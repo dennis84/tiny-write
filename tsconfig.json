@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "module": "commonjs",
+    "jsx": "react",
+    "jsxFactory": "h",
+    //"noImplicitAny": true,
+    "noUnusedLocals": true,
+    //"strictNullChecks": true,
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "skipLibCheck": true
+  }
+}

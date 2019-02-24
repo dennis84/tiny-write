@@ -1,0 +1,24 @@
+{
+  "name": "TinyWrite",
+  "main": "index.js",
+  "dependencies": {
+    "free-style": "^2.5.2",
+    "hyperapp": "git://github.com/jorgebucaran/hyperapp.git#V2",
+    "insert-css": "^2.0.0"
+  },
+  "devDependencies": {
+    "electron": "^4.0.5",
+    "rollup-plugin-commonjs": "^9.2.0",
+    "rollup-plugin-node-resolve": "^4.0.0",
+    "rollup-plugin-typescript": "^1.0.0",
+    "rollup-plugin-uglify": "^6.0.2",
+    "tslib": "^1.9.3",
+    "typescript": "^3.3.3"
+  },
+  "scripts": {
+    "build": "npx rollup -c",
+    "watch": "npx rollup -c -w",
+    "make": "npm run build && npx electron-packager . --overwrite",
+    "app": "npm run make && rm -rf /Applications/TinyWrite.app && cp -r TinyWrite-darwin-x64/TinyWrite.app /Applications/TinyWrite.app"
+  }
+}
