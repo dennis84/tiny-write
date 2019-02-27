@@ -9,15 +9,11 @@ const container = freestyle.registerStyle({
   'background': '#f2f2f2',
   'width': '100%',
   'height': '100%',
-  'display': 'flex',
-  'flex-direction': 'column',
-  'justify-content': 'center',
-  'align-items': 'center',
 })
 
 export default (props: State) => (
   <div class={container}>
-    <Editor text={props.text} />
+    <Editor text={props.text} position={props.position} />
     <WordCount text={props.text} />
   </div>
 )
