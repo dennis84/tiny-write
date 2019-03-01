@@ -9,9 +9,8 @@ import 'codemirror/mode/javascript/javascript'
 
 const fonts = {
   times: 'Times New Roman',
-  roboto: 'Roboto Slab',
-  playfair: 'Playfair Display',
   merriweather: 'Merriweather',
+  iosevka: 'Iosevka Term Slab',
 }
 
 const editor = freestyle.registerStyle({
@@ -56,6 +55,7 @@ const textarea = freestyle.registerStyle({
     'border-radius': '3px',
     'box-shadow': '0 2px 5px rgba(0,0,0,0.2)',
     'height': 'auto',
+    'font-family': fonts.iosevka,
   }
 })
 
