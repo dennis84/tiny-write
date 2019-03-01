@@ -12,6 +12,7 @@ declare module 'hyperapp' {
     init: S|[S,Effect],
     view: View<S>,
     container: HTMLElement,
+    subscriptions?: (s: S) => Effect[],
   }
 
   export function app<S>(props: Props<S>): void

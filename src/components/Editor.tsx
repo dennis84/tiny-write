@@ -39,15 +39,16 @@ const editor = freestyle.registerStyle({
 })
 
 const textarea = freestyle.registerStyle({
-  'width': '100%',
   'min-height': '100%',
   'font-size': '24px',
   'font-family': fonts.merriweather,
-  'padding': '50px',
+  'margin': '50px',
   'border': '0',
   'color': '#4a4a4a',
   'line-height': '160%',
   'background': 'transparent',
+  'outline': 'none',
+  '-webkit-app-region': 'no-drag',
   '&::-webkit-scrollbar': {
     'display': 'none',
   },

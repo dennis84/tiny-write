@@ -45,6 +45,13 @@ function createWindow () {
     win = null
   })
 
+  win.on('blur', () => {
+    win.setOpacity(0.3)
+  })
+
+  win.on('focus', () => {
+    win.setOpacity(1)
+  })
 }
 
 app.on('ready', createWindow)
