@@ -1,11 +1,9 @@
 import {h} from 'hyperapp'
-
+import * as caret from 'caret-pos'
 import {freestyle} from '../styles'
 import {OnTextChange} from '../actions'
 import {getNodeAt} from '../utils/caret'
-import CodeMirror from 'codemirror'
-import * as caret from 'caret-pos'
-import 'codemirror/mode/javascript/javascript'
+import * as codemirror from '../utils/codemirror'
 
 const fonts = {
   times: 'Times New Roman',
@@ -48,15 +46,13 @@ const textarea = freestyle.registerStyle({
   'background': 'transparent',
   'outline': 'none',
   '-webkit-app-region': 'no-drag',
+  '&:empty::before': {
+    'content': 'attr(placeholder)',
+    'color': '#999',
+  },
   '&::-webkit-scrollbar': {
     'display': 'none',
   },
-  '& .CodeMirror': {
-    'border-radius': '3px',
-    'box-shadow': '0 2px 5px rgba(0,0,0,0.2)',
-    'height': 'auto',
-    'font-family': fonts.iosevka,
-  }
 })
 
 const OnCreate = (text: string) => (elm: HTMLElement) => {
@@ -72,14 +68,7 @@ const OnKeyUp = (s, e: KeyboardEvent) => {
   const node = getNodeAt(elm, position)
 
   if(node && node.textContent === '```') {
-    const code = document.createElement('textarea') as Element
-    node.parentNode.replaceChild(code, node)
-    const codemirror = CodeMirror.fromTextArea(code, {
-      theme: 'dracula',
-      mode: 'javascript',
-    })
-
-    codemirror.focus()
+    codemirror.replace(node)
     return OnTextChange(s, text, position-3, true)
   }
 

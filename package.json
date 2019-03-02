@@ -12,6 +12,7 @@
     "electron": "^4.0.5",
     "rollup-plugin-commonjs": "^9.2.0",
     "rollup-plugin-node-resolve": "^4.0.0",
+    "rollup-plugin-string": "^3.0.0",
     "rollup-plugin-typescript": "^1.0.0",
     "rollup-plugin-uglify": "^6.0.2",
     "tslib": "^1.9.3",

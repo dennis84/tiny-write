@@ -1,5 +1,6 @@
 /// <reference path="./types/hyperapp.d.ts" />
 /// <reference path="./types/insert-css.d.ts" />
+/// <reference path="./types/svg.d.ts" />
 
 import {h, app, VNode, Effect} from 'hyperapp'
 import {insertCss} from 'insert-css'
