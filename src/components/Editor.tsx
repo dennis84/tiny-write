@@ -55,29 +55,37 @@ const textarea = freestyle.registerStyle({
   },
 })
 
-const OnCreate = (text: string) => (elm: HTMLElement) => {
-  elm.innerHTML = text ? text : ''
+interface Props {
+  text: string,
+  position: number,
+}
+
+const OnCreate = (props: Props) => (elm: HTMLElement) => {
+  elm.innerHTML = props.text
+  elm.querySelectorAll('textarea').forEach(x => codemirror.fromTextArea(x))
   elm.focus()
   document.getSelection().collapse(elm, elm.childNodes.length)
 }
 
 const OnKeyUp = (s, e: KeyboardEvent) => {
   const elm = e.target as HTMLElement
-  const text = (e.target as Element).innerHTML
-  const position = caret.position(elm).pos
-  const node = getNodeAt(elm, position)
+  let position = caret.position(elm).pos
+  const cur = getNodeAt(elm, position)
 
-  if(node && node.textContent === '```') {
-    codemirror.replace(node)
-    return OnTextChange(s, text, position-3, true)
+  if(cur && cur.textContent === '```') {
+    const textarea = document.createElement('textarea') as HTMLTextAreaElement
+    cur.parentNode.replaceChild(textarea, cur)
+    codemirror.fromTextArea(textarea)
+    position = position-3
   }
 
-  return OnTextChange(s, text, position, s.codemirror)
-}
+  const result = elm.cloneNode(true) as Element
+  result.querySelectorAll('.CodeMirror')
+    .forEach(x => x.parentNode.removeChild(x))
+  result.querySelectorAll('textarea')
+    .forEach(x => x.removeAttribute('style'))
 
-interface Props {
-  text: string,
-  position: number,
+  return OnTextChange(s, result.innerHTML, position)
 }
 
 export default (props: Props) => (
@@ -86,7 +94,7 @@ export default (props: Props) => (
       contenteditable
       class={textarea}
       placeholder="Start typing..."
-      onCreate={OnCreate(props.text)}
+      onCreate={OnCreate(props)}
       onKeyUp={OnKeyUp}
     ></div>
   </div>

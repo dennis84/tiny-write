@@ -13,14 +13,12 @@ export interface State {
   error: string,
   text: string,
   position: number,
-  codemirror: boolean,
 }
 
 const init: [State, Effect] = [{
   error: '',
   text: '',
   position: 0,
-  codemirror: false,
 }, [LocalStorage.getItem, {
   action: UpdateText,
   key: 'tiny_write.app.text'
@@ -30,7 +28,6 @@ const view = (state: State): VNode => (
   <Main
     text={state.text}
     position={state.position}
-    codemirror={state.codemirror}
     error={state.error} />
 )
 
