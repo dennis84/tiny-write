@@ -67,6 +67,13 @@ const OnCreate = (props: Props) => (elm: HTMLElement) => {
   document.getSelection().collapse(elm, elm.childNodes.length)
 }
 
+const OnPaste = (_, e: ClipboardEvent) => {
+  setTimeout(() => {
+    const elm = e.target as Element
+    elm.querySelectorAll('.CodeMirror').forEach(x => codemirror.fromDiv(x))
+  })
+}
+
 const OnKeyUp = (s, e: KeyboardEvent) => {
   const elm = e.target as HTMLElement
   let position = caret.position(elm).pos
@@ -95,6 +102,7 @@ export default (props: Props) => (
       class={textarea}
       placeholder="Start typing..."
       onCreate={OnCreate(props)}
+      onPaste={OnPaste}
       onKeyUp={OnKeyUp}
     ></div>
   </div>

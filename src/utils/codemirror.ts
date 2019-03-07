@@ -30,28 +30,35 @@ freestyle.registerRule('.CodeMirror', {
   }
 })
 
-export const fromTextArea = (textarea: HTMLTextAreaElement) => {
-  const codemirror = CodeMirror.fromTextArea(textarea, {
-    theme: 'dracula',
-    mode: 'javascript',
-  })
+const options = {
+  theme: 'dracula',
+  mode: 'javascript',
+}
 
+export const fromDiv = (e: Element) => {
+  init(CodeMirror((elt) => {
+    e.parentNode.replaceChild(elt, e)
+  }, options))
+}
+
+export const fromTextArea = (textarea: HTMLTextAreaElement) => {
+  init(CodeMirror.fromTextArea(textarea, options))
+}
+
+const init = (codemirror: CodeMirror) => {
   const wrapper = codemirror.getWrapperElement()
   const button = document.createElement('button')
   button.classList.add('codemirror-close')
   button.innerHTML = clear.default
   button.addEventListener('click', (e) => {
-    wrapper.parentNode.removeChild(wrapper.previousSibling)
+    if(wrapper.previousSibling) {
+      wrapper.parentNode.removeChild(wrapper.previousSibling)
+    }
     wrapper.parentNode.removeChild(wrapper)
   })
 
   wrapper.appendChild(button)
   codemirror.focus()
-
-  codemirror.on('change', (e) => {
-    textarea.value = codemirror.getValue()
-    textarea.defaultValue = codemirror.getValue()
-  })
 
   return codemirror
 }
