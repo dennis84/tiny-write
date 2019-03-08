@@ -2,11 +2,11 @@
   "name": "TinyWrite",
   "main": "index.js",
   "dependencies": {
-    "caret-pos": "^1.2.1",
     "codemirror": "^5.44.0",
     "free-style": "^2.5.2",
     "hyperapp": "git://github.com/jorgebucaran/hyperapp.git#V2",
-    "insert-css": "^2.0.0"
+    "insert-css": "^2.0.0",
+    "selection-ranges": "^3.0.3"
   },
   "devDependencies": {
     "electron": "^4.0.5",

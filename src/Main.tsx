@@ -13,7 +13,7 @@ const container = freestyle.registerStyle({
 
 export default (props: State) => (
   <div class={container}>
-    <Editor text={props.text} position={props.position} />
+    <Editor text={props.text} />
     <WordCount text={props.text} />
   </div>
 )

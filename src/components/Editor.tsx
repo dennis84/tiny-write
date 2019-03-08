@@ -1,8 +1,7 @@
 import {h} from 'hyperapp'
-import * as caret from 'caret-pos'
+import {setRange} from 'selection-ranges'
 import {freestyle} from '../styles'
 import {OnTextChange} from '../actions'
-import {getNodeAt} from '../utils/caret'
 import * as codemirror from '../utils/codemirror'
 
 const fonts = {
@@ -57,7 +56,6 @@ const textarea = freestyle.registerStyle({
 
 interface Props {
   text: string,
-  position: number,
 }
 
 const OnCreate = (props: Props) => (elm: HTMLElement) => {
@@ -74,16 +72,40 @@ const OnPaste = (_, e: ClipboardEvent) => {
   })
 }
 
-const OnKeyUp = (s, e: KeyboardEvent) => {
-  const elm = e.target as HTMLElement
-  let position = caret.position(elm).pos
-  const cur = getNodeAt(elm, position)
+const matchText = (node: Node, text: string) => {
+  return node.textContent.replace(/\u00A0/g, ' ') === text
+}
 
-  if(cur && cur.textContent === '```') {
+const OnKeyUp = (s, e: KeyboardEvent) => {
+  const elm = e.currentTarget as HTMLElement
+  let sel = window.getSelection()
+  let cur = sel.focusNode
+
+  if(cur && matchText(cur, '```')) {
     const textarea = document.createElement('textarea') as HTMLTextAreaElement
     cur.parentNode.replaceChild(textarea, cur)
     codemirror.fromTextArea(textarea)
-    position = position-3
+  }
+
+  if(cur && matchText(cur, '# ')) {
+    const node = document.createElement('h1')
+    node.appendChild(document.createTextNode('Heading 1'))
+    cur.parentNode.replaceChild(node, cur)
+    setRange(node, {start: 0, end: 9})
+  }
+
+  if(cur && matchText(cur, '## ')) {
+    const node = document.createElement('h2')
+    node.appendChild(document.createTextNode('Heading 2'))
+    cur.parentNode.replaceChild(node, cur)
+    setRange(node, {start: 0, end: 9})
+  }
+
+  if(cur && matchText(cur, '### ')) {
+    const node = document.createElement('h3')
+    node.appendChild(document.createTextNode('Heading 3'))
+    cur.parentNode.replaceChild(node, cur)
+    setRange(node, {start: 0, end: 9})
   }
 
   const result = elm.cloneNode(true) as Element
@@ -92,7 +114,7 @@ const OnKeyUp = (s, e: KeyboardEvent) => {
   result.querySelectorAll('textarea')
     .forEach(x => x.removeAttribute('style'))
 
-  return OnTextChange(s, result.innerHTML, position)
+  return OnTextChange(s, result.innerHTML)
 }
 
 export default (props: Props) => (

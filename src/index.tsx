@@ -12,13 +12,11 @@ import * as LocalStorage from './effects/LocalStorage'
 export interface State {
   error: string,
   text: string,
-  position: number,
 }
 
 const init: [State, Effect] = [{
   error: '',
   text: '',
-  position: 0,
 }, [LocalStorage.getItem, {
   action: UpdateText,
   key: 'tiny_write.app.text'
@@ -27,7 +25,6 @@ const init: [State, Effect] = [{
 const view = (state: State): VNode => (
   <Main
     text={state.text}
-    position={state.position}
     error={state.error} />
 )
 

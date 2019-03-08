@@ -1,6 +1,5 @@
 import {h} from 'hyperapp'
 import {freestyle} from '../styles'
-import {getAllTextnodes} from '../utils/caret'
 
 const text = freestyle.registerStyle({
   'font-size': '20px',
@@ -21,12 +20,17 @@ interface Props {
 }
 
 const wordCount = (str: string) => {
-  const container = document.createElement('div')
-  container.innerHTML = str
-  const count = getAllTextnodes(container).reduce((acc, node) => {
-    return acc + node.textContent.split(/\s+/).filter(x => x != '').length
-  }, 0)
+  const el = document.createElement('div')
+  el.innerHTML = str
 
+  let count = 0
+  const walk = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null, false)
+  while(walk.nextNode()) {
+    count += walk.currentNode.textContent
+      .split(/\s+/).filter(x => x != '').length
+  }
+
+  return count
   return !str ? 0 : count
 }
 
