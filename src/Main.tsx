@@ -6,7 +6,6 @@ import WordCount from './components/WordCount'
 
 const container = freestyle.registerStyle({
   'color': '#4a4a4a',
-  'background': '#f2f2f2',
   'width': '100%',
   'height': '100%',
 })

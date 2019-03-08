@@ -42,7 +42,10 @@ export const fromDiv = (e: Element) => {
 }
 
 export const fromTextArea = (textarea: HTMLTextAreaElement) => {
-  init(CodeMirror.fromTextArea(textarea, options))
+  const codemirror = init(CodeMirror.fromTextArea(textarea, options))
+  codemirror.on('change', (e) => {
+    textarea.defaultValue = codemirror.getValue()
+  })
 }
 
 const init = (codemirror: CodeMirror) => {
