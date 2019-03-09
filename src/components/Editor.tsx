@@ -52,6 +52,11 @@ const textarea = freestyle.registerStyle({
   '&::-webkit-scrollbar': {
     'display': 'none',
   },
+  '& blockquote': {
+    'border-left': '10px solid #eee',
+    'margin': '0',
+    'padding-left': '20px',
+  }
 })
 
 interface Props {
@@ -74,6 +79,35 @@ const OnPaste = (_, e: ClipboardEvent) => {
 
 const matchText = (node: Node, text: string) => {
   return node.textContent.replace(/\u00A0/g, ' ') === text
+}
+
+const OnKeyDown = (s, e: KeyboardEvent) => {
+  const elm = e.currentTarget as HTMLElement
+  let sel = window.getSelection()
+  let cur = sel.focusNode
+
+  const findTarget = (node: Node) => {
+    if(node.parentNode === elm) return node
+    else return findTarget(node.parentNode)
+  }
+
+  const insertAfter = (newElement, targetElement) => {
+    var parent = targetElement.parentNode
+    if(parent.lastChild == targetElement) {
+      parent.appendChild(newElement)
+    } else {
+      parent.insertBefore(newElement, targetElement.nextSibling)
+    }
+  }
+
+  if(e.keyCode === 13 && e.shiftKey) {
+    const node = document.createElement('div')
+    node.appendChild(document.createTextNode('...'))
+    if(cur === elm) elm.appendChild(node)
+    else insertAfter(node, findTarget(cur))
+    setRange(node, {start: 0, end: 3})
+    e.preventDefault()
+  }
 }
 
 const OnKeyUp = (s, e: KeyboardEvent) => {
@@ -108,6 +142,13 @@ const OnKeyUp = (s, e: KeyboardEvent) => {
     setRange(node, {start: 0, end: 9})
   }
 
+  if(cur && matchText(cur, '> ')) {
+    const node = document.createElement('blockquote')
+    node.appendChild(document.createTextNode('Blockquote'))
+    cur.parentNode.replaceChild(node, cur)
+    setRange(node, {start: 0, end: 10})
+  }
+
   const result = elm.cloneNode(true) as Element
   result.querySelectorAll('.CodeMirror')
     .forEach(x => x.parentNode.removeChild(x))
@@ -125,6 +166,7 @@ export default (props: Props) => (
       placeholder="Start typing..."
       onCreate={OnCreate(props)}
       onPaste={OnPaste}
+      onKeyDown={OnKeyDown}
       onKeyUp={OnKeyUp}
     ></div>
   </div>
