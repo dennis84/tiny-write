@@ -1,9 +1,14 @@
 {
   "name": "TinyWrite",
-  "main": "index.js",
   "version": "0.1.0",
   "build": {
     "appId": "com.github.dennis84.tinywrite",
+    "files": [
+      "index.html",
+      "index.js",
+      "dist/index.js",
+      "fonts/*"
+    ],
     "mac": {
       "category": "public.app-category.utilities"
     }
@@ -30,7 +35,6 @@
     "build": "npx rollup -c",
     "watch": "npx rollup -c -w",
     "pack": "npx electron-builder --dir",
-    "dist": "npx electron-builder",
-    "app": "npm run pack && rm -rf /Applications/TinyWrite.app && cp -r dist/mac/TinyWrite.app /Applications/TinyWrite.app"
+    "dist": "npx electron-builder"
   }
 }

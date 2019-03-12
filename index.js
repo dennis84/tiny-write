@@ -1,16 +1,14 @@
-const {app, BrowserWindow, Menu} = require('electron')
+const {app, shell, BrowserWindow, Menu} = require('electron')
 const {autoUpdater} = require('electron-updater')
 const path = require('path')
 const url = require('url')
 
+const appVersion = app.getVersion()
+
 let win
 
-function checkAndDownloadUpdate() {
-  try {
-    autoUpdater.checkForUpdatesAndNotify()
-  } catch(e) {
-    console.log(e.message)
-  }
+function autoUpdate() {
+  autoUpdater.checkForUpdatesAndNotify()
 }
 
 function createWindow() {
@@ -32,6 +30,9 @@ function createWindow() {
     label: 'Application',
     submenu: [
       {label: 'About Application', selector: 'orderFrontStandardAboutPanel:'},
+      {label: 'About Version', click: () => {
+        shell.openExternal(`https://github.com/dennis84/tiny-write/releases/tag/v${appVersion}`)
+      }},
       {type: 'separator'},
       {label: 'Quit', accelerator: 'Command+Q', click: () => app.quit()},
     ],
@@ -65,7 +66,7 @@ function createWindow() {
 
 app.on('ready', () => {
   createWindow()
-  checkAndDownloadUpdate()
+  autoUpdate()
 })
 
 app.on('window-all-closed', () => {
