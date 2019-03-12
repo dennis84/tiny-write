@@ -1,8 +1,16 @@
 {
   "name": "TinyWrite",
   "main": "index.js",
+  "version": "0.1.0",
+  "build": {
+    "appId": "com.github.dennis84.tinywrite",
+    "mac": {
+      "category": "public.app-category.utilities"
+    }
+  },
   "dependencies": {
     "codemirror": "^5.44.0",
+    "electron-updater": "^4.0.6",
     "free-style": "^2.5.2",
     "hyperapp": "git://github.com/jorgebucaran/hyperapp.git#V2",
     "insert-css": "^2.0.0",
@@ -21,7 +29,8 @@
   "scripts": {
     "build": "npx rollup -c",
     "watch": "npx rollup -c -w",
-    "make": "npm run build && npx electron-packager . --overwrite",
-    "app": "npm run make && rm -rf /Applications/TinyWrite.app && cp -r TinyWrite-darwin-x64/TinyWrite.app /Applications/TinyWrite.app"
+    "pack": "npx electron-builder --dir",
+    "dist": "npx electron-builder",
+    "app": "npm run pack && rm -rf /Applications/TinyWrite.app && cp -r dist/mac/TinyWrite.app /Applications/TinyWrite.app"
   }
 }

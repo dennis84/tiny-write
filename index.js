@@ -1,10 +1,19 @@
 const {app, BrowserWindow, Menu} = require('electron')
+const {autoUpdater} = require('electron-updater')
 const path = require('path')
 const url = require('url')
 
 let win
 
-function createWindow () {
+function checkAndDownloadUpdate() {
+  try {
+    autoUpdater.checkForUpdatesAndNotify()
+  } catch(e) {
+    console.log(e.message)
+  }
+}
+
+function createWindow() {
   win = new BrowserWindow({
     title: 'TinyWrite',
     alwaysOnTop: true,
@@ -54,7 +63,10 @@ function createWindow () {
   })
 }
 
-app.on('ready', createWindow)
+app.on('ready', () => {
+  createWindow()
+  checkAndDownloadUpdate()
+})
 
 app.on('window-all-closed', () => {
   // On macOS it is common for applications and their menu bar
