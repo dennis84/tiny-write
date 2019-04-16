@@ -63,11 +63,13 @@ interface Props {
   text: string,
 }
 
-const OnCreate = (props: Props) => (elm: HTMLElement) => {
-  elm.innerHTML = props.text
-  elm.querySelectorAll('textarea').forEach(x => codemirror.fromTextArea(x))
-  elm.focus()
-  document.getSelection().collapse(elm, elm.childNodes.length)
+class CustomEditor extends HTMLDivElement {
+  connectedCallback() {
+    this.innerHTML = this.textContent
+    this.querySelectorAll('textarea').forEach(x => codemirror.fromTextArea(x))
+    this.focus()
+    document.getSelection().collapse(this, this.childNodes.length)
+  }
 }
 
 const OnPaste = (_, e: ClipboardEvent) => {
@@ -81,7 +83,7 @@ const matchText = (node: Node, text: string) => {
   return node.textContent.replace(/\u00A0/g, ' ') === text
 }
 
-const OnKeyDown = (s, e: KeyboardEvent) => {
+const OnKeyDown = (state, e: KeyboardEvent) => {
   const elm = e.currentTarget as HTMLElement
   let sel = window.getSelection()
   let cur = sel.focusNode
@@ -108,6 +110,8 @@ const OnKeyDown = (s, e: KeyboardEvent) => {
     setRange(node, {start: 0, end: 3})
     e.preventDefault()
   }
+
+  return state
 }
 
 const OnKeyUp = (s, e: KeyboardEvent) => {
@@ -158,16 +162,17 @@ const OnKeyUp = (s, e: KeyboardEvent) => {
   return OnTextChange(s, result.innerHTML)
 }
 
+(window as any).customElements.define('custom-editor', CustomEditor, {extends: 'div'})
+
 export default (props: Props) => (
   <div class={editor}>
-    <div
+    <div is="custom-editor"
       contenteditable
       class={textarea}
       placeholder="Start typing..."
-      onCreate={OnCreate(props)}
-      onPaste={OnPaste}
-      onKeyDown={OnKeyDown}
-      onKeyUp={OnKeyUp}
-    ></div>
+      onpaste={OnPaste}
+      onkeydown={OnKeyDown}
+      onkeyup={OnKeyUp}
+    >{props.text}</div>
   </div>
 )
