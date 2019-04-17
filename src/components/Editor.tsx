@@ -10,7 +10,7 @@ const fonts = {
   iosevka: 'Iosevka Term Slab',
 }
 
-const editor = freestyle.registerStyle({
+const editor = (light: boolean) => freestyle.registerStyle({
   'width': '100%',
   'height': 'calc(100vh - 50px)',
   'overflow-y': 'auto',
@@ -19,7 +19,9 @@ const editor = freestyle.registerStyle({
     'content': '""',
     'height': '50px',
     'width': '100%',
-    'background': 'linear-gradient(to bottom, rgba(255,255,255,1), rgba(255,255,255,0))',
+    'background': light ?
+      'linear-gradient(to bottom, rgba(255,255,255,1), rgba(255,255,255,0))' :
+      'linear-gradient(to bottom, rgba(60,69,86,1), rgba(60,69,86,0))',
     'position': 'fixed',
     'z-index': '1',
   },
@@ -27,20 +29,22 @@ const editor = freestyle.registerStyle({
     'content': '""',
     'height': '50px',
     'width': '100%',
-    'background': 'linear-gradient(to top, rgba(255,255,255,1), rgba(255,255,255,0))',
+    'background': light ?
+      'linear-gradient(to top, rgba(255,255,255,1), rgba(255,255,255,0))' :
+      'linear-gradient(to top, rgba(60,69,86,1), rgba(60,69,86,0))',
     'position': 'fixed',
     'z-index': '1',
     'bottom': '50px',
   },
 })
 
-const textarea = freestyle.registerStyle({
+const textarea = (light: boolean) => freestyle.registerStyle({
   'min-height': '100%',
   'font-size': '24px',
   'font-family': fonts.merriweather,
   'margin': '50px',
   'border': '0',
-  'color': '#4a4a4a',
+  'color': light ? '#4a4a4a' : '#fff',
   'line-height': '160%',
   'background': 'transparent',
   'outline': 'none',
@@ -61,6 +65,7 @@ const textarea = freestyle.registerStyle({
 
 interface Props {
   text: string,
+  light: boolean,
 }
 
 class CustomEditor extends HTMLDivElement {
@@ -165,10 +170,10 @@ const OnKeyUp = (s, e: KeyboardEvent) => {
 (window as any).customElements.define('custom-editor', CustomEditor, {extends: 'div'})
 
 export default (props: Props) => (
-  <div class={editor}>
+  <div class={editor(props.light)}>
     <div is="custom-editor"
       contenteditable
-      class={textarea}
+      class={textarea(props.light)}
       placeholder="Start typing..."
       onpaste={OnPaste}
       onkeydown={OnKeyDown}

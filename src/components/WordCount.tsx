@@ -1,9 +1,9 @@
 import {h} from 'hyperapp'
 import {freestyle} from '../styles'
 
-const text = freestyle.registerStyle({
+const text = (light: boolean) => freestyle.registerStyle({
   'font-size': '20px',
-  'color': '#999',
+  'color': light ? '#999' : '#c4c7cc',
   'pointer-events': 'none',
   'user-select': 'none',
   'height': '50px',
@@ -17,6 +17,7 @@ const text = freestyle.registerStyle({
 
 interface Props {
   text: string,
+  light: boolean,
 }
 
 const wordCount = (str: string) => {
@@ -35,5 +36,5 @@ const wordCount = (str: string) => {
 }
 
 export default (props: Props) => (
-  <div class={text}>{wordCount(props.text)} words</div>
+  <div class={text(props.light)}>{wordCount(props.text)} words</div>
 )

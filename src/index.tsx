@@ -3,29 +3,31 @@
 /// <reference path="./types/svg.d.ts" />
 
 import {h, app, VNode, Effect} from 'hyperapp'
-import {insertCss} from 'insert-css'
-import {freestyle} from './styles'
 import Main from './Main'
-import {UpdateText} from './actions'
+import {UpdateState, ToggleBackground} from './actions'
 import * as LocalStorage from './effects/LocalStorage'
+import * as IpcRenderer from './effects/IpcRenderer'
 
 export interface State {
   error: string,
   text: string,
+  light: boolean,
 }
 
 const init: [State, Effect] = [{
   error: '',
   text: '',
+  light: true,
 }, [LocalStorage.getItem, {
-  action: UpdateText,
-  key: 'tiny_write.app.text'
+  action: UpdateState,
+  key: 'tiny_write.app.data'
 }]]
 
 const view = (state: State): VNode => (
   <Main
     text={state.text}
-    error={state.error} />
+    error={state.error}
+    light={state.light} />
 )
 
 const container = document.getElementById('container')
@@ -34,6 +36,10 @@ app({
   init,
   view,
   container,
+  subscriptions: (s: State) => [
+    [IpcRenderer.on, {
+      event: 'toggle-background',
+      action: ToggleBackground,
+    }],
+  ],
 })
-
-insertCss(freestyle.getStyles())
