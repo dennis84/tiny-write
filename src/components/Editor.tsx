@@ -24,10 +24,11 @@ const editor = (light: boolean) => freestyle.registerStyle({
       'linear-gradient(to bottom, rgba(60,69,86,1), rgba(60,69,86,0))',
     'position': 'fixed',
     'z-index': '1',
+    'pointer-events': 'none',
   },
   '&:after': {
     'content': '""',
-    'height': '50px',
+    'height': '20px',
     'width': '100%',
     'background': light ?
       'linear-gradient(to top, rgba(255,255,255,1), rgba(255,255,255,0))' :
@@ -35,11 +36,12 @@ const editor = (light: boolean) => freestyle.registerStyle({
     'position': 'fixed',
     'z-index': '1',
     'bottom': '50px',
+    'pointer-events': 'none',
   },
 })
 
 const textarea = (light: boolean) => freestyle.registerStyle({
-  'min-height': '100%',
+  'min-height': 'calc(100vh - 150px)',
   'font-size': '24px',
   'font-family': fonts.merriweather,
   'margin': '50px',
@@ -92,6 +94,16 @@ const OnKeyDown = (state, e: KeyboardEvent) => {
   const elm = e.currentTarget as HTMLElement
   let sel = window.getSelection()
   let cur = sel.focusNode
+
+  const selRange = sel.getRangeAt(0)
+  const testRange = selRange.cloneRange()
+  testRange.selectNodeContents(elm)
+  testRange.setStart(selRange.endContainer, selRange.endOffset)
+  const isCaretAtEnd = testRange.toString().trim() === ''
+
+  if(isCaretAtEnd) {
+    (elm.parentNode as HTMLElement).scrollTop = elm.offsetHeight
+  }
 
   const findTarget = (node: Node) => {
     if(node.parentNode === elm) return node
