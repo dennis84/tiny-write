@@ -26,15 +26,15 @@
     "rollup-plugin-commonjs": "^9.3.4",
     "rollup-plugin-node-resolve": "^4.2.3",
     "rollup-plugin-string": "^3.0.0",
+    "rollup-plugin-terser": "^4.0.4",
     "rollup-plugin-typescript": "^1.0.1",
-    "rollup-plugin-uglify": "^6.0.2",
     "tslib": "^1.9.3",
-    "typescript": "^3.4.3"
+    "typescript": "^3.4.4"
   },
   "scripts": {
     "build": "npx rollup -c",
     "watch": "npx rollup -c -w",
-    "pack": "npx electron-builder --dir",
-    "dist": "npx electron-builder"
+    "pack": "npm run build && npx electron-builder --dir",
+    "dist": "npm run build && npx electron-builder"
   }
 }

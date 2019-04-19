@@ -1,4 +1,4 @@
-import {uglify} from 'rollup-plugin-uglify'
+import {terser} from 'rollup-plugin-terser'
 import typescript from 'rollup-plugin-typescript'
 import resolve from 'rollup-plugin-node-resolve'
 import commonjs from 'rollup-plugin-commonjs'
@@ -21,6 +21,6 @@ export default {
     }),
     typescript({tsconfig: 'tsconfig.json'}),
     resolve(),
-    production && uglify(),
+    production && terser(),
   ],
 }
