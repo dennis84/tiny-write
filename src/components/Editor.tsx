@@ -73,21 +73,21 @@ interface Props {
 class CustomEditor extends HTMLDivElement {
   connectedCallback() {
     this.innerHTML = this.textContent
-    this.querySelectorAll('textarea').forEach(x => codemirror.fromTextArea(x))
+    this.querySelectorAll('textarea').forEach(x => {
+      codemirror.fromTextArea(x, {mode: x.dataset.mode})
+    })
     this.focus()
     document.getSelection().collapse(this, this.childNodes.length)
   }
 }
 
-const OnPaste = (_, e: ClipboardEvent) => {
+const OnPaste = (state, e: ClipboardEvent) => {
   setTimeout(() => {
     const elm = e.target as Element
     elm.querySelectorAll('.CodeMirror').forEach(x => codemirror.fromDiv(x))
   })
-}
 
-const matchText = (node: Node, text: string) => {
-  return node.textContent.replace(/\u00A0/g, ' ') === text
+  return state
 }
 
 const OnKeyDown = (state, e: KeyboardEvent) => {
@@ -133,37 +133,40 @@ const OnKeyDown = (state, e: KeyboardEvent) => {
 
 const OnKeyUp = (s, e: KeyboardEvent) => {
   const elm = e.currentTarget as HTMLElement
-  let sel = window.getSelection()
-  let cur = sel.focusNode
+  const sel = window.getSelection()
+  const cur = sel.focusNode
+  const curText = cur.textContent.replace(/\u00A0/g, ' ')
 
-  if(cur && matchText(cur, '```')) {
+  if(cur && /```[a-z]* /.test(curText)) {
+    const mode = codemirror.modeByLang(curText.substring(3).trim())
     const textarea = document.createElement('textarea') as HTMLTextAreaElement
+    textarea.dataset.mode = mode
     cur.parentNode.replaceChild(textarea, cur)
-    codemirror.fromTextArea(textarea)
+    codemirror.fromTextArea(textarea, mode ? {mode} : {})
   }
 
-  if(cur && matchText(cur, '# ')) {
+  if(cur && curText === '# ') {
     const node = document.createElement('h1')
     node.appendChild(document.createTextNode('Heading 1'))
     cur.parentNode.replaceChild(node, cur)
     setRange(node, {start: 0, end: 9})
   }
 
-  if(cur && matchText(cur, '## ')) {
+  if(cur && curText === '## ') {
     const node = document.createElement('h2')
     node.appendChild(document.createTextNode('Heading 2'))
     cur.parentNode.replaceChild(node, cur)
     setRange(node, {start: 0, end: 9})
   }
 
-  if(cur && matchText(cur, '### ')) {
+  if(cur && curText === '### ') {
     const node = document.createElement('h3')
     node.appendChild(document.createTextNode('Heading 3'))
     cur.parentNode.replaceChild(node, cur)
     setRange(node, {start: 0, end: 9})
   }
 
-  if(cur && matchText(cur, '> ')) {
+  if(cur && curText === '> ') {
     const node = document.createElement('blockquote')
     node.appendChild(document.createTextNode('Blockquote'))
     cur.parentNode.replaceChild(node, cur)
