@@ -51,6 +51,9 @@ function createWindow() {
   }, {
     label: 'View',
     submenu: [
+      {label: 'Toggle Fullscreen', accelerator: 'Cmd+Return', click: () => {
+        win.setSimpleFullScreen(!win.isSimpleFullScreen())
+      }},
       {label: 'Toggle Background', click: () => {
         win.webContents.send('toggle-background')
       }},
