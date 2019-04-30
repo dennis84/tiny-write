@@ -1,5 +1,6 @@
 import {h} from 'hyperapp'
 import {setRange} from 'selection-ranges'
+import {State} from '..'
 import {freestyle} from '../styles'
 import {OnTextChange} from '../actions'
 import * as codemirror from '../utils/codemirror'
@@ -15,6 +16,9 @@ const editor = (light: boolean) => freestyle.registerStyle({
   'height': 'calc(100vh - 50px)',
   'overflow-y': 'auto',
   'position': 'relative',
+  'padding': '0 50px',
+  'display': 'flex',
+  'justify-content': 'center',
   '&:before': {
     'content': '""',
     'height': '50px',
@@ -42,9 +46,11 @@ const editor = (light: boolean) => freestyle.registerStyle({
 
 const textarea = (light: boolean) => freestyle.registerStyle({
   'min-height': 'calc(100vh - 150px)',
+  'width': '100%',
+  'max-width': '800px',
   'font-size': '24px',
   'font-family': fonts.merriweather,
-  'margin': '50px',
+  'margin': '50px 0',
   'border': '0',
   'color': light ? '#4a4a4a' : '#fff',
   'line-height': '160%',
@@ -68,20 +74,35 @@ const textarea = (light: boolean) => freestyle.registerStyle({
 interface Props {
   text: string,
   light: boolean,
+  theme: string,
 }
 
 class CustomEditor extends HTMLDivElement {
+  static get observedAttributes() {
+    return ['theme']
+  }
+
+  attributeChangedCallback(name, oldValue, newValue,x) {
+    if(!oldValue) return
+    this.querySelectorAll('.CodeMirror').forEach(x => {
+      (x as any).CodeMirror.setOption('theme', newValue)
+    })
+  }
+
   connectedCallback() {
     this.innerHTML = this.textContent
     this.querySelectorAll('textarea').forEach(x => {
-      codemirror.fromTextArea(x, {mode: x.dataset.mode})
+      codemirror.fromTextArea(x, {
+        mode: x.dataset.mode,
+        theme: this.getAttribute('theme')
+      })
     })
     this.focus()
     document.getSelection().collapse(this, this.childNodes.length)
   }
 }
 
-const OnPaste = (state, e: ClipboardEvent) => {
+const OnPaste = (state: State, e: ClipboardEvent) => {
   setTimeout(() => {
     const elm = e.target as Element
     elm.querySelectorAll('.CodeMirror').forEach(x => codemirror.fromDiv(x))
@@ -90,7 +111,7 @@ const OnPaste = (state, e: ClipboardEvent) => {
   return state
 }
 
-const OnKeyDown = (state, e: KeyboardEvent) => {
+const OnKeyDown = (state: State, e: KeyboardEvent) => {
   const elm = e.currentTarget as HTMLElement
   let sel = window.getSelection()
   let cur = sel.focusNode
@@ -131,7 +152,7 @@ const OnKeyDown = (state, e: KeyboardEvent) => {
   return state
 }
 
-const OnKeyUp = (s, e: KeyboardEvent) => {
+const OnKeyUp = (state: State, e: KeyboardEvent) => {
   const elm = e.currentTarget as HTMLElement
   const sel = window.getSelection()
   const cur = sel.focusNode
@@ -142,7 +163,10 @@ const OnKeyUp = (s, e: KeyboardEvent) => {
     const textarea = document.createElement('textarea') as HTMLTextAreaElement
     textarea.dataset.mode = mode
     cur.parentNode.replaceChild(textarea, cur)
-    codemirror.fromTextArea(textarea, mode ? {mode} : {})
+    codemirror.fromTextArea(textarea, {
+      mode: mode,
+      theme: state.theme,
+    })
   }
 
   if(cur && curText === '# ') {
@@ -179,7 +203,7 @@ const OnKeyUp = (s, e: KeyboardEvent) => {
   result.querySelectorAll('textarea')
     .forEach(x => x.removeAttribute('style'))
 
-  return OnTextChange(s, result.innerHTML)
+  return OnTextChange(state, result.innerHTML)
 }
 
 (window as any).customElements.define('custom-editor', CustomEditor, {extends: 'div'})
@@ -188,6 +212,7 @@ export default (props: Props) => (
   <div class={editor(props.light)}>
     <div is="custom-editor"
       contenteditable
+      theme={props.theme}
       class={textarea(props.light)}
       placeholder="Start typing..."
       onpaste={OnPaste}

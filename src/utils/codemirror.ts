@@ -126,7 +126,7 @@ import {freestyle} from '../styles'
 
 freestyle.registerRule('.CodeMirror', {
   'border-radius': '3px',
-  'box-shadow': '0 2px 5px rgba(0,0,0,0.2)',
+  'box-shadow': '0 1px 3px rgba(0,0,0,0.2) !important',
   'height': 'auto',
   'font-family': 'Iosevka Term Slab',
   '.codemirror-close': {
@@ -156,7 +156,7 @@ const defaults = {
   mode: 'javascript',
 }
 
-const mapping = {
+const langMapping = {
   'c': 'text/x-csrc',
   'cpp': 'text/x-c++src',
   'c++': 'text/x-c++src',
@@ -169,7 +169,7 @@ const mapping = {
 }
 
 export const modeByLang = (lang: string) =>
-  mapping[lang] ? mapping[lang] : lang
+  langMapping[lang] ? langMapping[lang] : lang
 
 export const fromDiv = (e: Element, options = {}) => {
   init(CodeMirror((elt) => {

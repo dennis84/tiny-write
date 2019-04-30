@@ -1,4 +1,4 @@
-const {app, shell, BrowserWindow, Menu} = require('electron')
+const {app, ipcMain, shell, BrowserWindow, Menu} = require('electron')
 const {autoUpdater} = require('electron-updater')
 const path = require('path')
 const url = require('url')
@@ -57,6 +57,16 @@ function createWindow() {
       {label: 'Toggle Background', click: () => {
         win.webContents.send('toggle-background')
       }},
+      {type: 'separator'},
+      {label: 'Dracula', type: 'checkbox', checked: true, click: () => {
+        win.webContents.send('change-theme', 'dracula')
+      }},
+      {label: 'Solarized Dark', type: 'checkbox', click: () => {
+        win.webContents.send('change-theme', 'solarized dark')
+      }},
+      {label: 'Solarized Light', type: 'checkbox', click: () => {
+        win.webContents.send('change-theme', 'solarized light')
+      }},
     ],
   }]))
 
@@ -78,6 +88,13 @@ function createWindow() {
 app.on('ready', () => {
   createWindow()
   autoUpdate()
+})
+
+ipcMain.on('theme', (e, data) => {
+  var menu = Menu.getApplicationMenu()
+  menu.items[2].submenu.items.forEach(item => {
+    item.checked = item.label.toLowerCase() === data
+  })
 })
 
 app.on('window-all-closed', () => {

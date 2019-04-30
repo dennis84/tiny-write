@@ -25,7 +25,7 @@ class FreeStyle extends HTMLElement {
 
 export default (props: State) => (
   <div class={container(props.light)}>
-    <Editor text={props.text} light={props.light} />
+    <Editor text={props.text} light={props.light} theme={props.theme} />
     <WordCount text={props.text} light={props.light} />
     <free-style content={freestyle.getStyles()}></free-style>
   </div>
