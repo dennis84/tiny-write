@@ -58,8 +58,20 @@ function createWindow() {
         win.webContents.send('toggle-background')
       }},
       {type: 'separator'},
+      {label: 'Cobalt', type: 'checkbox', click: () => {
+        win.webContents.send('change-theme', 'cobalt')
+      }},
       {label: 'Dracula', type: 'checkbox', checked: true, click: () => {
         win.webContents.send('change-theme', 'dracula')
+      }},
+      {label: 'Material', type: 'checkbox', click: () => {
+        win.webContents.send('change-theme', 'material')
+      }},
+      {label: 'Nord', type: 'checkbox', click: () => {
+        win.webContents.send('change-theme', 'nord')
+      }},
+      {label: 'Panda-Syntax', type: 'checkbox', click: () => {
+        win.webContents.send('change-theme', 'panda-syntax')
       }},
       {label: 'Solarized Dark', type: 'checkbox', click: () => {
         win.webContents.send('change-theme', 'solarized dark')

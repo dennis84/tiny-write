@@ -1,13 +1,25 @@
 import {Dispatch} from 'hyperapp'
 
-const ipcRenderer = (window as any).require('electron').ipcRenderer
+interface IpcRenderer {
+  on: (...any) => void,
+  send: (...any) => void,
+}
 
-interface Props {
+const userAgent = window.navigator.userAgent.toLowerCase()
+let ipcRenderer: IpcRenderer
+
+if(userAgent.indexOf(' electron/') > -1) {
+  ipcRenderer = (window as any).require('electron').ipcRenderer
+} else {
+  ipcRenderer = {on: () => {}, send: () => {}}
+}
+
+interface OnProps {
   event: string,
   action: any,
 }
 
-export const on = (args: Props, dispatch: Dispatch) => {
+export const on = (args: OnProps, dispatch: Dispatch) => {
   ipcRenderer.on(args.event, (e, arg) => {
     dispatch(args.action, arg)
   })

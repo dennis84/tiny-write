@@ -32,7 +32,6 @@ const wordCount = (str: string) => {
   }
 
   return count
-  return !str ? 0 : count
 }
 
 export default (props: Props) => (
