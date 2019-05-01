@@ -171,12 +171,6 @@ const langMapping = {
 export const modeByLang = (lang: string) =>
   langMapping[lang] ? langMapping[lang] : lang
 
-export const fromDiv = (e: Element, options = {}) => {
-  init(CodeMirror((elt) => {
-    e.parentNode.replaceChild(elt, e)
-  }, {...defaults, ...options}))
-}
-
 export const fromTextArea = (textarea: HTMLTextAreaElement, options = {}) => {
   const codemirror = init(CodeMirror.fromTextArea(textarea, {...defaults, ...options}))
   codemirror.on('change', (e) => {

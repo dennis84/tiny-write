@@ -104,8 +104,8 @@ class CustomEditor extends HTMLDivElement {
 
 const OnPaste = (state: State, e: ClipboardEvent) => {
   setTimeout(() => {
-    const elm = e.target as Element
-    elm.querySelectorAll('.CodeMirror').forEach(x => codemirror.fromDiv(x))
+    (e.target as Element).querySelectorAll('.CodeMirror')
+      .forEach(x => x.parentNode.removeChild(x))
   })
 
   return state
@@ -158,7 +158,7 @@ const OnKeyUp = (state: State, e: KeyboardEvent) => {
   const cur = sel.focusNode
   const curText = cur.textContent.replace(/\u00A0/g, ' ')
 
-  if(cur && /```[a-z]* /.test(curText)) {
+  if(cur && /```[a-z+-]*\s/.test(curText)) {
     const mode = codemirror.modeByLang(curText.substring(3).trim())
     const textarea = document.createElement('textarea') as HTMLTextAreaElement
     textarea.dataset.mode = mode
