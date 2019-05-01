@@ -11,3 +11,18 @@ freestyle.registerRule('@font-face', {
   'font-family': 'Merriweather',
   'src': 'url(./fonts/Merriweather-Regular.ttf)',
 })
+
+freestyle.registerRule('@font-face', {
+  'font-family': 'IBM Plex Serif',
+  'src': 'url(./fonts/IBMPlexSerif-Regular.ttf)',
+})
+
+freestyle.registerRule('@font-face', {
+  'font-family': 'Roboto',
+  'src': 'url(./fonts/Roboto-Regular.ttf)',
+})
+
+freestyle.registerRule('@font-face', {
+  'font-family': 'Roboto Slab',
+  'src': 'url(./fonts/RobotoSlab-Regular.ttf)',
+})

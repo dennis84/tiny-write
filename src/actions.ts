@@ -1,4 +1,4 @@
-import {State} from '.'
+import {State, Config} from '.'
 import {setItem} from './effects/LocalStorage'
 import {send} from './effects/IpcRenderer'
 import Many from './effects/Many'
@@ -11,49 +11,32 @@ export const UpdateState = (state: State, data: string) => {
 
   const newState = {...state}
   if(parsed.text) newState.text = parsed.text
-  if(parsed.light) newState.light = parsed.light
-  if(parsed.theme) newState.theme = parsed.theme
+  if(parsed.config) newState.config = {...newState.config, ...parsed.config}
   return [
     newState,
-    [send, {event: 'theme', data: newState.theme}],
+    [send, {event: 'config', data: newState.config}],
   ]
 }
 
-export const ChangeTheme = (state: State, theme: string) => [
-  {...state, theme},
-  [Many, [
-    [setItem, {
-      key: 'tiny_write.app.data',
-      value: JSON.stringify({
-        text: state.text,
-        light: !state.light,
-        theme: theme,
-      }),
-    }],
-    [send, {event: 'theme', data: theme}],
-  ]]
-]
-
-export const ToggleBackground = (state: State) => [
-  {...state, light: !state.light},
-  [setItem, {
-    key: 'tiny_write.app.data',
-    value: JSON.stringify({
-      text: state.text,
-      light: !state.light,
-      theme: state.theme,
-    }),
-  }],
-]
+export const ChangeConfig = (state: State, config: Config) => {
+  console.log('ChangeConfig', config)
+  const newState = {...state, config: {...state.config, ...config}}
+  return [
+    newState,
+    [Many, [
+      [setItem, {
+        key: 'tiny_write.app.data',
+        value: JSON.stringify(newState),
+      }],
+      [send, {event: 'config', data: newState.config}],
+    ]]
+  ]
+}
 
 export const OnTextChange = (state: State, text: string) => [
   {...state, text},
   [setItem, {
     key: 'tiny_write.app.data',
-    value: JSON.stringify({
-      text: text,
-      light: state.light,
-      theme: state.theme,
-    }),
+    value: JSON.stringify({text: text, config: state.config}),
   }],
 ]

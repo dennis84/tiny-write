@@ -4,22 +4,28 @@
 
 import {h, app, VNode, Effect} from 'hyperapp'
 import Main from './Main'
-import {ChangeTheme, UpdateState, ToggleBackground} from './actions'
+import {ChangeConfig, UpdateState} from './actions'
 import * as LocalStorage from './effects/LocalStorage'
 import * as IpcRenderer from './effects/IpcRenderer'
 
-export interface State {
-  error: string,
-  text: string,
+export interface Config {
   light: boolean,
   theme: string,
+  font: string,
+}
+
+export interface State {
+  text: string,
+  config: Config,
 }
 
 const init: [State, Effect] = [{
-  error: '',
   text: '',
-  light: true,
-  theme: 'dracula',
+  config: {
+    light: true,
+    theme: 'dracula',
+    font: 'Merriweather',
+  }
 }, [LocalStorage.getItem, {
   action: UpdateState,
   key: 'tiny_write.app.data'
@@ -28,9 +34,7 @@ const init: [State, Effect] = [{
 const view = (state: State): VNode => (
   <Main
     text={state.text}
-    error={state.error}
-    light={state.light}
-    theme={state.theme} />
+    config={state.config} />
 )
 
 const container = document.getElementById('container')
@@ -41,12 +45,8 @@ app({
   container,
   subscriptions: (s: State) => [
     [IpcRenderer.on, {
-      event: 'toggle-background',
-      action: ToggleBackground,
-    }],
-    [IpcRenderer.on, {
-      event: 'change-theme',
-      action: ChangeTheme,
+      event: 'change-config',
+      action: ChangeConfig,
     }],
   ],
 })

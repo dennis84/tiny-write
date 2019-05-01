@@ -54,31 +54,59 @@ function createWindow() {
       {label: 'Toggle Fullscreen', accelerator: 'Cmd+Return', click: () => {
         win.setSimpleFullScreen(!win.isSimpleFullScreen())
       }},
-      {label: 'Toggle Background', click: () => {
-        win.webContents.send('toggle-background')
+      {label: 'Dark Mode', type: 'checkbox', update: (menu, value) => {
+        menu.checked = !value
+      }, click: (menu) => {
+        win.webContents.send('change-config', {light: !menu.checked})
       }},
-      {type: 'separator'},
-      {label: 'Cobalt', type: 'checkbox', click: () => {
-        win.webContents.send('change-theme', 'cobalt')
-      }},
-      {label: 'Dracula', type: 'checkbox', checked: true, click: () => {
-        win.webContents.send('change-theme', 'dracula')
-      }},
-      {label: 'Material', type: 'checkbox', click: () => {
-        win.webContents.send('change-theme', 'material')
-      }},
-      {label: 'Nord', type: 'checkbox', click: () => {
-        win.webContents.send('change-theme', 'nord')
-      }},
-      {label: 'Panda-Syntax', type: 'checkbox', click: () => {
-        win.webContents.send('change-theme', 'panda-syntax')
-      }},
-      {label: 'Solarized Dark', type: 'checkbox', click: () => {
-        win.webContents.send('change-theme', 'solarized dark')
-      }},
-      {label: 'Solarized Light', type: 'checkbox', click: () => {
-        win.webContents.send('change-theme', 'solarized light')
-      }},
+      {label: 'Font', update: (menu, value) => {
+        menu.submenu.items.forEach(item => {
+          item.checked = item.label === value
+        })
+      }, submenu: [
+        {label: 'Merriweather', type: 'checkbox', checked: true, click: () => {
+          win.webContents.send('change-config', {font: 'Merriweather'})
+        }},
+        {label: 'Times New Roman', type: 'checkbox', click: () => {
+          win.webContents.send('change-config', {font: 'Times New Roman'})
+        }},
+        {label: 'Roboto', type: 'checkbox', click: () => {
+          win.webContents.send('change-config', {font: 'Roboto'})
+        }},
+        {label: 'Roboto Slab', type: 'checkbox', click: () => {
+          win.webContents.send('change-config', {font: 'Roboto Slab'})
+        }},
+        {label: 'IBM Plex Serif', type: 'checkbox', click: () => {
+          win.webContents.send('change-config', {font: 'IBM Plex Serif'})
+        }},
+      ]},
+      {label: 'Code', update: (menu, value) => {
+        menu.submenu.items.forEach(item => {
+          item.checked = item.label.toLowerCase() === value
+        })
+      }, submenu: [
+        {label: 'Cobalt', type: 'checkbox', click: () => {
+          win.webContents.send('change-config', {theme: 'cobalt'})
+        }},
+        {label: 'Dracula', type: 'checkbox', checked: true, click: () => {
+          win.webContents.send('change-config', {theme: 'dracula'})
+        }},
+        {label: 'Material', type: 'checkbox', click: () => {
+          win.webContents.send('change-config', {theme: 'material'})
+        }},
+        {label: 'Nord', type: 'checkbox', click: () => {
+          win.webContents.send('change-config', {theme: 'nord'})
+        }},
+        {label: 'Panda-Syntax', type: 'checkbox', click: () => {
+          win.webContents.send('change-config', {theme: 'panda-syntax'})
+        }},
+        {label: 'Solarized Dark', type: 'checkbox', click: () => {
+          win.webContents.send('change-config', {theme: 'solarized dark'})
+        }},
+        {label: 'Solarized Light', type: 'checkbox', click: () => {
+          win.webContents.send('change-config', {theme: 'solarized light'})
+        }},
+      ]},
     ],
   }]))
 
@@ -102,11 +130,15 @@ app.on('ready', () => {
   autoUpdate()
 })
 
-ipcMain.on('theme', (e, data) => {
+ipcMain.on('config', (e, data) => {
   var menu = Menu.getApplicationMenu()
-  menu.items[2].submenu.items.forEach(item => {
-    item.checked = item.label.toLowerCase() === data
-  })
+  var view = menu.items[2].submenu
+  var mode = view.items[1]
+  var font = view.items[2]
+  var code = view.items[3]
+  mode.update(mode, data.light)
+  font.update(font, data.font)
+  code.update(code, data.theme)
 })
 
 app.on('window-all-closed', () => {

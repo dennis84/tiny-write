@@ -1,17 +1,11 @@
 import {h} from 'hyperapp'
 import {setRange} from 'selection-ranges'
-import {State} from '..'
+import {State, Config} from '..'
 import {freestyle} from '../styles'
 import {OnTextChange} from '../actions'
 import * as codemirror from '../utils/codemirror'
 
-const fonts = {
-  times: 'Times New Roman',
-  merriweather: 'Merriweather',
-  iosevka: 'Iosevka Term Slab',
-}
-
-const editor = (light: boolean) => freestyle.registerStyle({
+const editor = (config: Config) => freestyle.registerStyle({
   'width': '100%',
   'height': 'calc(100vh - 50px)',
   'overflow-y': 'auto',
@@ -23,7 +17,7 @@ const editor = (light: boolean) => freestyle.registerStyle({
     'content': '""',
     'height': '50px',
     'width': '100%',
-    'background': light ?
+    'background': config.light ?
       'linear-gradient(to bottom, rgba(255,255,255,1), rgba(255,255,255,0))' :
       'linear-gradient(to bottom, rgba(60,69,86,1), rgba(60,69,86,0))',
     'position': 'fixed',
@@ -34,7 +28,7 @@ const editor = (light: boolean) => freestyle.registerStyle({
     'content': '""',
     'height': '20px',
     'width': '100%',
-    'background': light ?
+    'background': config.light ?
       'linear-gradient(to top, rgba(255,255,255,1), rgba(255,255,255,0))' :
       'linear-gradient(to top, rgba(60,69,86,1), rgba(60,69,86,0))',
     'position': 'fixed',
@@ -44,15 +38,15 @@ const editor = (light: boolean) => freestyle.registerStyle({
   },
 })
 
-const textarea = (light: boolean) => freestyle.registerStyle({
+const textarea = (config: Config) => freestyle.registerStyle({
   'min-height': 'calc(100vh - 150px)',
   'width': '100%',
   'max-width': '800px',
   'font-size': '24px',
-  'font-family': fonts.merriweather,
+  'font-family': config.font,
   'margin': '50px 0',
   'border': '0',
-  'color': light ? '#4a4a4a' : '#fff',
+  'color': config.light ? '#4a4a4a' : '#fff',
   'line-height': '160%',
   'background': 'transparent',
   'outline': 'none',
@@ -73,8 +67,7 @@ const textarea = (light: boolean) => freestyle.registerStyle({
 
 interface Props {
   text: string,
-  light: boolean,
-  theme: string,
+  config: Config,
 }
 
 class CustomEditor extends HTMLDivElement {
@@ -165,7 +158,7 @@ const OnKeyUp = (state: State, e: KeyboardEvent) => {
     cur.parentNode.replaceChild(textarea, cur)
     codemirror.fromTextArea(textarea, {
       mode: mode,
-      theme: state.theme,
+      theme: state.config.theme,
     })
   }
 
@@ -209,11 +202,11 @@ const OnKeyUp = (state: State, e: KeyboardEvent) => {
 (window as any).customElements.define('custom-editor', CustomEditor, {extends: 'div'})
 
 export default (props: Props) => (
-  <div class={editor(props.light)}>
+  <div class={editor(props.config)}>
     <div is="custom-editor"
       contenteditable
-      theme={props.theme}
-      class={textarea(props.light)}
+      theme={props.config.theme}
+      class={textarea(props.config)}
       placeholder="Start typing..."
       onpaste={OnPaste}
       onkeydown={OnKeyDown}
