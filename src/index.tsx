@@ -37,12 +37,12 @@ const view = (state: State): VNode => (
     config={state.config} />
 )
 
-const container = document.getElementById('container')
+const node = document.getElementById('container')
 
 app({
   init,
   view,
-  container,
+  node,
   subscriptions: (s: State) => [
     [IpcRenderer.on, {
       event: 'change-config',

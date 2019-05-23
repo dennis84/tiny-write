@@ -18,6 +18,9 @@ function createWindow() {
     width: 600,
     height: 600,
     frame: false,
+    webPreferences: {
+      nodeIntegration: true
+    }
   })
 
   win.loadURL(url.format({

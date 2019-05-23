@@ -11,7 +11,7 @@ declare module 'hyperapp' {
   interface Props<S> {
     init: S|[S,Effect],
     view: View<S>,
-    container: HTMLElement,
+    node: HTMLElement,
     subscriptions?: (s: S) => Effect[],
   }
 
