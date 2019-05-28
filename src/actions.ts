@@ -1,7 +1,6 @@
 import {State, Config} from '.'
 import {setItem} from './effects/LocalStorage'
 import {send} from './effects/IpcRenderer'
-import Many from './effects/Many'
 
 export const UpdateState = (state: State, data: string) => {
   const parsed = JSON.parse(data)
@@ -23,13 +22,11 @@ export const ChangeConfig = (state: State, config: Config) => {
   const newState = {...state, config: {...state.config, ...config}}
   return [
     newState,
-    [Many, [
-      [setItem, {
-        key: 'tiny_write.app.data',
-        value: JSON.stringify(newState),
-      }],
-      [send, {event: 'config', data: newState.config}],
-    ]]
+    [setItem, {
+      key: 'tiny_write.app.data',
+      value: JSON.stringify(newState),
+    }],
+    [send, {event: 'config', data: newState.config}],
   ]
 }
 

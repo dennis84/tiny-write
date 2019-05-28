@@ -75,7 +75,7 @@ class CustomEditor extends HTMLDivElement {
     return ['theme']
   }
 
-  attributeChangedCallback(name, oldValue, newValue,x) {
+  attributeChangedCallback(name, oldValue, newValue) {
     if(!oldValue) return
     this.querySelectorAll('.CodeMirror').forEach(x => {
       (x as any).CodeMirror.setOption('theme', newValue)

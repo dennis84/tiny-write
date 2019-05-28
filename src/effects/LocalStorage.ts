@@ -5,7 +5,7 @@ interface GetProps {
   key: string,
 }
 
-export const getItem = (args: GetProps, dispatch: Dispatch) => {
+export const getItem = (dispatch: Dispatch, args: GetProps) => {
   const value = window.localStorage.getItem(args.key)
   dispatch(args.action, value)
 }
@@ -15,6 +15,6 @@ interface SetProps {
   value: string,
 }
 
-export const setItem = (args: SetProps, dispatch: Dispatch) => {
+export const setItem = (dispatch: Dispatch, args: SetProps) => {
   window.localStorage.setItem(args.key, args.value)
 }

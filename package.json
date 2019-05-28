@@ -1,6 +1,6 @@
 {
   "name": "TinyWrite",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "build": {
     "appId": "com.github.dennis84.tinywrite",
     "files": [
@@ -17,7 +17,7 @@
     "codemirror": "^5.47.0",
     "electron-updater": "^4.0.6",
     "free-style": "^2.6.1",
-    "hyperapp": "git://github.com/jorgebucaran/hyperapp.git#V2",
+    "hyperapp": "2.0.0-beta.18",
     "insert-css": "^2.0.0",
     "selection-ranges": "^3.0.3"
   },

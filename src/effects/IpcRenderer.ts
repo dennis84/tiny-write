@@ -19,7 +19,7 @@ interface OnProps {
   action: any,
 }
 
-export const on = (args: OnProps, dispatch: Dispatch) => {
+export const on = (dispatch: Dispatch, args: OnProps) => {
   ipcRenderer.on(args.event, (e, arg) => {
     dispatch(args.action, arg)
   })
@@ -30,6 +30,6 @@ interface SendProps {
   data: any,
 }
 
-export const send = (args: SendProps, dispatch: Dispatch) => {
+export const send = (dispatch: Dispatch, args: SendProps) => {
   ipcRenderer.send(args.event, args.data)
 }
