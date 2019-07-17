@@ -1,6 +1,6 @@
 {
   "name": "TinyWrite",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "build": {
     "appId": "com.github.dennis84.tinywrite",
     "files": [
