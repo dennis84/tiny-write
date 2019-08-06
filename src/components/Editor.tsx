@@ -7,7 +7,8 @@ import * as codemirror from '../utils/codemirror'
 
 const editor = (config: Config) => freestyle.registerStyle({
   'width': '100%',
-  'height': 'calc(100vh - 50px)',
+  'min-height': 'calc(100vh - 50px)',
+  'max-height': 'calc(100vh - 50px)',
   'overflow-y': 'auto',
   'position': 'relative',
   'padding': '0 50px',
@@ -39,12 +40,13 @@ const editor = (config: Config) => freestyle.registerStyle({
 })
 
 const textarea = (config: Config) => freestyle.registerStyle({
-  'min-height': 'calc(100vh - 150px)',
+  'height': '100%',
   'width': '100%',
   'max-width': '800px',
   'font-size': '24px',
   'font-family': config.font,
   'margin': '50px 0',
+  'padding-bottom': '100px',
   'border': '0',
   'color': config.light ? '#4a4a4a' : '#fff',
   'line-height': '160%',
@@ -109,13 +111,19 @@ const OnKeyDown = (state: State, e: KeyboardEvent) => {
   let sel = window.getSelection()
   let cur = sel.focusNode
 
-  const selRange = sel.getRangeAt(0)
-  const testRange = selRange.cloneRange()
-  testRange.selectNodeContents(elm)
-  testRange.setStart(selRange.endContainer, selRange.endOffset)
-  const isCaretAtEnd = testRange.toString().trim() === ''
+  function isCaretAtEnd(node) {
+    if (node === elm) {
+      return true
+    }
 
-  if(isCaretAtEnd) {
+    if (node.parentNode === elm) {
+      return !node.nextSibling || !node.nextSibling.nextSibling
+    }
+
+    return isCaretAtEnd(node.parentNode)
+  }
+
+  if (isCaretAtEnd(cur)) {
     (elm.parentNode as HTMLElement).scrollTop = elm.offsetHeight
   }
 
