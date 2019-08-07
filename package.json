@@ -17,13 +17,13 @@
     "codemirror": "^5.48.2",
     "electron-updater": "^4.1.2",
     "free-style": "^2.6.1",
-    "hyperapp": "git+https://github.com/jorgebucaran/hyperapp.git",
+    "hyperapp": "2.0.1",
     "insert-css": "^2.0.0",
     "selection-ranges": "^3.0.3"
   },
   "devDependencies": {
     "electron": "^5.0.8",
-    "rollup-plugin-commonjs": "^10.0.1",
+    "rollup-plugin-commonjs": "^10.0.2",
     "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-plugin-string": "^3.0.0",
     "rollup-plugin-terser": "^5.1.1",

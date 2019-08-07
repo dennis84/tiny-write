@@ -5,7 +5,7 @@ declare module 'hyperapp' {
   export type View<S> = (state: S) => VNode
 
   export type Dispatch = (action: any, props: any) => void
-  export type EffectFn = (args: any, dispatch: Dispatch) => void
+  export type EffectFn = (dispatch: Dispatch, args: any) => void
   export type Effect = [EffectFn, any]
 
   interface Props<S> {
