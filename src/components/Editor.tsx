@@ -77,18 +77,19 @@ interface Props {
   config: Config,
 }
 
-const OnChange = (state: State, e: CustomEvent) => {
-  return OnTextChange(state, e.detail.content)
-}
+const OnChange = (state: State, e: CustomEvent) =>
+  (e.detail && e.detail.content != undefined) ?
+    OnTextChange(state, e.detail.content) : state
 
 export default (props: Props) => (
   <div class={editor(props.config)}>
     <div is="markdown-editor"
       contenteditable
-      theme={props.config.theme}
       class={textarea(props.config)}
       placeholder="Start typing..."
+      theme={props.config.theme}
+      content={props.text}
       onchange={OnChange}
-    >{props.text}</div>
+    ></div>
   </div>
 )

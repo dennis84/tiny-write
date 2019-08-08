@@ -22,6 +22,10 @@ const OnKeyDown = (e: KeyboardEvent) => {
 }
 
 const OnKeyUp = (e: KeyboardEvent) => {
+  if (e.keyCode === 91) {
+    return
+  }
+
   const elm = e.currentTarget as MarkdownEditor
   const sel = window.getSelection()
   const cur = sel.focusNode
@@ -81,12 +85,11 @@ const OnPaste = (e: ClipboardEvent) => {
 
 export class MarkdownEditor extends HTMLDivElement {
   static get observedAttributes() {
-    return ['theme']
+    return ['theme', 'content']
   }
 
   connectedCallback() {
-    this.innerHTML = this.textContent
-
+    this.innerHTML = this.getAttribute('content')
     this.querySelectorAll('textarea').forEach(x => {
       codemirror.fromTextArea(x, {
         mode: x.dataset.mode,
@@ -104,9 +107,14 @@ export class MarkdownEditor extends HTMLDivElement {
 
   attributeChangedCallback(name, oldValue, newValue) {
     if(!oldValue) return
-    this.querySelectorAll('.CodeMirror').forEach(x => {
-      (x as any).CodeMirror.setOption('theme', newValue)
-    })
+
+    if (name === 'content' && newValue === '') {
+      this.innerHTML = ''
+    } else if (name === 'theme') {
+      this.querySelectorAll('.CodeMirror').forEach(x => {
+        (x as any).CodeMirror.setOption('theme', newValue)
+      })
+    }
   }
 
   getContent() {
