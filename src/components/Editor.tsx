@@ -1,9 +1,14 @@
 import {h} from 'hyperapp'
-import {setRange} from 'selection-ranges'
 import {State, Config} from '..'
 import {freestyle} from '../styles'
 import {OnTextChange} from '../actions'
-import * as codemirror from '../utils/codemirror'
+import {MarkdownEditor} from './MarkdownEditor'
+
+(window as any).customElements.define(
+  'markdown-editor',
+  MarkdownEditor,
+  {extends: 'div'}
+)
 
 const editor = (config: Config) => freestyle.registerStyle({
   'width': '100%',
@@ -72,153 +77,18 @@ interface Props {
   config: Config,
 }
 
-class CustomEditor extends HTMLDivElement {
-  static get observedAttributes() {
-    return ['theme']
-  }
-
-  attributeChangedCallback(name, oldValue, newValue) {
-    if(!oldValue) return
-    this.querySelectorAll('.CodeMirror').forEach(x => {
-      (x as any).CodeMirror.setOption('theme', newValue)
-    })
-  }
-
-  connectedCallback() {
-    this.innerHTML = this.textContent
-    this.querySelectorAll('textarea').forEach(x => {
-      codemirror.fromTextArea(x, {
-        mode: x.dataset.mode,
-        theme: this.getAttribute('theme')
-      })
-    })
-    this.focus()
-    document.getSelection().collapse(this, this.childNodes.length)
-  }
+const OnChange = (state: State, e: CustomEvent) => {
+  return OnTextChange(state, e.detail.content)
 }
-
-const OnPaste = (state: State, e: ClipboardEvent) => {
-  setTimeout(() => {
-    (e.target as Element).querySelectorAll('.CodeMirror')
-      .forEach(x => x.parentNode.removeChild(x))
-  })
-
-  return state
-}
-
-const OnKeyDown = (state: State, e: KeyboardEvent) => {
-  const elm = e.currentTarget as HTMLElement
-  let sel = window.getSelection()
-  let cur = sel.focusNode
-
-  function isCaretAtEnd(node) {
-    if (node === elm) {
-      return true
-    }
-
-    if (node.parentNode === elm) {
-      return !node.nextSibling || !node.nextSibling.nextSibling
-    }
-
-    return isCaretAtEnd(node.parentNode)
-  }
-
-  if (isCaretAtEnd(cur)) {
-    (elm.parentNode as HTMLElement).scrollTop = elm.offsetHeight
-  }
-
-  const findTarget = (node: Node) => {
-    if(node.parentNode === elm) return node
-    else return findTarget(node.parentNode)
-  }
-
-  const insertAfter = (newElement, targetElement) => {
-    var parent = targetElement.parentNode
-    if(parent.lastChild == targetElement) {
-      parent.appendChild(newElement)
-    } else {
-      parent.insertBefore(newElement, targetElement.nextSibling)
-    }
-  }
-
-  if(e.keyCode === 13 && e.shiftKey) {
-    const node = document.createElement('div')
-    node.appendChild(document.createTextNode('...'))
-    if(cur === elm) elm.appendChild(node)
-    else insertAfter(node, findTarget(cur))
-    setRange(node, {start: 0, end: 3})
-    e.preventDefault()
-  }
-
-  return state
-}
-
-const OnKeyUp = (state: State, e: KeyboardEvent) => {
-  const elm = e.currentTarget as HTMLElement
-  const sel = window.getSelection()
-  const cur = sel.focusNode
-  const curText = cur.textContent.replace(/\u00A0/g, ' ')
-
-  if(cur && /```[a-z+-]*\s/.test(curText)) {
-    const mode = codemirror.modeByLang(curText.substring(3).trim())
-    const textarea = document.createElement('textarea') as HTMLTextAreaElement
-    textarea.dataset.mode = mode
-    cur.parentNode.replaceChild(textarea, cur)
-    codemirror.fromTextArea(textarea, {
-      mode: mode,
-      theme: state.config.theme,
-    })
-  }
-
-  if(cur && curText === '# ') {
-    const node = document.createElement('h1')
-    node.appendChild(document.createTextNode('Heading 1'))
-    cur.parentNode.replaceChild(node, cur)
-    setRange(node, {start: 0, end: 9})
-  }
-
-  if(cur && curText === '## ') {
-    const node = document.createElement('h2')
-    node.appendChild(document.createTextNode('Heading 2'))
-    cur.parentNode.replaceChild(node, cur)
-    setRange(node, {start: 0, end: 9})
-  }
-
-  if(cur && curText === '### ') {
-    const node = document.createElement('h3')
-    node.appendChild(document.createTextNode('Heading 3'))
-    cur.parentNode.replaceChild(node, cur)
-    setRange(node, {start: 0, end: 9})
-  }
-
-  if(cur && curText === '> ') {
-    const node = document.createElement('blockquote')
-    node.appendChild(document.createTextNode('Blockquote'))
-    cur.parentNode.replaceChild(node, cur)
-    setRange(node, {start: 0, end: 10})
-  }
-
-  const result = elm.cloneNode(true) as Element
-  result.querySelectorAll('.CodeMirror')
-    .forEach(x => x.parentNode.removeChild(x))
-  result.querySelectorAll('textarea')
-    .forEach(x => x.removeAttribute('style'))
-
-  return OnTextChange(state, result.innerHTML)
-}
-
-(window as any).customElements.define('custom-editor', CustomEditor, {extends: 'div'})
 
 export default (props: Props) => (
   <div class={editor(props.config)}>
-    <div is="custom-editor"
+    <div is="markdown-editor"
       contenteditable
       theme={props.config.theme}
       class={textarea(props.config)}
       placeholder="Start typing..."
-      onpaste={OnPaste}
-      onkeydown={OnKeyDown}
-      onkeyup={OnKeyUp}
+      onchange={OnChange}
     >{props.text}</div>
   </div>
 )
