@@ -15,11 +15,20 @@ export interface Config {
 
 export interface State {
   text: string,
+  lastModified: Date,
+  files: File[],
   config: Config,
+}
+
+export interface File {
+  text: string,
+  lastModified: Date,
 }
 
 const init: [State, Effect] = [{
   text: '',
+  lastModified: new Date,
+  files: [],
   config: {
     light: true,
     theme: 'dracula',
@@ -33,6 +42,8 @@ const init: [State, Effect] = [{
 const view = (state: State): VNode => (
   <Main
     text={state.text}
+    lastModified={state.lastModified}
+    files={state.files}
     config={state.config} />
 )
 

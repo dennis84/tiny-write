@@ -1,6 +1,6 @@
-import {State, Config} from '.'
+import {State, File, Config} from '.'
 import {setItem} from './effects/LocalStorage'
-import {updateMenu} from './effects/Electron'
+import {updateMenu, reload} from './effects/Electron'
 import {createMenu} from './menu'
 
 export const UpdateState = (state: State, data: string) => {
@@ -11,6 +11,12 @@ export const UpdateState = (state: State, data: string) => {
 
   const newState = {...state}
   if(parsed.text) newState.text = parsed.text
+  if(parsed.lastModified) newState.lastModified = new Date(parsed.lastModified)
+  if(parsed.files) newState.files = parsed.files.map(file => {
+    file.lastModified = new Date(file.lastModified)
+    return file
+  })
+
   if(parsed.config) newState.config = {...newState.config, ...parsed.config}
 
   return [
@@ -32,9 +38,73 @@ export const ChangeConfig = (state: State, config: Config) => {
 }
 
 export const OnTextChange = (state: State, text: string) => [
-  {...state, text},
+  {...state, text, lastModified: new Date},
   [setItem, {
     key: 'tiny_write.app.data',
-    value: JSON.stringify({text: text, config: state.config}),
+    value: JSON.stringify(state),
   }],
 ]
+
+export const Save = (state: State) => {
+  if (state.text == '') {
+    return state
+  }
+
+  state.files.push({
+    text: state.text,
+    lastModified: state.lastModified,
+  })
+
+  const newState = {
+    ...state,
+    text: '',
+    lastModified: new Date,
+  }
+
+  return [
+    newState,
+    [setItem, {
+      key: 'tiny_write.app.data',
+      value: JSON.stringify(newState),
+    }],
+    [updateMenu, {fn: createMenu(newState)}],
+  ]
+}
+
+export const Open = (state, file: File) => {
+  if (state.text != '') {
+    state.files.push({
+      text: state.text,
+      lastModified: state.lastModified,
+    })
+  }
+
+  const index = state.files.indexOf(file)
+  const opened = state.files[index]
+  state.files.splice(index, 1)
+  const newState = {
+    ...state,
+    text: opened.text,
+    lastModified: opened.lastModified,
+  }
+
+  return [
+    newState,
+    [setItem, {
+      key: 'tiny_write.app.data',
+      value: JSON.stringify(newState),
+    }],
+    [reload, {}],
+  ]
+}
+
+export const Clear = (state) => {
+  const newState = {...state, text: '', lastModified: new Date}
+  return [
+    newState,
+    [setItem, {
+      key: 'tiny_write.app.data',
+      value: JSON.stringify(newState),
+    }],
+  ]
+}
