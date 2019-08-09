@@ -4,9 +4,8 @@
 
 import {h, app, VNode, Effect} from 'hyperapp'
 import Main from './Main'
-import {ChangeConfig, UpdateState} from './actions'
+import {UpdateState} from './actions'
 import * as LocalStorage from './effects/LocalStorage'
-import * as IpcRenderer from './effects/IpcRenderer'
 
 export interface Config {
   light: boolean,
@@ -39,14 +38,4 @@ const view = (state: State): VNode => (
 
 const node = document.getElementById('container')
 
-app({
-  init,
-  view,
-  node,
-  subscriptions: (s: State) => [
-    [IpcRenderer.on, {
-      event: 'change-config',
-      action: ChangeConfig,
-    }],
-  ],
-})
+app({init, view, node})
