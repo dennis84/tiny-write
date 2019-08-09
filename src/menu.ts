@@ -1,6 +1,7 @@
 import {Dispatch} from 'hyperapp'
 import {State} from '.'
-import {ChangeConfig} from './actions'
+import {ChangeConfig, Clear, Open, Save} from './actions'
+import {toText} from './utils/text'
 
 export const createMenu = (state: State) => (dispatch: Dispatch) => {
   const remote = (window as any).require('electron').remote
@@ -17,6 +18,31 @@ export const createMenu = (state: State) => (dispatch: Dispatch) => {
         }}),
         new MenuItem({type: 'separator'}),
         new MenuItem({label: 'Quit', accelerator: 'Command+Q', click: () => remote.app.quit()}),
+      ],
+    }),
+    new MenuItem({
+      label: 'File',
+      submenu: [
+        new MenuItem({
+          label: 'Save',
+          accelerator: 'Cmd+S',
+          click: () => dispatch(Save, {}),
+        }),
+        new MenuItem({
+          label: 'Clear',
+          accelerator: 'Cmd+W',
+          click: () => dispatch(Clear, {}),
+        }),
+        new MenuItem({type: 'separator'}),
+        new MenuItem({
+          label: 'Files',
+          submenu: state.files.map(file => new MenuItem({
+            label: toText(file.text).substring(0, 16),
+            type: 'checkbox',
+            checked: file.lastModified === state.lastModified,
+            click: () => dispatch(Open, file),
+          }))
+        }),
       ],
     }),
     new MenuItem({

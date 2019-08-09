@@ -27,6 +27,7 @@ function createWindow() {
     pathname: path.join(__dirname, '/index.html')
   }))
 
+  Menu.setApplicationMenu(Menu.buildFromTemplate([{label: ''}]))
   // win.webContents.openDevTools()
 
   win.on('closed', () => {

@@ -15,3 +15,13 @@ export const updateMenu = (dispatch: Dispatch, args: UpdateMenuProps) => {
   args.fn(dispatch).forEach(x => root.append(x))
   remote.app.setApplicationMenu(root)
 }
+
+export const reload = () => {
+  if (isElectron) {
+    const remote = (window as any).require('electron').remote
+    const win = remote.getCurrentWindow()
+    win.reload()
+  } else {
+    window.location.reload()
+  }
+}
