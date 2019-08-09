@@ -45,7 +45,7 @@ export const OnTextChange = (state: State, text: string) => [
   }],
 ]
 
-export const Save = (state: State) => {
+export const New = (state: State) => {
   if (state.text == '') {
     return state
   }

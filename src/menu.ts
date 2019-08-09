@@ -1,6 +1,6 @@
 import {Dispatch} from 'hyperapp'
 import {State} from '.'
-import {ChangeConfig, Clear, Open, Save} from './actions'
+import {ChangeConfig, Clear, Open, New} from './actions'
 import {toText} from './utils/text'
 
 export const createMenu = (state: State) => (dispatch: Dispatch) => {
@@ -31,9 +31,9 @@ export const createMenu = (state: State) => (dispatch: Dispatch) => {
       label: 'File',
       submenu: [
         new MenuItem({
-          label: 'Save',
-          accelerator: 'Cmd+S',
-          click: () => dispatch(Save, {}),
+          label: 'New',
+          accelerator: 'Cmd+N',
+          click: () => dispatch(New, {}),
         }),
         new MenuItem({
           label: 'Clear',
