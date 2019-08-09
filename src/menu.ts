@@ -125,6 +125,14 @@ export const createMenu = (state: State) => (dispatch: Dispatch) => {
               dispatch(ChangeConfig, {...state.config, font: 'IBM Plex Serif'})
             }
           }),
+          new MenuItem({
+            label: 'Iosevka Term Slab',
+            type: 'checkbox',
+            checked: 'Iosevka Term Slab' === state.config.font,
+            click: () => {
+              dispatch(ChangeConfig, {...state.config, font: 'Iosevka Term Slab'})
+            }
+          }),
         ]}),
         new MenuItem({label: 'Code', submenu: [
           new MenuItem({
