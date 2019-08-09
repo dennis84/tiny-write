@@ -12,12 +12,19 @@ export const createMenu = (state: State) => (dispatch: Dispatch) => {
       label: 'Application',
       submenu: [
         new MenuItem({label: 'About Application', selector: 'orderFrontStandardAboutPanel:'}),
-        new MenuItem({label: 'About Version', click: () => {
-          const version = remote.app.getVersion()
-          remote.shell.openExternal(`https://github.com/dennis84/tiny-write/releases/tag/v${version}`)
-        }}),
+        new MenuItem({
+          label: 'About Version',
+          click: () => {
+            const version = remote.app.getVersion()
+            remote.shell.openExternal(`https://github.com/dennis84/tiny-write/releases/tag/v${version}`)
+          }
+        }),
         new MenuItem({type: 'separator'}),
-        new MenuItem({label: 'Quit', accelerator: 'Command+Q', click: () => remote.app.quit()}),
+        new MenuItem({
+          label: 'Quit',
+          accelerator: 'Command+Q',
+          click: () => remote.app.quit()
+        }),
       ],
     }),
     new MenuItem({
@@ -61,11 +68,22 @@ export const createMenu = (state: State) => (dispatch: Dispatch) => {
     new MenuItem({
       label: 'View',
       submenu: [
-        new MenuItem({label: 'Toggle Fullscreen', accelerator: 'Cmd+Return', click: () => {
-          const win = remote.getCurrentWindow()
-          win.setSimpleFullScreen(!win.isSimpleFullScreen())
-        }}),
-        new MenuItem({label: 'Dark Mode', type: 'checkbox', checked: !state.config.light}),
+        new MenuItem({
+          label: 'Toggle Fullscreen',
+          accelerator: 'Cmd+Return',
+          click: () => {
+            const win = remote.getCurrentWindow()
+            win.setSimpleFullScreen(!win.isSimpleFullScreen())
+          }
+        }),
+        new MenuItem({
+          label: 'Dark Mode',
+          type: 'checkbox',
+          checked: !state.config.light,
+          click: () => {
+            dispatch(ChangeConfig, {...state.config, light: !state.config.light})
+          }
+        }),
         new MenuItem({label: 'Font', submenu: [
           new MenuItem({
             label: 'Merriweather',
