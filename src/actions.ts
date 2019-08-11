@@ -50,13 +50,16 @@ export const New = (state: State) => {
     return state
   }
 
-  state.files.push({
+  const files = [...state.files]
+
+  files.push({
     text: state.text,
     lastModified: state.lastModified,
   })
 
   const newState = {
     ...state,
+    files: files,
     text: '',
     lastModified: new Date,
   }
@@ -72,20 +75,22 @@ export const New = (state: State) => {
 }
 
 export const Open = (state, file: File) => {
+  const files = [...state.files]
   if (state.text != '') {
-    state.files.push({
+    files.push({
       text: state.text,
       lastModified: state.lastModified,
     })
   }
 
-  const index = state.files.indexOf(file)
-  const opened = state.files[index]
-  state.files.splice(index, 1)
+  const index = files.indexOf(file)
+  const next = files[index]
+  files.splice(index, 1)
   const newState = {
     ...state,
-    text: opened.text,
-    lastModified: opened.lastModified,
+    files: files,
+    text: next.text,
+    lastModified: next.lastModified,
   }
 
   return [
@@ -108,3 +113,6 @@ export const Clear = (state) => {
     }],
   ]
 }
+
+export const Next = (state) =>
+  state.files.length ? Open(state, state.files[0]) : state

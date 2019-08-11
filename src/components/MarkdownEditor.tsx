@@ -7,7 +7,7 @@ const OnKeyDown = (e: KeyboardEvent) => {
   let sel = window.getSelection()
   let cur = sel.focusNode
 
-  if (isCaretAtEnd(elm, cur)) {
+  if (!e.metaKey && !e.ctrlKey && isCaretAtEnd(elm, cur)) {
     (elm.parentNode as HTMLElement).scrollTop = elm.offsetHeight
   }
 
