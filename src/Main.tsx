@@ -3,7 +3,7 @@ import {freestyle} from './styles'
 import {insertCss} from 'insert-css'
 import {State, Config} from '.'
 import Editor from './components/Editor'
-import WordCount from './components/WordCount'
+import StatusLine from './components/StatusLine'
 
 const container = (config: Config) => freestyle.registerStyle({
   'background': config.light ? '#fff' : '#3C4556',
@@ -27,7 +27,10 @@ class FreeStyle extends HTMLElement {
 export default (props: State) => (
   <div class={container(props.config)}>
     <Editor text={props.text} config={props.config} />
-    <WordCount text={props.text} config={props.config} />
+    <StatusLine
+      text={props.text}
+      lastModified={props.lastModified}
+      config={props.config} />
     <free-style content={freestyle.getStyles()}></free-style>
   </div>
 )

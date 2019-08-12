@@ -37,13 +37,19 @@ export const ChangeConfig = (state: State, config: Config) => {
   ]
 }
 
-export const OnTextChange = (state: State, text: string) => [
-  {...state, text, lastModified: new Date},
-  [setItem, {
-    key: 'tiny_write.app.data',
-    value: JSON.stringify(state),
-  }],
-]
+export const OnTextChange = (state: State, text: string) => {
+  if (state.text === text) {
+    return state
+  }
+
+  return [
+    {...state, text, lastModified: new Date},
+    [setItem, {
+      key: 'tiny_write.app.data',
+      value: JSON.stringify(state),
+    }],
+  ]
+}
 
 export const New = (state: State) => {
   if (state.text == '') {

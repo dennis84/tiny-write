@@ -4,17 +4,11 @@ import {Config} from '..'
 import {wordCount} from '../utils/text'
 
 const text = (config: Config) => freestyle.registerStyle({
+  'grid-column-start': '2',
   'font-size': '20px',
   'color': config.light ? '#999' : '#c4c7cc',
   'pointer-events': 'none',
   'user-select': 'none',
-  'height': '50px',
-  'width': '100%',
-  'display': 'flex',
-  'justify-content': 'center',
-  'align-items': 'center',
-  'position': 'absolute',
-  'bottom': '0',
 })
 
 interface Props {
@@ -23,5 +17,5 @@ interface Props {
 }
 
 export default (props: Props) => (
-  <div class={text(props.config)}>{wordCount(props.text)} words</div>
+  <span class={text(props.config)}>{wordCount(props.text)} words</span>
 )
