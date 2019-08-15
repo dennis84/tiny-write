@@ -36,6 +36,7 @@
     "build": "npx rollup -c",
     "watch": "npx rollup -c -w",
     "pack": "npm run build && npx electron-builder --dir",
-    "dist": "npm run build && npx electron-builder"
+    "dist": "npm run build && npx electron-builder",
+    "dev": "NODE_ENV=dev npx electron ."
   }
 }

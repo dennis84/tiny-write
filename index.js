@@ -28,7 +28,10 @@ function createWindow() {
   }))
 
   Menu.setApplicationMenu(Menu.buildFromTemplate([{label: ''}]))
-  // win.webContents.openDevTools()
+
+  if (process.env.NODE_ENV === 'dev') {
+    win.webContents.openDevTools()
+  }
 
   win.on('closed', () => {
     win = null
