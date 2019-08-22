@@ -133,6 +133,10 @@ const findLineNode = (editor: MarkdownEditor, node: Node) => {
 }
 
 const isCaretAtEnd = (editor: MarkdownEditor, node: Node) => {
+  if (node instanceof Element && node.querySelector('textarea')) {
+    return false;
+  }
+
   if (node === editor) {
     return true
   }
