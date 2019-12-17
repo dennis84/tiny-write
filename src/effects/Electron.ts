@@ -7,13 +7,12 @@ interface UpdateMenuProps {
   fn: (dispatch: Dispatch) => any[],
 }
 
-export const updateMenu = (dispatch: Dispatch, args: UpdateMenuProps) => {
+export const updateMenu = (dispatch: Dispatch, props: UpdateMenuProps) => {
   if (!isElectron) return
-  const remote = (window as any).require('electron').remote
-  const {Menu} = remote
+  const { app, Menu } = require('electron').remote
   const root = new Menu()
-  args.fn(dispatch).forEach(x => root.append(x))
-  remote.app.setApplicationMenu(root)
+  props.fn(dispatch).forEach(x => root.append(x))
+  app.applicationMenu = root
 }
 
 export const reload = () => {

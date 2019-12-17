@@ -1,6 +1,6 @@
 import * as FS from 'free-style'
 
-export const freestyle = FS.create((x: string) => FS.stringHash(x))
+export const freestyle = FS.create()
 
 freestyle.registerRule('@font-face', {
   'font-family': 'Iosevka Term Slab',
