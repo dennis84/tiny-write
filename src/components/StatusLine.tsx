@@ -17,9 +17,9 @@ const text = (config: Config) => freestyle.registerStyle({
 })
 
 interface Props {
-  text: string,
-  lastModified: Date,
-  config: Config,
+  text: string;
+  lastModified: Date;
+  config: Config;
 }
 
 export default (props: Props) => (

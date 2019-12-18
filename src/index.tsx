@@ -8,21 +8,21 @@ import {UpdateState} from './actions'
 import * as LocalStorage from './effects/LocalStorage'
 
 export interface Config {
-  light: boolean,
-  theme: string,
-  font: string,
+  theme: string;
+  codeTheme: string;
+  font: string;
 }
 
 export interface State {
-  text: string,
-  lastModified: Date,
-  files: File[],
-  config: Config,
+  text: string;
+  lastModified: Date;
+  files: File[];
+  config: Config;
 }
 
 export interface File {
-  text: string,
-  lastModified: Date,
+  text: string;
+  lastModified: Date;
 }
 
 const init: [State, Effect] = [{
@@ -30,8 +30,8 @@ const init: [State, Effect] = [{
   lastModified: new Date,
   files: [],
   config: {
-    light: true,
-    theme: 'dracula',
+    theme: 'light',
+    codeTheme: 'dracula',
     font: 'Merriweather',
   }
 }, [LocalStorage.getItem, {

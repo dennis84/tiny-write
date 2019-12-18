@@ -1,6 +1,6 @@
 import {h} from 'hyperapp'
 import {State, Config} from '..'
-import {freestyle} from '../styles'
+import {freestyle, rgb, rgba, background, color} from '../styles'
 import {OnTextChange} from '../actions'
 import {MarkdownEditor} from './MarkdownEditor'
 
@@ -23,9 +23,7 @@ const editor = (config: Config) => freestyle.registerStyle({
     'content': '""',
     'height': '50px',
     'width': '100%',
-    'background': config.light ?
-      'linear-gradient(to bottom, rgba(255,255,255,1), rgba(255,255,255,0))' :
-      'linear-gradient(to bottom, rgba(60,69,86,1), rgba(60,69,86,0))',
+    'background': `linear-gradient(to bottom, ${rgba(background(config), 1)}, ${rgba(background(config), 0)})`,
     'position': 'fixed',
     'z-index': '1',
     'pointer-events': 'none',
@@ -34,9 +32,7 @@ const editor = (config: Config) => freestyle.registerStyle({
     'content': '""',
     'height': '20px',
     'width': '100%',
-    'background': config.light ?
-      'linear-gradient(to top, rgba(255,255,255,1), rgba(255,255,255,0))' :
-      'linear-gradient(to top, rgba(60,69,86,1), rgba(60,69,86,0))',
+    'background': `linear-gradient(to top, ${rgba(background(config), 1)}, ${rgba(background(config), 0)})`,
     'position': 'fixed',
     'z-index': '1',
     'bottom': '50px',
@@ -53,7 +49,7 @@ const textarea = (config: Config) => freestyle.registerStyle({
   'margin': '50px 0',
   'padding-bottom': '100px',
   'border': '0',
-  'color': config.light ? '#4a4a4a' : '#fff',
+  'color': rgb(color(config)),
   'line-height': '160%',
   'background': 'transparent',
   'outline': 'none',
@@ -73,8 +69,8 @@ const textarea = (config: Config) => freestyle.registerStyle({
 })
 
 interface Props {
-  text: string,
-  config: Config,
+  text: string;
+  config: Config;
 }
 
 const OnChange = (state: State, e: CustomEvent) =>
@@ -87,7 +83,7 @@ export default (props: Props) => (
       contenteditable
       class={textarea(props.config)}
       placeholder="Start typing..."
-      theme={props.config.theme}
+      theme={props.config.codeTheme}
       content={props.text}
       onchange={OnChange}
     ></div>

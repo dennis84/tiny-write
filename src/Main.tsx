@@ -1,12 +1,12 @@
 import {h} from 'hyperapp'
-import {freestyle} from './styles'
+import {freestyle, rgb, background} from './styles'
 import {insertCss} from 'insert-css'
 import {State, Config} from '.'
 import Editor from './components/Editor'
 import StatusLine from './components/StatusLine'
 
 const container = (config: Config) => freestyle.registerStyle({
-  'background': config.light ? '#fff' : '#3C4556',
+  'background': rgb(background(config)),
   'width': '100%',
   'height': '100%',
   'font-family': config.font,

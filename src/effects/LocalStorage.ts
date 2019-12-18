@@ -1,8 +1,8 @@
 import {Dispatch} from 'hyperapp'
 
 interface GetProps {
-  action: any,
-  key: string,
+  action: any;
+  key: string;
 }
 
 export const getItem = (dispatch: Dispatch, args: GetProps) => {
@@ -11,8 +11,8 @@ export const getItem = (dispatch: Dispatch, args: GetProps) => {
 }
 
 interface SetProps {
-  key: string,
-  value: string,
+  key: string;
+  value: string;
 }
 
 export const setItem = (dispatch: Dispatch, args: SetProps) => {

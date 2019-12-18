@@ -4,7 +4,7 @@ const userAgent = window.navigator.userAgent.toLowerCase()
 const isElectron = userAgent.indexOf(' electron/') > -1
 
 interface UpdateMenuProps {
-  fn: (dispatch: Dispatch) => any[],
+  fn: (dispatch: Dispatch) => any[];
 }
 
 export const updateMenu = (dispatch: Dispatch, props: UpdateMenuProps) => {

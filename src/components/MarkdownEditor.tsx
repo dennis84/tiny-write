@@ -7,7 +7,7 @@ const OnKeyDown = (e: KeyboardEvent) => {
   let sel = window.getSelection()
   let cur = sel.focusNode
 
-  if (!e.metaKey && !e.ctrlKey && isCaretAtEnd(elm, cur)) {
+  if (!e.metaKey && !e.ctrlKey && isCaretAtEnd(elm, cur, sel)) {
     (elm.parentNode as HTMLElement).scrollTop = elm.offsetHeight
   }
 
@@ -132,17 +132,28 @@ const findLineNode = (editor: MarkdownEditor, node: Node) => {
   else return findLineNode(editor, node.parentNode)
 }
 
-const isCaretAtEnd = (editor: MarkdownEditor, node: Node) => {
+const isCaretAtEnd = (editor: MarkdownEditor, node: Node, sel: Selection) => {
   if (node instanceof Element && node.querySelector('textarea')) {
-    return false;
+    return false
   }
 
   if (node === editor) {
     return true
   }
 
+  if (sel.rangeCount) {
+    const selRange = sel.getRangeAt(0);
+    const testRange = selRange.cloneRange();
+
+    testRange.selectNodeContents(node);
+    testRange.setStart(selRange.endContainer, selRange.endOffset);
+    if (testRange.toString().trim() !== '') {
+      return false
+    }
+  }
+
   const line = findLineNode(editor, node)
-  return !line.nextSibling || !line.nextSibling.nextSibling
+  return !(line.nextSibling || (line.nextSibling && line.nextSibling.nextSibling))
 }
 
 const insertAfter = (newElement, targetElement) => {
