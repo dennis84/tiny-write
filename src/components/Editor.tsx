@@ -65,7 +65,7 @@ const textarea = (config: Config) => freestyle.registerStyle({
     'border-left': '10px solid #eee',
     'margin': '0',
     'padding-left': '20px',
-  }
+  },
 })
 
 interface Props {

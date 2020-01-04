@@ -164,6 +164,14 @@ export const createMenu = (state: State) => (dispatch: Dispatch) => {
               dispatch(ChangeConfig, {...state.config, theme: 'sand dark'})
             }
           }),
+          new MenuItem({
+            label: 'Solarized Dark',
+            type: 'checkbox',
+            checked: 'solarized dark' === state.config.theme,
+            click: () => {
+              dispatch(ChangeConfig, {...state.config, theme: 'solarized dark'})
+            }
+          }),
         ]}),
         new MenuItem({label: 'Code', submenu: [
           new MenuItem({

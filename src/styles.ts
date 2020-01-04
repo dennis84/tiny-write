@@ -8,6 +8,7 @@ export const themes = {
   'sand': {background: '254, 246, 228', color: '23, 44, 102'},
   'dark': {background: '22, 22, 26', color: '148, 161, 178'},
   'sand dark': {background: '85, 66, 61', color: '255, 243, 236'},
+  'solarized dark': {background: '0, 43, 54', color: '131, 148, 150'},
 }
 
 export const background = (config: Config) =>
