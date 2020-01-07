@@ -1,7 +1,7 @@
 import {h} from 'hyperapp'
 import {State, Config} from '..'
 import {freestyle, rgb, rgba} from '../styles'
-import {background, color, font, codeTheme} from '../data'
+import {background, color, font, codeTheme} from '../config'
 import {OnTextChange} from '../actions'
 import {MarkdownEditor} from './MarkdownEditor'
 
@@ -57,7 +57,7 @@ const textarea = (config: Config) => freestyle.registerStyle({
   '-webkit-app-region': 'no-drag',
   '&:empty::before': {
     'content': 'attr(placeholder)',
-    'color': '#999',
+    'color': rgba(color(config), 0.5),
   },
   '&::-webkit-scrollbar': {
     'display': 'none',

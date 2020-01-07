@@ -1,5 +1,5 @@
 import * as FS from 'free-style'
-import {fonts} from './data'
+import {fonts} from './config'
 
 export const freestyle = FS.create()
 

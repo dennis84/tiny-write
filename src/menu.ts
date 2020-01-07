@@ -1,7 +1,7 @@
 import {Dispatch} from 'hyperapp'
 import {State} from '.'
 import {ChangeConfig, Clear, Open, New} from './actions'
-import {themes, fonts, codeThemes} from './data';
+import {themes, fonts, codeThemes} from './config';
 import {toText} from './utils/text'
 
 export const createMenu = (state: State) => (dispatch: Dispatch) => {

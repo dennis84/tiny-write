@@ -1,7 +1,7 @@
 import {h} from 'hyperapp'
 import dayjs from 'dayjs'
 import {freestyle, rgba} from '../styles'
-import {color} from '../data'
+import {color} from '../config'
 import {Config} from '..'
 
 const text = (config: Config) => freestyle.registerStyle({

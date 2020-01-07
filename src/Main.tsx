@@ -1,6 +1,6 @@
 import {h} from 'hyperapp'
 import {freestyle, rgb} from './styles'
-import {background, font} from './data'
+import {background, font} from './config'
 import {insertCss} from 'insert-css'
 import {State, Config} from '.'
 import Editor from './components/Editor'

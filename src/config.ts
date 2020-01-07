@@ -29,9 +29,19 @@ export const fonts: {[key: string]: Font} = {
     label: 'Iosevka Term Slab',
     src: './fonts/iosevka-term-slab-regular.woff2',
   },
+  'fantasque-sans-mono': {
+    label: 'Fantasque Sans Mono',
+    src: './fonts/FantasqueSansMono-Regular.woff2',
+  },
 }
 
-export const themes = {
+interface Theme {
+  label: string;
+  background: string;
+  color: string | string[];
+}
+
+export const themes: {[key: string]: Theme} = {
   'light': {
     label: 'Light',
     background: '255 255, 255',
@@ -56,6 +66,16 @@ export const themes = {
     label: 'Solarized Dark',
     background: '0, 43, 54',
     color: '131, 148, 150'
+  },
+  'viola': {
+    label: 'Viola',
+    background: '48, 36, 61',
+    color: '146, 123, 171',
+  },
+  'hibernus': {
+    label: 'Hibernus',
+    background: '244, 246, 246',
+    color: '144, 166, 166',
   },
 }
 
