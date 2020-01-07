@@ -22,10 +22,6 @@ const OnKeyDown = (e: KeyboardEvent) => {
 }
 
 const OnKeyUp = (e: KeyboardEvent) => {
-  if (e.keyCode === 91) {
-    return
-  }
-
   const elm = e.currentTarget as MarkdownEditor
   const sel = window.getSelection()
   const cur = sel.focusNode

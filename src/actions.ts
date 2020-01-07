@@ -119,6 +119,3 @@ export const Clear = (state) => {
     }],
   ]
 }
-
-export const Next = (state) =>
-  state.files.length ? Open(state, state.files[0]) : state
