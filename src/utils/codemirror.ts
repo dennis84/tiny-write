@@ -125,6 +125,7 @@ import * as clear from '../icons/clear.svg'
 import {freestyle} from '../styles'
 
 freestyle.registerRule('.CodeMirror', {
+  'pointer-events': 'auto',
   'border-radius': '3px',
   'box-shadow': '0 1px 3px rgba(0,0,0,0.2) !important',
   'height': 'auto',
@@ -181,6 +182,9 @@ export const fromTextArea = (textarea: HTMLTextAreaElement, options = {}) => {
 const init = (codemirror: CodeMirror) => {
   const wrapper = codemirror.getWrapperElement()
   const button = document.createElement('button')
+  if(wrapper.previousSibling) {
+    wrapper.parentNode.style.pointerEvents = 'none'
+  }
   button.classList.add('codemirror-close')
   button.innerHTML = clear.default
   button.addEventListener('click', (e) => {

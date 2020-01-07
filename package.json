@@ -14,8 +14,8 @@
     }
   },
   "dependencies": {
-    "codemirror": "^5.50.0",
-    "dayjs": "^1.8.18",
+    "codemirror": "^5.50.2",
+    "dayjs": "^1.8.19",
     "electron-updater": "^4.2.0",
     "free-style": "^3.0.0",
     "hyperapp": "2.0.3",
@@ -23,9 +23,9 @@
     "selection-ranges": "^3.0.3"
   },
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^11.0.0",
-    "@rollup/plugin-node-resolve": "^6.0.0",
-    "@rollup/plugin-typescript": "^2.0.1",
+    "@rollup/plugin-commonjs": "^11.0.1",
+    "@rollup/plugin-node-resolve": "^6.1.0",
+    "@rollup/plugin-typescript": "^2.0.2",
     "electron": "^7.1.7",
     "rollup-plugin-string": "^3.0.0",
     "rollup-plugin-terser": "^5.1.3",
