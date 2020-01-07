@@ -1,5 +1,6 @@
 import {h} from 'hyperapp'
-import {freestyle, rgb, background} from './styles'
+import {freestyle, rgb} from './styles'
+import {background, font} from './data'
 import {insertCss} from 'insert-css'
 import {State, Config} from '.'
 import Editor from './components/Editor'
@@ -9,7 +10,7 @@ const container = (config: Config) => freestyle.registerStyle({
   'background': rgb(background(config)),
   'width': '100%',
   'height': '100%',
-  'font-family': config.font,
+  'font-family': font(config),
 })
 
 class FreeStyle extends HTMLElement {

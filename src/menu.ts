@@ -1,6 +1,7 @@
 import {Dispatch} from 'hyperapp'
 import {State} from '.'
 import {ChangeConfig, Clear, Open, New, Next} from './actions'
+import {themes, fonts, codeThemes} from './data';
 import {toText} from './utils/text'
 
 export const createMenu = (state: State) => (dispatch: Dispatch) => {
@@ -81,148 +82,38 @@ export const createMenu = (state: State) => (dispatch: Dispatch) => {
             win.setSimpleFullScreen(!win.isSimpleFullScreen())
           }
         }),
-        new MenuItem({label: 'Font', submenu: [
-          new MenuItem({
-            label: 'Merriweather',
+        new MenuItem({
+          label: 'Font',
+          submenu: Object.entries(fonts).map(([key, value]) => new MenuItem({
+            label: value.label,
             type: 'checkbox',
-            checked: 'Merriweather' === state.config.font,
+            checked: key === state.config.font,
             click: () => {
-              dispatch(ChangeConfig, {...state.config, font: 'Merriweather'})
+              dispatch(ChangeConfig, {...state.config, font: key})
             }
-          }),
-          new MenuItem({
-            label: 'Times New Roman',
+          })),
+        }),
+        new MenuItem({
+          label: 'Theme',
+          submenu: Object.entries(themes).map(([key, value]) => new MenuItem({
+            label: value.label,
             type: 'checkbox',
-            checked: 'Times New Roman' === state.config.font,
+            checked: key === state.config.theme,
             click: () => {
-              dispatch(ChangeConfig, {...state.config, font: 'Times New Roman'})
+              dispatch(ChangeConfig, {...state.config, theme: key})
             }
-          }),
-          new MenuItem({
-            label: 'Roboto',
-            type: 'checkbox',
-            checked: 'Roboto' === state.config.font,
+          })),
+        }),
+        new MenuItem({
+          label: 'Code',
+          submenu: Object.entries(codeThemes).map(([key, value]) => new MenuItem({
+            label: value.label,
+            checked: key === state.config.codeTheme,
             click: () => {
-              dispatch(ChangeConfig, {...state.config, font: 'Roboto'})
+              dispatch(ChangeConfig, {...state.config, codeTheme: key})
             }
-          }),
-          new MenuItem({
-            label: 'Roboto Slab',
-            type: 'checkbox',
-            checked: 'Roboto Slab' === state.config.font,
-            click: () => {
-              dispatch(ChangeConfig, {...state.config, font: 'Roboto Slab'})
-            }
-          }),
-          new MenuItem({
-            label: 'IBM Plex Serif',
-            type: 'checkbox',
-            checked: 'IBM Plex Serif' === state.config.font,
-            click: () => {
-              dispatch(ChangeConfig, {...state.config, font: 'IBM Plex Serif'})
-            }
-          }),
-          new MenuItem({
-            label: 'Iosevka Term Slab',
-            type: 'checkbox',
-            checked: 'Iosevka Term Slab' === state.config.font,
-            click: () => {
-              dispatch(ChangeConfig, {...state.config, font: 'Iosevka Term Slab'})
-            }
-          }),
-        ]}),
-        new MenuItem({label: 'Theme', submenu: [
-          new MenuItem({
-            label: 'Light',
-            type: 'checkbox',
-            checked: 'light' === state.config.theme,
-            click: () => {
-              dispatch(ChangeConfig, {...state.config, theme: 'light'})
-            }
-          }),
-          new MenuItem({
-            label: 'Sand',
-            type: 'checkbox',
-            checked: 'sand' === state.config.theme,
-            click: () => {
-              dispatch(ChangeConfig, {...state.config, theme: 'sand'})
-            }
-          }),
-          new MenuItem({
-            label: 'Dark',
-            type: 'checkbox',
-            checked: 'dark' === state.config.theme,
-            click: () => {
-              dispatch(ChangeConfig, {...state.config, theme: 'dark'})
-            }
-          }),
-          new MenuItem({
-            label: 'Sand Dark',
-            type: 'checkbox',
-            checked: 'sand dark' === state.config.theme,
-            click: () => {
-              dispatch(ChangeConfig, {...state.config, theme: 'sand dark'})
-            }
-          }),
-          new MenuItem({
-            label: 'Solarized Dark',
-            type: 'checkbox',
-            checked: 'solarized dark' === state.config.theme,
-            click: () => {
-              dispatch(ChangeConfig, {...state.config, theme: 'solarized dark'})
-            }
-          }),
-        ]}),
-        new MenuItem({label: 'Code', submenu: [
-          new MenuItem({
-            label: 'Cobalt',
-            type: 'checkbox',
-            checked: 'cobalt' === state.config.codeTheme,
-            click: () => {
-              dispatch(ChangeConfig, {...state.config, codeTheme: 'cobalt'})
-            }
-          }),
-          new MenuItem({
-            label: 'Dracula',
-            type: 'checkbox',
-            checked: 'dracula' === state.config.codeTheme,
-            click: () => {
-              dispatch(ChangeConfig, {...state.config, codeTheme: 'dracula'})
-            }
-          }),
-          new MenuItem({
-            label: 'Material',
-            type: 'checkbox',
-            checked: 'material' === state.config.codeTheme,
-            click: () => {
-              dispatch(ChangeConfig, {...state.config, codeTheme: 'material'})
-            }
-          }),
-          new MenuItem({
-            label: 'Nord',
-            type: 'checkbox',
-            checked: 'nord' === state.config.codeTheme,
-            click: () => {
-              dispatch(ChangeConfig, {...state.config, codeTheme: 'nord'})
-            }
-          }),
-          new MenuItem({
-            label: 'Solarized Dark',
-            type: 'checkbox',
-            checked: 'solarized dark' === state.config.codeTheme,
-            click: () => {
-              dispatch(ChangeConfig, {...state.config, codeTheme: 'solarized dark'})
-            }
-          }),
-          new MenuItem({
-            label: 'Solarized Light',
-            type: 'checkbox',
-            checked: 'solarized light' === state.config.codeTheme,
-            click: () => {
-              dispatch(ChangeConfig, {...state.config, codeTheme: 'solarized light'})
-            }
-          }),
-        ]}),
+          })),
+        }),
       ],
     })
   ]

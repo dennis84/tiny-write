@@ -1,6 +1,7 @@
 import {h} from 'hyperapp'
 import {State, Config} from '..'
-import {freestyle, rgb, rgba, background, color} from '../styles'
+import {freestyle, rgb, rgba} from '../styles'
+import {background, color, font, codeTheme} from '../data'
 import {OnTextChange} from '../actions'
 import {MarkdownEditor} from './MarkdownEditor'
 
@@ -45,7 +46,7 @@ const textarea = (config: Config) => freestyle.registerStyle({
   'width': '100%',
   'max-width': '800px',
   'font-size': '24px',
-  'font-family': config.font,
+  'font-family': font(config),
   'margin': '50px 0',
   'padding-bottom': '100px',
   'border': '0',
@@ -83,7 +84,7 @@ export default (props: Props) => (
       contenteditable
       class={textarea(props.config)}
       placeholder="Start typing..."
-      theme={props.config.codeTheme}
+      theme={codeTheme(props.config)}
       content={props.text}
       onchange={OnChange}
     ></div>

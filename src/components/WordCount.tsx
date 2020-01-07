@@ -1,5 +1,6 @@
 import {h} from 'hyperapp'
-import {freestyle, color, rgba} from '../styles'
+import {freestyle, rgba} from '../styles'
+import {color} from '../data'
 import {Config} from '..'
 import {wordCount} from '../utils/text'
 
