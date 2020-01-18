@@ -1,18 +1,14 @@
 import {h} from 'hyperapp'
-import {State, Config} from '..'
+import {Delta} from 'quill'
+import {Config} from '..'
 import {freestyle, rgb, rgba} from '../styles'
 import {background, color, font, codeTheme} from '../config'
+import {create} from '../utils/quill'
 import {OnTextChange} from '../actions'
-import {MarkdownEditor} from './MarkdownEditor'
 
-(window as any).customElements.define(
-  'markdown-editor',
-  MarkdownEditor,
-  {extends: 'div'}
-)
-
-const editor = (config: Config) => freestyle.registerStyle({
+const container = (config: Config) => freestyle.registerStyle({
   'width': '100%',
+  'height': '100%',
   'min-height': 'calc(100vh - 50px)',
   'max-height': 'calc(100vh - 50px)',
   'overflow-y': 'auto',
@@ -41,52 +37,101 @@ const editor = (config: Config) => freestyle.registerStyle({
   },
 })
 
-const textarea = (config: Config) => freestyle.registerStyle({
+const editor = (config: Config) => freestyle.registerStyle({
   'height': '100%',
   'width': '100%',
   'max-width': '800px',
   'font-size': '24px',
   'font-family': font(config),
-  'margin': '50px 0',
-  'padding-bottom': '100px',
-  'border': '0',
   'color': rgb(color(config)),
-  'line-height': '160%',
-  'background': 'transparent',
-  'outline': 'none',
-  '-webkit-app-region': 'no-drag',
-  '&:empty::before': {
-    'content': 'attr(placeholder)',
-    'color': rgba(color(config), 0.5),
+  '.ql-editor': {
+    'min-height': 'calc(100% - 100px)',
+    'margin-top': '50px',
+    'padding-bottom': '100px',
+    'outline': 'none',
+    'line-height': '160%',
+    'background': 'transparent',
+    '-webkit-app-region': 'no-drag',
+    '&::-webkit-scrollbar': {
+      'display': 'none',
+    },
+    '&.ql-blank::before': {
+      'content': 'attr(data-placeholder)',
+      'color': rgba(color(config), 0.5),
+      'position': 'absolute',
+    },
+    'p': {
+      'margin': '0',
+    },
+    'blockquote': {
+      'border-left': `10px solid ${rgba(color(config), 0.2)}`,
+      'margin': '0',
+      'padding-left': '20px',
+    },
+    'code': {
+      'border': `1px solid ${rgba(color(config), 0.5)}`,
+      'background': rgba(color(config), 0.1),
+      'border-radius': '2px',
+      'padding': '2px',
+    }
   },
-  '&::-webkit-scrollbar': {
-    'display': 'none',
-  },
-  '& blockquote': {
-    'border-left': '10px solid #eee',
-    'margin': '0',
-    'padding-left': '20px',
+  '.ql-clipboard': {
+    'left': '-100000px',
+    'height': '1px',
+    'overflow-y': 'hidden',
+    'position': 'absolute',
+    'top': '50%',
   },
 })
 
 interface Props {
-  text: string;
+  text: Delta;
+  lastModified: Date,
   config: Config;
 }
 
-const OnChange = (state: State, e: CustomEvent) =>
-  (e.detail && e.detail.content != undefined) ?
-    OnTextChange(state, e.detail.content) : state
+const OnCreate = (state, e) => {
+  e.target.quill = create(e.target, state.text)
+  e.target.quill.currentDelta = state.text
+  return state
+}
+
+const OnChange = (state, e) => {
+  e.target.quill.currentDelta =  e.detail.delta
+  return OnTextChange(state, e.detail.delta)
+}
+
+const OnUpdate = (state, e) => {
+  if (!e.target.quill) {
+    return state
+  }
+
+  const theme = codeTheme(state.config)
+  if (e.target.quill.codeTheme !== theme) {
+    e.target.querySelectorAll('.CodeMirror').forEach((elem) => {
+      (elem as any).CodeMirror.setOption('theme', theme)
+    })
+
+    e.target.quill.codeTheme = theme
+  }
+
+  if (e.target.quill.currentDelta !== state.text) {
+    e.target.quill.setContents(state.text)
+  }
+
+  return state
+}
 
 export default (props: Props) => (
-  <div class={editor(props.config)}>
-    <div is="markdown-editor"
-      contenteditable
-      class={textarea(props.config)}
-      placeholder="Start typing..."
-      theme={codeTheme(props.config)}
-      content={props.text}
+  <div class={container(props.config)}>
+    <with-hooks
+      class={editor(props.config)}
+      data-placeholder="Start typing..."
+      data-theme={codeTheme(props.config)}
+      data-watch={`${props.lastModified.toISOString()} ${codeTheme(props.config)}`}
+      oncreate={OnCreate}
+      onupdate={OnUpdate}
       onchange={OnChange}
-    ></div>
+    />
   </div>
 )

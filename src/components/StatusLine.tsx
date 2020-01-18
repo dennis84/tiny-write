@@ -1,4 +1,5 @@
 import {h} from 'hyperapp'
+import {Delta} from 'quill'
 import {freestyle} from '../styles'
 import {Config} from '..'
 import LastModified from './LastModified'
@@ -17,7 +18,7 @@ const text = (config: Config) => freestyle.registerStyle({
 })
 
 interface Props {
-  text: string;
+  text: Delta;
   lastModified: Date;
   config: Config;
 }

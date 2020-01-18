@@ -1,8 +1,8 @@
 import {Dispatch} from 'hyperapp'
 import {State} from '.'
-import {ChangeConfig, Clear, Open, New} from './actions'
-import {themes, fonts, codeThemes} from './config';
-import {toText} from './utils/text'
+import {ChangeConfig, Close, Open, New} from './actions'
+import {themes, fonts, codeThemes} from './config'
+import {toText} from './utils/quill'
 
 export const createMenu = (state: State) => (dispatch: Dispatch) => {
   const remote = (window as any).require('electron').remote
@@ -37,9 +37,9 @@ export const createMenu = (state: State) => (dispatch: Dispatch) => {
           click: () => dispatch(New, {}),
         }),
         new MenuItem({
-          label: 'Clear',
+          label: 'Close',
           accelerator: 'Cmd+W',
-          click: () => dispatch(Clear, {}),
+          click: () => dispatch(Close, {}),
         }),
         new MenuItem({type: 'separator'}),
         new MenuItem({

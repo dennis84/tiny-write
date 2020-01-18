@@ -1,6 +1,6 @@
 {
   "name": "TinyWrite",
-  "version": "0.3.3",
+  "version": "0.4.0",
   "build": {
     "appId": "com.github.dennis84.tinywrite",
     "files": [
@@ -20,17 +20,17 @@
     "free-style": "^3.0.0",
     "hyperapp": "2.0.3",
     "insert-css": "^2.0.0",
+    "quill": "^1.3.7",
     "selection-ranges": "^3.0.3"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^11.0.1",
-    "@rollup/plugin-node-resolve": "^6.1.0",
-    "@rollup/plugin-typescript": "^2.0.2",
-    "electron": "^7.1.7",
-    "rollup-plugin-string": "^3.0.0",
-    "rollup-plugin-terser": "^5.1.3",
+    "@rollup/plugin-node-resolve": "^7.0.0",
+    "@rollup/plugin-typescript": "^2.1.0",
+    "electron": "^7.1.9",
+    "rollup-plugin-terser": "^5.2.0",
     "tslib": "^1.10.0",
-    "typescript": "^3.7.4"
+    "typescript": "^3.7.5"
   },
   "scripts": {
     "build": "npx rollup -c",

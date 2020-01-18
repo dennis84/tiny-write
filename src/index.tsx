@@ -1,11 +1,8 @@
-/// <reference path="./types/hyperapp.d.ts" />
-/// <reference path="./types/insert-css.d.ts" />
-/// <reference path="./types/svg.d.ts" />
-
 import {h, app, VNode, Effect} from 'hyperapp'
 import Main from './Main'
 import {UpdateState} from './actions'
 import * as LocalStorage from './effects/LocalStorage'
+import {Delta} from 'quill'
 
 export interface Config {
   theme: string;
@@ -14,19 +11,19 @@ export interface Config {
 }
 
 export interface State {
-  text: string;
+  text: Delta;
   lastModified: Date;
   files: File[];
   config: Config;
 }
 
 export interface File {
-  text: string;
+  text: Delta;
   lastModified: Date;
 }
 
 const init: [State, Effect] = [{
-  text: '',
+  text: {ops: []},
   lastModified: new Date,
   files: [],
   config: {

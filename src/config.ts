@@ -44,7 +44,7 @@ interface Theme {
 export const themes: {[key: string]: Theme} = {
   'light': {
     label: 'Light',
-    background: '255 255, 255',
+    background: '255, 255, 255',
     color: '74, 74, 74',
   },
   'dark': {
@@ -113,7 +113,7 @@ export const color = (config: Config) =>
   themes[config.theme] ? themes[config.theme].color : themes.light.color
 
 export const font = (config: Config) =>
-  fonts[config.font] ? fonts[config.font].label : 'Merriweather';
+  fonts[config.font] ? fonts[config.font].label : 'Merriweather'
 
 export const codeTheme = (config: Config) =>
-  codeThemes[config.codeTheme] ? codeThemes[config.codeTheme].value : 'dracula';
+  codeThemes[config.codeTheme] ? codeThemes[config.codeTheme].value : 'dracula'

@@ -121,7 +121,6 @@ import 'codemirror/mode/yaml/yaml'
 import 'codemirror/mode/z80/z80'
 
 import CodeMirror from 'codemirror'
-import * as clear from '../icons/clear.svg'
 import {freestyle} from '../styles'
 
 freestyle.registerRule('.CodeMirror', {
@@ -130,32 +129,8 @@ freestyle.registerRule('.CodeMirror', {
   'box-shadow': '0 1px 3px rgba(0,0,0,0.2) !important',
   'height': 'auto',
   'font-family': 'Iosevka Term Slab',
-  '.codemirror-close': {
-    'position': 'absolute',
-    'top': '10px',
-    'right': '10px',
-    'z-index': '2',
-    'cursor': 'pointer',
-    'background': 'none',
-    'width': '24px',
-    'height': '24px',
-    'border': '0',
-    'display': 'inline-flex',
-    'justify-content': 'center',
-    'align-items': 'center',
-    'padding': '0',
-    'svg': {
-      'fill': '#fff',
-      'width': '24px',
-      'height': '24px',
-    },
-  }
+  'z-index': 2,
 })
-
-const defaults = {
-  theme: 'dracula',
-  mode: 'javascript',
-}
 
 const langMapping = {
   'c': 'text/x-csrc',
@@ -172,30 +147,5 @@ const langMapping = {
 export const modeByLang = (lang: string) =>
   langMapping[lang] ? langMapping[lang] : lang
 
-export const fromTextArea = (textarea: HTMLTextAreaElement, options = {}) => {
-  const codemirror = init(CodeMirror.fromTextArea(textarea, {...defaults, ...options}))
-  codemirror.on('change', (e) => {
-    textarea.defaultValue = codemirror.getValue()
-  })
-}
-
-const init = (codemirror: CodeMirror) => {
-  const wrapper = codemirror.getWrapperElement()
-  const button = document.createElement('button')
-  if(wrapper.previousSibling) {
-    wrapper.parentNode.style.pointerEvents = 'none'
-  }
-  button.classList.add('codemirror-close')
-  button.innerHTML = clear.default
-  button.addEventListener('click', (e) => {
-    if(wrapper.previousSibling) {
-      wrapper.parentNode.removeChild(wrapper.previousSibling)
-    }
-    wrapper.parentNode.removeChild(wrapper)
-  })
-
-  wrapper.appendChild(button)
-  codemirror.focus()
-
-  return codemirror
-}
+export const fromTextArea = (textarea: HTMLTextAreaElement, options = {}) =>
+  CodeMirror.fromTextArea(textarea, options)

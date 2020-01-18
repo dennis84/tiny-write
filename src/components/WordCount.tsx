@@ -1,8 +1,9 @@
 import {h} from 'hyperapp'
+import {Delta} from 'quill'
 import {freestyle, rgba} from '../styles'
 import {color} from '../config'
 import {Config} from '..'
-import {wordCount} from '../utils/text'
+import {toText} from '../utils/quill'
 
 const text = (config: Config) => freestyle.registerStyle({
   'grid-column-start': '2',
@@ -13,10 +14,13 @@ const text = (config: Config) => freestyle.registerStyle({
 })
 
 interface Props {
-  text: string;
+  text: Delta;
   config: Config;
 }
 
-export default (props: Props) => (
-  <span class={text(props.config)}>{wordCount(props.text)} words</span>
-)
+export default (props: Props) => {
+  let count = toText(props.text).split(/\s+/).filter(x => x != '').length
+  return (
+    <span class={text(props.config)}>{count} words</span>
+  )
+}

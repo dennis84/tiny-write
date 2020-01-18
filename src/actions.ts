@@ -1,23 +1,30 @@
+import {Delta} from 'quill'
 import {State, File, Config} from '.'
 import {setItem} from './effects/LocalStorage'
 import {updateMenu, reload} from './effects/Electron'
 import {createMenu} from './menu'
+import {isEmpty} from './utils/quill'
 
 export const UpdateState = (state: State, data: string) => {
-  const parsed = JSON.parse(data)
-  if(!parsed) {
+  let parsed
+  try {
+    parsed = JSON.parse(data)
+  } catch (err) {}
+
+  if (!parsed) {
     return state
   }
 
   const newState = {...state}
-  if(parsed.text) newState.text = parsed.text
-  if(parsed.lastModified) newState.lastModified = new Date(parsed.lastModified)
-  if(parsed.files) newState.files = parsed.files.map(file => {
+  if (parsed.text) newState.text = parsed.text
+  if (parsed.lastModified) newState.lastModified = new Date(parsed.lastModified)
+  if (parsed.files) newState.files = parsed.files.map(file => {
     file.lastModified = new Date(file.lastModified)
+    file.text = file.text.ops ? file.text : {ops: []}
     return file
   })
 
-  if(parsed.config) newState.config = {...newState.config, ...parsed.config}
+  if (parsed.config) newState.config = {...newState.config, ...parsed.config}
 
   return [
     newState,
@@ -37,22 +44,26 @@ export const ChangeConfig = (state: State, config: Config) => {
   ]
 }
 
-export const OnTextChange = (state: State, text: string) => {
+export const OnTextChange = (state: State, text: Delta) => {
   if (state.text === text) {
     return state
   }
 
+  const newState = isEmpty(text) ?
+    {...state, text: {ops: []}, lastModified: new Date} :
+    {...state, text, lastModified: new Date}
+
   return [
-    {...state, text, lastModified: new Date},
+    newState,
     [setItem, {
       key: 'tiny_write.app.data',
-      value: JSON.stringify(state),
+      value: JSON.stringify(newState),
     }],
   ]
 }
 
 export const New = (state: State) => {
-  if (state.text == '') {
+  if (state.text.ops.length === 0) {
     return state
   }
 
@@ -65,8 +76,8 @@ export const New = (state: State) => {
 
   const newState = {
     ...state,
+    text: {ops: []},
     files: files,
-    text: '',
     lastModified: new Date,
   }
 
@@ -82,7 +93,7 @@ export const New = (state: State) => {
 
 export const Open = (state, file: File) => {
   const files = [...state.files]
-  if (state.text != '') {
+  if (!isEmpty(state.text)) {
     files.push({
       text: state.text,
       lastModified: state.lastModified,
@@ -109,8 +120,20 @@ export const Open = (state, file: File) => {
   ]
 }
 
-export const Clear = (state) => {
-  const newState = {...state, text: '', lastModified: new Date}
+export const Close = (state) => {
+  const files = [...state.files]
+  const next = files.shift() ?? {
+    text: {ops: []},
+    lastModified: new Date,
+  }
+
+  const newState = {
+    ...state,
+    files: files,
+    text: next.text,
+    lastModified: next.lastModified,
+  }
+
   return [
     newState,
     [setItem, {
