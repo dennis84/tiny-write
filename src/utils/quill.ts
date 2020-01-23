@@ -1,4 +1,5 @@
-import Quill, {Delta} from 'quill'
+import Quill from 'quill'
+import Delta from 'quill-delta'
 import {CodeMirror} from 'codemirror'
 import {fromTextArea, modeByLang} from './codemirror'
 
@@ -24,7 +25,7 @@ export const parseDelta = (str): Delta => {
     delta = JSON.parse(str)
   } catch (err) {}
 
-  return delta
+  return new Delta(delta.ops)
 }
 
 export const create = (node: HTMLElement, delta: Delta) => {

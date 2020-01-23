@@ -14,3 +14,24 @@ Object.entries(fonts).forEach(([key, value]) => {
     })
   }
 })
+
+export const button = {
+  'height': '50px',
+  'padding': '0 20px',
+  'background': '#8575ff',
+  'color': '#fff',
+  'border-radius': '30px',
+  'border': '0',
+  'font-size': '18px',
+  'cursor': 'pointer',
+  'display': 'inline-flex',
+  'justify-content': 'center',
+  'align-items': 'center',
+  'outline': 'none',
+  'text-decoration': 'none',
+  '&:hover': {
+    'opacity': '0.8',
+  }
+}
+
+export const buttonPrimary = freestyle.registerStyle(button)

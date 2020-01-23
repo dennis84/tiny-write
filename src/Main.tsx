@@ -5,6 +5,7 @@ import {insertCss} from 'insert-css'
 import {State, Config} from '.'
 import Editor from './components/Editor'
 import StatusLine from './components/StatusLine'
+import Notification from './components/Notification'
 import {WithHooks} from './components/WithHooks'
 
 (window as any).customElements.define('with-hooks', WithHooks)
@@ -36,5 +37,6 @@ export default (props: State) => (
       text={props.text}
       lastModified={props.lastModified}
       config={props.config} />
+    {props.notification ? <Notification notification={props.notification} /> : ''}
   </with-hooks>
 )

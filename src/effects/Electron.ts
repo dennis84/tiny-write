@@ -14,13 +14,3 @@ export const updateMenu = (dispatch: Dispatch, props: UpdateMenuProps) => {
   props.fn(dispatch).forEach(x => root.append(x))
   app.applicationMenu = root
 }
-
-export const reload = () => {
-  if (isElectron) {
-    const remote = (window as any).require('electron').remote
-    const win = remote.getCurrentWindow()
-    win.reload()
-  } else {
-    window.location.reload()
-  }
-}

@@ -1,9 +1,44 @@
-import {Delta} from 'quill'
-import {State, File, Config} from '.'
+import Delta from 'quill-delta'
+import {State, File, Config, Notification, newState} from '.'
 import {setItem} from './effects/LocalStorage'
-import {updateMenu, reload} from './effects/Electron'
+import {updateMenu} from './effects/Electron'
 import {createMenu} from './menu'
 import {isEmpty} from './utils/quill'
+
+const isState = (x: any) =>
+  x.text?.ops &&
+  x.lastModified instanceof Date &&
+  Array.isArray(x.files)
+
+const isFile = (x: any): boolean =>
+  x.text?.ops &&
+  x.lastModified instanceof Date
+
+const isConfig = (x: any): boolean =>
+  typeof x.theme === 'string' &&
+  typeof x.codeTheme === 'string' &&
+  typeof x.font === 'string'
+
+const UpdateMenuEffect = (state) =>
+  [updateMenu, {fn: createMenu(state)}]
+
+const UpdateDataEffect = (state) =>
+  [setItem, {
+    key: 'tiny_write.app.data',
+    value: JSON.stringify(state),
+  }]
+
+export const Notify = (state: State, notification: Notification) =>
+  ({...state, notification})
+
+export const Clean = (state: State) => {
+  const next = newState()
+  return [
+    next,
+    UpdateDataEffect(next),
+    UpdateMenuEffect(next),
+  ]
+}
 
 export const UpdateState = (state: State, data: string) => {
   let parsed
@@ -15,20 +50,39 @@ export const UpdateState = (state: State, data: string) => {
     return state
   }
 
-  const newState = {...state}
-  if (parsed.text) newState.text = parsed.text
-  if (parsed.lastModified) newState.lastModified = new Date(parsed.lastModified)
-  if (parsed.files) newState.files = parsed.files.map(file => {
-    file.lastModified = new Date(file.lastModified)
-    file.text = file.text.ops ? file.text : {ops: []}
-    return file
-  })
+  const config = {...state.config, ...parsed.config}
+  if (!isConfig(config)) {
+    return [
+      Notify(state, {title: 'Config is invalid', props: config}),
+      UpdateMenuEffect(state)
+    ]
+  }
 
-  if (parsed.config) newState.config = {...newState.config, ...parsed.config}
+  const newState = {...state, ...parsed, config}
+  if (parsed.lastModified) newState.lastModified = new Date(parsed.lastModified)
+  if (parsed.files) {
+    for (const file of parsed.files) {
+      file.text = new Delta(file.text)
+      file.lastModified = new Date(file.lastModified)
+      if (!isFile(file)) {
+        return [
+          Notify(state, {title: 'File is invalid', props: file}),
+          UpdateMenuEffect(state),
+        ]
+      }
+    }
+  }
+
+  if (!isState(newState)) {
+    return [
+      Notify(state, {title: 'State is invalid', props: newState}),
+      UpdateMenuEffect(state),
+    ]
+  }
 
   return [
     newState,
-    [updateMenu, {fn: createMenu(newState)}],
+    UpdateMenuEffect(newState),
   ]
 }
 
@@ -36,11 +90,8 @@ export const ChangeConfig = (state: State, config: Config) => {
   const newState = {...state, config: {...state.config, ...config}}
   return [
     newState,
-    [setItem, {
-      key: 'tiny_write.app.data',
-      value: JSON.stringify(newState),
-    }],
-    [updateMenu, {fn: createMenu(newState)}],
+    UpdateDataEffect(newState),
+    UpdateMenuEffect(newState),
   ]
 }
 
@@ -50,15 +101,12 @@ export const OnTextChange = (state: State, text: Delta) => {
   }
 
   const newState = isEmpty(text) ?
-    {...state, text: {ops: []}, lastModified: new Date} :
+    {...state, text: new Delta, lastModified: new Date} :
     {...state, text, lastModified: new Date}
 
   return [
     newState,
-    [setItem, {
-      key: 'tiny_write.app.data',
-      value: JSON.stringify(newState),
-    }],
+    UpdateDataEffect(newState),
   ]
 }
 
@@ -76,18 +124,15 @@ export const New = (state: State) => {
 
   const newState = {
     ...state,
-    text: {ops: []},
+    text: new Delta,
     files: files,
     lastModified: new Date,
   }
 
   return [
     newState,
-    [setItem, {
-      key: 'tiny_write.app.data',
-      value: JSON.stringify(newState),
-    }],
-    [updateMenu, {fn: createMenu(newState)}],
+    UpdateDataEffect(newState),
+    UpdateMenuEffect(newState),
   ]
 }
 
@@ -112,18 +157,15 @@ export const Open = (state, file: File) => {
 
   return [
     newState,
-    [setItem, {
-      key: 'tiny_write.app.data',
-      value: JSON.stringify(newState),
-    }],
-    [reload, {}],
+    UpdateDataEffect(newState),
+    UpdateMenuEffect(newState),
   ]
 }
 
 export const Close = (state) => {
   const files = [...state.files]
   const next = files.shift() ?? {
-    text: {ops: []},
+    text: new Delta(),
     lastModified: new Date,
   }
 
@@ -136,9 +178,6 @@ export const Close = (state) => {
 
   return [
     newState,
-    [setItem, {
-      key: 'tiny_write.app.data',
-      value: JSON.stringify(newState),
-    }],
+    UpdateDataEffect(newState),
   ]
 }
