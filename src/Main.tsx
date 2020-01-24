@@ -11,6 +11,7 @@ import {WithHooks} from './components/WithHooks'
 (window as any).customElements.define('with-hooks', WithHooks)
 
 const container = (config: Config) => freestyle.registerStyle({
+  'position': 'relative',
   'display': 'block',
   'background': rgb(background(config)),
   'width': '100%',

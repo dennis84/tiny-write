@@ -33,7 +33,7 @@ export const create = (node: HTMLElement, delta: Delta) => {
     theme: 'snow',
     placeholder: node.dataset.placeholder,
     modules: {
-      toolbar: null,
+      toolbar: [['link']],
       keyboard: {
         bindings: {
           header: {
@@ -60,6 +60,26 @@ export const create = (node: HTMLElement, delta: Delta) => {
               const [,lang] = /^`{3}([a-z+-]*)/.exec(context.prefix)
               this.quill.formatLine(range.index, 1, 'code-block', {lang, state: 'focused'})
               this.quill.deleteText(range.index, context.prefix.length)
+            }
+          },
+          codeblockEnter: {
+            key: 'Enter',
+            prefix: /^`{3}([a-z+-]*)/,
+            handler: function (range, context) {
+              const [,lang] = /^`{3}([a-z+-]*)/.exec(context.prefix)
+              this.quill.formatLine(range.index, 1, 'code-block', {lang, state: 'focused'})
+              this.quill.deleteText(range.index, context.prefix.length)
+            }
+          },
+          link: {
+            key: ' ',
+            prefix: /\[(.+?)\]\((.+?)\)/,
+            handler: function (range, context) {
+              const [match, text, link] = /\[(.+?)\]\((.+?)\)/.exec(context.prefix)
+              const startIndex = range.index - match.length
+              this.quill.deleteText(startIndex, match.length)
+              this.quill.insertText(startIndex, text, {link})
+              this.quill.insertText(this.quill.getSelection(), ' ')
             }
           },
           code: {

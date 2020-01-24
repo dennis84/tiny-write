@@ -44,6 +44,11 @@ function createWindow() {
   win.on('focus', () => {
     win.setOpacity(1)
   })
+
+  win.webContents.on('new-window', (e, url) => {
+    e.preventDefault()
+    shell.openExternal(url)
+  })
 }
 
 app.on('ready', () => {
