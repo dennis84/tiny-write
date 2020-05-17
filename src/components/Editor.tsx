@@ -1,4 +1,4 @@
-import React, {useLayoutEffect, useCallback, useMemo} from 'react'
+import React, {useLayoutEffect, useCallback, useRef, useMemo} from 'react'
 import {Slate, Editable, withReact} from 'slate-react'
 import {Editor, Node, Point, Range, Transforms, createEditor} from 'slate'
 import {withHistory} from 'slate-history'
@@ -38,14 +38,14 @@ const container = (config: Config) => freestyle.registerStyle({
   },
   '> [contenteditable]': {
     'min-height': 'calc(100% - 100px)',
-    'max-height': '100%',
+    'height': 'fit-content',
     'width': '100%',
     'max-width': '800px',
     'font-size': '24px',
     'font-family': font(config),
     'color': rgb(color(config)),
     'margin-top': '50px',
-    'padding-bottom': '100px',
+    'padding-bottom': '200px',
     'line-height': '160%',
     'outline': 'none',
     'background': 'transparent',
@@ -257,6 +257,7 @@ const Leaf = ({attributes, children, leaf}) => {
 
 export default (props: Props) => {
   const dispatch = useDispatch()
+  const containerRef = useRef(null)
 
   const renderElement = useCallback(props => <Element {...props} />, [])
   const renderLeaf = useCallback(props => <Leaf {...props} />, [])
@@ -271,11 +272,16 @@ export default (props: Props) => {
   const OnKeyDown = (event) => {
     const {anchor} = editor.selection
     const [node] = Editor.node(editor, editor.selection)
+    const next = Editor.next(editor, editor.selection)
     const isEnd = anchor && Editor.isEnd(editor, anchor, [anchor.path[0]])
 
     if (event.key === 'ArrowRight' && isEnd && (node.type === 'code' || node.code)) {
       event.preventDefault()
       Transforms.insertNodes(editor, {text: ' '})
+    }
+
+    if (!next && isEnd) {
+      containerRef.current.scrollTop = containerRef.current.scrollHeight
     }
   }
 
@@ -286,7 +292,7 @@ export default (props: Props) => {
   }, [props.files])
 
   return (
-    <div className={container(props.config)}>
+    <div className={container(props.config)} ref={containerRef}>
       <Slate
         children={0}
         editor={editor}
