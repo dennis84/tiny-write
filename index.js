@@ -24,7 +24,7 @@ function createWindow() {
   win.loadURL(url.format({
     protocol: 'file',
     hash: '',
-    pathname: path.join(__dirname, '/index.html')
+    pathname: path.join(__dirname, '/dist/index.html')
   }))
 
   Menu.setApplicationMenu(Menu.buildFromTemplate([{label: ''}]))

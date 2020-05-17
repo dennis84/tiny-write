@@ -8,30 +8,30 @@ interface Font {
 export const fonts: {[key: string]: Font} = {
   'merriweather': {
     label: 'Merriweather',
-    src: './fonts/Merriweather-Regular.ttf',
+    src: './Merriweather-Regular.ttf',
   },
   'times-new-roman': {
     label: 'Times New Roman',
   },
   'roboto': {
     label: 'Roboto',
-    src: './fonts/Roboto-Regular.ttf',
+    src: './Roboto-Regular.ttf',
   },
   'roboto-slab': {
     label: 'Roboto Slab',
-    src: './fonts/RobotoSlab-Regular.ttf',
+    src: './RobotoSlab-Regular.ttf',
   },
   'ibm-plex-serif': {
     label: 'IBM Plex Serif',
-    src: './fonts/IBMPlexSerif-Regular.ttf',
+    src: './IBMPlexSerif-Regular.ttf',
   },
   'iosevka-term-slab': {
     label: 'Iosevka Term Slab',
-    src: './fonts/iosevka-term-slab-regular.woff2',
+    src: './iosevka-term-slab-regular.woff2',
   },
   'fantasque-sans-mono': {
     label: 'Fantasque Sans Mono',
-    src: './fonts/FantasqueSansMono-Regular.woff2',
+    src: './FantasqueSansMono-Regular.woff2',
   },
 }
 

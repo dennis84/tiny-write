@@ -1,6 +1,6 @@
-import {h} from 'hyperapp'
+import React from 'react'
 import {Notification} from '..'
-import {Clean} from '../actions'
+import {Clean, useDispatch} from '../reducer'
 import {Modal, ModalBody, ModalHeader, ModalFooter} from './Modal'
 import {freestyle, buttonPrimary} from '../styles'
 
@@ -17,21 +17,30 @@ const code = freestyle.registerStyle({
   'padding': '10px',
 });
 
-export default (props: Props) => (
-  <Modal>
-    <ModalHeader>{props.notification.title}</ModalHeader>
-    <ModalBody>
-      <p>
-        There is an error with the editor state. This is probably due to an
-        old version. To fix this, you can copy important notes from below,
-        clean the state and paste it again.
-      </p>
-      <pre class={code}>
-        <code>{JSON.stringify(props.notification.props)}</code>
-      </pre>
-    </ModalBody>
-    <ModalFooter>
-      <button class={buttonPrimary} onclick={Clean}>Clean</button>
-    </ModalFooter>
-  </Modal>
-)
+export default (props: Props) => {
+  const dispatch = useDispatch()
+  const onClick = () => dispatch(Clean)
+
+  return (
+    <Modal>
+      <ModalHeader>{props.notification.title}</ModalHeader>
+      <ModalBody>
+        <p>
+          There is an error with the editor state. This is probably due to an
+          old version. To fix this, you can copy important notes from below,
+          clean the state and paste it again.
+        </p>
+        <pre className={code}>
+          <code>{JSON.stringify(props.notification.props)}</code>
+        </pre>
+      </ModalBody>
+      <ModalFooter>
+        <button
+          className={buttonPrimary}
+          onClick={onClick}>
+          Clean
+        </button>
+      </ModalFooter>
+    </Modal>
+  )
+}

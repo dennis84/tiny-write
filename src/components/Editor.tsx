@@ -1,10 +1,12 @@
-import {h} from 'hyperapp'
-import {Delta} from 'quill'
-import {Config} from '..'
-import {freestyle, button, rgb, rgba} from '../styles'
-import {background, color, color2, font, codeTheme} from '../config'
-import {create} from '../utils/quill'
-import {OnTextChange} from '../actions'
+import React, {useLayoutEffect, useCallback, useMemo} from 'react'
+import {Slate, Editable, withReact} from 'slate-react'
+import {Editor, Node, Point, Range, Transforms, createEditor} from 'slate'
+import {withHistory} from 'slate-history'
+import {Config, File} from '..'
+import {freestyle, rgb, rgba} from '../styles'
+import {background, color, color2, font} from '../config'
+import {OnTextChange, useDispatch} from '../reducer'
+import CodeEditor from './CodeEditor'
 
 const container = (config: Config) => freestyle.registerStyle({
   'width': '100%',
@@ -34,105 +36,22 @@ const container = (config: Config) => freestyle.registerStyle({
     'bottom': '50px',
     'pointer-events': 'none',
   },
-  '.ql-toolbar': {
-    'display': 'none',
-  },
-})
-
-const editor = (config: Config) => freestyle.registerStyle({
-  'height': '100%',
-  'width': '100%',
-  'max-width': '800px',
-  'font-size': '24px',
-  'font-family': font(config),
-  'color': rgb(color(config)),
-  'position': 'relative',
-  '.ql-tooltip': {
-    'position': 'absolute',
-    'margin-top': '10px',
-    'background': '#fff',
-    'font-family': 'Iosevka Term Slab',
-    'font-size': '16px',
-    'box-shadow': '0 2px 6px rgba(0,0,0,0.3)',
-    'border-radius': '2px',
-    'padding': '10px',
-    '&:before': {
-      'content': '"Visit URL: "',
-      'display': 'block',
-    },
-    '&:after': {
-      'content': '""',
-      'position': 'absolute',
-      'width': '6px',
-      'height': '6px',
-      'background': '#fff',
-      'left': 'calc(50% - 3px)',
-      'top': '-3px',
-      'transform': 'rotate(45deg)',
-    },
-    '.ql-preview': {
-      'color': '#8575ff',
-      'display': 'block',
-      'margin-bottom': '10px',
-    },
-    'input': {
-      'display': 'none',
-      'width': '100%',
-      'height': '40px',
-      'border': '1px solid #ccc',
-      'color': '#4a4a4a',
-      'font-size': '16px',
-      'font-family': 'Iosevka Term Slab',
-      'margin': '10px 0',
-      'border-radius': '2px',
-    },
-    '.ql-action': {
-      ...button,
-      'margin-right': '10px',
-      '&:before': {
-        'content': '"Edit"',
-      }
-    },
-    '.ql-remove': {
-      ...button,
-      '&:before': {
-        'content': '"Remove"',
-      }
-    },
-    '&.ql-editing': {
-      'input': {
-        'display': 'block',
-      },
-      '.ql-action:before': {
-        'content': '"Save"',
-      }
-    }
-  },
-  '.ql-hidden': {
-    'display': 'none',
-  },
-  '.ql-clipboard': {
-    'left': '-100000px',
-    'height': '1px',
-    'overflow-y': 'hidden',
-    'position': 'absolute',
-    'top': '50%',
-  },
-  '.ql-editor': {
+  '> [contenteditable]': {
     'min-height': 'calc(100% - 100px)',
+    'max-height': '100%',
+    'width': '100%',
+    'max-width': '800px',
+    'font-size': '24px',
+    'font-family': font(config),
+    'color': rgb(color(config)),
     'margin-top': '50px',
     'padding-bottom': '100px',
-    'outline': 'none',
     'line-height': '160%',
+    'outline': 'none',
     'background': 'transparent',
     '-webkit-app-region': 'no-drag',
     '&::-webkit-scrollbar': {
       'display': 'none',
-    },
-    '&.ql-blank::before': {
-      'content': 'attr(data-placeholder)',
-      'color': rgba(color(config), 0.5),
-      'position': 'absolute',
     },
     'p': {
       'margin': '0',
@@ -151,58 +70,237 @@ const editor = (config: Config) => freestyle.registerStyle({
     'a': {
       'color': rgba(color2(config), 1),
     }
-  },
+  }
 })
 
 interface Props {
-  text: Delta;
+  text: Node[];
+  files: File[];
   lastModified: Date,
   config: Config;
 }
 
-const OnCreate = (state, e) => {
-  e.target.quill = create(e.target, state.text)
-  e.target.quill.currentDelta = state.text
-  return state
+const SHORTCUTS = {
+  '*': 'list-item',
+  '-': 'list-item',
+  '+': 'list-item',
+  '>': 'block-quote',
+  '#': 'heading-one',
+  '##': 'heading-two',
+  '###': 'heading-three',
+  '####': 'heading-four',
+  '#####': 'heading-five',
+  '######': 'heading-six',
 }
 
-const OnChange = (state, e) => {
-  if (!e.detail) return state
-  e.target.quill.currentDelta =  e.detail.delta
-  return OnTextChange(state, e.detail.delta)
+const withEmbeds = editor => {
+  const {isVoid} = editor
+  editor.isVoid = (element) =>
+    element.type === 'code-block' ? true : isVoid(element)
+
+  return editor
 }
 
-const OnUpdate = (state, e) => {
-  if (!e.target.quill) {
-    return state
+const withShortcuts = (editor) => {
+  const {deleteBackward, insertText} = editor
+
+  editor.insertText = (text) => {
+    const {selection} = editor
+
+    if (text === ' ' && selection && Range.isCollapsed(selection)) {
+      const {anchor} = selection
+      const block = Editor.above(editor, {
+        match: n => Editor.isBlock(editor, n),
+      })
+      const path = block ? block[1] : []
+      const start = Editor.start(editor, path)
+      const range = {anchor, focus: start}
+      const beforeText = Editor.string(editor, range)
+
+      const codeBlockMatch = beforeText.match(/^`{3}([a-z+-]*)/)
+      if (codeBlockMatch) {
+        const [,lang] = codeBlockMatch
+        Transforms.select(editor, range)
+        Transforms.delete(editor)
+        Transforms.setNodes(editor, {type: 'code-block', lang, focus: true}, {
+          match: n => Editor.isBlock(editor, n)
+        })
+
+        return
+      }
+
+      const codeMatch = beforeText.match(/`(.+?)`/)
+      if (codeMatch) {
+        const [,code] = codeMatch
+        const startIndex = anchor.offset - code.length
+        Transforms.delete(editor, {at: {...anchor, offset: startIndex - 2}})
+        Transforms.delete(editor, {reverse: true})
+        Transforms.select(editor, {
+          anchor: {...anchor, offset: anchor.offset-2},
+          focus: {...anchor, offset: startIndex-2}
+        })
+
+        Editor.addMark(editor, 'code', true)
+        Transforms.collapse(editor)
+        Transforms.insertNodes(editor, [{text: ' '}])
+        return
+      }
+
+      const type = SHORTCUTS[beforeText]
+
+      if (type) {
+        Transforms.select(editor, range)
+        Transforms.delete(editor)
+        Transforms.setNodes(editor, {type}, {
+          match: n => Editor.isBlock(editor, n)
+        })
+
+        if (type === 'list-item') {
+          const list = {type: 'bulleted-list', children: []}
+          Transforms.wrapNodes(editor, list, {
+            match: n => n.type === 'list-item',
+          })
+        }
+
+        return
+      }
+    }
+
+    insertText(text)
   }
 
-  const theme = codeTheme(state.config)
-  if (e.target.quill.codeTheme !== theme) {
-    e.target.querySelectorAll('.CodeMirror').forEach((elem) => {
-      (elem as any).CodeMirror.setOption('theme', theme)
-    })
+  editor.deleteBackward = (...args) => {
+    const {selection} = editor
 
-    e.target.quill.codeTheme = theme
+    if (selection && Range.isCollapsed(selection)) {
+      const match = Editor.above(editor, {
+        match: n => Editor.isBlock(editor, n),
+      })
+
+      if (match) {
+        const [block, path] = match
+        const start = Editor.start(editor, path)
+
+        if (
+          block.type !== 'paragraph' &&
+          Point.equals(selection.anchor, start)
+        ) {
+          Transforms.setNodes(editor, {type: 'paragraph'})
+
+          if (block.type === 'list-item') {
+            Transforms.unwrapNodes(editor, {
+              match: n => n.type === 'bulleted-list',
+            })
+          }
+
+          return
+        }
+      }
+
+      deleteBackward(...args)
+    }
   }
 
-  if (e.target.quill.currentDelta !== state.text) {
-    e.target.quill.setContents(state.text)
-  }
-
-  return state
+  return editor
 }
 
-export default (props: Props) => (
-  <div class={container(props.config)}>
-    <with-hooks
-      class={editor(props.config)}
-      data-placeholder="Start typing..."
-      data-theme={codeTheme(props.config)}
-      data-watch={`${props.lastModified.toISOString()} ${codeTheme(props.config)}`}
-      oncreate={OnCreate}
-      onupdate={OnUpdate}
-      onchange={OnChange}
-    />
-  </div>
-)
+const Element = ({ attributes, children, element }) => {
+  switch (element.type) {
+    case 'block-quote':
+      return <blockquote {...attributes}>{children}</blockquote>
+    case 'bulleted-list':
+      return <ul {...attributes}>{children}</ul>
+    case 'heading-one':
+      return <h1 {...attributes}>{children}</h1>
+    case 'heading-two':
+      return <h2 {...attributes}>{children}</h2>
+    case 'heading-three':
+      return <h3 {...attributes}>{children}</h3>
+    case 'heading-four':
+      return <h4 {...attributes}>{children}</h4>
+    case 'heading-five':
+      return <h5 {...attributes}>{children}</h5>
+    case 'heading-six':
+      return <h6 {...attributes}>{children}</h6>
+    case 'list-item':
+      return <li {...attributes}>{children}</li>
+    case 'code':
+      return <code {...attributes}>{children}</code>
+    case 'code-block':
+      return (
+        <CodeEditor attributes={attributes} children={children} element={element} />
+      )
+    default:
+      return <p {...attributes}>{children}</p>
+  }
+}
+
+const Leaf = ({attributes, children, leaf}) => {
+  if (leaf.bold) {
+    children = <strong>{children}</strong>
+  }
+
+  if (leaf.code) {
+    children = <code>{children}</code>
+  }
+
+  if (leaf.italic) {
+    children = <em>{children}</em>
+  }
+
+  if (leaf.underline) {
+    children = <u>{children}</u>
+  }
+
+  return <span {...attributes}>{children}</span>
+}
+
+export default (props: Props) => {
+  const dispatch = useDispatch()
+
+  const renderElement = useCallback(props => <Element {...props} />, [])
+  const renderLeaf = useCallback(props => <Leaf {...props} />, [])
+  const editor = useMemo(() => {
+    return withEmbeds(withShortcuts(withReact(withHistory(createEditor()))))
+  }, [])
+
+  const OnChange = (value: any) => {
+    dispatch(OnTextChange(value))
+  }
+
+  const OnKeyDown = (event) => {
+    const {anchor} = editor.selection
+    const [node] = Editor.node(editor, editor.selection)
+    const isEnd = anchor && Editor.isEnd(editor, anchor, [anchor.path[0]])
+
+    if (event.key === 'ArrowRight' && isEnd && (node.type === 'code' || node.code)) {
+      event.preventDefault()
+      Transforms.insertNodes(editor, {text: ' '})
+    }
+  }
+
+  useLayoutEffect(() => {
+    return () => {
+      Transforms.select(editor, {path: [0], offset: 0})
+    }
+  }, [props.files])
+
+  return (
+    <div className={container(props.config)}>
+      <Slate
+        children={0}
+        editor={editor}
+        value={props.text}
+        onChange={OnChange}>
+        <Editable
+          renderElement={renderElement}
+          renderLeaf={renderLeaf}
+          placeholder="Start typing ..."
+          onKeyDown={OnKeyDown}
+          spellCheck
+          autoFocus
+        />
+      </Slate>
+    </div>
+  )
+}

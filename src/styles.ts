@@ -8,9 +8,12 @@ export const rgba = (str, alpha) => `rgba(${str}, ${alpha})`
 
 Object.entries(fonts).forEach(([key, value]) => {
   if (value.src) {
-    freestyle.registerRule('@font-face', {
-      'font-family': value.label,
-      'src': `url(${value.src})`,
+    freestyle.registerStyle({
+      $global: true,
+      '@font-face': {
+        'font-family': value.label,
+        'src': `url(${value.src})`,
+      }
     })
   }
 })

@@ -1,8 +1,7 @@
-import {h, app, VNode, Effect} from 'hyperapp'
+import React from 'react'
+import {render} from 'react-dom'
 import Main from './Main'
-import {UpdateState} from './actions'
-import * as LocalStorage from './effects/LocalStorage'
-import Delta from 'quill-delta'
+import {Node} from 'slate'
 
 export interface Config {
   theme: string;
@@ -16,7 +15,7 @@ export interface Notification {
 }
 
 export interface State {
-  text: Delta;
+  text: Node[];
   lastModified: Date;
   files: File[];
   config: Config;
@@ -24,12 +23,12 @@ export interface State {
 }
 
 export interface File {
-  text: Delta;
+  text: Node[];
   lastModified: Date;
 }
 
-export const newState = () => ({
-  text: new Delta,
+export const newState = (): State => ({
+  text: [{children: [{text: ''}]}],
   lastModified: new Date,
   files: [],
   config: {
@@ -39,23 +38,7 @@ export const newState = () => ({
   }
 })
 
-const init: [State, Effect] = [
-  newState(),
-  [LocalStorage.getItem, {
-    action: UpdateState,
-    key: 'tiny_write.app.data'
-  }]
-]
-
-const view = (state: State): VNode => (
-  <Main
-    text={state.text}
-    lastModified={state.lastModified}
-    files={state.files}
-    config={state.config}
-    notification={state.notification} />
+render(
+  <Main initialState={newState()} />,
+  document.getElementById('container')
 )
-
-const node = document.getElementById('container')
-
-app({init, view, node})

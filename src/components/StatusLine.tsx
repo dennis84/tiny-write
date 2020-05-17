@@ -1,5 +1,5 @@
-import {h} from 'hyperapp'
-import {Delta} from 'quill'
+import React from 'react'
+import {Node} from 'slate'
 import {freestyle} from '../styles'
 import {Config} from '..'
 import LastModified from './LastModified'
@@ -18,13 +18,13 @@ const text = (config: Config) => freestyle.registerStyle({
 })
 
 interface Props {
-  text: Delta;
+  text: Node[];
   lastModified: Date;
   config: Config;
 }
 
 export default (props: Props) => (
-  <div class={text(props.config)}>
+  <div className={text(props.config)}>
     <WordCount text={props.text} config={props.config} />
     <LastModified lastModified={props.lastModified} config={props.config} />
   </div>

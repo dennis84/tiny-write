@@ -1,12 +1,23 @@
-import {Dispatch} from 'hyperapp'
 import {State} from '.'
-import {ChangeConfig, Close, Open, New} from './actions'
+import {Node} from 'slate'
+import {ChangeConfig, Close, Open, New} from './reducer'
 import {themes, fonts, codeThemes} from './config'
-import {toText} from './utils/quill'
 
-export const createMenu = (state: State) => (dispatch: Dispatch) => {
+const userAgent = window.navigator.userAgent.toLowerCase()
+const isElectron = userAgent.indexOf(' electron/') > -1
+
+export const updateMenu = (state: State, dispatch: any) => {
+  if (!isElectron) return
+  const {app, Menu} = window.require('electron').remote
+  const root = new Menu()
+  createMenu(state, dispatch).forEach(root.append)
+  app.applicationMenu = root
+}
+
+export const createMenu = (state: State, dispatch: any) => {
   const remote = (window as any).require('electron').remote
   const {MenuItem} = remote
+  const toText = (text: Node[]) => text.map((node) => Node.string(node)).join('\n')
 
   return [
     new MenuItem({
@@ -34,12 +45,12 @@ export const createMenu = (state: State) => (dispatch: Dispatch) => {
         new MenuItem({
           label: 'New',
           accelerator: 'Cmd+N',
-          click: () => dispatch(New, {}),
+          click: () => dispatch(New),
         }),
         new MenuItem({
           label: 'Close',
           accelerator: 'Cmd+W',
-          click: () => dispatch(Close, {}),
+          click: () => dispatch(Close),
         }),
         new MenuItem({type: 'separator'}),
         new MenuItem({
@@ -48,7 +59,7 @@ export const createMenu = (state: State) => (dispatch: Dispatch) => {
             label: toText(file.text).substring(0, 16),
             type: 'checkbox',
             checked: file.lastModified === state.lastModified,
-            click: () => dispatch(Open, file),
+            click: () => dispatch(Open(file)),
           }))
         }),
       ],
@@ -72,8 +83,7 @@ export const createMenu = (state: State) => (dispatch: Dispatch) => {
         new MenuItem({
           label: 'Toggle Fullscreen',
           accelerator: 'Cmd+Return',
-          click: () => {
-            const win = remote.getCurrentWindow()
+          click: (_, win) => {
             win.setSimpleFullScreen(!win.isSimpleFullScreen())
           }
         }),
@@ -84,7 +94,7 @@ export const createMenu = (state: State) => (dispatch: Dispatch) => {
             type: 'checkbox',
             checked: key === state.config.font,
             click: () => {
-              dispatch(ChangeConfig, {...state.config, font: key})
+              dispatch(ChangeConfig({...state.config, font: key}))
             }
           })),
         }),
@@ -95,7 +105,7 @@ export const createMenu = (state: State) => (dispatch: Dispatch) => {
             type: 'checkbox',
             checked: key === state.config.theme,
             click: () => {
-              dispatch(ChangeConfig, {...state.config, theme: key})
+              dispatch(ChangeConfig({...state.config, theme: key}))
             }
           })),
         }),
@@ -105,7 +115,7 @@ export const createMenu = (state: State) => (dispatch: Dispatch) => {
             label: value.label,
             checked: key === state.config.codeTheme,
             click: () => {
-              dispatch(ChangeConfig, {...state.config, codeTheme: key})
+              dispatch(ChangeConfig({...state.config, codeTheme: key}))
             }
           })),
         }),

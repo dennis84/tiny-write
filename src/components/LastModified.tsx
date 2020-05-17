@@ -1,4 +1,4 @@
-import {h} from 'hyperapp'
+import React from 'react'
 import dayjs from 'dayjs'
 import {freestyle, rgba} from '../styles'
 import {color} from '../config'
@@ -31,5 +31,5 @@ const format = (date: Date) => {
 }
 
 export default (props: Props) => (
-  <span class={text(props.config)}>Edited {format(props.lastModified)}</span>
+  <span className={text(props.config)}>Edited {format(props.lastModified)}</span>
 )

@@ -1,4 +1,4 @@
-import {h} from 'hyperapp'
+import React, {ReactNode} from 'react'
 import {freestyle} from '../styles'
 
 const container = freestyle.registerStyle({
@@ -119,20 +119,24 @@ const footer = freestyle.registerStyle({
   },
 })
 
-export const ModalHeader = (_, children) => (
-  <div class={header}>{children}</div>
+interface Props {
+  children?: ReactNode;
+}
+
+export const ModalHeader = (props: Props) => (
+  <div className={header}>{props.children}</div>
 )
 
-export const ModalBody = (_, children) => (
-  <div class={body}>{children}</div>
+export const ModalBody = (props: Props) => (
+  <div className={body}>{props.children}</div>
 )
 
-export const ModalFooter = (_, children) => (
-  <div class={footer}>{children}</div>
+export const ModalFooter = (props: Props) => (
+  <div className={footer}>{props.children}</div>
 )
 
-export const Modal = (props: any, children) => (
-  <div class={container}>
-    <div class={content}>{children}</div>
+export const Modal = (props: Props) => (
+  <div className={container}>
+    <div className={content}>{props.children}</div>
   </div>
 )

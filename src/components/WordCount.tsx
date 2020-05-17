@@ -1,9 +1,8 @@
-import {h} from 'hyperapp'
-import {Delta} from 'quill'
+import React from 'react'
+import {Node} from 'slate'
 import {freestyle, rgba} from '../styles'
 import {color} from '../config'
 import {Config} from '..'
-import {toText} from '../utils/quill'
 
 const text = (config: Config) => freestyle.registerStyle({
   'grid-column-start': '2',
@@ -14,13 +13,16 @@ const text = (config: Config) => freestyle.registerStyle({
 })
 
 interface Props {
-  text: Delta;
+  text: Node[];
   config: Config;
 }
 
 export default (props: Props) => {
-  let count = toText(props.text).split(/\s+/).filter(x => x != '').length
+  const count = props.text
+    .map((node) => Node.string(node).split(/\s+/).filter(x => x != '').length)
+    .reduce((a, b) => a + b, 0)
+
   return (
-    <span class={text(props.config)}>{count} words</span>
+    <span className={text(props.config)}>{count} words</span>
   )
 }

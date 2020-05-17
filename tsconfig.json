@@ -3,7 +3,6 @@
     "target": "es2019",
     "module": "esnext",
     "jsx": "react",
-    "jsxFactory": "h",
     //"noImplicitAny": true,
     "noUnusedLocals": true,
     //"strictNullChecks": true,

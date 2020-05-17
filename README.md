@@ -13,9 +13,13 @@ Download from [releases](https://github.com/dennis84/tiny-write/releases)
 
 ```
 npm install
-npm run build
-npm run app
 
 # Install dmg
 npm run dist
+
+# Develop web
+npm run web
+
+# Develop app
+npm run app
 ```

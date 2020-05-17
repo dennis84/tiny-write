@@ -119,17 +119,17 @@ import 'codemirror/mode/yacas/yacas'
 import 'codemirror/mode/yaml-frontmatter/yaml-frontmatter'
 import 'codemirror/mode/yaml/yaml'
 import 'codemirror/mode/z80/z80'
-
+import React, {useEffect, useRef} from 'react'
+import {Editor, Transforms} from 'slate'
+import {ReactEditor, useEditor} from 'slate-react'
 import CodeMirror from 'codemirror'
 import {freestyle} from '../styles'
 
-freestyle.registerRule('.CodeMirror', {
-  'pointer-events': 'auto',
-  'border-radius': '3px',
-  'box-shadow': '0 1px 3px rgba(0,0,0,0.2) !important',
-  'height': 'auto',
-  'font-family': 'Iosevka Term Slab',
-  'z-index': 2,
+const codeMirror = freestyle.registerStyle({
+  '.CodeMirror': {
+    'border-radius': '2px',
+    'height': 'auto',
+  }
 })
 
 const langMapping = {
@@ -147,5 +147,71 @@ const langMapping = {
 export const modeByLang = (lang: string) =>
   langMapping[lang] ? langMapping[lang] : lang
 
-export const fromTextArea = (textarea: HTMLTextAreaElement, options = {}) =>
-  CodeMirror.fromTextArea(textarea, options)
+export default ({attributes, children, element}) => {
+  const codeRef = useRef(null)
+  const editor = useEditor()
+  const value = useRef(element.value ?? '')
+
+  const OnChange = (cm) => {
+    const newValue = cm.getValue()
+    const at = ReactEditor.findPath(editor, element)
+    Transforms.setNodes(editor, {value: newValue}, {at})
+    value.current = newValue
+  }
+
+  const OnKeyDown = (cm, event) => {
+    const cur = cm.getCursor()
+    const at = ReactEditor.findPath(editor, element)
+
+    if (event.key === 'Backspace' && value.current === '') {
+      Transforms.removeNodes(editor, {at})
+      ReactEditor.focus(editor)
+      return
+    }
+
+    if (event.key === 'ArrowUp' && cur.line === 0) {
+      if (!Editor.previous(editor, {at})) {
+        Transforms.insertNodes(editor, {children: [{text: ''}]}, {at: [0]})
+      }
+
+      Transforms.move(editor, {unit: 'line', reverse: true})
+      ReactEditor.focus(editor)
+    } else if (event.key === 'ArrowDown' && cur.line === cm.lineCount()-1) {
+      if (!Editor.next(editor, {at})) {
+        Transforms.insertNodes(editor, {children: [{text: ''}]}, {at: [at[0]+1]})
+      }
+      Transforms.move(editor, {unit: 'line'})
+      ReactEditor.focus(editor)
+    }
+  }
+
+  useEffect(() => {
+    const cm = new CodeMirror(codeRef.current, {
+      value: value.current,
+      inputStyle: 'contenteditable',
+      mode: modeByLang(element.lang ?? 'javascript'),
+      theme: 'dracula',
+    })
+
+    cm.on('change', OnChange)
+    cm.on('keydown', OnKeyDown)
+
+    if (element.focus) {
+      const at = ReactEditor.findPath(editor, element)
+      Transforms.setNodes(editor, {focus: false}, {at})
+      setTimeout(() => cm.focus(), 0)
+    }
+
+    return () => {
+      cm.off('change', OnChange)
+      cm.off('keydown', OnKeyDown)
+    }
+  }, [])
+
+  return (
+    <div {...attributes} contentEditable={false}>
+      <div ref={codeRef} className={codeMirror} />
+      {children}
+    </div>
+  )
+}
