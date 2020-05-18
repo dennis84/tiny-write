@@ -1,4 +1,4 @@
-import React, {ReactNode} from 'react'
+import React, {MouseEvent, SyntheticEvent, ReactNode} from 'react'
 import {freestyle} from '../styles'
 
 const container = freestyle.registerStyle({
@@ -119,6 +119,11 @@ const footer = freestyle.registerStyle({
   },
 })
 
+interface ModalProps {
+  onBackgroundClick?: (e: SyntheticEvent) => void;
+  children?: ReactNode;
+}
+
 interface Props {
   children?: ReactNode;
 }
@@ -135,8 +140,16 @@ export const ModalFooter = (props: Props) => (
   <div className={footer}>{props.children}</div>
 )
 
-export const Modal = (props: Props) => (
-  <div className={container}>
-    <div className={content}>{props.children}</div>
-  </div>
-)
+export const Modal = (props: ModalProps) => {
+  const onBackgroundClick = (e: MouseEvent<HTMLElement>) => {
+    if (props.onBackgroundClick && e.target === e.currentTarget) {
+      props.onBackgroundClick(e);
+    }
+  };
+
+  return (
+    <div className={container} onClick={onBackgroundClick}>
+      <div className={content}>{props.children}</div>
+    </div>
+  )
+}

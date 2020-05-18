@@ -26,6 +26,7 @@ export const button = {
   'border-radius': '30px',
   'border': '0',
   'font-size': '18px',
+  'font-family': 'Roboto',
   'cursor': 'pointer',
   'display': 'inline-flex',
   'justify-content': 'center',

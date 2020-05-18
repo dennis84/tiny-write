@@ -7,6 +7,7 @@ import {freestyle, rgb, rgba} from '../styles'
 import {background, color, color2, font} from '../config'
 import {OnTextChange, useDispatch} from '../reducer'
 import CodeEditor from './CodeEditor'
+import Link from './Link'
 
 const container = (config: Config) => freestyle.registerStyle({
   'width': '100%',
@@ -102,7 +103,11 @@ const withEmbeds = editor => {
 }
 
 const withShortcuts = (editor) => {
-  const {deleteBackward, insertText} = editor
+  const {deleteBackward, insertText, isInline} = editor
+
+  editor.isInline = element => {
+    return element.type === 'link' ? true : isInline(element)
+  }
 
   editor.insertText = (text) => {
     const {selection} = editor
@@ -143,6 +148,24 @@ const withShortcuts = (editor) => {
         Editor.addMark(editor, 'code', true)
         Transforms.collapse(editor)
         Transforms.insertNodes(editor, [{text: ' '}])
+        return
+      }
+
+      const linkMatch = beforeText.match(/\[(.+?)\]\((.+?)\)/)
+      if (linkMatch) {
+        const [match, title, url] = linkMatch
+        const startIndex = anchor.offset - match.length
+        Transforms.select(editor, {
+          anchor,
+          focus: {...anchor, offset: startIndex}
+        })
+        Transforms.delete(editor)
+        Transforms.insertNodes(editor, {
+          type: 'link',
+          url,
+          children: [{text: title}]
+        })
+
         return
       }
 
@@ -224,12 +247,12 @@ const Element = ({ attributes, children, element }) => {
       return <h6 {...attributes}>{children}</h6>
     case 'list-item':
       return <li {...attributes}>{children}</li>
+    case 'link':
+      return <Link attributes={attributes} element={element} children={children} />
     case 'code':
       return <code {...attributes}>{children}</code>
     case 'code-block':
-      return (
-        <CodeEditor attributes={attributes} children={children} element={element} />
-      )
+      return <CodeEditor attributes={attributes} children={children} element={element} />
     default:
       return <p {...attributes}>{children}</p>
   }
