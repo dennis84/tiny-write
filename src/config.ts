@@ -25,6 +25,10 @@ export const fonts: {[key: string]: Font} = {
     label: 'IBM Plex Serif',
     src: './IBMPlexSerif-Regular.ttf',
   },
+  'jetbrains-mono': {
+    label: 'JetBrains Mono',
+    src: './JetBrainsMono-Regular.woff2',
+  },
   'iosevka-term-slab': {
     label: 'Iosevka Term Slab',
     src: './iosevka-term-slab-regular.woff2',

@@ -127,6 +127,7 @@ import {freestyle} from '../styles'
 
 const codeMirror = freestyle.registerStyle({
   '.CodeMirror': {
+    'font-family': 'JetBrains Mono',
     'border-radius': '2px',
     'height': 'auto',
   }
@@ -151,16 +152,17 @@ export default ({attributes, children, element}) => {
   const codeRef = useRef(null)
   const editor = useEditor()
   const value = useRef(element.value ?? '')
+  const cm = useRef(null)
 
-  const OnChange = (cm) => {
-    const newValue = cm.getValue()
+  const OnChange = (c) => {
+    const newValue = c.getValue()
     const at = ReactEditor.findPath(editor, element)
     Transforms.setNodes(editor, {value: newValue}, {at})
     value.current = newValue
   }
 
-  const OnKeyDown = (cm, event) => {
-    const cur = cm.getCursor()
+  const OnKeyDown = (c, event) => {
+    const cur = c.getCursor()
     const at = ReactEditor.findPath(editor, element)
 
     if (event.key === 'Backspace' && value.current === '') {
@@ -176,7 +178,7 @@ export default ({attributes, children, element}) => {
 
       Transforms.move(editor, {unit: 'line', reverse: true})
       ReactEditor.focus(editor)
-    } else if (event.key === 'ArrowDown' && cur.line === cm.lineCount()-1) {
+    } else if (event.key === 'ArrowDown' && cur.line === c.lineCount()-1) {
       if (!Editor.next(editor, {at})) {
         Transforms.insertNodes(editor, {children: [{text: ''}]}, {at: [at[0]+1]})
       }
@@ -186,25 +188,25 @@ export default ({attributes, children, element}) => {
   }
 
   useEffect(() => {
-    const cm = new CodeMirror(codeRef.current, {
+    cm.current = new CodeMirror(codeRef.current, {
       value: value.current,
       inputStyle: 'contenteditable',
       mode: modeByLang(element.lang ?? 'javascript'),
-      theme: 'dracula',
+      theme: element.theme ?? 'dracula',
     })
 
-    cm.on('change', OnChange)
-    cm.on('keydown', OnKeyDown)
+    cm.current.on('change', OnChange)
+    cm.current.on('keydown', OnKeyDown)
 
     if (element.focus) {
       const at = ReactEditor.findPath(editor, element)
       Transforms.setNodes(editor, {focus: false}, {at})
-      setTimeout(() => cm.focus(), 0)
+      setTimeout(() => cm.current.focus(), 0)
     }
 
     return () => {
-      cm.off('change', OnChange)
-      cm.off('keydown', OnKeyDown)
+      cm.current.off('change', OnChange)
+      cm.current.off('keydown', OnKeyDown)
     }
   }, [])
 

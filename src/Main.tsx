@@ -32,11 +32,11 @@ export default (props: Props) => {
 
   useEffect(() => {
     save(state)
+    updateMenu(state, dispatch)
   }, [state])
 
   useEffect(() => {
     insertCss(freestyle.getStyles())
-    updateMenu(state, dispatch)
   }, [state.config, state.files])
 
   useEffect(() => {

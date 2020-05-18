@@ -15,7 +15,8 @@ export const updateMenu = (state: State, dispatch: any) => {
 }
 
 export const createMenu = (state: State, dispatch: any) => {
-  const remote = (window as any).require('electron').remote
+  const electron = (window as any).require('electron')
+  const remote = electron.remote
   const {MenuItem} = remote
   const toText = (text: Node[]) => text.map((node) => Node.string(node)).join('\n')
 
@@ -72,6 +73,47 @@ export const createMenu = (state: State, dispatch: any) => {
         new MenuItem({type: 'separator'}),
         new MenuItem({label: 'Cut', accelerator: 'CmdOrCtrl+X', selector: 'cut:'}),
         new MenuItem({label: 'Copy', accelerator: 'CmdOrCtrl+C', selector: 'copy:'}),
+        new MenuItem({
+          label: 'Copy All as Markdown',
+          click: () => {
+            const serialize = (children, del = '\n') => {
+              return children.map((node, i) => {
+                if (node.type === 'block-quote') {
+                  return '> ' + Node.string(node)
+                } else if (node.type === 'heading-one') {
+                  return '# ' + Node.string(node)
+                } else if (node.type === 'heading-two') {
+                  return '## ' + Node.string(node)
+                } else if (node.type === 'heading-three') {
+                  return '### ' + Node.string(node)
+                } else if (node.type === 'heading-four') {
+                  return '#### ' + Node.string(node)
+                } else if (node.type === 'heading-five') {
+                  return '##### ' + Node.string(node)
+                } else if (node.type === 'heading-six') {
+                  return '###### ' + Node.string(node)
+                } else if (node.type === 'list-item') {
+                  const end = children[i+1]?.type !== 'list-item'
+                  return `- ${serialize(node.children, '')}${end ? '\n' : ''}`
+                } else if (node.type === 'link') {
+                  return `[${Node.string(node)}](${node.url})`
+                } else if (node.type === 'code' || node.code) {
+                  return '`' + Node.string(node) + '`'
+                } else if (node.type === 'code-block') {
+                  return '```' + node.lang + '\n' + node.value + '\n```'
+                } else if (node.children?.length) {
+                  return serialize(node.children, '')
+                }
+
+                return Node.string(node)
+              }).join(del)
+            }
+
+            const text = serialize(state.text)
+            electron.clipboard.writeText(text, 'selection')
+          }
+        }),
+        new MenuItem({type: 'separator'}),
         new MenuItem({label: 'Paste', accelerator: 'CmdOrCtrl+V', selector: 'paste:'}),
         new MenuItem({label: 'Paste and match style', accelerator: 'Shift+CmdOrCtrl+V', selector: 'pasteAndMatchStyle:'}),
         new MenuItem({label: 'Select All', accelerator: 'CmdOrCtrl+A', selector: 'selectAll:'}),

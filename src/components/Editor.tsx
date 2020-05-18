@@ -77,7 +77,7 @@ const container = (config: Config) => freestyle.registerStyle({
 interface Props {
   text: Node[];
   files: File[];
-  lastModified: Date,
+  lastModified: Date;
   config: Config;
 }
 
@@ -94,16 +94,11 @@ const SHORTCUTS = {
   '######': 'heading-six',
 }
 
-const withEmbeds = editor => {
-  const {isVoid} = editor
+const withCustoms = (editor) => {
+  const {deleteBackward, insertText, isVoid, isInline} = editor
+
   editor.isVoid = (element) =>
     element.type === 'code-block' ? true : isVoid(element)
-
-  return editor
-}
-
-const withShortcuts = (editor) => {
-  const {deleteBackward, insertText, isInline} = editor
 
   editor.isInline = element => {
     return element.type === 'link' ? true : isInline(element)
@@ -285,7 +280,7 @@ export default (props: Props) => {
   const renderElement = useCallback(props => <Element {...props} />, [])
   const renderLeaf = useCallback(props => <Leaf {...props} />, [])
   const editor = useMemo(() => {
-    return withEmbeds(withShortcuts(withReact(withHistory(createEditor()))))
+    return withCustoms(withReact(withHistory(createEditor())))
   }, [])
 
   const OnChange = (value: any) => {
