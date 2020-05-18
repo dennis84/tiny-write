@@ -1,4 +1,4 @@
-import React, {useEffect, useReducer} from 'react'
+import React, {useEffect, useReducer, useRef} from 'react'
 import {freestyle, rgb} from './styles'
 import {background, font} from './config'
 import {insertCss} from 'insert-css'
@@ -25,6 +25,7 @@ interface Props {
 
 export default (props: Props) => {
   const [state, dispatch] = useReducer(reducer, props.initialState);
+  const containerRef = useRef(null)
 
   useEffect(() => {
     dispatch(UpdateState(read()))
@@ -36,16 +37,14 @@ export default (props: Props) => {
   }, [state])
 
   useEffect(() => {
-    insertCss(freestyle.getStyles())
+    const style = containerRef.current?.querySelector('style')
+    if (style) style.innerHTML = ''
+    insertCss(freestyle.getStyles(), {container: containerRef.current})
   }, [state.config, state.files])
-
-  useEffect(() => {
-    insertCss(freestyle.getStyles())
-  }, [state.config])
 
   return (
     <ReducerContext.Provider value={dispatch}>
-      <div className={container(state.config)}>
+      <div className={container(state.config)} ref={containerRef}>
         <Editor
           text={state.text}
           files={state.files}

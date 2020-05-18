@@ -130,6 +130,7 @@ const codeMirror = freestyle.registerStyle({
     'font-family': 'JetBrains Mono',
     'border-radius': '2px',
     'height': 'auto',
+    'box-shadow': '0 0 0 2px rgba(0,0,0,0.1)',
   }
 })
 
@@ -209,6 +210,10 @@ export default ({attributes, children, element}) => {
       cm.current.off('keydown', OnKeyDown)
     }
   }, [])
+
+  useEffect(() => {
+    cm.current.setOption('theme', element.theme)
+  }, [element.theme])
 
   return (
     <div {...attributes} contentEditable={false}>

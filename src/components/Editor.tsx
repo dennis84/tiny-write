@@ -1,10 +1,10 @@
-import React, {useLayoutEffect, useCallback, useRef, useMemo} from 'react'
+import React, {useEffect, useLayoutEffect, useCallback, useRef, useMemo} from 'react'
 import {Slate, Editable, withReact} from 'slate-react'
 import {Editor, Node, Point, Range, Transforms, createEditor} from 'slate'
 import {withHistory} from 'slate-history'
 import {Config, File} from '..'
 import {freestyle, rgb, rgba} from '../styles'
-import {background, color, color2, font} from '../config'
+import {background, color, color2, codeTheme, font} from '../config'
 import {OnTextChange, useDispatch} from '../reducer'
 import CodeEditor from './CodeEditor'
 import Link from './Link'
@@ -94,7 +94,7 @@ const SHORTCUTS = {
   '######': 'heading-six',
 }
 
-const withCustoms = (editor) => {
+const withCustoms = (config, editor) => {
   const {deleteBackward, insertText, isVoid, isInline} = editor
 
   editor.isVoid = (element) =>
@@ -122,8 +122,13 @@ const withCustoms = (editor) => {
         const [,lang] = codeBlockMatch
         Transforms.select(editor, range)
         Transforms.delete(editor)
-        Transforms.setNodes(editor, {type: 'code-block', lang, focus: true}, {
-          match: n => Editor.isBlock(editor, n)
+        Transforms.setNodes(editor, {
+          type: 'code-block',
+          lang,
+          focus: true,
+          theme: codeTheme(config),
+        }, {
+          match: n => Editor.isBlock(editor, n),
         })
 
         return
@@ -280,7 +285,7 @@ export default (props: Props) => {
   const renderElement = useCallback(props => <Element {...props} />, [])
   const renderLeaf = useCallback(props => <Leaf {...props} />, [])
   const editor = useMemo(() => {
-    return withCustoms(withReact(withHistory(createEditor())))
+    return withCustoms(props.config, withReact(withHistory(createEditor())))
   }, [])
 
   const OnChange = (value: any) => {
@@ -308,6 +313,15 @@ export default (props: Props) => {
       Transforms.select(editor, {path: [0], offset: 0})
     }
   }, [props.files])
+
+  useEffect(() => {
+    props.text.forEach((node, i) => {
+      Transforms.setNodes(editor, {theme: codeTheme(props.config)}, {
+        match: (n) => n.type === 'code-block',
+        at: [i],
+      })
+    })
+  }, [props.config])
 
   return (
     <div className={container(props.config)} ref={containerRef}>
