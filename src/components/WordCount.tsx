@@ -1,16 +1,17 @@
 import React from 'react'
 import {Node} from 'slate'
-import {freestyle, rgba} from '../styles'
+import styled from '@emotion/styled'
+import {rgba} from '../styles'
 import {color} from '../config'
 import {Config} from '..'
 
-const text = (config: Config) => freestyle.registerStyle({
-  'grid-column-start': '2',
-  'font-size': '20px',
-  'color': rgba(color(config), 0.5),
-  'pointer-events': 'none',
-  'user-select': 'none',
-})
+const Text = styled.span<any>`
+  grid-column-start: 2;
+  font-size: 20px;
+  color: ${props => rgba(color(props.config), 0.5)};
+  pointer-events: none;
+  user-select: none;
+`
 
 interface Props {
   text: Node[];
@@ -23,6 +24,6 @@ export default (props: Props) => {
     .reduce((a, b) => a + b, 0)
 
   return (
-    <span className={text(props.config)}>{count} words</span>
+    <Text config={props.config}>{count} words</Text>
   )
 }

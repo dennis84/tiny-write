@@ -1,21 +1,22 @@
 import React from 'react'
+import styled from '@emotion/styled'
 import {Notification} from '..'
 import {Clean, useDispatch} from '../reducer'
 import {Modal, ModalBody, ModalHeader, ModalFooter} from './Modal'
-import {freestyle, buttonPrimary} from '../styles'
+import {ButtonPrimary} from './Button'
 
 interface Props {
   notification: Notification;
 }
 
-const code = freestyle.registerStyle({
-  'white-space': 'pre-wrap',
-  'word-wrap': 'break-word',
-  'background': '#fafafa',
-  'border': '1px solid #ccc',
-  'border-radius': '2px',
-  'padding': '10px',
-});
+const Pre = styled.pre`
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  background: #fafafa;
+  border: 1px solid #ccc;
+  border-radius: 2px;
+  padding: 10px;
+`
 
 export default (props: Props) => {
   const dispatch = useDispatch()
@@ -30,16 +31,12 @@ export default (props: Props) => {
           old version. To fix this, you can copy important notes from below,
           clean the state and paste it again.
         </p>
-        <pre className={code}>
+        <Pre>
           <code>{JSON.stringify(props.notification.props)}</code>
-        </pre>
+        </Pre>
       </ModalBody>
       <ModalFooter>
-        <button
-          className={buttonPrimary}
-          onClick={onClick}>
-          Clean
-        </button>
+        <ButtonPrimary onClick={onClick}>Clean</ButtonPrimary>
       </ModalFooter>
     </Modal>
   )

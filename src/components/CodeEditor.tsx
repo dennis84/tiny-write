@@ -123,16 +123,16 @@ import React, {useEffect, useRef} from 'react'
 import {Editor, Transforms} from 'slate'
 import {ReactEditor, useEditor} from 'slate-react'
 import CodeMirror from 'codemirror'
-import {freestyle} from '../styles'
+import styled from '@emotion/styled'
 
-const codeMirror = freestyle.registerStyle({
-  '.CodeMirror': {
-    'font-family': 'JetBrains Mono',
-    'border-radius': '2px',
-    'height': 'auto',
-    'box-shadow': '0 0 0 2px rgba(0,0,0,0.1)',
+const Container = styled.div`
+  .CodeMirror {
+    font-family: 'JetBrains Mono';
+    border-radius: 2px;
+    height: auto;
+    box-shadow: inset 0 1px 4px rgba(0,0,0,.2);
   }
-})
+`
 
 const langMapping = {
   'c': 'text/x-csrc',
@@ -217,7 +217,7 @@ export default ({attributes, children, element}) => {
 
   return (
     <div {...attributes} contentEditable={false}>
-      <div ref={codeRef} className={codeMirror} />
+      <Container ref={codeRef} />
       {children}
     </div>
   )

@@ -2,77 +2,78 @@ import React, {useEffect, useLayoutEffect, useCallback, useRef, useMemo} from 'r
 import {Slate, Editable, withReact} from 'slate-react'
 import {Editor, Node, Point, Range, Transforms, createEditor} from 'slate'
 import {withHistory} from 'slate-history'
+import styled from '@emotion/styled'
 import {Config, File} from '..'
-import {freestyle, rgb, rgba} from '../styles'
+import {rgb, rgba} from '../styles'
 import {background, color, color2, codeTheme, font} from '../config'
 import {OnTextChange, useDispatch} from '../reducer'
 import CodeEditor from './CodeEditor'
 import Link from './Link'
 
-const container = (config: Config) => freestyle.registerStyle({
-  'width': '100%',
-  'height': '100%',
-  'min-height': 'calc(100vh - 50px)',
-  'max-height': 'calc(100vh - 50px)',
-  'overflow-y': 'auto',
-  'padding': '0 50px',
-  'display': 'flex',
-  'justify-content': 'center',
-  '&:before': {
-    'content': '""',
-    'height': '50px',
-    'width': '100%',
-    'background': `linear-gradient(to bottom, ${rgba(background(config), 1)}, ${rgba(background(config), 0)})`,
-    'position': 'fixed',
-    'z-index': '1',
-    'pointer-events': 'none',
-  },
-  '&:after': {
-    'content': '""',
-    'height': '20px',
-    'width': '100%',
-    'background': `linear-gradient(to top, ${rgba(background(config), 1)}, ${rgba(background(config), 0)})`,
-    'position': 'fixed',
-    'z-index': '1',
-    'bottom': '50px',
-    'pointer-events': 'none',
-  },
-  '> [contenteditable]': {
-    'min-height': 'calc(100% - 100px)',
-    'height': 'fit-content',
-    'width': '100%',
-    'max-width': '800px',
-    'font-size': '24px',
-    'font-family': font(config),
-    'color': rgb(color(config)),
-    'margin-top': '50px',
-    'padding-bottom': '200px',
-    'line-height': '160%',
-    'outline': 'none',
-    'background': 'transparent',
-    '-webkit-app-region': 'no-drag',
-    '&::-webkit-scrollbar': {
-      'display': 'none',
-    },
-    'p': {
-      'margin': '0',
-    },
-    'blockquote': {
-      'border-left': `10px solid ${rgba(color(config), 0.2)}`,
-      'margin': '0',
-      'padding-left': '20px',
-    },
-    'code': {
-      'border': `1px solid ${rgba(color(config), 0.5)}`,
-      'background': rgba(color(config), 0.1),
-      'border-radius': '2px',
-      'padding': '2px',
-    },
-    'a': {
-      'color': rgba(color2(config), 1),
+const Container = styled.div<any>`
+  width: 100%;
+  height: 100%;
+  min-height: calc(100vh - 50px);
+  max-height: calc(100vh - 50px);
+  overflow-y: auto;
+  padding: 0 50px;
+  display: flex;
+  justify-content: center;
+  &:before {
+    content: "";
+    height: 50px;
+    width: 100%;
+    background: linear-gradient(to bottom, ${props => rgba(background(props.config), 1)}, ${props => rgba(background(props.config), 0)});
+    position: fixed;
+    z-index: 1;
+    pointer-events: none;
+  }
+  &:after {
+    content: "";
+    height: 20px;
+    width: 100%;
+    background: linear-gradient(to top, ${props => rgba(background(props.config), 1)}, ${props => rgba(background(props.config), 0)});
+    position: fixed;
+    z-index: 1;
+    bottom: 50px;
+    pointer-events: none;
+  }
+  > [contenteditable] {
+    min-height: calc(100% - 100px);
+    height: fit-content;
+    width: 100%;
+    max-width: 800px;
+    font-size: 24px;
+    font-family: ${props => font(props.config)};
+    color: ${props => rgb(color(props.config))};
+    margin-top: 50px;
+    padding-bottom: 200px;
+    line-height: 160%;
+    outline: none;
+    background: transparent;
+    -webkit-app-region: no-drag;
+    &::-webkit-scrollbar {
+      display: none;
+    }
+    p {
+      margin: 0;
+    }
+    blockquote {
+      border-left: 10px solid ${props => rgba(color(props.config), 0.2)};
+      margin: 0;
+      padding-left: 20px;
+    }
+    code {
+      border: 1px solid ${props => rgba(color(props.config), 0.5)};
+      background: ${props => rgba(color(props.config), 0.1)};
+      border-radius: 2px;
+      padding: 2px;
+    }
+    a {
+      color: ${props => rgba(color2(props.config), 1)};
     }
   }
-})
+`
 
 interface Props {
   text: Node[];
@@ -324,9 +325,8 @@ export default (props: Props) => {
   }, [props.config])
 
   return (
-    <div className={container(props.config)} ref={containerRef}>
+    <Container config={props.config} ref={containerRef}>
       <Slate
-        children={0}
         editor={editor}
         value={props.text}
         onChange={OnChange}>
@@ -339,6 +339,6 @@ export default (props: Props) => {
           autoFocus
         />
       </Slate>
-    </div>
+    </Container>
   )
 }

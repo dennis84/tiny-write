@@ -155,6 +155,7 @@ export const createMenu = (state: State, dispatch: any) => {
           label: 'Code',
           submenu: Object.entries(codeThemes).map(([key, value]) => new MenuItem({
             label: value.label,
+            type: 'checkbox',
             checked: key === state.config.codeTheme,
             click: () => {
               dispatch(ChangeConfig({...state.config, codeTheme: key}))

@@ -1,21 +1,21 @@
 import React from 'react'
 import {Node} from 'slate'
-import {freestyle} from '../styles'
+import styled from '@emotion/styled'
 import {Config} from '..'
 import LastModified from './LastModified'
 import WordCount from './WordCount'
 
-const text = (config: Config) => freestyle.registerStyle({
-  'height': '50px',
-  'width': '100%',
-  'display': 'grid',
-  'grid-template-columns': '1fr 1fr 1fr',
-  'justify-items': 'center',
-  'align-items': 'center',
-  'position': 'absolute',
-  'bottom': '0',
-  'padding': '0 20px',
-})
+const StatusLine = styled.div`
+  height: 50px;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  justify-items: center;
+  align-items: center;
+  position: absolute;
+  bottom: 0;
+  padding: 0 20px;
+`
 
 interface Props {
   text: Node[];
@@ -24,8 +24,8 @@ interface Props {
 }
 
 export default (props: Props) => (
-  <div className={text(props.config)}>
+  <StatusLine>
     <WordCount text={props.text} config={props.config} />
     <LastModified lastModified={props.lastModified} config={props.config} />
-  </div>
+  </StatusLine>
 )

@@ -1,16 +1,17 @@
 import React from 'react'
 import dayjs from 'dayjs'
-import {freestyle, rgba} from '../styles'
+import styled from '@emotion/styled'
+import {rgba} from '../styles'
 import {color} from '../config'
 import {Config} from '..'
 
-const text = (config: Config) => freestyle.registerStyle({
-  'font-size': '12px',
-  'color': rgba(color(config), 0.5),
-  'pointer-events': 'none',
-  'user-select': 'none',
-  'justify-self': 'flex-end',
-})
+const Text = styled.span<any>`
+  font-size: 12px;
+  color: ${props => rgba(color(props.config), 0.5)};
+  pointer-events: none;
+  user-select: none;
+  justify-self: flex-end;
+`
 
 interface Props {
   lastModified: Date;
@@ -31,5 +32,5 @@ const format = (date: Date) => {
 }
 
 export default (props: Props) => (
-  <span className={text(props.config)}>Edited {format(props.lastModified)}</span>
+  <Text config={props.config}>Edited {format(props.lastModified)}</Text>
 )
