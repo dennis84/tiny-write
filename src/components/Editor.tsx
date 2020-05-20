@@ -304,7 +304,7 @@ export default (props: Props) => {
       Transforms.insertNodes(editor, {text: ' '})
     }
 
-    if (!next && isEnd) {
+    if (!next && isEnd && event.key.length === 1) {
       containerRef.current.scrollTop = containerRef.current.scrollHeight
     }
   }
@@ -324,6 +324,13 @@ export default (props: Props) => {
     })
   }, [props.config])
 
+  const OnCopy = (e) => {
+    const [node] = Editor.node(editor, editor.selection)
+    if (node.type === 'code-block') {
+      event.preventDefault()
+    }
+  }
+
   return (
     <Container config={props.config} ref={containerRef}>
       <Slate
@@ -335,6 +342,7 @@ export default (props: Props) => {
           renderLeaf={renderLeaf}
           placeholder="Start typing ..."
           onKeyDown={OnKeyDown}
+          onCopy={OnCopy}
           spellCheck
           autoFocus
         />
