@@ -5,7 +5,7 @@
     "appId": "com.github.dennis84.tinywrite",
     "files": [
       "index.js",
-      "dist/*"
+      "dist/**"
     ],
     "mac": {
       "category": "public.app-category.utilities"
@@ -48,7 +48,7 @@
     "dist": "npm run build && npx electron-builder"
   },
   "staticFiles": {
-    "staticPath": "fonts",
-    "watcherGlob": "fonts/**"
+    "staticPath": "assets",
+    "watcherGlob": "assets/**"
   }
 }
