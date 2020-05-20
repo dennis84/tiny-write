@@ -1,6 +1,6 @@
 {
   "name": "TinyWrite",
-  "version": "0.4.1",
+  "version": "0.4.0",
   "build": {
     "appId": "com.github.dennis84.tinywrite",
     "files": [
@@ -17,7 +17,7 @@
   "dependencies": {
     "@emotion/core": "^10.0.28",
     "@emotion/styled": "^10.0.27",
-    "codemirror": "^5.53.2",
+    "codemirror": "^5.54.0",
     "dayjs": "^1.8.27",
     "electron-updater": "^4.3.1",
     "emotion": "^10.0.27",
@@ -35,10 +35,10 @@
   "devDependencies": {
     "@types/react": "^16.9.35",
     "cssnano": "^4.1.10",
-    "electron": "^8.3.0",
+    "electron": "^9.0.0",
     "parcel-plugin-static-files-copy": "^2.3.1",
     "tslib": "^2.0.0",
-    "typescript": "^3.9.2"
+    "typescript": "^3.9.3"
   },
   "scripts": {
     "web": "npx parcel index.html",
