@@ -5,7 +5,7 @@ import {rgb} from './styles'
 import {background, font, fonts} from './config'
 import {State} from '.'
 import {save, read} from './store'
-import {updateMenu} from './menu'
+import {updateRemote} from './remote'
 import {UpdateState, ReducerContext, reducer} from './reducer'
 import Editor from './components/Editor'
 import StatusLine from './components/StatusLine'
@@ -32,8 +32,9 @@ export default (props: Props) => {
   }, [])
 
   useEffect(() => {
+    if (state.loading) return
     save(state)
-    updateMenu(state, dispatch)
+    updateRemote(state, dispatch)
   }, [state])
 
   const fontsStyles = Object.entries(fonts)

@@ -13,8 +13,8 @@ function createWindow() {
   win = new BrowserWindow({
     title: 'TinyWrite',
     alwaysOnTop: true,
-    width: 600,
-    height: 600,
+    width: 720,
+    height: 720,
     frame: false,
     webPreferences: {
       nodeIntegration: true,

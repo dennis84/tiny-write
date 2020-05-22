@@ -89,6 +89,12 @@ export const themes: {[key: string]: Theme} = {
     color: '144, 166, 166',
     color2: '254, 87, 146',
   },
+  'soft-era': {
+    label: 'Soft Era',
+    background: '249, 245, 245',
+    color: '186, 152, 156',
+    color2: '184, 189, 232',
+  },
 }
 
 export const codeThemes = {

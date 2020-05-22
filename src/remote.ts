@@ -1,17 +1,21 @@
 import {State} from '.'
 import {Node} from 'slate'
-import {ChangeConfig, Close, Open, New} from './reducer'
+import {ChangeConfig, Close, Open, New, ToggleAlwaysOnTop} from './reducer'
 import {themes, fonts, codeThemes} from './config'
 
 const userAgent = window.navigator.userAgent.toLowerCase()
 const isElectron = userAgent.indexOf(' electron/') > -1
 
-export const updateMenu = (state: State, dispatch: any) => {
+export const updateRemote = (state: State, dispatch: any) => {
   if (!isElectron) return
-  const {app, Menu} = window.require('electron').remote
+  const remote = window.require('electron').remote
+  const {app, Menu} = remote
+
   const root = new Menu()
   createMenu(state, dispatch).forEach(root.append)
   app.applicationMenu = root
+
+  remote.getCurrentWindow().setAlwaysOnTop(state.alwaysOnTop)
 }
 
 export const createMenu = (state: State, dispatch: any) => {
@@ -122,6 +126,12 @@ export const createMenu = (state: State, dispatch: any) => {
     new MenuItem({
       label: 'View',
       submenu: [
+        new MenuItem({
+          label: 'Always on Top',
+          type: 'checkbox',
+          checked: state.alwaysOnTop,
+          click: () => dispatch(ToggleAlwaysOnTop),
+        }),
         new MenuItem({
           label: 'Toggle Fullscreen',
           accelerator: 'Cmd+Return',

@@ -20,6 +20,8 @@ export interface State {
   files: File[];
   config: Config;
   notification?: Notification;
+  loading: boolean;
+  alwaysOnTop: boolean;
 }
 
 export interface File {
@@ -31,6 +33,8 @@ export const newState = (): State => ({
   text: [{children: [{text: ''}]}],
   lastModified: new Date,
   files: [],
+  loading: true,
+  alwaysOnTop: true,
   config: {
     theme: 'light',
     codeTheme: 'dracula',

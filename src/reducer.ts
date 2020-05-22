@@ -35,7 +35,7 @@ export const UpdateState = (data: any) => (state: State) => {
     return Notify({title: 'Config is invalid', props: config})(state)
   }
 
-  const newState = {...state, ...parsed, config}
+  const newState = {...state, ...parsed, config, loading: false}
   if (parsed.lastModified) newState.lastModified = new Date(parsed.lastModified)
   if (parsed.files) {
     for (const file of parsed.files) {
@@ -119,6 +119,11 @@ export const Close = (state: State) => {
     lastModified: next.lastModified,
   }
 }
+
+export const ToggleAlwaysOnTop = (state) => ({
+  ...state,
+  alwaysOnTop: !state.alwaysOnTop,
+});
 
 type Action = (state: State) => State;
 
