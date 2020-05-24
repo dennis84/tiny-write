@@ -3,66 +3,96 @@ import {Node} from 'slate'
 import {State, File, Config, Notification, newState} from '.'
 
 const isState = (x: any) =>
-  Array.isArray(x.text) &&
+  Node.isNodeList(x.text) &&
   x.lastModified instanceof Date &&
   Array.isArray(x.files)
 
 const isFile = (x: any): boolean =>
-  Array.isArray(x.text) &&
+  Node.isNodeList(x.text) &&
   x.lastModified instanceof Date
 
 const isConfig = (x: any): boolean =>
-  typeof x.theme === 'string' && typeof x.codeTheme === 'string' &&
+  typeof x.theme === 'string' &&
+  typeof x.codeTheme === 'string' &&
   typeof x.font === 'string'
 
 export const Notify = (notification: Notification) => (state: State) =>
   ({...state, notification})
 
+export const NotificationClose = (state: State) =>
+  ({...state, notification: undefined})
+
 export const Clean = (state: State) => newState()
 
-export const UpdateState = (data: any) => (state: State) => {
+export const Load = (data: any) => (state: State) => {
   let parsed
   try {
     parsed = JSON.parse(data)
   } catch (err) {}
 
   if (!parsed) {
-    return state
+    return {...state, loading: false}
   }
 
   const config = {...state.config, ...parsed.config}
   if (!isConfig(config)) {
-    return Notify({title: 'Config is invalid', props: config})(state)
+    return {
+      ...state,
+      loading: false,
+      notification: {
+        id: 'invalid_config',
+        props: config
+      }
+    }
   }
 
-  const newState = {...state, ...parsed, config, loading: false}
-  if (parsed.lastModified) newState.lastModified = new Date(parsed.lastModified)
+  const newState = {
+    ...state,
+    ...parsed,
+    config,
+    loading: false,
+  }
+
+  if (parsed.lastModified) {
+    newState.lastModified = new Date(parsed.lastModified)
+  }
+
   if (parsed.files) {
     for (const file of parsed.files) {
       file.lastModified = new Date(file.lastModified)
       if (!isFile(file)) {
-        return Notify({title: 'File is invalid', props: file})(state)
+        return {
+          ...state,
+          loading: false,
+          notification: {
+            id: 'invalid_file',
+            props: file,
+          },
+        }
       }
     }
   }
 
   if (!isState(newState)) {
-    return Notify({title: 'State is invalid', props: newState})(state)
+    return {
+      ...state,
+      loading: false,
+      notification: {
+        id: 'invalid_state',
+        props: newState
+      }
+    }
   }
 
   return newState
 }
 
-export const ChangeConfig = (config: Config) => (state: State) =>
+export const UpdateConfig = (config: Config) => (state: State) =>
   ({...state, config: {...state.config, ...config}})
 
-export const OnTextChange = (text: Node[]) => (state: State) => {
-  if (state.text.length === 0) {
-    return state
-  }
-
-  return {...state, text, lastModified: new Date}
-}
+export const UpdateText = (text: Node[]) => (state: State) =>
+  state.text.length === 0 ? state :
+  ({...state, text, lastModified: new Date})
 
 export const New = (state: State) => {
   if (state.text.length === 1 && Node.string(state.text[0]) === '') {

@@ -3,7 +3,7 @@
 # TinyWrite
 
 Just a little writing tool with markdown shortcuts for my Mac that saves every
-change to local storage.
+change to local indexeddb.
 
 ## Install
 

@@ -1,7 +1,6 @@
 import React from 'react'
 import {Node} from 'slate'
 import styled from '@emotion/styled'
-import {Config} from '..'
 import LastModified from './LastModified'
 import WordCount from './WordCount'
 
@@ -20,12 +19,11 @@ const StatusLine = styled.div`
 interface Props {
   text: Node[];
   lastModified: Date;
-  config: Config;
 }
 
 export default (props: Props) => (
   <StatusLine>
-    <WordCount text={props.text} config={props.config} />
-    <LastModified lastModified={props.lastModified} config={props.config} />
+    <WordCount text={props.text} />
+    <LastModified lastModified={props.lastModified} />
   </StatusLine>
 )

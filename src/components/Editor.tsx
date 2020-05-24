@@ -3,11 +3,13 @@ import {Slate, Editable, withReact} from 'slate-react'
 import {Editor, Node, Point, Range, Transforms, createEditor} from 'slate'
 import {withHistory} from 'slate-history'
 import styled from '@emotion/styled'
+import isImage from 'is-image'
 import {Config, File} from '..'
 import {rgb, rgba} from '../styles'
 import {background, color, color2, codeTheme, font} from '../config'
-import {OnTextChange, useDispatch} from '../reducer'
+import {UpdateText, useDispatch} from '../reducer'
 import CodeEditor from './CodeEditor'
+import Image from './Image'
 import Link from './Link'
 
 const Container = styled.div<any>`
@@ -23,7 +25,7 @@ const Container = styled.div<any>`
     content: "";
     height: 50px;
     width: 100%;
-    background: linear-gradient(to bottom, ${props => rgba(background(props.config), 1)}, ${props => rgba(background(props.config), 0)});
+    background: linear-gradient(to bottom, ${props => rgba(background(props.theme), 1)}, ${props => rgba(background(props.theme), 0)});
     position: fixed;
     z-index: 1;
     pointer-events: none;
@@ -32,7 +34,7 @@ const Container = styled.div<any>`
     content: "";
     height: 20px;
     width: 100%;
-    background: linear-gradient(to top, ${props => rgba(background(props.config), 1)}, ${props => rgba(background(props.config), 0)});
+    background: linear-gradient(to top, ${props => rgba(background(props.theme), 1)}, ${props => rgba(background(props.theme), 0)});
     position: fixed;
     z-index: 1;
     bottom: 50px;
@@ -44,8 +46,8 @@ const Container = styled.div<any>`
     width: 100%;
     max-width: 800px;
     font-size: 24px;
-    font-family: ${props => font(props.config)};
-    color: ${props => rgb(color(props.config))};
+    font-family: ${props => font(props.theme)};
+    color: ${props => rgb(color(props.theme))};
     margin-top: 50px;
     padding-bottom: 200px;
     line-height: 160%;
@@ -59,18 +61,18 @@ const Container = styled.div<any>`
       margin: 0;
     }
     blockquote {
-      border-left: 10px solid ${props => rgba(color(props.config), 0.2)};
+      border-left: 10px solid ${props => rgba(color(props.theme), 0.2)};
       margin: 0;
       padding-left: 20px;
     }
     code {
-      border: 1px solid ${props => rgba(color(props.config), 0.5)};
-      background: ${props => rgba(color(props.config), 0.1)};
+      border: 1px solid ${props => rgba(color(props.theme), 0.5)};
+      background: ${props => rgba(color(props.theme), 0.1)};
       border-radius: 2px;
       padding: 2px;
     }
     a {
-      color: ${props => rgba(color2(props.config), 1)};
+      color: ${props => rgba(color2(props.theme), 1)};
     }
   }
 `
@@ -96,14 +98,17 @@ const SHORTCUTS = {
 }
 
 const withCustoms = (config, editor) => {
-  const {deleteBackward, insertText, isVoid, isInline} = editor
+  const {deleteBackward, insertText, isVoid, isInline, insertData} = editor
 
   editor.isVoid = (element) =>
-    element.type === 'code-block' ? true : isVoid(element)
+    element.type === 'code-block' ||
+    element.type === 'image' ?
+    true : isVoid(element)
 
-  editor.isInline = element => {
-    return element.type === 'link' ? true : isInline(element)
-  }
+  editor.isInline = element =>
+    element.type === 'link' ||
+    element.type === 'code' ?
+    true : isInline(element)
 
   editor.insertText = (text) => {
     const {selection} = editor
@@ -137,18 +142,17 @@ const withCustoms = (config, editor) => {
 
       const codeMatch = beforeText.match(/`(.+?)`/)
       if (codeMatch) {
-        const [,code] = codeMatch
-        const startIndex = anchor.offset - code.length
-        Transforms.delete(editor, {at: {...anchor, offset: startIndex - 2}})
-        Transforms.delete(editor, {reverse: true})
+        const [match, code] = codeMatch
+        const startIndex = anchor.offset - match.length
         Transforms.select(editor, {
-          anchor: {...anchor, offset: anchor.offset-2},
-          focus: {...anchor, offset: startIndex-2}
+          anchor,
+          focus: {...anchor, offset: startIndex}
         })
-
-        Editor.addMark(editor, 'code', true)
-        Transforms.collapse(editor)
-        Transforms.insertNodes(editor, [{text: ' '}])
+        Transforms.delete(editor)
+        Transforms.insertNodes(editor, {
+          type: 'code',
+          children: [{text: code}]
+        })
         return
       }
 
@@ -225,7 +229,37 @@ const withCustoms = (config, editor) => {
     }
   }
 
+  editor.insertData = (data) => {
+    const text = data.getData('text/plain')
+    const {files} = data
+
+    if (files && files.length > 0) {
+      for (const file of files) {
+        const reader = new FileReader()
+        const [mime] = file.type.split('/')
+
+        if (mime === 'image') {
+          reader.addEventListener('load', () => {
+            const url = reader.result
+            insertImage(editor, url)
+          })
+
+          reader.readAsDataURL(file)
+        }
+      }
+    } else if (isImage(text)) {
+      insertImage(editor, text)
+    } else {
+      insertData(data)
+    }
+  }
+
   return editor
+}
+
+const insertImage = (editor, url) => {
+  const image = {type: 'image', url, children: [{text: ' '}]}
+  Transforms.insertNodes(editor, image)
 }
 
 const Element = ({ attributes, children, element }) => {
@@ -248,35 +282,17 @@ const Element = ({ attributes, children, element }) => {
       return <h6 {...attributes}>{children}</h6>
     case 'list-item':
       return <li {...attributes}>{children}</li>
+    case 'image':
+      return <Image attributes={attributes} element={element}>{children}</Image>
     case 'link':
-      return <Link attributes={attributes} element={element} children={children} />
+      return <Link attributes={attributes} element={element}>{children}</Link>
     case 'code':
       return <code {...attributes}>{children}</code>
     case 'code-block':
-      return <CodeEditor attributes={attributes} children={children} element={element} />
+      return <CodeEditor attributes={attributes} element={element}>{children}</CodeEditor>
     default:
       return <p {...attributes}>{children}</p>
   }
-}
-
-const Leaf = ({attributes, children, leaf}) => {
-  if (leaf.bold) {
-    children = <strong>{children}</strong>
-  }
-
-  if (leaf.code) {
-    children = <code>{children}</code>
-  }
-
-  if (leaf.italic) {
-    children = <em>{children}</em>
-  }
-
-  if (leaf.underline) {
-    children = <u>{children}</u>
-  }
-
-  return <span {...attributes}>{children}</span>
 }
 
 export default (props: Props) => {
@@ -284,24 +300,27 @@ export default (props: Props) => {
   const containerRef = useRef(null)
 
   const renderElement = useCallback(props => <Element {...props} />, [])
-  const renderLeaf = useCallback(props => <Leaf {...props} />, [])
   const editor = useMemo(() => {
     return withCustoms(props.config, withReact(withHistory(createEditor())))
   }, [])
 
   const OnChange = (value: any) => {
-    dispatch(OnTextChange(value))
+    dispatch(UpdateText(value))
   }
 
   const OnKeyDown = (event) => {
+    if (!editor.selection) return
     const {anchor} = editor.selection
-    const [node] = Editor.node(editor, editor.selection)
     const next = Editor.next(editor, editor.selection)
     const isEnd = anchor && Editor.isEnd(editor, anchor, [anchor.path[0]])
+    const nodeEntry = Editor.above(editor, {
+      match: n => Editor.isBlock(editor, n),
+    })
 
-    if (event.key === 'ArrowRight' && isEnd && (node.type === 'code' || node.code)) {
-      event.preventDefault()
-      Transforms.insertNodes(editor, {text: ' '})
+    if (!next && event.key === 'ArrowDown' && nodeEntry?.[0].type === 'image') {
+      Transforms.insertNodes(editor, {children: [{text: ''}]}, {
+        at: [anchor.path[0]+1],
+      })
     }
 
     if (!next && isEnd && event.key.length === 1) {
@@ -325,24 +344,29 @@ export default (props: Props) => {
   }, [props.config])
 
   const OnCopy = (e) => {
-    const [node] = Editor.node(editor, editor.selection)
+    const [node, path] = Editor.above(editor, {
+      match: n => Editor.isBlock(editor, n),
+    })
+
     if (node.type === 'code-block') {
       event.preventDefault()
+    } else if (node.type === 'image') {
+      Transforms.select(editor, path)
     }
   }
 
   return (
-    <Container config={props.config} ref={containerRef}>
+    <Container ref={containerRef}>
       <Slate
         editor={editor}
         value={props.text}
         onChange={OnChange}>
         <Editable
           renderElement={renderElement}
-          renderLeaf={renderLeaf}
           placeholder="Start typing ..."
           onKeyDown={OnKeyDown}
           onCopy={OnCopy}
+          onCut={OnCopy}
           spellCheck
           autoFocus
         />

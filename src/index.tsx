@@ -10,8 +10,8 @@ export interface Config {
 }
 
 export interface Notification {
-  title: string;
-  props: any,
+  id: string;
+  props?: any,
 }
 
 export interface State {

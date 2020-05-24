@@ -1,12 +1,13 @@
 import React, {useEffect, useReducer} from 'react'
 import {Global} from '@emotion/core'
 import styled from '@emotion/styled'
+import {ThemeProvider} from 'emotion-theming'
 import {rgb} from './styles'
 import {background, font, fonts} from './config'
 import {State} from '.'
-import {save, read} from './store'
+import db from './db'
 import {updateRemote} from './remote'
-import {UpdateState, ReducerContext, reducer} from './reducer'
+import {Load, ReducerContext, reducer} from './reducer'
 import Editor from './components/Editor'
 import StatusLine from './components/StatusLine'
 import Notification from './components/Notification'
@@ -14,10 +15,10 @@ import Notification from './components/Notification'
 const Container = styled.div<any>`
   position: relative;
   display: block;
-  background: ${props => rgb(background(props.config))};
+  background: ${props => rgb(background(props.theme))};
   width: 100%;
   height: 100%;
-  font-family: ${props => font(props.config)};
+  font-family: ${props => font(props.theme)};
 `
 
 interface Props {
@@ -28,13 +29,16 @@ export default (props: Props) => {
   const [state, dispatch] = useReducer(reducer, props.initialState);
 
   useEffect(() => {
-    dispatch(UpdateState(read()))
+    db.get('state').then((data) => {
+      dispatch(Load(data))
+    })
   }, [])
 
   useEffect(() => {
-    if (state.loading) return
-    save(state)
-    updateRemote(state, dispatch)
+    if (state.loading || state.notification) return
+    db.set('state', JSON.stringify(state)).then(() => {
+      updateRemote(state, dispatch)
+    })
   }, [state])
 
   const fontsStyles = Object.entries(fonts)
@@ -48,19 +52,22 @@ export default (props: Props) => {
 
   return (
     <ReducerContext.Provider value={dispatch}>
-      <Global styles={fontsStyles} />
-      <Container config={state.config}>
-        <Editor
-          text={state.text}
-          files={state.files}
-          config={state.config}
-          lastModified={state.lastModified} />
-        <StatusLine
-          text={state.text}
-          lastModified={state.lastModified}
-          config={state.config} />
-        {state.notification ? <Notification notification={state.notification} /> : ''}
-      </Container>
+      <ThemeProvider theme={state.config}>
+        <Global styles={fontsStyles} />
+        <Container>
+          <Editor
+            text={state.text}
+            files={state.files}
+            config={state.config}
+            lastModified={state.lastModified} />
+          <StatusLine
+            text={state.text}
+            lastModified={state.lastModified} />
+          {state.notification && (
+            <Notification notification={state.notification} />
+          )}
+        </Container>
+      </ThemeProvider>
     </ReducerContext.Provider>
   )
 }

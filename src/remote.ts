@@ -1,6 +1,6 @@
 import {State} from '.'
 import {Node} from 'slate'
-import {ChangeConfig, Close, Open, New, ToggleAlwaysOnTop} from './reducer'
+import {UpdateConfig, Close, Open, New, ToggleAlwaysOnTop} from './reducer'
 import {themes, fonts, codeThemes} from './config'
 
 const userAgent = window.navigator.userAgent.toLowerCase()
@@ -99,6 +99,8 @@ export const createMenu = (state: State, dispatch: any) => {
                 } else if (node.type === 'list-item') {
                   const end = children[i+1]?.type !== 'list-item'
                   return `- ${serialize(node.children, '')}${end ? '\n' : ''}`
+                } else if (node.type === 'image') {
+                  return `![](${node.url})`
                 } else if (node.type === 'link') {
                   return `[${Node.string(node)}](${node.url})`
                 } else if (node.type === 'code' || node.code) {
@@ -146,7 +148,7 @@ export const createMenu = (state: State, dispatch: any) => {
             type: 'checkbox',
             checked: key === state.config.font,
             click: () => {
-              dispatch(ChangeConfig({...state.config, font: key}))
+              dispatch(UpdateConfig({...state.config, font: key}))
             }
           })),
         }),
@@ -157,7 +159,7 @@ export const createMenu = (state: State, dispatch: any) => {
             type: 'checkbox',
             checked: key === state.config.theme,
             click: () => {
-              dispatch(ChangeConfig({...state.config, theme: key}))
+              dispatch(UpdateConfig({...state.config, theme: key}))
             }
           })),
         }),
@@ -168,7 +170,7 @@ export const createMenu = (state: State, dispatch: any) => {
             type: 'checkbox',
             checked: key === state.config.codeTheme,
             click: () => {
-              dispatch(ChangeConfig({...state.config, codeTheme: key}))
+              dispatch(UpdateConfig({...state.config, codeTheme: key}))
             }
           })),
         }),

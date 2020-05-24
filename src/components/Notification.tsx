@@ -18,13 +18,22 @@ const Pre = styled.pre`
   padding: 10px;
 `
 
-export default (props: Props) => {
+export default (props: Props) =>
+  props.notification.id === 'invalid_state' ?
+  invalidState('Invalid State', props.notification.props) :
+  props.notification.id === 'invalid_config' ?
+  invalidState('Invalid Config', props.notification.props) :
+  props.notification.id === 'invalid_file' ?
+  invalidState('Invalid File', props.notification.props) :
+  null
+
+const invalidState = (title, props) => {
   const dispatch = useDispatch()
   const onClick = () => dispatch(Clean)
 
   return (
     <Modal>
-      <ModalHeader>{props.notification.title}</ModalHeader>
+      <ModalHeader>{title}</ModalHeader>
       <ModalBody>
         <p>
           There is an error with the editor state. This is probably due to an
@@ -32,7 +41,7 @@ export default (props: Props) => {
           clean the state and paste it again.
         </p>
         <Pre>
-          <code>{JSON.stringify(props.notification.props)}</code>
+          <code>{JSON.stringify(props)}</code>
         </Pre>
       </ModalBody>
       <ModalFooter>
