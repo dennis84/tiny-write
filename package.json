@@ -17,26 +17,26 @@
   "dependencies": {
     "@emotion/core": "^10.0.28",
     "@emotion/styled": "^10.0.27",
-    "codemirror": "^5.54.0",
-    "dayjs": "^1.8.27",
+    "codemirror": "^5.56.0",
+    "dayjs": "^1.8.30",
     "electron-updater": "^4.3.1",
     "emotion": "^10.0.27",
     "emotion-theming": "^10.0.27",
-    "idb": "^5.0.3",
+    "idb": "^5.0.4",
     "is-image": "^3.0.0",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
-    "slate": "^0.58.1",
-    "slate-history": "^0.58.1",
-    "slate-react": "^0.58.1"
+    "slate": "^0.58.4",
+    "slate-history": "^0.58.4",
+    "slate-react": "^0.58.4"
   },
   "devDependencies": {
-    "@types/react": "^16.9.35",
+    "@types/react": "^16.9.43",
     "cssnano": "^4.1.10",
-    "electron": "^9.0.0",
-    "parcel-plugin-static-files-copy": "^2.3.1",
+    "electron": "^9.1.1",
+    "parcel-plugin-static-files-copy": "^2.4.3",
     "tslib": "^2.0.0",
-    "typescript": "^3.9.3"
+    "typescript": "^3.9.7"
   },
   "scripts": {
     "web": "npx parcel index.html",
