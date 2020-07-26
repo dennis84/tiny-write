@@ -22,7 +22,7 @@ const Content = styled.div`
   height: auto !important;
   background: #fff;
   border-radius: 4px;
-  @media (max-width: 767px) {
+  @media (max-width: 600px) {
     position: absolute;
     left: 0;
     bottom: 0;
@@ -57,7 +57,7 @@ export const ModalHeader = styled.div`
     justify-self: flex-end;
     margin-left: auto;
   }
-  @media (max-width: 767px) {
+  @media (max-width: 600px) {
     height: 56px;
     padding: 0 16px;
     font-size: 18px;
@@ -85,7 +85,7 @@ export const ModalBody = styled.div`
     background: linear-gradient(to top, #fff, #fff 50%, transparent);
     margin: 0 -24px -24px -24px;
   }
-  @media (max-width: 767px) {
+  @media (max-width: 600px) {
     padding: 16px;
     max-height: calc(100vh - 136px);
     &:before {
@@ -107,7 +107,7 @@ export const ModalFooter = styled.div`
   button:not(:last-child) {
     margin-right: 24px;
   }
-  @media (max-width: 767px) {
+  @media (max-width: 600px) {
     padding: 16px;
     justify-content: center;
     button {
