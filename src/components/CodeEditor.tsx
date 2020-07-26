@@ -216,8 +216,10 @@ export default ({attributes, children, element}) => {
   }, [element.theme])
 
   return (
-    <div {...attributes} contentEditable={false}>
-      <Container ref={codeRef} />
+    <div {...attributes}>
+      <div contentEditable={false}>
+        <Container ref={codeRef} />
+      </div>
       {children}
     </div>
   )
