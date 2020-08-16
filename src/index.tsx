@@ -29,8 +29,10 @@ export interface File {
   lastModified: Date;
 }
 
+export const emptyText = () => [{children: [{text: ''}]}]
+
 export const newState = (): State => ({
-  text: [{children: [{text: ''}]}],
+  text: emptyText(),
   lastModified: new Date,
   files: [],
   loading: true,

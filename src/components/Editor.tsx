@@ -317,7 +317,7 @@ export default (props: Props) => {
       match: n => Editor.isBlock(editor, n),
     })
 
-    if (!next && event.key === 'ArrowDown' && nodeEntry?.[0].type === 'image') {
+    if (!next && event.key === 'ArrowDown' && nodeEntry && Editor.isVoid(editor, nodeEntry[0])) {
       Transforms.insertNodes(editor, {children: [{text: ''}]}, {
         at: [anchor.path[0]+1],
       })
@@ -343,10 +343,13 @@ export default (props: Props) => {
     })
   }, [props.config])
 
-  const OnCopy = (e) => {
-    const [node, path] = Editor.above(editor, {
+  const OnCopy = (e: React.ClipboardEvent<HTMLDivElement>) => {
+    const above = Editor.above(editor, {
       match: n => Editor.isBlock(editor, n),
     })
+
+    if (!above) return
+    const [node, path] = above;
 
     if (node.type === 'code-block') {
       event.preventDefault()

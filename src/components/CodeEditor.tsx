@@ -124,6 +124,7 @@ import {Editor, Transforms} from 'slate'
 import {ReactEditor, useEditor} from 'slate-react'
 import CodeMirror from 'codemirror'
 import styled from '@emotion/styled'
+import {emptyText} from '..'
 
 const Container = styled.div`
   .CodeMirror {
@@ -144,6 +145,7 @@ const langMapping = {
   'kotlin': 'text/x-kotlin',
   'ceylon': 'text/x-ceylon',
   'java': 'text/x-java',
+  'js': 'javascript',
 }
 
 export const modeByLang = (lang: string) =>
@@ -168,6 +170,10 @@ export default ({attributes, children, element}) => {
 
     if (event.key === 'Backspace' && value.current === '') {
       Transforms.removeNodes(editor, {at})
+      if (at[0] === 0) {
+        Transforms.insertNodes(editor, emptyText())
+      }
+
       ReactEditor.focus(editor)
       return
     }

@@ -1,6 +1,6 @@
 import {useContext, createContext, Reducer } from 'react';
 import {Node} from 'slate'
-import {State, File, Config, Notification, newState} from '.'
+import {State, File, Config, Notification, newState, emptyText} from '.'
 
 const isState = (x: any) =>
   Node.isNodeList(x.text) &&
@@ -46,9 +46,12 @@ export const Load = (data: any) => (state: State) => {
     }
   }
 
+  const text = !parsed.text[0]?.children ? emptyText() : parsed.text
+
   const newState = {
     ...state,
     ...parsed,
+    text,
     config,
     loading: false,
   }
@@ -108,7 +111,7 @@ export const New = (state: State) => {
 
   return {
     ...state,
-    text: [{children: [{text: ''}]}],
+    text: emptyText(),
     files: files,
     lastModified: new Date,
   }
@@ -138,7 +141,7 @@ export const Open = (file: File) => (state: State) => {
 export const Close = (state: State) => {
   const files = [...state.files]
   const next = files.shift() ?? {
-    text: [{children: [{text: ''}]}],
+    text: emptyText(),
     lastModified: new Date,
   }
 
