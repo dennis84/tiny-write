@@ -127,6 +127,10 @@ import styled from '@emotion/styled'
 import {emptyText} from '..'
 
 const Container = styled.div`
+  position: relative;
+`
+
+const Code = styled.div`
   .CodeMirror {
     font-family: 'JetBrains Mono';
     border-radius: 2px;
@@ -222,11 +226,11 @@ export default ({attributes, children, element}) => {
   }, [element.theme])
 
   return (
-    <div {...attributes} style={{position: 'relative'}}>
+    <Container {...attributes}>
       <div contentEditable={false}>
-        <Container ref={codeRef} />
+        <Code ref={codeRef} />
       </div>
       {children}
-    </div>
+    </Container>
   )
 }

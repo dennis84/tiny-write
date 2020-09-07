@@ -1,12 +1,12 @@
 import React, {useEffect, useLayoutEffect, useCallback, useRef, useMemo} from 'react'
-import {Slate, Editable, withReact} from 'slate-react'
+import {Slate, Editable, ReactEditor, withReact} from 'slate-react'
 import {Editor, Node as SlateNode, Point, Range, Transforms, createEditor} from 'slate'
 import {withHistory} from 'slate-history'
 import styled from '@emotion/styled'
 import isImage from 'is-image'
 import {Config, File} from '..'
 import {rgb, rgba} from '../styles'
-import {background, color, color2, codeTheme, font} from '../config'
+import {color, color2, codeTheme, font} from '../config'
 import {UpdateText, useDispatch} from '../reducer'
 import {usePrevious} from '../use-previous'
 import CodeEditor from './CodeEditor'
@@ -22,25 +22,6 @@ const Container = styled.div<any>`
   padding: 0 50px;
   display: flex;
   justify-content: center;
-  &:before {
-    content: "";
-    height: 50px;
-    width: 100%;
-    background: linear-gradient(to bottom, ${props => rgba(background(props.theme), 1)}, ${props => rgba(background(props.theme), 0)});
-    position: fixed;
-    z-index: 1;
-    pointer-events: none;
-  }
-  &:after {
-    content: "";
-    height: 20px;
-    width: 100%;
-    background: linear-gradient(to top, ${props => rgba(background(props.theme), 1)}, ${props => rgba(background(props.theme), 0)});
-    position: fixed;
-    z-index: 1;
-    bottom: 50px;
-    pointer-events: none;
-  }
   > [contenteditable] {
     min-height: calc(100% - 100px);
     height: fit-content;
@@ -203,20 +184,36 @@ const withCustoms = (config, editor) => {
     const {selection} = editor
 
     if (selection && Range.isCollapsed(selection)) {
-      const match = Editor.above(editor, {
+      const above = Editor.above(editor, {
         match: n => Editor.isBlock(editor, n),
       })
 
-      if (match) {
-        const [block, path] = match
+      if (above) {
+        const [block, path] = above
         const start = Editor.start(editor, path)
+        const prev = Editor.previous(editor, {at: path})
+        const isStart = Point.equals(selection.anchor, start)
 
-        if (
-          block.type !== 'paragraph' &&
-          Point.equals(selection.anchor, start)
-        ) {
+        if (isStart && prev && prev[0].type === 'code-block') {
+          const content = Editor.string(editor, path)
+          Transforms.move(editor, {unit: 'line', reverse: true, edge: 'end'})
+          Transforms.removeNodes(editor, {at: path})
+          const node = ReactEditor.toDOMNode(editor, prev[0])
+          const cm = (node.querySelector('.CodeMirror') as any)?.CodeMirror
+          if (cm) {
+            cm.replaceRange(content, {line: Infinity})
+            cm.setCursor(Infinity, Infinity)
+            setTimeout(() => {
+              cm.focus()
+              const cur = cm.getCursor()
+              cm.setCursor(cur.line, cur.ch-content.length)
+            }, 0)
+          }
+          return
+        }
+
+        if (isStart && block.type !== 'paragraph') {
           Transforms.setNodes(editor, {type: 'paragraph'})
-
           if (block.type === 'list-item') {
             Transforms.unwrapNodes(editor, {
               match: n => n.type === 'bulleted-list',
