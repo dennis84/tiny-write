@@ -119,7 +119,7 @@ import 'codemirror/mode/yacas/yacas'
 import 'codemirror/mode/yaml-frontmatter/yaml-frontmatter'
 import 'codemirror/mode/yaml/yaml'
 import 'codemirror/mode/z80/z80'
-import React, {useEffect, useRef} from 'react'
+import React, {useEffect, useRef, useState} from 'react'
 import {Editor, Transforms} from 'slate'
 import {ReactEditor, useEditor} from 'slate-react'
 import CodeMirror from 'codemirror'
@@ -137,6 +137,28 @@ const Code = styled.div`
     height: auto;
     box-shadow: inset 0 1px 4px rgba(0,0,0,.2);
   }
+`
+
+const Exe = styled.div`
+  position: absolute;
+`
+
+const Out = styled.div<any>`
+  border-radius: 2px;
+  font-family: 'JetBrains Mono';
+`
+
+const Run = styled.div`
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  cursor: pointer;
+  height: 38px;
+  width: 38px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
 `
 
 const langMapping = {
@@ -157,20 +179,52 @@ export const modeByLang = (lang: string) =>
 
 export default ({attributes, children, element}) => {
   const codeRef = useRef(null)
+  const exeRef = useRef(null)
   const editor = useEditor()
   const value = useRef(element.value ?? '')
   const cm = useRef(null)
+  const mode = modeByLang(element.lang ?? 'javascript')
+  const [out, setOut] = useState([])
+  const [exec, setExec] = useState(false)
+
+  const OnRun = () => {
+    const res = []
+    const iframe = document.createElement('iframe')
+    exeRef.current.appendChild(iframe)
+    ;(iframe.contentWindow as any).console = {
+      log: (...args) => {
+        res.push(args.map((x) => JSON.stringify(x)).join(' '))
+      }
+    }
+    const doc = iframe.contentWindow.document
+    doc.open()
+    doc.write(`<script>${value.current}</script>`)
+    doc.close()
+    exeRef.current.innerHTML = ''
+    setOut(res)
+    setExec(true)
+  }
+
+  const OnClean = () => {
+    setOut([])
+    setExec(false)
+  }
 
   const OnChange = (c) => {
     const newValue = c.getValue()
     const at = ReactEditor.findPath(editor, element)
     Transforms.setNodes(editor, {value: newValue}, {at})
     value.current = newValue
+    setExec(false)
   }
 
   const OnKeyDown = (c, event) => {
     const cur = c.getCursor()
     const at = ReactEditor.findPath(editor, element)
+
+    if (event.shiftKey && event.metaKey && event.keyCode === 13) {
+      OnRun()
+    }
 
     if (event.key === 'Backspace' && value.current === '') {
       Transforms.removeNodes(editor, {at})
@@ -202,9 +256,10 @@ export default ({attributes, children, element}) => {
     cm.current = new CodeMirror(codeRef.current, {
       value: value.current,
       inputStyle: 'contenteditable',
-      mode: modeByLang(element.lang ?? 'javascript'),
       theme: element.theme ?? 'dracula',
+      mode,
     })
+
 
     cm.current.on('change', OnChange)
     cm.current.on('keydown', OnKeyDown)
@@ -229,6 +284,21 @@ export default ({attributes, children, element}) => {
     <Container {...attributes}>
       <div contentEditable={false}>
         <Code ref={codeRef} />
+        {mode === 'javascript' && (
+          <>
+            {!exec ? (
+              <Run onClick={OnRun}>✨</Run>
+            ) : (
+              <Run onClick={OnClean}>🧹</Run>
+            )}
+            <Exe ref={exeRef} />
+            {(out.length) > 0 && (
+              <Out>
+                {out.map((line, i) => <p key={i}>{'> ' + line}</p>)}
+              </Out>
+            )}
+          </>
+        )}
       </div>
       {children}
     </Container>
