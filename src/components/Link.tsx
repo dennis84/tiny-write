@@ -1,4 +1,4 @@
-import React, {useState} from 'react'
+import React, {useEffect, useRef, useState} from 'react'
 import {createPortal} from 'react-dom'
 import {Transforms} from 'slate'
 import {ReactEditor, useEditor} from 'slate-react'
@@ -71,7 +71,11 @@ export default ({attributes, element, children}) => {
   const editor = useEditor()
   const [edit, setEdit] = useState(false)
   const [value, setValue] = useState(element.url)
-  const container = ReactEditor.toDOMNode(editor, editor)
+  const containerRef = useRef(null)
+
+  useEffect(() => {
+    containerRef.current = ReactEditor.toDOMNode(editor, editor).parentNode
+  }, [])
 
   const OnOpen = (e) => {
     e.preventDefault()
@@ -99,32 +103,30 @@ export default ({attributes, element, children}) => {
     setEdit(false)
   }
 
-  const EditLink = () => {
-    return (
-      <Modal onBackgroundClick={OnClose}>
-        <ModalHeader>Edit Link</ModalHeader>
-        <ModalBody>
-          <p>Change link URL (Enter blank URL to remove the link)</p>
-          <InputField>
-            <input
-              type="text"
-              value={value}
-              onChange={OnChange}
-              autoFocus />
-            <label>Link URL</label>
-          </InputField>
-        </ModalBody>
-        <ModalFooter>
-          <Button onClick={OnClose}>Close</Button>
-          <ButtonPrimary onClick={OnSave}>Save</ButtonPrimary>
-        </ModalFooter>
-      </Modal>
-    )
-  }
+  const EditLink = () => (
+    <Modal onBackgroundClick={OnClose}>
+      <ModalHeader>Edit Link</ModalHeader>
+      <ModalBody>
+        <p>Change link URL (Enter blank URL to remove the link)</p>
+        <InputField>
+          <input
+            type="text"
+            value={value}
+            onChange={OnChange}
+            autoFocus />
+          <label>Link URL</label>
+        </InputField>
+      </ModalBody>
+      <ModalFooter>
+        <Button onClick={OnClose}>Close</Button>
+        <ButtonPrimary onClick={OnSave}>Save</ButtonPrimary>
+      </ModalFooter>
+    </Modal>
+  )
 
   return (
     <>
-      {edit && createPortal(<EditLink />, container.parentNode)}
+      {edit && createPortal(<EditLink />, containerRef.current)}
       <a {...attributes} href={element.url} onClick={OnOpen}>{children}</a>
     </>
   )

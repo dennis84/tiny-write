@@ -317,15 +317,22 @@ export default (props: Props) => {
 
   const OnKeyUp = (event) => {
     const sel = window.getSelection()
-    if (sel.isCollapsed) {
-      const height = containerRef.current.offsetHeight
-      const node = sel.anchorNode.nodeType === Node.ELEMENT_NODE ?
-        sel.anchorNode :
-        sel.anchorNode.parentNode
-      const rect = (node as Element).getBoundingClientRect()
-      const top = rect.top+containerRef.current.scrollTop
-      containerRef.current.scrollTo({top: top-(height/2.5), behavior: 'smooth'})
-    }
+    if (!sel.isCollapsed) return
+
+    const nodeEntry = Editor.above(editor, {
+      match: n => Editor.isBlock(editor, n),
+    })
+
+    if (!nodeEntry) return
+    const height = containerRef.current.offsetHeight
+    const node = !Editor.isVoid(editor, nodeEntry[0]) ?
+      ReactEditor.toDOMNode(editor, nodeEntry[0]) :
+      sel.anchorNode.nodeType === Node.ELEMENT_NODE ?
+      sel.anchorNode :
+      sel.anchorNode.parentNode
+    const rect = (node as Element).getBoundingClientRect()
+    const top = rect.top+containerRef.current.scrollTop
+    containerRef.current.scrollTo({top: top-(height/2.5), behavior: 'smooth'})
   }
 
   const OnKeyDown = (event) => {

@@ -90,7 +90,7 @@ export const Load = (data: any) => (state: State) => {
 }
 
 export const UpdateConfig = (config: Config) => (state: State) =>
-  ({...state, config: {...state.config, ...config}})
+  ({...state, config: {...state.config, ...config}, lastModified: new Date})
 
 export const UpdateText = (text: Node[], lastModified: Date) => (state: State) =>
   ({...state, text, lastModified})
@@ -154,6 +154,7 @@ export const Close = (state: State) => {
 export const ToggleAlwaysOnTop = (state) => ({
   ...state,
   alwaysOnTop: !state.alwaysOnTop,
+  lastModified: new Date,
 });
 
 type Action = (state: State) => State;
