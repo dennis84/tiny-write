@@ -222,7 +222,7 @@ export default ({attributes, children, element}) => {
   }, [element.theme])
 
   return (
-    <div {...attributes}>
+    <div {...attributes} style={{position: 'relative'}}>
       <div contentEditable={false}>
         <Container ref={codeRef} />
       </div>

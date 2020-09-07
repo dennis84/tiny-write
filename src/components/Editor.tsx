@@ -1,6 +1,6 @@
 import React, {useEffect, useLayoutEffect, useCallback, useRef, useMemo} from 'react'
 import {Slate, Editable, withReact} from 'slate-react'
-import {Editor, Node, Point, Range, Transforms, createEditor} from 'slate'
+import {Editor, Node as SlateNode, Point, Range, Transforms, createEditor} from 'slate'
 import {withHistory} from 'slate-history'
 import styled from '@emotion/styled'
 import isImage from 'is-image'
@@ -50,7 +50,7 @@ const Container = styled.div<any>`
     font-family: ${props => font(props.theme)};
     color: ${props => rgb(color(props.theme))};
     margin-top: 50px;
-    padding-bottom: 200px;
+    padding-bottom: 77vh;
     line-height: 160%;
     outline: none;
     background: transparent;
@@ -79,7 +79,7 @@ const Container = styled.div<any>`
 `
 
 interface Props {
-  text: Node[];
+  text: SlateNode[];
   lastModified?: Date;
   files: File[];
   config: Config;
@@ -291,7 +291,13 @@ const Element = ({ attributes, children, element }) => {
     case 'code':
       return <code {...attributes}>{children}</code>
     case 'code-block':
-      return <CodeEditor attributes={attributes} element={element}>{children}</CodeEditor>
+      return (
+        <CodeEditor
+          attributes={attributes}
+          element={element}>
+          {children}
+        </CodeEditor>
+      )
     default:
       return <p {...attributes}>{children}</p>
   }
@@ -312,11 +318,24 @@ export default (props: Props) => {
     dispatch(UpdateText(value, lastModified))
   }
 
+  const OnKeyUp = (event) => {
+    const sel = window.getSelection()
+    if (sel.isCollapsed) {
+      const height = containerRef.current.offsetHeight
+      const node = sel.anchorNode.nodeType === Node.ELEMENT_NODE ?
+        sel.anchorNode :
+        sel.anchorNode.parentNode
+      const rect = (node as Element).getBoundingClientRect()
+      const top = rect.top+containerRef.current.scrollTop
+      containerRef.current.scrollTo({top: top-(height/2.5), behavior: 'smooth'})
+    }
+  }
+
   const OnKeyDown = (event) => {
     if (!editor.selection) return
     const {anchor} = editor.selection
+
     const next = Editor.next(editor, editor.selection)
-    const isEnd = anchor && Editor.isEnd(editor, anchor, [anchor.path[0]])
     const nodeEntry = Editor.above(editor, {
       match: n => Editor.isBlock(editor, n),
     })
@@ -325,10 +344,6 @@ export default (props: Props) => {
       Transforms.insertNodes(editor, {children: [{text: ''}]}, {
         at: [anchor.path[0]+1],
       })
-    }
-
-    if (!next && isEnd && event.key.length === 1) {
-      containerRef.current.scrollTop = containerRef.current.scrollHeight
     }
   }
 
@@ -378,6 +393,7 @@ export default (props: Props) => {
           renderElement={renderElement}
           placeholder="Start typing ..."
           onKeyDown={OnKeyDown}
+          onKeyUp={OnKeyUp}
           onCopy={OnCopy}
           onCut={OnCopy}
           spellCheck
