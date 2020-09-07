@@ -4,7 +4,6 @@ import {State, File, Config, Notification, newState, emptyText} from '.'
 
 const isState = (x: any) =>
   Node.isNodeList(x.text) &&
-  x.lastModified instanceof Date &&
   Array.isArray(x.files)
 
 const isFile = (x: any): boolean =>
@@ -93,9 +92,8 @@ export const Load = (data: any) => (state: State) => {
 export const UpdateConfig = (config: Config) => (state: State) =>
   ({...state, config: {...state.config, ...config}})
 
-export const UpdateText = (text: Node[]) => (state: State) =>
-  state.text.length === 0 ? state :
-  ({...state, text, lastModified: new Date})
+export const UpdateText = (text: Node[], lastModified: Date) => (state: State) =>
+  ({...state, text, lastModified})
 
 export const New = (state: State) => {
   if (state.text.length === 1 && Node.string(state.text[0]) === '') {

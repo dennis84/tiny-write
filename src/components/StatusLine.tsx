@@ -18,7 +18,7 @@ const StatusLine = styled.div`
 
 interface Props {
   text: Node[];
-  lastModified: Date;
+  lastModified?: Date;
 }
 
 export default (props: Props) => (

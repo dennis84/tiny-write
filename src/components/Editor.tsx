@@ -8,6 +8,7 @@ import {Config, File} from '..'
 import {rgb, rgba} from '../styles'
 import {background, color, color2, codeTheme, font} from '../config'
 import {UpdateText, useDispatch} from '../reducer'
+import {usePrevious} from '../use-previous'
 import CodeEditor from './CodeEditor'
 import Image from './Image'
 import Link from './Link'
@@ -79,9 +80,10 @@ const Container = styled.div<any>`
 
 interface Props {
   text: Node[];
+  lastModified?: Date;
   files: File[];
-  lastModified: Date;
   config: Config;
+  loading: boolean;
 }
 
 const SHORTCUTS = {
@@ -298,6 +300,7 @@ const Element = ({ attributes, children, element }) => {
 export default (props: Props) => {
   const dispatch = useDispatch()
   const containerRef = useRef(null)
+  const loadingPrev = usePrevious(props.loading)
 
   const renderElement = useCallback(props => <Element {...props} />, [])
   const editor = useMemo(() => {
@@ -305,7 +308,8 @@ export default (props: Props) => {
   }, [])
 
   const OnChange = (value: any) => {
-    dispatch(UpdateText(value))
+    const lastModified = loadingPrev === false ? new Date : props.lastModified
+    dispatch(UpdateText(value, lastModified))
   }
 
   const OnKeyDown = (event) => {
@@ -329,12 +333,14 @@ export default (props: Props) => {
   }
 
   useLayoutEffect(() => {
+    if (props.loading) return
     return () => {
       Transforms.select(editor, {path: [0], offset: 0})
     }
   }, [props.files])
 
   useEffect(() => {
+    if (props.loading) return
     props.text.forEach((node, i) => {
       Transforms.setNodes(editor, {theme: codeTheme(props.config)}, {
         match: (n) => n.type === 'code-block',
@@ -356,6 +362,10 @@ export default (props: Props) => {
     } else if (node.type === 'image') {
       Transforms.select(editor, path)
     }
+  }
+
+  if (props.loading) {
+    return null
   }
 
   return (

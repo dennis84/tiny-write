@@ -16,7 +16,7 @@ export interface Notification {
 
 export interface State {
   text: Node[];
-  lastModified: Date;
+  lastModified?: Date;
   files: File[];
   config: Config;
   notification?: Notification;
@@ -33,7 +33,6 @@ export const emptyText = () => [{children: [{text: ''}]}]
 
 export const newState = (): State => ({
   text: emptyText(),
-  lastModified: new Date,
   files: [],
   loading: true,
   alwaysOnTop: true,

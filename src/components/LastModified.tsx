@@ -1,5 +1,5 @@
 import React from 'react'
-import dayjs from 'dayjs'
+import {differenceInHours, format} from 'date-fns'
 import styled from '@emotion/styled'
 import {rgba} from '../styles'
 import {color} from '../config'
@@ -13,22 +13,23 @@ const Text = styled.span<any>`
 `
 
 interface Props {
-  lastModified: Date;
+  lastModified?: Date;
 }
 
-const format = (date: Date) => {
-  const day = dayjs(date)
-  const now = dayjs()
+const formatDate = (date: Date) => {
+  const now = new Date()
 
-  if (now.diff(day, 'hour') <= 24) {
-    return day.format('HH:mm:ss')
-  } else if (day.year() === now.year()) {
-    return day.format('DD MMMM')
+  if (differenceInHours(now, date) <= 24) {
+    return format(date, 'HH:mm:ss')
+  } else if (date.getFullYear() === now.getFullYear()) {
+    return format(date, 'dd MMMM')
   }
 
-  return day.format('DD MMMM YYYY')
+  return format(date, 'dd MMMM YYYY')
 }
 
-export default (props: Props) => (
-  <Text>Edited {format(props.lastModified)}</Text>
+export default (props: Props) => props.lastModified ? (
+  <Text>Edited {formatDate(props.lastModified)}</Text>
+) : (
+  <Text>Nothing yet</Text>
 )

@@ -8,6 +8,7 @@ import {State} from '.'
 import db from './db'
 import {updateRemote} from './remote'
 import {Load, ReducerContext, reducer} from './reducer'
+import {usePrevious} from './use-previous'
 import Editor from './components/Editor'
 import StatusLine from './components/StatusLine'
 import Notification from './components/Notification'
@@ -26,7 +27,8 @@ interface Props {
 }
 
 export default (props: Props) => {
-  const [state, dispatch] = useReducer(reducer, props.initialState);
+  const [state, dispatch] = useReducer(reducer, props.initialState)
+  const loadingPrev = usePrevious(state.loading)
 
   useEffect(() => {
     db.get('state').then((data) => {
@@ -35,11 +37,14 @@ export default (props: Props) => {
   }, [])
 
   useEffect(() => {
-    if (state.loading || state.notification) return
+    if (loadingPrev !== false) {
+      return
+    }
+
     db.set('state', JSON.stringify(state)).then(() => {
       updateRemote(state, dispatch)
     })
-  }, [state])
+  }, [state.lastModified])
 
   const fontsStyles = Object.entries(fonts)
     .filter(([key, value]) => value.src)
@@ -57,9 +62,10 @@ export default (props: Props) => {
         <Container>
           <Editor
             text={state.text}
+            lastModified={state.lastModified}
             files={state.files}
             config={state.config}
-            lastModified={state.lastModified} />
+            loading={state.loading} />
           <StatusLine
             text={state.text}
             lastModified={state.lastModified} />

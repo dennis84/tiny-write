@@ -15,11 +15,11 @@
     }
   },
   "dependencies": {
-    "@emotion/core": "^10.0.28",
+    "@emotion/core": "^10.0.35",
     "@emotion/styled": "^10.0.27",
-    "codemirror": "^5.56.0",
-    "dayjs": "^1.8.30",
-    "electron-updater": "^4.3.1",
+    "codemirror": "^5.57.0",
+    "date-fns": "^2.16.1",
+    "electron-updater": "^4.3.4",
     "emotion": "^10.0.27",
     "emotion-theming": "^10.0.27",
     "idb": "^5.0.4",
@@ -31,12 +31,12 @@
     "slate-react": "^0.58.4"
   },
   "devDependencies": {
-    "@types/react": "^16.9.43",
+    "@types/react": "^16.9.49",
     "cssnano": "^4.1.10",
-    "electron": "^9.1.1",
-    "parcel-plugin-static-files-copy": "^2.4.3",
-    "tslib": "^2.0.0",
-    "typescript": "^3.9.7"
+    "electron": "^10.1.1",
+    "parcel-plugin-static-files-copy": "^2.5.0",
+    "tslib": "^2.0.1",
+    "typescript": "^4.0.2"
   },
   "scripts": {
     "web": "npx parcel index.html",
