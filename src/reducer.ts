@@ -21,7 +21,7 @@ export const Notify = (notification: Notification) => (state: State) =>
 export const NotificationClose = (state: State) =>
   ({...state, notification: undefined})
 
-export const Clean = (state: State) => newState()
+export const Clean = () => newState()
 
 export const Load = (data: any) => (state: State) => {
   let parsed

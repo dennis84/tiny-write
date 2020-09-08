@@ -315,7 +315,7 @@ export default (props: Props) => {
     dispatch(UpdateText(value, lastModified))
   }
 
-  const OnKeyUp = (event) => {
+  const OnKeyUp = () => {
     const sel = window.getSelection()
     if (!sel.isCollapsed) return
 
@@ -368,7 +368,7 @@ export default (props: Props) => {
     })
   }, [props.config])
 
-  const OnCopy = (e: React.ClipboardEvent<HTMLDivElement>) => {
+  const OnCopy = () => {
     const above = Editor.above(editor, {
       match: n => Editor.isBlock(editor, n),
     })

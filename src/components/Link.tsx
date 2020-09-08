@@ -92,7 +92,7 @@ export default ({attributes, element, children}) => {
     setValue(e.target.value)
   }
 
-  const OnSave = (e) => {
+  const OnSave = () => {
     const at = ReactEditor.findPath(editor, element)
     if (value === '') {
       Transforms.unwrapNodes(editor, {at})

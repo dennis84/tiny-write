@@ -47,8 +47,8 @@ export default (props: Props) => {
   }, [state.lastModified])
 
   const fontsStyles = Object.entries(fonts)
-    .filter(([key, value]) => value.src)
-    .map(([key, value]) => ({
+    .filter(([, value]) => value.src)
+    .map(([, value]) => ({
       '@font-face': {
         'fontFamily': `'${value.label}'`,
         'src': `url('${value.src}')`,
