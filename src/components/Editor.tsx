@@ -194,6 +194,17 @@ const withCustoms = (config, editor) => {
         const prev = Editor.previous(editor, {at: path})
         const isStart = Point.equals(selection.anchor, start)
 
+        if (isStart && block.type !== 'paragraph') {
+          Transforms.setNodes(editor, {type: 'paragraph'})
+          if (block.type === 'list-item') {
+            Transforms.unwrapNodes(editor, {
+              match: n => n.type === 'bulleted-list',
+            })
+          }
+
+          return
+        }
+
         if (isStart && prev && prev[0].type === 'code-block') {
           const content = Editor.string(editor, path)
           Transforms.move(editor, {unit: 'line', reverse: true, edge: 'end'})
@@ -209,17 +220,6 @@ const withCustoms = (config, editor) => {
               cm.setCursor(cur.line, cur.ch-content.length)
             }, 0)
           }
-          return
-        }
-
-        if (isStart && block.type !== 'paragraph') {
-          Transforms.setNodes(editor, {type: 'paragraph'})
-          if (block.type === 'list-item') {
-            Transforms.unwrapNodes(editor, {
-              match: n => n.type === 'bulleted-list',
-            })
-          }
-
           return
         }
       }
