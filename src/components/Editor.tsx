@@ -106,7 +106,7 @@ const withCustoms = (config, editor) => {
       const range = {anchor, focus: start}
       const beforeText = Editor.string(editor, range)
 
-      const codeBlockMatch = beforeText.match(/^`{3}([a-z+-]*)/)
+      const codeBlockMatch = beforeText.match(/^`{3}([a-z+-]*)$/)
       if (codeBlockMatch) {
         const [,lang] = codeBlockMatch
         Transforms.select(editor, range)
@@ -123,7 +123,7 @@ const withCustoms = (config, editor) => {
         return
       }
 
-      const codeMatch = beforeText.match(/`(.+?)`/)
+      const codeMatch = beforeText.match(/`(.+?)`$/)
       if (codeMatch) {
         const [match, code] = codeMatch
         const startIndex = anchor.offset - match.length
@@ -139,7 +139,7 @@ const withCustoms = (config, editor) => {
         return
       }
 
-      const linkMatch = beforeText.match(/\[(.+?)\]\((.+?)\)/)
+      const linkMatch = beforeText.match(/\[(.+?)\]\((.+?)\)$/)
       if (linkMatch) {
         const [match, title, url] = linkMatch
         const startIndex = anchor.offset - match.length
@@ -184,10 +184,7 @@ const withCustoms = (config, editor) => {
     const {selection} = editor
 
     if (selection && Range.isCollapsed(selection)) {
-      const above = Editor.above(editor, {
-        match: n => Editor.isBlock(editor, n),
-      })
-
+      const above = Editor.above(editor)
       if (above) {
         const [block, path] = above
         const start = Editor.start(editor, path)
