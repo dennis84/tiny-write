@@ -1,6 +1,6 @@
 import React from 'react'
-import {Node} from 'slate'
 import styled from '@emotion/styled'
+import {EditorState} from 'prosemirror-state'
 import LastModified from './LastModified'
 import WordCount from './WordCount'
 
@@ -17,7 +17,7 @@ const StatusLine = styled.div`
 `
 
 interface Props {
-  text: Node[];
+  text: EditorState;
   lastModified?: Date;
 }
 

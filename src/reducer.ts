@@ -1,13 +1,17 @@
-import {useContext, createContext, Reducer } from 'react';
-import {Node} from 'slate'
-import {State, File, Config, Notification, newState, emptyText} from '.'
+import {useContext, createContext, Reducer} from 'react'
+import {EditorState} from 'prosemirror-state'
+import {State, File, Config, Notification, newState} from '.'
+import {createState, createEmptyState} from './components/ProseMirror/state'
+import {isEmpty} from './components/ProseMirror/util'
+
+const isText = (x: any) => x && x.doc
 
 const isState = (x: any) =>
-  Node.isNodeList(x.text) &&
+  x.lastModified instanceof Date &&
   Array.isArray(x.files)
 
 const isFile = (x: any): boolean =>
-  Node.isNodeList(x.text) &&
+  x.text &&
   x.lastModified instanceof Date
 
 const isConfig = (x: any): boolean =>
@@ -45,7 +49,30 @@ export const Load = (data: any) => (state: State) => {
     }
   }
 
-  const text = !parsed.text[0]?.children ? emptyText() : parsed.text
+  if (!isText(parsed.text)) {
+    return {
+      ...state,
+      loading: false,
+      notification: {
+        id: 'invalid_file',
+        props: parsed.text,
+      },
+    }
+  }
+
+  let text
+  try {
+    text = createState(parsed.text)
+  }  catch (err) {
+    return {
+      ...state,
+      loading: false,
+      notification: {
+        id: 'invalid_file',
+        props: parsed.text,
+      },
+    }
+  }
 
   const newState = {
     ...state,
@@ -59,8 +86,10 @@ export const Load = (data: any) => (state: State) => {
     newState.lastModified = new Date(parsed.lastModified)
   }
 
+  if (parsed.lastModified) newState.lastModified = new Date(parsed.lastModified)
   if (parsed.files) {
     for (const file of parsed.files) {
+      file.text = createState(file.text)
       file.lastModified = new Date(file.lastModified)
       if (!isFile(file)) {
         return {
@@ -92,11 +121,12 @@ export const Load = (data: any) => (state: State) => {
 export const UpdateConfig = (config: Config) => (state: State) =>
   ({...state, config: {...state.config, ...config}, lastModified: new Date})
 
-export const UpdateText = (text: Node[], lastModified: Date) => (state: State) =>
-  ({...state, text, lastModified})
+export const UpdateText = (text: EditorState) => (state: State) => {
+  return {...state, text, lastModified: new Date}
+}
 
 export const New = (state: State) => {
-  if (state.text.length === 1 && Node.string(state.text[0]) === '') {
+  if (isEmpty(state.text)) {
     return state
   }
 
@@ -109,7 +139,7 @@ export const New = (state: State) => {
 
   return {
     ...state,
-    text: emptyText(),
+    text: createEmptyState(),
     files: files,
     lastModified: new Date,
   }
@@ -117,7 +147,7 @@ export const New = (state: State) => {
 
 export const Open = (file: File) => (state: State) => {
   const files = [...state.files]
-  if (state.text.length !== 0) {
+  if (!isEmpty(state.text)) {
     files.push({
       text: state.text,
       lastModified: state.lastModified,
@@ -139,7 +169,7 @@ export const Open = (file: File) => (state: State) => {
 export const Close = (state: State) => {
   const files = [...state.files]
   const next = files.shift() ?? {
-    text: emptyText(),
+    text: createEmptyState(),
     lastModified: new Date,
   }
 
@@ -155,13 +185,13 @@ export const ToggleAlwaysOnTop = (state) => ({
   ...state,
   alwaysOnTop: !state.alwaysOnTop,
   lastModified: new Date,
-});
+})
 
-type Action = (state: State) => State;
+type Action = (state: State) => State
 
-export const ReducerContext = createContext<any>(null);
+export const ReducerContext = createContext<any>(null)
 
-export const useDispatch = () => useContext(ReducerContext);
+export const useDispatch = () => useContext(ReducerContext)
 
 export const reducer: Reducer<State, Action> =
-  (state: State, action: Action) => action(state);
+  (state: State, action: Action) => action(state)

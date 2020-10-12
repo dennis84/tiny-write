@@ -1,7 +1,8 @@
 import React from 'react'
 import {render} from 'react-dom'
+import {EditorState} from 'prosemirror-state'
 import Main from './Main'
-import {Node} from 'slate'
+import {createEmptyState} from './components/ProseMirror/state'
 
 export interface Config {
   theme: string;
@@ -15,7 +16,7 @@ export interface Notification {
 }
 
 export interface State {
-  text: Node[];
+  text: EditorState;
   lastModified?: Date;
   files: File[];
   config: Config;
@@ -25,14 +26,13 @@ export interface State {
 }
 
 export interface File {
-  text: Node[];
+  text: string;
   lastModified: Date;
 }
 
-export const emptyText = () => [{children: [{text: ''}]}]
-
 export const newState = (): State => ({
-  text: emptyText(),
+  text: createEmptyState(),
+  lastModified: new Date,
   files: [],
   loading: true,
   alwaysOnTop: true,

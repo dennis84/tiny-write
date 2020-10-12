@@ -1,7 +1,7 @@
 import React from 'react'
-import {Node} from 'slate'
 import styled from '@emotion/styled'
 import {rgba} from '../styles'
+import {EditorState} from 'prosemirror-state'
 import {color} from '../config'
 
 const Text = styled.span<any>`
@@ -13,13 +13,14 @@ const Text = styled.span<any>`
 `
 
 interface Props {
-  text: Node[];
+  text: EditorState;
 }
 
 export default (props: Props) => {
-  const count = props.text
-    .map((node) => Node.string(node).split(/\s+/).filter(x => x != '').length)
-    .reduce((a, b) => a + b, 0)
+  let count = 0
+  props.text.doc.forEach((node) => {
+    count += node.textContent.split(/\s+/).filter(x => x != '').length
+  })
 
   return (
     <Text>{count} words</Text>

@@ -1,5 +1,5 @@
+import {defaultMarkdownSerializer} from 'prosemirror-markdown'
 import {State} from '.'
-import {Node} from 'slate'
 import {UpdateConfig, Close, Open, New, ToggleAlwaysOnTop} from './reducer'
 import {themes, fonts, codeThemes} from './config'
 
@@ -18,11 +18,18 @@ export const updateRemote = (state: State, dispatch: any) => {
   remote.getCurrentWindow().setAlwaysOnTop(state.alwaysOnTop)
 }
 
+export const toggleFullScreen = () => {
+  if (!isElectron) return
+  const remote = window.require('electron').remote
+  const win = remote.getCurrentWindow()
+  win.setSimpleFullScreen(!win.isSimpleFullScreen())
+}
+
 export const createMenu = (state: State, dispatch: any) => {
   const electron = (window as any).require('electron')
   const remote = electron.remote
   const {MenuItem} = remote
-  const toText = (text: Node[]) => text.map((node) => Node.string(node)).join('\n')
+  const toText = (editorState) => editorState.doc.textContent
 
   return [
     new MenuItem({
@@ -63,8 +70,7 @@ export const createMenu = (state: State, dispatch: any) => {
           submenu: state.files.map(file => new MenuItem({
             label: toText(file.text).substring(0, 16),
             type: 'checkbox',
-            checked: file.lastModified === state.lastModified,
-            click: () => dispatch(Open(file)),
+            click: () => dispatch(Open(file))
           }))
         }),
       ],
@@ -80,42 +86,7 @@ export const createMenu = (state: State, dispatch: any) => {
         new MenuItem({
           label: 'Copy All as Markdown',
           click: () => {
-            const serialize = (children, del = '\n') => {
-              return children.map((node, i) => {
-                if (node.type === 'block-quote') {
-                  return '> ' + Node.string(node)
-                } else if (node.type === 'heading-one') {
-                  return '# ' + Node.string(node)
-                } else if (node.type === 'heading-two') {
-                  return '## ' + Node.string(node)
-                } else if (node.type === 'heading-three') {
-                  return '### ' + Node.string(node)
-                } else if (node.type === 'heading-four') {
-                  return '#### ' + Node.string(node)
-                } else if (node.type === 'heading-five') {
-                  return '##### ' + Node.string(node)
-                } else if (node.type === 'heading-six') {
-                  return '###### ' + Node.string(node)
-                } else if (node.type === 'list-item') {
-                  const end = children[i+1]?.type !== 'list-item'
-                  return `- ${serialize(node.children, '')}${end ? '\n' : ''}`
-                } else if (node.type === 'image') {
-                  return `![](${node.url})`
-                } else if (node.type === 'link') {
-                  return `[${Node.string(node)}](${node.url})`
-                } else if (node.type === 'code' || node.code) {
-                  return '`' + Node.string(node) + '`'
-                } else if (node.type === 'code-block') {
-                  return '```' + node.lang + '\n' + node.value + '\n```'
-                } else if (node.children?.length) {
-                  return serialize(node.children, '')
-                }
-
-                return Node.string(node)
-              }).join(del)
-            }
-
-            const text = serialize(state.text)
+            const text = defaultMarkdownSerializer.serialize(state.text.doc)
             electron.clipboard.writeText(text, 'selection')
           }
         }),
@@ -136,9 +107,9 @@ export const createMenu = (state: State, dispatch: any) => {
         }),
         new MenuItem({
           label: 'Toggle Fullscreen',
-          accelerator: 'Cmd+Return',
+          accelerator: 'Cmd+Enter',
           click: (_, win) => {
-            win.setSimpleFullScreen(!win.isSimpleFullScreen())
+            toggleFullScreen()
           }
         }),
         new MenuItem({
