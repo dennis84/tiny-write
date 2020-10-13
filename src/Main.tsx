@@ -55,15 +55,18 @@ export default () => {
 
       if (!parsed) {
         dispatch(UpdateState({...state, loading: false}))
+        return;
       }
 
       const config = {...state.config, ...parsed.config}
       if (!isConfig(config)) {
         dispatch(Notify({id: 'invalid_config', props: config}))
+        return;
       }
 
       if (!isText(parsed.text)) {
         dispatch(Notify({id: 'invalid_file', props: parsed.text}))
+        return;
       }
 
       let text
@@ -71,6 +74,7 @@ export default () => {
         text = createState(parsed.text)
       }  catch (err) {
         dispatch(Notify({id: 'invalid_file', props: parsed.text}))
+        return;
       }
 
       const newState = {
@@ -98,6 +102,7 @@ export default () => {
 
       if (!isState(newState)) {
         dispatch(Notify({id: 'invalid_state', props: newState}))
+        return;
       }
 
       dispatch(UpdateState(newState))
