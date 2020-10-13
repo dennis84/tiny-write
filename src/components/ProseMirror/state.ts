@@ -35,7 +35,8 @@ export const createState = (data) =>
       scrollIntoView(),
       dropImage(),
       placeholder('Start typing ...'),
-    ].concat(arrowHandlers)
+      arrowHandlers,
+    ]
   }, data)
 
 export const createEmptyState = () => createState({

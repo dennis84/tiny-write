@@ -2,7 +2,6 @@ import React from 'react'
 import {render} from 'react-dom'
 import {EditorState} from 'prosemirror-state'
 import Main from './Main'
-import {createEmptyState} from './components/ProseMirror/state'
 
 export interface Config {
   theme: string;
@@ -16,7 +15,7 @@ export interface Notification {
 }
 
 export interface State {
-  text: EditorState;
+  text?: EditorState;
   lastModified?: Date;
   files: File[];
   config: Config;
@@ -26,12 +25,11 @@ export interface State {
 }
 
 export interface File {
-  text: string;
+  text?: EditorState;
   lastModified: Date;
 }
 
-export const newState = (): State => ({
-  text: createEmptyState(),
+export const newState = (props: Partial<State> = {}): State => ({
   lastModified: new Date,
   files: [],
   loading: true,
@@ -40,10 +38,11 @@ export const newState = (): State => ({
     theme: 'light',
     codeTheme: 'dracula',
     font: 'Merriweather',
-  }
+  },
+  ...props,
 })
 
 render(
-  <Main initialState={newState()} />,
+  <Main />,
   document.getElementById('container')
 )
