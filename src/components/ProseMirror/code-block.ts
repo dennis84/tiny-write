@@ -120,10 +120,34 @@ import 'codemirror/mode/yaml-frontmatter/yaml-frontmatter'
 import 'codemirror/mode/yaml/yaml'
 import 'codemirror/mode/z80/z80'
 import CodeMirror from 'codemirror'
-import {Selection, TextSelection} from 'prosemirror-state'
+import {Selection, TextSelection, Plugin, PluginKey} from 'prosemirror-state'
+import {Decoration, DecorationSet} from 'prosemirror-view'
 import {undo, redo} from 'prosemirror-history'
 import {exitCode} from 'prosemirror-commands'
 import {keymap} from 'prosemirror-keymap'
+
+export const codeBlockOptions = () => new Plugin({
+  key: new PluginKey('code-block-options'),
+  state: {
+    init: () => ({theme: 'dracula'}),
+    apply(tr, prev) {
+      const meta = tr.getMeta('code-block-options')
+      return meta ? meta : prev
+    }
+  },
+  props: {
+    decorations(state) {
+      const decos = []
+      state.doc.descendants((node, pos) => {
+        if (node.type.name === 'code_block') {
+          decos.push(Decoration.node(pos, pos + node.nodeSize, this.getState(state)))
+        }
+      })
+
+      return DecorationSet.create(state.doc, decos)
+    }
+  }
+})
 
 export class CodeBlockView {
   node: any
@@ -135,7 +159,7 @@ export class CodeBlockView {
   dom: any
   updating: any
 
-  constructor(node, view, getPos, schema) {
+  constructor(node, view, getPos, schema, decos) {
     // Store for later
     this.node = node
     this.view = view
@@ -150,6 +174,8 @@ export class CodeBlockView {
       mode: modeByLang(node.attrs.params ?? 'javascript'),
       theme: 'dracula',
     })
+
+    this.updateOptions(decos)
 
     // The editor's outer node is our DOM representation
     this.dom = this.cm.getWrapperElement()
@@ -274,7 +300,8 @@ export class CodeBlockView {
     this.view.focus()
   }
 
-  update(node) {
+  update(node, decorations) {
+    this.updateOptions(decorations)
     if (node.type != this.node.type) return false
     this.node = node
     const change = computeChange(this.cm.getValue(), node.textContent)
@@ -288,6 +315,16 @@ export class CodeBlockView {
       this.updating = false
     }
     return true
+  }
+
+  updateOptions(decorations) {
+    if (decorations?.length) {
+      decorations.forEach((deco) => {
+        for (const key in deco.type.attrs) {
+          this.cm.setOption(key, deco.type.attrs[key]);
+        }
+      })
+    }
   }
 
   selectNode() {

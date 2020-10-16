@@ -108,9 +108,7 @@ export const createMenu = (state: State, dispatch: any) => {
         new MenuItem({
           label: 'Toggle Fullscreen',
           accelerator: 'Cmd+Enter',
-          click: (_, win) => {
-            toggleFullScreen()
-          }
+          click: () => toggleFullScreen(),
         }),
         new MenuItem({
           label: 'Font',

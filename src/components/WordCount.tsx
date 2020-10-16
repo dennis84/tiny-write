@@ -13,14 +13,14 @@ const Text = styled.span<any>`
 `
 
 interface Props {
-  text: EditorState;
+  text?: EditorState;
 }
 
 export default (props: Props) => {
   let count = 0
-  props.text.doc.forEach((node) => {
+  props.text?.doc.forEach((node) => {
     count += node.textContent.split(/\s+/).filter(x => x != '').length
-  })
+  }) ?? 0
 
   return (
     <Text>{count} words</Text>

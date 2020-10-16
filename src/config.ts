@@ -13,25 +13,21 @@ export const fonts: {[key: string]: Font} = {
   'times-new-roman': {
     label: 'Times New Roman',
   },
-  'roboto': {
-    label: 'Roboto',
-    src: './fonts/Roboto-Regular.ttf',
-  },
-  'roboto-slab': {
-    label: 'Roboto Slab',
-    src: './fonts/RobotoSlab-Regular.ttf',
+  'piazzolla': {
+    label: 'Piazzolla',
+    src: './fonts/Piazzolla-Regular.woff2',
   },
   'ibm-plex-serif': {
     label: 'IBM Plex Serif',
     src: './fonts/IBMPlexSerif-Regular.ttf',
   },
+  'roboto-slab': {
+    label: 'Roboto Slab',
+    src: './fonts/RobotoSlab-Regular.ttf',
+  },
   'jetbrains-mono': {
     label: 'JetBrains Mono',
     src: './fonts/JetBrainsMono-Regular.woff2',
-  },
-  'iosevka-term-slab': {
-    label: 'Iosevka Term Slab',
-    src: './fonts/iosevka-term-slab-regular.woff2',
   },
   'fantasque-sans-mono': {
     label: 'Fantasque Sans Mono',

@@ -1,20 +1,22 @@
 import React, {useEffect, useState, useRef} from 'react'
 import {EditorState} from 'prosemirror-state'
 import {EditorView} from 'prosemirror-view'
+import {createEmptyState} from './state'
 import {CodeBlockView} from './code-block'
 
 interface Props {
   state?: EditorState;
   onChange: (state: EditorState) => void;
   className: string;
+  viewRef?: any;
 }
 
 const createEditor = (editorNode, props) => {
   const view = new EditorView(editorNode, {
-    state: props.state,
+    state: props.state ?? createEmptyState(),
     nodeViews: {
-      code_block: (node, view, getPos) => {
-        return new CodeBlockView(node, view, getPos, props.state.schema)
+      code_block: (node, view, getPos, decos) => {
+        return new CodeBlockView(node, view, getPos, props.state.schema, decos)
       },
     },
     dispatchTransaction(tr) {
@@ -24,6 +26,7 @@ const createEditor = (editorNode, props) => {
     }
   })
 
+  if (props.viewRef) props.viewRef.current = view
   return view
 }
 
@@ -32,7 +35,7 @@ export default (props: Props) => {
   const [view, setView] = useState(null)
 
   useEffect(() => {
-    if (view) view.updateState(props.state)
+    if (view) view.updateState(props.state ?? createEmptyState())
   }, [props.state])
 
   useEffect(() => {

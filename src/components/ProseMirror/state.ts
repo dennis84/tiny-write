@@ -5,7 +5,7 @@ import {history} from 'prosemirror-history'
 import {dropCursor} from 'prosemirror-dropcursor'
 import {gapCursor} from 'prosemirror-gapcursor'
 import {buildKeymap} from 'prosemirror-example-setup'
-import {arrowHandlers} from './code-block'
+import {codeBlockOptions, arrowHandlers} from './code-block'
 import {buildInputRules} from './input-rules'
 import {schema} from './schema'
 import {createLinkPlugin} from './link'
@@ -36,6 +36,7 @@ export const createState = (data) =>
       dropImage(),
       placeholder('Start typing ...'),
       arrowHandlers,
+      codeBlockOptions(),
     ]
   }, data)
 

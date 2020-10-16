@@ -64,17 +64,19 @@ export default () => {
         return;
       }
 
-      if (!isText(parsed.text)) {
-        dispatch(Notify({id: 'invalid_file', props: parsed.text}))
-        return;
-      }
-
       let text
-      try {
-        text = createState(parsed.text)
-      }  catch (err) {
-        dispatch(Notify({id: 'invalid_file', props: parsed.text}))
-        return;
+      if (parsed.text) {
+        if (!isText(parsed.text)) {
+          dispatch(Notify({id: 'invalid_state', props: parsed.text}))
+          return;
+        }
+
+        try {
+          text = createState(parsed.text)
+        }  catch (err) {
+          dispatch(Notify({id: 'invalid_file', props: parsed.text}))
+          return;
+        }
       }
 
       const newState = {

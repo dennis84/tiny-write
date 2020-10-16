@@ -34,6 +34,7 @@ export const New = (state: State) => {
 
   return {
     ...state,
+    text: undefined,
     files: files,
     lastModified: new Date,
   }

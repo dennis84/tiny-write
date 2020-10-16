@@ -1,9 +1,9 @@
-import React from 'react'
+import React, {useEffect, useRef} from 'react'
 import {EditorState} from 'prosemirror-state'
 import styled from '@emotion/styled'
 import {Config, File} from '..'
 import {rgb, rgba} from '../styles'
-import {color, color2, font} from '../config'
+import {codeTheme, color, color2, font} from '../config'
 import {UpdateText, useDispatch} from '../reducer'
 import ProseMirror from './ProseMirror'
 
@@ -81,10 +81,21 @@ interface Props {
 
 export default (props: Props) => {
   const dispatch = useDispatch()
+  const proseMirrorRef = useRef()
 
   const OnChange = (value: any) => {
     dispatch(UpdateText(value))
   }
+
+  useEffect(() => {
+    if (!proseMirrorRef.current) return
+    const view = proseMirrorRef.current
+    const tr = view.state.tr
+    tr.setMeta('code-block-options', {
+      theme: codeTheme(props.config.codeTheme),
+    })
+    view.dispatch(tr)
+  }, [props.config.codeTheme])
 
   if (props.loading) {
     return null
@@ -93,6 +104,7 @@ export default (props: Props) => {
   return (
     <Container>
       <ProseMirror
+        viewRef={proseMirrorRef}
         state={props.text}
         onChange={OnChange}
         className={''} />
