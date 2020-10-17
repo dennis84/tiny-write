@@ -76,7 +76,6 @@ interface Props {
   lastModified?: Date;
   files: File[];
   config: Config;
-  loading: boolean;
 }
 
 export default (props: Props) => {
@@ -96,10 +95,6 @@ export default (props: Props) => {
     })
     view.dispatch(tr)
   }, [props.config.codeTheme])
-
-  if (props.loading) {
-    return null
-  }
 
   return (
     <Container>

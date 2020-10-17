@@ -2,6 +2,7 @@ import React, {useEffect, useState, useRef} from 'react'
 import {EditorState} from 'prosemirror-state'
 import {EditorView} from 'prosemirror-view'
 import {createEmptyState} from './state'
+import {schema} from './schema'
 import {CodeBlockView} from './code-block'
 
 interface Props {
@@ -16,7 +17,7 @@ const createEditor = (editorNode, props) => {
     state: props.state ?? createEmptyState(),
     nodeViews: {
       code_block: (node, view, getPos, decos) => {
-        return new CodeBlockView(node, view, getPos, props.state.schema, decos)
+        return new CodeBlockView(node, view, getPos, schema, decos)
       },
     },
     dispatchTransaction(tr) {

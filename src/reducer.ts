@@ -1,13 +1,10 @@
 import {useContext, createContext, Reducer} from 'react'
 import {EditorState} from 'prosemirror-state'
-import {State, File, Config, Notification, newState} from '.'
+import {State, File, Config, Error, newState} from '.'
 import {isEmpty} from './components/ProseMirror/util'
 
-export const Notify = (notification: Notification) => (state: State) =>
-  ({...state, notification, loading: false})
-
-export const NotificationClose = (state: State) =>
-  ({...state, notification: undefined})
+export const UpdateError = (error: Error) => (state: State) =>
+  ({...state, error, loading: false})
 
 export const Clean = () => newState()
 

@@ -9,7 +9,7 @@ export interface Config {
   font: string;
 }
 
-export interface Notification {
+export interface Error {
   id: string;
   props?: any,
 }
@@ -19,7 +19,7 @@ export interface State {
   lastModified?: Date;
   files: File[];
   config: Config;
-  notification?: Notification;
+  error?: Error;
   loading: boolean;
   alwaysOnTop: boolean;
 }

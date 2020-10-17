@@ -1,15 +1,13 @@
 import {css} from '@emotion/core'
 import styled from '@emotion/styled'
+import {rgb} from '../styles'
+import {color, color2, font} from '../config'
 
 export const Common = css`
   height: 50px;
   padding: 0 20px;
-  background: #f9f9f9;
-  color: #4a4a4a;
   border-radius: 30px;
-  border: 1px solid #ccc;
   font-size: 18px;
-  font-family: 'Roboto';
   cursor: pointer;
   display: inline-flex;
   justify-content: center;
@@ -23,11 +21,16 @@ export const Common = css`
 
 export const Button = styled.button`
   ${Common}
+  background: none;
+  font-family: ${props => font(props.theme)};
+  color: ${props => rgb(color(props.theme))};
+  border: 1px solid ${props => rgb(color(props.theme))};
 `
 
 export const ButtonPrimary = styled.button`
   ${Common}
-  background: #8575ff;
   color: #fff;
   border: 0;
+  font-family: ${props => font(props.theme)};
+  background: ${props => rgb(color2(props.theme))};
 `

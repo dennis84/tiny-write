@@ -200,7 +200,7 @@ export class CodeBlockView {
     this.cm.on('keydown', (cm, e) => {
       if (cm.getValue() === '' && e.keyCode === 8) {
         const pos = getPos()
-        const tr = view.state.tr.deleteRange(pos-1, pos+1)
+        const tr = view.state.tr.deleteRange(Math.max(0, pos-1), pos+1)
         view.dispatch(tr)
         view.focus()
       }
@@ -227,10 +227,13 @@ export class CodeBlockView {
 
     const coords = this.cm.cursorCoords(this.cm.getCursor())
     const elem = document.elementFromPoint(coords.left, coords.top)
-    elem.scrollIntoView({
-      block: 'center',
-      behavior: 'smooth',
-    })
+
+    if (selection.empty) {
+      elem.scrollIntoView({
+        block: 'center',
+        behavior: 'smooth',
+      })
+    }
   }
 
   asProseMirrorSelection(doc) {
@@ -328,7 +331,6 @@ export class CodeBlockView {
   }
 
   selectNode() {
-    console.log('selectNode')
     this.cm.focus()
   }
 

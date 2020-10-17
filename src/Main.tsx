@@ -3,16 +3,16 @@ import {Global} from '@emotion/core'
 import styled from '@emotion/styled'
 import {ThemeProvider} from 'emotion-theming'
 import {rgb} from './styles'
-import {background, font, fonts} from './config'
+import {background, color, font, fonts} from './config'
 import {newState} from '.'
 import db from './db'
 import {updateRemote} from './remote'
-import {UpdateState, Notify, ReducerContext, reducer} from './reducer'
+import {UpdateState, UpdateError, ReducerContext, reducer} from './reducer'
 import {usePrevious} from './use-previous'
 import Editor from './components/Editor'
 import StatusLine from './components/StatusLine'
-import Notification from './components/Notification'
-import {createState, createEmptyState} from './components/ProseMirror/state'
+import Error from './components/Error'
+import {createState} from './components/ProseMirror/state'
 
 const Container = styled.div<any>`
   position: relative;
@@ -21,6 +21,7 @@ const Container = styled.div<any>`
   width: 100%;
   height: 100%;
   font-family: ${props => font(props.theme)};
+  color: ${props => rgb(color(props.theme))};
 `
 
 const isText = (x: any) => x && x.doc
@@ -39,10 +40,7 @@ const isConfig = (x: any): boolean =>
   typeof x.font === 'string'
 
 export default () => {
-  const initialState = newState({
-    text: createEmptyState(),
-  });
-
+  const initialState = newState();
   const [state, dispatch] = useReducer(reducer, initialState)
   const loadingPrev = usePrevious(state.loading)
 
@@ -60,21 +58,21 @@ export default () => {
 
       const config = {...state.config, ...parsed.config}
       if (!isConfig(config)) {
-        dispatch(Notify({id: 'invalid_config', props: config}))
+        dispatch(UpdateError({id: 'invalid_config', props: config}))
         return;
       }
 
       let text
       if (parsed.text) {
         if (!isText(parsed.text)) {
-          dispatch(Notify({id: 'invalid_state', props: parsed.text}))
+          dispatch(UpdateError({id: 'invalid_state', props: parsed.text}))
           return;
         }
 
         try {
           text = createState(parsed.text)
         }  catch (err) {
-          dispatch(Notify({id: 'invalid_file', props: parsed.text}))
+          dispatch(UpdateError({id: 'invalid_file', props: parsed.text}))
           return;
         }
       }
@@ -97,13 +95,13 @@ export default () => {
           file.text = createState(file.text)
           file.lastModified = new Date(file.lastModified)
           if (!isFile(file)) {
-            dispatch(Notify({id: 'invalid_file', props: file}))
+            dispatch(UpdateError({id: 'invalid_file', props: file}))
           }
         }
       }
 
       if (!isState(newState)) {
-        dispatch(Notify({id: 'invalid_state', props: newState}))
+        dispatch(UpdateError({id: 'invalid_state', props: newState}))
         return;
       }
 
@@ -137,17 +135,19 @@ export default () => {
       <ThemeProvider theme={state.config}>
         <Global styles={fontsStyles} />
         <Container>
-          <Editor
-            text={state.text}
-            lastModified={state.lastModified}
-            files={state.files}
-            config={state.config}
-            loading={state.loading} />
-          <StatusLine
-            text={state.text}
-            lastModified={state.lastModified} />
-          {state.notification && (
-            <Notification notification={state.notification} />
+          {state.error ? (
+            <Error error={state.error} />
+          ) : (
+            <>
+              <Editor
+                text={state.text}
+                lastModified={state.lastModified}
+                files={state.files}
+                config={state.config} />
+              <StatusLine
+                text={state.text}
+                lastModified={state.lastModified} />
+            </>
           )}
         </Container>
       </ThemeProvider>
