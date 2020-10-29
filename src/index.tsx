@@ -11,7 +11,7 @@ export interface Config {
 
 export interface Error {
   id: string;
-  props?: any,
+  props?: any;
 }
 
 export interface State {
@@ -30,7 +30,7 @@ export interface File {
 }
 
 export const newState = (props: Partial<State> = {}): State => ({
-  lastModified: new Date,
+  lastModified: new Date(),
   files: [],
   loading: true,
   alwaysOnTop: true,
@@ -42,7 +42,4 @@ export const newState = (props: Partial<State> = {}): State => ({
   ...props,
 })
 
-render(
-  <Main />,
-  document.getElementById('container')
-)
+render(<Main />, document.getElementById('container'))

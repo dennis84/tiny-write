@@ -3,19 +3,27 @@ import {EditorState} from 'prosemirror-state'
 import {State, File, Config, Error, newState} from '.'
 import {isEmpty} from './components/ProseMirror/util'
 
-export const UpdateError = (error: Error) => (state: State) =>
-  ({...state, error, loading: false})
+export const UpdateError = (error: Error) => (state: State) => ({
+  ...state,
+  error,
+  loading: false,
+})
 
 export const Clean = () => newState()
 
 export const UpdateState = (newState: State) => () => newState
 
-export const UpdateConfig = (config: Config) => (state: State) =>
-  ({...state, config: {...state.config, ...config}, lastModified: new Date})
+export const UpdateConfig = (config: Config) => (state: State) => ({
+  ...state,
+  config: {...state.config, ...config},
+  lastModified: new Date(),
+})
 
-export const UpdateText = (text: EditorState) => (state: State) => {
-  return {...state, text, lastModified: new Date}
-}
+export const UpdateText = (text: EditorState) => (state: State) => ({
+  ...state,
+  text,
+  lastModified: new Date(),
+})
 
 export const New = (state: State) => {
   if (isEmpty(state.text)) {
@@ -33,7 +41,7 @@ export const New = (state: State) => {
     ...state,
     text: undefined,
     files: files,
-    lastModified: new Date,
+    lastModified: new Date(),
   }
 }
 
@@ -61,7 +69,7 @@ export const Open = (file: File) => (state: State) => {
 export const Close = (state: State) => {
   const files = [...state.files]
   const next = files.shift() ?? {
-    lastModified: new Date,
+    lastModified: new Date(),
     text: undefined,
   }
 
@@ -76,7 +84,7 @@ export const Close = (state: State) => {
 export const ToggleAlwaysOnTop = (state) => ({
   ...state,
   alwaysOnTop: !state.alwaysOnTop,
-  lastModified: new Date,
+  lastModified: new Date(),
 })
 
 type Action = (state: State) => State

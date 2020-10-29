@@ -17,11 +17,11 @@ import {createState} from './components/ProseMirror/state'
 const Container = styled.div<any>`
   position: relative;
   display: block;
-  background: ${props => rgb(background(props.theme))};
+  background: ${(props) => rgb(background(props.theme))};
   width: 100%;
   height: 100%;
-  font-family: ${props => font(props.theme)};
-  color: ${props => rgb(color(props.theme))};
+  font-family: ${(props) => font(props.theme)};
+  color: ${(props) => rgb(color(props.theme))};
 `
 
 const isText = (x: any) => x && x.doc
@@ -40,7 +40,7 @@ const isConfig = (x: any): boolean =>
   typeof x.font === 'string'
 
 export default () => {
-  const initialState = newState();
+  const initialState = newState()
   const [state, dispatch] = useReducer(reducer, initialState)
   const loadingPrev = usePrevious(state.loading)
 
@@ -49,31 +49,31 @@ export default () => {
       let parsed
       try {
         parsed = JSON.parse(data)
-      } catch (err) {}
+      } catch (err) { /* ignore */ }
 
       if (!parsed) {
         dispatch(UpdateState({...state, loading: false}))
-        return;
+        return
       }
 
       const config = {...state.config, ...parsed.config}
       if (!isConfig(config)) {
         dispatch(UpdateError({id: 'invalid_config', props: config}))
-        return;
+        return
       }
 
       let text
       if (parsed.text) {
         if (!isText(parsed.text)) {
           dispatch(UpdateError({id: 'invalid_state', props: parsed.text}))
-          return;
+          return
         }
 
         try {
           text = createState(parsed.text)
-        }  catch (err) {
+        } catch (err) {
           dispatch(UpdateError({id: 'invalid_file', props: parsed.text}))
-          return;
+          return
         }
       }
 
@@ -89,7 +89,10 @@ export default () => {
         newState.lastModified = new Date(parsed.lastModified)
       }
 
-      if (parsed.lastModified) newState.lastModified = new Date(parsed.lastModified)
+      if (parsed.lastModified) {
+        newState.lastModified = new Date(parsed.lastModified)
+      }
+
       if (parsed.files) {
         for (const file of parsed.files) {
           file.text = createState(file.text)
@@ -102,7 +105,7 @@ export default () => {
 
       if (!isState(newState)) {
         dispatch(UpdateError({id: 'invalid_state', props: newState}))
-        return;
+        return
       }
 
       dispatch(UpdateState(newState))
@@ -111,7 +114,7 @@ export default () => {
 
   useEffect(() => {
     updateRemote(state, dispatch)
-  }, [state]);
+  }, [state])
 
   useEffect(() => {
     if (loadingPrev !== false) {
@@ -125,9 +128,9 @@ export default () => {
     .filter(([, value]) => value.src)
     .map(([, value]) => ({
       '@font-face': {
-        'fontFamily': `'${value.label}'`,
-        'src': `url('${value.src}')`,
-      }
+        fontFamily: `'${value.label}'`,
+        src: `url('${value.src}')`,
+      },
     }))
 
   return (

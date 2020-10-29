@@ -38,12 +38,9 @@ const Pre = styled.pre`
 `
 
 export default (props: Props) =>
-  props.error.id === 'invalid_state' ?
-  invalidState('Invalid State', props.error.props) :
-  props.error.id === 'invalid_config' ?
-  invalidState('Invalid Config', props.error.props) :
-  props.error.id === 'invalid_file' ?
-  invalidState('Invalid File', props.error.props) :
+  props.error.id === 'invalid_state' ? invalidState('Invalid State', props.error.props) :
+  props.error.id === 'invalid_config' ? invalidState('Invalid Config', props.error.props) :
+  props.error.id === 'invalid_file' ? invalidState('Invalid File', props.error.props) :
   null
 
 const invalidState = (title, props) => {

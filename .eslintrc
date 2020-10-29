@@ -2,17 +2,24 @@
   "root": true,
   "parser": "@typescript-eslint/parser",
   "plugins": [
-    "@typescript-eslint"
+    "@typescript-eslint",
+    "react"
   ],
   "extends": [
     "eslint:recommended",
-    "plugin:@typescript-eslint/eslint-recommended",
-    "plugin:@typescript-eslint/recommended"
+    "plugin:@typescript-eslint/recommended",
+    "plugin:react/recommended"
   ],
   "rules": {
-    "no-empty": 0,
-    "no-cond-assign": 0,
-    "@typescript-eslint/explicit-module-boundary-types": 0,
-    "@typescript-eslint/no-explicit-any": 0
+    "indent": "off",
+    "curly": ["error", "multi-line"],
+    "react/display-name": "off",
+    "no-trailing-spaces": ["error"],
+    "no-multiple-empty-lines": ["error", {"max": 1, "maxEOF": 0}],
+    "@typescript-eslint/indent": ["error", 2, {"flatTernaryExpressions": true}],
+    "@typescript-eslint/member-delimiter-style": ["error"],
+    "@typescript-eslint/explicit-module-bound,ary-types": "off",
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/explicit-module-boundary-types": "off"
   }
 }
