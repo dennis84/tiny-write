@@ -7,7 +7,6 @@ export const dropImage = () => new Plugin({
     handleDOMEvents: {
       drop: (view, event) => {
         event.preventDefault()
-        console.log(event)
 
         const text = event.dataTransfer.getData('text/plain')
         const {files} = event.dataTransfer
@@ -43,7 +42,7 @@ export const dropImage = () => new Plugin({
         } else if (isImage(text)) {
           insertImage(text)
         } else {
-          insertData(data)
+          insertData()
         }
       }
     }

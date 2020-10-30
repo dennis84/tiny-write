@@ -121,7 +121,8 @@ import 'codemirror/mode/yaml/yaml'
 import 'codemirror/mode/z80/z80'
 import CodeMirror from 'codemirror'
 import {Selection, TextSelection, Plugin, PluginKey} from 'prosemirror-state'
-import {Decoration, DecorationSet} from 'prosemirror-view'
+import {Decoration, DecorationSet, EditorView, Node} from 'prosemirror-view'
+import {Schema} from 'prosemirror-model'
 import {undo, redo} from 'prosemirror-history'
 import {exitCode} from 'prosemirror-commands'
 import {keymap} from 'prosemirror-keymap'
@@ -150,14 +151,14 @@ export const codeBlockOptions = () => new Plugin({
 })
 
 export class CodeBlockView {
-  node: any
-  view: any
-  getPos: any
-  schema: any
-  incomingChanges: any
-  cm: any
-  dom: any
-  updating: any
+  node: Node
+  view: EditorView
+  getPos: () => number
+  schema: Schema
+  incomingChanges: boolean
+  cm: CodeMirror
+  dom: Element
+  updating: boolean
 
   constructor(node, view, getPos, schema, decos) {
     // Store for later

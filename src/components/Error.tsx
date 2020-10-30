@@ -1,6 +1,6 @@
 import React from 'react'
 import styled from '@emotion/styled'
-import {Error} from '..'
+import {Error, ThemeProps} from '..'
 import {Clean, useDispatch} from '../reducer'
 import {rgb, rgba} from '../styles'
 import {background, color} from '../config'
@@ -10,7 +10,7 @@ interface Props {
   error: Error;
 }
 
-const Layer = styled.div`
+const Layer = styled.div<ThemeProps>`
   position: absolute;
   top: 0;
   bottom: 0;
@@ -28,7 +28,7 @@ const Container = styled.div`
   width: 100%;
 `
 
-const Pre = styled.pre`
+const Pre = styled.pre<ThemeProps>`
   white-space: pre-wrap;
   word-wrap: break-word;
   background: ${props => rgba(color(props.theme), 0.1)};

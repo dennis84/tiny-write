@@ -1,4 +1,4 @@
-import {useContext, createContext, Reducer} from 'react'
+import {useContext, createContext, Dispatch as Disp, Reducer} from 'react'
 import {EditorState} from 'prosemirror-state'
 import {State, File, Config, Error, newState} from '.'
 import {isEmpty} from './components/ProseMirror/util'
@@ -89,7 +89,9 @@ export const ToggleAlwaysOnTop = (state) => ({
 
 type Action = (state: State) => State
 
-export const ReducerContext = createContext<any>(null)
+export type Dispatch = Disp<Action>
+
+export const ReducerContext = createContext<Dispatch>(null)
 
 export const useDispatch = () => useContext(ReducerContext)
 

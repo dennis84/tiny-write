@@ -4,7 +4,7 @@ import styled from '@emotion/styled'
 import {ThemeProvider} from 'emotion-theming'
 import {rgb} from './styles'
 import {background, color, font, fonts} from './config'
-import {newState} from '.'
+import {ThemeProps, newState} from '.'
 import db from './db'
 import {updateRemote} from './remote'
 import {UpdateState, UpdateError, ReducerContext, reducer} from './reducer'
@@ -14,7 +14,7 @@ import StatusLine from './components/StatusLine'
 import Error from './components/Error'
 import {createState} from './components/ProseMirror/state'
 
-const Container = styled.div<any>`
+const Container = styled.div<ThemeProps>`
   position: relative;
   display: block;
   background: ${(props) => rgb(background(props.theme))};

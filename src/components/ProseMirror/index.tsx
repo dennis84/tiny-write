@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useRef} from 'react'
+import React, {useEffect, useState, useRef, RefObject} from 'react'
 import {EditorState} from 'prosemirror-state'
 import {EditorView} from 'prosemirror-view'
 import {createEmptyState} from './state'
@@ -9,7 +9,7 @@ interface Props {
   state?: EditorState;
   onChange: (state: EditorState) => void;
   className: string;
-  viewRef?: any;
+  viewRef?: RefObject<EditorView>;
 }
 
 const createEditor = (editorNode, props) => {

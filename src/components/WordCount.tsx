@@ -1,10 +1,11 @@
 import React from 'react'
 import styled from '@emotion/styled'
-import {rgba} from '../styles'
 import {EditorState} from 'prosemirror-state'
+import {ThemeProps} from '..'
 import {color} from '../config'
+import {rgba} from '../styles'
 
-const Text = styled.span<any>`
+const Text = styled.span<ThemeProps>`
   grid-column-start: 2;
   font-size: 20px;
   color: ${props => rgba(color(props.theme), 0.5)};

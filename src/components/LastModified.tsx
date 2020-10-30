@@ -1,10 +1,11 @@
 import React from 'react'
 import {differenceInHours, format} from 'date-fns'
 import styled from '@emotion/styled'
-import {rgba} from '../styles'
+import {ThemeProps} from '..'
 import {color} from '../config'
+import {rgba} from '../styles'
 
-const Text = styled.span<any>`
+const Text = styled.span<ThemeProps>`
   font-size: 12px;
   color: ${props => rgba(color(props.theme), 0.5)};
   pointer-events: none;

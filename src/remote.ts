@@ -1,12 +1,12 @@
 import {defaultMarkdownSerializer} from 'prosemirror-markdown'
 import {State} from '.'
-import {UpdateConfig, Close, Open, New, ToggleAlwaysOnTop} from './reducer'
+import {UpdateConfig, Close, Open, New, ToggleAlwaysOnTop, Dispatch} from './reducer'
 import {themes, fonts, codeThemes} from './config'
 
 const userAgent = window.navigator.userAgent.toLowerCase()
 const isElectron = userAgent.indexOf(' electron/') > -1
 
-export const updateRemote = (state: State, dispatch: any) => {
+export const updateRemote = (state: State, dispatch: Dispatch) => {
   if (!isElectron) return
   const remote = window.require('electron').remote
   const {app, Menu} = remote
@@ -25,8 +25,8 @@ export const toggleFullScreen = () => {
   win.setSimpleFullScreen(!win.isSimpleFullScreen())
 }
 
-export const createMenu = (state: State, dispatch: any) => {
-  const electron = (window as any).require('electron')
+export const createMenu = (state: State, dispatch: Dispatch) => {
+  const electron = window.require('electron')
   const remote = electron.remote
   const {MenuItem} = remote
   const toText = (editorState) => editorState.doc.textContent

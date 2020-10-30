@@ -9,9 +9,13 @@ export interface Config {
   font: string;
 }
 
+export interface ThemeProps {
+  theme: Config;
+}
+
 export interface Error {
   id: string;
-  props?: any;
+  props?: unknown;
 }
 
 export interface State {
