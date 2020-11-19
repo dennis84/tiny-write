@@ -9,10 +9,10 @@ import {UpdateText, useDispatch} from '../reducer'
 import ProseMirror from './ProseMirror'
 
 const Container = styled.div`
-  width: 100%;
   height: 100%;
-  min-height: calc(100vh - 50px);
-  max-height: calc(100vh - 50px);
+  width: 100%;
+  min-height: 100vh;
+  max-height: 100vh;
   overflow-y: auto;
   padding: 0 50px;
   display: flex;

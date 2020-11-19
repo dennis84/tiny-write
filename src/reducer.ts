@@ -66,7 +66,7 @@ export const Open = (file: File) => (state: State) => {
   }
 }
 
-export const Close = (state: State) => {
+export const Discard = (state: State) => {
   const files = [...state.files]
   const next = files.shift() ?? {
     lastModified: new Date(),

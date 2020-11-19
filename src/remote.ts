@@ -1,11 +1,9 @@
 import {defaultMarkdownSerializer} from 'prosemirror-markdown'
+import {EditorState} from 'prosemirror-state'
 import {State} from '.'
-import {UpdateConfig, Close, Open, New, ToggleAlwaysOnTop, Dispatch} from './reducer'
+import {UpdateConfig, Discard, Open, New, ToggleAlwaysOnTop, Dispatch} from './reducer'
 import {themes, fonts, codeThemes} from './config'
-const isMac = process.platform === 'darwin'
-
-const userAgent = window.navigator.userAgent.toLowerCase()
-const isElectron = userAgent.indexOf(' electron/') > -1
+import {isElectron, isMac} from './env'
 
 export const updateRemote = (state: State, dispatch: Dispatch) => {
   if (!isElectron) return
@@ -19,11 +17,35 @@ export const updateRemote = (state: State, dispatch: Dispatch) => {
   remote.getCurrentWindow().setAlwaysOnTop(state.alwaysOnTop)
 }
 
+export const quit = () => {
+  const remote = window.require('electron').remote
+  remote.app.quit()
+}
+
 export const toggleFullScreen = () => {
   if (!isElectron) return
   const remote = window.require('electron').remote
   const win = remote.getCurrentWindow()
   win.setSimpleFullScreen(!win.isSimpleFullScreen())
+}
+
+export const copyAllAsMarkdown = (state: EditorState) => {
+  const text = defaultMarkdownSerializer.serialize(state.doc)
+  if (isElectron) {
+    const electron = window.require('electron')
+    electron.clipboard.writeText(text, 'selection')
+  } else {
+    navigator.clipboard.writeText(text)
+  }
+}
+
+export const getVersion = () => {
+  if (isElectron) {
+    const electron = window.require('electron')
+    return electron.remote.app.getVersion()
+  }
+
+  return process.env.npm_package_version
 }
 
 export const createMenu = (state: State, dispatch: Dispatch) => {
@@ -40,15 +62,14 @@ export const createMenu = (state: State, dispatch: Dispatch) => {
         new MenuItem({
           label: 'About Version',
           click: () => {
-            const version = remote.app.getVersion()
-            remote.shell.openExternal(`https://github.com/dennis84/tiny-write/releases/tag/v${version}`)
+            remote.shell.openExternal(`https://github.com/dennis84/tiny-write/releases/tag/v${getVersion()}`)
           }
         }),
         new MenuItem({type: 'separator'}),
         new MenuItem({
           label: 'Quit',
           accelerator: 'CmdOrCtrl+Q',
-          click: () => remote.app.quit()
+          click: () => quit()
         }),
       ],
     }),
@@ -61,9 +82,9 @@ export const createMenu = (state: State, dispatch: Dispatch) => {
           click: () => dispatch(New),
         }),
         new MenuItem({
-          label: 'Close',
+          label: 'Discard',
           accelerator: 'CmdOrCtrl+W',
-          click: () => dispatch(Close),
+          click: () => dispatch(Discard),
         }),
         new MenuItem({type: 'separator'}),
         new MenuItem({
@@ -86,10 +107,7 @@ export const createMenu = (state: State, dispatch: Dispatch) => {
         new MenuItem({label: 'Copy', accelerator: 'CmdOrCtrl+C', selector: 'copy:'}),
         new MenuItem({
           label: 'Copy All as Markdown',
-          click: () => {
-            const text = defaultMarkdownSerializer.serialize(state.text.doc)
-            electron.clipboard.writeText(text, 'selection')
-          }
+          click: () => copyAllAsMarkdown(state.text)
         }),
         new MenuItem({type: 'separator'}),
         new MenuItem({label: 'Paste', accelerator: 'CmdOrCtrl+V', selector: 'paste:'}),

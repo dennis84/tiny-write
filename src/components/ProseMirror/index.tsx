@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useRef, RefObject} from 'react'
+import React, {createContext, useContext, useEffect, useState, useRef, RefObject} from 'react'
 import {EditorState} from 'prosemirror-state'
 import {EditorView} from 'prosemirror-view'
 import {createEmptyState} from './state'
@@ -34,6 +34,7 @@ const createEditor = (editorNode, props) => {
 export default (props: Props) => {
   const editorRef = useRef()
   const [view, setView] = useState(null)
+  const [,setEditorView] = useContext(ProseMirrorContext)
 
   useEffect(() => {
     if (view) view.updateState(props.state ?? createEmptyState())
@@ -43,9 +44,15 @@ export default (props: Props) => {
     const editorView = createEditor(editorRef.current, props)
     editorView.focus()
     setView(editorView)
+    setEditorView(editorView)
   }, [])
 
   return (
     <div ref={editorRef} className={props.className} />
   )
 }
+
+type ProseMirrorContextState = [EditorView, (v: EditorView) => void]
+export const ProseMirrorContext = createContext<ProseMirrorContextState>([null, () => undefined]);
+
+export const useProseMirror = () => useContext(ProseMirrorContext)[0]
