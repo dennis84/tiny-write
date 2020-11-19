@@ -2,6 +2,7 @@ import {defaultMarkdownSerializer} from 'prosemirror-markdown'
 import {State} from '.'
 import {UpdateConfig, Close, Open, New, ToggleAlwaysOnTop, Dispatch} from './reducer'
 import {themes, fonts, codeThemes} from './config'
+const isMac = process.platform === 'darwin'
 
 const userAgent = window.navigator.userAgent.toLowerCase()
 const isElectron = userAgent.indexOf(' electron/') > -1
@@ -46,7 +47,7 @@ export const createMenu = (state: State, dispatch: Dispatch) => {
         new MenuItem({type: 'separator'}),
         new MenuItem({
           label: 'Quit',
-          accelerator: 'Command+Q',
+          accelerator: 'CmdOrCtrl+Q',
           click: () => remote.app.quit()
         }),
       ],
@@ -56,12 +57,12 @@ export const createMenu = (state: State, dispatch: Dispatch) => {
       submenu: [
         new MenuItem({
           label: 'New',
-          accelerator: 'Cmd+N',
+          accelerator: 'CmdOrCtrl+N',
           click: () => dispatch(New),
         }),
         new MenuItem({
           label: 'Close',
-          accelerator: 'Cmd+W',
+          accelerator: 'CmdOrCtrl+W',
           click: () => dispatch(Close),
         }),
         new MenuItem({type: 'separator'}),
@@ -107,7 +108,7 @@ export const createMenu = (state: State, dispatch: Dispatch) => {
         }),
         new MenuItem({
           label: 'Toggle Fullscreen',
-          accelerator: 'Cmd+Enter',
+          accelerator: isMac ? 'Cmd+Enter' : 'Alt+Enter',
           click: () => toggleFullScreen(),
         }),
         new MenuItem({

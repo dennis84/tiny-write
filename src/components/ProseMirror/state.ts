@@ -24,6 +24,10 @@ export const createState = (data) =>
         'Cmd-Enter': () => {
           toggleFullScreen()
           return true
+        },
+        'Alt-Enter': () => {
+          toggleFullScreen()
+          return true
         }
       }),
       keymap(buildKeymap(schema)),
