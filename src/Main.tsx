@@ -7,7 +7,7 @@ import {newState} from '.'
 import db from './db'
 import {updateRemote} from './remote'
 import {UpdateState, UpdateError, ReducerContext, reducer} from './reducer'
-import {usePrevious} from './use-previous'
+import {useDebouncedEffect, usePrevious} from './hooks'
 import Editor from './components/Editor'
 import StatusLine from './components/StatusLine'
 import Error from './components/Error'
@@ -111,17 +111,17 @@ export default () => {
     })
   }, [])
 
-  useEffect(() => {
+  useDebouncedEffect(() => {
     updateRemote(state, dispatch)
-  }, [state])
+  }, 100, [state])
 
-  useEffect(() => {
+  useDebouncedEffect(() => {
     if (loadingPrev !== false) {
       return
     }
 
     db.set('state', JSON.stringify(state))
-  }, [state.lastModified])
+  }, 100, [state.lastModified])
 
   const fontsStyles = Object.entries(fonts)
     .filter(([, value]) => value.src)

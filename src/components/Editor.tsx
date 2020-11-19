@@ -17,6 +17,9 @@ const Container = styled.div`
   padding: 0 50px;
   display: flex;
   justify-content: center;
+  ::-webkit-scrollbar {
+    display: none;
+  }
   > div {
     width: 100%;
     display: flex;
