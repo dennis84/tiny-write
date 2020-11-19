@@ -2,8 +2,8 @@
 
 # TinyWrite
 
-Just a little writing tool with markdown shortcuts for my Mac that saves every
-change to local indexeddb.
+Just a little writing tool with markdown shortcuts that saves every change to
+local indexeddb.
 
 ## Install
 
@@ -14,8 +14,10 @@ Download from [releases](https://github.com/dennis84/tiny-write/releases)
 ```
 npm install
 
-# Install dmg
+# Build app
 npm run dist
+# Ubuntu
+snap install app/TinyWrite_0.x.x_amd64.snap --dangerous
 
 # Develop web
 npm run web
