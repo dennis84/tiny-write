@@ -2,13 +2,13 @@ import React, {useEffect, useRef} from 'react'
 import {EditorState} from 'prosemirror-state'
 import {EditorView} from 'prosemirror-view'
 import styled from '@emotion/styled'
-import {Config, ThemeProps, File} from '..'
+import {Config, File} from '..'
 import {rgb, rgba} from '../styles'
 import {codeTheme, color, color2, font} from '../config'
 import {UpdateText, useDispatch} from '../reducer'
 import ProseMirror from './ProseMirror'
 
-const Container = styled.div<ThemeProps>`
+const Container = styled.div`
   width: 100%;
   height: 100%;
   min-height: calc(100vh - 50px);

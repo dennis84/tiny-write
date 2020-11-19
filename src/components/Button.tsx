@@ -1,6 +1,5 @@
-import {css} from '@emotion/core'
+import {css} from '@emotion/react'
 import styled from '@emotion/styled'
-import {ThemeProps} from '..'
 import {color, color2, font} from '../config'
 import {rgb} from '../styles'
 
@@ -20,7 +19,7 @@ export const Common = css`
   }
 `
 
-export const Button = styled.button<ThemeProps>`
+export const Button = styled.button`
   ${Common}
   background: none;
   font-family: ${props => font(props.theme)};
@@ -28,7 +27,7 @@ export const Button = styled.button<ThemeProps>`
   border: 1px solid ${props => rgb(color(props.theme))};
 `
 
-export const ButtonPrimary = styled.button<ThemeProps>`
+export const ButtonPrimary = styled.button`
   ${Common}
   color: #fff;
   border: 0;

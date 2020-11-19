@@ -1,10 +1,9 @@
 import React, {useEffect, useReducer} from 'react'
-import {Global} from '@emotion/core'
+import {Global, ThemeProvider} from '@emotion/react'
 import styled from '@emotion/styled'
-import {ThemeProvider} from 'emotion-theming'
 import {rgb} from './styles'
 import {background, color, font, fonts} from './config'
-import {ThemeProps, newState} from '.'
+import {newState} from '.'
 import db from './db'
 import {updateRemote} from './remote'
 import {UpdateState, UpdateError, ReducerContext, reducer} from './reducer'
@@ -14,7 +13,7 @@ import StatusLine from './components/StatusLine'
 import Error from './components/Error'
 import {createState} from './components/ProseMirror/state'
 
-const Container = styled.div<ThemeProps>`
+const Container = styled.div`
   position: relative;
   display: block;
   background: ${(props) => rgb(background(props.theme))};
