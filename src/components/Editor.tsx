@@ -30,7 +30,7 @@ const Container = styled.div`
     height: fit-content;
     width: 100%;
     max-width: 800px;
-    font-size: 24px;
+    font-size: ${props => props.theme.fontSize}px;
     font-family: ${props => font(props.theme)};
     color: ${props => rgb(color(props.theme))};
     margin-top: 50px;
@@ -41,6 +41,9 @@ const Container = styled.div`
     -webkit-app-region: no-drag;
     &::-webkit-scrollbar {
       display: none;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      line-height: 120%;
     }
     p {
       margin: 0;
@@ -105,8 +108,7 @@ export default (props: Props) => {
       <ProseMirror
         viewRef={proseMirrorRef}
         state={props.text}
-        onChange={OnChange}
-        className={''} />
+        onChange={OnChange} />
     </Container>
   )
 }

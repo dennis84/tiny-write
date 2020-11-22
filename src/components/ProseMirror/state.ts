@@ -1,6 +1,7 @@
 import {EditorState} from 'prosemirror-state'
 import {keymap} from 'prosemirror-keymap'
 import {baseKeymap} from 'prosemirror-commands'
+import {sinkListItem, liftListItem} from 'prosemirror-schema-list'
 import {history} from 'prosemirror-history'
 import {dropCursor} from 'prosemirror-dropcursor'
 import {gapCursor} from 'prosemirror-gapcursor'
@@ -15,7 +16,6 @@ import {placeholder} from './placeholder'
 import {toggleFullScreen} from '../../remote'
 
 export const createState = (data) =>
-  data instanceof EditorState ? data :
   EditorState.fromJSON({
     schema,
     plugins: [
@@ -28,7 +28,9 @@ export const createState = (data) =>
         'Alt-Enter': () => {
           toggleFullScreen()
           return true
-        }
+        },
+        'Tab': sinkListItem(schema.nodes.list_item),
+        'Shift-Tab': liftListItem(schema.nodes.list_item),
       }),
       keymap(buildKeymap(schema)),
       keymap(baseKeymap),

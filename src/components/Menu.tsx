@@ -1,15 +1,18 @@
 import React, {useState} from 'react'
 import {EditorState} from 'prosemirror-state'
 import {undo, redo} from 'prosemirror-history'
+import {deleteSelection, selectAll} from 'prosemirror-commands'
 import {differenceInHours, format} from 'date-fns'
 import styled from '@emotion/styled'
+import {css} from '@emotion/react'
 import {Config, File} from '..'
 import {Discard, New, Open, UpdateConfig, ToggleAlwaysOnTop, useDispatch} from '../reducer'
-import {color, themes, fonts, codeThemes} from '../config'
+import {color, color2, themes, fonts, codeThemes} from '../config'
 import {rgb, rgba} from '../styles'
-import {isElectron} from '../env'
+import {isElectron, isMac} from '../env'
 import * as remote from '../remote'
 import {useProseMirror} from './ProseMirror'
+import {isEmpty} from './ProseMirror/util'
 
 const Container = styled.div`
   position: relative;
@@ -17,6 +20,7 @@ const Container = styled.div`
   flex-grow: 1;
   height: 100%;
   -webkit-app-region: no-drag;
+  font-family: 'JetBrains Mono';
 `
 
 const Burger = styled.button<any>`
@@ -36,33 +40,32 @@ const Burger = styled.button<any>`
   outline: none;
   -webkit-app-region: no-drag;
   > span {
-    background: ${props => rgba(color(props.theme), 0.3)};
+    background: ${props => rgba(color(props.theme), 0.4)};
     height: 2px;
     width: 100%;
     border-radius: 4px;
   }
+  &:hover > span {
+    background: ${props => rgba(color(props.theme), 0.6)};
+  };
 `
 
 const Off = styled.div`
   background: ${props => rgba(color(props.theme), 0.1)};
   padding: 20px;
   height: 100%;
-  min-width: 400px;
+  min-width: 460px;
   overflow-y: auto;
   ::-webkit-scrollbar {
     display: none;
   }
 `
 
-const Menu = styled.div`
-  > label {
-    font-size: 20px;
-  }
-`
+const Menu = styled.div``
 
 const Label = styled.h3`
   margin: 0;
-  font-size: 16px;
+  font-size: 18px;
   text-transform: uppercase;
 `
 
@@ -71,18 +74,49 @@ const Sub = styled.nav`
   margin-bottom: 30px;
 `
 
-const Item = styled.p`
-  cursor: pointer;
+export const Common = css`
+  height: 50px;
+  padding: 0 20px;
+`
+
+export const Item = props => css`
+  width: 100%;
   padding: 2px 0;
   margin: 0;
+  outline: none;
   display: flex;
   align-items: center;
-  color: ${props => rgb(color(props.theme))};
+  color: ${rgb(color(props.theme))};
+  font-size: 18px;
+  font-family: 'JetBrains Mono';
   white-space: nowrap;
-  text-decoration: none;
+  > i {
+    justify-self: flex-end;
+    margin-left: auto;
+    color: ${rgba(color(props.theme), 0.5)};
+  }
+`
+
+const Text = styled.p`
+  ${Item}
+`
+
+const Link = styled.button`
+  ${Item}
+  background: none;
+  border: 0;
+  cursor: pointer;
   &:hover {
-    text-decoration: underline;
+    color: ${props => rgb(color2(props.theme))};
   };
+  &[disabled] {
+    color: ${props => rgba(color(props.theme), 0.6)};
+    cursor: not-allowed;
+  }
+`
+
+const Slider = styled.input`
+  -webkit-app-region: no-drag;
 `
 
 interface Props {
@@ -97,6 +131,7 @@ export default (props: Props) => {
   const dispatch = useDispatch()
   const editorView = useProseMirror()
   const [show, setShow] = useState(false)
+  const mod = isMac ? 'Cmd' : 'Ctrl'
 
   const OnUndo = () => {
     undo(editorView.state, editorView.dispatch)
@@ -115,7 +150,16 @@ export default (props: Props) => {
   }
 
   const OnVersion = () => {
-    window.open(`https://github.com/dennis84/tiny-write/releases/tag/v${remote.getVersion()}`, '_blank')
+    window.open(remote.getVersionUrl(), '_blank')
+  }
+
+  const OnDiscard = () => {
+    if (props.files.length > 0 && isEmpty(props.text)) {
+      dispatch(Discard)
+    } else {
+      selectAll(editorView.state, editorView.dispatch)
+      deleteSelection(editorView.state, editorView.dispatch)
+    }
   }
 
   const WordCount = () => {
@@ -125,7 +169,7 @@ export default (props: Props) => {
     }) ?? 0
 
     return (
-      <Item>{count} words</Item>
+      <Text>{count} words</Text>
     )
   }
 
@@ -136,16 +180,16 @@ export default (props: Props) => {
       if (differenceInHours(now, date) <= 24) {
         return format(date, 'HH:mm:ss')
       } else if (date.getFullYear() === now.getFullYear()) {
-        return format(date, 'dd MMMM')
+        return format(date, 'dd MMMM HH:mm:ss')
       }
 
-      return format(date, 'dd MMMM YYYY')
+      return format(date, 'dd MMMM YYYY HH:mm:ss')
     }
 
     return props.lastModified ? (
-      <Item>Edited {formatDate(props.lastModified)}</Item>
+      <Text>Last modified {formatDate(props.lastModified)}</Text>
     ) : (
-      <Item>Nothing yet</Item>
+      <Text>Nothing yet</Text>
     )
   }
 
@@ -161,81 +205,92 @@ export default (props: Props) => {
           <Menu>
             <Label>Stats</Label>
             <Sub>
-              <WordCount />
               <LastModified />
+              <WordCount />
             </Sub>
             <Label>File</Label>
             <Sub>
-              <Item onClick={() => dispatch(New)}>New</Item>
-              <Item onClick={() => dispatch(Discard)}>Discard</Item>
+              <Link onClick={() => dispatch(New)}>New <i>({mod}+n)</i></Link>
+              <Link
+                onClick={OnDiscard}
+                disabled={props.files.length === 0 && isEmpty(props.text)}>
+                {(props.files.length > 0 && isEmpty(props.text)) ? 'Discard ⚠️' : 'Clear'} <i>({mod}+w)</i>
+              </Link>
             </Sub>
             {props.files.length > 0 && (
               <>
                 <Label>Files</Label>
                 <Sub>
                   {props.files.map((file) => (
-                    <Item
+                    <Link
                       key={file.lastModified.toString()}
                       onClick={() => dispatch(Open(file))}>
                       {file.text.doc.textContent.substring(0, 16)}
-                    </Item>
+                    </Link>
                   ))}
                 </Sub>
               </>
             )}
             <Label>Edit</Label>
             <Sub>
-              <Item onClick={OnUndo}>Undo</Item>
-              <Item onClick={OnRedo}>Redo</Item>
-              <Item onMouseDown={Cmd('cut')}>Cut</Item>
-              <Item onMouseDown={Cmd('copy')}>Copy</Item>
-              <Item onClick={OnCopyAllAsMd}>Copy all as markdown</Item>
+              <Link onClick={OnUndo}>Undo <i>({mod}+z)</i></Link>
+              <Link onClick={OnRedo}>Redo <i>({mod}+{isMac ? 'Shift+z' : 'y'})</i></Link>
+              <Link onMouseDown={Cmd('cut')}>Cut <i>({mod}+x)</i></Link>
+              <Link onMouseDown={Cmd('paste')}>Paste <i>({mod}+p)</i></Link>
+              <Link onMouseDown={Cmd('copy')}>Copy <i>({mod}+c)</i></Link>
+              <Link onClick={OnCopyAllAsMd}>Copy all as markdown</Link>
             </Sub>
             <Label>Theme</Label>
             <Sub>
               {Object.entries(themes).map(([key, value]) => (
-                <Item
+                <Link
                   key={key}
                   onClick={() => dispatch(UpdateConfig({...props.config, theme: key}))}>
-                  {value.label}
-                  {key === props.config.theme && <input type="checkbox" defaultChecked={true} />}
-                </Item>
+                  {value.label}{' '}{key === props.config.theme && '✅'}
+                </Link>
               ))}
             </Sub>
             <Label>Code</Label>
             <Sub>
               {Object.entries(codeThemes).map(([key, value]) => (
-                <Item
+                <Link
                   key={key}
                   onClick={() => dispatch(UpdateConfig({...props.config, codeTheme: key}))}>
-                  {value.label}
-                  {key === props.config.codeTheme && <input type="checkbox" defaultChecked={true} />}
-                </Item>
+                  {value.label}{' '}{key === props.config.codeTheme && '✅'}
+                </Link>
               ))}
             </Sub>
             <Label>Font</Label>
             <Sub>
               {Object.entries(fonts).map(([key, value]) => (
-                <Item
+                <Link
                   key={key}
                   onClick={() => dispatch(UpdateConfig({...props.config, font: key}))}>
-                  {value.label}
-                  {key === props.config.font && <input type="checkbox" defaultChecked={true} />}
-                </Item>
+                  {value.label}{' '}{key === props.config.font && '✅'}
+                </Link>
               ))}
+              <Text>
+                Font size:
+                <Slider
+                  type="range"
+                  min="8"
+                  max="48"
+                  value={props.config.fontSize}
+                  onChange={(e) => dispatch(UpdateConfig({...props.config, fontSize: parseInt(e.target.value)}))} />
+                {props.config.fontSize}
+              </Text>
             </Sub>
             <Label>Application</Label>
             <Sub>
               {isElectron && (
-                <Item onClick={() => dispatch(ToggleAlwaysOnTop)}>
-                  Always on Top
-                  {props.alwaysOnTop && <input type="checkbox" defaultChecked={true} />}
-                </Item>
+                <Link onClick={() => dispatch(ToggleAlwaysOnTop)}>
+                  Always on Top {props.alwaysOnTop && '✅'}
+                </Link>
               )}
-              <Item onClick={OnVersion}>
+              <Link onClick={OnVersion}>
                 About Version {remote.getVersion()}
-              </Item>
-              {isElectron && <Item onClick={() => remote.quit()}>Quit</Item>}
+              </Link>
+              {isElectron && <Link onClick={() => remote.quit()}>Quit <i>({mod}+q)</i></Link>}
             </Sub>
           </Menu>
         </Off>

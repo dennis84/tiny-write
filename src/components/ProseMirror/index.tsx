@@ -8,7 +8,7 @@ import {CodeBlockView} from './code-block'
 interface Props {
   state?: EditorState;
   onChange: (state: EditorState) => void;
-  className: string;
+  className?: string;
   viewRef?: RefObject<EditorView>;
 }
 
@@ -48,7 +48,7 @@ export default (props: Props) => {
   }, [])
 
   return (
-    <div ref={editorRef} className={props.className} />
+    <div ref={editorRef} className={props.className} spellCheck={false} />
   )
 }
 

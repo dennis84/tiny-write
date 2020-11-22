@@ -5,7 +5,7 @@ import {rgb} from './styles'
 import {background, color, font, fonts} from './config'
 import {newState} from '.'
 import db from './db'
-import {updateRemote} from './remote'
+import * as remote from './remote'
 import {UpdateState, UpdateError, ReducerContext, reducer} from './reducer'
 import {useDebouncedEffect, usePrevious} from './hooks'
 import Editor from './components/Editor'
@@ -21,6 +21,7 @@ const Container = styled.div`
   width: 100%;
   height: 100%;
   font-family: ${(props) => font(props.theme)};
+  font-size: 18px;
   color: ${(props) => rgb(color(props.theme))};
 `
 
@@ -113,9 +114,9 @@ export default () => {
     })
   }, [])
 
-  useDebouncedEffect(() => {
-    updateRemote(state, dispatch)
-  }, 100, [state])
+  useEffect(() => {
+    remote.setAlwaysOnTop(state.alwaysOnTop);
+  }, [state.alwaysOnTop])
 
   useDebouncedEffect(() => {
     if (loadingPrev !== false) {
@@ -163,6 +164,3 @@ export default () => {
     </ReducerContext.Provider>
   )
 }
-// <StatusLine
-//   text={state.text}
-//   lastModified={state.lastModified} />

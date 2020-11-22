@@ -29,7 +29,17 @@ function createWindow() {
     pathname: path.join(__dirname, '/dist/index.html')
   }))
 
-  Menu.setApplicationMenu(Menu.buildFromTemplate([{label: ''}]))
+  Menu.setApplicationMenu(Menu.buildFromTemplate([{
+    label: 'Application',
+    submenu: [
+      {label: 'About Application', selector: 'orderFrontStandardAboutPanel:'},
+      {
+        label: 'Quit',
+        accelerator: 'CmdOrCtrl+Q',
+        click: () => win.close()
+      },
+    ],
+  }]))
 
   if (process.env.NODE_ENV === 'dev') {
     win.webContents.openDevTools()
