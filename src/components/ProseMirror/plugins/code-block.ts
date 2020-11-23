@@ -174,6 +174,7 @@ export class CodeBlockView {
       extraKeys: this.codeMirrorKeymap(),
       mode: modeByLang(node.attrs.params ?? 'javascript'),
       theme: 'dracula',
+      scrollbarStyle: null,
     })
 
     this.updateOptions(decos)
