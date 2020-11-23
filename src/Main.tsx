@@ -1,4 +1,4 @@
-import React, {useEffect, useReducer, useState} from 'react'
+import React, {useEffect, useReducer} from 'react'
 import {Global, ThemeProvider} from '@emotion/react'
 import styled from '@emotion/styled'
 import {rgb} from './styles'
@@ -11,8 +11,8 @@ import {useDebouncedEffect, usePrevious} from './hooks'
 import Editor from './components/Editor'
 import Error from './components/Error'
 import Menu from './components/Menu'
-import {createState} from './components/ProseMirror/state'
-import {ProseMirrorContext} from './components/ProseMirror'
+import {ProseMirrorProvider, defaultSchema} from './components/ProseMirror'
+import {createState} from './prosemirror';
 
 const Container = styled.div`
   position: relative;
@@ -44,7 +44,6 @@ export default () => {
   const initialState = newState()
   const [state, dispatch] = useReducer(reducer, initialState)
   const loadingPrev = usePrevious(state.loading)
-  const [editorView, setEditorView] = useState()
 
   useEffect(() => {
     db.get('state').then((data) => {
@@ -72,7 +71,7 @@ export default () => {
         }
 
         try {
-          text = createState(parsed.text)
+          text = createState(dispatch, defaultSchema, parsed.text)
         } catch (err) {
           dispatch(UpdateError({id: 'invalid_file', props: parsed.text}))
           return
@@ -97,7 +96,7 @@ export default () => {
 
       if (parsed.files) {
         for (const file of parsed.files) {
-          file.text = createState(file.text)
+          file.text = createState(dispatch, defaultSchema, file.text)
           file.lastModified = new Date(file.lastModified)
           if (!isFile(file)) {
             dispatch(UpdateError({id: 'invalid_file', props: file}))
@@ -143,21 +142,19 @@ export default () => {
           {state.error ? (
             <Error error={state.error} />
           ) : (
-            <ProseMirrorContext.Provider value={[editorView, setEditorView]}>
-              <>
-                <Editor
-                  text={state.text}
-                  lastModified={state.lastModified}
-                  files={state.files}
-                  config={state.config} />
-                <Menu
-                  text={state.text}
-                  lastModified={state.lastModified}
-                  files={state.files}
-                  config={state.config}
-                  alwaysOnTop={state.alwaysOnTop} />
-              </>
-            </ProseMirrorContext.Provider>
+            <ProseMirrorProvider>
+              <Editor
+                text={state.text}
+                lastModified={state.lastModified}
+                files={state.files}
+                config={state.config} />
+              <Menu
+                text={state.text}
+                lastModified={state.lastModified}
+                files={state.files}
+                config={state.config}
+                alwaysOnTop={state.alwaysOnTop} />
+            </ProseMirrorProvider>
           )}
         </Container>
       </ThemeProvider>

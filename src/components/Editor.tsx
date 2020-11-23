@@ -1,12 +1,12 @@
-import React, {useEffect, useRef} from 'react'
+import React, {useEffect} from 'react'
 import {EditorState} from 'prosemirror-state'
-import {EditorView} from 'prosemirror-view'
 import styled from '@emotion/styled'
 import {Config, File} from '..'
 import {rgb, rgba} from '../styles'
 import {codeTheme, color, color2, font} from '../config'
 import {UpdateText, useDispatch} from '../reducer'
-import ProseMirror from './ProseMirror'
+import {createEmptyState} from '../prosemirror'
+import {ProseMirror, defaultSchema, useProseMirror} from './ProseMirror'
 
 const Container = styled.div`
   height: 100%;
@@ -79,7 +79,7 @@ const Container = styled.div`
 `
 
 interface Props {
-  text: EditorState;
+  text?: EditorState;
   lastModified?: Date;
   files: File[];
   config: Config;
@@ -87,27 +87,25 @@ interface Props {
 
 export default (props: Props) => {
   const dispatch = useDispatch()
-  const proseMirrorRef = useRef<EditorView>()
+  const proseMirror = useProseMirror()
 
   const OnChange = (value: EditorState) => {
     dispatch(UpdateText(value))
   }
 
   useEffect(() => {
-    if (!proseMirrorRef.current) return
-    const view = proseMirrorRef.current
-    const tr = view.state.tr
+    if (!proseMirror) return
+    const tr = proseMirror.state.tr
     tr.setMeta('code-block-options', {
       theme: codeTheme(props.config),
     })
-    view.dispatch(tr)
+    proseMirror.dispatch(tr)
   }, [props.config.codeTheme])
 
   return (
     <Container>
       <ProseMirror
-        viewRef={proseMirrorRef}
-        state={props.text}
+        state={props.text ?? createEmptyState(dispatch, defaultSchema)}
         onChange={OnChange} />
     </Container>
   )

@@ -38,7 +38,7 @@ export const fonts: {[key: string]: Font} = {
 interface Theme {
   label: string;
   background: string;
-  color: string | string[];
+  color: string;
   color2: string;
 }
 
@@ -93,7 +93,12 @@ export const themes: {[key: string]: Theme} = {
   },
 }
 
-export const codeThemes = {
+interface CodeTheme {
+  label: string;
+  value: string;
+}
+
+export const codeThemes: {[key: string]: CodeTheme} = {
   'cobalt': {
     label: 'Cobalt',
     value: 'cobalt',

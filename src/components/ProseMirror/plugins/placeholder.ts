@@ -1,6 +1,6 @@
 import {Plugin} from 'prosemirror-state'
 import {DecorationSet, Decoration} from 'prosemirror-view'
-import {isEmpty} from './util'
+import {isEmpty} from '../util'
 
 export const placeholder = (text) => new Plugin({
   props: {

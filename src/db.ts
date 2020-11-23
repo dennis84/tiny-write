@@ -7,13 +7,13 @@ const dbPromise = openDB('tiny_write', 2, {
 })
 
 export default {
-  async get(key) {
+  async get(key: string) {
     return (await dbPromise).get('keyval', key)
   },
-  async set(key, val) {
+  async set(key: string, val: string) {
     return (await dbPromise).put('keyval', val, key)
   },
-  async delete(key) {
+  async delete(key: string) {
     return (await dbPromise).delete('keyval', key)
   },
   async clear() {

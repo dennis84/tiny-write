@@ -9,7 +9,11 @@ export const usePrevious = <T>(value: T | undefined) => {
   return ref.current
 }
 
-export const useDebouncedEffect = (fn, delay, deps) => {
+export const useDebouncedEffect = (
+  fn: () => void,
+  delay: number,
+  deps: unknown[]
+) => {
   const callback = useCallback(fn, deps)
 
   useEffect(() => {

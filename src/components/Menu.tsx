@@ -9,10 +9,9 @@ import {Config, File} from '..'
 import {Discard, New, Open, UpdateConfig, ToggleAlwaysOnTop, useDispatch} from '../reducer'
 import {color, color2, themes, fonts, codeThemes} from '../config'
 import {rgb, rgba} from '../styles'
-import {isElectron, isMac} from '../env'
+import {isElectron, isMac, mod} from '../env'
 import * as remote from '../remote'
-import {useProseMirror} from './ProseMirror'
-import {isEmpty} from './ProseMirror/util'
+import {isEmpty, useProseMirror} from './ProseMirror'
 
 const Container = styled.div`
   position: relative;
@@ -79,7 +78,7 @@ export const Common = css`
   padding: 0 20px;
 `
 
-export const Item = props => css`
+export const Item = (props: {theme: Config}) => css`
   width: 100%;
   padding: 2px 0;
   margin: 0;
@@ -131,22 +130,55 @@ export default (props: Props) => {
   const dispatch = useDispatch()
   const editorView = useProseMirror()
   const [show, setShow] = useState(false)
-  const mod = isMac ? 'Cmd' : 'Ctrl'
+
+  const OnBurgerClick = () => {
+    editorView.focus()
+    setShow(!show)
+  }
 
   const OnUndo = () => {
     undo(editorView.state, editorView.dispatch)
+    editorView.focus()
   }
 
   const OnRedo = () => {
     redo(editorView.state, editorView.dispatch)
+    editorView.focus()
   }
 
-  const Cmd = (cmd) => () => {
+  const Cmd = (cmd: string) => () => {
     document.execCommand(cmd)
+    editorView.focus()
   }
 
   const OnCopyAllAsMd = () => {
     remote.copyAllAsMarkdown(editorView.state)
+    editorView.focus()
+  }
+
+  const OnChangeTheme = (theme) => () => {
+    dispatch(UpdateConfig({...props.config, theme}))
+    editorView.focus()
+  }
+
+  const OnChangeCodeTheme = (codeTheme) => () => {
+    dispatch(UpdateConfig({...props.config, codeTheme}))
+    editorView.focus()
+  }
+
+  const OnChangeFont = (font) => () => {
+    dispatch(UpdateConfig({...props.config, font}))
+    editorView.focus()
+  }
+
+  const OnChangeFontSize = (e) => {
+    dispatch(UpdateConfig({...props.config, fontSize: parseInt(e.target.value)}))
+    editorView.focus()
+  }
+
+  const OnToggleAlwaysOnTop = () => {
+    dispatch(ToggleAlwaysOnTop)
+    editorView.focus()
   }
 
   const OnVersion = () => {
@@ -195,13 +227,13 @@ export default (props: Props) => {
 
   return (
     <Container>
-      <Burger onClick={() => setShow(!show)}>
+      <Burger onClick={OnBurgerClick}>
         <span />
         <span />
         <span />
       </Burger>
       {show && (
-        <Off>
+        <Off onClick={() => editorView.focus()}>
           <Menu>
             <Label>Stats</Label>
             <Sub>
@@ -235,17 +267,15 @@ export default (props: Props) => {
             <Sub>
               <Link onClick={OnUndo}>Undo <i>({mod}+z)</i></Link>
               <Link onClick={OnRedo}>Redo <i>({mod}+{isMac ? 'Shift+z' : 'y'})</i></Link>
-              <Link onMouseDown={Cmd('cut')}>Cut <i>({mod}+x)</i></Link>
-              <Link onMouseDown={Cmd('paste')}>Paste <i>({mod}+p)</i></Link>
-              <Link onMouseDown={Cmd('copy')}>Copy <i>({mod}+c)</i></Link>
+              <Link onClick={Cmd('cut')}>Cut <i>({mod}+x)</i></Link>
+              <Link onClick={Cmd('paste')}>Paste <i>({mod}+p)</i></Link>
+              <Link onClick={Cmd('copy')}>Copy <i>({mod}+c)</i></Link>
               <Link onClick={OnCopyAllAsMd}>Copy all as markdown</Link>
             </Sub>
             <Label>Theme</Label>
             <Sub>
               {Object.entries(themes).map(([key, value]) => (
-                <Link
-                  key={key}
-                  onClick={() => dispatch(UpdateConfig({...props.config, theme: key}))}>
+                <Link key={key} onClick={OnChangeTheme(key)}>
                   {value.label}{' '}{key === props.config.theme && '✅'}
                 </Link>
               ))}
@@ -253,9 +283,7 @@ export default (props: Props) => {
             <Label>Code</Label>
             <Sub>
               {Object.entries(codeThemes).map(([key, value]) => (
-                <Link
-                  key={key}
-                  onClick={() => dispatch(UpdateConfig({...props.config, codeTheme: key}))}>
+                <Link key={key} onClick={OnChangeCodeTheme(key)}>
                   {value.label}{' '}{key === props.config.codeTheme && '✅'}
                 </Link>
               ))}
@@ -263,9 +291,7 @@ export default (props: Props) => {
             <Label>Font</Label>
             <Sub>
               {Object.entries(fonts).map(([key, value]) => (
-                <Link
-                  key={key}
-                  onClick={() => dispatch(UpdateConfig({...props.config, font: key}))}>
+                <Link key={key} onClick={OnChangeFont(key)}>
                   {value.label}{' '}{key === props.config.font && '✅'}
                 </Link>
               ))}
@@ -276,14 +302,14 @@ export default (props: Props) => {
                   min="8"
                   max="48"
                   value={props.config.fontSize}
-                  onChange={(e) => dispatch(UpdateConfig({...props.config, fontSize: parseInt(e.target.value)}))} />
+                  onChange={OnChangeFontSize} />
                 {props.config.fontSize}
               </Text>
             </Sub>
             <Label>Application</Label>
             <Sub>
               {isElectron && (
-                <Link onClick={() => dispatch(ToggleAlwaysOnTop)}>
+                <Link onClick={OnToggleAlwaysOnTop}>
                   Always on Top {props.alwaysOnTop && '✅'}
                 </Link>
               )}

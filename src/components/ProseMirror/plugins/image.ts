@@ -1,8 +1,7 @@
 import {Plugin} from 'prosemirror-state'
 import isImage from 'is-image'
-import {schema} from './schema'
 
-export const dropImage = () => new Plugin({
+export const dropImage = (schema) => new Plugin({
   props: {
     handleDOMEvents: {
       drop: (view, event) => {

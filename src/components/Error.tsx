@@ -43,7 +43,7 @@ export default (props: Props) =>
   props.error.id === 'invalid_file' ? invalidState('Invalid File', props.error.props) :
   null
 
-const invalidState = (title, props) => {
+const invalidState = (title: string, props: unknown) => {
   const dispatch = useDispatch()
   const onClick = () => dispatch(Clean)
 

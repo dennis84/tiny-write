@@ -1,7 +1,7 @@
 import {useContext, createContext, Dispatch as Disp, Reducer} from 'react'
 import {EditorState} from 'prosemirror-state'
 import {State, File, Config, Error, newState} from '.'
-import {isEmpty} from './components/ProseMirror/util'
+import {isEmpty} from './components/ProseMirror'
 
 export const UpdateError = (error: Error) => (state: State) => ({
   ...state,
@@ -81,7 +81,7 @@ export const Discard = (state: State) => {
   }
 }
 
-export const ToggleAlwaysOnTop = (state) => ({
+export const ToggleAlwaysOnTop = (state: State) => ({
   ...state,
   alwaysOnTop: !state.alwaysOnTop,
   lastModified: new Date(),

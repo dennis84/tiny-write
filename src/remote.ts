@@ -25,7 +25,7 @@ export const copyAllAsMarkdown = (state: EditorState) => {
   const text = defaultMarkdownSerializer.serialize(state.doc)
   if (isElectron) {
     const electron = window.require('electron')
-    electron.clipboard.writeText(text, 'selection')
+    electron.clipboard.writeText(text)
   } else {
     navigator.clipboard.writeText(text)
   }

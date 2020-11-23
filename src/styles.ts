@@ -1,2 +1,2 @@
-export const rgb = (str) => `rgb(${str})`
-export const rgba = (str, alpha) => `rgba(${str}, ${alpha})`
+export const rgb = (str: string) => `rgb(${str})`
+export const rgba = (str: string, alpha: number) => `rgba(${str}, ${alpha})`

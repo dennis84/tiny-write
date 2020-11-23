@@ -306,6 +306,7 @@ export class CodeBlockView {
 
   update(node, decorations) {
     this.updateOptions(decorations)
+    this.updateLang(node)
     if (node.type != this.node.type) return false
     this.node = node
     const change = computeChange(this.cm.getValue(), node.textContent)
@@ -328,6 +329,14 @@ export class CodeBlockView {
           this.cm.setOption(key, deco.type.attrs[key]);
         }
       })
+    }
+  }
+
+  updateLang(node) {
+    const mode = modeByLang(node.attrs.params)
+    const prev = this.cm.getOption('mode');
+    if (mode !== prev) {
+      this.cm.setOption('mode', mode)
     }
   }
 
