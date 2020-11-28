@@ -4,15 +4,15 @@ import styled from '@emotion/styled'
 import {rgb} from './styles'
 import {background, color, font, fonts} from './config'
 import {newState} from '.'
-import db from './db'
 import * as remote from './remote'
-import {UpdateState, UpdateError, ReducerContext, reducer} from './reducer'
+import db from './db'
 import {useDebouncedEffect, usePrevious} from './hooks'
+import {ReducerContext, reducer} from './reducer'
+import {WithEditorState} from './WithEditorState'
 import Editor from './components/Editor'
 import Error from './components/Error'
 import Menu from './components/Menu'
-import {ProseMirrorProvider, defaultSchema} from './components/ProseMirror'
-import {createState} from './prosemirror';
+import {ProseMirrorProvider} from './components/ProseMirror'
 
 const Container = styled.div`
   position: relative;
@@ -25,93 +25,10 @@ const Container = styled.div`
   color: ${(props) => rgb(color(props.theme))};
 `
 
-const isText = (x: any) => x && x.doc
-
-const isState = (x: any) =>
-  x.lastModified instanceof Date &&
-  Array.isArray(x.files)
-
-const isFile = (x: any): boolean =>
-  x.text &&
-  x.lastModified instanceof Date
-
-const isConfig = (x: any): boolean =>
-  typeof x.theme === 'string' &&
-  typeof x.codeTheme === 'string' &&
-  typeof x.font === 'string'
-
 export default () => {
   const initialState = newState()
   const [state, dispatch] = useReducer(reducer, initialState)
   const loadingPrev = usePrevious(state.loading)
-
-  useEffect(() => {
-    db.get('state').then((data) => {
-      let parsed
-      try {
-        parsed = JSON.parse(data)
-      } catch (err) { /* ignore */ }
-
-      if (!parsed) {
-        dispatch(UpdateState({...state, loading: false}))
-        return
-      }
-
-      const config = {...state.config, ...parsed.config}
-      if (!isConfig(config)) {
-        dispatch(UpdateError({id: 'invalid_config', props: config}))
-        return
-      }
-
-      let text
-      if (parsed.text) {
-        if (!isText(parsed.text)) {
-          dispatch(UpdateError({id: 'invalid_state', props: parsed.text}))
-          return
-        }
-
-        try {
-          text = createState(dispatch, defaultSchema, parsed.text)
-        } catch (err) {
-          dispatch(UpdateError({id: 'invalid_file', props: parsed.text}))
-          return
-        }
-      }
-
-      const newState = {
-        ...state,
-        ...parsed,
-        text,
-        config,
-        loading: false,
-      }
-
-      if (parsed.lastModified) {
-        newState.lastModified = new Date(parsed.lastModified)
-      }
-
-      if (parsed.lastModified) {
-        newState.lastModified = new Date(parsed.lastModified)
-      }
-
-      if (parsed.files) {
-        for (const file of parsed.files) {
-          file.text = createState(dispatch, defaultSchema, file.text)
-          file.lastModified = new Date(file.lastModified)
-          if (!isFile(file)) {
-            dispatch(UpdateError({id: 'invalid_file', props: file}))
-          }
-        }
-      }
-
-      if (!isState(newState)) {
-        dispatch(UpdateError({id: 'invalid_state', props: newState}))
-        return
-      }
-
-      dispatch(UpdateState(newState))
-    })
-  }, [])
 
   useEffect(() => {
     remote.setAlwaysOnTop(state.alwaysOnTop);
@@ -143,11 +60,15 @@ export default () => {
             <Error error={state.error} />
           ) : (
             <ProseMirrorProvider>
-              <Editor
-                text={state.text}
-                lastModified={state.lastModified}
-                files={state.files}
-                config={state.config} />
+              <WithEditorState state={state} dispatch={dispatch}>
+                {editorState => (
+                  <Editor
+                    text={editorState}
+                    lastModified={state.lastModified}
+                    files={state.files}
+                    config={state.config} />
+                )}
+              </WithEditorState>
               <Menu
                 text={state.text}
                 lastModified={state.lastModified}

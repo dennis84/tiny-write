@@ -13,54 +13,49 @@ import {createLinkPlugin} from './components/ProseMirror/plugins/link'
 import {scrollIntoView} from './components/ProseMirror/plugins/scroll'
 import {dropImage} from './components/ProseMirror/plugins/image'
 import {placeholder} from './components/ProseMirror/plugins/placeholder'
-import {toggleFullScreen} from './remote'
-import {mod} from './env'
-import {Dispatch, New} from './reducer'
 
-export const createState = (dispatch: Dispatch, schema: Schema, data: unknown) =>
+interface Props {
+  schema: Schema;
+  data?: unknown;
+  keymap?: any;
+}
+
+export const createState = (props: Props) =>
   EditorState.fromJSON({
-    schema,
+    schema: props.schema,
     plugins: [
-      buildInputRules(schema),
+      buildInputRules(props.schema),
       keymap({
-        [`${mod}-n`]: () => {
-          dispatch(New)
-          return true
-        },
-        'Cmd-Enter': () => {
-          toggleFullScreen()
-          return true
-        },
-        'Alt-Enter': () => {
-          toggleFullScreen()
-          return true
-        },
-        'Tab': sinkListItem(schema.nodes.list_item),
-        'Shift-Tab': liftListItem(schema.nodes.list_item),
+        ...(props.keymap ?? {}),
+        'Tab': sinkListItem(props.schema.nodes.list_item),
+        'Shift-Tab': liftListItem(props.schema.nodes.list_item),
       }),
-      keymap(buildKeymap(schema)),
+      keymap(buildKeymap(props.schema)),
       keymap(baseKeymap),
       history(),
       dropCursor(),
       gapCursor(),
-      createLinkPlugin(schema),
+      createLinkPlugin(props.schema),
       scrollIntoView(),
-      dropImage(schema),
+      dropImage(props.schema),
       placeholder('Start typing ...'),
       arrowHandlers,
       codeBlockOptions(),
     ]
-  }, data)
+  }, props.data)
 
-export const createEmptyState = (dispatch: Dispatch, schema: Schema) =>
-  createState(dispatch, schema, {
-    doc: {
-      type: 'doc',
-      content: [{type: 'paragraph'}]
-    },
-    selection: {
-      type: 'text',
-      anchor: 1,
-      head: 1
+export const createEmptyState = (props: Props) =>
+  createState({
+    ...props,
+    data: {
+      doc: {
+        type: 'doc',
+        content: [{type: 'paragraph'}]
+      },
+      selection: {
+        type: 'text',
+        anchor: 1,
+        head: 1
+      }
     }
   })

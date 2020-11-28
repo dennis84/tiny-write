@@ -5,8 +5,7 @@ import {Config, File} from '..'
 import {rgb, rgba} from '../styles'
 import {codeTheme, color, color2, font} from '../config'
 import {UpdateText, useDispatch} from '../reducer'
-import {createEmptyState} from '../prosemirror'
-import {ProseMirror, defaultSchema, useProseMirror} from './ProseMirror'
+import {ProseMirror, useProseMirror} from './ProseMirror'
 
 const Container = styled.div`
   height: 100%;
@@ -79,7 +78,7 @@ const Container = styled.div`
 `
 
 interface Props {
-  text?: EditorState;
+  text: EditorState;
   lastModified?: Date;
   files: File[];
   config: Config;
@@ -105,7 +104,7 @@ export default (props: Props) => {
   return (
     <Container>
       <ProseMirror
-        state={props.text ?? createEmptyState(dispatch, defaultSchema)}
+        state={props.text}
         onChange={OnChange} />
     </Container>
   )
