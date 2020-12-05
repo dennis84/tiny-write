@@ -8,6 +8,7 @@ import * as remote from './remote'
 import db from './db'
 import {useDebouncedEffect, usePrevious} from './hooks'
 import {ReducerContext, reducer} from './reducer'
+import {ErrorBoundary} from './ErrorBoundary'
 import {WithEditorState} from './WithEditorState'
 import Editor from './components/Editor'
 import Error from './components/Error'
@@ -55,29 +56,31 @@ export default () => {
     <ReducerContext.Provider value={dispatch}>
       <ThemeProvider theme={state.config}>
         <Global styles={fontsStyles} />
-        <Container>
-          {state.error ? (
-            <Error error={state.error} />
-          ) : (
-            <ProseMirrorProvider>
-              <WithEditorState state={state} dispatch={dispatch}>
-                {editorState => (
-                  <Editor
-                    text={editorState}
-                    lastModified={state.lastModified}
-                    files={state.files}
-                    config={state.config} />
-                )}
-              </WithEditorState>
-              <Menu
-                text={state.text}
-                lastModified={state.lastModified}
-                files={state.files}
-                config={state.config}
-                alwaysOnTop={state.alwaysOnTop} />
-            </ProseMirrorProvider>
-          )}
-        </Container>
+        <ErrorBoundary fallback={(error) => <Error error={error} />}>
+          <Container>
+            {state.error ? (
+              <Error error={state.error} />
+            ) : (
+              <ProseMirrorProvider>
+                <WithEditorState state={state} dispatch={dispatch}>
+                  {editorState => (
+                    <Editor
+                      text={editorState}
+                      lastModified={state.lastModified}
+                      files={state.files}
+                      config={state.config} />
+                  )}
+                </WithEditorState>
+                <Menu
+                  text={state.text}
+                  lastModified={state.lastModified}
+                  files={state.files}
+                  config={state.config}
+                  alwaysOnTop={state.alwaysOnTop} />
+              </ProseMirrorProvider>
+            )}
+          </Container>
+        </ErrorBoundary>
       </ThemeProvider>
     </ReducerContext.Provider>
   )

@@ -199,14 +199,15 @@ export default (props: Props) => {
     let words = 0
     let loc = 0
 
-    props.text?.doc.forEach((node, pos) => {
+    props.text?.doc.forEach((node) => {
+      const text = node.textContent
+
       if (node.type.name === 'code_block') {
-        const cm = editorView.nodeDOM(pos).CodeMirror
-        loc = cm.lineCount()
+        loc += text.split('\n').length
         return
       }
 
-      const curWords = node.textContent.split(/\s+/).filter(x => x != '').length
+      const curWords = text.split(/\s+/).filter(x => x != '').length
       if (node.type.name === 'paragraph' && curWords > 0) {
         paragraphs ++
       }

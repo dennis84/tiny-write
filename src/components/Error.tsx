@@ -41,7 +41,7 @@ export default (props: Props) =>
   props.error.id === 'invalid_state' ? invalidState('Invalid State', props.error.props) :
   props.error.id === 'invalid_config' ? invalidState('Invalid Config', props.error.props) :
   props.error.id === 'invalid_file' ? invalidState('Invalid File', props.error.props) :
-  null
+  other(props)
 
 const invalidState = (title: string, props: unknown) => {
   const dispatch = useDispatch()
@@ -60,6 +60,28 @@ const invalidState = (title: string, props: unknown) => {
         <Pre>
           <code>{JSON.stringify(props)}</code>
         </Pre>
+        <ButtonPrimary onClick={onClick}>Clean</ButtonPrimary>
+      </Container>
+    </Layer>
+  )
+}
+
+const other = (props: Props) => {
+  const dispatch = useDispatch()
+  const onClick = () => dispatch(Clean)
+
+  return (
+    <Layer>
+      <Container>
+        <h1>Something went wrong</h1>
+        <p>
+          An unexpected error ocured. You should try a restart. If this
+          doesn{`'`}t help, you can try to clean up the state.
+        </p>
+        <p>Error Details:</p>
+        <Pre><code>{(props.error.props as any)?.error.message}</code></Pre>
+        <Pre><code>{(props.error.props as any)?.error.stack}</code></Pre>
+        <Pre><code>{(props.error.props as any)?.errorInfo?.componentStack}</code></Pre>
         <ButtonPrimary onClick={onClick}>Clean</ButtonPrimary>
       </Container>
     </Layer>

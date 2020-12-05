@@ -143,7 +143,6 @@ export const font = (config: Config, monospace = false) => {
     return 'Merriweather'
   }
 
-  console.log( fonts[config.font].label )
   return fonts[config.font].label
 };
 
