@@ -4,7 +4,6 @@ import {selectAll, deleteSelection} from 'prosemirror-commands'
 import {State} from '..'
 import {mod} from './env'
 import db from './db'
-import * as remote from './remote'
 import {Dispatch, New, Discard, UpdateState, UpdateError} from './reducer'
 import {defaultSchema, isEmpty} from './components/ProseMirror'
 import {createState, createEmptyState} from './prosemirror';
@@ -38,14 +37,6 @@ export class WithEditorState extends React.Component<Props> {
     this.keymap = {
       [`${mod}-n`]: this.onNew.bind(this),
       [`${mod}-w`]: this.onDiscard.bind(this),
-      'Cmd-Enter': () => {
-        remote.toggleFullScreen()
-        return true
-      },
-      'Alt-Enter': () => {
-        remote.toggleFullScreen()
-        return true
-      },
     }
   }
 

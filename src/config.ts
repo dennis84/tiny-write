@@ -13,6 +13,9 @@ export const fonts: {[key: string]: Font} = {
   'times-new-roman': {
     label: 'Times New Roman',
   },
+  'georgia': {
+    label: 'Georgia',
+  },
   'piazzolla': {
     label: 'Piazzolla',
     src: './fonts/Piazzolla-Regular.woff2',
@@ -99,10 +102,6 @@ interface CodeTheme {
 }
 
 export const codeThemes: {[key: string]: CodeTheme} = {
-  'cobalt': {
-    label: 'Cobalt',
-    value: 'cobalt',
-  },
   'dracula': {
     label: 'Dracula',
     value: 'dracula',
@@ -111,10 +110,6 @@ export const codeThemes: {[key: string]: CodeTheme} = {
     label: 'Material',
     value: 'material',
   },
-  'nord': {
-    label: 'Nord',
-    value: 'nord',
-  },
   'solarized-dark': {
     label: 'Solarized Dark',
     value: 'solarized dark',
@@ -122,6 +117,10 @@ export const codeThemes: {[key: string]: CodeTheme} = {
   'solarized-light': {
     label: 'Solarized Light',
     value: 'solarized light',
+  },
+  'idea': {
+    label: 'Idea',
+    value: 'idea',
   },
 }
 

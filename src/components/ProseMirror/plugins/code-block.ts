@@ -286,13 +286,13 @@ export class CodeBlockView {
   }
 
   maybeEscape(unit, dir) {
-    const pos = this.cm.getCursor()
+    const cursor = this.cm.getCursor()
     if (
       this.cm.somethingSelected() ||
-      pos.line != (dir < 0 ? this.cm.firstLine() : this.cm.lastLine()) ||
+      cursor.line != (dir < 0 ? this.cm.firstLine() : this.cm.lastLine()) ||
       (
         unit == 'char' &&
-        pos.ch != (dir < 0 ? 0 : this.cm.getLine(pos.line).length)
+        cursor.ch != (dir < 0 ? 0 : this.cm.getLine(cursor.line).length)
       )
     ) {
       return CodeMirror.Pass
@@ -300,8 +300,18 @@ export class CodeBlockView {
 
     this.view.focus()
     const targetPos = this.getPos() + (dir < 0 ? 0 : this.node.nodeSize)
-    const selection = Selection.near(this.view.state.doc.resolve(targetPos), dir)
-    this.view.dispatch(this.view.state.tr.setSelection(selection).scrollIntoView())
+    const tr = this.view.state.tr
+    let selection
+
+    if (targetPos === 0) {
+      tr.insert(0, this.schema.node('paragraph'))
+      selection = new TextSelection(tr.doc.resolve(targetPos))
+    } else {
+      selection = Selection.near(this.view.state.doc.resolve(targetPos), dir)
+    }
+
+    tr.setSelection(selection).scrollIntoView()
+    this.view.dispatch(tr)
     this.view.focus()
   }
 

@@ -38,7 +38,13 @@ function createWindow() {
         accelerator: 'CmdOrCtrl+Q',
         click: () => win.close()
       },
-    ],
+    ].concat(
+      process.env.NODE_ENV === 'dev' ? [{
+        label: 'Open Dev Tools',
+        accelerator: 'CmdOrCtrl+Shift+J',
+        click: () => win.webContents.openDevTools()
+      }] : []
+    ),
   }, {
     label: 'Edit',
     submenu: [
@@ -53,10 +59,6 @@ function createWindow() {
       {label: 'Select All', accelerator: 'CmdOrCtrl+A', selector: 'selectAll:'},
     ],
   }]))
-
-  if (process.env.NODE_ENV === 'dev') {
-    win.webContents.openDevTools()
-  }
 
   win.on('closed', () => {
     win = null

@@ -13,6 +13,8 @@ import {createLinkPlugin} from './components/ProseMirror/plugins/link'
 import {scrollIntoView} from './components/ProseMirror/plugins/scroll'
 import {dropImage} from './components/ProseMirror/plugins/image'
 import {placeholder} from './components/ProseMirror/plugins/placeholder'
+import {codeKeymap} from './components/ProseMirror/plugins/code'
+import * as remote from './remote'
 
 interface Props {
   schema: Schema;
@@ -29,9 +31,18 @@ export const createState = (props: Props) =>
         ...(props.keymap ?? {}),
         'Tab': sinkListItem(props.schema.nodes.list_item),
         'Shift-Tab': liftListItem(props.schema.nodes.list_item),
+        'Cmd-Enter': () => {
+          remote.toggleFullScreen()
+          return true
+        },
+        'Alt-Enter': () => {
+          remote.toggleFullScreen()
+          return true
+        },
       }),
       keymap(buildKeymap(props.schema)),
       keymap(baseKeymap),
+      keymap(codeKeymap),
       history(),
       dropCursor(),
       gapCursor(),

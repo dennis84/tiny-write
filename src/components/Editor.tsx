@@ -73,6 +73,8 @@ const Container = styled.div`
     .CodeMirror {
       height: auto;
       border-radius: 2px;
+      margin: 10px 0;
+      box-shadow: inset 0 0 0 1px ${props => rgba(color(props.theme), 0.3)};
     }
   }
 `
