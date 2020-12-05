@@ -57,6 +57,7 @@ const Container = styled.div`
       background: ${props => rgba(color(props.theme), 0.1)};
       border-radius: 2px;
       padding: 2px;
+      font-family: '${props => font(props.theme, true)}' !important;
     }
     a {
       color: ${props => rgba(color2(props.theme), 1)};
@@ -75,6 +76,7 @@ const Container = styled.div`
       border-radius: 2px;
       margin: 10px 0;
       box-shadow: inset 0 0 0 1px ${props => rgba(color(props.theme), 0.3)};
+      font-family: '${props => font(props.theme, true)}' !important;
     }
   }
 `

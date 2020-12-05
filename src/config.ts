@@ -3,6 +3,7 @@ import {Config} from '.'
 interface Font {
   label: string;
   src?: string;
+  monospace?: boolean;
 }
 
 export const fonts: {[key: string]: Font} = {
@@ -31,10 +32,12 @@ export const fonts: {[key: string]: Font} = {
   'jetbrains-mono': {
     label: 'JetBrains Mono',
     src: './fonts/JetBrainsMono-Regular.woff2',
+    monospace: true,
   },
   'fantasque-sans-mono': {
     label: 'Fantasque Sans Mono',
     src: './fonts/FantasqueSansMono-Regular.woff2',
+    monospace: true,
   },
 }
 
@@ -133,8 +136,16 @@ export const color = (config: Config) =>
 export const color2 = (config: Config) =>
   themes[config.theme] ? themes[config.theme].color2 : themes.light.color2
 
-export const font = (config: Config) =>
-  fonts[config.font] ? fonts[config.font].label : 'Merriweather'
+export const font = (config: Config, monospace = false) => {
+  if (monospace && !fonts[config.font]?.monospace) {
+    return 'JetBrains Mono'
+  } else if (!fonts[config.font]) {
+    return 'Merriweather'
+  }
+
+  console.log( fonts[config.font].label )
+  return fonts[config.font].label
+};
 
 export const codeTheme = (config: Config) =>
   codeThemes[config.codeTheme] ? codeThemes[config.codeTheme].value : 'dracula'
