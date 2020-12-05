@@ -194,14 +194,32 @@ export default (props: Props) => {
     }
   }
 
-  const WordCount = () => {
-    let count = 0
-    props.text?.doc.forEach((node) => {
-      count += node.textContent.split(/\s+/).filter(x => x != '').length
-    }) ?? 0
+  const TextStats = () => {
+    let paragraphs = 0
+    let words = 0
+    let loc = 0
+
+    props.text?.doc.forEach((node, pos) => {
+      if (node.type.name === 'code_block') {
+        const cm = editorView.nodeDOM(pos).CodeMirror
+        loc = cm.lineCount()
+        return
+      }
+
+      const curWords = node.textContent.split(/\s+/).filter(x => x != '').length
+      if (node.type.name === 'paragraph' && curWords > 0) {
+        paragraphs ++
+      }
+
+      words += curWords
+    })
 
     return (
-      <Text>{count} words</Text>
+      <>
+        <Text>{words} words</Text>
+        <Text>{paragraphs} paragraphs</Text>
+        <Text>{loc} lines of code</Text>
+      </>
     )
   }
 
@@ -238,7 +256,7 @@ export default (props: Props) => {
             <Label>Stats</Label>
             <Sub>
               <LastModified />
-              <WordCount />
+              <TextStats />
             </Sub>
             <Label>File</Label>
             <Sub>
