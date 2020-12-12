@@ -125,7 +125,7 @@ import {Decoration, DecorationSet, EditorView, Node} from 'prosemirror-view'
 import {Schema} from 'prosemirror-model'
 import {undo, redo} from 'prosemirror-history'
 import {exitCode} from 'prosemirror-commands'
-import {keymap} from 'prosemirror-keymap'
+import {textblockTypeInputRule} from 'prosemirror-inputrules'
 
 export const codeBlockOptions = () => new Plugin({
   key: new PluginKey('code-block-options'),
@@ -440,12 +440,23 @@ const langMapping = {
   'js': 'javascript',
 }
 
-export const modeByLang = (lang: string) =>
+const modeByLang = (lang: string) =>
   langMapping[lang] ? langMapping[lang] : lang
 
-export const arrowHandlers = keymap({
+export const codeBlockKeymap = {
   ArrowLeft: arrowHandler('left'),
   ArrowRight: arrowHandler('right'),
   ArrowUp: arrowHandler('up'),
-  ArrowDown: arrowHandler('down')
-})
+  ArrowDown: arrowHandler('down'),
+}
+
+export const codeBlockRule = (nodeType) =>
+  textblockTypeInputRule(
+    /^```([a-zA-Z]*)?\s$/,
+    nodeType,
+    match => {
+      const lang = match[1]
+      if (lang) return {params: lang}
+      return {}
+    }
+  )

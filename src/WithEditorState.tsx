@@ -5,7 +5,7 @@ import {State} from '..'
 import {mod} from './env'
 import db from './db'
 import {Dispatch, New, Discard, UpdateState, UpdateError} from './reducer'
-import {defaultSchema, isEmpty} from './components/ProseMirror'
+import {isEmpty} from './components/ProseMirror'
 import {createState, createEmptyState} from './prosemirror';
 
 const isText = (x: any) => x && x.doc
@@ -86,7 +86,7 @@ export class WithEditorState extends React.Component<Props> {
         }
 
         try {
-          text = createState({schema: defaultSchema, data: parsed.text, keymap: this.keymap})
+          text = createState({data: parsed.text, keymap: this.keymap})
         } catch (err) {
           dispatch(UpdateError({id: 'invalid_file', props: parsed.text}))
           return
@@ -111,7 +111,7 @@ export class WithEditorState extends React.Component<Props> {
 
       if (parsed.files) {
         for (const file of parsed.files) {
-          file.text = createState({schema: defaultSchema, data: file.text, keymap: this.keymap})
+          file.text = createState({data: file.text, keymap: this.keymap})
           file.lastModified = new Date(file.lastModified)
           if (!isFile(file)) {
             dispatch(UpdateError({id: 'invalid_file', props: file}))
@@ -130,7 +130,6 @@ export class WithEditorState extends React.Component<Props> {
 
   render() {
     return this.props.children(this.props.state.text ?? createEmptyState({
-      schema: defaultSchema,
       keymap: this.keymap
     }))
   }

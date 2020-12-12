@@ -1,36 +1,46 @@
 import {EditorState} from 'prosemirror-state'
 import {Schema} from 'prosemirror-model'
+import {schema as markdownSchema} from 'prosemirror-markdown'
 import {keymap} from 'prosemirror-keymap'
 import {baseKeymap} from 'prosemirror-commands'
+import {inputRules} from 'prosemirror-inputrules'
 import {sinkListItem, liftListItem} from 'prosemirror-schema-list'
 import {history} from 'prosemirror-history'
 import {dropCursor} from 'prosemirror-dropcursor'
 import {gapCursor} from 'prosemirror-gapcursor'
 import {buildKeymap} from 'prosemirror-example-setup'
-import {codeBlockOptions, arrowHandlers} from './components/ProseMirror/plugins/code-block'
-import {buildInputRules} from './components/ProseMirror/plugins/input-rules'
-import {createLinkPlugin} from './components/ProseMirror/plugins/link'
+import {codeBlockRule, codeBlockOptions, codeBlockKeymap} from './components/ProseMirror/plugins/code-block'
+import {markdownRules} from './components/ProseMirror/plugins/markdown-shortcuts'
+import {markdownLinks} from './components/ProseMirror/plugins/link'
 import {scrollIntoView} from './components/ProseMirror/plugins/scroll'
 import {dropImage} from './components/ProseMirror/plugins/image'
 import {placeholder} from './components/ProseMirror/plugins/placeholder'
-import {codeKeymap} from './components/ProseMirror/plugins/code'
+import {codeKeymap, codeRule} from './components/ProseMirror/plugins/code'
 import * as remote from './remote'
 
 interface Props {
-  schema: Schema;
   data?: unknown;
   keymap?: any;
 }
 
+const schema = new Schema({
+  nodes: markdownSchema.spec.nodes,
+  marks: markdownSchema.spec.marks,
+})
+
 export const createState = (props: Props) =>
   EditorState.fromJSON({
-    schema: props.schema,
+    schema,
     plugins: [
-      buildInputRules(props.schema),
+      inputRules({rules: [
+        ...markdownRules(schema),
+        codeRule(schema.marks.code),
+        codeBlockRule(schema.nodes.code_block),
+      ]}),
       keymap({
         ...(props.keymap ?? {}),
-        'Tab': sinkListItem(props.schema.nodes.list_item),
-        'Shift-Tab': liftListItem(props.schema.nodes.list_item),
+        'Tab': sinkListItem(schema.nodes.list_item),
+        'Shift-Tab': liftListItem(schema.nodes.list_item),
         'Cmd-Enter': () => {
           remote.toggleFullScreen()
           return true
@@ -40,17 +50,17 @@ export const createState = (props: Props) =>
           return true
         },
       }),
-      keymap(buildKeymap(props.schema)),
+      keymap(buildKeymap(schema)),
       keymap(baseKeymap),
       keymap(codeKeymap),
+      keymap(codeBlockKeymap),
       history(),
       dropCursor(),
       gapCursor(),
-      createLinkPlugin(props.schema),
+      markdownLinks(schema),
       scrollIntoView(),
-      dropImage(props.schema),
+      dropImage(schema),
       placeholder('Start typing ...'),
-      arrowHandlers,
       codeBlockOptions(),
     ]
   }, props.data)

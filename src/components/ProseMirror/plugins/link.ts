@@ -14,7 +14,7 @@ const findMarkPosition = (mark, doc, from, to) => {
   return markPos
 }
 
-export const createLinkPlugin = (schema) => new Plugin({
+export const markdownLinks = (schema) => new Plugin({
   props: {
     handleDOMEvents: {
       keyup: (view) => {

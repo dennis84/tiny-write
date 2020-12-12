@@ -2,23 +2,20 @@ import React, {ReactNode, createContext, useContext, useEffect, useState, useRef
 import {EditorState} from 'prosemirror-state'
 import {Schema} from 'prosemirror-model'
 import {EditorView} from 'prosemirror-view'
-import {defaultSchema} from './schema'
 import {CodeBlockView} from './plugins/code-block'
 
 interface Props {
   state: EditorState;
   onChange: (state: EditorState) => void;
   className?: string;
-  schema?: Schema;
 }
 
 const createEditor = (editorNode: Element, props: Props) => {
-  const schema = props.schema ?? defaultSchema
   const view = new EditorView(editorNode, {
     state: props.state,
     nodeViews: {
       code_block: (node, view, getPos, decos) => {
-        return new CodeBlockView(node, view, getPos, schema, decos)
+        return new CodeBlockView(node, view, getPos, props.state.schema, decos)
       },
     },
     dispatchTransaction(tr) {
