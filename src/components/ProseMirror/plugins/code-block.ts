@@ -159,6 +159,7 @@ export class CodeBlockView {
   cm: CodeMirror
   dom: Element
   updating: boolean
+  clicked: boolean
 
   constructor(node, view, getPos, schema, decos) {
     // Store for later
@@ -190,12 +191,18 @@ export class CodeBlockView {
     // inner editor
     this.updating = false
 
+    // To distinguish between clicked selection change and others.
+    this.clicked = false
+
     // Track whether changes are have been made but not yet propagated
     this.cm.on('beforeChange', () => this.incomingChanges = true)
+    this.cm.on('mousedown', () => this.clicked = true)
 
     // Propagate updates from the code editor to ProseMirror
     this.cm.on('cursorActivity', () => {
-      if (!this.updating && !this.incomingChanges) this.forwardSelection()
+      if (!this.updating && !this.incomingChanges) {
+        this.forwardSelection()
+      }
     })
 
     // Remove the editor if value is empty and backspace
@@ -227,15 +234,25 @@ export class CodeBlockView {
       this.view.dispatch(state.tr.setSelection(selection))
     }
 
+    if (this.clicked) {
+      this.clicked = false
+      return
+    }
+
+    if (!selection.empty) {
+      return
+    }
+
     const coords = this.cm.cursorCoords(this.cm.getCursor())
     const elem = document.elementFromPoint(coords.left, coords.top)
-
-    if (selection.empty) {
-      elem.scrollIntoView({
-        block: 'center',
-        behavior: 'smooth',
-      })
+    if (!elem) {
+      return
     }
+
+    elem.scrollIntoView({
+      block: 'center',
+      behavior: 'smooth',
+    })
   }
 
   asProseMirrorSelection(doc) {
