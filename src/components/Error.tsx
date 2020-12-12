@@ -75,7 +75,7 @@ const other = (props: Props) => {
       <Container>
         <h1>Something went wrong</h1>
         <p>
-          An unexpected error ocured. You should try a restart. If this
+          An unexpected error occurred. You should try a restart. If this
           doesn{`'`}t help, you can try to clean up the state.
         </p>
         <p>Error Details:</p>

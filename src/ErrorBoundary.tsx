@@ -1,12 +1,17 @@
-import React, {ReactNode} from 'react'
-import {Error} from '.'
+import React, {ErrorInfo, ReactNode} from 'react'
+import {Error as ErrorObj} from '.'
 
 interface Props {
   children: ReactNode;
-  fallback: (error: Error) => ReactNode;
+  fallback: (error: ErrorObj) => ReactNode;
 }
 
-export class ErrorBoundary extends React.Component<Props> {
+interface State {
+  error?: Error;
+  errorInfo?: ErrorInfo;
+}
+
+export class ErrorBoundary extends React.Component<Props, State> {
   constructor(props) {
     super(props)
     this.state = {}

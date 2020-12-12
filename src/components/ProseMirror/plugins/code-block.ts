@@ -339,6 +339,8 @@ export class CodeBlockView {
         for (const key in deco.type.attrs) {
           this.cm.setOption(key, deco.type.attrs[key]);
         }
+
+        this.cm.refresh()
       })
     }
   }

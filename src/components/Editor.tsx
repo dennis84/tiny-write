@@ -101,9 +101,10 @@ export default (props: Props) => {
     const tr = proseMirror.state.tr
     tr.setMeta('code-block-options', {
       theme: codeTheme(props.config),
+      fontSize: props.config.fontSize,
     })
     proseMirror.dispatch(tr)
-  }, [props.config.codeTheme])
+  }, [props.config.codeTheme, props.config.fontSize])
 
   return (
     <Container>
