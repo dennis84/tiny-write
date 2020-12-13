@@ -1,4 +1,4 @@
-import {defaultMarkdownSerializer} from 'prosemirror-markdown'
+import {markdownSerializer} from './markdown'
 import {EditorState} from 'prosemirror-state'
 import {isElectron} from './env'
 
@@ -22,7 +22,7 @@ export const toggleFullScreen = () => {
 }
 
 export const copyAllAsMarkdown = (state: EditorState) => {
-  const text = defaultMarkdownSerializer.serialize(state.doc)
+  const text = markdownSerializer.serialize(state.doc)
   if (isElectron) {
     const electron = window.require('electron')
     electron.clipboard.writeText(text)

@@ -1,8 +1,8 @@
 import React, {ReactNode, createContext, useContext, useEffect, useState, useRef} from 'react'
 import {EditorState} from 'prosemirror-state'
-import {Schema} from 'prosemirror-model'
 import {EditorView} from 'prosemirror-view'
 import {CodeBlockView} from './plugins/code-block'
+import {TodoItemView} from './plugins/todo-list'
 
 interface Props {
   state: EditorState;
@@ -16,6 +16,9 @@ const createEditor = (editorNode: Element, props: Props) => {
     nodeViews: {
       code_block: (node, view, getPos, decos) => {
         return new CodeBlockView(node, view, getPos, props.state.schema, decos)
+      },
+      todo_item: (node, view, getPos, decos) => {
+        return new TodoItemView(node, view, getPos, props.state.schema)
       },
     },
     dispatchTransaction(tr) {

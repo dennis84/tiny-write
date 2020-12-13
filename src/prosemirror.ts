@@ -16,6 +16,7 @@ import {scrollIntoView} from './components/ProseMirror/plugins/scroll'
 import {dropImage} from './components/ProseMirror/plugins/image'
 import {placeholder} from './components/ProseMirror/plugins/placeholder'
 import {codeKeymap, codeRule} from './components/ProseMirror/plugins/code'
+import {todoListRule, todoListSchema, todoListKeymap} from './components/ProseMirror/plugins/todo-list'
 import * as remote from './remote'
 
 interface Props {
@@ -23,8 +24,8 @@ interface Props {
   keymap?: any;
 }
 
-const schema = new Schema({
-  nodes: markdownSchema.spec.nodes,
+export const schema = new Schema({
+  nodes: markdownSchema.spec.nodes.append(todoListSchema),
   marks: markdownSchema.spec.marks,
 })
 
@@ -36,7 +37,9 @@ export const createState = (props: Props) =>
         ...markdownRules(schema),
         codeRule(schema.marks.code),
         codeBlockRule(schema.nodes.code_block),
+        todoListRule(schema.nodes.todo_list),
       ]}),
+      keymap(todoListKeymap(schema)),
       keymap({
         ...(props.keymap ?? {}),
         'Tab': sinkListItem(schema.nodes.list_item),

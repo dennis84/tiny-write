@@ -64,8 +64,9 @@ const Menu = styled.div``
 
 const Label = styled.h3`
   margin: 0;
-  font-size: 18px;
+  font-size: 14px;
   text-transform: uppercase;
+  color: ${props => rgba(color(props.theme), 0.5)};
 `
 
 const Sub = styled.nav`

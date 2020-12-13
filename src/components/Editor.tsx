@@ -78,6 +78,19 @@ const Container = styled.div`
       box-shadow: inset 0 0 0 1px ${props => rgba(color(props.theme), 0.3)};
       font-family: '${props => font(props.theme, true)}' !important;
     }
+    .todo-list {
+      > div {
+        display: flex;
+        align-items: center;
+        &.done {
+          text-decoration: line-through;
+          color: ${props => rgba(color(props.theme), 0.3)};
+        }
+        input {
+          margin-right: 10px;
+        }
+      }
+    }
   }
 `
 
