@@ -17,8 +17,8 @@ const createEditor = (editorNode: Element, props: Props) => {
       code_block: (node, view, getPos, decos) => {
         return new CodeBlockView(node, view, getPos, props.state.schema, decos)
       },
-      todo_item: (node, view, getPos, decos) => {
-        return new TodoItemView(node, view, getPos, props.state.schema)
+      todo_item: (node, view, getPos) => {
+        return new TodoItemView(node, view, getPos)
       },
     },
     dispatchTransaction(tr) {
