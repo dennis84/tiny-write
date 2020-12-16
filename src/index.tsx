@@ -27,8 +27,8 @@ export interface State {
 }
 
 export interface File {
-  text?: EditorState;
-  lastModified: Date;
+  text: {doc: unknown};
+  lastModified: string;
 }
 
 export const newState = (props: Partial<State> = {}): State => ({

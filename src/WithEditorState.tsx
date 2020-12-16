@@ -14,9 +14,7 @@ const isState = (x: any) =>
   x.lastModified instanceof Date &&
   Array.isArray(x.files)
 
-const isFile = (x: any): boolean =>
-  x.text &&
-  x.lastModified instanceof Date
+const isFile = (x: any): boolean => x.text && x.lastModified
 
 const isConfig = (x: any): boolean =>
   typeof x.theme === 'string' &&
@@ -111,8 +109,6 @@ export class WithEditorState extends React.Component<Props> {
 
       if (parsed.files) {
         for (const file of parsed.files) {
-          file.text = createState({data: file.text, keymap: this.keymap})
-          file.lastModified = new Date(file.lastModified)
           if (!isFile(file)) {
             dispatch(UpdateError({id: 'invalid_file', props: file}))
           }

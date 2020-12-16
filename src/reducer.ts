@@ -33,14 +33,14 @@ export const New = (state: State) => {
   const files = [...state.files]
 
   files.push({
-    text: state.text,
-    lastModified: state.lastModified,
+    text: state.text.toJSON(),
+    lastModified: state.lastModified.toISOString(),
   })
 
   return {
     ...state,
     text: undefined,
-    files: files,
+    files,
     lastModified: new Date(),
   }
 }
@@ -49,35 +49,33 @@ export const Open = (file: File) => (state: State) => {
   const files = [...state.files]
   if (!isEmpty(state.text)) {
     files.push({
-      text: state.text,
-      lastModified: state.lastModified,
+      text: state.text.toJSON(),
+      lastModified: state.lastModified.toISOString(),
     })
   }
 
   const index = files.indexOf(file)
-  const next = files[index]
+  const [text, lastModified] = newText(state.text, files[index])
   files.splice(index, 1)
 
   return {
     ...state,
-    files: files,
-    text: next.text,
-    lastModified: next.lastModified,
+    files,
+    text,
+    lastModified,
   }
 }
 
 export const Discard = (state: State) => {
   const files = [...state.files]
-  const next = files.shift() ?? {
-    lastModified: new Date(),
-    text: undefined,
-  }
+  const file = files.shift()
+  const [text, lastModified] = file ? newText(state.text, file) : [undefined, new Date()]
 
   return {
     ...state,
-    files: files,
-    text: next.text,
-    lastModified: next.lastModified,
+    files,
+    text,
+    lastModified,
   }
 }
 
@@ -86,6 +84,18 @@ export const ToggleAlwaysOnTop = (state: State) => ({
   alwaysOnTop: !state.alwaysOnTop,
   lastModified: new Date(),
 })
+
+const newText = (text: EditorState, file: File): EditorState => {
+  const newEditorState = EditorState.fromJSON({
+    schema: text.schema,
+    plugins: text.plugins,
+  }, file.text)
+
+  return [
+    newEditorState,
+    new Date(file.lastModified)
+  ]
+}
 
 type Action = (state: State) => State
 

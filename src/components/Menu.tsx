@@ -245,6 +245,30 @@ export default (props: Props) => {
     )
   }
 
+  const filePreview = (file: File, length: number) => {
+    const getText = (node) => {
+      let text = ''
+
+      if (node.text) {
+        text += node.text + ' '
+      }
+
+      if (node.content) {
+        for (const child of node.content) {
+          if (text.length >= length) {
+            break
+          }
+
+          text += getText(child)
+        }
+      }
+
+      return text
+    }
+
+    return getText(file.text?.doc).substring(0, length)
+  }
+
   return (
     <Container>
       <Burger onClick={OnBurgerClick}>
@@ -275,9 +299,9 @@ export default (props: Props) => {
                 <Sub>
                   {props.files.map((file) => (
                     <Link
-                      key={file.lastModified.toString()}
+                      key={file.lastModified}
                       onClick={() => dispatch(Open(file))}>
-                      {file.text.doc.textContent.substring(0, 16)}
+                      {filePreview(file, 16)}
                     </Link>
                   ))}
                 </Sub>
