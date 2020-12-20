@@ -11,8 +11,7 @@ import {
   New,
   Open,
   UpdateConfig,
-  ToggleAlwaysOnTop,
-  ToggleFocusMode,
+  ToggleFullscreen,
   useDispatch,
 } from '../reducer'
 import {color, color2, themes, fonts, codeThemes} from '../config'
@@ -132,8 +131,7 @@ interface Props {
   lastModified?: Date;
   files: File[];
   config: Config;
-  alwaysOnTop: boolean;
-  focusMode: boolean;
+  fullscreen: boolean;
 }
 
 export default (props: Props) => {
@@ -187,13 +185,17 @@ export default (props: Props) => {
   }
 
   const OnToggleAlwaysOnTop = () => {
-    dispatch(ToggleAlwaysOnTop)
+    dispatch(UpdateConfig({...props.config, alwaysOnTop: !props.config.alwaysOnTop}))
     editorView.focus()
   }
 
-  const OnToggleFocusMode = () => {
-    dispatch(ToggleFocusMode)
+  const OnToggleTypewriterMode = () => {
+    dispatch(UpdateConfig({...props.config, typewriterMode: !props.config.typewriterMode}))
     editorView.focus()
+  }
+
+  const OnToggleFullscreen = () => {
+    dispatch(ToggleFullscreen)
   }
 
   const OnVersion = () => {
@@ -364,16 +366,24 @@ export default (props: Props) => {
                 {props.config.fontSize}
               </Text>
             </Sub>
-            <Label>Application</Label>
+            <Label>View</Label>
             <Sub>
-              <Link onClick={OnToggleFocusMode}>
-                Focus mode {props.focusMode && '✅'}
+              {isElectron && (
+                <Link onClick={OnToggleFullscreen}>
+                  Fullscreen {props.fullscreen && '✅'}
+                </Link>
+              )}
+              <Link onClick={OnToggleTypewriterMode}>
+                Typewriter mode {props.config.typewriterMode && '✅'}
               </Link>
               {isElectron && (
                 <Link onClick={OnToggleAlwaysOnTop}>
-                  Always on Top {props.alwaysOnTop && '✅'}
+                  Always on Top {props.config.alwaysOnTop && '✅'}
                 </Link>
               )}
+            </Sub>
+            <Label>Application</Label>
+            <Sub>
               <Link onClick={OnVersion}>
                 About Version {remote.getVersion()}
               </Link>

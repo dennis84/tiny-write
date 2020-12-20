@@ -14,11 +14,18 @@ export const quit = () => {
   remote.app.quit()
 }
 
-export const toggleFullScreen = () => {
+export const isFullScreen = () => {
+  if (!isElectron) return false
+  const remote = window.require('electron').remote
+  const win = remote.getCurrentWindow()
+  return win.isSimpleFullScreen()
+}
+
+export const setFullScreen = (status: boolean) => {
   if (!isElectron) return
   const remote = window.require('electron').remote
   const win = remote.getCurrentWindow()
-  win.setSimpleFullScreen(!win.isSimpleFullScreen())
+  win.setSimpleFullScreen(status)
 }
 
 export const copyAllAsMarkdown = (state: EditorState) => {

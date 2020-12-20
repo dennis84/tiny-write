@@ -19,6 +19,11 @@ export const UpdateConfig = (config: Config) => (state: State) => ({
   lastModified: new Date(),
 })
 
+export const ToggleFullscreen = (state: State) => ({
+  ...state,
+  fullscreen: !state.fullscreen,
+})
+
 export const UpdateText = (text: EditorState) => (state: State) => ({
   ...state,
   text,
@@ -78,18 +83,6 @@ export const Discard = (state: State) => {
     lastModified,
   }
 }
-
-export const ToggleAlwaysOnTop = (state: State) => ({
-  ...state,
-  alwaysOnTop: !state.alwaysOnTop,
-  lastModified: new Date(),
-})
-
-export const ToggleFocusMode = (state: State) => ({
-  ...state,
-  focusMode: !state.focusMode,
-  lastModified: new Date(),
-})
 
 const newText = (text: EditorState, file: File): EditorState => {
   const newEditorState = EditorState.fromJSON({

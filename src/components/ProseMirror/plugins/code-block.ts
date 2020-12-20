@@ -127,10 +127,20 @@ import {undo, redo} from 'prosemirror-history'
 import {exitCode} from 'prosemirror-commands'
 import {textblockTypeInputRule} from 'prosemirror-inputrules'
 
-export const codeBlockOptions = () => new Plugin({
+const initialState = {
+  theme: 'dracula',
+  typewriterMode: false,
+}
+
+interface CodeBlockOptionsProps {
+  theme: string;
+  typewriterMode: boolean;
+}
+
+export const codeBlockOptions = (props: CodeBlockOptionsProps) => new Plugin({
   key: new PluginKey('code-block-options'),
   state: {
-    init: () => ({theme: 'dracula'}),
+    init: () => ({...initialState, ...props}),
     apply(tr, prev) {
       const meta = tr.getMeta('code-block-options')
       return meta ? meta : prev
@@ -176,7 +186,7 @@ export class CodeBlockView {
       value: this.node.textContent,
       extraKeys: this.codeMirrorKeymap(),
       mode: modeByLang(node.attrs.params ?? 'javascript'),
-      theme: 'dracula',
+      theme: initialState.theme,
       scrollbarStyle: null,
     })
 
@@ -241,7 +251,7 @@ export class CodeBlockView {
       return
     }
 
-    if (!this.options.scrollIntoView || !selection.empty) {
+    if (!this.options.typewriterMode || !selection.empty) {
       return
     }
 

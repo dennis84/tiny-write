@@ -23,6 +23,7 @@ const createEditor = (editorNode: Element, props: Props) => {
     },
     dispatchTransaction(tr) {
       const newState = view.state.apply(tr)
+      view.updateState(newState)
       props.onChange(newState)
     }
   })

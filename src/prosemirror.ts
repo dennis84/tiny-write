@@ -17,12 +17,12 @@ import {dropImage} from './components/ProseMirror/plugins/image'
 import {placeholder} from './components/ProseMirror/plugins/placeholder'
 import {codeKeymap, codeRule} from './components/ProseMirror/plugins/code'
 import {todoListRule, todoListSchema, todoListKeymap} from './components/ProseMirror/plugins/todo-list'
-import * as remote from './remote'
+import {Config} from '.'
 
 interface Props {
   data?: unknown;
   keymap?: any;
-  scrollIntoView?: boolean;
+  config: Config;
 }
 
 export const schema = new Schema({
@@ -70,14 +70,6 @@ const createPlugins = (props: Props) => [
     ...(props.keymap ?? {}),
     'Tab': sinkListItem(schema.nodes.list_item),
     'Shift-Tab': liftListItem(schema.nodes.list_item),
-    'Cmd-Enter': () => {
-      remote.toggleFullScreen()
-      return true
-    },
-    'Alt-Enter': () => {
-      remote.toggleFullScreen()
-      return true
-    },
   }),
   keymap(buildKeymap(schema)),
   keymap(baseKeymap),
@@ -89,6 +81,9 @@ const createPlugins = (props: Props) => [
   markdownLinks(schema),
   dropImage(schema),
   placeholder('Start typing ...'),
-  codeBlockOptions(),
-  ...(props.scrollIntoView ? [scrollIntoView()] : []),
+  codeBlockOptions({
+    theme: props.config.theme,
+    typewriterMode: props.config.typewriterMode,
+  }),
+  ...(props.config.typewriterMode ? [scrollIntoView()] : []),
 ]

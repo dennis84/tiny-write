@@ -3,12 +3,15 @@ import {render} from 'react-dom'
 import {EditorState} from 'prosemirror-state'
 import Main from './Main'
 import {isMac} from './env'
+import {isFullScreen} from './remote'
 
 export interface Config {
   theme: string;
   codeTheme: string;
   font: string;
   fontSize: number;
+  alwaysOnTop: boolean;
+  typewriterMode: boolean;
 }
 
 export interface Error {
@@ -23,8 +26,7 @@ export interface State {
   config: Config;
   error?: Error;
   loading: boolean;
-  alwaysOnTop: boolean;
-  focusMode: boolean;
+  fullscreen: boolean;
 }
 
 export interface File {
@@ -36,15 +38,19 @@ export const newState = (props: Partial<State> = {}): State => ({
   lastModified: new Date(),
   files: [],
   loading: true,
-  alwaysOnTop: isMac,
-  focusMode: true,
+  fullscreen: isFullScreen(),
   config: {
     theme: 'light',
     codeTheme: 'dracula',
     font: 'Merriweather',
     fontSize: 24,
+    alwaysOnTop: isMac,
+    typewriterMode: true,
   },
   ...props,
 })
 
-render(<Main />, document.getElementById('container'))
+render(
+  <Main state={newState()} />,
+  document.getElementById('container')
+)

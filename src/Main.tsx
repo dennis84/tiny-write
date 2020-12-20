@@ -4,12 +4,21 @@ import {Global, ThemeProvider} from '@emotion/react'
 import styled from '@emotion/styled'
 import {rgb} from './styles'
 import {background, color, font, fonts} from './config'
-import {newState} from '.'
+import {State} from '.'
 import * as remote from './remote'
 import db from './db'
 import {mod} from './env'
 import {useDebouncedEffect, usePrevious, useDynamicCallback} from './hooks'
-import {UpdateState, UpdateError, UpdateText, New, Discard, ReducerContext, reducer} from './reducer'
+import {
+  UpdateState,
+  UpdateError,
+  UpdateText,
+  New,
+  Discard,
+  ReducerContext,
+  ToggleFullscreen,
+  reducer,
+} from './reducer'
 import {ErrorBoundary} from './ErrorBoundary'
 import Editor from './components/Editor'
 import Error from './components/Error'
@@ -41,25 +50,36 @@ const isConfig = (x: any): boolean =>
   typeof x.codeTheme === 'string' &&
   typeof x.font === 'string'
 
-export default () => {
-  const initialState = newState()
-  const [state, dispatch] = useReducer(reducer, initialState)
+export default (props: {state: State}) => {
+  const [state, dispatch] = useReducer(reducer, props.state)
   const loadingPrev = usePrevious(state.loading)
 
-  const keymap = {
-    [`${mod}-n`]: useDynamicCallback(() => {
-      dispatch(New)
-    }),
-    [`${mod}-w`]: useDynamicCallback((editorState, editorDispatch, editorView) => {
-      if (state.files.length > 0 && isEmpty(state.text)) {
-        dispatch(Discard)
-      } else {
-        selectAll(editorView.state, editorView.dispatch)
-        deleteSelection(editorView.state, editorView.dispatch)
-      }
+  const OnNew = useDynamicCallback(() => {
+    dispatch(New)
+    return true
+  })
 
-      return true
-    }),
+  const OnDiscard = useDynamicCallback((editorState, editorDispatch, editorView) => {
+    if (state.files.length > 0 && isEmpty(state.text)) {
+      dispatch(Discard)
+    } else {
+      selectAll(editorView.state, editorView.dispatch)
+      deleteSelection(editorView.state, editorView.dispatch)
+    }
+
+    return true
+  })
+
+  const OnFullscreen = useDynamicCallback(() => {
+    dispatch(ToggleFullscreen)
+    return true
+  })
+
+  const keymap = {
+    [`${mod}-n`]: OnNew,
+    [`${mod}-w`]: OnDiscard,
+    'Cmd-Enter': OnFullscreen,
+    'Alt-Enter': OnFullscreen,
   }
 
   useEffect(() => {
@@ -91,7 +111,7 @@ export default () => {
           text = createState({
             data: parsed.text,
             keymap: keymap,
-            scrollIntoView: parsed.focusMode,
+            config,
           })
         } catch (err) {
           dispatch(UpdateError({id: 'invalid_file', props: parsed.text}))
@@ -133,25 +153,32 @@ export default () => {
   }, [])
 
   useEffect(() => {
+    if (loadingPrev !== false) return
+    remote.setFullScreen(state.fullscreen)
+  }, [state.fullscreen]);
+
+  useEffect(() => {
     if (!state.text) return
     const newText = reconfigureState(state.text, {
       keymap: keymap,
-      scrollIntoView: state.focusMode,
+      config: state.config,
     })
 
     dispatch(UpdateText(newText))
-  }, [state.focusMode])
+  }, [state.config.typewriterMode])
 
   useEffect(() => {
-    remote.setAlwaysOnTop(state.alwaysOnTop);
-  }, [state.alwaysOnTop])
+    remote.setAlwaysOnTop(state.config.alwaysOnTop);
+  }, [state.config.alwaysOnTop])
 
   useDebouncedEffect(() => {
     if (loadingPrev !== false) {
       return
     }
 
-    db.set('state', JSON.stringify(state))
+    const data = {...state}
+    delete data.fullscreen
+    db.set('state', JSON.stringify(data))
   }, 100, [state.lastModified])
 
   const fontsStyles = Object.entries(fonts)
@@ -165,7 +192,7 @@ export default () => {
 
   const editorState = state.text ?? createEmptyState({
     keymap: keymap,
-    scrollIntoView: state.focusMode,
+    config: state.config,
   })
 
   return (
@@ -182,15 +209,13 @@ export default () => {
                   text={editorState}
                   lastModified={state.lastModified}
                   files={state.files}
-                  config={state.config}
-                  focusMode={state.focusMode} />
+                  config={state.config} />
                 <Menu
                   text={state.text}
                   lastModified={state.lastModified}
                   files={state.files}
                   config={state.config}
-                  alwaysOnTop={state.alwaysOnTop}
-                  focusMode={state.focusMode} />
+                  fullscreen={state.fullscreen} />
               </ProseMirrorProvider>
             )}
           </Container>
