@@ -24,6 +24,7 @@ export interface State {
   error?: Error;
   loading: boolean;
   alwaysOnTop: boolean;
+  focusMode: boolean;
 }
 
 export interface File {
@@ -36,6 +37,7 @@ export const newState = (props: Partial<State> = {}): State => ({
   files: [],
   loading: true,
   alwaysOnTop: isMac,
+  focusMode: true,
   config: {
     theme: 'light',
     codeTheme: 'dracula',

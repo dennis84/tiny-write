@@ -85,6 +85,12 @@ export const ToggleAlwaysOnTop = (state: State) => ({
   lastModified: new Date(),
 })
 
+export const ToggleFocusMode = (state: State) => ({
+  ...state,
+  focusMode: !state.focusMode,
+  lastModified: new Date(),
+})
+
 const newText = (text: EditorState, file: File): EditorState => {
   const newEditorState = EditorState.fromJSON({
     schema: text.schema,

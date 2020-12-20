@@ -68,7 +68,8 @@ export default () => {
                       text={editorState}
                       lastModified={state.lastModified}
                       files={state.files}
-                      config={state.config} />
+                      config={state.config}
+                      focusMode={state.focusMode} />
                   )}
                 </WithEditorState>
                 <Menu
@@ -76,7 +77,8 @@ export default () => {
                   lastModified={state.lastModified}
                   files={state.files}
                   config={state.config}
-                  alwaysOnTop={state.alwaysOnTop} />
+                  alwaysOnTop={state.alwaysOnTop}
+                  focusMode={state.focusMode} />
               </ProseMirrorProvider>
             )}
           </Container>

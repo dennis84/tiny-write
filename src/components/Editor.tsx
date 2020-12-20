@@ -13,6 +13,7 @@ interface Props {
   lastModified?: Date;
   files: File[];
   config: Config;
+  focusMode: boolean;
 }
 
 export default (props: Props) => {
@@ -109,9 +110,10 @@ export default (props: Props) => {
     tr.setMeta('code-block-options', {
       theme: codeTheme(props.config),
       fontSize: props.config.fontSize,
+      scrollIntoView: props.focusMode,
     })
     proseMirror.dispatch(tr)
-  }, [props.config.codeTheme, props.config.fontSize])
+  }, [props.config.codeTheme, props.config.fontSize, props.focusMode])
 
   return (
     <ProseMirror

@@ -6,7 +6,15 @@ import {differenceInHours, format} from 'date-fns'
 import styled from '@emotion/styled'
 import {css} from '@emotion/react'
 import {Config, File} from '..'
-import {Discard, New, Open, UpdateConfig, ToggleAlwaysOnTop, useDispatch} from '../reducer'
+import {
+  Discard,
+  New,
+  Open,
+  UpdateConfig,
+  ToggleAlwaysOnTop,
+  ToggleFocusMode,
+  useDispatch,
+} from '../reducer'
 import {color, color2, themes, fonts, codeThemes} from '../config'
 import {rgb, rgba} from '../styles'
 import {isElectron, isMac, mod} from '../env'
@@ -125,6 +133,7 @@ interface Props {
   files: File[];
   config: Config;
   alwaysOnTop: boolean;
+  focusMode: boolean;
 }
 
 export default (props: Props) => {
@@ -179,6 +188,11 @@ export default (props: Props) => {
 
   const OnToggleAlwaysOnTop = () => {
     dispatch(ToggleAlwaysOnTop)
+    editorView.focus()
+  }
+
+  const OnToggleFocusMode = () => {
+    dispatch(ToggleFocusMode)
     editorView.focus()
   }
 
@@ -352,6 +366,9 @@ export default (props: Props) => {
             </Sub>
             <Label>Application</Label>
             <Sub>
+              <Link onClick={OnToggleFocusMode}>
+                Focus mode {props.focusMode && '✅'}
+              </Link>
               {isElectron && (
                 <Link onClick={OnToggleAlwaysOnTop}>
                   Always on Top {props.alwaysOnTop && '✅'}

@@ -4,9 +4,9 @@ import {selectAll, deleteSelection} from 'prosemirror-commands'
 import {State} from '..'
 import {mod} from './env'
 import db from './db'
-import {Dispatch, New, Discard, UpdateState, UpdateError} from './reducer'
+import {Dispatch, New, Discard, UpdateState, UpdateText, UpdateError} from './reducer'
 import {isEmpty} from './components/ProseMirror'
-import {createState, createEmptyState} from './prosemirror';
+import {createState, createEmptyState, reconfigureState} from './prosemirror';
 
 const isText = (x: any) => x && x.doc
 
@@ -56,6 +56,20 @@ export class WithEditorState extends React.Component<Props> {
     return true
   }
 
+  componentDidUpdate(prev) {
+    const {dispatch, state} = this.props
+    if (prev.state.focusMode !== state.focusMode) {
+      const newText = reconfigureState(state.text, {
+        keymap: this.keymap,
+        scrollIntoView: state.focusMode,
+      })
+
+      setTimeout(() => {
+        dispatch(UpdateText(newText))
+      }, 100)
+    }
+  }
+
   componentDidMount() {
     const {dispatch, state} = this.props
 
@@ -84,7 +98,11 @@ export class WithEditorState extends React.Component<Props> {
         }
 
         try {
-          text = createState({data: parsed.text, keymap: this.keymap})
+          text = createState({
+            data: parsed.text,
+            keymap: this.keymap,
+            scrollIntoView: parsed.focusMode,
+          })
         } catch (err) {
           dispatch(UpdateError({id: 'invalid_file', props: parsed.text}))
           return
@@ -126,7 +144,8 @@ export class WithEditorState extends React.Component<Props> {
 
   render() {
     return this.props.children(this.props.state.text ?? createEmptyState({
-      keymap: this.keymap
+      keymap: this.keymap,
+      scrollIntoView: this.props.state.focusMode,
     }))
   }
 }

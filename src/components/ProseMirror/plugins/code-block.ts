@@ -160,6 +160,7 @@ export class CodeBlockView {
   dom: Element
   updating: boolean
   clicked: boolean
+  options: {[key: string]: unknown};
 
   constructor(node, view, getPos, schema, decos) {
     // Store for later
@@ -168,6 +169,7 @@ export class CodeBlockView {
     this.getPos = getPos
     this.schema = schema
     this.incomingChanges = false
+    this.options = {}
 
     // Create a CodeMirror instance
     this.cm = new CodeMirror(null, {
@@ -239,7 +241,7 @@ export class CodeBlockView {
       return
     }
 
-    if (!selection.empty) {
+    if (!this.options.scrollIntoView || !selection.empty) {
       return
     }
 
@@ -354,7 +356,9 @@ export class CodeBlockView {
     if (decorations?.length) {
       decorations.forEach((deco) => {
         for (const key in deco.type.attrs) {
-          this.cm.setOption(key, deco.type.attrs[key]);
+          const value = deco.type.attrs[key]
+          this.options[key] = value
+          this.cm.setOption(key, value)
         }
 
         this.cm.refresh()

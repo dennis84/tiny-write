@@ -22,6 +22,7 @@ import * as remote from './remote'
 interface Props {
   data?: unknown;
   keymap?: any;
+  scrollIntoView?: boolean;
 }
 
 export const schema = new Schema({
@@ -29,43 +30,16 @@ export const schema = new Schema({
   marks: markdownSchema.spec.marks,
 })
 
+export const reconfigureState = (state: EditorState, props: Props) =>
+  state.reconfigure({
+    schema: state.schema,
+    plugins: createPlugins(props),
+  })
+
 export const createState = (props: Props) =>
   EditorState.fromJSON({
     schema,
-    plugins: [
-      inputRules({rules: [
-        ...markdownRules(schema),
-        codeRule(schema.marks.code),
-        codeBlockRule(schema.nodes.code_block),
-        todoListRule(schema.nodes.todo_list),
-      ]}),
-      keymap(todoListKeymap(schema)),
-      keymap({
-        ...(props.keymap ?? {}),
-        'Tab': sinkListItem(schema.nodes.list_item),
-        'Shift-Tab': liftListItem(schema.nodes.list_item),
-        'Cmd-Enter': () => {
-          remote.toggleFullScreen()
-          return true
-        },
-        'Alt-Enter': () => {
-          remote.toggleFullScreen()
-          return true
-        },
-      }),
-      keymap(buildKeymap(schema)),
-      keymap(baseKeymap),
-      keymap(codeKeymap),
-      keymap(codeBlockKeymap),
-      history(),
-      dropCursor(),
-      gapCursor(),
-      markdownLinks(schema),
-      scrollIntoView(),
-      dropImage(schema),
-      placeholder('Start typing ...'),
-      codeBlockOptions(),
-    ]
+    plugins: createPlugins(props),
   }, props.data)
 
 export const createEmptyState = (props: Props) =>
@@ -83,3 +57,38 @@ export const createEmptyState = (props: Props) =>
       }
     }
   })
+
+const createPlugins = (props: Props) => [
+  inputRules({rules: [
+    ...markdownRules(schema),
+    codeRule(schema.marks.code),
+    codeBlockRule(schema.nodes.code_block),
+    todoListRule(schema.nodes.todo_list),
+  ]}),
+  keymap(todoListKeymap(schema)),
+  keymap({
+    ...(props.keymap ?? {}),
+    'Tab': sinkListItem(schema.nodes.list_item),
+    'Shift-Tab': liftListItem(schema.nodes.list_item),
+    'Cmd-Enter': () => {
+      remote.toggleFullScreen()
+      return true
+    },
+    'Alt-Enter': () => {
+      remote.toggleFullScreen()
+      return true
+    },
+  }),
+  keymap(buildKeymap(schema)),
+  keymap(baseKeymap),
+  keymap(codeKeymap),
+  keymap(codeBlockKeymap),
+  history(),
+  dropCursor(),
+  gapCursor(),
+  markdownLinks(schema),
+  dropImage(schema),
+  placeholder('Start typing ...'),
+  codeBlockOptions(),
+  ...(props.scrollIntoView ? [scrollIntoView()] : []),
+]
