@@ -251,7 +251,7 @@ export default (props: Props) => {
         return format(date, 'dd MMMM HH:mm:ss')
       }
 
-      return format(date, 'dd MMMM YYYY HH:mm:ss')
+      return format(date, 'dd MMMM yyyy HH:mm:ss')
     }
 
     return props.lastModified ? (
