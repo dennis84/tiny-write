@@ -18,6 +18,7 @@ import {placeholder} from './components/ProseMirror/plugins/placeholder'
 import {codeKeymap, codeRule} from './components/ProseMirror/plugins/code'
 import {todoListRule, todoListSchema, todoListKeymap} from './components/ProseMirror/plugins/todo-list'
 import {Config} from '.'
+import {codeTheme} from './config'
 
 interface Props {
   data?: unknown;
@@ -82,7 +83,7 @@ const createPlugins = (props: Props) => [
   dropImage(schema),
   placeholder('Start typing ...'),
   codeBlockOptions({
-    theme: props.config.theme,
+    theme: codeTheme(props.config),
     typewriterMode: props.config.typewriterMode,
   }),
   ...(props.config.typewriterMode ? [scrollIntoView()] : []),
