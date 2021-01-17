@@ -51,6 +51,11 @@ export default (props: Props) => {
       }
       p {
         margin: 0;
+        &::after {
+          content: "";
+          display: table;
+          clear: both;
+        }
       }
       blockquote {
         border-left: 10px solid ${rgba(color(theme), 0.2)};
@@ -69,6 +74,10 @@ export default (props: Props) => {
       }
       img {
         max-width: 100%;
+        float: left;
+        margin-right: 10px;
+        margin-bottom: 10px;
+        cursor: default;
       }
       .placeholder {
         color: ${rgba(color(theme), 0.3)};
@@ -96,6 +105,10 @@ export default (props: Props) => {
           }
         }
       }
+      .ProseMirror-selectednode {
+        box-shadow: 0 0 0 2px ${rgba(color2(theme), 1)};
+        border-radius: 2px;
+      };
     }
   `
 

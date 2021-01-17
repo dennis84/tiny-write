@@ -5,10 +5,11 @@ export const dropImage = (schema) => new Plugin({
   props: {
     handleDOMEvents: {
       drop: (view, event) => {
-        event.preventDefault()
-
         const text = event.dataTransfer.getData('text/plain')
         const {files} = event.dataTransfer
+
+        if (files.length === 0 && !text) return
+        event.preventDefault()
 
         const insertImage = (src) => {
           const tr = view.state.tr
