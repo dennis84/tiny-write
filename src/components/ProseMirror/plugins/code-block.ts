@@ -185,15 +185,70 @@ export class CodeBlockView {
     this.cm = new CodeMirror(null, {
       value: this.node.textContent,
       extraKeys: this.codeMirrorKeymap(),
-      mode: modeByLang(node.attrs.params ?? 'javascript'),
+      mode: modeByLang(node.attrs.params?.lang ?? 'javascript'),
       theme: initialState.theme,
       scrollbarStyle: null,
     })
 
     this.updateOptions(decos)
 
-    // The editor's outer node is our DOM representation
-    this.dom = this.cm.getWrapperElement()
+    const container = document.createElement('div')
+    container.className = 'codemirror-container'
+
+    const langInput = document.createElement('span')
+    langInput.className = 'lang-input'
+    langInput.textContent = this.cm.getOption('mode')
+    langInput.setAttribute('contenteditable', '')
+    langInput.addEventListener('keydown', (e) => {
+      if (e.keyCode === 13) {
+        e.preventDefault()
+        const lang = langInput.textContent
+        this.cm.setOption('mode', modeByLang(lang))
+        langSelect.style.display = 'none'
+        langSelectBottom.style.display = 'none'
+        langToggle.style.display = 'block'
+        const tr = view.state.tr
+        tr.setNodeMarkup(getPos(), undefined, {...node.attrs, params: {lang}})
+        view.dispatch(tr)
+      }
+    })
+
+    langInput.addEventListener('blur', () => {
+      langSelect.style.display = 'none'
+      langSelectBottom.style.display = 'none'
+      langToggle.style.display = 'block'
+    })
+
+    const langSelect = document.createElement('div')
+    langSelect.className = 'lang-select'
+    langSelect.textContent = '```'
+    langSelect.style.display = 'none'
+    langSelect.appendChild(langInput)
+    const langSelectBottom = document.createElement('div')
+    langSelectBottom.className = 'lang-select'
+    langSelectBottom.textContent = '```'
+    langSelectBottom.style.display = 'none'
+
+    const langToggle = document.createElement('div')
+    langToggle.className = 'lang-toggle'
+    langToggle.textContent = '📜'
+    langToggle.addEventListener('click', () => {
+      langToggle.style.display = 'none'
+      langSelect.style.display = 'block'
+      langSelectBottom.style.display = 'block'
+      langInput.focus()
+      const range = document.createRange()
+      range.selectNodeContents(langInput)
+      const sel = window.getSelection()
+      sel.removeAllRanges()
+      sel.addRange(range)
+    })
+
+    container.appendChild(langSelect)
+    container.appendChild(this.cm.getWrapperElement())
+    container.appendChild(langSelectBottom)
+    container.appendChild(langToggle)
+    this.dom = container
 
     // CodeMirror needs to be in the DOM to properly initialize, so
     // schedule it to update itself
@@ -377,7 +432,7 @@ export class CodeBlockView {
   }
 
   updateLang(node) {
-    const mode = modeByLang(node.attrs.params)
+    const mode = modeByLang(node.attrs.params?.lang ?? 'javascript')
     const prev = this.cm.getOption('mode');
     if (mode !== prev) {
       this.cm.setOption('mode', mode)
@@ -470,7 +525,7 @@ export const codeBlockRule = (nodeType) =>
     nodeType,
     match => {
       const lang = match[1]
-      if (lang) return {params: lang}
+      if (lang) return {params: {lang}}
       return {}
     }
   )

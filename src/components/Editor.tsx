@@ -85,12 +85,27 @@ export default (props: Props) => {
         pointer-events: none;
         user-select: none;
       }
-      .CodeMirror {
-        height: auto;
-        border-radius: 2px;
-        margin: 10px 0;
-        box-shadow: inset 0 0 0 1px ${rgba(color(theme), 0.3)};
-        font-family: '${font(theme, true)}' !important;
+      .codemirror-container {
+        position: relative;
+        .lang-select {
+          .lang-input {
+            outline: none;
+          }
+        }
+        .CodeMirror {
+          height: auto;
+          border-radius: 2px;
+          margin: 10px 0;
+          box-shadow: inset 0 0 0 1px ${rgba(color(theme), 0.3)};
+          font-family: '${font(theme, true)}' !important;
+        }
+        .lang-toggle {
+          position: absolute;
+          top: 4px;
+          right: 4px;
+          cursor: pointer;
+          z-index: 10;
+        }
       }
       .todo-list {
         > div {
@@ -108,7 +123,7 @@ export default (props: Props) => {
       .ProseMirror-selectednode {
         box-shadow: 0 0 0 2px ${rgba(color2(theme), 1)};
         border-radius: 2px;
-      };
+      }
     }
   `
 
