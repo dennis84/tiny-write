@@ -50,10 +50,22 @@ const Burger = styled.button<any>`
     height: 2px;
     width: 100%;
     border-radius: 4px;
+    transition: 0.4s;
   }
   &:hover > span {
     background: ${props => rgba(color(props.theme), 0.6)};
-  };
+  }
+  ${props => props.active && `
+    > span:nth-child(1) {
+      transform: rotate(-45deg) translate(-5px, 5px);
+    }
+    > span:nth-child(2) {
+      opacity: 0;
+    }
+    > span:nth-child(3) {
+      transform: rotate(45deg) translate(-5px, -5px);
+    }
+  `}
 `
 
 const Off = styled.div`
@@ -287,7 +299,7 @@ export default (props: Props) => {
 
   return (
     <Container>
-      <Burger onClick={OnBurgerClick}>
+      <Burger onClick={OnBurgerClick} active={show}>
         <span />
         <span />
         <span />
