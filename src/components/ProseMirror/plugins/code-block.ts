@@ -192,6 +192,12 @@ export class CodeBlockView {
 
     this.updateOptions(decos)
 
+    const getLogoClassName = () =>
+      `devicon-fallback devicon-${langByMode(this.cm.getOption('mode'))}-plain colored`
+
+    const logo = document.createElement('i')
+    logo.className = getLogoClassName()
+
     const container = document.createElement('div')
     container.className = 'codemirror-container'
 
@@ -204,6 +210,7 @@ export class CodeBlockView {
         e.preventDefault()
         const lang = langInput.textContent
         this.cm.setOption('mode', modeByLang(lang))
+        logo.className = getLogoClassName()
         langSelect.style.display = 'none'
         langSelectBottom.style.display = 'none'
         langToggle.style.display = 'block'
@@ -231,7 +238,7 @@ export class CodeBlockView {
 
     const langToggle = document.createElement('div')
     langToggle.className = 'lang-toggle'
-    langToggle.textContent = '📜'
+    langToggle.appendChild(logo)
     langToggle.addEventListener('click', () => {
       langToggle.style.display = 'none'
       langSelect.style.display = 'block'
@@ -498,6 +505,7 @@ function arrowHandler(dir) {
 
 const langMapping = {
   'c': 'text/x-csrc',
+  'cplusplus': 'text/x-c++src',
   'cpp': 'text/x-c++src',
   'c++': 'text/x-c++src',
   'objective-c': 'text/x-objectivec',
@@ -506,11 +514,25 @@ const langMapping = {
   'kotlin': 'text/x-kotlin',
   'ceylon': 'text/x-ceylon',
   'java': 'text/x-java',
+  'typescript': 'javascript',
+  'ts': 'javascript',
+  'javascript': 'javascript',
   'js': 'javascript',
+  'css3': 'css',
+  'html5': 'html',
+  'vim': 'viml',
 }
 
 const modeByLang = (lang: string) =>
   langMapping[lang] ? langMapping[lang] : lang
+
+const langByMode = (mode: string) => {
+  for (const [key, value] of Object.entries(langMapping)) {
+    if (value === mode) return key
+  }
+
+  return mode
+}
 
 export const codeBlockKeymap = {
   ArrowLeft: arrowHandler('left'),

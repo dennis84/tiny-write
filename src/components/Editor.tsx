@@ -102,7 +102,7 @@ export default (props: Props) => {
         .lang-toggle {
           position: absolute;
           top: 4px;
-          right: 4px;
+          right: 8px;
           cursor: pointer;
           z-index: 10;
         }
