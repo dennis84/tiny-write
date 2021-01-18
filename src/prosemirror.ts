@@ -85,6 +85,7 @@ const createPlugins = (props: Props) => [
   codeBlockOptions({
     theme: codeTheme(props.config),
     typewriterMode: props.config.typewriterMode,
+    fontSize: props.config.fontSize,
   }),
   ...(props.config.typewriterMode ? [scrollIntoView()] : []),
 ]

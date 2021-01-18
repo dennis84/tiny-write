@@ -126,15 +126,18 @@ import {Schema} from 'prosemirror-model'
 import {undo, redo} from 'prosemirror-history'
 import {exitCode} from 'prosemirror-commands'
 import {textblockTypeInputRule} from 'prosemirror-inputrules'
+import logos from './logos'
 
 const initialState = {
   theme: 'dracula',
   typewriterMode: false,
+  fontSize: 18,
 }
 
 interface CodeBlockOptionsProps {
   theme: string;
   typewriterMode: boolean;
+  fontSize: number;
 }
 
 export const codeBlockOptions = (props: CodeBlockOptionsProps) => new Plugin({
@@ -171,6 +174,7 @@ export class CodeBlockView {
   updating: boolean
   clicked: boolean
   options: {[key: string]: unknown};
+  logo: HTMLElement
 
   constructor(node, view, getPos, schema, decos) {
     // Store for later
@@ -192,11 +196,8 @@ export class CodeBlockView {
 
     this.updateOptions(decos)
 
-    const getLogoClassName = () =>
-      `devicon-fallback devicon-${langByMode(this.cm.getOption('mode'))}-plain colored`
-
-    const logo = document.createElement('i')
-    logo.className = getLogoClassName()
+    this.logo = document.createElement('span')
+    this.updateLogo()
 
     const container = document.createElement('div')
     container.className = 'codemirror-container'
@@ -210,7 +211,7 @@ export class CodeBlockView {
         e.preventDefault()
         const lang = langInput.textContent
         this.cm.setOption('mode', modeByLang(lang))
-        logo.className = getLogoClassName()
+        this.updateLogo()
         langSelect.style.display = 'none'
         langSelectBottom.style.display = 'none'
         langToggle.style.display = 'block'
@@ -238,7 +239,7 @@ export class CodeBlockView {
 
     const langToggle = document.createElement('div')
     langToggle.className = 'lang-toggle'
-    langToggle.appendChild(logo)
+    langToggle.appendChild(this.logo)
     langToggle.addEventListener('click', () => {
       langToggle.style.display = 'none'
       langSelect.style.display = 'block'
@@ -409,6 +410,7 @@ export class CodeBlockView {
   update(node, decorations) {
     this.updateOptions(decorations)
     this.updateLang(node)
+    this.updateLogo()
     if (node.type != this.node.type) return false
     this.node = node
     const change = computeChange(this.cm.getValue(), node.textContent)
@@ -444,6 +446,24 @@ export class CodeBlockView {
     if (mode !== prev) {
       this.cm.setOption('mode', mode)
     }
+  }
+
+  updateLogo() {
+    const lang = langByMode(this.cm.getOption('mode'))
+    let elem
+    if (logos[lang]) {
+      elem = document.createElement('img')
+      elem.src = logos[lang]
+      elem.width = this.options.fontSize
+      elem.height = this.options.fontSize
+      elem.style.marginTop = `${this.options.fontSize as number / 4}px`
+    } else {
+      elem = document.createElement('span')
+      elem.textContent = '📜'
+    }
+
+    this.logo.innerHTML = ''
+    this.logo.appendChild(elem)
   }
 
   selectNode() {
@@ -514,8 +534,6 @@ const langMapping = {
   'kotlin': 'text/x-kotlin',
   'ceylon': 'text/x-ceylon',
   'java': 'text/x-java',
-  'typescript': 'javascript',
-  'ts': 'javascript',
   'javascript': 'javascript',
   'js': 'javascript',
   'css3': 'css',

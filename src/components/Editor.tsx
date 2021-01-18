@@ -72,7 +72,7 @@ export default (props: Props) => {
       a {
         color: ${rgba(color2(theme), 1)};
       }
-      img {
+      p img {
         max-width: 100%;
         float: left;
         margin-right: 10px;
@@ -98,6 +98,7 @@ export default (props: Props) => {
           margin: 10px 0;
           box-shadow: inset 0 0 0 1px ${rgba(color(theme), 0.3)};
           font-family: '${font(theme, true)}' !important;
+          line-height: 150%;
         }
         .lang-toggle {
           position: absolute;
