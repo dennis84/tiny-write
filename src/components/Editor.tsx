@@ -107,6 +107,14 @@ export default (props: Props) => {
           transform: translateX(100%);
           cursor: pointer;
           z-index: 10;
+          -webkit-app-region: no-drag;
+        }
+        .prettify {
+          position: absolute;
+          right: 8px;
+          bottom: 4px;
+          cursor: pointer;
+          z-index: 10;
         }
       }
       .todo-list {
@@ -130,6 +138,7 @@ export default (props: Props) => {
   `
 
   const OnChange = (value: EditorState) => {
+    console.log('OnChange')
     dispatch(UpdateText(value))
   }
 

@@ -126,6 +126,12 @@ import {Schema} from 'prosemirror-model'
 import {undo, redo} from 'prosemirror-history'
 import {exitCode} from 'prosemirror-commands'
 import {textblockTypeInputRule} from 'prosemirror-inputrules'
+import prettier from 'prettier'
+import parserBabel from 'prettier/parser-babel'
+import parserCss from 'prettier/parser-postcss'
+import parserHtml from 'prettier/parser-html'
+import parserMarkdown from 'prettier/parser-markdown'
+import parserYaml from 'prettier/parser-yaml'
 import logos from './logos'
 
 const initialState = {
@@ -173,8 +179,9 @@ export class CodeBlockView {
   dom: Element
   updating: boolean
   clicked: boolean
-  options: {[key: string]: unknown};
+  options: {[key: string]: unknown}
   logo: HTMLElement
+  prettifyBtn: HTMLElement
 
   constructor(node, view, getPos, schema, decos) {
     // Store for later
@@ -189,35 +196,42 @@ export class CodeBlockView {
     this.cm = new CodeMirror(null, {
       value: this.node.textContent,
       extraKeys: this.codeMirrorKeymap(),
-      mode: modeByLang(node.attrs.params?.lang ?? 'javascript'),
       theme: initialState.theme,
       scrollbarStyle: null,
+      ...optionsByLang(this.getLang()),
     })
 
     this.updateOptions(decos)
 
     this.logo = document.createElement('span')
-    this.updateLogo()
+    this.prettifyBtn = document.createElement('span')
+    this.prettifyBtn.className = 'prettify'
+    this.prettifyBtn.textContent = '✨'
+    this.prettifyBtn.style.display = 'none'
+    this.prettifyBtn.setAttribute('title', 'prettify')
+    this.prettifyBtn.addEventListener('click', this.prettify.bind(this))
+    this.updateNav()
 
     const container = document.createElement('div')
     container.className = 'codemirror-container'
 
     const langInput = document.createElement('span')
     langInput.className = 'lang-input'
-    langInput.textContent = this.cm.getOption('mode')
+    langInput.textContent = this.getLang()
     langInput.setAttribute('contenteditable', '')
     langInput.addEventListener('keydown', (e) => {
       if (e.keyCode === 13) {
         e.preventDefault()
-        const lang = langInput.textContent
-        this.cm.setOption('mode', modeByLang(lang))
-        this.updateLogo()
+        const lang = cleanLang(langInput.textContent)
+        langInput.textContent = lang
         langSelect.style.display = 'none'
         langSelectBottom.style.display = 'none'
         langToggle.style.display = 'block'
         const tr = view.state.tr
-        tr.setNodeMarkup(getPos(), undefined, {...node.attrs, params: {lang}})
+        tr.setNodeMarkup(getPos(), undefined, {...this.node.attrs, params: {lang}})
         view.dispatch(tr)
+        this.updateLang()
+        this.updateNav()
       }
     })
 
@@ -256,6 +270,7 @@ export class CodeBlockView {
     container.appendChild(this.cm.getWrapperElement())
     container.appendChild(langSelectBottom)
     container.appendChild(langToggle)
+    container.appendChild(this.prettifyBtn)
     this.dom = container
 
     // CodeMirror needs to be in the DOM to properly initialize, so
@@ -408,11 +423,11 @@ export class CodeBlockView {
   }
 
   update(node, decorations) {
-    this.updateOptions(decorations)
-    this.updateLang(node)
-    this.updateLogo()
     if (node.type != this.node.type) return false
     this.node = node
+    this.updateOptions(decorations)
+    this.updateLang()
+    this.updateNav()
     const change = computeChange(this.cm.getValue(), node.textContent)
     if (change) {
       this.updating = true
@@ -440,20 +455,21 @@ export class CodeBlockView {
     }
   }
 
-  updateLang(node) {
-    const mode = modeByLang(node.attrs.params?.lang ?? 'javascript')
-    const prev = this.cm.getOption('mode');
-    if (mode !== prev) {
-      this.cm.setOption('mode', mode)
+  updateLang() {
+    const options = optionsByLang(this.getLang())
+    const prev = this.cm.getOption('mode')
+    if (options.mode !== prev) {
+      for (const key in options) {
+        this.cm.setOption(key, options[key])
+      }
     }
   }
 
-  updateLogo() {
-    const lang = langByMode(this.cm.getOption('mode'))
+  updateNav() {
     let elem
-    if (logos[lang]) {
+    if (logos[this.getLang()]) {
       elem = document.createElement('img')
-      elem.src = logos[lang]
+      elem.src = logos[this.getLang()]
       elem.width = this.options.fontSize
       elem.height = this.options.fontSize
       elem.style.marginTop = `${this.options.fontSize as number / 4}px`
@@ -462,8 +478,71 @@ export class CodeBlockView {
       elem.textContent = '📜'
     }
 
+    if (
+      this.getLang() === 'javascript' ||
+      this.getLang() === 'typescript' ||
+      this.getLang() === 'css' ||
+      this.getLang() === 'html' ||
+      this.getLang() === 'scss' ||
+      this.getLang() === 'less' ||
+      this.getLang() === 'markdown' ||
+      this.getLang() === 'yaml' ||
+      this.getLang() === 'json'
+    ) {
+      this.prettifyBtn.textContent = '✨'
+      this.prettifyBtn.style.display = 'block'
+    } else {
+      this.prettifyBtn.style.display = 'none'
+    }
+
     this.logo.innerHTML = ''
     this.logo.appendChild(elem)
+  }
+
+  prettify() {
+    const lang = this.getLang()
+
+    if (lang === 'json') {
+      try {
+        const value = JSON.stringify(JSON.parse(this.cm.getValue()), null, 2)
+        this.cm.setValue(value)
+        this.prettifyBtn.textContent = ''
+      } catch (err) {
+        this.prettifyBtn.textContent = '❌'
+      }
+      return
+    }
+
+    const [parser, plugin] =
+      lang === 'javascript' ? ['babel', parserBabel] :
+      lang === 'css' ? ['css', parserCss] :
+      lang === 'markdown' ? ['markdown', parserMarkdown] :
+      lang === 'html' ? ['html', parserHtml] :
+      lang === 'less' ? ['less', parserCss] :
+      lang === 'scss' ? ['scss', parserCss] :
+      lang === 'yaml' ? ['yaml', parserYaml] :
+      lang === 'typescript' ? ['babel', parserBabel] :
+      undefined
+    if (!parser) return
+    try {
+      const value = prettier.format(this.cm.getValue(), {
+        parser,
+        plugins: [plugin],
+        semi: false,
+        singleQuote: true,
+        trailingComma: 'all',
+        bracketSpacing: false,
+      })
+
+      this.cm.setValue(value.substring(0, value.lastIndexOf('\n')))
+      this.prettifyBtn.textContent = ''
+    } catch (err) {
+      this.prettifyBtn.textContent = '❌'
+    }
+  }
+
+  getLang() {
+    return this.node.attrs.params.lang ?? ''
   }
 
   selectNode() {
@@ -523,34 +602,29 @@ function arrowHandler(dir) {
   }
 }
 
-const langMapping = {
-  'c': 'text/x-csrc',
-  'cplusplus': 'text/x-c++src',
-  'cpp': 'text/x-c++src',
-  'c++': 'text/x-c++src',
-  'objective-c': 'text/x-objectivec',
-  'objc': 'text/x-objectivec',
-  'scala': 'text/x-scala',
-  'kotlin': 'text/x-kotlin',
-  'ceylon': 'text/x-ceylon',
-  'java': 'text/x-java',
-  'javascript': 'javascript',
-  'js': 'javascript',
-  'css3': 'css',
-  'html5': 'html',
-  'vim': 'viml',
-}
+const cleanLang = (lang: string) =>
+  lang === 'js' ? 'javascript' :
+  lang === 'ts' ? 'typescript' :
+  lang === 'cplusplus' ? 'cpp' :
+  lang === 'c++' ? 'cpp' :
+  lang
 
-const modeByLang = (lang: string) =>
-  langMapping[lang] ? langMapping[lang] : lang
-
-const langByMode = (mode: string) => {
-  for (const [key, value] of Object.entries(langMapping)) {
-    if (value === mode) return key
-  }
-
-  return mode
-}
+const optionsByLang = (lang: string) =>
+  lang === 'c' ? {mode: 'text/x-csrc'} :
+  lang === 'cplusplus' ? {mode: 'text/x-c++src'} :
+  lang === 'cpp' ? {mode: 'text/x-c++src'} :
+  lang === 'c++' ? {mode: 'text/x-c++src'} :
+  lang === 'objective-c' ? {mode: 'text/x-objectivec'} :
+  lang === 'objc' ? {mode: 'text/x-objectivec'} :
+  lang === 'scala' ? {mode: 'text/x-scala'} :
+  lang === 'kotlin' ? {mode: 'text/x-kotlin'} :
+  lang === 'ceylon' ? {mode: 'text/x-ceylon'} :
+  lang === 'java' ? {mode: 'text/x-java'} :
+  lang === 'typescript' ? {mode: 'javascript'} :
+  lang === 'less' ? {mode: 'css'} :
+  lang === 'scss' ? {mode: 'css'} :
+  lang === 'html' ? {mode: 'xml', htmlMode: true} :
+  {mode: lang}
 
 export const codeBlockKeymap = {
   ArrowLeft: arrowHandler('left'),
