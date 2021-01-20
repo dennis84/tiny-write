@@ -140,22 +140,27 @@ const initialState = {
   fontSize: 18,
 }
 
-interface CodeBlockOptionsProps {
+interface CodeBlockProps {
   theme: string;
   typewriterMode: boolean;
   fontSize: number;
 }
 
-export const codeBlockOptions = (props: CodeBlockOptionsProps) => new Plugin({
-  key: new PluginKey('code-block-options'),
+export const codeBlockPlugin = (props: CodeBlockProps) => new Plugin({
+  key: new PluginKey('code-block'),
   state: {
     init: () => ({...initialState, ...props}),
     apply(tr, prev) {
-      const meta = tr.getMeta('code-block-options')
+      const meta = tr.getMeta('code-block')
       return meta ? meta : prev
     }
   },
   props: {
+    nodeViews: {
+      code_block: (node, view, getPos, decos) => {
+        return new CodeBlockView(node, view, getPos, view.state.schema, decos)
+      }
+    },
     decorations(state) {
       const decos = []
       state.doc.descendants((node, pos) => {
@@ -508,7 +513,7 @@ export class CodeBlockView {
         this.cm.setValue(value)
         this.prettifyBtn.textContent = ''
       } catch (err) {
-        this.prettifyBtn.textContent = '❌'
+        this.prettifyBtn.textContent = '🚨'
       }
       return
     }
@@ -537,7 +542,7 @@ export class CodeBlockView {
       this.cm.setValue(value.substring(0, value.lastIndexOf('\n')))
       this.prettifyBtn.textContent = ''
     } catch (err) {
-      this.prettifyBtn.textContent = '❌'
+      this.prettifyBtn.textContent = '🚨'
     }
   }
 

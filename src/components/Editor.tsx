@@ -138,14 +138,13 @@ export default (props: Props) => {
   `
 
   const OnChange = (value: EditorState) => {
-    console.log('OnChange')
     dispatch(UpdateText(value))
   }
 
   useEffect(() => {
     if (!proseMirror) return
     const tr = proseMirror.state.tr
-    tr.setMeta('code-block-options', {
+    tr.setMeta('code-block', {
       theme: codeTheme(props.config),
       fontSize: props.config.fontSize,
       typewriterMode: props.config.typewriterMode,

@@ -1,3 +1,4 @@
+import {Plugin, PluginKey} from 'prosemirror-state'
 import {DOMSerializer} from 'prosemirror-model'
 import {EditorView} from 'prosemirror-view'
 import {wrappingInputRule} from 'prosemirror-inputrules'
@@ -37,6 +38,17 @@ export const todoListSchema = {
 
 export const todoListKeymap = (schema) => ({
   'Enter': splitListItem(schema.nodes.todo_item),
+})
+
+export const todoListPlugin = new Plugin({
+  key: new PluginKey('todo-list'),
+  props: {
+    nodeViews: {
+      todo_item: (node, view, getPos) => {
+        return new TodoItemView(node, view, getPos)
+      }
+    }
+  }
 })
 
 export class TodoItemView {

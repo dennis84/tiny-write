@@ -9,14 +9,14 @@ import {history} from 'prosemirror-history'
 import {dropCursor} from 'prosemirror-dropcursor'
 import {gapCursor} from 'prosemirror-gapcursor'
 import {buildKeymap} from 'prosemirror-example-setup'
-import {codeBlockRule, codeBlockOptions, codeBlockKeymap} from './components/ProseMirror/plugins/code-block'
+import {codeBlockRule, codeBlockPlugin, codeBlockKeymap} from './components/ProseMirror/plugins/code-block'
 import {markdownRules} from './components/ProseMirror/plugins/markdown-shortcuts'
 import {markdownLinks} from './components/ProseMirror/plugins/link'
 import {scrollIntoView} from './components/ProseMirror/plugins/scroll'
 import {dropImage} from './components/ProseMirror/plugins/image'
 import {placeholder} from './components/ProseMirror/plugins/placeholder'
 import {codeKeymap, codeRule} from './components/ProseMirror/plugins/code'
-import {todoListRule, todoListSchema, todoListKeymap} from './components/ProseMirror/plugins/todo-list'
+import {todoListRule, todoListSchema, todoListKeymap, todoListPlugin} from './components/ProseMirror/plugins/todo-list'
 import {Config} from '.'
 import {codeTheme} from './config'
 
@@ -82,7 +82,8 @@ const createPlugins = (props: Props) => [
   markdownLinks(schema),
   dropImage(schema),
   placeholder('Start typing ...'),
-  codeBlockOptions({
+  todoListPlugin,
+  codeBlockPlugin({
     theme: codeTheme(props.config),
     typewriterMode: props.config.typewriterMode,
     fontSize: props.config.fontSize,
