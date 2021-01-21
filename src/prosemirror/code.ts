@@ -1,4 +1,5 @@
-import {InputRule} from 'prosemirror-inputrules'
+import {inputRules, InputRule} from 'prosemirror-inputrules'
+import {keymap} from 'prosemirror-keymap'
 
 const blank = '\xa0'
 
@@ -23,12 +24,12 @@ const onArrow = (dir) => (state, dispatch, editorView) => {
   }
 }
 
-export const codeKeymap = {
+const codeKeymap = {
   'ArrowLeft': onArrow('left'),
   'ArrowRight': onArrow('right'),
 }
 
-export const codeRule = (nodeType) =>
+const codeRule = (nodeType) =>
   markInputRule(/(?:`)([^`]+)(?:`)$/, nodeType)
 
 const markInputRule = (regexp, nodeType, getAttrs = undefined) =>
@@ -47,3 +48,11 @@ const markInputRule = (regexp, nodeType, getAttrs = undefined) =>
     tr.removeStoredMark(nodeType)
     return tr
   })
+
+export default {
+  plugins: (prev, schema) => [
+    ...prev,
+    inputRules({rules: [codeRule(schema.marks.code)]}),
+    keymap(codeKeymap),
+  ]
+}

@@ -18,7 +18,7 @@ import {color, color2, themes, fonts, codeThemes} from '../config'
 import {rgb, rgba} from '../styles'
 import {isElectron, isMac, mod} from '../env'
 import * as remote from '../remote'
-import {isEmpty, useProseMirror} from './ProseMirror'
+import {isEmpty, useProseMirror} from '../prosemirror/prosemirror'
 
 const Container = styled.div`
   position: relative;
@@ -56,13 +56,13 @@ const Burger = styled.button<any>`
     background: ${props => rgba(color(props.theme), 0.6)};
   }
   ${props => props.active && `
-    > span:nth-child(1) {
+    > span:nth-of-type(1) {
       transform: rotate(-45deg) translate(-5px, 5px);
     }
-    > span:nth-child(2) {
+    > span:nth-of-type(2) {
       opacity: 0;
     }
-    > span:nth-child(3) {
+    > span:nth-of-type(3) {
       transform: rotate(45deg) translate(-5px, -5px);
     }
   `}
@@ -215,7 +215,7 @@ export default (props: Props) => {
   }
 
   const OnDiscard = () => {
-    if (props.files.length > 0 && isEmpty(props.text)) {
+    if (props.files.length > 0 && isEmpty(props.text.editorState)) {
       dispatch(Discard)
     } else {
       selectAll(editorView.state, editorView.dispatch)
@@ -228,21 +228,23 @@ export default (props: Props) => {
     let words = 0
     let loc = 0
 
-    props.text?.doc.forEach((node) => {
-      const text = node.textContent
+    if (props.text?.initialized) {
+      props.text?.editorState?.doc.forEach((node) => {
+        const text = node.textContent
 
-      if (node.type.name === 'code_block') {
-        loc += text.split('\n').length
-        return
-      }
+        if (node.type.name === 'code_block') {
+          loc += text.split('\n').length
+          return
+        }
 
-      const curWords = text.split(/\s+/).filter(x => x != '').length
-      if (node.type.name === 'paragraph' && curWords > 0) {
-        paragraphs ++
-      }
+        const curWords = text.split(/\s+/).filter(x => x != '').length
+        if (node.type.name === 'paragraph' && curWords > 0) {
+          paragraphs ++
+        }
 
-      words += curWords
-    })
+        words += curWords
+      })
+    }
 
     return (
       <>
@@ -317,8 +319,8 @@ export default (props: Props) => {
               <Link onClick={() => dispatch(New)}>New <i>({mod}+n)</i></Link>
               <Link
                 onClick={OnDiscard}
-                disabled={props.files.length === 0 && isEmpty(props.text)}>
-                {(props.files.length > 0 && isEmpty(props.text)) ? 'Discard ⚠️' : 'Clear'} <i>({mod}+w)</i>
+                disabled={props.files.length === 0 && isEmpty(props.text.editorState)}>
+                {(props.files.length > 0 && isEmpty(props.text.editorState)) ? 'Discard ⚠️' : 'Clear'} <i>({mod}+w)</i>
               </Link>
             </Sub>
             {props.files.length > 0 && (

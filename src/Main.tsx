@@ -23,8 +23,8 @@ import {ErrorBoundary} from './ErrorBoundary'
 import Editor from './components/Editor'
 import Error from './components/Error'
 import Menu from './components/Menu'
-import {ProseMirrorProvider, isEmpty} from './components/ProseMirror'
-import {createState, createEmptyState, reconfigureState} from './prosemirror';
+import {ProseMirrorProvider, isEmpty} from './prosemirror/prosemirror'
+import {createState, createEmptyState} from './prosemirror-util'
 
 const Container = styled.div`
   position: relative;
@@ -60,7 +60,7 @@ export default (props: {state: State}) => {
   })
 
   const OnDiscard = useDynamicCallback((editorState, editorDispatch, editorView) => {
-    if (state.files.length > 0 && isEmpty(state.text)) {
+    if (state.files.length > 0 && isEmpty(state.text.editorState)) {
       dispatch(Discard)
     } else {
       selectAll(editorView.state, editorView.dispatch)
@@ -158,8 +158,9 @@ export default (props: {state: State}) => {
   }, [state.fullscreen]);
 
   useEffect(() => {
-    if (!state.text) return
-    const newText = reconfigureState(state.text, {
+    if (!state.text?.initialized) return
+    const newText = createState({
+      data: state.text.editorState.toJSON(),
       keymap: keymap,
       config: state.config,
     })
@@ -176,7 +177,7 @@ export default (props: {state: State}) => {
       return
     }
 
-    const data = {...state}
+    const data = {...state, text: state.text.editorState}
     delete data.fullscreen
     db.set('state', JSON.stringify(data))
   }, 100, [state.lastModified])

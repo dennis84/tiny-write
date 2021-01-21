@@ -1,8 +1,8 @@
 import {Plugin} from 'prosemirror-state'
 import {DecorationSet, Decoration} from 'prosemirror-view'
-import {isEmpty} from '..'
+import {isEmpty} from './prosemirror'
 
-export const placeholder = (text) => new Plugin({
+const placeholder = (text) => new Plugin({
   props: {
     decorations(state) {
       if (isEmpty(state)) {
@@ -16,4 +16,11 @@ export const placeholder = (text) => new Plugin({
       }
     }
   }
+})
+
+export default (text: string) => ({
+  plugins: (prev) => [
+    ...prev,
+    placeholder(text),
+  ]
 })

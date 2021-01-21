@@ -1,4 +1,5 @@
 import {
+  inputRules,
   textblockTypeInputRule,
   wrappingInputRule,
   smartQuotes,
@@ -6,10 +7,10 @@ import {
   ellipsis,
 } from 'prosemirror-inputrules'
 
-export const blockQuoteRule = (nodeType) =>
+const blockQuoteRule = (nodeType) =>
   wrappingInputRule(/^\s*>\s$/, nodeType)
 
-export const orderedListRule = (nodeType) =>
+const orderedListRule = (nodeType) =>
   wrappingInputRule(
     /^(\d+)\.\s$/,
     nodeType,
@@ -17,21 +18,28 @@ export const orderedListRule = (nodeType) =>
     (match, node) => node.childCount + node.attrs.order == +match[1]
   )
 
-export const bulletListRule = (nodeType) =>
+const bulletListRule = (nodeType) =>
   wrappingInputRule(/^\s*([-+*])\s$/, nodeType)
 
-export const headingRule = (nodeType, maxLevel) =>
+const headingRule = (nodeType, maxLevel) =>
   textblockTypeInputRule(
     new RegExp('^(#{1,' + maxLevel + '})\\s$'),
     nodeType,
     match => ({level: match[1].length})
   )
 
-export const markdownRules = (schema) => {
+const markdownRules = (schema) => {
   const rules = smartQuotes.concat(ellipsis, emDash)
   if (schema.nodes.blockquote) rules.push(blockQuoteRule(schema.nodes.blockquote))
   if (schema.nodes.ordered_list) rules.push(orderedListRule(schema.nodes.ordered_list))
   if (schema.nodes.bullet_list) rules.push(bulletListRule(schema.nodes.bullet_list))
   if (schema.nodes.heading) rules.push(headingRule(schema.nodes.heading, 6))
   return rules
+}
+
+export default {
+  plugins: (prev, schema) => [
+    ...prev,
+    inputRules({rules: markdownRules(schema)}),
+  ]
 }

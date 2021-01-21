@@ -17,7 +17,7 @@ const scrollToElem = (node: Element) => {
   })
 }
 
-export const scrollIntoView = () => new Plugin({
+const scrollIntoView = new Plugin({
   props: {
     handleDOMEvents: {
       keyup: (view: EditorView) => {
@@ -25,4 +25,8 @@ export const scrollIntoView = () => new Plugin({
       }
     }
   },
+})
+
+export default (enabled: boolean) => ({
+  plugins: (prev) => enabled ? [...prev, scrollIntoView] : prev
 })

@@ -1,6 +1,6 @@
 import React from 'react'
 import {render} from 'react-dom'
-import {EditorState} from 'prosemirror-state'
+import {ProseMirrorState} from './prosemirror/prosemirror'
 import Main from './Main'
 import {isMac} from './env'
 import {isFullScreen} from './remote'
@@ -20,7 +20,7 @@ export interface Error {
 }
 
 export interface State {
-  text?: EditorState;
+  text?: ProseMirrorState;
   lastModified?: Date;
   files: File[];
   config: Config;

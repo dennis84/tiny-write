@@ -1,7 +1,6 @@
 import {useContext, createContext, Dispatch as Disp, Reducer} from 'react'
-import {EditorState} from 'prosemirror-state'
 import {State, File, Config, Error, newState} from '.'
-import {isEmpty} from './components/ProseMirror'
+import {ProseMirrorState, isEmpty} from './prosemirror/prosemirror'
 
 export const UpdateError = (error: Error) => (state: State) => ({
   ...state,
@@ -24,21 +23,21 @@ export const ToggleFullscreen = (state: State) => ({
   fullscreen: !state.fullscreen,
 })
 
-export const UpdateText = (text: EditorState) => (state: State) => ({
+export const UpdateText = (text: ProseMirrorState) => (state: State) => ({
   ...state,
   text,
   lastModified: new Date(),
 })
 
 export const New = (state: State) => {
-  if (isEmpty(state.text)) {
+  if (isEmpty(state.text.editorState)) {
     return state
   }
 
   const files = [...state.files]
 
   files.push({
-    text: state.text.toJSON(),
+    text: state.text.editorState.toJSON(),
     lastModified: state.lastModified.toISOString(),
   })
 
@@ -52,9 +51,9 @@ export const New = (state: State) => {
 
 export const Open = (file: File) => (state: State) => {
   const files = [...state.files]
-  if (!isEmpty(state.text)) {
+  if (!isEmpty(state.text.editorState)) {
     files.push({
-      text: state.text.toJSON(),
+      text: state.text.editorState.toJSON(),
       lastModified: state.lastModified.toISOString(),
     })
   }
@@ -84,16 +83,9 @@ export const Discard = (state: State) => {
   }
 }
 
-const newText = (text: EditorState, file: File): EditorState => {
-  const newEditorState = EditorState.fromJSON({
-    schema: text.schema,
-    plugins: text.plugins,
-  }, file.text)
-
-  return [
-    newEditorState,
-    new Date(file.lastModified)
-  ]
+const newText = (text: ProseMirrorState, file: File): [ProseMirrorState, Date] => {
+  const newState = {...text, editorState: file.text, initialized: false}
+  return [newState, new Date(file.lastModified)]
 }
 
 type Action = (state: State) => State

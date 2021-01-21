@@ -125,7 +125,8 @@ import {Decoration, DecorationSet, EditorView, Node} from 'prosemirror-view'
 import {Schema} from 'prosemirror-model'
 import {undo, redo} from 'prosemirror-history'
 import {exitCode} from 'prosemirror-commands'
-import {textblockTypeInputRule} from 'prosemirror-inputrules'
+import {inputRules, textblockTypeInputRule} from 'prosemirror-inputrules'
+import {keymap} from 'prosemirror-keymap'
 import prettier from 'prettier'
 import parserBabel from 'prettier/parser-babel'
 import parserCss from 'prettier/parser-postcss'
@@ -146,7 +147,7 @@ interface CodeBlockProps {
   fontSize: number;
 }
 
-export const codeBlockPlugin = (props: CodeBlockProps) => new Plugin({
+const codeBlockPlugin = (props: CodeBlockProps) => new Plugin({
   key: new PluginKey('code-block'),
   state: {
     init: () => ({...initialState, ...props}),
@@ -156,11 +157,6 @@ export const codeBlockPlugin = (props: CodeBlockProps) => new Plugin({
     }
   },
   props: {
-    nodeViews: {
-      code_block: (node, view, getPos, decos) => {
-        return new CodeBlockView(node, view, getPos, view.state.schema, decos)
-      }
-    },
     decorations(state) {
       const decos = []
       state.doc.descendants((node, pos) => {
@@ -174,7 +170,7 @@ export const codeBlockPlugin = (props: CodeBlockProps) => new Plugin({
   }
 })
 
-export class CodeBlockView {
+class CodeBlockView {
   node: Node
   view: EditorView
   getPos: () => number
@@ -233,7 +229,7 @@ export class CodeBlockView {
         langSelectBottom.style.display = 'none'
         langToggle.style.display = 'block'
         const tr = view.state.tr
-        tr.setNodeMarkup(getPos(), undefined, {...this.node.attrs, params: {lang}})
+        tr.setNodeMarkup(getPos(), undefined, {...this.node.attrs, params: lang})
         view.dispatch(tr)
         this.updateLang()
         this.updateNav()
@@ -547,7 +543,7 @@ export class CodeBlockView {
   }
 
   getLang() {
-    return this.node.attrs.params.lang ?? ''
+    return this.node.attrs.params ?? ''
   }
 
   selectNode() {
@@ -631,20 +627,40 @@ const optionsByLang = (lang: string) =>
   lang === 'html' ? {mode: 'xml', htmlMode: true} :
   {mode: lang}
 
-export const codeBlockKeymap = {
+const codeBlockKeymap = {
   ArrowLeft: arrowHandler('left'),
   ArrowRight: arrowHandler('right'),
   ArrowUp: arrowHandler('up'),
   ArrowDown: arrowHandler('down'),
 }
 
-export const codeBlockRule = (nodeType) =>
+const codeBlockRule = (nodeType) =>
   textblockTypeInputRule(
     /^```([a-zA-Z]*)?\s$/,
     nodeType,
     match => {
       const lang = match[1]
-      if (lang) return {params: {lang}}
+      if (lang) return {params: cleanLang(lang)}
       return {}
     }
   )
+
+export default (props: CodeBlockProps) => ({
+  plugins: (prev, schema) => [
+    ...prev,
+    inputRules({rules: [codeBlockRule(schema.nodes.code_block)]}),
+    keymap(codeBlockKeymap),
+    codeBlockPlugin(props),
+  ],
+  nodeViews: {
+    code_block: (node, view, getPos, decos) => {
+      return new CodeBlockView(node, view, getPos, view.state.schema, decos)
+    }
+  },
+})
+
+export const updateOptions = (view: EditorView, options: CodeBlockProps) => {
+  const tr = view.state.tr
+  tr.setMeta('code-block', options)
+  view.dispatch(tr)
+}
