@@ -145,6 +145,7 @@ interface CodeBlockProps {
   theme: string;
   typewriterMode: boolean;
   fontSize: number;
+  extraKeys?: {[key: string]: unknown};
 }
 
 const codeBlockPlugin = (props: CodeBlockProps) => new Plugin({
@@ -180,7 +181,7 @@ class CodeBlockView {
   dom: Element
   updating: boolean
   clicked: boolean
-  options: {[key: string]: unknown}
+  options: CodeBlockProps
   logo: HTMLElement
   prettifyBtn: HTMLElement
 
@@ -191,18 +192,17 @@ class CodeBlockView {
     this.getPos = getPos
     this.schema = schema
     this.incomingChanges = false
-    this.options = {}
+    this.options = initialState
+    this.updateOptions(decos)
 
     // Create a CodeMirror instance
     this.cm = new CodeMirror(null, {
       value: this.node.textContent,
-      extraKeys: this.codeMirrorKeymap(),
-      theme: initialState.theme,
-      scrollbarStyle: null,
       ...optionsByLang(this.getLang()),
+      theme: this.options.theme,
+      extraKeys: this.codeMirrorKeymap(),
+      scrollbarStyle: null,
     })
-
-    this.updateOptions(decos)
 
     this.logo = document.createElement('span')
     this.prettifyBtn = document.createElement('span')
@@ -210,7 +210,7 @@ class CodeBlockView {
     this.prettifyBtn.textContent = '✨'
     this.prettifyBtn.style.display = 'none'
     this.prettifyBtn.setAttribute('title', 'prettify')
-    this.prettifyBtn.addEventListener('click', this.prettify.bind(this))
+    this.prettifyBtn.addEventListener('mousedown', this.prettify.bind(this), true)
     this.updateNav()
 
     const container = document.createElement('div')
@@ -268,10 +268,10 @@ class CodeBlockView {
     })
 
     container.appendChild(langSelect)
+    container.appendChild(this.prettifyBtn)
     container.appendChild(this.cm.getWrapperElement())
     container.appendChild(langSelectBottom)
     container.appendChild(langToggle)
-    container.appendChild(this.prettifyBtn)
     this.dom = container
 
     // CodeMirror needs to be in the DOM to properly initialize, so
@@ -379,6 +379,7 @@ class CodeBlockView {
   codeMirrorKeymap() {
     const view = this.view
     const mod = /Mac/.test(navigator.platform) ? 'Cmd' : 'Ctrl'
+    const extraKeyMap = this.options.extraKeys ?? {}
     return CodeMirror.normalizeKeyMap({
       Up: () => this.maybeEscape('line', -1),
       Left: () => this.maybeEscape('char', -1),
@@ -389,7 +390,8 @@ class CodeBlockView {
       [`${mod}-Y`]: () => redo(view.state, view.dispatch),
       'Ctrl-Enter': () => {
         if (exitCode(view.state, view.dispatch)) view.focus()
-      }
+      },
+      ...extraKeyMap,
     })
   }
 
@@ -448,12 +450,17 @@ class CodeBlockView {
         for (const key in deco.type.attrs) {
           const value = deco.type.attrs[key]
           this.options[key] = value
-          this.cm.setOption(key, value)
+          if (this.cm && key === 'extraKeys') {
+            this.cm.setOption(key, this.codeMirrorKeymap())
+          } else if (this.cm) {
+            this.cm.setOption(key, value)
+          }
         }
 
-        this.cm.refresh()
+        if (this.cm) this.cm.refresh()
       })
     }
+
   }
 
   updateLang() {
