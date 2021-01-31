@@ -7,6 +7,7 @@ import todoList from './prosemirror/todo-list'
 import code from './prosemirror/code'
 import dropImage from './prosemirror/image'
 import placeholder from './prosemirror/placeholder'
+import codeBlockNext from './prosemirror/code-block-next'
 import codeBlock from './prosemirror/code-block'
 import {Config} from '.'
 import {codeTheme} from './config'
@@ -31,12 +32,13 @@ export const createState = (props: Props) => ({
     customKeymap(props),
     markdown,
     todoList,
-    codeBlock({
-      theme: codeTheme(props.config),
-      typewriterMode: props.config.typewriterMode,
-      fontSize: props.config.fontSize,
-      extraKeys: props.keymap,
-    }),
+    codeBlockNext(),
+    // codeBlock({
+    //   theme: codeTheme(props.config),
+    //   typewriterMode: props.config.typewriterMode,
+    //   fontSize: props.config.fontSize,
+    //   extraKeys: props.keymap,
+    // }),
     code,
     link,
     dropImage,

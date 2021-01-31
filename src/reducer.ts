@@ -11,7 +11,7 @@ export const newState = (props: Partial<State> = {}): State => ({
   fullscreen: isFullScreen(),
   config: {
     theme: 'light',
-    codeTheme: 'dracula',
+    codeTheme: 'material-light',
     font: 'Merriweather',
     fontSize: 24,
     alwaysOnTop: isMac,

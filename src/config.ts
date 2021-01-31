@@ -109,21 +109,29 @@ export const codeThemes: {[key: string]: CodeTheme} = {
     label: 'Dracula',
     value: 'dracula',
   },
-  'material': {
-    label: 'Material',
-    value: 'material',
+  'material-dark': {
+    label: 'Material Dark',
+    value: 'material-dark',
+  },
+  'material-light': {
+    label: 'Material Light',
+    value: 'material-light',
   },
   'solarized-dark': {
     label: 'Solarized Dark',
-    value: 'solarized dark',
+    value: 'solarized-dark',
   },
   'solarized-light': {
     label: 'Solarized Light',
-    value: 'solarized light',
+    value: 'solarized-light',
   },
-  'idea': {
-    label: 'Idea',
-    value: 'idea',
+  'github-light': {
+    label: 'Github Light',
+    value: 'github-light',
+  },
+  'github-dark': {
+    label: 'Github Dark',
+    value: 'github-dark',
   },
 }
 

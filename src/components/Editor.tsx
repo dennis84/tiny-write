@@ -6,7 +6,7 @@ import {rgb, rgba} from '../styles'
 import {codeTheme, color, color2, font} from '../config'
 import {UpdateText, useDispatch} from '../reducer'
 import {ProseMirror, ProseMirrorState, useProseMirror} from '../prosemirror/prosemirror'
-import {updateOptions} from '../prosemirror/code-block'
+import {updateOptions} from '../prosemirror/code-block-next'
 
 interface Props {
   text: ProseMirrorState;
@@ -90,6 +90,16 @@ export default (props: Props) => {
         .lang-select {
           .lang-input {
             outline: none;
+          }
+        }
+        .cm-wrap {
+          border-radius: 2px;
+          margin: 10px 0;
+          box-shadow: inset 0 0 0 1px ${rgba(color(theme), 0.3)};
+          font-family: '${font(theme, true)}' !important;
+          outline: none;
+          .cm-line {
+            line-height: 150%;
           }
         }
         .CodeMirror {
