@@ -23,11 +23,12 @@ function createWindow() {
     }
   })
 
-  win.loadURL(url.format({
-    protocol: 'file',
-    hash: '',
-    pathname: path.join(__dirname, '/dist/index.html')
-  }))
+  win.loadURL('http://localhost:3000')
+  // win.loadURL(url.format({
+  //   protocol: 'file',
+  //   hash: '',
+  //   pathname: path.join(__dirname, '/index.html')
+  // }))
 
   Menu.setApplicationMenu(Menu.buildFromTemplate([{
     label: 'Application',

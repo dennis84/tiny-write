@@ -9,7 +9,7 @@ interface Font {
 export const fonts: {[key: string]: Font} = {
   'merriweather': {
     label: 'Merriweather',
-    src: './fonts/Merriweather-Regular.ttf',
+    src: './Merriweather-Regular.ttf',
   },
   'times-new-roman': {
     label: 'Times New Roman',
@@ -19,24 +19,24 @@ export const fonts: {[key: string]: Font} = {
   },
   'piazzolla': {
     label: 'Piazzolla',
-    src: './fonts/Piazzolla-Regular.woff2',
+    src: './Piazzolla-Regular.woff2',
   },
   'ibm-plex-serif': {
     label: 'IBM Plex Serif',
-    src: './fonts/IBMPlexSerif-Regular.ttf',
+    src: './IBMPlexSerif-Regular.ttf',
   },
   'roboto-slab': {
     label: 'Roboto Slab',
-    src: './fonts/RobotoSlab-Regular.ttf',
+    src: './RobotoSlab-Regular.ttf',
   },
   'jetbrains-mono': {
     label: 'JetBrains Mono',
-    src: './fonts/JetBrainsMono-Regular.woff2',
+    src: './JetBrainsMono-Regular.woff2',
     monospace: true,
   },
   'fantasque-sans-mono': {
     label: 'Fantasque Sans Mono',
-    src: './fonts/FantasqueSansMono-Regular.woff2',
+    src: './FantasqueSansMono-Regular.woff2',
     monospace: true,
   },
 }

@@ -2,8 +2,7 @@ import React from 'react'
 import {render} from 'react-dom'
 import {ProseMirrorState} from './prosemirror/prosemirror'
 import Main from './Main'
-import {isMac} from './env'
-import {isFullScreen} from './remote'
+import {newState} from './reducer'
 
 export interface Config {
   theme: string;
@@ -34,23 +33,9 @@ export interface File {
   lastModified: string;
 }
 
-export const newState = (props: Partial<State> = {}): State => ({
-  lastModified: new Date(),
-  files: [],
-  loading: true,
-  fullscreen: isFullScreen(),
-  config: {
-    theme: 'light',
-    codeTheme: 'dracula',
-    font: 'Merriweather',
-    fontSize: 24,
-    alwaysOnTop: isMac,
-    typewriterMode: true,
-  },
-  ...props,
-})
-
 render(
-  <Main state={newState()} />,
+  <React.StrictMode>
+    <Main state={newState()} />
+  </React.StrictMode>,
   document.getElementById('container')
 )
