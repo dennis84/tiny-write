@@ -11,7 +11,7 @@
       "category": "public.app-category.utilities"
     },
     "directories": {
-      "output": "app"
+      "output": "dist/app"
     }
   },
   "dependencies": {
@@ -77,7 +77,7 @@
   },
   "scripts": {
     "web": "vite",
-    "app": "NODE_ENV=dev electron public & vite",
+    "app": "NODE_ENV=dev electron . & vite",
     "build": "npm run lint && vite build --base './'",
     "pack": "npm run build && electron-builder --dir",
     "dist": "npm run build && electron-builder",

@@ -23,12 +23,15 @@ function createWindow() {
     }
   })
 
-  win.loadURL('http://localhost:3000')
-  // win.loadURL(url.format({
-  //   protocol: 'file',
-  //   hash: '',
-  //   pathname: path.join(__dirname, '/index.html')
-  // }))
+  if (process.env.NODE_ENV === 'dev') {
+    win.loadURL('http://localhost:3000')
+  } else {
+    win.loadURL(url.format({
+      protocol: 'file',
+      hash: '',
+      pathname: path.join(__dirname, '/dist/index.html')
+    }))
+  }
 
   Menu.setApplicationMenu(Menu.buildFromTemplate([{
     label: 'Application',
