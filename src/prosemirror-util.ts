@@ -35,7 +35,7 @@ export const createState = (props: Props) => ({
       theme: codeTheme(props.config),
       typewriterMode: props.config.typewriterMode,
       fontSize: props.config.fontSize,
-      extraKeys: props.keymap,
+      keymap: props.keymap,
     }),
     code,
     link,

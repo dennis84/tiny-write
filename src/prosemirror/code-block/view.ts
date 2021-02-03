@@ -219,7 +219,13 @@ export class CodeBlockView {
       }
     }])
 
+    const extraKeys = []
+    for (const key in this.options.keymap) {
+      extraKeys.push({key: key, run: this.options.keymap[key]})
+    }
+
     return [
+      keymap.of(extraKeys),
       keymap.of(defaultKeymap),
       keymap.of([defaultTabBinding]),
       codeMirrorKeymap,

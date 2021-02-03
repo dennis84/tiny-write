@@ -58,7 +58,7 @@ export interface CodeBlockProps {
   theme: string;
   typewriterMode: boolean;
   fontSize: number;
-  extraKeys?: {[key: string]: unknown};
+  keymap?: {[key: string]: unknown};
 }
 
 const codeBlockPlugin = (props: CodeBlockProps) => new Plugin({
