@@ -1,11 +1,12 @@
 import React, {useEffect} from 'react'
+import {EditorView} from 'prosemirror-view'
 import {css} from '@emotion/css'
 import {useTheme} from '@emotion/react'
 import {Config, File} from '..'
 import {rgb, rgba} from '../styles'
 import {codeTheme, color, color2, font} from '../config'
 import {UpdateText, useDispatch} from '../reducer'
-import {ProseMirror, ProseMirrorState, useProseMirror} from '../prosemirror/prosemirror'
+import {ProseMirror, ProseMirrorState} from '../prosemirror/prosemirror'
 import {updateOptions} from '../prosemirror/code-block'
 
 interface Props {
@@ -13,11 +14,11 @@ interface Props {
   lastModified?: Date;
   files: File[];
   config: Config;
+  editorViewRef: React.RefObject<EditorView>;
 }
 
 export default (props: Props) => {
   const dispatch = useDispatch()
-  const proseMirror = useProseMirror()
   const theme = useTheme()
 
   const editorCss = css`
@@ -146,8 +147,8 @@ export default (props: Props) => {
   }
 
   useEffect(() => {
-    if (!proseMirror) return
-    updateOptions(proseMirror, {
+    if (!props.editorViewRef.current) return
+    updateOptions(props.editorViewRef.current, {
       theme: codeTheme(props.config),
       fontSize: props.config.fontSize,
       typewriterMode: props.config.typewriterMode,
@@ -156,6 +157,7 @@ export default (props: Props) => {
 
   return (
     <ProseMirror
+      editorViewRef={props.editorViewRef}
       className={editorCss}
       state={props.text}
       onChange={OnChange}

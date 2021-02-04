@@ -1,5 +1,6 @@
 import React, {useState} from 'react'
 import {EditorState} from 'prosemirror-state'
+import {EditorView} from 'prosemirror-view'
 import {undo, redo} from 'prosemirror-history'
 import {deleteSelection, selectAll} from 'prosemirror-commands'
 import {differenceInHours, format} from 'date-fns'
@@ -18,7 +19,7 @@ import {color, color2, themes, fonts, codeThemes} from '../config'
 import {rgb, rgba} from '../styles'
 import {isElectron, isMac, mod} from '../env'
 import * as remote from '../remote'
-import {isEmpty, useProseMirror} from '../prosemirror/prosemirror'
+import {isEmpty} from '../prosemirror/prosemirror'
 
 const Container = styled.div`
   position: relative;
@@ -144,15 +145,16 @@ interface Props {
   files: File[];
   config: Config;
   fullscreen: boolean;
+  editorViewRef: React.RefObject<EditorView>;
 }
 
 export default (props: Props) => {
   const dispatch = useDispatch()
-  const editorView = useProseMirror()
   const [show, setShow] = useState(false)
+  const editorView = props.editorViewRef.current
 
   const OnBurgerClick = () => {
-    editorView.focus()
+    editorView.current.focus()
     setShow(!show)
   }
 

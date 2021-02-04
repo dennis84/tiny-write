@@ -1,4 +1,4 @@
-import React, {useEffect, useReducer} from 'react'
+import React, {useEffect, useReducer, useRef} from 'react'
 import {selectAll, deleteSelection} from 'prosemirror-commands'
 import {Global, ThemeProvider} from '@emotion/react'
 import styled from '@emotion/styled'
@@ -23,7 +23,7 @@ import {ErrorBoundary} from './ErrorBoundary'
 import Editor from './components/Editor'
 import Error from './components/Error'
 import Menu from './components/Menu'
-import {ProseMirrorProvider, isEmpty} from './prosemirror/prosemirror'
+import {isEmpty} from './prosemirror/prosemirror'
 import {createState, createEmptyState} from './prosemirror-util'
 
 const Container = styled.div`
@@ -53,6 +53,7 @@ const isConfig = (x: any): boolean =>
 export default (props: {state: State}) => {
   const [state, dispatch] = useReducer(reducer, props.state)
   const loadingPrev = usePrevious(state.loading)
+  const editorViewRef = useRef()
 
   const OnNew = useDynamicCallback(() => {
     dispatch(New)
@@ -205,19 +206,21 @@ export default (props: {state: State}) => {
             {state.error ? (
               <Error error={state.error} />
             ) : (
-              <ProseMirrorProvider>
+              <>
                 <Editor
+                  editorViewRef={editorViewRef}
                   text={editorState}
                   lastModified={state.lastModified}
                   files={state.files}
                   config={state.config} />
                 <Menu
+                  editorViewRef={editorViewRef}
                   text={state.text}
                   lastModified={state.lastModified}
                   files={state.files}
                   config={state.config}
                   fullscreen={state.fullscreen} />
-              </ProseMirrorProvider>
+              </>
             )}
           </Container>
         </ErrorBoundary>
