@@ -1,5 +1,7 @@
 import React, {useEffect, useReducer, useRef} from 'react'
 import {selectAll, deleteSelection} from 'prosemirror-commands'
+import {EditorView} from 'prosemirror-view'
+import {undo, redo} from 'prosemirror-history'
 import {Global, ThemeProvider} from '@emotion/react'
 import styled from '@emotion/styled'
 import {rgb} from './styles'
@@ -53,7 +55,7 @@ const isConfig = (x: any): boolean =>
 export default (props: {state: State}) => {
   const [state, dispatch] = useReducer(reducer, props.state)
   const loadingPrev = usePrevious(state.loading)
-  const editorViewRef = useRef()
+  const editorViewRef = useRef<EditorView>()
 
   const OnNew = useDynamicCallback(() => {
     dispatch(New)
@@ -76,11 +78,26 @@ export default (props: {state: State}) => {
     return true
   })
 
+  const OnUndo = useDynamicCallback(() => {
+    if (!editorViewRef.current) return
+    undo(editorViewRef.current.state, editorViewRef.current.dispatch)
+    return true
+  })
+
+  const OnRedo = useDynamicCallback(() => {
+    if (!editorViewRef.current) return
+    redo(editorViewRef.current.state, editorViewRef.current.dispatch)
+    return true
+  })
+
   const keymap = {
     [`${mod}-n`]: OnNew,
     [`${mod}-w`]: OnDiscard,
     'Cmd-Enter': OnFullscreen,
     'Alt-Enter': OnFullscreen,
+    [`${mod}-z`]: OnUndo,
+    [`Shift-${mod}-z`]: OnRedo,
+    [`${mod}-y`]: OnRedo,
   }
 
   useEffect(() => {
@@ -111,7 +128,7 @@ export default (props: {state: State}) => {
         try {
           text = createState({
             data: parsed.text,
-            keymap: keymap,
+            keymap,
             config,
           })
         } catch (err) {
@@ -162,8 +179,8 @@ export default (props: {state: State}) => {
     if (!state.text?.initialized) return
     const newText = createState({
       data: state.text.editorState.toJSON(),
-      keymap: keymap,
       config: state.config,
+      keymap,
     })
 
     dispatch(UpdateText(newText))
@@ -193,8 +210,8 @@ export default (props: {state: State}) => {
     }))
 
   const editorState = state.text ?? createEmptyState({
-    keymap: keymap,
     config: state.config,
+    keymap,
   })
 
   return (

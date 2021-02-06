@@ -154,7 +154,7 @@ export default (props: Props) => {
   const editorView = props.editorViewRef.current
 
   const OnBurgerClick = () => {
-    editorView.current.focus()
+    editorView.focus()
     setShow(!show)
   }
 
