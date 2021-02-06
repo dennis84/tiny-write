@@ -1,5 +1,4 @@
-import {Selection, Plugin, PluginKey} from 'prosemirror-state'
-import {EditorView, Decoration, DecorationSet} from 'prosemirror-view'
+import {Selection} from 'prosemirror-state'
 import {keymap} from 'prosemirror-keymap'
 import {inputRules, textblockTypeInputRule} from 'prosemirror-inputrules'
 import {CodeBlockView} from './view'
@@ -61,45 +60,15 @@ export interface CodeBlockProps {
   keymap?: {[key: string]: unknown};
 }
 
-const codeBlockPlugin = (props: CodeBlockProps) => new Plugin({
-  key: new PluginKey('code-block'),
-  state: {
-    init: () => ({...defaultProps, ...props}),
-    apply(tr, prev) {
-      const meta = tr.getMeta('code-block')
-      return meta ? meta : prev
-    }
-  },
-  props: {
-    decorations(state) {
-      const decos = []
-      state.doc.descendants((node, pos) => {
-        if (node.type.name === 'code_block') {
-          decos.push(Decoration.node(pos, pos + node.nodeSize, this.getState(state)))
-        }
-      })
-
-      return DecorationSet.create(state.doc, decos)
-    }
-  }
-})
-
-export const updateOptions = (view: EditorView, options: CodeBlockProps) => {
-  const tr = view.state.tr
-  tr.setMeta('code-block', options)
-  view.dispatch(tr)
-}
-
 export default (props: CodeBlockProps) => ({
   plugins: (prev, schema) => [
     ...prev,
     inputRules({rules: [codeBlockRule(schema.nodes.code_block)]}),
     keymap(codeBlockKeymap),
-    codeBlockPlugin({...defaultProps, ...props}),
   ],
   nodeViews: {
     code_block: (node, view, getPos, decos) => {
-      return new CodeBlockView(node, view, getPos, view.state.schema, decos)
+      return new CodeBlockView(node, view, getPos, view.state.schema, decos, props)
     }
   },
 })

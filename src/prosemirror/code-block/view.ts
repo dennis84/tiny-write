@@ -53,12 +53,12 @@ export class CodeBlockView {
   logo: HTMLElement
   prettifyBtn: HTMLElement
 
-  constructor(node, view, getPos, schema, decos) {
+  constructor(node, view, getPos, schema, decos, options) {
     this.node = node
     this.view = view
     this.getPos = getPos
     this.schema = schema
-    this.updateOptions(decos)
+    this.options = options
 
     this.logo = document.createElement('span')
     this.prettifyBtn = document.createElement('span')
@@ -165,12 +165,10 @@ export class CodeBlockView {
     return true
   }
 
-  update(node, decos) {
+  update(node) {
     if (node.type != this.node.type) return false
     this.node = node
     this.updateNav()
-    const updated = this.updateOptions(decos)
-    if (updated) this.reconfigure()
 
     const change = computeChange(this.editorView.state.doc.toString(), node.textContent)
     if (change) {
@@ -270,10 +268,9 @@ export class CodeBlockView {
     const sel = update.state.selection.main
     if (sel.empty && this.options.typewriterMode) {
       const coords = this.editorView.coordsAtPos(sel.from)
+      if (!coords) return
       const elem = document.elementFromPoint(coords.left, coords.top)
-      if (!elem) {
-        return
-      }
+      if (!elem) return
 
       elem.scrollIntoView({
         block: 'center',
@@ -295,23 +292,6 @@ export class CodeBlockView {
         })
       }
     }
-  }
-
-  updateOptions(decorations) {
-    let updated = false
-    if (decorations?.length) {
-      decorations.forEach((deco) => {
-        for (const key in deco.type.attrs) {
-          const value = deco.type.attrs[key]
-          if (this.options[key] !== value) {
-            this.options[key] = value
-            updated = true
-          }
-        }
-      })
-    }
-
-    return updated
   }
 
   updateNav() {

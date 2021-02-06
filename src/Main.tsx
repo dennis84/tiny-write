@@ -184,7 +184,7 @@ export default (props: {state: State}) => {
     })
 
     dispatch(UpdateText(newText))
-  }, [state.config.typewriterMode])
+  }, [state.config.codeTheme, state.config.fontSize, state.config.typewriterMode])
 
   useEffect(() => {
     remote.setAlwaysOnTop(state.config.alwaysOnTop);
