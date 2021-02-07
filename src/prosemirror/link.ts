@@ -1,6 +1,6 @@
 import {Plugin} from 'prosemirror-state'
 
-const REGEX = /\[(.+?)\]\((.+?)\)/
+const REGEX = /\[([^[\]]+?)\]\((.+?)\)/
 
 const findMarkPosition = (mark, doc, from, to) => {
   let markPos = {from: -1, to: -1}

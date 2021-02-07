@@ -295,16 +295,19 @@ export class CodeBlockView {
   }
 
   updateNav() {
+    const lang = this.getLang()
     let elem
-    if (logos[this.getLang()]) {
+    if (logos[lang]) {
       elem = document.createElement('img')
-      elem.src = logos[this.getLang()]
+      elem.src = logos[lang]
       elem.width = this.options.fontSize
       elem.height = this.options.fontSize
       elem.style.marginTop = `${this.options.fontSize as number / 4}px`
+      elem.setAttribute('title', lang)
     } else {
       elem = document.createElement('span')
       elem.textContent = '📜'
+      elem.setAttribute('title', lang)
     }
 
     if (
