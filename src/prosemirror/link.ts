@@ -1,4 +1,4 @@
-import {Plugin} from 'prosemirror-state'
+import {Plugin, PluginKey, TextSelection} from 'prosemirror-state'
 
 const REGEX = /\[([^[\]]+?)\]\((.+?)\)/
 
@@ -14,71 +14,133 @@ const findMarkPosition = (mark, doc, from, to) => {
   return markPos
 }
 
-const markdownLinks = (schema) => new Plugin({
-  props: {
-    handleDOMEvents: {
-      keyup: (view) => {
-        const sel = view.state.selection
-        if (!sel.empty) return false
-
-        const $position = sel.$from
-        const textFrom = $position.start()
-        const textTo = $position.end()
-        const mark = schema.marks.link.isInSet($position.marks())
-
-        if (mark) {
-          const range = findMarkPosition(mark, view.state.doc, textFrom, textTo)
-          const {title, href} = mark.attrs
-          const tr = view.state.tr
-          tr.replaceRangeWith(range.from, range.to, view.state.schema.text(`[${title}](${href})`))
-          view.dispatch(tr)
-        }
-
-        return false
+const markdownLinks = (schema) => {
+  const plugin = new Plugin({
+    key: new PluginKey('markdown-links'),
+    state: {
+      init() {
+        return {}
       },
-      keydown: (view, event) => {
-        const sel = view.state.selection
-        const $position = sel.$from
-        if (!sel.empty) return false
-
-        const nextPos =
-          event.key === 'ArrowLeft' ? $position.pos - 1 :
-          event.key === 'ArrowRight' ? $position.pos + 1 :
-          event.key === 'ArrowUp' ? undefined :
-          event.key === 'ArrowDown' ? undefined :
-          $position.pos + 1
-
-        const textFrom = $position.start()
-        const textTo = $position.end()
-
-        const text = $position.doc.textBetween(textFrom, textTo, '\0', '\0')
-        const match = REGEX.exec(text)
-
-        if (match) {
-          const start = match.index + $position.start()
-          const end = start + match[0].length
-          if (nextPos && nextPos >= start && nextPos <= end) return
-
-          const tr = view.state.tr
-          const textStart = start + match[0].indexOf(match[1])
-          const textEnd = textStart + match[1].length
-          if (textEnd < end) tr.delete(textEnd, end)
-          if (textStart > start) tr.delete(start, textStart)
-          const to = start + match[1].length
-
-          tr.addMark(start, to, schema.marks.link.create({
-            title: match[1],
-            href: match[2]
-          }))
-
-          view.dispatch(tr)
+      apply(tr, state) {
+        const action = tr.getMeta(this)
+        if (action?.pos) {
+          state.pos = action.pos
         }
 
-        return false
+        return state
+      }
+    },
+    props: {
+      handleDOMEvents: {
+        keyup: (view) => {
+          return handleMove(view)
+        },
+        click: (view, e) => {
+          if (handleMove(view)) {
+            e.preventDefault()
+          }
+
+          return true
+        },
       }
     }
+  })
+
+  const resolvePos = (view, pos) => {
+    try {
+      return view.state.doc.resolve(pos)
+    } catch (err) {
+      // ignore
+    }
   }
-})
+
+  const toLink = (view, tr) => {
+    const sel = view.state.selection
+    const lastPos = plugin.getState(view.state).pos
+
+    if (lastPos !== undefined) {
+      const $from = resolvePos(view, lastPos)
+      if (!$from || $from.depth === 0) {
+        return false
+      }
+
+      const textFrom = $from.before()
+      const textTo = $from.after()
+
+      const text = view.state.doc.textBetween(textFrom, textTo, '\0', '\0')
+      const match = REGEX.exec(text)
+
+      if (match) {
+        const start = match.index + $from.start()
+        const end = start + match[0].length
+        if (sel.$from.pos >= start && sel.$from.pos <= end) {
+          return false
+        }
+
+        const textStart = start + match[0].indexOf(match[1])
+        const textEnd = textStart + match[1].length
+        if (textEnd < end) tr.delete(textEnd, end)
+        if (textStart > start) tr.delete(start, textStart)
+        const to = start + match[1].length
+
+        tr.addMark(start, to, schema.marks.link.create({
+          title: match[1],
+          href: match[2]
+        }))
+
+        const sub = end - textEnd + textStart - start
+        tr.setMeta(plugin, {pos: sel.$cursor.pos - sub})
+
+        return true
+      }
+    }
+
+    return false
+  }
+
+  const toMarkdown = (view, tr) => {
+    const sel = view.state.selection
+    const $from = resolvePos(view, sel.$cursor.pos)
+
+    const textFrom = $from.before()
+    const textTo = $from.after()
+    const mark = schema.marks.link.isInSet(sel.$from.marks())
+
+    if (mark) {
+      const range = findMarkPosition(mark, view.state.doc, textFrom, textTo)
+      const {title, href} = mark.attrs
+      tr.replaceRangeWith(range.from, range.to, view.state.schema.text(`[${title}](${href})`))
+      tr.setSelection(new TextSelection(tr.doc.resolve(sel.$head.pos + 1)))
+      tr.setMeta(plugin, {pos: sel.$cursor.pos})
+      return true
+    }
+
+    return false
+  }
+
+  const handleMove = (view) => {
+    const sel = view.state.selection
+    if (!sel.empty || !sel.$cursor) return false
+    const pos = sel.$cursor.pos
+    const tr = view.state.tr
+
+    if (toLink(view, tr)) {
+      view.dispatch(tr)
+      return true
+    }
+
+    if (toMarkdown(view, tr)) {
+      view.dispatch(tr)
+      return true
+    }
+
+    tr.setMeta(plugin, {pos})
+    view.dispatch(tr)
+    return false
+  }
+
+  return plugin
+}
 
 export default {
   plugins: (prev, schema) => [

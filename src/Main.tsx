@@ -105,7 +105,10 @@ export default (props: {state: State}) => {
       let parsed
       try {
         parsed = JSON.parse(data)
-      } catch (err) { /* ignore */ }
+      } catch (err) {
+        dispatch(UpdateError({id: 'invalid_state', props: data}))
+        return
+      }
 
       if (!parsed) {
         dispatch(UpdateState({...state, loading: false}))
