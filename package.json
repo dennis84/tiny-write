@@ -30,6 +30,7 @@
     "@codemirror/lang-sql": "^0.17.2",
     "@codemirror/lang-xml": "^0.17.1",
     "@codemirror/legacy-modes": "^0.17.1",
+    "@codemirror/lint": "^0.17.1",
     "@codemirror/state": "^0.17.1",
     "@codemirror/stream-parser": "^0.17.1",
     "@codemirror/theme-one-dark": "^0.17.4",

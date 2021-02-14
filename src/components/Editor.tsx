@@ -101,6 +101,9 @@ export default (props: Props) => {
           .cm-line {
             line-height: 150%;
           }
+          .cm-diagnosticText {
+            white-space: pre;
+          }
         }
         .lang-toggle {
           position: absolute;

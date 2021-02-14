@@ -5,6 +5,7 @@ import {exitCode} from 'prosemirror-commands'
 import {EditorState, tagExtension} from '@codemirror/state'
 import {EditorView, ViewUpdate, keymap} from '@codemirror/view'
 import {defaultKeymap, defaultTabBinding} from '@codemirror/commands'
+import {linter, setDiagnostics} from '@codemirror/lint'
 import {StreamLanguage} from '@codemirror/stream-parser'
 import {haskell} from '@codemirror/legacy-modes/mode/haskell'
 import {clojure} from '@codemirror/legacy-modes/mode/clojure'
@@ -226,6 +227,7 @@ export class CodeBlockView {
       keymap.of(extraKeys),
       keymap.of(defaultKeymap),
       keymap.of([defaultTabBinding]),
+      linter(() => []),
       codeMirrorKeymap,
       tagExtension('tabSize', EditorState.tabSize.of(2)),
       getLangExtension(this.getLang()),
@@ -342,8 +344,15 @@ export class CodeBlockView {
         })
         this.prettifyBtn.textContent = ''
       } catch (err) {
+        this.editorView.dispatch(setDiagnostics(this.editorView.state, [{
+          from: 0,
+          to: this.editorView.state.doc.length,
+          severity: 'error',
+          message: err.message,
+        }]))
         this.prettifyBtn.textContent = '🚨'
       }
+
       return
     }
 
@@ -378,6 +387,16 @@ export class CodeBlockView {
       this.prettifyBtn.textContent = ''
     } catch (err) {
       this.prettifyBtn.textContent = '🚨'
+      const line = this.editorView.state.doc.line(err.loc.start.line)
+      const lines = err.message.split('\n')
+      const diagnostics = lines.map((message) => ({
+        from: line.from + err.loc.start.column - 1,
+        to: line.from + err.loc.start.column - 1,
+        severity: 'error',
+        message: message,
+      }))
+
+      this.editorView.dispatch(setDiagnostics(this.editorView.state, diagnostics))
     }
   }
 
