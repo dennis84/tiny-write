@@ -3,11 +3,13 @@ import {keymap} from 'prosemirror-keymap'
 import {inputRules, textblockTypeInputRule} from 'prosemirror-inputrules'
 import {CodeBlockView} from './view'
 
-const cleanLang = (lang: string) =>
+export const cleanLang = (lang: string) =>
   lang === 'js' ? 'javascript' :
   lang === 'ts' ? 'typescript' :
   lang === 'cplusplus' ? 'cpp' :
   lang === 'c++' ? 'cpp' :
+  lang === 'yml' ? 'yaml' :
+  lang === 'shell' ? 'bash' :
   lang
 
 const codeBlockRule = (nodeType) =>

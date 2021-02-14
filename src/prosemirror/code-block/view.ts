@@ -39,7 +39,7 @@ import parserHtml from 'prettier/parser-html'
 import parserMarkdown from 'prettier/parser-markdown'
 import parserYaml from 'prettier/parser-yaml'
 import logos from './logos'
-import {CodeBlockProps, defaultProps} from '.'
+import {CodeBlockProps, cleanLang, defaultProps} from '.'
 
 export class CodeBlockView {
   node: Node
@@ -465,12 +465,3 @@ const getLangExtension = (lang: string) =>
   lang === 'bash' ? StreamLanguage.define(shell) :
   lang === 'yaml' ? StreamLanguage.define(yaml) :
   markdown()
-
-const cleanLang = (lang: string) =>
-  lang === 'js' ? 'javascript' :
-  lang === 'ts' ? 'typescript' :
-  lang === 'cplusplus' ? 'cpp' :
-  lang === 'c++' ? 'cpp' :
-  lang === 'yml' ? 'yaml' :
-  lang === 'shell' ? 'bash' :
-  lang
