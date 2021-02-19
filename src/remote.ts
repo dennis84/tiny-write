@@ -1,5 +1,6 @@
-import {markdownSerializer} from './markdown'
 import {EditorState} from 'prosemirror-state'
+import FileType from 'file-type'
+import {markdownSerializer} from './markdown'
 import {isElectron} from './env'
 
 const electron = (window as any).require?.('electron')
@@ -46,3 +47,29 @@ export const getVersion = () => {
 
 export const getVersionUrl = () =>
   `https://github.com/dennis84/tiny-write/releases/tag/v${getVersionUrl()}`
+
+export const fileExists = (src) => {
+  if (!isElectron) return false
+  const fs = (window as any).require?.('fs')
+  const os = (window as any).require?.('os')
+  const file = src.replace('~', os.homedir())
+  return fs.existsSync(file)
+}
+
+export const readFile = async (src) => {
+  if (!isElectron) return
+  const fs = (window as any).require?.('fs')
+  const os = (window as any).require?.('os')
+  const file = src.replace('~', os.homedir())
+  const buffer = fs.readFileSync(file)
+  const meta = await FileType.fromBuffer(buffer)
+  return {...meta, buffer, file}
+}
+
+export const writeFile = async (file, content) => {
+  if (!isElectron) return
+  const fs = (window as any).require?.('fs')
+  if (fs.existsSync(file)) {
+    fs.writeFileSync(file, content)
+  }
+}

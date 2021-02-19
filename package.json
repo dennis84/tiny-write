@@ -42,6 +42,7 @@
     "date-fns": "^2.16.1",
     "devicon": "devicons/devicon#master",
     "electron-updater": "^4.3.5",
+    "file-type": "^16.2.0",
     "idb": "^6.0.0",
     "is-image": "^3.0.0",
     "prettier": "^2.2.1",

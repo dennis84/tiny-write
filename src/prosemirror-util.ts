@@ -8,8 +8,10 @@ import code from './prosemirror/code'
 import dropImage from './prosemirror/image'
 import placeholder from './prosemirror/placeholder'
 import codeBlock from './prosemirror/code-block'
+import file from './prosemirror/file'
 import {Config} from '.'
 import {codeTheme} from './config'
+import {isElectron} from './env'
 
 interface Props {
   data?: unknown;
@@ -40,6 +42,7 @@ export const createState = (props: Props) => ({
     code,
     link,
     dropImage,
+    ...(isElectron ? [file] : []),
     placeholder('Start typing ...'),
     scroll(props.config.typewriterMode),
   ]

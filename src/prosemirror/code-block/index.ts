@@ -18,7 +18,7 @@ const codeBlockRule = (nodeType) =>
     nodeType,
     match => {
       const lang = match[1]
-      if (lang) return {params: cleanLang(lang)}
+      if (lang) return {params: {lang: cleanLang(lang)}}
       return {}
     }
   )

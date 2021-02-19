@@ -1,10 +1,11 @@
 import {Schema} from 'prosemirror-model'
 import {EditorView as PmEditorView, Node} from 'prosemirror-view'
-import {TextSelection} from 'prosemirror-state'
+import {NodeSelection, TextSelection} from 'prosemirror-state'
 import {exitCode} from 'prosemirror-commands'
 import {EditorState, tagExtension} from '@codemirror/state'
-import {EditorView, ViewUpdate, keymap} from '@codemirror/view'
+import {EditorView, ViewPlugin, ViewUpdate, keymap} from '@codemirror/view'
 import {defaultKeymap, defaultTabBinding} from '@codemirror/commands'
+import {tags} from '@codemirror/highlight'
 import {linter, setDiagnostics} from '@codemirror/lint'
 import {StreamLanguage} from '@codemirror/stream-parser'
 import {haskell} from '@codemirror/legacy-modes/mode/haskell'
@@ -14,6 +15,7 @@ import {groovy} from '@codemirror/legacy-modes/mode/groovy'
 import {ruby} from '@codemirror/legacy-modes/mode/ruby'
 import {shell} from '@codemirror/legacy-modes/mode/shell'
 import {yaml} from '@codemirror/legacy-modes/mode/yaml'
+import {go} from '@codemirror/legacy-modes/mode/go'
 import {javascript} from '@codemirror/lang-javascript'
 import {java} from '@codemirror/lang-java'
 import {rust} from '@codemirror/lang-rust'
@@ -40,6 +42,7 @@ import parserMarkdown from 'prettier/parser-markdown'
 import parserYaml from 'prettier/parser-yaml'
 import logos from './logos'
 import {CodeBlockProps, cleanLang, defaultProps} from '.'
+import {readFile, writeFile} from '../../remote'
 
 export class CodeBlockView {
   node: Node
@@ -70,8 +73,10 @@ export class CodeBlockView {
     this.prettifyBtn.addEventListener('mousedown', this.prettify.bind(this), true)
     this.updateNav()
 
+    const hasFile = this.node.attrs.params.file !== undefined
     const container = document.createElement('div')
-    container.className = 'codemirror-container'
+    container.classList.add('codemirror-container')
+    if (hasFile) container.classList.add('has-file')
 
     const langInput = document.createElement('span')
     langInput.className = 'lang-input'
@@ -86,7 +91,10 @@ export class CodeBlockView {
         langSelectBottom.style.display = 'none'
         langToggle.style.display = 'block'
         const tr = view.state.tr
-        tr.setNodeMarkup(getPos(), undefined, {...this.node.attrs, params: lang})
+        tr.setNodeMarkup(getPos(), undefined, {
+          ...this.node.attrs,
+          params: {...this.node.attrs.params, lang},
+        })
         view.dispatch(tr)
         this.reconfigure()
         this.updateNav()
@@ -135,11 +143,26 @@ export class CodeBlockView {
       parent: null,
     })
 
+    if (hasFile) {
+      const theme = getTheme(this.options.theme)
+      const fileInfo = document.createElement('pre')
+      fileInfo.classList.add('file-info')
+      fileInfo.classList.add(theme[1].match(tags.comment))
+      fileInfo.textContent = `// ${this.node.attrs.params.src}`
+      const closeFile = document.createElement('span')
+      closeFile.className = 'close-file'
+      closeFile.textContent = '❎'
+      closeFile.addEventListener('click', this.close.bind(this))
+      this.editorView.dom.appendChild(fileInfo)
+      this.editorView.dom.appendChild(closeFile)
+    }
+
     container.appendChild(langSelect)
     container.appendChild(this.prettifyBtn)
     container.appendChild(this.editorView.dom)
     container.appendChild(langSelectBottom)
     container.appendChild(langToggle)
+
     this.dom = container
   }
 
@@ -168,7 +191,9 @@ export class CodeBlockView {
 
   update(node) {
     if (node.type != this.node.type) return false
+    const langChanged = node.attrs.params.lang !== this.node.attrs.params.lang
     this.node = node
+    if (langChanged) this.reconfigure()
     this.updateNav()
 
     const change = computeChange(this.editorView.state.doc.toString(), node.textContent)
@@ -184,16 +209,20 @@ export class CodeBlockView {
     return true
   }
 
+  close() {
+    const offset = this.getPos()
+    const tr = this.view.state.tr.deleteRange(
+      Math.max(0, offset - 1),
+      offset + this.node.content.size + 1
+    )
+    this.view.dispatch(tr)
+    this.view.focus()
+  }
+
   createExtensions() {
     const codeMirrorKeymap = keymap.of([{
       key: 'Backspace',
-      run: () => {
-        const offset = this.getPos()
-        const tr = this.view.state.tr.deleteRange(Math.max(0, offset - 1), offset + 1)
-        this.view.dispatch(tr)
-        this.view.focus()
-        return true
-      }
+      run: this.close.bind(this),
     }, {
       key: 'Ctrl-Enter',
       run: () => {
@@ -223,11 +252,38 @@ export class CodeBlockView {
       extraKeys.push({key: key, run: this.options.keymap[key]})
     }
 
+    const syncFile = (view, node, getPos) => {
+      return ViewPlugin.fromClass(class {
+        initialized = false
+        update(update) {
+          if (!this.initialized) {
+            readFile(node.attrs.params.file).then((data) => {
+              this.initialized = true
+              const tr = view.state.tr
+              const lang = langFromFile(node.attrs.params.file)
+              const text = view.state.schema.text(data.buffer.toString('utf-8'))
+              const sel = new NodeSelection(tr.doc.resolve(getPos()))
+              tr.replaceRangeWith(sel.$from.pos+1, sel.$to.pos, text)
+              tr.setNodeMarkup(getPos(), undefined, {
+                ...node.attrs,
+                params: {...node.attrs.params, lang}
+              })
+              view.dispatch(tr)
+            })
+          }
+
+          if (!update.docChanged) return
+          writeFile(node.attrs.params.file, update.state.doc.toString())
+        }
+      })
+    }
+
     return [
       keymap.of(extraKeys),
       keymap.of(defaultKeymap),
       keymap.of([defaultTabBinding]),
       linter(() => []),
+      ...(this.node.attrs.params.file ? [syncFile(this.view, this.node,  this.getPos)] : []),
       codeMirrorKeymap,
       tagExtension('tabSize', EditorState.tabSize.of(2)),
       getLangExtension(this.getLang()),
@@ -401,7 +457,7 @@ export class CodeBlockView {
   }
 
   getLang() {
-    return this.node.attrs.params ?? ''
+    return this.node.attrs.params.lang ?? ''
   }
 }
 
@@ -464,4 +520,11 @@ const getLangExtension = (lang: string) =>
   lang === 'ruby' ? StreamLanguage.define(ruby) :
   lang === 'bash' ? StreamLanguage.define(shell) :
   lang === 'yaml' ? StreamLanguage.define(yaml) :
+  lang === 'go' ? StreamLanguage.define(go) :
   markdown()
+
+const langFromFile = (file: string) => {
+  const i = file.lastIndexOf('.')
+  const ext = (i < 0) ? '' : file.substr(i + 1)
+  return cleanLang(ext)
+}

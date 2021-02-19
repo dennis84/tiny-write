@@ -105,10 +105,13 @@ export default (props: Props) => {
             white-space: pre;
           }
         }
+        &.has-file .cm-wrap {
+          padding-top: calc(${theme.fontSize}px * 1.5);
+        }
         .lang-toggle {
           position: absolute;
-          top: 4px;
-          right: -10px;
+          top: 1px;
+          right: -8px;
           transform: translateX(100%);
           cursor: pointer;
           z-index: 10;
@@ -122,6 +125,28 @@ export default (props: Props) => {
           cursor: pointer;
           z-index: 10;
           user-select: none;
+        }
+        .file-info {
+          top: 2px;
+          width: 100%;
+          text-overflow: ellipsis;
+          overflow: hidden;
+          position: absolute;
+          z-index: 1;
+          margin: 0;
+          padding: 0 2px;
+          padding-right: 50px;
+          user-select: none;
+          pointer-events: none;
+        }
+        .close-file {
+          position: absolute;
+          top: 1px;
+          right: 4px;
+          cursor: pointer;
+          z-index: 10;
+          user-select: none;
+          -webkit-app-region: no-drag;
         }
       }
       .todo-list {
