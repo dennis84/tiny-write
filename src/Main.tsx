@@ -26,7 +26,7 @@ import Editor from './components/Editor'
 import Error from './components/Error'
 import Menu from './components/Menu'
 import {isEmpty} from './prosemirror/prosemirror'
-import {createState, createEmptyState} from './prosemirror-util'
+import {createState, createEmptyState} from './prosemirror'
 
 const Container = styled.div`
   position: relative;

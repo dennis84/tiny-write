@@ -1,7 +1,9 @@
+import {EditorView} from 'prosemirror-view'
 import {Selection} from 'prosemirror-state'
 import {keymap} from 'prosemirror-keymap'
 import {inputRules, textblockTypeInputRule} from 'prosemirror-inputrules'
 import {CodeBlockView} from './view'
+import {Extension} from '@codemirror/state'
 
 export const cleanLang = (lang: string) =>
   lang === 'js' ? 'javascript' :
@@ -59,7 +61,7 @@ export interface CodeBlockProps {
   theme: string;
   typewriterMode: boolean;
   fontSize: number;
-  keymap?: {[key: string]: unknown};
+  extensions?: (view: EditorView, node: Node, getPos: () => number) => Extension[];
 }
 
 export default (props: CodeBlockProps) => ({

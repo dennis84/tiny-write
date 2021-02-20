@@ -1,9 +1,9 @@
 import {Schema} from 'prosemirror-model'
 import {EditorView as PmEditorView, Node} from 'prosemirror-view'
-import {NodeSelection, TextSelection} from 'prosemirror-state'
+import {TextSelection} from 'prosemirror-state'
 import {exitCode} from 'prosemirror-commands'
 import {EditorState, tagExtension} from '@codemirror/state'
-import {EditorView, ViewPlugin, ViewUpdate, keymap} from '@codemirror/view'
+import {EditorView, ViewUpdate, keymap} from '@codemirror/view'
 import {defaultKeymap, defaultTabBinding} from '@codemirror/commands'
 import {tags} from '@codemirror/highlight'
 import {linter, setDiagnostics} from '@codemirror/lint'
@@ -42,7 +42,6 @@ import parserMarkdown from 'prettier/parser-markdown'
 import parserYaml from 'prettier/parser-yaml'
 import logos from './logos'
 import {CodeBlockProps, cleanLang, defaultProps} from '.'
-import {readFile, writeFile} from '../../remote'
 
 export class CodeBlockView {
   node: Node
@@ -247,43 +246,15 @@ export class CodeBlockView {
       }
     }])
 
-    const extraKeys = []
-    for (const key in this.options.keymap) {
-      extraKeys.push({key: key, run: this.options.keymap[key]})
-    }
-
-    const syncFile = (view, node, getPos) => {
-      return ViewPlugin.fromClass(class {
-        initialized = false
-        update(update) {
-          if (!this.initialized) {
-            readFile(node.attrs.params.file).then((data) => {
-              this.initialized = true
-              const tr = view.state.tr
-              const lang = langFromFile(node.attrs.params.file)
-              const text = view.state.schema.text(data.buffer.toString('utf-8'))
-              const sel = new NodeSelection(tr.doc.resolve(getPos()))
-              tr.replaceRangeWith(sel.$from.pos+1, sel.$to.pos, text)
-              tr.setNodeMarkup(getPos(), undefined, {
-                ...node.attrs,
-                params: {...node.attrs.params, lang}
-              })
-              view.dispatch(tr)
-            })
-          }
-
-          if (!update.docChanged) return
-          writeFile(node.attrs.params.file, update.state.doc.toString())
-        }
-      })
-    }
+    const extensions = this.options.extensions ?
+      this.options.extensions(this.view, this.node, this.getPos) :
+      []
 
     return [
-      keymap.of(extraKeys),
+      extensions,
       keymap.of(defaultKeymap),
       keymap.of([defaultTabBinding]),
       linter(() => []),
-      ...(this.node.attrs.params.file ? [syncFile(this.view, this.node,  this.getPos)] : []),
       codeMirrorKeymap,
       tagExtension('tabSize', EditorState.tabSize.of(2)),
       getLangExtension(this.getLang()),
@@ -522,9 +493,3 @@ const getLangExtension = (lang: string) =>
   lang === 'yaml' ? StreamLanguage.define(yaml) :
   lang === 'go' ? StreamLanguage.define(go) :
   markdown()
-
-const langFromFile = (file: string) => {
-  const i = file.lastIndexOf('.')
-  const ext = (i < 0) ? '' : file.substr(i + 1)
-  return cleanLang(ext)
-}
