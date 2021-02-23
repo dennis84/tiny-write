@@ -39,7 +39,6 @@ const codeMirrorKeymap = (props: Props) => {
 }
 
 const codeMirrorSyncFile = (view, node, getPos) => {
-  if (!node.attrs.params.file) return
   const i = node.attrs.params.file.lastIndexOf('.')
   const ext = (i < 0) ? '' : node.attrs.params.file.substr(i + 1)
   const lang = cleanLang(ext)
@@ -67,7 +66,6 @@ const codeMirrorSyncFile = (view, node, getPos) => {
     }
   })
 }
-
 export const createState = (props: Props) => ({
   editorState: props.data,
   extensions: [
@@ -81,7 +79,7 @@ export const createState = (props: Props) => ({
       fontSize: props.config.fontSize,
       extensions: (view, node, getPos) => [
         codeMirrorKeymap(props),
-        codeMirrorSyncFile(view, node, getPos),
+        ...(node.attrs.params.file ? [codeMirrorSyncFile(view, node, getPos)] : []),
       ],
     }),
     code,

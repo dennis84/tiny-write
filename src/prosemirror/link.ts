@@ -1,6 +1,6 @@
 import {Plugin, PluginKey, TextSelection} from 'prosemirror-state'
 
-const REGEX = /(^|\s)\[([^[\]]+?)\]\((.+?)\)/
+const REGEX = /(^|\s)\[([^[\]]+?)\]\((.+?)\)($|\s)/
 
 const findMarkPosition = (mark, doc, from, to) => {
   let markPos = {from: -1, to: -1}
@@ -72,14 +72,17 @@ const markdownLinks = (schema) => {
 
       if (match) {
         const [full,, title, href] = match
-        const start = match.index + $from.start()
-        const end = start + full.length
+        const spaceLeft = full.indexOf(title) - 1
+        const spaceRight = full.length - title.length - href.length - spaceLeft - 4
+        const start = match.index + $from.start() + spaceLeft
+        const end = start + full.length - spaceLeft - spaceRight
         if (sel.$from.pos >= start && sel.$from.pos <= end) {
           return false
         }
 
-        const textStart = start + full.indexOf(title)
+        const textStart = start + 1
         const textEnd = textStart + title.length
+
         if (textEnd < end) tr.delete(textEnd, end)
         if (textStart > start) tr.delete(start, textStart)
 

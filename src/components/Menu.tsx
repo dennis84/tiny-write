@@ -216,8 +216,13 @@ export default (props: Props) => {
     window.open(remote.getVersionUrl(), '_blank')
   }
 
+  const OnNew = () => {
+    dispatch(New)
+    setTimeout(() => editorView.focus())
+  }
+
   const OnDiscard = () => {
-    if (props.files.length > 0 && isEmpty(props.text.editorState)) {
+    if (props.files.length > 0 && isEmpty(props.text?.editorState)) {
       dispatch(Discard)
     } else {
       selectAll(editorView.state, editorView.dispatch)
@@ -318,11 +323,11 @@ export default (props: Props) => {
             </Sub>
             <Label>File</Label>
             <Sub>
-              <Link onClick={() => dispatch(New)}>New <i>({mod}+n)</i></Link>
+              <Link onClick={OnNew}>New <i>({mod}+n)</i></Link>
               <Link
                 onClick={OnDiscard}
-                disabled={props.files.length === 0 && isEmpty(props.text.editorState)}>
-                {(props.files.length > 0 && isEmpty(props.text.editorState)) ? 'Discard ⚠️' : 'Clear'} <i>({mod}+w)</i>
+                disabled={props.files.length === 0 && isEmpty(props.text?.editorState)}>
+                {(props.files.length > 0 && isEmpty(props.text?.editorState)) ? 'Discard ⚠️' : 'Clear'} <i>({mod}+w)</i>
               </Link>
             </Sub>
             {props.files.length > 0 && (

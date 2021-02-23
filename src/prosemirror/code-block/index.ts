@@ -1,4 +1,4 @@
-import {EditorView} from 'prosemirror-view'
+import {EditorView, Node} from 'prosemirror-view'
 import {Selection} from 'prosemirror-state'
 import {keymap} from 'prosemirror-keymap'
 import {inputRules, textblockTypeInputRule} from 'prosemirror-inputrules'
