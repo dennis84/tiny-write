@@ -60,7 +60,7 @@ const markdownLinks = (schema) => {
 
     if (lastPos !== undefined) {
       const $from = resolvePos(view, lastPos)
-      if (!$from || $from.depth === 0) {
+      if (!$from || $from.depth === 0 || $from.parent.type.spec.code) {
         return false
       }
 

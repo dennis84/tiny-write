@@ -103,11 +103,13 @@ export default (props: {state: State}) => {
   useEffect(() => {
     db.get('state').then((data) => {
       let parsed
-      try {
-        parsed = JSON.parse(data)
-      } catch (err) {
-        dispatch(UpdateError({id: 'invalid_state', props: data}))
-        return
+      if (data !== undefined) {
+        try {
+          parsed = JSON.parse(data)
+        } catch (err) {
+          dispatch(UpdateError({id: 'invalid_state', props: data}))
+          return
+        }
       }
 
       if (!parsed) {
