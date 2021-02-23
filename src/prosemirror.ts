@@ -69,8 +69,8 @@ const codeMirrorSyncFile = (view, node, getPos) => {
 export const createState = (props: Props) => ({
   editorState: props.data,
   extensions: [
-    base,
     customKeymap(props),
+    base,
     markdown,
     todoList,
     codeBlock({
