@@ -162,7 +162,7 @@ export default (props: Props) => {
           }
         }
       }
-      .ProseMirror-selectednode {
+      img.ProseMirror-selectednode {
         box-shadow: 0 0 0 2px ${rgba(color2(theme), 1)};
         border-radius: 2px;
       }

@@ -223,7 +223,10 @@ export class CodeBlockView {
   createExtensions() {
     const codeMirrorKeymap = keymap.of([{
       key: 'Backspace',
-      run: this.close.bind(this),
+      run: () => {
+        if (!this.editorView.state.doc.length) this.close()
+        return true
+      }
     }, {
       key: 'Ctrl-Enter',
       run: () => {

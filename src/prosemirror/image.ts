@@ -1,5 +1,4 @@
 import {Plugin} from 'prosemirror-state'
-import isImage from 'is-image'
 
 const dropImage = (schema) => new Plugin({
   props: {
@@ -23,8 +22,6 @@ const dropImage = (schema) => new Plugin({
           view.dispatch(tr)
         }
 
-        const insertData = () => undefined
-
         if (files && files.length > 0) {
           for (const file of files) {
             const reader = new FileReader()
@@ -39,10 +36,6 @@ const dropImage = (schema) => new Plugin({
               reader.readAsDataURL(file)
             }
           }
-        } else if (isImage(text)) {
-          insertImage(text)
-        } else {
-          insertData()
         }
       }
     }
