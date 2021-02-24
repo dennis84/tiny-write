@@ -89,6 +89,7 @@ export class CodeBlockView {
         langSelect.style.display = 'none'
         langSelectBottom.style.display = 'none'
         langToggle.style.display = 'block'
+        this.prettifyBtn.style.display = 'block'
         const tr = view.state.tr
         tr.setNodeMarkup(getPos(), undefined, {
           ...this.node.attrs,
@@ -124,6 +125,7 @@ export class CodeBlockView {
       langToggle.style.display = 'none'
       langSelect.style.display = 'block'
       langSelectBottom.style.display = 'block'
+      this.prettifyBtn.style.display = 'none'
       langInput.focus()
       const range = document.createRange()
       range.selectNodeContents(langInput)
