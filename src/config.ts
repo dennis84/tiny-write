@@ -79,11 +79,11 @@ export const themes: {[key: string]: Theme} = {
     color: '131, 148, 150',
     color2: '203, 75, 22',
   },
-  'viola': {
-    label: 'Viola',
-    background: '48, 36, 61',
-    color: '146, 123, 171',
-    color2: '223, 118, 155',
+  'material': {
+    label: 'Material',
+    background: '38, 50, 56',
+    color: '146, 152, 155',
+    color2: '137, 221, 255',
   },
   'hibernus': {
     label: 'Hibernus',
