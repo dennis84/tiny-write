@@ -1,6 +1,6 @@
 import {useContext, createContext, Dispatch as Disp, Reducer} from 'react'
 import {ProseMirrorState, isEmpty} from './prosemirror/prosemirror'
-import {State, File, Config, Error} from '.'
+import {State, File, Config, ErrorObject} from '.'
 import {isMac} from './env'
 import {isFullScreen} from './remote'
 
@@ -16,12 +16,11 @@ export const newState = (props: Partial<State> = {}): State => ({
     fontSize: 24,
     alwaysOnTop: isMac,
     typewriterMode: true,
-
   },
   ...props,
 })
 
-export const UpdateError = (error: Error) => (state: State) => ({
+export const UpdateError = (error: ErrorObject) => (state: State) => ({
   ...state,
   error,
   loading: false,

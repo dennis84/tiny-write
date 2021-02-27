@@ -1,13 +1,13 @@
 import React from 'react'
 import styled from '@emotion/styled'
-import {Error} from '..'
+import {ErrorObject} from '..'
 import {Clean, useDispatch} from '../reducer'
 import {rgb, rgba} from '../styles'
 import {background, color} from '../config'
 import {ButtonPrimary} from './Button'
 
 interface Props {
-  error: Error;
+  error: ErrorObject;
 }
 
 const Layer = styled.div`

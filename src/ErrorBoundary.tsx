@@ -1,9 +1,9 @@
 import React, {ErrorInfo, ReactNode} from 'react'
-import {Error as ErrorObj} from '.'
+import {ErrorObject} from '.'
 
 interface Props {
   children: ReactNode;
-  fallback: (error: ErrorObj) => ReactNode;
+  fallback: (error: ErrorObject) => ReactNode;
 }
 
 interface State {

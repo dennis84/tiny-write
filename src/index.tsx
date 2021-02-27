@@ -13,7 +13,7 @@ export interface Config {
   typewriterMode: boolean;
 }
 
-export interface Error {
+export interface ErrorObject {
   id: string;
   props?: unknown;
 }
@@ -23,7 +23,7 @@ export interface State {
   lastModified?: Date;
   files: File[];
   config: Config;
-  error?: Error;
+  error?: ErrorObject;
   loading: boolean;
   fullscreen: boolean;
 }
