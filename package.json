@@ -5,7 +5,8 @@
     "appId": "com.github.dennis84.tinywrite",
     "files": [
       "index.js",
-      "dist/**"
+      "dist/**",
+      "!dist/app"
     ],
     "mac": {
       "category": "public.app-category.utilities"
