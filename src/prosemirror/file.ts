@@ -36,7 +36,7 @@ const fileInput = (schema) => {
           readFile(src).then((data) => {
             if (data === undefined) return false
             const node = isImage(data) ?
-              schema.node('image', {src: imageSrc(data), title}) :
+              schema.node('image', {src: imageSrc(data), title, path: src}) :
               schema.node('code_block', {params: {file: data.file, src, title}})
 
             const start = from - (match[0].length - text.length)
@@ -53,7 +53,35 @@ const fileInput = (schema) => {
   })
 }
 
+const imageSchema = {
+  inline: true,
+  attrs: {
+    src: {},
+    alt: {default: null},
+    title: {default: null},
+    path: {default: null},
+  },
+  group: 'inline',
+  draggable: true,
+  parseDOM: [{tag: 'img[src]', getAttrs: (dom) => ({
+    src: dom.getAttribute('src'),
+    title: dom.getAttribute('title'),
+    alt: dom.getAttribute('alt'),
+    path: dom.getAttribute('data-path'),
+  })}],
+  toDOM: (node) => ['img', {
+    src: node.attrs.src,
+    title: node.attrs.title,
+    alt: node.attrs.alt,
+    'data-path': node.attrs.path,
+  }]
+}
+
 export default ({
+  schema: (prev) => ({
+    ...prev,
+    nodes: prev.nodes.update('image', imageSchema),
+  }),
   plugins: (prev, schema) => [
     ...prev,
     fileInput(schema),
