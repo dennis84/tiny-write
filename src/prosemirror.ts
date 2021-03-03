@@ -7,13 +7,11 @@ import link from './prosemirror/link'
 import scroll from './prosemirror/scroll'
 import todoList from './prosemirror/todo-list'
 import code from './prosemirror/code'
-import dropImage from './prosemirror/image'
 import placeholder from './prosemirror/placeholder'
 import codeBlock, {cleanLang} from './prosemirror/code-block'
 import file from './prosemirror/file'
 import {Config} from '.'
 import {codeTheme} from './config'
-import {isElectron} from './env'
 import {readFile, writeFile} from './remote'
 
 interface Props {
@@ -84,8 +82,7 @@ export const createState = (props: Props) => ({
     }),
     code,
     link,
-    dropImage,
-    ...(isElectron ? [file] : []),
+    file,
     placeholder('Start typing ...'),
     scroll(props.config.typewriterMode),
   ]

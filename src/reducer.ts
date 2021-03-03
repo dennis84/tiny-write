@@ -12,7 +12,7 @@ export const newState = (props: Partial<State> = {}): State => ({
   config: {
     theme: 'light',
     codeTheme: 'material-light',
-    font: 'Merriweather',
+    font: 'merriweather',
     fontSize: 24,
     alwaysOnTop: isMac,
     typewriterMode: true,

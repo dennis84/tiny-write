@@ -1,5 +1,6 @@
 import {Plugin} from 'prosemirror-state'
 import {fileExists, readFile} from '../remote'
+import {isElectron} from '../env'
 
 const REGEX = /^!\[([^[\]]*?)\]\((.+?)\)/
 const MAX_MATCH = 500
@@ -77,6 +78,48 @@ const imageSchema = {
   }]
 }
 
+const dropFile = (schema) => new Plugin({
+  props: {
+    handleDOMEvents: {
+      drop: (view, event) => {
+        const text = event.dataTransfer.getData('text/plain')
+        const {files} = event.dataTransfer
+
+        if (files.length === 0 && !text) return
+        event.preventDefault()
+
+        const insertImage = (src) => {
+          const tr = view.state.tr
+          const node = schema.nodes.image.create({src})
+          const pos = view.posAtCoords({
+            left: event.clientX,
+            top: event.clientY,
+          }).pos
+
+          tr.insert(pos, node)
+          view.dispatch(tr)
+        }
+
+        if (files && files.length > 0) {
+          for (const file of files) {
+            const reader = new FileReader()
+            const [mime] = file.type.split('/')
+
+            if (mime === 'image') {
+              reader.addEventListener('load', () => {
+                const url = reader.result
+                insertImage(url)
+              })
+
+              reader.readAsDataURL(file)
+            }
+          }
+        }
+      }
+    }
+  }
+})
+
 export default ({
   schema: (prev) => ({
     ...prev,
@@ -84,6 +127,7 @@ export default ({
   }),
   plugins: (prev, schema) => [
     ...prev,
-    fileInput(schema),
+    dropFile(schema),
+    ...(isElectron ? [fileInput(schema)] : []),
   ]
 })

@@ -178,7 +178,7 @@ export default (props: {state: State}) => {
   useEffect(() => {
     if (loadingPrev !== false) return
     remote.setFullScreen(state.fullscreen)
-  }, [state.fullscreen]);
+  }, [state.fullscreen])
 
   useEffect(() => {
     if (!state.text?.initialized) return
@@ -192,7 +192,7 @@ export default (props: {state: State}) => {
   }, [state.config.codeTheme, state.config.fontSize, state.config.typewriterMode])
 
   useEffect(() => {
-    remote.setAlwaysOnTop(state.config.alwaysOnTop);
+    remote.setAlwaysOnTop(state.config.alwaysOnTop)
   }, [state.config.alwaysOnTop])
 
   useDebouncedEffect(() => {

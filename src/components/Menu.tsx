@@ -1,4 +1,4 @@
-import React, {useState} from 'react'
+import React, {useEffect, useState} from 'react'
 import {EditorState} from 'prosemirror-state'
 import {EditorView} from 'prosemirror-view'
 import {undo, redo} from 'prosemirror-history'
@@ -108,6 +108,7 @@ export const Item = (props: {theme: Config}) => css`
   align-items: center;
   color: ${rgb(color(props.theme))};
   font-size: 18px;
+  line-height: 24px;
   font-family: 'JetBrains Mono';
   white-space: nowrap;
   > i {
@@ -151,6 +152,7 @@ interface Props {
 export default (props: Props) => {
   const dispatch = useDispatch()
   const [show, setShow] = useState(false)
+  const [lastAction, setLastAction] = useState<string | undefined>()
   const editorView = props.editorViewRef.current
 
   const OnBurgerClick = () => {
@@ -170,12 +172,14 @@ export default (props: Props) => {
 
   const Cmd = (cmd: string) => () => {
     document.execCommand(cmd)
+    setLastAction(cmd)
     editorView.focus()
   }
 
   const OnCopyAllAsMd = () => {
     remote.copyAllAsMarkdown(editorView.state)
     editorView.focus()
+    setLastAction('copy-md')
   }
 
   const OnChangeTheme = (theme) => () => {
@@ -306,6 +310,10 @@ export default (props: Props) => {
     return getText(file.text?.doc).substring(0, length)
   }
 
+  useEffect(() => {
+    setLastAction(undefined)
+  }, [props.lastModified])
+
   return (
     <Container>
       <Burger onClick={OnBurgerClick} active={show}>
@@ -350,8 +358,10 @@ export default (props: Props) => {
               <Link onClick={OnRedo}>Redo <i>({mod}+{isMac ? 'Shift+z' : 'y'})</i></Link>
               <Link onClick={Cmd('cut')}>Cut <i>({mod}+x)</i></Link>
               <Link onClick={Cmd('paste')}>Paste <i>({mod}+p)</i></Link>
-              <Link onClick={Cmd('copy')}>Copy <i>({mod}+c)</i></Link>
-              <Link onClick={OnCopyAllAsMd}>Copy all as markdown</Link>
+              <Link onClick={Cmd('copy')}>Copy {lastAction === 'copy' && '📋'} <i>({mod}+c)</i></Link>
+              <Link onClick={OnCopyAllAsMd}>
+                Copy all as markdown {lastAction === 'copy-md' && '📋'}
+              </Link>
             </Sub>
             <Label>Theme</Label>
             <Sub>
@@ -391,7 +401,7 @@ export default (props: Props) => {
             <Sub>
               {isElectron && (
                 <Link onClick={OnToggleFullscreen}>
-                  Fullscreen {props.fullscreen && '✅'}
+                  Fullscreen {props.fullscreen && '✅'}<i>({mod}+Enter)</i>
                 </Link>
               )}
               <Link onClick={OnToggleTypewriterMode}>

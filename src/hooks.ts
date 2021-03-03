@@ -28,11 +28,11 @@ export const useDebouncedEffect = (
 }
 
 export const useDynamicCallback = <T extends (...args: any[]) => any>(callback: T) => {
-  const ref = useRef(callback);
+  const ref = useRef(callback)
 
   useLayoutEffect(() => {
-    ref.current = callback;
-  }, [callback]);
+    ref.current = callback
+  }, [callback])
 
-  return useCallback((...args) => ref.current(...args), []);
+  return useCallback((...args) => ref.current(...args), [])
 }

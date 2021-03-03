@@ -38,6 +38,7 @@ export const ProseMirror = (props: Props) => {
     if (!editorViewRef.current) return
     const newState = editorViewRef.current.state.apply(tr)
     editorViewRef.current.updateState(newState)
+    if (!tr.docChanged) return
     props.onChange({
       ...props.state,
       editorState: newState,
