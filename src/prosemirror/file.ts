@@ -82,10 +82,9 @@ const dropFile = (schema) => new Plugin({
   props: {
     handleDOMEvents: {
       drop: (view, event) => {
-        const text = event.dataTransfer.getData('text/plain')
         const {files} = event.dataTransfer
 
-        if (files.length === 0 && !text) return
+        if (files.length === 0) return
         event.preventDefault()
 
         const insertImage = (src) => {
