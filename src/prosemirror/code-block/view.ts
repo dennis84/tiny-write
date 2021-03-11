@@ -42,6 +42,7 @@ import parserMarkdown from 'prettier/parser-markdown'
 import parserYaml from 'prettier/parser-yaml'
 import logos from './logos'
 import {CodeBlockProps, cleanLang, defaultProps} from '.'
+import {createDragHandle} from '../drag-handle'
 
 export class CodeBlockView {
   node: Node
@@ -49,14 +50,13 @@ export class CodeBlockView {
   getPos: () => number
   schema: Schema
   dom: Element
-  contentDOM: Element
   editorView: EditorView
   updating = false
   clicked = false
   options: CodeBlockProps = defaultProps
   logo: HTMLElement
   prettifyBtn: HTMLElement
-  initialized = false
+  dragHandle: HTMLElement
 
   constructor(node, view, getPos, schema, decos, options) {
     this.node = node
@@ -166,8 +166,11 @@ export class CodeBlockView {
     container.appendChild(langSelectBottom)
     container.appendChild(langToggle)
 
+    if (decos.find((d) => d.type.attrs.class === 'draggable')) {
+      container.appendChild(createDragHandle())
+    }
+
     this.dom = container
-    this.contentDOM = createElement('div')
   }
 
   destroy() {
@@ -195,13 +198,6 @@ export class CodeBlockView {
 
   update(node) {
     if (node.type != this.node.type) return false
-    if (!this.initialized) {
-      const widgets = this.contentDOM.querySelectorAll('.ProseMirror-widget')
-      for (let i = 0; i < widgets.length; i++) {
-        this.dom.appendChild(widgets[i])
-      }
-      this.initialized = true
-    }
     const langChanged = node.attrs.params.lang !== this.node.attrs.params.lang
     this.node = node
     if (langChanged) this.reconfigure()
