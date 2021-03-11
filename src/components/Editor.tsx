@@ -70,10 +70,10 @@ export default (props: Props) => {
           clear: both;
         }
       }
-      blockquote {
+      blockquote p {
         border-left: 10px solid ${rgba(color(theme), 0.2)};
         margin: 0;
-        padding-left: 20px;
+        padding-left: 10px;
       }
       code {
         border: 1px solid ${rgba(color(theme), 0.5)};
@@ -100,8 +100,8 @@ export default (props: Props) => {
       }
       .draggable {
         position: relative;
-        margin-left: -20px;
-        padding-left: 20px;
+        margin-left: -30px;
+        padding-left: 30px;
       }
       .handle {
         position: absolute;
@@ -118,13 +118,15 @@ export default (props: Props) => {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          border-radius: 2px;
-          padding: 4px 0;
+          border-radius: 3px;
+          padding: 6px;
           fill: ${rgba(color(theme), 0.7)};
-          background: ${rgba(color(theme), 0.1)};
           -webkit-app-region: no-drag;
           pointer-events: none;
           user-select: none;
+        }
+        &:hover > span {
+          background: ${rgba(color(theme), 0.1)};
         }
       }
       h1 .handle {
