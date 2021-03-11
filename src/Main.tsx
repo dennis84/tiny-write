@@ -5,7 +5,7 @@ import {undo, redo} from 'prosemirror-history'
 import {Global, ThemeProvider} from '@emotion/react'
 import styled from '@emotion/styled'
 import {rgb} from './styles'
-import {background, color, font, fonts} from './config'
+import {background, color, color2, font, fonts} from './config'
 import {State} from '.'
 import * as remote from './remote'
 import db from './db'
@@ -37,6 +37,9 @@ const Container = styled.div`
   font-family: ${(props) => font(props.theme)};
   font-size: 18px;
   color: ${(props) => rgb(color(props.theme))};
+  .drop-cursor {
+    background: ${(props) => rgb(color2(props.theme))} !important;
+  }
 `
 
 const isText = (x: any) => x && x.doc
@@ -189,7 +192,12 @@ export default (props: {state: State}) => {
     })
 
     dispatch(UpdateText(newText))
-  }, [state.config.codeTheme, state.config.fontSize, state.config.typewriterMode])
+  }, [
+    state.config.codeTheme,
+    state.config.fontSize,
+    state.config.typewriterMode,
+    state.config.dragHandle,
+  ])
 
   useEffect(() => {
     remote.setAlwaysOnTop(state.config.alwaysOnTop)

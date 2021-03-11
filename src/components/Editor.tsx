@@ -42,12 +42,12 @@ export default (props: Props) => {
       color: ${rgb(color(theme))};
       margin-top: 50px;
       padding-bottom: 77vh;
-      line-height: 160%;
+      line-height: 1.5;
       outline: none;
       background: transparent;
       -webkit-app-region: no-drag;
       h1, h2, h3, h4, h5, h6 {
-        line-height: 120%;
+        line-height: 1.2;
       }
       p {
         margin: 0;
@@ -85,6 +85,38 @@ export default (props: Props) => {
         pointer-events: none;
         user-select: none;
       }
+      .draggable {
+        position: relative;
+        margin-left: -20px;
+        padding-left: 20px;
+      }
+      .handle {
+        position: absolute;
+        left: 0;
+        top: 0;
+        opacity: 0;
+        cursor: move;
+        transition: opacity 0.3s;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        height: ${theme.fontSize * 1.5}px;
+        > span {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 2px;
+          padding: 4px 0;
+          fill: ${rgba(color(theme), 0.7)};
+          background: ${rgba(color(theme), 0.1)};
+          -webkit-app-region: no-drag;
+          pointer-events: none;
+          user-select: none;
+        }
+      }
+      .draggable:hover .handle {
+        opacity: 1;
+      }
       .codemirror-container {
         position: relative;
         .lang-select {
@@ -99,7 +131,7 @@ export default (props: Props) => {
           font-family: '${font(theme, true)}' !important;
           outline: none;
           .cm-line {
-            line-height: 150%;
+            line-height: 1.5;
           }
           .cm-diagnosticText {
             white-space: pre;

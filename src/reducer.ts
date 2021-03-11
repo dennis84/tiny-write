@@ -16,6 +16,7 @@ export const newState = (props: Partial<State> = {}): State => ({
     fontSize: 24,
     alwaysOnTop: isMac,
     typewriterMode: true,
+    dragHandle: true,
   },
   ...props,
 })

@@ -49,12 +49,14 @@ export class CodeBlockView {
   getPos: () => number
   schema: Schema
   dom: Element
+  contentDOM: Element
   editorView: EditorView
   updating = false
   clicked = false
   options: CodeBlockProps = defaultProps
   logo: HTMLElement
   prettifyBtn: HTMLElement
+  initialized = false
 
   constructor(node, view, getPos, schema, decos, options) {
     this.node = node
@@ -63,8 +65,8 @@ export class CodeBlockView {
     this.schema = schema
     this.options = options
 
-    this.logo = document.createElement('span')
-    this.prettifyBtn = document.createElement('span')
+    this.logo = createElement('span')
+    this.prettifyBtn = createElement('span')
     this.prettifyBtn.className = 'prettify'
     this.prettifyBtn.textContent = '✨'
     this.prettifyBtn.style.display = 'none'
@@ -73,11 +75,11 @@ export class CodeBlockView {
     this.updateNav()
 
     const hasFile = this.node.attrs.params.file !== undefined
-    const container = document.createElement('div')
+    const container = createElement('div')
     container.classList.add('codemirror-container')
     if (hasFile) container.classList.add('has-file')
 
-    const langInput = document.createElement('span')
+    const langInput = createElement('span')
     langInput.className = 'lang-input'
     langInput.textContent = this.getLang()
     langInput.setAttribute('contenteditable', '')
@@ -108,17 +110,17 @@ export class CodeBlockView {
       langToggle.style.display = 'block'
     })
 
-    const langSelect = document.createElement('div')
+    const langSelect = createElement('div')
     langSelect.className = 'lang-select'
     langSelect.textContent = '```'
     langSelect.style.display = 'none'
     langSelect.appendChild(langInput)
-    const langSelectBottom = document.createElement('div')
+    const langSelectBottom = createElement('div')
     langSelectBottom.className = 'lang-select'
     langSelectBottom.textContent = '```'
     langSelectBottom.style.display = 'none'
 
-    const langToggle = document.createElement('div')
+    const langToggle = createElement('div')
     langToggle.className = 'lang-toggle'
     langToggle.appendChild(this.logo)
     langToggle.addEventListener('click', () => {
@@ -146,11 +148,11 @@ export class CodeBlockView {
 
     if (hasFile) {
       const theme = getTheme(this.options.theme)
-      const fileInfo = document.createElement('pre')
+      const fileInfo = createElement('pre')
       fileInfo.classList.add('file-info')
       fileInfo.classList.add(theme[1].match(tags.comment))
       fileInfo.textContent = `// ${this.node.attrs.params.src}`
-      const closeFile = document.createElement('span')
+      const closeFile = createElement('span')
       closeFile.className = 'close-file'
       closeFile.textContent = '❎'
       closeFile.addEventListener('click', this.close.bind(this))
@@ -165,6 +167,7 @@ export class CodeBlockView {
     container.appendChild(langToggle)
 
     this.dom = container
+    this.contentDOM = createElement('div')
   }
 
   destroy() {
@@ -183,7 +186,7 @@ export class CodeBlockView {
   }
 
   stopEvent() {
-    return true
+    return false
   }
 
   ignoreMutation() {
@@ -192,6 +195,13 @@ export class CodeBlockView {
 
   update(node) {
     if (node.type != this.node.type) return false
+    if (!this.initialized) {
+      const widgets = this.contentDOM.querySelectorAll('.ProseMirror-widget')
+      for (let i = 0; i < widgets.length; i++) {
+        this.dom.appendChild(widgets[i])
+      }
+      this.initialized = true
+    }
     const langChanged = node.attrs.params.lang !== this.node.attrs.params.lang
     this.node = node
     if (langChanged) this.reconfigure()
@@ -332,14 +342,14 @@ export class CodeBlockView {
     const lang = this.getLang()
     let elem
     if (logos[lang]) {
-      elem = document.createElement('img')
+      elem = createElement('img')
       elem.src = logos[lang]
       elem.width = this.options.fontSize
       elem.height = this.options.fontSize
       elem.style.marginTop = `${this.options.fontSize as number / 4}px`
       elem.setAttribute('title', lang)
     } else {
-      elem = document.createElement('span')
+      elem = createElement('span')
       elem.textContent = '📜'
       elem.setAttribute('title', lang)
     }
@@ -498,3 +508,9 @@ const getLangExtension = (lang: string) =>
   lang === 'yaml' ? StreamLanguage.define(yaml) :
   lang === 'go' ? StreamLanguage.define(go) :
   markdown()
+
+const createElement = (name: string) => {
+  const el = document.createElement(name)
+  el.setAttribute('contenteditable', 'false')
+  return el
+}

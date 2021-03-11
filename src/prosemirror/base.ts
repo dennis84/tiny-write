@@ -21,7 +21,7 @@ export default {
     keymap(buildKeymap(schema)),
     keymap(baseKeymap),
     history(),
-    dropCursor(),
+    dropCursor({class: 'drop-cursor'}),
     gapCursor(),
   ]
 }

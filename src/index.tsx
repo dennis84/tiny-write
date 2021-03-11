@@ -11,6 +11,7 @@ export interface Config {
   fontSize: number;
   alwaysOnTop: boolean;
   typewriterMode: boolean;
+  dragHandle: boolean;
 }
 
 export interface ErrorObject {
