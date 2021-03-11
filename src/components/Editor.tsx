@@ -42,12 +42,25 @@ export default (props: Props) => {
       color: ${rgb(color(theme))};
       margin-top: 50px;
       padding-bottom: 77vh;
-      line-height: 1.5;
+      line-height: ${theme.fontSize * 1.6}px;
       outline: none;
       background: transparent;
       -webkit-app-region: no-drag;
       h1, h2, h3, h4, h5, h6 {
-        line-height: 1.2;
+        line-height: ${theme.fontSize * 1.6}px;
+      }
+      h1 {
+        font-size: ${theme.fontSize * 1.8}px;
+        line-height: ${theme.fontSize * 2.3}px;
+      }
+      h2 {
+        font-size: ${theme.fontSize * 1.4}px;
+      }
+      h3 {
+        font-size: ${theme.fontSize * 1.2}px;
+      }
+      h4, h5, h6 {
+        font-size: ${theme.fontSize}px;
       }
       p {
         margin: 0;
@@ -100,7 +113,7 @@ export default (props: Props) => {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        height: ${theme.fontSize * 1.5}px;
+        height: ${theme.fontSize * 1.6}px;
         > span {
           display: inline-flex;
           align-items: center;
@@ -113,6 +126,9 @@ export default (props: Props) => {
           pointer-events: none;
           user-select: none;
         }
+      }
+      h1 .handle {
+        height: ${theme.fontSize * 2.3}px;
       }
       .draggable:hover .handle {
         opacity: 1;
@@ -131,7 +147,7 @@ export default (props: Props) => {
           font-family: '${font(theme, true)}' !important;
           outline: none;
           .cm-line {
-            line-height: 1.5;
+            line-height: 1.6;
           }
           .cm-diagnosticText {
             white-space: pre;
