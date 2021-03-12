@@ -39,6 +39,8 @@ const Container = styled.div`
   color: ${(props) => rgb(color(props.theme))};
   .drop-cursor {
     background: ${(props) => rgb(color2(props.theme))} !important;
+    height: 2px !important;
+    opacity: 0.5;
   }
 `
 

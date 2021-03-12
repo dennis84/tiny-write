@@ -18,7 +18,7 @@ npm install
 # Build app
 npm run dist
 # Ubuntu
-snap install app/TinyWrite_0.x.x_amd64.snap --dangerous
+snap install dist/app/TinyWrite_0.x.x_amd64.snap --dangerous
 
 # Develop web
 npm run web

@@ -120,7 +120,7 @@ export default (props: Props) => {
           justify-content: center;
           border-radius: 3px;
           padding: 6px;
-          fill: ${rgba(color(theme), 0.7)};
+          fill: ${rgba(color(theme), 0.6)};
           -webkit-app-region: no-drag;
           pointer-events: none;
           user-select: none;
