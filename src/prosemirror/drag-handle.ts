@@ -18,12 +18,14 @@ const handlePlugin = new Plugin({
   props: {
     decorations(state) {
       const decos = []
-      state.doc.forEach((node, pos) => {
-        decos.push(Decoration.widget(pos + 1, createDragHandle))
-        decos.push(Decoration.node(pos, pos + node.nodeSize, {
-          class: 'draggable',
-        }))
-      })
+      if (state.doc.childCount > 1) {
+        state.doc.forEach((node, pos) => {
+          decos.push(Decoration.widget(pos + 1, createDragHandle))
+          decos.push(Decoration.node(pos, pos + node.nodeSize, {
+            class: 'draggable',
+          }))
+        })
+      }
 
       return DecorationSet.create(state.doc, decos)
     },

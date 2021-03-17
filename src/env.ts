@@ -7,3 +7,4 @@ export const isMac =
   window.navigator.platform.indexOf('Mac') !== -1
 
 export const mod = isMac ? 'Cmd' : 'Ctrl'
+export const alt = isMac ? 'Cmd' : 'Alt'

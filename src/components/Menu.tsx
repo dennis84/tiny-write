@@ -17,7 +17,7 @@ import {
 } from '../reducer'
 import {color, color2, themes, fonts, codeThemes} from '../config'
 import {rgb, rgba} from '../styles'
-import {isElectron, isMac, mod} from '../env'
+import {isElectron, isMac, alt, mod} from '../env'
 import * as remote from '../remote'
 import {isEmpty} from '../prosemirror/prosemirror'
 
@@ -406,7 +406,7 @@ export default (props: Props) => {
             <Sub>
               {isElectron && (
                 <Link onClick={OnToggleFullscreen}>
-                  Fullscreen {props.fullscreen && '✅'}<i>({mod}+Enter)</i>
+                  Fullscreen {props.fullscreen && '✅'}<i>({alt}+Enter)</i>
                 </Link>
               )}
               <Link onClick={OnToggleTypewriterMode}>
