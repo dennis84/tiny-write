@@ -11,6 +11,7 @@ import placeholder from './prosemirror/placeholder'
 import codeBlock, {cleanLang} from './prosemirror/code-block'
 import file from './prosemirror/file'
 import dragHandle from './prosemirror/drag-handle'
+import pasteMarkdown from './prosemirror/paste-markdown'
 import {Config} from '.'
 import {codeTheme} from './config'
 import {readFile, writeFile} from './remote'
@@ -87,6 +88,7 @@ export const createState = (props: Props) => ({
     file,
     placeholder('Start typing ...'),
     scroll(props.config.typewriterMode),
+    pasteMarkdown,
   ]
 })
 
