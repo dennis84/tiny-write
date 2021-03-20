@@ -50,7 +50,8 @@ const codeMirrorSyncFile = (view, node, getPos) => {
         readFile(node.attrs.params.file).then((data) => {
           this.initialized = true
           const tr = view.state.tr
-          const text = view.state.schema.text(data.buffer.toString('utf-8'))
+          const decoder = new TextDecoder('utf-8')
+          const text = view.state.schema.text(decoder.decode(data.buffer))
           const sel = new NodeSelection(tr.doc.resolve(getPos()))
           tr.replaceRangeWith(sel.$from.pos + 1, sel.$to.pos, text)
           tr.setNodeMarkup(getPos(), undefined, {

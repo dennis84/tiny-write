@@ -1,7 +1,10 @@
-const {app, shell, BrowserWindow, Menu} = require('electron')
+const {app, clipboard, shell, ipcMain, BrowserWindow, Menu} = require('electron')
 const {autoUpdater} = require('electron-updater')
 const path = require('path')
 const url = require('url')
+const FileType = require('file-type')
+const fs = require('fs')
+const os = require('os')
 
 let win
 
@@ -17,9 +20,12 @@ function createWindow() {
     height: 720,
     frame: false,
     webPreferences: {
-      nodeIntegration: true,
-      enableRemoteModule: true,
-      worldSafeExecuteJavaScript: true,
+      allowRunningInsecureContent: false,
+      contextIsolation: true,
+      enableRemoteModule: false,
+      nodeIntegration: false,
+      sandbox: true,
+      preload: path.join(app.getAppPath(), 'preload.js'),
     }
   })
 
@@ -99,5 +105,48 @@ app.on('activate', () => {
   // dock icon is clicked and there are no other windows open.
   if(win === null) {
     createWindow()
+  }
+})
+
+ipcMain.handle('setAlwaysOnTop', (event, flag) => {
+  if (win) win.setAlwaysOnTop(flag)
+})
+
+ipcMain.handle('setSimpleFullScreen', (event, flag) => {
+  if (win) win.setSimpleFullScreen(flag)
+})
+
+ipcMain.handle('isSimpleFullScreen', (event, flag) => {
+  return win && win.isSimpleFullScreen(flag)
+})
+
+ipcMain.handle('copyToClipboard', (event, text) => {
+  clipboard.writeText(text)
+})
+
+ipcMain.handle('quit', () => {
+  app.quit()
+})
+
+ipcMain.handle('getVersion', () => {
+  return app.getVersion()
+})
+
+ipcMain.handle('fileExists', (event, src) => {
+  const file = src.replace('~', os.homedir())
+  return fs.existsSync(file)
+})
+
+ipcMain.handle('readFile', async (event, src) => {
+  const file = src.replace('~', os.homedir())
+  const meta = await FileType.fromFile(file)
+  const data = await fs.promises.readFile(file)
+  const buffer = Buffer.from(data);
+  return {...meta, buffer, file}
+})
+
+ipcMain.handle('writeFile', (event, file, content) => {
+  if (fs.existsSync(file)) {
+    fs.writeFileSync(file, content)
   }
 })

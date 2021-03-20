@@ -2,13 +2,12 @@ import {useContext, createContext, Dispatch as Disp, Reducer} from 'react'
 import {ProseMirrorState, isEmpty} from './prosemirror/prosemirror'
 import {State, File, Config, ErrorObject} from '.'
 import {isMac} from './env'
-import {isFullScreen} from './remote'
 
 export const newState = (props: Partial<State> = {}): State => ({
   lastModified: new Date(),
   files: [],
   loading: true,
-  fullscreen: isFullScreen(),
+  fullscreen: false,
   config: {
     theme: 'light',
     codeTheme: 'material-light',

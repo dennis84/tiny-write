@@ -1,75 +1,60 @@
 import {EditorState} from 'prosemirror-state'
-import FileType from 'file-type'
 import {markdownSerializer} from './markdown'
 import {isElectron} from './env'
 
-const electron = (window as any).require?.('electron')
-const remote = electron?.remote
-
 export const setAlwaysOnTop = (alwaysOnTop) => {
   if (!isElectron) return
-  remote.getCurrentWindow().setAlwaysOnTop(alwaysOnTop)
+  return window.app.setAlwaysOnTop(alwaysOnTop)
 }
 
 export const quit = () => {
   if (!isElectron) return
-  remote.app.quit()
+  return window.app.quit()
 }
 
-export const isFullScreen = () => {
+export const isFullscreen = () => {
   if (!isElectron) return false
-  const win = remote.getCurrentWindow()
-  return win.isSimpleFullScreen()
+  return window.app.isSimpleFullScreen()
 }
 
-export const setFullScreen = (status: boolean) => {
+export const setFullscreen = (status: boolean) => {
   if (!isElectron) return
-  const win = remote.getCurrentWindow()
-  win.setSimpleFullScreen(status)
+  return window.app.setSimpleFullScreen(status)
 }
 
-export const copyAllAsMarkdown = (state: EditorState) => {
+export const copyAllAsMarkdown = async (state: EditorState) => {
   const text = markdownSerializer.serialize(state.doc)
   if (isElectron) {
-    electron.clipboard.writeText(text)
+    return window.app.copyToClipboard(text)
   } else {
     navigator.clipboard.writeText(text)
   }
 }
 
-export const getVersion = () => {
+export const getVersion = async (): Promise<string> => {
   if (isElectron) {
-    return electron.remote.app.getVersion()
+    return window.app.getVersion()
   }
 
-  return (window as any).process?.env.npm_package_version
+  return window.process?.env.npm_package_version
 }
 
-export const getVersionUrl = () =>
-  `https://github.com/dennis84/tiny-write/releases/tag/v${getVersionUrl()}`
+export const getVersionUrl = async () => {
+  const v = await getVersion()
+  return `https://github.com/dennis84/tiny-write/releases/tag/v${v}`
+}
 
-export const fileExists = (src) => {
+export const fileExists = async (src) => {
   if (!isElectron) return false
-  const fs = (window as any).require?.('fs')
-  const os = (window as any).require?.('os')
-  const file = src.replace('~', os.homedir())
-  return fs.existsSync(file)
+  return window.app.fileExists(src)
 }
 
 export const readFile = async (src) => {
   if (!isElectron) return
-  const fs = (window as any).require?.('fs')
-  const os = (window as any).require?.('os')
-  const file = src.replace('~', os.homedir())
-  const buffer = fs.readFileSync(file)
-  const meta = await FileType.fromBuffer(buffer)
-  return {...meta, buffer, file}
+  return window.app.readFile(src)
 }
 
 export const writeFile = async (file, content) => {
   if (!isElectron) return
-  const fs = (window as any).require?.('fs')
-  if (fs.existsSync(file)) {
-    fs.writeFileSync(file, content)
-  }
+  return window.app.writeFile(file, content)
 }

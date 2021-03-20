@@ -2,7 +2,7 @@ import {Schema} from 'prosemirror-model'
 import {EditorView as PmEditorView, Node} from 'prosemirror-view'
 import {TextSelection} from 'prosemirror-state'
 import {exitCode} from 'prosemirror-commands'
-import {EditorState, tagExtension} from '@codemirror/state'
+import {Compartment, EditorState} from '@codemirror/state'
 import {EditorView, ViewUpdate, keymap} from '@codemirror/view'
 import {defaultKeymap, defaultTabBinding} from '@codemirror/commands'
 import {tags} from '@codemirror/highlight'
@@ -57,6 +57,8 @@ export class CodeBlockView {
   logo: HTMLElement
   prettifyBtn: HTMLElement
   dragHandle: HTMLElement
+  langExtension: Compartment
+  themeExtension: Compartment
 
   constructor(node, view, getPos, schema, decos, options) {
     this.node = node
@@ -136,9 +138,62 @@ export class CodeBlockView {
       sel.addRange(range)
     })
 
+    const codeMirrorKeymap = keymap.of([{
+      key: 'Backspace',
+      run: () => {
+        if (!this.editorView.state.doc.length) this.close()
+        return true
+      }
+    }, {
+      key: 'Ctrl-Enter',
+      run: () => {
+        if (exitCode(this.view.state, this.view.dispatch)) this.view.focus()
+        return true
+      }
+    }, {
+      key: 'ArrowUp',
+      run: () => {
+        const tr = this.view.state.tr
+        let selection
+        if (this.getPos() === 0) {
+          tr.insert(0, this.schema.node('paragraph'))
+          selection = new TextSelection(tr.doc.resolve(this.getPos()))
+          tr.setSelection(selection).scrollIntoView()
+          this.view.dispatch(tr)
+          this.view.focus()
+          return true
+        }
+
+        return false
+      }
+    }])
+
+    const extensions = this.options.extensions ?
+      this.options.extensions(this.view, this.node, this.getPos) :
+      []
+
+    this.langExtension = new Compartment
+    this.themeExtension = new Compartment
+
     const startState = EditorState.create({
       doc: this.node.textContent,
-      extensions: this.createExtensions(),
+      extensions: [
+        extensions,
+        keymap.of(defaultKeymap),
+        keymap.of([defaultTabBinding]),
+        linter(() => []),
+        codeMirrorKeymap,
+        EditorState.tabSize.of(2),
+        this.langExtension.of(getLangExtension(this.getLang())),
+        this.themeExtension.of(getTheme(this.options.theme)),
+        EditorView.updateListener.of(this.updateListener.bind(this)),
+        EditorView.domEventHandlers({
+          'focus': () => this.forwardSelection(),
+          'mousedown': () => {
+            this.clicked = true
+          }
+        })
+      ]
     })
 
     this.editorView = new EditorView({
@@ -226,63 +281,12 @@ export class CodeBlockView {
     this.view.focus()
   }
 
-  createExtensions() {
-    const codeMirrorKeymap = keymap.of([{
-      key: 'Backspace',
-      run: () => {
-        if (!this.editorView.state.doc.length) this.close()
-        return true
-      }
-    }, {
-      key: 'Ctrl-Enter',
-      run: () => {
-        if (exitCode(this.view.state, this.view.dispatch)) this.view.focus()
-        return true
-      }
-    }, {
-      key: 'ArrowUp',
-      run: () => {
-        const tr = this.view.state.tr
-        let selection
-        if (this.getPos() === 0) {
-          tr.insert(0, this.schema.node('paragraph'))
-          selection = new TextSelection(tr.doc.resolve(this.getPos()))
-          tr.setSelection(selection).scrollIntoView()
-          this.view.dispatch(tr)
-          this.view.focus()
-          return true
-        }
-
-        return false
-      }
-    }])
-
-    const extensions = this.options.extensions ?
-      this.options.extensions(this.view, this.node, this.getPos) :
-      []
-
-    return [
-      extensions,
-      keymap.of(defaultKeymap),
-      keymap.of([defaultTabBinding]),
-      linter(() => []),
-      codeMirrorKeymap,
-      tagExtension('tabSize', EditorState.tabSize.of(2)),
-      getLangExtension(this.getLang()),
-      getTheme(this.options.theme),
-      EditorView.updateListener.of(this.updateListener.bind(this)),
-      EditorView.domEventHandlers({
-        'focus': () => this.forwardSelection(),
-        'mousedown': () => {
-          this.clicked = true
-        }
-      })
-    ]
-  }
-
   reconfigure() {
     this.editorView.dispatch({
-      reconfigure: {full: this.createExtensions()}
+      effects: [
+        this.langExtension.reconfigure(getLangExtension(this.getLang())),
+        this.themeExtension.reconfigure(getTheme(this.options.theme)),
+      ]
     })
   }
 

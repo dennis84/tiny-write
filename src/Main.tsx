@@ -182,7 +182,7 @@ export default (props: {state: State}) => {
 
   useEffect(() => {
     if (loadingPrev !== false) return
-    remote.setFullScreen(state.fullscreen)
+    remote.setFullscreen(state.fullscreen)
   }, [state.fullscreen])
 
   useEffect(() => {
@@ -210,7 +210,7 @@ export default (props: {state: State}) => {
       return
     }
 
-    const data = {...state, text: state.text.editorState}
+    const data = {...state, text: state.text?.editorState}
     delete data.fullscreen
     db.set('state', JSON.stringify(data))
   }, 100, [state.lastModified])

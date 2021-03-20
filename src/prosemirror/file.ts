@@ -10,8 +10,14 @@ const isImage = (data) =>
   data.ext === 'jpg' ||
   data.ext === 'gif'
 
-const imageSrc = (data) =>
-  `data:${data.mime};base64,${data.buffer.toString('base64')}`
+const imageSrc = (data) => {
+  let binary = '';
+  for (let i = 0; i < data.buffer.byteLength; i++) {
+    binary += String.fromCharCode(data.buffer[i])
+  }
+  const base64 = window.btoa(binary)
+  return `data:${data.mime};base64,${base64}`
+}
 
 const fileInput = (schema) => {
   return new Plugin({
@@ -30,15 +36,15 @@ const fileInput = (schema) => {
         const match = REGEX.exec(textBefore)
         if (match) {
           const [,title, src] = match
-          if (!fileExists(src)) {
-            return false
-          }
-
-          readFile(src).then((data) => {
+          fileExists(src).then((result) => {
+            if (!result) throw new Error('File does not exists')
+            return readFile(src)
+          }).then((data) => {
             if (data === undefined) return false
             const node = isImage(data) ?
               schema.node('image', {src: imageSrc(data), title, path: src}) :
               schema.node('code_block', {params: {file: data.file, src, title}})
+            console.log(node)
 
             const start = from - (match[0].length - text.length)
             const tr = view.state.tr

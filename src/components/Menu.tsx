@@ -152,8 +152,13 @@ interface Props {
 export default (props: Props) => {
   const dispatch = useDispatch()
   const [show, setShow] = useState(false)
+  const [version, setVersion] = useState(false)
   const [lastAction, setLastAction] = useState<string | undefined>()
   const editorView = props.editorViewRef.current
+
+  useEffect(() => {
+    remote.getVersion().then(setVersion)
+  }, [])
 
   const OnBurgerClick = () => {
     editorView.focus()
@@ -177,9 +182,10 @@ export default (props: Props) => {
   }
 
   const OnCopyAllAsMd = () => {
-    remote.copyAllAsMarkdown(editorView.state)
-    editorView.focus()
-    setLastAction('copy-md')
+    remote.copyAllAsMarkdown(editorView.state).then(() => {
+      editorView.focus()
+      setLastAction('copy-md')
+    })
   }
 
   const OnChangeTheme = (theme) => () => {
@@ -222,7 +228,7 @@ export default (props: Props) => {
   }
 
   const OnVersion = () => {
-    window.open(remote.getVersionUrl(), '_blank')
+    remote.getVersionUrl().then((url) => window.open(url, '_blank'))
   }
 
   const OnNew = () => {
@@ -424,7 +430,7 @@ export default (props: Props) => {
             <Label>Application</Label>
             <Sub>
               <Link onClick={OnVersion}>
-                About Version {remote.getVersion()}
+                About Version {version}
               </Link>
               {isElectron && <Link onClick={() => remote.quit()}>Quit <i>({mod}+q)</i></Link>}
             </Sub>
