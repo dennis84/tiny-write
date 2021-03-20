@@ -42,7 +42,7 @@ function createWindow() {
   Menu.setApplicationMenu(Menu.buildFromTemplate([{
     label: 'Application',
     submenu: [
-      {label: 'About Application', selector: 'orderFrontStandardAboutPanel:'},
+      {label: 'About Application', role: 'about'},
       {
         label: 'Quit',
         accelerator: 'CmdOrCtrl+Q',
@@ -57,15 +57,15 @@ function createWindow() {
   }, {
     label: 'Edit',
     submenu: [
-      {label: 'Undo', accelerator: 'CmdOrCtrl+Z', selector: 'undo:'},
-      {label: 'Redo', accelerator: 'Shift+CmdOrCtrl+Z', selector: 'redo:'},
+      {label: 'Undo', accelerator: 'CmdOrCtrl+Z', role: 'undo'},
+      {label: 'Redo', accelerator: 'Shift+CmdOrCtrl+Z', role: 'redo'},
       {type: 'separator'},
-      {label: 'Cut', accelerator: 'CmdOrCtrl+X', selector: 'cut:'},
-      {label: 'Copy', accelerator: 'CmdOrCtrl+C', selector: 'copy:'},
+      {label: 'Cut', accelerator: 'CmdOrCtrl+X', role: 'cut'},
+      {label: 'Copy', accelerator: 'CmdOrCtrl+C', role: 'copy'},
       {type: 'separator'},
-      {label: 'Paste', accelerator: 'CmdOrCtrl+V', selector: 'paste:'},
-      {label: 'Paste and match style', accelerator: 'Shift+CmdOrCtrl+V', selector: 'pasteAndMatchStyle:'},
-      {label: 'Select All', accelerator: 'CmdOrCtrl+A', selector: 'selectAll:'},
+      {label: 'Paste', accelerator: 'CmdOrCtrl+V', paste: 'paste'},
+      {label: 'Paste and match style', accelerator: 'Shift+CmdOrCtrl+V', role: 'pasteAndMatchStyle'},
+      {label: 'Select All', accelerator: 'CmdOrCtrl+A', role: 'selectAll'},
     ],
   }]))
 
