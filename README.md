@@ -8,7 +8,8 @@ local indexeddb.
 
 ## Install
 
-Download from [releases](https://github.com/dennis84/tiny-write/releases)
+Download: [releases](https://github.com/dennis84/tiny-write/releases)
+Demo: https://tiny-write.pages.dev
 
 ## Build
 
