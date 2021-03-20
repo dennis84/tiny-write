@@ -152,9 +152,21 @@ interface Props {
 export default (props: Props) => {
   const dispatch = useDispatch()
   const [show, setShow] = useState(false)
-  const [version, setVersion] = useState(false)
+  const [version, setVersion] = useState<string>()
   const [lastAction, setLastAction] = useState<string | undefined>()
   const editorView = props.editorViewRef.current
+
+  useEffect(() => {
+    if (!show) return
+    const onKeyDown = (e) => {
+      if (e.keyCode === 27) setShow(false)
+    }
+
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('keydown', onKeyDown)
+    }
+  }, [show])
 
   useEffect(() => {
     remote.getVersion().then(setVersion)
