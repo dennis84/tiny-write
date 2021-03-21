@@ -22,6 +22,14 @@ export const setFullscreen = (status: boolean) => {
   return window.app.setSimpleFullScreen(status)
 }
 
+export const copy = async (text: string) => {
+  if (isElectron) {
+    return window.app.copyToClipboard(text)
+  } else {
+    navigator.clipboard.writeText(text)
+  }
+}
+
 export const copyAllAsMarkdown = async (state: EditorState) => {
   const text = markdownSerializer.serialize(state.doc)
   if (isElectron) {

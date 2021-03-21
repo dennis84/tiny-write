@@ -4,11 +4,13 @@ import {EditorView} from 'prosemirror-view'
 import {undo, redo} from 'prosemirror-history'
 import {deleteSelection, selectAll} from 'prosemirror-commands'
 import {differenceInHours, format} from 'date-fns'
+import {io} from 'socket.io-client'
 import styled from '@emotion/styled'
 import {css} from '@emotion/react'
-import {Config, File} from '..'
+import {Config, File, Collab} from '..'
 import {
   Discard,
+  UpdateCollab,
   New,
   Open,
   UpdateConfig,
@@ -146,6 +148,7 @@ interface Props {
   files: File[];
   config: Config;
   fullscreen: boolean;
+  collab?: Collab;
   editorViewRef: React.RefObject<EditorView>;
 }
 
@@ -257,6 +260,24 @@ export default (props: Props) => {
     }
   }
 
+  const OnCollab = () => {
+    if (props.collab) {
+      dispatch(UpdateCollab(undefined))
+    } else {
+      const socket = io('ws://localhost:1234', {transports: ['websocket']})
+      dispatch(UpdateCollab({socket}))
+    }
+
+    editorView.focus()
+  }
+
+  const OnCopyCollabLink = () => {
+    remote.copy(`http://localhost:3000/${props.collab.room}`).then(() => {
+      editorView.focus()
+      setLastAction('copy-collab-link')
+    })
+  }
+
   const TextStats = () => {
     let paragraphs = 0
     let words = 0
@@ -351,6 +372,13 @@ export default (props: Props) => {
             <Sub>
               <LastModified />
               <TextStats />
+            </Sub>
+            <Label>Collab</Label>
+            <Sub>
+              <Link onClick={OnCollab}>{props.collab ? `Stop (${props.collab.room})` : 'Start'}</Link>
+              {props.collab && (
+                <Link onClick={OnCopyCollabLink}>Copy Link {lastAction === 'copy-collab-link' && '📋'}</Link>
+              )}
             </Sub>
             <Label>File</Label>
             <Sub>

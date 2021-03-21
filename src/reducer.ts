@@ -1,6 +1,6 @@
 import {useContext, createContext, Dispatch as Disp, Reducer} from 'react'
 import {ProseMirrorState, isEmpty} from './prosemirror/prosemirror'
-import {State, File, Config, ErrorObject} from '.'
+import {State, File, Config, ErrorObject, Collab} from '.'
 import {isMac} from './env'
 
 export const newState = (props: Partial<State> = {}): State => ({
@@ -45,6 +45,16 @@ export const UpdateText = (text: ProseMirrorState) => (state: State) => ({
   ...state,
   text,
   lastModified: new Date(),
+})
+
+export const UpdateCollab = (collab: Collab) => (state: State) => ({
+  ...state,
+  collab,
+})
+
+export const StopCollab = (state: State) => ({
+  ...state,
+  collab: undefined,
 })
 
 export const New = (state: State) => {

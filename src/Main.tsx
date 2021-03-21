@@ -15,6 +15,7 @@ import {
   UpdateState,
   UpdateError,
   UpdateText,
+  UpdateCollab,
   New,
   Discard,
   ReducerContext,
@@ -187,10 +188,23 @@ export default (props: {state: State}) => {
 
   useEffect(() => {
     if (!state.text?.initialized) return
+    if (state.collab?.socket) {
+      if (!state.collab.room) {
+        state.collab.socket.emit('create')
+      }
+
+      state.collab.socket.on('created', (data) => {
+        dispatch(UpdateCollab({...state.collab, ...data}))
+      })
+    }
+
+    const collab = state.collab?.socket && state.collab.room ? state.collab : undefined
+    console.log(collab)
     const newText = createState({
       data: state.text.editorState.toJSON(),
       config: state.config,
       keymap,
+      collab,
     })
 
     dispatch(UpdateText(newText))
@@ -199,6 +213,7 @@ export default (props: {state: State}) => {
     state.config.fontSize,
     state.config.typewriterMode,
     state.config.dragHandle,
+    state.collab,
   ])
 
   useEffect(() => {
@@ -212,6 +227,7 @@ export default (props: {state: State}) => {
 
     const data = {...state, text: state.text?.editorState}
     delete data.fullscreen
+    delete data.collab
     db.set('state', JSON.stringify(data))
   }, 100, [state.lastModified])
 
@@ -251,7 +267,8 @@ export default (props: {state: State}) => {
                   lastModified={state.lastModified}
                   files={state.files}
                   config={state.config}
-                  fullscreen={state.fullscreen} />
+                  fullscreen={state.fullscreen}
+                  collab={state.collab} />
               </>
             )}
           </Container>

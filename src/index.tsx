@@ -19,6 +19,12 @@ export interface ErrorObject {
   props?: unknown;
 }
 
+export interface Collab {
+  socket: any;
+  room?: string;
+  version?: number;
+}
+
 export interface State {
   text?: ProseMirrorState;
   lastModified?: Date;
@@ -27,6 +33,7 @@ export interface State {
   error?: ErrorObject;
   loading: boolean;
   fullscreen: boolean;
+  collab?: Collab;
 }
 
 export interface File {
