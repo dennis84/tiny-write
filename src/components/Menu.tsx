@@ -265,7 +265,7 @@ export default (props: Props) => {
       dispatch(UpdateCollab(undefined))
     } else {
       const socket = io('ws://localhost:1234', {transports: ['websocket']})
-      dispatch(UpdateCollab({socket}))
+      dispatch(UpdateCollab({socket, version: 1}))
     }
 
     editorView.focus()

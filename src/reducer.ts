@@ -52,10 +52,10 @@ export const UpdateCollab = (collab: Collab) => (state: State) => ({
   collab,
 })
 
-export const StopCollab = (state: State) => ({
-  ...state,
-  collab: undefined,
-})
+export const Join = (collab: Collab) => (state: State) => {
+  const newState = New(state)
+  return {...newState, collab}
+}
 
 export const New = (state: State) => {
   if (isEmpty(state.text.editorState)) {

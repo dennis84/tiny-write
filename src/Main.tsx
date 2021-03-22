@@ -2,6 +2,7 @@ import React, {useEffect, useReducer, useRef} from 'react'
 import {selectAll, deleteSelection} from 'prosemirror-commands'
 import {EditorView} from 'prosemirror-view'
 import {undo, redo} from 'prosemirror-history'
+import {io} from 'socket.io-client'
 import {Global, ThemeProvider} from '@emotion/react'
 import styled from '@emotion/styled'
 import {rgb} from './styles'
@@ -16,6 +17,7 @@ import {
   UpdateError,
   UpdateText,
   UpdateCollab,
+  Join,
   New,
   Discard,
   ReducerContext,
@@ -107,6 +109,12 @@ export default (props: {state: State}) => {
   }
 
   useEffect(() => {
+    const room = window.location.pathname?.slice(1)
+    if (room) {
+      const socket = io('ws://localhost:1234', {transports: ['websocket']})
+      dispatch(Join({socket, room}))
+    }
+
     db.get('state').then((data) => {
       let parsed
       if (data !== undefined) {
@@ -187,19 +195,40 @@ export default (props: {state: State}) => {
   }, [state.fullscreen])
 
   useEffect(() => {
-    if (!state.text?.initialized) return
-    if (state.collab?.socket) {
-      if (!state.collab.room) {
-        state.collab.socket.emit('create')
-      }
+    if (!state.collab) return
 
-      state.collab.socket.on('created', (data) => {
-        dispatch(UpdateCollab({...state.collab, ...data}))
+    if (!state.collab.room) {
+      state.collab.socket.emit('create', {
+        doc: state.text.editorState,
+        version: state.collab.version,
       })
+    } else if (!state.collab.version) {
+      state.collab.socket.emit('open', {room: state.collab.room})
     }
 
+    state.collab.socket.on('init', (data: any) => {
+      if (!state.collab.version) {
+        console.log('update doc', data.doc)
+        const newText = createState({
+          data: data.doc,
+          config: state.config,
+          keymap,
+        })
+
+        dispatch(UpdateText(newText))
+      }
+
+      dispatch(UpdateCollab({
+        ...state.collab,
+        version: data.version,
+        room: data.room,
+      }))
+    })
+  }, [state.collab])
+
+  useEffect(() => {
+    if (!state.text?.initialized) return
     const collab = state.collab?.socket && state.collab.room ? state.collab : undefined
-    console.log(collab)
     const newText = createState({
       data: state.text.editorState.toJSON(),
       config: state.config,
