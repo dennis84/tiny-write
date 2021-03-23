@@ -172,6 +172,11 @@ export default (props: {state: State}) => {
       }),
       data.steps.map((item) => item.clientID),
     ))
+
+    dispatch(UpdateCollab({
+      ...state.collab,
+      version: data.version,
+    }))
   })
 
   // On mount, load state from DB.
@@ -286,11 +291,6 @@ export default (props: {state: State}) => {
     console.log('State has changed, send sendable steps', {
       steps: sendable.steps.map(s => s.slice.toString()).join(', '),
     })
-
-    dispatch(UpdateCollab({
-      ...state.collab,
-      version: sendable.version,
-    }))
 
     state.collab.socket.emit('update', {
       room: state.collab.room,
