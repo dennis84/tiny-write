@@ -1,7 +1,7 @@
 import {keymap} from 'prosemirror-keymap'
 import {NodeSelection} from 'prosemirror-state'
 import {ViewPlugin, keymap as cmKeymap} from '@codemirror/view'
-import {collab, receiveTransaction, sendableSteps, getVersion} from 'prosemirror-collab'
+import {collab} from 'prosemirror-collab'
 import base from './prosemirror/base'
 import markdown from './prosemirror/markdown'
 import link from './prosemirror/link'
@@ -13,9 +13,14 @@ import codeBlock, {cleanLang} from './prosemirror/code-block'
 import file from './prosemirror/file'
 import dragHandle from './prosemirror/drag-handle'
 import pasteMarkdown from './prosemirror/paste-markdown'
-import {Config, Collab} from '.'
+import {Config} from '.'
 import {codeTheme} from './config'
 import {readFile, writeFile} from './remote'
+
+interface Collab {
+  version?: number;
+  clientID?: string;
+}
 
 interface Props {
   data?: unknown;
@@ -23,6 +28,13 @@ interface Props {
   config: Config;
   collab?: Collab;
 }
+
+const collabExtension = (props: Props) => ({
+  plugins: (prev) => props.collab ? [
+    ...prev,
+    collab(props.collab)
+  ] : prev
+})
 
 const customKeymap = (props: Props) => ({
   plugins: (prev) => props.keymap ? [
@@ -69,6 +81,7 @@ const codeMirrorSyncFile = (view, node, getPos) => {
     }
   })
 }
+
 export const createState = (props: Props) => ({
   editorState: props.data,
   extensions: [
@@ -92,7 +105,7 @@ export const createState = (props: Props) => ({
     placeholder('Start typing ...'),
     scroll(props.config.typewriterMode),
     pasteMarkdown,
-    ...(props.collab ? [collab({version: props.collab.version})] : []),
+    collabExtension(props),
   ]
 })
 

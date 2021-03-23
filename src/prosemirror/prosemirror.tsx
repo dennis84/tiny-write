@@ -48,7 +48,7 @@ export const ProseMirror = (props: Props) => {
 
   useEffect(() => {
     if (!editorViewRef.current) {
-      const [state, nodeViews] = createEditorState(props.state)
+      const {state, nodeViews} = createEditorState(props.state)
       const view = new EditorView(editorRef.current, {state, nodeViews, dispatchTransaction})
       editorViewRef.current = view
       view.focus()
@@ -60,7 +60,7 @@ export const ProseMirror = (props: Props) => {
     } else if (props.state.initialized) {
       editorViewRef.current.updateState(props.state.editorState)
     } else {
-      const [state, nodeViews] = createEditorState(props.state)
+      const {state, nodeViews} = createEditorState(props.state)
       editorViewRef.current.update({state, nodeViews, dispatchTransaction})
       props.onInit({
         ...props.state,
@@ -105,7 +105,10 @@ const createEditorState = (state: ProseMirrorState) => {
     }, editorState)
   }
 
-  return [editorState, nodeViews]
+  return {
+    state: editorState,
+    nodeViews,
+  }
 }
 
 export const isEmpty = (state?: EditorState) => !state || (

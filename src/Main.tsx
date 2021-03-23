@@ -1,5 +1,7 @@
 import React, {useEffect, useReducer, useRef} from 'react'
 import {selectAll, deleteSelection} from 'prosemirror-commands'
+import {Step} from 'prosemirror-transform'
+import {sendableSteps, getVersion, receiveTransaction} from 'prosemirror-collab'
 import {EditorView} from 'prosemirror-view'
 import {undo, redo} from 'prosemirror-history'
 import {io} from 'socket.io-client'
@@ -17,7 +19,6 @@ import {
   UpdateError,
   UpdateText,
   UpdateCollab,
-  Join,
   New,
   Discard,
   ReducerContext,
@@ -108,14 +109,8 @@ export default (props: {state: State}) => {
     [`${mod}-y`]: OnRedo,
   }
 
-  useEffect(() => {
-    const room = window.location.pathname?.slice(1)
-    if (room) {
-      const socket = io('ws://localhost:1234', {transports: ['websocket']})
-      dispatch(Join({socket, room}))
-    }
-
-    db.get('state').then((data) => {
+  const loadState = () => {
+    return db.get('state').then((data) => {
       let parsed
       if (data !== undefined) {
         try {
@@ -187,6 +182,19 @@ export default (props: {state: State}) => {
 
       dispatch(UpdateState(newState))
     })
+  }
+
+  useEffect(() => {
+    const initialize = async () => {
+      await loadState()
+      const room = window.location.pathname?.slice(1)
+      if (room) {
+        const socket = io('wss://plucky-spectacled-drawbridge.glitch.me', {transports: ['websocket']})
+        dispatch(UpdateCollab({socket, room}))
+      }
+    }
+
+    initialize()
   }, [])
 
   useEffect(() => {
@@ -194,46 +202,94 @@ export default (props: {state: State}) => {
     remote.setFullscreen(state.fullscreen)
   }, [state.fullscreen])
 
+  // Init collab if socket is defined
   useEffect(() => {
-    if (!state.collab) return
+    if (!state.collab?.socket) return
 
-    if (!state.collab.room) {
-      state.collab.socket.emit('create', {
-        doc: state.text.editorState,
-        version: state.collab.version,
+    // Send create message to server with doc and room
+    state.collab.socket.emit('create', {
+      doc: state.text.editorState.toJSON().doc,
+      room: state.collab.room,
+    })
+
+    state.collab.socket.on('update', OnReceiveUpdate)
+    state.collab.socket.on('steps', OnReceiveSteps)
+  }, [state.collab?.socket])
+
+  // Receive update response after create and recreate the state.
+  const OnReceiveUpdate = useDynamicCallback((data: any) => {
+    let newText
+    // Open state of other user
+    if (data.version !== state.collab.version) {
+      newText = createState({
+        data: {
+          selection: {type: 'text', anchor: 1, head: 1},
+          doc: data.doc,
+        },
+        config: state.config,
+        keymap,
+        collab: {
+          version: data.version,
+          clientID: data.clientId,
+        }
       })
-    } else if (!state.collab.version) {
-      state.collab.socket.emit('open', {room: state.collab.room})
     }
 
-    state.collab.socket.on('init', (data: any) => {
-      if (!state.collab.version) {
-        console.log('update doc', data.doc)
-        const newText = createState({
-          data: data.doc,
-          config: state.config,
-          keymap,
-        })
+    dispatch(UpdateCollab({
+      ...state.collab,
+      version: data.version,
+      room: data.room,
+      users: data.users,
+      clientId: data.clientId,
+    }, newText))
+  })
 
-        dispatch(UpdateText(newText))
-      }
+  // Apply emitted steps
+  const OnReceiveSteps = useDynamicCallback((data) => {
+    const version = getVersion(state.text.editorState)
+    if (version > data.version) {
+      return
+    }
 
-      dispatch(UpdateCollab({
-        ...state.collab,
-        version: data.version,
-        room: data.room,
-      }))
+    editorViewRef.current.dispatch(receiveTransaction(
+      editorViewRef.current.state,
+      data.steps.map((item) => Step.fromJSON(state.text.editorState.schema, item.step)),
+      data.steps.map((item) => item.clientID),
+    ))
+  })
+
+  // Send updates to collab users
+  useDebouncedEffect(() => {
+    if (!state.text?.initialized) return
+    if (!state.collab?.version) return
+    const sendable = sendableSteps(state.text.editorState)
+
+    if (!sendable) return
+    dispatch(UpdateCollab({
+      ...state.collab,
+      version: sendable.version,
+    }))
+
+    state.collab.socket.emit('update', {
+      room: state.collab.room,
+      update: {
+        version: sendable.version,
+        steps: sendable.steps.map(step => step.toJSON()),
+        clientID: state.collab.clientId,
+      },
     })
-  }, [state.collab])
+  }, 200, [state.text?.editorState])
 
   useEffect(() => {
     if (!state.text?.initialized) return
-    const collab = state.collab?.socket && state.collab.room ? state.collab : undefined
     const newText = createState({
       data: state.text.editorState.toJSON(),
       config: state.config,
       keymap,
-      collab,
+      collab: state.collab ? {
+        version: state.collab.version,
+        clientID: state.collab.clientId,
+      } : undefined
     })
 
     dispatch(UpdateText(newText))
@@ -242,7 +298,6 @@ export default (props: {state: State}) => {
     state.config.fontSize,
     state.config.typewriterMode,
     state.config.dragHandle,
-    state.collab,
   ])
 
   useEffect(() => {

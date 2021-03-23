@@ -264,8 +264,8 @@ export default (props: Props) => {
     if (props.collab) {
       dispatch(UpdateCollab(undefined))
     } else {
-      const socket = io('ws://localhost:1234', {transports: ['websocket']})
-      dispatch(UpdateCollab({socket, version: 1}))
+      const socket = io('wss://plucky-spectacled-drawbridge.glitch.me', {transports: ['websocket']})
+      dispatch(UpdateCollab({socket}))
     }
 
     editorView.focus()
@@ -375,9 +375,16 @@ export default (props: Props) => {
             </Sub>
             <Label>Collab</Label>
             <Sub>
-              <Link onClick={OnCollab}>{props.collab ? `Stop (${props.collab.room})` : 'Start'}</Link>
+              <Link onClick={OnCollab}>{props.collab ? 'Stop' : 'Start'}</Link>
               {props.collab && (
-                <Link onClick={OnCopyCollabLink}>Copy Link {lastAction === 'copy-collab-link' && '📋'}</Link>
+                <Link onClick={OnCopyCollabLink}>
+                  Copy Link {lastAction === 'copy-collab-link' && '📋'}
+                </Link>
+              )}
+              {props.collab?.users?.length > 0 && (
+                <Text>
+                  {props.collab.users.length} {props.collab.users?.length === 1 ? 'user' : 'users'} connected
+                </Text>
               )}
             </Sub>
             <Label>File</Label>

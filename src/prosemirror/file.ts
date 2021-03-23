@@ -44,7 +44,6 @@ const fileInput = (schema) => {
             const node = isImage(data) ?
               schema.node('image', {src: imageSrc(data), title, path: src}) :
               schema.node('code_block', {params: {file: data.file, src, title}})
-            console.log(node)
 
             const start = from - (match[0].length - text.length)
             const tr = view.state.tr

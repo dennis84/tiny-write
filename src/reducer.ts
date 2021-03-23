@@ -47,15 +47,13 @@ export const UpdateText = (text: ProseMirrorState) => (state: State) => ({
   lastModified: new Date(),
 })
 
-export const UpdateCollab = (collab: Collab) => (state: State) => ({
-  ...state,
-  collab,
-})
-
-export const Join = (collab: Collab) => (state: State) => {
-  const newState = New(state)
-  return {...newState, collab}
-}
+export const UpdateCollab = (collab: Collab, text?: ProseMirrorState) =>
+  (state: State) => ({
+    ...state,
+    collab,
+    text: text ?? state.text,
+    clientId: collab.socket?.id,
+  })
 
 export const New = (state: State) => {
   if (isEmpty(state.text.editorState)) {
@@ -74,6 +72,7 @@ export const New = (state: State) => {
     text: undefined,
     files,
     lastModified: new Date(),
+    collab: undefined,
   }
 }
 
@@ -95,6 +94,7 @@ export const Open = (file: File) => (state: State) => {
     files,
     text,
     lastModified,
+    collab: undefined,
   }
 }
 

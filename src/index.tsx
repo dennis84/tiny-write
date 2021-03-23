@@ -23,6 +23,8 @@ export interface Collab {
   socket: any;
   room?: string;
   version?: number;
+  users?: string[];
+  clientId?: string;
 }
 
 export interface State {
