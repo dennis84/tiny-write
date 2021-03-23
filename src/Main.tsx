@@ -12,7 +12,7 @@ import {background, color, color2, font, fonts} from './config'
 import {State} from '.'
 import * as remote from './remote'
 import db from './db'
-import {mod} from './env'
+import {mod, COLLAB_URL} from './env'
 import {useDebouncedEffect, usePrevious, useDynamicCallback} from './hooks'
 import {
   UpdateState,
@@ -189,7 +189,7 @@ export default (props: {state: State}) => {
       await loadState()
       const room = window.location.pathname?.slice(1)
       if (room) {
-        const socket = io('wss://plucky-spectacled-drawbridge.glitch.me', {transports: ['websocket']})
+        const socket = io(COLLAB_URL, {transports: ['websocket']})
         dispatch(UpdateCollab({socket, room}))
       }
     }

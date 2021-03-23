@@ -8,3 +8,7 @@ export const isMac =
 
 export const mod = isMac ? 'Cmd' : 'Ctrl'
 export const alt = isMac ? 'Cmd' : 'Alt'
+
+export const COLLAB_URL =
+  'ws://localhost:1234'
+  //'wss://plucky-spectacled-drawbridge.glitch.me'

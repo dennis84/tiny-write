@@ -19,7 +19,7 @@ import {
 } from '../reducer'
 import {color, color2, themes, fonts, codeThemes} from '../config'
 import {rgb, rgba} from '../styles'
-import {isElectron, isMac, alt, mod} from '../env'
+import {isElectron, isMac, alt, mod, COLLAB_URL} from '../env'
 import * as remote from '../remote'
 import {isEmpty} from '../prosemirror/prosemirror'
 
@@ -266,7 +266,7 @@ export default (props: Props) => {
       props.collab.socket.close()
       dispatch(UpdateCollab(undefined))
     } else {
-      const socket = io('wss://plucky-spectacled-drawbridge.glitch.me', {transports: ['websocket']})
+      const socket = io(COLLAB_URL, {transports: ['websocket']})
       dispatch(UpdateCollab({socket}))
     }
 
