@@ -109,8 +109,74 @@ export default (props: {state: State}) => {
     [`${mod}-y`]: OnRedo,
   }
 
-  const loadState = () => {
-    return db.get('state').then((data) => {
+  // Receive update response after create and recreate the state.
+  const OnReceiveUpdate = useDynamicCallback((data: any) => {
+    window.history.replaceState(null, '', `/${data.room}`)
+
+    // Init room
+    if (!state.collab.version) {
+      console.log('Init collab state with room data')
+      const newText = createState({
+        data: {
+          selection: {type: 'text', anchor: 1, head: 1},
+          doc: data.doc,
+        },
+        config: state.config,
+        keymap,
+        collab: {
+          version: data.version,
+          clientID: data.clientId,
+        }
+      })
+
+      dispatch(UpdateCollab({
+        ...state.collab,
+        version: data.version,
+        room: data.room,
+        users: data.users,
+        clientId: data.clientId,
+      }, newText))
+
+      return
+    }
+
+    console.log('Update users')
+    // Only update users
+    dispatch(UpdateCollab({
+      ...state.collab,
+      users: data.users,
+    }))
+  })
+
+  // Apply emitted steps
+  const OnReceiveSteps = useDynamicCallback((data) => {
+    const version = getVersion(editorViewRef.current.state)
+    if (version > data.version) {
+      console.log('Ignore outdated steps', {
+        currentVersion: version,
+        receivedVersion: data.version,
+      })
+      return
+    }
+
+    editorViewRef.current.dispatch(receiveTransaction(
+      editorViewRef.current.state,
+      data.steps.map((item) => {
+        const step = Step.fromJSON(state.text.editorState.schema, item.step)
+        console.log('Apply step', {
+          step: step.slice.toString(),
+          clientId: item.clientID,
+        })
+
+        return step
+      }),
+      data.steps.map((item) => item.clientID),
+    ))
+  })
+
+  // On mount, load state from DB.
+  useEffect(() => {
+    db.get('state').then((data) => {
       let parsed
       if (data !== undefined) {
         try {
@@ -180,27 +246,21 @@ export default (props: {state: State}) => {
         return
       }
 
+      console.log('State loaded from DB')
       dispatch(UpdateState(newState))
     })
-  }
-
-  useEffect(() => {
-    const initialize = async () => {
-      await loadState()
-      const room = window.location.pathname?.slice(1)
-      if (room) {
-        const socket = io(COLLAB_URL, {transports: ['websocket']})
-        dispatch(UpdateCollab({socket, room}))
-      }
-    }
-
-    initialize()
   }, [])
 
+  // More initialization after state loaded from DB
   useEffect(() => {
     if (loadingPrev !== false) return
-    remote.setFullscreen(state.fullscreen)
-  }, [state.fullscreen])
+    const room = window.location.pathname?.slice(1)
+    if (room) {
+      const socket = io(COLLAB_URL, {transports: ['websocket']})
+      console.log('Init collab socket with room from URL')
+      dispatch(UpdateCollab({socket, room}))
+    }
+  }, [loadingPrev])
 
   // Init collab if socket is defined
   useEffect(() => {
@@ -216,57 +276,17 @@ export default (props: {state: State}) => {
     state.collab.socket.on('steps', OnReceiveSteps)
   }, [state.collab?.socket])
 
-  // Receive update response after create and recreate the state.
-  const OnReceiveUpdate = useDynamicCallback((data: any) => {
-    window.history.replaceState(null, '', `/${data.room}`)
-
-    let newText
-    // Open state of other user
-    if (data.version !== state.collab.version) {
-      newText = createState({
-        data: {
-          selection: {type: 'text', anchor: 1, head: 1},
-          doc: data.doc,
-        },
-        config: state.config,
-        keymap,
-        collab: {
-          version: data.version,
-          clientID: data.clientId,
-        }
-      })
-    }
-
-    dispatch(UpdateCollab({
-      ...state.collab,
-      version: data.version,
-      room: data.room,
-      users: data.users,
-      clientId: data.clientId,
-    }, newText))
-  })
-
-  // Apply emitted steps
-  const OnReceiveSteps = useDynamicCallback((data) => {
-    const version = getVersion(state.text.editorState)
-    if (version > data.version) {
-      return
-    }
-
-    editorViewRef.current.dispatch(receiveTransaction(
-      editorViewRef.current.state,
-      data.steps.map((item) => Step.fromJSON(state.text.editorState.schema, item.step)),
-      data.steps.map((item) => item.clientID),
-    ))
-  })
-
-  // Send updates to collab users
+  // Listen to state changes and send them to all collab users
   useDebouncedEffect(() => {
     if (!state.text?.initialized) return
     if (!state.collab?.version) return
-    const sendable = sendableSteps(state.text.editorState)
-
+    const sendable = sendableSteps(editorViewRef.current.state)
     if (!sendable) return
+
+    console.log('State has changed, send sendable steps', {
+      steps: sendable.steps.map(s => s.slice.toString()).join(', '),
+    })
+
     dispatch(UpdateCollab({
       ...state.collab,
       version: sendable.version,
@@ -282,8 +302,11 @@ export default (props: {state: State}) => {
     })
   }, 200, [state.text?.editorState])
 
+  // Recreate prosemirror if config properties has changed
+  // which need a full recreation of extensions.
   useEffect(() => {
     if (!state.text?.initialized) return
+    console.log('Recreate prosemirror state due to config updates')
     const newText = createState({
       data: state.text.editorState.toJSON(),
       config: state.config,
@@ -302,10 +325,18 @@ export default (props: {state: State}) => {
     state.config.dragHandle,
   ])
 
+  // Toggle remote fullscreen if changed
+  useEffect(() => {
+    if (loadingPrev !== false) return
+    remote.setFullscreen(state.fullscreen)
+  }, [state.fullscreen])
+
+  // Toggle remote alwaysOnTop if changed
   useEffect(() => {
     remote.setAlwaysOnTop(state.config.alwaysOnTop)
   }, [state.config.alwaysOnTop])
 
+  // Save state in DB if lastModified has changed
   useDebouncedEffect(() => {
     if (loadingPrev !== false) {
       return
