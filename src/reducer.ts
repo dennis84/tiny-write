@@ -52,7 +52,7 @@ export const UpdateCollab = (collab: Collab, text?: ProseMirrorState) =>
     ...state,
     collab,
     text: text ?? state.text,
-    clientId: collab.socket?.id,
+    clientId: collab?.socket?.id,
   })
 
 export const New = (state: State) => {

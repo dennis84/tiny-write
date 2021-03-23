@@ -262,6 +262,8 @@ export default (props: Props) => {
 
   const OnCollab = () => {
     if (props.collab) {
+      window.history.replaceState(null, '', '/')
+      props.collab.socket.close()
       dispatch(UpdateCollab(undefined))
     } else {
       const socket = io('wss://plucky-spectacled-drawbridge.glitch.me', {transports: ['websocket']})

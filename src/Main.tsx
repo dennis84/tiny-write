@@ -218,6 +218,8 @@ export default (props: {state: State}) => {
 
   // Receive update response after create and recreate the state.
   const OnReceiveUpdate = useDynamicCallback((data: any) => {
+    window.history.replaceState(null, '', `/${data.room}`)
+
     let newText
     // Open state of other user
     if (data.version !== state.collab.version) {
