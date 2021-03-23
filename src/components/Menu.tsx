@@ -19,7 +19,7 @@ import {
 } from '../reducer'
 import {color, color2, themes, fonts, codeThemes} from '../config'
 import {rgb, rgba} from '../styles'
-import {isElectron, isMac, alt, mod, COLLAB_URL} from '../env'
+import {isElectron, isMac, alt, mod, COLLAB_URL, WEB_URL} from '../env'
 import * as remote from '../remote'
 import {isEmpty} from '../prosemirror/prosemirror'
 
@@ -274,7 +274,7 @@ export default (props: Props) => {
   }
 
   const OnCopyCollabLink = () => {
-    remote.copy(`http://localhost:3000/${props.collab.room}`).then(() => {
+    remote.copy(`${WEB_URL}/${props.collab.room}`).then(() => {
       editorView.focus()
       setLastAction('copy-collab-link')
     })
