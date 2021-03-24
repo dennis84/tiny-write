@@ -145,8 +145,13 @@ export default (props: {state: State}) => {
 
     // Init room
     if (!version || !state.collab.initialized) {
-      console.log('Init collab state with room data')
-      const newText = createTextByData(data)
+      console.log('Init collab state with room data', {
+        created: data.created,
+        room: data.room,
+      })
+
+      // Recreate text if an existing doc comes from server
+      const newText = !data.created ? createTextByData(data) : undefined
 
       dispatch(UpdateCollab({
         ...state.collab,
@@ -169,7 +174,7 @@ export default (props: {state: State}) => {
 
   // Apply emitted steps
   const OnReceiveSteps = useDynamicCallback((data) => {
-    if (!state.collab.initialized) {
+    if (!state.collab?.initialized) {
       console.log('Skip receiving steps while collab is not initialized')
     }
 
@@ -321,9 +326,7 @@ export default (props: {state: State}) => {
   // Listen to state changes and send them to all collab users
   useDebouncedEffect(() => {
     if (!state.text?.initialized) return
-    if (!state.collab?.initialized) {
-      console.log('Do not send steps while collab is not initialized')
-    }
+    if (!state.collab?.initialized) return
 
     const sendable = getSendableSteps()
     if (!sendable) return
