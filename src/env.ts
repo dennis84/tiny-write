@@ -14,5 +14,5 @@ export const WEB_URL =
   'https://tiny-write.pages.dev'
 
 export const COLLAB_URL =
-  //'ws://localhost:1234'
-  'wss://plucky-spectacled-drawbridge.glitch.me'
+  'ws://localhost:1234'
+  //'wss://plucky-spectacled-drawbridge.glitch.me'

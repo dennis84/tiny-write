@@ -109,29 +109,47 @@ export default (props: {state: State}) => {
     [`${mod}-y`]: OnRedo,
   }
 
+  const getCurrentVersion = () => {
+    try {
+      return getVersion(editorViewRef.current.state)
+    } catch(err) {
+      return undefined
+    }
+  }
+
+  const getSendableSteps = () => {
+    try {
+      return sendableSteps(editorViewRef.current.state)
+    } catch(err) {
+      return undefined
+    }
+  }
+
+  const createTextByData = (data: any) => createState({
+    data: {
+      selection: {type: 'text', anchor: 1, head: 1},
+      doc: data.doc,
+    },
+    config: state.config,
+    keymap,
+    collab: {
+      version: data.version,
+      clientID: data.clientId,
+    }
+  })
+
   // Receive update response after create and recreate the state.
   const OnReceiveUpdate = useDynamicCallback((data: any) => {
     window.history.replaceState(null, '', `/${data.room}`)
+    const version = getCurrentVersion()
 
     // Init room
-    if (!state.collab.version) {
+    if (!version) {
       console.log('Init collab state with room data')
-      const newText = createState({
-        data: {
-          selection: {type: 'text', anchor: 1, head: 1},
-          doc: data.doc,
-        },
-        config: state.config,
-        keymap,
-        collab: {
-          version: data.version,
-          clientID: data.clientId,
-        }
-      })
+      const newText = createTextByData(data)
 
       dispatch(UpdateCollab({
         ...state.collab,
-        version: data.version,
         room: data.room,
         users: data.users,
         clientId: data.clientId,
@@ -150,11 +168,21 @@ export default (props: {state: State}) => {
 
   // Apply emitted steps
   const OnReceiveSteps = useDynamicCallback((data) => {
-    const version = getVersion(editorViewRef.current.state)
+    const version = getCurrentVersion()
+    if (version === undefined) {
+      console.log('Cannot apply received data to uninitialized collab state', {
+        currentVersion: version,
+        receivedVersion: data.version,
+        receivedSteps: data.steps,
+      })
+      return
+    }
+
     if (version > data.version) {
       console.log('Ignore outdated steps', {
         currentVersion: version,
         receivedVersion: data.version,
+        receivedSteps: data.steps,
       })
       return
     }
@@ -172,11 +200,6 @@ export default (props: {state: State}) => {
       }),
       data.steps.map((item) => item.clientID),
     ))
-
-    dispatch(UpdateCollab({
-      ...state.collab,
-      version: data.version,
-    }))
   })
 
   // On mount, load state from DB.
@@ -284,11 +307,11 @@ export default (props: {state: State}) => {
   // Listen to state changes and send them to all collab users
   useDebouncedEffect(() => {
     if (!state.text?.initialized) return
-    if (!state.collab?.version) return
-    const sendable = sendableSteps(editorViewRef.current.state)
+    const sendable = getSendableSteps()
     if (!sendable) return
 
     console.log('State has changed, send sendable steps', {
+      version: sendable.version,
       steps: sendable.steps.map(s => s.slice.toString()).join(', '),
     })
 
@@ -306,13 +329,14 @@ export default (props: {state: State}) => {
   // which need a full recreation of extensions.
   useEffect(() => {
     if (!state.text?.initialized) return
+    const version = getCurrentVersion()
     console.log('Recreate prosemirror state due to config updates')
     const newText = createState({
       data: state.text.editorState.toJSON(),
       config: state.config,
       keymap,
       collab: state.collab ? {
-        version: state.collab.version,
+        version,
         clientID: state.collab.clientId,
       } : undefined
     })
