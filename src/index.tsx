@@ -22,9 +22,9 @@ export interface ErrorObject {
 export interface Collab {
   socket: any;
   room?: string;
-  version?: number;
   users?: string[];
   clientId?: string;
+  initialized?: boolean;
 }
 
 export interface State {

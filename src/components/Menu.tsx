@@ -375,7 +375,7 @@ export default (props: Props) => {
               <LastModified />
               <TextStats />
             </Sub>
-            <Label>Collab</Label>
+            <Label>Collab (beta 🐥)</Label>
             <Sub>
               <Link onClick={OnCollab}>{props.collab ? 'Stop' : 'Start'}</Link>
               {props.collab && (
