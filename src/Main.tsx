@@ -145,11 +145,6 @@ export default (props: {state: State}) => {
 
     // Init room
     if (!version || !state.collab.initialized) {
-      console.log('Init collab state with room data', {
-        created: data.created,
-        room: data.room,
-      })
-
       // Recreate text if an existing doc comes from server
       const newText = !data.created ? createTextByData(data) : undefined
 
@@ -164,7 +159,6 @@ export default (props: {state: State}) => {
       return
     }
 
-    console.log('Update users')
     // Only update users
     dispatch(UpdateCollab({
       ...state.collab,
@@ -174,27 +168,11 @@ export default (props: {state: State}) => {
 
   // Apply emitted steps
   const OnReceiveSteps = useDynamicCallback((data) => {
-    if (!state.collab?.initialized) {
-      console.log('Skip receiving steps while collab is not initialized')
-    }
+    if (!state.collab?.initialized) return
 
     const version = getCurrentVersion()
-    if (version === undefined) {
-      console.log('Cannot apply received data to uninitialized collab state', {
-        currentVersion: version,
-        receivedVersion: data.version,
-        receivedSteps: data.steps,
-      })
-      return
-    }
-
+    if (version === undefined) return
     if (version > data.version) {
-      console.log('Ignore outdated steps', {
-        currentVersion: version,
-        receivedVersion: data.version,
-        receivedSteps: data.steps,
-      })
-
       // Set initialized to false and request server
       // state to recover from current out of sync state.
       dispatch(UpdateCollab({
@@ -208,15 +186,7 @@ export default (props: {state: State}) => {
 
     editorViewRef.current.dispatch(receiveTransaction(
       editorViewRef.current.state,
-      data.steps.map((item) => {
-        const step = Step.fromJSON(state.text.editorState.schema, item.step)
-        console.log('Apply step', {
-          step: step.slice.toString(),
-          clientId: item.clientID,
-        })
-
-        return step
-      }),
+      data.steps.map((item) => Step.fromJSON(state.text.editorState.schema, item.step)),
       data.steps.map((item) => item.clientID),
     ))
   })
@@ -293,7 +263,6 @@ export default (props: {state: State}) => {
         return
       }
 
-      console.log('State loaded from DB')
       dispatch(UpdateState(newState))
     })
   }, [])
@@ -304,7 +273,6 @@ export default (props: {state: State}) => {
     const room = window.location.pathname?.slice(1)
     if (room) {
       const socket = io(COLLAB_URL, {transports: ['websocket']})
-      console.log('Init collab socket with room from URL')
       dispatch(UpdateCollab({socket, room}))
     }
   }, [loadingPrev])
@@ -331,11 +299,6 @@ export default (props: {state: State}) => {
     const sendable = getSendableSteps()
     if (!sendable) return
 
-    console.log('State has changed, send sendable steps', {
-      version: sendable.version,
-      steps: sendable.steps.map(s => s.slice.toString()).join(', '),
-    })
-
     state.collab.socket.emit('update', {
       room: state.collab.room,
       update: {
@@ -351,7 +314,6 @@ export default (props: {state: State}) => {
   useEffect(() => {
     if (!state.text?.initialized) return
     const version = getCurrentVersion()
-    console.log('Recreate prosemirror state due to config updates')
     const newText = createState({
       data: state.text.editorState.toJSON(),
       config: state.config,

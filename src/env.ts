@@ -1,3 +1,5 @@
+import {version} from '../package.json'
+
 const userAgent = window.navigator.userAgent.toLowerCase()
 
 export const isElectron = userAgent.indexOf(' electron/') > -1
@@ -16,3 +18,6 @@ export const WEB_URL =
 export const COLLAB_URL =
   //'ws://localhost:1234'
   'wss://plucky-spectacled-drawbridge.glitch.me'
+
+export const VERSION_URL =
+  `https://github.com/dennis84/tiny-write/releases/tag/v${version}`

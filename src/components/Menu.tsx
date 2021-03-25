@@ -7,6 +7,7 @@ import {differenceInHours, format} from 'date-fns'
 import {io} from 'socket.io-client'
 import styled from '@emotion/styled'
 import {css} from '@emotion/react'
+import {version} from '../../package.json'
 import {Config, File, Collab} from '..'
 import {
   Discard,
@@ -19,7 +20,7 @@ import {
 } from '../reducer'
 import {color, color2, themes, fonts, codeThemes} from '../config'
 import {rgb, rgba} from '../styles'
-import {isElectron, isMac, alt, mod, COLLAB_URL, WEB_URL} from '../env'
+import {isElectron, isMac, alt, mod, COLLAB_URL, WEB_URL, VERSION_URL} from '../env'
 import * as remote from '../remote'
 import {isEmpty} from '../prosemirror/prosemirror'
 
@@ -155,7 +156,6 @@ interface Props {
 export default (props: Props) => {
   const dispatch = useDispatch()
   const [show, setShow] = useState(false)
-  const [version, setVersion] = useState<string>()
   const [lastAction, setLastAction] = useState<string | undefined>()
   const editorView = props.editorViewRef.current
 
@@ -170,10 +170,6 @@ export default (props: Props) => {
       document.removeEventListener('keydown', onKeyDown)
     }
   }, [show])
-
-  useEffect(() => {
-    remote.getVersion().then(setVersion)
-  }, [])
 
   const OnBurgerClick = () => {
     editorView.focus()
@@ -243,7 +239,7 @@ export default (props: Props) => {
   }
 
   const OnVersion = () => {
-    remote.getVersionUrl().then((url) => window.open(url, '_blank'))
+    window.open(VERSION_URL, '_blank')
   }
 
   const OnNew = () => {
@@ -378,15 +374,15 @@ export default (props: Props) => {
             <Label>Collab (beta 🐥)</Label>
             <Sub>
               <Link onClick={OnCollab}>{props.collab ? 'Stop' : 'Start'}</Link>
-              {props.collab && (
-                <Link onClick={OnCopyCollabLink}>
-                  Copy Link {lastAction === 'copy-collab-link' && '📋'}
-                </Link>
-              )}
               {props.collab?.users?.length > 0 && (
-                <Text>
-                  {props.collab.users.length} {props.collab.users?.length === 1 ? 'user' : 'users'} connected
-                </Text>
+                <>
+                  <Link onClick={OnCopyCollabLink}>
+                    Copy Link {lastAction === 'copy-collab-link' && '📋'}
+                  </Link>
+                  <Text>
+                    {props.collab.users.length} {props.collab.users?.length === 1 ? 'user' : 'users'} connected
+                  </Text>
+                </>
               )}
             </Sub>
             <Label>File</Label>

@@ -39,19 +39,6 @@ export const copyAllAsMarkdown = async (state: EditorState) => {
   }
 }
 
-export const getVersion = async (): Promise<string> => {
-  if (isElectron) {
-    return window.app.getVersion()
-  }
-
-  return window.process?.env.npm_package_version
-}
-
-export const getVersionUrl = async () => {
-  const v = await getVersion()
-  return `https://github.com/dennis84/tiny-write/releases/tag/v${v}`
-}
-
 export const fileExists = async (src) => {
   if (!isElectron) return false
   return window.app.fileExists(src)

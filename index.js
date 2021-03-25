@@ -128,10 +128,6 @@ ipcMain.handle('quit', () => {
   app.quit()
 })
 
-ipcMain.handle('getVersion', () => {
-  return app.getVersion()
-})
-
 ipcMain.handle('fileExists', (event, src) => {
   const file = src.replace('~', os.homedir())
   return fs.existsSync(file)

@@ -16,7 +16,6 @@ interface Preload {
   isSimpleFullScreen: () => Promise<boolean>;
   copyToClipboard: (text: string) => Promise<void>;
   quit: () => Promise<void>;
-  getVersion: () => Promise<string>;
   fileExists: (str: string) => Promise<boolean>;
   readFile: (str: string) => Promise<FileInfo>;
   writeFile: (file: string, content: string) => Promise<void>;
@@ -25,6 +24,6 @@ interface Preload {
 declare global {
   interface Window {
     app: Preload;
-    process?: {env: {npm_package_version: string}};
+    process?: {platform: string};
   }
 }
