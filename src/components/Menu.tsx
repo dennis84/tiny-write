@@ -159,6 +159,11 @@ export default (props: Props) => {
   const [lastAction, setLastAction] = useState<string | undefined>()
   const editorView = props.editorViewRef.current
 
+  const collabText =
+    props.collab && !props.collab.users?.length ? 'Stop ...' :
+    props.collab ? 'Stop' :
+    'Start'
+
   useEffect(() => {
     if (!show) return
     const onKeyDown = (e) => {
@@ -259,7 +264,7 @@ export default (props: Props) => {
   const OnCollab = () => {
     if (props.collab) {
       window.history.replaceState(null, '', '/')
-      props.collab.socket.close()
+      props.collab.socket?.close()
       dispatch(UpdateCollab(undefined))
     } else {
       const socket = io(COLLAB_URL, {transports: ['websocket']})
@@ -373,7 +378,7 @@ export default (props: Props) => {
             </Sub>
             <Label>Collab (beta 🐥)</Label>
             <Sub>
-              <Link onClick={OnCollab}>{props.collab ? 'Stop' : 'Start'}</Link>
+              <Link onClick={OnCollab}>{collabText}</Link>
               {props.collab?.users?.length > 0 && (
                 <>
                   <Link onClick={OnCopyCollabLink}>
