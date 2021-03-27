@@ -4,7 +4,6 @@ import {EditorView} from 'prosemirror-view'
 import {undo, redo} from 'prosemirror-history'
 import {deleteSelection, selectAll} from 'prosemirror-commands'
 import {differenceInHours, format} from 'date-fns'
-import {io} from 'socket.io-client'
 import styled from '@emotion/styled'
 import {css} from '@emotion/react'
 import {version} from '../../package.json'
@@ -20,7 +19,7 @@ import {
 } from '../reducer'
 import {color, color2, themes, fonts, codeThemes} from '../config'
 import {rgb, rgba} from '../styles'
-import {isElectron, isMac, alt, mod, COLLAB_URL, WEB_URL, VERSION_URL} from '../env'
+import {isElectron, isMac, alt, mod, WEB_URL, VERSION_URL} from '../env'
 import * as remote from '../remote'
 import {isEmpty} from '../prosemirror/prosemirror'
 
@@ -160,8 +159,9 @@ export default (props: Props) => {
   const editorView = props.editorViewRef.current
 
   const collabText =
-    props.collab && !props.collab.users?.length ? 'Stop ...' :
-    props.collab ? 'Stop' :
+    props.collab?.started && !props.collab.users?.length ? 'Stop ...' :
+    props.collab?.started ? 'Stop' :
+    props.collab?.error ? 'Restart 🚨' :
     'Start'
 
   useEffect(() => {
@@ -262,13 +262,10 @@ export default (props: Props) => {
   }
 
   const OnCollab = () => {
-    if (props.collab) {
-      window.history.replaceState(null, '', '/')
-      props.collab.socket?.close()
-      dispatch(UpdateCollab(undefined))
+    if (props.collab?.started) {
+      dispatch(UpdateCollab({...props.collab, started: false}))
     } else {
-      const socket = io(COLLAB_URL, {transports: ['websocket']})
-      dispatch(UpdateCollab({socket}))
+      dispatch(UpdateCollab({started: true}))
     }
 
     editorView.focus()
@@ -378,7 +375,11 @@ export default (props: Props) => {
             </Sub>
             <Label>Collab (beta 🐥)</Label>
             <Sub>
-              <Link onClick={OnCollab}>{collabText}</Link>
+              <Link
+                onClick={OnCollab}
+                title={props.collab?.error ? 'Connection error' : ''}>
+                {collabText}
+              </Link>
               {props.collab?.users?.length > 0 && (
                 <>
                   <Link onClick={OnCopyCollabLink}>

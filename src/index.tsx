@@ -20,7 +20,9 @@ export interface ErrorObject {
 }
 
 export interface Collab {
-  socket: any;
+  started: boolean;
+  error?: boolean;
+  socket?: any;
   room?: string;
   users?: string[];
   clientId?: string;

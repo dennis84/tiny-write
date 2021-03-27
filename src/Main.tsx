@@ -12,7 +12,7 @@ import {background, color, color2, font, fonts} from './config'
 import {State} from '.'
 import * as remote from './remote'
 import db from './db'
-import {mod, COLLAB_URL} from './env'
+import {isElectron, mod, COLLAB_URL} from './env'
 import {useDebouncedEffect, usePrevious, useDynamicCallback} from './hooks'
 import {
   UpdateState,
@@ -186,9 +186,17 @@ export default (props: {state: State}) => {
 
     editorViewRef.current.dispatch(receiveTransaction(
       editorViewRef.current.state,
-      data.steps.map((item) => Step.fromJSON(state.text.editorState.schema, item.step)),
+      data.steps.map((item) => Step.fromJSON(editorViewRef.current.state.schema, item.step)),
       data.steps.map((item) => item.clientID),
     ))
+  })
+
+  const OnConnectError = useDynamicCallback(() => {
+    dispatch(UpdateCollab({
+      ...state.collab,
+      started: false,
+      error: true,
+    }))
   })
 
   // On mount, load state from DB.
@@ -271,11 +279,22 @@ export default (props: {state: State}) => {
   useEffect(() => {
     if (loadingPrev !== false) return
     const room = window.location.pathname?.slice(1)
-    if (room) {
-      const socket = io(COLLAB_URL, {transports: ['websocket']})
-      dispatch(UpdateCollab({socket, room}))
+    if (!isElectron && room) {
+      dispatch(UpdateCollab({room, started: true}))
     }
   }, [loadingPrev])
+
+  // If collab is started
+  useEffect(() => {
+    if (state.collab?.started) {
+      const socket = io(COLLAB_URL, {transports: ['websocket']})
+      dispatch(UpdateCollab({...state.collab, socket}))
+    } else if (state.collab) {
+      window.history.replaceState(null, '', '/')
+      state.collab?.socket?.close()
+      dispatch(UpdateCollab({started: false, error: state.collab.error}))
+    }
+  }, [state.collab?.started])
 
   // Init collab if socket is defined
   useEffect(() => {
@@ -289,6 +308,7 @@ export default (props: {state: State}) => {
 
     state.collab.socket.on('update', OnReceiveUpdate)
     state.collab.socket.on('steps', OnReceiveSteps)
+    state.collab.socket.on('connect_error', OnConnectError)
   }, [state.collab?.socket])
 
   // Listen to state changes and send them to all collab users
