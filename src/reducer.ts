@@ -49,7 +49,7 @@ export const UpdateText = (text: ProseMirrorState) => (state: State) => ({
 
 export const UpdateCollab = (collab: Collab, text?: ProseMirrorState) =>
   (state: State) => {
-    const newState = text ? New(state) : state
+    const newState = collab.started && text ? New(state) : state
 
     return {
       ...newState,

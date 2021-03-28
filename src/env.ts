@@ -12,7 +12,7 @@ export const mod = isMac ? 'Cmd' : 'Ctrl'
 export const alt = isMac ? 'Cmd' : 'Alt'
 
 export const WEB_URL =
-  //'ws://localhost:1234'
+  //'http://localhost:3000'
   'https://tiny-write.pages.dev'
 
 export const COLLAB_URL =

@@ -134,25 +134,22 @@ export default (props: {state: State}) => {
     keymap,
     collab: {
       version: data.version,
-      clientID: data.clientId,
+      clientID: data.clientID,
     }
   })
 
   // Receive update response after create and recreate the state.
   const OnReceiveUpdate = useDynamicCallback((data: any) => {
     window.history.replaceState(null, '', `/${data.room}`)
-    const version = getCurrentVersion()
 
-    // Init room
-    if (!version || !state.collab.initialized) {
+    // Init room if message is from us and collab plugin is not initialized
+    if (!state.collab.initialized && data.clientID === state.collab.socket.id) {
       // Recreate text if an existing doc comes from server
       const newText = !data.created ? createTextByData(data) : undefined
-
       dispatch(UpdateCollab({
         ...state.collab,
         room: data.room,
         users: data.users,
-        clientId: data.clientId,
         initialized: true,
       }, newText))
 
@@ -184,11 +181,13 @@ export default (props: {state: State}) => {
       return
     }
 
-    editorViewRef.current.dispatch(receiveTransaction(
+    const tr = receiveTransaction(
       editorViewRef.current.state,
       data.steps.map((item) => Step.fromJSON(editorViewRef.current.state.schema, item.step)),
       data.steps.map((item) => item.clientID),
-    ))
+    )
+
+    editorViewRef.current.dispatch(tr)
   })
 
   const OnConnectError = useDynamicCallback(() => {
@@ -292,7 +291,18 @@ export default (props: {state: State}) => {
     } else if (state.collab) {
       window.history.replaceState(null, '', '/')
       state.collab?.socket?.close()
-      dispatch(UpdateCollab({started: false, error: state.collab.error}))
+
+      // Recreate editorState without collab plugin.
+      const newText = createState({
+        data: state.text.editorState.toJSON(),
+        config: state.config,
+        keymap,
+      })
+
+      dispatch(UpdateCollab({
+        started: false,
+        error: state.collab.error,
+      }, newText))
     }
   }, [state.collab?.started])
 
@@ -324,7 +334,7 @@ export default (props: {state: State}) => {
       update: {
         version: sendable.version,
         steps: sendable.steps.map(step => step.toJSON()),
-        clientID: state.collab.clientId,
+        clientID: state.collab.socket.id,
       },
     })
   }, 200, [state.text?.editorState])
@@ -340,7 +350,7 @@ export default (props: {state: State}) => {
       keymap,
       collab: state.collab ? {
         version,
-        clientID: state.collab.clientId,
+        clientID: state.collab.socket.id,
       } : undefined
     })
 

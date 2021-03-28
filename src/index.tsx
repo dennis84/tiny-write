@@ -25,7 +25,6 @@ export interface Collab {
   socket?: any;
   room?: string;
   users?: string[];
-  clientId?: string;
   initialized?: boolean;
 }
 
