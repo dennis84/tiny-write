@@ -126,7 +126,7 @@ export default (props: {state: State}) => {
   }
 
   const createTextByData = (data: any) => createState({
-    data: {
+    data: data.created ? state.text.editorState.toJSON() : {
       selection: {type: 'text', anchor: 1, head: 1},
       doc: data.doc,
     },
@@ -144,8 +144,8 @@ export default (props: {state: State}) => {
 
     // Init room if message is from us and collab plugin is not initialized
     if (!state.collab.initialized && data.clientID === state.collab.socket.id) {
-      // Recreate text if an existing doc comes from server
-      const newText = !data.created ? createTextByData(data) : undefined
+      // Recreate editorState with enabled collab plugin
+      const newText = createTextByData(data)
       dispatch(UpdateCollab({
         ...state.collab,
         room: data.room,
