@@ -30,8 +30,6 @@ import typescript from '../../../node_modules/devicon/icons/typescript/typescrip
 import vim from '../../../node_modules/devicon/icons/vim/vim-original.svg'
 
 export default {
-  js: javascript,
-  ts: typescript,
   cpp: cplusplus,
   html: html5,
   css: css3,

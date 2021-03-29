@@ -47,17 +47,19 @@ export const UpdateText = (text: ProseMirrorState) => (state: State) => ({
   lastModified: new Date(),
 })
 
-export const UpdateCollab = (collab: Collab, text?: ProseMirrorState) =>
-  (state: State) => {
-    const newState = collab.started && text ? New(state) : state
-
-    return {
-      ...newState,
-      collab,
-      text: text ?? newState.text,
-      clientId: collab?.socket?.id,
-    }
+export const UpdateCollab = (
+  collab: Collab,
+  text?: ProseMirrorState,
+  backup?: boolean
+) => (state: State) => {
+  const newState = backup ? New(state) : state
+  return {
+    ...newState,
+    collab,
+    text: text ?? newState.text,
+    clientId: collab?.socket?.id,
   }
+}
 
 export const New = (state: State) => {
   if (isEmpty(state.text.editorState)) {

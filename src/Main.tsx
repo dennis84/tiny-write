@@ -146,12 +146,14 @@ export default (props: {state: State}) => {
     if (!state.collab.initialized && data.clientID === state.collab.socket.id) {
       // Recreate editorState with enabled collab plugin
       const newText = createTextByData(data)
+      // Create new file if we're not the creator
+      const backup = !data.created
       dispatch(UpdateCollab({
         ...state.collab,
         room: data.room,
         users: data.users,
         initialized: true,
-      }, newText))
+      }, newText, backup))
 
       return
     }
