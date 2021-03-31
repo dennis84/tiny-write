@@ -6,6 +6,11 @@
     "node": true,
     "es6": true
   },
+  "settings": {
+    "react": {
+      "version": "detect"
+    }
+  },
   "plugins": [
     "@typescript-eslint",
     "react"
