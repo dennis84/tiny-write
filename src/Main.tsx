@@ -406,7 +406,7 @@ export default (props: {state: State}) => {
       <ThemeProvider theme={state.config}>
         <Global styles={fontsStyles} />
         <ErrorBoundary fallback={(error) => <Error error={error} />}>
-          <Container>
+          <Container data-testid={loadingPrev !== false ? 'loading' : 'initialized'}>
             {state.error ? (
               <Error error={state.error} />
             ) : (

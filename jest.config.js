@@ -7,9 +7,4 @@ module.exports = {
   },
   moduleFileExtensions: ['ts', 'js', 'json'],
   testMatch: ['**/*.test.ts'],
-  testEnvironmentOptions: {
-    'jest-playwright': {
-      launchOptions: {headless: false},
-    },
-  },
 };

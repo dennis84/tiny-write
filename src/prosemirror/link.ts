@@ -102,6 +102,9 @@ const markdownLinks = (schema) => {
   const toMarkdown = (view, tr) => {
     const sel = view.state.selection
     const $from = resolvePos(view, sel.$cursor.pos)
+    if (!$from || $from.depth === 0 || $from.parent.type.spec.code) {
+      return false
+    }
 
     const textFrom = $from.before()
     const textTo = $from.after()
