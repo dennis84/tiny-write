@@ -42,7 +42,6 @@ import parserMarkdown from 'prettier/parser-markdown'
 import parserYaml from 'prettier/parser-yaml'
 import logos from './logos'
 import {CodeBlockProps, cleanLang, defaultProps} from '.'
-import {createDragHandle} from '../drag-handle'
 
 export class CodeBlockView {
   node: Node
@@ -60,7 +59,7 @@ export class CodeBlockView {
   langExtension: Compartment
   themeExtension: Compartment
 
-  constructor(node, view, getPos, schema, decos, options) {
+  constructor(node, view, getPos, schema, decos, innerDecos, options) {
     this.node = node
     this.view = view
     this.getPos = getPos
@@ -221,9 +220,9 @@ export class CodeBlockView {
     container.appendChild(langSelectBottom)
     container.appendChild(langToggle)
 
-    if (decos.find((d) => d.type.attrs.class === 'draggable')) {
-      container.appendChild(createDragHandle())
-    }
+    innerDecos.find().map((d) => {
+      container.appendChild(d.type.toDOM())
+    })
 
     this.dom = container
   }

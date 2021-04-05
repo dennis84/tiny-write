@@ -71,8 +71,8 @@ export default (props: CodeBlockProps) => ({
     keymap(codeBlockKeymap),
   ],
   nodeViews: {
-    code_block: (node, view, getPos, decos) => {
-      return new CodeBlockView(node, view, getPos, view.state.schema, decos, props)
+    code_block: (node, view, getPos, decos, innerDecos) => {
+      return new CodeBlockView(node, view, getPos, view.state.schema, decos, innerDecos, props)
     }
   },
 })
