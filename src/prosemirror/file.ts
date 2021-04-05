@@ -1,4 +1,6 @@
 import {Plugin} from 'prosemirror-state'
+import {Schema} from 'prosemirror-model'
+import {EditorView, Node} from 'prosemirror-view'
 import {fileExists, readFile} from '../remote'
 
 const REGEX = /^!\[([^[\]]*?)\]\((.+?)\)\s+/
@@ -86,6 +88,7 @@ const imageSchema = {
     alt: {default: null},
     title: {default: null},
     path: {default: null},
+    width: {default: null},
   },
   group: 'inline',
   draggable: true,
@@ -153,5 +156,76 @@ export default ({
     ...prev,
     dropFile(schema),
     fileInput(schema),
-  ]
+  ],
+  nodeViews: {
+    image: (node, view, getPos) => {
+      return new ImageView(node, view, getPos, view.state.schema)
+    }
+  },
 })
+
+class ImageView {
+  node: Node
+  view: EditorView
+  getPos: () => number
+  schema: Schema
+  dom: Element
+  contentDOM: Element
+  container: HTMLElement
+  handle: HTMLElement
+  onResizeFn: any
+  onResizeEndFn: any
+  width: number
+  updating: number
+
+  constructor(node, view, getPos, schema) {
+    this.node = node
+    this.view = view
+    this.getPos = getPos
+    this.schema = schema
+    this.onResizeFn = this.onResize.bind(this)
+    this.onResizeEndFn = this.onResizeEnd.bind(this)
+
+    this.container = document.createElement('span')
+    this.container.className = 'image-container'
+    if (node.attrs.width) this.setWidth(node.attrs.width)
+
+    const image = document.createElement('img')
+    image.setAttribute('src', node.attrs.src)
+    image.setAttribute('title', node.attrs.title ?? '')
+
+    this.handle = document.createElement('span')
+    this.handle.className = 'resize-handle'
+    this.handle.addEventListener('mousedown', (e) => {
+      e.preventDefault()
+      window.addEventListener('mousemove', this.onResizeFn)
+      window.addEventListener('mouseup', this.onResizeEndFn)
+    });
+
+    this.container.appendChild(image)
+    this.container.appendChild(this.handle)
+    this.dom = this.container
+  }
+
+  onResize(e) {
+    this.width = e.pageX - this.container.getBoundingClientRect().left
+    this.setWidth(this.width)
+  }
+
+  onResizeEnd() {
+    window.removeEventListener('mousemove', this.onResizeFn)
+    if (this.updating === this.width) return
+    this.updating = this.width
+    const tr = this.view.state.tr
+    tr.setNodeMarkup(this.getPos(), undefined, {
+      ...this.node.attrs,
+      width: this.width,
+    })
+
+    this.view.dispatch(tr)
+  }
+
+  setWidth(width) {
+    this.container.style.width = width + 'px'
+  }
+}

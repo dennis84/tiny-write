@@ -85,13 +85,6 @@ export default (props: Props) => {
       a {
         color: ${rgba(color2(theme), 1)};
       }
-      p img {
-        max-width: 100%;
-        float: left;
-        margin-right: 10px;
-        margin-bottom: 10px;
-        cursor: default;
-      }
       .placeholder {
         color: ${rgba(color(theme), 0.3)};
         position: absolute;
@@ -212,9 +205,29 @@ export default (props: Props) => {
           }
         }
       }
-      img.ProseMirror-selectednode {
-        box-shadow: 0 0 0 2px ${rgba(color2(theme), 1)};
-        border-radius: 2px;
+      .image-container {
+        position: relative;
+        float: left;
+        max-width: 100%;
+        margin-right: 10px;
+        margin-bottom: 10px;
+        cursor: default;
+        line-height: 0;
+        img {
+          width: 100%;
+        }
+        .resize-handle {
+          position: absolute;
+          width: 40px;
+          height: 40px;
+          bottom: -5px;
+          right: -5px;
+          cursor: nwse-resize;
+        }
+        &.ProseMirror-selectednode {
+          box-shadow: 0 0 0 2px ${rgba(color2(theme), 1)};
+          border-radius: 2px;
+        }
       }
     }
   `
