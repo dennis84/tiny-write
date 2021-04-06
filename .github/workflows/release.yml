@@ -39,7 +39,7 @@ jobs:
           name: snap file
           path: dist/app/TinyWrite.snap
   release:
-    needs: build
+    needs: [mac, ubuntu]
     runs-on: ubuntu-latest
     steps:
       - name: Download macos artifacts
