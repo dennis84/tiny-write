@@ -8,11 +8,8 @@ on:
         required: true
 
 jobs:
-  build:
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest]
-    runs-on: ${{ matrix.os }}
+  mac:
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
@@ -22,11 +19,39 @@ jobs:
       - run: npm run dist
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
+      - uses: actions/upload-artifact@v2
+        with:
+          name: dmg file
+          path: dist/app/TinyWrite.dmg
+  ubuntu:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: 14
+      - run: npm install
+      - run: npm run dist
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/upload-artifact@v2
+        with:
+          name: snap file
+          path: dist/app/TinyWrite.snap
   release:
     needs: build
     runs-on: ubuntu-latest
     steps:
+      - name: Download macos artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: dmg file
+          path: artifacts/
+      - name: Download ubuntu artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: snap file
+          path: artifacts/
       - id: create_release
         uses: actions/create-release@v1
         env:
@@ -40,7 +65,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./dist/app/TinyWrite.dmg
+          asset_path: ./artifacts/TinyWrite.dmg
           asset_name: TinyWrite.dmg
           asset_content_type: application/x-apple-diskimage
       - uses: actions/upload-release-asset@v1
@@ -48,6 +73,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./dist/app/TinyWrite.snap
+          asset_path: ./artifacts/TinyWrite.snap
           asset_name: TinyWrite.snap
           asset_content_type: application/octet-stream
