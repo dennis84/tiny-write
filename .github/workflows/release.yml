@@ -1,11 +1,9 @@
 name: Release
 
 on:
-  workflow_dispatch:
-    inputs:
-      version:
-        description: 'Version'
-        required: true
+  push:
+    tags:
+      - '*'
 
 jobs:
   mac:
@@ -58,7 +56,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tag_name: ${{ github.ref }}
-          release_name: ${{ github.event.inputs.version }}
+          release_name: ${{ github.ref }}
           draft: true
       - uses: actions/upload-release-asset@v1
         env:
