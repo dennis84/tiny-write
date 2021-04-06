@@ -2,6 +2,7 @@
   "name": "TinyWrite",
   "version": "0.5.0",
   "build": {
+    "artifactName": "TinyWrite.${ext}",
     "appId": "com.github.dennis84.tinywrite",
     "files": [
       "index.js",
