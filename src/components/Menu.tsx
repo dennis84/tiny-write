@@ -373,24 +373,6 @@ export default (props: Props) => {
               <LastModified />
               <TextStats />
             </Sub>
-            <Label>Collab (beta 🐥)</Label>
-            <Sub>
-              <Link
-                onClick={OnCollab}
-                title={props.collab?.error ? 'Connection error' : ''}>
-                {collabText}
-              </Link>
-              {props.collab?.users?.length > 0 && (
-                <>
-                  <Link onClick={OnCopyCollabLink}>
-                    Copy Link {lastAction === 'copy-collab-link' && '📋'}
-                  </Link>
-                  <Text>
-                    {props.collab.users.length} {props.collab.users?.length === 1 ? 'user' : 'users'} connected
-                  </Text>
-                </>
-              )}
-            </Sub>
             <Label>File</Label>
             <Sub>
               <Link onClick={OnNew}>New <i>({mod}+n)</i></Link>
@@ -484,6 +466,24 @@ export default (props: Props) => {
                 About Version {version}
               </Link>
               {isElectron && <Link onClick={() => remote.quit()}>Quit <i>({mod}+q)</i></Link>}
+            </Sub>
+            <Label>Collab (beta)</Label>
+            <Sub>
+              <Link
+                onClick={OnCollab}
+                title={props.collab?.error ? 'Connection error' : ''}>
+                {collabText}
+              </Link>
+              {props.collab?.users?.length > 0 && (
+                <>
+                  <Link onClick={OnCopyCollabLink}>
+                    Copy Link {lastAction === 'copy-collab-link' && '📋'}
+                  </Link>
+                  <Text>
+                    {props.collab.users.length} {props.collab.users?.length === 1 ? 'user' : 'users'} connected
+                  </Text>
+                </>
+              )}
             </Sub>
           </Menu>
         </Off>
