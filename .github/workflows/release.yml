@@ -19,7 +19,6 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/upload-artifact@v2
         with:
-          name: dmg file
           path: dist/app/TinyWrite.dmg
   ubuntu:
     runs-on: ubuntu-latest
@@ -34,43 +33,16 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/upload-artifact@v2
         with:
-          name: snap file
           path: dist/app/TinyWrite.snap
   release:
     needs: [mac, ubuntu]
     runs-on: ubuntu-latest
     steps:
-      - name: Download macos artifacts
-        uses: actions/download-artifact@v2
-        with:
-          name: dmg file
-          path: artifacts/
-      - name: Download ubuntu artifacts
-        uses: actions/download-artifact@v2
-        with:
-          name: snap file
-          path: artifacts/
-      - id: create_release
-        uses: actions/create-release@v1
+      - uses: actions/download-artifact@v2
+      - uses: softprops/action-gh-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.ref }}
-          release_name: ${{ github.ref }}
-          draft: true
-      - uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./artifacts/TinyWrite.dmg
-          asset_name: TinyWrite.dmg
-          asset_content_type: application/x-apple-diskimage
-      - uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./artifacts/TinyWrite.snap
-          asset_name: TinyWrite.snap
-          asset_content_type: application/octet-stream
+          files: |
+            artifacts/TinyWrite.dmg
+            artifacts/TinyWrite.snap
