@@ -1,6 +1,6 @@
 {
   "name": "TinyWrite",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "build": {
     "artifactName": "TinyWrite.${ext}",
     "appId": "com.github.dennis84.tinywrite",
