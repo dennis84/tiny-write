@@ -221,7 +221,8 @@ export class CodeBlockView {
     container.appendChild(langToggle)
 
     innerDecos.find().map((d) => {
-      container.appendChild(d.type.toDOM())
+      const elem = typeof d.type.toDOM === 'function' ? d.type.toDOM() : d.type.toDOM
+      container.appendChild(elem)
     })
 
     this.dom = container
