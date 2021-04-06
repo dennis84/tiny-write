@@ -44,5 +44,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           files: |
-            artifacts/TinyWrite.dmg
-            artifacts/TinyWrite.snap
+            TinyWrite.dmg
+            TinyWrite.snap
