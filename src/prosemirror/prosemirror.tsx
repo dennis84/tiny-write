@@ -113,6 +113,7 @@ const createEditorState = (state: ProseMirrorState) => {
 
 export const isEmpty = (state?: EditorState) => !state || (
   state.doc.childCount == 1 &&
+  !state.doc.firstChild.type.spec.code &&
   state.doc.firstChild.isTextblock &&
   state.doc.firstChild.content.size == 0
 )
