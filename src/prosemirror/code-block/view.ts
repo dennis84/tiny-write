@@ -66,8 +66,8 @@ export class CodeBlockView {
     this.schema = schema
     this.options = options
 
-    this.logo = createElement('span')
-    this.prettifyBtn = createElement('span')
+    this.logo = document.createElement('span')
+    this.prettifyBtn = document.createElement('span')
     this.prettifyBtn.className = 'prettify'
     this.prettifyBtn.textContent = '✨'
     this.prettifyBtn.style.display = 'none'
@@ -76,11 +76,12 @@ export class CodeBlockView {
     this.updateNav()
 
     const hasFile = this.node.attrs.params.file !== undefined
-    const container = createElement('div')
+    const container = document.createElement('div')
+    container.setAttribute('contenteditable', 'false')
     container.classList.add('codemirror-container')
     if (hasFile) container.classList.add('has-file')
 
-    const langInput = createElement('span')
+    const langInput = document.createElement('span')
     langInput.className = 'lang-input'
     langInput.textContent = this.getLang()
     langInput.setAttribute('contenteditable', '')
@@ -111,17 +112,17 @@ export class CodeBlockView {
       langToggle.style.display = 'block'
     })
 
-    const langSelect = createElement('div')
+    const langSelect = document.createElement('div')
     langSelect.className = 'lang-select'
     langSelect.textContent = '```'
     langSelect.style.display = 'none'
     langSelect.appendChild(langInput)
-    const langSelectBottom = createElement('div')
+    const langSelectBottom = document.createElement('div')
     langSelectBottom.className = 'lang-select'
     langSelectBottom.textContent = '```'
     langSelectBottom.style.display = 'none'
 
-    const langToggle = createElement('div')
+    const langToggle = document.createElement('div')
     langToggle.className = 'lang-toggle'
     langToggle.appendChild(this.logo)
     langToggle.addEventListener('click', () => {
@@ -151,12 +152,19 @@ export class CodeBlockView {
       }
     }, {
       key: 'ArrowUp',
-      run: () => {
-        const tr = this.view.state.tr
-        let selection
-        if (this.getPos() === 0) {
-          tr.insert(0, this.schema.node('paragraph'))
-          selection = new TextSelection(tr.doc.resolve(this.getPos()))
+      run: (editorView) => {
+        const state = editorView.state
+        const selection = state.selection
+        const startPos = selection.main.head
+        if (startPos === 0) {
+          const tr = this.view.state.tr
+          let targetPos = this.getPos() - 1
+          if (this.getPos() === 0) {
+            tr.insert(0, this.schema.node('paragraph'))
+            targetPos = 0
+          }
+
+          const selection = new TextSelection(tr.doc.resolve(targetPos))
           tr.setSelection(selection).scrollIntoView()
           this.view.dispatch(tr)
           this.view.focus()
@@ -202,11 +210,11 @@ export class CodeBlockView {
 
     if (hasFile) {
       const theme = getTheme(this.options.theme)
-      const fileInfo = createElement('pre')
+      const fileInfo = document.createElement('pre')
       fileInfo.classList.add('file-info')
       fileInfo.classList.add(theme[1].match(tags.comment))
       fileInfo.textContent = `// ${this.node.attrs.params.src}`
-      const closeFile = createElement('span')
+      const closeFile = document.createElement('span')
       closeFile.className = 'close-file'
       closeFile.textContent = '❎'
       closeFile.addEventListener('click', this.close.bind(this))
@@ -309,6 +317,7 @@ export class CodeBlockView {
       return
     }
 
+    this.forwardSelection()
     const sel = update.state.selection.main
     if (sel.empty && this.options.typewriterMode) {
       const coords = this.editorView.coordsAtPos(sel.from)
@@ -342,14 +351,14 @@ export class CodeBlockView {
     const lang = this.getLang()
     let elem
     if (logos[lang]) {
-      elem = createElement('img')
+      elem = document.createElement('img')
       elem.src = logos[lang]
       elem.width = this.options.fontSize
       elem.height = this.options.fontSize
       elem.style.marginTop = `${this.options.fontSize as number / 4}px`
       elem.setAttribute('title', lang)
     } else {
-      elem = createElement('span')
+      elem = document.createElement('span')
       elem.textContent = '📜'
       elem.setAttribute('title', lang)
     }
@@ -508,9 +517,3 @@ const getLangExtension = (lang: string) =>
   lang === 'yaml' ? StreamLanguage.define(yaml) :
   lang === 'go' ? StreamLanguage.define(go) :
   markdown()
-
-const createElement = (name: string) => {
-  const el = document.createElement(name)
-  el.setAttribute('contenteditable', 'false')
-  return el
-}
