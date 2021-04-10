@@ -438,6 +438,7 @@ export class CodeBlockView {
       this.prettifyBtn.textContent = ''
     } catch (err) {
       this.prettifyBtn.textContent = '🚨'
+      if (!err.loc?.start?.line) return
       const line = this.editorView.state.doc.line(err.loc.start.line)
       const lines = err.message.split('\n')
       const diagnostics = lines.map((message) => ({
