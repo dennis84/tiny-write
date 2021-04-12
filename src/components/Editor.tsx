@@ -70,6 +70,9 @@ export default (props: Props) => {
           clear: both;
         }
       }
+      ul li, ol li {
+        margin-left: 30px;
+      }
       blockquote p {
         border-left: 10px solid ${rgba(color(theme), 0.2)};
         margin: 0;
@@ -146,6 +149,13 @@ export default (props: Props) => {
           }
           .cm-diagnosticText {
             white-space: pre;
+          }
+          .cm-scroller {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+            &::-webkit-scrollbar {
+              display: none;
+            }
           }
         }
         &.has-file .cm-wrap {
