@@ -321,7 +321,7 @@ export class CodeBlockView {
 
     this.forwardSelection()
     const sel = update.state.selection.main
-    if (sel.empty && this.options.typewriterMode) {
+    if (this.editorView.hasFocus && sel.empty && this.options.typewriterMode) {
       const coords = this.editorView.coordsAtPos(sel.from)
       if (!coords) return
       const elem = document.elementFromPoint(coords.left, coords.top)
