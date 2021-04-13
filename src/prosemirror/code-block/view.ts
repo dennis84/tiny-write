@@ -303,10 +303,12 @@ export class CodeBlockView {
     const offset = this.getPos() + 1
     const anchor = this.editorView.state.selection.main.from + offset
     const head = this.editorView.state.selection.main.to + offset
-    const sel = TextSelection.create(this.view.state.doc, anchor, head)
-    if (!sel.eq(this.view.state.selection)) {
-      this.view.dispatch(this.view.state.tr.setSelection(sel))
-    }
+    try {
+      const sel = TextSelection.create(this.view.state.doc, anchor, head)
+      if (!sel.eq(this.view.state.selection)) {
+        this.view.dispatch(this.view.state.tr.setSelection(sel))
+      }
+    } catch (err) { /* ignore */ }
   }
 
   updateListener(update: ViewUpdate) {
