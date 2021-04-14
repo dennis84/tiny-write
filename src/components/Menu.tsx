@@ -113,11 +113,6 @@ export const Item = (props: {theme: Config}) => css`
   line-height: 24px;
   font-family: 'JetBrains Mono';
   white-space: nowrap;
-  > i {
-    justify-self: flex-end;
-    margin-left: auto;
-    color: ${rgba(color(props.theme), 0.5)};
-  }
 `
 
 const Text = styled.p`
@@ -129,9 +124,36 @@ const Link = styled.button`
   background: none;
   border: 0;
   cursor: pointer;
+  > span {
+    justify-self: flex-end;
+    margin-left: auto;
+    > i {
+      color: ${props => rgba(color(props.theme), 1)};
+      background: ${props => rgba(color(props.theme), 0.1)};
+      border: 1px solid ${props => rgba(color(props.theme), 0.6)};
+      box-shadow: 0 2px 0 0 ${props => rgba(color(props.theme), 0.6)};
+      border-radius: 2px;
+      font-size: 13px;
+      line-height: 1.4;
+      padding: 1px 4px;
+      margin: 0 1px;
+    }
+  }
   &:hover {
     color: ${props => rgb(color2(props.theme))};
-  };
+    > span i {
+      position: relative;
+      box-shadow: 0 3px 0 0 ${props => rgba(color(props.theme), 0.6)};
+      top: -1px;
+    }
+  }
+  &:active {
+    > span i {
+      position: relative;
+      box-shadow: none;
+      top: 1px;
+    }
+  }
   &[disabled] {
     color: ${props => rgba(color(props.theme), 0.6)};
     cursor: not-allowed;
@@ -358,6 +380,10 @@ export default (props: Props) => {
     setLastAction(undefined)
   }, [props.lastModified])
 
+  const Keys = ({keys}: {keys: string[]}) => (
+    <span>{keys.map((k, i) => <i key={i}>{k}</i>)}</span>
+  )
+
   return (
     <Container>
       <Burger onClick={OnBurgerClick} active={show}>
@@ -375,11 +401,11 @@ export default (props: Props) => {
             </Sub>
             <Label>File</Label>
             <Sub>
-              <Link onClick={OnNew}>New <i>({mod}+n)</i></Link>
+              <Link onClick={OnNew}>New <Keys keys={[mod, 'n']} /></Link>
               <Link
                 onClick={OnDiscard}
                 disabled={props.files.length === 0 && isEmpty(props.text?.editorState)}>
-                {(props.files.length > 0 && isEmpty(props.text?.editorState)) ? 'Discard ⚠️' : 'Clear'} <i>({mod}+w)</i>
+                {(props.files.length > 0 && isEmpty(props.text?.editorState)) ? 'Discard ⚠️' : 'Clear'} <Keys keys={[mod, 'w']} />
               </Link>
             </Sub>
             {props.files.length > 0 && (
@@ -398,11 +424,17 @@ export default (props: Props) => {
             )}
             <Label>Edit</Label>
             <Sub>
-              <Link onClick={OnUndo}>Undo <i>({mod}+z)</i></Link>
-              <Link onClick={OnRedo}>Redo <i>({mod}+{isMac ? 'Shift+z' : 'y'})</i></Link>
-              <Link onClick={Cmd('cut')}>Cut <i>({mod}+x)</i></Link>
-              <Link onClick={Cmd('paste')}>Paste <i>({mod}+p)</i></Link>
-              <Link onClick={Cmd('copy')}>Copy {lastAction === 'copy' && '📋'} <i>({mod}+c)</i></Link>
+              <Link onClick={OnUndo}>Undo <Keys keys={[mod, 'z']} /></Link>
+              <Link onClick={OnRedo}>
+                Redo <Keys keys={[mod, ...(isMac ? ['Shift', 'z'] : ['y'])]} />
+              </Link>
+              <Link onClick={Cmd('cut')}>Cut <Keys keys={[mod, 'x']} /></Link>
+              <Link onClick={Cmd('paste')} disabled={!isElectron}>
+                Paste <Keys keys={[mod, 'p']} />
+              </Link>
+              <Link onClick={Cmd('copy')}>
+                Copy {lastAction === 'copy' && '📋'} <Keys keys={[mod, 'c']} />
+              </Link>
               <Link onClick={OnCopyAllAsMd}>
                 Copy all as markdown {lastAction === 'copy-md' && '📋'}
               </Link>
@@ -445,7 +477,7 @@ export default (props: Props) => {
             <Sub>
               {isElectron && (
                 <Link onClick={OnToggleFullscreen}>
-                  Fullscreen {props.fullscreen && '✅'}<i>({alt}+Enter)</i>
+                  Fullscreen {props.fullscreen && '✅'} <Keys keys={[alt, 'Enter']} />
                 </Link>
               )}
               <Link onClick={OnToggleTypewriterMode}>
@@ -465,7 +497,9 @@ export default (props: Props) => {
               <Link onClick={OnVersion}>
                 About Version {version}
               </Link>
-              {isElectron && <Link onClick={() => remote.quit()}>Quit <i>({mod}+q)</i></Link>}
+              {isElectron && (
+                <Link onClick={() => remote.quit()}>Quit <Keys keys={[mod, 'q']} /></Link>
+              )}
             </Sub>
             <Label>Collab (beta)</Label>
             <Sub>

@@ -501,7 +501,7 @@ const getTheme = (theme: string) =>
 const getLangExtension = (lang: string) =>
   lang === 'javascript' ? javascript() :
   lang === 'typescript' ? javascript({typescript: true}) :
-  lang === 'java' ? java() :
+  lang === 'java' || lang === 'kotlin' ? java() :
   lang === 'rust' ? rust() :
   lang === 'sql' ? sql() :
   lang === 'json' ? json() :
