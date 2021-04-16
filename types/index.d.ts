@@ -20,6 +20,9 @@ interface Preload {
   fileExists: (str: string) => Promise<boolean>;
   readFile: (str: string) => Promise<FileInfo>;
   writeFile: (file: string, content: string) => Promise<void>;
+  getArgs: () => Promise<Args>;
+  resolve: (base: string, ...paths: string[]) => Promise<string>;
+  log: (...args: any) => void;
 }
 
 declare global {

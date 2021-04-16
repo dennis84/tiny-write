@@ -59,7 +59,7 @@ export const ProseMirror = (props: Props) => {
       })
     } else if (props.state.initialized) {
       editorViewRef.current.updateState(props.state.editorState)
-    } else {
+    } else if (props.state.editorState) {
       const {state, nodeViews} = createEditorState(props.state)
       editorViewRef.current.update({state, nodeViews, dispatchTransaction})
       props.onInit({

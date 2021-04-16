@@ -167,6 +167,7 @@ const Slider = styled.input`
 interface Props {
   text?: EditorState;
   lastModified?: Date;
+  path?: string;
   files: File[];
   config: Config;
   fullscreen: boolean;
@@ -275,7 +276,9 @@ export default (props: Props) => {
   }
 
   const OnDiscard = () => {
-    if (props.files.length > 0 && isEmpty(props.text?.editorState)) {
+    if (props.path) {
+      dispatch(Discard)
+    } else if (props.files.length > 0 && isEmpty(props.text?.editorState)) {
       dispatch(Discard)
     } else {
       selectAll(editorView.state, editorView.dispatch)
@@ -373,6 +376,10 @@ export default (props: Props) => {
       return text
     }
 
+    if (file.path) {
+      return file.path.substring(file.path.length - length)
+    }
+
     return getText(file.text?.doc).substring(0, length)
   }
 
@@ -405,7 +412,10 @@ export default (props: Props) => {
               <Link
                 onClick={OnDiscard}
                 disabled={props.files.length === 0 && isEmpty(props.text?.editorState)}>
-                {(props.files.length > 0 && isEmpty(props.text?.editorState)) ? 'Discard ⚠️' : 'Clear'} <Keys keys={[mod, 'w']} />
+                {
+                  props.path ? 'Close' :
+                  (props.files.length > 0 && isEmpty(props.text?.editorState)) ? 'Discard ⚠️' : 'Clear'
+                } <Keys keys={[mod, 'w']} />
               </Link>
             </Sub>
             {props.files.length > 0 && (
@@ -416,7 +426,7 @@ export default (props: Props) => {
                     <Link
                       key={file.lastModified}
                       onClick={() => dispatch(Open(file))}>
-                      {filePreview(file, 16)}
+                      {filePreview(file, 16)} {file.path && '💾'}
                     </Link>
                   ))}
                 </Sub>

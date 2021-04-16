@@ -9,4 +9,7 @@ contextBridge.exposeInMainWorld('app', {
   fileExists: (src) => ipcRenderer.invoke('fileExists', src),
   readFile: (src) => ipcRenderer.invoke('readFile', src),
   writeFile: (file, content) => ipcRenderer.invoke('writeFile', file, content),
+  getArgs: () => ipcRenderer.invoke('getArgs'),
+  resolve: (base, ...paths) => ipcRenderer.invoke('resolve', base, ...paths),
+  log: (...args) => ipcRenderer.invoke('log', ...args),
 })

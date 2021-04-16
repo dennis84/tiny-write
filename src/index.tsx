@@ -28,6 +28,12 @@ export interface Collab {
   initialized?: boolean;
 }
 
+export interface Args {
+  cwd: string;
+  file?: string;
+  text: any;
+}
+
 export interface State {
   text?: ProseMirrorState;
   lastModified?: Date;
@@ -37,11 +43,14 @@ export interface State {
   loading: boolean;
   fullscreen: boolean;
   collab?: Collab;
+  path?: string;
+  args?: Args;
 }
 
 export interface File {
   text: {doc: unknown};
   lastModified: string;
+  path?: string;
 }
 
 render(

@@ -13,7 +13,7 @@ import codeBlock, {cleanLang} from './prosemirror/code-block'
 import file from './prosemirror/file'
 import dragHandle from './prosemirror/drag-handle'
 import pasteMarkdown from './prosemirror/paste-markdown'
-import {Config} from '.'
+import {Args, Config} from '.'
 import {codeTheme} from './config'
 import {readFile, writeFile} from './remote'
 
@@ -27,6 +27,7 @@ interface Props {
   keymap?: any;
   config: Config;
   collab?: Collab;
+  args?: Args;
 }
 
 const collabExtension = (props: Props) => ({
@@ -101,7 +102,7 @@ export const createState = (props: Props) => ({
     }),
     code,
     link,
-    file,
+    file(props.args?.file),
     placeholder('Start typing ...'),
     scroll(props.config.typewriterMode),
     pasteMarkdown,

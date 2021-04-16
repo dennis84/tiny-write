@@ -2,6 +2,11 @@ import {EditorState} from 'prosemirror-state'
 import {markdownSerializer} from './markdown'
 import {isElectron} from './env'
 
+export const getArgs = () => {
+  if (!isElectron) return
+  return window.app.getArgs()
+}
+
 export const setAlwaysOnTop = (alwaysOnTop) => {
   if (!isElectron) return
   return window.app.setAlwaysOnTop(alwaysOnTop)
@@ -52,4 +57,14 @@ export const readFile = async (src) => {
 export const writeFile = async (file, content) => {
   if (!isElectron) return
   return window.app.writeFile(file, content)
+}
+
+export const resolve = async (base, ...paths) => {
+  if (!isElectron) return
+  return window.app.resolve(base, ...paths)
+}
+
+export const log = async (...args) => {
+  if (!isElectron) return
+  return window.app.log(...args)
 }

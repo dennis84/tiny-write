@@ -1,7 +1,7 @@
 import {Plugin} from 'prosemirror-state'
 import {Schema} from 'prosemirror-model'
 import {EditorView, Node} from 'prosemirror-view'
-import {fileExists, readFile} from '../remote'
+import {fileExists, readFile, resolve} from '../remote'
 
 const REGEX = /^!\[([^[\]]*?)\]\((.+?)\)\s+/
 const MAX_MATCH = 500
@@ -147,7 +147,7 @@ const dropFile = (schema) => new Plugin({
   }
 })
 
-export default ({
+export default (file?: string) => ({
   schema: (prev) => ({
     ...prev,
     nodes: prev.nodes.update('image', imageSchema),
@@ -159,7 +159,7 @@ export default ({
   ],
   nodeViews: {
     image: (node, view, getPos) => {
-      return new ImageView(node, view, getPos, view.state.schema)
+      return new ImageView(node, view, getPos, view.state.schema, file)
     }
   },
 })
@@ -178,7 +178,7 @@ class ImageView {
   width: number
   updating: number
 
-  constructor(node, view, getPos, schema) {
+  constructor(node, view, getPos, schema, file) {
     this.node = node
     this.view = view
     this.getPos = getPos
@@ -193,6 +193,11 @@ class ImageView {
     const image = document.createElement('img')
     image.setAttribute('src', node.attrs.src)
     image.setAttribute('title', node.attrs.title ?? '')
+
+    resolve(file, node.attrs.src).then((path) => {
+      console.log('Path', path)
+      image.setAttribute('src', path)
+    })
 
     this.handle = document.createElement('span')
     this.handle.className = 'resize-handle'

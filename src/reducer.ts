@@ -2,6 +2,7 @@ import {useContext, createContext, Dispatch as Disp, Reducer} from 'react'
 import {ProseMirrorState, isEmpty} from './prosemirror/prosemirror'
 import {State, File, Config, ErrorObject, Collab} from '.'
 import {isMac} from './env'
+import {log} from './remote'
 
 export const newState = (props: Partial<State> = {}): State => ({
   lastModified: new Date(),
@@ -69,8 +70,9 @@ export const New = (state: State) => {
   const files = [...state.files]
 
   files.push({
-    text: state.text.editorState.toJSON(),
+    text: state.path ? undefined : state.text.editorState.toJSON(),
     lastModified: state.lastModified.toISOString(),
+    path: state.path,
   })
 
   return {
@@ -79,27 +81,43 @@ export const New = (state: State) => {
     files,
     lastModified: new Date(),
     collab: undefined,
+    path: undefined,
   }
 }
 
 export const Open = (file: File) => (state: State) => {
+  log('Open')
+
   const files = [...state.files]
   if (!isEmpty(state.text.editorState)) {
     files.push({
-      text: state.text.editorState.toJSON(),
+      text: state.path ? undefined : state.text.editorState.toJSON(),
       lastModified: state.lastModified.toISOString(),
+      path: state.path,
     })
   }
 
-  const index = files.indexOf(file)
-  const [text, lastModified] = newText(state.text, files[index])
-  files.splice(index, 1)
+  const findIndexOfFile = (f) => {
+    for (let i = 0; i < files.length; i++) {
+      if (files[i] === f) return i
+      else if (f.path && files[i].path === f.path) return i
+    }
+
+    return -1
+  }
+
+  const index = findIndexOfFile(file)
+  const {text, lastModified, path} = newText(state.text, file)
+  if (index !== -1) {
+    files.splice(index, 1)
+  }
 
   return {
     ...state,
     files,
     text,
     lastModified,
+    path,
     collab: undefined,
   }
 }
@@ -107,20 +125,35 @@ export const Open = (file: File) => (state: State) => {
 export const Discard = (state: State) => {
   const files = [...state.files]
   const file = files.shift()
-  const [text, lastModified] = file ? newText(state.text, file) : [undefined, new Date()]
+  const {text, lastModified, path} = file ? newText(state.text, file) : {
+    text: undefined,
+    lastModified: new Date(),
+    path: undefined,
+  }
 
   return {
     ...state,
     files,
     text,
     lastModified,
+    path,
     collab: file ? undefined : state.collab,
   }
 }
 
-const newText = (text: ProseMirrorState, file: File): [ProseMirrorState, Date] => {
+interface WokenFile {
+  text: ProseMirrorState;
+  lastModified: Date;
+  path?: string;
+}
+
+const newText = (text: ProseMirrorState, file: File): WokenFile => {
   const newState = {...text, editorState: file.text, initialized: false}
-  return [newState, new Date(file.lastModified)]
+  return {
+    text: newState,
+    lastModified: new Date(file.lastModified),
+    path: file.path,
+  }
 }
 
 type Action = (state: State) => State

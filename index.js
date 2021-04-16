@@ -1,5 +1,6 @@
 const {app, clipboard, shell, ipcMain, BrowserWindow, Menu} = require('electron')
 const {autoUpdater} = require('electron-updater')
+const log = require('electron-log')
 const path = require('path')
 const url = require('url')
 const FileType = require('file-type')
@@ -103,9 +104,16 @@ app.on('window-all-closed', () => {
 app.on('activate', () => {
   // On macOS it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
-  if(win === null) {
+  if (win === null) {
     createWindow()
   }
+})
+
+ipcMain.handle('getArgs', () => {
+  const args = process.argv.slice(process.env.NODE_ENV === 'dev' ? 2 : 1)
+  const cwd = process.cwd()
+  const file = args.length > 0 ? path.resolve(cwd, args[0]) : undefined
+  return {cwd, file}
 })
 
 ipcMain.handle('setAlwaysOnTop', (event, flag) => {
@@ -145,4 +153,13 @@ ipcMain.handle('writeFile', (event, file, content) => {
   if (fs.existsSync(file)) {
     fs.writeFileSync(file, content)
   }
+})
+
+ipcMain.handle('resolve', (event, base, ...paths) => {
+  const dir = path.dirname(base)
+  return path.resolve(dir, ...paths)
+})
+
+ipcMain.handle('log', (event, ...args) => {
+  log.info(...args)
 })

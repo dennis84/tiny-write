@@ -14,6 +14,7 @@ import * as remote from './remote'
 import db from './db'
 import {isElectron, mod, COLLAB_URL} from './env'
 import {useDebouncedEffect, usePrevious, useDynamicCallback} from './hooks'
+import {markdownSerializer} from './markdown'
 import {
   UpdateState,
   UpdateError,
@@ -23,6 +24,7 @@ import {
   Discard,
   ReducerContext,
   ToggleFullscreen,
+  Open,
   reducer,
 } from './reducer'
 import {ErrorBoundary} from './ErrorBoundary'
@@ -30,6 +32,7 @@ import Editor from './components/Editor'
 import Error from './components/Error'
 import Menu from './components/Menu'
 import {isEmpty} from './prosemirror/prosemirror'
+import {createParser} from './prosemirror/paste-markdown'
 import {createState, createEmptyState} from './prosemirror'
 
 const Container = styled.div`
@@ -51,7 +54,7 @@ const Container = styled.div`
 const isText = (x: any) => x && x.doc
 
 const isState = (x: any) =>
-  x.lastModified instanceof Date &&
+  (typeof x.lastModified !== 'string') &&
   Array.isArray(x.files)
 
 const isFile = (x: any): boolean => x.text && x.lastModified
@@ -72,7 +75,9 @@ export default (props: {state: State}) => {
   })
 
   const OnDiscard = useDynamicCallback((editorState, editorDispatch, editorView) => {
-    if (state.files.length > 0 && isEmpty(state.text.editorState)) {
+    if (state.path) {
+      dispatch(Discard)
+    } else if (state.files.length > 0 && isEmpty(state.text.editorState)) {
       dispatch(Discard)
     } else {
       selectAll(editorView.state, editorView.dispatch)
@@ -131,6 +136,7 @@ export default (props: {state: State}) => {
       doc: data.doc,
     },
     config: state.config,
+    args: state.args,
     keymap,
     collab: {
       version: data.version,
@@ -200,85 +206,135 @@ export default (props: {state: State}) => {
     }))
   })
 
+  const getFile = async (path: string) => {
+    const fileExists = await remote.fileExists(path)
+    if (!fileExists) {
+      return
+    }
+
+    const decoder = new TextDecoder('utf-8')
+    const data = await remote.readFile(path)
+    const fileContent = decoder.decode(data.buffer)
+    const parser = createParser(editorViewRef.current.state.schema)
+    const doc = parser.parse(fileContent).toJSON()
+    const text = {
+      doc,
+      selection: {
+        type: 'text',
+        anchor: 1,
+        head: 1
+      }
+    }
+
+    return {
+      text,
+      path,
+      lastModified: undefined,
+    }
+  }
+
+  const initialize = async () => {
+    const args = await remote.getArgs()
+    const data = await db.get('state')
+    let parsed
+    if (data !== undefined) {
+      try {
+        parsed = JSON.parse(data)
+      } catch (err) {
+        dispatch(UpdateError({id: 'invalid_state', props: data}))
+        return
+      }
+    }
+
+    if (!parsed) {
+      dispatch(UpdateState({...state, loading: false}))
+      return
+    }
+
+    const config = {...state.config, ...parsed.config}
+    if (!isConfig(config)) {
+      dispatch(UpdateError({id: 'invalid_config', props: config}))
+      return
+    }
+
+    let text
+    if (parsed.path) {
+      const file = await getFile(parsed.path)
+      parsed.text = file.text
+      parsed.lastModified = file.lastModified
+    }
+
+    if (parsed.text) {
+      if (!isText(parsed.text)) {
+        dispatch(UpdateError({id: 'invalid_state', props: parsed.text}))
+        return
+      }
+
+      try {
+        text = createState({
+          data: parsed.text,
+          keymap,
+          config,
+          args,
+        })
+      } catch (err) {
+        dispatch(UpdateError({id: 'invalid_file', props: parsed.text}))
+        return
+      }
+    }
+
+    const newState = {
+      ...state,
+      ...parsed,
+      text,
+      config,
+      loading: false,
+      args,
+    }
+
+    if (newState.lastModified) {
+      newState.lastModified = new Date(newState.lastModified)
+    }
+
+    for (const file of parsed.files) {
+      if (!isFile(file)) {
+        dispatch(UpdateError({id: 'invalid_file', props: file}))
+      }
+    }
+
+    if (!isState(newState)) {
+      dispatch(UpdateError({id: 'invalid_state', props: newState}))
+      return
+    }
+
+    dispatch(UpdateState(newState))
+  }
+
+  const initializeFromArgs = async () => {
+    if (!state?.args) {
+      return
+    }
+
+    if (state.args.file === state.path) {
+      return
+    }
+
+    const file = await getFile(state.args.file)
+    if (!file) return
+
+    dispatch(Open(file))
+  }
+
   // On mount, load state from DB.
   useEffect(() => {
-    db.get('state').then((data) => {
-      let parsed
-      if (data !== undefined) {
-        try {
-          parsed = JSON.parse(data)
-        } catch (err) {
-          dispatch(UpdateError({id: 'invalid_state', props: data}))
-          return
-        }
-      }
-
-      if (!parsed) {
-        dispatch(UpdateState({...state, loading: false}))
-        return
-      }
-
-      const config = {...state.config, ...parsed.config}
-      if (!isConfig(config)) {
-        dispatch(UpdateError({id: 'invalid_config', props: config}))
-        return
-      }
-
-      let text
-      if (parsed.text) {
-        if (!isText(parsed.text)) {
-          dispatch(UpdateError({id: 'invalid_state', props: parsed.text}))
-          return
-        }
-
-        try {
-          text = createState({
-            data: parsed.text,
-            keymap,
-            config,
-          })
-        } catch (err) {
-          dispatch(UpdateError({id: 'invalid_file', props: parsed.text}))
-          return
-        }
-      }
-
-      const newState = {
-        ...state,
-        ...parsed,
-        text,
-        config,
-        loading: false,
-      }
-
-      if (parsed.lastModified) {
-        newState.lastModified = new Date(parsed.lastModified)
-      }
-
-      if (parsed.lastModified) {
-        newState.lastModified = new Date(parsed.lastModified)
-      }
-
-      if (parsed.files) {
-        for (const file of parsed.files) {
-          if (!isFile(file)) {
-            dispatch(UpdateError({id: 'invalid_file', props: file}))
-          }
-        }
-      }
-
-      if (!isState(newState)) {
-        dispatch(UpdateError({id: 'invalid_state', props: newState}))
-        return
-      }
-
-      dispatch(UpdateState(newState))
-    })
+    initialize()
   }, [])
 
-  // More initialization after state loaded from DB
+  // After initialization is completed
   useEffect(() => {
     if (loadingPrev !== false) return
+    initializeFromArgs()
+
     const room = window.location.pathname?.slice(1)
     if (!isElectron && room) {
       dispatch(UpdateCollab({room, started: true}))
@@ -298,6 +354,7 @@ export default (props: {state: State}) => {
       const newText = createState({
         data: state.text.editorState.toJSON(),
         config: state.config,
+        args: state.args,
         keymap,
       })
 
@@ -341,6 +398,27 @@ export default (props: {state: State}) => {
     })
   }, 200, [state.text?.editorState])
 
+  // If a path exists but no editorState means that a file was opened and
+  // the contents must be read.
+  useEffect(() => {
+    if (state.path && !state.text?.editorState) {
+      getFile(state.path).then((data) => {
+        const text = createState({
+          data: data.text,
+          config: state.config,
+          args: state.args,
+          keymap,
+        })
+
+        dispatch(UpdateState({
+          ...state,
+          text,
+          lastModified: data.lastModified,
+        }))
+      });
+    }
+  }, [state.path])
+
   // Recreate prosemirror if config properties has changed
   // which need a full recreation of extensions.
   useEffect(() => {
@@ -349,6 +427,7 @@ export default (props: {state: State}) => {
     const newText = createState({
       data: state.text.editorState.toJSON(),
       config: state.config,
+      args: state.args,
       keymap,
       collab: state.collab ? {
         version,
@@ -382,6 +461,13 @@ export default (props: {state: State}) => {
     }
 
     const data = {...state, text: state.text?.editorState}
+
+    if (state.path) {
+      const text = markdownSerializer.serialize(state.text.editorState.doc)
+      remote.writeFile(state.path, text)
+      delete data.text
+    }
+
     delete data.fullscreen
     delete data.collab
     db.set('state', JSON.stringify(data))
@@ -421,6 +507,7 @@ export default (props: {state: State}) => {
                   editorViewRef={editorViewRef}
                   text={state.text}
                   lastModified={state.lastModified}
+                  path={state.path}
                   files={state.files}
                   config={state.config}
                   fullscreen={state.fullscreen}

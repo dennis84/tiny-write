@@ -15,7 +15,16 @@
     },
     "directories": {
       "output": "dist/app"
-    }
+    },
+    "fileAssociations": [
+      {
+        "ext": "md",
+        "description": "Markdown File",
+        "mimeType": "text/markdown",
+        "name": "Markdown File",
+        "role": "Editor"
+      }
+    ]
   },
   "dependencies": {
     "@codemirror/commands": "^0.18.1",
@@ -42,6 +51,7 @@
     "@emotion/styled": "^11.3.0",
     "date-fns": "^2.20.1",
     "devicon": "devicons/devicon#master",
+    "electron-log": "^4.3.4",
     "electron-updater": "^4.3.8",
     "file-type": "^16.3.0",
     "idb": "^6.0.0",
@@ -87,7 +97,7 @@
   "hasInstallScript": true,
   "scripts": {
     "web": "vite",
-    "app": "NODE_ENV=dev electron . & vite",
+    "app": "NODE_ENV=dev electron . README.md & vite",
     "build": "npm run lint && vite build --base './'",
     "pack": "npm run build && electron-builder --dir",
     "dist": "npm run build && electron-builder",
