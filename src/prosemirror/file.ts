@@ -147,7 +147,7 @@ const dropFile = (schema) => new Plugin({
   }
 })
 
-export default (file?: string) => ({
+export default (path?: string) => ({
   schema: (prev) => ({
     ...prev,
     nodes: prev.nodes.update('image', imageSchema),
@@ -159,7 +159,7 @@ export default (file?: string) => ({
   ],
   nodeViews: {
     image: (node, view, getPos) => {
-      return new ImageView(node, view, getPos, view.state.schema, file)
+      return new ImageView(node, view, getPos, view.state.schema, path)
     }
   },
 })
@@ -178,7 +178,7 @@ class ImageView {
   width: number
   updating: number
 
-  constructor(node, view, getPos, schema, file) {
+  constructor(node, view, getPos, schema, path) {
     this.node = node
     this.view = view
     this.getPos = getPos
@@ -194,10 +194,11 @@ class ImageView {
     image.setAttribute('src', node.attrs.src)
     image.setAttribute('title', node.attrs.title ?? '')
 
-    resolve(file, node.attrs.src).then((path) => {
-      console.log('Path', path)
-      image.setAttribute('src', path)
-    })
+    if (path && !node.attrs.src.startsWith('data:')) {
+      resolve(path, node.attrs.src).then((p) => {
+        image.setAttribute('src', p)
+      })
+    }
 
     this.handle = document.createElement('span')
     this.handle.className = 'resize-handle'

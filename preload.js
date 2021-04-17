@@ -10,6 +10,6 @@ contextBridge.exposeInMainWorld('app', {
   readFile: (src) => ipcRenderer.invoke('readFile', src),
   writeFile: (file, content) => ipcRenderer.invoke('writeFile', file, content),
   getArgs: () => ipcRenderer.invoke('getArgs'),
-  resolve: (base, ...paths) => ipcRenderer.invoke('resolve', base, ...paths),
+  resolve: (base, src) => ipcRenderer.invoke('resolve', base, src),
   log: (...args) => ipcRenderer.invoke('log', ...args),
 })

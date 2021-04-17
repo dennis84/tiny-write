@@ -59,9 +59,9 @@ export const writeFile = async (file, content) => {
   return window.app.writeFile(file, content)
 }
 
-export const resolve = async (base, ...paths) => {
-  if (!isElectron) return
-  return window.app.resolve(base, ...paths)
+export const resolve = async (base, src) => {
+  if (!isElectron) return src
+  return window.app.resolve(base, src)
 }
 
 export const log = async (...args) => {

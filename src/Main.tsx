@@ -136,7 +136,7 @@ export default (props: {state: State}) => {
       doc: data.doc,
     },
     config: state.config,
-    args: state.args,
+    path: state.path,
     keymap,
     collab: {
       version: data.version,
@@ -273,9 +273,9 @@ export default (props: {state: State}) => {
       try {
         text = createState({
           data: parsed.text,
+          path: parsed.path,
           keymap,
           config,
-          args,
         })
       } catch (err) {
         dispatch(UpdateError({id: 'invalid_file', props: parsed.text}))
@@ -354,7 +354,7 @@ export default (props: {state: State}) => {
       const newText = createState({
         data: state.text.editorState.toJSON(),
         config: state.config,
-        args: state.args,
+        path: state.path,
         keymap,
       })
 
@@ -406,7 +406,7 @@ export default (props: {state: State}) => {
         const text = createState({
           data: data.text,
           config: state.config,
-          args: state.args,
+          path: state.path,
           keymap,
         })
 
@@ -427,7 +427,7 @@ export default (props: {state: State}) => {
     const newText = createState({
       data: state.text.editorState.toJSON(),
       config: state.config,
-      args: state.args,
+      path: state.path,
       keymap,
       collab: state.collab ? {
         version,

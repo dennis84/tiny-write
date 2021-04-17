@@ -155,9 +155,9 @@ ipcMain.handle('writeFile', (event, file, content) => {
   }
 })
 
-ipcMain.handle('resolve', (event, base, ...paths) => {
+ipcMain.handle('resolve', (event, base, src) => {
   const dir = path.dirname(base)
-  return path.resolve(dir, ...paths)
+  return path.resolve(dir, src)
 })
 
 ipcMain.handle('log', (event, ...args) => {

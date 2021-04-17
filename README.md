@@ -1,4 +1,5 @@
 ![Screenshot Light](./screenshot-light.png)
+
 ![Screenshot Dark](./screenshot-dark.png)
 
 # TinyWrite
