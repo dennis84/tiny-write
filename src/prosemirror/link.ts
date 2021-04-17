@@ -71,7 +71,7 @@ const markdownLinks = (schema) => {
       const match = REGEX.exec(line)
 
       if (match) {
-        const [full,, text, href, title] = match
+        const [full,, text, href] = match
         const spaceLeft = full.indexOf(text) - 1
         const spaceRight = full.length - text.length - href.length - spaceLeft - 4
         const start = match.index + $from.start() + spaceLeft

@@ -463,7 +463,10 @@ export default (props: {state: State}) => {
     const data = {...state, text: state.text?.editorState}
 
     if (state.path) {
-      const text = markdownSerializer.serialize(state.text.editorState.doc)
+      let text = markdownSerializer.serialize(state.text.editorState.doc)
+      if (text.charAt(text.length - 1) !== '\n') {
+        text += '\n'
+      }
       remote.writeFile(state.path, text)
       delete data.text
     }
