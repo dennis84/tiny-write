@@ -9,6 +9,7 @@ declare module '@emotion/react' {
 interface FileInfo {
   file: string;
   buffer: Buffer;
+  lastModified: string;
 }
 
 interface Preload {

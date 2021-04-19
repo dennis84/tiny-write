@@ -48,8 +48,8 @@ export interface State {
 }
 
 export interface File {
-  text: {doc: unknown};
-  lastModified: string;
+  text?: {doc: unknown};
+  lastModified?: string;
   path?: string;
 }
 

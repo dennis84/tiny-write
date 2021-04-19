@@ -97,7 +97,7 @@
   "hasInstallScript": true,
   "scripts": {
     "web": "vite",
-    "app": "NODE_ENV=dev electron . README.md & vite",
+    "app": "NODE_ENV=dev electron . abcdefghijklmnopqrstuvwxyz.md & vite",
     "build": "npm run lint && vite build --base './'",
     "pack": "npm run build && electron-builder --dir",
     "dist": "npm run build && electron-builder",

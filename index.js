@@ -145,8 +145,9 @@ ipcMain.handle('readFile', async (event, src) => {
   const file = src.replace('~', os.homedir())
   const meta = await FileType.fromFile(file)
   const data = await fs.promises.readFile(file)
+  const stat = await fs.promises.stat(file)
   const buffer = Buffer.from(data);
-  return {...meta, buffer, file}
+  return {...meta, buffer, file, lastModified: stat.mtime}
 })
 
 ipcMain.handle('writeFile', (event, file, content) => {

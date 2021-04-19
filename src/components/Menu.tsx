@@ -426,7 +426,7 @@ export default (props: Props) => {
                     <Link
                       key={file.lastModified}
                       onClick={() => dispatch(Open(file))}>
-                      {filePreview(file, 16)} {file.path && '💾'}
+                      {filePreview(file, 24)} {file.path && '📎'}
                     </Link>
                   ))}
                 </Sub>

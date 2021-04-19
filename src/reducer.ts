@@ -2,7 +2,6 @@ import {useContext, createContext, Dispatch as Disp, Reducer} from 'react'
 import {ProseMirrorState, isEmpty} from './prosemirror/prosemirror'
 import {State, File, Config, ErrorObject, Collab} from '.'
 import {isMac} from './env'
-import {log} from './remote'
 
 export const newState = (props: Partial<State> = {}): State => ({
   lastModified: new Date(),
@@ -42,10 +41,10 @@ export const ToggleFullscreen = (state: State) => ({
   fullscreen: !state.fullscreen,
 })
 
-export const UpdateText = (text: ProseMirrorState) => (state: State) => ({
+export const UpdateText = (text: ProseMirrorState, lastModified?: Date) => (state: State) => ({
   ...state,
   text,
-  lastModified: new Date(),
+  lastModified: lastModified ?? new Date(),
 })
 
 export const UpdateCollab = (
@@ -86,8 +85,6 @@ export const New = (state: State) => {
 }
 
 export const Open = (file: File) => (state: State) => {
-  log('Open')
-
   const files = [...state.files]
   if (!isEmpty(state.text.editorState)) {
     files.push({

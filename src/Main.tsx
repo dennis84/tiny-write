@@ -29,7 +29,7 @@ import {
 } from './reducer'
 import {ErrorBoundary} from './ErrorBoundary'
 import Editor from './components/Editor'
-import Error from './components/Error'
+import ErrorView from './components/Error'
 import Menu from './components/Menu'
 import {isEmpty} from './prosemirror/prosemirror'
 import {createParser} from './prosemirror/paste-markdown'
@@ -209,7 +209,7 @@ export default (props: {state: State}) => {
   const getFile = async (path: string) => {
     const fileExists = await remote.fileExists(path)
     if (!fileExists) {
-      return
+      throw new Error('File not found: ' + path)
     }
 
     const decoder = new TextDecoder('utf-8')
@@ -229,7 +229,7 @@ export default (props: {state: State}) => {
     return {
       text,
       path,
-      lastModified: undefined,
+      lastModified: new Date(data.lastModified),
     }
   }
 
@@ -258,12 +258,6 @@ export default (props: {state: State}) => {
     }
 
     let text
-    if (parsed.path) {
-      const file = await getFile(parsed.path)
-      parsed.text = file.text
-      parsed.lastModified = file.lastModified
-    }
-
     if (parsed.text) {
       if (!isText(parsed.text)) {
         dispatch(UpdateError({id: 'invalid_state', props: parsed.text}))
@@ -319,10 +313,9 @@ export default (props: {state: State}) => {
       return
     }
 
-    const file = await getFile(state.args.file)
-    if (!file) return
-
-    dispatch(Open(file))
+    dispatch(Open({
+      path: state.args.file,
+    }))
   }
 
   // On mount, load state from DB.
@@ -398,8 +391,7 @@ export default (props: {state: State}) => {
     })
   }, 200, [state.text?.editorState])
 
-  // If a path exists but no editorState means that a file was opened and
-  // the contents must be read.
+  // Files with a path but no editorState must be read and initialized.
   useEffect(() => {
     if (state.path && !state.text?.editorState) {
       getFile(state.path).then((data) => {
@@ -410,11 +402,10 @@ export default (props: {state: State}) => {
           keymap,
         })
 
-        dispatch(UpdateState({
-          ...state,
-          text,
-          lastModified: data.lastModified,
-        }))
+        const lastModified = new Date(data.lastModified)
+        dispatch(UpdateText(text, lastModified))
+      }).catch((err) => {
+        remote.log(err)
       });
     }
   }, [state.path])
@@ -462,7 +453,7 @@ export default (props: {state: State}) => {
 
     const data = {...state, text: state.text?.editorState}
 
-    if (state.path) {
+    if (state.path && state.text.editorState?.initialized) {
       let text = markdownSerializer.serialize(state.text.editorState.doc)
       if (text.charAt(text.length - 1) !== '\n') {
         text += '\n'
@@ -494,10 +485,10 @@ export default (props: {state: State}) => {
     <ReducerContext.Provider value={dispatch}>
       <ThemeProvider theme={state.config}>
         <Global styles={fontsStyles} />
-        <ErrorBoundary fallback={(error) => <Error error={error} />}>
+        <ErrorBoundary fallback={(error) => <ErrorView error={error} />}>
           <Container data-testid={loadingPrev !== false ? 'loading' : 'initialized'}>
             {state.error ? (
-              <Error error={state.error} />
+              <ErrorView error={state.error} />
             ) : (
               <>
                 <Editor
