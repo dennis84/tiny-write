@@ -148,7 +148,7 @@ const newText = (text: ProseMirrorState, file: File): WokenFile => {
   const newState = {...text, editorState: file.text, initialized: false}
   return {
     text: newState,
-    lastModified: new Date(file.lastModified),
+    lastModified: file.lastModified ? new Date(file.lastModified) : undefined,
     path: file.path,
   }
 }

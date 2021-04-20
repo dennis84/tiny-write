@@ -2,6 +2,7 @@ import React, {useEffect, useRef} from 'react'
 import {Plugin, EditorState} from 'prosemirror-state'
 import {Decoration, EditorView, NodeView} from 'prosemirror-view'
 import {Schema, SchemaSpec} from 'prosemirror-model'
+import {log} from '../remote'
 
 type NodeViewFn = (
   node: Node,
@@ -48,6 +49,7 @@ export const ProseMirror = (props: Props) => {
 
   useEffect(() => {
     if (!editorViewRef.current) {
+      log('11111111111111111111')
       const {state, nodeViews} = createEditorState(props.state)
       const view = new EditorView(editorRef.current, {state, nodeViews, dispatchTransaction})
       editorViewRef.current = view
@@ -58,8 +60,10 @@ export const ProseMirror = (props: Props) => {
         initialized: true,
       })
     } else if (props.state.initialized) {
+      log('22222222222222222222')
       editorViewRef.current.updateState(props.state.editorState)
     } else if (props.state.editorState) {
+      log('3333333333333333333333')
       const {state, nodeViews} = createEditorState(props.state)
       editorViewRef.current.update({state, nodeViews, dispatchTransaction})
       props.onInit({
@@ -67,6 +71,8 @@ export const ProseMirror = (props: Props) => {
         editorState: state,
         initialized: true,
       })
+    } else {
+      log('444444444444444444')
     }
   }, [props.state])
 

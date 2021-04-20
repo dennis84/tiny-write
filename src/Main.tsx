@@ -229,7 +229,7 @@ export default (props: {state: State}) => {
     return {
       text,
       path,
-      lastModified: new Date(data.lastModified),
+      lastModified: data.lastModified,
     }
   }
 
@@ -304,7 +304,7 @@ export default (props: {state: State}) => {
     dispatch(UpdateState(newState))
   }
 
-  const initializeFromArgs = async () => {
+  const initializeFromArgs = () => {
     if (!state?.args) {
       return
     }
@@ -395,7 +395,7 @@ export default (props: {state: State}) => {
   useEffect(() => {
     if (state.path && !state.text?.editorState) {
       getFile(state.path).then((data) => {
-        const text = createState({
+        const newText = createState({
           data: data.text,
           config: state.config,
           path: state.path,
@@ -403,7 +403,7 @@ export default (props: {state: State}) => {
         })
 
         const lastModified = new Date(data.lastModified)
-        dispatch(UpdateText(text, lastModified))
+        dispatch(UpdateText(newText, lastModified))
       }).catch((err) => {
         remote.log(err)
       });
