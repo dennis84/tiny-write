@@ -32,3 +32,14 @@ it('new line', async () => {
   expect(await lineText()).toBe('foo [title](url) bar other ')
   expect(await lineText(2)).toBe('test another ')
 })
+
+it('links in code', async () => {
+  await move('ArrowDown', 2)
+  await page.keyboard.press('Enter')
+  await page.type('.ProseMirror', 'test `inline code` ')
+  await move('ArrowLeft', 5)
+  await page.type('.ProseMirror', '[foo](bar) ')
+  await move('ArrowRight', 5)
+  await page.type('.ProseMirror', '123')
+  expect(await lineText(3)).toBe('test inline [foo](bar) code 123')
+})

@@ -76,7 +76,14 @@ const markdownLinks = (schema) => {
         const spaceRight = full.length - text.length - href.length - spaceLeft - 4
         const start = match.index + $from.start() + spaceLeft
         const end = start + full.length - spaceLeft - spaceRight
+
         if (sel.$from.pos >= start && sel.$from.pos <= end) {
+          return false
+        }
+
+        // Do not convert md links if content has marks
+        const $startPos = resolvePos(view, start)
+        if ($startPos.marks().length > 0) {
           return false
         }
 
