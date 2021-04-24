@@ -24,6 +24,7 @@ interface Preload {
   getArgs: () => Promise<Args>;
   resolve: (base: string, src: string) => Promise<string>;
   log: (...args: any) => void;
+  on: (name: string, fn: (...args: any) => void) => void;
 }
 
 declare global {

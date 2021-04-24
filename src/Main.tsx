@@ -9,7 +9,7 @@ import {Global, ThemeProvider} from '@emotion/react'
 import styled from '@emotion/styled'
 import {rgb} from './styles'
 import {background, color, color2, font, fonts} from './config'
-import {State} from '.'
+import {Args, State} from '.'
 import * as remote from './remote'
 import db from './db'
 import {isElectron, mod, COLLAB_URL} from './env'
@@ -308,18 +308,14 @@ export default (props: {state: State}) => {
     dispatch(UpdateState(newState))
   }
 
-  const initializeFromArgs = async () => {
-    if (!state?.args) {
-      return
-    }
-
-    if (state.args.file === state.path) {
+  const loadArgs = async (args: Args) => {
+    if (args.file === state.path) {
       await loadFile()
       return
     }
 
     dispatch(Open({
-      path: state.args.file,
+      path: args.file,
     }))
   }
 
@@ -335,7 +331,14 @@ export default (props: {state: State}) => {
     }
 
     if (state.loading === 'initialized') {
-      initializeFromArgs()
+      if (state.args) {
+        loadArgs(state.args)
+      }
+
+      remote.on('second-instance', (args) => {
+        loadArgs(args)
+      });
+
       const room = window.location.pathname?.slice(1)
       if (!isElectron && room) {
         dispatch(UpdateCollab({room, started: true}))
@@ -454,7 +457,6 @@ export default (props: {state: State}) => {
 
     if (state.path) {
       if (state.text.editorState?.initialized) {
-        remote.log('Write text')
         let text = markdownSerializer.serialize(state.text.editorState.doc)
         if (text.charAt(text.length - 1) !== '\n') {
           text += '\n'

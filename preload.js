@@ -12,4 +12,7 @@ contextBridge.exposeInMainWorld('app', {
   getArgs: () => ipcRenderer.invoke('getArgs'),
   resolve: (base, src) => ipcRenderer.invoke('resolve', base, src),
   log: (...args) => ipcRenderer.invoke('log', ...args),
+  on: (name, fn) => {
+    ipcRenderer.on(name, (event, ...args) => fn(...args))
+  }
 })

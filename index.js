@@ -9,6 +9,8 @@ const os = require('os')
 
 let win
 
+const lock = app.requestSingleInstanceLock()
+
 function autoUpdate() {
   autoUpdater.checkForUpdatesAndNotify()
 }
@@ -88,32 +90,49 @@ function createWindow() {
   })
 }
 
-app.on('ready', () => {
-  createWindow()
-  autoUpdate()
-})
-
-app.on('window-all-closed', () => {
-  // On macOS it is common for applications and their menu bar
-  // to stay active until the user quits explicitly with Cmd + Q
-  if(process.platform !== 'darwin') {
-    app.quit()
-  }
-})
-
-app.on('activate', () => {
-  // On macOS it's common to re-create a window in the app when the
-  // dock icon is clicked and there are no other windows open.
-  if (win === null) {
-    createWindow()
-  }
-})
-
-ipcMain.handle('getArgs', () => {
-  const args = process.argv.slice(process.env.NODE_ENV === 'dev' ? 2 : 1)
+function getArgs(argv) {
+  const args = argv.slice(process.env.NODE_ENV === 'dev' ? 2 : 1)
   const cwd = process.cwd()
   const file = args.length > 0 ? path.resolve(cwd, args[0]) : undefined
   return {cwd, file}
+}
+
+if (!lock) {
+  app.quit()
+} else {
+  app.on('second-instance', (e, argv) => {
+    if (win) {
+      if (win.isMinimized()) win.restore()
+      win.focus()
+      const args = getArgs(argv)
+      win.webContents.send('second-instance', args)
+    }
+  })
+
+  app.on('ready', () => {
+    createWindow()
+    autoUpdate()
+  })
+
+  app.on('window-all-closed', () => {
+    // On macOS it is common for applications and their menu bar
+    // to stay active until the user quits explicitly with Cmd + Q
+    if(process.platform !== 'darwin') {
+      app.quit()
+    }
+  })
+
+  app.on('activate', () => {
+    // On macOS it's common to re-create a window in the app when the
+    // dock icon is clicked and there are no other windows open.
+    if (win === null) {
+      createWindow()
+    }
+  })
+}
+
+ipcMain.handle('getArgs', () => {
+  return getArgs(process.argv)
 })
 
 ipcMain.handle('setAlwaysOnTop', (event, flag) => {

@@ -2,6 +2,11 @@ import {EditorState} from 'prosemirror-state'
 import {markdownSerializer} from './markdown'
 import {isElectron} from './env'
 
+export const on = (name, fn) => {
+  if (!isElectron) return
+  window.app.on(name, fn)
+}
+
 export const getArgs = () => {
   if (!isElectron) return
   return window.app.getArgs()
