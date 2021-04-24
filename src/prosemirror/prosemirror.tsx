@@ -2,7 +2,6 @@ import React, {useEffect, useRef} from 'react'
 import {Plugin, EditorState} from 'prosemirror-state'
 import {Decoration, EditorView, NodeView} from 'prosemirror-view'
 import {Schema, SchemaSpec} from 'prosemirror-model'
-import {log} from '../remote'
 
 type NodeViewFn = (
   node: Node,
@@ -19,6 +18,7 @@ export interface ProseMirrorExtension {
 
 export interface ProseMirrorState {
   editorState?: EditorState | unknown;
+  schema?: Schema;
   extensions: ProseMirrorExtension[];
   initialized?: boolean;
 }
@@ -48,31 +48,30 @@ export const ProseMirror = (props: Props) => {
   }
 
   useEffect(() => {
+    if (!props.state.editorState) return
     if (!editorViewRef.current) {
-      log('11111111111111111111')
-      const {state, nodeViews} = createEditorState(props.state)
+      const {state, schema, nodeViews} = createEditorState(props.state)
       const view = new EditorView(editorRef.current, {state, nodeViews, dispatchTransaction})
       editorViewRef.current = view
       view.focus()
       props.onInit({
         ...props.state,
         editorState: state,
+        schema,
         initialized: true,
       })
     } else if (props.state.initialized) {
-      log('22222222222222222222')
       editorViewRef.current.updateState(props.state.editorState)
     } else if (props.state.editorState) {
-      log('3333333333333333333333')
-      const {state, nodeViews} = createEditorState(props.state)
+      const {state, schema, nodeViews} = createEditorState(props.state)
+      if (!state) return
       editorViewRef.current.update({state, nodeViews, dispatchTransaction})
       props.onInit({
         ...props.state,
         editorState: state,
+        schema,
         initialized: true,
       })
-    } else {
-      log('444444444444444444')
     }
   }, [props.state])
 
@@ -113,6 +112,7 @@ const createEditorState = (state: ProseMirrorState) => {
 
   return {
     state: editorState,
+    schema,
     nodeViews,
   }
 }

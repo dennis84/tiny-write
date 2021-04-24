@@ -13,13 +13,14 @@ import {State} from '.'
 import * as remote from './remote'
 import db from './db'
 import {isElectron, mod, COLLAB_URL} from './env'
-import {useDebouncedEffect, usePrevious, useDynamicCallback} from './hooks'
+import {useDebouncedEffect, useDynamicCallback} from './hooks'
 import {markdownSerializer} from './markdown'
 import {
   UpdateState,
   UpdateError,
   UpdateText,
   UpdateCollab,
+  UpdateLoading,
   New,
   Discard,
   ReducerContext,
@@ -51,13 +52,13 @@ const Container = styled.div`
   }
 `
 
-const isText = (x: any) => x && x.doc
+const isText = (x: any) => x && x.doc && x.selection
 
 const isState = (x: any) =>
   (typeof x.lastModified !== 'string') &&
   Array.isArray(x.files)
 
-const isFile = (x: any): boolean => x.text && x.lastModified
+const isFile = (x: any): boolean => x.text || x.path
 
 const isConfig = (x: any): boolean =>
   typeof x.theme === 'string' &&
@@ -66,7 +67,6 @@ const isConfig = (x: any): boolean =>
 
 export default (props: {state: State}) => {
   const [state, dispatch] = useReducer(reducer, props.state)
-  const loadingPrev = usePrevious(state.loading)
   const editorViewRef = useRef<EditorView>()
 
   const OnNew = useDynamicCallback(() => {
@@ -206,16 +206,16 @@ export default (props: {state: State}) => {
     }))
   })
 
-  const getFile = async (path: string) => {
-    const fileExists = await remote.fileExists(path)
+  const loadFile = async () => {
+    const fileExists = await remote.fileExists(state.path)
     if (!fileExists) {
-      throw new Error('File not found: ' + path)
+      throw new Error('File not found: ' + state.path)
     }
 
     const decoder = new TextDecoder('utf-8')
-    const data = await remote.readFile(path)
+    const data = await remote.readFile(state.path)
     const fileContent = decoder.decode(data.buffer)
-    const parser = createParser(editorViewRef.current.state.schema)
+    const parser = createParser(state.text.schema)
     const doc = parser.parse(fileContent).toJSON()
     const text = {
       doc,
@@ -226,11 +226,15 @@ export default (props: {state: State}) => {
       }
     }
 
-    return {
-      text,
-      path,
-      lastModified: data.lastModified,
-    }
+    const newText = createState({
+      data: text,
+      config: state.config,
+      path: state.path,
+      keymap,
+    })
+
+    const lastModified = new Date(data.lastModified)
+    dispatch(UpdateText(newText, lastModified))
   }
 
   const initialize = async () => {
@@ -247,7 +251,7 @@ export default (props: {state: State}) => {
     }
 
     if (!parsed) {
-      dispatch(UpdateState({...state, loading: false}))
+      dispatch(UpdateState({...state, loading: 'initialized'}))
       return
     }
 
@@ -282,7 +286,7 @@ export default (props: {state: State}) => {
       ...parsed,
       text,
       config,
-      loading: false,
+      loading: 'roundtrip',
       args,
     }
 
@@ -304,12 +308,13 @@ export default (props: {state: State}) => {
     dispatch(UpdateState(newState))
   }
 
-  const initializeFromArgs = () => {
+  const initializeFromArgs = async () => {
     if (!state?.args) {
       return
     }
 
     if (state.args.file === state.path) {
+      await loadFile()
       return
     }
 
@@ -325,14 +330,18 @@ export default (props: {state: State}) => {
 
   // After initialization is completed
   useEffect(() => {
-    if (loadingPrev !== false) return
-    initializeFromArgs()
-
-    const room = window.location.pathname?.slice(1)
-    if (!isElectron && room) {
-      dispatch(UpdateCollab({room, started: true}))
+    if (state.loading === 'roundtrip') {
+      dispatch(UpdateLoading('initialized'))
     }
-  }, [loadingPrev])
+
+    if (state.loading === 'initialized') {
+      initializeFromArgs()
+      const room = window.location.pathname?.slice(1)
+      if (!isElectron && room) {
+        dispatch(UpdateCollab({room, started: true}))
+      }
+    }
+  }, [state.loading])
 
   // If collab is started
   useEffect(() => {
@@ -393,20 +402,8 @@ export default (props: {state: State}) => {
 
   // Files with a path but no editorState must be read and initialized.
   useEffect(() => {
-    if (state.path && !state.text?.editorState) {
-      getFile(state.path).then((data) => {
-        const newText = createState({
-          data: data.text,
-          config: state.config,
-          path: state.path,
-          keymap,
-        })
-
-        const lastModified = new Date(data.lastModified)
-        dispatch(UpdateText(newText, lastModified))
-      }).catch((err) => {
-        remote.log(err)
-      });
+    if (state.path && state.loading === 'initialized') {
+      loadFile()
     }
   }, [state.path])
 
@@ -436,7 +433,7 @@ export default (props: {state: State}) => {
 
   // Toggle remote fullscreen if changed
   useEffect(() => {
-    if (loadingPrev !== false) return
+    if (state.loading !== 'initialized') return
     remote.setFullscreen(state.fullscreen)
   }, [state.fullscreen])
 
@@ -447,23 +444,27 @@ export default (props: {state: State}) => {
 
   // Save state in DB if lastModified has changed
   useDebouncedEffect(() => {
-    if (loadingPrev !== false) {
-      return
+    if (state.loading !== 'initialized' || !state.lastModified) return
+    const data: any = {
+      lastModified: state.lastModified,
+      files: state.files,
+      config: state.config,
+      path: state.path,
     }
 
-    const data = {...state, text: state.text?.editorState}
-
-    if (state.path && state.text.editorState?.initialized) {
-      let text = markdownSerializer.serialize(state.text.editorState.doc)
-      if (text.charAt(text.length - 1) !== '\n') {
-        text += '\n'
+    if (state.path) {
+      if (state.text.editorState?.initialized) {
+        remote.log('Write text')
+        let text = markdownSerializer.serialize(state.text.editorState.doc)
+        if (text.charAt(text.length - 1) !== '\n') {
+          text += '\n'
+        }
+        remote.writeFile(state.path, text)
       }
-      remote.writeFile(state.path, text)
-      delete data.text
+    } else {
+      data.text = state.text?.editorState.toJSON()
     }
 
-    delete data.fullscreen
-    delete data.collab
     db.set('state', JSON.stringify(data))
   }, 100, [state.lastModified])
 
@@ -486,7 +487,7 @@ export default (props: {state: State}) => {
       <ThemeProvider theme={state.config}>
         <Global styles={fontsStyles} />
         <ErrorBoundary fallback={(error) => <ErrorView error={error} />}>
-          <Container data-testid={loadingPrev !== false ? 'loading' : 'initialized'}>
+          <Container data-testid={state.loading}>
             {state.error ? (
               <ErrorView error={state.error} />
             ) : (

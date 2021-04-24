@@ -34,13 +34,15 @@ export interface Args {
   text: any;
 }
 
+export type LoadingType = 'loading' | 'roundtrip' | 'initialized' | 'error'
+
 export interface State {
   text?: ProseMirrorState;
   lastModified?: Date;
   files: File[];
   config: Config;
   error?: ErrorObject;
-  loading: boolean;
+  loading: LoadingType;
   fullscreen: boolean;
   collab?: Collab;
   path?: string;
@@ -48,7 +50,7 @@ export interface State {
 }
 
 export interface File {
-  text?: {doc: unknown};
+  text?: {doc: unknown; selection: unknown};
   lastModified?: string;
   path?: string;
 }

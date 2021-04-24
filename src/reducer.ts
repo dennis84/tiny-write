@@ -1,12 +1,12 @@
 import {useContext, createContext, Dispatch as Disp, Reducer} from 'react'
 import {ProseMirrorState, isEmpty} from './prosemirror/prosemirror'
-import {State, File, Config, ErrorObject, Collab} from '.'
+import {State, File, Config, ErrorObject, Collab, LoadingType} from '.'
 import {isMac} from './env'
 
 export const newState = (props: Partial<State> = {}): State => ({
   lastModified: new Date(),
   files: [],
-  loading: true,
+  loading: 'loading',
   fullscreen: false,
   config: {
     theme: 'light',
@@ -20,13 +20,20 @@ export const newState = (props: Partial<State> = {}): State => ({
   ...props,
 })
 
-export const UpdateError = (error: ErrorObject) => (state: State) => ({
+export const UpdateError = (error: ErrorObject) => (state: State): State => ({
   ...state,
   error,
-  loading: false,
+  loading: 'error',
 })
 
-export const Clean = () => newState()
+export const UpdateLoading = (loading: LoadingType) => (state: State) => ({
+  ...state,
+  loading,
+})
+
+export const Clean = () => newState({
+  loading: 'initialized',
+})
 
 export const UpdateState = (newState: State) => () => newState
 
@@ -139,8 +146,8 @@ export const Discard = (state: State) => {
 }
 
 interface WokenFile {
-  text: ProseMirrorState;
-  lastModified: Date;
+  text?: ProseMirrorState;
+  lastModified?: Date;
   path?: string;
 }
 

@@ -89,6 +89,9 @@ const Label = styled.h3`
   font-size: 14px;
   text-transform: uppercase;
   color: ${props => rgba(color(props.theme), 0.5)};
+  > i {
+    text-transform: none;
+  }
 `
 
 const Sub = styled.nav`
@@ -406,7 +409,7 @@ export default (props: Props) => {
               <LastModified />
               <TextStats />
             </Sub>
-            <Label>File</Label>
+            <Label>File {props.path && <i>({props.path.substring(props.path.length - 24)})</i>}</Label>
             <Sub>
               <Link onClick={OnNew}>New <Keys keys={[mod, 'n']} /></Link>
               <Link
