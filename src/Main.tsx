@@ -209,7 +209,8 @@ export default (props: {state: State}) => {
   const loadFile = async () => {
     const fileExists = await remote.fileExists(state.path)
     if (!fileExists) {
-      throw new Error('File not found: ' + state.path)
+      dispatch(Discard)
+      return
     }
 
     const decoder = new TextDecoder('utf-8')
@@ -403,7 +404,7 @@ export default (props: {state: State}) => {
     })
   }, 200, [state.text?.editorState])
 
-  // Files with a path but no editorState must be read and initialized.
+  // Load file if path has changed
   useEffect(() => {
     if (state.path && state.loading === 'initialized') {
       loadFile()

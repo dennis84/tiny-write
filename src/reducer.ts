@@ -111,7 +111,7 @@ export const Open = (file: File) => (state: State) => {
   }
 
   const index = findIndexOfFile(file)
-  const {text, lastModified, path} = newText(state.text, file)
+  const next = newText(state.text, file)
   if (index !== -1) {
     files.splice(index, 1)
   }
@@ -119,9 +119,7 @@ export const Open = (file: File) => (state: State) => {
   return {
     ...state,
     files,
-    text,
-    lastModified,
-    path,
+    ...next,
     collab: undefined,
   }
 }
@@ -129,18 +127,16 @@ export const Open = (file: File) => (state: State) => {
 export const Discard = (state: State) => {
   const files = [...state.files]
   const file = files.shift()
-  const {text, lastModified, path} = file ? newText(state.text, file) : {
+  const next = file ? newText(state.text, file) : {
     text: undefined,
-    lastModified: new Date(),
+    lastModified: undefined,
     path: undefined,
   }
 
   return {
     ...state,
     files,
-    text,
-    lastModified,
-    path,
+    ...next,
     collab: file ? undefined : state.collab,
   }
 }

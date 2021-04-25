@@ -93,7 +93,9 @@ function createWindow() {
 function getArgs(argv) {
   const args = argv.slice(process.env.NODE_ENV === 'dev' ? 2 : 1)
   const cwd = process.cwd()
-  const file = args.length > 0 ? path.resolve(cwd, args[0]) : undefined
+  const file = args.length > 0 && !args[0].startsWith('--') ?
+    path.resolve(cwd, args[0]) :
+    undefined
   return {cwd, file}
 }
 
