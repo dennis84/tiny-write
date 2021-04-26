@@ -13,6 +13,7 @@ export const newState = (props: Partial<State> = {}): State => ({
     codeTheme: 'material-light',
     font: 'merriweather',
     fontSize: 24,
+    contentWidth: 800,
     alwaysOnTop: isMac,
     typewriterMode: true,
     dragHandle: true,

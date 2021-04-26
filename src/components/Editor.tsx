@@ -36,7 +36,7 @@ export default (props: Props) => {
       min-height: calc(100% - 100px);
       height: fit-content;
       width: 100%;
-      max-width: 800px;
+      max-width: ${theme.contentWidth}px;
       font-size: ${theme.fontSize}px;
       font-family: ${font(theme)};
       color: ${rgb(color(theme))};

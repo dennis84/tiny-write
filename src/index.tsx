@@ -9,6 +9,7 @@ export interface Config {
   codeTheme: string;
   font: string;
   fontSize: number;
+  contentWidth: number;
   alwaysOnTop: boolean;
   typewriterMode: boolean;
   dragHandle: boolean;

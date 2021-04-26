@@ -250,6 +250,11 @@ export default (props: Props) => {
     editorView.focus()
   }
 
+  const OnChangeContentWidth = (e) => {
+    dispatch(UpdateConfig({...props.config, contentWidth: parseInt(e.target.value)}))
+    editorView.focus()
+  }
+
   const OnToggleAlwaysOnTop = () => {
     dispatch(UpdateConfig({...props.config, alwaysOnTop: !props.config.alwaysOnTop}))
     editorView.focus()
@@ -475,16 +480,6 @@ export default (props: Props) => {
                   {value.label}{' '}{key === props.config.font && '✅'}
                 </Link>
               ))}
-              <Text>
-                Font size:
-                <Slider
-                  type="range"
-                  min="8"
-                  max="48"
-                  value={props.config.fontSize}
-                  onChange={OnChangeFontSize} />
-                {props.config.fontSize}
-              </Text>
             </Sub>
             <Label>View</Label>
             <Sub>
@@ -504,6 +499,26 @@ export default (props: Props) => {
                   Always on Top {props.config.alwaysOnTop && '✅'}
                 </Link>
               )}
+              <Text>
+                Font size:
+                <Slider
+                  type="range"
+                  min="8"
+                  max="48"
+                  value={props.config.fontSize}
+                  onChange={OnChangeFontSize} />
+                {props.config.fontSize}
+              </Text>
+              <Text>
+                Content width :
+                <Slider
+                  type="range"
+                  min="600"
+                  max="1400"
+                  value={props.config.contentWidth}
+                  onChange={OnChangeContentWidth} />
+                {props.config.contentWidth}
+              </Text>
             </Sub>
             <Label>Application</Label>
             <Sub>
