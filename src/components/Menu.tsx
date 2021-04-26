@@ -515,6 +515,7 @@ export default (props: Props) => {
                   type="range"
                   min="600"
                   max="1400"
+                  step="100"
                   value={props.config.contentWidth}
                   onChange={OnChangeContentWidth} />
                 {props.config.contentWidth}

@@ -25,12 +25,12 @@ it('create link', async () => {
 it('new line', async () => {
   await move('ArrowDown', 2)
   await page.keyboard.press('Enter')
-  await page.type('.ProseMirror', 'test [another](path) ')
+  await page.type('.ProseMirror', 'test [another](path).')
   await move('ArrowLeft', 7)
   await move('ArrowUp')
   await move('ArrowLeft') // must move 1 to the side before expand
   expect(await lineText()).toBe('foo [title](url) bar other ')
-  expect(await lineText(2)).toBe('test another ')
+  expect(await lineText(2)).toBe('test another.')
 })
 
 it('links in code', async () => {
