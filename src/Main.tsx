@@ -216,7 +216,8 @@ export default (props: {state: State}) => {
     const decoder = new TextDecoder('utf-8')
     const data = await remote.readFile(state.path)
     const fileContent = decoder.decode(data.buffer)
-    const parser = createParser(state.text.schema)
+    const schema = editorViewRef.current.state.schema
+    const parser = createParser(schema)
     const doc = parser.parse(fileContent).toJSON()
     const text = {
       doc,
@@ -309,7 +310,7 @@ export default (props: {state: State}) => {
     dispatch(UpdateState(newState))
   }
 
-  const loadArgs = async (args: Args) => {
+  const loadArgs = useDynamicCallback(async (args: Args) => {
     if (args.file === state.path) {
       await loadFile()
       return
@@ -318,7 +319,7 @@ export default (props: {state: State}) => {
     dispatch(Open({
       path: args.file,
     }))
-  }
+  })
 
   // On mount, load state from DB.
   useEffect(() => {
@@ -447,7 +448,7 @@ export default (props: {state: State}) => {
   }, [state.config.alwaysOnTop])
 
   // Save state in DB if lastModified has changed
-  useDebouncedEffect(() => {
+  useDebouncedEffect(async () => {
     if (state.loading !== 'initialized' || !state.lastModified) return
     const data: any = {
       lastModified: state.lastModified,
@@ -457,12 +458,13 @@ export default (props: {state: State}) => {
     }
 
     if (state.path) {
-      if (state.text.editorState?.initialized) {
+      if (state.text?.initialized) {
         let text = markdownSerializer.serialize(state.text.editorState.doc)
         if (text.charAt(text.length - 1) !== '\n') {
           text += '\n'
         }
-        remote.writeFile(state.path, text)
+
+        await remote.writeFile(state.path, text)
       }
     } else {
       data.text = state.text?.editorState.toJSON()

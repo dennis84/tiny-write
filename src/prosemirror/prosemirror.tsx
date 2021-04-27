@@ -18,7 +18,6 @@ export interface ProseMirrorExtension {
 
 export interface ProseMirrorState {
   editorState?: EditorState | unknown;
-  schema?: Schema;
   extensions: ProseMirrorExtension[];
   initialized?: boolean;
 }
@@ -50,26 +49,24 @@ export const ProseMirror = (props: Props) => {
   useEffect(() => {
     if (!props.state.editorState) return
     if (!editorViewRef.current) {
-      const {state, schema, nodeViews} = createEditorState(props.state)
+      const {state, nodeViews} = createEditorState(props.state)
       const view = new EditorView(editorRef.current, {state, nodeViews, dispatchTransaction})
       editorViewRef.current = view
       view.focus()
       props.onInit({
         ...props.state,
         editorState: state,
-        schema,
         initialized: true,
       })
     } else if (props.state.initialized) {
       editorViewRef.current.updateState(props.state.editorState)
     } else if (props.state.editorState) {
-      const {state, schema, nodeViews} = createEditorState(props.state)
+      const {state, nodeViews} = createEditorState(props.state)
       if (!state) return
       editorViewRef.current.update({state, nodeViews, dispatchTransaction})
       props.onInit({
         ...props.state,
         editorState: state,
-        schema,
         initialized: true,
       })
     }
@@ -112,7 +109,6 @@ const createEditorState = (state: ProseMirrorState) => {
 
   return {
     state: editorState,
-    schema,
     nodeViews,
   }
 }
