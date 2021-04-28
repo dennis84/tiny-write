@@ -265,11 +265,6 @@ export default (props: Props) => {
     editorView.focus()
   }
 
-  const OnToggleDragHandle = () => {
-    dispatch(UpdateConfig({...props.config, dragHandle: !props.config.dragHandle}))
-    editorView.focus()
-  }
-
   const OnToggleFullscreen = () => {
     dispatch(ToggleFullscreen)
   }
@@ -490,9 +485,6 @@ export default (props: Props) => {
               )}
               <Link onClick={OnToggleTypewriterMode}>
                 Typewriter mode {props.config.typewriterMode && '✅'}
-              </Link>
-              <Link onClick={OnToggleDragHandle}>
-                Drag handle {props.config.dragHandle && '✅'}
               </Link>
               {isElectron && (
                 <Link onClick={OnToggleAlwaysOnTop}>

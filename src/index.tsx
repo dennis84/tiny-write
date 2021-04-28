@@ -12,7 +12,6 @@ export interface Config {
   contentWidth: number;
   alwaysOnTop: boolean;
   typewriterMode: boolean;
-  dragHandle: boolean;
 }
 
 export interface ErrorObject {

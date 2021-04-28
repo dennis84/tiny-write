@@ -90,7 +90,7 @@ export const createState = (props: Props) => ({
     base,
     markdown,
     todoList,
-    dragHandle(props.config.dragHandle),
+    dragHandle,
     codeBlock({
       theme: codeTheme(props.config),
       typewriterMode: props.config.typewriterMode,

@@ -130,20 +130,6 @@ export default (props: {state: State}) => {
     }
   }
 
-  const createTextByData = (data: any) => createState({
-    data: data.created ? state.text.editorState.toJSON() : {
-      selection: {type: 'text', anchor: 1, head: 1},
-      doc: data.doc,
-    },
-    config: state.config,
-    path: state.path,
-    keymap,
-    collab: {
-      version: data.version,
-      clientID: data.clientID,
-    }
-  })
-
   // Receive update response after create and recreate the state.
   const OnReceiveUpdate = useDynamicCallback((data: any) => {
     window.history.replaceState(null, '', `/${data.room}`)
@@ -151,7 +137,20 @@ export default (props: {state: State}) => {
     // Init room if message is from us and collab plugin is not initialized
     if (!state.collab.initialized && data.clientID === state.collab.socket.id) {
       // Recreate editorState with enabled collab plugin
-      const newText = createTextByData(data)
+      const newText = createState({
+        data: data.created ? state.text.editorState.toJSON() : {
+          selection: {type: 'text', anchor: 1, head: 1},
+          doc: data.doc,
+        },
+        config: state.config,
+        path: state.path,
+        keymap,
+        collab: {
+          version: data.version,
+          clientID: data.clientID,
+        }
+      })
+
       // Create new file if we're not the creator
       const backup = !data.created
       dispatch(UpdateCollab({
@@ -253,7 +252,7 @@ export default (props: {state: State}) => {
     }
 
     if (!parsed) {
-      dispatch(UpdateState({...state, loading: 'initialized'}))
+      dispatch(UpdateState({...state, loading: 'roundtrip'}))
       return
     }
 
@@ -310,7 +309,7 @@ export default (props: {state: State}) => {
     dispatch(UpdateState(newState))
   }
 
-  const loadArgs = useDynamicCallback(async (args: Args) => {
+  const onArgs = useDynamicCallback(async (args: Args) => {
     if (args.file === state.path) {
       await loadFile()
       return
@@ -334,12 +333,10 @@ export default (props: {state: State}) => {
 
     if (state.loading === 'initialized') {
       if (state.args) {
-        loadArgs(state.args)
+        onArgs(state.args)
       }
 
-      remote.on('second-instance', (args) => {
-        loadArgs(args)
-      });
+      remote.on('second-instance', onArgs)
 
       const room = window.location.pathname?.slice(1)
       if (!isElectron && room) {
@@ -389,8 +386,7 @@ export default (props: {state: State}) => {
 
   // Listen to state changes and send them to all collab users
   useDebouncedEffect(() => {
-    if (!state.text?.initialized) return
-    if (!state.collab?.initialized) return
+    if (!state.text?.initialized || !state.collab?.initialized) return
 
     const sendable = getSendableSteps()
     if (!sendable) return
@@ -433,7 +429,6 @@ export default (props: {state: State}) => {
     state.config.codeTheme,
     state.config.fontSize,
     state.config.typewriterMode,
-    state.config.dragHandle,
   ])
 
   // Toggle remote fullscreen if changed
@@ -493,7 +488,7 @@ export default (props: {state: State}) => {
         <Global styles={fontsStyles} />
         <ErrorBoundary fallback={(error) => <ErrorView error={error} />}>
           <Container data-testid={state.loading}>
-            {state.error ? (
+            {(state.error) ? (
               <ErrorView error={state.error} />
             ) : (
               <>

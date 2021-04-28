@@ -4,7 +4,7 @@ import {DecorationSet, Decoration} from 'prosemirror-view'
 const handleIcon =
   '<svg viewBox="0 0 10 10" height="14" width="14"><path d="M3 2a1 1 0 110-2 1 1 0 010 2zm0 4a1 1 0 110-2 1 1 0 010 2zm0 4a1 1 0 110-2 1 1 0 010 2zm4-8a1 1 0 110-2 1 1 0 010 2zm0 4a1 1 0 110-2 1 1 0 010 2zm0 4a1 1 0 110-2 1 1 0 010 2z"/></svg>'
 
-export const createDragHandle = () => {
+const createDragHandle = () => {
   const handle = document.createElement('span')
   handle.setAttribute('contenteditable', 'false')
   const icon = document.createElement('span')
@@ -44,6 +44,6 @@ const handlePlugin = new Plugin({
   }
 })
 
-export default (enabled: boolean) => ({
-  plugins: (prev) => enabled ? [...prev, handlePlugin] : prev
+export default ({
+  plugins: (prev) => [...prev, handlePlugin]
 })

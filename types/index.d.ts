@@ -1,5 +1,5 @@
 import '@emotion/react'
-import {Config} from '../src'
+import {Args, Config} from '../src'
 import {Page} from 'playwright'
 
 declare module '@emotion/react' {
