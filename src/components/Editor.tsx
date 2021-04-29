@@ -202,17 +202,17 @@ export default (props: Props) => {
           -webkit-app-region: no-drag;
         }
       }
-      .todo-list {
-        > div {
-          display: flex;
-          align-items: center;
-          &.done {
-            text-decoration: line-through;
-            color: ${rgba(color(theme), 0.3)};
-          }
-          input {
-            margin-right: 10px;
-          }
+      .todo-item {
+        display: flex;
+        align-items: center;
+        -webkit-app-region: no-drag;
+        user-select: none;
+        &.done {
+          text-decoration: line-through;
+          color: ${rgba(color(theme), 0.3)};
+        }
+        input {
+          margin-right: 10px;
         }
       }
       .image-container {

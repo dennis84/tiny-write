@@ -22,9 +22,6 @@ export const markdownSerializer = new MarkdownSerializer({
     state.write('```')
     state.closeBlock(node)
   },
-  todo_list(state, node) {
-    state.renderList(node, '', () => '')
-  },
   todo_item(state, node) {
     state.write((node.attrs.done ? '[x]' : '[ ]') + ' ')
     state.renderContent(node)

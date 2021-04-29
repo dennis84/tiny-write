@@ -7,20 +7,18 @@ import {inputRules} from 'prosemirror-inputrules'
 
 const todoListRule = (nodeType) =>
   wrappingInputRule(
-    new RegExp('^\\[\\s\\]\\s$'),
+    new RegExp('^\\[( |x)]\\s$'),
     nodeType,
+    match => ({
+      done: match[1] === 'x',
+    }),
   )
 
 const todoListSchema = {
-  todo_list: {
-    content: 'todo_item+',
-    group: 'block',
-    parseDOM: [{tag: 'div'}],
-    toDOM: () => ['div', {class: 'todo-list'}, 0],
-  },
   todo_item: {
-    content: 'paragraph+',
+    content: 'paragraph block*',
     defining: true,
+    group: 'block',
     attrs: {done: {default: false}},
     parseDOM: [{
       tag: 'div',
@@ -30,7 +28,7 @@ const todoListSchema = {
     }],
     toDOM: (node) => [
       'div',
-      {class: node.attrs.done ? 'done' : ''},
+      {class: `todo-item ${node.attrs.done ? 'done' : ''}`},
       ['input', {type: 'checkbox', ...(node.attrs.done ? {checked: 'checked'} : {})}],
       ['span', 0],
     ],
@@ -57,6 +55,7 @@ class TodoItemView {
     const tr = this.view.state.tr
     tr.setNodeMarkup(this.getPos(), null, {done: e.target.checked})
     this.view.dispatch(tr)
+    this.view.focus()
   }
 }
 
@@ -72,7 +71,7 @@ export default {
   plugins: (prev, schema) => [
     keymap(todoListKeymap(schema)),
     ...prev,
-    inputRules({rules: [todoListRule(schema.nodes.todo_list)]}),
+    inputRules({rules: [todoListRule(schema.nodes.todo_item)]}),
   ],
   nodeViews: {
     todo_item: (node, view, getPos) => {

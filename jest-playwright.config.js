@@ -1,5 +1,5 @@
 module.exports = {
-  launchOptions: {headless: true},
+  launchOptions: {headless: false},
   serverOptions: {
     command: 'npm run web',
     port: 3000,
