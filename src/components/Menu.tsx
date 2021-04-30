@@ -340,9 +340,9 @@ export default (props: Props) => {
     }
 
     return props.lastModified ? (
-      <Text>Last modified {formatDate(props.lastModified)}</Text>
+      <Text data-testid="last-modified">Last modified {formatDate(props.lastModified)}</Text>
     ) : (
-      <Text>Nothing yet</Text>
+      <Text data-testid="last-modified">Nothing yet</Text>
     )
   }
 

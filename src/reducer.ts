@@ -4,7 +4,6 @@ import {State, File, Config, ErrorObject, Collab, LoadingType} from '.'
 import {isMac} from './env'
 
 export const newState = (props: Partial<State> = {}): State => ({
-  lastModified: new Date(),
   files: [],
   loading: 'loading',
   fullscreen: false,
@@ -51,7 +50,7 @@ export const ToggleFullscreen = (state: State) => ({
 export const UpdateText = (text: ProseMirrorState, lastModified?: Date) => (state: State) => ({
   ...state,
   text,
-  lastModified: lastModified ?? new Date(),
+  lastModified: lastModified ?? state.lastModified,
 })
 
 export const UpdateCollab = (
@@ -85,7 +84,7 @@ export const New = (state: State) => {
     ...state,
     text: undefined,
     files,
-    lastModified: new Date(),
+    lastModified: undefined,
     collab: undefined,
     path: undefined,
   }

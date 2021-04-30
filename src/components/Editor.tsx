@@ -242,8 +242,12 @@ export default (props: Props) => {
     }
   `
 
-  const OnChange = (value: ProseMirrorState) => {
+  const OnInit = (value: ProseMirrorState) => {
     dispatch(UpdateText(value))
+  }
+
+  const OnChange = (value: ProseMirrorState) => {
+    dispatch(UpdateText(value, new Date()))
   }
 
   return (
@@ -252,6 +256,6 @@ export default (props: Props) => {
       className={editorCss}
       state={props.text}
       onChange={OnChange}
-      onInit={OnChange} />
+      onInit={OnInit} />
   )
 }
