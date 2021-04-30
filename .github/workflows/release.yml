@@ -1,5 +1,8 @@
 name: Release
 
+env:
+  CI: true
+
 on:
   push:
     tags:
