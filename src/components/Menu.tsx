@@ -190,18 +190,6 @@ export default (props: Props) => {
     props.collab?.error ? 'Restart 🚨' :
     'Start'
 
-  useEffect(() => {
-    if (!show) return
-    const onKeyDown = (e) => {
-      if (e.keyCode === 27) setShow(false)
-    }
-
-    document.addEventListener('keydown', onKeyDown)
-    return () => {
-      document.removeEventListener('keydown', onKeyDown)
-    }
-  }, [show])
-
   const OnBurgerClick = () => {
     editorView.focus()
     setShow(!show)
@@ -358,7 +346,8 @@ export default (props: Props) => {
     )
   }
 
-  const filePreview = (file: File, length: number) => {
+  const FileLink = (props: {file: File}) => {
+    const length = 24
     const getText = (node) => {
       let text = ''
 
@@ -379,20 +368,37 @@ export default (props: Props) => {
       return text
     }
 
-    if (file.path) {
-      return file.path.substring(file.path.length - length)
-    }
+    const text = props.file.path ?
+      props.file.path.substring(props.file.path.length - length) :
+      getText(props.file.text?.doc).substring(0, length)
 
-    return getText(file.text?.doc).substring(0, length)
+    return (
+      <Link
+        onClick={() => dispatch(Open(props.file))}>
+        {text} {props.file.path && '📎'}
+      </Link>
+    )
   }
+
+  const Keys = ({keys}: {keys: string[]}) => (
+    <span>{keys.map((k, i) => <i key={i}>{k}</i>)}</span>
+  )
 
   useEffect(() => {
     setLastAction(undefined)
   }, [props.lastModified])
 
-  const Keys = ({keys}: {keys: string[]}) => (
-    <span>{keys.map((k, i) => <i key={i}>{k}</i>)}</span>
-  )
+  useEffect(() => {
+    if (!show) return
+    const onKeyDown = (e) => {
+      if (e.keyCode === 27) setShow(false)
+    }
+
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('keydown', onKeyDown)
+    }
+  }, [show])
 
   return (
     <Container>
@@ -426,11 +432,7 @@ export default (props: Props) => {
                 <Label>Files</Label>
                 <Sub>
                   {props.files.map((file) => (
-                    <Link
-                      key={file.lastModified}
-                      onClick={() => dispatch(Open(file))}>
-                      {filePreview(file, 24)} {file.path && '📎'}
-                    </Link>
+                    <FileLink key={file.lastModified} file={file} />
                   ))}
                 </Sub>
               </>
@@ -502,7 +504,7 @@ export default (props: Props) => {
                 {props.config.fontSize}
               </Text>
               <Text>
-                Content width :
+                Content width:
                 <Slider
                   type="range"
                   min="600"
