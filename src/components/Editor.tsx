@@ -243,6 +243,7 @@ export default (props: Props) => {
   `
 
   const OnInit = (value: ProseMirrorState) => {
+    props.editorViewRef.current.focus()
     dispatch(UpdateText(value))
   }
 

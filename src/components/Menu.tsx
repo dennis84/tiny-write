@@ -197,60 +197,49 @@ export default (props: Props) => {
 
   const OnUndo = () => {
     undo(editorView.state, editorView.dispatch)
-    editorView.focus()
   }
 
   const OnRedo = () => {
     redo(editorView.state, editorView.dispatch)
-    editorView.focus()
   }
 
   const Cmd = (cmd: string) => () => {
     document.execCommand(cmd)
     setLastAction(cmd)
-    editorView.focus()
   }
 
   const OnCopyAllAsMd = () => {
     remote.copyAllAsMarkdown(editorView.state).then(() => {
-      editorView.focus()
       setLastAction('copy-md')
     })
   }
 
   const OnChangeTheme = (theme) => () => {
     dispatch(UpdateConfig({...props.config, theme}))
-    editorView.focus()
   }
 
   const OnChangeCodeTheme = (codeTheme) => () => {
     dispatch(UpdateConfig({...props.config, codeTheme}))
-    editorView.focus()
   }
 
   const OnChangeFont = (font) => () => {
     dispatch(UpdateConfig({...props.config, font}))
-    editorView.focus()
   }
 
   const OnChangeFontSize = (e) => {
     dispatch(UpdateConfig({...props.config, fontSize: parseInt(e.target.value)}))
-    editorView.focus()
   }
 
   const OnChangeContentWidth = (e) => {
     dispatch(UpdateConfig({...props.config, contentWidth: parseInt(e.target.value)}))
-    editorView.focus()
   }
 
   const OnToggleAlwaysOnTop = () => {
     dispatch(UpdateConfig({...props.config, alwaysOnTop: !props.config.alwaysOnTop}))
-    editorView.focus()
   }
 
   const OnToggleTypewriterMode = () => {
     dispatch(UpdateConfig({...props.config, typewriterMode: !props.config.typewriterMode}))
-    editorView.focus()
   }
 
   const OnToggleFullscreen = () => {
@@ -263,7 +252,6 @@ export default (props: Props) => {
 
   const OnNew = () => {
     dispatch(New)
-    setTimeout(() => editorView.focus())
   }
 
   const OnDiscard = () => {

@@ -444,7 +444,12 @@ export default (props: {state: State}) => {
 
   // Save state in DB if lastModified has changed
   useDebouncedEffect(async () => {
-    if (state.loading !== 'initialized' || !state.lastModified) return
+    if (
+      state.loading !== 'initialized' ||
+      !state.text.initialized ||
+      !state.lastModified
+    ) return
+
     const data: any = {
       lastModified: state.lastModified,
       files: state.files,
@@ -453,14 +458,12 @@ export default (props: {state: State}) => {
     }
 
     if (state.path) {
-      if (state.text?.initialized) {
-        let text = markdownSerializer.serialize(state.text.editorState.doc)
-        if (text.charAt(text.length - 1) !== '\n') {
-          text += '\n'
-        }
-
-        await remote.writeFile(state.path, text)
+      let text = markdownSerializer.serialize(state.text.editorState.doc)
+      if (text.charAt(text.length - 1) !== '\n') {
+        text += '\n'
       }
+
+      await remote.writeFile(state.path, text)
     } else {
       data.text = state.text?.editorState.toJSON()
     }
