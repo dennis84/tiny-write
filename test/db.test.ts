@@ -4,7 +4,7 @@ beforeAll(async () => {
 
 it('init', async () => {
   await page.waitForSelector('[data-testid="initialized"]')
-  await page.click('button')
+  await page.click('[data-testid="burger"]')
   expect(await page.textContent('[data-testid="last-modified"]')).toContain('Nothing yet')
   await page.type('.ProseMirror', 'foo')
   expect(await page.textContent('[data-testid="last-modified"]')).not.toContain('Nothing yet')

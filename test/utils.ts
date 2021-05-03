@@ -7,3 +7,9 @@ export const move = async (key, repeat = 1) => {
     await page.keyboard.up(key)
   }
 }
+
+export const clearText = async () => {
+  await page.click('[data-testid="burger"]')
+  await page.click('[data-testid="discard"]')
+  expect(await lineText()).toBe('Start typing ...')
+}

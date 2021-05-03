@@ -158,8 +158,15 @@ ipcMain.handle('quit', () => {
 })
 
 ipcMain.handle('fileExists', (event, src) => {
-  const file = src.replace('~', os.homedir())
+  const file = src.replace(/^~/, os.homedir())
   return fs.existsSync(file)
+})
+
+ipcMain.handle('isImage', async (event, src) => {
+  const file = src.replace('~', os.homedir())
+  if (!fs.existsSync(file)) return false
+  const meta = await FileType.fromFile(file)
+  return meta && (meta.ext === 'png' || meta.ext === 'jpg' || meta.ext === 'gif')
 })
 
 ipcMain.handle('readFile', async (event, src) => {

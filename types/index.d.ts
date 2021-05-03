@@ -19,6 +19,7 @@ interface Preload {
   copyToClipboard: (text: string) => Promise<void>;
   quit: () => Promise<void>;
   fileExists: (str: string) => Promise<boolean>;
+  isImage: (str: string) => Promise<boolean>;
   readFile: (str: string) => Promise<FileInfo>;
   writeFile: (file: string, content: string) => Promise<void>;
   getArgs: () => Promise<Args>;

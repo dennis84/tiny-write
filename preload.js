@@ -7,6 +7,7 @@ contextBridge.exposeInMainWorld('app', {
   copyToClipboard: (text) => ipcRenderer.invoke('copyToClipboard', text),
   quit: () => ipcRenderer.invoke('quit'),
   fileExists: (src) => ipcRenderer.invoke('fileExists', src),
+  isImage: (src) => ipcRenderer.invoke('isImage', src),
   readFile: (src) => ipcRenderer.invoke('readFile', src),
   writeFile: (file, content) => ipcRenderer.invoke('writeFile', file, content),
   getArgs: () => ipcRenderer.invoke('getArgs'),

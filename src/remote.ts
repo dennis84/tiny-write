@@ -54,6 +54,11 @@ export const fileExists = async (src) => {
   return window.app.fileExists(src)
 }
 
+export const isImage = async (src) => {
+  if (!isElectron) return false
+  return window.app.isImage(src)
+}
+
 export const readFile = async (src) => {
   if (!isElectron) return
   return window.app.readFile(src)

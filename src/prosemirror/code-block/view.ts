@@ -5,7 +5,6 @@ import {exitCode} from 'prosemirror-commands'
 import {Compartment, EditorState} from '@codemirror/state'
 import {EditorView, ViewUpdate, keymap} from '@codemirror/view'
 import {defaultKeymap, defaultTabBinding} from '@codemirror/commands'
-import {tags} from '@codemirror/highlight'
 import {linter, setDiagnostics} from '@codemirror/lint'
 import {StreamLanguage} from '@codemirror/stream-parser'
 import {haskell} from '@codemirror/legacy-modes/mode/haskell'
@@ -75,11 +74,9 @@ export class CodeBlockView {
     this.prettifyBtn.addEventListener('mousedown', this.prettify.bind(this), true)
     this.updateNav()
 
-    const hasFile = this.node.attrs.params.file !== undefined
     const container = document.createElement('div')
     container.setAttribute('contenteditable', 'false')
     container.classList.add('codemirror-container')
-    if (hasFile) container.classList.add('has-file')
 
     const langInput = document.createElement('span')
     langInput.className = 'lang-input'
@@ -207,20 +204,6 @@ export class CodeBlockView {
       state: startState,
       parent: null,
     })
-
-    if (hasFile) {
-      const theme = getTheme(this.options.theme)
-      const fileInfo = document.createElement('pre')
-      fileInfo.classList.add('file-info')
-      fileInfo.classList.add(theme[1].match(tags.comment))
-      fileInfo.textContent = `// ${this.node.attrs.params.src}`
-      const closeFile = document.createElement('span')
-      closeFile.className = 'close-file'
-      closeFile.textContent = '❎'
-      closeFile.addEventListener('click', this.close.bind(this))
-      this.editorView.dom.appendChild(fileInfo)
-      this.editorView.dom.appendChild(closeFile)
-    }
 
     container.appendChild(langSelect)
     container.appendChild(this.prettifyBtn)

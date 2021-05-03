@@ -1,15 +1,11 @@
 import {Plugin} from 'prosemirror-state'
 import {Schema} from 'prosemirror-model'
 import {EditorView, Node} from 'prosemirror-view'
-import {fileExists, readFile, resolve} from '../remote'
+import {isImage, readFile, resolve} from '../remote'
+import {isElectron} from '../env'
 
 const REGEX = /^!\[([^[\]]*?)\]\((.+?)\)\s+/
 const MAX_MATCH = 500
-
-const isImage = (data) =>
-  data.ext === 'png' ||
-  data.ext === 'jpg' ||
-  data.ext === 'gif'
 
 const isUrl = (str) => {
   try {
@@ -31,7 +27,7 @@ const imageSrc = (data) => {
   return `data:${data.mime};base64,${base64}`
 }
 
-const fileInput = (schema) => {
+const imageInput = (schema) => {
   return new Plugin({
     props: {
       handleTextInput(view, from, to, text) {
@@ -58,15 +54,12 @@ const fileInput = (schema) => {
             return true
           }
 
-          fileExists(src).then((result) => {
-            if (!result) throw new Error('File does not exists')
+          isImage(src).then((result) => {
+            if (!result) return
             return readFile(src)
           }).then((data) => {
-            if (data === undefined) return false
-            const node = isImage(data) ?
-              schema.node('image', {src: imageSrc(data), title, path: src}) :
-              schema.node('code_block', {params: {file: data.file, src, title}})
-
+            if (!data) return false
+            const node = schema.node('image', {src: imageSrc(data), title, path: src})
             const start = from - (match[0].length - text.length)
             const tr = view.state.tr
             tr.delete(start, to)
@@ -74,7 +67,7 @@ const fileInput = (schema) => {
             view.dispatch(tr)
           })
 
-          return true
+          return false
         }
       },
     }
@@ -155,7 +148,7 @@ export default (path?: string) => ({
   plugins: (prev, schema) => [
     ...prev,
     dropFile(schema),
-    fileInput(schema),
+    imageInput(schema),
   ],
   nodeViews: {
     image: (node, view, getPos) => {

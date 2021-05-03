@@ -390,7 +390,7 @@ export default (props: Props) => {
 
   return (
     <Container>
-      <Burger onClick={OnBurgerClick} active={show}>
+      <Burger onClick={OnBurgerClick} active={show} data-testid="burger">
         <span />
         <span />
         <span />
@@ -408,7 +408,8 @@ export default (props: Props) => {
               <Link onClick={OnNew}>New <Keys keys={[mod, 'n']} /></Link>
               <Link
                 onClick={OnDiscard}
-                disabled={props.files.length === 0 && isEmpty(props.text?.editorState)}>
+                disabled={props.files.length === 0 && isEmpty(props.text?.editorState)}
+                data-testid="discard">
                 {
                   props.path ? 'Close' :
                   (props.files.length > 0 && isEmpty(props.text?.editorState)) ? 'Discard ⚠️' : 'Clear'
