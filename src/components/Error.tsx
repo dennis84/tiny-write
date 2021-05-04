@@ -3,7 +3,7 @@ import styled from '@emotion/styled'
 import {ErrorObject} from '..'
 import {Clean, useDispatch} from '../reducer'
 import {rgb, rgba} from '../styles'
-import {background, color} from '../config'
+import {color} from '../config'
 import {ButtonPrimary} from './Button'
 
 interface Props {
@@ -11,21 +11,23 @@ interface Props {
 }
 
 const Layer = styled.div`
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: ${props => rgb(background(props.theme))};
+  height: 100%;
+  width: 100%;
+  min-height: 100vh;
+  max-height: 100vh;
+  overflow-y: auto;
+  padding: 50px;
   display: flex;
   justify-content: center;
-  align-items: center;
-  padding: 0 50px;
+  ::-webkit-scrollbar {
+    display: none;
+  }
 `
 
 const Container = styled.div`
   max-width: 800px;
   width: 100%;
+  height: fit-content;
 `
 
 const Pre = styled.pre`
@@ -73,10 +75,10 @@ const other = (props: Props) => {
   return (
     <Layer>
       <Container>
-        <h1>Something went wrong</h1>
+        <h1>An unexpected error occurred.</h1>
         <p>
-          An unexpected error occurred. You should try a restart. If this
-          doesn{`'`}t help, you can try to clean up the state.
+          You should try a restart. If this doesn{`'`}t help, you can try to
+          clean up the state.
         </p>
         <p>Error Details:</p>
         <Pre><code>{(props.error.props as any)?.error.message}</code></Pre>
