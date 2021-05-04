@@ -2,7 +2,6 @@ import {Plugin} from 'prosemirror-state'
 import {Schema} from 'prosemirror-model'
 import {EditorView, Node} from 'prosemirror-view'
 import {isImage, readFile, resolve} from '../remote'
-import {isElectron} from '../env'
 
 const REGEX = /^!\[([^[\]]*?)\]\((.+?)\)\s+/
 const MAX_MATCH = 500

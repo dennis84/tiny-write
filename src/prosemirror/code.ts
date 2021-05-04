@@ -39,6 +39,18 @@ const markInputRule = (regexp, nodeType, getAttrs = undefined) =>
     if (match[1]) {
       const textStart = start + match[0].indexOf(match[1])
       const textEnd = textStart + match[1].length
+      let hasMarks = false
+      state.doc.nodesBetween(textStart, textEnd, (node) => {
+        if (node.marks.length > 0) {
+          hasMarks = true
+          return false
+        }
+      })
+
+      if (hasMarks) {
+        return false
+      }
+
       if (textEnd < end) tr.delete(textEnd, end)
       if (textStart > start) tr.delete(start, textStart)
       end = start + match[1].length
