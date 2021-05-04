@@ -17,3 +17,16 @@ export const Layout = styled.div`
     opacity: 0.5;
   }
 `
+
+export const Resizer = styled.div`
+  width: 100%;
+  height: 20px;
+  position: fixed;
+  background: transparent;
+  bottom: 0;
+  right: 0;
+  z-index: 1;
+  user-select: none;
+  pointer-events: none;
+  -webkit-app-region: no-drag;
+`

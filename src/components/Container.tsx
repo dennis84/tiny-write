@@ -23,7 +23,7 @@ import {
   Open,
   useDispatch,
 } from '../reducer'
-import {Layout} from './Layout'
+import {Layout, Resizer} from './Layout'
 import Editor from './Editor'
 import ErrorView from './Error'
 import Menu from './Menu'
@@ -481,6 +481,7 @@ export default (props: Props) => {
             config={props.state.config}
             fullscreen={props.state.fullscreen}
             collab={props.state.collab} />
+          {isElectron && <Resizer />}
         </>
       )}
     </Layout>
