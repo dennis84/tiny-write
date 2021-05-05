@@ -2,7 +2,7 @@ import React from 'react'
 import styled from '@emotion/styled'
 import {ErrorObject} from '..'
 import {Clean, useDispatch} from '../reducer'
-import {rgb, rgba} from '../styles'
+import {rgba} from '../styles'
 import {color} from '../config'
 import {ButtonPrimary} from './Button'
 
@@ -34,7 +34,7 @@ const Pre = styled.pre`
   white-space: pre-wrap;
   word-wrap: break-word;
   background: ${props => rgba(color(props.theme), 0.1)};
-  border: 1px solid ${props => rgb(color(props.theme))};
+  border: 1px solid ${props => rgba(color(props.theme))};
   border-radius: 2px;
   padding: 10px;
 `

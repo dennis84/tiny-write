@@ -41,61 +41,69 @@ export const fonts: {[key: string]: Font} = {
   },
 }
 
+export type Rgb = [number, number, number]
+
 interface Theme {
   label: string;
-  background: string;
-  color: string;
-  color2: string;
+  background: Rgb;
+  color: Rgb;
+  color2: Rgb;
 }
 
 export const themes: {[key: string]: Theme} = {
   'light': {
     label: 'Light',
-    background: '255, 255, 255',
-    color: '74, 74, 74',
-    color2: '133, 117, 255',
+    background: [255, 255, 255],
+    color: [74, 74, 74],
+    color2: [133, 117, 255],
   },
   'dark': {
     label: 'Dark',
-    background: '22, 22, 26',
-    color: '148, 161, 178',
-    color2: '104, 255, 184',
+    background: [22, 22, 26],
+    color: [148, 161, 178],
+    color2: [104, 255, 184],
   },
   'gruvbox-dark': {
     label: 'Gruvbox Dark',
-    background: '50, 48, 47',
-    color: '223, 191, 142',
-    color2: '215, 95, 95',
+    background: [50, 48, 47],
+    color: [223, 191, 142],
+    color2: [215, 95, 95],
   },
   'solarized-light': {
     label: 'Solarized Light',
-    background: '253, 246, 227',
-    color: '101, 123, 131',
-    color2: '42, 161, 152',
+    background: [253, 246, 227],
+    color: [101, 123, 131],
+    color2: [42, 161, 152],
   },
   'solarized-dark': {
     label: 'Solarized Dark',
-    background: '0, 43, 54',
-    color: '131, 148, 150',
-    color2: '203, 75, 22',
+    background: [0, 43, 54],
+    color: [131, 148, 150],
+    color2: [203, 75, 22],
   },
   'material': {
     label: 'Material',
-    background: '38, 50, 56',
-    color: '146, 152, 155',
-    color2: '137, 221, 255',
+    background: [38, 50, 56],
+    color: [146, 152, 155],
+    color2: [137, 221, 255],
+  },
+  'dracula': {
+    label: 'Dracula',
+    background: [40, 42, 54],
+    color: [189, 147, 249],
+    color2: [255, 121, 198],
   },
   'hibernus': {
     label: 'Hibernus',
-    background: '244, 246, 246',
-    color: '144, 166, 166',
-    color2: '254, 87, 146',
+    background: [244, 246, 246],
+    color: [144, 166, 166],
+    color2: [254, 87, 146],
   },
   'soft-era': {
     label: 'Soft Era',
-    background: '249, 245, 245',
-    color: '186, 152, 156',
-    color2: '184, 189, 232',
+    background: [249, 245, 245],
+    color: [186, 152, 156],
+    color2: [184, 189, 232],
   },
 }
 

@@ -18,7 +18,7 @@ import {
   useDispatch,
 } from '../reducer'
 import {color, color2, themes, fonts, codeThemes} from '../config'
-import {rgb, rgba} from '../styles'
+import {rgba} from '../styles'
 import {isElectron, isMac, alt, mod, WEB_URL, VERSION_URL} from '../env'
 import * as remote from '../remote'
 import {isEmpty} from '../prosemirror/prosemirror'
@@ -111,7 +111,7 @@ export const Item = (props: {theme: Config}) => css`
   outline: none;
   display: flex;
   align-items: center;
-  color: ${rgb(color(props.theme))};
+  color: ${rgba(color(props.theme))};
   font-size: 18px;
   line-height: 24px;
   font-family: 'JetBrains Mono';
@@ -143,7 +143,7 @@ const Link = styled.button`
     }
   }
   &:hover {
-    color: ${props => rgb(color2(props.theme))};
+    color: ${props => rgba(color2(props.theme))};
     > span i {
       position: relative;
       box-shadow: 0 3px 0 0 ${props => rgba(color(props.theme), 0.6)};

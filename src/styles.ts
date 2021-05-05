@@ -1,2 +1,3 @@
-export const rgb = (str: string) => `rgb(${str})`
-export const rgba = (str: string, alpha: number) => `rgba(${str}, ${alpha})`
+import {Rgb} from './config'
+
+export const rgba = ([r, g, b]: Rgb, a = 1) => `rgba(${r}, ${g}, ${b}, ${a})`

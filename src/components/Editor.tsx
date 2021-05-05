@@ -3,7 +3,7 @@ import {EditorView} from 'prosemirror-view'
 import {css} from '@emotion/css'
 import {useTheme} from '@emotion/react'
 import {Config, File} from '..'
-import {rgb, rgba} from '../styles'
+import {rgba} from '../styles'
 import {color, color2, font} from '../config'
 import {UpdateText, useDispatch} from '../reducer'
 import {ProseMirror, ProseMirrorState} from '../prosemirror/prosemirror'
@@ -39,7 +39,7 @@ export default (props: Props) => {
       max-width: ${theme.contentWidth}px;
       font-size: ${theme.fontSize}px;
       font-family: ${font(theme)};
-      color: ${rgb(color(theme))};
+      color: ${rgba(color(theme))};
       margin-top: 50px;
       padding-bottom: 77vh;
       line-height: ${theme.fontSize * 1.6}px;
