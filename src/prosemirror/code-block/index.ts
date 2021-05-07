@@ -25,23 +25,21 @@ const codeBlockRule = (nodeType) =>
     }
   )
 
-function arrowHandler(dir) {
-  return (state, dispatch, view) => {
-    if (state.selection.empty && view.endOfTextblock(dir)) {
-      const side = dir == 'left' || dir == 'up' ? -1 : 1
-      const $head = state.selection.$head
-      const nextPos = Selection.near(
-        state.doc.resolve(side > 0 ? $head.after() : $head.before()),
-        side
-      )
+const arrowHandler = (dir) => (state, dispatch, view) => {
+  if (state.selection.empty && view.endOfTextblock(dir)) {
+    const side = dir == 'left' || dir == 'up' ? -1 : 1
+    const $head = state.selection.$head
+    const nextPos = Selection.near(
+      state.doc.resolve(side > 0 ? $head.after() : $head.before()),
+      side
+    )
 
-      if (nextPos.$head?.parent.type.name == 'code_block') {
-        dispatch(state.tr.setSelection(nextPos))
-        return true
-      }
+    if (nextPos.$head?.parent.type.name == 'code_block') {
+      dispatch(state.tr.setSelection(nextPos))
+      return true
     }
-    return false
   }
+  return false
 }
 
 const codeBlockKeymap = {
@@ -72,7 +70,7 @@ export default (props: CodeBlockProps) => ({
   ],
   nodeViews: {
     code_block: (node, view, getPos, decos, innerDecos) => {
-      return new CodeBlockView(node, view, getPos, view.state.schema, decos, innerDecos, props)
+      return new CodeBlockView(node, view, getPos, decos, innerDecos, props)
     }
   },
 })

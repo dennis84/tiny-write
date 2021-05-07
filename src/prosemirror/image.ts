@@ -18,7 +18,7 @@ const isUrl = (str) => {
 const isBlank = (text) => text === ' ' || text === '\xa0'
 
 const imageSrc = (data) => {
-  let binary = '';
+  let binary = ''
   for (let i = 0; i < data.buffer.byteLength; i++) {
     binary += String.fromCharCode(data.buffer[i])
   }
@@ -198,7 +198,7 @@ class ImageView {
       e.preventDefault()
       window.addEventListener('mousemove', this.onResizeFn)
       window.addEventListener('mouseup', this.onResizeEndFn)
-    });
+    })
 
     this.container.appendChild(image)
     this.container.appendChild(this.handle)

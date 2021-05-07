@@ -1,4 +1,3 @@
-import {Schema} from 'prosemirror-model'
 import {EditorView as PmEditorView, Node} from 'prosemirror-view'
 import {TextSelection} from 'prosemirror-state'
 import {exitCode} from 'prosemirror-commands'
@@ -46,7 +45,6 @@ export class CodeBlockView {
   node: Node
   view: PmEditorView
   getPos: () => number
-  schema: Schema
   dom: Element
   editorView: EditorView
   updating = false
@@ -58,11 +56,10 @@ export class CodeBlockView {
   langExtension: Compartment
   themeExtension: Compartment
 
-  constructor(node, view, getPos, schema, decos, innerDecos, options) {
+  constructor(node, view, getPos, decos, innerDecos, options) {
     this.node = node
     this.view = view
     this.getPos = getPos
-    this.schema = schema
     this.options = options
 
     this.logo = document.createElement('span')
@@ -157,7 +154,7 @@ export class CodeBlockView {
           const tr = this.view.state.tr
           let targetPos = this.getPos() - 1
           if (this.getPos() === 0) {
-            tr.insert(0, this.schema.node('paragraph'))
+            tr.insert(0, this.view.state.schema.node('paragraph'))
             targetPos = 0
           }
 
@@ -323,7 +320,7 @@ export class CodeBlockView {
           const t = this.view.state.tr.replaceWith(
             offset + fromA,
             offset + toA,
-            text.length > 0 ? this.schema.text(text.toString()) : null,
+            text.length > 0 ? this.view.state.schema.text(text.toString()) : null,
           )
 
           this.view.dispatch(t)

@@ -30,8 +30,8 @@ export class ErrorBoundary extends React.Component<Props, State> {
           errorInfo: this.state.errorInfo,
         }
       })
-    } else {
-      return this.props.children
     }
+
+    return this.props.children
   }
 }

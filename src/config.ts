@@ -160,7 +160,7 @@ export const font = (config: Config, monospace = false) => {
   }
 
   return fonts[config.font].label
-};
+}
 
 export const codeTheme = (config: Config) =>
   codeThemes[config.codeTheme] ? codeThemes[config.codeTheme].value : 'dracula'
