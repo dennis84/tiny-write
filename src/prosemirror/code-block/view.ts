@@ -479,8 +479,8 @@ const getTheme = (theme: string) =>
   materialLight
 
 const getLangExtension = (lang: string) =>
-  lang === 'javascript' ? javascript() :
-  lang === 'typescript' ? javascript({typescript: true}) :
+  lang === 'javascript' || lang === 'jsx' ? javascript() :
+  lang === 'typescript' || lang === 'tsx' ? javascript({typescript: true}) :
   lang === 'java' || lang === 'kotlin' ? java() :
   lang === 'rust' ? rust() :
   lang === 'sql' ? sql() :

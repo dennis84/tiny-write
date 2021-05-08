@@ -33,6 +33,8 @@ export default {
   cpp: cplusplus,
   html: html5,
   css: css3,
+  jsx: javascript,
+  tsx: typescript,
   // all
   bash,
   c,
