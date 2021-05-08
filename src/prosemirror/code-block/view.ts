@@ -1,7 +1,7 @@
 import {EditorView as PmEditorView, Node} from 'prosemirror-view'
 import {TextSelection} from 'prosemirror-state'
 import {exitCode} from 'prosemirror-commands'
-import {Compartment, EditorState} from '@codemirror/state'
+import {Compartment, EditorState, Extension} from '@codemirror/state'
 import {EditorView, ViewUpdate, keymap} from '@codemirror/view'
 import {defaultKeymap, defaultTabBinding} from '@codemirror/commands'
 import {linter, setDiagnostics} from '@codemirror/lint'
@@ -25,13 +25,13 @@ import {css} from '@codemirror/lang-css'
 import {cpp} from '@codemirror/lang-cpp'
 import {markdown} from '@codemirror/lang-markdown'
 import {xml} from '@codemirror/lang-xml'
-import {materialLight} from '@ddietr/codemirror-themes/theme/material-light'
-import {materialDark} from '@ddietr/codemirror-themes/theme/material-dark'
-import {solarizedLight} from '@ddietr/codemirror-themes/theme/solarized-light'
-import {solarizedDark} from '@ddietr/codemirror-themes/theme/solarized-dark'
-import {dracula} from '@ddietr/codemirror-themes/theme/dracula'
-import {githubLight} from '@ddietr/codemirror-themes/theme/github-light'
-import {githubDark} from '@ddietr/codemirror-themes/theme/github-dark'
+import {materialLight, config as materialLightConfig} from '@ddietr/codemirror-themes/theme/material-light'
+import {materialDark, config as materialDarkConfig} from '@ddietr/codemirror-themes/theme/material-dark'
+import {solarizedLight, config as solarizedLightConfig} from '@ddietr/codemirror-themes/theme/solarized-light'
+import {solarizedDark, config as solarizedDarkConfig} from '@ddietr/codemirror-themes/theme/solarized-dark'
+import {dracula, config as draculaConfig} from '@ddietr/codemirror-themes/theme/dracula'
+import {githubLight, config as githubLightConfig} from '@ddietr/codemirror-themes/theme/github-light'
+import {githubDark, config as githubDarkConfig} from '@ddietr/codemirror-themes/theme/github-dark'
 import prettier from 'prettier'
 import parserBabel from 'prettier/parser-babel'
 import parserCss from 'prettier/parser-postcss'
@@ -54,7 +54,6 @@ export class CodeBlockView {
   prettifyBtn: HTMLElement
   dragHandle: HTMLElement
   langExtension: Compartment
-  themeExtension: Compartment
 
   constructor(node, view, getPos, decos, innerDecos, options) {
     this.node = node
@@ -69,11 +68,15 @@ export class CodeBlockView {
     this.prettifyBtn.style.display = 'none'
     this.prettifyBtn.setAttribute('title', 'prettify')
     this.prettifyBtn.addEventListener('mousedown', this.prettify.bind(this), true)
-    this.updateNav()
+    this.updateLangSelect()
+    this.updatePrettify()
 
-    const container = document.createElement('div')
-    container.setAttribute('contenteditable', 'false')
-    container.classList.add('codemirror-container')
+    const outer = document.createElement('div')
+    outer.setAttribute('contenteditable', 'false')
+    outer.classList.add('codemirror-outer')
+    const inner = document.createElement('div')
+    inner.classList.add('codemirror-inner')
+    outer.appendChild(inner)
 
     const langInput = document.createElement('span')
     langInput.className = 'lang-input'
@@ -95,7 +98,8 @@ export class CodeBlockView {
         })
         view.dispatch(tr)
         this.reconfigure()
-        this.updateNav()
+        this.updateLangSelect()
+        this.updatePrettify()
         this.editorView.focus()
       }
     })
@@ -174,7 +178,11 @@ export class CodeBlockView {
       []
 
     this.langExtension = new Compartment
-    this.themeExtension = new Compartment
+
+    const [theme, themeConfig] = getTheme(this.options.theme)
+    inner.style.background = themeConfig.background
+    langSelect.style.color = themeConfig.foreground
+    langSelectBottom.style.color = themeConfig.foreground
 
     const startState = EditorState.create({
       doc: this.node.textContent,
@@ -186,7 +194,7 @@ export class CodeBlockView {
         codeMirrorKeymap,
         EditorState.tabSize.of(2),
         this.langExtension.of(getLangExtension(this.getLang())),
-        this.themeExtension.of(getTheme(this.options.theme)),
+        theme,
         EditorView.updateListener.of(this.updateListener.bind(this)),
         EditorView.domEventHandlers({
           'focus': () => this.forwardSelection(),
@@ -202,18 +210,18 @@ export class CodeBlockView {
       parent: null,
     })
 
-    container.appendChild(langSelect)
-    container.appendChild(this.prettifyBtn)
-    container.appendChild(this.editorView.dom)
-    container.appendChild(langSelectBottom)
-    container.appendChild(langToggle)
+    inner.appendChild(langSelect)
+    inner.appendChild(this.prettifyBtn)
+    inner.appendChild(this.editorView.dom)
+    inner.appendChild(langSelectBottom)
+    inner.appendChild(langToggle)
 
     innerDecos.find().map((d) => {
       const elem = typeof d.type.toDOM === 'function' ? d.type.toDOM() : d.type.toDOM
-      container.appendChild(elem)
+      outer.appendChild(elem)
     })
 
-    this.dom = container
+    this.dom = outer
   }
 
   destroy() {
@@ -243,9 +251,12 @@ export class CodeBlockView {
     if (node.type != this.node.type) return false
     const langChanged = node.attrs.params.lang !== this.node.attrs.params.lang
     this.node = node
-    if (langChanged) this.reconfigure()
-    this.updateNav()
+    if (langChanged) {
+      this.reconfigure()
+      this.updateLangSelect()
+    }
 
+    this.updatePrettify()
     const change = computeChange(this.editorView.state.doc.toString(), node.textContent)
     if (change) {
       this.updating = true
@@ -273,7 +284,6 @@ export class CodeBlockView {
     this.editorView.dispatch({
       effects: [
         this.langExtension.reconfigure(getLangExtension(this.getLang())),
-        this.themeExtension.reconfigure(getTheme(this.options.theme)),
       ]
     })
   }
@@ -329,7 +339,7 @@ export class CodeBlockView {
     }
   }
 
-  updateNav() {
+  updateLangSelect() {
     const lang = this.getLang()
     let elem
     if (logos[lang]) {
@@ -345,6 +355,11 @@ export class CodeBlockView {
       elem.setAttribute('title', lang)
     }
 
+    this.logo.innerHTML = ''
+    this.logo.appendChild(elem)
+  }
+
+  updatePrettify() {
     if (
       this.getLang() === 'javascript' ||
       this.getLang() === 'typescript' ||
@@ -361,9 +376,6 @@ export class CodeBlockView {
     } else {
       this.prettifyBtn.style.display = 'none'
     }
-
-    this.logo.innerHTML = ''
-    this.logo.appendChild(elem)
   }
 
   prettify() {
@@ -468,15 +480,15 @@ function computeChange(oldVal, newVal) {
   }
 }
 
-const getTheme = (theme: string) =>
-  theme === 'dracula' ? dracula :
-  theme === 'solarized-light' ? solarizedLight :
-  theme === 'solarized-dark' ? solarizedDark :
-  theme === 'material-light' ? materialLight :
-  theme === 'material-dark' ? materialDark :
-  theme === 'github-light' ? githubLight :
-  theme === 'github-dark' ? githubDark :
-  materialLight
+const getTheme = (theme: string): [Extension, any] =>
+  theme === 'dracula' ? [dracula, draculaConfig] :
+  theme === 'solarized-light' ? [solarizedLight, solarizedLightConfig] :
+  theme === 'solarized-dark' ? [solarizedDark, solarizedDarkConfig] :
+  theme === 'material-light' ? [materialLight, materialLightConfig] :
+  theme === 'material-dark' ? [materialDark, materialDarkConfig] :
+  theme === 'github-light' ? [githubLight, githubLightConfig] :
+  theme === 'github-dark' ? [githubDark, githubDarkConfig] :
+  [materialLight, materialLightConfig]
 
 const getLangExtension = (lang: string) =>
   lang === 'javascript' || lang === 'jsx' ? javascript() :

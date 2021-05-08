@@ -131,50 +131,53 @@ export default (props: Props) => {
       .draggable:hover .handle {
         opacity: 1;
       }
-      .codemirror-container {
+      .codemirror-outer {
         position: relative;
-        .lang-select {
-          .lang-input {
-            outline: none;
-          }
-        }
-        .cm-wrap {
-          border-radius: 2px;
-          margin: 10px 0;
-          box-shadow: inset 0 0 0 1px ${rgba(color(theme), 0.3)};
+        .codemirror-inner {
+          position: relative;
+          padding: 5px 0;
           font-family: '${font(theme, true)}' !important;
-          outline: none;
-          .cm-line {
-            line-height: 1.6;
-          }
-          .cm-diagnosticText {
-            white-space: pre;
-          }
-          .cm-scroller {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
-            &::-webkit-scrollbar {
-              display: none;
+          border: 1px solid ${rgba(color(theme), 0.3)};
+          .lang-select {
+            .lang-input {
+              outline: none;
             }
           }
-        }
-        .lang-toggle {
-          position: absolute;
-          top: 1px;
-          right: -8px;
-          transform: translateX(100%);
-          cursor: pointer;
-          z-index: 10;
-          user-select: none;
-          -webkit-app-region: no-drag;
-        }
-        .prettify {
-          position: absolute;
-          right: 8px;
-          bottom: 4px;
-          cursor: pointer;
-          z-index: 10;
-          user-select: none;
+          .cm-wrap {
+            border-radius: 2px;
+            outline: none;
+            .cm-line {
+              line-height: 1.6;
+            }
+            .cm-diagnosticText {
+              white-space: pre;
+            }
+            .cm-scroller {
+              -ms-overflow-style: none;
+              scrollbar-width: none;
+              &::-webkit-scrollbar {
+                display: none;
+              }
+            }
+          }
+          .lang-toggle {
+            position: absolute;
+            top: 1px;
+            right: -8px;
+            transform: translateX(100%);
+            cursor: pointer;
+            z-index: 10;
+            user-select: none;
+            -webkit-app-region: no-drag;
+          }
+          .prettify {
+            position: absolute;
+            right: 8px;
+            bottom: 4px;
+            cursor: pointer;
+            z-index: 10;
+            user-select: none;
+          }
         }
       }
       .todo-item {
