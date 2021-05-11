@@ -29,6 +29,7 @@ export default (props: Props) => {
     padding: 0 50px;
     display: flex;
     justify-content: center;
+    scrollbar-width: none;
     ::-webkit-scrollbar {
       display: none;
     }

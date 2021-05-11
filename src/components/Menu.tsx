@@ -49,14 +49,11 @@ const Burger = styled.button<any>`
   outline: none;
   -webkit-app-region: no-drag;
   > span {
-    background: ${props => rgba(color(props.theme), 0.4)};
+    background: ${props => rgba(color(props.theme))};
     height: 2px;
     width: 100%;
     border-radius: 4px;
     transition: 0.4s;
-  }
-  &:hover > span {
-    background: ${props => rgba(color(props.theme), 0.6)};
   }
   ${props => props.active && `
     > span:nth-of-type(1) {
@@ -77,6 +74,7 @@ const Off = styled.div`
   height: 100%;
   min-width: 460px;
   overflow-y: auto;
+  scrollbar-width: none;
   ::-webkit-scrollbar {
     display: none;
   }

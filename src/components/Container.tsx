@@ -402,7 +402,7 @@ export default (props: Props) => {
       config: props.state.config,
       path: props.state.path,
       keymap,
-      collab: props.state.collab ? {
+      collab: props.state.collab?.started ? {
         version,
         clientID: props.state.collab.socket.id,
       } : undefined
