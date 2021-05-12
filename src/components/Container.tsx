@@ -189,6 +189,17 @@ export default (props: Props) => {
     }))
   })
 
+  const onDrop = (e) => {
+    if (
+      e.dataTransfer.files.length !== 1 ||
+      !e.dataTransfer.files[0].type.startsWith('text/')
+    ) return
+
+    dispatch(Open({
+      path: e.dataTransfer.files[0].path,
+    }))
+  }
+
   const loadFile = async () => {
     const fileExists = await remote.fileExists(props.state.path)
     if (!fileExists) {
@@ -430,7 +441,7 @@ export default (props: Props) => {
   useDebouncedEffect(async () => {
     if (
       props.state.loading !== 'initialized' ||
-      !props.state.text.initialized ||
+      !props.state.text?.initialized ||
       !props.state.lastModified
     ) return
 
@@ -461,7 +472,7 @@ export default (props: Props) => {
   })
 
   return (
-    <Layout data-testid={props.state.loading}>
+    <Layout data-testid={props.state.loading} onDrop={onDrop}>
       {(props.state.error) ? (
         <ErrorView error={props.state.error} />
       ) : (
