@@ -3,9 +3,12 @@ import {EditorView} from 'prosemirror-view'
 
 const scroll = (view: EditorView) => {
   if (!view.state.selection.empty) return false
-  const dom = view.domAtPos(view.state.selection.$head.start())
-  const skip = dom.node.classList.contains('codemirror-container')
-  if (!skip && dom.node !== view.dom) {
+  const pos = view.state.selection.$head.start()
+  const resolved = view.state.doc.resolve(pos)
+  if (resolved.parent.type.spec.code) return false
+
+  const dom = view.domAtPos(pos)
+  if (dom.node !== view.dom) {
     scrollToElem(dom.node)
   }
 }

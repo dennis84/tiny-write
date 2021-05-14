@@ -312,12 +312,9 @@ export class CodeBlockView {
     this.forwardSelection()
     const sel = update.state.selection.main
     if (this.editorView.hasFocus && sel.empty && this.options.typewriterMode) {
-      const coords = this.editorView.coordsAtPos(sel.from)
-      if (!coords) return
-      const elem = document.elementFromPoint(coords.left, coords.top)
-      if (!elem) return
-
-      elem.scrollIntoView({
+      const line = this.editorView.visualLineAt(sel.from)
+      const {node} = this.editorView.domAtPos(line.from)
+      ;(node as Element).scrollIntoView({
         block: 'center',
         behavior: 'smooth',
       })
