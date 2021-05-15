@@ -1,7 +1,6 @@
 import {css} from '@emotion/react'
 import styled from '@emotion/styled'
-import {color, color2, font} from '../config'
-import {rgba} from '../styles'
+import {color, color2, font, rgba} from '../config'
 
 export const Common = css`
   height: 50px;

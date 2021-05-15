@@ -85,7 +85,7 @@ export class CodeBlockView {
     langInput.addEventListener('keydown', (e) => {
       if (e.keyCode === 13) {
         e.preventDefault()
-        const lang = cleanLang(langInput.textContent)
+        const lang = cleanLang(langInput.textContent.trim())
         langInput.textContent = lang
         langSelect.style.display = 'none'
         langSelectBottom.style.display = 'none'

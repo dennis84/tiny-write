@@ -2,8 +2,7 @@ import React from 'react'
 import styled from '@emotion/styled'
 import {ErrorObject} from '..'
 import {Clean, useDispatch} from '../reducer'
-import {rgba} from '../styles'
-import {color} from '../config'
+import {color, rgba} from '../config'
 import {ButtonPrimary} from './Button'
 
 interface Props {

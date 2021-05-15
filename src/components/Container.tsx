@@ -53,12 +53,12 @@ export default (props: Props) => {
   const dispatch = useDispatch()
   const editorView = props.editorViewRef.current
 
-  const OnNew = useDynamicCallback(() => {
+  const onNew = useDynamicCallback(() => {
     dispatch(New)
     return true
   })
 
-  const OnDiscard = useDynamicCallback((editorState, editorDispatch, view) => {
+  const onDiscard = useDynamicCallback((editorState, editorDispatch, view) => {
     if (props.state.path) {
       dispatch(Discard)
     } else if (props.state.files.length > 0 && isEmpty(editorView.state)) {
@@ -71,31 +71,31 @@ export default (props: Props) => {
     return true
   })
 
-  const OnFullscreen = useDynamicCallback(() => {
+  const onFullscreen = useDynamicCallback(() => {
     dispatch(ToggleFullscreen)
     return true
   })
 
-  const OnUndo = useDynamicCallback(() => {
+  const onUndo = useDynamicCallback(() => {
     if (!editorView) return
     undo(editorView.state, editorView.dispatch)
     return true
   })
 
-  const OnRedo = useDynamicCallback(() => {
+  const onRedo = useDynamicCallback(() => {
     if (!editorView) return
     redo(editorView.state, editorView.dispatch)
     return true
   })
 
   const keymap = {
-    [`${mod}-n`]: OnNew,
-    [`${mod}-w`]: OnDiscard,
-    'Cmd-Enter': OnFullscreen,
-    'Alt-Enter': OnFullscreen,
-    [`${mod}-z`]: OnUndo,
-    [`Shift-${mod}-z`]: OnRedo,
-    [`${mod}-y`]: OnRedo,
+    [`${mod}-n`]: onNew,
+    [`${mod}-w`]: onDiscard,
+    'Cmd-Enter': onFullscreen,
+    'Alt-Enter': onFullscreen,
+    [`${mod}-z`]: onUndo,
+    [`Shift-${mod}-z`]: onRedo,
+    [`${mod}-y`]: onRedo,
   }
 
   const getCurrentVersion = () => {
@@ -115,7 +115,7 @@ export default (props: Props) => {
   }
 
   // Receive update response after create and recreate the state.
-  const OnReceiveUpdate = useDynamicCallback((data: any) => {
+  const onReceiveUpdate = useDynamicCallback((data: any) => {
     window.history.replaceState(null, '', `/${data.room}`)
 
     // Init room if message is from us and collab plugin is not initialized
@@ -155,7 +155,7 @@ export default (props: Props) => {
   })
 
   // Apply emitted steps
-  const OnReceiveSteps = useDynamicCallback((data) => {
+  const onReceiveSteps = useDynamicCallback((data) => {
     if (!props.state.collab?.initialized) return
 
     const version = getCurrentVersion()
@@ -181,7 +181,7 @@ export default (props: Props) => {
     editorView.dispatch(tr)
   })
 
-  const OnConnectError = useDynamicCallback(() => {
+  const onConnectError = useDynamicCallback(() => {
     dispatch(UpdateCollab({
       ...props.state.collab,
       started: false,
@@ -374,9 +374,9 @@ export default (props: Props) => {
       room: props.state.collab.room,
     })
 
-    props.state.collab.socket.on('update', OnReceiveUpdate)
-    props.state.collab.socket.on('steps', OnReceiveSteps)
-    props.state.collab.socket.on('connect_error', OnConnectError)
+    props.state.collab.socket.on('update', onReceiveUpdate)
+    props.state.collab.socket.on('steps', onReceiveSteps)
+    props.state.collab.socket.on('connect_error', onConnectError)
   }, [props.state.collab?.socket])
 
   // Listen to state changes and send them to all collab users

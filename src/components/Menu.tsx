@@ -17,8 +17,7 @@ import {
   ToggleFullscreen,
   useDispatch,
 } from '../reducer'
-import {color, color2, themes, fonts, codeThemes} from '../config'
-import {rgba} from '../styles'
+import {color, color2, themes, fonts, codeThemes, rgba} from '../config'
 import {isElectron, isMac, alt, mod, WEB_URL, VERSION_URL} from '../env'
 import * as remote from '../remote'
 import {isEmpty} from '../prosemirror/prosemirror'
@@ -188,71 +187,71 @@ export default (props: Props) => {
     props.collab?.error ? 'Restart 🚨' :
     'Start'
 
-  const OnBurgerClick = () => {
+  const onBurgerClick = () => {
     editorView.focus()
     setShow(!show)
   }
 
-  const OnUndo = () => {
+  const onUndo = () => {
     undo(editorView.state, editorView.dispatch)
   }
 
-  const OnRedo = () => {
+  const onRedo = () => {
     redo(editorView.state, editorView.dispatch)
   }
 
-  const Cmd = (cmd: string) => () => {
+  const cmd = (cmd: string) => () => {
     document.execCommand(cmd)
     setLastAction(cmd)
   }
 
-  const OnCopyAllAsMd = () => {
+  const onCopyAllAsMd = () => {
     remote.copyAllAsMarkdown(editorView.state).then(() => {
       setLastAction('copy-md')
     })
   }
 
-  const OnChangeTheme = (theme) => () => {
+  const onChangeTheme = (theme) => () => {
     dispatch(UpdateConfig({...props.config, theme}))
   }
 
-  const OnChangeCodeTheme = (codeTheme) => () => {
+  const onChangeCodeTheme = (codeTheme) => () => {
     dispatch(UpdateConfig({...props.config, codeTheme}))
   }
 
-  const OnChangeFont = (font) => () => {
+  const onChangeFont = (font) => () => {
     dispatch(UpdateConfig({...props.config, font}))
   }
 
-  const OnChangeFontSize = (e) => {
+  const onChangeFontSize = (e) => {
     dispatch(UpdateConfig({...props.config, fontSize: parseInt(e.target.value)}))
   }
 
-  const OnChangeContentWidth = (e) => {
+  const onChangeContentWidth = (e) => {
     dispatch(UpdateConfig({...props.config, contentWidth: parseInt(e.target.value)}))
   }
 
-  const OnToggleAlwaysOnTop = () => {
+  const onToggleAlwaysOnTop = () => {
     dispatch(UpdateConfig({...props.config, alwaysOnTop: !props.config.alwaysOnTop}))
   }
 
-  const OnToggleTypewriterMode = () => {
+  const onToggleTypewriterMode = () => {
     dispatch(UpdateConfig({...props.config, typewriterMode: !props.config.typewriterMode}))
   }
 
-  const OnToggleFullscreen = () => {
+  const onToggleFullscreen = () => {
     dispatch(ToggleFullscreen)
   }
 
-  const OnVersion = () => {
+  const onVersion = () => {
     window.open(VERSION_URL, '_blank')
   }
 
-  const OnNew = () => {
+  const onNew = () => {
     dispatch(New)
   }
 
-  const OnDiscard = () => {
+  const onDiscard = () => {
     if (props.path) {
       dispatch(Discard)
     } else if (props.files.length > 0 && isEmpty(props.text?.editorState)) {
@@ -263,7 +262,7 @@ export default (props: Props) => {
     }
   }
 
-  const OnCollab = () => {
+  const onCollab = () => {
     if (props.collab?.started) {
       dispatch(UpdateCollab({...props.collab, started: false}))
     } else {
@@ -273,7 +272,7 @@ export default (props: Props) => {
     editorView.focus()
   }
 
-  const OnCopyCollabLink = () => {
+  const onCopyCollabLink = () => {
     remote.copy(`${WEB_URL}/${props.collab.room}`).then(() => {
       editorView.focus()
       setLastAction('copy-collab-link')
@@ -388,7 +387,7 @@ export default (props: Props) => {
 
   return (
     <Container>
-      <Burger onClick={OnBurgerClick} active={show} data-testid="burger">
+      <Burger onClick={onBurgerClick} active={show} data-testid="burger">
         <span />
         <span />
         <span />
@@ -403,9 +402,9 @@ export default (props: Props) => {
             </Sub>
             <Label>File {props.path && <i>({props.path.substring(props.path.length - 24)})</i>}</Label>
             <Sub>
-              <Link onClick={OnNew}>New <Keys keys={[mod, 'n']} /></Link>
+              <Link onClick={onNew}>New <Keys keys={[mod, 'n']} /></Link>
               <Link
-                onClick={OnDiscard}
+                onClick={onDiscard}
                 disabled={props.files.length === 0 && isEmpty(props.text?.editorState)}
                 data-testid="discard">
                 {
@@ -426,25 +425,25 @@ export default (props: Props) => {
             )}
             <Label>Edit</Label>
             <Sub>
-              <Link onClick={OnUndo}>Undo <Keys keys={[mod, 'z']} /></Link>
-              <Link onClick={OnRedo}>
+              <Link onClick={onUndo}>Undo <Keys keys={[mod, 'z']} /></Link>
+              <Link onClick={onRedo}>
                 Redo <Keys keys={[mod, ...(isMac ? ['Shift', 'z'] : ['y'])]} />
               </Link>
-              <Link onClick={Cmd('cut')}>Cut <Keys keys={[mod, 'x']} /></Link>
-              <Link onClick={Cmd('paste')} disabled={!isElectron}>
+              <Link onClick={cmd('cut')}>Cut <Keys keys={[mod, 'x']} /></Link>
+              <Link onClick={cmd('paste')} disabled={!isElectron}>
                 Paste <Keys keys={[mod, 'p']} />
               </Link>
-              <Link onClick={Cmd('copy')}>
+              <Link onClick={cmd('copy')}>
                 Copy {lastAction === 'copy' && '📋'} <Keys keys={[mod, 'c']} />
               </Link>
-              <Link onClick={OnCopyAllAsMd}>
+              <Link onClick={onCopyAllAsMd}>
                 Copy all as markdown {lastAction === 'copy-md' && '📋'}
               </Link>
             </Sub>
             <Label>Theme</Label>
             <Sub>
               {Object.entries(themes).map(([key, value]) => (
-                <Link key={key} onClick={OnChangeTheme(key)}>
+                <Link key={key} onClick={onChangeTheme(key)}>
                   {value.label}{' '}{key === props.config.theme && '✅'}
                 </Link>
               ))}
@@ -452,7 +451,7 @@ export default (props: Props) => {
             <Label>Code</Label>
             <Sub>
               {Object.entries(codeThemes).map(([key, value]) => (
-                <Link key={key} onClick={OnChangeCodeTheme(key)}>
+                <Link key={key} onClick={onChangeCodeTheme(key)}>
                   {value.label}{' '}{key === props.config.codeTheme && '✅'}
                 </Link>
               ))}
@@ -460,7 +459,7 @@ export default (props: Props) => {
             <Label>Font</Label>
             <Sub>
               {Object.entries(fonts).map(([key, value]) => (
-                <Link key={key} onClick={OnChangeFont(key)}>
+                <Link key={key} onClick={onChangeFont(key)}>
                   {value.label}{' '}{key === props.config.font && '✅'}
                 </Link>
               ))}
@@ -468,15 +467,15 @@ export default (props: Props) => {
             <Label>View</Label>
             <Sub>
               {isElectron && (
-                <Link onClick={OnToggleFullscreen}>
+                <Link onClick={onToggleFullscreen}>
                   Fullscreen {props.fullscreen && '✅'} <Keys keys={[alt, 'Enter']} />
                 </Link>
               )}
-              <Link onClick={OnToggleTypewriterMode}>
+              <Link onClick={onToggleTypewriterMode}>
                 Typewriter mode {props.config.typewriterMode && '✅'}
               </Link>
               {isElectron && (
-                <Link onClick={OnToggleAlwaysOnTop}>
+                <Link onClick={onToggleAlwaysOnTop}>
                   Always on Top {props.config.alwaysOnTop && '✅'}
                 </Link>
               )}
@@ -487,7 +486,7 @@ export default (props: Props) => {
                   min="8"
                   max="48"
                   value={props.config.fontSize}
-                  onChange={OnChangeFontSize} />
+                  onChange={onChangeFontSize} />
                 {props.config.fontSize}
               </Text>
               <Text>
@@ -498,13 +497,13 @@ export default (props: Props) => {
                   max="1400"
                   step="100"
                   value={props.config.contentWidth}
-                  onChange={OnChangeContentWidth} />
+                  onChange={onChangeContentWidth} />
                 {props.config.contentWidth}
               </Text>
             </Sub>
             <Label>Application</Label>
             <Sub>
-              <Link onClick={OnVersion}>
+              <Link onClick={onVersion}>
                 About Version {version}
               </Link>
               {isElectron && (
@@ -514,13 +513,13 @@ export default (props: Props) => {
             <Label>Collab (beta)</Label>
             <Sub>
               <Link
-                onClick={OnCollab}
+                onClick={onCollab}
                 title={props.collab?.error ? 'Connection error' : ''}>
                 {collabText}
               </Link>
               {props.collab?.users?.length > 0 && (
                 <>
-                  <Link onClick={OnCopyCollabLink}>
+                  <Link onClick={onCopyCollabLink}>
                     Copy Link {lastAction === 'copy-collab-link' && '📋'}
                   </Link>
                   <Text>

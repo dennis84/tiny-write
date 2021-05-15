@@ -3,8 +3,7 @@ import {EditorView} from 'prosemirror-view'
 import {css} from '@emotion/css'
 import {useTheme} from '@emotion/react'
 import {Config, File} from '..'
-import {rgba} from '../styles'
-import {color, color2, font} from '../config'
+import {color, color2, font, rgba} from '../config'
 import {UpdateText, useDispatch} from '../reducer'
 import {ProseMirror, ProseMirrorState} from '../prosemirror/prosemirror'
 
@@ -221,12 +220,12 @@ export default (props: Props) => {
     }
   `
 
-  const OnInit = (value: ProseMirrorState) => {
+  const onInit = (value: ProseMirrorState) => {
     props.editorViewRef.current.focus()
     dispatch(UpdateText(value))
   }
 
-  const OnChange = (value: ProseMirrorState) => {
+  const onChange = (value: ProseMirrorState) => {
     dispatch(UpdateText(value, new Date()))
   }
 
@@ -235,7 +234,7 @@ export default (props: Props) => {
       editorViewRef={props.editorViewRef}
       className={editorCss}
       state={props.text}
-      onChange={OnChange}
-      onInit={OnInit} />
+      onChange={onChange}
+      onInit={onInit} />
   )
 }

@@ -164,3 +164,5 @@ export const font = (config: Config, monospace = false) => {
 
 export const codeTheme = (config: Config) =>
   codeThemes[config.codeTheme] ? codeThemes[config.codeTheme].value : 'dracula'
+
+export const rgba = ([r, g, b]: Rgb, a = 1) => `rgba(${r}, ${g}, ${b}, ${a})`

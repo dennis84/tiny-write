@@ -1,6 +1,5 @@
 import styled from '@emotion/styled'
-import {background, color, color2, font} from '../config'
-import {rgba} from '../styles'
+import {background, color, color2, font, rgba} from '../config'
 
 export const Layout = styled.div`
   position: relative;
