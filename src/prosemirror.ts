@@ -1,6 +1,6 @@
 import {keymap} from 'prosemirror-keymap'
 import {keymap as cmKeymap} from '@codemirror/view'
-import {collab} from 'prosemirror-collab'
+import {ySyncPlugin, yUndoPlugin} from 'y-prosemirror'
 import base from './prosemirror/base'
 import markdown from './prosemirror/markdown'
 import link from './prosemirror/link'
@@ -26,12 +26,15 @@ interface Props {
   config: Config;
   collab?: Collab;
   path?: string;
+  y?: any;
 }
 
-const collabExtension = (props: Props) => ({
-  plugins: (prev) => props.collab ? [
+const yExtension = (props: Props) => ({
+  plugins: (prev) => props.y ? [
     ...prev,
-    collab(props.collab)
+    ySyncPlugin(props.y.type),
+    //yCursorPlugin(props.y.provider.awareness),
+    yUndoPlugin(),
   ] : prev
 })
 
@@ -71,7 +74,7 @@ export const createState = (props: Props) => ({
     placeholder('Start typing ...'),
     scroll(props.config.typewriterMode),
     pasteMarkdown,
-    collabExtension(props),
+    yExtension(props),
   ]
 })
 

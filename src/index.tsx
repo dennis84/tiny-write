@@ -1,5 +1,7 @@
 import React from 'react'
 import {render} from 'react-dom'
+import {XmlFragment} from 'yjs'
+import {WebsocketProvider} from 'y-websocket'
 import {ProseMirrorState} from './prosemirror/prosemirror'
 import Main from './Main'
 import {newState} from './reducer'
@@ -19,13 +21,16 @@ export interface ErrorObject {
   props?: unknown;
 }
 
+export interface YOptions {
+  type: XmlFragment;
+  provider: WebsocketProvider;
+}
+
 export interface Collab {
   started: boolean;
   error?: boolean;
-  socket?: any;
   room?: string;
-  users?: string[];
-  initialized?: boolean;
+  y?: YOptions;
 }
 
 export interface Args {

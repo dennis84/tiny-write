@@ -182,10 +182,11 @@ export default (props: Props) => {
   const editorView = props.editorViewRef.current
 
   const collabText =
-    props.collab?.started && !props.collab.users?.length ? 'Stop ...' :
     props.collab?.started ? 'Stop' :
     props.collab?.error ? 'Restart 🚨' :
     'Start'
+
+  const collabUsers = props.collab?.y?.provider.awareness.meta.size ?? 0
 
   const onBurgerClick = () => {
     editorView.focus()
@@ -268,8 +269,6 @@ export default (props: Props) => {
     } else {
       dispatch(UpdateCollab({started: true}))
     }
-
-    editorView.focus()
   }
 
   const onCopyCollabLink = () => {
@@ -517,13 +516,13 @@ export default (props: Props) => {
                 title={props.collab?.error ? 'Connection error' : ''}>
                 {collabText}
               </Link>
-              {props.collab?.users?.length > 0 && (
+              {collabUsers > 0 && (
                 <>
                   <Link onClick={onCopyCollabLink}>
                     Copy Link {lastAction === 'copy-collab-link' && '📋'}
                   </Link>
                   <Text>
-                    {props.collab.users.length} {props.collab.users?.length === 1 ? 'user' : 'users'} connected
+                    {collabUsers} {collabUsers === 1 ? 'user' : 'users'} connected
                   </Text>
                 </>
               )}

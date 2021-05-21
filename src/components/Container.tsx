@@ -1,14 +1,15 @@
 import React, {useEffect} from 'react'
 import {selectAll, deleteSelection} from 'prosemirror-commands'
-import {Step} from 'prosemirror-transform'
-import {sendableSteps, getVersion, receiveTransaction} from 'prosemirror-collab'
 import {EditorView} from 'prosemirror-view'
 import {undo, redo} from 'prosemirror-history'
-import {io} from 'socket.io-client'
+import {v4 as uuidv4} from 'uuid'
+import * as Y from 'yjs'
+import {undo as yUndo, redo as yRedo} from 'y-prosemirror'
+import {WebsocketProvider} from 'y-websocket'
 import {Args, State} from '..'
 import * as remote from '../remote'
 import db from '../db'
-import {isElectron, mod, COLLAB_URL} from '../env'
+import {COLLAB_URL, isElectron, mod} from '../env'
 import {useDebouncedEffect, useDynamicCallback} from '../hooks'
 import {markdownSerializer} from '../markdown'
 import {
@@ -78,13 +79,23 @@ export default (props: Props) => {
 
   const onUndo = useDynamicCallback(() => {
     if (!editorView) return
-    undo(editorView.state, editorView.dispatch)
+    if (props.state.collab?.started) {
+      yUndo(editorView.state)
+    } else {
+      undo(editorView.state, editorView.dispatch)
+    }
+
     return true
   })
 
   const onRedo = useDynamicCallback(() => {
     if (!editorView) return
-    redo(editorView.state, editorView.dispatch)
+    if (props.state.collab?.started) {
+      yRedo(editorView.state)
+    } else {
+      redo(editorView.state, editorView.dispatch)
+    }
+
     return true
   })
 
@@ -97,97 +108,6 @@ export default (props: Props) => {
     [`Shift-${mod}-z`]: onRedo,
     [`${mod}-y`]: onRedo,
   }
-
-  const getCurrentVersion = () => {
-    try {
-      return getVersion(editorView.state)
-    } catch(err) {
-      return undefined
-    }
-  }
-
-  const getSendableSteps = () => {
-    try {
-      return sendableSteps(editorView.state)
-    } catch(err) {
-      return undefined
-    }
-  }
-
-  // Receive update response after create and recreate the state.
-  const onReceiveUpdate = useDynamicCallback((data: any) => {
-    window.history.replaceState(null, '', `/${data.room}`)
-
-    // Init room if message is from us and collab plugin is not initialized
-    if (!props.state.collab.initialized && data.clientID === props.state.collab.socket.id) {
-      // Recreate editorState with enabled collab plugin
-      const newText = createState({
-        data: data.created ? editorView.state.toJSON() : {
-          selection: {type: 'text', anchor: 1, head: 1},
-          doc: data.doc,
-        },
-        config: props.state.config,
-        path: props.state.path,
-        keymap,
-        collab: {
-          version: data.version,
-          clientID: data.clientID,
-        }
-      })
-
-      // Create new file if we're not the creator
-      const backup = !data.created
-      dispatch(UpdateCollab({
-        ...props.state.collab,
-        room: data.room,
-        users: data.users,
-        initialized: true,
-      }, newText, backup))
-
-      return
-    }
-
-    // Only update users
-    dispatch(UpdateCollab({
-      ...props.state.collab,
-      users: data.users,
-    }))
-  })
-
-  // Apply emitted steps
-  const onReceiveSteps = useDynamicCallback((data) => {
-    if (!props.state.collab?.initialized) return
-
-    const version = getCurrentVersion()
-    if (version === undefined) return
-    if (version > data.version) {
-      // Set initialized to false and request server
-      // state to recover from current out of sync state.
-      dispatch(UpdateCollab({
-        ...props.state.collab,
-        initialized: false,
-      }))
-
-      props.state.collab.socket.emit('create', {room: props.state.collab.room})
-      return
-    }
-
-    const tr = receiveTransaction(
-      editorView.state,
-      data.steps.map((item) => Step.fromJSON(editorView.state.schema, item.step)),
-      data.steps.map((item) => item.clientID),
-    )
-
-    editorView.dispatch(tr)
-  })
-
-  const onConnectError = useDynamicCallback(() => {
-    dispatch(UpdateCollab({
-      ...props.state.collab,
-      started: false,
-      error: true,
-    }))
-  })
 
   const onDrop = (e) => {
     if (
@@ -335,7 +255,7 @@ export default (props: Props) => {
 
       const room = window.location.pathname?.slice(1)
       if (!isElectron && room) {
-        dispatch(UpdateCollab({room, started: true}))
+        dispatch(UpdateCollab({room, started: true}, undefined, true))
       }
     }
   }, [props.state.loading])
@@ -343,11 +263,29 @@ export default (props: Props) => {
   // If collab is started
   useEffect(() => {
     if (props.state.collab?.started) {
-      const socket = io(COLLAB_URL, {transports: ['websocket']})
-      dispatch(UpdateCollab({...props.state.collab, socket}))
+      const room = props.state.collab?.room ?? uuidv4()
+      window.history.replaceState(null, '', `/${room}`)
+
+      const ydoc = new Y.Doc()
+      const type = ydoc.getXmlFragment('prosemirror')
+      const provider = new WebsocketProvider(COLLAB_URL, room, ydoc)
+
+      const newText = createState({
+        data: editorView.state.toJSON(),
+        config: props.state.config,
+        path: props.state.path,
+        keymap,
+        y: {type, provider},
+      })
+
+      dispatch(UpdateCollab({
+        ...props.state.collab,
+        room,
+        y: {type, provider},
+      }, newText))
     } else if (props.state.collab) {
       window.history.replaceState(null, '', '/')
-      props.state.collab?.socket?.close()
+      props.state.collab?.y?.provider.destroy()
 
       // Recreate editorState without collab plugin.
       const newText = createState({
@@ -364,38 +302,6 @@ export default (props: Props) => {
     }
   }, [props.state.collab?.started])
 
-  // Init collab if socket is defined
-  useEffect(() => {
-    if (!props.state.collab?.socket) return
-
-    // Send create message to server with doc and room
-    props.state.collab.socket.emit('create', {
-      doc: editorView.state.toJSON().doc,
-      room: props.state.collab.room,
-    })
-
-    props.state.collab.socket.on('update', onReceiveUpdate)
-    props.state.collab.socket.on('steps', onReceiveSteps)
-    props.state.collab.socket.on('connect_error', onConnectError)
-  }, [props.state.collab?.socket])
-
-  // Listen to state changes and send them to all collab users
-  useDebouncedEffect(() => {
-    if (!props.state.text?.initialized || !props.state.collab?.initialized) return
-
-    const sendable = getSendableSteps()
-    if (!sendable) return
-
-    props.state.collab.socket.emit('update', {
-      room: props.state.collab.room,
-      update: {
-        version: sendable.version,
-        steps: sendable.steps.map(step => step.toJSON()),
-        clientID: props.state.collab.socket.id,
-      },
-    })
-  }, 200, [props.state.text?.editorState])
-
   // Load file if path has changed
   useEffect(() => {
     if (props.state.path && props.state.loading === 'initialized') {
@@ -407,16 +313,12 @@ export default (props: Props) => {
   // which need a full recreation of extensions.
   useEffect(() => {
     if (!props.state.text?.initialized) return
-    const version = getCurrentVersion()
     const newText = createState({
       data: editorView.state.toJSON(),
       config: props.state.config,
       path: props.state.path,
       keymap,
-      collab: props.state.collab?.started ? {
-        version,
-        clientID: props.state.collab.socket.id,
-      } : undefined
+      y: props.state.collab?.y,
     })
 
     dispatch(UpdateText(newText))

@@ -63,7 +63,6 @@ export const UpdateCollab = (
     ...newState,
     collab,
     text: text ?? newState.text,
-    clientId: collab?.socket?.id,
   }
 }
 
