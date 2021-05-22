@@ -30,7 +30,7 @@ import ErrorView from './Error'
 import Menu from './Menu'
 import {isEmpty} from '../prosemirror/prosemirror'
 import {createParser} from '../prosemirror/paste-markdown'
-import {createState, createEmptyState} from '../prosemirror'
+import {createState, createEmptyData, createEmptyState} from '../prosemirror'
 
 const isText = (x: any) => x && x.doc && x.selection
 
@@ -255,13 +255,15 @@ export default (props: Props) => {
 
       const room = window.location.pathname?.slice(1)
       if (!isElectron && room) {
-        dispatch(UpdateCollab({room, started: true}, undefined, true))
+        const backup = props.state.collab?.room !== room
+        dispatch(UpdateCollab({room, started: true}, undefined, backup))
       }
     }
   }, [props.state.loading])
 
   // If collab is started
   useEffect(() => {
+    if (props.state.loading !== 'initialized') return
     if (props.state.collab?.started) {
       const room = props.state.collab?.room ?? uuidv4()
       window.history.replaceState(null, '', `/${room}`)
@@ -271,7 +273,7 @@ export default (props: Props) => {
       const provider = new WebsocketProvider(COLLAB_URL, room, ydoc)
 
       const newText = createState({
-        data: editorView.state.toJSON(),
+        data: props.state.collab?.room ? createEmptyData() : editorView.state.toJSON(),
         config: props.state.config,
         path: props.state.path,
         keymap,
@@ -283,8 +285,11 @@ export default (props: Props) => {
         room,
         y: {type, provider},
       }, newText))
-    } else if (props.state.collab) {
-      window.history.replaceState(null, '', '/')
+
+      return
+    }
+
+    if (props.state.collab) {
       props.state.collab?.y?.provider.destroy()
 
       // Recreate editorState without collab plugin.
@@ -300,6 +305,8 @@ export default (props: Props) => {
         error: props.state.collab.error,
       }, newText))
     }
+
+    window.history.replaceState(null, '', '/')
   }, [props.state.collab?.started])
 
   // Load file if path has changed
@@ -352,6 +359,9 @@ export default (props: Props) => {
       files: props.state.files,
       config: props.state.config,
       path: props.state.path,
+      collab: {
+        room: props.state.collab?.room
+      }
     }
 
     if (props.state.path) {

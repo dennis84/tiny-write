@@ -27,7 +27,7 @@ export interface YOptions {
 }
 
 export interface Collab {
-  started: boolean;
+  started?: boolean;
   error?: boolean;
   room?: string;
   y?: YOptions;

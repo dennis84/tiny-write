@@ -81,15 +81,17 @@ export const createState = (props: Props) => ({
 export const createEmptyState = (props: Props) =>
   createState({
     ...props,
-    data: {
-      doc: {
-        type: 'doc',
-        content: [{type: 'paragraph'}]
-      },
-      selection: {
-        type: 'text',
-        anchor: 1,
-        head: 1
-      }
-    }
+    data: createEmptyData(),
   })
+
+export const createEmptyData = () => ({
+  doc: {
+    type: 'doc',
+    content: [{type: 'paragraph'}]
+  },
+  selection: {
+    type: 'text',
+    anchor: 1,
+    head: 1
+  }
+})
