@@ -271,10 +271,22 @@ export default (props: Props) => {
     }
   }
 
+  const onOpenInApp = () => {
+    if (isElectron) return
+    window.open(`tinywrite://${props.collab.room ?? ''}`, '_self')
+  }
+
   const onCopyCollabLink = () => {
     remote.copy(`${WEB_URL}/${props.collab.room}`).then(() => {
       editorView.focus()
       setLastAction('copy-collab-link')
+    })
+  }
+
+  const onCopyCollabAppLink = () => {
+    remote.copy(`tinywrite://${props.collab.room}`).then(() => {
+      editorView.focus()
+      setLastAction('copy-collab-app-link')
     })
   }
 
@@ -502,6 +514,11 @@ export default (props: Props) => {
             </Sub>
             <Label>Application</Label>
             <Sub>
+              {!isElectron && (
+                <Link onClick={onOpenInApp}>
+                  Open in App ⚡
+                </Link>
+              )}
               <Link onClick={onVersion}>
                 About Version {version}
               </Link>
@@ -509,7 +526,7 @@ export default (props: Props) => {
                 <Link onClick={() => remote.quit()}>Quit <Keys keys={[mod, 'q']} /></Link>
               )}
             </Sub>
-            <Label>Collab (beta)</Label>
+            <Label>Collab</Label>
             <Sub>
               <Link
                 onClick={onCollab}
@@ -520,6 +537,9 @@ export default (props: Props) => {
                 <>
                   <Link onClick={onCopyCollabLink}>
                     Copy Link {lastAction === 'copy-collab-link' && '📋'}
+                  </Link>
+                  <Link onClick={onCopyCollabAppLink}>
+                    Copy App Link {lastAction === 'copy-collab-app-link' && '📋'}
                   </Link>
                   <Text>
                     {collabUsers} {collabUsers === 1 ? 'user' : 'users'} connected

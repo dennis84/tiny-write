@@ -225,14 +225,22 @@ export default (props: Props) => {
   }
 
   const onArgs = useDynamicCallback(async (args: Args) => {
-    if (args.file === props.state.path) {
-      await loadFile()
+    if (!props.state.collab?.started && args.room) {
+      const backup = props.state.collab?.room !== args.room
+      dispatch(UpdateCollab({room: args.room, started: true}, undefined, backup))
       return
     }
 
-    dispatch(Open({
-      path: args.file,
-    }))
+    if (args.file) {
+      if (args.file === props.state.path) {
+        await loadFile()
+        return
+      }
+
+      dispatch(Open({
+        path: args.file,
+      }))
+    }
   })
 
   // On mount, load state from DB.

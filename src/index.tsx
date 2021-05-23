@@ -36,6 +36,7 @@ export interface Collab {
 export interface Args {
   cwd: string;
   file?: string;
+  room?: string;
   text: any;
 }
 
