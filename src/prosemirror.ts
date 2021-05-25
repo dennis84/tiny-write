@@ -12,21 +12,15 @@ import codeBlock from './prosemirror/code-block'
 import image from './prosemirror/image'
 import dragHandle from './prosemirror/drag-handle'
 import pasteMarkdown from './prosemirror/paste-markdown'
-import {Config} from '.'
+import {Config, YOptions} from '.'
 import {codeTheme} from './config'
-
-interface Collab {
-  version?: number;
-  clientID?: string;
-}
 
 interface Props {
   data?: unknown;
   keymap?: any;
   config: Config;
-  collab?: Collab;
   path?: string;
-  y?: any;
+  y?: YOptions;
 }
 
 const yExtension = (props: Props) => ({
