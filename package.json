@@ -112,7 +112,7 @@
     "pack": "npm run build && electron-builder --dir",
     "dist": "npm run build && electron-builder",
     "lint": "eslint . --ext .ts,.tsx",
-    "test": "jest"
+    "test": "jest --runInBand"
   },
   "browserslist": [
     "last 1 Chrome versions"
