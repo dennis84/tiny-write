@@ -22,7 +22,8 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/upload-artifact@v2
         with:
-          path: dist/app/TinyWrite.dmg
+          name: TinyWrite.dmg
+          path: dist/app
   ubuntu:
     runs-on: ubuntu-latest
     steps:
@@ -36,6 +37,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/upload-artifact@v2
         with:
+          name: TinyWrite.snap
           path: dist/app/TinyWrite.snap
   release:
     needs: [mac, ubuntu]
@@ -43,14 +45,14 @@ jobs:
     steps:
       - uses: actions/download-artifact@v2
         with:
-          path: dist/app/TinyWrite.dmg
+          name: TinyWrite.dmg
+          path: dist/app/
       - uses: actions/download-artifact@v2
         with:
-          path: dist/app/TinyWrite.snap
-      - uses: softprops/action-gh-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          name: TinyWrite.snap
+          path: dist/app/
+      - uses: ncipollo/release-action@v1
         with:
-          files: |
-            dist/app/TinyWrite.dmg
-            dist/app/TinyWrite.snap
+          draft: true
+          artifacts: "dist/app/TinyWrite.dmg,dist/app/TinyWrite.snap"
+          token: ${{ secrets.GITHUB_TOKEN }}
