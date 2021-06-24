@@ -103,13 +103,13 @@ export default (props: Props) => {
         position: absolute;
         left: 0;
         top: 0;
+        height: 100%;
         opacity: 0;
         cursor: move;
         transition: opacity 0.3s;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        height: ${theme.fontSize * 1.6}px;
         > span {
           display: inline-flex;
           align-items: center;
@@ -133,6 +133,19 @@ export default (props: Props) => {
       }
       .codemirror-outer {
         position: relative;
+        .lang-toggle {
+          position: absolute;
+          height: 100%;
+          display: flex;
+          align-items: center;
+          right: -8px;
+          top: 0;
+          transform: translateX(100%);
+          cursor: pointer;
+          z-index: 10;
+          user-select: none;
+          -webkit-app-region: no-drag;
+        }
         .codemirror-inner {
           position: relative;
           padding: 5px 0;
@@ -160,20 +173,10 @@ export default (props: Props) => {
               }
             }
           }
-          .lang-toggle {
-            position: absolute;
-            top: 1px;
-            right: -8px;
-            transform: translateX(100%);
-            cursor: pointer;
-            z-index: 10;
-            user-select: none;
-            -webkit-app-region: no-drag;
-          }
           .prettify {
             position: absolute;
             right: 8px;
-            bottom: 4px;
+            bottom: 8px;
             cursor: pointer;
             z-index: 10;
             user-select: none;

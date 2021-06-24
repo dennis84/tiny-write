@@ -89,7 +89,7 @@ export class CodeBlockView {
         langInput.textContent = lang
         langSelect.style.display = 'none'
         langSelectBottom.style.display = 'none'
-        langToggle.style.display = 'block'
+        langToggle.style.display = 'flex'
         this.prettifyBtn.style.display = 'block'
         const tr = view.state.tr
         tr.setNodeMarkup(getPos(), undefined, {
@@ -107,7 +107,7 @@ export class CodeBlockView {
     langInput.addEventListener('blur', () => {
       langSelect.style.display = 'none'
       langSelectBottom.style.display = 'none'
-      langToggle.style.display = 'block'
+      langToggle.style.display = 'flex'
     })
 
     const langSelect = document.createElement('div')
@@ -214,7 +214,7 @@ export class CodeBlockView {
     inner.appendChild(this.prettifyBtn)
     inner.appendChild(this.editorView.dom)
     inner.appendChild(langSelectBottom)
-    inner.appendChild(langToggle)
+    outer.appendChild(langToggle)
 
     innerDecos.find().map((d) => {
       const elem = typeof d.type.toDOM === 'function' ? d.type.toDOM() : d.type.toDOM
@@ -344,7 +344,6 @@ export class CodeBlockView {
       elem.src = logos[lang]
       elem.width = this.options.fontSize
       elem.height = this.options.fontSize
-      elem.style.marginTop = `${this.options.fontSize as number / 4}px`
       elem.setAttribute('title', lang)
     } else {
       elem = document.createElement('span')
