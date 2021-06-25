@@ -10,11 +10,12 @@ import {version} from '../../package.json'
 import {Config, File, Collab} from '..'
 import {
   Discard,
-  UpdateCollab,
   New,
   Open,
-  UpdateConfig,
   ToggleFullscreen,
+  UpdateCollab,
+  UpdateConfig,
+  UpdatePath,
   useDispatch,
 } from '../reducer'
 import {color, color2, themes, fonts, codeThemes, rgba} from '../config'
@@ -252,6 +253,13 @@ export default (props: Props) => {
     dispatch(New)
   }
 
+  const onSaveAs = async () => {
+    const path = await remote.save(editorView.state)
+    if (path) {
+      dispatch(UpdatePath(path))
+    }
+  }
+
   const onDiscard = () => {
     if (props.path) {
       dispatch(Discard)
@@ -396,6 +404,16 @@ export default (props: Props) => {
     }
   }, [show])
 
+  useEffect(() => {
+    if (!lastAction) return
+    const id = setTimeout(() => {
+      setLastAction(undefined)
+    }, 1000)
+    return () => {
+      clearTimeout(id)
+    }
+  }, [lastAction])
+
   return (
     <Container>
       <Burger onClick={onBurgerClick} active={show} data-testid="burger">
@@ -413,6 +431,9 @@ export default (props: Props) => {
             </Sub>
             <Label>File {props.path && <i>({props.path.substring(props.path.length - 24)})</i>}</Label>
             <Sub>
+              {isElectron && !props.path && (
+                <Link onClick={onSaveAs}>Save to file <Keys keys={[mod, 's']} /></Link>
+              )}
               <Link onClick={onNew}>New <Keys keys={[mod, 'n']} /></Link>
               <Link
                 onClick={onDiscard}

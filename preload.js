@@ -8,6 +8,7 @@ contextBridge.exposeInMainWorld('app', {
   quit: () => ipcRenderer.invoke('quit'),
   fileExists: (src) => ipcRenderer.invoke('fileExists', src),
   isImage: (src) => ipcRenderer.invoke('isImage', src),
+  save: (content) => ipcRenderer.invoke('save', content),
   readFile: (src) => ipcRenderer.invoke('readFile', src),
   writeFile: (file, content) => ipcRenderer.invoke('writeFile', file, content),
   getArgs: () => ipcRenderer.invoke('getArgs'),

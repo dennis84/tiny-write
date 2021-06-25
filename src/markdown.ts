@@ -1,4 +1,14 @@
 import {MarkdownSerializer, defaultMarkdownSerializer} from 'prosemirror-markdown'
+import {EditorState} from 'prosemirror-view'
+
+export const serialize = (state: EditorState) => {
+  let text = markdownSerializer.serialize(state.doc)
+  if (text.charAt(text.length - 1) !== '\n') {
+    text += '\n'
+  }
+
+  return text
+}
 
 export const markdownSerializer = new MarkdownSerializer({
   ...defaultMarkdownSerializer.nodes,

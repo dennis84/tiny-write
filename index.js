@@ -1,4 +1,4 @@
-const {app, clipboard, shell, ipcMain, BrowserWindow, Menu} = require('electron')
+const {app, clipboard, dialog, shell, ipcMain, BrowserWindow, Menu} = require('electron')
 const {autoUpdater} = require('electron-updater')
 const log = require('electron-log')
 const path = require('path')
@@ -196,4 +196,15 @@ ipcMain.handle('resolve', (event, base, src) => {
 
 ipcMain.handle('log', (event, ...args) => {
   log.info(...args)
+})
+
+ipcMain.handle('save', (event, content) => {
+  const alwaysOnTop = win.alwaysOnTop
+  win.setAlwaysOnTop(false)
+  return dialog.showSaveDialog(win).then((result) => {
+    win.setAlwaysOnTop(alwaysOnTop)
+    if (result.cancelled) return
+    fs.writeFileSync(result.filePath, content, 'utf-8')
+    return result.filePath
+  })
 })

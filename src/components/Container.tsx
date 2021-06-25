@@ -11,7 +11,7 @@ import * as remote from '../remote'
 import db from '../db'
 import {COLLAB_URL, isElectron, mod} from '../env'
 import {useDebouncedEffect, useDynamicCallback} from '../hooks'
-import {markdownSerializer} from '../markdown'
+import {serialize} from '../markdown'
 import {
   UpdateState,
   UpdateError,
@@ -373,11 +373,7 @@ export default (props: Props) => {
     }
 
     if (props.state.path) {
-      let text = markdownSerializer.serialize(editorView.state.doc)
-      if (text.charAt(text.length - 1) !== '\n') {
-        text += '\n'
-      }
-
+      const text = serialize(editorView.state)
       await remote.writeFile(props.state.path, text)
     } else {
       data.text = editorView.state.toJSON()

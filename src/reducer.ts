@@ -47,6 +47,8 @@ export const ToggleFullscreen = (state: State) => ({
   fullscreen: !state.fullscreen,
 })
 
+export const UpdatePath = (path: string) => (state: State) => ({...state, path})
+
 export const UpdateText = (text: ProseMirrorState, lastModified?: Date) => (state: State) => ({
   ...state,
   text,

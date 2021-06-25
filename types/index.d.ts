@@ -20,6 +20,7 @@ interface Preload {
   quit: () => Promise<void>;
   fileExists: (str: string) => Promise<boolean>;
   isImage: (str: string) => Promise<boolean>;
+  save: (content: string) => Promise<string>;
   readFile: (str: string) => Promise<FileInfo>;
   writeFile: (file: string, content: string) => Promise<void>;
   getArgs: () => Promise<Args>;

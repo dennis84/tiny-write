@@ -1,5 +1,5 @@
 import {EditorState} from 'prosemirror-state'
-import {markdownSerializer} from './markdown'
+import {serialize} from './markdown'
 import {isElectron} from './env'
 
 export const on = (name, fn) => {
@@ -41,7 +41,7 @@ export const copy = async (text: string) => {
 }
 
 export const copyAllAsMarkdown = async (state: EditorState) => {
-  const text = markdownSerializer.serialize(state.doc)
+  const text = serialize(state)
   if (isElectron) {
     return window.app.copyToClipboard(text)
   } else {
@@ -77,4 +77,9 @@ export const resolve = async (base, src) => {
 export const log = async (...args) => {
   if (!isElectron) return
   return window.app.log(...args)
+}
+
+export const save = async (state: EditorState) => {
+  if (!isElectron) return
+  return window.app.save(serialize(state))
 }
