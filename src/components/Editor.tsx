@@ -103,7 +103,7 @@ export default (props: Props) => {
         position: absolute;
         left: 0;
         top: 0;
-        height: 100%;
+        height: ${theme.fontSize * 1.6}px;
         opacity: 0;
         cursor: move;
         transition: opacity 0.3s;
@@ -133,13 +133,16 @@ export default (props: Props) => {
       }
       .codemirror-outer {
         position: relative;
+        .handle {
+          top: 8px;
+        }
         .lang-toggle {
           position: absolute;
-          height: 100%;
+          right: -8px;
+          height: ${theme.fontSize * 1.6}px;
           display: flex;
           align-items: center;
-          right: -8px;
-          top: 0;
+          top: 8px;
           transform: translateX(100%);
           cursor: pointer;
           z-index: 10;

@@ -50,7 +50,7 @@ export class CodeBlockView {
   updating = false
   clicked = false
   options: CodeBlockProps = defaultProps
-  logo: HTMLElement
+  langToggle: HTMLElement
   prettifyBtn: HTMLElement
   dragHandle: HTMLElement
   langExtension: Compartment
@@ -61,7 +61,7 @@ export class CodeBlockView {
     this.getPos = getPos
     this.options = options
 
-    this.logo = document.createElement('span')
+    this.langToggle = document.createElement('div')
     this.prettifyBtn = document.createElement('span')
     this.prettifyBtn.className = 'prettify'
     this.prettifyBtn.textContent = '✨'
@@ -89,7 +89,7 @@ export class CodeBlockView {
         langInput.textContent = lang
         langSelect.style.display = 'none'
         langSelectBottom.style.display = 'none'
-        langToggle.style.display = 'flex'
+        this.langToggle.style.display = 'flex'
         this.prettifyBtn.style.display = 'block'
         const tr = view.state.tr
         tr.setNodeMarkup(getPos(), undefined, {
@@ -107,7 +107,7 @@ export class CodeBlockView {
     langInput.addEventListener('blur', () => {
       langSelect.style.display = 'none'
       langSelectBottom.style.display = 'none'
-      langToggle.style.display = 'flex'
+      this.langToggle.style.display = 'flex'
     })
 
     const langSelect = document.createElement('div')
@@ -120,11 +120,9 @@ export class CodeBlockView {
     langSelectBottom.textContent = '```'
     langSelectBottom.style.display = 'none'
 
-    const langToggle = document.createElement('div')
-    langToggle.className = 'lang-toggle'
-    langToggle.appendChild(this.logo)
-    langToggle.addEventListener('click', () => {
-      langToggle.style.display = 'none'
+    this.langToggle.className = 'lang-toggle'
+    this.langToggle.addEventListener('click', () => {
+      this.langToggle.style.display = 'none'
       langSelect.style.display = 'block'
       langSelectBottom.style.display = 'block'
       this.prettifyBtn.style.display = 'none'
@@ -214,7 +212,7 @@ export class CodeBlockView {
     inner.appendChild(this.prettifyBtn)
     inner.appendChild(this.editorView.dom)
     inner.appendChild(langSelectBottom)
-    outer.appendChild(langToggle)
+    outer.appendChild(this.langToggle)
 
     innerDecos.find().map((d) => {
       const elem = typeof d.type.toDOM === 'function' ? d.type.toDOM() : d.type.toDOM
@@ -351,8 +349,8 @@ export class CodeBlockView {
       elem.setAttribute('title', lang)
     }
 
-    this.logo.innerHTML = ''
-    this.logo.appendChild(elem)
+    this.langToggle.innerHTML = ''
+    this.langToggle.appendChild(elem)
   }
 
   updatePrettify() {
