@@ -16,7 +16,7 @@ const todoListRule = (nodeType) =>
 
 const todoListSchema = {
   todo_item: {
-    content: 'paragraph block*',
+    content: 'paragraph+',
     defining: true,
     group: 'block',
     attrs: {done: {default: false}},
