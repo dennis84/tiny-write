@@ -1,5 +1,7 @@
 import {move} from './utils'
 
+const code = `const foo='bar'`
+
 beforeAll(async () => {
   await page.goto('http://localhost:3000')
 })
@@ -7,7 +9,7 @@ beforeAll(async () => {
 it('code block', async () => {
   await page.type('.ProseMirror', '```js ')
   await page.waitForSelector('.codemirror-outer')
-  await page.type('.cm-content', `const foo='bar'`)
+  await page.type('.cm-content', code)
   expect(await page.$eval('.codemirror-outer .lang-toggle img', (node) => node.getAttribute('title'))).toBe('javascript')
 })
 
@@ -24,8 +26,8 @@ it('change lang', async () => {
 })
 
 it('create line above', async () => {
-  await page.keyboard.down('ArrowUp')
-  await page.keyboard.press('ArrowUp')
+  await move('ArrowLeft', code.length + 2)
+  await move('ArrowUp')
   await page.type('.ProseMirror p', 'above')
   expect(await page.textContent('.ProseMirror p:nth-of-type(1)')).toBe('above')
 })
