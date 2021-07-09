@@ -62,7 +62,31 @@ export interface CodeBlockProps {
   extensions?: (view: EditorView, node: Node, getPos: () => number) => Extension[];
 }
 
+const codeBlockSchema = {
+  content: 'text*',
+  group: 'block',
+  code: true,
+  defining: true,
+  draggable: true,
+  marks: '',
+  attrs: {params: {default: ''}},
+  parseDOM: [{
+    tag: 'pre',
+    preserveWhitespace: 'full',
+    getAttrs: node => ({params: node.getAttribute('data-params') || ''})
+  }],
+  toDOM: (node) => [
+    'pre',
+    node.attrs.params ? {'data-params': node.attrs.params} : {},
+    ['code', 0]
+  ]
+}
+
 export default (props: CodeBlockProps) => ({
+  schema: (prev) => ({
+    ...prev,
+    nodes: prev.nodes.update('code_block', codeBlockSchema),
+  }),
   plugins: (prev, schema) => [
     ...prev,
     inputRules({rules: [codeBlockRule(schema.nodes.code_block)]}),
