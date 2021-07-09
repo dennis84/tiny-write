@@ -404,7 +404,7 @@ export class CodeBlockView {
       lang === 'scss' ? ['scss', parserCss] :
       lang === 'yaml' ? ['yaml', parserYaml] :
       lang === 'typescript' ? ['babel', parserBabel] :
-      undefined
+      [undefined, undefined]
     if (!parser) return
     try {
       const value = prettier.format(this.editorView.state.doc.toString(), {

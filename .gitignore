@@ -2,3 +2,4 @@ node_modules
 dist
 app
 .cache
+stats.html
