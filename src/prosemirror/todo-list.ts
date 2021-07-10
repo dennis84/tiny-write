@@ -36,8 +36,8 @@ const todoListSchema = {
 }
 
 class TodoItemView {
-  contentDOM: Element
-  dom: Element
+  contentDOM: Node
+  dom: Node
   view: EditorView
   getPos: () => number
 
@@ -48,7 +48,7 @@ class TodoItemView {
     this.contentDOM = res.contentDOM
     this.view = view
     this.getPos = getPos
-    this.dom.querySelector('input').onclick = this.handleClick.bind(this)
+    ;(this.dom as Element).querySelector('input').onclick = this.handleClick.bind(this)
   }
 
   handleClick(e) {

@@ -401,7 +401,7 @@ export default (props: Props) => {
             config={props.state.config} />
           <Menu
             editorViewRef={props.editorViewRef}
-            text={props.state.text}
+            text={editorState}
             lastModified={props.state.lastModified}
             path={props.state.path}
             files={props.state.files}

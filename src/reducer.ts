@@ -1,4 +1,5 @@
 import {useContext, createContext, Dispatch as Disp, Reducer} from 'react'
+import {EditorState} from 'prosemirror-state'
 import {ProseMirrorState, isEmpty} from './prosemirror/prosemirror'
 import {State, File, Config, ErrorObject, Collab, LoadingType} from '.'
 import {isMac} from './env'
@@ -74,9 +75,10 @@ export const New = (state: State) => {
   }
 
   const files = [...state.files]
+  const text = state.path ? undefined : (state.text.editorState as EditorState).toJSON()
 
   files.push({
-    text: state.path ? undefined : state.text.editorState.toJSON(),
+    text,
     lastModified: state.lastModified.toISOString(),
     path: state.path,
   })
@@ -94,8 +96,9 @@ export const New = (state: State) => {
 export const Open = (file: File) => (state: State) => {
   const files = [...state.files]
   if (!isEmpty(state.text.editorState)) {
+    const text = state.path ? undefined : (state.text.editorState as EditorState).toJSON()
     files.push({
-      text: state.path ? undefined : state.text.editorState.toJSON(),
+      text,
       lastModified: state.lastModified.toISOString(),
       path: state.path,
     })

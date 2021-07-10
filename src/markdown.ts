@@ -1,5 +1,5 @@
 import {MarkdownSerializer, defaultMarkdownSerializer} from 'prosemirror-markdown'
-import {EditorState} from 'prosemirror-view'
+import {EditorState} from 'prosemirror-state'
 
 export const serialize = (state: EditorState) => {
   let text = markdownSerializer.serialize(state.doc)

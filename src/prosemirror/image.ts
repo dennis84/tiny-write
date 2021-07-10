@@ -1,6 +1,6 @@
 import {Plugin} from 'prosemirror-state'
-import {Schema} from 'prosemirror-model'
-import {EditorView, Node} from 'prosemirror-view'
+import {Node, Schema} from 'prosemirror-model'
+import {EditorView} from 'prosemirror-view'
 import {isImage, readFile, resolve} from '../remote'
 
 const REGEX = /^!\[([^[\]]*?)\]\((.+?)\)\s+/
@@ -104,7 +104,7 @@ const dropFile = (schema) => new Plugin({
       drop: (view, event) => {
         const {files} = event.dataTransfer
 
-        if (files.length === 0) return
+        if (files.length === 0) return false
         event.preventDefault()
 
         const insertImage = (src) => {

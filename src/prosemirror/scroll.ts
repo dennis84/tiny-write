@@ -9,7 +9,7 @@ const scroll = (view: EditorView) => {
 
   const dom = view.domAtPos(pos)
   if (dom.node !== view.dom) {
-    scrollToElem(dom.node)
+    scrollToElem(dom.node as Element)
   }
 }
 
@@ -25,6 +25,7 @@ const scrollIntoView = new Plugin({
     handleDOMEvents: {
       keyup: (view: EditorView) => {
         scroll(view)
+        return false
       }
     }
   },

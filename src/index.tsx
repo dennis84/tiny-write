@@ -56,7 +56,7 @@ export interface State {
 }
 
 export interface File {
-  text?: {doc: unknown; selection: unknown};
+  text?: {[key: string]: any};
   lastModified?: string;
   path?: string;
 }

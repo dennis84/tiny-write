@@ -1,4 +1,5 @@
-import {EditorView as PmEditorView, Node} from 'prosemirror-view'
+import {Node} from 'prosemirror-model'
+import {EditorView as PmEditorView} from 'prosemirror-view'
 import {TextSelection} from 'prosemirror-state'
 import {exitCode} from 'prosemirror-commands'
 import {Compartment, EditorState, Extension} from '@codemirror/state'

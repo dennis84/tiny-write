@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react'
-import {EditorState} from 'prosemirror-state'
 import {EditorView} from 'prosemirror-view'
+import {EditorState} from 'prosemirror-state'
 import {undo, redo} from 'prosemirror-history'
 import {deleteSelection, selectAll} from 'prosemirror-commands'
 import {differenceInHours, format} from 'date-fns'
@@ -21,7 +21,7 @@ import {
 import {color, color2, themes, fonts, codeThemes, rgba} from '../config'
 import {isElectron, isMac, alt, mod, WEB_URL, VERSION_URL} from '../env'
 import * as remote from '../remote'
-import {isEmpty} from '../prosemirror/prosemirror'
+import {ProseMirrorState, isEmpty} from '../prosemirror/prosemirror'
 
 const Container = styled.div`
   position: relative;
@@ -166,7 +166,7 @@ const Slider = styled.input`
 `
 
 interface Props {
-  text?: EditorState;
+  text: ProseMirrorState;
   lastModified?: Date;
   path?: string;
   files: File[];
@@ -303,7 +303,7 @@ export default (props: Props) => {
     let words = 0
     let loc = 0
 
-    if (props.text?.initialized) {
+    if (props.text?.initialized && props.text.editorState instanceof EditorState) {
       props.text?.editorState?.doc.forEach((node) => {
         const text = node.textContent
 

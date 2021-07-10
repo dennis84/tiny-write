@@ -1,7 +1,7 @@
 import React, {useEffect, useRef} from 'react'
 import {Plugin, EditorState} from 'prosemirror-state'
 import {Decoration, EditorView, NodeView} from 'prosemirror-view'
-import {Schema, SchemaSpec} from 'prosemirror-model'
+import {Schema, SchemaSpec, Node} from 'prosemirror-model'
 
 type NodeViewFn = (
   node: Node,
@@ -24,8 +24,8 @@ export interface ProseMirrorState {
 
 interface Props {
   state: ProseMirrorState;
-  onChange: (state: EditorState) => void;
-  onInit: (state: EditorState) => void;
+  onChange: (state: ProseMirrorState) => void;
+  onInit: (state: ProseMirrorState) => void;
   className?: string;
   editorViewRef?: React.MutableRefObject<EditorView>;
 }
@@ -58,7 +58,7 @@ export const ProseMirror = (props: Props) => {
         editorState: state,
         initialized: true,
       })
-    } else if (props.state.initialized) {
+    } else if (props.state.initialized && props.state.editorState instanceof EditorState) {
       editorViewRef.current.updateState(props.state.editorState)
     } else if (props.state.editorState) {
       const {state, nodeViews} = createEditorState(props.state)
@@ -77,9 +77,12 @@ export const ProseMirror = (props: Props) => {
   )
 }
 
-const createEditorState = (state: ProseMirrorState) => {
+const createEditorState = (state: ProseMirrorState): {
+  state: EditorState;
+  nodeViews: {[key: string]: NodeViewFn};
+} => {
   let nodeViews = {}
-  let schemaSpec = {}
+  let schemaSpec = {nodes: {}}
   let plugins = []
 
   for (const extension of state.extensions) {
@@ -108,14 +111,15 @@ const createEditorState = (state: ProseMirrorState) => {
   }
 
   return {
-    state: editorState,
+    state: (editorState as EditorState),
     nodeViews,
   }
 }
 
-export const isEmpty = (state?: EditorState) => !state || (
-  state.doc.childCount == 1 &&
-  !state.doc.firstChild.type.spec.code &&
-  state.doc.firstChild.isTextblock &&
-  state.doc.firstChild.content.size == 0
-)
+export const isEmpty = (state?: EditorState | unknown) =>
+  !state || !(state instanceof EditorState) || (
+    state.doc.childCount == 1 &&
+    !state.doc.firstChild.type.spec.code &&
+    state.doc.firstChild.isTextblock &&
+    state.doc.firstChild.content.size == 0
+  )
