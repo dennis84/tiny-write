@@ -19,7 +19,6 @@ export interface ProseMirrorExtension {
 export interface ProseMirrorState {
   editorState?: EditorState | unknown;
   extensions: ProseMirrorExtension[];
-  initialized?: boolean;
 }
 
 interface Props {
@@ -42,7 +41,6 @@ export const ProseMirror = (props: Props) => {
     props.onChange({
       ...props.state,
       editorState: newState,
-      initialized: true,
     })
   }
 
@@ -56,9 +54,8 @@ export const ProseMirror = (props: Props) => {
       props.onInit({
         ...props.state,
         editorState: state,
-        initialized: true,
       })
-    } else if (props.state.initialized && props.state.editorState instanceof EditorState) {
+    } else if (props.state.editorState instanceof EditorState) {
       editorViewRef.current.updateState(props.state.editorState)
     } else if (props.state.editorState) {
       const {state, nodeViews} = createEditorState(props.state)
@@ -67,7 +64,6 @@ export const ProseMirror = (props: Props) => {
       props.onInit({
         ...props.state,
         editorState: state,
-        initialized: true,
       })
     }
   }, [props.state])
@@ -116,8 +112,11 @@ const createEditorState = (state: ProseMirrorState): {
   }
 }
 
-export const isEmpty = (state?: EditorState | unknown) =>
-  !state || !(state instanceof EditorState) || (
+export const isInitialized = (state: any) =>
+  state !== undefined && state instanceof EditorState
+
+export const isEmpty = (state: any) =>
+  !isInitialized(state) || (
     state.doc.childCount == 1 &&
     !state.doc.firstChild.type.spec.code &&
     state.doc.firstChild.isTextblock &&

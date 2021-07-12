@@ -28,7 +28,7 @@ import {Layout, Resizer} from './Layout'
 import Editor from './Editor'
 import ErrorView from './Error'
 import Menu from './Menu'
-import {isEmpty} from '../prosemirror/prosemirror'
+import {isEmpty, isInitialized} from '../prosemirror/prosemirror'
 import {createParser} from '../prosemirror/paste-markdown'
 import {createState, createEmptyData, createEmptyState} from '../prosemirror'
 
@@ -327,7 +327,7 @@ export default (props: Props) => {
   // Recreate prosemirror if config properties has changed
   // which need a full recreation of extensions.
   useEffect(() => {
-    if (!props.state.text?.initialized) return
+    if (!isInitialized(props.state.text?.editorState)) return
     const newText = createState({
       data: editorView.state.toJSON(),
       config: props.state.config,
@@ -358,7 +358,7 @@ export default (props: Props) => {
   useDebouncedEffect(async () => {
     if (
       props.state.loading !== 'initialized' ||
-      !props.state.text?.initialized ||
+      !isInitialized(props.state.text?.editorState) ||
       !props.state.lastModified
     ) return
 

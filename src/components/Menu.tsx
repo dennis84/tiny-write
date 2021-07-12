@@ -21,7 +21,7 @@ import {
 import {color, color2, themes, fonts, codeThemes, rgba} from '../config'
 import {isElectron, isMac, alt, mod, WEB_URL, VERSION_URL} from '../env'
 import * as remote from '../remote'
-import {ProseMirrorState, isEmpty} from '../prosemirror/prosemirror'
+import {ProseMirrorState, isEmpty, isInitialized} from '../prosemirror/prosemirror'
 
 const Container = styled.div`
   position: relative;
@@ -303,8 +303,8 @@ export default (props: Props) => {
     let words = 0
     let loc = 0
 
-    if (props.text?.initialized && props.text.editorState instanceof EditorState) {
-      props.text?.editorState?.doc.forEach((node) => {
+    if (isInitialized(props.text?.editorState)) {
+      (props.text.editorState as EditorState).doc.forEach((node) => {
         const text = node.textContent
 
         if (node.type.name === 'code_block') {

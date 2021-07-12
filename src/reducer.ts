@@ -151,7 +151,7 @@ interface WokenFile {
 }
 
 const newText = (text: ProseMirrorState, file: File): WokenFile => {
-  const newState = {...text, editorState: file.text, initialized: false}
+  const newState = {...text, editorState: file.text}
   return {
     text: newState,
     lastModified: file.lastModified ? new Date(file.lastModified) : undefined,
