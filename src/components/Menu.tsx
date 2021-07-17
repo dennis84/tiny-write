@@ -478,11 +478,6 @@ export default (props: Props) => {
       {show && (
         <Off onClick={() => editorView.focus()}>
           <Menu>
-            <Label>Stats</Label>
-            <Sub>
-              <LastModified />
-              <TextStats />
-            </Sub>
             <Label>File {props.path && <i>({props.path.substring(props.path.length - 24)})</i>}</Label>
             <Sub>
               {isElectron && !props.path && (
@@ -590,20 +585,6 @@ export default (props: Props) => {
                 {props.config.contentWidth}
               </Text>
             </Sub>
-            <Label>Application</Label>
-            <Sub>
-              {!isElectron && (
-                <Link onClick={onOpenInApp}>
-                  Open in App ⚡
-                </Link>
-              )}
-              <Link onClick={onVersion}>
-                About Version {version}
-              </Link>
-              {isElectron && (
-                <Link onClick={() => remote.quit()}>Quit <Keys keys={[mod, 'q']} /></Link>
-              )}
-            </Sub>
             <Label>Collab</Label>
             <Sub>
               <Link
@@ -623,6 +604,25 @@ export default (props: Props) => {
                     {collabUsers} {collabUsers === 1 ? 'user' : 'users'} connected
                   </Text>
                 </>
+              )}
+            </Sub>
+            <Label>Stats</Label>
+            <Sub>
+              <LastModified />
+              <TextStats />
+            </Sub>
+            <Label>Application</Label>
+            <Sub>
+              {!isElectron && (
+                <Link onClick={onOpenInApp}>
+                  Open in App ⚡
+                </Link>
+              )}
+              <Link onClick={onVersion}>
+                About Version {version}
+              </Link>
+              {isElectron && (
+                <Link onClick={() => remote.quit()}>Quit <Keys keys={[mod, 'q']} /></Link>
               )}
             </Sub>
           </Menu>
