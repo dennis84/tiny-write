@@ -15,6 +15,7 @@ export const newState = (props: Partial<State> = {}): State => ({
     fontSize: 24,
     contentWidth: 800,
     alwaysOnTop: isMac,
+    markdown: false,
     typewriterMode: true,
   },
   ...props,
@@ -50,10 +51,15 @@ export const ToggleFullscreen = (state: State) => ({
 
 export const UpdatePath = (path: string) => (state: State) => ({...state, path})
 
-export const UpdateText = (text: ProseMirrorState, lastModified?: Date) => (state: State) => ({
+export const UpdateText = (
+  text: ProseMirrorState,
+  lastModified?: Date,
+  config?: Config
+) => (state: State) => ({
   ...state,
   text,
   lastModified: lastModified ?? state.lastModified,
+  config: config ? {...state.config, ...config} : state.config,
 })
 
 export const UpdateCollab = (

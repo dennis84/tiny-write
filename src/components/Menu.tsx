@@ -1,5 +1,6 @@
 import React, {useEffect, useState} from 'react'
 import {EditorView} from 'prosemirror-view'
+import {Schema} from 'prosemirror-model'
 import {EditorState} from 'prosemirror-state'
 import {undo, redo} from 'prosemirror-history'
 import {deleteSelection, selectAll} from 'prosemirror-commands'
@@ -16,12 +17,15 @@ import {
   UpdateCollab,
   UpdateConfig,
   UpdatePath,
+  UpdateText,
   useDispatch,
 } from '../reducer'
 import {color, color2, themes, fonts, codeThemes, rgba} from '../config'
 import {isElectron, isMac, alt, mod, WEB_URL, VERSION_URL} from '../env'
 import * as remote from '../remote'
 import {ProseMirrorState, isEmpty, isInitialized} from '../prosemirror/prosemirror'
+import {serialize, createMarkdownParser} from '../markdown'
+import {createEmptyState, createState} from '../prosemirror'
 
 const Container = styled.div`
   position: relative;
@@ -174,6 +178,7 @@ interface Props {
   fullscreen: boolean;
   collab?: Collab;
   editorViewRef: React.RefObject<EditorView>;
+  keymap: any;
 }
 
 export default (props: Props) => {
@@ -235,6 +240,55 @@ export default (props: Props) => {
 
   const onToggleAlwaysOnTop = () => {
     dispatch(UpdateConfig({...props.config, alwaysOnTop: !props.config.alwaysOnTop}))
+  }
+
+  const onToggleMarkdown = () => {
+    const markdown = !props.config.markdown
+    const config = {...props.config, markdown}
+    const selection = {type: 'text', anchor: 1, head: 1}
+    let doc
+
+    if (markdown) {
+      const lines = serialize(editorView.state).split('\n')
+      const nodes = lines.map((text) => {
+        return text ? {type: 'paragraph', content: [{type: 'text', text}]} : {type: 'paragraph'}
+      })
+
+      doc = {type: 'doc', content: nodes}
+    } else {
+      const newTextConfig = createEmptyState({
+        config,
+        path: props.path,
+        keymap: props.keymap,
+        y: props.collab?.y,
+      })
+
+      let schemaSpec = {nodes: {}}
+      for (const extension of newTextConfig.extensions) {
+        if (extension.schema) {
+          schemaSpec = extension.schema(schemaSpec)
+        }
+      }
+
+      const schema = new Schema(schemaSpec)
+      const parser = createMarkdownParser(schema)
+      let textContent = ''
+      editorView.state.doc.forEach((node) => {
+        textContent += `${node.textContent}\n`
+      })
+      const text = parser.parse(textContent)
+      doc = text.toJSON()
+    }
+
+    const newText = createState({
+      data: {selection, doc},
+      config,
+      path: props.path,
+      keymap: props.keymap,
+      y: props.collab?.y,
+    })
+
+    dispatch(UpdateText(newText, undefined, config))
   }
 
   const onToggleTypewriterMode = () => {
@@ -503,6 +557,9 @@ export default (props: Props) => {
                   Fullscreen {props.fullscreen && '✅'} <Keys keys={[alt, 'Enter']} />
                 </Link>
               )}
+              <Link onClick={onToggleMarkdown}>
+                Markdown mode {props.config.markdown && '✅'}
+              </Link>
               <Link onClick={onToggleTypewriterMode}>
                 Typewriter mode {props.config.typewriterMode && '✅'}
               </Link>

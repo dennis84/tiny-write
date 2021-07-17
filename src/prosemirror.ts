@@ -1,6 +1,7 @@
 import {keymap} from 'prosemirror-keymap'
 import {keymap as cmKeymap} from '@codemirror/view'
 import {ySyncPlugin, yUndoPlugin} from 'y-prosemirror'
+import {ProseMirrorState} from './prosemirror/prosemirror'
 import base from './prosemirror/base'
 import markdown from './prosemirror/markdown'
 import link from './prosemirror/link'
@@ -48,11 +49,14 @@ const codeMirrorKeymap = (props: Props) => {
   return cmKeymap.of(keys)
 }
 
-export const createState = (props: Props) => ({
+export const createState = (props: Props): ProseMirrorState => ({
   editorState: props.data,
-  extensions: [
+  extensions: props.config.markdown ? [
     customKeymap(props),
-    base,
+    base(props.config.markdown),
+  ] : [
+    customKeymap(props),
+    base(props.config.markdown),
     markdown,
     todoList,
     dragHandle,

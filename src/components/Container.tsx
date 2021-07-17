@@ -11,7 +11,7 @@ import * as remote from '../remote'
 import db from '../db'
 import {COLLAB_URL, isElectron, mod} from '../env'
 import {useDebouncedEffect, useDynamicCallback} from '../hooks'
-import {serialize} from '../markdown'
+import {serialize, createMarkdownParser} from '../markdown'
 import {
   UpdateState,
   UpdateError,
@@ -29,7 +29,6 @@ import Editor from './Editor'
 import ErrorView from './Error'
 import Menu from './Menu'
 import {isEmpty, isInitialized} from '../prosemirror/prosemirror'
-import {createParser} from '../prosemirror/paste-markdown'
 import {createState, createEmptyData, createEmptyState} from '../prosemirror'
 
 const isText = (x: any) => x && x.doc && x.selection
@@ -131,7 +130,7 @@ export default (props: Props) => {
     const data = await remote.readFile(props.state.path)
     const fileContent = decoder.decode(data.buffer)
     const schema = editorView.state.schema
-    const parser = createParser(schema)
+    const parser = createMarkdownParser(schema)
     const doc = parser.parse(fileContent).toJSON()
     const text = {
       doc,
@@ -401,6 +400,7 @@ export default (props: Props) => {
             config={props.state.config} />
           <Menu
             editorViewRef={props.editorViewRef}
+            keymap={keymap}
             text={editorState}
             lastModified={props.state.lastModified}
             path={props.state.path}
