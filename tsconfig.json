@@ -7,7 +7,6 @@
     "esModuleInterop": false,
     "allowSyntheticDefaultImports": true,
     "noImplicitAny": false,
-    //"strict": true,
     "forceConsistentCasingInFileNames": true,
     "module": "ESNext",
     "moduleResolution": "Node",

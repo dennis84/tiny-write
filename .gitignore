@@ -3,3 +3,4 @@ dist
 app
 .cache
 stats.html
+/index.js

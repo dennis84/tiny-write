@@ -1,19 +1,13 @@
-const {app, clipboard, dialog, shell, ipcMain, BrowserWindow, Menu} = require('electron')
-const {autoUpdater} = require('electron-updater')
-const log = require('electron-log')
-const path = require('path')
-const url = require('url')
-const FileType = require('file-type')
-const fs = require('fs')
-const os = require('os')
+import {app, clipboard, dialog, shell, ipcMain, BrowserWindow, Menu} from 'electron'
+import log from 'electron-log'
+import * as path from 'path'
+import * as FileType from 'file-type'
+import * as fs from 'fs'
+import * as os from 'os'
 
 let win
 
 const lock = app.requestSingleInstanceLock()
-
-function autoUpdate() {
-  autoUpdater.checkForUpdatesAndNotify()
-}
 
 function createWindow() {
   win = new BrowserWindow({
@@ -28,18 +22,14 @@ function createWindow() {
       enableRemoteModule: false,
       nodeIntegration: false,
       sandbox: true,
-      preload: path.join(app.getAppPath(), 'preload.js'),
+      preload: path.join(__dirname, 'preload.js'),
     }
   })
 
   if (process.env.NODE_ENV === 'dev') {
     win.loadURL('http://localhost:3000')
   } else {
-    win.loadURL(url.format({
-      protocol: 'file',
-      hash: '',
-      pathname: path.join(__dirname, '/dist/index.html')
-    }))
+    win.loadURL(`file://${path.join(__dirname, '/index.html')}`)
   }
 
   Menu.setApplicationMenu(Menu.buildFromTemplate([{
@@ -66,7 +56,7 @@ function createWindow() {
       {label: 'Cut', accelerator: 'CmdOrCtrl+X', role: 'cut'},
       {label: 'Copy', accelerator: 'CmdOrCtrl+C', role: 'copy'},
       {type: 'separator'},
-      {label: 'Paste', accelerator: 'CmdOrCtrl+V', paste: 'paste'},
+      {label: 'Paste', accelerator: 'CmdOrCtrl+V', role: 'paste'},
       {label: 'Paste and match style', accelerator: 'Shift+CmdOrCtrl+V', role: 'pasteAndMatchStyle'},
       {label: 'Select All', accelerator: 'CmdOrCtrl+A', role: 'selectAll'},
     ],
@@ -118,7 +108,6 @@ if (!lock) {
 
   app.on('ready', () => {
     createWindow()
-    autoUpdate()
   })
 
   app.on('window-all-closed', () => {
@@ -201,7 +190,7 @@ ipcMain.handle('log', (event, ...args) => {
 ipcMain.handle('save', (event, content) => {
   const alwaysOnTop = win.alwaysOnTop
   win.setAlwaysOnTop(false)
-  return dialog.showSaveDialog(win).then((result) => {
+  return dialog.showSaveDialog(win).then((result: any) => {
     win.setAlwaysOnTop(alwaysOnTop)
     if (result.cancelled) return
     fs.writeFileSync(result.filePath, content, 'utf-8')

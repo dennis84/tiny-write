@@ -1,4 +1,4 @@
-const {ipcRenderer, contextBridge} = require('electron')
+import {ipcRenderer, contextBridge} from 'electron'
 
 contextBridge.exposeInMainWorld('app', {
   setAlwaysOnTop: (flag) => ipcRenderer.invoke('setAlwaysOnTop', flag),

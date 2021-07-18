@@ -1,12 +1,11 @@
 {
   "name": "TinyWrite",
   "version": "0.5.3",
+  "main": "dist/index.js",
   "build": {
     "artifactName": "TinyWrite.${ext}",
     "appId": "com.github.dennis84.tinywrite",
     "files": [
-      "index.js",
-      "preload.js",
       "dist/**",
       "!dist/app"
     ],
@@ -108,10 +107,10 @@
   "hasInstallScript": true,
   "scripts": {
     "web": "vite",
-    "app": "NODE_ENV=dev electron . README.md & vite",
+    "app": "npm run tsc && NODE_ENV=dev electron dist README.md & vite",
+    "tsc": "tsc --outDir dist index.ts preload.ts",
     "build": "npm run lint && vite build --base './'",
-    "pack": "npm run build && electron-builder --dir",
-    "dist": "npm run build && electron-builder",
+    "dist": "npm run build && npm run tsc && electron-builder",
     "lint": "eslint . --ext .ts,.tsx",
     "test": "jest --runInBand"
   },
