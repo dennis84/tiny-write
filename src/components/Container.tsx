@@ -129,9 +129,20 @@ export default (props: Props) => {
     const decoder = new TextDecoder('utf-8')
     const data = await remote.readFile(props.state.path)
     const fileContent = decoder.decode(data.buffer)
-    const schema = editorView.state.schema
-    const parser = createMarkdownParser(schema)
-    const doc = parser.parse(fileContent).toJSON()
+    let doc
+
+    if (props.state.config.markdown) {
+      const nodes = fileContent.split('\n').map((text) => {
+        return text ? {type: 'paragraph', content: [{type: 'text', text}]} : {type: 'paragraph'}
+      })
+
+      doc = {type: 'doc', content: nodes}
+    } else {
+      const schema = editorView.state.schema
+      const parser = createMarkdownParser(schema)
+      doc = parser.parse(fileContent).toJSON()
+    }
+
     const text = {
       doc,
       selection: {
