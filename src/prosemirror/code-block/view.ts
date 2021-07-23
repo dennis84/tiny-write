@@ -1,6 +1,6 @@
 import {Node} from 'prosemirror-model'
 import {EditorView as PmEditorView} from 'prosemirror-view'
-import {TextSelection} from 'prosemirror-state'
+import {TextSelection, Selection} from 'prosemirror-state'
 import {exitCode} from 'prosemirror-commands'
 import {Compartment, EditorState, Extension} from '@codemirror/state'
 import {EditorView, ViewUpdate, keymap} from '@codemirror/view'
@@ -153,7 +153,10 @@ export class CodeBlockView {
         const state = editorView.state
         const selection = state.selection
         const startPos = selection.main.head
-        if (startPos === 0) {
+        if (!selection.main.empty) return
+        const line = editorView.state.doc.lineAt(startPos)
+
+        if (line.number === 1) {
           const tr = this.view.state.tr
           let targetPos = this.getPos() - 1
           if (this.getPos() === 0) {
@@ -161,7 +164,29 @@ export class CodeBlockView {
             targetPos = 0
           }
 
-          const selection = new TextSelection(tr.doc.resolve(targetPos))
+          const selection = Selection.near(tr.doc.resolve(targetPos))
+          tr.setSelection(selection).scrollIntoView()
+          this.view.dispatch(tr)
+          this.view.focus()
+          return true
+        }
+
+        return false
+      }
+    }, {
+      key: 'ArrowDown',
+      run: (editorView) => {
+        const state = editorView.state
+        const selection = state.selection
+        const startPos = selection.main.head
+        if (!selection.main.empty) return
+        const line = editorView.state.doc.lineAt(startPos)
+
+        if (line.number === editorView.state.doc.lines) {
+          const tr = this.view.state.tr
+          const targetPos = this.getPos() + editorView.state.doc.length + 2
+          const selection = Selection.near(tr.doc.resolve(targetPos))
+
           tr.setSelection(selection).scrollIntoView()
           this.view.dispatch(tr)
           this.view.focus()

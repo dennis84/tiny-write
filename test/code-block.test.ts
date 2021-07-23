@@ -26,7 +26,6 @@ it('change lang', async () => {
 })
 
 it('create line above', async () => {
-  await move('ArrowLeft', code.length + 2)
   await move('ArrowUp')
   await page.type('.ProseMirror p', 'above')
   expect(await page.textContent('.ProseMirror p:nth-of-type(1)')).toBe('above')
