@@ -383,7 +383,8 @@ export default (props: Props) => {
 
     return (
       <Link
-        onClick={() => dispatch(Open(props.file))}>
+        onClick={() => dispatch(Open(props.file))}
+        data-testid="open">
         {text} {props.file.path && '📎'}
       </Link>
     )
@@ -434,7 +435,9 @@ export default (props: Props) => {
               {isElectron && !props.path && (
                 <Link onClick={onSaveAs}>Save to file <Keys keys={[mod, 's']} /></Link>
               )}
-              <Link onClick={onNew}>New <Keys keys={[mod, 'n']} /></Link>
+              <Link onClick={onNew} data-testid="new">
+                New <Keys keys={[mod, 'n']} />
+              </Link>
               <Link
                 onClick={onDiscard}
                 disabled={props.files.length === 0 && isEmpty(props.text?.editorState)}
@@ -503,7 +506,7 @@ export default (props: Props) => {
                   Fullscreen {props.fullscreen && '✅'} <Keys keys={[alt, 'Enter']} />
                 </Link>
               )}
-              <Link onClick={onToggleMarkdown}>
+              <Link onClick={onToggleMarkdown} data-testid="markdown">
                 Markdown mode {props.config.markdown && '✅'}
               </Link>
               <Link onClick={onToggleTypewriterMode}>

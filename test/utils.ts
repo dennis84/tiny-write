@@ -9,7 +9,16 @@ export const move = async (key, repeat = 1) => {
 }
 
 export const clearText = async () => {
+  const discard = await page.$$('[data-testid="discard"]')
+  if (!discard.length) {
+    await page.click('[data-testid="burger"]')
+  }
+
+  const disabled = await page.$$('[data-testid="discard"]:disabled')
+  if (!disabled.length) {
+    await page.click('[data-testid="discard"]')
+  }
+
   await page.click('[data-testid="burger"]')
-  await page.click('[data-testid="discard"]')
   expect(await lineText()).toBe('Start typing ...')
 }
