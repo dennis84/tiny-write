@@ -20,6 +20,7 @@ interface Props {
   data?: unknown;
   keymap?: any;
   config: Config;
+  markdown: boolean;
   path?: string;
   y?: YOptions;
 }
@@ -51,12 +52,12 @@ const codeMirrorKeymap = (props: Props) => {
 
 export const createState = (props: Props): ProseMirrorState => ({
   editorState: props.data,
-  extensions: props.config.markdown ? [
+  extensions: props.markdown ? [
     customKeymap(props),
-    base(props.config.markdown),
+    base(props.markdown),
   ] : [
     customKeymap(props),
-    base(props.config.markdown),
+    base(props.markdown),
     markdown,
     todoList,
     dragHandle,

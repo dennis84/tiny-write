@@ -17,7 +17,7 @@ export interface ProseMirrorExtension {
 }
 
 export interface ProseMirrorState {
-  editorState?: EditorState | unknown;
+  editorState?: EditorState | {[key: string]: any};
   extensions: ProseMirrorExtension[];
 }
 
@@ -25,6 +25,7 @@ interface Props {
   state: ProseMirrorState;
   onChange: (state: ProseMirrorState) => void;
   onInit: (state: ProseMirrorState) => void;
+  onError?: (error: Error) => void;
   className?: string;
   editorViewRef?: React.MutableRefObject<EditorView>;
 }
@@ -45,26 +46,34 @@ export const ProseMirror = (props: Props) => {
   }
 
   useEffect(() => {
-    if (!props.state.editorState) return
-    if (!editorViewRef.current) {
-      const {state, nodeViews} = createEditorState(props.state)
-      const view = new EditorView(editorRef.current, {state, nodeViews, dispatchTransaction})
-      editorViewRef.current = view
-      view.focus()
-      props.onInit({
-        ...props.state,
-        editorState: state,
-      })
-    } else if (props.state.editorState instanceof EditorState) {
-      editorViewRef.current.updateState(props.state.editorState)
-    } else if (props.state.editorState) {
-      const {state, nodeViews} = createEditorState(props.state)
-      if (!state) return
-      editorViewRef.current.update({state, nodeViews, dispatchTransaction})
-      props.onInit({
-        ...props.state,
-        editorState: state,
-      })
+    try {
+      if (!props.state.editorState) return
+      if (!editorViewRef.current) {
+        const {state, nodeViews} = createEditorState(props.state)
+        const view = new EditorView(editorRef.current, {state, nodeViews, dispatchTransaction})
+        editorViewRef.current = view
+        view.focus()
+        props.onInit({
+          ...props.state,
+          editorState: state,
+        })
+      } else if (props.state.editorState instanceof EditorState) {
+        editorViewRef.current.updateState(props.state.editorState)
+      } else if (props.state.editorState) {
+        const {state, nodeViews} = createEditorState(props.state)
+        if (!state) return
+        editorViewRef.current.update({state, nodeViews, dispatchTransaction})
+        props.onInit({
+          ...props.state,
+          editorState: state,
+        })
+      }
+    } catch (err) {
+      if (props.onError) {
+        props.onError(err)
+      } else {
+        throw err
+      }
     }
   }, [props.state])
 

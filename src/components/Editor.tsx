@@ -241,6 +241,7 @@ export default (props: Props) => {
       className={editorCss}
       state={props.text}
       onChange={onChange}
-      onInit={onInit} />
+      onInit={onInit}
+      onError={() => undefined} />
   )
 }

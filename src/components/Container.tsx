@@ -1,6 +1,7 @@
 import React, {useEffect} from 'react'
 import {selectAll, deleteSelection} from 'prosemirror-commands'
 import {EditorView} from 'prosemirror-view'
+import {Schema} from 'prosemirror-model'
 import {undo, redo} from 'prosemirror-history'
 import {v4 as uuidv4} from 'uuid'
 import * as Y from 'yjs'
@@ -14,6 +15,7 @@ import {useDebouncedEffect, useDynamicCallback} from '../hooks'
 import {serialize, createMarkdownParser} from '../markdown'
 import {
   UpdateState,
+  UpdateStateConfig,
   UpdateError,
   UpdateText,
   UpdateCollab,
@@ -155,6 +157,7 @@ export default (props: Props) => {
     const newText = createState({
       data: text,
       config: props.state.config,
+      markdown: props.state.markdown,
       path: props.state.path,
       keymap,
     })
@@ -198,6 +201,7 @@ export default (props: Props) => {
         text = createState({
           data: parsed.text,
           path: parsed.path,
+          markdown: parsed.markdown,
           keymap,
           config,
         })
@@ -293,6 +297,7 @@ export default (props: Props) => {
       const newText = createState({
         data: props.state.collab?.room ? createEmptyData() : editorView.state.toJSON(),
         config: props.state.config,
+        markdown: props.state.markdown,
         path: props.state.path,
         keymap,
         y: {type, provider},
@@ -314,6 +319,7 @@ export default (props: Props) => {
       const newText = createState({
         data: editorView.state.toJSON(),
         config: props.state.config,
+        markdown: props.state.markdown,
         path: props.state.path,
         keymap,
       })
@@ -341,6 +347,7 @@ export default (props: Props) => {
     const newText = createState({
       data: editorView.state.toJSON(),
       config: props.state.config,
+      markdown: props.state.markdown,
       path: props.state.path,
       keymap,
       y: props.state.collab?.y,
@@ -352,6 +359,78 @@ export default (props: Props) => {
     props.state.config.fontSize,
     props.state.config.typewriterMode,
   ])
+
+  // Markdown changes of current file, can happen if open a file
+  useEffect(() => {
+    if (props.state.loading !== 'initialized') return
+    if (props.state.markdown === props.state.config.markdown) return
+    const selection = {type: 'text', anchor: 1, head: 1}
+    const doc = props.state.text.editorState.doc
+
+    const text = createState({
+      data: {selection, doc},
+      config: props.state.config,
+      markdown: props.state.markdown,
+      path: props.state.path,
+      keymap,
+      y: props.state.collab?.y,
+    })
+
+    dispatch(UpdateStateConfig({text}, {markdown: props.state.markdown}))
+  }, [props.state.markdown])
+
+  // Markdown config changes.
+  useEffect(() => {
+    if (props.state.loading !== 'initialized') return
+    if (props.state.markdown === props.state.config.markdown) return
+
+    const selection = {type: 'text', anchor: 1, head: 1}
+    let doc
+
+    if (props.state.config.markdown) {
+      const lines = serialize(editorView.state).split('\n')
+      const nodes = lines.map((text) => {
+        return text ? {type: 'paragraph', content: [{type: 'text', text}]} : {type: 'paragraph'}
+      })
+
+      doc = {type: 'doc', content: nodes}
+    } else {
+      const newTextConfig = createEmptyState({
+        config: props.state.config,
+        markdown: props.state.config.markdown,
+        path: props.state.path,
+        keymap,
+        y: props.state.collab?.y,
+      })
+
+      let schemaSpec = {nodes: {}}
+      for (const extension of newTextConfig.extensions) {
+        if (extension.schema) {
+          schemaSpec = extension.schema(schemaSpec)
+        }
+      }
+
+      const schema = new Schema(schemaSpec)
+      const parser = createMarkdownParser(schema)
+      let textContent = ''
+      editorView.state.doc.forEach((node) => {
+        textContent += `${node.textContent}\n`
+      })
+      const text = parser.parse(textContent)
+      doc = text.toJSON()
+    }
+
+    const text = createState({
+      data: {selection, doc},
+      config: props.state.config,
+      markdown: props.state.config.markdown,
+      path: props.state.path,
+      keymap,
+      y: props.state.collab?.y,
+    })
+
+    dispatch(UpdateStateConfig({text, markdown: props.state.config.markdown}))
+  }, [props.state.config.markdown])
 
   // Toggle remote fullscreen if changed
   useEffect(() => {
@@ -377,6 +456,7 @@ export default (props: Props) => {
       files: props.state.files,
       config: props.state.config,
       path: props.state.path,
+      markdown: props.state.markdown,
       collab: {
         room: props.state.collab?.room
       }
@@ -394,6 +474,7 @@ export default (props: Props) => {
 
   const editorState = props.state.text ?? createEmptyState({
     config: props.state.config,
+    markdown: props.state.markdown,
     keymap,
   })
 

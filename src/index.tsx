@@ -45,6 +45,7 @@ export type LoadingType = 'loading' | 'roundtrip' | 'initialized' | 'error'
 
 export interface State {
   text?: ProseMirrorState;
+  markdown?: boolean;
   lastModified?: Date;
   files: File[];
   config: Config;
@@ -60,6 +61,7 @@ export interface File {
   text?: {[key: string]: any};
   lastModified?: string;
   path?: string;
+  markdown?: boolean;
 }
 
 render(

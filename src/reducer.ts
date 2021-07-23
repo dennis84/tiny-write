@@ -8,6 +8,7 @@ export const newState = (props: Partial<State> = {}): State => ({
   files: [],
   loading: 'loading',
   fullscreen: false,
+  markdown: false,
   config: {
     theme: 'light',
     codeTheme: 'material-light',
@@ -38,6 +39,13 @@ export const Clean = () => newState({
 
 export const UpdateState = (newState: State) => () => newState
 
+export const UpdateStateConfig = (newState: Partial<State>, config?: Partial<Config>) =>
+  (state: State) => ({
+    ...state,
+    ...newState,
+    config: {...state.config, ...(config ?? {})},
+  })
+
 export const UpdateConfig = (config: Config) => (state: State) => ({
   ...state,
   config: {...state.config, ...config},
@@ -54,12 +62,12 @@ export const UpdatePath = (path: string) => (state: State) => ({...state, path})
 export const UpdateText = (
   text: ProseMirrorState,
   lastModified?: Date,
-  config?: Config
+  markdown?: boolean,
 ) => (state: State) => ({
   ...state,
   text,
   lastModified: lastModified ?? state.lastModified,
-  config: config ? {...state.config, ...config} : state.config,
+  markdown: markdown ?? state.markdown,
 })
 
 export const UpdateCollab = (
@@ -87,6 +95,7 @@ export const New = (state: State) => {
     text,
     lastModified: state.lastModified.toISOString(),
     path: state.path,
+    markdown: state.markdown,
   })
 
   return {
@@ -107,6 +116,7 @@ export const Open = (file: File) => (state: State) => {
       text,
       lastModified: state.lastModified.toISOString(),
       path: state.path,
+      markdown: state.markdown,
     })
   }
 
@@ -128,7 +138,10 @@ export const Open = (file: File) => (state: State) => {
   return {
     ...state,
     files,
-    ...next,
+    text: next.text,
+    path: next.path,
+    lastModified: next.lastModified,
+    markdown: next.markdown,
     collab: undefined,
   }
 }
@@ -140,12 +153,16 @@ export const Discard = (state: State) => {
     text: undefined,
     lastModified: undefined,
     path: undefined,
+    markdown: state.markdown,
   }
 
   return {
     ...state,
     files,
-    ...next,
+    text: next.text,
+    path: next.path,
+    lastModified: next.lastModified,
+    markdown: next.markdown,
     collab: file ? undefined : state.collab,
   }
 }
@@ -154,6 +171,7 @@ interface WokenFile {
   text?: ProseMirrorState;
   lastModified?: Date;
   path?: string;
+  markdown: boolean;
 }
 
 const newText = (text: ProseMirrorState, file: File): WokenFile => {
@@ -162,6 +180,7 @@ const newText = (text: ProseMirrorState, file: File): WokenFile => {
     text: newState,
     lastModified: file.lastModified ? new Date(file.lastModified) : undefined,
     path: file.path,
+    markdown: file.markdown,
   }
 }
 
