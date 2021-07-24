@@ -69,6 +69,7 @@ const codeBlockSchema = {
   code: true,
   defining: true,
   draggable: true,
+  isolating: true,
   marks: '',
   attrs: {params: {default: ''}},
   parseDOM: [{

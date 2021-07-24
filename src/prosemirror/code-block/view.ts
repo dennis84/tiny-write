@@ -84,7 +84,14 @@ export class CodeBlockView {
     langInput.textContent = this.getLang()
     langInput.setAttribute('contenteditable', '')
     langInput.addEventListener('keydown', (e) => {
-      if (e.keyCode === 13) {
+      if (e.keyCode === 27) {
+        e.preventDefault()
+        langInput.textContent = ''
+        langSelect.style.display = 'none'
+        langSelectBottom.style.display = 'none'
+        this.langToggle.style.display = 'flex'
+        this.editorView.focus()
+      } else if (e.keyCode === 13) {
         e.preventDefault()
         const lang = cleanLang(langInput.textContent.trim())
         langInput.textContent = lang
@@ -106,6 +113,7 @@ export class CodeBlockView {
     })
 
     langInput.addEventListener('blur', () => {
+      langInput.textContent = ''
       langSelect.style.display = 'none'
       langSelectBottom.style.display = 'none'
       this.langToggle.style.display = 'flex'
