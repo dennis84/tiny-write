@@ -174,7 +174,6 @@ interface Props {
   fullscreen: boolean;
   collab?: Collab;
   editorViewRef: React.RefObject<EditorView>;
-  keymap: any;
 }
 
 export default (props: Props) => {

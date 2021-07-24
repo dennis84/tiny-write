@@ -151,6 +151,7 @@ export default (props: Props) => {
         }
         .codemirror-inner {
           position: relative;
+          margin: 5px 0;
           padding: 5px 0;
           font-family: '${font(theme, true)}' !important;
           border: 1px solid ${rgba(color(theme), 0.3)};

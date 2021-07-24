@@ -429,7 +429,11 @@ export default (props: Props) => {
       y: props.state.collab?.y,
     })
 
-    dispatch(UpdateStateConfig({text, markdown: props.state.config.markdown}))
+    dispatch(UpdateStateConfig({
+      text,
+      markdown: props.state.config.markdown,
+      lastModified: new Date(),
+    }))
   }, [props.state.config.markdown])
 
   // Toggle remote fullscreen if changed
@@ -492,7 +496,6 @@ export default (props: Props) => {
             config={props.state.config} />
           <Menu
             editorViewRef={props.editorViewRef}
-            keymap={keymap}
             text={editorState}
             lastModified={props.state.lastModified}
             path={props.state.path}
