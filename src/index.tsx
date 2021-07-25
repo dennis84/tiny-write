@@ -13,7 +13,6 @@ export interface Config {
   fontSize: number;
   contentWidth: number;
   alwaysOnTop: boolean;
-  markdown: boolean;
   typewriterMode: boolean;
 }
 

@@ -16,7 +16,6 @@ export const newState = (props: Partial<State> = {}): State => ({
     fontSize: 24,
     contentWidth: 800,
     alwaysOnTop: isMac,
-    markdown: false,
     typewriterMode: true,
   },
   ...props,
@@ -38,13 +37,6 @@ export const Clean = () => newState({
 })
 
 export const UpdateState = (newState: State) => () => newState
-
-export const UpdateStateConfig = (newState: Partial<State>, config?: Partial<Config>) =>
-  (state: State) => ({
-    ...state,
-    ...newState,
-    config: {...state.config, ...(config ?? {})},
-  })
 
 export const UpdateConfig = (config: Config) => (state: State) => ({
   ...state,
@@ -130,7 +122,7 @@ export const Open = (file: File) => (state: State) => {
   }
 
   const index = findIndexOfFile(file)
-  const next = newText(state.text, file)
+  const next = createTextFromFile(state.text, file)
   if (index !== -1) {
     files.splice(index, 1)
   }
@@ -149,7 +141,7 @@ export const Open = (file: File) => (state: State) => {
 export const Discard = (state: State) => {
   const files = [...state.files]
   const file = files.shift()
-  const next = file ? newText(state.text, file) : {
+  const next = file ? createTextFromFile(state.text, file) : {
     text: undefined,
     lastModified: undefined,
     path: undefined,
@@ -167,22 +159,12 @@ export const Discard = (state: State) => {
   }
 }
 
-interface WokenFile {
-  text?: ProseMirrorState;
-  lastModified?: Date;
-  path?: string;
-  markdown: boolean;
-}
-
-const newText = (text: ProseMirrorState, file: File): WokenFile => {
-  const newState = {...text, editorState: file.text}
-  return {
-    text: newState,
-    lastModified: file.lastModified ? new Date(file.lastModified) : undefined,
-    path: file.path,
-    markdown: file.markdown,
-  }
-}
+const createTextFromFile = (text: ProseMirrorState, file: File) => ({
+  text: {editorState: file.text},
+  lastModified: file.lastModified ? new Date(file.lastModified) : undefined,
+  path: file.path,
+  markdown: file.markdown,
+})
 
 type Action = (state: State) => State
 

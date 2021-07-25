@@ -2,16 +2,21 @@ import React from 'react'
 import {EditorView} from 'prosemirror-view'
 import {css} from '@emotion/css'
 import {useTheme} from '@emotion/react'
-import {Config, File} from '..'
+import {Config, Collab, File} from '..'
 import {color, color2, font, rgba} from '../config'
 import {UpdateText, useDispatch} from '../reducer'
-import {ProseMirror, ProseMirrorState} from '../prosemirror/prosemirror'
+import {ProseMirror, ProseMirrorState, isInitialized} from '../prosemirror/prosemirror'
+import {createState} from '../prosemirror'
 
 interface Props {
   text: ProseMirrorState;
   lastModified?: Date;
   files: File[];
   config: Config;
+  path?: string;
+  collab?: Collab;
+  markdown: boolean;
+  keymap: {[key: string]: any};
   editorViewRef: React.RefObject<EditorView>;
 }
 
@@ -236,13 +241,26 @@ export default (props: Props) => {
     dispatch(UpdateText(value, new Date()))
   }
 
+  const onReconfigure = (state: ProseMirrorState) => {
+    if (isInitialized(state.editorState)) return state
+    console.log('onReconfigure')
+    return createState({
+      data: state.editorState,
+      config: props.config,
+      markdown: props.markdown,
+      path: props.path,
+      keymap: props.keymap,
+      y: props.collab?.y,
+    })
+  }
+
   return (
     <ProseMirror
       editorViewRef={props.editorViewRef}
       className={editorCss}
       state={props.text}
       onChange={onChange}
-      onInit={onInit}
-      onError={() => undefined} />
+      onReconfigure={onReconfigure}
+      onInit={onInit} />
   )
 }

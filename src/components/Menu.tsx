@@ -1,4 +1,5 @@
 import React, {useEffect, useState} from 'react'
+import {Schema} from 'prosemirror-model'
 import {EditorView} from 'prosemirror-view'
 import {EditorState} from 'prosemirror-state'
 import {undo, redo} from 'prosemirror-history'
@@ -16,11 +17,14 @@ import {
   UpdateCollab,
   UpdateConfig,
   UpdatePath,
+  UpdateText,
   useDispatch,
 } from '../reducer'
 import {color, color2, themes, fonts, codeThemes, rgba} from '../config'
 import {isElectron, isMac, alt, mod, WEB_URL, VERSION_URL} from '../env'
 import * as remote from '../remote'
+import {createMarkdownParser, serialize} from '../markdown'
+import {createEmptyState, createState} from '../prosemirror'
 import {ProseMirrorState, isEmpty, isInitialized} from '../prosemirror/prosemirror'
 
 const Container = styled.div`
@@ -173,6 +177,8 @@ interface Props {
   config: Config;
   fullscreen: boolean;
   collab?: Collab;
+  markdown: boolean;
+  keymap: {[key: string]: any};
   editorViewRef: React.RefObject<EditorView>;
 }
 
@@ -238,7 +244,53 @@ export default (props: Props) => {
   }
 
   const onToggleMarkdown = () => {
-    dispatch(UpdateConfig({...props.config, markdown: !props.config.markdown}))
+    const markdown = !props.markdown
+    const selection = {type: 'text', anchor: 1, head: 1}
+    let doc
+
+    if (markdown) {
+      const lines = serialize(editorView.state).split('\n')
+      const nodes = lines.map((text) => {
+        return text ? {type: 'paragraph', content: [{type: 'text', text}]} : {type: 'paragraph'}
+      })
+
+      doc = {type: 'doc', content: nodes}
+    } else {
+      const newTextConfig = createEmptyState({
+        config: props.config,
+        markdown,
+        path: props.path,
+        keymap: props.keymap,
+        y: props.collab?.y,
+      })
+
+      let schemaSpec = {nodes: {}}
+      for (const extension of newTextConfig.extensions) {
+        if (extension.schema) {
+          schemaSpec = extension.schema(schemaSpec)
+        }
+      }
+
+      const schema = new Schema(schemaSpec)
+      const parser = createMarkdownParser(schema)
+      let textContent = ''
+      editorView.state.doc.forEach((node) => {
+        textContent += `${node.textContent}\n`
+      })
+      const text = parser.parse(textContent)
+      doc = text.toJSON()
+    }
+
+    const text = createState({
+      data: {selection, doc},
+      config: props.config,
+      markdown,
+      path: props.path,
+      keymap: props.keymap,
+      y: props.collab?.y,
+    })
+
+    dispatch(UpdateText(text, undefined, markdown))
   }
 
   const onToggleTypewriterMode = () => {
@@ -506,7 +558,7 @@ export default (props: Props) => {
                 </Link>
               )}
               <Link onClick={onToggleMarkdown} data-testid="markdown">
-                Markdown mode {props.config.markdown && '✅'}
+                Markdown mode {props.markdown && '✅'}
               </Link>
               <Link onClick={onToggleTypewriterMode}>
                 Typewriter mode {props.config.typewriterMode && '✅'}
