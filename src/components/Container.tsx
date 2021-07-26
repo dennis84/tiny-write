@@ -155,7 +155,12 @@ export default (props: Props) => {
   }
 
   const initialize = async () => {
-    const args = await remote.getArgs()
+    let args = await remote.getArgs()
+    if (!isElectron) {
+      const room = window.location.pathname?.slice(1)
+      args = {room}
+    }
+
     const data = await db.get('state')
     let parsed
     if (data !== undefined) {
@@ -262,12 +267,6 @@ export default (props: Props) => {
       }
 
       remote.on('second-instance', onArgs)
-
-      const room = window.location.pathname?.slice(1)
-      if (!isElectron && room) {
-        const backup = props.state.collab?.room !== room
-        dispatch(UpdateCollab({room, started: true}, undefined, backup))
-      }
     }
   }, [props.state.loading])
 

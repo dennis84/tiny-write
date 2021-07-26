@@ -34,10 +34,10 @@ export interface Collab {
 }
 
 export interface Args {
-  cwd: string;
+  cwd?: string;
   file?: string;
   room?: string;
-  text: any;
+  text?: any;
 }
 
 export type LoadingType = 'loading' | 'roundtrip' | 'initialized' | 'error'
