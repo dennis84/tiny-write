@@ -112,7 +112,7 @@
     "build": "npm run lint && vite build --base './'",
     "dist": "npm run build && npm run tsc && electron-builder",
     "lint": "eslint . --ext .ts,.tsx",
-    "test": "jest --runInBand"
+    "test": "jest && jest --runInBand --config ./jest.integration.config.js"
   },
   "browserslist": [
     "last 1 Chrome versions"

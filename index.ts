@@ -5,6 +5,26 @@ import * as FileType from 'file-type'
 import * as fs from 'fs'
 import * as os from 'os'
 
+export const getArgs = (argv) => {
+  const args = argv.slice(process.env.NODE_ENV === 'dev' ? 2 : 1)
+  const cwd = process.cwd()
+  let file
+  let room
+  let text
+
+  for (const arg of args) {
+    if (arg.startsWith('tinywrite://')) {
+      const url = new URL(arg)
+      room = url.searchParams.get('room')
+      text = url.searchParams.get('text')
+    } else if (!arg.startsWith('--')) {
+      file = path.resolve(cwd, arg)
+    }
+  }
+
+  return {cwd, file, room, text}
+}
+
 let win
 
 const lock = app.requestSingleInstanceLock()
@@ -78,20 +98,6 @@ function createWindow() {
     e.preventDefault()
     shell.openExternal(url)
   })
-}
-
-function getArgs(argv) {
-  const args = argv.slice(process.env.NODE_ENV === 'dev' ? 2 : 1)
-  const cwd = process.cwd()
-  let file
-  let room
-  if (args.length > 0 && args[0].startsWith('tinywrite://')) {
-    room = args[0].substring(12) || undefined
-  } else if (args.length > 0 && !args[0].startsWith('--')) {
-    file = path.resolve(cwd, args[0])
-  }
-
-  return {cwd, file, room}
 }
 
 if (!lock) {

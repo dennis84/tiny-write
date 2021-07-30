@@ -337,7 +337,7 @@ export default (props: Props) => {
 
   const onOpenInApp = () => {
     if (isElectron) return
-    window.open(`tinywrite://${props.collab.room ?? ''}`, '_self')
+    window.open(`tinywrite://main?room=${props.collab.room ?? ''}`, '_self')
   }
 
   const onCopyCollabLink = () => {
