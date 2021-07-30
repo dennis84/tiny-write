@@ -16,7 +16,9 @@ export const getArgs = (argv) => {
     if (arg.startsWith('tinywrite://')) {
       const url = new URL(arg)
       room = url.searchParams.get('room')
-      text = url.searchParams.get('text')
+      if (url.searchParams.has('text')) {
+        text = Buffer.from(url.searchParams.get('text'), 'base64').toString('utf-8')
+      }
     } else if (!arg.startsWith('--')) {
       file = path.resolve(cwd, arg)
     }

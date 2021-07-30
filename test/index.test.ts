@@ -22,7 +22,8 @@ it.each(['dev', 'test'])('getArgs - empty', (env) => {
 
 it('getArgs - deep link', () => {
   process.env.NODE_ENV = 'test'
-  const argv = ['', 'tinywrite://main?room=123&text=blah']
+  const text = Buffer.from('blah').toString('base64')
+  const argv = ['', `tinywrite://main?room=123&text=${text}`]
   const args = getArgs(argv)
   expect(args.room).toBe('123')
   expect(args.text).toBe('blah')
@@ -30,7 +31,8 @@ it('getArgs - deep link', () => {
 
 it('getArgs - deep link - dev', () => {
   process.env.NODE_ENV = 'dev'
-  const argv = ['', '', 'tinywrite://main?room=123&text=blah']
+  const text = Buffer.from('blah').toString('base64')
+  const argv = ['', '', `tinywrite://main?room=123&text=${text}`]
   const args = getArgs(argv)
   expect(args.room).toBe('123')
   expect(args.text).toBe('blah')

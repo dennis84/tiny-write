@@ -243,7 +243,6 @@ export default (props: Props) => {
 
   const onReconfigure = (state: ProseMirrorState) => {
     if (isInitialized(state.editorState)) return state
-    console.log('onReconfigure')
     return createState({
       data: state.editorState,
       config: props.config,

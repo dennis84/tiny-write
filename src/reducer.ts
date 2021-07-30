@@ -104,12 +104,14 @@ export const Open = (file: File) => (state: State) => {
   const files = [...state.files]
   if (!isEmpty(state.text.editorState)) {
     const text = state.path ? undefined : (state.text.editorState as EditorState).toJSON()
-    files.push({
-      text,
-      lastModified: state.lastModified.toISOString(),
-      path: state.path,
-      markdown: state.markdown,
-    })
+    if (state.lastModified) {
+      files.push({
+        text,
+        lastModified: state.lastModified.toISOString(),
+        path: state.path,
+        markdown: state.markdown,
+      })
+    }
   }
 
   const findIndexOfFile = (f) => {

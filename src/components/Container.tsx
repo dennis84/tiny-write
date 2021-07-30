@@ -238,7 +238,11 @@ export default (props: Props) => {
       return
     }
 
-    if (args.file) {
+    if (args.text) {
+      dispatch(Open({
+        text: JSON.parse(args.text),
+      }))
+    } else if (args.file) {
       if (args.file === props.state.path) {
         await loadFile()
         return
