@@ -28,7 +28,7 @@ import {Layout, Resizer} from './Layout'
 import Editor from './Editor'
 import ErrorView from './Error'
 import Menu from './Menu'
-import {isEmpty, isInitialized} from '../prosemirror/prosemirror'
+import {isEmpty, isInitialized} from '../prosemirror/state'
 import {createState, createEmptyData, createEmptyState} from '../prosemirror'
 
 const isText = (x: any) => x && x.doc && x.selection

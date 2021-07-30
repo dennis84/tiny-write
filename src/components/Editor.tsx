@@ -5,7 +5,8 @@ import {useTheme} from '@emotion/react'
 import {Config, Collab, File} from '..'
 import {color, color2, font, rgba} from '../config'
 import {UpdateText, useDispatch} from '../reducer'
-import {ProseMirror, ProseMirrorState, isInitialized} from '../prosemirror/prosemirror'
+import {ProseMirror} from '../prosemirror/editor'
+import {ProseMirrorState, isInitialized} from '../prosemirror/state'
 import {createState} from '../prosemirror'
 
 interface Props {

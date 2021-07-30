@@ -1,6 +1,6 @@
 import {useContext, createContext, Dispatch as Disp, Reducer} from 'react'
 import {EditorState} from 'prosemirror-state'
-import {ProseMirrorState, isEmpty} from './prosemirror/prosemirror'
+import {ProseMirrorState, isEmpty} from './prosemirror/state'
 import {State, File, Config, ErrorObject, Collab, LoadingType} from '.'
 import {isMac} from './env'
 

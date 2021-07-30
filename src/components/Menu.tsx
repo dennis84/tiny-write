@@ -25,7 +25,7 @@ import {isElectron, isMac, alt, mod, WEB_URL, VERSION_URL} from '../env'
 import * as remote from '../remote'
 import {createMarkdownParser, serialize} from '../markdown'
 import {createEmptyState, createState} from '../prosemirror'
-import {ProseMirrorState, isEmpty, isInitialized} from '../prosemirror/prosemirror'
+import {ProseMirrorState, isEmpty, isInitialized} from '../prosemirror/state'
 
 const Container = styled.div`
   position: relative;

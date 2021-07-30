@@ -1,5 +1,5 @@
 import {Plugin} from 'prosemirror-state'
-import {createMarkdownParser} from '../markdown'
+import {createMarkdownParser} from '../../markdown'
 
 const pasteMarkdown = (schema) => {
   const parser = createMarkdownParser(schema)
