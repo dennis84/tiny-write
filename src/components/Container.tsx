@@ -29,7 +29,12 @@ import Editor from './Editor'
 import ErrorView from './Error'
 import Menu from './Menu'
 import {isEmpty, isInitialized} from '../prosemirror/state'
-import {createState, createEmptyData, createEmptyState} from '../prosemirror'
+import {
+  createSchema,
+  createState,
+  createEmptyData,
+  createEmptyState,
+} from '../prosemirror'
 
 const isText = (x: any) => x && x.doc && x.selection
 
@@ -129,7 +134,13 @@ export default (props: Props) => {
     const decoder = new TextDecoder('utf-8')
     const data = await remote.readFile(props.state.path)
     const fileContent = decoder.decode(data.buffer)
-    const schema = editorView.state.schema
+    const schema = createSchema({
+      config: props.state.config,
+      markdown: false,
+      path: props.state.path,
+      keymap,
+    })
+
     const parser = createMarkdownParser(schema)
     const doc = parser.parse(fileContent).toJSON()
 

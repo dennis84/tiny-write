@@ -2,6 +2,7 @@ import {keymap} from 'prosemirror-keymap'
 import {keymap as cmKeymap} from '@codemirror/view'
 import {ySyncPlugin, yUndoPlugin} from 'y-prosemirror'
 import {ProseMirrorState} from './prosemirror/state'
+import {Schema} from 'prosemirror-model'
 import base from './prosemirror/extension/base'
 import markdown from './prosemirror/extension/markdown'
 import link from './prosemirror/extension/link'
@@ -94,3 +95,22 @@ export const createEmptyData = () => ({
     head: 1
   }
 })
+
+export const createSchema = (props: Props) => {
+  const newTextConfig = createEmptyState({
+    config: props.config,
+    markdown: props.markdown,
+    path: props.path,
+    keymap: props.keymap,
+    y: props.y,
+  })
+
+  let schemaSpec = {nodes: {}}
+  for (const extension of newTextConfig.extensions) {
+    if (extension.schema) {
+      schemaSpec = extension.schema(schemaSpec)
+    }
+  }
+
+  return new Schema(schemaSpec)
+}

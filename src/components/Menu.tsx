@@ -1,5 +1,4 @@
 import React, {useEffect, useState} from 'react'
-import {Schema} from 'prosemirror-model'
 import {EditorView} from 'prosemirror-view'
 import {EditorState} from 'prosemirror-state'
 import {undo, redo} from 'prosemirror-history'
@@ -24,7 +23,7 @@ import {color, color2, themes, fonts, codeThemes, rgba} from '../config'
 import {isElectron, isMac, alt, mod, WEB_URL, VERSION_URL} from '../env'
 import * as remote from '../remote'
 import {createMarkdownParser, serialize} from '../markdown'
-import {createEmptyState, createState} from '../prosemirror'
+import {createSchema, createState} from '../prosemirror'
 import {ProseMirrorState, isEmpty, isInitialized} from '../prosemirror/state'
 
 const Container = styled.div`
@@ -256,7 +255,7 @@ export default (props: Props) => {
 
       doc = {type: 'doc', content: nodes}
     } else {
-      const newTextConfig = createEmptyState({
+      const schema = createSchema({
         config: props.config,
         markdown,
         path: props.path,
@@ -264,14 +263,6 @@ export default (props: Props) => {
         y: props.collab?.y,
       })
 
-      let schemaSpec = {nodes: {}}
-      for (const extension of newTextConfig.extensions) {
-        if (extension.schema) {
-          schemaSpec = extension.schema(schemaSpec)
-        }
-      }
-
-      const schema = new Schema(schemaSpec)
       const parser = createMarkdownParser(schema)
       let textContent = ''
       editorView.state.doc.forEach((node) => {
