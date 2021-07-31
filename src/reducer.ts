@@ -100,14 +100,14 @@ export const New = (state: State) => {
   }
 }
 
-export const Open = (file: File) => (state: State) => {
+export const Open = (file: File) => (state: State): State => {
   const files = [...state.files]
-  if (!isEmpty(state.text.editorState)) {
+  if (!isEmpty(state.text?.editorState)) {
     const text = state.path ? undefined : (state.text.editorState as EditorState).toJSON()
     if (state.lastModified) {
       files.push({
         text,
-        lastModified: state.lastModified.toISOString(),
+        lastModified: state.lastModified?.toISOString(),
         path: state.path,
         markdown: state.markdown,
       })
@@ -124,11 +124,12 @@ export const Open = (file: File) => (state: State) => {
   }
 
   const index = findIndexOfFile(file)
-  const next = createTextFromFile(state.text, file)
   if (index !== -1) {
+    file.lastModified = files[index].lastModified
     files.splice(index, 1)
   }
 
+  const next = createTextFromFile(file)
   return {
     ...state,
     files,
@@ -143,7 +144,7 @@ export const Open = (file: File) => (state: State) => {
 export const Discard = (state: State) => {
   const files = [...state.files]
   const file = files.shift()
-  const next = file ? createTextFromFile(state.text, file) : {
+  const next = file ? createTextFromFile(file) : {
     text: undefined,
     lastModified: undefined,
     path: undefined,
@@ -161,7 +162,7 @@ export const Discard = (state: State) => {
   }
 }
 
-const createTextFromFile = (text: ProseMirrorState, file: File) => ({
+const createTextFromFile = (file: File) => ({
   text: {editorState: file.text},
   lastModified: file.lastModified ? new Date(file.lastModified) : undefined,
   path: file.path,

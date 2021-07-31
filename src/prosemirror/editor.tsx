@@ -1,15 +1,8 @@
 import React, {useEffect, useRef} from 'react'
 import {EditorState} from 'prosemirror-state'
-import {Decoration, EditorView, NodeView} from 'prosemirror-view'
-import {Schema, Node} from 'prosemirror-model'
-import {ProseMirrorState} from './state'
-
-type NodeViewFn = (
-  node: Node,
-  view: EditorView,
-  getPos: () => number,
-  decorations: Decoration[]
-) => NodeView
+import {EditorView} from 'prosemirror-view'
+import {Schema} from 'prosemirror-model'
+import {NodeViewFn, ProseMirrorState} from './state'
 
 interface Props {
   state: ProseMirrorState;

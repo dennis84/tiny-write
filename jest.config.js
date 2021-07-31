@@ -4,7 +4,8 @@ module.exports = {
   transform: {
     '\\.ts$': 'ts-jest',
   },
-  moduleFileExtensions: ['ts', 'js', 'json'],
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'json'],
   testMatch: ['**/test/*.test.ts'],
   modulePathIgnorePatterns: ['dist'],
+  testEnvironment: 'jsdom',
 }
