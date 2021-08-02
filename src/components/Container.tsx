@@ -184,7 +184,11 @@ export default (props: Props) => {
     }
 
     if (!parsed) {
-      dispatch(UpdateState({...props.state, loading: 'roundtrip'}))
+      dispatch(UpdateState({
+        ...props.state,
+        args,
+        loading: 'roundtrip',
+      }))
       return
     }
 

@@ -2,7 +2,7 @@ import React from 'react'
 import {render} from 'react-dom'
 import {XmlFragment} from 'yjs'
 import {WebsocketProvider} from 'y-websocket'
-import {ProseMirrorState} from './prosemirror/prosemirror'
+import {ProseMirrorState} from './prosemirror/state'
 import Main from './Main'
 import {newState} from './reducer'
 

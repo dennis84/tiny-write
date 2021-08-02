@@ -5,31 +5,37 @@ import * as FileType from 'file-type'
 import * as fs from 'fs'
 import * as os from 'os'
 
+const parseDeepLink = (link: string) => {
+  const url = new URL(link)
+  const room = url.searchParams.get('room')
+  let text
+  if (url.searchParams.has('text')) {
+    text = Buffer.from(url.searchParams.get('text'), 'base64').toString('utf-8')
+  }
+
+  return {room, text}
+}
+
 export const getArgs = (argv) => {
-  const args = argv.slice(process.env.NODE_ENV === 'dev' ? 2 : 1)
+  const xs = argv.slice(process.env.NODE_ENV === 'dev' ? 2 : 1)
   const cwd = process.cwd()
   let file
-  let room
-  let text
+  let link = {}
 
-  for (const arg of args) {
+  for (const arg of xs) {
     if (arg.startsWith('tinywrite://')) {
-      const url = new URL(arg)
-      room = url.searchParams.get('room')
-      if (url.searchParams.has('text')) {
-        text = Buffer.from(url.searchParams.get('text'), 'base64').toString('utf-8')
-      }
+      link = parseDeepLink(arg)
     } else if (!arg.startsWith('--')) {
       file = path.resolve(cwd, arg)
     }
   }
 
-  return {cwd, file, room, text}
+  return {cwd, file, ...link}
 }
 
-let win
-
 const lock = app.requestSingleInstanceLock()
+let win
+let args = getArgs(process.argv)
 
 function createWindow() {
   win = new BrowserWindow({
@@ -102,16 +108,29 @@ function createWindow() {
   })
 }
 
+const maybeNotify = () => {
+  if (!win) return
+  if (win.isMinimized()) win.restore()
+  win.focus()
+  win.webContents.send('second-instance', args)
+}
+
 if (!lock) {
   app.quit()
 } else {
+  app.on('open-file', function (event, file) {
+    args = getArgs([...process.argv, file])
+    maybeNotify()
+  })
+
+  app.on('open-url', function (event, url) {
+    args = getArgs([...process.argv, url])
+    maybeNotify()
+  })
+
   app.on('second-instance', (e, argv) => {
-    if (win) {
-      if (win.isMinimized()) win.restore()
-      win.focus()
-      const args = getArgs(argv)
-      win.webContents.send('second-instance', args)
-    }
+    args = getArgs(argv)
+    maybeNotify()
   })
 
   app.on('ready', () => {
@@ -131,13 +150,12 @@ if (!lock) {
     // dock icon is clicked and there are no other windows open.
     if (win === null) {
       createWindow()
+      win.focus()
     }
   })
 }
 
-ipcMain.handle('getArgs', () => {
-  return getArgs(process.argv)
-})
+ipcMain.handle('getArgs', () => args)
 
 ipcMain.handle('setAlwaysOnTop', (event, flag) => {
   if (win) win.setAlwaysOnTop(flag)
@@ -191,8 +209,8 @@ ipcMain.handle('resolve', (event, base, src) => {
   return path.resolve(dir, src)
 })
 
-ipcMain.handle('log', (event, ...args) => {
-  log.info(...args)
+ipcMain.handle('log', (event, ...xs) => {
+  log.info(...xs)
 })
 
 ipcMain.handle('save', (event, content) => {
