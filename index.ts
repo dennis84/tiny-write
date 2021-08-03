@@ -120,20 +120,24 @@ if (!lock) {
 } else {
   app.on('open-file', function (event, file) {
     args = getArgs([...process.argv, file])
+    log.info('open-file', args)
     maybeNotify()
   })
 
   app.on('open-url', function (event, url) {
     args = getArgs([...process.argv, url])
+    log.info('open-url', args)
     maybeNotify()
   })
 
   app.on('second-instance', (e, argv) => {
     args = getArgs(argv)
+    log.info('second-instance', args)
     maybeNotify()
   })
 
   app.on('ready', () => {
+    log.info('ready')
     createWindow()
   })
 
@@ -146,6 +150,7 @@ if (!lock) {
   })
 
   app.on('activate', () => {
+    log.info('activate')
     // On macOS it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
     if (win === null) {
