@@ -5,18 +5,14 @@ import * as FileType from 'file-type'
 import * as fs from 'fs'
 import * as os from 'os'
 
-const parseDeepLink = (link: string) => {
-  const url = new URL(link)
-  const room = url.searchParams.get('room')
-  let text
-  if (url.searchParams.has('text')) {
-    text = Buffer.from(url.searchParams.get('text'), 'base64').toString('utf-8')
-  }
-
-  return {room, text}
+interface Args {
+  cwd?: string;
+  file?: string;
+  room?: string;
+  text?: any;
 }
 
-export const getArgs = (argv) => {
+export const getArgs = (argv): Args => {
   const xs = argv.slice(process.env.NODE_ENV === 'dev' ? 2 : 1)
   const cwd = process.cwd()
   let file
@@ -33,91 +29,104 @@ export const getArgs = (argv) => {
   return {cwd, file, ...link}
 }
 
-const lock = app.requestSingleInstanceLock()
-let win
-let args = getArgs(process.argv)
-
-function createWindow() {
-  win = new BrowserWindow({
-    title: 'TinyWrite',
-    alwaysOnTop: true,
-    width: 720,
-    height: 720,
-    frame: false,
-    webPreferences: {
-      allowRunningInsecureContent: false,
-      contextIsolation: true,
-      enableRemoteModule: false,
-      nodeIntegration: false,
-      sandbox: true,
-      preload: path.join(__dirname, 'preload.js'),
-    }
-  })
-
-  if (process.env.NODE_ENV === 'dev') {
-    win.loadURL('http://localhost:3000')
-  } else {
-    win.loadURL(`file://${path.join(__dirname, '/index.html')}`)
+const parseDeepLink = (link: string) => {
+  const url = new URL(link)
+  const room = url.searchParams.get('room')
+  let text
+  if (url.searchParams.has('text')) {
+    text = Buffer.from(url.searchParams.get('text'), 'base64').toString('utf-8')
   }
 
-  Menu.setApplicationMenu(Menu.buildFromTemplate([{
-    label: 'Application',
-    submenu: [
-      {label: 'About Application', role: 'about'},
-      {
-        label: 'Quit',
-        accelerator: 'CmdOrCtrl+Q',
-        click: () => win.close()
-      },
-      {
-        label: 'Open Dev Tools',
-        accelerator: 'CmdOrCtrl+Shift+J',
-        click: () => win.webContents.openDevTools()
-      },
-    ],
-  }, {
-    label: 'Edit',
-    submenu: [
-      {label: 'Undo', accelerator: 'CmdOrCtrl+Z', role: 'undo'},
-      {label: 'Redo', accelerator: 'Shift+CmdOrCtrl+Z', role: 'redo'},
-      {type: 'separator'},
-      {label: 'Cut', accelerator: 'CmdOrCtrl+X', role: 'cut'},
-      {label: 'Copy', accelerator: 'CmdOrCtrl+C', role: 'copy'},
-      {type: 'separator'},
-      {label: 'Paste', accelerator: 'CmdOrCtrl+V', role: 'paste'},
-      {label: 'Paste and match style', accelerator: 'Shift+CmdOrCtrl+V', role: 'pasteAndMatchStyle'},
-      {label: 'Select All', accelerator: 'CmdOrCtrl+A', role: 'selectAll'},
-    ],
-  }]))
-
-  win.on('closed', () => {
-    win = null
-  })
-
-  win.on('blur', () => {
-    win.setOpacity(0.3)
-  })
-
-  win.on('focus', () => {
-    win.setOpacity(1)
-  })
-
-  win.webContents.on('new-window', (e, url) => {
-    e.preventDefault()
-    shell.openExternal(url)
-  })
+  return {room, text}
 }
 
-const maybeNotify = () => {
-  if (!win) return
-  if (win.isMinimized()) win.restore()
-  win.focus()
-  win.webContents.send('second-instance', args)
-}
+const main = () => {
+  let win
+  let args = getArgs(process.argv)
 
-if (!lock) {
-  app.quit()
-} else {
+  const createWindow = () => {
+    win = new BrowserWindow({
+      title: 'TinyWrite',
+      alwaysOnTop: true,
+      width: 720,
+      height: 720,
+      frame: false,
+      webPreferences: {
+        allowRunningInsecureContent: false,
+        contextIsolation: true,
+        enableRemoteModule: false,
+        nodeIntegration: false,
+        sandbox: true,
+        preload: path.join(__dirname, 'preload.js'),
+      }
+    })
+
+    if (process.env.NODE_ENV === 'dev') {
+      win.loadURL('http://localhost:3000')
+    } else {
+      win.loadURL(`file://${path.join(__dirname, '/index.html')}`)
+    }
+
+    Menu.setApplicationMenu(Menu.buildFromTemplate([{
+      label: 'Application',
+      submenu: [
+        {label: 'About Application', role: 'about'},
+        {
+          label: 'Quit',
+          accelerator: 'CmdOrCtrl+Q',
+          click: () => win.close()
+        },
+        {
+          label: 'Open Dev Tools',
+          accelerator: 'CmdOrCtrl+Shift+J',
+          click: () => win.webContents.openDevTools()
+        },
+      ],
+    }, {
+      label: 'Edit',
+      submenu: [
+        {label: 'Undo', accelerator: 'CmdOrCtrl+Z', role: 'undo'},
+        {label: 'Redo', accelerator: 'Shift+CmdOrCtrl+Z', role: 'redo'},
+        {type: 'separator'},
+        {label: 'Cut', accelerator: 'CmdOrCtrl+X', role: 'cut'},
+        {label: 'Copy', accelerator: 'CmdOrCtrl+C', role: 'copy'},
+        {type: 'separator'},
+        {label: 'Paste', accelerator: 'CmdOrCtrl+V', role: 'paste'},
+        {label: 'Paste and match style', accelerator: 'Shift+CmdOrCtrl+V', role: 'pasteAndMatchStyle'},
+        {label: 'Select All', accelerator: 'CmdOrCtrl+A', role: 'selectAll'},
+      ],
+    }]))
+
+    win.on('closed', () => {
+      win = null
+    })
+
+    win.on('blur', () => {
+      win.setOpacity(0.3)
+    })
+
+    win.on('focus', () => {
+      win.setOpacity(1)
+    })
+
+    win.webContents.on('new-window', (e, url) => {
+      e.preventDefault()
+      shell.openExternal(url)
+    })
+  }
+
+  const maybeNotify = () => {
+    if (!win) return
+    if (win.isMinimized()) win.restore()
+    win.focus()
+    win.webContents.send('second-instance', args)
+  }
+
+  if (!app.requestSingleInstanceLock()) {
+    app.quit()
+    return
+  }
+
   app.on('open-file', function (event, file) {
     args = getArgs([...process.argv, file])
     log.info('open-file', args)
@@ -158,73 +167,75 @@ if (!lock) {
       win.focus()
     }
   })
+
+  ipcMain.handle('getArgs', () => args)
+
+  ipcMain.handle('setAlwaysOnTop', (event, flag) => {
+    if (win) win.setAlwaysOnTop(flag)
+  })
+
+  ipcMain.handle('setSimpleFullScreen', (event, flag) => {
+    if (win) win.setSimpleFullScreen(flag)
+  })
+
+  ipcMain.handle('isSimpleFullScreen', (event, flag) => {
+    return win && win.isSimpleFullScreen(flag)
+  })
+
+  ipcMain.handle('copyToClipboard', (event, text) => {
+    clipboard.writeText(text)
+  })
+
+  ipcMain.handle('quit', () => {
+    app.quit()
+  })
+
+  ipcMain.handle('fileExists', (event, src) => {
+    const file = src.replace(/^~/, os.homedir())
+    return fs.existsSync(file)
+  })
+
+  ipcMain.handle('isImage', async (event, src) => {
+    const file = src.replace('~', os.homedir())
+    if (!fs.existsSync(file)) return false
+    const meta = await FileType.fromFile(file)
+    return meta && (meta.ext === 'png' || meta.ext === 'jpg' || meta.ext === 'gif')
+  })
+
+  ipcMain.handle('readFile', async (event, src) => {
+    const file = src.replace('~', os.homedir())
+    const meta = await FileType.fromFile(file)
+    const data = await fs.promises.readFile(file)
+    const stat = await fs.promises.stat(file)
+    const buffer = Buffer.from(data)
+    return {...meta, buffer, file, lastModified: stat.mtime}
+  })
+
+  ipcMain.handle('writeFile', (event, file, content) => {
+    if (fs.existsSync(file)) {
+      fs.writeFileSync(file, content)
+    }
+  })
+
+  ipcMain.handle('resolve', (event, base, src) => {
+    const dir = path.dirname(base)
+    return path.resolve(dir, src)
+  })
+
+  ipcMain.handle('log', (event, ...xs) => {
+    log.info(...xs)
+  })
+
+  ipcMain.handle('save', (event, content) => {
+    const alwaysOnTop = win.alwaysOnTop
+    win.setAlwaysOnTop(false)
+    return dialog.showSaveDialog(win).then((result: any) => {
+      win.setAlwaysOnTop(alwaysOnTop)
+      if (result.cancelled) return
+      fs.writeFileSync(result.filePath, content, 'utf-8')
+      return result.filePath
+    })
+  })
 }
 
-ipcMain.handle('getArgs', () => args)
-
-ipcMain.handle('setAlwaysOnTop', (event, flag) => {
-  if (win) win.setAlwaysOnTop(flag)
-})
-
-ipcMain.handle('setSimpleFullScreen', (event, flag) => {
-  if (win) win.setSimpleFullScreen(flag)
-})
-
-ipcMain.handle('isSimpleFullScreen', (event, flag) => {
-  return win && win.isSimpleFullScreen(flag)
-})
-
-ipcMain.handle('copyToClipboard', (event, text) => {
-  clipboard.writeText(text)
-})
-
-ipcMain.handle('quit', () => {
-  app.quit()
-})
-
-ipcMain.handle('fileExists', (event, src) => {
-  const file = src.replace(/^~/, os.homedir())
-  return fs.existsSync(file)
-})
-
-ipcMain.handle('isImage', async (event, src) => {
-  const file = src.replace('~', os.homedir())
-  if (!fs.existsSync(file)) return false
-  const meta = await FileType.fromFile(file)
-  return meta && (meta.ext === 'png' || meta.ext === 'jpg' || meta.ext === 'gif')
-})
-
-ipcMain.handle('readFile', async (event, src) => {
-  const file = src.replace('~', os.homedir())
-  const meta = await FileType.fromFile(file)
-  const data = await fs.promises.readFile(file)
-  const stat = await fs.promises.stat(file)
-  const buffer = Buffer.from(data)
-  return {...meta, buffer, file, lastModified: stat.mtime}
-})
-
-ipcMain.handle('writeFile', (event, file, content) => {
-  if (fs.existsSync(file)) {
-    fs.writeFileSync(file, content)
-  }
-})
-
-ipcMain.handle('resolve', (event, base, src) => {
-  const dir = path.dirname(base)
-  return path.resolve(dir, src)
-})
-
-ipcMain.handle('log', (event, ...xs) => {
-  log.info(...xs)
-})
-
-ipcMain.handle('save', (event, content) => {
-  const alwaysOnTop = win.alwaysOnTop
-  win.setAlwaysOnTop(false)
-  return dialog.showSaveDialog(win).then((result: any) => {
-    win.setAlwaysOnTop(alwaysOnTop)
-    if (result.cancelled) return
-    fs.writeFileSync(result.filePath, content, 'utf-8')
-    return result.filePath
-  })
-})
+main()
