@@ -346,9 +346,11 @@ export class CodeBlockView {
     if (this.editorView.hasFocus && sel.empty && this.options.typewriterMode) {
       const line = this.editorView.visualLineAt(sel.from)
       const {node} = this.editorView.domAtPos(line.from)
-      ;(node as Element).scrollIntoView({
-        block: 'center',
-        behavior: 'smooth',
+      setTimeout(() => {
+        (node as Element).scrollIntoView({
+          block: 'center',
+          behavior: 'smooth',
+        })
       })
     }
 
