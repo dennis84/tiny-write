@@ -285,7 +285,7 @@ export default (props: Props) => {
         onArgs(props.state.args)
       }
 
-      remote.on('second-instance', onArgs)
+      remote.on('args', onArgs)
     }
   }, [props.state.loading])
 

@@ -122,11 +122,11 @@ const main = () => {
     })
   }
 
-  const maybeNotify = () => {
+  const maybeSendArgs = () => {
     if (!win) return
     if (win.isMinimized()) win.restore()
     win.focus()
-    win.webContents.send('second-instance', args)
+    win.webContents.send('args', args)
   }
 
   if (!app.requestSingleInstanceLock()) {
@@ -137,19 +137,19 @@ const main = () => {
   app.on('open-file', function (event, file) {
     args = getArgs([...process.argv, file])
     log.info('open-file', args)
-    maybeNotify()
+    maybeSendArgs()
   })
 
   app.on('open-url', function (event, url) {
     args = getArgs([...process.argv, url])
     log.info('open-url', args)
-    maybeNotify()
+    maybeSendArgs()
   })
 
   app.on('second-instance', (e, argv) => {
     args = getArgs(argv)
     log.info('second-instance', args)
-    maybeNotify()
+    maybeSendArgs()
   })
 
   app.on('ready', () => {
