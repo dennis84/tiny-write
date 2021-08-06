@@ -4,6 +4,8 @@ import * as path from 'path'
 import * as FileType from 'file-type'
 import * as fs from 'fs'
 import * as os from 'os'
+import {spawn} from 'child_process'
+import {isatty} from 'tty'
 
 interface Args {
   cwd?: string;
@@ -51,6 +53,7 @@ const main = () => {
       width: 720,
       height: 720,
       frame: false,
+      show: false,
       webPreferences: {
         allowRunningInsecureContent: false,
         contextIsolation: true,
@@ -96,6 +99,10 @@ const main = () => {
         {label: 'Select All', accelerator: 'CmdOrCtrl+A', role: 'selectAll'},
       ],
     }]))
+
+    win.once('ready-to-show', () => {
+      win.show()
+    })
 
     win.on('closed', () => {
       win = null
@@ -238,4 +245,35 @@ const main = () => {
   })
 }
 
-main()
+const detach = () => {
+  const outputPath = '/dev/null'
+
+  if (!isatty(process.stdout.fd)) {
+    return true
+  }
+
+  for (const arg of process.argv) {
+    if (arg === '--detached-process') {
+      return true
+    }
+  }
+
+  const args = process.argv
+    .slice(1)
+    .concat(['--detached-process'])
+
+  const out = fs.openSync(outputPath, 'a')
+  const err = fs.openSync(outputPath, 'a')
+
+  const child = spawn(process.argv[0], args, {
+    detached: true,
+    stdio: ['ignore', out, err]
+  })
+
+  child.unref()
+  app.quit()
+}
+
+if (detach()) {
+  main()
+}
