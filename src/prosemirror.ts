@@ -14,6 +14,7 @@ import codeBlock from './prosemirror/extension/code-block'
 import image from './prosemirror/extension/image'
 import dragHandle from './prosemirror/extension/drag-handle'
 import pasteMarkdown from './prosemirror/extension/paste-markdown'
+import table from './prosemirror/extension/table'
 import {Config, YOptions} from '.'
 import {codeTheme} from './config'
 
@@ -70,6 +71,7 @@ export const createState = (props: Props): ProseMirrorState => ({
     }),
     code,
     link,
+    table,
     image(props.path),
     placeholder('Start typing ...'),
     scroll(props.config.typewriterMode),

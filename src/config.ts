@@ -54,7 +54,7 @@ export const themes: {[key: string]: Theme} = {
   'light': {
     label: 'Light',
     background: [255, 255, 255],
-    color: [74, 74, 74],
+    color: [102, 102, 102],
     color2: [133, 117, 255],
   },
   'dark': {

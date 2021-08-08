@@ -37,6 +37,77 @@ export const markdownSerializer = new MarkdownSerializer({
     state.write((node.attrs.done ? '[x]' : '[ ]') + ' ')
     state.renderContent(node)
   },
+  table(state, node) {
+    function serializeTableHead(head: ProsemirrorNode) {
+      let columnAlignments: string[] = []
+      head.forEach((headRow) => {
+        if (headRow.type.name === 'table_row') {
+          columnAlignments = serializeTableRow(headRow)
+        }
+      })
+
+      // write table header separator
+      for (const alignment of columnAlignments) {
+        state.write('|')
+        state.write(alignment === 'left' || alignment === 'center' ? ':' : ' ')
+        state.write('---')
+        state.write(alignment === 'right' || alignment === 'center' ? ':' : ' ')
+      }
+      state.write('|')
+      state.ensureNewLine()
+    }
+
+    function serializeTableBody(body: ProsemirrorNode) {
+      body.forEach((bodyRow) => {
+        if (bodyRow.type.name === 'table_row') {
+          serializeTableRow(bodyRow)
+        }
+      })
+      state.ensureNewLine()
+    }
+
+    function serializeTableRow(row: ProsemirrorNode): string[] {
+      const columnAlignment: string[] = []
+      row.forEach((cell) => {
+        if (cell.type.name === 'table_header' || cell.type.name === 'table_cell') {
+          const alignment = serializeTableCell(cell)
+          columnAlignment.push(alignment)
+        }
+      })
+      state.write('|')
+      state.ensureNewLine()
+      return columnAlignment
+    }
+
+    function serializeTableCell(cell: ProsemirrorNode): string | null {
+      state.write('| ')
+      state.renderInline(cell)
+      state.write(' ')
+      return findAlignment(cell)
+    }
+
+    function findAlignment(cell: ProsemirrorNode): string | null {
+      const alignment = cell.attrs.style as string
+      if (!alignment) {
+        return null
+      }
+
+      const match = alignment.match(/text-align:[ ]?(left|right|center)/);
+      if (match && match[1]) {
+        return match[1]
+      }
+
+      return null
+    }
+
+    node.forEach((table_child) => {
+      if (table_child.type.name === 'table_head') serializeTableHead(table_child)
+      if (table_child.type.name === 'table_body') serializeTableBody(table_child)
+    });
+
+    state.ensureNewLine()
+    state.write('\n')
+  },
 }, {
   ...defaultMarkdownSerializer.marks,
 })
@@ -48,8 +119,26 @@ function listIsTight(tokens, i) {
   return false
 }
 
+const md = markdownit({html: false})
+
 export const createMarkdownParser = (schema) =>
-  new MarkdownParser(schema, markdownit('commonmark', {html: false}), {
+  new MarkdownParser(schema, md, {
+    table: {block: 'table'},
+    thead: {block: 'table_head'},
+    tbody: {block: 'table_body'},
+    th: {
+      block: 'table_header',
+      getAttrs: (tok) => ({
+        style: tok.attrGet('style'),
+      }),
+    },
+    tr: {block: 'table_row'},
+    td: {
+      block: 'table_cell',
+      getAttrs: (tok) => ({
+        style: tok.attrGet('style'),
+      }),
+    },
     blockquote: {block: 'blockquote'},
     paragraph: {block: 'paragraph'},
     list_item: {block: 'list_item'},
@@ -96,5 +185,5 @@ export const createMarkdownParser = (schema) =>
         title: tok.attrGet('title') || null
       })
     },
-    code_inline: {mark: 'code', noCloseToken: true}
+    code_inline: {mark: 'code', noCloseToken: true},
   })

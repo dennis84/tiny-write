@@ -266,7 +266,7 @@ export default (props: Props) => {
       const parser = createMarkdownParser(schema)
       let textContent = ''
       editorView.state.doc.forEach((node) => {
-        textContent += `${node.textContent}\n`
+        textContent += `${node.textContent.trim()}\n`
       })
       const text = parser.parse(textContent)
       doc = text.toJSON()

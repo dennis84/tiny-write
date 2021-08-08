@@ -87,12 +87,34 @@ export default (props: Props) => {
       code {
         border: 1px solid ${rgba(color(theme), 0.5)};
         background: ${rgba(color(theme), 0.1)};
-        border-radius: 2px;
+        border-radius: 3px;
         padding: 2px;
         font-family: '${font(theme, true)}' !important;
       }
       a {
         color: ${rgba(color2(theme), 1)};
+      }
+      table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        border-radius: 3px;
+        border: 1px solid ${rgba(color(theme), 0.5)};
+        text-align: left;
+        background: ${rgba(color(theme), 0.1)};
+        th, td {
+          padding: 5px;
+          vertical-align: top;
+          border: 1px solid ${rgba(color(theme), 0.5)};
+          border-top: 0;
+          border-right: 0;
+        }
+        th:first-child, td:first-child {
+          border-left: 0;
+        }
+        tr:last-child td {
+          border-bottom: 0;
+        }
       }
       .placeholder {
         color: ${rgba(color(theme), 0.3)};
@@ -167,7 +189,7 @@ export default (props: Props) => {
             }
           }
           .cm-wrap {
-            border-radius: 2px;
+            border-radius: 3px;
             outline: none;
             .cm-line {
               line-height: 1.6;
@@ -227,7 +249,7 @@ export default (props: Props) => {
         }
         &.ProseMirror-selectednode {
           box-shadow: 0 0 0 2px ${rgba(color2(theme), 1)};
-          border-radius: 2px;
+          border-radius: 3px;
         }
       }
     }
