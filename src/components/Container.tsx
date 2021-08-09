@@ -103,15 +103,47 @@ export default (props: Props) => {
     return true
   })
 
-  const keymap = {
-    [`${mod}-n`]: onNew,
-    [`${mod}-w`]: onDiscard,
-    'Cmd-Enter': onFullscreen,
-    'Alt-Enter': onFullscreen,
-    [`${mod}-z`]: onUndo,
-    [`Shift-${mod}-z`]: onRedo,
-    [`${mod}-y`]: onRedo,
-  }
+  const onToggleMarkdown = useDynamicCallback(() => {
+    const markdown = !props.state.markdown
+    const selection = {type: 'text', anchor: 1, head: 1}
+    let doc
+
+    if (markdown) {
+      const lines = serialize(editorView.state).split('\n')
+      const nodes = lines.map((text) => {
+        return text ? {type: 'paragraph', content: [{type: 'text', text}]} : {type: 'paragraph'}
+      })
+
+      doc = {type: 'doc', content: nodes}
+    } else {
+      const schema = createSchema({
+        config: props.state.config,
+        markdown,
+        path: props.state.path,
+        keymap: keymap,
+        y: props.state.collab?.y,
+      })
+
+      const parser = createMarkdownParser(schema)
+      let textContent = ''
+      editorView.state.doc.forEach((node) => {
+        textContent += `${node.textContent.trim()}\n`
+      })
+      const text = parser.parse(textContent)
+      doc = text.toJSON()
+    }
+
+    const text = createState({
+      data: {selection, doc},
+      config: props.state.config,
+      markdown,
+      path: props.state.path,
+      keymap: keymap,
+      y: props.state.collab?.y,
+    })
+
+    dispatch(UpdateText(text, undefined, markdown))
+  })
 
   const onDrop = (e) => {
     if (
@@ -122,6 +154,17 @@ export default (props: Props) => {
     dispatch(Open({
       path: e.dataTransfer.files[0].path,
     }))
+  }
+
+  const keymap = {
+    [`${mod}-n`]: onNew,
+    [`${mod}-w`]: onDiscard,
+    'Cmd-Enter': onFullscreen,
+    'Alt-Enter': onFullscreen,
+    [`${mod}-z`]: onUndo,
+    [`Shift-${mod}-z`]: onRedo,
+    [`${mod}-y`]: onRedo,
+    [`${mod}-m`]: onToggleMarkdown,
   }
 
   const loadFile = async () => {
@@ -438,7 +481,7 @@ export default (props: Props) => {
             fullscreen={props.state.fullscreen}
             collab={props.state.collab}
             markdown={props.state.markdown}
-            keymap={keymap} />
+            onToggleMarkdown={onToggleMarkdown} />
           {isElectron && <Resizer />}
         </>
       )}

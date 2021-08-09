@@ -96,6 +96,7 @@ export default (props: Props) => {
       }
       table {
         width: 100%;
+        margin: 5px 0;
         border-collapse: separate;
         border-spacing: 0;
         border-radius: 3px;
@@ -103,7 +104,7 @@ export default (props: Props) => {
         text-align: left;
         background: ${rgba(color(theme), 0.1)};
         th, td {
-          padding: 5px;
+          padding: 5px 10px;
           vertical-align: top;
           border: 1px solid ${rgba(color(theme), 0.5)};
           border-top: 0;
