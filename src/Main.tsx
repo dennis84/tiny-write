@@ -2,7 +2,7 @@ import React, {useReducer, useRef} from 'react'
 import {EditorView} from 'prosemirror-view'
 import {Global, ThemeProvider} from '@emotion/react'
 import {State} from '.'
-import {ReducerContext, reducer} from './reducer'
+import {UpdateError, ReducerContext, reducer} from './reducer'
 import {fonts} from './config'
 import {ErrorBoundary} from './ErrorBoundary'
 import ErrorView from './components/Error'
@@ -26,9 +26,15 @@ export default (props: {state: State}) => {
     <ReducerContext.Provider value={dispatch}>
       <ThemeProvider theme={state.config}>
         <Global styles={fontsStyles} />
-        <ErrorBoundary fallback={(error) =>
-          <Layout data-testid="error"><ErrorView error={error} /></Layout>
-        }>
+        <ErrorBoundary
+          onError={(error) => {
+            dispatch(UpdateError(error))
+            editorViewRef.current = undefined
+          }}
+          fallback={(error) =>
+            <Layout data-testid="error"><ErrorView error={error} /></Layout>
+          }
+        >
           <Container state={state} editorViewRef={editorViewRef} />
         </ErrorBoundary>
       </ThemeProvider>

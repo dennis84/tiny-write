@@ -55,8 +55,12 @@ const codeMirrorKeymap = (props: Props) => {
 export const createState = (props: Props): ProseMirrorState => ({
   editorState: props.data,
   extensions: props.markdown ? [
+    placeholder('Start typing ...'),
     customKeymap(props),
     base(props.markdown),
+    scroll(props.config.typewriterMode),
+    yExtension(props),
+    dragHandle,
   ] : [
     customKeymap(props),
     base(props.markdown),

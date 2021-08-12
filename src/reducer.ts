@@ -32,8 +32,10 @@ export const UpdateLoading = (loading: LoadingType) => (state: State) => ({
   loading,
 })
 
-export const Clean = () => newState({
+export const Clean = (state: State) => newState({
   loading: 'initialized',
+  files: state.files,
+  fullscreen: state.fullscreen,
 })
 
 export const UpdateState = (newState: State) => () => newState
