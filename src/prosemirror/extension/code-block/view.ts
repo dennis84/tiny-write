@@ -4,7 +4,7 @@ import {TextSelection, Selection} from 'prosemirror-state'
 import {exitCode} from 'prosemirror-commands'
 import {Compartment, EditorState, Extension} from '@codemirror/state'
 import {EditorView, ViewUpdate, keymap} from '@codemirror/view'
-import {defaultKeymap, defaultTabBinding} from '@codemirror/commands'
+import {defaultKeymap, indentWithTab} from '@codemirror/commands'
 import {linter, setDiagnostics} from '@codemirror/lint'
 import {StreamLanguage} from '@codemirror/stream-parser'
 import {haskell} from '@codemirror/legacy-modes/mode/haskell'
@@ -221,7 +221,7 @@ export class CodeBlockView {
       extensions: [
         extensions,
         keymap.of(defaultKeymap),
-        keymap.of([defaultTabBinding]),
+        keymap.of([indentWithTab]),
         linter(() => []),
         codeMirrorKeymap,
         EditorState.tabSize.of(2),
