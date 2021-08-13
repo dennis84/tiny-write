@@ -341,19 +341,6 @@ export class CodeBlockView {
       return
     }
 
-    this.forwardSelection()
-    const sel = update.state.selection.main
-    if (this.editorView.hasFocus && sel.empty && this.options.typewriterMode) {
-      const line = this.editorView.visualLineAt(sel.from)
-      const {node} = this.editorView.domAtPos(line.from)
-      setTimeout(() => {
-        (node as Element).scrollIntoView({
-          block: 'center',
-          behavior: 'smooth',
-        })
-      })
-    }
-
     for (const tr of update.transactions) {
       if (!tr.changes.empty) {
         tr.changes.iterChanges((fromA, toA, fromB, toB, text) => {
@@ -367,6 +354,17 @@ export class CodeBlockView {
           this.view.dispatch(t)
         })
       }
+    }
+
+    this.forwardSelection()
+    const sel = update.state.selection.main
+    if (this.editorView.hasFocus && sel.empty && this.options.typewriterMode) {
+      const line = this.editorView.visualLineAt(sel.from)
+      const {node} = this.editorView.domAtPos(line.from)
+      ;(node as Element).scrollIntoView({
+        block: 'center',
+        behavior: 'smooth',
+      })
     }
   }
 
