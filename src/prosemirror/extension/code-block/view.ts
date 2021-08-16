@@ -5,6 +5,9 @@ import {exitCode} from 'prosemirror-commands'
 import {Compartment, EditorState, Extension} from '@codemirror/state'
 import {EditorView, ViewUpdate, keymap} from '@codemirror/view'
 import {defaultKeymap, indentWithTab} from '@codemirror/commands'
+import {indentOnInput} from '@codemirror/language'
+import {bracketMatching} from '@codemirror/matchbrackets'
+import {closeBrackets, closeBracketsKeymap} from '@codemirror/closebrackets'
 import {linter, setDiagnostics} from '@codemirror/lint'
 import {StreamLanguage} from '@codemirror/stream-parser'
 import {haskell} from '@codemirror/legacy-modes/mode/haskell'
@@ -220,8 +223,14 @@ export class CodeBlockView {
       doc: this.node.textContent,
       extensions: [
         extensions,
-        keymap.of(defaultKeymap),
-        keymap.of([indentWithTab]),
+        keymap.of([
+          ...defaultKeymap,
+          ...closeBracketsKeymap,
+          indentWithTab,
+        ]),
+        indentOnInput(),
+        bracketMatching(),
+        closeBrackets(),
         linter(() => []),
         codeMirrorKeymap,
         EditorState.tabSize.of(2),
@@ -388,7 +397,8 @@ export class CodeBlockView {
   }
 
   updatePrettify() {
-    if (
+    console.log(this.editorView?.state.doc.length)
+    if (this.editorView?.state.doc.length > 0 && (
       this.getLang() === 'javascript' ||
       this.getLang() === 'typescript' ||
       this.getLang() === 'css' ||
@@ -398,7 +408,7 @@ export class CodeBlockView {
       this.getLang() === 'markdown' ||
       this.getLang() === 'yaml' ||
       this.getLang() === 'json'
-    ) {
+    )) {
       this.prettifyBtn.textContent = '✨'
       this.prettifyBtn.style.display = 'block'
     } else {

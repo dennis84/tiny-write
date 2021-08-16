@@ -143,6 +143,7 @@ export default (props: Props) => {
     })
 
     dispatch(UpdateText(text, undefined, markdown))
+    return true
   })
 
   const onDrop = (e) => {

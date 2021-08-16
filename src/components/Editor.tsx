@@ -184,13 +184,13 @@ export default (props: Props) => {
           padding: 5px 0;
           font-family: '${font(theme, true)}' !important;
           border: 1px solid ${rgba(color(theme), 0.3)};
+          border-radius: 3px;
           .lang-select {
             .lang-input {
               outline: none;
             }
           }
-          .cm-wrap {
-            border-radius: 3px;
+          .cm-editor {
             outline: none;
             .cm-line {
               line-height: 1.6;

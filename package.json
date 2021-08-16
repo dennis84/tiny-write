@@ -34,6 +34,7 @@
     ]
   },
   "dependencies": {
+    "@codemirror/closebrackets": "^0.19.0",
     "@codemirror/commands": "^0.19.1",
     "@codemirror/highlight": "^0.19.1",
     "@codemirror/lang-cpp": "^0.19.1",
@@ -47,8 +48,10 @@
     "@codemirror/lang-rust": "^0.19.1",
     "@codemirror/lang-sql": "^0.19.2",
     "@codemirror/lang-xml": "^0.19.1",
+    "@codemirror/language": "^0.19.2",
     "@codemirror/legacy-modes": "^0.19.0",
     "@codemirror/lint": "^0.19.0",
+    "@codemirror/matchbrackets": "^0.19.1",
     "@codemirror/state": "^0.19.0",
     "@codemirror/stream-parser": "^0.19.1",
     "@codemirror/view": "^0.19.1",
