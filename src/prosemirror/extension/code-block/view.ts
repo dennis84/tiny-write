@@ -4,7 +4,8 @@ import {TextSelection, Selection} from 'prosemirror-state'
 import {exitCode} from 'prosemirror-commands'
 import {Compartment, EditorState, Extension} from '@codemirror/state'
 import {EditorView, ViewUpdate, keymap} from '@codemirror/view'
-import {defaultKeymap, indentWithTab} from '@codemirror/commands'
+import {defaultKeymap} from '@codemirror/commands'
+import {autocompletion, completionKeymap} from '@codemirror/autocomplete'
 import {indentOnInput} from '@codemirror/language'
 import {bracketMatching} from '@codemirror/matchbrackets'
 import {closeBrackets, closeBracketsKeymap} from '@codemirror/closebrackets'
@@ -44,6 +45,7 @@ import parserMarkdown from 'prettier/parser-markdown'
 import parserYaml from 'prettier/parser-yaml'
 import logos from './logos'
 import {CodeBlockProps, cleanLang, defaultProps} from '.'
+import {completion, tabCompletionKeymap} from './completion'
 
 export class CodeBlockView {
   node: Node
@@ -226,8 +228,10 @@ export class CodeBlockView {
         keymap.of([
           ...defaultKeymap,
           ...closeBracketsKeymap,
-          indentWithTab,
+          ...completionKeymap,
+          ...tabCompletionKeymap,
         ]),
+        autocompletion({override: completion}),
         indentOnInput(),
         bracketMatching(),
         closeBrackets(),
@@ -397,7 +401,6 @@ export class CodeBlockView {
   }
 
   updatePrettify() {
-    console.log(this.editorView?.state.doc.length)
     if (this.editorView?.state.doc.length > 0 && (
       this.getLang() === 'javascript' ||
       this.getLang() === 'typescript' ||

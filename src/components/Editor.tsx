@@ -76,7 +76,7 @@ export default (props: Props) => {
           clear: both;
         }
       }
-      ul li, ol li {
+      > ul > li, > ol > li {
         margin-left: 30px;
       }
       blockquote p {
