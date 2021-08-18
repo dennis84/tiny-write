@@ -6,18 +6,10 @@ import {
   moveCompletionSelection,
 } from '@codemirror/autocomplete'
 
-let line
-let options
-
 const findWords: CompletionSource = (context) => {
   const tree = syntaxTree(context.state)
   const cur = tree.resolve(context.pos, -1)
 
-  if (line === context.state.doc.lines) {
-    return {from: cur.from, options}
-  }
-
-  line = context.state.doc.lines
   const words = []
   const c = tree.cursor()
 
@@ -32,16 +24,15 @@ const findWords: CompletionSource = (context) => {
         text = text.substring(1, text.length - 1)
       }
 
-      if (!text.match(/[\w\d]+/)) {
-        continue
-      }
+      const xs = text.replace(/(?:[^\w-]|_)+/, '')
+        .split(/[\s,-.]+/)
+        .filter(x => x.length > 2)
 
-      const xs = text.split(/[\s,-]+/).filter(x => x.length > 2)
       words.push(...xs)
     }
   } while (c.next())
 
-  options = words.map((label) => ({
+  const options = words.map((label) => ({
     label,
     type: 'word',
     boost: 1,
