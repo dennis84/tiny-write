@@ -18,7 +18,7 @@ import {
   UpdatePath,
   useDispatch,
 } from '../reducer'
-import {color, color2, themes, fonts, codeThemes, rgba} from '../config'
+import {color, color2, themes, fonts, codeThemes} from '../config'
 import {isElectron, isMac, alt, mod, WEB_URL, VERSION_URL} from '../env'
 import * as remote from '../remote'
 import {ProseMirrorState, isEmpty, isInitialized} from '../prosemirror/state'
@@ -49,7 +49,7 @@ const Burger = styled.button<any>`
   outline: none;
   -webkit-app-region: no-drag;
   > span {
-    background: ${props => rgba(color(props.theme))};
+    background: ${props => color(props.theme)};
     height: 2px;
     width: 100%;
     border-radius: 4px;
@@ -69,7 +69,7 @@ const Burger = styled.button<any>`
 `
 
 const Off = styled.div`
-  background: ${props => rgba(color(props.theme), 0.1)};
+  background: ${props => color(props.theme)}19;
   padding: 20px;
   height: 100%;
   min-width: 460px;
@@ -86,7 +86,7 @@ const Label = styled.h3`
   margin: 0;
   font-size: 14px;
   text-transform: uppercase;
-  color: ${props => rgba(color(props.theme), 0.5)};
+  color: ${props => color(props.theme)}7f;
   > i {
     text-transform: none;
   }
@@ -109,7 +109,7 @@ export const Item = (props: {theme: Config}) => css`
   outline: none;
   display: flex;
   align-items: center;
-  color: ${rgba(color(props.theme))};
+  color: ${color(props.theme)};
   font-size: 18px;
   line-height: 24px;
   font-family: 'JetBrains Mono';
@@ -129,10 +129,10 @@ const Link = styled.button`
     justify-self: flex-end;
     margin-left: auto;
     > i {
-      color: ${props => rgba(color(props.theme), 1)};
-      background: ${props => rgba(color(props.theme), 0.1)};
-      border: 1px solid ${props => rgba(color(props.theme), 0.6)};
-      box-shadow: 0 2px 0 0 ${props => rgba(color(props.theme), 0.6)};
+      color: ${props => color(props.theme)};
+      background: ${props => color(props.theme)}19;
+      border: 1px solid ${props => color(props.theme)}99;
+      box-shadow: 0 2px 0 0 ${props => color(props.theme)}99;
       border-radius: 2px;
       font-size: 13px;
       line-height: 1.4;
@@ -141,10 +141,10 @@ const Link = styled.button`
     }
   }
   &:hover {
-    color: ${props => rgba(color2(props.theme))};
+    color: ${props => color2(props.theme)};
     > span i {
       position: relative;
-      box-shadow: 0 3px 0 0 ${props => rgba(color(props.theme), 0.6)};
+      box-shadow: 0 3px 0 0 ${props => color(props.theme)}99;
       top: -1px;
     }
   }
@@ -156,7 +156,7 @@ const Link = styled.button`
     }
   }
   &[disabled] {
-    color: ${props => rgba(color(props.theme), 0.6)};
+    color: ${props => color(props.theme)}99;
     cursor: not-allowed;
   }
 `

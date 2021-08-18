@@ -46,64 +46,64 @@ export type Rgb = [number, number, number]
 interface Theme {
   label: string;
   background: Rgb;
-  color: Rgb;
-  color2: Rgb;
+  color: string;
+  color2: string;
 }
 
 export const themes: {[key: string]: Theme} = {
   'light': {
     label: 'Light',
-    background: [255, 255, 255],
-    color: [102, 102, 102],
-    color2: [133, 117, 255],
+    background: '#ffffff',
+    color: '#666666',
+    color2: '#8575ff',
   },
   'dark': {
     label: 'Dark',
-    background: [22, 22, 26],
-    color: [148, 161, 178],
-    color2: [104, 255, 184],
+    background: '#16161a',
+    color: '#94a1b2',
+    color2: '#68ffb8',
   },
   'gruvbox-dark': {
     label: 'Gruvbox Dark',
-    background: [50, 48, 47],
-    color: [223, 191, 142],
-    color2: [215, 95, 95],
+    background: '#32302f',
+    color: '#dfbf8e',
+    color2: '#d75f5f',
   },
   'solarized-light': {
     label: 'Solarized Light',
-    background: [253, 246, 227],
-    color: [101, 123, 131],
-    color2: [42, 161, 152],
+    background: '#fdf6e3',
+    color: '#657b83',
+    color2: '#2aa198',
   },
   'solarized-dark': {
     label: 'Solarized Dark',
-    background: [0, 43, 54],
-    color: [131, 148, 150],
-    color2: [203, 75, 22],
+    background: '#02b36 ',
+    color: '#839496',
+    color2: '#cb4b16',
   },
   'material': {
     label: 'Material',
-    background: [38, 50, 56],
-    color: [146, 152, 155],
-    color2: [137, 221, 255],
+    background: '#263238',
+    color: '#92989b',
+    color2: '#89ddff',
   },
   'dracula': {
     label: 'Dracula',
-    background: [40, 42, 54],
-    color: [189, 147, 249],
-    color2: [255, 121, 198],
+    background: '#282a36',
+    color: '#bd93f9',
+    color2: '#ff79c6',
   },
   'hibernus': {
     label: 'Hibernus',
-    background: [244, 246, 246],
-    color: [144, 166, 166],
-    color2: [254, 87, 146],
+    background: '#f4f6f6',
+    color: '#90a6a6',
+    color2: '#fe5792',
   },
   'soft-era': {
     label: 'Soft Era',
-    background: [249, 245, 245],
-    color: [186, 152, 156],
-    color2: [184, 189, 232],
+    background: '#f9f5f5',
+    color: '#ba989c',
+    color2: '#b8bde8',
   },
 }
 
@@ -164,5 +164,3 @@ export const font = (config: Config, monospace = false) => {
 
 export const codeTheme = (config: Config) =>
   codeThemes[config.codeTheme] ? codeThemes[config.codeTheme].value : 'dracula'
-
-export const rgba = ([r, g, b]: Rgb, a = 1) => `rgba(${r}, ${g}, ${b}, ${a})`

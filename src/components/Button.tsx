@@ -1,6 +1,6 @@
 import {css} from '@emotion/react'
 import styled from '@emotion/styled'
-import {color, color2, font, rgba} from '../config'
+import {color, color2, font} from '../config'
 
 export const Common = css`
   height: 50px;
@@ -23,8 +23,8 @@ export const Button = styled.button`
   ${Common}
   background: none;
   font-family: ${props => font(props.theme)};
-  color: ${props => rgba(color(props.theme))};
-  border: 1px solid ${props => rgba(color(props.theme))};
+  color: ${props => color(props.theme)};
+  border: 1px solid ${props => color(props.theme)};
 `
 
 export const ButtonPrimary = styled.button`
@@ -32,5 +32,5 @@ export const ButtonPrimary = styled.button`
   color: #fff;
   border: 0;
   font-family: ${props => font(props.theme)};
-  background: ${props => rgba(color2(props.theme))};
+  background: ${props => color2(props.theme)};
 `

@@ -3,7 +3,7 @@ import {EditorView} from 'prosemirror-view'
 import {css} from '@emotion/css'
 import {useTheme} from '@emotion/react'
 import {Config, Collab, File} from '..'
-import {color, color2, font, rgba} from '../config'
+import {color, color2, font} from '../config'
 import {UpdateText, useDispatch} from '../reducer'
 import {ProseMirror} from '../prosemirror/editor'
 import {ProseMirrorState, isInitialized} from '../prosemirror/state'
@@ -45,7 +45,7 @@ export default (props: Props) => {
       max-width: ${theme.contentWidth}px;
       font-size: ${theme.fontSize}px;
       font-family: ${font(theme)};
-      color: ${rgba(color(theme))};
+      color: ${color(theme)};
       margin-top: 50px;
       padding-bottom: 77vh;
       line-height: ${theme.fontSize * 1.6}px;
@@ -80,19 +80,19 @@ export default (props: Props) => {
         margin-left: 30px;
       }
       blockquote p {
-        border-left: 10px solid ${rgba(color(theme), 0.2)};
+        border-left: 10px solid ${color(theme)}33;
         margin: 0;
         padding-left: 10px;
       }
       code {
-        border: 1px solid ${rgba(color(theme), 0.5)};
-        background: ${rgba(color(theme), 0.1)};
+        border: 1px solid ${color(theme)}7f;
+        background: ${color(theme)}19;
         border-radius: 3px;
         padding: 2px;
         font-family: '${font(theme, true)}' !important;
       }
       a {
-        color: ${rgba(color2(theme), 1)};
+        color: ${color2(theme)};
       }
       table {
         width: 100%;
@@ -100,13 +100,13 @@ export default (props: Props) => {
         border-collapse: separate;
         border-spacing: 0;
         border-radius: 3px;
-        border: 1px solid ${rgba(color(theme), 0.5)};
+        border: 1px solid ${color(theme)}7f;
         text-align: left;
-        background: ${rgba(color(theme), 0.1)};
+        background: ${color(theme)}19;
         th, td {
           padding: 5px 10px;
           vertical-align: top;
-          border: 1px solid ${rgba(color(theme), 0.5)};
+          border: 1px solid ${color(theme)}7f;
           border-top: 0;
           border-right: 0;
         }
@@ -118,7 +118,7 @@ export default (props: Props) => {
         }
       }
       .placeholder {
-        color: ${rgba(color(theme), 0.3)};
+        color: ${color(theme)}4c;
         position: absolute;
         pointer-events: none;
         user-select: none;
@@ -145,13 +145,13 @@ export default (props: Props) => {
           justify-content: center;
           border-radius: 3px;
           padding: 6px;
-          fill: ${rgba(color(theme), 0.6)};
+          fill: ${color(theme)}99;
           -webkit-app-region: no-drag;
           pointer-events: none;
           user-select: none;
         }
         &:hover > span {
-          background: ${rgba(color(theme), 0.1)};
+          background: ${color(theme)}19;
         }
       }
       h1 .handle {
@@ -183,7 +183,7 @@ export default (props: Props) => {
           margin: 5px 0;
           padding: 5px 0;
           font-family: '${font(theme, true)}' !important;
-          border: 1px solid ${rgba(color(theme), 0.3)};
+          border: 1px solid ${color(theme)}4c;
           border-radius: 3px;
           .lang-select {
             .lang-input {
@@ -223,7 +223,7 @@ export default (props: Props) => {
         user-select: none;
         &.done {
           text-decoration: line-through;
-          color: ${rgba(color(theme), 0.3)};
+          color: ${color(theme)}4c;
         }
         input {
           margin-right: 10px;
@@ -249,7 +249,7 @@ export default (props: Props) => {
           cursor: nwse-resize;
         }
         &.ProseMirror-selectednode {
-          box-shadow: 0 0 0 2px ${rgba(color2(theme), 1)};
+          box-shadow: 0 0 0 2px ${color2(theme)};
           border-radius: 3px;
         }
       }
