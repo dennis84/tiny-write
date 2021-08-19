@@ -110,6 +110,12 @@ export const markdownSerializer = new MarkdownSerializer({
   },
 }, {
   ...defaultMarkdownSerializer.marks,
+  strikethrough: {
+    open: '~~',
+    close: '~~',
+    mixable: true,
+    expelEnclosingWhitespace: true,
+  },
 })
 
 function listIsTight(tokens, i) {
@@ -178,6 +184,7 @@ export const createMarkdownParser = (schema) =>
     hardbreak: {node: 'hard_break'},
     em: {mark: 'em'},
     strong: {mark: 'strong'},
+    s: {mark: 'strikethrough'},
     link: {
       mark: 'link',
       getAttrs: tok => ({
