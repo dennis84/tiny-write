@@ -77,7 +77,7 @@ export const themes: {[key: string]: Theme} = {
   },
   'solarized-dark': {
     label: 'Solarized Dark',
-    background: '#02b36 ',
+    background: '#002b36',
     color: '#839496',
     color2: '#cb4b16',
   },

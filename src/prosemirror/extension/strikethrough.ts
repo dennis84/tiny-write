@@ -7,7 +7,7 @@ const strikethroughRule = (nodeType) =>
 const strikethroughSchema = {
   strikethrough: {
     parseDOM: [{tag: 'del'}],
-    toDOM: () => ["del"],
+    toDOM: () => ['del'],
   },
 }
 
