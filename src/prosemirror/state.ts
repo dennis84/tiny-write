@@ -1,5 +1,5 @@
 import {Plugin, EditorState} from 'prosemirror-state'
-import {Schema, SchemaSpec} from 'prosemirror-model'
+import {Node, Schema, SchemaSpec} from 'prosemirror-model'
 import {Decoration, EditorView, NodeView} from 'prosemirror-view'
 
 export interface ProseMirrorExtension {
@@ -17,7 +17,7 @@ export type NodeViewFn = (
   node: Node,
   view: EditorView,
   getPos: () => number,
-  decorations: Decoration[]
+  decorations: Decoration[],
 ) => NodeView
 
 export const isInitialized = (state: any) =>

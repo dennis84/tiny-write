@@ -1,12 +1,13 @@
 import {Plugin} from 'prosemirror-state'
 import {Node, Schema} from 'prosemirror-model'
 import {EditorView} from 'prosemirror-view'
-import {isImage, readFile, resolve} from '../../remote'
+import {FileInfo, isImage, readFile, resolve} from '../../remote'
+import {ProseMirrorExtension} from '../state'
 
 const REGEX = /^!\[([^[\]]*?)\]\((.+?)\)\s+/
 const MAX_MATCH = 500
 
-const isUrl = (str) => {
+const isUrl = (str: string) => {
   try {
     const url = new URL(str)
     return url.protocol === 'http:' || url.protocol === 'https:'
@@ -15,9 +16,9 @@ const isUrl = (str) => {
   }
 }
 
-const isBlank = (text) => text === ' ' || text === '\xa0'
+const isBlank = (text: string) => text === ' ' || text === '\xa0'
 
-const imageSrc = (data) => {
+const imageSrc = (data: FileInfo) => {
   let binary = ''
   for (let i = 0; i < data.buffer.byteLength; i++) {
     binary += String.fromCharCode(data.buffer[i])
@@ -26,7 +27,7 @@ const imageSrc = (data) => {
   return `data:${data.mime};base64,${base64}`
 }
 
-const imageInput = (schema) => {
+const imageInput = (schema: Schema) => {
   return new Plugin({
     props: {
       handleTextInput(view, from, to, text) {
@@ -84,13 +85,13 @@ const imageSchema = {
   },
   group: 'inline',
   draggable: true,
-  parseDOM: [{tag: 'img[src]', getAttrs: (dom) => ({
+  parseDOM: [{tag: 'img[src]', getAttrs: (dom: Element) => ({
     src: dom.getAttribute('src'),
     title: dom.getAttribute('title'),
     alt: dom.getAttribute('alt'),
     path: dom.getAttribute('data-path'),
   })}],
-  toDOM: (node) => ['img', {
+  toDOM: (node: Node) => ['img', {
     src: node.attrs.src,
     title: node.attrs.title,
     alt: node.attrs.alt,
@@ -98,7 +99,7 @@ const imageSchema = {
   }]
 }
 
-const dropFile = (schema) => new Plugin({
+const dropFile = (schema: Schema) => new Plugin({
   props: {
     handleDOMEvents: {
       drop: (view, event) => {
@@ -107,7 +108,7 @@ const dropFile = (schema) => new Plugin({
         if (files.length === 0) return false
         event.preventDefault()
 
-        const insertImage = (src) => {
+        const insertImage = (src: string) => {
           const tr = view.state.tr
           const node = schema.nodes.image.create({src})
           const pos = view.posAtCoords({
@@ -126,7 +127,7 @@ const dropFile = (schema) => new Plugin({
 
             if (mime === 'image') {
               reader.addEventListener('load', () => {
-                const url = reader.result
+                const url = reader.result as string
                 insertImage(url)
               })
 
@@ -137,23 +138,6 @@ const dropFile = (schema) => new Plugin({
       }
     }
   }
-})
-
-export default (path?: string) => ({
-  schema: (prev) => ({
-    ...prev,
-    nodes: prev.nodes.update('image', imageSchema),
-  }),
-  plugins: (prev, schema) => [
-    ...prev,
-    dropFile(schema),
-    imageInput(schema),
-  ],
-  nodeViews: {
-    image: (node, view, getPos) => {
-      return new ImageView(node, view, getPos, view.state.schema, path)
-    }
-  },
 })
 
 class ImageView {
@@ -170,7 +154,13 @@ class ImageView {
   width: number
   updating: number
 
-  constructor(node, view, getPos, schema, path) {
+  constructor(
+    node: Node,
+    view: EditorView,
+    getPos: () => number,
+    schema: Schema,
+    path: string
+  ) {
     this.node = node
     this.view = view
     this.getPos = getPos
@@ -205,7 +195,7 @@ class ImageView {
     this.dom = this.container
   }
 
-  onResize(e) {
+  onResize(e: MouseEvent) {
     this.width = e.pageX - this.container.getBoundingClientRect().left
     this.setWidth(this.width)
   }
@@ -223,7 +213,24 @@ class ImageView {
     this.view.dispatch(tr)
   }
 
-  setWidth(width) {
+  setWidth(width: number) {
     this.container.style.width = width + 'px'
   }
 }
+
+export default (path?: string): ProseMirrorExtension => ({
+  schema: (prev) => ({
+    ...prev,
+    nodes: prev.nodes.update('image', imageSchema),
+  }),
+  plugins: (prev, schema) => [
+    ...prev,
+    dropFile(schema),
+    imageInput(schema),
+  ],
+  nodeViews: {
+    image: (node, view, getPos) => {
+      return new ImageView(node, view, getPos, view.state.schema, path)
+    }
+  },
+})

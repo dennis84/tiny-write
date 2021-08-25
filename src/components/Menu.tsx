@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react'
+import React, {ChangeEvent, useEffect, useState} from 'react'
 import {EditorView} from 'prosemirror-view'
 import {EditorState} from 'prosemirror-state'
 import {undo, redo} from 'prosemirror-history'
@@ -215,23 +215,23 @@ export default (props: Props) => {
     })
   }
 
-  const onChangeTheme = (theme) => () => {
+  const onChangeTheme = (theme: string) => () => {
     dispatch(UpdateConfig({...props.config, theme}))
   }
 
-  const onChangeCodeTheme = (codeTheme) => () => {
+  const onChangeCodeTheme = (codeTheme: string) => () => {
     dispatch(UpdateConfig({...props.config, codeTheme}))
   }
 
-  const onChangeFont = (font) => () => {
+  const onChangeFont = (font: string) => () => {
     dispatch(UpdateConfig({...props.config, font}))
   }
 
-  const onChangeFontSize = (e) => {
+  const onChangeFontSize = (e: ChangeEvent<HTMLInputElement>) => {
     dispatch(UpdateConfig({...props.config, fontSize: parseInt(e.target.value)}))
   }
 
-  const onChangeContentWidth = (e) => {
+  const onChangeContentWidth = (e: ChangeEvent<HTMLInputElement>) => {
     dispatch(UpdateConfig({...props.config, contentWidth: parseInt(e.target.value)}))
   }
 
@@ -286,7 +286,7 @@ export default (props: Props) => {
     if (props.collab?.started) {
       window.open(`tinywrite://main?room=${props.collab.room}`, '_self')
     } else {
-      const text = btoa(JSON.stringify(editorView.state.toJSON()))
+      const text = window.btoa(JSON.stringify(editorView.state.toJSON()))
       window.open(`tinywrite://main?text=${text}`, '_self')
     }
   }
@@ -359,7 +359,7 @@ export default (props: Props) => {
 
   const FileLink = (props: {file: File}) => {
     const length = 24
-    const getText = (node) => {
+    const getText = (node: any) => {
       let text = ''
 
       if (node.text) {
@@ -402,8 +402,8 @@ export default (props: Props) => {
 
   useEffect(() => {
     if (!show) return
-    const onKeyDown = (e) => {
-      if (e.keyCode === 27) setShow(false)
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setShow(false)
     }
 
     document.addEventListener('keydown', onKeyDown)

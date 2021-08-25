@@ -1,7 +1,9 @@
 import {inputRules} from 'prosemirror-inputrules'
+import {MarkType} from 'prosemirror-model'
 import {markInputRule} from './mark-input-rule'
+import {ProseMirrorExtension} from '../state'
 
-const strikethroughRule = (nodeType) =>
+const strikethroughRule = (nodeType: MarkType) =>
   markInputRule(/(?:~~)(.+)(?:~~)$/, nodeType)
 
 const strikethroughSchema = {
@@ -11,7 +13,7 @@ const strikethroughSchema = {
   },
 }
 
-export default {
+export default (): ProseMirrorExtension => ({
   schema: (prev) => ({
     ...prev,
     marks: prev.marks.append(strikethroughSchema),
@@ -22,4 +24,4 @@ export default {
       strikethroughRule(schema.marks.strikethrough),
     ]}),
   ]
-}
+})

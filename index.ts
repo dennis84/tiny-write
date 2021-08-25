@@ -14,10 +14,10 @@ interface Args {
   text?: any;
 }
 
-export const getArgs = (argv): Args => {
+export const getArgs = (argv: string[]): Args => {
   const xs = argv.slice(process.env.NODE_ENV === 'dev' ? 2 : 1)
   const cwd = process.cwd()
-  let file
+  let file: string
   let link = {}
 
   for (const arg of xs) {
@@ -34,7 +34,7 @@ export const getArgs = (argv): Args => {
 const parseDeepLink = (link: string) => {
   const url = new URL(link)
   const room = url.searchParams.get('room')
-  let text
+  let text: string
   if (url.searchParams.has('text')) {
     text = Buffer.from(url.searchParams.get('text'), 'base64').toString('utf-8')
   }
@@ -43,7 +43,7 @@ const parseDeepLink = (link: string) => {
 }
 
 const main = () => {
-  let win
+  let win: BrowserWindow
   let args = getArgs(process.argv)
 
   const createWindow = () => {
@@ -116,9 +116,9 @@ const main = () => {
       win.setOpacity(1)
     })
 
-    win.webContents.on('new-window', (e, url) => {
-      e.preventDefault()
+    win.webContents.setWindowOpenHandler(({url}) => {
       shell.openExternal(url)
+      return {action: 'allow'}
     })
   }
 
@@ -134,19 +134,19 @@ const main = () => {
     return
   }
 
-  app.on('open-file', function (event, file) {
+  app.on('open-file', (_, file) => {
     args = getArgs([...process.argv, file])
     log.info('open-file', args)
     maybeSendArgs()
   })
 
-  app.on('open-url', function (event, url) {
+  app.on('open-url', (_, url) => {
     args = getArgs([...process.argv, url])
     log.info('open-url', args)
     maybeSendArgs()
   })
 
-  app.on('second-instance', (e, argv) => {
+  app.on('second-instance', (_, argv) => {
     args = getArgs(argv)
     log.info('second-instance', args)
     maybeSendArgs()
@@ -177,19 +177,19 @@ const main = () => {
 
   ipcMain.handle('getArgs', () => args)
 
-  ipcMain.handle('setAlwaysOnTop', (event, flag) => {
+  ipcMain.handle('setAlwaysOnTop', (_, flag) => {
     if (win) win.setAlwaysOnTop(flag)
   })
 
-  ipcMain.handle('setSimpleFullScreen', (event, flag) => {
+  ipcMain.handle('setSimpleFullScreen', (_, flag) => {
     if (win) win.setSimpleFullScreen(flag)
   })
 
-  ipcMain.handle('isSimpleFullScreen', (event, flag) => {
-    return win && win.isSimpleFullScreen(flag)
+  ipcMain.handle('isSimpleFullScreen', () => {
+    return win && win.isSimpleFullScreen()
   })
 
-  ipcMain.handle('copyToClipboard', (event, text) => {
+  ipcMain.handle('copyToClipboard', (_, text) => {
     clipboard.writeText(text)
   })
 
@@ -197,19 +197,19 @@ const main = () => {
     app.quit()
   })
 
-  ipcMain.handle('fileExists', (event, src) => {
+  ipcMain.handle('fileExists', (_, src) => {
     const file = src.replace(/^~/, os.homedir())
     return fs.existsSync(file)
   })
 
-  ipcMain.handle('isImage', async (event, src) => {
+  ipcMain.handle('isImage', async (_, src) => {
     const file = src.replace('~', os.homedir())
     if (!fs.existsSync(file)) return false
     const meta = await FileType.fromFile(file)
     return meta && (meta.ext === 'png' || meta.ext === 'jpg' || meta.ext === 'gif')
   })
 
-  ipcMain.handle('readFile', async (event, src) => {
+  ipcMain.handle('readFile', async (_, src) => {
     const file = src.replace('~', os.homedir())
     const meta = await FileType.fromFile(file)
     const data = await fs.promises.readFile(file)
@@ -218,30 +218,29 @@ const main = () => {
     return {...meta, buffer, file, lastModified: stat.mtime}
   })
 
-  ipcMain.handle('writeFile', (event, file, content) => {
+  ipcMain.handle('writeFile', (_, file, content) => {
     if (fs.existsSync(file)) {
       fs.writeFileSync(file, content)
     }
   })
 
-  ipcMain.handle('resolve', (event, base, src) => {
+  ipcMain.handle('resolve', (_, base, src) => {
     const dir = path.dirname(base)
     return path.resolve(dir, src)
   })
 
-  ipcMain.handle('log', (event, ...xs) => {
+  ipcMain.handle('log', (_, ...xs) => {
     log.info(...xs)
   })
 
-  ipcMain.handle('save', (event, content) => {
-    const alwaysOnTop = win.alwaysOnTop
+  ipcMain.handle('save', async (_, content) => {
+    const alwaysOnTop = win.isAlwaysOnTop()
     win.setAlwaysOnTop(false)
-    return dialog.showSaveDialog(win).then((result: any) => {
-      win.setAlwaysOnTop(alwaysOnTop)
-      if (result.cancelled) return
-      fs.writeFileSync(result.filePath, content, 'utf-8')
-      return result.filePath
-    })
+    const result: any = await dialog.showSaveDialog(win)
+    win.setAlwaysOnTop(alwaysOnTop)
+    if (result.cancelled) return
+    fs.writeFileSync(result.filePath, content, 'utf-8')
+    return result.filePath
   })
 }
 

@@ -1,5 +1,6 @@
 import {Plugin, NodeSelection} from 'prosemirror-state'
 import {DecorationSet, Decoration} from 'prosemirror-view'
+import {ProseMirrorExtension} from '../state'
 
 const handleIcon =
   '<svg viewBox="0 0 10 10" height="14" width="14"><path d="M3 2a1 1 0 110-2 1 1 0 010 2zm0 4a1 1 0 110-2 1 1 0 010 2zm0 4a1 1 0 110-2 1 1 0 010 2zm4-8a1 1 0 110-2 1 1 0 010 2zm0 4a1 1 0 110-2 1 1 0 010 2zm0 4a1 1 0 110-2 1 1 0 010 2z"/></svg>'
@@ -45,6 +46,6 @@ const handlePlugin = new Plugin({
   }
 })
 
-export default ({
+export default (): ProseMirrorExtension => ({
   plugins: (prev) => [...prev, handlePlugin]
 })

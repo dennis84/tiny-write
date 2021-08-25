@@ -1,3 +1,4 @@
+import {EditorView} from '@codemirror/view'
 import {syntaxTree} from '@codemirror/language'
 import {
   CompletionSource,
@@ -48,7 +49,7 @@ export const completion = [findWords]
 
 export const tabCompletionKeymap = [{
   key: 'Tab',
-  run: (editorView) => {
+  run: (editorView: EditorView) => {
     const completions = currentCompletions(editorView.state)
     if (completions.length === 1) {
       acceptCompletion(editorView)

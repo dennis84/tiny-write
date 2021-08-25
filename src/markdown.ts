@@ -1,5 +1,6 @@
 import markdownit from 'markdown-it'
 import {MarkdownSerializer, MarkdownParser, defaultMarkdownSerializer} from 'prosemirror-markdown'
+import {Node, Schema} from 'prosemirror-model'
 import {EditorState} from 'prosemirror-state'
 
 export const serialize = (state: EditorState) => {
@@ -38,7 +39,7 @@ export const markdownSerializer = new MarkdownSerializer({
     state.renderContent(node)
   },
   table(state, node) {
-    function serializeTableHead(head: ProsemirrorNode) {
+    function serializeTableHead(head: Node) {
       let columnAlignments: string[] = []
       head.forEach((headRow) => {
         if (headRow.type.name === 'table_row') {
@@ -57,7 +58,7 @@ export const markdownSerializer = new MarkdownSerializer({
       state.ensureNewLine()
     }
 
-    function serializeTableBody(body: ProsemirrorNode) {
+    function serializeTableBody(body: Node) {
       body.forEach((bodyRow) => {
         if (bodyRow.type.name === 'table_row') {
           serializeTableRow(bodyRow)
@@ -66,7 +67,7 @@ export const markdownSerializer = new MarkdownSerializer({
       state.ensureNewLine()
     }
 
-    function serializeTableRow(row: ProsemirrorNode): string[] {
+    function serializeTableRow(row: Node): string[] {
       const columnAlignment: string[] = []
       row.forEach((cell) => {
         if (cell.type.name === 'table_header' || cell.type.name === 'table_cell') {
@@ -79,14 +80,14 @@ export const markdownSerializer = new MarkdownSerializer({
       return columnAlignment
     }
 
-    function serializeTableCell(cell: ProsemirrorNode): string | null {
+    function serializeTableCell(cell: Node): string | null {
       state.write('| ')
       state.renderInline(cell)
       state.write(' ')
       return findAlignment(cell)
     }
 
-    function findAlignment(cell: ProsemirrorNode): string | null {
+    function findAlignment(cell: Node): string | null {
       const alignment = cell.attrs.style as string
       if (!alignment) {
         return null
@@ -103,7 +104,7 @@ export const markdownSerializer = new MarkdownSerializer({
     node.forEach((table_child) => {
       if (table_child.type.name === 'table_head') serializeTableHead(table_child)
       if (table_child.type.name === 'table_body') serializeTableBody(table_child)
-    });
+    })
 
     state.ensureNewLine()
     state.write('\n')
@@ -127,7 +128,7 @@ function listIsTight(tokens, i) {
 
 const md = markdownit({html: false})
 
-export const createMarkdownParser = (schema) =>
+export const createMarkdownParser = (schema: Schema) =>
   new MarkdownParser(schema, md, {
     table: {block: 'table'},
     thead: {block: 'table_head'},

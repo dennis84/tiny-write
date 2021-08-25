@@ -45,7 +45,7 @@ export type Rgb = [number, number, number]
 
 interface Theme {
   label: string;
-  background: Rgb;
+  background: string;
   color: string;
   color2: string;
 }

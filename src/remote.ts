@@ -2,7 +2,15 @@ import {EditorState} from 'prosemirror-state'
 import {serialize} from './markdown'
 import {isElectron} from './env'
 
-export const on = (name, fn) => {
+export interface FileInfo {
+  file: string;
+  mime: string;
+  ext: string;
+  buffer: Buffer;
+  lastModified: string;
+}
+
+export const on = (name: string, fn: (...args: any) => void) => {
   if (!isElectron) return
   window.app.on(name, fn)
 }
@@ -12,7 +20,7 @@ export const getArgs = () => {
   return window.app.getArgs()
 }
 
-export const setAlwaysOnTop = (alwaysOnTop) => {
+export const setAlwaysOnTop = (alwaysOnTop: boolean) => {
   if (!isElectron) return
   return window.app.setAlwaysOnTop(alwaysOnTop)
 }
@@ -49,32 +57,32 @@ export const copyAllAsMarkdown = async (state: EditorState) => {
   }
 }
 
-export const fileExists = async (src) => {
+export const fileExists = async (src: string) => {
   if (!isElectron) return false
   return window.app.fileExists(src)
 }
 
-export const isImage = async (src) => {
+export const isImage = async (src: string) => {
   if (!isElectron) return false
   return window.app.isImage(src)
 }
 
-export const readFile = async (src) => {
+export const readFile = async (src: string) => {
   if (!isElectron) return
   return window.app.readFile(src)
 }
 
-export const writeFile = async (file, content) => {
+export const writeFile = async (file: string, content: string) => {
   if (!isElectron) return
   return window.app.writeFile(file, content)
 }
 
-export const resolve = async (base, src) => {
+export const resolve = async (base: string, src: string) => {
   if (!isElectron) return src
   return window.app.resolve(base, src)
 }
 
-export const log = async (...args) => {
+export const log = async (...args: any) => {
   if (!isElectron) return
   return window.app.log(...args)
 }

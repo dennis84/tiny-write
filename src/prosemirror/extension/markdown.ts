@@ -6,11 +6,13 @@ import {
   emDash,
   ellipsis,
 } from 'prosemirror-inputrules'
+import {NodeType, Schema} from 'prosemirror-model'
+import {ProseMirrorExtension} from '../state'
 
-const blockQuoteRule = (nodeType) =>
+const blockQuoteRule = (nodeType: NodeType) =>
   wrappingInputRule(/^\s*>\s$/, nodeType)
 
-const orderedListRule = (nodeType) =>
+const orderedListRule = (nodeType: NodeType) =>
   wrappingInputRule(
     /^(\d+)\.\s$/,
     nodeType,
@@ -18,17 +20,17 @@ const orderedListRule = (nodeType) =>
     (match, node) => node.childCount + node.attrs.order == +match[1]
   )
 
-const bulletListRule = (nodeType) =>
+const bulletListRule = (nodeType: NodeType) =>
   wrappingInputRule(/^\s*([-+*])\s$/, nodeType)
 
-const headingRule = (nodeType, maxLevel) =>
+const headingRule = (nodeType: NodeType, maxLevel: number) =>
   textblockTypeInputRule(
     new RegExp('^(#{1,' + maxLevel + '})\\s$'),
     nodeType,
     match => ({level: match[1].length})
   )
 
-const markdownRules = (schema) => {
+const markdownRules = (schema: Schema) => {
   const rules = smartQuotes.concat(ellipsis, emDash)
   if (schema.nodes.blockquote) rules.push(blockQuoteRule(schema.nodes.blockquote))
   if (schema.nodes.ordered_list) rules.push(orderedListRule(schema.nodes.ordered_list))
@@ -37,9 +39,9 @@ const markdownRules = (schema) => {
   return rules
 }
 
-export default {
+export default (): ProseMirrorExtension => ({
   plugins: (prev, schema) => [
     ...prev,
     inputRules({rules: markdownRules(schema)}),
   ]
-}
+})

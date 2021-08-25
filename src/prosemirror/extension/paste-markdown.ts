@@ -1,7 +1,9 @@
 import {Plugin} from 'prosemirror-state'
+import {Schema} from 'prosemirror-model'
+import {ProseMirrorExtension} from '../state'
 import {createMarkdownParser} from '../../markdown'
 
-const pasteMarkdown = (schema) => {
+const pasteMarkdown = (schema: Schema) => {
   const parser = createMarkdownParser(schema)
   return new Plugin({
     props: {
@@ -25,7 +27,7 @@ const pasteMarkdown = (schema) => {
   })
 }
 
-export default ({
+export default (): ProseMirrorExtension => ({
   plugins: (prev, schema) => [
     ...prev,
     pasteMarkdown(schema),

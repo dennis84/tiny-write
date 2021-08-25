@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react'
+import React, {DragEvent, useEffect} from 'react'
 import {selectAll, deleteSelection} from 'prosemirror-commands'
 import {EditorView} from 'prosemirror-view'
 import {undo, redo} from 'prosemirror-history'
@@ -63,7 +63,7 @@ export default (props: Props) => {
     return true
   })
 
-  const onDiscard = useDynamicCallback((editorState, editorDispatch, view) => {
+  const onDiscard = useDynamicCallback((_editorState, _editorDispatch, view) => {
     if (props.state.path) {
       dispatch(Discard)
     } else if (props.state.files.length > 0 && isEmpty(editorView.state)) {
@@ -106,7 +106,7 @@ export default (props: Props) => {
   const onToggleMarkdown = useDynamicCallback(() => {
     const markdown = !props.state.markdown
     const selection = {type: 'text', anchor: 1, head: 1}
-    let doc
+    let doc: any
 
     if (markdown) {
       const lines = serialize(editorView.state).split('\n')
@@ -146,7 +146,7 @@ export default (props: Props) => {
     return true
   })
 
-  const onDrop = (e) => {
+  const onDrop = (e: DragEvent) => {
     if (
       e.dataTransfer.files.length !== 1 ||
       !e.dataTransfer.files[0].type.startsWith('text/')
@@ -217,7 +217,7 @@ export default (props: Props) => {
     }
 
     const data = await db.get('state')
-    let parsed
+    let parsed: any
     if (data !== undefined) {
       try {
         parsed = JSON.parse(data)
@@ -242,7 +242,7 @@ export default (props: Props) => {
       return
     }
 
-    let text
+    let text: any
     if (parsed.text) {
       if (!isText(parsed.text)) {
         dispatch(UpdateError({id: 'invalid_state', props: parsed.text}))

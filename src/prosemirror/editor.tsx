@@ -1,5 +1,5 @@
 import React, {useEffect, useRef} from 'react'
-import {EditorState} from 'prosemirror-state'
+import {EditorState, Transaction} from 'prosemirror-state'
 import {EditorView} from 'prosemirror-view'
 import {Schema} from 'prosemirror-model'
 import {NodeViewFn, ProseMirrorState} from './state'
@@ -17,7 +17,7 @@ export const ProseMirror = (props: Props) => {
   const editorRef = useRef()
   const editorViewRef = props.editorViewRef ?? useRef()
 
-  const dispatchTransaction = (tr) => {
+  const dispatchTransaction = (tr: Transaction) => {
     if (!editorViewRef.current) return
     const newState = editorViewRef.current.state.apply(tr)
     editorViewRef.current.updateState(newState)
@@ -91,7 +91,7 @@ const createEditorState = (state: ProseMirrorState): {
   }
 
   return {
-    editorState,
+    editorState: editorState as EditorState,
     nodeViews,
   }
 }

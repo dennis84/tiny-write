@@ -16,6 +16,7 @@ import image from './prosemirror/extension/image'
 import dragHandle from './prosemirror/extension/drag-handle'
 import pasteMarkdown from './prosemirror/extension/paste-markdown'
 import table from './prosemirror/extension/table'
+import {ProseMirrorExtension} from './prosemirror/state'
 import {Config, YOptions} from '.'
 import {codeTheme} from './config'
 
@@ -28,7 +29,7 @@ interface Props {
   y?: YOptions;
 }
 
-const yExtension = (props: Props) => ({
+const yExtension = (props: Props): ProseMirrorExtension => ({
   plugins: (prev) => props.y ? [
     ...prev,
     ySyncPlugin(props.y.type),
@@ -37,7 +38,7 @@ const yExtension = (props: Props) => ({
   ] : prev
 })
 
-const customKeymap = (props: Props) => ({
+const customKeymap = (props: Props): ProseMirrorExtension => ({
   plugins: (prev) => props.keymap ? [
     ...prev,
     keymap(props.keymap)
@@ -61,27 +62,27 @@ export const createState = (props: Props): ProseMirrorState => ({
     base(props.markdown),
     scroll(props.config.typewriterMode),
     yExtension(props),
-    dragHandle,
+    dragHandle(),
   ] : [
     customKeymap(props),
     base(props.markdown),
-    markdown,
-    todoList,
-    dragHandle,
+    markdown(),
+    todoList(),
+    dragHandle(),
     codeBlock({
       theme: codeTheme(props.config),
       typewriterMode: props.config.typewriterMode,
       fontSize: props.config.fontSize,
       extensions: () => [codeMirrorKeymap(props)],
     }),
-    code,
-    strikethrough,
-    link,
-    table,
+    code(),
+    strikethrough(),
+    link(),
+    table(),
     image(props.path),
     placeholder('Start typing ...'),
     scroll(props.config.typewriterMode),
-    pasteMarkdown,
+    pasteMarkdown(),
     yExtension(props),
   ]
 })

@@ -1,9 +1,12 @@
 import {tableNodes} from 'prosemirror-tables'
+import {Node} from 'prosemirror-model'
+import {ProseMirrorExtension} from '../state'
 
 const tableSchema = {
   ...tableNodes({
     tableGroup: 'block',
     cellContent: 'inline*',
+    cellAttributes: {},
   }),
   table: {
     content: '(table_head | table_body)*',
@@ -42,7 +45,7 @@ const tableSchema = {
         return textAlign ? {style: `text-align: ${textAlign}`} : null
       },
     }],
-    toDOM: (node) => ['td', node.attrs, 0],
+    toDOM: (node: Node) => ['td', node.attrs, 0],
   },
   table_header: {
     content: 'inline*',
@@ -57,13 +60,13 @@ const tableSchema = {
         return textAlign ? {style: `text-align: ${textAlign}`} : null
       },
     }],
-    toDOM: (node) => ['th', node.attrs, 0],
+    toDOM: (node: Node) => ['th', node.attrs, 0],
   },
 }
 
-export default {
+export default (): ProseMirrorExtension => ({
   schema: (prev) => ({
     ...prev,
     nodes: prev.nodes.append(tableSchema),
   }),
-}
+})

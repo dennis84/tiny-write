@@ -1,8 +1,11 @@
-import {Plugin, PluginKey, TextSelection} from 'prosemirror-state'
+import {Plugin, PluginKey, TextSelection, Transaction} from 'prosemirror-state'
+import {EditorView} from 'prosemirror-view'
+import {Mark, Node, Schema} from 'prosemirror-model'
+import {ProseMirrorExtension} from '../state'
 
 const REGEX = /(^|\s)\[(.+)\]\(([^ ]+)(?: "(.+)")?\)/
 
-const findMarkPosition = (mark, doc, from, to) => {
+const findMarkPosition = (mark: Mark, doc: Node, from: number, to: number) => {
   let markPos = {from: -1, to: -1}
   doc.nodesBetween(from, to, (node, pos) => {
     if (markPos.from > -1) return false
@@ -14,7 +17,7 @@ const findMarkPosition = (mark, doc, from, to) => {
   return markPos
 }
 
-const markdownLinks = (schema) => {
+const markdownLinks = (schema: Schema) => {
   const plugin = new Plugin({
     key: new PluginKey('markdown-links'),
     state: {
@@ -46,7 +49,7 @@ const markdownLinks = (schema) => {
     }
   })
 
-  const resolvePos = (view, pos) => {
+  const resolvePos = (view: EditorView, pos: number) => {
     try {
       return view.state.doc.resolve(pos)
     } catch (err) {
@@ -54,7 +57,7 @@ const markdownLinks = (schema) => {
     }
   }
 
-  const toLink = (view, tr) => {
+  const toLink = (view: EditorView, tr: Transaction) => {
     const sel = view.state.selection
     const lastPos = plugin.getState(view.state).pos
 
@@ -97,7 +100,7 @@ const markdownLinks = (schema) => {
         tr.addMark(start, to, schema.marks.link.create({href}))
 
         const sub = end - textEnd + textStart - start
-        tr.setMeta(plugin, {pos: sel.$cursor.pos - sub})
+        tr.setMeta(plugin, {pos: sel.$head.pos - sub})
 
         return true
       }
@@ -106,9 +109,9 @@ const markdownLinks = (schema) => {
     return false
   }
 
-  const toMarkdown = (view, tr) => {
+  const toMarkdown = (view: EditorView, tr: Transaction) => {
     const sel = view.state.selection
-    const $from = resolvePos(view, sel.$cursor.pos)
+    const $from = resolvePos(view, sel.$head.pos)
     if (!$from || $from.depth === 0 || $from.parent.type.spec.code) {
       return false
     }
@@ -123,17 +126,17 @@ const markdownLinks = (schema) => {
       const text = view.state.doc.textBetween(range.from, range.to, '\0', '\0')
       tr.replaceRangeWith(range.from, range.to, view.state.schema.text(`[${text}](${href})`))
       tr.setSelection(new TextSelection(tr.doc.resolve(sel.$head.pos + 1)))
-      tr.setMeta(plugin, {pos: sel.$cursor.pos})
+      tr.setMeta(plugin, {pos: sel.$head.pos})
       return true
     }
 
     return false
   }
 
-  const handleMove = (view) => {
+  const handleMove = (view: EditorView) => {
     const sel = view.state.selection
-    if (!sel.empty || !sel.$cursor) return false
-    const pos = sel.$cursor.pos
+    if (!sel.empty || !sel.$head) return false
+    const pos = sel.$head.pos
     const tr = view.state.tr
 
     if (toLink(view, tr)) {
@@ -154,9 +157,9 @@ const markdownLinks = (schema) => {
   return plugin
 }
 
-export default {
+export default (): ProseMirrorExtension => ({
   plugins: (prev, schema) => [
     ...prev,
     markdownLinks(schema),
   ]
-}
+})

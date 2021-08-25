@@ -1,5 +1,6 @@
 import {Plugin} from 'prosemirror-state'
 import {EditorView} from 'prosemirror-view'
+import {ProseMirrorExtension} from '../state'
 
 const scroll = (view: EditorView) => {
   if (!view.state.selection.empty) return false
@@ -31,6 +32,6 @@ const scrollIntoView = new Plugin({
   },
 })
 
-export default (enabled: boolean) => ({
+export default (enabled: boolean): ProseMirrorExtension => ({
   plugins: (prev) => enabled ? [...prev, scrollIntoView] : prev
 })

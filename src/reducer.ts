@@ -116,7 +116,7 @@ export const Open = (file: File) => (state: State): State => {
     }
   }
 
-  const findIndexOfFile = (f) => {
+  const findIndexOfFile = (f: File) => {
     for (let i = 0; i < files.length; i++) {
       if (files[i] === f) return i
       else if (f.path && files[i].path === f.path) return i

@@ -1,10 +1,13 @@
-import {Node} from 'prosemirror-model'
-import {EditorView} from 'prosemirror-view'
-import {Selection} from 'prosemirror-state'
+import {Node, NodeType} from 'prosemirror-model'
+import {Decoration, EditorView} from 'prosemirror-view'
+import {EditorState, Selection, Transaction} from 'prosemirror-state'
 import {keymap} from 'prosemirror-keymap'
 import {inputRules, textblockTypeInputRule} from 'prosemirror-inputrules'
-import {CodeBlockView} from './view'
 import {Extension} from '@codemirror/state'
+import {CodeBlockView} from './view'
+import {ProseMirrorExtension} from '../../state'
+
+type Direction = 'left' | 'right' | 'up' | 'down' | 'forward' | 'backward'
 
 export const cleanLang = (lang: string) =>
   lang === 'js' ? 'javascript' :
@@ -15,7 +18,7 @@ export const cleanLang = (lang: string) =>
   lang === 'shell' ? 'bash' :
   lang
 
-const codeBlockRule = (nodeType) =>
+const codeBlockRule = (nodeType: NodeType) =>
   textblockTypeInputRule(
     /^```([a-zA-Z]*)?\s$/,
     nodeType,
@@ -26,7 +29,11 @@ const codeBlockRule = (nodeType) =>
     }
   )
 
-const arrowHandler = (dir) => (state, dispatch, view) => {
+const arrowHandler = (dir: Direction) => (
+  state: EditorState,
+  dispatch: (tr: Transaction) => void,
+  view: EditorView
+) => {
   if (state.selection.empty && view.endOfTextblock(dir)) {
     const side = dir == 'left' || dir == 'up' ? -1 : 1
     const $head = state.selection.$head
@@ -75,19 +82,19 @@ const codeBlockSchema = {
   parseDOM: [{
     tag: 'pre',
     preserveWhitespace: 'full',
-    getAttrs: node => ({params: node.getAttribute('data-params') || ''})
+    getAttrs: (node: Element) => ({params: node.getAttribute('data-params') || ''})
   }],
-  toDOM: (node) => [
+  toDOM: (node: Node) => [
     'pre',
     node.attrs.params ? {'data-params': node.attrs.params} : {},
     ['code', 0]
   ]
 }
 
-export default (props: CodeBlockProps) => ({
+export default (props: CodeBlockProps): ProseMirrorExtension => ({
   schema: (prev) => ({
     ...prev,
-    nodes: prev.nodes.update('code_block', codeBlockSchema),
+    nodes: (prev.nodes.update('code_block', codeBlockSchema),
   }),
   plugins: (prev, schema) => [
     ...prev,
@@ -95,8 +102,12 @@ export default (props: CodeBlockProps) => ({
     keymap(codeBlockKeymap),
   ],
   nodeViews: {
-    code_block: (node, view, getPos, decos, innerDecos) => {
-      return new CodeBlockView(node, view, getPos, decos, innerDecos, props)
-    }
+    code_block: (
+      node: Node,
+      view: EditorView,
+      getPos: () => number,
+      _decos: Decoration[],
+      innerDecos: any
+    ) => new CodeBlockView(node, view, getPos, innerDecos, props)
   },
 })

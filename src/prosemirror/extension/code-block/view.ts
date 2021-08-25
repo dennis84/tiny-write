@@ -1,8 +1,9 @@
 import {Node} from 'prosemirror-model'
-import {EditorView as PmEditorView} from 'prosemirror-view'
+import {EditorView as ProsemirrorEditorView} from 'prosemirror-view'
 import {TextSelection, Selection} from 'prosemirror-state'
 import {exitCode} from 'prosemirror-commands'
 import {Compartment, EditorState, Extension} from '@codemirror/state'
+import {Text} from '@codemirror/text'
 import {EditorView, ViewUpdate, keymap} from '@codemirror/view'
 import {defaultKeymap} from '@codemirror/commands'
 import {autocompletion, completionKeymap} from '@codemirror/autocomplete'
@@ -49,7 +50,7 @@ import {completion, tabCompletionKeymap} from './completion'
 
 export class CodeBlockView {
   node: Node
-  view: PmEditorView
+  view: ProsemirrorEditorView
   getPos: () => number
   dom: Element
   editorView: EditorView
@@ -61,7 +62,13 @@ export class CodeBlockView {
   dragHandle: HTMLElement
   langExtension: Compartment
 
-  constructor(node, view, getPos, decos, innerDecos, options) {
+  constructor(
+    node: Node,
+    view: ProsemirrorEditorView,
+    getPos: () => number,
+    innerDecos: any,
+    options: CodeBlockProps
+  ) {
     this.node = node
     this.view = view
     this.getPos = getPos
@@ -89,14 +96,14 @@ export class CodeBlockView {
     langInput.textContent = this.getLang()
     langInput.setAttribute('contenteditable', '')
     langInput.addEventListener('keydown', (e) => {
-      if (e.keyCode === 27) {
+      if (e.key === 'Escape') {
         e.preventDefault()
         langInput.textContent = this.getLang()
         langSelect.style.display = 'none'
         langSelectBottom.style.display = 'none'
         this.langToggle.style.display = 'flex'
         this.editorView.focus()
-      } else if (e.keyCode === 13) {
+      } else if (e.key === 'Enter') {
         e.preventDefault()
         const lang = cleanLang(langInput.textContent.trim())
         langInput.textContent = lang
@@ -261,7 +268,7 @@ export class CodeBlockView {
     inner.appendChild(langSelectBottom)
     outer.appendChild(this.langToggle)
 
-    innerDecos.find().map((d) => {
+    innerDecos.find().map((d: any) => {
       const elem = typeof d.type.toDOM === 'function' ? d.type.toDOM() : d.type.toDOM
       outer.appendChild(elem)
     })
@@ -277,7 +284,7 @@ export class CodeBlockView {
     this.editorView.focus()
   }
 
-  setSelection(anchor, head) {
+  setSelection(anchor: number, head: number) {
     this.editorView.focus()
     this.updating = true
     this.editorView.dispatch({selection: {anchor, head}})
@@ -292,7 +299,7 @@ export class CodeBlockView {
     return true
   }
 
-  update(node) {
+  update(node: Node) {
     if (node.type != this.node.type) return false
     const langChanged = node.attrs.params.lang !== this.node.attrs.params.lang
     this.node = node
@@ -356,7 +363,13 @@ export class CodeBlockView {
 
     for (const tr of update.transactions) {
       if (!tr.changes.empty) {
-        tr.changes.iterChanges((fromA, toA, fromB, toB, text) => {
+        tr.changes.iterChanges((
+          fromA: number,
+          toA: number,
+          _fromB: number,
+          _toB: number,
+          text: Text
+        ) => {
           const offset = this.getPos() + 1
           const t = this.view.state.tr.replaceWith(
             offset + fromA,
@@ -383,13 +396,14 @@ export class CodeBlockView {
 
   updateLangSelect() {
     const lang = this.getLang()
-    let elem
+    let elem: Element
     if (logos[lang]) {
-      elem = document.createElement('img')
-      elem.src = logos[lang]
-      elem.width = this.options.fontSize
-      elem.height = this.options.fontSize
-      elem.setAttribute('title', lang)
+      const img = document.createElement('img')
+      img.src = logos[lang]
+      img.width = this.options.fontSize
+      img.height = this.options.fontSize
+      img.setAttribute('title', lang)
+      elem = img
     } else {
       elem = document.createElement('span')
       elem.textContent = '📜'
@@ -477,7 +491,7 @@ export class CodeBlockView {
       if (!err.loc?.start?.line) return
       const line = this.editorView.state.doc.line(err.loc.start.line)
       const lines = err.message.split('\n')
-      const diagnostics = lines.map((message) => ({
+      const diagnostics = lines.map((message: string) => ({
         from: line.from + err.loc.start.column - 1,
         to: line.from + err.loc.start.column - 1,
         severity: 'error',
@@ -493,7 +507,7 @@ export class CodeBlockView {
   }
 }
 
-function computeChange(oldVal, newVal) {
+function computeChange(oldVal: string, newVal: string) {
   if (oldVal == newVal) return null
   let start = 0
   let oldEnd = oldVal.length
