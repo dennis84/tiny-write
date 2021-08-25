@@ -94,7 +94,7 @@ const codeBlockSchema = {
 export default (props: CodeBlockProps): ProseMirrorExtension => ({
   schema: (prev) => ({
     ...prev,
-    nodes: (prev.nodes.update('code_block', codeBlockSchema),
+    nodes: prev.nodes.update('code_block', codeBlockSchema),
   }),
   plugins: (prev, schema) => [
     ...prev,
