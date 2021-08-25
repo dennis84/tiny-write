@@ -5,7 +5,7 @@ module.exports = {
     '\\.ts$': 'ts-jest',
   },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'json'],
-  testMatch: ['**/test/*.test.ts'],
+  testMatch: ['**/test/unit/**/*.test.ts'],
   modulePathIgnorePatterns: ['dist'],
   testEnvironment: 'jsdom',
 }

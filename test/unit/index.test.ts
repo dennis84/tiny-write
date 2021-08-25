@@ -1,4 +1,4 @@
-import {getArgs} from '../index'
+import {getArgs} from '../../index'
 
 jest.mock('electron', () => ({
   app: {

@@ -1,4 +1,4 @@
-import {Open, newState} from '../src/reducer'
+import {Open, newState} from '../../src/reducer'
 import {EditorState} from 'prosemirror-state'
 import {schema} from 'prosemirror-markdown'
 

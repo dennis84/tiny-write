@@ -1,4 +1,4 @@
-import {completion} from '../src/prosemirror/extension/code-block/completion'
+import {completion} from '../../../src/prosemirror/extension/code-block/completion'
 import {CompletionContext} from '@codemirror/autocomplete'
 import {Compartment, EditorState} from '@codemirror/state'
 import {javascript} from '@codemirror/lang-javascript'
