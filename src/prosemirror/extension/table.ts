@@ -67,6 +67,6 @@ const tableSchema = {
 export default (): ProseMirrorExtension => ({
   schema: (prev) => ({
     ...prev,
-    nodes: prev.nodes.append(tableSchema),
+    nodes: (prev.nodes as any).append(tableSchema),
   }),
 })

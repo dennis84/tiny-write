@@ -68,7 +68,7 @@ const todoListKeymap = (schema: Schema) => ({
 export default (): ProseMirrorExtension => ({
   schema: (prev) => ({
     ...prev,
-    nodes: prev.nodes.append(todoListSchema),
+    nodes: (prev.nodes as any).append(todoListSchema),
   }),
   plugins: (prev, schema) => [
     keymap(todoListKeymap(schema)),

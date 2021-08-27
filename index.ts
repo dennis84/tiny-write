@@ -6,13 +6,7 @@ import * as fs from 'fs'
 import * as os from 'os'
 import {spawn} from 'child_process'
 import {isatty} from 'tty'
-
-interface Args {
-  cwd?: string;
-  file?: string;
-  room?: string;
-  text?: any;
-}
+import {Args} from './src/shared'
 
 export const getArgs = (argv: string[]): Args => {
   const xs = argv.slice(process.env.NODE_ENV === 'dev' ? 2 : 1)

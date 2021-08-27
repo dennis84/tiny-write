@@ -94,7 +94,7 @@ const codeBlockSchema = {
 export default (props: CodeBlockProps): ProseMirrorExtension => ({
   schema: (prev) => ({
     ...prev,
-    nodes: prev.nodes.update('code_block', codeBlockSchema),
+    nodes: (prev.nodes as any).update('code_block', codeBlockSchema),
   }),
   plugins: (prev, schema) => [
     ...prev,
@@ -102,6 +102,7 @@ export default (props: CodeBlockProps): ProseMirrorExtension => ({
     keymap(codeBlockKeymap),
   ],
   nodeViews: {
+    // @ts-ignore
     code_block: (
       node: Node,
       view: EditorView,

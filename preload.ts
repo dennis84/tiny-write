@@ -1,6 +1,5 @@
 import {ipcRenderer, contextBridge} from 'electron'
-import {Args} from './src'
-import {FileInfo} from './src/remote'
+import {Args, FileInfo} from './src/shared'
 
 export interface Preload {
   setAlwaysOnTop: (flag: boolean) => Promise<void>;

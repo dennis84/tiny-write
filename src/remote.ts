@@ -2,14 +2,6 @@ import {EditorState} from 'prosemirror-state'
 import {serialize} from './markdown'
 import {isElectron} from './env'
 
-export interface FileInfo {
-  file: string;
-  mime: string;
-  ext: string;
-  buffer: Buffer;
-  lastModified: string;
-}
-
 export const on = (name: string, fn: (...args: any) => void) => {
   if (!isElectron) return
   window.app.on(name, fn)

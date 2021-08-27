@@ -1,7 +1,8 @@
 import {Plugin} from 'prosemirror-state'
 import {Node, Schema} from 'prosemirror-model'
 import {EditorView} from 'prosemirror-view'
-import {FileInfo, isImage, readFile, resolve} from '../../remote'
+import {isImage, readFile, resolve} from '../../remote'
+import {FileInfo} from '../../shared'
 import {ProseMirrorExtension} from '../state'
 
 const REGEX = /^!\[([^[\]]*?)\]\((.+?)\)\s+/
@@ -221,7 +222,7 @@ class ImageView {
 export default (path?: string): ProseMirrorExtension => ({
   schema: (prev) => ({
     ...prev,
-    nodes: prev.nodes.update('image', imageSchema),
+    nodes: (prev.nodes as any).update('image', imageSchema),
   }),
   plugins: (prev, schema) => [
     ...prev,

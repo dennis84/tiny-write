@@ -16,7 +16,7 @@ const strikethroughSchema = {
 export default (): ProseMirrorExtension => ({
   schema: (prev) => ({
     ...prev,
-    marks: prev.marks.append(strikethroughSchema),
+    marks: (prev.marks as any).append(strikethroughSchema),
   }),
   plugins: (prev, schema) => [
     ...prev,

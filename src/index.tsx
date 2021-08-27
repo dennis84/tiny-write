@@ -5,6 +5,7 @@ import {WebsocketProvider} from 'y-websocket'
 import {ProseMirrorState} from './prosemirror/state'
 import Main from './Main'
 import {newState} from './reducer'
+import {Args} from './shared'
 
 export interface Config {
   theme: string;
@@ -31,13 +32,6 @@ export interface Collab {
   error?: boolean;
   room?: string;
   y?: YOptions;
-}
-
-export interface Args {
-  cwd?: string;
-  file?: string;
-  room?: string;
-  text?: any;
 }
 
 export type LoadingType = 'loading' | 'roundtrip' | 'initialized' | 'error'
