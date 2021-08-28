@@ -4,7 +4,7 @@ import {TextSelection, Selection} from 'prosemirror-state'
 import {exitCode} from 'prosemirror-commands'
 import {Compartment, EditorState, Extension} from '@codemirror/state'
 import {Text} from '@codemirror/text'
-import {EditorView, ViewUpdate, keymap} from '@codemirror/view'
+import {EditorView, ViewUpdate, highlightActiveLine, keymap} from '@codemirror/view'
 import {defaultKeymap} from '@codemirror/commands'
 import {autocompletion, completionKeymap} from '@codemirror/autocomplete'
 import {indentOnInput} from '@codemirror/language'
@@ -244,10 +244,12 @@ export class CodeBlockView {
         closeBrackets(),
         linter(() => []),
         codeMirrorKeymap,
+        highlightActiveLine(),
         EditorState.tabSize.of(2),
         this.langExtension.of(getLangExtension(this.getLang())),
         theme,
         EditorView.updateListener.of(this.updateListener.bind(this)),
+        EditorView.lineWrapping,
         EditorView.domEventHandlers({
           'focus': () => this.forwardSelection(),
           'mousedown': () => {

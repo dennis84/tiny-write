@@ -205,6 +205,14 @@ export default (props: Props) => {
                 display: none;
               }
             }
+            .cm-lineWrapping {
+              word-break: break-all;
+            }
+            &:not(.cm-focused) {
+              .cm-activeLine {
+                background: none;
+              }
+            }
           }
           .prettify {
             position: absolute;
