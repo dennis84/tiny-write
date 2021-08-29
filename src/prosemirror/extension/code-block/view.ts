@@ -45,8 +45,9 @@ import parserHtml from 'prettier/parser-html'
 import parserMarkdown from 'prettier/parser-markdown'
 import parserYaml from 'prettier/parser-yaml'
 import logos from './logos'
-import {CodeBlockProps, cleanLang, defaultProps} from '.'
+import {CodeBlockProps, defaultProps} from '.'
 import {completion, tabCompletionKeymap} from './completion'
+import {LangInputEditor} from './lang-input'
 
 export class CodeBlockView {
   node: Node
@@ -61,6 +62,7 @@ export class CodeBlockView {
   prettifyBtn: HTMLElement
   dragHandle: HTMLElement
   langExtension: Compartment
+  langInputEditor: LangInputEditor
 
   constructor(
     node: Node,
@@ -91,22 +93,19 @@ export class CodeBlockView {
     inner.classList.add('codemirror-inner')
     outer.appendChild(inner)
 
-    const langInput = document.createElement('span')
+    const langInput = document.createElement('div')
     langInput.className = 'lang-input'
-    langInput.textContent = this.getLang()
-    langInput.setAttribute('contenteditable', '')
-    langInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        e.preventDefault()
-        langInput.textContent = this.getLang()
+
+    this.langInputEditor = new LangInputEditor({
+      doc: this.getLang(),
+      parent: langInput,
+      onClose: () => {
         langSelect.style.display = 'none'
         langSelectBottom.style.display = 'none'
         this.langToggle.style.display = 'flex'
         this.editorView.focus()
-      } else if (e.key === 'Enter') {
-        e.preventDefault()
-        const lang = cleanLang(langInput.textContent.trim())
-        langInput.textContent = lang
+      },
+      onEnter: (lang) => {
         langSelect.style.display = 'none'
         langSelectBottom.style.display = 'none'
         this.langToggle.style.display = 'flex'
@@ -121,14 +120,7 @@ export class CodeBlockView {
         this.updateLangSelect()
         this.updatePrettify()
         this.editorView.focus()
-      }
-    })
-
-    langInput.addEventListener('blur', () => {
-      langInput.textContent = this.getLang()
-      langSelect.style.display = 'none'
-      langSelectBottom.style.display = 'none'
-      this.langToggle.style.display = 'flex'
+      },
     })
 
     const langSelect = document.createElement('div')
@@ -144,15 +136,10 @@ export class CodeBlockView {
     this.langToggle.className = 'lang-toggle'
     this.langToggle.addEventListener('click', () => {
       this.langToggle.style.display = 'none'
-      langSelect.style.display = 'block'
+      langSelect.style.display = 'flex'
       langSelectBottom.style.display = 'block'
       this.prettifyBtn.style.display = 'none'
-      langInput.focus()
-      const range = document.createRange()
-      range.selectNodeContents(langInput)
-      const sel = window.getSelection()
-      sel.removeAllRanges()
-      sel.addRange(range)
+      this.langInputEditor.focus()
     })
 
     const codeMirrorKeymap = keymap.of([{
@@ -293,8 +280,8 @@ export class CodeBlockView {
     this.updating = false
   }
 
-  stopEvent() {
-    return false
+  stopEvent(event: any) {
+    return this.langInputEditor.containsElem(event.target)
   }
 
   ignoreMutation() {
