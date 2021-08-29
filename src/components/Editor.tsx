@@ -171,7 +171,7 @@ export default (props: Props) => {
           height: ${theme.fontSize * 1.6}px;
           display: flex;
           align-items: center;
-          top: 8px;
+          top: 2px;
           transform: translateX(100%);
           cursor: pointer;
           z-index: 10;
@@ -181,7 +181,7 @@ export default (props: Props) => {
         .codemirror-inner {
           position: relative;
           margin: 5px 0;
-          padding: 5px 0;
+          padding: 0;
           font-family: '${font(theme, true)}' !important;
           border: 1px solid ${color(theme)}4c;
           border-radius: 3px;
@@ -192,8 +192,11 @@ export default (props: Props) => {
           }
           .cm-editor {
             outline: none;
+            .cm-content {
+              padding: 0;
+            }
             .cm-line {
-              line-height: 1.6;
+              line-height: ${theme.fontSize * 1.8}px;
             }
             .cm-diagnosticText {
               white-space: pre;
@@ -217,7 +220,7 @@ export default (props: Props) => {
           .prettify {
             position: absolute;
             right: 8px;
-            bottom: 8px;
+            bottom: 2px;
             cursor: pointer;
             z-index: 10;
             user-select: none;
