@@ -163,7 +163,7 @@ export default (props: Props) => {
       .codemirror-outer {
         position: relative;
         .handle {
-          top: 8px;
+          top: 2px;
         }
         .lang-toggle {
           position: absolute;
