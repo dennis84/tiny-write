@@ -9,13 +9,13 @@ beforeAll(async () => {
 it('code block', async () => {
   await page.type('.ProseMirror', '```js ')
   await page.waitForSelector('.codemirror-outer')
-  await page.type('.cm-content', code)
+  await page.type('.codemirror-inner > .cm-editor .cm-content', code)
   expect(await page.$eval('.codemirror-outer .lang-toggle img', (node) => node.getAttribute('title'))).toBe('javascript')
 })
 
 it('prettify', async () => {
-  await page.click('.codemirror-outer .prettify')
-  expect(await page.textContent('.cm-content')).toBe(`const foo = 'bar'`)
+  await page.click('.prettify')
+  expect(await page.textContent('.codemirror-inner > .cm-editor .cm-content')).toBe(`const foo = 'bar'`)
 })
 
 it('change lang', async () => {
