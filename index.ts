@@ -51,7 +51,6 @@ const main = () => {
       webPreferences: {
         allowRunningInsecureContent: false,
         contextIsolation: true,
-        enableRemoteModule: false,
         nodeIntegration: false,
         sandbox: true,
         preload: path.join(__dirname, 'preload.js'),
