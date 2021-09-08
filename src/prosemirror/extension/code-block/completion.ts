@@ -15,7 +15,7 @@ const findWords: CompletionSource = (context) => {
   const c = tree.cursor()
 
   do {
-    if (!c.node.firstChild) {
+    if (!c.node.firstChild && (context.pos < c.from || context.pos > c.to)) {
       let text = context.state.sliceDoc(c.node.from, c.node.to)
       if (c.node.type.name === 'String') {
         text = text.substring(1, text.length - 1)

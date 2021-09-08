@@ -4,10 +4,11 @@ import {Compartment, EditorState} from '@codemirror/state'
 import {javascript} from '@codemirror/lang-javascript'
 
 it.each([
-  [`const foo = 'bar'`, ['const', 'foo', 'bar'], 0],
+  ['abc', [], 3],
+  ['abc ', ['abc'], 4],
+  [` const foo = 'bar'`, ['const', 'foo', 'bar'], 0],
   [`....test`, ['test'], 10],
-  [`123`, ['123'], 3],
-  [`x+y*z`, [], 0],
+  [`x+y*z`, [], 10],
 ])('findWords', async (doc, words, pos) => {
   const [findWords] = completion
   const language = new Compartment()
@@ -18,6 +19,7 @@ it.each([
 
   const context = new CompletionContext(state, pos, false)
   const result = await findWords(context)
+  expect(result.options.length).toBe(words.length)
   words.forEach((w, i) => {
     expect(result.options[i].label).toBe(w)
   })
