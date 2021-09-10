@@ -36,7 +36,7 @@
   "dependencies": {
     "@codemirror/autocomplete": "^0.19.3",
     "@codemirror/closebrackets": "^0.19.0",
-    "@codemirror/commands": "^0.19.2",
+    "@codemirror/commands": "^0.19.3",
     "@codemirror/highlight": "^0.19.4",
     "@codemirror/lang-cpp": "^0.19.1",
     "@codemirror/lang-css": "^0.19.1",
@@ -55,7 +55,7 @@
     "@codemirror/matchbrackets": "^0.19.1",
     "@codemirror/state": "^0.19.1",
     "@codemirror/stream-parser": "^0.19.2",
-    "@codemirror/view": "^0.19.4",
+    "@codemirror/view": "^0.19.6",
     "@ddietr/codemirror-themes": "^1.0.8",
     "@emotion/css": "^11.1.3",
     "@emotion/react": "^11.4.1",
@@ -67,7 +67,7 @@
     "file-type": "^16.5.3",
     "idb": "^6.1.3",
     "markdown-it": "^12.2.0",
-    "prettier": "^2.3.2",
+    "prettier": "^2.4.0",
     "prosemirror-commands": "^1.1.10",
     "prosemirror-dropcursor": "^1.3.5",
     "prosemirror-example-setup": "^1.1.2",
@@ -81,7 +81,7 @@
     "prosemirror-state": "^1.3.4",
     "prosemirror-tables": "^1.1.1",
     "prosemirror-transform": "^1.3.2",
-    "prosemirror-view": "^1.20.0",
+    "prosemirror-view": "^1.20.1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "uuid": "^8.3.2",
@@ -110,14 +110,14 @@
     "electron-builder": "^22.11.7",
     "eslint": "^7.32.0",
     "eslint-plugin-react": "^7.25.1",
-    "jest": "^27.1.0",
+    "jest": "^27.1.1",
     "jest-playwright-preset": "^1.7.0",
     "playwright": "^1.14.1",
     "rollup-plugin-visualizer": "^5.5.2",
     "ts-jest": "^27.0.5",
     "tslib": "^2.3.1",
     "typescript": "^4.4.2",
-    "vite": "^2.5.4"
+    "vite": "^2.5.6"
   },
   "optionalDependencies": {
     "dmg-license": "^1.0.9"
