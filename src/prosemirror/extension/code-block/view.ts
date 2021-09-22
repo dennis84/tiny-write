@@ -145,8 +145,10 @@ export class CodeBlockView {
     const codeMirrorKeymap = keymap.of([{
       key: 'Backspace',
       run: () => {
-        if (!this.editorView.state.doc.length) this.close()
-        return true
+        if (!this.editorView.state.doc.length) {
+          this.close()
+          return true
+        }
       }
     }, {
       key: 'Ctrl-Enter',
@@ -219,6 +221,7 @@ export class CodeBlockView {
       doc: this.node.textContent,
       extensions: [
         extensions,
+        codeMirrorKeymap,
         keymap.of([
           ...defaultKeymap,
           ...closeBracketsKeymap,
@@ -230,7 +233,6 @@ export class CodeBlockView {
         bracketMatching(),
         closeBrackets(),
         linter(() => []),
-        codeMirrorKeymap,
         highlightActiveLine(),
         EditorState.tabSize.of(2),
         this.langExtension.of(getLangExtension(this.getLang())),
