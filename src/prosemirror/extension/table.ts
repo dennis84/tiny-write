@@ -92,8 +92,8 @@ const findParentPos = ($pos: ResolvedPos, fn: (n: Node) => boolean) => {
   return null
 }
 
-const findTableCellPos = ($pos: ResolvedPos) =>
-  findParentPos($pos, (n) => n.type.name === 'table_cell' || n.type.name === 'table_header')
+const findTableCellPos = ($pos: ResolvedPos, header = true) =>
+  findParentPos($pos, (n) => n.type.name === 'table_cell' || (header && n.type.name === 'table_header'))
 
 const findTableRowPos = ($pos: ResolvedPos) =>
   findParentPos($pos, (n) => n.type.name === 'table_row')
@@ -140,13 +140,14 @@ export default (): ProseMirrorExtension => ({
           const rowPos = findTableRowPos(sel.$head)
           const before = state.doc.resolve(sel.$head.pos - 2)
           const cellBeforePos = findTableCellPos(before)
+          const inTableHead = !!findTableHeadPos(sel.$head)
 
           if (cellBeforePos) {
             const tr = state.tr
             tr.setSelection(Selection.near(before))
             dispatch(tr)
             return true
-          } else if (getContentSize(rowPos.node()) === 0) {
+          } else if (!inTableHead && getContentSize(rowPos.node()) === 0) {
             const tr = state.tr
             tr.delete(before.pos - 1, before.pos + rowPos.node().nodeSize)
             dispatch(tr)
