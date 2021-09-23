@@ -104,10 +104,10 @@ const findTableHeadPos = ($pos: ResolvedPos) =>
 const findTablePos = ($pos: ResolvedPos) =>
   findParentPos($pos, (n) => n.type.name === 'table')
 
-const getContentSize = (n: Node) => {
+const getTextSize = (n: Node) => {
   let size = 0
   n.descendants((d: Node) => {
-    size += d.content.size
+    size += d.text?.length ?? 0
   })
 
   return size
@@ -136,8 +136,9 @@ export default (): ProseMirrorExtension => ({
         const cellPos = findTableCellPos(sel.$head)
         if (!cellPos) return false
 
-        if (cellPos.node().content.size === 0) {
+        if (getTextSize(cellPos.node()) === 0) {
           const rowPos = findTableRowPos(sel.$head)
+          const tablePos = findTablePos(sel.$head)
           const before = state.doc.resolve(sel.$head.pos - 2)
           const cellBeforePos = findTableCellPos(before)
           const inTableHead = !!findTableHeadPos(sel.$head)
@@ -147,9 +148,14 @@ export default (): ProseMirrorExtension => ({
             tr.setSelection(Selection.near(before))
             dispatch(tr)
             return true
-          } else if (!inTableHead && getContentSize(rowPos.node()) === 0) {
+          } else if (!inTableHead && getTextSize(rowPos.node()) === 0) {
             const tr = state.tr
             tr.delete(before.pos - 1, before.pos + rowPos.node().nodeSize)
+            dispatch(tr)
+            return true
+          } else if (getTextSize(tablePos.node()) === 0) {
+            const tr = state.tr
+            tr.delete(tablePos.before(), tablePos.before() + tablePos.node().nodeSize)
             dispatch(tr)
             return true
           }
