@@ -16,8 +16,8 @@ export const tableInputRule = (schema: Schema) => new InputRule(
       schema.node(schema.nodes.table_body, {}, schema.node(schema.nodes.table_row, {}, cells)),
     ])
 
-    tr.delete(start, end)
-    tr.insert(start, table)
+    tr.delete(start - 1, end)
+    tr.insert(start - 1, table)
     tr.setSelection(Selection.near(tr.doc.resolve(start + 3)))
     return tr
   }
@@ -27,6 +27,7 @@ const tableSchema = {
   table: {
     content: '(table_head | table_body)*',
     isolating: true,
+    selectable: false,
     group: 'block',
     parseDOM: [{tag: 'table'}],
     toDOM: () => ['div', {class: 'table-container'}, ['table', 0]],
@@ -151,6 +152,7 @@ export default (): ProseMirrorExtension => ({
           } else if (!inTableHead && getTextSize(rowPos.node()) === 0) {
             const tr = state.tr
             tr.delete(before.pos - 1, before.pos + rowPos.node().nodeSize)
+            tr.setSelection(Selection.near(tr.doc.resolve(before.pos - 2)))
             dispatch(tr)
             return true
           } else if (getTextSize(tablePos.node()) === 0) {
@@ -167,7 +169,6 @@ export default (): ProseMirrorExtension => ({
         const sel = state.selection
         if (!sel.empty) return false
         const cellPos = findTableCellPos(sel.$head)
-        console.log(cellPos)
         if (!cellPos) return false
 
         const rowPos = findTableRowPos(sel.$head)
