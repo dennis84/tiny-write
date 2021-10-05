@@ -86,9 +86,8 @@ const tableSchema = {
 }
 
 const findParentPos = ($pos: ResolvedPos, fn: (n: Node) => boolean) => {
-  if (fn($pos.node())) return $pos
-  for (let d = $pos.depth - 1; d > 0; d--) {
-    if (fn($pos.node(d))) return $pos.node(0).resolve($pos.before(d + 1))
+  for (let d = $pos.depth; d > 0; d--) {
+    if (fn($pos.node(d))) return $pos.doc.resolve($pos.before(d + 1))
   }
   return null
 }
@@ -104,6 +103,55 @@ const findTableHeadPos = ($pos: ResolvedPos) =>
 
 const findTablePos = ($pos: ResolvedPos) =>
   findParentPos($pos, (n) => n.type.name === 'table')
+
+const findNodePosition = (node: Node, fn: (n: Node, p: Node) => boolean) => {
+  let result = -1
+  node.descendants((n, pos, p) => {
+    if (result !== -1) {
+      return false
+    } else if (fn(n, p)) {
+      result = pos
+      return false
+    }
+  })
+
+  return result
+}
+
+const findVertTableCellPos = ($pos: ResolvedPos, dir = 'up') => {
+  const cellPos = findTableCellPos($pos)
+  const rowPos = findTableRowPos($pos)
+  const offset = cellPos.pos - ($pos.before() + 1)
+
+  const add = dir === 'up' ? -1 : rowPos.node().nodeSize + 1
+  const nodeBeforePos = $pos.doc.resolve(rowPos.before() + add)
+  let rowBeforePos = findTableRowPos(nodeBeforePos)
+
+  if (!rowBeforePos) {
+    const table = $pos.node(0)
+    const tablePos = findTablePos($pos)
+    const inTableHead = !!findTableHeadPos($pos)
+
+    if (dir === 'up' && inTableHead) {
+      return $pos.doc.resolve(Math.max(0, tablePos.before() - 1))
+    } else if (dir === 'down' && !inTableHead) {
+      return $pos.doc.resolve(tablePos.after())
+    }
+
+    const pos = findNodePosition(table, (n, p) => {
+      return inTableHead ?
+        p.type.name === 'table_body' && n.type.name === 'table_row' :
+        p.type.name === 'table_head' && n.type.name === 'table_row'
+    })
+
+    rowBeforePos = $pos.doc.resolve(pos + 1)
+  }
+
+  const targetCell = $pos.doc.resolve(rowBeforePos.posAtIndex(rowPos.index()) + 1)
+  const targetCellTextSize = getTextSize(targetCell.node())
+  const cellOffset = offset > targetCellTextSize ? targetCellTextSize : offset
+  return $pos.doc.resolve(targetCell.pos + cellOffset)
+}
 
 const getTextSize = (n: Node) => {
   let size = 0
@@ -140,7 +188,8 @@ export default (): ProseMirrorExtension => ({
         if (getTextSize(cellPos.node()) === 0) {
           const rowPos = findTableRowPos(sel.$head)
           const tablePos = findTablePos(sel.$head)
-          const before = state.doc.resolve(sel.$head.pos - 2)
+          const before = state.doc.resolve(cellPos.before() - 1)
+
           const cellBeforePos = findTableCellPos(before)
           const inTableHead = !!findTableHeadPos(sel.$head)
 
@@ -152,7 +201,7 @@ export default (): ProseMirrorExtension => ({
           } else if (!inTableHead && getTextSize(rowPos.node()) === 0) {
             const tr = state.tr
             tr.delete(before.pos - 1, before.pos + rowPos.node().nodeSize)
-            tr.setSelection(Selection.near(tr.doc.resolve(before.pos - 2)))
+            tr.setSelection(Selection.near(tr.doc.resolve(before.pos - 4)))
             dispatch(tr)
             return true
           } else if (getTextSize(tablePos.node()) === 0) {
@@ -210,6 +259,36 @@ export default (): ProseMirrorExtension => ({
 
         dispatch(tr)
         return true
+      },
+      'ArrowUp': (state, dispatch) => {
+        const sel = state.selection
+        if (!sel.empty) return false
+        const cellPos = findTableCellPos(sel.$head)
+        if (!cellPos) return false
+        const abovePos = findVertTableCellPos(sel.$head)
+        if (abovePos) {
+          const tr = state.tr
+          tr.setSelection(Selection.near(abovePos))
+          dispatch(tr)
+          return true
+        }
+
+        return false
+      },
+      'ArrowDown': (state, dispatch) => {
+        const sel = state.selection
+        if (!sel.empty) return false
+        const cellPos = findTableCellPos(sel.$head)
+        if (!cellPos) return false
+        const belowPos = findVertTableCellPos(sel.$head, 'down')
+        if (belowPos) {
+          const tr = state.tr
+          tr.setSelection(Selection.near(belowPos))
+          dispatch(tr)
+          return true
+        }
+
+        return false
       },
     }),
     ...prev,

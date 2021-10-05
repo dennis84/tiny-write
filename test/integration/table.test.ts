@@ -71,7 +71,7 @@ it('table keymap', async () => {
   expect(await page.textContent('.ProseMirror table tr:nth-of-type(2) td:nth-of-type(2)')).toBe('')
   await page.keyboard.press('Control+Enter')
   await page.type('.ProseMirror', 'outside')
-  expect(await lineText(2)).toBe('outside')
+  expect(await lineText(1)).toBe('outside')
 })
 
 it('dont remove table head', async () => {
@@ -103,4 +103,20 @@ it('remove table if empty', async () => {
   await page.keyboard.press('Backspace')
   await page.keyboard.press('Backspace')
   expect(await page.$('.ProseMirror table')).toBe(null)
+})
+
+it('arrow up and down', async () => {
+  await clearText()
+  await page.type('.ProseMirror', '||| ')
+  await page.type('.ProseMirror', '1')
+  await move('ArrowDown')
+  await page.type('.ProseMirror', '3')
+  await move('ArrowRight')
+  await page.type('.ProseMirror', '4')
+  await move('ArrowUp')
+  await page.type('.ProseMirror', '2')
+  expect(await page.textContent('.ProseMirror table tr th:nth-of-type(1)')).toBe('1')
+  expect(await page.textContent('.ProseMirror table tr th:nth-of-type(2)')).toBe('2')
+  expect(await page.textContent('.ProseMirror table tr:nth-of-type(1) td:nth-of-type(1)')).toBe('3')
+  expect(await page.textContent('.ProseMirror table tr:nth-of-type(1) td:nth-of-type(2)')).toBe('4')
 })
