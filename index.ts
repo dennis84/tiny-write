@@ -146,7 +146,6 @@ const main = () => {
   })
 
   app.on('ready', () => {
-    log.info('ready')
     createWindow()
   })
 
@@ -266,6 +265,12 @@ const detach = () => {
   app.quit()
 }
 
-if (detach()) {
+if (
+  process.argv[0].indexOf('/snap') === 0 &&
+  !process.env.BAMF_DESKTOP_FILE_HINT &&
+  detach()
+) {
+  main()
+} else {
   main()
 }
