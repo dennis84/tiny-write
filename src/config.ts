@@ -48,6 +48,7 @@ interface Theme {
   background: string;
   color: string;
   color2: string;
+  dark: boolean;
 }
 
 export const themes: {[key: string]: Theme} = {
@@ -56,54 +57,63 @@ export const themes: {[key: string]: Theme} = {
     background: '#ffffff',
     color: '#666666',
     color2: '#8575ff',
+    dark: false,
   },
   'dark': {
     label: 'Dark',
     background: '#16161a',
     color: '#94a1b2',
     color2: '#68ffb8',
+    dark: true,
   },
   'gruvbox-dark': {
     label: 'Gruvbox Dark',
     background: '#32302f',
     color: '#dfbf8e',
     color2: '#d75f5f',
+    dark: true,
   },
   'solarized-light': {
     label: 'Solarized Light',
     background: '#fdf6e3',
     color: '#657b83',
     color2: '#2aa198',
+    dark: false,
   },
   'solarized-dark': {
     label: 'Solarized Dark',
     background: '#002b36',
     color: '#839496',
     color2: '#cb4b16',
+    dark: true,
   },
   'material': {
     label: 'Material',
     background: '#263238',
     color: '#92989b',
     color2: '#89ddff',
+    dark: true,
   },
   'dracula': {
     label: 'Dracula',
     background: '#282a36',
     color: '#bd93f9',
     color2: '#ff79c6',
+    dark: true,
   },
   'hibernus': {
     label: 'Hibernus',
     background: '#f4f6f6',
     color: '#90a6a6',
     color2: '#fe5792',
+    dark: false,
   },
   'soft-era': {
     label: 'Soft Era',
     background: '#f9f5f5',
     color: '#ba989c',
     color2: '#b8bde8',
+    dark: false,
   },
 }
 
@@ -142,6 +152,9 @@ export const codeThemes: {[key: string]: CodeTheme} = {
     value: 'github-dark',
   },
 }
+
+export const isDarkTheme = (config: Config) =>
+  themes[config.theme] ? themes[config.theme].dark : false
 
 export const background = (config: Config) =>
   themes[config.theme] ? themes[config.theme].background : themes.light.background

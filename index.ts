@@ -1,4 +1,13 @@
-import {app, clipboard, dialog, shell, ipcMain, BrowserWindow, Menu} from 'electron'
+import {
+  app,
+  clipboard,
+  dialog,
+  shell,
+  ipcMain,
+  nativeTheme,
+  BrowserWindow,
+  Menu,
+} from 'electron'
 import log from 'electron-log'
 import * as path from 'path'
 import * as FileType from 'file-type'
@@ -11,6 +20,7 @@ import {Args} from './src/shared'
 export const getArgs = (argv: string[]): Args => {
   const xs = argv.slice(process.env.NODE_ENV === 'dev' ? 2 : 1)
   const cwd = process.cwd()
+  const darkMode = nativeTheme.shouldUseDarkColors
   let file: string
   let link = {}
 
@@ -22,7 +32,7 @@ export const getArgs = (argv: string[]): Args => {
     }
   }
 
-  return {cwd, file, ...link}
+  return {cwd, file, ...link, darkMode}
 }
 
 const parseDeepLink = (link: string) => {

@@ -10,7 +10,8 @@
       "!dist/app"
     ],
     "mac": {
-      "category": "public.app-category.utilities"
+      "category": "public.app-category.utilities",
+      "darkModeSupport": true
     },
     "protocols": [
       {

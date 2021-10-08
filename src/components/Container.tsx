@@ -11,6 +11,7 @@ import {Args} from '../shared'
 import * as remote from '../remote'
 import db from '../db'
 import {COLLAB_URL, isElectron, mod} from '../env'
+import {isDarkTheme} from '../config'
 import {useDebouncedEffect, useDynamicCallback} from '../hooks'
 import {serialize, createMarkdownParser} from '../markdown'
 import {
@@ -271,6 +272,10 @@ export default (props: Props) => {
       config,
       loading: 'roundtrip',
       args,
+    }
+
+    if (args.darkMode && !isDarkTheme(newState.config)) {
+      newState.config.theme = 'dark'
     }
 
     if (newState.lastModified) {
