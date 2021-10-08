@@ -40,10 +40,10 @@ export const Clean = (state: State) => newState({
 
 export const UpdateState = (newState: State) => () => newState
 
-export const UpdateConfig = (config: Config) => (state: State) => ({
+export const UpdateConfig = (config: Config, lastModified = new Date()) => (state: State) => ({
   ...state,
   config: {...state.config, ...config},
-  lastModified: new Date(),
+  lastModified,
 })
 
 export const ToggleFullscreen = (state: State) => ({

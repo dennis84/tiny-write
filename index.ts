@@ -48,9 +48,10 @@ const parseDeepLink = (link: string) => {
 
 const main = () => {
   let win: BrowserWindow
-  let args = getArgs(process.argv)
+  let args
 
   const createWindow = () => {
+    args = getArgs(process.argv)
     win = new BrowserWindow({
       title: 'TinyWrite',
       alwaysOnTop: true,
@@ -168,13 +169,17 @@ const main = () => {
   })
 
   app.on('activate', () => {
-    log.info('activate')
     // On macOS it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
     if (win === null) {
       createWindow()
       win.focus()
     }
+  })
+
+  nativeTheme.on('updated', () => {
+    args = getArgs(process.argv)
+    maybeSendArgs()
   })
 
   ipcMain.handle('getArgs', () => args)

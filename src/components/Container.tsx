@@ -15,6 +15,7 @@ import {isDarkTheme} from '../config'
 import {useDebouncedEffect, useDynamicCallback} from '../hooks'
 import {serialize, createMarkdownParser} from '../markdown'
 import {
+  UpdateConfig,
   UpdateState,
   UpdateError,
   UpdateText,
@@ -274,10 +275,6 @@ export default (props: Props) => {
       args,
     }
 
-    if (args.darkMode && !isDarkTheme(newState.config)) {
-      newState.config.theme = 'dark'
-    }
-
     if (newState.lastModified) {
       newState.lastModified = new Date(newState.lastModified)
     }
@@ -297,6 +294,12 @@ export default (props: Props) => {
   }
 
   const onArgs = useDynamicCallback(async (args: Args) => {
+    if (args.darkMode && !isDarkTheme(props.state.config)) {
+      dispatch(UpdateConfig({...props.state.config, theme: 'dark'}, props.state.lastModified))
+    } else if (!args.darkMode && isDarkTheme(props.state.config)) {
+      dispatch(UpdateConfig({...props.state.config, theme: 'light'}, props.state.lastModified))
+    }
+
     if (!props.state.collab?.started && args.room) {
       const backup = props.state.collab?.room !== args.room
       dispatch(UpdateCollab({room: args.room, started: true}, undefined, backup))
