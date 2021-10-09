@@ -10,6 +10,9 @@ jest.mock('electron', () => ({
   ipcMain: {
     handle: jest.fn(),
   },
+  nativeTheme: {
+    shouldUseDarkColors: true,
+  },
 }))
 
 it.each(['dev', 'test'])('getArgs - empty', (env) => {
