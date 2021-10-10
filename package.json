@@ -1,6 +1,6 @@
 {
   "name": "TinyWrite",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "main": "dist/index.js",
   "build": {
     "artifactName": "TinyWrite.${ext}",
