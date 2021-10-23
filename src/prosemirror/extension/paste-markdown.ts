@@ -39,10 +39,22 @@ const transform = (schema: Schema, fragment: Fragment) => {
   return Fragment.fromArray(nodes)
 }
 
+let shiftKey = false
+
 const pasteMarkdown = (schema: Schema) => {
   const parser = createMarkdownParser(schema)
   return new Plugin({
     props: {
+      handleDOMEvents: {
+        keydown: (_, event) => {
+          shiftKey = event.shiftKey
+          return false
+        },
+        keyup: () => {
+          shiftKey = false
+          return false
+        }
+      },
       handlePaste: (view, event) => {
         if (!event.clipboardData) return false
         const text = event.clipboardData.getData('text/plain')
@@ -55,7 +67,7 @@ const pasteMarkdown = (schema: Schema) => {
 
         const paste = parser.parse(text)
         const slice = paste.slice(0)
-        const fragment = transform(schema, slice.content)
+        const fragment = shiftKey ? slice.content : transform(schema, slice.content)
         const tr = view.state.tr.replaceSelection(new Slice(
           fragment,
           slice.openStart,
