@@ -111,14 +111,13 @@ const markdownLinks = (schema: Schema) => {
 
   const toMarkdown = (view: EditorView, tr: Transaction) => {
     const sel = view.state.selection
-    const $from = resolvePos(view, sel.$head.pos)
-    if (!$from || $from.depth === 0 || $from.parent.type.spec.code) {
+    if (sel.$head.depth === 0 || sel.$head.parent.type.spec.code) {
       return false
     }
 
-    const textFrom = $from.before()
-    const textTo = $from.after()
-    const mark = schema.marks.link.isInSet(sel.$from.marks())
+    const mark = schema.marks.link.isInSet(sel.$head.marks())
+    const textFrom = sel.$head.pos - sel.$head.textOffset
+    const textTo = sel.$head.after()
 
     if (mark) {
       const {href} = mark.attrs

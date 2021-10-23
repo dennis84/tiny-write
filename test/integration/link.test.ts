@@ -20,6 +20,10 @@ it('create link', async () => {
   expect(await lineText()).toBe('foo title bar other ')
   await move('ArrowLeft', 2)
   expect(await lineText()).toBe('foo title bar [other](link) ')
+  await move('ArrowLeft', 11)
+  expect(await lineText()).toBe('foo [title](url) bar other ')
+  await move('ArrowRight', 13)
+  expect(await lineText()).toBe('foo title bar [other](link) ')
 })
 
 it('new line', async () => {
