@@ -230,14 +230,13 @@ export default (props: Props) => {
       .todo-item {
         display: flex;
         align-items: center;
-        -webkit-app-region: no-drag;
-        user-select: none;
         &.done {
           text-decoration: line-through;
           color: ${color(theme)}4c;
         }
-        input {
+        label {
           margin-right: 10px;
+          user-select: none;
         }
       }
       .image-container {

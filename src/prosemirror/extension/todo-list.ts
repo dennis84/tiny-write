@@ -30,8 +30,11 @@ const todoListSchema = {
     toDOM: (node: ProsemirrorNode) => [
       'div',
       {class: `todo-item ${node.attrs.done ? 'done' : ''}`},
-      ['input', {type: 'checkbox', ...(node.attrs.done ? {checked: 'checked'} : {})}],
-      ['span', 0],
+      ['label', {contenteditable: false}, ['input', {
+        type: 'checkbox',
+        ...(node.attrs.done ? {checked: 'checked'} : {}),
+      }]],
+      ['div', 0],
     ],
   },
 }
