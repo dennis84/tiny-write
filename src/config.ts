@@ -151,6 +151,10 @@ export const codeThemes: {[key: string]: CodeTheme} = {
     label: 'Github Dark',
     value: 'github-dark',
   },
+  'aura': {
+    label: 'Aura Dark',
+    value: 'aura',
+  },
 }
 
 export const isDarkTheme = (config: Config) =>
