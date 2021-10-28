@@ -48,7 +48,7 @@ const parseDeepLink = (link: string) => {
 
 const main = () => {
   let win: BrowserWindow
-  let args
+  let args: Args
 
   const createWindow = () => {
     args = getArgs(process.argv)
