@@ -430,7 +430,7 @@ export default (props: Props) => {
         <span />
       </Burger>
       {show && (
-        <Off onClick={() => editorView.focus()}>
+        <Off onClick={() => editorView.focus()} data-tauri-drag-region="true">
           <Menu>
             <Label>File {props.path && <i>({props.path.substring(props.path.length - 24)})</i>}</Label>
             <Sub>
