@@ -4,6 +4,8 @@ const userAgent = window.navigator.userAgent.toLowerCase()
 
 export const isElectron = userAgent.indexOf(' electron/') > -1
 
+export const isTauri = (window as any).__TAURI__ !== undefined
+
 export const isMac =
   window.process?.platform === 'darwin' ||
   window.navigator.platform.indexOf('Mac') !== -1

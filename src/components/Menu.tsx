@@ -19,7 +19,7 @@ import {
   useDispatch,
 } from '../reducer'
 import {color, color2, themes, fonts, codeThemes} from '../config'
-import {isElectron, isMac, alt, mod, WEB_URL, VERSION_URL} from '../env'
+import {isElectron, isTauri, isMac, alt, mod, WEB_URL, VERSION_URL} from '../env'
 import * as remote from '../remote'
 import {ProseMirrorState, isEmpty, isInitialized} from '../prosemirror/state'
 
@@ -503,7 +503,7 @@ export default (props: Props) => {
             </Sub>
             <Label>View</Label>
             <Sub>
-              {isElectron && (
+              {isElectron || isTauri && (
                 <Link onClick={onToggleFullscreen}>
                   Fullscreen {props.fullscreen && '✅'} <Keys keys={[alt, 'Enter']} />
                 </Link>
@@ -577,7 +577,7 @@ export default (props: Props) => {
               <Link onClick={onVersion}>
                 About Version {version}
               </Link>
-              {isElectron && (
+              {isElectron || isTauri && (
                 <Link onClick={() => remote.quit()}>Quit <Keys keys={[mod, 'q']} /></Link>
               )}
             </Sub>

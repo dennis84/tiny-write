@@ -1,6 +1,7 @@
 import {EditorState} from 'prosemirror-state'
 import {serialize} from './markdown'
-import {isElectron} from './env'
+import {isElectron, isTauri} from './env'
+import {appWindow} from '@tauri-apps/api/window'
 
 export const on = (name: string, fn: (...args: any) => void) => {
   if (!isElectron) return
@@ -18,18 +19,27 @@ export const setAlwaysOnTop = (alwaysOnTop: boolean) => {
 }
 
 export const quit = () => {
-  if (!isElectron) return
-  return window.app.quit()
+  if (isElectron) {
+    return window.app.quit()
+  } else if (isTauri) {
+    appWindow.close()
+  }
 }
 
 export const isFullscreen = () => {
-  if (!isElectron) return false
-  return window.app.isSimpleFullScreen()
+  if (isElectron) {
+    return window.app.isSimpleFullScreen()
+  } else if (isTauri) {
+    return appWindow.isFullscreen()
+  }
 }
 
 export const setFullscreen = (status: boolean) => {
-  if (!isElectron) return
-  return window.app.setSimpleFullScreen(status)
+  if (isElectron) {
+    return window.app.setSimpleFullScreen(status)
+  } else if (isTauri) {
+    appWindow.setFullscreen(status)
+  }
 }
 
 export const copy = async (text: string) => {

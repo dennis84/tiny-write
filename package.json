@@ -130,7 +130,7 @@
     "app": "npm run tsc && NODE_ENV=dev electron dist README.md & vite",
     "tsc": "tsc --outDir dist index.ts preload.ts",
     "build": "npm run lint && vite build --base './'",
-    "dist": "npm run build && npm run tsc && electron-builder",
+    "dist": "npm run build && npm run tauri build",
     "lint": "eslint . --ext .ts,.tsx",
     "test": "jest && jest --runInBand --config ./jest.integration.config.js",
     "tauri": "tauri"

@@ -10,7 +10,7 @@ import {State} from '..'
 import {Args} from '../shared'
 import * as remote from '../remote'
 import db from '../db'
-import {COLLAB_URL, isElectron, mod} from '../env'
+import {COLLAB_URL, isElectron, isTauri, mod} from '../env'
 import {isDarkTheme} from '../config'
 import {useDebouncedEffect, useDynamicCallback} from '../hooks'
 import {serialize, createMarkdownParser} from '../markdown'
@@ -60,6 +60,8 @@ interface Props {
 export default (props: Props) => {
   const dispatch = useDispatch()
   const editorView = props.editorViewRef.current
+
+  const onQuit = () => remote.quit()
 
   const onNew = useDynamicCallback(() => {
     dispatch(New)
@@ -161,6 +163,7 @@ export default (props: Props) => {
   }
 
   const keymap = {
+    [`${mod}-q`]: onQuit,
     [`${mod}-n`]: onNew,
     [`${mod}-w`]: onDiscard,
     'Cmd-Enter': onFullscreen,
@@ -214,7 +217,7 @@ export default (props: Props) => {
 
   const initialize = async () => {
     let args = await remote.getArgs()
-    if (!isElectron) {
+    if (!isElectron || !isTauri) {
       const room = window.location.pathname?.slice(1)
       args = {room}
     }
