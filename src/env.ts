@@ -1,9 +1,5 @@
 import {version} from '../package.json'
 
-const userAgent = window.navigator.userAgent.toLowerCase()
-
-export const isElectron = userAgent.indexOf(' electron/') > -1
-
 export const isTauri = (window as any).__TAURI__ !== undefined
 
 export const isMac =

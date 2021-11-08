@@ -19,7 +19,7 @@ import {
   useDispatch,
 } from '../reducer'
 import {color, color2, themes, fonts, codeThemes} from '../config'
-import {isElectron, isTauri, isMac, alt, mod, WEB_URL, VERSION_URL} from '../env'
+import {isTauri, isMac, alt, mod, WEB_URL, VERSION_URL} from '../env'
 import * as remote from '../remote'
 import {ProseMirrorState, isEmpty, isInitialized} from '../prosemirror/state'
 
@@ -282,7 +282,7 @@ export default (props: Props) => {
   }
 
   const onOpenInApp = () => {
-    if (isElectron) return
+    if (isTauri) return
     if (props.collab?.started) {
       window.open(`tinywrite://main?room=${props.collab.room}`, '_self')
     } else {
@@ -434,7 +434,7 @@ export default (props: Props) => {
           <Menu>
             <Label>File {props.path && <i>({props.path.substring(props.path.length - 24)})</i>}</Label>
             <Sub>
-              {isElectron && !props.path && (
+              {isTauri && !props.path && (
                 <Link onClick={onSaveAs}>Save to file <Keys keys={[mod, 's']} /></Link>
               )}
               <Link onClick={onNew} data-testid="new">
@@ -467,7 +467,7 @@ export default (props: Props) => {
                 Redo <Keys keys={[mod, ...(isMac ? ['Shift', 'z'] : ['y'])]} />
               </Link>
               <Link onClick={cmd('cut')}>Cut <Keys keys={[mod, 'x']} /></Link>
-              <Link onClick={cmd('paste')} disabled={!isElectron}>
+              <Link onClick={cmd('paste')} disabled={!isTauri}>
                 Paste <Keys keys={[mod, 'p']} />
               </Link>
               <Link onClick={cmd('copy')}>
@@ -503,7 +503,7 @@ export default (props: Props) => {
             </Sub>
             <Label>View</Label>
             <Sub>
-              {isElectron || isTauri && (
+              {isTauri || isTauri && (
                 <Link onClick={onToggleFullscreen}>
                   Fullscreen {props.fullscreen && '✅'} <Keys keys={[alt, 'Enter']} />
                 </Link>
@@ -514,7 +514,7 @@ export default (props: Props) => {
               <Link onClick={onToggleTypewriterMode}>
                 Typewriter mode {props.config.typewriterMode && '✅'}
               </Link>
-              {isElectron && (
+              {isTauri && (
                 <Link onClick={onToggleAlwaysOnTop}>
                   Always on Top {props.config.alwaysOnTop && '✅'}
                 </Link>
@@ -569,7 +569,7 @@ export default (props: Props) => {
             </Sub>
             <Label>Application</Label>
             <Sub>
-              {!isElectron && (
+              {!isTauri && (
                 <Link onClick={onOpenInApp}>
                   Open in App ⚡
                 </Link>
@@ -577,7 +577,7 @@ export default (props: Props) => {
               <Link onClick={onVersion}>
                 About Version {version}
               </Link>
-              {isElectron || isTauri && (
+              {isTauri && (
                 <Link onClick={() => remote.quit()}>Quit <Keys keys={[mod, 'q']} /></Link>
               )}
             </Sub>

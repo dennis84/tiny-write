@@ -1,8 +1,7 @@
 import {Plugin} from 'prosemirror-state'
 import {Node, Schema} from 'prosemirror-model'
 import {EditorView} from 'prosemirror-view'
-import {isImage, readFile, resolve} from '../../remote'
-import {FileInfo} from '../../shared'
+import {getMimeType, readBinaryFile, resolve} from '../../remote'
 import {ProseMirrorExtension} from '../state'
 
 const REGEX = /^!\[([^[\]]*?)\]\((.+?)\)\s+/
@@ -19,61 +18,59 @@ const isUrl = (str: string) => {
 
 const isBlank = (text: string) => text === ' ' || text === '\xa0'
 
-const imageSrc = (data: FileInfo) => {
+const imageSrc = (mime: string, data: number[]) => {
   let binary = ''
-  for (let i = 0; i < data.buffer.byteLength; i++) {
-    binary += String.fromCharCode(data.buffer[i])
+  for (let i = 0; i < data.length; i++) {
+    binary += String.fromCharCode(data[i])
   }
   const base64 = window.btoa(binary)
-  return `data:${data.mime};base64,${base64}`
+  return `data:${mime};base64,${base64}`
 }
 
-const imageInput = (schema: Schema) => {
-  return new Plugin({
-    props: {
-      handleTextInput(view, from, to, text) {
-        if (view.composing || !isBlank(text)) return false
-        const $from = view.state.doc.resolve(from)
-        if ($from.parent.type.spec.code) return false
-        const textBefore = $from.parent.textBetween(
-          Math.max(0, $from.parentOffset - MAX_MATCH),
-          $from.parentOffset,
-          null,
-          '\ufffc'
-        ) + text
+const imageInput = (schema: Schema) => new Plugin({
+  props: {
+    handleTextInput(view, from, to, text) {
+      if (view.composing || !isBlank(text)) return false
+      const $from = view.state.doc.resolve(from)
+      if ($from.parent.type.spec.code) return false
+      const textBefore = $from.parent.textBetween(
+        Math.max(0, $from.parentOffset - MAX_MATCH),
+        $from.parentOffset,
+        null,
+        '\ufffc'
+      ) + text
 
-        const match = REGEX.exec(textBefore)
-        if (match) {
-          const [,title, src] = match
-          if (isUrl(src)) {
-            const node = schema.node('image', {src, title})
-            const start = from - (match[0].length - text.length)
-            const tr = view.state.tr
-            tr.delete(start, to)
-            tr.insert(start, node)
-            view.dispatch(tr)
-            return true
-          }
-
-          isImage(src).then((result) => {
-            if (!result) return
-            return readFile(src)
-          }).then((data) => {
-            if (!data) return false
-            const node = schema.node('image', {src: imageSrc(data), title, path: src})
-            const start = from - (match[0].length - text.length)
-            const tr = view.state.tr
-            tr.delete(start, to)
-            tr.insert(start, node)
-            view.dispatch(tr)
-          })
-
-          return false
+      const match = REGEX.exec(textBefore)
+      if (match) {
+        const [,title, src] = match
+        if (isUrl(src)) {
+          const node = schema.node('image', {src, title})
+          const start = from - (match[0].length - text.length)
+          const tr = view.state.tr
+          tr.delete(start, to)
+          tr.insert(start, node)
+          view.dispatch(tr)
+          return true
         }
-      },
-    }
-  })
-}
+
+        resolve([src]).then(async (path: string) => {
+          const mime = await getMimeType(path)
+          if (!mime.startsWith('image/')) return
+          const data = await readBinaryFile(path)
+          if (!data) return
+          const node = schema.node('image', {src: imageSrc(mime, data), title, path: src})
+          const start = from - (match[0].length - text.length)
+          const tr = view.state.tr
+          tr.delete(start, to)
+          tr.insert(start, node)
+          view.dispatch(tr)
+        })
+
+        return false
+      }
+    },
+  }
+})
 
 const imageSchema = {
   inline: true,
@@ -100,46 +97,14 @@ const imageSchema = {
   }]
 }
 
-const dropFile = (schema: Schema) => new Plugin({
-  props: {
-    handleDOMEvents: {
-      drop: (view, event) => {
-        const {files} = event.dataTransfer
-
-        if (files.length === 0) return false
-        event.preventDefault()
-
-        const insertImage = (src: string) => {
-          const tr = view.state.tr
-          const node = schema.nodes.image.create({src})
-          const pos = view.posAtCoords({
-            left: event.clientX,
-            top: event.clientY,
-          }).pos
-
-          tr.insert(pos, node)
-          view.dispatch(tr)
-        }
-
-        if (files && files.length > 0) {
-          for (const file of files) {
-            const reader = new FileReader()
-            const [mime] = file.type.split('/')
-
-            if (mime === 'image') {
-              reader.addEventListener('load', () => {
-                const url = reader.result as string
-                insertImage(url)
-              })
-
-              reader.readAsDataURL(file)
-            }
-          }
-        }
-      }
-    }
-  }
-})
+export const insertImage = (view: EditorView, src: string, left: number, top: number) => {
+  const state = view.state
+  const tr = state.tr
+  const node = state.schema.nodes.image.create({src})
+  const pos = view.posAtCoords({left, top}).pos
+  tr.insert(pos, node)
+  view.dispatch(tr)
+}
 
 class ImageView {
   node: Node
@@ -178,7 +143,7 @@ class ImageView {
     image.setAttribute('title', node.attrs.title ?? '')
 
     if (path && !node.attrs.src.startsWith('data:')) {
-      resolve(path, node.attrs.src).then((p) => {
+      resolve([path, node.attrs.src]).then((p: string) => {
         image.setAttribute('src', p)
       })
     }
@@ -226,7 +191,6 @@ export default (path?: string): ProseMirrorExtension => ({
   }),
   plugins: (prev, schema) => [
     ...prev,
-    dropFile(schema),
     imageInput(schema),
   ],
   nodeViews: {

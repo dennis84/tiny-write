@@ -5,7 +5,14 @@ import {WebsocketProvider} from 'y-websocket'
 import {ProseMirrorState} from './prosemirror/state'
 import Main from './Main'
 import {newState} from './reducer'
-import {Args} from './shared'
+
+export interface Args {
+  cwd?: string;
+  file?: string;
+  room?: string;
+  text?: any;
+  darkMode?: boolean;
+}
 
 export interface Config {
   theme: string;

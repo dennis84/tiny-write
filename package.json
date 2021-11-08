@@ -127,8 +127,7 @@
   "hasInstallScript": true,
   "scripts": {
     "web": "vite",
-    "app": "npm run tsc && NODE_ENV=dev electron dist README.md & vite",
-    "tsc": "tsc --outDir dist index.ts preload.ts",
+    "app": "npm run tauri dev ../README.md & vite",
     "build": "npm run lint && vite build --base './'",
     "dist": "npm run build && npm run tauri build",
     "lint": "eslint . --ext .ts,.tsx",

@@ -1,50 +1,45 @@
 import {EditorState} from 'prosemirror-state'
 import {serialize} from './markdown'
-import {isElectron, isTauri} from './env'
+import {isTauri} from './env'
 import {appWindow} from '@tauri-apps/api/window'
+import {invoke} from '@tauri-apps/api/tauri'
+import * as clipboard from '@tauri-apps/api/clipboard'
+import * as fs from '@tauri-apps/api/fs'
+import * as dialog from '@tauri-apps/api/dialog'
 
 export const on = (name: string, fn: (...args: any) => void) => {
-  if (!isElectron) return
-  window.app.on(name, fn)
+  if (!isTauri) return
+  // window.app.on(name, fn)
 }
 
-export const getArgs = () => {
-  if (!isElectron) return
-  return window.app.getArgs()
+export const getArgs = async () => {
+  if (!isTauri) return
+  return await invoke('get_args')
 }
 
 export const setAlwaysOnTop = (alwaysOnTop: boolean) => {
-  if (!isElectron) return
-  return window.app.setAlwaysOnTop(alwaysOnTop)
+  if (!isTauri) return
+  return appWindow.setAlwaysOnTop(alwaysOnTop)
 }
 
 export const quit = () => {
-  if (isElectron) {
-    return window.app.quit()
-  } else if (isTauri) {
-    appWindow.close()
-  }
+  if (!isTauri) return
+  return appWindow.close()
 }
 
 export const isFullscreen = () => {
-  if (isElectron) {
-    return window.app.isSimpleFullScreen()
-  } else if (isTauri) {
-    return appWindow.isFullscreen()
-  }
+  if (!isTauri) return
+  return appWindow.isFullscreen()
 }
 
 export const setFullscreen = (status: boolean) => {
-  if (isElectron) {
-    return window.app.setSimpleFullScreen(status)
-  } else if (isTauri) {
-    appWindow.setFullscreen(status)
-  }
+  if (!isTauri) return
+  return appWindow.setFullscreen(status)
 }
 
 export const copy = async (text: string) => {
-  if (isElectron) {
-    return window.app.copyToClipboard(text)
+  if (isTauri) {
+    return clipboard.writeText(text)
   } else {
     navigator.clipboard.writeText(text)
   }
@@ -52,44 +47,44 @@ export const copy = async (text: string) => {
 
 export const copyAllAsMarkdown = async (state: EditorState) => {
   const text = serialize(state)
-  if (isElectron) {
-    return window.app.copyToClipboard(text)
+  if (isTauri) {
+    return clipboard.writeText(text)
   } else {
     navigator.clipboard.writeText(text)
   }
 }
 
-export const fileExists = async (src: string) => {
-  if (!isElectron) return false
-  return window.app.fileExists(src)
-}
-
-export const isImage = async (src: string) => {
-  if (!isElectron) return false
-  return window.app.isImage(src)
+export const getMimeType = async (path: string): Promise<string> => {
+  return invoke('get_mime_type', {path})
 }
 
 export const readFile = async (src: string) => {
-  if (!isElectron) return
-  return window.app.readFile(src)
+  if (!isTauri) return
+  return fs.readTextFile(src)
 }
 
-export const writeFile = async (file: string, content: string) => {
-  if (!isElectron) return
-  return window.app.writeFile(file, content)
+export const readBinaryFile = async (src: string) => {
+  if (!isTauri) return
+  return fs.readBinaryFile(src)
 }
 
-export const resolve = async (base: string, src: string) => {
-  if (!isElectron) return src
-  return window.app.resolve(base, src)
+export const writeFile = async (path: string, contents: string) => {
+  if (!isTauri) return
+  return fs.writeFile({path, contents})
+}
+
+export const resolve = async (paths: string[]) => {
+  return invoke('resolve', {paths})
 }
 
 export const log = async (...args: any) => {
-  if (!isElectron) return
-  return window.app.log(...args)
+  if (!isTauri) return
+  return invoke('log', {args})
 }
 
 export const save = async (state: EditorState) => {
-  if (!isElectron) return
-  return window.app.save(serialize(state))
+  if (!isTauri) return
+  const path = await dialog.save()
+  await fs.writeFile({path, contents: serialize(state)})
+  return path
 }

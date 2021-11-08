@@ -1,4 +1,4 @@
-import React, {DragEvent, useEffect} from 'react'
+import React, {MouseEvent, DragEvent, useEffect, useRef} from 'react'
 import {selectAll, deleteSelection} from 'prosemirror-commands'
 import {EditorView} from 'prosemirror-view'
 import {undo, redo} from 'prosemirror-history'
@@ -6,11 +6,11 @@ import {v4 as uuidv4} from 'uuid'
 import * as Y from 'yjs'
 import {undo as yUndo, redo as yRedo} from 'y-prosemirror'
 import {WebsocketProvider} from 'y-websocket'
-import {State} from '..'
-import {Args} from '../shared'
+import {listen} from '@tauri-apps/api/event'
+import {Args, State} from '..'
 import * as remote from '../remote'
 import db from '../db'
-import {COLLAB_URL, isElectron, isTauri, mod} from '../env'
+import {COLLAB_URL, isTauri, mod} from '../env'
 import {isDarkTheme} from '../config'
 import {useDebouncedEffect, useDynamicCallback} from '../hooks'
 import {serialize, createMarkdownParser} from '../markdown'
@@ -27,11 +27,12 @@ import {
   Open,
   useDispatch,
 } from '../reducer'
-import {Layout, Resizer} from './Layout'
+import {Layout} from './Layout'
 import Editor from './Editor'
 import ErrorView from './Error'
 import Menu from './Menu'
 import {isEmpty, isInitialized} from '../prosemirror/state'
+import {insertImage} from '../prosemirror/extension/image'
 import {
   createSchema,
   createState,
@@ -151,6 +152,12 @@ export default (props: Props) => {
     return true
   })
 
+  const mouseEnterCoords = useRef({x: 0, y: 0})
+
+  const onMouseEnter = (e: MouseEvent) => {
+    mouseEnterCoords.current = {x: e.pageX, y: e.pageY}
+  }
+
   const onDrop = (e: DragEvent) => {
     if (
       e.dataTransfer.files.length !== 1 ||
@@ -175,49 +182,46 @@ export default (props: Props) => {
   }
 
   const loadFile = async () => {
-    const fileExists = await remote.fileExists(props.state.path)
-    if (!fileExists) {
+    try {
+      const fileContent = await remote.readFile(props.state.path)
+      const schema = createSchema({
+        config: props.state.config,
+        markdown: false,
+        path: props.state.path,
+        keymap,
+      })
+
+      const parser = createMarkdownParser(schema)
+      const doc = parser.parse(fileContent).toJSON()
+
+      const text = {
+        doc,
+        selection: {
+          type: 'text',
+          anchor: 1,
+          head: 1
+        }
+      }
+
+      const newText = createState({
+        data: text,
+        config: props.state.config,
+        markdown: false,
+        path: props.state.path,
+        keymap,
+      })
+
+      const lastModified = new Date() // file lastModified
+      dispatch(UpdateText(newText, lastModified))
+    } catch (e) {
       dispatch(Discard)
       return
     }
-
-    const decoder = new TextDecoder('utf-8')
-    const data = await remote.readFile(props.state.path)
-    const fileContent = decoder.decode(data.buffer)
-    const schema = createSchema({
-      config: props.state.config,
-      markdown: false,
-      path: props.state.path,
-      keymap,
-    })
-
-    const parser = createMarkdownParser(schema)
-    const doc = parser.parse(fileContent).toJSON()
-
-    const text = {
-      doc,
-      selection: {
-        type: 'text',
-        anchor: 1,
-        head: 1
-      }
-    }
-
-    const newText = createState({
-      data: text,
-      config: props.state.config,
-      markdown: false,
-      path: props.state.path,
-      keymap,
-    })
-
-    const lastModified = new Date(data.lastModified)
-    dispatch(UpdateText(newText, lastModified))
   }
 
   const initialize = async () => {
     let args = await remote.getArgs()
-    if (!isElectron || !isTauri) {
+    if (!isTauri) {
       const room = window.location.pathname?.slice(1)
       args = {room}
     }
@@ -329,6 +333,24 @@ export default (props: Props) => {
   useEffect(() => {
     initialize()
   }, [])
+
+  // Handle tauri file drop
+  useEffect(() => {
+    if (!isTauri) return
+    if (props.state.loading !== 'initialized') return
+    listen('tauri://file-drop', async (event) => {
+      for (const path of (event.payload as string[])) {
+        const mime = await remote.getMimeType(path)
+        if (mime.startsWith('image/')) {
+          const {x, y} = mouseEnterCoords.current
+          insertImage(editorView, `asset://${path}`, x, y)
+        } else if (mime.startsWith('text/')) {
+          dispatch(Open({path}))
+          return
+        }
+      }
+    })
+  }, [props.state.loading])
 
   // After initialization is completed
   useEffect(() => {
@@ -469,7 +491,10 @@ export default (props: Props) => {
   })
 
   return (
-    <Layout data-testid={props.state.loading} onDrop={onDrop}>
+    <Layout
+      data-testid={props.state.loading}
+      onDrop={onDrop}
+      onMouseEnter={onMouseEnter}>
       {(props.state.error) ? (
         <ErrorView error={props.state.error} />
       ) : (
@@ -495,7 +520,6 @@ export default (props: Props) => {
             collab={props.state.collab}
             markdown={props.state.markdown}
             onToggleMarkdown={onToggleMarkdown} />
-          {isElectron && <Resizer />}
         </>
       )}
     </Layout>
