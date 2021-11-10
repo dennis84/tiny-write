@@ -303,7 +303,7 @@ export default (props: Props) => {
   const onArgs = useDynamicCallback(async (args: Args) => {
     if (args.darkMode && !isDarkTheme(props.state.config)) {
       dispatch(UpdateConfig({...props.state.config, theme: 'dark'}, props.state.lastModified))
-    } else if (!args.darkMode && isDarkTheme(props.state.config)) {
+    } else if (args.darkMode === false && isDarkTheme(props.state.config)) {
       dispatch(UpdateConfig({...props.state.config, theme: 'light'}, props.state.lastModified))
     }
 
