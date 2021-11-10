@@ -16,6 +16,10 @@ jobs:
         node-version: [14.x]
     steps:
     - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
     - name: install stable
       uses: actions-rs/toolchain@v1
       with:
@@ -24,12 +28,7 @@ jobs:
       if: matrix.platform == 'ubuntu-latest'
       run: |
         sudo apt-get update
-        sudo apt-get install -y libgtk-3-dev webkit2gtk-4.0 libappindicator3-dev librsvg2-dev patchelf
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
-      with:
-        node-version: ${{ matrix.node-version }}
-    - run: cargo test
-      working-directory: ./src-tauri
+        sudo apt-get install -y webkit2gtk-4.0
     - run: npm install
     - run: npm test
+    - run: npm run dist
