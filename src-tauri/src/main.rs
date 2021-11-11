@@ -3,8 +3,8 @@
     windows_subsystem = "windows"
 )]
 
-use std::env;
 use std::collections::HashMap;
+use std::env;
 use std::io::{Error, ErrorKind};
 use std::path::{Path, PathBuf};
 use url::Url;
@@ -44,18 +44,18 @@ fn resolve(paths: Vec<String>) -> Result<String, String> {
                 if let Some(ref prev) = path {
                     path = Some(prev.join(path_buf));
                 }
-            },
-            None => return Err("Error in expand_tilde".into())
+            }
+            None => return Err("Error in expand_tilde".into()),
         }
     }
 
     std::fs::canonicalize(path.unwrap())
         .and_then(|x| {
-            x.into_os_string().into_string().map_err(|_| {
-                Error::new(ErrorKind::Other, "Could not convert os string to string")
-            })
+            x.into_os_string()
+                .into_string()
+                .map_err(|_| Error::new(ErrorKind::Other, "Could not convert os string to string"))
         })
-        .map_err(|_| { "File does not exist".into() })
+        .map_err(|_| "File does not exist".into())
 }
 
 fn expand_tilde<P: AsRef<Path>>(path_user_input: P) -> Option<PathBuf> {
@@ -88,15 +88,14 @@ fn create_args(args: Vec<String>) -> Args {
             if let Some(url) = Url::parse(arg).ok() {
                 let params: HashMap<_, _> = url.query_pairs().into_owned().collect();
                 room = params.get("room").map(|x| x.clone());
-                text = params.get("text")
+                text = params
+                    .get("text")
                     .and_then(|x| base64::decode(x).ok())
                     .and_then(|x| String::from_utf8(x).ok());
             }
-        },
-        Some(arg) => {
-            file = resolve(vec![arg.clone()]).ok()
-        },
-        None => {},
+        }
+        Some(arg) => file = resolve(vec![arg.clone()]).ok(),
+        None => {}
     }
 
     let cwd = env::current_dir()
@@ -115,11 +114,7 @@ fn create_args(args: Vec<String>) -> Args {
 fn main() {
     tauri::Builder::default()
         .manage(create_args(env::args().skip(1).collect::<Vec<_>>()))
-        .invoke_handler(tauri::generate_handler![
-            get_args,
-            get_mime_type,
-            resolve
-        ])
+        .invoke_handler(tauri::generate_handler![get_args, get_mime_type, resolve])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
@@ -151,7 +146,11 @@ fn test_create_args() {
 #[test]
 fn test_resolve() {
     let home = std::env::var("HOME").unwrap();
-    let cur = env::current_dir().unwrap().into_os_string().into_string().unwrap();
+    let cur = env::current_dir()
+        .unwrap()
+        .into_os_string()
+        .into_string()
+        .unwrap();
 
     assert_eq!(
         resolve(vec!["~/Pictures/11.png".to_string()]).unwrap(),
@@ -159,7 +158,11 @@ fn test_resolve() {
     );
 
     assert_eq!(
-        resolve(vec!["/home/ddietr".to_string(), "./Pictures/11.png".to_string()]).unwrap(),
+        resolve(vec![
+            "/home/ddietr".to_string(),
+            "./Pictures/11.png".to_string()
+        ])
+        .unwrap(),
         format!("{}/Pictures/11.png", home)
     );
 
