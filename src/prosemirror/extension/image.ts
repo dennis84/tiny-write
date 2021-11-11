@@ -2,6 +2,7 @@ import {Plugin} from 'prosemirror-state'
 import {Node, Schema} from 'prosemirror-model'
 import {EditorView} from 'prosemirror-view'
 import {getMimeType, readBinaryFile, resolve} from '../../remote'
+import {isTauri} from '../../env'
 import {ProseMirrorExtension} from '../state'
 
 const REGEX = /^!\[([^[\]]*?)\]\((.+?)\)\s+/
@@ -52,6 +53,8 @@ const imageInput = (schema: Schema) => new Plugin({
           view.dispatch(tr)
           return true
         }
+
+        if (!isTauri) return false
 
         resolve([src]).then(async (path: string) => {
           const mime = await getMimeType(path)

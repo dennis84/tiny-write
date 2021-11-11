@@ -533,7 +533,7 @@ export default (props: Props) => {
                 Content width:
                 <Slider
                   type="range"
-                  min="600"
+                  min="400"
                   max="1400"
                   step="100"
                   value={props.config.contentWidth}

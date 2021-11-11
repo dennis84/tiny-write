@@ -16,11 +16,11 @@ it('create todos', async () => {
   expect(await page.textContent('.ProseMirror .todo-item:nth-of-type(3)')).toBe('task3')
 
   expect(await page.$eval(
-    '.ProseMirror .todo-item:nth-of-type(3) > input',
+    '.ProseMirror .todo-item:nth-of-type(3) label input',
     (node: HTMLInputElement) => node.checked
   )).toBe(true)
 
-  const inputSel = '.ProseMirror .todo-item:nth-of-type(1) > input'
+  const inputSel = '.ProseMirror .todo-item:nth-of-type(1) label input'
   await page.click(inputSel)
   expect(await page.$eval(inputSel, (node: HTMLInputElement) => node.checked)).toBe(true)
 })
