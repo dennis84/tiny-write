@@ -5,6 +5,7 @@
 
 use std::collections::HashMap;
 use std::env;
+use std::fs::File;
 use std::io::{Error, ErrorKind};
 use std::path::{Path, PathBuf};
 use url::Url;
@@ -146,6 +147,8 @@ fn test_create_args() {
 #[test]
 fn test_resolve() {
     let home = std::env::var("HOME").unwrap();
+    File::create(format!("{}/{}", &home, "foo.txt")).unwrap();
+
     let cur = env::current_dir()
         .unwrap()
         .into_os_string()
@@ -153,21 +156,17 @@ fn test_resolve() {
         .unwrap();
 
     assert_eq!(
-        resolve(vec!["~/Pictures/11.png".to_string()]).unwrap(),
-        format!("{}/Pictures/11.png", home)
+        resolve(vec!["~/foo.txt".to_string()]).unwrap(),
+        format!("{}/foo.txt", &home)
     );
 
     assert_eq!(
-        resolve(vec![
-            "/home/ddietr".to_string(),
-            "./Pictures/11.png".to_string()
-        ])
-        .unwrap(),
-        format!("{}/Pictures/11.png", home)
+        resolve(vec![home.clone(), "./foo.txt".to_string()]).unwrap(),
+        format!("{}/foo.txt", &home)
     );
 
     assert_eq!(
-        resolve(vec!["/home/ddietr".to_string(), "/etc/hosts".to_string()]).unwrap(),
+        resolve(vec![home.clone(), "/etc/hosts".to_string()]).unwrap(),
         "/etc/hosts"
     );
 
