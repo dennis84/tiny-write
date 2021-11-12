@@ -13,7 +13,6 @@ export const Common = css`
   align-items: center;
   outline: none;
   text-decoration: none;
-  -webkit-app-region: no-drag;
   &:hover {
     opacity: 0.8;
   }

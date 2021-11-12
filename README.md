@@ -20,7 +20,7 @@ npm install
 # Build app
 npm run dist
 # Ubuntu
-snap install dist/app/TinyWrite_0.x.x_amd64.snap --dangerous
+sudo apt install ./src-tauri/target/release/bundle/deb/tiny-write_x.x.x_amd64.deb
 
 # Develop web
 npm run web

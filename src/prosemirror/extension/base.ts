@@ -25,12 +25,18 @@ const plainSchema = new Schema({
   }
 })
 
+const blockquoteSchema = {
+  content: 'block+',
+  group: 'block',
+  toDOM: () => ['div', ['blockquote', 0]],
+}
+
 export default (plain = false): ProseMirrorExtension => ({
   schema: () => plain ? ({
     nodes: plainSchema.spec.nodes,
     marks: plainSchema.spec.marks,
   }) : ({
-    nodes: markdownSchema.spec.nodes,
+    nodes: (markdownSchema.spec.nodes as any).update('blockquote', blockquoteSchema),
     marks: markdownSchema.spec.marks,
   }),
   plugins: (prev, schema) => [

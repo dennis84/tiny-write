@@ -28,7 +28,6 @@ const Container = styled.div`
   flex-shrink: 0;
   flex-grow: 1;
   height: 100%;
-  -webkit-app-region: no-drag;
   font-family: 'JetBrains Mono';
 `
 
@@ -47,7 +46,6 @@ const Burger = styled.button<any>`
   background: none;
   border: 0;
   outline: none;
-  -webkit-app-region: no-drag;
   > span {
     background: ${props => color(props.theme)};
     height: 2px;
@@ -161,9 +159,7 @@ const Link = styled.button`
   }
 `
 
-const Slider = styled.input`
-  -webkit-app-region: no-drag;
-`
+const Slider = styled.input``
 
 interface Props {
   text: ProseMirrorState;

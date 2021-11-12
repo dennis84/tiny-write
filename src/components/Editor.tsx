@@ -51,7 +51,6 @@ export default (props: Props) => {
       line-height: ${theme.fontSize * 1.6}px;
       outline: none;
       background: transparent;
-      -webkit-app-region: no-drag;
       h1, h2, h3, h4, h5, h6 {
         line-height: ${theme.fontSize * 1.6}px;
       }
@@ -79,10 +78,10 @@ export default (props: Props) => {
       > ul > li, > ol > li {
         margin-left: 30px;
       }
-      blockquote p {
+      blockquote {
         border-left: 10px solid ${color(theme)}33;
-        margin: 0;
         padding-left: 10px;
+        margin: 0;
       }
       code {
         border: 1px solid ${color(theme)}7f;
@@ -146,7 +145,6 @@ export default (props: Props) => {
           border-radius: 3px;
           padding: 6px;
           fill: ${color(theme)}99;
-          -webkit-app-region: no-drag;
           pointer-events: none;
           user-select: none;
         }
@@ -176,7 +174,6 @@ export default (props: Props) => {
           cursor: pointer;
           z-index: 10;
           user-select: none;
-          -webkit-app-region: no-drag;
         }
         .codemirror-inner {
           position: relative;
