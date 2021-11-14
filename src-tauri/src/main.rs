@@ -119,58 +119,64 @@ fn main() {
         .expect("error while running tauri application");
 }
 
-#[test]
-fn test_create_args() {
-    let args = create_args(vec!["../README.md".to_string()]);
-    assert_eq!(
-        Path::new(&args.cwd.as_ref().unwrap()),
-        env::current_dir().unwrap()
-    );
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::fs::File;
 
-    assert_eq!(
-        Path::new(&args.file.as_ref().unwrap()),
-        Path::new("../README.md").canonicalize().unwrap()
-    );
+    #[test]
+    fn test_create_args() {
+        let args = create_args(vec!["../README.md".to_string()]);
+        assert_eq!(
+            Path::new(&args.cwd.as_ref().unwrap()),
+            env::current_dir().unwrap()
+        );
 
-    assert!(args.room.is_none());
-    assert!(args.text.is_none());
-    assert!(args.dark_mode.is_none());
+        assert_eq!(
+            Path::new(&args.file.as_ref().unwrap()),
+            Path::new("../README.md").canonicalize().unwrap()
+        );
 
-    let args = create_args(vec!["tinywrite://test?room=123".to_string()]);
-    assert_eq!(args.room, Some("123".to_string()));
+        assert!(args.room.is_none());
+        assert!(args.text.is_none());
+        assert!(args.dark_mode.is_none());
 
-    let args = create_args(vec!["tinywrite://test?text=dGVzdA==".to_string()]);
-    assert_eq!(args.text, Some("test".to_string()));
-}
+        let args = create_args(vec!["tinywrite://test?room=123".to_string()]);
+        assert_eq!(args.room, Some("123".to_string()));
 
-#[test]
-fn test_resolve() {
-    let home = std::env::var("HOME").unwrap();
-    File::create(format!("{}/{}", &home, "foo.txt")).unwrap();
+        let args = create_args(vec!["tinywrite://test?text=dGVzdA==".to_string()]);
+        assert_eq!(args.text, Some("test".to_string()));
+    }
 
-    let cur = env::current_dir()
-        .unwrap()
-        .into_os_string()
-        .into_string()
-        .unwrap();
+    #[test]
+    fn test_resolve() {
+        let home = std::env::var("HOME").unwrap();
+        File::create(format!("{}/{}", &home, "foo.txt")).unwrap();
 
-    assert_eq!(
-        resolve(vec!["~/foo.txt".to_string()]).unwrap(),
-        format!("{}/foo.txt", &home)
-    );
+        let cur = env::current_dir()
+            .unwrap()
+            .into_os_string()
+            .into_string()
+            .unwrap();
 
-    assert_eq!(
-        resolve(vec![home.clone(), "./foo.txt".to_string()]).unwrap(),
-        format!("{}/foo.txt", &home)
-    );
+        assert_eq!(
+            resolve(vec!["~/foo.txt".to_string()]).unwrap(),
+            format!("{}/foo.txt", &home)
+        );
 
-    assert_eq!(
-        resolve(vec![home.clone(), "/etc/hosts".to_string()]).unwrap(),
-        "/etc/hosts"
-    );
+        assert_eq!(
+            resolve(vec![home.clone(), "./foo.txt".to_string()]).unwrap(),
+            format!("{}/foo.txt", &home)
+        );
 
-    assert_eq!(
-        resolve(vec!["./Cargo.toml".to_string()]).unwrap(),
-        format!("{}/Cargo.toml", cur),
-    );
+        assert_eq!(
+            resolve(vec![home.clone(), "/etc/hosts".to_string()]).unwrap(),
+            "/etc/hosts"
+        );
+
+        assert_eq!(
+            resolve(vec!["./Cargo.toml".to_string()]).unwrap(),
+            format!("{}/Cargo.toml", cur),
+        );
+    }
 }

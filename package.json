@@ -1,5 +1,4 @@
 {
-  "name": "TinyWrite",
   "main": "dist/index.js",
   "dependencies": {
     "@codemirror/autocomplete": "^0.19.6",
