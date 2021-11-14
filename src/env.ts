@@ -18,4 +18,4 @@ export const COLLAB_URL =
   'wss://amplified-brook-building.glitch.me'
 
 export const VERSION_URL =
-  `https://github.com/dennis84/tiny-write/releases/tag/v${tauriConf.package.version}`
+  `https://github.com/dennis84/tiny-write/releases/tag/v${tauriConf?.package.version}`
