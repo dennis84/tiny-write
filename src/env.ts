@@ -1,4 +1,4 @@
-import {version} from '../package.json'
+import tauriConf from '../src-tauri/tauri.conf.json'
 
 export const isTauri = (window as any).__TAURI__ !== undefined
 
@@ -18,4 +18,4 @@ export const COLLAB_URL =
   'wss://amplified-brook-building.glitch.me'
 
 export const VERSION_URL =
-  `https://github.com/dennis84/tiny-write/releases/tag/v${version}`
+  `https://github.com/dennis84/tiny-write/releases/tag/v${tauriConf.package.version}`

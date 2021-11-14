@@ -6,7 +6,7 @@ import {deleteSelection, selectAll} from 'prosemirror-commands'
 import {differenceInHours, format} from 'date-fns'
 import styled from '@emotion/styled'
 import {css} from '@emotion/react'
-import {version} from '../../package.json'
+import tauriConf from '../../src-tauri/tauri.conf.json'
 import {Config, File, Collab} from '..'
 import {
   Discard,
@@ -571,7 +571,7 @@ export default (props: Props) => {
                 </Link>
               )}
               <Link onClick={onVersion}>
-                About Version {version}
+                About Version {tauriConf.package.version}
               </Link>
               {isTauri && (
                 <Link onClick={() => remote.quit()}>Quit <Keys keys={[mod, 'q']} /></Link>

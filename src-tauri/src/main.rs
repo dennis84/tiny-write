@@ -5,7 +5,6 @@
 
 use std::collections::HashMap;
 use std::env;
-use std::fs::File;
 use std::io::{Error, ErrorKind};
 use std::path::{Path, PathBuf};
 use url::Url;
