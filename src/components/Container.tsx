@@ -1,4 +1,4 @@
-import React, {MouseEvent, DragEvent, useEffect, useRef} from 'react'
+import React, {MouseEvent, useEffect, useRef} from 'react'
 import {selectAll, deleteSelection} from 'prosemirror-commands'
 import {EditorView} from 'prosemirror-view'
 import {undo, redo} from 'prosemirror-history'
@@ -29,7 +29,6 @@ import {
 } from '../reducer'
 import {Layout} from './Layout'
 import Editor from './Editor'
-import ErrorView from './Error'
 import Menu from './Menu'
 import {isEmpty, isInitialized} from '../prosemirror/state'
 import {insertImage} from '../prosemirror/extension/image'
@@ -61,6 +60,7 @@ interface Props {
 export default (props: Props) => {
   const dispatch = useDispatch()
   const editorView = props.editorViewRef.current
+  const mouseEnterCoords = useRef({x: 0, y: 0})
 
   const onQuit = () => remote.quit()
 
@@ -152,21 +152,8 @@ export default (props: Props) => {
     return true
   })
 
-  const mouseEnterCoords = useRef({x: 0, y: 0})
-
   const onMouseEnter = (e: MouseEvent) => {
     mouseEnterCoords.current = {x: e.pageX, y: e.pageY}
-  }
-
-  const onDrop = (e: DragEvent) => {
-    if (
-      e.dataTransfer.files.length !== 1 ||
-      !e.dataTransfer.files[0].type.startsWith('text/')
-    ) return
-
-    dispatch(Open({
-      path: e.dataTransfer.files[0].path,
-    }))
   }
 
   const keymap = {
@@ -356,14 +343,8 @@ export default (props: Props) => {
   useEffect(() => {
     if (props.state.loading === 'roundtrip') {
       dispatch(UpdateLoading('initialized'))
-    }
-
-    if (props.state.loading === 'initialized') {
-      if (props.state.args) {
-        onArgs(props.state.args)
-      }
-
-      remote.on('args', onArgs)
+    } else if (props.state.loading === 'initialized') {
+      if (props.state.args) onArgs(props.state.args)
     }
   }, [props.state.loading])
 
@@ -493,35 +474,28 @@ export default (props: Props) => {
   return (
     <Layout
       data-testid={props.state.loading}
-      onDrop={onDrop}
       onMouseEnter={onMouseEnter}>
-      {(props.state.error) ? (
-        <ErrorView error={props.state.error} />
-      ) : (
-        <>
-          <Editor
-            editorViewRef={props.editorViewRef}
-            text={editorState}
-            lastModified={props.state.lastModified}
-            files={props.state.files}
-            config={props.state.config}
-            path={props.state.path}
-            collab={props.state.collab}
-            markdown={props.state.markdown}
-            keymap={keymap} />
-          <Menu
-            editorViewRef={props.editorViewRef}
-            text={editorState}
-            lastModified={props.state.lastModified}
-            path={props.state.path}
-            files={props.state.files}
-            config={props.state.config}
-            fullscreen={props.state.fullscreen}
-            collab={props.state.collab}
-            markdown={props.state.markdown}
-            onToggleMarkdown={onToggleMarkdown} />
-        </>
-      )}
+      <Editor
+        editorViewRef={props.editorViewRef}
+        text={editorState}
+        lastModified={props.state.lastModified}
+        files={props.state.files}
+        config={props.state.config}
+        path={props.state.path}
+        collab={props.state.collab}
+        markdown={props.state.markdown}
+        keymap={keymap} />
+      <Menu
+        editorViewRef={props.editorViewRef}
+        text={editorState}
+        lastModified={props.state.lastModified}
+        path={props.state.path}
+        files={props.state.files}
+        config={props.state.config}
+        fullscreen={props.state.fullscreen}
+        collab={props.state.collab}
+        markdown={props.state.markdown}
+        onToggleMarkdown={onToggleMarkdown} />
     </Layout>
   )
 }

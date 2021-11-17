@@ -7,11 +7,6 @@ import * as clipboard from '@tauri-apps/api/clipboard'
 import * as fs from '@tauri-apps/api/fs'
 import * as dialog from '@tauri-apps/api/dialog'
 
-export const on = (name: string, fn: (...args: any) => void) => {
-  if (!isTauri) return
-  // window.app.on(name, fn)
-}
-
 export const getArgs = async () => {
   if (!isTauri) return
   return await invoke('get_args')
