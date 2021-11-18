@@ -1,4 +1,4 @@
-import {clearText, lineText} from './utils'
+import {clearText, lineTextEq} from './utils'
 
 beforeAll(async () => {
   await page.goto('http://localhost:3000')
@@ -18,5 +18,5 @@ it('do nothing if image path does not exist', async () => {
   const input = '![](/foo/bar/test.txt) can continue to write'
   await clearText()
   await page.type('.ProseMirror', input)
-  expect(await lineText()).toBe(input)
+  await lineTextEq(1, input)
 })

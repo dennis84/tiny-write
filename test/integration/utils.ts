@@ -1,5 +1,8 @@
-export const lineText = async (nth = 1) =>
-  (await page.textContent(`.ProseMirror p:nth-of-type(${nth})`)).replace(/\xa0/g, ' ')
+export const lineTextEq = async (nth: number, text: string) =>
+  (await page.$(`.ProseMirror p:nth-of-type(${nth})`)).evaluate((elem, t) => {
+    const textContent = elem.textContent.replace(/\xa0/g, ' ')
+    if (textContent !== t) throw Error(`${t} != ${textContent}`)
+  }, text)
 
 export const move = async (key: string, repeat = 1) => {
   for (let i = 0; i < repeat; i ++) {
@@ -20,5 +23,5 @@ export const clearText = async () => {
   }
 
   await page.click('[data-testid="burger"]')
-  expect(await lineText()).toBe('Start typing ...')
+  await lineTextEq(1, 'Start typing ...')
 }
