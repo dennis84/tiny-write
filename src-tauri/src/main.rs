@@ -30,6 +30,22 @@ fn get_mime_type(path: String) -> String {
 }
 
 #[tauri::command]
+fn dirname(path: String) -> Result<String, String> {
+    let p = Path::new(&path);
+    if p.is_dir() {
+        return Ok(path);
+    }
+
+    let mut ancestors = p.ancestors();
+    ancestors.next().ok_or("")?;
+    let d = ancestors.next().ok_or("")?;
+    d.to_path_buf()
+        .into_os_string()
+        .into_string()
+        .map_err(|_| "".to_string())
+}
+
+#[tauri::command]
 fn resolve(paths: Vec<String>) -> Result<String, String> {
     let mut path = env::current_dir().ok();
 
@@ -114,7 +130,12 @@ fn create_args(args: Vec<String>) -> Args {
 fn main() {
     tauri::Builder::default()
         .manage(create_args(env::args().skip(1).collect::<Vec<_>>()))
-        .invoke_handler(tauri::generate_handler![get_args, get_mime_type, resolve])
+        .invoke_handler(tauri::generate_handler![
+            get_args,
+            get_mime_type,
+            resolve,
+            dirname,
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
@@ -178,5 +199,27 @@ mod tests {
             resolve(vec!["./Cargo.toml".to_string()]).unwrap(),
             format!("{}/Cargo.toml", cur),
         );
+    }
+
+    #[test]
+    fn test_dirname() {
+        assert_eq!(
+            dirname("../src-tauri/Cargo.lock".to_string()).unwrap(),
+            "../src-tauri".to_string()
+        );
+
+        assert_eq!(
+            dirname("../src-tauri".to_string()).unwrap(),
+            "../src-tauri".to_string()
+        );
+
+        assert_eq!(
+            dirname("./Cargo.lock".to_string()).unwrap(),
+            ".".to_string()
+        );
+
+        assert_eq!(dirname("Cargo.lock".to_string()).unwrap(), "".to_string());
+
+        assert!(dirname("".to_string()).is_err());
     }
 }

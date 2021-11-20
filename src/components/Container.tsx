@@ -7,6 +7,7 @@ import * as Y from 'yjs'
 import {undo as yUndo, redo as yRedo} from 'y-prosemirror'
 import {WebsocketProvider} from 'y-websocket'
 import {listen} from '@tauri-apps/api/event'
+import {convertFileSrc} from '@tauri-apps/api/tauri'
 import {Args, State} from '..'
 import * as remote from '../remote'
 import db from '../db'
@@ -330,7 +331,7 @@ export default (props: Props) => {
         const mime = await remote.getMimeType(path)
         if (mime.startsWith('image/')) {
           const {x, y} = mouseEnterCoords.current
-          insertImage(editorView, `asset://${path}`, x, y)
+          insertImage(editorView, convertFileSrc(path), x, y)
         } else if (mime.startsWith('text/')) {
           dispatch(Open({path}))
           return

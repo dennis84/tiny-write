@@ -1,9 +1,10 @@
 import {Plugin} from 'prosemirror-state'
 import {Node, Schema} from 'prosemirror-model'
 import {EditorView} from 'prosemirror-view'
-import {getMimeType, readBinaryFile, resolve} from '../../remote'
+import {resolve, dirname} from '../../remote'
 import {isTauri} from '../../env'
 import {ProseMirrorExtension} from '../state'
+import {convertFileSrc} from '@tauri-apps/api/tauri'
 
 const REGEX = /^!\[([^[\]]*?)\]\((.+?)\)\s+/
 const MAX_MATCH = 500
@@ -19,16 +20,16 @@ const isUrl = (str: string) => {
 
 const isBlank = (text: string) => text === ' ' || text === '\xa0'
 
-const imageSrc = (mime: string, data: number[]) => {
-  let binary = ''
-  for (let i = 0; i < data.length; i++) {
-    binary += String.fromCharCode(data[i])
+const resolveAssetPath = async (src: string, path?: string) => {
+  let paths = [src]
+  if (path) {
+    paths = [await dirname(path), src]
   }
-  const base64 = window.btoa(binary)
-  return `data:${mime};base64,${base64}`
+
+  return convertFileSrc(await resolve(paths))
 }
 
-const imageInput = (schema: Schema) => new Plugin({
+const imageInput = (schema: Schema, path?: string) => new Plugin({
   props: {
     handleTextInput(view, from, to, text) {
       if (view.composing || !isBlank(text)) return false
@@ -56,12 +57,8 @@ const imageInput = (schema: Schema) => new Plugin({
 
         if (!isTauri) return false
 
-        resolve([src]).then(async (path: string) => {
-          const mime = await getMimeType(path)
-          if (!mime.startsWith('image/')) return
-          const data = await readBinaryFile(path)
-          if (!data) return
-          const node = schema.node('image', {src: imageSrc(mime, data), title, path: src})
+        resolveAssetPath(src, path).then((p) => {
+          const node = schema.node('image', {src: p, title, path: src})
           const start = from - (match[0].length - text.length)
           const tr = view.state.tr
           tr.delete(start, to)
@@ -142,13 +139,14 @@ class ImageView {
     if (node.attrs.width) this.setWidth(node.attrs.width)
 
     const image = document.createElement('img')
-    image.setAttribute('src', node.attrs.src)
     image.setAttribute('title', node.attrs.title ?? '')
 
-    if (path && !node.attrs.src.startsWith('data:')) {
-      resolve([path, node.attrs.src]).then((p: string) => {
+    if (isTauri && !node.attrs.src.startsWith('asset:') && !isUrl(node.attrs.src)) {
+      resolveAssetPath(node.attrs.src, path).then((p) => {
         image.setAttribute('src', p)
       })
+    } else {
+      image.setAttribute('src', node.attrs.src)
     }
 
     this.handle = document.createElement('span')
@@ -194,7 +192,7 @@ export default (path?: string): ProseMirrorExtension => ({
   }),
   plugins: (prev, schema) => [
     ...prev,
-    imageInput(schema),
+    imageInput(schema, path),
   ],
   nodeViews: {
     image: (node, view, getPos) => {

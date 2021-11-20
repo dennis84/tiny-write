@@ -1,13 +1,14 @@
-import {EditorState} from 'prosemirror-state'
-import {serialize} from './markdown'
-import {isTauri} from './env'
 import {appWindow} from '@tauri-apps/api/window'
 import {invoke} from '@tauri-apps/api/tauri'
 import * as clipboard from '@tauri-apps/api/clipboard'
 import * as fs from '@tauri-apps/api/fs'
 import * as dialog from '@tauri-apps/api/dialog'
+import {EditorState} from 'prosemirror-state'
+import {Args} from '.'
+import {serialize} from './markdown'
+import {isTauri} from './env'
 
-export const getArgs = async () => {
+export const getArgs = async (): Promise<Args> => {
   if (!isTauri) return
   return await invoke('get_args')
 }
@@ -68,8 +69,12 @@ export const writeFile = async (path: string, contents: string) => {
   return fs.writeFile({path, contents})
 }
 
-export const resolve = async (paths: string[]) => {
+export const resolve = async (paths: string[]): Promise<string> => {
   return invoke('resolve', {paths})
+}
+
+export const dirname = async (path: string): Promise<string> => {
+  return invoke('dirname', {path})
 }
 
 export const log = async (...args: any) => {
