@@ -1,5 +1,5 @@
 import styled from '@emotion/styled'
-import {background, color, color2, font} from '../config'
+import {background, foreground, primary, font} from '../config'
 
 export const Layout = styled.div`
   position: relative;
@@ -9,9 +9,9 @@ export const Layout = styled.div`
   height: 100%;
   font-family: ${(props) => font(props.theme)};
   font-size: 18px;
-  color: ${(props) => color(props.theme)};
+  color: ${(props) => foreground(props.theme)};
   .drop-cursor {
-    background: ${(props) => color2(props.theme)} !important;
+    background: ${(props) => primary(props.theme)} !important;
     height: 2px !important;
     opacity: 0.5;
   }

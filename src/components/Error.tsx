@@ -2,7 +2,7 @@ import React from 'react'
 import styled from '@emotion/styled'
 import {ErrorObject} from '..'
 import {Clean, useDispatch} from '../reducer'
-import {color} from '../config'
+import {foreground} from '../config'
 import {ButtonPrimary} from './Button'
 
 interface Props {
@@ -32,8 +32,8 @@ const Container = styled.div`
 const Pre = styled.pre`
   white-space: pre-wrap;
   word-wrap: break-word;
-  background: ${props => color(props.theme)}19;
-  border: 1px solid ${props => color(props.theme)};
+  background: ${props => foreground(props.theme)}19;
+  border: 1px solid ${props => foreground(props.theme)};
   border-radius: 2px;
   padding: 10px;
 `

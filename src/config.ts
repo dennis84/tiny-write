@@ -46,8 +46,8 @@ export type Rgb = [number, number, number]
 interface Theme {
   label: string;
   background: string;
-  color: string;
-  color2: string;
+  foreground: string;
+  primary: string;
   dark: boolean;
 }
 
@@ -55,64 +55,64 @@ export const themes: {[key: string]: Theme} = {
   'light': {
     label: 'Light',
     background: '#ffffff',
-    color: '#666666',
-    color2: '#8575ff',
+    foreground: '#666666',
+    primary: '#8575ff',
     dark: false,
   },
   'dark': {
     label: 'Dark',
     background: '#16161a',
-    color: '#94a1b2',
-    color2: '#68ffb8',
+    foreground: '#94a1b2',
+    primary: '#68ffb8',
     dark: true,
   },
   'gruvbox-dark': {
     label: 'Gruvbox Dark',
     background: '#32302f',
-    color: '#dfbf8e',
-    color2: '#d75f5f',
+    foreground: '#dfbf8e',
+    primary: '#d75f5f',
     dark: true,
   },
   'solarized-light': {
     label: 'Solarized Light',
     background: '#fdf6e3',
-    color: '#657b83',
-    color2: '#2aa198',
+    foreground: '#657b83',
+    primary: '#2aa198',
     dark: false,
   },
   'solarized-dark': {
     label: 'Solarized Dark',
     background: '#002b36',
-    color: '#839496',
-    color2: '#cb4b16',
+    foreground: '#839496',
+    primary: '#cb4b16',
     dark: true,
   },
   'material': {
     label: 'Material',
     background: '#263238',
-    color: '#92989b',
-    color2: '#89ddff',
+    foreground: '#92989b',
+    primary: '#89ddff',
     dark: true,
   },
   'dracula': {
     label: 'Dracula',
     background: '#282a36',
-    color: '#bd93f9',
-    color2: '#ff79c6',
+    foreground: '#bd93f9',
+    primary: '#ff79c6',
     dark: true,
   },
   'hibernus': {
     label: 'Hibernus',
     background: '#f4f6f6',
-    color: '#90a6a6',
-    color2: '#fe5792',
+    foreground: '#90a6a6',
+    primary: '#fe5792',
     dark: false,
   },
   'soft-era': {
     label: 'Soft Era',
     background: '#f9f5f5',
-    color: '#ba989c',
-    color2: '#b8bde8',
+    foreground: '#ba989c',
+    primary: '#b8bde8',
     dark: false,
   },
 }
@@ -163,11 +163,11 @@ export const isDarkTheme = (config: Config) =>
 export const background = (config: Config) =>
   themes[config.theme] ? themes[config.theme].background : themes.light.background
 
-export const color = (config: Config) =>
-  themes[config.theme] ? themes[config.theme].color : themes.light.color
+export const foreground = (config: Config) =>
+  themes[config.theme] ? themes[config.theme].foreground : themes.light.foreground
 
-export const color2 = (config: Config) =>
-  themes[config.theme] ? themes[config.theme].color2 : themes.light.color2
+export const primary = (config: Config) =>
+  themes[config.theme] ? themes[config.theme].primary : themes.light.primary
 
 export const font = (config: Config, monospace = false) => {
   if (monospace && !fonts[config.font]?.monospace) {

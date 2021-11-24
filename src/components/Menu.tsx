@@ -18,7 +18,7 @@ import {
   UpdatePath,
   useDispatch,
 } from '../reducer'
-import {color, color2, themes, fonts, codeThemes} from '../config'
+import {foreground, primary, themes, fonts, codeThemes} from '../config'
 import {isTauri, isMac, alt, mod, WEB_URL, VERSION_URL} from '../env'
 import * as remote from '../remote'
 import {ProseMirrorState, isEmpty, isInitialized} from '../prosemirror/state'
@@ -47,7 +47,7 @@ const Burger = styled.button<any>`
   border: 0;
   outline: none;
   > span {
-    background: ${props => color(props.theme)};
+    background: ${props => foreground(props.theme)};
     height: 2px;
     width: 100%;
     border-radius: 4px;
@@ -67,7 +67,7 @@ const Burger = styled.button<any>`
 `
 
 const Off = styled.div`
-  background: ${props => color(props.theme)}19;
+  background: ${props => foreground(props.theme)}19;
   padding: 20px;
   height: 100%;
   min-width: 460px;
@@ -84,7 +84,7 @@ const Label = styled.h3`
   margin: 0;
   font-size: 14px;
   text-transform: uppercase;
-  color: ${props => color(props.theme)}7f;
+  color: ${props => foreground(props.theme)}7f;
   > i {
     text-transform: none;
   }
@@ -107,7 +107,7 @@ export const Item = (props: {theme: Config}) => css`
   outline: none;
   display: flex;
   align-items: center;
-  color: ${color(props.theme)};
+  color: ${foreground(props.theme)};
   font-size: 18px;
   line-height: 24px;
   font-family: 'JetBrains Mono';
@@ -127,10 +127,10 @@ const Link = styled.button`
     justify-self: flex-end;
     margin-left: auto;
     > i {
-      color: ${props => color(props.theme)};
-      background: ${props => color(props.theme)}19;
-      border: 1px solid ${props => color(props.theme)}99;
-      box-shadow: 0 2px 0 0 ${props => color(props.theme)}99;
+      color: ${props => foreground(props.theme)};
+      background: ${props => foreground(props.theme)}19;
+      border: 1px solid ${props => foreground(props.theme)}99;
+      box-shadow: 0 2px 0 0 ${props => foreground(props.theme)}99;
       border-radius: 2px;
       font-size: 13px;
       line-height: 1.4;
@@ -139,10 +139,10 @@ const Link = styled.button`
     }
   }
   &:hover {
-    color: ${props => color2(props.theme)};
+    color: ${props => primary(props.theme)};
     > span i {
       position: relative;
-      box-shadow: 0 3px 0 0 ${props => color(props.theme)}99;
+      box-shadow: 0 3px 0 0 ${props => foreground(props.theme)}99;
       top: -1px;
     }
   }
@@ -154,7 +154,7 @@ const Link = styled.button`
     }
   }
   &[disabled] {
-    color: ${props => color(props.theme)}99;
+    color: ${props => foreground(props.theme)}99;
     cursor: not-allowed;
   }
 `
