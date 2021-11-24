@@ -49,7 +49,7 @@ const invalidState = (title: string, props: unknown) => {
   const onClick = () => dispatch(Clean)
 
   return (
-    <Layer>
+    <Layer data-tauri-drag-region="true">
       <Container>
         <h1>{title}</h1>
         <p>
@@ -72,7 +72,7 @@ const other = (props: Props) => {
   const onClick = () => dispatch(Clean)
 
   return (
-    <Layer>
+    <Layer data-tauri-drag-region="true">
       <Container>
         <h1>An unexpected error occurred.</h1>
         <p>

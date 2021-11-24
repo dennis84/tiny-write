@@ -119,7 +119,7 @@ export const markdownSerializer = new MarkdownSerializer({
   },
 })
 
-function listIsTight(tokens, i) {
+function listIsTight(tokens: any, i: number) {
   while (++i < tokens.length) {
     if (tokens[i].type != 'list_item_open') return tokens[i].hidden
   }

@@ -45,6 +45,7 @@ export default (plain = false): ProseMirrorExtension => ({
       'Tab': sinkListItem(schema.nodes.list_item),
       'Shift-Tab': liftListItem(schema.nodes.list_item),
     }),
+    keymap({'Tab': () => true}),
     keymap(buildKeymap(schema)),
     keymap(baseKeymap),
     history(),

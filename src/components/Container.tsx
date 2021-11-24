@@ -63,7 +63,10 @@ export default (props: Props) => {
   const editorView = props.editorViewRef.current
   const mouseEnterCoords = useRef({x: 0, y: 0})
 
-  const onQuit = () => remote.quit()
+  const onQuit = () => {
+    if (!isTauri) return
+    remote.quit()
+  }
 
   const onNew = useDynamicCallback(() => {
     dispatch(New)
@@ -84,6 +87,7 @@ export default (props: Props) => {
   })
 
   const onFullscreen = useDynamicCallback(() => {
+    if (!isTauri) return
     dispatch(ToggleFullscreen)
     return true
   })
@@ -208,7 +212,7 @@ export default (props: Props) => {
   }
 
   const initialize = async () => {
-    let args = await remote.getArgs()
+    let args = await remote.getArgs().catch(() => undefined)
     if (!isTauri) {
       const room = window.location.pathname?.slice(1)
       args = {room}
@@ -434,6 +438,7 @@ export default (props: Props) => {
 
   // Toggle remote alwaysOnTop if changed
   useEffect(() => {
+    if (!isTauri) return
     remote.setAlwaysOnTop(props.state.config.alwaysOnTop)
   }, [props.state.config.alwaysOnTop])
 

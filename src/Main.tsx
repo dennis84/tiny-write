@@ -23,9 +23,7 @@ export default (props: {state: State}) => {
     }))
 
   const ErrorFn = (props: {error: ErrorObject}) => (
-    <Layout
-      data-testid="error"
-      data-tauri-drag-region="true">
+    <Layout data-testid="error">
       <ErrorView error={props.error} />
     </Layout>
   )

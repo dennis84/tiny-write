@@ -9,31 +9,31 @@ import {serialize} from './markdown'
 import {isTauri} from './env'
 
 export const getArgs = async (): Promise<Args> => {
-  if (!isTauri) return
+  if (!isTauri) throw Error('Must be run in tauri')
   return await invoke('get_args')
 }
 
-export const setAlwaysOnTop = (alwaysOnTop: boolean) => {
-  if (!isTauri) return
+export const setAlwaysOnTop = (alwaysOnTop: boolean): Promise<void> => {
+  if (!isTauri) throw Error('Must be run in tauri')
   return appWindow.setAlwaysOnTop(alwaysOnTop)
 }
 
-export const quit = () => {
-  if (!isTauri) return
+export const quit = (): Promise<void> => {
+  if (!isTauri) throw Error('Must be run in tauri')
   return appWindow.close()
 }
 
-export const isFullscreen = () => {
-  if (!isTauri) return
+export const isFullscreen = (): Promise<boolean> => {
+  if (!isTauri) throw Error('Must be run in tauri')
   return appWindow.isFullscreen()
 }
 
-export const setFullscreen = (status: boolean) => {
-  if (!isTauri) return
+export const setFullscreen = (status: boolean): Promise<void> => {
+  if (!isTauri) throw Error('Must be run in tauri')
   return appWindow.setFullscreen(status)
 }
 
-export const copy = async (text: string) => {
+export const copy = async (text: string): Promise<void> => {
   if (isTauri) {
     return clipboard.writeText(text)
   } else {
@@ -41,7 +41,7 @@ export const copy = async (text: string) => {
   }
 }
 
-export const copyAllAsMarkdown = async (state: EditorState) => {
+export const copyAllAsMarkdown = async (state: EditorState): Promise<void> => {
   const text = serialize(state)
   if (isTauri) {
     return clipboard.writeText(text)
@@ -51,39 +51,37 @@ export const copyAllAsMarkdown = async (state: EditorState) => {
 }
 
 export const getMimeType = async (path: string): Promise<string> => {
+  if (!isTauri) throw Error('Must be run in tauri')
   return invoke('get_mime_type', {path})
 }
 
-export const readFile = async (src: string) => {
-  if (!isTauri) return
+export const readFile = async (src: string): Promise<string> => {
+  if (!isTauri) throw Error('Must be run in tauri')
   return fs.readTextFile(src)
 }
 
-export const readBinaryFile = async (src: string) => {
-  if (!isTauri) return
+export const readBinaryFile = async (src: string): Promise<number[]> => {
+  if (!isTauri) throw Error('Must be run in tauri')
   return fs.readBinaryFile(src)
 }
 
-export const writeFile = async (path: string, contents: string) => {
-  if (!isTauri) return
+export const writeFile = async (path: string, contents: string): Promise<void> => {
+  if (!isTauri) throw Error('Must be run in tauri')
   return fs.writeFile({path, contents})
 }
 
 export const resolve = async (paths: string[]): Promise<string> => {
+  if (!isTauri) throw Error('Must be run in tauri')
   return invoke('resolve', {paths})
 }
 
 export const dirname = async (path: string): Promise<string> => {
+  if (!isTauri) throw Error('Must be run in tauri')
   return invoke('dirname', {path})
 }
 
-export const log = async (...args: any) => {
-  if (!isTauri) return
-  return invoke('log', {args})
-}
-
-export const save = async (state: EditorState) => {
-  if (!isTauri) return
+export const save = async (state: EditorState): Promise<string> => {
+  if (!isTauri) throw Error('Must be run in tauri')
   const path = await dialog.save()
   await fs.writeFile({path, contents: serialize(state)})
   return path
