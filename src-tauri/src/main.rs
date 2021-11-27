@@ -15,7 +15,6 @@ struct Args {
     pub file: Option<String>,
     pub room: Option<String>,
     pub text: Option<String>,
-    pub dark_mode: Option<bool>,
 }
 
 #[tauri::command]
@@ -123,7 +122,6 @@ fn create_args(args: Vec<String>) -> Args {
         file: file,
         room: room,
         text: text,
-        dark_mode: None,
     }
 }
 

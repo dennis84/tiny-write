@@ -11,7 +11,6 @@ export interface Args {
   file?: string;
   room?: string;
   text?: any;
-  darkMode?: boolean;
 }
 
 export interface PrettierConfig {

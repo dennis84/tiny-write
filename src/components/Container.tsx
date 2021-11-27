@@ -293,12 +293,6 @@ export default (props: Props) => {
   }
 
   const onArgs = useDynamicCallback(async (args: Args) => {
-    if (args.darkMode && !isDarkTheme(props.state.config)) {
-      dispatch(UpdateConfig({...props.state.config, theme: 'dark'}, props.state.lastModified))
-    } else if (args.darkMode === false && isDarkTheme(props.state.config)) {
-      dispatch(UpdateConfig({...props.state.config, theme: 'light'}, props.state.lastModified))
-    }
-
     if (!props.state.collab?.started && args.room) {
       const backup = props.state.collab?.room !== args.room
       dispatch(UpdateCollab({room: args.room, started: true}, undefined, backup))
@@ -325,6 +319,30 @@ export default (props: Props) => {
   useEffect(() => {
     initialize()
   }, [])
+
+  // Handle dark mode
+  useEffect(() => {
+    if (!window.matchMedia) return
+    if (props.state.loading !== 'initialized') return
+
+    const matchDark = () => window.matchMedia('(prefers-color-scheme: dark)')
+
+    const handleTheme = () => {
+      const isDark = matchDark().matches
+      if (isDark && !isDarkTheme(props.state.config)) {
+        dispatch(UpdateConfig({...props.state.config, theme: 'dark'}, props.state.lastModified))
+      } else if (!isDark && isDarkTheme(props.state.config)) {
+        dispatch(UpdateConfig({...props.state.config, theme: 'light'}, props.state.lastModified))
+      }
+    }
+
+    matchDark().addEventListener('change', handleTheme)
+    handleTheme()
+
+    return () => {
+      matchDark().removeEventListener('change', handleTheme)
+    }
+  }, [props.state.loading])
 
   // Handle tauri file drop
   useEffect(() => {
