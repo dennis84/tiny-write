@@ -428,6 +428,7 @@ export default (props: Props) => {
     props.state.config.codeTheme,
     props.state.config.fontSize,
     props.state.config.typewriterMode,
+    props.state.config.prettier,
   ])
 
   // Toggle remote fullscreen if changed

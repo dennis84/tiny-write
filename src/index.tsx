@@ -14,6 +14,14 @@ export interface Args {
   darkMode?: boolean;
 }
 
+export interface PrettierConfig {
+  printWidth: number;
+  tabWidth: number;
+  useTabs: boolean;
+  semi: boolean;
+  singleQuote: boolean;
+}
+
 export interface Config {
   theme: string;
   codeTheme: string;
@@ -22,6 +30,7 @@ export interface Config {
   contentWidth: number;
   alwaysOnTop: boolean;
   typewriterMode: boolean;
+  prettier: PrettierConfig;
 }
 
 export interface ErrorObject {

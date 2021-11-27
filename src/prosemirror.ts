@@ -73,6 +73,7 @@ export const createState = (props: Props): ProseMirrorState => ({
       theme: codeTheme(props.config),
       typewriterMode: props.config.typewriterMode,
       fontSize: props.config.fontSize,
+      prettier: props.config.prettier,
       extensions: () => [codeMirrorKeymap(props)],
     }),
     code(),

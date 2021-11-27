@@ -7,7 +7,7 @@ import {differenceInHours, format} from 'date-fns'
 import styled from '@emotion/styled'
 import {css} from '@emotion/react'
 import tauriConf from '../../src-tauri/tauri.conf.json'
-import {Config, File, Collab} from '..'
+import {Config, File, Collab, PrettierConfig} from '..'
 import {
   Discard,
   New,
@@ -224,11 +224,18 @@ export default (props: Props) => {
   }
 
   const onChangeFontSize = (e: ChangeEvent<HTMLInputElement>) => {
-    dispatch(UpdateConfig({...props.config, fontSize: parseInt(e.target.value)}))
+    dispatch(UpdateConfig({...props.config, fontSize: Number(e.target.value)}))
   }
 
   const onChangeContentWidth = (e: ChangeEvent<HTMLInputElement>) => {
-    dispatch(UpdateConfig({...props.config, contentWidth: parseInt(e.target.value)}))
+    dispatch(UpdateConfig({...props.config, contentWidth: Number(e.target.value)}))
+  }
+
+  const updatePrettier = (opt: Partial<PrettierConfig>) => {
+    dispatch(UpdateConfig({
+      ...props.config,
+      prettier: {...props.config.prettier, ...opt}
+    }))
   }
 
   const onToggleAlwaysOnTop = () => {
@@ -576,6 +583,40 @@ export default (props: Props) => {
               {isTauri && (
                 <Link onClick={() => remote.quit()}>Quit <Keys keys={[mod, 'q']} /></Link>
               )}
+            </Sub>
+            <Label>Prettier</Label>
+            <Sub>
+              <Text>
+                Print Width:
+                <Slider
+                  type="range"
+                  min="20"
+                  max="160"
+                  step="10"
+                  value={props.config.prettier.printWidth}
+                  onChange={(e) => updatePrettier({printWidth: Number(e.target.value)})} />
+                {props.config.prettier.printWidth}
+              </Text>
+              <Text>
+                Tab Width:
+                <Slider
+                  type="range"
+                  min="2"
+                  max="8"
+                  step="2"
+                  value={props.config.prettier.tabWidth}
+                  onChange={(e) => updatePrettier({tabWidth: Number(e.target.value)})} />
+                {props.config.prettier.tabWidth}
+              </Text>
+              <Link onClick={() => updatePrettier({useTabs: !props.config.prettier.useTabs})}>
+                Use Tabs {props.config.prettier.useTabs && '✅'}
+              </Link>
+              <Link onClick={() => updatePrettier({semi: !props.config.prettier.semi})}>
+                Semicolons {props.config.prettier.semi && '✅'}
+              </Link>
+              <Link onClick={() => updatePrettier({singleQuote: !props.config.prettier.singleQuote})}>
+                Single Quote {props.config.prettier.singleQuote && '✅'}
+              </Link>
             </Sub>
           </Menu>
         </Off>

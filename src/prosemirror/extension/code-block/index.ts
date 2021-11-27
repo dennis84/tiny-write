@@ -6,6 +6,7 @@ import {inputRules, textblockTypeInputRule} from 'prosemirror-inputrules'
 import {Extension} from '@codemirror/state'
 import {CodeBlockView} from './view'
 import {ProseMirrorExtension} from '../../state'
+import {PrettierConfig} from '../../..'
 
 type Direction = 'left' | 'right' | 'up' | 'down' | 'forward' | 'backward'
 
@@ -61,12 +62,20 @@ export const defaultProps = {
   theme: 'material-light',
   typewriterMode: false,
   fontSize: 18,
+  prettier: {
+    printWidth: 80,
+    tabWidth: 2,
+    useTabs: false,
+    semi: false,
+    singleQuote: true,
+  }
 }
 
 export interface CodeBlockProps {
   theme: string;
   typewriterMode: boolean;
   fontSize: number;
+  prettier: PrettierConfig;
   extensions?: (view: EditorView, node: Node, getPos: () => number) => Extension[];
 }
 

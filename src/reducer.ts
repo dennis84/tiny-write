@@ -17,6 +17,13 @@ export const newState = (props: Partial<State> = {}): State => ({
     contentWidth: 800,
     alwaysOnTop: isMac,
     typewriterMode: true,
+    prettier: {
+      printWidth: 80,
+      tabWidth: 2,
+      useTabs: false,
+      semi: false,
+      singleQuote: true,
+    }
   },
   ...props,
 })

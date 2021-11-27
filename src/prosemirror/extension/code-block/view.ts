@@ -41,6 +41,7 @@ import {githubDark, config as githubDarkConfig} from '@ddietr/codemirror-themes/
 import {aura, config as auraConfig} from '@ddietr/codemirror-themes/theme/aura'
 import prettier from 'prettier'
 import parserBabel from 'prettier/parser-babel'
+import parserTypescript from 'prettier/parser-typescript'
 import parserCss from 'prettier/parser-postcss'
 import parserHtml from 'prettier/parser-html'
 import parserMarkdown from 'prettier/parser-markdown'
@@ -80,12 +81,8 @@ export class CodeBlockView {
     this.langToggle = document.createElement('div')
     this.prettifyBtn = document.createElement('span')
     this.prettifyBtn.className = 'prettify'
-    this.prettifyBtn.textContent = '✨'
-    this.prettifyBtn.style.display = 'none'
     this.prettifyBtn.setAttribute('title', 'prettify')
     this.prettifyBtn.addEventListener('mousedown', this.prettify.bind(this), true)
-    this.updateLangSelect()
-    this.updatePrettify()
 
     const outer = document.createElement('div')
     outer.setAttribute('contenteditable', 'false')
@@ -265,6 +262,8 @@ export class CodeBlockView {
       outer.appendChild(elem)
     })
 
+    this.updateLangSelect()
+    this.updatePrettify()
     this.dom = outer
   }
 
@@ -457,17 +456,16 @@ export class CodeBlockView {
       lang === 'less' ? ['less', parserCss] :
       lang === 'scss' ? ['scss', parserCss] :
       lang === 'yaml' ? ['yaml', parserYaml] :
-      lang === 'typescript' ? ['babel', parserBabel] :
+      lang === 'typescript' ? ['typescript', parserTypescript] :
       [undefined, undefined]
     if (!parser) return
     try {
       const value = prettier.format(this.editorView.state.doc.toString(), {
         parser,
         plugins: [plugin],
-        semi: false,
-        singleQuote: true,
         trailingComma: 'all',
         bracketSpacing: false,
+        ...this.options.prettier,
       })
 
       this.editorView.dispatch({
