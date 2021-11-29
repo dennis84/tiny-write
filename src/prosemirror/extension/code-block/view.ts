@@ -375,7 +375,12 @@ export class CodeBlockView {
 
     this.forwardSelection()
     const sel = update.state.selection.main
-    if (this.editorView.hasFocus && sel.empty && this.options.typewriterMode) {
+    if (
+      this.editorView.hasFocus &&
+      sel.empty &&
+      update.transactions.length > 0 &&
+      this.options.typewriterMode
+    ) {
       const line = this.editorView.visualLineAt(sel.from)
       const {node} = this.editorView.domAtPos(line.from)
       ;(node as Element).scrollIntoView({
