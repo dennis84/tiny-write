@@ -17,6 +17,7 @@ export const cleanLang = (lang: string) =>
   lang === 'c++' ? 'cpp' :
   lang === 'yml' ? 'yaml' :
   lang === 'shell' ? 'bash' :
+  lang === 'tf' ? 'hcl' :
   lang
 
 const codeBlockRule = (nodeType: NodeType) =>

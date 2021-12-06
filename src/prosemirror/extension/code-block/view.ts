@@ -20,6 +20,7 @@ import {ruby} from '@codemirror/legacy-modes/mode/ruby'
 import {shell} from '@codemirror/legacy-modes/mode/shell'
 import {yaml} from '@codemirror/legacy-modes/mode/yaml'
 import {go} from '@codemirror/legacy-modes/mode/go'
+import {toml} from '@codemirror/legacy-modes/mode/toml'
 import {javascript} from '@codemirror/lang-javascript'
 import {java} from '@codemirror/lang-java'
 import {rust} from '@codemirror/lang-rust'
@@ -560,7 +561,9 @@ const getLangExtension = (lang: string) =>
   lang === 'erlang' ? StreamLanguage.define(erlang) :
   lang === 'groovy' ? StreamLanguage.define(groovy) :
   lang === 'ruby' ? StreamLanguage.define(ruby) :
+  lang === 'hcl' ? StreamLanguage.define(ruby) :
   lang === 'bash' ? StreamLanguage.define(shell) :
   lang === 'yaml' ? StreamLanguage.define(yaml) :
   lang === 'go' ? StreamLanguage.define(go) :
+  lang === 'toml' ? StreamLanguage.define(toml) :
   markdown()
