@@ -572,7 +572,8 @@ export default (props: Props) => {
             </Sub>
             <Label>Application</Label>
             <Sub>
-              {!isTauri && (
+              {/* doesn't work with tauri */}
+              {(!isTauri && false) && (
                 <Link onClick={onOpenInApp}>
                   Open in App ⚡
                 </Link>

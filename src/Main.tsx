@@ -1,4 +1,4 @@
-import React, {useReducer, useRef, useEffect} from 'react'
+import React, {useReducer, useRef} from 'react'
 import {EditorView} from 'prosemirror-view'
 import {Global, ThemeProvider} from '@emotion/react'
 import {State, ErrorObject} from '.'
