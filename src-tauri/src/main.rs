@@ -158,7 +158,6 @@ mod tests {
 
         assert!(args.room.is_none());
         assert!(args.text.is_none());
-        assert!(args.dark_mode.is_none());
 
         let args = create_args(vec!["tinywrite://test?room=123".to_string()]);
         assert_eq!(args.room, Some("123".to_string()));
