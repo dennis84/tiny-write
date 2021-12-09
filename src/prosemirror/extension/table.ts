@@ -29,8 +29,15 @@ const tableSchema = {
     isolating: true,
     selectable: false,
     group: 'block',
-    parseDOM: [{tag: 'table'}],
-    toDOM: () => ['div', {class: 'table-container'}, ['table', 0]],
+    parseDOM: [{tag: 'div[data-type="table"]'}],
+    toDOM: () => [
+      'div',
+      {
+        class: 'table-container',
+        'data-type': 'table',
+      },
+      ['table', 0]
+    ],
   },
   table_head: {
     content: 'table_row',

@@ -22,14 +22,17 @@ const todoListSchema = {
     group: 'block',
     attrs: {done: {default: false}},
     parseDOM: [{
-      tag: 'div',
+      tag: 'div[data-type="todo-item"]',
       getAttrs: (dom: Element) => ({
-        done: dom.querySelector('input').checked,
+        done: dom.querySelector('input')?.checked,
       }),
     }],
     toDOM: (node: ProsemirrorNode) => [
       'div',
-      {class: `todo-item ${node.attrs.done ? 'done' : ''}`},
+      {
+        class: `todo-item ${node.attrs.done ? 'done' : ''}`,
+        'data-type': 'todo-item',
+      },
       ['label', {contenteditable: false}, ['input', {
         type: 'checkbox',
         ...(node.attrs.done ? {checked: 'checked'} : {}),
