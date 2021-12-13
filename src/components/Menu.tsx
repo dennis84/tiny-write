@@ -445,7 +445,7 @@ export default (props: Props) => {
               </Link>
               <Link
                 onClick={onDiscard}
-                disabled={props.files.length === 0 && isEmpty(props.text?.editorState)}
+                disabled={!props.path && props.files.length === 0 && isEmpty(props.text?.editorState)}
                 data-testid="discard">
                 {
                   props.path ? 'Close' :
