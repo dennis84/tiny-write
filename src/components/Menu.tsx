@@ -506,7 +506,7 @@ export default (props: Props) => {
             </Sub>
             <Label>View</Label>
             <Sub>
-              {isTauri || isTauri && (
+              {isTauri && (
                 <Link onClick={onToggleFullscreen}>
                   Fullscreen {props.fullscreen && '✅'} <Keys keys={[alt, 'Enter']} />
                 </Link>
