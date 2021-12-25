@@ -1,4 +1,5 @@
 import {Config} from '.'
+import {isDark} from './env'
 
 interface Font {
   label: string;
@@ -161,13 +162,15 @@ export const isDarkTheme = (config: Config) =>
   themes[config.theme] ? themes[config.theme].dark : false
 
 export const background = (config: Config) =>
-  themes[config.theme] ? themes[config.theme].background : themes.light.background
+  themes[config.theme] ? themes[config.theme].background : getDefaltTheme().background
 
 export const foreground = (config: Config) =>
-  themes[config.theme] ? themes[config.theme].foreground : themes.light.foreground
+  themes[config.theme] ? themes[config.theme].foreground : getDefaltTheme().foreground
 
 export const primary = (config: Config) =>
-  themes[config.theme] ? themes[config.theme].primary : themes.light.primary
+  themes[config.theme] ? themes[config.theme].primary : getDefaltTheme().primary
+
+export const getDefaltTheme = () => isDark() ? themes.dark : themes.light
 
 export const font = (config: Config, monospace = false) => {
   if (monospace && !fonts[config.font]?.monospace) {

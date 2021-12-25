@@ -10,7 +10,7 @@ export const newState = (props: Partial<State> = {}): State => ({
   fullscreen: false,
   markdown: false,
   config: {
-    theme: 'light',
+    theme: undefined,
     codeTheme: 'material-light',
     font: 'merriweather',
     fontSize: 24,
