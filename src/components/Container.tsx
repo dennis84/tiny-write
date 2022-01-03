@@ -49,7 +49,7 @@ const isState = (x: any) =>
 const isFile = (x: any): boolean => x.text || x.path
 
 const isConfig = (x: any): boolean =>
-  typeof x.theme === 'string' &&
+  (typeof x.theme === 'string' || x.theme === undefined) &&
   typeof x.codeTheme === 'string' &&
   typeof x.font === 'string'
 
