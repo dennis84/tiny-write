@@ -537,7 +537,7 @@ export default (props: Props) => {
                 <Slider
                   type="range"
                   min="400"
-                  max="1400"
+                  max="1800"
                   step="100"
                   value={props.config.contentWidth}
                   onChange={onChangeContentWidth} />

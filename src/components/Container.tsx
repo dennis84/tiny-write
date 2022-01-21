@@ -367,7 +367,18 @@ export default (props: Props) => {
     if (props.state.loading === 'roundtrip') {
       dispatch(UpdateLoading('initialized'))
     } else if (props.state.loading === 'initialized') {
-      if (props.state.args) onArgs(props.state.args)
+      if (
+        props.state.args?.file ||
+        props.state.args?.room ||
+        props.state.args?.text
+      ) {
+        onArgs(props.state.args)
+        return
+      }
+
+      if (props.state.path) {
+        loadFile()
+      }
     }
   }, [props.state.loading])
 
