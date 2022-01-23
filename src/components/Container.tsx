@@ -476,7 +476,6 @@ export default (props: Props) => {
   useDebouncedEffect(async () => {
     if (
       props.state.loading !== 'initialized' ||
-      !isInitialized(props.state.text?.editorState) ||
       !props.state.lastModified
     ) return
 
@@ -491,11 +490,15 @@ export default (props: Props) => {
       }
     }
 
-    if (props.state.path) {
-      const text = serialize(editorView.state)
-      await remote.writeFile(props.state.path, text)
-    } else {
-      data.text = editorView.state.toJSON()
+    if (isInitialized(props.state.text?.editorState)) {
+      if (props.state.path) {
+        const text = serialize(editorView.state)
+        await remote.writeFile(props.state.path, text)
+      } else {
+        data.text = editorView.state.toJSON()
+      }
+    } else if (props.state.text?.editorState) {
+      data.text = props.state.text.editorState
     }
 
     db.set('state', JSON.stringify(data))
