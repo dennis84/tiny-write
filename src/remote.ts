@@ -55,6 +55,12 @@ export const getMimeType = async (path: string): Promise<string> => {
   return invoke('get_mime_type', {path})
 }
 
+export const getFileLastModified = async (path: string): Promise<Date> => {
+  if (!isTauri) throw Error('Must be run in tauri')
+  const ts = await invoke('get_file_last_modified', {path}) as string
+  return new Date(ts)
+}
+
 export const readFile = async (src: string): Promise<string> => {
   if (!isTauri) throw Error('Must be run in tauri')
   return fs.readTextFile(src)

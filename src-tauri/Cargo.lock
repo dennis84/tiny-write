@@ -43,6 +43,7 @@ name = "app"
 version = "0.1.0"
 dependencies = [
  "base64",
+ "chrono",
  "dirs 4.0.0",
  "mime_guess",
  "serde",

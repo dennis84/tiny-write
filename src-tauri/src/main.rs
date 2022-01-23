@@ -5,9 +5,11 @@
 
 use std::collections::HashMap;
 use std::env;
+use std::fs;
 use std::io::{Error, ErrorKind};
 use std::path::{Path, PathBuf};
 use url::Url;
+use chrono::{DateTime, Utc};
 
 #[derive(Clone, Debug, serde::Serialize)]
 struct Args {
@@ -26,6 +28,19 @@ fn get_args(state: tauri::State<Args>) -> Args {
 fn get_mime_type(path: String) -> String {
     let guess = mime_guess::from_path(path);
     guess.first_raw().unwrap_or("").to_string()
+}
+
+#[tauri::command]
+fn get_file_last_modified(path: String) -> Result<String, String> {
+    let metadata = fs::metadata(path)
+        .map_err(|_| "Could not get metadata".to_string())?;
+
+    if let Ok(time) = metadata.modified() {
+        let dt: DateTime<Utc> = time.into();
+        Ok(dt.to_rfc3339())
+    } else {
+        Err("Not supported on this platform".to_string())
+    }
 }
 
 #[tauri::command]
@@ -131,6 +146,7 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             get_args,
             get_mime_type,
+            get_file_last_modified,
             resolve,
             dirname,
         ])

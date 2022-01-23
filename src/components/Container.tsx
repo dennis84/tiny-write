@@ -176,6 +176,7 @@ export default (props: Props) => {
   const loadFile = async () => {
     try {
       const fileContent = await remote.readFile(props.state.path)
+      const lastModified = await remote.getFileLastModified(props.state.path)
       const schema = createSchema({
         config: props.state.config,
         markdown: false,
@@ -203,7 +204,6 @@ export default (props: Props) => {
         keymap,
       })
 
-      const lastModified = new Date() // file lastModified
       dispatch(UpdateText(newText, lastModified))
     } catch (e) {
       dispatch(Discard)

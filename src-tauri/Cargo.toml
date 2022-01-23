@@ -20,6 +20,7 @@ mime_guess = "2.0.3"
 dirs = "4.0"
 url = "2.2.2"
 base64 = "0.13.0"
+chrono = "0.4"
 
 [features]
 default = [ "custom-protocol" ]
