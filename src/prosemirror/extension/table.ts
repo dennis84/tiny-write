@@ -275,7 +275,12 @@ export default (): ProseMirrorExtension => ({
         const abovePos = findVertTableCellPos(sel.$head)
         if (abovePos) {
           const tr = state.tr
-          tr.setSelection(Selection.near(abovePos))
+          let selection = Selection.near(abovePos)
+          if (abovePos.pos === 0 && cellPos.parentOffset === 0) {
+            tr.insert(0, state.schema.node('paragraph'))
+            selection = Selection.near(tr.doc.resolve(0))
+          }
+          tr.setSelection(selection)
           dispatch(tr)
           return true
         }
