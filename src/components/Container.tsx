@@ -330,9 +330,17 @@ export default (props: Props) => {
     const handleTheme = () => {
       const isDark = matchDark().matches
       if (isDark && !isDarkTheme(props.state.config)) {
-        dispatch(UpdateConfig({...props.state.config, theme: 'dark'}, props.state.lastModified))
+        dispatch(UpdateConfig({
+          ...props.state.config,
+          theme: 'dark',
+          codeTheme: 'material-dark',
+        }, props.state.lastModified))
       } else if (!isDark && isDarkTheme(props.state.config)) {
-        dispatch(UpdateConfig({...props.state.config, theme: 'light'}, props.state.lastModified))
+        dispatch(UpdateConfig({
+          ...props.state.config,
+          theme: 'light',
+          codeTheme: 'material-light',
+        }, props.state.lastModified))
       }
     }
 
