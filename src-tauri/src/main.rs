@@ -10,6 +10,7 @@ use std::io::{Error, ErrorKind};
 use std::path::{Path, PathBuf};
 use url::Url;
 use chrono::{DateTime, Utc};
+use tauri::{Menu, MenuItem, Submenu};
 
 #[derive(Clone, Debug, serde::Serialize)]
 struct Args {
@@ -141,7 +142,21 @@ fn create_args(args: Vec<String>) -> Args {
 }
 
 fn main() {
-    tauri::Builder::default()
+    let mut builder = tauri::Builder::default();
+    if cfg!(target_os = "macos") {
+        let submenu = Submenu::new("Edit", Menu::new()
+            .add_native_item(MenuItem::Undo)
+            .add_native_item(MenuItem::Redo)
+            .add_native_item(MenuItem::Separator)
+            .add_native_item(MenuItem::Cut)
+            .add_native_item(MenuItem::Copy)
+            .add_native_item(MenuItem::Paste));
+        let menu = Menu::new()
+            .add_submenu(submenu);
+        builder = builder.menu(menu);
+    }
+
+    builder
         .manage(create_args(env::args().skip(1).collect::<Vec<_>>()))
         .invoke_handler(tauri::generate_handler![
             get_args,
