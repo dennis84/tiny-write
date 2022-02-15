@@ -27,7 +27,7 @@
     "@emotion/css": "^11.7.1",
     "@emotion/react": "^11.7.1",
     "@emotion/styled": "^11.6.0",
-    "@tauri-apps/api": "*",
+    "@tauri-apps/api": "^1.0.0-rc.1",
     "date-fns": "^2.28.0",
     "devicon": "devicons/devicon#master",
     "file-type": "^17.1.1",
@@ -55,7 +55,7 @@
     "yjs": "^13.5.24"
   },
   "devDependencies": {
-    "@tauri-apps/cli": "*",
+    "@tauri-apps/cli": "^1.0.0-rc.4",
     "@types/jest": "^27.4.0",
     "@types/markdown-it": "^12.2.3",
     "@types/prosemirror-dropcursor": "^1.0.3",
