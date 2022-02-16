@@ -70,7 +70,7 @@ const Off = styled.div`
   background: ${props => foreground(props.theme)}19;
   padding: 20px;
   height: 100%;
-  min-width: 460px;
+  width: 460px;
   overflow-y: auto;
   scrollbar-width: none;
   ::-webkit-scrollbar {
@@ -111,18 +111,23 @@ export const Item = (props: {theme: Config}) => css`
   font-size: 18px;
   line-height: 24px;
   font-family: 'JetBrains Mono';
-  white-space: nowrap;
+  text-align: left;
 `
 
 const Text = styled.p`
   ${Item}
 `
 
-const Link = styled.button`
+interface LinkProps {
+  withMargin?: boolean;
+}
+
+const Link = styled.button<LinkProps>`
   ${Item}
   background: none;
   border: 0;
   cursor: pointer;
+  margin-bottom: ${props => props.withMargin ? '10px' : ''};
   > span {
     justify-self: flex-end;
     margin-left: auto;
@@ -361,33 +366,38 @@ export default (props: Props) => {
   }
 
   const FileLink = (props: {file: File}) => {
-    const length = 24
-    const getText = (node: any) => {
-      let text = ''
-
+    const length = 100
+    let content = ''
+    const getContent = (node: any) => {
       if (node.text) {
-        text += node.text + ' '
+        content += node.text
+      }
+
+      if (content.length > length) {
+        content = content.substring(0, length) + '...'
+        return content
       }
 
       if (node.content) {
         for (const child of node.content) {
-          if (text.length >= length) {
+          if (content.length >= length) {
             break
           }
 
-          text += getText(child)
+          content = getContent(child)
         }
       }
 
-      return text
+      return content
     }
 
     const text = props.file.path ?
       props.file.path.substring(props.file.path.length - length) :
-      getText(props.file.text?.doc).substring(0, length)
+      getContent(props.file.text?.doc)
 
     return (
       <Link
+        withMargin={true}
         onClick={() => dispatch(Open(props.file))}
         data-testid="open">
         {text} {props.file.path && '📎'}
@@ -544,47 +554,6 @@ export default (props: Props) => {
                 {props.config.contentWidth}
               </Text>
             </Sub>
-            <Label>Collab</Label>
-            <Sub>
-              <Link
-                onClick={onCollab}
-                title={props.collab?.error ? 'Connection error' : ''}>
-                {collabText}
-              </Link>
-              {collabUsers > 0 && (
-                <>
-                  <Link onClick={onCopyCollabLink}>
-                    Copy Link {lastAction === 'copy-collab-link' && '📋'}
-                  </Link>
-                  <Link onClick={onCopyCollabAppLink}>
-                    Copy App Link {lastAction === 'copy-collab-app-link' && '📋'}
-                  </Link>
-                  <Text>
-                    {collabUsers} {collabUsers === 1 ? 'user' : 'users'} connected
-                  </Text>
-                </>
-              )}
-            </Sub>
-            <Label>Stats</Label>
-            <Sub>
-              <LastModified />
-              <TextStats />
-            </Sub>
-            <Label>Application</Label>
-            <Sub>
-              {/* doesn't work with tauri */}
-              {(!isTauri && false) && (
-                <Link onClick={onOpenInApp}>
-                  Open in App ⚡
-                </Link>
-              )}
-              <Link onClick={onVersion}>
-                About Version {tauriConf.package.version}
-              </Link>
-              {isTauri && (
-                <Link onClick={() => remote.quit()}>Quit <Keys keys={[mod, 'q']} /></Link>
-              )}
-            </Sub>
             <Label>Prettier</Label>
             <Sub>
               <Text>
@@ -618,6 +587,47 @@ export default (props: Props) => {
               <Link onClick={() => updatePrettier({singleQuote: !props.config.prettier.singleQuote})}>
                 Single Quote {props.config.prettier.singleQuote && '✅'}
               </Link>
+            </Sub>
+            <Label>Stats</Label>
+            <Sub>
+              <LastModified />
+              <TextStats />
+            </Sub>
+            <Label>Collab</Label>
+            <Sub>
+              <Link
+                onClick={onCollab}
+                title={props.collab?.error ? 'Connection error' : ''}>
+                {collabText}
+              </Link>
+              {collabUsers > 0 && (
+                <>
+                  <Link onClick={onCopyCollabLink}>
+                    Copy Link {lastAction === 'copy-collab-link' && '📋'}
+                  </Link>
+                  <Link onClick={onCopyCollabAppLink}>
+                    Copy App Link {lastAction === 'copy-collab-app-link' && '📋'}
+                  </Link>
+                  <Text>
+                    {collabUsers} {collabUsers === 1 ? 'user' : 'users'} connected
+                  </Text>
+                </>
+              )}
+            </Sub>
+            <Label>Application</Label>
+            <Sub>
+              {/* doesn't work with tauri */}
+              {(!isTauri && false) && (
+                <Link onClick={onOpenInApp}>
+                  Open in App ⚡
+                </Link>
+              )}
+              <Link onClick={onVersion}>
+                About Version {tauriConf.package.version}
+              </Link>
+              {isTauri && (
+                <Link onClick={() => remote.quit()}>Quit <Keys keys={[mod, 'q']} /></Link>
+              )}
             </Sub>
           </Menu>
         </Off>
