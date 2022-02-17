@@ -79,7 +79,6 @@ export class CodeBlockView {
     this.getPos = getPos
     this.options = options
 
-    this.langToggle = document.createElement('div')
     this.prettifyBtn = document.createElement('span')
     this.prettifyBtn.className = 'prettify'
     this.prettifyBtn.setAttribute('title', 'prettify')
@@ -91,55 +90,6 @@ export class CodeBlockView {
     const inner = document.createElement('div')
     inner.classList.add('codemirror-inner')
     outer.appendChild(inner)
-
-    const langInput = document.createElement('div')
-    langInput.className = 'lang-input'
-
-    this.langInputEditor = new LangInputEditor({
-      doc: this.getLang(),
-      parent: langInput,
-      onClose: () => {
-        langSelect.style.display = 'none'
-        langSelectBottom.style.display = 'none'
-        this.langToggle.style.display = 'flex'
-        this.editorView.focus()
-      },
-      onEnter: (lang) => {
-        langSelect.style.display = 'none'
-        langSelectBottom.style.display = 'none'
-        this.langToggle.style.display = 'flex'
-        this.prettifyBtn.style.display = 'block'
-        const tr = view.state.tr
-        tr.setNodeMarkup(getPos(), undefined, {
-          ...this.node.attrs,
-          params: {...this.node.attrs.params, lang},
-        })
-        view.dispatch(tr)
-        this.reconfigure()
-        this.updateLangSelect()
-        this.updatePrettify()
-        this.editorView.focus()
-      },
-    })
-
-    const langSelect = document.createElement('div')
-    langSelect.className = 'lang-select'
-    langSelect.textContent = '```'
-    langSelect.style.display = 'none'
-    langSelect.appendChild(langInput)
-    const langSelectBottom = document.createElement('div')
-    langSelectBottom.className = 'lang-select'
-    langSelectBottom.textContent = '```'
-    langSelectBottom.style.display = 'none'
-
-    this.langToggle.className = 'lang-toggle'
-    this.langToggle.addEventListener('click', () => {
-      this.langToggle.style.display = 'none'
-      langSelect.style.display = 'flex'
-      langSelectBottom.style.display = 'block'
-      this.prettifyBtn.style.display = 'none'
-      this.langInputEditor.focus()
-    })
 
     const codeMirrorKeymap = keymap.of([{
       key: 'Backspace',
@@ -213,8 +163,6 @@ export class CodeBlockView {
 
     const [theme, themeConfig] = getTheme(this.options.theme)
     inner.style.background = themeConfig.background
-    langSelect.style.color = themeConfig.foreground
-    langSelectBottom.style.color = themeConfig.foreground
 
     const startState = EditorState.create({
       doc: this.node.textContent,
@@ -252,6 +200,56 @@ export class CodeBlockView {
       parent: null,
     })
 
+    this.langToggle = document.createElement('div')
+    this.langToggle.className = 'lang-toggle'
+    const langInput = document.createElement('div')
+    langInput.className = 'lang-input'
+    const langSelect = document.createElement('div')
+    langSelect.className = 'lang-select'
+    langSelect.textContent = '```'
+    langSelect.style.display = 'none'
+    langSelect.style.color = themeConfig.foreground
+    langSelect.appendChild(langInput)
+    const langSelectBottom = document.createElement('div')
+    langSelectBottom.className = 'lang-select'
+    langSelectBottom.textContent = '```'
+    langSelectBottom.style.display = 'none'
+    langSelectBottom.style.color = themeConfig.foreground
+
+    this.langInputEditor = new LangInputEditor({
+      doc: this.getLang(),
+      parent: langInput,
+      onClose: () => {
+        langSelect.style.display = 'none'
+        langSelectBottom.style.display = 'none'
+        this.langToggle.style.display = 'flex'
+        this.editorView.focus()
+      },
+      onEnter: (lang) => {
+        langSelect.style.display = 'none'
+        langSelectBottom.style.display = 'none'
+        this.langToggle.style.display = 'flex'
+        const tr = this.view.state.tr
+        tr.setNodeMarkup(this.getPos(), undefined, {
+          ...this.node.attrs,
+          params: {...this.node.attrs.params, lang},
+        })
+        this.view.dispatch(tr)
+        this.reconfigure()
+        this.updateLangToggle()
+        this.updatePrettify()
+        this.editorView.focus()
+      },
+    })
+
+    this.langToggle.addEventListener('click', () => {
+      this.langToggle.style.display = 'none'
+      langSelect.style.display = 'flex'
+      langSelectBottom.style.display = 'block'
+      this.prettifyBtn.style.display = 'none'
+      this.langInputEditor.focus()
+    })
+
     inner.appendChild(langSelect)
     inner.appendChild(this.prettifyBtn)
     inner.appendChild(this.editorView.dom)
@@ -263,7 +261,7 @@ export class CodeBlockView {
       outer.appendChild(elem)
     })
 
-    this.updateLangSelect()
+    this.updateLangToggle()
     this.updatePrettify()
     this.dom = outer
   }
@@ -293,13 +291,7 @@ export class CodeBlockView {
 
   update(node: Node) {
     if (node.type != this.node.type) return false
-    const langChanged = node.attrs.params.lang !== this.node.attrs.params.lang
     this.node = node
-    if (langChanged) {
-      this.reconfigure()
-      this.updateLangSelect()
-    }
-
     this.updatePrettify()
     const change = computeChange(this.editorView.state.doc.toString(), node.textContent)
     if (change) {
@@ -391,7 +383,7 @@ export class CodeBlockView {
     }
   }
 
-  updateLangSelect() {
+  updateLangToggle() {
     const lang = this.getLang()
     let elem: Element
     if (logos[lang]) {

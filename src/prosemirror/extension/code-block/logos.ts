@@ -28,6 +28,7 @@ import scala from '../../../../node_modules/devicon/icons/scala/scala-original.s
 import swift from '../../../../node_modules/devicon/icons/swift/swift-original.svg'
 import typescript from '../../../../node_modules/devicon/icons/typescript/typescript-original.svg'
 import vim from '../../../../node_modules/devicon/icons/vim/vim-original.svg'
+import markdown from '../../../../node_modules/devicon/icons/markdown/markdown-original.svg'
 
 export default {
   cpp: cplusplus,
@@ -66,4 +67,5 @@ export default {
   swift,
   typescript,
   vim,
+  markdown,
 }
