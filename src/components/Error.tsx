@@ -1,7 +1,7 @@
 import React from 'react'
 import styled from '@emotion/styled'
 import {ErrorObject} from '..'
-import {Clean, useDispatch} from '../reducer'
+import {Clean, Discard, UpdateError, UpdateLoading, useDispatch} from '../reducer'
 import {foreground} from '../config'
 import {ButtonPrimary} from './Button'
 
@@ -69,21 +69,23 @@ const invalidState = (title: string, props: unknown) => {
 
 const other = (props: Props) => {
   const dispatch = useDispatch()
-  const onClick = () => dispatch(Clean)
+  const onClick = () => {
+    dispatch(UpdateError(undefined))
+    dispatch(Discard)
+    dispatch(UpdateLoading('initialized'))
+  }
+
+  const getMessage = () => {
+    const err = (props.error.props as any).error
+    return (typeof err === 'string') ? err : err.message
+  }
 
   return (
     <Layer data-tauri-drag-region="true">
       <Container>
-        <h1>An unexpected error occurred.</h1>
-        <p>
-          You should try a restart. If this doesn{`'`}t help, you can try to
-          clean up the state.
-        </p>
-        <p>Error Details:</p>
-        <Pre><code>{(props.error.props as any)?.error.message}</code></Pre>
-        <Pre><code>{(props.error.props as any)?.error.stack}</code></Pre>
-        <Pre><code>{(props.error.props as any)?.errorInfo?.componentStack}</code></Pre>
-        <ButtonPrimary onClick={onClick}>Clean</ButtonPrimary>
+        <h1>An error occurred.</h1>
+        <Pre><code>{getMessage()}</code></Pre>
+        <ButtonPrimary onClick={onClick}>Close</ButtonPrimary>
       </Container>
     </Layer>
   )

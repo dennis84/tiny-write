@@ -66,7 +66,7 @@ export const readFile = async (src: string): Promise<string> => {
   return fs.readTextFile(src)
 }
 
-export const readBinaryFile = async (src: string): Promise<number[]> => {
+export const readBinaryFile = async (src: string): Promise<Uint8Array> => {
   if (!isTauri) throw Error('Must be run in tauri')
   return fs.readBinaryFile(src)
 }

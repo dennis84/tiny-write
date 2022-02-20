@@ -13,7 +13,7 @@ import * as remote from '../remote'
 import db from '../db'
 import {COLLAB_URL, isTauri, mod} from '../env'
 import {isDarkTheme} from '../config'
-import {useDebouncedEffect, useDynamicCallback} from '../hooks'
+import {useDebouncedEffect, useDynamicCallback, usePrevious} from '../hooks'
 import {serialize, createMarkdownParser} from '../markdown'
 import {
   UpdateConfig,
@@ -62,6 +62,11 @@ export default (props: Props) => {
   const dispatch = useDispatch()
   const editorView = props.editorViewRef.current
   const mouseEnterCoords = useRef({x: 0, y: 0})
+  const loadingPrev = usePrevious(props.state.loading)
+
+  const isFirstInitialized =
+    loadingPrev === 'roundtrip' &&
+    props.state.loading === 'initialized'
 
   const onQuit = () => {
     if (!isTauri) return
@@ -206,8 +211,10 @@ export default (props: Props) => {
 
       dispatch(UpdateText(newText, lastModified))
     } catch (e) {
-      dispatch(Discard)
-      return
+      dispatch(UpdateError({
+        id: 'file_permission_denied',
+        props: {error: e}
+      }))
     }
   }
 
@@ -354,8 +361,7 @@ export default (props: Props) => {
 
   // Handle tauri file drop
   useEffect(() => {
-    if (!isTauri) return
-    if (props.state.loading !== 'initialized') return
+    if (!isTauri || !isFirstInitialized) return
     listen('tauri://file-drop', async (event) => {
       for (const path of (event.payload as string[])) {
         const mime = await remote.getMimeType(path)
@@ -374,7 +380,7 @@ export default (props: Props) => {
   useEffect(() => {
     if (props.state.loading === 'roundtrip') {
       dispatch(UpdateLoading('initialized'))
-    } else if (props.state.loading === 'initialized') {
+    } else if (isFirstInitialized) {
       if (
         props.state.args?.file ||
         props.state.args?.room ||

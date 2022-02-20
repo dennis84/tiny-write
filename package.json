@@ -54,7 +54,7 @@
     "yjs": "^13.5.27"
   },
   "devDependencies": {
-    "@tauri-apps/cli": "^1.0.0-rc.4",
+    "@tauri-apps/cli": "^1.0.0-rc.5",
     "@types/jest": "^27.4.0",
     "@types/markdown-it": "^12.2.3",
     "@types/prosemirror-dropcursor": "^1.0.3",
@@ -86,7 +86,7 @@
   "hasInstallScript": true,
   "scripts": {
     "web": "vite",
-    "app": "npm run tauri dev ../README.md & vite",
+    "app": "npm run tauri dev ~/projects/tiny-write/README.md & vite",
     "build": "npm run lint && vite build --base './'",
     "dist": "npm run build && npm run tauri build",
     "lint": "eslint . --ext .ts,.tsx",

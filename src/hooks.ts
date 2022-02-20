@@ -27,3 +27,12 @@ export const useDynamicCallback = <T extends (...args: any[]) => any>(callback: 
 
   return useCallback((...args) => ref.current(...args), [])
 }
+
+export const usePrevious = <T>(value: T | undefined) => {
+  const ref = useRef<T>()
+  useEffect(() => {
+    ref.current = value
+  })
+
+  return ref.current
+}

@@ -33,11 +33,8 @@ export default (props: {state: State}) => {
       <ThemeProvider theme={state.config}>
         <Global styles={fontsStyles} />
         <ErrorBoundary fallback={(error) => <ErrorFn error={error} />}>
-          {(state.error) ? (
-            <ErrorFn error={state.error} />
-          ) : (
-            <Container state={state} editorViewRef={editorViewRef} />
-          )}
+          {state.error && <ErrorFn error={state.error} />}
+          <Container state={state} editorViewRef={editorViewRef} />
         </ErrorBoundary>
       </ThemeProvider>
     </ReducerContext.Provider>
