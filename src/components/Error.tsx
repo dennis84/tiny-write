@@ -4,17 +4,15 @@ import {ErrorObject} from '..'
 import {Clean, Discard, UpdateError, UpdateLoading, useDispatch} from '../reducer'
 import {foreground} from '../config'
 import {ButtonPrimary} from './Button'
+import {ErrorLayout} from './Layout'
 
 interface Props {
   error: ErrorObject;
 }
 
 const Layer = styled.div`
-  height: 100%;
   width: 100%;
-  min-height: 100vh;
-  max-height: 100vh;
-  overflow-y: auto;
+  overflow: y-auto;
   padding: 50px;
   display: flex;
   justify-content: center;
@@ -49,21 +47,23 @@ const invalidState = (title: string, props: unknown) => {
   const onClick = () => dispatch(Clean)
 
   return (
-    <Layer data-tauri-drag-region="true">
-      <Container>
-        <h1>{title}</h1>
-        <p>
-          There is an error with the editor state. This is probably due to an
-          old version in which the data structure has changed. Automatic data
-          migrations may be supported in the future. To fix this now, you can
-          copy important notes from below, clean the state and paste it again.
-        </p>
-        <Pre>
-          <code>{JSON.stringify(props)}</code>
-        </Pre>
-        <ButtonPrimary onClick={onClick}>Clean</ButtonPrimary>
-      </Container>
-    </Layer>
+    <ErrorLayout data-testid="error">
+      <Layer data-tauri-drag-region="true">
+        <Container>
+          <h1>{title}</h1>
+          <p>
+            There is an error with the editor state. This is probably due to an
+            old version in which the data structure has changed. Automatic data
+            migrations may be supported in the future. To fix this now, you can
+            copy important notes from below, clean the state and paste it again.
+          </p>
+          <Pre>
+            <code>{JSON.stringify(props)}</code>
+          </Pre>
+          <ButtonPrimary onClick={onClick}>Clean</ButtonPrimary>
+        </Container>
+      </Layer>
+    </ErrorLayout>
   )
 }
 
@@ -81,12 +81,14 @@ const other = (props: Props) => {
   }
 
   return (
-    <Layer data-tauri-drag-region="true">
-      <Container>
-        <h1>An error occurred.</h1>
-        <Pre><code>{getMessage()}</code></Pre>
-        <ButtonPrimary onClick={onClick}>Close</ButtonPrimary>
-      </Container>
-    </Layer>
+    <ErrorLayout data-testid="error">
+      <Layer data-tauri-drag-region="true">
+        <Container>
+          <h1>An error occurred.</h1>
+          <Pre><code>{getMessage()}</code></Pre>
+          <ButtonPrimary onClick={onClick}>Close</ButtonPrimary>
+        </Container>
+      </Layer>
+    </ErrorLayout>
   )
 }
