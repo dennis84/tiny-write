@@ -199,8 +199,14 @@ mod tests {
 
     #[test]
     fn test_resolve() {
-        let home = std::env::var("HOME").unwrap();
-        File::create(format!("{}/{}", &home, "foo.txt")).unwrap();
+        let home = dirs::home_dir()
+            .unwrap()
+            .into_os_string()
+            .into_string()
+            .unwrap();
+
+        let test_file_path = format!("{}/.tinywrite-test.txt", &home);
+        File::create(&test_file_path).unwrap();
 
         let cur = env::current_dir()
             .unwrap()
@@ -209,13 +215,13 @@ mod tests {
             .unwrap();
 
         assert_eq!(
-            resolve(vec!["~/foo.txt".to_string()]).unwrap(),
-            format!("{}/foo.txt", &home)
+            resolve(vec!["~/.tinywrite-test.txt".to_string()]).unwrap(),
+            test_file_path,
         );
 
         assert_eq!(
-            resolve(vec![home.clone(), "./foo.txt".to_string()]).unwrap(),
-            format!("{}/foo.txt", &home)
+            resolve(vec![home.clone(), "./.tinywrite-test.txt".to_string()]).unwrap(),
+            test_file_path,
         );
 
         assert_eq!(
@@ -227,6 +233,8 @@ mod tests {
             resolve(vec!["./Cargo.toml".to_string()]).unwrap(),
             format!("{}/Cargo.toml", cur),
         );
+
+        std::fs::remove_file(test_file_path).unwrap();
     }
 
     #[test]
