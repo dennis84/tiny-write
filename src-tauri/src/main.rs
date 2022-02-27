@@ -32,6 +32,23 @@ fn get_mime_type(path: String) -> String {
 }
 
 #[tauri::command]
+fn read_file_string(path: String) -> Result<String, String> {
+    fs::read_to_string(path).map_err(|_| "Could not read file".to_string())
+}
+
+#[tauri::command]
+fn read_file_base64(path: String) -> Result<String, String> {
+    fs::read(path)
+        .map(|xs| base64::encode(xs))
+        .map_err(|_| "Could not read file".to_string())
+}
+
+#[tauri::command]
+fn write_file(path: String, contents: String) -> Result<(), String> {
+    fs::write(path, contents).map_err(|_| "Could not write file".to_string())
+}
+
+#[tauri::command]
 fn get_file_last_modified(path: String) -> Result<String, String> {
     let metadata = fs::metadata(path)
         .map_err(|_| "Could not get metadata".to_string())?;
@@ -162,6 +179,9 @@ fn main() {
             get_args,
             get_mime_type,
             get_file_last_modified,
+            read_file_string,
+            read_file_base64,
+            write_file,
             resolve,
             dirname,
         ])

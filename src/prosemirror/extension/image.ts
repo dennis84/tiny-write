@@ -1,10 +1,9 @@
 import {Plugin} from 'prosemirror-state'
 import {Node, Schema} from 'prosemirror-model'
 import {EditorView} from 'prosemirror-view'
-import {resolve, dirname} from '../../remote'
+import {getMimeType, readFileBase64, resolve, dirname} from '../../remote'
 import {isTauri} from '../../env'
 import {ProseMirrorExtension} from '../state'
-import {convertFileSrc} from '@tauri-apps/api/tauri'
 
 const REGEX = /^!\[([^[\]]*?)\]\((.+?)\)\s+/
 const MAX_MATCH = 500
@@ -20,13 +19,16 @@ const isUrl = (str: string) => {
 
 const isBlank = (text: string) => text === ' ' || text === '\xa0'
 
-const resolveAssetPath = async (src: string, path?: string) => {
+export const getImageAsBase64 = async (src: string, path?: string) => {
   let paths = [src]
   if (path) {
     paths = [await dirname(path), src]
   }
 
-  return convertFileSrc(await resolve(paths))
+  const absolutePath = await resolve(paths)
+  const mime = await getMimeType(absolutePath)
+  const base64 = await readFileBase64(absolutePath)
+  return `data:${mime};base64,${base64}`
 }
 
 const imageInput = (schema: Schema, path?: string) => new Plugin({
@@ -57,7 +59,7 @@ const imageInput = (schema: Schema, path?: string) => new Plugin({
 
         if (!isTauri) return false
 
-        resolveAssetPath(src, path).then((p) => {
+        getImageAsBase64(src, path).then((p) => {
           const node = schema.node('image', {src: p, title, path: src})
           const start = from - (match[0].length - text.length)
           const tr = view.state.tr
@@ -141,8 +143,8 @@ class ImageView {
     const image = document.createElement('img')
     image.setAttribute('title', node.attrs.title ?? '')
 
-    if (isTauri && !node.attrs.src.startsWith('asset:') && !isUrl(node.attrs.src)) {
-      resolveAssetPath(node.attrs.src, path).then((p) => {
+    if (isTauri && !node.attrs.src.startsWith('data:') && !isUrl(node.attrs.src)) {
+      getImageAsBase64(node.attrs.src, path).then((p) => {
         image.setAttribute('src', p)
       })
     } else {

@@ -7,7 +7,6 @@ import * as Y from 'yjs'
 import {undo as yUndo, redo as yRedo} from 'y-prosemirror'
 import {WebsocketProvider} from 'y-websocket'
 import {listen} from '@tauri-apps/api/event'
-import {convertFileSrc} from '@tauri-apps/api/tauri'
 import {Args, State} from '..'
 import * as remote from '../remote'
 import db from '../db'
@@ -32,7 +31,7 @@ import {Layout} from './Layout'
 import Editor from './Editor'
 import Menu from './Menu'
 import {isEmpty, isInitialized} from '../prosemirror/state'
-import {insertImage} from '../prosemirror/extension/image'
+import {getImageAsBase64, insertImage} from '../prosemirror/extension/image'
 import {
   createSchema,
   createState,
@@ -367,7 +366,8 @@ export default (props: Props) => {
         const mime = await remote.getMimeType(path)
         if (mime.startsWith('image/')) {
           const {x, y} = mouseEnterCoords.current
-          insertImage(editorView, convertFileSrc(path), x, y)
+          const base64 = await getImageAsBase64(path)
+          insertImage(editorView, base64, x, y)
         } else if (mime.startsWith('text/')) {
           dispatch(Open({path}))
           return

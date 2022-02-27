@@ -1,6 +1,6 @@
-![Screenshot Light](./screenshot-light.png)
+![Screenshot Light](./screenshot-light.jpg)
 
-![Screenshot Dark](./screenshot-dark.png)
+![Screenshot Dark](./screenshot-dark.jpg)
 
 # TinyWrite
 
