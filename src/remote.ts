@@ -76,9 +76,9 @@ export const writeFile = async (path: string, contents: string): Promise<void> =
   return invoke('write_file', {path, contents})
 }
 
-export const resolve = async (paths: string[]): Promise<string> => {
+export const resolvePath = async (paths: string[]): Promise<string> => {
   if (!isTauri) throw Error('Must be run in tauri')
-  return invoke('resolve', {paths})
+  return invoke('resolve_path', {paths})
 }
 
 export const dirname = async (path: string): Promise<string> => {

@@ -1,7 +1,7 @@
 import {Plugin} from 'prosemirror-state'
 import {Node, Schema} from 'prosemirror-model'
 import {EditorView} from 'prosemirror-view'
-import {getMimeType, readFileBase64, resolve, dirname} from '../../remote'
+import {getMimeType, readFileBase64, resolvePath, dirname} from '../../remote'
 import {isTauri} from '../../env'
 import {ProseMirrorExtension} from '../state'
 
@@ -25,7 +25,7 @@ export const getImageAsBase64 = async (src: string, path?: string) => {
     paths = [await dirname(path), src]
   }
 
-  const absolutePath = await resolve(paths)
+  const absolutePath = await resolvePath(paths)
   const mime = await getMimeType(absolutePath)
   const base64 = await readFileBase64(absolutePath)
   return `data:${mime};base64,${base64}`
