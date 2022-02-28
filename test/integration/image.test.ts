@@ -5,12 +5,12 @@ beforeAll(async () => {
 })
 
 it('create image', async () => {
-  await page.type('.ProseMirror', '![](http://localhost:3000/screenshot-light.png) ')
+  await page.type('.ProseMirror', '![](http://localhost:3000/screenshot-light.jpg) ')
   await page.waitForSelector('.ProseMirror p .image-container img')
 })
 
 it('image from url does not exist', async () => {
-  await page.type('.ProseMirror', '![](http://localhost:3000/123.png) ')
+  await page.type('.ProseMirror', '![](http://localhost:3000/123.jpg) ')
   await page.waitForSelector('.ProseMirror p .image-container img')
 })
 

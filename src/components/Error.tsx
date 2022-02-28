@@ -1,10 +1,9 @@
 import React from 'react'
 import styled from '@emotion/styled'
 import {ErrorObject} from '..'
-import {Clean, Discard, UpdateError, UpdateLoading, useDispatch} from '../reducer'
+import {Clean, Discard, useDispatch} from '../reducer'
 import {foreground} from '../config'
 import {ButtonPrimary} from './Button'
-import {ErrorLayout} from './Layout'
 
 interface Props {
   error: ErrorObject;
@@ -47,32 +46,28 @@ const invalidState = (title: string, props: unknown) => {
   const onClick = () => dispatch(Clean)
 
   return (
-    <ErrorLayout data-testid="error">
-      <Layer data-tauri-drag-region="true">
-        <Container>
-          <h1>{title}</h1>
-          <p>
-            There is an error with the editor state. This is probably due to an
-            old version in which the data structure has changed. Automatic data
-            migrations may be supported in the future. To fix this now, you can
-            copy important notes from below, clean the state and paste it again.
-          </p>
-          <Pre>
-            <code>{JSON.stringify(props)}</code>
-          </Pre>
-          <ButtonPrimary onClick={onClick}>Clean</ButtonPrimary>
-        </Container>
-      </Layer>
-    </ErrorLayout>
+    <Layer data-tauri-drag-region="true">
+      <Container>
+        <h1>{title}</h1>
+        <p>
+          There is an error with the editor state. This is probably due to an
+          old version in which the data structure has changed. Automatic data
+          migrations may be supported in the future. To fix this now, you can
+          copy important notes from below, clean the state and paste it again.
+        </p>
+        <Pre>
+          <code>{JSON.stringify(props)}</code>
+        </Pre>
+        <ButtonPrimary onClick={onClick}>Clean</ButtonPrimary>
+      </Container>
+    </Layer>
   )
 }
 
 const other = (props: Props) => {
   const dispatch = useDispatch()
   const onClick = () => {
-    dispatch(UpdateError(undefined))
     dispatch(Discard)
-    dispatch(UpdateLoading('initialized'))
   }
 
   const getMessage = () => {
@@ -81,14 +76,12 @@ const other = (props: Props) => {
   }
 
   return (
-    <ErrorLayout data-testid="error">
-      <Layer data-tauri-drag-region="true">
-        <Container>
-          <h1>An error occurred.</h1>
-          <Pre><code>{getMessage()}</code></Pre>
-          <ButtonPrimary onClick={onClick}>Close</ButtonPrimary>
-        </Container>
-      </Layer>
-    </ErrorLayout>
+    <Layer data-tauri-drag-region="true">
+      <Container>
+        <h1>An error occurred.</h1>
+        <Pre><code>{getMessage()}</code></Pre>
+        <ButtonPrimary onClick={onClick}>Close</ButtonPrimary>
+      </Container>
+    </Layer>
   )
 }

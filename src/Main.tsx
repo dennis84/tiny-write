@@ -5,7 +5,6 @@ import {State} from '.'
 import {ReducerContext, reducer} from './reducer'
 import {fonts} from './config'
 import {ErrorBoundary} from './ErrorBoundary'
-import ErrorView from './components/Error'
 import Container from './components/Container'
 
 export default (props: {state: State}) => {
@@ -25,8 +24,7 @@ export default (props: {state: State}) => {
     <ReducerContext.Provider value={dispatch}>
       <ThemeProvider theme={state.config}>
         <Global styles={fontsStyles} />
-        <ErrorBoundary fallback={(error) => <ErrorView error={error} />}>
-          {state.error && <ErrorView error={state.error} />}
+        <ErrorBoundary>
           <Container state={state} editorViewRef={editorViewRef} />
         </ErrorBoundary>
       </ThemeProvider>

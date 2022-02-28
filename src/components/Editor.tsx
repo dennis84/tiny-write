@@ -2,7 +2,7 @@ import React from 'react'
 import {EditorView} from 'prosemirror-view'
 import {css} from '@emotion/css'
 import {useTheme} from '@emotion/react'
-import {Config, Collab, File} from '..'
+import {Config, Collab, ErrorObject, File} from '..'
 import {foreground, primary, font} from '../config'
 import {UpdateText, useDispatch} from '../reducer'
 import {ProseMirror} from '../prosemirror/editor'
@@ -11,6 +11,7 @@ import {createState} from '../prosemirror'
 
 interface Props {
   text: ProseMirrorState;
+  error?: ErrorObject;
   lastModified?: Date;
   files: File[];
   config: Config;
@@ -32,7 +33,7 @@ export default (props: Props) => {
     max-height: 100vh;
     overflow-y: auto;
     padding: 0 50px;
-    display: flex;
+    display: ${props.error ? 'none' : 'flex'};
     justify-content: center;
     scrollbar-width: none;
     ::-webkit-scrollbar {

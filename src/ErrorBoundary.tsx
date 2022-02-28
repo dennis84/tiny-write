@@ -3,7 +3,6 @@ import {ErrorObject} from '.'
 
 interface Props {
   children: ReactNode;
-  fallback: (error: ErrorObject) => ReactNode;
   error?: ErrorObject;
 }
 
@@ -27,10 +26,6 @@ export class ErrorBoundary extends React.Component<Props, State> {
   }
 
   render() {
-    if (this.state.error) {
-      return this.props.fallback(this.state.error)
-    }
-
     return this.props.children
   }
 }

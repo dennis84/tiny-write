@@ -30,6 +30,7 @@ import {
 import {Layout} from './Layout'
 import Editor from './Editor'
 import Menu from './Menu'
+import ErrorView from './Error'
 import {isEmpty, isInitialized} from '../prosemirror/state'
 import {getImageAsBase64, insertImage} from '../prosemirror/extension/image'
 import {
@@ -490,7 +491,8 @@ export default (props: Props) => {
   useDebouncedEffect(async () => {
     if (
       props.state.loading !== 'initialized' ||
-      !props.state.lastModified
+      !props.state.lastModified ||
+      props.state.error !== undefined
     ) return
 
     const data: any = {
@@ -526,11 +528,13 @@ export default (props: Props) => {
 
   return (
     <Layout
-      data-testid={props.state.loading}
+      data-testid={props.state.error ? 'error' : props.state.loading}
       onMouseEnter={onMouseEnter}>
+      {props.state.error && <ErrorView error={props.state.error} />}
       <Editor
         editorViewRef={props.editorViewRef}
         text={editorState}
+        error={props.state.error}
         lastModified={props.state.lastModified}
         files={props.state.files}
         config={props.state.config}

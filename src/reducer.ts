@@ -31,7 +31,6 @@ export const newState = (props: Partial<State> = {}): State => ({
 export const UpdateError = (error: ErrorObject) => (state: State): State => ({
   ...state,
   error,
-  loading: 'error',
 })
 
 export const UpdateLoading = (loading: LoadingType) => (state: State) => ({
@@ -85,19 +84,20 @@ export const UpdateCollab = (
 }
 
 export const New = (state: State) => {
-  if (isEmpty(state.text.editorState)) {
+  if (isEmpty(state.text.editorState) && !state.path) {
     return state
   }
 
   const files = [...state.files]
-  const text = state.path ? undefined : (state.text.editorState as EditorState).toJSON()
-
-  files.push({
-    text,
-    lastModified: state.lastModified.toISOString(),
-    path: state.path,
-    markdown: state.markdown,
-  })
+  if (!state.error) {
+    const text = state.path ? undefined : (state.text.editorState as EditorState).toJSON()
+    files.push({
+      text,
+      lastModified: state.lastModified?.toISOString(),
+      path: state.path,
+      markdown: state.markdown,
+    })
+  }
 
   return {
     ...state,
@@ -106,6 +106,7 @@ export const New = (state: State) => {
     lastModified: undefined,
     collab: undefined,
     path: undefined,
+    error: undefined,
   }
 }
 
@@ -147,6 +148,7 @@ export const Open = (file: File) => (state: State): State => {
     lastModified: next.lastModified,
     markdown: next.markdown,
     collab: undefined,
+    error: undefined,
   }
 }
 
@@ -168,6 +170,7 @@ export const Discard = (state: State) => {
     lastModified: next.lastModified,
     markdown: next.markdown,
     collab: file ? undefined : state.collab,
+    error: undefined,
   }
 }
 
