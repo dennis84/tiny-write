@@ -1,13 +1,12 @@
 import React from 'react'
 import {EditorView} from 'prosemirror-view'
 import {css} from '@emotion/css'
-import {useTheme} from '@emotion/react'
 import {Config, Collab, ErrorObject, File} from '..'
-import {foreground, primary, font} from '../config'
 import {UpdateText, useDispatch} from '../reducer'
 import {ProseMirror} from '../prosemirror/editor'
 import {ProseMirrorState, isInitialized} from '../prosemirror/state'
 import {createState} from '../prosemirror'
+import {editorCss} from './Layout'
 
 interface Props {
   text: ProseMirrorState;
@@ -24,245 +23,6 @@ interface Props {
 
 export default (props: Props) => {
   const dispatch = useDispatch()
-  const theme = useTheme()
-
-  const editorCss = css`
-    height: 100%;
-    width: 100%;
-    min-height: 100vh;
-    max-height: 100vh;
-    overflow-y: auto;
-    padding: 0 50px;
-    display: ${props.error ? 'none' : 'flex'};
-    justify-content: center;
-    scrollbar-width: none;
-    ::-webkit-scrollbar {
-      display: none;
-    }
-    > [contenteditable] {
-      min-height: calc(100% - 100px);
-      height: fit-content;
-      width: 100%;
-      max-width: ${theme.contentWidth}px;
-      font-size: ${theme.fontSize}px;
-      font-family: ${font(theme)};
-      color: ${foreground(theme)};
-      margin-top: 50px;
-      padding-bottom: 77vh;
-      line-height: ${theme.fontSize * 1.6}px;
-      outline: none;
-      background: transparent;
-      h1, h2, h3, h4, h5, h6 {
-        line-height: ${theme.fontSize * 1.6}px;
-      }
-      h1 {
-        font-size: ${theme.fontSize * 1.8}px;
-        line-height: ${theme.fontSize * 2.3}px;
-      }
-      h2 {
-        font-size: ${theme.fontSize * 1.4}px;
-      }
-      h3 {
-        font-size: ${theme.fontSize * 1.2}px;
-      }
-      h4, h5, h6 {
-        font-size: ${theme.fontSize}px;
-      }
-      p {
-        margin: 0;
-        &::after {
-          content: "";
-          display: table;
-          clear: both;
-        }
-      }
-      > ul > li, > ol > li {
-        margin-left: 30px;
-      }
-      blockquote {
-        border-left: 10px solid ${foreground(theme)}33;
-        padding-left: 10px;
-        margin: 0;
-      }
-      code {
-        border: 1px solid ${foreground(theme)}7f;
-        background: ${foreground(theme)}19;
-        border-radius: 3px;
-        padding: 2px;
-        font-family: '${font(theme, true)}' !important;
-      }
-      a {
-        color: ${primary(theme)};
-      }
-      table {
-        width: 100%;
-        margin: 5px 0;
-        border-collapse: separate;
-        border-spacing: 0;
-        border-radius: 3px;
-        border: 1px solid ${foreground(theme)}7f;
-        text-align: left;
-        background: ${foreground(theme)}19;
-        th, td {
-          padding: 5px 10px;
-          vertical-align: top;
-          border: 1px solid ${foreground(theme)}7f;
-          border-top: 0;
-          border-right: 0;
-        }
-        th:first-child, td:first-child {
-          border-left: 0;
-        }
-        tr:last-child td {
-          border-bottom: 0;
-        }
-      }
-      .placeholder {
-        color: ${foreground(theme)}4c;
-        position: absolute;
-        pointer-events: none;
-        user-select: none;
-      }
-      .draggable {
-        position: relative;
-        margin-left: -30px;
-        padding-left: 30px;
-      }
-      .handle {
-        position: absolute;
-        left: 0;
-        top: 0;
-        height: ${theme.fontSize * 1.6}px;
-        opacity: 0;
-        cursor: move;
-        transition: opacity 0.3s;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        > span {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          border-radius: 3px;
-          padding: 6px;
-          fill: ${foreground(theme)}99;
-          pointer-events: none;
-          user-select: none;
-        }
-        &:hover > span {
-          background: ${foreground(theme)}19;
-        }
-      }
-      h1 .handle {
-        height: ${theme.fontSize * 2.3}px;
-      }
-      .draggable:hover .handle {
-        opacity: 1;
-      }
-      .codemirror-outer {
-        position: relative;
-        .handle {
-          top: 2px;
-        }
-        .lang-toggle {
-          position: absolute;
-          right: -8px;
-          height: ${theme.fontSize * 1.6}px;
-          display: flex;
-          align-items: center;
-          top: 2px;
-          transform: translateX(100%);
-          cursor: pointer;
-          z-index: 10;
-          user-select: none;
-        }
-        .codemirror-inner {
-          position: relative;
-          margin: 5px 0;
-          padding: 0;
-          font-family: '${font(theme, true)}' !important;
-          border: 1px solid ${foreground(theme)}4c;
-          border-radius: 3px;
-          .lang-select {
-            .lang-input {
-              outline: none;
-            }
-          }
-          .cm-editor {
-            outline: none;
-            .cm-content {
-              padding: 0;
-            }
-            .cm-line {
-              line-height: ${theme.fontSize * 1.8}px;
-            }
-            .cm-diagnosticText {
-              white-space: pre;
-            }
-            .cm-scroller {
-              -ms-overflow-style: none;
-              scrollbar-width: none;
-              &::-webkit-scrollbar {
-                display: none;
-              }
-            }
-            .cm-lineWrapping {
-              word-break: break-all;
-            }
-            &:not(.cm-focused) {
-              .cm-activeLine {
-                background: none;
-              }
-            }
-          }
-          .prettify {
-            position: absolute;
-            right: 8px;
-            bottom: 2px;
-            cursor: pointer;
-            z-index: 10;
-            user-select: none;
-          }
-        }
-      }
-      .todo-item {
-        display: flex;
-        align-items: center;
-        &.done {
-          text-decoration: line-through;
-          color: ${foreground(theme)}4c;
-        }
-        label {
-          margin-right: 10px;
-          user-select: none;
-        }
-      }
-      .image-container {
-        position: relative;
-        float: left;
-        max-width: 100%;
-        margin-right: 10px;
-        margin-bottom: 10px;
-        cursor: default;
-        line-height: 0;
-        img {
-          width: 100%;
-        }
-        .resize-handle {
-          position: absolute;
-          width: 40px;
-          height: 40px;
-          bottom: -5px;
-          right: -5px;
-          cursor: nwse-resize;
-        }
-        &.ProseMirror-selectednode {
-          box-shadow: 0 0 0 2px ${primary(theme)};
-          border-radius: 3px;
-        }
-      }
-    }
-  `
 
   const onInit = (value: ProseMirrorState) => {
     props.editorViewRef.current.focus()
@@ -285,10 +45,14 @@ export default (props: Props) => {
     })
   }
 
+  const styles = props.error ?
+    css`display: none` :
+    editorCss(props.config)
+
   return (
     <ProseMirror
       editorViewRef={props.editorViewRef}
-      className={editorCss}
+      className={styles}
       state={props.text}
       onChange={onChange}
       onReconfigure={onReconfigure}
