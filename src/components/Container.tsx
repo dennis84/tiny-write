@@ -327,6 +327,26 @@ export default (props: Props) => {
     initialize()
   }, [])
 
+  // After initialization is completed
+  useEffect(() => {
+    if (props.state.loading === 'roundtrip') {
+      dispatch(UpdateLoading('initialized'))
+    } else if (isFirstInitialized) {
+      if (
+        props.state.args?.file ||
+        props.state.args?.room ||
+        props.state.args?.text
+      ) {
+        onArgs(props.state.args)
+        return
+      }
+
+      if (props.state.path) {
+        loadFile()
+      }
+    }
+  }, [props.state.loading])
+
   // Handle dark mode
   useEffect(() => {
     if (!window.matchMedia) return
@@ -375,26 +395,6 @@ export default (props: Props) => {
         }
       }
     })
-  }, [props.state.loading])
-
-  // After initialization is completed
-  useEffect(() => {
-    if (props.state.loading === 'roundtrip') {
-      dispatch(UpdateLoading('initialized'))
-    } else if (isFirstInitialized) {
-      if (
-        props.state.args?.file ||
-        props.state.args?.room ||
-        props.state.args?.text
-      ) {
-        onArgs(props.state.args)
-        return
-      }
-
-      if (props.state.path) {
-        loadFile()
-      }
-    }
   }, [props.state.loading])
 
   // If collab is started
@@ -519,6 +519,15 @@ export default (props: Props) => {
 
     db.set('state', JSON.stringify(data))
   }, 100, [props.state.lastModified])
+
+  // Render uninitialized view.
+  if (props.state.loading !== 'initialized') {
+    return (
+      <Layout data-testid={props.state.error ? 'error' : props.state.loading}>
+        {props.state.error && <ErrorView error={props.state.error} />}
+      </Layout>
+    )
+  }
 
   const editorState = props.state.text ?? createEmptyState({
     config: props.state.config,
