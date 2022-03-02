@@ -4,7 +4,6 @@ import {background, foreground, primary, font} from '../config'
 import {Config} from '..'
 
 export const Layout = styled.div`
-  display: flex;
   background: ${props => background(props.theme)};
   width: 100%;
   height: 100%;
@@ -27,7 +26,7 @@ export const editorCss = (config: Config) => css`
   max-height: 100vh;
   overflow-y: auto;
   padding: 0 50px;
-  display: 'flex';
+  display: flex;
   justify-content: center;
   scrollbar-width: none;
   ::-webkit-scrollbar {
