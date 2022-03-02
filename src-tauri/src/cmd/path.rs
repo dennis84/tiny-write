@@ -10,8 +10,8 @@ pub fn dirname(path: String) -> Result<String, String> {
     }
 
     let mut ancestors = p.ancestors();
-    ancestors.next().ok_or("")?;
-    let d = ancestors.next().ok_or("")?;
+    ancestors.next().ok_or(format!("No directory in: {}", path))?;
+    let d = ancestors.next().ok_or(format!("No directory in: {}", path))?;
     d.to_path_buf()
         .into_os_string()
         .into_string()
@@ -131,6 +131,6 @@ mod tests {
 
         assert_eq!(dirname("Cargo.lock".to_string()).unwrap(), "".to_string());
 
-        assert!(dirname("".to_string()).is_err());
+        assert_eq!(dirname("".to_string()).err().unwrap(), "No directory in: ");
     }
 }

@@ -47,7 +47,10 @@ export default (props: Props) => {
 
   const styles = props.error ?
     css`display: none` :
-    editorCss(props.config)
+    css`
+      ${editorCss(props.config)};
+      ${props.markdown ? 'white-space: pre-wrap' : ''};
+    `
 
   return (
     <ProseMirror

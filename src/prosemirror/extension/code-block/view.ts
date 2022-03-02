@@ -419,6 +419,7 @@ export class CodeBlockView {
       this.prettifyBtn.style.display = 'block'
     } else {
       this.prettifyBtn.style.display = 'none'
+      this.editorView.dispatch(setDiagnostics(this.editorView.state, []))
     }
   }
 
