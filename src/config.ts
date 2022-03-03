@@ -48,7 +48,8 @@ interface Theme {
   label: string;
   background: string;
   foreground: string;
-  primary: string;
+  primaryForeground: string;
+  primaryBackground: string;
   dark: boolean;
 }
 
@@ -57,63 +58,72 @@ export const themes: {[key: string]: Theme} = {
     label: 'Light',
     background: '#ffffff',
     foreground: '#666666',
-    primary: '#8575ff',
+    primaryBackground: '#8575ff',
+    primaryForeground: '#fff',
     dark: false,
   },
   'dark': {
     label: 'Dark',
     background: '#16161a',
     foreground: '#94a1b2',
-    primary: '#68ffb8',
+    primaryBackground: '#68ffb8',
+    primaryForeground: '#32825B',
     dark: true,
   },
   'gruvbox-dark': {
     label: 'Gruvbox Dark',
     background: '#32302f',
     foreground: '#dfbf8e',
-    primary: '#d75f5f',
+    primaryBackground: '#d75f5f',
+    primaryForeground: '#fff',
     dark: true,
   },
   'solarized-light': {
     label: 'Solarized Light',
     background: '#fdf6e3',
     foreground: '#657b83',
-    primary: '#2aa198',
+    primaryBackground: '#2aa198',
+    primaryForeground: '#fff',
     dark: false,
   },
   'solarized-dark': {
     label: 'Solarized Dark',
     background: '#002b36',
     foreground: '#839496',
-    primary: '#cb4b16',
+    primaryBackground: '#cb4b16',
+    primaryForeground: '#fff',
     dark: true,
   },
   'material': {
     label: 'Material',
     background: '#263238',
     foreground: '#92989b',
-    primary: '#89ddff',
+    primaryBackground: '#89ddff',
+    primaryForeground: '#005f85',
     dark: true,
   },
   'dracula': {
     label: 'Dracula',
     background: '#282a36',
     foreground: '#bd93f9',
-    primary: '#ff79c6',
+    primaryBackground: '#ff79c6',
+    primaryForeground: '#fff',
     dark: true,
   },
   'hibernus': {
     label: 'Hibernus',
     background: '#f4f6f6',
     foreground: '#90a6a6',
-    primary: '#fe5792',
+    primaryBackground: '#fe5792',
+    primaryForeground: '#fff',
     dark: false,
   },
   'soft-era': {
     label: 'Soft Era',
     background: '#f9f5f5',
     foreground: '#ba989c',
-    primary: '#b8bde8',
+    primaryBackground: '#b8bde8',
+    primaryForeground: '#fff',
     dark: false,
   },
 }
@@ -161,16 +171,13 @@ export const codeThemes: {[key: string]: CodeTheme} = {
 export const isDarkTheme = (config: Config) =>
   themes[config.theme] ? themes[config.theme].dark : false
 
-export const background = (config: Config) =>
-  themes[config.theme] ? themes[config.theme].background : getDefaltTheme().background
+const getDefaltTheme = () => isDark() ? themes.dark : themes.light
+const getTheme = (config: Config) => themes[config.theme] ?? getDefaltTheme()
 
-export const foreground = (config: Config) =>
-  themes[config.theme] ? themes[config.theme].foreground : getDefaltTheme().foreground
-
-export const primary = (config: Config) =>
-  themes[config.theme] ? themes[config.theme].primary : getDefaltTheme().primary
-
-export const getDefaltTheme = () => isDark() ? themes.dark : themes.light
+export const background = (config: Config) => getTheme(config).background
+export const foreground = (config: Config) => getTheme(config).foreground
+export const primaryBackground = (config: Config) => getTheme(config).primaryBackground
+export const primaryForeground = (config: Config) => getTheme(config).primaryForeground
 
 export const font = (config: Config, monospace = false) => {
   if (monospace && !fonts[config.font]?.monospace) {

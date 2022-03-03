@@ -14,6 +14,7 @@ const Layer = styled.div`
   overflow: y-auto;
   padding: 50px;
   display: flex;
+  font-family: 'JetBrains Mono';
   justify-content: center;
   ::-webkit-scrollbar {
     display: none;

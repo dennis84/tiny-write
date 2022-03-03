@@ -18,7 +18,7 @@ import {
   UpdatePath,
   useDispatch,
 } from '../reducer'
-import {foreground, primary, themes, fonts, codeThemes} from '../config'
+import {foreground, primaryBackground, primaryForeground, themes, fonts, codeThemes} from '../config'
 import {isTauri, isMac, alt, mod, WEB_URL, VERSION_URL} from '../env'
 import * as remote from '../remote'
 import {ProseMirrorState, isEmpty, isInitialized} from '../prosemirror/state'
@@ -144,7 +144,7 @@ const Link = styled.button<LinkProps>`
     }
   }
   &:hover {
-    color: ${props => primary(props.theme)};
+    color: ${props => primaryBackground(props.theme)};
     > span i {
       position: relative;
       box-shadow: 0 3px 0 0 ${props => foreground(props.theme)}99;

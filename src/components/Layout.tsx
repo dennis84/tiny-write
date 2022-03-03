@@ -1,6 +1,6 @@
 import styled from '@emotion/styled'
 import {css} from '@emotion/css'
-import {background, foreground, primary, font} from '../config'
+import {background, foreground, primaryBackground, font} from '../config'
 import {Config} from '..'
 
 export const Layout = styled.div`
@@ -13,7 +13,7 @@ export const Layout = styled.div`
   display: ${props => props.hidden ? 'none' : 'flex'};
   position: relative;
   .drop-cursor {
-    background: ${props => primary(props.theme)} !important;
+    background: ${props => primaryBackground(props.theme)} !important;
     height: 2px !important;
     opacity: 0.5;
   }
@@ -85,7 +85,7 @@ export const editorCss = (config: Config) => css`
       font-family: '${font(config, true)}' !important;
     }
     a {
-      color: ${primary(config)};
+      color: ${primaryBackground(config)};
     }
     table {
       width: 100%;
@@ -250,7 +250,7 @@ export const editorCss = (config: Config) => css`
         cursor: nwse-resize;
       }
       &.ProseMirror-selectednode {
-        box-shadow: 0 0 0 2px ${primary(config)};
+        box-shadow: 0 0 0 2px ${primaryBackground(config)};
         border-radius: 3px;
       }
     }

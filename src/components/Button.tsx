@@ -1,6 +1,6 @@
 import {css} from '@emotion/react'
 import styled from '@emotion/styled'
-import {foreground, primary, font} from '../config'
+import {foreground, primaryBackground, primaryForeground, font} from '../config'
 
 export const Common = css`
   height: 50px;
@@ -13,6 +13,7 @@ export const Common = css`
   align-items: center;
   outline: none;
   text-decoration: none;
+  font-family: 'JetBrains Mono';
   &:hover {
     opacity: 0.8;
   }
@@ -28,8 +29,7 @@ export const Button = styled.button`
 
 export const ButtonPrimary = styled.button`
   ${Common}
-  color: #fff;
+  color: ${props => primaryForeground(props.theme)};
   border: 0;
-  font-family: ${props => font(props.theme)};
-  background: ${props => primary(props.theme)};
+  background: ${props => primaryBackground(props.theme)};
 `
