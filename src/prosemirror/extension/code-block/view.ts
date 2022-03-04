@@ -1,5 +1,5 @@
 import {Node} from 'prosemirror-model'
-import {EditorView as ProsemirrorEditorView} from 'prosemirror-view'
+import {DecorationSet, EditorView as ProsemirrorEditorView} from 'prosemirror-view'
 import {TextSelection, Selection} from 'prosemirror-state'
 import {exitCode} from 'prosemirror-commands'
 import {Compartment, EditorState, Extension} from '@codemirror/state'
@@ -256,10 +256,12 @@ export class CodeBlockView {
     inner.appendChild(langSelectBottom)
     outer.appendChild(this.langToggle)
 
-    innerDecos.find().map((d: any) => {
-      const elem = typeof d.type.toDOM === 'function' ? d.type.toDOM() : d.type.toDOM
-      outer.appendChild(elem)
-    })
+    if (innerDecos instanceof DecorationSet) {
+      innerDecos.find().map((d: any) => {
+        const elem = typeof d.type.toDOM === 'function' ? d.type.toDOM() : d.type.toDOM
+        outer.appendChild(elem)
+      })
+    }
 
     this.updateLangToggle()
     this.updatePrettify()
@@ -293,6 +295,12 @@ export class CodeBlockView {
     if (node.type != this.node.type) return false
     this.node = node
     this.updatePrettify()
+    // Allow update from collab
+    if (node.attrs.params.lang !== this.node.attrs.params.lang) {
+      this.reconfigure()
+      this.updateLangToggle()
+    }
+
     const change = computeChange(this.editorView.state.doc.toString(), node.textContent)
     if (change) {
       this.updating = true

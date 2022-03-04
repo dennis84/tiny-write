@@ -1,6 +1,6 @@
 import {keymap} from 'prosemirror-keymap'
 import {keymap as cmKeymap} from '@codemirror/view'
-import {ySyncPlugin, yUndoPlugin} from 'y-prosemirror'
+import {ySyncPlugin, yCursorPlugin, yUndoPlugin} from 'y-prosemirror'
 import {ProseMirrorState} from './prosemirror/state'
 import {Schema} from 'prosemirror-model'
 import base from './prosemirror/extension/base'
@@ -29,11 +29,23 @@ interface Props {
   y?: YOptions;
 }
 
+export const cursorBuilder = (user: any): HTMLElement => {
+  const cursor = document.createElement('span')
+  cursor.classList.add('ProseMirror-yjs-cursor')
+  cursor.setAttribute('style', `border-color: ${user.background}`)
+  const userDiv = document.createElement('span')
+  userDiv.setAttribute('style', `background-color: ${user.background}; color: ${user.foreground}`)
+  userDiv.textContent = user.name
+  cursor.append(userDiv)
+  return cursor
+}
+
 const yExtension = (props: Props): ProseMirrorExtension => ({
   plugins: (prev) => props.y ? [
     ...prev,
     ySyncPlugin(props.y.type),
-    //yCursorPlugin(props.y.provider.awareness),
+    // @ts-ignore
+    yCursorPlugin(props.y.provider.awareness, {cursorBuilder}),
     yUndoPlugin(),
   ] : prev
 })

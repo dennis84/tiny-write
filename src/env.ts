@@ -17,7 +17,7 @@ export const WEB_URL =
 
 export const COLLAB_URL =
   //'ws://localhost:1234'
-  'wss://amplified-brook-building.glitch.me'
+  'wss://dune-married-rotate.glitch.me'
 
 export const VERSION_URL =
   `https://github.com/dennis84/tiny-write/releases/tag/v${tauriConf?.package.version}`

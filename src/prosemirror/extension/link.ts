@@ -17,143 +17,143 @@ const findMarkPosition = (mark: Mark, doc: Node, from: number, to: number) => {
   return markPos
 }
 
-const markdownLinks = (schema: Schema) => {
-  const plugin = new Plugin({
-    key: new PluginKey('markdown-links'),
-    state: {
-      init() {
-        return {}
-      },
-      apply(tr, state) {
-        const action = tr.getMeta(this)
-        if (action?.pos) {
-          state.pos = action.pos
-        }
+const pluginKey = new PluginKey('markdown-links')
 
-        return state
-      }
+const markdownLinks = (schema: Schema) => new Plugin({
+  key: pluginKey,
+  state: {
+    init() {
+      return {schema}
     },
-    props: {
-      handleDOMEvents: {
-        keyup: (view) => {
-          return handleMove(view)
-        },
-        click: (view, e) => {
-          if (handleMove(view)) {
-            e.preventDefault()
-          }
-
-          return true
-        },
-      }
-    }
-  })
-
-  const resolvePos = (view: EditorView, pos: number) => {
-    try {
-      return view.state.doc.resolve(pos)
-    } catch (err) {
-      // ignore
-    }
-  }
-
-  const toLink = (view: EditorView, tr: Transaction) => {
-    const sel = view.state.selection
-    const lastPos = plugin.getState(view.state).pos
-
-    if (lastPos !== undefined) {
-      const $from = resolvePos(view, lastPos)
-      if (!$from || $from.depth === 0 || $from.parent.type.spec.code) {
-        return false
+    apply(tr, state) {
+      const action = tr.getMeta(this)
+      if (action?.pos) {
+        state.pos = action.pos
       }
 
-      const lineFrom = $from.before()
-      const lineTo = $from.after()
-
-      const line = view.state.doc.textBetween(lineFrom, lineTo, '\0', '\0')
-      const match = REGEX.exec(line)
-
-      if (match) {
-        const [full,, text, href] = match
-        const spaceLeft = full.indexOf(text) - 1
-        const spaceRight = full.length - text.length - href.length - spaceLeft - 4
-        const start = match.index + $from.start() + spaceLeft
-        const end = start + full.length - spaceLeft - spaceRight
-
-        if (sel.$from.pos >= start && sel.$from.pos <= end) {
-          return false
+      return state
+    }
+  },
+  props: {
+    handleDOMEvents: {
+      keyup: (view) => {
+        return handleMove(view)
+      },
+      click: (view, e) => {
+        if (handleMove(view)) {
+          e.preventDefault()
         }
-
-        // Do not convert md links if content has marks
-        const $startPos = resolvePos(view, start)
-        if ($startPos.marks().length > 0) {
-          return false
-        }
-
-        const textStart = start + 1
-        const textEnd = textStart + text.length
-
-        if (textEnd < end) tr.delete(textEnd, end)
-        if (textStart > start) tr.delete(start, textStart)
-
-        const to = start + text.length
-        tr.addMark(start, to, schema.marks.link.create({href}))
-
-        const sub = end - textEnd + textStart - start
-        tr.setMeta(plugin, {pos: sel.$head.pos - sub})
 
         return true
-      }
+      },
     }
-
-    return false
   }
+})
 
-  const toMarkdown = (view: EditorView, tr: Transaction) => {
-    const sel = view.state.selection
-    if (sel.$head.depth === 0 || sel.$head.parent.type.spec.code) {
+const resolvePos = (view: EditorView, pos: number) => {
+  try {
+    return view.state.doc.resolve(pos)
+  } catch (err) {
+    // ignore
+  }
+}
+
+const toLink = (view: EditorView, tr: Transaction) => {
+  const sel = view.state.selection
+  const state = pluginKey.getState(view.state)
+  const lastPos = state.pos
+
+  if (lastPos !== undefined) {
+    const $from = resolvePos(view, lastPos)
+    if (!$from || $from.depth === 0 || $from.parent.type.spec.code) {
       return false
     }
 
-    const mark = schema.marks.link.isInSet(sel.$head.marks())
-    const textFrom = sel.$head.pos - sel.$head.textOffset
-    const textTo = sel.$head.after()
+    const lineFrom = $from.before()
+    const lineTo = $from.after()
 
-    if (mark) {
-      const {href} = mark.attrs
-      const range = findMarkPosition(mark, view.state.doc, textFrom, textTo)
-      const text = view.state.doc.textBetween(range.from, range.to, '\0', '\0')
-      tr.replaceRangeWith(range.from, range.to, view.state.schema.text(`[${text}](${href})`))
-      tr.setSelection(new TextSelection(tr.doc.resolve(sel.$head.pos + 1)))
-      tr.setMeta(plugin, {pos: sel.$head.pos})
+    const line = view.state.doc.textBetween(lineFrom, lineTo, '\0', '\0')
+    const match = REGEX.exec(line)
+
+    if (match) {
+      const [full,, text, href] = match
+      const spaceLeft = full.indexOf(text) - 1
+      const spaceRight = full.length - text.length - href.length - spaceLeft - 4
+      const start = match.index + $from.start() + spaceLeft
+      const end = start + full.length - spaceLeft - spaceRight
+
+      if (sel.$from.pos >= start && sel.$from.pos <= end) {
+        return false
+      }
+
+      // Do not convert md links if content has marks
+      const $startPos = resolvePos(view, start)
+      if ($startPos.marks().length > 0) {
+        return false
+      }
+
+      const textStart = start + 1
+      const textEnd = textStart + text.length
+
+      if (textEnd < end) tr.delete(textEnd, end)
+      if (textStart > start) tr.delete(start, textStart)
+
+      const to = start + text.length
+      tr.addMark(start, to, state.schema.marks.link.create({href}))
+
+      const sub = end - textEnd + textStart - start
+      tr.setMeta(pluginKey, {pos: sel.$head.pos - sub})
+
       return true
     }
+  }
 
+  return false
+}
+
+const toMarkdown = (view: EditorView, tr: Transaction) => {
+  const {schema} = pluginKey.getState(view.state)
+  const sel = view.state.selection
+  if (sel.$head.depth === 0 || sel.$head.parent.type.spec.code) {
     return false
   }
 
-  const handleMove = (view: EditorView) => {
-    const sel = view.state.selection
-    if (!sel.empty || !sel.$head) return false
-    const pos = sel.$head.pos
-    const tr = view.state.tr
+  const mark = schema.marks.link.isInSet(sel.$head.marks())
+  const textFrom = sel.$head.pos - sel.$head.textOffset
+  const textTo = sel.$head.after()
 
-    if (toLink(view, tr)) {
-      view.dispatch(tr)
-      return true
-    }
+  if (mark) {
+    const {href} = mark.attrs
+    const range = findMarkPosition(mark, view.state.doc, textFrom, textTo)
+    const text = view.state.doc.textBetween(range.from, range.to, '\0', '\0')
+    tr.replaceRangeWith(range.from, range.to, view.state.schema.text(`[${text}](${href})`))
+    tr.setSelection(new TextSelection(tr.doc.resolve(sel.$head.pos + 1)))
+    tr.setMeta(pluginKey, {pos: sel.$head.pos})
+    return true
+  }
 
-    if (toMarkdown(view, tr)) {
-      view.dispatch(tr)
-      return true
-    }
+  return false
+}
 
-    tr.setMeta(plugin, {pos})
+const handleMove = (view: EditorView) => {
+  const sel = view.state.selection
+  if (!sel.empty || !sel.$head) return false
+  const pos = sel.$head.pos
+  const tr = view.state.tr
+
+  if (toLink(view, tr)) {
     view.dispatch(tr)
-    return false
+    return true
   }
 
-  return plugin
+  if (toMarkdown(view, tr)) {
+    view.dispatch(tr)
+    return true
+  }
+
+  tr.setMeta(pluginKey, {pos})
+  view.dispatch(tr)
+  return false
 }
 
 export default (): ProseMirrorExtension => ({

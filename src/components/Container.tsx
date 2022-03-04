@@ -7,11 +7,12 @@ import * as Y from 'yjs'
 import {undo as yUndo, redo as yRedo} from 'y-prosemirror'
 import {WebsocketProvider} from 'y-websocket'
 import {listen} from '@tauri-apps/api/event'
+import {uniqueNamesGenerator, adjectives, colors, animals} from 'unique-names-generator'
 import {Args, State} from '..'
 import * as remote from '../remote'
 import db from '../db'
 import {COLLAB_URL, isTauri, mod} from '../env'
-import {isDarkTheme} from '../config'
+import {isDarkTheme, themes} from '../config'
 import {useDebouncedEffect, useDynamicCallback, usePrevious} from '../hooks'
 import {serialize, createMarkdownParser} from '../markdown'
 import {
@@ -408,6 +409,21 @@ export default (props: Props) => {
       const type = ydoc.getXmlFragment('prosemirror')
       const provider = new WebsocketProvider(COLLAB_URL, room, ydoc)
 
+      const xs = Object.values(themes)
+      const index = Math.floor(Math.random() * xs.length)
+      const username = uniqueNamesGenerator({
+        dictionaries: [adjectives, animals],
+        style: 'capital',
+        separator: ' ',
+        length: 2,
+      });
+
+      provider.awareness.setLocalStateField('user', {
+        name: username,
+        background: xs[index].primaryBackground,
+        foreground: xs[index].primaryForeground,
+      })
+
       const newText = createState({
         data: props.state.collab?.room ? createEmptyData() : editorView.state.toJSON(),
         config: props.state.config,
@@ -427,7 +443,7 @@ export default (props: Props) => {
     }
 
     if (props.state.collab) {
-      props.state.collab?.y?.provider.destroy()
+      props.state.collab.y?.provider.destroy()
 
       // Recreate editorState without collab plugin.
       const newText = createState({
