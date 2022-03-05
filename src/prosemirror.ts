@@ -1,6 +1,5 @@
 import {keymap} from 'prosemirror-keymap'
 import {keymap as cmKeymap} from '@codemirror/view'
-import {ySyncPlugin, yCursorPlugin, yUndoPlugin} from 'y-prosemirror'
 import {ProseMirrorState} from './prosemirror/state'
 import {Schema} from 'prosemirror-model'
 import base from './prosemirror/extension/base'
@@ -16,6 +15,7 @@ import image from './prosemirror/extension/image'
 import dragHandle from './prosemirror/extension/drag-handle'
 import pasteMarkdown from './prosemirror/extension/paste-markdown'
 import table from './prosemirror/extension/table'
+import collab from './prosemirror/extension/collab'
 import {ProseMirrorExtension} from './prosemirror/state'
 import {Config, YOptions} from '.'
 import {codeTheme} from './config'
@@ -28,27 +28,6 @@ interface Props {
   path?: string;
   y?: YOptions;
 }
-
-export const cursorBuilder = (user: any): HTMLElement => {
-  const cursor = document.createElement('span')
-  cursor.classList.add('ProseMirror-yjs-cursor')
-  cursor.setAttribute('style', `border-color: ${user.background}`)
-  const userDiv = document.createElement('span')
-  userDiv.setAttribute('style', `background-color: ${user.background}; color: ${user.foreground}`)
-  userDiv.textContent = user.name
-  cursor.append(userDiv)
-  return cursor
-}
-
-const yExtension = (props: Props): ProseMirrorExtension => ({
-  plugins: (prev) => props.y ? [
-    ...prev,
-    ySyncPlugin(props.y.type),
-    // @ts-ignore
-    yCursorPlugin(props.y.provider.awareness, {cursorBuilder}),
-    yUndoPlugin(),
-  ] : prev
-})
 
 const customKeymap = (props: Props): ProseMirrorExtension => ({
   plugins: (prev) => props.keymap ? [
@@ -73,7 +52,7 @@ export const createState = (props: Props): ProseMirrorState => ({
     customKeymap(props),
     base(props.markdown),
     scroll(props.config.typewriterMode),
-    yExtension(props),
+    collab(props.y),
     dragHandle(),
   ] : [
     customKeymap(props),
@@ -96,7 +75,7 @@ export const createState = (props: Props): ProseMirrorState => ({
     placeholder('Start typing ...'),
     scroll(props.config.typewriterMode),
     pasteMarkdown(),
-    yExtension(props),
+    collab(props.y),
   ]
 })
 

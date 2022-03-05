@@ -18,7 +18,7 @@ import {
   UpdatePath,
   useDispatch,
 } from '../reducer'
-import {foreground, primaryBackground, primaryForeground, themes, fonts, codeThemes} from '../config'
+import {foreground, primaryBackground, themes, fonts, codeThemes} from '../config'
 import {isTauri, isMac, alt, mod, WEB_URL, VERSION_URL} from '../env'
 import * as remote from '../remote'
 import {ProseMirrorState, isEmpty, isInitialized} from '../prosemirror/state'
