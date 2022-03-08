@@ -2,7 +2,7 @@ import React, {useReducer, useRef} from 'react'
 import {EditorView} from 'prosemirror-view'
 import {Global, ThemeProvider} from '@emotion/react'
 import {State} from '.'
-import {ReducerContext, reducer} from './reducer'
+import {ReducerContext, UpdateError, reducer} from './reducer'
 import {fonts} from './config'
 import {ErrorBoundary} from './ErrorBoundary'
 import Container from './components/Container'
@@ -24,7 +24,7 @@ export default (props: {state: State}) => {
     <ReducerContext.Provider value={dispatch}>
       <ThemeProvider theme={state.config}>
         <Global styles={fontsStyles} />
-        <ErrorBoundary>
+        <ErrorBoundary onError={(error) => dispatch(UpdateError(error))}>
           <Container state={state} editorViewRef={editorViewRef} />
         </ErrorBoundary>
       </ThemeProvider>

@@ -87,7 +87,7 @@
   "hasInstallScript": true,
   "scripts": {
     "web": "vite",
-    "app": "npm run tauri dev ~/projects/tiny-write/README.md & vite",
+    "app": "npm run tauri dev ./README.md & vite",
     "build": "npm run lint && vite build --base './'",
     "dist": "npm run build && npm run tauri build",
     "lint": "eslint . --ext .ts,.tsx",

@@ -29,6 +29,12 @@ export const ProseMirror = (props: Props) => {
   }
 
   useEffect(() => {
+    return () => {
+      editorViewRef.current = null
+    }
+  }, [])
+
+  useEffect(() => {
     if (!props.state.editorState) return
 
     let state = {...props.state}

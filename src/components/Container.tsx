@@ -65,9 +65,8 @@ export default (props: Props) => {
   const mouseEnterCoords = useRef({x: 0, y: 0})
   const loadingPrev = usePrevious(props.state.loading)
 
-  const isFirstInitialized =
-    loadingPrev === 'roundtrip' &&
-    props.state.loading === 'initialized'
+  const isReady = props.state.loading === 'initialized' && props.state.error === undefined
+  const isFirstInitialized = isReady && loadingPrev === 'roundtrip'
 
   const onQuit = () => {
     if (!isTauri) return
@@ -325,6 +324,7 @@ export default (props: Props) => {
 
   // On mount, load state from DB.
   useEffect(() => {
+    if (props.state.error) return
     initialize()
   }, [])
 
@@ -351,7 +351,7 @@ export default (props: Props) => {
   // Handle dark mode
   useEffect(() => {
     if (!window.matchMedia) return
-    if (props.state.loading !== 'initialized') return
+    if (!isReady) return
 
     const matchDark = () => window.matchMedia('(prefers-color-scheme: dark)')
 
@@ -400,7 +400,7 @@ export default (props: Props) => {
 
   // If collab is started
   useEffect(() => {
-    if (props.state.loading !== 'initialized') return
+    if (!isReady) return
     if (props.state.collab?.started) {
       const room = props.state.collab?.room ?? uuidv4()
       window.history.replaceState(null, '', `/${room}`)
@@ -454,10 +454,7 @@ export default (props: Props) => {
         keymap,
       })
 
-      dispatch(UpdateCollab({
-        started: false,
-        error: props.state.collab.error,
-      }, newText))
+      dispatch(UpdateCollab(undefined, newText))
     }
 
     window.history.replaceState(null, '', '/')
@@ -465,9 +462,7 @@ export default (props: Props) => {
 
   // Load file if path has changed
   useEffect(() => {
-    if (props.state.path && props.state.loading === 'initialized') {
-      loadFile()
-    }
+    if (props.state.path && isReady) loadFile()
   }, [props.state.path])
 
   // Recreate prosemirror if config properties has changed
@@ -493,7 +488,7 @@ export default (props: Props) => {
 
   // Toggle remote fullscreen if changed
   useEffect(() => {
-    if (props.state.loading !== 'initialized') return
+    if (!isReady) return
     remote.setFullscreen(props.state.fullscreen)
   }, [props.state.fullscreen])
 
@@ -505,11 +500,7 @@ export default (props: Props) => {
 
   // Save state in DB if lastModified has changed
   useDebouncedEffect(async () => {
-    if (
-      props.state.loading !== 'initialized' ||
-      !props.state.lastModified ||
-      props.state.error !== undefined
-    ) return
+    if (!isReady || !props.state.lastModified) return
 
     const data: any = {
       lastModified: props.state.lastModified,
@@ -536,15 +527,6 @@ export default (props: Props) => {
     db.set('state', JSON.stringify(data))
   }, 100, [props.state.lastModified])
 
-  // Render uninitialized view.
-  if (props.state.loading !== 'initialized') {
-    return (
-      <Layout data-testid={props.state.error ? 'error' : props.state.loading}>
-        {props.state.error && <ErrorView error={props.state.error} />}
-      </Layout>
-    )
-  }
-
   const editorState = props.state.text ?? createEmptyState({
     config: props.state.config,
     markdown: props.state.markdown,
@@ -556,28 +538,32 @@ export default (props: Props) => {
       data-testid={props.state.error ? 'error' : props.state.loading}
       onMouseEnter={onMouseEnter}>
       {props.state.error && <ErrorView error={props.state.error} />}
-      <Editor
-        editorViewRef={props.editorViewRef}
-        text={editorState}
-        error={props.state.error}
-        lastModified={props.state.lastModified}
-        files={props.state.files}
-        config={props.state.config}
-        path={props.state.path}
-        collab={props.state.collab}
-        markdown={props.state.markdown}
-        keymap={keymap} />
-      <Menu
-        editorViewRef={props.editorViewRef}
-        text={editorState}
-        lastModified={props.state.lastModified}
-        path={props.state.path}
-        files={props.state.files}
-        config={props.state.config}
-        fullscreen={props.state.fullscreen}
-        collab={props.state.collab}
-        markdown={props.state.markdown}
-        onToggleMarkdown={onToggleMarkdown} />
+      {props.state.loading === 'initialized' && <>
+        {!props.state.error && (
+          <Editor
+            editorViewRef={props.editorViewRef}
+            text={editorState}
+            error={props.state.error}
+            lastModified={props.state.lastModified}
+            files={props.state.files}
+            config={props.state.config}
+            path={props.state.path}
+            collab={props.state.collab}
+            markdown={props.state.markdown}
+            keymap={keymap} />
+        )}
+        <Menu
+          editorViewRef={props.editorViewRef}
+          text={editorState}
+          lastModified={props.state.lastModified}
+          path={props.state.path}
+          files={props.state.files}
+          config={props.state.config}
+          fullscreen={props.state.fullscreen}
+          collab={props.state.collab}
+          markdown={props.state.markdown}
+          onToggleMarkdown={onToggleMarkdown} />
+      </>}
     </Layout>
   )
 }

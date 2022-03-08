@@ -4,6 +4,7 @@ import {ErrorObject} from '.'
 interface Props {
   children: ReactNode;
   error?: ErrorObject;
+  onError: (error: ErrorObject) => void;
 }
 
 interface State {
@@ -17,12 +18,13 @@ export class ErrorBoundary extends React.Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    this.setState({
-      error: {
-        id: 'exception',
-        props: {error, errorInfo},
-      }
-    });
+    const err = {
+      id: 'exception',
+      props: {error, errorInfo},
+    }
+
+    this.setState({error: err})
+    this.props.onError(err)
   }
 
   render() {

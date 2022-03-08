@@ -139,7 +139,7 @@ export const Open = (file: File) => (state: State): State => {
     files.splice(index, 1)
   }
 
-  const next = createTextFromFile(file)
+  const next = createTextFromFile(file, state.text)
   return {
     ...state,
     files,
@@ -155,7 +155,7 @@ export const Open = (file: File) => (state: State): State => {
 export const Discard = (state: State) => {
   const files = [...state.files]
   const file = files.shift()
-  const next = file ? createTextFromFile(file) : {
+  const next = file ? createTextFromFile(file, state.text) : {
     text: undefined,
     lastModified: undefined,
     path: undefined,
@@ -174,8 +174,8 @@ export const Discard = (state: State) => {
   }
 }
 
-const createTextFromFile = (file: File) => ({
-  text: {editorState: file.text},
+const createTextFromFile = (file: File, prev?: ProseMirrorState) => ({
+  text: {editorState: file.text, extensions: prev?.extensions ?? []},
   lastModified: file.lastModified ? new Date(file.lastModified) : undefined,
   path: file.path,
   markdown: file.markdown,
