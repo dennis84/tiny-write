@@ -32,7 +32,7 @@ import {Layout} from './Layout'
 import Editor from './Editor'
 import Menu from './Menu'
 import ErrorView from './Error'
-import {isEmpty, isInitialized} from '../prosemirror/state'
+import {ProseMirrorState, isEmpty, isInitialized} from '../prosemirror/state'
 import {getImageAsBase64, insertImage} from '../prosemirror/extension/image'
 import {
   createSchema,
@@ -134,10 +134,10 @@ export default (props: Props) => {
     } else {
       const schema = createSchema({
         config: props.state.config,
-        markdown,
         path: props.state.path,
-        keymap: keymap,
         y: props.state.collab?.y,
+        markdown,
+        keymap,
       })
 
       const parser = createMarkdownParser(schema)
@@ -527,11 +527,25 @@ export default (props: Props) => {
     db.set('state', JSON.stringify(data))
   }, 100, [props.state.lastModified])
 
-  const editorState = props.state.text ?? createEmptyState({
-    config: props.state.config,
-    markdown: props.state.markdown,
-    keymap,
-  })
+  let editorState: ProseMirrorState
+  if (props.state.text?.editorState && props.state.text?.extensions.length === 0) {
+    editorState = createState({
+      data: props.state.text.editorState,
+      config: props.state.config,
+      markdown: props.state.markdown,
+      path: props.state.path,
+      keymap,
+      y: props.state.collab?.y,
+    })
+  } else if (props.state.text) {
+    editorState = props.state.text
+  } else {
+    editorState = createEmptyState({
+      config: props.state.config,
+      markdown: props.state.markdown,
+      keymap,
+    })
+  }
 
   return (
     <Layout

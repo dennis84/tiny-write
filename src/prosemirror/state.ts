@@ -9,8 +9,8 @@ export interface ProseMirrorExtension {
 }
 
 export interface ProseMirrorState {
-  editorState?: EditorState | {[key: string]: any};
-  extensions?: ProseMirrorExtension[];
+  editorState: EditorState | {[key: string]: any};
+  extensions: ProseMirrorExtension[];
 }
 
 export type NodeViewFn = (
