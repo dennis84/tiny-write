@@ -1,6 +1,6 @@
-import {css} from '@emotion/react'
-import styled from '@emotion/styled'
+import {css} from '@emotion/css'
 import {foreground, primaryBackground, primaryForeground, font} from '../config'
+import {Config} from '..'
 
 export const Common = css`
   height: 50px;
@@ -19,17 +19,17 @@ export const Common = css`
   }
 `
 
-export const Button = styled.button`
+export const button = (config: Config) => css`
   ${Common}
   background: none;
-  font-family: ${props => font(props.theme)};
-  color: ${props => foreground(props.theme)};
-  border: 1px solid ${props => foreground(props.theme)};
+  font-family: ${font(config)};
+  color: ${foreground(config)};
+  border: 1px solid ${foreground(config)};
 `
 
-export const ButtonPrimary = styled.button`
+export const buttonPrimary = (config: Config) => css`
   ${Common}
-  color: ${props => primaryForeground(props.theme)};
+  color: ${primaryForeground(config)};
   border: 0;
-  background: ${props => primaryBackground(props.theme)};
+  background: ${primaryBackground(config)};
 `

@@ -1,23 +1,40 @@
-import styled from '@emotion/styled'
+import React, {MouseEvent, ReactNode} from 'react'
 import {css} from '@emotion/css'
 import {background, foreground, primaryBackground, font} from '../config'
 import {Config} from '..'
 
-export const Layout = styled.div`
-  background: ${props => background(props.theme)};
-  width: 100%;
-  height: 100%;
-  font-family: ${props => font(props.theme)};
-  font-size: 18px;
-  color: ${props => foreground(props.theme)};
-  display: ${props => props.hidden ? 'none' : 'flex'};
-  position: relative;
-  .drop-cursor {
-    background: ${props => primaryBackground(props.theme)} !important;
-    height: 2px !important;
-    opacity: 0.5;
-  }
-`
+export type Styled = {
+  children: ReactNode;
+  config: Config;
+  'data-testid'?: string;
+  onClick?: () => void;
+  onMouseEnter?: (e: MouseEvent) => void;
+}
+
+export const Layout = (props: Styled) => {
+  const styles = css`
+    background: ${background(props.config)};
+    display: flex;
+    width: 100%;
+    height: 100%;
+    font-family: ${font(props.config)};
+    font-size: 18px;
+    color: ${foreground(props.config)};
+    position: relative;
+    .drop-cursor {
+      background: ${primaryBackground(props.config)} !important;
+      height: 2px !important;
+      opacity: 0.5;
+    }
+  `
+  return (
+    <div
+      onMouseEnter={props.onMouseEnter}
+      className={styles}>
+      {props.children}
+    </div>
+  )
+}
 
 export const editorCss = (config: Config) => css`
   height: 100%;

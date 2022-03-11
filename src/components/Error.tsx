@@ -1,15 +1,17 @@
 import React from 'react'
-import styled from '@emotion/styled'
+import {css} from '@emotion/css'
 import {ErrorObject} from '..'
 import {Clean, Discard, useDispatch} from '../reducer'
 import {foreground} from '../config'
-import {ButtonPrimary} from './Button'
+import {Config} from '..'
+import {buttonPrimary} from './Button'
 
 interface Props {
   error: ErrorObject;
+  config: Config;
 }
 
-const Layer = styled.div`
+const layer = css`
   width: 100%;
   overflow: y-auto;
   padding: 50px;
@@ -21,34 +23,34 @@ const Layer = styled.div`
   }
 `
 
-const Container = styled.div`
+const container = css`
   max-width: 800px;
   width: 100%;
   height: fit-content;
 `
 
-const Pre = styled.pre`
+const pre = (config: Config) => css`
   white-space: pre-wrap;
   word-wrap: break-word;
-  background: ${props => foreground(props.theme)}19;
-  border: 1px solid ${props => foreground(props.theme)};
+  background: ${foreground(config)}19;
+  border: 1px solid ${foreground(config)};
   border-radius: 2px;
   padding: 10px;
 `
 
 export default (props: Props) =>
-  props.error.id === 'invalid_state' ? invalidState('Invalid State', props.error.props) :
-  props.error.id === 'invalid_config' ? invalidState('Invalid Config', props.error.props) :
-  props.error.id === 'invalid_file' ? invalidState('Invalid File', props.error.props) :
+  props.error.id === 'invalid_state' ? invalidState('Invalid State', props) :
+  props.error.id === 'invalid_config' ? invalidState('Invalid Config', props) :
+  props.error.id === 'invalid_file' ? invalidState('Invalid File', props) :
   other(props)
 
-const invalidState = (title: string, props: unknown) => {
+const invalidState = (title: string, props: Props) => {
   const dispatch = useDispatch()
   const onClick = () => dispatch(Clean)
 
   return (
-    <Layer data-tauri-drag-region="true">
-      <Container>
+    <div className={layer} data-tauri-drag-region="true">
+      <div className={container}>
         <h1>{title}</h1>
         <p>
           There is an error with the editor state. This is probably due to an
@@ -56,12 +58,12 @@ const invalidState = (title: string, props: unknown) => {
           migrations may be supported in the future. To fix this now, you can
           copy important notes from below, clean the state and paste it again.
         </p>
-        <Pre>
-          <code>{JSON.stringify(props)}</code>
-        </Pre>
-        <ButtonPrimary onClick={onClick}>Clean</ButtonPrimary>
-      </Container>
-    </Layer>
+        <pre className={pre(props.config)}>
+          <code>{JSON.stringify(props.error.props)}</code>
+        </pre>
+        <button className={buttonPrimary(props.config)} onClick={onClick}>Clean</button>
+      </div>
+    </div>
   )
 }
 
@@ -77,12 +79,12 @@ const other = (props: Props) => {
   }
 
   return (
-    <Layer data-tauri-drag-region="true">
-      <Container>
+    <div className={layer} data-tauri-drag-region="true">
+      <div className={container}>
         <h1>An error occurred.</h1>
-        <Pre><code>{getMessage()}</code></Pre>
-        <ButtonPrimary onClick={onClick}>Close</ButtonPrimary>
-      </Container>
-    </Layer>
+        <pre className={pre(props.config)}><code>{getMessage()}</code></pre>
+        <button className={buttonPrimary(props.config)} onClick={onClick}>Close</button>
+      </div>
+    </div>
   )
 }

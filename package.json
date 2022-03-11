@@ -25,8 +25,6 @@
     "@codemirror/view": "^0.19.47",
     "@ddietr/codemirror-themes": "^1.0.9",
     "@emotion/css": "^11.7.1",
-    "@emotion/react": "^11.8.2",
-    "@emotion/styled": "^11.8.1",
     "@tauri-apps/api": "^1.0.0-rc.2",
     "date-fns": "^2.28.0",
     "file-type": "^17.1.1",

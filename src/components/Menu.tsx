@@ -1,11 +1,10 @@
-import React, {ChangeEvent, useEffect, useState} from 'react'
+import React, {ChangeEvent, ReactNode, useEffect, useState} from 'react'
 import {EditorView} from 'prosemirror-view'
 import {EditorState} from 'prosemirror-state'
 import {undo, redo} from 'prosemirror-history'
 import {deleteSelection, selectAll} from 'prosemirror-commands'
 import {differenceInHours, format} from 'date-fns'
-import styled from '@emotion/styled'
-import {css} from '@emotion/react'
+import {css} from '@emotion/css'
 import tauriConf from '../../src-tauri/tauri.conf.json'
 import {Config, File, Collab, PrettierConfig} from '..'
 import {
@@ -22,149 +21,174 @@ import {foreground, primaryBackground, themes, fonts, codeThemes} from '../confi
 import {isTauri, isMac, alt, mod, WEB_URL, VERSION_URL} from '../env'
 import * as remote from '../remote'
 import {ProseMirrorState, isEmpty, isInitialized} from '../prosemirror/state'
+import {Styled} from './Layout'
 
-const Container = styled.div`
-  position: relative;
-  flex-shrink: 0;
-  flex-grow: 1;
-  height: 100%;
-  font-family: 'JetBrains Mono';
-`
+const Container = ({children}: {children: ReactNode}) => (
+  <div className={css`
+    position: relative;
+    flex-shrink: 0;
+    flex-grow: 1;
+    height: 100%;
+    font-family: 'JetBrains Mono';
+  `}>{children}</div>
+)
 
-const Burger = styled.button<any>`
-  position: absolute;
-  left: -40px;
-  z-index: 9999999;
-  width: 20px;
-  height: 20px;
-  padding: 2px 0;
-  margin: 10px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  cursor: pointer;
-  background: none;
-  border: 0;
-  outline: none;
-  > span {
-    background: ${props => foreground(props.theme)};
-    height: 2px;
-    width: 100%;
-    border-radius: 4px;
-    transition: 0.4s;
-  }
-  ${props => props.active && `
-    > span:nth-of-type(1) {
-      transform: rotate(-45deg) translate(-5px, 5px);
+const Burger = (props: Styled & {active: boolean}) => {
+  const styles = css`
+    position: absolute;
+    left: -40px;
+    z-index: 9999999;
+    width: 20px;
+    height: 20px;
+    padding: 2px 0;
+    margin: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    cursor: pointer;
+    background: none;
+    border: 0;
+    outline: none;
+    > span {
+      background: ${foreground(props.config)};
+      height: 2px;
+      width: 100%;
+      border-radius: 4px;
+      transition: 0.4s;
     }
-    > span:nth-of-type(2) {
-      opacity: 0;
+    ${props.active && `
+      > span:nth-of-type(1) {
+        transform: rotate(-45deg) translate(-5px, 5px);
+      }
+      > span:nth-of-type(2) {
+        opacity: 0;
+      }
+      > span:nth-of-type(3) {
+        transform: rotate(45deg) translate(-5px, -5px);
+      }
+    `}
+  `
+  return (
+    <button
+      className={styles}
+      onClick={props.onClick}
+      data-testid={props['data-testid']}>
+      {props.children}
+    </button>
+  )
+}
+
+const Off = ({config, children}: Styled) => (
+  <div className={css`
+    background: ${foreground(config)}19;
+    padding: 20px;
+    height: 100%;
+    width: 460px;
+    overflow-y: auto;
+    scrollbar-width: none;
+    ::-webkit-scrollbar {
+      display: none;
     }
-    > span:nth-of-type(3) {
-      transform: rotate(45deg) translate(-5px, -5px);
+  `}>{children}</div>
+)
+
+const Label = (props: Styled) => {
+  const styles = css`
+    margin: 0;
+    font-size: 14px;
+    text-transform: uppercase;
+    color: ${foreground(props.config)}7f;
+    > i {
+      text-transform: none;
     }
-  `}
-`
+  `
+  return <h3 className={styles}>{props.children}</h3>
+}
 
-const Off = styled.div`
-  background: ${props => foreground(props.theme)}19;
-  padding: 20px;
-  height: 100%;
-  width: 460px;
-  overflow-y: auto;
-  scrollbar-width: none;
-  ::-webkit-scrollbar {
-    display: none;
-  }
-`
+const Sub = ({children}: {children: ReactNode}) => {
+  const styles = css`
+    margin: 10px 0;
+    margin-bottom: 30px;
+  `
+  return <nav className={styles}>{children}</nav>
+}
 
-const Menu = styled.div``
-
-const Label = styled.h3`
-  margin: 0;
-  font-size: 14px;
-  text-transform: uppercase;
-  color: ${props => foreground(props.theme)}7f;
-  > i {
-    text-transform: none;
-  }
-`
-
-const Sub = styled.nav`
-  margin: 10px 0;
-  margin-bottom: 30px;
-`
-
-export const Common = css`
-  height: 50px;
-  padding: 0 20px;
-`
-
-export const Item = (props: {theme: Config}) => css`
+const itemCss = (config: Config) => css`
   width: 100%;
   padding: 2px 0;
   margin: 0;
   outline: none;
   display: flex;
   align-items: center;
-  color: ${foreground(props.theme)};
+  color: ${foreground(config)};
   font-size: 18px;
   line-height: 24px;
   font-family: 'JetBrains Mono';
   text-align: left;
 `
 
-const Text = styled.p`
-  ${Item}
-`
+const Text = (props: Styled) => (
+  <p
+    className={itemCss(props.config)}>
+    data-testid={props['data-testid']}
+    {props.children}
+  </p>
+)
 
-interface LinkProps {
-  withMargin?: boolean;
+const Link = (props: Styled & {withMargin?: boolean; disabled?: boolean; title?: string}) => {
+  const styles = css`
+    ${itemCss(props.config)}
+    background: none;
+    border: 0;
+    cursor: pointer;
+    margin-bottom: ${props.withMargin ? '10px' : ''};
+    > span {
+      justify-self: flex-end;
+      margin-left: auto;
+      > i {
+        color: ${foreground(props.config)};
+        background: ${foreground(props.config)}19;
+        border: 1px solid ${foreground(props.config)}99;
+        box-shadow: 0 2px 0 0 ${foreground(props.config)}99;
+        border-radius: 2px;
+        font-size: 13px;
+        line-height: 1.4;
+        padding: 1px 4px;
+        margin: 0 1px;
+      }
+    }
+    &:hover {
+      color: ${primaryBackground(props.config)};
+      > span i {
+        position: relative;
+        box-shadow: 0 3px 0 0 ${foreground(props.config)}99;
+        top: -1px;
+      }
+    }
+    &:active {
+      > span i {
+        position: relative;
+        box-shadow: none;
+        top: 1px;
+      }
+    }
+    &[disabled] {
+      color: ${foreground(props.config)}99;
+      cursor: not-allowed;
+    }
+  `
+
+  return (
+    <button
+      className={styles}
+      onClick={props.onClick}
+      disabled={props.disabled}
+      title={props.title}
+      data-testid={props['data-testid']}>
+      {props.children}
+    </button>
+  )
 }
-
-const Link = styled.button<LinkProps>`
-  ${Item}
-  background: none;
-  border: 0;
-  cursor: pointer;
-  margin-bottom: ${props => props.withMargin ? '10px' : ''};
-  > span {
-    justify-self: flex-end;
-    margin-left: auto;
-    > i {
-      color: ${props => foreground(props.theme)};
-      background: ${props => foreground(props.theme)}19;
-      border: 1px solid ${props => foreground(props.theme)}99;
-      box-shadow: 0 2px 0 0 ${props => foreground(props.theme)}99;
-      border-radius: 2px;
-      font-size: 13px;
-      line-height: 1.4;
-      padding: 1px 4px;
-      margin: 0 1px;
-    }
-  }
-  &:hover {
-    color: ${props => primaryBackground(props.theme)};
-    > span i {
-      position: relative;
-      box-shadow: 0 3px 0 0 ${props => foreground(props.theme)}99;
-      top: -1px;
-    }
-  }
-  &:active {
-    > span i {
-      position: relative;
-      box-shadow: none;
-      top: 1px;
-    }
-  }
-  &[disabled] {
-    color: ${props => foreground(props.theme)}99;
-    cursor: not-allowed;
-  }
-`
-
-const Slider = styled.input``
 
 interface Props {
   text: ProseMirrorState;
@@ -338,9 +362,9 @@ export default (props: Props) => {
 
     return (
       <>
-        <Text>{words} words</Text>
-        <Text>{paragraphs} paragraphs</Text>
-        <Text>{loc} lines of code</Text>
+        <Text config={props.config}>{words} words</Text>
+        <Text config={props.config}>{paragraphs} paragraphs</Text>
+        <Text config={props.config}>{loc} lines of code</Text>
       </>
     )
   }
@@ -359,13 +383,21 @@ export default (props: Props) => {
     }
 
     return props.lastModified ? (
-      <Text data-testid="last-modified">Last modified {formatDate(props.lastModified)}</Text>
+      <Text
+        config={props.config}
+        data-testid="last-modified">
+        Last modified {formatDate(props.lastModified)}
+      </Text>
     ) : (
-      <Text data-testid="last-modified">Nothing yet</Text>
+      <Text
+        config={props.config}
+        data-testid="last-modified">
+        Nothing yet
+      </Text>
     )
   }
 
-  const FileLink = (props: {file: File}) => {
+  const FileLink = (p: {file: File}) => {
     const length = 100
     let content = ''
     const getContent = (node: any) => {
@@ -391,16 +423,17 @@ export default (props: Props) => {
       return content
     }
 
-    const text = props.file.path ?
-      props.file.path.substring(props.file.path.length - length) :
-      getContent(props.file.text?.doc)
+    const text = p.file.path ?
+      p.file.path.substring(p.file.path.length - length) :
+      getContent(p.file.text?.doc)
 
     return (
       <Link
+        config={props.config}
         withMargin={true}
-        onClick={() => dispatch(Open(props.file))}
+        onClick={() => dispatch(Open(p.file))}
         data-testid="open">
-        {text} {props.file.path && '📎'}
+        {text} {p.file.path && '📎'}
       </Link>
     )
   }
@@ -437,23 +470,35 @@ export default (props: Props) => {
 
   return (
     <Container>
-      <Burger onClick={onBurgerClick} active={show} data-testid="burger">
+      <Burger
+        config={props.config}
+        active={show}
+        onClick={onBurgerClick}
+        data-testid="burger">
         <span />
         <span />
         <span />
       </Burger>
       {show && (
-        <Off onClick={() => editorView.focus()} data-tauri-drag-region="true">
-          <Menu>
-            <Label>File {props.path && <i>({props.path.substring(props.path.length - 24)})</i>}</Label>
+        <Off
+          config={props.config}
+          onClick={() => editorView.focus()}
+          data-tauri-drag-region="true">
+          <div>
+            <Label config={props.config}>
+              File {props.path && <i>({props.path.substring(props.path.length - 24)})</i>}
+            </Label>
             <Sub>
               {isTauri && !props.path && (
-                <Link onClick={onSaveAs}>Save to file <Keys keys={[mod, 's']} /></Link>
+                <Link config={props.config} onClick={onSaveAs}>
+                  Save to file <Keys keys={[mod, 's']} />
+                </Link>
               )}
-              <Link onClick={onNew} data-testid="new">
+              <Link config={props.config} onClick={onNew} data-testid="new">
                 New <Keys keys={[mod, 'n']} />
               </Link>
               <Link
+                config={props.config}
                 onClick={onDiscard}
                 disabled={!props.path && props.files.length === 0 && isEmpty(props.text?.editorState)}
                 data-testid="discard">
@@ -465,7 +510,7 @@ export default (props: Props) => {
             </Sub>
             {props.files.length > 0 && (
               <>
-                <Label>Files</Label>
+                <Label config={props.config}>Files</Label>
                 <Sub>
                   {props.files.map((file) => (
                     <FileLink key={file.lastModified} file={file} />
@@ -473,68 +518,68 @@ export default (props: Props) => {
                 </Sub>
               </>
             )}
-            <Label>Edit</Label>
+            <Label config={props.config}>Edit</Label>
             <Sub>
-              <Link onClick={onUndo}>Undo <Keys keys={[mod, 'z']} /></Link>
-              <Link onClick={onRedo}>
+              <Link config={props.config} onClick={onUndo}>Undo <Keys keys={[mod, 'z']} /></Link>
+              <Link config={props.config} onClick={onRedo}>
                 Redo <Keys keys={[mod, ...(isMac ? ['Shift', 'z'] : ['y'])]} />
               </Link>
-              <Link onClick={cmd('cut')}>Cut <Keys keys={[mod, 'x']} /></Link>
-              <Link onClick={cmd('paste')} disabled={!isTauri}>
+              <Link config={props.config} onClick={cmd('cut')}>Cut <Keys keys={[mod, 'x']} /></Link>
+              <Link config={props.config} onClick={cmd('paste')} disabled={!isTauri}>
                 Paste <Keys keys={[mod, 'p']} />
               </Link>
-              <Link onClick={cmd('copy')}>
+              <Link config={props.config} onClick={cmd('copy')}>
                 Copy {lastAction === 'copy' && '📋'} <Keys keys={[mod, 'c']} />
               </Link>
-              <Link onClick={onCopyAllAsMd}>
+              <Link config={props.config} onClick={onCopyAllAsMd}>
                 Copy all as markdown {lastAction === 'copy-md' && '📋'}
               </Link>
             </Sub>
-            <Label>Theme</Label>
+            <Label config={props.config}>Theme</Label>
             <Sub>
               {Object.entries(themes).map(([key, value]) => (
-                <Link key={key} onClick={onChangeTheme(key)}>
+                <Link config={props.config} key={key} onClick={onChangeTheme(key)}>
                   {value.label}{' '}{key === props.config.theme && '✅'}
                 </Link>
               ))}
             </Sub>
-            <Label>Code</Label>
+            <Label config={props.config}>Code</Label>
             <Sub>
               {Object.entries(codeThemes).map(([key, value]) => (
-                <Link key={key} onClick={onChangeCodeTheme(key)}>
+                <Link config={props.config} key={key} onClick={onChangeCodeTheme(key)}>
                   {value.label}{' '}{key === props.config.codeTheme && '✅'}
                 </Link>
               ))}
             </Sub>
-            <Label>Font</Label>
+            <Label config={props.config}>Font</Label>
             <Sub>
               {Object.entries(fonts).map(([key, value]) => (
-                <Link key={key} onClick={onChangeFont(key)}>
+                <Link config={props.config} key={key} onClick={onChangeFont(key)}>
                   {value.label}{' '}{key === props.config.font && '✅'}
                 </Link>
               ))}
             </Sub>
-            <Label>View</Label>
+            <Label config={props.config}>View</Label>
             <Sub>
               {isTauri && (
-                <Link onClick={onToggleFullscreen}>
+                <Link config={props.config} onClick={onToggleFullscreen}>
                   Fullscreen {props.fullscreen && '✅'} <Keys keys={[alt, 'Enter']} />
                 </Link>
               )}
-              <Link onClick={props.onToggleMarkdown} data-testid="markdown">
+              <Link config={props.config} onClick={props.onToggleMarkdown} data-testid="markdown">
                 Markdown mode {props.markdown && '✅'} <Keys keys={[mod, 'm']} />
               </Link>
-              <Link onClick={onToggleTypewriterMode}>
+              <Link config={props.config} onClick={onToggleTypewriterMode}>
                 Typewriter mode {props.config.typewriterMode && '✅'}
               </Link>
               {isTauri && (
-                <Link onClick={onToggleAlwaysOnTop}>
+                <Link config={props.config} onClick={onToggleAlwaysOnTop}>
                   Always on Top {props.config.alwaysOnTop && '✅'}
                 </Link>
               )}
-              <Text>
+              <Text config={props.config}>
                 Font size:
-                <Slider
+                <input
                   type="range"
                   min="8"
                   max="48"
@@ -542,9 +587,9 @@ export default (props: Props) => {
                   onChange={onChangeFontSize} />
                 {props.config.fontSize}
               </Text>
-              <Text>
+              <Text config={props.config}>
                 Content width:
-                <Slider
+                <input
                   type="range"
                   min="400"
                   max="1800"
@@ -554,11 +599,11 @@ export default (props: Props) => {
                 {props.config.contentWidth}
               </Text>
             </Sub>
-            <Label>Prettier</Label>
+            <Label config={props.config}>Prettier</Label>
             <Sub>
-              <Text>
+              <Text config={props.config}>
                 Print Width:
-                <Slider
+                <input
                   type="range"
                   min="20"
                   max="160"
@@ -567,9 +612,9 @@ export default (props: Props) => {
                   onChange={(e) => updatePrettier({printWidth: Number(e.target.value)})} />
                 {props.config.prettier.printWidth}
               </Text>
-              <Text>
+              <Text config={props.config}>
                 Tab Width:
-                <Slider
+                <input
                   type="range"
                   min="2"
                   max="8"
@@ -578,58 +623,69 @@ export default (props: Props) => {
                   onChange={(e) => updatePrettier({tabWidth: Number(e.target.value)})} />
                 {props.config.prettier.tabWidth}
               </Text>
-              <Link onClick={() => updatePrettier({useTabs: !props.config.prettier.useTabs})}>
+              <Link
+                config={props.config}
+                onClick={() => updatePrettier({useTabs: !props.config.prettier.useTabs})}>
                 Use Tabs {props.config.prettier.useTabs && '✅'}
               </Link>
-              <Link onClick={() => updatePrettier({semi: !props.config.prettier.semi})}>
+              <Link
+                config={props.config}
+                onClick={() => updatePrettier({semi: !props.config.prettier.semi})}>
                 Semicolons {props.config.prettier.semi && '✅'}
               </Link>
-              <Link onClick={() => updatePrettier({singleQuote: !props.config.prettier.singleQuote})}>
+              <Link
+                config={props.config}
+                onClick={() => updatePrettier({singleQuote: !props.config.prettier.singleQuote})}>
                 Single Quote {props.config.prettier.singleQuote && '✅'}
               </Link>
             </Sub>
-            <Label>Stats</Label>
+            <Label config={props.config}>Stats</Label>
             <Sub>
               <LastModified />
               <TextStats />
             </Sub>
-            <Label>Collab</Label>
+            <Label config={props.config}>Collab</Label>
             <Sub>
               <Link
+                config={props.config}
                 onClick={onCollab}
                 title={props.collab?.error ? 'Connection error' : ''}>
                 {collabText}
               </Link>
               {collabUsers > 0 && (
                 <>
-                  <Link onClick={onCopyCollabLink}>
+                  <Link config={props.config} onClick={onCopyCollabLink}>
                     Copy Link {lastAction === 'copy-collab-link' && '📋'}
                   </Link>
-                  <Link onClick={onCopyCollabAppLink}>
+                  <Link config={props.config} onClick={onCopyCollabAppLink}>
                     Copy App Link {lastAction === 'copy-collab-app-link' && '📋'}
                   </Link>
-                  <Text>
+                  <Text config={props.config}>
                     {collabUsers} {collabUsers === 1 ? 'user' : 'users'} connected
                   </Text>
                 </>
               )}
             </Sub>
-            <Label>Application</Label>
+            <Label config={props.config}>Application</Label>
             <Sub>
               {/* doesn't work with tauri */}
               {(!isTauri && false) && (
-                <Link onClick={onOpenInApp}>
+                <Link config={props.config} onClick={onOpenInApp}>
                   Open in App ⚡
                 </Link>
               )}
-              <Link onClick={onVersion}>
+              <Link config={props.config} onClick={onVersion}>
                 About Version {tauriConf.package.version}
               </Link>
               {isTauri && (
-                <Link onClick={() => remote.quit()}>Quit <Keys keys={[mod, 'q']} /></Link>
+                <Link
+                  config={props.config}
+                  onClick={() => remote.quit()}>
+                  Quit <Keys keys={[mod, 'q']} />
+                </Link>
               )}
             </Sub>
-          </Menu>
+          </div>
         </Off>
       )}
     </Container>

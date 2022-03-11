@@ -552,9 +552,10 @@ export default (props: Props) => {
 
   return (
     <Layout
+      config={props.state.config}
       data-testid={props.state.error ? 'error' : props.state.loading}
       onMouseEnter={onMouseEnter}>
-      {props.state.error && <ErrorView error={props.state.error} />}
+      {props.state.error && <ErrorView config={props.state.config} error={props.state.error} />}
       {props.state.loading === 'initialized' && <>
         {!props.state.error && (
           <Editor
