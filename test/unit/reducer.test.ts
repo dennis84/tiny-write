@@ -21,28 +21,25 @@ it('Open text', () => {
   const result = Open({text})(state)
   expect(result.files.length).toBe(0)
   expect(result.text.editorState).toEqual(text)
-  expect(result.text.extensions).toBe(undefined)
 })
 
 it('Open text - add to files', () => {
   const state = newState({
-    text: {editorState},
+    text: {editorState, extensions: []},
     lastModified: new Date(),
   })
   const result = Open({text})(state)
   expect(result.files.length).toBe(1)
   expect(result.text.editorState).toEqual(text)
-  expect(result.text.extensions).toBe(undefined)
 })
 
 it('Open text - dont add if not modified', () => {
   const state = newState({
-    text: {editorState},
+    text: {editorState, extensions: []},
   })
   const result = Open({text})(state)
   expect(result.files.length).toBe(0)
   expect(result.text.editorState).toEqual(text)
-  expect(result.text.extensions).toBe(undefined)
 })
 
 it('Open path', () => {
@@ -50,7 +47,6 @@ it('Open path', () => {
   const result = Open({path: '/foo'})(state)
   expect(result.files.length).toBe(0)
   expect(result.text.editorState).toEqual(undefined)
-  expect(result.text.extensions).toBe(undefined)
   expect(result.path).toBe('/foo')
 })
 
@@ -66,7 +62,6 @@ it('Open path - in files', () => {
   const result = Open({path: '/foo'})(state)
   expect(result.files.length).toBe(1)
   expect(result.text.editorState).toEqual(undefined)
-  expect(result.text.extensions).toBe(undefined)
   expect(result.path).toBe('/foo')
   expect(result.lastModified).toEqual(new Date(lastModified))
 })
@@ -74,7 +69,7 @@ it('Open path - in files', () => {
 it('Open path - push path to files', () => {
   const lastModified = new Date()
   const state = newState({
-    text: {editorState},
+    text: {editorState, extensions: []},
     lastModified,
     path: '/foo',
   })
@@ -84,6 +79,5 @@ it('Open path - push path to files', () => {
   expect(result.files[0].path).toBe('/foo')
   expect(result.files[0].lastModified).toBe(lastModified.toISOString())
   expect(result.text.editorState).toEqual(undefined)
-  expect(result.text.extensions).toBe(undefined)
   expect(result.path).toBe('/bar')
 })

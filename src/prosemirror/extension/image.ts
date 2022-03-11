@@ -1,7 +1,8 @@
 import {Plugin} from 'prosemirror-state'
 import {Node, Schema} from 'prosemirror-model'
 import {EditorView} from 'prosemirror-view'
-import {getMimeType, readFileBase64, resolvePath, dirname} from '../../remote'
+import {convertFileSrc} from '@tauri-apps/api/tauri'
+import {resolvePath, dirname} from '../../remote'
 import {isTauri} from '../../env'
 import {ProseMirrorExtension} from '../state'
 
@@ -19,16 +20,11 @@ const isUrl = (str: string) => {
 
 const isBlank = (text: string) => text === ' ' || text === '\xa0'
 
-export const getImageAsBase64 = async (src: string, path?: string) => {
+export const getImagePath = async (src: string, path?: string) => {
   let paths = [src]
-  if (path) {
-    paths = [await dirname(path), src]
-  }
-
+  if (path) paths = [await dirname(path), src]
   const absolutePath = await resolvePath(paths)
-  const mime = await getMimeType(absolutePath)
-  const base64 = await readFileBase64(absolutePath)
-  return `data:${mime};base64,${base64}`
+  return convertFileSrc(absolutePath)
 }
 
 const imageInput = (schema: Schema, path?: string) => new Plugin({
@@ -59,7 +55,7 @@ const imageInput = (schema: Schema, path?: string) => new Plugin({
 
         if (!isTauri) return false
 
-        getImageAsBase64(src, path).then((p) => {
+        getImagePath(src, path).then((p) => {
           const node = schema.node('image', {src: p, title, path: src})
           const start = from - (match[0].length - text.length)
           const tr = view.state.tr
@@ -143,8 +139,13 @@ class ImageView {
     const image = document.createElement('img')
     image.setAttribute('title', node.attrs.title ?? '')
 
-    if (isTauri && !node.attrs.src.startsWith('data:') && !isUrl(node.attrs.src)) {
-      getImageAsBase64(node.attrs.src, path).then((p) => {
+    if (
+      isTauri &&
+      !node.attrs.src.startsWith('asset:') &&
+      !node.attrs.src.startsWith('data:') &&
+      !isUrl(node.attrs.src)
+    ) {
+      getImagePath(node.attrs.src, path).then((p) => {
         image.setAttribute('src', p)
       })
     } else {

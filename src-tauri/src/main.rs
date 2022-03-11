@@ -29,9 +29,6 @@ fn main() {
             cmd::args::get_args,
             cmd::file::get_mime_type,
             cmd::file::get_file_last_modified,
-            cmd::file::read_file_string,
-            cmd::file::read_file_base64,
-            cmd::file::write_file,
             cmd::path::resolve_path,
             cmd::path::dirname,
         ])

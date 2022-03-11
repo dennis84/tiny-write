@@ -7,6 +7,7 @@ import * as Y from 'yjs'
 import {undo as yUndo, redo as yRedo} from 'y-prosemirror'
 import {WebsocketProvider} from 'y-websocket'
 import {listen} from '@tauri-apps/api/event'
+import {convertFileSrc} from '@tauri-apps/api/tauri'
 import {uniqueNamesGenerator, adjectives, animals} from 'unique-names-generator'
 import {Args, State} from '..'
 import * as remote from '../remote'
@@ -33,7 +34,7 @@ import Editor from './Editor'
 import Menu from './Menu'
 import ErrorView from './Error'
 import {ProseMirrorState, isEmpty, isInitialized} from '../prosemirror/state'
-import {getImageAsBase64, insertImage} from '../prosemirror/extension/image'
+import {insertImage} from '../prosemirror/extension/image'
 import {
   createSchema,
   createState,
@@ -165,6 +166,20 @@ export default (props: Props) => {
   const onMouseEnter = (e: MouseEvent) => {
     mouseEnterCoords.current = {x: e.pageX, y: e.pageY}
   }
+
+  const onDropFile = useDynamicCallback(async (event) => {
+    for (const path of (event.payload as string[])) {
+      const mime = await remote.getMimeType(path)
+      if (mime.startsWith('image/')) {
+        const {x, y} = mouseEnterCoords.current
+        console.log(editorView)
+        insertImage(editorView, convertFileSrc(path), x, y)
+      } else if (mime.startsWith('text/')) {
+        dispatch(Open({path}))
+        return
+      }
+    }
+  })
 
   const keymap = {
     [`${mod}-q`]: onQuit,
@@ -383,19 +398,7 @@ export default (props: Props) => {
   // Handle tauri file drop
   useEffect(() => {
     if (!isTauri || !isFirstInitialized) return
-    listen('tauri://file-drop', async (event) => {
-      for (const path of (event.payload as string[])) {
-        const mime = await remote.getMimeType(path)
-        if (mime.startsWith('image/')) {
-          const {x, y} = mouseEnterCoords.current
-          const base64 = await getImageAsBase64(path)
-          insertImage(editorView, base64, x, y)
-        } else if (mime.startsWith('text/')) {
-          dispatch(Open({path}))
-          return
-        }
-      }
-    })
+    listen('tauri://file-drop', onDropFile)
   }, [props.state.loading])
 
   // If collab is started

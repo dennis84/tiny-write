@@ -63,17 +63,17 @@ export const getFileLastModified = async (path: string): Promise<Date> => {
 
 export const readFile = async (path: string): Promise<string> => {
   if (!isTauri) throw Error('Must be run in tauri')
-  return invoke('read_file_string', {path})
+  return fs.readTextFile(path)
 }
 
-export const readFileBase64 = async (path: string): Promise<string> => {
+export const readBinaryFile = async (path: string): Promise<Uint8Array> => {
   if (!isTauri) throw Error('Must be run in tauri')
-  return invoke('read_file_base64', {path})
+  return fs.readBinaryFile(path)
 }
 
 export const writeFile = async (path: string, contents: string): Promise<void> => {
   if (!isTauri) throw Error('Must be run in tauri')
-  return invoke('write_file', {path, contents})
+  return fs.writeFile({path, contents})
 }
 
 export const resolvePath = async (paths: string[]): Promise<string> => {
