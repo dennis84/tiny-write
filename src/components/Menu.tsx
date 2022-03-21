@@ -1,29 +1,18 @@
-import React, {ChangeEvent, ReactNode, useEffect, useState} from 'react'
-import {EditorView} from 'prosemirror-view'
+import {For, Show, createEffect, createSignal, onCleanup} from 'solid-js'
+import {unwrap} from 'solid-js/store'
 import {EditorState} from 'prosemirror-state'
 import {undo, redo} from 'prosemirror-history'
-import {deleteSelection, selectAll} from 'prosemirror-commands'
 import {differenceInHours, format} from 'date-fns'
 import {css} from '@emotion/css'
 import tauriConf from '../../src-tauri/tauri.conf.json'
-import {Config, File, Collab, PrettierConfig} from '..'
-import {
-  Discard,
-  New,
-  Open,
-  ToggleFullscreen,
-  UpdateCollab,
-  UpdateConfig,
-  UpdatePath,
-  useDispatch,
-} from '../reducer'
+import {Config, File, PrettierConfig, useState} from '../state'
 import {foreground, primaryBackground, themes, fonts, codeThemes} from '../config'
 import {isTauri, isMac, alt, mod, WEB_URL, VERSION_URL} from '../env'
 import * as remote from '../remote'
-import {ProseMirrorState, isEmpty, isInitialized} from '../prosemirror/state'
+import {isEmpty, isInitialized} from '../prosemirror/state'
 import {Styled} from './Layout'
 
-const Container = ({children}: {children: ReactNode}) => (
+const Container = ({children}: {children: any}) => (
   <div className={css`
     position: relative;
     flex-shrink: 0;
@@ -33,50 +22,47 @@ const Container = ({children}: {children: ReactNode}) => (
   `}>{children}</div>
 )
 
-const Burger = (props: Styled & {active: boolean}) => {
-  const styles = css`
-    position: absolute;
-    left: -40px;
-    z-index: 9999999;
-    width: 20px;
-    height: 20px;
-    padding: 2px 0;
-    margin: 10px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    cursor: pointer;
-    background: none;
-    border: 0;
-    outline: none;
-    > span {
-      background: ${foreground(props.config)};
-      height: 2px;
-      width: 100%;
-      border-radius: 4px;
-      transition: 0.4s;
-    }
-    ${props.active && `
-      > span:nth-of-type(1) {
-        transform: rotate(-45deg) translate(-5px, 5px);
+const Burger = (props: Styled & {active: boolean}) => (
+  <button
+    className={css`
+      position: absolute;
+      left: -40px;
+      z-index: 9999999;
+      width: 20px;
+      height: 20px;
+      padding: 2px 0;
+      margin: 10px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      cursor: pointer;
+      background: none;
+      border: 0;
+      outline: none;
+      > span {
+        background: ${foreground(props.config)};
+        height: 2px;
+        width: 100%;
+        border-radius: 4px;
+        transition: 0.4s;
       }
-      > span:nth-of-type(2) {
-        opacity: 0;
-      }
-      > span:nth-of-type(3) {
-        transform: rotate(45deg) translate(-5px, -5px);
-      }
+      ${props.active && `
+        > span:nth-of-type(1) {
+          transform: rotate(-45deg) translate(-5px, 5px);
+        }
+        > span:nth-of-type(2) {
+          opacity: 0;
+        }
+        > span:nth-of-type(3) {
+          transform: rotate(45deg) translate(-5px, -5px);
+        }
+      `}
     `}
-  `
-  return (
-    <button
-      className={styles}
-      onClick={props.onClick}
-      data-testid={props['data-testid']}>
-      {props.children}
-    </button>
-  )
-}
+    onClick={props.onClick}
+    data-testid={props['data-testid']}>
+    {props.children}
+  </button>
+)
 
 const Off = ({config, children}: Styled) => (
   <div className={css`
@@ -92,8 +78,8 @@ const Off = ({config, children}: Styled) => (
   `}>{children}</div>
 )
 
-const Label = (props: Styled) => {
-  const styles = css`
+const Label = (props: Styled) => (
+  <h3 className={css`
     margin: 0;
     font-size: 14px;
     text-transform: uppercase;
@@ -101,17 +87,15 @@ const Label = (props: Styled) => {
     > i {
       text-transform: none;
     }
-  `
-  return <h3 className={styles}>{props.children}</h3>
-}
+  `}>{props.children}</h3>
+)
 
-const Sub = ({children}: {children: ReactNode}) => {
-  const styles = css`
+const Sub = ({children}: {children: any}) => (
+  <nav className={css`
     margin: 10px 0;
     margin-bottom: 30px;
-  `
-  return <nav className={styles}>{children}</nav>
-}
+  `}>{children}</nav>
+)
 
 const itemCss = (config: Config) => css`
   width: 100%;
@@ -129,104 +113,89 @@ const itemCss = (config: Config) => css`
 
 const Text = (props: Styled) => (
   <p
-    className={itemCss(props.config)}>
-    data-testid={props['data-testid']}
+    className={itemCss(props.config)}
+    data-testid={props['data-testid']}>
     {props.children}
   </p>
 )
 
-const Link = (props: Styled & {withMargin?: boolean; disabled?: boolean; title?: string}) => {
-  const styles = css`
-    ${itemCss(props.config)}
-    background: none;
-    border: 0;
-    cursor: pointer;
-    margin-bottom: ${props.withMargin ? '10px' : ''};
-    > span {
-      justify-self: flex-end;
-      margin-left: auto;
-      > i {
-        color: ${foreground(props.config)};
-        background: ${foreground(props.config)}19;
-        border: 1px solid ${foreground(props.config)}99;
-        box-shadow: 0 2px 0 0 ${foreground(props.config)}99;
-        border-radius: 2px;
-        font-size: 13px;
-        line-height: 1.4;
-        padding: 1px 4px;
-        margin: 0 1px;
+const Link = (props: Styled & {withMargin?: boolean; disabled?: boolean; title?: string}) => (
+  <button
+    className={css`
+      ${itemCss(props.config)}
+      background: none;
+      border: 0;
+      cursor: pointer;
+      margin-bottom: ${props.withMargin ? '10px' : ''};
+      > span {
+        justify-self: flex-end;
+        margin-left: auto;
+        > i {
+          color: ${foreground(props.config)};
+          background: ${foreground(props.config)}19;
+          border: 1px solid ${foreground(props.config)}99;
+          box-shadow: 0 2px 0 0 ${foreground(props.config)}99;
+          border-radius: 2px;
+          font-size: 13px;
+          line-height: 1.4;
+          padding: 1px 4px;
+          margin: 0 1px;
+        }
       }
-    }
-    &:hover {
-      color: ${primaryBackground(props.config)};
-      > span i {
-        position: relative;
-        box-shadow: 0 3px 0 0 ${foreground(props.config)}99;
-        top: -1px;
+      &:hover {
+        color: ${primaryBackground(props.config)};
+        > span i {
+          position: relative;
+          box-shadow: 0 3px 0 0 ${foreground(props.config)}99;
+          top: -1px;
+        }
       }
-    }
-    &:active {
-      > span i {
-        position: relative;
-        box-shadow: none;
-        top: 1px;
+      &:active {
+        > span i {
+          position: relative;
+          box-shadow: none;
+          top: 1px;
+        }
       }
-    }
-    &[disabled] {
-      color: ${foreground(props.config)}99;
-      cursor: not-allowed;
-    }
-  `
+      &[disabled] {
+        color: ${foreground(props.config)}99;
+        cursor: not-allowed;
+      }
+    `}
+    onClick={props.onClick}
+    disabled={props.disabled}
+    title={props.title}
+    data-testid={props['data-testid']}>
+    {props.children}
+  </button>
+)
 
-  return (
-    <button
-      className={styles}
-      onClick={props.onClick}
-      disabled={props.disabled}
-      title={props.title}
-      data-testid={props['data-testid']}>
-      {props.children}
-    </button>
-  )
-}
+export default () => {
+  const [store, ctrl] = useState()
+  const [show, setShow] = createSignal(false)
+  const [lastAction, setLastAction] = createSignal<string | undefined>()
 
-interface Props {
-  text: ProseMirrorState;
-  lastModified?: Date;
-  path?: string;
-  files: File[];
-  config: Config;
-  fullscreen: boolean;
-  collab?: Collab;
-  markdown: boolean;
-  onToggleMarkdown: () => void;
-  editorViewRef: React.RefObject<EditorView>;
-}
+  const editorView = () => unwrap(store.editorView)
 
-export default (props: Props) => {
-  const dispatch = useDispatch()
-  const [show, setShow] = useState(false)
-  const [lastAction, setLastAction] = useState<string | undefined>()
-  const editorView = props.editorViewRef.current
-
-  const collabText =
-    props.collab?.started ? 'Stop' :
-    props.collab?.error ? 'Restart 🚨' :
+  const collabText = () =>
+    store.collab?.started ? 'Stop' :
+    store.collab?.error ? 'Restart 🚨' :
     'Start'
 
-  const collabUsers = props.collab?.y?.provider.awareness.meta.size ?? 0
+  const collabUsers = () =>
+    store.collab?.y?.provider.awareness.meta.size ?? 0
 
   const onBurgerClick = () => {
-    editorView.focus()
-    setShow(!show)
+    editorView().focus()
+    setShow(!show())
   }
 
   const onUndo = () => {
-    undo(editorView.state, editorView.dispatch)
+    undo(editorView().state, editorView().dispatch)
   }
 
   const onRedo = () => {
-    redo(editorView.state, editorView.dispatch)
+    redo(editorView().state, editorView().dispatch)
   }
 
   const cmd = (cmd: string) => () => {
@@ -235,48 +204,47 @@ export default (props: Props) => {
   }
 
   const onCopyAllAsMd = () => {
-    remote.copyAllAsMarkdown(editorView.state).then(() => {
+    remote.copyAllAsMarkdown(editorView().state).then(() => {
       setLastAction('copy-md')
     })
   }
 
   const onChangeTheme = (theme: string) => () => {
-    dispatch(UpdateConfig({...props.config, theme}))
+    ctrl.updateConfig({theme})
   }
 
   const onChangeCodeTheme = (codeTheme: string) => () => {
-    dispatch(UpdateConfig({...props.config, codeTheme}))
+    ctrl.updateConfig({codeTheme})
   }
 
   const onChangeFont = (font: string) => () => {
-    dispatch(UpdateConfig({...props.config, font}))
+    ctrl.updateConfig({font})
   }
 
-  const onChangeFontSize = (e: ChangeEvent<HTMLInputElement>) => {
-    dispatch(UpdateConfig({...props.config, fontSize: Number(e.target.value)}))
+  const onChangeFontSize = (e: any) => {
+    ctrl.updateConfig({fontSize: Number(e.target.value)})
   }
 
-  const onChangeContentWidth = (e: ChangeEvent<HTMLInputElement>) => {
-    dispatch(UpdateConfig({...props.config, contentWidth: Number(e.target.value)}))
+  const onChangeContentWidth = (e: any) => {
+    ctrl.updateConfig({contentWidth: Number(e.target.value)})
   }
 
   const updatePrettier = (opt: Partial<PrettierConfig>) => {
-    dispatch(UpdateConfig({
-      ...props.config,
-      prettier: {...props.config.prettier, ...opt}
-    }))
+    ctrl.updateConfig({
+      prettier: {...store.config.prettier, ...opt}
+    })
   }
 
   const onToggleAlwaysOnTop = () => {
-    dispatch(UpdateConfig({...props.config, alwaysOnTop: !props.config.alwaysOnTop}))
+    ctrl.updateConfig({alwaysOnTop: !store.config.alwaysOnTop})
   }
 
   const onToggleTypewriterMode = () => {
-    dispatch(UpdateConfig({...props.config, typewriterMode: !props.config.typewriterMode}))
+    ctrl.updateConfig({typewriterMode: !store.config.typewriterMode})
   }
 
   const onToggleFullscreen = () => {
-    dispatch(ToggleFullscreen)
+    ctrl.setFullscreen(!store.fullscreen)
   }
 
   const onVersion = () => {
@@ -284,57 +252,51 @@ export default (props: Props) => {
   }
 
   const onNew = () => {
-    dispatch(New)
+    ctrl.newFile()
   }
 
   const onSaveAs = async () => {
-    const path = await remote.save(editorView.state)
-    if (path) {
-      dispatch(UpdatePath(path))
-    }
+    const path = await remote.save(editorView().state)
+    if (path) ctrl.updatePath(path)
   }
 
   const onDiscard = () => {
-    if (props.path) {
-      dispatch(Discard)
-    } else if (props.files.length > 0 && isEmpty(props.text?.editorState)) {
-      dispatch(Discard)
-    } else {
-      selectAll(editorView.state, editorView.dispatch)
-      deleteSelection(editorView.state, editorView.dispatch)
-    }
+    ctrl.discard()
   }
 
   const onCollab = () => {
-    if (props.collab?.started) {
-      dispatch(UpdateCollab({...props.collab, started: false}))
-    } else {
-      dispatch(UpdateCollab({started: true}))
-    }
+    const state = unwrap(store)
+    store.collab?.started ? ctrl.stopCollab(state) : ctrl.startCollab(state)
   }
 
   const onOpenInApp = () => {
     if (isTauri) return
-    if (props.collab?.started) {
-      window.open(`tinywrite://main?room=${props.collab.room}`, '_self')
+    if (store.collab?.started) {
+      window.open(`tinywrite://main?room=${store.collab.room}`, '_self')
     } else {
-      const text = window.btoa(JSON.stringify(editorView.state.toJSON()))
+      const text = window.btoa(JSON.stringify(editorView().state.toJSON()))
       window.open(`tinywrite://main?text=${text}`, '_self')
     }
   }
 
   const onCopyCollabLink = () => {
-    remote.copy(`${WEB_URL}/${props.collab.room}`).then(() => {
-      editorView.focus()
+    remote.copy(`${WEB_URL}/${store.collab.room}`).then(() => {
+      editorView().focus()
       setLastAction('copy-collab-link')
     })
   }
 
   const onCopyCollabAppLink = () => {
-    remote.copy(`tinywrite://${props.collab.room}`).then(() => {
-      editorView.focus()
+    remote.copy(`tinywrite://${store.collab.room}`).then(() => {
+      editorView().focus()
       setLastAction('copy-collab-app-link')
     })
+  }
+
+  const onToggleMarkdown = () => ctrl.toggleMarkdown()
+
+  const onOpenFile = (file: File) => {
+    ctrl.openFile(unwrap(file))
   }
 
   const TextStats = () => {
@@ -342,8 +304,8 @@ export default (props: Props) => {
     let words = 0
     let loc = 0
 
-    if (isInitialized(props.text?.editorState)) {
-      (props.text.editorState as EditorState).doc.forEach((node) => {
+    if (isInitialized(store.text)) {
+      (store.text as EditorState).doc.forEach((node) => {
         const text = node.textContent
 
         if (node.type.name === 'code_block') {
@@ -362,9 +324,9 @@ export default (props: Props) => {
 
     return (
       <>
-        <Text config={props.config}>{words} words</Text>
-        <Text config={props.config}>{paragraphs} paragraphs</Text>
-        <Text config={props.config}>{loc} lines of code</Text>
+        <Text config={store.config}>{words} words</Text>
+        <Text config={store.config}>{paragraphs} paragraphs</Text>
+        <Text config={store.config}>{loc} lines of code</Text>
       </>
     )
   }
@@ -382,18 +344,20 @@ export default (props: Props) => {
       return format(date, 'dd MMMM yyyy HH:mm:ss')
     }
 
-    return props.lastModified ? (
-      <Text
-        config={props.config}
-        data-testid="last-modified">
-        Last modified {formatDate(props.lastModified)}
-      </Text>
-    ) : (
-      <Text
-        config={props.config}
-        data-testid="last-modified">
-        Nothing yet
-      </Text>
+    return (
+      <Show when={store.lastModified} fallback={
+        <Text
+          config={store.config}
+          data-testid="last-modified">
+          Nothing yet
+        </Text>
+      }>
+        <Text
+          config={store.config}
+          data-testid="last-modified">
+          Last modified: {formatDate(store.lastModified)}
+        </Text>
+      </Show>
     )
   }
 
@@ -423,271 +387,267 @@ export default (props: Props) => {
       return content
     }
 
-    const text = p.file.path ?
+    const text = () => p.file.path ?
       p.file.path.substring(p.file.path.length - length) :
       getContent(p.file.text?.doc)
 
     return (
       <Link
-        config={props.config}
+        config={store.config}
         withMargin={true}
-        onClick={() => dispatch(Open(p.file))}
+        onClick={() => onOpenFile(p.file)}
         data-testid="open">
-        {text} {p.file.path && '📎'}
+        {text()} {p.file.path && '📎'}
       </Link>
     )
   }
 
   const Keys = ({keys}: {keys: string[]}) => (
-    <span>{keys.map((k, i) => <i key={i}>{k}</i>)}</span>
+    <span>{keys.map((k) => <i>{k}</i>)}</span>
   )
 
-  useEffect(() => {
+  createEffect(() => {
     setLastAction(undefined)
-  }, [props.lastModified])
+  }, store.lastModified)
 
-  useEffect(() => {
-    if (!show) return
+  createEffect(() => {
+    if (!show()) return
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') setShow(false)
     }
 
     document.addEventListener('keydown', onKeyDown)
-    return () => {
-      document.removeEventListener('keydown', onKeyDown)
-    }
-  }, [show])
+    onCleanup(() => document.removeEventListener('keydown', onKeyDown))
+  })
 
-  useEffect(() => {
-    if (!lastAction) return
+  createEffect(() => {
+    if (!lastAction()) return
     const id = setTimeout(() => {
       setLastAction(undefined)
     }, 1000)
-    return () => {
-      clearTimeout(id)
-    }
-  }, [lastAction])
+    onCleanup(() => clearTimeout(id))
+  })
 
   return (
     <Container>
       <Burger
-        config={props.config}
-        active={show}
+        config={store.config}
+        active={show()}
         onClick={onBurgerClick}
         data-testid="burger">
         <span />
         <span />
         <span />
       </Burger>
-      {show && (
+      <Show when={show()}>
         <Off
-          config={props.config}
-          onClick={() => editorView.focus()}
+          config={store.config}
+          onClick={() => editorView().focus()}
           data-tauri-drag-region="true">
           <div>
-            <Label config={props.config}>
-              File {props.path && <i>({props.path.substring(props.path.length - 24)})</i>}
+            <Label config={store.config}>
+              File {store.path && <i>({store.path.substring(store.path.length - 24)})</i>}
             </Label>
             <Sub>
-              {isTauri && !props.path && (
-                <Link config={props.config} onClick={onSaveAs}>
+              <Show when={isTauri && !store.path}>
+                <Link config={store.config} onClick={onSaveAs}>
                   Save to file <Keys keys={[mod, 's']} />
                 </Link>
-              )}
-              <Link config={props.config} onClick={onNew} data-testid="new">
+              </Show>
+              <Link config={store.config} onClick={onNew} data-testid="new">
                 New <Keys keys={[mod, 'n']} />
               </Link>
               <Link
-                config={props.config}
+                config={store.config}
                 onClick={onDiscard}
-                disabled={!props.path && props.files.length === 0 && isEmpty(props.text?.editorState)}
+                disabled={!store.path && store.files.length === 0 && isEmpty(store.text)}
                 data-testid="discard">
                 {
-                  props.path ? 'Close' :
-                  (props.files.length > 0 && isEmpty(props.text?.editorState)) ? 'Discard ⚠️' : 'Clear'
+                  store.path ? 'Close' :
+                  (store.files.length > 0 && isEmpty(store.text)) ? 'Discard ⚠️' : 'Clear'
                 } <Keys keys={[mod, 'w']} />
               </Link>
             </Sub>
-            {props.files.length > 0 && (
-              <>
-                <Label config={props.config}>Files</Label>
-                <Sub>
-                  {props.files.map((file) => (
-                    <FileLink key={file.lastModified} file={file} />
-                  ))}
-                </Sub>
-              </>
-            )}
-            <Label config={props.config}>Edit</Label>
+            <Show when={store.files.length > 0}>
+              <Label config={store.config}>Files</Label>
+              <Sub>
+                <For each={store.files}>
+                  {(file) => <FileLink file={file} />}
+                </For>
+              </Sub>
+            </Show>
+            <Label config={store.config}>Edit</Label>
             <Sub>
-              <Link config={props.config} onClick={onUndo}>Undo <Keys keys={[mod, 'z']} /></Link>
-              <Link config={props.config} onClick={onRedo}>
+              <Link config={store.config} onClick={onUndo}>Undo <Keys keys={[mod, 'z']} /></Link>
+              <Link config={store.config} onClick={onRedo}>
                 Redo <Keys keys={[mod, ...(isMac ? ['Shift', 'z'] : ['y'])]} />
               </Link>
-              <Link config={props.config} onClick={cmd('cut')}>Cut <Keys keys={[mod, 'x']} /></Link>
-              <Link config={props.config} onClick={cmd('paste')} disabled={!isTauri}>
+              <Link config={store.config} onClick={cmd('cut')}>Cut <Keys keys={[mod, 'x']} /></Link>
+              <Link config={store.config} onClick={cmd('paste')} disabled={!isTauri}>
                 Paste <Keys keys={[mod, 'p']} />
               </Link>
-              <Link config={props.config} onClick={cmd('copy')}>
-                Copy {lastAction === 'copy' && '📋'} <Keys keys={[mod, 'c']} />
+              <Link config={store.config} onClick={cmd('copy')}>
+                Copy {lastAction() === 'copy' && '📋'} <Keys keys={[mod, 'c']} />
               </Link>
-              <Link config={props.config} onClick={onCopyAllAsMd}>
-                Copy all as markdown {lastAction === 'copy-md' && '📋'}
+              <Link config={store.config} onClick={onCopyAllAsMd}>
+                Copy all as markdown {lastAction() === 'copy-md' && '📋'}
               </Link>
             </Sub>
-            <Label config={props.config}>Theme</Label>
+            <Label config={store.config}>Theme</Label>
             <Sub>
-              {Object.entries(themes).map(([key, value]) => (
-                <Link config={props.config} key={key} onClick={onChangeTheme(key)}>
-                  {value.label}{' '}{key === props.config.theme && '✅'}
-                </Link>
-              ))}
+              <For each={Object.entries(themes)}>
+                {([key, value]) => (
+                  <Link config={store.config} onClick={onChangeTheme(key)}>
+                    {value.label}{' '}{key === store.config.theme && '✅'}
+                  </Link>
+                )}
+              </For>
             </Sub>
-            <Label config={props.config}>Code</Label>
+            <Label config={store.config}>Code</Label>
             <Sub>
-              {Object.entries(codeThemes).map(([key, value]) => (
-                <Link config={props.config} key={key} onClick={onChangeCodeTheme(key)}>
-                  {value.label}{' '}{key === props.config.codeTheme && '✅'}
-                </Link>
-              ))}
+              <For each={Object.entries(codeThemes)}>
+                {([key, value]) => (
+                  <Link config={store.config} onClick={onChangeCodeTheme(key)}>
+                    {value.label}{' '}{key === store.config.codeTheme && '✅'}
+                  </Link>
+                )}
+              </For>
             </Sub>
-            <Label config={props.config}>Font</Label>
+            <Label config={store.config}>Font</Label>
             <Sub>
-              {Object.entries(fonts).map(([key, value]) => (
-                <Link config={props.config} key={key} onClick={onChangeFont(key)}>
-                  {value.label}{' '}{key === props.config.font && '✅'}
-                </Link>
-              ))}
+              <For each={Object.entries(fonts)}>
+                {([key, value]) => (
+                  <Link config={store.config} onClick={onChangeFont(key)}>
+                    {value.label}{' '}{key === store.config.font && '✅'}
+                  </Link>
+                )}
+              </For>
             </Sub>
-            <Label config={props.config}>View</Label>
+            <Label config={store.config}>View</Label>
             <Sub>
-              {isTauri && (
-                <Link config={props.config} onClick={onToggleFullscreen}>
-                  Fullscreen {props.fullscreen && '✅'} <Keys keys={[alt, 'Enter']} />
+              <Show when={isTauri}>
+                <Link config={store.config} onClick={onToggleFullscreen}>
+                  Fullscreen {store.fullscreen && '✅'} <Keys keys={[alt, 'Enter']} />
                 </Link>
-              )}
-              <Link config={props.config} onClick={props.onToggleMarkdown} data-testid="markdown">
-                Markdown mode {props.markdown && '✅'} <Keys keys={[mod, 'm']} />
+              </Show>
+              <Link config={store.config} onClick={onToggleMarkdown} data-testid="markdown">
+                Markdown mode {store.markdown && '✅'} <Keys keys={[mod, 'm']} />
               </Link>
-              <Link config={props.config} onClick={onToggleTypewriterMode}>
-                Typewriter mode {props.config.typewriterMode && '✅'}
+              <Link config={store.config} onClick={onToggleTypewriterMode}>
+                Typewriter mode {store.config.typewriterMode && '✅'}
               </Link>
-              {isTauri && (
-                <Link config={props.config} onClick={onToggleAlwaysOnTop}>
-                  Always on Top {props.config.alwaysOnTop && '✅'}
+              <Show when={isTauri}>
+                <Link config={store.config} onClick={onToggleAlwaysOnTop}>
+                  Always on Top {store.config.alwaysOnTop && '✅'}
                 </Link>
-              )}
-              <Text config={props.config}>
+              </Show>
+              <Text config={store.config}>
                 Font size:
                 <input
                   type="range"
                   min="8"
                   max="48"
-                  value={props.config.fontSize}
+                  value={store.config.fontSize}
                   onChange={onChangeFontSize} />
-                {props.config.fontSize}
+                {store.config.fontSize}
               </Text>
-              <Text config={props.config}>
+              <Text config={store.config}>
                 Content width:
                 <input
                   type="range"
                   min="400"
                   max="1800"
                   step="100"
-                  value={props.config.contentWidth}
+                  value={store.config.contentWidth}
                   onChange={onChangeContentWidth} />
-                {props.config.contentWidth}
+                {store.config.contentWidth}
               </Text>
             </Sub>
-            <Label config={props.config}>Prettier</Label>
+            <Label config={store.config}>Prettier</Label>
             <Sub>
-              <Text config={props.config}>
+              <Text config={store.config}>
                 Print Width:
                 <input
                   type="range"
                   min="20"
                   max="160"
                   step="10"
-                  value={props.config.prettier.printWidth}
-                  onChange={(e) => updatePrettier({printWidth: Number(e.target.value)})} />
-                {props.config.prettier.printWidth}
+                  value={store.config.prettier.printWidth}
+                  onChange={(e: any) => updatePrettier({printWidth: Number(e.target.value)})} />
+                {store.config.prettier.printWidth}
               </Text>
-              <Text config={props.config}>
+              <Text config={store.config}>
                 Tab Width:
                 <input
                   type="range"
                   min="2"
                   max="8"
                   step="2"
-                  value={props.config.prettier.tabWidth}
-                  onChange={(e) => updatePrettier({tabWidth: Number(e.target.value)})} />
-                {props.config.prettier.tabWidth}
+                  value={store.config.prettier.tabWidth}
+                  onChange={(e: any) => updatePrettier({tabWidth: Number(e.target.value)})} />
+                {store.config.prettier.tabWidth}
               </Text>
               <Link
-                config={props.config}
-                onClick={() => updatePrettier({useTabs: !props.config.prettier.useTabs})}>
-                Use Tabs {props.config.prettier.useTabs && '✅'}
+                config={store.config}
+                onClick={() => updatePrettier({useTabs: !store.config.prettier.useTabs})}>
+                Use Tabs {store.config.prettier.useTabs && '✅'}
               </Link>
               <Link
-                config={props.config}
-                onClick={() => updatePrettier({semi: !props.config.prettier.semi})}>
-                Semicolons {props.config.prettier.semi && '✅'}
+                config={store.config}
+                onClick={() => updatePrettier({semi: !store.config.prettier.semi})}>
+                Semicolons {store.config.prettier.semi && '✅'}
               </Link>
               <Link
-                config={props.config}
-                onClick={() => updatePrettier({singleQuote: !props.config.prettier.singleQuote})}>
-                Single Quote {props.config.prettier.singleQuote && '✅'}
+                config={store.config}
+                onClick={() => updatePrettier({singleQuote: !store.config.prettier.singleQuote})}>
+                Single Quote {store.config.prettier.singleQuote && '✅'}
               </Link>
             </Sub>
-            <Label config={props.config}>Stats</Label>
+            <Label config={store.config}>Stats</Label>
             <Sub>
               <LastModified />
               <TextStats />
             </Sub>
-            <Label config={props.config}>Collab</Label>
+            <Label config={store.config}>Collab</Label>
             <Sub>
               <Link
-                config={props.config}
+                config={store.config}
                 onClick={onCollab}
-                title={props.collab?.error ? 'Connection error' : ''}>
-                {collabText}
+                title={store.collab?.error ? 'Connection error' : ''}>
+                {collabText()}
               </Link>
-              {collabUsers > 0 && (
-                <>
-                  <Link config={props.config} onClick={onCopyCollabLink}>
-                    Copy Link {lastAction === 'copy-collab-link' && '📋'}
-                  </Link>
-                  <Link config={props.config} onClick={onCopyCollabAppLink}>
-                    Copy App Link {lastAction === 'copy-collab-app-link' && '📋'}
-                  </Link>
-                  <Text config={props.config}>
-                    {collabUsers} {collabUsers === 1 ? 'user' : 'users'} connected
-                  </Text>
-                </>
-              )}
+              <Show when={collabUsers() > 0}>
+                <Link config={store.config} onClick={onCopyCollabLink}>
+                  Copy Link {lastAction() === 'copy-collab-link' && '📋'}
+                </Link>
+                <Link config={store.config} onClick={onCopyCollabAppLink}>
+                  Copy App Link {lastAction() === 'copy-collab-app-link' && '📋'}
+                </Link>
+                <Text config={store.config}>
+                  {collabUsers()} {collabUsers() === 1 ? 'user' : 'users'} connected
+                </Text>
+              </Show>
             </Sub>
-            <Label config={props.config}>Application</Label>
+            <Label config={store.config}>Application</Label>
             <Sub>
               {/* doesn't work with tauri */}
-              {(!isTauri && false) && (
-                <Link config={props.config} onClick={onOpenInApp}>
-                  Open in App ⚡
-                </Link>
-              )}
-              <Link config={props.config} onClick={onVersion}>
+              <Show when={(!isTauri && false)}>
+                <Link config={store.config} onClick={onOpenInApp}>Open in App ⚡</Link>
+              </Show>
+              <Link config={store.config} onClick={onVersion}>
                 About Version {tauriConf.package.version}
               </Link>
-              {isTauri && (
+              <Show when={isTauri}>
                 <Link
-                  config={props.config}
+                  config={store.config}
                   onClick={() => remote.quit()}>
                   Quit <Keys keys={[mod, 'q']} />
                 </Link>
-              )}
+              </Show>
             </Sub>
           </div>
         </Off>
-      )}
+      </Show>
     </Container>
   )
 }

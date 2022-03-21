@@ -1,74 +1,77 @@
-import React, {useEffect, useRef} from 'react'
+import {createEffect, untrack} from 'solid-js'
+import {Store, unwrap} from 'solid-js/store'
 import {EditorState, Transaction} from 'prosemirror-state'
 import {EditorView} from 'prosemirror-view'
 import {Schema} from 'prosemirror-model'
-import {NodeViewFn, ProseMirrorState} from './state'
+import {NodeViewFn, ProseMirrorExtension, ProseMirrorState} from './state'
 
 interface Props {
-  state: ProseMirrorState;
-  onChange: (state: ProseMirrorState) => void;
-  onInit: (state: ProseMirrorState) => void;
-  onReconfigure: (state: ProseMirrorState) => ProseMirrorState;
   className?: string;
-  editorViewRef?: React.MutableRefObject<EditorView>;
+  text?: Store<ProseMirrorState>;
+  editorView?: Store<EditorView>;
+  extensions?: Store<ProseMirrorExtension[]>;
+  onInit: (s: EditorState, v: EditorView) => void;
+  onReconfigure: (s: EditorState) => void;
+  onChange: (s: EditorState) => void;
 }
 
 export const ProseMirror = (props: Props) => {
-  const editorRef = useRef()
-  const editorViewRef = props.editorViewRef ?? useRef()
+  let editorRef: HTMLDivElement
+  const editorView = () => untrack(() => unwrap(props.editorView))
 
   const dispatchTransaction = (tr: Transaction) => {
-    if (!editorViewRef.current) return
-    const newState = editorViewRef.current.state.apply(tr)
-    editorViewRef.current.updateState(newState)
+    console.log('dispatchTransaction', tr)
+    if (!editorView()) return
+    const newState = editorView().state.apply(tr)
+    editorView().updateState(newState)
     if (!tr.docChanged) return
-    props.onChange({
-      ...props.state,
-      editorState: newState,
-    })
+    props.onChange(newState)
   }
 
-  useEffect(() => {
-    return () => {
-      editorViewRef.current = null
-    }
-  }, [])
-
-  useEffect(() => {
-    if (!props.state.editorState) return
-
-    let state = {...props.state}
-    if (props.state.extensions === undefined) {
-      state = props.onReconfigure(props.state)
+  createEffect(([prevText, prevExtensions]) => {
+    const text: EditorState = unwrap(props.text)
+    const extensions: ProseMirrorExtension[] = unwrap(props.extensions)
+    if (!text || !extensions?.length) {
+      return [text, extensions]
     }
 
-    if (!editorViewRef.current) {
-      const {editorState, nodeViews} = createEditorState(props.state)
-      const view = new EditorView(editorRef.current, {state: editorState, nodeViews, dispatchTransaction})
-      editorViewRef.current = view
+    if (!props.editorView) {
+      console.log('INIT EDITOR VIEW')
+      const {editorState, nodeViews} = createEditorState(text, extensions)
+      const view = new EditorView(editorRef, {state: editorState, nodeViews, dispatchTransaction})
       view.focus()
-      props.onInit({...state, editorState})
-    } else if (state.editorState instanceof EditorState) {
-      // editorViewRef.current.updateState(state.editorState)
-    } else if (state.editorState) {
-      const {editorState, nodeViews} = createEditorState(state)
-      if (!editorState) return
-      editorViewRef.current.update({state: editorState, nodeViews, dispatchTransaction})
-      props.onInit({...state, editorState})
+      props.onInit(editorState, view)
+      return [editorState, extensions]
     }
-  }, [props.state])
+
+    if (
+      extensions !== prevExtensions ||
+      (!(text instanceof EditorState) && text !== prevText)
+    ) {
+      const {editorState, nodeViews} = createEditorState(text, extensions)
+      if (!editorState) return
+      editorView().updateState(editorState)
+      editorView().setProps({nodeViews, dispatchTransaction})
+      console.log(`UPDATE TEXT/EXTENSIONS (text=${editorState.doc.textContent}, prevText=${prevText.doc.textContent})`)
+      props.onReconfigure(editorState)
+      editorView().focus()
+      return [editorState, extensions]
+    }
+
+    return [text, extensions]
+  }, [props.text, props.extensions])
 
   return (
     <div
       ref={editorRef}
       className={props.className}
-      spellCheck={false}
+      spell-check={false}
       data-tauri-drag-region="true"
     />
   )
 }
 
-const createEditorState = (state: ProseMirrorState): {
+const createEditorState = (text: ProseMirrorState, extensions: ProseMirrorExtension[]): {
   editorState: EditorState;
   nodeViews: {[key: string]: NodeViewFn};
 } => {
@@ -76,7 +79,7 @@ const createEditorState = (state: ProseMirrorState): {
   let schemaSpec = {nodes: {}}
   let plugins = []
 
-  for (const extension of state.extensions) {
+  for (const extension of extensions) {
     if (extension.schema) {
       schemaSpec = extension.schema(schemaSpec)
     }
@@ -87,22 +90,18 @@ const createEditorState = (state: ProseMirrorState): {
   }
 
   const schema = new Schema(schemaSpec)
-  for (const extension of state.extensions) {
+  for (const extension of extensions) {
     if (extension.plugins) {
       plugins = extension.plugins(plugins, schema)
     }
   }
 
-  let editorState = state.editorState
-  if (!(editorState instanceof EditorState)) {
-    editorState = EditorState.fromJSON({
-      schema,
-      plugins,
-    }, editorState)
+  let editorState: EditorState
+  if (text instanceof EditorState) {
+    editorState = text.reconfigure({plugins, schema})
+  } else {
+    editorState = EditorState.fromJSON({schema, plugins}, text)
   }
 
-  return {
-    editorState: editorState as EditorState,
-    nodeViews,
-  }
+  return {editorState, nodeViews}
 }

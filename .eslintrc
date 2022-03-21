@@ -6,24 +6,16 @@
     "node": true,
     "es6": true
   },
-  "settings": {
-    "react": {
-      "version": "detect"
-    }
-  },
   "plugins": [
-    "@typescript-eslint",
-    "react"
+    "@typescript-eslint"
   ],
   "extends": [
     "eslint:recommended",
-    "plugin:@typescript-eslint/recommended",
-    "plugin:react/recommended"
+    "plugin:@typescript-eslint/recommended"
   ],
   "rules": {
     "indent": "off",
     "curly": ["error", "multi-line"],
-    "react/display-name": "off",
     "no-trailing-spaces": ["error"],
     "no-multiple-empty-lines": ["error", {"max": 1, "maxEOF": 0}],
     "@typescript-eslint/indent": ["error", 2, {"flatTernaryExpressions": true}],

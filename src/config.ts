@@ -1,4 +1,4 @@
-import {Config} from '.'
+import {Config} from './state'
 import {isDark} from './env'
 
 interface Font {
@@ -168,8 +168,8 @@ export const codeThemes: {[key: string]: CodeTheme} = {
   },
 }
 
-export const isDarkTheme = (config: Config) =>
-  themes[config.theme] ? themes[config.theme].dark : false
+export const isDarkTheme = (theme: string) =>
+  themes[theme] ? themes[theme].dark : false
 
 const getDefaltTheme = () => isDark() ? themes.dark : themes.light
 const getTheme = (config: Config) => themes[config.theme] ?? getDefaltTheme()

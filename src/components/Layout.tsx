@@ -1,40 +1,37 @@
-import React, {MouseEvent, ReactNode} from 'react'
 import {css} from '@emotion/css'
 import {background, foreground, primaryBackground, font} from '../config'
-import {Config} from '..'
+import {Config} from '../state'
 
 export type Styled = {
-  children: ReactNode;
+  children: any;
   config: Config;
   'data-testid'?: string;
   onClick?: () => void;
-  onMouseEnter?: (e: MouseEvent) => void;
+  onMouseEnter?: (e: any) => void;
 }
 
-export const Layout = (props: Styled) => {
-  const styles = css`
-    background: ${background(props.config)};
-    display: flex;
-    width: 100%;
-    height: 100%;
-    font-family: ${font(props.config)};
-    font-size: 18px;
-    color: ${foreground(props.config)};
-    position: relative;
-    .drop-cursor {
-      background: ${primaryBackground(props.config)} !important;
-      height: 2px !important;
-      opacity: 0.5;
-    }
-  `
-  return (
-    <div
-      onMouseEnter={props.onMouseEnter}
-      className={styles}>
-      {props.children}
-    </div>
-  )
-}
+export const Layout = (props: Styled) => (
+  <div
+    onMouseEnter={props.onMouseEnter}
+    className={css`
+      background: ${background(props.config)};
+      display: flex;
+      width: 100%;
+      height: 100%;
+      font-family: ${font(props.config)};
+      font-size: 18px;
+      color: ${foreground(props.config)};
+      position: relative;
+      .drop-cursor {
+        background: ${primaryBackground(props.config)} !important;
+        height: 2px !important;
+        opacity: 0.5;
+      }
+    `}
+    data-testid={props['data-testid']}>
+    {props.children}
+  </div>
+)
 
 export const editorCss = (config: Config) => css`
   height: 100%;

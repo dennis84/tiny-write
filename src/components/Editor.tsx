@@ -1,64 +1,40 @@
-import React from 'react'
-import {EditorView} from 'prosemirror-view'
 import {css} from '@emotion/css'
-import {Config, Collab, ErrorObject, File} from '..'
-import {UpdateText, useDispatch} from '../reducer'
+import {EditorView} from 'prosemirror-view'
+import {EditorState} from 'prosemirror-state'
+import {useState} from '../state'
 import {ProseMirror} from '../prosemirror/editor'
-import {ProseMirrorState, isInitialized} from '../prosemirror/state'
-import {createState} from '../prosemirror'
 import {editorCss} from './Layout'
 
-interface Props {
-  text: ProseMirrorState;
-  error?: ErrorObject;
-  lastModified?: Date;
-  files: File[];
-  config: Config;
-  path?: string;
-  collab?: Collab;
-  markdown: boolean;
-  keymap: {[key: string]: any};
-  editorViewRef: React.RefObject<EditorView>;
-}
+export default () => {
+  const [store, ctrl] = useState()
 
-export default (props: Props) => {
-  const dispatch = useDispatch()
-
-  const onInit = (value: ProseMirrorState) => {
-    props.editorViewRef.current.focus()
-    dispatch(UpdateText(value))
+  const onInit = (text: EditorState, editorView: EditorView) => {
+    ctrl.setState({editorView, text})
   }
 
-  const onChange = (value: ProseMirrorState) => {
-    dispatch(UpdateText(value, new Date()))
+  const onReconfigure = (text: EditorState) => {
+    ctrl.setState({text})
   }
 
-  const onReconfigure = (state: ProseMirrorState) => {
-    if (isInitialized(state.editorState)) return state
-    return createState({
-      data: state.editorState,
-      config: props.config,
-      markdown: props.markdown,
-      path: props.path,
-      keymap: props.keymap,
-      y: props.collab?.y,
-    })
+  const onChange = (text: EditorState) => {
+    ctrl.setState({text, lastModified: new Date()})
   }
 
-  const styles = props.error ?
+  const styles = () => store.error ?
     css`display: none` :
     css`
-      ${editorCss(props.config)};
-      ${props.markdown ? 'white-space: pre-wrap' : ''};
+      ${editorCss(store.config)};
+      ${store.markdown ? 'white-space: pre-wrap' : ''};
     `
 
   return (
     <ProseMirror
-      editorViewRef={props.editorViewRef}
-      className={styles}
-      state={props.text}
-      onChange={onChange}
+      className={styles()}
+      editorView={store.editorView}
+      text={store.text}
+      extensions={store.extensions}
+      onInit={onInit}
       onReconfigure={onReconfigure}
-      onInit={onInit} />
+      onChange={onChange} />
   )
 }

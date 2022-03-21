@@ -1,38 +1,13 @@
-import {useCallback, useEffect, useRef, useLayoutEffect} from 'react'
+import {onCleanup} from 'solid-js'
 
-export const useDebouncedEffect = (
-  fn: () => void,
-  delay: number,
-  deps: unknown[]
-) => {
-  const callback = useCallback(fn, deps)
+export const useDebounce = (cb: (...args: any[]) => void, timeoutMs = 100) => {
+  let id: any
+  const fn = (...args: any[]) => {
+    if (id) clearTimeout(id)
+    id = setTimeout(() => cb(...args), timeoutMs)
+  }
 
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      callback()
-    }, delay)
-
-    return () => {
-      clearTimeout(handler)
-    }
-  }, [callback, delay])
-}
-
-export const useDynamicCallback = <T extends (...args: any[]) => any>(callback: T) => {
-  const ref = useRef(callback)
-
-  useLayoutEffect(() => {
-    ref.current = callback
-  }, [callback])
-
-  return useCallback((...args) => ref.current(...args), [])
-}
-
-export const usePrevious = <T>(value: T | undefined) => {
-  const ref = useRef<T>()
-  useEffect(() => {
-    ref.current = value
-  })
-
-  return ref.current
+  fn.cancel = () => clearTimeout(id)
+  onCleanup(fn.cancel)
+  return fn
 }

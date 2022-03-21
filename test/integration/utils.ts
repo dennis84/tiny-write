@@ -1,3 +1,5 @@
+export const delay = 10
+
 export const lineTextEq = async (nth: number, text: string) =>
   (await page.$(`.ProseMirror p:nth-of-type(${nth})`)).evaluate((elem, t) => {
     const textContent = elem.textContent.replace(/\xa0/g, ' ')

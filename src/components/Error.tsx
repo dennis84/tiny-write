@@ -1,15 +1,8 @@
-import React from 'react'
+import {Switch, Match} from 'solid-js'
 import {css} from '@emotion/css'
-import {ErrorObject} from '..'
-import {Clean, Discard, useDispatch} from '../reducer'
+import {Config, useState} from '../state'
 import {foreground} from '../config'
-import {Config} from '..'
 import {buttonPrimary} from './Button'
-
-interface Props {
-  error: ErrorObject;
-  config: Config;
-}
 
 const layer = css`
   width: 100%;
@@ -38,43 +31,52 @@ const pre = (config: Config) => css`
   padding: 10px;
 `
 
-export default (props: Props) =>
-  props.error.id === 'invalid_state' ? invalidState('Invalid State', props) :
-  props.error.id === 'invalid_config' ? invalidState('Invalid Config', props) :
-  props.error.id === 'invalid_file' ? invalidState('Invalid File', props) :
-  other(props)
+export default () => {
+  const [store] = useState()
+  return (
+    <Switch fallback={<Other />}>
+      <Match when={store.error.id === 'invalid_state'}>
+        <InvalidState title="Invalid State" />
+      </Match>
+      <Match when={store.error.id === 'invalid_config'}>
+        <InvalidState title="Invalid Config" />
+      </Match>
+      <Match when={store.error.id === 'invalid_file'}>
+        <InvalidState title="Invalid File" />
+      </Match>
+    </Switch>
+  )
+}
 
-const invalidState = (title: string, props: Props) => {
-  const dispatch = useDispatch()
-  const onClick = () => dispatch(Clean)
+const InvalidState = (props: {title: string}) => {
+  const [store, ctrl] = useState()
+  const onClick = () => ctrl.clean()
 
   return (
     <div className={layer} data-tauri-drag-region="true">
       <div className={container}>
-        <h1>{title}</h1>
+        <h1>{props.title}</h1>
         <p>
           There is an error with the editor state. This is probably due to an
           old version in which the data structure has changed. Automatic data
           migrations may be supported in the future. To fix this now, you can
           copy important notes from below, clean the state and paste it again.
         </p>
-        <pre className={pre(props.config)}>
-          <code>{JSON.stringify(props.error.props)}</code>
+        <pre className={pre(store.config)}>
+          <code>{JSON.stringify(store.error.props)}</code>
         </pre>
-        <button className={buttonPrimary(props.config)} onClick={onClick}>Clean</button>
+        <button className={buttonPrimary(store.config)} onClick={onClick}>Clean</button>
       </div>
     </div>
   )
 }
 
-const other = (props: Props) => {
-  const dispatch = useDispatch()
-  const onClick = () => {
-    dispatch(Discard)
-  }
+const Other = () => {
+  const [store, ctrl] = useState()
+  const onClick = () => ctrl.discard()
 
   const getMessage = () => {
-    const err = (props.error.props as any).error
+    const err = (store.error.props as any).error
     return (typeof err === 'string') ? err : err.message
   }
 
@@ -82,8 +84,8 @@ const other = (props: Props) => {
     <div className={layer} data-tauri-drag-region="true">
       <div className={container}>
         <h1>An error occurred.</h1>
-        <pre className={pre(props.config)}><code>{getMessage()}</code></pre>
-        <button className={buttonPrimary(props.config)} onClick={onClick}>Close</button>
+        <pre className={pre(store.config)}><code>{getMessage()}</code></pre>
+        <button className={buttonPrimary(store.config)} onClick={onClick}>Close</button>
       </div>
     </div>
   )

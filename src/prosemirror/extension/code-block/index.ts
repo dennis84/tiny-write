@@ -6,7 +6,7 @@ import {inputRules, textblockTypeInputRule} from 'prosemirror-inputrules'
 import {Extension} from '@codemirror/state'
 import {CodeBlockView} from './view'
 import {ProseMirrorExtension} from '../../state'
-import {PrettierConfig} from '../../..'
+import {PrettierConfig} from '../../../state'
 
 type Direction = 'left' | 'right' | 'up' | 'down' | 'forward' | 'backward'
 

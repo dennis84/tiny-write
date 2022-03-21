@@ -4,7 +4,7 @@ import * as clipboard from '@tauri-apps/api/clipboard'
 import * as fs from '@tauri-apps/api/fs'
 import * as dialog from '@tauri-apps/api/dialog'
 import {EditorState} from 'prosemirror-state'
-import {Args} from '.'
+import {Args} from './state'
 import {serialize} from './markdown'
 import {isTauri} from './env'
 
@@ -51,43 +51,43 @@ export const copyAllAsMarkdown = async (state: EditorState): Promise<void> => {
 }
 
 export const getMimeType = async (path: string): Promise<string> => {
-  if (!isTauri) throw Error('Must be run in tauri')
+  if (!isTauri) throw Error('Must be run in tauri: getMimeType')
   return invoke('get_mime_type', {path})
 }
 
 export const getFileLastModified = async (path: string): Promise<Date> => {
-  if (!isTauri) throw Error('Must be run in tauri')
+  if (!isTauri) throw Error('Must be run in tauri: getFileLastModified')
   const ts = await invoke('get_file_last_modified', {path}) as string
   return new Date(ts)
 }
 
 export const readFile = async (path: string): Promise<string> => {
-  if (!isTauri) throw Error('Must be run in tauri')
+  if (!isTauri) throw Error('Must be run in tauri: readFile')
   return fs.readTextFile(path)
 }
 
 export const readBinaryFile = async (path: string): Promise<Uint8Array> => {
-  if (!isTauri) throw Error('Must be run in tauri')
+  if (!isTauri) throw Error('Must be run in tauri: readBinaryFile')
   return fs.readBinaryFile(path)
 }
 
 export const writeFile = async (path: string, contents: string): Promise<void> => {
-  if (!isTauri) throw Error('Must be run in tauri')
+  if (!isTauri) throw Error('Must be run in tauri: writeFile')
   return fs.writeFile({path, contents})
 }
 
 export const resolvePath = async (paths: string[]): Promise<string> => {
-  if (!isTauri) throw Error('Must be run in tauri')
+  if (!isTauri) throw Error('Must be run in tauri: resolvePath')
   return invoke('resolve_path', {paths})
 }
 
 export const dirname = async (path: string): Promise<string> => {
-  if (!isTauri) throw Error('Must be run in tauri')
+  if (!isTauri) throw Error('Must be run in tauri: dirname')
   return invoke('dirname', {path})
 }
 
 export const save = async (state: EditorState): Promise<string> => {
-  if (!isTauri) throw Error('Must be run in tauri')
+  if (!isTauri) throw Error('Must be run in tauri: save')
   const path = await dialog.save()
   await fs.writeFile({path, contents: serialize(state)})
   return path

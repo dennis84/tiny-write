@@ -1,6 +1,6 @@
 import {keymap} from 'prosemirror-keymap'
 import {keymap as cmKeymap} from '@codemirror/view'
-import {ProseMirrorState} from './prosemirror/state'
+import {ProseMirrorExtension, ProseMirrorState} from './prosemirror/state'
 import {Schema} from 'prosemirror-model'
 import base from './prosemirror/extension/base'
 import markdown from './prosemirror/extension/markdown'
@@ -16,8 +16,7 @@ import dragHandle from './prosemirror/extension/drag-handle'
 import pasteMarkdown from './prosemirror/extension/paste-markdown'
 import table from './prosemirror/extension/table'
 import collab from './prosemirror/extension/collab'
-import {ProseMirrorExtension} from './prosemirror/state'
-import {Config, YOptions} from '.'
+import {Config, YOptions} from './state'
 import {codeTheme} from './config'
 
 interface Props {
@@ -45,9 +44,9 @@ const codeMirrorKeymap = (props: Props) => {
   return cmKeymap.of(keys)
 }
 
-export const createState = (props: Props): ProseMirrorState => ({
-  editorState: props.data,
-  extensions: props.markdown ? [
+export const createState = (props: Props): [ProseMirrorState, ProseMirrorExtension[]] => [
+  props.data,
+  props.markdown ? [
     placeholder('Start typing ...'),
     customKeymap(props),
     base(props.markdown),
@@ -77,7 +76,7 @@ export const createState = (props: Props): ProseMirrorState => ({
     pasteMarkdown(),
     collab(props.y),
   ]
-})
+]
 
 export const createEmptyState = (props: Props) =>
   createState({
@@ -98,7 +97,7 @@ export const createEmptyData = () => ({
 })
 
 export const createSchema = (props: Props) => {
-  const newTextConfig = createEmptyState({
+  const [,extensions] = createEmptyState({
     config: props.config,
     markdown: props.markdown,
     path: props.path,
@@ -107,7 +106,7 @@ export const createSchema = (props: Props) => {
   })
 
   let schemaSpec = {nodes: {}}
-  for (const extension of newTextConfig.extensions) {
+  for (const extension of extensions) {
     if (extension.schema) {
       schemaSpec = extension.schema(schemaSpec)
     }
