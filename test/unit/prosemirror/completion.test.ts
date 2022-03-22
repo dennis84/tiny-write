@@ -1,9 +1,10 @@
-import {completion} from '../../../src/prosemirror/extension/code-block/completion'
+import {expect, test} from 'vitest'
 import {CompletionContext} from '@codemirror/autocomplete'
 import {Compartment, EditorState} from '@codemirror/state'
 import {javascript} from '@codemirror/lang-javascript'
+import {completion} from '../../../src/prosemirror/extension/code-block/completion'
 
-it.each([
+test.each([
   ['abc', [], 3],
   ['abc ', ['abc'], 4],
   [` const foo = 'bar'`, ['const', 'foo', 'bar'], 0],

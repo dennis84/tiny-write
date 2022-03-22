@@ -141,8 +141,12 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     })
   }
 
-  const createTextFromFile = (file: File) => {
+  const createTextFromFile = async (file: File) => {
     const state = unwrap(store)
+    if (file.path) {
+      file = await loadFile(state.config, file.path)
+    }
+
     const [text, extensions] = createState({
       data: file.text,
       config: state.config,
@@ -198,7 +202,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     })
   }
 
-  const discardText = () => {
+  const discardText = async () => {
     const state = unwrap(store)
     const index = state.files.length - 1
     if (index === -1) return
@@ -206,7 +210,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     const file = state.files[index]
     let next: Partial<State>
     if (file) {
-      next = createTextFromFile(file)
+      next = await createTextFromFile(file)
     } else {
       const [text, extensions] = createEmptyState({
         config: state.config ?? store.config,
@@ -282,14 +286,14 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     setState({path})
   }
 
-  const loadFile = async (state: State): Promise<File> => {
+  const loadFile = async (config: Config, path: string): Promise<File> => {
     try {
-      const fileContent = await remote.readFile(state.path)
-      const lastModified = await remote.getFileLastModified(state.path)
+      const fileContent = await remote.readFile(path)
+      const lastModified = await remote.getFileLastModified(path)
       const schema = createSchema({
-        config: state.config,
+        config,
         markdown: false,
-        path: state.path,
+        path,
         keymap,
       })
 
@@ -307,7 +311,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       return {
         text,
         lastModified: lastModified.toISOString(),
-        path: state.path
+        path: path
       }
     } catch (e) {
       throw new ServiceError('file_permission_denied', {error: e})
@@ -388,7 +392,6 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
   }
 
   const saveState = debounce(async (state: State) => {
-    console.log('saveState')
     const data: any = {
       lastModified: state.lastModified,
       files: state.files,
@@ -484,7 +487,8 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
 
   const openFile = async (file: File) => {
     const state: State = unwrap(store)
-    setState(await doOpenFile(state, file))
+    const update = await doOpenFile(state, file)
+    setState(update)
   }
 
   const doOpenFile = async (state: State, file: File): Promise<State> => {
@@ -506,7 +510,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     }
 
     file.lastModified = item.lastModified
-    const next = createTextFromFile(file)
+    const next = await createTextFromFile(file)
 
     return {
       ...state,

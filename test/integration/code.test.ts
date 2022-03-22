@@ -1,19 +1,19 @@
-import {clearText, delay, lineTextEq} from './utils'
+import {test, expect} from '@playwright/test'
+import {delay, lineTextEq} from './utils'
 
-beforeAll(async () => {
-  await page.goto('http://localhost:3000')
+test.beforeEach(async ({page}) => {
+  await page.goto('/')
   await page.waitForSelector('[data-testid="initialized"]')
   await page.waitForTimeout(10)
 })
 
-it('inline code', async () => {
+test('inline code', async ({page}) => {
   await page.type('.ProseMirror', 'foo `code` bar', {delay})
   expect(await page.textContent('.ProseMirror p code')).toBe('code')
 })
 
-it('code around marks', async () => {
-  await clearText()
+test('code around marks', async ({page}) => {
   await page.type('.ProseMirror', 'foo `inline [link](url) code` bar', {delay})
-  await lineTextEq(1, 'foo `inline link code` bar')
+  await lineTextEq(page, 1, 'foo `inline link code` bar')
   expect(await page.textContent('.ProseMirror a')).toBe('link')
 })

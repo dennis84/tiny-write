@@ -1,12 +1,13 @@
-import {clearText, delay, lineTextEq, move} from './utils'
+import {test, expect} from '@playwright/test'
+import {delay, lineTextEq, move} from './utils'
 
-beforeAll(async () => {
-  await page.goto('http://localhost:3000')
+test.beforeEach(async ({page}) => {
+  await page.goto('/')
   await page.waitForSelector('[data-testid="initialized"]')
   await page.waitForTimeout(10)
 })
 
-it('markdown table to html and back', async () => {
+test('markdown table to html and back', async ({page}) => {
   await page.click('[data-testid="burger"]')
   await page.click('[data-testid="markdown"]')
 
@@ -37,27 +38,26 @@ it('markdown table to html and back', async () => {
 
   await page.click('[data-testid="markdown"]')
 
-  await lineTextEq(1, '| Foo | Bar | Baz |')
-  await lineTextEq(2, '| --- | --- | ---:|')
-  await lineTextEq(3, '| 1 | 2 | 3 |')
+  await lineTextEq(page, 1, '| Foo | Bar | Baz |')
+  await lineTextEq(page, 2, '| --- | --- | ---:|')
+  await lineTextEq(page, 3, '| 1 | 2 | 3 |')
 
   await page.click('[data-testid="markdown"]')
   await page.click('[data-testid="burger"]')
 })
 
-it('table keymap', async () => {
-  await clearText()
+test('table keymap', async ({page}) => {
   await page.type('.ProseMirror', '||| ', {delay})
   expect(await page.textContent('.ProseMirror table tr th:nth-of-type(1)')).toBe('')
   expect(await page.textContent('.ProseMirror table tr th:nth-of-type(2)')).toBe('')
   expect(await page.textContent('.ProseMirror table tr td:nth-of-type(1)')).toBe('')
   expect(await page.textContent('.ProseMirror table tr td:nth-of-type(2)')).toBe('')
   await page.type('.ProseMirror', '1', {delay})
-  await move('ArrowRight')
+  await move(page, 'ArrowRight')
   await page.type('.ProseMirror', '2', {delay})
-  await move('ArrowRight')
+  await move(page, 'ArrowRight')
   await page.type('.ProseMirror', '3', {delay})
-  await move('ArrowRight')
+  await move(page, 'ArrowRight')
   await page.keyboard.press('Backspace')
   await page.keyboard.press('Backspace')
   await page.keyboard.press('Backspace')
@@ -73,17 +73,16 @@ it('table keymap', async () => {
   expect(await page.textContent('.ProseMirror table tr:nth-of-type(2) td:nth-of-type(2)')).toBe('')
   await page.keyboard.press('Control+Enter')
   await page.type('.ProseMirror', 'outside', {delay})
-  await lineTextEq(1, 'outside')
+  await lineTextEq(page, 1, 'outside')
 })
 
-it('dont remove table head', async () => {
-  await clearText()
+test('dont remove table head', async ({page}) => {
   await page.type('.ProseMirror', '||| ', {delay})
-  await move('ArrowRight')
-  await move('ArrowRight')
+  await move(page, 'ArrowRight')
+  await move(page, 'ArrowRight')
   await page.type('.ProseMirror', '3', {delay})
-  await move('ArrowLeft')
-  await move('ArrowLeft')
+  await move(page, 'ArrowLeft')
+  await move(page, 'ArrowLeft')
   await page.keyboard.press('Backspace')
   await page.keyboard.press('Backspace')
   await page.keyboard.press('Backspace')
@@ -93,11 +92,10 @@ it('dont remove table head', async () => {
   expect(await page.textContent('.ProseMirror table tr td:nth-of-type(2)')).toBe('')
 })
 
-it('remove table if empty', async () => {
-  await clearText()
+test('remove table if empty', async ({page}) => {
   await page.type('.ProseMirror', '||| ', {delay})
-  await move('ArrowRight')
-  await move('ArrowRight')
+  await move(page, 'ArrowRight')
+  await move(page, 'ArrowRight')
   await page.keyboard.press('Backspace')
   expect(await page.textContent('.ProseMirror table tr th:nth-of-type(1)')).toBe('')
   expect(await page.textContent('.ProseMirror table tr th:nth-of-type(2)')).toBe('')
@@ -107,23 +105,22 @@ it('remove table if empty', async () => {
   expect(await page.$('.ProseMirror table')).toBe(null)
 })
 
-it('arrow up and down', async () => {
-  await clearText()
+test('arrow up and down', async ({page}) => {
   await page.type('.ProseMirror', '||| ', {delay})
   await page.type('.ProseMirror', '1', {delay})
-  await move('ArrowDown')
+  await move(page, 'ArrowDown')
   await page.type('.ProseMirror', '3', {delay})
-  await move('ArrowRight')
+  await move(page, 'ArrowRight')
   await page.type('.ProseMirror', '4', {delay})
-  await move('ArrowUp')
+  await move(page, 'ArrowUp')
   await page.type('.ProseMirror', '2', {delay})
-  await move('ArrowLeft', 2)
-  await move('ArrowUp', 2)
+  await move(page, 'ArrowLeft', 2)
+  await move(page, 'ArrowUp', 2)
   await page.type('.ProseMirror', 'test', {delay})
   expect(await page.textContent('.ProseMirror table tr th:nth-of-type(1)')).toBe('1')
   expect(await page.textContent('.ProseMirror table tr th:nth-of-type(1)')).toBe('1')
   expect(await page.textContent('.ProseMirror table tr th:nth-of-type(2)')).toBe('2')
   expect(await page.textContent('.ProseMirror table tr:nth-of-type(1) td:nth-of-type(1)')).toBe('3')
   expect(await page.textContent('.ProseMirror table tr:nth-of-type(1) td:nth-of-type(2)')).toBe('4')
-  await lineTextEq(1, 'test')
+  await lineTextEq(page, 1, 'test')
 })

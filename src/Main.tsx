@@ -54,7 +54,7 @@ export default (props: {state: State}) => {
       } else if (data.args.text) {
         data = await ctrl.doOpenFile(data, {text: JSON.parse(data.args.text)})
       } else if (data.args.file && data.args.file === data.path) {
-        const file = await ctrl.loadFile(data)
+        const file = await ctrl.loadFile(data.config, data.path)
         data = await ctrl.doOpenFile(data, file)
       } else if (data.args.file) {
         data = await ctrl.doOpenFile(data, {path: data.args.file})
@@ -97,7 +97,7 @@ export default (props: {state: State}) => {
           insertImage(editorView(), convertFileSrc(path), x, y)
         } else if (mime.startsWith('text/')) {
           const state: State = unwrap(store)
-          const file = await ctrl.loadFile({...state, path})
+          const file = await ctrl.loadFile(state.config, path)
           await ctrl.openFile(file)
           return
         }

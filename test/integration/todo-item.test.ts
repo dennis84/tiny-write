@@ -1,12 +1,13 @@
+import {test, expect} from '@playwright/test'
 import {delay} from './utils'
 
-beforeAll(async () => {
-  await page.goto('http://localhost:3000')
+test.beforeEach(async ({page}) => {
+  await page.goto('/')
   await page.waitForSelector('[data-testid="initialized"]')
   await page.waitForTimeout(10)
 })
 
-it('create todos', async () => {
+test('create todos', async ({page}) => {
   await page.type('.ProseMirror', '[ ] task1', {delay})
   await page.keyboard.press('Enter')
   await page.type('.ProseMirror', 'task2', {delay})
