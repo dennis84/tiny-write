@@ -69,6 +69,7 @@
     "@typescript-eslint/parser": "^5.16.0",
     "devicon": "github:devicons/devicon#master",
     "eslint": "^8.11.0",
+    "jsdom": "^19.0.0",
     "rollup-plugin-visualizer": "^5.6.0",
     "tslib": "^2.3.1",
     "typescript": "^4.6.2",
