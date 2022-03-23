@@ -256,12 +256,11 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     })
   }
 
-  const discard = () => {
-    console.log(store.path)
+  const discard = async () => {
     if (store.path) {
-      discardText()
+      await discardText()
     } else if (store.files.length > 0 && isEmpty(store.text)) {
-      discardText()
+      await discardText()
     } else {
       selectAll(store.editorView.state, store.editorView.dispatch)
       deleteSelection(store.editorView.state, store.editorView.dispatch)

@@ -44,7 +44,7 @@ test('openFile', async () => {
   const [store, ctrl] = createCtrl(newState())
   await ctrl.openFile({text})
   expect(store.files.length).toBe(0)
-  expect(store.text !== undefined).toBe(true)
+  expect(store.text).toEqual(text)
   expect(store.extensions !== undefined).toBe(true)
 })
 
@@ -79,7 +79,7 @@ test('openFile - path in files', async () => {
 
   await ctrl.openFile({path: 'file1'})
   expect(store.files.length).toBe(1)
-  expect(store.text !== undefined).toBe(true)
+  expect(getText(store.text)).toBe('File1')
   expect(store.extensions !== undefined).toBe(true)
   expect(store.path).toBe('file1')
   expect(store.lastModified).toEqual(lastModified)
@@ -96,7 +96,40 @@ test('openFile - push path to files', async () => {
   expect(store.files.length).toBe(1)
   expect(store.files[0].path).toBe('file2')
   expect(store.files[0].lastModified).toBe(lastModified.toISOString())
-  expect(store.text !== undefined).toBe(true)
+  expect(getText(store.text)).toBe('File1')
   expect(store.extensions !== undefined).toBe(true)
   expect(store.path).toBe('file1')
 })
+
+test.only('discard - with path', async () => {
+  const [store, ctrl] = createCtrl(newState({
+    files: [{path: 'file1'}],
+    text: editorState,
+    lastModified,
+    path: 'file2',
+  }))
+
+  await ctrl.discard()
+  expect(getText(store.text)).toBe('File1')
+  expect(store.path).toBe('file1')
+  expect(store.files.length).toBe(0)
+})
+
+const getText = (text: any) => {
+  let content = ''
+  const getContent = (node: any) => {
+    if (node.text) {
+      content += node.text
+    }
+
+    if (node.content) {
+      for (const child of node.content) {
+        content = getContent(child)
+      }
+    }
+
+    return content
+  }
+
+  return getContent(text.doc)
+}
