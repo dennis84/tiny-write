@@ -54,6 +54,8 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     return true
   }
 
+  const onToggleMarkdown = () => toggleMarkdown()
+
   const onUndo = () => {
     if (!isInitialized(store.text)) return
     const text = store.text as EditorState
@@ -78,8 +80,6 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     return true
   }
 
-  const onToggleMarkdown = () => toggleMarkdown()
-
   const keymap = {
     [`${mod}-q`]: onQuit,
     [`${mod}-n`]: onNew,
@@ -90,55 +90,6 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     [`Shift-${mod}-z`]: onRedo,
     [`${mod}-y`]: onRedo,
     [`${mod}-m`]: onToggleMarkdown,
-  }
-
-  const toggleMarkdown = () => {
-    const state = unwrap(store)
-    const editorState = store.text as EditorState
-    const markdown = !state.markdown
-    console.log(markdown)
-    const selection = {type: 'text', anchor: 1, head: 1}
-    let doc: any
-
-    if (markdown) {
-      const lines = serialize(editorState).split('\n')
-      const nodes = lines.map((text) => {
-        return text ? {type: 'paragraph', content: [{type: 'text', text}]} : {type: 'paragraph'}
-      })
-
-      doc = {type: 'doc', content: nodes}
-    } else {
-      const schema = createSchema({
-        config: state.config,
-        path: state.path,
-        y: state.collab?.y,
-        markdown,
-        keymap,
-      })
-
-      const parser = createMarkdownParser(schema)
-      let textContent = ''
-      editorState.doc.forEach((node) => {
-        textContent += `${node.textContent}\n`
-      })
-      const text = parser.parse(textContent)
-      doc = text.toJSON()
-    }
-
-    const [text, extensions] = createState({
-      data: {selection, doc},
-      config: state.config,
-      markdown,
-      path: state.path,
-      keymap: keymap,
-      y: state.collab?.y,
-    })
-
-    setState({
-      text,
-      extensions,
-      markdown,
-    })
   }
 
   const createTextFromFile = async (file: File) => {
@@ -174,40 +125,11 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     }]
   }
 
-  const newFile = () => {
-    if (isEmpty(store.text) && !store.path) {
-      return
-    }
-
-    const state: State = unwrap(store)
-    let files = state.files
-    if (!state.error) {
-      files = addToFiles(files, state)
-    }
-
-    const [text, extensions] = createEmptyState({
-      config: state.config ?? store.config,
-      markdown: state.markdown ?? store.markdown,
-      keymap,
-    })
-
-    setState({
-      text,
-      extensions,
-      files,
-      lastModified: undefined,
-      path: undefined,
-      error: undefined,
-      collab: undefined,
-    })
-  }
-
   const discardText = async () => {
     const state = unwrap(store)
     const index = state.files.length - 1
-    if (index === -1) return
+    const file = index !== -1 ? state.files[index] : undefined
 
-    const file = state.files[index]
     let next: Partial<State>
     if (file) {
       next = await createTextFromFile(file)
@@ -237,94 +159,13 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     })
   }
 
-  const discard = () => {
-    if (store.path) {
-      discardText()
-    } else if (store.files.length > 0 && isEmpty(store.text)) {
-      discardText()
-    } else {
-      selectAll(store.editorView.state, store.editorView.dispatch)
-      deleteSelection(store.editorView.state, store.editorView.dispatch)
-    }
-  }
-
-  const clean = () => {
-    setState({
-      ...newState(),
-      loading: 'initialized',
-      files: [],
-      fullscreen: store.fullscreen,
-      lastModified: new Date(),
-      error: undefined,
-      text: undefined,
-    })
-  }
-
-  const setFullscreen = (fullscreen: boolean) => {
-    remote.setFullscreen(fullscreen)
-    setState({fullscreen})
-  }
-
-  const updateConfig = (config: Partial<Config>) => {
-    const state = unwrap(store)
-    const [, extensions] = createState({
-      data: state.text?.toJSON(),
-      config: {...state.config, ...config},
-      markdown: state.markdown,
-      path: state.path,
-      keymap,
-      y: state.collab?.y,
-    })
-
-    setState({
-      config: {...state.config, ...config},
-      extensions,
-    })
-  }
-
-  const updatePath = (path: string) => {
-    setState({path})
-  }
-
-  const loadFile = async (config: Config, path: string): Promise<File> => {
-    try {
-      const fileContent = await remote.readFile(path)
-      const lastModified = await remote.getFileLastModified(path)
-      const schema = createSchema({
-        config,
-        markdown: false,
-        path,
-        keymap,
-      })
-
-      const parser = createMarkdownParser(schema)
-      const doc = parser.parse(fileContent).toJSON()
-      const text = {
-        doc,
-        selection: {
-          type: 'text',
-          anchor: 1,
-          head: 1
-        }
-      }
-
-      return {
-        text,
-        lastModified: lastModified.toISOString(),
-        path: path
-      }
-    } catch (e) {
-      throw new ServiceError('file_permission_denied', {error: e})
-    }
-  }
-
   const fetchData = async (): Promise<State> => {
     let args = await remote.getArgs().catch(() => undefined)
     const state: State = unwrap(store)
 
     if (!isTauri) {
-      const room = window.location.pathname?.slice(1)
-      args = {room}
+      const room = window.location.pathname?.slice(1).trim()
+      args = {room: room ? room : undefined}
     }
 
     const data = await db.get('state')
@@ -391,6 +232,170 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     return newState
   }
 
+  const getTheme = (state: State) => {
+    const matchDark = window.matchMedia('(prefers-color-scheme: dark)')
+    const isDark = matchDark.matches
+    if (isDark && !isDarkTheme(state.config.theme)) {
+      return {theme: 'dark', codeTheme: 'material-dark'}
+    } else if (!isDark && isDarkTheme(state.config.theme)) {
+      return {theme: 'light', codeTheme: 'material-light'}
+    }
+
+    return {}
+  }
+
+  const clean = () => {
+    setState({
+      ...newState(),
+      loading: 'initialized',
+      files: [],
+      fullscreen: store.fullscreen,
+      lastModified: new Date(),
+      error: undefined,
+      text: undefined,
+    })
+  }
+
+  const discard = () => {
+    console.log(store.path)
+    if (store.path) {
+      discardText()
+    } else if (store.files.length > 0 && isEmpty(store.text)) {
+      discardText()
+    } else {
+      selectAll(store.editorView.state, store.editorView.dispatch)
+      deleteSelection(store.editorView.state, store.editorView.dispatch)
+    }
+  }
+
+  const init = async () => {
+    let data = await fetchData()
+    try {
+      if (data.args.room) {
+        data = doStartCollab(data)
+      } else if (data.args.text) {
+        data = await doOpenFile(data, {text: JSON.parse(data.args.text)})
+      } else if (data.args.file) {
+        const file = await loadFile(data.config, data.args.file)
+        data = await doOpenFile(data, file)
+      } else if (data.path) {
+        const file = await loadFile(data.config, data.path)
+        data = await doOpenFile(data, file)
+      } else if (!data.text) {
+        const [text, extensions] = createEmptyState({
+          config: data.config ?? store.config,
+          markdown: data.markdown ?? store.markdown,
+          keymap: keymap,
+        })
+        data = {...data, text, extensions}
+      }
+    } catch (error) {
+      data = {...data, error: error.errorObject}
+    }
+
+    setState({
+      ...data,
+      config: {...data.config, ...getTheme(data)},
+      loading: 'initialized'
+    })
+  }
+
+  const loadFile = async (config: Config, path: string): Promise<File> => {
+    try {
+      const fileContent = await remote.readFile(path)
+      const lastModified = await remote.getFileLastModified(path)
+      const schema = createSchema({
+        config,
+        markdown: false,
+        path,
+        keymap,
+      })
+
+      const parser = createMarkdownParser(schema)
+      const doc = parser.parse(fileContent).toJSON()
+      const text = {
+        doc,
+        selection: {
+          type: 'text',
+          anchor: 1,
+          head: 1
+        }
+      }
+
+      return {
+        text,
+        lastModified: lastModified.toISOString(),
+        path: path
+      }
+    } catch (e) {
+      throw new ServiceError('file_permission_denied', {error: e})
+    }
+  }
+
+  const newFile = () => {
+    if (isEmpty(store.text) && !store.path) {
+      return
+    }
+
+    const state: State = unwrap(store)
+    let files = state.files
+    if (!state.error) {
+      files = addToFiles(files, state)
+    }
+
+    const [text, extensions] = createEmptyState({
+      config: state.config ?? store.config,
+      markdown: state.markdown ?? store.markdown,
+      keymap,
+    })
+
+    setState({
+      text,
+      extensions,
+      files,
+      lastModified: undefined,
+      path: undefined,
+      error: undefined,
+      collab: undefined,
+    })
+  }
+
+  const openFile = async (file: File) => {
+    const state: State = unwrap(store)
+    const update = await doOpenFile(state, file)
+    setState(update)
+  }
+
+  const doOpenFile = async (state: State, file: File): Promise<State> => {
+    const findIndexOfFile = (f: File) => {
+      for (let i = 0; i < state.files.length; i++) {
+        if (state.files[i] === f) return i
+        else if (f.path && state.files[i].path === f.path) return i
+      }
+
+      return -1
+    }
+
+    const index = findIndexOfFile(file)
+    const item = index === -1 ? file : state.files[index]
+    let files = state.files.filter((f) => f !== item)
+
+    if (!isEmpty(state.text) && state.lastModified) {
+      files = addToFiles(files, state)
+    }
+
+    file.lastModified = item.lastModified
+    const next = await createTextFromFile(file)
+
+    return {
+      ...state,
+      ...next,
+      files,
+      collab: undefined,
+      error: undefined,
+    }
+  }
+
   const saveState = debounce(async (state: State) => {
     const data: any = {
       lastModified: state.lastModified,
@@ -417,8 +422,19 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     db.set('state', JSON.stringify(data))
   }, 200)
 
-  const startCollab = (state: State): State => {
-    const backup = state.collab?.room !== state.args.room
+  const setFullscreen = (fullscreen: boolean) => {
+    remote.setFullscreen(fullscreen)
+    setState({fullscreen})
+  }
+
+  const startCollab = () => {
+    const state: State = unwrap(store)
+    const update = doStartCollab(state)
+    setState(update)
+  }
+
+  const doStartCollab = (state: State): State => {
+    const backup = state.args?.room && state.collab.room !== state.args.room
     const room = state.args?.room ?? uuidv4()
     window.history.replaceState(null, '', `/${room}`)
 
@@ -485,71 +501,96 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     window.history.replaceState(null, '', '/')
   }
 
-  const openFile = async (file: File) => {
-    const state: State = unwrap(store)
-    const update = await doOpenFile(state, file)
-    setState(update)
+  const toggleMarkdown = () => {
+    const state = unwrap(store)
+    const editorState = store.text as EditorState
+    const markdown = !state.markdown
+    const selection = {type: 'text', anchor: 1, head: 1}
+    let doc: any
+
+    if (markdown) {
+      const lines = serialize(editorState).split('\n')
+      const nodes = lines.map((text) => {
+        return text ? {type: 'paragraph', content: [{type: 'text', text}]} : {type: 'paragraph'}
+      })
+
+      doc = {type: 'doc', content: nodes}
+    } else {
+      const schema = createSchema({
+        config: state.config,
+        path: state.path,
+        y: state.collab?.y,
+        markdown,
+        keymap,
+      })
+
+      const parser = createMarkdownParser(schema)
+      let textContent = ''
+      editorState.doc.forEach((node) => {
+        textContent += `${node.textContent}\n`
+      })
+      const text = parser.parse(textContent)
+      doc = text.toJSON()
+    }
+
+    const [text, extensions] = createState({
+      data: {selection, doc},
+      config: state.config,
+      markdown,
+      path: state.path,
+      keymap: keymap,
+      y: state.collab?.y,
+    })
+
+    setState({
+      text,
+      extensions,
+      markdown,
+    })
   }
 
-  const doOpenFile = async (state: State, file: File): Promise<State> => {
-    const findIndexOfFile = (f: File) => {
-      for (let i = 0; i < state.files.length; i++) {
-        if (state.files[i] === f) return i
-        else if (f.path && state.files[i].path === f.path) return i
-      }
+  const updateConfig = (config: Partial<Config>) => {
+    const state = unwrap(store)
+    const [, extensions] = createState({
+      data: state.text?.toJSON(),
+      config: {...state.config, ...config},
+      markdown: state.markdown,
+      path: state.path,
+      keymap,
+      y: state.collab?.y,
+    })
 
-      return -1
-    }
-
-    const index = findIndexOfFile(file)
-    const item = index === -1 ? file : state.files[index]
-    let files = state.files.filter((f) => f !== item)
-
-    if (!isEmpty(state.text) && state.lastModified) {
-      files = addToFiles(files, state)
-    }
-
-    file.lastModified = item.lastModified
-    const next = await createTextFromFile(file)
-
-    return {
-      ...state,
-      ...next,
-      files,
-      collab: undefined,
-      error: undefined,
-    }
+    setState({
+      config: {...state.config, ...config},
+      extensions,
+      lastModified: new Date(),
+    })
   }
 
-  const getTheme = (state: State) => {
-    const matchDark = window.matchMedia('(prefers-color-scheme: dark)')
-    const isDark = matchDark.matches
-    if (isDark && !isDarkTheme(state.config.theme)) {
-      return {theme: 'dark', codeTheme: 'material-dark'}
-    } else if (!isDark && isDarkTheme(state.config.theme)) {
-      return {theme: 'light', codeTheme: 'material-light'}
-    }
+  const updatePath = (path: string) => {
+    setState({path, lastModified: new Date()})
+  }
 
-    return {}
+  const updateTheme = () => {
+    setState('config', getTheme(unwrap(store)))
   }
 
   const ctrl = {
     clean,
+    discard,
+    init,
+    loadFile,
+    newFile,
+    openFile,
+    saveState,
     setFullscreen,
     setState,
-    updateConfig,
-    updatePath,
-    keymap,
-    getTheme,
-    loadFile,
-    fetchData,
-    saveState,
     startCollab,
     stopCollab,
-    openFile,
-    newFile,
     toggleMarkdown,
-    discard,
+    updateConfig,
+    updatePath,
+    updateTheme,
   }
 
   return [store, ctrl]

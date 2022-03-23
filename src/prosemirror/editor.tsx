@@ -20,7 +20,6 @@ export const ProseMirror = (props: Props) => {
   const editorView = () => untrack(() => unwrap(props.editorView))
 
   const dispatchTransaction = (tr: Transaction) => {
-    console.log('dispatchTransaction', tr)
     if (!editorView()) return
     const newState = editorView().state.apply(tr)
     editorView().updateState(newState)
@@ -36,7 +35,6 @@ export const ProseMirror = (props: Props) => {
     }
 
     if (!props.editorView) {
-      console.log('INIT EDITOR VIEW')
       const {editorState, nodeViews} = createEditorState(text, extensions)
       const view = new EditorView(editorRef, {state: editorState, nodeViews, dispatchTransaction})
       view.focus()
@@ -52,7 +50,6 @@ export const ProseMirror = (props: Props) => {
       if (!editorState) return
       editorView().updateState(editorState)
       editorView().setProps({nodeViews, dispatchTransaction})
-      console.log(`UPDATE TEXT/EXTENSIONS (text=${editorState.doc.textContent}, prevText=${prevText.doc.textContent})`)
       props.onReconfigure(editorState)
       editorView().focus()
       return [editorState, extensions]

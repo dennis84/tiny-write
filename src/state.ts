@@ -48,7 +48,7 @@ export interface Collab {
   y?: YOptions;
 }
 
-export type LoadingType = 'loading' | 'fetched' | 'initialized'
+export type LoadingType = 'loading' | 'initialized'
 
 export interface State {
   text?: ProseMirrorState;
