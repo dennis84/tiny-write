@@ -48,7 +48,7 @@ test('openFile', async () => {
   expect(store.extensions !== undefined).toBe(true)
 })
 
-test('Open text - add to files', async () => {
+test('openFile - add to files', async () => {
   const [store, ctrl] = createCtrl(newState({
     text: editorState,
     lastModified: new Date(),
@@ -59,7 +59,7 @@ test('Open text - add to files', async () => {
   expect(store.extensions !== undefined).toBe(true)
 })
 
-test('Open text - dont add if not modified', async () => {
+test('openFile - dont add if not modified', async () => {
   const [store, ctrl] = createCtrl(newState({
     text: editorState,
   }))
@@ -69,7 +69,7 @@ test('Open text - dont add if not modified', async () => {
   expect(store.extensions !== undefined).toBe(true)
 })
 
-test('Open path - in files', async () => {
+test('openFile - path in files', async () => {
   const [store, ctrl] = createCtrl(newState({
     files: [
       {path: 'file1', lastModified: lastModified.toISOString()},
@@ -85,7 +85,7 @@ test('Open path - in files', async () => {
   expect(store.lastModified).toEqual(lastModified)
 })
 
-test('Open path - push path to files', async () => {
+test('openFile - push path to files', async () => {
   const [store, ctrl] = createCtrl(newState({
     text: editorState,
     lastModified,
