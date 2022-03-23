@@ -434,27 +434,6 @@ export class CodeBlockView {
   prettify() {
     const lang = this.getLang()
 
-    if (lang === 'json') {
-      try {
-        const value = JSON.stringify(JSON.parse(this.editorView.state.doc.toString()), null, 2)
-        this.editorView.dispatch({
-          changes: {from: 0, to: this.editorView.state.doc.length, insert: value}
-        })
-        this.prettifyBtn.textContent = ''
-      } catch (err) {
-        this.editorView.dispatch(setDiagnostics(this.editorView.state, [{
-          from: 0,
-          to: this.editorView.state.doc.length,
-          severity: 'error',
-          message: err.message,
-        }]))
-        this.prettifyBtn.textContent = '🚨'
-      }
-
-      setTimeout(() => this.editorView.focus())
-      return
-    }
-
     const [parser, plugin] =
       lang === 'javascript' ? ['babel', parserBabel] :
       lang === 'css' ? ['css', parserCss] :
@@ -463,6 +442,7 @@ export class CodeBlockView {
       lang === 'less' ? ['less', parserCss] :
       lang === 'scss' ? ['scss', parserCss] :
       lang === 'yaml' ? ['yaml', parserYaml] :
+      lang === 'json' ? ['json', parserBabel] :
       lang === 'typescript' ? ['typescript', parserTypescript] :
       [undefined, undefined]
     if (!parser) return
