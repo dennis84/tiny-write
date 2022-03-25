@@ -175,8 +175,6 @@ export default () => {
   const [show, setShow] = createSignal(false)
   const [lastAction, setLastAction] = createSignal<string | undefined>()
 
-  const editorView = () => unwrap(store.editorView)
-
   const collabText = () =>
     store.collab?.started ? 'Stop' :
     store.collab?.error ? 'Restart 🚨' :
@@ -186,16 +184,16 @@ export default () => {
     store.collab?.y?.provider.awareness.meta.size ?? 0
 
   const onBurgerClick = () => {
-    editorView().focus()
+    store.editorView.focus()
     setShow(!show())
   }
 
   const onUndo = () => {
-    undo(editorView().state, editorView().dispatch)
+    undo(store.editorView.state, store.editorView.dispatch)
   }
 
   const onRedo = () => {
-    redo(editorView().state, editorView().dispatch)
+    redo(store.editorView.state, store.editorView.dispatch)
   }
 
   const cmd = (cmd: string) => () => {
@@ -204,7 +202,7 @@ export default () => {
   }
 
   const onCopyAllAsMd = () => {
-    remote.copyAllAsMarkdown(editorView().state).then(() => {
+    remote.copyAllAsMarkdown(store.editorView.state).then(() => {
       setLastAction('copy-md')
     })
   }
@@ -256,7 +254,7 @@ export default () => {
   }
 
   const onSaveAs = async () => {
-    const path = await remote.save(editorView().state)
+    const path = await remote.save(store.editorView.state)
     if (path) ctrl.updatePath(path)
   }
 
@@ -274,21 +272,21 @@ export default () => {
     if (store.collab?.started) {
       window.open(`tinywrite://main?room=${store.collab.room}`, '_self')
     } else {
-      const text = window.btoa(JSON.stringify(editorView().state.toJSON()))
+      const text = window.btoa(JSON.stringify(store.editorView.state.toJSON()))
       window.open(`tinywrite://main?text=${text}`, '_self')
     }
   }
 
   const onCopyCollabLink = () => {
     remote.copy(`${WEB_URL}/${store.collab.room}`).then(() => {
-      editorView().focus()
+      store.editorView.focus()
       setLastAction('copy-collab-link')
     })
   }
 
   const onCopyCollabAppLink = () => {
     remote.copy(`tinywrite://${store.collab.room}`).then(() => {
-      editorView().focus()
+      store.editorView.focus()
       setLastAction('copy-collab-app-link')
     })
   }
@@ -442,7 +440,7 @@ export default () => {
       <Show when={show()}>
         <Off
           config={store.config}
-          onClick={() => editorView().focus()}
+          onClick={() => store.editorView.focus()}
           data-tauri-drag-region="true">
           <div>
             <Label config={store.config}>

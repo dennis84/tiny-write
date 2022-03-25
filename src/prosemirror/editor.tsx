@@ -1,4 +1,4 @@
-import {createEffect, untrack} from 'solid-js'
+import {createEffect} from 'solid-js'
 import {Store, unwrap} from 'solid-js/store'
 import {EditorState, Transaction} from 'prosemirror-state'
 import {EditorView} from 'prosemirror-view'
@@ -17,12 +17,11 @@ interface Props {
 
 export const ProseMirror = (props: Props) => {
   let editorRef: HTMLDivElement
-  const editorView = () => untrack(() => unwrap(props.editorView))
 
   const dispatchTransaction = (tr: Transaction) => {
-    if (!editorView()) return
-    const newState = editorView().state.apply(tr)
-    editorView().updateState(newState)
+    if (!props.editorView) return
+    const newState = props.editorView.state.apply(tr)
+    props.editorView.updateState(newState)
     if (!tr.docChanged) return
     props.onChange(newState)
   }
@@ -48,10 +47,10 @@ export const ProseMirror = (props: Props) => {
     ) {
       const {editorState, nodeViews} = createEditorState(text, extensions, prevText)
       if (!editorState) return
-      editorView().updateState(editorState)
-      editorView().setProps({nodeViews, dispatchTransaction})
+      props.editorView.updateState(editorState)
+      props.editorView.setProps({nodeViews, dispatchTransaction})
       props.onReconfigure(editorState)
-      editorView().focus()
+      props.editorView.focus()
       return [editorState, extensions]
     }
 

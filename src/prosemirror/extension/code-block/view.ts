@@ -293,10 +293,11 @@ export class CodeBlockView {
 
   update(node: Node) {
     if (node.type != this.node.type) return false
+    const lang = this.getLang()
     this.node = node
     this.updatePrettify()
     // Allow update from collab
-    if (node.attrs.params.lang !== this.node.attrs.params.lang) {
+    if (node.attrs.params.lang !== lang) {
       this.reconfigure()
       this.updateLangToggle()
     }
