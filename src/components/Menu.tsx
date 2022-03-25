@@ -620,9 +620,11 @@ export default () => {
                 <Link config={store.config} onClick={onCopyCollabLink}>
                   Copy Link {lastAction() === 'copy-collab-link' && '📋'}
                 </Link>
-                <Link config={store.config} onClick={onCopyCollabAppLink}>
-                  Copy App Link {lastAction() === 'copy-collab-app-link' && '📋'}
-                </Link>
+                <Show when={false}>
+                  <Link config={store.config} onClick={onCopyCollabAppLink}>
+                    Copy App Link {lastAction() === 'copy-collab-app-link' && '📋'}
+                  </Link>
+                </Show>
                 <Text config={store.config}>
                   {collabUsers()} {collabUsers() === 1 ? 'user' : 'users'} connected
                 </Text>

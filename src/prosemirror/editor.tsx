@@ -46,7 +46,7 @@ export const ProseMirror = (props: Props) => {
       extensions !== prevExtensions ||
       (!(text instanceof EditorState) && text !== prevText)
     ) {
-      const {editorState, nodeViews} = createEditorState(text, extensions)
+      const {editorState, nodeViews} = createEditorState(text, extensions, prevText)
       if (!editorState) return
       editorView().updateState(editorState)
       editorView().setProps({nodeViews, dispatchTransaction})
@@ -68,12 +68,17 @@ export const ProseMirror = (props: Props) => {
   )
 }
 
-const createEditorState = (text: ProseMirrorState, extensions: ProseMirrorExtension[]): {
+const createEditorState = (
+  text: ProseMirrorState,
+  extensions: ProseMirrorExtension[],
+  prevText?: EditorState
+): {
   editorState: EditorState;
   nodeViews: {[key: string]: NodeViewFn};
 } => {
-  let nodeViews = {}
+  const reconfigure = text instanceof EditorState && prevText?.schema
   let schemaSpec = {nodes: {}}
+  let nodeViews = {}
   let plugins = []
 
   for (const extension of extensions) {
@@ -86,7 +91,7 @@ const createEditorState = (text: ProseMirrorState, extensions: ProseMirrorExtens
     }
   }
 
-  const schema = new Schema(schemaSpec)
+  const schema = reconfigure ? prevText.schema : new Schema(schemaSpec)
   for (const extension of extensions) {
     if (extension.plugins) {
       plugins = extension.plugins(plugins, schema)
@@ -94,8 +99,10 @@ const createEditorState = (text: ProseMirrorState, extensions: ProseMirrorExtens
   }
 
   let editorState: EditorState
-  if (text instanceof EditorState) {
-    editorState = text.reconfigure({plugins, schema})
+  if (reconfigure) {
+    editorState = text.reconfigure({schema, plugins})
+  } else if (text instanceof EditorState) {
+    editorState = EditorState.fromJSON({schema, plugins}, text.toJSON())
   } else {
     editorState = EditorState.fromJSON({schema, plugins}, text)
   }

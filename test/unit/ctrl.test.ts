@@ -101,7 +101,7 @@ test('openFile - push path to files', async () => {
   expect(store.path).toBe('file1')
 })
 
-test.only('discard - with path', async () => {
+test('discard - with path', async () => {
   const [store, ctrl] = createCtrl(newState({
     files: [{path: 'file1'}],
     text: editorState,

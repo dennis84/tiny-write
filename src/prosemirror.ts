@@ -1,6 +1,6 @@
 import {keymap} from 'prosemirror-keymap'
 import {keymap as cmKeymap} from '@codemirror/view'
-import {ProseMirrorExtension, ProseMirrorState} from './prosemirror/state'
+import {ProseMirrorExtension} from './prosemirror/state'
 import {Schema} from 'prosemirror-model'
 import base from './prosemirror/extension/base'
 import markdown from './prosemirror/extension/markdown'
@@ -44,8 +44,7 @@ const codeMirrorKeymap = (props: Props) => {
   return cmKeymap.of(keys)
 }
 
-export const createState = (props: Props): [ProseMirrorState, ProseMirrorExtension[]] => [
-  props.data,
+export const createExtensions = (props: Props): ProseMirrorExtension[] =>
   props.markdown ? [
     placeholder('Start typing ...'),
     customKeymap(props),
@@ -76,15 +75,8 @@ export const createState = (props: Props): [ProseMirrorState, ProseMirrorExtensi
     pasteMarkdown(),
     collab(props.y),
   ]
-]
 
-export const createEmptyState = (props: Props) =>
-  createState({
-    ...props,
-    data: createEmptyData(),
-  })
-
-export const createEmptyData = () => ({
+export const createEmptyText = () => ({
   doc: {
     type: 'doc',
     content: [{type: 'paragraph'}]
@@ -97,7 +89,7 @@ export const createEmptyData = () => ({
 })
 
 export const createSchema = (props: Props) => {
-  const [,extensions] = createEmptyState({
+  const extensions = createExtensions({
     config: props.config,
     markdown: props.markdown,
     path: props.path,

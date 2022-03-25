@@ -9,7 +9,7 @@ import {WebsocketProvider} from 'y-websocket'
 import {uniqueNamesGenerator, adjectives, animals} from 'unique-names-generator'
 import {debounce} from 'ts-debounce'
 import * as remote from './remote'
-import {createSchema, createState, createEmptyState} from './prosemirror'
+import {createSchema, createExtensions, createEmptyText} from './prosemirror'
 import {State, File, Config, ServiceError, newState} from './state'
 import {COLLAB_URL, isTauri, mod} from './env'
 import {serialize, createMarkdownParser} from './markdown'
@@ -98,8 +98,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       file = await loadFile(state.config, file.path)
     }
 
-    const [text, extensions] = createState({
-      data: file.text,
+    const extensions = createExtensions({
       config: state.config,
       markdown: file.markdown,
       path: file.path,
@@ -107,7 +106,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     })
 
     return {
-      text,
+      text: file.text,
       extensions,
       lastModified: file.lastModified ? new Date(file.lastModified) : undefined,
       path: file.path,
@@ -134,14 +133,14 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     if (file) {
       next = await createTextFromFile(file)
     } else {
-      const [text, extensions] = createEmptyState({
+      const extensions = createExtensions({
         config: state.config ?? store.config,
         markdown: state.markdown ?? store.markdown,
         keymap,
       })
 
       next = {
-        text,
+        text: createEmptyText(),
         extensions,
         lastModified: undefined,
         path: undefined,
@@ -188,24 +187,20 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     }
 
     let text = state.text
-    let extensions = []
     if (parsed.text) {
       if (!isText(parsed.text)) {
         throw new ServiceError('invalid_state', parsed.text)
       }
 
-      try {
-        [text, extensions] = createState({
-          data: parsed.text,
-          path: parsed.path,
-          markdown: parsed.markdown,
-          keymap,
-          config,
-        })
-      } catch (err) {
-        throw new ServiceError('invalid_state', parsed.text)
-      }
+      text = parsed.text
     }
+
+    const extensions = createExtensions({
+      path: parsed.path,
+      markdown: parsed.markdown,
+      keymap,
+      config,
+    })
 
     const newState = {
       ...parsed,
@@ -281,7 +276,8 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
         const file = await loadFile(data.config, data.path)
         data = await doOpenFile(data, file)
       } else if (!data.text) {
-        const [text, extensions] = createEmptyState({
+        const text = createEmptyText()
+        const extensions = createExtensions({
           config: data.config ?? store.config,
           markdown: data.markdown ?? store.markdown,
           keymap: keymap,
@@ -342,14 +338,14 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       files = addToFiles(files, state)
     }
 
-    const [text, extensions] = createEmptyState({
+    const extensions = createExtensions({
       config: state.config ?? store.config,
       markdown: state.markdown ?? store.markdown,
       keymap,
     })
 
     setState({
-      text,
+      text: createEmptyText(),
       extensions,
       files,
       lastModified: undefined,
@@ -456,7 +452,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       foreground: xs[index].primaryForeground,
     })
 
-    const [, extensions] = createState({
+    const extensions = createExtensions({
       config: state.config,
       markdown: state.markdown,
       path: state.path,
@@ -489,7 +485,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
 
   const stopCollab = (state: State) => {
     state.collab.y?.provider.destroy()
-    const [, extensions] = createState({
+    const extensions = createExtensions({
       config: state.config,
       markdown: state.markdown,
       path: state.path,
@@ -532,8 +528,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       doc = text.toJSON()
     }
 
-    const [text, extensions] = createState({
-      data: {selection, doc},
+    const extensions = createExtensions({
       config: state.config,
       markdown,
       path: state.path,
@@ -542,7 +537,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     })
 
     setState({
-      text,
+      text: {selection, doc},
       extensions,
       markdown,
     })
@@ -550,8 +545,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
 
   const updateConfig = (config: Partial<Config>) => {
     const state = unwrap(store)
-    const [, extensions] = createState({
-      data: state.text?.toJSON(),
+    const extensions = createExtensions({
       config: {...state.config, ...config},
       markdown: state.markdown,
       path: state.path,
