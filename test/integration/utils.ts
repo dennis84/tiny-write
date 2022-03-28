@@ -3,10 +3,17 @@ import {Page} from '@playwright/test'
 export const delay = 10
 
 export const lineTextEq = async (page: Page, nth: number, text: string) =>
-  (await page.$(`.ProseMirror p:nth-of-type(${nth})`)).evaluate((elem, t) => {
+  page.waitForFunction(([nth, text]) => {
+    const elem = document
+      .querySelector(`.ProseMirror p:nth-of-type(${nth})`)
+      .cloneNode(true) as HTMLElement
+    elem.querySelectorAll('[contexteditable="false"]').forEach((x) => {
+      x.parentNode.removeChild(x)
+    })
+
     const textContent = elem.textContent.replace(/\xa0/g, ' ')
-    if (textContent !== t) throw Error(`${t} != ${textContent}`)
-  }, text)
+    return textContent === text
+  }, [nth, text])
 
 export const move = async (page: Page, key: string, repeat = 1) => {
   for (let i = 0; i < repeat; i ++) {

@@ -153,7 +153,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     setState({
       files,
       ...next,
-      collab: file ? undefined : state.collab,
+      collab: undefined,
       error: undefined,
     })
   }
@@ -275,14 +275,19 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       } else if (data.path) {
         const file = await loadFile(data.config, data.path)
         data = await doOpenFile(data, file)
-      } else if (!data.text) {
-        const text = createEmptyText()
+      }
+
+      if (!data.text) {
+        data = {...data, text: createEmptyText()}
+      }
+
+      if (!data.extensions.length) {
         const extensions = createExtensions({
           config: data.config ?? store.config,
           markdown: data.markdown ?? store.markdown,
           keymap: keymap,
         })
-        data = {...data, text, extensions}
+        data = {...data, extensions}
       }
     } catch (error) {
       data = {...data, error: error.errorObject}
@@ -425,6 +430,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
   const startCollab = () => {
     const state: State = unwrap(store)
     const update = doStartCollab(state)
+    setState('text', createEmptyText());
     setState(update)
   }
 

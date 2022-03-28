@@ -9,6 +9,7 @@ const pluginKey = new PluginKey('y-mouse')
 
 const createCursor = (user: any, coords: any) => () => {
   const cur = document.createElement('span')
+  cur.setAttribute('contexteditable', 'false')
   cur.style.setProperty('--user-background', user.background)
   cur.classList.add('mouse-cursor')
   cur.style.top = `${coords.y}px`
@@ -80,6 +81,7 @@ const yMousePlugin = (awareness: Awareness) => new Plugin({
 
 const cursorBuilder = (user: any): HTMLElement => {
   const cursor = document.createElement('span')
+  cursor.setAttribute('contexteditable', 'false')
   cursor.classList.add('ProseMirror-yjs-cursor')
   cursor.setAttribute('style', `border-color: ${user.background}`)
   const userDiv = document.createElement('span')

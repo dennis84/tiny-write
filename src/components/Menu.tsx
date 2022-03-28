@@ -611,7 +611,8 @@ export default () => {
               <Link
                 config={store.config}
                 onClick={onCollab}
-                title={store.collab?.error ? 'Connection error' : ''}>
+                title={store.collab?.error ? 'Connection error' : ''}
+                data-testid="collab">
                 {collabText()}
               </Link>
               <Show when={collabUsers() > 0}>

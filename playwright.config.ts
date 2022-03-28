@@ -2,7 +2,7 @@ import { PlaywrightTestConfig } from '@playwright/test';
 const config: PlaywrightTestConfig = {
   testDir: './test/integration',
   webServer: {
-    command: 'npm run web',
+    command: 'npm run web & ./node_modules/.bin/y-websocket',
     port: 3000,
     timeout: 120 * 1000,
     reuseExistingServer: !process.env.CI,
