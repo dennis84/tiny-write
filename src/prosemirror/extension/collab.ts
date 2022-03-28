@@ -5,15 +5,26 @@ import {Awareness} from 'y-protocols/awareness'
 import {ProseMirrorExtension} from '../state'
 import {YOptions} from '../../state'
 
-const pluginKey = new PluginKey('y-mouse')
+const cursorBuilder = (user: any): HTMLElement => {
+  const cursor = document.createElement('span')
+  cursor.setAttribute('contexteditable', 'false')
+  cursor.classList.add('ProseMirror-yjs-cursor')
+  cursor.setAttribute('style', `border-color: ${user.background}`)
+  return cursor
+}
 
-const createCursor = (user: any, coords: any) => () => {
+const createMouseCursor = (user: any, coords: any) => () => {
   const cur = document.createElement('span')
   cur.setAttribute('contexteditable', 'false')
   cur.style.setProperty('--user-background', user.background)
   cur.classList.add('mouse-cursor')
   cur.style.top = `${coords.y}px`
   cur.style.left = `${coords.x}px`
+
+  const username = document.createElement('span')
+  username.setAttribute('style', `background-color: ${user.background}; color: ${user.foreground}`)
+  username.textContent = user.name
+  cur.append(username)
   return cur
 }
 
@@ -25,11 +36,13 @@ const createDecorations = (state: EditorState, awareness: Awareness) => {
   awareness.getStates().forEach((aw: any, clientId: any) => {
     if (clientId === y.clientID) return
     if (!aw.mouse) return
-    decorations.push(Decoration.widget(0, createCursor(aw.user, aw.mouse)))
+    decorations.push(Decoration.widget(0, createMouseCursor(aw.user, aw.mouse)))
   })
 
   return DecorationSet.create(state.doc, decorations)
 }
+
+const pluginKey = new PluginKey('y-mouse')
 
 const yMousePlugin = (awareness: Awareness) => new Plugin({
   key: pluginKey,
@@ -49,7 +62,7 @@ const yMousePlugin = (awareness: Awareness) => new Plugin({
   props: {
     decorations: (state) => pluginKey.getState(state)
   },
-  view: (view: any) => {
+  view: (view: any): any => {
     const onAwarenessChange = () => {
       const tr = view.state.tr
       tr.setMeta(pluginKey, {awarenessUpdated: true})
@@ -78,18 +91,6 @@ const yMousePlugin = (awareness: Awareness) => new Plugin({
     }
   }
 })
-
-const cursorBuilder = (user: any): HTMLElement => {
-  const cursor = document.createElement('span')
-  cursor.setAttribute('contexteditable', 'false')
-  cursor.classList.add('ProseMirror-yjs-cursor')
-  cursor.setAttribute('style', `border-color: ${user.background}`)
-  const userDiv = document.createElement('span')
-  userDiv.setAttribute('style', `background-color: ${user.background}; color: ${user.foreground}`)
-  userDiv.textContent = user.name
-  cursor.append(userDiv)
-  return cursor
-}
 
 export default (y: YOptions): ProseMirrorExtension => ({
   plugins: (prev) => y ? [

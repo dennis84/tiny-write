@@ -123,7 +123,7 @@ export const themes: {[key: string]: Theme} = {
     background: '#f9f5f5',
     foreground: '#ba989c',
     primaryBackground: '#b8bde8',
-    primaryForeground: '#fff',
+    primaryForeground: '#585a6d',
     dark: false,
   },
 }
