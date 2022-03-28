@@ -428,14 +428,26 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     setState(update)
   }
 
+  const onCollabConfigUpdate = (event: any) => {
+    const font = event.target.get('font') as string
+    const fontSize = event.target.get('fontSize') as number
+    const contentWidth = event.target.get('contentWidth') as number
+    setState('config', {font, fontSize, contentWidth})
+  }
+
   const doStartCollab = (state: State): State => {
-    const backup = state.args?.room && state.collab.room !== state.args.room
+    const backup = state.args?.room && state.collab?.room !== state.args.room
     const room = state.args?.room ?? uuidv4()
     window.history.replaceState(null, '', `/${room}`)
 
     const ydoc = new Y.Doc()
-    const type = ydoc.getXmlFragment('prosemirror')
+    const prosemirrorType = ydoc.getXmlFragment('prosemirror')
     const provider = new WebsocketProvider(COLLAB_URL, room, ydoc)
+    const configType = ydoc.getMap('config')
+    configType.set('font', state.config.font)
+    configType.set('fontSize', state.config.fontSize)
+    configType.set('contentWidth', state.config.contentWidth)
+    configType.observe(onCollabConfigUpdate)
 
     const xs = Object.values(themes)
     const index = Math.floor(Math.random() * xs.length)
@@ -457,7 +469,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       markdown: state.markdown,
       path: state.path,
       keymap,
-      y: {type, provider},
+      y: {prosemirrorType, configType, provider},
     })
 
     let newState = state
@@ -479,12 +491,14 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     return {
       ...newState,
       extensions,
-      collab: {started: true, room, y: {type, provider}}
+      collab: {started: true, room, y: {prosemirrorType, configType, provider}}
     }
   }
 
   const stopCollab = (state: State) => {
     state.collab.y?.provider.destroy()
+    state.collab.y?.configType.unobserve(onCollabConfigUpdate)
+
     const extensions = createExtensions({
       config: state.config,
       markdown: state.markdown,
@@ -552,6 +566,10 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       keymap,
       y: state.collab?.y,
     })
+
+    state.collab?.y.configType.set('font', config.font)
+    state.collab?.y.configType.set('fontSize', config.fontSize)
+    state.collab?.y.configType.set('contentWidth', config.contentWidth)
 
     setState({
       config: {...state.config, ...config},

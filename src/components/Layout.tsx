@@ -47,6 +47,7 @@ export const editorCss = (config: Config) => css`
     display: none;
   }
   > [contenteditable] {
+    position: relative;
     min-height: calc(100% - 100px);
     height: fit-content;
     width: 100%;
@@ -294,5 +295,31 @@ export const editorCss = (config: Config) => css`
     padding-left: 2px;
     padding-right: 2px;
     white-space: nowrap;
+  }
+  .mouse-cursor {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    margin-left: -15px;
+    z-index: 20;
+    &::before, &::after {
+      content: '';
+      transform: rotate(148deg);
+      position: absolute;
+      width: 0;
+      height: 0;
+      border-left: 10px solid transparent;
+      border-right: 10px solid transparent;
+      border-bottom: 10px solid var(--user-background);
+    }
+    &::before {
+      transform: rotate(148deg);
+      left: 0
+    }
+    &::after {
+      transform: rotate(-77deg);
+      left: -1px;
+      top: -1px;
+    }
   }
 `

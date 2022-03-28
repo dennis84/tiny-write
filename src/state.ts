@@ -1,6 +1,6 @@
 import {createContext, useContext} from 'solid-js'
 import {Store} from 'solid-js/store'
-import {XmlFragment} from 'yjs'
+import * as Y from 'yjs'
 import {WebsocketProvider} from 'y-websocket'
 import {ProseMirrorExtension, ProseMirrorState} from './prosemirror/state'
 import {isMac} from './env'
@@ -37,7 +37,8 @@ export interface ErrorObject {
 }
 
 export interface YOptions {
-  type: XmlFragment;
+  prosemirrorType: Y.XmlFragment;
+  configType: Y.Map<any>;
   provider: WebsocketProvider;
 }
 
