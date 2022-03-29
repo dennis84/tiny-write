@@ -2,7 +2,6 @@ import {createContext, useContext} from 'solid-js'
 import {Store} from 'solid-js/store'
 import * as Y from 'yjs'
 import {WebsocketProvider} from 'y-websocket'
-import {ProseMirrorExtension, ProseMirrorState} from './prosemirror/state'
 import {isMac} from './env'
 
 export interface Args {
@@ -52,9 +51,7 @@ export interface Collab {
 export type LoadingType = 'loading' | 'initialized'
 
 export interface State {
-  text?: ProseMirrorState;
   editorView?: any;
-  extensions?: ProseMirrorExtension[];
   markdown?: boolean;
   lastModified?: Date;
   files: File[];
@@ -72,6 +69,7 @@ export interface File {
   lastModified?: string;
   path?: string;
   markdown?: boolean;
+  collab?: Collab;
 }
 
 export class ServiceError extends Error {
@@ -87,7 +85,6 @@ export const StateContext = createContext<[Store<State>, any]>([undefined, undef
 export const useState = () => useContext(StateContext)
 
 export const newState = (props: Partial<State> = {}): State => ({
-  extensions: [],
   files: [],
   loading: 'loading',
   fullscreen: false,

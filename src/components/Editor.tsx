@@ -1,24 +1,15 @@
+import {onMount} from 'solid-js'
 import {css} from '@emotion/css'
-import {EditorView} from 'prosemirror-view'
-import {EditorState} from 'prosemirror-state'
 import {useState} from '../state'
-import {ProseMirror} from '../prosemirror/editor'
 import {editorCss} from './Layout'
 
 export default () => {
   const [store, ctrl] = useState()
+  let editorRef: HTMLDivElement
 
-  const onInit = (text: EditorState, editorView: EditorView) => {
-    ctrl.setState({editorView, text})
-  }
-
-  const onReconfigure = (text: EditorState) => {
-    ctrl.setState({text})
-  }
-
-  const onChange = (text: EditorState) => {
-    ctrl.setState({text, lastModified: new Date()})
-  }
+  onMount(() => {
+    ctrl.createEditorView(editorRef)
+  })
 
   const styles = () => store.error ?
     css`display: none` :
@@ -28,13 +19,11 @@ export default () => {
     `
 
   return (
-    <ProseMirror
+    <div
+      ref={editorRef}
       className={styles()}
-      editorView={store.editorView}
-      text={store.text}
-      extensions={store.extensions}
-      onInit={onInit}
-      onReconfigure={onReconfigure}
-      onChange={onChange} />
+      spell-check={false}
+      data-tauri-drag-region="true"
+    />
   )
 }

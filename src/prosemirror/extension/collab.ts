@@ -92,7 +92,7 @@ const yMousePlugin = (awareness: Awareness) => new Plugin({
   }
 })
 
-export default (y: YOptions): ProseMirrorExtension => ({
+export default (y?: YOptions): ProseMirrorExtension => ({
   plugins: (prev) => y ? [
     ...prev,
     ySyncPlugin(y.prosemirrorType),

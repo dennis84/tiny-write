@@ -1,6 +1,8 @@
 import {Store, createStore, unwrap} from 'solid-js/store'
 import {v4 as uuidv4} from 'uuid'
-import {EditorState} from 'prosemirror-state'
+import {EditorView} from 'prosemirror-view'
+import {EditorState, Transaction} from 'prosemirror-state'
+import {Schema} from 'prosemirror-model'
 import {undo, redo} from 'prosemirror-history'
 import {selectAll, deleteSelection} from 'prosemirror-commands'
 import * as Y from 'yjs'
@@ -10,12 +12,18 @@ import {uniqueNamesGenerator, adjectives, animals} from 'unique-names-generator'
 import {debounce} from 'ts-debounce'
 import * as remote from './remote'
 import {createSchema, createExtensions, createEmptyText} from './prosemirror'
-import {State, File, Config, ServiceError, newState} from './state'
+import {State, File, Collab, Config, ServiceError, newState} from './state'
 import {COLLAB_URL, isTauri, mod} from './env'
 import {serialize, createMarkdownParser} from './markdown'
 import {isDarkTheme, themes} from './config'
 import db from './db'
-import {isEmpty, isInitialized} from './prosemirror/state'
+import {
+  NodeViewFn,
+  ProseMirrorExtension,
+  ProseMirrorState,
+  isEmpty,
+  isInitialized,
+} from './prosemirror/state'
 
 const isText = (x: any) => x && x.doc && x.selection
 
@@ -32,6 +40,7 @@ const isConfig = (x: any): boolean =>
 
 export const createCtrl = (initial: State): [Store<State>, any] => {
   const [store, setState] = createStore(initial)
+  const initialEditorState = {text: undefined, extensions: undefined}
 
   const onQuit = () => {
     if (!isTauri) return
@@ -57,8 +66,8 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
   const onToggleMarkdown = () => toggleMarkdown()
 
   const onUndo = () => {
-    if (!isInitialized(store.text)) return
-    const text = store.text as EditorState
+    if (!isInitialized(store.editorView.state)) return
+    const text = store.editorView.state
     if (store.collab?.started) {
       yUndo(text)
     } else {
@@ -69,8 +78,8 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
   }
 
   const onRedo = () => {
-    if (!isInitialized(store.text)) return
-    const text = store.text as EditorState
+    if (!isInitialized(store.editorView.state)) return
+    const text = store.editorView.state as EditorState
     if (store.collab?.started) {
       yRedo(text)
     } else {
@@ -92,73 +101,48 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     [`${mod}-m`]: onToggleMarkdown,
   }
 
-  const createTextFromFile = async (file: File) => {
-    const state = unwrap(store)
-    if (file.path) {
-      file = await loadFile(state.config, file.path)
-    }
-
-    const extensions = createExtensions({
-      config: state.config,
-      markdown: file.markdown,
-      path: file.path,
-      keymap,
-    })
-
-    return {
-      text: file.text,
-      extensions,
-      lastModified: file.lastModified ? new Date(file.lastModified) : undefined,
-      path: file.path,
-      markdown: file.markdown,
-    }
-  }
-
   const addToFiles = (files: File[], prev: State) => {
-    const text = prev.path ? undefined : (prev.text as EditorState).toJSON()
+    const text = prev.path ? undefined : store.editorView.state.toJSON()
     return [...files, {
       text,
       lastModified: prev.lastModified?.toISOString(),
       path: prev.path,
       markdown: prev.markdown,
+      ...(prev.collab?.room ? {collab: {room: prev.collab.room}} : {}),
     }]
   }
 
   const discardText = async () => {
-    const state = unwrap(store)
+    const state: State = unwrap(store)
     const index = state.files.length - 1
-    const file = index !== -1 ? state.files[index] : undefined
-
-    let next: Partial<State>
-    if (file) {
-      next = await createTextFromFile(file)
-    } else {
-      const extensions = createExtensions({
-        config: state.config ?? store.config,
-        markdown: state.markdown ?? store.markdown,
-        keymap,
-      })
-
-      next = {
-        text: createEmptyText(),
-        extensions,
-        lastModified: undefined,
-        path: undefined,
-        markdown: state.markdown,
-      }
-    }
-
+    let file = index !== -1 ? state.files[index] : {text: createEmptyText()}
     const files = state.files.filter((f: File) => f !== file)
 
+    if (file?.path) {
+      file = await loadFile(state.config, file.path)
+    }
+
+    let next: Partial<State> = {
+      lastModified: file.lastModified ? new Date(file.lastModified) : undefined,
+      path: file.path,
+      markdown: file.markdown,
+      collab: {room: file.collab?.room},
+    }
+
+    disconnectCollab(state.collab)
+    next = doStartCollab({...state, ...next})
+    updateEditorState(next, file.text)
+
     setState({
-      files,
-      ...next,
+      args: {cwd: state.args?.cwd},
       collab: undefined,
       error: undefined,
+      ...next,
+      files,
     })
   }
 
-  const fetchData = async (): Promise<State> => {
+  const fetchData = async (): Promise<[State, ProseMirrorState]> => {
     let args = await remote.getArgs().catch(() => undefined)
     const state: State = unwrap(store)
 
@@ -178,7 +162,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     }
 
     if (!parsed) {
-      return {...state, args}
+      return [{...state, args}, undefined]
     }
 
     const config = {...state.config, ...parsed.config}
@@ -186,7 +170,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       throw new ServiceError('invalid_config', config)
     }
 
-    let text = state.text
+    let text: any
     if (parsed.text) {
       if (!isText(parsed.text)) {
         throw new ServiceError('invalid_state', parsed.text)
@@ -195,17 +179,8 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       text = parsed.text
     }
 
-    const extensions = createExtensions({
-      path: parsed.path,
-      markdown: parsed.markdown,
-      keymap,
-      config,
-    })
-
     const newState = {
       ...parsed,
-      text,
-      extensions,
       config,
       args,
     }
@@ -224,7 +199,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       throw new ServiceError('invalid_state', newState)
     }
 
-    return newState
+    return [newState, text]
   }
 
   const getTheme = (state: State) => {
@@ -240,31 +215,40 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
   }
 
   const clean = () => {
-    setState({
+    disconnectCollab(store.collab)
+    const state: State = {
       ...newState(),
+      args: {cwd: store.args?.cwd},
       loading: 'initialized',
       files: [],
       fullscreen: store.fullscreen,
       lastModified: new Date(),
       error: undefined,
-      text: undefined,
-    })
+      collab: undefined,
+    }
+    updateEditorState(state)
+    setState(state)
   }
 
   const discard = async () => {
     if (store.path) {
       await discardText()
-    } else if (store.files.length > 0 && isEmpty(store.text)) {
+    } else if (store.files.length > 0 && isEmpty(store.editorView.state)) {
       await discardText()
+    } else if (isEmpty(store.editorView.state)) {
+      newFile()
     } else {
       selectAll(store.editorView.state, store.editorView.dispatch)
       deleteSelection(store.editorView.state, store.editorView.dispatch)
     }
+
+    store.editorView.focus()
   }
 
   const init = async () => {
-    let data = await fetchData()
     try {
+      const result = await fetchData()
+      let data = result[0]
       if (data.args.room) {
         data = doStartCollab(data)
       } else if (data.args.text) {
@@ -277,27 +261,15 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
         data = await doOpenFile(data, file)
       }
 
-      if (!data.text) {
-        data = {...data, text: createEmptyText()}
-      }
-
-      if (!data.extensions.length) {
-        const extensions = createExtensions({
-          config: data.config ?? store.config,
-          markdown: data.markdown ?? store.markdown,
-          keymap: keymap,
-        })
-        data = {...data, extensions}
-      }
+      updateEditorState(data, result[1] ?? createEmptyText())
+      setState({
+        ...data,
+        config: {...data.config, ...getTheme(data)},
+        loading: 'initialized'
+      })
     } catch (error) {
-      data = {...data, error: error.errorObject}
+      setState({error: error.errorObject})
     }
-
-    setState({
-      ...data,
-      config: {...data.config, ...getTheme(data)},
-      loading: 'initialized'
-    })
   }
 
   const loadFile = async (config: Config, path: string): Promise<File> => {
@@ -333,31 +305,30 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
   }
 
   const newFile = () => {
-    if (isEmpty(store.text) && !store.path) {
+    const empty = isEmpty(store.editorView.state)
+    if (empty && !store.path && !store.collab?.room) {
       return
     }
 
     const state: State = unwrap(store)
     let files = state.files
-    if (!state.error) {
+    if (!state.error && !empty && !store.path) {
       files = addToFiles(files, state)
     }
 
-    const extensions = createExtensions({
-      config: state.config ?? store.config,
-      markdown: state.markdown ?? store.markdown,
-      keymap,
-    })
-
-    setState({
-      text: createEmptyText(),
-      extensions,
+    const update = {
+      ...state,
+      args: {cwd: state.args?.cwd},
       files,
       lastModified: undefined,
       path: undefined,
-      error: undefined,
       collab: undefined,
-    })
+      error: undefined,
+    }
+
+    disconnectCollab(state.collab)
+    updateEditorState(update, createEmptyText())
+    setState(update)
   }
 
   const openFile = async (file: File) => {
@@ -366,7 +337,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     setState(update)
   }
 
-  const doOpenFile = async (state: State, file: File): Promise<State> => {
+  const doOpenFile = async (state: State, f: File): Promise<State> => {
     const findIndexOfFile = (f: File) => {
       for (let i = 0; i < state.files.length; i++) {
         if (state.files[i] === f) return i
@@ -376,27 +347,45 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       return -1
     }
 
-    const index = findIndexOfFile(file)
-    const item = index === -1 ? file : state.files[index]
-    let files = state.files.filter((f) => f !== item)
+    const index = findIndexOfFile(f)
+    let file = index === -1 ? f : state.files[index]
+    let files = state.files.filter((f) => f !== file)
 
-    if (!isEmpty(state.text) && state.lastModified) {
+    if (!isEmpty(state.editorView?.state) && state.lastModified) {
       files = addToFiles(files, state)
     }
 
-    file.lastModified = item.lastModified
-    const next = await createTextFromFile(file)
+    if (file?.path) {
+      file = await loadFile(state.config, file.path)
+    }
 
-    return {
+    const next: Partial<State> = {
+      lastModified: file.lastModified ? new Date(file.lastModified) : undefined,
+      path: file.path,
+      markdown: file.markdown,
+      ...(file.collab?.room ? {collab: {room: file.collab.room}} : {}),
+    }
+
+    let newState: State = {
       ...state,
-      ...next,
+      args: {cwd: state.args?.cwd},
       files,
       collab: undefined,
       error: undefined,
+      ...next,
     }
+
+    disconnectCollab(state.collab)
+    newState = doStartCollab(newState)
+    updateEditorState(newState, file.text)
+    return newState
   }
 
   const saveState = debounce(async (state: State) => {
+    if (!state.editorView) {
+      return
+    }
+
     const data: any = {
       lastModified: state.lastModified,
       files: state.files,
@@ -408,15 +397,11 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       }
     }
 
-    if (isInitialized(state.text)) {
-      if (state.path) {
-        const text = serialize(store.editorView.state)
-        await remote.writeFile(state.path, text)
-      } else {
-        data.text = store.editorView.state.toJSON()
-      }
-    } else if (state.text) {
-      data.text = state.text
+    if (state.path) {
+      const text = serialize(store.editorView.state)
+      await remote.writeFile(state.path, text)
+    } else {
+      data.text = store.editorView.state.toJSON()
     }
 
     db.set('state', JSON.stringify(data))
@@ -427,11 +412,19 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     setState({fullscreen})
   }
 
+  const shouldBackup = (state: State) => state.path || (
+    state.args?.room &&
+    state.collab?.room !== state.args.room &&
+    !isEmpty(state.editorView?.state)
+  )
+
   const startCollab = () => {
     const state: State = unwrap(store)
-    const update = doStartCollab(state)
-    setState('text', createEmptyText());
+    const update = doStartCollab(state, uuidv4())
+    const editorStateBefore = state.editorView.state.toJSON()
+    updateEditorState(update, createEmptyText())
     setState(update)
+    if (editorStateBefore) updateEditorState(update, editorStateBefore)
   }
 
   const onCollabConfigUpdate = (event: any) => {
@@ -441,9 +434,10 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     setState('config', {font, fontSize, contentWidth})
   }
 
-  const doStartCollab = (state: State): State => {
-    const backup = state.args?.room && state.collab?.room !== state.args.room
-    const room = state.args?.room ?? uuidv4()
+  const doStartCollab = (state: State, newRoom?: string): State => {
+    const room = newRoom ?? state.args?.room ?? state.collab?.room
+    if (!room) return state
+
     window.history.replaceState(null, '', `/${room}`)
 
     const ydoc = new Y.Doc()
@@ -470,23 +464,15 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       foreground: xs[index].primaryForeground,
     })
 
-    const extensions = createExtensions({
-      config: state.config,
-      markdown: state.markdown,
-      path: state.path,
-      keymap,
-      y: {prosemirrorType, configType, provider},
-    })
-
     let newState = state
-    if ((backup && !isEmpty(state.text)) || state.path) {
+    if (shouldBackup(state)) {
       let files = state.files
       if (!state.error) {
         files = addToFiles(files, state)
       }
 
       newState = {
-        ...state,
+        ...newState,
         files,
         lastModified: undefined,
         path: undefined,
@@ -496,29 +482,23 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
 
     return {
       ...newState,
-      extensions,
-      collab: {started: true, room, y: {prosemirrorType, configType, provider}}
+      collab: {
+        started: true,
+        room,
+        y: {prosemirrorType, configType, provider}
+      }
     }
   }
 
-  const stopCollab = (state: State) => {
-    state.collab.y?.provider.destroy()
-    state.collab.y?.configType.unobserve(onCollabConfigUpdate)
-
-    const extensions = createExtensions({
-      config: state.config,
-      markdown: state.markdown,
-      path: state.path,
-      keymap,
-    })
-
-    setState({collab: undefined, extensions})
+  const disconnectCollab = (collab?: Collab) => {
+    collab?.y?.provider.destroy()
+    collab?.y?.configType.unobserve(onCollabConfigUpdate)
     window.history.replaceState(null, '', '/')
   }
 
   const toggleMarkdown = () => {
     const state = unwrap(store)
-    const editorState = store.text as EditorState
+    const editorState = store.editorView.state
     const markdown = !state.markdown
     const selection = {type: 'text', anchor: 1, head: 1}
     let doc: any
@@ -541,47 +521,25 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
 
       const parser = createMarkdownParser(schema)
       let textContent = ''
-      editorState.doc.forEach((node) => {
+      editorState.doc.forEach((node: any) => {
         textContent += `${node.textContent}\n`
       })
       const text = parser.parse(textContent)
       doc = text.toJSON()
     }
 
-    const extensions = createExtensions({
-      config: state.config,
-      markdown,
-      path: state.path,
-      keymap: keymap,
-      y: state.collab?.y,
-    })
-
-    setState({
-      text: {selection, doc},
-      extensions,
-      markdown,
-    })
+    updateEditorState({...state, markdown}, {selection, doc})
+    setState({markdown})
   }
 
-  const updateConfig = (config: Partial<Config>) => {
+  const updateConfig = (conf: Partial<Config>) => {
     const state = unwrap(store)
-    const extensions = createExtensions({
-      config: {...state.config, ...config},
-      markdown: state.markdown,
-      path: state.path,
-      keymap,
-      y: state.collab?.y,
-    })
-
-    state.collab?.y.configType.set('font', config.font)
-    state.collab?.y.configType.set('fontSize', config.fontSize)
-    state.collab?.y.configType.set('contentWidth', config.contentWidth)
-
-    setState({
-      config: {...state.config, ...config},
-      extensions,
-      lastModified: new Date(),
-    })
+    state.collab?.y?.configType.set('font', conf.font)
+    state.collab?.y?.configType.set('fontSize', conf.fontSize)
+    state.collab?.y?.configType.set('contentWidth', conf.contentWidth)
+    const config = {...state.config, ...conf}
+    updateEditorState({...state, config})
+    setState({config, lastModified: new Date()})
   }
 
   const updatePath = (path: string) => {
@@ -590,6 +548,52 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
 
   const updateTheme = () => {
     setState('config', getTheme(unwrap(store)))
+  }
+
+  const createEditorView = (elem: HTMLElement) => {
+    const {text, extensions} = initialEditorState
+    const {editorState, nodeViews} = createEditorState(text, extensions)
+    const dispatchTransaction = (tr: Transaction) => {
+      if (!store.editorView) return
+      const newState = store.editorView.state.apply(tr)
+      store.editorView.updateState(newState)
+      if (!tr.docChanged) return
+      setState({lastModified: new Date()})
+    }
+
+    const editorView = new EditorView(elem, {
+      state: editorState,
+      nodeViews,
+      dispatchTransaction,
+    })
+
+    setState({editorView})
+    setTimeout(() => editorView.focus())
+  }
+
+  const updateEditorState = (state: Partial<State>, text?: ProseMirrorState) => {
+    const extensions = createExtensions({
+      config: state.config ?? store.config,
+      markdown: state.markdown ?? store.markdown,
+      path: state.path ?? store.path,
+      keymap,
+      ...(state.collab?.y?.prosemirrorType ? {y: state.collab.y} : {}),
+    })
+
+    // Save text and extensions for first render
+    if (!state.editorView) {
+      initialEditorState.text = text
+      initialEditorState.extensions = extensions
+      return
+    } else {
+      delete initialEditorState.text
+      delete initialEditorState.extensions
+    }
+
+    const t = text ?? store.editorView.state
+    const {editorState, nodeViews} = createEditorState(t, extensions, store.editorView.state)
+    store.editorView.setProps({state: editorState, nodeViews})
+    store.editorView.focus()
   }
 
   const ctrl = {
@@ -603,12 +607,55 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     setFullscreen,
     setState,
     startCollab,
-    stopCollab,
     toggleMarkdown,
     updateConfig,
     updatePath,
     updateTheme,
+    createEditorView,
+    updateEditorState,
   }
 
   return [store, ctrl]
+}
+
+const createEditorState = (
+  text: ProseMirrorState,
+  extensions: ProseMirrorExtension[],
+  prevText?: EditorState
+): {
+  editorState: EditorState;
+  nodeViews: {[key: string]: NodeViewFn};
+} => {
+  const reconfigure = text instanceof EditorState && prevText?.schema
+  let schemaSpec = {nodes: {}}
+  let nodeViews = {}
+  let plugins = []
+
+  for (const extension of extensions) {
+    if (extension.schema) {
+      schemaSpec = extension.schema(schemaSpec)
+    }
+
+    if (extension.nodeViews) {
+      nodeViews = {...nodeViews, ...extension.nodeViews}
+    }
+  }
+
+  const schema = reconfigure ? prevText.schema : new Schema(schemaSpec)
+  for (const extension of extensions) {
+    if (extension.plugins) {
+      plugins = extension.plugins(plugins, schema)
+    }
+  }
+
+  let editorState: EditorState
+  if (reconfigure) {
+    editorState = text.reconfigure({schema, plugins})
+  } else if (text instanceof EditorState) {
+    editorState = EditorState.fromJSON({schema, plugins}, text.toJSON())
+  } else {
+    editorState = EditorState.fromJSON({schema, plugins}, text)
+  }
+
+  return {editorState, nodeViews}
 }

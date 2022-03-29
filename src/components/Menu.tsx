@@ -1,6 +1,5 @@
 import {For, Show, createEffect, createSignal, onCleanup} from 'solid-js'
 import {unwrap} from 'solid-js/store'
-import {EditorState} from 'prosemirror-state'
 import {undo, redo} from 'prosemirror-history'
 import {differenceInHours, format} from 'date-fns'
 import {css} from '@emotion/css'
@@ -9,7 +8,7 @@ import {Config, File, PrettierConfig, useState} from '../state'
 import {foreground, primaryBackground, themes, fonts, codeThemes} from '../config'
 import {isTauri, isMac, alt, mod, WEB_URL, VERSION_URL} from '../env'
 import * as remote from '../remote'
-import {isEmpty, isInitialized} from '../prosemirror/state'
+import {isEmpty} from '../prosemirror/state'
 import {Styled} from './Layout'
 
 const Container = ({children}: {children: any}) => (
@@ -127,6 +126,9 @@ const Link = (props: Styled & {withMargin?: boolean; disabled?: boolean; title?:
       border: 0;
       cursor: pointer;
       margin-bottom: ${props.withMargin ? '10px' : ''};
+      i {
+        font-style: normal;
+      }
       > span {
         justify-self: flex-end;
         margin-left: auto;
@@ -174,14 +176,51 @@ export default () => {
   const [store, ctrl] = useState()
   const [show, setShow] = createSignal(false)
   const [lastAction, setLastAction] = createSignal<string | undefined>()
+  const [isTextEmpty, setIsTextEmpty] = createSignal(false)
+  const [textStats, setTextStats] = createSignal({
+    paragraphs: 0,
+    words: 0,
+    loc: 0,
+  })
 
-  const collabText = () =>
-    store.collab?.started ? 'Stop' :
-    store.collab?.error ? 'Restart 🚨' :
-    'Start'
+  createEffect(() => {
+    setIsTextEmpty(isEmpty(store.editorView?.state))
+
+    let paragraphs = 0
+    let words = 0
+    let loc = 0
+
+    if (!store.editorView) return
+
+    store.editorView.state.doc.forEach((node: any) => {
+      const text = node.textContent
+
+      if (node.type.name === 'code_block') {
+        loc += text.split('\n').length
+        return
+      }
+
+      const curWords = text.split(/\s+/).filter((x: any) => x != '').length
+      if (node.type.name === 'paragraph' && curWords > 0) {
+        paragraphs ++
+      }
+
+      words += curWords
+    })
+
+    setTextStats({paragraphs, words, loc})
+    return store.lastModified
+  }, store.lastModified)
 
   const collabUsers = () =>
     store.collab?.y?.provider.awareness.meta.size ?? 0
+
+  const clearText = () => store.path ? 'Close' :
+    (store.files.length > 0 && isTextEmpty()) ? 'Discard ⚠️' :
+    'Clear'
+
+  const clearEnabled = () =>
+    store.path || store.files.length > 0 || !isTextEmpty()
 
   const onBurgerClick = () => {
     store.editorView.focus()
@@ -197,7 +236,7 @@ export default () => {
   }
 
   const cmd = (cmd: string) => () => {
-    document.execCommand(cmd)
+    (document as any).execCommand(cmd)
     setLastAction(cmd)
   }
 
@@ -251,6 +290,7 @@ export default () => {
 
   const onNew = () => {
     ctrl.newFile()
+    store.editorView?.focus()
   }
 
   const onSaveAs = async () => {
@@ -262,9 +302,8 @@ export default () => {
     ctrl.discard()
   }
 
-  const onCollab = () => {
-    const state = unwrap(store)
-    store.collab?.started ? ctrl.stopCollab(state) : ctrl.startCollab(state)
+  const onCollabStart = () => {
+    ctrl.startCollab()
   }
 
   const onOpenInApp = () => {
@@ -295,38 +334,6 @@ export default () => {
 
   const onOpenFile = (file: File) => {
     ctrl.openFile(unwrap(file))
-  }
-
-  const TextStats = () => {
-    let paragraphs = 0
-    let words = 0
-    let loc = 0
-
-    if (isInitialized(store.text)) {
-      (store.text as EditorState).doc.forEach((node) => {
-        const text = node.textContent
-
-        if (node.type.name === 'code_block') {
-          loc += text.split('\n').length
-          return
-        }
-
-        const curWords = text.split(/\s+/).filter(x => x != '').length
-        if (node.type.name === 'paragraph' && curWords > 0) {
-          paragraphs ++
-        }
-
-        words += curWords
-      })
-    }
-
-    return (
-      <>
-        <Text config={store.config}>{words} words</Text>
-        <Text config={store.config}>{paragraphs} paragraphs</Text>
-        <Text config={store.config}>{loc} lines of code</Text>
-      </>
-    )
   }
 
   const LastModified = () => {
@@ -395,7 +402,9 @@ export default () => {
         withMargin={true}
         onClick={() => onOpenFile(p.file)}
         data-testid="open">
-        {text()} {p.file.path && '📎'}
+        {text()}&nbsp;
+        <Show when={p.file.path}>📎</Show>
+        <Show when={p.file.collab?.room}><i title={p.file.collab.room}>💬</i></Show>
       </Link>
     )
   }
@@ -458,12 +467,9 @@ export default () => {
               <Link
                 config={store.config}
                 onClick={onDiscard}
-                disabled={!store.path && store.files.length === 0 && isEmpty(store.text)}
+                disabled={!clearEnabled()}
                 data-testid="discard">
-                {
-                  store.path ? 'Close' :
-                  (store.files.length > 0 && isEmpty(store.text)) ? 'Discard ⚠️' : 'Clear'
-                } <Keys keys={[mod, 'w']} />
+                {clearText()} <Keys keys={[mod, 'w']} />
               </Link>
             </Sub>
             <Show when={store.files.length > 0}>
@@ -604,17 +610,21 @@ export default () => {
             <Label config={store.config}>Stats</Label>
             <Sub>
               <LastModified />
-              <TextStats />
+              <Text config={store.config}>{textStats().words} words</Text>
+              <Text config={store.config}>{textStats().paragraphs} paragraphs</Text>
+              <Text config={store.config}>{textStats().loc} lines of code</Text>
             </Sub>
             <Label config={store.config}>Collab</Label>
             <Sub>
-              <Link
-                config={store.config}
-                onClick={onCollab}
-                title={store.collab?.error ? 'Connection error' : ''}
-                data-testid="collab">
-                {collabText()}
-              </Link>
+              <Show when={!store.collab?.started}>
+                <Link
+                  config={store.config}
+                  onClick={onCollabStart}
+                  title={store.collab?.error ? 'Connection error' : ''}
+                  data-testid="collab">
+                  Share
+                </Link>
+              </Show>
               <Show when={collabUsers() > 0}>
                 <Link config={store.config} onClick={onCopyCollabLink}>
                   Copy Link {lastAction() === 'copy-collab-link' && '📋'}

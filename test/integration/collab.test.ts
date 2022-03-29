@@ -17,6 +17,19 @@ test('create room', async ({page, browser}) => {
   await lineTextEq(page2, 1, 'Hello')
 })
 
+test('create room - existing content file', async ({page, browser}) => {
+  await page.goto('/')
+  await page.waitForSelector('[data-testid="initialized"]')
+  await page.type('.ProseMirror', 'Hello', {delay})
+  await page.click('[data-testid="burger"]')
+  await page.click('[data-testid="collab"]')
+  await lineTextEq(page, 1, 'Hello')
+
+  const page2 = await browser.newPage()
+  await page2.goto(page.url())
+  await lineTextEq(page2, 1, 'Hello')
+})
+
 test('existing room', async ({page, browser}) => {
   await page.goto(`/${room}`)
   await page.waitForSelector('[data-testid="initialized"]')
