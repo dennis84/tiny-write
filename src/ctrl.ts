@@ -22,7 +22,6 @@ import {
   ProseMirrorExtension,
   ProseMirrorState,
   isEmpty,
-  isInitialized,
 } from './prosemirror/state'
 
 const isText = (x: any) => x && x.doc && x.selection
@@ -66,24 +65,22 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
   const onToggleMarkdown = () => toggleMarkdown()
 
   const onUndo = () => {
-    if (!isInitialized(store.editorView.state)) return
-    const text = store.editorView.state
+    if (!store.editorView) return
     if (store.collab?.started) {
-      yUndo(text)
+      yUndo(store.editorView.state)
     } else {
-      undo(text, store.editorView.dispatch)
+      undo(store.editorView.state, store.editorView.dispatch)
     }
 
     return true
   }
 
   const onRedo = () => {
-    if (!isInitialized(store.editorView.state)) return
-    const text = store.editorView.state as EditorState
+    if (!store.editorView) return
     if (store.collab?.started) {
-      yRedo(text)
+      yRedo(store.editorView.state)
     } else {
-      redo(text, store.editorView.dispatch)
+      redo(store.editorView.state, store.editorView.dispatch)
     }
 
     return true
