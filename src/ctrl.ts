@@ -119,7 +119,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       file = await loadFile(state.config, file.path)
     }
 
-    let next: Partial<State> = {
+    const next: Partial<State> = {
       lastModified: file.lastModified ? new Date(file.lastModified) : undefined,
       path: file.path,
       markdown: file.markdown,
@@ -127,14 +127,14 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     }
 
     disconnectCollab(state.collab)
-    next = doStartCollab({...state, ...next})
-    updateEditorState(next, file.text)
+    const newState = doStartCollab({...state, ...next})
+    updateEditorState(newState, file.text)
 
     setState({
       args: {cwd: state.args?.cwd},
       collab: undefined,
       error: undefined,
-      ...next,
+      ...newState,
       files,
     })
   }
@@ -494,7 +494,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
   }
 
   const toggleMarkdown = () => {
-    const state = unwrap(store)
+    const state: State = unwrap(store)
     const editorState = store.editorView.state
     const markdown = !state.markdown
     const selection = {type: 'text', anchor: 1, head: 1}
@@ -530,7 +530,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
   }
 
   const updateConfig = (conf: Partial<Config>) => {
-    const state = unwrap(store)
+    const state: State = unwrap(store)
     state.collab?.y?.configType.set('font', conf.font)
     state.collab?.y?.configType.set('fontSize', conf.fontSize)
     state.collab?.y?.configType.set('contentWidth', conf.contentWidth)
@@ -568,7 +568,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     setTimeout(() => editorView.focus())
   }
 
-  const updateEditorState = (state: Partial<State>, text?: ProseMirrorState) => {
+  const updateEditorState = (state: State, text?: ProseMirrorState) => {
     const extensions = createExtensions({
       config: state.config ?? store.config,
       markdown: state.markdown ?? store.markdown,
