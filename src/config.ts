@@ -35,6 +35,11 @@ export const fonts: {[key: string]: Font} = {
     src: './JetBrainsMono-Regular.woff2',
     monospace: true,
   },
+  'jetbrains-mono-extralight': {
+    label: 'JetBrains Mono ExtraLight',
+    src: './JetBrainsMono-ExtraLight.woff2',
+    monospace: true,
+  },
   'fantasque-sans-mono': {
     label: 'Fantasque Sans Mono',
     src: './FantasqueSansMono-Regular.woff2',
@@ -58,7 +63,7 @@ export const themes: {[key: string]: Theme} = {
     label: 'Light',
     background: '#ffffff',
     foreground: '#666666',
-    primaryBackground: '#8575ff',
+    primaryBackground: '#0000EE',
     primaryForeground: '#fff',
     dark: false,
   },

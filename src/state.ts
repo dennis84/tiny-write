@@ -20,8 +20,8 @@ export interface PrettierConfig {
 }
 
 export interface Config {
-  theme: string;
-  codeTheme: string;
+  theme?: string;
+  codeTheme?: string;
   font: string;
   fontSize: number;
   contentWidth: number;
@@ -90,8 +90,6 @@ export const newState = (props: Partial<State> = {}): State => ({
   fullscreen: false,
   markdown: false,
   config: {
-    theme: 'light',
-    codeTheme: 'material-light',
     font: 'merriweather',
     fontSize: 24,
     contentWidth: 800,

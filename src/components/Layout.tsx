@@ -188,7 +188,7 @@ export const editorCss = (config: Config) => css`
         position: relative;
         margin: 5px 0;
         padding: 0;
-        font-family: '${font(config, true)}' !important;
+        font-family: '${font(config, true)}';
         border: 1px solid ${foreground(config)}4c;
         border-radius: 3px;
         .lang-select {
@@ -200,6 +200,7 @@ export const editorCss = (config: Config) => css`
           outline: none;
           .cm-content {
             padding: 0;
+            font-family: '${font(config, true)}';
           }
           .cm-line {
             line-height: ${config.fontSize * 1.8}px;

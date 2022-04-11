@@ -72,8 +72,10 @@ const InvalidState = (props: {title: string}) => {
 }
 
 const Other = () => {
-  const [store, ctrl] = useState()
-  const onClick = () => ctrl.discard()
+  const [store] = useState()
+  const onClick = () => {
+    window.location.reload()
+  }
 
   const getMessage = () => {
     const err = (store.error.props as any).error
@@ -85,7 +87,7 @@ const Other = () => {
       <div className={container}>
         <h1>An error occurred.</h1>
         <pre className={pre(store.config)}><code>{getMessage()}</code></pre>
-        <button className={buttonPrimary(store.config)} onClick={onClick}>Close</button>
+        <button className={buttonPrimary(store.config)} onClick={onClick}>Reload</button>
       </div>
     </div>
   )

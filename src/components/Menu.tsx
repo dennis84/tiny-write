@@ -377,7 +377,7 @@ export default () => {
     let content = ''
     const getContent = (node: any) => {
       if (node.text) {
-        content += node.text
+        content += node.text + ' '
       }
 
       if (content.length > length) {

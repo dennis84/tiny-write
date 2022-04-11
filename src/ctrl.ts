@@ -198,12 +198,13 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     return [newState, text]
   }
 
-  const getTheme = (state: State) => {
+  const getTheme = (state: State, force = false) => {
     const matchDark = window.matchMedia('(prefers-color-scheme: dark)')
     const isDark = matchDark.matches
-    if (isDark && !isDarkTheme(state.config.theme)) {
+    const update = force || !state.config.theme
+    if (update && isDark && !isDarkTheme(state.config.theme)) {
       return {theme: 'dark', codeTheme: 'material-dark'}
-    } else if (!isDark && isDarkTheme(state.config.theme)) {
+    } else if (update && !isDark && isDarkTheme(state.config.theme)) {
       return {theme: 'light', codeTheme: 'material-light'}
     }
 
@@ -549,7 +550,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
   }
 
   const updateTheme = () => {
-    setState('config', getTheme(unwrap(store)))
+    setState('config', getTheme(unwrap(store), true))
   }
 
   const createEditorView = (elem: HTMLElement) => {
@@ -643,7 +644,7 @@ const createEditorState = (
     }
   }
 
-  const schema = reconfigure ? prevText.schema : new Schema(schemaSpec)
+  const schema = reconfigure ? prevText?.schema : new Schema(schemaSpec)
   for (const extension of extensions) {
     if (extension.plugins) {
       plugins = extension.plugins(plugins, schema)
