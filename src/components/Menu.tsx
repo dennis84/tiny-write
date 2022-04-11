@@ -177,10 +177,18 @@ export default () => {
   const [show, setShow] = createSignal(false)
   const [lastAction, setLastAction] = createSignal<string | undefined>()
   const [isTextEmpty, setIsTextEmpty] = createSignal(false)
+  const [collabUsers, setCollabUsers] = createSignal(0)
   const [textStats, setTextStats] = createSignal({
     paragraphs: 0,
     words: 0,
     loc: 0,
+  })
+
+  createEffect(() => {
+    const provider = store.collab?.y.provider
+    const fn = () => setCollabUsers(provider.awareness.meta.size)
+    provider.awareness.on('update', fn)
+    onCleanup(() => provider.awareness.off('update', fn))
   })
 
   createEffect(() => {
@@ -211,9 +219,6 @@ export default () => {
     setTextStats({paragraphs, words, loc})
     return store.lastModified
   }, store.lastModified)
-
-  const collabUsers = () =>
-    store.collab?.y?.provider.awareness.meta.size ?? 0
 
   const clearText = () => store.path ? 'Close' :
     (store.files.length > 0 && isTextEmpty()) ? 'Discard ⚠️' :
@@ -476,7 +481,7 @@ export default () => {
               <Label config={store.config}>Files</Label>
               <Sub>
                 <For each={store.files}>
-                  {(file) => <FileLink file={file} />}
+                  {(file: File) => <FileLink file={file} />}
                 </For>
               </Sub>
             </Show>
