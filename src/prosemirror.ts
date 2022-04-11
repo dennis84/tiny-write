@@ -17,7 +17,7 @@ import pasteMarkdown from './prosemirror/extension/paste-markdown'
 import table from './prosemirror/extension/table'
 import collab from './prosemirror/extension/collab'
 import {Config, YOptions} from './state'
-import {codeTheme} from './config'
+import {codeTheme, font, isDarkTheme} from './config'
 
 interface Props {
   data?: unknown;
@@ -60,8 +60,10 @@ export const createExtensions = (props: Props): ProseMirrorExtension[] =>
     dragHandle(),
     codeBlock({
       theme: codeTheme(props.config),
+      dark: isDarkTheme(props.config),
       typewriterMode: props.config.typewriterMode,
       fontSize: props.config.fontSize,
+      font: font(props.config, true),
       prettier: props.config.prettier,
       extensions: () => [codeMirrorKeymap(props)],
     }),

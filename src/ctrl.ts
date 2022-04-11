@@ -41,6 +41,11 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
   const [store, setState] = createStore(initial)
   const initialEditorState = {text: undefined, extensions: undefined}
 
+  const onReload = () => {
+    if (!isTauri) return
+    window.location.reload()
+  }
+
   const onQuit = () => {
     if (!isTauri) return
     remote.quit()
@@ -87,6 +92,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
   }
 
   const keymap = {
+    [`${mod}-r`]: onReload,
     [`${mod}-q`]: onQuit,
     [`${mod}-n`]: onNew,
     [`${mod}-w`]: onDiscard,

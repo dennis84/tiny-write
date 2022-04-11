@@ -62,8 +62,10 @@ const codeBlockKeymap = {
 
 export const defaultProps = {
   theme: 'material-light',
+  dark: false,
   typewriterMode: false,
   fontSize: 18,
+  font: 'JetBrains Mono',
   prettier: {
     printWidth: 80,
     tabWidth: 2,
@@ -75,7 +77,9 @@ export const defaultProps = {
 
 export interface CodeBlockProps {
   theme: string;
+  dark: boolean;
   typewriterMode: boolean;
+  font: string;
   fontSize: number;
   prettier: PrettierConfig;
   extensions?: (view: EditorView, node: Node, getPos: () => number) => Extension[];

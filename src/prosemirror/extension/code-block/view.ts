@@ -47,6 +47,7 @@ import parserCss from 'prettier/parser-postcss'
 import parserHtml from 'prettier/parser-html'
 import parserMarkdown from 'prettier/parser-markdown'
 import parserYaml from 'prettier/parser-yaml'
+import mermaid from 'mermaid'
 import logos from './logos'
 import {CodeBlockProps, defaultProps} from '.'
 import {completion, tabCompletionKeymap} from './completion'
@@ -63,6 +64,7 @@ export class CodeBlockView {
   options: CodeBlockProps = defaultProps
   langToggle: HTMLElement
   prettifyBtn: HTMLElement
+  mermaid: HTMLElement
   dragHandle: HTMLElement
   langExtension: Compartment
   langInputEditor: LangInputEditor
@@ -83,6 +85,10 @@ export class CodeBlockView {
     this.prettifyBtn.className = 'prettify'
     this.prettifyBtn.setAttribute('title', 'prettify')
     this.prettifyBtn.addEventListener('mousedown', this.prettify.bind(this), true)
+
+    this.mermaid = document.createElement('div')
+    this.mermaid.className = 'mermaid'
+    this.mermaid.id = `mermaid-${getPos()}`
 
     const outer = document.createElement('div')
     outer.setAttribute('contenteditable', 'false')
@@ -252,6 +258,7 @@ export class CodeBlockView {
 
     inner.appendChild(langSelect)
     inner.appendChild(this.prettifyBtn)
+    outer.appendChild(this.mermaid)
     inner.appendChild(this.editorView.dom)
     inner.appendChild(langSelectBottom)
     outer.appendChild(this.langToggle)
@@ -265,6 +272,7 @@ export class CodeBlockView {
 
     this.updateLangToggle()
     this.updatePrettify()
+    this.updateMermaid()
     this.dom = outer
   }
 
@@ -296,6 +304,7 @@ export class CodeBlockView {
     const lang = this.getLang()
     this.node = node
     this.updatePrettify()
+    this.updateMermaid()
     // Allow update from collab
     if (node.attrs.params.lang !== lang) {
       this.reconfigure()
@@ -404,7 +413,7 @@ export class CodeBlockView {
       elem = img
     } else {
       elem = document.createElement('span')
-      elem.textContent = '📜'
+      elem.textContent = lang === 'mermaid' ? '🧜‍♀️' : '📜'
       elem.setAttribute('title', lang)
     }
 
@@ -429,6 +438,36 @@ export class CodeBlockView {
     } else {
       this.prettifyBtn.style.display = 'none'
       this.editorView.dispatch(setDiagnostics(this.editorView.state, []))
+    }
+  }
+
+  updateMermaid() {
+    if (this.getLang() !== 'mermaid') {
+      this.mermaid.style.display = 'none'
+      return
+    }
+
+    const content = this.editorView.state.doc.toString()
+    if (!content) {
+      this.mermaid.style.display = 'none'
+      return
+    }
+
+    try {
+      this.mermaid.style.display = 'flex'
+      mermaid.initialize({
+        startOnLoad: false,
+        theme: this.options.dark ? 'dark' : 'default',
+        fontFamily: this.options.font,
+      })
+      mermaid.render(`mermaid-graph-${this.getPos()}`, content, (svgCode) => {
+        this.mermaid.innerHTML = svgCode
+      })
+    } catch (err) {
+      const error = document.createElement('code')
+      error.textContent = err.message
+      this.mermaid.innerHTML = ''
+      this.mermaid.appendChild(error)
     }
   }
 
@@ -544,6 +583,7 @@ const getLangExtension = (lang: string) =>
   lang === 'groovy' ? StreamLanguage.define(groovy) :
   lang === 'ruby' ? StreamLanguage.define(ruby) :
   lang === 'hcl' ? StreamLanguage.define(ruby) :
+  lang === 'mermaid' ? StreamLanguage.define(ruby) :
   lang === 'bash' ? StreamLanguage.define(shell) :
   lang === 'yaml' ? StreamLanguage.define(yaml) :
   lang === 'go' ? StreamLanguage.define(go) :

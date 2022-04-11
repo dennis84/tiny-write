@@ -30,6 +30,7 @@
     "file-type": "^17.1.1",
     "idb": "^7.0.1",
     "markdown-it": "^12.3.2",
+    "mermaid": "^9.0.0",
     "prettier": "^2.6.2",
     "prosemirror-commands": "^1.2.2",
     "prosemirror-dropcursor": "^1.4.0",

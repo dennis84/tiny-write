@@ -189,11 +189,10 @@ export const editorCss = (config: Config) => css`
         position: relative;
         width: 100%;
         flex-grow: 1;
-        flex-shrink: 2;
-        min-width: 40%;
+        flex-shrink: 1;
+        margin: 5px 0;
         padding: 0;
         font-family: '${font(config, true)}';
-        font-variant-ligatures: none;
         border: 1px solid ${foreground(config)}4c;
         border-radius: 3px;
         .lang-select {
@@ -220,6 +219,9 @@ export const editorCss = (config: Config) => css`
               display: none;
             }
           }
+          .cm-lineWrapping {
+            word-break: break-all;
+          }
           &:not(.cm-focused) {
             .cm-activeLine {
               background: none;
@@ -236,31 +238,13 @@ export const editorCss = (config: Config) => css`
         }
       }
       .mermaid {
-        padding: 0 5px;
-        background: ${foreground(config)}19;
-        border: 1px solid ${foreground(config)}4c;
-        box-shadow: -1px 0 0 ${foreground(config)}4c;
-        border-left: 0;
-        border-top-right-radius: 3px;
-        border-bottom-right-radius: 3px;
         display: flex;
         width: 100%;
         line-height: 1 !important;
         flex-shrink: 1;
-        flex-grow: 2;
+        flex-grow: 1;
         justify-content: center;
-        align-items: center;
-        user-select: none;
-        code {
-          margin: 0;
-          width: 100%;
-          white-space: pre-line;
-          align-self: flex-start;
-          line-height: ${config.fontSize * 1.8}px;
-          overflow: hidden;
-          background: 0;
-          border: 0;
-        }
+        margin-left: 50px;
       }
     }
     .todo-item {
