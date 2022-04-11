@@ -16,7 +16,7 @@ import {State, File, Collab, Config, ServiceError, newState} from './state'
 import {COLLAB_URL, isTauri, mod} from './env'
 import {serialize, createMarkdownParser} from './markdown'
 import {isDarkTheme, themes} from './config'
-import db from './db'
+import * as db from './db'
 import {
   NodeViewFn,
   ProseMirrorExtension,
@@ -147,7 +147,6 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       const room = window.location.pathname?.slice(1).trim()
       args = {room: room ? room : undefined}
     }
-
     const data = await db.get('state')
     let parsed: any
     if (data !== undefined) {
@@ -246,6 +245,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     try {
       const result = await fetchData()
       let data = result[0]
+      let text = result[1]
       if (data.args.room) {
         data = doStartCollab(data)
       } else if (data.args.text) {
@@ -253,18 +253,21 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       } else if (data.args.file) {
         const file = await loadFile(data.config, data.args.file)
         data = await doOpenFile(data, file)
+        text = file.text
       } else if (data.path) {
         const file = await loadFile(data.config, data.path)
         data = await doOpenFile(data, file)
+        text = file.text
       }
 
       const newState: State = {
+        ...unwrap(store),
         ...data,
         config: {...data.config, ...getTheme(data)},
         loading: 'initialized'
       }
 
-      updateEditorState(newState, result[1] ?? createEmptyText())
+      updateEditorState(newState, text ?? createEmptyText())
       setState(newState)
     } catch (error) {
       setState({error: error.errorObject})
@@ -354,7 +357,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       files = addToFiles(files, state)
     }
 
-    if (file?.path) {
+    if (!file.text && file?.path) {
       file = await loadFile(state.config, file.path)
     }
 

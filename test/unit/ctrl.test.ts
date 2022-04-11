@@ -12,12 +12,10 @@ vi.mock('../../src/remote', () => ({
   },
 }))
 
-vi.mock('../../src/db', () => {
-  return {
-    get: () => '',
-    set: () => undefined,
-  }
-})
+vi.mock('../../src/db', () => ({
+  get: async () => undefined,
+  set: async () => undefined,
+}))
 
 const text = {
   doc: {
@@ -137,6 +135,15 @@ test('openFile - push path to files', async () => {
   expect(store.files[0].lastModified).toBe(lastModified.toISOString())
   expect(store.editorView.state.doc.textContent).toBe('File1')
   expect(store.path).toBe('file1')
+})
+
+test('openFile - path and text', async () => {
+  const [store, ctrl] = createCtrl(newState({}))
+  const target = document.createElement('div')
+  ctrl.updateEditorState(store, text)
+  ctrl.createEditorView(target)
+  await ctrl.openFile({text, path: 'file1'})
+  expect(store.editorView.state.doc.textContent).toBe('Test')
 })
 
 test('openFile - open collab', async () => {
