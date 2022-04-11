@@ -5,6 +5,9 @@ import {createMarkdownParser} from '../../markdown'
 
 const URL_REGEX = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-/]))?/g
 
+const isInlineContent = (f: Fragment) =>
+  f.childCount === 1 && f.firstChild.type.name === 'paragraph'
+
 const transform = (schema: Schema, fragment: Fragment) => {
   const nodes = []
   fragment.forEach((child: Node) => {
@@ -64,10 +67,13 @@ const pasteMarkdown = (schema: Schema) => {
         // parser behavior that comes with Prosemirror.
         if (text.length === 0 || html) return false
         event.preventDefault()
-
         const paste = parser.parse(text)
         const slice = paste.slice(0)
-        const fragment = shiftKey ? slice.content : transform(schema, slice.content)
+        let fragment = shiftKey ? slice.content : transform(schema, slice.content)
+        if (isInlineContent(fragment)) {
+          fragment = fragment.child(0).content
+        }
+
         const tr = view.state.tr.replaceSelection(new Slice(
           fragment,
           slice.openStart,

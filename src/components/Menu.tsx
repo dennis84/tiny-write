@@ -185,10 +185,11 @@ export default () => {
   })
 
   createEffect(() => {
-    const provider = store.collab?.y.provider
+    const provider = store.collab?.y?.provider
+    if (!provider) return
     const fn = () => setCollabUsers(provider.awareness.meta.size)
     provider.awareness.on('update', fn)
-    onCleanup(() => provider.awareness.off('update', fn))
+    onCleanup(() => provider?.awareness.off('update', fn))
   })
 
   createEffect(() => {

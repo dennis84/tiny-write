@@ -212,7 +212,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
   }
 
   const clean = () => {
-    disconnectCollab(store.collab)
+    disconnectCollab(unwrap(store.collab))
     const state: State = {
       ...newState(),
       args: {cwd: store.args?.cwd},
