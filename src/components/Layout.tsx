@@ -238,7 +238,7 @@ export const editorCss = (config: Config) => css`
       align-items: center;
       &.done {
         text-decoration: line-through;
-        color: ${foreground(config)}4c;
+        opacity: 0.6;
       }
       label {
         margin-right: 10px;

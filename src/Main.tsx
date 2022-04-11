@@ -41,10 +41,7 @@ export default (props: {state: State}) => {
 
   onMount(() => {
     const matchDark = () => window.matchMedia('(prefers-color-scheme: dark)')
-    const onChangeTheme = () => {
-      ctrl.updateTheme()
-    }
-
+    const onChangeTheme = () => ctrl.updateTheme()
     matchDark().addEventListener('change', onChangeTheme)
     onCleanup(() => matchDark().removeEventListener('change', onChangeTheme))
   })

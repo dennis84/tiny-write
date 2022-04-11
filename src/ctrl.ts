@@ -258,12 +258,14 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
         data = await doOpenFile(data, file)
       }
 
-      updateEditorState(data, result[1] ?? createEmptyText())
-      setState({
+      const newState: State = {
         ...data,
         config: {...data.config, ...getTheme(data)},
         loading: 'initialized'
-      })
+      }
+
+      updateEditorState(newState, result[1] ?? createEmptyText())
+      setState(newState)
     } catch (error) {
       setState({error: error.errorObject})
     }
