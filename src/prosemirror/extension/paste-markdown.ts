@@ -6,7 +6,10 @@ import {createMarkdownParser} from '../../markdown'
 const URL_REGEX = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-/]))?/g
 
 const isInlineContent = (f: Fragment) =>
-  f.childCount === 1 && f.firstChild.type.name === 'paragraph'
+  f.childCount === 1 && (
+    f.firstChild.type.name === 'paragraph' ||
+    f.firstChild.type.name === 'text'
+  )
 
 const transform = (schema: Schema, fragment: Fragment) => {
   const nodes = []
@@ -70,8 +73,21 @@ const pasteMarkdown = (schema: Schema) => {
         const paste = parser.parse(text)
         const slice = paste.slice(0)
         let fragment = shiftKey ? slice.content : transform(schema, slice.content)
+        const selection = view.state.selection
+
         if (isInlineContent(fragment)) {
           fragment = fragment.child(0).content
+        }
+
+        if (
+          isInlineContent(fragment) &&
+          fragment.firstChild.marks.find((m) => m.type.name === 'link') &&
+          selection.from !== selection.to
+        ) {
+          const mark = schema.marks.link.create({href: text})
+          const tr = view.state.tr.addMark(selection.from, selection.to, mark)
+          view.dispatch(tr)
+          return true
         }
 
         const tr = view.state.tr.replaceSelection(new Slice(
