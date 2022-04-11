@@ -34,7 +34,7 @@ const isFile = (x: any): boolean => x && (x.text || x.path)
 
 const isConfig = (x: any): boolean =>
   (typeof x.theme === 'string' || x.theme === undefined) &&
-  typeof x.codeTheme === 'string' &&
+  (typeof x.codeTheme === 'string' || x.codeTheme === undefined) &&
   typeof x.font === 'string'
 
 export const createCtrl = (initial: State): [Store<State>, any] => {
@@ -202,9 +202,9 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     const matchDark = window.matchMedia('(prefers-color-scheme: dark)')
     const isDark = matchDark.matches
     const update = force || !state.config.theme
-    if (update && isDark && !isDarkTheme(state.config.theme)) {
+    if (update && isDark && !isDarkTheme(state.config)) {
       return {theme: 'dark', codeTheme: 'material-dark'}
-    } else if (update && !isDark && isDarkTheme(state.config.theme)) {
+    } else if (update && !isDark && isDarkTheme(state.config)) {
       return {theme: 'light', codeTheme: 'material-light'}
     }
 
@@ -247,7 +247,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       const result = await fetchData()
       let data = result[0]
       let text = result[1]
-      if (data.args.room) {
+      if (data.args.room || data.collab.room) {
         data = doStartCollab(data)
       } else if (data.args.text) {
         data = await doOpenFile(data, {text: JSON.parse(data.args.text)})
@@ -268,7 +268,8 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
         loading: 'initialized'
       }
 
-      updateEditorState(newState, text ?? createEmptyText())
+      const t = newState.collab?.room ? createEmptyText() : text ?? createEmptyText()
+      updateEditorState(newState, t)
       setState(newState)
     } catch (error) {
       setState({error: error.errorObject})

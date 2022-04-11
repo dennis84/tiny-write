@@ -11,7 +11,8 @@ vi.stubGlobal('matchMedia', vi.fn(() => ({
 
 vi.mock('../../src/env', () => ({
   mod: 'Cmd',
-  isTauri: true
+  isTauri: true,
+  isDark: () => true,
 }))
 
 vi.mock('../../src/remote', () => ({

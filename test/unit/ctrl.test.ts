@@ -5,6 +5,10 @@ import {createEmptyText} from '../../src/prosemirror'
 
 const lastModified = new Date()
 
+vi.stubGlobal('matchMedia', vi.fn(() => ({
+  matchMedia: () => ''
+})))
+
 vi.mock('../../src/remote', () => ({
   getFileLastModified: async () => lastModified,
   readFile: async (path: string) => {

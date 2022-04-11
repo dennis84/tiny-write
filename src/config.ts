@@ -173,11 +173,12 @@ export const codeThemes: {[key: string]: CodeTheme} = {
   },
 }
 
-export const isDarkTheme = (theme: string) =>
-  themes[theme] ? themes[theme].dark : false
+export const isDarkTheme = (config: Config) => getTheme(config).dark
 
 const getDefaltTheme = () => isDark() ? themes.dark : themes.light
-const getTheme = (config: Config) => themes[config.theme] ?? getDefaltTheme()
+const getTheme = (config: Config) =>
+  !config.theme ? getDefaltTheme() :
+  themes[config.theme] ?? getDefaltTheme()
 
 export const background = (config: Config) => getTheme(config).background
 export const foreground = (config: Config) => getTheme(config).foreground
@@ -194,5 +195,9 @@ export const font = (config: Config, monospace = false) => {
   return fonts[config.font].label
 }
 
+const getDefaltCodeTheme = () => isDark() ? codeThemes.dracula : codeThemes['material-light']
+
 export const codeTheme = (config: Config) =>
-  codeThemes[config.codeTheme] ? codeThemes[config.codeTheme].value : 'dracula'
+  !config.codeTheme ? getDefaltCodeTheme().value :
+  codeThemes[config.codeTheme] ? codeThemes[config.codeTheme].value :
+  getDefaltCodeTheme().value
