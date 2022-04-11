@@ -157,7 +157,7 @@ test('openFile - open collab', async () => {
   ctrl.updateEditorState(store, createEmptyText())
   ctrl.createEditorView(target)
   await ctrl.openFile(file)
-  expect(store.editorView.state.doc.textContent).toBe('Test')
+  expect(store.editorView.state.doc.textContent).toBe('')
   expect(store.files.length).toBe(0)
   expect(store.collab.room).toBe('room-123')
 })

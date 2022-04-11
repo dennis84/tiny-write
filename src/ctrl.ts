@@ -253,7 +253,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       const result = await fetchData()
       let data = result[0]
       let text = result[1]
-      if (data.args.room || data.collab.room) {
+      if (data.args.room || data.collab?.room) {
         data = doStartCollab(data)
       } else if (data.args.text) {
         data = await doOpenFile(data, {text: JSON.parse(data.args.text)})
@@ -387,7 +387,8 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
 
     disconnectCollab(state.collab)
     newState = doStartCollab(newState)
-    updateEditorState(newState, file.text)
+    const t = newState.collab?.room ? createEmptyText() : file.text
+    updateEditorState(newState, t)
     return newState
   }
 
