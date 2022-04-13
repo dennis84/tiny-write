@@ -1,8 +1,8 @@
-import {Switch, Match} from 'solid-js'
+import {Show, Switch, Match} from 'solid-js'
 import {css} from '@emotion/css'
 import {Config, useState} from '../state'
 import {foreground} from '../config'
-import {buttonPrimary} from './Button'
+import {button, buttonPrimary} from './Button'
 
 const layer = css`
   width: 100%;
@@ -20,6 +20,9 @@ const container = css`
   max-width: 800px;
   width: 100%;
   height: fit-content;
+  button {
+    margin-right: 10px;
+  }
 `
 
 const pre = (config: Config) => css`
@@ -72,9 +75,13 @@ const InvalidState = (props: {title: string}) => {
 }
 
 const Other = () => {
-  const [store] = useState()
-  const onClick = () => {
+  const [store, ctrl] = useState()
+  const onReload = () => {
     window.location.reload()
+  }
+
+  const onDiscard = () => {
+    ctrl.discard()
   }
 
   const getMessage = () => {
@@ -87,7 +94,10 @@ const Other = () => {
       <div className={container}>
         <h1>An error occurred.</h1>
         <pre className={pre(store.config)}><code>{getMessage()}</code></pre>
-        <button className={buttonPrimary(store.config)} onClick={onClick}>Reload</button>
+        <button className={buttonPrimary(store.config)} onClick={onReload}>Reload</button>
+        <Show when={store.error.id === 'exception'}>
+          <button className={button(store.config)} onClick={onDiscard}>Discard</button>
+        </Show>
       </div>
     </div>
   )

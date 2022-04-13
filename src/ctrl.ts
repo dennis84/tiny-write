@@ -251,14 +251,14 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       await discardText()
     } else if (store.files.length > 0 && isEmpty(store.editorView.state)) {
       await discardText()
-    } else if (isEmpty(store.editorView.state)) {
+    } else if (isEmpty(store.editorView?.state)) {
       newFile()
     } else {
       selectAll(store.editorView.state, store.editorView.dispatch)
       deleteSelection(store.editorView.state, store.editorView.dispatch)
     }
 
-    store.editorView.focus()
+    store.editorView?.focus()
   }
 
   const init = async () => {
@@ -291,7 +291,11 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       updateEditorState(newState, text ?? createEmptyText())
       setState(newState)
     } catch (error) {
-      setState({error: error.errorObject})
+      if (error instanceof ServiceError) {
+        setState({error: error.errorObject, loading: 'initialized'})
+      } else {
+        setState({error: {id: 'exception', props: {error}}, loading: 'initialized'})
+      }
     }
   }
 
@@ -328,11 +332,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
   }
 
   const newFile = () => {
-    const empty = isEmpty(store.editorView.state)
-    if (empty && !store.path && !store.collab?.room) {
-      return
-    }
-
+    const empty = isEmpty(store.editorView?.state)
     const state: State = unwrap(store)
     let files = state.files
     if (!state.error && !empty && !store.path) {
