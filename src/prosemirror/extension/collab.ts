@@ -70,6 +70,7 @@ const yMousePlugin = (awareness: Awareness) => new Plugin({
     }
 
     const onMouseMove = (e: MouseEvent) => {
+      event.stopPropagation() // fixes focus to PM if in CM
       if (e.x !== undefined && e.y !== undefined) {
         const rect = view.dom.getBoundingClientRect()
         const x = e.x - rect.left
@@ -79,7 +80,7 @@ const yMousePlugin = (awareness: Awareness) => new Plugin({
     }
 
     awareness.on('change', onAwarenessChange)
-    window.addEventListener('mousemove', onMouseMove)
+    document.addEventListener('mousemove', onMouseMove)
 
     return {
       update: onMouseMove,

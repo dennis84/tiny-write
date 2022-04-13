@@ -316,6 +316,7 @@ export const editorCss = (config: Config) => css`
     margin-left: -15px;
     z-index: 20;
     pointer-events: none;
+    user-select: none;
     span {
       position: absolute;
       display: inline-flex;
