@@ -66,6 +66,7 @@ export interface State {
 
 export interface File {
   text?: {[key: string]: any};
+  ydoc?: Uint8Array;
   lastModified?: string;
   path?: string;
   markdown?: boolean;

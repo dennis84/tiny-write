@@ -189,7 +189,10 @@ export default () => {
     if (!provider) return
     const fn = () => setCollabUsers(provider.awareness.meta.size)
     provider.awareness.on('update', fn)
-    onCleanup(() => provider?.awareness.off('update', fn))
+    onCleanup(() => {
+      setCollabUsers(0)
+      provider?.awareness.off('update', fn)
+    })
   })
 
   createEffect(() => {
@@ -221,12 +224,12 @@ export default () => {
     return store.lastModified
   }, store.lastModified)
 
-  const clearText = () => store.path ? 'Close' :
+  const clearText = () => (store.path || store.collab?.room) ? 'Close' :
     (store.files.length > 0 && isTextEmpty()) ? 'Discard ⚠️' :
     'Clear'
 
   const clearEnabled = () =>
-    store.path || store.files.length > 0 || !isTextEmpty()
+    store.path || store.collab?.room || store.files.length > 0 || !isTextEmpty()
 
   const onBurgerClick = () => {
     store.editorView.focus()
@@ -398,8 +401,9 @@ export default () => {
       return content
     }
 
-    const text = () => p.file.path ?
-      p.file.path.substring(p.file.path.length - length) :
+    const text = () =>
+      p.file.collab?.room ? p.file.collab.room :
+      p.file.path ? p.file.path.substring(p.file.path.length - length) :
       getContent(p.file.text?.doc)
 
     return (
@@ -410,7 +414,6 @@ export default () => {
         data-testid="open">
         {text()}&nbsp;
         <Show when={p.file.path}>📎</Show>
-        <Show when={p.file.collab?.room}><i title={p.file.collab.room}>💬</i></Show>
       </Link>
     )
   }

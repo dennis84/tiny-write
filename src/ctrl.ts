@@ -6,7 +6,7 @@ import {Schema} from 'prosemirror-model'
 import {undo, redo} from 'prosemirror-history'
 import {selectAll, deleteSelection} from 'prosemirror-commands'
 import * as Y from 'yjs'
-import {undo as yUndo, redo as yRedo} from 'y-prosemirror'
+import {undo as yUndo, redo as yRedo, prosemirrorToYDoc} from 'y-prosemirror'
 import {WebsocketProvider} from 'y-websocket'
 import {uniqueNamesGenerator, adjectives, animals} from 'unique-names-generator'
 import {debounce} from 'ts-debounce'
@@ -30,7 +30,7 @@ const isState = (x: any) =>
   (typeof x.lastModified !== 'string') &&
   Array.isArray(x.files)
 
-const isFile = (x: any): boolean => x && (x.text || x.path)
+const isFile = (x: any): boolean => x && (x.text || x.path || x.ydoc)
 
 const isConfig = (x: any): boolean =>
   (typeof x.theme === 'string' || x.theme === undefined) &&
@@ -104,10 +104,21 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     [`${mod}-m`]: onToggleMarkdown,
   }
 
-  const addToFiles = (files: File[], prev: State) => {
-    const text = prev.path ? undefined : store.editorView.state.toJSON()
+  const addToFiles = (
+    files: File[],
+    prev: State,
+    prevYdoc?: Uint8Array,
+  ) => {
+    let text, ydoc
+    if (prevYdoc || prev.collab?.room) {
+      ydoc = prevYdoc ?? Y.encodeStateAsUpdate(prev.collab.y.provider.doc)
+    } else {
+      text = prev.path ? undefined : store.editorView?.state.toJSON()
+    }
+
     return [...files, {
       text,
+      ydoc,
       lastModified: prev.lastModified?.toISOString(),
       path: prev.path,
       markdown: prev.markdown,
@@ -130,11 +141,13 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       path: file.path,
       markdown: file.markdown,
       collab: {room: file.collab?.room},
+      args: {cwd: state.args?.cwd},
     }
 
     disconnectCollab(state.collab)
-    const newState = doStartCollab({...state, ...next})
-    updateEditorState(newState, file.text)
+    let newState = {...state, ...next}
+    newState = doStartCollab(newState, undefined, file.ydoc)
+    updateEditorState(newState, file.text ?? createEmptyText())
 
     setState({
       args: {cwd: state.args?.cwd},
@@ -145,7 +158,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     })
   }
 
-  const fetchData = async (): Promise<[State, ProseMirrorState]> => {
+  const fetchData = async (): Promise<[State, ProseMirrorState, Uint8Array]> => {
     let args = await remote.getArgs().catch(() => undefined)
     const state: State = unwrap(store)
 
@@ -164,7 +177,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     }
 
     if (!parsed) {
-      return [{...state, args}, undefined]
+      return [{...state, args}, undefined, undefined]
     }
 
     const config = {...state.config, ...parsed.config}
@@ -201,7 +214,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       throw new ServiceError('invalid_state', newState)
     }
 
-    return [newState, text]
+    return [newState, text, parsed.ydoc]
   }
 
   const getTheme = (state: State, force = false) => {
@@ -229,12 +242,12 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       error: undefined,
       collab: undefined,
     }
-    updateEditorState(state)
+    updateEditorState(state, createEmptyText())
     setState(state)
   }
 
   const discard = async () => {
-    if (store.path) {
+    if (store.path || store.collab?.room) {
       await discardText()
     } else if (store.files.length > 0 && isEmpty(store.editorView.state)) {
       await discardText()
@@ -253,8 +266,9 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       const result = await fetchData()
       let data = result[0]
       let text = result[1]
-      if (data.args.room || data.collab?.room) {
-        data = doStartCollab(data)
+      const ydoc = result[2]
+      if (data.collab?.room || data.args.room) {
+        data = doStartCollab(data, undefined, ydoc)
       } else if (data.args.text) {
         data = await doOpenFile(data, {text: JSON.parse(data.args.text)})
       } else if (data.args.file) {
@@ -274,8 +288,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
         loading: 'initialized'
       }
 
-      const t = newState.collab?.room ? createEmptyText() : text ?? createEmptyText()
-      updateEditorState(newState, t)
+      updateEditorState(newState, text ?? createEmptyText())
       setState(newState)
     } catch (error) {
       setState({error: error.errorObject})
@@ -386,9 +399,8 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     }
 
     disconnectCollab(state.collab)
-    newState = doStartCollab(newState)
-    const t = newState.collab?.room ? createEmptyText() : file.text
-    updateEditorState(newState, t)
+    newState = doStartCollab(newState, undefined, file.ydoc)
+    updateEditorState(newState, file.text ?? createEmptyText())
     return newState
   }
 
@@ -411,6 +423,8 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     if (state.path) {
       const text = serialize(store.editorView.state)
       await remote.writeFile(state.path, text)
+    } else if (state.collab?.room) {
+      data.ydoc = Y.encodeStateAsUpdate(state.collab.y.provider.doc)
     } else {
       data.text = store.editorView.state.toJSON()
     }
@@ -423,19 +437,19 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     setState({fullscreen})
   }
 
-  const shouldBackup = (state: State) => state.path || (
-    state.args?.room &&
-    state.collab?.room !== state.args.room &&
-    !isEmpty(state.editorView?.state)
-  )
+  const shouldBackup = (state: State, ydoc?: Uint8Array) => {
+    return state.path || (
+      state.args?.room &&
+      state.collab?.room !== state.args.room &&
+      (!isEmpty(state.editorView?.state) || ydoc)
+    )
+  }
 
   const startCollab = () => {
     const state: State = unwrap(store)
     const update = doStartCollab(state, uuidv4())
-    const editorStateBefore = state.editorView.state.toJSON()
-    updateEditorState(update, createEmptyText())
+    updateEditorState(update)
     setState(update)
-    if (editorStateBefore) updateEditorState(update, editorStateBefore)
   }
 
   const onCollabConfigUpdate = (event: any) => {
@@ -445,13 +459,23 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     setState('config', {font, fontSize, contentWidth})
   }
 
-  const doStartCollab = (state: State, newRoom?: string): State => {
+  const doStartCollab = (
+    state: State,
+    newRoom?: string,
+    savedDoc?: Uint8Array,
+  ): State => {
     const room = newRoom ?? state.args?.room ?? state.collab?.room
     if (!room) return state
 
     window.history.replaceState(null, '', `/${room}`)
 
-    const ydoc = new Y.Doc()
+    let ydoc = new Y.Doc()
+    if (room === state.collab?.room && savedDoc) {
+      Y.applyUpdate(ydoc, savedDoc)
+    } else if (state.editorView) {
+      ydoc = prosemirrorToYDoc(state.editorView.state.doc)
+    }
+
     const prosemirrorType = ydoc.getXmlFragment('prosemirror')
     const provider = new WebsocketProvider(COLLAB_URL, room, ydoc)
     const configType = ydoc.getMap('config')
@@ -476,10 +500,10 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     })
 
     let newState = state
-    if (shouldBackup(state)) {
+    if (shouldBackup(state, savedDoc)) {
       let files = state.files
       if (!state.error) {
-        files = addToFiles(files, state)
+        files = addToFiles(files, state, savedDoc)
       }
 
       newState = {

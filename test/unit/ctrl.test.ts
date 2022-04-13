@@ -70,7 +70,8 @@ test('newFile - collab', async () => {
   expect(store.files.length).toBe(1)
   expect(store.editorView.state.doc.textContent).toEqual('')
   expect(store.collab).toBe(undefined)
-  expect(store.files[0].text).toEqual(text)
+  expect(store.files[0].text).toEqual(undefined)
+  expect(store.files[0].ydoc).not.toBe(undefined)
   expect(store.files[0].collab.room).toEqual(room)
 })
 
@@ -157,7 +158,7 @@ test('openFile - open collab', async () => {
   ctrl.updateEditorState(store, createEmptyText())
   ctrl.createEditorView(target)
   await ctrl.openFile(file)
-  expect(store.editorView.state.doc.textContent).toBe('')
+  expect(store.editorView.state.doc.textContent).toBe('Test')
   expect(store.files.length).toBe(0)
   expect(store.collab.room).toBe('room-123')
 })
