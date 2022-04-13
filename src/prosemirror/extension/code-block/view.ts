@@ -304,7 +304,6 @@ export class CodeBlockView {
     const lang = this.getLang()
     this.node = node
     this.updatePrettify()
-    this.updateMermaid()
     // Allow update from collab
     if (node.attrs.params.lang !== lang) {
       this.reconfigure()
@@ -321,6 +320,7 @@ export class CodeBlockView {
       this.updating = false
     }
 
+    this.updateMermaid()
     return true
   }
 
