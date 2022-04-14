@@ -1,5 +1,5 @@
-import {EditorState, Plugin, PluginKey} from 'prosemirror-state'
-import {DecorationSet, Decoration} from 'prosemirror-view'
+import {Plugin} from 'prosemirror-state'
+import {EditorView} from 'prosemirror-view'
 import {ySyncPlugin, yCursorPlugin, yUndoPlugin, ySyncPluginKey} from 'y-prosemirror'
 import {Awareness} from 'y-protocols/awareness'
 import {ProseMirrorExtension} from '../state'
@@ -9,84 +9,83 @@ const cursorBuilder = (user: any): HTMLElement => {
   const cursor = document.createElement('span')
   cursor.setAttribute('contexteditable', 'false')
   cursor.classList.add('ProseMirror-yjs-cursor')
-  cursor.setAttribute('style', `border-color: ${user.background}`)
+  cursor.style.borderColor = user.background
   return cursor
 }
 
-const createMouseCursor = (user: any, coords: any) => () => {
-  const cur = document.createElement('span')
-  cur.setAttribute('contexteditable', 'false')
-  cur.style.setProperty('--user-background', user.background)
-  cur.classList.add('mouse-cursor')
-  cur.style.top = `${coords.y}px`
-  cur.style.left = `${coords.x}px`
+class MouseCursorView {
+  view: EditorView
+  awareness: Awareness
+  container: HTMLElement
+  cursors: Map<number, HTMLElement> = new Map()
 
-  const username = document.createElement('span')
-  username.setAttribute('style', `background-color: ${user.background}; color: ${user.foreground}`)
-  username.textContent = user.name
-  cur.append(username)
-  return cur
-}
+  constructor(view, awareness) {
+    this.view = view
+    this.awareness = awareness
+    this.container = document.createElement('div')
 
-const createDecorations = (state: EditorState, awareness: Awareness) => {
-  const ystate = ySyncPluginKey.getState(state)
-  const y = ystate.doc
-  const decorations = []
-
-  awareness.getStates().forEach((aw: any, clientId: any) => {
-    if (clientId === y.clientID) return
-    if (!aw.mouse) return
-    decorations.push(Decoration.widget(0, createMouseCursor(aw.user, aw.mouse)))
-  })
-
-  return DecorationSet.create(state.doc, decorations)
-}
-
-const pluginKey = new PluginKey('y-mouse')
-
-const yMousePlugin = (awareness: Awareness) => new Plugin({
-  key: pluginKey,
-  state: {
-    init(_, state) {
-      return createDecorations(state, awareness)
-    },
-    apply (tr, prevState, _oldState, newState) {
-      const yCursorState = tr.getMeta(pluginKey)
-      if (yCursorState?.awarenessUpdated) {
-        return createDecorations(newState, awareness)
-      }
-
-      return prevState.map(tr.mapping, tr.doc)
-    }
-  },
-  props: {
-    decorations: (state) => pluginKey.getState(state)
-  },
-  view: (view: any): any => {
-    const onAwarenessChange = () => {
-      const tr = view.state.tr
-      tr.setMeta(pluginKey, {awarenessUpdated: true})
-      view.dispatch(tr)
-    }
-
-    const onMouseMove = (e: MouseEvent) => {
-      const rect = view.dom.getBoundingClientRect()
-      const x = e.x - rect.left
-      const y = e.y - rect.top
-      awareness.setLocalStateField('mouse', {x, y})
-    }
-
-    awareness.on('change', onAwarenessChange)
-    document.addEventListener('mousemove', onMouseMove)
-
-    return {
-      destroy: () => {
-        window.removeEventListener('mousemove', onMouseMove)
-        awareness.off('change', onAwarenessChange)
-        awareness.setLocalStateField('mouse', null)
-      }
-    }
+    if (!view.dom.offsetParent) return
+    view.dom.offsetParent.appendChild(this.container)
+    awareness.on('change', this.onAwarenessChange.bind(this))
+    document.addEventListener('mousemove', this.onMouseMove.bind(this))
   }
+
+  destroy() {
+    document.removeEventListener('mousemove', this.onMouseMove.bind(this))
+    this.awareness.off('change', this.onAwarenessChange.bind(this))
+    this.awareness.setLocalStateField('mouse', null)
+  }
+
+  onMouseMove(e: MouseEvent) {
+    const rect = this.view.dom.getBoundingClientRect()
+    const x = e.x - rect.left
+    const y = e.y - rect.top
+    this.awareness.setLocalStateField('mouse', {x, y})
+  }
+
+  onAwarenessChange({added, updated, removed}) {
+    const ystate = ySyncPluginKey.getState(this.view.state)
+    const y = ystate.doc
+    const rect = this.view.dom.getBoundingClientRect()
+
+    removed.forEach((id) => {
+      const elem = this.cursors.get(id)
+      if (!elem || !this.container) return
+      this.container.removeChild(elem)
+      this.cursors.delete(id)
+    })
+
+    added.concat(updated).forEach((id) => {
+      const aw = this.awareness.states.get(id)
+      if (id === y.clientID || !aw.mouse) return
+      const mouse = this.cursors.get(id)
+      if (mouse) {
+        mouse.style.top = `${aw.mouse.y + rect.top}px`
+        mouse.style.left = `${aw.mouse.x + rect.left}px`
+      } else {
+        const cur = document.createElement('span')
+        cur.setAttribute('contexteditable', 'false')
+        cur.style.setProperty('--user-background', aw.user.background)
+        cur.classList.add('mouse-cursor')
+        cur.style.top = `${aw.mouse.y + rect.top}px`
+        cur.style.left = `${aw.mouse.x + rect.left}px`
+
+        const username = document.createElement('span')
+        username.style.backgroundColor = aw.user.background
+        username.style.color = aw.user.foreground
+        username.textContent = aw.user.name
+        cur.append(username)
+        this.container.appendChild(cur)
+        this.cursors.set(id, cur)
+      }
+    })
+  }
+}
+
+const yMouseCursorPlugin = (awareness: Awareness) => new Plugin({
+  view(editorView) {
+    return new MouseCursorView(editorView, awareness)
+  },
 })
 
 export default (y?: YOptions): ProseMirrorExtension => ({
@@ -95,7 +94,7 @@ export default (y?: YOptions): ProseMirrorExtension => ({
     ySyncPlugin(y.prosemirrorType),
     // @ts-ignore
     yCursorPlugin(y.provider.awareness, {cursorBuilder}),
-    yMousePlugin(y.provider.awareness),
+    yMouseCursorPlugin(y.provider.awareness),
     yUndoPlugin(),
   ] : prev
 })
