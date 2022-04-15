@@ -58,8 +58,8 @@ jobs:
           name: deb
       - name: Display structure of downloaded files
         run: ls -R
-      # - uses: ncipollo/release-action@v1
-      #   with:
-      #     draft: true
-      #     artifacts: "src-tauri/target/release/bundle/dmg/TinyWrite_${{github.ref_name}}_x64.dmg,src-tauri/target/release/bundle/deb/tiny-write_${{github.ref_name}}_amd64.deb"
-      #     token: ${{ secrets.GITHUB_TOKEN }}
+      - uses: ncipollo/release-action@v1
+        with:
+          draft: true
+          artifacts: "TinyWrite_${{ github.event.inputs.version }}_x64.dmg,tiny-write_${{ github.event.inputs.version }}_amd64.deb"
+          token: ${{ secrets.GITHUB_TOKEN }}
