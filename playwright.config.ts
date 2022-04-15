@@ -1,6 +1,8 @@
 import { PlaywrightTestConfig } from '@playwright/test';
 const config: PlaywrightTestConfig = {
   testDir: './test/integration',
+  timeout: 10000,
+  retries: 3,
   webServer: {
     command: 'npm run web',
     port: 3000,

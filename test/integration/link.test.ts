@@ -4,7 +4,6 @@ import {delay, move, lineTextEq} from './utils'
 test.beforeEach(async ({page}) => {
   await page.goto('/')
   await page.waitForSelector('[data-testid="initialized"]')
-  await page.waitForTimeout(10)
 })
 
 test('create link', async ({page}) => {

@@ -282,7 +282,7 @@ export default () => {
   }
 
   const onToggleAlwaysOnTop = () => {
-    ctrl.updateConfig({alwaysOnTop: !store.config.alwaysOnTop})
+    ctrl.setAlwaysOnTop(!store.config.alwaysOnTop)
   }
 
   const onToggleTypewriterMode = () => {

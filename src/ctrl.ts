@@ -288,6 +288,10 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
         loading: 'initialized'
       }
 
+      if (isTauri && newState.config?.alwaysOnTop) {
+        remote.setAlwaysOnTop(true)
+      }
+
       updateEditorState(newState, text ?? createEmptyText())
       setState(newState)
     } catch (error) {
@@ -431,6 +435,11 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
 
     db.set('state', JSON.stringify(data))
   }, 200)
+
+  const setAlwaysOnTop = (alwaysOnTop: boolean) => {
+    remote.setAlwaysOnTop(alwaysOnTop)
+    setState('config', {alwaysOnTop})
+  }
 
   const setFullscreen = (fullscreen: boolean) => {
     remote.setFullscreen(fullscreen)
@@ -639,6 +648,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     newFile,
     openFile,
     saveState,
+    setAlwaysOnTop,
     setFullscreen,
     setState,
     startCollab,

@@ -2,7 +2,6 @@ import {createContext, useContext} from 'solid-js'
 import {Store} from 'solid-js/store'
 import * as Y from 'yjs'
 import {WebsocketProvider} from 'y-websocket'
-import {isMac} from './env'
 
 export interface Args {
   cwd?: string;
@@ -94,7 +93,7 @@ export const newState = (props: Partial<State> = {}): State => ({
     font: 'merriweather',
     fontSize: 24,
     contentWidth: 800,
-    alwaysOnTop: isMac,
+    alwaysOnTop: false,
     typewriterMode: true,
     prettier: {
       printWidth: 80,

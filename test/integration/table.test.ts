@@ -4,7 +4,6 @@ import {delay, lineTextEq, move} from './utils'
 test.beforeEach(async ({page}) => {
   await page.goto('/')
   await page.waitForSelector('[data-testid="initialized"]')
-  await page.waitForTimeout(10)
 })
 
 test('markdown table to html and back', async ({page}) => {

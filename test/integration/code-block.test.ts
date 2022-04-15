@@ -6,7 +6,6 @@ const code = `const foo='bar'`
 test.beforeEach(async ({page}) => {
   await page.goto('/')
   await page.waitForSelector('[data-testid="initialized"]')
-  await page.waitForTimeout(10)
 })
 
 test('code block', async ({page}) => {
@@ -35,4 +34,16 @@ test('code block', async ({page}) => {
   await page.keyboard.press('Control+Enter')
   await page.type('.ProseMirror p', 'below', {delay})
   expect(await page.textContent('.ProseMirror p:nth-of-type(2)')).toBe('below')
+})
+
+test('mermaid', async ({page}) => {
+  const line1 = 'flowchart LR'
+  const line2 = "  A --> B"
+  await page.type('.ProseMirror', '```mermaid ', {delay})
+  await page.waitForSelector('.codemirror-outer')
+  await page.type('.codemirror-inner > .cm-editor .cm-content', line1, {delay})
+  expect(await page.textContent('.mermaid')).toContain('Parse error')
+  await page.keyboard.press('Enter')
+  await page.type('.codemirror-inner > .cm-editor .cm-content', line2, {delay})
+  await page.waitForSelector('.mermaid svg')
 })
