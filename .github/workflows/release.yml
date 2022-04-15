@@ -4,9 +4,12 @@ env:
   CI: true
 
 on:
-  push:
-    tags:
-      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Bump Version
+        default: 1.0.0
+        required: true
 
 jobs:
   mac:
@@ -20,10 +23,10 @@ jobs:
       - run: npm run dist
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
-          name: TinyWrite.dmg
-          path: dist/app
+          name: dmg
+          path: src-tauri/target/release/bundle/dmg/*
   ubuntu:
     runs-on: ubuntu-latest
     steps:
@@ -37,22 +40,22 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/upload-artifact@v2
         with:
-          name: TinyWrite.snap
-          path: dist/app/TinyWrite.snap
+          name: deb
+          path: src-tauri/target/release/bundle/deb/*
   release:
     needs: [mac, ubuntu]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
-          name: TinyWrite.dmg
-          path: dist/app/
-      - uses: actions/download-artifact@v2
+          name: dmg
+      - uses: actions/download-artifact@v3
         with:
-          name: TinyWrite.snap
-          path: dist/app/
-      - uses: ncipollo/release-action@v1
-        with:
-          draft: true
-          artifacts: "dist/app/TinyWrite.dmg,dist/app/TinyWrite.snap"
-          token: ${{ secrets.GITHUB_TOKEN }}
+          name: deb
+      - name: Display structure of downloaded files
+        run: ls -R
+      # - uses: ncipollo/release-action@v1
+      #   with:
+      #     draft: true
+      #     artifacts: "src-tauri/target/release/bundle/dmg/TinyWrite_${{github.ref_name}}_x64.dmg,src-tauri/target/release/bundle/deb/tiny-write_${{github.ref_name}}_amd64.deb"
+      #     token: ${{ secrets.GITHUB_TOKEN }}

@@ -84,10 +84,9 @@
     "web": "vite & y-websocket",
     "app": "npm run tauri dev ./README.md & vite",
     "build": "npm run lint && vite build --base './'",
-    "dist": "npm run build && npm run tauri build",
+    "dist": "npm run build && tauri build",
     "lint": "eslint . --ext .ts,.tsx",
-    "test": "CI=true vitest && npx playwright test",
-    "tauri": "tauri"
+    "test": "CI=true vitest && npx playwright test"
   },
   "browserslist": [
     "last 1 Chrome versions"
