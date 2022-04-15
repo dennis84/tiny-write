@@ -4,12 +4,8 @@ env:
   CI: true
 
 on:
-  workflow_dispatch:
-    inputs:
-      version:
-        description: Bump Version
-        default: 1.0.0
-        required: true
+  tags:
+    - 'v*'
 
 jobs:
   mac:
@@ -61,5 +57,5 @@ jobs:
       - uses: ncipollo/release-action@v1
         with:
           draft: true
-          artifacts: "TinyWrite_${{ github.event.inputs.version }}_x64.dmg,tiny-write_${{ github.event.inputs.version }}_amd64.deb"
+          artifacts: "*_x64.dmg,*_amd64.deb"
           token: ${{ secrets.GITHUB_TOKEN }}
