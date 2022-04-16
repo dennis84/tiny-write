@@ -19,32 +19,10 @@ class MouseCursorView {
   container: HTMLElement
   cursors: Map<number, HTMLElement> = new Map()
 
-  constructor(view, awareness) {
-    this.view = view
-    this.awareness = awareness
-    this.container = document.createElement('div')
-
-    if (!view.dom.offsetParent) return
-    view.dom.offsetParent.appendChild(this.container)
-    awareness.on('change', this.onAwarenessChange.bind(this))
-    document.addEventListener('mousemove', this.onMouseMove.bind(this))
-  }
-
-  destroy() {
-    document.removeEventListener('mousemove', this.onMouseMove.bind(this))
-    this.awareness.off('change', this.onAwarenessChange.bind(this))
-    this.awareness.setLocalStateField('mouse', null)
-  }
-
-  onMouseMove(e: MouseEvent) {
-    const rect = this.view.dom.getBoundingClientRect()
-    const x = e.x - rect.left
-    const y = e.y - rect.top
-    this.awareness.setLocalStateField('mouse', {x, y})
-  }
-
-  onAwarenessChange({added, updated, removed}) {
+  onAwarenessChange = ({added, updated, removed}) => {
     const ystate = ySyncPluginKey.getState(this.view.state)
+    if (!ystate) return
+
     const y = ystate.doc
     const rect = this.view.dom.getBoundingClientRect()
 
@@ -79,6 +57,30 @@ class MouseCursorView {
         this.cursors.set(id, cur)
       }
     })
+  }
+
+  onMouseMove = (e: MouseEvent) => {
+    const rect = this.view.dom.getBoundingClientRect()
+    const x = e.x - rect.left
+    const y = e.y - rect.top
+    this.awareness.setLocalStateField('mouse', {x, y})
+  }
+
+  constructor(view, awareness) {
+    this.view = view
+    this.awareness = awareness
+    this.container = document.createElement('div')
+
+    if (!view.dom.offsetParent) return
+    view.dom.offsetParent.appendChild(this.container)
+    awareness.on('change', this.onAwarenessChange)
+    document.addEventListener('mousemove', this.onMouseMove)
+  }
+
+  destroy() {
+    document.removeEventListener('mousemove', this.onMouseMove)
+    this.awareness.off('change', this.onAwarenessChange)
+    this.awareness.setLocalStateField('mouse', null)
   }
 }
 

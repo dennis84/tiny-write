@@ -1,5 +1,6 @@
 import {Store, createStore, unwrap} from 'solid-js/store'
 import {v4 as uuidv4} from 'uuid'
+import {fromUint8Array, toUint8Array} from 'js-base64'
 import {EditorView} from 'prosemirror-view'
 import {EditorState, Transaction} from 'prosemirror-state'
 import {Schema} from 'prosemirror-model'
@@ -208,13 +209,22 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       if (!isFile(file)) {
         throw new ServiceError('invalid_file', file)
       }
+
+      if (file.ydoc && typeof file.ydoc === 'string') {
+        file.ydoc = toUint8Array(file.ydoc)
+      }
     }
 
     if (!isState(newState)) {
       throw new ServiceError('invalid_state', newState)
     }
 
-    return [newState, text, parsed.ydoc]
+    let ydoc
+    if (parsed.ydoc && typeof parsed.ydoc === 'string') {
+      ydoc = toUint8Array(parsed.ydoc)
+    }
+
+    return [newState, text, ydoc]
   }
 
   const getTheme = (state: State, force = false) => {
@@ -295,6 +305,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       updateEditorState(newState, text ?? createEmptyText())
       setState(newState)
     } catch (error) {
+      console.error(error)
       if (error instanceof ServiceError) {
         setState({error: error.errorObject, loading: 'initialized'})
       } else {
@@ -428,7 +439,8 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       const text = serialize(store.editorView.state)
       await remote.writeFile(state.path, text)
     } else if (state.collab?.room) {
-      data.ydoc = Y.encodeStateAsUpdate(state.collab.y.provider.doc)
+      const documentState = Y.encodeStateAsUpdate(state.collab.y.provider.doc)
+      data.ydoc = fromUint8Array(documentState)
     } else {
       data.text = store.editorView.state.toJSON()
     }

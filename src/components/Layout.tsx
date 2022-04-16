@@ -210,6 +210,8 @@ export const editorCss = (config: Config) => css`
     }
     .codemirror-outer {
       position: relative;
+      margin-top: 10px;
+      margin-bottom: 10px;
       display: flex;
       .handle {
         top: 2px;
