@@ -4,8 +4,9 @@ env:
   CI: true
 
 on:
-  tags:
-    - 'v*'
+  push:
+    tags:
+      - 'v*'
 
 jobs:
   mac:
