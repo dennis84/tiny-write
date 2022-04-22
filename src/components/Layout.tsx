@@ -137,7 +137,7 @@ export const editorCss = (config: Config) => css`
       border: 1px solid ${foreground(config)}7f;
       background: ${foreground(config)}19;
       border-radius: 3px;
-      padding: 2px;
+      padding: 1px;
       font-family: '${font(config, true)}' !important;
     }
     a {
