@@ -2,16 +2,12 @@ import {Node} from 'prosemirror-model'
 import {DecorationSet, EditorView as ProsemirrorEditorView} from 'prosemirror-view'
 import {TextSelection, Selection} from 'prosemirror-state'
 import {exitCode} from 'prosemirror-commands'
-import {Compartment, EditorState, Extension} from '@codemirror/state'
-import {Text} from '@codemirror/text'
+import {Compartment, EditorState, Extension, Text} from '@codemirror/state'
 import {EditorView, ViewUpdate, highlightActiveLine, keymap} from '@codemirror/view'
 import {defaultKeymap} from '@codemirror/commands'
-import {autocompletion, completionKeymap} from '@codemirror/autocomplete'
-import {indentOnInput} from '@codemirror/language'
-import {bracketMatching} from '@codemirror/matchbrackets'
-import {closeBrackets, closeBracketsKeymap} from '@codemirror/closebrackets'
+import {autocompletion, completionKeymap, closeBrackets, closeBracketsKeymap} from '@codemirror/autocomplete'
+import {StreamLanguage, indentOnInput, bracketMatching} from '@codemirror/language'
 import {linter, setDiagnostics} from '@codemirror/lint'
-import {StreamLanguage} from '@codemirror/stream-parser'
 import {haskell} from '@codemirror/legacy-modes/mode/haskell'
 import {clojure} from '@codemirror/legacy-modes/mode/clojure'
 import {erlang} from '@codemirror/legacy-modes/mode/erlang'
@@ -175,12 +171,13 @@ export class CodeBlockView {
       extensions: [
         extensions,
         codeMirrorKeymap,
+        keymap.of(closeBracketsKeymap),
         keymap.of([
           ...defaultKeymap,
-          ...closeBracketsKeymap,
           ...completionKeymap,
           ...tabCompletionKeymap,
         ]),
+        theme,
         autocompletion({override: completion}),
         indentOnInput(),
         bracketMatching(),
@@ -189,7 +186,6 @@ export class CodeBlockView {
         highlightActiveLine(),
         EditorState.tabSize.of(2),
         this.langExtension.of(getLangExtension(this.getLang())),
-        theme,
         EditorView.updateListener.of(this.updateListener.bind(this)),
         EditorView.lineWrapping,
         EditorView.domEventHandlers({
@@ -392,8 +388,8 @@ export class CodeBlockView {
       update.transactions.length > 0 &&
       this.options.typewriterMode
     ) {
-      const line = this.editorView.visualLineAt(sel.from)
-      const {node} = this.editorView.domAtPos(line.from)
+      const lineBlock = this.editorView.lineBlockAt(sel.from)
+      const {node} = this.editorView.domAtPos(lineBlock.from)
       ;(node as Element).scrollIntoView({
         block: 'center',
         behavior: 'smooth',
