@@ -1,4 +1,4 @@
-import {appWindow} from '@tauri-apps/api/window'
+import {getCurrent} from '@tauri-apps/api/window'
 import {invoke} from '@tauri-apps/api/tauri'
 import * as clipboard from '@tauri-apps/api/clipboard'
 import * as fs from '@tauri-apps/api/fs'
@@ -15,22 +15,22 @@ export const getArgs = async (): Promise<Args> => {
 
 export const setAlwaysOnTop = (alwaysOnTop: boolean): Promise<void> => {
   if (!isTauri) throw Error('Must be run in tauri')
-  return appWindow.setAlwaysOnTop(alwaysOnTop)
+  return getCurrent().setAlwaysOnTop(alwaysOnTop)
 }
 
 export const quit = (): Promise<void> => {
   if (!isTauri) throw Error('Must be run in tauri')
-  return appWindow.close()
+  return getCurrent().close()
 }
 
 export const isFullscreen = (): Promise<boolean> => {
   if (!isTauri) throw Error('Must be run in tauri')
-  return appWindow.isFullscreen()
+  return getCurrent().isFullscreen()
 }
 
 export const setFullscreen = (status: boolean): Promise<void> => {
   if (!isTauri) throw Error('Must be run in tauri')
-  return appWindow.setFullscreen(status)
+  return getCurrent().setFullscreen(status)
 }
 
 export const copy = async (text: string): Promise<void> => {

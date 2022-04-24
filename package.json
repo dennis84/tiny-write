@@ -80,7 +80,7 @@
   "scripts": {
     "web": "vite & y-websocket",
     "app": "tauri dev ./README.md & vite",
-    "build": "npm run lint && vite build --base './'",
+    "build": "vite build --base './'",
     "dist": "npm run build && tauri build",
     "lint": "eslint . --ext .ts,.tsx",
     "test": "CI=true vitest && npx playwright test"
