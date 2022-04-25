@@ -25,7 +25,7 @@ vi.mock('../../src/remote', () => ({
     path === 'file2' ? '# File2' : ''
 }))
 
-vi.mock('../../src/db', () => ({
+vi.mock('idb-keyval', () => ({
   get: async () => undefined,
   set: async () => undefined,
 }))

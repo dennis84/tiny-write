@@ -16,7 +16,7 @@ vi.mock('../../src/remote', () => ({
   },
 }))
 
-vi.mock('../../src/db', () => ({
+vi.mock('idb-keyval', () => ({
   get: async () => undefined,
   set: async () => undefined,
 }))

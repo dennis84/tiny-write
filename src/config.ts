@@ -50,6 +50,7 @@ export const fonts: {[key: string]: Font} = {
 export type Rgb = [number, number, number]
 
 interface Theme {
+  value: string;
   label: string;
   background: string;
   foreground: string;
@@ -60,6 +61,7 @@ interface Theme {
 
 export const themes: {[key: string]: Theme} = {
   'light': {
+    value: 'light',
     label: 'Light',
     background: '#ffffff',
     foreground: '#666666',
@@ -68,6 +70,7 @@ export const themes: {[key: string]: Theme} = {
     dark: false,
   },
   'dark': {
+    value: 'dark',
     label: 'Dark',
     background: '#16161a',
     foreground: '#94a1b2',
@@ -76,6 +79,7 @@ export const themes: {[key: string]: Theme} = {
     dark: true,
   },
   'gruvbox-dark': {
+    value: 'gruvbox-dark',
     label: 'Gruvbox Dark',
     background: '#32302f',
     foreground: '#dfbf8e',
@@ -84,6 +88,7 @@ export const themes: {[key: string]: Theme} = {
     dark: true,
   },
   'solarized-light': {
+    value: 'solarized-light',
     label: 'Solarized Light',
     background: '#fdf6e3',
     foreground: '#657b83',
@@ -92,6 +97,7 @@ export const themes: {[key: string]: Theme} = {
     dark: false,
   },
   'solarized-dark': {
+    value: 'solarized-dark',
     label: 'Solarized Dark',
     background: '#002b36',
     foreground: '#839496',
@@ -100,6 +106,7 @@ export const themes: {[key: string]: Theme} = {
     dark: true,
   },
   'material': {
+    value: 'material',
     label: 'Material',
     background: '#263238',
     foreground: '#92989b',
@@ -108,6 +115,7 @@ export const themes: {[key: string]: Theme} = {
     dark: true,
   },
   'dracula': {
+    value: 'dracula',
     label: 'Dracula',
     background: '#282a36',
     foreground: '#bd93f9',
@@ -116,6 +124,7 @@ export const themes: {[key: string]: Theme} = {
     dark: true,
   },
   'hibernus': {
+    value: 'hibernus',
     label: 'Hibernus',
     background: '#f4f6f6',
     foreground: '#90a6a6',
@@ -124,6 +133,7 @@ export const themes: {[key: string]: Theme} = {
     dark: false,
   },
   'soft-era': {
+    value: 'soft-era',
     label: 'Soft Era',
     background: '#f9f5f5',
     foreground: '#ba989c',
@@ -176,7 +186,7 @@ export const codeThemes: {[key: string]: CodeTheme} = {
 export const isDarkTheme = (config: Config) => getTheme(config).dark
 
 const getDefaltTheme = () => isDark() ? themes.dark : themes.light
-const getTheme = (config: Config) =>
+export const getTheme = (config: Config) =>
   !config.theme ? getDefaltTheme() :
   themes[config.theme] ?? getDefaltTheme()
 

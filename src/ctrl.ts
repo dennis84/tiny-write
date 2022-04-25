@@ -1,5 +1,6 @@
 import {Store, createStore, unwrap} from 'solid-js/store'
 import {v4 as uuidv4} from 'uuid'
+import * as db from 'idb-keyval'
 import {fromUint8Array, toUint8Array} from 'js-base64'
 import {EditorView} from 'prosemirror-view'
 import {EditorState, Transaction} from 'prosemirror-state'
@@ -17,7 +18,6 @@ import {State, File, Collab, Config, ServiceError, newState} from './state'
 import {COLLAB_URL, isTauri, mod} from './env'
 import {serialize, createMarkdownParser} from './markdown'
 import {isDarkTheme, themes} from './config'
-import * as db from './db'
 import {
   NodeViewFn,
   ProseMirrorExtension,
@@ -68,8 +68,6 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     return true
   }
 
-  const onToggleMarkdown = () => toggleMarkdown()
-
   const onUndo = () => {
     if (!store.editorView) return
     if (store.collab?.started) {
@@ -102,7 +100,6 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     [`${mod}-z`]: onUndo,
     [`Shift-${mod}-z`]: onRedo,
     [`${mod}-y`]: onRedo,
-    [`${mod}-m`]: onToggleMarkdown,
   }
 
   const addToFiles = (
@@ -271,6 +268,15 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     store.editorView?.focus()
   }
 
+  const setError = (error: Error) => {
+    console.error(error)
+    if (error instanceof ServiceError) {
+      setState({error: error.errorObject, loading: 'initialized'})
+    } else {
+      setState({error: {id: 'exception', props: {error}}, loading: 'initialized'})
+    }
+  }
+
   const init = async () => {
     try {
       const result = await fetchData()
@@ -305,12 +311,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       updateEditorState(newState, text ?? createEmptyText())
       setState(newState)
     } catch (error) {
-      console.error(error)
-      if (error instanceof ServiceError) {
-        setState({error: error.errorObject, loading: 'initialized'})
-      } else {
-        setState({error: {id: 'exception', props: {error}}, loading: 'initialized'})
-      }
+      setError(error)
     }
   }
 
@@ -491,10 +492,14 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     window.history.replaceState(null, '', `/${room}`)
 
     let ydoc = new Y.Doc()
-    if (room === state.collab?.room && savedDoc) {
-      Y.applyUpdate(ydoc, savedDoc)
-    } else if (state.editorView) {
-      ydoc = prosemirrorToYDoc(state.editorView.state.doc)
+    try {
+      if (room === state.collab?.room && savedDoc) {
+        Y.applyUpdate(ydoc, savedDoc)
+      } else if (state.editorView) {
+        ydoc = prosemirrorToYDoc(state.editorView.state.doc)
+      }
+    } catch (error) {
+      setError(error)
     }
 
     const prosemirrorType = ydoc.getXmlFragment('prosemirror')

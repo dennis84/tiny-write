@@ -5,7 +5,7 @@ import {differenceInHours, format} from 'date-fns'
 import {css} from '@emotion/css'
 import tauriConf from '../../src-tauri/tauri.conf.json'
 import {Config, File, PrettierConfig, useState} from '../state'
-import {foreground, primaryBackground, themes, fonts, codeThemes} from '../config'
+import {foreground, primaryBackground, getTheme, themes, fonts, codeTheme, codeThemes} from '../config'
 import {isTauri, isMac, alt, mod, WEB_URL, VERSION_URL} from '../env'
 import * as remote from '../remote'
 import {isEmpty} from '../prosemirror/state'
@@ -183,6 +183,8 @@ export default () => {
     words: 0,
     loc: 0,
   })
+
+  const modKey = isMac ? '⌘' : mod
 
   createEffect(() => {
     const provider = store.collab?.y?.provider
@@ -467,18 +469,18 @@ export default () => {
             <Sub>
               <Show when={isTauri && !store.path}>
                 <Link config={store.config} onClick={onSaveAs}>
-                  Save to file <Keys keys={[mod, 's']} />
+                  Save to file <Keys keys={[modKey, 's']} />
                 </Link>
               </Show>
               <Link config={store.config} onClick={onNew} data-testid="new">
-                New <Keys keys={[mod, 'n']} />
+                New <Keys keys={[modKey, 'n']} />
               </Link>
               <Link
                 config={store.config}
                 onClick={onDiscard}
                 disabled={!clearEnabled()}
                 data-testid="discard">
-                {clearText()} <Keys keys={[mod, 'w']} />
+                {clearText()} <Keys keys={[modKey, 'w']} />
               </Link>
             </Sub>
             <Show when={store.files.length > 0}>
@@ -491,16 +493,16 @@ export default () => {
             </Show>
             <Label config={store.config}>Edit</Label>
             <Sub>
-              <Link config={store.config} onClick={onUndo}>Undo <Keys keys={[mod, 'z']} /></Link>
+              <Link config={store.config} onClick={onUndo}>Undo <Keys keys={[modKey, 'z']} /></Link>
               <Link config={store.config} onClick={onRedo}>
-                Redo <Keys keys={[mod, ...(isMac ? ['Shift', 'z'] : ['y'])]} />
+                Redo <Keys keys={[modKey, ...(isMac ? ['Shift', 'z'] : ['y'])]} />
               </Link>
-              <Link config={store.config} onClick={cmd('cut')}>Cut <Keys keys={[mod, 'x']} /></Link>
+              <Link config={store.config} onClick={cmd('cut')}>Cut <Keys keys={[modKey, 'x']} /></Link>
               <Link config={store.config} onClick={cmd('paste')} disabled={!isTauri}>
-                Paste <Keys keys={[mod, 'p']} />
+                Paste <Keys keys={[modKey, 'p']} />
               </Link>
               <Link config={store.config} onClick={cmd('copy')}>
-                Copy {lastAction() === 'copy' && '📋'} <Keys keys={[mod, 'c']} />
+                Copy {lastAction() === 'copy' && '📋'} <Keys keys={[modKey, 'c']} />
               </Link>
               <Link config={store.config} onClick={onCopyAllAsMd}>
                 Copy all as markdown {lastAction() === 'copy-md' && '📋'}
@@ -511,7 +513,7 @@ export default () => {
               <For each={Object.entries(themes)}>
                 {([key, value]) => (
                   <Link config={store.config} onClick={onChangeTheme(key)}>
-                    {value.label}{' '}{key === store.config.theme && '✅'}
+                    {value.label}{' '}{key === getTheme(store.config).value && '✅'}
                   </Link>
                 )}
               </For>
@@ -521,7 +523,7 @@ export default () => {
               <For each={Object.entries(codeThemes)}>
                 {([key, value]) => (
                   <Link config={store.config} onClick={onChangeCodeTheme(key)}>
-                    {value.label}{' '}{key === store.config.codeTheme && '✅'}
+                    {value.label}{' '}{key === codeTheme(store.config) && '✅'}
                   </Link>
                 )}
               </For>
@@ -544,7 +546,7 @@ export default () => {
                 </Link>
               </Show>
               <Link config={store.config} onClick={onToggleMarkdown} data-testid="markdown">
-                Markdown mode {store.markdown && '✅'} <Keys keys={[mod, 'm']} />
+                Markdown mode {store.markdown && '✅'}
               </Link>
               <Link config={store.config} onClick={onToggleTypewriterMode}>
                 Typewriter mode {store.config.typewriterMode && '✅'}
@@ -661,7 +663,7 @@ export default () => {
                 <Link
                   config={store.config}
                   onClick={() => remote.quit()}>
-                  Quit <Keys keys={[mod, 'q']} />
+                  Quit <Keys keys={[modKey, 'q']} />
                 </Link>
               </Show>
             </Sub>
