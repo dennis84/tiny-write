@@ -1,6 +1,6 @@
 import {Node, NodeType} from 'prosemirror-model'
 import {Decoration, EditorView} from 'prosemirror-view'
-import {EditorState, Selection, Transaction} from 'prosemirror-state'
+import {EditorState, Selection, Transaction, TextSelection} from 'prosemirror-state'
 import {keymap} from 'prosemirror-keymap'
 import {inputRules, textblockTypeInputRule} from 'prosemirror-inputrules'
 import {Extension} from '@codemirror/state'
@@ -37,20 +37,27 @@ const arrowHandler = (dir: Direction) => (
   dispatch: (tr: Transaction) => void,
   view: EditorView
 ) => {
-  if (state.selection.empty && view.endOfTextblock(dir)) {
-    const side = dir == 'left' || dir == 'up' ? -1 : 1
-    const $head = state.selection.$head
-    const nextPos = Selection.near(
-      state.doc.resolve(side > 0 ? $head.after() : $head.before()),
-      side
-    )
+  if (!view.endOfTextblock(dir)) return false
+  const side = dir == 'left' || dir == 'up' ? -1 : 1
+  const $head = state.selection.$head
+  const nextPos = Selection.near(
+    state.doc.resolve(side > 0 ? $head.after() : $head.before()),
+    side
+  )
 
-    if (nextPos.$head?.parent.type.name == 'code_block') {
-      dispatch(state.tr.setSelection(nextPos))
-      return true
-    }
+  if (nextPos.$head?.parent.type.name !== 'code_block') {
+    return false
   }
-  return false
+
+  if (state.selection.empty) {
+    dispatch(state.tr.setSelection(nextPos))
+    return true
+  }
+
+  const to = state.doc.resolve(nextPos.$head.pos + nextPos.$head.parent.nodeSize * side)
+  const sel = new TextSelection(state.selection.$anchor, to)
+  dispatch(state.tr.setSelection(sel))
+  return true
 }
 
 const codeBlockKeymap = {
@@ -58,6 +65,10 @@ const codeBlockKeymap = {
   ArrowRight: arrowHandler('right'),
   ArrowUp: arrowHandler('up'),
   ArrowDown: arrowHandler('down'),
+  'Shift-ArrowLeft': arrowHandler('left'),
+  'Shift-ArrowRight': arrowHandler('right'),
+  'Shift-ArrowUp': arrowHandler('up'),
+  'Shift-ArrowDown': arrowHandler('down'),
 }
 
 export const defaultProps = {
@@ -90,7 +101,6 @@ const codeBlockSchema = {
   group: 'block',
   code: true,
   defining: true,
-  isolating: true,
   marks: '',
   attrs: {params: {default: ''}},
   parseDOM: [{
