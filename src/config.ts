@@ -56,6 +56,7 @@ interface Theme {
   foreground: string;
   primaryForeground: string;
   primaryBackground: string;
+  selection: string;
   dark: boolean;
 }
 
@@ -67,6 +68,7 @@ export const themes: {[key: string]: Theme} = {
     foreground: '#666666',
     primaryBackground: '#0000EE',
     primaryForeground: '#fff',
+    selection: '#80CBC440',
     dark: false,
   },
   'dark': {
@@ -76,6 +78,7 @@ export const themes: {[key: string]: Theme} = {
     foreground: '#94a1b2',
     primaryBackground: '#68ffb8',
     primaryForeground: '#32825B',
+    selection: '#3d375e7f',
     dark: true,
   },
   'gruvbox-dark': {
@@ -85,6 +88,7 @@ export const themes: {[key: string]: Theme} = {
     foreground: '#dfbf8e',
     primaryBackground: '#d75f5f',
     primaryForeground: '#fff',
+    selection: '#504945d0',
     dark: true,
   },
   'solarized-light': {
@@ -94,6 +98,7 @@ export const themes: {[key: string]: Theme} = {
     foreground: '#657b83',
     primaryBackground: '#2aa198',
     primaryForeground: '#fff',
+    selection: '#eee8d5',
     dark: false,
   },
   'solarized-dark': {
@@ -103,6 +108,7 @@ export const themes: {[key: string]: Theme} = {
     foreground: '#839496',
     primaryBackground: '#cb4b16',
     primaryForeground: '#fff',
+    selection: '#073642',
     dark: true,
   },
   'material': {
@@ -112,6 +118,7 @@ export const themes: {[key: string]: Theme} = {
     foreground: '#92989b',
     primaryBackground: '#89ddff',
     primaryForeground: '#005f85',
+    selection: '#80CBC420',
     dark: true,
   },
   'dracula': {
@@ -121,6 +128,7 @@ export const themes: {[key: string]: Theme} = {
     foreground: '#bd93f9',
     primaryBackground: '#ff79c6',
     primaryForeground: '#fff',
+    selection: '#44475A',
     dark: true,
   },
   'hibernus': {
@@ -130,6 +138,7 @@ export const themes: {[key: string]: Theme} = {
     foreground: '#90a6a6',
     primaryBackground: '#fe5792',
     primaryForeground: '#fff',
+    selection: '#169fb133',
     dark: false,
   },
   'soft-era': {
@@ -139,6 +148,7 @@ export const themes: {[key: string]: Theme} = {
     foreground: '#ba989c',
     primaryBackground: '#b8bde8',
     primaryForeground: '#585a6d',
+    selection: '#ECEAFA',
     dark: false,
   },
 }
@@ -194,6 +204,7 @@ export const background = (config: Config) => getTheme(config).background
 export const foreground = (config: Config) => getTheme(config).foreground
 export const primaryBackground = (config: Config) => getTheme(config).primaryBackground
 export const primaryForeground = (config: Config) => getTheme(config).primaryForeground
+export const selection = (config: Config) => getTheme(config).selection
 
 export const font = (config: Config, monospace = false) => {
   if (monospace && !fonts[config.font]?.monospace) {

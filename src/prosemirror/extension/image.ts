@@ -99,8 +99,8 @@ export const insertImage = (view: EditorView, src: string, left: number, top: nu
   const state = view.state
   const tr = state.tr
   const node = state.schema.nodes.image.create({src})
-  const pos = view.posAtCoords({left, top}).pos
-  tr.insert(pos, node)
+  const pos = view.posAtCoords({left, top})
+  tr.insert(pos?.pos ?? state.doc.content.size, node)
   view.dispatch(tr)
 }
 

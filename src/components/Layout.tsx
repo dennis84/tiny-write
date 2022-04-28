@@ -1,5 +1,5 @@
 import {css} from '@emotion/css'
-import {background, foreground, primaryBackground, font} from '../config'
+import {background, foreground, primaryBackground, font, selection} from '../config'
 import {Config} from '../state'
 
 export type Styled = {
@@ -119,11 +119,6 @@ export const editorCss = (config: Config) => css`
     }
     p {
       margin: 0;
-      &::after {
-        content: "";
-        display: table;
-        clear: both;
-      }
     }
     > ul > li, > ol > li {
       margin-left: 30px;
@@ -341,6 +336,10 @@ export const editorCss = (config: Config) => css`
         box-shadow: 0 0 0 2px ${primaryBackground(config)};
         border-radius: 3px;
       }
+    }
+    > *:not(.codemirror-outer)::selection,
+    > *:not(.codemirror-outer) *::selection {
+      background: ${selection(config)};
     }
   }
   .ProseMirror-yjs-cursor {
