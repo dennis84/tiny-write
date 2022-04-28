@@ -3,7 +3,7 @@ import {unwrap} from 'solid-js/store'
 import {undo, redo} from 'prosemirror-history'
 import {differenceInHours, format} from 'date-fns'
 import {css} from '@emotion/css'
-import tauriConf from '../../src-tauri/tauri.conf.json'
+import {version} from '../../package.json'
 import {Config, File, PrettierConfig, useState} from '../state'
 import {foreground, primaryBackground, getTheme, themes, fonts, codeTheme, codeThemes} from '../config'
 import {isTauri, isMac, alt, mod, WEB_URL, VERSION_URL} from '../env'
@@ -657,7 +657,7 @@ export default () => {
                 <Link config={store.config} onClick={onOpenInApp}>Open in App ⚡</Link>
               </Show>
               <Link config={store.config} onClick={onVersion}>
-                About Version {tauriConf.package.version}
+                About Version {version}
               </Link>
               <Show when={isTauri}>
                 <Link
