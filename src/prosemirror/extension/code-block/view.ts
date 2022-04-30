@@ -62,6 +62,8 @@ export class CodeBlockView {
   prettifyBtn: HTMLElement
   mermaid: HTMLElement
   dragHandle: HTMLElement
+  expand: HTMLElement
+  expanded = false
   langExtension: Compartment
   langInputEditor: LangInputEditor
 
@@ -212,24 +214,17 @@ export class CodeBlockView {
     langSelect.style.display = 'none'
     langSelect.style.color = themeConfig.foreground
     langSelect.appendChild(langInput)
-    const langSelectBottom = document.createElement('div')
-    langSelectBottom.className = 'lang-select'
-    langSelectBottom.textContent = '```'
-    langSelectBottom.style.display = 'none'
-    langSelectBottom.style.color = themeConfig.foreground
 
     this.langInputEditor = new LangInputEditor({
       doc: this.getLang(),
       parent: langInput,
       onClose: () => {
         langSelect.style.display = 'none'
-        langSelectBottom.style.display = 'none'
         this.langToggle.style.display = 'flex'
         this.editorView.focus()
       },
       onEnter: (lang) => {
         langSelect.style.display = 'none'
-        langSelectBottom.style.display = 'none'
         this.langToggle.style.display = 'flex'
         const tr = this.view.state.tr
         tr.setNodeMarkup(this.getPos(), undefined, {
@@ -247,16 +242,22 @@ export class CodeBlockView {
     this.langToggle.addEventListener('click', () => {
       this.langToggle.style.display = 'none'
       langSelect.style.display = 'flex'
-      langSelectBottom.style.display = 'block'
       this.prettifyBtn.style.display = 'none'
       this.langInputEditor.focus()
     })
 
+    this.expand = document.createElement('div')
+    this.expand.classList.add('expand')
+    this.expand.addEventListener('click', () => {
+      this.expanded = !this.expanded
+      this.updateExpand()
+    })
+
+    inner.appendChild(this.expand)
     inner.appendChild(langSelect)
     inner.appendChild(this.prettifyBtn)
     outer.appendChild(this.mermaid)
     inner.appendChild(this.editorView.dom)
-    inner.appendChild(langSelectBottom)
     outer.appendChild(this.langToggle)
 
     if (innerDecos instanceof DecorationSet) {
@@ -269,6 +270,7 @@ export class CodeBlockView {
     this.updateLangToggle()
     this.updatePrettify()
     this.updateMermaid()
+    this.updateExpand()
     this.dom = outer
   }
 
@@ -317,6 +319,7 @@ export class CodeBlockView {
     }
 
     this.updateMermaid()
+    this.updateExpand()
     return true
   }
 
@@ -464,6 +467,24 @@ export class CodeBlockView {
       error.textContent = err.message
       this.mermaid.innerHTML = ''
       this.mermaid.appendChild(error)
+    }
+  }
+
+  updateExpand() {
+    if (this.editorView.state.doc.lines > 10) {
+      if (this.expanded) {
+        this.editorView.dom.style.maxHeight = '100%'
+        this.expand.textContent = '↑'
+      } else {
+        const height = 10 * this.options.fontSize * 1.8
+        this.editorView.dom.style.maxHeight = height + 'px'
+        this.expand.textContent = '↓'
+      }
+
+      this.expand.style.display = 'flex'
+    } else {
+      this.expanded = false
+      this.expand.style.display = 'none'
     }
   }
 

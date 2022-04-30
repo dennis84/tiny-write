@@ -234,6 +234,23 @@ export const editorCss = (config: Config) => css`
         font-variant-ligatures: none;
         border: 1px solid ${foreground(config)}4c;
         border-radius: 3px;
+        .expand {
+          position: absolute;
+          height: 8px;
+          width: 100%;
+          bottom: -9px;
+          box-shadow: 0 0px 0 1px ${foreground(config)}4c;
+          background: ${foreground(config)}4c;
+          border-bottom-left-radius: 2px;
+          border-bottom-right-radius: 2px;
+          z-index: 1;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          cursor: pointer;
+          font-size: 8px;
+          user-select: none;
+        }
         .lang-select {
           .lang-input {
             outline: none;
@@ -323,6 +340,7 @@ export const editorCss = (config: Config) => css`
       line-height: 0;
       img {
         width: 100%;
+        pointer-events: none;
       }
       .resize-handle {
         position: absolute;
