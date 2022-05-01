@@ -29,7 +29,7 @@ export default (props: {state: State}) => {
   const [store, ctrl] = createCtrl(props.state)
   const mouseEnterCoords = createMutable({x: 0, y: 0})
 
-  const onMouseEnter = (e: any) => {
+  const onDragOver = (e: any) => {
     mouseEnterCoords.x = e.pageX
     mouseEnterCoords.y = e.pageY
   }
@@ -67,6 +67,33 @@ export default (props: {state: State}) => {
     onCleanup(() => unlisten())
   })
 
+  onMount(async () => {
+    if (isTauri) return
+    const onDrop = (e) => {
+      e.preventDefault()
+      if (e.target.closest('.codemirror-outer')) {
+        return
+      }
+
+      for (const file of e.dataTransfer.files) {
+        if (file.type.startsWith('image/')) {
+          const x = mouseEnterCoords.x
+          const y = mouseEnterCoords.y
+          const reader = new FileReader()
+          reader.readAsDataURL(file)
+          reader.onloadend = function() {
+            insertImage(store.editorView, reader.result as string, x, y)
+          }
+        }
+      }
+    }
+
+    window.addEventListener('drop', onDrop)
+    onCleanup(() => {
+      window.removeEventListener('drop', onDrop)
+    })
+  })
+
   onError((error) => {
     console.error(error)
     ctrl.setState({
@@ -90,7 +117,7 @@ export default (props: {state: State}) => {
       <Layout
         config={store.config}
         data-testid={store.error ? 'error' : store.loading}
-        onMouseEnter={onMouseEnter}>
+        onDragOver={onDragOver}>
         <Show when={store.error}><ErrorView /></Show>
         <Show when={store.loading === 'initialized'}>
           <Show when={!store.error}><Editor /></Show>
