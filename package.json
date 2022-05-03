@@ -80,7 +80,7 @@
   "hasInstallScript": true,
   "scripts": {
     "web": "vite & y-websocket",
-    "app": "tauri dev ./README.md & vite",
+    "app": "tauri dev & vite",
     "build": "vite build --base './'",
     "dist": "npm run build && tauri build",
     "lint": "eslint . --ext .ts,.tsx",

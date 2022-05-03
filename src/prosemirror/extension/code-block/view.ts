@@ -471,7 +471,8 @@ export class CodeBlockView {
   }
 
   updateExpand() {
-    if (this.editorView.state.doc.lines > 10) {
+    const lang = this.getLang()
+    if (lang !== 'mermaid' && this.editorView.state.doc.lines > 10) {
       if (this.expanded) {
         this.editorView.dom.style.maxHeight = '100%'
         this.expand.textContent = '↑'

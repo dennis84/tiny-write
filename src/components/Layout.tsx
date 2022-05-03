@@ -119,6 +119,7 @@ export const editorCss = (config: Config) => css`
     }
     p {
       margin: 0;
+      display: flow-root;
     }
     > ul > li, > ol > li {
       margin-left: 30px;
