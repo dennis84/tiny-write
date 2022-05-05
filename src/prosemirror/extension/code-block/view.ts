@@ -3,10 +3,10 @@ import {DecorationSet, EditorView as ProsemirrorEditorView} from 'prosemirror-vi
 import {TextSelection, Selection} from 'prosemirror-state'
 import {exitCode} from 'prosemirror-commands'
 import {Compartment, EditorState, Text} from '@codemirror/state'
-import {EditorView, ViewUpdate, highlightActiveLine, keymap} from '@codemirror/view'
+import {EditorView, ViewUpdate, keymap} from '@codemirror/view'
 import {defaultKeymap} from '@codemirror/commands'
 import {autocompletion, completionKeymap, closeBrackets, closeBracketsKeymap} from '@codemirror/autocomplete'
-import {indentOnInput, bracketMatching, codeFolding, foldKeymap} from '@codemirror/language'
+import {indentOnInput, bracketMatching, foldGutter, foldKeymap} from '@codemirror/language'
 import {linter, setDiagnostics} from '@codemirror/lint'
 import prettier from 'prettier'
 import parserBabel from 'prettier/parser-babel'
@@ -158,10 +158,9 @@ export class CodeBlockView {
         autocompletion({override: completion}),
         indentOnInput(),
         bracketMatching(),
-        codeFolding(),
+        foldGutter(),
         closeBrackets(),
         linter(() => []),
-        highlightActiveLine(),
         EditorState.tabSize.of(2),
         this.langExtension.of(getLangExtension(this.getLang())),
         EditorView.updateListener.of(this.updateListener.bind(this)),

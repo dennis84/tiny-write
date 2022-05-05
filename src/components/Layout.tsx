@@ -230,7 +230,8 @@ export const editorCss = (config: Config) => css`
         flex-grow: 1;
         flex-shrink: 2;
         min-width: 40%;
-        padding: 0;
+        padding: 10px;
+        padding-left: 5px;
         font-family: '${font(config, true)}';
         font-variant-ligatures: none;
         border: 1px solid ${foreground(config)}4c;
@@ -239,11 +240,8 @@ export const editorCss = (config: Config) => css`
           position: absolute;
           height: 8px;
           width: 100%;
-          bottom: -9px;
-          box-shadow: 0 0px 0 1px ${foreground(config)}4c;
-          background: ${foreground(config)}4c;
-          border-bottom-left-radius: 2px;
-          border-bottom-right-radius: 2px;
+          bottom: -8px;
+          left: 0;
           z-index: 1;
           display: flex;
           justify-content: center;
@@ -259,7 +257,7 @@ export const editorCss = (config: Config) => css`
         }
         .cm-editor {
           outline: none;
-          .cm-content {
+          .cm-content, .cm-gutter {
             padding: 0;
             font-family: '${font(config, true)}';
           }
