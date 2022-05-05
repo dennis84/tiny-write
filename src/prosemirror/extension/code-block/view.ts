@@ -2,40 +2,12 @@ import {Node} from 'prosemirror-model'
 import {DecorationSet, EditorView as ProsemirrorEditorView} from 'prosemirror-view'
 import {TextSelection, Selection} from 'prosemirror-state'
 import {exitCode} from 'prosemirror-commands'
-import {Compartment, EditorState, Extension, Text} from '@codemirror/state'
+import {Compartment, EditorState, Text} from '@codemirror/state'
 import {EditorView, ViewUpdate, highlightActiveLine, keymap} from '@codemirror/view'
 import {defaultKeymap} from '@codemirror/commands'
 import {autocompletion, completionKeymap, closeBrackets, closeBracketsKeymap} from '@codemirror/autocomplete'
-import {StreamLanguage, indentOnInput, bracketMatching, codeFolding, foldKeymap} from '@codemirror/language'
+import {indentOnInput, bracketMatching, codeFolding, foldKeymap} from '@codemirror/language'
 import {linter, setDiagnostics} from '@codemirror/lint'
-import {haskell} from '@codemirror/legacy-modes/mode/haskell'
-import {clojure} from '@codemirror/legacy-modes/mode/clojure'
-import {erlang} from '@codemirror/legacy-modes/mode/erlang'
-import {groovy} from '@codemirror/legacy-modes/mode/groovy'
-import {ruby} from '@codemirror/legacy-modes/mode/ruby'
-import {shell} from '@codemirror/legacy-modes/mode/shell'
-import {yaml} from '@codemirror/legacy-modes/mode/yaml'
-import {go} from '@codemirror/legacy-modes/mode/go'
-import {toml} from '@codemirror/legacy-modes/mode/toml'
-import {javascript} from '@codemirror/lang-javascript'
-import {java} from '@codemirror/lang-java'
-import {rust} from '@codemirror/lang-rust'
-import {sql} from '@codemirror/lang-sql'
-import {json} from '@codemirror/lang-json'
-import {python} from '@codemirror/lang-python'
-import {html} from '@codemirror/lang-html'
-import {css} from '@codemirror/lang-css'
-import {cpp} from '@codemirror/lang-cpp'
-import {markdown} from '@codemirror/lang-markdown'
-import {xml} from '@codemirror/lang-xml'
-import {materialLight, config as materialLightConfig} from '@ddietr/codemirror-themes/theme/material-light'
-import {materialDark, config as materialDarkConfig} from '@ddietr/codemirror-themes/theme/material-dark'
-import {solarizedLight, config as solarizedLightConfig} from '@ddietr/codemirror-themes/theme/solarized-light'
-import {solarizedDark, config as solarizedDarkConfig} from '@ddietr/codemirror-themes/theme/solarized-dark'
-import {dracula, config as draculaConfig} from '@ddietr/codemirror-themes/theme/dracula'
-import {githubLight, config as githubLightConfig} from '@ddietr/codemirror-themes/theme/github-light'
-import {githubDark, config as githubDarkConfig} from '@ddietr/codemirror-themes/theme/github-dark'
-import {aura, config as auraConfig} from '@ddietr/codemirror-themes/theme/aura'
 import prettier from 'prettier'
 import parserBabel from 'prettier/parser-babel'
 import parserTypescript from 'prettier/parser-typescript'
@@ -48,6 +20,8 @@ import logos from './logos'
 import {CodeBlockProps, defaultProps} from '.'
 import {completion, tabCompletionKeymap} from './completion'
 import {LangInputEditor} from './lang-input'
+import {getLangExtension} from './lang'
+import {getTheme} from './theme'
 
 export class CodeBlockView {
   node: Node
@@ -572,40 +546,3 @@ function computeChange(oldVal: string, newVal: string) {
     text: newVal.slice(start, newEnd),
   }
 }
-
-const getTheme = (theme: string): [Extension, any] =>
-  theme === 'dracula' ? [dracula, draculaConfig] :
-  theme === 'solarized-light' ? [solarizedLight, solarizedLightConfig] :
-  theme === 'solarized-dark' ? [solarizedDark, solarizedDarkConfig] :
-  theme === 'material-light' ? [materialLight, materialLightConfig] :
-  theme === 'material-dark' ? [materialDark, materialDarkConfig] :
-  theme === 'github-light' ? [githubLight, githubLightConfig] :
-  theme === 'github-dark' ? [githubDark, githubDarkConfig] :
-  theme === 'aura' ? [aura, auraConfig] :
-  [materialLight, materialLightConfig]
-
-const getLangExtension = (lang: string) =>
-  lang === 'javascript' || lang === 'jsx' ? javascript() :
-  lang === 'typescript' || lang === 'tsx' ? javascript({typescript: true}) :
-  lang === 'java' || lang === 'kotlin' ? java() :
-  lang === 'rust' ? rust() :
-  lang === 'sql' ? sql() :
-  lang === 'json' ? json() :
-  lang === 'python' ? python() :
-  lang === 'html' ? html() :
-  lang === 'css' ? css() :
-  lang === 'cpp' ? cpp() :
-  lang === 'markdown' ? markdown() :
-  lang === 'xml' ? xml() :
-  lang === 'haskell' ? StreamLanguage.define(haskell) :
-  lang === 'clojure' ? StreamLanguage.define(clojure) :
-  lang === 'erlang' ? StreamLanguage.define(erlang) :
-  lang === 'groovy' ? StreamLanguage.define(groovy) :
-  lang === 'ruby' ? StreamLanguage.define(ruby) :
-  lang === 'hcl' ? StreamLanguage.define(ruby) :
-  lang === 'mermaid' ? StreamLanguage.define(ruby) :
-  lang === 'bash' ? StreamLanguage.define(shell) :
-  lang === 'yaml' ? StreamLanguage.define(yaml) :
-  lang === 'go' ? StreamLanguage.define(go) :
-  lang === 'toml' ? StreamLanguage.define(toml) :
-  markdown()
