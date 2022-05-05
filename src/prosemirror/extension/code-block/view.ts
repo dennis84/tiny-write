@@ -6,7 +6,7 @@ import {Compartment, EditorState, Extension, Text} from '@codemirror/state'
 import {EditorView, ViewUpdate, highlightActiveLine, keymap} from '@codemirror/view'
 import {defaultKeymap} from '@codemirror/commands'
 import {autocompletion, completionKeymap, closeBrackets, closeBracketsKeymap} from '@codemirror/autocomplete'
-import {StreamLanguage, indentOnInput, bracketMatching} from '@codemirror/language'
+import {StreamLanguage, indentOnInput, bracketMatching, codeFolding, foldKeymap} from '@codemirror/language'
 import {linter, setDiagnostics} from '@codemirror/lint'
 import {haskell} from '@codemirror/legacy-modes/mode/haskell'
 import {clojure} from '@codemirror/legacy-modes/mode/clojure'
@@ -174,6 +174,7 @@ export class CodeBlockView {
         extensions,
         codeMirrorKeymap,
         keymap.of(closeBracketsKeymap),
+        keymap.of(foldKeymap),
         keymap.of([
           ...defaultKeymap,
           ...completionKeymap,
@@ -183,6 +184,7 @@ export class CodeBlockView {
         autocompletion({override: completion}),
         indentOnInput(),
         bracketMatching(),
+        codeFolding(),
         closeBrackets(),
         linter(() => []),
         highlightActiveLine(),
