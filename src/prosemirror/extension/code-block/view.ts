@@ -7,14 +7,7 @@ import {EditorView, ViewUpdate, keymap} from '@codemirror/view'
 import {defaultKeymap} from '@codemirror/commands'
 import {autocompletion, completionKeymap, closeBrackets, closeBracketsKeymap} from '@codemirror/autocomplete'
 import {indentOnInput, bracketMatching, foldGutter, foldKeymap} from '@codemirror/language'
-import {linter, setDiagnostics} from '@codemirror/lint'
-import prettier from 'prettier'
-import parserBabel from 'prettier/parser-babel'
-import parserTypescript from 'prettier/parser-typescript'
-import parserCss from 'prettier/parser-postcss'
-import parserHtml from 'prettier/parser-html'
-import parserMarkdown from 'prettier/parser-markdown'
-import parserYaml from 'prettier/parser-yaml'
+import {linter} from '@codemirror/lint'
 import mermaid from 'mermaid'
 import logos from './logos'
 import {CodeBlockProps, defaultProps} from '.'
@@ -23,6 +16,7 @@ import {LangInputEditor} from './lang-input'
 import {getLangExtension} from './lang'
 import {getTheme} from './theme'
 import {expand} from './expand'
+import {prettify} from './prettify'
 
 export class CodeBlockView {
   node: Node
@@ -34,10 +28,10 @@ export class CodeBlockView {
   clicked = false
   options: CodeBlockProps = defaultProps
   langToggle: HTMLElement
-  prettifyBtn: HTMLElement
   mermaid: HTMLElement
   dragHandle: HTMLElement
   expandExtension: Compartment
+  prettifyExtension: Compartment
   langExtension: Compartment
   langInputEditor: LangInputEditor
 
@@ -52,11 +46,6 @@ export class CodeBlockView {
     this.view = view
     this.getPos = getPos
     this.options = options
-
-    this.prettifyBtn = document.createElement('span')
-    this.prettifyBtn.className = 'prettify'
-    this.prettifyBtn.setAttribute('title', 'prettify')
-    this.prettifyBtn.addEventListener('mousedown', this.prettify.bind(this), true)
 
     this.mermaid = document.createElement('div')
     this.mermaid.className = 'mermaid'
@@ -137,6 +126,7 @@ export class CodeBlockView {
       this.options.extensions(this.view, this.node, this.getPos) :
       []
 
+    this.prettifyExtension = new Compartment
     this.expandExtension = new Compartment
     this.langExtension = new Compartment
 
@@ -167,6 +157,10 @@ export class CodeBlockView {
         this.expandExtension.of(expand({
           height: 10 * this.options.fontSize * 1.8,
           lang: this.getLang(),
+        })),
+        this.prettifyExtension.of(prettify({
+          lang: this.getLang(),
+          prettier: this.options.prettier,
         })),
         EditorView.updateListener.of(this.updateListener.bind(this)),
         EditorView.lineWrapping,
@@ -214,7 +208,6 @@ export class CodeBlockView {
         this.view.dispatch(tr)
         this.reconfigure()
         this.updateLangToggle()
-        this.updatePrettify()
         this.editorView.focus()
       },
     })
@@ -222,12 +215,10 @@ export class CodeBlockView {
     this.langToggle.addEventListener('click', () => {
       this.langToggle.style.display = 'none'
       langSelect.style.display = 'flex'
-      this.prettifyBtn.style.display = 'none'
       this.langInputEditor.focus()
     })
 
     inner.appendChild(langSelect)
-    inner.appendChild(this.prettifyBtn)
     outer.appendChild(this.mermaid)
     inner.appendChild(this.editorView.dom)
     outer.appendChild(this.langToggle)
@@ -240,7 +231,6 @@ export class CodeBlockView {
     }
 
     this.updateLangToggle()
-    this.updatePrettify()
     this.updateMermaid()
     this.dom = outer
   }
@@ -272,7 +262,6 @@ export class CodeBlockView {
     if (node.type != this.node.type) return false
     const lang = this.getLang()
     this.node = node
-    this.updatePrettify()
     // Allow update from collab
     if (node.attrs.params.lang !== lang) {
       this.reconfigure()
@@ -310,6 +299,10 @@ export class CodeBlockView {
         this.expandExtension.reconfigure(expand({
           height: 10 * this.options.fontSize * 1.8,
           lang: this.getLang(),
+        })),
+        this.prettifyExtension.reconfigure(prettify({
+          lang: this.getLang(),
+          prettier: this.options.prettier,
         })),
       ]
     })
@@ -394,26 +387,6 @@ export class CodeBlockView {
     this.langToggle.appendChild(elem)
   }
 
-  updatePrettify() {
-    if (this.editorView?.state.doc.length > 0 && (
-      this.getLang() === 'javascript' ||
-      this.getLang() === 'typescript' ||
-      this.getLang() === 'css' ||
-      this.getLang() === 'html' ||
-      this.getLang() === 'scss' ||
-      this.getLang() === 'less' ||
-      this.getLang() === 'markdown' ||
-      this.getLang() === 'yaml' ||
-      this.getLang() === 'json'
-    )) {
-      this.prettifyBtn.textContent = '✨'
-      this.prettifyBtn.style.display = 'block'
-    } else {
-      this.prettifyBtn.style.display = 'none'
-      this.editorView.dispatch(setDiagnostics(this.editorView.state, []))
-    }
-  }
-
   updateMermaid() {
     if (this.getLang() !== 'mermaid') {
       this.mermaid.style.display = 'none'
@@ -441,54 +414,6 @@ export class CodeBlockView {
       error.textContent = err.message
       this.mermaid.innerHTML = ''
       this.mermaid.appendChild(error)
-    }
-  }
-
-  prettify() {
-    const lang = this.getLang()
-
-    const [parser, plugin] =
-      lang === 'javascript' ? ['babel', parserBabel] :
-      lang === 'css' ? ['css', parserCss] :
-      lang === 'markdown' ? ['markdown', parserMarkdown] :
-      lang === 'html' ? ['html', parserHtml] :
-      lang === 'less' ? ['less', parserCss] :
-      lang === 'scss' ? ['scss', parserCss] :
-      lang === 'yaml' ? ['yaml', parserYaml] :
-      lang === 'json' ? ['json', parserBabel] :
-      lang === 'typescript' ? ['typescript', parserTypescript] :
-      [undefined, undefined]
-    if (!parser) return
-    try {
-      const value = prettier.format(this.editorView.state.doc.toString(), {
-        parser,
-        plugins: [plugin],
-        trailingComma: 'all',
-        bracketSpacing: false,
-        ...this.options.prettier,
-      })
-
-      this.editorView.dispatch({
-        changes: {
-          from: 0,
-          to: this.editorView.state.doc.length,
-          insert: value.substring(0, value.lastIndexOf('\n')),
-        }
-      })
-      this.prettifyBtn.textContent = ''
-    } catch (err) {
-      this.prettifyBtn.textContent = '🚨'
-      if (!err.loc?.start?.line) return
-      const line = this.editorView.state.doc.line(err.loc.start.line)
-      const lines = err.message.split('\n')
-      const diagnostics = lines.map((message: string) => ({
-        from: line.from + err.loc.start.column - 1,
-        to: line.from + err.loc.start.column - 1,
-        severity: 'error',
-        message: message,
-      }))
-
-      this.editorView.dispatch(setDiagnostics(this.editorView.state, diagnostics))
     }
   }
 
