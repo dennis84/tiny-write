@@ -22,6 +22,7 @@ import {completion, tabCompletionKeymap} from './completion'
 import {LangInputEditor} from './lang-input'
 import {getLangExtension} from './lang'
 import {getTheme} from './theme'
+import {expand} from './expand'
 
 export class CodeBlockView {
   node: Node
@@ -36,8 +37,7 @@ export class CodeBlockView {
   prettifyBtn: HTMLElement
   mermaid: HTMLElement
   dragHandle: HTMLElement
-  expand: HTMLElement
-  expanded = false
+  expandExtension: Compartment
   langExtension: Compartment
   langInputEditor: LangInputEditor
 
@@ -137,6 +137,7 @@ export class CodeBlockView {
       this.options.extensions(this.view, this.node, this.getPos) :
       []
 
+    this.expandExtension = new Compartment
     this.langExtension = new Compartment
 
     const [theme, themeConfig] = getTheme(this.options.theme)
@@ -163,6 +164,10 @@ export class CodeBlockView {
         linter(() => []),
         EditorState.tabSize.of(2),
         this.langExtension.of(getLangExtension(this.getLang())),
+        this.expandExtension.of(expand({
+          height: 10 * this.options.fontSize * 1.8,
+          lang: this.getLang(),
+        })),
         EditorView.updateListener.of(this.updateListener.bind(this)),
         EditorView.lineWrapping,
         EditorView.domEventHandlers({
@@ -221,14 +226,6 @@ export class CodeBlockView {
       this.langInputEditor.focus()
     })
 
-    this.expand = document.createElement('div')
-    this.expand.classList.add('expand')
-    this.expand.addEventListener('click', () => {
-      this.expanded = !this.expanded
-      this.updateExpand()
-    })
-
-    inner.appendChild(this.expand)
     inner.appendChild(langSelect)
     inner.appendChild(this.prettifyBtn)
     outer.appendChild(this.mermaid)
@@ -245,7 +242,6 @@ export class CodeBlockView {
     this.updateLangToggle()
     this.updatePrettify()
     this.updateMermaid()
-    this.updateExpand()
     this.dom = outer
   }
 
@@ -294,7 +290,6 @@ export class CodeBlockView {
     }
 
     this.updateMermaid()
-    this.updateExpand()
     return true
   }
 
@@ -312,6 +307,10 @@ export class CodeBlockView {
     this.editorView.dispatch({
       effects: [
         this.langExtension.reconfigure(getLangExtension(this.getLang())),
+        this.expandExtension.reconfigure(expand({
+          height: 10 * this.options.fontSize * 1.8,
+          lang: this.getLang(),
+        })),
       ]
     })
   }
@@ -442,25 +441,6 @@ export class CodeBlockView {
       error.textContent = err.message
       this.mermaid.innerHTML = ''
       this.mermaid.appendChild(error)
-    }
-  }
-
-  updateExpand() {
-    const lang = this.getLang()
-    if (lang !== 'mermaid' && this.editorView.state.doc.lines > 10) {
-      if (this.expanded) {
-        this.editorView.dom.style.maxHeight = '100%'
-        this.expand.textContent = '↑'
-      } else {
-        const height = 10 * this.options.fontSize * 1.8
-        this.editorView.dom.style.maxHeight = height + 'px'
-        this.expand.textContent = '↓'
-      }
-
-      this.expand.style.display = 'flex'
-    } else {
-      this.expanded = false
-      this.expand.style.display = 'none'
     }
   }
 
