@@ -14,7 +14,7 @@ interface Config {
   prettier: PrettierConfig;
 }
 
-export const prettify = (config: Config) =>
+export default (config: Config) =>
   ViewPlugin.fromClass(class {
     view: EditorView
     button: HTMLElement

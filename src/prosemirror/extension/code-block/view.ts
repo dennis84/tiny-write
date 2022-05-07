@@ -8,15 +8,15 @@ import {defaultKeymap} from '@codemirror/commands'
 import {autocompletion, completionKeymap, closeBrackets, closeBracketsKeymap} from '@codemirror/autocomplete'
 import {indentOnInput, bracketMatching, foldGutter, foldKeymap} from '@codemirror/language'
 import {linter} from '@codemirror/lint'
-import mermaid from 'mermaid'
 import logos from './logos'
 import {CodeBlockProps, defaultProps} from '.'
 import {completion, tabCompletionKeymap} from './completion'
 import {LangInputEditor} from './lang-input'
 import {getLangExtension} from './lang'
 import {getTheme} from './theme'
-import {expand} from './expand'
-import {prettify} from './prettify'
+import expand from './expand'
+import prettify from './prettify'
+import mermaid from './mermaid'
 
 export class CodeBlockView {
   node: Node
@@ -28,9 +28,9 @@ export class CodeBlockView {
   clicked = false
   options: CodeBlockProps = defaultProps
   langToggle: HTMLElement
-  mermaid: HTMLElement
   dragHandle: HTMLElement
   expandExtension: Compartment
+  mermaidExtension: Compartment
   prettifyExtension: Compartment
   langExtension: Compartment
   langInputEditor: LangInputEditor
@@ -46,10 +46,6 @@ export class CodeBlockView {
     this.view = view
     this.getPos = getPos
     this.options = options
-
-    this.mermaid = document.createElement('div')
-    this.mermaid.className = 'mermaid'
-    this.mermaid.id = `mermaid-${getPos()}`
 
     const outer = document.createElement('div')
     outer.setAttribute('contenteditable', 'false')
@@ -127,6 +123,7 @@ export class CodeBlockView {
       []
 
     this.prettifyExtension = new Compartment
+    this.mermaidExtension = new Compartment
     this.expandExtension = new Compartment
     this.langExtension = new Compartment
 
@@ -161,6 +158,12 @@ export class CodeBlockView {
         this.prettifyExtension.of(prettify({
           lang: this.getLang(),
           prettier: this.options.prettier,
+        })),
+        this.mermaidExtension.of(mermaid({
+          lang: this.getLang(),
+          id: this.getPos().toString(),
+          dark: this.options.dark,
+          font: this.options.font,
         })),
         EditorView.updateListener.of(this.updateListener.bind(this)),
         EditorView.lineWrapping,
@@ -219,7 +222,6 @@ export class CodeBlockView {
     })
 
     inner.appendChild(langSelect)
-    outer.appendChild(this.mermaid)
     inner.appendChild(this.editorView.dom)
     outer.appendChild(this.langToggle)
 
@@ -231,7 +233,6 @@ export class CodeBlockView {
     }
 
     this.updateLangToggle()
-    this.updateMermaid()
     this.dom = outer
   }
 
@@ -278,7 +279,6 @@ export class CodeBlockView {
       this.updating = false
     }
 
-    this.updateMermaid()
     return true
   }
 
@@ -303,6 +303,12 @@ export class CodeBlockView {
         this.prettifyExtension.reconfigure(prettify({
           lang: this.getLang(),
           prettier: this.options.prettier,
+        })),
+        this.mermaidExtension.reconfigure(mermaid({
+          lang: this.getLang(),
+          id: this.getPos().toString(),
+          dark: this.options.dark,
+          font: this.options.font,
         })),
       ]
     })
@@ -385,36 +391,6 @@ export class CodeBlockView {
 
     this.langToggle.innerHTML = ''
     this.langToggle.appendChild(elem)
-  }
-
-  updateMermaid() {
-    if (this.getLang() !== 'mermaid') {
-      this.mermaid.style.display = 'none'
-      return
-    }
-
-    const content = this.editorView.state.doc.toString()
-    if (!content) {
-      this.mermaid.style.display = 'none'
-      return
-    }
-
-    try {
-      this.mermaid.style.display = 'flex'
-      mermaid.initialize({
-        startOnLoad: false,
-        theme: this.options.dark ? 'dark' : 'default',
-        fontFamily: this.options.font,
-      })
-      mermaid.render(`mermaid-graph-${this.getPos()}`, content, (svgCode) => {
-        this.mermaid.innerHTML = svgCode
-      })
-    } catch (err) {
-      const error = document.createElement('code')
-      error.textContent = err.message
-      this.mermaid.innerHTML = ''
-      this.mermaid.appendChild(error)
-    }
   }
 
   getLang() {

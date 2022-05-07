@@ -5,7 +5,7 @@ interface Config {
   lang: string;
 }
 
-export const expand = (config: Config) =>
+export default (config: Config) =>
   ViewPlugin.fromClass(class {
     view: EditorView
     expand: HTMLElement
