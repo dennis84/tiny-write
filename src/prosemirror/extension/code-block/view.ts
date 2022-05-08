@@ -8,11 +8,10 @@ import {defaultKeymap} from '@codemirror/commands'
 import {autocompletion, completionKeymap, closeBrackets, closeBracketsKeymap} from '@codemirror/autocomplete'
 import {indentOnInput, bracketMatching, foldGutter, foldKeymap} from '@codemirror/language'
 import {linter} from '@codemirror/lint'
-import logos from './logos'
 import {CodeBlockProps, defaultProps} from '.'
 import {completion, tabCompletionKeymap} from './completion'
 import {LangInputEditor} from './lang-input'
-import {getLangExtension} from './lang'
+import {highlight, changeLang} from './lang'
 import {getTheme} from './theme'
 import expand from './expand'
 import prettify from './prettify'
@@ -27,13 +26,14 @@ export class CodeBlockView {
   updating = false
   clicked = false
   options: CodeBlockProps = defaultProps
-  langToggle: HTMLElement
   dragHandle: HTMLElement
+  changeLangExtension: Compartment
   expandExtension: Compartment
   mermaidExtension: Compartment
   prettifyExtension: Compartment
   langExtension: Compartment
   langInputEditor: LangInputEditor
+  updateLang: (lang) => void
 
   constructor(
     node: Node,
@@ -46,6 +46,17 @@ export class CodeBlockView {
     this.view = view
     this.getPos = getPos
     this.options = options
+
+    this.updateLang = (lang: string) => {
+      const tr = this.view.state.tr
+      tr.setNodeMarkup(this.getPos(), undefined, {
+        ...this.node.attrs,
+        params: {...this.node.attrs.params, lang},
+      })
+      this.view.dispatch(tr)
+      this.reconfigure()
+      this.editorView.focus()
+    }
 
     const outer = document.createElement('div')
     outer.setAttribute('contenteditable', 'false')
@@ -122,6 +133,7 @@ export class CodeBlockView {
       this.options.extensions(this.view, this.node, this.getPos) :
       []
 
+    this.changeLangExtension = new Compartment
     this.prettifyExtension = new Compartment
     this.mermaidExtension = new Compartment
     this.expandExtension = new Compartment
@@ -150,7 +162,14 @@ export class CodeBlockView {
         closeBrackets(),
         linter(() => []),
         EditorState.tabSize.of(2),
-        this.langExtension.of(getLangExtension(this.getLang())),
+        this.changeLangExtension.of(changeLang({
+          lang: this.getLang(),
+          fontSize: this.options.fontSize,
+          theme: this.options.theme,
+          onClose: () => this.editorView.focus(),
+          onChange: this.updateLang,
+        })),
+        this.langExtension.of(highlight(this.getLang())),
         this.expandExtension.of(expand({
           height: 10 * this.options.fontSize * 1.8,
           lang: this.getLang(),
@@ -181,49 +200,7 @@ export class CodeBlockView {
       parent: null,
     })
 
-    this.langToggle = document.createElement('div')
-    this.langToggle.className = 'lang-toggle'
-    const langInput = document.createElement('div')
-    langInput.className = 'lang-input'
-    const langSelect = document.createElement('div')
-    langSelect.className = 'lang-select'
-    langSelect.textContent = '```'
-    langSelect.style.display = 'none'
-    langSelect.style.color = themeConfig.foreground
-    langSelect.appendChild(langInput)
-
-    this.langInputEditor = new LangInputEditor({
-      doc: this.getLang(),
-      parent: langInput,
-      onClose: () => {
-        langSelect.style.display = 'none'
-        this.langToggle.style.display = 'flex'
-        this.editorView.focus()
-      },
-      onEnter: (lang) => {
-        langSelect.style.display = 'none'
-        this.langToggle.style.display = 'flex'
-        const tr = this.view.state.tr
-        tr.setNodeMarkup(this.getPos(), undefined, {
-          ...this.node.attrs,
-          params: {...this.node.attrs.params, lang},
-        })
-        this.view.dispatch(tr)
-        this.reconfigure()
-        this.updateLangToggle()
-        this.editorView.focus()
-      },
-    })
-
-    this.langToggle.addEventListener('click', () => {
-      this.langToggle.style.display = 'none'
-      langSelect.style.display = 'flex'
-      this.langInputEditor.focus()
-    })
-
-    inner.appendChild(langSelect)
     inner.appendChild(this.editorView.dom)
-    outer.appendChild(this.langToggle)
 
     if (innerDecos instanceof DecorationSet) {
       innerDecos.find().map((d: any) => {
@@ -232,7 +209,6 @@ export class CodeBlockView {
       })
     }
 
-    this.updateLangToggle()
     this.dom = outer
   }
 
@@ -251,10 +227,6 @@ export class CodeBlockView {
     this.updating = false
   }
 
-  stopEvent(event: any) {
-    return this.langInputEditor.containsElem(event.target)
-  }
-
   ignoreMutation() {
     return true
   }
@@ -266,7 +238,6 @@ export class CodeBlockView {
     // Allow update from collab
     if (node.attrs.params.lang !== lang) {
       this.reconfigure()
-      this.updateLangToggle()
     }
 
     const change = computeChange(this.editorView.state.doc.toString(), node.textContent)
@@ -295,7 +266,14 @@ export class CodeBlockView {
   reconfigure() {
     this.editorView.dispatch({
       effects: [
-        this.langExtension.reconfigure(getLangExtension(this.getLang())),
+        this.changeLangExtension.reconfigure(changeLang({
+          lang: this.getLang(),
+          fontSize: this.options.fontSize,
+          theme: this.options.theme,
+          onClose: () => this.editorView.focus(),
+          onChange: this.updateLang,
+        })),
+        this.langExtension.reconfigure(highlight(this.getLang())),
         this.expandExtension.reconfigure(expand({
           height: 10 * this.options.fontSize * 1.8,
           lang: this.getLang(),
@@ -371,26 +349,6 @@ export class CodeBlockView {
         behavior: 'smooth',
       })
     }
-  }
-
-  updateLangToggle() {
-    const lang = this.getLang()
-    let elem: Element
-    if (logos[lang]) {
-      const img = document.createElement('img')
-      img.src = logos[lang]
-      img.width = this.options.fontSize
-      img.height = this.options.fontSize
-      img.setAttribute('title', lang)
-      elem = img
-    } else {
-      elem = document.createElement('span')
-      elem.textContent = lang === 'mermaid' ? '🧜‍♀️' : '📜'
-      elem.setAttribute('title', lang)
-    }
-
-    this.langToggle.innerHTML = ''
-    this.langToggle.appendChild(elem)
   }
 
   getLang() {
