@@ -1,11 +1,7 @@
 import {EditorView, ViewPlugin, ViewUpdate} from '@codemirror/view'
+import {CodeBlockView} from './view'
 
-interface Config {
-  height: number;
-  lang: string;
-}
-
-export default (config: Config) =>
+export default (codeBlock: CodeBlockView) =>
   ViewPlugin.fromClass(class {
     view: EditorView
     expand: HTMLElement
@@ -19,16 +15,15 @@ export default (config: Config) =>
       this.expanded = false
       if (this.expand) {
         this.updateDOM()
-        this.view.dom.parentNode.removeChild(this.expand)
+        codeBlock.inner.removeChild(this.expand)
       }
       this.expand = null
     }
 
     update(update: ViewUpdate) {
       if (!this.expand) {
-        this.expand = this.toDOM()
+        this.renderDOM()
         this.updateDOM()
-        this.view.dom.parentNode.appendChild(this.expand)
       }
 
       if (update.docChanged) {
@@ -36,7 +31,7 @@ export default (config: Config) =>
       }
     }
 
-    toDOM(): HTMLElement {
+    renderDOM() {
       const div = document.createElement('div')
       div.className = 'expand'
       div.addEventListener('click', () => {
@@ -44,16 +39,17 @@ export default (config: Config) =>
         this.updateDOM()
       })
 
-      return div
+      this.expand = div
+      codeBlock.inner.appendChild(this.expand)
     }
 
     updateDOM() {
-      if (config.lang !== 'mermaid' && this.view.state.doc.lines > 10) {
+      if (codeBlock.getLang() !== 'mermaid' && this.view.state.doc.lines > 10) {
         if (this.expanded) {
           this.view.dom.style.maxHeight = '100%'
           this.expand.textContent = '↑'
         } else {
-          const height = config.height
+          const height = 10 * codeBlock.options.fontSize * 1.8
           this.view.dom.style.maxHeight = height + 'px'
           this.expand.textContent = '↓'
         }

@@ -7,14 +7,9 @@ import parserCss from 'prettier/parser-postcss'
 import parserHtml from 'prettier/parser-html'
 import parserMarkdown from 'prettier/parser-markdown'
 import parserYaml from 'prettier/parser-yaml'
-import {PrettierConfig} from '../../../state'
+import {CodeBlockView} from './view'
 
-interface Config {
-  lang: string;
-  prettier: PrettierConfig;
-}
-
-export default (config: Config) =>
+export default (codeBlock: CodeBlockView) =>
   ViewPlugin.fromClass(class {
     view: EditorView
     button: HTMLElement
@@ -24,19 +19,19 @@ export default (config: Config) =>
     constructor(view: EditorView) {
       this.view = view
     }
+
     destroy() {
       if (this.button) {
         this.updateDOM()
-        this.view.dom.parentNode.removeChild(this.button)
+        codeBlock.inner.removeChild(this.button)
       }
       this.button = null
     }
 
     update(update: ViewUpdate) {
       if (!this.button) {
-        this.button = this.toDOM()
+        this.renderDOM()
         this.updateDOM()
-        this.view.dom.parentNode.appendChild(this.button)
       }
 
       if (update.docChanged) {
@@ -44,29 +39,32 @@ export default (config: Config) =>
       }
     }
 
-    toDOM(): HTMLElement {
+    renderDOM() {
       const span = document.createElement('span')
       span.className = 'prettify'
       span.setAttribute('title', 'prettify')
       span.addEventListener('mousedown', () => {
         this.prettify()
         this.updateDOM()
+        setTimeout(() => codeBlock.editorView.focus())
       })
 
-      return span
+      this.button = span
+      codeBlock.inner.appendChild(this.button)
     }
 
     updateDOM() {
+      const lang = codeBlock.getLang()
       if (this.view.state.doc.length > 0 && (
-        config.lang === 'javascript' ||
-        config.lang === 'typescript' ||
-        config.lang === 'css' ||
-        config.lang === 'html' ||
-        config.lang === 'scss' ||
-        config.lang === 'less' ||
-        config.lang === 'markdown' ||
-        config.lang === 'yaml' ||
-        config.lang === 'json'
+        lang === 'javascript' ||
+        lang === 'typescript' ||
+        lang === 'css' ||
+        lang === 'html' ||
+        lang === 'scss' ||
+        lang === 'less' ||
+        lang === 'markdown' ||
+        lang === 'yaml' ||
+        lang === 'json'
       )) {
         this.button.textContent = '✨'
         this.button.style.display = 'block'
@@ -81,16 +79,17 @@ export default (config: Config) =>
     }
 
     prettify() {
+      const lang = codeBlock.getLang()
       const [parser, plugin] =
-        config.lang === 'javascript' ? ['babel', parserBabel] :
-        config.lang === 'css' ? ['css', parserCss] :
-        config.lang === 'markdown' ? ['markdown', parserMarkdown] :
-        config.lang === 'html' ? ['html', parserHtml] :
-        config.lang === 'less' ? ['less', parserCss] :
-        config.lang === 'scss' ? ['scss', parserCss] :
-        config.lang === 'yaml' ? ['yaml', parserYaml] :
-        config.lang === 'json' ? ['json', parserBabel] :
-        config.lang === 'typescript' ? ['typescript', parserTypescript] :
+        lang === 'javascript' ? ['babel', parserBabel] :
+        lang === 'css' ? ['css', parserCss] :
+        lang === 'markdown' ? ['markdown', parserMarkdown] :
+        lang === 'html' ? ['html', parserHtml] :
+        lang === 'less' ? ['less', parserCss] :
+        lang === 'scss' ? ['scss', parserCss] :
+        lang === 'yaml' ? ['yaml', parserYaml] :
+        lang === 'json' ? ['json', parserBabel] :
+        lang === 'typescript' ? ['typescript', parserTypescript] :
         [undefined, undefined]
       if (!parser) return
       try {
@@ -99,7 +98,7 @@ export default (config: Config) =>
           plugins: [plugin],
           trailingComma: 'all',
           bracketSpacing: false,
-          ...config.prettier,
+          ...codeBlock.options.prettier,
         })
 
         this.view.dispatch({

@@ -5,7 +5,12 @@ import {exitCode} from 'prosemirror-commands'
 import {Compartment, EditorState, Text} from '@codemirror/state'
 import {EditorView, ViewUpdate, keymap} from '@codemirror/view'
 import {defaultKeymap} from '@codemirror/commands'
-import {autocompletion, completionKeymap, closeBrackets, closeBracketsKeymap} from '@codemirror/autocomplete'
+import {
+  autocompletion,
+  completionKeymap,
+  closeBrackets,
+  closeBracketsKeymap,
+} from '@codemirror/autocomplete'
 import {indentOnInput, bracketMatching, foldGutter, foldKeymap} from '@codemirror/language'
 import {linter} from '@codemirror/lint'
 import {CodeBlockProps, defaultProps} from '.'
@@ -21,27 +26,14 @@ export class CodeBlockView {
   view: ProsemirrorEditorView
   getPos: () => number
   dom: Element
+  outer: HTMLDivElement
+  inner: HTMLDivElement
   editorView: EditorView
   updating = false
   clicked = false
   options: CodeBlockProps = defaultProps
   dragHandle: HTMLElement
-  changeLangExtension: Compartment
-  expandExtension: Compartment
-  mermaidExtension: Compartment
-  prettifyExtension: Compartment
   langExtension: Compartment
-
-  updateLang = (lang: string) => {
-    const tr = this.view.state.tr
-    tr.setNodeMarkup(this.getPos(), undefined, {
-      ...this.node.attrs,
-      params: {...this.node.attrs.params, lang},
-    })
-    this.view.dispatch(tr)
-    this.reconfigure()
-    this.editorView.focus()
-  }
 
   constructor(
     node: Node,
@@ -55,12 +47,12 @@ export class CodeBlockView {
     this.getPos = getPos
     this.options = options
 
-    const outer = document.createElement('div')
-    outer.setAttribute('contenteditable', 'false')
-    outer.classList.add('codemirror-outer')
-    const inner = document.createElement('div')
-    inner.classList.add('codemirror-inner')
-    outer.appendChild(inner)
+    this.outer = document.createElement('div')
+    this.outer.setAttribute('contenteditable', 'false')
+    this.outer.classList.add('codemirror-outer')
+    this.inner = document.createElement('div')
+    this.inner.classList.add('codemirror-inner')
+    this.outer.appendChild(this.inner)
 
     const codeMirrorKeymap = keymap.of([{
       key: 'Backspace',
@@ -130,14 +122,10 @@ export class CodeBlockView {
       this.options.extensions(this.view, this.node, this.getPos) :
       []
 
-    this.changeLangExtension = new Compartment
-    this.prettifyExtension = new Compartment
-    this.mermaidExtension = new Compartment
-    this.expandExtension = new Compartment
     this.langExtension = new Compartment
 
     const [theme, themeConfig] = getTheme(this.options.theme)
-    inner.style.background = themeConfig.background
+    this.inner.style.background = themeConfig.background
 
     const startState = EditorState.create({
       doc: this.node.textContent,
@@ -159,27 +147,23 @@ export class CodeBlockView {
         closeBrackets(),
         linter(() => []),
         EditorState.tabSize.of(2),
-        this.changeLangExtension.of(changeLang({
-          lang: this.getLang(),
-          fontSize: this.options.fontSize,
-          theme: this.options.theme,
+        expand(this),
+        prettify(this),
+        mermaid(this),
+        changeLang(this, {
           onClose: () => this.editorView.focus(),
-          onChange: this.updateLang,
-        })),
+          onChange: (lang: string) => {
+            const tr = this.view.state.tr
+            tr.setNodeMarkup(this.getPos(), undefined, {
+              ...this.node.attrs,
+              params: {...this.node.attrs.params, lang},
+            })
+            this.view.dispatch(tr)
+            this.reconfigure()
+            this.editorView.focus()
+          }
+        }),
         this.langExtension.of(highlight(this.getLang())),
-        this.expandExtension.of(expand({
-          height: 10 * this.options.fontSize * 1.8,
-          lang: this.getLang(),
-        })),
-        this.prettifyExtension.of(prettify({
-          lang: this.getLang(),
-          prettier: this.options.prettier,
-        })),
-        this.mermaidExtension.of(mermaid({
-          lang: this.getLang(),
-          dark: this.options.dark,
-          font: this.options.font,
-        })),
         EditorView.updateListener.of(this.updateListener.bind(this)),
         EditorView.lineWrapping,
         EditorView.domEventHandlers({
@@ -196,16 +180,16 @@ export class CodeBlockView {
       parent: null,
     })
 
-    inner.appendChild(this.editorView.dom)
+    this.inner.appendChild(this.editorView.dom)
 
     if (innerDecos instanceof DecorationSet) {
       innerDecos.find().map((d: any) => {
         const elem = typeof d.type.toDOM === 'function' ? d.type.toDOM() : d.type.toDOM
-        outer.appendChild(elem)
+        this.outer.appendChild(elem)
       })
     }
 
-    this.dom = outer
+    this.dom = this.outer
   }
 
   destroy() {
@@ -262,27 +246,7 @@ export class CodeBlockView {
   reconfigure() {
     this.editorView.dispatch({
       effects: [
-        this.changeLangExtension.reconfigure(changeLang({
-          lang: this.getLang(),
-          fontSize: this.options.fontSize,
-          theme: this.options.theme,
-          onClose: () => this.editorView.focus(),
-          onChange: this.updateLang,
-        })),
         this.langExtension.reconfigure(highlight(this.getLang())),
-        this.expandExtension.reconfigure(expand({
-          height: 10 * this.options.fontSize * 1.8,
-          lang: this.getLang(),
-        })),
-        this.prettifyExtension.reconfigure(prettify({
-          lang: this.getLang(),
-          prettier: this.options.prettier,
-        })),
-        this.mermaidExtension.reconfigure(mermaid({
-          lang: this.getLang(),
-          dark: this.options.dark,
-          font: this.options.font,
-        })),
       ]
     })
   }

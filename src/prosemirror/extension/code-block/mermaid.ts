@@ -1,14 +1,10 @@
 import {EditorView, ViewPlugin, ViewUpdate} from '@codemirror/view'
+import {language} from '@codemirror/language'
 import {v4 as uuidv4} from 'uuid'
 import mermaid from 'mermaid'
+import {CodeBlockView} from './view'
 
-interface Config {
-  lang: string;
-  dark: boolean;
-  font: string;
-}
-
-export default (config: Config) =>
+export default (codeBlock: CodeBlockView) =>
   ViewPlugin.fromClass(class {
     id = uuidv4()
     view: EditorView
@@ -21,32 +17,35 @@ export default (config: Config) =>
     destroy() {
       if (this.button) {
         this.updateDOM()
-        this.view.dom.parentNode.parentNode.removeChild(this.button)
+        codeBlock.outer.removeChild(this.button)
       }
       this.button = null
     }
 
     update(update: ViewUpdate) {
       if (!this.button) {
-        this.button = this.toDOM()
+        this.renderDOM()
         this.updateDOM()
-        this.view.dom.parentNode.parentNode.appendChild(this.button)
       }
 
-      if (update.docChanged) {
+      if (
+        update.docChanged ||
+        update.startState.facet(language) != update.state.facet(language)
+      ) {
         this.updateDOM()
       }
     }
 
-    toDOM(): HTMLElement {
+    renderDOM() {
       const div = document.createElement('div')
       div.className = 'mermaid'
       div.id = `mermaid-${this.id}`
-      return div
+      this.button = div
+      codeBlock.outer.appendChild(this.button)
     }
 
     updateDOM() {
-      if (config.lang !== 'mermaid') {
+      if (codeBlock.getLang() !== 'mermaid') {
         this.button.style.display = 'none'
         return
       }
@@ -61,9 +60,10 @@ export default (config: Config) =>
         this.button.style.display = 'flex'
         mermaid.initialize({
           startOnLoad: false,
-          theme: config.dark ? 'dark' : 'default',
-          fontFamily: config.font,
+          theme: codeBlock.options.dark ? 'dark' : 'default',
+          fontFamily: codeBlock.options.font,
         })
+
         mermaid.render(`mermaid-graph-${this.id}`, content, (svgCode) => {
           this.button.innerHTML = svgCode
         })

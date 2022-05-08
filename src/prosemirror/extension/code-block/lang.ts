@@ -1,7 +1,7 @@
 import {EditorView, ViewPlugin, ViewUpdate, keymap} from '@codemirror/view'
 import {EditorState} from '@codemirror/state'
 import {standardKeymap} from '@codemirror/commands'
-import {StreamLanguage} from '@codemirror/language'
+import {StreamLanguage, language} from '@codemirror/language'
 import {haskell} from '@codemirror/legacy-modes/mode/haskell'
 import {clojure} from '@codemirror/legacy-modes/mode/clojure'
 import {erlang} from '@codemirror/legacy-modes/mode/erlang'
@@ -25,21 +25,20 @@ import {xml} from '@codemirror/lang-xml'
 import logos from './logos'
 import {getTheme} from './theme'
 import {cleanLang} from '.'
+import {CodeBlockView} from './view'
 
 interface Config {
-  lang: string;
-  fontSize: number;
-  theme: string;
   onClose: () => void;
   onChange: (lang: string) => void;
 }
 
-export const changeLang = (config: Config) =>
+export const changeLang = (codeBlock: CodeBlockView, config: Config) =>
   ViewPlugin.fromClass(class {
     view: EditorView
     toggle: HTMLElement
     select: HTMLElement
     inputEditor: LangInputEditor
+    lang = codeBlock.getLang()
 
     constructor(view: EditorView) {
       this.view = view
@@ -48,8 +47,8 @@ export const changeLang = (config: Config) =>
     destroy() {
       if (this.toggle) {
         this.updateDOM()
-        this.view.dom.parentNode.parentNode.removeChild(this.toggle)
-        this.view.dom.parentNode.removeChild(this.select)
+        codeBlock.outer.removeChild(this.toggle)
+        codeBlock.inner.removeChild(this.select)
       }
       this.toggle = null
       this.select = null
@@ -62,13 +61,17 @@ export const changeLang = (config: Config) =>
         this.updateDOM()
       }
 
-      if (update.docChanged) {
+      if (
+        update.docChanged ||
+        update.startState.facet(language) != update.state.facet(language)
+      ) {
+        this.lang = codeBlock.getLang()
         this.updateDOM()
       }
     }
 
     renderDOM() {
-      const [, themeConfig] = getTheme(config.theme)
+      const [, themeConfig] = getTheme(codeBlock.options.theme)
 
       this.toggle = document.createElement('div')
       this.toggle.className = 'lang-toggle'
@@ -83,7 +86,7 @@ export const changeLang = (config: Config) =>
       this.select.appendChild(input)
 
       this.inputEditor = new LangInputEditor({
-        doc: config.lang,
+        doc: this.lang,
         parent: input,
         onClose: () => {
           this.select.style.display = 'none'
@@ -103,18 +106,22 @@ export const changeLang = (config: Config) =>
         this.inputEditor.focus()
       })
 
-      this.view.dom.parentNode.prepend(this.select)
-      this.view.dom.parentNode.parentNode.appendChild(this.toggle)
+      codeBlock.inner.prepend(this.select)
+      codeBlock.outer.appendChild(this.toggle)
     }
 
     updateDOM() {
-      const lang = config.lang
+      const lang = this.lang
+      const {fontSize} = codeBlock.options
+      const cur = this.toggle?.children[0]?.getAttribute('title')
+      if (cur === lang) return
+
       let elem: Element
       if (logos[lang]) {
         const img = document.createElement('img')
         img.src = logos[lang]
-        img.width = config.fontSize
-        img.height = config.fontSize
+        img.width = fontSize
+        img.height = fontSize
         img.setAttribute('title', lang)
         elem = img
       } else {
