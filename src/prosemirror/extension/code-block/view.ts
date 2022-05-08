@@ -10,7 +10,6 @@ import {indentOnInput, bracketMatching, foldGutter, foldKeymap} from '@codemirro
 import {linter} from '@codemirror/lint'
 import {CodeBlockProps, defaultProps} from '.'
 import {completion, tabCompletionKeymap} from './completion'
-import {LangInputEditor} from './lang-input'
 import {highlight, changeLang} from './lang'
 import {getTheme} from './theme'
 import expand from './expand'
@@ -32,8 +31,17 @@ export class CodeBlockView {
   mermaidExtension: Compartment
   prettifyExtension: Compartment
   langExtension: Compartment
-  langInputEditor: LangInputEditor
-  updateLang: (lang) => void
+
+  updateLang = (lang: string) => {
+    const tr = this.view.state.tr
+    tr.setNodeMarkup(this.getPos(), undefined, {
+      ...this.node.attrs,
+      params: {...this.node.attrs.params, lang},
+    })
+    this.view.dispatch(tr)
+    this.reconfigure()
+    this.editorView.focus()
+  }
 
   constructor(
     node: Node,
@@ -46,17 +54,6 @@ export class CodeBlockView {
     this.view = view
     this.getPos = getPos
     this.options = options
-
-    this.updateLang = (lang: string) => {
-      const tr = this.view.state.tr
-      tr.setNodeMarkup(this.getPos(), undefined, {
-        ...this.node.attrs,
-        params: {...this.node.attrs.params, lang},
-      })
-      this.view.dispatch(tr)
-      this.reconfigure()
-      this.editorView.focus()
-    }
 
     const outer = document.createElement('div')
     outer.setAttribute('contenteditable', 'false')
@@ -180,7 +177,6 @@ export class CodeBlockView {
         })),
         this.mermaidExtension.of(mermaid({
           lang: this.getLang(),
-          id: this.getPos().toString(),
           dark: this.options.dark,
           font: this.options.font,
         })),
@@ -284,7 +280,6 @@ export class CodeBlockView {
         })),
         this.mermaidExtension.reconfigure(mermaid({
           lang: this.getLang(),
-          id: this.getPos().toString(),
           dark: this.options.dark,
           font: this.options.font,
         })),

@@ -1,8 +1,8 @@
 import {EditorView, ViewPlugin, ViewUpdate} from '@codemirror/view'
+import {v4 as uuidv4} from 'uuid'
 import mermaid from 'mermaid'
 
 interface Config {
-  id: string;
   lang: string;
   dark: boolean;
   font: string;
@@ -10,6 +10,7 @@ interface Config {
 
 export default (config: Config) =>
   ViewPlugin.fromClass(class {
+    id = uuidv4()
     view: EditorView
     button: HTMLElement
 
@@ -40,7 +41,7 @@ export default (config: Config) =>
     toDOM(): HTMLElement {
       const div = document.createElement('div')
       div.className = 'mermaid'
-      div.id = `mermaid-${config.id}`
+      div.id = `mermaid-${this.id}`
       return div
     }
 
@@ -63,7 +64,7 @@ export default (config: Config) =>
           theme: config.dark ? 'dark' : 'default',
           fontFamily: config.font,
         })
-        mermaid.render(`mermaid-graph-${config.id}`, content, (svgCode) => {
+        mermaid.render(`mermaid-graph-${this.id}`, content, (svgCode) => {
           this.button.innerHTML = svgCode
         })
       } catch (err) {
