@@ -310,10 +310,17 @@ export const editorCss = (config: Config) => css`
           width: 100%;
           white-space: pre-line;
           align-self: flex-start;
-          line-height: ${config.fontSize * 1.8}px;
           overflow: hidden;
           background: 0;
           border: 0;
+        }
+        .download {
+          position: absolute;
+          right: 8px;
+          bottom: 8px;
+          cursor: pointer;
+          z-index: 10;
+          user-select: none;
         }
       }
     }
