@@ -22,7 +22,7 @@ import {css} from '@codemirror/lang-css'
 import {cpp} from '@codemirror/lang-cpp'
 import {markdown} from '@codemirror/lang-markdown'
 import {xml} from '@codemirror/lang-xml'
-import logos from './logos'
+import * as logos from './logos'
 import {getTheme} from './theme'
 import {cleanLang} from '.'
 import {CodeBlockView} from './view'
@@ -211,7 +211,7 @@ export class LangInputEditor {
 
 export const highlight = (lang: string) =>
   lang === 'javascript' || lang === 'jsx' ? javascript() :
-  lang === 'typescript' || lang === 'tsx' ? javascript({typescript: true}) :
+  lang === 'typescript' || lang === 'tsx' || lang === 'graphql' ? javascript({typescript: true}) :
   lang === 'java' || lang === 'kotlin' ? java() :
   lang === 'rust' ? rust() :
   lang === 'sql' ? sql() :

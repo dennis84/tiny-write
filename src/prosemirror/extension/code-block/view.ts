@@ -4,7 +4,7 @@ import {TextSelection, Selection} from 'prosemirror-state'
 import {exitCode} from 'prosemirror-commands'
 import {Compartment, EditorState, Text} from '@codemirror/state'
 import {EditorView, ViewUpdate, keymap} from '@codemirror/view'
-import {defaultKeymap} from '@codemirror/commands'
+import {defaultKeymap, indentWithTab} from '@codemirror/commands'
 import {
   autocompletion,
   completionKeymap,
@@ -138,6 +138,7 @@ export class CodeBlockView {
           ...defaultKeymap,
           ...completionKeymap,
           ...tabCompletionKeymap,
+          indentWithTab,
         ]),
         theme,
         autocompletion({override: completion}),
