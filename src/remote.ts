@@ -4,9 +4,44 @@ import * as clipboard from '@tauri-apps/api/clipboard'
 import * as fs from '@tauri-apps/api/fs'
 import * as dialog from '@tauri-apps/api/dialog'
 import {EditorState} from 'prosemirror-state'
+import {toBase64} from 'js-base64'
 import {Args} from './state'
 import {serialize} from './markdown'
 import {isTauri} from './env'
+
+export const saveSvg = (svg: HTMLElement) => {
+  const canvas = document.createElement('canvas')
+  const ctx = canvas.getContext('2d')
+  const rect = svg.getBoundingClientRect()
+  const ratio = rect.height / rect.width
+  canvas.width = 1080
+  canvas.height = 1080 * ratio
+  ctx.fillStyle = 'transparent'
+  ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+  const image = new Image()
+  image.onload = () => {
+    ctx.drawImage(image, 0, 0, canvas.width, canvas.height)
+    canvas.toBlob(async (blob) => {
+      const filename = 'mermaid-graph.png'
+      if (isTauri) {
+        const path = await dialog.save({defaultPath: `./${filename}`})
+        const buffer = await blob.arrayBuffer()
+        const contents = new Uint8Array(buffer)
+        await fs.writeBinaryFile({path, contents})
+        return
+      }
+
+      const downloadLink = document.createElement('a')
+      downloadLink.setAttribute('download', filename)
+      const url = URL.createObjectURL(blob)
+      downloadLink.setAttribute('href', url)
+      downloadLink.click()
+    });
+  }
+
+  image.src = `data:image/svg+xml;base64,${toBase64(svg.outerHTML)}`
+}
 
 export const getArgs = async (): Promise<Args> => {
   if (!isTauri) throw Error('Must be run in tauri')

@@ -1,9 +1,9 @@
 import {EditorView, ViewPlugin, ViewUpdate} from '@codemirror/view'
 import {language} from '@codemirror/language'
-import {toBase64} from 'js-base64'
 import {v4 as uuidv4} from 'uuid'
 import mermaid from 'mermaid'
 import {CodeBlockView} from './view'
+import {saveSvg} from '../../../remote'
 
 export default (codeBlock: CodeBlockView) =>
   ViewPlugin.fromClass(class {
@@ -50,31 +50,8 @@ export default (codeBlock: CodeBlockView) =>
       span.textContent = '💾'
       span.addEventListener('mousedown', () => {
         const id = `mermaid-graph-${this.id}`
-        const canvas = document.createElement('canvas')
-        const ctx = canvas.getContext('2d')
         const svg = document.getElementById(id)
-        const rect = svg.getBoundingClientRect()
-        const ratio = rect.height / rect.width
-        canvas.width = 1080
-        canvas.height = 1080 * ratio
-        ctx.fillStyle = 'transparent'
-        ctx.fillRect(0, 0, canvas.width, canvas.height)
-        const image = new Image()
-        const downloadLink = document.createElement('a')
-        downloadLink.setAttribute('download', 'mermaid-graph.png')
-        image.onload = () => {
-          ctx.drawImage(image, 0, 0, canvas.width, canvas.height)
-          canvas.toBlob((blob) => {
-            const url = URL.createObjectURL(blob)
-            downloadLink.setAttribute('href', url)
-            downloadLink.click()
-          });
-        }
-
-        const clone = svg.cloneNode(true) as HTMLElement
-        clone.setAttribute('height', canvas.height.toString())
-        clone.setAttribute('width', canvas.width.toString())
-        image.src = `data:image/svg+xml;base64,${toBase64(clone.outerHTML)}`
+        saveSvg(svg)
       })
 
       this.download = span
@@ -97,7 +74,7 @@ export default (codeBlock: CodeBlockView) =>
       mermaid.initialize({
         startOnLoad: false,
         theme: codeBlock.options.dark ? 'dark' : 'default',
-        fontFamily: codeBlock.options.font,
+        fontFamily: `${codeBlock.options.font}, monospace`,
       })
 
       // fixes cut off text

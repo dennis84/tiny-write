@@ -305,6 +305,9 @@ export const editorCss = (config: Config) => css`
         justify-content: center;
         align-items: center;
         user-select: none;
+        svg {
+          height: auto;
+        }
         code {
           margin: 0;
           width: 100%;
