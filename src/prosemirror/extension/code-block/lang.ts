@@ -210,8 +210,10 @@ export class LangInputEditor {
 }
 
 export const highlight = (lang: string) =>
-  lang === 'javascript' || lang === 'jsx' ? javascript() :
-  lang === 'typescript' || lang === 'tsx' || lang === 'graphql' ? javascript({typescript: true}) :
+  lang === 'javascript' ? javascript() :
+  lang === 'jsx' ? javascript({jsx: true}) :
+  lang === 'typescript' ? javascript({typescript: true}) :
+  lang === 'tsx' ? javascript({jsx: true, typescript: true}) :
   lang === 'java' || lang === 'kotlin' ? java() :
   lang === 'rust' ? rust() :
   lang === 'sql' ? sql() :
