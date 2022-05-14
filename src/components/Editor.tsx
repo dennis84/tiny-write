@@ -21,7 +21,7 @@ export default () => {
   return (
     <div
       ref={editorRef}
-      className={styles()}
+      class={styles()}
       spellcheck={false}
       data-tauri-drag-region="true"
     />

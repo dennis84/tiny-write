@@ -12,7 +12,7 @@ import {isEmpty} from '../prosemirror/state'
 import {Styled} from './Layout'
 
 const Container = ({children}: {children: any}) => (
-  <div className={css`
+  <div class={css`
     position: relative;
     flex-shrink: 0;
     flex-grow: 1;
@@ -23,7 +23,7 @@ const Container = ({children}: {children: any}) => (
 
 const Burger = (props: Styled & {active: boolean}) => (
   <button
-    className={css`
+    class={css`
       position: absolute;
       left: -40px;
       z-index: 9999999;
@@ -64,7 +64,7 @@ const Burger = (props: Styled & {active: boolean}) => (
 )
 
 const Off = ({config, children}: Styled) => (
-  <div className={css`
+  <div class={css`
     background: ${foreground(config)}19;
     padding: 20px;
     height: 100%;
@@ -78,7 +78,7 @@ const Off = ({config, children}: Styled) => (
 )
 
 const Label = (props: Styled) => (
-  <h3 className={css`
+  <h3 class={css`
     margin: 0;
     font-size: 14px;
     text-transform: uppercase;
@@ -90,7 +90,7 @@ const Label = (props: Styled) => (
 )
 
 const Sub = ({children}: {children: any}) => (
-  <nav className={css`
+  <nav class={css`
     margin: 10px 0;
     margin-bottom: 30px;
   `}>{children}</nav>
@@ -112,7 +112,7 @@ const itemCss = (config: Config) => css`
 
 const Text = (props: Styled) => (
   <p
-    className={itemCss(props.config)}
+    class={itemCss(props.config)}
     data-testid={props['data-testid']}>
     {props.children}
   </p>
@@ -120,7 +120,7 @@ const Text = (props: Styled) => (
 
 const Link = (props: Styled & {withMargin?: boolean; disabled?: boolean; title?: string}) => (
   <button
-    className={css`
+    class={css`
       ${itemCss(props.config)}
       background: none;
       border: 0;

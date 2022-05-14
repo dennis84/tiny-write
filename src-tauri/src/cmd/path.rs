@@ -100,8 +100,8 @@ mod tests {
         );
 
         assert_eq!(
-            resolve_path(vec![home.clone(), "/etc/hosts".to_string()]).unwrap(),
-            "/etc/hosts"
+            resolve_path(vec![home.clone(), format!("{}/.tinywrite-test.txt", home.clone())]).unwrap(),
+            format!("{}/.tinywrite-test.txt", home.clone())
         );
 
         assert_eq!(

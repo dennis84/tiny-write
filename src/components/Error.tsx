@@ -56,8 +56,8 @@ const InvalidState = (props: {title: string}) => {
   const onClick = () => ctrl.clean()
 
   return (
-    <div className={layer} data-tauri-drag-region="true">
-      <div className={container}>
+    <div class={layer} data-tauri-drag-region="true">
+      <div class={container}>
         <h1>{props.title}</h1>
         <p>
           There is an error with the editor state. This is probably due to an
@@ -65,10 +65,10 @@ const InvalidState = (props: {title: string}) => {
           migrations may be supported in the future. To fix this now, you can
           copy important notes from below, clean the state and paste it again.
         </p>
-        <pre className={pre(store.config)}>
+        <pre class={pre(store.config)}>
           <code>{JSON.stringify(store.error.props)}</code>
         </pre>
-        <button className={buttonPrimary(store.config)} onClick={onClick}>Clean</button>
+        <button class={buttonPrimary(store.config)} onClick={onClick}>Clean</button>
       </div>
     </div>
   )
@@ -90,13 +90,13 @@ const Other = () => {
   }
 
   return (
-    <div className={layer} data-tauri-drag-region="true">
-      <div className={container}>
+    <div class={layer} data-tauri-drag-region="true">
+      <div class={container}>
         <h1>An error occurred.</h1>
-        <pre className={pre(store.config)}><code>{getMessage()}</code></pre>
-        <button className={buttonPrimary(store.config)} onClick={onReload}>Reload</button>
+        <pre class={pre(store.config)}><code>{getMessage()}</code></pre>
+        <button class={buttonPrimary(store.config)} onClick={onReload}>Reload</button>
         <Show when={store.error.id === 'exception'}>
-          <button className={button(store.config)} onClick={onDiscard}>Discard</button>
+          <button class={button(store.config)} onClick={onDiscard}>Discard</button>
         </Show>
       </div>
     </div>

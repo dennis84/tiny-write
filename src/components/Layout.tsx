@@ -13,7 +13,7 @@ export type Styled = {
 export const Layout = (props: Styled) => (
   <div
     onDragOver={props.onDragOver}
-    className={css`
+    class={css`
       background: ${background(props.config)};
       display: flex;
       width: 100%;
