@@ -86,9 +86,11 @@ const toLink = (view: EditorView, tr: Transaction) => {
         return false
       }
 
-      // Do not convert md links if content has marks
       const $startPos = resolvePos(view, start)
-      if ($startPos.marks().length > 0) {
+
+      // Do not convert md links if content has specific marks
+      const ignoreMarks = $startPos.marks().find((x) => x.type.name === 'code')
+      if (ignoreMarks) {
         return false
       }
 
