@@ -98,7 +98,7 @@ export const themes: {[key: string]: Theme} = {
     foreground: '#657b83',
     primaryBackground: '#2aa198',
     primaryForeground: '#fff',
-    selection: '#eee8d5',
+    selection: '#657b8322',
     dark: false,
   },
   'solarized-dark': {
@@ -108,7 +108,7 @@ export const themes: {[key: string]: Theme} = {
     foreground: '#839496',
     primaryBackground: '#cb4b16',
     primaryForeground: '#fff',
-    selection: '#073642',
+    selection: '#ffffff11',
     dark: true,
   },
   'material': {
@@ -128,7 +128,7 @@ export const themes: {[key: string]: Theme} = {
     foreground: '#bd93f9',
     primaryBackground: '#ff79c6',
     primaryForeground: '#fff',
-    selection: '#44475A',
+    selection: '#bd93f922',
     dark: true,
   },
   'hibernus': {
@@ -148,7 +148,7 @@ export const themes: {[key: string]: Theme} = {
     foreground: '#ba989c',
     primaryBackground: '#b8bde8',
     primaryForeground: '#585a6d',
-    selection: '#ECEAFA',
+    selection: '#ba989c22',
     dark: false,
   },
 }

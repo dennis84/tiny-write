@@ -101,6 +101,7 @@ const codeBlockSchema = {
   group: 'block',
   code: true,
   defining: true,
+  selectable: true,
   marks: '',
   attrs: {params: {default: ''}},
   parseDOM: [{

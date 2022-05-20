@@ -16,8 +16,11 @@ import dragHandle from './prosemirror/extension/drag-handle'
 import pasteMarkdown from './prosemirror/extension/paste-markdown'
 import table from './prosemirror/extension/table'
 import collab from './prosemirror/extension/collab'
+import select from './prosemirror/extension/select'
+import position from './prosemirror/extension/position'
 import {Config, YOptions} from './state'
-import {codeTheme, font, isDarkTheme} from './config'
+import {codeTheme, font, selection, isDarkTheme} from './config'
+import {isDev} from './env'
 
 interface Props {
   data?: unknown;
@@ -71,6 +74,8 @@ export const createExtensions = (props: Props): ProseMirrorExtension[] =>
     strikethrough(),
     link(),
     table(),
+    position(isDev),
+    select({background: selection(props.config)}),
     image(props.path),
     placeholder('Start typing ...'),
     scroll(props.config.typewriterMode),
