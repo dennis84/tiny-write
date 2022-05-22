@@ -1,4 +1,5 @@
 import {EditorView, ViewPlugin, ViewUpdate} from '@codemirror/view'
+import {language} from '@codemirror/language'
 import {setDiagnostics} from '@codemirror/lint'
 import prettier from 'prettier'
 import parserBabel from 'prettier/parser-babel'
@@ -34,7 +35,10 @@ export default (codeBlock: CodeBlockView) =>
         this.updateDOM()
       }
 
-      if (update.docChanged) {
+      if (
+        update.docChanged ||
+        update.startState.facet(language) != update.state.facet(language)
+      ) {
         this.updateDOM()
       }
     }
