@@ -1,3 +1,4 @@
+import {splitProps} from 'solid-js'
 import {css} from '@emotion/css'
 import {background, foreground, primaryBackground, font, selection} from '../config'
 import {Config} from '../state'
@@ -5,74 +6,73 @@ import {Config} from '../state'
 export type Styled = {
   children: any;
   config: Config;
-  'data-testid'?: string;
-  onClick?: () => void;
-  onDragOver?: (e: any) => void;
+  [key: string]: any;
 }
 
-export const Layout = (props: Styled) => (
-  <div
-    onDragOver={props.onDragOver}
-    class={css`
-      background: ${background(props.config)};
-      display: flex;
-      width: 100%;
-      height: 100%;
-      font-family: ${font(props.config)};
-      font-size: 18px;
-      color: ${foreground(props.config)};
-      position: relative;
-      .drop-cursor {
-        background: ${primaryBackground(props.config)} !important;
-        height: 2px !important;
-        opacity: 0.5;
-      }
-      .mouse-cursor {
-        position: absolute;
-        height: 10px;
-        margin-left: -15px;
-        z-index: 20;
-        pointer-events: none;
-        user-select: none;
-        span {
+export const Layout = (props: Styled) => {
+  const [local, others] = splitProps(props, ['config', 'children'])
+  return (
+    <div
+      {...others}
+      class={css`
+        background: ${background(local.config)};
+        display: flex;
+        width: 100%;
+        height: 100%;
+        font-family: ${font(local.config)};
+        font-size: 18px;
+        color: ${foreground(local.config)};
+        position: relative;
+        .drop-cursor {
+          background: ${primaryBackground(local.config)} !important;
+          height: 2px !important;
+          opacity: 0.5;
+        }
+        .mouse-cursor {
           position: absolute;
-          display: inline-flex;
-          align-items: center;
-          height: 20px;
-          top: 20px;
-          right: 0;
-          line-height: 0;
-          white-space: nowrap;
-          padding: 4px;
-          font-family: 'JetBrains Mono';
-          font-size: 12px;
-          border-radius: 4px;
+          height: 10px;
+          margin-left: -15px;
+          z-index: 20;
+          pointer-events: none;
+          user-select: none;
+          span {
+            position: absolute;
+            display: inline-flex;
+            align-items: center;
+            height: 20px;
+            top: 20px;
+            right: 0;
+            line-height: 0;
+            white-space: nowrap;
+            padding: 4px;
+            font-family: 'JetBrains Mono';
+            font-size: 12px;
+            border-radius: 4px;
+          }
+          &::before, &::after {
+            content: '';
+            transform: rotate(148deg);
+            position: absolute;
+            width: 10px;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-bottom: 10px solid var(--user-background);
+          }
+          &::before {
+            transform: rotate(148deg);
+            left: 0
+          }
+          &::after {
+            transform: rotate(-77deg);
+            left: -1px;
+            top: -1px;
+          }
         }
-        &::before, &::after {
-          content: '';
-          transform: rotate(148deg);
-          position: absolute;
-          width: 10px;
-          height: 0;
-          border-left: 10px solid transparent;
-          border-right: 10px solid transparent;
-          border-bottom: 10px solid var(--user-background);
-        }
-        &::before {
-          transform: rotate(148deg);
-          left: 0
-        }
-        &::after {
-          transform: rotate(-77deg);
-          left: -1px;
-          top: -1px;
-        }
-      }
-    `}
-    data-testid={props['data-testid']}>
-    {props.children}
-  </div>
-)
+      `}
+    >{local.children}</div>
+  )
+}
 
 export const editorCss = (config: Config) => css`
   height: 100%;

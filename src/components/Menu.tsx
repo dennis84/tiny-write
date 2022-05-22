@@ -1,4 +1,4 @@
-import {For, Show, createEffect, createSignal, onCleanup} from 'solid-js'
+import {For, Show, createEffect, createSignal, onCleanup, splitProps} from 'solid-js'
 import {unwrap} from 'solid-js/store'
 import {undo, redo} from 'prosemirror-history'
 import {differenceInHours, format} from 'date-fns'
@@ -11,61 +11,62 @@ import * as remote from '../remote'
 import {isEmpty} from '../prosemirror/state'
 import {Styled} from './Layout'
 
-const Container = ({children}: {children: any}) => (
+const Container = (props: {children: any}) => (
   <div class={css`
     position: relative;
     flex-shrink: 0;
     flex-grow: 1;
     height: 100%;
     font-family: 'JetBrains Mono';
-  `}>{children}</div>
+  `}>{props.children}</div>
 )
 
-const Burger = (props: Styled & {active: boolean}) => (
-  <button
-    class={css`
-      position: absolute;
-      left: -40px;
-      z-index: 9999999;
-      width: 20px;
-      height: 20px;
-      padding: 2px 0;
-      margin: 10px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      cursor: pointer;
-      background: none;
-      border: 0;
-      outline: none;
-      > span {
-        background: ${foreground(props.config)};
-        height: 2px;
-        width: 100%;
-        border-radius: 4px;
-        transition: 0.4s;
-      }
-      ${props.active && `
-        > span:nth-of-type(1) {
-          transform: rotate(-45deg) translate(-5px, 5px);
+const Burger = (props: Styled & {active: boolean}) => {
+  const [local, others] = splitProps(props, ['config', 'children', 'active'])
+  return (
+    <button
+      {...others}
+      class={css`
+        position: absolute;
+        left: -40px;
+        z-index: 9999999;
+        width: 20px;
+        height: 20px;
+        padding: 2px 0;
+        margin: 10px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        cursor: pointer;
+        background: none;
+        border: 0;
+        outline: none;
+        > span {
+          background: ${foreground(local.config)};
+          height: 2px;
+          width: 100%;
+          border-radius: 4px;
+          transition: 0.4s;
         }
-        > span:nth-of-type(2) {
-          opacity: 0;
-        }
-        > span:nth-of-type(3) {
-          transform: rotate(45deg) translate(-5px, -5px);
-        }
+        ${local.active && `
+          > span:nth-of-type(1) {
+            transform: rotate(-45deg) translate(-5px, 5px);
+          }
+          > span:nth-of-type(2) {
+            opacity: 0;
+          }
+          > span:nth-of-type(3) {
+            transform: rotate(45deg) translate(-5px, -5px);
+          }
+        `}
       `}
-    `}
-    onClick={props.onClick}
-    data-testid={props['data-testid']}>
-    {props.children}
-  </button>
-)
+    >{local.children}</button>
+  )
+}
 
-const Off = ({config, children}: Styled) => (
+const Off = (props: Styled) => (
   <div class={css`
-    background: ${foreground(config)}19;
+    background: ${foreground(props.config)}19;
     padding: 20px;
     height: 100%;
     width: 460px;
@@ -74,7 +75,7 @@ const Off = ({config, children}: Styled) => (
     ::-webkit-scrollbar {
       display: none;
     }
-  `}>{children}</div>
+  `}>{props.children}</div>
 )
 
 const Label = (props: Styled) => (
@@ -89,11 +90,11 @@ const Label = (props: Styled) => (
   `}>{props.children}</h3>
 )
 
-const Sub = ({children}: {children: any}) => (
+const Sub = (props: {children: any}) => (
   <nav class={css`
     margin: 10px 0;
     margin-bottom: 30px;
-  `}>{children}</nav>
+  `}>{props.children}</nav>
 )
 
 const itemCss = (config: Config) => css`
@@ -110,67 +111,71 @@ const itemCss = (config: Config) => css`
   text-align: left;
 `
 
-const Text = (props: Styled) => (
-  <p
-    class={itemCss(props.config)}
-    data-testid={props['data-testid']}>
-    {props.children}
-  </p>
-)
+const Text = (props: Styled) => {
+  return (
+    <p
+      class={itemCss(props.config)}
+      data-testid={props['data-testid']}>
+      {props.children}
+    </p>
+  )
+}
 
-const Link = (props: Styled & {withMargin?: boolean; disabled?: boolean; title?: string}) => (
-  <button
-    class={css`
-      ${itemCss(props.config)}
-      background: none;
-      border: 0;
-      cursor: pointer;
-      margin-bottom: ${props.withMargin ? '10px' : ''};
-      i {
-        font-style: normal;
-      }
-      > span {
-        justify-self: flex-end;
-        margin-left: auto;
-        > i {
-          color: ${foreground(props.config)};
-          background: ${foreground(props.config)}19;
-          border: 1px solid ${foreground(props.config)}99;
-          box-shadow: 0 2px 0 0 ${foreground(props.config)}99;
-          border-radius: 2px;
-          font-size: 13px;
-          line-height: 1.4;
-          padding: 1px 4px;
-          margin: 0 1px;
+const Link = (props: Styled & {withMargin?: boolean; disabled?: boolean; title?: string}) => {
+  return (
+    <button
+      class={css`
+        ${itemCss(props.config)}
+        background: none;
+        border: 0;
+        cursor: pointer;
+        margin-bottom: ${props.withMargin ? '10px' : ''};
+        i {
+          font-style: normal;
         }
-      }
-      &:hover {
-        color: ${primaryBackground(props.config)};
-        > span i {
-          position: relative;
-          box-shadow: 0 3px 0 0 ${foreground(props.config)}99;
-          top: -1px;
+        > span {
+          justify-self: flex-end;
+          margin-left: auto;
+          > i {
+            color: ${foreground(props.config)};
+            background: ${foreground(props.config)}19;
+            border: 1px solid ${foreground(props.config)}99;
+            box-shadow: 0 2px 0 0 ${foreground(props.config)}99;
+            border-radius: 2px;
+            font-size: 13px;
+            line-height: 1.4;
+            padding: 1px 4px;
+            margin: 0 1px;
+          }
         }
-      }
-      &:active {
-        > span i {
-          position: relative;
-          box-shadow: none;
-          top: 1px;
+        &:hover {
+          color: ${primaryBackground(props.config)};
+          > span i {
+            position: relative;
+            box-shadow: 0 3px 0 0 ${foreground(props.config)}99;
+            top: -1px;
+          }
         }
-      }
-      &[disabled] {
-        color: ${foreground(props.config)}99;
-        cursor: not-allowed;
-      }
-    `}
-    onClick={props.onClick}
-    disabled={props.disabled}
-    title={props.title}
-    data-testid={props['data-testid']}>
-    {props.children}
-  </button>
-)
+        &:active {
+          > span i {
+            position: relative;
+            box-shadow: none;
+            top: 1px;
+          }
+        }
+        &[disabled] {
+          color: ${foreground(props.config)}99;
+          cursor: not-allowed;
+        }
+      `}
+      onClick={props.onClick}
+      disabled={props.disabled}
+      title={props.title}
+      data-testid={props['data-testid']}>
+      {props.children}
+    </button>
+  )
+}
 
 export default () => {
   const [store, ctrl] = useState()
