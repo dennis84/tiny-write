@@ -36,7 +36,7 @@ const isFile = (x: any): boolean => x && (x.text || x.path || x.ydoc)
 const isConfig = (x: any): boolean =>
   (typeof x.theme === 'string' || x.theme === undefined) &&
   (typeof x.codeTheme === 'string' || x.codeTheme === undefined) &&
-  typeof x.font === 'string'
+  (typeof x.font === 'string' || x.font === undefined)
 
 export const createCtrl = (initial: State): [Store<State>, any] => {
   const [store, setState] = createStore(initial)
