@@ -139,27 +139,33 @@ export const editorCss = (config: Config) => css`
     a {
       color: ${primaryBackground(config)};
     }
-    table {
-      width: 100%;
-      margin: 5px 0;
-      border-collapse: separate;
-      border-spacing: 0;
-      border-radius: 3px;
-      border: 1px solid ${foreground(config)}7f;
-      text-align: left;
-      background: ${foreground(config)}19;
-      th, td {
-        padding: 5px 10px;
-        vertical-align: top;
+    .table-container {
+      table {
+        width: 100%;
+        margin: 5px 0;
+        border-collapse: separate;
+        border-spacing: 0;
+        border-radius: 3px;
         border: 1px solid ${foreground(config)}7f;
-        border-top: 0;
-        border-right: 0;
+        text-align: left;
+        background: ${foreground(config)}19;
+        th, td {
+          padding: 5px 10px;
+          vertical-align: top;
+          border: 1px solid ${foreground(config)}7f;
+          border-top: 0;
+          border-right: 0;
+        }
+        th:first-child, td:first-child {
+          border-left: 0;
+        }
+        tr:last-child td {
+          border-bottom: 0;
+        }
       }
-      th:first-child, td:first-child {
-        border-left: 0;
-      }
-      tr:last-child td {
-        border-bottom: 0;
+      &.selected table {
+        box-shadow: 0 0 0 1px ${primaryBackground(config)};
+        border-color: ${primaryBackground(config)};
       }
     }
     .placeholder {
@@ -280,6 +286,9 @@ export const editorCss = (config: Config) => css`
             }
           }
         }
+        .cm-foldGutter {
+          user-select: none;
+        }
         .prettify {
           position: absolute;
           right: 8px;
@@ -288,6 +297,11 @@ export const editorCss = (config: Config) => css`
           z-index: 10;
           user-select: none;
         }
+      }
+      &.selected .codemirror-inner {
+        box-shadow: 0 0 0 1px ${primaryBackground(config)};
+        border-color: ${primaryBackground(config)};
+        border-radius: 3px;
       }
       .mermaid {
         padding: 0 5px;
@@ -359,7 +373,7 @@ export const editorCss = (config: Config) => css`
         right: -5px;
         cursor: nwse-resize;
       }
-      &.ProseMirror-selectednode {
+      &.ProseMirror-selectednode, &.selected {
         box-shadow: 0 0 0 2px ${primaryBackground(config)};
         border-radius: 3px;
       }

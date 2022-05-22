@@ -1,5 +1,5 @@
-import {Plugin, TextSelection} from 'prosemirror-state'
-import {EditorView} from 'prosemirror-view'
+import {Plugin, PluginKey, TextSelection} from 'prosemirror-state'
+import {Decoration, DecorationSet, EditorView} from 'prosemirror-view'
 
 interface Props {
   background: string;
@@ -38,6 +38,7 @@ class SelectView {
   canvas: HTMLCanvasElement
 
   onMouseDown = (e) => {
+    if (e.which === 3) return
     this.onMouseUp()
     if (this.closest(e.target, this.view.dom)) {
       return
@@ -50,7 +51,8 @@ class SelectView {
     this.canvas.style.height = '100%'
     this.canvas.width = window.innerWidth
     this.canvas.height = window.innerHeight
-    this.canvas.style.position='absolute'
+    this.canvas.style.position = 'absolute'
+    this.canvas.style.userSelect = 'none'
     this.canvas.style.left = '0'
     this.canvas.style.top = '0'
     this.canvas.style.zIndex = '100000'
@@ -65,19 +67,21 @@ class SelectView {
       })
     })
 
+    // Set focus to prosemirror if in code_block
+    if (!this.view.hasFocus()) {
+      this.collapse(e.pageX, e.pageY)
+      this.view.focus()
+    }
+
     this.coords = {fromX: e.pageX, fromY: e.pageY}
-    const pos = this.view.posAtCoords({left: e.pageX, top: e.pageY})?.pos ?? 0
-    const sel = TextSelection.create(this.view.state.doc, pos)
-    const tr = this.view.state.tr
-    tr.setSelection(sel)
-    this.view.dispatch(tr)
-    this.view.focus()
     document.body.appendChild(this.canvas)
     document.addEventListener('mousemove', this.onMouseMove)
     document.addEventListener('mouseup', this.onMouseUp)
   }
 
   onMouseMove = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
     this.coords.toX = e.pageX
     this.coords.toY = e.pageY
     const context = this.canvas.getContext('2d')
@@ -137,20 +141,28 @@ class SelectView {
     }
 
     if (min === -1 || max === -1) {
-      const pos = this.view.posAtCoords({left: this.coords.fromX, top: this.coords.fromY})?.pos ?? 0
-      const sel = TextSelection.create(this.view.state.doc, pos)
-      const tr = this.view.state.tr
-      tr.setSelection(sel)
-      this.view.dispatch(tr)
+      this.collapse(this.coords.fromX, this.coords.fromY)
       return
     }
 
     const from = resolvePos(this.view, min)
     const to = resolvePos(this.view, max)
+    if (!from || !to) return
     const sel = TextSelection.between(from, to)
     const tr = this.view.state.tr
     tr.setSelection(sel)
+    tr.setMeta(pluginKey, {from: from.pos, to: to.pos})
     this.view.dispatch(tr)
+  }
+
+  collapse(left, top) {
+    const pos = this.view.posAtCoords({left, top})?.pos ?? 0
+    const sel = TextSelection.create(this.view.state.doc, pos)
+    const tr = this.view.state.tr
+    tr.setSelection(sel)
+    tr.setMeta(pluginKey, {from: pos, to: pos})
+    this.view.dispatch(tr)
+    return
   }
 
   closest(elem, other) {
@@ -165,12 +177,49 @@ class SelectView {
   }
 }
 
+const pluginKey = new PluginKey('select')
+
 const select = (props: Props) => new Plugin({
+  key: pluginKey,
+  state: {
+    init() {
+      return undefined
+    },
+    apply(tr) {
+      const selection = tr.getMeta(this)
+      if (selection) {
+        return selection
+      }
+
+      return undefined
+    }
+  },
+  props: {
+    decorations(state) {
+      const decos = []
+      const selection = pluginKey.getState(state)
+      if (!selection) return
+      if (selection.from === selection.to) {
+        return DecorationSet.empty
+      }
+
+      state.doc.nodesBetween(selection.from, selection.to, (node, pos) => {
+        decos.push(Decoration.node(pos, pos + node.nodeSize, {
+          class: 'selected',
+        }))
+      })
+
+      return DecorationSet.create(state.doc, decos)
+    }
+  },
   view(editorView) {
     return new SelectView(editorView, props)
   }
 })
 
 export default (props: Props) => ({
-  plugins: (prev) => [...prev, select(props)]
+  plugins: (prev) => [
+    ...prev,
+    select(props),
+  ]
 })

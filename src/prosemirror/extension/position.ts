@@ -20,5 +20,5 @@ export default (enabled = false) => ({
   plugins: (prev) => enabled ? [
     ...prev,
     position,
-  ] : []
+  ] : prev
 })
