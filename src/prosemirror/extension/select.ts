@@ -40,7 +40,7 @@ class SelectView {
   onMouseDown = (e) => {
     if (e.which === 3) return
     this.onMouseUp()
-    if (this.closest(e.target, this.view.dom)) {
+    if (e.target !== this.view.dom && e.target !== this.view.dom.parentNode) {
       return
     }
 
@@ -163,17 +163,6 @@ class SelectView {
     tr.setMeta(pluginKey, {from: pos, to: pos})
     this.view.dispatch(tr)
     return
-  }
-
-  closest(elem, other) {
-    let parent = elem.parentElement
-    while (parent) {
-      if (parent === other) {
-        return parent
-      }
-
-      parent = parent.parentElement
-    }
   }
 }
 
