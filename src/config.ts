@@ -12,15 +12,9 @@ export const fonts: {[key: string]: Font} = {
     label: 'Merriweather',
     src: './Merriweather-Regular.ttf',
   },
-  'times-new-roman': {
-    label: 'Times New Roman',
-  },
-  'georgia': {
-    label: 'Georgia',
-  },
-  'piazzolla': {
-    label: 'Piazzolla',
-    src: './Piazzolla-Regular.woff2',
+  'ibm-plex-sans': {
+    label: 'IBM Plex Sans',
+    src: './IBMPlexSans-Regular.woff2',
   },
   'ibm-plex-serif': {
     label: 'IBM Plex Serif',
@@ -43,6 +37,11 @@ export const fonts: {[key: string]: Font} = {
   'fantasque-sans-mono': {
     label: 'Fantasque Sans Mono',
     src: './FantasqueSansMono-Regular.woff2',
+    monospace: true,
+  },
+  'ia-writer-mono': {
+    label: 'iA Writer Mono',
+    src: './iAWriterMonoS-Regular.woff2',
     monospace: true,
   },
 }
@@ -207,10 +206,11 @@ export const primaryForeground = (config: Config) => getTheme(config).primaryFor
 export const selection = (config: Config) => getTheme(config).selection
 
 export const font = (config: Config, monospace = false) => {
+  const defaultFont = 'jetbrains-mono-extralight'
   if (monospace && !fonts[config.font]?.monospace) {
-    return 'JetBrains Mono'
+    return fonts[defaultFont].label
   } else if (!fonts[config.font]) {
-    return 'Merriweather'
+    return fonts[defaultFont].label
   }
 
   return fonts[config.font].label
