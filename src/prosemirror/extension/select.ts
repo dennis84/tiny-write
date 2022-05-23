@@ -60,8 +60,9 @@ class SelectView {
     document.body.appendChild(this.canvas)
 
     this.view.state.doc.forEach((node, offset) => {
+      const coords = this.view.coordsAtPos(offset + 1)
       this.positions.push({
-        ...this.view.coordsAtPos(offset + 1),
+        ...coords,
         pos: offset,
         nodeSize: node.nodeSize,
       })
@@ -102,6 +103,7 @@ class SelectView {
     document.removeEventListener('mousemove', this.onMouseMove)
     document.removeEventListener('mouseup', this.onMouseUp)
     if (this.canvas) document.body.removeChild(this.canvas)
+    this.positions = []
     this.canvas = undefined
     this.coords = undefined
   }
@@ -120,23 +122,22 @@ class SelectView {
 
   select() {
     if (!this.coords?.toX || !this.coords?.toY) return
-    const scrollTop = (this.view.dom.parentNode as HTMLElement).scrollTop
-    const fromY = Math.min(this.coords.fromY, this.coords.toY) + scrollTop
-    const toY = Math.max(this.coords.fromY, this.coords.toY) + scrollTop
+    const fromY = Math.min(this.coords.fromY, this.coords.toY)
+    const toY = Math.max(this.coords.fromY, this.coords.toY)
 
     let min = -1
     let max = -1
     for (let i = 0; i < this.positions.length; i++) {
       const pos = this.positions[i]
       const nextPos = this.positions[i+1]
-      const posBottom = Math.max(pos.bottom, nextPos?.top ?? pos.bottom)
+      const nextBottom = Math.max(pos.bottom, nextPos?.top ?? pos.bottom)
 
       if (
-        (fromY < pos.top || fromY < posBottom) &&
-        (toY > pos.top || toY > posBottom)
+        (fromY < pos.top || fromY < nextBottom) &&
+        (toY > pos.top || toY > nextBottom)
       ) {
         if (pos.pos < min || min === -1) min = pos.pos
-        if (pos.pos > min || max === -1) max = pos.pos + pos.nodeSize
+        if (pos.pos + pos.nodeSize > max || max === -1) max = pos.pos + pos.nodeSize
       }
     }
 
