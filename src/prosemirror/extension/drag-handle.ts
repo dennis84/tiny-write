@@ -32,7 +32,7 @@ const handlePlugin = new Plugin({
       mousedown: (editorView, event) => {
         const target = event.target as Element
         if (target.classList.contains('handle')) {
-          const pos = editorView.posAtCoords({left: event.x, top: event.y})
+          const pos = editorView.posAtCoords({left: event.x + 30, top: event.y})
           const resolved = editorView.state.doc.resolve(pos.pos)
           const tr = editorView.state.tr
           tr.setSelection(NodeSelection.create(editorView.state.doc, resolved.before()))

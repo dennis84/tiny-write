@@ -153,6 +153,7 @@ class SelectView {
     const tr = this.view.state.tr
     tr.setSelection(sel)
     tr.setMeta(pluginKey, {from: from.pos, to: to.pos})
+    if (!this.view.hasFocus()) this.view.focus()
     this.view.dispatch(tr)
   }
 

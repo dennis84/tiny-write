@@ -27,7 +27,8 @@ const tableSchema = {
   table: {
     content: '(table_head | table_body)*',
     isolating: true,
-    selectable: false,
+    selectable: true,
+    draggable: true,
     group: 'block',
     parseDOM: [{tag: 'div[data-type="table"]'}],
     toDOM: () => [

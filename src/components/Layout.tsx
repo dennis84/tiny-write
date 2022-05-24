@@ -176,12 +176,10 @@ export const editorCss = (config: Config) => css`
     }
     .draggable {
       position: relative;
-      margin-left: -30px;
-      padding-left: 30px;
     }
     .handle {
       position: absolute;
-      left: 0;
+      left: -30px;
       top: 0;
       height: ${config.fontSize * 1.6}px;
       opacity: 0;
@@ -270,6 +268,9 @@ export const editorCss = (config: Config) => css`
           .cm-line {
             line-height: ${config.fontSize * 1.8}px;
           }
+          .cm-lineWrapping {
+            word-break: break-all;
+          }
           .cm-diagnosticText {
             white-space: pre;
           }
@@ -298,9 +299,8 @@ export const editorCss = (config: Config) => css`
           user-select: none;
         }
       }
-      &.selected .codemirror-inner {
-        box-shadow: 0 0 0 1px ${primaryBackground(config)};
-        border-color: ${primaryBackground(config)};
+      &.selected {
+        box-shadow: 0 0 0 2px ${primaryBackground(config)};
         border-radius: 3px;
       }
       .mermaid {
