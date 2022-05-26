@@ -10,6 +10,7 @@ import {isTauri, isMac, alt, mod, WEB_URL, VERSION_URL} from '../env'
 import * as remote from '../remote'
 import {isEmpty} from '../prosemirror/state'
 import {Styled} from './Layout'
+import {button} from './Button'
 
 const Container = (props: {children: any}) => (
   <div class={css`
@@ -17,7 +18,7 @@ const Container = (props: {children: any}) => (
     flex-shrink: 0;
     flex-grow: 1;
     height: 100%;
-    font-family: 'JetBrains Mono';
+    font-family: 'JetBrains Mono ExtraLight';
   `}>{props.children}</div>
 )
 
@@ -64,11 +65,12 @@ const Burger = (props: Styled & {active: boolean}) => {
   )
 }
 
-const Off = (props: Styled) => (
+const Off = (props: Styled & {hidden?: boolean}) => (
   <div class={css`
     background: ${foreground(props.config)}19;
     padding: 20px;
     height: 100%;
+    display: ${props.hidden ? 'none' : 'block'};
     width: 460px;
     overflow-y: auto;
     scrollbar-width: none;
@@ -107,7 +109,7 @@ const itemCss = (config: Config) => css`
   color: ${foreground(config)};
   font-size: 18px;
   line-height: 24px;
-  font-family: 'JetBrains Mono';
+  font-family: 'JetBrains Mono ExtraLight';
   text-align: left;
 `
 
@@ -176,6 +178,7 @@ const Link = (props: Styled & {withMargin?: boolean; disabled?: boolean; title?:
 export default () => {
   const [store, ctrl] = useState()
   const [show, setShow] = createSignal(false)
+  const [showPrettier, setShowPrettier] = createSignal(false)
   const [lastAction, setLastAction] = createSignal<string | undefined>()
   const [isTextEmpty, setIsTextEmpty] = createSignal(false)
   const [collabUsers, setCollabUsers] = createSignal(0)
@@ -237,6 +240,7 @@ export default () => {
   const onBurgerClick = () => {
     store.editorView.focus()
     setShow(!show())
+    setShowPrettier(false)
   }
 
   const onUndo = () => {
@@ -447,6 +451,61 @@ export default () => {
     onCleanup(() => clearTimeout(id))
   })
 
+  const PrettierOff = () => (
+    <Off
+      config={store.config}
+      onClick={() => store.editorView.focus()}
+      data-tauri-drag-region="true">
+      <div>
+        <Label config={store.config}>Prettier</Label>
+        <Sub>
+          <Text config={store.config}>
+            Print Width:
+            <input
+              type="range"
+              min="20"
+              max="160"
+              step="10"
+              value={store.config.prettier.printWidth}
+              onInput={(e: any) => updatePrettier({printWidth: Number(e.target.value)})} />
+            {store.config.prettier.printWidth}
+          </Text>
+          <Text config={store.config}>
+            Tab Width:
+            <input
+              type="range"
+              min="2"
+              max="8"
+              step="2"
+              value={store.config.prettier.tabWidth}
+              onInput={(e: any) => updatePrettier({tabWidth: Number(e.target.value)})} />
+            {store.config.prettier.tabWidth}
+          </Text>
+          <Link
+            config={store.config}
+            onClick={() => updatePrettier({useTabs: !store.config.prettier.useTabs})}>
+            Use Tabs {store.config.prettier.useTabs && '✅'}
+          </Link>
+          <Link
+            config={store.config}
+            onClick={() => updatePrettier({semi: !store.config.prettier.semi})}>
+            Semicolons {store.config.prettier.semi && '✅'}
+          </Link>
+          <Link
+            config={store.config}
+            onClick={() => updatePrettier({singleQuote: !store.config.prettier.singleQuote})}>
+            Single Quote {store.config.prettier.singleQuote && '✅'}
+          </Link>
+        </Sub>
+        <button
+          class={button(store.config)}
+          onClick={() => setShowPrettier(false)}>
+          ⟵ Back
+        </button>
+      </div>
+    </Off>
+  )
+
   return (
     <Container>
       <Burger
@@ -458,10 +517,14 @@ export default () => {
         <span />
         <span />
       </Burger>
+      <Show when={showPrettier()}>
+        <PrettierOff />
+      </Show>
       <Show when={show()}>
         <Off
           config={store.config}
           onClick={() => store.editorView.focus()}
+          hidden={showPrettier()}
           data-tauri-drag-region="true">
           <div>
             <Label config={store.config}>
@@ -564,7 +627,7 @@ export default () => {
                   min="8"
                   max="48"
                   value={store.config.fontSize}
-                  onChange={onChangeFontSize} />
+                  onInput={onChangeFontSize} />
                 {store.config.fontSize}
               </Text>
               <Text config={store.config}>
@@ -575,48 +638,11 @@ export default () => {
                   max="1800"
                   step="100"
                   value={store.config.contentWidth}
-                  onChange={onChangeContentWidth} />
+                  onInput={onChangeContentWidth} />
                 {store.config.contentWidth}
               </Text>
-            </Sub>
-            <Label config={store.config}>Prettier</Label>
-            <Sub>
-              <Text config={store.config}>
-                Print Width:
-                <input
-                  type="range"
-                  min="20"
-                  max="160"
-                  step="10"
-                  value={store.config.prettier.printWidth}
-                  onChange={(e: any) => updatePrettier({printWidth: Number(e.target.value)})} />
-                {store.config.prettier.printWidth}
-              </Text>
-              <Text config={store.config}>
-                Tab Width:
-                <input
-                  type="range"
-                  min="2"
-                  max="8"
-                  step="2"
-                  value={store.config.prettier.tabWidth}
-                  onChange={(e: any) => updatePrettier({tabWidth: Number(e.target.value)})} />
-                {store.config.prettier.tabWidth}
-              </Text>
-              <Link
-                config={store.config}
-                onClick={() => updatePrettier({useTabs: !store.config.prettier.useTabs})}>
-                Use Tabs {store.config.prettier.useTabs && '✅'}
-              </Link>
-              <Link
-                config={store.config}
-                onClick={() => updatePrettier({semi: !store.config.prettier.semi})}>
-                Semicolons {store.config.prettier.semi && '✅'}
-              </Link>
-              <Link
-                config={store.config}
-                onClick={() => updatePrettier({singleQuote: !store.config.prettier.singleQuote})}>
-                Single Quote {store.config.prettier.singleQuote && '✅'}
+              <Link config={store.config} onClick={() => setShowPrettier(true)}>
+                Prettier
               </Link>
             </Sub>
             <Label config={store.config}>Stats</Label>
