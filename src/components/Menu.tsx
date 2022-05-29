@@ -241,7 +241,7 @@ export default () => {
     return store.lastModified
   }, store.lastModified)
 
-  const clearText = () => (store.path || store.collab?.room) ? 'Close' :
+  const clearText = () => (store.path || store.collab?.started) ? 'Close' :
     (store.files.length > 0 && isTextEmpty()) ? 'Discard ⚠️' :
     'Clear'
 
@@ -538,7 +538,7 @@ export default () => {
                   Share
                 </Link>
               </Show>
-              <Show when={collabUsers() > 0}>
+              <Show when={store.collab?.started}>
                 <Link config={store.config} onClick={onCopyCollabLink}>
                   Copy Link {lastAction() === 'copy-collab-link' && '📋'}
                 </Link>

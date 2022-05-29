@@ -139,6 +139,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
 
     disconnectCollab(state.collab)
     let newState = {...state, ...next}
+    console.log(file.ydoc)
     newState = doStartCollab(newState, undefined, file.ydoc)
     updateEditorState(newState, file.text ?? createEmptyText())
 
@@ -214,6 +215,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     let ydoc
     if (parsed.ydoc && typeof parsed.ydoc === 'string') {
       ydoc = toUint8Array(parsed.ydoc)
+      delete newState.ydoc
     }
 
     return [newState, text, ydoc]
@@ -278,9 +280,8 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       let data = result[0]
       let text = result[1]
       const ydoc = result[2]
-      if (data.collab?.room || data.args.room) {
-        data = doStartCollab(data, undefined, ydoc)
-      } else if (data.args.text) {
+      data = doStartCollab(data, undefined, ydoc)
+      if (data.args.text) {
         data = await doOpenFile(data, {text: JSON.parse(data.args.text)})
       } else if (data.args.file) {
         const file = await loadFile(data.config, data.args.file)
@@ -435,6 +436,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       const text = serialize(store.editorView.state)
       await remote.writeFile(state.path, text)
     } else if (state.collab?.room) {
+      console.log('save ydoc')
       const documentState = Y.encodeStateAsUpdate(state.collab.y.provider.doc)
       data.ydoc = fromUint8Array(documentState)
     } else {
@@ -463,10 +465,12 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
   }
 
   const startCollab = () => {
-    const state: State = unwrap(store)
-    const update = doStartCollab(state, uuidv4())
-    updateEditorState(update)
-    setState(update)
+    // const state: State = unwrap(store)
+    // const update = doStartCollab(state, uuidv4())
+    // updateEditorState(update)
+    window.history.replaceState(null, '', `/${store.collab.room}`)
+    store.collab.y.provider.connect()
+    setState('collab', {started: true})
   }
 
   const onCollabConfigUpdate = (event: any) => {
@@ -481,24 +485,21 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     newRoom?: string,
     savedDoc?: Uint8Array,
   ): State => {
-    const room = newRoom ?? state.args?.room ?? state.collab?.room
-    if (!room) return state
-
-    window.history.replaceState(null, '', `/${room}`)
-
-    let ydoc = new Y.Doc()
-    try {
-      if (room === state.collab?.room && savedDoc) {
-        Y.applyUpdate(ydoc, savedDoc)
-      } else if (state.editorView) {
-        ydoc = prosemirrorToYDoc(state.editorView.state.doc)
-      }
-    } catch (error) {
-      setError(error)
+    let room = newRoom ?? state.args?.room
+    let started = true
+    if (room) {
+      window.history.replaceState(null, '', `/${room}`)
+    } else {
+      room = uuidv4()
+      started = false
     }
+    console.log({started, room, savedDoc})
+
+    const ydoc = new Y.Doc()
+    if (savedDoc) Y.applyUpdate(ydoc, savedDoc)
 
     const prosemirrorType = ydoc.getXmlFragment('prosemirror')
-    const provider = new WebsocketProvider(COLLAB_URL, room, ydoc)
+    const provider = new WebsocketProvider(COLLAB_URL, room, ydoc, {connect: started})
     const configType = ydoc.getMap('config')
     configType.set('font', state.config.font)
     configType.set('fontSize', state.config.fontSize)
@@ -538,11 +539,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
 
     return {
       ...newState,
-      collab: {
-        started: true,
-        room,
-        y: {prosemirrorType, configType, provider}
-      }
+      collab: {started, room, y: {prosemirrorType, configType, provider}}
     }
   }
 
