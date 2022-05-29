@@ -102,7 +102,7 @@ const codeBlockSchema = {
   code: true,
   defining: true,
   selectable: true,
-  marks: '',
+  marks: 'ychange',
   attrs: {params: {default: ''}},
   toDOM: (node: Node) => [
     'pre',

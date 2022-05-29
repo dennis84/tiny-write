@@ -21,6 +21,16 @@ vi.mock('idb-keyval', () => ({
   set: async () => undefined,
 }))
 
+vi.mock('y-websocket', () => ({WebsocketProvider: class {
+  awareness = {
+    setLocalStateField: () => undefined,
+    on: () => undefined,
+    off: () => undefined,
+    getLocalState: () => undefined,
+  }
+  disconnect() { /**/ }
+}}))
+
 const text = {
   doc: {
     type: 'doc',
@@ -39,11 +49,11 @@ test('setState', () => {
   expect(store.fullscreen).toBe(true)
 })
 
-test('newFile', async () => {
+test.only('newFile', async () => {
   const [store, ctrl] = createCtrl(newState())
-  const target = document.createElement('div')
-  ctrl.updateEditorState(store, text)
-  ctrl.createEditorView(target)
+  // const target = document.createElement('div')
+  // ctrl.createEditorView(target)
+  await ctrl.init()
   await ctrl.newFile()
   expect(store.files.length).toBe(1)
   expect(store.editorView.state.doc.textContent).toEqual('')

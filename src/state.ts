@@ -34,10 +34,18 @@ export interface ErrorObject {
   props?: unknown;
 }
 
+export interface Version {
+  snapshot: any;
+  date: number;
+  clientID: number;
+}
+
 export interface YOptions {
   prosemirrorType: Y.XmlFragment;
   configType: Y.Map<any>;
   provider: WebsocketProvider;
+  permanentUserData: any;
+  ydoc: Y.Doc;
 }
 
 export interface Collab {

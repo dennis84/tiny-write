@@ -13,6 +13,7 @@ import {Styled} from './Layout'
 import {PrettierMenu} from './PrettierMenu'
 import {AppearanceMenu} from './AppearanceMenu'
 import {Help} from './Help'
+import {ChangeSetMenu} from './ChangeSetMenu'
 
 const Container = (props: {children: any}) => (
   <div class={css`
@@ -393,7 +394,6 @@ export default () => {
     }
 
     const text = () =>
-      p.file.collab?.room ? p.file.collab.room :
       p.file.path ? p.file.path.substring(p.file.path.length - length) :
       getContent(p.file.text?.doc)
 
@@ -450,6 +450,9 @@ export default () => {
       </Show>
       <Show when={show() === 'help'}>
         <Help onBack={() => setShow('main')} />
+      </Show>
+      <Show when={show() === 'change_set'}>
+        <ChangeSetMenu onBack={() => setShow('main')} />
       </Show>
       <Show when={show() === 'main'}>
         <Off
@@ -510,6 +513,7 @@ export default () => {
             <Sub>
               <Link config={store.config} onClick={() => setShow('theme')}>Appearance 🎨</Link>
               <Link config={store.config} onClick={() => setShow('prettier')}>Prettier 💅</Link>
+              <Link config={store.config} onClick={() => setShow('change_set')}>Change Set 📆</Link>
               <Show when={isTauri}>
                 <Link config={store.config} onClick={onToggleFullscreen}>
                   Fullscreen {store.fullscreen && '✅'} <Keys config={store.config} keys={[alt, 'Enter']} />

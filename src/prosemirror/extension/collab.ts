@@ -86,10 +86,29 @@ const yMouseCursorPlugin = (awareness: Awareness) => new Plugin({
   },
 })
 
+const ychangeSchema = {
+  ychange: {
+    attrs: {
+      user: { default: null },
+      type: { default: null },
+      color: { default: null }
+    },
+    inclusive: false,
+    parseDOM: [{ tag: 'ychange' }],
+    toDOM (node) {
+      return ['ychange', {}]
+    }
+  }
+}
+
 export default (y?: YOptions): ProseMirrorExtension => ({
+  schema: (prev) => ({
+    ...prev,
+    marks: (prev.marks as any).append(ychangeSchema),
+  }),
   plugins: (prev) => y ? [
     ...prev,
-    ySyncPlugin(y.prosemirrorType),
+    ySyncPlugin(y.prosemirrorType, {permanentUserData: y.permanentUserData}),
     // @ts-ignore
     yCursorPlugin(y.provider.awareness, {cursorBuilder}),
     yMouseCursorPlugin(y.provider.awareness),

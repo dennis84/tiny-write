@@ -1,20 +1,21 @@
+import {createSignal} from 'solid-js'
 import {Store, createStore, unwrap} from 'solid-js/store'
 import {v4 as uuidv4} from 'uuid'
 import * as db from 'idb-keyval'
 import {fromUint8Array, toUint8Array} from 'js-base64'
 import {EditorView, NodeViewConstructor} from 'prosemirror-view'
 import {EditorState, Transaction} from 'prosemirror-state'
-import {Schema} from 'prosemirror-model'
+import {Schema, Slice} from 'prosemirror-model'
 import {undo, redo} from 'prosemirror-history'
 import {selectAll, deleteSelection} from 'prosemirror-commands'
 import * as Y from 'yjs'
-import {undo as yUndo, redo as yRedo, prosemirrorToYDoc} from 'y-prosemirror'
+import {undo as yUndo, redo as yRedo, ySyncPluginKey, yDocToProsemirror} from 'y-prosemirror'
 import {WebsocketProvider} from 'y-websocket'
 import {uniqueNamesGenerator, adjectives, animals} from 'unique-names-generator'
 import {debounce} from 'ts-debounce'
 import * as remote from './remote'
 import {createSchema, createExtensions, createEmptyText} from './prosemirror'
-import {State, File, Collab, Config, ServiceError, newState} from './state'
+import {State, File, Collab, Config, Version, ServiceError, newState} from './state'
 import {COLLAB_URL, isTauri, mod} from './env'
 import {serialize, createMarkdownParser} from './markdown'
 import {isDarkTheme, themes} from './config'
@@ -35,6 +36,7 @@ const isConfig = (x: any): boolean =>
 
 export const createCtrl = (initial: State): [Store<State>, any] => {
   const [store, setState] = createStore(initial)
+  const [snapshotView, setSnapshotView] = createSignal(false)
   const initialEditorState = {text: undefined, extensions: undefined}
 
   const onReload = () => {
@@ -97,17 +99,9 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     [`${mod}-y`]: onRedo,
   }
 
-  const addToFiles = (
-    files: File[],
-    prev: State,
-    prevYdoc?: Uint8Array,
-  ) => {
-    let text, ydoc
-    if (prevYdoc || prev.collab?.room) {
-      ydoc = prevYdoc ?? Y.encodeStateAsUpdate(prev.collab.y.provider.doc)
-    } else {
-      text = prev.path ? undefined : store.editorView?.state.toJSON()
-    }
+  const addToFiles = (files: File[], prev: State) => {
+    const text = prev.path ? undefined : store.editorView?.state.toJSON()
+    const ydoc = Y.encodeStateAsUpdate(prev.collab.y.ydoc)
 
     return [...files, {
       text,
@@ -139,8 +133,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
 
     disconnectCollab(state.collab)
     let newState = {...state, ...next}
-    console.log(file.ydoc)
-    newState = doStartCollab(newState, undefined, file.ydoc)
+    newState = withYjs(newState, file.ydoc)
     updateEditorState(newState, file.text ?? createEmptyText())
 
     setState({
@@ -280,16 +273,16 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       let data = result[0]
       let text = result[1]
       const ydoc = result[2]
-      data = doStartCollab(data, undefined, ydoc)
+      data = withYjs(data, ydoc)
       if (data.args.text) {
-        data = await doOpenFile(data, {text: JSON.parse(data.args.text)})
+        data = await withFile(data, {text: JSON.parse(data.args.text)})
       } else if (data.args.file) {
         const file = await loadFile(data.config, data.args.file)
-        data = await doOpenFile(data, file)
+        data = await withFile(data, file)
         text = file.text
       } else if (data.path) {
         const file = await loadFile(data.config, data.path)
-        data = await doOpenFile(data, file)
+        data = await withFile(data, file)
         text = file.text
       }
 
@@ -351,15 +344,14 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       files = addToFiles(files, state)
     }
 
-    const update = {
+    const update = withYjs({
       ...state,
       args: {cwd: state.args?.cwd},
       files,
       lastModified: undefined,
       path: undefined,
-      collab: undefined,
       error: undefined,
-    }
+    })
 
     disconnectCollab(state.collab)
     updateEditorState(update, createEmptyText())
@@ -368,11 +360,11 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
 
   const openFile = async (file: File) => {
     const state: State = unwrap(store)
-    const update = await doOpenFile(state, file)
+    const update = await withFile(state, file)
     setState(update)
   }
 
-  const doOpenFile = async (state: State, f: File): Promise<State> => {
+  const withFile = async (state: State, f: File): Promise<State> => {
     const findIndexOfFile = (f: File) => {
       for (let i = 0; i < state.files.length; i++) {
         if (state.files[i] === f) return i
@@ -398,7 +390,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       lastModified: file.lastModified ? new Date(file.lastModified) : undefined,
       path: file.path,
       markdown: file.markdown,
-      ...(file.collab?.room ? {collab: {room: file.collab.room}} : {}),
+      collab: {room: file.collab.room},
     }
 
     let newState: State = {
@@ -411,13 +403,13 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     }
 
     disconnectCollab(state.collab)
-    newState = doStartCollab(newState, undefined, file.ydoc)
+    newState = withYjs(newState, file.ydoc)
     updateEditorState(newState, file.text ?? createEmptyText())
     return newState
   }
 
   const saveState = debounce(async (state: State) => {
-    if (!state.editorView) {
+    if (!state.editorView || snapshotView()) {
       return
     }
 
@@ -436,7 +428,6 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       const text = serialize(store.editorView.state)
       await remote.writeFile(state.path, text)
     } else if (state.collab?.room) {
-      console.log('save ydoc')
       const documentState = Y.encodeStateAsUpdate(state.collab.y.provider.doc)
       data.ydoc = fromUint8Array(documentState)
     } else {
@@ -457,6 +448,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
   }
 
   const shouldBackup = (state: State, ydoc?: Uint8Array) => {
+    if (!state.collab?.started) return false
     return state.path || (
       state.args?.room &&
       state.collab?.room !== state.args.room &&
@@ -465,9 +457,6 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
   }
 
   const startCollab = () => {
-    // const state: State = unwrap(store)
-    // const update = doStartCollab(state, uuidv4())
-    // updateEditorState(update)
     window.history.replaceState(null, '', `/${store.collab.room}`)
     store.collab.y.provider.connect()
     setState('collab', {started: true})
@@ -480,22 +469,17 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     setState('config', {font, fontSize, contentWidth})
   }
 
-  const doStartCollab = (
-    state: State,
-    newRoom?: string,
-    savedDoc?: Uint8Array,
-  ): State => {
-    let room = newRoom ?? state.args?.room
-    let started = true
-    if (room) {
+  const withYjs = (state: State, savedDoc?: Uint8Array): State => {
+    let started = false
+    let room = state.collab?.room ?? uuidv4()
+    if (state.args?.room) {
+      started = true
+      room = state.args.room
       window.history.replaceState(null, '', `/${room}`)
-    } else {
-      room = uuidv4()
-      started = false
     }
-    console.log({started, room, savedDoc})
 
-    const ydoc = new Y.Doc()
+    const ydoc = new Y.Doc({gc: false})
+    const permanentUserData = new Y.PermanentUserData(ydoc)
     if (savedDoc) Y.applyUpdate(ydoc, savedDoc)
 
     const prosemirrorType = ydoc.getXmlFragment('prosemirror')
@@ -521,11 +505,25 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       foreground: xs[index].primaryForeground,
     })
 
-    let newState = state
-    if (shouldBackup(state, savedDoc)) {
-      let files = state.files
-      if (!state.error) {
-        files = addToFiles(files, state, savedDoc)
+    let newState = {
+      ...state,
+      collab: {
+        started,
+        room,
+        y: {
+          ydoc,
+          prosemirrorType,
+          configType,
+          provider,
+          permanentUserData,
+        }
+      }
+    }
+
+    if (shouldBackup(newState, savedDoc)) {
+      let files = newState.files
+      if (!newState.error) {
+        files = addToFiles(files, newState)
       }
 
       newState = {
@@ -537,14 +535,11 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       }
     }
 
-    return {
-      ...newState,
-      collab: {started, room, y: {prosemirrorType, configType, provider}}
-    }
+    return newState
   }
 
   const disconnectCollab = (collab?: Collab) => {
-    collab?.y?.provider.destroy()
+    collab?.y?.provider.disconnect()
     collab?.y?.configType.unobserve(onCollabConfigUpdate)
     window.history.replaceState(null, '', '/')
   }
@@ -611,6 +606,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       const newState = store.editorView.state.apply(tr)
       store.editorView.updateState(newState)
       if (!tr.docChanged) return
+      if (tr.getMeta('addToHistory') === false) return
       setState({lastModified: new Date()})
     }
 
@@ -622,6 +618,58 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
 
     setState({editorView})
     setTimeout(() => editorView.focus())
+  }
+
+  const unrenderVersion = () => {
+    const state = unwrap(store)
+    const binding = ySyncPluginKey.getState(state.editorView.state).binding
+    if (binding) binding.unrenderSnapshot()
+    setSnapshotView(false)
+  }
+
+  const applyVersion = (version: any) => {
+    const state = unwrap(store)
+    const ydoc = state.collab.y.ydoc
+
+    const snapshot = Y.decodeSnapshot(version.snapshot)
+    const newDoc = Y.createDocFromSnapshot(ydoc, snapshot)
+    const node = yDocToProsemirror(state.editorView.state.schema, newDoc)
+    unrenderVersion()
+
+    const tr = state.editorView.state.tr
+    const slice = new Slice(node.content, 0, 0)
+    tr.replace(0, state.editorView.state.doc.content.size, slice)
+    state.editorView.dispatch(tr)
+  }
+
+  const renderVersion = (version: any, prevVersion: any) => {
+    setSnapshotView(true)
+    const snapshot = Y.decodeSnapshot(version.snapshot)
+    const prevSnapshot = prevVersion ? Y.decodeSnapshot(prevVersion.snapshot) : Y.emptySnapshot
+    const tr = store.editorView.state.tr
+    tr.setMeta(ySyncPluginKey, {snapshot, prevSnapshot})
+    store.editorView.dispatch(tr)
+  }
+
+  const addVersion = () => {
+    const state = unwrap(store)
+    const ydoc = state.collab.y.ydoc
+    const versions = ydoc.getArray<Version>('versions')
+    const prevVersion = versions.get(versions.length - 1)
+    const prevSnapshot = prevVersion ? Y.decodeSnapshot(prevVersion.snapshot) : Y.emptySnapshot
+    const snapshot = Y.snapshot(ydoc)
+
+    if (prevVersion) {
+      prevSnapshot.sv.set(prevVersion.clientID, (prevSnapshot.sv.get(prevVersion.clientID)) + 1)
+    }
+
+    if (!Y.equalSnapshots(prevSnapshot, snapshot)) {
+      versions.push([{
+        date: state.lastModified.getTime(),
+        snapshot: Y.encodeSnapshot(snapshot),
+        clientID: ydoc.clientID,
+      }])
+    }
   }
 
   const updateEditorState = (state: State, text?: ProseMirrorState) => {
@@ -667,6 +715,10 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     updateTheme,
     createEditorView,
     updateEditorState,
+    addVersion,
+    applyVersion,
+    renderVersion,
+    unrenderVersion,
   }
 
   return [store, ctrl]

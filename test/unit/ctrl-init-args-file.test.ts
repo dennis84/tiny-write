@@ -30,6 +30,16 @@ vi.mock('idb-keyval', () => ({
   set: async () => undefined,
 }))
 
+vi.mock('y-websocket', () => ({WebsocketProvider: class {
+  awareness = {
+    setLocalStateField: () => undefined,
+    on: () => undefined,
+    off: () => undefined,
+    getLocalState: () => undefined,
+  }
+  disconnect() { /**/ }
+}}))
+
 test('init - no state', async () => {
   const [store, ctrl] = createCtrl(newState())
   await ctrl.init()
