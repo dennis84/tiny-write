@@ -78,13 +78,15 @@ export class CodeBlockView {
         const line = editorView.state.doc.lineAt(startPos)
 
         if (line.number === 1) {
-          const tr = this.view.state.tr
+          let tr = this.view.state.tr
           let targetPos = this.getPos() - 1
           if (this.getPos() === 0) {
             tr.insert(0, this.view.state.schema.node('paragraph'))
             targetPos = 0
           }
 
+          this.view.dispatch(tr)
+          tr = this.view.state.tr
           const selection = Selection.near(tr.doc.resolve(targetPos))
           tr.setSelection(selection).scrollIntoView()
           this.view.dispatch(tr)

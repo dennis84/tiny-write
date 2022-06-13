@@ -35,7 +35,7 @@ const handlePlugin = new Plugin({
           const pos = editorView.posAtCoords({left: event.x + 30, top: event.y})
           const resolved = editorView.state.doc.resolve(pos.pos)
           const tr = editorView.state.tr
-          tr.setSelection(NodeSelection.create(editorView.state.doc, resolved.before()))
+          tr.setSelection(NodeSelection.create(editorView.state.doc, resolved.before(1)))
           editorView.dispatch(tr)
           return false
         }

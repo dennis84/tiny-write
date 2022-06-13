@@ -26,13 +26,13 @@ test('code block', async ({page}) => {
 
   // create line above
   await move(page, 'ArrowUp')
-  await page.type('.ProseMirror p', 'above', {delay})
+  await page.type('.ProseMirror', 'above', {delay})
   expect(await page.textContent('.ProseMirror p:nth-of-type(1)')).toBe('above')
 
   // create line below
   await move(page, 'ArrowDown', 2)
   await page.keyboard.press('Control+Enter')
-  await page.type('.ProseMirror p', 'below', {delay})
+  await page.type('.ProseMirror', 'below', {delay})
   expect(await page.textContent('.ProseMirror p:nth-of-type(2)')).toBe('below')
 })
 

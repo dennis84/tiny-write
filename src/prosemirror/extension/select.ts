@@ -1,4 +1,4 @@
-import {Plugin, PluginKey, TextSelection} from 'prosemirror-state'
+import {Plugin, PluginKey, Selection, TextSelection} from 'prosemirror-state'
 import {Decoration, DecorationSet, EditorView} from 'prosemirror-view'
 
 interface Props {
@@ -159,7 +159,7 @@ class SelectView {
 
   collapse(left, top) {
     const pos = this.view.posAtCoords({left, top})?.pos ?? 0
-    const sel = TextSelection.create(this.view.state.doc, pos)
+    const sel = Selection.near(this.view.state.doc.resolve(pos))
     const tr = this.view.state.tr
     tr.setSelection(sel)
     tr.setMeta(pluginKey, {from: pos, to: pos})
