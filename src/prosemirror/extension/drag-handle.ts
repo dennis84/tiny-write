@@ -29,7 +29,7 @@ const handlePlugin = new Plugin({
       return DecorationSet.create(state.doc, decos)
     },
     handleDOMEvents: {
-      mousedown: (editorView, event) => {
+      mousedown: (editorView, event: MouseEvent) => {
         const target = event.target as Element
         if (target.classList.contains('handle')) {
           const pos = editorView.posAtCoords({left: event.x + 30, top: event.y})

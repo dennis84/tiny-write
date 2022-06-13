@@ -16,19 +16,31 @@ const todoListRule = (nodeType: NodeType) =>
   )
 
 const todoListSchema = {
+  todo_list: {
+    content: 'todo_item+',
+    group: 'block',
+    selectable: true,
+    parseDOM: [{
+      tag: 'ul[data-type="todo-list"]',
+    }],
+    toDOM: () => [
+      'ul',
+      {class: 'todo-list', 'data-type': 'todo-list'},
+      0,
+    ],
+  },
   todo_item: {
     content: 'paragraph+',
     defining: true,
-    group: 'block',
     attrs: {done: {default: false}},
     parseDOM: [{
-      tag: 'div[data-type="todo-item"]',
+      tag: 'li[data-type="todo-item"]',
       getAttrs: (dom: Element) => ({
         done: dom.querySelector('input')?.checked,
       }),
     }],
     toDOM: (node: ProsemirrorNode) => [
-      'div',
+      'li',
       {
         class: `todo-item ${node.attrs.done ? 'done' : ''}`,
         'data-type': 'todo-item',
@@ -43,7 +55,7 @@ const todoListSchema = {
 }
 
 class TodoItemView {
-  contentDOM: Node
+  contentDOM: HTMLElement
   dom: Node
   view: EditorView
   getPos: () => number

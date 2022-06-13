@@ -1,5 +1,5 @@
 import {Node, NodeType} from 'prosemirror-model'
-import {Decoration, EditorView} from 'prosemirror-view'
+import {Decoration, DecorationSource, EditorView} from 'prosemirror-view'
 import {EditorState, Selection, Transaction, TextSelection} from 'prosemirror-state'
 import {keymap} from 'prosemirror-keymap'
 import {inputRules, textblockTypeInputRule} from 'prosemirror-inputrules'
@@ -133,7 +133,7 @@ export default (props: CodeBlockProps): ProseMirrorExtension => ({
       view: EditorView,
       getPos: () => number,
       _decos: Decoration[],
-      innerDecos: any
+      innerDecos: DecorationSource
     ) => new CodeBlockView(node, view, getPos, innerDecos, props)
   },
 })

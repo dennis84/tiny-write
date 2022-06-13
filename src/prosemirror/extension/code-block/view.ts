@@ -1,5 +1,5 @@
 import {Node} from 'prosemirror-model'
-import {DecorationSet, EditorView as ProsemirrorEditorView} from 'prosemirror-view'
+import {DecorationSet, DecorationSource, EditorView as ProsemirrorEditorView} from 'prosemirror-view'
 import {TextSelection, Selection} from 'prosemirror-state'
 import {exitCode} from 'prosemirror-commands'
 import {Compartment, EditorState, Text} from '@codemirror/state'
@@ -39,7 +39,7 @@ export class CodeBlockView {
     node: Node,
     view: ProsemirrorEditorView,
     getPos: () => number,
-    innerDecos: any,
+    innerDecos: DecorationSource,
     options: CodeBlockProps
   ) {
     this.node = node

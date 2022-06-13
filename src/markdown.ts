@@ -17,8 +17,8 @@ export const markdownSerializer = new MarkdownSerializer({
   image(state, node) {
     const alt = state.esc(node.attrs.alt || '')
     const src = node.attrs.path ?? node.attrs.src
-    const title = node.attrs.title ? state.quote(node.attrs.title) : undefined
-    state.write(`![${alt}](${src}${title ? (' ' + title) : ''})\n`)
+    const title = node.attrs.title ? ` "${node.attrs.title.replace(/"/g, '\\"')}"` : ''
+    state.write(`![${alt}](${src}${title})\n`)
   },
   code_block(state, node) {
     const src = node.attrs.params.src

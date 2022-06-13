@@ -111,7 +111,7 @@ class ImageView {
   getPos: () => number
   schema: Schema
   dom: Element
-  contentDOM: Element
+  contentDOM: HTMLElement
   container: HTMLElement
   handle: HTMLElement
   onResizeFn: any

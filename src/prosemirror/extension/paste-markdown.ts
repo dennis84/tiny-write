@@ -52,7 +52,7 @@ const pasteMarkdown = (schema: Schema) => {
   return new Plugin({
     props: {
       handleDOMEvents: {
-        keydown: (_, event) => {
+        keydown: (_, event: KeyboardEvent) => {
           shiftKey = event.shiftKey
           return false
         },

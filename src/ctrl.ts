@@ -2,7 +2,7 @@ import {Store, createStore, unwrap} from 'solid-js/store'
 import {v4 as uuidv4} from 'uuid'
 import * as db from 'idb-keyval'
 import {fromUint8Array, toUint8Array} from 'js-base64'
-import {EditorView} from 'prosemirror-view'
+import {EditorView, NodeViewConstructor} from 'prosemirror-view'
 import {EditorState, Transaction} from 'prosemirror-state'
 import {Schema} from 'prosemirror-model'
 import {undo, redo} from 'prosemirror-history'
@@ -18,12 +18,7 @@ import {State, File, Collab, Config, ServiceError, newState} from './state'
 import {COLLAB_URL, isTauri, mod} from './env'
 import {serialize, createMarkdownParser} from './markdown'
 import {isDarkTheme, themes} from './config'
-import {
-  NodeViewFn,
-  ProseMirrorExtension,
-  ProseMirrorState,
-  isEmpty,
-} from './prosemirror/state'
+import {ProseMirrorExtension, ProseMirrorState, isEmpty} from './prosemirror/state'
 
 const isText = (x: any) => x && x.doc && x.selection
 
@@ -686,7 +681,7 @@ const createEditorState = (
   prevText?: EditorState
 ): {
   editorState: EditorState;
-  nodeViews: {[key: string]: NodeViewFn};
+  nodeViews: {[key: string]: NodeViewConstructor};
 } => {
   const reconfigure = text instanceof EditorState && prevText?.schema
   let schemaSpec = {nodes: {}}
@@ -712,7 +707,7 @@ const createEditorState = (
 
   let editorState: EditorState
   if (reconfigure) {
-    editorState = text.reconfigure({schema, plugins})
+    editorState = text.reconfigure({plugins})
   } else if (text instanceof EditorState) {
     editorState = EditorState.fromJSON({schema, plugins}, text.toJSON())
   } else {

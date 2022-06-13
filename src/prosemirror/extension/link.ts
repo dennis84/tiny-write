@@ -23,7 +23,7 @@ const markdownLinks = (schema: Schema) => new Plugin({
   key: pluginKey,
   state: {
     init() {
-      return {schema}
+      return {schema, pos: undefined}
     },
     apply(tr, state) {
       const action = tr.getMeta(this)

@@ -1,21 +1,14 @@
 import {Plugin, EditorState} from 'prosemirror-state'
-import {Node, Schema, SchemaSpec} from 'prosemirror-model'
-import {Decoration, EditorView, NodeView} from 'prosemirror-view'
+import {Schema, SchemaSpec} from 'prosemirror-model'
+import {NodeViewConstructor} from 'prosemirror-view'
 
 export interface ProseMirrorExtension {
   schema?: (prev: SchemaSpec) => SchemaSpec;
   plugins?: (prev: Plugin[], schema: Schema) => Plugin[];
-  nodeViews?: {[key: string]: NodeViewFn};
+  nodeViews?: {[key: string]: NodeViewConstructor};
 }
 
 export type ProseMirrorState = EditorState | unknown
-
-export type NodeViewFn = (
-  node: Node,
-  view: EditorView,
-  getPos: () => number,
-  decorations: Decoration[],
-) => NodeView
 
 export const isEmpty = (state: any) => !state || (
   state.doc.childCount == 1 &&
