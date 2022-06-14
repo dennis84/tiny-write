@@ -4,13 +4,13 @@ import {undo, redo} from 'prosemirror-history'
 import {differenceInHours, format} from 'date-fns'
 import {css} from '@emotion/css'
 import {version} from '../../package.json'
-import {Config, File, PrettierConfig, useState} from '../state'
+import {Config, File, useState} from '../state'
 import {foreground, primaryBackground, getTheme, themes, fonts, codeTheme, codeThemes} from '../config'
 import {isTauri, isMac, alt, mod, WEB_URL, VERSION_URL} from '../env'
 import * as remote from '../remote'
 import {isEmpty} from '../prosemirror/state'
 import {Styled} from './Layout'
-import {button} from './Button'
+import {PrettierMenu} from './PrettierMenu'
 
 const Container = (props: {children: any}) => (
   <div class={css`
@@ -65,7 +65,7 @@ const Burger = (props: Styled & {active: boolean}) => {
   )
 }
 
-const Off = (props: Styled & {hidden?: boolean}) => (
+export const Off = (props: Styled & {hidden?: boolean}) => (
   <div class={css`
     background: ${foreground(props.config)}19;
     padding: 20px;
@@ -80,7 +80,7 @@ const Off = (props: Styled & {hidden?: boolean}) => (
   `}>{props.children}</div>
 )
 
-const Label = (props: Styled) => (
+export const Label = (props: Styled) => (
   <h3 class={css`
     margin: 0;
     font-size: 14px;
@@ -92,7 +92,7 @@ const Label = (props: Styled) => (
   `}>{props.children}</h3>
 )
 
-const Sub = (props: {children: any}) => (
+export const Sub = (props: {children: any}) => (
   <nav class={css`
     margin: 10px 0;
     margin-bottom: 30px;
@@ -113,7 +113,7 @@ const itemCss = (config: Config) => css`
   text-align: left;
 `
 
-const Text = (props: Styled) => (
+export const Text = (props: Styled) => (
   <p
     class={itemCss(props.config)}
     data-testid={props['data-testid']}>
@@ -121,7 +121,7 @@ const Text = (props: Styled) => (
   </p>
 )
 
-const Link = (props: Styled & {withMargin?: boolean; disabled?: boolean; title?: string}) => (
+export const Link = (props: Styled & {withMargin?: boolean; disabled?: boolean; title?: string}) => (
   <button
     class={css`
       ${itemCss(props.config)}
@@ -280,12 +280,6 @@ export default () => {
 
   const onChangeContentWidth = (e: any) => {
     ctrl.updateConfig({contentWidth: Number(e.target.value)})
-  }
-
-  const updatePrettier = (opt: Partial<PrettierConfig>) => {
-    ctrl.updateConfig({
-      prettier: {...store.config.prettier, ...opt}
-    })
   }
 
   const onToggleAlwaysOnTop = () => {
@@ -451,61 +445,6 @@ export default () => {
     onCleanup(() => clearTimeout(id))
   })
 
-  const PrettierOff = () => (
-    <Off
-      config={store.config}
-      onClick={() => store.editorView.focus()}
-      data-tauri-drag-region="true">
-      <div>
-        <Label config={store.config}>Prettier</Label>
-        <Sub>
-          <Text config={store.config}>
-            Print Width:
-            <input
-              type="range"
-              min="20"
-              max="160"
-              step="10"
-              value={store.config.prettier.printWidth}
-              onInput={(e: any) => updatePrettier({printWidth: Number(e.target.value)})} />
-            {store.config.prettier.printWidth}
-          </Text>
-          <Text config={store.config}>
-            Tab Width:
-            <input
-              type="range"
-              min="2"
-              max="8"
-              step="2"
-              value={store.config.prettier.tabWidth}
-              onInput={(e: any) => updatePrettier({tabWidth: Number(e.target.value)})} />
-            {store.config.prettier.tabWidth}
-          </Text>
-          <Link
-            config={store.config}
-            onClick={() => updatePrettier({useTabs: !store.config.prettier.useTabs})}>
-            Use Tabs {store.config.prettier.useTabs && '✅'}
-          </Link>
-          <Link
-            config={store.config}
-            onClick={() => updatePrettier({semi: !store.config.prettier.semi})}>
-            Semicolons {store.config.prettier.semi && '✅'}
-          </Link>
-          <Link
-            config={store.config}
-            onClick={() => updatePrettier({singleQuote: !store.config.prettier.singleQuote})}>
-            Single Quote {store.config.prettier.singleQuote && '✅'}
-          </Link>
-        </Sub>
-        <button
-          class={button(store.config)}
-          onClick={() => setShowPrettier(false)}>
-          ⟵ Back
-        </button>
-      </div>
-    </Off>
-  )
-
   return (
     <Container>
       <Burger
@@ -518,7 +457,7 @@ export default () => {
         <span />
       </Burger>
       <Show when={showPrettier()}>
-        <PrettierOff />
+        <PrettierMenu onBack={() => setShowPrettier(false)} />
       </Show>
       <Show when={show()}>
         <Off
