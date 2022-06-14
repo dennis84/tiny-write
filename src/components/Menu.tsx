@@ -23,7 +23,7 @@ const Container = (props: {children: any}) => (
   `}>{props.children}</div>
 )
 
-const Burger = (props: Styled & {active: boolean}) => {
+const Burger = (props: Styled) => {
   const [local, others] = splitProps(props, ['config', 'children', 'active'])
   return (
     <button
@@ -66,7 +66,7 @@ const Burger = (props: Styled & {active: boolean}) => {
   )
 }
 
-export const Off = (props: Styled & {hidden?: boolean}) => (
+export const Off = (props: Styled) => (
   <div class={css`
     background: ${foreground(props.config)}19;
     padding: 20px;
@@ -122,59 +122,57 @@ export const Text = (props: Styled) => (
   </p>
 )
 
-export const Link = (props: Styled & {withMargin?: boolean; disabled?: boolean; title?: string}) => (
-  <button
-    class={css`
-      ${itemCss(props.config)}
-      background: none;
-      border: 0;
-      cursor: pointer;
-      margin-bottom: ${props.withMargin ? '10px' : ''};
-      i {
-        font-style: normal;
-      }
-      > span {
-        justify-self: flex-end;
-        margin-left: auto;
-        > i {
-          color: ${foreground(props.config)};
-          background: ${foreground(props.config)}19;
-          border: 1px solid ${foreground(props.config)}99;
-          box-shadow: 0 2px 0 0 ${foreground(props.config)}99;
-          border-radius: 2px;
-          font-size: 13px;
-          line-height: 1.4;
-          padding: 1px 4px;
-          margin: 0 1px;
+export const Link = (props: Styled) => {
+  const [local, others] = splitProps(props, ['config', 'children'])
+  return (
+    <button
+      {...others}
+      class={css`
+        ${itemCss(local.config)}
+        background: none;
+        border: 0;
+        cursor: pointer;
+        i {
+          font-style: normal;
         }
-      }
-      &:hover {
-        color: ${primaryBackground(props.config)};
-        > span i {
-          position: relative;
-          box-shadow: 0 3px 0 0 ${foreground(props.config)}99;
-          top: -1px;
+        > span {
+          justify-self: flex-end;
+          margin-left: auto;
+          > i {
+            color: ${foreground(local.config)};
+            background: ${foreground(local.config)}19;
+            border: 1px solid ${foreground(local.config)}99;
+            box-shadow: 0 2px 0 0 ${foreground(local.config)}99;
+            border-radius: 2px;
+            font-size: 13px;
+            line-height: 1.4;
+            padding: 1px 4px;
+            margin: 0 1px;
+          }
         }
-      }
-      &:active {
-        > span i {
-          position: relative;
-          box-shadow: none;
-          top: 1px;
+        &:hover {
+          color: ${primaryBackground(local.config)};
+          > span i {
+            position: relative;
+            box-shadow: 0 3px 0 0 ${foreground(local.config)}99;
+            top: -1px;
+          }
         }
-      }
-      &[disabled] {
-        color: ${foreground(props.config)}99;
-        cursor: not-allowed;
-      }
-    `}
-    onClick={props.onClick}
-    disabled={props.disabled}
-    title={props.title}
-    data-testid={props['data-testid']}>
-    {props.children}
-  </button>
-)
+        &:active {
+          > span i {
+            position: relative;
+            box-shadow: none;
+            top: 1px;
+          }
+        }
+        &[disabled] {
+          color: ${foreground(local.config)}99;
+          cursor: not-allowed;
+        }
+      `}
+    >{local.children}</button>
+  )
+}
 
 export default () => {
   const [store, ctrl] = useState()
@@ -389,7 +387,7 @@ export default () => {
     return (
       <Link
         config={store.config}
-        withMargin={true}
+        style={{'margin-bottom': '10px'}}
         onClick={() => onOpenFile(p.file)}
         data-testid="open">
         {text()}&nbsp;
