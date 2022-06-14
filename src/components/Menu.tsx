@@ -248,7 +248,7 @@ export default () => {
     redo(store.editorView.state, store.editorView.dispatch)
   }
 
-  const cmd = (cmd: string) => () => {
+  const cmd = (cmd: string) => {
     (document as any).execCommand(cmd)
     setLastAction(cmd)
   }
@@ -479,11 +479,11 @@ export default () => {
               <Link config={store.config} onClick={onRedo}>
                 Redo <Keys keys={[modKey, ...(isMac ? ['Shift', 'z'] : ['y'])]} />
               </Link>
-              <Link config={store.config} onClick={cmd('cut')}>Cut <Keys keys={[modKey, 'x']} /></Link>
-              <Link config={store.config} onClick={cmd('paste')} disabled={!isTauri}>
+              <Link config={store.config} onClick={() => cmd('cut')}>Cut <Keys keys={[modKey, 'x']} /></Link>
+              <Link config={store.config} onClick={() => cmd('paste')} disabled={!isTauri}>
                 Paste <Keys keys={[modKey, 'p']} />
               </Link>
-              <Link config={store.config} onClick={cmd('copy')}>
+              <Link config={store.config} onClick={() => cmd('copy')}>
                 Copy {lastAction() === 'copy' && '📋'} <Keys keys={[modKey, 'c']} />
               </Link>
               <Link config={store.config} onClick={onCopyAllAsMd}>
