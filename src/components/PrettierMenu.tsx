@@ -64,7 +64,7 @@ export const PrettierMenu = (props: Props) => {
         <button
           class={button(store.config)}
           onClick={props.onBack}>
-          ⟵ Back
+          ↩ Back
         </button>
       </div>
     </Off>

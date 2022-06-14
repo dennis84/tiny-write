@@ -5,12 +5,13 @@ import {differenceInHours, format} from 'date-fns'
 import {css} from '@emotion/css'
 import {version} from '../../package.json'
 import {Config, File, useState} from '../state'
-import {foreground, primaryBackground, getTheme, themes, fonts, codeTheme, codeThemes} from '../config'
+import {foreground, primaryBackground} from '../config'
 import {isTauri, isMac, alt, mod, WEB_URL, VERSION_URL} from '../env'
 import * as remote from '../remote'
 import {isEmpty} from '../prosemirror/state'
 import {Styled} from './Layout'
 import {PrettierMenu} from './PrettierMenu'
+import {AppearanceMenu} from './AppearanceMenu'
 
 const Container = (props: {children: any}) => (
   <div class={css`
@@ -177,8 +178,7 @@ export const Link = (props: Styled & {withMargin?: boolean; disabled?: boolean; 
 
 export default () => {
   const [store, ctrl] = useState()
-  const [show, setShow] = createSignal(false)
-  const [showPrettier, setShowPrettier] = createSignal(false)
+  const [show, setShow] = createSignal()
   const [lastAction, setLastAction] = createSignal<string | undefined>()
   const [isTextEmpty, setIsTextEmpty] = createSignal(false)
   const [collabUsers, setCollabUsers] = createSignal(0)
@@ -239,8 +239,7 @@ export default () => {
 
   const onBurgerClick = () => {
     store.editorView.focus()
-    setShow(!show())
-    setShowPrettier(false)
+    setShow(show() ? undefined : 'main')
   }
 
   const onUndo = () => {
@@ -260,26 +259,6 @@ export default () => {
     remote.copyAllAsMarkdown(store.editorView.state).then(() => {
       setLastAction('copy-md')
     })
-  }
-
-  const onChangeTheme = (theme: string) => () => {
-    ctrl.updateConfig({theme})
-  }
-
-  const onChangeCodeTheme = (codeTheme: string) => () => {
-    ctrl.updateConfig({codeTheme})
-  }
-
-  const onChangeFont = (font: string) => () => {
-    ctrl.updateConfig({font})
-  }
-
-  const onChangeFontSize = (e: any) => {
-    ctrl.updateConfig({fontSize: Number(e.target.value)})
-  }
-
-  const onChangeContentWidth = (e: any) => {
-    ctrl.updateConfig({contentWidth: Number(e.target.value)})
   }
 
   const onToggleAlwaysOnTop = () => {
@@ -430,7 +409,7 @@ export default () => {
   createEffect(() => {
     if (!show()) return
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setShow(false)
+      if (e.key === 'Escape') setShow(undefined)
     }
 
     document.addEventListener('keydown', onKeyDown)
@@ -449,21 +428,23 @@ export default () => {
     <Container>
       <Burger
         config={store.config}
-        active={show()}
+        active={show() !== undefined}
         onClick={onBurgerClick}
         data-testid="burger">
         <span />
         <span />
         <span />
       </Burger>
-      <Show when={showPrettier()}>
-        <PrettierMenu onBack={() => setShowPrettier(false)} />
+      <Show when={show() === 'prettier'}>
+        <PrettierMenu onBack={() => setShow('main')} />
       </Show>
-      <Show when={show()}>
+      <Show when={show() === 'theme'}>
+        <AppearanceMenu onBack={() => setShow('main')} />
+      </Show>
+      <Show when={show() === 'main'}>
         <Off
           config={store.config}
           onClick={() => store.editorView.focus()}
-          hidden={showPrettier()}
           data-tauri-drag-region="true">
           <div>
             <Label config={store.config}>
@@ -511,38 +492,10 @@ export default () => {
                 Copy all as markdown {lastAction() === 'copy-md' && '📋'}
               </Link>
             </Sub>
-            <Label config={store.config}>Theme</Label>
-            <Sub>
-              <For each={Object.entries(themes)}>
-                {([key, value]) => (
-                  <Link config={store.config} onClick={onChangeTheme(key)}>
-                    {value.label}{' '}{key === getTheme(store.config).value && '✅'}
-                  </Link>
-                )}
-              </For>
-            </Sub>
-            <Label config={store.config}>Code</Label>
-            <Sub>
-              <For each={Object.entries(codeThemes)}>
-                {([key, value]) => (
-                  <Link config={store.config} onClick={onChangeCodeTheme(key)}>
-                    {value.label}{' '}{key === codeTheme(store.config) && '✅'}
-                  </Link>
-                )}
-              </For>
-            </Sub>
-            <Label config={store.config}>Font</Label>
-            <Sub>
-              <For each={Object.entries(fonts)}>
-                {([key, value]) => (
-                  <Link config={store.config} onClick={onChangeFont(key)}>
-                    {value.label}{' '}{key === store.config.font && '✅'}
-                  </Link>
-                )}
-              </For>
-            </Sub>
             <Label config={store.config}>View</Label>
             <Sub>
+              <Link config={store.config} onClick={() => setShow('theme')}>Appearance 🎨</Link>
+              <Link config={store.config} onClick={() => setShow('prettier')}>Prettier 💅</Link>
               <Show when={isTauri}>
                 <Link config={store.config} onClick={onToggleFullscreen}>
                   Fullscreen {store.fullscreen && '✅'} <Keys keys={[alt, 'Enter']} />
@@ -559,37 +512,6 @@ export default () => {
                   Always on Top {store.config.alwaysOnTop && '✅'}
                 </Link>
               </Show>
-              <Text config={store.config}>
-                Font size:
-                <input
-                  type="range"
-                  min="8"
-                  max="48"
-                  value={store.config.fontSize}
-                  onInput={onChangeFontSize} />
-                {store.config.fontSize}
-              </Text>
-              <Text config={store.config}>
-                Content width:
-                <input
-                  type="range"
-                  min="400"
-                  max="1800"
-                  step="100"
-                  value={store.config.contentWidth}
-                  onInput={onChangeContentWidth} />
-                {store.config.contentWidth}
-              </Text>
-              <Link config={store.config} onClick={() => setShowPrettier(true)}>
-                Prettier
-              </Link>
-            </Sub>
-            <Label config={store.config}>Stats</Label>
-            <Sub>
-              <LastModified />
-              <Text config={store.config}>{textStats().words} words</Text>
-              <Text config={store.config}>{textStats().paragraphs} paragraphs</Text>
-              <Text config={store.config}>{textStats().loc} lines of code</Text>
             </Sub>
             <Label config={store.config}>Collab</Label>
             <Sub>
@@ -615,6 +537,13 @@ export default () => {
                   {collabUsers()} {collabUsers() === 1 ? 'user' : 'users'} connected
                 </Text>
               </Show>
+            </Sub>
+            <Label config={store.config}>Stats</Label>
+            <Sub>
+              <LastModified />
+              <Text config={store.config}>{textStats().words} words</Text>
+              <Text config={store.config}>{textStats().paragraphs} paragraphs</Text>
+              <Text config={store.config}>{textStats().loc} lines of code</Text>
             </Sub>
             <Label config={store.config}>Application</Label>
             <Sub>
