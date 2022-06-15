@@ -101,6 +101,16 @@ export default (props: {state: State}) => {
     })
   })
 
+  createEffect(() => {
+    if (!store.lastModified) return
+    const doc = store.editorView?.state.doc
+    const len = doc?.content.size
+    if (len > 0) {
+      const text = doc.textBetween(0, Math.min(30, len), ' ')
+      document.title = text
+    }
+  })
+
   createEffect((prev) => {
     const lastModified = store.lastModified
     if (!lastModified || (store.loading === 'initialized' && prev === 'loading')) {
