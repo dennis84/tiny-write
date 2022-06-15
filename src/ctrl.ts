@@ -590,9 +590,9 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
 
   const updateConfig = (conf: Partial<Config>) => {
     const state: State = unwrap(store)
-    state.collab?.y?.configType.set('font', conf.font)
-    state.collab?.y?.configType.set('fontSize', conf.fontSize)
-    state.collab?.y?.configType.set('contentWidth', conf.contentWidth)
+    if (conf.font) state.collab?.y?.configType.set('font', conf.font)
+    if (conf.fontSize) state.collab?.y?.configType.set('fontSize', conf.fontSize)
+    if (conf.contentWidth) state.collab?.y?.configType.set('contentWidth', conf.contentWidth)
     const config = {...state.config, ...conf}
     updateEditorState({...state, config})
     setState({config, lastModified: new Date()})
