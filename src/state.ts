@@ -50,8 +50,8 @@ export interface YOptions {
 
 export interface Collab {
   started?: boolean;
-  error?: boolean;
   room?: string;
+  error?: boolean;
   y?: YOptions;
 }
 
@@ -66,7 +66,7 @@ export interface State {
   error?: ErrorObject;
   loading: LoadingType;
   fullscreen: boolean;
-  collab?: Collab;
+  collab: Collab;
   path?: string;
   args?: Args;
 }
@@ -77,7 +77,7 @@ export interface File {
   lastModified?: string;
   path?: string;
   markdown?: boolean;
-  collab?: Collab;
+  room?: string;
 }
 
 export class ServiceError extends Error {
@@ -97,6 +97,7 @@ export const newState = (props: Partial<State> = {}): State => ({
   loading: 'loading',
   fullscreen: false,
   markdown: false,
+  collab: {started: false},
   config: {
     fontSize: 24,
     contentWidth: 800,

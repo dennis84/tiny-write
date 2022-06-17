@@ -127,7 +127,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       lastModified: file.lastModified ? new Date(file.lastModified) : undefined,
       path: file.path,
       markdown: file.markdown,
-      collab: {room: file.collab?.room},
+      collab: {room: file.room},
       args: {cwd: state.args?.cwd},
     }
 
@@ -237,14 +237,13 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       fullscreen: store.fullscreen,
       lastModified: new Date(),
       error: undefined,
-      collab: undefined,
     }
     updateEditorState(state, createEmptyText())
     setState(state)
   }
 
   const discard = async () => {
-    if (store.path || store.collab?.room) {
+    if (store.path) {
       await discardText()
     } else if (store.files.length > 0 && isEmpty(store.editorView.state)) {
       await discardText()
@@ -390,14 +389,13 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       lastModified: file.lastModified ? new Date(file.lastModified) : undefined,
       path: file.path,
       markdown: file.markdown,
-      collab: {room: file.collab.room},
+      collab: {room: file.room},
     }
 
     let newState: State = {
       ...state,
       args: {cwd: state.args?.cwd},
       files,
-      collab: undefined,
       error: undefined,
       ...next,
     }
@@ -427,10 +425,9 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     if (state.path) {
       const text = serialize(store.editorView.state)
       await remote.writeFile(state.path, text)
-    } else if (state.collab?.room) {
+    } else {
       const documentState = Y.encodeStateAsUpdate(state.collab.y.provider.doc)
       data.ydoc = fromUint8Array(documentState)
-    } else {
       data.text = store.editorView.state.toJSON()
     }
 
