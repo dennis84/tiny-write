@@ -1,4 +1,4 @@
-export * as bash from '../../../../node_modules/devicon/icons/bash/bash-original.svg'
+export {default as bash} from '../../../../node_modules/devicon/icons/bash/bash-original.svg'
 export {default as c} from '../../../../node_modules/devicon/icons/c/c-original.svg'
 export {default as ceylon} from '../../../../node_modules/devicon/icons/ceylon/ceylon-original.svg'
 export {default as clojure} from '../../../../node_modules/devicon/icons/clojure/clojure-original.svg'
