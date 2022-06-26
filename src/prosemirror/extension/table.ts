@@ -9,11 +9,11 @@ export const tableInputRule = (schema: Schema) => new InputRule(
   (state: EditorState, match: string[], start: number, end: number) => {
     const tr = state.tr
     const columns = [...Array(match[0].trim().length - 1)]
-    const headers = columns.map(() => schema.node(schema.nodes.table_header, {}))
-    const cells = columns.map(() => schema.node(schema.nodes.table_cell, {}))
-    const table = schema.node(schema.nodes.table, {}, [
-      schema.node(schema.nodes.table_head, {}, schema.node(schema.nodes.table_row, {}, headers)),
-      schema.node(schema.nodes.table_body, {}, schema.node(schema.nodes.table_row, {}, cells)),
+    const headers = columns.map(() => schema.nodes.table_header.createAndFill())
+    const cells = columns.map(() => schema.nodes.table_cell.createAndFill())
+    const table = schema.nodes.table.createChecked(null, [
+      schema.nodes.table_head.createChecked(null, schema.nodes.table_row.createChecked(null, headers)),
+      schema.nodes.table_body.createChecked(null, schema.nodes.table_row.createChecked(null, cells)),
     ])
 
     tr.delete(start - 1, end)
