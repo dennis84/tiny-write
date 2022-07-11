@@ -5,7 +5,7 @@ const position = new Plugin({
   props: {
     decorations(state) {
       const decos = []
-      state.doc.forEach((node, pos) => {
+      state.doc.descendants((node, pos) => {
         decos.push(Decoration.node(pos, pos + node.nodeSize, {
           'title': `${pos}-${pos+node.nodeSize}`,
         }))

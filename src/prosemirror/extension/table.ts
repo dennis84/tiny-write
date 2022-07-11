@@ -156,18 +156,9 @@ const findVertTableCellPos = ($pos: ResolvedPos, dir = 'up') => {
   }
 
   const targetCell = $pos.doc.resolve(rowBeforePos.posAtIndex(rowPos.index()) + 1)
-  const targetCellTextSize = getTextSize(targetCell.node())
+  const targetCellTextSize = targetCell.node().content.size
   const cellOffset = offset > targetCellTextSize ? targetCellTextSize : offset
   return $pos.doc.resolve(targetCell.pos + cellOffset)
-}
-
-const getTextSize = (n: Node) => {
-  let size = 0
-  n.descendants((d: Node) => {
-    size += d.text?.length ?? 0
-  })
-
-  return size
 }
 
 export default (): ProseMirrorExtension => ({
@@ -193,31 +184,39 @@ export default (): ProseMirrorExtension => ({
         const cellPos = findTableCellPos(sel.$head)
         if (!cellPos) return false
 
-        if (getTextSize(cellPos.node()) === 0) {
-          const rowPos = findTableRowPos(sel.$head)
-          const tablePos = findTablePos(sel.$head)
-          const before = state.doc.resolve(cellPos.before() - 1)
+        if (cellPos.node().content.size > 0) {
+          return false
+        }
 
-          const cellBeforePos = findTableCellPos(before)
-          const inTableHead = !!findTableHeadPos(sel.$head)
+        const rowPos = findTableRowPos(sel.$head)
+        const tablePos = findTablePos(sel.$head)
+        const before = state.doc.resolve(cellPos.before() - 1)
 
-          if (cellBeforePos) {
-            const tr = state.tr
-            tr.setSelection(Selection.near(before))
-            dispatch(tr)
-            return true
-          } else if (!inTableHead && getTextSize(rowPos.node()) === 0) {
-            const tr = state.tr
-            tr.delete(before.pos - 1, before.pos + rowPos.node().nodeSize)
-            tr.setSelection(Selection.near(tr.doc.resolve(before.pos - 4)))
-            dispatch(tr)
-            return true
-          } else if (getTextSize(tablePos.node()) === 0) {
-            const tr = state.tr
-            tr.delete(tablePos.before(), tablePos.before() + tablePos.node().nodeSize)
-            dispatch(tr)
-            return true
-          }
+        const cellBeforePos = findTableCellPos(before)
+        const inTableHead = !!findTableHeadPos(sel.$head)
+
+        if (cellBeforePos) {
+          const tr = state.tr
+          tr.setSelection(Selection.near(before, -1))
+          dispatch(tr)
+          return true
+        }
+
+        // Delete row if all cells are empty
+        if (!inTableHead && !rowPos.node().textContent.length) {
+          const tr = state.tr
+          tr.setSelection(Selection.near(before, -1))
+          tr.delete(before.pos - 1, before.pos + rowPos.node().nodeSize)
+          dispatch(tr)
+          return true
+        }
+
+        // Delete table if empty
+        if (!tablePos.node().textContent.length) {
+          const tr = state.tr
+          tr.delete(tablePos.before(), tablePos.before() + tablePos.node().nodeSize)
+          dispatch(tr)
+          return true
         }
 
         return false

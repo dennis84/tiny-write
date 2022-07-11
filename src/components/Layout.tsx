@@ -121,6 +121,9 @@ export const editorCss = (config: Config) => css`
       margin: 0;
       display: flow-root;
     }
+    > ul, ol {
+      padding: 0;
+    }
     > ul > li, > ol > li {
       margin-left: 30px;
     }
