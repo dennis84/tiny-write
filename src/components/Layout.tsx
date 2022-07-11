@@ -214,7 +214,7 @@ export const editorCss = (config: Config) => css`
     .codemirror-outer {
       position: relative;
       margin-top: 10px;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
       display: flex;
       .handle {
         top: 2px;
@@ -247,15 +247,20 @@ export const editorCss = (config: Config) => css`
           position: absolute;
           height: 8px;
           width: 100%;
-          bottom: -8px;
+          bottom: -10px;
           left: 0;
           z-index: 1;
           display: flex;
           justify-content: center;
           align-items: center;
           cursor: pointer;
-          font-size: 8px;
+          font-size: 10px;
           user-select: none;
+          background: ${foreground(config)}22;
+          border-radius: 3px;
+          &:hover {
+            background: ${foreground(config)}33;
+          }
         }
         .lang-select {
           .lang-input {
