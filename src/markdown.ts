@@ -39,44 +39,26 @@ export const markdownSerializer = new MarkdownSerializer({
     state.renderContent(node)
   },
   table(state, node) {
-    function serializeTableHead(head: Node) {
-      let columnAlignments: string[] = []
-      head.forEach((headRow) => {
-        if (headRow.type.name === 'table_row') {
-          columnAlignments = serializeTableRow(headRow)
-        }
-      })
-
-      // write table header separator
-      for (const alignment of columnAlignments) {
-        state.write('|')
-        state.write(alignment === 'left' || alignment === 'center' ? ':' : ' ')
-        state.write('---')
-        state.write(alignment === 'right' || alignment === 'center' ? ':' : ' ')
-      }
-      state.write('|')
-      state.ensureNewLine()
-    }
-
-    function serializeTableBody(body: Node) {
-      body.forEach((bodyRow) => {
-        if (bodyRow.type.name === 'table_row') {
-          serializeTableRow(bodyRow)
-        }
-      })
-      state.ensureNewLine()
-    }
-
     function serializeTableRow(row: Node): string[] {
       const columnAlignment: string[] = []
+      let headerRow = false
       row.forEach((cell) => {
-        if (cell.type.name === 'table_header' || cell.type.name === 'table_cell') {
-          const alignment = serializeTableCell(cell)
-          columnAlignment.push(alignment)
-        }
+        headerRow = cell.type.name === 'table_header'
+        const alignment = serializeTableCell(cell)
+        columnAlignment.push(alignment)
       })
       state.write('|')
       state.ensureNewLine()
+      if (headerRow) {
+        columnAlignment.forEach((alignment) => {
+          state.write('|')
+          state.write(alignment === 'left' || alignment === 'center' ? ':' : ' ')
+          state.write('---')
+          state.write(alignment === 'right' || alignment === 'center' ? ':' : ' ')
+        })
+        state.write('|')
+        state.ensureNewLine()
+      }
       return columnAlignment
     }
 
@@ -102,8 +84,7 @@ export const markdownSerializer = new MarkdownSerializer({
     }
 
     node.forEach((table_child) => {
-      if (table_child.type.name === 'table_head') serializeTableHead(table_child)
-      if (table_child.type.name === 'table_body') serializeTableBody(table_child)
+      serializeTableRow(table_child)
     })
 
     state.ensureNewLine()
@@ -131,8 +112,8 @@ const md = markdownit({html: false})
 export const createMarkdownParser = (schema: Schema) =>
   new MarkdownParser(schema, md, {
     table: {block: 'table'},
-    thead: {block: 'table_head'},
-    tbody: {block: 'table_body'},
+    thead: {ignore: true},
+    tbody: {ignore: true},
     th: {
       block: 'table_header',
       getAttrs: (tok) => ({
