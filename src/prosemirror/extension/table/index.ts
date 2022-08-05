@@ -9,7 +9,6 @@ import {
   deleteTable,
   nextCell,
   selectionCell,
-  tableEditing,
   tableNodes,
 } from 'prosemirror-tables'
 
@@ -72,7 +71,6 @@ export default (): ProseMirrorExtension => ({
     nodes: (prev.nodes as any).append(schema),
   }),
   plugins: (prev, schema) => [
-    tableEditing(),
     keymap({
       'Ctrl-Enter': (state, dispatch) => {
         const cellPos = selectionCell(state)
