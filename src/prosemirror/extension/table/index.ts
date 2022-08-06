@@ -2,7 +2,6 @@ import {EditorState, Selection} from 'prosemirror-state'
 import {Schema} from 'prosemirror-model'
 import {InputRule, inputRules} from 'prosemirror-inputrules'
 import {keymap} from 'prosemirror-keymap'
-import {ProseMirrorExtension} from '../../state'
 import {
   addRowAfter,
   deleteRow,
@@ -11,6 +10,8 @@ import {
   selectionCell,
   tableNodes,
 } from 'prosemirror-tables'
+import {ProseMirrorExtension} from '../../state'
+import {cellMenu} from './cell-menu'
 
 export const tableInputRule = (schema: Schema) => new InputRule(
   new RegExp('^\\|{2,}\\s$'),
@@ -170,5 +171,6 @@ export default (): ProseMirrorExtension => ({
     }),
     ...prev,
     inputRules({rules: [tableInputRule(schema)]}),
+    cellMenu,
   ],
 })

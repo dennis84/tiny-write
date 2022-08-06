@@ -158,6 +158,7 @@ export const editorCss = (config: Config) => css`
           border: 1px solid ${foreground(config)}7f;
           border-top: 0;
           border-right: 0;
+          position: relative;
         }
         th:first-child, td:first-child {
           border-left: 0;
@@ -165,6 +166,46 @@ export const editorCss = (config: Config) => css`
         tr:last-child td {
           border-bottom: 0;
         }
+      }
+      .table-menu-right,
+      .table-menu-left,
+      .table-menu-bottom,
+      .table-menu-top {
+        position: absolute;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        font-size: 12px;
+        user-select: none;
+        z-index: 1;
+        background: ${background(config)};
+        border: 1px solid ${foreground(config)}7f;
+        border-radius: 3px;
+      }
+      .table-menu-right {
+        top: calc(50% - 10px);
+        right: -5px;
+        width: 10px;
+        height: 20px;
+      }
+      .table-menu-left {
+        top: calc(50% - 10px);
+        left: -5px;
+        width: 10px;
+        height: 20px;
+      }
+      .table-menu-bottom {
+        left: calc(50% - 10px);
+        bottom: -5px;
+        width: 20px;
+        height: 10px;
+      }
+      .table-menu-top {
+        left: calc(50% - 10px);
+        top: -5px;
+        width: 20px;
+        height: 10px;
       }
       &.selected table {
         box-shadow: 0 0 0 1px ${primaryBackground(config)};
