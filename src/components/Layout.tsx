@@ -163,14 +163,16 @@ export const editorCss = (config: Config) => css`
         th:first-child, td:first-child {
           border-left: 0;
         }
+        th {
+          border-bottom-width: 2px;
+        }
         tr:last-child td {
           border-bottom: 0;
         }
       }
       .table-menu-right,
       .table-menu-left,
-      .table-menu-bottom,
-      .table-menu-top {
+      .table-menu-bottom {
         position: absolute;
         display: flex;
         justify-content: center;
@@ -198,12 +200,6 @@ export const editorCss = (config: Config) => css`
       .table-menu-bottom {
         left: calc(50% - 10px);
         bottom: -5px;
-        width: 20px;
-        height: 10px;
-      }
-      .table-menu-top {
-        left: calc(50% - 10px);
-        top: -5px;
         width: 20px;
         height: 10px;
       }

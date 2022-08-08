@@ -6,7 +6,6 @@ import {
   nextCell,
   addColumnAfter,
   addColumnBefore,
-  addRowBefore,
   deleteColumn,
   deleteTable,
   CellSelection,
@@ -17,33 +16,19 @@ const createMenu = (type: 'right' | 'left' | 'bottom' | 'top') => {
   button.setAttribute('contenteditable', 'false')
   button.classList.add(`table-menu-${type}`)
   if (type === 'right') {
-    button.title = 'Add column right'
+    button.title = 'Add column'
     button.textContent = '+'
   } else if (type === 'left') {
-    button.title = 'Add column left'
+    button.title = 'Add column'
     button.textContent = '+'
   } else if (type === 'bottom') {
     button.title = 'Delete column'
     button.textContent = '-'
-  } else if (type === 'top') {
-    button.title = 'Add row before'
-    button.textContent = '+'
   }
   return button
 }
 
 const pluginKey = new PluginKey('column-ctrl')
-
-const findTopCell = (pos) => {
-  let next = nextCell(pos, 'vert', -1)
-  let prev = pos
-  while (next != null) {
-    prev = next
-    next = nextCell(next, 'vert', -1)
-  }
-
-  return prev
-}
 
 const findBottomCell = (pos) => {
   let next = nextCell(pos, 'vert', 1)
@@ -76,9 +61,7 @@ export const cellMenu = new Plugin({
       const cell = pluginState.currentCell
 
       if (cell) {
-        const topCell = findTopCell(cell)
         const bottomCell = findBottomCell(cell)
-        decos.push(Decoration.widget(topCell.pos + 1, createMenu('top')))
         decos.push(Decoration.widget(bottomCell.pos + 1, createMenu('bottom')))
         decos.push(Decoration.widget(cell.pos + 1, createMenu('right')))
         decos.push(Decoration.widget(cell.pos + 1, createMenu('left')))
@@ -138,13 +121,6 @@ export const cellMenu = new Plugin({
             deleteColumn(view.state, view.dispatch)
           }
 
-          return true
-        } else if (target.classList.contains('table-menu-top')) {
-          const pluginState = pluginKey.getState(view.state)
-          const tr = view.state.tr
-          tr.setSelection(new CellSelection(pluginState.currentCell))
-          view.dispatch(tr)
-          addRowBefore(view.state, view.dispatch)
           return true
         }
       }
