@@ -2,6 +2,7 @@ import markdownit from 'markdown-it'
 import {MarkdownSerializer, MarkdownParser, defaultMarkdownSerializer} from 'prosemirror-markdown'
 import {Node, Schema} from 'prosemirror-model'
 import {EditorState} from 'prosemirror-state'
+import {taskList} from './prosemirror/extension/task-list/markdown'
 
 export const serialize = (state: EditorState) => {
   let text = markdownSerializer.serialize(state.doc)
@@ -34,8 +35,11 @@ export const markdownSerializer = new MarkdownSerializer({
     state.write('```')
     state.closeBlock(node)
   },
-  todo_item(state, node) {
-    state.write((node.attrs.done ? '[x]' : '[ ]') + ' ')
+  task_list(state, node) {
+    state.renderList(node, '  ', () => '- ')
+  },
+  task_list_item(state, node) {
+    state.write((node.attrs.checked ? '[x]' : '[ ]') + ' ')
     state.renderContent(node)
   },
   table(state, node) {
@@ -75,7 +79,7 @@ export const markdownSerializer = new MarkdownSerializer({
         return null
       }
 
-      const match = alignment.match(/text-align:[ ]?(left|right|center)/);
+      const match = alignment.match(/text-align:[ ]?(left|right|center)/)
       if (match && match[1]) {
         return match[1]
       }
@@ -107,7 +111,7 @@ function listIsTight(tokens: any, i: number) {
   return false
 }
 
-const md = markdownit({html: false})
+const md = markdownit({html: false}).use(taskList)
 
 export const createMarkdownParser = (schema: Schema) =>
   new MarkdownParser(schema, md, {
@@ -116,19 +120,20 @@ export const createMarkdownParser = (schema: Schema) =>
     tbody: {ignore: true},
     th: {
       block: 'table_header',
-      getAttrs: (tok) => ({
-        style: tok.attrGet('style'),
-      }),
+      getAttrs: (tok) => ({style: tok.attrGet('style')}),
     },
     tr: {block: 'table_row'},
     td: {
       block: 'table_cell',
-      getAttrs: (tok) => ({
-        style: tok.attrGet('style'),
-      }),
+      getAttrs: (tok) => ({style: tok.attrGet('style')}),
     },
     blockquote: {block: 'blockquote'},
     paragraph: {block: 'paragraph'},
+    task_list: {block: 'task_list'},
+    task_list_item: {
+      block: 'task_list_item',
+      getAttrs: (tok) => ({checked: tok.attrGet('checked')}),
+    },
     list_item: {block: 'list_item'},
     bullet_list: {
       block: 'bullet_list',

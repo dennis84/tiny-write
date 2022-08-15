@@ -4,83 +4,67 @@ import {wrappingInputRule} from 'prosemirror-inputrules'
 import {splitListItem} from 'prosemirror-schema-list'
 import {keymap} from 'prosemirror-keymap'
 import {inputRules} from 'prosemirror-inputrules'
-import {ProseMirrorExtension} from '../state'
+import {ProseMirrorExtension} from '../../state'
 
 const todoListRule = (nodeType: NodeType) =>
   wrappingInputRule(
     new RegExp('^\\[( |x)]\\s$'),
     nodeType,
     match => ({
-      done: match[1] === 'x',
+      checked: match[1] === 'x',
     }),
   )
 
 const todoListSchema = {
-  todo_list: {
-    content: 'todo_item+',
-    group: 'block',
-    selectable: true,
-    parseDOM: [{
-      tag: 'ul[data-type="todo-list"]',
-    }],
-    toDOM: () => [
-      'ul',
-      {class: 'todo-list', 'data-type': 'todo-list'},
-      0,
-    ],
-  },
-  todo_item: {
-    content: 'paragraph+',
+  task_list_item: {
+    content: 'paragraph block*',
     defining: true,
-    attrs: {done: {default: false}},
-    parseDOM: [{
-      tag: 'li[data-type="todo-item"]',
-      getAttrs: (dom: Element) => ({
-        done: dom.querySelector('input')?.checked,
-      }),
-    }],
-    toDOM: (node: ProsemirrorNode) => [
+    attrs: {checked: {default: false}},
+    toDOM: (node) => [
       'li',
-      {
-        class: `todo-item ${node.attrs.done ? 'done' : ''}`,
-        'data-type': 'todo-item',
-      },
+      {class: `task-list-item ${node.attrs.checked ? 'checked' : ''}`},
       ['label', {contenteditable: false}, ['input', {
         type: 'checkbox',
-        ...(node.attrs.done ? {checked: 'checked'} : {}),
+        ...(node.attrs.checked ? {checked: 'checked'} : {}),
       }]],
       ['div', 0],
-    ],
+    ]
   },
+  task_list: {
+    content: 'task_list_item+',
+    group: 'block',
+    attrs: {tight: {default: true}},
+    toDOM: () => ['ul', {class: 'task-list'}, 0]
+  }
 }
 
-class TodoItemView {
+class TaskListItemView {
+  dom: HTMLInputElement
   contentDOM: HTMLElement
-  dom: Node
   view: EditorView
   getPos: () => number
 
   constructor(node: ProsemirrorNode, view: EditorView, getPos: () => number) {
     const dom = node.type.spec.toDOM(node)
     const res = DOMSerializer.renderSpec(document, dom)
-    this.dom = res.dom
+    this.dom = res.dom as HTMLInputElement
     this.contentDOM = res.contentDOM
     this.view = view
     this.getPos = getPos
-    ;(this.dom as Element).querySelector('input').onclick = this.handleClick.bind(this)
+    this.dom.querySelector('input').onclick = this.handleClick.bind(this)
   }
 
   handleClick(e: MouseEvent) {
     const tr = this.view.state.tr
     const elem = e.target as HTMLInputElement
-    tr.setNodeMarkup(this.getPos(), null, {done: elem.checked})
+    tr.setNodeMarkup(this.getPos(), null, {checked: elem.checked})
     this.view.dispatch(tr)
     this.view.focus()
   }
 }
 
 const todoListKeymap = (schema: Schema) => ({
-  'Enter': splitListItem(schema.nodes.todo_item),
+  'Enter': splitListItem(schema.nodes.task_list_item),
 })
 
 export default (): ProseMirrorExtension => ({
@@ -91,11 +75,11 @@ export default (): ProseMirrorExtension => ({
   plugins: (prev, schema) => [
     keymap(todoListKeymap(schema)),
     ...prev,
-    inputRules({rules: [todoListRule(schema.nodes.todo_item)]}),
+    inputRules({rules: [todoListRule(schema.nodes.task_list_item)]}),
   ],
   nodeViews: {
-    todo_item: (node, view, getPos) => {
-      return new TodoItemView(node, view, getPos)
+    task_list_item: (node, view, getPos) => {
+      return new TaskListItemView(node, view, getPos)
     }
   }
 })

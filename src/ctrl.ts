@@ -512,7 +512,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       style: 'capital',
       separator: ' ',
       length: 2,
-    });
+    })
 
     provider.awareness.setLocalStateField('user', {
       name: username,

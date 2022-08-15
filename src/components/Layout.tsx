@@ -386,21 +386,19 @@ export const editorCss = (config: Config) => css`
         }
       }
     }
-    .todo-list {
+    .task-list, .task-list-item {
       margin: 0;
       padding: 0;
     }
-    .todo-item {
-      margin: 0;
+    .task-list-item {
       display: flex;
       align-items: center;
-      &.done {
+      label {
+        margin-right: 5px;
+      }
+      &.checked {
         text-decoration: line-through;
         opacity: 0.6;
-      }
-      label {
-        margin-right: 10px;
-        user-select: none;
       }
     }
     .image-container {
