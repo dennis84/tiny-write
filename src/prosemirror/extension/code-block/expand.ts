@@ -3,13 +3,10 @@ import {CodeBlockView} from './view'
 
 export default (codeBlock: CodeBlockView) =>
   ViewPlugin.fromClass(class {
-    view: EditorView
     expand: HTMLElement
     expanded = false
 
-    constructor(view: EditorView) {
-      this.view = view
-    }
+    constructor(private view: EditorView) {}
 
     destroy() {
       this.expanded = false

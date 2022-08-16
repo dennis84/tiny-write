@@ -22,31 +22,22 @@ import prettify from './prettify'
 import mermaid from './mermaid'
 
 export class CodeBlockView {
-  node: Node
-  view: ProsemirrorEditorView
-  getPos: () => number
   dom: Element
   outer: HTMLDivElement
   inner: HTMLDivElement
   editorView: EditorView
   updating = false
   clicked = false
-  options: CodeBlockProps = defaultProps
   dragHandle: HTMLElement
   langExtension: Compartment
 
   constructor(
-    node: Node,
-    view: ProsemirrorEditorView,
-    getPos: () => number,
-    innerDecos: DecorationSource,
-    options: CodeBlockProps
+    private node: Node,
+    private view: ProsemirrorEditorView,
+    private getPos: () => number,
+    private innerDecos: DecorationSource,
+    private options: CodeBlockProps = defaultProps,
   ) {
-    this.node = node
-    this.view = view
-    this.getPos = getPos
-    this.options = options
-
     this.outer = document.createElement('div')
     this.outer.setAttribute('contenteditable', 'false')
     this.outer.classList.add('codemirror-outer')
@@ -185,8 +176,8 @@ export class CodeBlockView {
 
     this.inner.appendChild(this.editorView.dom)
 
-    if (innerDecos instanceof DecorationSet) {
-      innerDecos.find().map((d: any) => {
+    if (this.innerDecos instanceof DecorationSet) {
+      this.innerDecos.find().map((d: any) => {
         const elem = typeof d.type.toDOM === 'function' ? d.type.toDOM() : d.type.toDOM
         this.outer.appendChild(elem)
       })

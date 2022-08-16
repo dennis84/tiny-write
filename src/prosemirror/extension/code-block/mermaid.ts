@@ -8,13 +8,10 @@ import {saveSvg} from '../../../remote'
 export default (codeBlock: CodeBlockView) =>
   ViewPlugin.fromClass(class {
     id = uuidv4()
-    view: EditorView
     output: HTMLElement
     download: HTMLElement
 
-    constructor(view: EditorView) {
-      this.view = view
-    }
+    constructor(private view: EditorView) {}
 
     destroy() {
       if (this.output) {

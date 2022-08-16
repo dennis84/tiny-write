@@ -392,11 +392,11 @@ export const editorCss = (config: Config) => css`
     }
     .task-list-item {
       display: flex;
-      align-items: center;
-      label {
-        margin-right: 5px;
+      align-items: baseline;
+      input {
+        margin-right: 8px;
       }
-      &.checked {
+      &.checked > div > p {
         text-decoration: line-through;
         opacity: 0.6;
       }

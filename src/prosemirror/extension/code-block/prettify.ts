@@ -12,14 +12,11 @@ import {CodeBlockView} from './view'
 
 export default (codeBlock: CodeBlockView) =>
   ViewPlugin.fromClass(class {
-    view: EditorView
     button: HTMLElement
     prettified = false
     error = false
 
-    constructor(view: EditorView) {
-      this.view = view
-    }
+    constructor(private view: EditorView) {}
 
     destroy() {
       if (this.button) {

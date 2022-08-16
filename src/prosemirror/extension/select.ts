@@ -30,8 +30,6 @@ const resolvePos = (view: EditorView, pos: number) => {
 }
 
 class SelectView {
-  view: EditorView
-  props: Props
   coords: Coords
   positions: Position[] = []
   selection: HTMLElement
@@ -108,9 +106,7 @@ class SelectView {
     this.coords = undefined
   }
 
-  constructor(view: EditorView, props: Props) {
-    this.view = view
-    this.props = props
+  constructor(private view: EditorView, private props: Props) {
     document.addEventListener('mousedown', this.onMouseDown)
   }
 

@@ -14,8 +14,6 @@ const cursorBuilder = (user: any): HTMLElement => {
 }
 
 class MouseCursorView {
-  view: EditorView
-  awareness: Awareness
   container: HTMLElement
   cursors: Map<number, HTMLElement> = new Map()
 
@@ -66,14 +64,12 @@ class MouseCursorView {
     this.awareness.setLocalStateField('mouse', {x, y})
   }
 
-  constructor(view, awareness) {
-    this.view = view
-    this.awareness = awareness
+  constructor(private view: EditorView, private awareness: Awareness) {
     this.container = document.createElement('div')
 
-    if (!view.dom.offsetParent) return
-    view.dom.offsetParent.appendChild(this.container)
-    awareness.on('change', this.onAwarenessChange)
+    if (!this.view.dom.offsetParent) return
+    this.view.dom.offsetParent.appendChild(this.container)
+    this.awareness.on('change', this.onAwarenessChange)
     document.addEventListener('mousemove', this.onMouseMove)
   }
 

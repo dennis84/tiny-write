@@ -1,7 +1,7 @@
 import {DOMSerializer, Node as ProsemirrorNode, NodeType, Schema} from 'prosemirror-model'
 import {EditorView} from 'prosemirror-view'
 import {wrappingInputRule} from 'prosemirror-inputrules'
-import {splitListItem} from 'prosemirror-schema-list'
+import {liftListItem, sinkListItem, splitListItem} from 'prosemirror-schema-list'
 import {keymap} from 'prosemirror-keymap'
 import {inputRules} from 'prosemirror-inputrules'
 import {ProseMirrorExtension} from '../../state'
@@ -23,10 +23,10 @@ const todoListSchema = {
     toDOM: (node) => [
       'li',
       {class: `task-list-item ${node.attrs.checked ? 'checked' : ''}`},
-      ['label', {contenteditable: false}, ['input', {
+      ['input', {
         type: 'checkbox',
         ...(node.attrs.checked ? {checked: 'checked'} : {}),
-      }]],
+      }],
       ['div', 0],
     ]
   },
@@ -41,16 +41,16 @@ const todoListSchema = {
 class TaskListItemView {
   dom: HTMLInputElement
   contentDOM: HTMLElement
-  view: EditorView
-  getPos: () => number
 
-  constructor(node: ProsemirrorNode, view: EditorView, getPos: () => number) {
-    const dom = node.type.spec.toDOM(node)
+  constructor(
+    private node: ProsemirrorNode,
+    private view: EditorView,
+    private getPos: () => number
+  ) {
+    const dom = this.node.type.spec.toDOM(this.node)
     const res = DOMSerializer.renderSpec(document, dom)
     this.dom = res.dom as HTMLInputElement
     this.contentDOM = res.contentDOM
-    this.view = view
-    this.getPos = getPos
     this.dom.querySelector('input').onclick = this.handleClick.bind(this)
   }
 
@@ -65,6 +65,8 @@ class TaskListItemView {
 
 const todoListKeymap = (schema: Schema) => ({
   'Enter': splitListItem(schema.nodes.task_list_item),
+  'Mod-[': liftListItem(schema.nodes.task_list_item),
+  'Mod-]': sinkListItem(schema.nodes.task_list_item),
 })
 
 export default (): ProseMirrorExtension => ({

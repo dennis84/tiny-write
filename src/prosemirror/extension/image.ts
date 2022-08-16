@@ -106,10 +106,6 @@ export const insertImage = (view: EditorView, src: string, left: number, top: nu
 }
 
 class ImageView {
-  node: Node
-  view: EditorView
-  getPos: () => number
-  schema: Schema
   dom: Element
   contentDOM: HTMLElement
   container: HTMLElement
@@ -120,16 +116,12 @@ class ImageView {
   updating: number
 
   constructor(
-    node: Node,
-    view: EditorView,
-    getPos: () => number,
-    schema: Schema,
-    path: string
+    private node: Node,
+    private view: EditorView,
+    private getPos: () => number,
+    private schema: Schema,
+    private path: string
   ) {
-    this.node = node
-    this.view = view
-    this.getPos = getPos
-    this.schema = schema
     this.onResizeFn = this.onResize.bind(this)
     this.onResizeEndFn = this.onResizeEnd.bind(this)
 

@@ -23,13 +23,13 @@ test('create tasks', async ({page}) => {
   expect(await page.textContent(getItem(2, 1))).toBe('task3')
 
   expect(await page.$eval(
-    `${getItem(2, 1)} label input`,
+    `${getItem(2, 1)} input`,
     (node: HTMLInputElement) => node.checked
   )).toBe(true)
 
-  await page.click(`${getItem(1, 1)} label input`)
+  await page.click(`${getItem(1, 1)} input`)
   expect(await page.$eval(
-    `${getItem(1, 1)} label input`,
+    `${getItem(1, 1)} input`,
     (node: HTMLInputElement) => node.checked)
   ).toBe(true)
 })
@@ -40,7 +40,7 @@ test('from/to markdown', async ({page}) => {
   await page.type('.ProseMirror', 'task2', {delay})
   await page.keyboard.press('Enter')
   await page.type('.ProseMirror', 'task3')
-  await page.click(`${getItem(1, 3)} label input`)
+  await page.click(`${getItem(1, 3)} input`)
 
   await page.click('[data-testid="burger"]')
   await page.click('[data-testid="markdown"]')

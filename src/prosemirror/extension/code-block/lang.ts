@@ -34,15 +34,12 @@ interface Config {
 
 export const changeLang = (codeBlock: CodeBlockView, config: Config) =>
   ViewPlugin.fromClass(class {
-    view: EditorView
     toggle: HTMLElement
     select: HTMLElement
     inputEditor: LangInputEditor
     lang = codeBlock.getLang()
 
-    constructor(view: EditorView) {
-      this.view = view
-    }
+    constructor(private view: EditorView) {}
 
     destroy() {
       if (this.toggle) {
@@ -143,21 +140,19 @@ interface Props {
 }
 
 export class LangInputEditor {
-  private props: Props
   private view: EditorView
   private doc: string
 
-  constructor(props: Props) {
-    this.props = props
-    this.doc = props.doc
+  constructor(private props: Props) {
+    this.doc = this.props.doc
     this.view = new EditorView({
       state: EditorState.create({
-        doc: props.doc,
+        doc: this.props.doc,
         extensions: [
           EditorView.domEventHandlers({
             'blur': () => {
               this.reset()
-              props.onClose()
+              this.props.onClose()
               return true
             }
           }),
@@ -173,13 +168,13 @@ export class LangInputEditor {
             key: 'Escape',
             run: () => {
               this.reset()
-              props.onClose()
+              this.props.onClose()
               return true
             }
           }, ...standardKeymap])
         ]
       }),
-      parent: props.parent,
+      parent: this.props.parent,
     })
   }
 
