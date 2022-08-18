@@ -20,7 +20,11 @@ export const saveSvg = (svg: HTMLElement) => {
   ctx.fillRect(0, 0, canvas.width, canvas.height)
 
   const image = new Image()
-  image.onload = () => {
+  const svgString = svg.outerHTML
+    .replaceAll('<br>', '<br/>')
+    .replaceAll(/<img([^>]*)>/g, (m, g: string) => `<img ${g} />`)
+  image.src = `data:image/svg+xml;base64,${toBase64(svgString)}`
+  image.decode().then(() => {
     ctx.drawImage(image, 0, 0, canvas.width, canvas.height)
     canvas.toBlob(async (blob) => {
       const filename = 'mermaid-graph.png'
@@ -38,9 +42,7 @@ export const saveSvg = (svg: HTMLElement) => {
       downloadLink.setAttribute('href', url)
       downloadLink.click()
     });
-  }
-
-  image.src = `data:image/svg+xml;base64,${toBase64(svg.outerHTML)}`
+  })
 }
 
 export const getArgs = async (): Promise<Args> => {

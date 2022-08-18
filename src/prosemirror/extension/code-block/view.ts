@@ -307,6 +307,10 @@ export class CodeBlockView {
   getLang() {
     return this.node.attrs.params.lang ?? ''
   }
+
+  getOptions() {
+    return this.options;
+  }
 }
 
 function computeChange(oldVal: string, newVal: string) {

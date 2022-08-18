@@ -70,8 +70,8 @@ export default (codeBlock: CodeBlockView) =>
       this.output.style.display = 'flex'
       mermaid.initialize({
         startOnLoad: false,
-        theme: codeBlock.options.dark ? 'dark' : 'default',
-        fontFamily: `${codeBlock.options.font}, monospace`,
+        theme: codeBlock.getOptions().dark ? 'dark' : 'default',
+        fontFamily: `${codeBlock.getOptions().font}, monospace`,
       })
 
       // fixes cut off text
