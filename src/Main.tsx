@@ -34,6 +34,18 @@ export default (props: {state: State}) => {
     mouseEnterCoords.y = e.pageY
   }
 
+  const insertImageMd = (editorView, data, left, top) => {
+    if (store.markdown) {
+      const text = `![](${data})`
+      const pos = editorView.posAtCoords({left, top})
+      const tr = editorView.state.tr
+      tr.insertText(text, pos?.pos ?? editorView.state.doc.content.size)
+      editorView.dispatch(tr)
+    } else {
+      insertImage(store.editorView, data, left, top)
+    }
+  }
+
   onMount(async () => {
     if (store.error) return
     await ctrl.init()
@@ -54,7 +66,7 @@ export default (props: {state: State}) => {
         if (mime.startsWith('image/')) {
           const x = mouseEnterCoords.x
           const y = mouseEnterCoords.y
-          insertImage(store.editorView, convertFileSrc(path), x, y)
+          insertImageMd(store.editorView, convertFileSrc(path), x, y)
         } else if (mime.startsWith('text/')) {
           const state: State = unwrap(store)
           const file = await ctrl.loadFile(state.config, path)
@@ -82,7 +94,7 @@ export default (props: {state: State}) => {
           const reader = new FileReader()
           reader.readAsDataURL(file)
           reader.onloadend = function() {
-            insertImage(store.editorView, reader.result as string, x, y)
+            insertImageMd(store.editorView, reader.result as string, x, y)
           }
         }
       }

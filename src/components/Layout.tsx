@@ -117,6 +117,12 @@ export const editorCss = (config: Config) => css`
     h4, h5, h6 {
       font-size: ${config.fontSize}px;
     }
+    p.truncate {
+      overflow: hidden;
+      max-width: 75ch;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
     p {
       margin: 0;
       display: flow-root;
@@ -386,7 +392,14 @@ export const editorCss = (config: Config) => css`
         }
       }
     }
-    .task-list, .task-list-item {
+    .task-list {
+      margin: 10px 0;
+      padding: 0;
+      .task-list {
+        margin: 0;
+      }
+    }
+    .task-list-item {
       margin: 0;
       padding: 0;
     }

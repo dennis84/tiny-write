@@ -46,8 +46,6 @@ export const fonts: {[key: string]: Font} = {
   },
 }
 
-export type Rgb = [number, number, number]
-
 interface Theme {
   value: string;
   label: string;

@@ -17,7 +17,7 @@ const plainSchema = new Schema({
       content: 'inline*',
       group: 'block',
       parseDOM: [{tag: 'p'}],
-      toDOM: () => ['p', 0],
+      toDOM: (node) => ['p', {class: node.content.size > 500 ? 'truncate' : undefined}, 0],
     },
     text: {
       group: 'inline'
