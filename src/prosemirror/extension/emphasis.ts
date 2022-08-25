@@ -6,6 +6,15 @@ import {ProseMirrorExtension} from '../state'
 const strikethroughRule = (nodeType: MarkType) =>
   markInputRule(/(?:~~)(.+)(?:~~)$/, nodeType)
 
+const strongRule = (nodeType: MarkType) =>
+  markInputRule(/(?:\*\*)(.+)(?:\*\*)$/, nodeType)
+
+const strongRule2 = (nodeType: MarkType) =>
+  markInputRule(/(?:__)(.+)(?:__)$/, nodeType)
+
+const italicRule = (nodeType: MarkType) =>
+  markInputRule(/(?:\*)(.+)(?:\*)$/, nodeType)
+
 const strikethroughSchema = {
   strikethrough: {
     parseDOM: [{tag: 'del'}],
@@ -22,6 +31,9 @@ export default (): ProseMirrorExtension => ({
     ...prev,
     inputRules({rules: [
       strikethroughRule(schema.marks.strikethrough),
+      strongRule(schema.marks.strong),
+      strongRule2(schema.marks.strong),
+      italicRule(schema.marks.em),
     ]}),
   ]
 })

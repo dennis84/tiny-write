@@ -8,7 +8,7 @@ import link from './prosemirror/extension/link'
 import scroll from './prosemirror/extension/scroll'
 import todoList from './prosemirror/extension/task-list'
 import code from './prosemirror/extension/code'
-import strikethrough from './prosemirror/extension/strikethrough'
+import emphasis from './prosemirror/extension/emphasis'
 import placeholder from './prosemirror/extension/placeholder'
 import codeBlock from './prosemirror/extension/code-block'
 import image from './prosemirror/extension/image'
@@ -71,7 +71,7 @@ export const createExtensions = (props: Props): ProseMirrorExtension[] =>
       extensions: () => [codeMirrorKeymap(props)],
     }),
     code(),
-    strikethrough(),
+    emphasis(),
     link(),
     table(),
     position(isDev),
