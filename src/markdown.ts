@@ -1,4 +1,5 @@
 import markdownit from 'markdown-it'
+import container from 'markdown-it-container'
 import {MarkdownSerializer, MarkdownParser, defaultMarkdownSerializer} from 'prosemirror-markdown'
 import {Node, Schema} from 'prosemirror-model'
 import {EditorState} from 'prosemirror-state'
@@ -20,6 +21,11 @@ export const markdownSerializer = new MarkdownSerializer({
     const src = node.attrs.path ?? node.attrs.src
     const title = node.attrs.title ? ` "${node.attrs.title.replace(/"/g, '\\"')}"` : ''
     state.write(`![${alt}](${src}${title})\n`)
+  },
+  container(state, node) {
+    state.write(`::: ${node.attrs.type}\n`)
+    state.renderContent(node)
+    state.write(':::\n')
   },
   code_block(state, node) {
     const src = node.attrs.params.src
@@ -111,7 +117,11 @@ function listIsTight(tokens: any, i: number) {
   return false
 }
 
-const md = markdownit({html: false}).use(taskList)
+const md = markdownit({html: false})
+  .use(taskList)
+  .use(container, 'tip')
+  .use(container, 'warning')
+  .use(container, 'details')
 
 export const createMarkdownParser = (schema: Schema) =>
   new MarkdownParser(schema, md, {
@@ -126,6 +136,18 @@ export const createMarkdownParser = (schema: Schema) =>
     td: {
       block: 'table_cell',
       getAttrs: (tok) => ({style: tok.attrGet('style')}),
+    },
+    container_tip: {
+      block: 'container',
+      getAttrs: () => ({type: 'tip'}),
+    },
+    container_warning: {
+      block: 'container',
+      getAttrs: () => ({type: 'warning'}),
+    },
+    container_details: {
+      block: 'container',
+      getAttrs: () => ({type: 'details'}),
     },
     blockquote: {block: 'blockquote'},
     paragraph: {block: 'paragraph'},

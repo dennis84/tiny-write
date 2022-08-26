@@ -23,7 +23,7 @@ export const cleanLang = (lang: string) =>
 
 const codeBlockRule = (nodeType: NodeType) =>
   textblockTypeInputRule(
-    /^```([a-zA-Z]*)?\s$/,
+    /^```([a-z]*)?\s$/,
     nodeType,
     match => {
       const lang = match[1]

@@ -18,6 +18,7 @@ import table from './prosemirror/extension/table'
 import collab from './prosemirror/extension/collab'
 import select from './prosemirror/extension/select'
 import position from './prosemirror/extension/position'
+import container from './prosemirror/extension/container'
 import {Config, YOptions} from './state'
 import {codeTheme, font, selection, isDarkTheme} from './config'
 import {isDev} from './env'
@@ -75,6 +76,7 @@ export const createExtensions = (props: Props): ProseMirrorExtension[] =>
     link(),
     table(),
     position(isDev),
+    container(),
     select({background: selection(props.config)}),
     image(props.path),
     placeholder('Start typing ...'),

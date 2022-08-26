@@ -1,9 +1,8 @@
 import {DOMSerializer, Node as ProsemirrorNode, NodeType, Schema} from 'prosemirror-model'
 import {EditorView} from 'prosemirror-view'
-import {wrappingInputRule} from 'prosemirror-inputrules'
+import {inputRules, wrappingInputRule} from 'prosemirror-inputrules'
 import {liftListItem, sinkListItem, splitListItem} from 'prosemirror-schema-list'
 import {keymap} from 'prosemirror-keymap'
-import {inputRules} from 'prosemirror-inputrules'
 import {ProseMirrorExtension} from '../../state'
 
 const todoListRule = (nodeType: NodeType) =>

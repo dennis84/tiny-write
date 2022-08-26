@@ -88,6 +88,8 @@ export const editorCss = (config: Config) => css`
     display: none;
   }
   > [contenteditable] {
+    word-wrap: break-word;
+    white-space: pre-wrap;
     position: relative;
     min-height: calc(100% - 100px);
     height: fit-content;
@@ -413,6 +415,25 @@ export const editorCss = (config: Config) => css`
         text-decoration: line-through;
         opacity: 0.6;
       }
+    }
+    .container-tip, .container-warning, .container-details {
+      padding: 40px;
+      border-radius: 3px;
+    }
+    .container-tip {
+      background: ${foreground(config)}19;
+    }
+    .container-details {
+      background: ${foreground(config)}19;
+      > summary {
+        cursor: pointer;
+      }
+      &[open] > summary {
+        margin-bottom: 10px;
+      }
+    }
+    .container-warning {
+      background: ${primaryBackground(config)}19;
     }
     .image-container {
       position: relative;
