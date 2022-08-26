@@ -104,11 +104,6 @@ const codeBlockSchema = {
   selectable: true,
   marks: '',
   attrs: {params: {default: ''}},
-  parseDOM: [{
-    tag: 'pre',
-    preserveWhitespace: 'full',
-    getAttrs: (node: Element) => ({params: node.getAttribute('data-params') || ''})
-  }],
   toDOM: (node: Node) => [
     'pre',
     node.attrs.params ? {'data-params': node.attrs.params} : {},

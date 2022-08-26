@@ -17,7 +17,6 @@ const italicRule = (nodeType: MarkType) =>
 
 const strikethroughSchema = {
   strikethrough: {
-    parseDOM: [{tag: 'del'}],
     toDOM: () => ['del'],
   },
 }

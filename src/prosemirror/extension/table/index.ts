@@ -54,7 +54,6 @@ const schema = {
     ...defaultSchema.table,
     selectable: true,
     draggable: true,
-    parseDOM: [{tag: 'div[data-type="table"]'}],
     toDOM: () => [
       'div',
       {

@@ -82,12 +82,6 @@ const imageSchema = {
   group: 'inline',
   draggable: true,
   selectable: true,
-  parseDOM: [{tag: 'img[src]', getAttrs: (dom: Element) => ({
-    src: dom.getAttribute('src'),
-    title: dom.getAttribute('title'),
-    alt: dom.getAttribute('alt'),
-    path: dom.getAttribute('data-path'),
-  })}],
   toDOM: (node: Node) => ['img', {
     src: node.attrs.src,
     title: node.attrs.title,
