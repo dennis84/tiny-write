@@ -21,8 +21,6 @@ import {serialize, createMarkdownParser} from './markdown'
 import {isDarkTheme, themes} from './config'
 import {ProseMirrorExtension, ProseMirrorState, isEmpty} from './prosemirror/state'
 
-const isText = (x: any) => x && x.doc && x.selection
-
 const isState = (x: any) =>
   (typeof x.lastModified !== 'string') &&
   Array.isArray(x.files)
@@ -145,7 +143,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     })
   }
 
-  const fetchData = async (): Promise<[State, ProseMirrorState, Uint8Array]> => {
+  const fetchData = async (): Promise<[State, Uint8Array]> => {
     let args = await remote.getArgs().catch(() => undefined)
     const state: State = unwrap(store)
 
@@ -164,21 +162,12 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     }
 
     if (!parsed) {
-      return [{...state, args}, undefined, undefined]
+      return [{...state, args}, undefined]
     }
 
     const config = {...state.config, ...parsed.config}
     if (!isConfig(config)) {
       throw new ServiceError('invalid_config', config)
-    }
-
-    let text: any
-    if (parsed.text) {
-      if (!isText(parsed.text)) {
-        throw new ServiceError('invalid_state', parsed.text)
-      }
-
-      text = parsed.text
     }
 
     const newState = {
@@ -211,7 +200,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       delete newState.ydoc
     }
 
-    return [newState, text, ydoc]
+    return [newState, ydoc]
   }
 
   const getTheme = (state: State, force = false) => {
@@ -270,8 +259,8 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     try {
       const result = await fetchData()
       let data = result[0]
-      let text = result[1]
-      const ydoc = result[2]
+      const ydoc = result[1]
+      let text
       data = withYjs(data, ydoc)
       if (data.args.text) {
         data = await withFile(data, {text: JSON.parse(data.args.text)})
