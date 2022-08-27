@@ -195,21 +195,21 @@ export const editorCss = (config: Config) => css`
       }
       .table-menu-right {
         top: calc(50% - 10px);
-        right: -5px;
-        width: 10px;
+        right: -6px;
+        width: 9px;
         height: 20px;
       }
       .table-menu-left {
         top: calc(50% - 10px);
-        left: -5px;
-        width: 10px;
+        left: -6px;
+        width: 9px;
         height: 20px;
       }
       .table-menu-bottom {
         left: calc(50% - 10px);
-        bottom: -5px;
+        bottom: -6px;
         width: 20px;
-        height: 10px;
+        height: 9px;
       }
       &.selected table {
         box-shadow: 0 0 0 1px ${primaryBackground(config)};
@@ -433,7 +433,7 @@ export const editorCss = (config: Config) => css`
       }
     }
     .container-warning {
-      background: ${primaryBackground(config)}19;
+      background: ${primaryBackground(config)}33;
     }
     .image-container {
       position: relative;

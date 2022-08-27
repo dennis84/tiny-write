@@ -147,7 +147,13 @@ export const createMarkdownParser = (schema: Schema) =>
     },
     container_details: {
       block: 'container',
-      getAttrs: () => ({type: 'details'}),
+      getAttrs: (tok) => {
+        let summary
+        const info = tok.info.trim()
+        const i = info.indexOf(' ')
+        if (i !== -1) summary = info.substring(i+1, info.length)
+        return {type: 'details', summary}
+      },
     },
     blockquote: {block: 'blockquote'},
     paragraph: {block: 'paragraph'},

@@ -8,11 +8,15 @@ const container = {
   selectable: true,
   defining: true,
   content: 'paragraph block*',
-  attrs: {type: {default: 'tip'}, open: {default: true}},
+  attrs: {
+    type: {default: 'tip'},
+    open: {default: true},
+    summary: {default: 'Details'},
+  },
   toDOM: (node) => node.attrs.type === 'details' ? [
     'details',
     {class: `container-${node.attrs.type}`, ...(node.attrs.open ? {open: ''} : {})},
-    ['summary', {contenteditable: 'false'}, 'Details'],
+    ['summary', {contenteditable: 'false'}, node.attrs.summary],
     ['div', 0],
   ] : [
     'div',
@@ -48,7 +52,7 @@ class ContainerView {
       this.dom.childNodes[0].addEventListener('click', () => {
         const tr = this.view.state.tr
         const open = !(this.dom as HTMLDetailsElement).open
-        tr.setNodeMarkup(this.getPos(), null, {type: 'details', open})
+        tr.setNodeMarkup(this.getPos(), null, {...node.attrs, open})
         if (!open) {
           tr.setSelection(new TextSelection(tr.doc.resolve(this.getPos() + 1)))
         }
