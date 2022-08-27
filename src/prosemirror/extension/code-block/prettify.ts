@@ -99,7 +99,7 @@ export default (codeBlock: CodeBlockView) =>
           plugins: [plugin],
           trailingComma: 'all',
           bracketSpacing: false,
-          ...codeBlock.options.prettier,
+          ...codeBlock.getOptions().prettier,
         })
 
         this.view.dispatch({

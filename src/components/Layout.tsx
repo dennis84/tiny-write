@@ -4,7 +4,7 @@ import {background, foreground, primaryBackground, font, selection} from '../con
 import {Config} from '../state'
 
 export type Styled = {
-  children: any;
+  children?: any;
   config: Config;
   [key: string]: any;
 }
@@ -195,19 +195,19 @@ export const editorCss = (config: Config) => css`
       }
       .table-menu-right {
         top: calc(50% - 10px);
-        right: -6px;
+        right: -5px;
         width: 9px;
         height: 20px;
       }
       .table-menu-left {
         top: calc(50% - 10px);
-        left: -6px;
+        left: -5px;
         width: 9px;
         height: 20px;
       }
       .table-menu-bottom {
         left: calc(50% - 10px);
-        bottom: -6px;
+        bottom: -5px;
         width: 20px;
         height: 9px;
       }

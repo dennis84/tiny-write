@@ -46,7 +46,7 @@ export default (codeBlock: CodeBlockView) =>
           this.view.dom.style.maxHeight = '100%'
           this.expand.textContent = '↑'
         } else {
-          const height = 10 * codeBlock.options.fontSize * 1.8
+          const height = 10 * codeBlock.getOptions().fontSize * 1.8
           this.view.dom.style.maxHeight = height + 'px'
           this.expand.textContent = '↓'
         }

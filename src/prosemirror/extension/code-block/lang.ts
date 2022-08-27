@@ -68,7 +68,7 @@ export const changeLang = (codeBlock: CodeBlockView, config: Config) =>
     }
 
     renderDOM() {
-      const [, themeConfig] = getTheme(codeBlock.options.theme)
+      const [, themeConfig] = getTheme(codeBlock.getOptions().theme)
 
       this.toggle = document.createElement('div')
       this.toggle.className = 'lang-toggle'
@@ -109,7 +109,7 @@ export const changeLang = (codeBlock: CodeBlockView, config: Config) =>
 
     updateDOM() {
       const lang = this.lang
-      const {fontSize} = codeBlock.options
+      const {fontSize} = codeBlock.getOptions()
       const cur = this.toggle?.children[0]?.getAttribute('title')
       if (cur === lang) return
 

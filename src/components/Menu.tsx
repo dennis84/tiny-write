@@ -12,6 +12,7 @@ import {isEmpty} from '../prosemirror/state'
 import {Styled} from './Layout'
 import {PrettierMenu} from './PrettierMenu'
 import {AppearanceMenu} from './AppearanceMenu'
+import {Help} from './Help'
 
 const Container = (props: {children: any}) => (
   <div class={css`
@@ -138,17 +139,6 @@ export const Link = (props: Styled) => {
         > span {
           justify-self: flex-end;
           margin-left: auto;
-          > i {
-            color: ${foreground(local.config)};
-            background: ${foreground(local.config)}19;
-            border: 1px solid ${foreground(local.config)}99;
-            box-shadow: 0 2px 0 0 ${foreground(local.config)}99;
-            border-radius: 2px;
-            font-size: 13px;
-            line-height: 1.4;
-            padding: 1px 4px;
-            margin: 0 1px;
-          }
         }
         &:hover {
           color: ${primaryBackground(local.config)};
@@ -171,6 +161,29 @@ export const Link = (props: Styled) => {
         }
       `}
     >{local.children}</button>
+  )
+}
+
+export const Keys = (props: Styled) => {
+  const [local] = splitProps(props, ['config'])
+  return (
+    <span
+      class={css`
+        margin-top: -4px;
+        > i {
+          color: ${foreground(local.config)};
+          background: ${foreground(local.config)}19;
+          border: 1px solid ${foreground(local.config)}99;
+          box-shadow: 0 2px 0 0 ${foreground(local.config)}99;
+          border-radius: 2px;
+          font-style: normal;
+          font-size: 13px;
+          line-height: 1.4;
+          padding: 1px 4px;
+          margin: 0 1px;
+        }
+      `}
+    >{props.keys.map((k) => <i>{k}</i>)}</span>
   )
 }
 
@@ -396,10 +409,6 @@ export default () => {
     )
   }
 
-  const Keys = ({keys}: {keys: string[]}) => (
-    <span>{keys.map((k) => <i>{k}</i>)}</span>
-  )
-
   createEffect(() => {
     setLastAction(undefined)
   }, store.lastModified)
@@ -439,6 +448,9 @@ export default () => {
       <Show when={show() === 'theme'}>
         <AppearanceMenu onBack={() => setShow('main')} />
       </Show>
+      <Show when={show() === 'help'}>
+        <Help onBack={() => setShow('main')} />
+      </Show>
       <Show when={show() === 'main'}>
         <Off
           config={store.config}
@@ -451,18 +463,18 @@ export default () => {
             <Sub>
               <Show when={isTauri && !store.path}>
                 <Link config={store.config} onClick={onSaveAs}>
-                  Save to file <Keys keys={[modKey, 's']} />
+                  Save to file <Keys config={store.config} keys={[modKey, 's']} />
                 </Link>
               </Show>
               <Link config={store.config} onClick={onNew} data-testid="new">
-                New <Keys keys={[modKey, 'n']} />
+                New <Keys config={store.config} keys={[modKey, 'n']} />
               </Link>
               <Link
                 config={store.config}
                 onClick={onDiscard}
                 disabled={!clearEnabled()}
                 data-testid="discard">
-                {clearText()} <Keys keys={[modKey, 'w']} />
+                {clearText()} <Keys config={store.config} keys={[modKey, 'w']} />
               </Link>
             </Sub>
             <Show when={store.files.length > 0}>
@@ -475,16 +487,20 @@ export default () => {
             </Show>
             <Label config={store.config}>Edit</Label>
             <Sub>
-              <Link config={store.config} onClick={onUndo}>Undo <Keys keys={[modKey, 'z']} /></Link>
-              <Link config={store.config} onClick={onRedo}>
-                Redo <Keys keys={[modKey, ...(isMac ? ['Shift', 'z'] : ['y'])]} />
+              <Link config={store.config} onClick={onUndo}>
+                Undo <Keys config={store.config} keys={[modKey, 'z']} />
               </Link>
-              <Link config={store.config} onClick={() => cmd('cut')}>Cut <Keys keys={[modKey, 'x']} /></Link>
+              <Link config={store.config} onClick={onRedo}>
+                Redo <Keys config={store.config} keys={[modKey, ...(isMac ? ['Shift', 'z'] : ['y'])]} />
+              </Link>
+              <Link config={store.config} onClick={() => cmd('cut')}>
+                Cut <Keys config={store.config} keys={[modKey, 'x']} />
+              </Link>
               <Link config={store.config} onClick={() => cmd('paste')} disabled={!isTauri}>
-                Paste <Keys keys={[modKey, 'p']} />
+                Paste <Keys config={store.config} keys={[modKey, 'p']} />
               </Link>
               <Link config={store.config} onClick={() => cmd('copy')}>
-                Copy {lastAction() === 'copy' && '📋'} <Keys keys={[modKey, 'c']} />
+                Copy {lastAction() === 'copy' && '📋'} <Keys config={store.config} keys={[modKey, 'c']} />
               </Link>
               <Link config={store.config} onClick={onCopyAllAsMd}>
                 Copy all as markdown {lastAction() === 'copy-md' && '📋'}
@@ -496,7 +512,7 @@ export default () => {
               <Link config={store.config} onClick={() => setShow('prettier')}>Prettier 💅</Link>
               <Show when={isTauri}>
                 <Link config={store.config} onClick={onToggleFullscreen}>
-                  Fullscreen {store.fullscreen && '✅'} <Keys keys={[alt, 'Enter']} />
+                  Fullscreen {store.fullscreen && '✅'} <Keys config={store.config} keys={[alt, 'Enter']} />
                 </Link>
               </Show>
               <Link config={store.config} onClick={onToggleMarkdown} data-testid="markdown">
@@ -552,11 +568,12 @@ export default () => {
               <Link config={store.config} onClick={onVersion}>
                 About Version {version}
               </Link>
+              <Link config={store.config} onClick={() => setShow('help')}>Help</Link>
               <Show when={isTauri}>
                 <Link
                   config={store.config}
                   onClick={() => remote.quit()}>
-                  Quit <Keys keys={[modKey, 'q']} />
+                  Quit <Keys config={store.config} keys={[modKey, 'q']} />
                 </Link>
               </Show>
             </Sub>
