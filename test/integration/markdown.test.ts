@@ -28,6 +28,7 @@ test('html to markdown and back', async ({page}) => {
   // toggle markdown when open file
   await page.click('[data-testid="new"]')
   await page.click('[data-testid="markdown"]')
+  await page.click('[data-testid="discard"]') // rm whitespace
 
   await page.type('.ProseMirror', '# markdown', {delay})
   await lineTextEq(page, 1, '# markdown')

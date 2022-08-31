@@ -7,7 +7,9 @@ test.beforeEach(async ({page}) => {
 })
 
 test('inline code', async ({page}) => {
-  await page.type('.ProseMirror', 'foo `code` bar', {delay})
+  await page.type('.ProseMirror', 'foo `code`', {delay})
+  await page.keyboard.down('ArrowRight')
+  await page.type('.ProseMirror', 'bar', {delay})
   expect(await page.textContent('.ProseMirror p code')).toBe('code')
 })
 

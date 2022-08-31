@@ -42,6 +42,7 @@ test('mermaid', async ({page}) => {
   await page.type('.ProseMirror', '```mermaid ', {delay})
   await page.waitForSelector('.codemirror-outer')
   await page.type('.codemirror-inner > .cm-editor .cm-content', line1, {delay})
+  await page.waitForTimeout(100)
   expect(await page.textContent('.mermaid')).toContain('Parse error')
   await page.keyboard.press('Enter')
   await page.type('.codemirror-inner > .cm-editor .cm-content', line2, {delay})

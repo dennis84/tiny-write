@@ -9,7 +9,7 @@ import {Schema, Slice} from 'prosemirror-model'
 import {undo, redo} from 'prosemirror-history'
 import {selectAll, deleteSelection} from 'prosemirror-commands'
 import * as Y from 'yjs'
-import {undo as yUndo, redo as yRedo, ySyncPluginKey, yDocToProsemirror} from 'y-prosemirror'
+import {undo as yUndo, redo as yRedo, ySyncPluginKey, yDocToProsemirror, prosemirrorJSONToYDoc} from 'y-prosemirror'
 import {WebsocketProvider} from 'y-websocket'
 import {uniqueNamesGenerator, adjectives, animals} from 'unique-names-generator'
 import {debounce} from 'ts-debounce'
@@ -339,6 +339,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       lastModified: undefined,
       path: undefined,
       error: undefined,
+      markdown: false,
     })
 
     disconnectCollab(state.collab)
@@ -534,8 +535,8 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     const state: State = unwrap(store)
     const editorState = store.editorView.state
     const markdown = !state.markdown
-    const selection = {type: 'text', anchor: 1, head: 1}
     let doc: any
+    let schema = store.editorView.state.schema
 
     if (markdown) {
       const lines = serialize(editorState).split('\n')
@@ -545,7 +546,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
 
       doc = {type: 'doc', content: nodes}
     } else {
-      const schema = createSchema({
+      schema = createSchema({
         config: state.config,
         path: state.path,
         y: state.collab?.y,
@@ -562,7 +563,12 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       doc = text.toJSON()
     }
 
-    updateEditorState({...state, markdown}, {selection, doc})
+    const ydoc = prosemirrorJSONToYDoc(schema, doc)
+    const update = Y.encodeStateAsUpdate(ydoc)
+    const type = store.collab.y.prosemirrorType
+    type.delete(0, type.length)
+    updateEditorState({...state, markdown}, createEmptyText())
+    Y.applyUpdate(store.collab.y.ydoc, update)
     setState({markdown})
   }
 

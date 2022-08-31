@@ -1,6 +1,6 @@
 import {Page} from '@playwright/test'
 
-export const delay = 20
+export const delay = process.env.CI ? 20 : 80
 
 export const lineTextEq = async (page: Page, nth: number, text: string) =>
   page.waitForFunction(([nth, text]) => {
