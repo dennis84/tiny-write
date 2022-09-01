@@ -23,9 +23,9 @@ export const ChangeSetMenu = (props: Props) => {
     })
   })
 
-  const renderVersion = (version, prevVersion) => {
+  const renderVersion = (version) => {
     setActive(version)
-    ctrl.renderVersion(version, prevVersion)
+    ctrl.renderVersion(version)
   }
 
   const applyVersion = () => {
@@ -51,10 +51,10 @@ export const ChangeSetMenu = (props: Props) => {
         <Label config={store.config}>Change Set</Label>
         <Sub>
           <For each={versions()}>
-            {(version, i) => (
+            {(version) => (
               <Link
                 config={store.config}
-                onClick={() => renderVersion(version, versions()[i()-1])}>
+                onClick={() => renderVersion(version)}>
                 {format(version.date, 'dd MMMM HH:mm:ss')}
                 {version.date === active()?.date && ' ✅'}
               </Link>

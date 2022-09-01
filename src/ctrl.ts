@@ -467,7 +467,13 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
 
     const ydoc = new Y.Doc({gc: false})
     const permanentUserData = new Y.PermanentUserData(ydoc)
-    if (savedDoc) Y.applyUpdate(ydoc, savedDoc)
+    if (savedDoc) {
+      try {
+        Y.applyUpdate(ydoc, savedDoc)
+      } catch (e) {
+        // ignore
+      }
+    }
 
     const prosemirrorType = ydoc.getXmlFragment('prosemirror')
     const provider = new WebsocketProvider(COLLAB_URL, room, ydoc, {connect: started})
@@ -634,10 +640,10 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     state.editorView.dispatch(tr)
   }
 
-  const renderVersion = (version: any, prevVersion: any) => {
+  const renderVersion = (version: any) => {
     setSnapshotView(true)
     const snapshot = Y.decodeSnapshot(version.snapshot)
-    const prevSnapshot = prevVersion ? Y.decodeSnapshot(prevVersion.snapshot) : Y.emptySnapshot
+    const prevSnapshot = Y.emptySnapshot
     const tr = store.editorView.state.tr
     tr.setMeta(ySyncPluginKey, {snapshot, prevSnapshot})
     store.editorView.dispatch(tr)
