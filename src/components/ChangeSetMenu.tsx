@@ -1,12 +1,22 @@
 import {For, Show, createSignal, onMount} from 'solid-js'
 import {format} from 'date-fns'
+import {css} from '@emotion/css'
 import {Version, useState} from '../state'
 import {Off, Label, Link, Sub} from './Menu'
-import {button} from './Button'
+import {button, buttonPrimary} from './Button'
+import {Styled} from './Layout'
 
 interface Props {
   onBack: () => void;
 }
+
+export const ButtonGroup = (props: Styled) => (
+  <div class={css`
+    > button {
+      margin-right: 10px;
+    }
+  `}>{props.children}</div>
+)
 
 export const ChangeSetMenu = (props: Props) => {
   const [store, ctrl] = useState()
@@ -61,25 +71,27 @@ export const ChangeSetMenu = (props: Props) => {
             )}
           </For>
         </Sub>
-        <button
-          class={button(store.config)}
-          onClick={onBack}>
-          ↩ Back
-        </button>
-        <Show when={active() === undefined}>
+        <ButtonGroup config={store.config}>
           <button
             class={button(store.config)}
-            onClick={() => ctrl.addVersion()}>
-            Create Snapshot
+            onClick={onBack}>
+            ↩ Back
           </button>
-        </Show>
-        <Show when={active() !== undefined}>
-          <button
-            class={button(store.config)}
-            onClick={() => applyVersion()}>
-            Apply Snapshot
-          </button>
-        </Show>
+          <Show when={active() === undefined}>
+            <button
+              class={buttonPrimary(store.config)}
+              onClick={() => ctrl.addVersion()}>
+              Create Snapshot
+            </button>
+          </Show>
+          <Show when={active() !== undefined}>
+            <button
+              class={buttonPrimary(store.config)}
+              onClick={() => applyVersion()}>
+              Apply Snapshot
+            </button>
+          </Show>
+        </ButtonGroup>
       </div>
     </Off>
   )
