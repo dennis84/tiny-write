@@ -35,7 +35,6 @@ const isConfig = (x: any): boolean =>
 export const createCtrl = (initial: State): [Store<State>, any] => {
   const [store, setState] = createStore(initial)
   const [snapshotView, setSnapshotView] = createSignal(false)
-  const initialEditorState = {text: undefined, extensions: undefined}
 
   const onReload = () => {
     if (!isTauri) return
@@ -255,7 +254,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     }
   }
 
-  const init = async () => {
+  const init = async (node: Element) => {
     try {
       const result = await fetchData()
       let data = result[0]
@@ -285,7 +284,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
         remote.setAlwaysOnTop(true)
       }
 
-      updateEditorState(newState, text ?? createEmptyText())
+      updateEditorState(newState, text ?? createEmptyText(), node)
       setState(newState)
     } catch (error) {
       setError(error)
@@ -596,28 +595,6 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     setState('config', getTheme(unwrap(store), true))
   }
 
-  const createEditorView = (elem: HTMLElement) => {
-    const {text, extensions} = initialEditorState
-    const {editorState, nodeViews} = createEditorState(text, extensions)
-    const dispatchTransaction = (tr: Transaction) => {
-      if (!store.editorView) return
-      const newState = store.editorView.state.apply(tr)
-      store.editorView.updateState(newState)
-      if (!tr.docChanged) return
-      if (tr.getMeta('addToHistory') === false) return
-      setState({lastModified: new Date()})
-    }
-
-    const editorView = new EditorView(elem, {
-      state: editorState,
-      nodeViews,
-      dispatchTransaction,
-    })
-
-    setState({editorView})
-    setTimeout(() => editorView.focus())
-  }
-
   const unrenderVersion = () => {
     const state = unwrap(store)
     const binding = ySyncPluginKey.getState(state.editorView.state).binding
@@ -670,7 +647,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     }
   }
 
-  const updateEditorState = (state: State, text?: ProseMirrorState) => {
+  const updateEditorState = (state: State, text?: ProseMirrorState, node?: Element) => {
     const extensions = createExtensions({
       config: state.config ?? store.config,
       markdown: state.markdown ?? store.markdown,
@@ -679,20 +656,30 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       ...(state.collab?.y?.prosemirrorType ? {y: state.collab.y} : {}),
     })
 
-    // Save text and extensions for first render
-    if (!state.editorView) {
-      initialEditorState.text = text
-      initialEditorState.extensions = extensions
-      return
-    } else {
-      delete initialEditorState.text
-      delete initialEditorState.extensions
+    let editorView = store.editorView
+    const t = text ?? editorView?.state
+    const {editorState, nodeViews} = createEditorState(t, extensions, editorView?.state)
+
+    if (!editorView) {
+      const dispatchTransaction = (tr: Transaction) => {
+        if (!store.editorView) return
+        const newState = store.editorView.state.apply(tr)
+        store.editorView.updateState(newState)
+        if (!tr.docChanged) return
+        if (tr.getMeta('addToHistory') === false) return
+        setState({lastModified: new Date()})
+      }
+
+      editorView = new EditorView(node, {
+        state: editorState,
+        nodeViews,
+        dispatchTransaction,
+      })
     }
 
-    const t = text ?? store.editorView.state
-    const {editorState, nodeViews} = createEditorState(t, extensions, store.editorView.state)
-    store.editorView.setProps({state: editorState, nodeViews})
-    store.editorView.focus()
+    editorView.setProps({state: editorState, nodeViews})
+    editorView.focus()
+    setState({editorView})
   }
 
   const ctrl = {
@@ -711,7 +698,6 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     updateConfig,
     updatePath,
     updateTheme,
-    createEditorView,
     updateEditorState,
     addVersion,
     applyVersion,

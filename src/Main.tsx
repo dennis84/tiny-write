@@ -2,14 +2,13 @@ import {Show, onCleanup, createEffect, onError, onMount, untrack} from 'solid-js
 import {createMutable, unwrap} from 'solid-js/store'
 import {listen} from '@tauri-apps/api/event'
 import {convertFileSrc} from '@tauri-apps/api/tauri'
-import {injectGlobal} from '@emotion/css'
+import {css, injectGlobal} from '@emotion/css'
 import {State, StateContext} from './state'
 import {createCtrl} from './ctrl'
 import * as remote from './remote'
 import {isTauri} from './env'
 import {fonts} from './config'
-import {Layout} from './components/Layout'
-import Editor from './components/Editor'
+import {Layout, editorCss} from './components/Layout'
 import Menu from './components/Menu'
 import ErrorView from './components/Error'
 import {insertImage} from './prosemirror/extension/image'
@@ -28,6 +27,7 @@ injectGlobal(fontsStyles)
 export default (props: {state: State}) => {
   const [store, ctrl] = createCtrl(props.state)
   const mouseEnterCoords = createMutable({x: 0, y: 0})
+  let editorRef: HTMLDivElement
 
   const onDragOver = (e: any) => {
     mouseEnterCoords.x = e.pageX
@@ -46,9 +46,9 @@ export default (props: {state: State}) => {
     }
   }
 
-  onMount(async () => {
+  onMount(() => {
     if (store.error) return
-    await ctrl.init()
+    ctrl.init(editorRef)
   })
 
   onMount(() => {
@@ -134,6 +134,13 @@ export default (props: {state: State}) => {
     return store.loading
   }, store.loading)
 
+  const styles = () => store.error ?
+    css`display: none` :
+    css`
+      ${editorCss(store.config)};
+      ${store.markdown ? 'white-space: pre-wrap' : ''};
+    `
+
   return (
     <StateContext.Provider value={[store, ctrl]}>
       <Layout
@@ -141,8 +148,13 @@ export default (props: {state: State}) => {
         data-testid={store.error ? 'error' : store.loading}
         onDragOver={onDragOver}>
         <Show when={store.error}><ErrorView /></Show>
-        <Show when={store.loading === 'initialized'}>
-          <Show when={!store.error}><Editor /></Show>
+        <Show when={!store.error}>
+          <div
+            ref={editorRef}
+            class={styles()}
+            spellcheck={false}
+            data-tauri-drag-region="true"
+          />
           <Menu />
         </Show>
       </Layout>
