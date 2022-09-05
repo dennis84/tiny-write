@@ -106,7 +106,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       lastModified: prev.lastModified?.toISOString(),
       path: prev.path,
       markdown: prev.markdown,
-      ...(prev.collab?.room ? {collab: {room: prev.collab.room}} : {}),
+      ...(prev.collab?.room ? {room: prev.collab.room} : {}),
     }]
   }
 
@@ -128,9 +128,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       args: {cwd: state.args?.cwd},
     }
 
-    disconnectCollab(state.collab)
-    let newState = {...state, ...next}
-    newState = withYjs(newState, file.ydoc)
+    const newState = withYjs({...state, ...next}, file.ydoc)
     updateEditorState(newState, file.text ?? createEmptyText())
 
     setState({
@@ -216,8 +214,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
   }
 
   const clean = () => {
-    disconnectCollab(unwrap(store.collab))
-    const state: State = {
+    const state: State = withYjs({
       ...newState(),
       args: {cwd: store.args?.cwd},
       loading: 'initialized',
@@ -225,7 +222,8 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       fullscreen: store.fullscreen,
       lastModified: new Date(),
       error: undefined,
-    }
+    })
+
     updateEditorState(state, createEmptyText())
     setState(state)
   }
@@ -260,17 +258,20 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       let data = result[0]
       const ydoc = result[1]
       let text
-      data = withYjs(data, ydoc)
+
       if (data.args.text) {
-        data = await withFile(data, {text: JSON.parse(data.args.text)})
+        const file = await getFile(data, {text: JSON.parse(data.args.text)})
+        data = await withFile(data, file)
       } else if (data.args.file) {
-        const file = await loadFile(data.config, data.args.file)
+        const file = await getFile(data, {path: data.args.file})
         data = await withFile(data, file)
         text = file.text
       } else if (data.path) {
-        const file = await loadFile(data.config, data.path)
+        const file = await getFile(data, {path: data.path})
         data = await withFile(data, file)
         text = file.text
+      } else {
+        data = withYjs(data, ydoc)
       }
 
       const newState: State = {
@@ -284,7 +285,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
         remote.setAlwaysOnTop(true)
       }
 
-      updateEditorState(newState, text ?? createEmptyText(), node)
+      updateEditorState(newState, text, node)
       setState(newState)
     } catch (error) {
       setError(error)
@@ -341,37 +342,45 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       markdown: false,
     })
 
-    disconnectCollab(state.collab)
     updateEditorState(update, createEmptyText())
     setState(update)
   }
 
-  const openFile = async (file: File) => {
+  const openFile = async (f: File) => {
     const state: State = unwrap(store)
+    const file = await getFile(state, f)
     const update = await withFile(state, file)
+    updateEditorState(update, file.text)
     setState(update)
   }
 
-  const withFile = async (state: State, f: File): Promise<State> => {
-    const findIndexOfFile = (f: File) => {
-      for (let i = 0; i < state.files.length; i++) {
-        if (state.files[i] === f) return i
-        else if (f.path && state.files[i].path === f.path) return i
+  const eqFile = (a: File, b: File) =>
+    (a.text !== undefined && a.text === b.text) ||
+    (a.path !== undefined && a.path === b.path)
+
+  const getFile = async (state, f: File): Promise<File> => {
+    let index = -1
+    for (let i = 0; i < state.files.length; i++) {
+      if (eqFile(state.files[i], f)) {
+        index = i
+        break
       }
-
-      return -1
     }
 
-    const index = findIndexOfFile(f)
     let file = index === -1 ? f : state.files[index]
-    let files = state.files.filter((f) => f !== file)
-
-    if (!isEmpty(state.editorView?.state) && state.lastModified) {
-      files = addToFiles(files, state)
-    }
 
     if (!file.text && file?.path) {
       file = await loadFile(state.config, file.path)
+    }
+
+    return file
+  }
+
+  const withFile = async (state: State, file: File): Promise<State> => {
+    let files = state.files.filter((f) => !eqFile(f, file))
+
+    if (!isEmpty(state.editorView?.state) && state.lastModified) {
+      files = addToFiles(files, state)
     }
 
     const next: Partial<State> = {
@@ -381,18 +390,13 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       collab: {room: file.room},
     }
 
-    let newState: State = {
+    return withYjs({
       ...state,
       args: {cwd: state.args?.cwd},
       files,
       error: undefined,
       ...next,
-    }
-
-    disconnectCollab(state.collab)
-    newState = withYjs(newState, file.ydoc)
-    updateEditorState(newState, file.text ?? createEmptyText())
-    return newState
+    }, file.ydoc)
   }
 
   const saveState = debounce(async (state: State) => {
@@ -456,6 +460,11 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
   }
 
   const withYjs = (state: State, savedDoc?: Uint8Array): State => {
+    // Disconnect if already connected
+    state.collab?.y?.provider.disconnect()
+    state.collab?.y?.configType.unobserve(onCollabConfigUpdate)
+    window.history.replaceState(null, '', '/')
+
     let started = false
     let room = state.collab?.room ?? uuidv4()
     if (state.args?.room) {
@@ -528,12 +537,6 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     }
 
     return newState
-  }
-
-  const disconnectCollab = (collab?: Collab) => {
-    collab?.y?.provider.disconnect()
-    collab?.y?.configType.unobserve(onCollabConfigUpdate)
-    window.history.replaceState(null, '', '/')
   }
 
   const toggleMarkdown = () => {
@@ -657,7 +660,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     })
 
     let editorView = store.editorView
-    const t = text ?? editorView?.state
+    const t = text ?? editorView?.state ?? createEmptyText()
     const {editorState, nodeViews} = createEditorState(t, extensions, editorView?.state)
 
     if (!editorView) {

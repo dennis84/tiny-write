@@ -1,7 +1,6 @@
 import {vi, expect, test} from 'vitest'
 import {createCtrl} from '../../src/ctrl'
 import {newState} from '../../src/state'
-import {createEmptyText} from '../../src/prosemirror'
 
 const lastModified = new Date()
 
@@ -24,19 +23,10 @@ vi.mock('idb-keyval', () => ({
   set: async () => undefined,
 }))
 
-test('init - no state', async () => {
-  const [store, ctrl] = createCtrl(newState())
-  await ctrl.init()
-  expect(store.path).toBe('file1')
-  expect(store.editorView).toBe(undefined)
-})
-
-test('init - check text', async () => {
+test('init - saved path', async () => {
   const [store, ctrl] = createCtrl(newState())
   const target = document.createElement('div')
-  ctrl.updateEditorState(store, createEmptyText())
-  ctrl.createEditorView(target)
-  await ctrl.init()
+  await ctrl.init(target)
   expect(store.path).toBe('file1')
   expect(store.editorView.state.doc.textContent).toBe('File1')
 })
