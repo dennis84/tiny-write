@@ -231,3 +231,22 @@ test('startCollab - with text', async () => {
   expect(store.collab.room).not.toBe(undefined)
   expect(store.collab.y).not.toBe(undefined)
 })
+
+test('clean', async () => {
+  const error = {id: 'fail'}
+  const [store, ctrl] = createCtrl(newState({
+    error,
+    files: [{text}],
+  }))
+  const target = document.createElement('div')
+  await ctrl.init(target)
+  const tr = store.editorView.state.tr
+  tr.insertText('Test')
+  store.editorView.dispatch(tr)
+  expect(store.editorView.state.doc.textContent).toBe('Test')
+  expect(store.error).toBe(error)
+  await ctrl.clean()
+  expect(store.error).toBe(undefined)
+  expect(store.editorView.state.doc.textContent).toBe('')
+  expect(store.files.length).toBe(0)
+})
