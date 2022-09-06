@@ -35,10 +35,6 @@ pub fn create_args(args: Vec<String>) -> Args {
         None => {}
     }
 
-    file = Some(crate::cmd::path::resolve_path(vec![
-        "/Users/dennisdietrich/projects/tiny-write/README.md".to_string()
-    ]).unwrap());
-
     let cwd = env::current_dir()
         .map(|x| x.into_os_string().into_string().unwrap())
         .ok();
