@@ -49,9 +49,9 @@ export const cellMenu = new Plugin({
         currentCell: undefined,
       }
     },
-    apply(tr) {
+    apply(tr, prev) {
       const state = tr.getMeta(this)
-      return state ?? {currentCell: undefined}
+      return state ?? prev
     }
   },
   props: {
@@ -85,7 +85,7 @@ export const cellMenu = new Plugin({
         const cell = cellAround(resolved)
         if (!cell) return
 
-        if (cell) {
+        if (cell && pluginState.currentCell !== cell) {
           const tr = view.state.tr
           tr.setMeta(pluginKey, {currentCell: cell})
           view.dispatch(tr)
