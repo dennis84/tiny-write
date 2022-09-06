@@ -6,7 +6,6 @@ import {fromUint8Array, toUint8Array} from 'js-base64'
 import {EditorView, NodeViewConstructor} from 'prosemirror-view'
 import {EditorState, Transaction} from 'prosemirror-state'
 import {Schema, Slice} from 'prosemirror-model'
-import {undo, redo} from 'prosemirror-history'
 import {selectAll, deleteSelection} from 'prosemirror-commands'
 import * as Y from 'yjs'
 import {undo as yUndo, redo as yRedo, ySyncPluginKey, yDocToProsemirror, prosemirrorJSONToYDoc} from 'y-prosemirror'
@@ -64,23 +63,13 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
 
   const onUndo = () => {
     if (!store.editorView) return
-    if (store.collab?.started) {
-      yUndo(store.editorView.state)
-    } else {
-      undo(store.editorView.state, store.editorView.dispatch)
-    }
-
+    yUndo(store.editorView.state)
     return true
   }
 
   const onRedo = () => {
     if (!store.editorView) return
-    if (store.collab?.started) {
-      yRedo(store.editorView.state)
-    } else {
-      redo(store.editorView.state, store.editorView.dispatch)
-    }
-
+    yRedo(store.editorView.state)
     return true
   }
 
