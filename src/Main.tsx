@@ -68,9 +68,7 @@ export default (props: {state: State}) => {
           const y = mouseEnterCoords.y
           insertImageMd(store.editorView, convertFileSrc(path), x, y)
         } else if (mime.startsWith('text/')) {
-          const state: State = unwrap(store)
-          const file = await ctrl.loadFile(state.config, path)
-          await ctrl.openFile(file)
+          await ctrl.openFile({path})
           return
         }
       }

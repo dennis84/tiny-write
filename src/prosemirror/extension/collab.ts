@@ -95,9 +95,7 @@ const ychangeSchema = {
     },
     inclusive: false,
     parseDOM: [{ tag: 'ychange' }],
-    toDOM (node) {
-      return ['ychange', {}]
-    }
+    toDOM: () => ['ychange', {}]
   }
 }
 

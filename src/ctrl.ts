@@ -3,12 +3,12 @@ import {Store, createStore, unwrap} from 'solid-js/store'
 import {v4 as uuidv4} from 'uuid'
 import * as db from 'idb-keyval'
 import {fromUint8Array, toUint8Array} from 'js-base64'
-import {EditorView, NodeViewConstructor} from 'prosemirror-view'
+import {EditorView} from 'prosemirror-view'
 import {EditorState, Transaction} from 'prosemirror-state'
-import {Schema, Slice} from 'prosemirror-model'
+import {Node, Schema, Slice} from 'prosemirror-model'
 import {selectAll, deleteSelection} from 'prosemirror-commands'
 import * as Y from 'yjs'
-import {undo as yUndo, redo as yRedo, ySyncPluginKey, yDocToProsemirror, prosemirrorJSONToYDoc} from 'y-prosemirror'
+import {undo, redo, ySyncPluginKey, yDocToProsemirror, prosemirrorJSONToYDoc} from 'y-prosemirror'
 import {WebsocketProvider} from 'y-websocket'
 import {uniqueNamesGenerator, adjectives, animals} from 'unique-names-generator'
 import {debounce} from 'ts-debounce'
@@ -18,7 +18,7 @@ import {State, File, Config, Version, ServiceError, newState} from './state'
 import {COLLAB_URL, isTauri, mod} from './env'
 import {serialize, createMarkdownParser} from './markdown'
 import {isDarkTheme, themes} from './config'
-import {ProseMirrorExtension, ProseMirrorState, isEmpty} from './prosemirror/state'
+import {isEmpty} from './prosemirror/state'
 
 const isState = (x: any) =>
   (typeof x.lastModified !== 'string') &&
@@ -63,13 +63,13 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
 
   const onUndo = () => {
     if (!store.editorView) return
-    yUndo(store.editorView.state)
+    undo(store.editorView.state)
     return true
   }
 
   const onRedo = () => {
     if (!store.editorView) return
-    yRedo(store.editorView.state)
+    redo(store.editorView.state)
     return true
   }
 
@@ -118,7 +118,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     }
 
     const newState = withYjs({...state, ...next}, file.ydoc)
-    updateEditorState(newState, file.text ?? createEmptyText())
+    updateEditorState(newState, createEmptyText())
 
     setState({
       args: {cwd: state.args?.cwd},
@@ -358,7 +358,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
 
     let file = index === -1 ? f : state.files[index]
 
-    if (!file.text && file?.path) {
+    if (file?.path) {
       file = await loadFile(state.config, file.path)
     }
 
@@ -560,12 +560,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       doc = text.toJSON()
     }
 
-    const ydoc = prosemirrorJSONToYDoc(schema, doc)
-    const update = Y.encodeStateAsUpdate(ydoc)
-    const type = store.collab.y.prosemirrorType
-    type.delete(0, type.length)
-    updateEditorState({...state, markdown}, createEmptyText())
-    Y.applyUpdate(store.collab.y.ydoc, update)
+    updateEditorState({...state, markdown}, {...createEmptyText(), doc})
     setState({markdown})
   }
 
@@ -639,7 +634,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     }
   }
 
-  const updateEditorState = (state: State, text?: ProseMirrorState, node?: Element) => {
+  const updateEditorState = (state: State, text?: {[key: string]: any}, node?: Element) => {
     const extensions = createExtensions({
       config: state.config ?? store.config,
       markdown: state.markdown ?? store.markdown,
@@ -649,8 +644,47 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     })
 
     let editorView = store.editorView
-    const t = text ?? editorView?.state ?? createEmptyText()
-    const {editorState, nodeViews} = createEditorState(t, extensions, editorView?.state)
+    let schemaSpec = {nodes: {}}
+    let nodeViews = {}
+    let plugins = []
+
+    for (const extension of extensions) {
+      if (extension.schema) {
+        schemaSpec = extension.schema(schemaSpec)
+      }
+
+      if (extension.nodeViews) {
+        nodeViews = {...nodeViews, ...extension.nodeViews}
+      }
+    }
+
+    const reconfigure = !text && editorView?.state?.schema
+    const schema = reconfigure ? editorView.state.schema : new Schema(schemaSpec)
+
+    for (const extension of extensions) {
+      if (extension.plugins) {
+        plugins = extension.plugins(plugins, schema)
+      }
+    }
+
+    let editorState: EditorState
+    if (reconfigure) {
+      editorState = editorView.state.reconfigure({plugins})
+    } else {
+      if (text) {
+        const s = yDocToProsemirror(schema, state.collab.y.ydoc)
+        const n = Node.fromJSON(schema, text.doc)
+        if (!n.eq(s)) {
+          const ydoc = prosemirrorJSONToYDoc(schema, text.doc)
+          const update = Y.encodeStateAsUpdate(ydoc)
+          const type = state.collab.y.prosemirrorType
+          type.delete(0, type.length)
+          Y.applyUpdate(state.collab.y.ydoc, update)
+        }
+      }
+
+      editorState = EditorState.fromJSON({schema, plugins}, createEmptyText())
+    }
 
     if (!editorView) {
       const dispatchTransaction = (tr: Transaction) => {
@@ -667,11 +701,12 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
         nodeViews,
         dispatchTransaction,
       })
+
+      setState({editorView})
     }
 
     editorView.setProps({state: editorState, nodeViews})
     editorView.focus()
-    setState({editorView})
   }
 
   const ctrl = {
@@ -698,46 +733,4 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
   }
 
   return [store, ctrl]
-}
-
-const createEditorState = (
-  text: ProseMirrorState,
-  extensions: ProseMirrorExtension[],
-  prevText?: EditorState
-): {
-  editorState: EditorState;
-  nodeViews: {[key: string]: NodeViewConstructor};
-} => {
-  const reconfigure = text instanceof EditorState && prevText?.schema
-  let schemaSpec = {nodes: {}}
-  let nodeViews = {}
-  let plugins = []
-
-  for (const extension of extensions) {
-    if (extension.schema) {
-      schemaSpec = extension.schema(schemaSpec)
-    }
-
-    if (extension.nodeViews) {
-      nodeViews = {...nodeViews, ...extension.nodeViews}
-    }
-  }
-
-  const schema = reconfigure ? prevText?.schema : new Schema(schemaSpec)
-  for (const extension of extensions) {
-    if (extension.plugins) {
-      plugins = extension.plugins(plugins, schema)
-    }
-  }
-
-  let editorState: EditorState
-  if (reconfigure) {
-    editorState = text.reconfigure({plugins})
-  } else if (text instanceof EditorState) {
-    editorState = EditorState.fromJSON({schema, plugins}, text.toJSON())
-  } else {
-    editorState = EditorState.fromJSON({schema, plugins}, text)
-  }
-
-  return {editorState, nodeViews}
 }
