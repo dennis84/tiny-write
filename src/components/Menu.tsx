@@ -205,7 +205,7 @@ export default () => {
   createEffect(() => {
     const provider = store.collab?.y?.provider
     if (!provider) return
-    const fn = () => setCollabUsers(provider.awareness.meta.size)
+    const fn = () => setCollabUsers(provider.awareness.states.size)
     provider.awareness.on('update', fn)
     onCleanup(() => {
       setCollabUsers(0)

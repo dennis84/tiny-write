@@ -37,7 +37,6 @@ export default (codeBlock: CodeBlockView) =>
     renderDOM() {
       const div = document.createElement('div')
       div.className = 'mermaid'
-      div.id = `mermaid-${this.id}`
       this.output = div
       codeBlock.outer.appendChild(this.output)
 
@@ -72,6 +71,7 @@ export default (codeBlock: CodeBlockView) =>
         startOnLoad: false,
         theme: codeBlock.getOptions().dark ? 'dark' : 'default',
         fontFamily: `${codeBlock.getOptions().font}, monospace`,
+        flowchart: {diagramPadding: 20},
       })
 
       // fixes cut off text
@@ -86,7 +86,7 @@ export default (codeBlock: CodeBlockView) =>
           error.textContent = err.message
           this.output.innerHTML = ''
           this.output.appendChild(error)
-          const errorDiv = document.getElementById(`dmermaid-graph-${this.id}`)
+          const errorDiv = document.getElementById(`mermaid-graph-${this.id}`)
           if (errorDiv) document.body.removeChild(errorDiv)
         }
       }, 100)

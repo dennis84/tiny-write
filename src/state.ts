@@ -98,8 +98,8 @@ export const newState = (props: Partial<State> = {}): State => ({
   markdown: false,
   collab: {started: false},
   config: {
-    fontSize: 24,
-    contentWidth: 800,
+    fontSize: 14,
+    contentWidth: 600,
     alwaysOnTop: false,
     typewriterMode: true,
     prettier: {

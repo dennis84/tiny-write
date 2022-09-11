@@ -253,10 +253,12 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
         data = await withFile(data, file)
       } else if (data.args.file) {
         const file = await getFile(data, {path: data.args.file})
+        file.ydoc = ydoc
         data = await withFile(data, file)
         text = file.text
       } else if (data.path) {
         const file = await getFile(data, {path: data.path})
+        file.ydoc = ydoc
         data = await withFile(data, file)
         text = file.text
       } else {
@@ -393,12 +395,14 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       return
     }
 
+    const documentState = Y.encodeStateAsUpdate(state.collab.y.provider.doc)
     const data: any = {
       lastModified: state.lastModified,
       files: state.files,
       config: state.config,
       path: state.path,
       markdown: state.markdown,
+      ydoc: fromUint8Array(documentState),
       collab: {
         room: state.collab?.room
       }
@@ -407,10 +411,6 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     if (state.path) {
       const text = serialize(store.editorView.state)
       await remote.writeFile(state.path, text)
-    } else {
-      const documentState = Y.encodeStateAsUpdate(state.collab.y.provider.doc)
-      data.ydoc = fromUint8Array(documentState)
-      data.text = store.editorView.state.toJSON()
     }
 
     db.set('state', JSON.stringify(data))
@@ -624,6 +624,8 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
         clientID: ydoc.clientID,
       }])
     }
+
+    saveState(state)
   }
 
   const updateEditorState = (state: State, text?: {[key: string]: any}, node?: Element) => {

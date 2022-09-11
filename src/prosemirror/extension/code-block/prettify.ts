@@ -32,11 +32,13 @@ export default (codeBlock: CodeBlockView) =>
         this.updateDOM()
       }
 
-      if (
-        update.docChanged ||
-        update.startState.facet(language) != update.state.facet(language)
-      ) {
+      if (update.docChanged) {
         this.updateDOM()
+      } else if (update.startState.facet(language) != update.state.facet(language)) {
+        this.updateDOM()
+        setTimeout(() => {
+          this.view.dispatch(setDiagnostics(this.view.state, []))
+        })
       }
     }
 
@@ -71,11 +73,6 @@ export default (codeBlock: CodeBlockView) =>
         this.button.style.display = 'block'
       } else {
         this.button.style.display = 'none'
-        try {
-          this.view.dispatch(setDiagnostics(this.view.state, []))
-        } catch (e) {
-          // ignore
-        }
       }
     }
 
