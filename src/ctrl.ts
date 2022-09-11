@@ -118,7 +118,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     }
 
     const newState = withYjs({...state, ...next}, file.ydoc)
-    updateEditorState(newState, createEmptyText())
+    updateEditorState(newState, file.text)
 
     setState({
       args: {cwd: state.args?.cwd},
@@ -451,7 +451,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
   const withYjs = (state: State, savedDoc?: Uint8Array): State => {
     // Disconnect if already connected
     state.collab?.y?.provider.disconnect()
-    state.collab?.y?.configType.unobserve(onCollabConfigUpdate)
+    state.collab?.y?.ydoc.getMap('config').unobserve(onCollabConfigUpdate)
     window.history.replaceState(null, '', '/')
 
     let started = false
@@ -472,7 +472,6 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       }
     }
 
-    const prosemirrorType = ydoc.getXmlFragment('prosemirror')
     const provider = new WebsocketProvider(COLLAB_URL, room, ydoc, {connect: started})
     const configType = ydoc.getMap('config')
     configType.set('font', state.config.font)
@@ -500,13 +499,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       collab: {
         started,
         room,
-        y: {
-          ydoc,
-          prosemirrorType,
-          configType,
-          provider,
-          permanentUserData,
-        }
+        y: {ydoc, provider, permanentUserData}
       }
     }
 
@@ -546,7 +539,6 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       schema = createSchema({
         config: state.config,
         path: state.path,
-        y: state.collab?.y,
         markdown,
         keymap,
       })
@@ -566,9 +558,9 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
 
   const updateConfig = (conf: Partial<Config>) => {
     const state: State = unwrap(store)
-    if (conf.font) state.collab?.y?.configType.set('font', conf.font)
-    if (conf.fontSize) state.collab?.y?.configType.set('fontSize', conf.fontSize)
-    if (conf.contentWidth) state.collab?.y?.configType.set('contentWidth', conf.contentWidth)
+    if (conf.font) state.collab?.y?.ydoc.getMap('config').set('font', conf.font)
+    if (conf.fontSize) state.collab?.y?.ydoc.getMap('config').set('fontSize', conf.fontSize)
+    if (conf.contentWidth) state.collab?.y?.ydoc.getMap('config').set('contentWidth', conf.contentWidth)
     const config = {...state.config, ...conf}
     updateEditorState({...state, config})
     setState({config, lastModified: new Date()})
@@ -640,7 +632,14 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       markdown: state.markdown ?? store.markdown,
       path: state.path ?? store.path,
       keymap,
-      ...(state.collab?.y?.prosemirrorType ? {y: state.collab.y} : {}),
+      y: {
+        type: state.collab.y.ydoc.getXmlFragment('prosemirror'),
+        provider: state.collab.y.provider,
+        permanentUserData: state.collab.y.permanentUserData,
+        onFirstRender: () => {
+          setState('collab', 'ready', true)
+        }
+      }
     })
 
     let editorView = store.editorView
@@ -668,21 +667,10 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     }
 
     let editorState: EditorState
+
     if (reconfigure) {
       editorState = editorView.state.reconfigure({plugins})
     } else {
-      if (text) {
-        const s = yDocToProsemirror(schema, state.collab.y.ydoc)
-        const n = Node.fromJSON(schema, text.doc)
-        if (!n.eq(s)) {
-          const ydoc = prosemirrorJSONToYDoc(schema, text.doc)
-          const update = Y.encodeStateAsUpdate(ydoc)
-          const type = state.collab.y.prosemirrorType
-          type.delete(0, type.length)
-          Y.applyUpdate(state.collab.y.ydoc, update)
-        }
-      }
-
       editorState = EditorState.fromJSON({schema, plugins}, createEmptyText())
     }
 
@@ -707,6 +695,24 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
 
     editorView.setProps({state: editorState, nodeViews})
     editorView.focus()
+
+    if (text) {
+      let ynode
+      try {
+        ynode = yDocToProsemirror(schema, state.collab.y.ydoc)
+      } catch(e) {
+        ynode = new Node()
+      }
+
+      const node = Node.fromJSON(schema, text.doc)
+      if (!node.eq(ynode)) {
+        const ydoc = prosemirrorJSONToYDoc(schema, text.doc)
+        const update = Y.encodeStateAsUpdate(ydoc)
+        const type = state.collab.y.ydoc.getXmlFragment('prosemirror')
+        type.delete(0, type.length)
+        Y.applyUpdate(state.collab.y.ydoc, update)
+      }
+    }
   }
 
   const ctrl = {

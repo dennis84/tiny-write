@@ -2,7 +2,7 @@ import { PlaywrightTestConfig } from '@playwright/test'
 const second = 1000
 const config: PlaywrightTestConfig = {
   testDir: './test/integration',
-  timeout: process.env.CI ? 10 * second : 60 * second,
+  timeout: 10 * second,
   retries: process.env.CI ? 3 : 0,
   webServer: {
     command: 'npm run web',

@@ -15,11 +15,11 @@ import image from './prosemirror/extension/image'
 import dragHandle from './prosemirror/extension/drag-handle'
 import pasteMarkdown from './prosemirror/extension/paste-markdown'
 import table from './prosemirror/extension/table'
-import collab from './prosemirror/extension/collab'
+import {collab, CollabOptions} from './prosemirror/extension/collab'
 import select from './prosemirror/extension/select'
 import position from './prosemirror/extension/position'
 import container from './prosemirror/extension/container'
-import {Config, YOptions} from './state'
+import {Config} from './state'
 import {codeTheme, font, selection, isDarkTheme} from './config'
 import {isDev} from './env'
 
@@ -29,7 +29,7 @@ interface Props {
   config: Config;
   markdown: boolean;
   path?: string;
-  y?: YOptions;
+  y?: CollabOptions;
 }
 
 const customKeymap = (props: Props): ProseMirrorExtension => ({

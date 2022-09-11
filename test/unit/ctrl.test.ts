@@ -98,7 +98,7 @@ test('openFile', async () => {
   await ctrl.init(target)
   await ctrl.openFile({text})
   expect(store.files.length).toBe(0)
-  expect(store.editorView.state.toJSON()).toEqual(text)
+  expect(store.editorView.state.toJSON().doc).toEqual(text.doc)
 })
 
 test('openFile - add to files', async () => {
@@ -110,7 +110,7 @@ test('openFile - add to files', async () => {
   store.editorView.dispatch(tr)
   await ctrl.openFile({text})
   expect(store.files.length).toBe(1)
-  expect(store.editorView.state.toJSON()).toEqual(text)
+  expect(store.editorView.state.toJSON().doc).toEqual(text.doc)
 })
 
 test('openFile - from files', async () => {
@@ -165,7 +165,7 @@ test('openFile - path and text', async () => {
   const target = document.createElement('div')
   await ctrl.init(target)
   await ctrl.openFile({text, path: 'file1'})
-  expect(store.editorView.state.doc.textContent).toBe('Test')
+  expect(store.editorView.state.doc.textContent).toBe('File1')
 })
 
 test('openFile - open collab', async () => {
@@ -202,6 +202,7 @@ test('discard - open collab', async () => {
   const target = document.createElement('div')
   await ctrl.init(target)
   await ctrl.discard()
+
   expect(store.editorView.state.doc.textContent).toBe('Test')
   expect(store.files.length).toBe(0)
   expect(store.collab.room).toBe('room-123')

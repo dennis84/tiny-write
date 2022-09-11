@@ -41,8 +41,6 @@ export interface Version {
 }
 
 export interface YOptions {
-  prosemirrorType: Y.XmlFragment;
-  configType: Y.Map<any>;
   provider: WebsocketProvider;
   permanentUserData: any;
   ydoc: Y.Doc;
@@ -53,6 +51,7 @@ export interface Collab {
   room?: string;
   error?: boolean;
   y?: YOptions;
+  ready?: boolean;
 }
 
 export type LoadingType = 'loading' | 'initialized'

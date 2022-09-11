@@ -1,9 +1,17 @@
 import {Plugin} from 'prosemirror-state'
 import {EditorView} from 'prosemirror-view'
+import * as Y from 'yjs'
+import {WebsocketProvider} from 'y-websocket'
 import {ySyncPlugin, yCursorPlugin, yUndoPlugin, ySyncPluginKey} from 'y-prosemirror'
 import {Awareness} from 'y-protocols/awareness'
 import {ProseMirrorExtension} from '../state'
-import {YOptions} from '../../state'
+
+export interface CollabOptions {
+  type: Y.XmlFragment;
+  provider: WebsocketProvider;
+  permanentUserData: any;
+  onFirstRender: () => void;
+}
 
 const cursorBuilder = (user: any): HTMLElement => {
   const cursor = document.createElement('span')
@@ -99,14 +107,17 @@ const ychangeSchema = {
   }
 }
 
-export default (y?: YOptions): ProseMirrorExtension => ({
+export const collab = (y: CollabOptions): ProseMirrorExtension => ({
   schema: (prev) => ({
     ...prev,
     marks: (prev.marks as any).append(ychangeSchema),
   }),
   plugins: (prev) => y ? [
     ...prev,
-    ySyncPlugin(y.prosemirrorType, {permanentUserData: y.permanentUserData}),
+    ySyncPlugin(y.type, {
+      permanentUserData: y.permanentUserData,
+      onFirstRender: y.onFirstRender,
+    }),
     // @ts-ignore
     yCursorPlugin(y.provider.awareness, {cursorBuilder}),
     yMouseCursorPlugin(y.provider.awareness),
