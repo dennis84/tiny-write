@@ -1,5 +1,5 @@
-import {Show, onCleanup, createEffect, onError, onMount, untrack} from 'solid-js'
-import {createMutable, unwrap} from 'solid-js/store'
+import {Show, onCleanup, createEffect, onError, onMount} from 'solid-js'
+import {createMutable} from 'solid-js/store'
 import {listen} from '@tauri-apps/api/event'
 import {convertFileSrc} from '@tauri-apps/api/tauri'
 import {css, injectGlobal} from '@emotion/css'
@@ -120,17 +120,6 @@ export default (props: {state: State}) => {
       document.title = text
     }
   })
-
-  createEffect((prev) => {
-    const lastModified = store.lastModified
-    if (!lastModified || (store.loading === 'initialized' && prev === 'loading')) {
-      return store.loading
-    }
-
-    const state: State = untrack(() => unwrap(store))
-    ctrl.saveState(state)
-    return store.loading
-  }, store.loading)
 
   const styles = () => store.error ?
     css`display: none` :

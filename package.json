@@ -61,6 +61,7 @@
     "@types/uuid": "^8.3.4",
     "@typescript-eslint/eslint-plugin": "^5.32.0",
     "@typescript-eslint/parser": "^5.32.0",
+    "cross-env": "^7.0.3",
     "devicon": "github:devicons/devicon#master",
     "eslint": "^8.21.0",
     "jsdom": "^20.0.0",
@@ -78,7 +79,7 @@
     "build": "vite build --base './'",
     "dist": "npm run build && tauri build",
     "lint": "eslint . --ext .ts,.tsx",
-    "test": "CI=true vitest && npx playwright test"
+    "test": "cross-env CI=true vitest && cross-env CI=true npx playwright test"
   },
   "browserslist": [
     "last 1 Chrome versions"

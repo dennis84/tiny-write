@@ -307,6 +307,10 @@ export default () => {
     ctrl.startCollab()
   }
 
+  const onCollabStop = () => {
+    ctrl.stopCollab()
+  }
+
   const onOpenInApp = () => {
     if (isTauri) return
     if (store.collab?.started) {
@@ -543,6 +547,12 @@ export default () => {
                 </Link>
               </Show>
               <Show when={store.collab?.started}>
+                <Link
+                  config={store.config}
+                  onClick={onCollabStop}
+                  data-testid="collab">
+                  Disconnect
+                </Link>
                 <Link config={store.config} onClick={onCopyCollabLink}>
                   Copy Link {lastAction() === 'copy-collab-link' && '📋'}
                 </Link>

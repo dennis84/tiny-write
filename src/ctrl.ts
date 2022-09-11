@@ -441,6 +441,13 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     setState('collab', {started: true})
   }
 
+  const stopCollab = () => {
+    store.collab?.y?.ydoc.getMap('config').unobserve(onCollabConfigUpdate)
+    store.collab?.y?.provider.disconnect()
+    window.history.replaceState(null, '', '/')
+    setState('collab', {started: false})
+  }
+
   const onCollabConfigUpdate = (event: any) => {
     const font = event.target.get('font') as string
     const fontSize = event.target.get('fontSize') as number
@@ -450,8 +457,8 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
 
   const withYjs = (state: State, savedDoc?: Uint8Array): State => {
     // Disconnect if already connected
-    state.collab?.y?.provider.disconnect()
     state.collab?.y?.ydoc.getMap('config').unobserve(onCollabConfigUpdate)
+    state.collab?.y?.provider.disconnect()
     window.history.replaceState(null, '', '/')
 
     let started = false
@@ -683,7 +690,12 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
         store.editorView.updateState(newState)
         if (!tr.docChanged) return
         if (tr.getMeta('addToHistory') === false) return
-        setState({lastModified: new Date()})
+
+        setState((prev) => {
+          const newState = {...prev, lastModified: new Date()}
+          saveState(newState)
+          return newState
+        })
       }
 
       editorView = new EditorView(node, {
@@ -729,6 +741,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     setFullscreen,
     setState,
     startCollab,
+    stopCollab,
     toggleMarkdown,
     updateConfig,
     updatePath,
