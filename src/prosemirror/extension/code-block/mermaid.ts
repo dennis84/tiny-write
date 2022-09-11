@@ -86,6 +86,9 @@ export default (codeBlock: CodeBlockView) =>
           error.textContent = err.message
           this.output.innerHTML = ''
           this.output.appendChild(error)
+          // remove mermaid error div
+          const errorDiv = document.getElementById(`dmermaid-graph-${this.id}`)
+          if (errorDiv) document.body.removeChild(errorDiv)
         }
       }, 100)
     }
