@@ -373,33 +373,10 @@ export default () => {
 
   const FileLink = (p: {file: File}) => {
     const length = 100
-    let content = ''
-    const getContent = (node: any) => {
-      if (node.text) {
-        content += node.text + ' '
-      }
-
-      if (content.length > length) {
-        content = content.substring(0, length) + '...'
-        return content
-      }
-
-      if (node.content) {
-        for (const child of node.content) {
-          if (content.length >= length) {
-            break
-          }
-
-          content = getContent(child)
-        }
-      }
-
-      return content
-    }
 
     const text = () =>
       p.file.path ? p.file.path.substring(p.file.path.length - length) :
-      getContent(p.file.text?.doc)
+      p.file.excerpt ?? 'undefined'
 
     return (
       <Link

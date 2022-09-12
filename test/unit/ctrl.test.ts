@@ -63,7 +63,7 @@ test('newFile', async () => {
   await ctrl.newFile()
   expect(store.files.length).toBe(1)
   expect(store.editorView.state.doc.textContent).toEqual('')
-  expect(store.files[0].text.doc).toEqual(text.doc)
+  expect(store.files[0].ydoc).not.toBe(undefined)
 })
 
 test('newFile - empty', async () => {

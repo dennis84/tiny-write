@@ -86,12 +86,10 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
   }
 
   const addToFiles = (files: File[], prev: State) => {
-    const text = prev.path ? undefined : store.editorView?.state.toJSON()
     const ydoc = Y.encodeStateAsUpdate(prev.collab.y.ydoc)
-
     return [...files, {
-      text,
       ydoc,
+      excerpt: store.editorView.state.doc.textContent.substring(0, 50),
       lastModified: prev.lastModified?.toISOString(),
       path: prev.path,
       markdown: prev.markdown,
@@ -118,8 +116,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     }
 
     const newState = withYjs({...state, ...next}, file.ydoc)
-    updateEditorState(newState, file.text)
-
+    updateEditorState(newState, false)
     setState({
       args: {cwd: state.args?.cwd},
       collab: undefined,
@@ -127,6 +124,8 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       ...newState,
       files,
     })
+
+    if (!file.ydoc && file.text) updateText(file.text)
   }
 
   const fetchData = async (): Promise<[State, Uint8Array]> => {
@@ -213,8 +212,9 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       error: undefined,
     })
 
-    updateEditorState(state, createEmptyText())
+    updateEditorState(state, false)
     setState(state)
+    updateText(createEmptyText())
   }
 
   const discard = async () => {
@@ -276,8 +276,9 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
         remote.setAlwaysOnTop(true)
       }
 
-      updateEditorState(newState, text, node)
+      updateEditorState(newState, false, node)
       setState(newState)
+      updateText(text)
     } catch (error) {
       setError(error)
     }
@@ -333,7 +334,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       markdown: false,
     })
 
-    updateEditorState(update, createEmptyText())
+    updateEditorState(update, false)
     setState(update)
   }
 
@@ -341,12 +342,14 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     const state: State = unwrap(store)
     const file = await getFile(state, f)
     const update = await withFile(state, file)
-    updateEditorState(update, file.text)
+    updateEditorState(update, false)
     setState(update)
+    if (!file.ydoc && file.text) updateText(file.text)
   }
 
   const eqFile = (a: File, b: File) =>
     (a.text !== undefined && a.text === b.text) ||
+    (a.ydoc !== undefined && a.ydoc === b.ydoc) ||
     (a.path !== undefined && a.path === b.path)
 
   const getFile = async (state, f: File): Promise<File> => {
@@ -559,8 +562,9 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       doc = text.toJSON()
     }
 
-    updateEditorState({...state, markdown}, {...createEmptyText(), doc})
+    updateEditorState({...state, markdown}, false)
     setState({markdown})
+    updateText({...createEmptyText(), doc})
   }
 
   const updateConfig = (conf: Partial<Config>) => {
@@ -635,7 +639,27 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     saveState(state)
   }
 
-  const updateEditorState = (state: State, text?: {[key: string]: any}, node?: Element) => {
+  const updateText = (text?: {[key: string]: any}) => {
+    if (!text) return
+    const schema = store.editorView.state.schema
+    let ynode
+    try {
+      ynode = yDocToProsemirror(schema, store.collab.y.ydoc)
+    } catch(e) {
+      ynode = new Node()
+    }
+
+    const node = Node.fromJSON(schema, text.doc)
+    if (!node.eq(ynode)) {
+      const ydoc = prosemirrorJSONToYDoc(schema, text.doc)
+      const update = Y.encodeStateAsUpdate(ydoc)
+      const type = store.collab.y.ydoc.getXmlFragment('prosemirror')
+      type.delete(0, type.length)
+      Y.applyUpdate(store.collab.y.ydoc, update)
+    }
+  }
+
+  const updateEditorState = (state: State, reconfigure = true, node?: Element) => {
     const extensions = createExtensions({
       config: state.config ?? store.config,
       markdown: state.markdown ?? store.markdown,
@@ -666,7 +690,6 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       }
     }
 
-    const reconfigure = !text && editorView?.state?.schema
     const schema = reconfigure ? editorView.state.schema : new Schema(schemaSpec)
 
     for (const extension of extensions) {
@@ -709,24 +732,6 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
 
     editorView.setProps({state: editorState, nodeViews})
     editorView.focus()
-
-    if (text) {
-      let ynode
-      try {
-        ynode = yDocToProsemirror(schema, state.collab.y.ydoc)
-      } catch(e) {
-        ynode = new Node()
-      }
-
-      const node = Node.fromJSON(schema, text.doc)
-      if (!node.eq(ynode)) {
-        const ydoc = prosemirrorJSONToYDoc(schema, text.doc)
-        const update = Y.encodeStateAsUpdate(ydoc)
-        const type = state.collab.y.ydoc.getXmlFragment('prosemirror')
-        type.delete(0, type.length)
-        Y.applyUpdate(state.collab.y.ydoc, update)
-      }
-    }
   }
 
   const ctrl = {
@@ -746,7 +751,6 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     updateConfig,
     updatePath,
     updateTheme,
-    updateEditorState,
     addVersion,
     applyVersion,
     renderVersion,
