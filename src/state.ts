@@ -68,6 +68,7 @@ export interface State {
   collab: Collab;
   path?: string;
   args?: Args;
+  storageSize: number;
 }
 
 export interface File {
@@ -78,6 +79,7 @@ export interface File {
   path?: string;
   markdown?: boolean;
   room?: string;
+  storageSize?: number;
 }
 
 export class ServiceError extends Error {
@@ -98,6 +100,7 @@ export const newState = (props: Partial<State> = {}): State => ({
   fullscreen: false,
   markdown: false,
   collab: {started: false},
+  storageSize: 0,
   config: {
     fontSize: 14,
     contentWidth: 600,

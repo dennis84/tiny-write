@@ -159,6 +159,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       ...parsed,
       config,
       args,
+      storageSize: data.length,
     }
 
     if (newState.lastModified) {
@@ -401,7 +402,10 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     const documentState = Y.encodeStateAsUpdate(state.collab.y.provider.doc)
     const data: any = {
       lastModified: state.lastModified,
-      files: state.files,
+      files: state.files.map((f) => {
+        const json = {...f, ydoc: fromUint8Array(f.ydoc)}
+        return {...newFile, storageSize: JSON.stringify(json).length}
+      }),
       config: state.config,
       path: state.path,
       markdown: state.markdown,
@@ -416,7 +420,9 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       await remote.writeFile(state.path, text)
     }
 
-    db.set('state', JSON.stringify(data))
+    const json = JSON.stringify(data)
+    setState({storageSize: json.length})
+    db.set('state', json)
   }, 200)
 
   const setAlwaysOnTop = (alwaysOnTop: boolean) => {

@@ -3,6 +3,7 @@ import {unwrap} from 'solid-js/store'
 import {undo, redo} from 'prosemirror-history'
 import {differenceInHours, format} from 'date-fns'
 import {css} from '@emotion/css'
+import * as Y from 'yjs'
 import {version} from '../../package.json'
 import {Config, File, useState} from '../state'
 import {foreground, primaryBackground} from '../config'
@@ -371,6 +372,25 @@ export default () => {
     )
   }
 
+  const StorageStats = () => {
+    const [ydocSize, setYdocSize] = createSignal(0)
+
+    createEffect(() => {
+      setYdocSize(Y.encodeStateAsUpdate(store.collab.y.ydoc).byteLength)
+    })
+
+    return (
+      <>
+        <Text config={store.config}>
+          File size: {(ydocSize() / 1024 / 1024).toFixed(2)} MiB
+        </Text>
+        <Text config={store.config}>
+          DB size used: {(store.storageSize / 1024 / 1024).toFixed(2)} MiB
+        </Text>
+      </>
+    )
+  }
+
   const FileLink = (p: {file: File}) => {
     const length = 100
 
@@ -546,6 +566,7 @@ export default () => {
             <Label config={store.config}>Stats</Label>
             <Sub>
               <LastModified />
+              <StorageStats />
               <Text config={store.config}>{textStats().words} words</Text>
               <Text config={store.config}>{textStats().paragraphs} paragraphs</Text>
               <Text config={store.config}>{textStats().loc} lines of code</Text>
