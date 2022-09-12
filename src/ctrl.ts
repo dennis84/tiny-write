@@ -166,23 +166,28 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       newState.lastModified = new Date(newState.lastModified)
     }
 
+    const files = []
     for (const file of parsed.files) {
       if (!isFile(file)) {
-        throw new ServiceError('invalid_file', file)
+        continue
       }
 
       if (file.ydoc && typeof file.ydoc === 'string') {
         file.ydoc = toUint8Array(file.ydoc)
       }
+
+      files.push(file)
     }
+
+    newState.files = files
 
     if (!isState(newState)) {
       throw new ServiceError('invalid_state', newState)
     }
 
     let ydoc
-    if (parsed.ydoc && typeof parsed.ydoc === 'string') {
-      ydoc = toUint8Array(parsed.ydoc)
+    if (newState.ydoc && typeof newState.ydoc === 'string') {
+      ydoc = toUint8Array(newState.ydoc)
       delete newState.ydoc
     }
 
@@ -404,7 +409,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       lastModified: state.lastModified,
       files: state.files.map((f) => {
         const json = {...f, ydoc: fromUint8Array(f.ydoc)}
-        return {...newFile, storageSize: JSON.stringify(json).length}
+        return {...json, storageSize: JSON.stringify(json).length}
       }),
       config: state.config,
       path: state.path,

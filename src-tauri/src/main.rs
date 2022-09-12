@@ -4,7 +4,7 @@
 )]
 
 use std::env;
-use tauri::{Menu, MenuItem, Submenu};
+use tauri::{Menu, MenuItem, Submenu, Manager};
 
 mod cmd;
 
@@ -24,7 +24,33 @@ fn main() {
     }
 
     builder
-        .manage(cmd::args::create_args(env::args().skip(1).collect::<Vec<_>>()))
+        .setup(|app| {
+            match app.get_cli_matches() {
+                Ok(matches) => {
+                    if let Some(source) = matches.args.get("source") {
+                        let source = source
+                            .value
+                            .as_str()
+                            .map(|s| s.to_string())
+                            .unwrap_or_default();
+                        app.manage(cmd::args::create_args(source));
+                    } else if let Some(help) = matches.args.get("help") {
+                        let help_text = help
+                            .value
+                            .as_str()
+                            .map(|s| s.to_string())
+                            .unwrap_or_default();
+                        println!("{}", help_text);
+                        app.app_handle().exit(0);
+                    }
+                }
+                Err(e) => {
+                    println!("{}", e.to_string());
+                    app.app_handle().exit(1);
+                }
+            }
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
             cmd::args::get_args,
             cmd::file::get_mime_type,

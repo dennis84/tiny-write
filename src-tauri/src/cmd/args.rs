@@ -15,24 +15,22 @@ pub fn get_args(state: tauri::State<Args>) -> Args {
     state.inner().clone()
 }
 
-pub fn create_args(args: Vec<String>) -> Args {
+pub fn create_args(source: String) -> Args {
     let mut file = None;
     let mut room = None;
     let mut text = None;
 
-    match args.get(0) {
-        Some(arg) if arg.starts_with("tinywrite://") => {
-            if let Some(url) = Url::parse(arg).ok() {
-                let params: HashMap<_, _> = url.query_pairs().into_owned().collect();
-                room = params.get("room").map(|x| x.clone());
-                text = params
-                    .get("text")
-                    .and_then(|x| base64::decode(x).ok())
-                    .and_then(|x| String::from_utf8(x).ok());
-            }
+    if source.starts_with("tinywrite://") {
+        if let Some(url) = Url::parse(&source).ok() {
+            let params: HashMap<_, _> = url.query_pairs().into_owned().collect();
+            room = params.get("room").map(|x| x.clone());
+            text = params
+                .get("text")
+                .and_then(|x| base64::decode(x).ok())
+                .and_then(|x| String::from_utf8(x).ok());
         }
-        Some(arg) => file = crate::cmd::path::resolve_path(vec![arg.clone()]).ok(),
-        None => {}
+    } else if source != "" {
+        file = crate::cmd::path::resolve_path(vec![source]).ok();
     }
 
     let cwd = env::current_dir()
@@ -54,24 +52,31 @@ mod tests {
 
     #[test]
     fn test_create_args() {
-        let args = create_args(vec!["../README.md".to_string()]);
+        let args = create_args("".to_string());
         assert_eq!(
             Path::new(&args.cwd.as_ref().unwrap()),
             env::current_dir().unwrap()
         );
+        assert!(args.file.is_none());
+        assert!(args.room.is_none());
+        assert!(args.text.is_none());
 
+        let args = create_args("../README.md".to_string());
+        assert_eq!(
+            Path::new(&args.cwd.as_ref().unwrap()),
+            env::current_dir().unwrap()
+        );
         assert_eq!(
             Path::new(&args.file.as_ref().unwrap()),
             Path::new("../README.md").canonicalize().unwrap()
         );
-
         assert!(args.room.is_none());
         assert!(args.text.is_none());
 
-        let args = create_args(vec!["tinywrite://test?room=123".to_string()]);
+        let args = create_args("tinywrite://test?room=123".to_string());
         assert_eq!(args.room, Some("123".to_string()));
 
-        let args = create_args(vec!["tinywrite://test?text=dGVzdA==".to_string()]);
+        let args = create_args("tinywrite://test?text=dGVzdA==".to_string());
         assert_eq!(args.text, Some("test".to_string()));
     }
 }
