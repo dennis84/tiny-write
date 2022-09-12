@@ -11,6 +11,7 @@
   },
   "tauri": {
     "cli": {
+      "description": "A markdown text editor",
       "args": [
         {
           "name": "source",
