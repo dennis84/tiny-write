@@ -228,6 +228,8 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       await discardText()
     } else if (store.files.length > 0 && isEmpty(store.editorView.state)) {
       await discardText()
+    } else if (store.collab.started) {
+      await discardText()
     } else if (isEmpty(store.editorView?.state)) {
       newFile()
     } else {
@@ -347,6 +349,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
   const openFile = async (f: File) => {
     const state: State = unwrap(store)
     const file = await getFile(state, f)
+    disconnectCollab(state)
     const update = await withFile(state, file)
     updateEditorState(update, false)
     setState(update)
@@ -456,8 +459,12 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
   }
 
   const stopCollab = () => {
-    store.collab?.y?.ydoc.getMap('config').unobserve(onCollabConfigUpdate)
-    store.collab?.y?.provider.disconnect()
+    disconnectCollab(unwrap(store))
+  }
+
+  const disconnectCollab = (state: State) => {
+    state.collab?.y?.ydoc.getMap('config').unobserve(onCollabConfigUpdate)
+    state.collab?.y?.provider.disconnect()
     window.history.replaceState(null, '', '/')
     setState('collab', {started: false})
   }
@@ -470,11 +477,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
   }
 
   const withYjs = (state: State, savedDoc?: Uint8Array): State => {
-    // Disconnect if already connected
-    state.collab?.y?.ydoc.getMap('config').unobserve(onCollabConfigUpdate)
-    state.collab?.y?.provider.disconnect()
-    window.history.replaceState(null, '', '/')
-
+    disconnectCollab(state)
     let started = false
     let room = state.collab?.room ?? uuidv4()
     if (state.args?.room) {

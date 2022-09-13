@@ -208,6 +208,40 @@ test('discard - open collab', async () => {
   expect(store.collab.room).toBe('room-123')
 })
 
+test('discard - with text', async () => {
+  const [store, ctrl] = createCtrl(newState({
+    files: [{text}],
+  }))
+
+  const target = document.createElement('div')
+  await ctrl.init(target)
+  const tr = store.editorView.state.tr
+  tr.insertText('111')
+  store.editorView.dispatch(tr)
+  await ctrl.discard()
+  expect(store.editorView.state.doc.textContent).toBe('')
+  expect(store.files.length).toBe(1)
+  await ctrl.discard()
+  expect(store.editorView.state.doc.textContent).toBe('Test')
+  expect(store.files.length).toBe(0)
+})
+
+test('discard - close collab', async () => {
+  const [store, ctrl] = createCtrl(newState({
+    files: [{text}],
+  }))
+
+  const target = document.createElement('div')
+  await ctrl.init(target)
+  await ctrl.startCollab()
+  const tr = store.editorView.state.tr
+  tr.insertText('111')
+  store.editorView.dispatch(tr)
+  await ctrl.discard()
+  expect(store.editorView.state.doc.textContent).toBe('Test')
+  expect(store.files.length).toBe(0)
+})
+
 test('startCollab', async () => {
   const [store, ctrl] = createCtrl(newState({}))
   const target = document.createElement('div')
