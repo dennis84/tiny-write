@@ -408,7 +408,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       return
     }
 
-    const documentState = Y.encodeStateAsUpdate(state.collab.y.provider.doc)
+    const documentState = Y.encodeStateAsUpdate(state.collab.y.ydoc)
     const data: any = {
       lastModified: state.lastModified,
       files: state.files.map((f) => {
