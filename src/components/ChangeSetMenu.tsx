@@ -22,13 +22,13 @@ export const ChangeSetMenu = (props: Props) => {
   const [store, ctrl] = useState()
 
   const getVersions = () =>
-    store.collab.y.ydoc.getArray('versions').toArray() as Version[]
+    store.collab.ydoc.getArray('versions').toArray() as Version[]
 
   const [versions, setVersions] = createSignal(getVersions())
   const [active, setActive] = createSignal<Version>()
 
   onMount(() => {
-    store.collab.y.ydoc.getArray('versions').observe(() => {
+    store.collab.ydoc.getArray('versions').observe(() => {
       setVersions(getVersions())
     })
   })

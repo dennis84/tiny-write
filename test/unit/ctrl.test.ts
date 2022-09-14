@@ -251,7 +251,7 @@ test('startCollab', async () => {
   expect(store.editorView.state.doc.textContent).toBe('')
   expect(store.collab.started).toBe(true)
   expect(store.collab.room).not.toBe(undefined)
-  expect(store.collab.y).not.toBe(undefined)
+  expect(store.collab.provider).not.toBe(undefined)
 })
 
 test('startCollab - with text', async () => {
@@ -265,7 +265,7 @@ test('startCollab - with text', async () => {
   expect(store.editorView.state.doc.textContent).toBe('Test')
   expect(store.collab.started).toBe(true)
   expect(store.collab.room).not.toBe(undefined)
-  expect(store.collab.y).not.toBe(undefined)
+  expect(store.collab.provider).not.toBe(undefined)
 })
 
 test('clean', async () => {

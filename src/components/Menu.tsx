@@ -204,7 +204,7 @@ export default () => {
   const modKey = isMac ? '⌘' : mod
 
   createEffect(() => {
-    const provider = store.collab?.y?.provider
+    const provider = store.collab?.provider
     if (!provider) return
     const fn = () => setCollabUsers(provider.awareness.states.size)
     provider.awareness.on('update', fn)
@@ -376,7 +376,7 @@ export default () => {
     const [ydocSize, setYdocSize] = createSignal(0)
 
     createEffect(() => {
-      setYdocSize(Y.encodeStateAsUpdate(store.collab.y.ydoc).byteLength)
+      setYdocSize(Y.encodeStateAsUpdate(store.collab.ydoc).byteLength)
     })
 
     return (
@@ -538,7 +538,6 @@ export default () => {
                 <Link
                   config={store.config}
                   onClick={onCollabStart}
-                  title={store.collab?.error ? 'Connection error' : ''}
                   data-testid="collab">
                   Share
                 </Link>

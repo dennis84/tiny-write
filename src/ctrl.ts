@@ -86,7 +86,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
   }
 
   const addToFiles = (files: File[], prev: State) => {
-    const ydoc = Y.encodeStateAsUpdate(prev.collab.y.ydoc)
+    const ydoc = Y.encodeStateAsUpdate(prev.collab.ydoc)
     return [...files, {
       ydoc,
       excerpt: store.editorView.state.doc.textContent.substring(0, 50),
@@ -408,7 +408,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       return
     }
 
-    const documentState = Y.encodeStateAsUpdate(state.collab.y.ydoc)
+    const documentState = Y.encodeStateAsUpdate(state.collab.ydoc)
     const data: any = {
       lastModified: state.lastModified,
       files: state.files.map((f) => {
@@ -455,7 +455,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
 
   const startCollab = () => {
     window.history.replaceState(null, '', `/${store.collab.room}`)
-    store.collab.y.provider.connect()
+    store.collab.provider.connect()
     setState('collab', {started: true})
   }
 
@@ -464,8 +464,11 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
   }
 
   const disconnectCollab = (state: State) => {
-    state.collab?.y?.ydoc.getMap('config').unobserve(onCollabConfigUpdate)
-    state.collab?.y?.provider.disconnect()
+    if (state.collab?.ydoc instanceof Y.Doc) {
+      state.collab?.ydoc.getMap('config').unobserve(onCollabConfigUpdate)
+    }
+
+    state.collab?.provider?.disconnect()
     window.history.replaceState(null, '', '/')
     setState('collab', {started: false})
   }
@@ -524,7 +527,9 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       collab: {
         started,
         room,
-        y: {ydoc, provider, permanentUserData}
+        ydoc,
+        provider,
+        permanentUserData,
       }
     }
 
@@ -584,9 +589,9 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
 
   const updateConfig = (conf: Partial<Config>) => {
     const state: State = unwrap(store)
-    if (conf.font) state.collab?.y?.ydoc.getMap('config').set('font', conf.font)
-    if (conf.fontSize) state.collab?.y?.ydoc.getMap('config').set('fontSize', conf.fontSize)
-    if (conf.contentWidth) state.collab?.y?.ydoc.getMap('config').set('contentWidth', conf.contentWidth)
+    if (conf.font) state.collab?.ydoc.getMap('config').set('font', conf.font)
+    if (conf.fontSize) state.collab?.ydoc.getMap('config').set('fontSize', conf.fontSize)
+    if (conf.contentWidth) state.collab?.ydoc.getMap('config').set('contentWidth', conf.contentWidth)
     const config = {...state.config, ...conf}
     updateEditorState({...state, config})
     setState({config, lastModified: new Date()})
@@ -609,7 +614,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
 
   const applyVersion = (version: any) => {
     const state = unwrap(store)
-    const ydoc = state.collab.y.ydoc
+    const ydoc = state.collab.ydoc
 
     const snapshot = Y.decodeSnapshot(version.snapshot)
     const newDoc = Y.createDocFromSnapshot(ydoc, snapshot)
@@ -633,7 +638,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
 
   const addVersion = () => {
     const state = unwrap(store)
-    const ydoc = state.collab.y.ydoc
+    const ydoc = state.collab.ydoc
     const versions = ydoc.getArray<Version>('versions')
     const prevVersion = versions.get(versions.length - 1)
     const prevSnapshot = prevVersion ? Y.decodeSnapshot(prevVersion.snapshot) : Y.emptySnapshot
@@ -659,7 +664,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     const schema = store.editorView.state.schema
     let ynode
     try {
-      ynode = yDocToProsemirror(schema, store.collab.y.ydoc)
+      ynode = yDocToProsemirror(schema, store.collab.ydoc)
     } catch(e) {
       ynode = new Node()
     }
@@ -668,9 +673,9 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     if (!node.eq(ynode)) {
       const ydoc = prosemirrorJSONToYDoc(schema, text.doc)
       const update = Y.encodeStateAsUpdate(ydoc)
-      const type = store.collab.y.ydoc.getXmlFragment('prosemirror')
+      const type = store.collab.ydoc.getXmlFragment('prosemirror')
       type.delete(0, type.length)
-      Y.applyUpdate(store.collab.y.ydoc, update)
+      Y.applyUpdate(store.collab.ydoc, update)
     }
   }
 
@@ -681,9 +686,9 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       path: state.path ?? store.path,
       keymap,
       y: {
-        type: state.collab.y.ydoc.getXmlFragment('prosemirror'),
-        provider: state.collab.y.provider,
-        permanentUserData: state.collab.y.permanentUserData,
+        type: state.collab.ydoc.getXmlFragment('prosemirror'),
+        provider: state.collab.provider,
+        permanentUserData: state.collab.permanentUserData,
         onFirstRender: () => {
           setState('collab', 'ready', true)
         }

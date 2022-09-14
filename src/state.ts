@@ -40,18 +40,13 @@ export interface Version {
   clientID: number;
 }
 
-export interface YOptions {
-  provider: WebsocketProvider;
-  permanentUserData: any;
-  ydoc: Y.Doc;
-}
-
 export interface Collab {
   started?: boolean;
-  room?: string;
-  error?: boolean;
-  y?: YOptions;
   ready?: boolean;
+  room?: string;
+  provider?: WebsocketProvider;
+  permanentUserData?: any;
+  ydoc?: Y.Doc;
 }
 
 export type LoadingType = 'loading' | 'initialized'
