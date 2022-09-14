@@ -28,45 +28,53 @@ export const Layout = (props: Styled) => {
           height: 2px !important;
           opacity: 0.5;
         }
-        .mouse-cursor {
+        .mouse-cursor-container {
           position: absolute;
-          height: 10px;
-          margin-left: -15px;
-          z-index: 20;
-          pointer-events: none;
+          overflow: hidden;
+          width: 100vw;
+          height: 100vw;
           user-select: none;
-          span {
+          pointer-events: none;
+          .mouse-cursor {
             position: absolute;
-            display: inline-flex;
-            align-items: center;
-            height: 20px;
-            top: 20px;
-            right: 0;
-            line-height: 0;
-            white-space: nowrap;
-            padding: 4px;
-            font-family: 'JetBrains Mono';
-            font-size: 12px;
-            border-radius: 4px;
-          }
-          &::before, &::after {
-            content: '';
-            transform: rotate(148deg);
-            position: absolute;
-            width: 10px;
-            height: 0;
-            border-left: 10px solid transparent;
-            border-right: 10px solid transparent;
-            border-bottom: 10px solid var(--user-background);
-          }
-          &::before {
-            transform: rotate(148deg);
-            left: 0
-          }
-          &::after {
-            transform: rotate(-77deg);
-            left: -1px;
-            top: -1px;
+            height: 10px;
+            margin-left: -15px;
+            z-index: 20;
+            pointer-events: none;
+            user-select: none;
+            span {
+              position: absolute;
+              display: inline-flex;
+              align-items: center;
+              height: 20px;
+              top: 20px;
+              right: 0;
+              line-height: 0;
+              white-space: nowrap;
+              padding: 4px;
+              font-family: 'JetBrains Mono';
+              font-size: 12px;
+              border-radius: 4px;
+            }
+            &::before, &::after {
+              content: '';
+              transform: rotate(148deg);
+              position: absolute;
+              width: 10px;
+              height: 0;
+              border-left: 10px solid transparent;
+              border-right: 10px solid transparent;
+              border-bottom: 10px solid var(--user-background);
+            }
+            &::before {
+              transform: rotate(148deg);
+              left: 0
+            }
+            &::after {
+              transform: rotate(-77deg);
+              left: -1px;
+              top: -1px;
+            }
           }
         }
       `}
@@ -465,7 +473,7 @@ export const editorCss = (config: Config) => css`
       background: ${selection(config)};
     }
   }
-  .ProseMirror-yjs-cursor {
+  .yjs-cursor {
     position: relative;
     margin-left: -1px;
     margin-right: -1px;

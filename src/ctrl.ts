@@ -93,7 +93,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       lastModified: prev.lastModified?.toISOString(),
       path: prev.path,
       markdown: prev.markdown,
-      ...(prev.collab?.room ? {room: prev.collab.room} : {}),
+      room: prev.collab.room,
     }]
   }
 
@@ -340,6 +340,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       path: undefined,
       error: undefined,
       markdown: false,
+      collab: {room: undefined},
     })
 
     updateEditorState(update, false)

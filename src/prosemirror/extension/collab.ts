@@ -16,7 +16,7 @@ export interface CollabOptions {
 const cursorBuilder = (user: any): HTMLElement => {
   const cursor = document.createElement('span')
   cursor.setAttribute('contexteditable', 'false')
-  cursor.classList.add('ProseMirror-yjs-cursor')
+  cursor.classList.add('yjs-cursor')
   cursor.style.borderColor = user.background
   return cursor
 }
@@ -74,7 +74,7 @@ class MouseCursorView {
 
   constructor(private view: EditorView, private awareness: Awareness) {
     this.container = document.createElement('div')
-
+    this.container.classList.add('mouse-cursor-container')
     if (!this.view.dom.offsetParent) return
     this.view.dom.offsetParent.appendChild(this.container)
     this.awareness.on('change', this.onAwarenessChange)
@@ -97,12 +97,12 @@ const yMouseCursorPlugin = (awareness: Awareness) => new Plugin({
 const ychangeSchema = {
   ychange: {
     attrs: {
-      user: { default: null },
-      type: { default: null },
-      color: { default: null }
+      user: {default: null},
+      type: {default: null},
+      color: {default: null}
     },
     inclusive: false,
-    parseDOM: [{ tag: 'ychange' }],
+    parseDOM: [{tag: 'ychange'}],
     toDOM: () => ['ychange', {}]
   }
 }

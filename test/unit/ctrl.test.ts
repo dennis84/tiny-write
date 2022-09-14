@@ -90,6 +90,7 @@ test('newFile - collab', async () => {
   expect(store.collab.started).toBe(false)
   expect(store.files[0].ydoc).not.toBe(undefined)
   expect(store.files[0].room).toEqual(room)
+  expect(store.collab.room).not.toEqual(room)
 })
 
 test('openFile', async () => {
