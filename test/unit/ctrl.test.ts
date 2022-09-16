@@ -252,20 +252,7 @@ test('startCollab', async () => {
   expect(store.collab.started).toBe(true)
   expect(store.collab.room).not.toBe(undefined)
   expect(store.collab.provider).not.toBe(undefined)
-})
-
-test('startCollab - with text', async () => {
-  const [store, ctrl] = createCtrl(newState({}))
-  const target = document.createElement('div')
-  await ctrl.init(target)
-  const tr = store.editorView.state.tr
-  tr.insertText('Test')
-  store.editorView.dispatch(tr)
-  await ctrl.startCollab()
-  expect(store.editorView.state.doc.textContent).toBe('Test')
-  expect(store.collab.started).toBe(true)
-  expect(store.collab.room).not.toBe(undefined)
-  expect(store.collab.provider).not.toBe(undefined)
+  await ctrl.stopCollab()
 })
 
 test('clean', async () => {
@@ -285,4 +272,18 @@ test('clean', async () => {
   expect(store.error).toBe(undefined)
   expect(store.editorView.state.doc.textContent).toBe('')
   expect(store.files.length).toBe(0)
+})
+
+test('startCollab - with text', async () => {
+  const [store, ctrl] = createCtrl(newState({}))
+  const target = document.createElement('div')
+  await ctrl.init(target)
+  const tr = store.editorView.state.tr
+  tr.insertText('Test')
+  store.editorView.dispatch(tr)
+  await ctrl.startCollab()
+  expect(store.editorView.state.doc.textContent).toBe('Test')
+  expect(store.collab.started).toBe(true)
+  expect(store.collab.room).not.toBe(undefined)
+  expect(store.collab.provider).not.toBe(undefined)
 })

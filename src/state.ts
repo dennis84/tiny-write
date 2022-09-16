@@ -53,6 +53,7 @@ export type LoadingType = 'loading' | 'initialized'
 
 export interface State {
   editorView?: any;
+  excerpt?: string;
   markdown?: boolean;
   lastModified?: Date;
   files: File[];
