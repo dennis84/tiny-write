@@ -1,8 +1,6 @@
 import {expect, test} from '@playwright/test'
 import {delay, lineTextEq} from './utils'
 
-const room = 'test123'
-
 test('create room', async ({page, browser}) => {
   await page.goto('/')
   const url = page.url()
@@ -31,6 +29,7 @@ test('create room - existing content file', async ({page, browser}) => {
 })
 
 test('existing room', async ({page, browser}) => {
+  const room = 'test-1'
   await page.goto(`/${room}`)
   await page.waitForSelector('[data-testid="initialized"]')
   await page.type('.ProseMirror', 'Hello', {delay})
@@ -41,4 +40,19 @@ test('existing room', async ({page, browser}) => {
   await page2.type('.ProseMirror', ' World', {delay})
 
   await lineTextEq(page, 1, 'Hello World')
+})
+
+test('existing room - backup', async ({page}) => {
+  const room = 'test-2'
+  await page.goto(`/`)
+  await page.type('.ProseMirror', '123', {delay})
+  await page.waitForTimeout(210)
+
+  await page.goto(`/${room}`)
+  await page.waitForSelector('[data-testid="initialized"]')
+  await page.type('.ProseMirror', 'Hello', {delay})
+  await lineTextEq(page, 1, 'Hello')
+
+  await page.click('[data-testid="burger"]')
+  expect(await page.textContent('[data-testid="open"]')).toContain('123')
 })

@@ -154,7 +154,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     }
 
     if (!parsed) {
-      return {...state, args}
+      return {...state, args, collab: {ydoc: createYdoc()}}
     }
 
     const config = {...state.config, ...parsed.config}
@@ -167,6 +167,10 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       config,
       args,
       storageSize: data.length,
+      collab: {
+        ...parsed.collab,
+        ydoc: parsed.collab.ydoc ? createYdoc(toUint8Array(parsed.collab.ydoc)) : createYdoc(),
+      }
     }
 
     if (newState.lastModified) {
@@ -184,10 +188,6 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
 
     if (!isState(newState)) {
       throw new ServiceError('invalid_state', newState)
-    }
-
-    if (newState.collab.ydoc) {
-      newState.collab.ydoc = createYdoc(toUint8Array(newState.collab.ydoc))
     }
 
     return newState
@@ -210,6 +210,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     disconnectCollab(store)
     const state: State = withYjs({
       ...newState(),
+      collab: {started: false, ydoc: createYdoc()},
       args: {cwd: store.args?.cwd},
       loading: 'initialized',
       files: [],
@@ -338,7 +339,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       path: undefined,
       error: undefined,
       markdown: false,
-      collab: {room: undefined},
+      collab: {room: undefined, ydoc: createYdoc()},
       excerpt: undefined,
     })
 
@@ -477,13 +478,11 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     if (state.args?.room) {
       started = true
       room = state.args.room
-      shouldBackup =
-        state.args.room !== state.collab.room &&
-        (!isEmpty(state.editorView?.state) || state.collab.ydoc !== undefined)
+      shouldBackup = state.args.room !== state.collab.room
       window.history.replaceState(null, '', `/${room}`)
     }
 
-    const ydoc = state.collab.ydoc ?? createYdoc()
+    const ydoc = shouldBackup ? createYdoc() : state.collab.ydoc
     const permanentUserData = new Y.PermanentUserData(ydoc)
 
     const provider = new WebsocketProvider(COLLAB_URL, room, ydoc, {connect: started})
@@ -531,6 +530,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
         lastModified: undefined,
         path: undefined,
         error: undefined,
+        excerpt: undefined,
       }
     }
 

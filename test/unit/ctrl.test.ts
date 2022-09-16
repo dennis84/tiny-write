@@ -52,6 +52,13 @@ test('setState', () => {
   expect(store.fullscreen).toBe(true)
 })
 
+test('init', async () => {
+  const [store, ctrl] = createCtrl(newState())
+  const target = document.createElement('div')
+  await ctrl.init(target)
+  expect(store.collab.ydoc).not.toBe(undefined)
+})
+
 test('newFile', async () => {
   const [store, ctrl] = createCtrl(newState())
   const target = document.createElement('div')
