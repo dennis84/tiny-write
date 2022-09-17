@@ -14,7 +14,7 @@ import {uniqueNamesGenerator, adjectives, animals} from 'unique-names-generator'
 import {debounce} from 'ts-debounce'
 import * as remote from './remote'
 import {createSchema, createExtensions, createEmptyText} from './prosemirror'
-import {State, File, Config, Version, ServiceError, newState} from './state'
+import {State, File, Config, Version, ServiceError, createState} from './state'
 import {COLLAB_URL, isTauri, mod} from './env'
 import {serialize, createMarkdownParser} from './markdown'
 import {isDarkTheme, themes} from './config'
@@ -149,7 +149,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       try {
         parsed = JSON.parse(data)
       } catch (err) {
-        throw new ServiceError('invalid_state', data)
+        // ignore
       }
     }
 
@@ -157,12 +157,12 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       return {...state, args, collab: {ydoc: createYdoc()}}
     }
 
-    const config = {...state.config, ...parsed.config}
+    let config = {...state.config, ...parsed.config}
     if (!isConfig(config)) {
-      throw new ServiceError('invalid_config', config)
+      config = createState().config
     }
 
-    const newState = {
+    let newState = {
       ...parsed,
       config,
       args,
@@ -187,7 +187,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     newState.files = files
 
     if (!isState(newState)) {
-      throw new ServiceError('invalid_state', newState)
+      newState = createState()
     }
 
     return newState
@@ -209,7 +209,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
   const clean = () => {
     disconnectCollab(store)
     const state: State = withYjs({
-      ...newState(),
+      ...createState(),
       collab: {started: false, ydoc: createYdoc()},
       args: {cwd: store.args?.cwd},
       loading: 'initialized',

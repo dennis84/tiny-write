@@ -1,6 +1,6 @@
 import {vi, expect, test} from 'vitest'
 import {createCtrl} from '../../src/ctrl'
-import {newState} from '../../src/state'
+import {createState} from '../../src/state'
 
 const lastModified = new Date()
 
@@ -47,20 +47,20 @@ const createText = (text) => ({
 const text = createText('Test')
 
 test('setState', () => {
-  const [store, ctrl] = createCtrl(newState())
+  const [store, ctrl] = createCtrl(createState())
   ctrl.setState({fullscreen: true})
   expect(store.fullscreen).toBe(true)
 })
 
 test('init', async () => {
-  const [store, ctrl] = createCtrl(newState())
+  const [store, ctrl] = createCtrl(createState())
   const target = document.createElement('div')
   await ctrl.init(target)
   expect(store.collab.ydoc).not.toBe(undefined)
 })
 
 test('newFile', async () => {
-  const [store, ctrl] = createCtrl(newState())
+  const [store, ctrl] = createCtrl(createState())
   const target = document.createElement('div')
   await ctrl.init(target)
   const tr = store.editorView.state.tr
@@ -74,7 +74,7 @@ test('newFile', async () => {
 })
 
 test('newFile - empty', async () => {
-  const [store, ctrl] = createCtrl(newState())
+  const [store, ctrl] = createCtrl(createState())
   const target = document.createElement('div')
   await ctrl.init(target)
   await ctrl.newFile()
@@ -83,7 +83,7 @@ test('newFile - empty', async () => {
 })
 
 test('newFile - collab', async () => {
-  const [store, ctrl] = createCtrl(newState())
+  const [store, ctrl] = createCtrl(createState())
   const target = document.createElement('div')
   await ctrl.init(target)
   const tr = store.editorView.state.tr
@@ -101,7 +101,7 @@ test('newFile - collab', async () => {
 })
 
 test('openFile', async () => {
-  const [store, ctrl] = createCtrl(newState())
+  const [store, ctrl] = createCtrl(createState())
   const target = document.createElement('div')
   await ctrl.init(target)
   await ctrl.openFile({text})
@@ -110,7 +110,7 @@ test('openFile', async () => {
 })
 
 test('openFile - add to files', async () => {
-  const [store, ctrl] = createCtrl(newState())
+  const [store, ctrl] = createCtrl(createState())
   const target = document.createElement('div')
   await ctrl.init(target)
   const tr = store.editorView.state.tr
@@ -122,7 +122,7 @@ test('openFile - add to files', async () => {
 })
 
 test('openFile - from files', async () => {
-  const [store, ctrl] = createCtrl(newState({
+  const [store, ctrl] = createCtrl(createState({
     files: [
       {text},
       {text: createText('Test 2')},
@@ -137,7 +137,7 @@ test('openFile - from files', async () => {
 })
 
 test('openFile - path in files', async () => {
-  const [store, ctrl] = createCtrl(newState({
+  const [store, ctrl] = createCtrl(createState({
     files: [
       {path: 'file1', lastModified: lastModified.toISOString()},
       {path: 'file2'},
@@ -154,7 +154,7 @@ test('openFile - path in files', async () => {
 })
 
 test('openFile - push path to files', async () => {
-  const [store, ctrl] = createCtrl(newState({path: 'file2'}))
+  const [store, ctrl] = createCtrl(createState({path: 'file2'}))
 
   const target = document.createElement('div')
   await ctrl.init(target)
@@ -169,7 +169,7 @@ test('openFile - push path to files', async () => {
 })
 
 test('openFile - path and text', async () => {
-  const [store, ctrl] = createCtrl(newState({}))
+  const [store, ctrl] = createCtrl(createState())
   const target = document.createElement('div')
   await ctrl.init(target)
   await ctrl.openFile({text, path: 'file1'})
@@ -178,7 +178,7 @@ test('openFile - path and text', async () => {
 
 test('openFile - open collab', async () => {
   const file = {text, room: 'room-123'}
-  const [store, ctrl] = createCtrl(newState({files: [file]}))
+  const [store, ctrl] = createCtrl(createState({files: [file]}))
   const target = document.createElement('div')
   await ctrl.init(target)
   await ctrl.openFile(file)
@@ -188,7 +188,7 @@ test('openFile - open collab', async () => {
 })
 
 test('discard - with path', async () => {
-  const [store, ctrl] = createCtrl(newState({
+  const [store, ctrl] = createCtrl(createState({
     files: [{path: 'file1'}],
     path: 'file2',
   }))
@@ -203,7 +203,7 @@ test('discard - with path', async () => {
 })
 
 test('discard - open collab', async () => {
-  const [store, ctrl] = createCtrl(newState({
+  const [store, ctrl] = createCtrl(createState({
     files: [{text, room: 'room-123'}],
   }))
 
@@ -217,7 +217,7 @@ test('discard - open collab', async () => {
 })
 
 test('discard - with text', async () => {
-  const [store, ctrl] = createCtrl(newState({
+  const [store, ctrl] = createCtrl(createState({
     files: [{text}],
   }))
 
@@ -235,7 +235,7 @@ test('discard - with text', async () => {
 })
 
 test('discard - close collab', async () => {
-  const [store, ctrl] = createCtrl(newState({
+  const [store, ctrl] = createCtrl(createState({
     files: [{text}],
   }))
 
@@ -251,7 +251,7 @@ test('discard - close collab', async () => {
 })
 
 test('startCollab', async () => {
-  const [store, ctrl] = createCtrl(newState({}))
+  const [store, ctrl] = createCtrl(createState())
   const target = document.createElement('div')
   await ctrl.init(target)
   await ctrl.startCollab()
@@ -264,7 +264,7 @@ test('startCollab', async () => {
 
 test('clean', async () => {
   const error = {id: 'fail'}
-  const [store, ctrl] = createCtrl(newState({
+  const [store, ctrl] = createCtrl(createState({
     error,
     files: [{text}],
   }))
@@ -282,7 +282,7 @@ test('clean', async () => {
 })
 
 test('startCollab - with text', async () => {
-  const [store, ctrl] = createCtrl(newState({}))
+  const [store, ctrl] = createCtrl(createState())
   const target = document.createElement('div')
   await ctrl.init(target)
   const tr = store.editorView.state.tr

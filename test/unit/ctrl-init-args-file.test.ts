@@ -1,6 +1,6 @@
 import {vi, expect, test} from 'vitest'
 import {createCtrl} from '../../src/ctrl'
-import {newState} from '../../src/state'
+import {createState} from '../../src/state'
 
 const lastModified = new Date()
 
@@ -40,7 +40,7 @@ vi.mock('y-websocket', () => ({WebsocketProvider: class {
 }}))
 
 test('init - check text', async () => {
-  const [store, ctrl] = createCtrl(newState())
+  const [store, ctrl] = createCtrl(createState())
   const target = document.createElement('div')
   await ctrl.init(target)
   expect(store.path).toBe('file2')

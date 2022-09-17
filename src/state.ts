@@ -90,7 +90,7 @@ export const StateContext = createContext<[Store<State>, any]>([undefined, undef
 
 export const useState = () => useContext(StateContext)
 
-export const newState = (props: Partial<State> = {}): State => ({
+export const createState = (props: Partial<State> = {}): State => ({
   files: [],
   loading: 'loading',
   fullscreen: false,
