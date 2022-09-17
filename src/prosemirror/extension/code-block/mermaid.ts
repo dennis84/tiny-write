@@ -71,7 +71,6 @@ export default (codeBlock: CodeBlockView) =>
         startOnLoad: false,
         theme: codeBlock.getOptions().dark ? 'dark' : 'default',
         fontFamily: `${codeBlock.getOptions().font}, monospace`,
-        flowchart: {diagramPadding: 20},
       })
 
       // fixes cut off text
