@@ -52,7 +52,7 @@ export const Layout = (props: Styled) => {
               line-height: 0;
               white-space: nowrap;
               padding: 4px;
-              font-family: 'JetBrains Mono';
+              font-family: 'iA Writer Mono';
               font-size: 12px;
               border-radius: 4px;
             }

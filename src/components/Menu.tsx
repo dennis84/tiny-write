@@ -22,7 +22,7 @@ const Container = (props: {children: any}) => (
     flex-shrink: 0;
     flex-grow: 1;
     height: 100%;
-    font-family: 'JetBrains Mono ExtraLight';
+    font-family: 'iA Writer Mono';
   `}>{props.children}</div>
 )
 
@@ -111,9 +111,9 @@ const itemCss = (config: Config) => css`
   display: flex;
   align-items: center;
   color: ${foreground(config)};
-  font-size: 18px;
-  line-height: 24px;
-  font-family: 'JetBrains Mono ExtraLight';
+  font-size: 16px;
+  line-height: 22px;
+  font-family: 'iA Writer Mono';
   text-align: left;
 `
 
@@ -243,9 +243,9 @@ export default () => {
     return [store.lastModified, store.collab.ready]
   }, [store.lastModified, store.collab.ready])
 
-  const clearText = () => (store.path || store.collab?.started) ? 'Close' :
+  const clearText = () => (store.path || store.collab?.started) ? 'Close ⚠️' :
     (store.files.length > 0 && isTextEmpty()) ? 'Discard ⚠️' :
-    'Clear'
+    'Clear 🧽'
 
   const clearEnabled = () =>
     store.path || store.collab?.room || store.files.length > 0 || !isTextEmpty()
@@ -471,7 +471,7 @@ export default () => {
                 </Link>
               </Show>
               <Link config={store.config} onClick={onNew} data-testid="new">
-                New <Keys config={store.config} keys={[modKey, 'n']} />
+                New 🆕 <Keys config={store.config} keys={[modKey, 'n']} />
               </Link>
               <Link
                 config={store.config}
@@ -539,7 +539,7 @@ export default () => {
                   config={store.config}
                   onClick={onCollabStart}
                   data-testid="collab">
-                  Share
+                  Share 🌐
                 </Link>
               </Show>
               <Show when={store.collab?.started}>
@@ -550,7 +550,7 @@ export default () => {
                   Disconnect
                 </Link>
                 <Link config={store.config} onClick={onCopyCollabLink}>
-                  Copy Link {lastAction() === 'copy-collab-link' && '📋'}
+                  Copy Link 🔗 {lastAction() === 'copy-collab-link' && '📋'}
                 </Link>
                 <Show when={false}>
                   <Link config={store.config} onClick={onCopyCollabAppLink}>

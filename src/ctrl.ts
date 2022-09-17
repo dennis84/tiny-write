@@ -747,7 +747,6 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     loadFile,
     newFile,
     openFile,
-    saveState,
     setAlwaysOnTop,
     setFullscreen,
     setState,

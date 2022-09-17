@@ -60,7 +60,7 @@ export const ChangeSetMenu = (props: Props) => {
       <div>
         <Label config={store.config}>Change Set</Label>
         <Sub>
-          <For each={versions()}>
+          <For each={versions()} fallback={<p>No snapshots yet</p>}>
             {(version) => (
               <Link
                 config={store.config}

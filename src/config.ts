@@ -204,7 +204,7 @@ export const primaryForeground = (config: Config) => getTheme(config).primaryFor
 export const selection = (config: Config) => getTheme(config).selection
 
 export const font = (config: Config, monospace = false) => {
-  const defaultFont = 'jetbrains-mono-extralight'
+  const defaultFont = 'ia-writer-mono'
   if (monospace && !fonts[config.font]?.monospace) {
     return fonts[defaultFont].label
   } else if (!fonts[config.font]) {
