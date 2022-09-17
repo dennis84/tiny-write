@@ -29,7 +29,7 @@ export const Layout = (props: Styled) => {
           opacity: 0.5;
         }
         .mouse-cursor-container {
-          position: absolute;
+          position: fixed;
           overflow: hidden;
           width: 100vw;
           height: 100vw;
