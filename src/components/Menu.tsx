@@ -467,7 +467,7 @@ export default () => {
             <Sub>
               <Show when={isTauri && !store.path}>
                 <Link config={store.config} onClick={onSaveAs}>
-                  Save to file <Keys config={store.config} keys={[modKey, 's']} />
+                  Save to file 💾 <Keys config={store.config} keys={[modKey, 's']} />
                 </Link>
               </Show>
               <Link config={store.config} onClick={onNew} data-testid="new">
@@ -566,9 +566,9 @@ export default () => {
             <Sub>
               <LastModified />
               <StorageStats />
-              <Text config={store.config}>{textStats().words} words</Text>
-              <Text config={store.config}>{textStats().paragraphs} paragraphs</Text>
-              <Text config={store.config}>{textStats().loc} lines of code</Text>
+              <Text config={store.config}>Words: {textStats().words}</Text>
+              <Text config={store.config}>Paragraphs: {textStats().paragraphs}</Text>
+              <Text config={store.config}>Lines of code: {textStats().loc}</Text>
             </Sub>
             <Label config={store.config}>Application</Label>
             <Sub>

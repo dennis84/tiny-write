@@ -290,8 +290,6 @@ export const editorCss = (config: Config) => css`
         flex-grow: 1;
         flex-shrink: 2;
         min-width: 40%;
-        padding: 10px;
-        padding-left: 5px;
         font-family: '${font(config, true)}';
         font-variant-ligatures: none;
         border: 1px solid ${foreground(config)}4c;
@@ -336,6 +334,8 @@ export const editorCss = (config: Config) => css`
             white-space: pre;
           }
           .cm-scroller {
+            padding: 10px;
+            padding-left: 5px;
             -ms-overflow-style: none;
             scrollbar-width: none;
             &::-webkit-scrollbar {

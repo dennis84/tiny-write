@@ -24,6 +24,11 @@ export const PrettierMenu = (props: Props) => {
         <Label config={store.config}>Prettier</Label>
         <Sub>
           <Text config={store.config}>
+            Code blocks with specific languages can be formatted by prettier
+            with config:
+          </Text>
+          <br/>
+          <Text config={store.config}>
             Print Width:
             <input
               type="range"

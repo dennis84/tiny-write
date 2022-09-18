@@ -410,7 +410,8 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     }
 
     const documentState = Y.encodeStateAsUpdate(state.collab.ydoc)
-    const excerpt = store.editorView.state.doc.textContent.substring(0, 50)
+    const len = Math.min(150, store.editorView.state.doc.nodeSize - 2)
+    const excerpt = store.editorView.state.doc.textBetween(0, len, ' ')
     const data: any = {
       excerpt,
       lastModified: state.lastModified,
