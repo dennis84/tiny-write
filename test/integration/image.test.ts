@@ -7,7 +7,7 @@ test.beforeEach(async ({page}) => {
 })
 
 test('create image', async ({page}) => {
-  const url = 'http://localhost:3000/screenshot-light.jpg'
+  const url = 'http://localhost:3000/screenshot-light.png'
   await page.type('.ProseMirror', `![](${url}) `, {delay})
   await page.waitForSelector(`.ProseMirror p .image-container img[src="${url}"]`)
 })
