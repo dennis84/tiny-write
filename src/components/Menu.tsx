@@ -251,7 +251,7 @@ export default () => {
     store.path || store.collab?.room || store.files.length > 0 || !isTextEmpty()
 
   const onBurgerClick = () => {
-    store.editorView.focus()
+    store.editorView?.focus()
     setShow(show() ? undefined : 'main')
   }
 
@@ -376,6 +376,7 @@ export default () => {
     const [ydocSize, setYdocSize] = createSignal(0)
 
     createEffect(() => {
+      if (!store.collab.ydoc) return
       setYdocSize(Y.encodeStateAsUpdate(store.collab.ydoc).byteLength)
     })
 

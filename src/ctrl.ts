@@ -13,7 +13,7 @@ import {WebsocketProvider} from 'y-websocket'
 import {uniqueNamesGenerator, adjectives, animals} from 'unique-names-generator'
 import {debounce} from 'ts-debounce'
 import * as remote from './remote'
-import {createSchema, createExtensions, createEmptyText} from './prosemirror'
+import {createExtensions, createEmptyText} from './prosemirror'
 import {State, File, Config, Version, ServiceError, createState} from './state'
 import {COLLAB_URL, isTauri, mod} from './env'
 import {serialize, createMarkdownParser} from './markdown'
@@ -294,13 +294,13 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     try {
       const fileContent = await remote.readFile(path)
       const lastModified = await remote.getFileLastModified(path)
-      const schema = createSchema({
+      const extensions = createExtensions({
         config,
         markdown: false,
         path,
         keymap,
       })
-
+      const [schema] = createSchema(extensions)
       const parser = createMarkdownParser(schema)
       const doc = parser.parse(fileContent).toJSON()
       const text = {
@@ -543,7 +543,6 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     const editorState = store.editorView.state
     const markdown = !state.markdown
     let doc: any
-    let schema = store.editorView.state.schema
 
     if (markdown) {
       const lines = serialize(editorState).split('\n')
@@ -553,13 +552,13 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
 
       doc = {type: 'doc', content: nodes}
     } else {
-      schema = createSchema({
+      const extensions = createExtensions({
         config: state.config,
         path: state.path,
         markdown,
         keymap,
       })
-
+      const [schema] = createSchema(extensions)
       const parser = createMarkdownParser(schema)
       let textContent = ''
       editorState.doc.forEach((node: any) => {
@@ -683,21 +682,13 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     })
 
     let editorView = store.editorView
-    let schemaSpec = {nodes: {}}
-    let nodeViews = {}
     let plugins = []
+    let schema = editorView?.state.schema
+    let nodeViews
 
-    for (const extension of extensions) {
-      if (extension.schema) {
-        schemaSpec = extension.schema(schemaSpec)
-      }
-
-      if (extension.nodeViews) {
-        nodeViews = {...nodeViews, ...extension.nodeViews}
-      }
+    if (!reconfigure) {
+      [schema, nodeViews] = createSchema(extensions)
     }
-
-    const schema = reconfigure ? editorView.state.schema : new Schema(schemaSpec)
 
     for (const extension of extensions) {
       if (extension.plugins) {
@@ -739,6 +730,26 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
 
     editorView.setProps({state: editorState, nodeViews})
     editorView.focus()
+  }
+
+  const createSchema = (extensions): [Schema, any] => {
+    let schemaSpec = {nodes: {}}
+    let nodeViews = {}
+
+    for (const extension of extensions) {
+      if (extension.schema) {
+        schemaSpec = extension.schema(schemaSpec)
+      }
+
+      if (extension.nodeViews) {
+        nodeViews = {...nodeViews, ...extension.nodeViews}
+      }
+    }
+
+    return [
+      new Schema(schemaSpec),
+      nodeViews,
+    ]
   }
 
   const ctrl = {

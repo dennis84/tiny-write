@@ -135,15 +135,13 @@ export default (props: {state: State}) => {
         data-testid={store.error ? 'error' : store.loading}
         onDragOver={onDragOver}>
         <Show when={store.error}><ErrorView /></Show>
-        <Show when={!store.error}>
-          <div
-            ref={editorRef}
-            class={styles()}
-            spellcheck={false}
-            data-tauri-drag-region="true"
-          />
-          <Menu />
-        </Show>
+        <div
+          ref={editorRef}
+          class={styles()}
+          spellcheck={false}
+          data-tauri-drag-region="true"
+        />
+        <Menu />
       </Layout>
     </StateContext.Provider>
   )
