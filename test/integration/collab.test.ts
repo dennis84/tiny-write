@@ -55,4 +55,9 @@ test('existing room - backup', async ({page}) => {
 
   await page.click('[data-testid="burger"]')
   expect(await page.textContent('[data-testid="open"]')).toContain('123')
+
+  await page.click('[data-testid="open"]')
+  await lineTextEq(page, 1, '123')
+
+  expect(await page.textContent('[data-testid="open"]')).toContain('Hello')
 })

@@ -504,6 +504,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
 
     provider.awareness.setLocalStateField('user', {
       name: username,
+      color: xs[index].primaryBackground,
       background: xs[index].primaryBackground,
       foreground: xs[index].primaryForeground,
     })
@@ -522,7 +523,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     if (shouldBackup) {
       let files = newState.files
       if (!newState.error) {
-        files = addToFiles(files, newState)
+        files = addToFiles(files, state)
       }
 
       newState = {
