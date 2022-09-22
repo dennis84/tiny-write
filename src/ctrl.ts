@@ -85,56 +85,6 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     [`${mod}-y`]: onRedo,
   }
 
-  const addToFiles = (files: File[], prev: State) => {
-    const ydoc = Y.encodeStateAsUpdate(prev.collab.ydoc)
-    return [...files, {
-      ydoc,
-      excerpt: prev.excerpt,
-      lastModified: prev.lastModified?.toISOString(),
-      path: prev.path,
-      markdown: prev.markdown,
-      room: prev.collab.room,
-    }]
-  }
-
-  const discardText = async () => {
-    const state: State = unwrap(store)
-    const index = state.files.length - 1
-    let file = index !== -1 ? state.files[index] : {text: createEmptyText()}
-    const files = state.files.filter((f: File) => f !== file)
-
-    if (file?.path) {
-      file = await loadFile(state.config, file.path)
-    }
-
-    const next: Partial<State> = {
-      lastModified: file.lastModified ? new Date(file.lastModified) : undefined,
-      path: file.path,
-      markdown: file.markdown,
-      collab: {room: file.room, ydoc: createYdoc(file.ydoc)},
-      args: {cwd: state.args?.cwd},
-    }
-
-    disconnectCollab(state)
-    const newState = withYjs({...state, ...next})
-    updateEditorState(newState, false)
-    setState({
-      args: {cwd: state.args?.cwd},
-      collab: undefined,
-      error: undefined,
-      ...newState,
-      files,
-    })
-
-    if (!file.ydoc && file.text) updateText(file.text)
-  }
-
-  const createYdoc = (bytes?: Uint8Array): Y.Doc => {
-    const ydoc = new Y.Doc({gc: false})
-    if (bytes) Y.applyUpdate(ydoc, bytes)
-    return ydoc
-  }
-
   const fetchData = async (): Promise<State> => {
     let args = await remote.getArgs().catch(() => undefined)
     const state: State = unwrap(store)
@@ -193,6 +143,53 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     return newState
   }
 
+  const addToFiles = (files: File[], prev: State) => [...files, {
+    ydoc: Y.encodeStateAsUpdate(prev.collab.ydoc),
+    excerpt: prev.excerpt,
+    lastModified: prev.lastModified?.toISOString(),
+    path: prev.path,
+    markdown: prev.markdown,
+    room: prev.collab.room,
+  }]
+
+  const createYdoc = (bytes?: Uint8Array): Y.Doc => {
+    const ydoc = new Y.Doc({gc: false})
+    if (bytes) Y.applyUpdate(ydoc, bytes)
+    return ydoc
+  }
+
+  const discardText = async () => {
+    const state: State = unwrap(store)
+    const index = state.files.length - 1
+    let file = index !== -1 ? state.files[index] : {text: createEmptyText()}
+    const files = state.files.filter((f: File) => f !== file)
+
+    if (file?.path) {
+      file = await loadFile(state.config, file.path)
+    }
+
+    const next: Partial<State> = {
+      lastModified: file.lastModified ? new Date(file.lastModified) : undefined,
+      path: file.path,
+      markdown: file.markdown,
+      collab: {room: file.room, ydoc: createYdoc(file.ydoc)},
+      args: {cwd: state.args?.cwd},
+    }
+
+    disconnectCollab(state)
+    const newState = withYjs({...state, ...next})
+    updateEditorState(newState, false)
+    setState({
+      args: {cwd: state.args?.cwd},
+      collab: undefined,
+      error: undefined,
+      ...newState,
+      files,
+    })
+
+    if (!file.ydoc && file.text) updateText(file.text)
+  }
+
   const getTheme = (state: State, force = false) => {
     const matchDark = window.matchMedia('(prefers-color-scheme: dark)')
     const isDark = matchDark.matches
@@ -204,90 +201,6 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     }
 
     return {}
-  }
-
-  const clean = () => {
-    disconnectCollab(store)
-    const state: State = withYjs({
-      ...createState(),
-      collab: {started: false, ydoc: createYdoc()},
-      args: {cwd: store.args?.cwd},
-      loading: 'initialized',
-      files: [],
-      fullscreen: store.fullscreen,
-      lastModified: new Date(),
-      error: undefined,
-      excerpt: undefined,
-    })
-
-    updateEditorState(state, false)
-    setState(state)
-    updateText(createEmptyText())
-  }
-
-  const discard = async () => {
-    if (store.path) {
-      await discardText()
-    } else if (store.files.length > 0 && isEmpty(store.editorView.state)) {
-      await discardText()
-    } else if (store.collab.started) {
-      await discardText()
-    } else if (isEmpty(store.editorView?.state)) {
-      newFile()
-    } else {
-      selectAll(store.editorView.state, store.editorView.dispatch)
-      deleteSelection(store.editorView.state, store.editorView.dispatch)
-    }
-
-    store.editorView?.focus()
-  }
-
-  const setError = (error: Error) => {
-    console.error(error)
-    if (error instanceof ServiceError) {
-      setState({error: error.errorObject, loading: 'initialized'})
-    } else {
-      setState({error: {id: 'exception', props: {error}}, loading: 'initialized'})
-    }
-  }
-
-  const init = async (node: Element) => {
-    try {
-      let data = await fetchData()
-      let text
-
-      if (data.args.text) {
-        const file = await getFile(data, {text: JSON.parse(data.args.text)})
-        data = await withFile(data, file)
-      } else if (data.args.file) {
-        const file = await getFile(data, {path: data.args.file})
-        data = await withFile(data, file)
-        text = file.text
-      } else if (data.path) {
-        const file = await getFile(data, {path: data.path})
-        data = await withFile(data, file)
-        text = file.text
-      } else {
-        data = withYjs(data)
-      }
-
-      const newState: State = {
-        ...unwrap(store),
-        ...data,
-        config: {...data.config, ...getTheme(data)},
-        loading: 'initialized'
-      }
-
-      if (isTauri && newState.config?.alwaysOnTop) {
-        remote.setAlwaysOnTop(true)
-      }
-
-      updateEditorState(newState, false, node)
-      setState(newState)
-      updateText(text)
-    } catch (error) {
-      setError(error)
-    }
   }
 
   const loadFile = async (config: Config, path: string): Promise<File> => {
@@ -320,40 +233,6 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     } catch (e) {
       throw new ServiceError('file_permission_denied', {error: e})
     }
-  }
-
-  const newFile = () => {
-    const empty = isEmpty(store.editorView?.state)
-    const state: State = unwrap(store)
-    let files = state.files
-    if (!state.error && !empty && !store.path) {
-      files = addToFiles(files, state)
-    }
-
-    disconnectCollab(state)
-    const update = withYjs({
-      ...state,
-      args: {cwd: state.args?.cwd},
-      files,
-      lastModified: undefined,
-      path: undefined,
-      error: undefined,
-      markdown: false,
-      collab: {room: undefined, ydoc: createYdoc()},
-      excerpt: undefined,
-    })
-
-    updateEditorState(update, false)
-    setState(update)
-  }
-
-  const openFile = async (f: File) => {
-    const state: State = unwrap(store)
-    const file = await getFile(state, f)
-    const update = await withFile(state, file)
-    updateEditorState(update, false)
-    setState(update)
-    if (!file.ydoc && file.text) updateText(file.text)
   }
 
   const eqFile = (a: File, b: File) =>
@@ -404,6 +283,15 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     })
   }
 
+  const setError = (error: Error) => {
+    console.error(error)
+    if (error instanceof ServiceError) {
+      setState({error: error.errorObject, loading: 'initialized'})
+    } else {
+      setState({error: {id: 'exception', props: {error}}, loading: 'initialized'})
+    }
+  }
+
   const saveState = debounce(async (state: State) => {
     if (!state.editorView || snapshotView()) {
       return
@@ -437,26 +325,6 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     setState({storageSize: json.length, excerpt})
     db.set('state', json)
   }, 200)
-
-  const setAlwaysOnTop = (alwaysOnTop: boolean) => {
-    remote.setAlwaysOnTop(alwaysOnTop)
-    setState('config', {alwaysOnTop})
-  }
-
-  const setFullscreen = (fullscreen: boolean) => {
-    remote.setFullscreen(fullscreen)
-    setState({fullscreen})
-  }
-
-  const startCollab = () => {
-    window.history.replaceState(null, '', `/${store.collab.room}`)
-    store.collab.provider.connect()
-    setState('collab', {started: true})
-  }
-
-  const stopCollab = () => {
-    disconnectCollab(unwrap(store))
-  }
 
   const disconnectCollab = (state: State) => {
     state.collab?.ydoc?.getMap('config').unobserve(onCollabConfigUpdate)
@@ -537,113 +405,6 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     }
 
     return newState
-  }
-
-  const toggleMarkdown = () => {
-    const state: State = unwrap(store)
-    const editorState = store.editorView.state
-    const markdown = !state.markdown
-    let doc: any
-
-    if (markdown) {
-      const lines = serialize(editorState).split('\n')
-      const nodes = lines.map((text) => {
-        return text ? {type: 'paragraph', content: [{type: 'text', text}]} : {type: 'paragraph'}
-      })
-
-      doc = {type: 'doc', content: nodes}
-    } else {
-      const extensions = createExtensions({
-        config: state.config,
-        path: state.path,
-        markdown,
-        keymap,
-      })
-      const [schema] = createSchema(extensions)
-      const parser = createMarkdownParser(schema)
-      let textContent = ''
-      editorState.doc.forEach((node: any) => {
-        textContent += `${node.textContent}\n`
-      })
-      const text = parser.parse(textContent)
-      doc = text.toJSON()
-    }
-
-    updateEditorState({...state, markdown}, false)
-    setState({markdown})
-    updateText({...createEmptyText(), doc})
-  }
-
-  const updateConfig = (conf: Partial<Config>) => {
-    const state: State = unwrap(store)
-    if (conf.font) state.collab?.ydoc.getMap('config').set('font', conf.font)
-    if (conf.fontSize) state.collab?.ydoc.getMap('config').set('fontSize', conf.fontSize)
-    if (conf.contentWidth) state.collab?.ydoc.getMap('config').set('contentWidth', conf.contentWidth)
-    const config = {...state.config, ...conf}
-    updateEditorState({...state, config})
-    setState({config, lastModified: new Date()})
-  }
-
-  const updatePath = (path: string) => {
-    setState({path, lastModified: new Date()})
-  }
-
-  const updateTheme = () => {
-    setState('config', getTheme(unwrap(store), true))
-  }
-
-  const unrenderVersion = () => {
-    const state = unwrap(store)
-    const binding = ySyncPluginKey.getState(state.editorView.state).binding
-    if (binding) binding.unrenderSnapshot()
-    setSnapshotView(false)
-  }
-
-  const applyVersion = (version: any) => {
-    const state = unwrap(store)
-    const ydoc = state.collab.ydoc
-
-    const snapshot = Y.decodeSnapshot(version.snapshot)
-    const newDoc = Y.createDocFromSnapshot(ydoc, snapshot)
-    const node = yDocToProsemirror(state.editorView.state.schema, newDoc)
-    unrenderVersion()
-
-    const tr = state.editorView.state.tr
-    const slice = new Slice(node.content, 0, 0)
-    tr.replace(0, state.editorView.state.doc.content.size, slice)
-    state.editorView.dispatch(tr)
-  }
-
-  const renderVersion = (version: any) => {
-    setSnapshotView(true)
-    const snapshot = Y.decodeSnapshot(version.snapshot)
-    const prevSnapshot = Y.emptySnapshot
-    const tr = store.editorView.state.tr
-    tr.setMeta(ySyncPluginKey, {snapshot, prevSnapshot})
-    store.editorView.dispatch(tr)
-  }
-
-  const addVersion = () => {
-    const state = unwrap(store)
-    const ydoc = state.collab.ydoc
-    const versions = ydoc.getArray<Version>('versions')
-    const prevVersion = versions.get(versions.length - 1)
-    const prevSnapshot = prevVersion ? Y.decodeSnapshot(prevVersion.snapshot) : Y.emptySnapshot
-    const snapshot = Y.snapshot(ydoc)
-
-    if (prevVersion) {
-      prevSnapshot.sv.set(prevVersion.clientID, (prevSnapshot.sv.get(prevVersion.clientID)) + 1)
-    }
-
-    if (!Y.equalSnapshots(prevSnapshot, snapshot)) {
-      versions.push([{
-        date: state.lastModified.getTime(),
-        snapshot: Y.encodeSnapshot(snapshot),
-        clientID: ydoc.clientID,
-      }])
-    }
-
-    saveState(state)
   }
 
   const updateText = (text?: {[key: string]: any}) => {
@@ -753,26 +514,261 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     ]
   }
 
+  const init = async (node: Element) => {
+    try {
+      let data = await fetchData()
+      let text
+
+      if (data.args.text) {
+        const file = await getFile(data, {text: JSON.parse(data.args.text)})
+        data = await withFile(data, file)
+      } else if (data.args.file) {
+        const file = await getFile(data, {path: data.args.file})
+        data = await withFile(data, file)
+        text = file.text
+      } else if (data.path) {
+        const file = await getFile(data, {path: data.path})
+        data = await withFile(data, file)
+        text = file.text
+      } else {
+        data = withYjs(data)
+      }
+
+      const newState: State = {
+        ...unwrap(store),
+        ...data,
+        config: {...data.config, ...getTheme(data)},
+        loading: 'initialized'
+      }
+
+      if (isTauri && newState.config?.alwaysOnTop) {
+        remote.setAlwaysOnTop(true)
+      }
+
+      updateEditorState(newState, false, node)
+      setState(newState)
+      updateText(text)
+    } catch (error) {
+      setError(error)
+    }
+  }
+
+  const clean = () => {
+    disconnectCollab(store)
+    const state: State = withYjs({
+      ...createState(),
+      collab: {started: false, ydoc: createYdoc()},
+      args: {cwd: store.args?.cwd},
+      loading: 'initialized',
+      files: [],
+      fullscreen: store.fullscreen,
+      lastModified: new Date(),
+      error: undefined,
+      excerpt: undefined,
+    })
+
+    updateEditorState(state, false)
+    setState(state)
+    updateText(createEmptyText())
+  }
+
+  const discard = async () => {
+    if (store.path) {
+      await discardText()
+    } else if (store.files.length > 0 && isEmpty(store.editorView.state)) {
+      await discardText()
+    } else if (store.collab.started) {
+      await discardText()
+    } else if (isEmpty(store.editorView?.state)) {
+      newFile()
+    } else {
+      selectAll(store.editorView.state, store.editorView.dispatch)
+      deleteSelection(store.editorView.state, store.editorView.dispatch)
+    }
+
+    store.editorView?.focus()
+  }
+
+  const newFile = () => {
+    const empty = isEmpty(store.editorView?.state)
+    const state: State = unwrap(store)
+    let files = state.files
+    if (!state.error && !empty && !store.path) {
+      files = addToFiles(files, state)
+    }
+
+    disconnectCollab(state)
+    const update = withYjs({
+      ...state,
+      args: {cwd: state.args?.cwd},
+      files,
+      lastModified: undefined,
+      path: undefined,
+      error: undefined,
+      markdown: false,
+      collab: {room: undefined, ydoc: createYdoc()},
+      excerpt: undefined,
+    })
+
+    updateEditorState(update, false)
+    setState(update)
+  }
+
+  const openFile = async (f: File) => {
+    const state: State = unwrap(store)
+    const file = await getFile(state, f)
+    const update = await withFile(state, file)
+    updateEditorState(update, false)
+    setState(update)
+    if (!file.ydoc && file.text) updateText(file.text)
+  }
+
+  const setFullscreen = (fullscreen: boolean) => {
+    remote.setFullscreen(fullscreen)
+    setState({fullscreen})
+  }
+
+  const setAlwaysOnTop = (alwaysOnTop: boolean) => {
+    remote.setAlwaysOnTop(alwaysOnTop)
+    setState('config', {alwaysOnTop})
+  }
+
+  const startCollab = () => {
+    window.history.replaceState(null, '', `/${store.collab.room}`)
+    store.collab.provider.connect()
+    setState('collab', {started: true})
+  }
+
+  const stopCollab = () => {
+    disconnectCollab(unwrap(store))
+  }
+
+  const addVersion = () => {
+    const state = unwrap(store)
+    const ydoc = state.collab.ydoc
+    const versions = ydoc.getArray<Version>('versions')
+    const prevVersion = versions.get(versions.length - 1)
+    const prevSnapshot = prevVersion ? Y.decodeSnapshot(prevVersion.snapshot) : Y.emptySnapshot
+    const snapshot = Y.snapshot(ydoc)
+
+    if (prevVersion) {
+      prevSnapshot.sv.set(prevVersion.clientID, (prevSnapshot.sv.get(prevVersion.clientID)) + 1)
+    }
+
+    if (!Y.equalSnapshots(prevSnapshot, snapshot)) {
+      versions.push([{
+        date: state.lastModified.getTime(),
+        snapshot: Y.encodeSnapshot(snapshot),
+        clientID: ydoc.clientID,
+      }])
+    }
+
+    saveState(state)
+  }
+
+  const renderVersion = (version: any) => {
+    setSnapshotView(true)
+    const snapshot = Y.decodeSnapshot(version.snapshot)
+    const prevSnapshot = Y.emptySnapshot
+    const tr = store.editorView.state.tr
+    tr.setMeta(ySyncPluginKey, {snapshot, prevSnapshot})
+    store.editorView.dispatch(tr)
+  }
+
+  const unrenderVersion = () => {
+    const state = unwrap(store)
+    const binding = ySyncPluginKey.getState(state.editorView.state).binding
+    if (binding) binding.unrenderSnapshot()
+    setSnapshotView(false)
+  }
+
+  const applyVersion = (version: any) => {
+    const state = unwrap(store)
+    const ydoc = state.collab.ydoc
+
+    const snapshot = Y.decodeSnapshot(version.snapshot)
+    const newDoc = Y.createDocFromSnapshot(ydoc, snapshot)
+    const node = yDocToProsemirror(state.editorView.state.schema, newDoc)
+    unrenderVersion()
+
+    const tr = state.editorView.state.tr
+    const slice = new Slice(node.content, 0, 0)
+    tr.replace(0, state.editorView.state.doc.content.size, slice)
+    state.editorView.dispatch(tr)
+  }
+
+  const toggleMarkdown = () => {
+    const state: State = unwrap(store)
+    const editorState = store.editorView.state
+    const markdown = !state.markdown
+    let doc: any
+
+    if (markdown) {
+      const lines = serialize(editorState).split('\n')
+      const nodes = lines.map((text) => {
+        return text ? {type: 'paragraph', content: [{type: 'text', text}]} : {type: 'paragraph'}
+      })
+
+      doc = {type: 'doc', content: nodes}
+    } else {
+      const extensions = createExtensions({
+        config: state.config,
+        path: state.path,
+        markdown,
+        keymap,
+      })
+      const [schema] = createSchema(extensions)
+      const parser = createMarkdownParser(schema)
+      let textContent = ''
+      editorState.doc.forEach((node: any) => {
+        textContent += `${node.textContent}\n`
+      })
+      const text = parser.parse(textContent)
+      doc = text.toJSON()
+    }
+
+    updateEditorState({...state, markdown}, false)
+    setState({markdown})
+    updateText({...createEmptyText(), doc})
+  }
+
+  const updateConfig = (conf: Partial<Config>) => {
+    const state: State = unwrap(store)
+    if (conf.font) state.collab?.ydoc.getMap('config').set('font', conf.font)
+    if (conf.fontSize) state.collab?.ydoc.getMap('config').set('fontSize', conf.fontSize)
+    if (conf.contentWidth) state.collab?.ydoc.getMap('config').set('contentWidth', conf.contentWidth)
+    const config = {...state.config, ...conf}
+    updateEditorState({...state, config})
+    setState({config, lastModified: new Date()})
+  }
+
+  const updatePath = (path: string) => {
+    setState({path, lastModified: new Date()})
+  }
+
+  const updateTheme = () => {
+    setState('config', getTheme(unwrap(store), true))
+  }
+
   const ctrl = {
+    init,
     clean,
     discard,
-    init,
-    loadFile,
     newFile,
     openFile,
-    setAlwaysOnTop,
     setFullscreen,
-    setState,
+    setAlwaysOnTop,
     startCollab,
     stopCollab,
+    addVersion,
+    renderVersion,
+    unrenderVersion,
+    applyVersion,
     toggleMarkdown,
     updateConfig,
     updatePath,
     updateTheme,
-    addVersion,
-    applyVersion,
-    renderVersion,
-    unrenderVersion,
+    setState,
   }
 
   return [store, ctrl]
