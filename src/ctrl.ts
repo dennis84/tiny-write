@@ -213,7 +213,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
         path,
         keymap,
       })
-      const [schema] = createSchema(extensions)
+      const schema = createSchema(extensions)
       const parser = createMarkdownParser(schema)
       const doc = parser.parse(fileContent).toJSON()
       const text = {
@@ -444,21 +444,11 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     })
 
     let editorView = store.editorView
-    let plugins = []
-    let schema = editorView?.state.schema
-    let nodeViews
-
-    if (!reconfigure) {
-      [schema, nodeViews] = createSchema(extensions)
-    }
-
-    for (const extension of extensions) {
-      if (extension.plugins) {
-        plugins = extension.plugins(plugins, schema)
-      }
-    }
-
     let editorState: EditorState
+
+    const nodeViews = createNodeViews(extensions)
+    const schema = reconfigure ? editorView?.state.schema : createSchema(extensions)
+    const plugins = extensions.reduce((acc, e) => e.plugins ? e.plugins(acc, schema) : acc, [])
 
     if (reconfigure) {
       editorState = editorView.state.reconfigure({plugins})
@@ -494,25 +484,14 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     editorView.focus()
   }
 
-  const createSchema = (extensions): [Schema, any] => {
-    let schemaSpec = {nodes: {}}
-    let nodeViews = {}
+  const createNodeViews = (extensions) =>
+    extensions.reduce((acc, e) => e.nodeViews ? ({...acc, ...e.nodeViews}) : acc, {})
 
-    for (const extension of extensions) {
-      if (extension.schema) {
-        schemaSpec = extension.schema(schemaSpec)
-      }
-
-      if (extension.nodeViews) {
-        nodeViews = {...nodeViews, ...extension.nodeViews}
-      }
-    }
-
-    return [
-      new Schema(schemaSpec),
-      nodeViews,
-    ]
-  }
+  const createSchema = (extensions) =>
+    new Schema(extensions.reduce(
+      (acc, e) => e.schema ? e.schema(acc) : acc,
+      {nodes: {}}
+    ))
 
   const init = async (node: Element) => {
     try {
@@ -717,7 +696,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
         markdown,
         keymap,
       })
-      const [schema] = createSchema(extensions)
+      const schema = createSchema(extensions)
       const parser = createMarkdownParser(schema)
       let textContent = ''
       editorState.doc.forEach((node: any) => {

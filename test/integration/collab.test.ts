@@ -51,6 +51,7 @@ test('existing room - backup', async ({page}) => {
   await page.goto(`/${room}`)
   await page.waitForSelector('[data-testid="initialized"]')
   await page.type('.ProseMirror', 'Hello', {delay})
+  await page.waitForTimeout(210)
   await lineTextEq(page, 1, 'Hello')
 
   await page.click('[data-testid="burger"]')

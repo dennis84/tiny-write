@@ -1,5 +1,7 @@
 import {test, expect} from '@playwright/test'
-import {delay, move, lineTextEq} from './utils'
+import {move, lineTextEq} from './utils'
+
+const delay = 50
 
 test.beforeEach(async ({page}) => {
   await page.goto('/')
