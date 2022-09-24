@@ -12,10 +12,10 @@ jobs:
   mac:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v2
         with:
-          node-version: 14
+          node-version: 16
       - run: npm install
       - run: npm run dist
         env:
@@ -27,10 +27,10 @@ jobs:
   ubuntu:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v2
         with:
-          node-version: 14
+          node-version: 16
       - name: install dependencies
         run: |
           sudo apt-get update
@@ -39,7 +39,7 @@ jobs:
       - run: npm run dist
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: deb
           path: src-tauri/target/release/bundle/deb/*
