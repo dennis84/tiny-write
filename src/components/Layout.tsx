@@ -334,8 +334,6 @@ export const editorCss = (config: Config) => css`
             white-space: pre;
           }
           .cm-scroller {
-            padding: 10px;
-            padding-left: 5px;
             -ms-overflow-style: none;
             scrollbar-width: none;
             &::-webkit-scrollbar {
@@ -347,6 +345,10 @@ export const editorCss = (config: Config) => css`
               background: none;
             }
           }
+        }
+        > .cm-editor .cm-scroller {
+          padding: 10px;
+          padding-left: 5px;
         }
         .cm-foldGutter {
           user-select: none;

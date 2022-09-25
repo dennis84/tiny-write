@@ -1,5 +1,5 @@
 import {EditorView, ViewPlugin, ViewUpdate, keymap} from '@codemirror/view'
-import {EditorState} from '@codemirror/state'
+import {EditorState, Extension} from '@codemirror/state'
 import {standardKeymap} from '@codemirror/commands'
 import {StreamLanguage, language} from '@codemirror/language'
 import {haskell} from '@codemirror/legacy-modes/mode/haskell'
@@ -68,7 +68,7 @@ export const changeLang = (codeBlock: CodeBlockView, config: Config) =>
     }
 
     renderDOM() {
-      const [, themeConfig] = getTheme(codeBlock.getOptions().theme)
+      const [theme, themeConfig] = getTheme(codeBlock.getOptions().theme)
 
       this.toggle = document.createElement('div')
       this.toggle.className = 'lang-toggle'
@@ -83,6 +83,7 @@ export const changeLang = (codeBlock: CodeBlockView, config: Config) =>
       this.select.appendChild(input)
 
       this.inputEditor = new LangInputEditor({
+        theme,
         doc: this.lang,
         parent: input,
         onClose: () => {
@@ -135,6 +136,7 @@ export const changeLang = (codeBlock: CodeBlockView, config: Config) =>
 interface Props {
   doc: string;
   parent: Element;
+  theme: Extension;
   onClose: () => void;
   onEnter: (lang: string) => void;
 }
@@ -149,6 +151,7 @@ export class LangInputEditor {
       state: EditorState.create({
         doc: this.props.doc,
         extensions: [
+          props.theme,
           EditorView.domEventHandlers({
             'blur': () => {
               this.reset()
