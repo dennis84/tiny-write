@@ -19,6 +19,11 @@ dirs = "4"
 url = "2"
 base64 = "0"
 chrono = "0"
+log = { version = "0", features = ["max_level_debug"] }
+
+[dependencies.tauri-plugin-log]
+git = "https://github.com/tauri-apps/tauri-plugin-log"
+branch = "dev"
 
 [features]
 default = [ "custom-protocol" ]

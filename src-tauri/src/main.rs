@@ -4,7 +4,9 @@
 )]
 
 use std::env;
+use log::{info};
 use tauri::{Menu, MenuItem, Submenu, Manager};
+use tauri_plugin_log::{LogTarget, LoggerBuilder};
 
 mod cmd;
 
@@ -24,7 +26,21 @@ fn main() {
     }
 
     builder
+        .plugin(LoggerBuilder::default().targets([
+            LogTarget::LogDir,
+            LogTarget::Stdout,
+            LogTarget::Webview,
+        ]).build())
         .setup(|app| {
+            let log_dir_string = app
+                .path_resolver()
+                .log_dir()
+                .unwrap()
+                .into_os_string()
+                .into_string()
+                .unwrap();
+            info!("Log dir: {}", log_dir_string);
+
             match app.get_cli_matches() {
                 Ok(matches) => {
                     if let Some(source) = matches.args.get("source") {
@@ -49,6 +65,8 @@ fn main() {
                     app.app_handle().exit(1);
                 }
             }
+
+            info!("Start app with {:?}", app.state::<cmd::args::Args>().inner());
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
