@@ -300,7 +300,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     const documentState = Y.encodeStateAsUpdate(state.collab.ydoc)
     const len = Math.min(150, store.editorView.state.doc.nodeSize - 2)
     const excerpt = store.editorView.state.doc.textBetween(0, len, ' ')
-    const data: any = {
+    const data = {
       excerpt,
       lastModified: state.lastModified,
       files: state.files.map((f) => {
@@ -333,7 +333,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     setState('collab', {started: false})
   }
 
-  const onCollabConfigUpdate = (event: any) => {
+  const onCollabConfigUpdate = (event: Y.YMapEvent<unknown>) => {
     const font = event.target.get('font') as string
     const fontSize = event.target.get('fontSize') as number
     const contentWidth = event.target.get('contentWidth') as number
@@ -645,7 +645,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     saveState(state)
   }
 
-  const renderVersion = (version: any) => {
+  const renderVersion = (version: Version) => {
     setSnapshotView(true)
     const snapshot = Y.decodeSnapshot(version.snapshot)
     const prevSnapshot = Y.emptySnapshot
@@ -661,7 +661,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     setSnapshotView(false)
   }
 
-  const applyVersion = (version: any) => {
+  const applyVersion = (version: Version) => {
     const state = unwrap(store)
     const ydoc = state.collab.ydoc
 
@@ -699,7 +699,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       const schema = createSchema(extensions)
       const parser = createMarkdownParser(schema)
       let textContent = ''
-      editorState.doc.forEach((node: any) => {
+      editorState.doc.forEach((node: Node) => {
         textContent += `${node.textContent}\n`
       })
       const text = parser.parse(textContent)

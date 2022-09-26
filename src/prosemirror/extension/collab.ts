@@ -9,7 +9,7 @@ import {ProseMirrorExtension} from '../state'
 export interface CollabOptions {
   type: Y.XmlFragment;
   provider: WebsocketProvider;
-  permanentUserData: any;
+  permanentUserData: Y.PermanentUserData;
   onFirstRender: () => void;
 }
 

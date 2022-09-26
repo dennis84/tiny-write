@@ -1,5 +1,6 @@
-import {For, Show, createEffect, createSignal, onCleanup, splitProps} from 'solid-js'
+import {For, Show, JSX, createEffect, createSignal, onCleanup, splitProps} from 'solid-js'
 import {unwrap} from 'solid-js/store'
+import {Node} from 'prosemirror-model'
 import {undo, redo} from 'prosemirror-history'
 import {differenceInHours, format} from 'date-fns'
 import {css} from '@emotion/css'
@@ -16,7 +17,7 @@ import {AppearanceMenu} from './AppearanceMenu'
 import {Help} from './Help'
 import {ChangeSetMenu} from './ChangeSetMenu'
 
-const Container = (props: {children: any}) => (
+const Container = (props: {children: JSX.Element}) => (
   <div class={css`
     position: relative;
     flex-shrink: 0;
@@ -96,7 +97,7 @@ export const Label = (props: Styled) => (
   `}>{props.children}</h3>
 )
 
-export const Sub = (props: {children: any}) => (
+export const Sub = (props: {children: JSX.Element}) => (
   <nav class={css`
     margin: 10px 0;
     margin-bottom: 30px;
@@ -223,7 +224,7 @@ export default () => {
 
     if (!store.editorView) return
 
-    store.editorView.state.doc.forEach((node: any) => {
+    store.editorView.state.doc.forEach((node: Node) => {
       const text = node.textContent
 
       if (node.type.name === 'code_block') {
@@ -231,7 +232,7 @@ export default () => {
         return
       }
 
-      const curWords = text.split(/\s+/).filter((x: any) => x != '').length
+      const curWords = text.split(/\s+/).filter((x) => x != '').length
       if (node.type.name === 'paragraph' && curWords > 0) {
         paragraphs ++
       }

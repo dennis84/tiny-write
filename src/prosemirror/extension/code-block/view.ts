@@ -22,7 +22,7 @@ import prettify from './prettify'
 import mermaid from './mermaid'
 
 export class CodeBlockView {
-  dom: Element
+  dom: HTMLElement
   outer: HTMLDivElement
   inner: HTMLDivElement
   editorView: EditorView

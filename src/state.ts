@@ -1,5 +1,6 @@
 import {createContext, useContext} from 'solid-js'
 import {Store} from 'solid-js/store'
+import {EditorView} from 'prosemirror-view'
 import * as Y from 'yjs'
 import {WebsocketProvider} from 'y-websocket'
 
@@ -7,7 +8,7 @@ export interface Args {
   cwd?: string;
   file?: string;
   room?: string;
-  text?: any;
+  text?: string;
 }
 
 export interface PrettierConfig {
@@ -35,7 +36,7 @@ export interface ErrorObject {
 }
 
 export interface Version {
-  snapshot: any;
+  snapshot: Uint8Array;
   date: number;
   clientID: number;
 }
@@ -45,14 +46,14 @@ export interface Collab {
   ready?: boolean;
   room?: string;
   provider?: WebsocketProvider;
-  permanentUserData?: any;
+  permanentUserData?: Y.PermanentUserData;
   ydoc?: Y.Doc;
 }
 
 export type LoadingType = 'loading' | 'initialized'
 
 export interface State {
-  editorView?: any;
+  editorView?: EditorView;
   excerpt?: string;
   markdown?: boolean;
   lastModified?: Date;

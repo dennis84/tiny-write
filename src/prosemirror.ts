@@ -24,7 +24,7 @@ import {isDev} from './env'
 
 interface Props {
   data?: unknown;
-  keymap?: any;
+  keymap?: {[key: string]: any};
   config: Config;
   markdown: boolean;
   path?: string;

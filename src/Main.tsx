@@ -29,7 +29,7 @@ export default (props: {state: State}) => {
   const mouseEnterCoords = createMutable({x: 0, y: 0})
   let editorRef: HTMLDivElement
 
-  const onDragOver = (e: any) => {
+  const onDragOver = (e: DragEvent) => {
     mouseEnterCoords.x = e.pageX
     mouseEnterCoords.y = e.pageY
   }
@@ -60,7 +60,7 @@ export default (props: {state: State}) => {
 
   onMount(async () => {
     if (!isTauri) return
-    const unlisten = await listen('tauri://file-drop', async (event: any) => {
+    const unlisten = await listen('tauri://file-drop', async (event) => {
       for (const path of (event.payload as string[])) {
         const mime = await remote.getMimeType(path)
         if (mime.startsWith('image/')) {

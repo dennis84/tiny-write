@@ -122,7 +122,6 @@ export default (props: CodeBlockProps): ProseMirrorExtension => ({
     keymap(codeBlockKeymap),
   ],
   nodeViews: {
-    // @ts-ignore
     code_block: (
       node: Node,
       view: EditorView,
