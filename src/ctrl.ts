@@ -292,7 +292,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     }
   }
 
-  const saveState = debounce(async (state: State) => {
+  const saveState = async (state: State) => {
     if (!state.editorView || snapshotView()) {
       return
     }
@@ -324,7 +324,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     const json = JSON.stringify(data)
     setState({storageSize: json.length, excerpt})
     db.set('state', json)
-  }, 200)
+  }
 
   const disconnectCollab = (state: State) => {
     state.collab?.ydoc?.getMap('config').unobserve(onCollabConfigUpdate)
@@ -457,6 +457,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     }
 
     if (!editorView) {
+      const save = debounce((newState) => saveState(newState), 200)
       const dispatchTransaction = (tr: Transaction) => {
         if (!store.editorView) return
         const newState = store.editorView.state.apply(tr)
@@ -466,7 +467,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
 
         setState((prev) => {
           const newState = {...prev, lastModified: new Date()}
-          saveState(newState)
+          save(newState)
           return newState
         })
       }
