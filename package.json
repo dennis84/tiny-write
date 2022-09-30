@@ -74,10 +74,8 @@
   },
   "hasInstallScript": true,
   "scripts": {
-    "web": "vite & y-websocket",
-    "app": "tauri dev & vite",
-    "build": "vite build --base './'",
-    "dist": "npm run build && tauri build",
+    "dev": "vite & y-websocket",
+    "tauri": "tauri",
     "lint": "eslint . --ext .ts,.tsx",
     "test": "cross-env CI=true vitest && cross-env CI=true npx playwright test"
   },

@@ -82,7 +82,7 @@ jobs:
           ./src-tauri/target
         key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
         restore-keys: ${{ runner.os }}-cargo-
-    - run: npm run dist
+    - run: npm run tauri build
     - name: install stable
       uses: actions-rs/toolchain@v1
       with:

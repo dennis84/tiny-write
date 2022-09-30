@@ -18,13 +18,13 @@ Demo: https://tiny-write.pages.dev
 npm install
 
 # Build app
-npm run dist
+npm run tauri build
 # Ubuntu
 sudo apt install ./src-tauri/target/release/bundle/deb/tiny-write_x.x.x_amd64.deb
 
 # Develop web
-npm run web
+npm run dev
 
 # Develop app
-npm run app
+npm run tauri dev
 ```
