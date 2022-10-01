@@ -1,5 +1,5 @@
 import {css} from '@emotion/css'
-import {foreground, primaryBackground, primaryForeground, font} from '../config'
+import {foreground, primaryBackground, primaryForeground} from '../config'
 import {Config} from '../state'
 
 export const Common = css`
@@ -13,7 +13,7 @@ export const Common = css`
   align-items: center;
   outline: none;
   text-decoration: none;
-  font-family: 'JetBrains Mono';
+  font-family: 'iA Writer Mono';
   &:hover {
     opacity: 0.8;
   }
@@ -22,7 +22,7 @@ export const Common = css`
 export const button = (config: Config) => css`
   ${Common}
   background: none;
-  font-family: ${font(config)};
+  font-family: 'iA Writer Mono';
   color: ${foreground(config)};
   border: 1px solid ${foreground(config)};
 `
