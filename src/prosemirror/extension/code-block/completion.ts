@@ -7,7 +7,7 @@ import {
   moveCompletionSelection,
 } from '@codemirror/autocomplete'
 
-const findWords: CompletionSource = (context) => {
+export const findWords: CompletionSource = (context) => {
   const tree = syntaxTree(context.state)
   const cur = tree.resolve(context.pos, -1)
 
@@ -40,8 +40,6 @@ const findWords: CompletionSource = (context) => {
     from: cur.from,
   }
 }
-
-export const completion = [findWords]
 
 export const tabCompletionKeymap = [{
   key: 'Tab',

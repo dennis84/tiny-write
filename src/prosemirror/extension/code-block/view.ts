@@ -14,7 +14,7 @@ import {
 import {indentOnInput, bracketMatching, foldGutter, foldKeymap} from '@codemirror/language'
 import {linter} from '@codemirror/lint'
 import {CodeBlockProps, defaultProps} from '.'
-import {completion, tabCompletionKeymap} from './completion'
+import {findWords, tabCompletionKeymap} from './completion'
 import {highlight, changeLang} from './lang'
 import {getTheme} from './theme'
 import expand from './expand'
@@ -30,6 +30,7 @@ export class CodeBlockView {
   clicked = false
   dragHandle: HTMLElement
   langExtension: Compartment
+  langCompletionExtension: Compartment
 
   constructor(
     private node: Node,
@@ -116,9 +117,11 @@ export class CodeBlockView {
       []
 
     this.langExtension = new Compartment
+    this.langCompletionExtension = new Compartment
 
     const [theme, themeConfig] = getTheme(this.options.theme)
     this.inner.style.background = themeConfig.background
+    const langSupport = highlight(this.getLang())
 
     const startState = EditorState.create({
       doc: this.node.textContent,
@@ -134,7 +137,6 @@ export class CodeBlockView {
           indentWithTab,
         ]),
         theme,
-        autocompletion({override: completion}),
         indentOnInput(),
         bracketMatching(),
         foldGutter(),
@@ -157,8 +159,10 @@ export class CodeBlockView {
             this.editorView.focus()
           }
         }),
-        this.langExtension.of(highlight(this.getLang())),
+        this.langExtension.of(langSupport),
         EditorView.updateListener.of(this.updateListener.bind(this)),
+        this.langCompletionExtension.of(langSupport.language.data.of({autocomplete: findWords})),
+        autocompletion(),
         EditorView.lineWrapping,
         EditorView.domEventHandlers({
           'focus': () => this.forwardSelection(),
@@ -238,9 +242,13 @@ export class CodeBlockView {
   }
 
   reconfigure() {
+    const langSupport = highlight(this.getLang())
     this.editorView.dispatch({
       effects: [
-        this.langExtension.reconfigure(highlight(this.getLang())),
+        this.langExtension.reconfigure(langSupport),
+        this.langCompletionExtension.reconfigure(
+          langSupport.language.data.of({autocomplete: findWords})
+        ),
       ]
     })
   }

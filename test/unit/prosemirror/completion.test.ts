@@ -2,7 +2,7 @@ import {expect, test} from 'vitest'
 import {CompletionContext} from '@codemirror/autocomplete'
 import {Compartment, EditorState} from '@codemirror/state'
 import {javascript} from '@codemirror/lang-javascript'
-import {completion} from '../../../src/prosemirror/extension/code-block/completion'
+import {findWords} from '../../../src/prosemirror/extension/code-block/completion'
 
 test.each([
   ['abc', [], 3],
@@ -11,7 +11,6 @@ test.each([
   [`....test`, ['test'], 10],
   [`x+y*z`, [], 10],
 ])('findWords', async (doc, words, pos) => {
-  const [findWords] = completion
   const language = new Compartment()
   const state = EditorState.create({
     doc,

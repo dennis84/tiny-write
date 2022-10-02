@@ -5,7 +5,7 @@ const config: PlaywrightTestConfig = {
   timeout: 10 * second,
   retries: process.env.CI ? 3 : 0,
   webServer: {
-    command: 'npm run web',
+    command: 'npm run dev',
     port: 3000,
     timeout: 120 * 1000,
     reuseExistingServer: !process.env.CI,

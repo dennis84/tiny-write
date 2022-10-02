@@ -1,7 +1,7 @@
 import {EditorView, ViewPlugin, ViewUpdate, keymap} from '@codemirror/view'
 import {EditorState, Extension} from '@codemirror/state'
 import {standardKeymap} from '@codemirror/commands'
-import {StreamLanguage, language} from '@codemirror/language'
+import {StreamLanguage, language, LanguageSupport} from '@codemirror/language'
 import {haskell} from '@codemirror/legacy-modes/mode/haskell'
 import {clojure} from '@codemirror/legacy-modes/mode/clojure'
 import {erlang} from '@codemirror/legacy-modes/mode/erlang'
@@ -207,6 +207,8 @@ export class LangInputEditor {
   }
 }
 
+const langSupport = (l) => new LanguageSupport(StreamLanguage.define(l))
+
 export const highlight = (lang: string) =>
   lang === 'javascript' ? javascript() :
   lang === 'jsx' ? javascript({jsx: true}) :
@@ -222,15 +224,15 @@ export const highlight = (lang: string) =>
   lang === 'cpp' ? cpp() :
   lang === 'markdown' ? markdown() :
   lang === 'xml' ? xml() :
-  lang === 'haskell' ? StreamLanguage.define(haskell) :
-  lang === 'clojure' ? StreamLanguage.define(clojure) :
-  lang === 'erlang' ? StreamLanguage.define(erlang) :
-  lang === 'groovy' ? StreamLanguage.define(groovy) :
-  lang === 'ruby' ? StreamLanguage.define(ruby) :
-  lang === 'hcl' ? StreamLanguage.define(ruby) :
-  lang === 'mermaid' ? StreamLanguage.define(ruby) :
-  lang === 'bash' ? StreamLanguage.define(shell) :
-  lang === 'yaml' ? StreamLanguage.define(yaml) :
-  lang === 'go' ? StreamLanguage.define(go) :
-  lang === 'toml' ? StreamLanguage.define(toml) :
+  lang === 'haskell' ? langSupport(haskell) :
+  lang === 'clojure' ? langSupport(clojure) :
+  lang === 'erlang' ? langSupport(erlang) :
+  lang === 'groovy' ? langSupport(groovy) :
+  lang === 'ruby' ? langSupport(ruby) :
+  lang === 'hcl' ? langSupport(ruby) :
+  lang === 'mermaid' ? langSupport(ruby) :
+  lang === 'bash' ? langSupport(shell) :
+  lang === 'yaml' ? langSupport(yaml) :
+  lang === 'go' ? langSupport(go) :
+  lang === 'toml' ? langSupport(toml) :
   markdown()
