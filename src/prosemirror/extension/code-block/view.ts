@@ -1,6 +1,6 @@
 import {Node} from 'prosemirror-model'
 import {DecorationSet, DecorationSource, EditorView as ProsemirrorEditorView} from 'prosemirror-view'
-import {TextSelection, Selection} from 'prosemirror-state'
+import {Selection} from 'prosemirror-state'
 import {exitCode} from 'prosemirror-commands'
 import {Compartment, EditorState, Text} from '@codemirror/state'
 import {EditorView, ViewUpdate, keymap} from '@codemirror/view'
@@ -28,7 +28,6 @@ export class CodeBlockView {
   editorView: EditorView
   updating = false
   clicked = false
-  dragHandle: HTMLElement
   langExtension: Compartment
   langCompletionExtension: Compartment
 
@@ -50,7 +49,13 @@ export class CodeBlockView {
       key: 'Backspace',
       run: () => {
         if (!this.editorView.state.doc.length) {
-          this.close()
+          const offset = this.getPos()
+          const tr = this.view.state.tr.deleteRange(
+            Math.max(0, offset - 1),
+            offset + this.node.content.size + 1
+          )
+          this.view.dispatch(tr)
+          this.view.focus()
           return true
         }
       }
@@ -160,12 +165,11 @@ export class CodeBlockView {
           }
         }),
         this.langExtension.of(langSupport),
-        EditorView.updateListener.of(this.updateListener.bind(this)),
+        EditorView.updateListener.of((update) => this.forwardUpdate(update)),
         this.langCompletionExtension.of(langSupport.language.data.of({autocomplete: findWords})),
         autocompletion(),
         EditorView.lineWrapping,
         EditorView.domEventHandlers({
-          'focus': () => this.forwardSelection(),
           'mousedown': () => {
             this.clicked = true
           }
@@ -190,84 +194,8 @@ export class CodeBlockView {
     this.dom = this.outer
   }
 
-  destroy() {
-    this.editorView.destroy()
-  }
-
-  selectNode() {
-    this.editorView.focus()
-  }
-
-  setSelection(anchor: number, head: number) {
-    this.editorView.focus()
-    this.updating = true
-    this.editorView.dispatch({selection: {anchor, head}})
-    this.updating = false
-  }
-
-  ignoreMutation() {
-    return true
-  }
-
-  update(node: Node) {
-    if (node.type != this.node.type) return false
-    const lang = this.getLang()
-    this.node = node
-    // Allow update from collab
-    if (node.attrs.params.lang !== lang) {
-      this.reconfigure()
-    }
-
-    const change = computeChange(this.editorView.state.doc.toString(), node.textContent)
-    if (change) {
-      this.updating = true
-      this.editorView.dispatch({
-        changes: {from: change.from, to: change.to, insert: change.text}
-      })
-
-      this.updating = false
-    }
-
-    return true
-  }
-
-  close() {
-    const offset = this.getPos()
-    const tr = this.view.state.tr.deleteRange(
-      Math.max(0, offset - 1),
-      offset + this.node.content.size + 1
-    )
-    this.view.dispatch(tr)
-    this.view.focus()
-  }
-
-  reconfigure() {
-    const langSupport = highlight(this.getLang())
-    this.editorView.dispatch({
-      effects: [
-        this.langExtension.reconfigure(langSupport),
-        this.langCompletionExtension.reconfigure(
-          langSupport.language.data.of({autocomplete: findWords})
-        ),
-      ]
-    })
-  }
-
-  forwardSelection() {
-    if (!this.editorView.hasFocus) return
-    const offset = this.getPos() + 1
-    const anchor = this.editorView.state.selection.main.from + offset
-    const head = this.editorView.state.selection.main.to + offset
-    try {
-      const sel = TextSelection.create(this.view.state.doc, anchor, head)
-      if (!sel.eq(this.view.state.selection)) {
-        this.view.dispatch(this.view.state.tr.setSelection(sel))
-      }
-    } catch (err) { /* ignore */ }
-  }
-
-  updateListener(update: ViewUpdate) {
-    if (this.updating) return
+  forwardUpdate(update: ViewUpdate) {
+    if (this.updating || !this.editorView.hasFocus) return
 
     if (this.clicked) {
       this.clicked = false
@@ -295,7 +223,6 @@ export class CodeBlockView {
       }
     }
 
-    this.forwardSelection()
     const sel = update.state.selection.main
     if (
       this.editorView.hasFocus &&
@@ -312,40 +239,90 @@ export class CodeBlockView {
     }
   }
 
+  setSelection(anchor: number, head: number) {
+    this.editorView.focus()
+    this.updating = true
+    this.editorView.dispatch({selection: {anchor, head}})
+    this.updating = false
+  }
+
+  update(node: Node) {
+    if (node.type != this.node.type) return false
+    const lang = this.getLang()
+    this.node = node
+    if (this.updating) return true
+
+    if (node.attrs.params.lang !== lang) {
+      this.reconfigure()
+    }
+
+    const newText = node.textContent
+    const curText = this.editorView.state.doc.toString()
+
+    if (newText != curText) {
+      let start = 0
+      let curEnd = curText.length
+      let newEnd = newText.length
+      while (
+        start < curEnd &&
+        curText.charCodeAt(start) == newText.charCodeAt(start)
+      ) {
+        ++start
+      }
+
+      while (
+        curEnd > start &&
+        newEnd > start &&
+        curText.charCodeAt(curEnd - 1) == newText.charCodeAt(newEnd - 1)
+      ) {
+        curEnd--
+        newEnd--
+      }
+
+      this.updating = true
+      this.editorView.dispatch({
+        changes: {
+          from: start,
+          to: curEnd,
+          insert: newText.slice(start, newEnd)
+        }
+      })
+
+      this.updating = false
+    }
+
+    return true
+  }
+
+  reconfigure() {
+    const langSupport = highlight(this.getLang())
+    this.editorView.dispatch({
+      effects: [
+        this.langExtension.reconfigure(langSupport),
+        this.langCompletionExtension.reconfigure(
+          langSupport.language.data.of({autocomplete: findWords})
+        ),
+      ]
+    })
+  }
+
+  destroy() {
+    this.editorView.destroy()
+  }
+
+  selectNode() {
+    this.editorView.focus()
+  }
+
+  stopEvent() {
+    return true
+  }
+
   getLang() {
     return this.node.attrs.params.lang ?? ''
   }
 
   getOptions() {
     return this.options;
-  }
-}
-
-function computeChange(oldVal: string, newVal: string) {
-  if (oldVal == newVal) return null
-  let start = 0
-  let oldEnd = oldVal.length
-  let newEnd = newVal.length
-
-  while (
-    start < oldEnd &&
-    oldVal.charCodeAt(start) == newVal.charCodeAt(start)
-  ) {
-    ++start
-  }
-
-  while (
-    oldEnd > start &&
-    newEnd > start &&
-    oldVal.charCodeAt(oldEnd - 1) == newVal.charCodeAt(newEnd - 1)
-  ) {
-    oldEnd--
-    newEnd--
-  }
-
-  return {
-    from: start,
-    to: oldEnd,
-    text: newVal.slice(start, newEnd),
   }
 }

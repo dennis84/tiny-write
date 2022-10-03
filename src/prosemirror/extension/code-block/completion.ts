@@ -32,7 +32,6 @@ export const findWords: CompletionSource = (context) => {
   const options = words.map((label) => ({
     label,
     type: 'word',
-    boost: 1,
   }))
 
   return {
