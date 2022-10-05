@@ -31,6 +31,10 @@ const createMenu = (type: 'right' | 'left' | 'bottom' | 'top') => {
 const pluginKey = new PluginKey('column-ctrl')
 
 const findBottomCell = (pos) => {
+  if (pos.node().type.name !== 'table_row') {
+    return
+  }
+
   let next = nextCell(pos, 'vert', 1)
   let prev = pos
   while (next != null) {
@@ -61,10 +65,13 @@ export const cellMenu = new Plugin({
       const cell = pluginState.currentCell
 
       if (cell) {
-        const bottomCell = findBottomCell(cell)
-        decos.push(Decoration.widget(bottomCell.pos + 1, createMenu('bottom')))
-        decos.push(Decoration.widget(cell.pos + 1, createMenu('right')))
-        decos.push(Decoration.widget(cell.pos + 1, createMenu('left')))
+        const resolved = state.doc.resolve(cell)
+        const bottomCell = findBottomCell(resolved)
+        if (bottomCell) {
+          decos.push(Decoration.widget(bottomCell.pos + 1, createMenu('bottom')))
+          decos.push(Decoration.widget(cell + 1, createMenu('right')))
+          decos.push(Decoration.widget(cell + 1, createMenu('left')))
+        }
       }
 
       return DecorationSet.create(state.doc, decos)
@@ -85,36 +92,39 @@ export const cellMenu = new Plugin({
         const cell = cellAround(resolved)
         if (!cell) return
 
-        if (cell && pluginState.currentCell !== cell) {
+        if (cell && pluginState.currentCell !== cell.pos) {
           const tr = view.state.tr
-          tr.setMeta(pluginKey, {currentCell: cell})
+          tr.setMeta(pluginKey, {currentCell: cell.pos})
           view.dispatch(tr)
           return false
         }
       },
       mousedown: (view, event: MouseEvent) => {
         const target = event.target as Element
+        const setCellSelection = (pos) => {
+          const tr = view.state.tr
+          tr.setSelection(new CellSelection(pos))
+          view.dispatch(tr)
+        }
+
         if (target.classList.contains('table-menu-right')) {
           const pluginState = pluginKey.getState(view.state)
-          const tr = view.state.tr
-          tr.setSelection(new CellSelection(pluginState.currentCell))
-          view.dispatch(tr)
+          const pos = view.state.doc.resolve(pluginState.currentCell)
+          setCellSelection(pos)
           addColumnAfter(view.state, view.dispatch)
           return true
         } else if (target.classList.contains('table-menu-left')) {
           const pluginState = pluginKey.getState(view.state)
-          const tr = view.state.tr
-          tr.setSelection(new CellSelection(pluginState.currentCell))
-          view.dispatch(tr)
+          const pos = view.state.doc.resolve(pluginState.currentCell)
+          setCellSelection(pos)
           addColumnBefore(view.state, view.dispatch)
           return true
         } else if (target.classList.contains('table-menu-bottom')) {
           const pluginState = pluginKey.getState(view.state)
-          const tr = view.state.tr
-          tr.setSelection(new CellSelection(pluginState.currentCell))
-          view.dispatch(tr)
+          const pos = view.state.doc.resolve(pluginState.currentCell)
+          const colCount = pos.node().childCount
 
-          const colCount = pluginState.currentCell.node().childCount
+          setCellSelection(pos)
           if (colCount === 1) {
             deleteTable(view.state, view.dispatch)
           } else {
