@@ -32,18 +32,20 @@ const resolvePos = (view: EditorView, pos: number) => {
 class SelectView {
   coords: Coords
   positions: Position[] = []
-  selection: HTMLElement
   canvas: HTMLCanvasElement
 
   onMouseDown = (e) => {
     if (e.which === 3) return
-    this.onMouseUp()
+    this.onMouseUp(e)
     if (e.target !== this.view.dom && e.target !== this.view.dom.parentNode) {
       return
     }
 
+    document.addEventListener('mouseup', this.onMouseUp)
+    document.addEventListener('mousemove', this.onMouseMove)
     e.preventDefault()
     e.stopPropagation()
+
     this.canvas = document.createElement('canvas')
     this.canvas.style.width = '100%'
     this.canvas.style.height = '100%'
@@ -74,8 +76,6 @@ class SelectView {
 
     this.coords = {fromX: e.pageX, fromY: e.pageY}
     document.body.appendChild(this.canvas)
-    document.addEventListener('mousemove', this.onMouseMove)
-    document.addEventListener('mouseup', this.onMouseUp)
   }
 
   onMouseMove = (e) => {
@@ -97,7 +97,12 @@ class SelectView {
     this.select()
   }
 
-  onMouseUp = () => {
+  onMouseUp = (e: MouseEvent) => {
+    const selection = pluginKey.getState(this.view.state)
+    if (selection && !this.coords) {
+      this.collapse(e.pageX, e.pageY)
+    }
+
     document.removeEventListener('mousemove', this.onMouseMove)
     document.removeEventListener('mouseup', this.onMouseUp)
     if (this.canvas) document.body.removeChild(this.canvas)
@@ -158,7 +163,7 @@ class SelectView {
     const sel = Selection.near(this.view.state.doc.resolve(pos))
     const tr = this.view.state.tr
     tr.setSelection(sel)
-    tr.setMeta(pluginKey, {from: pos, to: pos})
+    tr.setMeta(pluginKey, null)
     this.view.dispatch(tr)
     return
   }
@@ -170,15 +175,11 @@ const select = (props: Props) => new Plugin({
   key: pluginKey,
   state: {
     init() {
-      return undefined
+      return null
     },
-    apply(tr) {
+    apply(tr, prev) {
       const selection = tr.getMeta(this)
-      if (selection) {
-        return selection
-      }
-
-      return undefined
+      return selection === undefined ? prev : selection
     }
   },
   props: {
@@ -190,11 +191,15 @@ const select = (props: Props) => new Plugin({
         return DecorationSet.empty
       }
 
-      state.doc.nodesBetween(selection.from, selection.to, (node, pos) => {
-        decos.push(Decoration.node(pos, pos + node.nodeSize, {
-          class: 'selected',
-        }))
-      })
+      try {
+        state.doc.nodesBetween(selection.from, selection.to, (node, pos) => {
+          decos.push(Decoration.node(pos, pos + node.nodeSize, {
+            class: 'selected',
+          }))
+        })
+      } catch (e) {
+        // ignore
+      }
 
       return DecorationSet.create(state.doc, decos)
     }

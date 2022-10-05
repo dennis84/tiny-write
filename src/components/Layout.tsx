@@ -429,6 +429,9 @@ export const editorCss = (config: Config) => css`
     .container-tip, .container-warning, .container-details {
       padding: 40px;
       border-radius: 3px;
+      &.selected {
+        box-shadow: 0 0 0 2px ${primaryBackground(config)};
+      }
     }
     .container-tip {
       background: ${foreground(config)}19;
