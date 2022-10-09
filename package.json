@@ -75,6 +75,7 @@
   "hasInstallScript": true,
   "scripts": {
     "dev": "vite & y-websocket",
+    "build": "vite build",
     "tauri": "tauri",
     "lint": "eslint . --ext .ts,.tsx",
     "test": "cross-env CI=true vitest && cross-env CI=true npx playwright test"
