@@ -25,7 +25,7 @@ export const Layout = (props: Styled) => {
         position: relative;
         .drop-cursor {
           background: ${primaryBackground(local.config)} !important;
-          height: 2px !important;
+          height: 4px !important;
           opacity: 0.5;
         }
         .mouse-cursor-container {
@@ -471,6 +471,9 @@ export const editorCss = (config: Config) => css`
       &.ProseMirror-selectednode, &.selected {
         box-shadow: 0 0 0 2px ${primaryBackground(config)};
         border-radius: 3px;
+        img {
+          border-radius: 3px;
+        }
       }
     }
     > *:not(.codemirror-outer)::selection,

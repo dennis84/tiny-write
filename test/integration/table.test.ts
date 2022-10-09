@@ -72,7 +72,7 @@ test('table keymap', async ({page}) => {
   expect(await page.textContent('.ProseMirror table tr:nth-of-type(3) td:nth-of-type(2)')).toBe('')
   await page.keyboard.press('Control+Enter')
   await page.type('.ProseMirror', 'outside', {delay})
-  await lineTextEq(page, 1, 'outside')
+  await lineTextEq(page, 2, 'outside')
 })
 
 test('remove table if empty', async ({page}) => {

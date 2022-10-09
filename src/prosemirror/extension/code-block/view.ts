@@ -314,7 +314,9 @@ export class CodeBlockView {
     this.editorView.focus()
   }
 
-  stopEvent() {
+  // Using `ignoreMutation` instead `stopEvent` allows drag and drop from
+  // prosemirror.
+  ignoreMutation() {
     return true
   }
 

@@ -5,7 +5,7 @@ export const delay = process.env.CI ? 30 : 80
 export const lineTextEq = async (page: Page, nth: number, text: string) =>
   page.waitForFunction(([nth, text]) => {
     const elem = document
-      .querySelector(`.ProseMirror p:nth-of-type(${nth})`)
+      .querySelector(`.ProseMirror > *:nth-child(${nth})`)
       .cloneNode(true) as HTMLElement
     elem.querySelectorAll('[contexteditable="false"]').forEach((x) => {
       x.parentNode.removeChild(x)
