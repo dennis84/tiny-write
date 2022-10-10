@@ -124,8 +124,7 @@ export class CodeBlockView {
     this.langExtension = new Compartment
     this.langCompletionExtension = new Compartment
 
-    const [theme, themeConfig] = getTheme(this.options.theme)
-    this.inner.style.background = themeConfig.background
+    const theme = getTheme(this.options.theme)
     const langSupport = highlight(this.getLang())
 
     const startState = EditorState.create({

@@ -35,7 +35,7 @@ interface Config {
 export const changeLang = (codeBlock: CodeBlockView, config: Config) =>
   ViewPlugin.fromClass(class {
     toggle: HTMLElement
-    select: HTMLElement
+    input: HTMLElement
     inputEditor: LangInputEditor
     lang = codeBlock.getLang()
 
@@ -45,10 +45,10 @@ export const changeLang = (codeBlock: CodeBlockView, config: Config) =>
       if (this.toggle) {
         this.updateDOM()
         codeBlock.outer.removeChild(this.toggle)
-        codeBlock.inner.removeChild(this.select)
+        codeBlock.inner.removeChild(this.input)
       }
       this.toggle = null
-      this.select = null
+      this.input = null
       this.inputEditor?.destroy()
     }
 
@@ -68,31 +68,26 @@ export const changeLang = (codeBlock: CodeBlockView, config: Config) =>
     }
 
     renderDOM() {
-      const [theme, themeConfig] = getTheme(codeBlock.getOptions().theme)
+      const theme = getTheme(codeBlock.getOptions().theme)
 
       this.toggle = document.createElement('div')
       this.toggle.className = 'lang-toggle'
 
-      const input = document.createElement('div')
-      input.className = 'lang-input'
-      this.select = document.createElement('div')
-      this.select.className = 'lang-select'
-      this.select.textContent = '```'
-      this.select.style.display = 'none'
-      this.select.style.color = themeConfig.foreground
-      this.select.appendChild(input)
+      this.input = document.createElement('div')
+      this.input.className = 'lang-input'
+      this.input.style.display = 'none'
 
       this.inputEditor = new LangInputEditor({
         theme,
         doc: this.lang,
-        parent: input,
+        parent: this.input,
         onClose: () => {
-          this.select.style.display = 'none'
+          this.input.style.display = 'none'
           this.toggle.style.display = 'flex'
           config.onClose()
         },
         onEnter: (lang) => {
-          this.select.style.display = 'none'
+          this.input.style.display = 'none'
           this.toggle.style.display = 'flex'
           config.onChange(lang)
         },
@@ -100,11 +95,11 @@ export const changeLang = (codeBlock: CodeBlockView, config: Config) =>
 
       this.toggle.addEventListener('click', () => {
         this.toggle.style.display = 'none'
-        this.select.style.display = 'flex'
+        this.input.style.display = 'flex'
         this.inputEditor.focus()
       })
 
-      codeBlock.inner.prepend(this.select)
+      codeBlock.inner.prepend(this.input)
       codeBlock.outer.appendChild(this.toggle)
     }
 

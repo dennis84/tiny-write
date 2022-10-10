@@ -134,7 +134,7 @@ export const editorCss = (config: Config) => css`
       white-space: nowrap;
     }
     p {
-      margin: 0;
+      margin: 10px 0;
       display: flow-root;
     }
     > ul, ol {
@@ -266,8 +266,8 @@ export const editorCss = (config: Config) => css`
     }
     .codemirror-outer {
       position: relative;
-      margin-top: 10px;
-      margin-bottom: 12px;
+      margin: 10px 0;
+      margin-bottom: 15px;
       display: flex;
       .handle {
         top: 2px;
@@ -313,13 +313,24 @@ export const editorCss = (config: Config) => css`
             background: ${foreground(config)}33;
           }
         }
-        .lang-select {
-          .lang-input {
-            outline: none;
+        .lang-input {
+          outline: none;
+          .cm-editor {
+            width: 100%;
+            padding: 5px;
+            display: flex;
+            flex-direction: row;
+            &::before {
+              content: "\`\`\`";
+            }
+            .cm-line {
+              padding: 0;
+            }
           }
         }
         .cm-editor {
           outline: none;
+          border-radius: 3px;
           .cm-content, .cm-gutter {
             padding: 0;
             font-family: '${font(config, true)}';
@@ -347,8 +358,8 @@ export const editorCss = (config: Config) => css`
           }
         }
         > .cm-editor .cm-scroller {
-          padding: 10px;
-          padding-left: 5px;
+          padding: 20px;
+          padding-left: 10px;
         }
         .cm-foldGutter {
           user-select: none;
@@ -395,7 +406,7 @@ export const editorCss = (config: Config) => css`
           border: 0;
         }
         .download {
-          position: absolute;
+          possolute;
           right: 8px;
           bottom: 8px;
           cursor: pointer;
@@ -414,10 +425,11 @@ export const editorCss = (config: Config) => css`
     .task-list-item {
       margin: 0;
       padding: 0;
-    }
-    .task-list-item {
       display: flex;
       align-items: baseline;
+      p {
+        margin: 0;
+      }
       input {
         margin-right: 8px;
       }
@@ -427,7 +439,7 @@ export const editorCss = (config: Config) => css`
       }
     }
     .container-tip, .container-warning, .container-details {
-      padding: 40px;
+      padding: 30px;
       border-radius: 3px;
       &.selected {
         box-shadow: 0 0 0 2px ${primaryBackground(config)};
@@ -453,7 +465,6 @@ export const editorCss = (config: Config) => css`
       float: left;
       max-width: 100%;
       margin-right: 10px;
-      margin-bottom: 10px;
       cursor: default;
       line-height: 0;
       img {
