@@ -72,6 +72,9 @@
     "vite-plugin-solid": "^2.3.2",
     "vitest": "^0.23.2"
   },
+  "overrides": {
+    "d3-color": "^3.1.0"
+  },
   "hasInstallScript": true,
   "scripts": {
     "dev": "vite & y-websocket",

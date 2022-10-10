@@ -287,6 +287,8 @@ export const editorCss = (config: Config) => css`
       .codemirror-inner {
         position: relative;
         width: 100%;
+        display: flex;
+        flex-direction: column;
         flex-grow: 1;
         flex-shrink: 2;
         min-width: 40%;
@@ -357,9 +359,12 @@ export const editorCss = (config: Config) => css`
             }
           }
         }
-        > .cm-editor .cm-scroller {
-          padding: 20px;
-          padding-left: 10px;
+        > .cm-editor {
+          height: 100%;
+          .cm-scroller {
+            padding: 20px;
+            padding-left: 10px;
+          }
         }
         .cm-foldGutter {
           user-select: none;
@@ -406,7 +411,7 @@ export const editorCss = (config: Config) => css`
           border: 0;
         }
         .download {
-          possolute;
+          position: absolute;
           right: 8px;
           bottom: 8px;
           cursor: pointer;
