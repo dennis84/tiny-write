@@ -10,24 +10,13 @@ import {PrettierConfig} from '../../../state'
 
 type Direction = 'left' | 'right' | 'up' | 'down' | 'forward' | 'backward'
 
-export const cleanLang = (lang: string) =>
-  lang === 'js' ? 'javascript' :
-  lang === 'ts' ? 'typescript' :
-  lang === 'cplusplus' ? 'cpp' :
-  lang === 'c++' ? 'cpp' :
-  lang === 'yml' ? 'yaml' :
-  lang === 'shell' ? 'bash' :
-  lang === 'tf' ? 'hcl' :
-  lang === 'md' ? 'markdown' :
-  lang
-
 const codeBlockRule = (nodeType: NodeType) =>
   textblockTypeInputRule(
     /^```([a-z]*)?\s$/,
     nodeType,
     match => {
       const lang = match[1]
-      if (lang) return {params: {lang: cleanLang(lang)}}
+      if (lang) return {params: {lang}}
       return {}
     }
   )

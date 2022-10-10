@@ -127,7 +127,7 @@ export class CodeBlockView {
     const theme = getTheme(this.options.theme)
     const langSupport = highlight(this.getLang())
 
-    const startState = EditorState.create({
+    this.editorView = new EditorView({
       doc: this.node.textContent,
       extensions: [
         extensions,
@@ -174,11 +174,6 @@ export class CodeBlockView {
           }
         })
       ]
-    })
-
-    this.editorView = new EditorView({
-      state: startState,
-      parent: null,
     })
 
     this.inner.appendChild(this.editorView.dom)

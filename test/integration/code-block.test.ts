@@ -9,7 +9,7 @@ test.beforeEach(async ({page}) => {
 })
 
 test('code block', async ({page}) => {
-  await page.type('.ProseMirror', '```js ', {delay})
+  await page.type('.ProseMirror', '```javascript ', {delay})
   await page.waitForSelector('.codemirror-outer')
   await page.type('.codemirror-inner > .cm-editor .cm-content', code, {delay})
   expect(await page.$eval('.codemirror-outer .lang-toggle img', (node) => node.getAttribute('title'))).toBe('javascript')
@@ -20,7 +20,7 @@ test('code block', async ({page}) => {
 
   // change lang
   await page.click('.codemirror-outer .lang-toggle')
-  await page.type('.codemirror-outer .lang-input', 'ts', {delay})
+  await page.type('.codemirror-outer .lang-input', 'typescript', {delay})
   await page.keyboard.press('Enter')
   expect(await page.$eval('.codemirror-outer .lang-toggle img', (node) => node.getAttribute('title'))).toBe('typescript')
 

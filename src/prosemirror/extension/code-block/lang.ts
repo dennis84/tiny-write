@@ -1,7 +1,8 @@
 import {EditorView, ViewPlugin, ViewUpdate, keymap} from '@codemirror/view'
-import {EditorState, Extension} from '@codemirror/state'
+import {Extension} from '@codemirror/state'
 import {standardKeymap} from '@codemirror/commands'
 import {StreamLanguage, language, LanguageSupport} from '@codemirror/language'
+import {acceptCompletion, autocompletion, moveCompletionSelection} from '@codemirror/autocomplete'
 import {haskell} from '@codemirror/legacy-modes/mode/haskell'
 import {clojure} from '@codemirror/legacy-modes/mode/clojure'
 import {erlang} from '@codemirror/legacy-modes/mode/erlang'
@@ -24,7 +25,6 @@ import {markdown} from '@codemirror/lang-markdown'
 import {xml} from '@codemirror/lang-xml'
 import * as logos from './logos'
 import {getTheme} from './theme'
-import {cleanLang} from '.'
 import {CodeBlockView} from './view'
 
 interface Config {
@@ -143,21 +143,38 @@ export class LangInputEditor {
   constructor(private props: Props) {
     this.doc = this.props.doc
     this.view = new EditorView({
-      state: EditorState.create({
-        doc: this.props.doc,
-        extensions: [
-          props.theme,
-          EditorView.domEventHandlers({
-            'blur': () => {
-              this.reset()
-              this.props.onClose()
-              return true
-            }
-          }),
-          keymap.of([{
+      doc: this.props.doc,
+      parent: this.props.parent,
+      extensions: [
+        props.theme,
+        autocompletion({
+          defaultKeymap: false,
+          override: [() => ({
+            options: Object.keys(mapping).map((label) => ({label, type: 'word'})),
+            from: 0,
+          })]
+        }),
+        EditorView.domEventHandlers({
+          'blur': () => {
+            this.reset()
+            this.props.onClose()
+            return true
+          }
+        }),
+        keymap.of([
+          {
+            key: 'ArrowDown',
+            run: moveCompletionSelection(true),
+          },
+          {
+            key: 'ArrowUp',
+            run: moveCompletionSelection(false),
+          },
+          {
             key: 'Enter',
             run: (editorView) => {
-              const lang = cleanLang(editorView.state.doc.lineAt(0).text.trim())
+              acceptCompletion(editorView)
+              const lang = editorView.state.doc.lineAt(0).text.trim()
               this.doc = lang
               this.props.onEnter(lang)
               return true
@@ -169,10 +186,10 @@ export class LangInputEditor {
               this.props.onClose()
               return true
             }
-          }, ...standardKeymap])
-        ]
-      }),
-      parent: this.props.parent,
+          },
+          ...standardKeymap,
+        ])
+      ],
     })
   }
 
@@ -204,30 +221,35 @@ export class LangInputEditor {
 
 const langSupport = (l) => new LanguageSupport(StreamLanguage.define(l))
 
-export const highlight = (lang: string) =>
-  lang === 'javascript' ? javascript() :
-  lang === 'jsx' ? javascript({jsx: true}) :
-  lang === 'typescript' ? javascript({typescript: true}) :
-  lang === 'tsx' ? javascript({jsx: true, typescript: true}) :
-  lang === 'java' || lang === 'kotlin' ? java() :
-  lang === 'rust' ? rust() :
-  lang === 'sql' ? sql() :
-  lang === 'json' ? json() :
-  lang === 'python' ? python() :
-  lang === 'html' ? html() :
-  lang === 'css' ? css() :
-  lang === 'cpp' ? cpp() :
-  lang === 'markdown' ? markdown() :
-  lang === 'xml' ? xml() :
-  lang === 'haskell' ? langSupport(haskell) :
-  lang === 'clojure' ? langSupport(clojure) :
-  lang === 'erlang' ? langSupport(erlang) :
-  lang === 'groovy' ? langSupport(groovy) :
-  lang === 'ruby' ? langSupport(ruby) :
-  lang === 'hcl' ? langSupport(ruby) :
-  lang === 'mermaid' ? langSupport(ruby) :
-  lang === 'bash' ? langSupport(shell) :
-  lang === 'yaml' ? langSupport(yaml) :
-  lang === 'go' ? langSupport(go) :
-  lang === 'toml' ? langSupport(toml) :
-  markdown()
+const mapping = {
+  javascript: () => javascript(),
+  js: () => javascript(),
+  jsx: () => javascript({jsx: true}),
+  typescript: () => javascript({typescript: true}),
+  ts: () => javascript({typescript: true}),
+  tsx: () => javascript({jsx: true, typescript: true}),
+  java: () => java(),
+  kotlin: () => java(),
+  rust: () => rust(),
+  sql: () => sql(),
+  json: () => json(),
+  python: () => python(),
+  html: () => html(),
+  css: () => css(),
+  cpp: () => cpp(),
+  markdown: () => markdown(),
+  xml: () => xml(),
+  haskell: () => langSupport(haskell),
+  clojure: () => langSupport(clojure),
+  erlang: () => langSupport(erlang),
+  groovy: () => langSupport(groovy),
+  ruby: () => langSupport(ruby),
+  hcl: () => langSupport(ruby),
+  mermaid: () => langSupport(ruby),
+  bash: () => langSupport(shell),
+  yaml: () => langSupport(yaml),
+  go: () => langSupport(go),
+  toml: () => langSupport(toml),
+}
+
+export const highlight = (lang: string) => mapping[lang]?.() ?? markdown()
