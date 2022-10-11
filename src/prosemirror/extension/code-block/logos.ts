@@ -21,6 +21,7 @@ export {default as java} from '../../../../node_modules/devicon/icons/java/java-
 export {
   default as javascript,
   default as jsx,
+  default as js,
 } from '../../../../node_modules/devicon/icons/javascript/javascript-original.svg'
 export {default as kotlin} from '../../../../node_modules/devicon/icons/kotlin/kotlin-original.svg'
 export {default as php} from '../../../../node_modules/devicon/icons/php/php-original.svg'
@@ -32,6 +33,7 @@ export {default as swift} from '../../../../node_modules/devicon/icons/swift/swi
 export {
   default as typescript,
   default as tsx,
+  default as ts,
 } from '../../../../node_modules/devicon/icons/typescript/typescript-original.svg'
 export {
   default as vim,

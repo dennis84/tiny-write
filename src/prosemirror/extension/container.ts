@@ -7,7 +7,7 @@ const container = {
   group: 'block',
   selectable: true,
   defining: true,
-  content: 'paragraph block*',
+  content: 'block+',
   attrs: {
     type: {default: 'tip'},
     open: {default: true},

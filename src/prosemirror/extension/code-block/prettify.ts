@@ -60,7 +60,11 @@ export default (codeBlock: CodeBlockView) =>
       const lang = codeBlock.getLang()
       if (this.view.state.doc.length > 0 && (
         lang === 'javascript' ||
+        lang === 'jsx' ||
+        lang === 'js' ||
         lang === 'typescript' ||
+        lang === 'tsx' ||
+        lang === 'ts' ||
         lang === 'css' ||
         lang === 'html' ||
         lang === 'scss' ||
