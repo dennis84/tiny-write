@@ -83,7 +83,7 @@ export default (codeBlock: CodeBlockView) =>
     prettify() {
       const lang = codeBlock.getLang()
       const [parser, plugin] =
-        lang === 'javascript' ? ['babel', parserBabel] :
+        lang === 'javascript' || lang === 'js' || lang === 'jsx' ? ['babel', parserBabel] :
         lang === 'css' ? ['css', parserCss] :
         lang === 'markdown' ? ['markdown', parserMarkdown] :
         lang === 'html' ? ['html', parserHtml] :
@@ -91,7 +91,7 @@ export default (codeBlock: CodeBlockView) =>
         lang === 'scss' ? ['scss', parserCss] :
         lang === 'yaml' ? ['yaml', parserYaml] :
         lang === 'json' ? ['json', parserBabel] :
-        lang === 'typescript' ? ['typescript', parserTypescript] :
+        lang === 'typescript' || lang === 'ts' || lang === 'tsx' ? ['typescript', parserTypescript] :
         [undefined, undefined]
       if (!parser) return
       try {

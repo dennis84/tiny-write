@@ -353,6 +353,9 @@ export const editorCss = (config: Config) => css`
               display: none;
             }
           }
+          .cm-tooltip ul {
+            font-family: '${font(config, true)}';
+          }
           &:not(.cm-focused) {
             .cm-activeLine {
               background: none;

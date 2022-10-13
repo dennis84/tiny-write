@@ -44,6 +44,11 @@ export const fonts: {[key: string]: Font} = {
     src: './iAWriterMonoS-Regular.woff2',
     monospace: true,
   },
+  'monocraft': {
+    label: 'Monocraft',
+    src: './Monocraft.otf',
+    monospace: true,
+  },
 }
 
 interface Theme {
@@ -72,7 +77,7 @@ export const themes: {[key: string]: Theme} = {
     value: 'dark',
     label: 'Dark',
     background: '#16161a',
-    foreground: '#94a1b2',
+    foreground: '#b6bfcb',
     primaryBackground: '#68ffb8',
     primaryForeground: '#32825B',
     selection: '#3d375e7f',
