@@ -138,7 +138,7 @@ export default (props: {state: State}) => {
         <div
           ref={editorRef}
           class={styles()}
-          spellcheck={false}
+          spellcheck={store.config.spellcheck}
           data-tauri-drag-region="true"
         />
         <Menu />

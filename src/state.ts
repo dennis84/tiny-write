@@ -27,6 +27,7 @@ export interface Config {
   contentWidth: number;
   alwaysOnTop: boolean;
   typewriterMode: boolean;
+  spellcheck: boolean;
   prettier: PrettierConfig;
 }
 
@@ -103,6 +104,7 @@ export const createState = (props: Partial<State> = {}): State => ({
     contentWidth: 600,
     alwaysOnTop: false,
     typewriterMode: true,
+    spellcheck: true,
     prettier: {
       printWidth: 80,
       tabWidth: 2,

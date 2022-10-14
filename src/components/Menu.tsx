@@ -283,6 +283,10 @@ export default () => {
     ctrl.updateConfig({typewriterMode: !store.config.typewriterMode})
   }
 
+  const onToggleSpellcheck = () => {
+    ctrl.updateConfig({spellcheck: !store.config.spellcheck})
+  }
+
   const onToggleFullscreen = () => {
     ctrl.setFullscreen(!store.fullscreen)
   }
@@ -527,6 +531,9 @@ export default () => {
               </Link>
               <Link config={store.config} onClick={onToggleTypewriterMode}>
                 Typewriter mode {store.config.typewriterMode && '✅'}
+              </Link>
+              <Link config={store.config} onClick={onToggleSpellcheck}>
+                Spellcheck {store.config.spellcheck && '✅'}
               </Link>
               <Show when={isTauri}>
                 <Link config={store.config} onClick={onToggleAlwaysOnTop}>
