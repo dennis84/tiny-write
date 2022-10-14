@@ -1,6 +1,6 @@
 import {For} from 'solid-js'
 import {useState} from '../state'
-import {Off, Label, Link, Sub, Text} from './Menu'
+import {Drawer, Label, Link, Sub, Text} from './Menu'
 import {button} from './Button'
 import {codeTheme, codeThemes, fonts, themes, getTheme} from '../config'
 
@@ -32,7 +32,7 @@ export const AppearanceMenu = (props: Props) => {
   }
 
   return (
-    <Off
+    <Drawer
       config={store.config}
       onClick={() => store.editorView.focus()}
       data-tauri-drag-region="true">
@@ -97,6 +97,6 @@ export const AppearanceMenu = (props: Props) => {
           ↩ Back
         </button>
       </div>
-    </Off>
+    </Drawer>
   )
 }

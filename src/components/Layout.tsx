@@ -268,6 +268,7 @@ export const editorCss = (config: Config) => css`
       position: relative;
       margin: 10px 0;
       margin-bottom: 15px;
+      border-radius: 3px;
       display: flex;
       .handle {
         top: 2px;
@@ -332,7 +333,6 @@ export const editorCss = (config: Config) => css`
         }
         .cm-editor {
           outline: none;
-          border-radius: 3px;
           .cm-content, .cm-gutter {
             padding: 0;
             font-family: '${font(config, true)}';

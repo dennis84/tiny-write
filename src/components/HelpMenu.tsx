@@ -1,16 +1,16 @@
 import {useState} from '../state'
-import {Off, Keys, Label, Sub, Text} from './Menu'
+import {Drawer, Keys, Label, Sub, Text} from './Menu'
 import {button} from './Button'
 
 interface Props {
   onBack: () => void;
 }
 
-export const Help = (props: Props) => {
+export const HelpMenu = (props: Props) => {
   const [store] = useState()
 
   return (
-    <Off
+    <Drawer
       config={store.config}
       onClick={() => store.editorView.focus()}
       data-tauri-drag-region="true">
@@ -119,6 +119,6 @@ export const Help = (props: Props) => {
           ↩ Back
         </button>
       </div>
-    </Off>
+    </Drawer>
   )
 }

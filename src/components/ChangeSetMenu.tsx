@@ -2,7 +2,7 @@ import {For, Show, createSignal, onMount} from 'solid-js'
 import {format} from 'date-fns'
 import {css} from '@emotion/css'
 import {Version, useState} from '../state'
-import {Off, Label, Link, Sub} from './Menu'
+import {Drawer, Label, Link, Sub} from './Menu'
 import {button, buttonPrimary} from './Button'
 import {Styled} from './Layout'
 
@@ -53,7 +53,7 @@ export const ChangeSetMenu = (props: Props) => {
   }
 
   return (
-    <Off
+    <Drawer
       config={store.config}
       onClick={() => store.editorView.focus()}
       data-tauri-drag-region="true">
@@ -93,6 +93,6 @@ export const ChangeSetMenu = (props: Props) => {
           </Show>
         </ButtonGroup>
       </div>
-    </Off>
+    </Drawer>
   )
 }

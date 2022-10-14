@@ -14,8 +14,8 @@ import {isEmpty} from '../prosemirror/state'
 import {Styled} from './Layout'
 import {PrettierMenu} from './PrettierMenu'
 import {AppearanceMenu} from './AppearanceMenu'
-import {Help} from './Help'
 import {ChangeSetMenu} from './ChangeSetMenu'
+import {HelpMenu} from './HelpMenu'
 
 const Container = (props: {children: JSX.Element}) => (
   <div class={css`
@@ -38,7 +38,7 @@ const Burger = (props: Styled) => {
         z-index: 9999999;
         width: 20px;
         height: 20px;
-        padding: 2px 0;
+        padding: 4px 0;
         margin: 10px;
         display: flex;
         flex-direction: column;
@@ -49,20 +49,19 @@ const Burger = (props: Styled) => {
         outline: none;
         > span {
           background: ${foreground(local.config)};
-          height: 2px;
-          width: 100%;
+          height: 3px;
+          width: 20px;
           border-radius: 4px;
           transition: 0.4s;
         }
         ${local.active && `
           > span:nth-of-type(1) {
-            transform: rotate(-45deg) translate(-5px, 5px);
+            position: absolute;
+            transform: rotate(-45deg);
           }
           > span:nth-of-type(2) {
-            opacity: 0;
-          }
-          > span:nth-of-type(3) {
-            transform: rotate(45deg) translate(-5px, -5px);
+            position: absolute;
+            transform: rotate(45deg);
           }
         `}
       `}
@@ -70,7 +69,7 @@ const Burger = (props: Styled) => {
   )
 }
 
-export const Off = (props: Styled) => (
+export const Drawer = (props: Styled) => (
   <div class={css`
     background: ${foreground(props.config)}19;
     padding: 20px;
@@ -447,7 +446,6 @@ export default () => {
         data-testid="burger">
         <span />
         <span />
-        <span />
       </Burger>
       <Show when={show() === 'prettier'}>
         <PrettierMenu onBack={() => setShow('main')} />
@@ -456,13 +454,13 @@ export default () => {
         <AppearanceMenu onBack={() => setShow('main')} />
       </Show>
       <Show when={show() === 'help'}>
-        <Help onBack={() => setShow('main')} />
+        <HelpMenu onBack={() => setShow('main')} />
       </Show>
       <Show when={show() === 'change_set'}>
         <ChangeSetMenu onBack={() => setShow('main')} />
       </Show>
       <Show when={show() === 'main'}>
-        <Off
+        <Drawer
           config={store.config}
           onClick={() => store.editorView.focus()}
           data-tauri-drag-region="true">
@@ -598,7 +596,7 @@ export default () => {
               </Show>
             </Sub>
           </div>
-        </Off>
+        </Drawer>
       </Show>
     </Container>
   )
