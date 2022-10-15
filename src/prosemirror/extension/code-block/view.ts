@@ -225,7 +225,9 @@ export class CodeBlockView {
       this.options.typewriterMode
     ) {
       const lineBlock = this.editorView.lineBlockAt(sel.from)
-      const {node} = this.editorView.domAtPos(lineBlock.from)
+      let {node} = this.editorView.domAtPos(lineBlock.from)
+      if (!node) return
+      if (node.nodeType === 3) node = node.parentNode
       ;(node as Element).scrollIntoView({
         block: 'center',
         behavior: 'smooth',

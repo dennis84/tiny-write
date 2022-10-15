@@ -66,6 +66,7 @@ class MouseCursorView {
   }
 
   onMouseMove = (e: MouseEvent) => {
+    if (this.awareness.states.size <= 1) return
     const rect = this.view.dom.getBoundingClientRect()
     const x = e.x - rect.left
     const y = e.y - rect.top

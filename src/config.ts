@@ -77,7 +77,7 @@ export const themes: {[key: string]: Theme} = {
     value: 'dark',
     label: 'Dark',
     background: '#16161a',
-    foreground: '#b6bfcb',
+    foreground: '#dadfe5',
     primaryBackground: '#68ffb8',
     primaryForeground: '#32825B',
     selection: '#3d375e7f',
