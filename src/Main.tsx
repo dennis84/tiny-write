@@ -14,13 +14,20 @@ import ErrorView from './components/Error'
 import {insertImage} from './prosemirror/extension/image'
 
 const fontsStyles = Object.entries(fonts)
-  .filter(([, value]) => value.src)
-  .map(([, value]) => ({
-    '@font-face': {
-      fontFamily: `'${value.label}'`,
-      src: `url('${value.src}')`,
-    },
-  }))
+  .map(([, value]) => [
+    ...(value.regular ? [{
+      '@font-face': {
+        fontFamily: `${value.label}`,
+        src: `url('${value.regular}')`,
+      },
+    }] : []),
+    ...(value.bold ? [{
+      '@font-face': {
+        fontFamily: `${value.label} Bold`,
+        src: `url('${value.bold}')`,
+      },
+    }] : []),
+  ]).flatMap((x) => x)
 
 injectGlobal(fontsStyles)
 

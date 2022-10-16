@@ -3,50 +3,49 @@ import {isDark} from './env'
 
 interface Font {
   label: string;
-  src?: string;
+  regular?: string;
+  bold?: string;
   monospace?: boolean;
 }
 
 export const fonts: {[key: string]: Font} = {
   'merriweather': {
     label: 'Merriweather',
-    src: './Merriweather-Regular.ttf',
+    regular: './Merriweather-Regular.ttf',
+    bold: './Merriweather-Black.ttf',
   },
   'ibm-plex-sans': {
     label: 'IBM Plex Sans',
-    src: './IBMPlexSans-Regular.woff2',
+    regular: './IBMPlexSans-Regular.woff2',
+    bold: './IBMPlexSans-Bold.woff2',
   },
   'ibm-plex-serif': {
     label: 'IBM Plex Serif',
-    src: './IBMPlexSerif-Regular.ttf',
-  },
-  'roboto-slab': {
-    label: 'Roboto Slab',
-    src: './RobotoSlab-Regular.ttf',
+    regular: './IBMPlexSerif-Regular.woff2',
+    bold: './IBMPlexSerif-Bold.woff2',
   },
   'jetbrains-mono': {
     label: 'JetBrains Mono',
-    src: './JetBrainsMono-Regular.woff2',
-    monospace: true,
-  },
-  'jetbrains-mono-extralight': {
-    label: 'JetBrains Mono ExtraLight',
-    src: './JetBrainsMono-ExtraLight.woff2',
+    regular: './JetBrainsMono-ExtraLight.woff2',
+    bold: './JetBrainsMono-Bold.woff2',
     monospace: true,
   },
   'fantasque-sans-mono': {
     label: 'Fantasque Sans Mono',
-    src: './FantasqueSansMono-Regular.woff2',
+    regular: './FantasqueSansMono-Regular.woff2',
+    bold: './FantasqueSansMono-Bold.woff2',
     monospace: true,
   },
   'ia-writer-mono': {
     label: 'iA Writer Mono',
-    src: './iAWriterMonoS-Regular.woff2',
+    regular: './iAWriterMonoS-Regular.woff2',
+    bold: './iAWriterMonoS-Bold.woff2',
     monospace: true,
   },
-  'monocraft': {
-    label: 'Monocraft',
-    src: './Monocraft.otf',
+  'scientifica': {
+    label: 'Scientifica',
+    regular: './scientifica.ttf',
+    bold: './scientificaBold.ttf',
     monospace: true,
   },
 }
@@ -208,15 +207,20 @@ export const primaryBackground = (config: Config) => getTheme(config).primaryBac
 export const primaryForeground = (config: Config) => getTheme(config).primaryForeground
 export const selection = (config: Config) => getTheme(config).selection
 
-export const font = (config: Config, monospace = false) => {
+export const font = (
+  config: Config,
+  options: {monospace?: boolean; strong?: boolean} = {}
+) => {
   const defaultFont = 'ia-writer-mono'
-  if (monospace && !fonts[config.font]?.monospace) {
+  if (options.monospace && !fonts[config.font]?.monospace) {
     return fonts[defaultFont].label
-  } else if (!fonts[config.font]) {
-    return fonts[defaultFont].label
+  } else if (options.strong && fonts[config.font]?.bold) {
+    return fonts[config.font].label + ' Bold'
+  } else if (fonts[config.font]) {
+    return fonts[config.font].label
   }
 
-  return fonts[config.font].label
+  return fonts[defaultFont].label
 }
 
 const getDefaltCodeTheme = () => isDark() ? codeThemes.dracula : codeThemes['material-light']

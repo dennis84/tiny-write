@@ -66,7 +66,7 @@ export const createExtensions = (props: Props): ProseMirrorExtension[] =>
       dark: isDarkTheme(props.config),
       typewriterMode: props.config.typewriterMode,
       fontSize: props.config.fontSize,
-      font: font(props.config, true),
+      font: font(props.config, {monospace: true}),
       prettier: props.config.prettier,
       extensions: () => [codeMirrorKeymap(props)],
     }),

@@ -111,6 +111,9 @@ export const editorCss = (config: Config) => css`
     line-height: ${config.fontSize * 1.6}px;
     outline: none;
     background: transparent;
+    strong {
+      font-family: ${font(config, {strong: true})};
+    }
     h1, h2, h3, h4, h5, h6 {
       line-height: ${config.fontSize * 1.6}px;
     }
@@ -153,7 +156,7 @@ export const editorCss = (config: Config) => css`
       background: ${foreground(config)}19;
       border-radius: 3px;
       padding: 1px;
-      font-family: '${font(config, true)}' !important;
+      font-family: '${font(config, {monospace: true})}' !important;
     }
     a {
       color: ${primaryBackground(config)};
@@ -293,7 +296,7 @@ export const editorCss = (config: Config) => css`
         flex-grow: 1;
         flex-shrink: 2;
         min-width: 40%;
-        font-family: '${font(config, true)}';
+        font-family: '${font(config, {monospace: true})}';
         font-variant-ligatures: none;
         border: 1px solid ${foreground(config)}4c;
         border-radius: 3px;
@@ -335,7 +338,7 @@ export const editorCss = (config: Config) => css`
           outline: none;
           .cm-content, .cm-gutter {
             padding: 0;
-            font-family: '${font(config, true)}';
+            font-family: '${font(config, {monospace: true})}';
           }
           .cm-line {
             line-height: ${config.fontSize * 1.8}px;
@@ -354,7 +357,7 @@ export const editorCss = (config: Config) => css`
             }
           }
           .cm-tooltip ul {
-            font-family: '${font(config, true)}';
+            font-family: '${font(config, {monospace: true})}';
           }
           &:not(.cm-focused) {
             .cm-activeLine {
