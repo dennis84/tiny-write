@@ -310,10 +310,9 @@ export class CodeBlockView {
     this.editorView.focus()
   }
 
-  // Using `ignoreMutation` instead `stopEvent` allows drag and drop from
-  // prosemirror.
-  ignoreMutation() {
-    return true
+  stopEvent(e) {
+    // Allow mouse events to allow to drag the code block from prosemirror.
+    return !(e instanceof MouseEvent)
   }
 
   getLang() {
