@@ -21,7 +21,7 @@ export default (codeBlock: CodeBlockView) =>
     destroy() {
       if (this.button) {
         this.updateDOM()
-        codeBlock.inner.removeChild(this.button)
+        this.button.remove()
       }
       this.button = null
     }

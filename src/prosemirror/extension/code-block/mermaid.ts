@@ -14,9 +14,7 @@ export default (codeBlock: CodeBlockView) =>
     constructor(private view: EditorView) {}
 
     destroy() {
-      if (this.output) {
-        codeBlock.outer.removeChild(this.output)
-      }
+      if (this.output) this.output.remove()
       this.output = null
     }
 
@@ -87,7 +85,7 @@ export default (codeBlock: CodeBlockView) =>
           this.output.appendChild(error)
           // remove mermaid error div
           const errorDiv = document.getElementById(`dmermaid-graph-${this.id}`)
-          if (errorDiv) document.body.removeChild(errorDiv)
+          errorDiv?.remove()
         }
       }, 100)
     }

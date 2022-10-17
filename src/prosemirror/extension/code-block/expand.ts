@@ -12,7 +12,7 @@ export default (codeBlock: CodeBlockView) =>
       this.expanded = false
       if (this.expand) {
         this.updateDOM()
-        codeBlock.inner.removeChild(this.expand)
+        this.expand.remove()
       }
       this.expand = null
     }

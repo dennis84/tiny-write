@@ -105,7 +105,7 @@ class SelectView {
 
     document.removeEventListener('mousemove', this.onMouseMove)
     document.removeEventListener('mouseup', this.onMouseUp)
-    if (this.canvas) document.body.removeChild(this.canvas)
+    this.canvas?.remove()
     this.positions = []
     this.canvas = undefined
     this.coords = undefined

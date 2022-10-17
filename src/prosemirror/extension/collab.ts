@@ -34,8 +34,7 @@ class MouseCursorView {
 
     removed.forEach((id) => {
       const elem = this.cursors.get(id)
-      if (!elem || !this.container) return
-      this.container.removeChild(elem)
+      elem?.remove()
       this.cursors.delete(id)
     })
 
@@ -86,7 +85,7 @@ class MouseCursorView {
     document.removeEventListener('mousemove', this.onMouseMove)
     this.awareness.off('change', this.onAwarenessChange)
     this.awareness.setLocalStateField('mouse', null)
-    this.view.dom.offsetParent?.removeChild(this.container)
+    this.container.remove()
   }
 }
 

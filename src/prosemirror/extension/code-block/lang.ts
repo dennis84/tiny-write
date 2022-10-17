@@ -44,8 +44,8 @@ export const changeLang = (codeBlock: CodeBlockView, config: Config) =>
     destroy() {
       if (this.toggle) {
         this.updateDOM()
-        codeBlock.outer.removeChild(this.toggle)
-        codeBlock.inner.removeChild(this.input)
+        this.toggle.remove()
+        this.input.remove()
       }
       this.toggle = null
       this.input = null
