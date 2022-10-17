@@ -27,6 +27,12 @@ const fontsStyles = Object.entries(fonts)
         src: `url('${value.bold}')`,
       },
     }] : []),
+    ...(value.italic ? [{
+      '@font-face': {
+        fontFamily: `${value.label} Italic`,
+        src: `url('${value.italic}')`,
+      },
+    }] : []),
   ]).flatMap((x) => x)
 
 injectGlobal(fontsStyles)

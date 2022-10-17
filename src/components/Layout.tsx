@@ -112,7 +112,10 @@ export const editorCss = (config: Config) => css`
     outline: none;
     background: transparent;
     strong {
-      font-family: ${font(config, {strong: true})};
+      font-family: ${font(config, {bold: true})};
+    }
+    em {
+      font-family: ${font(config, {italic: true})};
     }
     h1, h2, h3, h4, h5, h6 {
       line-height: ${config.fontSize * 1.6}px;

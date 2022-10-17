@@ -36,7 +36,7 @@ const Burger = (props: Styled) => {
         position: absolute;
         left: -40px;
         z-index: 9999999;
-        width: 20px;
+        width: 15px;
         height: 20px;
         padding: 4px 0;
         margin: 10px;
@@ -50,7 +50,7 @@ const Burger = (props: Styled) => {
         > span {
           background: ${foreground(local.config)};
           height: 3px;
-          width: 20px;
+          width: 15px;
           border-radius: 4px;
           transition: 0.4s;
         }

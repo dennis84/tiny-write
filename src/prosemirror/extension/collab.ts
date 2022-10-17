@@ -86,6 +86,7 @@ class MouseCursorView {
     document.removeEventListener('mousemove', this.onMouseMove)
     this.awareness.off('change', this.onAwarenessChange)
     this.awareness.setLocalStateField('mouse', null)
+    this.view.dom.offsetParent.removeChild(this.container)
   }
 }
 

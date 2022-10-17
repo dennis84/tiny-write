@@ -5,6 +5,7 @@ interface Font {
   label: string;
   regular?: string;
   bold?: string;
+  italic?: string;
   monospace?: boolean;
 }
 
@@ -13,39 +14,46 @@ export const fonts: {[key: string]: Font} = {
     label: 'Merriweather',
     regular: './Merriweather-Regular.ttf',
     bold: './Merriweather-Black.ttf',
+    italic: './Merriweather-Italic.ttf',
   },
   'ibm-plex-sans': {
     label: 'IBM Plex Sans',
     regular: './IBMPlexSans-Regular.woff2',
     bold: './IBMPlexSans-Bold.woff2',
+    italic: './IBMPlexSans-Italic.woff2',
   },
   'ibm-plex-serif': {
     label: 'IBM Plex Serif',
     regular: './IBMPlexSerif-Regular.woff2',
     bold: './IBMPlexSerif-Bold.woff2',
+    italic: './IBMPlexSerif-Italic.woff2',
   },
   'jetbrains-mono': {
     label: 'JetBrains Mono',
     regular: './JetBrainsMono-ExtraLight.woff2',
     bold: './JetBrainsMono-Bold.woff2',
+    italic: './JetBrainsMono-Italic.woff2',
     monospace: true,
   },
   'fantasque-sans-mono': {
     label: 'Fantasque Sans Mono',
     regular: './FantasqueSansMono-Regular.woff2',
     bold: './FantasqueSansMono-Bold.woff2',
+    italic: './FantasqueSansMono-Italic.woff2',
     monospace: true,
   },
   'ia-writer-mono': {
     label: 'iA Writer Mono',
     regular: './iAWriterMonoS-Regular.woff2',
     bold: './iAWriterMonoS-Bold.woff2',
+    italic: './iAWriterMonoS-Italic.ttf',
     monospace: true,
   },
   'scientifica': {
     label: 'Scientifica',
     regular: './scientifica.ttf',
     bold: './scientificaBold.ttf',
+    italic: './scientificaItalic.ttf',
     monospace: true,
   },
 }
@@ -209,13 +217,15 @@ export const selection = (config: Config) => getTheme(config).selection
 
 export const font = (
   config: Config,
-  options: {monospace?: boolean; strong?: boolean} = {}
+  options: {monospace?: boolean; bold?: boolean; italic?: boolean} = {}
 ) => {
   const defaultFont = 'ia-writer-mono'
   if (options.monospace && !fonts[config.font]?.monospace) {
     return fonts[defaultFont].label
-  } else if (options.strong && fonts[config.font]?.bold) {
+  } else if (options.bold && fonts[config.font]?.bold) {
     return fonts[config.font].label + ' Bold'
+  } else if (options.italic && fonts[config.font]?.italic) {
+    return fonts[config.font].label + ' Italic'
   } else if (fonts[config.font]) {
     return fonts[config.font].label
   }
