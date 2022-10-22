@@ -34,11 +34,11 @@ const Burger = (props: Styled) => {
       {...others}
       class={css`
         position: absolute;
-        left: -40px;
+        left: -35px;
         z-index: 9999999;
         width: 15px;
-        height: 20px;
-        padding: 4px 0;
+        height: 10px;
+        padding: 0;
         margin: 10px;
         display: flex;
         flex-direction: column;
@@ -56,12 +56,10 @@ const Burger = (props: Styled) => {
         }
         ${local.active && `
           > span:nth-of-type(1) {
-            position: absolute;
-            transform: rotate(-45deg);
+            transform: rotate(-45deg) translate(-2.5px, 2.5px);
           }
           > span:nth-of-type(2) {
-            position: absolute;
-            transform: rotate(45deg);
+            transform: rotate(45deg) translate(-2.5px, -2.5px);
           }
         `}
       `}

@@ -1,6 +1,6 @@
 import {Plugin, PluginKey, TextSelection, Transaction} from 'prosemirror-state'
 import {EditorView} from 'prosemirror-view'
-import {Mark, Node, Schema} from 'prosemirror-model'
+import {Mark, Node} from 'prosemirror-model'
 import {ProseMirrorExtension} from '../state'
 
 const REGEX = /(^|\s)\[([^[\]]*)\]\(([^ ]+)(?: "(.+)")?\)/
@@ -19,11 +19,11 @@ const findMarkPosition = (mark: Mark, doc: Node, from: number, to: number) => {
 
 const pluginKey = new PluginKey('markdown-links')
 
-const markdownLinks = (schema: Schema) => new Plugin({
+const markdownLinks = () => new Plugin({
   key: pluginKey,
   state: {
     init() {
-      return {schema, pos: undefined}
+      return {pos: undefined}
     },
     apply(tr, state) {
       const action = tr.getMeta(this)
@@ -101,7 +101,7 @@ const toLink = (view: EditorView, tr: Transaction) => {
       if (textStart > start) tr.delete(start, textStart)
 
       const to = start + text.length
-      tr.addMark(start, to, state.schema.marks.link.create({href}))
+      tr.addMark(start, to, view.state.schema.marks.link.create({href}))
 
       const sub = end - textEnd + textStart - start
       tr.setMeta(pluginKey, {pos: sel.$head.pos - sub})
@@ -114,7 +114,7 @@ const toLink = (view: EditorView, tr: Transaction) => {
 }
 
 const toMarkdown = (view: EditorView, tr: Transaction) => {
-  const {schema} = pluginKey.getState(view.state)
+  const schema = view.state.schema
   const sel = view.state.selection
   if (sel.$head.depth === 0 || sel.$head.parent.type.spec.code) {
     return false
@@ -159,8 +159,8 @@ const handleMove = (view: EditorView) => {
 }
 
 export default (): ProseMirrorExtension => ({
-  plugins: (prev, schema) => [
+  plugins: (prev) => [
     ...prev,
-    markdownLinks(schema),
+    markdownLinks(),
   ]
 })
