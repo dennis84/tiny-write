@@ -41,9 +41,9 @@ test('drag drop - code block', async ({page}) => {
   const box = await page.locator('.ProseMirror .codemirror-outer .handle').boundingBox()
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2)
   await page.mouse.down()
-  await page.mouse.move(firstBox.x + 100, firstBox.y - 0.1)
+  await page.mouse.move(firstBox.x + 100, firstBox.y + 1)
   await page.mouse.up()
 
-  expect(await lineTextEq(page, 2, 'Line 1'))
+  expect(await lineTextEq(page, 1, 'Line 1'))
   expect(await lineTextEq(page, 3, 'Line 2'))
 })
