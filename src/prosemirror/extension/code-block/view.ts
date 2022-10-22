@@ -1,8 +1,8 @@
 import {Node} from 'prosemirror-model'
 import {DecorationSet, DecorationSource, EditorView as ProsemirrorEditorView} from 'prosemirror-view'
-import {Selection} from 'prosemirror-state'
+import {Selection, TextSelection} from 'prosemirror-state'
 import {exitCode} from 'prosemirror-commands'
-import {Compartment, EditorState, Text} from '@codemirror/state'
+import {Compartment, EditorState} from '@codemirror/state'
 import {EditorView, ViewUpdate, keymap} from '@codemirror/view'
 import {defaultKeymap, indentWithTab} from '@codemirror/commands'
 import {
@@ -191,30 +191,33 @@ export class CodeBlockView {
   forwardUpdate(update: ViewUpdate) {
     if (this.updating || !this.editorView.hasFocus) return
 
+    let offset = this.getPos() + 1
+    const {main} = update.state.selection
+    const selFrom = offset + main.from
+    const selTo = offset + main.to
+    const pmSel = this.view.state.selection
+
+    if (update.docChanged || pmSel.from != selFrom || pmSel.to != selTo) {
+      const tr = this.view.state.tr
+      update.changes.iterChanges((fromA, toA, fromB, toB, text) => {
+        if (text.length) {
+          tr.replaceWith(
+            offset + fromA,
+            offset + toA,
+            this.view.state.schema.text(text.toString())
+          )
+        } else {
+          tr.delete(offset + fromA, offset + toA)
+        }
+        offset += (toB - fromB) - (toA - fromA)
+      })
+      tr.setSelection(TextSelection.create(tr.doc, selFrom, selTo))
+      this.view.dispatch(tr)
+    }
+
     if (this.clicked) {
       this.clicked = false
       return
-    }
-
-    for (const tr of update.transactions) {
-      if (!tr.changes.empty) {
-        tr.changes.iterChanges((
-          fromA: number,
-          toA: number,
-          _fromB: number,
-          _toB: number,
-          text: Text
-        ) => {
-          const offset = this.getPos() + 1
-          const t = this.view.state.tr.replaceWith(
-            offset + fromA,
-            offset + toA,
-            text.length > 0 ? this.view.state.schema.text(text.toString()) : null,
-          )
-
-          this.view.dispatch(t)
-        })
-      }
     }
 
     const sel = update.state.selection.main
