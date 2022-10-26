@@ -5,12 +5,12 @@ use ignore::{WalkBuilder};
 use globset::{Glob};
 
 #[tauri::command]
-pub fn list_contents(file: String) -> Vec<String> {
+pub fn list_contents(file: String) -> Result<Vec<String>, String> {
     let mut file = file;
     let mut files = Vec::new();
 
     // Convert input of "~/" to "/Users/me"
-    if let Some(p) = expand_tilde(file.clone()) {
+    if let Some(p) = expand_tilde(&file) {
         if let Ok(p) = p.into_os_string().into_string() {
             file = p;
         }
@@ -19,7 +19,7 @@ pub fn list_contents(file: String) -> Vec<String> {
     // Get dirname of input to walk through: "~/Ca" -> "/Users/me"
     let dir = dirname(file.clone());
     if dir.is_err() {
-        return files;
+        return Ok(files);
     }
 
     let mut dir = dir.unwrap();
@@ -47,7 +47,7 @@ pub fn list_contents(file: String) -> Vec<String> {
 
     let glob = Glob::new(&input);
     if glob.is_err() {
-        return files;
+        return Ok(files);
     }
 
     println!("WALKKK: {:?}", dir);
@@ -60,9 +60,11 @@ pub fn list_contents(file: String) -> Vec<String> {
     for entry in walker {
         match entry {
             Ok(path) => {
-                if let Some(f) = path.into_path().into_os_string().to_str() {
-                    if glob.is_match(f) && f != "./" {
-                        let p = to_relative_path(f).unwrap_or(f.to_string());
+                let path = path.into_path();
+                if glob.is_match(&path) {
+                    let relative_path = to_relative_path(&path)
+                        .and_then(|p| path_buf_to_string(p));
+                    if let Ok(p) = relative_path {
                         files.push(p);
                     }
                 }
@@ -72,7 +74,7 @@ pub fn list_contents(file: String) -> Vec<String> {
     }
 
     files.truncate(10);
-    files
+    Ok(files)
 }
 
 #[tauri::command]
@@ -126,19 +128,20 @@ fn expand_tilde<P: AsRef<Path>>(path_user_input: P) -> Option<PathBuf> {
     if !p.starts_with("~") {
         return Some(p.to_path_buf());
     }
+
+    let mut home_dir = dirs::home_dir()?;
     if p == Path::new("~") {
-        return dirs::home_dir();
+        return Some(home_dir);
     }
-    dirs::home_dir().map(|mut h| {
-        if h == Path::new("/") {
-            // Corner case: `h` root directory;
-            // don't prepend extra `/`, just drop the tilde.
-            p.strip_prefix("~").unwrap().to_path_buf()
-        } else {
-            h.push(p.strip_prefix("~/").unwrap());
-            h
-        }
-    })
+
+    if home_dir == Path::new("/") {
+        // Corner case: `h` root directory;
+        // don't prepend extra `/`, just drop the tilde.
+        Some(p.strip_prefix("~").ok()?.to_path_buf())
+    } else {
+        home_dir.push(p.strip_prefix("~/").unwrap());
+        Some(home_dir)
+    }
 }
 
 fn path_buf_to_string(path: PathBuf) -> Result<String, Error> {
@@ -148,33 +151,31 @@ fn path_buf_to_string(path: PathBuf) -> Result<String, Error> {
         .map_err(|_| Error::new(ErrorKind::Other, "Could not convert path to string"))
 }
 
-fn to_relative_path<P: AsRef<Path>>(path: P) -> Result<String, Error> {
+fn to_relative_path<P: AsRef<Path>>(path: P) -> Result<PathBuf, Error> {
     let path = path.as_ref();
     let cur = env::current_dir()?;
     let cur = path_buf_to_string(cur)?;
 
     if path.starts_with(&cur) {
         if let Ok(p) = path.strip_prefix(&cur) {
-            let p = path_buf_to_string(p.to_path_buf())?;
-            return Ok(format!(".{}", p));
+            return Ok(Path::new(".").join(p));
         }
     }
 
     let home = dirs::home_dir()
-        .ok_or(Error::new(ErrorKind::Other, "Could not get home_dir"))?;
-    let home = home
+        .ok_or(Error::new(ErrorKind::Other, "Could not get home_dir"))?
         .into_os_string()
         .into_string()
         .map_err(|_| Error::new(ErrorKind::Other, "Could not convert home_dir to string"))?;
 
     if path.starts_with(&home) {
         if let Ok(p) = path.strip_prefix(&home) {
-            let p = path_buf_to_string(p.to_path_buf())?;
-            return Ok(format!("~{}", p));
+            // let p = path_buf_to_string(p.to_path_buf())?;
+            return Ok(Path::new("~").join(p));
         }
     }
 
-    path_buf_to_string(path.to_path_buf())
+    Ok(path.to_path_buf())
 }
 
 #[cfg(test)]
@@ -249,12 +250,12 @@ mod tests {
     #[test]
     fn test_list_contents() {
         assert_eq!(
-            list_contents("./Ca".to_string()),
+            list_contents("./Ca".to_string()).unwrap(),
             vec!["./Cargo.toml", "./Cargo.lock"]
         );
 
         assert_eq!(
-            list_contents("./src/m".to_string()),
+            list_contents("./src/m".to_string()).unwrap(),
             vec!["./src/main.rs"]
         );
 
@@ -262,12 +263,12 @@ mod tests {
         File::create(&test_file_path).unwrap();
 
         assert_eq!(
-            list_contents("~/tinywrite".to_string()),
+            list_contents("~/tinywrite".to_string()).unwrap(),
             vec!["~/tinywrite-test.txt"]
         );
 
         std::fs::remove_file(test_file_path).unwrap();
 
-        assert_eq!(list_contents("".to_string()), Vec::<String>::new())
+        assert_eq!(list_contents("".to_string()).unwrap(), Vec::<String>::new())
     }
 }
