@@ -62,7 +62,8 @@ pub fn list_contents(file: String) -> Vec<String> {
             Ok(path) => {
                 if let Some(f) = path.into_path().into_os_string().to_str() {
                     if glob.is_match(f) && f != "./" {
-                        files.push(to_relative_path(f.to_string()));
+                        let p = to_relative_path(f).unwrap_or(f.to_string());
+                        files.push(p);
                     }
                 }
             },
@@ -140,42 +141,40 @@ fn expand_tilde<P: AsRef<Path>>(path_user_input: P) -> Option<PathBuf> {
     })
 }
 
-fn to_relative_path(path: String) -> String {
-    let cur = env::current_dir();
-    if cur.is_err() {
-        return path;
-    }
-
-    let cur = cur.unwrap().into_os_string().into_string();
-    if cur.is_err() {
-        return path;
-    }
-
-    let cur = cur.unwrap();
-    if path.starts_with(&cur) {
-        if let Some(p) = path.strip_prefix(&cur) {
-            return format!(".{}", p);
-        }
-    }
-
-    let home = dirs::home_dir();
-    if home.is_none() {
-        return path;
-    }
-
-    let home = home.unwrap().into_os_string().into_string();
-    if home.is_err() {
-        return path;
-    }
-
-    let home = home.unwrap();
-    if path.starts_with(&home) {
-        if let Some(p) = path.strip_prefix(&home) {
-            return format!("~{}", p);
-        }
-    }
-
+fn path_buf_to_string(path: PathBuf) -> Result<String, Error> {
     path
+        .into_os_string()
+        .into_string()
+        .map_err(|_| Error::new(ErrorKind::Other, "Could not convert path to string"))
+}
+
+fn to_relative_path<P: AsRef<Path>>(path: P) -> Result<String, Error> {
+    let path = path.as_ref();
+    let cur = env::current_dir()?;
+    let cur = path_buf_to_string(cur)?;
+
+    if path.starts_with(&cur) {
+        if let Ok(p) = path.strip_prefix(&cur) {
+            let p = path_buf_to_string(p.to_path_buf())?;
+            return Ok(format!(".{}", p));
+        }
+    }
+
+    let home = dirs::home_dir()
+        .ok_or(Error::new(ErrorKind::Other, "Could not get home_dir"))?;
+    let home = home
+        .into_os_string()
+        .into_string()
+        .map_err(|_| Error::new(ErrorKind::Other, "Could not convert home_dir to string"))?;
+
+    if path.starts_with(&home) {
+        if let Ok(p) = path.strip_prefix(&home) {
+            let p = path_buf_to_string(p.to_path_buf())?;
+            return Ok(format!("~{}", p));
+        }
+    }
+
+    path_buf_to_string(path.to_path_buf())
 }
 
 #[cfg(test)]
