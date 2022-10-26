@@ -69,6 +69,8 @@ dependencies = [
  "base64",
  "chrono",
  "dirs",
+ "globset",
+ "ignore",
  "log",
  "mime_guess",
  "serde",

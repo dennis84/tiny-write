@@ -73,6 +73,7 @@ fn main() {
             cmd::args::get_args,
             cmd::file::get_mime_type,
             cmd::file::get_file_last_modified,
+            cmd::path::list_contents,
             cmd::path::resolve_path,
             cmd::path::dirname,
         ])

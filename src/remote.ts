@@ -9,6 +9,11 @@ import {Args} from './state'
 import {serialize} from './markdown'
 import {isTauri} from './env'
 
+export const listContents = async (file: string) => {
+  if (!isTauri) throw Error('Must be run in tauri: listContents')
+  return await invoke('list_contents', {file}) as string[]
+}
+
 export const saveSvg = (svg: HTMLElement) => {
   const canvas = document.createElement('canvas')
   const ctx = canvas.getContext('2d')

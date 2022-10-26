@@ -1,6 +1,78 @@
 use std::path::{Path, PathBuf};
-use std::env;
+use std::{env};
 use std::io::{Error, ErrorKind};
+use ignore::{WalkBuilder};
+use globset::{Glob};
+
+#[tauri::command]
+pub fn list_contents(file: String) -> Vec<String> {
+    let mut file = file;
+    let mut files = Vec::new();
+
+    // Convert input of "~/" to "/Users/me"
+    if let Some(p) = expand_tilde(file.clone()) {
+        if let Ok(p) = p.into_os_string().into_string() {
+            file = p;
+        }
+    }
+
+    // Get dirname of input to walk through: "~/Ca" -> "/Users/me"
+    let dir = dirname(file.clone());
+    if dir.is_err() {
+        return files;
+    }
+
+    let mut dir = dir.unwrap();
+
+    let resolved_dir = resolve_path(vec![dir.clone()]);
+    if resolved_dir.is_ok() {
+        dir = resolved_dir.unwrap();
+    }
+
+    let mut input = format!("{}**", file);
+    if input.starts_with("./") {
+        if let Ok(mut cur) = env::current_dir() {
+            if let Some(p) = input.strip_prefix("./") {
+                cur.push(p);
+                input = cur.into_os_string().into_string().unwrap();
+            }
+        }
+    }
+
+    if let Some(p) = expand_tilde(&input) {
+        if let Ok(i) = p.into_os_string().into_string() {
+            input = i;
+        }
+    }
+
+    let glob = Glob::new(&input);
+    if glob.is_err() {
+        return files;
+    }
+
+    println!("WALKKK: {:?}", dir);
+
+    let glob = glob.unwrap().compile_matcher();
+    let walker = WalkBuilder::new(dir)
+        .max_depth(Some(3))
+        .build();
+
+    for entry in walker {
+        match entry {
+            Ok(path) => {
+                if let Some(f) = path.into_path().into_os_string().to_str() {
+                    if glob.is_match(f) && f != "./" {
+                        files.push(to_relative_path(f.to_string()));
+                    }
+                }
+            },
+            Err(_) => {}
+        }
+    }
+
+    files.truncate(10);
+    files
+}
 
 #[tauri::command]
 pub fn dirname(path: String) -> Result<String, String> {
@@ -38,13 +110,14 @@ pub fn resolve_path(paths: Vec<String>) -> Result<String, String> {
         }
     }
 
-    std::fs::canonicalize(path.unwrap())
+    let path = path.unwrap();
+    std::fs::canonicalize(&path)
         .and_then(|x| {
             x.into_os_string()
                 .into_string()
                 .map_err(|_| Error::new(ErrorKind::Other, "Could not convert os string to string"))
         })
-        .map_err(|_| "File does not exist".into())
+        .map_err(|_| format!("File does not exist: {:?}", path))
 }
 
 fn expand_tilde<P: AsRef<Path>>(path_user_input: P) -> Option<PathBuf> {
@@ -67,20 +140,60 @@ fn expand_tilde<P: AsRef<Path>>(path_user_input: P) -> Option<PathBuf> {
     })
 }
 
+fn to_relative_path(path: String) -> String {
+    let cur = env::current_dir();
+    if cur.is_err() {
+        return path;
+    }
+
+    let cur = cur.unwrap().into_os_string().into_string();
+    if cur.is_err() {
+        return path;
+    }
+
+    let cur = cur.unwrap();
+    if path.starts_with(&cur) {
+        if let Some(p) = path.strip_prefix(&cur) {
+            return format!(".{}", p);
+        }
+    }
+
+    let home = dirs::home_dir();
+    if home.is_none() {
+        return path;
+    }
+
+    let home = home.unwrap().into_os_string().into_string();
+    if home.is_err() {
+        return path;
+    }
+
+    let home = home.unwrap();
+    if path.starts_with(&home) {
+        if let Some(p) = path.strip_prefix(&home) {
+            return format!("~{}", p);
+        }
+    }
+
+    path
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use std::fs::File;
 
-    #[test]
-    fn test_resolve_path() {
-        let home = dirs::home_dir()
+    fn get_home() -> String {
+        dirs::home_dir()
             .unwrap()
             .into_os_string()
             .into_string()
-            .unwrap();
+            .unwrap()
+    }
 
-        let test_file_path = format!("{}/.tinywrite-test.txt", &home);
+    #[test]
+    fn test_resolve_path() {
+        let test_file_path = format!("{}/.tinywrite-test.txt", get_home());
         File::create(&test_file_path).unwrap();
 
         let cur = env::current_dir()
@@ -95,13 +208,13 @@ mod tests {
         );
 
         assert_eq!(
-            resolve_path(vec![home.clone(), "./.tinywrite-test.txt".to_string()]).unwrap(),
+            resolve_path(vec![get_home(), "./.tinywrite-test.txt".to_string()]).unwrap(),
             test_file_path,
         );
 
         assert_eq!(
-            resolve_path(vec![home.clone(), format!("{}/.tinywrite-test.txt", home.clone())]).unwrap(),
-            format!("{}/.tinywrite-test.txt", home.clone())
+            resolve_path(vec![get_home(), format!("{}/.tinywrite-test.txt", get_home())]).unwrap(),
+            format!("{}/.tinywrite-test.txt", get_home())
         );
 
         assert_eq!(
@@ -132,5 +245,30 @@ mod tests {
         assert_eq!(dirname("Cargo.lock".to_string()).unwrap(), "".to_string());
 
         assert_eq!(dirname("".to_string()).err().unwrap(), "No directory in: ");
+    }
+
+    #[test]
+    fn test_list_contents() {
+        assert_eq!(
+            list_contents("./Ca".to_string()),
+            vec!["./Cargo.toml", "./Cargo.lock"]
+        );
+
+        assert_eq!(
+            list_contents("./src/m".to_string()),
+            vec!["./src/main.rs"]
+        );
+
+        let test_file_path = format!("{}/tinywrite-test.txt", get_home());
+        File::create(&test_file_path).unwrap();
+
+        assert_eq!(
+            list_contents("~/tinywrite".to_string()),
+            vec!["~/tinywrite-test.txt"]
+        );
+
+        std::fs::remove_file(test_file_path).unwrap();
+
+        assert_eq!(list_contents("".to_string()), Vec::<String>::new())
     }
 }

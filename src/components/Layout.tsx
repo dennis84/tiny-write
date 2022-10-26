@@ -516,4 +516,19 @@ export const editorCss = (config: Config) => css`
     word-break: normal;
     pointer-events: none;
   }
+  .autocomplete {
+    position: absolute;
+    font-size: ${config.fontSize}px;
+    font-family: ${font(config)};
+    color: ${foreground(config)};
+    line-height: ${config.fontSize * 1.6}px;
+    border: 1px solid ${foreground(config)}4c;
+    border-radius: 3px;
+    div {
+      padding: 5px;
+    }
+    div.selected {
+      background: ${selection(config)};
+    }
+  }
 `
