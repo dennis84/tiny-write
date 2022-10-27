@@ -6,53 +6,29 @@ use globset::{Glob};
 
 #[tauri::command]
 pub fn list_contents(file: String) -> Result<Vec<String>, String> {
-    let mut file = file;
     let mut files = Vec::new();
 
-    // Convert input of "~/" to "/Users/me"
-    if let Some(p) = expand_tilde(&file) {
-        if let Ok(p) = p.into_os_string().into_string() {
-            file = p;
-        }
+    // Get dirname of input to walk through:
+    // ~/Ca -> /Users/me
+    // ./Ca -> ./Ca
+    let dir = dirname(file.clone())
+        .map_err(|e| e.to_string())?;
+    // Resolve maybe relative dir to absolute
+    let dir = resolve_path(vec![dir.clone()])?;
+
+    // Convert input to absolute path
+    let mut input = PathBuf::from(&dir);
+    let file_name = PathBuf::from(&file);
+    if let Some(file_name) = file_name.file_name() {
+        input.push(file_name);
     }
+    let input = path_buf_to_string(input)
+        .map_err(|e| e.to_string())?;
+    let input = format!("{}**", input);
 
-    // Get dirname of input to walk through: "~/Ca" -> "/Users/me"
-    let dir = dirname(file.clone());
-    if dir.is_err() {
-        return Ok(files);
-    }
-
-    let mut dir = dir.unwrap();
-
-    let resolved_dir = resolve_path(vec![dir.clone()]);
-    if resolved_dir.is_ok() {
-        dir = resolved_dir.unwrap();
-    }
-
-    let mut input = format!("{}**", file);
-    if input.starts_with("./") {
-        if let Ok(mut cur) = env::current_dir() {
-            if let Some(p) = input.strip_prefix("./") {
-                cur.push(p);
-                input = cur.into_os_string().into_string().unwrap();
-            }
-        }
-    }
-
-    if let Some(p) = expand_tilde(&input) {
-        if let Ok(i) = p.into_os_string().into_string() {
-            input = i;
-        }
-    }
-
-    let glob = Glob::new(&input);
-    if glob.is_err() {
-        return Ok(files);
-    }
-
-    println!("WALKKK: {:?}", dir);
-
-    let glob = glob.unwrap().compile_matcher();
+    let glob = Glob::new(&input)
+        .map_err(|e| e.to_string())?;
+    let glob = glob.compile_matcher();
     let walker = WalkBuilder::new(dir)
         .max_depth(Some(3))
         .build();
@@ -79,9 +55,11 @@ pub fn list_contents(file: String) -> Result<Vec<String>, String> {
 
 #[tauri::command]
 pub fn dirname(path: String) -> Result<String, String> {
-    let p = Path::new(&path);
+    let p = PathBuf::from(&path);
+    let p = expand_tilde(&p).unwrap_or(p);
+
     if p.is_dir() {
-        return Ok(path);
+        return path_buf_to_string(p).map_err(|e| e.to_string());
     }
 
     let mut ancestors = p.ancestors();
@@ -95,31 +73,25 @@ pub fn dirname(path: String) -> Result<String, String> {
 
 #[tauri::command]
 pub fn resolve_path(paths: Vec<String>) -> Result<String, String> {
-    let mut path = env::current_dir().ok();
+    let mut path = env::current_dir()
+        .map_err(|e| e.to_string())?;
 
     for p in paths {
         match expand_tilde(p) {
             Some(path_buf) => {
                 if path_buf.is_absolute() {
-                    path = Some(path_buf);
+                    path = path_buf;
                     continue;
                 }
 
-                if let Some(ref prev) = path {
-                    path = Some(prev.join(path_buf));
-                }
+                path = path.join(path_buf);
             }
             None => return Err("Error in expand_tilde".into()),
         }
     }
 
-    let path = path.unwrap();
     std::fs::canonicalize(&path)
-        .and_then(|x| {
-            x.into_os_string()
-                .into_string()
-                .map_err(|_| Error::new(ErrorKind::Other, "Could not convert os string to string"))
-        })
+        .and_then(|x| path_buf_to_string(x))
         .map_err(|_| format!("File does not exist: {:?}", path))
 }
 
@@ -244,7 +216,14 @@ mod tests {
 
         assert_eq!(dirname("Cargo.lock".to_string()).unwrap(), "".to_string());
 
-        assert_eq!(dirname("".to_string()).err().unwrap(), "No directory in: ");
+        assert_eq!(dirname("".to_string()).unwrap_err(), "No directory in: ");
+
+        assert_eq!(
+            dirname("~/src-tauri/Cargo.lock".to_string()).unwrap(),
+            format!("{}/src-tauri", get_home())
+        );
+
+        assert_eq!(dirname("~/".to_string()).unwrap(), get_home());
     }
 
     #[test]
@@ -269,6 +248,6 @@ mod tests {
 
         std::fs::remove_file(test_file_path).unwrap();
 
-        assert_eq!(list_contents("".to_string()).unwrap(), Vec::<String>::new())
+        assert_eq!(list_contents("".to_string()).unwrap_err(), "No directory in: ");
     }
 }
