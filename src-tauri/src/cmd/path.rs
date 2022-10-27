@@ -1,6 +1,7 @@
 use std::path::{Path, PathBuf};
 use std::{env};
 use std::io::{Error, ErrorKind};
+use log::{info};
 use ignore::{WalkBuilder};
 use globset::{Glob};
 
@@ -26,6 +27,7 @@ pub fn list_contents(file: String) -> Result<Vec<String>, String> {
         .map_err(|e| e.to_string())?;
     let input = format!("{}**", input);
 
+    info!("List file contents in {} and glob fliter by {}", dir, input);
     let glob = Glob::new(&input)
         .map_err(|e| e.to_string())?;
     let glob = glob.compile_matcher();
@@ -65,9 +67,7 @@ pub fn dirname(path: String) -> Result<String, String> {
     let mut ancestors = p.ancestors();
     ancestors.next().ok_or(format!("No directory in: {}", path))?;
     let d = ancestors.next().ok_or(format!("No directory in: {}", path))?;
-    d.to_path_buf()
-        .into_os_string()
-        .into_string()
+    path_buf_to_string(d.to_path_buf())
         .map_err(|_| "".to_string())
 }
 

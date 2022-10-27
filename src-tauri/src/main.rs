@@ -4,7 +4,7 @@
 )]
 
 use std::env;
-use log::{info};
+use log::{info, LevelFilter};
 use tauri::{Menu, MenuItem, Submenu, Manager};
 use tauri_plugin_log::{LogTarget, LoggerBuilder};
 
@@ -25,12 +25,17 @@ fn main() {
         builder = builder.menu(menu);
     }
 
-    builder
-        .plugin(LoggerBuilder::default().targets([
+    let logger = LoggerBuilder::default()
+        .targets([
             LogTarget::LogDir,
             LogTarget::Stdout,
             LogTarget::Webview,
-        ]).build())
+        ])
+        .level(LevelFilter::Info)
+        .build();
+
+    builder
+        .plugin(logger)
         .setup(|app| {
             let log_dir_string = app
                 .path_resolver()
