@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::env;
 use url::Url;
+use crate::pathutil::{path_buf_to_string, resolve_path};
 
 #[derive(Clone, Debug, serde::Serialize)]
 pub struct Args {
@@ -30,11 +31,13 @@ pub fn create_args(source: String) -> Args {
                 .and_then(|x| String::from_utf8(x).ok());
         }
     } else if source != "" {
-        file = crate::cmd::path::resolve_path(vec![source]).ok();
+        file = resolve_path(vec![source])
+            .and_then(|p| path_buf_to_string(p))
+            .ok();
     }
 
     let cwd = env::current_dir()
-        .map(|x| x.into_os_string().into_string().unwrap())
+        .and_then(|x| path_buf_to_string(x))
         .ok();
 
     Args {

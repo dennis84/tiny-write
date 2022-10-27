@@ -9,6 +9,7 @@ use tauri::{Manager, Menu, MenuItem, Submenu};
 use tauri_plugin_log::{LogTarget, LoggerBuilder};
 
 mod cmd;
+mod pathutil;
 
 fn main() {
     let mut builder = tauri::Builder::default();
@@ -79,9 +80,9 @@ fn main() {
             cmd::args::get_args,
             cmd::file::get_mime_type,
             cmd::file::get_file_last_modified,
-            cmd::path::cmd_list_contents,
-            cmd::path::cmd_resolve_path,
-            cmd::path::cmd_dirname,
+            cmd::path::list_contents,
+            cmd::path::resolve_path,
+            cmd::path::dirname,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
