@@ -1,4 +1,5 @@
-import { PlaywrightTestConfig } from '@playwright/test'
+import {PlaywrightTestConfig} from '@playwright/test'
+
 const second = 1000
 const config: PlaywrightTestConfig = {
   testDir: './test/integration',
@@ -14,4 +15,5 @@ const config: PlaywrightTestConfig = {
     baseURL: 'http://localhost:3000/',
   },
 }
+
 export default config

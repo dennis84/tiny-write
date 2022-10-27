@@ -44,7 +44,7 @@ test('existing room', async ({page, browser}) => {
 
 test('existing room - backup', async ({page}) => {
   const room = 'test-2'
-  await page.goto(`/`)
+  await page.goto('/')
   await page.type('.ProseMirror', '123', {delay})
   await page.waitForTimeout(210)
 

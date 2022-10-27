@@ -1,7 +1,7 @@
-import {isTauri} from "../../env"
-import {listContents} from "../../remote"
-import {ProseMirrorExtension} from "../state"
-import {completionKeymap, completionPlugin} from "./autocomplete"
+import {isTauri} from '../../env'
+import {listContents} from '../../remote'
+import {ProseMirrorExtension} from '../state'
+import {completionKeymap, completionPlugin} from './autocomplete'
 
 const REGEX = /[.~]\/[^\s]*/g
 

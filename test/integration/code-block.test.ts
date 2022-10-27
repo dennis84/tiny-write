@@ -1,7 +1,7 @@
 import {test, expect} from '@playwright/test'
 import {delay, move} from './utils'
 
-const code = `const foo='bar'`
+const code = "const foo='bar'"
 
 test.beforeEach(async ({page}) => {
   await page.goto('/')
@@ -16,7 +16,7 @@ test('code block', async ({page}) => {
 
   // prettify
   await page.click('.prettify')
-  expect(await page.textContent('.codemirror-inner > .cm-editor .cm-content')).toBe(`const foo = 'bar'`)
+  expect(await page.textContent('.codemirror-inner > .cm-editor .cm-content')).toBe("const foo = 'bar'")
 
   // change lang
   await page.click('.codemirror-outer .lang-toggle')
@@ -38,7 +38,7 @@ test('code block', async ({page}) => {
 
 test('mermaid', async ({page}) => {
   const line1 = 'flowchart LR'
-  const line2 = "  A --> B"
+  const line2 = '  A --> B'
   await page.type('.ProseMirror', '```mermaid ', {delay})
   await page.waitForSelector('.codemirror-outer')
   await page.type('.codemirror-inner > .cm-editor .cm-content', line1, {delay})

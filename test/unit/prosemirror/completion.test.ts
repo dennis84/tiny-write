@@ -7,9 +7,9 @@ import {findWords} from '../../../src/prosemirror/extension/code-block/completio
 test.each([
   ['abc', [], 3],
   ['abc ', ['abc'], 4],
-  [` const foo = 'bar'`, ['const', 'foo', 'bar'], 0],
-  [`....test`, ['test'], 10],
-  [`x+y*z`, [], 10],
+  [" const foo = 'bar'", ['const', 'foo', 'bar'], 0],
+  ['....test', ['test'], 10],
+  ['x+y*z', [], 10],
 ])('findWords', async (doc, words, pos) => {
   const language = new Compartment()
   const state = EditorState.create({
