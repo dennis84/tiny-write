@@ -79,6 +79,9 @@ mod tests {
 
     #[test]
     fn test_list_contents() {
+        std::fs::create_dir(format!("{}/tinywrite", get_home())).ok();
+        File::create(format!("{}/tinywrite/test.txt", get_home())).ok();
+
         assert_eq!(
             list_contents("./Ca".to_string()).unwrap(),
             vec!["./Cargo.toml", "./Cargo.lock"]
@@ -89,21 +92,22 @@ mod tests {
             vec!["./src/main.rs"]
         );
 
-        let test_file_path = format!("{}/tinywrite-test.txt", get_home());
-        File::create(&test_file_path).unwrap();
+        assert_eq!(
+            list_contents("~/tinyw".to_string()).unwrap(),
+            vec!["~/tinywrite", "~/tinywrite/test.txt"]
+        );
 
         assert_eq!(
-            list_contents("~/tinywrite".to_string()).unwrap(),
-            vec!["~/tinywrite-test.txt"]
+            list_contents("~/tinywrite/".to_string()).unwrap(),
+            vec!["~/tinywrite", "~/tinywrite/test.txt"]
         );
 
         assert!(list_contents("~/".to_string()).unwrap().len() > 0);
 
-        std::fs::remove_file(test_file_path).unwrap();
-
         assert!(list_contents("./icons/".to_string()).unwrap().len() > 0);
-        assert!(list_contents("~/Downloads/".to_string()).unwrap().len() > 0);
 
         assert_eq!(list_contents("".to_string()).unwrap_err(), "No parent dir");
+
+        std::fs::remove_dir_all(format!("{}/tinywrite", get_home())).ok();
     }
 }
