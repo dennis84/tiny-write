@@ -1,7 +1,7 @@
+use crate::pathutil::{path_buf_to_string, resolve_path};
 use std::collections::HashMap;
 use std::env;
 use url::Url;
-use crate::pathutil::{path_buf_to_string, resolve_path};
 
 #[derive(Clone, Debug, serde::Serialize)]
 pub struct Args {
@@ -36,9 +36,7 @@ pub fn create_args(source: String) -> Args {
             .ok();
     }
 
-    let cwd = env::current_dir()
-        .and_then(|x| path_buf_to_string(x))
-        .ok();
+    let cwd = env::current_dir().and_then(|x| path_buf_to_string(x)).ok();
 
     Args {
         cwd: cwd,

@@ -1,40 +1,32 @@
+use crate::pathutil as pu;
 use globset::Glob;
 use ignore::WalkBuilder;
 use log::info;
-use std::path::{PathBuf};
-use crate::pathutil as pu;
+use std::path::PathBuf;
 
 #[tauri::command]
 pub fn list_contents(file: String) -> Result<Vec<String>, String> {
     let mut files = Vec::new();
-
-    // Get dirname of input to walk through:
-    // ~/Ca -> /Users/me
-    // ./Ca -> ./Ca
+    let file = pu::expand_tilde(file).ok_or("Fail")?;
     let dir = pu::dirname(&file).map_err(|e| e.to_string())?;
-    // Resolve maybe relative dir to absolute
-    let dir = pu::resolve_path(vec![dir]).map_err(|e| e.to_string())?;
 
-    // Convert input to absolute path:
-    // ~/   -> /Users/me**
-    // ~/Ca -> /Users/me/Ca**
-    let mut input = dir.clone();
+    let mut glob_pattern = dir.clone();
     let file_name = PathBuf::from(&file);
-    if let Some(file_name) = file_name.file_name() {
-        if file_name != "~" {
-            input.push(file_name);
+    if let Some(name) = file_name.file_name() {
+        if !file_name.is_dir() {
+            glob_pattern.push(name);
         }
     }
-    let input = pu::path_buf_to_string(input).map_err(|e| e.to_string())?;
-    let input = format!("{}**", input);
+    let glob_pattern = pu::path_buf_to_string(glob_pattern).map_err(|e| e.to_string())?;
+    let glob_pattern = format!("{}**", glob_pattern);
 
     info!(
         "List file contents in {} and glob fliter by {}",
         pu::path_buf_to_string(&dir).unwrap_or("".into()),
-        input
+        glob_pattern
     );
 
-    let glob = Glob::new(&input).map_err(|e| e.to_string())?;
+    let glob = Glob::new(&glob_pattern).map_err(|e| e.to_string())?;
     let glob = glob.compile_matcher();
     let walker = WalkBuilder::new(dir).max_depth(Some(3)).build();
 
@@ -43,8 +35,8 @@ pub fn list_contents(file: String) -> Result<Vec<String>, String> {
             Ok(path) => {
                 let path = path.into_path();
                 if glob.is_match(&path) {
-                    let relative_path = pu::to_relative_path(&path)
-                        .and_then(|p| pu::path_buf_to_string(p));
+                    let relative_path =
+                        pu::to_relative_path(&path).and_then(|p| pu::path_buf_to_string(p));
                     if let Ok(p) = relative_path {
                         files.push(p);
                     }
@@ -86,7 +78,7 @@ mod tests {
     }
 
     #[test]
-    fn test_cmd_list_contents() {
+    fn test_list_contents() {
         assert_eq!(
             list_contents("./Ca".to_string()).unwrap(),
             vec!["./Cargo.toml", "./Cargo.lock"]
@@ -109,9 +101,9 @@ mod tests {
 
         std::fs::remove_file(test_file_path).unwrap();
 
-        assert_eq!(
-            list_contents("".to_string()).unwrap_err(),
-            "No parent dir"
-        );
+        assert!(list_contents("./icons/".to_string()).unwrap().len() > 0);
+        assert!(list_contents("~/Downloads/".to_string()).unwrap().len() > 0);
+
+        assert_eq!(list_contents("".to_string()).unwrap_err(), "No parent dir");
     }
 }

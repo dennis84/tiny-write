@@ -31,13 +31,7 @@ pub fn dirname<P: AsRef<Path>>(p: P) -> Result<PathBuf, Error> {
         return Ok(p);
     }
 
-    let mut ancestors = p.ancestors();
-    ancestors
-        .next()
-        .ok_or(Error::new(ErrorKind::Other, "No parent dir"))?;
-
-    Ok(ancestors
-        .next()
+    Ok(p.parent()
         .ok_or(Error::new(ErrorKind::Other, "No parent dir"))?
         .to_path_buf())
 }
