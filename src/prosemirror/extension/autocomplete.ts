@@ -88,13 +88,14 @@ export const completionPlugin = (regex, getOptions) => new Plugin({
         const matchTo = matchFrom + match[0].length
 
         if (from >= matchFrom && to <= matchTo) {
-          getOptions(match[0]).then((options) => {
+          getOptions(match[0], view.state).then((options) => {
             const tr = view.state.tr
             view.dispatch(tr.setMeta(pluginKey, {
               from: matchFrom,
               to: matchTo,
               text: match[0],
               options,
+              selected: options.length > 0 ? 0 : -1,
             }))
           })
 
@@ -147,10 +148,7 @@ export const completionKeymap = keymap({
   },
   Enter: (state, dispatch) => {
     const pluginState = pluginKey.getState(state)
-    if (pluginState?.selected === undefined) {
-      dispatch(state.tr.setMeta(pluginKey, {}))
-      return false
-    }
+    if (!pluginState?.options?.length) return false
 
     const tr = state.tr
     tr.replaceWith(

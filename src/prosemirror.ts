@@ -19,6 +19,7 @@ import select from './prosemirror/extension/select'
 import position from './prosemirror/extension/position'
 import container from './prosemirror/extension/container'
 import fileListing from './prosemirror/extension/file-listing'
+import wordCompletion from './prosemirror/extension/word-completion'
 import {Config} from './state'
 import {codeTheme, font, selection, isDarkTheme} from './config'
 import {isDev} from './env'
@@ -57,6 +58,7 @@ export const createExtensions = (props: Props): ProseMirrorExtension[] =>
     collab(props.y),
     dragHandle(),
     fileListing(),
+    wordCompletion(),
   ] : [
     customKeymap(props),
     base(props.markdown),
@@ -85,6 +87,7 @@ export const createExtensions = (props: Props): ProseMirrorExtension[] =>
     pasteMarkdown(),
     collab(props.y),
     fileListing(),
+    wordCompletion(),
   ]
 
 export const createEmptyText = () => ({

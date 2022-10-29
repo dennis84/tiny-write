@@ -524,6 +524,8 @@ export const editorCss = (config: Config) => css`
     line-height: ${config.fontSize * 1.6}px;
     border: 1px solid ${foreground(config)}4c;
     border-radius: 3px;
+    background: ${background(config)};
+    box-shadow: 0 2px 5px #00000033;
     div {
       padding: 5px;
     }
