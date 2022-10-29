@@ -1,16 +1,19 @@
+import {PluginKey} from 'prosemirror-state'
 import {isTauri} from '../../env'
 import {listContents} from '../../remote'
 import {ProseMirrorExtension} from '../state'
 import {completionKeymap, completionPlugin} from './autocomplete'
 
-const REGEX = /[.~]\/[^\s]*/g
+const pluginKey = new PluginKey('file-listing')
 
 export default (): ProseMirrorExtension => isTauri ? ({
   plugins: (prev) => [
-    completionKeymap,
+    completionKeymap(pluginKey),
     ...prev,
-    completionPlugin(REGEX, async (text) => {
-      return listContents(text)
-    }),
+    completionPlugin(
+      pluginKey,
+      /(\.\.?|~)\/[^\s]*/g,
+      async (text) => listContents(text)
+    ),
   ]
 }) : ({})

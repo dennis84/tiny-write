@@ -4,12 +4,10 @@ import {EditorView} from 'prosemirror-view'
 
 const MAX_MATCH = 500
 
-const pluginKey = new PluginKey('autocomplete')
-
 class AutocompleteView {
   private dialog: HTMLElement
 
-  constructor(private view: EditorView) {
+  constructor(private view: EditorView, private pluginKey: PluginKey) {
     this.dialog = document.createElement('div')
     this.dialog.className = 'autocomplete'
     view.dom.parentNode.appendChild(this.dialog)
@@ -17,7 +15,7 @@ class AutocompleteView {
   }
 
   update(view) {
-    const pluginState = pluginKey.getState(view.state)
+    const pluginState = this.pluginKey.getState(view.state)
     this.dialog.innerHTML = ''
     let coords
     if (!pluginState?.options?.length) return
@@ -48,7 +46,7 @@ class AutocompleteView {
   }
 }
 
-export const completionPlugin = (regex, getOptions) => new Plugin({
+export const completionPlugin = (pluginKey, regex, getOptions) => new Plugin({
   key: pluginKey,
   state: {
     init() {
@@ -61,7 +59,7 @@ export const completionPlugin = (regex, getOptions) => new Plugin({
     }
   },
   view(editorView) {
-    return new AutocompleteView(editorView)
+    return new AutocompleteView(editorView, pluginKey)
   },
   props: {
     handleTextInput(view, from, to, t) {
@@ -84,16 +82,17 @@ export const completionPlugin = (regex, getOptions) => new Plugin({
 
       const matches = text.matchAll(regex)
       for (const match of matches) {
+        const matchedText = match[0]
         const matchFrom = $from.before() + match.index
-        const matchTo = matchFrom + match[0].length
+        const matchTo = matchFrom + matchedText.length
 
         if (from >= matchFrom && to <= matchTo) {
-          getOptions(match[0], view.state).then((options) => {
+          getOptions(matchedText, view.state).then((options) => {
             const tr = view.state.tr
             view.dispatch(tr.setMeta(pluginKey, {
               from: matchFrom,
               to: matchTo,
-              text: match[0],
+              text: matchedText,
               options,
               selected: options.length > 0 ? 0 : -1,
             }))
@@ -113,7 +112,7 @@ export const completionPlugin = (regex, getOptions) => new Plugin({
   }
 })
 
-export const completionKeymap = keymap({
+export const completionKeymap = (pluginKey) => keymap({
   ArrowLeft: (state, dispatch) => {
     dispatch(state.tr.setMeta(pluginKey, {}))
     return false

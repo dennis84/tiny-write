@@ -11,9 +11,9 @@ const getWords = (text) => {
     .filter((w) => w.length >= 5)
 }
 
-const pluginKey = new PluginKey('word-complete')
+const collectWordsKey = new PluginKey('collect-words')
 const plugin = new Plugin({
-  key: pluginKey,
+  key: collectWordsKey,
   state: {
     init() {
       return new Set()
@@ -33,36 +33,40 @@ const plugin = new Plugin({
     },
   },
   props: {
-    handleTextInput(view, from, to) {
-      // const $from = view.state.doc.resolve(from)
-      update(view, from, to)
+    handleTextInput(view) {
+      update(view)
       return false
     }
   }
 })
 
-const update = debounce((view, from, to) => {
+const update = debounce((view) => {
   const words = new Set()
-  view.state.doc.descendants((node, pos) => {
-    console.log(node, {pos, from, to})
-    // if (node.type.name === 'code_block') return
-    // getWords(node.textContent).forEach((w) => words.add(w))
+  view.state.doc.forEach((node) => {
+    if (node.type.name === 'code_block') return
+    getWords(node.textContent).forEach((w) => words.add(w))
   })
 
   const tr = view.state.tr
-  tr.setMeta(pluginKey, {words})
+  tr.setMeta(collectWordsKey, {words})
   view.dispatch(tr)
 }, 500)
 
+const wordCompletionKey = new PluginKey('word-completion')
+
 export default (): ProseMirrorExtension => ({
   plugins: (prev) => [
-    completionKeymap,
+    completionKeymap(wordCompletionKey),
     ...prev,
-    completionPlugin(/[\w]*/g, async (text, state) => {
-      const words = pluginKey.getState(state)
-      if (text.length < 1) return []
-      return [...words].filter((w) => w.startsWith(text))
-    }),
+    completionPlugin(
+      wordCompletionKey,
+      /[\w]*/g,
+      async (text, state) => {
+        const words = collectWordsKey.getState(state)
+        if (text.length < 1) return []
+        return [...words].filter((w) => w.startsWith(text))
+      }
+    ),
     plugin,
   ]
 })
