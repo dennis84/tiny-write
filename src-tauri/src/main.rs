@@ -62,6 +62,8 @@ fn main() {
                             .unwrap_or_default();
                         println!("{}", help_text);
                         app.app_handle().exit(0);
+                    } else {
+                        app.manage(cmd::args::create_args("".to_string()));
                     }
                 }
                 Err(e) => {

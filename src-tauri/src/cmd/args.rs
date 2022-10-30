@@ -1,4 +1,4 @@
-use crate::pathutil::{path_buf_to_string, resolve_path};
+use crate::pathutil::{dirname, path_buf_to_string, resolve_path};
 use std::collections::HashMap;
 use std::env;
 use url::Url;
@@ -20,6 +20,7 @@ pub fn create_args(source: String) -> Args {
     let mut file = None;
     let mut room = None;
     let mut text = None;
+    let mut cwd = None;
 
     if source.starts_with("tinywrite://") {
         if let Some(url) = Url::parse(&source).ok() {
@@ -31,12 +32,31 @@ pub fn create_args(source: String) -> Args {
                 .and_then(|x| String::from_utf8(x).ok());
         }
     } else if source != "" {
-        file = resolve_path(vec![source])
-            .and_then(|p| path_buf_to_string(p))
-            .ok();
+        if let Ok(p) = resolve_path(vec![source]) {
+            if p.is_dir() {
+                cwd = path_buf_to_string(p).ok();
+            } else {
+                file = path_buf_to_string(&p).ok();
+                cwd = dirname(p).and_then(|d| path_buf_to_string(d)).ok();
+            }
+        }
     }
 
-    let cwd = env::current_dir().and_then(|x| path_buf_to_string(x)).ok();
+    if cwd.is_none() {
+        cwd = env::current_dir()
+            .and_then(|x| {
+                if x.parent().is_none() {
+                    if let Some(home) = dirs::home_dir() {
+                        env::set_current_dir(home)?;
+                    }
+
+                    return env::current_dir();
+                }
+
+                Ok(x)
+            })
+            .and_then(|x| path_buf_to_string(x)).ok();
+    }
 
     Args {
         cwd: cwd,
@@ -65,7 +85,7 @@ mod tests {
         let args = create_args("../README.md".to_string());
         assert_eq!(
             Path::new(&args.cwd.as_ref().unwrap()),
-            env::current_dir().unwrap()
+            env::current_dir().unwrap().parent().unwrap()
         );
         assert_eq!(
             Path::new(&args.file.as_ref().unwrap()),
@@ -73,6 +93,13 @@ mod tests {
         );
         assert!(args.room.is_none());
         assert!(args.text.is_none());
+
+        let args = create_args("..".to_string());
+        assert_eq!(
+            Path::new(&args.cwd.as_ref().unwrap()),
+            env::current_dir().unwrap().parent().unwrap()
+        );
+        assert!(args.file.is_none());
 
         let args = create_args("tinywrite://test?room=123".to_string());
         assert_eq!(args.room, Some("123".to_string()));
