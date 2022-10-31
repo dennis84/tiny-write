@@ -62,6 +62,9 @@ export const completionPlugin = (pluginKey, regex, getOptions) => new Plugin({
     return new AutocompleteView(editorView, pluginKey)
   },
   props: {
+    handleDOMEvents: {
+      blur: (view) => maybeClose(pluginKey, view.state, view.dispatch),
+    },
     handleTextInput(view, from, to, t) {
       if (view.composing) return false
       const state = view.state
@@ -112,13 +115,28 @@ export const completionPlugin = (pluginKey, regex, getOptions) => new Plugin({
   }
 })
 
+const maybeClose = (pluginKey, state, dispatch) => {
+  const pluginState = pluginKey.getState(state)
+  if (pluginState?.options?.length) {
+    dispatch(state.tr.setMeta(pluginKey, {}))
+  }
+}
+
 export const completionKeymap = (pluginKey) => keymap({
   ArrowLeft: (state, dispatch) => {
-    dispatch(state.tr.setMeta(pluginKey, {}))
+    maybeClose(pluginKey, state, dispatch)
     return false
   },
   ArrowRight: (state, dispatch) => {
-    dispatch(state.tr.setMeta(pluginKey, {}))
+    maybeClose(pluginKey, state, dispatch)
+    return false
+  },
+  Backspace: (state, dispatch) => {
+    maybeClose(pluginKey, state, dispatch)
+    return false
+  },
+  Escape: (state, dispatch) => {
+    maybeClose(pluginKey, state, dispatch)
     return false
   },
   ArrowDown: (state, dispatch) => {
@@ -140,10 +158,6 @@ export const completionKeymap = (pluginKey) => keymap({
       pluginState.selected - 1
     dispatch(state.tr.setMeta(pluginKey, {...pluginState, selected}))
     return true
-  },
-  Backspace: (state, dispatch) => {
-    dispatch(state.tr.setMeta(pluginKey, {}))
-    return false
   },
   Enter: (state, dispatch) => {
     const pluginState = pluginKey.getState(state)
