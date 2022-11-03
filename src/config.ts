@@ -140,14 +140,24 @@ export const themes: {[key: string]: Theme} = {
     selection: '#bd93f922',
     dark: true,
   },
-  'hibernus': {
-    value: 'hibernus',
-    label: 'Hibernus',
-    background: '#f4f6f6',
-    foreground: '#90a6a6',
-    primaryBackground: '#fe5792',
+  'tokyo-night': {
+    value: 'tokyo-night',
+    label: 'Tokyo Night',
+    background: '#1a1b26',
+    foreground: '#c0caf5',
+    primaryBackground: '#9ece6a',
     primaryForeground: '#fff',
-    selection: '#169fb133',
+    selection: '#292e42',
+    dark: true,
+  },
+  'tokyo-night-day': {
+    value: 'tokyo-night-day',
+    label: 'Tokyo Night Day',
+    background: '#e1e2e7',
+    foreground: '#3760bf',
+    primaryBackground: '#9854f1',
+    primaryForeground: '#fff',
+    selection: '#c0caf5',
     dark: false,
   },
   'soft-era': {
@@ -199,6 +209,14 @@ export const codeThemes: {[key: string]: CodeTheme} = {
   'aura': {
     label: 'Aura Dark',
     value: 'aura',
+  },
+  'tokyo-night': {
+    label: 'Tokyo Night',
+    value: 'tokyo-night',
+  },
+  'tokyo-night-day': {
+    label: 'Tokyo Night Day',
+    value: 'tokyo-night-day',
   },
 }
 

@@ -8,6 +8,8 @@ import {dracula} from '@ddietr/codemirror-themes/dracula'
 import {githubLight} from '@ddietr/codemirror-themes/github-light'
 import {githubDark} from '@ddietr/codemirror-themes/github-dark'
 import {aura} from '@ddietr/codemirror-themes/aura'
+import {tokyoNightStorm} from '@ddietr/codemirror-themes/tokyo-night-storm'
+import {tokyoNightDay} from '@ddietr/codemirror-themes/tokyo-night-day'
 
 export const getTheme = (theme: string): Extension =>
   theme === 'dracula' ? dracula :
@@ -18,4 +20,6 @@ export const getTheme = (theme: string): Extension =>
   theme === 'github-light' ? githubLight :
   theme === 'github-dark' ? githubDark :
   theme === 'aura' ? aura :
+  theme === 'tokyo-night' ? tokyoNightStorm :
+  theme === 'tokyo-night-day' ? tokyoNightDay :
   materialLight
