@@ -147,7 +147,7 @@ export const themes: {[key: string]: Theme} = {
     foreground: '#c0caf5',
     primaryBackground: '#9ece6a',
     primaryForeground: '#fff',
-    selection: '#292e42',
+    selection: '#292e4244',
     dark: true,
   },
   'tokyo-night-day': {
@@ -157,7 +157,7 @@ export const themes: {[key: string]: Theme} = {
     foreground: '#3760bf',
     primaryBackground: '#9854f1',
     primaryForeground: '#fff',
-    selection: '#c0caf5',
+    selection: '#c0caf544',
     dark: false,
   },
   'soft-era': {

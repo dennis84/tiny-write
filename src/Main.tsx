@@ -11,6 +11,7 @@ import {fonts} from './config'
 import {Layout, editorCss} from './components/Layout'
 import Menu from './components/Menu'
 import ErrorView from './components/Error'
+import Dir from './components/Dir'
 import {insertImage} from './prosemirror/extension/image'
 
 const fontsStyles = Object.entries(fonts)
@@ -134,7 +135,7 @@ export default (props: {state: State}) => {
     }
   })
 
-  const styles = () => store.error ?
+  const styles = () => store.error || store.args?.dir ?
     css`display: none` :
     css`
       ${editorCss(store.config)};
@@ -148,6 +149,7 @@ export default (props: {state: State}) => {
         data-testid={store.error ? 'error' : store.loading}
         onDragOver={onDragOver}>
         <Show when={store.error}><ErrorView /></Show>
+        <Show when={store.args?.dir}><Dir /></Show>
         <div
           ref={editorRef}
           class={styles()}

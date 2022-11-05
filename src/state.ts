@@ -7,6 +7,7 @@ import {WebsocketProvider} from 'y-websocket'
 export interface Args {
   cwd?: string;
   file?: string;
+  dir?: string[];
   room?: string;
   text?: string;
 }

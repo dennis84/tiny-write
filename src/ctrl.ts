@@ -205,12 +205,13 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
 
   const loadFile = async (config: Config, path: string): Promise<File> => {
     try {
-      const fileContent = await remote.readFile(path)
-      const lastModified = await remote.getFileLastModified(path)
+      const resolvedPath = await remote.resolvePath([path])
+      const fileContent = await remote.readFile(resolvedPath)
+      const lastModified = await remote.getFileLastModified(resolvedPath)
       const extensions = createExtensions({
         config,
         markdown: false,
-        path,
+        path: resolvedPath,
         keymap,
       })
       const schema = createSchema(extensions)
@@ -228,7 +229,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       return {
         text,
         lastModified: lastModified.toISOString(),
-        path: path
+        path: resolvedPath,
       }
     } catch (e) {
       throw new ServiceError('file_permission_denied', {error: e})
@@ -499,7 +500,9 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       let data = await fetchData()
       let text
 
-      if (data.args.text) {
+      if (data.args.dir) {
+        data = withYjs(data)
+      } else if (data.args.text) {
         const file = await getFile(data, {text: JSON.parse(data.args.text)})
         data = await withFile(data, file)
       } else if (data.args.file) {

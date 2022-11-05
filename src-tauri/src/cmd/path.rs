@@ -51,8 +51,8 @@ pub fn list_contents(file: String) -> Result<Vec<String>, String> {
 }
 
 #[tauri::command]
-pub fn dirname(p: String) -> Result<String, String> {
-    pu::dirname(p)
+pub fn dirname(path: String) -> Result<String, String> {
+    pu::dirname(path)
         .and_then(|p| pu::path_buf_to_string(p))
         .map_err(|e| e.to_string())
 }
