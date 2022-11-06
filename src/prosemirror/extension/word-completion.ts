@@ -64,7 +64,7 @@ export default (): ProseMirrorExtension => ({
       async (text, state) => {
         const words = collectWordsKey.getState(state)
         if (text.length < 1) return []
-        return [...words].filter((w) => w.startsWith(text))
+        return [...words].filter((w) => w !== text && w.startsWith(text))
       }
     ),
     plugin,

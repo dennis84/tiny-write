@@ -17,6 +17,7 @@ class AutocompleteView {
   update(view) {
     const pluginState = this.pluginKey.getState(view.state)
     this.dialog.innerHTML = ''
+    this.dialog.style.display = 'none'
     let coords
     if (!pluginState?.options?.length) return
     try {
@@ -27,6 +28,7 @@ class AutocompleteView {
       return
     }
 
+    this.dialog.style.display = 'block'
     this.dialog.style.left = `${coords.left}px`
     this.dialog.style.top = `${coords.bottom + 10}px`
 

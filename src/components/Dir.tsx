@@ -100,8 +100,6 @@ export default () => {
     </>
   )
 
-  console.log(store.args.dir)
-
   return (
     <Layer config={store.config}>
       <Container config={store.config}>
