@@ -2,13 +2,14 @@ import {Show, onCleanup, createEffect, onError, onMount} from 'solid-js'
 import {createMutable} from 'solid-js/store'
 import {listen} from '@tauri-apps/api/event'
 import {convertFileSrc} from '@tauri-apps/api/tauri'
-import {css, injectGlobal} from '@emotion/css'
+import {injectGlobal} from '@emotion/css'
 import {State, StateContext} from './state'
 import {createCtrl} from './ctrl'
 import * as remote from './remote'
 import {isTauri} from './env'
 import {fonts} from './config'
-import {Layout, editorCss} from './components/Layout'
+import {Layout} from './components/Layout'
+import Editor from './components/Editor'
 import Menu from './components/Menu'
 import ErrorView from './components/Error'
 import Dir from './components/Dir'
@@ -135,13 +136,6 @@ export default (props: {state: State}) => {
     }
   })
 
-  const styles = () => store.error || store.args?.dir ?
-    css`display: none` :
-    css`
-      ${editorCss(store.config)};
-      ${store.markdown ? 'white-space: pre-wrap' : ''};
-    `
-
   return (
     <StateContext.Provider value={[store, ctrl]}>
       <Layout
@@ -150,10 +144,12 @@ export default (props: {state: State}) => {
         onDragOver={onDragOver}>
         <Show when={store.error}><ErrorView /></Show>
         <Show when={store.args?.dir}><Dir /></Show>
-        <div
+        <Editor
+          config={store.config}
           ref={editorRef}
-          class={styles()}
           spellcheck={store.config.spellcheck}
+          markdown={store.markdown}
+          hide={store.error !== undefined || store.args?.dir !== undefined}
           data-tauri-drag-region="true"
         />
         <Menu />
