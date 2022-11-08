@@ -1,4 +1,9 @@
 import {vi, expect, test} from 'vitest'
+
+vi.stubGlobal('d3', vi.fn(() => ({
+  curveLinear: () => undefined
+})))
+
 import {createCtrl} from '../../src/ctrl'
 import {createState} from '../../src/state'
 
@@ -10,6 +15,7 @@ vi.stubGlobal('matchMedia', vi.fn(() => ({
 
 vi.mock('../../src/remote', () => ({
   getArgs: async () => ({}),
+  resolvePath: async ([path]) => path,
   getFileLastModified: async () => lastModified,
   readFile: async (path: string) => {
     return path === 'file1' ? '# File1' : ''

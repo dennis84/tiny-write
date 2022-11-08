@@ -80,7 +80,7 @@ export default (codeBlock: CodeBlockView) =>
           })
         } catch (err) {
           const error = document.createElement('code')
-          error.textContent = err.str
+          error.textContent = err
           this.output.innerHTML = ''
           this.output.appendChild(error)
           // remove mermaid error div
