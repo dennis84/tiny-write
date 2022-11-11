@@ -5,6 +5,7 @@ import * as fs from '@tauri-apps/api/fs'
 import * as dialog from '@tauri-apps/api/dialog'
 import {EditorState} from 'prosemirror-state'
 import {toBase64} from 'js-base64'
+import {info} from 'tauri-plugin-log-api'
 import {Args} from './state'
 import {serialize} from './markdown'
 import {isTauri} from './env'
@@ -133,4 +134,8 @@ export const save = async (state: EditorState): Promise<string> => {
   const path = await dialog.save()
   await fs.writeFile({path, contents: serialize(state)})
   return path
+}
+
+export const log = (msg) => {
+  info(msg)
 }

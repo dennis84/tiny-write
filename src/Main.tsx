@@ -149,7 +149,7 @@ export default (props: {state: State}) => {
           ref={editorRef}
           spellcheck={store.config.spellcheck}
           markdown={store.markdown}
-          hide={store.error !== undefined || store.args?.dir !== undefined}
+          hide={store.error !== undefined || store.args?.dir?.length !== undefined}
           data-tauri-drag-region="true"
         />
         <Menu />

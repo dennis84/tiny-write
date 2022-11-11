@@ -38,7 +38,7 @@ fn main() {
         .setup(|app| {
             let log_dir_string = app
                 .path_resolver()
-                .log_dir()
+                .app_log_dir()
                 .unwrap()
                 .into_os_string()
                 .into_string()
