@@ -102,7 +102,7 @@ export default (props: Styled & {hide: boolean; markdown: boolean}) => {
             text-align: left;
             background: ${foreground(local.config)}19;
             th, td {
-              padding: 5px 10px;
+              padding: 10px 15px;
               vertical-align: top;
               border: 1px solid ${foreground(local.config)}7f;
               border-top: 0;

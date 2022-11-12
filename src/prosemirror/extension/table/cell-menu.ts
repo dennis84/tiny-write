@@ -64,14 +64,18 @@ export const cellMenu = new Plugin({
       const decos = []
       const cell = pluginState.currentCell
 
-      if (cell) {
-        const resolved = state.doc.resolve(cell)
-        const bottomCell = findBottomCell(resolved)
-        if (bottomCell) {
-          decos.push(Decoration.widget(bottomCell.pos + 1, createMenu('bottom')))
-          decos.push(Decoration.widget(cell + 1, createMenu('right')))
-          decos.push(Decoration.widget(cell + 1, createMenu('left')))
+      try {
+        if (cell) {
+          const resolved = state.doc.resolve(cell)
+          const bottomCell = findBottomCell(resolved)
+          if (bottomCell) {
+            decos.push(Decoration.widget(bottomCell.pos + 1, createMenu('bottom')))
+            decos.push(Decoration.widget(cell + 1, createMenu('right')))
+            decos.push(Decoration.widget(cell + 1, createMenu('left')))
+          }
         }
+      } catch (e) {
+        // nextCell throws errors if undo removes a column
       }
 
       return DecorationSet.create(state.doc, decos)
@@ -112,12 +116,14 @@ export const cellMenu = new Plugin({
           const pos = view.state.doc.resolve(pluginState.currentCell)
           setCellSelection(pos)
           addColumnAfter(view.state, view.dispatch)
+          setTimeout(() => view.focus())
           return true
         } else if (target.classList.contains('table-menu-left')) {
           const pluginState = pluginKey.getState(view.state)
           const pos = view.state.doc.resolve(pluginState.currentCell)
           setCellSelection(pos)
           addColumnBefore(view.state, view.dispatch)
+          setTimeout(() => view.focus())
           return true
         } else if (target.classList.contains('table-menu-bottom')) {
           const pluginState = pluginKey.getState(view.state)
@@ -131,6 +137,7 @@ export const cellMenu = new Plugin({
             deleteColumn(view.state, view.dispatch)
           }
 
+          setTimeout(() => view.focus())
           return true
         }
       }

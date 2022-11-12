@@ -1,9 +1,12 @@
+import {Node} from 'prosemirror-model'
 import {Plugin, PluginKey} from 'prosemirror-state'
 import {debounce} from 'ts-debounce'
 import {ProseMirrorExtension} from '../state'
 import {completionPlugin, completionKeymap} from './autocomplete'
 
-const getWords = (text) => {
+const getWords = (node: Node) => {
+  if (node.type.name === 'code_block') return []
+  const text = node.textBetween(0, node.nodeSize - 2, ' ')
   const results = text.match(/("[^"]+"|[^"\s]+)/g)
   if (!results) return []
   return results
@@ -23,9 +26,8 @@ const plugin = new Plugin({
       if (meta?.words) return meta.words
       // Generate words initially
       if (prev.size === 0) {
-        state.doc.forEach((node) => {
-          if (node.type.name === 'code_block') return
-          getWords(node.textContent).forEach((w) => prev.add(w))
+        state.doc.forEach((node, p) => {
+          getWords(node).forEach((w) => prev.add(w))
         })
       }
 
@@ -43,8 +45,7 @@ const plugin = new Plugin({
 const update = debounce((view) => {
   const words = new Set()
   view.state.doc.forEach((node) => {
-    if (node.type.name === 'code_block') return
-    getWords(node.textContent).forEach((w) => words.add(w))
+    getWords(node).forEach((w) => words.add(w))
   })
 
   const tr = view.state.tr
