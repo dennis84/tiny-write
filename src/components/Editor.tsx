@@ -3,33 +3,19 @@ import {css} from '@emotion/css'
 import {background, foreground, primaryBackground, font, selection} from '../config'
 import {Styled} from './Layout'
 
-export default (props: Styled & {hide: boolean; markdown: boolean}) => {
-  const [local, others] = splitProps(props, ['config', 'markdown', 'hide'])
+export default (props: Styled & {markdown: boolean}) => {
+  const [local, others] = splitProps(props, ['config', 'markdown'])
 
-  const styles = () => local.hide ?
-    css`display: none` :
-    css`
-      ${local.markdown ? 'white-space: pre-wrap' : ''};
-      height: 100%;
-      width: 100%;
-      min-height: 100vh;
-      max-height: 100vh;
-      overflow-y: auto;
-      padding: 0 50px;
-      display: flex;
-      justify-content: center;
-      scrollbar-width: none;
-      ::-webkit-scrollbar {
-        display: none;
-      }
+  return (
+    <div {...others} class={css`
       .ProseMirror {
+        ${local.markdown ? 'white-space: pre-wrap' : ''};
         word-wrap: break-word;
         white-space: pre-wrap;
         position: relative;
         min-height: calc(100% - 100px);
         height: fit-content;
-        width: 100%;
-        max-width: ${local.config.contentWidth}px;
+        width: ${local.config.contentWidth}px;
         font-size: ${local.config.fontSize}px;
         font-family: ${font(local.config)};
         color: ${foreground(local.config)};
@@ -433,9 +419,6 @@ export default (props: Styled & {hide: boolean; markdown: boolean}) => {
           background: ${selection(local.config)};
         }
       }
-    `
-
-  return (
-    <div {...others} class={styles()} />
+    `} />
   )
 }

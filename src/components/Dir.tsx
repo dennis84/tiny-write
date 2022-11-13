@@ -1,50 +1,9 @@
 import {For, Show, splitProps} from 'solid-js'
 import {css} from '@emotion/css'
 import {useState} from '../state'
-import {background, foreground, font} from '../config'
-import {Styled} from './Layout'
+import {foreground} from '../config'
+import {Content, Scroll, Styled} from './Layout'
 import {buttonPrimary} from './Button'
-
-const Layer = (props: Styled) => (
-  <div
-    class={css`
-      position: absolute;
-      background: ${background(props.config)};
-      height: 100%;
-      width: 100%;
-      display: flex;
-      justify-content: center;
-      z-index: 100;
-      padding-left: 50px;
-      padding-right: 50px;
-    `}
-    data-tauri-drag-region="true">
-    {props.children}
-  </div>
-)
-
-const Container = (props: Styled) => (
-  <div
-    class={css`
-      position: relative;
-      height: 100%;
-      width: 100%;
-      max-width: ${props.config.contentWidth}px;
-      padding-top: 50px;
-      padding-bottom: 77vh;
-      overflow-y: auto;
-      scrollbar-width: none;
-      ::-webkit-scrollbar {
-        display: none;
-      }
-      code {
-        font-family: '${font(props.config, {monospace: true})}';
-      }
-    `}
-    data-tauri-drag-region="true">
-    {props.children}
-  </div>
-)
 
 const Link = (props: Styled) => {
   const [local, others] = splitProps(props, ['config', 'children'])
@@ -101,15 +60,17 @@ export default () => {
   )
 
   return (
-    <Layer config={store.config}>
-      <Container config={store.config}>
+    <Scroll config={store.config}
+      data-testid="content"
+      data-tauri-drag-region="true">
+      <Content config={store.config}>
         <Show when={store.args.dir.length > 0}>
           <p>Click to open file:</p>
         </Show>
         <For each={store.args.dir} fallback={<Empty />}>
           {(path) => <FileLink path={path} />}
         </For>
-      </Container>
-    </Layer>
+      </Content>
+    </Scroll>
   )
 }

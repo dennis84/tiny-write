@@ -8,7 +8,7 @@ import {createCtrl} from './ctrl'
 import * as remote from './remote'
 import {isTauri} from './env'
 import {fonts} from './config'
-import {Layout} from './components/Layout'
+import {Scroll, Layout} from './components/Layout'
 import Editor from './components/Editor'
 import Menu from './components/Menu'
 import ErrorView from './components/Error'
@@ -144,14 +144,17 @@ export default (props: {state: State}) => {
         onDragOver={onDragOver}>
         <Show when={store.error}><ErrorView /></Show>
         <Show when={store.args?.dir}><Dir /></Show>
-        <Editor
+        <Scroll
           config={store.config}
-          ref={editorRef}
-          spellcheck={store.config.spellcheck}
-          markdown={store.markdown}
           hide={store.error !== undefined || store.args?.dir?.length !== undefined}
-          data-tauri-drag-region="true"
-        />
+          data-tauri-drag-region="true">
+          <Editor
+            config={store.config}
+            ref={editorRef}
+            spellcheck={store.config.spellcheck}
+            markdown={store.markdown}
+          />
+        </Scroll>
         <Menu />
       </Layout>
     </StateContext.Provider>

@@ -3,27 +3,7 @@ import {css} from '@emotion/css'
 import {Config, useState} from '../state'
 import {foreground} from '../config'
 import {button, buttonPrimary} from './Button'
-
-const layer = css`
-  width: 100%;
-  overflow: y-auto;
-  padding: 50px;
-  display: flex;
-  font-family: 'JetBrains Mono';
-  justify-content: center;
-  ::-webkit-scrollbar {
-    display: none;
-  }
-`
-
-const container = css`
-  max-width: 800px;
-  width: 100%;
-  height: fit-content;
-  button {
-    margin-right: 10px;
-  }
-`
+import {Content, Scroll} from './Layout'
 
 const pre = (config: Config) => css`
   white-space: pre-wrap;
@@ -56,8 +36,8 @@ const InvalidState = (props: {title: string}) => {
   const onClick = () => ctrl.clean()
 
   return (
-    <div class={layer} data-tauri-drag-region="true">
-      <div class={container}>
+    <Scroll config={store.config}>
+      <Content config={store.config}>
         <h1>{props.title}</h1>
         <p>
           There is an error with the editor state. This is probably due to an
@@ -69,8 +49,8 @@ const InvalidState = (props: {title: string}) => {
           <code>{JSON.stringify(store.error.props)}</code>
         </pre>
         <button class={buttonPrimary(store.config)} onClick={onClick}>Clean</button>
-      </div>
-    </div>
+      </Content>
+    </Scroll>
   )
 }
 
@@ -90,15 +70,15 @@ const Other = () => {
   }
 
   return (
-    <div class={layer} data-tauri-drag-region="true">
-      <div class={container}>
+    <Scroll config={store.config}>
+      <Content config={store.config}>
         <h1>An error occurred.</h1>
         <pre class={pre(store.config)}><code>{getMessage()}</code></pre>
         <button class={buttonPrimary(store.config)} onClick={onReload}>Reload</button>
         <Show when={store.error.id === 'exception'}>
           <button class={button(store.config)} onClick={onDiscard}>Discard</button>
         </Show>
-      </div>
-    </div>
+      </Content>
+    </Scroll>
   )
 }
