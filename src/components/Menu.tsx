@@ -76,6 +76,9 @@ export const Drawer = (props: Styled) => (
     width: 460px;
     overflow-y: auto;
     scrollbar-width: none;
+    @media (max-width: 600px) {
+      width: 100vw;
+    }
     ::-webkit-scrollbar {
       display: none;
     }

@@ -116,7 +116,6 @@ export const Scroll = (props: Styled & {hide?: boolean}) => {
       min-height: 100vh;
       max-height: 100vh;
       overflow-y: auto;
-      padding: 0 50px;
       display: flex;
       justify-content: center;
       scrollbar-width: none;

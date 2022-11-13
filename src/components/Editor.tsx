@@ -8,14 +8,16 @@ export default (props: Styled & {markdown: boolean}) => {
 
   return (
     <div {...others} class={css`
+      min-height: calc(100% - 100px);
+      height: fit-content;
+      width: ${local.config.contentWidth}px;
+      max-width: 100%;
+      margin: 0 50px;
       .ProseMirror {
         ${local.markdown ? 'white-space: pre-wrap' : ''};
         word-wrap: break-word;
         white-space: pre-wrap;
         position: relative;
-        min-height: calc(100% - 100px);
-        height: fit-content;
-        width: ${local.config.contentWidth}px;
         font-size: ${local.config.fontSize}px;
         font-family: ${font(local.config)};
         color: ${foreground(local.config)};
