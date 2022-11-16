@@ -153,6 +153,7 @@ export default (props: {state: State}) => {
             ref={editorRef}
             spellcheck={store.config.spellcheck}
             markdown={store.markdown}
+            data-tauri-drag-region="true"
           />
         </Scroll>
         <Menu />

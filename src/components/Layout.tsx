@@ -129,19 +129,22 @@ export const Scroll = (props: Styled & {hide?: boolean}) => {
 }
 
 export const Content = (props: Styled) => (
-  <div class={css`
-    position: relative;
-    height: 100%;
-    width: ${props.config.contentWidth}px;
-    padding-top: 50px;
-    padding-bottom: 77vh;
-    overflow-y: auto;
-    scrollbar-width: none;
-    ::-webkit-scrollbar {
-      display: none;
-    }
-    code {
-      font-family: '${font(props.config, {monospace: true})}';
-    }
-  `}>{props.children}</div>
+  <div
+    class={css`
+      position: relative;
+      height: 100%;
+      width: ${props.config.contentWidth}px;
+      padding-top: 50px;
+      padding-bottom: 77vh;
+      overflow-y: auto;
+      scrollbar-width: none;
+      ::-webkit-scrollbar {
+        display: none;
+      }
+      code {
+        font-family: '${font(props.config, {monospace: true})}';
+      }
+    `}
+    data-tauri-drag-region="true"
+  >{props.children}</div>
 )
