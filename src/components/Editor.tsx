@@ -196,11 +196,10 @@ export default (props: Styled & {markdown: boolean}) => {
           }
           .lang-toggle {
             position: absolute;
-            right: -8px;
+            right: -5px;
             height: ${local.config.fontSize * 1.6}px;
             display: flex;
             align-items: center;
-            top: 2px;
             transform: translateX(100%);
             cursor: pointer;
             z-index: 10;

@@ -47,6 +47,10 @@ const Burger = (props: Styled) => {
         background: none;
         border: 0;
         outline: none;
+        @media (max-width: 600px) {
+          right: 0px;
+          left: auto;
+        }
         > span {
           background: ${foreground(local.config)};
           height: 3px;
@@ -465,7 +469,7 @@ export default () => {
           config={store.config}
           onClick={() => store.editorView.focus()}
           data-tauri-drag-region="true">
-          <div>
+          <div data-tauri-drag-region="true">
             <Label config={store.config}>
               File {store.path && <i>({store.path.substring(store.path.length - 24)})</i>}
             </Label>
