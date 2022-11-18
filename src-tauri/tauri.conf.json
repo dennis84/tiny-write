@@ -65,8 +65,8 @@
     "windows": [
       {
         "title": "TinyWrite",
-        "width": 700,
-        "height": 600,
+        "width": 0,
+        "height": 0,
         "resizable": true,
         "fullscreen": false,
         "hiddenTitle": true,

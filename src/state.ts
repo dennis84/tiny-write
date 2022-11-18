@@ -54,6 +54,13 @@ export interface Collab {
 
 export type LoadingType = 'loading' | 'initialized'
 
+export interface Window {
+  width?: number;
+  height?: number;
+  x?: number;
+  y?: number;
+}
+
 export interface State {
   editorView?: EditorView;
   excerpt?: string;
@@ -68,6 +75,7 @@ export interface State {
   path?: string;
   args?: Args;
   storageSize: number;
+  window?: Window;
 }
 
 export interface File {

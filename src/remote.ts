@@ -1,4 +1,4 @@
-import {getCurrent} from '@tauri-apps/api/window'
+import {getCurrent, LogicalSize, PhysicalPosition, PhysicalSize} from '@tauri-apps/api/window'
 import {invoke} from '@tauri-apps/api/tauri'
 import * as clipboard from '@tauri-apps/api/clipboard'
 import * as fs from '@tauri-apps/api/fs'
@@ -6,7 +6,7 @@ import * as dialog from '@tauri-apps/api/dialog'
 import {EditorState} from 'prosemirror-state'
 import {toBase64} from 'js-base64'
 import {info} from 'tauri-plugin-log-api'
-import {Args} from './state'
+import {Args, Window} from './state'
 import {serialize} from './markdown'
 import {isTauri} from './env'
 
@@ -136,6 +136,18 @@ export const save = async (state: EditorState): Promise<string> => {
   return path
 }
 
-export const log = (msg) => {
-  info(msg)
+export const log = (level: string, msg: string) => {
+  info(msg, {level})
+}
+
+export const updateWindow = ({width, height, x, y}: Window = {}) => {
+  if (!isTauri) throw Error('Must be run in tauri: save')
+  let size = new LogicalSize(700, 600)
+  if (width && height) size = new PhysicalSize(width, height)
+  getCurrent().setSize(size)
+  if (x >= 0 && y >= 0) {
+    getCurrent().setPosition(new PhysicalPosition(x, y))
+  } else {
+    getCurrent().center()
+  }
 }

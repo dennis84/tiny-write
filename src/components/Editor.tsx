@@ -12,7 +12,7 @@ export default (props: Styled & {markdown: boolean}) => {
       height: fit-content;
       width: ${local.config.contentWidth}px;
       max-width: 100%;
-      margin: 0 50px;
+      padding: 0 50px;
       .ProseMirror {
         ${local.markdown ? 'white-space: pre-wrap' : ''};
         word-wrap: break-word;

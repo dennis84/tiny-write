@@ -93,6 +93,22 @@ export default (props: {state: State}) => {
   })
 
   onMount(async () => {
+    if (!isTauri) return
+    const unlistenResize = await listen('tauri://resize', async (event) => {
+      ctrl.updateWindow(event.payload)
+    })
+
+    const unlistenMove = await listen('tauri://move', async (event) => {
+      ctrl.updateWindow(event.payload)
+    })
+
+    onCleanup(() => {
+      unlistenResize()
+      unlistenMove()
+    })
+  })
+
+  onMount(async () => {
     if (isTauri) return
     const onDrop = (e) => {
       e.preventDefault()

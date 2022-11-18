@@ -14,7 +14,7 @@ import {uniqueNamesGenerator, adjectives, animals} from 'unique-names-generator'
 import {debounce} from 'ts-debounce'
 import * as remote from './remote'
 import {createExtensions, createEmptyText} from './prosemirror'
-import {State, File, Config, Version, ServiceError, createState} from './state'
+import {State, File, Config, Version, ServiceError, createState, Window} from './state'
 import {COLLAB_URL, isTauri, mod} from './env'
 import {serialize, createMarkdownParser} from './markdown'
 import {isDarkTheme, themes} from './config'
@@ -311,6 +311,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       config: state.config,
       path: state.path,
       markdown: state.markdown,
+      window: state.window,
       collab: {
         ydoc: fromUint8Array(documentState),
         room: state.collab?.room,
@@ -326,6 +327,8 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     setState({storageSize: json.length, excerpt})
     db.set('state', json)
   }
+
+  const saveStateDebounced = debounce((newState) => saveState(newState), 200)
 
   const disconnectCollab = (state: State) => {
     state.collab?.ydoc?.getMap('config').unobserve(onCollabConfigUpdate)
@@ -458,7 +461,6 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     }
 
     if (!editorView) {
-      const save = debounce((newState) => saveState(newState), 200)
       const dispatchTransaction = (tr: Transaction) => {
         if (!store.editorView) return
         const newState = store.editorView.state.apply(tr)
@@ -468,7 +470,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
 
         setState((prev) => {
           const newState = {...prev, lastModified: new Date()}
-          save(newState)
+          saveStateDebounced(newState)
           return newState
         })
       }
@@ -499,6 +501,10 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     try {
       let data = await fetchData()
       let text
+
+      if (isTauri) {
+        remote.updateWindow(data.window)
+      }
 
       if (data.args.dir) {
         data = withYjs(data)
@@ -532,6 +538,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       setState(newState)
       updateText(text)
     } catch (error) {
+      remote.log('error', `Error during init: ${error.message}`)
       setError(error)
     }
   }
@@ -723,6 +730,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     const config = {...state.config, ...conf}
     updateEditorState({...state, config})
     setState({config, lastModified: new Date()})
+    saveStateDebounced(store)
   }
 
   const updatePath = (path: string) => {
@@ -731,6 +739,12 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
 
   const updateTheme = () => {
     setState('config', getTheme(unwrap(store), true))
+    saveStateDebounced(store)
+  }
+
+  const updateWindow = (win: Window) => {
+    setState('window', {...store.window, ...win})
+    saveStateDebounced(store)
   }
 
   const ctrl = {
@@ -751,6 +765,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     updateConfig,
     updatePath,
     updateTheme,
+    updateWindow,
     setState,
   }
 
