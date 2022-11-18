@@ -37,8 +37,8 @@ const Burger = (props: Styled) => {
         z-index: 9999999;
         width: 15px;
         height: 10px;
-        padding: 0;
-        margin: 10px;
+        padding: 10px;
+        box-sizing: content-box;
         display: flex;
         flex-direction: column;
         justify-content: space-between;
