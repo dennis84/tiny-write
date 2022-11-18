@@ -3,7 +3,7 @@ import container from 'markdown-it-container'
 import {MarkdownSerializer, MarkdownParser, defaultMarkdownSerializer} from 'prosemirror-markdown'
 import {Node, Schema} from 'prosemirror-model'
 import {EditorState} from 'prosemirror-state'
-import {taskList} from './prosemirror/extension/task-list/markdown'
+import {taskList} from '@/prosemirror/extension/task-list/markdown'
 
 export const serialize = (state: EditorState) => {
   let text = markdownSerializer.serialize(state.doc)

@@ -4,8 +4,8 @@ vi.stubGlobal('d3', vi.fn(() => ({
   curveLinear: () => undefined
 })))
 
-import {createCtrl} from '../../src/ctrl'
-import {createState} from '../../src/state'
+import {createCtrl} from '@/ctrl'
+import {createState} from '@/state'
 
 const lastModified = new Date()
 
@@ -13,14 +13,13 @@ vi.stubGlobal('matchMedia', vi.fn(() => ({
   matchMedia: () => '',
 })))
 
-
-vi.mock('../../src/env', () => ({
+vi.mock('@/env', () => ({
   mod: 'Cmd',
   isTauri: true,
   isDark: () => true,
 }))
 
-vi.mock('../../src/remote', () => ({
+vi.mock('@/remote', () => ({
   getArgs: async () => ({
     file: 'file2',
   }),
@@ -28,7 +27,9 @@ vi.mock('../../src/remote', () => ({
   resolvePath: async ([path]) => path,
   readFile: async (path: string) =>
     path === 'file1' ? '# File1' :
-    path === 'file2' ? '# File2' : ''
+    path === 'file2' ? '# File2' : '',
+  log: () => undefined,
+  updateWindow: () => undefined,
 }))
 
 vi.mock('idb-keyval', () => ({

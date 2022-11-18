@@ -4,7 +4,7 @@ import * as Y from 'yjs'
 import {WebsocketProvider} from 'y-websocket'
 import {ySyncPlugin, yCursorPlugin, yUndoPlugin, ySyncPluginKey} from 'y-prosemirror'
 import {Awareness} from 'y-protocols/awareness'
-import {ProseMirrorExtension} from '../state'
+import {ProseMirrorExtension} from '@/prosemirror/state'
 
 export interface CollabOptions {
   type: Y.XmlFragment;

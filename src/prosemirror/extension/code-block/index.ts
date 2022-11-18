@@ -4,9 +4,9 @@ import {EditorState, Selection, Transaction, TextSelection} from 'prosemirror-st
 import {keymap} from 'prosemirror-keymap'
 import {inputRules, textblockTypeInputRule} from 'prosemirror-inputrules'
 import {Extension} from '@codemirror/state'
+import {PrettierConfig} from '@/state'
+import {ProseMirrorExtension} from '@/prosemirror/state'
 import {CodeBlockView} from './view'
-import {ProseMirrorExtension} from '../../state'
-import {PrettierConfig} from '../../../state'
 
 type Direction = 'left' | 'right' | 'up' | 'down' | 'forward' | 'backward'
 

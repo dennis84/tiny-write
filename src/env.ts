@@ -1,4 +1,6 @@
-import {version} from '../package.json'
+import {version as v} from '../package.json'
+
+export const version = v
 
 export const isTauri = (window as any).__TAURI__ !== undefined
 

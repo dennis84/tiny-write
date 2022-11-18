@@ -1,7 +1,7 @@
 import {Plugin} from 'prosemirror-state'
 import {Fragment, Node, Schema, Slice} from 'prosemirror-model'
-import {ProseMirrorExtension} from '../state'
-import {createMarkdownParser} from '../../markdown'
+import {createMarkdownParser} from '@/markdown'
+import {ProseMirrorExtension} from '@/prosemirror/state'
 
 const URL_REGEX = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-/]))?/g
 

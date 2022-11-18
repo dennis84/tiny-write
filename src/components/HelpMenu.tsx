@@ -1,4 +1,4 @@
-import {useState} from '../state'
+import {useState} from '@/state'
 import {Drawer, Keys, Label, Sub, Text} from './Menu'
 import {button} from './Button'
 

@@ -6,9 +6,9 @@ import * as dialog from '@tauri-apps/api/dialog'
 import {EditorState} from 'prosemirror-state'
 import {toBase64} from 'js-base64'
 import {info} from 'tauri-plugin-log-api'
-import {Args, Window} from './state'
-import {serialize} from './markdown'
-import {isTauri} from './env'
+import {Args, Window} from '@/state'
+import {serialize} from '@/markdown'
+import {isTauri} from '@/env'
 
 export const listContents = async (file: string) => {
   if (!isTauri) throw Error('Must be run in tauri: listContents')

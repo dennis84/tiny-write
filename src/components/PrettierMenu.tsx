@@ -1,4 +1,4 @@
-import {PrettierConfig, useState} from '../state'
+import {PrettierConfig, useState} from '@/state'
 import {Drawer, Label, Link, Sub, Text} from './Menu'
 import {button} from './Button'
 

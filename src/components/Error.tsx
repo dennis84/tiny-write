@@ -1,7 +1,7 @@
 import {Show, Switch, Match} from 'solid-js'
 import {css} from '@emotion/css'
-import {Config, useState} from '../state'
-import {foreground} from '../config'
+import {Config, useState} from '@/state'
+import {foreground} from '@/config'
 import {button, buttonPrimary} from './Button'
 import {Content, Scroll} from './Layout'
 

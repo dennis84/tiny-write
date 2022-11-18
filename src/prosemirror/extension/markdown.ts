@@ -7,7 +7,7 @@ import {
   ellipsis,
 } from 'prosemirror-inputrules'
 import {NodeType, Schema} from 'prosemirror-model'
-import {ProseMirrorExtension} from '../state'
+import {ProseMirrorExtension} from '@/prosemirror/state'
 
 const blockQuoteRule = (nodeType: NodeType) =>
   wrappingInputRule(/^\s*>\s$/, nodeType)

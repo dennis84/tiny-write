@@ -2,9 +2,9 @@ import {Plugin} from 'prosemirror-state'
 import {Node, Schema} from 'prosemirror-model'
 import {EditorView} from 'prosemirror-view'
 import {convertFileSrc} from '@tauri-apps/api/tauri'
-import {resolvePath, dirname} from '../../remote'
-import {isTauri} from '../../env'
-import {ProseMirrorExtension} from '../state'
+import {resolvePath, dirname} from '@/remote'
+import {isTauri} from '@/env'
+import {ProseMirrorExtension} from '@/prosemirror/state'
 
 const REGEX = /^!\[([^[\]]*?)\]\((.+?)\)\s+/
 const MAX_MATCH = 500

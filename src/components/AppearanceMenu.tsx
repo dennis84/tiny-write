@@ -1,8 +1,8 @@
 import {For} from 'solid-js'
-import {useState} from '../state'
+import {useState} from '@/state'
+import {codeTheme, codeThemes, fonts, themes, getTheme} from '@/config'
 import {Drawer, Label, Link, Sub, Text} from './Menu'
 import {button} from './Button'
-import {codeTheme, codeThemes, fonts, themes, getTheme} from '../config'
 
 interface Props {
   onBack: () => void;

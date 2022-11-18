@@ -1,6 +1,6 @@
 import {splitProps} from 'solid-js'
 import {css} from '@emotion/css'
-import {background, foreground, primaryBackground, font, selection} from '../config'
+import {background, foreground, primaryBackground, font, selection} from '@/config'
 import {Styled} from './Layout'
 
 export default (props: Styled & {markdown: boolean}) => {

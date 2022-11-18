@@ -1,7 +1,7 @@
 import {JSX, splitProps} from 'solid-js'
 import {css} from '@emotion/css'
-import {background, foreground, primaryBackground, font, selection} from '../config'
-import {Config} from '../state'
+import {background, foreground, primaryBackground, font, selection} from '@/config'
+import {Config} from '@/state'
 
 export type Styled = {
   children?: JSX.Element;

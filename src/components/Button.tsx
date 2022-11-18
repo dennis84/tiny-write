@@ -1,6 +1,6 @@
 import {css} from '@emotion/css'
-import {foreground, primaryBackground, primaryForeground} from '../config'
-import {Config} from '../state'
+import {foreground, primaryBackground, primaryForeground} from '@/config'
+import {Config} from '@/state'
 
 export const Common = css`
   height: 50px;

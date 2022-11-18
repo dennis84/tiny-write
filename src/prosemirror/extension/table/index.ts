@@ -10,7 +10,7 @@ import {
   selectionCell,
   tableNodes,
 } from 'prosemirror-tables'
-import {ProseMirrorExtension} from '../../state'
+import {ProseMirrorExtension} from '@/prosemirror/state'
 import {cellMenu} from './cell-menu'
 
 export const tableInputRule = (schema: Schema) => new InputRule(

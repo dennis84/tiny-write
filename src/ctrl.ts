@@ -12,13 +12,13 @@ import {undo, redo, ySyncPluginKey, yDocToProsemirror, prosemirrorJSONToYDoc} fr
 import {WebsocketProvider} from 'y-websocket'
 import {uniqueNamesGenerator, adjectives, animals} from 'unique-names-generator'
 import {debounce} from 'ts-debounce'
-import * as remote from './remote'
-import {createExtensions, createEmptyText} from './prosemirror'
-import {State, File, Config, Version, ServiceError, createState, Window} from './state'
-import {COLLAB_URL, isTauri, mod} from './env'
-import {serialize, createMarkdownParser} from './markdown'
-import {isDarkTheme, themes} from './config'
-import {isEmpty} from './prosemirror/state'
+import * as remote from '@/remote'
+import {createExtensions, createEmptyText} from '@/prosemirror'
+import {State, File, Config, Version, ServiceError, createState, Window} from '@/state'
+import {COLLAB_URL, isTauri, mod} from '@/env'
+import {serialize, createMarkdownParser} from '@/markdown'
+import {isDarkTheme, themes} from '@/config'
+import {isEmpty} from '@/prosemirror/state'
 
 const isState = (x: any) =>
   (typeof x.lastModified !== 'string') &&

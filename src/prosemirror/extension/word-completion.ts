@@ -1,7 +1,7 @@
 import {Node} from 'prosemirror-model'
 import {Plugin, PluginKey} from 'prosemirror-state'
 import {debounce} from 'ts-debounce'
-import {ProseMirrorExtension} from '../state'
+import {ProseMirrorExtension} from '@/prosemirror/state'
 import {completionPlugin, completionKeymap} from './autocomplete'
 
 const getWords = (node: Node) => {
@@ -26,7 +26,7 @@ const plugin = new Plugin({
       if (meta?.words) return meta.words
       // Generate words initially
       if (prev.size === 0) {
-        state.doc.forEach((node, p) => {
+        state.doc.forEach((node) => {
           getWords(node).forEach((w) => prev.add(w))
         })
       }

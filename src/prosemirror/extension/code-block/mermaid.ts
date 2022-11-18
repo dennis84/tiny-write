@@ -3,7 +3,7 @@ import {language} from '@codemirror/language'
 import {v4 as uuidv4} from 'uuid'
 import mermaid from 'mermaid'
 import {CodeBlockView} from './view'
-import {saveSvg} from '../../../remote'
+import {saveSvg} from '@/remote'
 
 export default (codeBlock: CodeBlockView) =>
   ViewPlugin.fromClass(class {

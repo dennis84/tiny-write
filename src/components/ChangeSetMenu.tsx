@@ -1,7 +1,7 @@
 import {For, Show, createSignal, onMount} from 'solid-js'
 import {format} from 'date-fns'
 import {css} from '@emotion/css'
-import {Version, useState} from '../state'
+import {Version, useState} from '@/state'
 import {Drawer, Label, Link, Sub} from './Menu'
 import {button, buttonPrimary} from './Button'
 import {Styled} from './Layout'

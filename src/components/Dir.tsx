@@ -1,7 +1,7 @@
 import {For, Show, splitProps} from 'solid-js'
 import {css} from '@emotion/css'
-import {useState} from '../state'
-import {foreground} from '../config'
+import {useState} from '@/state'
+import {foreground} from '@/config'
 import {Content, Scroll, Styled} from './Layout'
 import {buttonPrimary} from './Button'
 
