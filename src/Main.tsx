@@ -55,7 +55,7 @@ export default (props: {state: State}) => {
       const tr = editorView.state.tr
       tr.insertText(text, pos?.pos ?? editorView.state.doc.content.size)
       editorView.dispatch(tr)
-    } else if (mime.startsWith('video/')) {
+    } else if (mime && mime.startsWith('video/')) {
       insertVideo(store.editorView, data, mime, left, top)
     } else {
       insertImage(store.editorView, data, left, top)

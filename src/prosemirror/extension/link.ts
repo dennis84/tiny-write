@@ -3,7 +3,7 @@ import {EditorView} from 'prosemirror-view'
 import {Mark, Node} from 'prosemirror-model'
 import {ProseMirrorExtension} from '@/prosemirror/state'
 
-const REGEX = /(^|\s)\[([^[\]]*)\]\(([^ ]+)(?: "(.+)")?\)/
+const REGEX = /(^|\s)\[([^[\]]+)\]\(([^ ]+)(?: "(.+)")?\)/
 
 const findMarkPosition = (mark: Mark, doc: Node, from: number, to: number) => {
   let markPos = {from: -1, to: -1}
