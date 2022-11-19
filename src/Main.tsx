@@ -1,7 +1,6 @@
 import {Show, onCleanup, createEffect, onError, onMount} from 'solid-js'
 import {createMutable} from 'solid-js/store'
 import {listen} from '@tauri-apps/api/event'
-import {convertFileSrc} from '@tauri-apps/api/tauri'
 import {injectGlobal} from '@emotion/css'
 import {State, StateContext} from './state'
 import {createCtrl} from '@/ctrl'
@@ -81,7 +80,8 @@ export default (props: {state: State}) => {
         if (mime.startsWith('image/')) {
           const x = mouseEnterCoords.x
           const y = mouseEnterCoords.y
-          insertImageMd(store.editorView, convertFileSrc(path), x, y)
+          const p = await remote.toRelativePath(path)
+          insertImageMd(store.editorView, p, x, y)
         } else if (mime.startsWith('text/')) {
           await ctrl.openFile({path})
           return

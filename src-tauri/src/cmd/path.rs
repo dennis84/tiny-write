@@ -64,6 +64,13 @@ pub fn resolve_path(paths: Vec<String>) -> Result<String, String> {
         .map_err(|e| e.to_string())
 }
 
+#[tauri::command]
+pub fn to_relative_path(path: String) -> Result<String, String> {
+    pu::to_relative_path(path)
+        .and_then(|p| pu::path_buf_to_string(p))
+        .map_err(|e| e.to_string())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -109,5 +116,13 @@ mod tests {
         assert_eq!(list_contents("".to_string()).unwrap_err(), "No parent dir");
 
         std::fs::remove_dir_all(format!("{}/tinywrite", get_home())).ok();
+    }
+
+    #[test]
+    fn test_to_relative_path() {
+        assert_eq!(
+            to_relative_path(format!("{}/foo/bar", get_home())).unwrap(),
+            "~/foo/bar".to_string()
+        );
     }
 }

@@ -21,8 +21,8 @@ const isUrl = (str: string) => {
 const isBlank = (text: string) => text === ' ' || text === '\xa0'
 
 export const getImagePath = async (src: string, path?: string) => {
-  let paths = [src]
-  if (path) paths = [await dirname(path), src]
+  const s = src.replaceAll('%20', ' ')
+  const paths = path ? [await dirname(path), s] : [s]
   const absolutePath = await resolvePath(paths)
   return convertFileSrc(absolutePath)
 }

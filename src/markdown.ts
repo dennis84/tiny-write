@@ -18,7 +18,7 @@ export const markdownSerializer = new MarkdownSerializer({
   ...defaultMarkdownSerializer.nodes,
   image(state, node) {
     const alt = state.esc(node.attrs.alt || '')
-    const src = node.attrs.path ?? node.attrs.src
+    const src = (node.attrs.path ?? node.attrs.src).replaceAll(' ', '%20')
     const title = node.attrs.title ? ` "${node.attrs.title.replace(/"/g, '\\"')}"` : ''
     state.write(`![${alt}](${src}${title})\n`)
   },

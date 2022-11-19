@@ -129,6 +129,11 @@ export const dirname = async (path: string): Promise<string> => {
   return invoke('dirname', {path})
 }
 
+export const toRelativePath = async (path: string): Promise<string> => {
+  if (!isTauri) throw Error('Must be run in tauri: toRelativePath')
+  return invoke('to_relative_path', {path})
+}
+
 export const save = async (state: EditorState): Promise<string> => {
   if (!isTauri) throw Error('Must be run in tauri: save')
   const path = await dialog.save()

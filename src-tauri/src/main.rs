@@ -85,6 +85,7 @@ fn main() {
             cmd::path::list_contents,
             cmd::path::resolve_path,
             cmd::path::dirname,
+            cmd::path::to_relative_path,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
