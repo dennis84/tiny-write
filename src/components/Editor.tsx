@@ -395,9 +395,9 @@ export default (props: Styled & {markdown: boolean}) => {
           margin-right: 10px;
           cursor: default;
           line-height: 0;
-          img {
+          img, video {
             width: 100%;
-            pointer-events: none;
+            border-radius: 3px;
           }
           .resize-handle {
             position: absolute;

@@ -12,7 +12,7 @@ import Editor from '@/components/Editor'
 import Menu from '@/components/Menu'
 import ErrorView from '@/components/Error'
 import Dir from '@/components/Dir'
-import {insertImage} from '@/prosemirror/extension/image'
+import {insertImage, insertVideo} from '@/prosemirror/extension/image'
 
 const fontsStyles = Object.entries(fonts)
   .map(([, value]) => [
@@ -48,13 +48,15 @@ export default (props: {state: State}) => {
     mouseEnterCoords.y = e.pageY
   }
 
-  const insertImageMd = (editorView, data, left, top) => {
+  const insertImageMd = (editorView, data, left, top, mime?: string) => {
     if (store.markdown) {
       const text = `![](${data})`
       const pos = editorView.posAtCoords({left, top})
       const tr = editorView.state.tr
       tr.insertText(text, pos?.pos ?? editorView.state.doc.content.size)
       editorView.dispatch(tr)
+    } else if (mime.startsWith('video/')) {
+      insertVideo(store.editorView, data, mime, left, top)
     } else {
       insertImage(store.editorView, data, left, top)
     }
@@ -77,11 +79,11 @@ export default (props: {state: State}) => {
     const unlisten = await listen('tauri://file-drop', async (event) => {
       for (const path of (event.payload as string[])) {
         const mime = await remote.getMimeType(path)
-        if (mime.startsWith('image/')) {
+        if (mime.startsWith('image/') || mime.startsWith('video/')) {
           const x = mouseEnterCoords.x
           const y = mouseEnterCoords.y
           const p = await remote.toRelativePath(path)
-          insertImageMd(store.editorView, p, x, y)
+          insertImageMd(store.editorView, p, x, y, mime)
         } else if (mime.startsWith('text/')) {
           await ctrl.openFile({path})
           return

@@ -90,10 +90,44 @@ const imageSchema = {
   }]
 }
 
+const videoSchema = {
+  inline: true,
+  attrs: {
+    src: {},
+    type: {},
+    title: {default: null},
+    path: {default: null},
+    width: {default: null},
+  },
+  group: 'inline',
+  draggable: true,
+  selectable: true,
+  toDOM: (node: Node) => [
+    'video',
+    {title: node.attrs.title, 'data-path': node.attrs.path},
+    ['source', {src: node.attrs.src, type: node.attrs.type}]
+  ]
+}
+
 export const insertImage = (view: EditorView, src: string, left: number, top: number) => {
   const state = view.state
   const tr = state.tr
   const node = state.schema.nodes.image.create({src})
+  const pos = view.posAtCoords({left, top})
+  tr.insert(pos?.pos ?? state.doc.content.size, node)
+  view.dispatch(tr)
+}
+
+export const insertVideo = (
+  view: EditorView,
+  src: string,
+  type: string,
+  left: number,
+  top: number
+) => {
+  const state = view.state
+  const tr = state.tr
+  const node = state.schema.nodes.video.create({src, type})
   const pos = view.posAtCoords({left, top})
   tr.insert(pos?.pos ?? state.doc.content.size, node)
   view.dispatch(tr)
@@ -136,8 +170,21 @@ class ImageView {
     this.container.className = 'image-container'
     if (node.attrs.width) this.setWidth(node.attrs.width)
 
-    const image = document.createElement('img')
-    image.setAttribute('title', node.attrs.title ?? '')
+    let source
+    if (node.type.name === 'video') {
+      const video = document.createElement('video')
+      video.setAttribute('title', node.attrs.title ?? '')
+      video.setAttribute('controls', '')
+      source = document.createElement('source')
+      source.setAttribute('type', node.attrs.type)
+      video.appendChild(source)
+      this.container.appendChild(video)
+    } else {
+      const image = document.createElement('img')
+      image.setAttribute('title', node.attrs.title ?? '')
+      source = image
+      this.container.appendChild(image)
+    }
 
     if (
       isTauri &&
@@ -146,10 +193,10 @@ class ImageView {
       !isUrl(node.attrs.src)
     ) {
       getImagePath(node.attrs.src, path).then((p) => {
-        image.setAttribute('src', p)
+        source.setAttribute('src', p)
       })
     } else {
-      image.setAttribute('src', node.attrs.src)
+      source.setAttribute('src', node.attrs.src)
     }
 
     this.handle = document.createElement('span')
@@ -160,7 +207,6 @@ class ImageView {
       window.addEventListener('mouseup', this.onResizeEnd)
     })
 
-    this.container.appendChild(image)
     this.container.appendChild(this.handle)
     this.dom = this.container
   }
@@ -170,10 +216,85 @@ class ImageView {
   }
 }
 
+// class VideoView {
+//   dom: Element
+//   contentDOM: HTMLElement
+//   container: HTMLElement
+//   handle: HTMLElement
+//   width: number
+//   updating: number
+
+//   onResize = (e: MouseEvent) => {
+//     this.width = e.pageX - this.container.getBoundingClientRect().left
+//     this.setWidth(this.width)
+//   }
+
+//   onResizeEnd = () => {
+//     window.removeEventListener('mousemove', this.onResize)
+//     if (this.updating === this.width) return
+//     this.updating = this.width
+//     const tr = this.view.state.tr
+//     tr.setNodeMarkup(this.getPos(), undefined, {
+//       ...this.node.attrs,
+//       width: this.width,
+//     })
+
+//     this.view.dispatch(tr)
+//   }
+
+//   constructor(
+//     private node: Node,
+//     private view: EditorView,
+//     private getPos: () => number,
+//     private schema: Schema,
+//     private path: string
+//   ) {
+//     this.container = document.createElement('span')
+//     this.container.className = 'video-container'
+//     if (node.attrs.width) this.setWidth(node.attrs.width)
+
+//     const video = document.createElement('video')
+//     video.setAttribute('title', node.attrs.title ?? '')
+//     const source = document.createElement('source')
+//     source.setAttribute('type', node.attrs.type)
+
+//     if (
+//       isTauri &&
+//       !node.attrs.src.startsWith('asset:') &&
+//       !node.attrs.src.startsWith('data:') &&
+//       !isUrl(node.attrs.src)
+//     ) {
+//       getImagePath(node.attrs.src, path).then((p) => {
+//         source.setAttribute('src', p)
+//       })
+//     } else {
+//       source.setAttribute('src', node.attrs.src)
+//     }
+
+//     this.handle = document.createElement('span')
+//     this.handle.className = 'resize-handle'
+//     this.handle.addEventListener('mousedown', (e) => {
+//       e.preventDefault()
+//       window.addEventListener('mousemove', this.onResize)
+//       window.addEventListener('mouseup', this.onResizeEnd)
+//     })
+
+//     this.container.appendChild(video)
+//     this.container.appendChild(this.handle)
+//     this.dom = this.container
+//   }
+
+//   setWidth(width: number) {
+//     this.container.style.width = width + 'px'
+//   }
+// }
+
 export default (path?: string): ProseMirrorExtension => ({
   schema: (prev) => ({
     ...prev,
-    nodes: (prev.nodes as any).update('image', imageSchema),
+    nodes: (prev.nodes as any)
+      .update('image', imageSchema)
+      .append({video: videoSchema}),
   }),
   plugins: (prev, schema) => [
     ...prev,
@@ -181,6 +302,9 @@ export default (path?: string): ProseMirrorExtension => ({
   ],
   nodeViews: {
     image: (node, view, getPos) => {
+      return new ImageView(node, view, getPos, view.state.schema, path)
+    },
+    video: (node, view, getPos) => {
       return new ImageView(node, view, getPos, view.state.schema, path)
     }
   },
