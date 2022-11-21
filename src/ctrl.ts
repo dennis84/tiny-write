@@ -502,7 +502,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       let data = await fetchData()
       let text
 
-      if (isTauri) {
+      if (isTauri && data.window) {
         remote.updateWindow(data.window)
       }
 

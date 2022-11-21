@@ -1,4 +1,4 @@
-import {getCurrent, LogicalSize, PhysicalPosition, PhysicalSize} from '@tauri-apps/api/window'
+import {currentMonitor, getCurrent, LogicalSize, PhysicalPosition, PhysicalSize} from '@tauri-apps/api/window'
 import {invoke} from '@tauri-apps/api/tauri'
 import * as clipboard from '@tauri-apps/api/clipboard'
 import * as fs from '@tauri-apps/api/fs'
@@ -145,14 +145,25 @@ export const log = (level: string, msg: string) => {
   info(msg, {level})
 }
 
-export const updateWindow = ({width, height, x, y}: Window = {}) => {
+export const updateWindow = async ({width, height, x, y}: Window = {}) => {
   if (!isTauri) throw Error('Must be run in tauri: save')
-  let size = new LogicalSize(700, 600)
-  if (width && height) size = new PhysicalSize(width, height)
-  getCurrent().setSize(size)
-  if (x >= 0 && y >= 0) {
+  log('info', `Update window: (width=${width}, height=${height}, x=${x}, y=${y}`)
+
+  // Last size should not be too small, otherwise difficult to enlarge.
+  if (width > 10 && height > 10) {
+    getCurrent().setSize(new PhysicalSize(width, height))
+  }
+
+  const size = await getCurrent().outerSize()
+  const monitor = await currentMonitor()
+
+  // Last pos must fit in current screen size.
+  if (
+    x >= 0 &&
+    x < monitor.size.width - size.width &&
+    y >= 0 &&
+    y < monitor.size.height - size.height
+  ) {
     getCurrent().setPosition(new PhysicalPosition(x, y))
-  } else {
-    getCurrent().center()
   }
 }
