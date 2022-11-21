@@ -199,6 +199,7 @@ export default () => {
   const [lastAction, setLastAction] = createSignal<string | undefined>()
   const [isTextEmpty, setIsTextEmpty] = createSignal(false)
   const [collabUsers, setCollabUsers] = createSignal(0)
+  const [relativePath, setRelativePath] = createSignal('')
   const [textStats, setTextStats] = createSignal({
     paragraphs: 0,
     words: 0,
@@ -401,11 +402,12 @@ export default () => {
   }
 
   const FileLink = (p: {file: File}) => {
-    const length = 100
+    const [text, setText] = createSignal(p.file.excerpt ?? 'undefined')
 
-    const text = () =>
-      p.file.path ? p.file.path.substring(p.file.path.length - length) :
-      p.file.excerpt ?? 'undefined'
+    createEffect(async () => {
+      if (!p.file.path) return
+      setText(await remote.toRelativePath(p.file.path))
+    }, p.file.path)
 
     return (
       <Link
@@ -441,6 +443,12 @@ export default () => {
     onCleanup(() => clearTimeout(id))
   })
 
+  createEffect(async () => {
+    if (!store.path) return
+    const rel = await remote.toRelativePath(store.path)
+    setRelativePath(rel)
+  }, store.path)
+
   return (
     <Container>
       <Burger
@@ -470,7 +478,7 @@ export default () => {
           data-tauri-drag-region="true">
           <div data-tauri-drag-region="true">
             <Label config={store.config}>
-              File {store.path && <i>({store.path.substring(store.path.length - 24)})</i>}
+              File {store.path && <i>({relativePath()})</i>}
             </Label>
             <Sub>
               <Show when={isTauri && !store.path}>
