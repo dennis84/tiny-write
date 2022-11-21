@@ -92,7 +92,8 @@ fn list_text_files(p: &Path) -> Result<Vec<String>, Error> {
 
         if let Some(mime) = m.first_raw() {
             if mime.ends_with("/markdown") || mime.ends_with("/plain") {
-                let relative_path = to_relative_path(&path).and_then(|p| path_buf_to_string(p));
+                let relative_path =
+                    to_relative_path(&path, None).and_then(|p| path_buf_to_string(p));
                 if let Ok(p) = relative_path {
                     files.push(p);
                 }

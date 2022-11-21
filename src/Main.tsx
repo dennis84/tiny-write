@@ -82,7 +82,8 @@ export default (props: {state: State}) => {
         if (mime.startsWith('image/') || mime.startsWith('video/')) {
           const x = mouseEnterCoords.x
           const y = mouseEnterCoords.y
-          const p = await remote.toRelativePath(path)
+          const d = store.path ? await remote.dirname(store.path) : undefined
+          const p = await remote.toRelativePath(path, d)
           insertImageMd(store.editorView, p, x, y, mime)
         } else if (mime.startsWith('text/')) {
           await ctrl.openFile({path})

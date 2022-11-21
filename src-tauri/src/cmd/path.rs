@@ -36,7 +36,7 @@ pub fn list_contents(file: String) -> Result<Vec<String>, String> {
                 let path = path.into_path();
                 if glob.is_match(&path) {
                     let relative_path =
-                        pu::to_relative_path(&path).and_then(|p| pu::path_buf_to_string(p));
+                        pu::to_relative_path(&path, None).and_then(|p| pu::path_buf_to_string(p));
                     if let Ok(p) = relative_path {
                         files.push(p);
                     }
@@ -65,8 +65,8 @@ pub fn resolve_path(paths: Vec<String>) -> Result<String, String> {
 }
 
 #[tauri::command]
-pub fn to_relative_path(path: String) -> Result<String, String> {
-    pu::to_relative_path(path)
+pub fn to_relative_path(path: String, base_path: Option<String>) -> Result<String, String> {
+    pu::to_relative_path(path, base_path)
         .and_then(|p| pu::path_buf_to_string(p))
         .map_err(|e| e.to_string())
 }
@@ -120,9 +120,22 @@ mod tests {
 
     #[test]
     fn test_to_relative_path() {
+        let test_base_path = format!("{}/foo", get_home());
+        let test_path = format!("{}/foo/bar", get_home());
+
         assert_eq!(
-            to_relative_path(format!("{}/foo/bar", get_home())).unwrap(),
+            to_relative_path(test_path.clone(), None).unwrap(),
             "~/foo/bar".to_string()
+        );
+
+        assert_eq!(
+            to_relative_path(test_path.clone(), Some(test_base_path.clone())).unwrap(),
+            "./bar".to_string()
+        );
+
+        assert_eq!(
+            to_relative_path(test_base_path.clone(), Some(test_path.clone())).unwrap(),
+            "~/foo".to_string()
         );
     }
 }

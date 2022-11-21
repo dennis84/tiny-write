@@ -64,9 +64,10 @@ pub fn path_buf_to_string<P: AsRef<OsStr>>(path: P) -> Result<String, Error> {
         .map_err(|_| Error::new(ErrorKind::Other, "Could not convert path to string"))
 }
 
-pub fn to_relative_path<P: AsRef<Path>>(path: P) -> Result<PathBuf, Error> {
+pub fn to_relative_path<P: AsRef<Path>>(path: P, base_path: Option<P>) -> Result<PathBuf, Error> {
     let path = path.as_ref();
     let cur = env::current_dir()?;
+    let cur = base_path.map(|p| p.as_ref().to_path_buf()).unwrap_or(cur);
     let cur = path_buf_to_string(cur)?;
 
     if path.starts_with(&cur) {
