@@ -63,7 +63,6 @@ export interface Window {
 
 export interface State {
   editorView?: EditorView;
-  excerpt?: string;
   markdown?: boolean;
   lastModified?: Date;
   files: File[];
@@ -80,7 +79,6 @@ export interface State {
 
 export interface File {
   text?: {[key: string]: any};
-  excerpt?: string;
   ydoc?: Uint8Array;
   lastModified?: string;
   path?: string;

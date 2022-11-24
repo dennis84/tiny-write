@@ -21,7 +21,7 @@ export const findWords: CompletionSource = (context) => {
         text = text.substring(1, text.length - 1)
       }
 
-      const xs = text.replace(/(?:[^\w-]|_)+/, '')
+      const xs = text.replace(/(?:[^\w\-_])+/, '')
         .split(/[\s,-.]+/)
         .filter(x => x.length > 2)
 

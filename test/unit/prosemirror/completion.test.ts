@@ -7,6 +7,7 @@ import {findWords} from '@/prosemirror/extension/code-block/completion'
 test.each([
   ['abc', [], 3],
   ['abc ', ['abc'], 4],
+  ['foo_bar ', ['foo_bar'], 8],
   [" const foo = 'bar'", ['const', 'foo', 'bar'], 0],
   ['....test', ['test'], 10],
   ['x+y*z', [], 10],

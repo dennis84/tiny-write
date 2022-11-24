@@ -145,7 +145,6 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
 
   const addToFiles = (files: File[], prev: State) => [...files, {
     ydoc: Y.encodeStateAsUpdate(prev.collab.ydoc),
-    excerpt: prev.excerpt,
     lastModified: prev.lastModified?.toISOString(),
     path: prev.path,
     markdown: prev.markdown,
@@ -271,7 +270,6 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       path: file.path,
       markdown: file.markdown,
       collab: {room: file.room, ydoc: createYdoc(file.ydoc)},
-      excerpt: file.excerpt,
     }
 
     disconnectCollab(state)
@@ -299,10 +297,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     }
 
     const documentState = Y.encodeStateAsUpdate(state.collab.ydoc)
-    const len = Math.min(150, store.editorView.state.doc.nodeSize - 2)
-    const excerpt = store.editorView.state.doc.textBetween(0, len, ' ')
     const data = {
-      excerpt,
       lastModified: state.lastModified,
       files: state.files.map((f) => {
         const json = {...f, ydoc: fromUint8Array(f.ydoc)}
@@ -324,7 +319,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     }
 
     const json = JSON.stringify(data)
-    setState({storageSize: json.length, excerpt})
+    setState({storageSize: json.length})
     db.set('state', json)
   }
 
@@ -404,7 +399,6 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
         lastModified: undefined,
         path: undefined,
         error: undefined,
-        excerpt: undefined,
       }
     }
 
@@ -554,7 +548,6 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       fullscreen: store.fullscreen,
       lastModified: new Date(),
       error: undefined,
-      excerpt: undefined,
     })
 
     updateEditorState(state, false)
@@ -597,7 +590,6 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       error: undefined,
       markdown: false,
       collab: {room: undefined, ydoc: createYdoc()},
-      excerpt: undefined,
     })
 
     updateEditorState(update, false)

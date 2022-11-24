@@ -1,10 +1,12 @@
-import {For, Show, JSX, createEffect, createSignal, onCleanup, splitProps} from 'solid-js'
+import {For, Show, JSX, createEffect, createSignal, onCleanup, splitProps, onMount} from 'solid-js'
+import h from 'solid-js/h'
 import {unwrap} from 'solid-js/store'
 import {Node} from 'prosemirror-model'
 import {undo, redo} from 'prosemirror-history'
 import {differenceInHours, format} from 'date-fns'
 import {css} from '@emotion/css'
 import * as Y from 'yjs'
+import {yDocToProsemirror} from 'y-prosemirror'
 import {Config, File, useState} from '@/state'
 import {foreground, primaryBackground} from '@/config'
 import {isTauri, isMac, alt, mod, version, WEB_URL, VERSION_URL} from '@/env'
@@ -130,11 +132,11 @@ export const Text = (props: Styled) => (
 )
 
 export const Link = (props: Styled) => {
-  const [local, others] = splitProps(props, ['config', 'children'])
+  const [local, others] = splitProps(props, ['config', 'children', 'css'])
   return (
     <button
       {...others}
-      class={css`
+      class={local.css + ' ' + css`
         ${itemCss(local.config)}
         background: none;
         border: 0;
@@ -401,22 +403,72 @@ export default () => {
     )
   }
 
-  const FileLink = (p: {file: File}) => {
-    const [text, setText] = createSignal(p.file.excerpt ?? 'undefined')
+  const Excerpt = (p: {file: File}) => {
+    const ydoc = new Y.Doc({gc: false})
+    Y.applyUpdate(ydoc, p.file.ydoc)
+    const doc = yDocToProsemirror(store.editorView.state.schema, ydoc)
+    const maxText = 150
+    const maxCode = 80
+    const nodes = []
+    let len = 0
+    let done = false
 
-    createEffect(async () => {
-      if (!p.file.path) return
-      setText(await remote.toRelativePath(p.file.path))
-    }, p.file.path)
+    doc.descendants((node, pos, parent) => {
+      if (len >= 150) {
+        if (!done) nodes.push(h('span', {}, '…'))
+        done = true
+        return false
+      } else if (node.type.name === 'image') {
+        nodes.push(h('span', {}, '️🖼️ '))
+      } else if (node.type.name === 'video') {
+        nodes.push(h('span', {}, '️🎬 '))
+      } else if (parent.type.name === 'code_block') {
+        let text = node.textContent
+        if (text.length > maxCode) {
+          text = text.slice(0, maxCode) + '…'
+        }
+        nodes.push(h('code', {}, text))
+        nodes.push(h('span', {}, ' '))
+        len += text.length + 1
+      } else if (node.isText) {
+        const text = node.textContent.slice(0, maxText)
+        nodes.push(h('span', {}, text + ' '))
+        len += text.length + 1
+      }
+    })
+
+    return nodes
+  }
+
+  const FileLink = (p: {file: File}) => {
+    const [path, setPath] = createSignal<string>()
+
+    onMount(async () => {
+      if (p.file.path) {
+        setPath(await remote.toRelativePath(p.file.path))
+      }
+    })
 
     return (
       <Link
         config={store.config}
-        style={{'margin-bottom': '10px'}}
+        css={css`
+          margin-bottom: 10px;
+          display: block;
+          line-height: 28px;
+          code {
+            border: 1px solid ${foreground(store.config)}7f;
+            background: ${foreground(store.config)}19;
+            border-radius: 3px;
+            padding: 2px;
+          }
+        `}
         onClick={() => onOpenFile(p.file)}
         data-testid="open">
-        {text()}&nbsp;
-        <Show when={p.file.path}>📎</Show>
+        <Show
+          when={p.file.path}
+          fallback={<Excerpt file={p.file} />}
+        >{path()}&nbsp;📎</Show>
       </Link>
     )
   }
