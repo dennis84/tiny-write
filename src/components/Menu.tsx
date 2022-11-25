@@ -18,6 +18,8 @@ import {AppearanceMenu} from './AppearanceMenu'
 import {ChangeSetMenu} from './ChangeSetMenu'
 import {HelpMenu} from './HelpMenu'
 
+const fullWidth = 500
+
 const Container = (props: {children: JSX.Element}) => (
   <div class={css`
     position: relative;
@@ -48,7 +50,7 @@ const Burger = (props: Styled) => {
         background: none;
         border: 0;
         outline: none;
-        @media (max-width: 600px) {
+        @media (max-width: ${fullWidth}px) {
           right: 0px;
           left: auto;
         }
@@ -81,8 +83,9 @@ export const Drawer = (props: Styled) => (
     width: 460px;
     overflow-y: auto;
     scrollbar-width: none;
-    @media (max-width: 600px) {
+    @media (max-width: ${fullWidth}px) {
       width: 100vw;
+      ${isTauri && 'padding-top: 40px'}
     }
     ::-webkit-scrollbar {
       display: none;
@@ -351,6 +354,7 @@ export default () => {
 
   const onOpenFile = (file: File) => {
     ctrl.openFile(unwrap(file))
+    if (window.innerWidth <= fullWidth) setShow(undefined)
   }
 
   const LastModified = () => {
