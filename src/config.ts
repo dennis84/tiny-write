@@ -175,48 +175,59 @@ export const themes: {[key: string]: Theme} = {
 interface CodeTheme {
   label: string;
   value: string;
+  dark: boolean;
 }
 
 export const codeThemes: {[key: string]: CodeTheme} = {
   'dracula': {
     label: 'Dracula',
     value: 'dracula',
+    dark: true,
   },
   'material-dark': {
     label: 'Material Dark',
     value: 'material-dark',
+    dark: true,
   },
   'material-light': {
     label: 'Material Light',
     value: 'material-light',
+    dark: false,
   },
   'solarized-dark': {
     label: 'Solarized Dark',
     value: 'solarized-dark',
+    dark: true,
   },
   'solarized-light': {
     label: 'Solarized Light',
     value: 'solarized-light',
+    dark: false,
   },
   'github-light': {
     label: 'Github Light',
     value: 'github-light',
+    dark: false,
   },
   'github-dark': {
     label: 'Github Dark',
     value: 'github-dark',
+    dark: true,
   },
   'aura': {
     label: 'Aura Dark',
     value: 'aura',
+    dark: true,
   },
   'tokyo-night': {
     label: 'Tokyo Night',
     value: 'tokyo-night',
+    dark: true,
   },
   'tokyo-night-day': {
     label: 'Tokyo Night Day',
     value: 'tokyo-night-day',
+    dark: false,
   },
 }
 
@@ -254,6 +265,6 @@ export const font = (
 const getDefaltCodeTheme = () => isDark() ? codeThemes.dracula : codeThemes['material-light']
 
 export const codeTheme = (config: Config) =>
-  !config.codeTheme ? getDefaltCodeTheme().value :
-  codeThemes[config.codeTheme] ? codeThemes[config.codeTheme].value :
-  getDefaltCodeTheme().value
+  !config.codeTheme ? getDefaltCodeTheme() :
+  codeThemes[config.codeTheme] ? codeThemes[config.codeTheme] :
+  getDefaltCodeTheme()

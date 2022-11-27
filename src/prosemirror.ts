@@ -66,8 +66,8 @@ export const createExtensions = (props: Props): ProseMirrorExtension[] =>
     todoList(),
     dragHandle(),
     codeBlock({
-      theme: codeTheme(props.config),
-      dark: isDarkTheme(props.config),
+      theme: codeTheme(props.config).value,
+      dark: codeTheme(props.config).dark,
       typewriterMode: props.config.typewriterMode,
       fontSize: props.config.fontSize,
       font: font(props.config, {monospace: true}),

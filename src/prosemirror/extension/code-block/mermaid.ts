@@ -36,7 +36,7 @@ export default (codeBlock: CodeBlockView) =>
       const div = document.createElement('div')
       div.className = 'mermaid'
       this.output = div
-      codeBlock.outer.appendChild(this.output)
+      this.view.dom.appendChild(this.output)
 
       const span = document.createElement('span')
       span.className = 'download'
@@ -53,7 +53,7 @@ export default (codeBlock: CodeBlockView) =>
     }
 
     updateDOM() {
-      if (codeBlock.getLang() !== 'mermaid') {
+      if (codeBlock.lang !== 'mermaid') {
         this.output.style.display = 'none'
         return
       }
@@ -67,26 +67,23 @@ export default (codeBlock: CodeBlockView) =>
       this.output.style.display = 'flex'
       mermaid.initialize({
         startOnLoad: false,
-        theme: codeBlock.getOptions().dark ? 'dark' : 'default',
-        fontFamily: `${codeBlock.getOptions().font}, monospace`,
+        theme: codeBlock.options.dark ? 'dark' : 'default',
+        fontFamily: `${codeBlock.options.font}, monospace`,
       })
 
-      // fixes cut off text
-      setTimeout(() => {
-        try {
-          mermaid.render(`mermaid-graph-${this.id}`, content, (svgCode) => {
-            this.output.innerHTML = svgCode
-            this.output.appendChild(this.download)
-          })
-        } catch (err) {
-          const error = document.createElement('code')
-          error.textContent = err
-          this.output.innerHTML = ''
-          this.output.appendChild(error)
-          // remove mermaid error div
-          const errorDiv = document.getElementById(`dmermaid-graph-${this.id}`)
-          errorDiv?.remove()
-        }
-      }, 100)
+      try {
+        mermaid.render(`mermaid-graph-${this.id}`, content, (svgCode) => {
+          this.output.innerHTML = svgCode
+          this.output.appendChild(this.download)
+        })
+      } catch (err) {
+        const error = document.createElement('code')
+        error.textContent = err
+        this.output.innerHTML = ''
+        this.output.appendChild(error)
+        // remove mermaid error div
+        const errorDiv = document.getElementById(`dmermaid-graph-${this.id}`)
+        errorDiv?.remove()
+      }
     }
   })

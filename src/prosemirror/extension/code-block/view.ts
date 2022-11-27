@@ -22,28 +22,23 @@ import prettify from './prettify'
 import mermaid from './mermaid'
 
 export class CodeBlockView {
-  dom: HTMLElement
-  outer: HTMLDivElement
-  inner: HTMLDivElement
-  editorView: EditorView
-  updating = false
-  clicked = false
-  langExtension: Compartment
-  langCompletionExtension: Compartment
+  public dom: HTMLElement
+  private editorView: EditorView
+  private updating = false
+  private clicked = false
+  private langExtension: Compartment
+  private langCompletionExtension: Compartment
 
   constructor(
     private node: Node,
     private view: ProsemirrorEditorView,
     private getPos: () => number,
     private innerDecos: DecorationSource,
-    private options: CodeBlockProps = defaultProps,
+    readonly options: CodeBlockProps = defaultProps,
   ) {
-    this.outer = document.createElement('div')
-    this.outer.setAttribute('contenteditable', 'false')
-    this.outer.classList.add('codemirror-outer')
-    this.inner = document.createElement('div')
-    this.inner.classList.add('codemirror-inner')
-    this.outer.appendChild(this.inner)
+    this.dom = document.createElement('div')
+    this.dom.setAttribute('contenteditable', 'false')
+    this.dom.classList.add('cm-container')
 
     const codeMirrorKeymap = keymap.of([{
       key: 'Backspace',
@@ -125,7 +120,7 @@ export class CodeBlockView {
     this.langCompletionExtension = new Compartment
 
     const theme = getTheme(this.options.theme)
-    const langSupport = highlight(this.getLang())
+    const langSupport = highlight(this.lang)
 
     this.editorView = new EditorView({
       doc: this.node.textContent,
@@ -176,16 +171,14 @@ export class CodeBlockView {
       ]
     })
 
-    this.inner.appendChild(this.editorView.dom)
+    this.dom.appendChild(this.editorView.dom)
 
     if (this.innerDecos instanceof DecorationSet) {
       this.innerDecos.find().map((d: any) => {
         const elem = typeof d.type.toDOM === 'function' ? d.type.toDOM() : d.type.toDOM
-        this.outer.appendChild(elem)
+        this.dom.appendChild(elem)
       })
     }
-
-    this.dom = this.outer
   }
 
   forwardUpdate(update: ViewUpdate) {
@@ -247,7 +240,7 @@ export class CodeBlockView {
 
   update(node: Node) {
     if (node.type != this.node.type) return false
-    const lang = this.getLang()
+    const lang = this.lang
     this.node = node
     if (this.updating) return true
 
@@ -294,7 +287,7 @@ export class CodeBlockView {
   }
 
   reconfigure() {
-    const langSupport = highlight(this.getLang())
+    const langSupport = highlight(this.lang)
     this.editorView.dispatch({
       effects: [
         this.langExtension.reconfigure(langSupport),
@@ -318,11 +311,7 @@ export class CodeBlockView {
     return !(e instanceof MouseEvent)
   }
 
-  getLang() {
+  get lang() {
     return this.node.attrs.params.lang ?? ''
-  }
-
-  getOptions() {
-    return this.options;
   }
 }

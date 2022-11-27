@@ -53,11 +53,11 @@ export default (codeBlock: CodeBlockView) =>
       })
 
       this.button = span
-      codeBlock.inner.appendChild(this.button)
+      this.view.dom.appendChild(this.button)
     }
 
     updateDOM() {
-      const lang = codeBlock.getLang()
+      const lang = codeBlock.lang
       if (this.view.state.doc.length > 0 && (
         lang === 'javascript' ||
         lang === 'jsx' ||
@@ -81,7 +81,7 @@ export default (codeBlock: CodeBlockView) =>
     }
 
     prettify() {
-      const lang = codeBlock.getLang()
+      const lang = codeBlock.lang
       const [parser, plugin] =
         lang === 'javascript' || lang === 'js' || lang === 'jsx' ? ['babel', parserBabel] :
         lang === 'css' ? ['css', parserCss] :
@@ -100,7 +100,7 @@ export default (codeBlock: CodeBlockView) =>
           plugins: [plugin],
           trailingComma: 'all',
           bracketSpacing: false,
-          ...codeBlock.getOptions().prettier,
+          ...codeBlock.options.prettier,
         })
 
         this.view.dispatch({

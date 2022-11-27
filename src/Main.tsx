@@ -115,7 +115,7 @@ export default (props: {state: State}) => {
     if (isTauri) return
     const onDrop = (e) => {
       e.preventDefault()
-      if (e.target.closest('.codemirror-outer')) {
+      if (e.target.closest('.cm-container')) {
         return
       }
 

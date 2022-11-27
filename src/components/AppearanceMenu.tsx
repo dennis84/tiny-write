@@ -52,7 +52,7 @@ export const AppearanceMenu = (props: Props) => {
           <For each={Object.entries(codeThemes)}>
             {([key, value]) => (
               <Link config={store.config} onClick={onChangeCodeTheme(key)}>
-                {value.label}{' '}{key === codeTheme(store.config) && '✅'}
+                {value.label}{' '}{key === codeTheme(store.config).value && '✅'}
               </Link>
             )}
           </For>

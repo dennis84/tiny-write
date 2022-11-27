@@ -6,6 +6,161 @@ import {Styled} from './Layout'
 export default (props: Styled & {markdown: boolean}) => {
   const [local, others] = splitProps(props, ['config', 'markdown'])
 
+  const codeBlock = () => css`
+    .cm-container {
+      position: relative;
+      margin: 10px 0;
+      margin-bottom: 15px;
+      border-radius: 3px;
+      display: flex;
+      font-family: '${font(local.config, {monospace: true})}';
+      font-variant-ligatures: none;
+      .handle {
+        top: 2px;
+      }
+      .cm-editor {
+        outline: none;
+        .cm-content, .cm-gutter {
+          padding: 0;
+          font-family: '${font(local.config, {monospace: true})}';
+        }
+        .cm-line {
+          line-height: ${local.config.fontSize * 1.8}px;
+        }
+        .cm-lineWrapping {
+          word-break: break-all;
+        }
+        .cm-diagnosticText {
+          white-space: pre;
+        }
+        .cm-scroller {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+          &::-webkit-scrollbar {
+            display: none;
+          }
+        }
+        .cm-foldGutter {
+          user-select: none;
+        }
+        &:not(.cm-focused) {
+          .cm-activeLine {
+            background: none;
+          }
+        }
+        .cm-tooltip ul {
+          font-family: '${font(local.config, {monospace: true})}';
+        }
+      }
+      > .cm-editor {
+        height: 100%;
+        width: 100%;
+        border-radius: 3px;
+        flex-direction: ${local.config.contentWidth > 600 ? 'row' : 'column'};
+        &.selected {
+          box-shadow: 0 0 0 2px ${primaryBackground(local.config)};
+          border-radius: 3px;
+        }
+        > .cm-scroller {
+          flex-grow: 1;
+          flex-shrink: 1;
+          padding: 30px;
+          padding-left: 20px;
+        }
+        .lang-input {
+          position: absolute;
+          outline: none;
+          margin-left: 15px;
+          .cm-editor {
+            width: 100%;
+            padding: 5px;
+            flex-direction: row;
+            &::before {
+              content: "\`\`\`";
+            }
+            .cm-line {
+              padding: 0;
+            }
+          }
+        }
+        .lang-toggle {
+          position: absolute;
+          box-sizing: border-box;
+          top: 0;
+          right: 0;
+          margin: 4px;
+          height: 16px;
+          font-size: 12px;
+          line-height: 100%;
+          cursor: pointer;
+          z-index: 10;
+          user-select: none;
+          img {
+            width: 16px;
+          }
+        }
+        .mermaid {
+          padding: 30px;
+          background: #00000022;
+          display: flex;
+          flex-grow: 2;
+          flex-shrink: 1;
+          line-height: 1 !important;
+          justify-content: center;
+          align-items: center;
+          user-select: none;
+          svg {
+            height: auto;
+          }
+          code {
+            margin: 0;
+            width: 100%;
+            white-space: pre-line;
+            align-self: flex-start;
+            overflow: hidden;
+            background: 0;
+            border: 0;
+          }
+          .download {
+            position: absolute;
+            right: 8px;
+            bottom: 8px;
+            cursor: pointer;
+            z-index: 10;
+            user-select: none;
+          }
+        }
+        .expand {
+          position: absolute;
+          height: 8px;
+          width: 100%;
+          bottom: -9px;
+          left: 0;
+          z-index: 1;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          cursor: pointer;
+          font-size: 10px;
+          user-select: none;
+          background: ${foreground(local.config)}22;
+          border-radius: 3px;
+          &:hover {
+            background: ${foreground(local.config)}33;
+          }
+        }
+        .prettify {
+          position: absolute;
+          right: 8px;
+          bottom: 2px;
+          cursor: pointer;
+          z-index: 10;
+          user-select: none;
+        }
+      }
+    }
+  `
+
   return (
     <div {...others} class={css`
       min-height: calc(100% - 100px);
@@ -14,6 +169,7 @@ export default (props: Styled & {markdown: boolean}) => {
       max-width: 100%;
       padding: 0 50px;
       .ProseMirror {
+        ${codeBlock()}
         ${local.markdown ? 'white-space: pre-wrap' : ''};
         word-wrap: break-word;
         white-space: pre-wrap;
@@ -185,164 +341,6 @@ export default (props: Styled & {markdown: boolean}) => {
         .draggable:hover .handle {
           opacity: 1;
         }
-        .codemirror-outer {
-          position: relative;
-          margin: 10px 0;
-          margin-bottom: 15px;
-          border-radius: 3px;
-          display: flex;
-          .handle {
-            top: 2px;
-          }
-          .lang-toggle {
-            position: absolute;
-            right: -5px;
-            height: ${local.config.fontSize * 1.6}px;
-            display: flex;
-            align-items: center;
-            transform: translateX(100%);
-            cursor: pointer;
-            z-index: 10;
-            user-select: none;
-          }
-          .codemirror-inner {
-            position: relative;
-            width: 100%;
-            display: flex;
-            flex-direction: column;
-            flex-grow: 1;
-            flex-shrink: 2;
-            min-width: 40%;
-            font-family: '${font(local.config, {monospace: true})}';
-            font-variant-ligatures: none;
-            border: 1px solid ${foreground(local.config)}4c;
-            border-radius: 3px;
-            .expand {
-              position: absolute;
-              height: 8px;
-              width: 100%;
-              bottom: -10px;
-              left: 0;
-              z-index: 1;
-              display: flex;
-              justify-content: center;
-              align-items: center;
-              cursor: pointer;
-              font-size: 10px;
-              user-select: none;
-              background: ${foreground(local.config)}22;
-              border-radius: 3px;
-              &:hover {
-                background: ${foreground(local.config)}33;
-              }
-            }
-            .lang-input {
-              outline: none;
-              .cm-editor {
-                width: 100%;
-                padding: 5px;
-                display: flex;
-                flex-direction: row;
-                &::before {
-                  content: "\`\`\`";
-                }
-                .cm-line {
-                  padding: 0;
-                }
-              }
-            }
-            .cm-editor {
-              outline: none;
-              .cm-content, .cm-gutter {
-                padding: 0;
-                font-family: '${font(local.config, {monospace: true})}';
-              }
-              .cm-line {
-                line-height: ${local.config.fontSize * 1.8}px;
-              }
-              .cm-lineWrapping {
-                word-break: break-all;
-              }
-              .cm-diagnosticText {
-                white-space: pre;
-              }
-              .cm-scroller {
-                -ms-overflow-style: none;
-                scrollbar-width: none;
-                &::-webkit-scrollbar {
-                  display: none;
-                }
-              }
-              .cm-tooltip ul {
-                font-family: '${font(local.config, {monospace: true})}';
-              }
-              &:not(.cm-focused) {
-                .cm-activeLine {
-                  background: none;
-                }
-              }
-            }
-            > .cm-editor {
-              height: 100%;
-              .cm-scroller {
-                padding: 20px;
-                padding-left: 10px;
-              }
-            }
-            .cm-foldGutter {
-              user-select: none;
-            }
-            .prettify {
-              position: absolute;
-              right: 8px;
-              bottom: 2px;
-              cursor: pointer;
-              z-index: 10;
-              user-select: none;
-            }
-          }
-          &.selected {
-            box-shadow: 0 0 0 2px ${primaryBackground(local.config)};
-            border-radius: 3px;
-          }
-          .mermaid {
-            padding: 0 5px;
-            background: ${foreground(local.config)}19;
-            border: 1px solid ${foreground(local.config)}4c;
-            box-shadow: -1px 0 0 ${foreground(local.config)}4c;
-            border-left: 0;
-            border-top-right-radius: 3px;
-            border-bottom-right-radius: 3px;
-            display: flex;
-            width: 100%;
-            line-height: 1 !important;
-            flex-shrink: 1;
-            flex-grow: 2;
-            justify-content: center;
-            align-items: center;
-            user-select: none;
-            svg {
-              height: auto;
-            }
-            code {
-              margin: 0;
-              width: 100%;
-              white-space: pre-line;
-              align-self: flex-start;
-              overflow: hidden;
-              background: 0;
-              border: 0;
-            }
-            .download {
-              position: absolute;
-              right: 8px;
-              bottom: 8px;
-              cursor: pointer;
-              z-index: 10;
-              user-select: none;
-            }
-          }
-        }
         .task-list {
           margin: 10px 0;
           padding: 0;
@@ -415,8 +413,8 @@ export default (props: Styled & {markdown: boolean}) => {
             }
           }
         }
-        > *:not(.codemirror-outer)::selection,
-        > *:not(.codemirror-outer) *::selection {
+        > *:not(.cm-container)::selection,
+        > *:not(.cm-container) *::selection {
           background: ${selection(local.config)};
         }
       }

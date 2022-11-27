@@ -37,7 +37,7 @@ export const changeLang = (codeBlock: CodeBlockView, config: Config) =>
     toggle: HTMLElement
     input: HTMLElement
     inputEditor: LangInputEditor
-    lang = codeBlock.getLang()
+    lang = codeBlock.lang
 
     constructor(private view: EditorView) {}
 
@@ -62,13 +62,13 @@ export const changeLang = (codeBlock: CodeBlockView, config: Config) =>
         update.docChanged ||
         update.startState.facet(language) != update.state.facet(language)
       ) {
-        this.lang = codeBlock.getLang()
+        this.lang = codeBlock.lang
         this.updateDOM()
       }
     }
 
     renderDOM() {
-      const theme = getTheme(codeBlock.getOptions().theme)
+      const theme = getTheme(codeBlock.options.theme)
 
       this.toggle = document.createElement('div')
       this.toggle.className = 'lang-toggle'
@@ -99,13 +99,12 @@ export const changeLang = (codeBlock: CodeBlockView, config: Config) =>
         this.inputEditor.focus()
       })
 
-      codeBlock.inner.prepend(this.input)
-      codeBlock.outer.appendChild(this.toggle)
+      this.view.dom.prepend(this.input)
+      this.view.dom.appendChild(this.toggle)
     }
 
     updateDOM() {
       const lang = this.lang
-      const {fontSize} = codeBlock.getOptions()
       const cur = this.toggle?.children[0]?.getAttribute('title')
       if (cur === lang) return
 
@@ -113,14 +112,12 @@ export const changeLang = (codeBlock: CodeBlockView, config: Config) =>
       if (logos[lang]) {
         const img = document.createElement('img')
         img.src = logos[lang]
-        img.width = fontSize
-        img.height = fontSize
         img.setAttribute('title', lang)
         elem = img
       } else {
         elem = document.createElement('span')
-        elem.textContent = lang === 'mermaid' ? '🧜‍♀️' : '📜'
-        elem.setAttribute('title', lang)
+        elem.textContent = lang
+        elem.setAttribute('title', 'Change language')
       }
 
       this.toggle.innerHTML = ''
