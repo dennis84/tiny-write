@@ -1,4 +1,4 @@
-import {currentMonitor, getCurrent, LogicalSize, PhysicalPosition, PhysicalSize} from '@tauri-apps/api/window'
+import {currentMonitor, getCurrent, PhysicalPosition, PhysicalSize} from '@tauri-apps/api/window'
 import {invoke} from '@tauri-apps/api/tauri'
 import * as clipboard from '@tauri-apps/api/clipboard'
 import * as fs from '@tauri-apps/api/fs'

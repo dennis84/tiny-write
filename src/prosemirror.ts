@@ -21,7 +21,7 @@ import container from '@/prosemirror/extension/container'
 import fileListing from '@/prosemirror/extension/file-listing'
 import wordCompletion from '@/prosemirror/extension/word-completion'
 import {Config} from '@/state'
-import {codeTheme, font, selection, isDarkTheme} from '@/config'
+import {codeTheme, font, selection} from '@/config'
 import {isDev} from '@/env'
 
 interface Props {

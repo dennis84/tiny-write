@@ -47,6 +47,7 @@ pub fn list_contents(file: String) -> Result<Vec<String>, String> {
     }
 
     files.truncate(10);
+    files.sort();
     Ok(files)
 }
 
@@ -91,7 +92,7 @@ mod tests {
 
         assert_eq!(
             list_contents("./Ca".to_string()).unwrap(),
-            vec!["./Cargo.toml", "./Cargo.lock"]
+            vec!["./Cargo.lock", "./Cargo.toml"]
         );
 
         assert_eq!(

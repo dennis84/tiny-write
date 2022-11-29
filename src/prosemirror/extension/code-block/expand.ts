@@ -43,11 +43,11 @@ export default (codeBlock: CodeBlockView) =>
     updateDOM() {
       if (codeBlock.lang !== 'mermaid' && this.view.state.doc.lines > 10) {
         if (this.expanded) {
-          this.view.dom.style.maxHeight = '100%'
+          this.view.scrollDOM.style.maxHeight = '100%'
           this.expand.textContent = '↑'
         } else {
           const height = 10 * codeBlock.options.fontSize * 1.8
-          this.view.dom.style.maxHeight = height + 'px'
+          this.view.scrollDOM.style.maxHeight = height + 'px'
           this.expand.textContent = '↓'
         }
 
