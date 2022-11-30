@@ -13,7 +13,7 @@ import {isTauri, isMac, alt, mod, version, WEB_URL, VERSION_URL} from '@/env'
 import * as remote from '@/remote'
 import {isEmpty} from '@/prosemirror/state'
 import {Styled} from './Layout'
-import {PrettierMenu} from './PrettierMenu'
+import {CodeBlockMenu} from './CodeBlockMenu'
 import {AppearanceMenu} from './AppearanceMenu'
 import {ChangeSetMenu} from './ChangeSetMenu'
 import {HelpMenu} from './HelpMenu'
@@ -515,8 +515,8 @@ export default () => {
         <span />
         <span />
       </Burger>
-      <Show when={show() === 'prettier'}>
-        <PrettierMenu onBack={() => setShow('main')} />
+      <Show when={show() === 'code_block'}>
+        <CodeBlockMenu onBack={() => setShow('main')} />
       </Show>
       <Show when={show() === 'theme'}>
         <AppearanceMenu onBack={() => setShow('main')} />
@@ -585,7 +585,7 @@ export default () => {
             <Label config={store.config}>View</Label>
             <Sub>
               <Link config={store.config} onClick={() => setShow('theme')}>Appearance 🎨</Link>
-              <Link config={store.config} onClick={() => setShow('prettier')}>Prettier 💅</Link>
+              <Link config={store.config} onClick={() => setShow('code_block')}>Code Blocks 💅</Link>
               <Link config={store.config} onClick={() => setShow('change_set')}>Change Set 📆</Link>
               <Show when={isTauri}>
                 <Link config={store.config} onClick={onToggleFullscreen}>

@@ -6,7 +6,7 @@ interface Props {
   onBack: () => void;
 }
 
-export const PrettierMenu = (props: Props) => {
+export const CodeBlockMenu = (props: Props) => {
   const [store, ctrl] = useState()
 
   const updatePrettier = (opt: Partial<PrettierConfig>) => {
@@ -21,24 +21,8 @@ export const PrettierMenu = (props: Props) => {
       onClick={() => store.editorView.focus()}
       data-tauri-drag-region="true">
       <div>
-        <Label config={store.config}>Prettier</Label>
+        <Label config={store.config}>Indentation</Label>
         <Sub>
-          <Text config={store.config}>
-            Code blocks with specific languages can be formatted by prettier
-            with config:
-          </Text>
-          <br/>
-          <Text config={store.config}>
-            Print Width:
-            <input
-              type="range"
-              min="20"
-              max="160"
-              step="10"
-              value={store.config.prettier.printWidth}
-              onInput={(e: any) => updatePrettier({printWidth: Number(e.target.value)})} />
-            {store.config.prettier.printWidth}
-          </Text>
           <Text config={store.config}>
             Tab Width:
             <input
@@ -55,6 +39,20 @@ export const PrettierMenu = (props: Props) => {
             onClick={() => updatePrettier({useTabs: !store.config.prettier.useTabs})}>
             Use Tabs {store.config.prettier.useTabs && '✅'}
           </Link>
+        </Sub>
+        <Label config={store.config}>Prettier</Label>
+        <Sub>
+          <Text config={store.config}>
+            Print Width:
+            <input
+              type="range"
+              min="20"
+              max="160"
+              step="10"
+              value={store.config.prettier.printWidth}
+              onInput={(e: any) => updatePrettier({printWidth: Number(e.target.value)})} />
+            {store.config.prettier.printWidth}
+          </Text>
           <Link
             config={store.config}
             onClick={() => updatePrettier({semi: !store.config.prettier.semi})}>
