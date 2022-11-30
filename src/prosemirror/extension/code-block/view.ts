@@ -11,7 +11,7 @@ import {
   closeBrackets,
   closeBracketsKeymap,
 } from '@codemirror/autocomplete'
-import {indentOnInput, bracketMatching, foldGutter, foldKeymap} from '@codemirror/language'
+import {indentOnInput, indentUnit, bracketMatching, foldGutter, foldKeymap} from '@codemirror/language'
 import {linter} from '@codemirror/lint'
 import {CodeBlockProps, defaultProps} from '.'
 import {findWords, tabCompletionKeymap} from './completion'
@@ -141,7 +141,8 @@ export class CodeBlockView {
         foldGutter(),
         closeBrackets(),
         linter(() => []),
-        EditorState.tabSize.of(2),
+        EditorState.tabSize.of(this.options.prettier.tabWidth),
+        indentUnit.of(this.options.prettier.useTabs ? '\t' : ' '.repeat(this.options.prettier.tabWidth)),
         expand(this),
         prettify(this),
         mermaid(this),
