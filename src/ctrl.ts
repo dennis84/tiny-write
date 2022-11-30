@@ -725,6 +725,12 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     saveStateDebounced(store)
   }
 
+  const updateContentWidth = (contentWidth: number) => {
+    store.collab?.ydoc.getMap('config').set('contentWidth', contentWidth)
+    setState('config', 'contentWidth', contentWidth)
+    saveStateDebounced(store)
+  }
+
   const updatePath = (path: string) => {
     setState({path, lastModified: new Date()})
   }
@@ -755,6 +761,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     applyVersion,
     toggleMarkdown,
     updateConfig,
+    updateContentWidth,
     updatePath,
     updateTheme,
     updateWindow,

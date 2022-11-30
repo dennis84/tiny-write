@@ -138,6 +138,22 @@ export default (props: {state: State}) => {
     })
   })
 
+  onMount(async () => {
+    const onWheel = (e) => {
+      if (e.ctrlKey && e.buttons === 0) {
+        e.preventDefault()
+        const currentWidth = store.config.contentWidth
+        ctrl.updateContentWidth(Math.max(400, Math.min(1800, currentWidth - e.deltaY)))
+        return
+      }
+    }
+
+    document.addEventListener('wheel', onWheel, {passive: false})
+    onCleanup(() => {
+      document.removeEventListener('wheel', onWheel)
+    })
+  })
+
   onError((error) => {
     console.error(error)
     ctrl.setState({
