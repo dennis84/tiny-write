@@ -1,6 +1,6 @@
 import {JSX, splitProps} from 'solid-js'
 import {css} from '@emotion/css'
-import {background, foreground, primaryBackground, font, selection} from '@/config'
+import {background, foreground, primaryBackground, font, selection, tooltipBackground} from '@/config'
 import {Config} from '@/state'
 
 export type Styled = {
@@ -75,21 +75,35 @@ export const Layout = (props: Styled) => {
           }
         }
       }
-      .autocomplete {
+      .tooltip, .autocomplete {
         position: absolute;
-        font-size: ${local.config.fontSize}px;
-        font-family: ${font(local.config)};
-        color: ${foreground(local.config)};
-        line-height: ${local.config.fontSize * 1.6}px;
-        border: 1px solid ${foreground(local.config)}4c;
+        width: max-content;
+        background: ${tooltipBackground(local.config)};
         border-radius: 3px;
-        background: ${background(local.config)};
-        box-shadow: 0 2px 5px #00000033;
+        font-family: 'iA Writer Mono';
+        font-size: 12px;
+        z-index: 200;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
         div {
-          padding: 5px;
+          position: relative;
+          z-index: 1;
+          display: block;
+          padding: 10px;
+          cursor: pointer;
+          &:hover, &.selected {
+            background: ${selection(local.config)};
+          }
         }
-        div.selected {
-          background: ${selection(local.config)};
+        .arrow {
+          width: 8px;
+          height: 8px;
+          background: ${tooltipBackground(local.config)};
+          position: absolute;
+          right: -4px;
+          transform: rotate(45deg);
+        }
+        &.right .arrow {
+          left: -4px;
         }
       }
       .yjs-cursor {

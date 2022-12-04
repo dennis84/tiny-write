@@ -367,7 +367,7 @@ export default (props: Styled & {markdown: boolean}) => {
         .container-tip, .container-warning, .container-details {
           padding: 30px;
           border-radius: 3px;
-          &.selected {
+          &.ProseMirror-selectednode, &.selected {
             box-shadow: 0 0 0 2px ${primaryBackground(local.config)};
           }
         }
@@ -405,17 +405,23 @@ export default (props: Styled & {markdown: boolean}) => {
             right: -5px;
             cursor: nwse-resize;
           }
-          &.ProseMirror-selectednode, &.selected {
-            box-shadow: 0 0 0 2px ${primaryBackground(local.config)};
+        }
+        .ProseMirror-selectednode .image-container,
+        .image-container.ProseMirror-selectednode,
+        .image-container.selected {
+          box-shadow: 0 0 0 2px ${primaryBackground(local.config)};
+          border-radius: 3px;
+          img {
             border-radius: 3px;
-            img {
-              border-radius: 3px;
-            }
           }
         }
         > *:not(.cm-container)::selection,
         > *:not(.cm-container) *::selection {
           background: ${selection(local.config)};
+        }
+        .ProseMirror-selectednode {
+          background: ${selection(local.config)};
+          box-shadow: 0 0 0 5px ${selection(local.config)};
         }
       }
     `} />

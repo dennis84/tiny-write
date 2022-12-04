@@ -65,6 +65,7 @@ interface Theme {
   foreground: string;
   primaryForeground: string;
   primaryBackground: string;
+  tooltipBackground: string;
   selection: string;
   dark: boolean;
 }
@@ -76,8 +77,9 @@ export const themes: {[key: string]: Theme} = {
     background: '#ffffff',
     foreground: '#666666',
     primaryBackground: '#0000EE',
-    primaryForeground: '#fff',
+    primaryForeground: '#ffffff',
     selection: '#80CBC440',
+    tooltipBackground: '#eeeeee',
     dark: false,
   },
   'dark': {
@@ -88,6 +90,7 @@ export const themes: {[key: string]: Theme} = {
     primaryBackground: '#68ffb8',
     primaryForeground: '#32825B',
     selection: '#3d375e7f',
+    tooltipBackground: '#2d2d31',
     dark: true,
   },
   'gruvbox-dark': {
@@ -98,6 +101,7 @@ export const themes: {[key: string]: Theme} = {
     primaryBackground: '#d75f5f',
     primaryForeground: '#fff',
     selection: '#504945d0',
+    tooltipBackground: '#474544',
     dark: true,
   },
   'solarized-light': {
@@ -108,6 +112,7 @@ export const themes: {[key: string]: Theme} = {
     primaryBackground: '#2aa198',
     primaryForeground: '#fff',
     selection: '#657b8322',
+    tooltipBackground: '#e4ddcc',
     dark: false,
   },
   'solarized-dark': {
@@ -118,6 +123,7 @@ export const themes: {[key: string]: Theme} = {
     primaryBackground: '#cb4b16',
     primaryForeground: '#fff',
     selection: '#ffffff11',
+    tooltipBackground: '#1a404a',
     dark: true,
   },
   'material': {
@@ -128,6 +134,7 @@ export const themes: {[key: string]: Theme} = {
     primaryBackground: '#89ddff',
     primaryForeground: '#005f85',
     selection: '#80CBC420',
+    tooltipBackground: '#3c474c',
     dark: true,
   },
   'dracula': {
@@ -138,6 +145,7 @@ export const themes: {[key: string]: Theme} = {
     primaryBackground: '#ff79c6',
     primaryForeground: '#fff',
     selection: '#bd93f922',
+    tooltipBackground: '#3e3f4a',
     dark: true,
   },
   'tokyo-night': {
@@ -148,6 +156,7 @@ export const themes: {[key: string]: Theme} = {
     primaryBackground: '#9ece6a',
     primaryForeground: '#fff',
     selection: '#c0caf522',
+    tooltipBackground: '#31323c',
     dark: true,
   },
   'tokyo-night-day': {
@@ -158,6 +167,7 @@ export const themes: {[key: string]: Theme} = {
     primaryBackground: '#9854f1',
     primaryForeground: '#fff',
     selection: '#3760bf22',
+    tooltipBackground: '#cbcbd0',
     dark: false,
   },
   'soft-era': {
@@ -168,6 +178,7 @@ export const themes: {[key: string]: Theme} = {
     primaryBackground: '#b8bde8',
     primaryForeground: '#585a6d',
     selection: '#ba989c22',
+    tooltipBackground: '#e0dddd',
     dark: false,
   },
 }
@@ -243,6 +254,7 @@ export const foreground = (config: Config) => getTheme(config).foreground
 export const primaryBackground = (config: Config) => getTheme(config).primaryBackground
 export const primaryForeground = (config: Config) => getTheme(config).primaryForeground
 export const selection = (config: Config) => getTheme(config).selection
+export const tooltipBackground = (config: Config) => getTheme(config).tooltipBackground
 
 export const font = (
   config: Config,
