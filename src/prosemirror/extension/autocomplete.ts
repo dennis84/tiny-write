@@ -18,8 +18,19 @@ class AutocompleteView {
     const pluginState = this.pluginKey.getState(view.state)
     this.dialog.innerHTML = ''
     this.dialog.style.display = 'none'
+    const sel = view.state.selection
+
+    if (!sel.empty) return
+
+    const inRange = (
+      pluginState.from &&
+      pluginState.to &&
+      sel.$head.pos - 1 >= pluginState.from &&
+      sel.$head.pos - 1 <= pluginState.to
+    ) === true
+
     let coords
-    if (!pluginState?.options?.length) return
+    if (!pluginState?.options?.length || !inRange) return
     try {
       coords = view.coordsAtPos(pluginState.from + 1)
     } catch (e) {
