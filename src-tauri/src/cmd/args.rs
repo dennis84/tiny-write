@@ -20,6 +20,11 @@ pub struct Args {
 }
 
 #[tauri::command]
+pub async fn show_main_window(window: tauri::Window) {
+    window.show().unwrap();
+}
+
+#[tauri::command]
 pub fn get_args(state: tauri::State<Args>) -> Args {
     state.inner().clone()
 }

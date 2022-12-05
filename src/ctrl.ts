@@ -497,7 +497,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       let text
 
       if (isTauri && data.window) {
-        remote.updateWindow(data.window)
+        await remote.updateWindow(data.window)
       }
 
       if (data.args.dir) {
@@ -525,7 +525,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       }
 
       if (isTauri && newState.config?.alwaysOnTop) {
-        remote.setAlwaysOnTop(true)
+        await remote.setAlwaysOnTop(true)
       }
 
       updateEditorState(newState, false, node)
@@ -534,6 +534,10 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     } catch (error) {
       remote.log('error', `Error during init: ${error.message}`)
       setError(error)
+    }
+
+    if (isTauri) {
+      await remote.show()
     }
   }
 

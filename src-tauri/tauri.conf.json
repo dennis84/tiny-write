@@ -71,7 +71,8 @@
         "fullscreen": false,
         "hiddenTitle": true,
         "titleBarStyle": "Overlay",
-        "center": true
+        "center": true,
+        "visible": false
       }
     ],
     "security": {

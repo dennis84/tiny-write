@@ -151,7 +151,7 @@ export const updateWindow = async ({width, height, x, y}: Window = {}) => {
 
   // Last size should not be too small, otherwise difficult to enlarge.
   if (width > 10 && height > 10) {
-    getCurrent().setSize(new PhysicalSize(width, height))
+    await getCurrent().setSize(new PhysicalSize(width, height))
   }
 
   const size = await getCurrent().outerSize()
@@ -164,6 +164,11 @@ export const updateWindow = async ({width, height, x, y}: Window = {}) => {
     y >= 0 &&
     y < monitor.size.height - size.height
   ) {
-    getCurrent().setPosition(new PhysicalPosition(x, y))
+    await getCurrent().setPosition(new PhysicalPosition(x, y))
   }
+}
+
+export const show = async () => {
+  if (!isTauri) throw Error('Must be run in tauri: show')
+  return await invoke('show_main_window')
 }
