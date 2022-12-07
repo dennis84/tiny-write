@@ -1,3 +1,4 @@
+import {computePosition, offset} from '@floating-ui/dom'
 import {keymap} from 'prosemirror-keymap'
 import {Plugin, PluginKey} from 'prosemirror-state'
 import {EditorView} from 'prosemirror-view'
@@ -5,19 +6,20 @@ import {EditorView} from 'prosemirror-view'
 const MAX_MATCH = 500
 
 class AutocompleteView {
-  private dialog: HTMLElement
+  private tooltip: HTMLElement
 
   constructor(private view: EditorView, private pluginKey: PluginKey) {
-    this.dialog = document.createElement('div')
-    this.dialog.className = 'autocomplete'
-    view.dom.parentNode.appendChild(this.dialog)
+    this.tooltip = document.createElement('div')
+    this.tooltip.className = 'autocomplete-tooltip'
+
+    view.dom.parentNode.appendChild(this.tooltip)
     this.update(view)
   }
 
   update(view) {
     const pluginState = this.pluginKey.getState(view.state)
-    this.dialog.innerHTML = ''
-    this.dialog.style.display = 'none'
+    this.tooltip.innerHTML = ''
+    this.tooltip.style.display = 'none'
     const sel = view.state.selection
 
     if (!sel.empty) return
@@ -39,9 +41,30 @@ class AutocompleteView {
       return
     }
 
-    this.dialog.style.display = 'block'
-    this.dialog.style.left = `${coords.left}px`
-    this.dialog.style.top = `${coords.bottom + 10}px`
+    this.tooltip.style.display = 'block'
+    const virtualEl = {
+      getBoundingClientRect() {
+        return {
+          x: coords.left,
+          y: coords.top,
+          top: coords.top,
+          left: coords.left,
+          bottom: coords.bottom,
+          right: coords.right,
+          width: 1,
+          height: 1,
+        };
+      },
+    }
+
+    computePosition(virtualEl, this.tooltip, {
+      placement: 'bottom-start',
+      middleware: [offset(30)],
+    }).then(({x, y, placement}) => {
+      this.tooltip.classList.add(placement)
+      this.tooltip.style.left = `${x}px`
+      this.tooltip.style.top = `${y}px`
+    })
 
     pluginState.options.forEach((f, i) => {
       const option = document.createElement('div')
@@ -50,12 +73,12 @@ class AutocompleteView {
       }
 
       option.textContent = f
-      this.dialog.appendChild(option)
+      this.tooltip.appendChild(option)
     });
   }
 
   destroy() {
-    this.dialog.remove()
+    this.tooltip.remove()
   }
 }
 

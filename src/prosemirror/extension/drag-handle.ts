@@ -24,7 +24,7 @@ class TooltipView {
   private pos: number
 
   private onClose = (e) => {
-    if (!e.target.closest('.tooltip')) {
+    if (!e.target.closest('.block-tooltip')) {
       const tr = this.view.state.tr
       tr.setMeta(pluginKey, {showMenu: false, ref: undefined, pos: undefined})
       this.view.dispatch(tr)
@@ -53,7 +53,7 @@ class TooltipView {
 
   constructor(private view) {
     this.tooltip = document.createElement('div')
-    this.tooltip.className = 'tooltip'
+    this.tooltip.className = 'block-tooltip'
 
     const toPlain = document.createElement('div')
     toPlain.textContent = '🧽 remove text formats'
@@ -110,7 +110,7 @@ class TooltipView {
         this.tooltip.style.left = `${x}px`
         this.tooltip.style.top = `${y}px`
         this.arrow.style.left = middlewareData.arrow.x !== null ? `${middlewareData.arrow.x}px` : ''
-        this.arrow.style.top = middlewareData.arrow.x !== null ? `${middlewareData.arrow.y}px` : ''
+        this.arrow.style.top = middlewareData.arrow.y !== null ? `${middlewareData.arrow.y}px` : ''
       })
     })
   }

@@ -30,6 +30,7 @@ vi.mock('@/remote', () => ({
     path === 'file2' ? '# File2' : '',
   log: () => undefined,
   updateWindow: () => undefined,
+  show: () => undefined,
 }))
 
 vi.mock('idb-keyval', () => ({

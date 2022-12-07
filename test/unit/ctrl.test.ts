@@ -22,6 +22,7 @@ vi.mock('@/remote', () => ({
   },
   log: () => undefined,
   updateWindow: () => undefined,
+  show: () => undefined,
 }))
 
 vi.mock('idb-keyval', () => ({

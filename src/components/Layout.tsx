@@ -75,7 +75,8 @@ export const Layout = (props: Styled) => {
           }
         }
       }
-      .tooltip, .autocomplete {
+      .block-tooltip,
+      .autocomplete-tooltip {
         position: absolute;
         width: max-content;
         background: ${tooltipBackground(local.config)};
