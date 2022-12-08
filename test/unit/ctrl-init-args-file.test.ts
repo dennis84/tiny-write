@@ -1,5 +1,6 @@
 import {vi, expect, test} from 'vitest'
 
+vi.stubGlobal('__TAURI__', {})
 vi.stubGlobal('d3', vi.fn(() => ({
   curveLinear: () => undefined
 })))
@@ -12,12 +13,6 @@ const lastModified = new Date()
 vi.stubGlobal('matchMedia', vi.fn(() => ({
   matchMedia: () => '',
 })))
-
-vi.mock('@/env', () => ({
-  mod: 'Cmd',
-  isTauri: true,
-  isDark: () => true,
-}))
 
 vi.mock('@/remote', () => ({
   getArgs: async () => ({
