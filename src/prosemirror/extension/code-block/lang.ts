@@ -116,7 +116,7 @@ export const changeLang = (codeBlock: CodeBlockView, config: Config) =>
         elem = img
       } else {
         elem = document.createElement('span')
-        elem.textContent = lang
+        elem.textContent = lang || 'text'
         elem.setAttribute('title', 'Change language')
       }
 
