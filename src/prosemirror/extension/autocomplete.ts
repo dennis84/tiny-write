@@ -105,6 +105,7 @@ export const completionPlugin = (pluginKey, regex, getOptions) => new Plugin({
       if (view.composing) return false
       const state = view.state
       const $from = state.doc.resolve(from)
+      if ($from.depth === 0) return false
       if ($from.parent.type.spec.code) return false
 
       const text = $from.parent.textBetween(

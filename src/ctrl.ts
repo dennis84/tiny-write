@@ -8,7 +8,14 @@ import {EditorState, Transaction} from 'prosemirror-state'
 import {Node, Schema, Slice} from 'prosemirror-model'
 import {selectAll, deleteSelection} from 'prosemirror-commands'
 import * as Y from 'yjs'
-import {undo, redo, ySyncPluginKey, yDocToProsemirror, prosemirrorJSONToYDoc} from 'y-prosemirror'
+import {
+  undo,
+  redo,
+  ySyncPluginKey,
+  yDocToProsemirror,
+  yUndoPluginKey,
+  prosemirrorJSONToYDoc,
+} from 'y-prosemirror'
 import {WebsocketProvider} from 'y-websocket'
 import {uniqueNamesGenerator, adjectives, animals} from 'unique-names-generator'
 import {debounce} from 'ts-debounce'
@@ -177,7 +184,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
 
     disconnectCollab(state)
     const newState = withYjs({...state, ...next})
-    updateEditorState(newState, false)
+    updateEditorState(newState)
     setState({
       args: {cwd: state.args?.cwd},
       collab: undefined,
@@ -425,13 +432,18 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     }
   }
 
-  const updateEditorState = (state: State, reconfigure = true, node?: Element) => {
+  const updateEditorState = (state: State, node?: Element) => {
+    const undoManager = state.editorView?.state ?
+      yUndoPluginKey.getState(state.editorView.state)?.undoManager :
+      undefined
+
     const extensions = createExtensions({
       config: state.config ?? store.config,
       markdown: state.markdown ?? store.markdown,
       path: state.path ?? store.path,
       keymap,
       y: {
+        undoManager,
         type: state.collab.ydoc.getXmlFragment('prosemirror'),
         provider: state.collab.provider,
         permanentUserData: state.collab.permanentUserData,
@@ -442,17 +454,11 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     })
 
     let editorView = store.editorView
-    let editorState: EditorState
 
     const nodeViews = createNodeViews(extensions)
-    const schema = reconfigure ? editorView?.state.schema : createSchema(extensions)
+    const schema = createSchema(extensions)
     const plugins = extensions.reduce((acc, e) => e.plugins ? e.plugins(acc, schema) : acc, [])
-
-    if (reconfigure) {
-      editorState = editorView.state.reconfigure({plugins})
-    } else {
-      editorState = EditorState.fromJSON({schema, plugins}, createEmptyText())
-    }
+    const editorState = EditorState.fromJSON({schema, plugins}, createEmptyText())
 
     if (!editorView) {
       const dispatchTransaction = (tr: Transaction) => {
@@ -528,7 +534,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
         await remote.setAlwaysOnTop(true)
       }
 
-      updateEditorState(newState, false, node)
+      updateEditorState(newState, node)
       setState(newState)
       updateText(text)
     } catch (error) {
@@ -554,7 +560,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       error: undefined,
     })
 
-    updateEditorState(state, false)
+    updateEditorState(state)
     setState(state)
     updateText(createEmptyText())
   }
@@ -596,7 +602,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       collab: {room: undefined, ydoc: createYdoc()},
     })
 
-    updateEditorState(update, false)
+    updateEditorState(update)
     setState(update)
   }
 
@@ -604,7 +610,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     const state: State = unwrap(store)
     const file = await getFile(state, f)
     const update = await withFile(state, file)
-    updateEditorState(update, false)
+    updateEditorState(update)
     setState(update)
     if (!file.ydoc && file.text) updateText(file.text)
   }
@@ -713,7 +719,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       doc = text.toJSON()
     }
 
-    updateEditorState({...state, markdown}, false)
+    updateEditorState({...state, markdown})
     setState({markdown})
     updateText({...createEmptyText(), doc})
   }

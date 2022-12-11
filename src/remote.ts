@@ -142,7 +142,8 @@ export const save = async (state: EditorState): Promise<string> => {
 }
 
 export const log = (level: string, msg: string) => {
-  info(msg, {level})
+  if (isTauri) info(msg, {level})
+  else console.info(msg)
 }
 
 export const updateWindow = async ({width, height, x, y}: Window = {}) => {
