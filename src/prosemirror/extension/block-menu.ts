@@ -13,7 +13,7 @@ const createDragHandle = () => {
   const icon = document.createElement('span')
   icon.innerHTML = handleIcon
   handle.appendChild(icon)
-  handle.classList.add('handle')
+  handle.classList.add('block-handle')
   return handle
 }
 
@@ -116,9 +116,9 @@ class TooltipView {
   }
 }
 
-export const pluginKey = new PluginKey('drag-handle')
+export const pluginKey = new PluginKey('block-menu')
 
-const handlePlugin = new Plugin({
+const blockMenu = new Plugin({
   key: pluginKey,
   state: {
     init() {
@@ -151,7 +151,7 @@ const handlePlugin = new Plugin({
     handleDOMEvents: {
       mousedown: (editorView, event: MouseEvent) => {
         const target = event.target as Element
-        if (target.classList.contains('handle')) {
+        if (target.classList.contains('block-handle')) {
           const pos = editorView.posAtCoords({left: event.x + 30, top: event.y})
           const resolved = editorView.state.doc.resolve(pos.pos)
           const blockPos = resolved.before(1)
@@ -176,5 +176,5 @@ const handlePlugin = new Plugin({
 })
 
 export default (): ProseMirrorExtension => ({
-  plugins: (prev) => [...prev, handlePlugin]
+  plugins: (prev) => [...prev, blockMenu]
 })

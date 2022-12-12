@@ -11,15 +11,15 @@ import emphasis from '@/prosemirror/extension/emphasis'
 import placeholder from '@/prosemirror/extension/placeholder'
 import codeBlock from '@/prosemirror/extension/code-block'
 import image from '@/prosemirror/extension/image'
-import dragHandle from '@/prosemirror/extension/drag-handle'
+import blockMenu from '@/prosemirror/extension/block-menu'
 import pasteMarkdown from '@/prosemirror/extension/paste-markdown'
 import table from '@/prosemirror/extension/table'
 import {collab, CollabOptions} from '@/prosemirror/extension/collab'
 import select from '@/prosemirror/extension/select'
 import position from '@/prosemirror/extension/position'
 import container from '@/prosemirror/extension/container'
-import fileListing from '@/prosemirror/extension/file-listing'
-import wordCompletion from '@/prosemirror/extension/word-completion'
+import fileListing from '@/prosemirror/extension/autocomplete/file-listing'
+import wordCompletion from '@/prosemirror/extension/autocomplete/word-completion'
 import {Config} from '@/state'
 import {codeTheme, font, selection} from '@/config'
 import {isDev} from '@/env'
@@ -56,7 +56,7 @@ export const createExtensions = (props: Props): ProseMirrorExtension[] =>
     base(props.markdown),
     scroll(props.config.typewriterMode),
     collab(props.y),
-    dragHandle(),
+    blockMenu(),
     fileListing(),
     wordCompletion(),
   ] : [
@@ -64,7 +64,7 @@ export const createExtensions = (props: Props): ProseMirrorExtension[] =>
     base(props.markdown),
     markdown(),
     todoList(),
-    dragHandle(),
+    blockMenu(),
     codeBlock({
       theme: codeTheme(props.config).value,
       dark: codeTheme(props.config).dark,

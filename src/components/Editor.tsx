@@ -15,7 +15,7 @@ export default (props: Styled & {markdown: boolean}) => {
       display: flex;
       font-family: '${font(local.config, {monospace: true})}';
       font-variant-ligatures: none;
-      .handle {
+      .block-handle {
         top: 2px;
       }
       .cm-editor {
@@ -193,7 +193,6 @@ export default (props: Styled & {markdown: boolean}) => {
         }
         h1 {
           font-size: ${local.config.fontSize * 1.8}px;
-          line-height: ${local.config.fontSize * 2.3}px;
         }
         h2 {
           font-size: ${local.config.fontSize * 1.4}px;
@@ -310,7 +309,7 @@ export default (props: Styled & {markdown: boolean}) => {
         .draggable {
           position: relative;
         }
-        .handle {
+        .block-handle {
           position: absolute;
           left: -30px;
           top: 0;
@@ -335,10 +334,7 @@ export default (props: Styled & {markdown: boolean}) => {
             background: ${foreground(local.config)}19;
           }
         }
-        h1 .handle {
-          height: ${local.config.fontSize * 2.3}px;
-        }
-        .draggable:hover .handle {
+        .draggable:hover .block-handle {
           opacity: 1;
         }
         .task-list {
