@@ -256,7 +256,8 @@ export default (props: Styled & {markdown: boolean}) => {
               border-left: 0;
             }
             th {
-              border-bottom-width: 2px;
+              background: ${foreground(local.config)}19;
+              color: ${foreground(local.config)}cc;
             }
             tr:last-child td {
               border-bottom: 0;

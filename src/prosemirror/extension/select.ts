@@ -37,7 +37,12 @@ class SelectView {
   onMouseDown = (e) => {
     if (e.which === 3) return
     this.onMouseUp(e)
-    if (e.target !== this.view.dom && e.target !== this.view.dom.parentNode) {
+
+    if (
+      e.target !== this.view.dom &&
+      e.target !== this.view.dom.parentNode &&
+      e.target !== this.view.dom.parentNode.parentNode
+    ) {
       return
     }
 

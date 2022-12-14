@@ -6,14 +6,15 @@ import {completionKeymap, completionPlugin} from './autocomplete'
 
 const pluginKey = new PluginKey('file-listing')
 
-export default (): ProseMirrorExtension => isTauri ? ({
+export default (fontSize: number): ProseMirrorExtension => isTauri ? ({
   plugins: (prev) => [
     completionKeymap(pluginKey),
     ...prev,
     completionPlugin(
       pluginKey,
       /(\.\.?|~)\/[^\s]*/g,
-      async (text) => listContents(text)
+      async (text) => listContents(text),
+      fontSize
     ),
   ]
 }) : ({})

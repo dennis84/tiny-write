@@ -57,8 +57,8 @@ export const createExtensions = (props: Props): ProseMirrorExtension[] =>
     scroll(props.config.typewriterMode),
     collab(props.y),
     blockMenu(),
-    fileListing(),
-    wordCompletion(),
+    fileListing(props.config.fontSize),
+    wordCompletion(props.config.fontSize),
   ] : [
     customKeymap(props),
     base(props.markdown),
@@ -86,8 +86,8 @@ export const createExtensions = (props: Props): ProseMirrorExtension[] =>
     scroll(props.config.typewriterMode),
     pasteMarkdown(),
     collab(props.y),
-    fileListing(),
-    wordCompletion(),
+    fileListing(props.config.fontSize),
+    wordCompletion(props.config.fontSize),
   ]
 
 export const createEmptyText = () => ({

@@ -8,7 +8,11 @@ const MAX_MATCH = 500
 class AutocompleteView {
   private tooltip: HTMLElement
 
-  constructor(private view: EditorView, private pluginKey: PluginKey) {
+  constructor(
+    private view: EditorView,
+    private pluginKey: PluginKey,
+    private fontSize: number = 14,
+  ) {
     this.tooltip = document.createElement('div')
     this.tooltip.className = 'autocomplete-tooltip'
 
@@ -59,7 +63,7 @@ class AutocompleteView {
 
     computePosition(virtualEl, this.tooltip, {
       placement: 'bottom-start',
-      middleware: [offset(30)],
+      middleware: [offset(this.fontSize + 5)],
     }).then(({x, y, placement}) => {
       this.tooltip.classList.add(placement)
       this.tooltip.style.left = `${x}px`
@@ -82,7 +86,7 @@ class AutocompleteView {
   }
 }
 
-export const completionPlugin = (pluginKey, regex, getOptions) => new Plugin({
+export const completionPlugin = (pluginKey, regex, getOptions, fontSize) => new Plugin({
   key: pluginKey,
   state: {
     init() {
@@ -95,7 +99,7 @@ export const completionPlugin = (pluginKey, regex, getOptions) => new Plugin({
     }
   },
   view(editorView) {
-    return new AutocompleteView(editorView, pluginKey)
+    return new AutocompleteView(editorView, pluginKey, fontSize)
   },
   props: {
     handleDOMEvents: {

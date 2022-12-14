@@ -55,7 +55,7 @@ const update = debounce((view) => {
 
 const wordCompletionKey = new PluginKey('word-completion')
 
-export default (): ProseMirrorExtension => ({
+export default (fontSize): ProseMirrorExtension => ({
   plugins: (prev) => [
     completionKeymap(wordCompletionKey),
     ...prev,
@@ -66,7 +66,8 @@ export default (): ProseMirrorExtension => ({
         const words = collectWordsKey.getState(state)
         if (text.length < 1) return []
         return [...words].filter((w) => w !== text && w.startsWith(text))
-      }
+      },
+      fontSize
     ),
     plugin,
   ]
