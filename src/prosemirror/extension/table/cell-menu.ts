@@ -1,6 +1,6 @@
 import {Plugin, PluginKey} from 'prosemirror-state'
-import {Decoration, DecorationSet} from 'prosemirror-view'
-
+import {Decoration, DecorationSet, EditorView} from 'prosemirror-view'
+import {selectParentNode} from 'prosemirror-commands'
 import {
   cellAround,
   nextCell,
@@ -10,21 +10,16 @@ import {
   deleteTable,
   CellSelection,
 } from 'prosemirror-tables'
+import {arrow, computePosition, flip, offset, shift} from '@floating-ui/dom'
+
+const handleIcon =
+  '<svg viewBox="0 0 10 10" height="14" width="14"><path d="M3 2a1 1 0 110-2 1 1 0 010 2zm0 4a1 1 0 110-2 1 1 0 010 2zm0 4a1 1 0 110-2 1 1 0 010 2zm4-8a1 1 0 110-2 1 1 0 010 2zm0 4a1 1 0 110-2 1 1 0 010 2zm0 4a1 1 0 110-2 1 1 0 010 2z"/></svg>'
 
 const createMenu = (type: 'right' | 'left' | 'bottom' | 'top') => {
   const button = document.createElement('span')
   button.setAttribute('contenteditable', 'false')
-  button.classList.add(`table-menu-${type}`)
-  if (type === 'right') {
-    button.title = 'Add column'
-    button.textContent = '+'
-  } else if (type === 'left') {
-    button.title = 'Add column'
-    button.textContent = '+'
-  } else if (type === 'bottom') {
-    button.title = 'Delete column'
-    button.textContent = '-'
-  }
+  button.classList.add('table-menu-button', `table-menu-${type}`)
+  button.innerHTML = handleIcon
   return button
 }
 
@@ -45,18 +40,149 @@ const findBottomCell = (pos) => {
   return prev
 }
 
+class CellMenuView {
+  private tooltip: HTMLElement
+  private arrow: HTMLElement
+
+  private onAddColumnBefore = () => {
+    const pluginState = pluginKey.getState(this.view.state)
+    const pos = this.view.state.doc.resolve(pluginState.currentCell)
+    this.setCellSelection(pos)
+    addColumnBefore(this.view.state, this.view.dispatch)
+    setTimeout(() => this.view.focus())
+    return true
+  }
+
+  private onAddColumnAfter = () => {
+    const pluginState = pluginKey.getState(this.view.state)
+    const pos = this.view.state.doc.resolve(pluginState.currentCell)
+    this.setCellSelection(pos)
+    addColumnAfter(this.view.state, this.view.dispatch)
+    setTimeout(() => this.view.focus())
+    return true
+  }
+
+  private onRemoveColumn = () => {
+    const pluginState = pluginKey.getState(this.view.state)
+    const pos = this.view.state.doc.resolve(pluginState.currentCell)
+    const colCount = pos.node().childCount
+
+    this.setCellSelection(pos)
+    if (colCount === 1) {
+      deleteTable(this.view.state, this.view.dispatch)
+    } else {
+      deleteColumn(this.view.state, this.view.dispatch)
+    }
+
+    setTimeout(() => this.view.focus())
+    return true
+  }
+
+  constructor(private view: EditorView) {
+    this.tooltip = document.createElement('div')
+    this.tooltip.className = 'table-menu-tooltip'
+
+    const addColumnBefore = document.createElement('div')
+    addColumnBefore.textContent = 'Add column before'
+    addColumnBefore.addEventListener('click', this.onAddColumnBefore)
+    this.tooltip.appendChild(addColumnBefore)
+
+    const addColumnAfter = document.createElement('div')
+    addColumnAfter.textContent = 'Add column after'
+    addColumnAfter.addEventListener('click', this.onAddColumnAfter)
+    this.tooltip.appendChild(addColumnAfter)
+
+    const removeColumn = document.createElement('div')
+    removeColumn.textContent = 'Remove column'
+    removeColumn.addEventListener('click', this.onRemoveColumn)
+    this.tooltip.appendChild(removeColumn)
+
+    this.arrow = document.createElement('span')
+    this.arrow.className = 'arrow'
+    this.tooltip.appendChild(this.arrow)
+
+    view.dom.parentNode.appendChild(this.tooltip)
+    this.update(view)
+  }
+
+  private onClose = (e) => {
+    if (!e.target.closest('.table-menu-tooltip')) {
+      const tr = this.view.state.tr
+      tr.setMeta(pluginKey, {})
+      this.view.dispatch(tr)
+    }
+  }
+
+  update(view) {
+    const pluginState = pluginKey.getState(view.state)
+    if (!pluginState.virtualEl) {
+      document.removeEventListener('mousedown', this.onClose)
+      this.tooltip.style.display = 'none'
+      return
+    }
+
+    if (this.tooltip.style.display === 'block') {
+      return
+    }
+
+    this.tooltip.style.display = 'block'
+    document.addEventListener('mousedown', this.onClose)
+
+    computePosition(pluginState.virtualEl, this.tooltip, {
+      placement: pluginState.virtualEl.direction,
+      middleware: [
+        offset(10),
+        flip(),
+        shift(),
+        arrow({element: this.arrow}),
+      ]
+    }).then(({x, y, placement, middlewareData}) => {
+      this.tooltip.style.left = `${x}px`
+      this.tooltip.style.top = `${y}px`
+
+      const [side] = placement.split('-')
+      const staticSide = {
+        top: 'bottom',
+        right: 'left',
+        bottom: 'top',
+        left: 'right',
+      }[side]
+
+      if (middlewareData.arrow) {
+        const {x, y} = middlewareData.arrow
+        Object.assign(this.arrow.style, {
+          left: x != null ? `${x}px` : '',
+          top: y != null ? `${y}px` : '',
+          [staticSide]: `${-this.arrow.offsetWidth / 2}px`
+        });
+      }
+    })
+  }
+
+  setCellSelection(pos) {
+    const tr = this.view.state.tr
+    tr.setSelection(new CellSelection(pos))
+    tr.setMeta(pluginKey, {})
+    this.view.dispatch(tr)
+  }
+}
+
 export const cellMenu = new Plugin({
   key: pluginKey,
   state: {
     init() {
       return {
         currentCell: undefined,
+        virtualEl: undefined,
       }
     },
     apply(tr, prev) {
       const state = tr.getMeta(this)
       return state ?? prev
     }
+  },
+  view(editorView: EditorView) {
+    return new CellMenuView(editorView)
   },
   props: {
     decorations(state) {
@@ -84,9 +210,13 @@ export const cellMenu = new Plugin({
       mousemove(view, event) {
         const target = event.target as HTMLElement
         const pluginState = pluginKey.getState(view.state)
+        if (pluginState.virtualEl) {
+          return false
+        }
+
         if (pluginState.currentCell && !target.closest('table')) {
           const tr = view.state.tr
-          tr.setMeta(pluginKey, {currentCell: undefined})
+          tr.setMeta(pluginKey, {...pluginState, currentCell: undefined})
           view.dispatch(tr)
         }
 
@@ -98,46 +228,31 @@ export const cellMenu = new Plugin({
 
         if (cell && pluginState.currentCell !== cell.pos) {
           const tr = view.state.tr
-          tr.setMeta(pluginKey, {currentCell: cell.pos})
+          tr.setMeta(pluginKey, {...pluginState, currentCell: cell.pos})
           view.dispatch(tr)
           return false
         }
       },
-      mousedown: (view, event: MouseEvent) => {
+      mouseup: (view, event: MouseEvent) => {
         const target = event.target as Element
-        const setCellSelection = (pos) => {
+
+        if (target.classList.contains('table-menu-button')) {
+          const pluginState = pluginKey.getState(view.state)
+          const pos = view.state.doc.resolve(pluginState.currentCell)
           const tr = view.state.tr
-          tr.setSelection(new CellSelection(pos))
-          view.dispatch(tr)
-        }
-
-        if (target.classList.contains('table-menu-right')) {
-          const pluginState = pluginKey.getState(view.state)
-          const pos = view.state.doc.resolve(pluginState.currentCell)
-          setCellSelection(pos)
-          addColumnAfter(view.state, view.dispatch)
-          setTimeout(() => view.focus())
-          return true
-        } else if (target.classList.contains('table-menu-left')) {
-          const pluginState = pluginKey.getState(view.state)
-          const pos = view.state.doc.resolve(pluginState.currentCell)
-          setCellSelection(pos)
-          addColumnBefore(view.state, view.dispatch)
-          setTimeout(() => view.focus())
-          return true
-        } else if (target.classList.contains('table-menu-bottom')) {
-          const pluginState = pluginKey.getState(view.state)
-          const pos = view.state.doc.resolve(pluginState.currentCell)
-          const colCount = pos.node().childCount
-
-          setCellSelection(pos)
-          if (colCount === 1) {
-            deleteTable(view.state, view.dispatch)
-          } else {
-            deleteColumn(view.state, view.dispatch)
+          const box = (event.target as Element).getBoundingClientRect()
+          const direction = target.classList.contains('table-menu-left') ? 'left'
+            : target.classList.contains('table-menu-right') ? 'right'
+            : target.classList.contains('table-menu-bottom') ? 'bottom' : 'left'
+          const virtualEl = {
+            getBoundingClientRect: () => box,
+            direction,
           }
 
-          setTimeout(() => view.focus())
+          tr.setSelection(new CellSelection(pos))
+          tr.setMeta(pluginKey, {...pluginState, virtualEl})
+          view.dispatch(tr)
+          selectParentNode(view.state, view.dispatch)
           return true
         }
       }

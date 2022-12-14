@@ -276,24 +276,32 @@ export default (props: Styled & {markdown: boolean}) => {
             background: ${background(local.config)};
             border: 1px solid ${foreground(local.config)}7f;
             border-radius: 3px;
+            svg {
+              pointer-events: none;
+              fill: ${foreground(local.config)}99;
+              height: 10px;
+            }
           }
           .table-menu-right {
-            top: calc(50% - 10px);
-            right: -5px;
-            width: 9px;
-            height: 20px;
+            top: calc(50% - 8px);
+            right: -8.5px;
+            width: 16px;
+            height: 16px;
           }
           .table-menu-left {
-            top: calc(50% - 10px);
-            left: -5px;
-            width: 9px;
-            height: 20px;
+            top: calc(50% - 8px);
+            left: -8.5px;
+            width: 16px;
+            height: 16px;
           }
           .table-menu-bottom {
-            left: calc(50% - 10px);
-            bottom: -5px;
-            width: 20px;
-            height: 9px;
+            left: calc(50% - 8px);
+            bottom: -8.5px;
+            width: 16px;
+            height: 16px;
+            svg {
+              transform: rotate(90deg);
+            }
           }
           &.selected table {
             box-shadow: 0 0 0 1px ${primaryBackground(local.config)};

@@ -105,12 +105,24 @@ class TooltipView {
           arrow({element: this.arrow}),
         ],
       }).then(({x, y, placement, middlewareData}) => {
-        this.tooltip.classList.remove('left', 'right')
-        this.tooltip.classList.add(placement)
         this.tooltip.style.left = `${x}px`
         this.tooltip.style.top = `${y}px`
-        this.arrow.style.left = middlewareData.arrow.x !== null ? `${middlewareData.arrow.x}px` : ''
-        this.arrow.style.top = middlewareData.arrow.y !== null ? `${middlewareData.arrow.y}px` : ''
+        const side = placement.split('-')[0]
+        const staticSide = {
+          top: 'bottom',
+          right: 'left',
+          bottom: 'top',
+          left: 'right'
+        }[side]
+
+        if (middlewareData.arrow) {
+          const {x, y} = middlewareData.arrow
+          Object.assign(this.arrow.style, {
+            left: x != null ? `${x}px` : '',
+            top: y != null ? `${y}px` : '',
+            [staticSide]: `${-this.arrow.offsetWidth / 2}px`
+          });
+        }
       })
     })
   }

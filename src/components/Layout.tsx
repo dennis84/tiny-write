@@ -76,6 +76,7 @@ export const Layout = (props: Styled) => {
         }
       }
       .block-tooltip,
+      .table-menu-tooltip,
       .autocomplete-tooltip {
         position: absolute;
         width: max-content;
@@ -100,11 +101,7 @@ export const Layout = (props: Styled) => {
           height: 8px;
           background: ${tooltipBackground(local.config)};
           position: absolute;
-          right: -4px;
           transform: rotate(45deg);
-        }
-        &.right .arrow {
-          left: -4px;
         }
       }
       .yjs-cursor {
