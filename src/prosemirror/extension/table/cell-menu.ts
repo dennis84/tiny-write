@@ -9,6 +9,7 @@ import {
   deleteColumn,
   deleteTable,
   CellSelection,
+  deleteRow,
 } from 'prosemirror-tables'
 import {arrow, computePosition, flip, offset, shift} from '@floating-ui/dom'
 
@@ -78,24 +79,46 @@ class CellMenuView {
     return true
   }
 
+  private onRemoveRow = () => {
+    const pluginState = pluginKey.getState(this.view.state)
+    const pos = this.view.state.doc.resolve(pluginState.currentCell)
+    const rowCount = pos.node(-1).childCount
+    console.log(rowCount)
+
+    this.setCellSelection(pos)
+    if (rowCount === 1) {
+      deleteTable(this.view.state, this.view.dispatch)
+    } else {
+      deleteRow(this.view.state, this.view.dispatch)
+    }
+
+    setTimeout(() => this.view.focus())
+    return true
+  }
+
   constructor(private view: EditorView) {
     this.tooltip = document.createElement('div')
     this.tooltip.className = 'table-menu-tooltip'
 
     const addColumnBefore = document.createElement('div')
-    addColumnBefore.textContent = 'Add column before'
+    addColumnBefore.textContent = '⍇ Add column before'
     addColumnBefore.addEventListener('click', this.onAddColumnBefore)
     this.tooltip.appendChild(addColumnBefore)
 
     const addColumnAfter = document.createElement('div')
-    addColumnAfter.textContent = 'Add column after'
+    addColumnAfter.textContent = '⍈ Add column after'
     addColumnAfter.addEventListener('click', this.onAddColumnAfter)
     this.tooltip.appendChild(addColumnAfter)
 
     const removeColumn = document.createElement('div')
-    removeColumn.textContent = 'Remove column'
+    removeColumn.textContent = '⎅ Remove column'
     removeColumn.addEventListener('click', this.onRemoveColumn)
     this.tooltip.appendChild(removeColumn)
+
+    const removeRow = document.createElement('div')
+    removeRow.textContent = '⏛ Remove row'
+    removeRow.addEventListener('click', this.onRemoveRow)
+    this.tooltip.appendChild(removeRow)
 
     this.arrow = document.createElement('span')
     this.arrow.className = 'arrow'

@@ -425,7 +425,7 @@ export default (props: Styled & {markdown: boolean}) => {
           background: ${selection(local.config)};
         }
         .ProseMirror-selectednode {
-          background: ${selection(local.config)};
+          background: ${selection(local.config)} !important;
           box-shadow: 0 0 0 5px ${selection(local.config)};
         }
       }
