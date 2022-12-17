@@ -34,14 +34,7 @@ export const markdownSerializer = new MarkdownSerializer({
     state.write(':::\n')
   },
   code_block(state, node) {
-    const src = node.attrs.params.src
-    if (src) {
-      const title = state.esc(node.attrs.params.title || '')
-      state.write(`![${title}](${src})\n`)
-      return
-    }
-
-    state.write('```' + (node.attrs.params.lang || '') + '\n')
+    state.write('```' + (node.attrs.lang || '') + '\n')
     state.text(node.textContent, false)
     state.ensureNewLine()
     state.write('```')
@@ -190,7 +183,7 @@ export const createMarkdownParser = (schema: Schema) =>
     },
     fence: {
       block: 'code_block',
-      getAttrs: (tok) => ({params: {lang: tok.info}}),
+      getAttrs: (tok) => ({lang: tok.info}),
       noCloseToken: true
     },
     hr: {node: 'horizontal_rule'},

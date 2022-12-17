@@ -16,7 +16,7 @@ const codeBlockRule = (nodeType: NodeType) =>
     nodeType,
     match => {
       const lang = match[1]
-      if (lang) return {params: {lang}}
+      if (lang) return {lang}
       return {}
     }
   )
@@ -92,12 +92,8 @@ const codeBlockSchema = {
   defining: true,
   selectable: true,
   marks: 'ychange',
-  attrs: {params: {default: ''}},
-  toDOM: (node: Node) => [
-    'pre',
-    node.attrs.params ? {'data-params': node.attrs.params} : {},
-    ['code', 0]
-  ]
+  attrs: {lang: {default: null}},
+  toDOM: () => ['pre', {}, ['code', 0]]
 }
 
 export default (props: CodeBlockProps): ProseMirrorExtension => ({

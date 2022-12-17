@@ -150,10 +150,7 @@ export class CodeBlockView {
           onClose: () => this.editorView.focus(),
           onChange: (lang: string) => {
             const tr = this.view.state.tr
-            tr.setNodeMarkup(this.getPos(), undefined, {
-              ...this.node.attrs,
-              params: {...this.node.attrs.params, lang},
-            })
+            tr.setNodeMarkup(this.getPos(), undefined, {...this.node.attrs, lang})
             this.view.dispatch(tr)
             this.reconfigure()
             this.editorView.focus()
@@ -245,7 +242,7 @@ export class CodeBlockView {
     this.node = node
     if (this.updating) return true
 
-    if (node.attrs.params.lang !== lang) {
+    if (node.attrs.lang !== lang) {
       this.reconfigure()
     }
 
@@ -313,6 +310,6 @@ export class CodeBlockView {
   }
 
   get lang() {
-    return this.node.attrs.params.lang ?? ''
+    return this.node.attrs.lang ?? ''
   }
 }
