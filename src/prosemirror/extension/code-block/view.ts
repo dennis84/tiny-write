@@ -18,7 +18,7 @@ import {findWords, tabCompletionKeymap} from './completion'
 import {highlight, changeLang} from './lang'
 import {getTheme} from './theme'
 import expand from './expand'
-import prettify from './prettify'
+import {prettify} from './prettify'
 import mermaid from './mermaid'
 
 export class CodeBlockView {
@@ -39,6 +39,7 @@ export class CodeBlockView {
     this.dom = document.createElement('div')
     this.dom.setAttribute('contenteditable', 'false')
     this.dom.classList.add('cm-container')
+    this.dom.CodeMirror = this
 
     const codeMirrorKeymap = keymap.of([{
       key: 'Backspace',
@@ -144,7 +145,6 @@ export class CodeBlockView {
         EditorState.tabSize.of(this.options.prettier.tabWidth),
         indentUnit.of(this.options.prettier.useTabs ? '\t' : ' '.repeat(this.options.prettier.tabWidth)),
         expand(this),
-        prettify(this),
         mermaid(this),
         changeLang(this, {
           onClose: () => this.editorView.focus(),
@@ -311,5 +311,16 @@ export class CodeBlockView {
 
   get lang() {
     return this.node.attrs.lang ?? ''
+  }
+
+  prettify() {
+    this.editorView.focus()
+    prettify(this.editorView, this.lang, this.options.prettier)
+  }
+
+  changeLang() {
+    this.editorView.dispatch({
+      userEvent: 'change-lang',
+    })
   }
 }

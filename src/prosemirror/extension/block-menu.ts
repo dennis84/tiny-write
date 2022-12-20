@@ -1,4 +1,4 @@
-import {Plugin, NodeSelection, PluginKey} from 'prosemirror-state'
+import {Plugin, NodeSelection, PluginKey, Selection} from 'prosemirror-state'
 import {DecorationSet, Decoration, EditorView} from 'prosemirror-view'
 import {setBlockType} from 'prosemirror-commands'
 import {ProseMirrorExtension} from '@/prosemirror/state'
@@ -51,9 +51,54 @@ class TooltipView {
     this.view.focus()
   }
 
+  onPrettify = () => {
+    const dom = this.view.domAtPos(this.pos + 1)
+    dom.node?.CodeMirror?.prettify()
+    const tr = this.view.state.tr
+    tr.setMeta(pluginKey, {showMenu: false, ref: undefined, pos: undefined})
+    this.view.dispatch(tr)
+    this.view.focus()
+  }
+
+  onChangeLang = () => {
+    const tr = this.view.state.tr
+    tr.setMeta(pluginKey, {showMenu: false, ref: undefined, pos: undefined})
+    tr.setSelection(Selection.near(tr.doc.resolve(this.pos)))
+    this.view.dispatch(tr)
+    this.view.focus()
+    const dom = this.view.domAtPos(this.pos + 1)
+    dom.node?.CodeMirror?.changeLang()
+  }
+
   constructor(private view) {
+    this.update(view)
+  }
+
+  createNav() {
+    const resolvedPos = this.view.state.doc.resolve(this.pos + 1)
+    const node = resolvedPos.node()
+
     this.tooltip = document.createElement('div')
     this.tooltip.className = 'block-tooltip'
+    this.tooltip.style.display = 'block'
+
+    if (node.type.name === 'code_block') {
+      const changeLang = document.createElement('div')
+      changeLang.textContent = '💱 change language'
+      changeLang.addEventListener('click', this.onChangeLang)
+      changeLang.dataset.testid = 'change-lang'
+      this.tooltip.appendChild(changeLang)
+
+      const prettify = document.createElement('div')
+      prettify.textContent = '💅 prettify'
+      prettify.addEventListener('click', this.onPrettify)
+      prettify.dataset.testid = 'prettify'
+      this.tooltip.appendChild(prettify)
+
+      const divider = document.createElement('hr')
+      divider.classList.add('divider')
+      this.tooltip.appendChild(divider)
+    }
 
     const toPlain = document.createElement('div')
     toPlain.textContent = '🧽 remove text formats'
@@ -69,8 +114,7 @@ class TooltipView {
     this.arrow.className = 'arrow'
     this.tooltip.appendChild(this.arrow)
 
-    view.dom.parentNode.appendChild(this.tooltip)
-    this.update(view)
+    this.view.dom.parentNode.appendChild(this.tooltip)
   }
 
   update(view: EditorView) {
@@ -78,12 +122,11 @@ class TooltipView {
 
     if (!showMenu) {
       if (this.cleanup) {
-        this.cleanup()
-        this.cleanup = undefined
+        this.cleanup = this.cleanup()
       }
 
       document.removeEventListener('mousedown', this.onClose)
-      this.tooltip.style.display = 'none'
+      this.tooltip = this.tooltip?.remove()
       return
     }
 
@@ -92,8 +135,8 @@ class TooltipView {
     }
 
     this.pos = pos
+    this.createNav()
     document.addEventListener('mousedown', this.onClose)
-    this.tooltip.style.display = 'block'
 
     this.cleanup = autoUpdate(ref, this.tooltip, () => {
       computePosition(ref, this.tooltip, {

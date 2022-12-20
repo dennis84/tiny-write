@@ -10,6 +10,13 @@ test.beforeEach(async ({page}) => {
   await page.waitForSelector('[data-testid="initialized"]')
 })
 
+const openBlockMenu = async (page: Page, nth: number) => {
+  const box = await page.locator(`.ProseMirror *:nth-child(${nth}) .block-handle`).boundingBox()
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2)
+  await page.mouse.down()
+  await page.mouse.up()
+}
+
 test('code block', async ({page}) => {
   await page.type('.ProseMirror', '```javascript ', {delay})
   await page.waitForSelector('.cm-container')
@@ -17,7 +24,8 @@ test('code block', async ({page}) => {
   expect(await page.$eval('.cm-container .lang-toggle img', (node) => node.getAttribute('title'))).toBe('javascript')
 
   // prettify
-  await page.click('.prettify')
+  await openBlockMenu(page, 1)
+  await page.click('[data-testid="prettify"]')
   expect(await page.textContent(cmContent)).toBe("const foo = 'bar'")
 
   // change lang
@@ -25,6 +33,13 @@ test('code block', async ({page}) => {
   await page.type('.cm-container .lang-input', 'typescript', {delay})
   await page.keyboard.press('Enter')
   expect(await page.$eval('.cm-container .lang-toggle img', (node) => node.getAttribute('title'))).toBe('typescript')
+
+  // change lang via block menu
+  await openBlockMenu(page, 1)
+  await page.click('[data-testid="change-lang"]')
+  await page.type('.cm-container .lang-input', 'js', {delay})
+  await page.keyboard.press('Enter')
+  expect(await page.$eval('.cm-container .lang-toggle img', (node) => node.getAttribute('title'))).toBe('js')
 
   // create line above
   await move(page, 'ArrowUp')

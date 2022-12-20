@@ -96,6 +96,12 @@ export const Layout = (props: Styled) => {
             background: ${selection(local.config)};
           }
         }
+        .divider {
+          height: 1px;
+          border: 0;
+          background: ${foreground(local.config)}19;
+          margin: 0;
+        }
         .arrow {
           width: 8px;
           height: 8px;

@@ -42,20 +42,22 @@ export const changeLang = (codeBlock: CodeBlockView, config: Config) =>
     constructor(private view: EditorView) {}
 
     destroy() {
-      if (this.toggle) {
-        this.updateDOM()
-        this.toggle.remove()
-        this.input.remove()
-      }
-      this.toggle = null
-      this.input = null
-      this.inputEditor?.destroy()
+      this.toggle = this.toggle?.remove()
+      this.input = this.input?.remove()
+      this.inputEditor = this.inputEditor?.destroy()
     }
 
     update(update: ViewUpdate) {
       if (!this.toggle) {
         this.renderDOM()
         this.updateDOM()
+      }
+
+      if (update.transactions[0]?.isUserEvent('change-lang')) {
+        this.toggle.style.display = 'none'
+        this.input.style.display = 'flex'
+        this.inputEditor.focus()
+        return
       }
 
       if (
@@ -67,7 +69,7 @@ export const changeLang = (codeBlock: CodeBlockView, config: Config) =>
       }
     }
 
-    renderDOM() {
+    private renderDOM() {
       const theme = getTheme(codeBlock.options.theme)
 
       this.toggle = document.createElement('div')
@@ -103,25 +105,21 @@ export const changeLang = (codeBlock: CodeBlockView, config: Config) =>
       this.view.dom.appendChild(this.toggle)
     }
 
-    updateDOM() {
+    private updateDOM() {
       const lang = this.lang
       const cur = this.toggle?.children[0]?.getAttribute('title')
       if (cur === lang) return
 
-      let elem: Element
       if (logos[lang]) {
         const img = document.createElement('img')
         img.src = logos[lang]
         img.setAttribute('title', lang)
-        elem = img
+        this.toggle.innerHTML = ''
+        this.toggle.appendChild(img)
       } else {
-        elem = document.createElement('span')
-        elem.textContent = lang || 'text'
-        elem.setAttribute('title', 'Change language')
+        this.toggle.style.display = 'none'
+        this.toggle.innerHTML = ''
       }
-
-      this.toggle.innerHTML = ''
-      this.toggle.appendChild(elem)
     }
   })
 
