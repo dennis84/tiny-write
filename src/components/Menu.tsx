@@ -112,6 +112,16 @@ export const Sub = (props: {children: JSX.Element}) => (
   `}>{props.children}</nav>
 )
 
+export const FileList = (props: {children: JSX.Element}) => (
+  <nav class={css`
+    margin: 10px 0;
+    margin-bottom: 30px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-column-gap: 10px;
+  `}>{props.children}</nav>
+)
+
 const itemCss = (config: Config) => css`
   width: 100%;
   padding: 2px 0;
@@ -423,7 +433,7 @@ export default () => {
         done = true
         return false
       } else if (node.type.name === 'image') {
-        nodes.push(h('span', {}, '️🖼️ '))
+        nodes.push(h('span', {}, '️🖼️'))
       } else if (node.type.name === 'video') {
         nodes.push(h('span', {}, '️🎬 '))
       } else if (parent.type.name === 'code_block') {
@@ -431,7 +441,7 @@ export default () => {
         if (text.length > maxCode) {
           text = text.slice(0, maxCode) + '…'
         }
-        nodes.push(h('code', {}, text))
+        nodes.push(h('pre', h('code', {}, text)))
         nodes.push(h('span', {}, ' '))
         len += text.length + 1
       } else if (node.isText) {
@@ -454,17 +464,37 @@ export default () => {
     })
 
     return (
-      <Link
-        config={store.config}
-        css={css`
+      <div
+        class={css`
+          height: 100px;
+          overflow: hidden;
+          padding: 2px 4px;
           margin-bottom: 10px;
-          display: block;
-          line-height: 28px;
-          code {
+          cursor: pointer;
+          font-size: 10px;
+          line-height: 1.5;
+          color: ${foreground(store.config)};
+          background: ${foreground(store.config)}19;
+          border: 1px solid ${foreground(store.config)}99;
+          box-shadow: 0 2px 0 0 ${foreground(store.config)}99;
+          border-radius: 3px;
+          pre {
             border: 1px solid ${foreground(store.config)}7f;
             background: ${foreground(store.config)}19;
             border-radius: 3px;
-            padding: 2px;
+            padding: 0px;
+            margin: 0;
+            overflow: hidden;
+          }
+          &:hover {
+            position: relative;
+            box-shadow: 0 3px 0 0 ${foreground(store.config)}99;
+            top: -1px;
+          }
+          &:active {
+            position: relative;
+            box-shadow: none;
+            top: 1px;
           }
         `}
         onClick={() => onOpenFile(p.file)}
@@ -473,7 +503,7 @@ export default () => {
           when={p.file.path}
           fallback={<Excerpt file={p.file} />}
         >{path()}&nbsp;📎</Show>
-      </Link>
+      </div>
     )
   }
 
@@ -555,11 +585,11 @@ export default () => {
             </Sub>
             <Show when={store.files.length > 0}>
               <Label config={store.config}>Files</Label>
-              <Sub>
+              <FileList>
                 <For each={store.files}>
                   {(file: File) => <FileLink file={file} />}
                 </For>
-              </Sub>
+              </FileList>
             </Show>
             <Label config={store.config}>Edit</Label>
             <Sub>
