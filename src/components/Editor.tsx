@@ -18,6 +18,17 @@ export default (props: Styled & {markdown: boolean}) => {
       .block-handle {
         top: 2px;
       }
+      .cm-tooltip-autocomplete {
+        border-radius: 3px;
+        border: 0;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        ul {
+          max-height: 300px;
+          li {
+            padding: 10px;
+          }
+        }
+      }
       &.ProseMirror-selectednode {
         box-shadow: 0 0 0 5px ${primaryBackground(local.config)}44;
       }
