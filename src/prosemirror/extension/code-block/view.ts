@@ -300,10 +300,6 @@ export class CodeBlockView {
     this.editorView.destroy()
   }
 
-  selectNode() {
-    this.editorView.focus()
-  }
-
   stopEvent(e) {
     // Allow mouse events to allow to drag the code block from prosemirror.
     return !(e instanceof MouseEvent)

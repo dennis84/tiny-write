@@ -18,6 +18,9 @@ export default (props: Styled & {markdown: boolean}) => {
       .block-handle {
         top: 2px;
       }
+      &.ProseMirror-selectednode {
+        box-shadow: 0 0 0 5px ${primaryBackground(local.config)}44;
+      }
       .cm-editor {
         outline: none;
         .cm-content, .cm-gutter {
@@ -343,7 +346,8 @@ export default (props: Styled & {markdown: boolean}) => {
             background: ${foreground(local.config)}19;
           }
         }
-        .draggable:hover .block-handle {
+        .draggable:hover .block-handle,
+        .ProseMirror-selectednode .block-handle {
           opacity: 1;
         }
         .task-list {
@@ -373,7 +377,7 @@ export default (props: Styled & {markdown: boolean}) => {
           padding: 30px;
           border-radius: 3px;
           &.ProseMirror-selectednode, &.selected {
-            box-shadow: 0 0 0 2px ${primaryBackground(local.config)};
+            box-shadow: 0 0 0 5px ${primaryBackground(local.config)}44;
           }
         }
         .container-tip {
@@ -414,7 +418,7 @@ export default (props: Styled & {markdown: boolean}) => {
         .ProseMirror-selectednode .image-container,
         .image-container.ProseMirror-selectednode,
         .image-container.selected {
-          box-shadow: 0 0 0 2px ${primaryBackground(local.config)};
+          box-shadow: 0 0 0 5px ${primaryBackground(local.config)}44;
           border-radius: 3px;
           img {
             border-radius: 3px;
