@@ -13,7 +13,6 @@ import {
   redo,
   ySyncPluginKey,
   yDocToProsemirror,
-  yUndoPluginKey,
   prosemirrorJSONToYDoc,
 } from 'y-prosemirror'
 import {WebsocketProvider} from 'y-websocket'
@@ -433,17 +432,12 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
   }
 
   const updateEditorState = (state: State, node?: Element) => {
-    const undoManager = state.editorView?.state ?
-      yUndoPluginKey.getState(state.editorView.state)?.undoManager :
-      undefined
-
     const extensions = createExtensions({
       config: state.config ?? store.config,
       markdown: state.markdown ?? store.markdown,
       path: state.path ?? store.path,
       keymap,
       y: {
-        undoManager,
         type: state.collab.ydoc.getXmlFragment('prosemirror'),
         provider: state.collab.provider,
         permanentUserData: state.collab.permanentUserData,
@@ -568,17 +562,24 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
   const discard = async () => {
     if (store.path) {
       await discardText()
+      store.editorView?.focus()
+      return true
     } else if (store.files.length > 0 && isEmpty(store.editorView.state)) {
       await discardText()
+      store.editorView?.focus()
+      return true
     } else if (store.collab.started) {
       await discardText()
+      store.editorView?.focus()
+      return true
     } else if (isEmpty(store.editorView?.state)) {
       newFile()
-    } else {
-      selectAll(store.editorView.state, store.editorView.dispatch)
-      deleteSelection(store.editorView.state, store.editorView.dispatch)
+      store.editorView?.focus()
+      return true
     }
 
+    selectAll(store.editorView.state, store.editorView.dispatch)
+    deleteSelection(store.editorView.state, store.editorView.dispatch)
     store.editorView?.focus()
   }
 

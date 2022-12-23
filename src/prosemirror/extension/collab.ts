@@ -11,7 +11,6 @@ export interface CollabOptions {
   provider: WebsocketProvider;
   permanentUserData: Y.PermanentUserData;
   onFirstRender: () => void;
-  undoManager?: Y.UndoManager;
 }
 
 const cursorBuilder = (user: any): HTMLElement => {
@@ -123,6 +122,6 @@ export const collab = (y: CollabOptions): ProseMirrorExtension => ({
     // @ts-ignore
     yCursorPlugin(y.provider.awareness, {cursorBuilder}),
     yMouseCursorPlugin(y.provider.awareness),
-    yUndoPlugin({undoManager: y.undoManager}),
+    yUndoPlugin(),
   ] : prev
 })

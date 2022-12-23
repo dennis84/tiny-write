@@ -3,6 +3,7 @@ import {Decoration, DecorationSet, EditorView} from 'prosemirror-view'
 
 interface Props {
   background: string;
+  border: string;
 }
 
 interface Coords {
@@ -91,14 +92,19 @@ class SelectView {
     const context = this.canvas.getContext('2d')
     context.clearRect(0, 0, this.canvas.width, this.canvas.height)
 
+    context.beginPath();
     context.fillStyle = this.props.background
-    context.fillRect(
+    context.lineWidth = 2
+    context.strokeStyle = this.props.border
+    context.roundRect(
       this.coords.fromX,
       this.coords.fromY,
       this.coords.toX - this.coords.fromX,
-      this.coords.toY - this.coords.fromY
+      this.coords.toY - this.coords.fromY,
+      3
     )
-
+    context.fill()
+    context.stroke()
     this.select()
   }
 

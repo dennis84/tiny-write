@@ -29,7 +29,8 @@ export default (props: Styled & {markdown: boolean}) => {
           }
         }
       }
-      &.ProseMirror-selectednode {
+      &.ProseMirror-selectednode,
+      &.selected {
         box-shadow: 0 0 0 5px ${primaryBackground(local.config)}44;
       }
       .cm-editor {

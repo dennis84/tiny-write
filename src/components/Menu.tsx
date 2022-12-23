@@ -2,11 +2,10 @@ import {For, Show, JSX, createEffect, createSignal, onCleanup, splitProps, onMou
 import h from 'solid-js/h'
 import {unwrap} from 'solid-js/store'
 import {Node} from 'prosemirror-model'
-import {undo, redo} from 'prosemirror-history'
 import {differenceInHours, format} from 'date-fns'
 import {css} from '@emotion/css'
 import * as Y from 'yjs'
-import {yDocToProsemirror} from 'y-prosemirror'
+import {undo, redo, yDocToProsemirror} from 'y-prosemirror'
 import {Config, File, useState} from '@/state'
 import {foreground, primaryBackground} from '@/config'
 import {isTauri, isMac, alt, mod, version, WEB_URL, VERSION_URL} from '@/env'
@@ -276,11 +275,13 @@ export default () => {
   }
 
   const onUndo = () => {
-    undo(store.editorView.state, store.editorView.dispatch)
+    undo(store.editorView.state)
+    store.editorView?.focus()
   }
 
   const onRedo = () => {
-    redo(store.editorView.state, store.editorView.dispatch)
+    redo(store.editorView.state)
+    store.editorView?.focus()
   }
 
   const cmd = (cmd: string) => {
@@ -316,6 +317,7 @@ export default () => {
 
   const onNew = () => {
     ctrl.newFile()
+    maybeHide()
     store.editorView?.focus()
   }
 
@@ -324,8 +326,9 @@ export default () => {
     if (path) ctrl.updatePath(path)
   }
 
-  const onDiscard = () => {
-    ctrl.discard()
+  const onDiscard = async () => {
+    const res = await ctrl.discard()
+    if (res) maybeHide()
   }
 
   const onCollabStart = () => {
@@ -364,6 +367,10 @@ export default () => {
 
   const onOpenFile = (file: File) => {
     ctrl.openFile(unwrap(file))
+    maybeHide()
+  }
+
+  const maybeHide = () => {
     if (window.innerWidth <= fullWidth) setShow(undefined)
   }
 
@@ -470,6 +477,7 @@ export default () => {
           overflow: hidden;
           padding: 2px 4px;
           margin-bottom: 10px;
+          word-break: break-word;
           cursor: pointer;
           font-size: 10px;
           line-height: 1.5;

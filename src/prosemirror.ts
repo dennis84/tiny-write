@@ -21,7 +21,7 @@ import container from '@/prosemirror/extension/container'
 import fileListing from '@/prosemirror/extension/autocomplete/file-listing'
 import wordCompletion from '@/prosemirror/extension/autocomplete/word-completion'
 import {Config} from '@/state'
-import {codeTheme, font, selection} from '@/config'
+import {codeTheme, font, primaryBackground, selection} from '@/config'
 import {isDev} from '@/env'
 
 interface Props {
@@ -80,7 +80,10 @@ export const createExtensions = (props: Props): ProseMirrorExtension[] =>
     table(),
     position(isDev),
     container(),
-    select({background: selection(props.config)}),
+    select({
+      background: selection(props.config),
+      border: primaryBackground(props.config),
+    }),
     image(props.path),
     placeholder('Start typing ...'),
     scroll(props.config.typewriterMode),
