@@ -1,17 +1,16 @@
-import {For, Show, JSX, createEffect, createSignal, onCleanup, splitProps, onMount} from 'solid-js'
-import h from 'solid-js/h'
-import {unwrap} from 'solid-js/store'
+import {Show, JSX, createEffect, createSignal, onCleanup, splitProps} from 'solid-js'
 import {Node} from 'prosemirror-model'
 import {differenceInHours, format} from 'date-fns'
 import {css} from '@emotion/css'
 import * as Y from 'yjs'
-import {undo, redo, yDocToProsemirror} from 'y-prosemirror'
-import {Config, File, useState} from '@/state'
+import {undo, redo} from 'y-prosemirror'
+import {Config, useState} from '@/state'
 import {foreground, primaryBackground} from '@/config'
 import {isTauri, isMac, alt, mod, version, WEB_URL, VERSION_URL} from '@/env'
 import * as remote from '@/remote'
 import {isEmpty} from '@/prosemirror'
 import {Styled} from './Layout'
+import {FilesMenu} from './FilesMenu'
 import {CodeBlockMenu} from './CodeBlockMenu'
 import {AppearanceMenu} from './AppearanceMenu'
 import {ChangeSetMenu} from './ChangeSetMenu'
@@ -108,16 +107,6 @@ export const Sub = (props: {children: JSX.Element}) => (
   <nav class={css`
     margin: 10px 0;
     margin-bottom: 30px;
-  `}>{props.children}</nav>
-)
-
-export const FileList = (props: {children: JSX.Element}) => (
-  <nav class={css`
-    margin: 10px 0;
-    margin-bottom: 30px;
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    grid-column-gap: 10px;
   `}>{props.children}</nav>
 )
 
@@ -365,11 +354,6 @@ export default () => {
 
   const onToggleMarkdown = () => ctrl.toggleMarkdown()
 
-  const onOpenFile = (file: File) => {
-    ctrl.openFile(unwrap(file))
-    maybeHide()
-  }
-
   const maybeHide = () => {
     if (window.innerWidth <= fullWidth) setShow(undefined)
   }
@@ -424,97 +408,6 @@ export default () => {
     )
   }
 
-  const Excerpt = (p: {file: File}) => {
-    const ydoc = new Y.Doc({gc: false})
-    Y.applyUpdate(ydoc, p.file.ydoc)
-    const doc = yDocToProsemirror(store.editorView.state.schema, ydoc)
-    const maxText = 150
-    const maxCode = 80
-    const nodes = []
-    let len = 0
-    let done = false
-
-    doc.descendants((node, pos, parent) => {
-      if (len >= 150) {
-        if (!done) nodes.push(h('span', {}, '…'))
-        done = true
-        return false
-      } else if (node.type.name === 'image') {
-        nodes.push(h('span', {}, '️🖼️'))
-      } else if (node.type.name === 'video') {
-        nodes.push(h('span', {}, '️🎬 '))
-      } else if (parent.type.name === 'code_block') {
-        let text = node.textContent
-        if (text.length > maxCode) {
-          text = text.slice(0, maxCode) + '…'
-        }
-        nodes.push(h('pre', h('code', {}, text)))
-        nodes.push(h('span', {}, ' '))
-        len += text.length + 1
-      } else if (node.isText) {
-        const text = node.textContent.slice(0, maxText)
-        nodes.push(h('span', {}, text + ' '))
-        len += text.length + 1
-      }
-    })
-
-    return nodes
-  }
-
-  const FileLink = (p: {file: File}) => {
-    const [path, setPath] = createSignal<string>()
-
-    onMount(async () => {
-      if (p.file.path) {
-        setPath(await remote.toRelativePath(p.file.path))
-      }
-    })
-
-    return (
-      <div
-        class={css`
-          height: 100px;
-          overflow: hidden;
-          padding: 2px 4px;
-          margin-bottom: 10px;
-          word-break: break-word;
-          cursor: pointer;
-          font-size: 10px;
-          line-height: 1.5;
-          color: ${foreground(store.config)};
-          background: ${foreground(store.config)}19;
-          border: 1px solid ${foreground(store.config)}99;
-          box-shadow: 0 2px 0 0 ${foreground(store.config)}99;
-          border-radius: 3px;
-          pre {
-            border: 1px solid ${foreground(store.config)}7f;
-            background: ${foreground(store.config)}19;
-            border-radius: 3px;
-            padding: 0px;
-            margin: 0;
-            overflow: hidden;
-          }
-          &:hover {
-            position: relative;
-            box-shadow: 0 3px 0 0 ${foreground(store.config)}99;
-            top: -1px;
-          }
-          &:active {
-            position: relative;
-            box-shadow: none;
-            top: 1px;
-          }
-        `}
-        onClick={() => onOpenFile(p.file)}
-        data-testid="open">
-        <Show
-          when={p.file.path}
-          fallback={<Excerpt file={p.file} />}
-        >{path()}&nbsp;📎</Show>
-      </div>
-    )
-  }
-
   createEffect(() => {
     setLastAction(undefined)
   }, store.lastModified)
@@ -553,6 +446,9 @@ export default () => {
         <span />
         <span />
       </Burger>
+      <Show when={show() === 'files'}>
+        <FilesMenu onBack={() => setShow('main')} onOpenFile={() => maybeHide()} />
+      </Show>
       <Show when={show() === 'code_block'}>
         <CodeBlockMenu onBack={() => setShow('main')} />
       </Show>
@@ -590,15 +486,10 @@ export default () => {
                 data-testid="discard">
                 {clearText()} <Keys config={store.config} keys={[modKey, 'w']} />
               </Link>
+              <Show when={store.files.length > 0}>
+                <Link config={store.config} onClick={() => setShow('files')}>Files 🗃️</Link>
+              </Show>
             </Sub>
-            <Show when={store.files.length > 0}>
-              <Label config={store.config}>Files</Label>
-              <FileList>
-                <For each={store.files}>
-                  {(file: File) => <FileLink file={file} />}
-                </For>
-              </FileList>
-            </Show>
             <Label config={store.config}>Edit</Label>
             <Sub>
               <Link config={store.config} onClick={onUndo}>

@@ -2,7 +2,6 @@ import {schema as markdownSchema} from 'prosemirror-markdown'
 import {Schema} from 'prosemirror-model'
 import {baseKeymap} from 'prosemirror-commands'
 import {sinkListItem, liftListItem} from 'prosemirror-schema-list'
-import {history} from 'prosemirror-history'
 import {dropCursor} from 'prosemirror-dropcursor'
 import {buildKeymap} from 'prosemirror-example-setup'
 import {keymap} from 'prosemirror-keymap'
@@ -30,8 +29,13 @@ const blockquoteSchema = {
   toDOM: () => ['div', ['blockquote', 0]],
 }
 
-export default (plain = false): ProseMirrorExtension => ({
-  schema: () => plain ? ({
+interface Props {
+  keymap?: {[key: string]: any};
+  markdown: boolean;
+}
+
+export default (props: Props): ProseMirrorExtension => ({
+  schema: () => props.markdown ? ({
     nodes: plainSchema.spec.nodes,
     marks: plainSchema.spec.marks,
   }) : ({
@@ -44,10 +48,9 @@ export default (plain = false): ProseMirrorExtension => ({
       'Tab': sinkListItem(schema.nodes.list_item),
       'Shift-Tab': liftListItem(schema.nodes.list_item),
     }),
-    keymap({'Tab': () => true}),
     keymap(buildKeymap(schema)),
     keymap(baseKeymap),
-    history(),
+    keymap(props.keymap),
     dropCursor({class: 'drop-cursor'}),
   ]
 })

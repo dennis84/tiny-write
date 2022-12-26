@@ -61,6 +61,12 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     return true
   }
 
+  const onSave = async () => {
+    if (!isTauri || store.path) return false
+    const path = await remote.save(store.editorView.state)
+    if (path) ctrl.updatePath(path)
+  }
+
   const onFullscreen = () => {
     if (!isTauri) return
     ctrl.setFullscreen(!store.fullscreen)
@@ -84,6 +90,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     [`${mod}-q`]: onQuit,
     [`${mod}-n`]: onNew,
     [`${mod}-w`]: onDiscard,
+    [`${mod}-s`]: onSave,
     'Cmd-Enter': onFullscreen,
     'Alt-Enter': onFullscreen,
     [`${mod}-z`]: onUndo,

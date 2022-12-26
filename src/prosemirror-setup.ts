@@ -1,4 +1,3 @@
-import {keymap} from 'prosemirror-keymap'
 import {keymap as cmKeymap} from '@codemirror/view'
 import {ProseMirrorExtension} from '@/prosemirror'
 import base from '@/prosemirror/base'
@@ -33,13 +32,6 @@ interface Props {
   y?: CollabOptions;
 }
 
-const customKeymap = (props: Props): ProseMirrorExtension => ({
-  plugins: (prev) => props.keymap ? [
-    ...prev,
-    keymap(props.keymap)
-  ] : prev
-})
-
 const codeMirrorKeymap = (props: Props) => {
   const keys = []
   for (const key in props.keymap) {
@@ -52,16 +44,14 @@ const codeMirrorKeymap = (props: Props) => {
 export const createExtensions = (props: Props): ProseMirrorExtension[] =>
   props.markdown ? [
     placeholder('Start typing ...'),
-    customKeymap(props),
-    base(props.markdown),
+    base({markdown: props.markdown, keymap: props.keymap}),
     scroll(props.config.typewriterMode),
     collab(props.y),
     blockMenu(),
     fileListing(props.config.fontSize),
     wordCompletion(props.config.fontSize),
   ] : [
-    customKeymap(props),
-    base(props.markdown),
+    base({markdown: props.markdown, keymap: props.keymap}),
     markdown(),
     todoList(),
     blockMenu(),
