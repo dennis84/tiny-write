@@ -1,7 +1,7 @@
 import {Plugin, NodeSelection, PluginKey, Selection} from 'prosemirror-state'
 import {DecorationSet, Decoration, EditorView} from 'prosemirror-view'
 import {setBlockType} from 'prosemirror-commands'
-import {ProseMirrorExtension} from '@/prosemirror/state'
+import {ProseMirrorExtension} from '@/prosemirror'
 import {arrow, autoUpdate, computePosition, flip, offset, shift} from '@floating-ui/dom'
 
 const handleIcon =

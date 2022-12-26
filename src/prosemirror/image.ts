@@ -4,7 +4,7 @@ import {EditorView} from 'prosemirror-view'
 import {convertFileSrc} from '@tauri-apps/api/tauri'
 import {resolvePath, dirname} from '@/remote'
 import {isTauri} from '@/env'
-import {ProseMirrorExtension} from '@/prosemirror/state'
+import {ProseMirrorExtension} from '@/prosemirror'
 
 const REGEX = /^!\[([^[\]]*?)\]\((.+?)\)\s+/
 const MAX_MATCH = 500

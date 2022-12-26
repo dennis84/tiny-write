@@ -2,7 +2,7 @@ import {expect, test} from 'vitest'
 import {CompletionContext} from '@codemirror/autocomplete'
 import {Compartment, EditorState} from '@codemirror/state'
 import {javascript} from '@codemirror/lang-javascript'
-import {findWords} from '@/prosemirror/extension/code-block/completion'
+import {findWords} from '@/prosemirror/code-block/completion'
 
 test.each([
   ['abc', [], 3],

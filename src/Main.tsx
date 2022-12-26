@@ -12,7 +12,7 @@ import Editor from '@/components/Editor'
 import Menu from '@/components/Menu'
 import ErrorView from '@/components/Error'
 import Dir from '@/components/Dir'
-import {insertImage, insertVideo} from '@/prosemirror/extension/image'
+import {insertImage, insertVideo} from '@/prosemirror/image'
 
 const fontsStyles = Object.entries(fonts)
   .map(([, value]) => [

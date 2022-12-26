@@ -1,7 +1,7 @@
 import {PluginKey} from 'prosemirror-state'
 import {isTauri} from '@/env'
 import {listContents} from '@/remote'
-import {ProseMirrorExtension} from '@/prosemirror/state'
+import {ProseMirrorExtension} from '@/prosemirror'
 import {completionKeymap, completionPlugin} from './autocomplete'
 
 const pluginKey = new PluginKey('file-listing')

@@ -1,7 +1,7 @@
 import {DOMSerializer, NodeType} from 'prosemirror-model'
 import {TextSelection} from 'prosemirror-state'
 import {inputRules, wrappingInputRule} from 'prosemirror-inputrules'
-import {ProseMirrorExtension} from '@/prosemirror/state'
+import {ProseMirrorExtension} from '@/prosemirror'
 
 const container = {
   group: 'block',

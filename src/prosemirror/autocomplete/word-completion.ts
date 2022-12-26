@@ -1,7 +1,7 @@
 import {Node} from 'prosemirror-model'
 import {Plugin, PluginKey} from 'prosemirror-state'
 import {debounce} from 'ts-debounce'
-import {ProseMirrorExtension} from '@/prosemirror/state'
+import {ProseMirrorExtension} from '@/prosemirror'
 import {completionPlugin, completionKeymap} from './autocomplete'
 
 const getWords = (node: Node) => {

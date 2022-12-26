@@ -3,8 +3,8 @@ import {Mark, MarkType} from 'prosemirror-model'
 import {EditorState, Transaction} from 'prosemirror-state'
 import {EditorView} from 'prosemirror-view'
 import {keymap} from 'prosemirror-keymap'
-import {markInputRule} from './mark-input-rule'
-import {ProseMirrorExtension} from '@/prosemirror/state'
+import {markInputRule} from '@/prosemirror/mark-input-rule'
+import {ProseMirrorExtension} from '@/prosemirror'
 
 const blank = '\xa0'
 
