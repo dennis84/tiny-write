@@ -73,7 +73,7 @@ const Burger = (props: Styled) => {
 }
 
 export const Drawer = (props: Styled) => (
-  <div class={css`
+  <div data-tauri-drag-region="true" class={css`
     background: ${foreground(props.config)}19;
     padding: 20px;
     height: 100%;
@@ -133,11 +133,11 @@ export const Text = (props: Styled) => (
 )
 
 export const Link = (props: Styled) => {
-  const [local, others] = splitProps(props, ['config', 'children', 'css'])
+  const [local, others] = splitProps(props, ['config', 'children'])
   return (
     <button
       {...others}
-      class={local.css + ' ' + css`
+      class={css`
         ${itemCss(local.config)}
         background: none;
         border: 0;
@@ -464,135 +464,136 @@ export default () => {
       <Show when={show() === 'main'}>
         <Drawer
           config={store.config}
-          onClick={() => store.editorView.focus()}
-          data-tauri-drag-region="true">
-          <div data-tauri-drag-region="true">
-            <Label config={store.config}>
-              File {store.path && <i>({relativePath()})</i>}
-            </Label>
-            <Sub>
-              <Show when={isTauri && !store.path}>
-                <Link config={store.config} onClick={onSaveAs}>
-                  Save to file 💾 <Keys config={store.config} keys={[modKey, 's']} />
-                </Link>
-              </Show>
-              <Link config={store.config} onClick={onNew} data-testid="new">
-                New 🆕 <Keys config={store.config} keys={[modKey, 'n']} />
+          onClick={() => store.editorView.focus()}>
+          <Label config={store.config}>
+            File {store.path && <i>({relativePath()})</i>}
+          </Label>
+          <Sub>
+            <Show when={isTauri && !store.path}>
+              <Link config={store.config} onClick={onSaveAs}>
+                Save to file 💾 <Keys config={store.config} keys={[modKey, 's']} />
               </Link>
+            </Show>
+            <Link config={store.config} onClick={onNew} data-testid="new">
+              New 🆕 <Keys config={store.config} keys={[modKey, 'n']} />
+            </Link>
+            <Link
+              config={store.config}
+              onClick={onDiscard}
+              disabled={!clearEnabled()}
+              data-testid="discard">
+              {clearText()} <Keys config={store.config} keys={[modKey, 'w']} />
+            </Link>
+            <Show when={store.files.length > 0}>
               <Link
                 config={store.config}
-                onClick={onDiscard}
-                disabled={!clearEnabled()}
-                data-testid="discard">
-                {clearText()} <Keys config={store.config} keys={[modKey, 'w']} />
+                onClick={() => setShow('files')}
+                data-testid="files"
+              >Files 🗃️</Link>
+            </Show>
+          </Sub>
+          <Label config={store.config}>Edit</Label>
+          <Sub>
+            <Link config={store.config} onClick={onUndo}>
+              Undo <Keys config={store.config} keys={[modKey, 'z']} />
+            </Link>
+            <Link config={store.config} onClick={onRedo}>
+              Redo <Keys config={store.config} keys={[modKey, ...(isMac ? ['Shift', 'z'] : ['y'])]} />
+            </Link>
+            <Link config={store.config} onClick={() => cmd('cut')}>
+              Cut <Keys config={store.config} keys={[modKey, 'x']} />
+            </Link>
+            <Link config={store.config} onClick={() => cmd('paste')} disabled={!isTauri}>
+              Paste <Keys config={store.config} keys={[modKey, 'p']} />
+            </Link>
+            <Link config={store.config} onClick={() => cmd('copy')}>
+              Copy {lastAction() === 'copy' && '📋'} <Keys config={store.config} keys={[modKey, 'c']} />
+            </Link>
+            <Link config={store.config} onClick={onCopyAllAsMd}>
+              Copy all as markdown {lastAction() === 'copy-md' && '📋'}
+            </Link>
+          </Sub>
+          <Label config={store.config}>View</Label>
+          <Sub>
+            <Link config={store.config} onClick={() => setShow('theme')}>Appearance 🎨</Link>
+            <Link config={store.config} onClick={() => setShow('code_block')}>Code Blocks 💅</Link>
+            <Link config={store.config} onClick={() => setShow('change_set')}>Change Set 📆</Link>
+            <Show when={isTauri}>
+              <Link config={store.config} onClick={onToggleFullscreen}>
+                Fullscreen {store.fullscreen && '✅'} <Keys config={store.config} keys={[alt, 'Enter']} />
               </Link>
-              <Show when={store.files.length > 0}>
-                <Link config={store.config} onClick={() => setShow('files')}>Files 🗃️</Link>
-              </Show>
-            </Sub>
-            <Label config={store.config}>Edit</Label>
-            <Sub>
-              <Link config={store.config} onClick={onUndo}>
-                Undo <Keys config={store.config} keys={[modKey, 'z']} />
+            </Show>
+            <Link config={store.config} onClick={onToggleMarkdown} data-testid="markdown">
+              Markdown mode {store.markdown && '✅'}
+            </Link>
+            <Link config={store.config} onClick={onToggleTypewriterMode}>
+              Typewriter mode {store.config.typewriterMode && '✅'}
+            </Link>
+            <Link config={store.config} onClick={onToggleSpellcheck}>
+              Spellcheck {store.config.spellcheck && '✅'}
+            </Link>
+            <Show when={isTauri}>
+              <Link config={store.config} onClick={onToggleAlwaysOnTop}>
+                Always on Top {store.config.alwaysOnTop && '✅'}
               </Link>
-              <Link config={store.config} onClick={onRedo}>
-                Redo <Keys config={store.config} keys={[modKey, ...(isMac ? ['Shift', 'z'] : ['y'])]} />
+            </Show>
+          </Sub>
+          <Label config={store.config}>Collab</Label>
+          <Sub>
+            <Show when={!store.collab?.started}>
+              <Link
+                config={store.config}
+                onClick={onCollabStart}
+                data-testid="collab">
+                Share 🌐
               </Link>
-              <Link config={store.config} onClick={() => cmd('cut')}>
-                Cut <Keys config={store.config} keys={[modKey, 'x']} />
+            </Show>
+            <Show when={store.collab?.started}>
+              <Link
+                config={store.config}
+                onClick={onCollabStop}
+                data-testid="collab">
+                Disconnect
               </Link>
-              <Link config={store.config} onClick={() => cmd('paste')} disabled={!isTauri}>
-                Paste <Keys config={store.config} keys={[modKey, 'p']} />
+              <Link config={store.config} onClick={onCopyCollabLink}>
+                Copy Link 🔗 {lastAction() === 'copy-collab-link' && '📋'}
               </Link>
-              <Link config={store.config} onClick={() => cmd('copy')}>
-                Copy {lastAction() === 'copy' && '📋'} <Keys config={store.config} keys={[modKey, 'c']} />
-              </Link>
-              <Link config={store.config} onClick={onCopyAllAsMd}>
-                Copy all as markdown {lastAction() === 'copy-md' && '📋'}
-              </Link>
-            </Sub>
-            <Label config={store.config}>View</Label>
-            <Sub>
-              <Link config={store.config} onClick={() => setShow('theme')}>Appearance 🎨</Link>
-              <Link config={store.config} onClick={() => setShow('code_block')}>Code Blocks 💅</Link>
-              <Link config={store.config} onClick={() => setShow('change_set')}>Change Set 📆</Link>
-              <Show when={isTauri}>
-                <Link config={store.config} onClick={onToggleFullscreen}>
-                  Fullscreen {store.fullscreen && '✅'} <Keys config={store.config} keys={[alt, 'Enter']} />
+              <Show when={false}>
+                <Link config={store.config} onClick={onCopyCollabAppLink}>
+                  Copy App Link {lastAction() === 'copy-collab-app-link' && '📋'}
                 </Link>
               </Show>
-              <Link config={store.config} onClick={onToggleMarkdown} data-testid="markdown">
-                Markdown mode {store.markdown && '✅'}
+              <Text config={store.config}>
+                {collabUsers()} {collabUsers() === 1 ? 'user' : 'users'} connected
+              </Text>
+            </Show>
+          </Sub>
+          <Label config={store.config}>Stats</Label>
+          <Sub>
+            <LastModified />
+            <StorageStats />
+            <Text config={store.config}>Words: {textStats().words}</Text>
+            <Text config={store.config}>Paragraphs: {textStats().paragraphs}</Text>
+            <Text config={store.config}>Lines of code: {textStats().loc}</Text>
+          </Sub>
+          <Label config={store.config}>Application</Label>
+          <Sub>
+            {/* doesn't work with tauri */}
+            <Show when={(!isTauri && false)}>
+              <Link config={store.config} onClick={onOpenInApp}>Open in App ⚡</Link>
+            </Show>
+            <Link config={store.config} onClick={onVersion}>
+              About Version {version}
+            </Link>
+            <Link config={store.config} onClick={() => setShow('help')}>Help</Link>
+            <Show when={isTauri}>
+              <Link
+                config={store.config}
+                onClick={() => remote.quit()}>
+                Quit <Keys config={store.config} keys={[modKey, 'q']} />
               </Link>
-              <Link config={store.config} onClick={onToggleTypewriterMode}>
-                Typewriter mode {store.config.typewriterMode && '✅'}
-              </Link>
-              <Link config={store.config} onClick={onToggleSpellcheck}>
-                Spellcheck {store.config.spellcheck && '✅'}
-              </Link>
-              <Show when={isTauri}>
-                <Link config={store.config} onClick={onToggleAlwaysOnTop}>
-                  Always on Top {store.config.alwaysOnTop && '✅'}
-                </Link>
-              </Show>
-            </Sub>
-            <Label config={store.config}>Collab</Label>
-            <Sub>
-              <Show when={!store.collab?.started}>
-                <Link
-                  config={store.config}
-                  onClick={onCollabStart}
-                  data-testid="collab">
-                  Share 🌐
-                </Link>
-              </Show>
-              <Show when={store.collab?.started}>
-                <Link
-                  config={store.config}
-                  onClick={onCollabStop}
-                  data-testid="collab">
-                  Disconnect
-                </Link>
-                <Link config={store.config} onClick={onCopyCollabLink}>
-                  Copy Link 🔗 {lastAction() === 'copy-collab-link' && '📋'}
-                </Link>
-                <Show when={false}>
-                  <Link config={store.config} onClick={onCopyCollabAppLink}>
-                    Copy App Link {lastAction() === 'copy-collab-app-link' && '📋'}
-                  </Link>
-                </Show>
-                <Text config={store.config}>
-                  {collabUsers()} {collabUsers() === 1 ? 'user' : 'users'} connected
-                </Text>
-              </Show>
-            </Sub>
-            <Label config={store.config}>Stats</Label>
-            <Sub>
-              <LastModified />
-              <StorageStats />
-              <Text config={store.config}>Words: {textStats().words}</Text>
-              <Text config={store.config}>Paragraphs: {textStats().paragraphs}</Text>
-              <Text config={store.config}>Lines of code: {textStats().loc}</Text>
-            </Sub>
-            <Label config={store.config}>Application</Label>
-            <Sub>
-              {/* doesn't work with tauri */}
-              <Show when={(!isTauri && false)}>
-                <Link config={store.config} onClick={onOpenInApp}>Open in App ⚡</Link>
-              </Show>
-              <Link config={store.config} onClick={onVersion}>
-                About Version {version}
-              </Link>
-              <Link config={store.config} onClick={() => setShow('help')}>Help</Link>
-              <Show when={isTauri}>
-                <Link
-                  config={store.config}
-                  onClick={() => remote.quit()}>
-                  Quit <Keys config={store.config} keys={[modKey, 'q']} />
-                </Link>
-              </Show>
-            </Sub>
-          </div>
+            </Show>
+          </Sub>
         </Drawer>
       </Show>
     </Container>

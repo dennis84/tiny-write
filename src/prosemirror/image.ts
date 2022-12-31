@@ -20,7 +20,7 @@ const isUrl = (str: string) => {
 
 const isBlank = (text: string) => text === ' ' || text === '\xa0'
 
-export const getImagePath = async (src: string, path?: string) => {
+const getImagePath = async (src: string, path?: string) => {
   const s = src.replaceAll('%20', ' ')
   const paths = path ? [await dirname(path), s] : [s]
   const absolutePath = await resolvePath(paths)
@@ -43,28 +43,14 @@ const imageInput = (schema: Schema, path?: string) => new Plugin({
       const match = REGEX.exec(textBefore)
       if (match) {
         const [,title, src] = match
-        if (isUrl(src)) {
-          const node = schema.node('image', {src, title})
-          const start = from - (match[0].length - text.length)
-          const tr = view.state.tr
-          tr.delete(start, to)
-          tr.insert(start, node)
-          view.dispatch(tr)
-          return true
-        }
+        const node = schema.node('image', {src, title})
+        const start = from - (match[0].length - text.length)
+        const tr = view.state.tr
+        tr.delete(start, to)
+        tr.insert(start, node)
+        view.dispatch(tr)
 
-        if (!isTauri) return false
-
-        getImagePath(src, path).then((p) => {
-          const node = schema.node('image', {src: p, title, path: src})
-          const start = from - (match[0].length - text.length)
-          const tr = view.state.tr
-          tr.delete(start, to)
-          tr.insert(start, node)
-          view.dispatch(tr)
-        })
-
-        return false
+        return true
       }
     },
   }
@@ -76,7 +62,6 @@ const imageSchema = {
     src: {},
     alt: {default: null},
     title: {default: null},
-    path: {default: null},
     width: {default: null},
   },
   group: 'inline',
@@ -86,7 +71,6 @@ const imageSchema = {
     src: node.attrs.src,
     title: node.attrs.title,
     alt: node.attrs.alt,
-    'data-path': node.attrs.path,
   }]
 }
 
@@ -96,7 +80,6 @@ const videoSchema = {
     src: {},
     type: {},
     title: {default: null},
-    path: {default: null},
     width: {default: null},
   },
   group: 'inline',
@@ -104,7 +87,7 @@ const videoSchema = {
   selectable: true,
   toDOM: (node: Node) => [
     'video',
-    {title: node.attrs.title, 'data-path': node.attrs.path},
+    {title: node.attrs.title},
     ['source', {src: node.attrs.src, type: node.attrs.type}]
   ]
 }

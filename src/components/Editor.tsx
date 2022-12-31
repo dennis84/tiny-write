@@ -437,7 +437,8 @@ export default (props: Styled & {markdown: boolean}) => {
           }
         }
         > *:not(.cm-container)::selection,
-        > *:not(.cm-container) *::selection {
+        > *:not(.cm-container) *::selection,
+        > *:not(.cm-container).selected {
           background: ${selection(local.config)};
         }
         .ProseMirror-selectednode {

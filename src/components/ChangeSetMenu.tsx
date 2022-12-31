@@ -55,44 +55,41 @@ export const ChangeSetMenu = (props: Props) => {
   return (
     <Drawer
       config={store.config}
-      onClick={() => store.editorView.focus()}
-      data-tauri-drag-region="true">
-      <div>
-        <Label config={store.config}>Change Set</Label>
-        <Sub>
-          <For each={versions()} fallback={<p>No snapshots yet</p>}>
-            {(version) => (
-              <Link
-                config={store.config}
-                onClick={() => renderVersion(version)}>
-                {format(version.date, 'dd MMMM HH:mm:ss')}
-                {version.date === active()?.date && ' ✅'}
-              </Link>
-            )}
-          </For>
-        </Sub>
-        <ButtonGroup config={store.config}>
+      onClick={() => store.editorView.focus()}>
+      <Label config={store.config}>Change Set</Label>
+      <Sub>
+        <For each={versions()} fallback={<p>No snapshots yet</p>}>
+          {(version) => (
+            <Link
+              config={store.config}
+              onClick={() => renderVersion(version)}>
+              {format(version.date, 'dd MMMM HH:mm:ss')}
+              {version.date === active()?.date && ' ✅'}
+            </Link>
+          )}
+        </For>
+      </Sub>
+      <ButtonGroup config={store.config}>
+        <button
+          class={button(store.config)}
+          onClick={onBack}>
+          ↩ Back
+        </button>
+        <Show when={active() === undefined}>
           <button
-            class={button(store.config)}
-            onClick={onBack}>
-            ↩ Back
+            class={buttonPrimary(store.config)}
+            onClick={() => ctrl.addVersion()}>
+            Create Snapshot
           </button>
-          <Show when={active() === undefined}>
-            <button
-              class={buttonPrimary(store.config)}
-              onClick={() => ctrl.addVersion()}>
-              Create Snapshot
-            </button>
-          </Show>
-          <Show when={active() !== undefined}>
-            <button
-              class={buttonPrimary(store.config)}
-              onClick={() => applyVersion()}>
-              Apply Snapshot
-            </button>
-          </Show>
-        </ButtonGroup>
-      </div>
+        </Show>
+        <Show when={active() !== undefined}>
+          <button
+            class={buttonPrimary(store.config)}
+            onClick={() => applyVersion()}>
+            Apply Snapshot
+          </button>
+        </Show>
+      </ButtonGroup>
     </Drawer>
   )
 }

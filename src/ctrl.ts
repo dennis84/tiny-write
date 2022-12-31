@@ -143,8 +143,14 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     const files = []
     for (const file of parsed.files) {
       if (!isFile(file)) continue
-      if (file.ydoc) file.ydoc = toUint8Array(file.ydoc)
-      files.push(file)
+      try {
+        if (file.ydoc) {
+          file.ydoc = toUint8Array(file.ydoc)
+        }
+        files.push(file)
+      } catch (err) {
+        remote.log('ERROR', 'Ignore file due to invalid ydoc.')
+      }
     }
 
     newState.files = files

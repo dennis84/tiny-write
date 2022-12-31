@@ -25,6 +25,11 @@ export const button = (config: Config) => css`
   font-family: 'iA Writer Mono';
   color: ${foreground(config)};
   border: 1px solid ${foreground(config)};
+  &:hover {
+    border-color: ${primaryBackground(config)};
+    color: ${primaryBackground(config)};
+    box-shadow: 0 0 0 1px ${primaryBackground(config)};
+  }
 `
 
 export const buttonPrimary = (config: Config) => css`

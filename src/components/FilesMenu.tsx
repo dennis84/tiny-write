@@ -4,8 +4,9 @@ import h from 'solid-js/h'
 import {css} from '@emotion/css'
 import * as Y from 'yjs'
 import {yDocToProsemirror} from 'y-prosemirror'
+import {formatDistance} from 'date-fns'
 import {File, useState} from '@/state'
-import {foreground} from '@/config'
+import {foreground, primaryBackground} from '@/config'
 import {Drawer, Label} from './Menu'
 import {button} from './Button'
 import * as remote from '@/remote'
@@ -16,13 +17,18 @@ interface Props {
 }
 
 export const FileList = (props: {children: JSX.Element}) => (
-  <nav class={css`
-    margin: 10px 0;
-    margin-bottom: 30px;
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    grid-column-gap: 10px;
-  `}>{props.children}</nav>
+  <nav
+    data-tauri-drag-region="true"
+    data-testid="file-list"
+    class={css`
+      margin: 10px 0;
+      margin-bottom: 30px;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      grid-column-gap: 20px;
+    `}>
+    {props.children}
+  </nav>
 )
 
 export const FilesMenu = (props: Props) => {
@@ -49,7 +55,7 @@ export const FilesMenu = (props: Props) => {
         done = true
         return false
       } else if (node.type.name === 'image') {
-        nodes.push(h('span', {}, '️🖼️'))
+        nodes.push(h('img', {src: node.attrs.src, alt: '️🖼️'}))
       } else if (node.type.name === 'video') {
         nodes.push(h('span', {}, '️🎬 '))
       } else if (parent.type.name === 'code_block') {
@@ -62,7 +68,7 @@ export const FilesMenu = (props: Props) => {
         len += text.length + 1
       } else if (node.isText) {
         const text = node.textContent.slice(0, maxText)
-        nodes.push(h('span', {}, text + ' '))
+        nodes.push(h('p', {}, text + ' '))
         len += text.length + 1
       }
     })
@@ -80,46 +86,59 @@ export const FilesMenu = (props: Props) => {
     })
 
     return (
-      <div
-        class={css`
-          height: 100px;
-          overflow: hidden;
-          padding: 2px 4px;
-          margin-bottom: 10px;
-          word-break: break-word;
-          cursor: pointer;
-          font-size: 10px;
-          line-height: 1.5;
-          color: ${foreground(store.config)};
-          background: ${foreground(store.config)}19;
-          border: 1px solid ${foreground(store.config)}99;
-          box-shadow: 0 2px 0 0 ${foreground(store.config)}99;
-          border-radius: 3px;
-          pre {
-            border: 1px solid ${foreground(store.config)}7f;
-            background: ${foreground(store.config)}19;
-            border-radius: 3px;
-            padding: 0px;
-            margin: 0;
+      <div class={css`
+        margin-bottom: 20px;
+        overflow: hidden;
+      `}>
+        <div
+          class={css`
+            height: 140px;
             overflow: hidden;
-          }
-          &:hover {
-            position: relative;
-            box-shadow: 0 3px 0 0 ${foreground(store.config)}99;
-            top: -1px;
-          }
-          &:active {
-            position: relative;
-            box-shadow: none;
-            top: 1px;
-          }
-        `}
-        onClick={() => onOpenFile(p.file)}
-        data-testid="open">
-        <Show
-          when={p.file.path}
-          fallback={<Excerpt file={p.file} />}
-        >{path()}&nbsp;📎</Show>
+            margin: 1px;
+            padding: 2px 4px;
+            word-break: break-all;
+            cursor: pointer;
+            font-size: 10px;
+            line-height: 1.5;
+            color: ${foreground(store.config)};
+            background: ${foreground(store.config)}11;
+            border: 1px solid ${foreground(store.config)}99;
+            border-radius: 3px;
+            p {
+              margin: 0;
+            }
+            img {
+              max-width: 50%;
+              float: left;
+              margin-right: 2px;
+            }
+            pre {
+              border: 1px solid ${foreground(store.config)}55;
+              background: ${foreground(store.config)}11;
+              border-radius: 3px;
+              padding: 0px;
+              margin: 0;
+              overflow: hidden;
+            }
+            &:hover {
+              border-color: ${primaryBackground(store.config)};
+              box-shadow: 0 0 0 1px ${primaryBackground(store.config)};
+            }
+          `}
+          onClick={() => onOpenFile(p.file)}
+          data-testid="open">
+          <Show
+            when={p.file.path}
+            fallback={<Excerpt file={p.file} />}
+          >{path()}&nbsp;📎</Show>
+        </div>
+        <div class={css`
+          font-size: 12px;
+          margin-top: 5px;
+          color: ${foreground(store.config)}99;
+        `}>
+          {formatDistance(new Date(p.file.lastModified), new Date())}
+        </div>
       </div>
     )
   }
@@ -127,21 +146,19 @@ export const FilesMenu = (props: Props) => {
   return (
     <Drawer
       config={store.config}
-      onClick={() => store.editorView.focus()}
-      data-tauri-drag-region="true">
-      <div>
-        <Label config={store.config}>Files</Label>
-        <FileList>
-          <For each={store.files}>
-            {(file: File) => <FileLink file={file} />}
-          </For>
-        </FileList>
-        <button
-          class={button(store.config)}
-          onClick={props.onBack}>
-          ↩ Back
-        </button>
-      </div>
+      onClick={() => store.editorView.focus()}>
+      <Label config={store.config}>Files</Label>
+      <FileList>
+        <For each={store.files}>
+          {(file: File) => <FileLink file={file} />}
+        </For>
+      </FileList>
+      <button
+        class={button(store.config)}
+        onClick={props.onBack}
+        data-testid="back">
+        ↩ Back
+      </button>
     </Drawer>
   )
 }
