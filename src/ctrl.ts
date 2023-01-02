@@ -629,6 +629,14 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     if (!file.ydoc && file.text) updateText(file.text)
   }
 
+  const deleteFile = async (file: File) => {
+    const state: State = unwrap(store)
+    const files = state.files.filter((f: File) => f !== file)
+    const newState = {...state, files}
+    setState(newState)
+    saveState(newState)
+  }
+
   const setFullscreen = (fullscreen: boolean) => {
     remote.setFullscreen(fullscreen)
     setState({fullscreen})
@@ -775,6 +783,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     discard,
     newFile,
     openFile,
+    deleteFile,
     setFullscreen,
     setAlwaysOnTop,
     startCollab,

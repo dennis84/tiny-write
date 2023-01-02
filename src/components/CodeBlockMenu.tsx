@@ -16,9 +16,7 @@ export const CodeBlockMenu = (props: Props) => {
   }
 
   return (
-    <Drawer
-      config={store.config}
-      onClick={() => store.editorView.focus()}>
+    <Drawer config={store.config}>
       <Label config={store.config}>Indentation</Label>
       <Sub>
         <Text config={store.config}>

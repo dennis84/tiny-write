@@ -1,15 +1,16 @@
-import {For, JSX, createSignal, onMount} from 'solid-js'
+import {For, JSX, createSignal, onMount, onCleanup} from 'solid-js'
 import {unwrap} from 'solid-js/store'
 import h from 'solid-js/h'
-import {css} from '@emotion/css'
+import {css, cx} from '@emotion/css'
 import * as Y from 'yjs'
 import {yDocToProsemirror} from 'y-prosemirror'
 import {formatDistance} from 'date-fns'
+import {arrow, computePosition, flip, offset, shift} from '@floating-ui/dom'
 import {File, useState} from '@/state'
 import {foreground, primaryBackground} from '@/config'
+import * as remote from '@/remote'
 import {Drawer, Label} from './Menu'
 import {button} from './Button'
-import * as remote from '@/remote'
 
 interface Props {
   onBack: () => void;
@@ -33,10 +34,19 @@ export const FileList = (props: {children: JSX.Element}) => (
 
 export const FilesMenu = (props: Props) => {
   const [store, ctrl] = useState()
+  const [current, setCurrent] = createSignal()
+  let tooltipRef
+  let arrowRef
 
   const onOpenFile = (file: File) => {
     ctrl.openFile(unwrap(file))
     props.onOpenFile()
+  }
+
+  const onRemove = () => {
+    const f = unwrap(current())
+    if (f) ctrl.deleteFile(f)
+    setCurrent(undefined)
   }
 
   const Excerpt = (p: {file: File}) => {
@@ -79,6 +89,39 @@ export const FilesMenu = (props: Props) => {
   const FileLink = (p: {file: File}) => {
     const [path, setPath] = createSignal<string>()
 
+    const onTooltip = (e) => {
+      setCurrent(p.file)
+      computePosition(e.target, tooltipRef, {
+        placement: 'bottom',
+        middleware: [
+          offset(10),
+          flip(),
+          shift(),
+          arrow({element: arrowRef}),
+        ],
+      }).then(({x, y, placement, middlewareData}) => {
+        tooltipRef.style.left = `${x}px`
+        tooltipRef.style.top = `${y}px`
+
+        const side = placement.split('-')[0]
+        const staticSide = {
+          top: 'bottom',
+          right: 'left',
+          bottom: 'top',
+          left: 'right'
+        }[side]
+
+        if (middlewareData.arrow) {
+          const {x, y} = middlewareData.arrow
+          Object.assign(arrowRef.style, {
+            left: x != null ? `${x}px` : '',
+            top: y != null ? `${y}px` : '',
+            [staticSide]: `${-arrowRef.offsetWidth / 2}px`
+          });
+        }
+      })
+    }
+
     onMount(async () => {
       if (p.file.path) {
         setPath(await remote.toRelativePath(p.file.path))
@@ -103,6 +146,10 @@ export const FilesMenu = (props: Props) => {
             color: ${foreground(store.config)};
             background: ${foreground(store.config)}11;
             border: 1px solid ${foreground(store.config)}99;
+            ${current() === p.file ? `
+              border-color: ${primaryBackground(store.config)};
+              box-shadow: 0 0 0 1px ${primaryBackground(store.config)};
+            ` : ''}
             border-radius: 3px;
             p {
               margin: 0;
@@ -136,17 +183,56 @@ export const FilesMenu = (props: Props) => {
           font-size: 12px;
           margin-top: 5px;
           color: ${foreground(store.config)}99;
+          display: flex;
+          align-items: center;
         `}>
-          {formatDistance(new Date(p.file.lastModified), new Date())}
+          <span>{formatDistance(new Date(p.file.lastModified), new Date())}</span>
+          <button class={css`
+            justify-self: flex-end;
+            margin-left: auto;
+            background: none;
+            border: 0;
+            color: ${foreground(store.config)}99;
+            cursor: pointer;
+            padding: 0;
+            ${current() === p.file ? `
+              color: ${primaryBackground(store.config)};
+            ` : ''}
+            &:hover {
+              color: ${primaryBackground(store.config)};
+            }
+          `} onClick={onTooltip}>︙</button>
         </div>
       </div>
     )
   }
 
+  const Tooltip = () => {
+    onMount(() => {
+      const listener = (e) => {
+        if (e.target.closest('.file-tooltip')) return
+        setCurrent(undefined)
+      }
+
+      document.addEventListener('click', listener)
+      onCleanup(() => document.removeEventListener('click', listener))
+    })
+
+    return (
+      <div
+        ref={tooltipRef}
+        class={cx('file-tooltip', css`
+          position: absolute;
+          min-width: 150px;
+        `)}>
+        <div onClick={onRemove}>🗑️ Delete</div>
+        <span ref={arrowRef} class="arrow"></span>
+      </div>
+    )
+  }
+
   return (
-    <Drawer
-      config={store.config}
-      onClick={() => store.editorView.focus()}>
+    <Drawer config={store.config}>
       <Label config={store.config}>Files</Label>
       <FileList>
         <For each={store.files}>
@@ -159,6 +245,7 @@ export const FilesMenu = (props: Props) => {
         data-testid="back">
         ↩ Back
       </button>
+      <Show when={current() !== undefined}><Tooltip /></Show>
     </Drawer>
   )
 }

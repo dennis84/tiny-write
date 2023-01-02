@@ -83,7 +83,6 @@ class CellMenuView {
     const pluginState = pluginKey.getState(this.view.state)
     const pos = this.view.state.doc.resolve(pluginState.currentCell)
     const rowCount = pos.node(-1).childCount
-    console.log(rowCount)
 
     this.setCellSelection(pos)
     if (rowCount === 1) {

@@ -53,9 +53,7 @@ export const ChangeSetMenu = (props: Props) => {
   }
 
   return (
-    <Drawer
-      config={store.config}
-      onClick={() => store.editorView.focus()}>
+    <Drawer config={store.config}>
       <Label config={store.config}>Change Set</Label>
       <Sub>
         <For each={versions()} fallback={<p>No snapshots yet</p>}>

@@ -10,9 +10,7 @@ export const HelpMenu = (props: Props) => {
   const [store] = useState()
 
   return (
-    <Drawer
-      config={store.config}
-      onClick={() => store.editorView.focus()}>
+    <Drawer config={store.config}>
       <Label config={store.config}>Markdown shortcuts</Label>
       <Sub>
         <Text config={store.config}>

@@ -77,7 +77,8 @@ export const Layout = (props: Styled) => {
       }
       .block-tooltip,
       .table-menu-tooltip,
-      .autocomplete-tooltip {
+      .autocomplete-tooltip,
+      .file-tooltip {
         position: absolute;
         width: max-content;
         background: ${tooltipBackground(local.config)};
