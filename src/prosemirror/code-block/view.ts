@@ -12,7 +12,7 @@ import {
   closeBracketsKeymap,
 } from '@codemirror/autocomplete'
 import {indentOnInput, indentUnit, bracketMatching, foldGutter, foldKeymap} from '@codemirror/language'
-import {linter} from '@codemirror/lint'
+import {linter, setDiagnostics} from '@codemirror/lint'
 import {CodeBlockProps, defaultProps} from '.'
 import {findWords, tabCompletionKeymap} from './completion'
 import {highlight, changeLang} from './lang'
@@ -153,6 +153,7 @@ export class CodeBlockView {
             tr.setNodeMarkup(this.getPos(), undefined, {...this.node.attrs, lang})
             this.view.dispatch(tr)
             this.reconfigure()
+            this.editorView.dispatch(setDiagnostics(this.editorView.state, []))
             this.editorView.focus()
           }
         }),
