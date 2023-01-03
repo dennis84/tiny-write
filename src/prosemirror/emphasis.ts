@@ -13,7 +13,7 @@ const strongRule2 = (nodeType: MarkType) =>
   markInputRule(/(?:__)(.+)(?:__)$/, nodeType)
 
 const italicRule = (nodeType: MarkType) =>
-  markInputRule(/(?:\*)(.+)(?:\*)$/, nodeType)
+  markInputRule(/(?:^|\s)(?:\*)((?:[^*]+))(?:\*)$/, nodeType)
 
 const strikethroughSchema = {
   strikethrough: {

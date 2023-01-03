@@ -7,9 +7,10 @@ export const markInputRule = (
   nodeType: MarkType,
   getAttrs = undefined
 ) => new InputRule(regexp, (state: EditorState, match: string[], start: number, end: number) => {
-  const attrs = getAttrs instanceof Function ? getAttrs(match) : getAttrs
+  const attrs = getAttrs ? getAttrs(match) : getAttrs
   const tr = state.tr
   if (match[1]) {
+    const startSpaces = match[0].search(/\S/)
     const textStart = start + match[0].indexOf(match[1])
     const textEnd = textStart + match[1].length
     let hasMarks = false
@@ -25,7 +26,7 @@ export const markInputRule = (
     }
 
     if (textEnd < end) tr.delete(textEnd, end)
-    if (textStart > start) tr.delete(start, textStart)
+    if (textStart > start) tr.delete(start + startSpaces, textStart)
     end = start + match[1].length
   }
 

@@ -48,9 +48,9 @@ export default (props: Props): ProseMirrorExtension => ({
       'Tab': sinkListItem(schema.nodes.list_item),
       'Shift-Tab': liftListItem(schema.nodes.list_item),
     }),
+    keymap(props.keymap),
     keymap(buildKeymap(schema)),
     keymap(baseKeymap),
-    keymap(props.keymap),
     dropCursor({class: 'drop-cursor'}),
   ]
 })

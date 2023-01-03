@@ -142,8 +142,9 @@ export default (props: {state: State}) => {
     const onWheel = (e) => {
       if (e.ctrlKey && e.buttons === 0) {
         e.preventDefault()
+        const max = Math.min(document.body.clientWidth, 1800)
         const currentWidth = store.config.contentWidth
-        ctrl.updateContentWidth(Math.max(400, Math.min(1800, currentWidth - e.deltaY)))
+        ctrl.updateContentWidth(Math.max(400, Math.min(max, currentWidth - e.deltaY)))
         return
       }
     }
