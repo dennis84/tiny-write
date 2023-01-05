@@ -4,14 +4,14 @@ import {debounce} from 'ts-debounce'
 import {ProseMirrorExtension} from '@/prosemirror'
 import {completionPlugin, completionKeymap} from './autocomplete'
 
+const pattern = /[a-zA-Z0-9_\u0392-\u03c9\u00c0-\u00ff\u0600-\u06ff\u0400-\u04ff]+|[\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff\u3040-\u309f\uac00-\ud7af]+/g
+
 const getWords = (node: Node) => {
   if (node.type.name === 'code_block') return []
   const text = node.textBetween(0, node.nodeSize - 2, ' ')
-  const results = text.match(/("[^"]+"|[^"\s]+)/g)
-  if (!results) return []
-  return results
-    .map((w) => w.replace(/^[^\w]*|[^\w]$/g, ''))
+  const words = (text.match(pattern) ?? [])
     .filter((w) => w.length >= 5)
+  return words
 }
 
 const collectWordsKey = new PluginKey('collect-words')
@@ -61,7 +61,7 @@ export default (fontSize): ProseMirrorExtension => ({
     ...prev,
     completionPlugin(
       wordCompletionKey,
-      /[\w]*/g,
+      /(?:^|\s)[\w]*/g,
       async (text, state) => {
         const words = collectWordsKey.getState(state)
         if (text.length < 1) return []

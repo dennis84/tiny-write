@@ -126,15 +126,16 @@ export const completionPlugin = (pluginKey, regex, getOptions, fontSize) => new 
 
       const matches = text.matchAll(regex)
       for (const match of matches) {
+        const startSpaces = match[0].search(/\S/)
         const matchedText = match[0]
         const matchFrom = $from.before() + match.index
         const matchTo = matchFrom + matchedText.length
 
         if (from >= matchFrom && to <= matchTo) {
-          getOptions(matchedText, view.state).then((options) => {
+          getOptions(matchedText.substring(startSpaces), view.state).then((options) => {
             const tr = view.state.tr
             view.dispatch(tr.setMeta(pluginKey, {
-              from: matchFrom,
+              from: matchFrom + startSpaces,
               to: matchTo,
               text: matchedText,
               options,
