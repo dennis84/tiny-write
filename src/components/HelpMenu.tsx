@@ -44,6 +44,15 @@ export const HelpMenu = (props: Props) => {
           <Keys config={store.config} keys={['~~']} />
         </Text>
       </Sub>
+      <Label config={store.config}>Horizontal Rules</Label>
+      <Sub>
+        <Text config={store.config}><Keys config={store.config} keys={['---', '␣']}/>&nbsp;</Text>
+        <Text config={store.config}><Keys config={store.config} keys={['___', '␣']}/>&nbsp;</Text>
+        <Text config={store.config}><Keys config={store.config} keys={['***', '␣']}/>&nbsp;</Text>
+        <Text config={store.config}>
+          <small>Tip: Horizontal rules break pages in print layout</small>
+        </Text>
+      </Sub>
       <Label config={store.config}>Blockquotes</Label>
       <Sub>
         <Text config={store.config}><Keys config={store.config} keys={['>', '␣']}/> Blockquote</Text>

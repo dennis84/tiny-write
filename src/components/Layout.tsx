@@ -141,6 +141,9 @@ export const Scroll = (props: Styled & {hide?: boolean}) => {
       ::-webkit-scrollbar {
         display: none;
       }
+      @media print {
+        overflow-y: visible;
+      }
     `
   return (
     <div {...others} class={styles()} data-tauri-drag-region="true" />

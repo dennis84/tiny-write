@@ -1,6 +1,6 @@
 import {inputRules} from 'prosemirror-inputrules'
 import {MarkType} from 'prosemirror-model'
-import {markInputRule} from '@/prosemirror/mark-input-rule'
+import {markInputRule} from '@/prosemirror/rulebuilders'
 import {ProseMirrorExtension} from '@/prosemirror'
 
 const strikethroughRule = (nodeType: MarkType) =>

@@ -8,6 +8,7 @@ import {
 } from 'prosemirror-inputrules'
 import {NodeType, Schema} from 'prosemirror-model'
 import {ProseMirrorExtension} from '@/prosemirror'
+import {nodeInputRule} from './rulebuilders'
 
 const blockQuoteRule = (nodeType: NodeType) =>
   wrappingInputRule(/^\s*>\s$/, nodeType)
@@ -30,12 +31,16 @@ const headingRule = (nodeType: NodeType, maxLevel: number) =>
     match => ({level: match[1].length})
   )
 
+const hrRule = (nodeType: NodeType) =>
+  nodeInputRule(/^(?:---|—-|___\s|\*\*\*\s)$/, nodeType)
+
 const markdownRules = (schema: Schema) => {
   const rules = smartQuotes.concat(ellipsis, emDash)
   if (schema.nodes.blockquote) rules.push(blockQuoteRule(schema.nodes.blockquote))
   if (schema.nodes.ordered_list) rules.push(orderedListRule(schema.nodes.ordered_list))
   if (schema.nodes.bullet_list) rules.push(bulletListRule(schema.nodes.bullet_list))
   if (schema.nodes.heading) rules.push(headingRule(schema.nodes.heading, 6))
+  if (schema.nodes.horizontal_rule) rules.push(hrRule(schema.nodes.horizontal_rule))
   return rules
 }
 

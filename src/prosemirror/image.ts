@@ -27,7 +27,7 @@ const getImagePath = async (src: string, path?: string) => {
   return convertFileSrc(absolutePath)
 }
 
-const imageInput = (schema: Schema, path?: string) => new Plugin({
+const imageInput = (schema: Schema) => new Plugin({
   props: {
     handleTextInput(view, from, to, text) {
       if (view.composing || !isBlank(text)) return false

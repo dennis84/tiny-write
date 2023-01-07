@@ -249,6 +249,15 @@ export default (props: Styled & {markdown: boolean}) => {
         a {
           color: ${primaryBackground(local.config)};
         }
+        hr {
+          margin: 40px 0;
+          border: 0;
+          border-bottom: 5px dashed ${foreground(local.config)}33;
+          page-break-after: always;
+          @media print {
+            opacity: 0;
+          }
+        }
         .table-container {
           table {
             width: 100%;
