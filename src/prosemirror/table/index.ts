@@ -73,7 +73,7 @@ export default (): ProseMirrorExtension => ({
   plugins: (prev, schema) => [
     keymap({
       'Ctrl-Enter': (state, dispatch) => {
-        const cellPos = selectionCell(state)
+        const cellPos = getSelectionCell(state)
         if (!cellPos) return false
         const before = state.doc.resolve(cellPos.before())
         const targetPos = before.after()
@@ -86,7 +86,7 @@ export default (): ProseMirrorExtension => ({
       'Backspace': (state, dispatch, view) => {
         const sel = state.selection
         if (!sel.empty) return false
-        const cellPos = selectionCell(state)
+        const cellPos = getSelectionCell(state)
         if (!cellPos) return false
         if (cellPos.nodeAfter.content.size > 0) {
           return false
@@ -101,7 +101,7 @@ export default (): ProseMirrorExtension => ({
           return true
         } else {
           const above = nextCell(cellPos, 'vert', -1)
-          const cell = selectionCell(state)
+          const cell = getSelectionCell(state)
           if (!above && cell.node(-1).textContent === '') {
             deleteTable(state, dispatch)
             return true
@@ -122,7 +122,7 @@ export default (): ProseMirrorExtension => ({
       'Enter': (state, dispatch, view) => {
         const sel = state.selection
         if (!sel.empty) return false
-        const cellPos = selectionCell(state)
+        const cellPos = getSelectionCell(state)
         if (!cellPos) return false
         addRowAfter(state, dispatch)
         const cur = view.state.doc.resolve(sel.$head.before())
@@ -135,7 +135,7 @@ export default (): ProseMirrorExtension => ({
       'ArrowUp': (state, dispatch) => {
         const sel = state.selection
         if (!sel.empty) return false
-        const cellPos = selectionCell(state)
+        const cellPos = getSelectionCell(state)
         if (!cellPos) return false
         const pos = nextCell(cellPos, 'vert', -1)
         if (pos) {
@@ -156,7 +156,7 @@ export default (): ProseMirrorExtension => ({
       'ArrowDown': (state, dispatch) => {
         const sel = state.selection
         if (!sel.empty) return false
-        const cellPos = selectionCell(state)
+        const cellPos = getSelectionCell(state)
         if (!cellPos) return false
         const pos = nextCell(cellPos, 'vert', 1)
         if (pos) {
@@ -174,3 +174,11 @@ export default (): ProseMirrorExtension => ({
     cellMenu,
   ],
 })
+
+const getSelectionCell = (state: EditorState) => {
+  try {
+    return selectionCell(state)
+  } catch (err) {
+    return undefined
+  }
+}
