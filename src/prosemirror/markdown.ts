@@ -44,7 +44,20 @@ const markdownRules = (schema: Schema) => {
   return rules
 }
 
+const hr = {
+  content: 'inline*',
+  group: 'block',
+  atom: true,
+  draggable: true,
+  selectable: true,
+  toDOM: () => ['div', {class: 'horizontal-rule'}, 0],
+}
+
 export default (): ProseMirrorExtension => ({
+  schema: (prev) => ({
+    ...prev,
+    nodes: (prev.nodes as any).update('horizontal_rule', hr),
+  }),
   plugins: (prev, schema) => [
     ...prev,
     inputRules({rules: markdownRules(schema)}),

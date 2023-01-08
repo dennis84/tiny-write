@@ -25,6 +25,9 @@ const Container = (props: {children: JSX.Element}) => (
     flex-grow: 1;
     height: 100%;
     font-family: 'iA Writer Mono';
+    @media print {
+      display: none;
+    }
   `}>{props.children}</div>
 )
 

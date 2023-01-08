@@ -249,13 +249,20 @@ export default (props: Styled & {markdown: boolean}) => {
         a {
           color: ${primaryBackground(local.config)};
         }
-        hr {
+        .horizontal-rule {
           margin: 40px 0;
-          border: 0;
-          border-bottom: 5px dashed ${foreground(local.config)}33;
-          page-break-after: always;
+          height: 5px;
+          line-height: 5px;
+          background: ${foreground(local.config)}33;
+          border-radius: 5px;
+          page-break-before: always;
+          .block-handle {
+            top: -10px;
+          }
           @media print {
             opacity: 0;
+            margin: 0;
+            height: 0;
           }
         }
         .table-container {
@@ -366,6 +373,9 @@ export default (props: Styled & {markdown: boolean}) => {
           &:hover > span {
             background: ${foreground(local.config)}19;
           }
+          @media print {
+            display: none;
+          }
         }
         .draggable:hover .block-handle,
         .ProseMirror-selectednode .block-handle {
@@ -453,6 +463,9 @@ export default (props: Styled & {markdown: boolean}) => {
         .ProseMirror-selectednode {
           background: ${selection(local.config)} !important;
           box-shadow: 0 0 0 5px ${selection(local.config)};
+        }
+        @media print {
+          padding-bottom: 0;
         }
       }
     `} />

@@ -85,6 +85,12 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     return true
   }
 
+  const onPrint = () => {
+    if (!isTauri) return
+    window.print()
+    return true
+  }
+
   const keymap = {
     [`${mod}-r`]: onReload,
     [`${mod}-q`]: onQuit,
@@ -96,6 +102,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     [`${mod}-z`]: onUndo,
     [`Shift-${mod}-z`]: onRedo,
     [`${mod}-y`]: onRedo,
+    [`${mod}-p`]: onPrint,
   }
 
   const fetchData = async (): Promise<State> => {
