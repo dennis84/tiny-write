@@ -208,6 +208,10 @@ export default (props: Styled & {markdown: boolean}) => {
         }
         h1 {
           font-size: ${local.config.fontSize * 1.8}px;
+          line-height: ${local.config.fontSize * 2.2}px;
+          .block-handle {
+            height: ${local.config.fontSize * 2.2}px;
+          }
         }
         h2 {
           font-size: ${local.config.fontSize * 1.4}px;

@@ -9,8 +9,8 @@ import {arrow, computePosition, flip, offset, shift} from '@floating-ui/dom'
 import {File, useState} from '@/state'
 import {foreground, primaryBackground} from '@/config'
 import * as remote from '@/remote'
-import {Drawer, Label} from './Menu'
-import {button} from './Button'
+import {ButtonGroup, Drawer, Label} from './Menu'
+import {button, buttonPrimary} from './Button'
 
 interface Props {
   onBack: () => void;
@@ -47,6 +47,11 @@ export const FilesMenu = (props: Props) => {
     const f = unwrap(current())
     if (f) ctrl.deleteFile(f)
     setCurrent(undefined)
+  }
+
+  const onNew = () => {
+    ctrl.newFile()
+    props.onOpenFile()
   }
 
   const Excerpt = (p: {file: File}) => {
@@ -239,12 +244,15 @@ export const FilesMenu = (props: Props) => {
           {(file: File) => <FileLink file={file} />}
         </For>
       </FileList>
-      <button
-        class={button(store.config)}
-        onClick={props.onBack}
-        data-testid="back">
-        ↩ Back
-      </button>
+      <ButtonGroup config={store.config}>
+        <button
+          class={button(store.config)}
+          onClick={props.onBack}
+          data-testid="back">
+          ↩ Back
+        </button>
+        <button class={buttonPrimary(store.config)} onClick={onNew}>New doc</button>
+      </ButtonGroup>
       <Show when={current() !== undefined}><Tooltip /></Show>
     </Drawer>
   )

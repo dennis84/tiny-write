@@ -10,14 +10,6 @@ interface Props {
   onBack: () => void;
 }
 
-export const ButtonGroup = (props: Styled) => (
-  <div class={css`
-    > button {
-      margin-right: 10px;
-    }
-  `}>{props.children}</div>
-)
-
 export const ChangeSetMenu = (props: Props) => {
   const [store, ctrl] = useState()
 
