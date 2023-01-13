@@ -116,8 +116,6 @@ export default (): ProseMirrorExtension => ({
 
           return true
         }
-
-        return false
       },
       'Enter': (state, dispatch, view) => {
         const sel = state.selection

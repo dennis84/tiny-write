@@ -1,4 +1,5 @@
 import {Plugin, PluginKey} from 'prosemirror-state'
+import {ResolvedPos} from 'prosemirror-model'
 import {Decoration, DecorationSet, EditorView} from 'prosemirror-view'
 import {selectParentNode} from 'prosemirror-commands'
 import {
@@ -10,6 +11,7 @@ import {
   deleteTable,
   CellSelection,
   deleteRow,
+  toggleHeaderRow,
 } from 'prosemirror-tables'
 import {arrow, computePosition, flip, offset, shift} from '@floating-ui/dom'
 
@@ -26,7 +28,7 @@ const createMenu = (type: 'right' | 'left' | 'bottom' | 'top') => {
 
 const pluginKey = new PluginKey('column-ctrl')
 
-const findBottomCell = (pos) => {
+const findBottomCell = (pos: ResolvedPos) => {
   if (pos.node().type.name !== 'table_row') {
     return
   }
@@ -42,7 +44,7 @@ const findBottomCell = (pos) => {
 }
 
 class CellMenuView {
-  private tooltip: HTMLElement
+  private tooltip?: HTMLElement
   private arrow: HTMLElement
 
   private onAddColumnBefore = () => {
@@ -95,9 +97,29 @@ class CellMenuView {
     return true
   }
 
+  onToggleHeaderRow = () => {
+    toggleHeaderRow(this.view.state, this.view.dispatch)
+    setTimeout(() => this.view.focus())
+    return true
+  }
+
   constructor(private view: EditorView) {
+    this.update(view)
+  }
+
+  createNav() {
+    const pluginState = pluginKey.getState(this.view.state)
+    const resolvedPos = this.view.state.doc.resolve(pluginState.currentCell)
+
     this.tooltip = document.createElement('div')
     this.tooltip.className = 'table-menu-tooltip'
+
+    if (resolvedPos.index(-1) === 0) {
+      const toTh = document.createElement('div')
+      toTh.textContent = '+ Toggle table header row'
+      toTh.addEventListener('click', this.onToggleHeaderRow)
+      this.tooltip.appendChild(toTh)
+    }
 
     const addColumnBefore = document.createElement('div')
     addColumnBefore.textContent = '⍇ Add column before'
@@ -123,31 +145,31 @@ class CellMenuView {
     this.arrow.className = 'arrow'
     this.tooltip.appendChild(this.arrow)
 
-    view.dom.parentNode.appendChild(this.tooltip)
-    this.update(view)
+    this.view.dom.parentNode.appendChild(this.tooltip)
   }
 
-  private onClose = (e) => {
-    if (!e.target.closest('.table-menu-tooltip')) {
+  private onClose = (e: MouseEvent) => {
+    if (!(e.target as Element).closest('.table-menu-tooltip')) {
       const tr = this.view.state.tr
       tr.setMeta(pluginKey, {})
       this.view.dispatch(tr)
     }
   }
 
-  update(view) {
+  update(view: EditorView) {
     const pluginState = pluginKey.getState(view.state)
     if (!pluginState.virtualEl) {
       document.removeEventListener('mousedown', this.onClose)
-      this.tooltip.style.display = 'none'
+      this.tooltip?.remove()
+      this.tooltip = undefined
       return
     }
 
-    if (this.tooltip.style.display === 'block') {
+    if (this.tooltip) {
       return
     }
 
-    this.tooltip.style.display = 'block'
+    this.createNav()
     document.addEventListener('mousedown', this.onClose)
 
     computePosition(pluginState.virtualEl, this.tooltip, {
@@ -181,7 +203,7 @@ class CellMenuView {
     })
   }
 
-  setCellSelection(pos) {
+  setCellSelection(pos: ResolvedPos) {
     const tr = this.view.state.tr
     tr.setSelection(new CellSelection(pos))
     tr.setMeta(pluginKey, {})

@@ -278,7 +278,7 @@ export default (props: Styled & {markdown: boolean}) => {
             border-radius: 3px;
             border: 1px solid ${foreground(local.config)}7f;
             text-align: left;
-            background: ${foreground(local.config)}19;
+            background: ${foreground(local.config)}11;
             th, td {
               padding: 10px 15px;
               vertical-align: top;
@@ -291,8 +291,9 @@ export default (props: Styled & {markdown: boolean}) => {
               border-left: 0;
             }
             th {
-              background: ${foreground(local.config)}19;
+              background: ${foreground(local.config)}11;
               color: ${foreground(local.config)}cc;
+              font-family: ${font(local.config, {bold: true})};
             }
             tr:last-child td {
               border-bottom: 0;
