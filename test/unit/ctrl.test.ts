@@ -41,7 +41,7 @@ vi.mock('y-websocket', () => ({WebsocketProvider: class {
   connect() { /**/ }
 }}))
 
-const createText = (text) => ({
+const createText = (text: string) => ({
   doc: {
     type: 'doc',
     content: [{type: 'paragraph', content: [{type: 'text', text}]}]

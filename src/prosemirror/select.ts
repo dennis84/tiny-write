@@ -1,5 +1,6 @@
 import {Plugin, PluginKey, Selection, TextSelection} from 'prosemirror-state'
 import {Decoration, DecorationSet, EditorView} from 'prosemirror-view'
+import {ProseMirrorExtension} from '@/prosemirror';
 
 interface Props {
   background: string;
@@ -35,8 +36,8 @@ class SelectView {
   positions: Position[] = []
   canvas: HTMLCanvasElement
 
-  onMouseDown = (e) => {
-    if (e.which === 3) return
+  onMouseDown = (e: MouseEvent) => {
+    if (e.button !== 0) return
     this.onMouseUp(e)
 
     if (
@@ -84,7 +85,7 @@ class SelectView {
     document.body.appendChild(this.canvas)
   }
 
-  onMouseMove = (e) => {
+  onMouseMove = (e: MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
     this.coords.toX = e.pageX
@@ -169,7 +170,7 @@ class SelectView {
     this.view.dispatch(tr)
   }
 
-  collapse(left, top) {
+  collapse(left: number, top: number) {
     const pos = this.view.posAtCoords({left, top})?.pos ?? 0
     const sel = Selection.near(this.view.state.doc.resolve(pos))
     const tr = this.view.state.tr
@@ -220,7 +221,7 @@ const select = (props: Props) => new Plugin({
   }
 })
 
-export default (props: Props) => ({
+export default (props: Props): ProseMirrorExtension => ({
   plugins: (prev) => [
     ...prev,
     select(props),

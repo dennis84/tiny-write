@@ -28,7 +28,7 @@ export const saveSvg = (svg: HTMLElement) => {
   const image = new Image()
   const svgString = svg.outerHTML
     .replaceAll('<br>', '<br/>')
-    .replaceAll(/<img([^>]*)>/g, (m, g: string) => `<img ${g} />`)
+    .replaceAll(/<img([^>]*)>/g, (_, g: string) => `<img ${g} />`)
   image.src = `data:image/svg+xml;base64,${toBase64(svgString)}`
   image.decode().then(() => {
     ctx.drawImage(image, 0, 0, canvas.width, canvas.height)

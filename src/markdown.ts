@@ -147,7 +147,7 @@ export const createMarkdownParser = (schema: Schema) =>
     container_details: {
       block: 'container',
       getAttrs: (tok) => {
-        let summary
+        let summary: string
         const info = tok.info.trim()
         const i = info.indexOf(' ')
         if (i !== -1) summary = info.substring(i+1, info.length)

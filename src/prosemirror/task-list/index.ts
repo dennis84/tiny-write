@@ -1,4 +1,4 @@
-import {DOMSerializer, Node as ProsemirrorNode, NodeType, Schema} from 'prosemirror-model'
+import {DOMSerializer, Node, NodeType, Schema} from 'prosemirror-model'
 import {EditorView} from 'prosemirror-view'
 import {inputRules, wrappingInputRule} from 'prosemirror-inputrules'
 import {liftListItem, sinkListItem, splitListItem} from 'prosemirror-schema-list'
@@ -19,7 +19,7 @@ const todoListSchema = {
     content: 'paragraph block*',
     defining: true,
     attrs: {checked: {default: false}},
-    toDOM: (node) => [
+    toDOM: (node: Node) => [
       'li',
       {class: `task-list-item ${node.attrs.checked ? 'checked' : ''}`},
       ['input', {
@@ -42,7 +42,7 @@ class TaskListItemView {
   contentDOM: HTMLElement
 
   constructor(
-    private node: ProsemirrorNode,
+    private node: Node,
     private view: EditorView,
     private getPos: () => number
   ) {

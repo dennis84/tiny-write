@@ -1,6 +1,6 @@
 import {computePosition, offset} from '@floating-ui/dom'
 import {keymap} from 'prosemirror-keymap'
-import {Plugin, PluginKey} from 'prosemirror-state'
+import {EditorState, Plugin, PluginKey, Transaction} from 'prosemirror-state'
 import {EditorView} from 'prosemirror-view'
 
 const MAX_MATCH = 500
@@ -9,7 +9,7 @@ class AutocompleteView {
   private tooltip: HTMLElement
 
   constructor(
-    private view: EditorView,
+    view: EditorView,
     private pluginKey: PluginKey,
     private fontSize: number = 14,
   ) {
@@ -20,7 +20,7 @@ class AutocompleteView {
     this.update(view)
   }
 
-  update(view) {
+  update(view: EditorView) {
     const pluginState = this.pluginKey.getState(view.state)
     this.tooltip.innerHTML = ''
     this.tooltip.style.display = 'none'
@@ -35,7 +35,7 @@ class AutocompleteView {
       sel.$head.pos - 1 <= pluginState.to
     ) === true
 
-    let coords
+    let coords: any
     if (!pluginState?.options?.length || !inRange) return
     try {
       coords = view.coordsAtPos(pluginState.from + 1)
@@ -70,7 +70,7 @@ class AutocompleteView {
       this.tooltip.style.top = `${y}px`
     })
 
-    pluginState.options.forEach((f, i) => {
+    pluginState.options.forEach((f: string, i: number) => {
       const option = document.createElement('div')
       if (i === pluginState.selected) {
         option.classList.add('selected')
@@ -86,7 +86,12 @@ class AutocompleteView {
   }
 }
 
-export const completionPlugin = (pluginKey, regex, getOptions, fontSize) => new Plugin({
+export const completionPlugin = (
+  pluginKey: PluginKey,
+  regex: RegExp,
+  getOptions: (match: string, state: EditorState) => Promise<string[]>,
+  fontSize: number
+) => new Plugin({
   key: pluginKey,
   state: {
     init() {
@@ -157,14 +162,18 @@ export const completionPlugin = (pluginKey, regex, getOptions, fontSize) => new 
   }
 })
 
-const maybeClose = (pluginKey, state, dispatch) => {
+const maybeClose = (
+  pluginKey: PluginKey,
+  state: EditorState,
+  dispatch: (tr: Transaction) => void
+) => {
   const pluginState = pluginKey.getState(state)
   if (pluginState?.options?.length) {
     dispatch(state.tr.setMeta(pluginKey, {}))
   }
 }
 
-export const completionKeymap = (pluginKey) => keymap({
+export const completionKeymap = (pluginKey: PluginKey) => keymap({
   ArrowLeft: (state, dispatch) => {
     maybeClose(pluginKey, state, dispatch)
     return false

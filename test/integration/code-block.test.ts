@@ -1,4 +1,4 @@
-import {test, expect} from '@playwright/test'
+import {Page, test, expect} from '@playwright/test'
 import {delay, move} from './utils'
 
 const code = "const foo='bar'"

@@ -2,6 +2,7 @@ import {Show, onCleanup, createEffect, onError, onMount} from 'solid-js'
 import {createMutable} from 'solid-js/store'
 import {listen} from '@tauri-apps/api/event'
 import {injectGlobal} from '@emotion/css'
+import {EditorView} from 'prosemirror-view'
 import {State, StateContext} from './state'
 import {createCtrl} from '@/ctrl'
 import * as remote from '@/remote'
@@ -48,7 +49,13 @@ export default (props: {state: State}) => {
     mouseEnterCoords.y = e.pageY
   }
 
-  const insertImageMd = (editorView, data, left, top, mime?: string) => {
+  const insertImageMd = (
+    editorView: EditorView,
+    data: string,
+    left: number,
+    top: number,
+    mime?: string
+  ) => {
     if (store.markdown) {
       const text = `![](${data})`
       const pos = editorView.posAtCoords({left, top})
@@ -113,9 +120,9 @@ export default (props: {state: State}) => {
 
   onMount(async () => {
     if (isTauri) return
-    const onDrop = (e) => {
+    const onDrop = (e: DragEvent) => {
       e.preventDefault()
-      if (e.target.closest('.cm-container')) {
+      if ((e.target as Element).closest('.cm-container')) {
         return
       }
 
@@ -139,7 +146,7 @@ export default (props: {state: State}) => {
   })
 
   onMount(async () => {
-    const onWheel = (e) => {
+    const onWheel = (e: WheelEvent) => {
       if (e.ctrlKey && e.buttons === 0) {
         e.preventDefault()
         const max = Math.min(document.body.clientWidth, 1800)

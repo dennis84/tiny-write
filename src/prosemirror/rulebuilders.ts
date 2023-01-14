@@ -1,6 +1,6 @@
 import {InputRule} from 'prosemirror-inputrules'
 import {EditorState} from 'prosemirror-state'
-import {MarkType} from 'prosemirror-model'
+import {MarkType, NodeType} from 'prosemirror-model'
 
 export const markInputRule = (
   regexp: RegExp,

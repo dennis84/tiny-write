@@ -77,8 +77,10 @@ export interface State {
   window?: Window;
 }
 
+export type FileText = {[key: string]: any};
+
 export interface File {
-  text?: {[key: string]: any};
+  text?: FileText;
   ydoc?: Uint8Array;
   lastModified?: string;
   path?: string;

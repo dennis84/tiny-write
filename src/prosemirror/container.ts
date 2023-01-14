@@ -1,5 +1,6 @@
-import {DOMSerializer, NodeType} from 'prosemirror-model'
+import {DOMSerializer, Node, NodeType} from 'prosemirror-model'
 import {TextSelection} from 'prosemirror-state'
+import {EditorView} from 'prosemirror-view'
 import {inputRules, wrappingInputRule} from 'prosemirror-inputrules'
 import {ProseMirrorExtension} from '@/prosemirror'
 
@@ -13,7 +14,7 @@ const container = {
     open: {default: true},
     summary: {default: 'Details'},
   },
-  toDOM: (node) => node.attrs.type === 'details' ? [
+  toDOM: (node: Node) => node.attrs.type === 'details' ? [
     'details',
     {class: `container-${node.attrs.type}`, ...(node.attrs.open ? {open: ''} : {})},
     ['summary', {contenteditable: 'false'}, node.attrs.summary],
@@ -42,7 +43,11 @@ class ContainerView {
   dom: HTMLElement
   contentDOM: HTMLElement
 
-  constructor(private node, private view, private getPos) {
+  constructor(
+    private node: Node,
+    private view: EditorView,
+    private getPos: () => number,
+  ) {
     const dom = this.node.type.spec.toDOM(this.node)
     const res = DOMSerializer.renderSpec(document, dom)
     this.dom = res.dom as HTMLInputElement

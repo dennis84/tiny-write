@@ -39,7 +39,7 @@ export class CodeBlockView {
     this.dom = document.createElement('div')
     this.dom.setAttribute('contenteditable', 'false')
     this.dom.classList.add('cm-container')
-    this.dom.CodeMirror = this
+    ;(this.dom as any).CodeMirror = this
 
     const codeMirrorKeymap = keymap.of([{
       key: 'Backspace',
@@ -301,7 +301,7 @@ export class CodeBlockView {
     this.editorView.destroy()
   }
 
-  stopEvent(e) {
+  stopEvent(e: Event) {
     // Allow mouse events to allow to drag the code block from prosemirror.
     return !(e instanceof MouseEvent)
   }

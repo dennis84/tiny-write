@@ -1,4 +1,4 @@
-import {For, JSX, createSignal, onMount, onCleanup} from 'solid-js'
+import {For, JSX, createSignal, onMount, onCleanup, Show} from 'solid-js'
 import {unwrap} from 'solid-js/store'
 import h from 'solid-js/h'
 import {css, cx} from '@emotion/css'
@@ -35,8 +35,8 @@ export const FileList = (props: {children: JSX.Element}) => (
 export const FilesMenu = (props: Props) => {
   const [store, ctrl] = useState()
   const [current, setCurrent] = createSignal()
-  let tooltipRef
-  let arrowRef
+  let tooltipRef: HTMLDivElement
+  let arrowRef: HTMLSpanElement
 
   const onOpenFile = (file: File) => {
     ctrl.openFile(unwrap(file))
@@ -64,7 +64,7 @@ export const FilesMenu = (props: Props) => {
     let len = 0
     let done = false
 
-    doc.descendants((node, pos, parent) => {
+    doc.descendants((node, _, parent) => {
       if (len >= 150) {
         if (!done) nodes.push(h('span', {}, '…'))
         done = true
@@ -94,9 +94,9 @@ export const FilesMenu = (props: Props) => {
   const FileLink = (p: {file: File}) => {
     const [path, setPath] = createSignal<string>()
 
-    const onTooltip = (e) => {
+    const onTooltip = (e: MouseEvent) => {
       setCurrent(p.file)
-      computePosition(e.target, tooltipRef, {
+      computePosition(e.target as Element, tooltipRef, {
         placement: 'bottom',
         middleware: [
           offset(10),
@@ -214,8 +214,8 @@ export const FilesMenu = (props: Props) => {
 
   const Tooltip = () => {
     onMount(() => {
-      const listener = (e) => {
-        if (e.target.closest('.file-tooltip')) return
+      const listener = (e: MouseEvent) => {
+        if ((e.target as Element).closest('.file-tooltip')) return
         setCurrent(undefined)
       }
 

@@ -32,13 +32,13 @@ class MouseCursorView {
     const y = ystate.doc
     const rect = this.view.dom.getBoundingClientRect()
 
-    removed.forEach((id) => {
+    removed.forEach((id: number) => {
       const elem = this.cursors.get(id)
       elem?.remove()
       this.cursors.delete(id)
     })
 
-    added.concat(updated).forEach((id) => {
+    added.concat(updated).forEach((id: number) => {
       const aw = this.awareness.states.get(id)
       if (id === y.clientID || !aw.mouse) return
       const mouse = this.cursors.get(id)

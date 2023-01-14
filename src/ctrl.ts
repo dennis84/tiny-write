@@ -20,11 +20,11 @@ import {uniqueNamesGenerator, adjectives, animals} from 'unique-names-generator'
 import {debounce} from 'ts-debounce'
 import * as remote from '@/remote'
 import {createExtensions, createEmptyText} from '@/prosemirror-setup'
-import {State, File, Config, Version, ServiceError, createState, Window} from '@/state'
+import {State, File, Config, Version, ServiceError, createState, Window, FileText} from '@/state'
 import {COLLAB_URL, isTauri, mod} from '@/env'
 import {serialize, createMarkdownParser} from '@/markdown'
 import {isDarkTheme, themes} from '@/config'
-import {isEmpty} from '@/prosemirror'
+import {NodeViewConfig, ProseMirrorExtension, isEmpty} from '@/prosemirror'
 
 const isState = (x: any) =>
   (typeof x.lastModified !== 'string') &&
@@ -266,7 +266,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     (a.ydoc !== undefined && a.ydoc === b.ydoc) ||
     (a.path !== undefined && a.path === b.path)
 
-  const getFile = async (state, f: File): Promise<File> => {
+  const getFile = async (state: State, f: File): Promise<File> => {
     let index = -1
     for (let i = 0; i < state.files.length; i++) {
       if (eqFile(state.files[i], f)) {
@@ -434,7 +434,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
   const updateText = (text?: {[key: string]: any}) => {
     if (!text) return
     const schema = store.editorView.state.schema
-    let ynode
+    let ynode: Node
     try {
       ynode = yDocToProsemirror(schema, store.collab.ydoc)
     } catch(e) {
@@ -502,10 +502,10 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     editorView.focus()
   }
 
-  const createNodeViews = (extensions) =>
-    extensions.reduce((acc, e) => e.nodeViews ? ({...acc, ...e.nodeViews}) : acc, {})
+  const createNodeViews = (extensions: ProseMirrorExtension[]) =>
+    extensions.reduce<NodeViewConfig>((acc, e) => e.nodeViews ? ({...acc, ...e.nodeViews}) : acc, {})
 
-  const createSchema = (extensions) =>
+  const createSchema = (extensions: ProseMirrorExtension[]) =>
     new Schema(extensions.reduce(
       (acc, e) => e.schema ? e.schema(acc) : acc,
       {nodes: {}}
@@ -514,7 +514,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
   const init = async (node: Element) => {
     try {
       let data = await fetchData()
-      let text
+      let text: FileText
 
       if (isTauri && data.window) {
         await remote.updateWindow(data.window)

@@ -22,7 +22,7 @@ test('render', () => {
   expect(tokens[5].type).toBe('task_list_item_close')
 
   expect(tokens[6].type).toBe('task_list_item_open')
-  expect(tokens[6].attrGet('checked')).toBe(true)
+  expect(tokens[6].attrGet('checked')).toBe('checked')
   expect(tokens[7].type).toBe('paragraph_open')
   expect(tokens[8].type).toBe('inline')
   expect(tokens[8].children[0].content).toBe('bbb')

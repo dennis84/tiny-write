@@ -1,7 +1,7 @@
 import {EditorView, ViewPlugin, ViewUpdate, keymap} from '@codemirror/view'
 import {Extension} from '@codemirror/state'
 import {standardKeymap} from '@codemirror/commands'
-import {StreamLanguage, language, LanguageSupport} from '@codemirror/language'
+import {StreamLanguage, language, LanguageSupport, StreamParser} from '@codemirror/language'
 import {acceptCompletion, autocompletion, moveCompletionSelection} from '@codemirror/autocomplete'
 import {haskell} from '@codemirror/legacy-modes/mode/haskell'
 import {clojure} from '@codemirror/legacy-modes/mode/clojure'
@@ -42,9 +42,12 @@ export const changeLang = (codeBlock: CodeBlockView, config: Config) =>
     constructor(private view: EditorView) {}
 
     destroy() {
-      this.toggle = this.toggle?.remove()
-      this.input = this.input?.remove()
-      this.inputEditor = this.inputEditor?.destroy()
+      this.toggle?.remove()
+      this.input?.remove()
+      this.inputEditor?.destroy()
+      this.inputEditor = undefined
+      this.input = undefined
+      this.toggle = undefined
     }
 
     update(update: ViewUpdate) {
@@ -214,7 +217,8 @@ export class LangInputEditor {
   }
 }
 
-const langSupport = (l) => new LanguageSupport(StreamLanguage.define(l))
+const langSupport = (l: StreamParser<unknown>) =>
+  new LanguageSupport(StreamLanguage.define(l))
 
 const mapping = {
   javascript: () => javascript(),

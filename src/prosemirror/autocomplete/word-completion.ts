@@ -44,7 +44,7 @@ const plugin = new Plugin({
 
 const update = debounce((view) => {
   const words = new Set()
-  view.state.doc.forEach((node) => {
+  view.state.doc.forEach((node: Node) => {
     getWords(node).forEach((w) => words.add(w))
   })
 
@@ -55,7 +55,7 @@ const update = debounce((view) => {
 
 const wordCompletionKey = new PluginKey('word-completion')
 
-export default (fontSize): ProseMirrorExtension => ({
+export default (fontSize: number): ProseMirrorExtension => ({
   plugins: (prev) => [
     completionKeymap(wordCompletionKey),
     ...prev,

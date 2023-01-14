@@ -146,14 +146,13 @@ class ImageView {
     private node: Node,
     private view: EditorView,
     private getPos: () => number,
-    private schema: Schema,
     private path: string
   ) {
     this.container = document.createElement('span')
     this.container.className = 'image-container'
     if (node.attrs.width) this.setWidth(node.attrs.width)
 
-    let source
+    let source: HTMLElement
     if (node.type.name === 'video') {
       const video = document.createElement('video')
       video.setAttribute('title', node.attrs.title ?? '')
@@ -175,7 +174,7 @@ class ImageView {
       !node.attrs.src.startsWith('data:') &&
       !isUrl(node.attrs.src)
     ) {
-      getImagePath(node.attrs.src, path).then((p) => {
+      getImagePath(node.attrs.src, this.path).then((p) => {
         source.setAttribute('src', p)
       })
     } else {
@@ -208,14 +207,14 @@ export default (path?: string): ProseMirrorExtension => ({
   }),
   plugins: (prev, schema) => [
     ...prev,
-    imageInput(schema, path),
+    imageInput(schema),
   ],
   nodeViews: {
     image: (node, view, getPos) => {
-      return new ImageView(node, view, getPos, view.state.schema, path)
+      return new ImageView(node, view, getPos, path)
     },
     video: (node, view, getPos) => {
-      return new ImageView(node, view, getPos, view.state.schema, path)
+      return new ImageView(node, view, getPos, path)
     }
   },
 })

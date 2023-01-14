@@ -23,8 +23,8 @@ class TooltipView {
   private cleanup: any
   private pos: number
 
-  private onClose = (e) => {
-    if (!e.target.closest('.block-tooltip')) {
+  private onClose = (e: MouseEvent) => {
+    if (!(e.target as Element).closest('.block-tooltip')) {
       const tr = this.view.state.tr
       tr.setMeta(pluginKey, {showMenu: false, ref: undefined, pos: undefined})
       this.view.dispatch(tr)
@@ -53,7 +53,7 @@ class TooltipView {
 
   onPrettify = () => {
     const dom = this.view.domAtPos(this.pos + 1)
-    dom.node?.CodeMirror?.prettify()
+    ;(dom.node as any)?.CodeMirror?.prettify()
     const tr = this.view.state.tr
     tr.setMeta(pluginKey, {showMenu: false, ref: undefined, pos: undefined})
     this.view.dispatch(tr)
@@ -67,10 +67,10 @@ class TooltipView {
     this.view.dispatch(tr)
     this.view.focus()
     const dom = this.view.domAtPos(this.pos + 1)
-    dom.node?.CodeMirror?.changeLang()
+    ;(dom.node as any)?.CodeMirror?.changeLang()
   }
 
-  constructor(private view) {
+  constructor(private view: EditorView) {
     this.update(view)
   }
 
@@ -126,7 +126,8 @@ class TooltipView {
       }
 
       document.removeEventListener('mousedown', this.onClose)
-      this.tooltip = this.tooltip?.remove()
+      this.tooltip?.remove()
+      this.tooltip = undefined
       return
     }
 

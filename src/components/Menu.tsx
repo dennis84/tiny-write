@@ -195,7 +195,7 @@ export const Keys = (props: Styled) => {
           margin: 0 1px;
         }
       `}
-    >{props.keys.map((k) => <i>{k}</i>)}</span>
+    >{props.keys.map((k: string) => <i>{k}</i>)}</span>
   )
 }
 

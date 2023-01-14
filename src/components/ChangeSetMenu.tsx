@@ -1,10 +1,8 @@
 import {For, Show, createSignal, onMount} from 'solid-js'
 import {format} from 'date-fns'
-import {css} from '@emotion/css'
 import {Version, useState} from '@/state'
-import {Drawer, Label, Link, Sub} from './Menu'
+import {ButtonGroup, Drawer, Label, Link, Sub} from './Menu'
 import {button, buttonPrimary} from './Button'
-import {Styled} from './Layout'
 
 interface Props {
   onBack: () => void;
@@ -25,7 +23,7 @@ export const ChangeSetMenu = (props: Props) => {
     })
   })
 
-  const renderVersion = (version) => {
+  const renderVersion = (version: Version) => {
     setActive(version)
     ctrl.renderVersion(version)
   }
