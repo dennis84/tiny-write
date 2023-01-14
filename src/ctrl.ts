@@ -5,7 +5,7 @@ import * as db from 'idb-keyval'
 import {fromUint8Array, toUint8Array} from 'js-base64'
 import {EditorView} from 'prosemirror-view'
 import {EditorState, Transaction} from 'prosemirror-state'
-import {Node, Schema, Slice} from 'prosemirror-model'
+import {Node, Slice} from 'prosemirror-model'
 import {selectAll, deleteSelection} from 'prosemirror-commands'
 import * as Y from 'yjs'
 import {
@@ -19,12 +19,12 @@ import {WebsocketProvider} from 'y-websocket'
 import {uniqueNamesGenerator, adjectives, animals} from 'unique-names-generator'
 import {debounce} from 'ts-debounce'
 import * as remote from '@/remote'
-import {createExtensions, createEmptyText} from '@/prosemirror-setup'
+import {createExtensions, createEmptyText, createSchema, createNodeViews} from '@/prosemirror-setup'
 import {State, File, Config, Version, ServiceError, createState, Window, FileText} from '@/state'
 import {COLLAB_URL, isTauri, mod} from '@/env'
 import {serialize, createMarkdownParser} from '@/markdown'
 import {isDarkTheme, themes} from '@/config'
-import {NodeViewConfig, ProseMirrorExtension, isEmpty} from '@/prosemirror'
+import {isEmpty} from '@/prosemirror'
 
 const isState = (x: any) =>
   (typeof x.lastModified !== 'string') &&
@@ -501,15 +501,6 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     editorView.setProps({state: editorState, nodeViews})
     editorView.focus()
   }
-
-  const createNodeViews = (extensions: ProseMirrorExtension[]) =>
-    extensions.reduce<NodeViewConfig>((acc, e) => e.nodeViews ? ({...acc, ...e.nodeViews}) : acc, {})
-
-  const createSchema = (extensions: ProseMirrorExtension[]) =>
-    new Schema(extensions.reduce(
-      (acc, e) => e.schema ? e.schema(acc) : acc,
-      {nodes: {}}
-    ))
 
   const init = async (node: Element) => {
     try {

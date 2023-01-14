@@ -1,5 +1,6 @@
+import {Schema} from 'prosemirror-model'
 import {keymap as cmKeymap} from '@codemirror/view'
-import {ProseMirrorExtension} from '@/prosemirror'
+import {NodeViewConfig, ProseMirrorExtension} from '@/prosemirror'
 import base from '@/prosemirror/base'
 import markdown from '@/prosemirror/markdown'
 import link from '@/prosemirror/link'
@@ -82,6 +83,15 @@ export const createExtensions = (props: Props): ProseMirrorExtension[] =>
     fileListing(props.config.fontSize),
     wordCompletion(props.config.fontSize),
   ]
+
+export const createNodeViews = (extensions: ProseMirrorExtension[]) =>
+  extensions.reduce<NodeViewConfig>((acc, e) => e.nodeViews ? ({...acc, ...e.nodeViews}) : acc, {})
+
+export const createSchema = (extensions: ProseMirrorExtension[]) =>
+  new Schema(extensions.reduce(
+    (acc, e) => e.schema ? e.schema(acc) : acc,
+    {nodes: {}}
+  ))
 
 export const createEmptyText = () => ({
   doc: {

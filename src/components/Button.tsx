@@ -1,6 +1,7 @@
 import {css} from '@emotion/css'
 import {foreground, primaryBackground, primaryForeground} from '@/config'
 import {Config} from '@/state'
+import {Styled} from './Layout'
 
 export const Common = css`
   height: 50px;
@@ -38,3 +39,12 @@ export const buttonPrimary = (config: Config) => css`
   border: 0;
   background: ${primaryBackground(config)};
 `
+
+export const ButtonGroup = (props: Styled) => (
+  <div class={css`
+    > button {
+      margin-right: 10px;
+      margin-bottom: 10px;
+    }
+  `}>{props.children}</div>
+)

@@ -1,8 +1,8 @@
 import {For, Show, createSignal, onMount} from 'solid-js'
 import {format} from 'date-fns'
 import {Version, useState} from '@/state'
-import {ButtonGroup, Drawer, Label, Link, Sub} from './Menu'
-import {button, buttonPrimary} from './Button'
+import {Drawer, Label, Link, Sub} from './Menu'
+import {ButtonGroup, button, buttonPrimary} from './Button'
 
 interface Props {
   onBack: () => void;

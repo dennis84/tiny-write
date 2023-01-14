@@ -2,7 +2,7 @@ import {Show, Switch, Match} from 'solid-js'
 import {css} from '@emotion/css'
 import {Config, useState} from '@/state'
 import {foreground} from '@/config'
-import {button, buttonPrimary} from './Button'
+import {ButtonGroup, button, buttonPrimary} from './Button'
 import {Content, Scroll} from './Layout'
 
 const pre = (config: Config) => css`
@@ -74,10 +74,12 @@ const Other = () => {
       <Content config={store.config}>
         <h1>An error occurred.</h1>
         <pre class={pre(store.config)}><code>{getMessage()}</code></pre>
-        <button class={buttonPrimary(store.config)} onClick={onReload}>Reload</button>
-        <Show when={store.error.id === 'exception'}>
-          <button class={button(store.config)} onClick={onDiscard}>Discard</button>
-        </Show>
+        <ButtonGroup config={store.config}>
+          <button class={buttonPrimary(store.config)} onClick={onReload}>Reload</button>
+          <Show when={store.error.id === 'exception'}>
+            <button class={button(store.config)} onClick={onDiscard}>Discard</button>
+          </Show>
+        </ButtonGroup>
       </Content>
     </Scroll>
   )

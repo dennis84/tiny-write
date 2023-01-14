@@ -9,8 +9,9 @@ import {arrow, computePosition, flip, offset, shift} from '@floating-ui/dom'
 import {File, useState} from '@/state'
 import {foreground, primaryBackground} from '@/config'
 import * as remote from '@/remote'
-import {ButtonGroup, Drawer, Label} from './Menu'
-import {button, buttonPrimary} from './Button'
+import {createExtensions, createSchema} from '@/prosemirror-setup'
+import {Drawer, Label} from './Menu'
+import {ButtonGroup, button, buttonPrimary} from './Button'
 
 interface Props {
   onBack: () => void;
@@ -38,6 +39,11 @@ export const FilesMenu = (props: Props) => {
   let tooltipRef: HTMLDivElement
   let arrowRef: HTMLSpanElement
 
+  const schema = createSchema(createExtensions({
+    config: store.config,
+    markdown: false,
+  }))
+
   const onOpenFile = (file: File) => {
     ctrl.openFile(unwrap(file))
     props.onOpenFile()
@@ -57,7 +63,7 @@ export const FilesMenu = (props: Props) => {
   const Excerpt = (p: {file: File}) => {
     const ydoc = new Y.Doc({gc: false})
     Y.applyUpdate(ydoc, p.file.ydoc)
-    const doc = yDocToProsemirror(store.editorView.state.schema, ydoc)
+    const doc = yDocToProsemirror(schema, ydoc)
     const maxText = 150
     const maxCode = 80
     const nodes = []

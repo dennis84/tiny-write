@@ -199,14 +199,6 @@ export const Keys = (props: Styled) => {
   )
 }
 
-export const ButtonGroup = (props: Styled) => (
-  <div class={css`
-    > button {
-      margin-right: 10px;
-    }
-  `}>{props.children}</div>
-)
-
 export default () => {
   const [store, ctrl] = useState()
   const [show, setShow] = createSignal()
