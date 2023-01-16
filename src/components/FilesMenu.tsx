@@ -88,8 +88,9 @@ export const FilesMenu = (props: Props) => {
         nodes.push(h('span', {}, ' '))
         len += text.length + 1
       } else if (node.isText) {
+        const nodeType = parent.type.name === 'heading' ? 'h2' : 'p'
         const text = node.textContent.slice(0, maxText)
-        nodes.push(h('p', {}, text + ' '))
+        nodes.push(h(nodeType, {}, text + ' '))
         len += text.length + 1
       }
     })
@@ -153,7 +154,7 @@ export const FilesMenu = (props: Props) => {
             word-break: break-all;
             cursor: pointer;
             font-size: 10px;
-            line-height: 1.5;
+            line-height: 1.4;
             color: ${foreground(store.config)};
             background: ${foreground(store.config)}11;
             border: 1px solid ${foreground(store.config)}99;
@@ -164,6 +165,10 @@ export const FilesMenu = (props: Props) => {
             border-radius: 3px;
             p {
               margin: 0;
+            }
+            h2 {
+              margin: 0;
+              font-size: 14px;
             }
             img {
               max-width: 50%;

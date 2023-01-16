@@ -132,7 +132,7 @@ export default (props: {state: State}) => {
           const y = mouseEnterCoords.y
           const reader = new FileReader()
           reader.readAsDataURL(file)
-          reader.onloadend = function() {
+          reader.onloadend = () => {
             insertImageMd(store.editorView, reader.result as string, x, y)
           }
         }
