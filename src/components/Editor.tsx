@@ -71,7 +71,7 @@ export default (props: Styled & {markdown: boolean}) => {
         height: 100%;
         width: 100%;
         border-radius: 3px;
-        flex-direction: ${local.config.contentWidth > 600 ? 'row' : 'column'};
+        flex-direction: ${local.config.contentWidth > 1000 ? 'row' : 'column'};
         &.selected {
           box-shadow: 0 0 0 2px ${primaryBackground(local.config)};
           border-radius: 3px;
@@ -116,10 +116,12 @@ export default (props: Styled & {markdown: boolean}) => {
         }
         .mermaid {
           padding: 30px;
-          background: #00000022;
+          background: #ffffff11;
           display: flex;
           flex-grow: 2;
           flex-shrink: 1;
+          min-width: 40%;
+          max-width: 100%;
           line-height: 1 !important;
           justify-content: center;
           align-items: center;
