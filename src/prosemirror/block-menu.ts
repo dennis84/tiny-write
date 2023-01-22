@@ -1,8 +1,9 @@
 import {Plugin, NodeSelection, PluginKey, Selection} from 'prosemirror-state'
 import {DecorationSet, Decoration, EditorView} from 'prosemirror-view'
 import {setBlockType} from 'prosemirror-commands'
-import {ProseMirrorExtension} from '@/prosemirror'
 import {arrow, autoUpdate, computePosition, flip, offset, shift} from '@floating-ui/dom'
+import {ProseMirrorExtension} from '@/prosemirror'
+import * as remote from '@/remote'
 
 const handleIcon =
   '<svg viewBox="0 0 10 10" height="14" width="14"><path d="M3 2a1 1 0 110-2 1 1 0 010 2zm0 4a1 1 0 110-2 1 1 0 010 2zm0 4a1 1 0 110-2 1 1 0 010 2zm4-8a1 1 0 110-2 1 1 0 010 2zm0 4a1 1 0 110-2 1 1 0 010 2zm0 4a1 1 0 110-2 1 1 0 010 2z"/></svg>'
@@ -60,6 +61,12 @@ class TooltipView {
     this.view.focus()
   }
 
+  onMermaidSave = () => {
+    const id = `mermaid-graph-${this.pos}`
+    const svg = document.getElementById(id)
+    remote.saveSvg(svg)
+  }
+
   onChangeLang = () => {
     const tr = this.view.state.tr
     tr.setMeta(pluginKey, {showMenu: false, ref: undefined, pos: undefined})
@@ -77,6 +84,7 @@ class TooltipView {
   createNav() {
     const resolvedPos = this.view.state.doc.resolve(this.pos + 1)
     const node = resolvedPos.node()
+    const dom = this.view.domAtPos(this.pos + 1)
 
     this.tooltip = document.createElement('div')
     this.tooltip.className = 'block-tooltip'
@@ -94,6 +102,14 @@ class TooltipView {
       prettify.addEventListener('click', this.onPrettify)
       prettify.dataset.testid = 'prettify'
       this.tooltip.appendChild(prettify)
+
+      if ((dom.node as any)?.CodeMirror?.lang === 'mermaid') {
+        const mermaid = document.createElement('div')
+        mermaid.textContent = '💾 save as png'
+        mermaid.addEventListener('click', this.onMermaidSave)
+        mermaid.dataset.testid = 'mermaid'
+        this.tooltip.appendChild(mermaid)
+      }
 
       const divider = document.createElement('hr')
       divider.classList.add('divider')

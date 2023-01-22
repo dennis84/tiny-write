@@ -1,9 +1,7 @@
 import {EditorView, ViewPlugin, ViewUpdate} from '@codemirror/view'
 import {language} from '@codemirror/language'
-import {v4 as uuidv4} from 'uuid'
 import mermaid from 'mermaid'
 import {CodeBlockView} from './view'
-import {saveSvg} from '@/remote'
 import {CompletionSource} from '@codemirror/autocomplete'
 
 const syntax = {
@@ -41,9 +39,8 @@ export const mermaidKeywords: CompletionSource = (context) => {
 
 export const mermaidView = (codeBlock: CodeBlockView) =>
   ViewPlugin.fromClass(class {
-    id = uuidv4()
+    id = codeBlock.getPos()
     output: HTMLElement
-    download: HTMLElement
 
     constructor(private view: EditorView) {}
 
@@ -71,19 +68,6 @@ export const mermaidView = (codeBlock: CodeBlockView) =>
       div.className = 'mermaid'
       this.output = div
       this.view.dom.appendChild(this.output)
-
-      const span = document.createElement('span')
-      span.className = 'download'
-      span.setAttribute('title', 'download')
-      span.textContent = '💾'
-      span.addEventListener('mousedown', () => {
-        const id = `mermaid-graph-${this.id}`
-        const svg = document.getElementById(id)
-        saveSvg(svg)
-      })
-
-      this.download = span
-      this.output.appendChild(this.download)
     }
 
     updateDOM() {
@@ -108,7 +92,6 @@ export const mermaidView = (codeBlock: CodeBlockView) =>
       try {
         mermaid.render(`mermaid-graph-${this.id}`, content, (svgCode) => {
           this.output.innerHTML = svgCode
-          this.output.appendChild(this.download)
         })
       } catch (err) {
         const error = document.createElement('code')

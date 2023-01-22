@@ -33,7 +33,7 @@ export class CodeBlockView {
   constructor(
     private node: Node,
     private view: ProsemirrorEditorView,
-    private getPos: () => number,
+    readonly getPos: () => number,
     private innerDecos: DecorationSource,
     readonly options: CodeBlockProps = defaultProps,
   ) {

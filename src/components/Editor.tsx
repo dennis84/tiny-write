@@ -138,14 +138,6 @@ export default (props: Styled & {markdown: boolean}) => {
             background: 0;
             border: 0;
           }
-          .download {
-            position: absolute;
-            right: 8px;
-            bottom: 8px;
-            cursor: pointer;
-            z-index: 10;
-            user-select: none;
-          }
         }
         .expand {
           position: absolute;

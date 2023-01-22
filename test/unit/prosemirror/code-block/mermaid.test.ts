@@ -24,7 +24,6 @@ it('mermaid keywords - keywords', async () => {
 
   const context = new CompletionContext(state, doc.length, false)
   const result = await mermaidKeywords(context)
-  console.log('>>>', result)
 
   expect(result.options.find((x) => x.label === 'actor')).toBeDefined()
   expect(result.options.find((x) => x.label === 'activate')).toBeDefined()
