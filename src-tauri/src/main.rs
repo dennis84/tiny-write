@@ -3,7 +3,7 @@
     windows_subsystem = "windows"
 )]
 
-use log::{info, LevelFilter};
+use log::{info, LevelFilter, Level};
 use std::env;
 use tauri::{Manager, Menu, MenuItem, Submenu};
 use tauri_plugin_log::LogTarget;
@@ -29,6 +29,16 @@ fn main() {
     }
 
     let logger = tauri_plugin_log::Builder::default()
+        .format(move |out, message, record| {
+            match record.level() {
+                Level::Info => {
+                    out.finish(format_args!("{}", message))
+                }
+                level => {
+                    out.finish(format_args!("{}: {}", level, message));
+                }
+            }
+        })
         .targets([LogTarget::LogDir, LogTarget::Stdout, LogTarget::Webview])
         .level(LevelFilter::Info)
         .build();

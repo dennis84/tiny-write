@@ -349,7 +349,10 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     db.set('state', json)
   }
 
-  const saveStateDebounced = debounce((newState) => saveState(newState), 200)
+  const saveStateDebounced = debounce((newState: State, log?: string) => {
+    saveState(newState)
+    if (log) remote.log('info', log)
+  }, 200)
 
   const disconnectCollab = (state: State) => {
     state.collab?.ydoc?.getMap('config').unobserve(onCollabConfigUpdate)
@@ -484,7 +487,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
 
         setState((prev) => {
           const newState = {...prev, lastModified: new Date()}
-          saveStateDebounced(newState)
+          saveStateDebounced(newState, '💾 Saved updated text')
           return newState
         })
       }
@@ -633,6 +636,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     const newState = {...state, files}
     setState(newState)
     saveState(newState)
+    remote.log('info', '💾 Deleted file')
   }
 
   const setFullscreen = (fullscreen: boolean) => {
@@ -676,6 +680,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     }
 
     saveState(state)
+    remote.log('info', '💾 Saved new snapshot version')
   }
 
   const renderVersion = (version: Version) => {
@@ -752,13 +757,13 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     const config = {...state.config, ...conf}
     updateEditorState({...state, config})
     setState({config, lastModified: new Date()})
-    saveStateDebounced(store)
+    saveStateDebounced(store, '💾 Saved new config')
   }
 
   const updateContentWidth = (contentWidth: number) => {
     store.collab?.ydoc.getMap('config').set('contentWidth', contentWidth)
     setState('config', 'contentWidth', contentWidth)
-    saveStateDebounced(store)
+    saveStateDebounced(store, '💾 Saved new content width')
   }
 
   const updatePath = (path: string) => {
@@ -767,7 +772,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
 
   const updateTheme = () => {
     setState('config', getTheme(unwrap(store), true))
-    saveStateDebounced(store)
+    saveStateDebounced(store, '💾 Saved new theme')
   }
 
   const updateWindow = (win: Window) => {
