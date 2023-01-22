@@ -200,7 +200,7 @@ export const FilesMenu = (props: Props) => {
           margin-top: 5px;
           color: ${foreground(store.config)}99;
           display: flex;
-          align-items: center;
+          align-items: flex-start;
         `}>
           <span>{formatDistance(new Date(p.file.lastModified), new Date())}</span>
           <button class={css`

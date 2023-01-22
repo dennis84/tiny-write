@@ -4,8 +4,42 @@ import {v4 as uuidv4} from 'uuid'
 import mermaid from 'mermaid'
 import {CodeBlockView} from './view'
 import {saveSvg} from '@/remote'
+import {CompletionSource} from '@codemirror/autocomplete'
 
-export default (codeBlock: CodeBlockView) =>
+const syntax = {
+  flowchart: [
+    'subgraph',
+  ],
+  sequenceDiagram: [
+    'actor',
+    'activate',
+    'deactivate',
+    'participant',
+    'autonumber',
+  ],
+  classDiagram: [
+    'class',
+    '<<interface>>',
+    '<<enumeration>>',
+  ],
+}
+
+export const mermaidKeywords: CompletionSource = (context) => {
+  const word = context.matchBefore(/\w*/)
+  if (word.from == word.to && !context.explicit) {
+    return null
+  }
+
+  const type = context.state.doc.line(1).text
+  const keywords = syntax[type] ?? Object.keys(syntax)
+
+  return {
+    from: word.from,
+    options: keywords.map((label: string) => ({label, type: 'keyword'})),
+  }
+}
+
+export const mermaidView = (codeBlock: CodeBlockView) =>
   ViewPlugin.fromClass(class {
     id = uuidv4()
     output: HTMLElement

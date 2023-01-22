@@ -19,15 +19,16 @@ import {highlight, changeLang} from './lang'
 import {getTheme} from './theme'
 import expand from './expand'
 import {prettify} from './prettify'
-import mermaid from './mermaid'
+import {mermaidKeywords, mermaidView} from './mermaid'
 
 export class CodeBlockView {
   public dom: HTMLElement
   private editorView: EditorView
   private updating = false
   private clicked = false
-  private langExtension: Compartment
-  private langCompletionExtension: Compartment
+  private langExt: Compartment
+  private findWordsExt: Compartment
+  private keywordsExt: Compartment
 
   constructor(
     private node: Node,
@@ -117,8 +118,9 @@ export class CodeBlockView {
       this.options.extensions(this.view, this.node, this.getPos) :
       []
 
-    this.langExtension = new Compartment
-    this.langCompletionExtension = new Compartment
+    this.langExt = new Compartment
+    this.findWordsExt = new Compartment
+    this.keywordsExt = new Compartment
 
     const theme = getTheme(this.options.theme)
     const langSupport = highlight(this.lang)
@@ -145,7 +147,7 @@ export class CodeBlockView {
         EditorState.tabSize.of(this.options.prettier.tabWidth),
         indentUnit.of(this.options.prettier.useTabs ? '\t' : ' '.repeat(this.options.prettier.tabWidth)),
         expand(this),
-        mermaid(this),
+        mermaidView(this),
         changeLang(this, {
           onClose: () => this.editorView.focus(),
           onChange: (lang: string) => {
@@ -157,9 +159,14 @@ export class CodeBlockView {
             this.editorView.focus()
           }
         }),
-        this.langExtension.of(langSupport),
+        this.langExt.of(langSupport),
         EditorView.updateListener.of((update) => this.forwardUpdate(update)),
-        this.langCompletionExtension.of(langSupport.language.data.of({autocomplete: findWords})),
+        this.findWordsExt.of(langSupport.language.data.of({autocomplete: findWords})),
+        ...(this.lang === 'mermaid' ? [
+          this.keywordsExt.of(langSupport.language.data.of({
+            autocomplete: mermaidKeywords,
+          })),
+        ] : []),
         autocompletion(),
         EditorView.lineWrapping,
         EditorView.domEventHandlers({
@@ -287,12 +294,20 @@ export class CodeBlockView {
 
   reconfigure() {
     const langSupport = highlight(this.lang)
+
     this.editorView.dispatch({
       effects: [
-        this.langExtension.reconfigure(langSupport),
-        this.langCompletionExtension.reconfigure(
+        this.langExt.reconfigure(langSupport),
+        this.findWordsExt.reconfigure(
           langSupport.language.data.of({autocomplete: findWords})
         ),
+        ...(this.lang === 'mermaid' ? [
+          this.keywordsExt.reconfigure(
+            langSupport.language.data.of({
+              autocomplete: mermaidKeywords,
+            })
+          )
+        ] : []),
       ]
     })
   }
