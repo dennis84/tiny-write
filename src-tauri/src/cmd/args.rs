@@ -4,6 +4,7 @@ use std::io::Error;
 use std::path::Path;
 use std::{env, fs};
 use url::Url;
+use base64::{engine::general_purpose, Engine as _};
 
 #[derive(Clone, Debug, serde::Serialize)]
 pub struct Args {
@@ -42,7 +43,7 @@ pub fn create_args(source: String) -> Args {
             room = params.get("room").map(|x| x.clone());
             text = params
                 .get("text")
-                .and_then(|x| base64::decode(x).ok())
+                .and_then(|x| general_purpose::STANDARD.decode(x).ok())
                 .and_then(|x| String::from_utf8(x).ok());
         }
     } else if source != "" {
@@ -74,13 +75,7 @@ pub fn create_args(source: String) -> Args {
             .ok();
     }
 
-    Args {
-        cwd: cwd,
-        file: file,
-        dir: dir,
-        room: room,
-        text: text,
-    }
+    Args { cwd, file, dir, room, text }
 }
 
 fn list_text_files(p: &Path) -> Result<Vec<String>, Error> {

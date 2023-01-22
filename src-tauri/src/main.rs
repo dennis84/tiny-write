@@ -6,7 +6,7 @@
 use log::{info, LevelFilter};
 use std::env;
 use tauri::{Manager, Menu, MenuItem, Submenu};
-use tauri_plugin_log::{LogTarget};
+use tauri_plugin_log::LogTarget;
 
 mod cmd;
 mod pathutil;
