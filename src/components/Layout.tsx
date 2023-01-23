@@ -4,7 +4,7 @@ import {Config} from '@/state'
 
 export type Styled = {
   children?: JSX.Element;
-  config: Config;
+  config?: Config;
   [key: string]: any;
 }
 
@@ -123,7 +123,7 @@ export const Layout = (props: Styled) => {
   )
 }
 
-export const Scroll = (props: Styled & {hide?: boolean}) => {
+export const Scroll = (props: Styled) => {
   const [local, others] = splitProps(props, ['config', 'hide'])
   const styles = () => local.hide ?
     css`display: none` :

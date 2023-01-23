@@ -2,7 +2,7 @@ import {For} from 'solid-js'
 import {useState} from '@/state'
 import {codeTheme, codeThemes, fonts, themes, getTheme} from '@/config'
 import {Drawer, Label, Link, Sub, Text} from './Menu'
-import {button} from './Button'
+import {Button} from './Button'
 
 interface Props {
   onBack: () => void;
@@ -87,11 +87,7 @@ export const AppearanceMenu = (props: Props) => {
           {store.config.contentWidth}
         </Text>
       </Sub>
-      <button
-        class={button()}
-        onClick={props.onBack}>
-        ↩ Back
-      </button>
+      <Button onClick={props.onBack}>↩ Back</Button>
     </Drawer>
   )
 }

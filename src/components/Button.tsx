@@ -1,4 +1,5 @@
 import {css} from '@emotion/css'
+import {splitProps} from 'solid-js'
 import {Styled} from './Layout'
 
 export const Common = css`
@@ -18,25 +19,35 @@ export const Common = css`
   }
 `
 
-export const button = () => css`
-  ${Common}
-  background: none;
-  font-family: var(--menu-font-family);
-  color: var(--foreground);
-  border: 1px solid var(--foreground);
-  &:hover {
-    border-color: var(--primary-background);
-    color: var(--primary-background);
-    box-shadow: 0 0 0 1px var(--primary-background);
-  }
-`
+export const Button = (props: Styled) => {
+  const [local, others] = splitProps(props, ['children'])
+  return (
+    <button {...others} class={css`
+      ${Common}
+      background: none;
+      font-family: var(--menu-font-family);
+      color: var(--foreground);
+      border: 1px solid var(--foreground);
+      &:hover {
+        border-color: var(--primary-background);
+        color: var(--primary-background);
+        box-shadow: 0 0 0 1px var(--primary-background);
+      }
+    `}>{local.children}</button>
+  )
+}
 
-export const buttonPrimary = () => css`
-  ${Common}
-  color: var(--primary-foreground);
-  border: 0;
-  background: var(--primary-background);
-`
+export const ButtonPrimary = (props: Styled) => {
+  const [local, others] = splitProps(props, ['children'])
+  return (
+    <button {...others} class={css`
+      ${Common}
+      color: var(--primary-foreground);
+      border: 0;
+      background: var(--primary-background);
+    `}>{local.children}</button>
+  )
+}
 
 export const ButtonGroup = (props: Styled) => (
   <div class={css`

@@ -2,7 +2,7 @@ import {For, Show, splitProps} from 'solid-js'
 import {css} from '@emotion/css'
 import {useState} from '@/state'
 import {Content, Scroll, Styled} from './Layout'
-import {buttonPrimary} from './Button'
+import {ButtonPrimary} from './Button'
 
 const Link = (props: Styled) => {
   const [local, others] = splitProps(props, ['config', 'children'])
@@ -54,7 +54,7 @@ export default () => {
       <p>
         No markdown/plain text file in: <code>{store.args.cwd}</code>
       </p>
-      <button class={buttonPrimary()} onClick={onNew}>New File</button>
+      <ButtonPrimary onClick={onNew}>New File</ButtonPrimary>
     </>
   )
 

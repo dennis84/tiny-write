@@ -2,7 +2,7 @@ import {splitProps} from 'solid-js'
 import {css} from '@emotion/css'
 import {Styled} from './Layout'
 
-export default (props: Styled & {markdown: boolean}) => {
+export default (props: Styled) => {
   const [local, others] = splitProps(props, ['config', 'markdown'])
 
   const codeBlock = () => css`

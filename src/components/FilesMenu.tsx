@@ -10,7 +10,7 @@ import {File, useState} from '@/state'
 import * as remote from '@/remote'
 import {createExtensions, createSchema} from '@/prosemirror-setup'
 import {Drawer, Label} from './Menu'
-import {ButtonGroup, button, buttonPrimary} from './Button'
+import {ButtonGroup, Button, ButtonPrimary} from './Button'
 
 interface Props {
   onBack: () => void;
@@ -255,13 +255,8 @@ export const FilesMenu = (props: Props) => {
         </For>
       </FileList>
       <ButtonGroup config={store.config}>
-        <button
-          class={button()}
-          onClick={props.onBack}
-          data-testid="back">
-          ↩ Back
-        </button>
-        <button class={buttonPrimary()} onClick={onNew}>New doc</button>
+        <Button onClick={props.onBack} data-testid="back">↩ Back</Button>
+        <ButtonPrimary onClick={onNew}>New doc</ButtonPrimary>
       </ButtonGroup>
       <Show when={current() !== undefined}><Tooltip /></Show>
     </Drawer>

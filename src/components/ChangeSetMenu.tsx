@@ -2,7 +2,7 @@ import {For, Show, createSignal, onMount} from 'solid-js'
 import {format} from 'date-fns'
 import {Version, useState} from '@/state'
 import {Drawer, Label, Link, Sub} from './Menu'
-import {ButtonGroup, button, buttonPrimary} from './Button'
+import {ButtonGroup, Button, ButtonPrimary} from './Button'
 
 interface Props {
   onBack: () => void;
@@ -58,24 +58,16 @@ export const ChangeSetMenu = (props: Props) => {
         </For>
       </Sub>
       <ButtonGroup config={store.config}>
-        <button
-          class={button()}
-          onClick={onBack}>
-          ↩ Back
-        </button>
+        <Button onClick={onBack}>↩ Back</Button>
         <Show when={active() === undefined}>
-          <button
-            class={buttonPrimary()}
-            onClick={() => ctrl.addVersion()}>
+          <ButtonPrimary onClick={() => ctrl.addVersion()}>
             Create Snapshot
-          </button>
+          </ButtonPrimary>
         </Show>
         <Show when={active() !== undefined}>
-          <button
-            class={buttonPrimary()}
-            onClick={() => applyVersion()}>
+          <ButtonPrimary onClick={() => applyVersion()}>
             Apply Snapshot
-          </button>
+          </ButtonPrimary>
         </Show>
       </ButtonGroup>
     </Drawer>

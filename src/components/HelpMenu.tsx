@@ -1,6 +1,6 @@
 import {useState} from '@/state'
 import {Drawer, Keys, Label, Sub, Text} from './Menu'
-import {button} from './Button'
+import {Button} from './Button'
 
 interface Props {
   onBack: () => void;
@@ -118,11 +118,7 @@ export const HelpMenu = (props: Props) => {
           <Keys config={store.config} keys={[':::', 'details', '␣']} /> Container of type details
         </Text>
       </Sub>
-      <button
-        class={button()}
-        onClick={props.onBack}>
-        ↩ Back
-      </button>
+      <Button onClick={props.onBack}>↩ Back</Button>
     </Drawer>
   )
 }
