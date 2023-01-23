@@ -9,6 +9,10 @@ interface Font {
   monospace?: boolean;
 }
 
+export const styles = {
+  borderRadius: '5px',
+}
+
 export const fonts: {[key: string]: Font} = {
   'merriweather': {
     label: 'Merriweather',

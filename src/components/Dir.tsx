@@ -1,7 +1,6 @@
 import {For, Show, splitProps} from 'solid-js'
 import {css} from '@emotion/css'
 import {useState} from '@/state'
-import {foreground} from '@/config'
 import {Content, Scroll, Styled} from './Layout'
 import {buttonPrimary} from './Button'
 
@@ -16,10 +15,10 @@ const Link = (props: Styled) => {
         display: block;
         border-radius: 3px;
         cursor: pointer;
-        color: ${foreground(props.config)}99;
+        color: var(--foreground-60);
         &:hover {
-          background: ${foreground(local.config)}11;
-          color: ${foreground(props.config)};
+          background: var(--foreground-10);
+          color: var(--foreground);
         }
       `}
     >{local.children}</a>
@@ -55,7 +54,7 @@ export default () => {
       <p>
         No markdown/plain text file in: <code>{store.args.cwd}</code>
       </p>
-      <button class={buttonPrimary(store.config)} onClick={onNew}>New File</button>
+      <button class={buttonPrimary()} onClick={onNew}>New File</button>
     </>
   )
 

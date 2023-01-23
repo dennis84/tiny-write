@@ -7,7 +7,7 @@ import {State, StateContext} from './state'
 import {createCtrl} from '@/ctrl'
 import * as remote from '@/remote'
 import {isTauri} from '@/env'
-import {fonts} from '@/config'
+import * as config from '@/config'
 import {Scroll, Layout} from '@/components/Layout'
 import Editor from '@/components/Editor'
 import Menu from '@/components/Menu'
@@ -15,7 +15,7 @@ import ErrorView from '@/components/Error'
 import Dir from '@/components/Dir'
 import {insertImage, insertVideo} from '@/prosemirror/image'
 
-const fontsStyles = Object.entries(fonts)
+const fontsStyles = Object.entries(config.fonts)
   .map(([, value]) => [
     ...(value.regular ? [{
       '@font-face': {
@@ -177,6 +177,35 @@ export default (props: {state: State}) => {
       const text = doc.textBetween(0, Math.min(30, len), ' ')
       document.title = text
     }
+  })
+
+  createEffect(() => {
+    const root = document.documentElement
+    const c = store.config
+    root.style.setProperty('--background', config.background(c))
+    root.style.setProperty('--foreground', config.foreground(c))
+    root.style.setProperty('--foreground-80', `${config.foreground(c)}cc`)
+    root.style.setProperty('--foreground-60', `${config.foreground(c)}99`)
+    root.style.setProperty('--foreground-50', `${config.foreground(c)}80`)
+    root.style.setProperty('--foreground-20', `${config.foreground(c)}33`)
+    root.style.setProperty('--foreground-10', `${config.foreground(c)}1a`)
+    root.style.setProperty('--primary-background', config.primaryBackground(c))
+    root.style.setProperty('--primary-background-20', `${config.primaryBackground(c)}33`)
+    root.style.setProperty('--primary-foreground', config.primaryForeground(c))
+    root.style.setProperty('--selection-border', `${config.primaryBackground(c)}44`)
+    root.style.setProperty('--selection', config.selection(c))
+    root.style.setProperty('--tooltip-background', config.tooltipBackground(c))
+    root.style.setProperty('--font', config.font(c))
+    root.style.setProperty('--font-monospace', config.font(c, {monospace: true}))
+    root.style.setProperty('--font-bold', config.font(c, {bold: true}))
+    root.style.setProperty('--font-italic', config.font(c, {italic: true}))
+    root.style.setProperty('--font-size', `${c.fontSize}px`)
+    root.style.setProperty('--font-size-h1', `${c.fontSize * 1.8}px`)
+    root.style.setProperty('--font-size-h2', `${c.fontSize * 1.4}px`)
+    root.style.setProperty('--font-size-h3', `${c.fontSize * 1.2}px`)
+    root.style.setProperty('--border-radius', config.styles.borderRadius)
+    root.style.setProperty('--menu-font-family', 'iA Writer Mono')
+    root.style.setProperty('--menu-font-size', '14px')
   })
 
   return (

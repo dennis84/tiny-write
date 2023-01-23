@@ -1,15 +1,14 @@
 import {Show, Switch, Match} from 'solid-js'
 import {css} from '@emotion/css'
-import {Config, useState} from '@/state'
-import {foreground} from '@/config'
+import {useState} from '@/state'
 import {ButtonGroup, button, buttonPrimary} from './Button'
 import {Content, Scroll} from './Layout'
 
-const pre = (config: Config) => css`
+const pre = () => css`
   white-space: pre-wrap;
   word-wrap: break-word;
-  background: ${foreground(config)}19;
-  border: 1px solid ${foreground(config)};
+  background: var(--foreground-10);
+  border: 1px solid var(--foreground);
   border-radius: 2px;
   padding: 10px;
 `
@@ -45,10 +44,10 @@ const InvalidState = (props: {title: string}) => {
           migrations may be supported in the future. To fix this now, you can
           copy important notes from below, clean the state and paste it again.
         </p>
-        <pre class={pre(store.config)}>
+        <pre class={pre()}>
           <code>{JSON.stringify(store.error.props)}</code>
         </pre>
-        <button class={buttonPrimary(store.config)} onClick={onClick}>Clean</button>
+        <button class={buttonPrimary()} onClick={onClick}>Clean</button>
       </Content>
     </Scroll>
   )
@@ -73,11 +72,11 @@ const Other = () => {
     <Scroll config={store.config}>
       <Content config={store.config}>
         <h1>An error occurred.</h1>
-        <pre class={pre(store.config)}><code>{getMessage()}</code></pre>
+        <pre class={pre()}><code>{getMessage()}</code></pre>
         <ButtonGroup config={store.config}>
-          <button class={buttonPrimary(store.config)} onClick={onReload}>Reload</button>
+          <button class={buttonPrimary()} onClick={onReload}>Reload</button>
           <Show when={store.error.id === 'exception'}>
-            <button class={button(store.config)} onClick={onDiscard}>Discard</button>
+            <button class={button()} onClick={onDiscard}>Discard</button>
           </Show>
         </ButtonGroup>
       </Content>

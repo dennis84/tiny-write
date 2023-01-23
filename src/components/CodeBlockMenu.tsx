@@ -61,7 +61,7 @@ export const CodeBlockMenu = (props: Props) => {
         </Link>
       </Sub>
       <button
-        class={button(store.config)}
+        class={button()}
         onClick={props.onBack}>
         ↩ Back
       </button>

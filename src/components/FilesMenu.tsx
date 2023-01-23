@@ -7,7 +7,6 @@ import {yDocToProsemirror} from 'y-prosemirror'
 import {formatDistance} from 'date-fns'
 import {arrow, computePosition, flip, offset, shift} from '@floating-ui/dom'
 import {File, useState} from '@/state'
-import {foreground, primaryBackground} from '@/config'
 import * as remote from '@/remote'
 import {createExtensions, createSchema} from '@/prosemirror-setup'
 import {Drawer, Label} from './Menu'
@@ -155,14 +154,14 @@ export const FilesMenu = (props: Props) => {
             cursor: pointer;
             font-size: 10px;
             line-height: 1.4;
-            color: ${foreground(store.config)};
-            background: ${foreground(store.config)}11;
-            border: 1px solid ${foreground(store.config)}99;
+            color: var(--foreground);
+            background: var(--foreground-10);
+            border: 1px solid var(--foreground-60);
             ${current() === p.file ? `
-              border-color: ${primaryBackground(store.config)};
-              box-shadow: 0 0 0 1px ${primaryBackground(store.config)};
+              border-color: var(--primary-background);
+              box-shadow: 0 0 0 1px var(--primary-background);
             ` : ''}
-            border-radius: 3px;
+            border-radius: var(--border-radius);
             p {
               margin: 0;
             }
@@ -176,16 +175,16 @@ export const FilesMenu = (props: Props) => {
               margin-right: 2px;
             }
             pre {
-              border: 1px solid ${foreground(store.config)}55;
-              background: ${foreground(store.config)}11;
-              border-radius: 3px;
+              border: 1px solid var(--foreground-50);
+              background: var(--foreground-10);
+              border-radius: var(--border-radius);
               padding: 0px;
               margin: 0;
               overflow: hidden;
             }
             &:hover {
-              border-color: ${primaryBackground(store.config)};
-              box-shadow: 0 0 0 1px ${primaryBackground(store.config)};
+              border-color: var(--primary-background);
+              box-shadow: 0 0 0 1px var(--primary-background);
             }
           `}
           onClick={() => onOpenFile(p.file)}
@@ -198,7 +197,7 @@ export const FilesMenu = (props: Props) => {
         <div class={css`
           font-size: 12px;
           margin-top: 5px;
-          color: ${foreground(store.config)}99;
+          color: var(--foreground-60);
           display: flex;
           align-items: flex-start;
         `}>
@@ -208,14 +207,14 @@ export const FilesMenu = (props: Props) => {
             margin-left: auto;
             background: none;
             border: 0;
-            color: ${foreground(store.config)}99;
+            color: var(--foreground-60);
             cursor: pointer;
             padding: 0;
             ${current() === p.file ? `
-              color: ${primaryBackground(store.config)};
+              color: var(--primary-background);
             ` : ''}
             &:hover {
-              color: ${primaryBackground(store.config)};
+              color: var(--primary-background);
             }
           `} onClick={onTooltip}>︙</button>
         </div>
@@ -257,12 +256,12 @@ export const FilesMenu = (props: Props) => {
       </FileList>
       <ButtonGroup config={store.config}>
         <button
-          class={button(store.config)}
+          class={button()}
           onClick={props.onBack}
           data-testid="back">
           ↩ Back
         </button>
-        <button class={buttonPrimary(store.config)} onClick={onNew}>New doc</button>
+        <button class={buttonPrimary()} onClick={onNew}>New doc</button>
       </ButtonGroup>
       <Show when={current() !== undefined}><Tooltip /></Show>
     </Drawer>

@@ -1,6 +1,5 @@
 import {JSX, splitProps} from 'solid-js'
 import {css} from '@emotion/css'
-import {background, foreground, primaryBackground, font, selection, tooltipBackground} from '@/config'
 import {Config} from '@/state'
 
 export type Styled = {
@@ -13,18 +12,17 @@ export const Layout = (props: Styled) => {
   const [local, others] = splitProps(props, ['config', 'children'])
   return (
     <div {...others} class={css`
-      background: ${background(local.config)};
+      background: var(--background);
       display: flex;
       width: 100%;
       height: 100%;
-      font-family: ${font(local.config)};
-      font-size: 18px;
-      color: ${foreground(local.config)};
+      font-family: var(--font);
+      color: var(--foreground);
       position: relative;
       .drop-cursor {
-        background: ${primaryBackground(local.config)} !important;
-        height: 4px !important;
-        opacity: 0.5;
+        background: var(--primary-background) !important;
+        height: 5px !important;
+        border-radius: 5px;
       }
       .mouse-cursor-container {
         position: fixed;
@@ -50,9 +48,9 @@ export const Layout = (props: Styled) => {
             line-height: 0;
             white-space: nowrap;
             padding: 4px;
-            font-family: 'iA Writer Mono';
-            font-size: 12px;
-            border-radius: 4px;
+            font-family: var(--menu-font-family);
+            font-size: var(--menu-font-size);
+            border-radius: var(--border-radius);
           }
           &::before, &::after {
             content: '';
@@ -81,10 +79,10 @@ export const Layout = (props: Styled) => {
       .file-tooltip {
         position: absolute;
         width: max-content;
-        background: ${tooltipBackground(local.config)};
-        border-radius: 3px;
-        font-family: 'iA Writer Mono';
-        font-size: 12px;
+        background: var(--tooltip-background);
+        border-radius: var(--border-radius);
+        font-family: var(--font-monospace);
+        font-size: var(--menu-font-size);
         z-index: 200;
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
         div {
@@ -94,19 +92,19 @@ export const Layout = (props: Styled) => {
           padding: 10px;
           cursor: pointer;
           &:hover, &.selected {
-            background: ${selection(local.config)};
+            background: var(--selection);
           }
         }
         .divider {
           height: 1px;
           border: 0;
-          background: ${foreground(local.config)}19;
+          background: var(--foreground-20);
           margin: 0;
         }
         .arrow {
           width: 8px;
           height: 8px;
-          background: ${tooltipBackground(local.config)};
+          background: var(--tooltip-background);
           position: absolute;
           transform: rotate(45deg);
         }
@@ -117,7 +115,7 @@ export const Layout = (props: Styled) => {
         margin-right: -1px;
         border-left: 1px solid black;
         border-right: 1px solid black;
-        border-color: ${primaryBackground(local.config)};
+        border-color: var(--primary-background);
         word-break: normal;
         pointer-events: none;
       }
@@ -164,7 +162,7 @@ export const Content = (props: Styled) => (
         display: none;
       }
       code {
-        font-family: '${font(props.config, {monospace: true})}';
+        font-family: var(--font-monospace);
       }
     `}
     data-tauri-drag-region="true"

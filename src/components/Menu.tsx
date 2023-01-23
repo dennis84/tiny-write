@@ -4,8 +4,7 @@ import {differenceInHours, format} from 'date-fns'
 import {css} from '@emotion/css'
 import * as Y from 'yjs'
 import {undo, redo} from 'y-prosemirror'
-import {Config, useState} from '@/state'
-import {foreground, primaryBackground} from '@/config'
+import {useState} from '@/state'
 import {isTauri, isMac, alt, mod, version, WEB_URL, VERSION_URL} from '@/env'
 import * as remote from '@/remote'
 import {isEmpty} from '@/prosemirror'
@@ -24,7 +23,7 @@ const Container = (props: {children: JSX.Element}) => (
     flex-shrink: 0;
     flex-grow: 1;
     height: 100%;
-    font-family: 'iA Writer Mono';
+    font-family: var(--menu-font-family);
     @media print {
       display: none;
     }
@@ -56,7 +55,7 @@ const Burger = (props: Styled) => {
           left: auto;
         }
         > span {
-          background: ${foreground(local.config)};
+          background: var(--foreground);
           height: 3px;
           width: 15px;
           border-radius: 4px;
@@ -77,7 +76,7 @@ const Burger = (props: Styled) => {
 
 export const Drawer = (props: Styled) => (
   <div data-tauri-drag-region="true" class={css`
-    background: ${foreground(props.config)}19;
+    background: var(--foreground-10);
     padding: 20px;
     height: 100%;
     display: ${props.hidden ? 'none' : 'block'};
@@ -97,9 +96,9 @@ export const Drawer = (props: Styled) => (
 export const Label = (props: Styled) => (
   <h3 class={css`
     margin: 0;
-    font-size: 14px;
+    font-size: var(--menu-font-size);
     text-transform: uppercase;
-    color: ${foreground(props.config)}7f;
+    color: var(--foreground-50);
     > i {
       text-transform: none;
     }
@@ -113,23 +112,23 @@ export const Sub = (props: {children: JSX.Element}) => (
   `}>{props.children}</nav>
 )
 
-const itemCss = (config: Config) => css`
+const itemCss = () => css`
   width: 100%;
   padding: 2px 0;
   margin: 0;
   outline: none;
   display: flex;
   align-items: center;
-  color: ${foreground(config)};
-  font-size: 16px;
-  line-height: 22px;
-  font-family: 'iA Writer Mono';
+  color: var(--foreground);
+  font-size: var(--menu-font-size);
+  line-height: calc(var(--menu-font-size) * 1.6);
+  font-family: var(--menu-font-family);
   text-align: left;
 `
 
 export const Text = (props: Styled) => (
   <p
-    class={itemCss(props.config)}
+    class={itemCss()}
     data-testid={props['data-testid']}>
     {props.children}
   </p>
@@ -141,7 +140,7 @@ export const Link = (props: Styled) => {
     <button
       {...others}
       class={css`
-        ${itemCss(local.config)}
+        ${itemCss()}
         background: none;
         border: 0;
         cursor: pointer;
@@ -153,10 +152,10 @@ export const Link = (props: Styled) => {
           margin-left: auto;
         }
         &:hover {
-          color: ${primaryBackground(local.config)};
+          color: var(--primary-background);
           > span i {
             position: relative;
-            box-shadow: 0 3px 0 0 ${foreground(local.config)}99;
+            box-shadow: 0 3px 0 0 var(--foreground-60);
             top: -1px;
           }
         }
@@ -168,7 +167,7 @@ export const Link = (props: Styled) => {
           }
         }
         &[disabled] {
-          color: ${foreground(local.config)}99;
+          color: var(--foreground-60);
           cursor: not-allowed;
         }
       `}
@@ -176,28 +175,25 @@ export const Link = (props: Styled) => {
   )
 }
 
-export const Keys = (props: Styled) => {
-  const [local] = splitProps(props, ['config'])
-  return (
-    <span
-      class={css`
-        margin-top: -4px;
-        > i {
-          color: ${foreground(local.config)};
-          background: ${foreground(local.config)}19;
-          border: 1px solid ${foreground(local.config)}99;
-          box-shadow: 0 2px 0 0 ${foreground(local.config)}99;
-          border-radius: 2px;
-          font-style: normal;
-          font-size: 13px;
-          line-height: 1.4;
-          padding: 1px 4px;
-          margin: 0 1px;
-        }
-      `}
-    >{props.keys.map((k: string) => <i>{k}</i>)}</span>
-  )
-}
+export const Keys = (props: Styled) => (
+  <span
+    class={css`
+      margin-top: -4px;
+      > i {
+        color: var(--foreground);
+        background: var(--foreground-10);
+        border: 1px solid var(--foreground-60);
+        box-shadow: 0 2px 0 0 var(--foreground-60);
+        border-radius: 2px;
+        font-style: normal;
+        font-size: 13px;
+        line-height: 1.4;
+        padding: 1px 4px;
+        margin: 0 1px;
+      }
+    `}
+  >{props.keys.map((k: string) => <i>{k}</i>)}</span>
+)
 
 export default () => {
   const [store, ctrl] = useState()

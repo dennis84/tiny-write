@@ -1,6 +1,5 @@
 import {splitProps} from 'solid-js'
 import {css} from '@emotion/css'
-import {background, foreground, primaryBackground, font, selection} from '@/config'
 import {Styled} from './Layout'
 
 export default (props: Styled & {markdown: boolean}) => {
@@ -11,15 +10,15 @@ export default (props: Styled & {markdown: boolean}) => {
       position: relative;
       margin: 10px 0;
       margin-bottom: 15px;
-      border-radius: 3px;
+      border-radius: var(--border-radius);
       display: flex;
-      font-family: '${font(local.config, {monospace: true})}';
+      font-family: var(--font-monospace);
       font-variant-ligatures: none;
       .block-handle {
         top: 2px;
       }
       .cm-tooltip-autocomplete {
-        border-radius: 3px;
+        border-radius: var(--border-radius);
         border: 0;
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
         ul {
@@ -31,16 +30,16 @@ export default (props: Styled & {markdown: boolean}) => {
       }
       &.ProseMirror-selectednode,
       &.selected {
-        box-shadow: 0 0 0 5px ${primaryBackground(local.config)}44;
+        box-shadow: 0 0 0 5px var(--selection-border);
       }
       .cm-editor {
         outline: none;
         .cm-content, .cm-gutter {
           padding: 0;
-          font-family: '${font(local.config, {monospace: true})}';
+          font-family: var(--font-monospace);
         }
         .cm-line {
-          line-height: ${local.config.fontSize * 1.8}px;
+          line-height: calc(var(--font-size) * 1.6) !important;
         }
         .cm-lineWrapping {
           word-break: break-all;
@@ -64,18 +63,14 @@ export default (props: Styled & {markdown: boolean}) => {
           }
         }
         .cm-tooltip ul {
-          font-family: '${font(local.config, {monospace: true})}';
+          font-family: var(--font-monospace);
         }
       }
       > .cm-editor {
         height: 100%;
         width: 100%;
-        border-radius: 3px;
+        border-radius: var(--border-radius);
         flex-direction: ${local.config.contentWidth > 1000 ? 'row' : 'column'};
-        &.selected {
-          box-shadow: 0 0 0 2px ${primaryBackground(local.config)};
-          border-radius: 3px;
-        }
         > .cm-scroller {
           flex-grow: 1;
           flex-shrink: 1;
@@ -105,7 +100,6 @@ export default (props: Styled & {markdown: boolean}) => {
           right: 0;
           margin: 4px;
           height: 16px;
-          font-size: 12px;
           line-height: 100%;
           cursor: pointer;
           z-index: 10;
@@ -152,10 +146,10 @@ export default (props: Styled & {markdown: boolean}) => {
           cursor: pointer;
           font-size: 10px;
           user-select: none;
-          background: ${foreground(local.config)}22;
-          border-radius: 3px;
+          background: var(--foreground-10);
+          border-radius: var(--border-radius);
           &:hover {
-            background: ${foreground(local.config)}33;
+            background: var(--foreground-20);
           }
         }
         .prettify {
@@ -183,38 +177,35 @@ export default (props: Styled & {markdown: boolean}) => {
         word-wrap: break-word;
         white-space: pre-wrap;
         position: relative;
-        font-size: ${local.config.fontSize}px;
-        font-family: ${font(local.config)};
-        color: ${foreground(local.config)};
+        font-size: var(--font-size);
+        font-family: var(--font);
+        color: var(--foreground);
         margin-top: 50px;
         padding-bottom: 77vh;
-        line-height: ${local.config.fontSize * 1.6}px;
+        line-height: calc(var(--font-size) * 1.6);
         outline: none !important;
         background: transparent;
         strong {
-          font-family: ${font(local.config, {bold: true})};
+          font-family: var(--font-bold);
         }
         em {
-          font-family: ${font(local.config, {italic: true})};
-        }
-        h1, h2, h3, h4, h5, h6 {
-          line-height: ${local.config.fontSize * 1.6}px;
+          font-family: var(--font-italic);
         }
         h1 {
-          font-size: ${local.config.fontSize * 1.8}px;
-          line-height: ${local.config.fontSize * 2.2}px;
+          font-size: var(--font-size-h1);
+          line-height: calc(var(--font-size-h1) * 1.6);
           .block-handle {
-            height: ${local.config.fontSize * 2.2}px;
+            height: calc(var(--font-size-h1) * 1.6);
           }
         }
         h2 {
-          font-size: ${local.config.fontSize * 1.4}px;
+          font-size: var(--font-size-h2);
         }
         h3 {
-          font-size: ${local.config.fontSize * 1.2}px;
+          font-size: var(--font-size-h3);
         }
         h4, h5, h6 {
-          font-size: ${local.config.fontSize}px;
+          font-size: var(--font-size);
         }
         p.truncate {
           overflow: hidden;
@@ -233,25 +224,25 @@ export default (props: Styled & {markdown: boolean}) => {
           margin-left: 30px;
         }
         blockquote {
-          border-left: 10px solid ${foreground(local.config)}33;
+          border-left: 10px solid var(--foreground-20);
           padding-left: 10px;
           margin: 0;
         }
         code {
-          border: 1px solid ${foreground(local.config)}7f;
-          background: ${foreground(local.config)}19;
-          border-radius: 3px;
+          border: 1px solid var(--foreground-50);
+          background: var(--foreground-10);
+          border-radius: var(--border-radius);
           padding: 1px;
-          font-family: '${font(local.config, {monospace: true})}' !important;
+          font-family: var(--font-monospace) !important;
         }
         a {
-          color: ${primaryBackground(local.config)};
+          color: var(--primary-background);
         }
         .horizontal-rule {
           margin: 40px 0;
           height: 5px;
           line-height: 5px;
-          background: ${foreground(local.config)}33;
+          background: var(--foreground-20);
           border-radius: 5px;
           page-break-before: always;
           .block-handle {
@@ -269,14 +260,14 @@ export default (props: Styled & {markdown: boolean}) => {
             margin: 5px 0;
             border-collapse: separate;
             border-spacing: 0;
-            border-radius: 3px;
-            border: 1px solid ${foreground(local.config)}7f;
+            border-radius: var(--border-radius);
+            border: 1px solid var(--foreground-50);
             text-align: left;
-            background: ${foreground(local.config)}11;
+            background: var(--foreground-10);
             th, td {
               padding: 10px 15px;
               vertical-align: top;
-              border: 1px solid ${foreground(local.config)}7f;
+              border: 1px solid var(--foreground-50);
               border-top: 0;
               border-right: 0;
               position: relative;
@@ -285,31 +276,28 @@ export default (props: Styled & {markdown: boolean}) => {
               border-left: 0;
             }
             th {
-              background: ${foreground(local.config)}11;
-              color: ${foreground(local.config)}cc;
-              font-family: ${font(local.config, {bold: true})};
+              background: var(--foreground-10);
+              color: var(--foreground-80);
+              font-family: var(--font-bold);
             }
             tr:last-child td {
               border-bottom: 0;
             }
           }
-          .table-menu-right,
-          .table-menu-left,
-          .table-menu-bottom {
+          .table-menu-button {
             position: absolute;
             display: flex;
             justify-content: center;
             align-items: center;
             cursor: pointer;
-            font-size: 12px;
             user-select: none;
             z-index: 1;
-            background: ${background(local.config)};
-            border: 1px solid ${foreground(local.config)}7f;
-            border-radius: 3px;
+            background: var(--background);
+            border: 1px solid var(--foreground-50);
+            border-radius: var(--border-radius);
             svg {
               pointer-events: none;
-              fill: ${foreground(local.config)}99;
+              fill: var(--foreground-60);
               height: 10px;
             }
           }
@@ -335,12 +323,11 @@ export default (props: Styled & {markdown: boolean}) => {
             }
           }
           &.selected table {
-            box-shadow: 0 0 0 1px ${primaryBackground(local.config)};
-            border-color: ${primaryBackground(local.config)};
+            box-shadow: 0 0 0 5px var(--selection-border);
           }
         }
         .placeholder {
-          color: ${foreground(local.config)}4c;
+          color: var(--foreground-50);
           position: absolute;
           pointer-events: none;
           user-select: none;
@@ -352,7 +339,7 @@ export default (props: Styled & {markdown: boolean}) => {
           position: absolute;
           left: -30px;
           top: 0;
-          height: ${local.config.fontSize * 1.6}px;
+          height: calc(var(--font-size) * 1.6);
           opacity: 0;
           cursor: move;
           transition: opacity 0.3s;
@@ -363,14 +350,14 @@ export default (props: Styled & {markdown: boolean}) => {
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            border-radius: 3px;
+            border-radius: var(--border-radius);
             padding: 6px;
-            fill: ${foreground(local.config)}99;
+            fill: var(--foreground-60);
             pointer-events: none;
             user-select: none;
           }
           &:hover > span {
-            background: ${foreground(local.config)}19;
+            background: var(foreground-10);
           }
           @media print {
             display: none;
@@ -405,16 +392,14 @@ export default (props: Styled & {markdown: boolean}) => {
         }
         .container-tip, .container-warning, .container-details {
           padding: 30px;
-          border-radius: 3px;
+          border-radius: var(--border-radius);
           &.ProseMirror-selectednode, &.selected {
-            box-shadow: 0 0 0 5px ${primaryBackground(local.config)}44;
+            box-shadow: 0 0 0 5px var(--selection-border);
           }
         }
-        .container-tip {
-          background: ${foreground(local.config)}19;
-        }
+        .container-tip,
         .container-details {
-          background: ${foreground(local.config)}19;
+          background: var(--foreground-10);
           > summary {
             cursor: pointer;
           }
@@ -423,7 +408,7 @@ export default (props: Styled & {markdown: boolean}) => {
           }
         }
         .container-warning {
-          background: ${primaryBackground(local.config)}33;
+          background: var(--primary-background-20);
         }
         .image-container {
           position: relative;
@@ -434,7 +419,7 @@ export default (props: Styled & {markdown: boolean}) => {
           line-height: 0;
           img, video {
             width: 100%;
-            border-radius: 3px;
+            border-radius: var(--border-radius);
           }
           .resize-handle {
             position: absolute;
@@ -448,20 +433,20 @@ export default (props: Styled & {markdown: boolean}) => {
         .ProseMirror-selectednode .image-container,
         .image-container.ProseMirror-selectednode,
         .image-container.selected {
-          box-shadow: 0 0 0 5px ${primaryBackground(local.config)}44;
-          border-radius: 3px;
+          box-shadow: 0 0 0 5px var(--selection-border);
+          border-radius: var(--border-radius);
           img {
-            border-radius: 3px;
+            border-radius: var(--border-radius);
           }
         }
         > *:not(.cm-container)::selection,
         > *:not(.cm-container) *::selection,
         > *:not(.cm-container).selected {
-          background: ${selection(local.config)};
+          background: var(--selection);
         }
         .ProseMirror-selectednode {
-          background: ${selection(local.config)} !important;
-          box-shadow: 0 0 0 5px ${selection(local.config)};
+          background: var(--selection) !important;
+          box-shadow: 0 0 0 5px var(--selection);
         }
         @media print {
           padding-bottom: 0;

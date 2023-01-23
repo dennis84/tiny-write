@@ -59,20 +59,20 @@ export const ChangeSetMenu = (props: Props) => {
       </Sub>
       <ButtonGroup config={store.config}>
         <button
-          class={button(store.config)}
+          class={button()}
           onClick={onBack}>
           ↩ Back
         </button>
         <Show when={active() === undefined}>
           <button
-            class={buttonPrimary(store.config)}
+            class={buttonPrimary()}
             onClick={() => ctrl.addVersion()}>
             Create Snapshot
           </button>
         </Show>
         <Show when={active() !== undefined}>
           <button
-            class={buttonPrimary(store.config)}
+            class={buttonPrimary()}
             onClick={() => applyVersion()}>
             Apply Snapshot
           </button>

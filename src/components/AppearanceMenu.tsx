@@ -88,7 +88,7 @@ export const AppearanceMenu = (props: Props) => {
         </Text>
       </Sub>
       <button
-        class={button(store.config)}
+        class={button()}
         onClick={props.onBack}>
         ↩ Back
       </button>
