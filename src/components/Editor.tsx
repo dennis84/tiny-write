@@ -12,7 +12,7 @@ export default (props: Styled) => {
       margin-bottom: 15px;
       border-radius: var(--border-radius);
       display: flex;
-      font-family: var(--font-monospace);
+      font-family: var(--font-family-monospace);
       font-variant-ligatures: none;
       .block-handle {
         top: 2px;
@@ -36,7 +36,7 @@ export default (props: Styled) => {
         outline: none;
         .cm-content, .cm-gutter {
           padding: 0;
-          font-family: var(--font-monospace);
+          font-family: var(--font-family-monospace);
         }
         .cm-line {
           line-height: calc(var(--font-size) * 1.6) !important;
@@ -63,7 +63,7 @@ export default (props: Styled) => {
           }
         }
         .cm-tooltip ul {
-          font-family: var(--font-monospace);
+          font-family: var(--font-family-monospace);
         }
       }
       > .cm-editor {
@@ -152,13 +152,14 @@ export default (props: Styled) => {
             background: var(--foreground-20);
           }
         }
-        .prettify {
-          position: absolute;
-          right: 8px;
-          bottom: 2px;
-          cursor: pointer;
-          z-index: 10;
-          user-select: none;
+        @media print {
+          .cm-scroller {
+            max-height: 100% !important;
+          }
+          .expand,
+          .lang-toggle {
+            display: none !important;
+          }
         }
       }
     }
@@ -178,7 +179,7 @@ export default (props: Styled) => {
         white-space: pre-wrap;
         position: relative;
         font-size: var(--font-size);
-        font-family: var(--font);
+        font-family: var(--font-family);
         color: var(--foreground);
         margin-top: 50px;
         padding-bottom: 77vh;
@@ -186,10 +187,10 @@ export default (props: Styled) => {
         outline: none !important;
         background: transparent;
         strong {
-          font-family: var(--font-bold);
+          font-family: var(--font-family-bold);
         }
         em {
-          font-family: var(--font-italic);
+          font-family: var(--font-family-italic);
         }
         h1 {
           font-size: var(--font-size-h1);
@@ -233,7 +234,7 @@ export default (props: Styled) => {
           background: var(--foreground-10);
           border-radius: var(--border-radius);
           padding: 1px;
-          font-family: var(--font-monospace) !important;
+          font-family: var(--font-family-monospace) !important;
         }
         a {
           color: var(--primary-background);
@@ -278,7 +279,7 @@ export default (props: Styled) => {
             th {
               background: var(--foreground-10);
               color: var(--foreground-80);
-              font-family: var(--font-bold);
+              font-family: var(--font-family-bold);
             }
             tr:last-child td {
               border-bottom: 0;

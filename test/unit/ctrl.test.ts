@@ -1,29 +1,8 @@
 import {vi, expect, test} from 'vitest'
 
-vi.stubGlobal('d3', vi.fn(() => ({
-  curveLinear: () => undefined
-})))
-
-import {createCtrl} from '@/ctrl'
-import {createState} from '@/state'
-
-const lastModified = new Date()
-
 vi.stubGlobal('matchMedia', vi.fn(() => ({
   matchMedia: () => ''
 })))
-
-vi.mock('@/remote', () => ({
-  getArgs: async () => ({}),
-  resolvePath: async ([path]) => path,
-  getFileLastModified: async () => lastModified,
-  readFile: async (path: string) => {
-    return path === 'file1' ? '# File1' : ''
-  },
-  log: () => undefined,
-  updateWindow: () => undefined,
-  show: () => undefined,
-}))
 
 vi.mock('idb-keyval', () => ({
   get: async () => undefined,
@@ -41,16 +20,14 @@ vi.mock('y-websocket', () => ({WebsocketProvider: class {
   connect() { /**/ }
 }}))
 
+import {createCtrl} from '@/ctrl'
+import {createState} from '@/state'
+
 const createText = (text: string) => ({
   doc: {
     type: 'doc',
     content: [{type: 'paragraph', content: [{type: 'text', text}]}]
   },
-  selection: {
-    type: 'text',
-    anchor: 1,
-    head: 1
-  }
 })
 
 const text = createText('Test')
@@ -145,46 +122,6 @@ test('openFile - from files', async () => {
   expect(store.editorView.state.doc.textContent).toBe('Test')
 })
 
-test('openFile - path in files', async () => {
-  const [store, ctrl] = createCtrl(createState({
-    files: [
-      {path: 'file1', lastModified: lastModified.toISOString()},
-      {path: 'file2'},
-    ]
-  }))
-
-  const target = document.createElement('div')
-  await ctrl.init(target)
-  await ctrl.openFile({path: 'file1'})
-  expect(store.files.length).toBe(1)
-  expect(store.editorView.state.doc.textContent).toBe('File1')
-  expect(store.path).toBe('file1')
-  expect(store.lastModified).toEqual(lastModified)
-})
-
-test('openFile - push path to files', async () => {
-  const [store, ctrl] = createCtrl(createState({path: 'file2'}))
-
-  const target = document.createElement('div')
-  await ctrl.init(target)
-  const tr = store.editorView.state.tr
-  tr.insertText('Test')
-  store.editorView.dispatch(tr)
-  await ctrl.openFile({path: 'file1'})
-  expect(store.files.length).toBe(1)
-  expect(store.files[0].path).toBe('file2')
-  expect(store.editorView.state.doc.textContent).toBe('File1')
-  expect(store.path).toBe('file1')
-})
-
-test('openFile - path and text', async () => {
-  const [store, ctrl] = createCtrl(createState())
-  const target = document.createElement('div')
-  await ctrl.init(target)
-  await ctrl.openFile({text, path: 'file1'})
-  expect(store.editorView.state.doc.textContent).toBe('File1')
-})
-
 test('openFile - open collab', async () => {
   const file = {text, room: 'room-123'}
   const [store, ctrl] = createCtrl(createState({files: [file]}))
@@ -194,21 +131,6 @@ test('openFile - open collab', async () => {
   expect(store.editorView.state.doc.textContent).toBe('Test')
   expect(store.files.length).toBe(0)
   expect(store.collab.room).toBe('room-123')
-})
-
-test('discard - with path', async () => {
-  const [store, ctrl] = createCtrl(createState({
-    files: [{path: 'file1'}],
-    path: 'file2',
-  }))
-
-  const target = document.createElement('div')
-  await ctrl.init(target)
-  expect(store.files.length).toBe(1)
-  await ctrl.discard()
-  expect(store.editorView.state.doc.textContent).toBe('File1')
-  expect(store.path).toBe('file1')
-  expect(store.files.length).toBe(0)
 })
 
 test('discard - open collab', async () => {

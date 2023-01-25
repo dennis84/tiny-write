@@ -16,7 +16,7 @@ export const Layout = (props: Styled) => {
       display: flex;
       width: 100%;
       height: 100%;
-      font-family: var(--font);
+      font-family: var(--font-family);
       color: var(--foreground);
       position: relative;
       .drop-cursor {
@@ -81,8 +81,9 @@ export const Layout = (props: Styled) => {
         width: max-content;
         background: var(--tooltip-background);
         border-radius: var(--border-radius);
-        font-family: var(--font-monospace);
+        font-family: var(--menu-font-family);
         font-size: var(--menu-font-size);
+        line-height: 1.4;
         z-index: 200;
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
         div {
@@ -162,7 +163,7 @@ export const Content = (props: Styled) => (
         display: none;
       }
       code {
-        font-family: var(--font-monospace);
+        font-family: var(--font-family-monospace);
       }
     `}
     data-tauri-drag-region="true"
