@@ -122,7 +122,6 @@ class ImageView {
   container: HTMLElement
   handle: HTMLElement
   width: number
-  updating: number
 
   onResize = (e: MouseEvent) => {
     this.width = e.pageX - this.container.getBoundingClientRect().left
@@ -131,8 +130,8 @@ class ImageView {
 
   onResizeEnd = () => {
     window.removeEventListener('mousemove', this.onResize)
-    if (this.updating === this.width) return
-    this.updating = this.width
+    window.removeEventListener('mouseup', this.onResizeEnd)
+    if (!this.width) return
     const tr = this.view.state.tr
     tr.setNodeMarkup(this.getPos(), undefined, {
       ...this.node.attrs,
@@ -149,10 +148,10 @@ class ImageView {
     private path: string
   ) {
     this.container = document.createElement('span')
-    this.container.className = 'image-container'
+    this.container.classList.add('image-container', 'loading')
     if (node.attrs.width) this.setWidth(node.attrs.width)
 
-    let source: HTMLElement
+    let source: HTMLImageElement | HTMLSourceElement
     if (node.type.name === 'video') {
       const video = document.createElement('video')
       video.setAttribute('title', node.attrs.title ?? '')
@@ -181,9 +180,20 @@ class ImageView {
       source.setAttribute('src', node.attrs.src)
     }
 
+    source.onload = () => {
+      this.container.classList.remove('loading')
+    }
+
+    source.onerror = () => {
+      this.container.classList.remove('loading')
+      this.container.classList.add('error')
+      this.container.appendChild(document.createTextNode('⚠︎'))
+    }
+
     this.handle = document.createElement('span')
     this.handle.className = 'resize-handle'
     this.handle.addEventListener('mousedown', (e) => {
+      if (e.buttons !== 1) return
       e.preventDefault()
       window.addEventListener('mousemove', this.onResize)
       window.addEventListener('mouseup', this.onResizeEnd)

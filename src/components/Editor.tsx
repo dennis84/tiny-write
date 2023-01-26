@@ -414,10 +414,22 @@ export default (props: Styled) => {
         .image-container {
           position: relative;
           float: left;
+          display: flex;
+          justify-content: center;
+          align-items: center;
           max-width: 100%;
           margin-right: 10px;
           cursor: default;
           line-height: 0;
+          &.error, &.loading {
+            background: var(--foreground-10);
+            border-radius: var(--border-radius);
+            min-width: 40px;
+            aspect-ratio: 1/1;
+            img, video {
+              display: none;
+            }
+          }
           img, video {
             width: 100%;
             border-radius: var(--border-radius);
