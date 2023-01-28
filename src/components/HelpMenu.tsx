@@ -1,4 +1,3 @@
-import {useState} from '@/state'
 import {Drawer, Keys, Label, Sub, Text} from './Menu'
 import {Button} from './Button'
 
@@ -7,115 +6,113 @@ interface Props {
 }
 
 export const HelpMenu = (props: Props) => {
-  const [store] = useState()
-
   return (
-    <Drawer config={store.config}>
-      <Label config={store.config}>Markdown shortcuts</Label>
-      <Sub>
-        <Text config={store.config}>
-          (<Keys config={store.config} keys={['␣']} /> =Space)
+    <Drawer data-tauri-drag-region="true">
+      <Label>Markdown shortcuts</Label>
+      <Sub data-tauri-drag-region="true">
+        <Text>
+          (<Keys keys={['␣']} /> =Space)
         </Text>
       </Sub>
       <br/>
-      <Label config={store.config}>Heading</Label>
-      <Sub>
-        <Text config={store.config}><Keys config={store.config} keys={['#', '␣']} /> Heading 1</Text>
-        <Text config={store.config}><Keys config={store.config} keys={['##', '␣']} /> Heading 2</Text>
-        <Text config={store.config}><Keys config={store.config} keys={['###', '␣']} /> Heading 3</Text>
-        <Text config={store.config}>...</Text>
+      <Label>Heading</Label>
+      <Sub data-tauri-drag-region="true">
+        <Text><Keys keys={['#', '␣']} /> Heading 1</Text>
+        <Text><Keys keys={['##', '␣']} /> Heading 2</Text>
+        <Text><Keys keys={['###', '␣']} /> Heading 3</Text>
+        <Text>...</Text>
       </Sub>
-      <Label config={store.config}>Emphasis</Label>
-      <Sub>
-        <Text config={store.config}>
-          <Keys config={store.config} keys={['**']} />strong
-          <Keys config={store.config} keys={['**']} />
+      <Label>Emphasis</Label>
+      <Sub data-tauri-drag-region="true">
+        <Text>
+          <Keys keys={['**']} />strong
+          <Keys keys={['**']} />
         </Text>
-        <Text config={store.config}>
-          <Keys config={store.config} keys={['__']} />strong
-          <Keys config={store.config} keys={['__']} />
+        <Text>
+          <Keys keys={['__']} />strong
+          <Keys keys={['__']} />
         </Text>
-        <Text config={store.config}>
-          <Keys config={store.config} keys={['*']} />italic
-          <Keys config={store.config} keys={['*']} />
+        <Text>
+          <Keys keys={['*']} />italic
+          <Keys keys={['*']} />
         </Text>
-        <Text config={store.config}>
-          <Keys config={store.config} keys={['~~']} />strikethrough
-          <Keys config={store.config} keys={['~~']} />
+        <Text>
+          <Keys keys={['~~']} />strikethrough
+          <Keys keys={['~~']} />
         </Text>
       </Sub>
-      <Label config={store.config}>Horizontal Rules</Label>
-      <Sub>
-        <Text config={store.config}><Keys config={store.config} keys={['---', '␣']}/>&nbsp;</Text>
-        <Text config={store.config}><Keys config={store.config} keys={['___', '␣']}/>&nbsp;</Text>
-        <Text config={store.config}><Keys config={store.config} keys={['***', '␣']}/>&nbsp;</Text>
-        <Text config={store.config}>
+      <Label>Horizontal Rules</Label>
+      <Sub data-tauri-drag-region="true">
+        <Text><Keys keys={['---', '␣']}/>&nbsp;</Text>
+        <Text><Keys keys={['___', '␣']}/>&nbsp;</Text>
+        <Text><Keys keys={['***', '␣']}/>&nbsp;</Text>
+        <Text>
           <small>Tip: Horizontal rules break pages in print layout</small>
         </Text>
       </Sub>
-      <Label config={store.config}>Blockquotes</Label>
-      <Sub>
-        <Text config={store.config}><Keys config={store.config} keys={['>', '␣']}/> Blockquote</Text>
+      <Label>Blockquotes</Label>
+      <Sub data-tauri-drag-region="true">
+        <Text><Keys keys={['>', '␣']}/> Blockquote</Text>
       </Sub>
-      <Label config={store.config}>Lists</Label>
-      <Sub>
-        <Text config={store.config}><Keys config={store.config} keys={['*', '␣']}/> Unordered</Text>
-        <Text config={store.config}><Keys config={store.config} keys={['+', '␣']}/> Unordered</Text>
-        <Text config={store.config}><Keys config={store.config} keys={['1.', '␣']}/> Ordered</Text>
+      <Label>Lists</Label>
+      <Sub data-tauri-drag-region="true">
+        <Text><Keys keys={['*', '␣']}/> Unordered</Text>
+        <Text><Keys keys={['+', '␣']}/> Unordered</Text>
+        <Text><Keys keys={['1.', '␣']}/> Ordered</Text>
       </Sub>
-      <Label config={store.config}>Code</Label>
-      <Sub>
-        <Text config={store.config}>
-          <Keys config={store.config} keys={['```', '␣']} /> Code block
+      <Label>Code</Label>
+      <Sub data-tauri-drag-region="true">
+        <Text>
+          <Keys keys={['```', '␣']} /> Code block
         </Text>
-        <Text config={store.config}>
-          <Keys config={store.config} keys={['```', 'lang', '␣']} /> Code block with highlighting
+        <Text>
+          <Keys keys={['```', 'lang', '␣']} /> Code block with highlighting
         </Text>
-        <Text config={store.config}>
-          Inline <Keys config={store.config} keys={['`']} />code
-          <Keys config={store.config} keys={['`']} />
-        </Text>
-      </Sub>
-      <Label config={store.config}>Tables</Label>
-      <Sub>
-        <Text config={store.config}>
-          <Keys config={store.config} keys={['|||', '␣']} /> Table with 2 columns
-        </Text>
-        <Text config={store.config}>
-          <Keys config={store.config} keys={['||||', '␣']} /> Table with 3 columns
-        </Text>
-        <Text config={store.config}>...</Text>
-      </Sub>
-      <Label config={store.config}>Links</Label>
-      <Sub>
-        <Text config={store.config}>
-          <Keys config={store.config} keys={['[']} /> Link text
-          <Keys config={store.config} keys={['](']} /> URL
-          <Keys config={store.config} keys={[')']} />
+        <Text>
+          Inline <Keys keys={['`']} />code
+          <Keys keys={['`']} />
         </Text>
       </Sub>
-      <Label config={store.config}>Images</Label>
-      <Sub>
-        <Text config={store.config}>
-          <Keys config={store.config} keys={['![](']} /> URL or path
-          <Keys config={store.config} keys={[')']} />
+      <Label>Tables</Label>
+      <Sub data-tauri-drag-region="true">
+        <Text>
+          <Keys keys={['|||', '␣']} /> Table with 2 columns
         </Text>
-        <Text config={store.config}>
-          <Keys config={store.config} keys={['![']} /> Alt text
-          <Keys config={store.config} keys={['](']} /> URL or path
-          <Keys config={store.config} keys={[')']} />
+        <Text>
+          <Keys keys={['||||', '␣']} /> Table with 3 columns
+        </Text>
+        <Text>...</Text>
+      </Sub>
+      <Label>Links</Label>
+      <Sub data-tauri-drag-region="true">
+        <Text>
+          <Keys keys={['[']} /> Link text
+          <Keys keys={['](']} /> URL
+          <Keys keys={[')']} />
         </Text>
       </Sub>
-      <Label config={store.config}>Custom Containers</Label>
-      <Sub>
-        <Text config={store.config}>
-          <Keys config={store.config} keys={[':::', '␣']} /> Container of type tip
+      <Label>Images</Label>
+      <Sub data-tauri-drag-region="true">
+        <Text>
+          <Keys keys={['![](']} /> URL or path
+          <Keys keys={[')']} />
         </Text>
-        <Text config={store.config}>
-          <Keys config={store.config} keys={[':::', 'warning', '␣']} /> Container of type warning
+        <Text>
+          <Keys keys={['![']} /> Alt text
+          <Keys keys={['](']} /> URL or path
+          <Keys keys={[')']} />
         </Text>
-        <Text config={store.config}>
-          <Keys config={store.config} keys={[':::', 'details', '␣']} /> Container of type details
+      </Sub>
+      <Label>Custom Containers</Label>
+      <Sub data-tauri-drag-region="true">
+        <Text>
+          <Keys keys={[':::', '␣']} /> Container of type tip
+        </Text>
+        <Text>
+          <Keys keys={[':::', 'warning', '␣']} /> Container of type warning
+        </Text>
+        <Text>
+          <Keys keys={[':::', 'details', '␣']} /> Container of type details
         </Text>
       </Sub>
       <Button onClick={props.onBack}>↩ Back</Button>

@@ -1,10 +1,10 @@
 import {Show, Switch, Match} from 'solid-js'
-import {css} from '@emotion/css'
+import {styled} from 'solid-styled-components'
 import {useState} from '@/state'
 import {ButtonGroup, Button, ButtonPrimary} from './Button'
 import {Content, Scroll} from './Layout'
 
-const pre = () => css`
+const Pre = styled('pre')`
   white-space: pre-wrap;
   word-wrap: break-word;
   background: var(--foreground-10);
@@ -35,8 +35,8 @@ const InvalidState = (props: {title: string}) => {
   const onClick = () => ctrl.clean()
 
   return (
-    <Scroll config={store.config}>
-      <Content config={store.config}>
+    <Scroll>
+      <Content>
         <h1>{props.title}</h1>
         <p>
           There is an error with the editor state. This is probably due to an
@@ -44,9 +44,9 @@ const InvalidState = (props: {title: string}) => {
           migrations may be supported in the future. To fix this now, you can
           copy important notes from below, clean the state and paste it again.
         </p>
-        <pre class={pre()}>
+        <Pre>
           <code>{JSON.stringify(store.error.props)}</code>
-        </pre>
+        </Pre>
         <ButtonPrimary onClick={onClick}>Clean</ButtonPrimary>
       </Content>
     </Scroll>
@@ -69,11 +69,11 @@ const Other = () => {
   }
 
   return (
-    <Scroll config={store.config}>
-      <Content config={store.config}>
+    <Scroll data-tauri-drag-region="true">
+      <Content data-tauri-drag-region="true">
         <h1>An error occurred.</h1>
-        <pre class={pre()}><code>{getMessage()}</code></pre>
-        <ButtonGroup config={store.config}>
+        <Pre><code>{getMessage()}</code></Pre>
+        <ButtonGroup>
           <ButtonPrimary onClick={onReload}>Reload</ButtonPrimary>
           <Show when={store.error.id === 'exception'}>
             <Button onClick={onDiscard}>Discard</Button>

@@ -32,40 +32,40 @@ export const AppearanceMenu = (props: Props) => {
   }
 
   return (
-    <Drawer config={store.config}>
-      <Label config={store.config}>Theme</Label>
-      <Sub>
+    <Drawer data-tauri-drag-region="true">
+      <Label>Theme</Label>
+      <Sub data-tauri-drag-region="true">
         <For each={Object.entries(themes)}>
           {([key, value]) => (
-            <Link config={store.config} onClick={onChangeTheme(key)}>
+            <Link onClick={onChangeTheme(key)}>
               {value.label}{' '}{key === getTheme(store.config).value && '✅'}
             </Link>
           )}
         </For>
       </Sub>
-      <Label config={store.config}>Code</Label>
-      <Sub>
+      <Label>Code</Label>
+      <Sub data-tauri-drag-region="true">
         <For each={Object.entries(codeThemes)}>
           {([key, value]) => (
-            <Link config={store.config} onClick={onChangeCodeTheme(key)}>
+            <Link onClick={onChangeCodeTheme(key)}>
               {value.label}{' '}{key === codeTheme(store.config).value && '✅'}
             </Link>
           )}
         </For>
       </Sub>
-      <Label config={store.config}>Font</Label>
-      <Sub>
+      <Label>Font</Label>
+      <Sub data-tauri-drag-region="true">
         <For each={Object.entries(fonts)}>
           {([key, value]) => (
-            <Link config={store.config} onClick={onChangeFont(key)}>
+            <Link onClick={onChangeFont(key)}>
               {value.label}{' '}{key === store.config.font && '✅'}
             </Link>
           )}
         </For>
       </Sub>
-      <Label config={store.config}>Layout</Label>
-      <Sub>
-        <Text config={store.config}>
+      <Label>Layout</Label>
+      <Sub data-tauri-drag-region="true">
+        <Text>
           Font size:
           <input
             type="range"
@@ -75,7 +75,7 @@ export const AppearanceMenu = (props: Props) => {
             onInput={onChangeFontSize} />
           {store.config.fontSize}
         </Text>
-        <Text config={store.config}>
+        <Text>
           Content width:
           <input
             type="range"

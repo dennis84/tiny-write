@@ -1,7 +1,6 @@
-import {For, JSX, createSignal, onMount, onCleanup, Show} from 'solid-js'
+import {For, createSignal, onMount, onCleanup, Show} from 'solid-js'
 import {unwrap} from 'solid-js/store'
 import h from 'solid-js/h'
-import {css, cx} from '@emotion/css'
 import * as Y from 'yjs'
 import {yDocToProsemirror} from 'y-prosemirror'
 import {formatDistance} from 'date-fns'
@@ -11,26 +10,92 @@ import * as remote from '@/remote'
 import {createExtensions, createSchema} from '@/prosemirror-setup'
 import {Drawer, Label} from './Menu'
 import {ButtonGroup, Button, ButtonPrimary} from './Button'
+import {styled} from 'solid-styled-components'
 
 interface Props {
   onBack: () => void;
   onOpenFile: () => void;
 }
 
-export const FileList = (props: {children: JSX.Element}) => (
-  <nav
-    data-tauri-drag-region="true"
-    data-testid="file-list"
-    class={css`
-      margin: 10px 0;
-      margin-bottom: 30px;
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      grid-column-gap: 20px;
-    `}>
-    {props.children}
-  </nav>
-)
+export const FileList = styled('nav')`
+  margin: 10px 0;
+  margin-bottom: 30px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  grid-column-gap: 20px;
+`
+
+const FileCard = styled('div')`
+  margin-bottom: 20px;
+  overflow: hidden;
+`
+
+const FileContent = styled('div')`
+  height: 140px;
+  overflow: hidden;
+  margin: 1px;
+  padding: 2px 4px;
+  word-break: break-all;
+  cursor: pointer;
+  font-size: 10px;
+  line-height: 1.4;
+  color: var(--foreground);
+  background: var(--foreground-10);
+  border: 1px solid var(--foreground-60);
+  ${(props: any) => props.selected ? `
+    border-color: var(--primary-background);
+    box-shadow: 0 0 0 1px var(--primary-background);
+  ` : ''}
+  border-radius: var(--border-radius);
+  p {
+    margin: 0;
+  }
+  h2 {
+    margin: 0;
+    font-size: 14px;
+  }
+  img {
+    max-width: 50%;
+    float: left;
+    margin-right: 2px;
+  }
+  pre {
+    border: 1px solid var(--foreground-50);
+    background: var(--foreground-10);
+    border-radius: var(--border-radius);
+    padding: 0px;
+    margin: 0;
+    overflow: hidden;
+  }
+  &:hover {
+    border-color: var(--primary-background);
+    box-shadow: 0 0 0 1px var(--primary-background);
+  }
+`
+
+const FileFooter = styled('div')`
+  font-size: 12px;
+  margin-top: 5px;
+  color: var(--foreground-60);
+  display: flex;
+  align-items: flex-start;
+`
+
+const FileMenuButton = styled('button')`
+  justify-self: flex-end;
+  margin-left: auto;
+  background: none;
+  border: 0;
+  color: var(--foreground-60);
+  cursor: pointer;
+  padding: 0;
+  ${(props: any) => props.selected ? `
+    color: var(--primary-background);
+  ` : ''}
+  &:hover {
+    color: var(--primary-background);
+  }
+`
 
 export const FilesMenu = (props: Props) => {
   const [store, ctrl] = useState()
@@ -140,85 +205,24 @@ export const FilesMenu = (props: Props) => {
     })
 
     return (
-      <div class={css`
-        margin-bottom: 20px;
-        overflow: hidden;
-      `}>
-        <div
-          class={css`
-            height: 140px;
-            overflow: hidden;
-            margin: 1px;
-            padding: 2px 4px;
-            word-break: break-all;
-            cursor: pointer;
-            font-size: 10px;
-            line-height: 1.4;
-            color: var(--foreground);
-            background: var(--foreground-10);
-            border: 1px solid var(--foreground-60);
-            ${current() === p.file ? `
-              border-color: var(--primary-background);
-              box-shadow: 0 0 0 1px var(--primary-background);
-            ` : ''}
-            border-radius: var(--border-radius);
-            p {
-              margin: 0;
-            }
-            h2 {
-              margin: 0;
-              font-size: 14px;
-            }
-            img {
-              max-width: 50%;
-              float: left;
-              margin-right: 2px;
-            }
-            pre {
-              border: 1px solid var(--foreground-50);
-              background: var(--foreground-10);
-              border-radius: var(--border-radius);
-              padding: 0px;
-              margin: 0;
-              overflow: hidden;
-            }
-            &:hover {
-              border-color: var(--primary-background);
-              box-shadow: 0 0 0 1px var(--primary-background);
-            }
-          `}
+      <FileCard>
+        <FileContent
           onClick={() => onOpenFile(p.file)}
+          selected={current() === p.file}
           data-testid="open">
           <Show
             when={p.file.path}
             fallback={<Excerpt file={p.file} />}
           >{path()}&nbsp;📎</Show>
-        </div>
-        <div class={css`
-          font-size: 12px;
-          margin-top: 5px;
-          color: var(--foreground-60);
-          display: flex;
-          align-items: flex-start;
-        `}>
+        </FileContent>
+        <FileFooter>
           <span>{formatDistance(new Date(p.file.lastModified), new Date())}</span>
-          <button class={css`
-            justify-self: flex-end;
-            margin-left: auto;
-            background: none;
-            border: 0;
-            color: var(--foreground-60);
-            cursor: pointer;
-            padding: 0;
-            ${current() === p.file ? `
-              color: var(--primary-background);
-            ` : ''}
-            &:hover {
-              color: var(--primary-background);
-            }
-          `} onClick={onTooltip}>︙</button>
-        </div>
-      </div>
+          <FileMenuButton
+            selected={current() === p.file}
+            onClick={onTooltip}
+          >︙</FileMenuButton>
+        </FileFooter>
+      </FileCard>
     )
   }
 
@@ -233,28 +237,32 @@ export const FilesMenu = (props: Props) => {
       onCleanup(() => document.removeEventListener('click', listener))
     })
 
+    const TooltipEl = styled('div')`
+      position: absolute;
+      min-width: 150px;
+    `
+
     return (
-      <div
+      <TooltipEl
         ref={tooltipRef}
-        class={cx('file-tooltip', css`
-          position: absolute;
-          min-width: 150px;
-        `)}>
+        class="file-tooltip">
         <div onClick={onRemove}>🗑️ Delete</div>
         <span ref={arrowRef} class="arrow"></span>
-      </div>
+      </TooltipEl>
     )
   }
 
   return (
-    <Drawer config={store.config}>
-      <Label config={store.config}>Files</Label>
-      <FileList>
+    <Drawer data-tauri-drag-region="true">
+      <Label>Files</Label>
+      <FileList
+        data-tauri-drag-region="true"
+        data-testid="file-list">
         <For each={store.files}>
           {(file: File) => <FileLink file={file} />}
         </For>
       </FileList>
-      <ButtonGroup config={store.config}>
+      <ButtonGroup>
         <Button onClick={props.onBack} data-testid="back">↩ Back</Button>
         <ButtonPrimary onClick={onNew}>New doc</ButtonPrimary>
       </ButtonGroup>

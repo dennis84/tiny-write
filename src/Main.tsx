@@ -1,7 +1,6 @@
 import {Show, onCleanup, createEffect, onError, onMount} from 'solid-js'
 import {createMutable} from 'solid-js/store'
 import {listen} from '@tauri-apps/api/event'
-import {injectGlobal} from '@emotion/css'
 import {EditorView} from 'prosemirror-view'
 import {State, StateContext} from './state'
 import {createCtrl} from '@/ctrl'
@@ -14,30 +13,6 @@ import Menu from '@/components/Menu'
 import ErrorView from '@/components/Error'
 import Dir from '@/components/Dir'
 import {insertImage, insertVideo} from '@/prosemirror/image'
-
-const fontsStyles = Object.entries(config.fonts)
-  .map(([, value]) => [
-    ...(value.regular ? [{
-      '@font-face': {
-        fontFamily: `${value.label}`,
-        src: `url('${value.regular}')`,
-      },
-    }] : []),
-    ...(value.bold ? [{
-      '@font-face': {
-        fontFamily: `${value.label} Bold`,
-        src: `url('${value.bold}')`,
-      },
-    }] : []),
-    ...(value.italic ? [{
-      '@font-face': {
-        fontFamily: `${value.label} Italic`,
-        src: `url('${value.italic}')`,
-      },
-    }] : []),
-  ]).flatMap((x) => x)
-
-injectGlobal(fontsStyles)
 
 export default (props: {state: State}) => {
   const [store, ctrl] = createCtrl(props.state)
@@ -68,6 +43,10 @@ export default (props: {state: State}) => {
       insertImage(store.editorView, data, left, top)
     }
   }
+
+  onMount(() => {
+    setupFonts()
+  })
 
   onMount(() => {
     if (store.error) return
@@ -211,7 +190,6 @@ export default (props: {state: State}) => {
   return (
     <StateContext.Provider value={[store, ctrl]}>
       <Layout
-        config={store.config}
         data-testid={store.error ? 'error' : store.loading}
         onDragOver={onDragOver}>
         <Show when={store.error}><ErrorView /></Show>
@@ -232,4 +210,37 @@ export default (props: {state: State}) => {
       </Layout>
     </StateContext.Provider>
   )
+}
+
+const setupFonts = () => {
+  let styles = ''
+  for (const k of Object.keys(config.fonts)) {
+    const font = config.fonts[k]
+    if (font.regular) {
+      styles += `
+        @font-face {
+          font-family: '${font.label}';
+          src: url('${font.regular}');
+        }
+      `
+    } else if (font.bold) {
+      styles += `
+        @font-face {
+          font-family: '${font.label} Bold';
+          src: url('${font.bold}');
+        }
+      `
+    } else if (font.italic) {
+      styles += `
+        @font-face {
+          font-family: '${font.label} Italic';
+          src: url('${font.italic}');
+        }
+      `
+    }
+  }
+
+  const style = document.createElement('style')
+  style.textContent = styles
+  document.head.append(style)
 }

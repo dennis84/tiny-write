@@ -1,7 +1,7 @@
 import {Config} from '@/state'
 import {isDark} from '@/env'
 
-interface Font {
+export interface Font {
   label: string;
   regular?: string;
   bold?: string;

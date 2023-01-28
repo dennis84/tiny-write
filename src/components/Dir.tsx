@@ -1,29 +1,21 @@
-import {For, Show, splitProps} from 'solid-js'
-import {css} from '@emotion/css'
+import {For, Show} from 'solid-js'
+import {styled} from 'solid-styled-components'
 import {useState} from '@/state'
-import {Content, Scroll, Styled} from './Layout'
+import {Content, Scroll} from './Layout'
 import {ButtonPrimary} from './Button'
 
-const Link = (props: Styled) => {
-  const [local, others] = splitProps(props, ['config', 'children'])
-  return (
-    <a
-      {...others}
-      class={css`
-        padding: 10px;
-        margin: 0;
-        display: block;
-        border-radius: 3px;
-        cursor: pointer;
-        color: var(--foreground-60);
-        &:hover {
-          background: var(--foreground-10);
-          color: var(--foreground);
-        }
-      `}
-    >{local.children}</a>
-  )
-}
+const Link = styled('a')`
+  padding: 10px;
+  margin: 0;
+  display: block;
+  border-radius: 3px;
+  cursor: pointer;
+  color: var(--foreground-60);
+  &:hover {
+    background: var(--foreground-10);
+    color: var(--foreground);
+  }
+`
 
 export default () => {
   const [store, ctrl] = useState()
@@ -41,11 +33,7 @@ export default () => {
     }
 
     return (
-      <Link
-        config={store.config}
-        onClick={onClick}>
-        {props.path}
-      </Link>
+      <Link onClick={onClick}>{props.path}</Link>
     )
   }
 
@@ -59,10 +47,10 @@ export default () => {
   )
 
   return (
-    <Scroll config={store.config}
+    <Scroll
       data-testid="content"
       data-tauri-drag-region="true">
-      <Content config={store.config}>
+      <Content data-tauri-drag-region="true">
         <Show when={store.args.dir.length > 0}>
           <p>Click to open file:</p>
         </Show>

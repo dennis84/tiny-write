@@ -1,14 +1,13 @@
-import {Show, JSX, createEffect, createSignal, onCleanup, splitProps} from 'solid-js'
+import {Show, createEffect, createSignal, onCleanup} from 'solid-js'
+import {css, styled} from 'solid-styled-components'
 import {Node} from 'prosemirror-model'
 import {differenceInHours, format} from 'date-fns'
-import {css} from '@emotion/css'
 import * as Y from 'yjs'
 import {undo, redo} from 'y-prosemirror'
 import {useState} from '@/state'
 import {isTauri, isMac, alt, mod, version, WEB_URL, VERSION_URL} from '@/env'
 import * as remote from '@/remote'
 import {isEmpty} from '@/prosemirror'
-import {Styled} from './Layout'
 import {FilesMenu} from './FilesMenu'
 import {CodeBlockMenu} from './CodeBlockMenu'
 import {AppearanceMenu} from './AppearanceMenu'
@@ -17,102 +16,86 @@ import {HelpMenu} from './HelpMenu'
 
 const fullWidth = 500
 
-const Container = (props: {children: JSX.Element}) => (
-  <div class={css`
-    position: relative;
-    flex-shrink: 0;
-    flex-grow: 1;
-    height: 100%;
-    font-family: var(--menu-font-family);
-    @media print {
-      display: none;
+const Container = styled('div')`
+  position: relative;
+  flex-shrink: 0;
+  flex-grow: 1;
+  height: 100%;
+  font-family: var(--menu-font-family);
+  @media print {
+    display: none;
+  }
+`
+
+const Burger = styled('button')`
+  position: absolute;
+  left: -35px;
+  z-index: 9999999;
+  width: 15px;
+  height: 10px;
+  padding: 10px;
+  box-sizing: content-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  cursor: pointer;
+  background: none;
+  border: 0;
+  outline: none;
+  @media (max-width: ${(props: any) => props.fullWidth}px) {
+    right: 0px;
+    left: auto;
+  }
+  > span {
+    background: var(--foreground);
+    height: 3px;
+    width: 15px;
+    border-radius: 4px;
+    transition: 0.4s;
+  }
+  ${(props: any) => props.active && `
+    > span:nth-of-type(1) {
+      transform: rotate(-45deg) translate(-2.5px, 2.5px);
     }
-  `}>{props.children}</div>
-)
-
-const Burger = (props: Styled) => {
-  const [local, others] = splitProps(props, ['config', 'children', 'active'])
-  return (
-    <button
-      {...others}
-      class={css`
-        position: absolute;
-        left: -35px;
-        z-index: 9999999;
-        width: 15px;
-        height: 10px;
-        padding: 10px;
-        box-sizing: content-box;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        cursor: pointer;
-        background: none;
-        border: 0;
-        outline: none;
-        @media (max-width: ${fullWidth}px) {
-          right: 0px;
-          left: auto;
-        }
-        > span {
-          background: var(--foreground);
-          height: 3px;
-          width: 15px;
-          border-radius: 4px;
-          transition: 0.4s;
-        }
-        ${local.active && `
-          > span:nth-of-type(1) {
-            transform: rotate(-45deg) translate(-2.5px, 2.5px);
-          }
-          > span:nth-of-type(2) {
-            transform: rotate(45deg) translate(-2.5px, -2.5px);
-          }
-        `}
-      `}
-    >{local.children}</button>
-  )
-}
-
-export const Drawer = (props: Styled) => (
-  <div data-tauri-drag-region="true" class={css`
-    background: var(--foreground-10);
-    padding: 20px;
-    height: 100%;
-    display: ${props.hidden ? 'none' : 'block'};
-    width: 460px;
-    overflow-y: auto;
-    scrollbar-width: none;
-    @media (max-width: ${fullWidth}px) {
-      width: 100vw;
-      ${isTauri && 'padding-top: 40px'}
+    > span:nth-of-type(2) {
+      transform: rotate(45deg) translate(-2.5px, -2.5px);
     }
-    ::-webkit-scrollbar {
-      display: none;
-    }
-  `}>{props.children}</div>
-)
+  `}
+`
 
-export const Label = (props: Styled) => (
-  <h3 class={css`
-    margin: 0;
-    font-size: var(--menu-font-size);
-    text-transform: uppercase;
-    color: var(--foreground-50);
-    > i {
-      text-transform: none;
-    }
-  `}>{props.children}</h3>
-)
+export const Drawer = styled('div')`
+  background: var(--foreground-10);
+  padding: 20px;
+  height: 100%;
+  display: ${(props: any) => props.hidden ? 'none' : 'block'};
+  width: 460px;
+  overflow-y: auto;
+  scrollbar-width: none;
+  @media (max-width: ${(props: any) => props.fullWidth}px) {
+    width: 100vw;
+    ${isTauri && 'padding-top: 40px'}
+  }
+  ::-webkit-scrollbar {
+    display: none;
+  }
+`
 
-export const Sub = (props: {children: JSX.Element}) => (
-  <nav class={css`
-    margin: 10px 0;
-    margin-bottom: 30px;
-  `}>{props.children}</nav>
-)
+export const Label = styled('h3')`
+  margin: 0;
+  font-size: var(--menu-font-size);
+  text-transform: uppercase;
+  color: var(--foreground-50);
+  > i {
+    text-transform: none;
+  }
+`
 
-const itemCss = () => css`
+export const Sub = styled('nav')`
+  margin: 10px 0;
+  margin-bottom: 30px;
+`
+
+const itemCss = `
   width: 100%;
   padding: 2px 0;
   margin: 0;
@@ -126,56 +109,42 @@ const itemCss = () => css`
   text-align: left;
 `
 
-export const Text = (props: Styled) => (
-  <p
-    class={itemCss()}
-    data-testid={props['data-testid']}>
-    {props.children}
-  </p>
-)
+export const Text = styled('p')`${itemCss}`
 
-export const Link = (props: Styled) => {
-  const [local, others] = splitProps(props, ['config', 'children'])
-  return (
-    <button
-      {...others}
-      class={css`
-        ${itemCss()}
-        background: none;
-        border: 0;
-        cursor: pointer;
-        i {
-          font-style: normal;
-        }
-        > span {
-          justify-self: flex-end;
-          margin-left: auto;
-        }
-        &:hover {
-          color: var(--primary-background);
-          > span i {
-            position: relative;
-            box-shadow: 0 3px 0 0 var(--foreground-60);
-            top: -1px;
-          }
-        }
-        &:active {
-          > span i {
-            position: relative;
-            box-shadow: none;
-            top: 1px;
-          }
-        }
-        &[disabled] {
-          color: var(--foreground-60);
-          cursor: not-allowed;
-        }
-      `}
-    >{local.children}</button>
-  )
-}
+export const Link = styled('button')`
+  ${itemCss}
+  background: none;
+  border: 0;
+  cursor: pointer;
+  i {
+    font-style: normal;
+  }
+  > span {
+    justify-self: flex-end;
+    margin-left: auto;
+  }
+  &:hover {
+    color: var(--primary-background);
+    > span i {
+      position: relative;
+      box-shadow: 0 3px 0 0 var(--foreground-60);
+      top: -1px;
+    }
+  }
+  &:active {
+    > span i {
+      position: relative;
+      box-shadow: none;
+      top: 1px;
+    }
+  }
+  &[disabled] {
+    color: var(--foreground-60);
+    cursor: not-allowed;
+  }
+`
 
-export const Keys = (props: Styled) => (
+export const Keys = (props: {keys: string[]}) => (
   <span
     class={css`
       margin-top: -4px;
@@ -372,15 +341,11 @@ export default () => {
 
     return (
       <Show when={store.lastModified} fallback={
-        <Text
-          config={store.config}
-          data-testid="last-modified">
+        <Text data-testid="last-modified">
           Nothing yet
         </Text>
       }>
-        <Text
-          config={store.config}
-          data-testid="last-modified">
+        <Text data-testid="last-modified">
           Last modified: {formatDate(store.lastModified)}
         </Text>
       </Show>
@@ -397,10 +362,10 @@ export default () => {
 
     return (
       <>
-        <Text config={store.config}>
+        <Text>
           File size: {(ydocSize() / 1024 / 1024).toFixed(2)} MiB
         </Text>
-        <Text config={store.config}>
+        <Text>
           DB size used: {(store.storageSize / 1024 / 1024).toFixed(2)} MiB
         </Text>
       </>
@@ -438,7 +403,6 @@ export default () => {
   return (
     <Container>
       <Burger
-        config={store.config}
         active={show() !== undefined}
         onClick={onBurgerClick}
         data-testid="burger">
@@ -462,86 +426,83 @@ export default () => {
       </Show>
       <Show when={show() === 'main'}>
         <Drawer
-          config={store.config}
-          onClick={() => store.editorView.focus()}>
-          <Label config={store.config}>
+          onClick={() => store.editorView.focus()}
+          data-tauri-drag-region="true">
+          <Label>
             File {store.path && <i>({relativePath()})</i>}
           </Label>
-          <Sub>
+          <Sub data-tauri-drag-region="true">
             <Show when={isTauri && !store.path}>
-              <Link config={store.config} onClick={onSaveAs}>
-                Save to file 💾 <Keys config={store.config} keys={[modKey, 's']} />
+              <Link onClick={onSaveAs}>
+                Save to file 💾 <Keys keys={[modKey, 's']} />
               </Link>
             </Show>
-            <Link config={store.config} onClick={onNew} data-testid="new">
-              New 🆕 <Keys config={store.config} keys={[modKey, 'n']} />
+            <Link onClick={onNew} data-testid="new">
+              New 🆕 <Keys keys={[modKey, 'n']} />
             </Link>
             <Link
-              config={store.config}
               onClick={onDiscard}
               disabled={!clearEnabled()}
               data-testid="discard">
-              {clearText()} <Keys config={store.config} keys={[modKey, 'w']} />
+              {clearText()} <Keys keys={[modKey, 'w']} />
             </Link>
             <Show when={store.files.length > 0}>
               <Link
-                config={store.config}
                 onClick={() => setShow('files')}
                 data-testid="files"
               >Files 🗃️</Link>
             </Show>
           </Sub>
-          <Label config={store.config}>Edit</Label>
-          <Sub>
-            <Link config={store.config} onClick={onUndo}>
-              Undo <Keys config={store.config} keys={[modKey, 'z']} />
+          <Label>Edit</Label>
+          <Sub data-tauri-drag-region="true">
+            <Link onClick={onUndo}>
+              Undo <Keys keys={[modKey, 'z']} />
             </Link>
-            <Link config={store.config} onClick={onRedo}>
-              Redo <Keys config={store.config} keys={[modKey, ...(isMac ? ['Shift', 'z'] : ['y'])]} />
+            <Link onClick={onRedo}>
+              Redo <Keys keys={[modKey, ...(isMac ? ['Shift', 'z'] : ['y'])]} />
             </Link>
-            <Link config={store.config} onClick={() => cmd('cut')}>
-              Cut <Keys config={store.config} keys={[modKey, 'x']} />
+            <Link onClick={() => cmd('cut')}>
+              Cut <Keys keys={[modKey, 'x']} />
             </Link>
-            <Link config={store.config} onClick={() => cmd('paste')} disabled={!isTauri}>
-              Paste <Keys config={store.config} keys={[modKey, 'p']} />
+            <Link onClick={() => cmd('paste')} disabled={!isTauri}>
+              Paste <Keys keys={[modKey, 'p']} />
             </Link>
-            <Link config={store.config} onClick={() => cmd('copy')}>
-              Copy {lastAction() === 'copy' && '📋'} <Keys config={store.config} keys={[modKey, 'c']} />
+            <Link onClick={() => cmd('copy')}>
+              Copy {lastAction() === 'copy' && '📋'} <Keys keys={[modKey, 'c']} />
             </Link>
-            <Link config={store.config} onClick={onCopyAllAsMd}>
+            <Link onClick={onCopyAllAsMd}>
               Copy all as markdown {lastAction() === 'copy-md' && '📋'}
             </Link>
           </Sub>
-          <Label config={store.config}>View</Label>
-          <Sub>
-            <Link config={store.config} onClick={() => setShow('theme')}>Appearance 🎨</Link>
-            <Link config={store.config} onClick={() => setShow('code_block')}>Code Blocks 💅</Link>
-            <Link config={store.config} onClick={() => setShow('change_set')}>Change Set 📆</Link>
+          <Label>View</Label>
+          <Sub data-tauri-drag-region="true">
+            <Link onClick={() => setShow('theme')}>Appearance 🎨</Link>
+            <Link onClick={() => setShow('code_block')}>Code Blocks 💅</Link>
+            <Link onClick={() => setShow('change_set')}>Change Set 📆</Link>
             <Show when={isTauri}>
-              <Link config={store.config} onClick={onToggleFullscreen}>
-                Fullscreen {store.fullscreen && '✅'} <Keys config={store.config} keys={[alt, 'Enter']} />
+              <Link onClick={onToggleFullscreen}>
+                Fullscreen {store.fullscreen && '✅'} <Keys keys={[alt, 'Enter']} />
               </Link>
             </Show>
-            <Link config={store.config} onClick={onToggleMarkdown} data-testid="markdown">
+            <Link onClick={onToggleMarkdown} data-testid="markdown">
               Markdown mode {store.markdown && '✅'}
             </Link>
-            <Link config={store.config} onClick={onToggleTypewriterMode}>
+            <Link onClick={onToggleTypewriterMode}>
               Typewriter mode {store.config.typewriterMode && '✅'}
             </Link>
-            <Link config={store.config} onClick={onToggleSpellcheck}>
+            <Link onClick={onToggleSpellcheck}>
               Spellcheck {store.config.spellcheck && '✅'}
             </Link>
             <Show when={isTauri}>
-              <Link config={store.config} onClick={onToggleAlwaysOnTop}>
+              <Link onClick={onToggleAlwaysOnTop}>
                 Always on Top {store.config.alwaysOnTop && '✅'}
               </Link>
             </Show>
           </Sub>
-          <Label config={store.config}>Collab</Label>
-          <Sub>
+          <Label>Collab</Label>
+          <Sub data-tauri-drag-region="true">
             <Show when={!store.collab?.started}>
               <Link
-                config={store.config}
                 onClick={onCollabStart}
                 data-testid="collab">
                 Share 🌐
@@ -549,47 +510,45 @@ export default () => {
             </Show>
             <Show when={store.collab?.started}>
               <Link
-                config={store.config}
                 onClick={onCollabStop}
                 data-testid="collab">
                 Disconnect
               </Link>
-              <Link config={store.config} onClick={onCopyCollabLink}>
+              <Link onClick={onCopyCollabLink}>
                 Copy Link 🔗 {lastAction() === 'copy-collab-link' && '📋'}
               </Link>
               <Show when={false}>
-                <Link config={store.config} onClick={onCopyCollabAppLink}>
+                <Link onClick={onCopyCollabAppLink}>
                   Copy App Link {lastAction() === 'copy-collab-app-link' && '📋'}
                 </Link>
               </Show>
-              <Text config={store.config}>
+              <Text>
                 {collabUsers()} {collabUsers() === 1 ? 'user' : 'users'} connected
               </Text>
             </Show>
           </Sub>
-          <Label config={store.config}>Stats</Label>
-          <Sub>
+          <Label>Stats</Label>
+          <Sub data-tauri-drag-region="true">
             <LastModified />
             <StorageStats />
-            <Text config={store.config}>Words: {textStats().words}</Text>
-            <Text config={store.config}>Paragraphs: {textStats().paragraphs}</Text>
-            <Text config={store.config}>Lines of code: {textStats().loc}</Text>
+            <Text>Words: {textStats().words}</Text>
+            <Text>Paragraphs: {textStats().paragraphs}</Text>
+            <Text>Lines of code: {textStats().loc}</Text>
           </Sub>
-          <Label config={store.config}>Application</Label>
-          <Sub>
+          <Label>Application</Label>
+          <Sub data-tauri-drag-region="true">
             {/* doesn't work with tauri */}
             <Show when={(!isTauri && false)}>
-              <Link config={store.config} onClick={onOpenInApp}>Open in App ⚡</Link>
+              <Link onClick={onOpenInApp}>Open in App ⚡</Link>
             </Show>
-            <Link config={store.config} onClick={onVersion}>
+            <Link onClick={onVersion}>
               About Version {version}
             </Link>
-            <Link config={store.config} onClick={() => setShow('help')}>Help</Link>
+            <Link onClick={() => setShow('help')}>Help</Link>
             <Show when={isTauri}>
               <Link
-                config={store.config}
                 onClick={() => remote.quit()}>
-                Quit <Keys config={store.config} keys={[modKey, 'q']} />
+                Quit <Keys keys={[modKey, 'q']} />
               </Link>
             </Show>
           </Sub>

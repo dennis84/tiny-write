@@ -43,13 +43,12 @@ export const ChangeSetMenu = (props: Props) => {
   }
 
   return (
-    <Drawer config={store.config}>
-      <Label config={store.config}>Change Set</Label>
-      <Sub>
+    <Drawer data-tauri-drag-region="true">
+      <Label>Change Set</Label>
+      <Sub data-tauri-drag-region="true">
         <For each={versions()} fallback={<p>No snapshots yet</p>}>
           {(version) => (
             <Link
-              config={store.config}
               onClick={() => renderVersion(version)}>
               {format(version.date, 'dd MMMM HH:mm:ss')}
               {version.date === active()?.date && ' ✅'}
@@ -57,7 +56,7 @@ export const ChangeSetMenu = (props: Props) => {
           )}
         </For>
       </Sub>
-      <ButtonGroup config={store.config}>
+      <ButtonGroup>
         <Button onClick={onBack}>↩ Back</Button>
         <Show when={active() === undefined}>
           <ButtonPrimary onClick={() => ctrl.addVersion()}>

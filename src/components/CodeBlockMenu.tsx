@@ -16,10 +16,10 @@ export const CodeBlockMenu = (props: Props) => {
   }
 
   return (
-    <Drawer config={store.config}>
-      <Label config={store.config}>Indentation</Label>
-      <Sub>
-        <Text config={store.config}>
+    <Drawer data-tauri-drag-region="true">
+      <Label>Indentation</Label>
+      <Sub data-tauri-drag-region="true">
+        <Text>
           Tab Width:
           <input
             type="range"
@@ -30,15 +30,13 @@ export const CodeBlockMenu = (props: Props) => {
             onInput={(e: any) => updatePrettier({tabWidth: Number(e.target.value)})} />
           {store.config.prettier.tabWidth}
         </Text>
-        <Link
-          config={store.config}
-          onClick={() => updatePrettier({useTabs: !store.config.prettier.useTabs})}>
+        <Link onClick={() => updatePrettier({useTabs: !store.config.prettier.useTabs})}>
           Use Tabs {store.config.prettier.useTabs && '✅'}
         </Link>
       </Sub>
-      <Label config={store.config}>Prettier</Label>
-      <Sub>
-        <Text config={store.config}>
+      <Label>Prettier</Label>
+      <Sub data-tauri-drag-region="true">
+        <Text>
           Print Width:
           <input
             type="range"
@@ -49,14 +47,10 @@ export const CodeBlockMenu = (props: Props) => {
             onInput={(e: any) => updatePrettier({printWidth: Number(e.target.value)})} />
           {store.config.prettier.printWidth}
         </Text>
-        <Link
-          config={store.config}
-          onClick={() => updatePrettier({semi: !store.config.prettier.semi})}>
+        <Link onClick={() => updatePrettier({semi: !store.config.prettier.semi})}>
           Semicolons {store.config.prettier.semi && '✅'}
         </Link>
-        <Link
-          config={store.config}
-          onClick={() => updatePrettier({singleQuote: !store.config.prettier.singleQuote})}>
+        <Link onClick={() => updatePrettier({singleQuote: !store.config.prettier.singleQuote})}>
           Single Quote {store.config.prettier.singleQuote && '✅'}
         </Link>
       </Sub>

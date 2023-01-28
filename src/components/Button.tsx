@@ -1,11 +1,7 @@
-import {css} from '@emotion/css'
-import {splitProps} from 'solid-js'
-import {Styled} from './Layout'
+import {styled} from 'solid-styled-components'
 
-export const Common = css`
-  height: 50px;
-  padding: 0 20px;
-  border-radius: 30px;
+export const Common = `
+  height: 50px; padding: 0 20px; border-radius: 30px;
   font-size: var(--menu-font-size);
   cursor: pointer;
   display: inline-flex;
@@ -19,41 +15,29 @@ export const Common = css`
   }
 `
 
-export const Button = (props: Styled) => {
-  const [local, others] = splitProps(props, ['children'])
-  return (
-    <button {...others} class={css`
-      ${Common}
-      background: none;
-      font-family: var(--menu-font-family);
-      color: var(--foreground);
-      border: 1px solid var(--foreground);
-      &:hover {
-        border-color: var(--primary-background);
-        color: var(--primary-background);
-        box-shadow: 0 0 0 1px var(--primary-background);
-      }
-    `}>{local.children}</button>
-  )
-}
+export const Button = styled('button')`
+  ${Common}
+  background: none;
+  font-family: var(--menu-font-family);
+  color: var(--foreground);
+  border: 1px solid var(--foreground);
+  &:hover {
+    border-color: var(--primary-background);
+    color: var(--primary-background);
+    box-shadow: 0 0 0 1px var(--primary-background);
+  }
+`
 
-export const ButtonPrimary = (props: Styled) => {
-  const [local, others] = splitProps(props, ['children'])
-  return (
-    <button {...others} class={css`
-      ${Common}
-      color: var(--primary-foreground);
-      border: 0;
-      background: var(--primary-background);
-    `}>{local.children}</button>
-  )
-}
+export const ButtonPrimary = styled('button')`
+  ${Common}
+  color: var(--primary-foreground);
+  border: 0;
+  background: var(--primary-background);
+`
 
-export const ButtonGroup = (props: Styled) => (
-  <div class={css`
-    > button {
-      margin-right: 10px;
-      margin-bottom: 10px;
-    }
-  `}>{props.children}</div>
-)
+export const ButtonGroup = styled('div')`
+  > button {
+    margin-right: 10px;
+    margin-bottom: 10px;
+  }
+`
