@@ -18,7 +18,7 @@ import {findWords, tabCompletionKeymap} from './completion'
 import {highlight, changeLang} from './lang'
 import {getTheme} from './theme'
 import expand from './expand'
-import {prettify} from './prettify'
+import {prettifyView} from './prettify'
 import {mermaidKeywords, mermaidView} from './mermaid'
 
 export class CodeBlockView {
@@ -40,7 +40,10 @@ export class CodeBlockView {
     this.dom = document.createElement('div')
     this.dom.setAttribute('contenteditable', 'false')
     this.dom.classList.add('cm-container')
-    ;(this.dom as any).CodeMirror = this
+
+    this.dom.addEventListener('cm:user_event', (event: CustomEvent) => {
+      this.editorView.dispatch({userEvent: event.detail.userEvent})
+    })
 
     const codeMirrorKeymap = keymap.of([{
       key: 'Backspace',
@@ -148,6 +151,7 @@ export class CodeBlockView {
         indentUnit.of(this.options.prettier.useTabs ? '\t' : ' '.repeat(this.options.prettier.tabWidth)),
         expand(this),
         mermaidView(this),
+        prettifyView(this),
         changeLang(this, {
           onClose: () => this.editorView.focus(),
           onChange: (lang: string) => {
@@ -185,6 +189,8 @@ export class CodeBlockView {
         this.dom.appendChild(elem)
       })
     }
+
+    this.update(node)
   }
 
   forwardUpdate(update: ViewUpdate) {
@@ -249,6 +255,12 @@ export class CodeBlockView {
     const lang = this.lang
     this.node = node
     if (this.updating) return true
+
+    if (node.attrs.hidden) {
+      this.dom.classList.add('hidden')
+    } else {
+      this.dom.classList.remove('hidden')
+    }
 
     if (node.attrs.lang !== lang) {
       this.reconfigure()
@@ -323,16 +335,5 @@ export class CodeBlockView {
 
   get lang() {
     return this.node.attrs.lang ?? ''
-  }
-
-  prettify() {
-    this.editorView.focus()
-    prettify(this.editorView, this.lang, this.options.prettier)
-  }
-
-  changeLang() {
-    this.editorView.dispatch({
-      userEvent: 'change-lang',
-    })
   }
 }

@@ -1,4 +1,4 @@
-import {EditorView} from '@codemirror/view'
+import {EditorView, ViewPlugin, ViewUpdate} from '@codemirror/view'
 import {setDiagnostics} from '@codemirror/lint'
 import prettier from 'prettier'
 import parserBabel from 'prettier/parser-babel'
@@ -8,8 +8,23 @@ import parserHtml from 'prettier/parser-html'
 import parserMarkdown from 'prettier/parser-markdown'
 import parserYaml from 'prettier/parser-yaml'
 import {PrettierConfig} from '@/state'
+import {CodeBlockView} from './view'
 
-export const prettify = (view: EditorView, lang: string, options: PrettierConfig) => {
+export const prettifyView = (codeBlock: CodeBlockView) =>
+  ViewPlugin.fromClass(class {
+    update(update: ViewUpdate) {
+      if (update.transactions[0]?.isUserEvent('prettify')) {
+        update.view.focus()
+        setTimeout(() => {
+          prettify(update.view, codeBlock.lang, codeBlock.options.prettier)
+        })
+
+        return true
+      }
+    }
+  })
+
+const prettify = (view: EditorView, lang: string, options: PrettierConfig) => {
   const [parser, plugin] =
     lang === 'javascript' || lang === 'js' || lang === 'jsx' ? ['babel', parserBabel] :
     lang === 'css' ? ['css', parserCss] :

@@ -110,6 +110,7 @@ export const changeLang = (codeBlock: CodeBlockView, config: Config) =>
 
     private updateDOM() {
       const lang = this.lang
+      codeBlock.dom.dataset.lang = lang
       const cur = this.toggle?.children[0]?.getAttribute('title')
       if (cur === lang) return
 

@@ -158,6 +158,9 @@ const codeBlock = (config: Config) => `
         }
       }
     }
+    &.hidden > .cm-editor > .cm-scroller {
+      display: none !important;
+    }
   }
 `
 

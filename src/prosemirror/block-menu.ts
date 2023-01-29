@@ -54,11 +54,31 @@ class TooltipView {
 
   onPrettify = () => {
     const dom = this.view.domAtPos(this.pos + 1)
-    ;(dom.node as any)?.CodeMirror?.prettify()
+    dom.node.dispatchEvent(new CustomEvent('cm:user_event', {
+      detail: {userEvent: 'prettify'},
+    }))
+
     const tr = this.view.state.tr
     tr.setMeta(pluginKey, {showMenu: false, ref: undefined, pos: undefined})
     this.view.dispatch(tr)
     this.view.focus()
+  }
+
+  onChangeLang = () => {
+    const tr = this.view.state.tr
+    const pos = tr.doc.resolve(this.pos + 1)
+    const node = pos.node()
+    if (node.type.name !== 'code_block') return
+
+    tr.setMeta(pluginKey, {showMenu: false, ref: undefined, pos: undefined})
+    tr.setSelection(Selection.near(tr.doc.resolve(this.pos)))
+    tr.setNodeAttribute(this.pos, 'hidden', false)
+    this.view.dispatch(tr)
+    this.view.focus()
+    const dom = this.view.domAtPos(this.pos + 1)
+    dom.node.dispatchEvent(new CustomEvent('cm:user_event', {
+      detail: {userEvent: 'change-lang'},
+    }))
   }
 
   onMermaidSave = () => {
@@ -67,14 +87,16 @@ class TooltipView {
     remote.saveSvg(svg)
   }
 
-  onChangeLang = () => {
+  onMermaidHideCode = () => {
     const tr = this.view.state.tr
+    const pos = tr.doc.resolve(this.pos + 1)
+    const node = pos.node()
+    if (node.type.name !== 'code_block') return
+
     tr.setMeta(pluginKey, {showMenu: false, ref: undefined, pos: undefined})
-    tr.setSelection(Selection.near(tr.doc.resolve(this.pos)))
+    tr.setNodeAttribute(this.pos, 'hidden', !node.attrs.hidden)
     this.view.dispatch(tr)
     this.view.focus()
-    const dom = this.view.domAtPos(this.pos + 1)
-    ;(dom.node as any)?.CodeMirror?.changeLang()
   }
 
   constructor(private view: EditorView) {
@@ -103,12 +125,17 @@ class TooltipView {
       prettify.dataset.testid = 'prettify'
       this.tooltip.appendChild(prettify)
 
-      if ((dom.node as any)?.CodeMirror?.lang === 'mermaid') {
+      if ((dom.node as HTMLElement).dataset.lang === 'mermaid') {
         const mermaid = document.createElement('div')
         mermaid.textContent = '💾 save as png'
         mermaid.addEventListener('click', this.onMermaidSave)
         mermaid.dataset.testid = 'mermaid'
         this.tooltip.appendChild(mermaid)
+
+        const hideCode = document.createElement('div')
+        hideCode.textContent = node.attrs.hidden ? '🙉 Show code' : '🙈 Hide code'
+        hideCode.addEventListener('click', this.onMermaidHideCode)
+        this.tooltip.appendChild(hideCode)
       }
 
       const divider = document.createElement('hr')

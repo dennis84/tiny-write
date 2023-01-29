@@ -195,7 +195,6 @@ export default (props: {state: State}) => {
         <Show when={store.error}><ErrorView /></Show>
         <Show when={store.args?.dir}><Dir /></Show>
         <Scroll
-          config={store.config}
           hide={store.error !== undefined || store.args?.dir?.length !== undefined}
           data-tauri-drag-region="true">
           <Editor
