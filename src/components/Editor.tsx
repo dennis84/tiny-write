@@ -330,6 +330,7 @@ export default styled('div')`
       position: absolute;
       pointer-events: none;
       user-select: none;
+      -webkit-user-select: none; // otherwise cannot type in empty editor
     }
     .draggable {
       position: relative;
