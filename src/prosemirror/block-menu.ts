@@ -9,7 +9,7 @@ const handleIcon =
   '<svg viewBox="0 0 10 10" height="14" width="14"><path d="M3 2a1 1 0 110-2 1 1 0 010 2zm0 4a1 1 0 110-2 1 1 0 010 2zm0 4a1 1 0 110-2 1 1 0 010 2zm4-8a1 1 0 110-2 1 1 0 010 2zm0 4a1 1 0 110-2 1 1 0 010 2zm0 4a1 1 0 110-2 1 1 0 010 2z"/></svg>'
 
 const createDragHandle = () => {
-  const handle = document.createElement('div')
+  const handle = document.createElement('span')
   handle.setAttribute('contenteditable', 'false')
   const icon = document.createElement('span')
   icon.innerHTML = handleIcon

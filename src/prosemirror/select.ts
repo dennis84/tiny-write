@@ -1,6 +1,7 @@
 import {Plugin, PluginKey, Selection, TextSelection} from 'prosemirror-state'
 import {Decoration, DecorationSet, EditorView} from 'prosemirror-view'
 import {ProseMirrorExtension} from '@/prosemirror';
+import {isTauri} from '@/env';
 
 interface Props {
   background: string;
@@ -41,9 +42,10 @@ class SelectView {
     this.onMouseUp(e)
 
     if (
-      e.target !== this.view.dom &&
-      e.target !== this.view.dom.parentNode &&
-      e.target !== this.view.dom.parentNode.parentNode
+      (e.target !== this.view.dom &&
+        e.target !== this.view.dom.parentNode &&
+        e.target !== this.view.dom.parentNode.parentNode) ||
+      (isTauri && e.target as HTMLElement)?.dataset?.tauriDragRegion === 'true'
     ) {
       return
     }

@@ -112,22 +112,20 @@ export const Layout = styled('div')`
 `
 
 export const Scroll = styled('div')`
-  ${(props: any) => props.hide ? 'display: none' : `
-    height: 100%;
-    width: 100%;
-    min-height: 100vh;
-    max-height: 100vh;
-    overflow-y: auto;
-    display: flex;
-    justify-content: center;
-    scrollbar-width: none;
-    ::-webkit-scrollbar {
-      display: none;
-    }
-    @media print {
-      overflow-y: visible;
-    }
-  `}
+  height: 100%;
+  width: 100%;
+  min-height: 100vh;
+  max-height: 100vh;
+  overflow-y: auto;
+  ${(props: any) => props.hide ? 'display: none;' : 'display: flex;'}
+  justify-content: center;
+  scrollbar-width: none;
+  ::-webkit-scrollbar {
+    display: none;
+  }
+  @media print {
+    overflow-y: visible;
+  }
 `
 
 export const Content = styled('div')`
