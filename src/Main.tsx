@@ -201,7 +201,7 @@ export default (props: {state: State}) => {
             config={store.config}
             ref={editorRef}
             spellcheck={store.config.spellcheck}
-            markdown={store.markdown}
+            markdown={store.editor?.markdown}
             data-tauri-drag-region="true"
           />
         </Scroll>

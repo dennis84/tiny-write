@@ -38,7 +38,7 @@ export const ChangeSetMenu = (props: Props) => {
 
   const onBack = () => {
     ctrl.unrenderVersion()
-    store.editorView.focus()
+    store.editor?.editorView.focus()
     props.onBack()
   }
 

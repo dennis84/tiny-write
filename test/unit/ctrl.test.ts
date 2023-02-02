@@ -49,13 +49,13 @@ test('newFile', async () => {
   const [store, ctrl] = createCtrl(createState())
   const target = document.createElement('div')
   await ctrl.init(target)
-  const tr = store.editorView.state.tr
+  const tr = store.editor.editorView.state.tr
   tr.insertText('Test')
-  store.editorView.dispatch(tr)
-  expect(store.editorView.state.doc.textContent).toEqual('Test')
+  store.editor.editorView.dispatch(tr)
+  expect(store.editor.editorView.state.doc.textContent).toEqual('Test')
   await ctrl.newFile()
   expect(store.files.length).toBe(1)
-  expect(store.editorView.state.doc.textContent).toEqual('')
+  expect(store.editor.editorView.state.doc.textContent).toEqual('')
   expect(store.files[0].ydoc).not.toBe(undefined)
 })
 
@@ -72,14 +72,14 @@ test('newFile - collab', async () => {
   const [store, ctrl] = createCtrl(createState())
   const target = document.createElement('div')
   await ctrl.init(target)
-  const tr = store.editorView.state.tr
+  const tr = store.editor.editorView.state.tr
   tr.insertText('Test')
-  store.editorView.dispatch(tr)
+  store.editor.editorView.dispatch(tr)
   await ctrl.startCollab()
   const room = store.collab.room
   await ctrl.newFile()
   expect(store.files.length).toBe(1)
-  expect(store.editorView.state.doc.textContent).toEqual('')
+  expect(store.editor.editorView.state.doc.textContent).toEqual('')
   expect(store.collab.started).toBe(false)
   expect(store.files[0].ydoc).not.toBe(undefined)
   expect(store.files[0].room).toEqual(room)
@@ -92,19 +92,19 @@ test('openFile', async () => {
   await ctrl.init(target)
   await ctrl.openFile({text})
   expect(store.files.length).toBe(0)
-  expect(store.editorView.state.toJSON().doc).toEqual(text.doc)
+  expect(store.editor.editorView.state.toJSON().doc).toEqual(text.doc)
 })
 
 test('openFile - add to files', async () => {
   const [store, ctrl] = createCtrl(createState())
   const target = document.createElement('div')
   await ctrl.init(target)
-  const tr = store.editorView.state.tr
+  const tr = store.editor.editorView.state.tr
   tr.insertText('Test')
-  store.editorView.dispatch(tr)
+  store.editor.editorView.dispatch(tr)
   await ctrl.openFile({text})
   expect(store.files.length).toBe(1)
-  expect(store.editorView.state.toJSON().doc).toEqual(text.doc)
+  expect(store.editor.editorView.state.toJSON().doc).toEqual(text.doc)
 })
 
 test('openFile - from files', async () => {
@@ -119,7 +119,7 @@ test('openFile - from files', async () => {
   await ctrl.init(target)
   await ctrl.openFile({text})
   expect(store.files.length).toBe(1)
-  expect(store.editorView.state.doc.textContent).toBe('Test')
+  expect(store.editor.editorView.state.doc.textContent).toBe('Test')
 })
 
 test('openFile - open collab', async () => {
@@ -128,7 +128,7 @@ test('openFile - open collab', async () => {
   const target = document.createElement('div')
   await ctrl.init(target)
   await ctrl.openFile(file)
-  expect(store.editorView.state.doc.textContent).toBe('Test')
+  expect(store.editor.editorView.state.doc.textContent).toBe('Test')
   expect(store.files.length).toBe(0)
   expect(store.collab.room).toBe('room-123')
 })
@@ -142,7 +142,7 @@ test('discard - open collab', async () => {
   await ctrl.init(target)
   await ctrl.discard()
 
-  expect(store.editorView.state.doc.textContent).toBe('Test')
+  expect(store.editor.editorView.state.doc.textContent).toBe('Test')
   expect(store.files.length).toBe(0)
   expect(store.collab.room).toBe('room-123')
 })
@@ -154,14 +154,14 @@ test('discard - with text', async () => {
 
   const target = document.createElement('div')
   await ctrl.init(target)
-  const tr = store.editorView.state.tr
+  const tr = store.editor.editorView.state.tr
   tr.insertText('111')
-  store.editorView.dispatch(tr)
+  store.editor.editorView.dispatch(tr)
   await ctrl.discard()
-  expect(store.editorView.state.doc.textContent).toBe('')
+  expect(store.editor.editorView.state.doc.textContent).toBe('')
   expect(store.files.length).toBe(1)
   await ctrl.discard()
-  expect(store.editorView.state.doc.textContent).toBe('Test')
+  expect(store.editor.editorView.state.doc.textContent).toBe('Test')
   expect(store.files.length).toBe(0)
 })
 
@@ -173,11 +173,11 @@ test('discard - close collab', async () => {
   const target = document.createElement('div')
   await ctrl.init(target)
   await ctrl.startCollab()
-  const tr = store.editorView.state.tr
+  const tr = store.editor.editorView.state.tr
   tr.insertText('111')
-  store.editorView.dispatch(tr)
+  store.editor.editorView.dispatch(tr)
   await ctrl.discard()
-  expect(store.editorView.state.doc.textContent).toBe('Test')
+  expect(store.editor.editorView.state.doc.textContent).toBe('Test')
   expect(store.files.length).toBe(0)
 })
 
@@ -186,7 +186,7 @@ test('startCollab', async () => {
   const target = document.createElement('div')
   await ctrl.init(target)
   await ctrl.startCollab()
-  expect(store.editorView.state.doc.textContent).toBe('')
+  expect(store.editor.editorView.state.doc.textContent).toBe('')
   expect(store.collab.started).toBe(true)
   expect(store.collab.room).not.toBe(undefined)
   expect(store.collab.provider).not.toBe(undefined)
@@ -201,14 +201,14 @@ test('clean', async () => {
   }))
   const target = document.createElement('div')
   await ctrl.init(target)
-  const tr = store.editorView.state.tr
+  const tr = store.editor.editorView.state.tr
   tr.insertText('Test')
-  store.editorView.dispatch(tr)
-  expect(store.editorView.state.doc.textContent).toBe('Test')
+  store.editor.editorView.dispatch(tr)
+  expect(store.editor.editorView.state.doc.textContent).toBe('Test')
   expect(store.error).toBe(error)
   await ctrl.clean()
   expect(store.error).toBe(undefined)
-  expect(store.editorView.state.doc.textContent).toBe('')
+  expect(store.editor.editorView.state.doc.textContent).toBe('')
   expect(store.files.length).toBe(0)
 })
 
@@ -216,11 +216,11 @@ test('startCollab - with text', async () => {
   const [store, ctrl] = createCtrl(createState())
   const target = document.createElement('div')
   await ctrl.init(target)
-  const tr = store.editorView.state.tr
+  const tr = store.editor.editorView.state.tr
   tr.insertText('Test')
-  store.editorView.dispatch(tr)
+  store.editor.editorView.dispatch(tr)
   await ctrl.startCollab()
-  expect(store.editorView.state.doc.textContent).toBe('Test')
+  expect(store.editor.editorView.state.doc.textContent).toBe('Test')
   expect(store.collab.started).toBe(true)
   expect(store.collab.room).not.toBe(undefined)
   expect(store.collab.provider).not.toBe(undefined)

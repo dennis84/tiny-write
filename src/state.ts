@@ -61,17 +61,21 @@ export interface Window {
   y?: number;
 }
 
-export interface State {
+export interface Editor {
   editorView?: EditorView;
   markdown?: boolean;
   lastModified?: Date;
+  path?: string;
+}
+
+export interface State {
+  editor?: Editor;
   files: File[];
   config: Config;
   error?: ErrorObject;
   loading: LoadingType;
   fullscreen: boolean;
   collab: Collab;
-  path?: string;
   args?: Args;
   storageSize: number;
   window?: Window;
@@ -105,7 +109,6 @@ export const createState = (props: Partial<State> = {}): State => ({
   files: [],
   loading: 'loading',
   fullscreen: false,
-  markdown: false,
   collab: {started: false},
   storageSize: 0,
   config: {

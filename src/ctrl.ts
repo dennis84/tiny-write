@@ -62,8 +62,8 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
   }
 
   const onSave = async () => {
-    if (!isTauri || store.path) return false
-    const path = await remote.save(store.editorView.state)
+    if (!isTauri || store.editor?.path) return false
+    const path = await remote.save(store.editor?.editorView.state)
     if (path) ctrl.updatePath(path)
   }
 
@@ -74,14 +74,14 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
   }
 
   const onUndo = () => {
-    if (!store.editorView) return
-    undo(store.editorView.state)
+    if (!store.editor?.editorView) return
+    undo(store.editor?.editorView.state)
     return true
   }
 
   const onRedo = () => {
-    if (!store.editorView) return
-    redo(store.editorView.state)
+    if (!store.editor?.editorView) return
+    redo(store.editor?.editorView.state)
     return true
   }
 
@@ -132,8 +132,14 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       config = createState().config
     }
 
+    const editor = parsed.editor ?? {}
+    if (editor?.lastModified) {
+      editor.lastModified = new Date(editor.lastModified)
+    }
+
     let newState = {
       ...parsed,
+      editor,
       config,
       args,
       storageSize: data.length,
@@ -141,10 +147,6 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
         ...parsed.collab,
         ydoc: parsed.collab.ydoc ? createYdoc(toUint8Array(parsed.collab.ydoc)) : createYdoc(),
       }
-    }
-
-    if (newState.lastModified) {
-      newState.lastModified = new Date(newState.lastModified)
     }
 
     const files = []
@@ -171,9 +173,9 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
 
   const addToFiles = (files: File[], prev: State) => [...files, {
     ydoc: Y.encodeStateAsUpdate(prev.collab.ydoc),
-    lastModified: prev.lastModified?.toISOString(),
-    path: prev.path,
-    markdown: prev.markdown,
+    lastModified: prev.editor?.lastModified?.toISOString(),
+    markdown: prev.editor?.markdown,
+    path: prev.editor?.path,
     room: prev.collab.room,
   }]
 
@@ -194,9 +196,12 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     }
 
     const next: Partial<State> = {
-      lastModified: file.lastModified ? new Date(file.lastModified) : undefined,
-      path: file.path,
-      markdown: file.markdown,
+      editor: {
+        editorView: state.editor?.editorView,
+        path: file.path,
+        lastModified: file.lastModified ? new Date(file.lastModified) : undefined,
+        markdown: file.markdown,
+      },
       collab: {room: file.room, ydoc: createYdoc(file.ydoc)},
       args: {cwd: state.args?.cwd},
     }
@@ -287,14 +292,17 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
   const withFile = async (state: State, file: File): Promise<State> => {
     let files = state.files.filter((f) => !eqFile(f, file))
 
-    if (!isEmpty(state.editorView?.state) && state.lastModified) {
+    if (!isEmpty(state.editor?.editorView?.state) && state.editor?.lastModified) {
       files = addToFiles(files, state)
     }
 
     const next: Partial<State> = {
-      lastModified: file.lastModified ? new Date(file.lastModified) : undefined,
-      path: file.path,
-      markdown: file.markdown,
+      editor: {
+        editorView: state.editor?.editorView,
+        path: file.path,
+        lastModified: file.lastModified ? new Date(file.lastModified) : undefined,
+        markdown: file.markdown,
+      },
       collab: {room: file.room, ydoc: createYdoc(file.ydoc)},
     }
 
@@ -318,20 +326,22 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
   }
 
   const saveState = async (state: State) => {
-    if (!state.editorView || snapshotView()) {
+    if (!state.editor?.editorView || snapshotView()) {
       return
     }
 
     const documentState = Y.encodeStateAsUpdate(state.collab.ydoc)
     const data = {
-      lastModified: state.lastModified,
       files: state.files.map((f) => {
         const json = {...f, ydoc: fromUint8Array(f.ydoc)}
         return {...json, storageSize: JSON.stringify(json).length}
       }),
       config: state.config,
-      path: state.path,
-      markdown: state.markdown,
+      editor: {
+        path: state.editor?.path,
+        markdown: state.editor?.markdown,
+        lastModified: state.editor?.lastModified,
+      },
       window: state.window,
       collab: {
         ydoc: fromUint8Array(documentState),
@@ -339,13 +349,13 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       }
     }
 
-    if (state.path) {
-      const text = serialize(store.editorView.state)
-      await remote.writeFile(state.path, text)
+    if (state.editor?.path) {
+      const text = serialize(store.editor?.editorView.state)
+      await remote.writeFile(state.editor.path, text)
     }
 
     const json = JSON.stringify(data)
-    setState({storageSize: json.length})
+    setState('storageSize', json.length)
     db.set('state', json)
   }
 
@@ -425,8 +435,10 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       newState = {
         ...newState,
         files,
-        lastModified: undefined,
-        path: undefined,
+        editor: {
+          lastModified: undefined,
+          path: undefined,
+        },
         error: undefined,
       }
     }
@@ -436,7 +448,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
 
   const updateText = (text?: {[key: string]: any}) => {
     if (!text) return
-    const schema = store.editorView.state.schema
+    const schema = store.editor?.editorView?.state?.schema
     let ynode: Node
     try {
       ynode = yDocToProsemirror(schema, store.collab.ydoc)
@@ -457,8 +469,8 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
   const updateEditorState = (state: State, node?: Element) => {
     const extensions = createExtensions({
       config: state.config ?? store.config,
-      markdown: state.markdown ?? store.markdown,
-      path: state.path ?? store.path,
+      markdown: state.editor?.markdown ?? store.editor?.markdown,
+      path: state.editor?.path ?? store.editor?.path,
       keymap,
       y: {
         type: state.collab.ydoc.getXmlFragment('prosemirror'),
@@ -470,7 +482,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       }
     })
 
-    let editorView = store.editorView
+    let editorView = store.editor?.editorView
 
     const nodeViews = createNodeViews(extensions)
     const schema = createSchema(extensions)
@@ -479,14 +491,20 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
 
     if (!editorView) {
       const dispatchTransaction = (tr: Transaction) => {
-        if (!store.editorView) return
-        const newState = store.editorView.state.apply(tr)
-        store.editorView.updateState(newState)
+        const newState = editorView.state.apply(tr)
+        editorView.updateState(newState)
         if (!tr.docChanged) return
         if (tr.getMeta('addToHistory') === false) return
 
         setState((prev) => {
-          const newState = {...prev, lastModified: new Date()}
+          const newState = {
+            ...prev,
+            editor: {
+              ...prev.editor,
+              lastModified: new Date(),
+            }
+          }
+
           saveStateDebounced(newState, '💾 Saved updated text')
           return newState
         })
@@ -498,7 +516,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
         dispatchTransaction,
       })
 
-      setState({editorView})
+      setState('editor', (prev) => ({...prev, editorView}))
     }
 
     editorView.setProps({state: editorState, nodeViews})
@@ -523,8 +541,8 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
         const file = await getFile(data, {path: data.args.file})
         data = await withFile(data, file)
         text = file.text
-      } else if (data.path) {
-        const file = await getFile(data, {path: data.path})
+      } else if (data.editor?.path) {
+        const file = await getFile(data, {path: data.editor?.path})
         data = await withFile(data, file)
         text = file.text
       } else {
@@ -543,7 +561,16 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       }
 
       updateEditorState(newState, node)
-      setState(newState)
+      setState((prev) => {
+        return {
+          ...prev,
+          ...newState,
+          editor: {
+            ...newState.editor,
+            ...prev.editor,
+          }
+        }
+      })
       updateText(text)
     } catch (error) {
       remote.log('error', `Error during init: ${error.message}`)
@@ -564,7 +591,10 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       loading: 'initialized',
       files: [],
       fullscreen: store.fullscreen,
-      lastModified: new Date(),
+      editor: {
+        ...store.editor,
+        lastModified: new Date(),
+      },
       error: undefined,
     })
 
@@ -574,34 +604,34 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
   }
 
   const discard = async () => {
-    if (store.path) {
+    if (store.editor?.path) {
       await discardText()
-      store.editorView?.focus()
+      store.editor?.editorView?.focus()
       return true
-    } else if (store.files.length > 0 && isEmpty(store.editorView.state)) {
+    } else if (store.files.length > 0 && isEmpty(store.editor?.editorView.state)) {
       await discardText()
-      store.editorView?.focus()
+      store.editor?.editorView?.focus()
       return true
     } else if (store.collab.started) {
       await discardText()
-      store.editorView?.focus()
+      store.editor?.editorView?.focus()
       return true
-    } else if (isEmpty(store.editorView?.state)) {
+    } else if (isEmpty(store.editor?.editorView?.state)) {
       newFile()
-      store.editorView?.focus()
+      store.editor?.editorView?.focus()
       return true
     }
 
-    selectAll(store.editorView.state, store.editorView.dispatch)
-    deleteSelection(store.editorView.state, store.editorView.dispatch)
-    store.editorView?.focus()
+    selectAll(store.editor?.editorView.state, store.editor?.editorView.dispatch)
+    deleteSelection(store.editor?.editorView.state, store.editor?.editorView.dispatch)
+    store.editor?.editorView?.focus()
   }
 
   const newFile = () => {
-    const empty = isEmpty(store.editorView?.state)
+    const empty = isEmpty(store.editor?.editorView?.state)
     const state: State = unwrap(store)
     let files = state.files
-    if (!state.error && !empty && !store.path) {
+    if (!state.error && !empty && !store.editor?.path) {
       files = addToFiles(files, state)
     }
 
@@ -610,10 +640,13 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       ...state,
       args: {cwd: state.args?.cwd},
       files,
-      lastModified: undefined,
-      path: undefined,
       error: undefined,
-      markdown: false,
+      editor: {
+        ...state.editor,
+        path: undefined,
+        lastModified: undefined,
+        markdown: false,
+      },
       collab: {room: undefined, ydoc: createYdoc()},
     })
 
@@ -641,7 +674,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
 
   const setFullscreen = (fullscreen: boolean) => {
     remote.setFullscreen(fullscreen)
-    setState({fullscreen})
+    setState('fullscreen', fullscreen)
   }
 
   const setAlwaysOnTop = (alwaysOnTop: boolean) => {
@@ -673,7 +706,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
 
     if (!Y.equalSnapshots(prevSnapshot, snapshot)) {
       versions.push([{
-        date: state.lastModified.getTime(),
+        date: state.editor?.lastModified?.getTime(),
         snapshot: Y.encodeSnapshot(snapshot),
         clientID: ydoc.clientID,
       }])
@@ -687,14 +720,14 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     setSnapshotView(true)
     const snapshot = Y.decodeSnapshot(version.snapshot)
     const prevSnapshot = Y.emptySnapshot
-    const tr = store.editorView.state.tr
+    const tr = store.editor?.editorView.state.tr
     tr.setMeta(ySyncPluginKey, {snapshot, prevSnapshot})
-    store.editorView.dispatch(tr)
+    store.editor?.editorView.dispatch(tr)
   }
 
   const unrenderVersion = () => {
     const state = unwrap(store)
-    const binding = ySyncPluginKey.getState(state.editorView.state).binding
+    const binding = ySyncPluginKey.getState(state.editor?.editorView.state).binding
     if (binding) binding.unrenderSnapshot()
     setSnapshotView(false)
   }
@@ -705,19 +738,19 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
 
     const snapshot = Y.decodeSnapshot(version.snapshot)
     const newDoc = Y.createDocFromSnapshot(ydoc, snapshot)
-    const node = yDocToProsemirror(state.editorView.state.schema, newDoc)
+    const node = yDocToProsemirror(state.editor?.editorView.state.schema, newDoc)
     unrenderVersion()
 
-    const tr = state.editorView.state.tr
+    const tr = state.editor?.editorView.state.tr
     const slice = new Slice(node.content, 0, 0)
-    tr.replace(0, state.editorView.state.doc.content.size, slice)
-    state.editorView.dispatch(tr)
+    tr.replace(0, state.editor?.editorView.state.doc.content.size, slice)
+    state.editor?.editorView.dispatch(tr)
   }
 
   const toggleMarkdown = () => {
     const state: State = unwrap(store)
-    const editorState = store.editorView.state
-    const markdown = !state.markdown
+    const editorState = store.editor?.editorView.state
+    const markdown = !state.editor?.markdown
     let doc: any
 
     if (markdown) {
@@ -730,7 +763,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     } else {
       const extensions = createExtensions({
         config: state.config,
-        path: state.path,
+        path: state.editor?.path,
         markdown,
         keymap,
       })
@@ -744,8 +777,9 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       doc = text.toJSON()
     }
 
-    updateEditorState({...state, markdown})
-    setState({markdown})
+    const editor = {markdown}
+    updateEditorState({...state, editor})
+    setState('editor', editor)
     updateText({...createEmptyText(), doc})
   }
 
@@ -756,7 +790,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     if (conf.contentWidth) state.collab?.ydoc.getMap('config').set('contentWidth', conf.contentWidth)
     const config = {...state.config, ...conf}
     updateEditorState({...state, config})
-    setState({config, lastModified: new Date()})
+    setState('config', config)
     saveStateDebounced(store, '💾 Saved new config')
   }
 
@@ -767,7 +801,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
   }
 
   const updatePath = (path: string) => {
-    setState({path, lastModified: new Date()})
+    setState('editor', 'path', path)
   }
 
   const updateTheme = () => {

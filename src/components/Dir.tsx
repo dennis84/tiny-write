@@ -23,7 +23,7 @@ export default () => {
   const onNew = () => {
     ctrl.newFile()
     ctrl.setState('args.dir', undefined)
-    store.editorView?.focus()
+    store.editor?.editorView?.focus()
   }
 
   const FileLink = (props: {path: string}) => {

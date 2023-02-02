@@ -36,7 +36,7 @@ const InvalidState = (props: {title: string}) => {
 
   return (
     <Scroll>
-      <Content>
+      <Content config={store.config} data-tauri-drag-region="true">
         <h1>{props.title}</h1>
         <p>
           There is an error with the editor state. This is probably due to an
@@ -70,7 +70,7 @@ const Other = () => {
 
   return (
     <Scroll data-tauri-drag-region="true">
-      <Content data-tauri-drag-region="true">
+      <Content config={store.config} data-tauri-drag-region="true">
         <h1>An error occurred.</h1>
         <Pre><code>{getMessage()}</code></Pre>
         <ButtonGroup>
