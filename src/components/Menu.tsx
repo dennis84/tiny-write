@@ -68,7 +68,7 @@ export const Drawer = styled('div')`
   padding: 20px;
   height: 100%;
   display: ${(props: any) => props.hidden ? 'none' : 'block'};
-  width: 460px;
+  width: 360px;
   overflow-y: auto;
   scrollbar-width: none;
   @media (max-width: ${(props: any) => props.fullWidth}px) {
@@ -224,7 +224,7 @@ export default () => {
     'Clear 🧽'
 
   const clearEnabled = () =>
-    store.editor?.path || store.collab?.room || store.files.length > 0 || !isTextEmpty()
+    store.editor?.path || store.editor?.id || store.files.length > 0 || !isTextEmpty()
 
   const onBurgerClick = () => {
     store.editor?.editorView?.focus()
@@ -299,7 +299,7 @@ export default () => {
   const onOpenInApp = () => {
     if (isTauri) return
     if (store.collab?.started) {
-      window.open(`tinywrite://main?room=${store.collab.room}`, '_self')
+      window.open(`tinywrite://main?room=${store.editor?.id}`, '_self')
     } else {
       const text = window.btoa(JSON.stringify(store.editor?.editorView.state.toJSON()))
       window.open(`tinywrite://main?text=${text}`, '_self')
@@ -307,14 +307,14 @@ export default () => {
   }
 
   const onCopyCollabLink = () => {
-    remote.copy(`${WEB_URL}/${store.collab.room}`).then(() => {
+    remote.copy(`${WEB_URL}/${store.editor?.id}`).then(() => {
       store.editor?.editorView.focus()
       setLastAction('copy-collab-link')
     })
   }
 
   const onCopyCollabAppLink = () => {
-    remote.copy(`tinywrite://${store.collab.room}`).then(() => {
+    remote.copy(`tinywrite://${store.editor?.id}`).then(() => {
       store.editor?.editorView.focus()
       setLastAction('copy-collab-app-link')
     })

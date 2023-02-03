@@ -43,7 +43,7 @@ beforeEach(() => {
 })
 
 test('init - saved path', async () => {
-  DB.data = JSON.stringify(createState({editor: {path: 'file1'}}))
+  DB.data = JSON.stringify(createState({editor: {id: '1', path: 'file1'}}))
 
   const [store, ctrl] = createCtrl(createState())
   const target = document.createElement('div')
@@ -76,8 +76,8 @@ test('init - check text', async () => {
 test('openFile - path in files', async () => {
   const [store, ctrl] = createCtrl(createState({
     files: [
-      {path: 'file1', lastModified: lastModified.toISOString()},
-      {path: 'file2'},
+      {id: '1', path: 'file1', lastModified: lastModified.toISOString()},
+      {id: '1', path: 'file2'},
     ]
   }))
 
@@ -91,7 +91,7 @@ test('openFile - path in files', async () => {
 })
 
 test('openFile - push path to files', async () => {
-  const [store, ctrl] = createCtrl(createState({editor: {path: 'file2'}}))
+  const [store, ctrl] = createCtrl(createState({editor: {id: '1', path: 'file2'}}))
   const target = document.createElement('div')
   await ctrl.init(target)
   const tr = store.editor.editorView.state.tr
@@ -114,8 +114,8 @@ test('openFile - path and text', async () => {
 
 test('discard - with path', async () => {
   const [store, ctrl] = createCtrl(createState({
-    files: [{path: 'file1'}],
-    editor: {path: 'file2'},
+    files: [{id: '2', path: 'file1'}],
+    editor: {id: '1', path: 'file2'},
   }))
 
   const target = document.createElement('div')
@@ -124,5 +124,6 @@ test('discard - with path', async () => {
   await ctrl.discard()
   expect(store.editor.editorView.state.doc.textContent).toBe('File1')
   expect(store.editor.path).toBe('file1')
+  expect(store.editor.id).toBe('2')
   expect(store.files.length).toBe(0)
 })

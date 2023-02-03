@@ -21,7 +21,7 @@ export const FileList = styled('nav')`
   margin: 10px 0;
   margin-bottom: 30px;
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr;
   grid-column-gap: 20px;
 `
 
@@ -31,7 +31,7 @@ const FileCard = styled('div')`
 `
 
 const FileContent = styled('div')`
-  height: 140px;
+  height: 180px;
   overflow: hidden;
   margin: 1px;
   padding: 2px 4px;

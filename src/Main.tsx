@@ -31,16 +31,16 @@ export default (props: {state: State}) => {
     top: number,
     mime?: string
   ) => {
-    if (store.markdown) {
+    if (store.editor.markdown) {
       const text = `![](${data})`
       const pos = editorView.posAtCoords({left, top})
       const tr = editorView.state.tr
       tr.insertText(text, pos?.pos ?? editorView.state.doc.content.size)
       editorView.dispatch(tr)
     } else if (mime && mime.startsWith('video/')) {
-      insertVideo(store.editorView, data, mime, left, top)
+      insertVideo(store.editor.editorView, data, mime, left, top)
     } else {
-      insertImage(store.editorView, data, left, top)
+      insertImage(store.editor.editorView, data, left, top)
     }
   }
 
@@ -68,9 +68,9 @@ export default (props: {state: State}) => {
         if (mime.startsWith('image/') || mime.startsWith('video/')) {
           const x = mouseEnterCoords.x
           const y = mouseEnterCoords.y
-          const d = store.path ? await remote.dirname(store.path) : undefined
+          const d = store.editor.path ? await remote.dirname(store.editor.path) : undefined
           const p = await remote.toRelativePath(path, d)
-          insertImageMd(store.editorView, p, x, y, mime)
+          insertImageMd(store.editor.editorView, p, x, y, mime)
         } else if (mime.startsWith('text/')) {
           await ctrl.openFile({path})
           return
@@ -112,7 +112,7 @@ export default (props: {state: State}) => {
           const reader = new FileReader()
           reader.readAsDataURL(file)
           reader.onloadend = () => {
-            insertImageMd(store.editorView, reader.result as string, x, y)
+            insertImageMd(store.editor.editorView, reader.result as string, x, y)
           }
         }
       }
@@ -149,8 +149,8 @@ export default (props: {state: State}) => {
   })
 
   createEffect(() => {
-    if (!store.lastModified) return
-    const doc = store.editorView?.state.doc
+    if (!store.editor?.lastModified) return
+    const doc = store.editor.editorView?.state.doc
     const len = doc?.content.size
     if (len > 0) {
       const text = doc.textBetween(0, Math.min(30, len), ' ')

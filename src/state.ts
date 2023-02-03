@@ -46,7 +46,6 @@ export interface Version {
 export interface Collab {
   started?: boolean;
   ready?: boolean;
-  room?: string;
   provider?: WebsocketProvider;
   permanentUserData?: Y.PermanentUserData;
   ydoc?: Y.Doc;
@@ -62,6 +61,7 @@ export interface Window {
 }
 
 export interface Editor {
+  id: string;
   editorView?: EditorView;
   markdown?: boolean;
   lastModified?: Date;
@@ -84,12 +84,12 @@ export interface State {
 export type FileText = {[key: string]: any};
 
 export interface File {
+  id: string;
   text?: FileText;
   ydoc?: Uint8Array;
   lastModified?: string;
   path?: string;
   markdown?: boolean;
-  room?: string;
   storageSize?: number;
 }
 
