@@ -186,9 +186,11 @@ export default styled('div')`
     background: transparent;
     strong {
       font-family: var(--font-family-bold);
+      font-weight: normal;
     }
     em {
       font-family: var(--font-family-italic);
+      font-style: normal;
     }
     h1 {
       font-size: var(--font-size-h1);

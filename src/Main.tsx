@@ -222,14 +222,16 @@ const setupFonts = () => {
           src: url('${font.regular}');
         }
       `
-    } else if (font.bold) {
+    }
+    if (font.bold) {
       styles += `
         @font-face {
           font-family: '${font.label} Bold';
           src: url('${font.bold}');
         }
       `
-    } else if (font.italic) {
+    }
+    if (font.italic) {
       styles += `
         @font-face {
           font-family: '${font.label} Italic';
