@@ -159,6 +159,18 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     }
   }
 
+  const updateCurrentFile = () => {
+    const state = unwrap(store)
+    const index = store.files.findIndex((f) => f.id === state.editor.id)
+    if (index === -1) return
+    setState('files', index, {
+      lastModified: state.editor.lastModified,
+      markdown: state.editor.markdown,
+      path: state.editor.path,
+      ydoc: Y.encodeStateAsUpdate(state.collab.ydoc),
+    })
+  }
+
   const discardText = async () => {
     const state: State = unwrap(store)
     const files = state.files.filter((f) => f.id !== state.editor.id)
@@ -273,31 +285,13 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     const files = []
     for (let i = 0; i < state.files.length; i++) {
       const file = state.files[i]
-      let documentState = file.ydoc
-      let lastModified = file.lastModified
-      let markdown = file.markdown
-      if (file.id === state.editor.id) {
-        documentState = Y.encodeStateAsUpdate(state.collab.ydoc)
-        lastModified = state.editor.lastModified
-        markdown = state.editor.markdown
-      }
 
-      if (!lastModified) {
+      if (!file.lastModified) {
         continue
       }
 
-      const json = {
-        ...file,
-        lastModified,
-        markdown,
-        ydoc: fromUint8Array(documentState),
-      }
-
+      const json = {...file, ydoc: fromUint8Array(file.ydoc)}
       files.push({...json, storageSize: JSON.stringify(json).length})
-
-      if (file.id === state.editor.id) {
-        setState('files', i, {ydoc: documentState, lastModified})
-      }
     }
 
     const data = {
@@ -463,6 +457,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
         if (tr.getMeta('addToHistory') === false) return
 
         setState('editor', 'lastModified', new Date())
+        updateCurrentFile()
         saveStateDebounced(store, '💾 Saved updated text')
       }
 
@@ -749,6 +744,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     setState('editor', (prev) => ({...prev, markdown, lastModified}))
     updateEditorState(store)
     updateText({...createEmptyText(), doc})
+    updateCurrentFile()
     saveState(store)
     remote.log('info', '💾 Toggle markdown')
   }
@@ -772,6 +768,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
 
   const updatePath = (path: string) => {
     setState('editor', 'path', path)
+    updateCurrentFile()
   }
 
   const updateTheme = () => {

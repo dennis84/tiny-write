@@ -31,7 +31,6 @@ test('html to markdown and back', async ({page}) => {
 
   await page.type('.ProseMirror', '# markdown', {delay})
   await lineTextEq(page, 2, '# markdown')
-  await page.waitForTimeout(250)
 
   await page.click('[data-testid="files"]')
   await page.click('[data-testid="open"]')
