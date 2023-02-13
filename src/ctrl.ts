@@ -454,7 +454,10 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
         const newState = editorView.state.apply(tr)
         editorView.updateState(newState)
         if (!tr.docChanged) return
-        if (tr.getMeta('addToHistory') === false) return
+        if (
+          tr.getMeta('addToHistory') === false &&
+          !tr.getMeta(ySyncPluginKey)?.isUndoRedoOperation
+        ) return
 
         setState('editor', 'lastModified', new Date())
         updateCurrentFile()
