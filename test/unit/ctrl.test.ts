@@ -275,7 +275,6 @@ test('startCollab', async () => {
 test('clean', async () => {
   const error = {id: 'fail'}
   const [store, ctrl] = createCtrl(createState({
-    error,
     files: [{id: '1', text}],
   }))
   const target = document.createElement('div')
@@ -284,7 +283,10 @@ test('clean', async () => {
   tr.insertText('Test')
   store.editor.editorView.dispatch(tr)
   expect(store.editor.editorView.state.doc.textContent).toBe('Test')
+
+  ctrl.setState('error', error)
   expect(store.error).toBe(error)
+
   await ctrl.clean()
   expect(store.error).toBe(undefined)
   expect(store.editor.id).not.toBe('1')
