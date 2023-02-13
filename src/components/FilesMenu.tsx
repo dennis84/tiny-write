@@ -103,6 +103,9 @@ export const FilesMenu = (props: Props) => {
   let tooltipRef: HTMLDivElement
   let arrowRef: HTMLSpanElement
 
+  const files = () =>
+    store.files.filter((f) => f.lastModified && f.id !== store.editor.id)
+
   const schema = createSchema(createExtensions({
     config: store.config,
     markdown: false,
@@ -258,7 +261,7 @@ export const FilesMenu = (props: Props) => {
       <FileList
         data-tauri-drag-region="true"
         data-testid="file-list">
-        <For each={store.files}>
+        <For each={files()}>
           {(file: File) => <FileLink file={file} />}
         </For>
       </FileList>

@@ -26,15 +26,6 @@ import {serialize, createMarkdownParser} from '@/markdown'
 import {isDarkTheme, themes} from '@/config'
 import {isEmpty} from '@/prosemirror'
 
-const isState = (x: any) => Array.isArray(x.files)
-
-const isFile = (x: any): boolean => x && (x.text || x.path || x.ydoc)
-
-const isConfig = (x: any): boolean =>
-  (typeof x.theme === 'string' || x.theme === undefined) &&
-  (typeof x.codeTheme === 'string' || x.codeTheme === undefined) &&
-  (typeof x.font === 'string' || x.font === undefined)
-
 export const createCtrl = (initial: State): [Store<State>, any] => {
   const [store, setState] = createStore(initial)
   const [snapshotView, setSnapshotView] = createSignal(false)
@@ -109,7 +100,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
 
     if (!isTauri) {
       const room = window.location.pathname?.slice(1).trim()
-      args = {room: room || undefined}
+      if (room) args = {room}
     }
     const data = await db.get('state')
     let parsed: any
@@ -122,60 +113,35 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     }
 
     if (!parsed) {
-      return {...state, args, collab: {ydoc: createYdoc()}}
+      return {args, ...state}
     }
 
-    let config = {...state.config, ...parsed.config}
-    if (!isConfig(config)) {
-      config = createState().config
-    }
-
-    const editor = parsed.editor ?? {id: uuidv4()}
-    if (editor?.lastModified) {
-      editor.lastModified = new Date(editor.lastModified)
-    }
-
-    let newState = {
-      ...parsed,
-      editor,
-      config,
-      args,
-      storageSize: data.length,
-      collab: {
-        ...parsed.collab,
-        ydoc: parsed.collab.ydoc ? createYdoc(toUint8Array(parsed.collab.ydoc)) : createYdoc(),
-      }
-    }
-
+    const id = parsed.editor?.id
+    const config = {...state.config, ...parsed.config}
     const files = []
+
     for (const file of parsed.files) {
-      if (!isFile(file)) continue
       try {
-        if (file.ydoc) {
-          file.ydoc = toUint8Array(file.ydoc)
-        }
+        if (!file.id) file.id = uuidv4()
+        if (file.ydoc) file.ydoc = toUint8Array(file.ydoc)
+        if (file.lastModified) file.lastModified = new Date(file.lastModified)
         files.push(file)
       } catch (err) {
         remote.log('ERROR', 'Ignore file due to invalid ydoc.')
       }
     }
 
-    newState.files = files
-
-    if (!isState(newState)) {
-      newState = createState({editor})
+    return {
+      ...parsed,
+      args,
+      ...state,
+      editor: {id},
+      files,
+      config,
+      storageSize: data.length,
+      collab: undefined,
     }
-
-    return newState
   }
-
-  const addToFiles = (files: File[], prev: State) => [...files, {
-    id: prev.editor.id,
-    ydoc: Y.encodeStateAsUpdate(prev.collab.ydoc),
-    lastModified: prev.editor?.lastModified?.toISOString(),
-    markdown: prev.editor?.markdown,
-    path: prev.editor?.path,
-  }]
 
   const createYdoc = (bytes?: Uint8Array): Y.Doc => {
     const ydoc = new Y.Doc({gc: false})
@@ -185,9 +151,9 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
 
   const discardText = async () => {
     const state: State = unwrap(store)
-    const index = state.files.length - 1
-    let file = index !== -1 ? state.files[index] : {id: uuidv4(), text: createEmptyText()}
-    const files = state.files.filter((f: File) => f !== file)
+    const files = state.files.filter((f) => f.id !== state.editor.id)
+    const index = files.length - 1
+    let file = index !== -1 ? files[index] : {id: uuidv4(), text: createEmptyText()}
 
     if (file?.path) {
       file = await loadFile(state.config, file)
@@ -198,7 +164,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
         id: file.id,
         editorView: state.editor?.editorView,
         path: file.path,
-        lastModified: file.lastModified ? new Date(file.lastModified) : undefined,
+        lastModified: file.lastModified,
         markdown: file.markdown,
       },
       collab: {ydoc: createYdoc(file.ydoc)},
@@ -207,7 +173,6 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
 
     disconnectCollab(state)
     const newState = withYjs({...state, ...next})
-    updateEditorState(newState)
     setState({
       args: {cwd: state.args?.cwd},
       collab: undefined,
@@ -216,6 +181,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       files,
     })
 
+    updateEditorState(newState)
     if (!file.ydoc && file.text) updateText(file.text)
   }
 
@@ -258,7 +224,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       return {
         id: file.id ?? uuidv4(),
         text,
-        lastModified: lastModified.toISOString(),
+        lastModified,
         path: resolvedPath,
       }
     } catch (e) {
@@ -266,22 +232,13 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     }
   }
 
-  const eqFile = (a: Partial<File>, b: Partial<File>) =>
-    (a.text !== undefined && a.text === b.text) ||
-    (a.ydoc !== undefined && a.ydoc === b.ydoc) ||
-    (a.path !== undefined && a.path === b.path)
-
   const getFile = async (state: State, f: Partial<File>): Promise<Partial<File>> => {
-    let index = -1
-    for (let i = 0; i < state.files.length; i++) {
-      if (eqFile(state.files[i], f)) {
-        index = i
-        break
-      }
-    }
+    const index = state.files.findIndex((file) => {
+      return file.id === f.id || (file.path && file.path === f.path)
+    })
 
-    let file = index === -1 ? f : state.files[index]
-
+    if (index === -1) return
+    let file = state.files[index]
     if (file?.path) {
       file = await loadFile(state.config, file)
     }
@@ -290,30 +247,20 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
   }
 
   const withFile = async (state: State, file: Partial<File>): Promise<State> => {
-    let files = state.files.filter((f) => !eqFile(f, file))
-
-    if (!isEmpty(state.editor?.editorView?.state) && state.editor?.lastModified) {
-      files = addToFiles(files, state)
-    }
-
-    const next: Partial<State> = {
+    disconnectCollab(state)
+    return withYjs({
+      ...state,
+      error: undefined,
       editor: {
         id: file.id,
         editorView: state.editor?.editorView,
         path: file.path,
-        lastModified: file.lastModified ? new Date(file.lastModified) : undefined,
+        lastModified: file.lastModified,
         markdown: file.markdown,
       },
-      collab: {ydoc: createYdoc(file.ydoc)},
-    }
-
-    disconnectCollab(state)
-    return withYjs({
-      ...state,
-      args: {cwd: state.args?.cwd},
-      files,
-      error: undefined,
-      ...next,
+      collab: {
+        ydoc: createYdoc(file.ydoc),
+      },
     })
   }
 
@@ -331,23 +278,43 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       return
     }
 
-    const documentState = Y.encodeStateAsUpdate(state.collab.ydoc)
+    const files = []
+    for (let i = 0; i < state.files.length; i++) {
+      const file = state.files[i]
+      let documentState = file.ydoc
+      let lastModified = file.lastModified
+      let markdown = file.markdown
+      if (file.id === state.editor.id) {
+        documentState = Y.encodeStateAsUpdate(state.collab.ydoc)
+        lastModified = state.editor.lastModified
+        markdown = state.editor.markdown
+      }
+
+      if (!lastModified) {
+        continue
+      }
+
+      const json = {
+        ...file,
+        lastModified,
+        markdown,
+        ydoc: fromUint8Array(documentState),
+      }
+
+      files.push({...json, storageSize: JSON.stringify(json).length})
+
+      if (file.id === state.editor.id) {
+        setState('files', i, {ydoc: documentState, lastModified})
+      }
+    }
+
     const data = {
-      files: state.files.map((f) => {
-        const json = {...f, ydoc: fromUint8Array(f.ydoc)}
-        return {...json, storageSize: JSON.stringify(json).length}
-      }),
+      files,
       config: state.config,
       editor: {
         id: state.editor?.id,
-        path: state.editor?.path,
-        markdown: state.editor?.markdown,
-        lastModified: state.editor?.lastModified,
       },
       window: state.window,
-      collab: {
-        ydoc: fromUint8Array(documentState),
-      }
     }
 
     if (state.editor?.path) {
@@ -380,17 +347,18 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
   }
 
   const withYjs = (state: State): State => {
-    let shouldBackup = false
+    let join = false
     let started = false
     let room = state.editor.id
+
     if (state.args?.room) {
       started = true
-      shouldBackup = state.args.room !== room
+      join = room !== state.args.room
       room = state.args.room
       window.history.replaceState(null, '', `/${room}`)
     }
 
-    const ydoc = shouldBackup ? createYdoc() : state.collab.ydoc
+    const ydoc = join ? createYdoc() : state.collab.ydoc
     const permanentUserData = new Y.PermanentUserData(ydoc)
 
     const provider = new WebsocketProvider(COLLAB_URL, room, ydoc, {connect: started})
@@ -416,7 +384,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       foreground: xs[index].primaryForeground,
     })
 
-    let newState = {
+    const newState = {
       ...state,
       editor: {
         ...state.editor,
@@ -430,23 +398,23 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       }
     }
 
-    if (shouldBackup) {
-      let files = newState.files
-      if (!newState.error) {
-        files = addToFiles(files, state)
-      }
+    if (room !== state.args?.room) {
+      // let files = newState.files
+      // if (!newState.error) {
+      //   files = addToFiles(files, state)
+      // }
 
-      newState = {
-        ...newState,
-        files,
-        editor: {
-          ...state.editor,
-          id: room,
-          lastModified: undefined,
-          path: undefined,
-        },
-        error: undefined,
-      }
+      // newState = {
+      //   ...newState,
+      //   files,
+      //   editor: {
+      //     ...state.editor,
+      //     id: room,
+      //     lastModified: undefined,
+      //     path: undefined,
+      //   },
+      //   error: undefined,
+      // }
     }
 
     return newState
@@ -538,20 +506,43 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
         await remote.updateWindow(data.window)
       }
 
-      if (data.args?.dir) {
+      if (data.args?.dir) { // If app was started with a directory as argument
         data = withYjs(data)
-      } else if (data.args?.text) {
+      } else if (data.args?.text) { // Currenly dead code, pass text as deeplink
         const file = await getFile(data, {text: JSON.parse(data.args.text)})
         data = await withFile(data, file)
-      } else if (data.args?.file) {
-        const file = await getFile(data, {path: data.args.file})
+      } else if (data.args?.file) { // If app was started with a file as argument
+        const path = data.args.file
+        let file = await getFile(data, {path})
+        if (!file) {
+          file = await loadFile(data.config, {path})
+          file.ydoc = Y.encodeStateAsUpdate(createYdoc())
+          data.files.push(file as File)
+        }
         data = await withFile(data, file)
         text = file.text
-      } else if (data.editor?.path) {
-        const file = await getFile(data, {path: data.editor?.path})
-        data = await withFile(data, file)
-        text = file.text
-      } else {
+      } else if (data.args?.room) { // Join collab
+        data.editor = {id: data.args.room}
+      }
+
+      if (data.editor?.id) { // Restore last saved file
+        const file = await getFile(data, {id: data.editor.id})
+        if (file) {
+          data = await withFile(data, file)
+          text = file.text
+        } else {
+          data.editor.id = undefined
+        }
+      }
+
+      // Init from empty state or file not found
+      if (!data.editor?.id) {
+        const ydoc = createYdoc()
+        const id = data.args?.room ?? uuidv4()
+        const file = {id, ydoc: Y.encodeStateAsUpdate(ydoc)}
+        data.editor = {id}
+        data.collab = {ydoc}
+        data.files.push(file)
         data = withYjs(data)
       }
 
@@ -566,17 +557,8 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
         await remote.setAlwaysOnTop(true)
       }
 
+      setState(newState)
       updateEditorState(newState, node)
-      setState((prev) => {
-        return {
-          ...prev,
-          ...newState,
-          editor: {
-            ...newState.editor,
-            ...prev.editor,
-          }
-        }
-      })
       updateText(text)
     } catch (error) {
       remote.log('error', `Error during init: ${error.message}`)
@@ -590,89 +572,109 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
 
   const clean = () => {
     disconnectCollab(store)
+    const id = uuidv4()
+    const ydoc = createYdoc()
+    const file = {id, ydoc: Y.encodeStateAsUpdate(ydoc)}
+
     const state: State = withYjs({
       ...createState(),
-      collab: {started: false, ydoc: createYdoc()},
+      collab: {ydoc},
       args: {cwd: store.args?.cwd},
       loading: 'initialized',
-      files: [],
+      files: [file],
       fullscreen: store.fullscreen,
-      editor: {
-        ...store.editor,
-        lastModified: new Date(),
-      },
+      editor: {editorView: store.editor.editorView, id},
       error: undefined,
     })
 
-    updateEditorState(state)
     setState(state)
+    updateEditorState(state)
     updateText(createEmptyText())
   }
 
   const discard = async () => {
+    const editorView = store.editor?.editorView
     if (store.editor?.path) {
       await discardText()
-      store.editor?.editorView?.focus()
+      editorView?.focus()
       return true
-    } else if (store.files.length > 0 && isEmpty(store.editor?.editorView.state)) {
+    } else if (store.files.length > 1 && isEmpty(editorView?.state)) {
       await discardText()
-      store.editor?.editorView?.focus()
+      editorView?.focus()
       return true
-    } else if (store.collab.started) {
+    } else if (store.collab?.started) {
       await discardText()
-      store.editor?.editorView?.focus()
+      editorView?.focus()
       return true
-    } else if (isEmpty(store.editor?.editorView?.state)) {
+    } else if (isEmpty(editorView?.state)) {
       newFile()
-      store.editor?.editorView?.focus()
+      editorView?.focus()
       return true
     }
 
-    selectAll(store.editor?.editorView.state, store.editor?.editorView.dispatch)
-    deleteSelection(store.editor?.editorView.state, store.editor?.editorView.dispatch)
-    store.editor?.editorView?.focus()
+    selectAll(editorView?.state, editorView?.dispatch)
+    deleteSelection(editorView?.state, editorView?.dispatch)
+    editorView?.focus()
   }
 
   const newFile = () => {
-    const empty = isEmpty(store.editor?.editorView?.state)
+    if (isEmpty(store.editor?.editorView?.state)) {
+      return
+    }
+
     const state: State = unwrap(store)
-    let files = state.files
-    if (!state.error && !empty && !store.editor?.path) {
-      files = addToFiles(files, state)
+    const ydoc = createYdoc()
+    const file = {
+      id: uuidv4(),
+      markdown: false,
+      ydoc: Y.encodeStateAsUpdate(ydoc),
+      lastModified: new Date(),
     }
 
     disconnectCollab(state)
     const update = withYjs({
       ...state,
       args: {cwd: state.args?.cwd},
-      files,
+      files: [...state.files, file],
       error: undefined,
       editor: {
         ...state.editor,
-        id: uuidv4(),
-        path: undefined,
-        lastModified: undefined,
-        markdown: false,
+        id: file.id,
+        markdown: file.markdown,
+        lastModified: file.lastModified,
       },
-      collab: {ydoc: createYdoc()},
+      collab: {ydoc},
     })
 
-    updateEditorState(update)
     setState(update)
+    updateEditorState(update)
   }
 
-  const openFile = async (f: File) => {
+  const openFile = async (f: Partial<File>) => {
     const state: State = unwrap(store)
-    const file = await getFile(state, f)
+    let file = await getFile(state, f)
+    if (!file && f.path) {
+      file = await loadFile(state.config, f)
+      state.files.push(file as File)
+    }
+
+    if (!file) return
+
+    if (isEmpty(state.editor?.editorView?.state)) {
+      const index = state.files.findIndex((x) => x.id === state.editor.id)
+      state.files.splice(index, 1)
+    }
+
+    if (state.args?.room) state.args.room = undefined
     const update = await withFile(state, file)
-    updateEditorState(update)
     setState(update)
+    updateEditorState(update)
     if (!file.ydoc && file.text) updateText(file.text)
   }
 
   const deleteFile = async (file: File) => {
     const state: State = unwrap(store)
-    const files = state.files.filter((f: File) => f !== file)
+    const files = state.files.filter((f: File) => f.id !== file.id)
     const newState = {...state, files}
     setState(newState)
     saveState(newState)
@@ -784,10 +786,12 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       doc = text.toJSON()
     }
 
-    const editor = {...state.editor, markdown}
-    updateEditorState({...state, editor})
-    setState('editor', editor)
+    const lastModified = new Date()
+    setState('editor', (prev) => ({...prev, markdown, lastModified}))
+    updateEditorState(store)
     updateText({...createEmptyText(), doc})
+    saveState(store)
+    remote.log('info', '💾 Toggle markdown')
   }
 
   const updateConfig = (conf: Partial<Config>) => {
@@ -796,8 +800,8 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     if (conf.fontSize) state.collab?.ydoc.getMap('config').set('fontSize', conf.fontSize)
     if (conf.contentWidth) state.collab?.ydoc.getMap('config').set('contentWidth', conf.contentWidth)
     const config = {...state.config, ...conf}
-    updateEditorState({...state, config})
     setState('config', config)
+    updateEditorState({...state, config})
     saveStateDebounced(store, '💾 Saved new config')
   }
 
