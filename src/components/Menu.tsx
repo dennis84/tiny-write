@@ -75,7 +75,7 @@ export const Drawer = styled('div')`
     width: 100vw;
     ${isTauri && 'padding-top: 40px'}
   }
-  ::-webkit-scrollbar {
+  &::-webkit-scrollbar {
     display: none;
   }
 `

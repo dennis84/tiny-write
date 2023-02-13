@@ -120,7 +120,7 @@ export const Scroll = styled('div')`
   ${(props: any) => props.hide ? 'display: none;' : 'display: flex;'}
   justify-content: center;
   scrollbar-width: none;
-  ::-webkit-scrollbar {
+  &::-webkit-scrollbar {
     display: none;
   }
   @media print {
@@ -136,7 +136,7 @@ export const Content = styled('div')`
   padding-bottom: 77vh;
   overflow-y: auto;
   scrollbar-width: none;
-  ::-webkit-scrollbar {
+  &::-webkit-scrollbar {
     display: none;
   }
   code {
