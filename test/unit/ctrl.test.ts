@@ -260,18 +260,6 @@ test('discard - close collab', async () => {
   expect(store.files.length).toBe(1)
 })
 
-test('startCollab', async () => {
-  const [store, ctrl] = createCtrl(createState())
-  const target = document.createElement('div')
-  await ctrl.init(target)
-  await ctrl.startCollab()
-  expect(store.editor.editorView.state.doc.textContent).toBe('')
-  expect(store.editor.id).not.toBe(undefined)
-  expect(store.collab.started).toBe(true)
-  expect(store.collab.provider).not.toBe(undefined)
-  await ctrl.stopCollab()
-})
-
 test('clean', async () => {
   const error = {id: 'fail'}
   const [store, ctrl] = createCtrl(createState({
@@ -294,6 +282,18 @@ test('clean', async () => {
   expect(store.files.length).toBe(1)
 })
 
+test('startCollab - from empty state', async () => {
+  const [store, ctrl] = createCtrl(createState())
+  const target = document.createElement('div')
+  await ctrl.init(target)
+  await ctrl.startCollab()
+  expect(store.editor.editorView.state.doc.textContent).toBe('')
+  expect(store.editor.id).not.toBe(undefined)
+  expect(store.collab.started).toBe(true)
+  expect(store.collab.provider).not.toBe(undefined)
+  await ctrl.stopCollab()
+})
+
 test('startCollab - with text', async () => {
   const [store, ctrl] = createCtrl(createState())
   const target = document.createElement('div')
@@ -304,6 +304,42 @@ test('startCollab - with text', async () => {
   await ctrl.startCollab()
   expect(store.editor.editorView.state.doc.textContent).toBe('Test')
   expect(store.editor.id).not.toBe(undefined)
+  expect(store.collab.started).toBe(true)
+  expect(store.collab.provider).not.toBe(undefined)
+})
+
+test('startCollab - join new file', async () => {
+  const [store, ctrl] = createCtrl(createState({
+    args: {room: '2'},
+    editor: {id: '1'},
+    files: [{id: '1', text}],
+  }))
+  const target = document.createElement('div')
+  await ctrl.init(target)
+
+  expect(store.editor.editorView.state.doc.textContent).toBe('')
+  expect(store.editor.id).toBe('2')
+  expect(store.files.length).toBe(2)
+  expect(store.collab.started).toBe(true)
+  expect(store.collab.provider).not.toBe(undefined)
+})
+
+test('startCollab - join existing file', async () => {
+  const [store, ctrl] = createCtrl(createState({
+    args: {room: '2'},
+    editor: {id: '1'},
+    files: [
+      {id: '1', text},
+      {id: '2', text: createText('Test2')},
+    ],
+  }))
+  const target = document.createElement('div')
+  await ctrl.init(target)
+
+  // Not sure if updateText should be called.
+  expect(store.editor.editorView.state.doc.textContent).toBe('')
+  expect(store.editor.id).toBe('2')
+  expect(store.files.length).toBe(2)
   expect(store.collab.started).toBe(true)
   expect(store.collab.provider).not.toBe(undefined)
 })

@@ -64,13 +64,13 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
 
   const onUndo = () => {
     if (!store.editor?.editorView) return
-    undo(store.editor?.editorView.state)
+    undo(store.editor.editorView.state)
     return true
   }
 
   const onRedo = () => {
     if (!store.editor?.editorView) return
-    redo(store.editor?.editorView.state)
+    redo(store.editor.editorView.state)
     return true
   }
 
@@ -304,7 +304,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     }
 
     if (state.editor?.path) {
-      const text = serialize(store.editor?.editorView.state)
+      const text = serialize(store.editor.editorView.state)
       await remote.writeFile(state.editor.path, text)
     }
 
@@ -382,25 +382,6 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
         provider,
         permanentUserData,
       }
-    }
-
-    if (room !== state.args?.room) {
-      // let files = newState.files
-      // if (!newState.error) {
-      //   files = addToFiles(files, state)
-      // }
-
-      // newState = {
-      //   ...newState,
-      //   files,
-      //   editor: {
-      //     ...state.editor,
-      //     id: room,
-      //     lastModified: undefined,
-      //     path: undefined,
-      //   },
-      //   error: undefined,
-      // }
     }
 
     return newState
@@ -502,10 +483,13 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
         data = await withFile(data, file)
         text = file.text
       } else if (data.args?.room) { // Join collab
-        data.editor = {id: data.args.room}
-      }
-
-      if (data.editor?.id) { // Restore last saved file
+        let file = await getFile(data, {id: data.args.room})
+        if (!file) {
+          file = createFile({id: data.args.room})
+          data.files.push(file as File)
+        }
+        data = await withFile(data, file)
+      } else if (data.editor?.id) { // Restore last saved file
         const file = await getFile(data, {id: data.editor.id})
         if (file) {
           data = await withFile(data, file)
