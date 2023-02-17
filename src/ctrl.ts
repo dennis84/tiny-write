@@ -354,6 +354,11 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     configType.set('contentWidth', state.config.contentWidth)
     configType.observe(onCollabConfigUpdate)
 
+    provider.on('connection-error', () => {
+      remote.log('ERROR', '🌐 Connection error')
+      disconnectCollab(store)
+    })
+
     const xs = Object.values(themes)
     const index = Math.floor(Math.random() * xs.length)
     const username = uniqueNamesGenerator({

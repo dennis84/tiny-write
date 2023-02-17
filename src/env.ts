@@ -22,7 +22,7 @@ export const WEB_URL =
 
 export const COLLAB_URL =
   (isTest || isDev) ? 'ws://localhost:1234' :
-  'wss://dune-married-rotate.glitch.me'
+  'wss://y-websocket-88ps.onrender.com'
 
 export const VERSION_URL =
   `https://github.com/dennis84/tiny-write/releases/tag/v${version}`
