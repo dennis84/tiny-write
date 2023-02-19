@@ -4,21 +4,26 @@ vi.stubGlobal('matchMedia', vi.fn(() => ({
   matchMedia: () => ''
 })))
 
+vi.mock('mermaid', () => ({}))
+
 vi.mock('idb-keyval', () => ({
   get: async () => undefined,
   set: async () => undefined,
 }))
 
-vi.mock('y-websocket', () => ({WebsocketProvider: class {
-  awareness = {
-    setLocalStateField: () => undefined,
-    on: () => undefined,
-    off: () => undefined,
-    getLocalState: () => undefined,
-  }
-  disconnect() { /**/ }
-  connect() { /**/ }
-}}))
+vi.mock('y-websocket', () => ({
+  WebsocketProvider: vi.fn(() => ({
+    awareness: {
+      setLocalStateField: vi.fn(),
+      on: vi.fn(),
+      off: vi.fn(),
+      getLocalState: vi.fn(),
+    },
+    disconnect: vi.fn(),
+    connect: vi.fn(),
+    on: vi.fn(),
+  }))
+}))
 
 import {createCtrl} from '@/ctrl'
 import {createState} from '@/state'

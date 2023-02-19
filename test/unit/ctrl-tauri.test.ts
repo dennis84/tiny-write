@@ -6,6 +6,8 @@ vi.stubGlobal('matchMedia', vi.fn(() => ({
   matchMedia: () => ''
 })))
 
+vi.mock('mermaid', () => ({}))
+
 vi.mock('idb-keyval', () => ({
   get: async () => DB.data,
   set: async () => undefined,

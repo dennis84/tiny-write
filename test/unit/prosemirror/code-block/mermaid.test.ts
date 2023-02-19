@@ -1,8 +1,9 @@
-import {expect, it} from 'vitest'
-
-import {mermaidKeywords} from '@/prosemirror/code-block/mermaid'
+import {expect, it, vi} from 'vitest'
 import {EditorState} from '@codemirror/state'
 import {CompletionContext} from '@codemirror/autocomplete'
+import {mermaidKeywords} from '@/prosemirror/code-block/mermaid'
+
+vi.mock('mermaid', () => ({}))
 
 it('mermaid keywords - diagrams', async () => {
   const state = EditorState.create({
