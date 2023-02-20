@@ -75,7 +75,7 @@ export interface State {
   error?: ErrorObject;
   loading: LoadingType;
   fullscreen: boolean;
-  collab: Collab;
+  collab?: Collab;
   args?: Args;
   storageSize: number;
   window?: Window;
@@ -109,7 +109,6 @@ export const createState = (props: Partial<State> = {}): State => ({
   files: [],
   loading: 'loading',
   fullscreen: false,
-  collab: {started: false},
   storageSize: 0,
   config: {
     fontSize: 14,

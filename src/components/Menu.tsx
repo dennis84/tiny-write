@@ -216,8 +216,8 @@ export default () => {
     })
 
     setTextStats({paragraphs, words, loc})
-    return [store.editor?.lastModified, store.collab.ready]
-  }, [store.editor?.lastModified, store.collab.ready])
+    return [store.editor?.lastModified, store.collab?.ready]
+  }, [store.editor?.lastModified, store.collab?.ready])
 
   const clearText = () => (store.editor?.path || store.collab?.started) ? 'Close ⚠️' :
     (store.files.length > 0 && isTextEmpty()) ? 'Discard ⚠️' :
@@ -356,7 +356,7 @@ export default () => {
     const [ydocSize, setYdocSize] = createSignal(0)
 
     createEffect(() => {
-      if (!store.collab.ydoc) return
+      if (!store.collab?.ydoc) return
       setYdocSize(Y.encodeStateAsUpdate(store.collab.ydoc).byteLength)
     })
 

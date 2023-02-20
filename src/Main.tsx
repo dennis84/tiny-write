@@ -193,7 +193,7 @@ export default (props: {state: State}) => {
         data-testid={store.error ? 'error' : store.loading}
         onDragOver={onDragOver}>
         <Show when={store.error}><ErrorView /></Show>
-        <Show when={store.args?.dir}><Dir /></Show>
+        <Show when={store.args?.dir && !store.error}><Dir /></Show>
         <Scroll
           hide={store.error !== undefined || store.args?.dir?.length !== undefined}
           data-tauri-drag-region="true">

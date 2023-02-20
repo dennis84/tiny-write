@@ -255,6 +255,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     return withYjs({
       ...state,
       error: undefined,
+      args: {...state.args, dir: undefined},
       editor: {
         id: file.id,
         editorView: state.editor?.editorView,
@@ -418,14 +419,14 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       markdown: state.editor?.markdown ?? store.editor?.markdown,
       path: state.editor?.path ?? store.editor?.path,
       keymap,
-      y: {
+      y: state.collab?.ydoc ? {
         type: state.collab.ydoc.getXmlFragment('prosemirror'),
         provider: state.collab.provider,
         permanentUserData: state.collab.permanentUserData,
         onFirstRender: () => {
           setState('collab', 'ready', true)
         }
-      }
+      } : undefined
     })
 
     let editorView = store.editor?.editorView
@@ -473,7 +474,6 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       }
 
       if (data.args?.dir) { // If app was started with a directory as argument
-        data = withYjs(data)
       } else if (data.args?.text) { // Currenly dead code, pass text as deeplink
         const file = await getFile(data, {text: JSON.parse(data.args.text)})
         data = await withFile(data, file)
@@ -505,7 +505,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       }
 
       // Init from empty state or file not found
-      if (!data.editor?.id) {
+      if (!data.args?.dir && !data.editor?.id) {
         const file = createFile({id: data.args?.room})
         data.files.push(file)
         data = await withFile(data, file)
@@ -579,6 +579,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
 
   const newFile = async () => {
     if (isEmpty(store.editor?.editorView?.state)) {
+      setState('args', 'dir', undefined)
       return
     }
 

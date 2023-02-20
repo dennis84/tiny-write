@@ -50,7 +50,7 @@ export default () => {
     <Scroll
       data-testid="content"
       data-tauri-drag-region="true">
-      <Content data-tauri-drag-region="true">
+      <Content config={store.config} data-tauri-drag-region="true">
         <Show when={store.args.dir.length > 0}>
           <p>Click to open file:</p>
         </Show>

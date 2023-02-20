@@ -96,6 +96,35 @@ test('init - join', async () => {
   expect(store.editor.editorView.state.doc.textContent).toBe('')
 })
 
+test('init - dir', async () => {
+  const [store, ctrl] = createCtrl(createState({
+    args: {dir: ['~/Desktop/Aaaa.md']},
+    editor: {id: '1'},
+    files: [{id: '1', text}],
+  }))
+
+  const target = document.createElement('div')
+  await ctrl.init(target)
+  expect(store.files.length).toBe(1)
+  expect(store.editor.id).toBe('1')
+  expect(store.editor.editorView.state.doc.textContent).toBe('')
+  expect(store.args.dir).toEqual(['~/Desktop/Aaaa.md'])
+})
+
+test('init - dir no current file', async () => {
+  const [store, ctrl] = createCtrl(createState({
+    args: {dir: ['~/Desktop/Aaaa.md']},
+    files: []
+  }))
+
+  const target = document.createElement('div')
+  await ctrl.init(target)
+  expect(store.files.length).toBe(0)
+  expect(store.editor.id).toBe(undefined)
+  expect(store.editor.editorView.state.doc.textContent).toBe('')
+  expect(store.args.dir).toEqual(['~/Desktop/Aaaa.md'])
+})
+
 test('newFile', async () => {
   const [store, ctrl] = createCtrl(createState())
   const target = document.createElement('div')
