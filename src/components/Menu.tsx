@@ -64,7 +64,7 @@ const Burger = styled('button')`
 `
 
 export const Drawer = styled('div')`
-  background: var(--foreground-10);
+  background: var(--foreground-5);
   padding: 20px;
   height: 100%;
   display: ${(props: any) => props.hidden ? 'none' : 'block'};

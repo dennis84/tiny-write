@@ -40,8 +40,8 @@ const FileContent = styled('div')`
   font-size: 10px;
   line-height: 1.4;
   color: var(--foreground);
-  background: var(--foreground-10);
-  border: 1px solid var(--foreground-60);
+  background: var(--foreground-5);
+  border: 1px solid var(--foreground-50);
   ${(props: any) => props.selected ? `
     border-color: var(--primary-background);
     box-shadow: 0 0 0 1px var(--primary-background);

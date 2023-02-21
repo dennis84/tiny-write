@@ -168,6 +168,7 @@ export default (props: {state: State}) => {
     root.style.setProperty('--foreground-50', `${config.foreground(c)}80`)
     root.style.setProperty('--foreground-20', `${config.foreground(c)}33`)
     root.style.setProperty('--foreground-10', `${config.foreground(c)}1a`)
+    root.style.setProperty('--foreground-5', `${config.foreground(c)}0D`)
     root.style.setProperty('--primary-background', config.primaryBackground(c))
     root.style.setProperty('--primary-background-20', `${config.primaryBackground(c)}33`)
     root.style.setProperty('--primary-foreground', config.primaryForeground(c))
