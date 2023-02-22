@@ -90,7 +90,6 @@ export interface File {
   lastModified?: Date;
   path?: string;
   markdown?: boolean;
-  storageSize?: number;
 }
 
 export class ServiceError extends Error {

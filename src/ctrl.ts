@@ -291,8 +291,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
         continue
       }
 
-      const json = {...file, ydoc: fromUint8Array(file.ydoc)}
-      files.push({...json, storageSize: JSON.stringify(json).length})
+      files.push({...file, ydoc: fromUint8Array(file.ydoc)})
     }
 
     const data = {
