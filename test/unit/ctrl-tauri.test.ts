@@ -1,5 +1,6 @@
 import {vi, expect, test, beforeEach} from 'vitest'
 import {clearMocks, mockIPC} from '@tauri-apps/api/mocks'
+import * as db from '@/db'
 
 vi.stubGlobal('__TAURI__', {})
 vi.stubGlobal('matchMedia', vi.fn(() => ({
@@ -8,16 +9,22 @@ vi.stubGlobal('matchMedia', vi.fn(() => ({
 
 vi.mock('mermaid', () => ({}))
 
-vi.mock('idb-keyval', () => ({
-  get: async () => DB.data,
-  set: async () => undefined,
+vi.mock('@/db', () => ({
+  getEditor: vi.fn(),
+  setEditor: vi.fn(),
+  getConfig: vi.fn(),
+  setConfig: vi.fn(),
+  getWindow: vi.fn(),
+  setWindow: vi.fn(),
+  getFiles: vi.fn(),
+  deleteFile: vi.fn(),
+  updateFile: vi.fn(),
 }))
 
 import {createCtrl} from '@/ctrl'
 import {createState} from '@/state'
 
 const lastModified = new Date()
-const DB = {data: undefined}
 
 const createText = (text: string) => ({
   doc: {
@@ -29,7 +36,7 @@ const createText = (text: string) => ({
 const text = createText('Test')
 
 beforeEach(() => {
-  DB.data = undefined
+  vi.restoreAllMocks()
   clearMocks()
   mockIPC((cmd, args: any) => {
     if (cmd === 'get_args') {
@@ -45,10 +52,8 @@ beforeEach(() => {
 })
 
 test('init - load existing by path', async () => {
-  DB.data = JSON.stringify(createState({
-    editor: {id: '1'},
-    files: [{id: '1', path: 'file1'}]
-  }))
+  vi.spyOn(db, 'getFiles').mockResolvedValue([{id: '1', ydoc: '', path: 'file1', lastModified}])
+  vi.spyOn(db, 'getEditor').mockResolvedValue({id: '1'})
 
   const [store, ctrl] = createCtrl(createState())
   const target = document.createElement('div')

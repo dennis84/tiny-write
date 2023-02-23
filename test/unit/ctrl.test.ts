@@ -4,11 +4,22 @@ vi.stubGlobal('matchMedia', vi.fn(() => ({
   matchMedia: () => ''
 })))
 
+vi.stubGlobal('location', vi.fn(() => ({
+  pathname: ''
+})))
+
 vi.mock('mermaid', () => ({}))
 
-vi.mock('idb-keyval', () => ({
-  get: async () => undefined,
-  set: async () => undefined,
+vi.mock('@/db', () => ({
+  getEditor: vi.fn(),
+  setEditor: vi.fn(),
+  getConfig: vi.fn(),
+  setConfig: vi.fn(),
+  getWindow: vi.fn(),
+  setWindow: vi.fn(),
+  getFiles: vi.fn(),
+  deleteFile: vi.fn(),
+  updateFile: vi.fn(),
 }))
 
 vi.mock('y-websocket', () => ({

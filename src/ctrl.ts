@@ -1,7 +1,6 @@
 import {createSignal} from 'solid-js'
 import {Store, createStore, unwrap} from 'solid-js/store'
 import {v4 as uuidv4} from 'uuid'
-import * as db from 'idb-keyval'
 import {fromUint8Array, toUint8Array} from 'js-base64'
 import {EditorView} from 'prosemirror-view'
 import {EditorState, Transaction} from 'prosemirror-state'
@@ -17,7 +16,7 @@ import {
 } from 'y-prosemirror'
 import {WebsocketProvider} from 'y-websocket'
 import {uniqueNamesGenerator, adjectives, animals} from 'unique-names-generator'
-import {debounce} from 'ts-debounce'
+import * as db from '@/db'
 import * as remote from '@/remote'
 import {createExtensions, createEmptyText, createSchema, createNodeViews} from '@/prosemirror-setup'
 import {State, File, Config, Version, ServiceError, createState, Window, FileText} from '@/state'
@@ -102,43 +101,42 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       const room = window.location.pathname?.slice(1).trim()
       if (room) args = {room}
     }
-    const data = await db.get('state')
-    let parsed: any
-    if (data !== undefined) {
-      try {
-        parsed = JSON.parse(data)
-      } catch (err) {
-        // ignore
-      }
+
+    const fetchedEditor = await db.getEditor() ?? state.editor
+    const fetchedWindow = await db.getWindow()
+    const fetchedFiles = await db.getFiles() ?? (state.files as any) ?? []
+    const fetchedConfig = await db.getConfig()
+
+    const id = fetchedEditor?.id
+    const config = {
+      ...state.config,
+      ...fetchedConfig
     }
 
-    if (!parsed) {
-      return {args, ...state}
-    }
-
-    const id = parsed.editor?.id
-    const config = {...state.config, ...parsed.config}
     const files = []
-
-    for (const file of parsed.files) {
+    for (const file of fetchedFiles) {
       try {
-        if (!file.id) file.id = uuidv4()
-        if (file.ydoc) file.ydoc = toUint8Array(file.ydoc)
-        if (file.lastModified) file.lastModified = new Date(file.lastModified)
-        files.push(file)
+        files.push({
+          id: file.id,
+          ydoc: file.ydoc ? toUint8Array(file.ydoc) : undefined,
+          lastModified: new Date(file.lastModified),
+          path: file.path,
+          markdown: file.markdown,
+          text: file.text,
+        })
       } catch (err) {
         remote.log('ERROR', 'Ignore file due to invalid ydoc.')
       }
     }
 
     return {
-      ...parsed,
-      args,
       ...state,
-      editor: {id},
+      args: args ?? state.args,
+      editor: {id: id ?? state.editor?.id},
       files,
       config,
-      storageSize: data.length,
+      window: fetchedWindow,
+      storageSize: 0,
       collab: undefined,
     }
   }
@@ -278,45 +276,51 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     }
   }
 
-  const saveState = async (state: State) => {
-    if (!state.editor?.editorView || snapshotView()) {
+  const saveConfig = async (state: State) => {
+    db.setConfig(state.config)
+    remote.log('info', '💾 Save config')
+  }
+
+  const saveWindow = async (state: State) => {
+    db.setWindow(state.window)
+    remote.log('info', '💾 Save window state')
+  }
+
+  const saveFile = async (file: File) => {
+    if (!file.lastModified) {
       return
     }
 
-    const files = []
-    for (let i = 0; i < state.files.length; i++) {
-      const file = state.files[i]
+    db.updateFile({
+      id: file.id,
+      ydoc: fromUint8Array(file.ydoc),
+      lastModified: file.lastModified,
+      path: file.path,
+      markdown: file.markdown,
+    })
+  }
 
-      if (!file.lastModified) {
-        continue
-      }
-
-      files.push({...file, ydoc: fromUint8Array(file.ydoc)})
+  const saveEditor = async (state: State) => {
+    if (
+      !state.editor.id ||
+      !state.editor?.editorView ||
+      snapshotView()
+    ) {
+      return
     }
 
-    const data = {
-      files,
-      config: state.config,
-      editor: {
-        id: state.editor?.id,
-      },
-      window: state.window,
-    }
+    const editor = {id: state.editor.id}
+    const file = state.files.find((f) => f.id === editor.id)
+    if (!file) return
+    saveFile(file)
 
     if (state.editor?.path) {
       const text = serialize(store.editor.editorView.state)
       await remote.writeFile(state.editor.path, text)
     }
 
-    const json = JSON.stringify(data)
-    setState('storageSize', json.length)
-    db.set('state', json)
+    db.setEditor(editor)
   }
-
-  const saveStateDebounced = debounce((newState: State, log?: string) => {
-    saveState(newState)
-    if (log) remote.log('info', log)
-  }, 200)
 
   const disconnectCollab = (state: State) => {
     state.collab?.ydoc?.getMap('config').unobserve(onCollabConfigUpdate)
@@ -447,7 +451,8 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
 
         setState('editor', 'lastModified', new Date())
         updateCurrentFile()
-        saveStateDebounced(store, '💾 Saved updated text')
+        saveEditor(store)
+        remote.log('info', '💾 Saved updated text')
       }
 
       editorView = new EditorView(node, {
@@ -623,7 +628,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     const files = state.files.filter((f: File) => f.id !== file.id)
     const newState = {...state, files}
     setState(newState)
-    saveState(newState)
+    db.deleteFile(file.id)
     remote.log('info', '💾 Deleted file')
   }
 
@@ -667,7 +672,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
       }])
     }
 
-    saveState(state)
+    saveEditor(state)
     remote.log('info', '💾 Saved new snapshot version')
   }
 
@@ -737,7 +742,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     updateEditorState(store)
     updateText({...createEmptyText(), doc})
     updateCurrentFile()
-    saveState(store)
+    saveEditor(store)
     remote.log('info', '💾 Toggle markdown')
   }
 
@@ -749,13 +754,13 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     const config = {...state.config, ...conf}
     setState('config', config)
     updateEditorState({...state, config})
-    saveStateDebounced(store, '💾 Saved new config')
+    saveConfig(store)
   }
 
   const updateContentWidth = (contentWidth: number) => {
     store.collab?.ydoc.getMap('config').set('contentWidth', contentWidth)
     setState('config', 'contentWidth', contentWidth)
-    saveStateDebounced(store, '💾 Saved new content width')
+    saveConfig(store)
   }
 
   const updatePath = (path: string) => {
@@ -765,12 +770,12 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
 
   const updateTheme = () => {
     setState('config', getTheme(unwrap(store), true))
-    saveStateDebounced(store, '💾 Saved new theme')
+    saveConfig(store)
   }
 
   const updateWindow = (win: Window) => {
     setState('window', {...store.window, ...win})
-    saveStateDebounced(store)
+    saveWindow(store)
   }
 
   const ctrl = {

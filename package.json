@@ -25,7 +25,7 @@
     "@tauri-apps/api": "^1.2.0",
     "date-fns": "^2.29.3",
     "file-type": "^18.2.1",
-    "idb-keyval": "^6.2.0",
+    "idb": "^7.1.1",
     "js-base64": "^3.7.5",
     "markdown-it": "^13.0.1",
     "markdown-it-container": "^3.0.0",
