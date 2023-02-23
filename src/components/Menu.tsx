@@ -42,7 +42,7 @@ const Burger = styled('button')`
   background: none;
   border: 0;
   outline: none;
-  @media (max-width: ${(props: any) => props.fullWidth}px) {
+  @media (max-width: ${fullWidth.toString()}px) {
     right: 0px;
     left: auto;
   }
@@ -71,7 +71,7 @@ export const Drawer = styled('div')`
   width: 360px;
   overflow-y: auto;
   scrollbar-width: none;
-  @media (max-width: ${(props: any) => props.fullWidth}px) {
+  @media (max-width: ${fullWidth.toString()}px) {
     width: 100vw;
     ${isTauri && 'padding-top: 40px'}
   }
