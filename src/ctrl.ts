@@ -420,6 +420,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     const extensions = createExtensions({
       config: state.config ?? store.config,
       markdown: state.editor?.markdown ?? store.editor?.markdown,
+      fullscreen: state.fullscreen,
       path: state.editor?.path ?? store.editor?.path,
       keymap,
       y: state.collab?.ydoc ? {
@@ -635,6 +636,7 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
   const setFullscreen = (fullscreen: boolean) => {
     remote.setFullscreen(fullscreen)
     setState('fullscreen', fullscreen)
+    updateEditorState(store)
   }
 
   const setAlwaysOnTop = (alwaysOnTop: boolean) => {
@@ -754,13 +756,13 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
     const config = {...state.config, ...conf}
     setState('config', config)
     updateEditorState({...state, config})
-    saveConfig(store)
+    saveConfig(unwrap(store))
   }
 
   const updateContentWidth = (contentWidth: number) => {
     store.collab?.ydoc.getMap('config').set('contentWidth', contentWidth)
     setState('config', 'contentWidth', contentWidth)
-    saveConfig(store)
+    saveConfig(unwrap(store))
   }
 
   const updatePath = (path: string) => {
@@ -770,12 +772,13 @@ export const createCtrl = (initial: State): [Store<State>, any] => {
 
   const updateTheme = () => {
     setState('config', getTheme(unwrap(store), true))
-    saveConfig(store)
+    saveConfig(unwrap(store))
   }
 
   const updateWindow = (win: Window) => {
+    if (store.fullscreen) return
     setState('window', {...store.window, ...win})
-    saveWindow(store)
+    saveWindow(unwrap(store))
   }
 
   const ctrl = {

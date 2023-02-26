@@ -6,6 +6,7 @@ import {isTauri} from '@/env';
 interface Props {
   background: string;
   border: string;
+  fullscreen: boolean;
 }
 
 interface Coords {
@@ -45,7 +46,8 @@ class SelectView {
       (e.target !== this.view.dom &&
         e.target !== this.view.dom.parentNode &&
         e.target !== this.view.dom.parentNode.parentNode) ||
-      (isTauri && e.target as HTMLElement)?.dataset?.tauriDragRegion === 'true'
+      (isTauri && e.target as HTMLElement)?.dataset?.tauriDragRegion === 'true' &&
+        !this.props.fullscreen
     ) {
       return
     }

@@ -29,6 +29,7 @@ interface Props {
   keymap?: {[key: string]: any};
   config: Config;
   markdown: boolean;
+  fullscreen?: boolean;
   path?: string;
   y?: CollabOptions;
 }
@@ -74,6 +75,7 @@ export const createExtensions = (props: Props): ProseMirrorExtension[] =>
     select({
       background: selection(props.config),
       border: primaryBackground(props.config),
+      fullscreen: props.fullscreen,
     }),
     image(props.path),
     placeholder('Start typing ...'),
