@@ -3,6 +3,7 @@ import {isDark} from '@/env'
 
 export interface Font {
   label: string;
+  value: string;
   regular?: string;
   bold?: string;
   italic?: string;
@@ -16,24 +17,28 @@ export const styles = {
 export const fonts: {[key: string]: Font} = {
   'merriweather': {
     label: 'Merriweather',
+    value: 'merriweather',
     regular: '/Merriweather-Regular.ttf',
     bold: '/Merriweather-Black.ttf',
     italic: '/Merriweather-Italic.ttf',
   },
   'ibm-plex-sans': {
     label: 'IBM Plex Sans',
+    value: 'ibm-plex-sans',
     regular: '/IBMPlexSans-Regular.woff2',
     bold: '/IBMPlexSans-Bold.woff2',
     italic: '/IBMPlexSans-Italic.woff2',
   },
   'ibm-plex-serif': {
     label: 'IBM Plex Serif',
+    value: 'ibm-plex-serif',
     regular: '/IBMPlexSerif-Regular.woff2',
     bold: '/IBMPlexSerif-Bold.woff2',
     italic: '/IBMPlexSerif-Italic.woff2',
   },
   'jetbrains-mono': {
     label: 'JetBrains Mono',
+    value: 'jetbrains-mono',
     regular: '/JetBrainsMono-ExtraLight.woff2',
     bold: '/JetBrainsMono-Bold.woff2',
     italic: '/JetBrainsMono-Italic.woff2',
@@ -41,6 +46,7 @@ export const fonts: {[key: string]: Font} = {
   },
   'fantasque-sans-mono': {
     label: 'Fantasque Sans Mono',
+    value: 'fantasque-sans-mono',
     regular: '/FantasqueSansMono-Regular.woff2',
     bold: '/FantasqueSansMono-Bold.woff2',
     italic: '/FantasqueSansMono-Italic.woff2',
@@ -48,6 +54,7 @@ export const fonts: {[key: string]: Font} = {
   },
   'ia-writer-mono': {
     label: 'iA Writer Mono',
+    value: 'ia-writer-mono',
     regular: '/iAWriterMonoS-Regular.woff2',
     bold: '/iAWriterMonoS-Bold.woff2',
     italic: '/iAWriterMonoS-Italic.ttf',
@@ -55,6 +62,7 @@ export const fonts: {[key: string]: Font} = {
   },
   'scientifica': {
     label: 'Scientifica',
+    value: 'scientifica',
     regular: '/scientifica.ttf',
     bold: '/scientificaBold.ttf',
     italic: '/scientificaItalic.ttf',
@@ -263,19 +271,21 @@ export const tooltipBackground = (config: Config) => getTheme(config).tooltipBac
 export const font = (
   config: Config,
   options: {monospace?: boolean; bold?: boolean; italic?: boolean} = {}
-) => {
+): Font => {
   const defaultFont = 'ia-writer-mono'
-  if (options.monospace && !fonts[config.font]?.monospace) {
-    return fonts[defaultFont].label
-  } else if (options.bold && fonts[config.font]?.bold) {
-    return fonts[config.font].label + ' Bold'
-  } else if (options.italic && fonts[config.font]?.italic) {
-    return fonts[config.font].label + ' Italic'
-  } else if (fonts[config.font]) {
-    return fonts[config.font].label
+  const selected = fonts[config.font]
+
+  if (options.monospace && !selected?.monospace) {
+    return fonts[defaultFont]
+  } else if (options.bold && selected?.bold) {
+    return {...selected, label: selected.label + ' Bold'}
+  } else if (options.italic && selected?.italic) {
+    return {...selected, label: selected.label + ' Italic'}
+  } else if (selected) {
+    return selected
   }
 
-  return fonts[defaultFont].label
+  return fonts[defaultFont]
 }
 
 const getDefaltCodeTheme = () => isDark() ? codeThemes.dracula : codeThemes['material-light']
