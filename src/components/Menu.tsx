@@ -81,7 +81,7 @@ export const Drawer = styled('div')`
 `
 
 export const Label = styled('h3')`
-  margin: 0;
+  margin: 10px 0;
   font-size: var(--menu-font-size);
   text-transform: uppercase;
   color: var(--foreground-50);
