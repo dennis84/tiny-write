@@ -1,6 +1,7 @@
 import {vi, expect, test, beforeEach} from 'vitest'
 import {clearMocks, mockIPC} from '@tauri-apps/api/mocks'
 import * as db from '@/db'
+import {createYdoc} from './util'
 
 vi.stubGlobal('__TAURI__', {})
 vi.stubGlobal('matchMedia', vi.fn(() => ({
@@ -84,14 +85,13 @@ test('init - check text', async () => {
 })
 
 test('openFile - path in files', async () => {
-  const [store, ctrl] = createCtrl(createState({
-    editor: {id: '2'},
-    files: [
-      {id: '1', path: 'file1', lastModified},
-      {id: '2', path: 'file2'},
-    ]
-  }))
+  vi.spyOn(db, 'getEditor').mockResolvedValue({id: '2'})
+  vi.spyOn(db, 'getFiles').mockResolvedValue([
+    {id: '1', path: 'file1', ydoc: createYdoc('Test'), lastModified},
+    {id: '2', path: 'file2', ydoc: createYdoc('Test 2'), lastModified},
+  ])
 
+  const [store, ctrl] = createCtrl(createState())
   const target = document.createElement('div')
   await ctrl.init(target)
   await ctrl.openFile({path: 'file1'})
@@ -102,7 +102,7 @@ test('openFile - path in files', async () => {
 })
 
 test('openFile - push path to files', async () => {
-  const [store, ctrl] = createCtrl(createState({}))
+  const [store, ctrl] = createCtrl(createState())
   const target = document.createElement('div')
   await ctrl.init(target)
   expect(store.files.length).toBe(1)
@@ -126,14 +126,13 @@ test('openFile - path and text', async () => {
 })
 
 test('discard - with path', async () => {
-  const [store, ctrl] = createCtrl(createState({
-    editor: {id: '1'},
-    files: [
-      {id: '1', path: 'file1'},
-      {id: '2', path: 'file2'},
-    ],
-  }))
+  vi.spyOn(db, 'getEditor').mockResolvedValue({id: '1'})
+  vi.spyOn(db, 'getFiles').mockResolvedValue([
+    {id: '1', path: 'file1', ydoc: createYdoc('Test'), lastModified},
+    {id: '2', path: 'file2', ydoc: createYdoc('Test 2'), lastModified},
+  ])
 
+  const [store, ctrl] = createCtrl(createState())
   const target = document.createElement('div')
   await ctrl.init(target)
   expect(store.files.length).toBe(2)

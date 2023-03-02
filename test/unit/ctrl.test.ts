@@ -1,4 +1,6 @@
-import {vi, expect, test} from 'vitest'
+import {vi, expect, test, beforeEach} from 'vitest'
+import * as db from '@/db'
+import {createYdoc, waitFor} from './util'
 
 vi.stubGlobal('matchMedia', vi.fn(() => ({
   matchMedia: () => ''
@@ -39,14 +41,11 @@ vi.mock('y-websocket', () => ({
 import {createCtrl} from '@/ctrl'
 import {createState} from '@/state'
 
-const createText = (text: string) => ({
-  doc: {
-    type: 'doc',
-    content: [{type: 'paragraph', content: [{type: 'text', text}]}]
-  },
+beforeEach(() => {
+  vi.restoreAllMocks()
 })
 
-const text = createText('Test')
+const lastModified = new Date()
 
 test('setState', () => {
   const [store, ctrl] = createCtrl(createState())
@@ -62,44 +61,44 @@ test('init', async () => {
 })
 
 test('init - new file if no id', async () => {
-  const [store, ctrl] = createCtrl(createState({
-    files: [
-      {id: '1', text},
-      {id: '2', text: createText('Test 2')},
-    ]
-  }))
+  vi.spyOn(db, 'getFiles').mockResolvedValue([
+    {id: '1', ydoc: createYdoc('Text'), lastModified},
+    {id: '2', ydoc: createYdoc('Test 2'), lastModified},
+  ])
 
+  const [store, ctrl] = createCtrl(createState())
   const target = document.createElement('div')
   await ctrl.init(target)
   expect(store.files.length).toBe(3)
   expect(store.editor.editorView.state.doc.textContent).toBe('')
+  expect(store.editor.id).not.toBe(1)
+  expect(store.editor.id).not.toBe(2)
 })
 
 test('init - existing file', async () => {
-  const [store, ctrl] = createCtrl(createState({
-    editor: {id: '2'},
-    files: [
-      {id: '1', text},
-      {id: '2', text: createText('Test 2')},
-    ]
-  }))
+  vi.spyOn(db, 'getEditor').mockResolvedValue({id: '2'})
+  vi.spyOn(db, 'getFiles').mockResolvedValue([
+    {id: '1', ydoc: createYdoc('Test'), lastModified},
+    {id: '2', ydoc: createYdoc('Test 2'), lastModified},
+  ])
 
+  const [store, ctrl] = createCtrl(createState())
   const target = document.createElement('div')
   await ctrl.init(target)
   expect(store.files.length).toBe(2)
-  expect(store.editor.editorView.state.doc.textContent).toBe('Test 2')
+  await waitFor(() => {
+    expect(store.editor.editorView.state.doc.textContent).toBe('Test 2')
+  })
 })
 
 test('init - join', async () => {
-  const [store, ctrl] = createCtrl(createState({
-    args: {room: '3'},
-    editor: {id: '1'},
-    files: [
-      {id: '1', text},
-      {id: '2', text: createText('Test 2')},
-    ]
-  }))
+  vi.spyOn(db, 'getEditor').mockResolvedValue({id: '1'})
+  vi.spyOn(db, 'getFiles').mockResolvedValue([
+    {id: '1', ydoc: createYdoc('Test'), lastModified},
+    {id: '2', ydoc: createYdoc('Test 2'), lastModified},
+  ])
 
+  const [store, ctrl] = createCtrl(createState({args: {room: '3'}}))
   const target = document.createElement('div')
   await ctrl.init(target)
   expect(store.files.length).toBe(3)
@@ -108,12 +107,12 @@ test('init - join', async () => {
 })
 
 test('init - dir', async () => {
-  const [store, ctrl] = createCtrl(createState({
-    args: {dir: ['~/Desktop/Aaaa.md']},
-    editor: {id: '1'},
-    files: [{id: '1', text}],
-  }))
+  vi.spyOn(db, 'getEditor').mockResolvedValue({id: '1'})
+  vi.spyOn(db, 'getFiles').mockResolvedValue([
+    {id: '1', ydoc: createYdoc('Test'), lastModified},
+  ])
 
+  const [store, ctrl] = createCtrl(createState({args: {dir: ['~/Desktop/Aaaa.md']}}))
   const target = document.createElement('div')
   await ctrl.init(target)
   expect(store.files.length).toBe(1)
@@ -125,7 +124,6 @@ test('init - dir', async () => {
 test('init - dir no current file', async () => {
   const [store, ctrl] = createCtrl(createState({
     args: {dir: ['~/Desktop/Aaaa.md']},
-    files: []
   }))
 
   const target = document.createElement('div')
@@ -180,19 +178,26 @@ test('newFile - collab', async () => {
 })
 
 test('openFile - existing', async () => {
-  const [store, ctrl] = createCtrl(createState({
-    editor: {id: '1'},
-    files: [
-      {id: '1', text},
-      {id: '2', text: createText('Test 2')},
-    ]
-  }))
+  vi.spyOn(db, 'getEditor').mockResolvedValue({id: '1'})
+  vi.spyOn(db, 'getFiles').mockResolvedValue([
+    {id: '1', ydoc: createYdoc('Test'), lastModified},
+    {id: '2', ydoc: createYdoc('Test 2'), lastModified},
+  ])
 
+  const [store, ctrl] = createCtrl(createState())
   const target = document.createElement('div')
   await ctrl.init(target)
+
+  // FIXME
+  await waitFor(() => {
+    expect(store.editor.editorView.state.doc.textContent).toBe('Test')
+  })
+
   await ctrl.openFile({id: '2'})
   expect(store.files.length).toBe(2)
-  expect(store.editor.editorView.state.doc.textContent).toBe('Test 2')
+  await waitFor(() => {
+    expect(store.editor.editorView.state.doc.textContent).toBe('Test 2')
+  })
 })
 
 test('openFile - not found', async () => {
@@ -201,78 +206,96 @@ test('openFile - not found', async () => {
   await ctrl.init(target)
   const id = store.editor.id
   expect(store.files.length).toBe(1)
-  await ctrl.openFile({id: '123', text})
+  await ctrl.openFile({id: '123'})
   expect(store.files.length).toBe(1)
   expect(store.editor.id).toBe(id)
 })
 
 test('openFile - delete empty', async () => {
-  const [store, ctrl] = createCtrl(createState({
-    editor: {id: '1'},
-    files: [
-      {id: '1', text: {doc: {type: 'doc', content: []}}},
-      {id: '2', text: createText('Test 2')},
-    ]
-  }))
+  vi.spyOn(db, 'getEditor').mockResolvedValue({id: '1'})
+  vi.spyOn(db, 'getFiles').mockResolvedValue([
+    {id: '1', ydoc: createYdoc(''), lastModified},
+    {id: '2', ydoc: createYdoc('Test 2'), lastModified},
+  ])
 
+  const [store, ctrl] = createCtrl(createState())
   const target = document.createElement('div')
   await ctrl.init(target)
   await ctrl.openFile({id: '2'})
   expect(store.files.length).toBe(1)
-  expect(store.editor.editorView.state.doc.textContent).toBe('Test 2')
+
+  await waitFor(() => {
+    expect(store.editor.editorView.state.doc.textContent).toBe('Test 2')
+  })
 })
 
 test('openFile - open collab', async () => {
-  const file = {text, id: 'room-123'}
-  const [store, ctrl] = createCtrl(createState({files: [file]}))
+  const file = {id: 'room-123', ydoc: createYdoc('Test'), lastModified}
+  vi.spyOn(db, 'getFiles').mockResolvedValue([file])
+
+  const [store, ctrl] = createCtrl(createState())
   const target = document.createElement('div')
   await ctrl.init(target)
   await ctrl.openFile(file)
-  expect(store.editor.editorView.state.doc.textContent).toBe('Test')
-  expect(store.editor.id).toBe('room-123')
-  expect(store.files.length).toBe(1)
+  await waitFor(() => {
+    expect(store.editor.editorView.state.doc.textContent).toBe('Test')
+    expect(store.editor.id).toBe('room-123')
+    expect(store.files.length).toBe(1)
+  })
 })
 
 test('openFile - open from collab', async () => {
-  const [store, ctrl] = createCtrl(createState({
-    editor: {id: '1'},
-    files: [
-      {id: '1', text},
-      {id: '2', text: createText('Test2')},
-    ],
-  }))
+  vi.spyOn(db, 'getEditor').mockResolvedValue({id: '1'})
+  vi.spyOn(db, 'getFiles').mockResolvedValue([
+    {id: '1', ydoc: createYdoc('Test'), lastModified},
+    {id: '2', ydoc: createYdoc('Test 2'), lastModified},
+  ])
 
+  const [store, ctrl] = createCtrl(createState())
   const target = document.createElement('div')
   await ctrl.init(target)
+  expect(store.files.length).toBe(2)
   ctrl.startCollab()
   expect(store.files.length).toBe(2)
   expect(store.collab.started).toBe(true)
+  // FIXME: File is dropped if not waiting for render
+  await waitFor(() => {
+    expect(store.editor.editorView.state.doc.textContent).toBe('Test')
+  })
+
   await ctrl.openFile({id: '2'})
   expect(store.files.length).toBe(2)
   expect(store.collab.started).toBe(false)
-  expect(store.editor.editorView.state.doc.textContent).toBe('Test2')
+  await waitFor(() => {
+    expect(store.editor.editorView.state.doc.textContent).toBe('Test 2')
+  })
 })
 
 test('discard - open collab', async () => {
-  const [store, ctrl] = createCtrl(createState({
-    files: [{text, id: 'room-123'}],
-  }))
+  vi.spyOn(db, 'getFiles').mockResolvedValue([
+    {id: 'room-123', ydoc: createYdoc('Test'), lastModified},
+  ])
+
+  const [store, ctrl] = createCtrl(createState())
 
   const target = document.createElement('div')
   await ctrl.init(target)
   expect(store.files.length).toBe(2)
   await ctrl.discard()
 
-  expect(store.editor.editorView.state.doc.textContent).toBe('Test')
-  expect(store.editor.id).toBe('room-123')
-  expect(store.files.length).toBe(1)
+  await waitFor(() => {
+    expect(store.editor.editorView.state.doc.textContent).toBe('Test')
+    expect(store.editor.id).toBe('room-123')
+    expect(store.files.length).toBe(1)
+  })
 })
 
 test('discard - with text', async () => {
-  const [store, ctrl] = createCtrl(createState({
-    files: [{id: '1', text}],
-  }))
+  vi.spyOn(db, 'getFiles').mockResolvedValue([
+    {id: '1', ydoc: createYdoc('Test'), lastModified},
+  ])
 
+  const [store, ctrl] = createCtrl(createState())
   const target = document.createElement('div')
   await ctrl.init(target)
   const tr = store.editor.editorView.state.tr
@@ -283,15 +306,18 @@ test('discard - with text', async () => {
   expect(store.editor.editorView.state.doc.textContent).toBe('')
   expect(store.files.length).toBe(2)
   await ctrl.discard()
-  expect(store.editor.editorView.state.doc.textContent).toBe('Test')
-  expect(store.files.length).toBe(1)
+  await waitFor(() => {
+    expect(store.editor.editorView.state.doc.textContent).toBe('Test')
+    expect(store.files.length).toBe(1)
+  })
 })
 
 test('discard - close collab', async () => {
-  const [store, ctrl] = createCtrl(createState({
-    files: [{id: '1', text}],
-  }))
+  vi.spyOn(db, 'getFiles').mockResolvedValue([
+    {id: '1', ydoc: createYdoc('Test'), lastModified},
+  ])
 
+  const [store, ctrl] = createCtrl(createState())
   const target = document.createElement('div')
   await ctrl.init(target)
   expect(store.files.length).toBe(2)
@@ -301,15 +327,19 @@ test('discard - close collab', async () => {
   tr.insertText('111')
   store.editor.editorView.dispatch(tr)
   await ctrl.discard()
-  expect(store.editor.editorView.state.doc.textContent).toBe('Test')
-  expect(store.files.length).toBe(1)
+  await waitFor(() => {
+    expect(store.editor.editorView.state.doc.textContent).toBe('Test')
+    expect(store.files.length).toBe(1)
+  })
 })
 
 test('clean', async () => {
+  vi.spyOn(db, 'getFiles').mockResolvedValue([
+    {id: '1', ydoc: createYdoc('Test'), lastModified},
+  ])
+
   const error = {id: 'fail'}
-  const [store, ctrl] = createCtrl(createState({
-    files: [{id: '1', text}],
-  }))
+  const [store, ctrl] = createCtrl(createState())
   const target = document.createElement('div')
   await ctrl.init(target)
   const tr = store.editor.editorView.state.tr
@@ -354,11 +384,12 @@ test('startCollab - with text', async () => {
 })
 
 test('startCollab - join new file', async () => {
-  const [store, ctrl] = createCtrl(createState({
-    args: {room: '2'},
-    editor: {id: '1'},
-    files: [{id: '1', text}],
-  }))
+  vi.spyOn(db, 'getEditor').mockResolvedValue({id: '1'})
+  vi.spyOn(db, 'getFiles').mockResolvedValue([
+    {id: '1', ydoc: createYdoc('Test'), lastModified},
+  ])
+
+  const [store, ctrl] = createCtrl(createState({args: {room: '2'}}))
   const target = document.createElement('div')
   await ctrl.init(target)
 
@@ -370,14 +401,13 @@ test('startCollab - join new file', async () => {
 })
 
 test('startCollab - join existing file', async () => {
-  const [store, ctrl] = createCtrl(createState({
-    args: {room: '2'},
-    editor: {id: '1'},
-    files: [
-      {id: '1', text},
-      {id: '2', text: createText('Test2')},
-    ],
-  }))
+  vi.spyOn(db, 'getEditor').mockResolvedValue({id: '1'})
+  vi.spyOn(db, 'getFiles').mockResolvedValue([
+    {id: '1', ydoc: createYdoc('Test'), lastModified},
+    {id: '2', ydoc: createYdoc('Test 2'), lastModified},
+  ])
+
+  const [store, ctrl] = createCtrl(createState({args: {room: '2'}}))
   const target = document.createElement('div')
   await ctrl.init(target)
 
