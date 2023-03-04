@@ -41,14 +41,14 @@ const containerRule = (nodeType: NodeType) =>
 
 class ContainerView {
   dom: HTMLElement
-  contentDOM: HTMLElement
+  contentDOM?: HTMLElement
 
   constructor(
     private node: Node,
     private view: EditorView,
     private getPos: () => number,
   ) {
-    const dom = this.node.type.spec.toDOM(this.node)
+    const dom = this.node.type.spec.toDOM!(this.node)
     const res = DOMSerializer.renderSpec(document, dom)
     this.dom = res.dom as HTMLInputElement
     this.contentDOM = res.contentDOM

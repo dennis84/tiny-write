@@ -18,8 +18,8 @@ export const tableInputRule = (schema: Schema) => new InputRule(
   (state: EditorState, match: string[], start: number, end: number) => {
     const tr = state.tr
     const columns = [...Array(match[0].trim().length - 1)]
-    const headers = columns.map(() => schema.nodes.table_header.createAndFill())
-    const cells = columns.map(() => schema.nodes.table_cell.createAndFill())
+    const headers = columns.map(() => schema.nodes.table_header.createAndFill()!)
+    const cells = columns.map(() => schema.nodes.table_cell.createAndFill()!)
     const table = schema.nodes.table.createChecked(null, [
       schema.nodes.table_row.createChecked(null, headers),
       schema.nodes.table_row.createChecked(null, cells),
@@ -78,22 +78,23 @@ export default (): ProseMirrorExtension => ({
         const before = state.doc.resolve(cellPos.before())
         const targetPos = before.after()
         const tr = state.tr
-        tr.insert(targetPos, state.schema.nodes.paragraph.createAndFill())
+        tr.insert(targetPos, state.schema.nodes.paragraph.createAndFill()!)
         tr.setSelection(Selection.near(tr.doc.resolve(targetPos)))
-        dispatch(tr)
+        dispatch?.(tr)
         return true
       },
       'Backspace': (state, dispatch, view) => {
         const sel = state.selection
-        if (!sel.empty) return false
+        if (!sel.empty || !view || !dispatch) return false
+
         const cellPos = getSelectionCell(state)
         if (!cellPos) return false
-        if (cellPos.nodeAfter.content.size > 0) {
+        if (cellPos.nodeAfter && cellPos.nodeAfter.content.size > 0) {
           return false
         }
 
         const pos = nextCell(cellPos, 'horiz', -1)
-        if (pos) {
+        if (pos?.nodeAfter) {
           const tr = state.tr
           const target = tr.doc.resolve(pos.pos + pos.nodeAfter.content.size + 1)
           tr.setSelection(Selection.near(target))
@@ -102,7 +103,7 @@ export default (): ProseMirrorExtension => ({
         } else {
           const above = nextCell(cellPos, 'vert', -1)
           const cell = getSelectionCell(state)
-          if (!above && cell.node(-1).textContent === '') {
+          if (!above && cell?.node(-1).textContent === '') {
             deleteTable(state, dispatch)
             return true
           }
@@ -119,12 +120,15 @@ export default (): ProseMirrorExtension => ({
       },
       'Enter': (state, dispatch, view) => {
         const sel = state.selection
-        if (!sel.empty) return false
+        if (!sel.empty || !dispatch || !view) return false
+
         const cellPos = getSelectionCell(state)
         if (!cellPos) return false
         addRowAfter(state, dispatch)
         const cur = view.state.doc.resolve(sel.$head.before())
         const pos = nextCell(cur, 'vert', 1)
+        if (!pos) return false
+
         const tr = view.state.tr
         tr.setSelection(Selection.near(pos))
         view.dispatch(tr)
@@ -132,7 +136,7 @@ export default (): ProseMirrorExtension => ({
       },
       'ArrowUp': (state, dispatch) => {
         const sel = state.selection
-        if (!sel.empty) return false
+        if (!sel.empty || !dispatch) return false
         const cellPos = getSelectionCell(state)
         if (!cellPos) return false
         const pos = nextCell(cellPos, 'vert', -1)
@@ -153,7 +157,7 @@ export default (): ProseMirrorExtension => ({
       },
       'ArrowDown': (state, dispatch) => {
         const sel = state.selection
-        if (!sel.empty) return false
+        if (!sel.empty || !dispatch) return false
         const cellPos = getSelectionCell(state)
         if (!cellPos) return false
         const pos = nextCell(cellPos, 'vert', 1)

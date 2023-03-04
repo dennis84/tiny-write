@@ -28,7 +28,7 @@ interface Props {
   data?: unknown;
   keymap?: {[key: string]: any};
   config: Config;
-  markdown: boolean;
+  markdown?: boolean;
   fullscreen?: boolean;
   path?: string;
   y?: CollabOptions;
@@ -46,14 +46,17 @@ const codeMirrorKeymap = (props: Props) => {
 export const createExtensions = (props: Props): ProseMirrorExtension[] =>
   props.markdown ? [
     placeholder('Start typing ...'),
-    base({markdown: props.markdown, keymap: props.keymap}),
+    base({markdown: props.markdown, keymap: props.keymap ?? {}}),
     scroll(props.config.typewriterMode),
     collab(props.y),
     blockMenu(),
     fileListing(props.config.fontSize),
     wordCompletion(props.config.fontSize),
   ] : [
-    base({markdown: props.markdown, keymap: props.keymap}),
+    base({
+      markdown: props.markdown ?? false,
+      keymap: props.keymap ?? {},
+    }),
     markdown(),
     todoList(),
     blockMenu(),
@@ -75,7 +78,7 @@ export const createExtensions = (props: Props): ProseMirrorExtension[] =>
     select({
       background: selection(props.config),
       border: primaryBackground(props.config),
-      fullscreen: props.fullscreen,
+      fullscreen: props.fullscreen ?? false,
     }),
     image(props.path),
     placeholder('Start typing ...'),

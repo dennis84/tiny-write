@@ -1,12 +1,11 @@
 import {InputRule} from 'prosemirror-inputrules'
-import {EditorState} from 'prosemirror-state'
 import {MarkType, NodeType} from 'prosemirror-model'
 
 export const markInputRule = (
   regexp: RegExp,
   nodeType: MarkType,
-  getAttrs = undefined
-) => new InputRule(regexp, (state: EditorState, match: string[], start: number, end: number) => {
+  getAttrs: any = undefined
+) => new InputRule(regexp, (state, match, start, end) => {
   const attrs = getAttrs ? getAttrs(match) : getAttrs
   const tr = state.tr
   if (match[1]) {
@@ -22,7 +21,7 @@ export const markInputRule = (
     })
 
     if (hasMarks) {
-      return
+      return null
     }
 
     if (textEnd < end) tr.delete(textEnd, end)
@@ -38,7 +37,7 @@ export const markInputRule = (
 export const nodeInputRule = (
   regexp: RegExp,
   nodeType: NodeType,
-  getAttrs = undefined
+  getAttrs: any = undefined
 ) => new InputRule(regexp, (state, match, start, end) => {
   const attrs = getAttrs ? getAttrs(match) : getAttrs
   const tr = state.tr
@@ -64,4 +63,6 @@ export const nodeInputRule = (
     tr.replaceWith(start, end, nodeType.create(attrs))
     return tr
   }
+
+  return null
 })

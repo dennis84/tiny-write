@@ -53,7 +53,7 @@ const prettify = (view: EditorView, lang: string, options: PrettierConfig) => {
         insert: value.substring(0, value.lastIndexOf('\n')),
       }
     })
-  } catch (err) {
+  } catch (err: any) {
     if (!err.loc?.start?.line) return
     const line = view.state.doc.line(err.loc.start.line)
     const lines = err.message.split('\n')

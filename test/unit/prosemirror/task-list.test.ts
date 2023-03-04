@@ -17,7 +17,7 @@ test('render', () => {
   expect(tokens[1].attrGet('checked')).toBe(null)
   expect(tokens[2].type).toBe('paragraph_open')
   expect(tokens[3].type).toBe('inline')
-  expect(tokens[3].children[0].content).toBe('aaa')
+  expect(tokens[3].children![0].content).toBe('aaa')
   expect(tokens[4].type).toBe('paragraph_close')
   expect(tokens[5].type).toBe('task_list_item_close')
 
@@ -25,7 +25,7 @@ test('render', () => {
   expect(tokens[6].attrGet('checked')).toBe('checked')
   expect(tokens[7].type).toBe('paragraph_open')
   expect(tokens[8].type).toBe('inline')
-  expect(tokens[8].children[0].content).toBe('bbb')
+  expect(tokens[8].children![0].content).toBe('bbb')
   expect(tokens[9].type).toBe('paragraph_close')
 
   expect(tokens[10].type).toBe('task_list_open')
@@ -33,7 +33,7 @@ test('render', () => {
   expect(tokens[11].attrGet('checked')).toBe(null)
   expect(tokens[12].type).toBe('paragraph_open')
   expect(tokens[13].type).toBe('inline')
-  expect(tokens[13].children[0].content).toBe('ccc')
+  expect(tokens[13].children![0].content).toBe('ccc')
   expect(tokens[14].type).toBe('paragraph_close')
   expect(tokens[15].type).toBe('task_list_item_close')
   expect(tokens[16].type).toBe('task_list_close')

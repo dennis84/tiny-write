@@ -34,45 +34,12 @@ interface Config {
 
 export const changeLang = (codeBlock: CodeBlockView, config: Config) =>
   ViewPlugin.fromClass(class {
-    toggle: HTMLElement
-    input: HTMLElement
-    inputEditor: LangInputEditor
-    lang = codeBlock.lang
+    toggle!: HTMLElement
+    input!: HTMLElement
+    inputEditor!: LangInputEditor
+    lang: string = codeBlock.lang
 
-    constructor(private view: EditorView) {}
-
-    destroy() {
-      this.toggle?.remove()
-      this.input?.remove()
-      this.inputEditor?.destroy()
-      this.inputEditor = undefined
-      this.input = undefined
-      this.toggle = undefined
-    }
-
-    update(update: ViewUpdate) {
-      if (!this.toggle) {
-        this.renderDOM()
-        this.updateDOM()
-      }
-
-      if (update.transactions[0]?.isUserEvent('change-lang')) {
-        this.toggle.style.display = 'none'
-        this.input.style.display = 'flex'
-        this.inputEditor.focus()
-        return
-      }
-
-      if (
-        update.docChanged ||
-        update.startState.facet(language) != update.state.facet(language)
-      ) {
-        this.lang = codeBlock.lang
-        this.updateDOM()
-      }
-    }
-
-    private renderDOM() {
+    constructor(private view: EditorView) {
       const theme = getTheme(codeBlock.options.theme)
 
       this.toggle = document.createElement('div')
@@ -106,17 +73,42 @@ export const changeLang = (codeBlock: CodeBlockView, config: Config) =>
 
       this.view.dom.prepend(this.input)
       this.view.dom.appendChild(this.toggle)
+      this.updateDOM()
+    }
+
+    destroy() {
+      this.toggle.remove()
+      this.input.remove()
+      this.inputEditor?.destroy()
+    }
+
+    update(update: ViewUpdate) {
+      if (update.transactions[0]?.isUserEvent('change-lang')) {
+        this.toggle.style.display = 'none'
+        this.input.style.display = 'flex'
+        this.inputEditor.focus()
+        return
+      }
+
+      if (
+        update.docChanged ||
+        update.startState.facet(language) != update.state.facet(language)
+      ) {
+        this.lang = codeBlock.lang
+        this.updateDOM()
+      }
     }
 
     private updateDOM() {
-      const lang = this.lang
+      const lang = this.lang as string
       codeBlock.dom.dataset.lang = lang
       const cur = this.toggle?.children[0]?.getAttribute('title')
       if (cur === lang) return
 
-      if (logos[lang]) {
+      const l: any = logos
+      if (l[lang]) {
         const img = document.createElement('img')
-        img.src = logos[lang]
+        img.src = l[lang]
         img.setAttribute('title', lang)
         this.toggle.innerHTML = ''
         this.toggle.appendChild(img)
@@ -221,7 +213,7 @@ export class LangInputEditor {
 const langSupport = (l: StreamParser<unknown>) =>
   new LanguageSupport(StreamLanguage.define(l))
 
-const mapping = {
+const mapping: {[key: string]: () => LanguageSupport} = {
   javascript: () => javascript(),
   js: () => javascript(),
   jsx: () => javascript({jsx: true}),

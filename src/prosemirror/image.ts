@@ -118,10 +118,10 @@ export const insertVideo = (
 
 class ImageView {
   dom: Element
-  contentDOM: HTMLElement
+  contentDOM?: HTMLElement
   container: HTMLElement
   handle: HTMLElement
-  width: number
+  width?: number
 
   onResize = (e: MouseEvent) => {
     this.width = e.pageX - this.container.getBoundingClientRect().left
@@ -145,7 +145,7 @@ class ImageView {
     private node: Node,
     private view: EditorView,
     private getPos: () => number,
-    private path: string
+    private path?: string
   ) {
     this.container = document.createElement('span')
     this.container.classList.add('image-container', 'loading')

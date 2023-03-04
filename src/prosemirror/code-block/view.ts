@@ -41,7 +41,7 @@ export class CodeBlockView {
     this.dom.setAttribute('contenteditable', 'false')
     this.dom.classList.add('cm-container')
 
-    this.dom.addEventListener('cm:user_event', (event: CustomEvent) => {
+    this.dom.addEventListener('cm:user_event', (event: any) => {
       this.editorView.dispatch({userEvent: event.detail.userEvent})
     })
 
@@ -58,6 +58,8 @@ export class CodeBlockView {
           this.view.focus()
           return true
         }
+
+        return false
       }
     }, {
       key: 'Ctrl-Enter',
@@ -71,7 +73,7 @@ export class CodeBlockView {
         const state = editorView.state
         const selection = state.selection
         const startPos = selection.main.head
-        if (!selection.main.empty) return
+        if (!selection.main.empty) return false
         const line = editorView.state.doc.lineAt(startPos)
 
         if (line.number === 1) {
@@ -99,7 +101,7 @@ export class CodeBlockView {
         const state = editorView.state
         const selection = state.selection
         const startPos = selection.main.head
-        if (!selection.main.empty) return
+        if (!selection.main.empty) return false
         const line = editorView.state.doc.lineAt(startPos)
 
         if (line.number === editorView.state.doc.lines) {
@@ -235,7 +237,7 @@ export class CodeBlockView {
       const lineBlock = this.editorView.lineBlockAt(sel.from)
       let {node} = this.editorView.domAtPos(lineBlock.from)
       if (!node) return
-      if (node.nodeType === 3) node = node.parentNode
+      if (node.nodeType === 3) node = node.parentNode as Element
       ;(node as Element).scrollIntoView({
         block: 'center',
         behavior: 'smooth',

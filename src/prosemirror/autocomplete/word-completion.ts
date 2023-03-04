@@ -22,7 +22,7 @@ const plugin = new Plugin({
       return new Set()
     },
     apply(tr, prev, _, state) {
-      const meta = tr.getMeta(this)
+      const meta = tr.getMeta(collectWordsKey)
       if (meta?.words) return meta.words
       // Generate words initially
       if (prev.size === 0) {

@@ -10,10 +10,10 @@ const blank = '\xa0'
 
 const onArrow = (dir: 'left' | 'right') => (
   state: EditorState,
-  dispatch: (tr: Transaction) => void,
-  editorView: EditorView
-) => {
-  if (!state.selection.empty) return false
+  dispatch?: (tr: Transaction) => void,
+  editorView?: EditorView
+): boolean => {
+  if (!state.selection.empty || !dispatch || !editorView) return false
   const $pos = state.selection.$head
   const isCode = $pos.marks().find((m: Mark) => m.type.name === 'code')
   const tr = state.tr
@@ -31,6 +31,8 @@ const onArrow = (dir: 'left' | 'right') => (
       dispatch(tr)
     }
   }
+
+  return false
 }
 
 const codeKeymap = {

@@ -73,7 +73,7 @@ export const Drawer = styled('div')`
   scrollbar-width: none;
   @media (max-width: ${fullWidth.toString()}px) {
     width: 100vw;
-    ${isTauri && 'padding-top: 40px'}
+    ${isTauri ? 'padding-top: 40px' : ''}
   }
   &::-webkit-scrollbar {
     display: none;
@@ -191,7 +191,7 @@ export default () => {
   })
 
   createEffect(() => {
-    setIsTextEmpty(isEmpty(store.editor?.editorView?.state))
+    setIsTextEmpty(isEmpty(store.editor?.editorView?.state) ?? true)
 
     let paragraphs = 0
     let words = 0
@@ -232,12 +232,12 @@ export default () => {
   }
 
   const onUndo = () => {
-    undo(store.editor?.editorView.state)
+    undo(store.editor?.editorView?.state)
     store.editor?.editorView?.focus()
   }
 
   const onRedo = () => {
-    redo(store.editor?.editorView.state)
+    redo(store.editor?.editorView?.state)
     store.editor?.editorView?.focus()
   }
 
@@ -247,7 +247,9 @@ export default () => {
   }
 
   const onCopyAllAsMd = () => {
-    remote.copyAllAsMarkdown(store.editor?.editorView.state).then(() => {
+    const state = store.editor?.editorView?.state
+    if (!state) return
+    remote.copyAllAsMarkdown(state).then(() => {
       setLastAction('copy-md')
     })
   }
@@ -279,7 +281,9 @@ export default () => {
   }
 
   const onSaveAs = async () => {
-    const path = await remote.save(store.editor?.editorView.state)
+    const state = store.editor?.editorView?.state
+    if (!state) return
+    const path = await remote.save(state)
     if (path) ctrl.updatePath(path)
   }
 
@@ -301,21 +305,23 @@ export default () => {
     if (store.collab?.started) {
       window.open(`tinywrite://main?room=${store.editor?.id}`, '_self')
     } else {
-      const text = window.btoa(JSON.stringify(store.editor?.editorView.state.toJSON()))
+      const state = store.editor?.editorView?.state
+      if (!state) return
+      const text = window.btoa(JSON.stringify(state.toJSON()))
       window.open(`tinywrite://main?text=${text}`, '_self')
     }
   }
 
   const onCopyCollabLink = () => {
     remote.copy(`${WEB_URL}/${store.editor?.id}`).then(() => {
-      store.editor?.editorView.focus()
+      store.editor?.editorView?.focus()
       setLastAction('copy-collab-link')
     })
   }
 
   const onCopyCollabAppLink = () => {
     remote.copy(`tinywrite://${store.editor?.id}`).then(() => {
-      store.editor?.editorView.focus()
+      store.editor?.editorView?.focus()
       setLastAction('copy-collab-app-link')
     })
   }
@@ -346,7 +352,7 @@ export default () => {
         </Text>
       }>
         <Text data-testid="last-modified">
-          Last modified: {formatDate(store.editor?.lastModified)}
+          Last modified: {formatDate(store.editor!.lastModified!)}
         </Text>
       </Show>
     )

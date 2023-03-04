@@ -25,7 +25,7 @@ class MouseCursorView {
   container: HTMLElement
   cursors: Map<number, HTMLElement> = new Map()
 
-  onAwarenessChange = ({added, updated, removed}) => {
+  onAwarenessChange = ({added, updated, removed}: any) => {
     const ystate = ySyncPluginKey.getState(this.view.state)
     if (!ystate) return
 
@@ -40,7 +40,7 @@ class MouseCursorView {
 
     added.concat(updated).forEach((id: number) => {
       const aw = this.awareness.states.get(id)
-      if (id === y.clientID || !aw.mouse) return
+      if (id === y.clientID || !aw?.mouse) return
       const mouse = this.cursors.get(id)
       if (mouse) {
         mouse.style.top = `${aw.mouse.y + rect.top}px`
@@ -108,7 +108,7 @@ const ychangeSchema = {
   }
 }
 
-export const collab = (y: CollabOptions): ProseMirrorExtension => ({
+export const collab = (y?: CollabOptions): ProseMirrorExtension => ({
   schema: (prev) => ({
     ...prev,
     marks: (prev.marks as any).append(ychangeSchema),

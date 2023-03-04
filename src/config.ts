@@ -257,8 +257,8 @@ export const codeThemes: {[key: string]: CodeTheme} = {
 export const isDarkTheme = (config: Config) => getTheme(config).dark
 
 const getDefaltTheme = () => isDark() ? themes.dark : themes.light
-export const getTheme = (config: Config) =>
-  !config.theme ? getDefaltTheme() :
+export const getTheme = (config?: Config) =>
+  !config?.theme ? getDefaltTheme() :
   themes[config.theme] ?? getDefaltTheme()
 
 export const background = (config: Config) => getTheme(config).background
@@ -269,11 +269,11 @@ export const selection = (config: Config) => getTheme(config).selection
 export const tooltipBackground = (config: Config) => getTheme(config).tooltipBackground
 
 export const font = (
-  config: Config,
+  config?: Config,
   options: {monospace?: boolean; bold?: boolean; italic?: boolean} = {}
 ): Font => {
   const defaultFont = 'ia-writer-mono'
-  const selected = fonts[config.font]
+  const selected = config?.font ? fonts[config.font] : undefined
 
   if (options.monospace && !selected?.monospace) {
     return fonts[defaultFont]
@@ -290,7 +290,7 @@ export const font = (
 
 const getDefaltCodeTheme = () => isDark() ? codeThemes.dracula : codeThemes['material-light']
 
-export const codeTheme = (config: Config) =>
-  !config.codeTheme ? getDefaltCodeTheme() :
+export const codeTheme = (config?: Config) =>
+  !config?.codeTheme ? getDefaltCodeTheme() :
   codeThemes[config.codeTheme] ? codeThemes[config.codeTheme] :
   getDefaltCodeTheme()

@@ -54,10 +54,10 @@ export interface Collab {
 export type LoadingType = 'loading' | 'initialized'
 
 export interface Window {
-  width?: number;
-  height?: number;
-  x?: number;
-  y?: number;
+  width: number;
+  height: number;
+  x: number;
+  y: number;
 }
 
 export interface Editor {
@@ -100,7 +100,7 @@ export class ServiceError extends Error {
   }
 }
 
-export const StateContext = createContext<[Store<State>, any]>([undefined, undefined])
+export const StateContext = createContext<[Store<State>, any]>([{} as any, {} as any])
 
 export const useState = () => useContext(StateContext)
 

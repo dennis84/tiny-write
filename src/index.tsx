@@ -4,5 +4,5 @@ import {createState} from '@/state'
 
 render(
   () => <Main state={createState()} />,
-  document.getElementById('container')
+  document.getElementById('container')!
 )

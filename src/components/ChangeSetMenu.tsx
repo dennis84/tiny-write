@@ -12,13 +12,13 @@ export const ChangeSetMenu = (props: Props) => {
   const [store, ctrl] = useState()
 
   const getVersions = () =>
-    store.collab.ydoc.getArray('versions').toArray() as Version[]
+    store.collab?.ydoc?.getArray('versions').toArray() as Version[]
 
   const [versions, setVersions] = createSignal(getVersions())
   const [active, setActive] = createSignal<Version>()
 
   onMount(() => {
-    store.collab.ydoc.getArray('versions').observe(() => {
+    store.collab?.ydoc?.getArray('versions').observe(() => {
       setVersions(getVersions())
     })
   })
@@ -38,7 +38,7 @@ export const ChangeSetMenu = (props: Props) => {
 
   const onBack = () => {
     ctrl.unrenderVersion()
-    store.editor?.editorView.focus()
+    store.editor?.editorView?.focus()
     props.onBack()
   }
 

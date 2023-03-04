@@ -14,9 +14,9 @@ it('mermaid keywords - diagrams', async () => {
   const context = new CompletionContext(state, 1, false)
   const result = await mermaidKeywords(context)
 
-  expect(result.options.find((x) => x.label === 'sequenceDiagram')).toBeDefined()
-  expect(result.options.find((x) => x.label === 'flowchart')).toBeDefined()
-  expect(result.options.find((x) => x.label === 'classDiagram')).toBeDefined()
+  expect(result?.options.find((x) => x.label === 'sequenceDiagram')).toBeDefined()
+  expect(result?.options.find((x) => x.label === 'flowchart')).toBeDefined()
+  expect(result?.options.find((x) => x.label === 'classDiagram')).toBeDefined()
 })
 
 it('mermaid keywords - keywords', async () => {
@@ -26,8 +26,8 @@ it('mermaid keywords - keywords', async () => {
   const context = new CompletionContext(state, doc.length, false)
   const result = await mermaidKeywords(context)
 
-  expect(result.options.find((x) => x.label === 'actor')).toBeDefined()
-  expect(result.options.find((x) => x.label === 'activate')).toBeDefined()
-  expect(result.options.find((x) => x.label === 'deactivate')).toBeDefined()
-  expect(result.options.find((x) => x.label === 'autonumber')).toBeDefined()
+  expect(result?.options.find((x) => x.label === 'actor')).toBeDefined()
+  expect(result?.options.find((x) => x.label === 'activate')).toBeDefined()
+  expect(result?.options.find((x) => x.label === 'deactivate')).toBeDefined()
+  expect(result?.options.find((x) => x.label === 'autonumber')).toBeDefined()
 })

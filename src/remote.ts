@@ -17,7 +17,7 @@ export const listContents = async (file: string) => {
 
 export const saveSvg = (svg: HTMLElement) => {
   const canvas = document.createElement('canvas')
-  const ctx = canvas.getContext('2d')
+  const ctx = canvas.getContext('2d')!
   const rect = svg.getBoundingClientRect()
   const ratio = rect.height / rect.width
   canvas.width = 1080
@@ -33,9 +33,12 @@ export const saveSvg = (svg: HTMLElement) => {
   image.decode().then(() => {
     ctx.drawImage(image, 0, 0, canvas.width, canvas.height)
     canvas.toBlob(async (blob) => {
+      if (!blob) return
+
       const filename = 'mermaid-graph.png'
       if (isTauri) {
         const path = await dialog.save({defaultPath: `./${filename}`})
+        if (!path) return
         const buffer = await blob.arrayBuffer()
         const contents = new Uint8Array(buffer)
         await fs.writeBinaryFile({path, contents})
@@ -137,6 +140,7 @@ export const toRelativePath = async (path: string, basePath?: string): Promise<s
 export const save = async (state: EditorState): Promise<string> => {
   if (!isTauri) throw Error('Must be run in tauri: save')
   const path = await dialog.save()
+  if (!path) throw Error('No path returned')
   await fs.writeFile({path, contents: serialize(state)})
   return path
 }
@@ -146,7 +150,7 @@ export const log = (level: string, msg: string) => {
   else console.info(msg)
 }
 
-export const updateWindow = async ({width, height, x, y}: Window = {}) => {
+export const updateWindow = async ({width, height, x, y}: Window) => {
   if (!isTauri) throw Error('Must be run in tauri: save')
   log('info', `🖼️ Update window: (width=${width}, height=${height}, x=${x}, y=${y}`)
 
@@ -157,6 +161,7 @@ export const updateWindow = async ({width, height, x, y}: Window = {}) => {
 
   const size = await getCurrent().outerSize()
   const monitor = await currentMonitor()
+  if (!monitor) return
 
   // Last pos must fit in current screen size.
   if (

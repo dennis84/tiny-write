@@ -23,10 +23,10 @@ const codeBlockRule = (nodeType: NodeType) =>
 
 const arrowHandler = (dir: Direction) => (
   state: EditorState,
-  dispatch: (tr: Transaction) => void,
-  view: EditorView
+  dispatch?: (tr: Transaction) => void,
+  view?: EditorView
 ) => {
-  if (!view.endOfTextblock(dir)) return false
+  if (!view?.endOfTextblock(dir)) return false
   const side = dir == 'left' || dir == 'up' ? -1 : 1
   const $head = state.selection.$head
   const nextPos = Selection.near(
@@ -39,13 +39,13 @@ const arrowHandler = (dir: Direction) => (
   }
 
   if (state.selection.empty) {
-    dispatch(state.tr.setSelection(nextPos))
+    dispatch?.(state.tr.setSelection(nextPos))
     return true
   }
 
   const to = state.doc.resolve(nextPos.$head.pos + nextPos.$head.parent.nodeSize * side)
   const sel = new TextSelection(state.selection.$anchor, to)
-  dispatch(state.tr.setSelection(sel))
+  dispatch?.(state.tr.setSelection(sel))
   return true
 }
 
@@ -114,7 +114,7 @@ export default (props: CodeBlockProps): ProseMirrorExtension => ({
       node: Node,
       view: EditorView,
       getPos: () => number,
-      _decos: Decoration[],
+      _decos: readonly Decoration[],
       innerDecos: DecorationSource
     ) => new CodeBlockView(node, view, getPos, innerDecos, props)
   },

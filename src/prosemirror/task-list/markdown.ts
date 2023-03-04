@@ -4,7 +4,7 @@ import Token from 'markdown-it/lib/token'
 export const taskList = (md: MarkdownIt) => {
   md.core.ruler.after('inline', 'github-task-lists', (state) => {
     const tokens = state.tokens
-    const closers = {}
+    const closers: any = {}
 
     for (let i = 2; i < tokens.length; i++) {
       const cur = tokens[i]
@@ -23,7 +23,7 @@ export const taskList = (md: MarkdownIt) => {
         }
 
         closers[prev2.level] = 'task_list_item_close'
-        cur.children[0].content = cur.children[0].content.slice(4)
+        cur.children![0].content = cur.children![0].content.slice(4)
       }
 
       if (closers[cur.level] !== undefined) {

@@ -5,7 +5,7 @@ import {ProseMirrorExtension} from '@/prosemirror'
 const position = new Plugin({
   props: {
     decorations(state) {
-      const decos = []
+      const decos: Decoration[] = []
       state.doc.descendants((node, pos) => {
         decos.push(Decoration.node(pos, pos + node.nodeSize, {
           'title': `${pos}-${pos+node.nodeSize}`,

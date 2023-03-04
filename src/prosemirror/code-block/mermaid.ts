@@ -4,7 +4,7 @@ import mermaid from 'mermaid'
 import {CodeBlockView} from './view'
 import {CompletionSource} from '@codemirror/autocomplete'
 
-const syntax = {
+const syntax: Record<string, string[]> = {
   flowchart: [
     'subgraph',
   ],
@@ -24,6 +24,10 @@ const syntax = {
 
 export const mermaidKeywords: CompletionSource = (context) => {
   const word = context.matchBefore(/\w*/)
+  if (!word) {
+    return null
+  }
+
   if (word.from == word.to && !context.explicit) {
     return null
   }
@@ -42,32 +46,25 @@ export const mermaidView = (codeBlock: CodeBlockView) =>
     id = codeBlock.getPos()
     output: HTMLElement
 
-    constructor(private view: EditorView) {}
+    constructor(private view: EditorView) {
+      const div = document.createElement('div')
+      div.className = 'mermaid'
+      this.output = div
+      this.view.dom.appendChild(this.output)
+      this.updateDOM()
+    }
 
     destroy() {
       if (this.output) this.output.remove()
-      this.output = null
     }
 
     update(update: ViewUpdate) {
-      if (!this.output) {
-        this.renderDOM()
-        this.updateDOM()
-      }
-
       if (
         update.docChanged ||
         update.startState.facet(language) != update.state.facet(language)
       ) {
         this.updateDOM()
       }
-    }
-
-    renderDOM() {
-      const div = document.createElement('div')
-      div.className = 'mermaid'
-      this.output = div
-      this.view.dom.appendChild(this.output)
     }
 
     updateDOM() {
@@ -93,7 +90,7 @@ export const mermaidView = (codeBlock: CodeBlockView) =>
         mermaid.render(`mermaid-graph-${this.id}`, content, (svgCode) => {
           this.output.innerHTML = svgCode
         })
-      } catch (err) {
+      } catch (err: any) {
         const error = document.createElement('code')
         error.textContent = err
         this.output.innerHTML = ''

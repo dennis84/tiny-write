@@ -26,7 +26,7 @@ const markdownLinks = () => new Plugin({
       return {pos: undefined}
     },
     apply(tr, state) {
-      const action = tr.getMeta(this)
+      const action = tr.getMeta(pluginKey)
       if (action?.pos) {
         state.pos = action.pos
       }
@@ -89,7 +89,7 @@ const toLink = (view: EditorView, tr: Transaction) => {
       const $startPos = resolvePos(view, start)
 
       // Do not convert md links if content has specific marks
-      const ignoreMarks = $startPos.marks().find((x) => x.type.name === 'code')
+      const ignoreMarks = $startPos?.marks().find((x) => x.type.name === 'code')
       if (ignoreMarks) {
         return false
       }

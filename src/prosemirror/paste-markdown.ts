@@ -7,14 +7,14 @@ const URL_REGEX = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\
 
 const isInlineContent = (f: Fragment) =>
   f.childCount === 1 && (
-    f.firstChild.type.name === 'paragraph' ||
-    f.firstChild.type.name === 'text'
+    f.firstChild?.type.name === 'paragraph' ||
+    f.firstChild?.type.name === 'text'
   )
 
 const transform = (schema: Schema, fragment: Fragment) => {
-  const nodes = []
+  const nodes: Node[] = []
   fragment.forEach((child: Node) => {
-    if (child.isText) {
+    if (child.isText && child.text) {
       let pos = 0
       let match: any
 
@@ -71,6 +71,7 @@ const pasteMarkdown = (schema: Schema) => {
         if (text.length === 0 || html) return false
         event.preventDefault()
         const paste = parser.parse(text)
+        if (!paste) return false
         const slice = paste.slice(0)
         let fragment = shiftKey ? slice.content : transform(schema, slice.content)
         const selection = view.state.selection
@@ -81,7 +82,7 @@ const pasteMarkdown = (schema: Schema) => {
 
         if (
           isInlineContent(fragment) &&
-          fragment.firstChild.marks.find((m) => m.type.name === 'link') &&
+          fragment.firstChild?.marks.find((m) => m.type.name === 'link') &&
           selection.from !== selection.to
         ) {
           const mark = schema.marks.link.create({href: text})

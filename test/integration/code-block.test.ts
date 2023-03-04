@@ -11,7 +11,7 @@ test.beforeEach(async ({page}) => {
 })
 
 const openBlockMenu = async (page: Page, nth: number) => {
-  const box = await page.locator(`.ProseMirror *:nth-child(${nth}) .block-handle`).boundingBox()
+  const box = (await page.locator(`.ProseMirror *:nth-child(${nth}) .block-handle`).boundingBox())!
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2)
   await page.mouse.down()
   await page.mouse.up()

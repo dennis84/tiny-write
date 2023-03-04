@@ -22,9 +22,9 @@ test.each([
 
   const context = new CompletionContext(state, pos, false)
   const result = await findWords(context)
-  expect(result.options.length).toBe(words.length)
+  expect(result?.options.length).toBe(words.length)
   words.forEach((w, i) => {
-    expect(result.options[i].label).toBe(w)
+    expect(result?.options[i].label).toBe(w)
   })
 })
 
@@ -39,8 +39,8 @@ test.each([
 
   const context = new CompletionContext(state, pos, false)
   const result = await findWords(context)
-  expect(result.options.length).toBe(words.length)
+  expect(result?.options.length).toBe(words.length)
   words.forEach((w, i) => {
-    expect(result.options[i].label).toBe(w)
+    expect(result?.options[i].label).toBe(w)
   })
 })

@@ -54,6 +54,7 @@ export const markdownSerializer = new MarkdownSerializer({
       row.forEach((cell) => {
         headerRow = cell.type.name === 'table_header'
         const alignment = serializeTableCell(cell)
+        if (!alignment) return
         columnAlignment.push(alignment)
       })
       state.write('|')
@@ -147,7 +148,7 @@ export const createMarkdownParser = (schema: Schema) =>
     container_details: {
       block: 'container',
       getAttrs: (tok) => {
-        let summary: string
+        let summary: string | undefined
         const info = tok.info.trim()
         const i = info.indexOf(' ')
         if (i !== -1) summary = info.substring(i+1, info.length)

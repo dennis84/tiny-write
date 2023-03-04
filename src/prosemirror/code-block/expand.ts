@@ -3,7 +3,7 @@ import {CodeBlockView} from './view'
 
 export default (codeBlock: CodeBlockView) =>
   ViewPlugin.fromClass(class {
-    expand: HTMLElement
+    expand: HTMLElement | undefined
     expanded = false
 
     constructor(private view: EditorView) {}
@@ -14,7 +14,7 @@ export default (codeBlock: CodeBlockView) =>
         this.updateDOM()
         this.expand.remove()
       }
-      this.expand = null
+      this.expand = undefined
     }
 
     update(update: ViewUpdate) {
@@ -41,6 +41,7 @@ export default (codeBlock: CodeBlockView) =>
     }
 
     updateDOM() {
+      if (!this.expand) return
       if (codeBlock.lang !== 'mermaid' && this.view.state.doc.lines > 10) {
         if (this.expanded) {
           this.view.scrollDOM.style.maxHeight = '100%'

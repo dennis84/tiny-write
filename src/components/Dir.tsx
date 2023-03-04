@@ -40,7 +40,7 @@ export default () => {
   const Empty = () => (
     <>
       <p>
-        No markdown/plain text file in: <code>{store.args.cwd}</code>
+        No markdown/plain text file in: <code>{store.args?.cwd}</code>
       </p>
       <ButtonPrimary onClick={onNew}>New File</ButtonPrimary>
     </>
@@ -51,10 +51,10 @@ export default () => {
       data-testid="content"
       data-tauri-drag-region="true">
       <Content config={store.config} data-tauri-drag-region="true">
-        <Show when={store.args.dir.length > 0}>
+        <Show when={store.args?.dir && store.args.dir.length > 0}>
           <p>Click to open file:</p>
         </Show>
-        <For each={store.args.dir} fallback={<Empty />}>
+        <For each={store.args?.dir} fallback={<Empty />}>
           {(path) => <FileLink path={path} />}
         </For>
       </Content>

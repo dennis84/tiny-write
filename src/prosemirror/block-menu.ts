@@ -19,10 +19,10 @@ const createDragHandle = () => {
 }
 
 class TooltipView {
-  private tooltip: HTMLElement
-  private arrow: HTMLElement
+  private tooltip?: HTMLElement
+  private arrow?: HTMLElement
   private cleanup: any
-  private pos: number
+  private pos?: number
 
   private onClose = (e: MouseEvent) => {
     if (!(e.target as Element).closest('.block-tooltip')) {
@@ -33,10 +33,12 @@ class TooltipView {
   }
 
   private onToPlain = () => {
+    if (!this.pos) return
     const toPlain = setBlockType(this.view.state.schema.nodes.paragraph)
     toPlain(this.view.state, this.view.dispatch)
     const tr = this.view.state.tr
     const pos = tr.doc.resolve(this.pos)
+    if (!pos.nodeAfter) return
     tr.removeMark(pos.pos, pos.pos + pos.nodeAfter.nodeSize)
     tr.setMeta(pluginKey, {showMenu: false, ref: undefined, pos: undefined})
     this.view.dispatch(tr)
@@ -44,8 +46,10 @@ class TooltipView {
   }
 
   private onRemoveBlock = () => {
+    if (!this.pos) return
     const tr = this.view.state.tr
     const pos = tr.doc.resolve(this.pos)
+    if (!pos.nodeAfter) return
     tr.delete(pos.pos, pos.pos + pos.nodeAfter.nodeSize)
     tr.setMeta(pluginKey, {showMenu: false, ref: undefined, pos: undefined})
     this.view.dispatch(tr)
@@ -53,6 +57,7 @@ class TooltipView {
   }
 
   onPrettify = () => {
+    if (!this.pos) return
     const dom = this.view.domAtPos(this.pos + 1)
     dom.node.dispatchEvent(new CustomEvent('cm:user_event', {
       detail: {userEvent: 'prettify'},
@@ -65,6 +70,7 @@ class TooltipView {
   }
 
   onChangeLang = () => {
+    if (!this.pos) return
     const tr = this.view.state.tr
     const pos = tr.doc.resolve(this.pos + 1)
     const node = pos.node()
@@ -84,10 +90,11 @@ class TooltipView {
   onMermaidSave = () => {
     const id = `mermaid-graph-${this.pos}`
     const svg = document.getElementById(id)
-    remote.saveSvg(svg)
+    if (svg) remote.saveSvg(svg)
   }
 
   onMermaidHideCode = () => {
+    if (!this.pos) return
     const tr = this.view.state.tr
     const pos = tr.doc.resolve(this.pos + 1)
     const node = pos.node()
@@ -104,6 +111,7 @@ class TooltipView {
   }
 
   createNav() {
+    if (!this.pos) return
     const resolvedPos = this.view.state.doc.resolve(this.pos + 1)
     const node = resolvedPos.node()
     const dom = this.view.domAtPos(this.pos + 1)
@@ -157,7 +165,7 @@ class TooltipView {
     this.arrow.className = 'arrow'
     this.tooltip.appendChild(this.arrow)
 
-    this.view.dom.parentNode.appendChild(this.tooltip)
+    this.view.dom.parentNode?.appendChild(this.tooltip)
   }
 
   update(view: EditorView) {
@@ -180,9 +188,11 @@ class TooltipView {
 
     this.pos = pos
     this.createNav()
+    if (!this.tooltip || !this.arrow) return
     document.addEventListener('mousedown', this.onClose)
 
     this.cleanup = autoUpdate(ref, this.tooltip, () => {
+      if (!this.tooltip || !this.arrow) return
       computePosition(ref, this.tooltip, {
         placement: 'left',
         middleware: [
@@ -192,6 +202,7 @@ class TooltipView {
           arrow({element: this.arrow}),
         ],
       }).then(({x, y, placement, middlewareData}) => {
+        if (!this.tooltip || !this.arrow) return
         this.tooltip.style.left = `${x}px`
         this.tooltip.style.top = `${y}px`
         const side = placement.split('-')[0]
@@ -200,7 +211,7 @@ class TooltipView {
           right: 'left',
           bottom: 'top',
           left: 'right'
-        }[side]
+        }[side] ?? 'top'
 
         if (middlewareData.arrow) {
           const {x, y} = middlewareData.arrow
@@ -228,7 +239,7 @@ const blockMenu = new Plugin({
       }
     },
     apply(tr, prev) {
-      const action = tr.getMeta(this)
+      const action = tr.getMeta(pluginKey)
       return action ?? prev
     },
   },
@@ -237,7 +248,7 @@ const blockMenu = new Plugin({
   },
   props: {
     decorations(state) {
-      const decos = []
+      const decos: Decoration[] = []
       state.doc.forEach((node, pos) => {
         decos.push(Decoration.widget(pos + 1, createDragHandle))
         decos.push(Decoration.node(pos, pos + node.nodeSize, {
@@ -252,6 +263,7 @@ const blockMenu = new Plugin({
         const target = event.target as Element
         if (target.classList.contains('block-handle')) {
           const pos = editorView.posAtCoords({left: event.x + 30, top: event.y})
+          if (!pos) return false
           const resolved = editorView.state.doc.resolve(pos.pos)
           const blockPos = resolved.before(1)
           const tr = editorView.state.tr

@@ -30,7 +30,7 @@ const blockquoteSchema = {
 }
 
 interface Props {
-  keymap?: {[key: string]: any};
+  keymap: {[key: string]: any};
   markdown: boolean;
 }
 

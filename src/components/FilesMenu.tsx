@@ -104,12 +104,9 @@ export const FilesMenu = (props: Props) => {
   let arrowRef: HTMLSpanElement
 
   const files = () =>
-    store.files.filter((f) => f.lastModified && f.id !== store.editor.id)
+    store.files.filter((f) => f.lastModified && f.id !== store.editor?.id)
 
-  const schema = createSchema(createExtensions({
-    config: store.config,
-    markdown: false,
-  }))
+  const schema = createSchema(createExtensions({config: store.config}))
 
   const onOpenFile = (file: File) => {
     ctrl.openFile(unwrap(file))
@@ -129,11 +126,11 @@ export const FilesMenu = (props: Props) => {
 
   const Excerpt = (p: {file: File}) => {
     const ydoc = new Y.Doc({gc: false})
-    Y.applyUpdate(ydoc, p.file.ydoc)
+    Y.applyUpdate(ydoc, p.file.ydoc!)
     const doc = yDocToProsemirror(schema, ydoc)
     const maxText = 150
     const maxCode = 80
-    const nodes = []
+    const nodes: Node[] = []
     let len = 0
     let done = false
 
@@ -146,7 +143,7 @@ export const FilesMenu = (props: Props) => {
         nodes.push(h('img', {src: node.attrs.src, alt: '️🖼️'}))
       } else if (node.type.name === 'video') {
         nodes.push(h('span', {}, '️🎬 '))
-      } else if (parent.type.name === 'code_block') {
+      } else if (parent?.type.name === 'code_block') {
         let text = node.textContent
         if (text.length > maxCode) {
           text = text.slice(0, maxCode) + '…'
@@ -155,7 +152,7 @@ export const FilesMenu = (props: Props) => {
         nodes.push(h('span', {}, ' '))
         len += text.length + 1
       } else if (node.isText) {
-        const nodeType = parent.type.name === 'heading' ? 'h2' : 'p'
+        const nodeType = parent?.type.name === 'heading' ? 'h2' : 'p'
         const text = node.textContent.slice(0, maxText)
         nodes.push(h(nodeType, {}, text + ' '))
         len += text.length + 1
@@ -188,7 +185,7 @@ export const FilesMenu = (props: Props) => {
           right: 'left',
           bottom: 'top',
           left: 'right'
-        }[side]
+        }[side] ?? 'top'
 
         if (middlewareData.arrow) {
           const {x, y} = middlewareData.arrow
@@ -219,7 +216,7 @@ export const FilesMenu = (props: Props) => {
           >{path()}&nbsp;📎</Show>
         </FileContent>
         <FileFooter>
-          <span>{formatDistance(new Date(p.file.lastModified), new Date())}</span>
+          <span>{formatDistance(new Date(p.file.lastModified!), new Date())}</span>
           <FileMenuButton
             selected={current() === p.file}
             onClick={onTooltip}

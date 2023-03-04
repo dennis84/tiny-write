@@ -34,21 +34,25 @@ const resolvePos = (view: EditorView, pos: number) => {
 }
 
 class SelectView {
-  coords: Coords
+  coords?: Coords
   positions: Position[] = []
-  canvas: HTMLCanvasElement
+  canvas?: HTMLCanvasElement
 
   onMouseDown = (e: MouseEvent) => {
     if (e.button !== 0) return
     this.onMouseUp(e)
 
-    if (
-      (e.target !== this.view.dom &&
-        e.target !== this.view.dom.parentNode &&
-        e.target !== this.view.dom.parentNode.parentNode) ||
-      (isTauri && e.target as HTMLElement)?.dataset?.tauriDragRegion === 'true' &&
-        !this.props.fullscreen
-    ) {
+    const isInnerNodes =
+      e.target !== this.view.dom &&
+      e.target !== this.view.dom.parentNode &&
+      e.target !== this.view.dom.parentNode?.parentNode
+
+    const isTauriDragRegion =
+      isTauri &&
+      (e.target as HTMLElement)?.dataset?.tauriDragRegion === 'true' &&
+      !this.props.fullscreen
+
+    if (isInnerNodes || isTauriDragRegion) {
       return
     }
 
@@ -90,11 +94,12 @@ class SelectView {
   }
 
   onMouseMove = (e: MouseEvent) => {
+    if (!this.canvas || !this.coords) return
     e.preventDefault()
     e.stopPropagation()
     this.coords.toX = e.pageX
     this.coords.toY = e.pageY
-    const context = this.canvas.getContext('2d')
+    const context = this.canvas.getContext('2d')!
     context.clearRect(0, 0, this.canvas.width, this.canvas.height)
 
     context.beginPath();
@@ -194,13 +199,13 @@ const select = (props: Props) => new Plugin({
       return null
     },
     apply(tr, prev) {
-      const selection = tr.getMeta(this)
+      const selection = tr.getMeta(pluginKey)
       return selection === undefined ? prev : selection
     }
   },
   props: {
     decorations(state) {
-      const decos = []
+      const decos: Decoration[] = []
       const selection = pluginKey.getState(state)
       if (!selection) return
       if (selection.from === selection.to) {

@@ -17,13 +17,13 @@ export default () => {
   const [store] = useState()
   return (
     <Switch fallback={<Other />}>
-      <Match when={store.error.id === 'invalid_state'}>
+      <Match when={store.error?.id === 'invalid_state'}>
         <InvalidState title="Invalid State" />
       </Match>
-      <Match when={store.error.id === 'invalid_config'}>
+      <Match when={store.error?.id === 'invalid_config'}>
         <InvalidState title="Invalid Config" />
       </Match>
-      <Match when={store.error.id === 'invalid_file'}>
+      <Match when={store.error?.id === 'invalid_file'}>
         <InvalidState title="Invalid File" />
       </Match>
     </Switch>
@@ -45,7 +45,7 @@ const InvalidState = (props: {title: string}) => {
           copy important notes from below, clean the state and paste it again.
         </p>
         <Pre>
-          <code>{JSON.stringify(store.error.props)}</code>
+          <code>{JSON.stringify(store.error?.props)}</code>
         </Pre>
         <ButtonPrimary onClick={onClick}>Clean</ButtonPrimary>
       </Content>
@@ -64,7 +64,7 @@ const Other = () => {
   }
 
   const getMessage = () => {
-    const err = (store.error.props as any).error
+    const err = (store.error?.props as any).error
     return (typeof err === 'string') ? err : err.message
   }
 
@@ -75,7 +75,7 @@ const Other = () => {
         <Pre><code>{getMessage()}</code></Pre>
         <ButtonGroup>
           <ButtonPrimary onClick={onReload}>Reload</ButtonPrimary>
-          <Show when={store.error.id === 'exception'}>
+          <Show when={store.error?.id === 'exception'}>
             <Button onClick={onDiscard}>Discard</Button>
           </Show>
         </ButtonGroup>

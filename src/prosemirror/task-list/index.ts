@@ -39,18 +39,19 @@ const todoListSchema = {
 
 class TaskListItemView {
   dom: HTMLInputElement
-  contentDOM: HTMLElement
+  contentDOM?: HTMLElement
 
   constructor(
     private node: Node,
     private view: EditorView,
     private getPos: () => number
   ) {
-    const dom = this.node.type.spec.toDOM(this.node)
+    const dom = this.node.type.spec.toDOM!(this.node)
     const res = DOMSerializer.renderSpec(document, dom)
     this.dom = res.dom as HTMLInputElement
     this.contentDOM = res.contentDOM
-    this.dom.querySelector('input').onclick = this.handleClick.bind(this)
+    const input = this.dom.querySelector('input')
+    if (input) input.onclick = this.handleClick.bind(this)
   }
 
   handleClick(e: MouseEvent) {

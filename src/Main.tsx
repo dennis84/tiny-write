@@ -17,7 +17,7 @@ import {insertImage, insertVideo} from '@/prosemirror/image'
 export default (props: {state: State}) => {
   const [store, ctrl] = createCtrl(props.state)
   const mouseEnterCoords = createMutable({x: 0, y: 0})
-  let editorRef: HTMLDivElement
+  let editorRef: HTMLDivElement | undefined
 
   const onDragOver = (e: DragEvent) => {
     mouseEnterCoords.x = e.pageX
@@ -31,16 +31,16 @@ export default (props: {state: State}) => {
     top: number,
     mime?: string
   ) => {
-    if (store.editor.markdown) {
+    if (store.editor?.markdown) {
       const text = `![](${data})`
       const pos = editorView.posAtCoords({left, top})
       const tr = editorView.state.tr
       tr.insertText(text, pos?.pos ?? editorView.state.doc.content.size)
       editorView.dispatch(tr)
     } else if (mime && mime.startsWith('video/')) {
-      insertVideo(store.editor.editorView, data, mime, left, top)
+      insertVideo(editorView, data, mime, left, top)
     } else {
-      insertImage(store.editor.editorView, data, left, top)
+      insertImage(editorView, data, left, top)
     }
   }
 
@@ -66,9 +66,10 @@ export default (props: {state: State}) => {
       for (const path of (event.payload as string[])) {
         const mime = await remote.getMimeType(path)
         if (mime.startsWith('image/') || mime.startsWith('video/')) {
+          if (!store.editor?.editorView) return
           const x = mouseEnterCoords.x
           const y = mouseEnterCoords.y
-          const d = store.editor.path ? await remote.dirname(store.editor.path) : undefined
+          const d = store.editor?.path ? await remote.dirname(store.editor.path) : undefined
           const p = await remote.toRelativePath(path, d)
           insertImageMd(store.editor.editorView, p, x, y, mime)
         } else if (mime.startsWith('text/')) {
@@ -105,13 +106,14 @@ export default (props: {state: State}) => {
         return
       }
 
-      for (const file of e.dataTransfer.files) {
+      for (const file of e.dataTransfer?.files ?? []) {
         if (file.type.startsWith('image/')) {
           const x = mouseEnterCoords.x
           const y = mouseEnterCoords.y
           const reader = new FileReader()
           reader.readAsDataURL(file)
           reader.onloadend = () => {
+            if (!store.editor?.editorView) return
             insertImageMd(store.editor.editorView, reader.result as string, x, y)
           }
         }
@@ -151,9 +153,9 @@ export default (props: {state: State}) => {
   createEffect(() => {
     if (!store.editor?.lastModified) return
     const doc = store.editor.editorView?.state.doc
-    const len = doc?.content.size
+    const len = doc?.content.size ?? 0
     if (len > 0) {
-      const text = doc.textBetween(0, Math.min(30, len), ' ')
+      const text = doc?.textBetween(0, Math.min(30, len), ' ') ?? ''
       document.title = text
     }
   })

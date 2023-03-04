@@ -16,7 +16,7 @@ class AutocompleteView {
     this.tooltip = document.createElement('div')
     this.tooltip.className = 'autocomplete-tooltip'
 
-    view.dom.parentNode.appendChild(this.tooltip)
+    view.dom.parentNode?.appendChild(this.tooltip)
     this.update(view)
   }
 
@@ -98,7 +98,7 @@ export const completionPlugin = (
       return {}
     },
     apply(tr, prev) {
-      const meta = tr.getMeta(this)
+      const meta = tr.getMeta(pluginKey)
       if (!meta) return prev
       return meta
     }
@@ -133,7 +133,7 @@ export const completionPlugin = (
       for (const match of matches) {
         const startSpaces = match[0].search(/\S/)
         const matchedText = match[0]
-        const matchFrom = $from.before() + match.index
+        const matchFrom = $from.before() + (match.index ?? 0)
         const matchTo = matchFrom + matchedText.length
 
         if (from >= matchFrom && to <= matchTo) {
@@ -165,8 +165,9 @@ export const completionPlugin = (
 const maybeClose = (
   pluginKey: PluginKey,
   state: EditorState,
-  dispatch: (tr: Transaction) => void
+  dispatch?: (tr: Transaction) => void
 ) => {
+  if (!dispatch) return
   const pluginState = pluginKey.getState(state)
   if (pluginState?.options?.length) {
     dispatch(state.tr.setMeta(pluginKey, {}))
@@ -197,7 +198,7 @@ export const completionKeymap = (pluginKey: PluginKey) => keymap({
       pluginState.selected === undefined ? 0 :
       pluginState.selected >= pluginState.options.length - 1 ? 0 :
       pluginState.selected + 1
-    dispatch(state.tr.setMeta(pluginKey, {...pluginState, selected}))
+    dispatch?.(state.tr.setMeta(pluginKey, {...pluginState, selected}))
     return true
   },
   ArrowUp: (state, dispatch) => {
@@ -207,7 +208,7 @@ export const completionKeymap = (pluginKey: PluginKey) => keymap({
       pluginState.selected === undefined ? pluginState.options.length - 1 :
       pluginState.selected <= 0 ? pluginState.options.length - 1 :
       pluginState.selected - 1
-    dispatch(state.tr.setMeta(pluginKey, {...pluginState, selected}))
+    dispatch?.(state.tr.setMeta(pluginKey, {...pluginState, selected}))
     return true
   },
   Enter: (state, dispatch) => {
@@ -221,7 +222,7 @@ export const completionKeymap = (pluginKey: PluginKey) => keymap({
       state.schema.text(pluginState.options[pluginState.selected])
     )
     tr.setMeta(pluginKey, {})
-    dispatch(tr)
+    dispatch?.(tr)
     return true
   },
 })

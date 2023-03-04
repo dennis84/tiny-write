@@ -45,7 +45,7 @@ const findBottomCell = (pos: ResolvedPos) => {
 
 class CellMenuView {
   private tooltip?: HTMLElement
-  private arrow: HTMLElement
+  private arrow?: HTMLElement
 
   private onAddColumnBefore = () => {
     const pluginState = pluginKey.getState(this.view.state)
@@ -145,7 +145,7 @@ class CellMenuView {
     this.arrow.className = 'arrow'
     this.tooltip.appendChild(this.arrow)
 
-    this.view.dom.parentNode.appendChild(this.tooltip)
+    this.view.dom.parentNode?.appendChild(this.tooltip)
   }
 
   private onClose = (e: MouseEvent) => {
@@ -170,6 +170,7 @@ class CellMenuView {
     }
 
     this.createNav()
+    if (!this.tooltip || !this.arrow) return
     document.addEventListener('mousedown', this.onClose)
 
     computePosition(pluginState.virtualEl, this.tooltip, {
@@ -181,6 +182,7 @@ class CellMenuView {
         arrow({element: this.arrow}),
       ]
     }).then(({x, y, placement, middlewareData}) => {
+      if (!this.tooltip || !this.arrow) return
       this.tooltip.style.left = `${x}px`
       this.tooltip.style.top = `${y}px`
 
@@ -190,7 +192,7 @@ class CellMenuView {
         right: 'left',
         bottom: 'top',
         left: 'right',
-      }[side]
+      }[side] ?? 'top'
 
       if (middlewareData.arrow) {
         const {x, y} = middlewareData.arrow
@@ -221,7 +223,7 @@ export const cellMenu = new Plugin({
       }
     },
     apply(tr, prev) {
-      const state = tr.getMeta(this)
+      const state = tr.getMeta(pluginKey)
       return state ?? prev
     }
   },
