@@ -21,7 +21,7 @@ import container from '@/prosemirror/container'
 import fileListing from '@/prosemirror/autocomplete/file-listing'
 import wordCompletion from '@/prosemirror/autocomplete/word-completion'
 import {Config} from '@/state'
-import {codeTheme, font, primaryBackground, selection} from '@/config'
+import {codeTheme, fontFamily, primaryBackground, selection} from '@/config'
 import {isDev} from '@/env'
 
 interface Props {
@@ -65,7 +65,7 @@ export const createExtensions = (props: Props): ProseMirrorExtension[] =>
       dark: codeTheme(props.config).dark,
       typewriterMode: props.config.typewriterMode,
       fontSize: props.config.fontSize,
-      font: font(props.config, {monospace: true}).label,
+      font: fontFamily(props.config, {monospace: true}),
       prettier: props.config.prettier,
       extensions: () => [codeMirrorKeymap(props)],
     }),

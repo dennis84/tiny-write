@@ -179,16 +179,16 @@ export default (props: {state: State}) => {
     root.style.setProperty('--selection-border', `${config.primaryBackground(c)}44`)
     root.style.setProperty('--selection', config.selection(c))
     root.style.setProperty('--tooltip-background', config.tooltipBackground(c))
-    root.style.setProperty('--font-family', config.font(c).label)
-    root.style.setProperty('--font-family-monospace', config.font(c, {monospace: true}).label)
-    root.style.setProperty('--font-family-bold', config.font(c, {bold: true}).label)
-    root.style.setProperty('--font-family-italic', config.font(c, {italic: true}).label)
+    root.style.setProperty('--font-family', config.fontFamily(c))
+    root.style.setProperty('--font-family-monospace', config.fontFamily(c, {monospace: true}))
+    root.style.setProperty('--font-family-bold', config.fontFamily(c, {bold: true}))
+    root.style.setProperty('--font-family-italic', config.fontFamily(c, {italic: true}))
     root.style.setProperty('--font-size', `${c.fontSize}px`)
     root.style.setProperty('--font-size-h1', `${c.fontSize * 1.8}px`)
     root.style.setProperty('--font-size-h2', `${c.fontSize * 1.4}px`)
     root.style.setProperty('--font-size-h3', `${c.fontSize * 1.2}px`)
     root.style.setProperty('--border-radius', config.styles.borderRadius)
-    root.style.setProperty('--menu-font-family', 'iA Writer Mono')
+    root.style.setProperty('--menu-font-family', config.DEFAULT_FONT)
     root.style.setProperty('--menu-font-size', '14px')
   })
 
@@ -223,7 +223,7 @@ const setupFonts = () => {
     if (font.regular) {
       styles += `
         @font-face {
-          font-family: '${font.label}';
+          font-family: '${font.value}';
           src: url('${font.regular}');
         }
       `
@@ -231,7 +231,7 @@ const setupFonts = () => {
     if (font.bold) {
       styles += `
         @font-face {
-          font-family: '${font.label} Bold';
+          font-family: '${font.value} bold';
           src: url('${font.bold}');
         }
       `
@@ -239,7 +239,7 @@ const setupFonts = () => {
     if (font.italic) {
       styles += `
         @font-face {
-          font-family: '${font.label} Italic';
+          font-family: '${font.value} italic';
           src: url('${font.italic}');
         }
       `

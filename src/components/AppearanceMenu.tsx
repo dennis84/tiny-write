@@ -1,6 +1,6 @@
 import {For} from 'solid-js'
 import {useState} from '@/state'
-import {codeTheme, codeThemes, font, fonts, themes, getTheme} from '@/config'
+import {codeTheme, codeThemes, fonts, themes, getTheme, getFont} from '@/config'
 import {Drawer, Label, Link, Sub, Text} from './Menu'
 import {Button} from './Button'
 
@@ -58,7 +58,7 @@ export const AppearanceMenu = (props: Props) => {
         <For each={Object.entries(fonts)}>
           {([key, value]) => (
             <Link onClick={onChangeFont(key)}>
-              {value.label}{' '}{key === font(store.config).value && '✅'}
+              {value.label}{' '}{key === getFont(store.config).value && '✅'}
             </Link>
           )}
         </For>

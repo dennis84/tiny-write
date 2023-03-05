@@ -15,6 +15,10 @@ export const styles = {
 }
 
 export const fonts: {[key: string]: Font} = {
+  'system-ui': {
+    label: 'System UI',
+    value: 'system-ui',
+  },
   'merriweather': {
     label: 'Merriweather',
     value: 'merriweather',
@@ -268,24 +272,26 @@ export const primaryForeground = (config: Config) => getTheme(config).primaryFor
 export const selection = (config: Config) => getTheme(config).selection
 export const tooltipBackground = (config: Config) => getTheme(config).tooltipBackground
 
-export const font = (
+export const DEFAULT_FONT = 'ia-writer-mono'
+
+export const getFont = (config?: Config): Font => {
+  return config?.font ? fonts[config.font] : fonts[DEFAULT_FONT]
+}
+
+export const fontFamily = (
   config?: Config,
   options: {monospace?: boolean; bold?: boolean; italic?: boolean} = {}
-): Font => {
-  const defaultFont = 'ia-writer-mono'
-  const selected = config?.font ? fonts[config.font] : undefined
-
-  if (options.monospace && !selected?.monospace) {
-    return fonts[defaultFont]
-  } else if (options.bold && selected?.bold) {
-    return {...selected, label: selected.label + ' Bold'}
-  } else if (options.italic && selected?.italic) {
-    return {...selected, label: selected.label + ' Italic'}
-  } else if (selected) {
-    return selected
+): string => {
+  const font = getFont(config)
+  if (options.monospace && !font?.monospace) {
+    return fonts[DEFAULT_FONT].value
+  } else if (options.bold && font?.bold) {
+    return font.value + ' bold'
+  } else if (options.italic && font?.italic) {
+    return font.value + ' italic'
   }
 
-  return fonts[defaultFont]
+  return font.value
 }
 
 const getDefaltCodeTheme = () => isDark() ? codeThemes.dracula : codeThemes['material-light']

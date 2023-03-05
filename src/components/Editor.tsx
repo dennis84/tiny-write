@@ -194,6 +194,7 @@ export default styled('div')`
     }
     h1 {
       font-size: var(--font-size-h1);
+      font-weight: 800;
       line-height: calc(var(--font-size-h1) * 1.6);
       .block-handle {
         height: calc(var(--font-size-h1) * 1.6);
