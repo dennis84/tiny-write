@@ -48,13 +48,13 @@ beforeEach(() => {
 const lastModified = new Date()
 
 test('setState', () => {
-  const [store, ctrl] = createCtrl(createState())
+  const {ctrl, store} = createCtrl(createState())
   ctrl.setState({fullscreen: true})
   expect(store.fullscreen).toBe(true)
 })
 
 test('init', async () => {
-  const [store, ctrl] = createCtrl(createState())
+  const {ctrl, store} = createCtrl(createState())
   const target = document.createElement('div')
   await ctrl.init(target)
   expect(store.collab?.ydoc).not.toBe(undefined)
@@ -66,7 +66,7 @@ test('init - new file if no id', async () => {
     {id: '2', ydoc: createYdoc('Test 2'), lastModified},
   ])
 
-  const [store, ctrl] = createCtrl(createState())
+  const {ctrl, store} = createCtrl(createState())
   const target = document.createElement('div')
   await ctrl.init(target)
   expect(store.files.length).toBe(3)
@@ -82,7 +82,7 @@ test('init - existing file', async () => {
     {id: '2', ydoc: createYdoc('Test 2'), lastModified},
   ])
 
-  const [store, ctrl] = createCtrl(createState())
+  const {ctrl, store} = createCtrl(createState())
   const target = document.createElement('div')
   await ctrl.init(target)
   expect(store.files.length).toBe(2)
@@ -98,7 +98,7 @@ test('init - join', async () => {
     {id: '2', ydoc: createYdoc('Test 2'), lastModified},
   ])
 
-  const [store, ctrl] = createCtrl(createState({args: {room: '3'}}))
+  const {ctrl, store} = createCtrl(createState({args: {room: '3'}}))
   const target = document.createElement('div')
   await ctrl.init(target)
   expect(store.files.length).toBe(3)
@@ -112,7 +112,7 @@ test('init - dir', async () => {
     {id: '1', ydoc: createYdoc('Test'), lastModified},
   ])
 
-  const [store, ctrl] = createCtrl(createState({args: {dir: ['~/Desktop/Aaaa.md']}}))
+  const {ctrl, store} = createCtrl(createState({args: {dir: ['~/Desktop/Aaaa.md']}}))
   const target = document.createElement('div')
 
   await ctrl.init(target)
@@ -123,7 +123,7 @@ test('init - dir', async () => {
 })
 
 test('init - dir no current file', async () => {
-  const [store, ctrl] = createCtrl(createState({
+  const {ctrl, store} = createCtrl(createState({
     args: {dir: ['~/Desktop/Aaaa.md']},
   }))
 
@@ -136,7 +136,7 @@ test('init - dir no current file', async () => {
 })
 
 test('newFile', async () => {
-  const [store, ctrl] = createCtrl(createState())
+  const {ctrl, store} = createCtrl(createState())
   const target = document.createElement('div')
 
   await ctrl.init(target)
@@ -151,7 +151,7 @@ test('newFile', async () => {
 })
 
 test('newFile - empty', async () => {
-  const [store, ctrl] = createCtrl(createState())
+  const {ctrl, store} = createCtrl(createState())
   const target = document.createElement('div')
   await ctrl.init(target)
   await ctrl.newFile()
@@ -161,7 +161,7 @@ test('newFile - empty', async () => {
 })
 
 test('newFile - collab', async () => {
-  const [store, ctrl] = createCtrl(createState())
+  const {ctrl, store} = createCtrl(createState())
   const target = document.createElement('div')
 
   await ctrl.init(target)
@@ -186,7 +186,7 @@ test('openFile - existing', async () => {
     {id: '2', ydoc: createYdoc('Test 2'), lastModified},
   ])
 
-  const [store, ctrl] = createCtrl(createState())
+  const {ctrl, store} = createCtrl(createState())
   const target = document.createElement('div')
   await ctrl.init(target)
 
@@ -203,7 +203,7 @@ test('openFile - existing', async () => {
 })
 
 test('openFile - not found', async () => {
-  const [store, ctrl] = createCtrl(createState())
+  const {ctrl, store} = createCtrl(createState())
   const target = document.createElement('div')
   await ctrl.init(target)
   const id = store.editor?.id
@@ -220,7 +220,7 @@ test('openFile - delete empty', async () => {
     {id: '2', ydoc: createYdoc('Test 2'), lastModified},
   ])
 
-  const [store, ctrl] = createCtrl(createState())
+  const {ctrl, store} = createCtrl(createState())
   const target = document.createElement('div')
   await ctrl.init(target)
   await ctrl.openFile({id: '2'})
@@ -235,7 +235,7 @@ test('openFile - open collab', async () => {
   const file = {id: 'room-123', ydoc: createYdoc('Test'), lastModified}
   vi.spyOn(db, 'getFiles').mockResolvedValue([file])
 
-  const [store, ctrl] = createCtrl(createState())
+  const {ctrl, store} = createCtrl(createState())
   const target = document.createElement('div')
   await ctrl.init(target)
   await ctrl.openFile(file)
@@ -253,7 +253,7 @@ test('openFile - open from collab', async () => {
     {id: '2', ydoc: createYdoc('Test 2'), lastModified},
   ])
 
-  const [store, ctrl] = createCtrl(createState())
+  const {ctrl, store} = createCtrl(createState())
   const target = document.createElement('div')
   await ctrl.init(target)
   expect(store.files.length).toBe(2)
@@ -278,7 +278,7 @@ test('discard - open collab', async () => {
     {id: 'room-123', ydoc: createYdoc('Test'), lastModified},
   ])
 
-  const [store, ctrl] = createCtrl(createState())
+  const {ctrl, store} = createCtrl(createState())
 
   const target = document.createElement('div')
   await ctrl.init(target)
@@ -297,7 +297,7 @@ test('discard - with text', async () => {
     {id: '1', ydoc: createYdoc('Test'), lastModified},
   ])
 
-  const [store, ctrl] = createCtrl(createState())
+  const {ctrl, store} = createCtrl(createState())
   const target = document.createElement('div')
   await ctrl.init(target)
 
@@ -320,7 +320,7 @@ test('discard - close collab', async () => {
     {id: '1', ydoc: createYdoc('Test'), lastModified},
   ])
 
-  const [store, ctrl] = createCtrl(createState())
+  const {ctrl, store} = createCtrl(createState())
   const target = document.createElement('div')
   await ctrl.init(target)
   expect(store.files.length).toBe(2)
@@ -342,7 +342,7 @@ test('clean', async () => {
   ])
 
   const error = {id: 'fail'}
-  const [store, ctrl] = createCtrl(createState())
+  const {ctrl, store} = createCtrl(createState())
   const target = document.createElement('div')
 
   await ctrl.init(target)
@@ -360,7 +360,7 @@ test('clean', async () => {
 })
 
 test('startCollab - from empty state', async () => {
-  const [store, ctrl] = createCtrl(createState())
+  const {ctrl, store} = createCtrl(createState())
   const target = document.createElement('div')
   await ctrl.init(target)
   await ctrl.startCollab()
@@ -372,7 +372,7 @@ test('startCollab - from empty state', async () => {
 })
 
 test('startCollab - with text', async () => {
-  const [store, ctrl] = createCtrl(createState())
+  const {ctrl, store} = createCtrl(createState())
   const target = document.createElement('div')
 
   await ctrl.init(target)
@@ -392,7 +392,7 @@ test('startCollab - join new file', async () => {
     {id: '1', ydoc: createYdoc('Test'), lastModified},
   ])
 
-  const [store, ctrl] = createCtrl(createState({args: {room: '2'}}))
+  const {ctrl, store} = createCtrl(createState({args: {room: '2'}}))
   const target = document.createElement('div')
   await ctrl.init(target)
 
@@ -410,7 +410,7 @@ test('startCollab - join existing file', async () => {
     {id: '2', ydoc: createYdoc('Test 2'), lastModified},
   ])
 
-  const [store, ctrl] = createCtrl(createState({args: {room: '2'}}))
+  const {ctrl, store} = createCtrl(createState({args: {room: '2'}}))
   const target = document.createElement('div')
   await ctrl.init(target)
 

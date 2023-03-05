@@ -126,7 +126,7 @@ export const FilesMenu = (props: Props) => {
 
   const Excerpt = (p: {file: File}) => {
     const ydoc = new Y.Doc({gc: false})
-    Y.applyUpdate(ydoc, p.file.ydoc!)
+    Y.applyUpdate(ydoc, p.file.ydoc)
     const doc = yDocToProsemirror(schema, ydoc)
     const maxText = 150
     const maxCode = 80

@@ -1,7 +1,7 @@
 import {vi, expect, test, beforeEach} from 'vitest'
 import {clearMocks, mockIPC} from '@tauri-apps/api/mocks'
 import * as db from '@/db'
-import {createYdoc, insertText} from './util'
+import {createYdoc, insertText, waitFor} from './util'
 
 vi.stubGlobal('__TAURI__', {})
 vi.stubGlobal('matchMedia', vi.fn(() => ({
@@ -27,15 +27,6 @@ import {createState} from '@/state'
 
 const lastModified = new Date()
 
-const createText = (text: string) => ({
-  doc: {
-    type: 'doc',
-    content: [{type: 'paragraph', content: [{type: 'text', text}]}]
-  },
-})
-
-const text = createText('Test')
-
 beforeEach(() => {
   vi.restoreAllMocks()
   clearMocks()
@@ -53,10 +44,12 @@ beforeEach(() => {
 })
 
 test('init - load existing by path', async () => {
-  vi.spyOn(db, 'getFiles').mockResolvedValue([{id: '1', ydoc: '', path: 'file1', lastModified}])
   vi.spyOn(db, 'getEditor').mockResolvedValue({id: '1'})
+  vi.spyOn(db, 'getFiles').mockResolvedValue([
+    {id: '1', ydoc: createYdoc(''), path: 'file1', lastModified}
+  ])
 
-  const [store, ctrl] = createCtrl(createState())
+  const {store, ctrl} = createCtrl(createState())
   const target = document.createElement('div')
   await ctrl.init(target)
   expect(store.editor?.path).toBe('file1')
@@ -77,7 +70,7 @@ test('init - check text', async () => {
     }
   })
 
-  const [store, ctrl] = createCtrl(createState())
+  const {ctrl, store} = createCtrl(createState())
   const target = document.createElement('div')
   await ctrl.init(target)
   expect(store.editor?.path).toBe('file2')
@@ -91,7 +84,7 @@ test('openFile - path in files', async () => {
     {id: '2', path: 'file2', ydoc: createYdoc('Test 2'), lastModified},
   ])
 
-  const [store, ctrl] = createCtrl(createState())
+  const {ctrl, store} = createCtrl(createState())
   const target = document.createElement('div')
 
   await ctrl.init(target)
@@ -103,7 +96,7 @@ test('openFile - path in files', async () => {
 })
 
 test('openFile - push path to files', async () => {
-  const [store, ctrl] = createCtrl(createState())
+  const {ctrl, store} = createCtrl(createState())
   const target = document.createElement('div')
 
   await ctrl.init(target)
@@ -119,11 +112,15 @@ test('openFile - push path to files', async () => {
 })
 
 test('openFile - path and text', async () => {
-  const [store, ctrl] = createCtrl(createState())
+  const {ctrl, store} = createCtrl(createState())
   const target = document.createElement('div')
   await ctrl.init(target)
-  await ctrl.openFile({text, path: 'file1'})
-  expect(store.editor?.editorView?.state.doc.textContent).toBe('File1')
+  expect(store.files.length).toBe(1)
+  await ctrl.openFile({path: 'file1'})
+  expect(store.files.length).toBe(1)
+  await waitFor(() => {
+    expect(store.editor?.editorView?.state.doc.textContent).toBe('File1')
+  })
 })
 
 test('discard - with path', async () => {
@@ -133,7 +130,7 @@ test('discard - with path', async () => {
     {id: '2', path: 'file2', ydoc: createYdoc('Test 2'), lastModified},
   ])
 
-  const [store, ctrl] = createCtrl(createState())
+  const {ctrl, store} = createCtrl(createState())
   const target = document.createElement('div')
 
   await ctrl.init(target)
@@ -141,7 +138,10 @@ test('discard - with path', async () => {
 
   await ctrl.discard()
   expect(store.files.length).toBe(1)
-  expect(store.editor?.editorView?.state.doc.textContent).toBe('File2')
-  expect(store.editor?.path).toBe('file2')
   expect(store.editor?.id).toBe('2')
+  expect(store.editor?.path).toBe('file2')
+
+  await waitFor(() => {
+    expect(store.editor?.editorView?.state.doc.textContent).toBe('File2')
+  })
 })

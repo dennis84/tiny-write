@@ -1,6 +1,6 @@
 import {Show, onCleanup, createEffect, onError, onMount} from 'solid-js'
 import {createMutable} from 'solid-js/store'
-import {listen} from '@tauri-apps/api/event'
+import {appWindow} from '@tauri-apps/api/window'
 import {EditorView} from 'prosemirror-view'
 import {State, StateContext} from './state'
 import {createCtrl} from '@/ctrl'
@@ -15,7 +15,7 @@ import Dir from '@/components/Dir'
 import {insertImage, insertVideo} from '@/prosemirror/image'
 
 export default (props: {state: State}) => {
-  const [store, ctrl] = createCtrl(props.state)
+  const {store, ctrl} = createCtrl(props.state)
   const mouseEnterCoords = createMutable({x: 0, y: 0})
   let editorRef: HTMLDivElement | undefined
 
@@ -46,14 +46,9 @@ export default (props: {state: State}) => {
 
   onMount(() => {
     setupFonts()
-  })
-
-  onMount(() => {
     if (store.error) return
-    ctrl.init(editorRef)
-  })
+    ctrl.init(editorRef!)
 
-  onMount(() => {
     const matchDark = () => window.matchMedia('(prefers-color-scheme: dark)')
     const onChangeTheme = () => ctrl.updateTheme()
     matchDark().addEventListener('change', onChangeTheme)
@@ -62,20 +57,27 @@ export default (props: {state: State}) => {
 
   onMount(async () => {
     if (!isTauri) return
-    const unlisten = await listen('tauri://file-drop', async (event) => {
-      for (const path of (event.payload as string[])) {
-        const mime = await remote.getMimeType(path)
-        if (mime.startsWith('image/') || mime.startsWith('video/')) {
-          if (!store.editor?.editorView) return
-          const x = mouseEnterCoords.x
-          const y = mouseEnterCoords.y
-          const d = store.editor?.path ? await remote.dirname(store.editor.path) : undefined
-          const p = await remote.toRelativePath(path, d)
-          insertImageMd(store.editor.editorView, p, x, y, mime)
-        } else if (mime.startsWith('text/')) {
-          await ctrl.openFile({path})
-          return
+    const unlisten = await appWindow.onFileDropEvent(async (event) => {
+      if (event.payload.type === 'hover') {
+        remote.log('INFO', '🔗 User hovering')
+      } else if (event.payload.type === 'drop') {
+        remote.log('INFO', '🔗 User dropped')
+        for (const path of event.payload.paths) {
+          const mime = await remote.getMimeType(path)
+          if (mime.startsWith('image/') || mime.startsWith('video/')) {
+            if (!store.editor?.editorView) return
+            const x = mouseEnterCoords.x
+            const y = mouseEnterCoords.y
+            const d = store.editor?.path ? await remote.dirname(store.editor.path) : undefined
+            const p = await remote.toRelativePath(path, d)
+            insertImageMd(store.editor.editorView, p, x, y, mime)
+          } else if (mime.startsWith('text/')) {
+            await ctrl.openFile({path})
+            return
+          }
         }
+      } else {
+        remote.log('INFO', '🔗 File drop cancelled')
       }
     })
 
@@ -84,12 +86,12 @@ export default (props: {state: State}) => {
 
   onMount(async () => {
     if (!isTauri) return
-    const unlistenResize = await listen('tauri://resize', async (event) => {
-      ctrl.updateWindow(event.payload)
+    const unlistenResize = await appWindow.onResized(async ({payload}) => {
+      ctrl.updateWindow(payload)
     })
 
-    const unlistenMove = await listen('tauri://move', async (event) => {
-      ctrl.updateWindow(event.payload)
+    const unlistenMove = await appWindow.onMoved(async ({payload}) => {
+      ctrl.updateWindow(payload)
     })
 
     onCleanup(() => {

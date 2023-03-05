@@ -33,7 +33,7 @@ class TooltipView {
   }
 
   private onToPlain = () => {
-    if (!this.pos) return
+    if (this.pos === undefined) return
     const toPlain = setBlockType(this.view.state.schema.nodes.paragraph)
     toPlain(this.view.state, this.view.dispatch)
     const tr = this.view.state.tr
@@ -46,7 +46,7 @@ class TooltipView {
   }
 
   private onRemoveBlock = () => {
-    if (!this.pos) return
+    if (this.pos === undefined) return
     const tr = this.view.state.tr
     const pos = tr.doc.resolve(this.pos)
     if (!pos.nodeAfter) return
@@ -57,7 +57,7 @@ class TooltipView {
   }
 
   onPrettify = () => {
-    if (!this.pos) return
+    if (this.pos === undefined) return
     const dom = this.view.domAtPos(this.pos + 1)
     dom.node.dispatchEvent(new CustomEvent('cm:user_event', {
       detail: {userEvent: 'prettify'},
@@ -70,7 +70,7 @@ class TooltipView {
   }
 
   onChangeLang = () => {
-    if (!this.pos) return
+    if (this.pos === undefined) return
     const tr = this.view.state.tr
     const pos = tr.doc.resolve(this.pos + 1)
     const node = pos.node()
@@ -94,7 +94,7 @@ class TooltipView {
   }
 
   onMermaidHideCode = () => {
-    if (!this.pos) return
+    if (this.pos === undefined) return
     const tr = this.view.state.tr
     const pos = tr.doc.resolve(this.pos + 1)
     const node = pos.node()
@@ -111,7 +111,8 @@ class TooltipView {
   }
 
   createNav() {
-    if (!this.pos) return
+    console.log(this.pos)
+    if (this.pos === undefined) return
     const resolvedPos = this.view.state.doc.resolve(this.pos + 1)
     const node = resolvedPos.node()
     const dom = this.view.domAtPos(this.pos + 1)

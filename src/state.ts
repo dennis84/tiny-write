@@ -85,9 +85,9 @@ export type FileText = {[key: string]: any};
 
 export interface File {
   id: string;
-  text?: FileText;
-  ydoc?: Uint8Array;
+  ydoc: Uint8Array;
   lastModified?: Date;
+  text?: FileText;
   path?: string;
   markdown?: boolean;
 }

@@ -54,8 +54,7 @@ export const markdownSerializer = new MarkdownSerializer({
       row.forEach((cell) => {
         headerRow = cell.type.name === 'table_header'
         const alignment = serializeTableCell(cell)
-        if (!alignment) return
-        columnAlignment.push(alignment)
+        columnAlignment.push(alignment ?? '')
       })
       state.write('|')
       state.ensureNewLine()
