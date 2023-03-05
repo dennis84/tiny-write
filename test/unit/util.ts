@@ -36,3 +36,6 @@ export const waitFor = async (fn: () => unknown, retries = 10): Promise<void> =>
     return waitFor(fn, retries - 1)
   }
 }
+
+export const pause = (ms: number) =>
+  new Promise((resolve) => setTimeout(() => resolve(1), ms))

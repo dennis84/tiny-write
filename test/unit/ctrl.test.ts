@@ -1,6 +1,6 @@
 import {vi, expect, test, beforeEach} from 'vitest'
 import * as db from '@/db'
-import {createYdoc, insertText, waitFor} from './util'
+import {createYdoc, insertText, waitFor, pause} from './util'
 
 vi.stubGlobal('matchMedia', vi.fn(() => ({
   matchMedia: () => ''
@@ -39,7 +39,7 @@ vi.mock('y-websocket', () => ({
 }))
 
 import {createCtrl} from '@/ctrl'
-import {createState} from '@/state'
+import {createState, Version} from '@/state'
 
 beforeEach(() => {
   vi.restoreAllMocks()
@@ -167,7 +167,7 @@ test('newFile - collab', async () => {
   await ctrl.init(target)
   insertText(store.editor!.editorView!, 'Test')
 
-  await ctrl.startCollab()
+  ctrl.startCollab()
   const id = store.editor?.id
 
   await ctrl.newFile()
@@ -190,7 +190,6 @@ test('openFile - existing', async () => {
   const target = document.createElement('div')
   await ctrl.init(target)
 
-  // FIXME
   await waitFor(() => {
     expect(store.editor?.editorView?.state.doc.textContent).toBe('Test')
   })
@@ -258,12 +257,10 @@ test('openFile - open from collab', async () => {
   await ctrl.init(target)
   expect(store.files.length).toBe(2)
   ctrl.startCollab()
+  await pause(10)
+
   expect(store.files.length).toBe(2)
   expect(store.collab?.started).toBe(true)
-  // FIXME: File is dropped if not waiting for render
-  await waitFor(() => {
-    expect(store.editor?.editorView?.state.doc.textContent).toBe('Test')
-  })
 
   await ctrl.openFile({id: '2'})
   expect(store.files.length).toBe(2)
@@ -325,7 +322,7 @@ test('discard - close collab', async () => {
   await ctrl.init(target)
   expect(store.files.length).toBe(2)
 
-  await ctrl.startCollab()
+  ctrl.startCollab()
   expect(store.files.length).toBe(2)
   insertText(store.editor!.editorView!, '111')
 
@@ -363,12 +360,12 @@ test('startCollab - from empty state', async () => {
   const {ctrl, store} = createCtrl(createState())
   const target = document.createElement('div')
   await ctrl.init(target)
-  await ctrl.startCollab()
+  ctrl.startCollab()
   expect(store.editor?.editorView?.state.doc.textContent).toBe('')
   expect(store.editor?.id).not.toBe(undefined)
   expect(store.collab?.started).toBe(true)
   expect(store.collab?.provider).not.toBe(undefined)
-  await ctrl.stopCollab()
+  ctrl.stopCollab()
 })
 
 test('startCollab - with text', async () => {
@@ -379,7 +376,7 @@ test('startCollab - with text', async () => {
   expect(store.editor?.editorView).not.toBe(undefined)
   insertText(store.editor!.editorView!, 'Test')
 
-  await ctrl.startCollab()
+  ctrl.startCollab()
   expect(store.editor?.editorView?.state.doc.textContent).toBe('Test')
   expect(store.editor?.id).not.toBe(undefined)
   expect(store.collab?.started).toBe(true)
@@ -420,4 +417,33 @@ test('startCollab - join existing file', async () => {
   expect(store.files.length).toBe(2)
   expect(store.collab?.started).toBe(true)
   expect(store.collab?.provider).not.toBe(undefined)
+})
+
+test('applyVersion', async () => {
+  const getVersions = () =>
+    store.collab?.ydoc?.getArray('versions').toArray() as Version[]
+
+  const {ctrl, store} = createCtrl(createState())
+  const target = document.createElement('div')
+  await ctrl.init(target)
+  insertText(store.editor!.editorView!, 'Test')
+  expect(store.editor?.editorView?.state.doc.textContent).toBe('Test')
+  expect(getVersions().length).toBe(0)
+
+  ctrl.addVersion()
+  await pause(10)
+
+  expect(getVersions().length).toBe(1)
+  insertText(store.editor!.editorView!, '123')
+  expect(store.editor?.editorView?.state.doc.textContent).toBe('Test123')
+
+  ctrl.renderVersion(getVersions()[0])
+  await pause(10)
+
+  expect(store.editor?.editorView?.state.doc.textContent).toBe('Test')
+
+  ctrl.applyVersion(getVersions()[0])
+  await pause(10)
+
+  expect(store.editor?.editorView?.state.doc.textContent).toBe('Test')
 })

@@ -307,10 +307,10 @@ export const createCtrl = (initial: State) => {
 
   const updateEditorState = (state: State, node?: Element) => {
     const extensions = createExtensions({
-      config: state.config ?? store.config,
-      markdown: state.editor?.markdown ?? store.editor?.markdown,
+      config: state.config,
+      markdown: state.editor?.markdown,
       fullscreen: state.fullscreen,
-      path: state.editor?.path ?? store.editor?.path,
+      path: state.editor?.path,
       keymap,
       y: state.collab?.ydoc ? {
         type: state.collab.ydoc.getXmlFragment('prosemirror'),
@@ -322,7 +322,7 @@ export const createCtrl = (initial: State) => {
       } : undefined
     })
 
-    let editorView = store.editor?.editorView
+    let editorView = state.editor?.editorView
 
     const nodeViews = createNodeViews(extensions)
     const schema = createSchema(extensions)
@@ -331,16 +331,15 @@ export const createCtrl = (initial: State) => {
 
     if (!editorView) {
       const dispatchTransaction = (tr: Transaction) => {
-        if (!editorView) return
-        const newState = editorView.state.apply(tr)
-        editorView.updateState(newState)
+        const newState = editorView!.state.apply(tr)
+        editorView!.updateState(newState)
         if (!tr.docChanged) return
 
-        const isYInit =
-          tr.getMeta('addToHistory') === false &&
-          !tr.getMeta(ySyncPluginKey)?.isUndoRedoOperation
+        const yMeta = tr.getMeta(ySyncPluginKey)
+        const maybeSkip = tr.getMeta('addToHistory') === false
+        const isUndo = yMeta?.isUndoRedoOperation
 
-        if (isYInit || snapshotView()) return
+        if ((maybeSkip && !isUndo) || snapshotView()) return
 
         setState('editor', 'lastModified', new Date())
         updateCurrentFile()
@@ -595,18 +594,18 @@ export const createCtrl = (initial: State) => {
   const applyVersion = (version: Version) => {
     const state = unwrap(store)
     const ydoc = state.collab?.ydoc
-    const editorState = state.editor?.editorView?.state
-    if (!ydoc || !editorState) return
+    const editorView = state.editor?.editorView
+    if (!ydoc || !editorView?.state) return
 
     const snapshot = Y.decodeSnapshot(version.snapshot)
     const newDoc = Y.createDocFromSnapshot(ydoc, snapshot)
-    const node = yDocToProsemirror(editorState.schema, newDoc)
+    const node = yDocToProsemirror(editorView.state.schema, newDoc)
     unrenderVersion()
 
-    const tr = editorState.tr
+    const tr = editorView?.state.tr
     const slice = new Slice(node.content, 0, 0)
-    tr.replace(0, editorState.doc.content.size, slice)
-    state.editor?.editorView?.dispatch(tr)
+    tr!.replace(0, editorView.state.doc.content.size, slice)
+    editorView?.dispatch(tr!)
   }
 
   const toggleMarkdown = () => {
