@@ -2,7 +2,7 @@ import {schema} from 'prosemirror-markdown'
 import * as Y from 'yjs'
 import {prosemirrorJSONToYDoc} from 'y-prosemirror'
 import {fromUint8Array} from 'js-base64'
-import {EditorView} from 'prosemirror-view'
+import {State} from '@/state'
 
 export const createText = (text: string) => ({
   doc: {
@@ -17,11 +17,14 @@ export const createYdoc = (str: string) => {
   return fromUint8Array(Y.encodeStateAsUpdate(ydoc))
 }
 
-export const insertText = (editorView: EditorView, text: string) => {
-  const tr = editorView!.state.tr
-  tr.insertText(text)
-  editorView?.dispatch(tr)
+export const insertText = (state: State, text: string) => {
+  const tr = state.editor?.editorView?.state.tr
+  tr!.insertText(text)
+  state.editor?.editorView?.dispatch(tr!)
 }
+
+export const getText = (state: State) =>
+  state.editor?.editorView?.state.doc.textContent
 
 export const waitFor = async (fn: () => unknown, retries = 10): Promise<void> => {
   try {

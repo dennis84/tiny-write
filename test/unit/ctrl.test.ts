@@ -1,6 +1,6 @@
 import {vi, expect, test, beforeEach} from 'vitest'
 import * as db from '@/db'
-import {createYdoc, insertText, waitFor, pause} from './util'
+import {createYdoc, getText, insertText, waitFor, pause} from './util'
 
 vi.stubGlobal('matchMedia', vi.fn(() => ({
   matchMedia: () => ''
@@ -70,7 +70,7 @@ test('init - new file if no id', async () => {
   const target = document.createElement('div')
   await ctrl.init(target)
   expect(store.files.length).toBe(3)
-  expect(store.editor?.editorView?.state.doc.textContent).toBe('')
+  expect(getText(store)).toBe('')
   expect(store.editor?.id).not.toBe(1)
   expect(store.editor?.id).not.toBe(2)
 })
@@ -87,7 +87,7 @@ test('init - existing file', async () => {
   await ctrl.init(target)
   expect(store.files.length).toBe(2)
   await waitFor(() => {
-    expect(store.editor?.editorView?.state.doc.textContent).toBe('Test 2')
+    expect(getText(store)).toBe('Test 2')
   })
 })
 
@@ -103,7 +103,7 @@ test('init - join', async () => {
   await ctrl.init(target)
   expect(store.files.length).toBe(3)
   expect(store.editor?.id).toBe('3')
-  expect(store.editor?.editorView?.state.doc.textContent).toBe('')
+  expect(getText(store)).toBe('')
 })
 
 test('init - dir', async () => {
@@ -118,7 +118,7 @@ test('init - dir', async () => {
   await ctrl.init(target)
   expect(store.files.length).toBe(1)
   expect(store.editor?.id).toBe('1')
-  expect(store.editor?.editorView?.state.doc.textContent).toBe('')
+  expect(getText(store)).toBe('')
   expect(store.args?.dir).toEqual(['~/Desktop/Aaaa.md'])
 })
 
@@ -131,7 +131,7 @@ test('init - dir no current file', async () => {
   await ctrl.init(target)
   expect(store.files.length).toBe(0)
   expect(store.editor?.id).toBe(undefined)
-  expect(store.editor?.editorView?.state.doc.textContent).toBe('')
+  expect(getText(store)).toBe('')
   expect(store.args?.dir).toEqual(['~/Desktop/Aaaa.md'])
 })
 
@@ -140,11 +140,11 @@ test('newFile', async () => {
   const target = document.createElement('div')
 
   await ctrl.init(target)
-  insertText(store.editor!.editorView!, 'Test')
-  expect(store.editor?.editorView?.state.doc.textContent).toEqual('Test')
+  insertText(store, 'Test')
+  expect(getText(store)).toEqual('Test')
 
   await ctrl.newFile()
-  expect(store.editor?.editorView?.state.doc.textContent).toEqual('')
+  expect(getText(store)).toEqual('')
   expect(store.files.length).toBe(2)
   expect(store.files[0].ydoc).not.toBe(undefined)
   expect(store.files[1].ydoc).not.toBe(undefined)
@@ -165,14 +165,14 @@ test('newFile - collab', async () => {
   const target = document.createElement('div')
 
   await ctrl.init(target)
-  insertText(store.editor!.editorView!, 'Test')
+  insertText(store, 'Test')
 
   ctrl.startCollab()
   const id = store.editor?.id
 
   await ctrl.newFile()
   expect(store.files.length).toBe(2)
-  expect(store.editor?.editorView?.state.doc.textContent).toEqual('')
+  expect(getText(store)).toEqual('')
   expect(store.editor?.id).not.toEqual(id)
   expect(store.collab?.started).toBe(false)
   expect(store.files[0].ydoc).not.toBe(undefined)
@@ -191,13 +191,13 @@ test('openFile - existing', async () => {
   await ctrl.init(target)
 
   await waitFor(() => {
-    expect(store.editor?.editorView?.state.doc.textContent).toBe('Test')
+    expect(getText(store)).toBe('Test')
   })
 
   await ctrl.openFile({id: '2'})
   expect(store.files.length).toBe(2)
   await waitFor(() => {
-    expect(store.editor?.editorView?.state.doc.textContent).toBe('Test 2')
+    expect(getText(store)).toBe('Test 2')
   })
 })
 
@@ -226,7 +226,7 @@ test('openFile - delete empty', async () => {
   expect(store.files.length).toBe(1)
 
   await waitFor(() => {
-    expect(store.editor?.editorView?.state.doc.textContent).toBe('Test 2')
+    expect(getText(store)).toBe('Test 2')
   })
 })
 
@@ -239,7 +239,7 @@ test('openFile - open collab', async () => {
   await ctrl.init(target)
   await ctrl.openFile(file)
   await waitFor(() => {
-    expect(store.editor?.editorView?.state.doc.textContent).toBe('Test')
+    expect(getText(store)).toBe('Test')
     expect(store.editor?.id).toBe('room-123')
     expect(store.files.length).toBe(1)
   })
@@ -266,7 +266,7 @@ test('openFile - open from collab', async () => {
   expect(store.files.length).toBe(2)
   expect(store.collab?.started).toBe(false)
   await waitFor(() => {
-    expect(store.editor?.editorView?.state.doc.textContent).toBe('Test 2')
+    expect(getText(store)).toBe('Test 2')
   })
 })
 
@@ -283,7 +283,7 @@ test('discard - open collab', async () => {
   await ctrl.discard()
 
   await waitFor(() => {
-    expect(store.editor?.editorView?.state.doc.textContent).toBe('Test')
+    expect(getText(store)).toBe('Test')
     expect(store.editor?.id).toBe('room-123')
     expect(store.files.length).toBe(1)
   })
@@ -298,16 +298,16 @@ test('discard - with text', async () => {
   const target = document.createElement('div')
   await ctrl.init(target)
 
-  insertText(store.editor!.editorView!, '111')
+  insertText(store, '111')
   expect(store.files.length).toBe(2)
 
   await ctrl.discard()
-  expect(store.editor?.editorView?.state.doc.textContent).toBe('')
+  expect(getText(store)).toBe('')
   expect(store.files.length).toBe(2)
 
   await ctrl.discard()
   await waitFor(() => {
-    expect(store.editor?.editorView?.state.doc.textContent).toBe('Test')
+    expect(getText(store)).toBe('Test')
     expect(store.files.length).toBe(1)
   })
 })
@@ -324,11 +324,11 @@ test('discard - close collab', async () => {
 
   ctrl.startCollab()
   expect(store.files.length).toBe(2)
-  insertText(store.editor!.editorView!, '111')
+  insertText(store, '111')
 
   await ctrl.discard()
   await waitFor(() => {
-    expect(store.editor?.editorView?.state.doc.textContent).toBe('Test')
+    expect(getText(store)).toBe('Test')
     expect(store.files.length).toBe(1)
   })
 })
@@ -343,8 +343,8 @@ test('clean', async () => {
   const target = document.createElement('div')
 
   await ctrl.init(target)
-  insertText(store.editor!.editorView!, 'Test')
-  expect(store.editor?.editorView?.state.doc.textContent).toBe('Test')
+  insertText(store, 'Test')
+  expect(getText(store)).toBe('Test')
 
   ctrl.setState('error', error)
   expect(store.error).toBe(error)
@@ -352,7 +352,7 @@ test('clean', async () => {
   await ctrl.clean()
   expect(store.error).toBe(undefined)
   expect(store.editor?.id).not.toBe('1')
-  expect(store.editor?.editorView?.state.doc.textContent).toBe('')
+  expect(getText(store)).toBe('')
   expect(store.files.length).toBe(1)
 })
 
@@ -361,7 +361,7 @@ test('startCollab - from empty state', async () => {
   const target = document.createElement('div')
   await ctrl.init(target)
   ctrl.startCollab()
-  expect(store.editor?.editorView?.state.doc.textContent).toBe('')
+  expect(getText(store)).toBe('')
   expect(store.editor?.id).not.toBe(undefined)
   expect(store.collab?.started).toBe(true)
   expect(store.collab?.provider).not.toBe(undefined)
@@ -374,10 +374,10 @@ test('startCollab - with text', async () => {
 
   await ctrl.init(target)
   expect(store.editor?.editorView).not.toBe(undefined)
-  insertText(store.editor!.editorView!, 'Test')
+  insertText(store, 'Test')
 
   ctrl.startCollab()
-  expect(store.editor?.editorView?.state.doc.textContent).toBe('Test')
+  expect(getText(store)).toBe('Test')
   expect(store.editor?.id).not.toBe(undefined)
   expect(store.collab?.started).toBe(true)
   expect(store.collab?.provider).not.toBe(undefined)
@@ -393,7 +393,7 @@ test('startCollab - join new file', async () => {
   const target = document.createElement('div')
   await ctrl.init(target)
 
-  expect(store.editor?.editorView?.state.doc.textContent).toBe('')
+  expect(getText(store)).toBe('')
   expect(store.editor?.id).toBe('2')
   expect(store.files.length).toBe(2)
   expect(store.collab?.started).toBe(true)
@@ -412,7 +412,7 @@ test('startCollab - join existing file', async () => {
   await ctrl.init(target)
 
   // Not sure if updateText should be called.
-  expect(store.editor?.editorView?.state.doc.textContent).toBe('')
+  expect(getText(store)).toBe('')
   expect(store.editor?.id).toBe('2')
   expect(store.files.length).toBe(2)
   expect(store.collab?.started).toBe(true)
@@ -426,24 +426,24 @@ test('applyVersion', async () => {
   const {ctrl, store} = createCtrl(createState())
   const target = document.createElement('div')
   await ctrl.init(target)
-  insertText(store.editor!.editorView!, 'Test')
-  expect(store.editor?.editorView?.state.doc.textContent).toBe('Test')
+  insertText(store, 'Test')
+  expect(getText(store)).toBe('Test')
   expect(getVersions().length).toBe(0)
 
   ctrl.addVersion()
   await pause(10)
 
   expect(getVersions().length).toBe(1)
-  insertText(store.editor!.editorView!, '123')
-  expect(store.editor?.editorView?.state.doc.textContent).toBe('Test123')
+  insertText(store, '123')
+  expect(getText(store)).toBe('Test123')
 
   ctrl.renderVersion(getVersions()[0])
   await pause(10)
 
-  expect(store.editor?.editorView?.state.doc.textContent).toBe('Test')
+  expect(getText(store)).toBe('Test')
 
   ctrl.applyVersion(getVersions()[0])
   await pause(10)
 
-  expect(store.editor?.editorView?.state.doc.textContent).toBe('Test')
+  expect(getText(store)).toBe('Test')
 })
