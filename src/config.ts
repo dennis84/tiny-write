@@ -48,14 +48,6 @@ export const fonts: {[key: string]: Font} = {
     italic: '/JetBrainsMono-Italic.woff2',
     monospace: true,
   },
-  'fantasque-sans-mono': {
-    label: 'Fantasque Sans Mono',
-    value: 'fantasque-sans-mono',
-    regular: '/FantasqueSansMono-Regular.woff2',
-    bold: '/FantasqueSansMono-Bold.woff2',
-    italic: '/FantasqueSansMono-Italic.woff2',
-    monospace: true,
-  },
   'ia-writer-mono': {
     label: 'iA Writer Mono',
     value: 'ia-writer-mono',
@@ -274,9 +266,8 @@ export const tooltipBackground = (config: Config) => getTheme(config).tooltipBac
 
 export const DEFAULT_FONT = 'ia-writer-mono'
 
-export const getFont = (config?: Config): Font => {
-  return config?.font ? fonts[config.font] : fonts[DEFAULT_FONT]
-}
+export const getFont = (config?: Config): Font =>
+  (config?.font ? fonts[config.font] : undefined) ?? fonts[DEFAULT_FONT]
 
 export const fontFamily = (
   config?: Config,

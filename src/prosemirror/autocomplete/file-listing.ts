@@ -12,8 +12,11 @@ export default (fontSize: number): ProseMirrorExtension => isTauri ? ({
     ...prev,
     completionPlugin(
       pluginKey,
-      /(\.\.?|~)\/[^\s]*/g,
-      async (text) => listContents(text),
+      /(\.\.?|~)\/[^\s\]]*/g,
+      async (text) => {
+        console.log(text)
+        return listContents(text)
+      },
       fontSize
     ),
   ]

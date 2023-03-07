@@ -42,9 +42,14 @@ const FileContent = styled('div')`
   color: var(--foreground);
   background: var(--foreground-5);
   border: 1px solid var(--foreground-50);
+  ${(props: any) => props.active ? `
+    border-color: var(--primary-background);
+    box-shadow: 0 0 0 1px var(--primary-background);
+  ` : ''}
   ${(props: any) => props.selected ? `
     border-color: var(--primary-background);
     box-shadow: 0 0 0 1px var(--primary-background);
+    background: var(--foreground-10);
   ` : ''}
   border-radius: var(--border-radius);
   p {
@@ -70,6 +75,7 @@ const FileContent = styled('div')`
   &:hover {
     border-color: var(--primary-background);
     box-shadow: 0 0 0 1px var(--primary-background);
+    background: var(--foreground-10);
   }
 `
 
@@ -103,8 +109,7 @@ export const FilesMenu = (props: Props) => {
   let tooltipRef: HTMLDivElement
   let arrowRef: HTMLSpanElement
 
-  const files = () =>
-    store.files.filter((f) => f.lastModified && f.id !== store.editor?.id)
+  const files = () => store.files.filter((f) => f.lastModified)
 
   const schema = createSchema(createExtensions({config: store.config}))
 
@@ -162,7 +167,7 @@ export const FilesMenu = (props: Props) => {
     return nodes
   }
 
-  const FileLink = (p: {file: File}) => {
+  const FileItem = (p: {file: File}) => {
     const [path, setPath] = createSignal<string>()
 
     const onTooltip = (e: MouseEvent) => {
@@ -209,6 +214,7 @@ export const FilesMenu = (props: Props) => {
         <FileContent
           onClick={() => onOpenFile(p.file)}
           selected={current() === p.file}
+          active={store.editor?.id === p.file.id}
           data-testid="open">
           <Show
             when={p.file.path}
@@ -259,7 +265,7 @@ export const FilesMenu = (props: Props) => {
         data-tauri-drag-region="true"
         data-testid="file-list">
         <For each={files()}>
-          {(file: File) => <FileLink file={file} />}
+          {(file: File) => <FileItem file={file} />}
         </For>
       </FileList>
       <ButtonGroup>
