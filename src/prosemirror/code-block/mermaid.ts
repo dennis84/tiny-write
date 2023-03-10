@@ -20,6 +20,7 @@ const syntax: Record<string, string[]> = {
     '<<interface>>',
     '<<enumeration>>',
   ],
+  erDiagram: [],
 }
 
 export const mermaidKeywords: CompletionSource = (context) => {

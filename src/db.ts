@@ -30,6 +30,10 @@ interface MyDB extends DBSchema {
     key: string;
     value: PersistedFile;
   };
+  size: {
+    key: string;
+    value: number;
+  };
 }
 
 const dbPromise = openDB<MyDB>('keyval', 1, {
@@ -38,6 +42,7 @@ const dbPromise = openDB<MyDB>('keyval', 1, {
     db.createObjectStore('editor')
     db.createObjectStore('window')
     db.createObjectStore('files', {keyPath: 'id'})
+    db.createObjectStore('size')
   }
 })
 
@@ -82,4 +87,14 @@ export async function updateFile(file: PersistedFile) {
 
 export async function deleteFile(id: string) {
   return (await dbPromise).delete('files', id)
+}
+
+export async function setSize(key: string, value: number) {
+  return (await dbPromise).put('size', value, key)
+}
+
+export async function getSize() {
+  const db = await dbPromise
+  const sizes = await db.getAll('size')
+  return sizes.reduce((a, b) => (a ?? 0) + (b ?? 0))
 }

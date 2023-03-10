@@ -17,6 +17,7 @@ export const fetchData = async (state: State): Promise<State> => {
   const fetchedWindow = await db.getWindow()
   const fetchedFiles = await db.getFiles()
   const fetchedConfig = await db.getConfig()
+  const fetchedSize = await db.getSize()
 
   const config = {
     ...state.config,
@@ -45,19 +46,21 @@ export const fetchData = async (state: State): Promise<State> => {
     files,
     config,
     window: fetchedWindow,
-    storageSize: 0,
+    storageSize: fetchedSize ?? 0,
     collab: undefined,
   }
 }
 
 export const saveConfig = async (state: State) => {
   db.setConfig(state.config)
+  db.setSize('window', JSON.stringify(state.config).length)
   remote.log('info', '💾 Save config')
 }
 
 export const saveWindow = async (state: State) => {
   if (!state.window) return
   db.setWindow(state.window)
+  db.setSize('window', JSON.stringify(state.window).length)
   remote.log('info', '💾 Save window state')
 }
 
@@ -73,6 +76,9 @@ export const saveFile = async (file: File) => {
     path: file.path,
     markdown: file.markdown,
   })
+
+  const files = await db.getFiles()
+  db.setSize('files', JSON.stringify(files).length)
 }
 
 export const saveEditor = async (state: State) => {
