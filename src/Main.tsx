@@ -46,9 +46,6 @@ export default (props: {state: State}) => {
 
   onMount(() => {
     setupFonts()
-    if (store.error) return
-    ctrl.init(editorRef!)
-
     const matchDark = () => window.matchMedia('(prefers-color-scheme: dark)')
     const onChangeTheme = () => ctrl.updateTheme()
     matchDark().addEventListener('change', onChangeTheme)
@@ -153,6 +150,12 @@ export default (props: {state: State}) => {
   })
 
   createEffect(() => {
+    if (!store.editor?.id && !store.editor) {
+      ctrl.init(editorRef!)
+    }
+  })
+
+  createEffect(() => {
     if (!store.editor?.lastModified) return
     const doc = store.editor.editorView?.state.doc
     const len = doc?.content.size ?? 0
@@ -165,6 +168,7 @@ export default (props: {state: State}) => {
   createEffect(() => {
     const root = document.documentElement
     const c = store.config
+
     root.style.setProperty('--background', config.background(c))
     root.style.setProperty('--foreground', config.foreground(c))
     root.style.setProperty('--foreground-80', `${config.foreground(c)}cc`)
@@ -199,17 +203,17 @@ export default (props: {state: State}) => {
         onDragOver={onDragOver}>
         <Show when={store.error}><ErrorView /></Show>
         <Show when={store.args?.dir && !store.error}><Dir /></Show>
-        <Scroll
-          hide={store.error !== undefined || store.args?.dir?.length !== undefined}
-          data-tauri-drag-region="true">
-          <Editor
-            config={store.config}
-            ref={editorRef}
-            spellcheck={store.config.spellcheck}
-            markdown={store.editor?.markdown}
-            data-tauri-drag-region="true"
-          />
-        </Scroll>
+        <Show when={!store.error && !store.args?.dir?.length}>
+          <Scroll data-tauri-drag-region="true">
+            <Editor
+              config={store.config}
+              ref={editorRef}
+              spellcheck={store.config.spellcheck}
+              markdown={store.editor?.markdown}
+              data-tauri-drag-region="true"
+            />
+          </Scroll>
+        </Show>
         <Menu />
       </Layout>
     </StateContext.Provider>

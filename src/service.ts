@@ -77,7 +77,7 @@ export const saveFile = async (file: File) => {
     markdown: file.markdown,
   })
 
-  const files = await db.getFiles()
+  const files = await db.getFiles() ?? []
   db.setSize('files', JSON.stringify(files).length)
 }
 
@@ -98,3 +98,5 @@ export const saveEditor = async (state: State) => {
 
   db.setEditor(editor)
 }
+
+export const reset = () => db.deleteDatabase()

@@ -46,20 +46,20 @@ test('existing room - backup', async ({page}) => {
   const room = 'test-2'
   await page.goto('/')
   await page.type('.ProseMirror', '123', {delay})
-  await page.waitForTimeout(210)
 
   await page.goto(`/${room}`)
   await page.waitForSelector('[data-testid="initialized"]')
   await page.type('.ProseMirror', 'Hello', {delay})
-  await page.waitForTimeout(210)
   await lineTextEq(page, 1, 'Hello')
 
   await page.click('[data-testid="burger"]')
   await page.click('[data-testid="files"]')
-  expect(await page.textContent('[data-testid="open"]')).toContain('123')
+  expect(await page.locator('[data-testid="file-list"] > div').count()).toBe(2)
+  expect(await page.textContent('[data-testid="file-list"] > div:nth-child(1)')).toContain('123')
+  expect(await page.textContent('[data-testid="file-list"] > div:nth-child(2)')).toContain('Hello')
 
-  await page.click('[data-testid="open"]')
+  await page.click('[data-testid="file-list"] > div:nth-child(1) > div')
   await lineTextEq(page, 1, '123')
 
-  expect(await page.textContent('[data-testid="open"]')).toContain('Hello')
+  expect(await page.locator('[data-testid="file-list"] > div').count()).toBe(2)
 })

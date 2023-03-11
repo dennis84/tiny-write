@@ -459,27 +459,29 @@ export default () => {
               >Files 🗃️</Link>
             </Show>
           </Sub>
-          <Label>Edit</Label>
-          <Sub data-tauri-drag-region="true">
-            <Link onClick={onUndo}>
-              Undo <Keys keys={[modKey, 'z']} />
-            </Link>
-            <Link onClick={onRedo}>
-              Redo <Keys keys={[modKey, ...(isMac ? ['Shift', 'z'] : ['y'])]} />
-            </Link>
-            <Link onClick={() => cmd('cut')}>
-              Cut <Keys keys={[modKey, 'x']} />
-            </Link>
-            <Link onClick={() => cmd('paste')} disabled={!isTauri}>
-              Paste <Keys keys={[modKey, 'p']} />
-            </Link>
-            <Link onClick={() => cmd('copy')}>
-              Copy {lastAction() === 'copy' && '📋'} <Keys keys={[modKey, 'c']} />
-            </Link>
-            <Link onClick={onCopyAllAsMd}>
-              Copy all as markdown {lastAction() === 'copy-md' && '📋'}
-            </Link>
-          </Sub>
+          <Show when={store.editor?.id !== undefined}>
+            <Label>Edit</Label>
+            <Sub data-tauri-drag-region="true">
+              <Link onClick={onUndo}>
+                Undo <Keys keys={[modKey, 'z']} />
+              </Link>
+              <Link onClick={onRedo}>
+                Redo <Keys keys={[modKey, ...(isMac ? ['Shift', 'z'] : ['y'])]} />
+              </Link>
+              <Link onClick={() => cmd('cut')}>
+                Cut <Keys keys={[modKey, 'x']} />
+              </Link>
+              <Link onClick={() => cmd('paste')} disabled={!isTauri}>
+                Paste <Keys keys={[modKey, 'p']} />
+              </Link>
+              <Link onClick={() => cmd('copy')}>
+                Copy {lastAction() === 'copy' && '📋'} <Keys keys={[modKey, 'c']} />
+              </Link>
+              <Link onClick={onCopyAllAsMd}>
+                Copy all as markdown {lastAction() === 'copy-md' && '📋'}
+              </Link>
+            </Sub>
+          </Show>
           <Label>View</Label>
           <Sub data-tauri-drag-region="true">
             <Link onClick={() => setShow('theme')}>Appearance 🎨</Link>

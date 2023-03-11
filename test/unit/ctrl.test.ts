@@ -6,9 +6,10 @@ vi.stubGlobal('matchMedia', vi.fn(() => ({
   matchMedia: () => ''
 })))
 
-vi.stubGlobal('location', vi.fn(() => ({
-  pathname: ''
-})))
+vi.stubGlobal('location', ({
+  pathname: '',
+  reload: vi.fn(),
+}))
 
 vi.mock('mermaid', () => ({}))
 
@@ -22,6 +23,9 @@ vi.mock('@/db', () => ({
   getFiles: vi.fn(),
   deleteFile: vi.fn(),
   updateFile: vi.fn(),
+  setSize: vi.fn(),
+  getSize: vi.fn(),
+  deleteDatabase: vi.fn(),
 }))
 
 vi.mock('y-websocket', () => ({
@@ -333,27 +337,43 @@ test('discard - close collab', async () => {
   })
 })
 
-test('clean', async () => {
+test('discard - error', async () => {
+  vi.spyOn(db, 'getEditor').mockResolvedValue({id: '1'})
   vi.spyOn(db, 'getFiles').mockResolvedValue([
     {id: '1', ydoc: createYdoc('Test'), lastModified},
   ])
+
+  const {ctrl, store} = createCtrl(createState())
+  const target = document.createElement('div')
+  await ctrl.init(target)
+  expect(store.editor?.id).toBe('1')
+  expect(store.files.length).toBe(1)
+
+  const error = {id: 'fail'}
+  ctrl.setState('error', error)
+  expect(store.error).toBe(error)
+
+  await ctrl.discard()
+  expect(store.error).toBe(undefined)
+  expect(store.editor).toBe(undefined)
+  expect(store.files.length).toBe(0)
+})
+
+test('reset', async () => {
+  const dbSpy = vi.spyOn(db, 'deleteDatabase')
+  const reloadSpy = vi.spyOn(window.location, 'reload')
 
   const error = {id: 'fail'}
   const {ctrl, store} = createCtrl(createState())
   const target = document.createElement('div')
 
   await ctrl.init(target)
-  insertText(store, 'Test')
-  expect(getText(store)).toBe('Test')
-
   ctrl.setState('error', error)
   expect(store.error).toBe(error)
 
-  await ctrl.clean()
-  expect(store.error).toBe(undefined)
-  expect(store.editor?.id).not.toBe('1')
-  expect(getText(store)).toBe('')
-  expect(store.files.length).toBe(1)
+  await ctrl.reset()
+  expect(dbSpy).toHaveBeenCalledTimes(1)
+  expect(reloadSpy).toHaveBeenCalledTimes(1)
 })
 
 test('startCollab - from empty state', async () => {

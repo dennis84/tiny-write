@@ -112,12 +112,12 @@ export const Layout = styled('div')`
 `
 
 export const Scroll = styled('div')`
+  display: flex;
   height: 100%;
   width: 100%;
   min-height: 100vh;
   max-height: 100vh;
   overflow-y: auto;
-  ${(props: any) => props.hide ? 'display: none;' : 'display: flex;'}
   justify-content: center;
   scrollbar-width: none;
   &::-webkit-scrollbar {

@@ -18,13 +18,13 @@ import {uniqueNamesGenerator, adjectives, animals} from 'unique-names-generator'
 import * as db from '@/db'
 import * as remote from '@/remote'
 import {createExtensions, createEmptyText, createSchema, createNodeViews} from '@/prosemirror-setup'
-import {State, File, Config, Version, ServiceError, createState, Window, FileText} from '@/state'
+import {State, File, Config, Version, ServiceError, Window, FileText} from '@/state'
 import {COLLAB_URL, isTauri, mod} from '@/env'
 import {serialize, createMarkdownParser} from '@/markdown'
 import {isDarkTheme, themes} from '@/config'
 import {isEmpty} from '@/prosemirror'
 import {loadFile} from '@/fs'
-import {fetchData, saveConfig, saveEditor, saveWindow} from '@/service'
+import * as service from '@/service'
 
 type OpenFile = {id?: string; path?: string}
 
@@ -340,10 +340,11 @@ export const createCtrl = (initial: State) => {
         const isUndo = yMeta?.isUndoRedoOperation
 
         if ((maybeSkip && !isUndo) || snapshotView()) return
+        if (!store.editor?.id) return
 
         setState('editor', 'lastModified', new Date())
         updateCurrentFile()
-        saveEditor(store)
+        service.saveEditor(store)
         remote.log('info', '💾 Saved updated text')
       }
 
@@ -364,7 +365,7 @@ export const createCtrl = (initial: State) => {
     const state = unwrap(store)
 
     try {
-      let data = await fetchData(state)
+      let data = await service.fetchData(state)
       let text: FileText | undefined
 
       if (isTauri && data.window) {
@@ -430,28 +431,28 @@ export const createCtrl = (initial: State) => {
     }
   }
 
-  const clean = async () => {
+  const reset = async () => {
     disconnectCollab(store)
-    const file = createFile()
-    const state: State = await withFile({
-      ...createState(),
-      args: {cwd: store.args?.cwd},
-      loading: 'initialized',
-      files: [file],
-      fullscreen: store.fullscreen,
-      editor: {editorView: store.editor?.editorView, id: file.id},
-    }, file)
-
-    setState(state)
-    updateEditorState(state)
-    updateText(createEmptyText())
+    await service.reset()
+    window.location.reload()
   }
 
   const discard = async () => {
     const editorView = store.editor?.editorView
     if (!editorView) return
 
-    if (store.editor?.path) {
+    if (store.error) {
+      if (store.editor?.id) {
+        await deleteFile({id: store.editor.id})
+      }
+
+      setState({
+        ...unwrap(store),
+        error: undefined,
+        editor: undefined,
+      })
+      return true
+    } else if (store.editor?.path) {
       await discardText()
       editorView?.focus()
       return true
@@ -517,12 +518,12 @@ export const createCtrl = (initial: State) => {
     if (file.text) updateText(file.text)
   }
 
-  const deleteFile = async (file: File) => {
+  const deleteFile = async (req: OpenFile) => {
     const state: State = unwrap(store)
-    const files = state.files.filter((f: File) => f.id !== file.id)
+    const files = state.files.filter((f: File) => f.id !== req.id)
     const newState = {...state, files}
     setState(newState)
-    db.deleteFile(file.id)
+    db.deleteFile(req.id!)
     remote.log('info', '💾 Deleted file')
   }
 
@@ -569,7 +570,7 @@ export const createCtrl = (initial: State) => {
       }])
     }
 
-    saveEditor(state)
+    service.saveEditor(state)
     remote.log('info', '💾 Saved new snapshot version')
   }
 
@@ -645,7 +646,7 @@ export const createCtrl = (initial: State) => {
     updateEditorState(store)
     updateText({...createEmptyText(), doc})
     updateCurrentFile()
-    saveEditor(store)
+    service.saveEditor(store)
     remote.log('info', '💾 Toggle markdown')
   }
 
@@ -657,13 +658,13 @@ export const createCtrl = (initial: State) => {
     const config = {...state.config, ...conf}
     setState('config', config)
     updateEditorState({...state, config})
-    saveConfig(unwrap(store))
+    service.saveConfig(unwrap(store))
   }
 
   const updateContentWidth = (contentWidth: number) => {
     store.collab?.ydoc?.getMap('config').set('contentWidth', contentWidth)
     setState('config', 'contentWidth', contentWidth)
-    saveConfig(unwrap(store))
+    service.saveConfig(unwrap(store))
   }
 
   const updatePath = (path: string) => {
@@ -673,18 +674,18 @@ export const createCtrl = (initial: State) => {
 
   const updateTheme = () => {
     setState('config', getTheme(unwrap(store), true))
-    saveConfig(unwrap(store))
+    service.saveConfig(unwrap(store))
   }
 
   const updateWindow = (win: Partial<Window>) => {
     if (store.fullscreen) return
     setState('window', {...store.window, ...win})
-    saveWindow(unwrap(store))
+    service.saveWindow(unwrap(store))
   }
 
   const ctrl = {
     init,
-    clean,
+    reset,
     discard,
     newFile,
     openFile,

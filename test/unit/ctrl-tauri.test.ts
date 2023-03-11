@@ -20,6 +20,9 @@ vi.mock('@/db', () => ({
   getFiles: vi.fn(),
   deleteFile: vi.fn(),
   updateFile: vi.fn(),
+  setSize: vi.fn(),
+  getSize: vi.fn(),
+  deleteDatabase: vi.fn(),
 }))
 
 import {createCtrl} from '@/ctrl'

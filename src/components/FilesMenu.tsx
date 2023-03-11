@@ -270,7 +270,7 @@ export const FilesMenu = (props: Props) => {
       </FileList>
       <ButtonGroup>
         <Button onClick={props.onBack} data-testid="back">↩ Back</Button>
-        <ButtonPrimary onClick={onNew}>New doc</ButtonPrimary>
+        <ButtonPrimary onClick={onNew} data-testid="new-doc">New doc</ButtonPrimary>
       </ButtonGroup>
       <Show when={current() !== undefined}><Tooltip /></Show>
     </Drawer>

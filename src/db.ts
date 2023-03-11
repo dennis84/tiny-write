@@ -1,4 +1,4 @@
-import {DBSchema, openDB} from 'idb'
+import {DBSchema, openDB, deleteDB} from 'idb'
 import {Config, Window} from './state';
 
 export interface PersistedFile {
@@ -36,7 +36,9 @@ interface MyDB extends DBSchema {
   };
 }
 
-const dbPromise = openDB<MyDB>('keyval', 1, {
+const DB_NAME = 'keyval'
+
+const dbPromise = openDB<MyDB>(DB_NAME, 1, {
   upgrade(db: any) {
     db.createObjectStore('config')
     db.createObjectStore('editor')
@@ -95,6 +97,10 @@ export async function setSize(key: string, value: number) {
 
 export async function getSize() {
   const db = await dbPromise
-  const sizes = await db.getAll('size')
-  return sizes.reduce((a, b) => (a ?? 0) + (b ?? 0))
+  const sizes = await db.getAll('size') ?? []
+  return sizes.reduce((a, b) => (a ?? 0) + (b ?? 0), 0)
+}
+
+export async function deleteDatabase() {
+  indexedDB.deleteDatabase(DB_NAME)
 }
