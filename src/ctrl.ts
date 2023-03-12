@@ -306,6 +306,12 @@ export const createCtrl = (initial: State) => {
   }
 
   const updateEditorState = (state: State, node?: Element) => {
+    let editorView = state.editor?.editorView
+
+    if ((!editorView && !node) || !state.editor?.id) {
+      return
+    }
+
     const extensions = createExtensions({
       config: state.config,
       markdown: state.editor?.markdown,
@@ -321,8 +327,6 @@ export const createCtrl = (initial: State) => {
         }
       } : undefined
     })
-
-    let editorView = state.editor?.editorView
 
     const nodeViews = createNodeViews(extensions)
     const schema = createSchema(extensions)
@@ -373,6 +377,7 @@ export const createCtrl = (initial: State) => {
       }
 
       if (data.args?.dir) { // If app was started with a directory as argument
+        data.editor = undefined
       } else if (data.args?.file) { // If app was started with a file as argument
         const path = data.args.file
         let file = await getFile(data, {path})
@@ -419,7 +424,7 @@ export const createCtrl = (initial: State) => {
       }
 
       setState(newState)
-      updateEditorState(newState, node)
+      renderEditor(node)
       updateText(text)
     } catch (error: any) {
       remote.log('error', `Error during init: ${error.message}`)
@@ -429,6 +434,10 @@ export const createCtrl = (initial: State) => {
     if (isTauri) {
       await remote.show()
     }
+  }
+
+  const renderEditor = (node: Element) => {
+    updateEditorState(unwrap(store), node)
   }
 
   const reset = async () => {
@@ -508,7 +517,7 @@ export const createCtrl = (initial: State) => {
 
     if (isEmpty(state.editor?.editorView?.state)) {
       const index = state.files.findIndex((x) => x.id === state.editor?.id)
-      state.files.splice(index, 1)
+      if (index !== -1) state.files.splice(index, 1)
     }
 
     if (state.args?.room) state.args.room = undefined
@@ -685,6 +694,8 @@ export const createCtrl = (initial: State) => {
 
   const ctrl = {
     init,
+    renderEditor,
+    updateEditorState,
     reset,
     discard,
     newFile,

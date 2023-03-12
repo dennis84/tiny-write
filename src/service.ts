@@ -5,27 +5,11 @@ import {File, State} from '@/state'
 import {isTauri} from '@/env'
 import {serialize} from '@/markdown'
 
-export const fetchData = async (state: State): Promise<State> => {
-  let args = await remote.getArgs().catch(() => undefined)
-
-  if (!isTauri) {
-    const room = window.location.pathname?.slice(1).trim()
-    if (room) args = {room}
-  }
-
-  const fetchedEditor = await db.getEditor()
-  const fetchedWindow = await db.getWindow()
-  const fetchedFiles = await db.getFiles()
-  const fetchedConfig = await db.getConfig()
-  const fetchedSize = await db.getSize()
-
-  const config = {
-    ...state.config,
-    ...fetchedConfig
-  }
-
+const fetchFiles = async () => {
+  const fetched = await db.getFiles()
   const files = []
-  for (const file of fetchedFiles ?? []) {
+
+  for (const file of fetched ?? []) {
     try {
       files.push({
         id: file.id,
@@ -37,6 +21,28 @@ export const fetchData = async (state: State): Promise<State> => {
     } catch (err) {
       remote.log('ERROR', 'Ignore file due to invalid ydoc.')
     }
+  }
+
+  return files
+}
+
+export const fetchData = async (state: State): Promise<State> => {
+  let args = await remote.getArgs().catch(() => undefined)
+
+  if (!isTauri) {
+    const room = window.location.pathname?.slice(1).trim()
+    if (room) args = {room}
+  }
+
+  const fetchedEditor = await db.getEditor()
+  const fetchedWindow = await db.getWindow()
+  const fetchedConfig = await db.getConfig()
+  const fetchedSize = await db.getSize()
+  const files = await fetchFiles()
+
+  const config = {
+    ...state.config,
+    ...fetchedConfig,
   }
 
   return {

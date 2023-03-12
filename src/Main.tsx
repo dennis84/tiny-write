@@ -150,8 +150,10 @@ export default (props: {state: State}) => {
   })
 
   createEffect(() => {
-    if (!store.editor?.id && !store.editor) {
+    if (store.editor === undefined) {
       ctrl.init(editorRef!)
+    } else if (store.editor.id && store.editor.editorView === undefined) {
+      ctrl.renderEditor(editorRef!)
     }
   })
 
@@ -203,7 +205,7 @@ export default (props: {state: State}) => {
         onDragOver={onDragOver}>
         <Show when={store.error}><ErrorView /></Show>
         <Show when={store.args?.dir && !store.error}><Dir /></Show>
-        <Show when={!store.error && !store.args?.dir?.length}>
+        <Show when={!store.error && !store.args?.dir}>
           <Scroll data-tauri-drag-region="true">
             <Editor
               config={store.config}

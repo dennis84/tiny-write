@@ -121,8 +121,7 @@ test('init - dir', async () => {
 
   await ctrl.init(target)
   expect(store.files.length).toBe(1)
-  expect(store.editor?.id).toBe('1')
-  expect(getText(store)).toBe('')
+  expect(store.editor).toBe(undefined)
   expect(store.args?.dir).toEqual(['~/Desktop/Aaaa.md'])
 })
 
@@ -134,8 +133,7 @@ test('init - dir no current file', async () => {
   const target = document.createElement('div')
   await ctrl.init(target)
   expect(store.files.length).toBe(0)
-  expect(store.editor?.id).toBe(undefined)
-  expect(getText(store)).toBe('')
+  expect(store.editor).toBe(undefined)
   expect(store.args?.dir).toEqual(['~/Desktop/Aaaa.md'])
 })
 
