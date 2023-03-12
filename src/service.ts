@@ -87,6 +87,8 @@ export const saveFile = async (file: File) => {
   db.setSize('files', JSON.stringify(files).length)
 }
 
+export const deleteFile = (id: string) => db.deleteFile(id)
+
 export const saveEditor = async (state: State) => {
   if (!state.editor?.id || !state.editor?.editorView) {
     return

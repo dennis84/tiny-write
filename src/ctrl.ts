@@ -15,7 +15,6 @@ import {
 } from 'y-prosemirror'
 import {WebsocketProvider} from 'y-websocket'
 import {uniqueNamesGenerator, adjectives, animals} from 'unique-names-generator'
-import * as db from '@/db'
 import * as remote from '@/remote'
 import {createExtensions, createEmptyText, createSchema, createNodeViews} from '@/prosemirror-setup'
 import {State, File, Config, Version, ServiceError, Window, FileText} from '@/state'
@@ -128,7 +127,8 @@ export const createCtrl = (initial: State) => {
 
   const discardText = async () => {
     const state: State = unwrap(store)
-    const files = state.files.filter((f) => f.id !== state.editor?.id)
+    const id = state.editor?.id
+    const files = state.files.filter((f) => f.id !== id)
     const index = files.length - 1
     let file: File | undefined
 
@@ -146,6 +146,9 @@ export const createCtrl = (initial: State) => {
       ...newState,
       files,
     })
+
+    service.deleteFile(id!)
+    service.saveEditor(newState)
 
     updateEditorState(newState)
     if (file?.text) updateText(file.text)
@@ -528,11 +531,17 @@ export const createCtrl = (initial: State) => {
   }
 
   const deleteFile = async (req: OpenFile) => {
+    if (store.editor?.id === req.id) {
+      discardText()
+      return
+    }
+
     const state: State = unwrap(store)
     const files = state.files.filter((f: File) => f.id !== req.id)
     const newState = {...state, files}
+
     setState(newState)
-    db.deleteFile(req.id!)
+    service.deleteFile(req.id!)
     remote.log('info', '💾 Deleted file')
   }
 

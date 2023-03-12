@@ -357,6 +357,52 @@ test('discard - error', async () => {
   expect(store.files.length).toBe(0)
 })
 
+test('deleteFile - unused', async () => {
+  vi.spyOn(db, 'getEditor').mockResolvedValue({id: '1'})
+  vi.spyOn(db, 'getFiles').mockResolvedValue([
+    {id: '1', ydoc: createYdoc('Test'), lastModified},
+    {id: '2', ydoc: createYdoc('Test2'), lastModified},
+  ])
+
+  const {ctrl, store} = createCtrl(createState())
+  const target = document.createElement('div')
+  await ctrl.init(target)
+
+  await waitFor(() => {
+    expect(getText(store)).toBe('Test')
+  })
+
+  expect(store.files.length).toBe(2)
+
+  await ctrl.deleteFile({id: '2'})
+  expect(store.files.length).toBe(1)
+  expect(getText(store)).toBe('Test')
+})
+
+test('deleteFile - current', async () => {
+  vi.spyOn(db, 'getEditor').mockResolvedValue({id: '1'})
+  vi.spyOn(db, 'getFiles').mockResolvedValue([
+    {id: '1', ydoc: createYdoc('Test'), lastModified},
+    {id: '2', ydoc: createYdoc('Test2'), lastModified},
+  ])
+
+  const {ctrl, store} = createCtrl(createState())
+  const target = document.createElement('div')
+  await ctrl.init(target)
+
+  await waitFor(() => {
+    expect(getText(store)).toBe('Test')
+  })
+
+  expect(store.files.length).toBe(2)
+  await ctrl.deleteFile({id: '1'})
+
+  await waitFor(() => {
+    expect(store.files.length).toBe(1)
+    expect(getText(store)).toBe('Test2')
+  })
+})
+
 test('reset', async () => {
   const dbSpy = vi.spyOn(db, 'deleteDatabase')
   const reloadSpy = vi.spyOn(window.location, 'reload')

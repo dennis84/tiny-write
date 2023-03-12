@@ -24,6 +24,11 @@
           "takesValue": false
         },
         {
+          "name": "version",
+          "short": "v",
+          "takesValue": false
+        },
+        {
           "name": "no-default-features",
           "takesValue": false
         }

@@ -72,6 +72,9 @@ fn main() {
                             .unwrap_or_default();
                         println!("{}", help_text);
                         app.app_handle().exit(0);
+                    } else if matches.args.contains_key("version") {
+                        println!("{}", app.package_info().version);
+                        app.app_handle().exit(0);
                     } else {
                         app.manage(cmd::args::create_args("".to_string()));
                     }
