@@ -37,13 +37,9 @@ test('open file', async ({page}) => {
   expect(await page.locator('[data-testid="file-list"] > div').count()).toBe(2)
   expect(await page.textContent('.ProseMirror p')).toBe('Start typing ...')
 
-  // Exceprt is not updated while typing
-  await page.click('[data-testid="back"]')
-  await page.click('[data-testid="files"]')
-
-  expect(await page.textContent('[data-testid="file-list"] > div:nth-child(1)')).toContain('test1')
-  expect(await page.textContent('[data-testid="file-list"] > div:nth-child(2)')).toContain('test2')
-  await page.click('[data-testid="file-list"] > div:nth-child(1) > div')
+  expect(await page.textContent('[data-testid="file-list"] > div:nth-child(1)')).toContain('test2')
+  expect(await page.textContent('[data-testid="file-list"] > div:nth-child(2)')).toContain('test1')
+  await page.click('[data-testid="file-list"] > div:nth-child(2) > div')
 
   expect(await page.textContent('.ProseMirror p')).toBe('test1')
   expect(await page.locator('[data-testid="file-list"] > div').count()).toBe(2)

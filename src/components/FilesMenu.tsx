@@ -1,4 +1,4 @@
-import {For, createSignal, onMount, onCleanup, Show} from 'solid-js'
+import {For, createSignal, onMount, onCleanup, Show, createEffect} from 'solid-js'
 import {unwrap} from 'solid-js/store'
 import h from 'solid-js/h'
 import * as Y from 'yjs'
@@ -34,11 +34,11 @@ const FileContent = styled('div')`
   height: 180px;
   overflow: hidden;
   margin: 1px;
-  padding: 2px 4px;
+  padding: 4px;
   word-break: break-all;
   cursor: pointer;
   font-size: 10px;
-  line-height: 1.4;
+  line-height: 1.2;
   color: var(--foreground);
   background: var(--foreground-5);
   border: 1px solid var(--foreground-50);
@@ -53,6 +53,9 @@ const FileContent = styled('div')`
   ` : ''}
   border-radius: var(--border-radius);
   p {
+    margin: 4px 0;
+  }
+  p:first-child {
     margin: 0;
   }
   h2 {
@@ -68,8 +71,8 @@ const FileContent = styled('div')`
     border: 1px solid var(--foreground-50);
     background: var(--foreground-10);
     border-radius: var(--border-radius);
-    padding: 0px;
-    margin: 0;
+    padding: 0 4px;
+    margin: 4px 0;
     overflow: hidden;
   }
   &:hover {
@@ -109,7 +112,9 @@ export const FilesMenu = (props: Props) => {
   let tooltipRef: HTMLDivElement
   let arrowRef: HTMLSpanElement
 
-  const files = () => store.files.filter((f) => f.lastModified)
+  const files = () => store.files
+    .filter((f) => f.lastModified)
+    .sort((a, b) => b.lastModified!.getTime() - a.lastModified!.getTime())
 
   const schema = createSchema(createExtensions({config: store.config}))
 
@@ -130,41 +135,51 @@ export const FilesMenu = (props: Props) => {
   }
 
   const Excerpt = (p: {file: File}) => {
-    const ydoc = new Y.Doc({gc: false})
-    Y.applyUpdate(ydoc, p.file.ydoc)
-    const doc = yDocToProsemirror(schema, ydoc)
+    const maxLen = 300
     const maxText = 150
     const maxCode = 80
-    const nodes: Node[] = []
-    let len = 0
-    let done = false
+    const [content, setContent] = createSignal<Node[]>([])
 
-    doc.descendants((node, _, parent) => {
-      if (len >= 150) {
-        if (!done) nodes.push(h('span', {}, '…'))
-        done = true
-        return false
-      } else if (node.type.name === 'image') {
-        nodes.push(h('img', {src: node.attrs.src, alt: '️🖼️'}))
-      } else if (node.type.name === 'video') {
-        nodes.push(h('span', {}, '️🎬 '))
-      } else if (parent?.type.name === 'code_block') {
-        let text = node.textContent
-        if (text.length > maxCode) {
-          text = text.slice(0, maxCode) + '…'
+    createEffect(() => {
+      const ydoc = new Y.Doc({gc: false})
+      Y.applyUpdate(ydoc, p.file.ydoc)
+      const doc = yDocToProsemirror(schema, ydoc)
+      const nodes: Node[] = []
+      let len = 0
+      let done = false
+
+      doc.descendants((node, _, parent) => {
+        if (len >= maxLen) {
+          if (!done) nodes.push(h('span', {}, '…'))
+          done = true
+          return false
+        } else if (node.type.name === 'image') {
+          nodes.push(h('img', {src: node.attrs.src, alt: '️🖼️'}))
+        } else if (node.type.name === 'video') {
+          nodes.push(h('span', {}, '️🎬 '))
+        } else if (parent?.type.name === 'code_block') {
+          let text = node.textContent
+          if (text.length > maxCode) {
+            text = text.slice(0, maxCode) + '…'
+          }
+          nodes.push(h('pre', h('code', {}, text)))
+          nodes.push(h('span', {}, ' '))
+          len += text.length + 1
+        } else if (node.isText) {
+          const nodeType = parent?.type.name === 'heading' ? 'h2' : 'p'
+          let text = node.textContent
+          if (text.length > maxText) {
+            text = text.slice(0, maxText) + '…'
+          }
+          nodes.push(h(nodeType, {}, text + ' '))
+          len += text.length + 1
         }
-        nodes.push(h('pre', h('code', {}, text)))
-        nodes.push(h('span', {}, ' '))
-        len += text.length + 1
-      } else if (node.isText) {
-        const nodeType = parent?.type.name === 'heading' ? 'h2' : 'p'
-        const text = node.textContent.slice(0, maxText)
-        nodes.push(h(nodeType, {}, text + ' '))
-        len += text.length + 1
-      }
+      })
+
+      setContent(nodes)
     })
 
-    return nodes
+    return <>{content()}</>
   }
 
   const FileItem = (p: {file: File}) => {

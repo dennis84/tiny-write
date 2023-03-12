@@ -1,4 +1,4 @@
-import {DBSchema, openDB, deleteDB} from 'idb'
+import {DBSchema, openDB} from 'idb'
 import {Config, Window} from './state';
 
 export interface PersistedFile {
