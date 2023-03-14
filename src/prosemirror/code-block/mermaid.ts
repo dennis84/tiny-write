@@ -68,7 +68,7 @@ export const mermaidView = (codeBlock: CodeBlockView) =>
       }
     }
 
-    updateDOM() {
+    async updateDOM() {
       if (codeBlock.lang !== 'mermaid') {
         this.output.style.display = 'none'
         return
@@ -88,9 +88,7 @@ export const mermaidView = (codeBlock: CodeBlockView) =>
       })
 
       try {
-        mermaid.render(`mermaid-graph-${this.id}`, content, (svgCode) => {
-          this.output.innerHTML = svgCode
-        })
+        await mermaid.parse(content)
       } catch (err: any) {
         const error = document.createElement('code')
         error.textContent = err
@@ -99,6 +97,14 @@ export const mermaidView = (codeBlock: CodeBlockView) =>
         // remove mermaid error div
         const errorDiv = document.getElementById(`dmermaid-graph-${this.id}`)
         errorDiv?.remove()
+        return
+      }
+
+      try {
+        const result = await mermaid.render(`mermaid-graph-${this.id}`, content)
+        this.output.innerHTML = result.svg
+      } catch (err) {
+        // ignore
       }
     }
   })

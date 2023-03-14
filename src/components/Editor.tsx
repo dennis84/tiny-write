@@ -72,6 +72,7 @@ const codeBlock = (config: Config) => `
         flex-shrink: 1;
         padding: 30px;
         padding-left: 20px;
+        width: 100%;
       }
       .lang-input {
         position: absolute;

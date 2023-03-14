@@ -54,14 +54,15 @@ test('code block', async ({page}) => {
 })
 
 test('mermaid', async ({page}) => {
-  const line1 = 'flowchart LR'
-  const line2 = '  A --> B'
+  const line1 = 'flowchart'
   await page.type('.ProseMirror', '```mermaid ', {delay})
   await page.waitForSelector('.cm-container')
   await page.type(cmContent, line1, {delay})
-  await page.waitForTimeout(100)
-  expect(await page.textContent('.mermaid')).toContain('Parse error')
   await page.keyboard.press('Enter')
-  await page.type(cmContent, line2, {delay})
+  await page.type(cmContent, '  A --', {delay})
+  await page.waitForTimeout(100)
+
+  expect(await page.textContent('.mermaid')).toContain('Parse error')
+  await page.type(cmContent, '> B', {delay})
   await page.waitForSelector('.mermaid svg')
 })
