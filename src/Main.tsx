@@ -47,7 +47,7 @@ export default (props: {state: State}) => {
   onMount(() => {
     setupFonts()
     const matchDark = () => window.matchMedia('(prefers-color-scheme: dark)')
-    const onChangeTheme = () => ctrl.updateTheme()
+    const onChangeTheme = () => ctrl.config.updateTheme()
     matchDark().addEventListener('change', onChangeTheme)
     onCleanup(() => matchDark().removeEventListener('change', onChangeTheme))
   })
@@ -69,7 +69,7 @@ export default (props: {state: State}) => {
             const p = await remote.toRelativePath(path, d)
             insertImageMd(store.editor.editorView, p, x, y, mime)
           } else if (mime.startsWith('text/')) {
-            await ctrl.openFile({path})
+            await ctrl.editor.openFile({path})
             return
           }
         }
@@ -84,11 +84,11 @@ export default (props: {state: State}) => {
   onMount(async () => {
     if (!isTauri) return
     const unlistenResize = await appWindow.onResized(async ({payload}) => {
-      ctrl.updateWindow(payload)
+      ctrl.app.updateWindow(payload)
     })
 
     const unlistenMove = await appWindow.onMoved(async ({payload}) => {
-      ctrl.updateWindow(payload)
+      ctrl.app.updateWindow(payload)
     })
 
     onCleanup(() => {
@@ -131,7 +131,7 @@ export default (props: {state: State}) => {
         e.preventDefault()
         const max = Math.min(document.body.clientWidth, 1800)
         const currentWidth = store.config.contentWidth
-        ctrl.updateContentWidth(Math.max(400, Math.min(max, currentWidth - e.deltaY)))
+        ctrl.config.updateContentWidth(Math.max(400, Math.min(max, currentWidth - e.deltaY)))
         return
       }
     }
@@ -144,16 +144,14 @@ export default (props: {state: State}) => {
 
   onError((error) => {
     console.error(error)
-    ctrl.setState({
-      error: {id: 'exception', props: {error}}
-    })
+    ctrl.app.setError(error)
   })
 
   createEffect(() => {
     if (store.editor === undefined) {
-      ctrl.init(editorRef!)
+      ctrl.editor.init(editorRef!)
     } else if (store.editor.id && store.editor.editorView === undefined) {
-      ctrl.renderEditor(editorRef!)
+      ctrl.editor.renderEditor(editorRef!)
     }
   })
 

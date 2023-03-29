@@ -3,6 +3,7 @@ import {Store} from 'solid-js/store'
 import {EditorView} from 'prosemirror-view'
 import * as Y from 'yjs'
 import {WebsocketProvider} from 'y-websocket'
+import {Ctrl} from './ctrl'
 
 export interface Args {
   cwd?: string;
@@ -79,6 +80,7 @@ export interface State {
   args?: Args;
   storageSize: number;
   window?: Window;
+  isSnapshot?: boolean;
 }
 
 export type FileText = {[key: string]: any};
@@ -100,7 +102,7 @@ export class ServiceError extends Error {
   }
 }
 
-export const StateContext = createContext<[Store<State>, any]>([{} as any, {} as any])
+export const StateContext = createContext<[Store<State>, Ctrl]>([{} as any, {} as any])
 
 export const useState = () => useContext(StateContext)
 

@@ -10,7 +10,7 @@ export const CodeBlockMenu = (props: Props) => {
   const [store, ctrl] = useState()
 
   const updatePrettier = (opt: Partial<PrettierConfig>) => {
-    ctrl.updateConfig({
+    ctrl.config.updateConfig({
       prettier: {...store.config.prettier, ...opt}
     })
   }

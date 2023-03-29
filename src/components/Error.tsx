@@ -23,11 +23,11 @@ const GeneralError = () => {
   }
 
   const onDiscard = () => {
-    ctrl.discard()
+    ctrl.editor.discard()
   }
 
   const onReset = () => {
-    ctrl.reset()
+    ctrl.app.reset()
   }
 
   const getMessage = () => {

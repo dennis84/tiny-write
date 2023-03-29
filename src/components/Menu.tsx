@@ -255,19 +255,19 @@ export default () => {
   }
 
   const onToggleAlwaysOnTop = () => {
-    ctrl.setAlwaysOnTop(!store.config.alwaysOnTop)
+    ctrl.config.setAlwaysOnTop(!store.config.alwaysOnTop)
   }
 
   const onToggleTypewriterMode = () => {
-    ctrl.updateConfig({typewriterMode: !store.config.typewriterMode})
+    ctrl.config.updateConfig({typewriterMode: !store.config.typewriterMode})
   }
 
   const onToggleSpellcheck = () => {
-    ctrl.updateConfig({spellcheck: !store.config.spellcheck})
+    ctrl.config.updateConfig({spellcheck: !store.config.spellcheck})
   }
 
   const onToggleFullscreen = () => {
-    ctrl.setFullscreen(!store.fullscreen)
+    ctrl.app.setFullscreen(!store.fullscreen)
   }
 
   const onVersion = () => {
@@ -275,7 +275,7 @@ export default () => {
   }
 
   const onNew = () => {
-    ctrl.newFile()
+    ctrl.editor.newFile()
     maybeHide()
     store.editor?.editorView?.focus()
   }
@@ -284,20 +284,20 @@ export default () => {
     const state = store.editor?.editorView?.state
     if (!state) return
     const path = await remote.save(state)
-    if (path) ctrl.updatePath(path)
+    if (path) ctrl.editor.updatePath(path)
   }
 
   const onDiscard = async () => {
-    const res = await ctrl.discard()
+    const res = await ctrl.editor.discard()
     if (res) maybeHide()
   }
 
   const onCollabStart = () => {
-    ctrl.startCollab()
+    ctrl.editor.startCollab()
   }
 
   const onCollabStop = () => {
-    ctrl.stopCollab()
+    ctrl.editor.stopCollab()
   }
 
   const onOpenInApp = () => {
@@ -326,7 +326,7 @@ export default () => {
     })
   }
 
-  const onToggleMarkdown = () => ctrl.toggleMarkdown()
+  const onToggleMarkdown = () => ctrl.editor.toggleMarkdown()
 
   const maybeHide = () => {
     if (window.innerWidth <= fullWidth) setShow(undefined)

@@ -12,23 +12,23 @@ export const AppearanceMenu = (props: Props) => {
   const [store, ctrl] = useState()
 
   const onChangeTheme = (theme: string) => () => {
-    ctrl.updateConfig({theme})
+    ctrl.config.updateConfig({theme})
   }
 
   const onChangeCodeTheme = (codeTheme: string) => () => {
-    ctrl.updateConfig({codeTheme})
+    ctrl.config.updateConfig({codeTheme})
   }
 
   const onChangeFont = (font: string) => () => {
-    ctrl.updateConfig({font})
+    ctrl.config.updateConfig({font})
   }
 
   const onChangeFontSize = (e: any) => {
-    ctrl.updateConfig({fontSize: Number(e.target.value)})
+    ctrl.config.updateConfig({fontSize: Number(e.target.value)})
   }
 
   const onChangeContentWidth = (e: any) => {
-    ctrl.updateConfig({contentWidth: Number(e.target.value)})
+    ctrl.config.updateConfig({contentWidth: Number(e.target.value)})
   }
 
   return (

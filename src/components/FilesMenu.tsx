@@ -119,18 +119,18 @@ export const FilesMenu = (props: Props) => {
   const schema = createSchema(createExtensions({config: store.config}))
 
   const onOpenFile = (file: File) => {
-    ctrl.openFile(unwrap(file))
+    ctrl.editor.openFile(unwrap(file))
     props.onOpenFile()
   }
 
   const onRemove = () => {
     const f = unwrap(current())
-    if (f) ctrl.deleteFile(f)
+    if (f) ctrl.editor.deleteFile(f)
     setCurrent(undefined)
   }
 
   const onNew = () => {
-    ctrl.newFile()
+    ctrl.editor.newFile()
     props.onOpenFile()
   }
 

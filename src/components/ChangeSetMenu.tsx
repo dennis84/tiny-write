@@ -25,19 +25,19 @@ export const ChangeSetMenu = (props: Props) => {
 
   const renderVersion = (version: Version) => {
     setActive(version)
-    ctrl.renderVersion(version)
+    ctrl.changeSet.renderVersion(version)
   }
 
   const applyVersion = () => {
     const version = active()
     if (!version) return
-    ctrl.applyVersion(version)
+    ctrl.changeSet.applyVersion(version)
     setActive(undefined)
     setVersions(getVersions())
   }
 
   const onBack = () => {
-    ctrl.unrenderVersion()
+    ctrl.changeSet.unrenderVersion()
     store.editor?.editorView?.focus()
     props.onBack()
   }
@@ -59,7 +59,7 @@ export const ChangeSetMenu = (props: Props) => {
       <ButtonGroup>
         <Button onClick={onBack}>↩ Back</Button>
         <Show when={active() === undefined}>
-          <ButtonPrimary onClick={() => ctrl.addVersion()}>
+          <ButtonPrimary onClick={() => ctrl.changeSet.addVersion()}>
             Create Snapshot
           </ButtonPrimary>
         </Show>

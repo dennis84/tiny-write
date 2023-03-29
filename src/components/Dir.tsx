@@ -21,15 +21,13 @@ export default () => {
   const [store, ctrl] = useState()
 
   const onNew = () => {
-    ctrl.newFile()
-    ctrl.setState('args.dir', undefined)
+    ctrl.editor.newFile()
     store.editor?.editorView?.focus()
   }
 
   const FileLink = (props: {path: string}) => {
     const onClick = () => {
-      ctrl.openFile({path: props.path})
-      ctrl.setState('args.dir', undefined)
+      ctrl.editor.openFile({path: props.path})
     }
 
     return (
