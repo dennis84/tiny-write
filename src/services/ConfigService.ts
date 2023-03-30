@@ -1,11 +1,11 @@
 import {SetStoreFunction, Store, unwrap} from 'solid-js/store'
 import {Config, State} from '@/state'
-import * as service from '@/service'
 import * as remote from '@/remote'
 import {isDarkTheme} from '@/config'
+import * as db from '@/db'
 import {Ctrl} from '.'
 
-export class ConfigApi {
+export class ConfigService {
   constructor(
     private ctrl: Ctrl,
     private store: Store<State>,
@@ -38,17 +38,23 @@ export class ConfigApi {
     const config = {...state.config, ...conf}
     this.setState('config', config)
     this.ctrl.editor.updateEditorState({...state, config})
-    service.saveConfig(unwrap(this.store))
+    this.saveConfig(unwrap(this.store))
   }
 
   updateContentWidth(contentWidth: number) {
     this.store.collab?.ydoc?.getMap('config').set('contentWidth', contentWidth)
     this.setState('config', 'contentWidth', contentWidth)
-    service.saveConfig(unwrap(this.store))
+    this.saveConfig(unwrap(this.store))
   }
 
   updateTheme() {
     this.setState('config', this.getTheme(unwrap(this.store), true))
-    service.saveConfig(unwrap(this.store))
+    this.saveConfig(unwrap(this.store))
+  }
+
+  private async saveConfig(state: State) {
+    db.setConfig(state.config)
+    db.setSize('window', JSON.stringify(state.config).length)
+    remote.log('info', '💾 Save config')
   }
 }

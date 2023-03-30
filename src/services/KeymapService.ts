@@ -1,62 +1,62 @@
 import {Store} from 'solid-js/store'
-import {Ctrl} from '@/ctrl'
 import {isTauri, mod} from '@/env'
 import * as remote from '@/remote'
 import {State} from '@/state'
 import {redo, undo} from 'y-prosemirror'
+import {Ctrl} from '.'
 
-export class Keymap {
+export class KeymapService {
   constructor(
     private ctrl: Ctrl,
     private store: Store<State>,
   ) {}
 
-  onReload = () => {
+  private onReload = () => {
     if (!isTauri) return
     window.location.reload()
   }
 
-  onQuit = () => {
+  private onQuit = () => {
     if (!isTauri) return
     remote.quit()
   }
 
-  onNew = () => {
+  private onNew = () => {
     this.ctrl.editor.newFile()
     return true
   }
 
-  onDiscard = () => {
+  private onDiscard = () => {
     this.ctrl.editor.discard()
     return true
   }
 
-  onSave = async () => {
+  private onSave = async () => {
     const state = this.store.editor?.editorView?.state
     if (!isTauri || this.store.editor?.path || !state) return false
     const path = await remote.save(state)
     if (path) this.ctrl.editor.updatePath(path)
   }
 
-  onFullscreen = () => {
+  private onFullscreen = () => {
     if (!isTauri) return
     this.ctrl.app.setFullscreen(!this.store.fullscreen)
     return true
   }
 
-  onUndo = () => {
+  private onUndo = () => {
     if (!this.store.editor?.editorView) return
     undo(this.store.editor.editorView.state)
     return true
   }
 
-  onRedo = () => {
+  private onRedo = () => {
     if (!this.store.editor?.editorView) return
     redo(this.store.editor.editorView.state)
     return true
   }
 
-  onPrint = () => {
+  private onPrint = () => {
     if (!isTauri) return
     window.print()
     return true

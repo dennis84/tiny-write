@@ -42,7 +42,7 @@ vi.mock('y-websocket', () => ({
   }))
 }))
 
-import {createCtrl} from '@/ctrl'
+import {createCtrl} from '@/services'
 import {createState, Version} from '@/state'
 
 beforeEach(() => {

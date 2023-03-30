@@ -1,10 +1,10 @@
 import {Store, unwrap, SetStoreFunction} from 'solid-js/store'
 import * as remote from '@/remote'
 import {State, ServiceError, Window} from '@/state'
-import * as service from '@/service'
-import {Ctrl} from '@/ctrl'
+import * as db from '@/db'
+import {Ctrl} from '.'
 
-export class AppApi {
+export class AppService {
   constructor(
     private ctrl: Ctrl,
     private store: Store<State>,
@@ -22,7 +22,7 @@ export class AppApi {
 
   async reset() {
     this.ctrl.editor.disconnectCollab(this.store)
-    await service.reset()
+    await db.deleteDatabase()
     window.location.reload()
   }
 
@@ -35,6 +35,10 @@ export class AppApi {
   updateWindow(win: Partial<Window>) {
     if (this.store.fullscreen) return
     this.setState('window', {...this.store.window, ...win})
-    service.saveWindow(unwrap(this.store))
+    if (!this.store.window) return
+    const updatedWindow = unwrap(this.store.window)
+    db.setWindow(updatedWindow)
+    db.setSize('window', JSON.stringify(updatedWindow).length)
+    remote.log('info', '💾 Save window state')
   }
 }

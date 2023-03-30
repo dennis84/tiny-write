@@ -11,6 +11,7 @@ import {
   prosemirrorJSONToYDoc,
 } from 'y-prosemirror'
 import {WebsocketProvider} from 'y-websocket'
+import {fromUint8Array, toUint8Array} from 'js-base64'
 import {uniqueNamesGenerator, adjectives, animals} from 'unique-names-generator'
 import * as remote from '@/remote'
 import {createExtensions, createEmptyText, createSchema, createNodeViews} from '@/prosemirror-setup'
@@ -19,13 +20,12 @@ import {COLLAB_URL, isTauri} from '@/env'
 import {serialize, createMarkdownParser} from '@/markdown'
 import {themes} from '@/config'
 import {isEmpty} from '@/prosemirror'
-import {loadFile} from '@/fs'
-import * as service from '@/service'
-import {Ctrl} from '@/ctrl'
+import * as db from '@/db'
+import {Ctrl} from '.'
 
 type OpenFile = {id?: string; path?: string}
 
-export class EditorApi {
+export class EditorService {
   constructor(
     private ctrl: Ctrl,
     private store: Store<State>,
@@ -75,7 +75,7 @@ export class EditorApi {
 
         this.setState('editor', 'lastModified', new Date())
         this.updateCurrentFile()
-        service.saveEditor(this.store)
+        this.saveEditor(this.store)
         remote.log('info', '💾 Saved updated text')
       }
 
@@ -96,7 +96,7 @@ export class EditorApi {
     const state = unwrap(this.store)
 
     try {
-      let data = await service.fetchData(state)
+      let data = await this.fetchData(state)
       let text: FileText | undefined
 
       if (isTauri && data.window) {
@@ -109,7 +109,7 @@ export class EditorApi {
         const path = data.args.file
         let file = await this.getFile(data, {path})
         if (!file) {
-          const loadedFile = await loadFile(data.config, path)
+          const loadedFile = await this.ctrl.fs.loadFile(data.config, path)
           file = this.createFile(loadedFile)
           data.files.push(file as File)
         }
@@ -229,7 +229,7 @@ export class EditorApi {
     const state: State = unwrap(this.store)
     let file = await this.getFile(state, req)
     if (!file && req.path) {
-      const loadedFile = await loadFile(state.config, req.path)
+      const loadedFile = await this.ctrl.fs.loadFile(state.config, req.path)
       file = this.createFile(loadedFile)
       state.files.push(file as File)
     }
@@ -259,7 +259,7 @@ export class EditorApi {
     const newState = {...state, files}
 
     this.setState(newState)
-    service.deleteFile(req.id!)
+    await db.deleteFile(req.id!)
     remote.log('info', '💾 Deleted file')
   }
 
@@ -310,7 +310,7 @@ export class EditorApi {
     this.updateEditorState(this.store)
     this.updateText({...createEmptyText(), doc})
     this.updateCurrentFile()
-    service.saveEditor(this.store)
+    this.saveEditor(this.store)
     remote.log('info', '💾 Toggle markdown')
   }
 
@@ -377,8 +377,8 @@ export class EditorApi {
       files,
     })
 
-    service.deleteFile(id!)
-    service.saveEditor(newState)
+    await db.deleteFile(id!)
+    this.saveEditor(newState)
 
     this.updateEditorState(newState)
     if (file?.text) this.updateText(file.text)
@@ -393,7 +393,7 @@ export class EditorApi {
 
     const file = state.files[index]
     if (file?.path) {
-      const loadedFile = await loadFile(state.config, file.path)
+      const loadedFile = await this.ctrl.fs.loadFile(state.config, file.path)
       file.text = loadedFile.text
       file.lastModified = loadedFile.lastModified
       file.path = loadedFile.path
@@ -506,6 +506,93 @@ export class EditorApi {
       const type = this.store.collab.ydoc.getXmlFragment('prosemirror')
       type.delete(0, type.length)
       Y.applyUpdate(this.store.collab.ydoc, update)
+    }
+  }
+
+  async saveEditor(state: State) {
+    if (!state.editor?.id || !state.editor?.editorView) {
+      return
+    }
+
+    const editor = {id: state.editor.id}
+    const file = state.files.find((f) => f.id === editor.id)
+    if (!file) return
+    this.saveFile(file)
+
+    if (state.editor?.path) {
+      const text = serialize(state.editor.editorView.state)
+      await remote.writeFile(state.editor.path, text)
+    }
+
+    db.setEditor(editor)
+  }
+
+  private async saveFile(file: File) {
+    if (!file.lastModified) {
+      return
+    }
+
+    db.updateFile({
+      id: file.id,
+      ydoc: fromUint8Array(file.ydoc!),
+      lastModified: file.lastModified,
+      path: file.path,
+      markdown: file.markdown,
+    })
+
+    const files = await db.getFiles() ?? []
+    db.setSize('files', JSON.stringify(files).length)
+  }
+
+  private async fetchFiles() {
+    const fetched = await db.getFiles()
+    const files = []
+
+    for (const file of fetched ?? []) {
+      try {
+        files.push({
+          id: file.id,
+          ydoc: toUint8Array(file.ydoc),
+          lastModified: new Date(file.lastModified),
+          path: file.path,
+          markdown: file.markdown,
+        })
+      } catch (err) {
+        remote.log('ERROR', 'Ignore file due to invalid ydoc.')
+      }
+    }
+
+    return files
+  }
+
+  private async fetchData(state: State): Promise<State> {
+    let args = await remote.getArgs().catch(() => undefined)
+
+    if (!isTauri) {
+      const room = window.location.pathname?.slice(1).trim()
+      if (room) args = {room}
+    }
+
+    const fetchedEditor = await db.getEditor()
+    const fetchedWindow = await db.getWindow()
+    const fetchedConfig = await db.getConfig()
+    const fetchedSize = await db.getSize()
+    const files = await this.fetchFiles()
+
+    const config = {
+      ...state.config,
+      ...fetchedConfig,
+    }
+
+    return {
+      ...state,
+      args: args ?? state.args,
+      editor: fetchedEditor,
+      files,
+      config,
+      window: fetchedWindow,
+      storageSize: fetchedSize ?? 0,
+      collab: undefined,
     }
   }
 }

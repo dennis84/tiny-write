@@ -25,7 +25,7 @@ vi.mock('@/db', () => ({
   deleteDatabase: vi.fn(),
 }))
 
-import {createCtrl} from '@/ctrl'
+import {createCtrl} from '@/services'
 import {createState} from '@/state'
 
 const lastModified = new Date()

@@ -3,7 +3,7 @@ import {Store} from 'solid-js/store'
 import {EditorView} from 'prosemirror-view'
 import * as Y from 'yjs'
 import {WebsocketProvider} from 'y-websocket'
-import {Ctrl} from './ctrl'
+import {Ctrl} from '@/services'
 
 export interface Args {
   cwd?: string;

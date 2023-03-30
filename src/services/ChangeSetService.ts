@@ -4,10 +4,11 @@ import * as Y from 'yjs'
 import {yDocToProsemirror, ySyncPluginKey} from 'y-prosemirror'
 import {State, Version} from '@/state'
 import * as remote from '@/remote'
-import * as service from '@/service'
+import {Ctrl} from '.'
 
-export class ChangeSetApi {
+export class ChangeSetService {
   constructor(
+    private ctrl: Ctrl,
     private store: Store<State>,
     private setState: SetStoreFunction<State>,
   ) {}
@@ -34,7 +35,7 @@ export class ChangeSetApi {
       }])
     }
 
-    service.saveEditor(state)
+    this.ctrl.editor.saveEditor(state)
     remote.log('info', '💾 Saved new snapshot version')
   }
 
