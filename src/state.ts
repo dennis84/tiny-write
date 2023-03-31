@@ -46,7 +46,6 @@ export interface Version {
 
 export interface Collab {
   started?: boolean;
-  ready?: boolean;
   provider?: WebsocketProvider;
   permanentUserData?: Y.PermanentUserData;
   ydoc?: Y.Doc;

@@ -10,7 +10,6 @@ export interface CollabOptions {
   type: Y.XmlFragment;
   provider: WebsocketProvider;
   permanentUserData: Y.PermanentUserData;
-  onFirstRender: () => void;
 }
 
 const cursorBuilder = (user: any): HTMLElement => {
@@ -117,7 +116,6 @@ export const collab = (y?: CollabOptions): ProseMirrorExtension => ({
     ...prev,
     ySyncPlugin(y.type, {
       permanentUserData: y.permanentUserData,
-      onFirstRender: y.onFirstRender,
     }),
     // @ts-ignore
     yCursorPlugin(y.provider.awareness, {cursorBuilder}),

@@ -216,8 +216,8 @@ export default () => {
     })
 
     setTextStats({paragraphs, words, loc})
-    return [store.editor?.lastModified, store.collab?.ready]
-  }, [store.editor?.lastModified, store.collab?.ready])
+    return store.editor?.lastModified
+  }, store.editor?.lastModified)
 
   const clearText = () => (store.editor?.path || store.collab?.started) ? 'Close ⚠️' :
     (store.files.length > 0 && isTextEmpty()) ? 'Discard ⚠️' :

@@ -49,9 +49,6 @@ export class EditorService {
         type: state.collab.ydoc.getXmlFragment('prosemirror'),
         provider: state.collab.provider!,
         permanentUserData: state.collab.permanentUserData!,
-        onFirstRender: () => {
-          this.setState('collab', 'ready', true)
-        }
       } : undefined
     })
 
