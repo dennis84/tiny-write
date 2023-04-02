@@ -29,7 +29,6 @@ export class AppService {
   setFullscreen(fullscreen: boolean) {
     remote.setFullscreen(fullscreen)
     this.setState('fullscreen', fullscreen)
-    this.ctrl.editor.updateEditorState(this.store)
   }
 
   updateWindow(win: Partial<Window>) {

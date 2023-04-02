@@ -5,6 +5,7 @@ import {convertFileSrc} from '@tauri-apps/api/tauri'
 import {resolvePath, dirname} from '@/remote'
 import {isTauri} from '@/env'
 import {ProseMirrorExtension} from '@/prosemirror'
+import {State} from '@/state'
 
 const REGEX = /^!\[([^[\]]*?)\]\((.+?)\)\s+/
 const MAX_MATCH = 500
@@ -145,7 +146,7 @@ class ImageView {
     private node: Node,
     private view: EditorView,
     private getPos: () => number,
-    private path?: string
+    private state: State,
   ) {
     this.container = document.createElement('span')
     this.container.classList.add('image-container', 'loading')
@@ -173,7 +174,7 @@ class ImageView {
       !node.attrs.src.startsWith('data:') &&
       !isUrl(node.attrs.src)
     ) {
-      getImagePath(node.attrs.src, this.path).then((p) => {
+      getImagePath(node.attrs.src, this.state?.editor?.path).then((p) => {
         source.setAttribute('src', p)
       })
     } else {
@@ -208,7 +209,7 @@ class ImageView {
   }
 }
 
-export default (path?: string): ProseMirrorExtension => ({
+export default (state: State): ProseMirrorExtension => ({
   schema: (prev) => ({
     ...prev,
     nodes: (prev.nodes as any)
@@ -221,10 +222,10 @@ export default (path?: string): ProseMirrorExtension => ({
   ],
   nodeViews: {
     image: (node, view, getPos) => {
-      return new ImageView(node, view, getPos, path)
+      return new ImageView(node, view, getPos, state)
     },
     video: (node, view, getPos) => {
-      return new ImageView(node, view, getPos, path)
+      return new ImageView(node, view, getPos, state)
     }
   },
 })

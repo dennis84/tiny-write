@@ -2,12 +2,8 @@ import {Plugin, PluginKey, Selection, TextSelection} from 'prosemirror-state'
 import {Decoration, DecorationSet, EditorView} from 'prosemirror-view'
 import {ProseMirrorExtension} from '@/prosemirror';
 import {isTauri} from '@/env';
-
-interface Props {
-  background: string;
-  border: string;
-  fullscreen: boolean;
-}
+import {State} from '@/state';
+import {primaryBackground, selection} from '@/config';
 
 interface Coords {
   fromX: number;
@@ -50,7 +46,7 @@ class SelectView {
     const isTauriDragRegion =
       isTauri &&
       (e.target as HTMLElement)?.dataset?.tauriDragRegion === 'true' &&
-      !this.props.fullscreen
+      !this.state.fullscreen
 
     if (isInnerNodes || isTauriDragRegion) {
       return
@@ -103,9 +99,9 @@ class SelectView {
     context.clearRect(0, 0, this.canvas.width, this.canvas.height)
 
     context.beginPath();
-    context.fillStyle = this.props.background
+    context.fillStyle = selection(this.state.config)
     context.lineWidth = 2
-    context.strokeStyle = this.props.border
+    context.strokeStyle = primaryBackground(this.state.config)
     context.roundRect(
       this.coords.fromX,
       this.coords.fromY,
@@ -132,7 +128,7 @@ class SelectView {
     this.coords = undefined
   }
 
-  constructor(private view: EditorView, private props: Props) {
+  constructor(private view: EditorView, private state: State) {
     document.addEventListener('mousedown', this.onMouseDown)
   }
 
@@ -192,7 +188,7 @@ class SelectView {
 
 const pluginKey = new PluginKey('select')
 
-const select = (props: Props) => new Plugin({
+const select = (state: State) => new Plugin({
   key: pluginKey,
   state: {
     init() {
@@ -226,13 +222,13 @@ const select = (props: Props) => new Plugin({
     }
   },
   view(editorView) {
-    return new SelectView(editorView, props)
+    return new SelectView(editorView, state)
   }
 })
 
-export default (props: Props): ProseMirrorExtension => ({
+export default (state: State): ProseMirrorExtension => ({
   plugins: (prev) => [
     ...prev,
-    select(props),
+    select(state),
   ]
 })

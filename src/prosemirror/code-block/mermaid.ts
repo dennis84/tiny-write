@@ -3,6 +3,7 @@ import {language} from '@codemirror/language'
 import mermaid from 'mermaid'
 import {CodeBlockView} from './view'
 import {CompletionSource} from '@codemirror/autocomplete'
+import {codeTheme, fontFamily} from '@/config'
 
 const syntax: Record<string, string[]> = {
   flowchart: [
@@ -83,8 +84,8 @@ export const mermaidView = (codeBlock: CodeBlockView) =>
       this.output.style.display = 'flex'
       mermaid.initialize({
         startOnLoad: false,
-        theme: codeBlock.options.dark ? 'dark' : 'default',
-        fontFamily: `${codeBlock.options.font}, monospace`,
+        theme: codeTheme(codeBlock.options.state.config).dark ? 'dark' : 'default',
+        fontFamily: `${fontFamily(codeBlock.options.state.config)}, monospace`,
       })
 
       try {

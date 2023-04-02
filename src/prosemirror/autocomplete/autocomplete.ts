@@ -2,6 +2,7 @@ import {computePosition, offset} from '@floating-ui/dom'
 import {keymap} from 'prosemirror-keymap'
 import {EditorState, Plugin, PluginKey, Transaction} from 'prosemirror-state'
 import {EditorView} from 'prosemirror-view'
+import {State} from '@/state'
 
 const MAX_MATCH = 500
 
@@ -11,7 +12,7 @@ class AutocompleteView {
   constructor(
     view: EditorView,
     private pluginKey: PluginKey,
-    private fontSize: number = 14,
+    private state: State,
   ) {
     this.tooltip = document.createElement('div')
     this.tooltip.className = 'autocomplete-tooltip'
@@ -63,7 +64,7 @@ class AutocompleteView {
 
     computePosition(virtualEl, this.tooltip, {
       placement: 'bottom-start',
-      middleware: [offset(this.fontSize + 5)],
+      middleware: [offset(this.state.config.fontSize + 5)],
     }).then(({x, y, placement}) => {
       this.tooltip.classList.add(placement)
       this.tooltip.style.left = `${x}px`
@@ -90,7 +91,7 @@ export const completionPlugin = (
   pluginKey: PluginKey,
   regex: RegExp,
   getOptions: (match: string, state: EditorState) => Promise<string[]>,
-  fontSize: number
+  state: State
 ) => new Plugin({
   key: pluginKey,
   state: {
@@ -104,7 +105,7 @@ export const completionPlugin = (
     }
   },
   view(editorView) {
-    return new AutocompleteView(editorView, pluginKey, fontSize)
+    return new AutocompleteView(editorView, pluginKey, state)
   },
   props: {
     handleDOMEvents: {

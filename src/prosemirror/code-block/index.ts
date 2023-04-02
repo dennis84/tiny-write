@@ -3,8 +3,8 @@ import {Decoration, DecorationSource, EditorView} from 'prosemirror-view'
 import {EditorState, Selection, Transaction, TextSelection} from 'prosemirror-state'
 import {keymap} from 'prosemirror-keymap'
 import {inputRules, textblockTypeInputRule} from 'prosemirror-inputrules'
-import {Extension} from '@codemirror/state'
-import {PrettierConfig} from '@/state'
+import {KeyBinding} from '@codemirror/view'
+import {State} from '@/state'
 import {ProseMirrorExtension} from '@/prosemirror'
 import {CodeBlockView} from './view'
 
@@ -76,13 +76,8 @@ export const defaultProps = {
 }
 
 export interface CodeBlockProps {
-  theme: string;
-  dark: boolean;
-  typewriterMode: boolean;
-  font: string;
-  fontSize: number;
-  prettier: PrettierConfig;
-  extensions?: (view: EditorView, node: Node, getPos: () => number) => Extension[];
+  state: State;
+  keymap: KeyBinding[];
 }
 
 const codeBlockSchema = {
@@ -91,7 +86,7 @@ const codeBlockSchema = {
   code: true,
   defining: true,
   selectable: true,
-  marks: 'ychange',
+  //marks: 'ychange',
   attrs: {
     lang: {default: null},
     hidden: {default: false},

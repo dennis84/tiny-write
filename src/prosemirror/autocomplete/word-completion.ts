@@ -2,6 +2,7 @@ import {Node} from 'prosemirror-model'
 import {Plugin, PluginKey} from 'prosemirror-state'
 import {debounce} from 'ts-debounce'
 import {ProseMirrorExtension} from '@/prosemirror'
+import {State} from '@/state'
 import {completionPlugin, completionKeymap} from './autocomplete'
 
 const pattern = /[a-zA-Z0-9_\u0392-\u03c9\u00c0-\u00ff\u0600-\u06ff\u0400-\u04ff]+|[\u4e00-\u9fff\u3400-\u4dbf\uf900-\ufaff\u3040-\u309f\uac00-\ud7af]+/g
@@ -55,7 +56,7 @@ const update = debounce((view) => {
 
 const wordCompletionKey = new PluginKey('word-completion')
 
-export default (fontSize: number): ProseMirrorExtension => ({
+export default (state: State): ProseMirrorExtension => ({
   plugins: (prev) => [
     completionKeymap(wordCompletionKey),
     ...prev,
@@ -67,7 +68,7 @@ export default (fontSize: number): ProseMirrorExtension => ({
         if (text.length < 1) return []
         return [...words].filter((w) => w !== text && w.startsWith(text))
       },
-      fontSize
+      state
     ),
     plugin,
   ]

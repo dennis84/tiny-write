@@ -116,7 +116,10 @@ export const FilesMenu = (props: Props) => {
     .filter((f) => f.lastModified)
     .sort((a, b) => b.lastModified!.getTime() - a.lastModified!.getTime())
 
-  const schema = createSchema(createExtensions({config: store.config}))
+  const schema = createSchema(createExtensions({
+    state: unwrap(store),
+    markdown: false,
+  }))
 
   const onOpenFile = (file: File) => {
     ctrl.editor.openFile(unwrap(file))

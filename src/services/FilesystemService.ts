@@ -1,4 +1,5 @@
-import {Config, FileText, ServiceError} from '@/state'
+import {Store, unwrap} from 'solid-js/store'
+import {FileText, ServiceError, State} from '@/state'
 import * as remote from '@/remote'
 import {createExtensions, createSchema} from '@/prosemirror-setup'
 import {createMarkdownParser} from '@/markdown'
@@ -10,17 +11,14 @@ export interface LoadedFile {
 }
 
 export class FilesystemService {
-  async loadFile(config: Config, path: string): Promise<LoadedFile> {
+  constructor(private store: Store<State>) {}
+
+  async loadFile(path: string): Promise<LoadedFile> {
     try {
       const resolvedPath = await remote.resolvePath([path])
       const fileContent = await remote.readFile(resolvedPath)
       const lastModified = await remote.getFileLastModified(resolvedPath)
-      const extensions = createExtensions({
-        config,
-        markdown: false,
-        path: resolvedPath,
-        keymap: {},
-      })
+      const extensions = createExtensions({state: unwrap(this.store)})
       const schema = createSchema(extensions)
       const parser = createMarkdownParser(schema)
       const doc = parser.parse(fileContent)?.toJSON()

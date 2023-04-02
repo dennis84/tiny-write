@@ -40,16 +40,9 @@ export class EditorService {
     }
 
     const extensions = createExtensions({
-      config: state.config,
-      markdown: state.editor?.markdown,
-      fullscreen: state.fullscreen,
-      path: state.editor?.path,
+      state,
+      type: state.collab!.ydoc!.getXmlFragment('prosemirror'),
       keymap: this.ctrl.keymap.create(),
-      y: state.collab?.ydoc ? {
-        type: state.collab.ydoc.getXmlFragment('prosemirror'),
-        provider: state.collab.provider!,
-        permanentUserData: state.collab.permanentUserData!,
-      } : undefined
     })
 
     const nodeViews = createNodeViews(extensions)
@@ -106,7 +99,7 @@ export class EditorService {
         const path = data.args.file
         let file = await this.getFile(data, {path})
         if (!file) {
-          const loadedFile = await this.ctrl.fs.loadFile(data.config, path)
+          const loadedFile = await this.ctrl.fs.loadFile(path)
           file = this.createFile(loadedFile)
           data.files.push(file as File)
         }
@@ -226,7 +219,7 @@ export class EditorService {
     const state: State = unwrap(this.store)
     let file = await this.getFile(state, req)
     if (!file && req.path) {
-      const loadedFile = await this.ctrl.fs.loadFile(state.config, req.path)
+      const loadedFile = await this.ctrl.fs.loadFile(req.path)
       file = this.createFile(loadedFile)
       state.files.push(file as File)
     }
@@ -287,10 +280,10 @@ export class EditorService {
       doc = {type: 'doc', content: nodes}
     } else {
       const extensions = createExtensions({
-        config: state.config,
-        path: state.editor?.path,
+        state,
         markdown,
         keymap: this.ctrl.keymap.create(),
+        type: state.collab!.ydoc!.getXmlFragment('prosemirror'),
       })
       const schema = createSchema(extensions)
       const parser = createMarkdownParser(schema)
@@ -390,7 +383,7 @@ export class EditorService {
 
     const file = state.files[index]
     if (file?.path) {
-      const loadedFile = await this.ctrl.fs.loadFile(state.config, file.path)
+      const loadedFile = await this.ctrl.fs.loadFile(file.path)
       file.text = loadedFile.text
       file.lastModified = loadedFile.lastModified
       file.path = loadedFile.path

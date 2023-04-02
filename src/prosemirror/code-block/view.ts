@@ -13,13 +13,14 @@ import {
 } from '@codemirror/autocomplete'
 import {indentOnInput, indentUnit, bracketMatching, foldGutter, foldKeymap} from '@codemirror/language'
 import {linter, setDiagnostics} from '@codemirror/lint'
-import {CodeBlockProps, defaultProps} from '.'
+import {CodeBlockProps} from '.'
 import {findWords, tabCompletionKeymap} from './completion'
 import {highlight, changeLang} from './lang'
 import {getTheme} from './theme'
 import expand from './expand'
 import {prettifyView} from './prettify'
 import {mermaidKeywords, mermaidView} from './mermaid'
+import {codeTheme} from '@/config'
 
 export class CodeBlockView {
   public dom: HTMLElement
@@ -35,7 +36,7 @@ export class CodeBlockView {
     private view: ProsemirrorEditorView,
     readonly getPos: () => number,
     private innerDecos: DecorationSource,
-    readonly options: CodeBlockProps = defaultProps,
+    readonly options: CodeBlockProps,
   ) {
     this.dom = document.createElement('div')
     this.dom.setAttribute('contenteditable', 'false')
@@ -119,21 +120,17 @@ export class CodeBlockView {
       }
     }])
 
-    const extensions = this.options.extensions ?
-      this.options.extensions(this.view, this.node, this.getPos) :
-      []
-
     this.langExt = new Compartment
     this.findWordsExt = new Compartment
     this.keywordsExt = new Compartment
 
-    const theme = getTheme(this.options.theme)
+    const theme = getTheme(codeTheme(this.options.state.config).value)
     const langSupport = highlight(this.lang)
 
     this.editorView = new EditorView({
       doc: this.node.textContent,
       extensions: [
-        extensions,
+        keymap.of(this.options.keymap),
         codeMirrorKeymap,
         keymap.of(closeBracketsKeymap),
         keymap.of(foldKeymap),
@@ -149,8 +146,12 @@ export class CodeBlockView {
         foldGutter(),
         closeBrackets(),
         linter(() => []),
-        EditorState.tabSize.of(this.options.prettier.tabWidth),
-        indentUnit.of(this.options.prettier.useTabs ? '\t' : ' '.repeat(this.options.prettier.tabWidth)),
+        EditorState.tabSize.of(this.options.state.config.prettier.tabWidth),
+        indentUnit.of(
+          this.options.state.config.prettier.useTabs ?
+            '\t' :
+            ' '.repeat(this.options.state.config.prettier.tabWidth)
+        ),
         expand(this),
         mermaidView(this),
         prettifyView(this),
@@ -232,7 +233,7 @@ export class CodeBlockView {
       this.editorView.hasFocus &&
       sel.empty &&
       update.transactions.length > 0 &&
-      this.options.typewriterMode
+      this.options.state.config.typewriterMode
     ) {
       const lineBlock = this.editorView.lineBlockAt(sel.from)
       let {node} = this.editorView.domAtPos(lineBlock.from)

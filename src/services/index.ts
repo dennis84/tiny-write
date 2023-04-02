@@ -20,11 +20,11 @@ export class Ctrl {
     setState: SetStoreFunction<State>,
   ) {
     this.app = new AppService(this, store, setState)
-    this.config = new ConfigService(this, store, setState)
+    this.config = new ConfigService(store, setState)
     this.editor = new EditorService(this, store, setState)
     this.changeSet = new ChangeSetService(this, store, setState)
     this.keymap = new KeymapService(this, store)
-    this.fs = new FilesystemService()
+    this.fs = new FilesystemService(store)
   }
 }
 
