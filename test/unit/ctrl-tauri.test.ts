@@ -49,7 +49,7 @@ beforeEach(() => {
 test('init - load existing by path', async () => {
   vi.spyOn(db, 'getEditor').mockResolvedValue({id: '1'})
   vi.spyOn(db, 'getFiles').mockResolvedValue([
-    {id: '1', ydoc: createYdoc(''), path: 'file1', lastModified}
+    {id: '1', ydoc: createYdoc('1', ''), path: 'file1', lastModified}
   ])
 
   const {store, ctrl} = createCtrl(createState())
@@ -83,8 +83,8 @@ test('init - check text', async () => {
 test('openFile - path in files', async () => {
   vi.spyOn(db, 'getEditor').mockResolvedValue({id: '2'})
   vi.spyOn(db, 'getFiles').mockResolvedValue([
-    {id: '1', path: 'file1', ydoc: createYdoc('Test'), lastModified},
-    {id: '2', path: 'file2', ydoc: createYdoc('Test 2'), lastModified},
+    {id: '1', path: 'file1', ydoc: createYdoc('1', 'Test'), lastModified},
+    {id: '2', path: 'file2', ydoc: createYdoc('2', 'Test 2'), lastModified},
   ])
 
   const {ctrl, store} = createCtrl(createState())
@@ -129,8 +129,8 @@ test('openFile - path and text', async () => {
 test('discard - with path', async () => {
   vi.spyOn(db, 'getEditor').mockResolvedValue({id: '1'})
   vi.spyOn(db, 'getFiles').mockResolvedValue([
-    {id: '1', path: 'file1', ydoc: createYdoc('Test'), lastModified},
-    {id: '2', path: 'file2', ydoc: createYdoc('Test 2'), lastModified},
+    {id: '1', path: 'file1', ydoc: createYdoc('1', 'Test'), lastModified},
+    {id: '2', path: 'file2', ydoc: createYdoc('2', 'Test 2'), lastModified},
   ])
 
   const {ctrl, store} = createCtrl(createState())

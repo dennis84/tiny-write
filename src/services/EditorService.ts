@@ -7,18 +7,15 @@ import {selectAll, deleteSelection} from 'prosemirror-commands'
 import * as Y from 'yjs'
 import {
   ySyncPluginKey,
-  yDocToProsemirror,
   prosemirrorJSONToYDoc,
+  yDocToProsemirrorJSON,
 } from 'y-prosemirror'
-import {WebsocketProvider} from 'y-websocket'
 import {fromUint8Array, toUint8Array} from 'js-base64'
-import {uniqueNamesGenerator, adjectives, animals} from 'unique-names-generator'
 import * as remote from '@/remote'
 import {createExtensions, createEmptyText, createSchema, createNodeViews} from '@/prosemirror-setup'
 import {State, File, FileText} from '@/state'
-import {COLLAB_URL, isTauri} from '@/env'
+import {isTauri} from '@/env'
 import {serialize, createMarkdownParser} from '@/markdown'
-import {themes} from '@/config'
 import {isEmpty} from '@/prosemirror'
 import * as db from '@/db'
 import {Ctrl} from '.'
@@ -41,7 +38,7 @@ export class EditorService {
 
     const extensions = createExtensions({
       state,
-      type: state.collab!.ydoc!.getXmlFragment('prosemirror'),
+      type: state.collab!.ydoc!.getXmlFragment(this.store.editor?.id),
       keymap: this.ctrl.keymap.create(),
     })
 
@@ -103,7 +100,7 @@ export class EditorService {
           file = this.createFile(loadedFile)
           data.files.push(file as File)
         }
-        data = await this.withFile(data, file)
+        data = this.withFile(data, file)
         text = file.text
       } else if (data.args?.room) { // Join collab
         let file = await this.getFile(data, {id: data.args.room})
@@ -111,11 +108,11 @@ export class EditorService {
           file = this.createFile({id: data.args.room})
           data.files.push(file as File)
         }
-        data = await this.withFile(data, file)
+        data = this.withFile(data, file)
       } else if (data.editor?.id) { // Restore last saved file
         const file = await this.getFile(data, {id: data.editor.id})
         if (file) {
-          data = await this.withFile(data, file)
+          data = this.withFile(data, file)
           text = file.text
         } else {
           data.editor = undefined
@@ -126,14 +123,22 @@ export class EditorService {
       if (!data.args?.dir && !data.editor?.id) {
         const file = this.createFile({id: data.args?.room})
         data.files.push(file)
-        data = await this.withFile(data, file)
+        data = this.withFile(data, file)
+      }
+
+      let collab
+      if (data.editor?.id) {
+        collab = this.ctrl.collab.create(data.editor.id, data.args?.room)
+        const file = await this.getFile(data, {id: data.editor.id})
+        if (file) this.ctrl.collab.applyTo(file, collab.ydoc)
       }
 
       const newState: State = {
         ...state,
         ...data,
         config: {...data.config, ...this.ctrl.config.getTheme(data)},
-        loading: 'initialized'
+        loading: 'initialized',
+        collab,
       }
 
       if (isTauri && newState.config?.alwaysOnTop) {
@@ -204,13 +209,14 @@ export class EditorService {
     const state: State = unwrap(this.store)
     const file = this.createFile()
 
-    this.disconnectCollab(state)
-    const update = await this.withFile({
+    this.ctrl.collab.disconnectCollab(state)
+    const update = this.withFile({
       ...state,
       args: {cwd: state.args?.cwd},
       files: [...state.files, file],
     }, file)
 
+    this.ctrl.collab.apply(file)
     this.setState(update)
     this.updateEditorState(update)
   }
@@ -232,7 +238,9 @@ export class EditorService {
     }
 
     if (state.args?.room) state.args.room = undefined
-    const update = await this.withFile(state, file)
+    this.ctrl.collab.disconnectCollab(state)
+    const update = this.withFile(state, file)
+    this.ctrl.collab.apply(file)
     this.setState(update)
     this.updateEditorState(update)
     if (file.text) this.updateText(file.text)
@@ -251,16 +259,6 @@ export class EditorService {
     this.setState(newState)
     await db.deleteFile(req.id!)
     remote.log('info', '💾 Deleted file')
-  }
-
-  startCollab() {
-    window.history.replaceState(null, '', `/${this.store.editor?.id}`)
-    this.store.collab?.provider?.connect()
-    this.setState('collab', {started: true})
-  }
-
-  stopCollab() {
-    this.disconnectCollab(unwrap(this.store))
   }
 
   toggleMarkdown() {
@@ -283,7 +281,7 @@ export class EditorService {
         state,
         markdown,
         keymap: this.ctrl.keymap.create(),
-        type: state.collab!.ydoc!.getXmlFragment('prosemirror'),
+        type: state.collab!.ydoc!.getXmlFragment(this.store.editor?.id),
       })
       const schema = createSchema(extensions)
       const parser = createMarkdownParser(schema)
@@ -307,13 +305,6 @@ export class EditorService {
   updatePath(path: string) {
     this.setState('editor', 'path', path)
     this.updateCurrentFile()
-  }
-
-  disconnectCollab(state: State) {
-    state.collab?.ydoc?.getMap('config').unobserve(this.onCollabConfigUpdate)
-    state.collab?.provider?.disconnect()
-    window.history.replaceState(null, '', '/')
-    this.setState('collab', {started: false})
   }
 
   private createYdoc(bytes?: Uint8Array): Y.Doc {
@@ -360,7 +351,8 @@ export class EditorService {
       file = this.createFile()
     }
 
-    const newState = await this.withFile(state, file)
+    this.ctrl.collab.disconnectCollab(state)
+    const newState = this.withFile(state, file)
     this.setState({
       args: {cwd: state.args?.cwd},
       ...newState,
@@ -370,6 +362,7 @@ export class EditorService {
     await db.deleteFile(id!)
     this.saveEditor(newState)
 
+    this.ctrl.collab.apply(file)
     this.updateEditorState(newState)
     if (file?.text) this.updateText(file.text)
   }
@@ -392,9 +385,8 @@ export class EditorService {
     return file
   }
 
-  private async withFile(state: State, file: File): Promise<State> {
-    this.disconnectCollab(state)
-    return this.withYjs({
+  private withFile(state: State, file: File): State {
+    return {
       ...state,
       error: undefined,
       args: {...state.args, dir: undefined},
@@ -404,78 +396,8 @@ export class EditorService {
         path: file.path,
         lastModified: file.lastModified,
         markdown: file.markdown,
-      },
-      collab: {
-        ydoc: this.createYdoc(file.ydoc),
-      },
-    })
-  }
-
-  private onCollabConfigUpdate = (event: Y.YMapEvent<unknown>) => {
-    const font = event.target.get('font') as string
-    const fontSize = event.target.get('fontSize') as number
-    const contentWidth = event.target.get('contentWidth') as number
-    this.setState('config', {font, fontSize, contentWidth})
-  }
-
-  private withYjs(state: State): State {
-    let join = false
-    let started = false
-    let room = state.editor!.id
-
-    if (state.args?.room) {
-      started = true
-      join = room !== state.args.room
-      room = state.args.room
-      window.history.replaceState(null, '', `/${room}`)
-    }
-
-    const ydoc = join ? this.createYdoc() : (state.collab?.ydoc ?? this.createYdoc())
-    const permanentUserData = new Y.PermanentUserData(ydoc)
-
-    const provider = new WebsocketProvider(COLLAB_URL, room, ydoc, {connect: started})
-    const configType = ydoc.getMap('config')
-    configType.set('font', state.config.font)
-    configType.set('fontSize', state.config.fontSize)
-    configType.set('contentWidth', state.config.contentWidth)
-    configType.observe(this.onCollabConfigUpdate)
-
-    provider.on('connection-error', () => {
-      remote.log('ERROR', '🌐 Connection error')
-      this.disconnectCollab(this.store)
-    })
-
-    const xs = Object.values(themes)
-    const index = Math.floor(Math.random() * xs.length)
-    const username = uniqueNamesGenerator({
-      dictionaries: [adjectives, animals],
-      style: 'capital',
-      separator: ' ',
-      length: 2,
-    })
-
-    provider.awareness.setLocalStateField('user', {
-      name: username,
-      color: xs[index].primaryBackground,
-      background: xs[index].primaryBackground,
-      foreground: xs[index].primaryForeground,
-    })
-
-    const newState = {
-      ...state,
-      editor: {
-        ...state.editor,
-        id: room,
-      },
-      collab: {
-        started,
-        ydoc,
-        provider,
-        permanentUserData,
       }
     }
-
-    return newState
   }
 
   private updateText(text?: {[key: string]: any}) {
@@ -484,16 +406,17 @@ export class EditorService {
     if (!schema || !this.store.collab?.ydoc) return
     let ynode: Node
     try {
-      ynode = yDocToProsemirror(schema, this.store.collab.ydoc)
+      const json = yDocToProsemirrorJSON(this.store.collab.ydoc, this.store.editor?.id)
+      ynode = Node.fromJSON(schema, json)
     } catch(e) {
       ynode = new Node()
     }
 
     const node = Node.fromJSON(schema, text.doc)
     if (!node.eq(ynode)) {
-      const ydoc = prosemirrorJSONToYDoc(schema, text.doc)
+      const ydoc = prosemirrorJSONToYDoc(schema, text.doc, this.store.editor?.id)
       const update = Y.encodeStateAsUpdate(ydoc)
-      const type = this.store.collab.ydoc.getXmlFragment('prosemirror')
+      const type = this.store.collab.ydoc.getXmlFragment(this.store.editor?.id)
       type.delete(0, type.length)
       Y.applyUpdate(this.store.collab.ydoc, update)
     }

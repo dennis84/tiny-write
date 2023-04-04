@@ -1,7 +1,7 @@
 import {SetStoreFunction, Store, unwrap} from 'solid-js/store'
-import {Slice} from 'prosemirror-model'
+import {Node, Slice} from 'prosemirror-model'
 import * as Y from 'yjs'
-import {yDocToProsemirror, ySyncPluginKey} from 'y-prosemirror'
+import {yDocToProsemirrorJSON, ySyncPluginKey} from 'y-prosemirror'
 import {State, Version} from '@/state'
 import * as remote from '@/remote'
 import {Ctrl} from '.'
@@ -65,7 +65,8 @@ export class ChangeSetService {
 
     const snapshot = Y.decodeSnapshot(version.snapshot)
     const newDoc = Y.createDocFromSnapshot(ydoc, snapshot)
-    const node = yDocToProsemirror(editorView.state.schema, newDoc)
+    const json = yDocToProsemirrorJSON(newDoc, state.editor?.id)
+    const node = Node.fromJSON(editorView.state.schema, json)
     this.unrenderVersion()
 
     const tr = editorView?.state.tr

@@ -1,0 +1,96 @@
+import {SetStoreFunction, Store, unwrap} from 'solid-js/store'
+import * as Y from 'yjs'
+import {WebsocketProvider} from 'y-websocket'
+import {Collab, File, State} from '@/state'
+import {COLLAB_URL} from '@/env'
+import * as remote from '@/remote'
+import {adjectives, animals, uniqueNamesGenerator} from 'unique-names-generator'
+import {themes} from '@/config'
+
+export class CollabService {
+  private onCollabConfigUpdate = (event: Y.YMapEvent<unknown>) => {
+    const font = event.target.get('font') as string
+    const fontSize = event.target.get('fontSize') as number
+    const contentWidth = event.target.get('contentWidth') as number
+    this.setState('config', {font, fontSize, contentWidth})
+  }
+
+  constructor(
+    private store: Store<State>,
+    private setState: SetStoreFunction<State>,
+  ) {}
+
+  create(room: string, joinRoom?: string): Collab {
+    let started = false
+
+    if (joinRoom) {
+      started = true
+      room = joinRoom
+      window.history.replaceState(null, '', `/${room}`)
+    }
+
+    const ydoc = new Y.Doc({gc: false})
+    const permanentUserData = new Y.PermanentUserData(ydoc)
+    const provider = new WebsocketProvider(COLLAB_URL, room, ydoc, {connect: started})
+
+    const configType = ydoc.getMap('config')
+    configType.set('font', this.store.config.font)
+    configType.set('fontSize', this.store.config.fontSize)
+    configType.set('contentWidth', this.store.config.contentWidth)
+    configType.observe(this.onCollabConfigUpdate)
+
+    provider.on('connection-error', () => {
+      remote.log('ERROR', '🌐 Connection error')
+      this.disconnectCollab(this.store)
+    })
+
+    const xs = Object.values(themes)
+    const index = Math.floor(Math.random() * xs.length)
+    const username = uniqueNamesGenerator({
+      dictionaries: [adjectives, animals],
+      style: 'capital',
+      separator: ' ',
+      length: 2,
+    })
+
+    provider.awareness.setLocalStateField('user', {
+      name: username,
+      color: xs[index].primaryBackground,
+      background: xs[index].primaryBackground,
+      foreground: xs[index].primaryForeground,
+    })
+
+    return {
+      started,
+      ydoc,
+      provider,
+      permanentUserData,
+    }
+  }
+
+  applyTo(file: File, ydoc?: Y.Doc) {
+    if (!ydoc || !file.ydoc) return
+    Y.applyUpdate(ydoc, file.ydoc)
+  }
+
+  apply(file: File) {
+    this.applyTo(file, this.store.collab?.ydoc)
+  }
+
+  startCollab() {
+    window.history.replaceState(null, '', `/${this.store.editor?.id}`)
+    this.store.collab?.provider?.connect()
+    this.setState('collab', {started: true})
+  }
+
+  stopCollab() {
+    this.disconnectCollab(unwrap(this.store))
+  }
+
+  disconnectCollab(state: State) {
+    state.collab?.ydoc?.getMap('config').unobserve(this.onCollabConfigUpdate)
+    state.collab?.provider?.disconnect()
+    window.history.replaceState(null, '', '/')
+    this.setState('collab', {started: false})
+  }
+}

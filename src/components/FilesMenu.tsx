@@ -1,8 +1,9 @@
 import {For, createSignal, onMount, onCleanup, Show, createEffect} from 'solid-js'
 import {unwrap} from 'solid-js/store'
 import h from 'solid-js/h'
+import {Node} from 'prosemirror-model'
 import * as Y from 'yjs'
-import {yDocToProsemirror} from 'y-prosemirror'
+import {yDocToProsemirrorJSON} from 'y-prosemirror'
 import {formatDistance} from 'date-fns'
 import {arrow, computePosition, flip, offset, shift} from '@floating-ui/dom'
 import {File, useState} from '@/state'
@@ -146,7 +147,8 @@ export const FilesMenu = (props: Props) => {
     createEffect(() => {
       const ydoc = new Y.Doc({gc: false})
       Y.applyUpdate(ydoc, p.file.ydoc)
-      const doc = yDocToProsemirror(schema, ydoc)
+      const state = yDocToProsemirrorJSON(ydoc, p.file.id)
+      const doc = Node.fromJSON(schema, state)
       const nodes: Node[] = []
       let len = 0
       let done = false

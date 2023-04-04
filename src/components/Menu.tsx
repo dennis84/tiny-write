@@ -293,11 +293,11 @@ export default () => {
   }
 
   const onCollabStart = () => {
-    ctrl.editor.startCollab()
+    ctrl.collab.startCollab()
   }
 
   const onCollabStop = () => {
-    ctrl.editor.stopCollab()
+    ctrl.collab.stopCollab()
   }
 
   const onOpenInApp = () => {

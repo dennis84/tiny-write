@@ -11,9 +11,9 @@ export const createText = (text: string) => ({
   },
 })
 
-export const createYdoc = (str: string) => {
+export const createYdoc = (id: string, str: string) => {
   const doc = str ? createText(str).doc : {type: 'doc', content: []}
-  const ydoc = prosemirrorJSONToYDoc(schema, doc)
+  const ydoc = prosemirrorJSONToYDoc(schema, doc, id)
   return fromUint8Array(Y.encodeStateAsUpdate(ydoc))
 }
 
