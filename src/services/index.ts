@@ -5,7 +5,7 @@ import {KeymapService} from './KeymapService'
 import {ChangeSetService} from './ChangeSetService'
 import {ConfigService} from './ConfigService'
 import {EditorService} from './EditorService'
-import {FilesystemService} from './FilesystemService'
+import {FileService} from './FileService'
 import {CollabService} from './CollabService'
 
 export class Ctrl {
@@ -14,7 +14,7 @@ export class Ctrl {
   editor!: EditorService
   changeSet!: ChangeSetService
   keymap!: KeymapService
-  fs!: FilesystemService
+  file!: FileService
   collab!: CollabService
 
   constructor(
@@ -26,7 +26,7 @@ export class Ctrl {
     this.editor = new EditorService(this, store, setState)
     this.changeSet = new ChangeSetService(this, store, setState)
     this.keymap = new KeymapService(this, store)
-    this.fs = new FilesystemService(store)
+    this.file = new FileService(store)
     this.collab = new CollabService(store, setState)
   }
 }

@@ -1,5 +1,4 @@
 import {Store, unwrap, SetStoreFunction} from 'solid-js/store'
-import {v4 as uuidv4} from 'uuid'
 import {EditorView} from 'prosemirror-view'
 import {EditorState, Plugin, Transaction} from 'prosemirror-state'
 import {Node} from 'prosemirror-model'
@@ -10,7 +9,6 @@ import {
   prosemirrorJSONToYDoc,
   yDocToProsemirrorJSON,
 } from 'y-prosemirror'
-import {fromUint8Array, toUint8Array} from 'js-base64'
 import * as remote from '@/remote'
 import {createExtensions, createEmptyText, createSchema, createNodeViews} from '@/prosemirror-setup'
 import {State, File, FileText} from '@/state'
@@ -94,23 +92,23 @@ export class EditorService {
         data.editor = undefined
       } else if (data.args?.file) { // If app was started with a file as argument
         const path = data.args.file
-        let file = await this.getFile(data, {path})
+        let file = await this.ctrl.file.getFile(data, {path})
         if (!file) {
-          const loadedFile = await this.ctrl.fs.loadFile(path)
-          file = this.createFile(loadedFile)
+          const loadedFile = await this.ctrl.file.loadFile(path)
+          file = this.ctrl.file.createFile(loadedFile)
           data.files.push(file as File)
         }
         data = this.withFile(data, file)
         text = file.text
       } else if (data.args?.room) { // Join collab
-        let file = await this.getFile(data, {id: data.args.room})
+        let file = await this.ctrl.file.getFile(data, {id: data.args.room})
         if (!file) {
-          file = this.createFile({id: data.args.room})
+          file = this.ctrl.file.createFile({id: data.args.room})
           data.files.push(file as File)
         }
         data = this.withFile(data, file)
       } else if (data.editor?.id) { // Restore last saved file
-        const file = await this.getFile(data, {id: data.editor.id})
+        const file = await this.ctrl.file.getFile(data, {id: data.editor.id})
         if (file) {
           data = this.withFile(data, file)
           text = file.text
@@ -121,7 +119,7 @@ export class EditorService {
 
       // Init from empty state or file not found
       if (!data.args?.dir && !data.editor?.id) {
-        const file = this.createFile({id: data.args?.room})
+        const file = this.ctrl.file.createFile({id: data.args?.room})
         data.files.push(file)
         data = this.withFile(data, file)
       }
@@ -129,7 +127,7 @@ export class EditorService {
       let collab
       if (data.editor?.id) {
         collab = this.ctrl.collab.create(data.editor.id, data.args?.room)
-        const file = await this.getFile(data, {id: data.editor.id})
+        const file = await this.ctrl.file.getFile(data, {id: data.editor.id})
         if (file) this.ctrl.collab.applyTo(file, collab.ydoc)
       }
 
@@ -207,7 +205,7 @@ export class EditorService {
     }
 
     const state: State = unwrap(this.store)
-    const file = this.createFile()
+    const file = this.ctrl.file.createFile()
 
     this.ctrl.collab.disconnectCollab(state)
     const update = this.withFile({
@@ -223,10 +221,10 @@ export class EditorService {
 
   async openFile(req: OpenFile) {
     const state: State = unwrap(this.store)
-    let file = await this.getFile(state, req)
+    let file = await this.ctrl.file.getFile(state, req)
     if (!file && req.path) {
-      const loadedFile = await this.ctrl.fs.loadFile(req.path)
-      file = this.createFile(loadedFile)
+      const loadedFile = await this.ctrl.file.loadFile(req.path)
+      file = this.ctrl.file.createFile(loadedFile)
       state.files.push(file as File)
     }
 
@@ -307,22 +305,6 @@ export class EditorService {
     this.updateCurrentFile()
   }
 
-  private createYdoc(bytes?: Uint8Array): Y.Doc {
-    const ydoc = new Y.Doc({gc: false})
-    if (bytes) Y.applyUpdate(ydoc, bytes)
-    return ydoc
-  }
-
-  private createFile(params: Partial<File> = {}): File {
-    const ydoc = params.ydoc ?? Y.encodeStateAsUpdate(this.createYdoc())
-    return {
-      markdown: false,
-      ...params,
-      id: params.id ?? uuidv4(),
-      ydoc,
-    }
-  }
-
   private updateCurrentFile() {
     const state = unwrap(this.store)
     if (!state.editor || !state.collab?.ydoc) return
@@ -344,11 +326,11 @@ export class EditorService {
     let file: File | undefined
 
     if (index !== -1) {
-      file = await this.getFile(state, {id: files[index].id})
+      file = await this.ctrl.file.getFile(state, {id: files[index].id})
     }
 
     if (!file) {
-      file = this.createFile()
+      file = this.ctrl.file.createFile()
     }
 
     this.ctrl.collab.disconnectCollab(state)
@@ -365,24 +347,6 @@ export class EditorService {
     this.ctrl.collab.apply(file)
     this.updateEditorState(newState)
     if (file?.text) this.updateText(file.text)
-  }
-
-  private async getFile(state: State, req: OpenFile): Promise<File | undefined> {
-    const index = state.files.findIndex((file) => {
-      return file.id === req.id || (file.path && file.path === req.path)
-    })
-
-    if (index === -1) return
-
-    const file = state.files[index]
-    if (file?.path) {
-      const loadedFile = await this.ctrl.fs.loadFile(file.path)
-      file.text = loadedFile.text
-      file.lastModified = loadedFile.lastModified
-      file.path = loadedFile.path
-    }
-
-    return file
   }
 
   private withFile(state: State, file: File): State {
@@ -430,7 +394,7 @@ export class EditorService {
     const editor = {id: state.editor.id}
     const file = state.files.find((f) => f.id === editor.id)
     if (!file) return
-    this.saveFile(file)
+    this.ctrl.file.saveFile(file)
 
     if (state.editor?.path) {
       const text = serialize(state.editor.editorView.state)
@@ -438,44 +402,6 @@ export class EditorService {
     }
 
     db.setEditor(editor)
-  }
-
-  private async saveFile(file: File) {
-    if (!file.lastModified) {
-      return
-    }
-
-    db.updateFile({
-      id: file.id,
-      ydoc: fromUint8Array(file.ydoc!),
-      lastModified: file.lastModified,
-      path: file.path,
-      markdown: file.markdown,
-    })
-
-    const files = await db.getFiles() ?? []
-    db.setSize('files', JSON.stringify(files).length)
-  }
-
-  private async fetchFiles() {
-    const fetched = await db.getFiles()
-    const files = []
-
-    for (const file of fetched ?? []) {
-      try {
-        files.push({
-          id: file.id,
-          ydoc: toUint8Array(file.ydoc),
-          lastModified: new Date(file.lastModified),
-          path: file.path,
-          markdown: file.markdown,
-        })
-      } catch (err) {
-        remote.log('ERROR', 'Ignore file due to invalid ydoc.')
-      }
-    }
-
-    return files
   }
 
   private async fetchData(state: State): Promise<State> {
@@ -490,7 +416,7 @@ export class EditorService {
     const fetchedWindow = await db.getWindow()
     const fetchedConfig = await db.getConfig()
     const fetchedSize = await db.getSize()
-    const files = await this.fetchFiles()
+    const files = await this.ctrl.file.fetchFiles()
 
     const config = {
       ...state.config,
