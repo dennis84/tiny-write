@@ -29,7 +29,8 @@ vi.mock('@/db', () => ({
 }))
 
 vi.mock('y-websocket', () => ({
-  WebsocketProvider: vi.fn(() => ({
+  WebsocketProvider: vi.fn((_, roomname) => ({
+    roomname,
     awareness: {
       setLocalStateField: vi.fn(),
       on: vi.fn(),
@@ -227,17 +228,27 @@ test('openFile - delete empty', async () => {
 })
 
 test('openFile - open collab', async () => {
-  const file = {id: 'room-123', ydoc: createYdoc('room-123', 'Test'), lastModified}
+  const file = {
+    id: 'room-123',
+    ydoc: createYdoc('room-123', 'Test'),
+    lastModified,
+  }
+
   vi.spyOn(db, 'getFiles').mockResolvedValue([file])
 
   const {ctrl, store} = createCtrl(createState())
   const target = document.createElement('div')
   await ctrl.editor.init(target)
+
+  expect(store.editor?.id).not.toBe('room-123')
+  expect(store.collab?.provider?.roomname).toBe(store.editor?.id)
+
   await ctrl.editor.openFile(file)
   await waitFor(() => {
     expect(getText(store)).toBe('Test')
     expect(store.editor?.id).toBe('room-123')
     expect(store.files.length).toBe(1)
+    expect(store.collab?.provider?.roomname).toBe('room-123')
   })
 })
 

@@ -1,4 +1,4 @@
-import {SetStoreFunction, Store, unwrap} from 'solid-js/store'
+import {SetStoreFunction, Store} from 'solid-js/store'
 import * as Y from 'yjs'
 import {WebsocketProvider} from 'y-websocket'
 import {Collab, File, State} from '@/state'
@@ -20,18 +20,14 @@ export class CollabService {
     private setState: SetStoreFunction<State>,
   ) {}
 
-  create(room: string, joinRoom?: string): Collab {
-    let started = false
-
-    if (joinRoom) {
-      started = true
-      room = joinRoom
+  create(room: string, connect = false): Collab {
+    if (connect) {
       window.history.replaceState(null, '', `/${room}`)
     }
 
     const ydoc = new Y.Doc({gc: false})
     const permanentUserData = new Y.PermanentUserData(ydoc)
-    const provider = new WebsocketProvider(COLLAB_URL, room, ydoc, {connect: started})
+    const provider = new WebsocketProvider(COLLAB_URL, room, ydoc, {connect})
 
     const configType = ydoc.getMap('config')
     configType.set('font', this.store.config.font)
@@ -41,7 +37,7 @@ export class CollabService {
 
     provider.on('connection-error', () => {
       remote.log('ERROR', '🌐 Connection error')
-      this.disconnectCollab(this.store)
+      this.disconnectCollab()
     })
 
     const xs = Object.values(themes)
@@ -61,20 +57,18 @@ export class CollabService {
     })
 
     return {
-      started,
+      started: connect,
       ydoc,
       provider,
       permanentUserData,
     }
   }
 
-  applyTo(file: File, ydoc?: Y.Doc) {
-    if (!ydoc || !file.ydoc) return
-    Y.applyUpdate(ydoc, file.ydoc)
-  }
-
-  apply(file: File) {
-    this.applyTo(file, this.store.collab?.ydoc)
+  createByFile(file: File, connect = false): Collab {
+    this.disconnectCollab()
+    const collab = this.create(file.id, connect)
+    if (file.ydoc) Y.applyUpdate(collab.ydoc!, file.ydoc)
+    return collab
   }
 
   startCollab() {
@@ -84,12 +78,12 @@ export class CollabService {
   }
 
   stopCollab() {
-    this.disconnectCollab(unwrap(this.store))
+    this.disconnectCollab()
   }
 
-  disconnectCollab(state: State) {
-    state.collab?.ydoc?.getMap('config').unobserve(this.onCollabConfigUpdate)
-    state.collab?.provider?.disconnect()
+  disconnectCollab() {
+    this.store.collab?.ydoc?.getMap('config').unobserve(this.onCollabConfigUpdate)
+    this.store.collab?.provider?.disconnect()
     window.history.replaceState(null, '', '/')
     this.setState('collab', {started: false})
   }

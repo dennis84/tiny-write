@@ -17,8 +17,7 @@ import {serialize, createMarkdownParser} from '@/markdown'
 import {isEmpty} from '@/prosemirror'
 import * as db from '@/db'
 import {Ctrl} from '.'
-
-type OpenFile = {id?: string; path?: string}
+import {OpenFile} from './FileService'
 
 export class EditorService {
   constructor(
@@ -126,9 +125,8 @@ export class EditorService {
 
       let collab
       if (data.editor?.id) {
-        collab = this.ctrl.collab.create(data.editor.id, data.args?.room)
         const file = await this.ctrl.file.getFile(data, {id: data.editor.id})
-        if (file) this.ctrl.collab.applyTo(file, collab.ydoc)
+        if (file) collab = this.ctrl.collab.createByFile(file, data.args?.room !== undefined)
       }
 
       const newState: State = {
@@ -207,14 +205,13 @@ export class EditorService {
     const state: State = unwrap(this.store)
     const file = this.ctrl.file.createFile()
 
-    this.ctrl.collab.disconnectCollab(state)
     const update = this.withFile({
       ...state,
       args: {cwd: state.args?.cwd},
       files: [...state.files, file],
     }, file)
 
-    this.ctrl.collab.apply(file)
+    update.collab = this.ctrl.collab.createByFile(file)
     this.setState(update)
     this.updateEditorState(update)
   }
@@ -236,9 +233,8 @@ export class EditorService {
     }
 
     if (state.args?.room) state.args.room = undefined
-    this.ctrl.collab.disconnectCollab(state)
     const update = this.withFile(state, file)
-    this.ctrl.collab.apply(file)
+    update.collab = this.ctrl.collab.createByFile(file)
     this.setState(update)
     this.updateEditorState(update)
     if (file.text) this.updateText(file.text)
@@ -333,8 +329,8 @@ export class EditorService {
       file = this.ctrl.file.createFile()
     }
 
-    this.ctrl.collab.disconnectCollab(state)
     const newState = this.withFile(state, file)
+    newState.collab = this.ctrl.collab.createByFile(file)
     this.setState({
       args: {cwd: state.args?.cwd},
       ...newState,
@@ -344,7 +340,6 @@ export class EditorService {
     await db.deleteFile(id!)
     this.saveEditor(newState)
 
-    this.ctrl.collab.apply(file)
     this.updateEditorState(newState)
     if (file?.text) this.updateText(file.text)
   }

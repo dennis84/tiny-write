@@ -21,7 +21,7 @@ export class AppService {
   }
 
   async reset() {
-    this.ctrl.collab.disconnectCollab(this.store)
+    this.ctrl.collab.disconnectCollab()
     await db.deleteDatabase()
     window.location.reload()
   }

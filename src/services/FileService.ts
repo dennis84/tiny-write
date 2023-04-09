@@ -14,7 +14,7 @@ export interface LoadedFile {
   path: string;
 }
 
-type OpenFile = {id?: string; path?: string}
+export type OpenFile = {id?: string; path?: string}
 
 export class FileService {
   constructor(private store: Store<State>) {}
