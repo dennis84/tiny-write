@@ -1,6 +1,6 @@
 import {vi, expect, test, beforeEach} from 'vitest'
 import * as db from '@/db'
-import {createYdoc, getText, insertText, waitFor, pause} from './util'
+import {createYUpdateAsString, getText, insertText, waitFor, pause} from './util'
 
 vi.stubGlobal('matchMedia', vi.fn(() => ({
   matchMedia: () => ''
@@ -61,8 +61,8 @@ test('init', async () => {
 
 test('init - new file if no id', async () => {
   vi.spyOn(db, 'getFiles').mockResolvedValue([
-    {id: '1', ydoc: createYdoc('1', 'Text'), lastModified},
-    {id: '2', ydoc: createYdoc('2', 'Test 2'), lastModified},
+    {id: '1', ydoc: createYUpdateAsString('1', 'Text'), lastModified},
+    {id: '2', ydoc: createYUpdateAsString('2', 'Test 2'), lastModified},
   ])
 
   const {ctrl, store} = createCtrl(createState())
@@ -77,8 +77,8 @@ test('init - new file if no id', async () => {
 test('init - existing file', async () => {
   vi.spyOn(db, 'getEditor').mockResolvedValue({id: '2'})
   vi.spyOn(db, 'getFiles').mockResolvedValue([
-    {id: '1', ydoc: createYdoc('1', 'Test'), lastModified},
-    {id: '2', ydoc: createYdoc('2', 'Test 2'), lastModified},
+    {id: '1', ydoc: createYUpdateAsString('1', 'Test'), lastModified},
+    {id: '2', ydoc: createYUpdateAsString('2', 'Test 2'), lastModified},
   ])
 
   const {ctrl, store} = createCtrl(createState())
@@ -93,8 +93,8 @@ test('init - existing file', async () => {
 test('init - join', async () => {
   vi.spyOn(db, 'getEditor').mockResolvedValue({id: '1'})
   vi.spyOn(db, 'getFiles').mockResolvedValue([
-    {id: '1', ydoc: createYdoc('1', 'Test'), lastModified},
-    {id: '2', ydoc: createYdoc('2', 'Test 2'), lastModified},
+    {id: '1', ydoc: createYUpdateAsString('1', 'Test'), lastModified},
+    {id: '2', ydoc: createYUpdateAsString('2', 'Test 2'), lastModified},
   ])
 
   const {ctrl, store} = createCtrl(createState({args: {room: '3'}}))
@@ -108,7 +108,7 @@ test('init - join', async () => {
 test('init - dir', async () => {
   vi.spyOn(db, 'getEditor').mockResolvedValue({id: '1'})
   vi.spyOn(db, 'getFiles').mockResolvedValue([
-    {id: '1', ydoc: createYdoc('1', 'Test'), lastModified},
+    {id: '1', ydoc: createYUpdateAsString('1', 'Test'), lastModified},
   ])
 
   const {ctrl, store} = createCtrl(createState({args: {dir: ['~/Desktop/Aaaa.md']}}))
@@ -179,8 +179,8 @@ test('newFile - collab', async () => {
 test('openFile - existing', async () => {
   vi.spyOn(db, 'getEditor').mockResolvedValue({id: '1'})
   vi.spyOn(db, 'getFiles').mockResolvedValue([
-    {id: '1', ydoc: createYdoc('1', 'Test'), lastModified},
-    {id: '2', ydoc: createYdoc('2', 'Test 2'), lastModified},
+    {id: '1', ydoc: createYUpdateAsString('1', 'Test'), lastModified},
+    {id: '2', ydoc: createYUpdateAsString('2', 'Test 2'), lastModified},
   ])
 
   const {ctrl, store} = createCtrl(createState())
@@ -212,8 +212,8 @@ test('openFile - not found', async () => {
 test('openFile - delete empty', async () => {
   vi.spyOn(db, 'getEditor').mockResolvedValue({id: '1'})
   vi.spyOn(db, 'getFiles').mockResolvedValue([
-    {id: '1', ydoc: createYdoc('1', ''), lastModified},
-    {id: '2', ydoc: createYdoc('2', 'Test 2'), lastModified},
+    {id: '1', ydoc: createYUpdateAsString('1', ''), lastModified},
+    {id: '2', ydoc: createYUpdateAsString('2', 'Test 2'), lastModified},
   ])
 
   const {ctrl, store} = createCtrl(createState())
@@ -230,7 +230,7 @@ test('openFile - delete empty', async () => {
 test('openFile - open collab', async () => {
   const file = {
     id: 'room-123',
-    ydoc: createYdoc('room-123', 'Test'),
+    ydoc: createYUpdateAsString('room-123', 'Test'),
     lastModified,
   }
 
@@ -255,8 +255,8 @@ test('openFile - open collab', async () => {
 test('openFile - open from collab', async () => {
   vi.spyOn(db, 'getEditor').mockResolvedValue({id: '1'})
   vi.spyOn(db, 'getFiles').mockResolvedValue([
-    {id: '1', ydoc: createYdoc('1', 'Test'), lastModified},
-    {id: '2', ydoc: createYdoc('2', 'Test 2'), lastModified},
+    {id: '1', ydoc: createYUpdateAsString('1', 'Test'), lastModified},
+    {id: '2', ydoc: createYUpdateAsString('2', 'Test 2'), lastModified},
   ])
 
   const {ctrl, store} = createCtrl(createState())
@@ -279,7 +279,7 @@ test('openFile - open from collab', async () => {
 
 test('discard - open collab', async () => {
   vi.spyOn(db, 'getFiles').mockResolvedValue([
-    {id: 'room-123', ydoc: createYdoc('room-123', 'Test'), lastModified},
+    {id: 'room-123', ydoc: createYUpdateAsString('room-123', 'Test'), lastModified},
   ])
 
   const {ctrl, store} = createCtrl(createState())
@@ -298,7 +298,7 @@ test('discard - open collab', async () => {
 
 test('discard - with text', async () => {
   vi.spyOn(db, 'getFiles').mockResolvedValue([
-    {id: '1', ydoc: createYdoc('1', 'Test'), lastModified},
+    {id: '1', ydoc: createYUpdateAsString('1', 'Test'), lastModified},
   ])
 
   const {ctrl, store} = createCtrl(createState())
@@ -321,7 +321,7 @@ test('discard - with text', async () => {
 
 test('discard - close collab', async () => {
   vi.spyOn(db, 'getFiles').mockResolvedValue([
-    {id: '1', ydoc: createYdoc('1', 'Test'), lastModified},
+    {id: '1', ydoc: createYUpdateAsString('1', 'Test'), lastModified},
   ])
 
   const {ctrl, store} = createCtrl(createState())
@@ -343,7 +343,7 @@ test('discard - close collab', async () => {
 test('discard - error', async () => {
   vi.spyOn(db, 'getEditor').mockResolvedValue({id: '1'})
   vi.spyOn(db, 'getFiles').mockResolvedValue([
-    {id: '1', ydoc: createYdoc('1', 'Test'), lastModified},
+    {id: '1', ydoc: createYUpdateAsString('1', 'Test'), lastModified},
   ])
 
   const {ctrl, store} = createCtrl(createState())
@@ -365,8 +365,8 @@ test('discard - error', async () => {
 test('deleteFile - unused', async () => {
   vi.spyOn(db, 'getEditor').mockResolvedValue({id: '1'})
   vi.spyOn(db, 'getFiles').mockResolvedValue([
-    {id: '1', ydoc: createYdoc('1', 'Test'), lastModified},
-    {id: '2', ydoc: createYdoc('2', 'Test2'), lastModified},
+    {id: '1', ydoc: createYUpdateAsString('1', 'Test'), lastModified},
+    {id: '2', ydoc: createYUpdateAsString('2', 'Test2'), lastModified},
   ])
 
   const {ctrl, store} = createCtrl(createState())
@@ -387,8 +387,8 @@ test('deleteFile - unused', async () => {
 test('deleteFile - current', async () => {
   vi.spyOn(db, 'getEditor').mockResolvedValue({id: '1'})
   vi.spyOn(db, 'getFiles').mockResolvedValue([
-    {id: '1', ydoc: createYdoc('1', 'Test'), lastModified},
-    {id: '2', ydoc: createYdoc('2', 'Test2'), lastModified},
+    {id: '1', ydoc: createYUpdateAsString('1', 'Test'), lastModified},
+    {id: '2', ydoc: createYUpdateAsString('2', 'Test2'), lastModified},
   ])
 
   const {ctrl, store} = createCtrl(createState())
@@ -455,7 +455,7 @@ test('startCollab - with text', async () => {
 test('startCollab - join new file', async () => {
   vi.spyOn(db, 'getEditor').mockResolvedValue({id: '1'})
   vi.spyOn(db, 'getFiles').mockResolvedValue([
-    {id: '1', ydoc: createYdoc('1', 'Test'), lastModified},
+    {id: '1', ydoc: createYUpdateAsString('1', 'Test'), lastModified},
   ])
 
   const {ctrl, store} = createCtrl(createState({args: {room: '2'}}))
@@ -472,8 +472,8 @@ test('startCollab - join new file', async () => {
 test('startCollab - join existing file', async () => {
   vi.spyOn(db, 'getEditor').mockResolvedValue({id: '1'})
   vi.spyOn(db, 'getFiles').mockResolvedValue([
-    {id: '1', ydoc: createYdoc('1', 'Test'), lastModified},
-    {id: '2', ydoc: createYdoc('2', 'Test 2'), lastModified},
+    {id: '1', ydoc: createYUpdateAsString('1', 'Test'), lastModified},
+    {id: '2', ydoc: createYUpdateAsString('2', 'Test 2'), lastModified},
   ])
 
   const {ctrl, store} = createCtrl(createState({args: {room: '2'}}))

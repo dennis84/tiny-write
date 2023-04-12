@@ -11,10 +11,18 @@ export const createText = (text: string) => ({
   },
 })
 
+export const createYUpdate = (id: string, str: string) => {
+  const ydoc = createYdoc(id, str)
+  return Y.encodeStateAsUpdate(ydoc)
+}
+
+export const createYUpdateAsString = (id: string, str: string) => {
+  return fromUint8Array(createYUpdate(id, str))
+}
+
 export const createYdoc = (id: string, str: string) => {
   const doc = str ? createText(str).doc : {type: 'doc', content: []}
-  const ydoc = prosemirrorJSONToYDoc(schema, doc, id)
-  return fromUint8Array(Y.encodeStateAsUpdate(ydoc))
+  return prosemirrorJSONToYDoc(schema, doc, id)
 }
 
 export const insertText = (state: State, text: string) => {
