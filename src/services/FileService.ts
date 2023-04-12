@@ -1,4 +1,4 @@
-import {Store, unwrap} from 'solid-js/store'
+import {SetStoreFunction, Store, unwrap} from 'solid-js/store'
 import * as Y from 'yjs'
 import {v4 as uuidv4} from 'uuid'
 import {fromUint8Array, toUint8Array} from 'js-base64'
@@ -16,8 +16,18 @@ export interface LoadedFile {
 
 export type OpenFile = {id?: string; path?: string}
 
+export interface UpdateFile {
+  lastModified?: Date;
+  markdown?: boolean;
+  path?: string;
+  ydoc?: Y.Doc;
+}
+
 export class FileService {
-  constructor(private store: Store<State>) {}
+  constructor(
+    private store: Store<State>,
+    private setState: SetStoreFunction<State>,
+  ) {}
 
   createFile(params: Partial<File> = {}): File {
     const ydoc = params.ydoc ?? Y.encodeStateAsUpdate(this.createYdoc())
@@ -73,6 +83,24 @@ export class FileService {
     } catch (e) {
       throw new ServiceError('file_permission_denied', {error: e})
     }
+  }
+
+  updateFile(id: string, update: UpdateFile) {
+    if (!update.ydoc) return
+
+    const index = this.store.files.findIndex((file) => file.id === id)
+    if (index === -1) return
+
+    const ydoc = new Y.Doc({gc: false})
+    const type = ydoc.getXmlFragment(id)
+    update.ydoc.getXmlFragment(id).forEach((x) => type.push([x.clone()]))
+
+    this.setState('files', index, {
+      lastModified: update.lastModified,
+      markdown: update.markdown,
+      path: update.path,
+      ydoc: Y.encodeStateAsUpdate(ydoc),
+    })
   }
 
   async saveFile(file: File) {

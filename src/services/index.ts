@@ -26,7 +26,7 @@ export class Ctrl {
     this.editor = new EditorService(this, store, setState)
     this.changeSet = new ChangeSetService(this, store, setState)
     this.keymap = new KeymapService(this, store)
-    this.file = new FileService(store)
+    this.file = new FileService(store, setState)
     this.collab = new CollabService(store, setState)
   }
 }

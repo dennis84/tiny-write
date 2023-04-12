@@ -302,15 +302,12 @@ export class EditorService {
   }
 
   private updateCurrentFile() {
-    const state = unwrap(this.store)
-    if (!state.editor || !state.collab?.ydoc) return
-    const index = this.store.files.findIndex((f) => f.id === state.editor?.id)
-    if (index === -1) return
-    this.setState('files', index, {
-      lastModified: state.editor.lastModified,
-      markdown: state.editor.markdown,
-      path: state.editor.path,
-      ydoc: Y.encodeStateAsUpdate(state.collab.ydoc),
+    if (!this.store.editor?.editorView || !this.store.collab?.ydoc) return
+    this.ctrl.file.updateFile(this.store.editor.id, {
+      lastModified: this.store.editor.lastModified,
+      markdown: this.store.editor.markdown,
+      path: this.store.editor.path,
+      ydoc: this.store.collab.ydoc,
     })
   }
 
