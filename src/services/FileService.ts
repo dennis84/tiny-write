@@ -39,22 +39,10 @@ export class FileService {
     }
   }
 
-  async getFile(state: State, req: OpenFile): Promise<File | undefined> {
-    const index = state.files.findIndex((file) => {
+  findFile(req: OpenFile): File | undefined {
+    return this.store.files.find((file) => {
       return file.id === req.id || (file.path && file.path === req.path)
     })
-
-    if (index === -1) return
-
-    const file = state.files[index]
-    if (file?.path) {
-      const loadedFile = await this.loadFile(file.path)
-      file.text = loadedFile.text
-      file.lastModified = loadedFile.lastModified
-      file.path = loadedFile.path
-    }
-
-    return file
   }
 
   async loadFile(path: string): Promise<LoadedFile> {

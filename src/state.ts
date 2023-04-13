@@ -88,7 +88,6 @@ export interface File {
   id: string;
   ydoc: Uint8Array;
   lastModified?: Date;
-  text?: FileText;
   path?: string;
   markdown?: boolean;
 }

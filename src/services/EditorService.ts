@@ -91,28 +91,34 @@ export class EditorService {
         data.editor = undefined
       } else if (data.args?.file) { // If app was started with a file as argument
         const path = data.args.file
-        let file = await this.ctrl.file.getFile(data, {path})
-        if (!file) {
+        let file = data.files.find((f) => f.path === path)
+        if (file?.path) {
+          text = (await this.ctrl.file.loadFile(file.path)).text
+        } else if (!file) {
           const loadedFile = await this.ctrl.file.loadFile(path)
           file = this.ctrl.file.createFile(loadedFile)
           data.files.push(file as File)
         }
         data = this.withFile(data, file)
-        text = file.text
       } else if (data.args?.room) { // Join collab
-        let file = await this.ctrl.file.getFile(data, {id: data.args.room})
-        if (!file) {
+        let file = data.files.find((f) => f.id === data.args?.room)
+        if (file?.path) {
+          text = (await this.ctrl.file.loadFile(file.path)).text
+        } else if (!file) {
           file = this.ctrl.file.createFile({id: data.args.room})
           data.files.push(file as File)
         }
         data = this.withFile(data, file)
       } else if (data.editor?.id) { // Restore last saved file
-        const file = await this.ctrl.file.getFile(data, {id: data.editor.id})
+        const file = data.files.find((f) => f.id === data.editor?.id)
         if (file) {
           data = this.withFile(data, file)
-          text = file.text
         } else {
           data.editor = undefined
+        }
+
+        if (file?.path) {
+          text = (await this.ctrl.file.loadFile(file.path)).text
         }
       }
 
@@ -125,8 +131,11 @@ export class EditorService {
 
       let collab
       if (data.editor?.id) {
-        const file = await this.ctrl.file.getFile(data, {id: data.editor.id})
+        const file = data.files.find((f) => f.id === data.editor?.id)
         if (file) collab = this.ctrl.collab.createByFile(file, data.args?.room !== undefined)
+        if (file?.path) {
+          text = (await this.ctrl.file.loadFile(file.path)).text
+        }
       }
 
       const newState: State = {
@@ -218,9 +227,14 @@ export class EditorService {
 
   async openFile(req: OpenFile) {
     const state: State = unwrap(this.store)
-    let file = await this.ctrl.file.getFile(state, req)
-    if (!file && req.path) {
+    let file = this.ctrl.file.findFile(req)
+    let text: FileText | undefined
+
+    if (file?.path) {
+      text = (await this.ctrl.file.loadFile(file.path)).text
+    } else if (!file && req.path) {
       const loadedFile = await this.ctrl.file.loadFile(req.path)
+      text = loadedFile.text
       file = this.ctrl.file.createFile(loadedFile)
       state.files.push(file as File)
     }
@@ -237,7 +251,7 @@ export class EditorService {
     update.collab = this.ctrl.collab.createByFile(file)
     this.setState(update)
     this.updateEditorState(update)
-    if (file.text) this.updateText(file.text)
+    if (text) this.updateText(text)
   }
 
   async deleteFile(req: OpenFile) {
@@ -317,9 +331,13 @@ export class EditorService {
     const files = state.files.filter((f) => f.id !== id)
     const index = files.length - 1
     let file: File | undefined
+    let text: FileText | undefined
 
     if (index !== -1) {
-      file = await this.ctrl.file.getFile(state, {id: files[index].id})
+      file = this.ctrl.file.findFile({id: files[index].id})
+      if (file?.path) {
+        text = (await this.ctrl.file.loadFile(file.path)).text
+      }
     }
 
     if (!file) {
@@ -338,7 +356,7 @@ export class EditorService {
     this.saveEditor(newState)
 
     this.updateEditorState(newState)
-    if (file?.text) this.updateText(file.text)
+    if (text) this.updateText(text)
   }
 
   private withFile(state: State, file: File): State {
@@ -384,7 +402,7 @@ export class EditorService {
     }
 
     const editor = {id: state.editor.id}
-    const file = state.files.find((f) => f.id === editor.id)
+    const file = this.ctrl.file.findFile({id: editor.id})
     if (!file) return
     this.ctrl.file.saveFile(file)
 
