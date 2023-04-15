@@ -14,8 +14,7 @@ export class ChangeSetService {
   ) {}
 
   addVersion() {
-    const state = unwrap(this.store)
-    const ydoc = state.collab?.ydoc
+    const ydoc = this.store.collab?.ydoc
     if (!ydoc) return
 
     const versions = ydoc.getArray<Version>('versions')
@@ -29,13 +28,13 @@ export class ChangeSetService {
 
     if (!Y.equalSnapshots(prevSnapshot, snapshot)) {
       versions.push([{
-        date: state.editor?.lastModified?.getTime() ?? 0,
+        date: this.ctrl.editor.currentFile?.lastModified?.getTime() ?? 0,
         snapshot: Y.encodeSnapshot(snapshot),
         clientID: ydoc.clientID,
       }])
     }
 
-    this.ctrl.editor.saveEditor(state)
+    this.ctrl.editor.saveEditor()
     remote.log('info', '💾 Saved new snapshot version')
   }
 

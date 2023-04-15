@@ -31,7 +31,7 @@ interface Props {
 }
 
 export const createExtensions = (props: Props): ProseMirrorExtension[] => {
-  const isMarkdown = props.markdown ?? props.state.editor?.markdown ?? false
+  const isMarkdown = props.markdown ?? false
   const keymap = props.keymap ?? {}
 
   const extensions = [

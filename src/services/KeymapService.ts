@@ -33,7 +33,7 @@ export class KeymapService {
 
   private onSave = async () => {
     const state = this.store.editor?.editorView?.state
-    if (!isTauri || this.store.editor?.path || !state) return false
+    if (!isTauri || this.ctrl.editor.currentFile?.path || !state) return false
     const path = await remote.save(state)
     if (path) this.ctrl.editor.updatePath(path)
   }

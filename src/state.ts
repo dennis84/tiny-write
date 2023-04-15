@@ -63,9 +63,6 @@ export interface Window {
 export interface Editor {
   id: string;
   editorView?: EditorView;
-  markdown?: boolean;
-  lastModified?: Date;
-  path?: string;
 }
 
 export interface State {

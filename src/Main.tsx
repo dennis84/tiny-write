@@ -31,7 +31,7 @@ export default (props: {state: State}) => {
     top: number,
     mime?: string
   ) => {
-    if (store.editor?.markdown) {
+    if (ctrl.editor.currentFile?.markdown) {
       const text = `![](${data})`
       const pos = editorView.posAtCoords({left, top})
       const tr = editorView.state.tr
@@ -65,7 +65,9 @@ export default (props: {state: State}) => {
             if (!store.editor?.editorView) return
             const x = mouseEnterCoords.x
             const y = mouseEnterCoords.y
-            const d = store.editor?.path ? await remote.dirname(store.editor.path) : undefined
+            const d = ctrl.editor.currentFile?.path
+              ? await remote.dirname(ctrl.editor.currentFile.path)
+              : undefined
             const p = await remote.toRelativePath(path, d)
             insertImageMd(store.editor.editorView, p, x, y, mime)
           } else if (mime.startsWith('text/')) {
@@ -156,8 +158,8 @@ export default (props: {state: State}) => {
   })
 
   createEffect(() => {
-    if (!store.editor?.lastModified) return
-    const doc = store.editor.editorView?.state.doc
+    if (!ctrl.editor.currentFile?.lastModified) return
+    const doc = store.editor?.editorView?.state.doc
     const len = doc?.content.size ?? 0
     if (len > 0) {
       const text = doc?.textBetween(0, Math.min(30, len), ' ') ?? ''
@@ -209,7 +211,7 @@ export default (props: {state: State}) => {
               config={store.config}
               ref={editorRef}
               spellcheck={store.config.spellcheck}
-              markdown={store.editor?.markdown}
+              markdown={ctrl.editor.currentFile?.markdown}
               data-tauri-drag-region="true"
             />
           </Scroll>

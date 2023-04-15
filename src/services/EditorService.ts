@@ -26,16 +26,25 @@ export class EditorService {
     private setState: SetStoreFunction<State>,
   ) {}
 
-  updateEditorState(state: State, node?: Element) {
-    let editorView = state.editor?.editorView
+  get currentFile(): File | undefined {
+    return this.ctrl.file.findFile({id: this.store.editor?.id})
+  }
 
-    if ((!editorView && !node) || !state.editor?.id) {
+  updateEditorState(node?: Element) {
+    let editorView = this.store.editor?.editorView
+    const id = this.store.editor?.id
+
+    if ((!editorView && !node) || !id) {
       return
     }
 
+    const file = this.ctrl.file.findFile({id})
+    if (!file) return
+
     const extensions = createExtensions({
-      state,
-      type: state.collab!.ydoc!.getXmlFragment(this.store.editor?.id),
+      state: unwrap(this.store),
+      markdown: file?.markdown,
+      type: this.store.collab!.ydoc!.getXmlFragment(id),
       keymap: this.ctrl.keymap.create(),
     })
 
@@ -57,9 +66,11 @@ export class EditorService {
         if ((maybeSkip && !isUndo) || this.store.isSnapshot) return
         if (!this.store.editor?.id) return
 
-        this.setState('editor', 'lastModified', new Date())
-        this.updateCurrentFile()
-        this.saveEditor(this.store)
+        this.ctrl.file.updateFile(this.store.editor.id, {
+          lastModified: new Date(),
+        })
+
+        this.saveEditor()
         remote.log('info', '💾 Saved updated text')
       }
 
@@ -164,7 +175,7 @@ export class EditorService {
   }
 
   renderEditor(node: Element) {
-    this.updateEditorState(unwrap(this.store), node)
+    this.updateEditorState(node)
   }
 
   async discard() {
@@ -182,7 +193,7 @@ export class EditorService {
         editor: undefined,
       })
       return true
-    } else if (this.store.editor?.path) {
+    } else if (this.currentFile?.path) {
       await this.discardText()
       editorView?.focus()
       return true
@@ -222,7 +233,7 @@ export class EditorService {
 
     update.collab = this.ctrl.collab.createByFile(file)
     this.setState(update)
-    this.updateEditorState(update)
+    this.updateEditorState()
   }
 
   async openFile(req: OpenFile) {
@@ -250,7 +261,7 @@ export class EditorService {
     const update = this.withFile(state, file)
     update.collab = this.ctrl.collab.createByFile(file)
     this.setState(update)
-    this.updateEditorState(update)
+    this.updateEditorState()
     if (text) this.updateText(text)
   }
 
@@ -274,7 +285,7 @@ export class EditorService {
     const editorState = state.editor?.editorView?.state
     if (!editorState) return
 
-    const markdown = !state.editor?.markdown
+    const markdown = !this.currentFile?.markdown
     let doc: any
 
     if (markdown) {
@@ -285,12 +296,7 @@ export class EditorService {
 
       doc = {type: 'doc', content: nodes}
     } else {
-      const extensions = createExtensions({
-        state,
-        markdown,
-        keymap: this.ctrl.keymap.create(),
-        type: state.collab!.ydoc!.getXmlFragment(this.store.editor?.id),
-      })
+      const extensions = createExtensions({state, markdown})
       const schema = createSchema(extensions)
       const parser = createMarkdownParser(schema)
       let textContent = ''
@@ -301,28 +307,21 @@ export class EditorService {
       doc = text?.toJSON()
     }
 
-    const lastModified = new Date()
-    this.setState('editor', (prev) => ({...prev, markdown, lastModified}))
-    this.updateEditorState(this.store)
+    this.ctrl.file.updateFile(this.store.editor!.id, {markdown})
+    this.updateEditorState()
     this.updateText({...createEmptyText(), doc})
-    this.updateCurrentFile()
-    this.saveEditor(this.store)
+    this.ctrl.file.updateFile(this.store.editor!.id, {
+      lastModified: new Date(),
+    })
+
+    this.saveEditor()
     remote.log('info', '💾 Toggle markdown')
   }
 
   updatePath(path: string) {
-    this.setState('editor', 'path', path)
-    this.updateCurrentFile()
-  }
-
-  private updateCurrentFile() {
-    if (!this.store.editor?.editorView || !this.store.collab?.ydoc) return
-    this.ctrl.file.updateFile(this.store.editor.id, {
-      lastModified: this.store.editor.lastModified,
-      markdown: this.store.editor.markdown,
-      path: this.store.editor.path,
-      ydoc: this.store.collab.ydoc,
-    })
+    if (!this.store.editor?.id) return
+    const lastModified = new Date()
+    this.ctrl.file.updateFile(this.store.editor.id, {lastModified, path})
   }
 
   private async discardText() {
@@ -353,10 +352,10 @@ export class EditorService {
     })
 
     await db.deleteFile(id!)
-    this.saveEditor(newState)
 
-    this.updateEditorState(newState)
+    this.updateEditorState()
     if (text) this.updateText(text)
+    this.saveEditor()
   }
 
   private withFile(state: State, file: File): State {
@@ -367,9 +366,6 @@ export class EditorService {
       editor: {
         id: file.id!,
         editorView: state.editor?.editorView,
-        path: file.path,
-        lastModified: file.lastModified,
-        markdown: file.markdown,
       }
     }
   }
@@ -396,19 +392,19 @@ export class EditorService {
     }
   }
 
-  async saveEditor(state: State) {
-    if (!state.editor?.id || !state.editor?.editorView) {
+  async saveEditor() {
+    if (!this.currentFile || !this.store.editor?.editorView) {
       return
     }
 
-    const editor = {id: state.editor.id}
+    const editor = {id: this.store.editor.id}
     const file = this.ctrl.file.findFile({id: editor.id})
     if (!file) return
     this.ctrl.file.saveFile(file)
 
-    if (state.editor?.path) {
-      const text = serialize(state.editor.editorView.state)
-      await remote.writeFile(state.editor.path, text)
+    if (this.currentFile?.path) {
+      const text = serialize(this.store.editor.editorView.state)
+      await remote.writeFile(this.currentFile.path, text)
     }
 
     db.setEditor(editor)

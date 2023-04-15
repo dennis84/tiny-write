@@ -216,15 +216,17 @@ export default () => {
     })
 
     setTextStats({paragraphs, words, loc})
-    return store.editor?.lastModified
-  }, store.editor?.lastModified)
+    return ctrl.editor.currentFile?.lastModified
+  }, ctrl.editor.currentFile?.lastModified)
 
-  const clearText = () => (store.editor?.path || store.collab?.started) ? 'Close ⚠️' :
-    (store.files.length > 0 && isTextEmpty()) ? 'Discard ⚠️' :
-    'Clear 🧽'
+  const clearText = () => (ctrl.editor.currentFile?.path || store.collab?.started)
+    ? 'Close ⚠️'
+    : (store.files.length > 0 && isTextEmpty())
+      ? 'Discard ⚠️'
+      : 'Clear 🧽'
 
   const clearEnabled = () =>
-    store.editor?.path || store.editor?.id || store.files.length > 0 || !isTextEmpty()
+    ctrl.editor.currentFile?.path || store.editor?.id || store.files.length > 0 || !isTextEmpty()
 
   const onBurgerClick = () => {
     store.editor?.editorView?.focus()
@@ -346,13 +348,13 @@ export default () => {
     }
 
     return (
-      <Show when={store.editor?.lastModified !== undefined} fallback={
+      <Show when={ctrl.editor.currentFile?.lastModified !== undefined} fallback={
         <Text data-testid="last-modified">
           Nothing yet
         </Text>
       }>
         <Text data-testid="last-modified">
-          Last modified: {formatDate(store.editor!.lastModified!)}
+          Last modified: {formatDate(ctrl.editor.currentFile!.lastModified!)}
         </Text>
       </Show>
     )
@@ -380,7 +382,7 @@ export default () => {
 
   createEffect(() => {
     setLastAction(undefined)
-  }, store.editor?.lastModified)
+  }, ctrl.editor.currentFile?.lastModified)
 
   createEffect(() => {
     if (!show()) return
@@ -401,10 +403,10 @@ export default () => {
   })
 
   createEffect(async () => {
-    if (!store.editor?.path) return
-    const rel = await remote.toRelativePath(store.editor?.path)
+    if (!ctrl.editor.currentFile?.path) return
+    const rel = await remote.toRelativePath(ctrl.editor.currentFile?.path)
     setRelativePath(rel)
-  }, store.editor?.path)
+  }, ctrl.editor.currentFile?.path)
 
   return (
     <Container>
@@ -435,10 +437,10 @@ export default () => {
           onClick={() => store.editor?.editorView?.focus()}
           data-tauri-drag-region="true">
           <Label>
-            File {store.editor?.path && <i>({relativePath()})</i>}
+            File {ctrl.editor.currentFile?.path && <i>({relativePath()})</i>}
           </Label>
           <Sub data-tauri-drag-region="true">
-            <Show when={isTauri && !store.editor?.path}>
+            <Show when={isTauri && !ctrl.editor.currentFile?.path}>
               <Link onClick={onSaveAs}>
                 Save to file 💾 <Keys keys={[modKey, 's']} />
               </Link>
@@ -493,7 +495,7 @@ export default () => {
               </Link>
             </Show>
             <Link onClick={onToggleMarkdown} data-testid="markdown">
-              Markdown mode {store.editor?.markdown && '✅'}
+              Markdown mode {ctrl.editor.currentFile?.markdown && '✅'}
             </Link>
             <Link onClick={onToggleTypewriterMode}>
               Typewriter mode {store.config.typewriterMode && '✅'}

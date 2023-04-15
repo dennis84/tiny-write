@@ -20,7 +20,6 @@ export interface UpdateFile {
   lastModified?: Date;
   markdown?: boolean;
   path?: string;
-  ydoc?: Y.Doc;
 }
 
 export class FileService {
@@ -74,21 +73,20 @@ export class FileService {
   }
 
   updateFile(id: string, update: UpdateFile) {
-    if (!update.ydoc) return
-
     const index = this.store.files.findIndex((file) => file.id === id)
     if (index === -1) return
 
-    const ydoc = new Y.Doc({gc: false})
-    const type = ydoc.getXmlFragment(id)
-    update.ydoc.getXmlFragment(id).forEach((x) => type.push([x.clone()]))
+    const newDoc = new Y.Doc({gc: false})
+    const type = newDoc.getXmlFragment(id)
+    this.store.collab?.ydoc?.getXmlFragment(id).forEach((x) => type.push([x.clone()]))
+    const ydoc = Y.encodeStateAsUpdate(newDoc)
 
-    this.setState('files', index, {
-      lastModified: update.lastModified,
-      markdown: update.markdown,
-      path: update.path,
-      ydoc: Y.encodeStateAsUpdate(ydoc),
-    })
+    this.setState('files', index, (prev) => ({
+      lastModified: update.lastModified ?? prev?.lastModified,
+      markdown: update.markdown ?? prev?.markdown,
+      path: update.path ?? prev?.path,
+      ydoc,
+    }))
   }
 
   async saveFile(file: File) {

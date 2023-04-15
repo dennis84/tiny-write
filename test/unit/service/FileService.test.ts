@@ -20,6 +20,7 @@ test('only save file type', async () => {
   }))
 
   const service = new FileService(store, setState)
+  setState('collab', {ydoc})
 
   ydoc.getText('2').insert(0, '1')
   expect(ydoc.getText('2').length).toBe(1)
@@ -28,7 +29,7 @@ test('only save file type', async () => {
   ydoc.getXmlFragment('1').push([new Y.XmlText('1')])
   expect(ydoc.getXmlFragment('1').length).toBe(2)
 
-  service.updateFile('1', {ydoc})
+  service.updateFile('1', {})
 
   const fileYdoc = new Y.Doc()
   Y.applyUpdate(fileYdoc, store.files[0].ydoc)
