@@ -151,7 +151,7 @@ export default (props: {state: State}) => {
 
   createEffect(() => {
     if (store.editor === undefined) {
-      ctrl.editor.init(editorRef!)
+      ctrl.app.init(editorRef!)
     } else if (store.editor.id && store.editor.editorView === undefined) {
       ctrl.editor.renderEditor(editorRef!)
     }

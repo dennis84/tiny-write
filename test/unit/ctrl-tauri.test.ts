@@ -54,7 +54,7 @@ test('init - load existing by path', async () => {
 
   const {store, ctrl} = createCtrl(createState())
   const target = document.createElement('div')
-  await ctrl.editor.init(target)
+  await ctrl.app.init(target)
   expect(ctrl.editor.currentFile?.path).toBe('file1')
   expect(getText(store)).toBe('File1')
 })
@@ -75,7 +75,7 @@ test('init - check text', async () => {
 
   const {ctrl, store} = createCtrl(createState())
   const target = document.createElement('div')
-  await ctrl.editor.init(target)
+  await ctrl.app.init(target)
   expect(ctrl.editor.currentFile?.path).toBe('file2')
   expect(getText(store)).toBe('File2')
 })
@@ -90,7 +90,7 @@ test('openFile - path in files', async () => {
   const {ctrl, store} = createCtrl(createState())
   const target = document.createElement('div')
 
-  await ctrl.editor.init(target)
+  await ctrl.app.init(target)
   await ctrl.editor.openFile({path: 'file1'})
   expect(store.files.length).toBe(2)
   expect(getText(store)).toBe('File1')
@@ -102,7 +102,7 @@ test('openFile - push path to files', async () => {
   const {ctrl, store} = createCtrl(createState())
   const target = document.createElement('div')
 
-  await ctrl.editor.init(target)
+  await ctrl.app.init(target)
   expect(store.files.length).toBe(1)
   insertText(store, 'Test')
 
@@ -117,7 +117,7 @@ test('openFile - push path to files', async () => {
 test('openFile - path and text', async () => {
   const {ctrl, store} = createCtrl(createState())
   const target = document.createElement('div')
-  await ctrl.editor.init(target)
+  await ctrl.app.init(target)
   expect(store.files.length).toBe(1)
   await ctrl.editor.openFile({path: 'file1'})
   expect(store.files.length).toBe(1)
@@ -136,7 +136,7 @@ test('discard - with path', async () => {
   const {ctrl, store} = createCtrl(createState())
   const target = document.createElement('div')
 
-  await ctrl.editor.init(target)
+  await ctrl.app.init(target)
   expect(store.files.length).toBe(2)
 
   await ctrl.editor.discard()

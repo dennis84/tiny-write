@@ -12,7 +12,6 @@ import {
 import * as remote from '@/remote'
 import {createExtensions, createEmptyText, createSchema, createNodeViews} from '@/prosemirror-setup'
 import {State, File, FileText} from '@/state'
-import {isTauri} from '@/env'
 import {serialize, createMarkdownParser} from '@/markdown'
 import {isEmpty} from '@/prosemirror'
 import * as db from '@/db'
@@ -85,93 +84,6 @@ export class EditorService {
 
     editorView.setProps({state: editorState, nodeViews})
     editorView.focus()
-  }
-
-  async init(node: Element) {
-    const state = unwrap(this.store)
-
-    try {
-      let data = await this.fetchData(state)
-      let text: FileText | undefined
-
-      if (isTauri && data.window) {
-        await remote.updateWindow(data.window)
-      }
-
-      if (data.args?.dir) { // If app was started with a directory as argument
-        data.editor = undefined
-      } else if (data.args?.file) { // If app was started with a file as argument
-        const path = data.args.file
-        let file = data.files.find((f) => f.path === path)
-        if (file?.path) {
-          text = (await this.ctrl.file.loadFile(file.path)).text
-        } else if (!file) {
-          const loadedFile = await this.ctrl.file.loadFile(path)
-          file = this.ctrl.file.createFile(loadedFile)
-          data.files.push(file as File)
-        }
-        data = this.withFile(data, file)
-      } else if (data.args?.room) { // Join collab
-        let file = data.files.find((f) => f.id === data.args?.room)
-        if (file?.path) {
-          text = (await this.ctrl.file.loadFile(file.path)).text
-        } else if (!file) {
-          file = this.ctrl.file.createFile({id: data.args.room})
-          data.files.push(file as File)
-        }
-        data = this.withFile(data, file)
-      } else if (data.editor?.id) { // Restore last saved file
-        const file = data.files.find((f) => f.id === data.editor?.id)
-        if (file) {
-          data = this.withFile(data, file)
-        } else {
-          data.editor = undefined
-        }
-
-        if (file?.path) {
-          text = (await this.ctrl.file.loadFile(file.path)).text
-        }
-      }
-
-      // Init from empty state or file not found
-      if (!data.args?.dir && !data.editor?.id) {
-        const file = this.ctrl.file.createFile({id: data.args?.room})
-        data.files.push(file)
-        data = this.withFile(data, file)
-      }
-
-      let collab
-      if (data.editor?.id) {
-        const file = data.files.find((f) => f.id === data.editor?.id)
-        if (file) collab = this.ctrl.collab.createByFile(file, data.args?.room !== undefined)
-        if (file?.path) {
-          text = (await this.ctrl.file.loadFile(file.path)).text
-        }
-      }
-
-      const newState: State = {
-        ...state,
-        ...data,
-        config: {...data.config, ...this.ctrl.config.getTheme(data)},
-        loading: 'initialized',
-        collab,
-      }
-
-      if (isTauri && newState.config?.alwaysOnTop) {
-        await remote.setAlwaysOnTop(true)
-      }
-
-      this.setState(newState)
-      this.renderEditor(node)
-      this.updateText(text)
-    } catch (error: any) {
-      remote.log('error', `Error during init: ${error.message}`)
-      this.ctrl.app.setError(error)
-    }
-
-    if (isTauri) {
-      await remote.show()
-    }
   }
 
   renderEditor(node: Element) {
@@ -358,7 +270,7 @@ export class EditorService {
     this.saveEditor()
   }
 
-  private withFile(state: State, file: File): State {
+  withFile(state: State, file: File): State {
     return {
       ...state,
       error: undefined,
@@ -370,7 +282,7 @@ export class EditorService {
     }
   }
 
-  private updateText(text?: {[key: string]: any}) {
+  updateText(text?: {[key: string]: any}) {
     if (!text) return
     const schema = this.store.editor?.editorView?.state?.schema
     if (!schema || !this.store.collab?.ydoc) return
@@ -408,36 +320,5 @@ export class EditorService {
     }
 
     db.setEditor(editor)
-  }
-
-  private async fetchData(state: State): Promise<State> {
-    let args = await remote.getArgs().catch(() => undefined)
-
-    if (!isTauri) {
-      const room = window.location.pathname?.slice(1).trim()
-      if (room) args = {room}
-    }
-
-    const fetchedEditor = await db.getEditor()
-    const fetchedWindow = await db.getWindow()
-    const fetchedConfig = await db.getConfig()
-    const fetchedSize = await db.getSize()
-    const files = await this.ctrl.file.fetchFiles()
-
-    const config = {
-      ...state.config,
-      ...fetchedConfig,
-    }
-
-    return {
-      ...state,
-      args: args ?? state.args,
-      editor: fetchedEditor,
-      files,
-      config,
-      window: fetchedWindow,
-      storageSize: fetchedSize ?? 0,
-      collab: undefined,
-    }
   }
 }
