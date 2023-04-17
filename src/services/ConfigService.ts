@@ -3,6 +3,7 @@ import {Config, State} from '@/state'
 import * as remote from '@/remote'
 import * as db from '@/db'
 import {isDark} from '@/env'
+import {Ctrl} from '.'
 
 export interface Font {
   label: string;
@@ -254,6 +255,7 @@ export class ConfigService {
   }
 
   constructor(
+    private ctrl: Ctrl,
     private store: Store<State>,
     private setState: SetStoreFunction<State>,
   ) {}
@@ -340,6 +342,7 @@ export class ConfigService {
     if (conf.contentWidth) state.collab?.ydoc?.getMap('config').set('contentWidth', conf.contentWidth)
     const config = {...state.config, ...conf}
     this.setState('config', config)
+    this.ctrl.editor.updateEditorState()
     this.saveConfig(unwrap(this.store))
   }
 
