@@ -1,4 +1,4 @@
-import {For, createSignal, onMount, onCleanup, Show, createEffect} from 'solid-js'
+import {For, createSignal, onMount, onCleanup, Show, createEffect, catchError} from 'solid-js'
 import {unwrap} from 'solid-js/store'
 import h from 'solid-js/h'
 import {Node} from 'prosemirror-model'
@@ -122,8 +122,8 @@ export const FilesMenu = (props: Props) => {
     markdown: false,
   }))
 
-  const onOpenFile = (file: File) => {
-    ctrl.editor.openFile(unwrap(file))
+  const onOpenFile = async (file: File) => {
+    await ctrl.editor.openFile(unwrap(file))
     props.onOpenFile()
   }
 

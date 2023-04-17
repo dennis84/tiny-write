@@ -1,4 +1,4 @@
-import {Show, onCleanup, createEffect, onError, onMount} from 'solid-js'
+import {Show, onCleanup, createEffect, onMount} from 'solid-js'
 import {createMutable} from 'solid-js/store'
 import {appWindow} from '@tauri-apps/api/window'
 import {EditorView} from 'prosemirror-view'
@@ -142,11 +142,6 @@ export default (props: {state: State}) => {
     onCleanup(() => {
       document.removeEventListener('wheel', onWheel)
     })
-  })
-
-  onError((error) => {
-    console.error(error)
-    ctrl.app.setError(error)
   })
 
   createEffect(() => {

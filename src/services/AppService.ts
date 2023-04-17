@@ -88,7 +88,7 @@ export class AppService {
       this.ctrl.editor.updateText(text)
     } catch (error: any) {
       remote.log('error', `Error during init: ${error.message}`)
-      this.ctrl.app.setError(error)
+      this.setError(error)
     }
 
     if (isTauri) {
