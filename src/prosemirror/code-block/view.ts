@@ -202,6 +202,10 @@ export class CodeBlockView {
     this.update(node)
   }
 
+  get lang() {
+    return this.node.attrs.lang ?? ''
+  }
+
   forwardUpdate(update: ViewUpdate) {
     if (this.updating || !this.editorView.hasFocus) return
 
@@ -343,9 +347,5 @@ export class CodeBlockView {
   stopEvent(e: Event) {
     // Allow mouse events to allow to drag the code block from prosemirror.
     return !(e instanceof MouseEvent)
-  }
-
-  get lang() {
-    return this.node.attrs.lang ?? ''
   }
 }

@@ -146,6 +146,8 @@ export class ConfigService {
     },
   }
 
+  readonly DEFAULT_FONT = 'ia-writer-mono'
+
   readonly fonts: {[key: string]: Font} = {
     'system-ui': {
       label: 'System UI',
@@ -280,8 +282,6 @@ export class ConfigService {
         : getDefaltCodeTheme()
   }
 
-  readonly DEFAULT_FONT = 'ia-writer-mono'
-
   get font() {
     return (
       this.store.config?.font
@@ -292,6 +292,12 @@ export class ConfigService {
 
   get fontFamily() {
     return this.getFontFamily()
+  }
+
+  get theme() {
+    return !this.store.config?.theme
+      ? this.getDefaltTheme()
+      : this.themes[this.store.config.theme] ?? this.getDefaltTheme()
   }
 
   getFontFamily = (
@@ -307,16 +313,6 @@ export class ConfigService {
     }
 
     return font.value
-  }
-
-  private getDefaltTheme() {
-    return isDark() ? this.themes.dark : this.themes.light
-  }
-
-  get theme() {
-    return !this.store.config?.theme
-      ? this.getDefaltTheme()
-      : this.themes[this.store.config.theme] ?? this.getDefaltTheme()
   }
 
   getTheme(state: State, force = false) {
@@ -362,5 +358,9 @@ export class ConfigService {
     db.setConfig(state.config)
     db.setSize('window', JSON.stringify(state.config).length)
     remote.log('info', '💾 Save config')
+  }
+
+  private getDefaltTheme() {
+    return isDark() ? this.themes.dark : this.themes.light
   }
 }

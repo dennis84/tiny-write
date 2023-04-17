@@ -8,13 +8,6 @@ import * as remote from '@/remote'
 import {Ctrl} from '.'
 
 export class CollabService {
-  private onCollabConfigUpdate = (event: Y.YMapEvent<unknown>) => {
-    const font = event.target.get('font') as string
-    const fontSize = event.target.get('fontSize') as number
-    const contentWidth = event.target.get('contentWidth') as number
-    this.setState('config', {font, fontSize, contentWidth})
-  }
-
   constructor(
     private ctrl: Ctrl,
     private store: Store<State>,
@@ -95,5 +88,12 @@ export class CollabService {
     this.store.collab?.provider?.disconnect()
     window.history.replaceState(null, '', '/')
     this.setState('collab', {started: false})
+  }
+
+  private onCollabConfigUpdate = (event: Y.YMapEvent<unknown>) => {
+    const font = event.target.get('font') as string
+    const fontSize = event.target.get('fontSize') as number
+    const contentWidth = event.target.get('contentWidth') as number
+    this.setState('config', {font, fontSize, contentWidth})
   }
 }

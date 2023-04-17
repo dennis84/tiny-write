@@ -235,40 +235,6 @@ export class EditorService {
     this.ctrl.file.updateFile(this.store.editor.id, {lastModified, path})
   }
 
-  private async discardText() {
-    const state: State = unwrap(this.store)
-    const id = state.editor?.id
-    const files = state.files.filter((f) => f.id !== id)
-    const index = files.length - 1
-    let file: File | undefined
-    let text: FileText | undefined
-
-    if (index !== -1) {
-      file = this.ctrl.file.findFile({id: files[index].id})
-      if (file?.path) {
-        text = (await this.ctrl.file.loadFile(file.path)).text
-      }
-    }
-
-    if (!file) {
-      file = this.ctrl.file.createFile()
-    }
-
-    const newState = this.withFile(state, file)
-    newState.collab = this.ctrl.collab.createByFile(file)
-    this.setState({
-      args: {cwd: state.args?.cwd},
-      ...newState,
-      files,
-    })
-
-    await db.deleteFile(id!)
-
-    this.updateEditorState()
-    if (text) this.updateText(text)
-    this.saveEditor()
-  }
-
   withFile(state: State, file: File): State {
     return {
       ...state,
@@ -319,5 +285,39 @@ export class EditorService {
     }
 
     db.setEditor(editor)
+  }
+
+  private async discardText() {
+    const state: State = unwrap(this.store)
+    const id = state.editor?.id
+    const files = state.files.filter((f) => f.id !== id)
+    const index = files.length - 1
+    let file: File | undefined
+    let text: FileText | undefined
+
+    if (index !== -1) {
+      file = this.ctrl.file.findFile({id: files[index].id})
+      if (file?.path) {
+        text = (await this.ctrl.file.loadFile(file.path)).text
+      }
+    }
+
+    if (!file) {
+      file = this.ctrl.file.createFile()
+    }
+
+    const newState = this.withFile(state, file)
+    newState.collab = this.ctrl.collab.createByFile(file)
+    this.setState({
+      args: {cwd: state.args?.cwd},
+      ...newState,
+      files,
+    })
+
+    await db.deleteFile(id!)
+
+    this.updateEditorState()
+    if (text) this.updateText(text)
+    this.saveEditor()
   }
 }

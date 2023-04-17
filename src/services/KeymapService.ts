@@ -11,6 +11,22 @@ export class KeymapService {
     private store: Store<State>,
   ) {}
 
+  create() {
+    return {
+      [`${mod}-r`]: this.onReload,
+      [`${mod}-q`]: this.onQuit,
+      [`${mod}-n`]: this.onNew,
+      [`${mod}-w`]: this.onDiscard,
+      [`${mod}-s`]: this.onSave,
+      'Cmd-Enter': this.onFullscreen,
+      'Alt-Enter': this.onFullscreen,
+      [`${mod}-z`]: this.onUndo,
+      [`Shift-${mod}-z`]: this.onRedo,
+      [`${mod}-y`]: this.onRedo,
+      [`${mod}-p`]: this.onPrint,
+    }
+  }
+
   private onReload = () => {
     if (!isTauri) return
     window.location.reload()
@@ -60,21 +76,5 @@ export class KeymapService {
     if (!isTauri) return
     window.print()
     return true
-  }
-
-  create() {
-    return {
-      [`${mod}-r`]: this.onReload,
-      [`${mod}-q`]: this.onQuit,
-      [`${mod}-n`]: this.onNew,
-      [`${mod}-w`]: this.onDiscard,
-      [`${mod}-s`]: this.onSave,
-      'Cmd-Enter': this.onFullscreen,
-      'Alt-Enter': this.onFullscreen,
-      [`${mod}-z`]: this.onUndo,
-      [`Shift-${mod}-z`]: this.onRedo,
-      [`${mod}-y`]: this.onRedo,
-      [`${mod}-p`]: this.onPrint,
-    }
   }
 }
