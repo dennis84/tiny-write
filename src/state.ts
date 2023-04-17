@@ -79,7 +79,7 @@ export interface State {
   isSnapshot?: boolean;
 }
 
-export type FileText = {[key: string]: any};
+export type FileText = {[key: string]: any}
 
 export interface File {
   id: string;

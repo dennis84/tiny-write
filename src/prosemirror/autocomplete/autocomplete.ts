@@ -58,7 +58,7 @@ class AutocompleteView {
           right: coords.right,
           width: 1,
           height: 1,
-        };
+        }
       },
     }
 

@@ -1,5 +1,5 @@
 import {DBSchema, openDB} from 'idb'
-import {Config, Window} from './state';
+import {Config, Window} from './state'
 
 export interface PersistedFile {
   id: string;

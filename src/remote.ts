@@ -50,7 +50,7 @@ export const saveSvg = (svg: HTMLElement) => {
       const url = URL.createObjectURL(blob)
       downloadLink.setAttribute('href', url)
       downloadLink.click()
-    });
+    })
   })
 }
 

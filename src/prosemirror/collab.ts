@@ -25,7 +25,23 @@ class MouseCursorView {
   container: HTMLElement
   cursors: Map<number, HTMLElement> = new Map()
 
-  onAwarenessChange = ({added, updated, removed}: any) => {
+  constructor(private view: EditorView, private awareness: Awareness) {
+    this.container = document.createElement('div')
+    this.container.classList.add('mouse-cursor-container')
+    if (!this.view.dom.offsetParent) return
+    this.view.dom.offsetParent.appendChild(this.container)
+    this.awareness.on('change', this.onAwarenessChange)
+    document.addEventListener('mousemove', this.onMouseMove)
+  }
+
+  destroy() {
+    document.removeEventListener('mousemove', this.onMouseMove)
+    this.awareness.off('change', this.onAwarenessChange)
+    this.awareness.setLocalStateField('mouse', null)
+    this.container.remove()
+  }
+
+  private onAwarenessChange = ({added, updated, removed}: any) => {
     const ystate = ySyncPluginKey.getState(this.view.state)
     if (!ystate) return
 
@@ -64,28 +80,12 @@ class MouseCursorView {
     })
   }
 
-  onMouseMove = (e: MouseEvent) => {
+  private onMouseMove = (e: MouseEvent) => {
     if (this.awareness.states.size <= 1) return
     const rect = this.view.dom.getBoundingClientRect()
     const x = e.x - rect.left
     const y = e.y - rect.top
     this.awareness.setLocalStateField('mouse', {x, y})
-  }
-
-  constructor(private view: EditorView, private awareness: Awareness) {
-    this.container = document.createElement('div')
-    this.container.classList.add('mouse-cursor-container')
-    if (!this.view.dom.offsetParent) return
-    this.view.dom.offsetParent.appendChild(this.container)
-    this.awareness.on('change', this.onAwarenessChange)
-    document.addEventListener('mousemove', this.onMouseMove)
-  }
-
-  destroy() {
-    document.removeEventListener('mousemove', this.onMouseMove)
-    this.awareness.off('change', this.onAwarenessChange)
-    this.awareness.setLocalStateField('mouse', null)
-    this.container.remove()
   }
 }
 
@@ -118,7 +118,6 @@ export const collab = (ctrl: Ctrl, type: Y.XmlFragment): ProseMirrorExtension =>
     ySyncPlugin(type, {
       permanentUserData: ctrl.collab?.permanentUserData,
     }),
-    // @ts-ignore
     yCursorPlugin(ctrl.collab.provider!.awareness, {cursorBuilder}),
     yMouseCursorPlugin(ctrl.collab.provider!.awareness),
     yUndoPlugin(),

@@ -124,26 +124,6 @@ class ImageView {
   handle: HTMLElement
   width?: number
 
-  onResize = (e: MouseEvent) => {
-    this.width = e.pageX - this.container.getBoundingClientRect().left
-    this.setWidth(this.width)
-  }
-
-  onResizeEnd = () => {
-    window.removeEventListener('mousemove', this.onResize)
-    window.removeEventListener('mouseup', this.onResizeEnd)
-    if (!this.width) return
-    const tr = this.view.state.tr
-    const nodePos = this.getPos()
-    if (nodePos === undefined) return
-    tr.setNodeMarkup(nodePos, undefined, {
-      ...this.node.attrs,
-      width: this.width,
-    })
-
-    this.view.dispatch(tr)
-  }
-
   constructor(
     private node: Node,
     private view: EditorView,
@@ -206,8 +186,28 @@ class ImageView {
     this.dom = this.container
   }
 
-  setWidth(width: number) {
+  private setWidth(width: number) {
     this.container.style.width = width + 'px'
+  }
+
+  private onResize = (e: MouseEvent) => {
+    this.width = e.pageX - this.container.getBoundingClientRect().left
+    this.setWidth(this.width)
+  }
+
+  private onResizeEnd = () => {
+    window.removeEventListener('mousemove', this.onResize)
+    window.removeEventListener('mouseup', this.onResizeEnd)
+    if (!this.width) return
+    const tr = this.view.state.tr
+    const nodePos = this.getPos()
+    if (nodePos === undefined) return
+    tr.setNodeMarkup(nodePos, undefined, {
+      ...this.node.attrs,
+      width: this.width,
+    })
+
+    this.view.dispatch(tr)
   }
 }
 

@@ -24,88 +24,6 @@ class TooltipView {
   private cleanup: any
   private pos?: number
 
-  private onClose = (e: MouseEvent) => {
-    if (!(e.target as Element).closest('.block-tooltip')) {
-      const tr = this.view.state.tr
-      tr.setMeta(pluginKey, {showMenu: false, ref: undefined, pos: undefined})
-      this.view.dispatch(tr)
-    }
-  }
-
-  private onToPlain = () => {
-    if (this.pos === undefined) return
-    const toPlain = setBlockType(this.view.state.schema.nodes.paragraph)
-    toPlain(this.view.state, this.view.dispatch)
-    const tr = this.view.state.tr
-    const pos = tr.doc.resolve(this.pos)
-    if (!pos.nodeAfter) return
-    tr.removeMark(pos.pos, pos.pos + pos.nodeAfter.nodeSize)
-    tr.setMeta(pluginKey, {showMenu: false, ref: undefined, pos: undefined})
-    this.view.dispatch(tr)
-    this.view.focus()
-  }
-
-  private onRemoveBlock = () => {
-    if (this.pos === undefined) return
-    const tr = this.view.state.tr
-    const pos = tr.doc.resolve(this.pos)
-    if (!pos.nodeAfter) return
-    tr.delete(pos.pos, pos.pos + pos.nodeAfter.nodeSize)
-    tr.setMeta(pluginKey, {showMenu: false, ref: undefined, pos: undefined})
-    this.view.dispatch(tr)
-    this.view.focus()
-  }
-
-  onPrettify = () => {
-    if (this.pos === undefined) return
-    const dom = this.view.domAtPos(this.pos + 1)
-    dom.node.dispatchEvent(new CustomEvent('cm:user_event', {
-      detail: {userEvent: 'prettify'},
-    }))
-
-    const tr = this.view.state.tr
-    tr.setMeta(pluginKey, {showMenu: false, ref: undefined, pos: undefined})
-    this.view.dispatch(tr)
-    this.view.focus()
-  }
-
-  onChangeLang = () => {
-    if (this.pos === undefined) return
-    const tr = this.view.state.tr
-    const pos = tr.doc.resolve(this.pos + 1)
-    const node = pos.node()
-    if (node.type.name !== 'code_block') return
-
-    tr.setMeta(pluginKey, {showMenu: false, ref: undefined, pos: undefined})
-    tr.setSelection(Selection.near(tr.doc.resolve(this.pos)))
-    tr.setNodeAttribute(this.pos, 'hidden', false)
-    this.view.dispatch(tr)
-    this.view.focus()
-    const dom = this.view.domAtPos(this.pos + 1)
-    dom.node.dispatchEvent(new CustomEvent('cm:user_event', {
-      detail: {userEvent: 'change-lang'},
-    }))
-  }
-
-  onMermaidSave = () => {
-    const id = `mermaid-graph-${this.pos}`
-    const svg = document.getElementById(id)
-    if (svg) remote.saveSvg(svg)
-  }
-
-  onMermaidHideCode = () => {
-    if (this.pos === undefined) return
-    const tr = this.view.state.tr
-    const pos = tr.doc.resolve(this.pos + 1)
-    const node = pos.node()
-    if (node.type.name !== 'code_block') return
-
-    tr.setMeta(pluginKey, {showMenu: false, ref: undefined, pos: undefined})
-    tr.setNodeAttribute(this.pos, 'hidden', !node.attrs.hidden)
-    this.view.dispatch(tr)
-    this.view.focus()
-  }
-
   constructor(private view: EditorView) {
     this.update(view)
   }
@@ -225,6 +143,89 @@ class TooltipView {
       })
     })
   }
+
+  private onPrettify = () => {
+    if (this.pos === undefined) return
+    const dom = this.view.domAtPos(this.pos + 1)
+    dom.node.dispatchEvent(new CustomEvent('cm:user_event', {
+      detail: {userEvent: 'prettify'},
+    }))
+
+    const tr = this.view.state.tr
+    tr.setMeta(pluginKey, {showMenu: false, ref: undefined, pos: undefined})
+    this.view.dispatch(tr)
+    this.view.focus()
+  }
+
+  private onChangeLang = () => {
+    if (this.pos === undefined) return
+    const tr = this.view.state.tr
+    const pos = tr.doc.resolve(this.pos + 1)
+    const node = pos.node()
+    if (node.type.name !== 'code_block') return
+
+    tr.setMeta(pluginKey, {showMenu: false, ref: undefined, pos: undefined})
+    tr.setSelection(Selection.near(tr.doc.resolve(this.pos)))
+    tr.setNodeAttribute(this.pos, 'hidden', false)
+    this.view.dispatch(tr)
+    this.view.focus()
+    const dom = this.view.domAtPos(this.pos + 1)
+    dom.node.dispatchEvent(new CustomEvent('cm:user_event', {
+      detail: {userEvent: 'change-lang'},
+    }))
+  }
+
+  private onMermaidSave = () => {
+    const id = `mermaid-graph-${this.pos}`
+    const svg = document.getElementById(id)
+    if (svg) remote.saveSvg(svg)
+  }
+
+  private onMermaidHideCode = () => {
+    if (this.pos === undefined) return
+    const tr = this.view.state.tr
+    const pos = tr.doc.resolve(this.pos + 1)
+    const node = pos.node()
+    if (node.type.name !== 'code_block') return
+
+    tr.setMeta(pluginKey, {showMenu: false, ref: undefined, pos: undefined})
+    tr.setNodeAttribute(this.pos, 'hidden', !node.attrs.hidden)
+    this.view.dispatch(tr)
+    this.view.focus()
+  }
+
+  private onClose = (e: MouseEvent) => {
+    if (!(e.target as Element).closest('.block-tooltip')) {
+      const tr = this.view.state.tr
+      tr.setMeta(pluginKey, {showMenu: false, ref: undefined, pos: undefined})
+      this.view.dispatch(tr)
+    }
+  }
+
+  private onToPlain = () => {
+    if (this.pos === undefined) return
+    const toPlain = setBlockType(this.view.state.schema.nodes.paragraph)
+    toPlain(this.view.state, this.view.dispatch)
+    const tr = this.view.state.tr
+    const pos = tr.doc.resolve(this.pos)
+    if (!pos.nodeAfter) return
+    tr.removeMark(pos.pos, pos.pos + pos.nodeAfter.nodeSize)
+    tr.setMeta(pluginKey, {showMenu: false, ref: undefined, pos: undefined})
+    this.view.dispatch(tr)
+    this.view.focus()
+  }
+
+  private onRemoveBlock = () => {
+    if (this.pos === undefined) return
+    const tr = this.view.state.tr
+    const pos = tr.doc.resolve(this.pos)
+    if (!pos.nodeAfter) return
+    tr.delete(pos.pos, pos.pos + pos.nodeAfter.nodeSize)
+    tr.setMeta(pluginKey, {showMenu: false, ref: undefined, pos: undefined})
+    this.view.dispatch(tr)
+    this.view.focus()
+  }
+
 }
 
 export const pluginKey = new PluginKey('block-menu')
