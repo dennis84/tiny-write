@@ -1,11 +1,11 @@
 import {SetStoreFunction, Store} from 'solid-js/store'
 import * as Y from 'yjs'
 import {WebsocketProvider} from 'y-websocket'
+import {adjectives, animals, uniqueNamesGenerator} from 'unique-names-generator'
 import {Collab, File, State} from '@/state'
 import {COLLAB_URL} from '@/env'
 import * as remote from '@/remote'
-import {adjectives, animals, uniqueNamesGenerator} from 'unique-names-generator'
-import {themes} from '@/config'
+import {Ctrl} from '.'
 
 export class CollabService {
   private onCollabConfigUpdate = (event: Y.YMapEvent<unknown>) => {
@@ -16,9 +16,18 @@ export class CollabService {
   }
 
   constructor(
+    private ctrl: Ctrl,
     private store: Store<State>,
     private setState: SetStoreFunction<State>,
   ) {}
+
+  get provider() {
+    return this.store.collab?.provider
+  }
+
+  get permanentUserData() {
+    return this.store.collab?.permanentUserData
+  }
 
   create(room: string, connect = false): Collab {
     if (connect) {
@@ -40,7 +49,7 @@ export class CollabService {
       this.disconnectCollab()
     })
 
-    const xs = Object.values(themes)
+    const xs = Object.values(this.ctrl.config.themes)
     const index = Math.floor(Math.random() * xs.length)
     const username = uniqueNamesGenerator({
       dictionaries: [adjectives, animals],

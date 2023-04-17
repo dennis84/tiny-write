@@ -20,7 +20,6 @@ import {getTheme} from './theme'
 import expand from './expand'
 import {prettifyView} from './prettify'
 import {mermaidKeywords, mermaidView} from './mermaid'
-import {codeTheme} from '@/config'
 
 export class CodeBlockView {
   public dom: HTMLElement
@@ -34,7 +33,7 @@ export class CodeBlockView {
   constructor(
     private node: Node,
     private view: ProsemirrorEditorView,
-    readonly getPos: () => number,
+    readonly getPos: () => number | undefined,
     private innerDecos: DecorationSource,
     readonly options: CodeBlockProps,
   ) {
@@ -51,6 +50,7 @@ export class CodeBlockView {
       run: () => {
         if (!this.editorView.state.doc.length) {
           const offset = this.getPos()
+          if (offset === undefined) return false
           const tr = this.view.state.tr.deleteRange(
             Math.max(0, offset - 1),
             offset + this.node.content.size + 1
@@ -79,8 +79,10 @@ export class CodeBlockView {
 
         if (line.number === 1) {
           let tr = this.view.state.tr
-          let targetPos = this.getPos() - 1
-          if (this.getPos() === 0) {
+          const nodePos = this.getPos()
+          if (nodePos === undefined) return false
+          let targetPos = nodePos - 1
+          if (nodePos === 0) {
             tr.insert(0, this.view.state.schema.node('paragraph'))
             targetPos = 0
           }
@@ -107,7 +109,9 @@ export class CodeBlockView {
 
         if (line.number === editorView.state.doc.lines) {
           const tr = this.view.state.tr
-          const targetPos = this.getPos() + editorView.state.doc.length + 2
+          const nodePos = this.getPos()
+          if (nodePos === undefined) return false
+          const targetPos = nodePos + editorView.state.doc.length + 2
           const selection = Selection.near(tr.doc.resolve(targetPos))
 
           tr.setSelection(selection).scrollIntoView()
@@ -124,7 +128,7 @@ export class CodeBlockView {
     this.findWordsExt = new Compartment
     this.keywordsExt = new Compartment
 
-    const theme = getTheme(codeTheme(this.options.state.config).value)
+    const theme = getTheme(this.options.ctrl.config.codeTheme.value)
     const langSupport = highlight(this.lang)
 
     this.editorView = new EditorView({
@@ -146,11 +150,11 @@ export class CodeBlockView {
         foldGutter(),
         closeBrackets(),
         linter(() => []),
-        EditorState.tabSize.of(this.options.state.config.prettier.tabWidth),
+        EditorState.tabSize.of(this.options.ctrl.config.prettier.tabWidth),
         indentUnit.of(
-          this.options.state.config.prettier.useTabs ?
+          this.options.ctrl.config.prettier.useTabs ?
             '\t' :
-            ' '.repeat(this.options.state.config.prettier.tabWidth)
+            ' '.repeat(this.options.ctrl.config.prettier.tabWidth)
         ),
         expand(this),
         mermaidView(this),
@@ -159,7 +163,9 @@ export class CodeBlockView {
           onClose: () => this.editorView.focus(),
           onChange: (lang: string) => {
             const tr = this.view.state.tr
-            tr.setNodeMarkup(this.getPos(), undefined, {...this.node.attrs, lang})
+            const nodePos = this.getPos()
+            if (nodePos === undefined) return
+            tr.setNodeMarkup(nodePos, undefined, {...this.node.attrs, lang})
             this.view.dispatch(tr)
             this.reconfigure()
             this.editorView.dispatch(setDiagnostics(this.editorView.state, []))
@@ -199,7 +205,10 @@ export class CodeBlockView {
   forwardUpdate(update: ViewUpdate) {
     if (this.updating || !this.editorView.hasFocus) return
 
-    let offset = this.getPos() + 1
+    const nodePos = this.getPos()
+    if (nodePos === undefined) return
+
+    let offset = nodePos + 1
     const {main} = update.state.selection
     const selFrom = offset + main.from
     const selTo = offset + main.to
@@ -233,7 +242,7 @@ export class CodeBlockView {
       this.editorView.hasFocus &&
       sel.empty &&
       update.transactions.length > 0 &&
-      this.options.state.config.typewriterMode
+      this.options.ctrl.config.typewriterMode
     ) {
       const lineBlock = this.editorView.lineBlockAt(sel.from)
       let {node} = this.editorView.domAtPos(lineBlock.from)

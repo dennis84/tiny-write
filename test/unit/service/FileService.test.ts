@@ -5,6 +5,7 @@ import {createState} from '@/state'
 import {createYdoc} from '../util'
 import {FileService} from '@/services/FileService'
 import {createStore} from 'solid-js/store'
+import {Ctrl} from '@/services'
 
 vi.mock('@/db', () => ({}))
 
@@ -19,7 +20,8 @@ test('only save file type', async () => {
     files: [{id: '1', ydoc: Y.encodeStateAsUpdate(ydoc)}],
   }))
 
-  const service = new FileService(store, setState)
+  const ctrl = {} as Ctrl
+  const service = new FileService(ctrl, store, setState)
   setState('collab', {ydoc})
 
   ydoc.getText('2').insert(0, '1')

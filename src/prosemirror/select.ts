@@ -1,9 +1,8 @@
 import {Plugin, PluginKey, Selection, TextSelection} from 'prosemirror-state'
 import {Decoration, DecorationSet, EditorView} from 'prosemirror-view'
-import {ProseMirrorExtension} from '@/prosemirror';
-import {isTauri} from '@/env';
-import {State} from '@/state';
-import {primaryBackground, selection} from '@/config';
+import {ProseMirrorExtension} from '@/prosemirror'
+import {isTauri} from '@/env'
+import {Ctrl} from '@/services'
 
 interface Coords {
   fromX: number;
@@ -46,7 +45,7 @@ class SelectView {
     const isTauriDragRegion =
       isTauri &&
       (e.target as HTMLElement)?.dataset?.tauriDragRegion === 'true' &&
-      !this.state.fullscreen
+      !this.ctrl.app.fullscreen
 
     if (isInnerNodes || isTauriDragRegion) {
       return
@@ -99,9 +98,9 @@ class SelectView {
     context.clearRect(0, 0, this.canvas.width, this.canvas.height)
 
     context.beginPath();
-    context.fillStyle = selection(this.state.config)
+    context.fillStyle = this.ctrl.config.theme.selection
     context.lineWidth = 2
-    context.strokeStyle = primaryBackground(this.state.config)
+    context.strokeStyle = this.ctrl.config.theme.primaryBackground
     context.roundRect(
       this.coords.fromX,
       this.coords.fromY,
@@ -128,7 +127,7 @@ class SelectView {
     this.coords = undefined
   }
 
-  constructor(private view: EditorView, private state: State) {
+  constructor(private view: EditorView, private ctrl: Ctrl) {
     document.addEventListener('mousedown', this.onMouseDown)
   }
 
@@ -188,7 +187,7 @@ class SelectView {
 
 const pluginKey = new PluginKey('select')
 
-const select = (state: State) => new Plugin({
+const select = (ctrl: Ctrl) => new Plugin({
   key: pluginKey,
   state: {
     init() {
@@ -222,13 +221,13 @@ const select = (state: State) => new Plugin({
     }
   },
   view(editorView) {
-    return new SelectView(editorView, state)
+    return new SelectView(editorView, ctrl)
   }
 })
 
-export default (state: State): ProseMirrorExtension => ({
+export default (ctrl: Ctrl): ProseMirrorExtension => ({
   plugins: (prev) => [
     ...prev,
-    select(state),
+    select(ctrl),
   ]
 })

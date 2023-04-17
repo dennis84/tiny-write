@@ -20,11 +20,11 @@ import position from '@/prosemirror/position'
 import container from '@/prosemirror/container'
 import fileListing from '@/prosemirror/autocomplete/file-listing'
 import wordCompletion from '@/prosemirror/autocomplete/word-completion'
-import {State} from '@/state'
 import {isDev} from '@/env'
+import {Ctrl} from '@/services'
 
 interface Props {
-  state: State;
+  ctrl: Ctrl;
   type?: Y.XmlFragment;
   keymap?: {[key: string]: any};
   markdown?: boolean;
@@ -37,14 +37,14 @@ export const createExtensions = (props: Props): ProseMirrorExtension[] => {
   const extensions = [
     base({markdown: isMarkdown, keymap}),
     placeholder('Start typing ...'),
-    scroll(props.state),
+    scroll(props.ctrl),
     blockMenu(),
-    fileListing(props.state),
-    wordCompletion(props.state),
+    fileListing(props.ctrl),
+    wordCompletion(props.ctrl),
   ]
 
   if (props.type) {
-    extensions.push(collab(props.state, props.type))
+    extensions.push(collab(props.ctrl, props.type))
   }
 
   if (isMarkdown) {
@@ -56,7 +56,7 @@ export const createExtensions = (props: Props): ProseMirrorExtension[] => {
     markdown(),
     todoList(),
     codeBlock({
-      state: props.state,
+      ctrl: props.ctrl,
       keymap: Object.entries(props.keymap ?? {}).map(([key, run]) => ({key, run})),
     }),
     code(),
@@ -65,8 +65,8 @@ export const createExtensions = (props: Props): ProseMirrorExtension[] => {
     table(),
     position(isDev),
     container(),
-    select(props.state),
-    image(props.state),
+    select(props.ctrl),
+    image(props.ctrl),
     pasteMarkdown(),
   ]
 }

@@ -41,7 +41,7 @@ export class EditorService {
     if (!file) return
 
     const extensions = createExtensions({
-      state: unwrap(this.store),
+      ctrl: this.ctrl,
       markdown: file?.markdown,
       type: this.store.collab!.ydoc!.getXmlFragment(id),
       keymap: this.ctrl.keymap.create(),
@@ -193,8 +193,7 @@ export class EditorService {
   }
 
   toggleMarkdown() {
-    const state: State = unwrap(this.store)
-    const editorState = state.editor?.editorView?.state
+    const editorState = this.store.editor?.editorView?.state
     if (!editorState) return
 
     const markdown = !this.currentFile?.markdown
@@ -208,7 +207,7 @@ export class EditorService {
 
       doc = {type: 'doc', content: nodes}
     } else {
-      const extensions = createExtensions({state, markdown})
+      const extensions = createExtensions({ctrl: this.ctrl, markdown})
       const schema = createSchema(extensions)
       const parser = createMarkdownParser(schema)
       let textContent = ''

@@ -1,7 +1,7 @@
 import {Plugin} from 'prosemirror-state'
 import {EditorView} from 'prosemirror-view'
 import {ProseMirrorExtension} from '@/prosemirror'
-import {State} from '@/state'
+import {Ctrl} from '@/services'
 
 const scroll = (view: EditorView) => {
   if (!view.state.selection.empty) return false
@@ -22,17 +22,17 @@ const scrollToElem = (node: Element) => {
   })
 }
 
-const scrollIntoView = (state: State) => new Plugin({
+const scrollIntoView = (ctrl: Ctrl) => new Plugin({
   props: {
     handleDOMEvents: {
       keyup: (view: EditorView) => {
-        if (state.config.typewriterMode) scroll(view)
+        if (ctrl.config.typewriterMode) scroll(view)
         return false
       }
     }
   },
 })
 
-export default (state: State): ProseMirrorExtension => ({
-  plugins: (prev) => [...prev, scrollIntoView(state)]
+export default (ctrl: Ctrl): ProseMirrorExtension => ({
+  plugins: (prev) => [...prev, scrollIntoView(ctrl)]
 })

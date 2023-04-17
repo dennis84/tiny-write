@@ -1,4 +1,4 @@
-import {SetStoreFunction, Store, unwrap} from 'solid-js/store'
+import {SetStoreFunction, Store} from 'solid-js/store'
 import * as Y from 'yjs'
 import {v4 as uuidv4} from 'uuid'
 import {fromUint8Array, toUint8Array} from 'js-base64'
@@ -7,6 +7,7 @@ import * as remote from '@/remote'
 import * as db from '@/db'
 import {createExtensions, createSchema} from '@/prosemirror-setup'
 import {createMarkdownParser} from '@/markdown'
+import {Ctrl} from '.'
 
 export interface LoadedFile {
   text: FileText;
@@ -24,6 +25,7 @@ export interface UpdateFile {
 
 export class FileService {
   constructor(
+    private ctrl: Ctrl,
     private store: Store<State>,
     private setState: SetStoreFunction<State>,
   ) {}
@@ -49,7 +51,7 @@ export class FileService {
       const resolvedPath = await remote.resolvePath([path])
       const fileContent = await remote.readFile(resolvedPath)
       const lastModified = await remote.getFileLastModified(resolvedPath)
-      const extensions = createExtensions({state: unwrap(this.store)})
+      const extensions = createExtensions({ctrl: this.ctrl})
       const schema = createSchema(extensions)
       const parser = createMarkdownParser(schema)
       const doc = parser.parse(fileContent)?.toJSON()

@@ -12,6 +12,10 @@ export class AppService {
     private setState: SetStoreFunction<State>,
   ) {}
 
+  get fullscreen() {
+    return this.store.fullscreen
+  }
+
   async init(node: Element) {
     try {
       let data = await this.fetchData()

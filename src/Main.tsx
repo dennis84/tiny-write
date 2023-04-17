@@ -3,7 +3,7 @@ import {createMutable} from 'solid-js/store'
 import {appWindow} from '@tauri-apps/api/window'
 import {EditorView} from 'prosemirror-view'
 import {State, StateContext} from './state'
-import {createCtrl} from '@/services'
+import {createCtrl, Ctrl} from '@/services'
 import * as remote from '@/remote'
 import {isTauri} from '@/env'
 import * as config from '@/config'
@@ -45,7 +45,7 @@ export default (props: {state: State}) => {
   }
 
   onMount(() => {
-    setupFonts()
+    setupFonts(ctrl)
     const matchDark = () => window.matchMedia('(prefers-color-scheme: dark)')
     const onChangeTheme = () => ctrl.config.updateTheme()
     matchDark().addEventListener('change', onChangeTheme)
@@ -164,32 +164,31 @@ export default (props: {state: State}) => {
 
   createEffect(() => {
     const root = document.documentElement
-    const c = store.config
 
-    root.style.setProperty('--background', config.background(c))
-    root.style.setProperty('--foreground', config.foreground(c))
-    root.style.setProperty('--foreground-80', `${config.foreground(c)}cc`)
-    root.style.setProperty('--foreground-60', `${config.foreground(c)}99`)
-    root.style.setProperty('--foreground-50', `${config.foreground(c)}80`)
-    root.style.setProperty('--foreground-20', `${config.foreground(c)}33`)
-    root.style.setProperty('--foreground-10', `${config.foreground(c)}1a`)
-    root.style.setProperty('--foreground-5', `${config.foreground(c)}0D`)
-    root.style.setProperty('--primary-background', config.primaryBackground(c))
-    root.style.setProperty('--primary-background-20', `${config.primaryBackground(c)}33`)
-    root.style.setProperty('--primary-foreground', config.primaryForeground(c))
-    root.style.setProperty('--selection-border', `${config.primaryBackground(c)}44`)
-    root.style.setProperty('--selection', config.selection(c))
-    root.style.setProperty('--tooltip-background', config.tooltipBackground(c))
-    root.style.setProperty('--font-family', config.fontFamily(c))
-    root.style.setProperty('--font-family-monospace', config.fontFamily(c, {monospace: true}))
-    root.style.setProperty('--font-family-bold', config.fontFamily(c, {bold: true}))
-    root.style.setProperty('--font-family-italic', config.fontFamily(c, {italic: true}))
-    root.style.setProperty('--font-size', `${c.fontSize}px`)
-    root.style.setProperty('--font-size-h1', `${c.fontSize * 1.8}px`)
-    root.style.setProperty('--font-size-h2', `${c.fontSize * 1.4}px`)
-    root.style.setProperty('--font-size-h3', `${c.fontSize * 1.2}px`)
+    root.style.setProperty('--background', ctrl.config.theme.background)
+    root.style.setProperty('--foreground', ctrl.config.theme.foreground)
+    root.style.setProperty('--foreground-80', `${ctrl.config.theme.foreground}cc`)
+    root.style.setProperty('--foreground-60', `${ctrl.config.theme.foreground}99`)
+    root.style.setProperty('--foreground-50', `${ctrl.config.theme.foreground}80`)
+    root.style.setProperty('--foreground-20', `${ctrl.config.theme.foreground}33`)
+    root.style.setProperty('--foreground-10', `${ctrl.config.theme.foreground}1a`)
+    root.style.setProperty('--foreground-5', `${ctrl.config.theme.foreground}0D`)
+    root.style.setProperty('--primary-background', ctrl.config.theme.primaryBackground)
+    root.style.setProperty('--primary-background-20', `${ctrl.config.theme.primaryBackground}33`)
+    root.style.setProperty('--primary-foreground', ctrl.config.theme.primaryForeground)
+    root.style.setProperty('--selection-border', `${ctrl.config.theme.primaryBackground}44`)
+    root.style.setProperty('--selection', ctrl.config.theme.selection)
+    root.style.setProperty('--tooltip-background', ctrl.config.theme.tooltipBackground)
+    root.style.setProperty('--font-family', ctrl.config.fontFamily)
+    root.style.setProperty('--font-family-monospace', ctrl.config.getFontFamily({monospace: true}))
+    root.style.setProperty('--font-family-bold', ctrl.config.getFontFamily({bold: true}))
+    root.style.setProperty('--font-family-italic', ctrl.config.getFontFamily({italic: true}))
+    root.style.setProperty('--font-size', `${ctrl.config.fontSize}px`)
+    root.style.setProperty('--font-size-h1', `${ctrl.config.fontSize * 1.8}px`)
+    root.style.setProperty('--font-size-h2', `${ctrl.config.fontSize * 1.4}px`)
+    root.style.setProperty('--font-size-h3', `${ctrl.config.fontSize * 1.2}px`)
     root.style.setProperty('--border-radius', config.styles.borderRadius)
-    root.style.setProperty('--menu-font-family', config.DEFAULT_FONT)
+    root.style.setProperty('--menu-font-family', ctrl.config.DEFAULT_FONT)
     root.style.setProperty('--menu-font-size', '14px')
   })
 
@@ -217,10 +216,10 @@ export default (props: {state: State}) => {
   )
 }
 
-const setupFonts = () => {
+const setupFonts = (ctrl: Ctrl) => {
   let styles = ''
-  for (const k of Object.keys(config.fonts)) {
-    const font = config.fonts[k]
+  for (const k of Object.keys(ctrl.config.fonts)) {
+    const font = ctrl.config.fonts[k]
     if (font.regular) {
       styles += `
         @font-face {

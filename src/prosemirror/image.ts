@@ -5,7 +5,7 @@ import {convertFileSrc} from '@tauri-apps/api/tauri'
 import {resolvePath, dirname} from '@/remote'
 import {isTauri} from '@/env'
 import {ProseMirrorExtension} from '@/prosemirror'
-import {State} from '@/state'
+import {Ctrl} from '@/services'
 
 const REGEX = /^!\[([^[\]]*?)\]\((.+?)\)\s+/
 const MAX_MATCH = 500
@@ -134,7 +134,9 @@ class ImageView {
     window.removeEventListener('mouseup', this.onResizeEnd)
     if (!this.width) return
     const tr = this.view.state.tr
-    tr.setNodeMarkup(this.getPos(), undefined, {
+    const nodePos = this.getPos()
+    if (nodePos === undefined) return
+    tr.setNodeMarkup(nodePos, undefined, {
       ...this.node.attrs,
       width: this.width,
     })
@@ -145,8 +147,8 @@ class ImageView {
   constructor(
     private node: Node,
     private view: EditorView,
-    private getPos: () => number,
-    private state: State,
+    private getPos: () => number | undefined,
+    private ctrl: Ctrl,
   ) {
     this.container = document.createElement('span')
     this.container.classList.add('image-container', 'loading')
@@ -174,7 +176,7 @@ class ImageView {
       !node.attrs.src.startsWith('data:') &&
       !isUrl(node.attrs.src)
     ) {
-      getImagePath(node.attrs.src, this.state?.editor?.path).then((p) => {
+      getImagePath(node.attrs.src, this.ctrl?.editor?.currentFile?.path).then((p) => {
         source.setAttribute('src', p)
       })
     } else {
@@ -209,7 +211,7 @@ class ImageView {
   }
 }
 
-export default (state: State): ProseMirrorExtension => ({
+export default (ctrl: Ctrl): ProseMirrorExtension => ({
   schema: (prev) => ({
     ...prev,
     nodes: (prev.nodes as any)
@@ -222,10 +224,10 @@ export default (state: State): ProseMirrorExtension => ({
   ],
   nodeViews: {
     image: (node, view, getPos) => {
-      return new ImageView(node, view, getPos, state)
+      return new ImageView(node, view, getPos, ctrl)
     },
     video: (node, view, getPos) => {
-      return new ImageView(node, view, getPos, state)
+      return new ImageView(node, view, getPos, ctrl)
     }
   },
 })

@@ -44,7 +44,7 @@ class TaskListItemView {
   constructor(
     private node: Node,
     private view: EditorView,
-    private getPos: () => number
+    private getPos: () => number | undefined
   ) {
     const dom = this.node.type.spec.toDOM!(this.node)
     const res = DOMSerializer.renderSpec(document, dom)
@@ -57,7 +57,10 @@ class TaskListItemView {
   handleClick(e: MouseEvent) {
     const tr = this.view.state.tr
     const elem = e.target as HTMLInputElement
-    tr.setNodeMarkup(this.getPos(), null, {checked: elem.checked})
+    const nodePos = this.getPos()
+    if (nodePos === undefined) return
+
+    tr.setNodeMarkup(nodePos, null, {checked: elem.checked})
     this.view.dispatch(tr)
     this.view.focus()
   }

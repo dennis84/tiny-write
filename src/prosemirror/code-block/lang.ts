@@ -26,7 +26,6 @@ import {xml} from '@codemirror/lang-xml'
 import * as logos from './logos'
 import {getTheme} from './theme'
 import {CodeBlockView} from './view'
-import {codeTheme} from '@/config'
 
 interface Config {
   onClose: () => void;
@@ -41,7 +40,7 @@ export const changeLang = (codeBlock: CodeBlockView, config: Config) =>
     lang: string = codeBlock.lang
 
     constructor(private view: EditorView) {
-      const theme = getTheme(codeTheme(codeBlock.options.state.config).value)
+      const theme = getTheme(codeBlock.options.ctrl.config.codeTheme.value)
 
       this.toggle = document.createElement('div')
       this.toggle.className = 'lang-toggle'

@@ -1,10 +1,10 @@
-import {Node, NodeType} from 'prosemirror-model'
-import {Decoration, DecorationSource, EditorView} from 'prosemirror-view'
+import {NodeType} from 'prosemirror-model'
+import {EditorView} from 'prosemirror-view'
 import {EditorState, Selection, Transaction, TextSelection} from 'prosemirror-state'
 import {keymap} from 'prosemirror-keymap'
 import {inputRules, textblockTypeInputRule} from 'prosemirror-inputrules'
 import {KeyBinding} from '@codemirror/view'
-import {State} from '@/state'
+import {Ctrl} from '@/services'
 import {ProseMirrorExtension} from '@/prosemirror'
 import {CodeBlockView} from './view'
 
@@ -76,7 +76,7 @@ export const defaultProps = {
 }
 
 export interface CodeBlockProps {
-  state: State;
+  ctrl: Ctrl;
   keymap: KeyBinding[];
 }
 
@@ -105,12 +105,7 @@ export default (props: CodeBlockProps): ProseMirrorExtension => ({
     keymap(codeBlockKeymap),
   ],
   nodeViews: {
-    code_block: (
-      node: Node,
-      view: EditorView,
-      getPos: () => number,
-      _decos: readonly Decoration[],
-      innerDecos: DecorationSource
-    ) => new CodeBlockView(node, view, getPos, innerDecos, props)
+    code_block: (node, view, getPos, _decos, innerDecos) =>
+      new CodeBlockView(node, view, getPos, innerDecos, props)
   },
 })

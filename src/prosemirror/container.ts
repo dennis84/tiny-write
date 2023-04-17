@@ -46,7 +46,7 @@ class ContainerView {
   constructor(
     private node: Node,
     private view: EditorView,
-    private getPos: () => number,
+    private getPos: () => number | undefined,
   ) {
     const dom = this.node.type.spec.toDOM!(this.node)
     const res = DOMSerializer.renderSpec(document, dom)
@@ -57,9 +57,12 @@ class ContainerView {
       this.dom.childNodes[0].addEventListener('click', () => {
         const tr = this.view.state.tr
         const open = !(this.dom as HTMLDetailsElement).open
-        tr.setNodeMarkup(this.getPos(), null, {...node.attrs, open})
+        const nodePos = this.getPos()
+        if (nodePos === undefined) return
+
+        tr.setNodeMarkup(nodePos, null, {...node.attrs, open})
         if (!open) {
-          tr.setSelection(new TextSelection(tr.doc.resolve(this.getPos() + 1)))
+          tr.setSelection(new TextSelection(tr.doc.resolve(nodePos + 1)))
         }
 
         this.view.dispatch(tr)

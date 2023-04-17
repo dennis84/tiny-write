@@ -5,7 +5,7 @@ import {WebsocketProvider} from 'y-websocket'
 import {ySyncPlugin, yCursorPlugin, yUndoPlugin, ySyncPluginKey} from 'y-prosemirror'
 import {Awareness} from 'y-protocols/awareness'
 import {ProseMirrorExtension} from '@/prosemirror'
-import {State} from '@/state'
+import {Ctrl} from '@/services'
 
 export interface CollabOptions {
   type: Y.XmlFragment;
@@ -108,7 +108,7 @@ const ychangeSchema = {
   }
 }
 
-export const collab = (state: State, type: Y.XmlFragment): ProseMirrorExtension => ({
+export const collab = (ctrl: Ctrl, type: Y.XmlFragment): ProseMirrorExtension => ({
   schema: (prev) => ({
     ...prev,
     marks: (prev.marks as any).append(ychangeSchema),
@@ -116,11 +116,11 @@ export const collab = (state: State, type: Y.XmlFragment): ProseMirrorExtension 
   plugins: (prev) => [
     ...prev,
     ySyncPlugin(type, {
-      permanentUserData: state.collab?.permanentUserData,
+      permanentUserData: ctrl.collab?.permanentUserData,
     }),
     // @ts-ignore
-    yCursorPlugin(state.collab.provider.awareness, {cursorBuilder}),
-    yMouseCursorPlugin(state.collab!.provider!.awareness),
+    yCursorPlugin(ctrl.collab.provider!.awareness, {cursorBuilder}),
+    yMouseCursorPlugin(ctrl.collab.provider!.awareness),
     yUndoPlugin(),
   ]
 })

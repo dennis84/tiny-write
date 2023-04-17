@@ -1,6 +1,5 @@
 import {For} from 'solid-js'
 import {useState} from '@/state'
-import {codeTheme, codeThemes, fonts, themes, getTheme, getFont} from '@/config'
 import {Drawer, Label, Link, Sub, Text} from './Menu'
 import {Button} from './Button'
 
@@ -35,30 +34,30 @@ export const AppearanceMenu = (props: Props) => {
     <Drawer data-tauri-drag-region="true">
       <Label>Theme</Label>
       <Sub data-tauri-drag-region="true">
-        <For each={Object.entries(themes)}>
+        <For each={Object.entries(ctrl.config.themes)}>
           {([key, value]) => (
             <Link onClick={onChangeTheme(key)}>
-              {value.label}{' '}{key === getTheme(store.config).value && '✅'}
+              {value.label}{' '}{key === ctrl.config.theme.value && '✅'}
             </Link>
           )}
         </For>
       </Sub>
       <Label>Code</Label>
       <Sub data-tauri-drag-region="true">
-        <For each={Object.entries(codeThemes)}>
+        <For each={Object.entries(ctrl.config.codeThemes)}>
           {([key, value]) => (
             <Link onClick={onChangeCodeTheme(key)}>
-              {value.label}{' '}{key === codeTheme(store.config).value && '✅'}
+              {value.label}{' '}{key === ctrl.config.codeTheme.value && '✅'}
             </Link>
           )}
         </For>
       </Sub>
       <Label>Font</Label>
       <Sub data-tauri-drag-region="true">
-        <For each={Object.entries(fonts)}>
+        <For each={Object.entries(ctrl.config.fonts)}>
           {([key, value]) => (
             <Link onClick={onChangeFont(key)}>
-              {value.label}{' '}{key === getFont(store.config).value && '✅'}
+              {value.label}{' '}{key === ctrl.config.font.value && '✅'}
             </Link>
           )}
         </For>
