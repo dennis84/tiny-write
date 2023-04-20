@@ -254,6 +254,8 @@ export class ConfigService {
     },
   }
 
+  readonly borderRadius = '5px';
+
   constructor(
     private ctrl: Ctrl,
     private store: Store<State>,

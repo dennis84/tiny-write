@@ -6,7 +6,6 @@ import {State, StateContext} from './state'
 import {createCtrl, Ctrl} from '@/services'
 import * as remote from '@/remote'
 import {isTauri} from '@/env'
-import * as config from '@/config'
 import {Scroll, Layout} from '@/components/Layout'
 import Editor from '@/components/Editor'
 import Menu from '@/components/Menu'
@@ -187,7 +186,7 @@ export default (props: {state: State}) => {
     root.style.setProperty('--font-size-h1', `${ctrl.config.fontSize * 1.8}px`)
     root.style.setProperty('--font-size-h2', `${ctrl.config.fontSize * 1.4}px`)
     root.style.setProperty('--font-size-h3', `${ctrl.config.fontSize * 1.2}px`)
-    root.style.setProperty('--border-radius', config.styles.borderRadius)
+    root.style.setProperty('--border-radius', ctrl.config.borderRadius)
     root.style.setProperty('--menu-font-family', ctrl.config.DEFAULT_FONT)
     root.style.setProperty('--menu-font-size', '14px')
   })
