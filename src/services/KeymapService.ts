@@ -48,8 +48,9 @@ export class KeymapService {
   }
 
   private onSave = async () => {
-    const state = this.store.editor?.editorView?.state
-    if (!isTauri || this.ctrl.editor.currentFile?.path || !state) return false
+    const currentFile = this.ctrl.file.currentFile
+    const state = currentFile?.editorView?.state
+    if (!isTauri || currentFile?.path || !state) return false
     const path = await remote.save(state)
     if (path) this.ctrl.editor.updatePath(path)
   }
@@ -61,14 +62,16 @@ export class KeymapService {
   }
 
   private onUndo = () => {
-    if (!this.store.editor?.editorView) return
-    undo(this.store.editor.editorView.state)
+    const currentFile = this.ctrl.file.currentFile
+    if (!currentFile?.editorView) return
+    undo(currentFile.editorView.state)
     return true
   }
 
   private onRedo = () => {
-    if (!this.store.editor?.editorView) return
-    redo(this.store.editor.editorView.state)
+    const currentFile = this.ctrl.file.currentFile
+    if (!currentFile?.editorView) return
+    redo(currentFile.editorView.state)
     return true
   }
 

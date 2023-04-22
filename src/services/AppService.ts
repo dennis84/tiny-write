@@ -25,54 +25,49 @@ export class AppService {
         await remote.updateWindow(data.window)
       }
 
+      let currentFile = data.files.find((f) => f.active)
+
       if (data.args?.dir) { // If app was started with a directory as argument
-        data.editor = undefined
+        currentFile = undefined
       } else if (data.args?.file) { // If app was started with a file as argument
         const path = data.args.file
-        let file = data.files.find((f) => f.path === path)
-        if (file?.path) {
-          text = (await this.ctrl.file.loadFile(file.path)).text
-        } else if (!file) {
+        currentFile = data.files.find((f) => f.path === path)
+        if (currentFile?.path) {
+          text = (await this.ctrl.file.loadFile(currentFile.path)).text
+        } else if (!currentFile) {
           const loadedFile = await this.ctrl.file.loadFile(path)
-          file = this.ctrl.file.createFile(loadedFile)
-          data.files.push(file as File)
+          currentFile = this.ctrl.file.createFile(loadedFile)
+          data.files.push(currentFile as File)
         }
-        data = this.ctrl.editor.withFile(data, file)
+        data = this.ctrl.editor.activateFile(data, currentFile)
       } else if (data.args?.room) { // Join collab
-        let file = data.files.find((f) => f.id === data.args?.room)
-        if (file?.path) {
-          text = (await this.ctrl.file.loadFile(file.path)).text
-        } else if (!file) {
-          file = this.ctrl.file.createFile({id: data.args.room})
-          data.files.push(file as File)
+        currentFile = data.files.find((f) => f.id === data.args?.room)
+        if (currentFile?.path) {
+          text = (await this.ctrl.file.loadFile(currentFile.path)).text
+        } else if (!currentFile) {
+          currentFile = this.ctrl.file.createFile({id: data.args.room})
+          data.files.push(currentFile as File)
         }
-        data = this.ctrl.editor.withFile(data, file)
-      } else if (data.editor?.id) { // Restore last saved file
-        const file = data.files.find((f) => f.id === data.editor?.id)
-        if (file) {
-          data = this.ctrl.editor.withFile(data, file)
-        } else {
-          data.editor = undefined
-        }
-
-        if (file?.path) {
-          text = (await this.ctrl.file.loadFile(file.path)).text
+        data = this.ctrl.editor.activateFile(data, currentFile)
+      } else if (currentFile?.id) { // Restore last saved file
+        data = this.ctrl.editor.activateFile(data, currentFile)
+        if (currentFile?.path) {
+          text = (await this.ctrl.file.loadFile(currentFile.path)).text
         }
       }
 
       // Init from empty state or file not found
-      if (!data.args?.dir && !data.editor?.id) {
-        const file = this.ctrl.file.createFile({id: data.args?.room})
-        data.files.push(file)
-        data = this.ctrl.editor.withFile(data, file)
+      if (!data.args?.dir && !currentFile) {
+        currentFile = this.ctrl.file.createFile({id: data.args?.room})
+        data.files.push(currentFile)
+        data = this.ctrl.editor.activateFile(data, currentFile)
       }
 
       let collab
-      if (data.editor?.id) {
-        const file = data.files.find((f) => f.id === data.editor?.id)
-        if (file) collab = this.ctrl.collab.createByFile(file, data.args?.room !== undefined)
-        if (file?.path) {
-          text = (await this.ctrl.file.loadFile(file.path)).text
+      if (currentFile) {
+        collab = this.ctrl.collab.createByFile(currentFile, data.args?.room !== undefined)
+        if (currentFile?.path) {
+          text = (await this.ctrl.file.loadFile(currentFile.path)).text
         }
       }
 
@@ -139,7 +134,6 @@ export class AppService {
       if (room) args = {room}
     }
 
-    const fetchedEditor = await db.getEditor()
     const fetchedWindow = await db.getWindow()
     const fetchedConfig = await db.getConfig()
     const fetchedSize = await db.getSize()
@@ -153,7 +147,6 @@ export class AppService {
     return {
       ...state,
       args: args ?? state.args,
-      editor: fetchedEditor,
       files,
       config,
       window: fetchedWindow,

@@ -37,8 +37,9 @@ export const ChangeSetMenu = (props: Props) => {
   }
 
   const onBack = () => {
+    const currentFile = ctrl.file.currentFile
     ctrl.changeSet.unrenderVersion()
-    store.editor?.editorView?.focus()
+    currentFile?.editorView?.focus()
     props.onBack()
   }
 

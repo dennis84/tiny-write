@@ -30,7 +30,7 @@ export default (props: {state: State}) => {
     top: number,
     mime?: string
   ) => {
-    if (ctrl.editor.currentFile?.markdown) {
+    if (ctrl.file.currentFile?.markdown) {
       const text = `![](${data})`
       const pos = editorView.posAtCoords({left, top})
       const tr = editorView.state.tr
@@ -54,6 +54,7 @@ export default (props: {state: State}) => {
   onMount(async () => {
     if (!isTauri) return
     const unlisten = await appWindow.onFileDropEvent(async (event) => {
+      const currentFile = ctrl.file.currentFile
       if (event.payload.type === 'hover') {
         remote.log('INFO', '🔗 User hovering')
       } else if (event.payload.type === 'drop') {
@@ -61,14 +62,14 @@ export default (props: {state: State}) => {
         for (const path of event.payload.paths) {
           const mime = await remote.getMimeType(path)
           if (mime.startsWith('image/') || mime.startsWith('video/')) {
-            if (!store.editor?.editorView) return
+            if (!currentFile?.editorView) return
             const x = mouseEnterCoords.x
             const y = mouseEnterCoords.y
-            const d = ctrl.editor.currentFile?.path
-              ? await remote.dirname(ctrl.editor.currentFile.path)
+            const d = currentFile?.path
+              ? await remote.dirname(currentFile.path)
               : undefined
             const p = await remote.toRelativePath(path, d)
-            insertImageMd(store.editor.editorView, p, x, y, mime)
+            insertImageMd(currentFile.editorView, p, x, y, mime)
           } else if (mime.startsWith('text/')) {
             await ctrl.editor.openFile({path})
             return
@@ -106,6 +107,8 @@ export default (props: {state: State}) => {
         return
       }
 
+      const currentFile = ctrl.file.currentFile
+
       for (const file of e.dataTransfer?.files ?? []) {
         if (file.type.startsWith('image/')) {
           const x = mouseEnterCoords.x
@@ -113,8 +116,8 @@ export default (props: {state: State}) => {
           const reader = new FileReader()
           reader.readAsDataURL(file)
           reader.onloadend = () => {
-            if (!store.editor?.editorView) return
-            insertImageMd(store.editor.editorView, reader.result as string, x, y)
+            if (!currentFile?.editorView) return
+            insertImageMd(currentFile.editorView, reader.result as string, x, y)
           }
         }
       }
@@ -144,16 +147,18 @@ export default (props: {state: State}) => {
   })
 
   createEffect(() => {
-    if (store.editor === undefined) {
+    const currentFile = ctrl.file.currentFile
+    if (!currentFile) {
       ctrl.app.init(editorRef!)
-    } else if (store.editor.id && store.editor.editorView === undefined) {
+    } else if (currentFile.id && currentFile.editorView === undefined) {
       ctrl.editor.renderEditor(editorRef!)
     }
   })
 
   createEffect(() => {
-    if (!ctrl.editor.currentFile?.lastModified) return
-    const doc = store.editor?.editorView?.state.doc
+    const currentFile = ctrl.file.currentFile
+    if (!currentFile?.lastModified) return
+    const doc = currentFile?.editorView?.state.doc
     const len = doc?.content.size ?? 0
     if (len > 0) {
       const text = doc?.textBetween(0, Math.min(30, len), ' ') ?? ''
@@ -204,7 +209,7 @@ export default (props: {state: State}) => {
               config={store.config}
               ref={editorRef}
               spellcheck={store.config.spellcheck}
-              markdown={ctrl.editor.currentFile?.markdown}
+              markdown={ctrl.file.currentFile?.markdown}
               data-tauri-drag-region="true"
             />
           </Scroll>

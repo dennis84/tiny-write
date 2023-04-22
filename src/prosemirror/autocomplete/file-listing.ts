@@ -14,10 +14,7 @@ export default (ctrl: Ctrl): ProseMirrorExtension => isTauri ? ({
     completionPlugin(
       pluginKey,
       /(\.\.?|~)\/[^\s\]]*/g,
-      async (text) => {
-        console.log(text)
-        return listContents(text)
-      },
+      async (text) => listContents(text),
       ctrl
     ),
   ]

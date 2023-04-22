@@ -29,7 +29,6 @@ class TooltipView {
   }
 
   createNav() {
-    console.log(this.pos)
     if (this.pos === undefined) return
     const resolvedPos = this.view.state.doc.resolve(this.pos + 1)
     const node = resolvedPos.node()

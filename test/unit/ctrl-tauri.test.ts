@@ -11,8 +11,6 @@ vi.stubGlobal('matchMedia', vi.fn(() => ({
 vi.mock('mermaid', () => ({}))
 
 vi.mock('@/db', () => ({
-  getEditor: vi.fn(),
-  setEditor: vi.fn(),
   getConfig: vi.fn(),
   setConfig: vi.fn(),
   getWindow: vi.fn(),
@@ -47,16 +45,15 @@ beforeEach(() => {
 })
 
 test('init - load existing by path', async () => {
-  vi.spyOn(db, 'getEditor').mockResolvedValue({id: '1'})
   vi.spyOn(db, 'getFiles').mockResolvedValue([
-    {id: '1', ydoc: createYUpdateAsString('1', ''), path: 'file1', lastModified}
+    {id: '1', ydoc: createYUpdateAsString('1', ''), path: 'file1', lastModified, active: true}
   ])
 
-  const {store, ctrl} = createCtrl(createState())
+  const {ctrl} = createCtrl(createState())
   const target = document.createElement('div')
   await ctrl.app.init(target)
-  expect(ctrl.editor.currentFile?.path).toBe('file1')
-  expect(getText(store)).toBe('File1')
+  expect(ctrl.file.currentFile?.path).toBe('file1')
+  expect(getText(ctrl)).toBe('File1')
 })
 
 test('init - check text', async () => {
@@ -73,18 +70,17 @@ test('init - check text', async () => {
     }
   })
 
-  const {ctrl, store} = createCtrl(createState())
+  const {ctrl} = createCtrl(createState())
   const target = document.createElement('div')
   await ctrl.app.init(target)
-  expect(ctrl.editor.currentFile?.path).toBe('file2')
-  expect(getText(store)).toBe('File2')
+  expect(ctrl.file.currentFile?.path).toBe('file2')
+  expect(getText(ctrl)).toBe('File2')
 })
 
 test('openFile - path in files', async () => {
-  vi.spyOn(db, 'getEditor').mockResolvedValue({id: '2'})
   vi.spyOn(db, 'getFiles').mockResolvedValue([
     {id: '1', path: 'file1', ydoc: createYUpdateAsString('1', 'Test'), lastModified},
-    {id: '2', path: 'file2', ydoc: createYUpdateAsString('2', 'Test 2'), lastModified},
+    {id: '2', path: 'file2', ydoc: createYUpdateAsString('2', 'Test 2'), lastModified, active: true},
   ])
 
   const {ctrl, store} = createCtrl(createState())
@@ -93,9 +89,14 @@ test('openFile - path in files', async () => {
   await ctrl.app.init(target)
   await ctrl.editor.openFile({path: 'file1'})
   expect(store.files.length).toBe(2)
-  expect(getText(store)).toBe('File1')
-  expect(ctrl.editor.currentFile?.path).toBe('file1')
-  expect(ctrl.editor.currentFile?.lastModified).toEqual(lastModified)
+  expect(ctrl.file.currentFile?.editorView).toBe(undefined)
+  expect(ctrl.file.currentFile?.path).toBe('file1')
+  expect(ctrl.file.currentFile?.lastModified).toEqual(lastModified)
+  ctrl.editor.renderEditor(target)
+
+  await waitFor(() => {
+    expect(getText(ctrl)).toBe('File1')
+  })
 })
 
 test('openFile - push path to files', async () => {
@@ -104,14 +105,19 @@ test('openFile - push path to files', async () => {
 
   await ctrl.app.init(target)
   expect(store.files.length).toBe(1)
-  insertText(store, 'Test')
+  insertText(ctrl, 'Test')
 
   await ctrl.editor.openFile({path: 'file1'})
   expect(store.files.length).toBe(2)
   expect(store.files[0].path).toBe(undefined)
   expect(store.files[1].path).toBe('file1')
-  expect(ctrl.editor.currentFile?.path).toBe('file1')
-  expect(getText(store)).toBe('File1')
+  expect(ctrl.file.currentFile?.path).toBe('file1')
+  expect(ctrl.file.currentFile?.editorView).toBe(undefined)
+  ctrl.editor.renderEditor(target)
+
+  await waitFor(() => {
+    expect(getText(ctrl)).toBe('File1')
+  })
 })
 
 test('openFile - path and text', async () => {
@@ -119,17 +125,19 @@ test('openFile - path and text', async () => {
   const target = document.createElement('div')
   await ctrl.app.init(target)
   expect(store.files.length).toBe(1)
+
   await ctrl.editor.openFile({path: 'file1'})
   expect(store.files.length).toBe(1)
+  ctrl.editor.renderEditor(target)
+
   await waitFor(() => {
-    expect(getText(store)).toBe('File1')
+    expect(getText(ctrl)).toBe('File1')
   })
 })
 
 test('discard - with path', async () => {
-  vi.spyOn(db, 'getEditor').mockResolvedValue({id: '1'})
   vi.spyOn(db, 'getFiles').mockResolvedValue([
-    {id: '1', path: 'file1', ydoc: createYUpdateAsString('1', 'Test'), lastModified},
+    {id: '1', path: 'file1', ydoc: createYUpdateAsString('1', 'Test'), lastModified, active: true},
     {id: '2', path: 'file2', ydoc: createYUpdateAsString('2', 'Test 2'), lastModified},
   ])
 
@@ -141,10 +149,11 @@ test('discard - with path', async () => {
 
   await ctrl.editor.discard()
   expect(store.files.length).toBe(1)
-  expect(store.editor?.id).toBe('2')
-  expect(ctrl.editor.currentFile?.path).toBe('file2')
+  expect(ctrl.file.currentFile?.id).toBe('2')
+  expect(ctrl.file.currentFile?.path).toBe('file2')
+  ctrl.editor.renderEditor(target)
 
   await waitFor(() => {
-    expect(getText(store)).toBe('File2')
+    expect(getText(ctrl)).toBe('File2')
   })
 })

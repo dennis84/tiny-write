@@ -231,7 +231,7 @@ export const FilesMenu = (props: Props) => {
         <FileContent
           onClick={() => onOpenFile(p.file)}
           selected={current() === p.file}
-          active={store.editor?.id === p.file.id}
+          active={ctrl.file.currentFile?.id === p.file.id}
           data-testid="open">
           <Show
             when={p.file.path}

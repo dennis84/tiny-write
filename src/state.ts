@@ -60,13 +60,7 @@ export interface Window {
   y: number;
 }
 
-export interface Editor {
-  id: string;
-  editorView?: EditorView;
-}
-
 export interface State {
-  editor?: Editor;
   files: File[];
   config: Config;
   error?: ErrorObject;
@@ -87,6 +81,8 @@ export interface File {
   lastModified?: Date;
   path?: string;
   markdown?: boolean;
+  active?: boolean;
+  editorView?: EditorView;
 }
 
 export class ServiceError extends Error {

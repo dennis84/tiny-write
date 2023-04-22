@@ -2,7 +2,7 @@ import {schema} from 'prosemirror-markdown'
 import * as Y from 'yjs'
 import {prosemirrorJSONToYDoc} from 'y-prosemirror'
 import {fromUint8Array} from 'js-base64'
-import {State} from '@/state'
+import {Ctrl} from '@/services'
 
 export const createText = (text: string) => ({
   doc: {
@@ -25,14 +25,15 @@ export const createYdoc = (id: string, str: string) => {
   return prosemirrorJSONToYDoc(schema, doc, id)
 }
 
-export const insertText = (state: State, text: string) => {
-  const tr = state.editor?.editorView?.state.tr
+export const insertText = (ctrl: Ctrl, text: string) => {
+  const currentFile = ctrl.file.currentFile
+  const tr = currentFile?.editorView?.state.tr
   tr!.insertText(text)
-  state.editor?.editorView?.dispatch(tr!)
+  currentFile?.editorView?.dispatch(tr!)
 }
 
-export const getText = (state: State) =>
-  state.editor?.editorView?.state.doc.textContent
+export const getText = (ctrl: Ctrl) =>
+  ctrl.file.currentFile?.editorView?.state.doc.textContent
 
 export const waitFor = async (fn: () => unknown, retries = 10): Promise<void> => {
   try {

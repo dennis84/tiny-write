@@ -191,15 +191,16 @@ export default () => {
   })
 
   createEffect(() => {
-    setIsTextEmpty(isEmpty(store.editor?.editorView?.state) ?? true)
+    const currentFile = ctrl.file.currentFile
+    setIsTextEmpty(isEmpty(currentFile?.editorView?.state) ?? true)
 
     let paragraphs = 0
     let words = 0
     let loc = 0
 
-    if (!store.editor?.editorView) return
+    if (!currentFile?.editorView) return
 
-    store.editor?.editorView.state.doc.forEach((node: Node) => {
+    currentFile?.editorView.state.doc.forEach((node: Node) => {
       const text = node.textContent
 
       if (node.type.name === 'code_block') {
@@ -216,31 +217,33 @@ export default () => {
     })
 
     setTextStats({paragraphs, words, loc})
-    return ctrl.editor.currentFile?.lastModified
-  }, ctrl.editor.currentFile?.lastModified)
+    return ctrl.file.currentFile?.lastModified
+  }, ctrl.file.currentFile?.lastModified)
 
-  const clearText = () => (ctrl.editor.currentFile?.path || store.collab?.started)
+  const clearText = () => (ctrl.file.currentFile?.path || store.collab?.started)
     ? 'Close ⚠️'
     : (store.files.length > 0 && isTextEmpty())
       ? 'Discard ⚠️'
       : 'Clear 🧽'
 
   const clearEnabled = () =>
-    ctrl.editor.currentFile?.path || store.editor?.id || store.files.length > 0 || !isTextEmpty()
+    ctrl.file.currentFile?.path || ctrl.file.currentFile?.id || store.files.length > 0 || !isTextEmpty()
 
   const onBurgerClick = () => {
-    store.editor?.editorView?.focus()
+    ctrl.file.currentFile?.editorView?.focus()
     setShow(show() ? undefined : 'main')
   }
 
   const onUndo = () => {
-    undo(store.editor?.editorView?.state)
-    store.editor?.editorView?.focus()
+    const currentFile = ctrl.file.currentFile
+    undo(currentFile?.editorView?.state)
+    currentFile?.editorView?.focus()
   }
 
   const onRedo = () => {
-    redo(store.editor?.editorView?.state)
-    store.editor?.editorView?.focus()
+    const currentFile = ctrl.file.currentFile
+    redo(currentFile?.editorView?.state)
+    currentFile?.editorView?.focus()
   }
 
   const cmd = (cmd: string) => {
@@ -249,7 +252,8 @@ export default () => {
   }
 
   const onCopyAllAsMd = () => {
-    const state = store.editor?.editorView?.state
+    const currentFile = ctrl.file.currentFile
+    const state = currentFile?.editorView?.state
     if (!state) return
     remote.copyAllAsMarkdown(state).then(() => {
       setLastAction('copy-md')
@@ -277,13 +281,15 @@ export default () => {
   }
 
   const onNew = () => {
+    const currentFile = ctrl.file.currentFile
     ctrl.editor.newFile()
     maybeHide()
-    store.editor?.editorView?.focus()
+    currentFile?.editorView?.focus()
   }
 
   const onSaveAs = async () => {
-    const state = store.editor?.editorView?.state
+    const currentFile = ctrl.file.currentFile
+    const state = currentFile?.editorView?.state
     if (!state) return
     const path = await remote.save(state)
     if (path) ctrl.editor.updatePath(path)
@@ -304,10 +310,11 @@ export default () => {
 
   const onOpenInApp = () => {
     if (isTauri) return
+    const currentFile = ctrl.file.currentFile
     if (store.collab?.started) {
-      window.open(`tinywrite://main?room=${store.editor?.id}`, '_self')
+      window.open(`tinywrite://main?room=${currentFile?.id}`, '_self')
     } else {
-      const state = store.editor?.editorView?.state
+      const state = currentFile?.editorView?.state
       if (!state) return
       const text = window.btoa(JSON.stringify(state.toJSON()))
       window.open(`tinywrite://main?text=${text}`, '_self')
@@ -315,15 +322,17 @@ export default () => {
   }
 
   const onCopyCollabLink = () => {
-    remote.copy(`${WEB_URL}/${store.editor?.id}`).then(() => {
-      store.editor?.editorView?.focus()
+    const currentFile = ctrl.file.currentFile
+    remote.copy(`${WEB_URL}/${currentFile?.id}`).then(() => {
+      currentFile?.editorView?.focus()
       setLastAction('copy-collab-link')
     })
   }
 
   const onCopyCollabAppLink = () => {
-    remote.copy(`tinywrite://${store.editor?.id}`).then(() => {
-      store.editor?.editorView?.focus()
+    const currentFile = ctrl.file.currentFile
+    remote.copy(`tinywrite://${currentFile?.id}`).then(() => {
+      currentFile?.editorView?.focus()
       setLastAction('copy-collab-app-link')
     })
   }
@@ -348,13 +357,13 @@ export default () => {
     }
 
     return (
-      <Show when={ctrl.editor.currentFile?.lastModified !== undefined} fallback={
+      <Show when={ctrl.file.currentFile?.lastModified !== undefined} fallback={
         <Text data-testid="last-modified">
           Nothing yet
         </Text>
       }>
         <Text data-testid="last-modified">
-          Last modified: {formatDate(ctrl.editor.currentFile!.lastModified!)}
+          Last modified: {formatDate(ctrl.file.currentFile!.lastModified!)}
         </Text>
       </Show>
     )
@@ -382,7 +391,7 @@ export default () => {
 
   createEffect(() => {
     setLastAction(undefined)
-  }, ctrl.editor.currentFile?.lastModified)
+  }, ctrl.file.currentFile?.lastModified)
 
   createEffect(() => {
     if (!show()) return
@@ -403,10 +412,10 @@ export default () => {
   })
 
   createEffect(async () => {
-    if (!ctrl.editor.currentFile?.path) return
-    const rel = await remote.toRelativePath(ctrl.editor.currentFile?.path)
+    if (!ctrl.file.currentFile?.path) return
+    const rel = await remote.toRelativePath(ctrl.file.currentFile?.path)
     setRelativePath(rel)
-  }, ctrl.editor.currentFile?.path)
+  }, ctrl.file.currentFile?.path)
 
   return (
     <Container>
@@ -434,13 +443,13 @@ export default () => {
       </Show>
       <Show when={show() === 'main'}>
         <Drawer
-          onClick={() => store.editor?.editorView?.focus()}
+          onClick={() => ctrl.file.currentFile?.editorView?.focus()}
           data-tauri-drag-region="true">
           <Label>
-            File {ctrl.editor.currentFile?.path && <i>({relativePath()})</i>}
+            File {ctrl.file.currentFile?.path && <i>({relativePath()})</i>}
           </Label>
           <Sub data-tauri-drag-region="true">
-            <Show when={isTauri && !ctrl.editor.currentFile?.path}>
+            <Show when={isTauri && !ctrl.file.currentFile?.path}>
               <Link onClick={onSaveAs}>
                 Save to file 💾 <Keys keys={[modKey, 's']} />
               </Link>
@@ -461,7 +470,7 @@ export default () => {
               >Files 🗃️</Link>
             </Show>
           </Sub>
-          <Show when={store.editor?.id !== undefined}>
+          <Show when={ctrl.file.currentFile !== undefined}>
             <Label>Edit</Label>
             <Sub data-tauri-drag-region="true">
               <Link onClick={onUndo}>
@@ -495,7 +504,7 @@ export default () => {
               </Link>
             </Show>
             <Link onClick={onToggleMarkdown} data-testid="markdown">
-              Markdown mode {ctrl.editor.currentFile?.markdown && '✅'}
+              Markdown mode {ctrl.file.currentFile?.markdown && '✅'}
             </Link>
             <Link onClick={onToggleTypewriterMode}>
               Typewriter mode {store.config.typewriterMode && '✅'}

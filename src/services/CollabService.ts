@@ -74,7 +74,8 @@ export class CollabService {
   }
 
   startCollab() {
-    window.history.replaceState(null, '', `/${this.store.editor?.id}`)
+    const currentFile = this.ctrl.file.currentFile
+    window.history.replaceState(null, '', `/${currentFile?.id}`)
     this.store.collab?.provider?.connect()
     this.setState('collab', {started: true})
   }

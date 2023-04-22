@@ -7,20 +7,13 @@ export interface PersistedFile {
   lastModified: Date;
   path?: string;
   markdown?: boolean;
-}
-
-export interface PersistedEditor {
-  id: string;
+  active?: boolean;
 }
 
 interface MyDB extends DBSchema {
   config: {
     key: string;
     value: Config;
-  };
-  editor: {
-    key: string;
-    value: PersistedEditor;
   };
   window: {
     key: string;
@@ -54,14 +47,6 @@ export async function setConfig(config: Config) {
 
 export async function getConfig() {
   return (await dbPromise).get('config', 'main')
-}
-
-export async function setEditor(editor: PersistedEditor) {
-  return (await dbPromise).put('editor', editor, 'main')
-}
-
-export async function getEditor() {
-  return (await dbPromise).get('editor', 'main')
 }
 
 export async function setWindow(window: Window) {

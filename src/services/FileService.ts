@@ -30,6 +30,14 @@ export class FileService {
     private setState: SetStoreFunction<State>,
   ) {}
 
+  get currentFile(): File | undefined {
+    return this.store.files.find((f) => f.active)
+  }
+
+  get currentFileIndex(): number {
+    return this.store.files.findIndex((f) => f.active)
+  }
+
   createFile(params: Partial<File> = {}): File {
     const ydoc = params.ydoc ?? Y.encodeStateAsUpdate(this.createYdoc())
     return {
@@ -102,6 +110,7 @@ export class FileService {
       lastModified: file.lastModified,
       path: file.path,
       markdown: file.markdown,
+      active: file.active,
     })
 
     const files = await db.getFiles() ?? []
@@ -120,6 +129,7 @@ export class FileService {
           lastModified: new Date(file.lastModified),
           path: file.path,
           markdown: file.markdown,
+          active: file.active,
         })
       } catch (err) {
         remote.log('ERROR', 'Ignore file due to invalid ydoc.')

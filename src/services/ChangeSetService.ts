@@ -28,7 +28,7 @@ export class ChangeSetService {
 
     if (!Y.equalSnapshots(prevSnapshot, snapshot)) {
       versions.push([{
-        date: this.ctrl.editor.currentFile?.lastModified?.getTime() ?? 0,
+        date: this.ctrl.file.currentFile?.lastModified?.getTime() ?? 0,
         snapshot: Y.encodeSnapshot(snapshot),
         clientID: ydoc.clientID,
       }])
@@ -39,17 +39,18 @@ export class ChangeSetService {
   }
 
   renderVersion(version: Version) {
+    const currentFile = this.ctrl.file.currentFile
     this.setState('isSnapshot', true)
     const snapshot = Y.decodeSnapshot(version.snapshot)
     const prevSnapshot = Y.emptySnapshot
-    const tr = this.store.editor?.editorView?.state.tr
+    const tr = currentFile?.editorView?.state.tr
     tr?.setMeta(ySyncPluginKey, {snapshot, prevSnapshot})
-    this.store.editor?.editorView?.dispatch(tr!)
+    currentFile?.editorView?.dispatch(tr!)
   }
 
   unrenderVersion() {
-    const state = unwrap(this.store)
-    const editorState = state.editor?.editorView?.state
+    const currentFile = this.ctrl.file.currentFile
+    const editorState = currentFile?.editorView?.state
     if (!editorState) return
     const binding = ySyncPluginKey.getState(editorState).binding
     if (binding) binding.unrenderSnapshot()
@@ -57,14 +58,15 @@ export class ChangeSetService {
   }
 
   applyVersion(version: Version) {
+    const currentFile = this.ctrl.file.currentFile
     const state = unwrap(this.store)
     const ydoc = state.collab?.ydoc
-    const editorView = state.editor?.editorView
+    const editorView = currentFile?.editorView
     if (!ydoc || !editorView?.state) return
 
     const snapshot = Y.decodeSnapshot(version.snapshot)
     const newDoc = Y.createDocFromSnapshot(ydoc, snapshot)
-    const json = yDocToProsemirrorJSON(newDoc, state.editor?.id)
+    const json = yDocToProsemirrorJSON(newDoc, currentFile?.id)
     const node = Node.fromJSON(editorView.state.schema, json)
     this.unrenderVersion()
 

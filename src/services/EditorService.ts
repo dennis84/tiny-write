@@ -25,25 +25,18 @@ export class EditorService {
     private setState: SetStoreFunction<State>,
   ) {}
 
-  get currentFile(): File | undefined {
-    return this.ctrl.file.findFile({id: this.store.editor?.id})
-  }
-
   updateEditorState(node?: Element) {
-    let editorView = this.store.editor?.editorView
-    const id = this.store.editor?.id
+    const currentFile = this.ctrl.file.currentFile
+    let editorView = currentFile?.editorView
 
-    if ((!editorView && !node) || !id) {
+    if ((!editorView && !node) || !currentFile?.id) {
       return
     }
 
-    const file = this.ctrl.file.findFile({id})
-    if (!file) return
-
     const extensions = createExtensions({
       ctrl: this.ctrl,
-      markdown: file?.markdown,
-      type: this.store.collab!.ydoc!.getXmlFragment(id),
+      markdown: currentFile?.markdown,
+      type: this.store.collab!.ydoc!.getXmlFragment(currentFile.id),
       keymap: this.ctrl.keymap.create(),
     })
 
@@ -61,11 +54,12 @@ export class EditorService {
         const yMeta = tr.getMeta(ySyncPluginKey)
         const maybeSkip = tr.getMeta('addToHistory') === false
         const isUndo = yMeta?.isUndoRedoOperation
+        const currentFile = this.ctrl.file.currentFile
 
         if ((maybeSkip && !isUndo) || this.store.isSnapshot) return
-        if (!this.store.editor?.id) return
+        if (!currentFile) return
 
-        this.ctrl.file.updateFile(this.store.editor.id, {
+        this.ctrl.file.updateFile(currentFile.id, {
           lastModified: new Date(),
         })
 
@@ -79,7 +73,8 @@ export class EditorService {
         dispatchTransaction,
       })
 
-      this.setState('editor', (prev) => ({...prev, editorView}))
+      const currentFileIndex = this.ctrl.file.currentFileIndex
+      this.setState('files', currentFileIndex, 'editorView', editorView)
     }
 
     editorView.setProps({state: editorState, nodeViews})
@@ -91,21 +86,15 @@ export class EditorService {
   }
 
   async discard() {
-    const editorView = this.store.editor?.editorView
+    const currentFile = this.ctrl.file.currentFile
+    const editorView = currentFile?.editorView
     if (!editorView) return
 
     if (this.store.error) {
-      if (this.store.editor?.id) {
-        await this.deleteFile({id: this.store.editor.id})
-      }
-
-      this.setState({
-        ...unwrap(this.store),
-        error: undefined,
-        editor: undefined,
-      })
+      await this.deleteFile({id: currentFile.id})
+      this.setState('error', undefined)
       return true
-    } else if (this.currentFile?.path) {
+    } else if (currentFile?.path) {
       await this.discardText()
       editorView?.focus()
       return true
@@ -129,7 +118,8 @@ export class EditorService {
   }
 
   async newFile() {
-    if (isEmpty(this.store.editor?.editorView?.state)) {
+    const currentFile = this.ctrl.file.currentFile
+    if (isEmpty(currentFile?.editorView?.state)) {
       this.setState('args', 'dir', undefined)
       return
     }
@@ -137,7 +127,9 @@ export class EditorService {
     const state: State = unwrap(this.store)
     const file = this.ctrl.file.createFile()
 
-    const update = this.withFile({
+    currentFile?.editorView?.destroy()
+
+    const update = this.activateFile({
       ...state,
       args: {cwd: state.args?.cwd},
       files: [...state.files, file],
@@ -145,7 +137,6 @@ export class EditorService {
 
     update.collab = this.ctrl.collab.createByFile(file)
     this.setState(update)
-    this.updateEditorState()
   }
 
   async openFile(req: OpenFile) {
@@ -163,22 +154,25 @@ export class EditorService {
     }
 
     if (!file) return
+    const currentFile = this.ctrl.file.currentFile
 
-    if (isEmpty(state.editor?.editorView?.state)) {
-      const index = state.files.findIndex((x) => x.id === state.editor?.id)
+    if (isEmpty(currentFile?.editorView?.state)) {
+      const index = this.ctrl.file.currentFileIndex
       if (index !== -1) state.files.splice(index, 1)
     }
 
     if (state.args?.room) state.args.room = undefined
-    const update = this.withFile(state, file)
+    currentFile?.editorView?.destroy()
+
+    const update = this.activateFile(state, file)
     update.collab = this.ctrl.collab.createByFile(file)
     this.setState(update)
-    this.updateEditorState()
     if (text) this.updateText(text)
   }
 
   async deleteFile(req: OpenFile) {
-    if (this.store.editor?.id === req.id) {
+    const currentFile = this.ctrl.file.currentFile
+    if (currentFile?.id === req.id) {
       this.discardText()
       return
     }
@@ -193,10 +187,11 @@ export class EditorService {
   }
 
   toggleMarkdown() {
-    const editorState = this.store.editor?.editorView?.state
+    const currentFile = this.ctrl.file.currentFile
+    const editorState = currentFile?.editorView?.state
     if (!editorState) return
 
-    const markdown = !this.currentFile?.markdown
+    const markdown = !currentFile?.markdown
     let doc: any
 
     if (markdown) {
@@ -218,10 +213,11 @@ export class EditorService {
       doc = text?.toJSON()
     }
 
-    this.ctrl.file.updateFile(this.store.editor!.id, {markdown})
+    this.ctrl.file.updateFile(currentFile!.id, {markdown})
     this.updateEditorState()
+
     this.updateText({...createEmptyText(), doc})
-    this.ctrl.file.updateFile(this.store.editor!.id, {
+    this.ctrl.file.updateFile(currentFile!.id, {
       lastModified: new Date(),
     })
 
@@ -230,30 +226,43 @@ export class EditorService {
   }
 
   updatePath(path: string) {
-    if (!this.store.editor?.id) return
+    const currentFile = this.ctrl.file.currentFile
+    if (!currentFile?.id) return
     const lastModified = new Date()
-    this.ctrl.file.updateFile(this.store.editor.id, {lastModified, path})
+    this.ctrl.file.updateFile(currentFile.id, {lastModified, path})
   }
 
-  withFile(state: State, file: File): State {
+  activateFile(state: State, file: File): State {
     return {
       ...state,
       error: undefined,
       args: {...state.args, dir: undefined},
-      editor: {
-        id: file.id!,
-        editorView: state.editor?.editorView,
-      }
+      files: state.files.map((f) => ({
+        ...f,
+        editorView: undefined,
+        active: f.id === file.id,
+      }))
     }
   }
 
   updateText(text?: {[key: string]: any}) {
+    const currentFile = this.ctrl.file.currentFile
     if (!text) return
-    const schema = this.store.editor?.editorView?.state?.schema
+    let schema
+    if (currentFile?.editorView) {
+      schema = currentFile.editorView.state.schema
+    } else {
+      const extensions = createExtensions({
+        ctrl: this.ctrl,
+        markdown: currentFile?.markdown
+      })
+      schema = createSchema(extensions)
+    }
+
     if (!schema || !this.store.collab?.ydoc) return
     let ynode: Node
     try {
-      const json = yDocToProsemirrorJSON(this.store.collab.ydoc, this.store.editor?.id)
+      const json = yDocToProsemirrorJSON(this.store.collab.ydoc, currentFile?.id)
       ynode = Node.fromJSON(schema, json)
     } catch(e) {
       ynode = new Node()
@@ -261,35 +270,34 @@ export class EditorService {
 
     const node = Node.fromJSON(schema, text.doc)
     if (!node.eq(ynode)) {
-      const ydoc = prosemirrorJSONToYDoc(schema, text.doc, this.store.editor?.id)
+      const ydoc = prosemirrorJSONToYDoc(schema, text.doc, currentFile?.id)
       const update = Y.encodeStateAsUpdate(ydoc)
-      const type = this.store.collab.ydoc.getXmlFragment(this.store.editor?.id)
+      const type = this.store.collab.ydoc.getXmlFragment(currentFile?.id)
       type.delete(0, type.length)
       Y.applyUpdate(this.store.collab.ydoc, update)
     }
   }
 
   async saveEditor() {
-    if (!this.currentFile || !this.store.editor?.editorView) {
+    const currentFile = this.ctrl.file.currentFile
+    if (!currentFile || !currentFile?.editorView) {
       return
     }
 
-    const editor = {id: this.store.editor.id}
-    const file = this.ctrl.file.findFile({id: editor.id})
+    const file = this.ctrl.file.currentFile
     if (!file) return
     this.ctrl.file.saveFile(file)
 
-    if (this.currentFile?.path) {
-      const text = serialize(this.store.editor.editorView.state)
-      await remote.writeFile(this.currentFile.path, text)
+    if (currentFile?.path) {
+      const text = serialize(currentFile.editorView.state)
+      await remote.writeFile(currentFile.path, text)
     }
-
-    db.setEditor(editor)
   }
 
   private async discardText() {
+    const currentFile = this.ctrl.file.currentFile
     const state: State = unwrap(this.store)
-    const id = state.editor?.id
+    const id = currentFile?.id
     const files = state.files.filter((f) => f.id !== id)
     const index = files.length - 1
     let file: File | undefined
@@ -306,17 +314,19 @@ export class EditorService {
       file = this.ctrl.file.createFile()
     }
 
-    const newState = this.withFile(state, file)
-    newState.collab = this.ctrl.collab.createByFile(file)
-    this.setState({
+    currentFile?.editorView?.destroy()
+
+    const newState = this.activateFile({
       args: {cwd: state.args?.cwd},
-      ...newState,
+      ...state,
       files,
-    })
+    }, file)
+
+    newState.collab = this.ctrl.collab.createByFile(file)
+    this.setState(newState)
 
     await db.deleteFile(id!)
 
-    this.updateEditorState()
     if (text) this.updateText(text)
     this.saveEditor()
   }

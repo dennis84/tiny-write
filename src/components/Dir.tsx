@@ -21,8 +21,9 @@ export default () => {
   const [store, ctrl] = useState()
 
   const onNew = () => {
+    const currentFile = ctrl.file.currentFile
     ctrl.editor.newFile()
-    store.editor?.editorView?.focus()
+    currentFile?.editorView?.focus()
   }
 
   const FileLink = (props: {path: string}) => {
