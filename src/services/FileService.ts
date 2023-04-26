@@ -1,4 +1,5 @@
 import {SetStoreFunction, Store} from 'solid-js/store'
+import {EditorView} from 'prosemirror-view'
 import * as Y from 'yjs'
 import {v4 as uuidv4} from 'uuid'
 import {fromUint8Array, toUint8Array} from 'js-base64'
@@ -21,6 +22,7 @@ export interface UpdateFile {
   lastModified?: Date;
   markdown?: boolean;
   path?: string;
+  editorView?: EditorView;
 }
 
 export class FileService {
@@ -90,13 +92,23 @@ export class FileService {
     const type = newDoc.getXmlFragment(id)
     this.store.collab?.ydoc?.getXmlFragment(id).forEach((x) => type.push([x.clone()]))
     const ydoc = Y.encodeStateAsUpdate(newDoc)
+    const hasOwn = (prop: string) => Object.hasOwn(update, prop)
 
     this.setState('files', index, (prev) => ({
-      lastModified: update.lastModified ?? prev?.lastModified,
-      markdown: update.markdown ?? prev?.markdown,
-      path: update.path ?? prev?.path,
+      lastModified: hasOwn('lastModified') ? update.lastModified : prev?.lastModified,
+      markdown: hasOwn('markdown') ? update.markdown : prev?.markdown,
+      path: hasOwn('path') ? update.path : prev?.path,
+      editorView: hasOwn('editorView') ? update.editorView : prev?.editorView,
       ydoc,
     }))
+  }
+
+  destroy() {
+    if (!this.currentFile) return
+    this.currentFile?.editorView?.destroy()
+    const index = this.store.files.findIndex((file) => file.id === this.currentFile?.id)
+    if (index === -1) return
+    this.setState('files', index, 'editorView', undefined)
   }
 
   async saveFile(file: File) {

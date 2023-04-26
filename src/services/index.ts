@@ -7,6 +7,7 @@ import {ConfigService} from './ConfigService'
 import {EditorService} from './EditorService'
 import {FileService} from './FileService'
 import {CollabService} from './CollabService'
+import {CanvasService} from './CanvasService'
 
 export class Ctrl {
   app!: AppService
@@ -16,6 +17,7 @@ export class Ctrl {
   keymap!: KeymapService
   file!: FileService
   collab!: CollabService
+  canvas!: CanvasService
 
   constructor(
     store: Store<State>,
@@ -28,6 +30,7 @@ export class Ctrl {
     this.keymap = new KeymapService(this, store)
     this.file = new FileService(this, store, setState)
     this.collab = new CollabService(this, store, setState)
+    this.canvas = new CanvasService(this, store, setState)
   }
 }
 

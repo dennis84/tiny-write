@@ -14,6 +14,7 @@ vi.stubGlobal('location', ({
 vi.mock('mermaid', () => ({}))
 
 vi.mock('@/db', () => ({
+  getCanvas: vi.fn(),
   getConfig: vi.fn(),
   setConfig: vi.fn(),
   getWindow: vi.fn(),

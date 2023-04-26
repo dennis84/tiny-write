@@ -1,5 +1,5 @@
 import {DBSchema, openDB} from 'idb'
-import {Config, Window} from './state'
+import {Camera, Config, Window} from './state'
 
 export interface PersistedFile {
   id: string;
@@ -10,10 +10,26 @@ export interface PersistedFile {
   active?: boolean;
 }
 
+export interface PersistedCanvasElement {
+  type: string;
+}
+
+export interface PersistedCanvas {
+  id: string;
+  camera: Camera;
+  elements: PersistedCanvasElement[];
+  active?: boolean;
+  lastModified?: Date;
+}
+
 interface MyDB extends DBSchema {
   config: {
     key: string;
     value: Config;
+  };
+  canvases: {
+    key: string;
+    value: PersistedCanvas;
   };
   window: {
     key: string;
@@ -35,6 +51,7 @@ const dbPromise = openDB<MyDB>(DB_NAME, 1, {
   upgrade(db: any) {
     db.createObjectStore('config')
     db.createObjectStore('editor')
+    db.createObjectStore('canvases', {keyPath: 'id'})
     db.createObjectStore('window')
     db.createObjectStore('files', {keyPath: 'id'})
     db.createObjectStore('size')
@@ -74,6 +91,25 @@ export async function updateFile(file: PersistedFile) {
 
 export async function deleteFile(id: string) {
   return (await dbPromise).delete('files', id)
+}
+
+export async function getCanvases() {
+  return (await dbPromise).getAll('canvases')
+}
+
+export async function updateCanvas(canvas: PersistedCanvas) {
+  const db = await dbPromise
+  const existing = await db.get('canvases', canvas.id)
+  if (existing) {
+    await db.put('canvases', canvas)
+    return
+  }
+
+  await db.add('canvases', canvas)
+}
+
+export async function deleteCanvas(id: string) {
+  return (await dbPromise).delete('canvases', id)
 }
 
 export async function setSize(key: string, value: number) {

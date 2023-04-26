@@ -1,5 +1,5 @@
 import {SetStoreFunction, Store, unwrap} from 'solid-js/store'
-import {Config, State} from '@/state'
+import {Config, Mode, State} from '@/state'
 import * as remote from '@/remote'
 import * as db from '@/db'
 import {isDark} from '@/env'
@@ -344,7 +344,12 @@ export class ConfigService {
     if (conf.contentWidth) state.collab?.ydoc?.getMap('config').set('contentWidth', conf.contentWidth)
     const config = {...state.config, ...conf}
     this.setState('config', config)
-    this.ctrl.editor.updateEditorState()
+    if (state.mode === Mode.Editor) {
+      this.ctrl.editor.updateEditorState()
+    } else if (state.mode == Mode.Canvas) {
+      this.store.files.forEach((f) => this.ctrl.canvas.updateEditorState(f))
+    }
+
     this.saveConfig(unwrap(this.store))
   }
 

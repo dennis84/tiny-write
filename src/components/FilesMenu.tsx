@@ -1,115 +1,27 @@
 import {For, createSignal, onMount, onCleanup, Show, createEffect} from 'solid-js'
 import {unwrap} from 'solid-js/store'
 import h from 'solid-js/h'
+import {styled} from 'solid-styled-components'
 import {Node} from 'prosemirror-model'
 import * as Y from 'yjs'
 import {yDocToProsemirrorJSON} from 'y-prosemirror'
 import {formatDistance} from 'date-fns'
 import {arrow, computePosition, flip, offset, shift} from '@floating-ui/dom'
-import {File, useState} from '@/state'
+import {File, Mode, useState} from '@/state'
 import * as remote from '@/remote'
 import {createExtensions, createSchema} from '@/prosemirror-setup'
 import {Drawer, Label} from './Menu'
 import {ButtonGroup, Button, ButtonPrimary} from './Button'
-import {styled} from 'solid-styled-components'
+import {Card, CardContent, CardFooter, CardList, CardMenuButton} from './Layout'
 
 interface Props {
   onBack: () => void;
   onOpenFile: () => void;
 }
 
-export const FileList = styled('nav')`
-  margin: 10px 0;
-  margin-bottom: 30px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-column-gap: 20px;
-`
-
-const FileCard = styled('div')`
-  margin-bottom: 20px;
-  overflow: hidden;
-`
-
-const FileContent = styled('div')`
-  height: 180px;
-  overflow: hidden;
-  margin: 1px;
-  padding: 4px;
-  word-break: break-all;
-  cursor: pointer;
-  font-size: 10px;
-  line-height: 1.2;
-  color: var(--foreground);
-  background: var(--foreground-5);
-  border: 1px solid var(--foreground-50);
-  ${(props: any) => props.active ? `
-    border-color: var(--primary-background);
-    box-shadow: 0 0 0 1px var(--primary-background);
-  ` : ''}
-  ${(props: any) => props.selected ? `
-    border-color: var(--primary-background);
-    box-shadow: 0 0 0 1px var(--primary-background);
-    background: var(--foreground-10);
-  ` : ''}
-  border-radius: var(--border-radius);
-  p {
-    margin: 4px 0;
-  }
-  p:first-child {
-    margin: 0;
-  }
-  h2 {
-    margin: 0;
-    font-size: 14px;
-  }
-  img {
-    max-width: 50%;
-    float: left;
-    margin-right: 2px;
-  }
-  pre {
-    border: 1px solid var(--foreground-50);
-    background: var(--foreground-10);
-    border-radius: var(--border-radius);
-    padding: 0 4px;
-    margin: 4px 0;
-    overflow: hidden;
-  }
-  &:hover {
-    border-color: var(--primary-background);
-    box-shadow: 0 0 0 1px var(--primary-background);
-    background: var(--foreground-10);
-  }
-`
-
-const FileFooter = styled('div')`
-  font-size: 12px;
-  margin-top: 5px;
-  color: var(--foreground-60);
-  display: flex;
-  align-items: flex-start;
-`
-
-const FileMenuButton = styled('button')`
-  justify-self: flex-end;
-  margin-left: auto;
-  background: none;
-  border: 0;
-  color: var(--foreground-60);
-  cursor: pointer;
-  padding: 0;
-  ${(props: any) => props.selected ? `
-    color: var(--primary-background);
-  ` : ''}
-  &:hover {
-    color: var(--primary-background);
-  }
-`
-
 export const FilesMenu = (props: Props) => {
   const [store, ctrl] = useState()
-  const [current, setCurrent] = createSignal()
+  const [current, setCurrent] = createSignal<File>()
   let tooltipRef: HTMLDivElement
   let arrowRef: HTMLSpanElement
 
@@ -130,9 +42,15 @@ export const FilesMenu = (props: Props) => {
     setCurrent(undefined)
   }
 
-  const onNew = () => {
+  const onNewFile = () => {
     ctrl.editor.newFile()
     props.onOpenFile()
+  }
+
+  const onAddToCanvas = () => {
+    const f = unwrap(current())
+    if (f) ctrl.canvas.addToCanvas(f)
+    setCurrent(undefined)
   }
 
   const Excerpt = (p: {file: File}) => {
@@ -227,8 +145,8 @@ export const FilesMenu = (props: Props) => {
     })
 
     return (
-      <FileCard>
-        <FileContent
+      <Card>
+        <CardContent
           onClick={() => onOpenFile(p.file)}
           selected={current() === p.file}
           active={ctrl.file.currentFile?.id === p.file.id}
@@ -237,15 +155,15 @@ export const FilesMenu = (props: Props) => {
             when={p.file.path}
             fallback={<Excerpt file={p.file} />}
           >{path()}&nbsp;📎</Show>
-        </FileContent>
-        <FileFooter>
+        </CardContent>
+        <CardFooter>
           <span>{formatDistance(new Date(p.file.lastModified!), new Date())}</span>
-          <FileMenuButton
+          <CardMenuButton
             selected={current() === p.file}
             onClick={onTooltip}
-          >︙</FileMenuButton>
-        </FileFooter>
-      </FileCard>
+          >︙</CardMenuButton>
+        </CardFooter>
+      </Card>
     )
   }
 
@@ -270,6 +188,9 @@ export const FilesMenu = (props: Props) => {
         ref={tooltipRef}
         class="file-tooltip">
         <div onClick={onRemove}>🗑️ Delete</div>
+        <Show when={store.mode === Mode.Canvas}>
+          <div onClick={onAddToCanvas}>🤏 Add to canvas</div>
+        </Show>
         <span ref={arrowRef} class="arrow"></span>
       </TooltipEl>
     )
@@ -278,16 +199,16 @@ export const FilesMenu = (props: Props) => {
   return (
     <Drawer data-tauri-drag-region="true">
       <Label>Files</Label>
-      <FileList
+      <CardList
         data-tauri-drag-region="true"
         data-testid="file-list">
         <For each={files()}>
           {(file: File) => <FileItem file={file} />}
         </For>
-      </FileList>
+      </CardList>
       <ButtonGroup>
         <Button onClick={props.onBack} data-testid="back">↩ Back</Button>
-        <ButtonPrimary onClick={onNew} data-testid="new-doc">New doc</ButtonPrimary>
+        <ButtonPrimary onClick={onNewFile} data-testid="new-doc">New doc</ButtonPrimary>
       </ButtonGroup>
       <Show when={current() !== undefined}><Tooltip /></Show>
     </Drawer>

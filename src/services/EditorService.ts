@@ -11,7 +11,7 @@ import {
 } from 'y-prosemirror'
 import * as remote from '@/remote'
 import {createExtensions, createEmptyText, createSchema, createNodeViews} from '@/prosemirror-setup'
-import {State, File, FileText} from '@/state'
+import {State, File, FileText, Mode} from '@/state'
 import {serialize, createMarkdownParser} from '@/markdown'
 import {isEmpty} from '@/prosemirror'
 import * as db from '@/db'
@@ -127,8 +127,6 @@ export class EditorService {
     const state: State = unwrap(this.store)
     const file = this.ctrl.file.createFile()
 
-    currentFile?.editorView?.destroy()
-
     const update = this.activateFile({
       ...state,
       args: {cwd: state.args?.cwd},
@@ -156,13 +154,12 @@ export class EditorService {
     if (!file) return
     const currentFile = this.ctrl.file.currentFile
 
-    if (isEmpty(currentFile?.editorView?.state)) {
+    if (state.mode === Mode.Editor && isEmpty(currentFile?.editorView?.state)) {
       const index = this.ctrl.file.currentFileIndex
       if (index !== -1) state.files.splice(index, 1)
     }
 
     if (state.args?.room) state.args.room = undefined
-    currentFile?.editorView?.destroy()
 
     const update = this.activateFile(state, file)
     update.collab = this.ctrl.collab.createByFile(file)
@@ -233,15 +230,19 @@ export class EditorService {
   }
 
   activateFile(state: State, file: File): State {
+    const files = []
+    for (const f of state.files) {
+      const active = f.id === file.id
+      f.editorView?.destroy()
+      files.push({...f, active, editorView: undefined})
+    }
+
     return {
       ...state,
       error: undefined,
       args: {...state.args, dir: undefined},
-      files: state.files.map((f) => ({
-        ...f,
-        editorView: undefined,
-        active: f.id === file.id,
-      }))
+      files,
+      mode: Mode.Editor,
     }
   }
 
@@ -313,8 +314,6 @@ export class EditorService {
     if (!file) {
       file = this.ctrl.file.createFile()
     }
-
-    currentFile?.editorView?.destroy()
 
     const newState = this.activateFile({
       args: {cwd: state.args?.cwd},

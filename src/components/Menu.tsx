@@ -4,11 +4,12 @@ import {Node} from 'prosemirror-model'
 import {differenceInHours, format} from 'date-fns'
 import * as Y from 'yjs'
 import {undo, redo} from 'y-prosemirror'
-import {useState} from '@/state'
+import {Mode, useState} from '@/state'
 import {isTauri, isMac, alt, mod, version, WEB_URL, VERSION_URL} from '@/env'
 import * as remote from '@/remote'
 import {isEmpty} from '@/prosemirror'
 import {FilesMenu} from './FilesMenu'
+import {CanvasesMenu} from './CanvasesMenu'
 import {CodeBlockMenu} from './CodeBlockMenu'
 import {AppearanceMenu} from './AppearanceMenu'
 import {ChangeSetMenu} from './ChangeSetMenu'
@@ -287,6 +288,11 @@ export default () => {
     currentFile?.editorView?.focus()
   }
 
+  const onNewCanvas = () => {
+    ctrl.canvas.newCanvas()
+    maybeHide()
+  }
+
   const onSaveAs = async () => {
     const currentFile = ctrl.file.currentFile
     const state = currentFile?.editorView?.state
@@ -338,6 +344,9 @@ export default () => {
   }
 
   const onToggleMarkdown = () => ctrl.editor.toggleMarkdown()
+
+  const onClearCanvas = () => ctrl.canvas.clearCanvas()
+  const onBackToContent = () => ctrl.canvas.backToContent()
 
   const maybeHide = () => {
     if (window.innerWidth <= fullWidth) setShow(undefined)
@@ -429,6 +438,9 @@ export default () => {
       <Show when={show() === 'files'}>
         <FilesMenu onBack={() => setShow('main')} onOpenFile={() => maybeHide()} />
       </Show>
+      <Show when={show() === 'canvases'}>
+        <CanvasesMenu onBack={() => setShow('main')} />
+      </Show>
       <Show when={show() === 'code_block'}>
         <CodeBlockMenu onBack={() => setShow('main')} />
       </Show>
@@ -445,6 +457,25 @@ export default () => {
         <Drawer
           onClick={() => ctrl.file.currentFile?.editorView?.focus()}
           data-tauri-drag-region="true">
+          <Label>Storage</Label>
+          <Sub data-tauri-drag-region="true">
+            <Show when={store.files.length > 0}>
+              <Link
+                onClick={() => setShow('files')}
+                data-testid="files"
+              >Files 🗃️</Link>
+            </Show>
+            <Show when={store.canvases.length > 0}>
+              <Link
+                onClick={() => setShow('canvases')}
+                data-testid="canvases"
+              >Canvases 🗃️</Link>
+            </Show>
+            <Link onClick={onNew} data-testid="new">
+              New file 🆕 <Keys keys={[modKey, 'n']} />
+            </Link>
+            <Link onClick={onNewCanvas} data-testid="new-canvas">New canvas 🖼️</Link>
+          </Sub>
           <Label>
             File {ctrl.file.currentFile?.path && <i>({relativePath()})</i>}
           </Label>
@@ -454,20 +485,15 @@ export default () => {
                 Save to file 💾 <Keys keys={[modKey, 's']} />
               </Link>
             </Show>
-            <Link onClick={onNew} data-testid="new">
-              New 🆕 <Keys keys={[modKey, 'n']} />
-            </Link>
             <Link
               onClick={onDiscard}
               disabled={!clearEnabled()}
               data-testid="discard">
               {clearText()} <Keys keys={[modKey, 'w']} />
             </Link>
-            <Show when={store.files.length > 0}>
-              <Link
-                onClick={() => setShow('files')}
-                data-testid="files"
-              >Files 🗃️</Link>
+            <Show when={store.mode === Mode.Canvas}>
+              <Link onClick={onClearCanvas}>Clear Canvas</Link>
+              <Link onClick={onBackToContent}>Back to content</Link>
             </Show>
           </Sub>
           <Show when={ctrl.file.currentFile !== undefined}>

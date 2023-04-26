@@ -1,5 +1,6 @@
 import {styled} from 'solid-styled-components'
-import {Config} from '@/state'
+import {Config, useState} from '@/state'
+import {onCleanup} from 'solid-js'
 
 const codeBlock = (config: Config) => `
   .cm-container {
@@ -165,23 +166,16 @@ const codeBlock = (config: Config) => `
   }
 `
 
-export default styled('div')`
-  min-height: calc(100% - 100px);
-  height: fit-content;
-  width: ${(props: any) => props.config.contentWidth}px;
-  max-width: 100%;
-  padding: 0 50px;
+const proseMirror = (config: Config, markdown: boolean) => `
   .ProseMirror {
-    ${(props: any) => codeBlock(props.config)}
-    ${(props: any) => props.markdown ? 'white-space: pre-wrap' : ''};
+    ${codeBlock(config)}
+    ${markdown ? 'white-space: pre-wrap' : ''};
     word-wrap: break-word;
     white-space: pre-wrap;
     position: relative;
     font-size: var(--font-size);
     font-family: var(--font-family);
     color: var(--foreground);
-    margin-top: 50px;
-    padding-bottom: 77vh;
     line-height: calc(var(--font-size) * 1.6);
     outline: none !important;
     background: transparent;
@@ -469,3 +463,43 @@ export default styled('div')`
     }
   }
 `
+
+export const CanvasEditor = styled('div')`
+  width: 100%;
+  min-height: 100%;
+  height: fit-content;
+  background: var(--background);
+  padding: 10px 30px;
+  ${(props: any) => proseMirror(props.config, props.markdown)}
+`
+
+const EditorStyle = styled('div')`
+  min-height: calc(100% - 100px);
+  height: fit-content;
+  width: ${(props: any) => props.config.contentWidth}px;
+  max-width: 100%;
+  padding: 0 50px;
+  ${(props: any) => proseMirror(props.config, props.markdown)}
+  .ProseMirror {
+    margin-top: 50px;
+    padding-bottom: 77vh;
+  }
+`
+
+export const Editor = (props: any) => {
+  const [store, ctrl] = useState()
+
+  onCleanup(() => {
+    ctrl.file.destroy()
+  })
+
+  return (
+    <EditorStyle
+      ref={props.ref}
+      config={store.config}
+      spellcheck={store.config.spellcheck}
+      markdown={ctrl.file.currentFile?.markdown}
+      data-tauri-drag-region="true"
+    />
+  )
+}

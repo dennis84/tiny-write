@@ -1,6 +1,7 @@
 import {styled} from 'solid-styled-components'
 
 export const Layout = styled('div')`
+  touch-action: none;
   background: var(--background);
   display: flex;
   width: 100%;
@@ -65,7 +66,8 @@ export const Layout = styled('div')`
   .block-tooltip,
   .table-menu-tooltip,
   .autocomplete-tooltip,
-  .file-tooltip {
+  .file-tooltip,
+  .canvas-tooltip {
     position: absolute;
     width: max-content;
     background: var(--tooltip-background);
@@ -141,5 +143,94 @@ export const Content = styled('div')`
   }
   code {
     font-family: var(--font-family-monospace);
+  }
+`
+
+export const CardList = styled('nav')`
+  margin: 10px 0;
+  margin-bottom: 30px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-column-gap: 20px;
+`
+
+export const Card = styled('div')`
+  margin-bottom: 20px;
+  overflow: hidden;
+`
+
+export const CardContent = styled('div')`
+  height: 180px;
+  overflow: hidden;
+  margin: 1px;
+  padding: 4px;
+  word-break: break-all;
+  cursor: pointer;
+  font-size: 10px;
+  line-height: 1.2;
+  color: var(--foreground);
+  background: var(--foreground-5);
+  border: 1px solid var(--foreground-50);
+  ${(props: any) => props.active ? `
+    border-color: var(--primary-background);
+    box-shadow: 0 0 0 1px var(--primary-background);
+  ` : ''}
+  ${(props: any) => props.selected ? `
+    border-color: var(--primary-background);
+    box-shadow: 0 0 0 1px var(--primary-background);
+    background: var(--foreground-10);
+  ` : ''}
+  border-radius: var(--border-radius);
+  p {
+    margin: 4px 0;
+  }
+  p:first-child {
+    margin: 0;
+  }
+  h2 {
+    margin: 0;
+    font-size: 14px;
+  }
+  img {
+    max-width: 50%;
+    float: left;
+    margin-right: 2px;
+  }
+  pre {
+    border: 1px solid var(--foreground-50);
+    background: var(--foreground-10);
+    border-radius: var(--border-radius);
+    padding: 0 4px;
+    margin: 4px 0;
+    overflow: hidden;
+  }
+  &:hover {
+    border-color: var(--primary-background);
+    box-shadow: 0 0 0 1px var(--primary-background);
+    background: var(--foreground-10);
+  }
+`
+
+export const CardFooter = styled('div')`
+  font-size: 12px;
+  margin-top: 5px;
+  color: var(--foreground-60);
+  display: flex;
+  align-items: flex-start;
+`
+
+export const CardMenuButton = styled('button')`
+  justify-self: flex-end;
+  margin-left: auto;
+  background: none;
+  border: 0;
+  color: var(--foreground-60);
+  cursor: pointer;
+  padding: 0;
+  ${(props: any) => props.selected ? `
+    color: var(--primary-background);
+  ` : ''}
+  &:hover {
+    color: var(--primary-background);
   }
 `

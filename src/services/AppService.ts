@@ -1,6 +1,6 @@
 import {Store, unwrap, SetStoreFunction} from 'solid-js/store'
 import * as remote from '@/remote'
-import {State, ServiceError, Window, File, FileText} from '@/state'
+import {State, ServiceError, Window, File, FileText, Mode} from '@/state'
 import * as db from '@/db'
 import {isTauri} from '@/env'
 import {Ctrl} from '.'
@@ -25,7 +25,15 @@ export class AppService {
         await remote.updateWindow(data.window)
       }
 
-      let currentFile = data.files.find((f) => f.active)
+      let currentFile = data.files.find((it) => it.active)
+      const currentCanvas = data.canvases.find((it) => it.active)
+      if (
+        currentCanvas?.lastModified &&
+        currentFile?.lastModified &&
+        currentCanvas.lastModified > currentFile.lastModified
+      ) {
+        currentFile = undefined
+      }
 
       if (data.args?.dir) { // If app was started with a directory as argument
         currentFile = undefined
@@ -57,7 +65,7 @@ export class AppService {
       }
 
       // Init from empty state or file not found
-      if (!data.args?.dir && !currentFile) {
+      if (!data.args?.dir && !currentFile && !currentCanvas) {
         currentFile = this.ctrl.file.createFile({id: data.args?.room})
         data.files.push(currentFile)
         data = this.ctrl.editor.activateFile(data, currentFile)
@@ -69,6 +77,8 @@ export class AppService {
         if (currentFile?.path) {
           text = (await this.ctrl.file.loadFile(currentFile.path)).text
         }
+      } else if (currentCanvas) {
+        collab = this.ctrl.collab.create(currentCanvas.id, data.args?.room !== undefined)
       }
 
       const newState: State = {
@@ -76,6 +86,7 @@ export class AppService {
         config: {...data.config, ...this.ctrl.config.getTheme(data)},
         loading: 'initialized',
         collab,
+        mode: currentCanvas ? Mode.Canvas : Mode.Editor,
       }
 
       if (isTauri && newState.config?.alwaysOnTop) {
@@ -138,6 +149,7 @@ export class AppService {
     const fetchedConfig = await db.getConfig()
     const fetchedSize = await db.getSize()
     const files = await this.ctrl.file.fetchFiles()
+    const canvases = await this.ctrl.canvas.fetchCanvases()
 
     const config = {
       ...state.config,
@@ -147,6 +159,7 @@ export class AppService {
     return {
       ...state,
       args: args ?? state.args,
+      canvases,
       files,
       config,
       window: fetchedWindow,

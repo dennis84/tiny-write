@@ -2,12 +2,13 @@ import {Show, onCleanup, createEffect, onMount} from 'solid-js'
 import {createMutable} from 'solid-js/store'
 import {appWindow} from '@tauri-apps/api/window'
 import {EditorView} from 'prosemirror-view'
-import {State, StateContext} from './state'
+import {Mode, State, StateContext} from './state'
 import {createCtrl, Ctrl} from '@/services'
 import * as remote from '@/remote'
 import {isTauri} from '@/env'
 import {Scroll, Layout} from '@/components/Layout'
-import Editor from '@/components/Editor'
+import {Editor} from '@/components/Editor'
+import Canvas from '@/components/Canvas'
 import Menu from '@/components/Menu'
 import ErrorView from '@/components/Error'
 import Dir from '@/components/Dir'
@@ -129,7 +130,9 @@ export default (props: {state: State}) => {
     })
   })
 
-  onMount(async () => {
+  createEffect(async () => {
+    if (ctrl.canvas.currentCanvas) return
+
     const onWheel = (e: WheelEvent) => {
       if (e.ctrlKey && e.buttons === 0) {
         e.preventDefault()
@@ -148,9 +151,10 @@ export default (props: {state: State}) => {
 
   createEffect(() => {
     const currentFile = ctrl.file.currentFile
-    if (!currentFile) {
+    const currentCanvas = ctrl.canvas.currentCanvas
+    if (!currentFile && !currentCanvas) {
       ctrl.app.init(editorRef!)
-    } else if (currentFile.id && currentFile.editorView === undefined) {
+    } else if (currentFile?.id && currentFile.editorView === undefined) {
       ctrl.editor.renderEditor(editorRef!)
     }
   })
@@ -203,15 +207,10 @@ export default (props: {state: State}) => {
         onDragOver={onDragOver}>
         <Show when={store.error}><ErrorView /></Show>
         <Show when={store.args?.dir && !store.error}><Dir /></Show>
-        <Show when={!store.error && !store.args?.dir}>
+        <Show when={!store.error && !store.args?.dir && store.mode === Mode.Canvas}><Canvas /></Show>
+        <Show when={!store.error && !store.args?.dir && store.mode === Mode.Editor}>
           <Scroll data-tauri-drag-region="true">
-            <Editor
-              config={store.config}
-              ref={editorRef}
-              spellcheck={store.config.spellcheck}
-              markdown={ctrl.file.currentFile?.markdown}
-              data-tauri-drag-region="true"
-            />
+            <Editor ref={editorRef} />
           </Scroll>
         </Show>
         <Menu />
