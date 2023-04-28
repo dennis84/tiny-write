@@ -174,6 +174,7 @@ test('newFile - collab', async () => {
 })
 
 test('openFile - existing', async () => {
+  const updateFileSpy = vi.spyOn(db, 'updateFile')
   vi.spyOn(db, 'getFiles').mockResolvedValue([
     {id: '1', ydoc: createYUpdateAsString('1', 'Test'), lastModified, active: true},
     {id: '2', ydoc: createYUpdateAsString('2', 'Test 2'), lastModified},
@@ -182,16 +183,23 @@ test('openFile - existing', async () => {
   const {ctrl, store} = createCtrl(createState())
   const target = document.createElement('div')
   await ctrl.app.init(target)
+  updateFileSpy.mockClear()
 
   await waitFor(() => {
     expect(getText(ctrl)).toBe('Test')
   })
 
+  expect(store.files[0].active).toBe(true)
+  expect(store.files[1].active).toBe(false)
+
   await ctrl.editor.openFile({id: '2'})
   expect(store.files.length).toBe(2)
+  expect(store.files[0].active).toBe(false)
+  expect(store.files[1].active).toBe(true)
   expect(ctrl.file.currentFile?.editorView).toBe(undefined)
-  ctrl.editor.renderEditor(target)
 
+  expect(updateFileSpy).toHaveReturnedTimes(2)
+  ctrl.editor.renderEditor(target)
   await waitFor(() => {
     expect(getText(ctrl)).toBe('Test 2')
   })

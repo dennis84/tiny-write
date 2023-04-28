@@ -127,9 +127,7 @@ export class EditorService {
     const state: State = unwrap(this.store)
     const file = this.ctrl.file.createFile()
 
-    currentFile?.editorView?.destroy()
-
-    const update = this.activateFile({
+    const update = await this.activateFile({
       ...state,
       args: {cwd: state.args?.cwd},
       files: [...state.files, file],
@@ -154,17 +152,9 @@ export class EditorService {
     }
 
     if (!file) return
-    const currentFile = this.ctrl.file.currentFile
-
-    if (isEmpty(currentFile?.editorView?.state)) {
-      const index = this.ctrl.file.currentFileIndex
-      if (index !== -1) state.files.splice(index, 1)
-    }
-
     if (state.args?.room) state.args.room = undefined
-    currentFile?.editorView?.destroy()
 
-    const update = this.activateFile(state, file)
+    const update = await this.activateFile(state, file)
     update.collab = this.ctrl.collab.createByFile(file)
     this.setState(update)
     if (text) this.updateText(text)
@@ -173,7 +163,7 @@ export class EditorService {
   async deleteFile(req: OpenFile) {
     const currentFile = this.ctrl.file.currentFile
     if (currentFile?.id === req.id) {
-      this.discardText()
+      await this.discardText()
       return
     }
 
@@ -232,16 +222,30 @@ export class EditorService {
     this.ctrl.file.updateFile(currentFile.id, {lastModified, path})
   }
 
-  activateFile(state: State, file: File): State {
+  async activateFile(state: State, file: File): Promise<State> {
+    const files = []
+
+    for (const f of state.files) {
+      if (f.editorView && isEmpty(f.editorView?.state)) {
+        f.editorView.destroy()
+        await db.deleteFile(f.id)
+        continue
+      }
+
+      f.editorView?.destroy()
+      const active = f.id === file.id
+      const newFile = {...f, active, editorView: undefined}
+      files.push(newFile)
+      if (active || f.active) {
+        await this.ctrl.file.saveFile(newFile)
+      }
+    }
+
     return {
       ...state,
       error: undefined,
       args: {...state.args, dir: undefined},
-      files: state.files.map((f) => ({
-        ...f,
-        editorView: undefined,
-        active: f.id === file.id,
-      }))
+      files,
     }
   }
 
@@ -314,9 +318,7 @@ export class EditorService {
       file = this.ctrl.file.createFile()
     }
 
-    currentFile?.editorView?.destroy()
-
-    const newState = this.activateFile({
+    const newState = await this.activateFile({
       args: {cwd: state.args?.cwd},
       ...state,
       files,
@@ -328,6 +330,5 @@ export class EditorService {
     await db.deleteFile(id!)
 
     if (text) this.updateText(text)
-    this.saveEditor()
   }
 }

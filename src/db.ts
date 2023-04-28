@@ -34,7 +34,6 @@ const DB_NAME = 'keyval'
 const dbPromise = openDB<MyDB>(DB_NAME, 1, {
   upgrade(db: any) {
     db.createObjectStore('config')
-    db.createObjectStore('editor')
     db.createObjectStore('window')
     db.createObjectStore('files', {keyPath: 'id'})
     db.createObjectStore('size')

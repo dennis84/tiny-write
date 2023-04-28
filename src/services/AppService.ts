@@ -39,7 +39,7 @@ export class AppService {
           currentFile = this.ctrl.file.createFile(loadedFile)
           data.files.push(currentFile as File)
         }
-        data = this.ctrl.editor.activateFile(data, currentFile)
+        data = await this.ctrl.editor.activateFile(data, currentFile)
       } else if (data.args?.room) { // Join collab
         currentFile = data.files.find((f) => f.id === data.args?.room)
         if (currentFile?.path) {
@@ -48,9 +48,9 @@ export class AppService {
           currentFile = this.ctrl.file.createFile({id: data.args.room})
           data.files.push(currentFile as File)
         }
-        data = this.ctrl.editor.activateFile(data, currentFile)
+        data = await this.ctrl.editor.activateFile(data, currentFile)
       } else if (currentFile?.id) { // Restore last saved file
-        data = this.ctrl.editor.activateFile(data, currentFile)
+        data = await this.ctrl.editor.activateFile(data, currentFile)
         if (currentFile?.path) {
           text = (await this.ctrl.file.loadFile(currentFile.path)).text
         }
@@ -60,7 +60,7 @@ export class AppService {
       if (!data.args?.dir && !currentFile) {
         currentFile = this.ctrl.file.createFile({id: data.args?.room})
         data.files.push(currentFile)
-        data = this.ctrl.editor.activateFile(data, currentFile)
+        data = await this.ctrl.editor.activateFile(data, currentFile)
       }
 
       let collab
