@@ -47,64 +47,14 @@ class CellMenuView {
   private tooltip?: HTMLElement
   private arrow?: HTMLElement
 
-  private onAddColumnBefore = () => {
-    const pluginState = pluginKey.getState(this.view.state)
-    const pos = this.view.state.doc.resolve(pluginState.currentCell)
-    this.setCellSelection(pos)
-    addColumnBefore(this.view.state, this.view.dispatch)
-    setTimeout(() => this.view.focus())
-    return true
-  }
-
-  private onAddColumnAfter = () => {
-    const pluginState = pluginKey.getState(this.view.state)
-    const pos = this.view.state.doc.resolve(pluginState.currentCell)
-    this.setCellSelection(pos)
-    addColumnAfter(this.view.state, this.view.dispatch)
-    setTimeout(() => this.view.focus())
-    return true
-  }
-
-  private onRemoveColumn = () => {
-    const pluginState = pluginKey.getState(this.view.state)
-    const pos = this.view.state.doc.resolve(pluginState.currentCell)
-    const colCount = pos.node().childCount
-
-    this.setCellSelection(pos)
-    if (colCount === 1) {
-      deleteTable(this.view.state, this.view.dispatch)
-    } else {
-      deleteColumn(this.view.state, this.view.dispatch)
-    }
-
-    setTimeout(() => this.view.focus())
-    return true
-  }
-
-  private onRemoveRow = () => {
-    const pluginState = pluginKey.getState(this.view.state)
-    const pos = this.view.state.doc.resolve(pluginState.currentCell)
-    const rowCount = pos.node(-1).childCount
-
-    this.setCellSelection(pos)
-    if (rowCount === 1) {
-      deleteTable(this.view.state, this.view.dispatch)
-    } else {
-      deleteRow(this.view.state, this.view.dispatch)
-    }
-
-    setTimeout(() => this.view.focus())
-    return true
+  constructor(private view: EditorView) {
+    this.update(view)
   }
 
   onToggleHeaderRow = () => {
     toggleHeaderRow(this.view.state, this.view.dispatch)
     setTimeout(() => this.view.focus())
     return true
-  }
-
-  constructor(private view: EditorView) {
-    this.update(view)
   }
 
   createNav() {
@@ -146,14 +96,6 @@ class CellMenuView {
     this.tooltip.appendChild(this.arrow)
 
     this.view.dom.parentNode?.appendChild(this.tooltip)
-  }
-
-  private onClose = (e: MouseEvent) => {
-    if (!(e.target as Element).closest('.table-menu-tooltip')) {
-      const tr = this.view.state.tr
-      tr.setMeta(pluginKey, {})
-      this.view.dispatch(tr)
-    }
   }
 
   update(view: EditorView) {
@@ -210,6 +152,64 @@ class CellMenuView {
     tr.setSelection(new CellSelection(pos))
     tr.setMeta(pluginKey, {})
     this.view.dispatch(tr)
+  }
+
+  private onClose = (e: MouseEvent) => {
+    if (!(e.target as Element).closest('.table-menu-tooltip')) {
+      const tr = this.view.state.tr
+      tr.setMeta(pluginKey, {})
+      this.view.dispatch(tr)
+    }
+  }
+
+  private onAddColumnBefore = () => {
+    const pluginState = pluginKey.getState(this.view.state)
+    const pos = this.view.state.doc.resolve(pluginState.currentCell)
+    this.setCellSelection(pos)
+    addColumnBefore(this.view.state, this.view.dispatch)
+    setTimeout(() => this.view.focus())
+    return true
+  }
+
+  private onAddColumnAfter = () => {
+    const pluginState = pluginKey.getState(this.view.state)
+    const pos = this.view.state.doc.resolve(pluginState.currentCell)
+    this.setCellSelection(pos)
+    addColumnAfter(this.view.state, this.view.dispatch)
+    setTimeout(() => this.view.focus())
+    return true
+  }
+
+  private onRemoveColumn = () => {
+    const pluginState = pluginKey.getState(this.view.state)
+    const pos = this.view.state.doc.resolve(pluginState.currentCell)
+    const colCount = pos.node().childCount
+
+    this.setCellSelection(pos)
+    if (colCount === 1) {
+      deleteTable(this.view.state, this.view.dispatch)
+    } else {
+      deleteColumn(this.view.state, this.view.dispatch)
+    }
+
+    setTimeout(() => this.view.focus())
+    return true
+  }
+
+  private onRemoveRow = () => {
+    const pluginState = pluginKey.getState(this.view.state)
+    const pos = this.view.state.doc.resolve(pluginState.currentCell)
+    const rowCount = pos.node(-1).childCount
+
+    this.setCellSelection(pos)
+    if (rowCount === 1) {
+      deleteTable(this.view.state, this.view.dispatch)
+    } else {
+      deleteRow(this.view.state, this.view.dispatch)
+    }
+
+    setTimeout(() => this.view.focus())
+    return true
   }
 }
 
