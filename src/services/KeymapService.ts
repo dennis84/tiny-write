@@ -28,12 +28,12 @@ export class KeymapService {
   }
 
   private onReload = () => {
-    if (!isTauri) return
+    if (!isTauri()) return
     window.location.reload()
   }
 
   private onQuit = () => {
-    if (!isTauri) return
+    if (!isTauri()) return
     remote.quit()
   }
 
@@ -57,13 +57,13 @@ export class KeymapService {
   private onSave = async () => {
     const currentFile = this.ctrl.file.currentFile
     const state = currentFile?.editorView?.state
-    if (!isTauri || currentFile?.path || !state) return false
+    if (!isTauri() || currentFile?.path || !state) return false
     const path = await remote.save(state)
     if (path) this.ctrl.editor.updatePath(path)
   }
 
   private onFullscreen = () => {
-    if (!isTauri) return
+    if (!isTauri()) return
     this.ctrl.app.setFullscreen(!this.store.fullscreen)
     return true
   }
@@ -83,7 +83,7 @@ export class KeymapService {
   }
 
   private onPrint = () => {
-    if (!isTauri) return
+    if (!isTauri()) return
     window.print()
     return true
   }

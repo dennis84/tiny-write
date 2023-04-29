@@ -100,7 +100,7 @@ class SelectView {
       e.target !== this.view.dom.parentNode?.parentNode
 
     const isTauriDragRegion =
-      isTauri &&
+      isTauri() &&
       (e.target as HTMLElement)?.dataset?.tauriDragRegion === 'true' &&
       !this.ctrl.app.fullscreen
 

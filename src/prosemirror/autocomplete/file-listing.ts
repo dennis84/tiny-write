@@ -7,7 +7,7 @@ import {Ctrl} from '@/services'
 
 const pluginKey = new PluginKey('file-listing')
 
-export default (ctrl: Ctrl): ProseMirrorExtension => isTauri ? ({
+export default (ctrl: Ctrl): ProseMirrorExtension => isTauri() ? ({
   plugins: (prev) => [
     completionKeymap(pluginKey),
     ...prev,

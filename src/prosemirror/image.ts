@@ -151,7 +151,7 @@ class ImageView {
     }
 
     if (
-      isTauri &&
+      isTauri() &&
       !node.attrs.src.startsWith('asset:') &&
       !node.attrs.src.startsWith('data:') &&
       !isUrl(node.attrs.src)

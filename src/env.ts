@@ -2,7 +2,7 @@ import {version as v} from '../package.json'
 
 export const version = v
 
-export const isTauri = (window as any).__TAURI__ !== undefined
+export const isTauri = () => (window as any).__TAURI__ !== undefined
 
 export const isDark = () => (window as any).matchMedia('(prefers-color-scheme: dark)').matches
 

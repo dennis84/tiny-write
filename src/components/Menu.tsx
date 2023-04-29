@@ -74,7 +74,7 @@ export const Drawer = styled('div')`
   scrollbar-width: none;
   @media (max-width: ${fullWidth.toString()}px) {
     width: 100vw;
-    ${isTauri ? 'padding-top: 40px' : ''}
+    ${isTauri() ? 'padding-top: 40px' : ''}
   }
   &::-webkit-scrollbar {
     display: none;
@@ -198,7 +198,7 @@ export default () => {
   }
 
   const onOpenInApp = () => {
-    if (isTauri) return
+    if (isTauri()) return
     const currentFile = ctrl.file.currentFile
     if (store.collab?.started) {
       window.open(`tinywrite://main?room=${currentFile?.id}`, '_self')
@@ -289,7 +289,7 @@ export default () => {
             <Link onClick={() => setShow('theme')}>Appearance 🎨</Link>
             <Link onClick={() => setShow('code_block')}>Code Blocks 💅</Link>
             <Link onClick={() => setShow('change_set')}>Change Set 📆</Link>
-            <Show when={isTauri}>
+            <Show when={isTauri()}>
               <Link onClick={onToggleFullscreen}>
                 Fullscreen {store.fullscreen && '✅'} <Keys keys={[alt, 'Enter']} />
               </Link>
@@ -300,7 +300,7 @@ export default () => {
             <Link onClick={onToggleSpellcheck}>
               Spellcheck {store.config.spellcheck && '✅'}
             </Link>
-            <Show when={isTauri}>
+            <Show when={isTauri()}>
               <Link onClick={onToggleAlwaysOnTop}>
                 Always on Top {store.config.alwaysOnTop && '✅'}
               </Link>
@@ -318,14 +318,14 @@ export default () => {
           <Label>Application</Label>
           <Sub data-tauri-drag-region="true">
             {/* doesn't work with tauri */}
-            <Show when={(!isTauri && false)}>
+            <Show when={(!isTauri() && false)}>
               <Link onClick={onOpenInApp}>Open in App ⚡</Link>
             </Show>
             <Link onClick={onVersion}>
               About Version {version}
             </Link>
             <Link onClick={() => setShow('help')}>Help</Link>
-            <Show when={isTauri}>
+            <Show when={isTauri()}>
               <Link
                 onClick={() => remote.quit()}>
                 Quit <Keys keys={[modKey, 'q']} />

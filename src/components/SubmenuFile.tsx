@@ -64,7 +64,7 @@ export default ({maybeHide}: {maybeHide: () => void}) => {
         <Link onClick={onNew} data-testid="new-file">
           New file 🆕 <Keys keys={[modKey, 'n']} />
         </Link>
-        <Show when={isTauri && !ctrl.file.currentFile?.path}>
+        <Show when={isTauri() && !ctrl.file.currentFile?.path}>
           <Link onClick={onSaveAs}>
             Save to file 💾 <Keys keys={[modKey, 's']} />
           </Link>

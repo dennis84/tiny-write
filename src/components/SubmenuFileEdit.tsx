@@ -58,7 +58,7 @@ export default () => {
         <Link onClick={() => cmd('cut')}>
           Cut <Keys keys={[modKey, 'x']} />
         </Link>
-        <Link onClick={() => cmd('paste')} disabled={!isTauri}>
+        <Link onClick={() => cmd('paste')} disabled={!isTauri()}>
           Paste <Keys keys={[modKey, 'p']} />
         </Link>
         <Link onClick={() => cmd('copy')}>

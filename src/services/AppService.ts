@@ -21,7 +21,7 @@ export class AppService {
       let data = await this.fetchData()
       let text: FileText | undefined
 
-      if (isTauri && data.window) {
+      if (isTauri() && data.window) {
         await remote.updateWindow(data.window)
       }
 
@@ -87,7 +87,7 @@ export class AppService {
         mode: currentCanvas ? Mode.Canvas : Mode.Editor,
       }
 
-      if (isTauri && newState.config?.alwaysOnTop) {
+      if (isTauri() && newState.config?.alwaysOnTop) {
         await remote.setAlwaysOnTop(true)
       }
 
@@ -99,7 +99,7 @@ export class AppService {
       this.setError(error)
     }
 
-    if (isTauri) {
+    if (isTauri()) {
       await remote.show()
     }
   }
@@ -138,7 +138,7 @@ export class AppService {
     const state = unwrap(this.store)
     let args = await remote.getArgs().catch(() => undefined)
 
-    if (!isTauri) {
+    if (!isTauri()) {
       const room = window.location.pathname?.slice(1).trim()
       if (room) args = {room}
     }

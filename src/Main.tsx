@@ -53,7 +53,7 @@ export default (props: {state: State}) => {
   })
 
   onMount(async () => {
-    if (!isTauri) return
+    if (!isTauri()) return
     const unlisten = await appWindow.onFileDropEvent(async (event) => {
       const currentFile = ctrl.file.currentFile
       if (event.payload.type === 'hover') {
@@ -85,7 +85,7 @@ export default (props: {state: State}) => {
   })
 
   onMount(async () => {
-    if (!isTauri) return
+    if (!isTauri()) return
     const unlistenResize = await appWindow.onResized(async ({payload}) => {
       ctrl.app.updateWindow(payload)
     })
@@ -101,7 +101,7 @@ export default (props: {state: State}) => {
   })
 
   onMount(async () => {
-    if (isTauri) return
+    if (isTauri()) return
     const onDrop = (e: DragEvent) => {
       e.preventDefault()
       if ((e.target as Element).closest('.cm-container')) {
