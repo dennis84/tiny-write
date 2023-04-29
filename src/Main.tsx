@@ -182,6 +182,7 @@ export default (props: {state: State}) => {
     root.style.setProperty('--foreground-10', `${ctrl.config.theme.foreground}1a`)
     root.style.setProperty('--foreground-5', `${ctrl.config.theme.foreground}0D`)
     root.style.setProperty('--primary-background', ctrl.config.theme.primaryBackground)
+    root.style.setProperty('--primary-background-50', `${ctrl.config.theme.primaryBackground}80`)
     root.style.setProperty('--primary-background-20', `${ctrl.config.theme.primaryBackground}33`)
     root.style.setProperty('--primary-foreground', ctrl.config.theme.primaryForeground)
     root.style.setProperty('--selection-border', `${ctrl.config.theme.primaryBackground}44`)

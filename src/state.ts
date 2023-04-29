@@ -70,6 +70,7 @@ export interface Camera {
 export interface CanvasElement {
   id: string;
   type: ElementType;
+  selected?: boolean;
 }
 
 export interface CanvasEditorElement extends CanvasElement {

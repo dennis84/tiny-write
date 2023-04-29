@@ -14,6 +14,7 @@ interface UpdateCanvas {
   camera?: Camera;
   elements?: CanvasEditorElement[];
   lastModified?: Date;
+  selected?: boolean;
 }
 
 interface UpdateCanvasElement {
@@ -88,6 +89,17 @@ export class CanvasService {
 
     this.setState('canvases', canvases)
     db.deleteCanvas(id)
+  }
+
+  select(id: string) {
+    const currentCanvas = this.currentCanvas
+    if (!currentCanvas) return
+    const elements = currentCanvas.elements.map((el) => ({
+      ...el,
+      selected: el.id === id,
+    }))
+
+    this.updateCanvas(currentCanvas.id, {elements})
   }
 
   newCanvas() {
