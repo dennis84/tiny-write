@@ -60,8 +60,43 @@ export interface Window {
   y: number;
 }
 
+export type ElementType = 'editor' | 'canvas'
+
+export interface Camera {
+  point: [number, number];
+  zoom: number;
+}
+
+export interface CanvasElement {
+  id: string;
+  type: ElementType;
+}
+
+export interface CanvasEditorElement extends CanvasElement {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  editorView?: EditorView;
+}
+
+export interface Canvas {
+  id: string;
+  camera: Camera;
+  elements: CanvasEditorElement[];
+  active?: boolean;
+  lastModified?: Date;
+}
+
+export enum Mode {
+  Editor,
+  Canvas,
+}
+
 export interface State {
+  canvases: Canvas[];
   files: File[];
+  mode: Mode;
   config: Config;
   error?: ErrorObject;
   loading: LoadingType;
@@ -99,6 +134,8 @@ export const useState = () => useContext(StateContext)
 
 export const createState = (props: Partial<State> = {}): State => ({
   files: [],
+  canvases: [],
+  mode: Mode.Editor,
   loading: 'loading',
   fullscreen: false,
   storageSize: 0,

@@ -1,18 +1,19 @@
 import {Show, createEffect, createSignal, onCleanup} from 'solid-js'
 import {css, styled} from 'solid-styled-components'
-import {Node} from 'prosemirror-model'
-import {differenceInHours, format} from 'date-fns'
-import * as Y from 'yjs'
-import {undo, redo} from 'y-prosemirror'
-import {useState} from '@/state'
-import {isTauri, isMac, alt, mod, version, WEB_URL, VERSION_URL} from '@/env'
+import {Mode, useState} from '@/state'
+import {isTauri, isMac, alt, mod, version, VERSION_URL, isDev} from '@/env'
 import * as remote from '@/remote'
-import {isEmpty} from '@/prosemirror'
 import {FilesMenu} from './FilesMenu'
+import {CanvasesMenu} from './CanvasesMenu'
 import {CodeBlockMenu} from './CodeBlockMenu'
 import {AppearanceMenu} from './AppearanceMenu'
 import {ChangeSetMenu} from './ChangeSetMenu'
 import {HelpMenu} from './HelpMenu'
+import SubmenuFile from './SubmenuFile'
+import SubmenuFileStats from './SubmenuFileStats'
+import SubmenuCanvas from './SubmenuCanvas'
+import SubmenuFileEdit from './SubmenuFileEdit'
+import SubmenuCollab from './SubmenuCollab'
 
 const fullWidth = 500
 
@@ -167,97 +168,13 @@ export const Keys = (props: {keys: string[]}) => (
 export default () => {
   const [store, ctrl] = useState()
   const [show, setShow] = createSignal()
-  const [lastAction, setLastAction] = createSignal<string | undefined>()
-  const [isTextEmpty, setIsTextEmpty] = createSignal(false)
-  const [collabUsers, setCollabUsers] = createSignal(0)
-  const [relativePath, setRelativePath] = createSignal('')
-  const [textStats, setTextStats] = createSignal({
-    paragraphs: 0,
-    words: 0,
-    loc: 0,
-  })
 
   const modKey = isMac ? '⌘' : mod
-
-  createEffect(() => {
-    const provider = store.collab?.provider
-    if (!provider) return
-    const fn = () => setCollabUsers(provider.awareness.states.size)
-    provider.awareness.on('update', fn)
-    onCleanup(() => {
-      setCollabUsers(0)
-      provider?.awareness.off('update', fn)
-    })
-  })
-
-  createEffect(() => {
-    const currentFile = ctrl.file.currentFile
-    setIsTextEmpty(isEmpty(currentFile?.editorView?.state) ?? true)
-
-    let paragraphs = 0
-    let words = 0
-    let loc = 0
-
-    if (!currentFile?.editorView) return
-
-    currentFile?.editorView.state.doc.forEach((node: Node) => {
-      const text = node.textContent
-
-      if (node.type.name === 'code_block') {
-        loc += text.split('\n').length
-        return
-      }
-
-      const curWords = text.split(/\s+/).filter((x) => x != '').length
-      if (node.type.name === 'paragraph' && curWords > 0) {
-        paragraphs ++
-      }
-
-      words += curWords
-    })
-
-    setTextStats({paragraphs, words, loc})
-    return ctrl.file.currentFile?.lastModified
-  }, ctrl.file.currentFile?.lastModified)
-
-  const clearText = () => (ctrl.file.currentFile?.path || store.collab?.started)
-    ? 'Close ⚠️'
-    : (store.files.length > 0 && isTextEmpty())
-      ? 'Discard ⚠️'
-      : 'Clear 🧽'
-
-  const clearEnabled = () =>
-    ctrl.file.currentFile?.path || ctrl.file.currentFile?.id || store.files.length > 0 || !isTextEmpty()
+  const featureCanvas = isDev
 
   const onBurgerClick = () => {
     ctrl.file.currentFile?.editorView?.focus()
     setShow(show() ? undefined : 'main')
-  }
-
-  const onUndo = () => {
-    const currentFile = ctrl.file.currentFile
-    undo(currentFile?.editorView?.state)
-    currentFile?.editorView?.focus()
-  }
-
-  const onRedo = () => {
-    const currentFile = ctrl.file.currentFile
-    redo(currentFile?.editorView?.state)
-    currentFile?.editorView?.focus()
-  }
-
-  const cmd = (cmd: string) => {
-    (document as any).execCommand(cmd)
-    setLastAction(cmd)
-  }
-
-  const onCopyAllAsMd = () => {
-    const currentFile = ctrl.file.currentFile
-    const state = currentFile?.editorView?.state
-    if (!state) return
-    remote.copyAllAsMarkdown(state).then(() => {
-      setLastAction('copy-md')
-    })
   }
 
   const onToggleAlwaysOnTop = () => {
@@ -280,34 +197,6 @@ export default () => {
     window.open(VERSION_URL, '_blank')
   }
 
-  const onNew = () => {
-    const currentFile = ctrl.file.currentFile
-    ctrl.editor.newFile()
-    maybeHide()
-    currentFile?.editorView?.focus()
-  }
-
-  const onSaveAs = async () => {
-    const currentFile = ctrl.file.currentFile
-    const state = currentFile?.editorView?.state
-    if (!state) return
-    const path = await remote.save(state)
-    if (path) ctrl.editor.updatePath(path)
-  }
-
-  const onDiscard = async () => {
-    const res = await ctrl.editor.discard()
-    if (res) maybeHide()
-  }
-
-  const onCollabStart = () => {
-    ctrl.collab.startCollab()
-  }
-
-  const onCollabStop = () => {
-    ctrl.collab.stopCollab()
-  }
-
   const onOpenInApp = () => {
     if (isTauri) return
     const currentFile = ctrl.file.currentFile
@@ -321,77 +210,9 @@ export default () => {
     }
   }
 
-  const onCopyCollabLink = () => {
-    const currentFile = ctrl.file.currentFile
-    remote.copy(`${WEB_URL}/${currentFile?.id}`).then(() => {
-      currentFile?.editorView?.focus()
-      setLastAction('copy-collab-link')
-    })
-  }
-
-  const onCopyCollabAppLink = () => {
-    const currentFile = ctrl.file.currentFile
-    remote.copy(`tinywrite://${currentFile?.id}`).then(() => {
-      currentFile?.editorView?.focus()
-      setLastAction('copy-collab-app-link')
-    })
-  }
-
-  const onToggleMarkdown = () => ctrl.editor.toggleMarkdown()
-
   const maybeHide = () => {
     if (window.innerWidth <= fullWidth) setShow(undefined)
   }
-
-  const LastModified = () => {
-    const formatDate = (date: Date) => {
-      const now = new Date()
-
-      if (differenceInHours(now, date) <= 24) {
-        return format(date, 'HH:mm:ss')
-      } else if (date.getFullYear() === now.getFullYear()) {
-        return format(date, 'dd MMMM HH:mm:ss')
-      }
-
-      return format(date, 'dd MMMM yyyy HH:mm:ss')
-    }
-
-    return (
-      <Show when={ctrl.file.currentFile?.lastModified !== undefined} fallback={
-        <Text data-testid="last-modified">
-          Nothing yet
-        </Text>
-      }>
-        <Text data-testid="last-modified">
-          Last modified: {formatDate(ctrl.file.currentFile!.lastModified!)}
-        </Text>
-      </Show>
-    )
-  }
-
-  const StorageStats = () => {
-    const [ydocSize, setYdocSize] = createSignal(0)
-
-    createEffect(() => {
-      if (!store.collab?.ydoc) return
-      setYdocSize(Y.encodeStateAsUpdate(store.collab.ydoc).byteLength)
-    })
-
-    return (
-      <>
-        <Text>
-          File size: {(ydocSize() / 1024 / 1024).toFixed(2)} MiB
-        </Text>
-        <Text>
-          DB size used: {(store.storageSize / 1024 / 1024).toFixed(2)} MiB
-        </Text>
-      </>
-    )
-  }
-
-  createEffect(() => {
-    setLastAction(undefined)
-  }, ctrl.file.currentFile?.lastModified)
 
   createEffect(() => {
     if (!show()) return
@@ -402,20 +223,6 @@ export default () => {
     document.addEventListener('keydown', onKeyDown)
     onCleanup(() => document.removeEventListener('keydown', onKeyDown))
   })
-
-  createEffect(() => {
-    if (!lastAction()) return
-    const id = setTimeout(() => {
-      setLastAction(undefined)
-    }, 1000)
-    onCleanup(() => clearTimeout(id))
-  })
-
-  createEffect(async () => {
-    if (!ctrl.file.currentFile?.path) return
-    const rel = await remote.toRelativePath(ctrl.file.currentFile?.path)
-    setRelativePath(rel)
-  }, ctrl.file.currentFile?.path)
 
   return (
     <Container>
@@ -428,6 +235,9 @@ export default () => {
       </Burger>
       <Show when={show() === 'files'}>
         <FilesMenu onBack={() => setShow('main')} onOpenFile={() => maybeHide()} />
+      </Show>
+      <Show when={show() === 'canvases'}>
+        <CanvasesMenu onBack={() => setShow('main')} />
       </Show>
       <Show when={show() === 'code_block'}>
         <CodeBlockMenu onBack={() => setShow('main')} />
@@ -445,54 +255,35 @@ export default () => {
         <Drawer
           onClick={() => ctrl.file.currentFile?.editorView?.focus()}
           data-tauri-drag-region="true">
-          <Label>
-            File {ctrl.file.currentFile?.path && <i>({relativePath()})</i>}
-          </Label>
+          <Label>Storage</Label>
+          {/* Submenu Storage */}
           <Sub data-tauri-drag-region="true">
-            <Show when={isTauri && !ctrl.file.currentFile?.path}>
-              <Link onClick={onSaveAs}>
-                Save to file 💾 <Keys keys={[modKey, 's']} />
-              </Link>
-            </Show>
-            <Link onClick={onNew} data-testid="new">
-              New 🆕 <Keys keys={[modKey, 'n']} />
-            </Link>
-            <Link
-              onClick={onDiscard}
-              disabled={!clearEnabled()}
-              data-testid="discard">
-              {clearText()} <Keys keys={[modKey, 'w']} />
-            </Link>
             <Show when={store.files.length > 0}>
               <Link
                 onClick={() => setShow('files')}
                 data-testid="files"
-              >Files 🗃️</Link>
+              >Files ✍️</Link>
+            </Show>
+            <Show when={featureCanvas}>
+              <Link
+                onClick={() => setShow('canvases')}
+                data-testid="canvases"
+              >Canvases 🧑‍🎨</Link>
             </Show>
           </Sub>
-          <Show when={ctrl.file.currentFile !== undefined}>
-            <Label>Edit</Label>
-            <Sub data-tauri-drag-region="true">
-              <Link onClick={onUndo}>
-                Undo <Keys keys={[modKey, 'z']} />
-              </Link>
-              <Link onClick={onRedo}>
-                Redo <Keys keys={[modKey, ...(isMac ? ['Shift', 'z'] : ['y'])]} />
-              </Link>
-              <Link onClick={() => cmd('cut')}>
-                Cut <Keys keys={[modKey, 'x']} />
-              </Link>
-              <Link onClick={() => cmd('paste')} disabled={!isTauri}>
-                Paste <Keys keys={[modKey, 'p']} />
-              </Link>
-              <Link onClick={() => cmd('copy')}>
-                Copy {lastAction() === 'copy' && '📋'} <Keys keys={[modKey, 'c']} />
-              </Link>
-              <Link onClick={onCopyAllAsMd}>
-                Copy all as markdown {lastAction() === 'copy-md' && '📋'}
-              </Link>
-            </Sub>
+          {/* Submenu File */}
+          <Show when={store.mode === Mode.Editor}>
+            <SubmenuFile maybeHide={maybeHide} />
           </Show>
+          {/* Submenu Canvas */}
+          <Show when={store.mode === Mode.Canvas}>
+            <SubmenuCanvas maybeHide={maybeHide} />
+          </Show>
+          {/* Submenu File Edit */}
+          <Show when={ctrl.file.currentFile !== undefined}>
+            <SubmenuFileEdit />
+          </Show>
+          {/* Submenu View */}
           <Label>View</Label>
           <Sub data-tauri-drag-region="true">
             <Link onClick={() => setShow('theme')}>Appearance 🎨</Link>
@@ -503,9 +294,6 @@ export default () => {
                 Fullscreen {store.fullscreen && '✅'} <Keys keys={[alt, 'Enter']} />
               </Link>
             </Show>
-            <Link onClick={onToggleMarkdown} data-testid="markdown">
-              Markdown mode {ctrl.file.currentFile?.markdown && '✅'}
-            </Link>
             <Link onClick={onToggleTypewriterMode}>
               Typewriter mode {store.config.typewriterMode && '✅'}
             </Link>
@@ -518,42 +306,15 @@ export default () => {
               </Link>
             </Show>
           </Sub>
-          <Label>Collab</Label>
-          <Sub data-tauri-drag-region="true">
-            <Show when={!store.collab?.started}>
-              <Link
-                onClick={onCollabStart}
-                data-testid="collab">
-                Share 🌐
-              </Link>
-            </Show>
-            <Show when={store.collab?.started}>
-              <Link
-                onClick={onCollabStop}
-                data-testid="collab">
-                Disconnect
-              </Link>
-              <Link onClick={onCopyCollabLink}>
-                Copy Link 🔗 {lastAction() === 'copy-collab-link' && '📋'}
-              </Link>
-              <Show when={false}>
-                <Link onClick={onCopyCollabAppLink}>
-                  Copy App Link {lastAction() === 'copy-collab-app-link' && '📋'}
-                </Link>
-              </Show>
-              <Text>
-                {collabUsers()} {collabUsers() === 1 ? 'user' : 'users'} connected
-              </Text>
-            </Show>
-          </Sub>
-          <Label>Stats</Label>
-          <Sub data-tauri-drag-region="true">
-            <LastModified />
-            <StorageStats />
-            <Text>Words: {textStats().words}</Text>
-            <Text>Paragraphs: {textStats().paragraphs}</Text>
-            <Text>Lines of code: {textStats().loc}</Text>
-          </Sub>
+          {/* Submenu Collab */}
+          <Show when={store.mode === Mode.Editor}>
+            <SubmenuCollab />
+          </Show>
+          {/* Submenu File Stats */}
+          <Show when={store.mode === Mode.Editor}>
+            <SubmenuFileStats />
+          </Show>
+          {/* Submenu Application */}
           <Label>Application</Label>
           <Sub data-tauri-drag-region="true">
             {/* doesn't work with tauri */}

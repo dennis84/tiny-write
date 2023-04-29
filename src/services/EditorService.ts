@@ -11,7 +11,7 @@ import {
 } from 'y-prosemirror'
 import * as remote from '@/remote'
 import {createExtensions, createEmptyText, createSchema, createNodeViews} from '@/prosemirror-setup'
-import {State, File, FileText} from '@/state'
+import {State, File, FileText, Mode} from '@/state'
 import {serialize, createMarkdownParser} from '@/markdown'
 import {isEmpty} from '@/prosemirror'
 import * as db from '@/db'
@@ -241,11 +241,15 @@ export class EditorService {
       }
     }
 
+    const mode = Mode.Editor
+    db.setMeta({mode})
+
     return {
       ...state,
       error: undefined,
       args: {...state.args, dir: undefined},
       files,
+      mode,
     }
   }
 

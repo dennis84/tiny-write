@@ -11,6 +11,9 @@ vi.stubGlobal('matchMedia', vi.fn(() => ({
 vi.mock('mermaid', () => ({}))
 
 vi.mock('@/db', () => ({
+  getCanvases: vi.fn(),
+  getMeta: vi.fn(),
+  setMeta: vi.fn(),
   getConfig: vi.fn(),
   setConfig: vi.fn(),
   getWindow: vi.fn(),

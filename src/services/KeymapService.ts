@@ -1,7 +1,7 @@
 import {Store} from 'solid-js/store'
 import {isTauri, mod} from '@/env'
 import * as remote from '@/remote'
-import {State} from '@/state'
+import {Mode, State} from '@/state'
 import {redo, undo} from 'y-prosemirror'
 import {Ctrl} from '.'
 
@@ -38,13 +38,20 @@ export class KeymapService {
   }
 
   private onNew = () => {
-    this.ctrl.editor.newFile()
+    if (this.store.mode === Mode.Editor) {
+      this.ctrl.editor.newFile()
+    } else {
+      this.ctrl.canvas.newCanvas()
+    }
+
     return true
   }
 
   private onDiscard = () => {
-    this.ctrl.editor.discard()
-    return true
+    if (this.store.mode === Mode.Editor) {
+      this.ctrl.editor.discard()
+      return true
+    }
   }
 
   private onSave = async () => {

@@ -26,7 +26,7 @@ test('html to markdown and back', async ({page}) => {
   expect(await page.textContent('.ProseMirror blockquote')).toBe('blockquote')
 
   // toggle markdown when open file
-  await page.click('[data-testid="new"]')
+  await page.click('[data-testid="new-file"]')
   await page.click('[data-testid="markdown"]')
 
   await page.type('.ProseMirror', '# markdown', {delay})

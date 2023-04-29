@@ -73,6 +73,10 @@ export class CollabService {
     return collab
   }
 
+  apply(file: File) {
+    if (file.ydoc) Y.applyUpdate(this.store.collab!.ydoc!, file.ydoc)
+  }
+
   startCollab() {
     const currentFile = this.ctrl.file.currentFile
     window.history.replaceState(null, '', `/${currentFile?.id}`)
