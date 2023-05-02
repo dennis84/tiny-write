@@ -1,12 +1,14 @@
-import {CanvasEditorElement, useState} from '@/state'
 import {onCleanup, onMount, Show} from 'solid-js'
 import {css, styled} from 'solid-styled-components'
+import {CanvasEditorElement, useState} from '@/state'
 import {CanvasEditor} from './Editor'
 import {Scroll} from './Layout'
+import Bounds from './Bounds'
 
 export default ({element}: {element: CanvasEditorElement}) => {
   const [store, ctrl] = useState()
-  let editorRef: HTMLDivElement | undefined
+  let containerRef!: HTMLDivElement
+  let editorRef!: HTMLDivElement
 
   const onSelect = () => {
     ctrl.canvas.select(element.id)
@@ -27,39 +29,49 @@ export default ({element}: {element: CanvasEditorElement}) => {
     bottom: 0;
     left: 0;
     right: 0;
-    z-index: 999;
+    z-index: 10;
   `
 
   return (
-    <Scroll
-      class={css`
-        position: absolute;
-        left: ${element.x.toString()}px;
-        top: ${element.y.toString()}px;
-        width: ${element.width.toString()}px;
-        height: ${element.height.toString()}px;
-        min-height: auto;
-        min-width: auto;
-        border-radius: 5px;
-        ${element.selected ? `
-          box-shadow: 0 0 0 5px var(--primary-background);
-        ` : `
-          cursor: grab;
-          box-shadow: 0 0 0 2px var(--primary-background-50);
-          &:hover {
-            box-shadow: 0 0 0 5px var(--primary-background-50);
-          }
+    <>
+      <Scroll
+        ref={containerRef}
+        class={css`
+          position: absolute;
+          left: ${element.x.toString()}px;
+          top: ${element.y.toString()}px;
+          width: ${element.width.toString()}px;
+          height: ${element.height.toString()}px;
+          min-height: auto;
+          min-width: auto;
+          border-radius: 5px;
+          ${element.selected ? `
+            box-shadow: 0 0 0 5px var(--primary-background);
+          ` : `
+            cursor: grab;
+            box-shadow: 0 0 0 2px var(--primary-background-50);
+            &:hover {
+              box-shadow: 0 0 0 5px var(--primary-background-50);
+            }
+          `}
         `}
-      `}
-    >
-      <Show when={!element.selected}>
-        <Layer onClick={onSelect} />
-      </Show>
-      <CanvasEditor
-        config={store.config}
-        markdown={false}
-        ref={editorRef}
-      ></CanvasEditor>
-    </Scroll>
+      >
+        <Show when={!element.selected}>
+          <Layer onClick={onSelect} />
+        </Show>
+        <CanvasEditor
+          config={store.config}
+          markdown={false}
+          ref={editorRef}
+        ></CanvasEditor>
+      </Scroll>
+      <Bounds
+        id={element.id}
+        x={element.x}
+        y={element.y}
+        width={element.width}
+        height={element.height}
+      />
+    </>
   )
 }

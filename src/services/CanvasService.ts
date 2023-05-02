@@ -19,6 +19,17 @@ interface UpdateCanvas {
 
 interface UpdateCanvasElement {
   editorView?: EditorView;
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
+}
+
+export enum EdgeType {
+  Top,
+  Right,
+  Bottom,
+  Left,
 }
 
 export class CanvasService {
@@ -32,6 +43,39 @@ export class CanvasService {
 
   get currentCanvas() {
     return this.store.canvases?.find((c) => c.active)
+  }
+
+  resizeElement(elementId: string, edge: EdgeType, delta: number) {
+    const currentCanvas = this.currentCanvas
+    if (!currentCanvas) return
+    const elementIndex = currentCanvas.elements.findIndex((el) => el.id === elementId)
+    if (elementIndex === -1) return
+    const element = currentCanvas.elements[elementIndex]
+
+    switch (edge) {
+    case EdgeType.Top:
+      this.updateCanvasElement(currentCanvas.id, elementIndex, {
+        y: element.y + delta,
+        height: element.height - delta,
+      })
+      break
+    case EdgeType.Bottom:
+      this.updateCanvasElement(currentCanvas.id, elementIndex, {
+        height: element.height + delta,
+      })
+      break
+    case EdgeType.Left:
+      this.updateCanvasElement(currentCanvas.id, elementIndex, {
+        x: element.x + delta,
+        width: element.width - delta,
+      })
+      break
+    case EdgeType.Right:
+      this.updateCanvasElement(currentCanvas.id, elementIndex, {
+        width: element.width + delta,
+      })
+      break
+    }
   }
 
   updateCanvas(id: string, update: UpdateCanvas) {
@@ -53,6 +97,10 @@ export class CanvasService {
 
     this.setState('canvases', index, 'elements', elementIndex, (prev) => ({
       editorView: hasOwn('editorView') ? update.editorView : prev?.editorView,
+      x: hasOwn('x') ? update.x : prev?.x,
+      y: hasOwn('y') ? update.y : prev?.y,
+      width: hasOwn('width') ? update.width : prev?.width,
+      height: hasOwn('height') ? update.height : prev?.height,
     }))
   }
 
