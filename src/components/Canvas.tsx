@@ -28,6 +28,16 @@ export default () => {
   const scaleBounds = {min: 0.5, max: 10}
   let ref!: HTMLDivElement
 
+  const onGridClick = () => {
+    const currentCanvas = ctrl.canvas.currentCanvas
+    if (!currentCanvas) return
+    if (!currentCanvas.elements.find((el) => el.selected ?? false)) {
+      return
+    }
+
+    ctrl.canvas.deselect()
+  }
+
   const zoomTo = (next: number, center?: number[]) => {
     if (!ctrl.canvas.currentCanvas?.camera) return
 
@@ -89,14 +99,16 @@ export default () => {
 
   return (
     <Container ref={ref}>
-      <CanvasGrid />
-      <Board style={{
-        transform: `
-          scale(${ctrl.canvas.currentCanvas?.camera.zoom})
-          translateX(${ctrl.canvas.currentCanvas?.camera.point[0]}px)
-          translateY(${ctrl.canvas.currentCanvas?.camera.point[1]}px)
-        `
-      }}>
+      <CanvasGrid onClick={onGridClick} />
+      <Board
+        style={{
+          transform: `
+            scale(${ctrl.canvas.currentCanvas?.camera.zoom})
+            translateX(${ctrl.canvas.currentCanvas?.camera.point[0]}px)
+            translateY(${ctrl.canvas.currentCanvas?.camera.point[1]}px)
+          `
+        }}
+      >
         <For each={ctrl.canvas.currentCanvas?.elements}>
           {(element) =>
             element.type === 'editor' ? <CanvasEditor element={element} /> :

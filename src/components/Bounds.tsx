@@ -10,10 +10,12 @@ interface BoundsProps {
   y: number;
   width: number;
   height: number;
+  onSelect?: () => void;
+  onDoubleClick?: () => void;
 }
 
 interface EdgeProps extends BoundsProps {
-  edge: EdgeType;
+  type: EdgeType;
 }
 
 interface CornerProps extends BoundsProps {
@@ -26,13 +28,13 @@ const Border = styled('rect')`
   touch-action: none;
 `
 
-const BORDER_SIZE = 5
+const BORDER_SIZE = 20
 const BORDER_SIZE_2 = (BORDER_SIZE * 2)
 
 const Edge = (props: EdgeProps) => {
   const [, ctrl] = useState()
-  const vert = props.edge === EdgeType.Top || props.edge === EdgeType.Bottom
-  let ref!: HTMLElement
+  const vert = props.type === EdgeType.Top || props.type === EdgeType.Bottom
+  let ref!: SVGRectElement
 
   onMount(() => {
     const currentCanvas = ctrl.canvas.currentCanvas
@@ -40,9 +42,10 @@ const Edge = (props: EdgeProps) => {
     const elementIndex = currentCanvas.elements.findIndex((el) => el.id === props.id)
     if (elementIndex === -1) return
 
-    const gesture = new DragGesture(ref, ({delta: [dx, dy]}) => {
+    const gesture = new DragGesture(ref, ({event, delta: [dx, dy]}) => {
+      event.stopPropagation()
       const {zoom} = currentCanvas.camera
-      switch (props.edge) {
+      switch (props.type) {
       case EdgeType.Top:
         ctrl.canvas.updateCanvasElement(currentCanvas.id, elementIndex, {
           y: props.y + dy / zoom,
@@ -76,8 +79,8 @@ const Edge = (props: EdgeProps) => {
   createEffect(() => {
     const ew = vert ? props.width + BORDER_SIZE_2 : BORDER_SIZE
     const eh = vert ? BORDER_SIZE : props.height + BORDER_SIZE_2
-    const ex = props.edge === EdgeType.Right ? props.width + BORDER_SIZE : 0
-    const ey = props.edge === EdgeType.Bottom ? props.height + BORDER_SIZE : 0
+    const ex = props.type === EdgeType.Right ? props.width + BORDER_SIZE : 0
+    const ey = props.type === EdgeType.Bottom ? props.height + BORDER_SIZE : 0
     ref.setAttribute('x', ex.toString())
     ref.setAttribute('y', ey.toString())
     ref.setAttribute('width', ew.toString())
@@ -92,7 +95,7 @@ const Edge = (props: EdgeProps) => {
 const Corner = (props: CornerProps) => {
   let ref!: SVGRectElement
   const [, ctrl] = useState()
-  const size = 15
+  const size = 20
   const left = props.type === CornerType.TopLeft || props.type === CornerType.BottomLeft
   const bottom = props.type === CornerType.BottomLeft || props.type === CornerType.BottomRight
   const cursor = props.type === CornerType.TopLeft ? 'nwse-resize'
@@ -107,7 +110,8 @@ const Corner = (props: CornerProps) => {
     const elementIndex = currentCanvas.elements.findIndex((el) => el.id === props.id)
     if (elementIndex === -1) return
 
-    const gesture = new DragGesture(ref, ({delta: [dx, dy]}) => {
+    const gesture = new DragGesture(ref, ({event, delta: [dx, dy]}) => {
+      event.stopPropagation()
       const {zoom} = currentCanvas.camera
       switch (props.type) {
       case CornerType.TopLeft:
@@ -169,20 +173,51 @@ const Bounds = styled('svg')`
   height: ${(props) => Number(props.height) + BORDER_SIZE_2}px;
   left: ${(props) => Number(props.x) - BORDER_SIZE}px;
   top: ${(props) => Number(props.y) - BORDER_SIZE}px;
-  z-index: 0;
+  cursor: move;
+  touch-action: none;
+  z-index: 2;
 `
 
 export default (props: BoundsProps) => {
+  let ref!: SVGSVGElement
+  const [, ctrl] = useState()
+
+  onMount(() => {
+    const currentCanvas = ctrl.canvas.currentCanvas
+    if (!currentCanvas) return
+    const elementIndex = currentCanvas.elements.findIndex((el) => el.id === props.id)
+    if (elementIndex === -1) return
+
+    const gesture = new DragGesture(ref, ({delta: [dx, dy]}) => {
+      const {zoom} = currentCanvas.camera
+      ctrl.canvas.updateCanvasElement(currentCanvas.id, elementIndex, {
+        x: props.x + dx / zoom,
+        y: props.y + dy / zoom,
+      })
+    })
+
+    onCleanup(() => {
+      gesture.destroy()
+    })
+  })
+
   return (
-    <Bounds {...props} version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <Bounds
+      {...props}
+      ref={ref}
+      onMouseDown={props.onSelect}
+      onDblClick={props.onDoubleClick}
+      version="1.1"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <Edge {...props} type={EdgeType.Top} />
+      <Edge {...props} type={EdgeType.Right} />
+      <Edge {...props} type={EdgeType.Bottom} />
+      <Edge {...props} type={EdgeType.Left} />
       <Corner {...props} type={CornerType.TopLeft} />
       <Corner {...props} type={CornerType.TopRight} />
       <Corner {...props} type={CornerType.BottomLeft} />
       <Corner {...props} type={CornerType.BottomRight} />
-      <Edge {...props} edge={EdgeType.Top} />
-      <Edge {...props} edge={EdgeType.Right} />
-      <Edge {...props} edge={EdgeType.Bottom} />
-      <Edge {...props} edge={EdgeType.Left} />
     </Bounds>
   )
 }

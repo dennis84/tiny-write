@@ -1,5 +1,5 @@
 import {onCleanup, onMount, Show} from 'solid-js'
-import {css, styled} from 'solid-styled-components'
+import {css} from 'solid-styled-components'
 import {CanvasEditorElement, useState} from '@/state'
 import {CanvasEditor} from './Editor'
 import {Scroll} from './Layout'
@@ -14,6 +14,10 @@ export default ({element}: {element: CanvasEditorElement}) => {
     ctrl.canvas.select(element.id)
   }
 
+  const onDoubleClick = () => {
+    ctrl.canvas.select(element.id, true)
+  }
+
   onMount(() => {
     ctrl.canvas.renderEditor(element, editorRef!)
   })
@@ -22,18 +26,19 @@ export default ({element}: {element: CanvasEditorElement}) => {
     ctrl.canvas.destroyElement(element.id)
   })
 
-  const Layer = styled('div')`
-    position: absolute;
-    background: #00000033;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: 10;
-  `
-
   return (
     <>
+      <Show when={!element.active}>
+        <Bounds
+          id={element.id}
+          x={element.x}
+          y={element.y}
+          width={element.width}
+          height={element.height}
+          onSelect={onSelect}
+          onDoubleClick={onDoubleClick}
+        />
+      </Show>
       <Scroll
         ref={containerRef}
         class={css`
@@ -41,14 +46,12 @@ export default ({element}: {element: CanvasEditorElement}) => {
           left: ${element.x.toString()}px;
           top: ${element.y.toString()}px;
           width: ${element.width.toString()}px;
-          height: ${element.height.toString()}px;
-          min-height: auto;
-          min-width: auto;
+          min-height: ${element.height.toString()}px;
           border-radius: 5px;
+          z-index: 1;
           ${element.selected ? `
             box-shadow: 0 0 0 5px var(--primary-background);
           ` : `
-            cursor: grab;
             box-shadow: 0 0 0 2px var(--primary-background-50);
             &:hover {
               box-shadow: 0 0 0 5px var(--primary-background-50);
@@ -56,22 +59,12 @@ export default ({element}: {element: CanvasEditorElement}) => {
           `}
         `}
       >
-        <Show when={!element.selected}>
-          <Layer onClick={onSelect} />
-        </Show>
         <CanvasEditor
           config={store.config}
           markdown={false}
           ref={editorRef}
-        ></CanvasEditor>
+        />
       </Scroll>
-      <Bounds
-        id={element.id}
-        x={element.x}
-        y={element.y}
-        width={element.width}
-        height={element.height}
-      />
     </>
   )
 }

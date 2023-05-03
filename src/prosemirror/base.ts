@@ -32,6 +32,7 @@ const blockquoteSchema = {
 interface Props {
   keymap: {[key: string]: any};
   markdown: boolean;
+  dropcursor?: boolean;
 }
 
 export default (props: Props): ProseMirrorExtension => ({
@@ -51,6 +52,6 @@ export default (props: Props): ProseMirrorExtension => ({
     keymap(props.keymap),
     keymap(buildKeymap(schema)),
     keymap(baseKeymap),
-    dropCursor({class: 'drop-cursor'}),
+    ...(props.dropcursor !== false ? [dropCursor({class: 'drop-cursor'})] : []),
   ]
 })

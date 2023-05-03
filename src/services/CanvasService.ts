@@ -14,7 +14,6 @@ interface UpdateCanvas {
   camera?: Camera;
   elements?: CanvasEditorElement[];
   lastModified?: Date;
-  selected?: boolean;
 }
 
 interface UpdateCanvasElement {
@@ -23,6 +22,8 @@ interface UpdateCanvasElement {
   y?: number;
   width?: number;
   height?: number;
+  selected?: boolean;
+  active?: boolean;
 }
 
 export enum EdgeType {
@@ -75,6 +76,8 @@ export class CanvasService {
       y: hasOwn('y') ? update.y : prev?.y,
       width: hasOwn('width') ? update.width : prev?.width,
       height: hasOwn('height') ? update.height : prev?.height,
+      selected: hasOwn('selected') ? update.selected : prev?.selected,
+      active: hasOwn('active') ? update.active : prev?.active,
     }))
   }
 
@@ -113,15 +116,24 @@ export class CanvasService {
     db.deleteCanvas(id)
   }
 
-  select(id: string) {
+  select(id: string, active = false) {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
-    const elements = currentCanvas.elements.map((el) => ({
-      ...el,
-      selected: el.id === id,
-    }))
+    const prevIndex = currentCanvas.elements.findIndex((el) => el.selected)
+    const newIndex = currentCanvas.elements.findIndex((el) => el.id === id)
+    if (prevIndex !== newIndex) {
+      this.updateCanvasElement(currentCanvas.id, prevIndex, {selected: false, active: false})
+    }
 
-    this.updateCanvas(currentCanvas.id, {elements})
+    this.updateCanvasElement(currentCanvas.id, newIndex, {selected: true, active})
+  }
+
+  deselect() {
+    const currentCanvas = this.currentCanvas
+    if (!currentCanvas) return
+    const prevIndex = currentCanvas.elements.findIndex((el) => el.selected)
+    if (prevIndex === -1) return
+    this.updateCanvasElement(currentCanvas.id, prevIndex, {selected: false, active: false})
   }
 
   newCanvas() {
@@ -199,6 +211,9 @@ export class CanvasService {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
 
+    const existing = currentCanvas.elements.find((el) => el.id === file.id)
+    if (existing) return
+
     const x = (currentCanvas.elements.length ?? 0) * 400
     const element: CanvasEditorElement = {
       type: 'editor',
@@ -247,6 +262,7 @@ export class CanvasService {
       markdown: false,
       keymap: this.ctrl.keymap.create(),
       type: this.store.collab?.ydoc?.getXmlFragment(file.id),
+      dropcursor: false,
     })
 
     const nodeViews = createNodeViews(extensions)
@@ -304,6 +320,8 @@ export class CanvasService {
       elements: currentCanvas.elements.map((el) => ({
         ...el,
         editorView: undefined,
+        selected: undefined,
+        active: undefined,
       }))
     }))
   }

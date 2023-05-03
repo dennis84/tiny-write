@@ -28,6 +28,7 @@ interface Props {
   type?: Y.XmlFragment;
   keymap?: {[key: string]: any};
   markdown?: boolean;
+  dropcursor?: boolean;
 }
 
 export const createExtensions = (props: Props): ProseMirrorExtension[] => {
@@ -35,7 +36,11 @@ export const createExtensions = (props: Props): ProseMirrorExtension[] => {
   const keymap = props.keymap ?? {}
 
   const extensions = [
-    base({markdown: isMarkdown, keymap}),
+    base({
+      markdown: isMarkdown,
+      dropcursor: props.dropcursor,
+      keymap,
+    }),
     placeholder('Start typing ...'),
     scroll(props.ctrl),
     blockMenu(),

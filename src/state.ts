@@ -79,6 +79,7 @@ export interface CanvasEditorElement extends CanvasElement {
   width: number;
   height: number;
   editorView?: EditorView;
+  active?: boolean;
 }
 
 export interface Canvas {

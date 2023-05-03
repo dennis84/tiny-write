@@ -38,6 +38,7 @@ export class EditorService {
       markdown: currentFile?.markdown,
       type: this.store.collab!.ydoc!.getXmlFragment(currentFile.id),
       keymap: this.ctrl.keymap.create(),
+      dropcursor: true,
     })
 
     const nodeViews = createNodeViews(extensions)
