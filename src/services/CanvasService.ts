@@ -160,6 +160,21 @@ export class CanvasService {
     this.saveCanvas()
   }
 
+  removeElement(elementId: string) {
+    const currentCanvas = this.currentCanvas
+    if (!currentCanvas) return
+    const elements = []
+    for (const el of currentCanvas.elements) {
+      if (el.id === elementId) {
+        el.editorView?.destroy()
+      } else {
+        elements.push(el)
+      }
+    }
+
+    this.updateCanvas(currentCanvas.id, {elements})
+  }
+
   destroyElement(elementId: string) {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
@@ -205,6 +220,19 @@ export class CanvasService {
     })
 
     db.setMeta({mode})
+  }
+
+  newFile() {
+    const file = this.ctrl.file.createFile()
+    const state = unwrap(this.store)
+    const update = {
+      ...state,
+      files: [...state.files, file],
+      collab: this.ctrl.collab.createByFile(file),
+    }
+
+    this.setState(update)
+    this.addToCanvas(file)
   }
 
   addToCanvas(file: File) {

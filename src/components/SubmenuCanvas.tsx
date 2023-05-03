@@ -11,6 +11,10 @@ export default ({maybeHide}: {maybeHide: () => void}) => {
     maybeHide()
   }
 
+  const onNewFile = () => {
+    ctrl.canvas.newFile()
+  }
+
   const onClearCanvas = () => ctrl.canvas.clearCanvas()
 
   const onBackToContent = () => ctrl.canvas.backToContent()
@@ -21,6 +25,9 @@ export default ({maybeHide}: {maybeHide: () => void}) => {
       <Sub data-tauri-drag-region="true">
         <Link onClick={onNewCanvas} data-testid="new-canvas">
           New canvas  🆕 <Keys keys={[modKey, 'n']} />
+        </Link>
+        <Link onClick={onNewFile} data-testid="new-file">
+          New file  🆕
         </Link>
         <Link onClick={onClearCanvas}>Clear Canvas</Link>
         <Link onClick={onBackToContent}>Back to content</Link>

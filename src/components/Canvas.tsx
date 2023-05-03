@@ -1,10 +1,11 @@
-import {useState} from '@/state'
-import {Gesture} from '@use-gesture/vanilla'
 import {For, onCleanup, onMount} from 'solid-js'
 import {styled} from 'solid-styled-components'
+import {Gesture} from '@use-gesture/vanilla'
+import {Vec} from '@tldraw/vec'
+import {keyName} from 'w3c-keyname'
+import {useState} from '@/state'
 import CanvasGrid from './CanvasGrid'
 import CanvasEditor from './CanvasEditor'
-import {Vec} from '@tldraw/vec'
 
 const Container = styled('div')`
   width: 100%;
@@ -38,6 +39,17 @@ export default () => {
     ctrl.canvas.deselect()
   }
 
+  const onKeyDown = (e: KeyboardEvent) => {
+    const k = keyName(e)
+    if (k === 'Backspace') {
+      const currentCanvas = ctrl.canvas.currentCanvas
+      if (!currentCanvas) return
+      const selected = currentCanvas.elements.find((el) => el.selected && !el.active)
+      if (!selected) return
+      ctrl.canvas.removeElement(selected.id)
+    }
+  }
+
   const zoomTo = (next: number, center?: number[]) => {
     if (!ctrl.canvas.currentCanvas?.camera) return
 
@@ -61,6 +73,8 @@ export default () => {
     document.addEventListener('gesturechange', preventGesture)
     // @ts-ignore
     document.addEventListener('gestureend', preventGesture)
+
+    document.addEventListener('keydown', onKeyDown)
 
     const gesture = new Gesture(ref, {
       onPinch: ({origin: [ox, oy], offset: [s]}) => {
@@ -94,6 +108,7 @@ export default () => {
       document.removeEventListener('gesturechange', preventGesture)
       // @ts-ignore
       document.removeEventListener('gestureend', preventGesture)
+      document.removeEventListener('keydown', onKeyDown)
     })
   })
 
