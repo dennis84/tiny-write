@@ -3,7 +3,7 @@ import {DecorationSet, DecorationSource, EditorView as ProsemirrorEditorView} fr
 import {Selection, TextSelection} from 'prosemirror-state'
 import {exitCode} from 'prosemirror-commands'
 import {Compartment, EditorState} from '@codemirror/state'
-import {EditorView, ViewUpdate, keymap} from '@codemirror/view'
+import {EditorView, ViewUpdate, keymap, tooltips} from '@codemirror/view'
 import {defaultKeymap, indentWithTab} from '@codemirror/commands'
 import {
   autocompletion,
@@ -134,6 +134,7 @@ export class CodeBlockView {
     this.editorView = new EditorView({
       doc: this.node.textContent,
       extensions: [
+        tooltips({position: 'absolute'}), // fixes position in canvas view
         keymap.of(this.options.keymap),
         codeMirrorKeymap,
         keymap.of(closeBracketsKeymap),
