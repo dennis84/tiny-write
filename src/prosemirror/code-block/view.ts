@@ -246,7 +246,7 @@ export class CodeBlockView {
     if (
       this.editorView.hasFocus &&
       sel.empty &&
-      update.transactions.length > 0 &&
+      (update.docChanged || update.selectionSet) &&
       this.options.ctrl.config.typewriterMode
     ) {
       const lineBlock = this.editorView.lineBlockAt(sel.from)
