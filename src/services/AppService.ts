@@ -6,6 +6,8 @@ import {isTauri} from '@/env'
 import {Ctrl} from '.'
 
 export class AppService {
+  public layoutRef: HTMLElement | undefined
+
   constructor(
     private ctrl: Ctrl,
     private store: Store<State>,

@@ -14,17 +14,6 @@ const codeBlock = (config: Config) => `
     .block-handle {
       top: 2px;
     }
-    .cm-tooltip-autocomplete {
-      border-radius: var(--border-radius);
-      border: 0;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-      ul {
-        max-height: 300px;
-        li {
-          padding: 10px;
-        }
-      }
-    }
     &.ProseMirror-selectednode,
     &.selected {
       box-shadow: 0 0 0 5px var(--selection-border);

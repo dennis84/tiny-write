@@ -17,7 +17,7 @@ class AutocompleteView {
     this.tooltip = document.createElement('div')
     this.tooltip.className = 'autocomplete-tooltip'
 
-    view.dom.parentNode?.appendChild(this.tooltip)
+    ;(this.ctrl.app.layoutRef ?? view.dom.parentNode)?.appendChild(this.tooltip)
     this.update(view)
   }
 

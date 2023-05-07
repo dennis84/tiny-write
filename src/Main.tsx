@@ -17,7 +17,8 @@ import {insertImage, insertVideo} from '@/prosemirror/image'
 export default (props: {state: State}) => {
   const {store, ctrl} = createCtrl(props.state)
   const mouseEnterCoords = createMutable({x: 0, y: 0})
-  let editorRef: HTMLDivElement | undefined
+  let editorRef!: HTMLDivElement
+  let layoutRef!: HTMLDivElement
 
   const onDragOver = (e: DragEvent) => {
     mouseEnterCoords.x = e.pageX
@@ -45,6 +46,7 @@ export default (props: {state: State}) => {
   }
 
   onMount(() => {
+    ctrl.app.layoutRef = layoutRef
     setupFonts(ctrl)
     const matchDark = () => window.matchMedia('(prefers-color-scheme: dark)')
     const onChangeTheme = () => ctrl.config.updateTheme()
@@ -204,6 +206,7 @@ export default (props: {state: State}) => {
   return (
     <StateContext.Provider value={[store, ctrl]}>
       <Layout
+        ref={layoutRef}
         data-testid={store.error ? 'error' : store.loading}
         onDragOver={onDragOver}>
         <Show when={store.error}><ErrorView /></Show>

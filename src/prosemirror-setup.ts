@@ -67,7 +67,7 @@ export const createExtensions = (props: Props): ProseMirrorExtension[] => {
     code(),
     emphasis(),
     link(),
-    table(),
+    table(props.ctrl),
     position(isDev),
     container(),
     select(props.ctrl),

@@ -134,7 +134,7 @@ export class CodeBlockView {
     this.editorView = new EditorView({
       doc: this.node.textContent,
       extensions: [
-        tooltips({position: 'absolute'}), // fixes position in canvas view
+        tooltips({parent: this.options.ctrl.app.layoutRef}),
         keymap.of(this.options.keymap),
         codeMirrorKeymap,
         keymap.of(closeBracketsKeymap),

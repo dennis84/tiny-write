@@ -12,6 +12,7 @@ import {
 } from 'prosemirror-tables'
 import {ProseMirrorExtension} from '@/prosemirror'
 import {cellMenu} from './cell-menu'
+import {Ctrl} from '@/services'
 
 export const tableInputRule = (schema: Schema) => new InputRule(
   new RegExp('^\\|{2,}\\s$'),
@@ -65,7 +66,7 @@ const schema = {
   },
 }
 
-export default (): ProseMirrorExtension => ({
+export default (ctrl: Ctrl): ProseMirrorExtension => ({
   schema: (prev) => ({
     ...prev,
     nodes: (prev.nodes as any).append(schema),
@@ -173,7 +174,7 @@ export default (): ProseMirrorExtension => ({
     }),
     ...prev,
     inputRules({rules: [tableInputRule(schema)]}),
-    cellMenu,
+    cellMenu(ctrl.app.layoutRef),
   ],
 })
 

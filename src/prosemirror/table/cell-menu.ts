@@ -47,7 +47,10 @@ class CellMenuView {
   private tooltip?: HTMLElement
   private arrow?: HTMLElement
 
-  constructor(private view: EditorView) {
+  constructor(
+    private view: EditorView,
+    private tooltipParent?: HTMLElement
+  ) {
     this.update(view)
   }
 
@@ -95,7 +98,7 @@ class CellMenuView {
     this.arrow.className = 'arrow'
     this.tooltip.appendChild(this.arrow)
 
-    this.view.dom.parentNode?.appendChild(this.tooltip)
+    ;(this.tooltipParent ?? this.view.dom.parentNode)?.appendChild(this.tooltip)
   }
 
   update(view: EditorView) {
@@ -213,7 +216,7 @@ class CellMenuView {
   }
 }
 
-export const cellMenu = new Plugin({
+export const cellMenu = (tooltipParent?: HTMLElement) => new Plugin({
   key: pluginKey,
   state: {
     init() {
@@ -228,7 +231,7 @@ export const cellMenu = new Plugin({
     }
   },
   view(editorView: EditorView) {
-    return new CellMenuView(editorView)
+    return new CellMenuView(editorView, tooltipParent)
   },
   props: {
     decorations(state) {
