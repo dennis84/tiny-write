@@ -1,5 +1,5 @@
 import {DBSchema, openDB} from 'idb'
-import {Camera, Config, Mode, Window} from './state'
+import {Camera, Config, ElementType, Mode, Window} from './state'
 
 export interface PersistedFile {
   id: string;
@@ -11,7 +11,7 @@ export interface PersistedFile {
 }
 
 export interface PersistedCanvasElement {
-  type: string;
+  type: ElementType;
 }
 
 export interface PersistedCanvas {

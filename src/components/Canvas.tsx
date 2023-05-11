@@ -3,9 +3,10 @@ import {styled} from 'solid-styled-components'
 import {Gesture} from '@use-gesture/vanilla'
 import {Vec} from '@tldraw/vec'
 import {keyName} from 'w3c-keyname'
-import {useState} from '@/state'
+import {CanvasEditorElement, CanvasLinkElement, ElementType, useState} from '@/state'
 import CanvasGrid from './CanvasGrid'
 import CanvasEditor from './CanvasEditor'
+import CanvasLink from './CanvasLink'
 
 const Container = styled('div')`
   width: 100%;
@@ -126,7 +127,8 @@ export default () => {
       >
         <For each={ctrl.canvas.currentCanvas?.elements}>
           {(element) =>
-            element.type === 'editor' ? <CanvasEditor element={element} /> :
+            element.type === ElementType.Editor ? <CanvasEditor element={element as CanvasEditorElement} /> :
+            element.type === ElementType.Link ? <CanvasLink element={element as CanvasLinkElement} /> :
             null
           }
         </For>

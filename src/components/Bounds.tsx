@@ -1,8 +1,8 @@
-import {createEffect, onCleanup, onMount} from 'solid-js'
+import {createEffect, createSignal, onCleanup, onMount} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {DragGesture} from '@use-gesture/vanilla'
-import {useState} from '@/state'
-import {CornerType, EdgeType} from '@/services/CanvasService'
+import {v4 as uuidv4} from 'uuid'
+import {CornerType, EdgeType, ElementType, useState} from '@/state'
 
 interface BoundsProps {
   id: string;
@@ -33,8 +33,11 @@ const BORDER_SIZE_2 = (BORDER_SIZE * 2)
 
 const Edge = (props: EdgeProps) => {
   const [, ctrl] = useState()
+  const [hovering, setHovering] = createSignal(false)
+  const [currentLink, setCurrentLink] = createSignal<string>()
   const vert = props.type === EdgeType.Top || props.type === EdgeType.Bottom
   let ref!: SVGRectElement
+  let linkRef!: SVGCircleElement
 
   onMount(() => {
     const currentCanvas = ctrl.canvas.currentCanvas
@@ -42,53 +45,94 @@ const Edge = (props: EdgeProps) => {
     const elementIndex = currentCanvas.elements.findIndex((el) => el.id === props.id)
     if (elementIndex === -1) return
 
-    const gesture = new DragGesture(ref, ({event, delta: [dx, dy]}) => {
+    const resizeGesture = new DragGesture(ref, ({event, delta: [dx, dy]}) => {
       event.stopPropagation()
       const {zoom} = currentCanvas.camera
       switch (props.type) {
       case EdgeType.Top:
         ctrl.canvas.updateCanvasElement(currentCanvas.id, elementIndex, {
+          type: ElementType.Editor,
           y: props.y + dy / zoom,
           height: props.height - dy / zoom,
         })
         break
       case EdgeType.Bottom:
         ctrl.canvas.updateCanvasElement(currentCanvas.id, elementIndex, {
+          type: ElementType.Editor,
           height: props.height + dy / zoom,
         })
         break
       case EdgeType.Left:
         ctrl.canvas.updateCanvasElement(currentCanvas.id, elementIndex, {
+          type: ElementType.Editor,
           x: props.x + dx / zoom,
           width: props.width - dx / zoom,
         })
         break
       case EdgeType.Right:
         ctrl.canvas.updateCanvasElement(currentCanvas.id, elementIndex, {
+          type: ElementType.Editor,
           width: props.width + dx / zoom,
         })
         break
       }
     })
 
+    const linkGesture = new DragGesture(linkRef, ({event, first, last, movement: [mx, my]}) => {
+      event.stopPropagation()
+      if (first) setCurrentLink(uuidv4())
+      const {zoom} = currentCanvas.camera
+      ctrl.canvas.drawLink(currentLink()!, props.id, props.type, mx / zoom, my / zoom)
+      if (last) setCurrentLink(undefined)
+    })
+
     onCleanup(() => {
-      gesture.destroy()
+      resizeGesture.destroy()
+      linkGesture.destroy()
     })
   })
 
   createEffect(() => {
-    const ew = vert ? props.width + BORDER_SIZE_2 : BORDER_SIZE
-    const eh = vert ? BORDER_SIZE : props.height + BORDER_SIZE_2
-    const ex = props.type === EdgeType.Right ? props.width + BORDER_SIZE : 0
-    const ey = props.type === EdgeType.Bottom ? props.height + BORDER_SIZE : 0
-    ref.setAttribute('x', ex.toString())
-    ref.setAttribute('y', ey.toString())
-    ref.setAttribute('width', ew.toString())
-    ref.setAttribute('height', eh.toString())
+    const rw = vert ? props.width + BORDER_SIZE_2 : BORDER_SIZE
+    const rh = vert ? BORDER_SIZE : props.height + BORDER_SIZE_2
+    const rx = props.type === EdgeType.Right ? props.width + BORDER_SIZE : 0
+    const ry = props.type === EdgeType.Bottom ? props.height + BORDER_SIZE : 0
+    ref.setAttribute('x', rx.toString())
+    ref.setAttribute('y', ry.toString())
+    ref.setAttribute('width', rw.toString())
+    ref.setAttribute('height', rh.toString())
+
+    const cx =
+      props.type === EdgeType.Left ? BORDER_SIZE - 1 :
+      props.type === EdgeType.Right ? props.width + BORDER_SIZE + 1 :
+      (props.width / 2) + BORDER_SIZE
+    const cy =
+      props.type === EdgeType.Top ? BORDER_SIZE - 1 :
+      props.type === EdgeType.Bottom ? props.height + BORDER_SIZE + 1 :
+      (props.height / 2) + BORDER_SIZE
+    linkRef.setAttribute('cx', cx.toString())
+    linkRef.setAttribute('cy', cy.toString())
   })
 
   return (
-    <Border ref={ref} vert={vert} />
+    <>
+      <Border
+        ref={ref}
+        vert={vert}
+        onMouseOver={() => setHovering(true)}
+        onMouseOut={() => setHovering(false)}
+      />
+      <circle
+        ref={linkRef}
+        r="8"
+        onMouseOver={() => setHovering(true)}
+        onMouseOut={() => setHovering(false)}
+        style={{
+          fill: hovering() ? 'var(--primary-background)' : 'transparent',
+          cursor: 'grab',
+        }}
+      />
+    </>
   )
 }
 
@@ -116,6 +160,7 @@ const Corner = (props: CornerProps) => {
       switch (props.type) {
       case CornerType.TopLeft:
         ctrl.canvas.updateCanvasElement(currentCanvas.id, elementIndex, {
+          type: ElementType.Editor,
           x: props.x + dx / zoom,
           y: props.y + dy / zoom,
           width: props.width - dx / zoom,
@@ -124,6 +169,7 @@ const Corner = (props: CornerProps) => {
         break
       case CornerType.TopRight:
         ctrl.canvas.updateCanvasElement(currentCanvas.id, elementIndex, {
+          type: ElementType.Editor,
           y: props.y + dy / zoom,
           width: props.width + dx / zoom,
           height: props.height - dy / zoom,
@@ -131,6 +177,7 @@ const Corner = (props: CornerProps) => {
         break
       case CornerType.BottomLeft:
         ctrl.canvas.updateCanvasElement(currentCanvas.id, elementIndex, {
+          type: ElementType.Editor,
           x: props.x + dx / zoom,
           width: props.width - dx / zoom,
           height: props.height + dy / zoom,
@@ -138,6 +185,7 @@ const Corner = (props: CornerProps) => {
         break
       case CornerType.BottomRight:
         ctrl.canvas.updateCanvasElement(currentCanvas.id, elementIndex, {
+          type: ElementType.Editor,
           width: props.width + dx / zoom,
           height: props.height + dy / zoom,
         })
@@ -191,6 +239,7 @@ export default (props: BoundsProps) => {
     const gesture = new DragGesture(ref, ({delta: [dx, dy]}) => {
       const {zoom} = currentCanvas.camera
       ctrl.canvas.updateCanvasElement(currentCanvas.id, elementIndex, {
+        type: ElementType.Editor,
         x: props.x + dx / zoom,
         y: props.y + dy / zoom,
       })

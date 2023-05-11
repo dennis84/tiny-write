@@ -60,7 +60,24 @@ export interface Window {
   y: number;
 }
 
-export type ElementType = 'editor' | 'canvas'
+export enum ElementType {
+  Editor,
+  Link,
+}
+
+export enum EdgeType {
+  Top,
+  Right,
+  Bottom,
+  Left,
+}
+
+export enum CornerType {
+  TopLeft,
+  TopRight,
+  BottomLeft,
+  BottomRight,
+}
 
 export interface Camera {
   point: [number, number];
@@ -82,10 +99,19 @@ export interface CanvasEditorElement extends CanvasElement {
   active?: boolean;
 }
 
+export interface CanvasLinkElement extends CanvasElement {
+  from: string;
+  fromEdge: EdgeType;
+  to?: string;
+  toEdge?: EdgeType;
+  toX?: number;
+  toY?: number;
+}
+
 export interface Canvas {
   id: string;
   camera: Camera;
-  elements: CanvasEditorElement[];
+  elements: CanvasElement[];
   active?: boolean;
   lastModified?: Date;
 }
