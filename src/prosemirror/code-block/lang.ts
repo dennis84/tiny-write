@@ -1,4 +1,4 @@
-import {EditorView, ViewPlugin, ViewUpdate, keymap} from '@codemirror/view'
+import {EditorView, ViewPlugin, ViewUpdate, keymap, tooltips} from '@codemirror/view'
 import {Extension} from '@codemirror/state'
 import {standardKeymap} from '@codemirror/commands'
 import {StreamLanguage, language, LanguageSupport, StreamParser} from '@codemirror/language'
@@ -53,6 +53,7 @@ export const changeLang = (codeBlock: CodeBlockView, config: Config) =>
         theme,
         doc: this.lang,
         parent: this.input,
+        codeBlock,
         onClose: () => {
           this.input.style.display = 'none'
           this.toggle.style.display = 'flex'
@@ -125,6 +126,7 @@ interface Props {
   theme: Extension;
   onClose: () => void;
   onEnter: (lang: string) => void;
+  codeBlock: CodeBlockView;
 }
 
 export class LangInputEditor {
@@ -137,6 +139,7 @@ export class LangInputEditor {
       doc: this.props.doc,
       parent: this.props.parent,
       extensions: [
+        tooltips({parent: this.props.codeBlock.options.ctrl.app.layoutRef}),
         props.theme,
         autocompletion({
           defaultKeymap: false,
