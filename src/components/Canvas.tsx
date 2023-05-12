@@ -1,7 +1,7 @@
 import {For, onCleanup, onMount} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {Gesture} from '@use-gesture/vanilla'
-import {Vec} from '@tldraw/vec'
+import {Vec2d} from '@tldraw/primitives'
 import {keyName} from 'w3c-keyname'
 import {CanvasEditorElement, CanvasLinkElement, ElementType, useState} from '@/state'
 import CanvasGrid from './CanvasGrid'
@@ -45,7 +45,7 @@ export default () => {
     if (k === 'Backspace') {
       const currentCanvas = ctrl.canvas.currentCanvas
       if (!currentCanvas) return
-      const selected = currentCanvas.elements.find((el) => el.selected && !el.active)
+      const selected = currentCanvas.elements.find((el) => el.selected && !(el as any).active)
       if (!selected) return
       ctrl.canvas.removeElement(selected.id)
     }
@@ -54,15 +54,20 @@ export default () => {
   const zoomTo = (next: number, center?: number[]) => {
     if (!ctrl.canvas.currentCanvas?.camera) return
 
+    let c
     if (center === undefined) {
       const {width, height} = ref.getBoundingClientRect()
-      center = Vec.toFixed([width / 2, height / 2])
+      c = new Vec2d(width / 2, height / 2).toFixed()
+    } else {
+      c = Vec2d.FromArray(center)
     }
 
     const {zoom, point} = ctrl.canvas.currentCanvas.camera
-    const p0 = Vec.sub(Vec.div(center, zoom), point)
-    const p1 = Vec.sub(Vec.div(center, next), point)
-    const [x, y] = Vec.toFixed(Vec.add(point, Vec.sub(p1, p0)))
+    const p = Vec2d.FromArray(point)
+
+    const p0 = c.clone().div(zoom).sub(p)
+    const p1 = c.clone().div(next).sub(p)
+    const [x, y] = p1.sub(p0).add(p).toFixed().toArray()
     ctrl.canvas.updateCamera({zoom: next, point: [x, y]})
   }
 

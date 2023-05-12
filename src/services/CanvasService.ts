@@ -4,6 +4,7 @@ import {EditorView} from 'prosemirror-view'
 import {ySyncPluginKey} from 'y-prosemirror'
 import {v4 as uuidv4} from 'uuid'
 import {debounce} from 'ts-debounce'
+import {Box2d} from '@tldraw/primitives'
 import {
   Camera,
   Canvas,
@@ -20,7 +21,7 @@ import * as db from '@/db'
 import * as remote from '@/remote'
 import {createEmptyText, createExtensions, createNodeViews, createSchema} from '@/prosemirror-setup'
 import {Ctrl} from '.'
-import {ElementMap} from './ElementMap'
+import {ElementBox, ElementMap} from './ElementMap'
 
 interface UpdateCanvas {
   camera?: Camera;
@@ -315,27 +316,10 @@ export class CanvasService {
 
     const fromEl = currentCanvas.elements.find((el) => el.id === from) as CanvasEditorElement
     const existingIndex = currentCanvas.elements.findIndex((el) => el.id === id)
+
     if (existingIndex !== -1) {
-      let toX
-      let toY
-      switch (fromEdge) {
-      case EdgeType.Top:
-        toX = fromEl.x + (fromEl.width /2) + x
-        toY = fromEl.y + y
-        break
-      case EdgeType.Bottom:
-        toX = fromEl.x + (fromEl.width /2) + x
-        toY = fromEl.y + fromEl.height + y
-        break
-      case EdgeType.Left:
-        toX = fromEl.x + x
-        toY = fromEl.y + (fromEl.height / 2) + y
-        break
-      case EdgeType.Right:
-        toX = fromEl.x + fromEl.width + x
-        toY = fromEl.y + (fromEl.height / 2) + y
-        break
-      }
+      const box = new Box2d(fromEl.x, fromEl.y, fromEl.width, fromEl.height)
+      const [toX, toY] = box.getHandlePoint(fromEdge).addXY(x, y).toArray()
 
       let result = this.elementMap?.near([toX, toY])
       if (result?.id === fromEl.id) {
@@ -453,6 +437,13 @@ export class CanvasService {
     editorView.focus()
   }
 
+  // getBoxEdge(edge: EdgeType): SelectionEdge {
+  //   return edge === EdgeType.Top ? 'top' :
+  //     edge === EdgeType.Bottom ? 'bottom' :
+  //     edge === EdgeType.Left ? 'left' :
+  //     'right'
+  // }
+
   fetchCanvases(): Promise<Canvas[]> {
     return db.getCanvases() as Promise<Canvas[]>
   }
@@ -479,7 +470,7 @@ export class CanvasService {
     for (const el of currentCanvas.elements) {
       if (el.type === ElementType.Editor) {
         const {id, x, y, width, height} = el as CanvasEditorElement
-        xs.push({id, x, y, w: width, h: height})
+        xs.push(new ElementBox(id, x, y, width, height))
       }
     }
 

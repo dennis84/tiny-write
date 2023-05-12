@@ -124,12 +124,13 @@ const Edge = (props: EdgeProps) => {
       />
       <circle
         ref={linkRef}
-        r="8"
+        r="10"
         onMouseOver={() => setHovering(true)}
         onMouseOut={() => setHovering(false)}
         style={{
           fill: hovering() ? 'var(--primary-background)' : 'transparent',
           cursor: 'grab',
+          'touch-action': 'none',
         }}
       />
     </>

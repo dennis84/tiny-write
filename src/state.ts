@@ -66,10 +66,10 @@ export enum ElementType {
 }
 
 export enum EdgeType {
-  Top,
-  Right,
-  Bottom,
-  Left,
+  Top = 'top',
+  Right = 'right',
+  Bottom = 'bottom',
+  Left = 'left',
 }
 
 export enum CornerType {

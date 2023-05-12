@@ -1,12 +1,16 @@
 import {EdgeType} from '@/state'
-import Vec from '@tldraw/vec';
+import {Box2d, Vec2d} from '@tldraw/primitives'
 
-interface Element {
-  id: string;
-  x: number;
-  y: number;
-  w: number;
-  h: number;
+export class ElementBox extends Box2d {
+  constructor(
+    public id: string,
+    x = 0,
+    y = 0,
+    w = 0,
+    h = 0
+  ) {
+    super(x, y, w, h)
+  }
 }
 
 interface Result {
@@ -15,14 +19,31 @@ interface Result {
 }
 
 export class ElementMap {
-  constructor(private elements: Element[]) {}
+  constructor(private elements: ElementBox[]) {}
 
-  near(p: [number, number]): Result | undefined {
-    for (const {id, x, y, w, h} of this.elements) {
-      const distT = Vec.distanceToLineSegment([x + 1, y], [x + w - 1, y], p)
-      const distB = Vec.distanceToLineSegment([x + 1, y + h], [x + w - 1, y + h], p)
-      const distL = Vec.distanceToLineSegment([x, y + 1], [x, y + h -1], p)
-      const distR = Vec.distanceToLineSegment([x + w, y + 1], [x + w, y + h -1], p)
+  near(point: [number, number]): Result | undefined {
+    const p = Vec2d.FromArray(point)
+    for (const box of this.elements) {
+      const distT = Vec2d.DistanceToLineSegment(
+        box.getHandlePoint('top_left').addXY(1, 0),
+        box.getHandlePoint('top_right').subXY(1, 0),
+        p
+      )
+      const distB = Vec2d.DistanceToLineSegment(
+        box.getHandlePoint('bottom_left').addXY(1, 0),
+        box.getHandlePoint('bottom_right').subXY(1, 0),
+        p
+      )
+      const distL = Vec2d.DistanceToLineSegment(
+        box.getHandlePoint('top_left').addXY(0, 1),
+        box.getHandlePoint('bottom_left').subXY(0, 1),
+        p
+      )
+      const distR = Vec2d.DistanceToLineSegment(
+        box.getHandlePoint('top_right').addXY(0, 1),
+        box.getHandlePoint('bottom_right').subXY(0, 1),
+        p
+      )
 
       const corners = [
         {e: EdgeType.Top, d: distT},
@@ -37,7 +58,7 @@ export class ElementMap {
       }
 
       if (min !== undefined && min.d < 20) {
-        return {id, edge: min.e}
+        return {id: box.id, edge: min.e}
       }
     }
   }

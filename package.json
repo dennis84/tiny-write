@@ -23,7 +23,7 @@
     "@ddietr/codemirror-themes": "^1.4.1",
     "@floating-ui/dom": "^1.2.7",
     "@tauri-apps/api": "^1.2.0",
-    "@tldraw/vec": "^1.9.2",
+    "@tldraw/primitives": "^2.0.0-alpha.8",
     "@use-gesture/vanilla": "^10.2.26",
     "date-fns": "^2.29.3",
     "file-type": "^18.3.0",

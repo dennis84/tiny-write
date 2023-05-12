@@ -1,9 +1,9 @@
 import {test} from 'vitest'
-import {ElementMap} from '@/services/ElementMap'
+import {ElementBox, ElementMap} from '@/services/ElementMap'
 
 test('near', () => {
   const map = new ElementMap([
-    {id: '1', x: 0, y: 0, w: 100, h: 100},
+    new ElementBox('1', 0, 0, 100, 100),
   ])
 
   const p: [number, number] = [-10, -20]
