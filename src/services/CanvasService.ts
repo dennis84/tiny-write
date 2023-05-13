@@ -351,6 +351,21 @@ export class CanvasService {
     })
   }
 
+  drawLinkEnd(id: string) {
+    const currentCanvas = this.currentCanvas
+    if (!currentCanvas) return
+
+    const unlinked = currentCanvas.elements.find((el) => {
+      return el.id === id && !(el as CanvasLinkElement).to
+    }) as CanvasLinkElement
+
+    if (unlinked) {
+      this.updateCanvas(currentCanvas.id, {
+        elements: currentCanvas.elements.filter((el) => el.id !== id),
+      })
+    }
+  }
+
   clearCanvas() {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return

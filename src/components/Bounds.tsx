@@ -82,8 +82,12 @@ const Edge = (props: EdgeProps) => {
       event.stopPropagation()
       if (first) setCurrentLink(uuidv4())
       const {zoom} = currentCanvas.camera
-      ctrl.canvas.drawLink(currentLink()!, props.id, props.type, mx / zoom, my / zoom)
-      if (last) setCurrentLink(undefined)
+      const id = currentLink()!
+      ctrl.canvas.drawLink(id, props.id, props.type, mx / zoom, my / zoom)
+      if (last) {
+        ctrl.canvas.drawLinkEnd(id)
+        setCurrentLink(undefined)
+      }
     })
 
     onCleanup(() => {
@@ -124,7 +128,7 @@ const Edge = (props: EdgeProps) => {
       />
       <circle
         ref={linkRef}
-        r="10"
+        r="12"
         onMouseOver={() => setHovering(true)}
         onMouseOut={() => setHovering(false)}
         style={{
