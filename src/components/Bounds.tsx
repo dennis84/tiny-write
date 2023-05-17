@@ -3,6 +3,7 @@ import {styled} from 'solid-styled-components'
 import {DragGesture} from '@use-gesture/vanilla'
 import {v4 as uuidv4} from 'uuid'
 import {CornerType, EdgeType, ElementType, useState} from '@/state'
+import {Vec2d} from '@tldraw/primitives'
 
 interface BoundsProps {
   id: string;
@@ -78,12 +79,18 @@ const Edge = (props: EdgeProps) => {
       }
     })
 
-    const linkGesture = new DragGesture(linkRef, ({event, first, last, movement: [mx, my]}) => {
+    const linkGesture = new DragGesture(linkRef, ({event, initial, first, last, movement}) => {
       event.stopPropagation()
-      if (first) setCurrentLink(uuidv4())
-      const {zoom} = currentCanvas.camera
+      if (first) {
+        setCurrentLink(uuidv4())
+        ctrl.canvas.generateElementMap()
+      }
+      const {point, zoom} = currentCanvas.camera
+      const p = Vec2d.FromArray(point)
+      const i = Vec2d.FromArray(initial).div(zoom).sub(p)
+      const t = Vec2d.FromArray(movement).div(zoom).add(i)
       const id = currentLink()!
-      ctrl.canvas.drawLink(id, props.id, props.type, mx / zoom, my / zoom)
+      ctrl.canvas.drawLink(id, props.id, props.type, t.x, t.y)
       if (last) {
         ctrl.canvas.drawLinkEnd(id)
         setCurrentLink(undefined)

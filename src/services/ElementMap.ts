@@ -57,7 +57,7 @@ export class ElementMap {
         if (!min || c.d < min.d) min = c
       }
 
-      if (min !== undefined && min.d < 20) {
+      if (min !== undefined && min.d <= 30) {
         return {id: box.id, edge: min.e}
       }
     }

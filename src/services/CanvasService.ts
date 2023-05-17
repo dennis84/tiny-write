@@ -4,7 +4,6 @@ import {EditorView} from 'prosemirror-view'
 import {ySyncPluginKey} from 'y-prosemirror'
 import {v4 as uuidv4} from 'uuid'
 import {debounce} from 'ts-debounce'
-import {Box2d} from '@tldraw/primitives'
 import {
   Camera,
   Canvas,
@@ -38,6 +37,8 @@ interface UpdateCanvasElement {
   height?: number;
   selected?: boolean;
   active?: boolean;
+  from?: string;
+  fromEdge?: EdgeType;
   toX?: number;
   toY?: number;
   to?: string;
@@ -90,6 +91,8 @@ export class CanvasService {
       } else if (prev?.type === ElementType.Link) {
         const p = prev as CanvasLinkElement
         return {
+          from: hasOwn('from') ? update.from : p?.from,
+          fromEdge: hasOwn('fromEdge') ? update.fromEdge : p?.fromEdge,
           toX: hasOwn('toX') ? update.toX : p?.toX,
           toY: hasOwn('toY') ? update.toY : p?.toY,
           to: hasOwn('to') ? update.to : p?.to,
@@ -310,30 +313,33 @@ export class CanvasService {
     this.saveCanvas()
   }
 
-  drawLink(id: string, from: string, fromEdge: EdgeType, x: number, y: number) {
+  drawLink(id: string, from: string, fromEdge: EdgeType, toX: number, toY: number) {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
 
     const fromEl = currentCanvas.elements.find((el) => el.id === from) as CanvasEditorElement
+    if (!fromEl) return
+
     const existingIndex = currentCanvas.elements.findIndex((el) => el.id === id)
 
     if (existingIndex !== -1) {
-      const box = new Box2d(fromEl.x, fromEl.y, fromEl.width, fromEl.height)
-      const [toX, toY] = box.getHandlePoint(fromEdge).addXY(x, y).toArray()
-
-      let result = this.elementMap?.near([toX, toY])
-      if (result?.id === fromEl.id) {
-        result = undefined
+      let toBox = this.elementMap?.near([toX, toY])
+      if (toBox?.id === fromEl.id) {
+        toBox = undefined
       }
 
       this.updateCanvasElement(currentCanvas.id, existingIndex, {
         type: ElementType.Link,
-        ...(result ? {
-          to: result.id,
-          toEdge: result.edge,
+        ...(toBox ? {
+          from,
+          fromEdge,
+          to: toBox.id,
+          toEdge: toBox.edge,
           toX: undefined,
           toY: undefined,
         } : {
+          from,
+          fromEdge,
           toX,
           toY,
           to: undefined,
@@ -343,7 +349,6 @@ export class CanvasService {
       return
     }
 
-    this.generateElementMap()
     const newLink: CanvasLinkElement = {type: ElementType.Link, id, from, fromEdge}
 
     this.updateCanvas(currentCanvas.id, {
@@ -364,6 +369,20 @@ export class CanvasService {
         elements: currentCanvas.elements.filter((el) => el.id !== id),
       })
     }
+  }
+
+  generateElementMap() {
+    const currentCanvas = this.currentCanvas
+    if (!currentCanvas) return
+    const xs = []
+    for (const el of currentCanvas.elements) {
+      if (el.type === ElementType.Editor) {
+        const {id, x, y, width, height} = el as CanvasEditorElement
+        xs.push(new ElementBox(id, x, y, width, height))
+      }
+    }
+
+    this.elementMap = new ElementMap(xs)
   }
 
   clearCanvas() {
@@ -452,13 +471,6 @@ export class CanvasService {
     editorView.focus()
   }
 
-  // getBoxEdge(edge: EdgeType): SelectionEdge {
-  //   return edge === EdgeType.Top ? 'top' :
-  //     edge === EdgeType.Bottom ? 'bottom' :
-  //     edge === EdgeType.Left ? 'left' :
-  //     'right'
-  // }
-
   fetchCanvases(): Promise<Canvas[]> {
     return db.getCanvases() as Promise<Canvas[]>
   }
@@ -476,19 +488,5 @@ export class CanvasService {
         active: undefined,
       }))
     }))
-  }
-
-  private generateElementMap() {
-    const currentCanvas = this.currentCanvas
-    if (!currentCanvas) return
-    const xs = []
-    for (const el of currentCanvas.elements) {
-      if (el.type === ElementType.Editor) {
-        const {id, x, y, width, height} = el as CanvasEditorElement
-        xs.push(new ElementBox(id, x, y, width, height))
-      }
-    }
-
-    this.elementMap = new ElementMap(xs)
   }
 }
