@@ -15,6 +15,8 @@ import {
   File,
   Mode,
   State,
+  isEditorElement,
+  isLinkElement,
 } from '@/state'
 import * as db from '@/db'
 import * as remote from '@/remote'
@@ -28,8 +30,10 @@ interface UpdateCanvas {
   lastModified?: Date;
 }
 
-interface UpdateCanvasElement {
-  type: ElementType;
+type UpdateElement = UpdateEditorElement | UpdateLinkElement
+
+interface UpdateEditorElement {
+  type: ElementType.Editor;
   editorView?: EditorView;
   x?: number;
   y?: number;
@@ -37,12 +41,17 @@ interface UpdateCanvasElement {
   height?: number;
   selected?: boolean;
   active?: boolean;
+}
+
+interface UpdateLinkElement {
+  type: ElementType.Link;
   from?: string;
   fromEdge?: EdgeType;
   toX?: number;
   toY?: number;
   to?: string;
   toEdge?: EdgeType;
+  selected?: boolean;
 }
 
 export class CanvasService {
@@ -71,33 +80,35 @@ export class CanvasService {
     }))
   }
 
-  updateCanvasElement(id: string, elementIndex: number, update: UpdateCanvasElement) {
+  updateCanvasElement(
+    id: string,
+    elementIndex: number,
+    update: UpdateEditorElement | UpdateLinkElement
+  ) {
     const index = this.store.canvases.findIndex((canvas) => canvas.id === id)
     if (index === -1) return
     const hasOwn = (prop: string) => Object.hasOwn(update, prop)
 
-    this.setState('canvases', index, 'elements', elementIndex, (prev: CanvasElement) => {
-      if (prev?.type === ElementType.Editor) {
-        const p = prev as CanvasEditorElement
+    this.setState('canvases', index, 'elements', elementIndex, (prev) => {
+      if (isEditorElement(prev) && isEditorUpdate(update)) {
         return {
-          editorView: hasOwn('editorView') ? update.editorView : p?.editorView,
-          x: hasOwn('x') ? update.x : p?.x,
-          y: hasOwn('y') ? update.y : p?.y,
-          width: hasOwn('width') ? update.width : p?.width,
-          height: hasOwn('height') ? update.height : p?.height,
-          selected: hasOwn('selected') ? update.selected : p?.selected,
-          active: hasOwn('active') ? update.active : p?.active,
+          editorView: hasOwn('editorView') ? update.editorView : prev?.editorView,
+          x: hasOwn('x') ? update.x : prev?.x,
+          y: hasOwn('y') ? update.y : prev?.y,
+          width: hasOwn('width') ? update.width : prev?.width,
+          height: hasOwn('height') ? update.height : prev?.height,
+          selected: hasOwn('selected') ? update.selected : prev?.selected,
+          active: hasOwn('active') ? update.active : prev?.active,
         }
-      } else if (prev?.type === ElementType.Link) {
-        const p = prev as CanvasLinkElement
+      } else if (isLinkElement(prev) && isLinkUpdate(update)) {
         return {
-          from: hasOwn('from') ? update.from : p?.from,
-          fromEdge: hasOwn('fromEdge') ? update.fromEdge : p?.fromEdge,
-          toX: hasOwn('toX') ? update.toX : p?.toX,
-          toY: hasOwn('toY') ? update.toY : p?.toY,
-          to: hasOwn('to') ? update.to : p?.to,
-          toEdge: hasOwn('toEdge') ? update.toEdge : p?.toEdge,
-          selected: hasOwn('selected') ? update.selected : p?.selected,
+          from: hasOwn('from') ? update.from : prev?.from,
+          fromEdge: hasOwn('fromEdge') ? update.fromEdge : prev?.fromEdge,
+          toX: hasOwn('toX') ? update.toX : prev?.toX,
+          toY: hasOwn('toY') ? update.toY : prev?.toY,
+          to: hasOwn('to') ? update.to : prev?.to,
+          toEdge: hasOwn('toEdge') ? update.toEdge : prev?.toEdge,
+          selected: hasOwn('selected') ? update.selected : prev?.selected,
         }
       } else {
         console.log('No element update', prev)
@@ -132,9 +143,7 @@ export class CanvasService {
     for (const c of this.store.canvases) {
       if (c.id === id) {
         c.elements.forEach((el) => {
-          if (el.type === ElementType.Editor) {
-            (el as CanvasEditorElement).editorView?.destroy()
-          }
+          if (isEditorElement(el)) el.editorView?.destroy()
         })
       } else {
         canvases.push(c)
@@ -150,7 +159,7 @@ export class CanvasService {
     if (!currentCanvas) return
     const prevIndex = currentCanvas.elements.findIndex((el) => el.selected)
     const newIndex = currentCanvas.elements.findIndex((el) => el.id === id)
-    if (prevIndex !== newIndex) {
+    if (prevIndex !== -1 && prevIndex !== newIndex) {
       this.updateCanvasElement(currentCanvas.id, prevIndex, {
         type: ElementType.Editor,
         selected: false,
@@ -207,9 +216,7 @@ export class CanvasService {
     const elements = []
     for (const el of currentCanvas.elements) {
       if (el.id === elementId) {
-        if (el.type === ElementType.Editor) {
-          (el as CanvasEditorElement).editorView?.destroy()
-        }
+        if (isEditorElement(el)) el.editorView?.destroy()
       } else {
         elements.push(el)
       }
@@ -222,12 +229,10 @@ export class CanvasService {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
     const elementIndex = currentCanvas.elements.findIndex((el) => el.id === elementId)
-    if (
-      elementIndex === -1 ||
-      currentCanvas.elements[elementIndex].type !== ElementType.Editor
-    ) return
+    const element = currentCanvas.elements[elementIndex]
+    if (elementIndex === -1 || !isEditorElement(element)) return
 
-    (currentCanvas.elements[elementIndex] as CanvasEditorElement)?.editorView?.destroy()
+    element?.editorView?.destroy()
     this.updateCanvasElement(currentCanvas.id, elementIndex, {
       type: ElementType.Editor,
       editorView: undefined,
@@ -250,10 +255,7 @@ export class CanvasService {
           ...canvas,
           active: false,
           elements: canvas.elements.map((el) => {
-            if (el.type === ElementType.Editor) {
-              (el as CanvasEditorElement).editorView?.destroy()
-            }
-
+            if (isEditorElement(el)) el.editorView?.destroy()
             return {...el, editorView: undefined}
           }),
         })
@@ -376,8 +378,8 @@ export class CanvasService {
     if (!currentCanvas) return
     const xs = []
     for (const el of currentCanvas.elements) {
-      if (el.type === ElementType.Editor) {
-        const {id, x, y, width, height} = el as CanvasEditorElement
+      if (isEditorElement(el)) {
+        const {id, x, y, width, height} = el
         xs.push(new ElementBox(id, x, y, width, height))
       }
     }
@@ -395,7 +397,7 @@ export class CanvasService {
   removeLinks() {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
-    const elements = currentCanvas.elements.filter((el) => el.type !== ElementType.Link)
+    const elements = currentCanvas.elements.filter((el) => !isLinkElement(el))
     this.updateCanvas(currentCanvas.id, {elements})
     this.saveCanvas()
   }
@@ -490,3 +492,9 @@ export class CanvasService {
     }))
   }
 }
+
+const isEditorUpdate = (update: UpdateElement): update is UpdateEditorElement =>
+  update.type === ElementType.Editor
+
+const isLinkUpdate = (update: UpdateElement): update is UpdateLinkElement =>
+  update.type === ElementType.Link

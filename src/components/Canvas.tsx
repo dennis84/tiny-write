@@ -3,7 +3,7 @@ import {styled} from 'solid-styled-components'
 import {Gesture} from '@use-gesture/vanilla'
 import {Vec2d} from '@tldraw/primitives'
 import {keyName} from 'w3c-keyname'
-import {CanvasEditorElement, CanvasLinkElement, ElementType, useState} from '@/state'
+import {isEditorElement, isLinkElement, useState} from '@/state'
 import CanvasGrid from './CanvasGrid'
 import CanvasEditor from './CanvasEditor'
 import CanvasLink from './CanvasLink'
@@ -132,8 +132,8 @@ export default () => {
       >
         <For each={ctrl.canvas.currentCanvas?.elements}>
           {(element) =>
-            element.type === ElementType.Editor ? <CanvasEditor element={element as CanvasEditorElement} /> :
-            element.type === ElementType.Link ? <CanvasLink element={element as CanvasLinkElement} /> :
+            isEditorElement(element) ? <CanvasEditor element={element} /> :
+            isLinkElement(element) ? <CanvasLink element={element} /> :
             null
           }
         </For>
