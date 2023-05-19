@@ -169,7 +169,7 @@ export const createMarkdownParser = (schema: Schema) =>
     ordered_list: {
       block: 'ordered_list',
       getAttrs: (tok, tokens, i) => ({
-        order: +tok.attrGet('start') || 1,
+        order: tok.attrGet('start') ?? 1,
         tight: listIsTight(tokens, i)
       })
     },
@@ -192,7 +192,7 @@ export const createMarkdownParser = (schema: Schema) =>
       getAttrs: tok => ({
         src: tok.attrGet('src'),
         title: tok.attrGet('title') || null,
-        alt: tok.children[0] && tok.children[0].content || null
+        alt: tok.children?.[0].content || null
       })
     },
     hardbreak: {node: 'hard_break'},
