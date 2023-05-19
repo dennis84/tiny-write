@@ -4,6 +4,7 @@ import {EditorView} from 'prosemirror-view'
 import {ySyncPluginKey} from 'y-prosemirror'
 import {v4 as uuidv4} from 'uuid'
 import {debounce} from 'ts-debounce'
+import {Vec2d} from '@tldraw/primitives'
 import {
   Camera,
   Canvas,
@@ -132,8 +133,15 @@ export class CanvasService {
   backToContent() {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
-    this.updateCanvas(currentCanvas.id, {camera: {zoom: 1, point: [0, 0]}})
-    this.saveCanvas()
+    this.generateElementMap()
+    const center = this.elementMap?.center()
+    const zoom = 0.5
+    if (center) {
+      const vp = new Vec2d(window.innerWidth / 2, window.innerHeight / 2).div(zoom)
+      const [x, y] = center.sub(vp).toArray()
+      this.updateCanvas(currentCanvas.id, {camera: {zoom, point: [-x, -y]}})
+      this.saveCanvas()
+    }
   }
 
   updateCamera(camera: Camera) {

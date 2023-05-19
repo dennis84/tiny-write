@@ -62,4 +62,14 @@ export class ElementMap {
       }
     }
   }
+
+  center(): Vec2d | undefined {
+    let all
+    for (const el of this.elements) {
+      if (!all) all = el
+      else all.expand(el)
+    }
+
+    return all?.center
+  }
 }
