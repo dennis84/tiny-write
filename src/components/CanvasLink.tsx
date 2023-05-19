@@ -25,17 +25,17 @@ const Path = styled('path')`
   pointer-events: auto;
   touch-action: none;
   ${(props: any) => props.selected ? `
-    stroke: var(--foreground-20);
+    stroke: var(--border-30);
   ` : `
     &:hover {
-      stroke: var(--foreground-10);
+      stroke: var(--border-20);
     }
   `}
 `
 
 const InnerPath = styled('path')`
-  stroke: var(--primary-background);
-  stroke-width: 2;
+  stroke: var(--border);
+  stroke-width: 3;
   stroke-linecap: round;
   pointer-events: none;
   touch-action: none;
@@ -83,6 +83,9 @@ export default ({element}: {element: CanvasLinkElement}) => {
 
       const t = Vec2d.FromArray(movement).div(zoom).add(i)
       const f = from()!
+
+      if (i.dist(t) <= 1) return
+
       ctrl.canvas.drawLink(element.id, f.id, f.edge, t.x, t.y)
       if (last) ctrl.canvas.drawLinkEnd(element.id)
     })

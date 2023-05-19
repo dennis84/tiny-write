@@ -35,6 +35,7 @@ export default ({element}: {element: CanvasEditorElement}) => {
           y={element.y}
           width={element.width}
           height={element.height}
+          selected={element.selected}
           onSelect={onSelect}
           onDoubleClick={onDoubleClick}
         />
@@ -49,13 +50,12 @@ export default ({element}: {element: CanvasEditorElement}) => {
           min-height: ${element.height.toString()}px;
           border-radius: 5px;
           z-index: 1;
-          ${element.selected ? `
+          ${element.active ? `
             box-shadow: 0 0 0 5px var(--primary-background);
+          ` : element.selected ? `
+            box-shadow: 0 0 0 5px var(--border);
           ` : `
-            box-shadow: 0 0 0 2px var(--primary-background-50);
-            &:hover {
-              box-shadow: 0 0 0 5px var(--primary-background-50);
-            }
+            box-shadow: 0 0 0 3px var(--border);
           `}
         `}
       >

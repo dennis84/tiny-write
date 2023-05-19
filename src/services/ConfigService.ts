@@ -23,6 +23,7 @@ interface Theme {
   primaryBackground: string;
   tooltipBackground: string;
   selection: string;
+  border: string;
   dark: boolean;
 }
 
@@ -44,6 +45,7 @@ export class ConfigService {
       primaryForeground: '#ffffff',
       selection: '#80CBC440',
       tooltipBackground: '#eeeeee',
+      border: '#cccccc',
       dark: false,
     },
     'dark': {
@@ -55,6 +57,7 @@ export class ConfigService {
       primaryForeground: '#32825B',
       selection: '#3d375e7f',
       tooltipBackground: '#2d2d31',
+      border: '#687b93',
       dark: true,
     },
     'gruvbox-dark': {
@@ -66,6 +69,7 @@ export class ConfigService {
       primaryForeground: '#ffffff',
       selection: '#dfbf8e22',
       tooltipBackground: '#474544',
+      border: '#756D59',
       dark: true,
     },
     'solarized-light': {
@@ -77,6 +81,7 @@ export class ConfigService {
       primaryForeground: '#fff',
       selection: '#657b8322',
       tooltipBackground: '#e4ddcc',
+      border: '#B1AC9E',
       dark: false,
     },
     'solarized-dark': {
@@ -88,6 +93,7 @@ export class ConfigService {
       primaryForeground: '#fff',
       selection: '#ffffff11',
       tooltipBackground: '#1a404a',
+      border: '#4C6A72',
       dark: true,
     },
     'material': {
@@ -99,6 +105,7 @@ export class ConfigService {
       primaryForeground: '#ffffff',
       selection: '#80CBC420',
       tooltipBackground: '#3c474c',
+      border: '#676F73',
       dark: true,
     },
     'dracula': {
@@ -110,6 +117,7 @@ export class ConfigService {
       primaryForeground: '#ffffff',
       selection: '#bd93f922',
       tooltipBackground: '#3e3f4a',
+      border: '#7E7F86',
       dark: true,
     },
     'tokyo-night': {
@@ -121,6 +129,7 @@ export class ConfigService {
       primaryForeground: '#fff',
       selection: '#c0caf522',
       tooltipBackground: '#31323c',
+      border: '#75767C',
       dark: true,
     },
     'tokyo-night-day': {
@@ -132,6 +141,7 @@ export class ConfigService {
       primaryForeground: '#fff',
       selection: '#3760bf22',
       tooltipBackground: '#cbcbd0',
+      border: '#9D9EA1',
       dark: false,
     },
     'soft-era': {
@@ -143,6 +153,7 @@ export class ConfigService {
       primaryForeground: '#585a6d',
       selection: '#ba989c22',
       tooltipBackground: '#e0dddd',
+      border: '#AEABAB',
       dark: false,
     },
   }

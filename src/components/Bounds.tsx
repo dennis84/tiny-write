@@ -11,6 +11,7 @@ interface BoundsProps {
   y: number;
   width: number;
   height: number;
+  selected?: boolean;
   onSelect?: () => void;
   onDoubleClick?: () => void;
 }
@@ -113,13 +114,15 @@ const Edge = (props: EdgeProps) => {
     ref.setAttribute('width', rw.toString())
     ref.setAttribute('height', rh.toString())
 
+    const BS = (props.selected ? 5 : 3) / 2
+
     const cx =
-      props.type === EdgeType.Left ? BORDER_SIZE - 1 :
-      props.type === EdgeType.Right ? props.width + BORDER_SIZE + 1 :
+      props.type === EdgeType.Left ? BORDER_SIZE - BS :
+      props.type === EdgeType.Right ? props.width + BORDER_SIZE + BS :
       (props.width / 2) + BORDER_SIZE
     const cy =
-      props.type === EdgeType.Top ? BORDER_SIZE - 1 :
-      props.type === EdgeType.Bottom ? props.height + BORDER_SIZE + 1 :
+      props.type === EdgeType.Top ? BORDER_SIZE - BS :
+      props.type === EdgeType.Bottom ? props.height + BORDER_SIZE + BS :
       (props.height / 2) + BORDER_SIZE
     linkRef.setAttribute('cx', cx.toString())
     linkRef.setAttribute('cy', cy.toString())
@@ -135,11 +138,11 @@ const Edge = (props: EdgeProps) => {
       />
       <circle
         ref={linkRef}
-        r="12"
+        r={12}
         onMouseOver={() => setHovering(true)}
         onMouseOut={() => setHovering(false)}
         style={{
-          fill: hovering() ? 'var(--primary-background)' : 'transparent',
+          fill: hovering() ? 'var(--border)' : 'transparent',
           cursor: 'grab',
           'touch-action': 'none',
         }}

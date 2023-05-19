@@ -30,7 +30,12 @@ interface UpdateCanvas {
   lastModified?: Date;
 }
 
-type UpdateElement = UpdateEditorElement | UpdateLinkElement
+type UpdateElement = UpdateEditorElement | UpdateLinkElement | UpdateSelection
+
+interface UpdateSelection {
+  selected?: boolean;
+  active?: boolean;
+}
 
 interface UpdateEditorElement {
   type: ElementType.Editor;
@@ -80,16 +85,12 @@ export class CanvasService {
     }))
   }
 
-  updateCanvasElement(
-    id: string,
-    elementIndex: number,
-    update: UpdateEditorElement | UpdateLinkElement
-  ) {
+  updateCanvasElement(id: string, elementIndex: number, update: UpdateElement) {
     const index = this.store.canvases.findIndex((canvas) => canvas.id === id)
     if (index === -1) return
     const hasOwn = (prop: string) => Object.hasOwn(update, prop)
 
-    this.setState('canvases', index, 'elements', elementIndex, (prev) => {
+    this.setState('canvases', index, 'elements', elementIndex, (prev: CanvasElement) => {
       if (isEditorElement(prev) && isEditorUpdate(update)) {
         return {
           editorView: hasOwn('editorView') ? update.editorView : prev?.editorView,
@@ -108,6 +109,17 @@ export class CanvasService {
           toY: hasOwn('toY') ? update.toY : prev?.toY,
           to: hasOwn('to') ? update.to : prev?.to,
           toEdge: hasOwn('toEdge') ? update.toEdge : prev?.toEdge,
+          selected: hasOwn('selected') ? update.selected : prev?.selected,
+        }
+      } else if (isSelectionUpdate(update) && isEditorElement(prev)) {
+        return {
+          ...prev,
+          selected: hasOwn('selected') ? update.selected : prev?.selected,
+          active: hasOwn('active') ? update.active : prev?.active,
+        }
+      } else if (isSelectionUpdate(update) && isLinkElement(prev)) {
+        return {
+          ...prev,
           selected: hasOwn('selected') ? update.selected : prev?.selected,
         }
       } else {
@@ -160,18 +172,10 @@ export class CanvasService {
     const prevIndex = currentCanvas.elements.findIndex((el) => el.selected)
     const newIndex = currentCanvas.elements.findIndex((el) => el.id === id)
     if (prevIndex !== -1 && prevIndex !== newIndex) {
-      this.updateCanvasElement(currentCanvas.id, prevIndex, {
-        type: ElementType.Editor,
-        selected: false,
-        active: false,
-      })
+      this.updateCanvasElement(currentCanvas.id, prevIndex, {selected: false, active: false})
     }
 
-    this.updateCanvasElement(currentCanvas.id, newIndex, {
-      type: ElementType.Editor,
-      selected: true,
-      active,
-    })
+    this.updateCanvasElement(currentCanvas.id, newIndex, {selected: true, active})
   }
 
   deselect() {
@@ -179,11 +183,7 @@ export class CanvasService {
     if (!currentCanvas) return
     const prevIndex = currentCanvas.elements.findIndex((el) => el.selected)
     if (prevIndex === -1) return
-    this.updateCanvasElement(currentCanvas.id, prevIndex, {
-      type: ElementType.Editor,
-      selected: false,
-      active: false,
-    })
+    this.updateCanvasElement(currentCanvas.id, prevIndex, {selected: false, active: false})
   }
 
   newCanvas() {
@@ -493,8 +493,11 @@ export class CanvasService {
   }
 }
 
-const isEditorUpdate = (update: UpdateElement): update is UpdateEditorElement =>
+const isEditorUpdate = (update: any): update is UpdateEditorElement =>
   update.type === ElementType.Editor
 
-const isLinkUpdate = (update: UpdateElement): update is UpdateLinkElement =>
+const isLinkUpdate = (update: any): update is UpdateLinkElement =>
   update.type === ElementType.Link
+
+const isSelectionUpdate = (update: any): update is UpdateSelection =>
+  Object.hasOwn(update, 'selected')
