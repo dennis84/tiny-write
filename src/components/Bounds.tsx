@@ -32,6 +32,7 @@ const Border = styled('rect')`
 
 const BORDER_SIZE = 20
 const BORDER_SIZE_2 = (BORDER_SIZE * 2)
+const MIN_SIZE = 100
 
 const Edge = (props: EdgeProps) => {
   const [, ctrl] = useState()
@@ -50,33 +51,26 @@ const Edge = (props: EdgeProps) => {
     const resizeGesture = new DragGesture(ref, ({event, delta: [dx, dy]}) => {
       event.stopPropagation()
       const {zoom} = currentCanvas.camera
-      switch (props.type) {
-      case EdgeType.Top:
-        ctrl.canvas.updateCanvasElement(currentCanvas.id, elementIndex, {
-          type: ElementType.Editor,
-          y: props.y + dy / zoom,
-          height: props.height - dy / zoom,
-        })
-        break
-      case EdgeType.Bottom:
-        ctrl.canvas.updateCanvasElement(currentCanvas.id, elementIndex, {
-          type: ElementType.Editor,
-          height: props.height + dy / zoom,
-        })
-        break
-      case EdgeType.Left:
-        ctrl.canvas.updateCanvasElement(currentCanvas.id, elementIndex, {
-          type: ElementType.Editor,
-          x: props.x + dx / zoom,
-          width: props.width - dx / zoom,
-        })
-        break
-      case EdgeType.Right:
-        ctrl.canvas.updateCanvasElement(currentCanvas.id, elementIndex, {
-          type: ElementType.Editor,
-          width: props.width + dx / zoom,
-        })
-        break
+      const type = ElementType.Editor
+
+      if (props.type === EdgeType.Top) {
+        const height = props.height - dy / zoom
+        const y = props.y + dy / zoom
+        if (height < MIN_SIZE) return
+        ctrl.canvas.updateCanvasElement(currentCanvas.id, elementIndex, {type, y, height})
+      } else if (props.type === EdgeType.Bottom) {
+        const height = props.height + dy / zoom
+        if (height < MIN_SIZE) return
+        ctrl.canvas.updateCanvasElement(currentCanvas.id, elementIndex, {type, height})
+      } else if (props.type === EdgeType.Left) {
+        const width = props.width - dx / zoom
+        const x = props.x + dx / zoom
+        if (width < MIN_SIZE) return
+        ctrl.canvas.updateCanvasElement(currentCanvas.id, elementIndex, {type, x, width})
+      } else if (props.type === EdgeType.Right) {
+        const width = props.width + dx / zoom
+        if (width < MIN_SIZE) return
+        ctrl.canvas.updateCanvasElement(currentCanvas.id, elementIndex, {type, width})
       }
     })
 
@@ -172,39 +166,48 @@ const Corner = (props: CornerProps) => {
     const gesture = new DragGesture(ref, ({event, delta: [dx, dy]}) => {
       event.stopPropagation()
       const {zoom} = currentCanvas.camera
-      switch (props.type) {
-      case CornerType.TopLeft:
-        ctrl.canvas.updateCanvasElement(currentCanvas.id, elementIndex, {
-          type: ElementType.Editor,
-          x: props.x + dx / zoom,
-          y: props.y + dy / zoom,
-          width: props.width - dx / zoom,
-          height: props.height - dy / zoom,
-        })
-        break
-      case CornerType.TopRight:
-        ctrl.canvas.updateCanvasElement(currentCanvas.id, elementIndex, {
-          type: ElementType.Editor,
-          y: props.y + dy / zoom,
-          width: props.width + dx / zoom,
-          height: props.height - dy / zoom,
-        })
-        break
-      case CornerType.BottomLeft:
-        ctrl.canvas.updateCanvasElement(currentCanvas.id, elementIndex, {
-          type: ElementType.Editor,
-          x: props.x + dx / zoom,
-          width: props.width - dx / zoom,
-          height: props.height + dy / zoom,
-        })
-        break
-      case CornerType.BottomRight:
-        ctrl.canvas.updateCanvasElement(currentCanvas.id, elementIndex, {
-          type: ElementType.Editor,
-          width: props.width + dx / zoom,
-          height: props.height + dy / zoom,
-        })
-        break
+      const type = ElementType.Editor
+
+      if (props.type === CornerType.TopLeft) {
+        let x = props.x + dx / zoom
+        let y = props.y + dy / zoom
+        let width = props.width - dx / zoom
+        let height = props.height - dy / zoom
+        if (width < MIN_SIZE) {
+          width = props.width
+          x = props.x
+        }
+        if (height < MIN_SIZE) {
+          height = props.height
+          y = props.y
+        }
+        ctrl.canvas.updateCanvasElement(currentCanvas.id, elementIndex, {type, x, y, width, height})
+      } else if (props.type === CornerType.TopRight) {
+        let y = props.y + dy / zoom
+        let width = props.width + dx / zoom
+        let height = props.height - dy / zoom
+        if (width < MIN_SIZE) width = props.width
+        if (height < MIN_SIZE) {
+          height = props.height
+          y = props.y
+        }
+        ctrl.canvas.updateCanvasElement(currentCanvas.id, elementIndex, {type, y, width, height})
+      } else if (props.type === CornerType.BottomLeft) {
+        let x = props.x + dx / zoom
+        let width = props.width - dx / zoom
+        let height = props.height + dy / zoom
+        if (width < MIN_SIZE) {
+          width = props.width
+          x = props.x
+        }
+        if (height < MIN_SIZE) height = props.height
+        ctrl.canvas.updateCanvasElement(currentCanvas.id, elementIndex, {type, x, width, height})
+      } else if (props.type === CornerType.BottomRight) {
+        let width = props.width + dx / zoom
+        let height = props.height + dy / zoom
+        if (width < MIN_SIZE) width = props.width
+        if (height < MIN_SIZE) height = props.height
+        ctrl.canvas.updateCanvasElement(currentCanvas.id, elementIndex, {type, width, height})
       }
     })
 
