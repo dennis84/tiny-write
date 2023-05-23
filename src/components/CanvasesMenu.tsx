@@ -6,6 +6,7 @@ import {Canvas, useState} from '@/state';
 import {Drawer, Label} from './Menu'
 import {Button, ButtonGroup, ButtonPrimary} from './Button'
 import {Card, CardContent, CardFooter, CardList, CardMenuButton} from './Layout';
+import CanvasPreview from './CanvasPreview';
 
 interface Props {
   onBack: () => void;
@@ -75,7 +76,7 @@ export const CanvasesMenu = (props: Props) => {
           active={ctrl.canvas.currentCanvas?.id === p.canvas.id}
           data-testid="open-canvas"
         >
-          E: {p.canvas.elements.length}
+          <CanvasPreview canvas={p.canvas} />
         </CardContent>
         <CardFooter>
           <span>{formatDistance(new Date(p.canvas.lastModified!), new Date())}</span>
