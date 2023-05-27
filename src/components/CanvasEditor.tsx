@@ -48,6 +48,7 @@ export default ({element}: {element: CanvasEditorElement}) => {
           top: ${element.y.toString()}px;
           width: ${element.width.toString()}px;
           min-height: ${element.height.toString()}px;
+          max-height: ${element.height.toString()}px;
           border-radius: 5px;
           z-index: 1;
           ${element.active ? `

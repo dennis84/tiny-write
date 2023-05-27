@@ -1,6 +1,6 @@
 import {createEffect, createSignal, onCleanup, onMount} from 'solid-js'
 import {styled} from 'solid-styled-components'
-import {Box2d, Vec2d} from '@tldraw/primitives'
+import {Box2d, LineSegment2d, PI, Vec2d, VecLike} from '@tldraw/primitives'
 import {DragGesture} from '@use-gesture/vanilla'
 import {Canvas, CanvasEditorElement, CanvasLinkElement, EdgeType, useState} from '@/state'
 
@@ -39,11 +39,13 @@ const InnerPath = styled('path')`
   stroke-linecap: round;
   pointer-events: none;
   touch-action: none;
+  fill: var(--border);
 `
 
 export default ({element}: {element: CanvasLinkElement}) => {
   let pathRef!: SVGLineElement
   let innerPathRef!: SVGLineElement
+  let arrowheadRef!: SVGLineElement
   const [, ctrl] = useState()
   const [from, setFrom] = createSignal<{id: string; edge: EdgeType}>()
   const currentCanvas = ctrl.canvas.currentCanvas
@@ -100,36 +102,52 @@ export default ({element}: {element: CanvasLinkElement}) => {
       return
     }
 
-    const p = getPath(currentCanvas, element)
-    if (!p) return
+    const line = getLine(currentCanvas, element)
+    if (!line) return
+
+    const p = getPath(line)
+    const i = Vec2d.Nudge(line.b, line.a, 15)
+    const a = getArrowhead(line.b, i)
+
     pathRef.setAttribute('d', p)
     innerPathRef.setAttribute('d', p)
+    arrowheadRef.setAttribute('d', a)
   })
 
   return (
     <Link version="1.1" xmlns="http://www.w3.org/2000/svg">
       <Path ref={pathRef} onClick={onClick} selected={element.selected} />
       <InnerPath ref={innerPathRef} />
+      <InnerPath ref={arrowheadRef} />
     </Link>
   )
 }
 
-const getPath = (canvas: Canvas, element: CanvasLinkElement): string | undefined => {
+const getLine = (canvas: Canvas, element: CanvasLinkElement): LineSegment2d | undefined => {
   const fromEl = canvas.elements.find((el) => el.id === element.from) as CanvasEditorElement
 
   if (!fromEl) return
   const fromBox = new Box2d(fromEl.x, fromEl.y, fromEl.width, fromEl.height)
-  const [x1, y1] = fromBox.getHandlePoint(element.fromEdge).toArray()
-  let x2, y2
+  const a = fromBox.getHandlePoint(element.fromEdge)
+  let b!: Vec2d
 
   if (element.toX !== undefined && element.toY !== undefined) {
-    x2 = element.toX
-    y2 = element.toY
+    b = new Vec2d(element.toX, element.toY)
   } else if (element.to && element.toEdge !== undefined) {
     const toEl = canvas.elements.find((el) => el.id === element.to) as CanvasEditorElement
     const toBox = new Box2d(toEl.x, toEl.y, toEl.width, toEl.height)
-    ;[x2, y2] = toBox.getHandlePoint(element.toEdge).toArray()
+    b = toBox.getHandlePoint(element.toEdge)
   }
 
-  return `M${x1},${y1}L${x2},${y2}`
+  return new LineSegment2d(a, b)
+}
+
+const getPath = (line: LineSegment2d): string => {
+  return `M${line.a.x},${line.a.y}L${line.b.x},${line.b.y}`
+}
+
+export const getArrowhead = (point: VecLike, int: VecLike) => {
+  const PL = Vec2d.RotWith(int, point, PI / 6)
+  const PR = Vec2d.RotWith(int, point, -PI / 6)
+  return `M ${PL.x} ${PL.y} L ${point.x} ${point.y} L ${PR.x} ${PR.y} Z`
 }

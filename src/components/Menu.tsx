@@ -1,7 +1,7 @@
 import {Show, createEffect, createSignal, onCleanup} from 'solid-js'
 import {css, styled} from 'solid-styled-components'
 import {Mode, useState} from '@/state'
-import {isTauri, isMac, alt, mod, version, VERSION_URL, isDev} from '@/env'
+import {isTauri, isMac, alt, mod, version, VERSION_URL} from '@/env'
 import * as remote from '@/remote'
 import {FilesMenu} from './FilesMenu'
 import {CanvasesMenu} from './CanvasesMenu'
@@ -170,7 +170,6 @@ export default () => {
   const [show, setShow] = createSignal()
 
   const modKey = isMac ? '⌘' : mod
-  const featureCanvas = isDev
 
   const onBurgerClick = () => {
     ctrl.file.currentFile?.editorView?.focus()
@@ -264,12 +263,10 @@ export default () => {
                 data-testid="files"
               >Files ✍️</Link>
             </Show>
-            <Show when={featureCanvas}>
-              <Link
-                onClick={() => setShow('canvases')}
-                data-testid="canvases"
-              >Canvases 🧑‍🎨</Link>
-            </Show>
+            <Link
+              onClick={() => setShow('canvases')}
+              data-testid="canvases"
+            >Canvases 🧑‍🎨</Link>
           </Sub>
           {/* Submenu File */}
           <Show when={store.mode === Mode.Editor}>

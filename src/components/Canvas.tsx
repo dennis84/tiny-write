@@ -1,4 +1,4 @@
-import {For, onCleanup, onMount} from 'solid-js'
+import {createSignal, For, onCleanup, onMount} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {Gesture} from '@use-gesture/vanilla'
 import {Vec2d} from '@tldraw/primitives'
@@ -27,6 +27,7 @@ const Board = styled('div')`
 
 export default () => {
   const [, ctrl] = useState()
+  const [stopGesture, setStopGesture] = createSignal(false)
   const scaleBounds = {min: 0.5, max: 10}
   let ref!: HTMLDivElement
 
@@ -86,8 +87,18 @@ export default () => {
       onPinch: ({origin: [ox, oy], offset: [s]}) => {
         zoomTo(s, [ox, oy])
       },
-      onWheel: ({event, pinching, offset: [x, y]}) => {
+      onWheel: ({event, first, last, pinching, offset: [x, y]}) => {
         if (pinching) return false
+        const skip = stopGesture()
+        if (last) setStopGesture(false)
+        if (skip) return false
+
+        const target = event.target as HTMLElement
+        if (first && target.closest('.ProseMirror')) {
+          setStopGesture(true)
+          return false
+        }
+
         event.preventDefault()
         ctrl.canvas.updateCameraPoint([-x, -y])
       },
