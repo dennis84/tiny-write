@@ -8,6 +8,7 @@ import {createStore} from 'solid-js/store'
 import {Ctrl} from '@/services'
 
 vi.mock('@/db', () => ({}))
+vi.mock('mermaid', () => ({}))
 
 beforeEach(() => {
   vi.restoreAllMocks()
