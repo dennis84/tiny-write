@@ -223,11 +223,16 @@ export class CanvasService {
     if (!currentCanvas) return
     const elements = []
     for (const el of currentCanvas.elements) {
-      if (el.id === elementId) {
-        if (isEditorElement(el)) el.editorView?.destroy()
-      } else {
-        elements.push(el)
+      if (isEditorElement(el) && el.id === elementId) {
+        el.editorView?.destroy()
+        continue
       }
+
+      if (isLinkElement(el) && (el.from === elementId || el.to === elementId)) {
+        continue
+      }
+
+      elements.push(el)
     }
 
     this.updateCanvas(currentCanvas.id, {elements})
@@ -305,14 +310,21 @@ export class CanvasService {
     const existing = currentCanvas.elements.find((el) => el.id === file.id)
     if (existing) return
 
-    const x = (currentCanvas.elements.length ?? 0) * 400
+    const width = 300
+    const height = 350
+    const {point, zoom} = currentCanvas.camera
+
+    const center = new Vec2d(window.innerWidth / 2, window.innerHeight / 2).toFixed()
+    const p = Vec2d.FromArray(point)
+    const {x, y} = center.div(zoom).sub(p).subXY(width / 2, height / 2)
+
     const element: CanvasEditorElement = {
       type: ElementType.Editor,
       id: file.id,
-      x: x,
-      y: 0,
-      width: 300,
-      height: 350,
+      x,
+      y,
+      width,
+      height,
     }
 
     this.updateCanvas(currentCanvas.id, {
