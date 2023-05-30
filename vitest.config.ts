@@ -5,6 +5,10 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     include: ['test/unit/**/*.test.ts'],
+    coverage: {
+      provider: 'c8',
+      reporter: ['html'],
+    },
   },
   resolve: {
     alias: {
