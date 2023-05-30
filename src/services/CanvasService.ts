@@ -115,16 +115,16 @@ export class CanvasService {
       } else if (isSelectionUpdate(update) && isEditorElement(prev)) {
         return {
           ...prev,
-          selected: hasOwn('selected') ? update.selected : prev?.selected,
-          active: hasOwn('active') ? update.active : prev?.active,
+          selected: update.selected,
+          active: update.active,
         }
       } else if (isSelectionUpdate(update) && isLinkElement(prev)) {
         return {
           ...prev,
-          selected: hasOwn('selected') ? update.selected : prev?.selected,
+          selected: update.selected,
         }
       } else {
-        console.log('No element update', prev)
+        console.error('No element update', prev)
         return prev
       }
     })
