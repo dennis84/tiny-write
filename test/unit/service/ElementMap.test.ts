@@ -1,7 +1,6 @@
 import {expect, test} from 'vitest'
 import {ElementBox, ElementMap} from '@/services/ElementMap'
 import {EdgeType} from '@/state'
-import {Vec2d} from '@tldraw/primitives'
 
 test('near', () => {
   const map = new ElementMap([
