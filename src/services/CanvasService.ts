@@ -371,7 +371,7 @@ export class CanvasService {
       return
     }
 
-    const newLink: CanvasLinkElement = {type: ElementType.Link, id, from, fromEdge}
+    const newLink: CanvasLinkElement = {type: ElementType.Link, id, from, fromEdge, toX, toY}
 
     this.updateCanvas(currentCanvas.id, {
       elements: [...currentCanvas.elements, newLink],
@@ -424,13 +424,16 @@ export class CanvasService {
 
   async renderEditor(element: CanvasEditorElement, node: HTMLElement) {
     const file = this.ctrl.file.findFile({id: element.id})
+    console.log({file})
     if (!file) return
     this.updateEditorState(file, node)
   }
 
   updateEditorState(file: File, node?: Element) {
     const currentCanvas = this.currentCanvas
+    console.log({currentCanvas})
     if (!currentCanvas) return
+    console.log('111111111')
 
     const elementIndex = currentCanvas?.elements.findIndex((el) => el.id === file.id)
     if (elementIndex === undefined || elementIndex === -1) {
@@ -440,6 +443,7 @@ export class CanvasService {
     let editorView = (currentCanvas?.elements[elementIndex] as CanvasEditorElement)?.editorView
     this.ctrl.collab.apply(file)
 
+    console.log('type >>>', this.store.collab?.ydoc?.getXmlFragment(file.id))
     const extensions = createExtensions({
       ctrl: this.ctrl,
       markdown: false,

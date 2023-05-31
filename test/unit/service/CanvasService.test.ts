@@ -1,9 +1,19 @@
 import {beforeEach, expect, test, vi} from 'vitest'
-
-import {Canvas, CanvasEditorElement, CanvasLinkElement, createState, EdgeType, ElementType} from '@/state'
-import {CanvasService} from '@/services/CanvasService'
+import {mock, mockDeep} from 'vitest-mock-extended'
 import {createStore} from 'solid-js/store'
-import {Ctrl} from '@/services'
+import {EditorView} from 'prosemirror-view'
+
+import {
+  Canvas,
+  CanvasEditorElement,
+  CanvasLinkElement,
+  createState,
+  EdgeType,
+  ElementType,
+} from '@/state'
+import {createCtrl, Ctrl} from '@/services'
+import {CanvasService} from '@/services/CanvasService'
+import {createYUpdate, waitFor} from '../util'
 
 vi.stubGlobal('innerWidth', 1000)
 vi.stubGlobal('innerHeight', 1000)
@@ -12,6 +22,10 @@ vi.mock('mermaid', () => ({}))
 vi.mock('@/db', () => ({
   updateCanvas: vi.fn(),
   deleteCanvas: vi.fn(),
+  setMeta: vi.fn(),
+  getFiles: vi.fn(),
+  updateFile: vi.fn(),
+  setSize: vi.fn(),
 }))
 
 const createCanvas = (props: Partial<Canvas> = {}): Canvas => ({
@@ -47,9 +61,11 @@ beforeEach(() => {
   vi.restoreAllMocks()
 })
 
+const ctrl = mockDeep<Ctrl>()
+
 test('currentCanvas - empty', () => {
   const [store, setState] = createStore(createState({canvases: []}))
-  const service = new CanvasService({} as Ctrl, store, setState)
+  const service = new CanvasService(ctrl, store, setState)
   expect(service.currentCanvas).toBeUndefined()
 })
 
@@ -61,7 +77,7 @@ test('currentCanvas', () => {
     ]
   }))
 
-  const service = new CanvasService({} as Ctrl, store, setState)
+  const service = new CanvasService(ctrl, store, setState)
   expect(service.currentCanvas?.id).toBe('2')
 })
 
@@ -70,7 +86,7 @@ test('updateCanvas', async () => {
     canvases: [createCanvas({id: '1', active: true})]
   }))
 
-  const service = new CanvasService({} as Ctrl, store, setState)
+  const service = new CanvasService(ctrl, store, setState)
   service.updateCanvas('1', {camera: {point: [10, 10], zoom: 2}})
 
   expect(service.currentCanvas?.camera.point).toEqual([10, 10])
@@ -96,7 +112,7 @@ test('updateCanvasElement', async () => {
     ]
   }))
 
-  const service = new CanvasService({} as Ctrl, store, setState)
+  const service = new CanvasService(ctrl, store, setState)
   service.updateCanvasElement('1', 0, {type: ElementType.Editor, x: 100, y: 100})
 
   const editorEl = service.currentCanvas?.elements[0] as CanvasEditorElement
@@ -137,7 +153,7 @@ test('backToContent', () => {
     ]
   }))
 
-  const service = new CanvasService({} as Ctrl, store, setState)
+  const service = new CanvasService(ctrl, store, setState)
   service.backToContent()
 
   expect(service.currentCanvas?.camera.point).toEqual([500, 500])
@@ -149,7 +165,7 @@ test('updateCamera', () => {
     canvases: [createCanvas({id: '1', active: true})]
   }))
 
-  const service = new CanvasService({} as Ctrl, store, setState)
+  const service = new CanvasService(ctrl, store, setState)
   service.updateCamera({point: [100, 100], zoom: 2})
 
   expect(service.currentCanvas?.camera.point).toEqual([100, 100])
@@ -161,7 +177,7 @@ test('updateCameraPoint', () => {
     canvases: [createCanvas({id: '1', active: true})]
   }))
 
-  const service = new CanvasService({} as Ctrl, store, setState)
+  const service = new CanvasService(ctrl, store, setState)
   service.updateCameraPoint([100, 100])
 
   expect(service.currentCanvas?.camera.point).toEqual([100, 100])
@@ -175,7 +191,7 @@ test('deleteCanvas', () => {
     ]
   }))
 
-  const service = new CanvasService({} as Ctrl, store, setState)
+  const service = new CanvasService(ctrl, store, setState)
 
   service.deleteCanvas('2')
   expect(store.canvases.length).toBe(1)
@@ -198,7 +214,7 @@ test('select', () => {
     ],
   }))
 
-  const service = new CanvasService({} as Ctrl, store, setState)
+  const service = new CanvasService(ctrl, store, setState)
 
   service.select('1')
   const editor = service.currentCanvas?.elements[0] as CanvasEditorElement
@@ -232,10 +248,255 @@ test('deselect', () => {
     ],
   }))
 
-  const service = new CanvasService({} as Ctrl, store, setState)
+  const service = new CanvasService(ctrl, store, setState)
   service.deselect()
 
   const editor = service.currentCanvas?.elements[0] as CanvasEditorElement
   expect(editor.selected).toBe(false)
   expect(editor.active).toBe(false)
+})
+
+test('newCanvas', () => {
+  const [store, setState] = createStore(createState({canvases: []}))
+  ctrl.collab.create.mockReturnValue({})
+
+  const service = new CanvasService(ctrl, store, setState)
+  service.newCanvas()
+
+  expect(store.canvases.length).toBe(1)
+  expect(store.canvases[0].active).toBe(true)
+
+  service.newCanvas()
+  expect(store.canvases.length).toBe(2)
+  expect(store.canvases[0].active).toBe(false)
+  expect(store.canvases[1].active).toBe(true)
+
+  expect(ctrl.collab.create.mock.calls.length).toBe(2)
+})
+
+test('removeElement', () => {
+  const [store, setState] = createStore(createState({
+    canvases: [
+      createCanvas({
+        id: '1',
+        active: true,
+        elements: [
+          createEditorElement({id: '1'}),
+          createEditorElement({id: '2'}),
+          createLinkElement({id: '3', from: '1', to: '2'}),
+        ],
+      }),
+    ],
+  }))
+
+  const service = new CanvasService(ctrl, store, setState)
+  service.removeElement('1')
+
+  expect(service.currentCanvas?.elements.length).toBe(1)
+  expect(service.currentCanvas?.elements[0].id).toBe('2')
+})
+
+test('destroyElement', () => {
+  const editorView = mock<EditorView>()
+  const [store, setState] = createStore(createState({
+    canvases: [
+      createCanvas({
+        id: '1',
+        active: true,
+        elements: [
+          createEditorElement({id: '1', editorView}),
+        ],
+      }),
+    ],
+  }))
+
+  const service = new CanvasService(ctrl, store, setState)
+  service.destroyElement('1')
+
+  const editorEl = service.currentCanvas?.elements[0] as CanvasEditorElement
+  expect(editorEl.editorView).toBeUndefined()
+
+  expect(editorView.destroy.mock.calls.length).toBe(1)
+})
+
+test('open', () => {
+  const editorView = mock<EditorView>()
+  const [store, setState] = createStore(createState({
+    canvases: [
+      createCanvas({id: '1', elements: [createEditorElement({editorView})]}),
+      createCanvas({id: '2'}),
+    ],
+  }))
+
+  const service = new CanvasService(ctrl, store, setState)
+
+  service.open('1')
+  expect(service.currentCanvas?.id).toBe('1')
+
+  service.open('2')
+  expect(service.currentCanvas?.id).toBe('2')
+
+  expect(editorView.destroy.mock.calls.length).toBe(1)
+})
+
+test('newFile', () => {
+  const ydoc = new Uint8Array()
+
+  const [store, setState] = createStore(createState({
+    canvases: [
+      createCanvas({id: '1', active: true}),
+    ],
+  }))
+
+  ctrl.file.createFile.mockReturnValue({id: '1', ydoc})
+  ctrl.collab.create.mockReturnValue({})
+
+  const service = new CanvasService(ctrl, store, setState)
+  service.newFile()
+
+  expect(service.currentCanvas?.elements.length).toBe(1)
+  const editorEl = service.currentCanvas?.elements[0] as CanvasEditorElement
+  expect(editorEl.id).toBe('1')
+})
+
+test('drawLink', () => {
+  const [store, setState] = createStore(createState({
+    canvases: [
+      createCanvas({
+        id: '1',
+        active: true,
+        elements: [
+          createEditorElement({id: '1'}),
+          createEditorElement({id: '2', x: 300, y: 300}),
+        ],
+      }),
+    ],
+  }))
+
+  const service = new CanvasService(ctrl, store, setState)
+  service.generateElementMap()
+
+  service.drawLink('3', '1', EdgeType.Right, 0, 0)
+  expect(service.currentCanvas?.elements.length).toBe(3)
+  const link = service.currentCanvas?.elements[2] as CanvasLinkElement
+  expect(link.from).toBe('1')
+  expect(link.fromEdge).toBe(EdgeType.Right)
+  expect(link.to).toBe(undefined)
+  expect(link.toX).toBe(0)
+  expect(link.toY).toBe(0)
+
+  service.drawLink('3', '1', EdgeType.Right, 100, 100)
+  const link1 = service.currentCanvas?.elements[2] as CanvasLinkElement
+  expect(link1.to).toBe(undefined)
+  expect(link1.toX).toBe(100)
+  expect(link1.toY).toBe(100)
+
+  service.drawLink('3', '1', EdgeType.Right, 280, 300)
+  const link2 = service.currentCanvas?.elements[2] as CanvasLinkElement
+  expect(link2.to).toBe('2')
+  expect(link2.toX).toBe(undefined)
+  expect(link2.toY).toBe(undefined)
+})
+
+test('drawLink - abort', () => {
+  const [store, setState] = createStore(createState({
+    canvases: [
+      createCanvas({
+        id: '1',
+        active: true,
+        elements: [
+          createEditorElement({id: '1'}),
+          createEditorElement({id: '2', x: 300, y: 300}),
+        ],
+      }),
+    ],
+  }))
+
+  const service = new CanvasService(ctrl, store, setState)
+  service.generateElementMap()
+
+  service.drawLink('3', '1', EdgeType.Right, 100, 100)
+  expect(service.currentCanvas?.elements.length).toBe(3)
+
+  service.drawLinkEnd('3')
+  expect(service.currentCanvas?.elements.length).toBe(2)
+})
+
+test('clearCanvas', () => {
+  const [store, setState] = createStore(createState({
+    canvases: [
+      createCanvas({
+        id: '1',
+        active: true,
+        elements: [
+          createEditorElement({id: '1'}),
+        ],
+      }),
+    ],
+  }))
+
+  const service = new CanvasService(ctrl, store, setState)
+  service.clearCanvas()
+
+  expect(service.currentCanvas?.elements.length).toBe(0)
+})
+
+test('clearCanvas', () => {
+  const [store, setState] = createStore(createState({
+    canvases: [
+      createCanvas({
+        id: '1',
+        active: true,
+        elements: [
+          createEditorElement({id: '1'}),
+          createEditorElement({id: '2', x: 300, y: 300}),
+          createLinkElement({id: '3', from: '1', to: '2'}),
+        ],
+      }),
+    ],
+  }))
+
+  const service = new CanvasService(ctrl, store, setState)
+  service.removeLinks()
+
+  expect(service.currentCanvas?.elements.length).toBe(2)
+})
+
+test('renderEditor', async () => {
+  const element = createEditorElement({id: '1'})
+  const init = createState({
+    files: [
+      {id: '1', ydoc: createYUpdate('1', 'Test'), active: true},
+    ],
+    canvases: [
+      createCanvas({
+        id: '1',
+        active: true,
+        elements: [element],
+      }),
+    ],
+  })
+
+  const [, setState] = createStore(init)
+  const {ctrl, store} = createCtrl(init)
+  const target = document.createElement('div')
+
+  const service = new CanvasService(ctrl, store, setState)
+  setState('collab', ctrl.collab.create('test'))
+
+  service.renderEditor(element, target)
+
+  const editor = service.currentCanvas?.elements[0] as CanvasEditorElement
+
+  await waitFor(() => {
+    expect(editor?.editorView?.state.doc.textContent).toBe('Test')
+  })
+
+  const tr = editor?.editorView?.state.tr
+  tr!.insertText('123')
+  editor?.editorView?.dispatch(tr!)
+
+  await waitFor(() => {
+    expect(editor?.editorView?.state.doc.textContent).toBe('Test123')
+  })
 })

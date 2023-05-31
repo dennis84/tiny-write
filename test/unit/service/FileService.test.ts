@@ -6,6 +6,7 @@ import {createYdoc} from '../util'
 import {FileService} from '@/services/FileService'
 import {createStore} from 'solid-js/store'
 import {Ctrl} from '@/services'
+import {mockDeep} from 'vitest-mock-extended'
 
 vi.mock('@/db', () => ({}))
 vi.mock('mermaid', () => ({}))
@@ -14,6 +15,8 @@ beforeEach(() => {
   vi.restoreAllMocks()
 })
 
+const ctrl = mockDeep<Ctrl>()
+
 test('only save file type', async () => {
   const ydoc = createYdoc('1', 'Test')
 
@@ -21,7 +24,6 @@ test('only save file type', async () => {
     files: [{id: '1', ydoc: Y.encodeStateAsUpdate(ydoc)}],
   }))
 
-  const ctrl = {} as Ctrl
   const service = new FileService(ctrl, store, setState)
   setState('collab', {ydoc})
 
