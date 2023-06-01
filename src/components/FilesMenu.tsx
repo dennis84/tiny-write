@@ -105,6 +105,15 @@ export const FilesMenu = (props: Props) => {
   const FileItem = (p: {file: File}) => {
     const [path, setPath] = createSignal<string>()
 
+    const isActive = (): boolean => {
+      if (store.mode === Mode.Editor) {
+        return ctrl.file.currentFile?.id === p.file.id ?? false
+      }
+
+      const elements = ctrl.canvas.currentCanvas?.elements
+      return elements?.some((el) => el.selected && el.id === p.file.id) ?? false
+    }
+
     const onTooltip = (e: MouseEvent) => {
       setCurrent(p.file)
       computePosition(e.target as Element, tooltipRef, {
@@ -149,7 +158,7 @@ export const FilesMenu = (props: Props) => {
         <CardContent
           onClick={() => onOpenFile(p.file)}
           selected={current() === p.file}
-          active={ctrl.file.currentFile?.id === p.file.id}
+          active={isActive()}
           data-testid="open">
           <Show
             when={p.file.path}
