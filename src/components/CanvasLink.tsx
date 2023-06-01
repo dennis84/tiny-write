@@ -35,7 +35,7 @@ const Path = styled('path')`
 
 const InnerPath = styled('path')`
   stroke: var(--border);
-  stroke-width: 3;
+  stroke-width: 1;
   stroke-linecap: round;
   pointer-events: none;
   touch-action: none;
@@ -106,7 +106,7 @@ export default ({element}: {element: CanvasLinkElement}) => {
     if (!line) return
 
     const p = getPath(line)
-    const i = Vec2d.Nudge(line.b, line.a, 15)
+    const i = Vec2d.Nudge(line.b, line.a, 10)
     const a = getArrowhead(line.b, i)
 
     pathRef.setAttribute('d', p)

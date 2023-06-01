@@ -29,7 +29,7 @@ export default ({onClick}: {onClick: () => void}) => {
           const yo = camera.point[1] * camera.zoom
           const gxo = xo > 0 ? xo % s : s + (xo % s)
           const gyo = yo > 0 ? yo % s : s + (yo % s)
-          const opacity = 0.4
+          const opacity = 0.1
 
           return (
             <pattern
