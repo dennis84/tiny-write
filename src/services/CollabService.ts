@@ -95,6 +95,10 @@ export class CollabService {
     this.setState('collab', {started: false})
   }
 
+  setRendered() {
+    this.setState('collab', 'rendered', true)
+  }
+
   private onCollabConfigUpdate = (event: Y.YMapEvent<unknown>) => {
     const font = event.target.get('font') as string
     const fontSize = event.target.get('fontSize') as number

@@ -117,6 +117,7 @@ export const collab = (ctrl: Ctrl, type: Y.XmlFragment): ProseMirrorExtension =>
     ...prev,
     ySyncPlugin(type, {
       permanentUserData: ctrl.collab?.permanentUserData,
+      onFirstRender: () => ctrl.collab.setRendered(),
     }),
     yCursorPlugin(ctrl.collab.provider!.awareness, {cursorBuilder}),
     yMouseCursorPlugin(ctrl.collab.provider!.awareness),

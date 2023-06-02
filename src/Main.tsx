@@ -162,6 +162,13 @@ export default (props: {state: State}) => {
   })
 
   createEffect(() => {
+    if (!store.collab?.rendered) return
+
+    if (store.mode === Mode.Canvas) {
+      document.title = 'Canvas'
+      return
+    }
+
     const currentFile = ctrl.file.currentFile
     if (!currentFile?.lastModified) return
     const doc = currentFile?.editorView?.state.doc
