@@ -37,7 +37,6 @@ export class EditorService {
       ctrl: this.ctrl,
       markdown: currentFile?.markdown,
       type: this.store.collab!.ydoc!.getXmlFragment(currentFile.id),
-      keymap: this.ctrl.keymap.create(),
       dropcursor: true,
     })
 
@@ -330,6 +329,8 @@ export class EditorService {
     }, file)
 
     newState.collab = this.ctrl.collab.createByFile(file)
+    currentFile?.editorView?.destroy()
+
     this.setState(newState)
 
     await db.deleteFile(id!)

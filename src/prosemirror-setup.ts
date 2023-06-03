@@ -26,20 +26,17 @@ import {Ctrl} from '@/services'
 interface Props {
   ctrl: Ctrl;
   type?: Y.XmlFragment;
-  keymap?: {[key: string]: any};
   markdown?: boolean;
   dropcursor?: boolean;
 }
 
 export const createExtensions = (props: Props): ProseMirrorExtension[] => {
   const isMarkdown = props.markdown ?? false
-  const keymap = props.keymap ?? {}
 
   const extensions = [
     base({
       markdown: isMarkdown,
       dropcursor: props.dropcursor,
-      keymap,
     }),
     placeholder('Start typing ...'),
     scroll(props.ctrl),
@@ -60,10 +57,7 @@ export const createExtensions = (props: Props): ProseMirrorExtension[] => {
     ...extensions,
     markdown(),
     todoList(),
-    codeBlock({
-      ctrl: props.ctrl,
-      keymap: Object.entries(props.keymap ?? {}).map(([key, run]) => ({key, run})),
-    }),
+    codeBlock(props.ctrl),
     code(),
     emphasis(),
     link(),

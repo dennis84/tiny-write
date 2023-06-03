@@ -83,8 +83,8 @@ export const mermaidView = (codeBlock: CodeBlockView) =>
       this.output.style.display = 'flex'
       mermaid.initialize({
         startOnLoad: false,
-        theme: codeBlock.options.ctrl.config.codeTheme.dark ? 'dark' : 'default',
-        fontFamily: `${codeBlock.options.ctrl.config.fontFamily}, monospace`,
+        theme: codeBlock.ctrl.config.codeTheme.dark ? 'dark' : 'default',
+        fontFamily: `${codeBlock.ctrl.config.fontFamily}, monospace`,
       })
 
       try {

@@ -3,7 +3,6 @@ import {EditorView} from 'prosemirror-view'
 import {EditorState, Selection, Transaction, TextSelection} from 'prosemirror-state'
 import {keymap} from 'prosemirror-keymap'
 import {inputRules, textblockTypeInputRule} from 'prosemirror-inputrules'
-import {KeyBinding} from '@codemirror/view'
 import {Ctrl} from '@/services'
 import {ProseMirrorExtension} from '@/prosemirror'
 import {CodeBlockView} from './view'
@@ -75,11 +74,6 @@ export const defaultProps = {
   }
 }
 
-export interface CodeBlockProps {
-  ctrl: Ctrl;
-  keymap: KeyBinding[];
-}
-
 const codeBlockSchema = {
   content: 'text*',
   group: 'block',
@@ -94,7 +88,7 @@ const codeBlockSchema = {
   toDOM: () => ['pre', {}, ['code', 0]]
 }
 
-export default (props: CodeBlockProps): ProseMirrorExtension => ({
+export default (ctrl: Ctrl): ProseMirrorExtension => ({
   schema: (prev) => ({
     ...prev,
     nodes: (prev.nodes as any).update('code_block', codeBlockSchema),
@@ -106,6 +100,6 @@ export default (props: CodeBlockProps): ProseMirrorExtension => ({
   ],
   nodeViews: {
     code_block: (node, view, getPos, _decos, innerDecos) =>
-      new CodeBlockView(node, view, getPos, innerDecos, props)
+      new CodeBlockView(node, view, getPos, innerDecos, ctrl)
   },
 })

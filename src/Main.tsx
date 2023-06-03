@@ -12,6 +12,7 @@ import Canvas from '@/components/Canvas'
 import Menu from '@/components/Menu'
 import ErrorView from '@/components/Error'
 import Dir from '@/components/Dir'
+import Keymap from '@/components/Keymap'
 import {insertImage, insertVideo} from '@/prosemirror/image'
 
 export default (props: {state: State}) => {
@@ -228,6 +229,7 @@ export default (props: {state: State}) => {
           </Scroll>
         </Show>
         <Menu />
+        <Keymap />
       </Layout>
     </StateContext.Provider>
   )

@@ -13,8 +13,8 @@ export const isMac =
   window.process?.platform === 'darwin' ||
   window.navigator.platform.indexOf('Mac') !== -1
 
-export const mod = isMac ? 'Cmd' : 'Ctrl'
-export const alt = isMac ? 'Cmd' : 'Alt'
+export const mod = isMac ? 'Meta' : 'Ctrl'
+export const alt = isMac ? 'Meta' : 'Alt'
 
 export const WEB_URL =
   (isTest || isDev) ? 'http://localhost:3000' :

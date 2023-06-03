@@ -80,7 +80,6 @@ export class FileService {
         path: resolvedPath,
       }
     } catch (e) {
-      console.log(e)
       throw new ServiceError('file_permission_denied', {error: e})
     }
   }

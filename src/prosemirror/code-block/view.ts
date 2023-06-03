@@ -13,7 +13,7 @@ import {
 } from '@codemirror/autocomplete'
 import {indentOnInput, indentUnit, bracketMatching, foldGutter, foldKeymap} from '@codemirror/language'
 import {linter, setDiagnostics} from '@codemirror/lint'
-import {CodeBlockProps} from '.'
+import {Ctrl} from '@/services'
 import {findWords, tabCompletionKeymap} from './completion'
 import {highlight, changeLang} from './lang'
 import {getTheme} from './theme'
@@ -35,7 +35,7 @@ export class CodeBlockView {
     private view: ProsemirrorEditorView,
     readonly getPos: () => number | undefined,
     private innerDecos: DecorationSource,
-    readonly options: CodeBlockProps,
+    readonly ctrl: Ctrl,
   ) {
     this.dom = document.createElement('div')
     this.dom.setAttribute('contenteditable', 'false')
@@ -128,14 +128,13 @@ export class CodeBlockView {
     this.findWordsExt = new Compartment
     this.keywordsExt = new Compartment
 
-    const theme = getTheme(this.options.ctrl.config.codeTheme.value)
+    const theme = getTheme(this.ctrl.config.codeTheme.value)
     const langSupport = highlight(this.lang)
 
     this.editorView = new EditorView({
       doc: this.node.textContent,
       extensions: [
-        tooltips({parent: this.options.ctrl.app.layoutRef}),
-        keymap.of(this.options.keymap),
+        tooltips({parent: this.ctrl.app.layoutRef}),
         codeMirrorKeymap,
         keymap.of(closeBracketsKeymap),
         keymap.of(foldKeymap),
@@ -151,11 +150,11 @@ export class CodeBlockView {
         foldGutter(),
         closeBrackets(),
         linter(() => []),
-        EditorState.tabSize.of(this.options.ctrl.config.prettier.tabWidth),
+        EditorState.tabSize.of(this.ctrl.config.prettier.tabWidth),
         indentUnit.of(
-          this.options.ctrl.config.prettier.useTabs ?
+          this.ctrl.config.prettier.useTabs ?
             '\t' :
-            ' '.repeat(this.options.ctrl.config.prettier.tabWidth)
+            ' '.repeat(this.ctrl.config.prettier.tabWidth)
         ),
         expand(this),
         mermaidView(this),
@@ -247,7 +246,7 @@ export class CodeBlockView {
       this.editorView.hasFocus &&
       sel.empty &&
       (update.docChanged || update.selectionSet) &&
-      this.options.ctrl.config.typewriterMode
+      this.ctrl.config.typewriterMode
     ) {
       const lineBlock = this.editorView.lineBlockAt(sel.from)
       let {node} = this.editorView.domAtPos(lineBlock.from)

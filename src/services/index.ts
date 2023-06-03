@@ -1,7 +1,6 @@
 import {Store, createStore, SetStoreFunction} from 'solid-js/store'
 import {State} from '@/state'
 import {AppService} from './AppService'
-import {KeymapService} from './KeymapService'
 import {ChangeSetService} from './ChangeSetService'
 import {ConfigService} from './ConfigService'
 import {EditorService} from './EditorService'
@@ -14,7 +13,6 @@ export class Ctrl {
   config!: ConfigService
   editor!: EditorService
   changeSet!: ChangeSetService
-  keymap!: KeymapService
   file!: FileService
   collab!: CollabService
   canvas!: CanvasService
@@ -27,7 +25,6 @@ export class Ctrl {
     this.config = new ConfigService(this, store, setState)
     this.editor = new EditorService(this, store, setState)
     this.changeSet = new ChangeSetService(this, store, setState)
-    this.keymap = new KeymapService(this, store)
     this.file = new FileService(this, store, setState)
     this.collab = new CollabService(this, store, setState)
     this.canvas = new CanvasService(this, store, setState)

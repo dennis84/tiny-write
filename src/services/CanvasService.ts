@@ -443,7 +443,6 @@ export class CanvasService {
     const extensions = createExtensions({
       ctrl: this.ctrl,
       markdown: false,
-      keymap: this.ctrl.keymap.create(),
       type: this.store.collab?.ydoc?.getXmlFragment(file.id),
       dropcursor: false,
     })
@@ -490,7 +489,6 @@ export class CanvasService {
     }
 
     editorView.setProps({state: editorState, nodeViews})
-    editorView.focus()
   }
 
   fetchCanvases(): Promise<Canvas[]> {

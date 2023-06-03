@@ -40,7 +40,7 @@ export const changeLang = (codeBlock: CodeBlockView, config: Config) =>
     lang: string = codeBlock.lang
 
     constructor(private view: EditorView) {
-      const theme = getTheme(codeBlock.options.ctrl.config.codeTheme.value)
+      const theme = getTheme(codeBlock.ctrl.config.codeTheme.value)
 
       this.toggle = document.createElement('div')
       this.toggle.className = 'lang-toggle'
@@ -139,7 +139,7 @@ export class LangInputEditor {
       doc: this.props.doc,
       parent: this.props.parent,
       extensions: [
-        tooltips({parent: this.props.codeBlock.options.ctrl.app.layoutRef}),
+        tooltips({parent: this.props.codeBlock.ctrl.app.layoutRef}),
         props.theme,
         autocompletion({
           defaultKeymap: false,
