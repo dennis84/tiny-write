@@ -109,11 +109,11 @@ export interface CanvasLinkElement extends CanvasElement {
   toY?: number;
 }
 
-export const isEditorElement = (el: CanvasElement): el is CanvasEditorElement =>
-  el.type === ElementType.Editor
+export const isEditorElement = (el?: CanvasElement): el is CanvasEditorElement =>
+  el?.type === ElementType.Editor
 
-export const isLinkElement = (el: CanvasElement): el is CanvasLinkElement =>
-  el.type === ElementType.Link
+export const isLinkElement = (el?: CanvasElement): el is CanvasLinkElement =>
+  el?.type === ElementType.Link
 
 export interface Canvas {
   id: string;

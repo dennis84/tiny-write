@@ -72,6 +72,9 @@ const Edge = (props: EdgeProps) => {
         if (width < MIN_SIZE) return
         ctrl.canvas.updateCanvasElement(currentCanvas.id, elementIndex, {type, width})
       }
+
+      ctrl.canvas.updateCanvas(currentCanvas.id, {lastModified: new Date()})
+      ctrl.canvas.saveCanvasDebounced()
     })
 
     const linkGesture = new DragGesture(linkRef, ({event, initial, first, last, movement}) => {
@@ -209,6 +212,9 @@ const Corner = (props: CornerProps) => {
         if (height < MIN_SIZE) height = props.height
         ctrl.canvas.updateCanvasElement(currentCanvas.id, elementIndex, {type, width, height})
       }
+
+      ctrl.canvas.updateCanvas(currentCanvas.id, {lastModified: new Date()})
+      ctrl.canvas.saveCanvasDebounced()
     })
 
     onCleanup(() => {
@@ -261,6 +267,9 @@ export default (props: BoundsProps) => {
         x: props.x + dx / zoom,
         y: props.y + dy / zoom,
       })
+
+      ctrl.canvas.updateCanvas(currentCanvas.id, {lastModified: new Date()})
+      ctrl.canvas.saveCanvasDebounced()
     })
 
     onCleanup(() => {

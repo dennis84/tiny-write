@@ -51,6 +51,7 @@ export const FilesMenu = (props: Props) => {
     const f = unwrap(current())
     if (f) ctrl.canvas.addToCanvas(f)
     setCurrent(undefined)
+    props.onOpenFile()
   }
 
   const Excerpt = (p: {file: File}) => {

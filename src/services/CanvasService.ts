@@ -61,7 +61,7 @@ interface UpdateLinkElement {
 }
 
 export class CanvasService {
-  private saveUpdatedCamera = debounce(() => this.saveCanvas(), 100)
+  public saveCanvasDebounced = debounce(() => this.saveCanvas(), 100)
   private elementMap: ElementMap | undefined
 
   constructor(
@@ -141,6 +141,7 @@ export class CanvasService {
       const [x, y] = center.sub(vp).toArray()
       this.updateCanvas(currentCanvas.id, {camera: {zoom, point: [-x, -y]}})
       this.saveCanvas()
+      remote.log('info', '💾 Saved updated camera')
     }
   }
 
@@ -148,14 +149,14 @@ export class CanvasService {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
     this.updateCanvas(currentCanvas.id, {camera})
-    this.saveUpdatedCamera()
+    this.saveCanvasDebounced()
   }
 
   updateCameraPoint(point: [number, number]) {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
     this.updateCanvas(currentCanvas.id, {camera: {...currentCanvas.camera, point}})
-    this.saveUpdatedCamera()
+    this.saveCanvasDebounced()
   }
 
   deleteCanvas(id: string) {
@@ -172,6 +173,7 @@ export class CanvasService {
 
     this.setState('canvases', canvases)
     db.deleteCanvas(id)
+    remote.log('info', '💾 Canvas deleted')
   }
 
   select(id: string, active = false) {
@@ -216,6 +218,7 @@ export class CanvasService {
     })
 
     this.saveCanvas()
+    remote.log('info', '💾 New canvas created')
   }
 
   removeElement(elementId: string) {
@@ -236,6 +239,8 @@ export class CanvasService {
     }
 
     this.updateCanvas(currentCanvas.id, {elements})
+    this.saveCanvas()
+    remote.log('info', '💾 Element removed')
   }
 
   destroyElement(elementId: string) {
@@ -250,10 +255,6 @@ export class CanvasService {
       type: ElementType.Editor,
       editorView: undefined,
     })
-  }
-
-  discard() {
-    console.log('discard')
   }
 
   open(id: string) {
@@ -288,6 +289,7 @@ export class CanvasService {
     })
 
     db.setMeta({mode})
+    remote.log('info', '💾 Switched to canvas mode')
   }
 
   newFile() {
@@ -301,6 +303,7 @@ export class CanvasService {
 
     this.setState(update)
     this.addToCanvas(file)
+    remote.log('info', '💾 New file added')
   }
 
   addToCanvas(file: File) {
@@ -333,6 +336,7 @@ export class CanvasService {
     })
 
     this.saveCanvas()
+    remote.log('info', '💾 Added file to canvas')
   }
 
   drawLink(id: string, from: string, fromEdge: EdgeType, toX: number, toY: number) {
@@ -391,6 +395,8 @@ export class CanvasService {
         elements: currentCanvas.elements.filter((el) => el.id !== id),
       })
     }
+
+    this.saveCanvas()
   }
 
   generateElementMap() {
@@ -412,6 +418,7 @@ export class CanvasService {
     if (!currentCanvas) return
     this.updateCanvas(currentCanvas.id, {elements: []})
     this.saveCanvas()
+    remote.log('info', '💾 All elements cleared')
   }
 
   removeLinks() {
@@ -420,6 +427,7 @@ export class CanvasService {
     const elements = currentCanvas.elements.filter((el) => !isLinkElement(el))
     this.updateCanvas(currentCanvas.id, {elements})
     this.saveCanvas()
+    remote.log('info', '💾 All links removed')
   }
 
   async renderEditor(element: CanvasEditorElement, node: HTMLElement) {
@@ -511,11 +519,11 @@ export class CanvasService {
   }
 }
 
-const isEditorUpdate = (update: any): update is UpdateEditorElement =>
-  update.type === ElementType.Editor
+const isEditorUpdate = (update: UpdateElement): update is UpdateEditorElement =>
+  update !== undefined && 'type' in update && update.type === ElementType.Editor
 
 const isLinkUpdate = (update: any): update is UpdateLinkElement =>
-  update.type === ElementType.Link
+  update !== undefined && 'type' in update && update.type === ElementType.Link
 
-const isSelectionUpdate = (update: any): update is UpdateSelection =>
-  Object.hasOwn(update, 'selected')
+const isSelectionUpdate = (update?: UpdateElement): update is UpdateSelection =>
+  update !== undefined && Object.hasOwn(update, 'selected')

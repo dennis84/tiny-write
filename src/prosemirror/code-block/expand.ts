@@ -47,7 +47,7 @@ export default (codeBlock: CodeBlockView) =>
           this.view.scrollDOM.style.maxHeight = '100%'
           this.expand.textContent = '↑'
         } else {
-          const height = 60 + 10 * codeBlock.options.ctrl.config.fontSize * 1.8
+          const height = 60 + 10 * codeBlock.ctrl.config.fontSize * 1.8
           this.view.scrollDOM.style.maxHeight = height + 'px'
           this.expand.textContent = '↓'
         }

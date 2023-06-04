@@ -13,12 +13,23 @@ export default ({maybeHide}: {maybeHide: () => void}) => {
 
   const onNewFile = () => {
     ctrl.canvas.newFile()
+    maybeHide()
   }
 
-  const onClearCanvas = () => ctrl.canvas.clearCanvas()
-  const onRemoveLinks = () => ctrl.canvas.removeLinks()
+  const onClearCanvas = () => {
+    ctrl.canvas.clearCanvas()
+    maybeHide()
+  }
 
-  const onBackToContent = () => ctrl.canvas.backToContent()
+  const onRemoveLinks = () => {
+    ctrl.canvas.removeLinks()
+    maybeHide()
+  }
+
+  const onBackToContent = () => {
+    ctrl.canvas.backToContent()
+    maybeHide()
+  }
 
   return (
     <>
@@ -28,11 +39,11 @@ export default ({maybeHide}: {maybeHide: () => void}) => {
           New canvas  🆕 <Keys keys={[modKey, 'n']} />
         </Link>
         <Link onClick={onNewFile} data-testid="new-file">
-          New file  🆕
+          New file 📝
         </Link>
-        <Link onClick={onClearCanvas}>Clear Canvas</Link>
+        <Link onClick={onClearCanvas}>Clear Canvas 🧽</Link>
         <Link onClick={onRemoveLinks}>Remove links</Link>
-        <Link onClick={onBackToContent}>Back to content</Link>
+        <Link onClick={onBackToContent}>Back to content 🎯</Link>
       </Sub>
     </>
   )
