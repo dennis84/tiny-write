@@ -11,6 +11,7 @@ import {
   CanvasEditorElement,
   CanvasElement,
   CanvasLinkElement,
+  CanvasImageElement,
   EdgeType,
   ElementType,
   File,
@@ -18,6 +19,7 @@ import {
   State,
   isEditorElement,
   isLinkElement,
+  isImageElement,
 } from '@/state'
 import * as db from '@/db'
 import * as remote from '@/remote'
@@ -39,7 +41,7 @@ interface UpdateSelection {
 }
 
 interface UpdateEditorElement {
-  type: ElementType.Editor;
+  type: ElementType;
   editorView?: EditorView;
   x?: number;
   y?: number;
@@ -49,8 +51,17 @@ interface UpdateEditorElement {
   active?: boolean;
 }
 
+interface UpdateImageElement {
+  type: ElementType;
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
+  selected?: boolean;
+}
+
 interface UpdateLinkElement {
-  type: ElementType.Link;
+  type: ElementType;
   from?: string;
   fromEdge?: EdgeType;
   toX?: number;
@@ -112,13 +123,21 @@ export class CanvasService {
           toEdge: hasOwn('toEdge') ? update.toEdge : prev?.toEdge,
           selected: hasOwn('selected') ? update.selected : prev?.selected,
         }
+      } else if (isImageUpdate(update) && isImageElement(prev)) {
+        return {
+          x: hasOwn('x') ? update.x : prev?.x,
+          y: hasOwn('y') ? update.y : prev?.y,
+          width: hasOwn('width') ? update.width : prev?.width,
+          height: hasOwn('height') ? update.height : prev?.height,
+          selected: hasOwn('selected') ? update.selected : prev?.selected,
+        }
       } else if (isSelectionUpdate(update) && isEditorElement(prev)) {
         return {
           ...prev,
           selected: update.selected,
           active: update.active,
         }
-      } else if (isSelectionUpdate(update) && isLinkElement(prev)) {
+      } else if (isSelectionUpdate(update)) {
         return {
           ...prev,
           selected: update.selected,
@@ -235,6 +254,8 @@ export class CanvasService {
         continue
       }
 
+      if (el.id === elementId) continue
+
       elements.push(el)
     }
 
@@ -302,11 +323,11 @@ export class CanvasService {
     }
 
     this.setState(update)
-    this.addToCanvas(file)
+    this.addFile(file)
     remote.log('info', '💾 New file added')
   }
 
-  addToCanvas(file: File) {
+  addFile(file: File) {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
 
@@ -337,6 +358,42 @@ export class CanvasService {
 
     this.saveCanvas()
     remote.log('info', '💾 Added file to canvas')
+  }
+
+  addImage(
+    src: string,
+    pageX: number,
+    pageY: number,
+    imageWidth: number,
+    imageHeight: number
+  ) {
+    const currentCanvas = this.currentCanvas
+    if (!currentCanvas) return
+
+    const width = 300
+    const height = width * imageHeight / imageWidth
+    const {zoom, point} = currentCanvas.camera
+    const p = Vec2d.FromArray(point)
+    const {x, y} = new Vec2d(pageX, pageY).div(zoom).sub(p)
+
+    const id = uuidv4()
+    const element: CanvasImageElement = {
+      type: ElementType.Image,
+      id,
+      src,
+      x,
+      y,
+      width,
+      height,
+    }
+
+    this.updateCanvas(currentCanvas.id, {
+      elements: [...currentCanvas.elements, element],
+      lastModified: new Date(),
+    })
+
+    // this.saveCanvas()
+    // remote.log('info', '💾 Added file to canvas')
   }
 
   drawLink(id: string, from: string, fromEdge: EdgeType, toX: number, toY: number) {
@@ -404,7 +461,7 @@ export class CanvasService {
     if (!currentCanvas) return
     const xs = []
     for (const el of currentCanvas.elements) {
-      if (isEditorElement(el)) {
+      if (isEditorElement(el) || isImageElement(el)) {
         const {id, x, y, width, height} = el
         xs.push(new ElementBox(id, x, y, width, height))
       }
@@ -524,6 +581,9 @@ const isEditorUpdate = (update: UpdateElement): update is UpdateEditorElement =>
 
 const isLinkUpdate = (update: any): update is UpdateLinkElement =>
   update !== undefined && 'type' in update && update.type === ElementType.Link
+
+const isImageUpdate = (update: any): update is UpdateImageElement =>
+  update !== undefined && 'type' in update && update.type === ElementType.Image
 
 const isSelectionUpdate = (update?: UpdateElement): update is UpdateSelection =>
   update !== undefined && Object.hasOwn(update, 'selected')

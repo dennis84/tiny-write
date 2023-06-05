@@ -7,6 +7,7 @@ import {Vec2d} from '@tldraw/primitives'
 
 interface BoundsProps {
   id: string;
+  elementType: ElementType;
   x: number;
   y: number;
   width: number;
@@ -51,7 +52,7 @@ const Edge = (props: EdgeProps) => {
     const resizeGesture = new DragGesture(ref, ({event, delta: [dx, dy]}) => {
       event.stopPropagation()
       const {zoom} = currentCanvas.camera
-      const type = ElementType.Editor
+      const type = props.elementType
 
       if (props.type === EdgeType.Top) {
         const height = props.height - dy / zoom
@@ -169,7 +170,7 @@ const Corner = (props: CornerProps) => {
     const gesture = new DragGesture(ref, ({event, delta: [dx, dy]}) => {
       event.stopPropagation()
       const {zoom} = currentCanvas.camera
-      const type = ElementType.Editor
+      const type = props.elementType
 
       if (props.type === CornerType.TopLeft) {
         let x = props.x + dx / zoom
@@ -263,7 +264,7 @@ export default (props: BoundsProps) => {
     const gesture = new DragGesture(ref, ({delta: [dx, dy]}) => {
       const {zoom} = currentCanvas.camera
       ctrl.canvas.updateCanvasElement(currentCanvas.id, elementIndex, {
-        type: ElementType.Editor,
+        type: props.elementType,
         x: props.x + dx / zoom,
         y: props.y + dy / zoom,
       })

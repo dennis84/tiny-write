@@ -64,6 +64,7 @@ export interface Window {
 export enum ElementType {
   Editor,
   Link,
+  Image,
 }
 
 export enum EdgeType {
@@ -109,11 +110,22 @@ export interface CanvasLinkElement extends CanvasElement {
   toY?: number;
 }
 
+export interface CanvasImageElement extends CanvasElement {
+  src: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 export const isEditorElement = (el?: CanvasElement): el is CanvasEditorElement =>
   el?.type === ElementType.Editor
 
 export const isLinkElement = (el?: CanvasElement): el is CanvasLinkElement =>
   el?.type === ElementType.Link
+
+export const isImageElement = (el?: CanvasElement): el is CanvasImageElement =>
+  el?.type === ElementType.Image
 
 export interface Canvas {
   id: string;

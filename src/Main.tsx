@@ -13,7 +13,7 @@ import Menu from '@/components/Menu'
 import ErrorView from '@/components/Error'
 import Dir from '@/components/Dir'
 import Keymap from '@/components/Keymap'
-import {insertImage, insertVideo} from '@/prosemirror/image'
+import {getImagePath, insertImage, insertVideo} from '@/prosemirror/image'
 
 export default (props: {state: State}) => {
   const {store, ctrl} = createCtrl(props.state)
@@ -58,22 +58,35 @@ export default (props: {state: State}) => {
   onMount(async () => {
     if (!isTauri()) return
     const unlisten = await appWindow.onFileDropEvent(async (event) => {
-      const currentFile = ctrl.file.currentFile
       if (event.payload.type === 'hover') {
         remote.log('INFO', '🔗 User hovering')
       } else if (event.payload.type === 'drop') {
         remote.log('INFO', '🔗 User dropped')
         for (const path of event.payload.paths) {
           const mime = await remote.getMimeType(path)
+
           if (mime.startsWith('image/') || mime.startsWith('video/')) {
-            if (!currentFile?.editorView) return
             const x = mouseEnterCoords.x
             const y = mouseEnterCoords.y
-            const d = currentFile?.path
-              ? await remote.dirname(currentFile.path)
-              : undefined
-            const p = await remote.toRelativePath(path, d)
-            insertImageMd(currentFile.editorView, p, x, y, mime)
+
+            if (store.mode === Mode.Editor) {
+              const currentFile = ctrl.file.currentFile
+              if (!currentFile?.editorView) return
+              const d = currentFile?.path
+                ? await remote.dirname(currentFile.path)
+                : undefined
+              const p = await remote.toRelativePath(path, d)
+              insertImageMd(currentFile.editorView, p, x, y, mime)
+            } else if (store.mode === Mode.Canvas) {
+              const p = await remote.toRelativePath(path)
+              const src = await getImagePath(p)
+              remote.log('INFO', 'Add to canvas:' + p)
+              const img = new Image()
+              img.src = src
+              img.onload = () => {
+                ctrl.canvas.addImage(src, x, y, img.width, img.height)
+              }
+            }
           } else if (mime.startsWith('text/')) {
             await ctrl.editor.openFile({path})
             return
@@ -107,11 +120,10 @@ export default (props: {state: State}) => {
     if (isTauri()) return
     const onDrop = (e: DragEvent) => {
       e.preventDefault()
+
       if ((e.target as Element).closest('.cm-container')) {
         return
       }
-
-      const currentFile = ctrl.file.currentFile
 
       for (const file of e.dataTransfer?.files ?? []) {
         if (file.type.startsWith('image/')) {
@@ -120,16 +132,31 @@ export default (props: {state: State}) => {
           const reader = new FileReader()
           reader.readAsDataURL(file)
           reader.onloadend = () => {
-            if (!currentFile?.editorView) return
-            insertImageMd(currentFile.editorView, reader.result as string, x, y)
+            const data = reader.result as string
+            if (store.mode === Mode.Editor) {
+              const currentFile = ctrl.file.currentFile
+              if (!currentFile?.editorView) return
+              insertImageMd(currentFile.editorView, data, x, y)
+            } else if (store.mode === Mode.Canvas) {
+              const img = new Image()
+              img.src = data
+              img.onload = () => {
+                ctrl.canvas.addImage(data, x, y, img.width, img.height)
+              }
+            }
           }
         }
       }
     }
 
-    window.addEventListener('drop', onDrop)
+    const onDragOver = (e: DragEvent) => e.preventDefault()
+
+    window.addEventListener('drop', onDrop, false)
+    window.addEventListener('dragover', onDragOver, false)
+
     onCleanup(() => {
-      window.removeEventListener('drop', onDrop)
+      window.removeEventListener('drop', onDrop, false)
+      window.removeEventListener('dragover', onDragOver, false)
     })
   })
 

@@ -49,7 +49,7 @@ export const FilesMenu = (props: Props) => {
 
   const onAddToCanvas = () => {
     const f = unwrap(current())
-    if (f) ctrl.canvas.addToCanvas(f)
+    if (f) ctrl.canvas.addFile(f)
     setCurrent(undefined)
     props.onOpenFile()
   }

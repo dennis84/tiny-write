@@ -7,6 +7,7 @@ import {
   Canvas,
   CanvasEditorElement,
   CanvasLinkElement,
+  CanvasImageElement,
   createState,
   EdgeType,
   ElementType,
@@ -357,6 +358,24 @@ test('newFile', () => {
   expect(service.currentCanvas?.elements.length).toBe(1)
   const editorEl = service.currentCanvas?.elements[0] as CanvasEditorElement
   expect(editorEl.id).toBe('1')
+})
+
+test('addImage', () => {
+  const [store, setState] = createStore(createState({
+    canvases: [
+      createCanvas({id: '1', active: true}),
+    ],
+  }))
+
+  const service = new CanvasService(ctrl, store, setState)
+  service.addImage('/path/1.png', 100, 100, 1000, 2000)
+
+  expect(service.currentCanvas?.elements.length).toBe(1)
+  const imageEl = service.currentCanvas?.elements[0] as CanvasImageElement
+  expect(imageEl.x).toBe(100)
+  expect(imageEl.x).toBe(100)
+  expect(imageEl.width).toBe(300)
+  expect(imageEl.height).toBe(600)
 })
 
 test('drawLink', () => {

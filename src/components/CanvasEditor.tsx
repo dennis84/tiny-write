@@ -1,6 +1,6 @@
 import {onCleanup, onMount, Show} from 'solid-js'
 import {css} from 'solid-styled-components'
-import {CanvasEditorElement, useState} from '@/state'
+import {CanvasEditorElement, ElementType, useState} from '@/state'
 import {CanvasEditor} from './Editor'
 import {Scroll} from './Layout'
 import Bounds from './Bounds'
@@ -31,6 +31,7 @@ export default ({element}: {element: CanvasEditorElement}) => {
       <Show when={!element.active}>
         <Bounds
           id={element.id}
+          elementType={ElementType.Editor}
           x={element.x}
           y={element.y}
           width={element.width}

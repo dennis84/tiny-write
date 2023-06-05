@@ -2,10 +2,11 @@ import {createSignal, For, onCleanup, onMount} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {Gesture} from '@use-gesture/vanilla'
 import {Vec2d} from '@tldraw/primitives'
-import {isEditorElement, isLinkElement, useState} from '@/state'
+import {isEditorElement, isLinkElement, isImageElement, useState} from '@/state'
 import CanvasGrid from './CanvasGrid'
 import CanvasEditor from './CanvasEditor'
 import CanvasLink from './CanvasLink'
+import CanvasImage from './CanvasImage'
 
 const Container = styled('div')`
   width: 100%;
@@ -130,6 +131,7 @@ export default () => {
           {(element) =>
             isEditorElement(element) ? <CanvasEditor element={element} /> :
             isLinkElement(element) ? <CanvasLink element={element} /> :
+            isImageElement(element) ? <CanvasImage element={element} /> :
             null
           }
         </For>
