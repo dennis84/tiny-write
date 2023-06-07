@@ -167,50 +167,88 @@ const Corner = (props: CornerProps) => {
     const elementIndex = currentCanvas.elements.findIndex((el) => el.id === props.id)
     if (elementIndex === -1) return
 
-    const gesture = new DragGesture(ref, ({event, delta: [dx, dy]}) => {
+    const ratio = props.width / props.height
+    const gesture = new DragGesture(ref, ({event, delta: [dx, dy], shiftKey}) => {
       event.stopPropagation()
       const {zoom} = currentCanvas.camera
       const type = props.elementType
 
       if (props.type === CornerType.TopLeft) {
         let x = props.x + dx / zoom
-        let y = props.y + dy / zoom
+        let y = props.y + (shiftKey ? dx / ratio : dy) / zoom
         let width = props.width - dx / zoom
-        let height = props.height - dy / zoom
-        if (width < MIN_SIZE) {
+        let height = shiftKey ? width / ratio : props.height - dy / zoom
+
+        if (shiftKey && (width < MIN_SIZE || height < MIN_SIZE)) {
           width = props.width
-          x = props.x
-        }
-        if (height < MIN_SIZE) {
           height = props.height
+          x = props.x
           y = props.y
+        } else {
+          if (width < MIN_SIZE) {
+            width = props.width
+            x = props.x
+          }
+          if (height < MIN_SIZE) {
+            height = props.height
+            y = props.y
+          }
         }
+
         ctrl.canvas.updateCanvasElement(currentCanvas.id, elementIndex, {type, x, y, width, height})
       } else if (props.type === CornerType.TopRight) {
-        let y = props.y + dy / zoom
         let width = props.width + dx / zoom
-        let height = props.height - dy / zoom
-        if (width < MIN_SIZE) width = props.width
-        if (height < MIN_SIZE) {
+        let height = shiftKey ? width / ratio : props.height - dy / zoom
+        let y = props.y + (shiftKey ? -dx / ratio : dy) / zoom
+
+        if (shiftKey && (width < MIN_SIZE || height < MIN_SIZE)) {
+          width = props.width
           height = props.height
           y = props.y
+        } else {
+          if (width < MIN_SIZE) {
+            width = props.width
+            y = props.y
+          }
+          if (height < MIN_SIZE) {
+            height = props.height
+            y = props.y
+          }
         }
         ctrl.canvas.updateCanvasElement(currentCanvas.id, elementIndex, {type, y, width, height})
       } else if (props.type === CornerType.BottomLeft) {
         let x = props.x + dx / zoom
         let width = props.width - dx / zoom
-        let height = props.height + dy / zoom
-        if (width < MIN_SIZE) {
+        let height = shiftKey ? width / ratio : props.height + dy / zoom
+
+        if (shiftKey && (width < MIN_SIZE || height < MIN_SIZE)) {
           width = props.width
+          height = props.height
           x = props.x
+        } else {
+          if (width < MIN_SIZE) {
+            width = props.width
+            x = props.x
+          }
+          if (height < MIN_SIZE) {
+            height = props.height
+          }
         }
-        if (height < MIN_SIZE) height = props.height
         ctrl.canvas.updateCanvasElement(currentCanvas.id, elementIndex, {type, x, width, height})
       } else if (props.type === CornerType.BottomRight) {
         let width = props.width + dx / zoom
-        let height = props.height + dy / zoom
-        if (width < MIN_SIZE) width = props.width
-        if (height < MIN_SIZE) height = props.height
+        let height = shiftKey ? width / ratio : props.height + dy / zoom
+        if (shiftKey && (width < MIN_SIZE || height < MIN_SIZE)) {
+          width = props.width
+          height = props.height
+        } else {
+          if (width < MIN_SIZE) {
+            width = props.width
+          }
+          if (height < MIN_SIZE) {
+            height = props.height
+          }
+        }
         ctrl.canvas.updateCanvasElement(currentCanvas.id, elementIndex, {type, width, height})
       }
 
