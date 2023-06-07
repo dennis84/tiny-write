@@ -52,8 +52,12 @@ export default ({element}: {element: CanvasEditorElement}) => {
           max-height: ${element.height.toString()}px;
           border-radius: 5px;
           z-index: 1;
+          user-select: none;
+          pointer-events: none;
           ${element.active ? `
             box-shadow: 0 0 0 5px var(--primary-background);
+            user-select: auto;
+            pointer-events: auto;
           ` : element.selected ? `
             box-shadow: 0 0 0 5px var(--border);
           ` : `

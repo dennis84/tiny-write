@@ -44,7 +44,12 @@ export default ({onClick}: {onClick: () => void}) => {
         })}
       </defs>
       {STEPS.map((_, i) => (
-        <rect width="100%" height="100%" fill={`url(#grid-${i})`} />
+        <rect
+          width="100%"
+          height="100%"
+          fill={`url(#grid-${i})`}
+          data-tauri-drag-region="true"
+        />
       ))}
     </Grid>
   )

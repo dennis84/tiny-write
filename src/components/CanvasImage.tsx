@@ -30,6 +30,7 @@ export default ({element}: {element: CanvasImageElement}) => {
         top: ${element.y.toString()}px;
         border-radius: 5px;
         user-select: none;
+        -webkit-user-select: none;
         ${element.selected ? `
           box-shadow: 0 0 0 5px var(--border);
         `: ''}
