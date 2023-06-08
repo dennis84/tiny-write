@@ -80,10 +80,7 @@ const Edge = (props: EdgeProps) => {
 
     const linkGesture = new DragGesture(linkRef, ({event, initial, first, last, movement}) => {
       event.stopPropagation()
-      if (first) {
-        setCurrentLink(uuidv4())
-        ctrl.canvas.generateElementMap()
-      }
+      if (first) setCurrentLink(uuidv4())
       const {point, zoom} = currentCanvas.camera
       const p = Vec2d.FromArray(point)
       const i = Vec2d.FromArray(initial).div(zoom).sub(p)

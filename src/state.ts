@@ -92,11 +92,14 @@ export interface CanvasElement {
   selected?: boolean;
 }
 
-export interface CanvasEditorElement extends CanvasElement {
+export interface CanvasBoxElement extends CanvasElement {
   x: number;
   y: number;
   width: number;
   height: number;
+}
+
+export interface CanvasEditorElement extends CanvasBoxElement {
   editorView?: EditorView;
   active?: boolean;
 }
@@ -110,13 +113,12 @@ export interface CanvasLinkElement extends CanvasElement {
   toY?: number;
 }
 
-export interface CanvasImageElement extends CanvasElement {
+export interface CanvasImageElement extends CanvasBoxElement {
   src: string;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
 }
+
+export const isBoxElement = (el?: CanvasElement): el is CanvasBoxElement =>
+  el?.type === ElementType.Editor || el?.type === ElementType.Image
 
 export const isEditorElement = (el?: CanvasElement): el is CanvasEditorElement =>
   el?.type === ElementType.Editor

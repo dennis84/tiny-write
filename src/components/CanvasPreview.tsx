@@ -4,7 +4,7 @@ import {Node} from 'prosemirror-model'
 import * as Y from 'yjs'
 import {yDocToProsemirrorJSON} from 'y-prosemirror'
 import {Box2d} from '@tldraw/primitives'
-import {Canvas, isEditorElement, isImageElement, useState} from '@/state'
+import {Canvas, isBoxElement, isEditorElement, isImageElement, useState} from '@/state'
 import {createExtensions, createSchema} from '@/prosemirror-setup'
 
 interface Props {
@@ -47,7 +47,7 @@ export default (props: Props) => {
     const background = style.getPropertyValue('--background')
 
     for (const el of props.canvas.elements) {
-      if (!isEditorElement(el) && !isImageElement(el)) continue
+      if (!isBoxElement(el)) continue
 
       const x = (el.x - frame.x) * r
       const y = (el.y - frame.y) * r

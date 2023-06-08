@@ -415,7 +415,6 @@ test('drawLink', () => {
   }))
 
   const service = new CanvasService(ctrl, store, setState)
-  service.generateElementMap()
 
   service.drawLink('3', '1', EdgeType.Right, 0, 0)
   expect(service.currentCanvas?.elements.length).toBe(3)
@@ -454,7 +453,6 @@ test('drawLink - abort', () => {
   }))
 
   const service = new CanvasService(ctrl, store, setState)
-  service.generateElementMap()
 
   service.drawLink('3', '1', EdgeType.Right, 100, 100)
   expect(service.currentCanvas?.elements.length).toBe(3)
@@ -540,4 +538,48 @@ test('renderEditor', async () => {
   await waitFor(() => {
     expect(editor?.editorView?.state.doc.textContent).toBe('Test123')
   })
+})
+
+test('getElementNear', () => {
+  const [store, setState] = createStore(createState({
+    canvases: [
+      createCanvas({
+        id: '1',
+        active: true,
+        elements: [
+          createEditorElement({id: '1', x: 0, y: 0, width: 100, height: 100}),
+          createEditorElement({id: '2', x: 200, y: 200, width: 100, height: 100}),
+        ],
+      }),
+    ],
+  }))
+
+  const service = new CanvasService(ctrl, store, setState)
+
+  expect(service.getElementNear([-10, -20])).toEqual({id: '1', edge: EdgeType.Top})
+  expect(service.getElementNear([-20, -10])).toEqual({id: '1', edge: EdgeType.Left})
+  expect(service.getElementNear([110, 120])).toEqual({id: '1', edge: EdgeType.Bottom})
+  expect(service.getElementNear([120, 110])).toEqual({id: '1', edge: EdgeType.Right})
+
+  expect(service.getElementNear([300, 180])).toEqual({id: '2', edge: EdgeType.Top})
+})
+
+test('center', () => {
+  const [store, setState] = createStore(createState({
+    canvases: [
+      createCanvas({
+        id: '1',
+        active: true,
+        elements: [
+          createEditorElement({id: '1', x: 0, y: 0, width: 100, height: 100}),
+          createEditorElement({id: '2', x: 100, y: 0, width: 100, height: 100}),
+          createEditorElement({id: '3', x: 0, y: 100, width: 100, height: 100}),
+        ],
+      }),
+    ],
+  }))
+
+  const service = new CanvasService(ctrl, store, setState)
+
+  expect(service.getCenterPoint()?.toArray()).toEqual([100, 100, 1])
 })

@@ -4,7 +4,7 @@ import {EditorView} from 'prosemirror-view'
 import {ySyncPluginKey} from 'y-prosemirror'
 import {v4 as uuidv4} from 'uuid'
 import {debounce} from 'ts-debounce'
-import {Vec2d} from '@tldraw/primitives'
+import {Box2d, Vec2d} from '@tldraw/primitives'
 import {
   Camera,
   Canvas,
@@ -20,12 +20,13 @@ import {
   isEditorElement,
   isLinkElement,
   isImageElement,
+  isBoxElement,
+  CanvasBoxElement,
 } from '@/state'
 import * as db from '@/db'
 import * as remote from '@/remote'
 import {createEmptyText, createExtensions, createNodeViews, createSchema} from '@/prosemirror-setup'
 import {Ctrl} from '.'
-import {ElementBox, ElementMap} from './ElementMap'
 
 interface UpdateCanvas {
   camera?: Camera;
@@ -73,7 +74,6 @@ interface UpdateLinkElement {
 
 export class CanvasService {
   public saveCanvasDebounced = debounce(() => this.saveCanvas(), 100)
-  private elementMap: ElementMap | undefined
 
   constructor(
     private ctrl: Ctrl,
@@ -152,8 +152,7 @@ export class CanvasService {
   backToContent() {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
-    this.generateElementMap()
-    const center = this.elementMap?.center()
+    const center = this.getCenterPoint()
     const zoom = 0.5
     if (center) {
       const vp = new Vec2d(window.innerWidth / 2, window.innerHeight / 2).div(zoom)
@@ -406,7 +405,7 @@ export class CanvasService {
     const existingIndex = currentCanvas.elements.findIndex((el) => el.id === id)
 
     if (existingIndex !== -1) {
-      let toBox = this.elementMap?.near([toX, toY])
+      let toBox = this.getElementNear([toX, toY])
       if (toBox?.id === fromEl.id) {
         toBox = undefined
       }
@@ -454,20 +453,6 @@ export class CanvasService {
     }
 
     this.saveCanvas()
-  }
-
-  generateElementMap() {
-    const currentCanvas = this.currentCanvas
-    if (!currentCanvas) return
-    const xs = []
-    for (const el of currentCanvas.elements) {
-      if (isEditorElement(el) || isImageElement(el)) {
-        const {id, x, y, width, height} = el
-        xs.push(new ElementBox(id, x, y, width, height))
-      }
-    }
-
-    this.elementMap = new ElementMap(xs)
   }
 
   clearCanvas() {
@@ -560,6 +545,70 @@ export class CanvasService {
     return db.getCanvases() as Promise<Canvas[]>
   }
 
+  getElementNear(point: [number, number]): {id: string; edge: EdgeType} | undefined {
+    const currentCanvas = this.currentCanvas
+    if (!currentCanvas) return
+
+    const p = Vec2d.FromArray(point)
+
+    for (const el of currentCanvas.elements) {
+      if (!isBoxElement(el)) continue
+      const box = this.createBox(el)
+
+      const distT = Vec2d.DistanceToLineSegment(
+        box.getHandlePoint('top_left').addXY(1, 0),
+        box.getHandlePoint('top_right').subXY(1, 0),
+        p
+      )
+      const distB = Vec2d.DistanceToLineSegment(
+        box.getHandlePoint('bottom_left').addXY(1, 0),
+        box.getHandlePoint('bottom_right').subXY(1, 0),
+        p
+      )
+      const distL = Vec2d.DistanceToLineSegment(
+        box.getHandlePoint('top_left').addXY(0, 1),
+        box.getHandlePoint('bottom_left').subXY(0, 1),
+        p
+      )
+      const distR = Vec2d.DistanceToLineSegment(
+        box.getHandlePoint('top_right').addXY(0, 1),
+        box.getHandlePoint('bottom_right').subXY(0, 1),
+        p
+      )
+
+      const corners = [
+        {e: EdgeType.Top, d: distT},
+        {e: EdgeType.Bottom, d: distB},
+        {e: EdgeType.Left, d: distL},
+        {e: EdgeType.Right, d: distR},
+      ]
+
+      let min
+      for (const c of corners) {
+        if (!min || c.d < min.d) min = c
+      }
+
+      if (min !== undefined && min.d <= 30) {
+        return {id: el.id, edge: min.e}
+      }
+    }
+  }
+
+  getCenterPoint(): Vec2d | undefined {
+    const currentCanvas = this.currentCanvas
+    if (!currentCanvas) return
+
+    let all
+    for (const el of currentCanvas.elements) {
+      if (!isBoxElement(el)) continue
+      const box = this.createBox(el)
+      if (!all) all = box
+      else all.expand(box)
+    }
+
+    return all?.center
+  }
+
   private async saveCanvas() {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
@@ -573,6 +622,11 @@ export class CanvasService {
         active: undefined,
       }))
     }))
+  }
+
+  private createBox(el: CanvasBoxElement) {
+    const {x, y, width, height} = el
+    return new Box2d(x, y, width, height)
   }
 }
 

@@ -66,7 +66,6 @@ export default ({element}: {element: CanvasLinkElement}) => {
       const i = Vec2d.FromArray(initial).div(zoom).sub(p)
 
       if (first) {
-        ctrl.canvas.generateElementMap()
         const fromEl = currentCanvas.elements.find((el) => el.id === element.from) as CanvasEditorElement
         const toEl = currentCanvas.elements.find((el) => el.id === element.to) as CanvasEditorElement
         const fromBox = new Box2d(fromEl.x, fromEl.y, fromEl.width, fromEl.height)
