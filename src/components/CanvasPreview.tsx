@@ -4,7 +4,7 @@ import {Node} from 'prosemirror-model'
 import * as Y from 'yjs'
 import {yDocToProsemirrorJSON} from 'y-prosemirror'
 import {Box2d} from '@tldraw/primitives'
-import {Canvas, isEditorElement, useState} from '@/state'
+import {Canvas, isEditorElement, isImageElement, useState} from '@/state'
 import {createExtensions, createSchema} from '@/prosemirror-setup'
 
 interface Props {
@@ -28,8 +28,9 @@ export default (props: Props) => {
     const canvas = createHiPPICanvas(136, 172)
     const ctx = canvas.getContext('2d')!
     const frame = new Box2d(0, 0, 0, 0)
+
     for (const el of props.canvas.elements) {
-      if (!isEditorElement(el)) continue
+      if (!isEditorElement(el) && !isImageElement(el)) continue
       const box = new Box2d(el.x, el.y, el.width, el.height)
       frame.expand(box)
     }
@@ -46,32 +47,39 @@ export default (props: Props) => {
     const background = style.getPropertyValue('--background')
 
     for (const el of props.canvas.elements) {
-      if (!isEditorElement(el)) continue
+      if (!isEditorElement(el) && !isImageElement(el)) continue
+
       const x = (el.x - frame.x) * r
       const y = (el.y - frame.y) * r
       const w = el.width * r
       const h = el.height * r
 
-      ctx.fillStyle = background
-      ctx.strokeStyle = border
-      ctx.rect(x, y, w, h)
-      ctx.lineWidth = 1
-      ctx.stroke()
-      ctx.beginPath()
-      ctx.fill()
-      ctx.closePath()
+      if (isImageElement(el)) {
+        const img = new Image()
+        img.onload = () => ctx.drawImage(img, x, y, w, h)
+        img.src = el.src
+      } else if (isEditorElement(el)) {
+        ctx.fillStyle = background
+        ctx.strokeStyle = border
+        ctx.rect(x, y, w, h)
+        ctx.lineWidth = 1
+        ctx.stroke()
+        ctx.beginPath()
+        ctx.fill()
+        ctx.closePath()
 
-      const file = ctrl.file.findFile({id: el.id})
-      if (!file) continue
-      const ydoc = new Y.Doc({gc: false})
-      Y.applyUpdate(ydoc, file.ydoc)
-      const state = yDocToProsemirrorJSON(ydoc, file.id)
-      const doc = Node.fromJSON(schema, state)
-      ctx.font = '6px ' + font
-      ctx.fillStyle = foreground
-      ctx.beginPath()
-      wrapText(ctx, doc, x + 2, y + 6, w - 4, h - 2, 6)
-      ctx.closePath()
+        const file = ctrl.file.findFile({id: el.id})
+        if (!file) continue
+        const ydoc = new Y.Doc({gc: false})
+        Y.applyUpdate(ydoc, file.ydoc)
+        const state = yDocToProsemirrorJSON(ydoc, file.id)
+        const doc = Node.fromJSON(schema, state)
+        ctx.font = '6px ' + font
+        ctx.fillStyle = foreground
+        ctx.beginPath()
+        wrapText(ctx, doc, x + 2, y + 6, w - 4, h - 2, 6)
+        ctx.closePath()
+      }
     }
 
     ref.innerHTML = ''

@@ -109,7 +109,7 @@ export async function deleteFile(id: string) {
   return (await dbPromise).delete('files', id)
 }
 
-export async function getCanvases() {
+export async function getCanvases(): Promise<PersistedCanvas[]> {
   return (await dbPromise).getAll('canvases')
 }
 

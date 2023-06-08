@@ -8,9 +8,9 @@ import {
   CanvasEditorElement,
   CanvasLinkElement,
   CanvasImageElement,
-  createState,
   EdgeType,
   ElementType,
+  createState,
 } from '@/state'
 import {createCtrl, Ctrl} from '@/services'
 import {CanvasService} from '@/services/CanvasService'
@@ -55,6 +55,17 @@ const createLinkElement = (props: Partial<CanvasLinkElement> = {}): CanvasLinkEl
   fromEdge: EdgeType.Left,
   to: '2',
   toEdge: EdgeType.Right,
+  ...props,
+})
+
+const createImageElement = (props: Partial<CanvasImageElement> = {}): CanvasImageElement => ({
+  id: '1',
+  type: ElementType.Image,
+  src: '/path/1.png',
+  x: 0,
+  y: 0,
+  width: 100,
+  height: 100,
   ...props,
 })
 
@@ -107,6 +118,7 @@ test('updateCanvasElement', async () => {
           createEditorElement({id: '1'}),
           createEditorElement({id: '2'}),
           createLinkElement({id: '3', from: '1', to: '2'}),
+          createImageElement({id: '4'}),
         ],
         active: true,
       })
@@ -138,6 +150,16 @@ test('updateCanvasElement', async () => {
   service.updateCanvasElement('1', 2, {selected: true})
   const selectedLinkEl = service.currentCanvas?.elements[2] as CanvasLinkElement
   expect(selectedLinkEl.selected).toBe(true)
+
+  service.updateCanvasElement('1', 3, {
+    type: ElementType.Image,
+    width: 200,
+    height: 200,
+  })
+
+  const imageEl = service.currentCanvas?.elements[3] as CanvasImageElement
+  expect(imageEl.width).toBe(200)
+  expect(imageEl.height).toBe(200)
 })
 
 test('backToContent', () => {
