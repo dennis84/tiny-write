@@ -1,7 +1,6 @@
 import {Show, onCleanup, createEffect, onMount} from 'solid-js'
 import {createMutable} from 'solid-js/store'
 import {appWindow} from '@tauri-apps/api/window'
-import {EditorView} from 'prosemirror-view'
 import {Mode, State, StateContext} from './state'
 import {createCtrl, Ctrl} from '@/services'
 import * as remote from '@/remote'
@@ -13,7 +12,6 @@ import Menu from '@/components/Menu'
 import ErrorView from '@/components/Error'
 import Dir from '@/components/Dir'
 import Keymap from '@/components/Keymap'
-import {getImagePath, insertImage, insertVideo} from '@/prosemirror/image'
 
 export default (props: {state: State}) => {
   const {store, ctrl} = createCtrl(props.state)
@@ -24,26 +22,6 @@ export default (props: {state: State}) => {
   const onDragOver = (e: DragEvent) => {
     mouseEnterCoords.x = e.pageX
     mouseEnterCoords.y = e.pageY
-  }
-
-  const insertImageMd = (
-    editorView: EditorView,
-    data: string,
-    left: number,
-    top: number,
-    mime?: string
-  ) => {
-    if (ctrl.file.currentFile?.markdown) {
-      const text = `![](${data})`
-      const pos = editorView.posAtCoords({left, top})
-      const tr = editorView.state.tr
-      tr.insertText(text, pos?.pos ?? editorView.state.doc.content.size)
-      editorView.dispatch(tr)
-    } else if (mime && mime.startsWith('video/')) {
-      insertVideo(editorView, data, mime, left, top)
-    } else {
-      insertImage(editorView, data, left, top)
-    }
   }
 
   onMount(() => {
@@ -76,10 +54,10 @@ export default (props: {state: State}) => {
                 ? await remote.dirname(currentFile.path)
                 : undefined
               const p = await remote.toRelativePath(path, d)
-              insertImageMd(currentFile.editorView, p, x, y, mime)
+              ctrl.image.insert(p, x, y, mime)
             } else if (store.mode === Mode.Canvas) {
               const p = await remote.toRelativePath(path)
-              const src = await getImagePath(p)
+              const src = await ctrl.image.getImagePath(p)
               remote.log('INFO', 'Add to canvas:' + p)
               const img = new Image()
               img.src = src
@@ -136,7 +114,7 @@ export default (props: {state: State}) => {
             if (store.mode === Mode.Editor) {
               const currentFile = ctrl.file.currentFile
               if (!currentFile?.editorView) return
-              insertImageMd(currentFile.editorView, data, x, y)
+              ctrl.image.insert(data, x, y)
             } else if (store.mode === Mode.Canvas) {
               const img = new Image()
               img.src = data

@@ -1,8 +1,6 @@
 import {Plugin} from 'prosemirror-state'
 import {Node, Schema} from 'prosemirror-model'
 import {EditorView} from 'prosemirror-view'
-import {convertFileSrc} from '@tauri-apps/api/tauri'
-import {resolvePath, dirname} from '@/remote'
 import {isTauri} from '@/env'
 import {ProseMirrorExtension} from '@/prosemirror'
 import {Ctrl} from '@/services'
@@ -20,13 +18,6 @@ const isUrl = (str: string) => {
 }
 
 const isBlank = (text: string) => text === ' ' || text === '\xa0'
-
-export const getImagePath = async (src: string, path?: string) => {
-  const s = decodeURIComponent(src)
-  const paths = path ? [await dirname(path), s] : [s]
-  const absolutePath = await resolvePath(paths)
-  return convertFileSrc(absolutePath)
-}
 
 const imageInput = (schema: Schema) => new Plugin({
   props: {
@@ -93,30 +84,6 @@ const videoSchema = {
   ]
 }
 
-export const insertImage = (view: EditorView, src: string, left: number, top: number) => {
-  const state = view.state
-  const tr = state.tr
-  const node = state.schema.nodes.image.create({src})
-  const pos = view.posAtCoords({left, top})
-  tr.insert(pos?.pos ?? state.doc.content.size, node)
-  view.dispatch(tr)
-}
-
-export const insertVideo = (
-  view: EditorView,
-  src: string,
-  type: string,
-  left: number,
-  top: number
-) => {
-  const state = view.state
-  const tr = state.tr
-  const node = state.schema.nodes.video.create({src, type})
-  const pos = view.posAtCoords({left, top})
-  tr.insert(pos?.pos ?? state.doc.content.size, node)
-  view.dispatch(tr)
-}
-
 class ImageView {
   dom: Element
   contentDOM?: HTMLElement
@@ -156,7 +123,7 @@ class ImageView {
       !node.attrs.src.startsWith('data:') &&
       !isUrl(node.attrs.src)
     ) {
-      getImagePath(node.attrs.src, this.ctrl?.file?.currentFile?.path).then((p) => {
+      ctrl.image.getImagePath(node.attrs.src, this.ctrl?.file?.currentFile?.path).then((p) => {
         source.setAttribute('src', p)
       })
     } else {
