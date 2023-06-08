@@ -59,21 +59,6 @@ const codeBlockKeymap = {
   'Shift-ArrowDown': arrowHandler('down'),
 }
 
-export const defaultProps = {
-  theme: 'material-light',
-  dark: false,
-  typewriterMode: false,
-  fontSize: 18,
-  font: 'JetBrains Mono',
-  prettier: {
-    printWidth: 80,
-    tabWidth: 2,
-    useTabs: false,
-    semi: false,
-    singleQuote: true,
-  }
-}
-
 const codeBlockSchema = {
   content: 'text*',
   group: 'block',

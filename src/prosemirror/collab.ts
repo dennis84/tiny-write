@@ -1,17 +1,10 @@
 import {Plugin} from 'prosemirror-state'
 import {EditorView} from 'prosemirror-view'
 import * as Y from 'yjs'
-import {WebsocketProvider} from 'y-websocket'
 import {ySyncPlugin, yCursorPlugin, yUndoPlugin, ySyncPluginKey} from 'y-prosemirror'
 import {Awareness} from 'y-protocols/awareness'
 import {ProseMirrorExtension} from '@/prosemirror'
 import {Ctrl} from '@/services'
-
-export interface CollabOptions {
-  type: Y.XmlFragment;
-  provider: WebsocketProvider;
-  permanentUserData: Y.PermanentUserData;
-}
 
 const cursorBuilder = (user: any): HTMLElement => {
   const cursor = document.createElement('span')

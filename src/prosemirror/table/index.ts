@@ -14,7 +14,7 @@ import {ProseMirrorExtension} from '@/prosemirror'
 import {cellMenu} from './cell-menu'
 import {Ctrl} from '@/services'
 
-export const tableInputRule = (schema: Schema) => new InputRule(
+const tableInputRule = (schema: Schema) => new InputRule(
   new RegExp('^\\|{2,}\\s$'),
   (state: EditorState, match: string[], start: number, end: number) => {
     const tr = state.tr
