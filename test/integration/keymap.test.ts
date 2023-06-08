@@ -1,6 +1,8 @@
+import os from 'os'
 import {expect, test} from '@playwright/test'
-import {mod} from '@/env'
 import {delay} from './utils'
+
+const mod = os.platform() === 'darwin' ? 'Meta' : 'Ctrl'
 
 test.beforeEach(async ({page}) => {
   await page.goto('/')
