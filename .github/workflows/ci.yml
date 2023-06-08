@@ -25,19 +25,11 @@ jobs:
     needs: install
     steps:
     - uses: actions/checkout@v3
-    - name: Use Node.js ${{ matrix.node-version }}
+    - name: Use Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: ${{ matrix.node-version }}
-    - name: Cache npm
-      id: cache-npm
-      uses: actions/cache@v3
-      with:
-        path: |
-          ~/.npm
-          node_modules
-        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: ${{ runner.os }}-node-
+        node-version: 16
+        cache: 'npm'
     - run: npm run lint
     - run: npx playwright install --with-deps chromium
     - run: npm test
@@ -50,19 +42,11 @@ jobs:
     - run: |
         sudo apt-get update
         sudo apt-get install -y webkit2gtk-4.0
-    - name: Use Node.js ${{ matrix.node-version }}
+    - name: Use Node.js
       uses: actions/setup-node@v3
       with:
-        node-version: ${{ matrix.node-version }}
-    - name: Cache npm
-      id: cache-npm
-      uses: actions/cache@v3
-      with:
-        path: |
-          ~/.npm
-          node_modules
-        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: ${{ runner.os }}-node-
+        node-version: 16
+        cache: 'npm'
     - name: Cache cargo
       uses: actions/cache@v3
       with:
