@@ -4,6 +4,7 @@ import * as remote from '@/remote'
 import * as db from '@/db'
 import {isDark} from '@/env'
 import {Ctrl} from '.'
+import {debounce} from 'ts-debounce'
 
 export interface Font {
   label: string;
@@ -267,6 +268,8 @@ export class ConfigService {
 
   readonly borderRadius = '5px';
 
+  private saveConfigDebounced = debounce((state) => this.saveConfig(state), 100)
+
   constructor(
     private ctrl: Ctrl,
     private store: Store<State>,
@@ -367,7 +370,7 @@ export class ConfigService {
   updateContentWidth(contentWidth: number) {
     this.store.collab?.ydoc?.getMap('config').set('contentWidth', contentWidth)
     this.setState('config', 'contentWidth', contentWidth)
-    this.saveConfig(unwrap(this.store))
+    this.saveConfigDebounced(unwrap(this.store))
   }
 
   updateTheme() {

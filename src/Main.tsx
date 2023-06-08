@@ -139,7 +139,7 @@ export default (props: {state: State}) => {
   })
 
   createEffect(async () => {
-    if (ctrl.canvas.currentCanvas) return
+    if (store.mode === Mode.Canvas) return
 
     const onWheel = (e: WheelEvent) => {
       if (e.ctrlKey && e.buttons === 0) {

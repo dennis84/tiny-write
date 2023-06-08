@@ -233,10 +233,10 @@ export default () => {
         <span />
       </Burger>
       <Show when={show() === 'files'}>
-        <FilesMenu onBack={() => setShow('main')} onOpenFile={() => maybeHide()} />
+        <FilesMenu onBack={() => setShow('main')} onOpen={() => maybeHide()} />
       </Show>
       <Show when={show() === 'canvases'}>
-        <CanvasesMenu onBack={() => setShow('main')} />
+        <CanvasesMenu onBack={() => setShow('main')} onOpen={() => maybeHide()} />
       </Show>
       <Show when={show() === 'code_block'}>
         <CodeBlockMenu onBack={() => setShow('main')} />

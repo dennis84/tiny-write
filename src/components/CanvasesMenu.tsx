@@ -10,6 +10,7 @@ import CanvasPreview from './CanvasPreview';
 
 interface Props {
   onBack: () => void;
+  onOpen: () => void;
 }
 
 export const CanvasesMenu = (props: Props) => {
@@ -23,6 +24,7 @@ export const CanvasesMenu = (props: Props) => {
 
   const onOpenCanvas = (canvas: Canvas) => {
     ctrl.canvas.open(canvas.id)
+    props.onOpen()
   }
 
   const onRemove = () => {

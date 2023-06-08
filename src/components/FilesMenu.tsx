@@ -16,7 +16,7 @@ import {Card, CardContent, CardFooter, CardList, CardMenuButton} from './Layout'
 
 interface Props {
   onBack: () => void;
-  onOpenFile: () => void;
+  onOpen: () => void;
 }
 
 export const FilesMenu = (props: Props) => {
@@ -33,7 +33,7 @@ export const FilesMenu = (props: Props) => {
 
   const onOpenFile = async (file: File) => {
     await ctrl.editor.openFile(unwrap(file))
-    props.onOpenFile()
+    props.onOpen()
   }
 
   const onRemove = () => {
@@ -44,14 +44,14 @@ export const FilesMenu = (props: Props) => {
 
   const onNewFile = () => {
     ctrl.editor.newFile()
-    props.onOpenFile()
+    props.onOpen()
   }
 
   const onAddToCanvas = () => {
     const f = unwrap(current())
     if (f) ctrl.canvas.addFile(f)
     setCurrent(undefined)
-    props.onOpenFile()
+    props.onOpen()
   }
 
   const Excerpt = (p: {file: File}) => {
