@@ -109,7 +109,7 @@ const Edge = (props: EdgeProps) => {
     ref.setAttribute('width', rw.toString())
     ref.setAttribute('height', rh.toString())
 
-    const BS = (props.selected ? 5 : 3) / 2
+    const BS = (props.selected ? 3 : 2) / 2
 
     const cx =
       props.type === EdgeType.Left ? BORDER_SIZE - BS :

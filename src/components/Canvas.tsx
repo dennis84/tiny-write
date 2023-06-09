@@ -28,7 +28,7 @@ const Board = styled('div')`
 export default () => {
   const [, ctrl] = useState()
   const [stopGesture, setStopGesture] = createSignal(false)
-  const scaleBounds = {min: 0.5, max: 10}
+  const scaleBounds = {min: 0.3, max: 10}
   let ref!: HTMLDivElement
 
   const onGridClick = () => {

@@ -55,13 +55,13 @@ export default ({element}: {element: CanvasEditorElement}) => {
           user-select: none;
           pointer-events: none;
           ${element.active ? `
-            box-shadow: 0 0 0 5px var(--primary-background);
+            box-shadow: 0 0 0 3px var(--primary-background);
             user-select: auto;
             pointer-events: auto;
           ` : element.selected ? `
-            box-shadow: 0 0 0 5px var(--border);
-          ` : `
             box-shadow: 0 0 0 3px var(--border);
+          ` : `
+            box-shadow: 0 0 0 2px var(--border);
           `}
         `}
       >
