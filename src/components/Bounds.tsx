@@ -31,7 +31,8 @@ const Border = styled('rect')`
   touch-action: none;
 `
 
-const BORDER_SIZE = 20
+const CIRCLE_RADIUS = 5
+const BORDER_SIZE = 30
 const BORDER_SIZE_2 = (BORDER_SIZE * 2)
 const MIN_SIZE = 100
 
@@ -80,7 +81,10 @@ const Edge = (props: EdgeProps) => {
 
     const linkGesture = new DragGesture(linkRef, ({event, initial, first, last, movement}) => {
       event.stopPropagation()
-      if (first) setCurrentLink(uuidv4())
+      if (first) {
+        setCurrentLink(uuidv4())
+        setHovering(false)
+      }
       const {point, zoom} = currentCanvas.camera
       const p = Vec2d.FromArray(point)
       const i = Vec2d.FromArray(initial).div(zoom).sub(p)
@@ -109,15 +113,13 @@ const Edge = (props: EdgeProps) => {
     ref.setAttribute('width', rw.toString())
     ref.setAttribute('height', rh.toString())
 
-    const BS = (props.selected ? 3 : 2) / 2
-
     const cx =
-      props.type === EdgeType.Left ? BORDER_SIZE - BS :
-      props.type === EdgeType.Right ? props.width + BORDER_SIZE + BS :
+      props.type === EdgeType.Left ? CIRCLE_RADIUS :
+      props.type === EdgeType.Right ? props.width + BORDER_SIZE_2 - CIRCLE_RADIUS :
       (props.width / 2) + BORDER_SIZE
     const cy =
-      props.type === EdgeType.Top ? BORDER_SIZE - BS :
-      props.type === EdgeType.Bottom ? props.height + BORDER_SIZE + BS :
+      props.type === EdgeType.Top ? CIRCLE_RADIUS :
+      props.type === EdgeType.Bottom ? props.height + BORDER_SIZE_2 - CIRCLE_RADIUS :
       (props.height / 2) + BORDER_SIZE
     linkRef.setAttribute('cx', cx.toString())
     linkRef.setAttribute('cy', cy.toString())
@@ -133,12 +135,14 @@ const Edge = (props: EdgeProps) => {
       />
       <circle
         ref={linkRef}
-        r={12}
+        r={CIRCLE_RADIUS}
         onMouseOver={() => setHovering(true)}
         onMouseOut={() => setHovering(false)}
+        stroke="transparent"
+        stroke-width="10"
         style={{
-          fill: hovering() ? 'var(--border)' : 'transparent',
-          cursor: 'grab',
+          fill: hovering() ? 'var(--primary-background-80)' : 'transparent',
+          cursor: 'pointer',
           'touch-action': 'none',
         }}
       />
@@ -149,7 +153,6 @@ const Edge = (props: EdgeProps) => {
 const Corner = (props: CornerProps) => {
   let ref!: SVGRectElement
   const [, ctrl] = useState()
-  const size = 20
   const left = props.type === CornerType.TopLeft || props.type === CornerType.BottomLeft
   const bottom = props.type === CornerType.BottomLeft || props.type === CornerType.BottomRight
   const cursor = props.type === CornerType.TopLeft ? 'nwse-resize'
@@ -259,8 +262,8 @@ const Corner = (props: CornerProps) => {
   })
 
   createEffect(() => {
-    const ex = left ? 0 : props.width + BORDER_SIZE_2 - size
-    const ey = bottom ? props.height + BORDER_SIZE_2 - size : 0
+    const ex = left ? 0 : props.width + BORDER_SIZE
+    const ey = bottom ? props.height + BORDER_SIZE   : 0
     ref.setAttribute('x', ex.toString())
     ref.setAttribute('y', ey.toString())
   })
@@ -268,8 +271,8 @@ const Corner = (props: CornerProps) => {
   return (
     <rect
       ref={ref}
-      width={size}
-      height={size}
+      width={BORDER_SIZE}
+      height={BORDER_SIZE}
       style={{cursor, fill: 'transparent', 'touch-action': 'none'}}
     />
   )

@@ -12,7 +12,7 @@ import Menu from '@/components/Menu'
 import ErrorView from '@/components/Error'
 import Dir from '@/components/Dir'
 import Keymap from '@/components/Keymap'
-import Fonts from '@/components/Fonts'
+import Variables from '@/components/Variables'
 
 export default (props: {state: State}) => {
   const {store, ctrl} = createCtrl(props.state)
@@ -201,7 +201,7 @@ export default (props: {state: State}) => {
         </Show>
         <Menu />
         <Keymap />
-        <Fonts />
+        <Variables />
       </Layout>
     </StateContext.Provider>
   )
