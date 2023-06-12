@@ -1,8 +1,14 @@
 import {styled} from 'solid-styled-components'
-import {Config, useState} from '@/state'
+import {Config, Mode, useState} from '@/state'
 import {onCleanup} from 'solid-js'
 
-const codeBlock = (config: Config) => `
+interface Props {
+  config: Config;
+  mode: Mode;
+  markdown: boolean;
+}
+
+const codeBlock = (props: Props) => `
   .cm-container {
     position: relative;
     margin: 10px 0;
@@ -56,7 +62,7 @@ const codeBlock = (config: Config) => `
       height: 100%;
       width: 100%;
       border-radius: var(--border-radius);
-      flex-direction: ${config.contentWidth > 1000 ? 'row' : 'column'};
+      flex-direction: ${props.mode === Mode.Editor && props.config.contentWidth > 1000 ? 'row' : 'column'};
       > .cm-scroller {
         flex-grow: 1;
         flex-shrink: 1;
@@ -155,10 +161,10 @@ const codeBlock = (config: Config) => `
   }
 `
 
-const proseMirror = (config: Config, markdown: boolean) => `
+const proseMirror = (props: Props) => `
   .ProseMirror {
-    ${codeBlock(config)}
-    ${markdown ? 'white-space: pre-wrap' : ''};
+    ${codeBlock(props)}
+    ${props.markdown ? 'white-space: pre-wrap' : ''};
     word-wrap: break-word;
     white-space: pre-wrap;
     position: relative;
@@ -459,7 +465,7 @@ export const CanvasEditor = styled('div')`
   height: fit-content;
   background: var(--background);
   padding: 10px 30px;
-  ${(props: any) => proseMirror(props.config, props.markdown)}
+  ${(props: any) => proseMirror(props)}
 `
 
 const EditorStyle = styled('div')`
@@ -468,7 +474,7 @@ const EditorStyle = styled('div')`
   width: ${(props: any) => props.config.contentWidth}px;
   max-width: 100%;
   padding: 0 50px;
-  ${(props: any) => proseMirror(props.config, props.markdown)}
+  ${(props: any) => proseMirror(props)}
   .ProseMirror {
     margin-top: 50px;
     padding-bottom: 77vh;
@@ -486,6 +492,7 @@ export const Editor = (props: any) => {
     <EditorStyle
       ref={props.ref}
       config={store.config}
+      mode={store.mode}
       spellcheck={store.config.spellcheck}
       markdown={ctrl.file.currentFile?.markdown}
       data-tauri-drag-region="true"

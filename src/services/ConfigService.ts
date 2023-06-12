@@ -281,7 +281,7 @@ export class ConfigService {
   }
 
   get typewriterMode() {
-    return this.store.config.typewriterMode
+    return this.store.mode === Mode.Editor && this.store.config.typewriterMode
   }
 
   get prettier() {
