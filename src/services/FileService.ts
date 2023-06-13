@@ -106,7 +106,7 @@ export class FileService {
   destroy() {
     if (!this.currentFile) return
     this.currentFile?.editorView?.destroy()
-    const index = this.store.files.findIndex((file) => file.id === this.currentFile?.id)
+    const index = this.currentFileIndex
     if (index === -1) return
     this.setState('files', index, 'editorView', undefined)
   }

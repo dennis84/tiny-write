@@ -81,12 +81,13 @@ export class AppService {
         collab = this.ctrl.collab.create(currentCanvas.id, data.args?.room !== undefined)
       }
 
+      const mode = currentCanvas ? Mode.Canvas : Mode.Editor
       const newState: State = {
         ...data,
         config: {...data.config, ...this.ctrl.config.getTheme(data)},
         loading: 'initialized',
         collab,
-        mode: currentCanvas ? Mode.Canvas : Mode.Editor,
+        mode,
       }
 
       if (isTauri() && newState.config?.alwaysOnTop) {
@@ -94,8 +95,10 @@ export class AppService {
       }
 
       this.setState(newState)
-      this.ctrl.editor.renderEditor(node)
-      this.ctrl.editor.updateText(text)
+      if (mode === Mode.Editor) {
+        this.ctrl.editor.renderEditor(node)
+        this.ctrl.editor.updateText(text)
+      }
     } catch (error: any) {
       remote.log('error', `Error during init: ${error.message}`)
       this.setError(error)

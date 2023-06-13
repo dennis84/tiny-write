@@ -161,8 +161,14 @@ export default (props: {state: State}) => {
     const currentFile = ctrl.file.currentFile
     const currentCanvas = ctrl.canvas.currentCanvas
     if (!currentFile && !currentCanvas) {
+      // Init on first render
       ctrl.app.init(editorRef!)
-    } else if (currentFile?.id && currentFile.editorView === undefined) {
+    } else if (
+      // Render editor if change file
+      store.mode === Mode.Editor &&
+      currentFile?.id &&
+      currentFile.editorView === undefined
+    ) {
       ctrl.editor.renderEditor(editorRef!)
     }
   })
