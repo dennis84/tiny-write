@@ -141,7 +141,7 @@ export class AppService {
 
   private async fetchData(): Promise<State> {
     const state = unwrap(this.store)
-    let args = await remote.getArgs().catch(() => undefined) ?? {}
+    let args = await remote.getArgs().catch(() => undefined) ?? state.args ?? {}
 
     if (!isTauri()) {
       const room = window.location.pathname?.slice(1).trim()
@@ -151,8 +151,8 @@ export class AppService {
     const fetchedWindow = await db.getWindow()
     const fetchedConfig = await db.getConfig()
     const fetchedSize = await db.getSize()
-    const files = await this.ctrl.file.fetchFiles()
-    const canvases = await this.ctrl.canvas.fetchCanvases()
+    const files = await this.ctrl.file.fetchFiles() ?? []
+    const canvases = await this.ctrl.canvas.fetchCanvases() ?? []
     const meta = await db.getMeta()
 
     const config = {
@@ -162,14 +162,14 @@ export class AppService {
 
     return {
       ...state,
-      args: args ?? state.args,
+      args,
       canvases,
       files,
       config,
       window: fetchedWindow,
       storageSize: fetchedSize ?? 0,
       collab: undefined,
-      mode: meta?.mode ?? Mode.Editor,
+      mode: meta?.mode ?? state.mode ?? Mode.Editor,
     }
   }
 }

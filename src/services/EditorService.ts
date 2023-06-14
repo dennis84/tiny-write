@@ -119,7 +119,7 @@ export class EditorService {
 
   async newFile() {
     const currentFile = this.ctrl.file.currentFile
-    if (isEmpty(currentFile?.editorView?.state)) {
+    if (this.store.mode === Mode.Editor && isEmpty(currentFile?.editorView?.state)) {
       this.setState('args', 'dir', undefined)
       return
     }
