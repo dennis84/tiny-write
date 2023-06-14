@@ -111,6 +111,7 @@ export interface CanvasLinkElement extends CanvasElement {
   toEdge?: EdgeType;
   toX?: number;
   toY?: number;
+  drawing?: boolean;
 }
 
 export interface CanvasImageElement extends CanvasBoxElement {

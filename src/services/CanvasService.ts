@@ -70,6 +70,7 @@ interface UpdateLinkElement {
   to?: string;
   toEdge?: EdgeType;
   selected?: boolean;
+  drawing?: boolean;
 }
 
 export class CanvasService {
@@ -122,6 +123,7 @@ export class CanvasService {
           to: hasOwn('to') ? update.to : prev?.to,
           toEdge: hasOwn('toEdge') ? update.toEdge : prev?.toEdge,
           selected: hasOwn('selected') ? update.selected : prev?.selected,
+          drawing: hasOwn('drawing') ? update.drawing : prev?.drawing,
         }
       } else if (isImageUpdate(update) && isImageElement(prev)) {
         return {
@@ -312,7 +314,7 @@ export class CanvasService {
     remote.log('info', '💾 Switched to canvas mode')
   }
 
-  newFile() {
+  newFile(link?: CanvasLinkElement) {
     const file = this.ctrl.file.createFile()
     const state = unwrap(this.store)
     const update = {
@@ -322,11 +324,11 @@ export class CanvasService {
     }
 
     this.setState(update)
-    this.addFile(file)
+    this.addFile(file, link)
     remote.log('info', '💾 New file added')
   }
 
-  addFile(file: File) {
+  addFile(file: File, link?: CanvasLinkElement) {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
 
@@ -337,9 +339,19 @@ export class CanvasService {
     const height = 350
     const {point, zoom} = currentCanvas.camera
 
-    const center = new Vec2d(window.innerWidth / 2, window.innerHeight / 2).toFixed()
-    const p = Vec2d.FromArray(point)
-    const {x, y} = center.div(zoom).sub(p).subXY(width / 2, height / 2)
+    const isLink = link?.toX !== undefined && link.toY !== undefined
+
+    let x, y
+    if (isLink) {
+      x = link.toX ?? 0
+      y = link.toY ?? 0
+    } else {
+      const center = new Vec2d(window.innerWidth / 2, window.innerHeight / 2).toFixed()
+      const p = Vec2d.FromArray(point)
+      const target = center.div(zoom).sub(p).subXY(width / 2, height / 2)
+      x = target.x
+      y = target.y
+    }
 
     const element: CanvasEditorElement = {
       type: ElementType.Editor,
@@ -354,6 +366,17 @@ export class CanvasService {
       elements: [...currentCanvas.elements, element],
       lastModified: new Date(),
     })
+
+    if (isLink) {
+      const linkIndex = currentCanvas.elements.findIndex((el) => el.id === link.id)
+      this.updateCanvasElement(currentCanvas.id, linkIndex, {
+        type: ElementType.Link,
+        to: file.id,
+        toEdge: EdgeType.Top,
+        toX: undefined,
+        toY: undefined,
+      })
+    }
 
     this.saveCanvas()
     remote.log('info', '💾 Added file to canvas')
@@ -419,6 +442,7 @@ export class CanvasService {
           toEdge: toBox.edge,
           toX: undefined,
           toY: undefined,
+          drawing: true,
         } : {
           from,
           fromEdge,
@@ -426,12 +450,21 @@ export class CanvasService {
           toY,
           to: undefined,
           toEdge: undefined,
+          drawing: true,
         }),
       })
       return
     }
 
-    const newLink: CanvasLinkElement = {type: ElementType.Link, id, from, fromEdge, toX, toY}
+    const newLink: CanvasLinkElement = {
+      type: ElementType.Link,
+      drawing: true,
+      id,
+      from,
+      fromEdge,
+      toX,
+      toY,
+    }
 
     this.updateCanvas(currentCanvas.id, {
       elements: [...currentCanvas.elements, newLink],
@@ -442,17 +475,39 @@ export class CanvasService {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
 
-    const unlinked = currentCanvas.elements.find((el) => {
-      return el.id === id && !(el as CanvasLinkElement).to
-    }) as CanvasLinkElement
+    const elementIndex = currentCanvas.elements.findIndex((el) => el.id === id)
+    if (elementIndex === -1) return
 
-    if (unlinked) {
-      this.updateCanvas(currentCanvas.id, {
-        elements: currentCanvas.elements.filter((el) => el.id !== id),
-      })
+    this.updateCanvasElement(currentCanvas.id, elementIndex, {
+      type: ElementType.Link,
+      drawing: undefined,
+    })
+
+    const element = currentCanvas.elements[elementIndex] as CanvasLinkElement
+    if (element.to) this.saveCanvas()
+  }
+
+  findDeadLinks(): CanvasLinkElement[] {
+    const currentCanvas = this.currentCanvas
+    if (!currentCanvas) return []
+    return currentCanvas.elements.filter((el) => {
+      return isLinkElement(el) && el.to === undefined && !el.drawing
+    }) as CanvasLinkElement[]
+  }
+
+  removeDeadLinks() {
+    const currentCanvas = this.currentCanvas
+    if (!currentCanvas) return false
+
+    const elements = currentCanvas.elements.filter((el) => {
+      return !isLinkElement(el) || el.to !== undefined
+    })
+
+    if (elements.length !== currentCanvas.elements.length) {
+      this.updateCanvas(currentCanvas.id, {elements})
+      this.saveCanvas()
+      remote.log('info', '💾 Removed dead links')
     }
-
-    this.saveCanvas()
   }
 
   clearCanvas() {

@@ -141,7 +141,7 @@ export class AppService {
 
   private async fetchData(): Promise<State> {
     const state = unwrap(this.store)
-    let args = await remote.getArgs().catch(() => undefined)
+    let args = await remote.getArgs().catch(() => undefined) ?? {}
 
     if (!isTauri()) {
       const room = window.location.pathname?.slice(1).trim()

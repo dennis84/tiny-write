@@ -7,6 +7,7 @@ import CanvasGrid from './CanvasGrid'
 import CanvasEditor from './CanvasEditor'
 import CanvasLink from './CanvasLink'
 import CanvasImage from './CanvasImage'
+import CanvasLinkEnd from './CanvasLinkEnd'
 
 const Container = styled('div')`
   width: 100%;
@@ -34,10 +35,6 @@ export default () => {
   const onGridClick = () => {
     const currentCanvas = ctrl.canvas.currentCanvas
     if (!currentCanvas) return
-    if (!currentCanvas.elements.find((el) => el.selected ?? false)) {
-      return
-    }
-
     ctrl.canvas.deselect()
   }
 
@@ -117,6 +114,7 @@ export default () => {
 
   return (
     <Container ref={ref}>
+      <CanvasLinkEnd />
       <CanvasGrid onClick={onGridClick} />
       <Board
         style={{

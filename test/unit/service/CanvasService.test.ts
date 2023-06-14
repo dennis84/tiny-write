@@ -382,6 +382,42 @@ test('newFile', () => {
   expect(editorEl.id).toBe('1')
 })
 
+test('newFile - with link', () => {
+  const ydoc = new Uint8Array()
+  const link = createLinkElement({id: '2', from: '1', toX: 100, toY: 100, to: undefined})
+
+  const [store, setState] = createStore(createState({
+    canvases: [
+      createCanvas({
+        id: '1',
+        active: true,
+        elements: [
+          createEditorElement({id: '1'}),
+          link,
+        ]
+      }),
+    ],
+  }))
+
+  ctrl.file.createFile.mockReturnValue({id: '3', ydoc})
+  ctrl.collab.create.mockReturnValue({})
+
+  const service = new CanvasService(ctrl, store, setState)
+  service.newFile(link)
+
+  expect(service.currentCanvas?.elements.length).toBe(3)
+  const editorEl = service.currentCanvas?.elements[2] as CanvasEditorElement
+  expect(editorEl.id).toBe('3')
+  expect(editorEl.x).toBe(100)
+  expect(editorEl.y).toBe(100)
+
+  const linkEl = service.currentCanvas?.elements[1] as CanvasLinkElement
+  expect(linkEl.toX).toBe(undefined)
+  expect(linkEl.toY).toBe(undefined)
+  expect(linkEl.to).toBe('3')
+  expect(linkEl.toEdge).toBe(EdgeType.Top)
+})
+
 test('addImage', () => {
   const [store, setState] = createStore(createState({
     canvases: [
@@ -458,7 +494,30 @@ test('drawLink - abort', () => {
   expect(service.currentCanvas?.elements.length).toBe(3)
 
   service.drawLinkEnd('3')
+  expect(service.currentCanvas?.elements.length).toBe(3)
+  expect(service.findDeadLinks().length).toBe(1)
+})
+
+test('removeDeadLinks', () => {
+  const [store, setState] = createStore(createState({
+    canvases: [
+      createCanvas({
+        id: '1',
+        active: true,
+        elements: [
+          createEditorElement({id: '1'}),
+          createLinkElement({id: '2', from: '1', toX: 0, toY: 0, to: undefined}),
+        ],
+      }),
+    ],
+  }))
+
+  const service = new CanvasService(ctrl, store, setState)
   expect(service.currentCanvas?.elements.length).toBe(2)
+
+  service.removeDeadLinks()
+
+  expect(service.currentCanvas?.elements.length).toBe(1)
 })
 
 test('clearCanvas', () => {

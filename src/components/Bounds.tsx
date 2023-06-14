@@ -40,6 +40,7 @@ const Edge = (props: EdgeProps) => {
   const [, ctrl] = useState()
   const [hovering, setHovering] = createSignal(false)
   const [currentLink, setCurrentLink] = createSignal<string>()
+
   const vert = props.type === EdgeType.Top || props.type === EdgeType.Bottom
   let ref!: SVGRectElement
   let linkRef!: SVGCircleElement
@@ -292,6 +293,8 @@ const Bounds = styled('svg')`
 export default (props: BoundsProps) => {
   let ref!: SVGSVGElement
   const [, ctrl] = useState()
+  const currentCanvas = ctrl.canvas.currentCanvas
+  if (!currentCanvas) return
 
   onMount(() => {
     const currentCanvas = ctrl.canvas.currentCanvas
@@ -316,7 +319,7 @@ export default (props: BoundsProps) => {
     })
   })
 
-  return (
+  return <>
     <Bounds
       {...props}
       ref={ref}
@@ -334,5 +337,5 @@ export default (props: BoundsProps) => {
       <Corner {...props} type={CornerType.BottomLeft} />
       <Corner {...props} type={CornerType.BottomRight} />
     </Bounds>
-  )
+  </>
 }
