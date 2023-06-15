@@ -414,8 +414,8 @@ export class CanvasService {
       lastModified: new Date(),
     })
 
-    // this.saveCanvas()
-    // remote.log('info', '💾 Added file to canvas')
+    this.saveCanvas()
+    remote.log('info', '💾 Added image to canvas')
   }
 
   drawLink(id: string, from: string, fromEdge: EdgeType, toX: number, toY: number) {
