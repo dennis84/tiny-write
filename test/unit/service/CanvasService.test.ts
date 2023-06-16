@@ -382,9 +382,14 @@ test('newFile', () => {
   expect(editorEl.id).toBe('1')
 })
 
-test('newFile - with link', () => {
+test.each([
+  {toX: 400, toY: 175, x: 400, y: 0, edge: EdgeType.Left},
+  {toX: -400, toY: 175, x: -700, y: 0, edge: EdgeType.Right},
+  {toX: 150, toY: 400, x: 0, y: 400, edge: EdgeType.Top},
+  {toX: 150, toY: -400, x: 0, y: -750, edge: EdgeType.Bottom},
+])('newFile - with link', ({toX, toY, x, y, edge}) => {
   const ydoc = new Uint8Array()
-  const link = createLinkElement({id: '2', from: '1', toX: 100, toY: 100, to: undefined})
+  const link = createLinkElement({id: '2', from: '1', toX, toY, to: undefined})
 
   const [store, setState] = createStore(createState({
     canvases: [
@@ -408,14 +413,14 @@ test('newFile - with link', () => {
   expect(service.currentCanvas?.elements.length).toBe(3)
   const editorEl = service.currentCanvas?.elements[2] as CanvasEditorElement
   expect(editorEl.id).toBe('3')
-  expect(editorEl.x).toBe(100)
-  expect(editorEl.y).toBe(100)
+  expect(editorEl.x).toBe(x)
+  expect(editorEl.y).toBe(y)
 
   const linkEl = service.currentCanvas?.elements[1] as CanvasLinkElement
   expect(linkEl.toX).toBe(undefined)
   expect(linkEl.toY).toBe(undefined)
   expect(linkEl.to).toBe('3')
-  expect(linkEl.toEdge).toBe(EdgeType.Top)
+  expect(linkEl.toEdge).toBe(edge)
 })
 
 test('addImage', () => {

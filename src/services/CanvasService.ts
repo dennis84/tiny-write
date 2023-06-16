@@ -340,11 +340,39 @@ export class CanvasService {
     const {point, zoom} = currentCanvas.camera
 
     const isLink = link?.toX !== undefined && link.toY !== undefined
+    let linkToEdge
 
     let x, y
     if (isLink) {
+      const from = currentCanvas.elements.find((el) => el.id === link.from) as CanvasBoxElement
+      if (!from) return
+      const fromBox = this.createBox(from)
+      const fromHandle = fromBox.getHandlePoint(link.fromEdge)
+
       x = link.toX ?? 0
       y = link.toY ?? 0
+
+      const box = new Box2d(fromHandle.x, fromHandle.y, x - fromHandle.x, y - fromHandle.y)
+
+      if (Math.abs(box.aspectRatio) > 1) {
+        if (box.width > 0) {
+          linkToEdge = EdgeType.Left
+          y -= height / 2
+        } else {
+          linkToEdge = EdgeType.Right
+          y -= height / 2
+          x -= width
+        }
+      } else {
+        if (box.height > 0) {
+          linkToEdge = EdgeType.Top
+          x -= width / 2
+        } else {
+          linkToEdge = EdgeType.Bottom
+          x -= width / 2
+          y -= height
+        }
+      }
     } else {
       const center = new Vec2d(window.innerWidth / 2, window.innerHeight / 2).toFixed()
       const p = Vec2d.FromArray(point)
@@ -372,7 +400,7 @@ export class CanvasService {
       this.updateCanvasElement(currentCanvas.id, linkIndex, {
         type: ElementType.Link,
         to: file.id,
-        toEdge: EdgeType.Top,
+        toEdge: linkToEdge,
         toX: undefined,
         toY: undefined,
       })
