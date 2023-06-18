@@ -424,7 +424,7 @@ export class CanvasService {
     const height = width * imageHeight / imageWidth
     const {zoom, point} = currentCanvas.camera
     const p = Vec2d.FromArray(point)
-    const {x, y} = new Vec2d(pageX, pageY).div(zoom).sub(p)
+    const {x, y} = new Vec2d(pageX, pageY).div(zoom).sub(p).subXY(width / 2, height / 2)
 
     const id = uuidv4()
     const element: CanvasImageElement = {
