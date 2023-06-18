@@ -48,8 +48,6 @@ const Edge = (props: EdgeProps) => {
   onMount(() => {
     const currentCanvas = ctrl.canvas.currentCanvas
     if (!currentCanvas) return
-    const elementIndex = currentCanvas.elements.findIndex((el) => el.id === props.id)
-    if (elementIndex === -1) return
 
     const resizeGesture = new DragGesture(ref, ({event, delta: [dx, dy]}) => {
       event.stopPropagation()
@@ -60,20 +58,20 @@ const Edge = (props: EdgeProps) => {
         const height = props.height - dy / zoom
         const y = props.y + dy / zoom
         if (height < MIN_SIZE) return
-        ctrl.canvas.updateCanvasElement(currentCanvas.id, elementIndex, {type, y, height})
+        ctrl.canvas.updateCanvasElement(props.id, {type, y, height})
       } else if (props.type === EdgeType.Bottom) {
         const height = props.height + dy / zoom
         if (height < MIN_SIZE) return
-        ctrl.canvas.updateCanvasElement(currentCanvas.id, elementIndex, {type, height})
+        ctrl.canvas.updateCanvasElement(props.id, {type, height})
       } else if (props.type === EdgeType.Left) {
         const width = props.width - dx / zoom
         const x = props.x + dx / zoom
         if (width < MIN_SIZE) return
-        ctrl.canvas.updateCanvasElement(currentCanvas.id, elementIndex, {type, x, width})
+        ctrl.canvas.updateCanvasElement(props.id, {type, x, width})
       } else if (props.type === EdgeType.Right) {
         const width = props.width + dx / zoom
         if (width < MIN_SIZE) return
-        ctrl.canvas.updateCanvasElement(currentCanvas.id, elementIndex, {type, width})
+        ctrl.canvas.updateCanvasElement(props.id, {type, width})
       }
 
       ctrl.canvas.updateCanvas(currentCanvas.id, {lastModified: new Date()})
@@ -165,8 +163,6 @@ const Corner = (props: CornerProps) => {
   onMount(() => {
     const currentCanvas = ctrl.canvas.currentCanvas
     if (!currentCanvas) return
-    const elementIndex = currentCanvas.elements.findIndex((el) => el.id === props.id)
-    if (elementIndex === -1) return
 
     const ratio = props.width / props.height
     const gesture = new DragGesture(ref, ({event, delta: [dx, dy], shiftKey}) => {
@@ -196,7 +192,7 @@ const Corner = (props: CornerProps) => {
           }
         }
 
-        ctrl.canvas.updateCanvasElement(currentCanvas.id, elementIndex, {type, x, y, width, height})
+        ctrl.canvas.updateCanvasElement(props.id, {type, x, y, width, height})
       } else if (props.type === CornerType.TopRight) {
         let width = props.width + dx / zoom
         let height = shiftKey ? width / ratio : props.height - dy / zoom
@@ -216,7 +212,7 @@ const Corner = (props: CornerProps) => {
             y = props.y
           }
         }
-        ctrl.canvas.updateCanvasElement(currentCanvas.id, elementIndex, {type, y, width, height})
+        ctrl.canvas.updateCanvasElement(props.id, {type, y, width, height})
       } else if (props.type === CornerType.BottomLeft) {
         let x = props.x + dx / zoom
         let width = props.width - dx / zoom
@@ -235,7 +231,7 @@ const Corner = (props: CornerProps) => {
             height = props.height
           }
         }
-        ctrl.canvas.updateCanvasElement(currentCanvas.id, elementIndex, {type, x, width, height})
+        ctrl.canvas.updateCanvasElement(props.id, {type, x, width, height})
       } else if (props.type === CornerType.BottomRight) {
         let width = props.width + dx / zoom
         let height = shiftKey ? width / ratio : props.height + dy / zoom
@@ -250,7 +246,7 @@ const Corner = (props: CornerProps) => {
             height = props.height
           }
         }
-        ctrl.canvas.updateCanvasElement(currentCanvas.id, elementIndex, {type, width, height})
+        ctrl.canvas.updateCanvasElement(props.id, {type, width, height})
       }
 
       ctrl.canvas.updateCanvas(currentCanvas.id, {lastModified: new Date()})
@@ -299,12 +295,10 @@ export default (props: BoundsProps) => {
   onMount(() => {
     const currentCanvas = ctrl.canvas.currentCanvas
     if (!currentCanvas) return
-    const elementIndex = currentCanvas.elements.findIndex((el) => el.id === props.id)
-    if (elementIndex === -1) return
 
     const gesture = new DragGesture(ref, ({delta: [dx, dy]}) => {
       const {zoom} = currentCanvas.camera
-      ctrl.canvas.updateCanvasElement(currentCanvas.id, elementIndex, {
+      ctrl.canvas.updateCanvasElement(props.id, {
         type: props.elementType,
         x: props.x + dx / zoom,
         y: props.y + dy / zoom,

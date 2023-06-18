@@ -98,10 +98,12 @@ export class CanvasService {
     }))
   }
 
-  updateCanvasElement(id: string, elementIndex: number, update: UpdateElement) {
-    const index = this.store.canvases.findIndex((canvas) => canvas.id === id)
-    if (index === -1) return
+  updateCanvasElement(elementId: string, update: UpdateElement) {
     const hasOwn = (prop: string) => Object.hasOwn(update, prop)
+    const index = this.store.canvases?.findIndex((c) => c.active)
+    if (index === -1) return
+    const currentCanvas = this.store.canvases[index]
+    const elementIndex = currentCanvas.elements.findIndex((el) => el.id === elementId)
 
     this.setState('canvases', index, 'elements', elementIndex, (prev: CanvasElement) => {
       if (isEditorElement(prev) && isEditorUpdate(update)) {
@@ -199,21 +201,23 @@ export class CanvasService {
   select(id: string, active = false) {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
-    const prevIndex = currentCanvas.elements.findIndex((el) => el.selected)
-    const newIndex = currentCanvas.elements.findIndex((el) => el.id === id)
-    if (prevIndex !== -1 && prevIndex !== newIndex) {
-      this.updateCanvasElement(currentCanvas.id, prevIndex, {selected: false, active: false})
+    const prevEl = currentCanvas.elements.find((el) => el.selected)
+    const newEl = currentCanvas.elements.find((el) => el.id === id)
+
+    if (prevEl && prevEl?.id !== newEl?.id) {
+      this.updateCanvasElement(prevEl.id, {selected: false, active: false})
     }
 
-    this.updateCanvasElement(currentCanvas.id, newIndex, {selected: true, active})
+    if (!newEl) return
+    this.updateCanvasElement(newEl.id, {selected: true, active})
   }
 
   deselect() {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
-    const prevIndex = currentCanvas.elements.findIndex((el) => el.selected)
-    if (prevIndex === -1) return
-    this.updateCanvasElement(currentCanvas.id, prevIndex, {selected: false, active: false})
+    const prevEl = currentCanvas.elements.find((el) => el.selected)
+    if (!prevEl) return
+    this.updateCanvasElement(prevEl.id, {selected: false, active: false})
   }
 
   newCanvas() {
@@ -268,12 +272,11 @@ export class CanvasService {
   destroyElement(elementId: string) {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
-    const elementIndex = currentCanvas.elements.findIndex((el) => el.id === elementId)
-    const element = currentCanvas.elements[elementIndex]
-    if (elementIndex === -1 || !isEditorElement(element)) return
+    const element = currentCanvas.elements.find((el) => el.id === elementId)
+    if (!element || !isEditorElement(element)) return
 
     element?.editorView?.destroy()
-    this.updateCanvasElement(currentCanvas.id, elementIndex, {
+    this.updateCanvasElement(element.id, {
       type: ElementType.Editor,
       editorView: undefined,
     })
@@ -396,8 +399,9 @@ export class CanvasService {
     })
 
     if (isLink) {
-      const linkIndex = currentCanvas.elements.findIndex((el) => el.id === link.id)
-      this.updateCanvasElement(currentCanvas.id, linkIndex, {
+      const l = currentCanvas.elements.find((el) => el.id === link.id)
+      if (!l) return
+      this.updateCanvasElement(l.id, {
         type: ElementType.Link,
         to: file.id,
         toEdge: linkToEdge,
@@ -453,15 +457,15 @@ export class CanvasService {
     const fromEl = currentCanvas.elements.find((el) => el.id === from) as CanvasEditorElement
     if (!fromEl) return
 
-    const existingIndex = currentCanvas.elements.findIndex((el) => el.id === id)
+    const existing = currentCanvas.elements.find((el) => el.id === id)
 
-    if (existingIndex !== -1) {
+    if (existing) {
       let toBox = this.getElementNear([toX, toY])
       if (toBox?.id === fromEl.id) {
         toBox = undefined
       }
 
-      this.updateCanvasElement(currentCanvas.id, existingIndex, {
+      this.updateCanvasElement(existing.id, {
         type: ElementType.Link,
         ...(toBox ? {
           from,
@@ -503,15 +507,14 @@ export class CanvasService {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
 
-    const elementIndex = currentCanvas.elements.findIndex((el) => el.id === id)
-    if (elementIndex === -1) return
+    const element = currentCanvas.elements.find((el) => el.id === id) as CanvasLinkElement
+    if (!element) return
 
-    this.updateCanvasElement(currentCanvas.id, elementIndex, {
+    this.updateCanvasElement(element.id, {
       type: ElementType.Link,
       drawing: undefined,
     })
 
-    const element = currentCanvas.elements[elementIndex] as CanvasLinkElement
     if (element.to) this.saveCanvas()
   }
 
@@ -565,12 +568,12 @@ export class CanvasService {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
 
-    const elementIndex = currentCanvas?.elements.findIndex((el) => el.id === file.id)
-    if (elementIndex === undefined || elementIndex === -1) {
+    const element = currentCanvas?.elements.find((el) => el.id === file.id) as CanvasEditorElement
+    if (!element) {
       return
     }
 
-    let editorView = (currentCanvas?.elements[elementIndex] as CanvasEditorElement)?.editorView
+    let editorView = element?.editorView
     this.ctrl.collab.apply(file)
 
     const extensions = createExtensions({
@@ -615,10 +618,7 @@ export class CanvasService {
         dispatchTransaction,
       })
 
-      this.updateCanvasElement(currentCanvas.id, elementIndex, {
-        type: ElementType.Editor,
-        editorView,
-      })
+      this.updateCanvasElement(element.id, {type: ElementType.Editor, editorView})
     }
 
     editorView.setProps({state: editorState, nodeViews})

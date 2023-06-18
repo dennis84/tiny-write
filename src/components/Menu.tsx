@@ -277,7 +277,7 @@ export default () => {
             <SubmenuCanvas maybeHide={maybeHide} />
           </Show>
           {/* Submenu File Edit */}
-          <Show when={ctrl.file.currentFile !== undefined}>
+          <Show when={store.mode === Mode.Editor}>
             <SubmenuFileEdit />
           </Show>
           {/* Submenu View */}

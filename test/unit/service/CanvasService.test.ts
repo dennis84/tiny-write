@@ -126,13 +126,13 @@ test('updateCanvasElement', async () => {
   }))
 
   const service = new CanvasService(ctrl, store, setState)
-  service.updateCanvasElement('1', 0, {type: ElementType.Editor, x: 100, y: 100})
+  service.updateCanvasElement('1', {type: ElementType.Editor, x: 100, y: 100})
 
   const editorEl = service.currentCanvas?.elements[0] as CanvasEditorElement
   expect(editorEl.x).toBe(100)
   expect(editorEl.y).toBe(100)
 
-  service.updateCanvasElement('1', 2, {
+  service.updateCanvasElement('3', {
     type: ElementType.Link,
     fromEdge: EdgeType.Bottom,
     toEdge: EdgeType.Bottom,
@@ -142,16 +142,16 @@ test('updateCanvasElement', async () => {
   expect(linkEl.fromEdge).toBe(EdgeType.Bottom)
   expect(linkEl.toEdge).toBe(EdgeType.Bottom)
 
-  service.updateCanvasElement('1', 0, {selected: true, active: true})
+  service.updateCanvasElement('1', {selected: true, active: true})
   const selectedEditorEl = service.currentCanvas?.elements[0] as CanvasEditorElement
   expect(selectedEditorEl.selected).toBe(true)
   expect(selectedEditorEl.active).toBe(true)
 
-  service.updateCanvasElement('1', 2, {selected: true})
+  service.updateCanvasElement('3', {selected: true})
   const selectedLinkEl = service.currentCanvas?.elements[2] as CanvasLinkElement
   expect(selectedLinkEl.selected).toBe(true)
 
-  service.updateCanvasElement('1', 3, {
+  service.updateCanvasElement('4', {
     type: ElementType.Image,
     width: 200,
     height: 200,
@@ -435,8 +435,8 @@ test('addImage', () => {
 
   expect(service.currentCanvas?.elements.length).toBe(1)
   const imageEl = service.currentCanvas?.elements[0] as CanvasImageElement
-  expect(imageEl.x).toBe(100)
-  expect(imageEl.x).toBe(100)
+  expect(imageEl.x).toBe(-50)
+  expect(imageEl.y).toBe(-200)
   expect(imageEl.width).toBe(300)
   expect(imageEl.height).toBe(600)
 })
