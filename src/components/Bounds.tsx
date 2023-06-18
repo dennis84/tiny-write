@@ -82,7 +82,6 @@ const Edge = (props: EdgeProps) => {
 
     const linkGesture = new DragGesture(linkRef, ({event, initial, first, last, movement}) => {
       event.stopPropagation()
-      event.preventDefault()
       if (first) {
         setCurrentLink(uuidv4())
         setHovering(false)
