@@ -186,7 +186,7 @@ const getControlPoints = (
   toEdge?: EdgeType,
 ): [Vec2d, Vec2d] => {
   const box = Box2d.FromPoints([line.a, line.b])
-  const len = box.aspectRatio > 1 ? box.width / 2 : box.height / 2
+  const len = Math.max(box.height, box.width) / 2
 
   const f = Vec2d.From(line.a).add(getControlPointByEdge(fromEdge, len))
   const t = Vec2d.From(line.b)
