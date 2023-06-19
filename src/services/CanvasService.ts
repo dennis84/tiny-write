@@ -221,6 +221,8 @@ export class CanvasService {
   }
 
   newCanvas() {
+    this.removeDeadLinks()
+
     const state = unwrap(this.store)
     const id = uuidv4()
     const collab = this.ctrl.collab.create(id, false)
@@ -285,6 +287,8 @@ export class CanvasService {
   open(id: string) {
     const state = unwrap(this.store)
     const canvases = []
+
+    this.removeDeadLinks()
 
     for (const canvas of state.canvases) {
       if (canvas.id === id) {

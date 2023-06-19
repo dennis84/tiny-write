@@ -126,10 +126,10 @@ export default () => {
         }}
       >
         <For each={ctrl.canvas.currentCanvas?.elements}>
-          {(element) =>
-            isEditorElement(element) ? <CanvasEditor element={element} /> :
+          {(element, index) =>
+            isEditorElement(element) ? <CanvasEditor element={element} index={index()} /> :
             isLinkElement(element) ? <CanvasLink element={element} /> :
-            isImageElement(element) ? <CanvasImage element={element} /> :
+            isImageElement(element) ? <CanvasImage element={element} index={index()} /> :
             null
           }
         </For>

@@ -15,6 +15,7 @@ const Link = styled('svg')`
   transform-origin: top left;
   overflow: visible;
   pointer-events: none;
+  z-index: ${(props: any) => props.index + 1};
 `
 
 const Path = styled('path')`
@@ -57,6 +58,12 @@ export default ({element}: {element: CanvasLinkElement}) => {
   const [from, setFrom] = createSignal<{id: string; edge: EdgeType}>()
   const currentCanvas = ctrl.canvas.currentCanvas
   if (!currentCanvas) return
+
+  const index = () => {
+    const fromIndex = currentCanvas.elements.findIndex((el) => el.id === element.from)
+    const toIndex = currentCanvas.elements.findIndex((el) => el.id === element.to)
+    return toIndex !== -1 ? Math.min(fromIndex, toIndex) : fromIndex
+  }
 
   const onClick = () => {
     ctrl.canvas.select(element.id)
@@ -133,7 +140,11 @@ export default ({element}: {element: CanvasLinkElement}) => {
   })
 
   return (
-    <Link version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <Link
+      version="1.1"
+      xmlns="http://www.w3.org/2000/svg"
+      index={index()}
+    >
       <Path ref={pathRef} onClick={onClick} selected={element.selected} />
       <InnerPath ref={innerPathRef} />
       <ArrowHead ref={arrowheadRef} />

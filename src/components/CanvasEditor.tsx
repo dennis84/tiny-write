@@ -5,7 +5,7 @@ import {CanvasEditor} from './Editor'
 import {Scroll} from './Layout'
 import Bounds from './Bounds'
 
-export default ({element}: {element: CanvasEditorElement}) => {
+export default ({element, index}: {element: CanvasEditorElement; index: number}) => {
   const [store, ctrl] = useState()
   let containerRef!: HTMLDivElement
   let editorRef!: HTMLDivElement
@@ -51,7 +51,7 @@ export default ({element}: {element: CanvasEditorElement}) => {
           min-height: ${element.height.toString()}px;
           max-height: ${element.height.toString()}px;
           border-radius: 5px;
-          z-index: 1;
+          z-index: ${(index + 1).toString()};
           user-select: none;
           pointer-events: none;
           ${element.active ? `

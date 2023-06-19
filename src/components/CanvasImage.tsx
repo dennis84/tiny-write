@@ -2,7 +2,7 @@ import {css} from 'solid-styled-components'
 import {CanvasImageElement, ElementType, useState} from '@/state'
 import Bounds from './Bounds'
 
-export default ({element}: {element: CanvasImageElement}) => {
+export default ({element, index}: {element: CanvasImageElement; index: number}) => {
   const [, ctrl] = useState()
 
   const onSelect = () => {
@@ -30,6 +30,7 @@ export default ({element}: {element: CanvasImageElement}) => {
         top: ${element.y.toString()}px;
         border-radius: 5px;
         user-select: none;
+        z-index: ${(index + 1).toString()};
         -webkit-user-select: none;
         ${element.selected ? `
           box-shadow: 0 0 0 5px var(--border);
