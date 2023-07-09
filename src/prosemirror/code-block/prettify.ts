@@ -1,12 +1,13 @@
 import {EditorView, ViewPlugin, ViewUpdate} from '@codemirror/view'
 import {setDiagnostics} from '@codemirror/lint'
-import prettier from 'prettier'
-import parserBabel from 'prettier/parser-babel'
-import parserTypescript from 'prettier/parser-typescript'
-import parserCss from 'prettier/parser-postcss'
-import parserHtml from 'prettier/parser-html'
-import parserMarkdown from 'prettier/parser-markdown'
-import parserYaml from 'prettier/parser-yaml'
+import * as prettier from 'prettier'
+import * as estreePlugin from 'prettier/plugins/estree'
+import babelPlugin from 'prettier/plugins/babel'
+import typescriptPlugin from 'prettier/plugins/typescript'
+import cssPlugin from 'prettier/plugins/postcss'
+import htmlPlugin from 'prettier/plugins/html'
+import markdownPlugin from 'prettier/plugins/markdown'
+import yamlPlugin from 'prettier/plugins/yaml'
 import {PrettierConfig} from '@/state'
 import {CodeBlockView} from './view'
 
@@ -15,32 +16,29 @@ export const prettifyView = (codeBlock: CodeBlockView) =>
     update(update: ViewUpdate) {
       if (update.transactions[0]?.isUserEvent('prettify')) {
         update.view.focus()
-        setTimeout(() => {
-          prettify(update.view, codeBlock.lang, codeBlock.ctrl.config.prettier)
-        })
-
+        prettify(update.view, codeBlock.lang, codeBlock.ctrl.config.prettier)
         return true
       }
     }
   })
 
-const prettify = (view: EditorView, lang: string, options: PrettierConfig) => {
-  const [parser, plugin] =
-    lang === 'javascript' || lang === 'js' || lang === 'jsx' ? ['babel', parserBabel] :
-    lang === 'css' ? ['css', parserCss] :
-    lang === 'markdown' ? ['markdown', parserMarkdown] :
-    lang === 'html' ? ['html', parserHtml] :
-    lang === 'less' ? ['less', parserCss] :
-    lang === 'scss' ? ['scss', parserCss] :
-    lang === 'yaml' ? ['yaml', parserYaml] :
-    lang === 'json' ? ['json', parserBabel] :
-    lang === 'typescript' || lang === 'ts' || lang === 'tsx' ? ['typescript', parserTypescript] :
+const prettify = async (view: EditorView, lang: string, options: PrettierConfig) => {
+  const [parser, plugins] =
+    lang === 'javascript' || lang === 'js' || lang === 'jsx' ? ['babel', [babelPlugin, estreePlugin]] :
+    lang === 'css' ? ['css', [cssPlugin]] :
+    lang === 'markdown' ? ['markdown', [markdownPlugin]] :
+    lang === 'html' ? ['html', [htmlPlugin]] :
+    lang === 'less' ? ['less', [cssPlugin]] :
+    lang === 'scss' ? ['scss', [cssPlugin]] :
+    lang === 'yaml' ? ['yaml', [yamlPlugin]] :
+    lang === 'json' ? ['json', [babelPlugin, estreePlugin]] :
+    lang === 'typescript' || lang === 'ts' || lang === 'tsx' ? ['typescript', [typescriptPlugin, estreePlugin]] :
     [undefined, undefined]
   if (!parser) return
   try {
-    const value = prettier.format(view.state.doc.toString(), {
+    const value = await prettier.format(view.state.doc.toString(), {
       parser,
-      plugins: [plugin],
+      plugins,
       trailingComma: 'all',
       bracketSpacing: false,
       ...options,
