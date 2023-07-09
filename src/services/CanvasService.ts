@@ -8,10 +8,12 @@ import {Box2d, Vec2d} from '@tldraw/primitives'
 import {
   Camera,
   Canvas,
+  CanvasBoxElement,
   CanvasEditorElement,
   CanvasElement,
   CanvasLinkElement,
   CanvasImageElement,
+  CanvasVideoElement,
   EdgeType,
   ElementType,
   File,
@@ -20,8 +22,8 @@ import {
   isEditorElement,
   isLinkElement,
   isImageElement,
+  isVideoElement,
   isBoxElement,
-  CanvasBoxElement,
 } from '@/state'
 import * as db from '@/db'
 import * as remote from '@/remote'
@@ -53,6 +55,15 @@ interface UpdateEditorElement {
 }
 
 interface UpdateImageElement {
+  type: ElementType;
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
+  selected?: boolean;
+}
+
+interface UpdateVideoElement {
   type: ElementType;
   x?: number;
   y?: number;
@@ -127,7 +138,10 @@ export class CanvasService {
           selected: hasOwn('selected') ? update.selected : prev?.selected,
           drawing: hasOwn('drawing') ? update.drawing : prev?.drawing,
         }
-      } else if (isImageUpdate(update) && isImageElement(prev)) {
+      } else if (
+        (isImageUpdate(update) && isImageElement(prev)) ||
+        (isVideoUpdate(update) && isVideoElement(prev))
+      ) {
         return {
           x: hasOwn('x') ? update.x : prev?.x,
           y: hasOwn('y') ? update.y : prev?.y,
@@ -454,6 +468,45 @@ export class CanvasService {
     remote.log('info', '💾 Added image to canvas')
   }
 
+  addVideo(
+    src: string,
+    mime: string,
+    pageX: number,
+    pageY: number,
+    imageWidth: number,
+    imageHeight: number
+  ) {
+    console.log('addVideo')
+    const currentCanvas = this.currentCanvas
+    if (!currentCanvas) return
+
+    const width = 300
+    const height = width * imageHeight / imageWidth
+    const {zoom, point} = currentCanvas.camera
+    const p = Vec2d.FromArray(point)
+    const {x, y} = new Vec2d(pageX, pageY).div(zoom).sub(p).subXY(width / 2, height / 2)
+
+    const id = uuidv4()
+    const element: CanvasVideoElement = {
+      type: ElementType.Video,
+      id,
+      src,
+      mime,
+      x,
+      y,
+      width,
+      height,
+    }
+
+    this.updateCanvas(currentCanvas.id, {
+      elements: [...currentCanvas.elements, element],
+      lastModified: new Date(),
+    })
+
+    this.saveCanvas()
+    remote.log('info', '💾 Added video to canvas')
+  }
+
   drawLink(id: string, from: string, fromEdge: EdgeType, toX: number, toY: number) {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
@@ -725,6 +778,9 @@ const isLinkUpdate = (update: any): update is UpdateLinkElement =>
 
 const isImageUpdate = (update: any): update is UpdateImageElement =>
   update !== undefined && 'type' in update && update.type === ElementType.Image
+
+const isVideoUpdate = (update: any): update is UpdateVideoElement =>
+  update !== undefined && 'type' in update && update.type === ElementType.Video
 
 const isSelectionUpdate = (update?: UpdateElement): update is UpdateSelection =>
   update !== undefined && Object.hasOwn(update, 'selected')

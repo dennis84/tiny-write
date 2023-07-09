@@ -42,8 +42,10 @@ export default (props: {state: State}) => {
         remote.log('INFO', '🔗 User dropped')
         for (const path of event.payload.paths) {
           const mime = await remote.getMimeType(path)
+          const isImage = mime.startsWith('image/')
+          const isVideo = mime.startsWith('video/')
 
-          if (mime.startsWith('image/') || mime.startsWith('video/')) {
+          if (isImage || isVideo) {
             const x = mouseEnterCoords.x
             const y = mouseEnterCoords.y
 
@@ -58,11 +60,18 @@ export default (props: {state: State}) => {
             } else if (store.mode === Mode.Canvas) {
               const p = await remote.toRelativePath(path)
               const src = await ctrl.image.getImagePath(p)
-              remote.log('INFO', 'Add to canvas:' + p)
-              const img = new Image()
-              img.src = src
-              img.onload = () => {
-                ctrl.canvas.addImage(src, x, y, img.width, img.height)
+              if (isImage) {
+                const img = new Image()
+                img.onload = () => {
+                  ctrl.canvas.addImage(src, x, y, img.width, img.height)
+                }
+                img.src = src
+              } else {
+                const video = document.createElement('video')
+                video.addEventListener('loadedmetadata', () => {
+                  ctrl.canvas.addVideo(p, mime, x, y, video.videoWidth, video.videoHeight)
+                })
+                video.src = src
               }
             }
           } else if (mime.startsWith('text/')) {

@@ -413,7 +413,7 @@ const proseMirror = (props: Props) => `
       margin-right: 10px;
       cursor: default;
       line-height: 0;
-      &.error, &.loading {
+      &.error {
         background: var(--foreground-10);
         border-radius: var(--border-radius);
         min-width: 40px;

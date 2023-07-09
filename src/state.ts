@@ -65,6 +65,7 @@ export enum ElementType {
   Editor,
   Link,
   Image,
+  Video,
 }
 
 export enum EdgeType {
@@ -118,8 +119,15 @@ export interface CanvasImageElement extends CanvasBoxElement {
   src: string;
 }
 
+export interface CanvasVideoElement extends CanvasBoxElement {
+  src: string;
+  mime: string;
+}
+
 export const isBoxElement = (el?: CanvasElement): el is CanvasBoxElement =>
-  el?.type === ElementType.Editor || el?.type === ElementType.Image
+  el?.type === ElementType.Editor ||
+    el?.type === ElementType.Image ||
+    el?.type === ElementType.Video
 
 export const isEditorElement = (el?: CanvasElement): el is CanvasEditorElement =>
   el?.type === ElementType.Editor
@@ -129,6 +137,9 @@ export const isLinkElement = (el?: CanvasElement): el is CanvasLinkElement =>
 
 export const isImageElement = (el?: CanvasElement): el is CanvasImageElement =>
   el?.type === ElementType.Image
+
+export const isVideoElement = (el?: CanvasElement): el is CanvasVideoElement =>
+  el?.type === ElementType.Video
 
 export interface Canvas {
   id: string;

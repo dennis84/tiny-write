@@ -98,7 +98,7 @@ class ImageView {
     private ctrl: Ctrl,
   ) {
     this.container = document.createElement('span')
-    this.container.classList.add('image-container', 'loading')
+    this.container.classList.add('image-container')
     if (node.attrs.width) this.setWidth(node.attrs.width)
 
     let source: HTMLImageElement | HTMLSourceElement
@@ -117,6 +117,10 @@ class ImageView {
       this.container.appendChild(image)
     }
 
+    source.onerror = () => {
+      this.container.classList.add('error')
+    }
+
     if (
       isTauri() &&
       !node.attrs.src.startsWith('asset:') &&
@@ -130,16 +134,6 @@ class ImageView {
       source.setAttribute('src', node.attrs.src)
     }
 
-    source.onload = () => {
-      this.container.classList.remove('loading')
-    }
-
-    source.onerror = () => {
-      this.container.classList.remove('loading')
-      this.container.classList.add('error')
-      this.container.appendChild(document.createTextNode('⚠︎'))
-    }
-
     this.handle = document.createElement('span')
     this.handle.className = 'resize-handle'
     this.handle.addEventListener('mousedown', (e) => {
@@ -151,6 +145,11 @@ class ImageView {
 
     this.container.appendChild(this.handle)
     this.dom = this.container
+  }
+
+  update() {
+    // Don't reinitialize view
+    return true
   }
 
   private setWidth(width: number) {

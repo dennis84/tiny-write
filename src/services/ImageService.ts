@@ -24,9 +24,9 @@ export class ImageService {
       tr.insertText(text, pos?.pos ?? currentFile.editorView.state.doc.content.size)
       currentFile.editorView.dispatch(tr)
     } else if (mime && mime.startsWith('video/')) {
-      this.ctrl.image.insertVideo(currentFile.editorView, data, mime, left, top)
+      this.insertVideo(currentFile.editorView, data, mime, left, top)
     } else {
-      this.ctrl.image.insertImage(currentFile.editorView, data, left, top)
+      this.insertImage(currentFile.editorView, data, left, top)
     }
   }
 
