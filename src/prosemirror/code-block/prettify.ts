@@ -23,17 +23,7 @@ export const prettifyView = (codeBlock: CodeBlockView) =>
   })
 
 const prettify = async (view: EditorView, lang: string, options: PrettierConfig) => {
-  const [parser, plugins] =
-    lang === 'javascript' || lang === 'js' || lang === 'jsx' ? ['babel', [babelPlugin, estreePlugin]] :
-    lang === 'css' ? ['css', [cssPlugin]] :
-    lang === 'markdown' ? ['markdown', [markdownPlugin]] :
-    lang === 'html' ? ['html', [htmlPlugin]] :
-    lang === 'less' ? ['less', [cssPlugin]] :
-    lang === 'scss' ? ['scss', [cssPlugin]] :
-    lang === 'yaml' ? ['yaml', [yamlPlugin]] :
-    lang === 'json' ? ['json', [babelPlugin, estreePlugin]] :
-    lang === 'typescript' || lang === 'ts' || lang === 'tsx' ? ['typescript', [typescriptPlugin, estreePlugin]] :
-    [undefined, undefined]
+  const [parser, plugins] = getParserAndPlugins(lang)
   if (!parser) return
   try {
     const value = await prettier.format(view.state.doc.toString(), {
@@ -64,4 +54,33 @@ const prettify = async (view: EditorView, lang: string, options: PrettierConfig)
 
     view.dispatch(setDiagnostics(view.state, diagnostics))
   }
+}
+
+const getParserAndPlugins = (lang: string): [string, prettier.Plugin[]] => {
+  switch (lang) {
+  case 'javascript':
+  case 'js':
+  case 'jsx':
+    return ['babel', [babelPlugin, estreePlugin]]
+  case 'typescript':
+  case 'ts':
+  case 'tsx':
+    return ['typescript', [typescriptPlugin, estreePlugin]]
+  case 'json':
+    return ['json', [babelPlugin, estreePlugin]]
+  case 'css':
+    return ['css', [cssPlugin]]
+  case 'markdown':
+    return ['markdown', [markdownPlugin]]
+  case 'html':
+    return ['html', [htmlPlugin]]
+  case 'less':
+    return ['less', [cssPlugin]]
+  case 'scss':
+    return ['scss', [cssPlugin]]
+  case 'yaml':
+    return ['yaml', [yamlPlugin]]
+  }
+
+  throw new Error(`No parser and plugins for ${lang}`)
 }
