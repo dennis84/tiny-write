@@ -64,7 +64,8 @@ test('getImagePath', async () => {
 test('insert - image', async () => {
   const {ctrl} = createCtrl(createState())
   const target = document.createElement('div')
-  await ctrl.app.init(target)
+  await ctrl.app.init()
+  ctrl.editor.renderEditor(target)
 
   ctrl.image.insert('123', 0, 0)
 
@@ -78,7 +79,8 @@ test('insert - image', async () => {
 test('insert - video', async () => {
   const {ctrl} = createCtrl(createState())
   const target = document.createElement('div')
-  await ctrl.app.init(target)
+  await ctrl.app.init()
+  ctrl.editor.renderEditor(target)
 
   ctrl.image.insert('123', 0, 0, 'video/mp4')
 
@@ -104,7 +106,8 @@ test('insert - markdown mode', async () => {
 
   const {ctrl} = createCtrl(createState())
   const target = document.createElement('div')
-  await ctrl.app.init(target)
+  await ctrl.app.init()
+  ctrl.editor.renderEditor(target)
 
   ctrl.image.insert('123', 0, 0)
 

@@ -267,7 +267,10 @@ export class EditorService {
       schema = createSchema(extensions)
     }
 
-    if (!schema || !this.store.collab?.ydoc) return
+    if (!schema || !this.store.collab?.ydoc) {
+      return
+    }
+
     let ynode: Node
     try {
       const json = yDocToProsemirrorJSON(this.store.collab.ydoc, currentFile?.id)

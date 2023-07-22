@@ -18,7 +18,7 @@ export class AppService {
     return this.store.fullscreen
   }
 
-  async init(node: Element) {
+  async init() {
     try {
       let data = await this.fetchData()
       let text: FileText | undefined
@@ -96,7 +96,6 @@ export class AppService {
 
       this.setState(newState)
       if (mode === Mode.Editor) {
-        this.ctrl.editor.renderEditor(node)
         this.ctrl.editor.updateText(text)
       }
     } catch (error: any) {

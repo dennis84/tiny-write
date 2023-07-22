@@ -171,7 +171,7 @@ export default (props: {state: State}) => {
     const currentCanvas = ctrl.canvas.currentCanvas
     if (!currentFile && !currentCanvas) {
       // Init on first render
-      ctrl.app.init(editorRef!)
+      ctrl.app.init()
     } else if (
       // Render editor if change file
       store.mode === Mode.Editor &&
