@@ -1,6 +1,7 @@
 import {SetStoreFunction, Store} from 'solid-js/store'
 import * as Y from 'yjs'
 import {WebsocketProvider} from 'y-websocket'
+import {defaultDeleteFilter, defaultProtectedNodes, ySyncPluginKey} from 'y-prosemirror'
 import {adjectives, animals, uniqueNamesGenerator} from 'unique-names-generator'
 import {Collab, File, State} from '@/state'
 import {COLLAB_URL} from '@/env'
@@ -22,6 +23,10 @@ export class CollabService {
     return this.store.collab?.permanentUserData
   }
 
+  get undoManager() {
+    return this.store.collab?.undoManager
+  }
+
   create(room: string, connect = false): Collab {
     if (connect) {
       window.history.replaceState(null, '', `/${room}`)
@@ -36,6 +41,13 @@ export class CollabService {
     configType.set('fontSize', this.store.config.fontSize)
     configType.set('contentWidth', this.store.config.contentWidth)
     configType.observe(this.onCollabConfigUpdate)
+
+    const type = ydoc.getXmlFragment(room)
+    const undoManager = new Y.UndoManager(type, {
+      trackedOrigins: new Set([ySyncPluginKey]),
+      deleteFilter: (item) => defaultDeleteFilter(item, defaultProtectedNodes),
+      captureTransaction: tr => tr.meta.get('addToHistory') !== false,
+    })
 
     provider.on('connection-error', () => {
       remote.log('ERROR', '🌐 Connection error')
@@ -63,18 +75,24 @@ export class CollabService {
       ydoc,
       provider,
       permanentUserData,
+      undoManager,
     }
   }
 
   createByFile(file: File, connect = false): Collab {
     this.disconnectCollab()
+    this.store.collab?.undoManager?.destroy()
     const collab = this.create(file.id, connect)
     if (file.ydoc) Y.applyUpdate(collab.ydoc!, file.ydoc)
     return collab
   }
 
   apply(file: File) {
-    if (file.ydoc) Y.applyUpdate(this.store.collab!.ydoc!, file.ydoc)
+    if (file.ydoc) {
+      const ydoc = this.store.collab!.ydoc!
+      Y.applyUpdate(ydoc, file.ydoc)
+      this.store.collab?.undoManager.addToScope(ydoc.getXmlFragment(file.id))
+    }
   }
 
   startCollab() {

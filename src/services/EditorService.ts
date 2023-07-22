@@ -33,10 +33,11 @@ export class EditorService {
       return
     }
 
+    const type = this.store.collab!.ydoc!.getXmlFragment(currentFile.id)
     const extensions = createExtensions({
       ctrl: this.ctrl,
       markdown: currentFile?.markdown,
-      type: this.store.collab!.ydoc!.getXmlFragment(currentFile.id),
+      type,
       dropcursor: true,
     })
 

@@ -3,7 +3,6 @@ import {keyName} from 'w3c-keyname'
 import {isEditorElement, Mode, useState} from '@/state'
 import {isTauri, mod} from '@/env'
 import * as remote from '@/remote'
-import {redo, undo} from 'y-prosemirror'
 
 export default () => {
   const [store, ctrl] = useState()
@@ -63,16 +62,12 @@ export default () => {
   }
 
   const onUndo = () => {
-    const currentFile = ctrl.file.currentFile
-    if (!currentFile?.editorView) return
-    undo(currentFile.editorView.state)
+    store.collab?.undoManager.undo()
     return true
   }
 
   const onRedo = () => {
-    const currentFile = ctrl.file.currentFile
-    if (!currentFile?.editorView) return
-    redo(currentFile.editorView.state)
+    store.collab?.undoManager.redo()
     return true
   }
 

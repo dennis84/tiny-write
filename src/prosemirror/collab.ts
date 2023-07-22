@@ -114,6 +114,6 @@ export const collab = (ctrl: Ctrl, type: Y.XmlFragment): ProseMirrorExtension =>
     }),
     yCursorPlugin(ctrl.collab.provider!.awareness, {cursorBuilder}),
     yMouseCursorPlugin(ctrl.collab.provider!.awareness),
-    yUndoPlugin(),
+    yUndoPlugin({undoManager: ctrl.collab.undoManager}),
   ]
 })

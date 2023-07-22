@@ -341,7 +341,6 @@ export class CanvasService {
     const update = {
       ...state,
       files: [...state.files, file],
-      collab: this.ctrl.collab.createByFile(file),
     }
 
     this.setState(update)
