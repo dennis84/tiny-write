@@ -8,6 +8,19 @@ import {COLLAB_URL} from '@/env'
 import * as remote from '@/remote'
 import {Ctrl} from '.'
 
+export class UndoManager extends Y.UndoManager {
+  removeFromScope(type: Y.AbstractType<any>) {
+    const index = this.scope.indexOf(type)
+    if (index !== -1) {
+      this.scope.slice(index, 1)
+    }
+  }
+
+  destroy() {
+    // Ignore destroy from undo plugin
+  }
+}
+
 export class CollabService {
   constructor(
     private ctrl: Ctrl,
@@ -42,8 +55,8 @@ export class CollabService {
     configType.set('contentWidth', this.store.config.contentWidth)
     configType.observe(this.onCollabConfigUpdate)
 
-    const type = ydoc.getXmlFragment(room)
-    const undoManager = new Y.UndoManager(type, {
+    const undoManager = new UndoManager([], {
+      doc: ydoc,
       trackedOrigins: new Set([ySyncPluginKey]),
       deleteFilter: (item) => defaultDeleteFilter(item, defaultProtectedNodes),
       captureTransaction: tr => tr.meta.get('addToHistory') !== false,
@@ -84,6 +97,8 @@ export class CollabService {
     this.store.collab?.undoManager?.destroy()
     const collab = this.create(file.id, connect)
     if (file.ydoc) Y.applyUpdate(collab.ydoc!, file.ydoc)
+    const type = collab.ydoc!.getXmlFragment(file.id)
+    collab?.undoManager?.addToScope(type)
     return collab
   }
 

@@ -280,6 +280,9 @@ export class CanvasService {
       elements.push(el)
     }
 
+    const type = this.store.collab?.ydoc?.get(elementId)
+    if (type) this.store.collab?.undoManager.removeFromScope(type)
+
     this.updateCanvas(currentCanvas.id, {elements})
     this.saveCanvas()
     remote.log('info', '💾 Element removed')
