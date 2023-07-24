@@ -51,7 +51,7 @@ export interface Collab {
   provider?: WebsocketProvider;
   permanentUserData?: Y.PermanentUserData;
   ydoc?: Y.Doc;
-  undoManager: UndoManager;
+  undoManager?: UndoManager;
 }
 
 export type LoadingType = 'loading' | 'initialized'

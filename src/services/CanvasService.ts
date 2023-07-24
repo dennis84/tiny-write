@@ -281,7 +281,7 @@ export class CanvasService {
     }
 
     const type = this.store.collab?.ydoc?.get(elementId)
-    if (type) this.store.collab?.undoManager.removeFromScope(type)
+    if (type) this.store.collab?.undoManager?.removeFromScope(type)
 
     this.updateCanvas(currentCanvas.id, {elements})
     this.saveCanvas()

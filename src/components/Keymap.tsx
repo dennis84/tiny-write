@@ -62,12 +62,12 @@ export default () => {
   }
 
   const onUndo = () => {
-    store.collab?.undoManager.undo()
+    store.collab?.undoManager?.undo()
     return true
   }
 
   const onRedo = () => {
-    store.collab?.undoManager.redo()
+    store.collab?.undoManager?.redo()
     return true
   }
 

@@ -106,7 +106,7 @@ export class CollabService {
     if (file.ydoc) {
       const ydoc = this.store.collab!.ydoc!
       Y.applyUpdate(ydoc, file.ydoc)
-      this.store.collab?.undoManager.addToScope(ydoc.getXmlFragment(file.id))
+      this.store.collab?.undoManager?.addToScope(ydoc.getXmlFragment(file.id))
     }
   }
 
