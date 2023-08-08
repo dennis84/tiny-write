@@ -65,7 +65,7 @@ export const FilesMenu = (props: Props) => {
       Y.applyUpdate(ydoc, p.file.ydoc)
       const state = yDocToProsemirrorJSON(ydoc, p.file.id)
       const doc = Node.fromJSON(schema, state)
-      const nodes: Node[] = []
+      const nodes: any = []
       let len = 0
       let done = false
 

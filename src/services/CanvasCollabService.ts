@@ -27,7 +27,6 @@ export class CanvasCollabService {
   }
 
   init() {
-    console.log('init before')
     const currentCanvas = this.canvasService.currentCanvas
     if (!currentCanvas) return
 
