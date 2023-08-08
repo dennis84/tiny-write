@@ -6,7 +6,7 @@ import {CanvasService} from './CanvasService'
 type Elements = Y.Map<Y.Map<any>>
 
 interface CollabElement {
-  [key: string]: unknown;
+  [key: string]: any;
   id: string;
 }
 

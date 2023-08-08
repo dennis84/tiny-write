@@ -14,6 +14,7 @@ import SubmenuFileStats from './SubmenuFileStats'
 import SubmenuCanvas from './SubmenuCanvas'
 import SubmenuFileEdit from './SubmenuFileEdit'
 import SubmenuCollab from './SubmenuCollab'
+import SubmenuCanvasEdit from './SubmenuCanvasEdit'
 
 const fullWidth = 500
 
@@ -279,6 +280,10 @@ export default () => {
           {/* Submenu File Edit */}
           <Show when={store.mode === Mode.Editor}>
             <SubmenuFileEdit />
+          </Show>
+          {/* Submenu Canvas Edit */}
+          <Show when={store.mode === Mode.Canvas}>
+            <SubmenuCanvasEdit />
           </Show>
           {/* Submenu View */}
           <Label>View</Label>
