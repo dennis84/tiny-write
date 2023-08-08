@@ -57,7 +57,7 @@ export class CollabService {
 
     const undoManager = new UndoManager([], {
       doc: ydoc,
-      trackedOrigins: new Set([ySyncPluginKey]),
+      trackedOrigins: new Set([ySyncPluginKey, ydoc.clientID]),
       deleteFilter: (item) => defaultDeleteFilter(item, defaultProtectedNodes),
       captureTransaction: tr => tr.meta.get('addToHistory') !== false,
     })

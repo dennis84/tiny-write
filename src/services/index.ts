@@ -7,6 +7,7 @@ import {EditorService} from './EditorService'
 import {FileService} from './FileService'
 import {CollabService} from './CollabService'
 import {CanvasService} from './CanvasService'
+import {CanvasCollabService} from './CanvasCollabService'
 import {ImageService} from './ImageService'
 
 export class Ctrl {
@@ -17,6 +18,7 @@ export class Ctrl {
   file!: FileService
   collab!: CollabService
   canvas!: CanvasService
+  canvasCollab!: CanvasCollabService
   image!: ImageService
 
   constructor(
@@ -30,6 +32,7 @@ export class Ctrl {
     this.file = new FileService(this, store, setState)
     this.collab = new CollabService(this, store, setState)
     this.canvas = new CanvasService(this, store, setState)
+    this.canvasCollab = new CanvasCollabService(this.canvas, store)
     this.image = new ImageService(this)
   }
 }

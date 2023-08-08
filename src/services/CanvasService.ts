@@ -265,6 +265,8 @@ export class CanvasService {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
     const elements = []
+    const toRemove = [elementId]
+
     for (const el of currentCanvas.elements) {
       if (isEditorElement(el) && el.id === elementId) {
         el.editorView?.destroy()
@@ -272,10 +274,13 @@ export class CanvasService {
       }
 
       if (isLinkElement(el) && (el.from === elementId || el.to === elementId)) {
+        toRemove.push(el.id)
         continue
       }
 
-      if (el.id === elementId) continue
+      if (el.id === elementId) {
+        continue
+      }
 
       elements.push(el)
     }
@@ -283,6 +288,7 @@ export class CanvasService {
     const type = this.store.collab?.ydoc?.get(elementId)
     if (type) this.store.collab?.undoManager?.removeFromScope(type)
 
+    this.ctrl.canvasCollab.removeMany(toRemove)
     this.updateCanvas(currentCanvas.id, {elements})
     this.saveCanvas()
     remote.log('info', '💾 Element removed')
@@ -336,6 +342,8 @@ export class CanvasService {
 
     db.setMeta({mode})
     remote.log('info', '💾 Switched to canvas mode')
+
+    this.ctrl.canvasCollab.init()
   }
 
   newFile(link?: CanvasLinkElement) {
@@ -413,6 +421,8 @@ export class CanvasService {
       height,
     }
 
+    const toAdd: CanvasElement[] = [element]
+
     this.updateCanvas(currentCanvas.id, {
       elements: [...currentCanvas.elements, element],
       lastModified: new Date(),
@@ -428,8 +438,12 @@ export class CanvasService {
         toX: undefined,
         toY: undefined,
       })
+
+      const updatedLink = currentCanvas.elements.find((el) => el.id === link.id)
+      if (updatedLink) toAdd.push(unwrap(updatedLink))
     }
 
+    this.ctrl.canvasCollab.addElements(toAdd)
     this.saveCanvas()
     remote.log('info', '💾 Added file to canvas')
   }
@@ -461,6 +475,7 @@ export class CanvasService {
       height,
     }
 
+    this.ctrl.canvasCollab.addElement(element)
     this.updateCanvas(currentCanvas.id, {
       elements: [...currentCanvas.elements, element],
       lastModified: new Date(),
@@ -478,7 +493,6 @@ export class CanvasService {
     imageWidth: number,
     imageHeight: number
   ) {
-    console.log('addVideo')
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
 
@@ -500,6 +514,7 @@ export class CanvasService {
       height,
     }
 
+    this.ctrl.canvasCollab.addElement(element)
     this.updateCanvas(currentCanvas.id, {
       elements: [...currentCanvas.elements, element],
       lastModified: new Date(),
@@ -574,7 +589,15 @@ export class CanvasService {
       drawing: undefined,
     })
 
-    if (element.to) this.saveCanvas()
+    if (element.to) {
+      if (this.ctrl.canvasCollab.hasElement(id)) {
+        this.ctrl.canvasCollab.updateElement(element)
+      } else {
+        this.ctrl.canvasCollab.addElement(element)
+      }
+
+      this.saveCanvas()
+    }
   }
 
   findDeadLinks(): CanvasLinkElement[] {
@@ -589,11 +612,20 @@ export class CanvasService {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return false
 
-    const elements = currentCanvas.elements.filter((el) => {
-      return !isLinkElement(el) || el.to !== undefined
-    })
+    const elements = []
+    const toRemove = []
+
+    for (const el of currentCanvas.elements) {
+      if (isLinkElement(el) && el.to === undefined) {
+        toRemove.push(el.id)
+        continue
+      }
+
+      elements.push(el)
+    }
 
     if (elements.length !== currentCanvas.elements.length) {
+      this.ctrl.canvasCollab.removeMany(toRemove)
       this.updateCanvas(currentCanvas.id, {elements})
       this.saveCanvas()
       remote.log('info', '💾 Removed dead links')
@@ -603,6 +635,8 @@ export class CanvasService {
   clearCanvas() {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
+
+    this.ctrl.canvasCollab.removeAll()
     this.updateCanvas(currentCanvas.id, {elements: []})
     this.saveCanvas()
     remote.log('info', '💾 All elements cleared')
@@ -611,7 +645,19 @@ export class CanvasService {
   removeLinks() {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
-    const elements = currentCanvas.elements.filter((el) => !isLinkElement(el))
+    const elements = []
+    const toRemove = []
+
+    for (const el of currentCanvas.elements) {
+      if (isLinkElement(el)) {
+        toRemove.push(el.id)
+        continue
+      }
+
+      elements.push(el)
+    }
+
+    this.ctrl.canvasCollab.removeMany(toRemove)
     this.updateCanvas(currentCanvas.id, {elements})
     this.saveCanvas()
     remote.log('info', '💾 All links removed')

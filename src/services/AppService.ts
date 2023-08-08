@@ -97,6 +97,8 @@ export class AppService {
       this.setState(newState)
       if (mode === Mode.Editor) {
         this.ctrl.editor.updateText(text)
+      } else {
+        this.ctrl.canvasCollab.init()
       }
     } catch (error: any) {
       remote.log('error', `Error during init: ${error.message}`)
