@@ -20,6 +20,7 @@ import {getTheme} from './theme'
 import expand from './expand'
 import {prettifyView} from './prettify'
 import {mermaidKeywords, mermaidView} from './mermaid'
+import {foldAll} from './fold'
 
 export class CodeBlockView {
   public dom: HTMLElement
@@ -159,6 +160,7 @@ export class CodeBlockView {
         expand(this),
         mermaidView(this),
         prettifyView(this),
+        foldAll(),
         changeLang(this, {
           onClose: () => this.editorView.focus(),
           onChange: (lang: string) => {

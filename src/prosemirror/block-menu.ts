@@ -51,6 +51,12 @@ class TooltipView {
       prettify.dataset.testid = 'prettify'
       this.tooltip.appendChild(prettify)
 
+      const foldAll = document.createElement('div')
+      foldAll.textContent = '🙏 fold all'
+      foldAll.addEventListener('click', this.onFoldAll)
+      foldAll.dataset.testid = 'fold-all'
+      this.tooltip.appendChild(foldAll)
+
       if ((dom.node as HTMLElement).dataset.lang === 'mermaid') {
         const mermaid = document.createElement('div')
         mermaid.textContent = '💾 save as png'
@@ -148,6 +154,19 @@ class TooltipView {
     const dom = this.view.domAtPos(this.pos + 1)
     dom.node.dispatchEvent(new CustomEvent('cm:user_event', {
       detail: {userEvent: 'prettify'},
+    }))
+
+    const tr = this.view.state.tr
+    tr.setMeta(pluginKey, {showMenu: false, ref: undefined, pos: undefined})
+    this.view.dispatch(tr)
+    this.view.focus()
+  }
+
+  private onFoldAll = () => {
+    if (this.pos === undefined) return
+    const dom = this.view.domAtPos(this.pos + 1)
+    dom.node.dispatchEvent(new CustomEvent('cm:user_event', {
+      detail: {userEvent: 'fold_all'},
     }))
 
     const tr = this.view.state.tr
