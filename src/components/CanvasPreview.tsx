@@ -27,13 +27,16 @@ export default (props: Props) => {
   createEffect(() => {
     const canvas = createHiPPICanvas(136, 172)
     const ctx = canvas.getContext('2d')!
-    const frame = new Box2d(0, 0, 0, 0)
+    let frame
 
     for (const el of props.canvas.elements) {
       if (!isEditorElement(el) && !isImageElement(el)) continue
       const box = new Box2d(el.x, el.y, el.width, el.height)
-      frame.expand(box)
+      if (!frame) frame = box
+      else frame.expand(box)
     }
+
+    if (!frame) return
 
     let r = canvas.width / window.devicePixelRatio / frame.w
     if (frame.h > frame.w) {

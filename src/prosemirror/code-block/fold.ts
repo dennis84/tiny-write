@@ -14,7 +14,7 @@ export const foldAll = () =>
 const foldLines = (view: EditorView) => {
   const effects = []
 
-  for (let i = 2; i <= view.state.doc.lines; i++) {
+  for (let i = 1; i <= view.state.doc.lines; i++) {
     const from = view.state.doc.line(i).from
     const line = view.lineBlockAt(from)
     const range = foldable(view.state, line.from, line.to)

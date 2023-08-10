@@ -74,6 +74,7 @@ const codeBlock = (props: Props) => `
         position: absolute;
         outline: none;
         margin-left: 15px;
+        z-index: 1;
         .cm-editor {
           width: 100%;
           padding: 5px;
