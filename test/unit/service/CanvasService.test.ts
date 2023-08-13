@@ -11,6 +11,7 @@ import {
   EdgeType,
   ElementType,
   createState,
+  Mode,
 } from '@/state'
 import {createCtrl, Ctrl} from '@/services'
 import {CanvasService} from '@/services/CanvasService'
@@ -208,6 +209,7 @@ test('updateCameraPoint', () => {
 
 test('deleteCanvas', () => {
   const [store, setState] = createStore(createState({
+    mode: Mode.Canvas,
     canvases: [
       createCanvas({id: '1', active: true}),
       createCanvas({id: '2', active: false}),
@@ -216,10 +218,11 @@ test('deleteCanvas', () => {
 
   const service = new CanvasService(ctrl, store, setState)
 
-  service.deleteCanvas('2')
-  expect(store.canvases.length).toBe(1)
-
   service.deleteCanvas('1')
+  expect(store.canvases.length).toBe(1)
+  expect(store.canvases[0].active).toBe(true)
+
+  service.deleteCanvas('2')
   expect(store.canvases.length).toBe(0)
 })
 
@@ -280,19 +283,39 @@ test('deselect', () => {
 })
 
 test('newCanvas', () => {
-  const [store, setState] = createStore(createState({canvases: []}))
+  const editorView = mock<EditorView>()
+  const [store, setState] = createStore(createState({
+    canvases: [
+      createCanvas({
+        id: '1',
+        active: true,
+        elements: [
+          createEditorElement({id: '1', selected: true, active: true, editorView}),
+        ],
+      }),
+    ],
+  }))
+
   ctrl.collab.create.mockReturnValue({})
 
   const service = new CanvasService(ctrl, store, setState)
-  service.newCanvas()
 
-  expect(store.canvases.length).toBe(1)
-  expect(store.canvases[0].active).toBe(true)
-
+  // new canvas
   service.newCanvas()
   expect(store.canvases.length).toBe(2)
-  expect(store.canvases[0].active).toBe(false)
   expect(store.canvases[1].active).toBe(true)
+
+  // old editor views are destroyed
+  const editorEl = store.canvases[0]?.elements[0] as CanvasEditorElement
+  expect(editorEl.editorView).toBeUndefined()
+  expect(editorView.destroy.mock.calls.length).toBe(1)
+
+  // Add another canvas
+  service.newCanvas()
+  expect(store.canvases.length).toBe(3)
+  expect(store.canvases[0].active).toBe(false)
+  expect(store.canvases[1].active).toBe(false)
+  expect(store.canvases[2].active).toBe(true)
 
   expect(ctrl.collab.create.mock.calls.length).toBe(2)
 })

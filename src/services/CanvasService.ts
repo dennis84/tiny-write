@@ -197,6 +197,9 @@ export class CanvasService {
 
   deleteCanvas(id: string) {
     const canvases = []
+    let max = 0
+    let maxId = undefined
+
     for (const c of this.store.canvases) {
       if (c.id === id) {
         c.elements.forEach((el) => {
@@ -204,12 +207,21 @@ export class CanvasService {
         })
       } else {
         canvases.push(c)
+        const t = c.lastModified?.getTime() ?? 0
+        if (!max || t > max) {
+          max = t
+          maxId = c.id
+        }
       }
     }
 
     this.setState('canvases', canvases)
     db.deleteCanvas(id)
     remote.log('info', '💾 Canvas deleted')
+
+    if (this.store.mode === Mode.Canvas && maxId) {
+      this.open(maxId)
+    }
   }
 
   select(id: string, active = false) {
@@ -248,7 +260,14 @@ export class CanvasService {
       lastModified: new Date(),
     }
 
-    const prev = state.canvases.map((c) => ({...c, active: false}))
+    const prev = state.canvases.map((c) => ({
+      ...c,
+      active: false,
+      elements: c.elements.map((el) => {
+        if (isEditorElement(el)) el.editorView?.destroy()
+        return {...el, editorView: undefined}
+      }),
+    }))
 
     this.setState({
       ...state,
