@@ -697,7 +697,7 @@ export class CanvasService {
       return
     }
 
-    let editorView = element?.editorView
+    let editorView = unwrap(element)?.editorView
     this.ctrl.collab.apply(file)
 
     const extensions = createExtensions({

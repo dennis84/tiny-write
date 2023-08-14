@@ -14,6 +14,10 @@ export class AppService {
     private setState: SetStoreFunction<State>,
   ) {}
 
+  get mode() {
+    return this.store.mode
+  }
+
   get fullscreen() {
     return this.store.fullscreen
   }

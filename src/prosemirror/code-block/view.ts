@@ -3,7 +3,7 @@ import {DecorationSet, DecorationSource, EditorView as ProsemirrorEditorView} fr
 import {Selection, TextSelection} from 'prosemirror-state'
 import {exitCode} from 'prosemirror-commands'
 import {Compartment, EditorState} from '@codemirror/state'
-import {EditorView, ViewUpdate, keymap, tooltips} from '@codemirror/view'
+import {EditorView, ViewUpdate, keymap, tooltips, drawSelection} from '@codemirror/view'
 import {defaultKeymap, indentWithTab} from '@codemirror/commands'
 import {
   autocompletion,
@@ -14,6 +14,7 @@ import {
 import {indentOnInput, indentUnit, bracketMatching, foldGutter, foldKeymap} from '@codemirror/language'
 import {linter, setDiagnostics} from '@codemirror/lint'
 import {Ctrl} from '@/services'
+import {Mode} from '@/state'
 import {findWords, tabCompletionKeymap} from './completion'
 import {highlight, changeLang} from './lang'
 import {getTheme} from './theme'
@@ -146,9 +147,13 @@ export class CodeBlockView {
           indentWithTab,
         ]),
         theme,
+        ...(this.ctrl.app.mode == Mode.Editor ? [
+          drawSelection(),
+          EditorState.allowMultipleSelections.of(true),
+          foldGutter(),
+        ] : []),
         indentOnInput(),
         bracketMatching(),
-        foldGutter(),
         closeBrackets(),
         linter(() => []),
         EditorState.tabSize.of(this.ctrl.config.prettier.tabWidth),
