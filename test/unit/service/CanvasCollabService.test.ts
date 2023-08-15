@@ -55,32 +55,32 @@ test('init', () => {
   service.init()
 
   expect(service.elements?.toJSON()).toEqual({
-    '1': {id: '1', type: ElementType.Editor, x: 0, y: 0, width: 100, height: 100}
+    'el-1': {id: '1', type: ElementType.Editor, x: 0, y: 0, width: 100, height: 100}
   })
 
   // Undo do nothing
   undoManager.undo()
 
   expect(service.elements?.toJSON()).toEqual({
-    '1': {id: '1', type: ElementType.Editor, x: 0, y: 0, width: 100, height: 100}
+    'el-1': {id: '1', type: ElementType.Editor, x: 0, y: 0, width: 100, height: 100}
   })
 
   // Add element
   service.addElement({id: '2', x: 0, y: 0})
 
   expect(service.elements?.toJSON()).toEqual({
-    '1': {id: '1', type: ElementType.Editor, x: 0, y: 0, width: 100, height: 100},
-    '2': {id: '2', x: 0, y: 0},
+    'el-1': {id: '1', type: ElementType.Editor, x: 0, y: 0, width: 100, height: 100},
+    'el-2': {id: '2', x: 0, y: 0},
   })
 
   // Undo add
   undoManager.undo()
 
   expect(service.elements?.toJSON()).toEqual({
-    '1': {id: '1', type: ElementType.Editor, x: 0, y: 0, width: 100, height: 100}
+    'el-1': {id: '1', type: ElementType.Editor, x: 0, y: 0, width: 100, height: 100}
   })
 
-  expect(canvasService.removeElement).toHaveBeenCalledWith('2')
+  expect(canvasService.removeElement).toHaveBeenCalledWith('el-2')
 })
 
 test('addElement', () => {
@@ -95,7 +95,7 @@ test('addElement', () => {
   undoManager.undo()
 
   expect(service.elements?.toJSON()).toEqual({})
-  expect(canvasService.removeElement).toHaveBeenCalledWith('1')
+  expect(canvasService.removeElement).toHaveBeenCalledWith('el-1')
 })
 
 test('addElements', () => {
@@ -110,8 +110,8 @@ test('addElements', () => {
   ])
 
   expect(service.elements?.toJSON()).toEqual({
-    '1': {id: '1', x: 0, y: 0},
-    '2': {id: '2', x: 1, y: 1},
+    'el-1': {id: '1', x: 0, y: 0},
+    'el-2': {id: '2', x: 1, y: 1},
   })
 
   // Undo add
@@ -130,12 +130,12 @@ test('updateElement', () => {
 
   // Update element
   service.updateElement({id: '1', x: 1})
-  expect(service.elements?.toJSON()).toEqual({'1': {id: '1', x: 1, y: 0}})
+  expect(service.elements?.toJSON()).toEqual({'el-1': {id: '1', x: 1, y: 0}})
 
   // Undo update
   undoManager.undo()
 
-  expect(service.elements?.toJSON()).toEqual({'1': {id: '1', x: 0, y: 0}})
+  expect(service.elements?.toJSON()).toEqual({'el-1': {id: '1', x: 0, y: 0}})
   expect(canvasService.updateCanvasElement).toHaveBeenCalledWith('1', {x: 0})
 })
 
@@ -148,12 +148,12 @@ test('updateElement - add prop', () => {
 
   // Update element
   service.updateElement({id: '1', z: 1})
-  expect(service.elements?.toJSON()).toEqual({'1': {id: '1', x: 0, y: 0, z: 1}})
+  expect(service.elements?.toJSON()).toEqual({'el-1': {id: '1', x: 0, y: 0, z: 1}})
 
   // Undo update
   undoManager.undo()
 
-  expect(service.elements?.toJSON()).toEqual({'1': {id: '1', x: 0, y: 0}})
+  expect(service.elements?.toJSON()).toEqual({'el-1': {id: '1', x: 0, y: 0}})
 
   expect(canvasService.updateCanvasElement).toHaveBeenCalledWith('1', {z: undefined})
 })
@@ -173,7 +173,7 @@ test('removeElement', () => {
   // Undo remove
   undoManager.undo()
 
-  expect(service.elements?.toJSON()).toEqual({'1': {id: '1', x: 0, y: 0}})
+  expect(service.elements?.toJSON()).toEqual({'el-1': {id: '1', x: 0, y: 0}})
   expect(canvasService.updateCanvas).toHaveBeenCalledWith('c1', {
     elements: [{id: '1', x: 0, y: 0}],
   })
@@ -206,8 +206,8 @@ test('removeAll', () => {
   undoManager.undo()
 
   expect(service.elements?.toJSON()).toEqual({
-    '1': {id: '1', x: 0, y: 0},
-    '2': {id: '2', x: 1, y: 1},
+    'el-1': {id: '1', x: 0, y: 0},
+    'el-2': {id: '2', x: 1, y: 1},
   })
 
   expect(canvasService.updateCanvas).toHaveBeenCalledTimes(2)
@@ -226,16 +226,16 @@ test('removeMany', () => {
   // Remove many
   service.removeMany(['1', '2'])
   expect(service.elements?.toJSON()).toEqual({
-    '3': {id: '3', x: 2, y: 2},
+    'el-3': {id: '3', x: 2, y: 2},
   })
 
   // Undo remove
   undoManager.undo()
 
   expect(service.elements?.toJSON()).toEqual({
-    '1': {id: '1', x: 0, y: 0},
-    '2': {id: '2', x: 1, y: 1},
-    '3': {id: '3', x: 2, y: 2},
+    'el-1': {id: '1', x: 0, y: 0},
+    'el-2': {id: '2', x: 1, y: 1},
+    'el-3': {id: '3', x: 2, y: 2},
   })
 
   expect(canvasService.updateCanvas).toHaveBeenCalledTimes(2)
