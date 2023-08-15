@@ -1,5 +1,6 @@
 import {Store, unwrap} from 'solid-js/store'
 import * as Y from 'yjs'
+import {debounce} from 'ts-debounce'
 import {State} from '@/state'
 import {CanvasService} from './CanvasService'
 
@@ -13,6 +14,8 @@ interface CollabElement {
 const PREFIX = 'el-'
 
 export class CanvasCollabService {
+  updateElementThrottled = debounce((el) => this.updateElement(el), 10, {maxWait: 10})
+
   constructor(
     private canvasService: CanvasService,
     private store: Store<State>,

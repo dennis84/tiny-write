@@ -18,18 +18,8 @@ export default () => {
   }
 
   const onCopyCollabLink = () => {
-    const currentFile = ctrl.file.currentFile
-    remote.copy(`${WEB_URL}/${currentFile?.id}`).then(() => {
-      currentFile?.editorView?.focus()
+    remote.copy(`${WEB_URL}/${ctrl.collab.room}`).then(() => {
       setLastAction('copy-collab-link')
-    })
-  }
-
-  const onCopyCollabAppLink = () => {
-    const currentFile = ctrl.file.currentFile
-    remote.copy(`tinywrite://${currentFile?.id}`).then(() => {
-      currentFile?.editorView?.focus()
-      setLastAction('copy-collab-app-link')
     })
   }
 
@@ -52,10 +42,6 @@ export default () => {
     onCleanup(() => clearTimeout(id))
   })
 
-  // createEffect(() => {
-  //   setLastAction(undefined)
-  // }, ctrl.file.currentFile?.lastModified)
-
   return (
     <>
       <Label>Collab</Label>
@@ -76,11 +62,6 @@ export default () => {
           <Link onClick={onCopyCollabLink}>
             Copy Link 🔗 {lastAction() === 'copy-collab-link' && '📋'}
           </Link>
-          <Show when={false}>
-            <Link onClick={onCopyCollabAppLink}>
-              Copy App Link {lastAction() === 'copy-collab-app-link' && '📋'}
-            </Link>
-          </Show>
           <Text>
             {collabUsers()} {collabUsers() === 1 ? 'user' : 'users'} connected
           </Text>

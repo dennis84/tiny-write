@@ -3,7 +3,7 @@ import * as Y from 'yjs'
 import {WebsocketProvider} from 'y-websocket'
 import {defaultDeleteFilter, defaultProtectedNodes, ySyncPluginKey} from 'y-prosemirror'
 import {adjectives, animals, uniqueNamesGenerator} from 'unique-names-generator'
-import {Collab, File, State} from '@/state'
+import {Collab, File, Mode, State} from '@/state'
 import {COLLAB_URL} from '@/env'
 import * as remote from '@/remote'
 import {Ctrl} from '.'
@@ -38,6 +38,12 @@ export class CollabService {
 
   get undoManager() {
     return this.store.collab?.undoManager
+  }
+
+  get room() {
+    return this.store.mode === Mode.Editor ?
+      this.ctrl.file.currentFile?.id :
+      this.ctrl.canvas.currentCanvas?.id
   }
 
   create(room: string, connect = false): Collab {
@@ -111,8 +117,7 @@ export class CollabService {
   }
 
   startCollab() {
-    const currentFile = this.ctrl.file.currentFile
-    window.history.replaceState(null, '', `/${currentFile?.id}`)
+    window.history.replaceState(null, '', `/${this.room}`)
     this.store.collab?.provider?.connect()
     this.setState('collab', {started: true})
   }

@@ -152,8 +152,8 @@ export interface Canvas {
 }
 
 export enum Mode {
-  Editor,
-  Canvas,
+  Editor = 'editor',
+  Canvas = 'canvas',
 }
 
 export interface State {

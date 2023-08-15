@@ -26,6 +26,7 @@ export class AppService {
     try {
       let data = await this.fetchData()
       let text: FileText | undefined
+      remote.log('info', `Init app (mode=${data.mode})`)
 
       if (isTauri() && data.window) {
         await remote.updateWindow(data.window)

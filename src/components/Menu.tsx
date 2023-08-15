@@ -309,9 +309,7 @@ export default () => {
             </Show>
           </Sub>
           {/* Submenu Collab */}
-          <Show when={store.mode === Mode.Editor}>
-            <SubmenuCollab />
-          </Show>
+          <SubmenuCollab />
           {/* Submenu File Stats */}
           <Show when={store.mode === Mode.Editor}>
             <SubmenuFileStats />
