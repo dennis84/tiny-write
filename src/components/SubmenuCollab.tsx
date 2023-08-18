@@ -1,5 +1,5 @@
 import {createEffect, createSignal, onCleanup, Show} from 'solid-js'
-import {useState} from '@/state'
+import {Mode, useState} from '@/state'
 import * as remote from '@/remote'
 import {Label, Link, Sub, Text} from './Menu'
 import {WEB_URL} from '@/env'
@@ -18,7 +18,8 @@ export default () => {
   }
 
   const onCopyCollabLink = () => {
-    remote.copy(`${WEB_URL}/${ctrl.collab.room}`).then(() => {
+    const m = store.mode === Mode.Canvas ? 'c/' : ''
+    remote.copy(`${WEB_URL}/${m + ctrl.collab.room}`).then(() => {
       setLastAction('copy-collab-link')
     })
   }

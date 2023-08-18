@@ -54,14 +54,25 @@ export class AppService {
         }
         data = await this.ctrl.editor.activateFile(data, currentFile)
       } else if (data.args?.room) { // Join collab
-        currentFile = data.files.find((f) => f.id === data.args?.room)
-        if (currentFile?.path) {
-          text = (await this.ctrl.file.loadFile(currentFile.path)).text
-        } else if (!currentFile) {
-          currentFile = this.ctrl.file.createFile({id: data.args.room})
-          data.files.push(currentFile as File)
+        if (data.mode === Mode.Editor) {
+          currentFile = data.files.find((f) => f.id === data.args?.room)
+          if (currentFile?.path) {
+            text = (await this.ctrl.file.loadFile(currentFile.path)).text
+          } else if (!currentFile) {
+            currentFile = this.ctrl.file.createFile({id: data.args.room})
+            data.files.push(currentFile)
+          }
+
+          data = await this.ctrl.editor.activateFile(data, currentFile)
+        } else {
+          currentCanvas = data.canvases.find((c) => c.id === data.args?.room)
+          if (!currentCanvas) {
+            currentCanvas = this.ctrl.canvas.createCanvas({id: data.args.room})
+            data.canvases.push(currentCanvas)
+          }
+
+          data = this.ctrl.canvas.activateCanvas(data, data.args.room)
         }
-        data = await this.ctrl.editor.activateFile(data, currentFile)
       } else if (currentFile?.id) { // Restore last saved file
         data = await this.ctrl.editor.activateFile(data, currentFile)
         if (currentFile?.path) {
@@ -76,17 +87,17 @@ export class AppService {
         data = await this.ctrl.editor.activateFile(data, currentFile)
       }
 
+      const mode = currentCanvas ? Mode.Canvas : Mode.Editor
       let collab
-      if (currentFile) {
+      if (mode === Mode.Editor && currentFile) {
         collab = this.ctrl.collab.createByFile(currentFile, data.args?.room !== undefined)
         if (currentFile?.path) {
           text = (await this.ctrl.file.loadFile(currentFile.path)).text
         }
-      } else if (currentCanvas) {
-        collab = this.ctrl.collab.create(currentCanvas.id, data.args?.room !== undefined)
+      } else if (mode === Mode.Canvas && currentCanvas) {
+        collab = this.ctrl.collab.create(currentCanvas.id, mode, data.args?.room !== undefined)
       }
 
-      const mode = currentCanvas ? Mode.Canvas : Mode.Editor
       const newState: State = {
         ...data,
         config: {...data.config, ...this.ctrl.config.getTheme(data)},
@@ -145,6 +156,12 @@ export class AppService {
     remote.log('info', '💾 Save window state')
   }
 
+  parseRoom(room: string): [Mode, string] {
+    const [m, r] = room.split('/')
+    if (!r) return [Mode.Editor, m]
+    return [m === 'c' ? Mode.Canvas : Mode.Editor, r]
+  }
+
   private async fetchData(): Promise<State> {
     const state = unwrap(this.store)
     let args = await remote.getArgs().catch(() => undefined) ?? state.args ?? {}
@@ -161,6 +178,13 @@ export class AppService {
     const canvases = await this.ctrl.canvas.fetchCanvases() ?? []
     const meta = await db.getMeta()
 
+    let mode = meta?.mode ?? state.mode ?? Mode.Editor
+    if (args.room) {
+      const [m, r] = this.parseRoom(args.room)
+      mode = m
+      args.room = r
+    }
+
     const config = {
       ...state.config,
       ...fetchedConfig,
@@ -175,7 +199,7 @@ export class AppService {
       window: fetchedWindow,
       storageSize: fetchedSize ?? 0,
       collab: undefined,
-      mode: meta?.mode ?? state.mode ?? Mode.Editor,
+      mode,
     }
   }
 }

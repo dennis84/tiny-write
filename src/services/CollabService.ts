@@ -46,9 +46,10 @@ export class CollabService {
       this.ctrl.canvas.currentCanvas?.id
   }
 
-  create(room: string, connect = false): Collab {
+  create(room: string, mode = Mode.Editor, connect = false): Collab {
     if (connect) {
-      window.history.replaceState(null, '', `/${room}`)
+      const m = mode === Mode.Canvas ? 'c/' : ''
+      window.history.replaceState(null, '', `/${m + room}`)
     }
 
     const ydoc = new Y.Doc({gc: false})
@@ -101,7 +102,7 @@ export class CollabService {
   createByFile(file: File, connect = false): Collab {
     this.disconnectCollab()
     this.store.collab?.undoManager?.destroy()
-    const collab = this.create(file.id, connect)
+    const collab = this.create(file.id, Mode.Editor, connect)
     if (file.ydoc) Y.applyUpdate(collab.ydoc!, file.ydoc)
     const type = collab.ydoc!.getXmlFragment(file.id)
     collab?.undoManager?.addToScope(type)
@@ -117,7 +118,8 @@ export class CollabService {
   }
 
   startCollab() {
-    window.history.replaceState(null, '', `/${this.room}`)
+    const m = this.store.mode === Mode.Canvas ? 'c/' : ''
+    window.history.replaceState(null, '', `/${m + this.room}`)
     this.store.collab?.provider?.connect()
     this.setState('collab', {started: true})
   }

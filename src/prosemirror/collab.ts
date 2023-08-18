@@ -5,6 +5,7 @@ import {ySyncPlugin, yCursorPlugin, yUndoPlugin, ySyncPluginKey} from 'y-prosemi
 import {Awareness} from 'y-protocols/awareness'
 import {ProseMirrorExtension} from '@/prosemirror'
 import {Ctrl} from '@/services'
+import {Mode} from '@/state'
 
 const cursorBuilder = (user: any): HTMLElement => {
   const cursor = document.createElement('span')
@@ -113,7 +114,7 @@ export const collab = (ctrl: Ctrl, type: Y.XmlFragment): ProseMirrorExtension =>
       onFirstRender: () => ctrl.collab.setRendered(),
     }),
     yCursorPlugin(ctrl.collab.provider!.awareness, {cursorBuilder}),
-    yMouseCursorPlugin(ctrl.collab.provider!.awareness),
+    ...(ctrl.app.mode === Mode.Editor ? [yMouseCursorPlugin(ctrl.collab.provider!.awareness)] : []),
     yUndoPlugin({undoManager: ctrl.collab.undoManager}),
   ]
 })

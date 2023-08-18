@@ -246,19 +246,23 @@ export class CanvasService {
     this.updateCanvasElement(prevEl.id, {selected: false, active: false})
   }
 
+  createCanvas(params: Partial<Canvas>): Canvas {
+    return {
+      camera: {point: [0, 0], zoom: 1},
+      elements: [],
+      lastModified: new Date(),
+      ...params,
+      id: params.id ?? uuidv4(),
+    }
+  }
+
   newCanvas() {
     this.removeDeadLinks()
 
     const state = unwrap(this.store)
     const id = uuidv4()
-    const collab = this.ctrl.collab.create(id, false)
-    const canvas: Canvas = {
-      id,
-      camera: {point: [0, 0], zoom: 1},
-      elements: [],
-      active: true,
-      lastModified: new Date(),
-    }
+    const collab = this.ctrl.collab.create(id, Mode.Canvas, false)
+    const canvas = this.createCanvas({id, active: true})
 
     const prev = state.canvases.map((c) => ({
       ...c,
@@ -327,10 +331,25 @@ export class CanvasService {
   }
 
   open(id: string) {
-    const state = unwrap(this.store)
-    const canvases = []
-
     this.removeDeadLinks()
+    this.ctrl.collab.disconnectCollab()
+
+    const state = this.activateCanvas(unwrap(this.store), id)
+    const collab = this.ctrl.collab.create(id, Mode.Canvas, false)
+
+    this.setState({
+      ...state,
+      collab,
+    })
+
+    db.setMeta({mode: state.mode})
+    remote.log('info', '💾 Switched to canvas mode')
+
+    this.ctrl.canvasCollab.init()
+  }
+
+  activateCanvas(state: State, id: string) {
+    const canvases = []
 
     for (const canvas of state.canvases) {
       if (canvas.id === id) {
@@ -349,20 +368,11 @@ export class CanvasService {
       }
     }
 
-    const collab = this.ctrl.collab.create(id, false)
-    const mode = Mode.Canvas
-
-    this.setState({
+    return {
       ...state,
-      collab,
       canvases,
-      mode,
-    })
-
-    db.setMeta({mode})
-    remote.log('info', '💾 Switched to canvas mode')
-
-    this.ctrl.canvasCollab.init()
+      mode: Mode.Canvas,
+    }
   }
 
   newFile(link?: CanvasLinkElement) {

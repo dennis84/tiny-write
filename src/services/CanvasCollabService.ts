@@ -58,11 +58,13 @@ export class CanvasCollabService {
               })
             }
           } else if (action.action === 'update') {
-            const elementId = event.path[0].toString().substring(PREFIX.length)
-            this.canvasService.updateCanvasElement(elementId, {
-              type: event.target.get('type'),
-              [key]: event.target.get(key)
-            })
+            if (event.path.length > 0) {
+              const elementId = event.path[0].toString().substring(PREFIX.length)
+              this.canvasService.updateCanvasElement(elementId, {
+                type: event.target.get('type'),
+                [key]: event.target.get(key)
+              })
+            }
           } else if (action.action === 'add') {
             const element = event.target.get(key).toJSON()
             this.canvasService.updateCanvas(currentCanvas.id, {
