@@ -1,10 +1,7 @@
 import {beforeEach, expect, test, vi} from 'vitest'
-import {mockDeep} from 'vitest-mock-extended'
+import {mock, mockDeep} from 'vitest-mock-extended'
 
-vi.mock('@/db', () => ({
-  setConfig: vi.fn(),
-  setSize: vi.fn(),
-}))
+vi.mock('@/db', () => mock())
 
 vi.stubGlobal('matchMedia', vi.fn(() => ({
   matchMedia: () => ''

@@ -1,5 +1,5 @@
 import {beforeEach, expect, test, vi} from 'vitest'
-import {mockDeep} from 'vitest-mock-extended'
+import {mock, mockDeep} from 'vitest-mock-extended'
 import {clearMocks, mockIPC} from '@tauri-apps/api/mocks'
 import {ImageService} from '@/services/ImageService'
 import {createCtrl, Ctrl} from '@/services'
@@ -19,21 +19,7 @@ vi.stubGlobal('location', ({
 }))
 
 vi.mock('mermaid', () => ({}))
-vi.mock('@/db', () => ({
-  getCanvases: vi.fn(),
-  getMeta: vi.fn(),
-  setMeta: vi.fn(),
-  getConfig: vi.fn(),
-  setConfig: vi.fn(),
-  getWindow: vi.fn(),
-  setWindow: vi.fn(),
-  getFiles: vi.fn(),
-  deleteFile: vi.fn(),
-  updateFile: vi.fn(),
-  setSize: vi.fn(),
-  getSize: vi.fn(),
-  deleteDatabase: vi.fn(),
-}))
+vi.mock('@/db', () => mock())
 
 beforeEach(() => {
   clearMocks()

@@ -1,5 +1,8 @@
 import {vi, expect, test, beforeEach} from 'vitest'
+import {mock} from 'vitest-mock-extended'
 import * as db from '@/db'
+import {createCtrl} from '@/services'
+import {createState, Version} from '@/state'
 import {createYUpdateAsString, getText, insertText, waitFor, pause} from './util'
 
 vi.stubGlobal('matchMedia', vi.fn(() => ({
@@ -13,21 +16,7 @@ vi.stubGlobal('location', ({
 
 vi.mock('mermaid', () => ({}))
 
-vi.mock('@/db', () => ({
-  getCanvases: vi.fn(),
-  getMeta: vi.fn(),
-  setMeta: vi.fn(),
-  getConfig: vi.fn(),
-  setConfig: vi.fn(),
-  getWindow: vi.fn(),
-  setWindow: vi.fn(),
-  getFiles: vi.fn(),
-  deleteFile: vi.fn(),
-  updateFile: vi.fn(),
-  setSize: vi.fn(),
-  getSize: vi.fn(),
-  deleteDatabase: vi.fn(),
-}))
+vi.mock('@/db', () => mock())
 
 vi.mock('y-websocket', () => ({
   WebsocketProvider: vi.fn((_, roomname) => ({
@@ -43,9 +32,6 @@ vi.mock('y-websocket', () => ({
     on: vi.fn(),
   }))
 }))
-
-import {createCtrl} from '@/services'
-import {createState, Version} from '@/state'
 
 beforeEach(() => {
   vi.restoreAllMocks()
@@ -466,9 +452,7 @@ test('deleteFile - current', async () => {
 })
 
 test('reset', async () => {
-  const dbSpy = vi.spyOn(db, 'deleteDatabase')
-  const reloadSpy = vi.spyOn(window.location, 'reload')
-
+  const loc = mock(window.location)
   const error = new Error('fail')
   const {ctrl, store} = createCtrl(createState())
   const target = document.createElement('div')
@@ -480,8 +464,8 @@ test('reset', async () => {
   expect(store.error?.id).toBe('exception')
 
   await ctrl.app.reset()
-  expect(dbSpy).toHaveBeenCalledTimes(1)
-  expect(reloadSpy).toHaveBeenCalledTimes(1)
+  expect(db.deleteDatabase).toHaveBeenCalledTimes(1)
+  expect(loc.reload).toHaveBeenCalledTimes(1)
 })
 
 test('startCollab - from empty state', async () => {

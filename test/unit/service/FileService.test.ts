@@ -1,14 +1,14 @@
 import {beforeEach, expect, test, vi} from 'vitest'
+import {mock, mockDeep} from 'vitest-mock-extended'
+import {createStore} from 'solid-js/store'
 import * as Y from 'yjs'
 
 import {createState} from '@/state'
-import {createYdoc} from '../util'
 import {FileService} from '@/services/FileService'
-import {createStore} from 'solid-js/store'
 import {Ctrl} from '@/services'
-import {mockDeep} from 'vitest-mock-extended'
+import {createYdoc} from '../util'
 
-vi.mock('@/db', () => ({}))
+vi.mock('@/db', () => mock())
 vi.mock('mermaid', () => ({}))
 
 beforeEach(() => {

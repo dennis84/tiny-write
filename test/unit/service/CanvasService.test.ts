@@ -21,14 +21,7 @@ vi.stubGlobal('innerWidth', 1000)
 vi.stubGlobal('innerHeight', 1000)
 
 vi.mock('mermaid', () => ({}))
-vi.mock('@/db', () => ({
-  updateCanvas: vi.fn(),
-  deleteCanvas: vi.fn(),
-  setMeta: vi.fn(),
-  getFiles: vi.fn(),
-  updateFile: vi.fn(),
-  setSize: vi.fn(),
-}))
+vi.mock('@/db', () => mock())
 
 const createCanvas = (props: Partial<Canvas> = {}): Canvas => ({
   id: '1',

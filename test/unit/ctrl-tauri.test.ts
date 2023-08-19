@@ -1,6 +1,9 @@
 import {vi, expect, test, beforeEach} from 'vitest'
+import {mock} from 'vitest-mock-extended'
 import {clearMocks, mockIPC} from '@tauri-apps/api/mocks'
 import * as db from '@/db'
+import {createCtrl} from '@/services'
+import {createState} from '@/state'
 import {createYUpdateAsString, getText, insertText, waitFor} from './util'
 
 vi.stubGlobal('__TAURI__', {})
@@ -9,25 +12,7 @@ vi.stubGlobal('matchMedia', vi.fn(() => ({
 })))
 
 vi.mock('mermaid', () => ({}))
-
-vi.mock('@/db', () => ({
-  getCanvases: vi.fn(),
-  getMeta: vi.fn(),
-  setMeta: vi.fn(),
-  getConfig: vi.fn(),
-  setConfig: vi.fn(),
-  getWindow: vi.fn(),
-  setWindow: vi.fn(),
-  getFiles: vi.fn(),
-  deleteFile: vi.fn(),
-  updateFile: vi.fn(),
-  setSize: vi.fn(),
-  getSize: vi.fn(),
-  deleteDatabase: vi.fn(),
-}))
-
-import {createCtrl} from '@/services'
-import {createState} from '@/state'
+vi.mock('@/db', () => mock())
 
 const lastModified = new Date()
 
@@ -48,7 +33,7 @@ beforeEach(() => {
 })
 
 test('init - load existing by path', async () => {
-  vi.spyOn(db, 'getFiles').mockResolvedValue([
+  mock(db.getFiles).mockResolvedValue([
     {id: '1', ydoc: createYUpdateAsString('1', ''), path: 'file1', lastModified, active: true}
   ])
 

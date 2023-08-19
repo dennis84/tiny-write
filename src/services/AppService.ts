@@ -175,7 +175,7 @@ export class AppService {
     const fetchedConfig = await db.getConfig()
     const fetchedSize = await db.getSize()
     const files = await this.ctrl.file.fetchFiles() ?? []
-    const canvases = await this.ctrl.canvas.fetchCanvases() ?? []
+    const canvases = await this.ctrl.canvas.fetchCanvases() ?? state.canvases ?? []
     const meta = await db.getMeta()
 
     let mode = meta?.mode ?? state.mode ?? Mode.Editor
