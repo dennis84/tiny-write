@@ -196,7 +196,7 @@ const Corner = (props: CornerProps) => {
           }
         }
 
-        ctrl.eanvasCollab.updateElementThrottled({id: props.id, x, y, width, height})
+        ctrl.canvasCollab.updateElementThrottled({id: props.id, x, y, width, height})
         ctrl.canvas.updateCanvasElement(props.id, {type, x, y, width, height})
       } else if (props.type === CornerType.TopRight) {
         let width = props.width + dx / zoom

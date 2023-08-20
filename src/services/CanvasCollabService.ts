@@ -14,7 +14,7 @@ interface CollabElement {
 const PREFIX = 'el-'
 
 export class CanvasCollabService {
-  updateElementThrottled = debounce((el) => this.updateElement(el), 10, {maxWait: 10})
+  updateElementThrottled = debounce((el) => this.updateElement(el), 20, {maxWait: 20})
 
   constructor(
     private canvasService: CanvasService,

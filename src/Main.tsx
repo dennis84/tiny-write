@@ -13,6 +13,7 @@ import ErrorView from '@/components/Error'
 import Dir from '@/components/Dir'
 import Keymap from '@/components/Keymap'
 import Variables from '@/components/Variables'
+import MouseCursor from '@/components/MouseCursor'
 
 export default (props: {state: State}) => {
   const {store, ctrl} = createCtrl(props.state)
@@ -214,6 +215,7 @@ export default (props: {state: State}) => {
             <Editor ref={editorRef} />
           </Scroll>
         </Show>
+        <MouseCursor />
         <Menu />
         <Keymap />
         <Variables />
