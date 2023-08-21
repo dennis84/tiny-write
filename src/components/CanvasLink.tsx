@@ -164,6 +164,7 @@ const getLine = (canvas: Canvas, element: CanvasLinkElement): LineSegment2d | un
     b = new Vec2d(element.toX, element.toY)
   } else if (element.to && element.toEdge !== undefined) {
     const toEl = canvas.elements.find((el) => el.id === element.to) as CanvasEditorElement
+    if (!toEl) return
     const toBox = new Box2d(toEl.x, toEl.y, toEl.width, toEl.height)
     b = toBox.getHandlePoint(element.toEdge)
   }
