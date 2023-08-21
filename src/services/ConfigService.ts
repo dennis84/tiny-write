@@ -1,5 +1,5 @@
 import {SetStoreFunction, Store, unwrap} from 'solid-js/store'
-import {Config, Mode, State} from '@/state'
+import {Config, isEditorElement, Mode, State} from '@/state'
 import * as remote from '@/remote'
 import * as db from '@/db'
 import {isDark} from '@/env'
@@ -361,7 +361,11 @@ export class ConfigService {
     if (state.mode === Mode.Editor) {
       this.ctrl.editor.updateEditorState()
     } else if (state.mode == Mode.Canvas) {
-      this.store.files.forEach((f) => this.ctrl.canvas.updateEditorState(f))
+      this.ctrl.canvas.currentCanvas?.elements.forEach((el) => {
+        if (isEditorElement(el)) {
+          this.ctrl.canvas.updateEditorState(el.id)
+        }
+      })
     }
 
     this.saveConfig(unwrap(this.store))

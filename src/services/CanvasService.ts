@@ -1,6 +1,7 @@
 import {SetStoreFunction, Store, unwrap} from 'solid-js/store'
 import {EditorState, Plugin, Transaction} from 'prosemirror-state'
 import {EditorView} from 'prosemirror-view'
+import * as Y from 'yjs'
 import {ySyncPluginKey} from 'y-prosemirror'
 import {v4 as uuidv4} from 'uuid'
 import {debounce} from 'ts-debounce'
@@ -693,30 +694,35 @@ export class CanvasService {
   }
 
   async renderEditor(element: CanvasEditorElement, node: HTMLElement) {
-    const file = this.ctrl.file.findFile({id: element.id})
-    if (!file) return
-    this.updateEditorState(file, node)
+    this.updateEditorState(element.id, node)
   }
 
-  updateEditorState(file: File, node?: Element) {
+  updateEditorState(id: string, node?: Element) {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
 
-    const element = currentCanvas?.elements.find((el) => el.id === file.id) as CanvasEditorElement
+    const element = currentCanvas?.elements.find((el) => el.id === id) as CanvasEditorElement
     if (!element) {
       return
     }
 
-    let editorView = unwrap(element)?.editorView
-    this.ctrl.collab.apply(file)
+    let type = this.store.collab?.ydoc?.getXmlFragment(id)
+    const file = this.ctrl.file.findFile({id})
+    if (file) {
+      Y.applyUpdate(this.store.collab?.ydoc, file.ydoc)
+      type = this.store.collab?.ydoc?.getXmlFragment(id)
+    }
+
+    this.store.collab?.undoManager?.addToScope(type)
 
     const extensions = createExtensions({
       ctrl: this.ctrl,
       markdown: false,
-      type: this.store.collab?.ydoc?.getXmlFragment(file.id),
+      type,
       dropcursor: false,
     })
 
+    let editorView = unwrap(element)?.editorView
     const nodeViews = createNodeViews(extensions)
     const schema = createSchema(extensions)
     const plugins = extensions.reduce<Plugin[]>((acc, e) => e.plugins?.(acc, schema) ?? acc, [])
@@ -734,13 +740,9 @@ export class CanvasService {
 
         if ((maybeSkip && !isUndo) || this.store.isSnapshot) return
 
-        this.ctrl.file.updateFile(file.id, {
-          lastModified: new Date(),
-          markdown: file.markdown,
-          path: file.path,
-        })
+        this.ctrl.file.updateFile(id, {lastModified: new Date()})
 
-        const updatedFile = this.store.files.find((f) => f.id === file.id)
+        const updatedFile = this.store.files.find((f) => f.id === id)
         if (!updatedFile) return
         this.ctrl.file.saveFile(updatedFile)
         remote.log('info', '💾 Saved updated text')
