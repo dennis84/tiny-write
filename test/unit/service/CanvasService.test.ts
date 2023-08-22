@@ -311,6 +311,7 @@ test('newCanvas', () => {
   expect(store.canvases[2].active).toBe(true)
 
   expect(ctrl.collab.create.mock.calls.length).toBe(2)
+  expect(ctrl.collab.disconnectCollab).toHaveBeenCalled()
 })
 
 test('removeElement', () => {

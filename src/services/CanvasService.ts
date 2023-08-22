@@ -259,6 +259,7 @@ export class CanvasService {
 
   newCanvas() {
     this.removeDeadLinks()
+    this.ctrl.collab.disconnectCollab()
 
     const state = unwrap(this.store)
     const id = uuidv4()
