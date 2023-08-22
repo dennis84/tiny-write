@@ -24,6 +24,7 @@ const Container = styled('div')`
   flex-grow: 1;
   height: 100%;
   font-family: var(--menu-font-family);
+  background: var(--background);
   @media print {
     display: none;
   }
@@ -258,12 +259,10 @@ export default () => {
           <Label>Storage</Label>
           {/* Submenu Storage */}
           <Sub data-tauri-drag-region="true">
-            <Show when={store.files.length > 0}>
-              <Link
-                onClick={() => setShow('files')}
-                data-testid="files"
-              >Files ✍️</Link>
-            </Show>
+            <Link
+              onClick={() => setShow('files')}
+              data-testid="files"
+            >Files ✍️</Link>
             <Link
               onClick={() => setShow('canvases')}
               data-testid="canvases"
