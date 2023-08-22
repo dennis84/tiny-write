@@ -77,7 +77,10 @@ export default () => {
           class="canvas-link-end-tooltip"
           style={coordsStyle(link)}
         >
-          <div onClick={() => onNewFile(link)}>🆕 New file</div>
+          <div
+            onClick={() => onNewFile(link)}
+            data-testid="link_end_new_file"
+          >🆕 New file</div>
           <hr class="divider" />
           <For each={getFiles()}>
             {(file: File) => <FileName file={file} link={link} />}

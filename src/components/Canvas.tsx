@@ -114,7 +114,7 @@ export default () => {
   })
 
   return (
-    <Container ref={ref}>
+    <Container ref={ref} data-testid="canvas-container">
       <CanvasLinkEnd />
       <CanvasGrid onClick={onGridClick} />
       <Board

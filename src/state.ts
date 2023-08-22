@@ -78,10 +78,10 @@ export enum EdgeType {
 }
 
 export enum CornerType {
-  TopLeft,
-  TopRight,
-  BottomLeft,
-  BottomRight,
+  TopLeft = 'top_left',
+  TopRight = 'top_right',
+  BottomLeft = 'bottom_left',
+  BottomRight = 'bottom_right',
 }
 
 export interface Camera {

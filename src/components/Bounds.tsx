@@ -135,6 +135,7 @@ const Edge = (props: EdgeProps) => {
         vert={vert}
         onMouseOver={() => setHovering(true)}
         onMouseOut={() => setHovering(false)}
+        data-testid={`edge_${props.type}`}
       />
       <circle
         ref={linkRef}
@@ -148,6 +149,7 @@ const Edge = (props: EdgeProps) => {
           cursor: 'pointer',
           'touch-action': 'none',
         }}
+        data-testid={`edge_${props.type}_link_handle`}
       />
     </>
   )
@@ -282,6 +284,7 @@ const Corner = (props: CornerProps) => {
       width={BORDER_SIZE}
       height={BORDER_SIZE}
       style={{cursor, fill: 'transparent', 'touch-action': 'none'}}
+      data-testid={`corner_${props.type}`}
     />
   )
 }

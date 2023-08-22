@@ -1,6 +1,6 @@
 import os from 'os'
 import {expect, test} from '@playwright/test'
-import {delay} from './utils'
+import {delay} from '../utils'
 
 const mod = os.platform() === 'darwin' ? 'Meta' : 'Control'
 

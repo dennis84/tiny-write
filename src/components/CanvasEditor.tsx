@@ -69,6 +69,7 @@ export default ({element, index}: {element: CanvasEditorElement; index: number})
           config={store.config}
           markdown={false}
           ref={editorRef}
+          data-testid="canvas-editor"
         />
       </Scroll>
     </>

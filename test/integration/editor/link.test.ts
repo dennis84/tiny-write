@@ -1,5 +1,5 @@
 import {test, expect} from '@playwright/test'
-import {move, lineTextEq} from './utils'
+import {move, lineTextEq} from '../utils'
 
 const delay = 50
 
