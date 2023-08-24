@@ -26,21 +26,21 @@ test('html to markdown and back', async ({page}) => {
   expect(await page.textContent('.ProseMirror blockquote')).toBe('blockquote')
 
   // toggle markdown when open file
-  await page.click('[data-testid="new-file"]')
+  await page.click('[data-testid="new_file"]')
   await page.click('[data-testid="markdown"]')
 
   await page.type('.ProseMirror', '# markdown', {delay})
   await lineTextEq(page, 2, '# markdown')
 
   await page.click('[data-testid="files"]')
-  expect(await page.locator('[data-testid="file-list"] > div').count()).toBe(2)
-  expect(await page.textContent('[data-testid="file-list"] > div:nth-child(1)')).toContain('markdown')
-  expect(await page.textContent('[data-testid="file-list"] > div:nth-child(2)')).toContain('title')
-  await page.click('[data-testid="file-list"] > div:nth-child(2) > div')
+  expect(await page.locator('[data-testid="file_list"] > div').count()).toBe(2)
+  expect(await page.textContent('[data-testid="file_list"] > div:nth-child(1)')).toContain('markdown')
+  expect(await page.textContent('[data-testid="file_list"] > div:nth-child(2)')).toContain('title')
+  await page.click('[data-testid="file_list"] > div:nth-child(2) > div')
 
   expect(await page.textContent('.ProseMirror h1')).toBe('title')
   expect(await page.textContent('.ProseMirror blockquote')).toBe('blockquote')
 
-  await page.click('[data-testid="file-list"] > div:nth-child(1) > div')
+  await page.click('[data-testid="file_list"] > div:nth-child(1) > div')
   await lineTextEq(page, 2, '# markdown')
 })

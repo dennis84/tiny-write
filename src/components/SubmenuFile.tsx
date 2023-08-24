@@ -61,7 +61,7 @@ export default ({maybeHide}: {maybeHide: () => void}) => {
         File {ctrl.file.currentFile?.path && <i>({relativePath()})</i>}
       </Label>
       <Sub data-tauri-drag-region="true">
-        <Link onClick={onNew} data-testid="new-file">
+        <Link onClick={onNew} data-testid="new_file">
           New file 🆕 <Keys keys={[modKey, 'n']} />
         </Link>
         <Show when={isTauri() && !ctrl.file.currentFile?.path}>

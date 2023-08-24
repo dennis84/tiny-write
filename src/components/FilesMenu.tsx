@@ -211,14 +211,14 @@ export const FilesMenu = (props: Props) => {
       <Label>Files</Label>
       <CardList
         data-tauri-drag-region="true"
-        data-testid="file-list">
+        data-testid="file_list">
         <For each={files()}>
           {(file: File) => <FileItem file={file} />}
         </For>
       </CardList>
       <ButtonGroup>
         <Button onClick={props.onBack} data-testid="back">↩ Back</Button>
-        <ButtonPrimary onClick={onNewFile} data-testid="new-doc">New doc</ButtonPrimary>
+        <ButtonPrimary onClick={onNewFile} data-testid="new_doc">New doc</ButtonPrimary>
       </ButtonGroup>
       <Show when={current() !== undefined}><Tooltip /></Show>
     </Drawer>

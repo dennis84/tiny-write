@@ -33,16 +33,16 @@ test('on new/discard', async ({page}) => {
 
   await page.click('[data-testid="burger"]')
   await page.click('[data-testid="files"]')
-  expect(await page.locator('[data-testid="file-list"] > div').count()).toBe(2)
+  expect(await page.locator('[data-testid="file_list"] > div').count()).toBe(2)
 
   // discard
 
   await page.keyboard.press(`${mod}+w`)
   expect(await page.textContent('.ProseMirror')).toBe('Start typing ...')
-  expect(await page.locator('[data-testid="file-list"] > div').count()).toBe(2)
+  expect(await page.locator('[data-testid="file_list"] > div').count()).toBe(2)
 
   await page.keyboard.press(`${mod}+w`)
   await page.waitForTimeout(100)
   expect(await page.textContent('.ProseMirror')).toBe('first')
-  expect(await page.locator('[data-testid="file-list"] > div').count()).toBe(1)
+  expect(await page.locator('[data-testid="file_list"] > div').count()).toBe(1)
 })

@@ -54,12 +54,12 @@ test('existing room - backup', async ({page}) => {
 
   await page.click('[data-testid="burger"]')
   await page.click('[data-testid="files"]')
-  expect(await page.locator('[data-testid="file-list"] > div').count()).toBe(2)
-  expect(await page.textContent('[data-testid="file-list"] > div:nth-child(1)')).toContain('Hello')
-  expect(await page.textContent('[data-testid="file-list"] > div:nth-child(2)')).toContain('123')
+  expect(await page.locator('[data-testid="file_list"] > div').count()).toBe(2)
+  expect(await page.textContent('[data-testid="file_list"] > div:nth-child(1)')).toContain('Hello')
+  expect(await page.textContent('[data-testid="file_list"] > div:nth-child(2)')).toContain('123')
 
-  await page.click('[data-testid="file-list"] > div:nth-child(2) > div')
+  await page.click('[data-testid="file_list"] > div:nth-child(2) > div')
   await lineTextEq(page, 1, '123')
 
-  expect(await page.locator('[data-testid="file-list"] > div').count()).toBe(2)
+  expect(await page.locator('[data-testid="file_list"] > div').count()).toBe(2)
 })

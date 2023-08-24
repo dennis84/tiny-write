@@ -35,10 +35,10 @@ export default ({maybeHide}: {maybeHide: () => void}) => {
     <>
       <Label>Canvas</Label>
       <Sub data-tauri-drag-region="true">
-        <Link onClick={onNewCanvas} data-testid="new-canvas">
+        <Link onClick={onNewCanvas} data-testid="new_canvas">
           New canvas  🆕 <Keys keys={[modKey, 'n']} />
         </Link>
-        <Link onClick={onNewFile} data-testid="new-file">
+        <Link onClick={onNewFile} data-testid="new_file">
           New file 📝
         </Link>
         <Link onClick={onClearCanvas}>Clear Canvas 🧽</Link>

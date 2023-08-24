@@ -8,15 +8,15 @@ test.beforeEach(async ({page}) => {
 test('add file', async ({page}) => {
   await page.click('[data-testid="burger"]')
   await page.click('[data-testid="canvases"]')
-  await page.click('[data-testid="new-canvas"]')
+  await page.click('[data-testid="new_canvas"]')
 
-  await page.isVisible('[data-testid="canvas-container"]')
+  await page.isVisible('[data-testid="canvas_container"]')
 
   // Create file
   await page.click('[data-testid="back"]')
-  await page.click('[data-testid="new-file"]')
+  await page.click('[data-testid="new_file"]')
 
-  expect(await page.locator('[data-testid="canvas-editor"]')).toHaveCount(1)
+  await expect(page.locator('[data-testid="canvas_editor"]')).toHaveCount(1)
 
   // Move mouse to left link handle
   const box = await page.locator('[data-testid="edge_left_link_handle"]').boundingBox()
@@ -30,5 +30,5 @@ test('add file', async ({page}) => {
   // Create another file
   await page.click('[data-testid="link_end_new_file"]')
 
-  expect(await page.locator('[data-testid="canvas-editor"]')).toHaveCount(2)
+  await expect(page.locator('[data-testid="canvas_editor"]')).toHaveCount(2)
 })

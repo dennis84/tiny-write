@@ -36,7 +36,7 @@ test('code block', async ({page}) => {
 
   // change lang via block menu
   await openBlockMenu(page, 1)
-  await page.click('[data-testid="change-lang"]')
+  await page.click('[data-testid="change_lang"]')
   await page.type('.cm-container .lang-input', 'js', {delay})
   await page.keyboard.press('Enter')
   expect(await page.$eval('.cm-container .lang-toggle img', (node) => node.getAttribute('title'))).toBe('js')

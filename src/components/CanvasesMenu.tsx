@@ -76,7 +76,7 @@ export const CanvasesMenu = (props: Props) => {
         <CardContent
           onClick={() => onOpenCanvas(p.canvas)}
           active={ctrl.canvas.currentCanvas?.id === p.canvas.id}
-          data-testid="open-canvas"
+          data-testid="open_canvas"
         >
           <CanvasPreview canvas={p.canvas} />
         </CardContent>
@@ -122,14 +122,14 @@ export const CanvasesMenu = (props: Props) => {
       <Label>Canvases</Label>
       <CardList
         data-tauri-drag-region="true"
-        data-testid="file-list">
+        data-testid="file_list">
         <For each={canvases()}>
           {(canvas: Canvas) => <CanvasItem canvas={canvas} />}
         </For>
       </CardList>
       <ButtonGroup>
         <Button onClick={props.onBack} data-testid="back">↩ Back</Button>
-        <ButtonPrimary onClick={onNew} data-testid="new-canvas">New canvas</ButtonPrimary>
+        <ButtonPrimary onClick={onNew} data-testid="new_canvas">New canvas</ButtonPrimary>
       </ButtonGroup>
       <Show when={current() !== undefined}><Tooltip /></Show>
     </Drawer>

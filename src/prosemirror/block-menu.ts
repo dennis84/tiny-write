@@ -42,7 +42,7 @@ class TooltipView {
       const changeLang = document.createElement('div')
       changeLang.textContent = '💱 change language'
       changeLang.addEventListener('click', this.onChangeLang)
-      changeLang.dataset.testid = 'change-lang'
+      changeLang.dataset.testid = 'change_lang'
       this.tooltip.appendChild(changeLang)
 
       const prettify = document.createElement('div')
@@ -54,7 +54,7 @@ class TooltipView {
       const foldAll = document.createElement('div')
       foldAll.textContent = '🙏 fold all'
       foldAll.addEventListener('click', this.onFoldAll)
-      foldAll.dataset.testid = 'fold-all'
+      foldAll.dataset.testid = 'fold_all'
       this.tooltip.appendChild(foldAll)
 
       if ((dom.node as HTMLElement).dataset.lang === 'mermaid') {

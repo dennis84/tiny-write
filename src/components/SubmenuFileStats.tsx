@@ -57,11 +57,11 @@ export default () => {
 
     return (
       <Show when={ctrl.file.currentFile?.lastModified !== undefined} fallback={
-        <Text data-testid="last-modified">
+        <Text data-testid="last_modified">
           Nothing yet
         </Text>
       }>
-        <Text data-testid="last-modified">
+        <Text data-testid="last_modified">
           Last modified: {formatDate(ctrl.file.currentFile!.lastModified!)}
         </Text>
       </Show>
