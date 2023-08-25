@@ -2,6 +2,7 @@ import {beforeEach, expect, test, vi} from 'vitest'
 import {mock, mockDeep} from 'vitest-mock-extended'
 import {createStore} from 'solid-js/store'
 import {EditorView} from 'prosemirror-view'
+import {createYdoc} from '../util'
 
 import {
   Canvas,
@@ -12,6 +13,7 @@ import {
   ElementType,
   createState,
   Mode,
+  CanvasVideoElement,
 } from '@/state'
 import {createCtrl, Ctrl} from '@/services'
 import {CanvasService} from '@/services/CanvasService'
@@ -458,6 +460,25 @@ test('addImage', () => {
   expect(imageEl.height).toBe(600)
 })
 
+test('addVideo', () => {
+  const [store, setState] = createStore(createState({
+    canvases: [
+      createCanvas({id: '1', active: true}),
+    ],
+  }))
+
+  const service = new CanvasService(ctrl, store, setState)
+  service.addVideo('/path/1.mp4', 'video/mp4', 100, 100, 1000, 2000)
+
+  expect(service.currentCanvas?.elements.length).toBe(1)
+  const el = service.currentCanvas?.elements[0] as CanvasVideoElement
+  expect(el.mime).toBe('video/mp4')
+  expect(el.x).toBe(-50)
+  expect(el.y).toBe(-200)
+  expect(el.width).toBe(300)
+  expect(el.height).toBe(600)
+})
+
 test('drawLink', () => {
   const [store, setState] = createStore(createState({
     canvases: [
@@ -618,6 +639,37 @@ test('renderEditor', async () => {
 
   await waitFor(() => {
     expect(editor?.editorView?.state.doc.textContent).toBe('Test123')
+  })
+})
+
+test('renderEditor - collab', async () => {
+  const element = createEditorElement({id: '1'})
+  const init = createState({
+    files: [],
+    canvases: [
+      createCanvas({
+        id: 'c1',
+        active: true,
+        elements: [element],
+      }),
+    ],
+  })
+
+  const [, setState] = createStore(init)
+  const {ctrl, store} = createCtrl(init)
+  const target = document.createElement('div')
+  const collab = ctrl.collab.create('test')
+  collab.ydoc = createYdoc('1', 'Test')
+
+  const service = new CanvasService(ctrl, store, setState)
+  setState('collab', collab)
+
+  service.renderEditor(element, target)
+
+  const editor = service.currentCanvas?.elements[0] as CanvasEditorElement
+
+  await waitFor(() => {
+    expect(editor?.editorView?.state.doc.textContent).toBe('Test')
   })
 })
 

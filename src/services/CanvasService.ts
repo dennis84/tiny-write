@@ -708,10 +708,13 @@ export class CanvasService {
     }
 
     let type = this.store.collab?.ydoc?.getXmlFragment(id)
-    const file = this.ctrl.file.findFile({id})
+    let file = this.ctrl.file.findFile({id})
     if (file) {
       Y.applyUpdate(this.store.collab?.ydoc, file.ydoc)
       type = this.store.collab?.ydoc?.getXmlFragment(id)
+    } else {
+      file = this.ctrl.file.createFile({id})
+      this.setState('files', (prev) => [...prev, file])
     }
 
     this.store.collab?.undoManager?.addToScope(type)
