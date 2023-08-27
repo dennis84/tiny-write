@@ -24,8 +24,13 @@ export const ChangeSetMenu = (props: Props) => {
   })
 
   const renderVersion = (version: Version) => {
-    setActive(version)
-    ctrl.changeSet.renderVersion(version)
+    if (active() != version) {
+      setActive(version)
+      ctrl.changeSet.renderVersion(version)
+    } else  {
+      setActive(undefined)
+      ctrl.changeSet.unrenderVersion()
+    }
   }
 
   const applyVersion = () => {
