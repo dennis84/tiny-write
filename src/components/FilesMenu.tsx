@@ -31,26 +31,36 @@ export const FilesMenu = (props: Props) => {
 
   const schema = createSchema(createExtensions({ctrl, markdown: false}))
 
-  const onOpenFile = async (file: File) => {
+  const onOpenFile = async (file?: File) => {
+    if (!file) return
     await ctrl.editor.openFile(unwrap(file))
     props.onOpen()
   }
 
   const onRemove = () => {
     const f = unwrap(current())
+    if (!f) return
+
+    if (store.mode === Mode.Canvas) {
+      ctrl.canvas.removeElement(f.id)
+    }
+
     if (f) ctrl.editor.deleteFile(f)
     setCurrent(undefined)
   }
 
   const onNewFile = () => {
-    ctrl.editor.newFile()
+    if (store.mode === Mode.Canvas) {
+      ctrl.canvas.newFile()
+    } else {
+      ctrl.editor.newFile()
+    }
+
     props.onOpen()
   }
 
-  const onAddToCanvas = () => {
-    const f = unwrap(current())
-    if (f) ctrl.canvas.addFile(f)
-    setCurrent(undefined)
+  const onAddToCanvas = (file: File) => {
+    ctrl.canvas.addFile(file)
     props.onOpen()
   }
 
@@ -106,6 +116,14 @@ export const FilesMenu = (props: Props) => {
   const FileItem = (p: {file: File}) => {
     const [path, setPath] = createSignal<string>()
 
+    const onCardClick = () => {
+      if (store.mode === Mode.Canvas) {
+        onAddToCanvas(p.file)
+      } else {
+        onOpenFile(p.file)
+      }
+    }
+
     const isActive = (): boolean => {
       if (store.mode === Mode.Editor) {
         return ctrl.file.currentFile?.id === p.file.id ?? false
@@ -157,7 +175,7 @@ export const FilesMenu = (props: Props) => {
     return (
       <Card>
         <CardContent
-          onClick={() => onOpenFile(p.file)}
+          onClick={onCardClick}
           selected={current() === p.file}
           active={isActive()}
           data-testid="open">
@@ -199,7 +217,7 @@ export const FilesMenu = (props: Props) => {
         class="file-tooltip">
         <div onClick={onRemove}>🗑️ Delete</div>
         <Show when={store.mode === Mode.Canvas}>
-          <div onClick={onAddToCanvas}>🤏 Add to canvas</div>
+          <div onClick={() => onOpenFile(current())}>↪️ Open in editor mode</div>
         </Show>
         <span ref={arrowRef} class="arrow"></span>
       </TooltipEl>
