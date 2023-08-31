@@ -695,6 +695,8 @@ export class CanvasService {
   }
 
   async renderEditor(element: CanvasEditorElement, node: HTMLElement) {
+    const file = this.ctrl.file.findFile({id: element.id})
+    if (file) Y.applyUpdate(this.store.collab?.ydoc, file.ydoc)
     this.updateEditorState(element.id, node)
   }
 
@@ -707,12 +709,12 @@ export class CanvasService {
       return
     }
 
-    let type = this.store.collab?.ydoc?.getXmlFragment(id)
+    let editorView = element?.editorView
+    if (!editorView && !node) return
+
+    const type = this.store.collab?.ydoc?.getXmlFragment(id)
     let file = this.ctrl.file.findFile({id})
-    if (file) {
-      Y.applyUpdate(this.store.collab?.ydoc, file.ydoc)
-      type = this.store.collab?.ydoc?.getXmlFragment(id)
-    } else {
+    if (!file) {
       file = this.ctrl.file.createFile({id})
       this.setState('files', (prev) => [...prev, file])
     }
@@ -726,7 +728,6 @@ export class CanvasService {
       dropcursor: false,
     })
 
-    let editorView = unwrap(element)?.editorView
     const nodeViews = createNodeViews(extensions)
     const schema = createSchema(extensions)
     const plugins = extensions.reduce<Plugin[]>((acc, e) => e.plugins?.(acc, schema) ?? acc, [])
