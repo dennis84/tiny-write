@@ -66,78 +66,80 @@ const dbPromise = openDB<MyDB>(DB_NAME, 1, {
   }
 })
 
-export async function setConfig(config: Config) {
-  return (await dbPromise).put('config', config, 'main')
-}
-
-export async function getConfig() {
-  return (await dbPromise).get('config', 'main')
-}
-
-export async function setWindow(window: Window) {
-  return (await dbPromise).put('window', window, 'main')
-}
-
-export async function getWindow() {
-  return (await dbPromise).get('window', 'main')
-}
-
-export async function setMeta(meta: Meta) {
-  return (await dbPromise).put('meta', meta, 'main')
-}
-
-export async function getMeta() {
-  return (await dbPromise).get('meta', 'main')
-}
-
-export async function getFiles() {
-  return (await dbPromise).getAll('files')
-}
-
-export async function updateFile(file: PersistedFile) {
-  const db = await dbPromise
-  const existing = await db.get('files', file.id)
-  if (existing) {
-    await db.put('files', file)
-    return
+export class DB {
+  static async setConfig(config: Config) {
+    return (await dbPromise).put('config', config, 'main')
   }
 
-  await db.add('files', file)
-}
-
-export async function deleteFile(id: string) {
-  return (await dbPromise).delete('files', id)
-}
-
-export async function getCanvases(): Promise<PersistedCanvas[]> {
-  return (await dbPromise).getAll('canvases')
-}
-
-export async function updateCanvas(canvas: PersistedCanvas) {
-  const db = await dbPromise
-  const existing = await db.get('canvases', canvas.id)
-  if (existing) {
-    await db.put('canvases', canvas)
-    return
+  static async getConfig() {
+    return (await dbPromise).get('config', 'main')
   }
 
-  await db.add('canvases', canvas)
-}
+  static async setWindow(window: Window) {
+    return (await dbPromise).put('window', window, 'main')
+  }
 
-export async function deleteCanvas(id: string) {
-  return (await dbPromise).delete('canvases', id)
-}
+  static async getWindow() {
+    return (await dbPromise).get('window', 'main')
+  }
 
-export async function setSize(key: string, value: number) {
-  return (await dbPromise).put('size', value, key)
-}
+  static async setMeta(meta: Meta) {
+    return (await dbPromise).put('meta', meta, 'main')
+  }
 
-export async function getSize() {
-  const db = await dbPromise
-  const sizes = await db.getAll('size') ?? []
-  return sizes.reduce((a, b) => (a ?? 0) + (b ?? 0), 0)
-}
+  static async getMeta() {
+    return (await dbPromise).get('meta', 'main')
+  }
 
-export async function deleteDatabase() {
-  indexedDB.deleteDatabase(DB_NAME)
+  static async getFiles() {
+    return (await dbPromise).getAll('files')
+  }
+
+  static async updateFile(file: PersistedFile) {
+    const db = await dbPromise
+    const existing = await db.get('files', file.id)
+    if (existing) {
+      await db.put('files', file)
+      return
+    }
+
+    await db.add('files', file)
+  }
+
+  static async deleteFile(id: string) {
+    return (await dbPromise).delete('files', id)
+  }
+
+  static async getCanvases(): Promise<PersistedCanvas[]> {
+    return (await dbPromise).getAll('canvases')
+  }
+
+  static async updateCanvas(canvas: PersistedCanvas) {
+    const db = await dbPromise
+    const existing = await db.get('canvases', canvas.id)
+    if (existing) {
+      await db.put('canvases', canvas)
+      return
+    }
+
+    await db.add('canvases', canvas)
+  }
+
+  static async deleteCanvas(id: string) {
+    return (await dbPromise).delete('canvases', id)
+  }
+
+  static async setSize(key: string, value: number) {
+    return (await dbPromise).put('size', value, key)
+  }
+
+  static async getSize() {
+    const db = await dbPromise
+    const sizes = await db.getAll('size') ?? []
+    return sizes.reduce((a, b) => (a ?? 0) + (b ?? 0), 0)
+  }
+
+  static async deleteDatabase() {
+    indexedDB.deleteDatabase(DB_NAME)
+  }
 }

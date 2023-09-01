@@ -2,6 +2,7 @@ import {createEffect, createSignal, For, onCleanup} from 'solid-js'
 import {createStore} from 'solid-js/store'
 import {styled} from 'solid-styled-components'
 import {debounce} from 'ts-debounce'
+import {Awareness} from 'y-protocols/awareness'
 import {Mode, useState} from '@/state'
 
 const CursorContainer = styled('div')`
@@ -15,8 +16,8 @@ const CursorContainer = styled('div')`
 
 const Cursor = styled('div')`
   position: absolute;
-  top: ${(props) => props.y}px;
-  left: ${(props) => props.x}px;
+  top: ${(props: any) => props.y}px;
+  left: ${(props: any) => props.x}px;
   height: 10px;
   margin-left: -15px;
   z-index: 20;
@@ -32,8 +33,8 @@ const Cursor = styled('div')`
     line-height: 0;
     white-space: nowrap;
     padding: 4px;
-    color: ${(props) => props.foreground};
-    background: ${(props) => props.background};
+    color: ${(props: any) => props.foreground};
+    background: ${(props: any) => props.background};
     font-family: var(--menu-font-family);
     font-size: var(--menu-font-size);
     border-radius: var(--border-radius);
@@ -46,7 +47,7 @@ const Cursor = styled('div')`
     height: 0;
     border-left: 10px solid transparent;
     border-right: 10px solid transparent;
-    border-bottom: 10px solid ${(props) => props.background};
+    border-bottom: 10px solid ${(props: any) => props.background};
   }
   &::before {
     transform: rotate(148deg);
@@ -59,12 +60,21 @@ const Cursor = styled('div')`
   }
 `
 
+interface Cursor {
+  id: number;
+  username: string;
+  x: number;
+  y: number;
+  background: string;
+  foreground: string;
+}
+
 export default () => {
   const [store, ctrl] = useState()
-  const [awareness, setAwareness] = createSignal()
-  const [cursors, setCursors] = createStore([])
+  const [awareness, setAwareness] = createSignal<Awareness>()
+  const [cursors, setCursors] = createStore<Cursor[]>([])
 
-  const zoom = () => store.mode === Mode.Canvas ? ctrl.canvas.currentCanvas?.camera.zoom : 1
+  const zoom = () => store.mode === Mode.Canvas ? (ctrl.canvas.currentCanvas?.camera.zoom ?? 1) : 1
 
   const offset = () => {
     if (store.mode === Mode.Canvas) {
@@ -85,7 +95,7 @@ export default () => {
     })
 
     added.concat(updated).forEach((id: number) => {
-      const aw = awareness().states.get(id)
+      const aw = awareness()?.states.get(id)
       if (id === y.clientID || !aw?.mouse) return
       const mouse = cursors.find((c) => c.id === id)
 
@@ -113,11 +123,11 @@ export default () => {
   }
 
   const onMouseMove = debounce((e: MouseEvent) => {
-    if (awareness()?.states.size <= 1) return
+    if ((awareness()?.states.size ?? 0) <= 1) return
     const [offsetX, offsetY] = offset()
     const x = (e.x / zoom()) - offsetX
     const y = (e.y / zoom()) - offsetY
-    awareness().setLocalStateField('mouse', {x, y})
+    awareness()?.setLocalStateField('mouse', {x, y})
   }, 20, {maxWait: 20})
 
   createEffect(() => {

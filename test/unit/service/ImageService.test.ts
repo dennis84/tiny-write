@@ -4,7 +4,7 @@ import {clearMocks, mockIPC} from '@tauri-apps/api/mocks'
 import {ImageService} from '@/services/ImageService'
 import {createCtrl, Ctrl} from '@/services'
 import {createState} from '@/state'
-import * as db from '@/db'
+import {DB} from '@/db'
 import {createYUpdateAsString, getText} from '../util'
 
 document.elementFromPoint = () => null
@@ -19,7 +19,7 @@ vi.stubGlobal('location', ({
 }))
 
 vi.mock('mermaid', () => ({}))
-vi.mock('@/db', () => mock())
+vi.mock('@/db', () => ({DB: mock()}))
 
 beforeEach(() => {
   clearMocks()
@@ -80,7 +80,7 @@ test('insert - video', async () => {
 test('insert - markdown mode', async () => {
   const lastModified = new Date()
 
-  vi.spyOn(db, 'getFiles').mockResolvedValue([
+  vi.mocked(DB.getFiles).mockResolvedValue([
     {
       id: '1',
       ydoc: createYUpdateAsString('1', ''),

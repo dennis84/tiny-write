@@ -1,11 +1,12 @@
 import {beforeEach, expect, test, vi} from 'vitest'
 import {mock, mockDeep} from 'vitest-mock-extended'
 import {createStore} from 'solid-js/store'
-import {createState, Mode} from '@/state'
+import {createState, Canvas, Mode} from '@/state'
+import {Ctrl} from '@/services'
 import {AppService} from '@/services/AppService'
 
 vi.mock('mermaid', () => ({}))
-vi.mock('@/db', () => mock())
+vi.mock('@/db', () => ({DB: mock()}))
 
 beforeEach(() => {
   vi.restoreAllMocks()

@@ -1,7 +1,7 @@
 import {SetStoreFunction, Store, unwrap} from 'solid-js/store'
 import {Config, isEditorElement, Mode, State} from '@/state'
 import * as remote from '@/remote'
-import * as db from '@/db'
+import {DB} from '@/db'
 import {isDark} from '@/env'
 import {Ctrl} from '.'
 import {debounce} from 'ts-debounce'
@@ -383,8 +383,8 @@ export class ConfigService {
   }
 
   private async saveConfig(state: State) {
-    db.setConfig(state.config)
-    db.setSize('window', JSON.stringify(state.config).length)
+    DB.setConfig(state.config)
+    DB.setSize('window', JSON.stringify(state.config).length)
     remote.log('info', '💾 Save config')
   }
 

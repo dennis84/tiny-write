@@ -8,7 +8,7 @@ import {FileService} from '@/services/FileService'
 import {Ctrl} from '@/services'
 import {createYdoc} from '../util'
 
-vi.mock('@/db', () => mock())
+vi.mock('@/db', () => ({DB: mock()}))
 vi.mock('mermaid', () => ({}))
 
 beforeEach(() => {

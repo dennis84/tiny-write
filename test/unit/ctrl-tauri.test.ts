@@ -1,7 +1,7 @@
 import {vi, expect, test, beforeEach} from 'vitest'
 import {mock} from 'vitest-mock-extended'
 import {clearMocks, mockIPC} from '@tauri-apps/api/mocks'
-import * as db from '@/db'
+import {DB} from '@/db'
 import {createCtrl} from '@/services'
 import {createState} from '@/state'
 import {createYUpdateAsString, getText, insertText, waitFor} from './util'
@@ -12,7 +12,7 @@ vi.stubGlobal('matchMedia', vi.fn(() => ({
 })))
 
 vi.mock('mermaid', () => ({}))
-vi.mock('@/db', () => mock())
+vi.mock('@/db', () => ({DB: mock<DB>()}))
 
 const lastModified = new Date()
 
@@ -33,7 +33,7 @@ beforeEach(() => {
 })
 
 test('init - load existing by path', async () => {
-  mock(db.getFiles).mockResolvedValue([
+  vi.mocked(DB.getFiles).mockResolvedValue([
     {id: '1', ydoc: createYUpdateAsString('1', ''), path: 'file1', lastModified, active: true}
   ])
 
@@ -74,7 +74,7 @@ test('init - check text', async () => {
 })
 
 test('openFile - path in files', async () => {
-  vi.spyOn(db, 'getFiles').mockResolvedValue([
+  vi.mocked(DB.getFiles).mockResolvedValue([
     {id: '1', path: 'file1', ydoc: createYUpdateAsString('1', 'Test'), lastModified},
     {id: '2', path: 'file2', ydoc: createYUpdateAsString('2', 'Test 2'), lastModified, active: true},
   ])
@@ -142,7 +142,7 @@ test('openFile - path and text', async () => {
 })
 
 test('discard - with path', async () => {
-  vi.spyOn(db, 'getFiles').mockResolvedValue([
+  vi.mocked(DB.getFiles).mockResolvedValue([
     {id: '1', path: 'file1', ydoc: createYUpdateAsString('1', 'Test'), lastModified, active: true},
     {id: '2', path: 'file2', ydoc: createYUpdateAsString('2', 'Test 2'), lastModified},
   ])

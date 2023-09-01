@@ -14,7 +14,7 @@ import {createExtensions, createEmptyText, createSchema, createNodeViews} from '
 import {State, File, FileText, Mode} from '@/state'
 import {serialize, createMarkdownParser} from '@/markdown'
 import {isEmpty} from '@/prosemirror'
-import * as db from '@/db'
+import {DB} from '@/db'
 import {Ctrl} from '.'
 import {OpenFile} from './FileService'
 
@@ -173,7 +173,7 @@ export class EditorService {
     const newState = {...state, files}
 
     this.setState(newState)
-    await db.deleteFile(req.id!)
+    await DB.deleteFile(req.id!)
     remote.log('info', '💾 Deleted file')
   }
 
@@ -229,7 +229,7 @@ export class EditorService {
     for (const f of state.files) {
       if (f.editorView && isEmpty(f.editorView?.state)) {
         f.editorView.destroy()
-        await db.deleteFile(f.id)
+        await DB.deleteFile(f.id)
         continue
       }
 
@@ -243,7 +243,7 @@ export class EditorService {
     }
 
     const mode = Mode.Editor
-    db.setMeta({mode})
+    DB.setMeta({mode})
 
     return {
       ...state,
@@ -337,7 +337,7 @@ export class EditorService {
 
     this.setState(newState)
 
-    await db.deleteFile(id!)
+    await DB.deleteFile(id!)
 
     if (text) this.updateText(text)
   }

@@ -26,7 +26,7 @@ import {
   isVideoElement,
   isBoxElement,
 } from '@/state'
-import * as db from '@/db'
+import {DB} from '@/db'
 import * as remote from '@/remote'
 import {createEmptyText, createExtensions, createNodeViews, createSchema} from '@/prosemirror-setup'
 import {Ctrl} from '.'
@@ -217,7 +217,7 @@ export class CanvasService {
     }
 
     this.setState('canvases', canvases)
-    db.deleteCanvas(id)
+    DB.deleteCanvas(id)
     remote.log('info', '💾 Canvas deleted')
 
     if (this.store.mode === Mode.Canvas && maxId) {
@@ -344,7 +344,7 @@ export class CanvasService {
       collab,
     })
 
-    db.setMeta({mode: state.mode})
+    DB.setMeta({mode: state.mode})
     remote.log('info', '💾 Switched to canvas mode')
 
     this.ctrl.canvasCollab.init()
@@ -696,7 +696,7 @@ export class CanvasService {
 
   async renderEditor(element: CanvasEditorElement, node: HTMLElement) {
     const file = this.ctrl.file.findFile({id: element.id})
-    if (file) Y.applyUpdate(this.store.collab?.ydoc, file.ydoc)
+    if (file) Y.applyUpdate(this.store.collab!.ydoc!, file.ydoc)
     this.updateEditorState(element.id, node)
   }
 
@@ -716,10 +716,10 @@ export class CanvasService {
     let file = this.ctrl.file.findFile({id})
     if (!file) {
       file = this.ctrl.file.createFile({id})
-      this.setState('files', (prev) => [...prev, file])
+      this.setState('files', (prev) => [...prev, file!])
     }
 
-    this.store.collab?.undoManager?.addToScope(type)
+    this.store.collab?.undoManager?.addToScope(type!)
 
     const extensions = createExtensions({
       ctrl: this.ctrl,
@@ -766,7 +766,7 @@ export class CanvasService {
   }
 
   fetchCanvases(): Promise<Canvas[]> {
-    return db.getCanvases() as Promise<Canvas[]>
+    return DB.getCanvases() as Promise<Canvas[]>
   }
 
   getElementNear(point: [number, number]): {id: string; edge: EdgeType} | undefined {
@@ -837,7 +837,7 @@ export class CanvasService {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
 
-    db.updateCanvas(unwrap({
+    DB.updateCanvas(unwrap({
       ...currentCanvas,
       elements: currentCanvas.elements.map((el) => ({
         ...el,

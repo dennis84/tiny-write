@@ -1,6 +1,6 @@
 import {vi, expect, test, beforeEach} from 'vitest'
 import {mock} from 'vitest-mock-extended'
-import * as db from '@/db'
+import {DB} from '@/db'
 import {createCtrl} from '@/services'
 import {createState, Version} from '@/state'
 import {createYUpdateAsString, getText, insertText, waitFor, pause} from './util'
@@ -16,7 +16,7 @@ vi.stubGlobal('location', ({
 
 vi.mock('mermaid', () => ({}))
 
-vi.mock('@/db', () => mock())
+vi.mock('@/db', () => ({DB: mock<DB>()}))
 
 vi.mock('y-websocket', () => ({
   WebsocketProvider: vi.fn((_, roomname) => ({
@@ -49,7 +49,7 @@ test('init', async () => {
 })
 
 test('init - new file if no id', async () => {
-  vi.spyOn(db, 'getFiles').mockResolvedValue([
+  vi.mocked(DB.getFiles).mockResolvedValue([
     {id: '1', ydoc: createYUpdateAsString('1', 'Text'), lastModified},
     {id: '2', ydoc: createYUpdateAsString('2', 'Test 2'), lastModified},
   ])
@@ -66,7 +66,7 @@ test('init - new file if no id', async () => {
 })
 
 test('init - existing file', async () => {
-  vi.spyOn(db, 'getFiles').mockResolvedValue([
+  vi.mocked(DB.getFiles).mockResolvedValue([
     {id: '1', ydoc: createYUpdateAsString('1', 'Test'), lastModified},
     {id: '2', ydoc: createYUpdateAsString('2', 'Test 2'), lastModified, active: true},
   ])
@@ -83,7 +83,7 @@ test('init - existing file', async () => {
 })
 
 test('init - join', async () => {
-  vi.spyOn(db, 'getFiles').mockResolvedValue([
+  vi.mocked(DB.getFiles).mockResolvedValue([
     {id: '1', ydoc: createYUpdateAsString('1', 'Test'), lastModified, active: true},
     {id: '2', ydoc: createYUpdateAsString('2', 'Test 2'), lastModified},
   ])
@@ -99,7 +99,7 @@ test('init - join', async () => {
 })
 
 test('init - dir', async () => {
-  vi.spyOn(db, 'getFiles').mockResolvedValue([
+  vi.mocked(DB.getFiles).mockResolvedValue([
     {id: '1', ydoc: createYUpdateAsString('1', 'Test'), lastModified, active: true},
   ])
 
@@ -178,8 +178,7 @@ test('newFile - collab', async () => {
 })
 
 test('openFile - existing', async () => {
-  const updateFileSpy = vi.spyOn(db, 'updateFile')
-  vi.spyOn(db, 'getFiles').mockResolvedValue([
+  vi.mocked(DB.getFiles).mockResolvedValue([
     {id: '1', ydoc: createYUpdateAsString('1', 'Test'), lastModified, active: true},
     {id: '2', ydoc: createYUpdateAsString('2', 'Test 2'), lastModified},
   ])
@@ -189,7 +188,7 @@ test('openFile - existing', async () => {
   await ctrl.app.init()
   ctrl.editor.renderEditor(target)
 
-  updateFileSpy.mockClear()
+  vi.mocked(DB.updateFile).mockClear()
 
   await waitFor(() => {
     expect(getText(ctrl)).toBe('Test')
@@ -204,7 +203,7 @@ test('openFile - existing', async () => {
   expect(store.files[1].active).toBe(true)
   expect(ctrl.file.currentFile?.editorView).toBe(undefined)
 
-  expect(updateFileSpy).toHaveReturnedTimes(2)
+  expect(DB.updateFile).toHaveReturnedTimes(2)
   ctrl.editor.renderEditor(target)
   await waitFor(() => {
     expect(getText(ctrl)).toBe('Test 2')
@@ -225,7 +224,7 @@ test('openFile - not found', async () => {
 })
 
 test('openFile - delete empty', async () => {
-  vi.spyOn(db, 'getFiles').mockResolvedValue([
+  vi.mocked(DB.getFiles).mockResolvedValue([
     {id: '1', ydoc: createYUpdateAsString('1', ''), lastModified, active: true},
     {id: '2', ydoc: createYUpdateAsString('2', 'Test 2'), lastModified},
   ])
@@ -252,7 +251,7 @@ test('openFile - open collab', async () => {
     lastModified,
   }
 
-  vi.spyOn(db, 'getFiles').mockResolvedValue([file])
+  vi.mocked(DB.getFiles).mockResolvedValue([file])
 
   const {ctrl, store} = createCtrl(createState())
   const target = document.createElement('div')
@@ -275,7 +274,7 @@ test('openFile - open collab', async () => {
 })
 
 test('openFile - open from collab', async () => {
-  vi.spyOn(db, 'getFiles').mockResolvedValue([
+  vi.mocked(DB.getFiles).mockResolvedValue([
     {id: '1', ydoc: createYUpdateAsString('1', 'Test'), lastModified, active: true},
     {id: '2', ydoc: createYUpdateAsString('2', 'Test 2'), lastModified},
   ])
@@ -304,7 +303,7 @@ test('openFile - open from collab', async () => {
 })
 
 test('discard - open collab', async () => {
-  vi.spyOn(db, 'getFiles').mockResolvedValue([
+  vi.mocked(DB.getFiles).mockResolvedValue([
     {id: 'room-123', ydoc: createYUpdateAsString('room-123', 'Test'), lastModified},
   ])
 
@@ -328,7 +327,7 @@ test('discard - open collab', async () => {
 })
 
 test('discard - with text', async () => {
-  vi.spyOn(db, 'getFiles').mockResolvedValue([
+  vi.mocked(DB.getFiles).mockResolvedValue([
     {id: '1', ydoc: createYUpdateAsString('1', 'Test'), lastModified},
   ])
 
@@ -355,7 +354,7 @@ test('discard - with text', async () => {
 })
 
 test('discard - close collab', async () => {
-  vi.spyOn(db, 'getFiles').mockResolvedValue([
+  vi.mocked(DB.getFiles).mockResolvedValue([
     {id: '1', ydoc: createYUpdateAsString('1', 'Test'), lastModified},
   ])
 
@@ -381,7 +380,7 @@ test('discard - close collab', async () => {
 })
 
 test('discard - error', async () => {
-  vi.spyOn(db, 'getFiles').mockResolvedValue([
+  vi.mocked(DB.getFiles).mockResolvedValue([
     {id: '1', ydoc: createYUpdateAsString('1', 'Test'), lastModified, active: true},
   ])
 
@@ -404,7 +403,7 @@ test('discard - error', async () => {
 })
 
 test('deleteFile - unused', async () => {
-  vi.spyOn(db, 'getFiles').mockResolvedValue([
+  vi.mocked(DB.getFiles).mockResolvedValue([
     {id: '1', ydoc: createYUpdateAsString('1', 'Test'), lastModified, active: true},
     {id: '2', ydoc: createYUpdateAsString('2', 'Test2'), lastModified},
   ])
@@ -426,7 +425,7 @@ test('deleteFile - unused', async () => {
 })
 
 test('deleteFile - current', async () => {
-  vi.spyOn(db, 'getFiles').mockResolvedValue([
+  vi.mocked(DB.getFiles).mockResolvedValue([
     {id: '1', ydoc: createYUpdateAsString('1', 'Test'), lastModified, active: true},
     {id: '2', ydoc: createYUpdateAsString('2', 'Test2'), lastModified},
   ])
@@ -464,7 +463,7 @@ test('reset', async () => {
   expect(store.error?.id).toBe('exception')
 
   await ctrl.app.reset()
-  expect(db.deleteDatabase).toHaveBeenCalledTimes(1)
+  expect(DB.deleteDatabase).toHaveBeenCalledTimes(1)
   expect(loc.reload).toHaveBeenCalledTimes(1)
 })
 
@@ -501,7 +500,7 @@ test('startCollab - with text', async () => {
 })
 
 test('startCollab - join new file', async () => {
-  vi.spyOn(db, 'getFiles').mockResolvedValue([
+  vi.mocked(DB.getFiles).mockResolvedValue([
     {id: '1', ydoc: createYUpdateAsString('1', 'Test'), lastModified, active: true},
   ])
 
@@ -518,7 +517,7 @@ test('startCollab - join new file', async () => {
 })
 
 test('startCollab - join existing file', async () => {
-  vi.spyOn(db, 'getFiles').mockResolvedValue([
+  vi.mocked(DB.getFiles).mockResolvedValue([
     {id: '1', ydoc: createYUpdateAsString('1', 'Test'), lastModified, active: true},
     {id: '2', ydoc: createYUpdateAsString('2', 'Test 2'), lastModified},
   ])

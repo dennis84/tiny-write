@@ -5,7 +5,7 @@ import {v4 as uuidv4} from 'uuid'
 import {fromUint8Array, toUint8Array} from 'js-base64'
 import {File, FileText, ServiceError, State} from '@/state'
 import * as remote from '@/remote'
-import * as db from '@/db'
+import {DB} from '@/db'
 import {createExtensions, createSchema} from '@/prosemirror-setup'
 import {createMarkdownParser} from '@/markdown'
 import {Ctrl} from '.'
@@ -116,7 +116,7 @@ export class FileService {
       return
     }
 
-    db.updateFile({
+    DB.updateFile({
       id: file.id,
       ydoc: fromUint8Array(file.ydoc!),
       lastModified: file.lastModified,
@@ -125,12 +125,12 @@ export class FileService {
       active: file.active,
     })
 
-    const files = await db.getFiles() ?? []
-    db.setSize('files', JSON.stringify(files).length)
+    const files = await DB.getFiles() ?? []
+    DB.setSize('files', JSON.stringify(files).length)
   }
 
   async fetchFiles() {
-    const fetched = await db.getFiles()
+    const fetched = await DB.getFiles()
     const files = []
 
     for (const file of fetched ?? []) {

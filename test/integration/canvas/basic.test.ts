@@ -21,10 +21,11 @@ test('add file', async ({page}) => {
   // Move mouse to left link handle
   const box = await page.locator('[data-testid="edge_left_link_handle"]').boundingBox()
   expect(box).toBeDefined()
+  if (!box) return
 
-  await page.mouse.move(box?.x + box?.width / 2, box?.y + box?.width / 2)
+  await page.mouse.move(box.x + box.width / 2, box.y + box.width / 2)
   await page.mouse.down()
-  await page.mouse.move(box?.x - 100, box?.y)
+  await page.mouse.move(box.x - 100, box.y)
   await page.mouse.up()
 
   // Create another file

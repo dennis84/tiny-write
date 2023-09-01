@@ -1,7 +1,7 @@
 import {Store, unwrap, SetStoreFunction} from 'solid-js/store'
 import * as remote from '@/remote'
 import {State, ServiceError, Window, File, FileText, Mode} from '@/state'
-import * as db from '@/db'
+import {DB} from '@/db'
 import {isTauri} from '@/env'
 import {Ctrl} from '.'
 
@@ -137,7 +137,7 @@ export class AppService {
 
   async reset() {
     this.ctrl.collab.disconnectCollab()
-    await db.deleteDatabase()
+    await DB.deleteDatabase()
     window.location.reload()
   }
 
@@ -151,8 +151,8 @@ export class AppService {
     this.setState('window', {...this.store.window, ...win})
     if (!this.store.window) return
     const updatedWindow = unwrap(this.store.window)
-    db.setWindow(updatedWindow)
-    db.setSize('window', JSON.stringify(updatedWindow).length)
+    DB.setWindow(updatedWindow)
+    DB.setSize('window', JSON.stringify(updatedWindow).length)
     remote.log('info', '💾 Save window state')
   }
 
@@ -171,12 +171,12 @@ export class AppService {
       if (room) args = {room}
     }
 
-    const fetchedWindow = await db.getWindow()
-    const fetchedConfig = await db.getConfig()
-    const fetchedSize = await db.getSize()
+    const fetchedWindow = await DB.getWindow()
+    const fetchedConfig = await DB.getConfig()
+    const fetchedSize = await DB.getSize()
     const files = await this.ctrl.file.fetchFiles() ?? []
     const canvases = await this.ctrl.canvas.fetchCanvases() ?? state.canvases ?? []
-    const meta = await db.getMeta()
+    const meta = await DB.getMeta()
 
     let mode = meta?.mode ?? state.mode ?? Mode.Editor
     if (args.room) {
