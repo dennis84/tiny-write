@@ -117,10 +117,12 @@ export class CanvasService {
     const currentCanvas = this.store.canvases[index]
     const elementIndex = currentCanvas.elements.findIndex((el) => el.id === elementId)
 
-    this.setState('canvases', index, 'elements', elementIndex, (prev: CanvasElement) => {
+    this.setState('canvases', index, 'elements', elementIndex, (prev) => {
       if (isEditorElement(prev) && isEditorUpdate(update)) {
+        // Also mutate, otherwise editorView is not deleted
+        prev.editorView = hasOwn('editorView') ? update.editorView : prev?.editorView
         return {
-          editorView: hasOwn('editorView') ? update.editorView : prev?.editorView,
+          editorView: prev.editorView,
           x: hasOwn('x') ? update.x : prev?.x,
           y: hasOwn('y') ? update.y : prev?.y,
           width: hasOwn('width') ? update.width : prev?.width,
@@ -325,7 +327,7 @@ export class CanvasService {
     const element = currentCanvas.elements.find((el) => el.id === elementId)
     if (!element || !isEditorElement(element)) return
 
-    element?.editorView?.destroy()
+    element.editorView?.destroy()
     this.updateCanvasElement(element.id, {
       type: ElementType.Editor,
       editorView: undefined,

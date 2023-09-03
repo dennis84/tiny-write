@@ -206,7 +206,7 @@ export const createState = (props: Partial<State> = {}): State => ({
     fontSize: 14,
     contentWidth: 600,
     alwaysOnTop: false,
-    typewriterMode: true,
+    typewriterMode: false,
     spellcheck: true,
     prettier: {
       printWidth: 80,
