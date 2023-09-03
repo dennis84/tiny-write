@@ -133,6 +133,15 @@ export const FilesMenu = (props: Props) => {
       return elements?.some((el) => el.selected && el.id === p.file.id) ?? false
     }
 
+    const isOnCanvas = (): boolean => {
+      if (store.mode === Mode.Editor) {
+        return false
+      }
+
+      const elements = ctrl.canvas.currentCanvas?.elements
+      return elements?.some((el) => el.id === p.file.id) ?? false
+    }
+
     const onTooltip = (e: MouseEvent) => {
       setCurrent(p.file)
       computePosition(e.target as Element, tooltipRef, {
@@ -178,6 +187,7 @@ export const FilesMenu = (props: Props) => {
           onClick={onCardClick}
           selected={current() === p.file}
           active={isActive()}
+          isOnCanvas={isOnCanvas()}
           data-testid="open">
           <Show
             when={p.file.path}
@@ -215,10 +225,10 @@ export const FilesMenu = (props: Props) => {
       <TooltipEl
         ref={tooltipRef}
         class="file-tooltip">
-        <div onClick={onRemove}>🗑️ Delete</div>
         <Show when={store.mode === Mode.Canvas}>
           <div onClick={() => onOpenFile(current())}>↪️ Open in editor mode</div>
         </Show>
+        <div onClick={onRemove}>🗑️ Delete</div>
         <span ref={arrowRef} class="arrow"></span>
       </TooltipEl>
     )

@@ -141,6 +141,14 @@ export const CardContent = styled('div')`
     border-color: var(--primary-background);
     box-shadow: 0 0 0 1px var(--primary-background);
   ` : ''}
+  ${(props: any) => props.isOnCanvas && !props.active && !props.selected ? `
+    border-color: var(--foreground-20);
+    background: none;
+    color: var(--foreground-50);
+    > * {
+      opacity: 0.5;
+    }
+  ` : ''}
   ${(props: any) => props.selected ? `
     border-color: var(--primary-background);
     box-shadow: 0 0 0 1px var(--primary-background);
@@ -174,6 +182,10 @@ export const CardContent = styled('div')`
     border-color: var(--primary-background);
     box-shadow: 0 0 0 1px var(--primary-background);
     background: var(--foreground-10);
+    color: var(--foreground);
+    > * {
+      opacity: 1;
+    }
   }
 `
 
