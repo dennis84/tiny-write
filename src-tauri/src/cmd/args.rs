@@ -38,22 +38,22 @@ pub fn create_args(source: String) -> Args {
     let mut cwd = None;
 
     if source.starts_with("tinywrite://") {
-        if let Some(url) = Url::parse(&source).ok() {
+        if let Ok(url) = Url::parse(&source) {
             let params: HashMap<_, _> = url.query_pairs().into_owned().collect();
-            room = params.get("room").map(|x| x.clone());
+            room = params.get("room").cloned();
             text = params
                 .get("text")
                 .and_then(|x| general_purpose::STANDARD.decode(x).ok())
                 .and_then(|x| String::from_utf8(x).ok());
         }
-    } else if source != "" {
+    } else if !source.is_empty() {
         if let Ok(p) = resolve_path(vec![source]) {
             if p.is_dir() {
                 dir = list_text_files(&p).ok();
                 cwd = path_buf_to_string(p).ok();
             } else {
                 file = path_buf_to_string(&p).ok();
-                cwd = dirname(p).and_then(|d| path_buf_to_string(d)).ok();
+                cwd = dirname(p).and_then(path_buf_to_string).ok();
             }
         }
     }
@@ -71,7 +71,7 @@ pub fn create_args(source: String) -> Args {
 
                 Ok(x)
             })
-            .and_then(|x| path_buf_to_string(x))
+            .and_then(path_buf_to_string)
             .ok();
     }
 
@@ -81,7 +81,7 @@ pub fn create_args(source: String) -> Args {
 fn list_text_files(p: &Path) -> Result<Vec<String>, Error> {
     let mut files = Vec::new();
 
-    for entry in fs::read_dir(&p)? {
+    for entry in fs::read_dir(p)? {
         let dir_entry = &entry.as_ref();
         if dir_entry.is_err() {
             continue;
@@ -93,7 +93,7 @@ fn list_text_files(p: &Path) -> Result<Vec<String>, Error> {
         if let Some(mime) = m.first_raw() {
             if mime.ends_with("/markdown") || mime.ends_with("/plain") {
                 let relative_path =
-                    to_relative_path(&path, None).and_then(|p| path_buf_to_string(p));
+                    to_relative_path(&path, None).and_then(path_buf_to_string);
                 if let Ok(p) = relative_path {
                     files.push(p);
                 }

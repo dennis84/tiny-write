@@ -30,19 +30,14 @@ pub fn list_contents(file: String) -> Result<Vec<String>, String> {
     let glob = glob.compile_matcher();
     let walker = WalkBuilder::new(dir).max_depth(Some(3)).build();
 
-    for entry in walker {
-        match entry {
-            Ok(path) => {
-                let path = path.into_path();
-                if glob.is_match(&path) {
-                    let relative_path =
-                        pu::to_relative_path(&path, None).and_then(|p| pu::path_buf_to_string(p));
-                    if let Ok(p) = relative_path {
-                        files.push(p);
-                    }
-                }
+    for path in walker.flatten() {
+        let path = path.into_path();
+        if glob.is_match(&path) {
+            let relative_path =
+                pu::to_relative_path(&path, None).and_then(pu::path_buf_to_string);
+            if let Ok(p) = relative_path {
+                files.push(p);
             }
-            Err(_) => {}
         }
     }
 
@@ -54,21 +49,21 @@ pub fn list_contents(file: String) -> Result<Vec<String>, String> {
 #[tauri::command]
 pub fn dirname(path: String) -> Result<String, String> {
     pu::dirname(path)
-        .and_then(|p| pu::path_buf_to_string(p))
+        .and_then(pu::path_buf_to_string)
         .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
 pub fn resolve_path(paths: Vec<String>) -> Result<String, String> {
     pu::resolve_path(paths)
-        .and_then(|p| pu::path_buf_to_string(p))
+        .and_then(pu::path_buf_to_string)
         .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
 pub fn to_relative_path(path: String, base_path: Option<String>) -> Result<String, String> {
     pu::to_relative_path(path, base_path)
-        .and_then(|p| pu::path_buf_to_string(p))
+        .and_then(pu::path_buf_to_string)
         .map_err(|e| e.to_string())
 }
 
@@ -135,7 +130,7 @@ mod tests {
         );
 
         assert_eq!(
-            to_relative_path(test_base_path.clone(), Some(test_path.clone())).unwrap(),
+            to_relative_path(test_base_path, Some(test_path)).unwrap(),
             "~/foo".to_string()
         );
     }

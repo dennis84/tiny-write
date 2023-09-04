@@ -80,7 +80,7 @@ fn main() {
                     }
                 }
                 Err(e) => {
-                    println!("{}", e.to_string());
+                    println!("{}", e);
                     app.app_handle().exit(1);
                 }
             }

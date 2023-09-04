@@ -9,7 +9,7 @@ pub fn get_mime_type(path: String) -> String {
 
 #[tauri::command]
 pub fn get_file_last_modified(path: String) -> Result<String, String> {
-    let metadata = fs::metadata(&path).map_err(|e| e.to_string())?;
+    let metadata = fs::metadata(path).map_err(|e| e.to_string())?;
 
     if let Ok(time) = metadata.modified() {
         let dt: DateTime<Utc> = time.into();
