@@ -38,9 +38,9 @@ export default (props: {state: State}) => {
     if (!isTauri()) return
     const unlisten = await appWindow.onFileDropEvent(async (event) => {
       if (event.payload.type === 'hover') {
-        remote.log('INFO', '🔗 User hovering')
+        remote.info('🔗 User hovering')
       } else if (event.payload.type === 'drop') {
-        remote.log('INFO', '🔗 User dropped')
+        remote.info('🔗 User dropped')
         for (const path of event.payload.paths) {
           const mime = await remote.getMimeType(path)
           const isImage = mime.startsWith('image/')
@@ -81,7 +81,7 @@ export default (props: {state: State}) => {
           }
         }
       } else {
-        remote.log('INFO', '🔗 File drop cancelled')
+        remote.info('🔗 File drop cancelled')
       }
     })
 

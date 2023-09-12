@@ -34,6 +34,7 @@ export const FilesMenu = (props: Props) => {
   const onOpenFile = async (file?: File) => {
     if (!file) return
     await ctrl.editor.openFile(unwrap(file))
+    setCurrent(undefined)
     props.onOpen()
   }
 

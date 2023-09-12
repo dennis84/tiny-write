@@ -65,7 +65,7 @@ export class EditorService {
         })
 
         this.saveEditor()
-        remote.log('info', '💾 Saved updated text')
+        remote.info('💾 Saved updated text')
       }
 
       editorView = new EditorView(node!, {
@@ -174,7 +174,7 @@ export class EditorService {
 
     this.setState(newState)
     await DB.deleteFile(req.id!)
-    remote.log('info', '💾 Deleted file')
+    remote.info('💾 Deleted file')
   }
 
   toggleMarkdown() {
@@ -213,7 +213,7 @@ export class EditorService {
     })
 
     this.saveEditor()
-    remote.log('info', '💾 Toggle markdown')
+    remote.info('💾 Toggle markdown')
   }
 
   updatePath(path: string) {

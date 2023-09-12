@@ -47,6 +47,8 @@ export class CollabService {
   }
 
   create(room: string, mode = Mode.Editor, connect = false): Collab {
+    remote.info(`Create ydoc: (room=${room}, mode=${mode}, connect=${connect})`)
+
     if (connect) {
       const m = mode === Mode.Canvas ? 'c/' : ''
       window.history.replaceState(null, '', `/${m + room}`)

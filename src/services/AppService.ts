@@ -26,7 +26,7 @@ export class AppService {
     try {
       let data = await this.fetchData()
       let text: FileText | undefined
-      remote.log('info', `Init app (mode=${data.mode})`)
+      remote.info(`Init app (mode=${data.mode}, args=${JSON.stringify(data.args)})`)
 
       if (isTauri() && data.window) {
         await remote.updateWindow(data.window)
@@ -90,12 +90,12 @@ export class AppService {
       const mode = currentCanvas ? Mode.Canvas : Mode.Editor
       let collab
       if (mode === Mode.Editor && currentFile) {
-        collab = this.ctrl.collab.createByFile(currentFile, data.args?.room !== undefined)
+        collab = this.ctrl.collab.createByFile(currentFile, !!data.args?.room)
         if (currentFile?.path) {
           text = (await this.ctrl.file.loadFile(currentFile.path)).text
         }
       } else if (mode === Mode.Canvas && currentCanvas) {
-        collab = this.ctrl.collab.create(currentCanvas.id, mode, data.args?.room !== undefined)
+        collab = this.ctrl.collab.create(currentCanvas.id, mode, !!data.args?.room)
       }
 
       const newState: State = {
@@ -153,7 +153,7 @@ export class AppService {
     const updatedWindow = unwrap(this.store.window)
     DB.setWindow(updatedWindow)
     DB.setSize('window', JSON.stringify(updatedWindow).length)
-    remote.log('info', '💾 Save window state')
+    remote.info('💾 Save window state')
   }
 
   parseRoom(room: string): [Mode, string] {
