@@ -22,8 +22,6 @@ import {
   State,
   isEditorElement,
   isLinkElement,
-  isImageElement,
-  isVideoElement,
   isBoxElement,
 } from '@/state'
 import {DB} from '@/db'
@@ -37,53 +35,10 @@ interface UpdateCanvas {
   lastModified?: Date;
 }
 
-type UpdateElement = UpdateEditorElement | UpdateLinkElement | UpdateSelection
-
-interface UpdateSelection {
-  selected?: boolean;
-  active?: boolean;
-}
-
-interface UpdateEditorElement {
-  type: ElementType;
-  editorView?: EditorView;
-  x?: number;
-  y?: number;
-  width?: number;
-  height?: number;
-  selected?: boolean;
-  active?: boolean;
-}
-
-interface UpdateImageElement {
-  type: ElementType;
-  x?: number;
-  y?: number;
-  width?: number;
-  height?: number;
-  selected?: boolean;
-}
-
-interface UpdateVideoElement {
-  type: ElementType;
-  x?: number;
-  y?: number;
-  width?: number;
-  height?: number;
-  selected?: boolean;
-}
-
-interface UpdateLinkElement {
-  type: ElementType;
-  from?: string;
-  fromEdge?: EdgeType;
-  toX?: number;
-  toY?: number;
-  to?: string;
-  toEdge?: EdgeType;
-  selected?: boolean;
-  drawing?: boolean;
-}
+type UpdateElement =
+  Partial<CanvasLinkElement> |
+  Partial<CanvasEditorElement> |
+  Partial<CanvasBoxElement>
 
 export class CanvasService {
   public saveCanvasDebounced = debounce(() => this.saveCanvas(), 100)
@@ -111,63 +66,11 @@ export class CanvasService {
   }
 
   updateCanvasElement(elementId: string, update: UpdateElement) {
-    const hasOwn = (prop: string) => Object.hasOwn(update, prop)
     const index = this.store.canvases?.findIndex((c) => c.active)
     if (index === -1) return
     const currentCanvas = this.store.canvases[index]
     const elementIndex = currentCanvas.elements.findIndex((el) => el.id === elementId)
-
-    this.setState('canvases', index, 'elements', elementIndex, (prev) => {
-      if (isEditorElement(prev) && isEditorUpdate(update)) {
-        // Also mutate, otherwise editorView is not deleted
-        prev.editorView = hasOwn('editorView') ? update.editorView : prev?.editorView
-        return {
-          editorView: prev.editorView,
-          x: hasOwn('x') ? update.x : prev?.x,
-          y: hasOwn('y') ? update.y : prev?.y,
-          width: hasOwn('width') ? update.width : prev?.width,
-          height: hasOwn('height') ? update.height : prev?.height,
-          selected: hasOwn('selected') ? update.selected : prev?.selected,
-          active: hasOwn('active') ? update.active : prev?.active,
-        }
-      } else if (isLinkElement(prev) && isLinkUpdate(update)) {
-        return {
-          from: hasOwn('from') ? update.from : prev?.from,
-          fromEdge: hasOwn('fromEdge') ? update.fromEdge : prev?.fromEdge,
-          toX: hasOwn('toX') ? update.toX : prev?.toX,
-          toY: hasOwn('toY') ? update.toY : prev?.toY,
-          to: hasOwn('to') ? update.to : prev?.to,
-          toEdge: hasOwn('toEdge') ? update.toEdge : prev?.toEdge,
-          selected: hasOwn('selected') ? update.selected : prev?.selected,
-          drawing: hasOwn('drawing') ? update.drawing : prev?.drawing,
-        }
-      } else if (
-        (isImageUpdate(update) && isImageElement(prev)) ||
-        (isVideoUpdate(update) && isVideoElement(prev))
-      ) {
-        return {
-          x: hasOwn('x') ? update.x : prev?.x,
-          y: hasOwn('y') ? update.y : prev?.y,
-          width: hasOwn('width') ? update.width : prev?.width,
-          height: hasOwn('height') ? update.height : prev?.height,
-          selected: hasOwn('selected') ? update.selected : prev?.selected,
-        }
-      } else if (isSelectionUpdate(update) && isEditorElement(prev)) {
-        return {
-          ...prev,
-          selected: update.selected,
-          active: update.active,
-        }
-      } else if (isSelectionUpdate(update)) {
-        return {
-          ...prev,
-          selected: update.selected,
-        }
-      } else {
-        console.error('No element update', prev)
-        return prev
-      }
-    })
+    this.setState('canvases', index, 'elements', elementIndex, update)
   }
 
   backToContent() {
@@ -855,18 +758,3 @@ export class CanvasService {
     return new Box2d(x, y, width, height)
   }
 }
-
-const isEditorUpdate = (update: UpdateElement): update is UpdateEditorElement =>
-  update !== undefined && 'type' in update && update.type === ElementType.Editor
-
-const isLinkUpdate = (update: any): update is UpdateLinkElement =>
-  update !== undefined && 'type' in update && update.type === ElementType.Link
-
-const isImageUpdate = (update: any): update is UpdateImageElement =>
-  update !== undefined && 'type' in update && update.type === ElementType.Image
-
-const isVideoUpdate = (update: any): update is UpdateVideoElement =>
-  update !== undefined && 'type' in update && update.type === ElementType.Video
-
-const isSelectionUpdate = (update?: UpdateElement): update is UpdateSelection =>
-  update !== undefined && Object.hasOwn(update, 'selected')
