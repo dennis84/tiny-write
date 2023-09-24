@@ -23,7 +23,7 @@ export class ChangeSetService {
     const snapshot = Y.snapshot(ydoc)
 
     if (prevVersion) {
-      prevSnapshot.sv.set(prevVersion.clientID, (prevSnapshot.sv.get(prevVersion.clientID))! + 1)
+      prevSnapshot.sv.set(prevVersion.clientID, prevSnapshot.sv.get(prevVersion.clientID)! + 1)
     }
 
     if (!Y.equalSnapshots(prevSnapshot, snapshot)) {

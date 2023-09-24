@@ -189,6 +189,7 @@ export class CanvasService {
 
     this.saveCanvas()
     remote.info('💾 New canvas created')
+    DB.setMeta({mode: state.mode})
   }
 
   removeElement(elementId: string) {
