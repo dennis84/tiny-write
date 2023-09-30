@@ -83,6 +83,11 @@ export class EditorService {
   }
 
   renderEditor(node: Element) {
+    const currentFile = this.ctrl.file.currentFile
+    if (!currentFile?.path && currentFile?.ydoc) {
+      this.ctrl.collab.apply(currentFile)
+    }
+
     this.updateEditorState(node)
   }
 
@@ -134,7 +139,7 @@ export class EditorService {
       files: [...state.files, file],
     }, file)
 
-    update.collab = this.ctrl.collab.createByFile(file)
+    update.collab = this.ctrl.collab.create(file.id, state.mode, false)
     this.setState(update)
   }
 
@@ -156,7 +161,7 @@ export class EditorService {
     if (state.args?.room) state.args.room = undefined
 
     const update = await this.activateFile(state, file)
-    update.collab = this.ctrl.collab.createByFile(file)
+    update.collab = this.ctrl.collab.create(file.id, state.mode, false)
     this.setState(update)
     if (text) this.updateText(text)
   }
@@ -256,9 +261,9 @@ export class EditorService {
 
   updateText(text?: {[key: string]: any}) {
     const currentFile = this.ctrl.file.currentFile
-    if (!text) return
+    if (!text || !currentFile) return
     let schema
-    if (currentFile?.editorView) {
+    if (currentFile.editorView) {
       schema = currentFile.editorView.state.schema
     } else {
       const extensions = createExtensions({
@@ -274,7 +279,7 @@ export class EditorService {
 
     let ynode: Node
     try {
-      const json = yDocToProsemirrorJSON(this.store.collab.ydoc, currentFile?.id)
+      const json = yDocToProsemirrorJSON(this.store.collab.ydoc, currentFile.id)
       ynode = Node.fromJSON(schema, json)
     } catch(e) {
       ynode = new Node()
@@ -282,9 +287,9 @@ export class EditorService {
 
     const node = Node.fromJSON(schema, text.doc)
     if (!node.eq(ynode)) {
-      const ydoc = prosemirrorJSONToYDoc(schema, text.doc, currentFile?.id)
+      const ydoc = prosemirrorJSONToYDoc(schema, text.doc, currentFile.id)
       const update = Y.encodeStateAsUpdate(ydoc)
-      const type = this.store.collab.ydoc.getXmlFragment(currentFile?.id)
+      const type = this.store.collab.ydoc.getXmlFragment(currentFile.id)
       type.delete(0, type.length)
       Y.applyUpdate(this.store.collab.ydoc, update)
     }
@@ -332,7 +337,7 @@ export class EditorService {
       files,
     }, file)
 
-    newState.collab = this.ctrl.collab.createByFile(file)
+    newState.collab = this.ctrl.collab.create(file.id, state.mode, false)
     currentFile?.editorView?.destroy()
 
     this.setState(newState)

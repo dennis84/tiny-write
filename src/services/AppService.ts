@@ -90,7 +90,7 @@ export class AppService {
       const mode = currentCanvas ? Mode.Canvas : Mode.Editor
       let collab
       if (mode === Mode.Editor && currentFile) {
-        collab = this.ctrl.collab.createByFile(currentFile, !!data.args?.room)
+        collab = this.ctrl.collab.create(currentFile.id, mode, !!data.args?.room)
         if (currentFile?.path) {
           text = (await this.ctrl.file.loadFile(currentFile.path)).text
         }

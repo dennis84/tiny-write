@@ -48,6 +48,7 @@ export class CollabService {
 
   create(room: string, mode = Mode.Editor, connect = false): Collab {
     remote.info(`Create ydoc: (room=${room}, mode=${mode}, connect=${connect})`)
+    this.stopCollab()
 
     if (connect) {
       const m = mode === Mode.Canvas ? 'c/' : ''
@@ -99,16 +100,6 @@ export class CollabService {
       permanentUserData,
       undoManager,
     }
-  }
-
-  createByFile(file: File, connect = false): Collab {
-    this.disconnectCollab()
-    this.store.collab?.undoManager?.destroy()
-    const collab = this.create(file.id, Mode.Editor, connect)
-    if (file.ydoc) Y.applyUpdate(collab.ydoc!, file.ydoc)
-    const type = collab.ydoc!.getXmlFragment(file.id)
-    collab?.undoManager?.addToScope(type)
-    return collab
   }
 
   apply(file: File) {
