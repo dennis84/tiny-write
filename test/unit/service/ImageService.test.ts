@@ -33,7 +33,9 @@ beforeEach(() => {
   })
 })
 
-vi.stubGlobal('__TAURI__', {})
+vi.stubGlobal('__TAURI__', {
+  convertFileSrc: (x: string) => `asset://localhost/${encodeURIComponent(x)}`
+})
 
 const ctrl = mockDeep<Ctrl>()
 
