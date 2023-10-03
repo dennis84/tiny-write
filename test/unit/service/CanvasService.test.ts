@@ -390,7 +390,7 @@ test('newFile', () => {
     ],
   }))
 
-  ctrl.file.createFile.mockReturnValue({id: '1', ydoc})
+  ctrl.file.createFile.mockReturnValue({id: '1', ydoc, versions: []})
   ctrl.collab.create.mockReturnValue({})
 
   const service = new CanvasService(ctrl, store, setState)
@@ -423,7 +423,7 @@ test.each([
     ],
   }))
 
-  ctrl.file.createFile.mockReturnValue({id: '3', ydoc})
+  ctrl.file.createFile.mockReturnValue({id: '3', ydoc, versions: []})
   ctrl.collab.create.mockReturnValue({})
 
   const service = new CanvasService(ctrl, store, setState)
@@ -607,7 +607,7 @@ test('renderEditor', async () => {
   const element = createEditorElement({id: '1'})
   const init = createState({
     files: [
-      {id: '1', ydoc: createYUpdate('1', 'Test'), active: true},
+      {id: '1', ydoc: createYUpdate('1', 'Test'), versions: [], active: true},
     ],
     canvases: [
       createCanvas({

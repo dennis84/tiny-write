@@ -33,7 +33,8 @@ export class EditorService {
       return
     }
 
-    const type = this.store.collab!.ydoc!.getXmlFragment(currentFile.id)
+    const doc = this.store.collab?.snapshot ?? this.store.collab?.ydoc
+    const type = doc!.getXmlFragment(currentFile.id)
     const extensions = createExtensions({
       ctrl: this.ctrl,
       markdown: currentFile?.markdown,
@@ -72,6 +73,7 @@ export class EditorService {
         state: editorState,
         nodeViews,
         dispatchTransaction,
+        editable: () => !this.ctrl.collab.isSnapshot,
       })
 
       const currentFileIndex = this.ctrl.file.currentFileIndex

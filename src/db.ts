@@ -1,9 +1,15 @@
 import {DBSchema, openDB} from 'idb'
 import {Camera, Config, ElementType, Mode, Window} from './state'
 
+export interface PersistedVersion {
+  ydoc: string;
+  date: Date;
+}
+
 export interface PersistedFile {
   id: string;
   ydoc: string;
+  versions?: PersistedVersion[];
   lastModified: Date;
   path?: string;
   markdown?: boolean;

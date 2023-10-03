@@ -21,7 +21,7 @@ test('only save file type', async () => {
   const ydoc = createYdoc('1', 'Test')
 
   const [store, setState] = createStore(createState({
-    files: [{id: '1', ydoc: Y.encodeStateAsUpdate(ydoc)}],
+    files: [{id: '1', ydoc: Y.encodeStateAsUpdate(ydoc), versions: []}],
   }))
 
   const service = new FileService(ctrl, store, setState)

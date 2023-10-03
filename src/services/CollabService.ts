@@ -46,6 +46,10 @@ export class CollabService {
       this.ctrl.canvas.currentCanvas?.id
   }
 
+  get isSnapshot(): boolean {
+    return this.store.collab?.snapshot !== undefined
+  }
+
   create(room: string, mode = Mode.Editor, connect = false): Collab {
     remote.info(`Create ydoc: (room=${room}, mode=${mode}, connect=${connect})`)
     this.stopCollab()

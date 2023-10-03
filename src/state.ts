@@ -40,9 +40,8 @@ export interface ErrorObject {
 }
 
 export interface Version {
-  snapshot: Uint8Array;
-  date: number;
-  clientID: number;
+  ydoc: Uint8Array;
+  date: Date;
 }
 
 export interface Collab {
@@ -51,6 +50,7 @@ export interface Collab {
   provider?: WebsocketProvider;
   permanentUserData?: Y.PermanentUserData;
   ydoc?: Y.Doc;
+  snapshot?: Y.Doc;
   undoManager?: UndoManager;
 }
 
@@ -176,6 +176,7 @@ export type FileText = {[key: string]: any}
 export interface File {
   id: string;
   ydoc: Uint8Array;
+  versions: Version[];
   lastModified?: Date;
   path?: string;
   markdown?: boolean;

@@ -1,4 +1,4 @@
-import {For, Show, createSignal, onMount} from 'solid-js'
+import {For, Show, createSignal} from 'solid-js'
 import {format} from 'date-fns'
 import {Version, useState} from '@/state'
 import {Drawer, Label, Link, Sub} from './Menu'
@@ -9,19 +9,9 @@ interface Props {
 }
 
 export const ChangeSetMenu = (props: Props) => {
-  const [store, ctrl] = useState()
-
-  const getVersions = () =>
-    store.collab?.ydoc?.getArray('versions').toArray() as Version[]
-
-  const [versions, setVersions] = createSignal(getVersions())
+  const [, ctrl] = useState()
+  const versions = () => ctrl.file.currentFile?.versions ?? []
   const [active, setActive] = createSignal<Version>()
-
-  onMount(() => {
-    store.collab?.ydoc?.getArray('versions').observe(() => {
-      setVersions(getVersions())
-    })
-  })
 
   const renderVersion = (version: Version) => {
     if (active() != version) {
@@ -38,7 +28,6 @@ export const ChangeSetMenu = (props: Props) => {
     if (!version) return
     ctrl.changeSet.applyVersion(version)
     setActive(undefined)
-    setVersions(getVersions())
   }
 
   const onBack = () => {

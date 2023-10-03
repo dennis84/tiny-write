@@ -2,8 +2,8 @@ import {SetStoreFunction, Store} from 'solid-js/store'
 import {EditorView} from 'prosemirror-view'
 import * as Y from 'yjs'
 import {v4 as uuidv4} from 'uuid'
-import {fromUint8Array, toUint8Array} from 'js-base64'
-import {File, FileText, ServiceError, State} from '@/state'
+import {fromUint8Array, toUint8Array, version} from 'js-base64'
+import {File, FileText, ServiceError, State, Version} from '@/state'
 import * as remote from '@/remote'
 import {DB} from '@/db'
 import {createExtensions, createSchema} from '@/prosemirror-setup'
@@ -23,6 +23,7 @@ export interface UpdateFile {
   markdown?: boolean;
   path?: string;
   editorView?: EditorView;
+  versions?: Version[];
 }
 
 export class FileService {
@@ -47,6 +48,7 @@ export class FileService {
       ...params,
       id: params.id ?? uuidv4(),
       ydoc,
+      versions: [],
     }
   }
 
@@ -100,6 +102,7 @@ export class FileService {
       path: hasOwn('path') ? update.path : prev?.path,
       editorView: hasOwn('editorView') ? update.editorView : prev?.editorView,
       ydoc,
+      versions: hasOwn('versions') ? update.versions : prev?.versions,
     }))
   }
 
@@ -123,13 +126,17 @@ export class FileService {
       path: file.path,
       markdown: file.markdown,
       active: file.active,
+      versions: file.versions.map((v) => ({
+        date: v.date,
+        ydoc: fromUint8Array(v.ydoc),
+      }))
     })
 
     const files = await DB.getFiles() ?? []
     DB.setSize('files', JSON.stringify(files).length)
   }
 
-  async fetchFiles() {
+  async fetchFiles(): Promise<File[]> {
     const fetched = await DB.getFiles()
     const files = []
 
@@ -142,6 +149,10 @@ export class FileService {
           path: file.path,
           markdown: file.markdown,
           active: file.active,
+          versions: (file.versions ?? []).map((v) => ({
+            date: v.date,
+            ydoc: toUint8Array(v.ydoc),
+          })),
         })
       } catch (err) {
         remote.log('ERROR', 'Ignore file due to invalid ydoc.')

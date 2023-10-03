@@ -35,7 +35,7 @@ export const collab = (ctrl: Ctrl, type: Y.XmlFragment): ProseMirrorExtension =>
       permanentUserData: ctrl.collab?.permanentUserData,
       onFirstRender: () => ctrl.collab.setRendered(),
     }),
-    yCursorPlugin(ctrl.collab.provider!.awareness, {cursorBuilder}),
+    ...(ctrl.collab.isSnapshot ? [] : [yCursorPlugin(ctrl.collab.provider!.awareness, {cursorBuilder})]),
     yUndoPlugin({undoManager: ctrl.collab.undoManager}),
   ]
 })

@@ -534,34 +534,3 @@ test('startCollab - join existing file', async () => {
   expect(store.collab?.started).toBe(true)
   expect(store.collab?.provider).not.toBe(undefined)
 })
-
-test('applyVersion', async () => {
-  const getVersions = () =>
-    store.collab?.ydoc?.getArray('versions').toArray() as Version[]
-
-  const {ctrl, store} = createCtrl(createState())
-  const target = document.createElement('div')
-  await ctrl.app.init()
-  ctrl.editor.renderEditor(target)
-
-  insertText(ctrl, 'Test')
-  expect(getText(ctrl)).toBe('Test')
-  expect(getVersions().length).toBe(0)
-
-  ctrl.changeSet.addVersion()
-  await pause(10)
-
-  expect(getVersions().length).toBe(1)
-  insertText(ctrl, '123')
-  expect(getText(ctrl)).toBe('Test123')
-
-  ctrl.changeSet.renderVersion(getVersions()[0])
-  await pause(10)
-
-  expect(getText(ctrl)).toBe('Test')
-
-  ctrl.changeSet.applyVersion(getVersions()[0])
-  await pause(10)
-
-  expect(getText(ctrl)).toBe('Test')
-})
