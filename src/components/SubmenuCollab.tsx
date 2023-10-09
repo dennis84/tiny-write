@@ -47,6 +47,9 @@ export default () => {
     <>
       <Label>Collab</Label>
       <Sub data-tauri-drag-region="true">
+        <Show when={store.collab?.error}>
+          ⚠️ Connection error, reconnecting ...
+        </Show>
         <Show when={!store.collab?.started}>
           <Link
             onClick={onCollabStart}

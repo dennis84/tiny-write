@@ -78,7 +78,13 @@ export class CollabService {
 
     provider.on('connection-error', () => {
       remote.log('ERROR', '🌐 Connection error')
-      this.disconnectCollab()
+      this.setState('collab', 'error', true)
+    })
+
+    provider.on('status', (e: any) => {
+      if (e.status === 'connected') {
+        this.setState('collab', 'error', undefined)
+      }
     })
 
     const xs = Object.values(this.ctrl.config.themes)

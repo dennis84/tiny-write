@@ -52,6 +52,7 @@ export interface Collab {
   ydoc?: Y.Doc;
   snapshot?: Y.Doc;
   undoManager?: UndoManager;
+  error?: boolean;
 }
 
 export type LoadingType = 'loading' | 'initialized'
