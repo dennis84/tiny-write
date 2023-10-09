@@ -15,7 +15,7 @@ export class ChangeSetService {
     const currentFile = this.ctrl.file.currentFile
     if (!currentFile) return
 
-    const newDoc = new Y.Doc({gc: false, guid: currentFile.id})
+    const newDoc = new Y.Doc({gc: false})
     const type = newDoc.getXmlFragment(currentFile.id)
     this.store.collab?.ydoc?.getXmlFragment(currentFile.id).forEach((x) => type.push([x.clone()]))
     const ydoc = Y.encodeStateAsUpdate(newDoc)

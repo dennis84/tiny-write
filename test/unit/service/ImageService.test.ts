@@ -5,7 +5,7 @@ import {ImageService} from '@/services/ImageService'
 import {createCtrl, Ctrl} from '@/services'
 import {createState} from '@/state'
 import {DB} from '@/db'
-import {createYUpdateAsString, getText} from '../util'
+import {createYUpdate, getText} from '../util'
 
 document.elementFromPoint = () => null
 
@@ -85,7 +85,7 @@ test('insert - markdown mode', async () => {
   vi.mocked(DB.getFiles).mockResolvedValue([
     {
       id: '1',
-      ydoc: createYUpdateAsString('1', ''),
+      ydoc: createYUpdate('1', ''),
       active: true,
       markdown: true,
       lastModified,

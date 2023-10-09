@@ -2,7 +2,6 @@ import {SetStoreFunction, Store} from 'solid-js/store'
 import {EditorView} from 'prosemirror-view'
 import * as Y from 'yjs'
 import {v4 as uuidv4} from 'uuid'
-import {fromUint8Array, toUint8Array, version} from 'js-base64'
 import {File, FileText, ServiceError, State, Version} from '@/state'
 import * as remote from '@/remote'
 import {DB} from '@/db'
@@ -90,10 +89,15 @@ export class FileService {
     const index = this.store.files.findIndex((file) => file.id === id)
     if (index === -1) return
 
+    const doc = this.store.collab?.ydoc!
+
     const newDoc = new Y.Doc({gc: false})
-    const type = newDoc.getXmlFragment(id)
-    this.store.collab?.ydoc?.getXmlFragment(id).forEach((x) => type.push([x.clone()]))
+    const newType = newDoc.getXmlFragment(id)
+    const type = doc.getXmlFragment(id)
+    // @ts-ignore
+    newType.insert(0, type.toArray().map((el) => el instanceof Y.AbstractType ? el.clone() : el))
     const ydoc = Y.encodeStateAsUpdate(newDoc)
+
     const hasOwn = (prop: string) => Object.hasOwn(update, prop)
 
     this.setState('files', index, (prev) => ({
@@ -121,14 +125,14 @@ export class FileService {
 
     DB.updateFile({
       id: file.id,
-      ydoc: fromUint8Array(file.ydoc!),
+      ydoc: file.ydoc!,
       lastModified: file.lastModified,
       path: file.path,
       markdown: file.markdown,
       active: file.active,
       versions: file.versions.map((v) => ({
         date: v.date,
-        ydoc: fromUint8Array(v.ydoc),
+        ydoc: v.ydoc,
       }))
     })
 
@@ -144,14 +148,14 @@ export class FileService {
       try {
         files.push({
           id: file.id,
-          ydoc: toUint8Array(file.ydoc),
+          ydoc: file.ydoc,
           lastModified: new Date(file.lastModified),
           path: file.path,
           markdown: file.markdown,
           active: file.active,
           versions: (file.versions ?? []).map((v) => ({
             date: v.date,
-            ydoc: toUint8Array(v.ydoc),
+            ydoc: v.ydoc,
           })),
         })
       } catch (err) {

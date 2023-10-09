@@ -1,7 +1,6 @@
 import {schema} from 'prosemirror-markdown'
 import * as Y from 'yjs'
 import {prosemirrorJSONToYDoc} from 'y-prosemirror'
-import {fromUint8Array} from 'js-base64'
 import {Ctrl} from '@/services'
 
 export const createText = (text: string) => ({
@@ -14,10 +13,6 @@ export const createText = (text: string) => ({
 export const createYUpdate = (id: string, str: string) => {
   const ydoc = createYdoc(id, str)
   return Y.encodeStateAsUpdate(ydoc)
-}
-
-export const createYUpdateAsString = (id: string, str: string) => {
-  return fromUint8Array(createYUpdate(id, str))
 }
 
 export const createYdoc = (id: string, str: string) => {

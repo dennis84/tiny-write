@@ -4,7 +4,7 @@ import {clearMocks, mockIPC} from '@tauri-apps/api/mocks'
 import {DB} from '@/db'
 import {createCtrl} from '@/services'
 import {createState} from '@/state'
-import {createYUpdateAsString, getText, insertText, waitFor} from './util'
+import {createYUpdate, getText, insertText, waitFor} from './util'
 
 vi.stubGlobal('__TAURI__', {})
 vi.stubGlobal('matchMedia', vi.fn(() => ({
@@ -34,7 +34,7 @@ beforeEach(() => {
 
 test('init - load existing by path', async () => {
   vi.mocked(DB.getFiles).mockResolvedValue([
-    {id: '1', ydoc: createYUpdateAsString('1', ''), path: 'file1', lastModified, active: true}
+    {id: '1', ydoc: createYUpdate('1', ''), path: 'file1', lastModified, active: true}
   ])
 
   const {ctrl} = createCtrl(createState())
@@ -75,8 +75,8 @@ test('init - check text', async () => {
 
 test('openFile - path in files', async () => {
   vi.mocked(DB.getFiles).mockResolvedValue([
-    {id: '1', path: 'file1', ydoc: createYUpdateAsString('1', 'Test'), lastModified},
-    {id: '2', path: 'file2', ydoc: createYUpdateAsString('2', 'Test 2'), lastModified, active: true},
+    {id: '1', path: 'file1', ydoc: createYUpdate('1', 'Test'), lastModified},
+    {id: '2', path: 'file2', ydoc: createYUpdate('2', 'Test 2'), lastModified, active: true},
   ])
 
   const {ctrl, store} = createCtrl(createState())
@@ -143,8 +143,8 @@ test('openFile - path and text', async () => {
 
 test('discard - with path', async () => {
   vi.mocked(DB.getFiles).mockResolvedValue([
-    {id: '1', path: 'file1', ydoc: createYUpdateAsString('1', 'Test'), lastModified, active: true},
-    {id: '2', path: 'file2', ydoc: createYUpdateAsString('2', 'Test 2'), lastModified},
+    {id: '1', path: 'file1', ydoc: createYUpdate('1', 'Test'), lastModified, active: true},
+    {id: '2', path: 'file2', ydoc: createYUpdate('2', 'Test 2'), lastModified},
   ])
 
   const {ctrl, store} = createCtrl(createState())
