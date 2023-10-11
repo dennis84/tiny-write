@@ -18,51 +18,51 @@ const openBlockMenu = async (page: Page, nth: number) => {
 }
 
 test('code block', async ({page}) => {
-  await page.type('.ProseMirror', '```javascript ', {delay})
+  await page.locator('.ProseMirror').pressSequentially('```javascript ', {delay})
   await page.waitForSelector('.cm-container')
-  await page.type(cmContent, code, {delay})
-  expect(await page.$eval('.cm-container .lang-toggle img', (node) => node.getAttribute('title'))).toBe('javascript')
+  await page.locator(cmContent).pressSequentially(code, {delay})
+  await expect(page.locator('.cm-container .lang-toggle img')).toHaveAttribute('title', 'javascript')
 
   // prettify
   await openBlockMenu(page, 1)
   await page.click('[data-testid="prettify"]')
-  expect(await page.textContent(cmContent)).toBe("const foo = 'bar'")
+  await expect(page.locator(cmContent)).toHaveText("const foo = 'bar'")
 
   // change lang
   await page.click('.cm-container .lang-toggle')
-  await page.type('.cm-container .lang-input', 'typescript', {delay})
+  await page.locator('.cm-container .lang-input').pressSequentially('typescript', {delay})
   await page.keyboard.press('Enter')
-  expect(await page.$eval('.cm-container .lang-toggle img', (node) => node.getAttribute('title'))).toBe('typescript')
+  await expect(page.locator('.cm-container .lang-toggle img')).toHaveAttribute('title', 'typescript')
 
   // change lang via block menu
   await openBlockMenu(page, 1)
   await page.click('[data-testid="change_lang"]')
-  await page.type('.cm-container .lang-input', 'js', {delay})
+  await page.locator('.cm-container .lang-input').pressSequentially('js', {delay})
   await page.keyboard.press('Enter')
-  expect(await page.$eval('.cm-container .lang-toggle img', (node) => node.getAttribute('title'))).toBe('js')
+  await expect(page.locator('.cm-container .lang-toggle img')).toHaveAttribute('title', 'js')
 
   // create line above
   await move(page, 'ArrowUp')
-  await page.type('.ProseMirror', 'above', {delay})
-  expect(await page.textContent('.ProseMirror p:nth-of-type(1)')).toBe('above')
+  await page.locator('.ProseMirror').pressSequentially('above', {delay})
+  await expect(page.locator('.ProseMirror p:nth-of-type(1)')).toHaveText('above')
 
   // create line below
   await move(page, 'ArrowDown', 2)
   await page.keyboard.press('Control+Enter')
-  await page.type('.ProseMirror', 'below', {delay})
-  expect(await page.textContent('.ProseMirror p:nth-of-type(2)')).toBe('below')
+  await page.locator('.ProseMirror').pressSequentially('below', {delay})
+  await expect(page.locator('.ProseMirror p:nth-of-type(2)')).toHaveText('below')
 })
 
 test('mermaid', async ({page}) => {
   const line1 = 'flowchart'
-  await page.type('.ProseMirror', '```mermaid ', {delay})
+  await page.locator('.ProseMirror').pressSequentially('```mermaid ', {delay})
   await page.waitForSelector('.cm-container')
-  await page.type(cmContent, line1, {delay})
+  await page.locator(cmContent).pressSequentially(line1, {delay})
   await page.keyboard.press('Enter')
-  await page.type(cmContent, '  A --', {delay})
+  await page.locator(cmContent).pressSequentially('  A --', {delay})
   await page.waitForTimeout(100)
 
-  expect(await page.textContent('.mermaid')).toContain('Parse error')
-  await page.type(cmContent, '> B', {delay})
+  await expect(page.locator('.mermaid')).toContainText('Parse error')
+  await page.locator(cmContent).pressSequentially('> B', {delay})
   await page.waitForSelector('.mermaid svg')
 })

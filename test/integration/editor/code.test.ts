@@ -7,14 +7,14 @@ test.beforeEach(async ({page}) => {
 })
 
 test('inline code', async ({page}) => {
-  await page.type('.ProseMirror', 'foo `code`', {delay})
+  await page.locator('.ProseMirror').pressSequentially('foo `code`', {delay})
   await page.keyboard.down('ArrowRight')
-  await page.type('.ProseMirror', 'bar', {delay})
-  expect(await page.textContent('.ProseMirror p code')).toBe('code')
+  await page.locator('.ProseMirror').pressSequentially('bar', {delay})
+  await expect(page.locator('.ProseMirror p code')).toHaveText('code')
 })
 
 test('code around marks', async ({page}) => {
-  await page.type('.ProseMirror', 'foo `inline [link](url) code` bar', {delay})
+  await page.locator('.ProseMirror').pressSequentially('foo `inline [link](url) code` bar', {delay})
   await lineTextEq(page, 1, 'foo `inline link code` bar')
-  expect(await page.textContent('.ProseMirror a')).toBe('link')
+  await expect(page.locator('.ProseMirror a')).toHaveText('link')
 })

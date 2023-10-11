@@ -10,39 +10,39 @@ test.beforeEach(async ({page}) => {
 })
 
 test('on undo/redo', async ({page}) => {
-  await page.type('.ProseMirror', 'text', {delay})
+  await page.locator('.ProseMirror').pressSequentially('text', {delay})
   await page.waitForTimeout(500)
-  await page.type('.ProseMirror', '123', {delay})
+  await page.locator('.ProseMirror').pressSequentially('123', {delay})
 
-  expect(await page.textContent('.ProseMirror')).toBe('text123')
+  await expect(page.locator('.ProseMirror')).toHaveText('text123')
   await page.keyboard.press(`${mod}+z`)
-  expect(await page.textContent('.ProseMirror')).toBe('text')
+  await expect(page.locator('.ProseMirror')).toHaveText('text')
   await page.keyboard.press(`${mod}+y`)
-  expect(await page.textContent('.ProseMirror')).toBe('text123')
+  await expect(page.locator('.ProseMirror')).toHaveText('text123')
 })
 
 test('on new/discard', async ({page}) => {
-  await page.type('.ProseMirror', 'first', {delay})
-  expect(await page.textContent('.ProseMirror')).toBe('first')
+  await page.locator('.ProseMirror').pressSequentially('first', {delay})
+  await expect(page.locator('.ProseMirror')).toHaveText('first')
 
   await page.keyboard.press(`${mod}+n`)
-  expect(await page.textContent('.ProseMirror')).toBe('Start typing ...')
+  await expect(page.locator('.ProseMirror')).toHaveText('Start typing ...')
 
-  await page.type('.ProseMirror', 'second', {delay})
-  expect(await page.textContent('.ProseMirror')).toBe('second')
+  await page.locator('.ProseMirror').pressSequentially('second', {delay})
+  await expect(page.locator('.ProseMirror')).toHaveText('second')
 
   await page.click('[data-testid="burger"]')
   await page.click('[data-testid="files"]')
-  expect(await page.locator('[data-testid="file_list"] > div').count()).toBe(2)
+  await expect(page.locator('[data-testid="file_list"] > div')).toHaveCount(2)
 
   // discard
 
   await page.keyboard.press(`${mod}+w`)
-  expect(await page.textContent('.ProseMirror')).toBe('Start typing ...')
-  expect(await page.locator('[data-testid="file_list"] > div').count()).toBe(2)
+  await expect(page.locator('.ProseMirror')).toHaveText('Start typing ...')
+  await expect(page.locator('[data-testid="file_list"] > div')).toHaveCount(2)
 
   await page.keyboard.press(`${mod}+w`)
   await page.waitForTimeout(100)
-  expect(await page.textContent('.ProseMirror')).toBe('first')
-  expect(await page.locator('[data-testid="file_list"] > div').count()).toBe(1)
+  await expect(page.locator('.ProseMirror')).toHaveText('first')
+  await expect(page.locator('[data-testid="file_list"] > div')).toHaveCount(1)
 })

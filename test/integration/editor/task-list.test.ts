@@ -10,36 +10,29 @@ test.beforeEach(async ({page}) => {
 })
 
 test('create tasks', async ({page}) => {
-  await page.type('.ProseMirror', '[ ] task1', {delay})
+  await page.locator('.ProseMirror').pressSequentially('[ ] task1', {delay})
   await page.keyboard.press('Enter')
-  await page.type('.ProseMirror', 'task2', {delay})
+  await page.locator('.ProseMirror').pressSequentially('task2', {delay})
   await page.keyboard.press('Enter')
   await page.keyboard.press('Enter')
-  await page.type('.ProseMirror', '...', {delay})
+  await page.locator('.ProseMirror').pressSequentially('...', {delay})
   await page.keyboard.press('Enter')
-  await page.type('.ProseMirror', '[x] task3')
-  expect(await page.textContent(getItem(1, 1))).toBe('task1')
-  expect(await page.textContent(getItem(1, 2))).toBe('task2')
-  expect(await page.textContent(getItem(2, 1))).toBe('task3')
+  await page.locator('.ProseMirror').pressSequentially('[x] task3')
+  await expect(page.locator(getItem(1, 1))).toHaveText('task1')
+  await expect(page.locator(getItem(1, 2))).toHaveText('task2')
+  await expect(page.locator(getItem(2, 1))).toHaveText('task3')
 
-  expect(await page.$eval(
-    `${getItem(2, 1)} input`,
-    (node: HTMLInputElement) => node.checked
-  )).toBe(true)
-
+  await expect(page.locator(`${getItem(2, 1)} input`)).toBeChecked()
   await page.click(`${getItem(1, 1)} input`)
-  expect(await page.$eval(
-    `${getItem(1, 1)} input`,
-    (node: HTMLInputElement) => node.checked)
-  ).toBe(true)
+  await expect(page.locator(`${getItem(1, 1)} input`)).toBeChecked()
 })
 
 test('from/to markdown', async ({page}) => {
-  await page.type('.ProseMirror', '[ ] task1', {delay})
+  await page.locator('.ProseMirror').pressSequentially('[ ] task1', {delay})
   await page.keyboard.press('Enter')
-  await page.type('.ProseMirror', 'task2', {delay})
+  await page.locator('.ProseMirror').pressSequentially('task2', {delay})
   await page.keyboard.press('Enter')
-  await page.type('.ProseMirror', 'task3')
+  await page.locator('.ProseMirror').pressSequentially('task3')
   await page.click(`${getItem(1, 3)} input`)
 
   await page.click('[data-testid="burger"]')
@@ -51,7 +44,7 @@ test('from/to markdown', async ({page}) => {
 
   await page.click('[data-testid="markdown"]')
 
-  expect(await page.textContent(getItem(1, 1))).toBe('task1')
-  expect(await page.textContent(getItem(1, 2))).toBe('task2')
-  expect(await page.textContent(getItem(1, 3))).toBe('task3')
+  await expect(page.locator(getItem(1, 1))).toHaveText('task1')
+  await expect(page.locator(getItem(1, 2))).toHaveText('task2')
+  await expect(page.locator(getItem(1, 3))).toHaveText('task3')
 })

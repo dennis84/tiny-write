@@ -7,18 +7,18 @@ test.beforeEach(async ({page}) => {
 })
 
 test('autocomplete', async ({page}) => {
-  await page.type('.ProseMirror', 'foobar foobaz', {delay})
+  await page.locator('.ProseMirror').pressSequentially('foobar foobaz', {delay})
   await page.waitForTimeout(500)
 
   await page.keyboard.press('Enter')
-  await page.type('.ProseMirror', 'f', {delay})
-  expect(await page.textContent('.autocomplete-tooltip div:nth-child(1)')).toContain('foobar')
-  expect(await page.textContent('.autocomplete-tooltip div:nth-child(2)')).toContain('foobaz')
+  await page.locator('.ProseMirror').pressSequentially('f', {delay})
+  await expect(page.locator('.autocomplete-tooltip div:nth-child(1)')).toContainText('foobar')
+  await expect(page.locator('.autocomplete-tooltip div:nth-child(2)')).toContainText('foobaz')
   await page.keyboard.press('Enter')
   await lineTextEq(page, 2, 'foobar')
 
   await page.keyboard.press('Enter')
-  await page.type('.ProseMirror', 'f', {delay})
+  await page.locator('.ProseMirror').pressSequentially('f', {delay})
   await page.keyboard.press('ArrowDown')
   await page.keyboard.press('ArrowDown')
   await page.keyboard.press('ArrowUp')

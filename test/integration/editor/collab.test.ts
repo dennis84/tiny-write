@@ -8,7 +8,7 @@ test('create room', async ({page, browser}) => {
   await page.click('[data-testid="burger"]')
   await page.click('[data-testid="collab"]')
   expect(url).not.toBe(page.url())
-  await page.type('.ProseMirror', 'Hello', {delay})
+  await page.locator('.ProseMirror').pressSequentially('Hello', {delay})
 
   const page2 = await browser.newPage()
   await page2.goto(page.url())
@@ -18,7 +18,7 @@ test('create room', async ({page, browser}) => {
 test('create room - existing content file', async ({page, browser}) => {
   await page.goto('/')
   await page.waitForSelector('[data-testid="initialized"]')
-  await page.type('.ProseMirror', 'Hello', {delay})
+  await page.locator('.ProseMirror').pressSequentially('Hello', {delay})
   await page.click('[data-testid="burger"]')
   await page.click('[data-testid="collab"]')
   await lineTextEq(page, 1, 'Hello')
@@ -32,12 +32,12 @@ test('existing room', async ({page, browser}) => {
   const room = 'test-1'
   await page.goto(`/${room}`)
   await page.waitForSelector('[data-testid="initialized"]')
-  await page.type('.ProseMirror', 'Hello', {delay})
+  await page.locator('.ProseMirror').pressSequentially('Hello', {delay})
 
   const page2 = await browser.newPage()
   await page2.goto(`/${room}`)
   await lineTextEq(page2, 1, 'Hello')
-  await page2.type('.ProseMirror', ' World', {delay})
+  await page2.locator('.ProseMirror').pressSequentially(' World', {delay})
 
   await lineTextEq(page, 1, 'Hello World')
 })
@@ -45,21 +45,21 @@ test('existing room', async ({page, browser}) => {
 test('existing room - backup', async ({page}) => {
   const room = 'test-2'
   await page.goto('/')
-  await page.type('.ProseMirror', '123', {delay})
+  await page.locator('.ProseMirror').pressSequentially('123', {delay})
 
   await page.goto(`/${room}`)
   await page.waitForSelector('[data-testid="initialized"]')
-  await page.type('.ProseMirror', 'Hello', {delay})
+  await page.locator('.ProseMirror').pressSequentially('Hello', {delay})
   await lineTextEq(page, 1, 'Hello')
 
   await page.click('[data-testid="burger"]')
   await page.click('[data-testid="files"]')
-  expect(await page.locator('[data-testid="file_list"] > div').count()).toBe(2)
-  expect(await page.textContent('[data-testid="file_list"] > div:nth-child(1)')).toContain('Hello')
-  expect(await page.textContent('[data-testid="file_list"] > div:nth-child(2)')).toContain('123')
+  await expect(page.locator('[data-testid="file_list"] > div')).toHaveCount(2)
+  await expect(page.locator('[data-testid="file_list"] > div:nth-child(1)')).toContainText('Hello')
+  await expect(page.locator('[data-testid="file_list"] > div:nth-child(2)')).toContainText('123')
 
   await page.click('[data-testid="file_list"] > div:nth-child(2) > div')
   await lineTextEq(page, 1, '123')
 
-  expect(await page.locator('[data-testid="file_list"] > div').count()).toBe(2)
+  await expect(page.locator('[data-testid="file_list"] > div')).toHaveCount(2)
 })
