@@ -2,7 +2,7 @@ import {createEffect, createSignal, onCleanup, onMount} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {Box2d, LineSegment2d, PI, Vec2d, VecLike} from '@tldraw/primitives'
 import {DragGesture} from '@use-gesture/vanilla'
-import {Canvas, CanvasEditorElement, CanvasLinkElement, EdgeType, useState} from '@/state'
+import {Canvas, CanvasBoxElement, CanvasLinkElement, EdgeType, useState} from '@/state'
 
 const Link = styled('svg')`
   position: absolute;
@@ -80,8 +80,8 @@ export default ({element}: {element: CanvasLinkElement}) => {
       const i = Vec2d.FromArray(initial).div(zoom).sub(p)
 
       if (first) {
-        const fromEl = currentCanvas.elements.find((el) => el.id === element.from) as CanvasEditorElement
-        const toEl = currentCanvas.elements.find((el) => el.id === element.to) as CanvasEditorElement
+        const fromEl = currentCanvas.elements.find((el) => el.id === element.from) as CanvasBoxElement
+        const toEl = currentCanvas.elements.find((el) => el.id === element.to) as CanvasBoxElement
         const fromBox = new Box2d(fromEl.x, fromEl.y, fromEl.width, fromEl.height)
         const toBox = new Box2d(toEl.x, toEl.y, toEl.width, toEl.height)
         const handleFrom = fromBox.getHandlePoint(element.fromEdge)
@@ -153,7 +153,7 @@ export default ({element}: {element: CanvasLinkElement}) => {
 }
 
 const getLine = (canvas: Canvas, element: CanvasLinkElement): LineSegment2d | undefined => {
-  const fromEl = canvas.elements.find((el) => el.id === element.from) as CanvasEditorElement
+  const fromEl = canvas.elements.find((el) => el.id === element.from) as CanvasBoxElement
 
   if (!fromEl) return
   const fromBox = new Box2d(fromEl.x, fromEl.y, fromEl.width, fromEl.height)
@@ -163,7 +163,7 @@ const getLine = (canvas: Canvas, element: CanvasLinkElement): LineSegment2d | un
   if (element.toX !== undefined && element.toY !== undefined) {
     b = new Vec2d(element.toX, element.toY)
   } else if (element.to && element.toEdge !== undefined) {
-    const toEl = canvas.elements.find((el) => el.id === element.to) as CanvasEditorElement
+    const toEl = canvas.elements.find((el) => el.id === element.to) as CanvasBoxElement
     if (!toEl) return
     const toBox = new Box2d(toEl.x, toEl.y, toEl.width, toEl.height)
     b = toBox.getHandlePoint(element.toEdge)

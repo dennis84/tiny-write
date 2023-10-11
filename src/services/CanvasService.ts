@@ -465,7 +465,7 @@ export class CanvasService {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
 
-    const fromEl = currentCanvas.elements.find((el) => el.id === from) as CanvasEditorElement
+    const fromEl = currentCanvas.elements.find((el) => el.id === from) as CanvasBoxElement
     if (!fromEl) return
 
     const existing = currentCanvas.elements.find((el) => el.id === id)
