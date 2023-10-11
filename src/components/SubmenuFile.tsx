@@ -12,11 +12,15 @@ export default ({maybeHide}: {maybeHide: () => void}) => {
 
   const modKey = isMac ? '⌘' : mod
 
-  const clearText = () => (ctrl.file.currentFile?.path || store.collab?.started)
-    ? 'Close ⚠️'
-    : (store.files.length > 0 && isTextEmpty())
-      ? 'Discard ⚠️'
-      : 'Clear 🧽'
+  const clearText = () => {
+    if (ctrl.file.currentFile?.path || store.collab?.started) {
+      return 'Close ⚠️'
+    }
+    if (store.files.length > 0 && isTextEmpty()) {
+      return 'Discard ⚠️'
+    }
+    return 'Clear 🧽'
+  }
 
   const clearEnabled = () =>
     ctrl.file.currentFile?.path || ctrl.file.currentFile?.id || store.files.length > 0 || !isTextEmpty()
@@ -44,10 +48,11 @@ export default ({maybeHide}: {maybeHide: () => void}) => {
   const onToggleMarkdown = () => ctrl.editor.toggleMarkdown()
 
   createEffect(() => {
+    ctrl.file.currentFile?.lastModified
+    store.collab?.rendered
     const currentFile = ctrl.file.currentFile
     setIsTextEmpty(isEmpty(currentFile?.editorView?.state) ?? true)
-    return ctrl.file.currentFile?.lastModified
-  }, ctrl.file.currentFile?.lastModified)
+  })
 
   createEffect(async () => {
     if (!ctrl.file.currentFile?.path) return
