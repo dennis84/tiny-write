@@ -104,7 +104,7 @@ export interface CanvasBoxElement extends CanvasElement {
 }
 
 export interface CanvasEditorElement extends CanvasBoxElement {
-  editorView?: EditorView;
+  editorView?: EditorView | null;
   active?: boolean;
 }
 

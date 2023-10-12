@@ -122,14 +122,15 @@ test('updateCanvasElement', async () => {
   }))
 
   const service = new CanvasService(ctrl, store, setState)
-  service.updateCanvasElement('1', {type: ElementType.Editor, x: 100, y: 100})
 
+  // update editor element
+  service.updateCanvasElement('1', {x: 100, y: 100})
   const editorEl = service.currentCanvas?.elements[0] as CanvasEditorElement
   expect(editorEl.x).toBe(100)
   expect(editorEl.y).toBe(100)
 
+  // update link
   service.updateCanvasElement('3', {
-    type: ElementType.Link,
     fromEdge: EdgeType.Bottom,
     toEdge: EdgeType.Bottom,
   })
@@ -138,17 +139,19 @@ test('updateCanvasElement', async () => {
   expect(linkEl.fromEdge).toBe(EdgeType.Bottom)
   expect(linkEl.toEdge).toBe(EdgeType.Bottom)
 
+  // select and activate
   service.updateCanvasElement('1', {selected: true, active: true})
   const selectedEditorEl = service.currentCanvas?.elements[0] as CanvasEditorElement
   expect(selectedEditorEl.selected).toBe(true)
   expect(selectedEditorEl.active).toBe(true)
 
+  // only select
   service.updateCanvasElement('3', {selected: true})
   const selectedLinkEl = service.currentCanvas?.elements[2] as CanvasLinkElement
   expect(selectedLinkEl.selected).toBe(true)
 
+  // update image
   service.updateCanvasElement('4', {
-    type: ElementType.Image,
     width: 200,
     height: 200,
   })
@@ -156,6 +159,16 @@ test('updateCanvasElement', async () => {
   const imageEl = service.currentCanvas?.elements[3] as CanvasImageElement
   expect(imageEl.width).toBe(200)
   expect(imageEl.height).toBe(200)
+
+  // unset editorView
+  const editorView = mock<EditorView>()
+  service.updateCanvasElement('1', {editorView})
+  const editorEl1 = service.currentCanvas?.elements[0] as CanvasEditorElement
+  expect(editorEl1.editorView).toBe(editorView)
+
+  service.updateCanvasElement('1', {editorView: undefined})
+  const editorEl2 = service.currentCanvas?.elements[0] as CanvasEditorElement
+  expect(editorEl2.editorView).toBe(undefined)
 })
 
 test('backToContent', () => {
@@ -356,7 +369,7 @@ test('destroyElement', () => {
   service.destroyElement('1')
 
   const editorEl = service.currentCanvas?.elements[0] as CanvasEditorElement
-  expect(editorEl.editorView).toBeUndefined()
+  expect(editorEl.editorView).toBeNull()
 
   expect(editorView.destroy.mock.calls.length).toBe(1)
 })

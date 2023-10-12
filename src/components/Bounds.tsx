@@ -52,30 +52,29 @@ const Edge = (props: EdgeProps) => {
     const resizeGesture = new DragGesture(ref, ({event, delta: [dx, dy]}) => {
       event.stopPropagation()
       const {zoom} = currentCanvas.camera
-      const type = props.elementType
 
       if (props.type === EdgeType.Top) {
         const height = props.height - dy / zoom
         const y = props.y + dy / zoom
         if (height < MIN_SIZE) return
         ctrl.canvasCollab.updateElementThrottled({id: props.id, y, height})
-        ctrl.canvas.updateCanvasElement(props.id, {type, y, height})
+        ctrl.canvas.updateCanvasElement(props.id, {y, height})
       } else if (props.type === EdgeType.Bottom) {
         const height = props.height + dy / zoom
         if (height < MIN_SIZE) return
         ctrl.canvasCollab.updateElementThrottled({id: props.id, height})
-        ctrl.canvas.updateCanvasElement(props.id, {type, height})
+        ctrl.canvas.updateCanvasElement(props.id, {height})
       } else if (props.type === EdgeType.Left) {
         const width = props.width - dx / zoom
         const x = props.x + dx / zoom
         if (width < MIN_SIZE) return
         ctrl.canvasCollab.updateElementThrottled({id: props.id, x, width})
-        ctrl.canvas.updateCanvasElement(props.id, {type, x, width})
+        ctrl.canvas.updateCanvasElement(props.id, {x, width})
       } else if (props.type === EdgeType.Right) {
         const width = props.width + dx / zoom
         if (width < MIN_SIZE) return
         ctrl.canvasCollab.updateElementThrottled({id: props.id, width})
-        ctrl.canvas.updateCanvasElement(props.id, {type, width})
+        ctrl.canvas.updateCanvasElement(props.id, {width})
       }
 
       ctrl.canvas.updateCanvas(currentCanvas.id, {lastModified: new Date()})
@@ -199,7 +198,7 @@ const Corner = (props: CornerProps) => {
         }
 
         ctrl.canvasCollab.updateElementThrottled({id: props.id, x, y, width, height})
-        ctrl.canvas.updateCanvasElement(props.id, {type, x, y, width, height})
+        ctrl.canvas.updateCanvasElement(props.id, {x, y, width, height})
       } else if (props.type === CornerType.TopRight) {
         let width = props.width + dx / zoom
         let height = shiftKey ? width / ratio : props.height - dy / zoom
@@ -221,7 +220,7 @@ const Corner = (props: CornerProps) => {
         }
 
         ctrl.canvasCollab.updateElementThrottled({id: props.id, y, width, height})
-        ctrl.canvas.updateCanvasElement(props.id, {type, y, width, height})
+        ctrl.canvas.updateCanvasElement(props.id, {y, width, height})
       } else if (props.type === CornerType.BottomLeft) {
         let x = props.x + dx / zoom
         let width = props.width - dx / zoom
@@ -242,7 +241,7 @@ const Corner = (props: CornerProps) => {
         }
 
         ctrl.canvasCollab.updateElementThrottled({id: props.id, x, width, height})
-        ctrl.canvas.updateCanvasElement(props.id, {type, x, width, height})
+        ctrl.canvas.updateCanvasElement(props.id, {x, width, height})
       } else if (props.type === CornerType.BottomRight) {
         let width = props.width + dx / zoom
         let height = shiftKey ? width / ratio : props.height + dy / zoom
@@ -259,7 +258,7 @@ const Corner = (props: CornerProps) => {
         }
 
         ctrl.canvasCollab.updateElementThrottled({id: props.id, width, height})
-        ctrl.canvas.updateCanvasElement(props.id, {type, width, height})
+        ctrl.canvas.updateCanvasElement(props.id, {width, height})
       }
 
       ctrl.canvas.updateCanvas(currentCanvas.id, {lastModified: new Date()})
@@ -315,7 +314,7 @@ export default (props: BoundsProps) => {
       const x = props.x + dx / zoom
       const y = props.y + dy / zoom
       ctrl.canvasCollab.updateElementThrottled({id: props.id, x, y})
-      ctrl.canvas.updateCanvasElement(props.id, {type: props.elementType, x, y})
+      ctrl.canvas.updateCanvasElement(props.id, {x, y})
       ctrl.canvas.updateCanvas(currentCanvas.id, {lastModified: new Date()})
       ctrl.canvas.saveCanvasDebounced()
     })

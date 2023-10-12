@@ -232,10 +232,7 @@ export class CanvasService {
     if (!element || !isEditorElement(element)) return
 
     element.editorView?.destroy()
-    this.updateCanvasElement(element.id, {
-      type: ElementType.Editor,
-      editorView: undefined,
-    })
+    this.updateCanvasElement(element.id, {editorView: null})
   }
 
   open(id: string) {
@@ -369,7 +366,6 @@ export class CanvasService {
       const l = currentCanvas.elements.find((el) => el.id === link.id)
       if (!l) return
       this.updateCanvasElement(l.id, {
-        type: ElementType.Link,
         to: file.id,
         toEdge: linkToEdge,
         toX: undefined,
@@ -477,7 +473,6 @@ export class CanvasService {
       }
 
       this.updateCanvasElement(existing.id, {
-        type: ElementType.Link,
         ...(toBox ? {
           from,
           fromEdge,
@@ -521,10 +516,7 @@ export class CanvasService {
     const element = currentCanvas.elements.find((el) => el.id === id) as CanvasLinkElement
     if (!element) return
 
-    this.updateCanvasElement(element.id, {
-      type: ElementType.Link,
-      drawing: undefined,
-    })
+    this.updateCanvasElement(element.id, {drawing: undefined})
 
     if (element.to) {
       if (this.ctrl.canvasCollab.hasElement(id)) {
@@ -665,7 +657,7 @@ export class CanvasService {
         dispatchTransaction,
       })
 
-      this.updateCanvasElement(element.id, {type: ElementType.Editor, editorView})
+      this.updateCanvasElement(element.id, {editorView})
     }
 
     editorView.setProps({state: editorState, nodeViews})

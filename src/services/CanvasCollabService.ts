@@ -52,18 +52,12 @@ export class CanvasCollabService {
               this.canvasService.removeElement(key)
             } else {
               const elementId = event.path[0].toString().substring(PREFIX.length)
-              this.canvasService.updateCanvasElement(elementId, {
-                type: event.target.get('type'),
-                [key]: undefined
-              })
+              this.canvasService.updateCanvasElement(elementId, {[key]: undefined})
             }
           } else if (action.action === 'update') {
             if (event.path.length > 0) {
               const elementId = event.path[0].toString().substring(PREFIX.length)
-              this.canvasService.updateCanvasElement(elementId, {
-                type: event.target.get('type'),
-                [key]: event.target.get(key)
-              })
+              this.canvasService.updateCanvasElement(elementId, {[key]: event.target.get(key)})
             }
           } else if (action.action === 'add') {
             const element = event.target.get(key).toJSON()
