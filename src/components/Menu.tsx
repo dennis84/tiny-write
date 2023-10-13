@@ -15,6 +15,7 @@ import SubmenuCanvas from './SubmenuCanvas'
 import SubmenuFileEdit from './SubmenuFileEdit'
 import SubmenuCollab from './SubmenuCollab'
 import SubmenuCanvasEdit from './SubmenuCanvasEdit'
+import {Common} from './Button'
 
 const fullWidth = 500
 
@@ -27,6 +28,25 @@ const Container = styled('div')`
   background: var(--background);
   @media print {
     display: none;
+  }
+`
+
+const CloseMenu = styled('button')`
+  ${Common}
+  height: 32px;
+  padding: 0 10px;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 1;
+  background: var(--background);
+  border: 1px solid var(--foreground);
+  color: var(--foreground);
+  text-transform: uppercase;
+  &:hover {
+    box-shadow: 0 0 0 1px var(--primary-background);
+    color: var(--primary-background);
+    border-color: var(--primary-background);
   }
 `
 
@@ -227,13 +247,18 @@ export default () => {
 
   return (
     <Container>
-      <Burger
-        active={show() !== undefined}
-        onClick={onBurgerClick}
-        data-testid="burger">
-        <span />
-        <span />
-      </Burger>
+      <Show when={!show()}>
+        <Burger
+          active={show() !== undefined}
+          onClick={onBurgerClick}
+          data-testid="burger">
+          <span />
+          <span />
+        </Burger>
+      </Show>
+      <Show when={show()} data-testid="close-menu">
+        <CloseMenu onClick={onBurgerClick}>Close</CloseMenu>
+      </Show>
       <Show when={show() === 'files'}>
         <FilesMenu onBack={() => setShow('main')} onOpen={() => maybeHide()} />
       </Show>

@@ -1,7 +1,9 @@
 import {styled} from 'solid-styled-components'
 
 export const Common = `
-  height: 50px; padding: 0 20px; border-radius: 30px;
+  height: 50px;
+  padding: 0 20px;
+  border-radius: 30px;
   font-size: var(--menu-font-size);
   cursor: pointer;
   display: inline-flex;
@@ -18,7 +20,6 @@ export const Common = `
 export const Button = styled('button')`
   ${Common}
   background: none;
-  font-family: var(--menu-font-family);
   color: var(--foreground);
   border: 1px solid var(--foreground);
   &:hover {
