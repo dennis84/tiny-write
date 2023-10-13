@@ -256,8 +256,8 @@ export default () => {
           <span />
         </Burger>
       </Show>
-      <Show when={show()} data-testid="close-menu">
-        <CloseMenu onClick={onBurgerClick}>Close</CloseMenu>
+      <Show when={show()}>
+        <CloseMenu data-testid="close-menu" onClick={onBurgerClick}>Close</CloseMenu>
       </Show>
       <Show when={show() === 'files'}>
         <FilesMenu onBack={() => setShow('main')} onOpen={() => maybeHide()} />

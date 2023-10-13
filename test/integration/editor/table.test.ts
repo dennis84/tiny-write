@@ -35,7 +35,7 @@ test('markdown table to html and back', async ({page}) => {
   await lineTextEq(page, 3, '| 1 | 2 | 3 |')
 
   await page.click('[data-testid="markdown"]')
-  await page.click('[data-testid="burger"]')
+  await page.click('[data-testid="close-menu"]')
 })
 
 test('table keymap', async ({page}) => {

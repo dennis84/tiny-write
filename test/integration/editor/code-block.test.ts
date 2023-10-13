@@ -60,7 +60,6 @@ test('mermaid', async ({page}) => {
   await page.locator(cmContent).pressSequentially(line1, {delay})
   await page.keyboard.press('Enter')
   await page.locator(cmContent).pressSequentially('  A --', {delay})
-  await page.waitForTimeout(100)
 
   await expect(page.locator('.mermaid')).toContainText('Parse error')
   await page.locator(cmContent).pressSequentially('> B', {delay})
