@@ -32,12 +32,12 @@ test('addVersion', async () => {
   insertText(ctrl, '123')
   expect(getText(ctrl)).toBe('Test123')
 
-  ctrl.changeSet.renderVersion(ctrl.file.currentFile?.versions[0]!)
+  ctrl.changeSet.renderVersion(ctrl.file.currentFile!.versions[0]!)
   await waitFor(() => {
     expect(getText(ctrl)).toBe('Test')
   })
 
-  ctrl.changeSet.applyVersion(ctrl.file.currentFile?.versions[0]!)
+  ctrl.changeSet.applyVersion(ctrl.file.currentFile!.versions[0]!)
   await waitFor(() => {
     expect(getText(ctrl)).toBe('Test')
   })

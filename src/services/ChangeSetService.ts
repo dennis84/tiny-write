@@ -44,7 +44,7 @@ export class ChangeSetService {
 
   applyVersion(version: Version) {
     const currentFile = this.ctrl.file.currentFile
-    const ydoc = this.store.collab?.ydoc!
+    const ydoc = this.store.collab!.ydoc!
     const type = ydoc.getXmlFragment(currentFile?.id)
     type.delete(0, type.length)
     Y.applyUpdate(ydoc, version.ydoc)

@@ -89,8 +89,7 @@ export class FileService {
     const index = this.store.files.findIndex((file) => file.id === id)
     if (index === -1) return
 
-    const doc = this.store.collab?.ydoc!
-
+    const doc = this.store.collab!.ydoc!
     const newDoc = new Y.Doc({gc: false})
     const newType = newDoc.getXmlFragment(id)
     const type = doc.getXmlFragment(id)

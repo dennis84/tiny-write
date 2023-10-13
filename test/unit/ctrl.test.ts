@@ -2,7 +2,7 @@ import {vi, expect, test, beforeEach} from 'vitest'
 import {mock} from 'vitest-mock-extended'
 import {DB} from '@/db'
 import {createCtrl} from '@/services'
-import {createState, Version} from '@/state'
+import {createState} from '@/state'
 import {createYUpdate, getText, insertText, waitFor, pause} from './util'
 
 vi.stubGlobal('matchMedia', vi.fn(() => ({

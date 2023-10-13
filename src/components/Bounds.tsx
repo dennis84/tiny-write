@@ -173,7 +173,6 @@ const Corner = (props: CornerProps) => {
     const gesture = new DragGesture(ref, ({event, delta: [dx, dy], shiftKey}) => {
       event.stopPropagation()
       const {zoom} = currentCanvas.camera
-      const type = props.elementType
 
       if (props.type === CornerType.TopLeft) {
         let x = props.x + dx / zoom
