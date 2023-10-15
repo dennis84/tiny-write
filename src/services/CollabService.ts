@@ -135,7 +135,7 @@ export class CollabService {
     this.store.collab?.ydoc?.getMap('config').unobserve(this.onCollabConfigUpdate)
     this.store.collab?.provider?.disconnect()
     window.history.replaceState(null, '', '/')
-    this.setState('collab', {started: false})
+    this.setState('collab', {started: false, error: undefined})
   }
 
   setRendered() {
