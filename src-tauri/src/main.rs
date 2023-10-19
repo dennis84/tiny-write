@@ -44,6 +44,7 @@ fn main() {
         .build();
 
     builder
+        .plugin(tauri_plugin_websocket::init())
         .plugin(logger)
         .setup(|app| {
             let log_dir_string = app

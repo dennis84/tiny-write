@@ -22,7 +22,8 @@ chrono = "0"
 log = { version = "0", features = ["max_level_debug"] }
 ignore = "0"
 globset = "0"
-tauri-plugin-log = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "dev" }
+tauri-plugin-log = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
+tauri-plugin-websocket = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
 
 [features]
 default = [ "custom-protocol" ]

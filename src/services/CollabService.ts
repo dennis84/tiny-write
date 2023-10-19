@@ -4,9 +4,10 @@ import {WebsocketProvider} from 'y-websocket'
 import {defaultDeleteFilter, defaultProtectedNodes, ySyncPluginKey} from 'y-prosemirror'
 import {adjectives, animals, uniqueNamesGenerator} from 'unique-names-generator'
 import {Collab, File, Mode, State} from '@/state'
-import {COLLAB_URL} from '@/env'
+import {COLLAB_URL, isTauri} from '@/env'
 import * as remote from '@/remote'
 import {Ctrl} from '.'
+import {TauriWebSocket} from '@/utils/TauriWebSocket'
 
 export class UndoManager extends Y.UndoManager {
   removeFromScope(type: Y.AbstractType<any>) {
@@ -59,9 +60,11 @@ export class CollabService {
       window.history.replaceState(null, '', `/${m + room}`)
     }
 
+    const WebSocketPolyfill = this.createWS()
+
     const ydoc = new Y.Doc({gc: false})
     const permanentUserData = new Y.PermanentUserData(ydoc)
-    const provider = new WebsocketProvider(COLLAB_URL, room, ydoc, {connect})
+    const provider = new WebsocketProvider(COLLAB_URL, room, ydoc, {connect, WebSocketPolyfill})
 
     const configType = ydoc.getMap('config')
     configType.set('font', this.store.config.font)
@@ -147,5 +150,13 @@ export class CollabService {
     const fontSize = event.target.get('fontSize') as number
     const contentWidth = event.target.get('contentWidth') as number
     this.setState('config', {font, fontSize, contentWidth})
+  }
+
+  private createWS(): typeof WebSocket {
+    if (!isTauri()) {
+      return window.WebSocket
+    }
+
+    return TauriWebSocket as any
   }
 }
