@@ -31,12 +31,6 @@ export class TauriWebSocket {
     })
   }
 
-  get protocol(): string { return 'a' }
-
-  get bufferedAmount(): number { return 2 }
-
-  get extensions(): string { return 'a' }
-
   get onopen(): any { return this.onOpen }
   get onerror(): any { return this.onError }
   get onclose(): any { return this.onClose }

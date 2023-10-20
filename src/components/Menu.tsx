@@ -1,7 +1,7 @@
 import {Show, createEffect, createSignal, onCleanup} from 'solid-js'
 import {css, styled} from 'solid-styled-components'
 import {Mode, useState} from '@/state'
-import {isTauri, isMac, alt, mod, version, VERSION_URL} from '@/env'
+import {isTauri, isMac, mod, version, VERSION_URL} from '@/env'
 import * as remote from '@/remote'
 import {FilesMenu} from './FilesMenu'
 import {CanvasesMenu} from './CanvasesMenu'

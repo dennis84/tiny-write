@@ -73,17 +73,20 @@ export default () => {
   const [store, ctrl] = useState()
   const [awareness, setAwareness] = createSignal<Awareness>()
   const [cursors, setCursors] = createStore<Cursor[]>([])
+  const [offset, setOffset] = createSignal<[number, number]>([0, 0])
 
   const zoom = () => store.mode === Mode.Canvas ? (ctrl.canvas.currentCanvas?.camera.zoom ?? 1) : 1
 
-  const offset = () => {
+  createEffect(() => {
+    store.config.contentWidth
     if (store.mode === Mode.Canvas) {
-      return ctrl.canvas.currentCanvas?.camera.point ?? [0, 0]
+      setOffset(ctrl.canvas.currentCanvas?.camera.point ?? [0, 0])
+      return
     }
 
     const rect = ctrl.file.currentFile?.editorView?.dom.getBoundingClientRect()
-    return [rect?.left ?? 0, rect?.top ?? 0]
-  }
+    setOffset([rect?.left ?? 0, rect?.top ?? 0])
+  })
 
   const onAwarenessChange = ({added, updated, removed}: any) => {
     const y = store.collab?.ydoc

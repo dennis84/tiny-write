@@ -9,6 +9,7 @@ import {CollabService} from './CollabService'
 import {CanvasService} from './CanvasService'
 import {CanvasCollabService} from './CanvasCollabService'
 import {ImageService} from './ImageService'
+import {isDev} from '@/env'
 
 export class Ctrl {
   app!: AppService
@@ -39,6 +40,7 @@ export class Ctrl {
 
 export const createCtrl = (initial: State) => {
   const [store, setState] = createStore<Store<State>>(initial)
+  if (isDev) (window as any).__STORE__ = store
   const ctrl = new Ctrl(store, setState)
   return {store, ctrl}
 }
