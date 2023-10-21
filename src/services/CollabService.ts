@@ -67,9 +67,6 @@ export class CollabService {
     const provider = new WebsocketProvider(COLLAB_URL, room, ydoc, {connect, WebSocketPolyfill})
 
     const configType = ydoc.getMap('config')
-    configType.set('font', this.store.config.font)
-    configType.set('fontSize', this.store.config.fontSize)
-    configType.set('contentWidth', this.store.config.contentWidth)
     configType.observe(this.onCollabConfigUpdate)
 
     const undoManager = new UndoManager([], {
@@ -149,7 +146,11 @@ export class CollabService {
     const font = event.target.get('font') as string
     const fontSize = event.target.get('fontSize') as number
     const contentWidth = event.target.get('contentWidth') as number
-    this.setState('config', {font, fontSize, contentWidth})
+    const update: any = {}
+    if (font) update.font = font
+    if (fontSize) update.fontSize = fontSize
+    if (contentWidth) update.contentWidth = contentWidth
+    this.setState('config', update)
   }
 
   private createWS(): typeof WebSocket {
