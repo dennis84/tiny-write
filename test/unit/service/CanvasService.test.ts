@@ -192,6 +192,25 @@ test('backToContent', () => {
   expect(service.currentCanvas?.camera.zoom).toEqual(0.5)
 })
 
+test('focus', () => {
+  const [store, setState] = createStore(createState({
+    canvases: [
+      createCanvas({
+        id: '1',
+        elements: [
+          createEditorElement({id: '2', x: 500, y: 500, width: 200, height: 200}),
+        ],
+        active: true,
+      })
+    ]
+  }))
+
+  const service = new CanvasService(ctrl, store, setState)
+  service.focus('2')
+
+  expect(service.currentCanvas?.camera.point).toEqual([-100, -100])
+})
+
 test('updateCamera', () => {
   const [store, setState] = createStore(createState({
     canvases: [createCanvas({id: '1', active: true})]

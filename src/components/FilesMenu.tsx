@@ -62,6 +62,8 @@ export const FilesMenu = (props: Props) => {
 
   const onAddToCanvas = (file: File) => {
     ctrl.canvas.addFile(file)
+    ctrl.canvas.select(file.id)
+    ctrl.canvas.focus(file.id)
     props.onOpen()
   }
 

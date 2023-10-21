@@ -73,6 +73,22 @@ export class CanvasService {
     this.setState('canvases', index, 'elements', elementIndex, update)
   }
 
+  focus(id: string) {
+    const currentCanvas = this.currentCanvas
+    if (!currentCanvas) return
+    const element = currentCanvas.elements.find((el) => el.id === id) as CanvasBoxElement
+    if (!element) return
+
+    const zoom = currentCanvas.camera.zoom
+    const elementCenter = this.createBox(element).center
+    const vp = new Vec2d(window.innerWidth / 2, window.innerHeight / 2).div(zoom)
+    const [x, y] = elementCenter.sub(vp).toArray()
+
+    this.updateCamera({zoom, point: [-x, -y]})
+    this.saveCanvas()
+    remote.info('💾 Saved updated camera')
+  }
+
   backToContent() {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
