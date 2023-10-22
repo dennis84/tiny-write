@@ -42,6 +42,7 @@ type UpdateElement =
 
 export class CanvasService {
   public saveCanvasDebounced = debounce(() => this.saveCanvas(), 100)
+  public canvasRef: HTMLElement | undefined
 
   constructor(
     private ctrl: Ctrl,
@@ -81,7 +82,8 @@ export class CanvasService {
 
     const zoom = currentCanvas.camera.zoom
     const elementCenter = this.createBox(element).center
-    const vp = new Vec2d(window.innerWidth / 2, window.innerHeight / 2).div(zoom)
+    const canvasRef = this.canvasRef!
+    const vp = new Vec2d(canvasRef.clientWidth / 2, canvasRef.clientHeight / 2).div(zoom)
     const [x, y] = elementCenter.sub(vp).toArray()
 
     this.updateCamera({zoom, point: [-x, -y]})
@@ -95,7 +97,8 @@ export class CanvasService {
     const center = this.getCenterPoint()
     const zoom = 0.5
     if (center) {
-      const vp = new Vec2d(window.innerWidth / 2, window.innerHeight / 2).div(zoom)
+      const canvasRef = this.canvasRef!
+      const vp = new Vec2d(canvasRef.clientWidth / 2, canvasRef.clientHeight / 2).div(zoom)
       const [x, y] = center.sub(vp).toArray()
       this.updateCanvas(currentCanvas.id, {camera: {zoom, point: [-x, -y]}})
       this.saveCanvas()

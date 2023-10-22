@@ -60,6 +60,7 @@ export default () => {
   }
 
   onMount(() => {
+    ctrl.canvas.canvasRef = ref
     const preventGesture = (e: TouchEvent) => e.preventDefault()
     // @ts-ignore
     document.addEventListener('gesturestart', preventGesture)
