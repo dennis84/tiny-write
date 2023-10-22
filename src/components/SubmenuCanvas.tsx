@@ -6,11 +6,6 @@ export default ({maybeHide}: {maybeHide: () => void}) => {
   const [, ctrl] = useState()
   const modKey = isMac ? '⌘' : mod
 
-  const onNewCanvas = () => {
-    ctrl.canvas.newCanvas()
-    maybeHide()
-  }
-
   const onNewFile = () => {
     ctrl.canvas.newFile()
     maybeHide()
@@ -31,19 +26,22 @@ export default ({maybeHide}: {maybeHide: () => void}) => {
     maybeHide()
   }
 
+  const onSnapToGrid = () => {
+    ctrl.canvas.snapToGrid()
+    maybeHide()
+  }
+
   return (
     <>
       <Label>Canvas</Label>
       <Sub data-tauri-drag-region="true">
-        <Link onClick={onNewCanvas} data-testid="new_canvas">
-          New canvas  🆕 <Keys keys={[modKey, 'n']} />
-        </Link>
         <Link onClick={onNewFile} data-testid="new_file">
-          New file 📝
+          New file 📝 <Keys keys={[modKey, 'n']} />
         </Link>
         <Link onClick={onClearCanvas}>Clear Canvas 🧽</Link>
         <Link onClick={onRemoveLinks}>Remove links</Link>
         <Link onClick={onBackToContent}>Back to content 🎯</Link>
+        <Link onClick={onSnapToGrid}>Snap to grid 🫰 {ctrl.canvas.currentCanvas?.snapToGrid && '✅'}</Link>
       </Sub>
     </>
   )

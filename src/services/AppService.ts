@@ -164,12 +164,10 @@ export class AppService {
 
   private async fetchData(): Promise<State> {
     const state = unwrap(this.store)
-    let args = await remote.getArgs().catch(() => undefined) ?? state.args ?? {}
+    const args = await remote.getArgs().catch(() => undefined) ?? state.args ?? {}
 
-    if (!isTauri()) {
-      const room = window.location.pathname?.slice(1).trim()
-      if (room) args = {room}
-    }
+    const room = window.location.pathname?.slice(1).trim()
+    if (room) args.room = room
 
     const fetchedWindow = await DB.getWindow()
     const fetchedConfig = await DB.getConfig()

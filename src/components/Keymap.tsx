@@ -37,7 +37,7 @@ export default () => {
     if (store.mode === Mode.Editor) {
       ctrl.editor.newFile()
     } else {
-      ctrl.canvas.newCanvas()
+      ctrl.canvas.newFile()
     }
   }
 

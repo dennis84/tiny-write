@@ -33,6 +33,7 @@ interface UpdateCanvas {
   camera?: Camera;
   elements?: CanvasElement[];
   lastModified?: Date;
+  snapToGrid?: boolean;
 }
 
 type UpdateElement =
@@ -57,13 +58,7 @@ export class CanvasService {
   updateCanvas(id: string, update: UpdateCanvas) {
     const index = this.store.canvases.findIndex((canvas) => canvas.id === id)
     if (index === -1) return
-    const hasOwn = (prop: string) => Object.hasOwn(update, prop)
-
-    this.setState('canvases', index, (prev) => ({
-      camera: hasOwn('camera') ? update.camera : prev?.camera,
-      elements: hasOwn('elements') ? update.elements : prev?.elements,
-      lastModified: hasOwn('lastModified') ? update.lastModified : prev?.lastModified,
-    }))
+    this.setState('canvases', index, update)
   }
 
   updateCanvasElement(elementId: string, update: UpdateElement) {
@@ -104,6 +99,12 @@ export class CanvasService {
       this.saveCanvas()
       remote.info('💾 Saved updated camera')
     }
+  }
+
+  snapToGrid() {
+    const currentCanvas = this.currentCanvas
+    if (!currentCanvas) return
+    this.updateCanvas(currentCanvas.id, {snapToGrid: !currentCanvas.snapToGrid})
   }
 
   updateCamera(camera: Camera) {

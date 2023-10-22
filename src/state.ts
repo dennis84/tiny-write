@@ -150,6 +150,7 @@ export interface Canvas {
   elements: CanvasElement[];
   active?: boolean;
   lastModified?: Date;
+  snapToGrid?: boolean;
 }
 
 export enum Mode {

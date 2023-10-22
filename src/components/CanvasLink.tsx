@@ -1,4 +1,4 @@
-import {createEffect, createSignal, onCleanup, onMount} from 'solid-js'
+import {createEffect, onCleanup, onMount} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {Box2d, LineSegment2d, PI, Vec2d, VecLike} from '@tldraw/primitives'
 import {DragGesture} from '@use-gesture/vanilla'
@@ -55,7 +55,6 @@ export default ({element}: {element: CanvasLinkElement}) => {
   let innerPathRef!: SVGLineElement
   let arrowheadRef!: SVGLineElement
   const [, ctrl] = useState()
-  const [from, setFrom] = createSignal<{id: string; edge: EdgeType}>()
   const currentCanvas = ctrl.canvas.currentCanvas
   if (!currentCanvas) return
 
@@ -73,11 +72,12 @@ export default ({element}: {element: CanvasLinkElement}) => {
     const currentCanvas = ctrl.canvas.currentCanvas
     if (!currentCanvas) return
 
-    const linkGesture = new DragGesture(pathRef, ({event, initial, first, last, movement}) => {
+    const linkGesture = new DragGesture(pathRef, ({event, initial, first, last, movement, memo}) => {
       event.stopPropagation()
       const {point, zoom} = currentCanvas.camera
       const p = Vec2d.FromArray(point)
       const i = Vec2d.FromArray(initial).div(zoom).sub(p)
+      let [fromId, fromEdge] = memo ?? []
 
       if (first) {
         const fromEl = currentCanvas.elements.find((el) => el.id === element.from) as CanvasBoxElement
@@ -90,19 +90,22 @@ export default ({element}: {element: CanvasLinkElement}) => {
         const distTo = Vec2d.Dist(handleTo, i)
 
         if (distTo > distFrom) {
-          setFrom({id: element.to!, edge: element.toEdge!})
+          fromId = element.to
+          fromEdge = element.toEdge
         } else {
-          setFrom({id: element.from, edge: element.fromEdge})
+          fromId = element.from
+          fromEdge = element.fromEdge
         }
       }
 
       const t = Vec2d.FromArray(movement).div(zoom).add(i)
-      const f = from()!
+      // If clicked and not dragged
+      if (i.dist(t) <= 1) return [fromId, fromEdge]
+      if (currentCanvas.snapToGrid) t.snapToGrid(10)
 
-      if (i.dist(t) <= 1) return
-
-      ctrl.canvas.drawLink(element.id, f.id, f.edge, t.x, t.y)
+      ctrl.canvas.drawLink(element.id, fromId, fromEdge, t.x, t.y)
       if (last) ctrl.canvas.drawLinkEnd(element.id)
+      return [fromId, fromEdge]
     })
 
     onCleanup(() => {
@@ -154,8 +157,8 @@ export default ({element}: {element: CanvasLinkElement}) => {
 
 const getLine = (canvas: Canvas, element: CanvasLinkElement): LineSegment2d | undefined => {
   const fromEl = canvas.elements.find((el) => el.id === element.from) as CanvasBoxElement
-
   if (!fromEl) return
+
   const fromBox = new Box2d(fromEl.x, fromEl.y, fromEl.width, fromEl.height)
   const a = fromBox.getHandlePoint(element.fromEdge)
   let b!: Vec2d

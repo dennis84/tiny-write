@@ -3,7 +3,7 @@ import {styled} from 'solid-styled-components'
 import {DragGesture} from '@use-gesture/vanilla'
 import {v4 as uuidv4} from 'uuid'
 import {CornerType, EdgeType, ElementType, useState} from '@/state'
-import {Vec2d} from '@tldraw/primitives'
+import {Box2d, Vec2d} from '@tldraw/primitives'
 
 interface BoundsProps {
   id: string;
@@ -34,7 +34,6 @@ const Border = styled('rect')`
 const CIRCLE_RADIUS = 5
 const BORDER_SIZE = 30
 const BORDER_SIZE_2 = (BORDER_SIZE * 2)
-const MIN_SIZE = 100
 
 const Edge = (props: EdgeProps) => {
   const [, ctrl] = useState()
@@ -49,36 +48,21 @@ const Edge = (props: EdgeProps) => {
     const currentCanvas = ctrl.canvas.currentCanvas
     if (!currentCanvas) return
 
-    const resizeGesture = new DragGesture(ref, ({event, delta: [dx, dy]}) => {
+    const resizeGesture = new DragGesture(ref, ({event, movement: [mx, my], memo, first}) => {
+      const initial: Box2d = first ? new Box2d(props.x, props.y, props.width, props.height) : memo
       event.stopPropagation()
       const {zoom} = currentCanvas.camera
+      const box = initial.clone()
 
-      if (props.type === EdgeType.Top) {
-        const height = props.height - dy / zoom
-        const y = props.y + dy / zoom
-        if (height < MIN_SIZE) return
-        ctrl.canvasCollab.updateElementThrottled({id: props.id, y, height})
-        ctrl.canvas.updateCanvasElement(props.id, {y, height})
-      } else if (props.type === EdgeType.Bottom) {
-        const height = props.height + dy / zoom
-        if (height < MIN_SIZE) return
-        ctrl.canvasCollab.updateElementThrottled({id: props.id, height})
-        ctrl.canvas.updateCanvasElement(props.id, {height})
-      } else if (props.type === EdgeType.Left) {
-        const width = props.width - dx / zoom
-        const x = props.x + dx / zoom
-        if (width < MIN_SIZE) return
-        ctrl.canvasCollab.updateElementThrottled({id: props.id, x, width})
-        ctrl.canvas.updateCanvasElement(props.id, {x, width})
-      } else if (props.type === EdgeType.Right) {
-        const width = props.width + dx / zoom
-        if (width < MIN_SIZE) return
-        ctrl.canvasCollab.updateElementThrottled({id: props.id, width})
-        ctrl.canvas.updateCanvasElement(props.id, {width})
-      }
+      box.resize(props.type, mx / zoom, my / zoom)
+      if (currentCanvas.snapToGrid) box.snapToGrid(10)
+      const rect = {x: box.x, y: box.y, width: box.w, height: box.h}
 
+      ctrl.canvasCollab.updateElementThrottled({id: props.id, ...rect})
+      ctrl.canvas.updateCanvasElement(props.id, rect)
       ctrl.canvas.updateCanvas(currentCanvas.id, {lastModified: new Date()})
       ctrl.canvas.saveCanvasDebounced()
+      return initial
     })
 
     const linkGesture = new DragGesture(linkRef, ({event, initial, first, last, movement}) => {
@@ -169,99 +153,22 @@ const Corner = (props: CornerProps) => {
     const currentCanvas = ctrl.canvas.currentCanvas
     if (!currentCanvas) return
 
-    const ratio = props.width / props.height
-    const gesture = new DragGesture(ref, ({event, delta: [dx, dy], shiftKey}) => {
+    const gesture = new DragGesture(ref, ({event, movement: [mx, my], shiftKey, memo, first}) => {
       event.stopPropagation()
+      const initial: Box2d = first ? new Box2d(props.x, props.y, props.width, props.height) : memo
       const {zoom} = currentCanvas.camera
+      const x = mx / zoom
+      const y = my / zoom
 
-      if (props.type === CornerType.TopLeft) {
-        let x = props.x + dx / zoom
-        let y = props.y + (shiftKey ? dx / ratio : dy) / zoom
-        let width = props.width - dx / zoom
-        let height = shiftKey ? width / ratio : props.height - dy / zoom
+      const box = Box2d.Resize(initial, props.type, x, y, shiftKey).box
+      if (currentCanvas.snapToGrid) box.snapToGrid(10)
 
-        if (shiftKey && (width < MIN_SIZE || height < MIN_SIZE)) {
-          width = props.width
-          height = props.height
-          x = props.x
-          y = props.y
-        } else {
-          if (width < MIN_SIZE) {
-            width = props.width
-            x = props.x
-          }
-          if (height < MIN_SIZE) {
-            height = props.height
-            y = props.y
-          }
-        }
-
-        ctrl.canvasCollab.updateElementThrottled({id: props.id, x, y, width, height})
-        ctrl.canvas.updateCanvasElement(props.id, {x, y, width, height})
-      } else if (props.type === CornerType.TopRight) {
-        let width = props.width + dx / zoom
-        let height = shiftKey ? width / ratio : props.height - dy / zoom
-        let y = props.y + (shiftKey ? -dx / ratio : dy) / zoom
-
-        if (shiftKey && (width < MIN_SIZE || height < MIN_SIZE)) {
-          width = props.width
-          height = props.height
-          y = props.y
-        } else {
-          if (width < MIN_SIZE) {
-            width = props.width
-            y = props.y
-          }
-          if (height < MIN_SIZE) {
-            height = props.height
-            y = props.y
-          }
-        }
-
-        ctrl.canvasCollab.updateElementThrottled({id: props.id, y, width, height})
-        ctrl.canvas.updateCanvasElement(props.id, {y, width, height})
-      } else if (props.type === CornerType.BottomLeft) {
-        let x = props.x + dx / zoom
-        let width = props.width - dx / zoom
-        let height = shiftKey ? width / ratio : props.height + dy / zoom
-
-        if (shiftKey && (width < MIN_SIZE || height < MIN_SIZE)) {
-          width = props.width
-          height = props.height
-          x = props.x
-        } else {
-          if (width < MIN_SIZE) {
-            width = props.width
-            x = props.x
-          }
-          if (height < MIN_SIZE) {
-            height = props.height
-          }
-        }
-
-        ctrl.canvasCollab.updateElementThrottled({id: props.id, x, width, height})
-        ctrl.canvas.updateCanvasElement(props.id, {x, width, height})
-      } else if (props.type === CornerType.BottomRight) {
-        let width = props.width + dx / zoom
-        let height = shiftKey ? width / ratio : props.height + dy / zoom
-        if (shiftKey && (width < MIN_SIZE || height < MIN_SIZE)) {
-          width = props.width
-          height = props.height
-        } else {
-          if (width < MIN_SIZE) {
-            width = props.width
-          }
-          if (height < MIN_SIZE) {
-            height = props.height
-          }
-        }
-
-        ctrl.canvasCollab.updateElementThrottled({id: props.id, width, height})
-        ctrl.canvas.updateCanvasElement(props.id, {width, height})
-      }
-
+      const rect = {x: box.x, y: box.y, width: box.w, height: box.h}
+      ctrl.canvasCollab.updateElementThrottled({id: props.id, ...rect})
+      ctrl.canvas.updateCanvasElement(props.id, rect)
       ctrl.canvas.updateCanvas(currentCanvas.id, {lastModified: new Date()})
       ctrl.canvas.saveCanvasDebounced()
+      return initial
     })
 
     onCleanup(() => {
@@ -308,14 +215,19 @@ export default (props: BoundsProps) => {
     const currentCanvas = ctrl.canvas.currentCanvas
     if (!currentCanvas) return
 
-    const gesture = new DragGesture(ref, ({delta: [dx, dy]}) => {
+    const gesture = new DragGesture(ref, ({first, movement: [mx, my], memo}) => {
+      const initial = first ? new Vec2d(props.x, props.y) : memo
       const {zoom} = currentCanvas.camera
-      const x = props.x + dx / zoom
-      const y = props.y + dy / zoom
+
+      const t = new Vec2d(mx, my).div(zoom).add(initial)
+      if (currentCanvas.snapToGrid) t.snapToGrid(10)
+      const [x, y] = t.toArray()
+
       ctrl.canvasCollab.updateElementThrottled({id: props.id, x, y})
       ctrl.canvas.updateCanvasElement(props.id, {x, y})
       ctrl.canvas.updateCanvas(currentCanvas.id, {lastModified: new Date()})
       ctrl.canvas.saveCanvasDebounced()
+      return initial
     })
 
     onCleanup(() => {

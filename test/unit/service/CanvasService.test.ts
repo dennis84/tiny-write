@@ -19,9 +19,6 @@ import {createCtrl, Ctrl} from '@/services'
 import {CanvasService} from '@/services/CanvasService'
 import {createYUpdate, waitFor} from '../util'
 
-vi.stubGlobal('innerWidth', 1000)
-vi.stubGlobal('innerHeight', 1000)
-
 vi.mock('mermaid', () => ({}))
 vi.mock('@/db', () => ({DB: mock()}))
 
@@ -186,6 +183,11 @@ test('backToContent', () => {
   }))
 
   const service = new CanvasService(ctrl, store, setState)
+  service.canvasRef = mock<HTMLElement>({
+    clientWidth: 1000,
+    clientHeight: 1000,
+  })
+
   service.backToContent()
 
   expect(service.currentCanvas?.camera.point).toEqual([500, 500])
@@ -206,9 +208,34 @@ test('focus', () => {
   }))
 
   const service = new CanvasService(ctrl, store, setState)
+  service.canvasRef = mock<HTMLElement>({
+    clientWidth: 1000,
+    clientHeight: 1000,
+  })
+
   service.focus('2')
 
   expect(service.currentCanvas?.camera.point).toEqual([-100, -100])
+})
+
+test('snapToGrid', () => {
+  const [store, setState] = createStore(createState({
+    canvases: [
+      createCanvas({
+        id: '1',
+        elements: [],
+        active: true,
+      })
+    ]
+  }))
+
+  const service = new CanvasService(ctrl, store, setState)
+
+  service.snapToGrid()
+  expect(service.currentCanvas?.snapToGrid).toBe(true)
+
+  service.snapToGrid()
+  expect(service.currentCanvas?.snapToGrid).toBe(false)
 })
 
 test('updateCamera', () => {
