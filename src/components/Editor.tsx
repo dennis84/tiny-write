@@ -166,6 +166,7 @@ const proseMirror = (props: Props) => `
   .ProseMirror {
     ${codeBlock(props)}
     ${props.markdown ? 'white-space: pre-wrap' : ''};
+    tab-size: 4;
     word-wrap: break-word;
     white-space: pre-wrap;
     position: relative;

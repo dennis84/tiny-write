@@ -1,5 +1,7 @@
-import {schema as markdownSchema} from 'prosemirror-markdown'
+import {EditorState, Transaction} from 'prosemirror-state'
+import {EditorView} from 'prosemirror-view'
 import {Schema} from 'prosemirror-model'
+import {schema as markdownSchema} from 'prosemirror-markdown'
 import {baseKeymap} from 'prosemirror-commands'
 import {sinkListItem, liftListItem} from 'prosemirror-schema-list'
 import {dropCursor} from 'prosemirror-dropcursor'
@@ -34,6 +36,25 @@ interface Props {
   dropcursor?: boolean;
 }
 
+const onTab = (schema: Schema) => (
+  state: EditorState,
+  dispatch?: (tr: Transaction) => void,
+  view?: EditorView
+): boolean => {
+  if (sinkListItem(schema.nodes.list_item)(state, dispatch)) {
+    return true
+  }
+
+  if (view?.hasFocus()) {
+    const tr = state.tr
+    tr.insertText('\u0009')
+    view.dispatch(tr)
+    return true
+  }
+
+  return false
+}
+
 export default (props: Props): ProseMirrorExtension => ({
   schema: () => props.markdown ? ({
     nodes: plainSchema.spec.nodes,
@@ -45,7 +66,7 @@ export default (props: Props): ProseMirrorExtension => ({
   plugins: (prev, schema) => [
     ...prev,
     keymap({
-      'Tab': sinkListItem(schema.nodes.list_item),
+      'Tab': onTab(schema),
       'Shift-Tab': liftListItem(schema.nodes.list_item),
     }),
     keymap(buildKeymap(schema)),
