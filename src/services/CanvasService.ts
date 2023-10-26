@@ -162,6 +162,10 @@ export class CanvasService {
 
     if (!newEl) return
     this.updateCanvasElement(newEl.id, {selected: true, active})
+
+    if (isEditorElement(newEl)) {
+      newEl.editorView?.focus()
+    }
   }
 
   deselect() {
