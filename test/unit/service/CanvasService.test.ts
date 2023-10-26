@@ -2,8 +2,6 @@ import {beforeEach, expect, test, vi} from 'vitest'
 import {mock, mockDeep} from 'vitest-mock-extended'
 import {createStore} from 'solid-js/store'
 import {EditorView} from 'prosemirror-view'
-import {createYdoc} from '../util'
-
 import {
   Canvas,
   CanvasEditorElement,
@@ -15,9 +13,10 @@ import {
   Mode,
   CanvasVideoElement,
 } from '@/state'
+import {DB} from '@/db'
 import {createCtrl, Ctrl} from '@/services'
 import {CanvasService} from '@/services/CanvasService'
-import {createYUpdate, waitFor} from '../util'
+import {createYdoc, createYUpdate, waitFor} from '../util'
 
 vi.mock('mermaid', () => ({}))
 vi.mock('@/db', () => ({DB: mock()}))
@@ -433,9 +432,12 @@ test('open', () => {
 
   service.open('1')
   expect(service.currentCanvas?.id).toBe('1')
+  expect(DB.updateCanvas).toHaveReturnedTimes(1)
+  vi.mocked(DB.updateCanvas).mockClear()
 
   service.open('2')
   expect(service.currentCanvas?.id).toBe('2')
+  expect(DB.updateCanvas).toHaveReturnedTimes(2)
 
   expect(editorView.destroy.mock.calls.length).toBe(1)
 })

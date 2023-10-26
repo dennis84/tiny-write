@@ -259,6 +259,7 @@ export class CanvasService {
     this.removeDeadLinks()
     this.ctrl.collab.disconnectCollab()
 
+    const prevCanvas = this.currentCanvas
     const state = this.activateCanvas(unwrap(this.store), id)
     const collab = this.ctrl.collab.create(id, Mode.Canvas, false)
 
@@ -267,6 +268,11 @@ export class CanvasService {
       collab,
     })
 
+    if (prevCanvas) {
+      this.saveCanvas({...prevCanvas, active: false})
+    }
+
+    this.saveCanvas()
     DB.setMeta({mode: state.mode})
     remote.info('💾 Switched to canvas mode')
 
@@ -751,13 +757,11 @@ export class CanvasService {
     return all?.center
   }
 
-  private async saveCanvas() {
-    const currentCanvas = this.currentCanvas
-    if (!currentCanvas) return
-
+  private async saveCanvas(canvas = this.currentCanvas) {
+    if (!canvas) return
     DB.updateCanvas(unwrap({
-      ...currentCanvas,
-      elements: currentCanvas.elements.map((el) => ({
+      ...canvas,
+      elements: canvas.elements.map((el) => ({
         ...el,
         editorView: undefined,
         selected: undefined,
