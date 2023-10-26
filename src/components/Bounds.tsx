@@ -25,24 +25,109 @@ interface CornerProps extends BoundsProps {
   type: CornerType;
 }
 
+const BORDER_SIZE = 30
+const BORDER_SIZE_2 = (BORDER_SIZE * 2)
+const CIRCLE_RADIUS = 10
+const CIRCLE_HOVER_RADIUS = 50
+
 const Border = styled('rect')`
   fill: transparent;
   cursor: ${(props: any) => props.vert ? 'ns-resize' : 'ew-resize'};
   touch-action: none;
 `
 
-const CIRCLE_RADIUS = 5
-const BORDER_SIZE = 30
-const BORDER_SIZE_2 = (BORDER_SIZE * 2)
+const LinkHandleDot = styled('span')`
+  position: absolute;
+  width: ${CIRCLE_HOVER_RADIUS.toString()}px;
+  height: ${CIRCLE_HOVER_RADIUS.toString()}px;
+  border-radius: ${CIRCLE_HOVER_RADIUS.toString()}px;
+  background: transparent;
+  cursor: pointer;
+  z-index: 99999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  touch-action: none;
+  > span {
+    width: ${CIRCLE_RADIUS.toString()}px;
+    height: ${CIRCLE_RADIUS.toString()}px;
+    border-radius: ${CIRCLE_RADIUS.toString()}px;
+    background: transparent;
+  }
+  &:hover > span {
+    background: var(--primary-background-80);
+  }
+`
+
+const LinkHandle = (props: EdgeProps) => {
+  let linkRef!: HTMLSpanElement
+
+  const [, ctrl] = useState()
+  const [currentLink, setCurrentLink] = createSignal<string>()
+  const coords = () => {
+    const box = new Box2d(props.x, props.y, props.width, props.height)
+    const p = box.getHandlePoint(props.type)
+    p.addXY(-CIRCLE_HOVER_RADIUS/2, -CIRCLE_HOVER_RADIUS/2)
+    if (props.type === EdgeType.Top) {
+      p.addXY(0, -BORDER_SIZE)
+    } else if (props.type === EdgeType.Bottom) {
+      p.addXY(0, BORDER_SIZE)
+    } else if (props.type === EdgeType.Left) {
+      p.addXY(-BORDER_SIZE, 0)
+    } else if (props.type === EdgeType.Right) {
+      p.addXY(BORDER_SIZE, 0)
+    }
+
+    const [x, y] = p.toArray()
+    return [x, y]
+  }
+
+  onMount(() => {
+    const currentCanvas = ctrl.canvas.currentCanvas
+    if (!currentCanvas) return
+
+    const linkGesture = new DragGesture(linkRef, ({event, initial, first, last, movement}) => {
+      event.stopPropagation()
+      if (first) {
+        setCurrentLink(uuidv4())
+      }
+      const {point, zoom} = currentCanvas.camera
+      const p = Vec2d.FromArray(point)
+      const i = Vec2d.FromArray(initial).div(zoom).sub(p)
+      const t = Vec2d.FromArray(movement).div(zoom).add(i)
+      const id = currentLink()!
+      ctrl.canvas.drawLink(id, props.id, props.type, t.x, t.y)
+      if (last) {
+        ctrl.canvas.drawLinkEnd(id)
+        setCurrentLink(undefined)
+      }
+    })
+
+    onCleanup(() => {
+      linkGesture.destroy()
+    })
+  })
+
+  return (
+    <LinkHandleDot
+      style={{
+        transform: `
+          translate(${coords().map((n) => n + 'px').join(',')})
+        `
+      }}
+      ref={linkRef}
+      data-testid={`edge_${props.type}_link_handle`}
+    >
+      <span />
+    </LinkHandleDot>
+  )
+}
 
 const Edge = (props: EdgeProps) => {
   const [, ctrl] = useState()
-  const [hovering, setHovering] = createSignal(false)
-  const [currentLink, setCurrentLink] = createSignal<string>()
 
   const vert = props.type === EdgeType.Top || props.type === EdgeType.Bottom
   let ref!: SVGRectElement
-  let linkRef!: SVGCircleElement
 
   onMount(() => {
     const currentCanvas = ctrl.canvas.currentCanvas
@@ -65,27 +150,8 @@ const Edge = (props: EdgeProps) => {
       return initial
     })
 
-    const linkGesture = new DragGesture(linkRef, ({event, initial, first, last, movement}) => {
-      event.stopPropagation()
-      if (first) {
-        setCurrentLink(uuidv4())
-        setHovering(false)
-      }
-      const {point, zoom} = currentCanvas.camera
-      const p = Vec2d.FromArray(point)
-      const i = Vec2d.FromArray(initial).div(zoom).sub(p)
-      const t = Vec2d.FromArray(movement).div(zoom).add(i)
-      const id = currentLink()!
-      ctrl.canvas.drawLink(id, props.id, props.type, t.x, t.y)
-      if (last) {
-        ctrl.canvas.drawLinkEnd(id)
-        setCurrentLink(undefined)
-      }
-    })
-
     onCleanup(() => {
       resizeGesture.destroy()
-      linkGesture.destroy()
     })
   })
 
@@ -98,43 +164,14 @@ const Edge = (props: EdgeProps) => {
     ref.setAttribute('y', ry.toString())
     ref.setAttribute('width', rw.toString())
     ref.setAttribute('height', rh.toString())
-
-    const cx =
-      props.type === EdgeType.Left ? CIRCLE_RADIUS :
-      props.type === EdgeType.Right ? props.width + BORDER_SIZE_2 - CIRCLE_RADIUS :
-      (props.width / 2) + BORDER_SIZE
-    const cy =
-      props.type === EdgeType.Top ? CIRCLE_RADIUS :
-      props.type === EdgeType.Bottom ? props.height + BORDER_SIZE_2 - CIRCLE_RADIUS :
-      (props.height / 2) + BORDER_SIZE
-    linkRef.setAttribute('cx', cx.toString())
-    linkRef.setAttribute('cy', cy.toString())
   })
 
   return (
-    <>
-      <Border
-        ref={ref}
-        vert={vert}
-        onMouseOver={() => setHovering(true)}
-        onMouseOut={() => setHovering(false)}
-        data-testid={`edge_${props.type}`}
-      />
-      <circle
-        ref={linkRef}
-        r={CIRCLE_RADIUS}
-        onMouseOver={() => setHovering(true)}
-        onMouseOut={() => setHovering(false)}
-        stroke="transparent"
-        stroke-width="10"
-        style={{
-          fill: hovering() ? 'var(--primary-background-80)' : 'transparent',
-          cursor: 'pointer',
-          'touch-action': 'none',
-        }}
-        data-testid={`edge_${props.type}_link_handle`}
-      />
-    </>
+    <Border
+      ref={ref}
+      vert={vert}
+      data-testid={`edge_${props.type}`}
+    />
   )
 }
 
@@ -253,5 +290,9 @@ export default (props: BoundsProps) => {
       <Corner {...props} type={CornerType.BottomLeft} />
       <Corner {...props} type={CornerType.BottomRight} />
     </Bounds>
+    <LinkHandle {...props} type={EdgeType.Top} />
+    <LinkHandle {...props} type={EdgeType.Right} />
+    <LinkHandle {...props} type={EdgeType.Bottom} />
+    <LinkHandle {...props} type={EdgeType.Left} />
   </>
 }
