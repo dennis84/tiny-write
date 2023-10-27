@@ -121,21 +121,7 @@ export default ({element}: {element: CanvasLinkElement}) => {
     const line = getLine(currentCanvas, element)
     if (!line) return
 
-    const toEdge = element.toEdge ?? (
-      element.fromEdge === EdgeType.Top ? EdgeType.Bottom :
-      element.fromEdge === EdgeType.Bottom ? EdgeType.Top :
-      element.fromEdge === EdgeType.Left ? EdgeType.Right :
-      EdgeType.Left
-    )
-
-    const p = getPath(line, element.fromEdge, element.toEdge)
-    const i = Vec2d.Nudge(
-      line.b,
-      Vec2d.From(line.b).add(getControlPointByEdge(toEdge, 100)),
-      10
-    )
-
-    const a = getArrowhead(line.b, i)
+    const [p, a] = getArrowPath(line, element.fromEdge, element.toEdge)
 
     pathRef.setAttribute('d', p)
     innerPathRef.setAttribute('d', p)
@@ -175,10 +161,8 @@ const getLine = (canvas: Canvas, element: CanvasLinkElement): LineSegment2d | un
   return new LineSegment2d(a, b)
 }
 
-const getPath = (line: LineSegment2d, fromEdge: EdgeType, toEdge?: EdgeType): string => {
-  const [c1, c2] = getControlPoints(line, fromEdge, toEdge)
+const getPath = (line: LineSegment2d, [c1, c2]: [Vec2d, Vec2d]): string => {
   const controlPoints = `C${c1.x},${c1.y} ${c2.x},${c2.y}`
-
   return `M${line.a.x},${line.a.y} ${controlPoints} ${line.b.x},${line.b.y}`
 }
 
@@ -214,4 +198,22 @@ const getArrowhead = (point: VecLike, int: VecLike) => {
   const PL = Vec2d.RotWith(int, point, PI / 6)
   const PR = Vec2d.RotWith(int, point, -PI / 6)
   return `M ${PL.x} ${PL.y} L ${point.x} ${point.y} L ${PR.x} ${PR.y} Z`
+}
+
+const getArrowPath = (
+  line: LineSegment2d,
+  fromEdge: EdgeType,
+  toEdge?: EdgeType
+): [string, string] => {
+  const [c1, c2] = getControlPoints(line, fromEdge, toEdge)
+  const p = getPath(line, [c1, c2])
+
+  const t = toEdge ?
+    Vec2d.From(line.b).add(getControlPointByEdge(toEdge, 100)) :
+    new LineSegment2d(c1, line.b).getPoint(0.5)
+  const arrowSize = 10
+  const i = Vec2d.Nudge(line.b, t, arrowSize)
+  const a = getArrowhead(line.b, i)
+
+  return [p, a]
 }
