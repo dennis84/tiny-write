@@ -133,13 +133,12 @@ const Edge = (props: EdgeProps) => {
     const currentCanvas = ctrl.canvas.currentCanvas
     if (!currentCanvas) return
 
-    const resizeGesture = new DragGesture(ref, ({event, movement: [mx, my], memo, first}) => {
+    const resizeGesture = new DragGesture(ref, ({event, movement: [mx, my], memo, first, shiftKey}) => {
       const initial: Box2d = first ? new Box2d(props.x, props.y, props.width, props.height) : memo
       event.stopPropagation()
       const {zoom} = currentCanvas.camera
-      const box = initial.clone()
+      const box = Box2d.Resize(initial, props.type, mx / zoom, my / zoom, shiftKey).box
 
-      box.resize(props.type, mx / zoom, my / zoom)
       if (currentCanvas.snapToGrid) box.snapToGrid(10)
       const rect = {x: box.x, y: box.y, width: box.w, height: box.h}
 
