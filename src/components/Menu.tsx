@@ -3,6 +3,7 @@ import {css, styled} from 'solid-styled-components'
 import {Mode, useState} from '@/state'
 import {isTauri, isMac, mod, version, VERSION_URL} from '@/env'
 import * as remote from '@/remote'
+import {BinMenu} from './BinMenu'
 import {FilesMenu} from './FilesMenu'
 import {CanvasesMenu} from './CanvasesMenu'
 import {CodeBlockMenu} from './CodeBlockMenu'
@@ -248,6 +249,9 @@ export default () => {
       <Show when={show() === 'canvases'}>
         <CanvasesMenu onBack={() => setShow('main')} onOpen={() => maybeHide()} />
       </Show>
+      <Show when={show() === 'bin'}>
+        <BinMenu onBack={() => setShow('main')} />
+      </Show>
       <Show when={show() === 'code_block'}>
         <CodeBlockMenu onBack={() => setShow('main')} />
       </Show>
@@ -275,6 +279,10 @@ export default () => {
               onClick={() => setShow('canvases')}
               data-testid="canvases"
             >Canvases 🧑‍🎨</Link>
+            <Link
+              onClick={() => setShow('bin')}
+              data-testid="bin"
+            >Bin 🗑️</Link>
           </Sub>
           {/* Submenu File */}
           <Show when={store.mode === Mode.Editor}>

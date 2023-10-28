@@ -41,11 +41,19 @@ interface MyDB extends DBSchema {
     key: string;
     value: PersistedCanvas;
   };
+  deletedCanvases: {
+    key: string;
+    value: PersistedCanvas;
+  };
   window: {
     key: string;
     value: Window;
   };
   files: {
+    key: string;
+    value: PersistedFile;
+  };
+  deletedFiles: {
     key: string;
     value: PersistedFile;
   };
@@ -66,7 +74,9 @@ const dbPromise = openDB<MyDB>(DB_NAME, 1, {
     db.createObjectStore('config')
     db.createObjectStore('window')
     db.createObjectStore('canvases', {keyPath: 'id'})
+    db.createObjectStore('deletedCanvases', {keyPath: 'id'})
     db.createObjectStore('files', {keyPath: 'id'})
+    db.createObjectStore('deletedFiles', {keyPath: 'id'})
     db.createObjectStore('size')
     db.createObjectStore('meta')
   }
@@ -113,7 +123,31 @@ export class DB {
   }
 
   static async deleteFile(id: string) {
-    return (await dbPromise).delete('files', id)
+    const db = await dbPromise
+    const file = await db.get('files', id)
+    if (file) {
+      await db.put('deletedFiles', file)
+    }
+
+    return db.delete('files', id)
+  }
+
+  static async getDeletedFiles() {
+    return (await dbPromise).getAll('deletedFiles')
+  }
+
+  static async deleteDeletedFile(id: string) {
+    return (await dbPromise).delete('deletedFiles', id)
+  }
+
+  static async restoreFile(id: string): Promise<PersistedFile | undefined> {
+    const db = await dbPromise
+    const file = await db.get('deletedFiles', id)
+    if (file) {
+      await db.put('files', file)
+      await db.delete('deletedFiles', id)
+      return file
+    }
   }
 
   static async getCanvases(): Promise<PersistedCanvas[]> {
@@ -132,7 +166,31 @@ export class DB {
   }
 
   static async deleteCanvas(id: string) {
-    return (await dbPromise).delete('canvases', id)
+    const db = await dbPromise
+    const canvas = await db.get('canvases', id)
+    if (canvas) {
+      await db.put('deletedCanvases', canvas)
+    }
+
+    return db.delete('canvases', id)
+  }
+
+  static async getDeletedCanvases() {
+    return (await dbPromise).getAll('deletedCanvases')
+  }
+
+  static async deleteDeletedCanvas(id: string) {
+    return (await dbPromise).delete('deletedCanvases', id)
+  }
+
+  static async restoreCanvas(id: string): Promise<PersistedCanvas | undefined> {
+    const db = await dbPromise
+    const canvas = await db.get('deletedCanvases', id)
+    if (canvas) {
+      await db.put('canvases', canvas)
+      await db.delete('deletedCanvases', id)
+      return canvas
+    }
   }
 
   static async setSize(key: string, value: number) {

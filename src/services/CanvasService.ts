@@ -697,6 +697,22 @@ export class CanvasService {
     return DB.getCanvases() as Promise<Canvas[]>
   }
 
+  fetchDeletedCanvases(): Promise<Canvas[]> {
+    return DB.getDeletedCanvases() as Promise<Canvas[]>
+  }
+
+  async deleteForever(id: string) {
+    await DB.deleteDeletedCanvas(id)
+    remote.info('Canvas forever deleted')
+  }
+
+  async restore(id: string) {
+    const canvas = await DB.restoreCanvas(id)
+    if (!canvas) return
+    this.setState('canvases', [...this.store.canvases, canvas as Canvas])
+    remote.info('Canavs restored')
+  }
+
   getElementNear(point: [number, number]): {id: string; edge: EdgeType} | undefined {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return

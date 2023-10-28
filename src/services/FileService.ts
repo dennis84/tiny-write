@@ -4,7 +4,7 @@ import * as Y from 'yjs'
 import {v4 as uuidv4} from 'uuid'
 import {File, FileText, ServiceError, State, Version} from '@/state'
 import * as remote from '@/remote'
-import {DB} from '@/db'
+import {DB, PersistedFile} from '@/db'
 import {createExtensions, createSchema} from '@/prosemirror-setup'
 import {createMarkdownParser} from '@/markdown'
 import {Ctrl} from '.'
@@ -141,9 +141,34 @@ export class FileService {
 
   async fetchFiles(): Promise<File[]> {
     const fetched = await DB.getFiles()
+    return this.toFiles(fetched)
+  }
+
+  async fetchDeletedFiles(): Promise<File[]> {
+    const fetched = await DB.getDeletedFiles()
+    return this.toFiles(fetched)
+  }
+
+  async deleteForever(id: string) {
+    await DB.deleteDeletedFile(id)
+    remote.info('File forever deleted')
+  }
+
+  async restore(id: string) {
+    const file = await DB.restoreFile(id)
+    if (!file) return
+    this.setState('files', [
+      ...this.store.files,
+      ...this.toFiles([file])
+    ])
+
+    remote.info('File restored')
+  }
+
+  private toFiles(persistedFiles: PersistedFile[]): File[] {
     const files = []
 
-    for (const file of fetched ?? []) {
+    for (const file of persistedFiles ?? []) {
       try {
         files.push({
           id: file.id,

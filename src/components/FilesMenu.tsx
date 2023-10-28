@@ -6,17 +6,69 @@ import {Node} from 'prosemirror-model'
 import * as Y from 'yjs'
 import {yDocToProsemirrorJSON} from 'y-prosemirror'
 import {formatDistance} from 'date-fns'
-import {arrow, computePosition, flip, offset, shift} from '@floating-ui/dom'
 import {File, Mode, useState} from '@/state'
 import * as remote from '@/remote'
 import {createExtensions, createSchema} from '@/prosemirror-setup'
 import {Drawer, Label} from './Menu'
 import {ButtonGroup, Button, ButtonPrimary} from './Button'
 import {Card, CardContent, CardFooter, CardList, CardMenuButton} from './Layout'
+import {computeTooltipPosition} from './MenuTooltip'
 
 interface Props {
   onBack: () => void;
   onOpen: () => void;
+}
+
+export const Excerpt = (p: {file: File}) => {
+  const [, ctrl] = useState()
+  const maxLen = 300
+  const maxText = 150
+  const maxCode = 80
+  const [content, setContent] = createSignal<Node[]>([])
+
+  const schema = createSchema(createExtensions({ctrl, markdown: false}))
+
+  createEffect(() => {
+    const ydoc = new Y.Doc({gc: false})
+    Y.applyUpdate(ydoc, p.file.ydoc)
+    const state = yDocToProsemirrorJSON(ydoc, p.file.id)
+    const doc = Node.fromJSON(schema, state)
+    const nodes: any = []
+    let len = 0
+    let done = false
+
+    doc.descendants((node, _, parent) => {
+      if (len >= maxLen) {
+        if (!done) nodes.push(h('span', {}, '…'))
+        done = true
+        return false
+      } else if (node.type.name === 'image') {
+        nodes.push(h('img', {src: node.attrs.src, alt: '️🖼️'}))
+      } else if (node.type.name === 'video') {
+        nodes.push(h('span', {}, '️🎬 '))
+      } else if (parent?.type.name === 'code_block') {
+        let text = node.textContent
+        if (text.length > maxCode) {
+          text = text.slice(0, maxCode) + '…'
+        }
+        nodes.push(h('pre', h('code', {}, text)))
+        nodes.push(h('span', {}, ' '))
+        len += text.length + 1
+      } else if (node.isText) {
+        const nodeType = parent?.type.name === 'heading' ? 'h2' : 'p'
+        let text = node.textContent
+        if (text.length > maxText) {
+          text = text.slice(0, maxText) + '…'
+        }
+        nodes.push(h(nodeType, {}, text + ' '))
+        len += text.length + 1
+      }
+    })
+
+    setContent(nodes)
+  })
+
+  return <>{content()}</>
 }
 
 export const FilesMenu = (props: Props) => {
@@ -28,8 +80,6 @@ export const FilesMenu = (props: Props) => {
   const files = () => store.files
     .filter((f) => f.lastModified)
     .sort((a, b) => b.lastModified!.getTime() - a.lastModified!.getTime())
-
-  const schema = createSchema(createExtensions({ctrl, markdown: false}))
 
   const onOpenFile = async (file?: File) => {
     if (!file) return
@@ -67,55 +117,6 @@ export const FilesMenu = (props: Props) => {
     props.onOpen()
   }
 
-  const Excerpt = (p: {file: File}) => {
-    const maxLen = 300
-    const maxText = 150
-    const maxCode = 80
-    const [content, setContent] = createSignal<Node[]>([])
-
-    createEffect(() => {
-      const ydoc = new Y.Doc({gc: false})
-      Y.applyUpdate(ydoc, p.file.ydoc)
-      const state = yDocToProsemirrorJSON(ydoc, p.file.id)
-      const doc = Node.fromJSON(schema, state)
-      const nodes: any = []
-      let len = 0
-      let done = false
-
-      doc.descendants((node, _, parent) => {
-        if (len >= maxLen) {
-          if (!done) nodes.push(h('span', {}, '…'))
-          done = true
-          return false
-        } else if (node.type.name === 'image') {
-          nodes.push(h('img', {src: node.attrs.src, alt: '️🖼️'}))
-        } else if (node.type.name === 'video') {
-          nodes.push(h('span', {}, '️🎬 '))
-        } else if (parent?.type.name === 'code_block') {
-          let text = node.textContent
-          if (text.length > maxCode) {
-            text = text.slice(0, maxCode) + '…'
-          }
-          nodes.push(h('pre', h('code', {}, text)))
-          nodes.push(h('span', {}, ' '))
-          len += text.length + 1
-        } else if (node.isText) {
-          const nodeType = parent?.type.name === 'heading' ? 'h2' : 'p'
-          let text = node.textContent
-          if (text.length > maxText) {
-            text = text.slice(0, maxText) + '…'
-          }
-          nodes.push(h(nodeType, {}, text + ' '))
-          len += text.length + 1
-        }
-      })
-
-      setContent(nodes)
-    })
-
-    return <>{content()}</>
-  }
-
   const FileItem = (p: {file: File}) => {
     const [path, setPath] = createSignal<string>()
 
@@ -147,35 +148,7 @@ export const FilesMenu = (props: Props) => {
 
     const onTooltip = (e: MouseEvent) => {
       setCurrent(p.file)
-      computePosition(e.target as Element, tooltipRef, {
-        placement: 'bottom',
-        middleware: [
-          offset(10),
-          flip(),
-          shift(),
-          arrow({element: arrowRef}),
-        ],
-      }).then(({x, y, placement, middlewareData}) => {
-        tooltipRef.style.left = `${x}px`
-        tooltipRef.style.top = `${y}px`
-
-        const side = placement.split('-')[0]
-        const staticSide = {
-          top: 'bottom',
-          right: 'left',
-          bottom: 'top',
-          left: 'right'
-        }[side] ?? 'top'
-
-        if (middlewareData.arrow) {
-          const {x, y} = middlewareData.arrow
-          Object.assign(arrowRef.style, {
-            left: x != null ? `${x}px` : '',
-            top: y != null ? `${y}px` : '',
-            [staticSide]: `${-arrowRef.offsetWidth / 2}px`
-          });
-        }
-      })
+      computeTooltipPosition(e.target as HTMLElement, tooltipRef, arrowRef)
     }
 
     onMount(async () => {

@@ -1,12 +1,12 @@
-import {createSignal, For, onCleanup, onMount, Show} from 'solid-js';
-import {styled} from 'solid-styled-components';
-import {formatDistance} from 'date-fns';
-import {arrow, computePosition, flip, offset, shift} from '@floating-ui/dom';
-import {Canvas, useState} from '@/state';
+import {createSignal, For, onCleanup, onMount, Show} from 'solid-js'
+import {styled} from 'solid-styled-components'
+import {formatDistance} from 'date-fns'
+import {Canvas, useState} from '@/state'
 import {Drawer, Label} from './Menu'
 import {Button, ButtonGroup, ButtonPrimary} from './Button'
-import {Card, CardContent, CardFooter, CardList, CardMenuButton} from './Layout';
-import CanvasPreview from './CanvasPreview';
+import {Card, CardContent, CardFooter, CardList, CardMenuButton} from './Layout'
+import CanvasPreview from './CanvasPreview'
+import {computeTooltipPosition} from './MenuTooltip'
 
 interface Props {
   onBack: () => void;
@@ -40,35 +40,7 @@ export const CanvasesMenu = (props: Props) => {
   const CanvasItem = (p: {canvas: Canvas}) => {
     const onTooltip = (e: MouseEvent) => {
       setCurrent(p.canvas)
-      computePosition(e.target as Element, tooltipRef, {
-        placement: 'bottom',
-        middleware: [
-          offset(10),
-          flip(),
-          shift(),
-          arrow({element: arrowRef}),
-        ],
-      }).then(({x, y, placement, middlewareData}) => {
-        tooltipRef.style.left = `${x}px`
-        tooltipRef.style.top = `${y}px`
-
-        const side = placement.split('-')[0]
-        const staticSide = {
-          top: 'bottom',
-          right: 'left',
-          bottom: 'top',
-          left: 'right'
-        }[side] ?? 'top'
-
-        if (middlewareData.arrow) {
-          const {x, y} = middlewareData.arrow
-          Object.assign(arrowRef.style, {
-            left: x != null ? `${x}px` : '',
-            top: y != null ? `${y}px` : '',
-            [staticSide]: `${-arrowRef.offsetWidth / 2}px`
-          });
-        }
-      })
+      computeTooltipPosition(e.target as HTMLElement, tooltipRef, arrowRef)
     }
 
     return (
