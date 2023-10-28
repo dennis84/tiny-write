@@ -36,7 +36,7 @@ export class CanvasCollabService {
     if (!currentCanvas) return
 
     currentCanvas.elements.forEach((element) => {
-      const el = new Y.Map(Object.entries(this.getProps(unwrap(element))))
+      const el = new Y.Map(this.getProps(unwrap(element)))
       this.elements?.set(PREFIX + element.id, el)
     })
 
@@ -75,7 +75,7 @@ export class CanvasCollabService {
   }
 
   addElement(element: CollabElement) {
-    const el = new Y.Map(Object.entries(this.getProps(element)))
+    const el = new Y.Map(this.getProps(element))
     this.ydoc?.transact(() => {
       this.elements?.set(PREFIX + element.id, el)
     }, this.ydoc.clientID)
@@ -84,7 +84,7 @@ export class CanvasCollabService {
   addElements(elements: CollabElement[]) {
     this.ydoc?.transact(() => {
       elements.forEach((el) => {
-        const element = new Y.Map(Object.entries(this.getProps(el)))
+        const element = new Y.Map(this.getProps(el))
         this.elements?.set(PREFIX + el.id, element)
       })
     }, this.ydoc.clientID)
@@ -95,7 +95,7 @@ export class CanvasCollabService {
     if (!elem) return
 
     const props = this.getProps(element)
-    for (const [k, v] of Object.entries(props)) {
+    for (const [k, v] of props) {
       this.ydoc?.transact(() => {
         elem.set(k, v)
       }, this.ydoc.clientID)
@@ -120,8 +120,8 @@ export class CanvasCollabService {
     }, this.ydoc.clientID)
   }
 
-  private getProps(element: any) {
-    delete element.editorView
-    return element
+  private getProps(element: object): Iterable<readonly [string, any]> {
+    const obj = {...element, editorView: undefined}
+    return Object.entries(obj).filter(([, v]) => v !== undefined)
   }
 }
