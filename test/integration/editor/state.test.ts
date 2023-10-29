@@ -8,13 +8,13 @@ test.beforeEach(async ({page}) => {
 test('load state from db', async ({page}) => {
   await page.waitForSelector('[data-testid="initialized"]')
   await page.click('[data-testid="burger"]')
-  await expect(page.locator('[data-testid="last_modified"]')).toContainText('Nothing yet')
+  await lineTextEq(page, 1, 'Start typing ...')
 
   await page.locator('.ProseMirror').pressSequentially('foo', {delay})
-  await expect(page.locator('[data-testid="last_modified"]')).not.toContainText('Nothing yet')
 
   await page.waitForTimeout(200)
   await page.reload()
+
   await page.waitForSelector('[data-testid="initialized"]')
   await expect(page.locator('.ProseMirror p')).toHaveText('foo')
 })

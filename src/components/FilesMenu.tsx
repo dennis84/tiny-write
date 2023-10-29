@@ -1,7 +1,6 @@
-import {For, createSignal, onMount, onCleanup, Show, createEffect} from 'solid-js'
+import {For, createSignal, onMount, Show, createEffect} from 'solid-js'
 import {unwrap} from 'solid-js/store'
 import h from 'solid-js/h'
-import {styled} from 'solid-styled-components'
 import {Node} from 'prosemirror-model'
 import * as Y from 'yjs'
 import {yDocToProsemirrorJSON} from 'y-prosemirror'
@@ -12,7 +11,7 @@ import {createExtensions, createSchema} from '@/prosemirror-setup'
 import {Drawer, Label} from './Menu'
 import {ButtonGroup, Button, ButtonPrimary} from './Button'
 import {Card, CardContent, CardFooter, CardList, CardMenuButton} from './Layout'
-import {computeTooltipPosition} from './MenuTooltip'
+import {MenuTooltip} from './MenuTooltip'
 
 interface Props {
   onBack: () => void;
@@ -74,8 +73,7 @@ export const Excerpt = (p: {file: File}) => {
 export const FilesMenu = (props: Props) => {
   const [store, ctrl] = useState()
   const [current, setCurrent] = createSignal<File>()
-  let tooltipRef: HTMLDivElement
-  let arrowRef: HTMLSpanElement
+  const [toolipAnchor, setTooltipAnchor] = createSignal<HTMLElement | undefined>()
 
   const files = () => store.files
     .filter((f) => f.lastModified)
@@ -117,6 +115,11 @@ export const FilesMenu = (props: Props) => {
     props.onOpen()
   }
 
+  const onTooltipClose = () => {
+    setCurrent(undefined)
+    setTooltipAnchor(undefined)
+  }
+
   const FileItem = (p: {file: File}) => {
     const [path, setPath] = createSignal<string>()
 
@@ -148,7 +151,7 @@ export const FilesMenu = (props: Props) => {
 
     const onTooltip = (e: MouseEvent) => {
       setCurrent(p.file)
-      computeTooltipPosition(e.target as HTMLElement, tooltipRef, arrowRef)
+      setTooltipAnchor(e.target as HTMLElement)
     }
 
     onMount(async () => {
@@ -181,35 +184,6 @@ export const FilesMenu = (props: Props) => {
     )
   }
 
-  const Tooltip = () => {
-    onMount(() => {
-      const listener = (e: MouseEvent) => {
-        if ((e.target as Element).closest('.file-tooltip')) return
-        setCurrent(undefined)
-      }
-
-      document.addEventListener('click', listener)
-      onCleanup(() => document.removeEventListener('click', listener))
-    })
-
-    const TooltipEl = styled('div')`
-      position: absolute;
-      min-width: 150px;
-    `
-
-    return (
-      <TooltipEl
-        ref={tooltipRef}
-        class="file-tooltip">
-        <Show when={store.mode === Mode.Canvas}>
-          <div onClick={() => onOpenFile(current())}>↪️ Open in editor mode</div>
-        </Show>
-        <div onClick={onRemove}>🗑️ Delete</div>
-        <span ref={arrowRef} class="arrow"></span>
-      </TooltipEl>
-    )
-  }
-
   return (
     <Drawer data-tauri-drag-region="true">
       <Label>Files</Label>
@@ -224,7 +198,14 @@ export const FilesMenu = (props: Props) => {
         <Button onClick={props.onBack} data-testid="back">↩ Back</Button>
         <ButtonPrimary onClick={onNewFile} data-testid="new_doc">New doc</ButtonPrimary>
       </ButtonGroup>
-      <Show when={current() !== undefined}><Tooltip /></Show>
+      <Show when={toolipAnchor() !== undefined}>
+        <MenuTooltip anchor={toolipAnchor()} onClose={onTooltipClose}>
+          <Show when={store.mode === Mode.Canvas}>
+            <div onClick={() => onOpenFile(current())}>↪️ Open in editor mode</div>
+          </Show>
+          <div onClick={onRemove}>🗑️ Delete</div>
+        </MenuTooltip>
+      </Show>
     </Drawer>
   )
 }

@@ -1,12 +1,11 @@
-import {createSignal, For, onCleanup, onMount, Show} from 'solid-js'
-import {styled} from 'solid-styled-components'
+import {createSignal, For, Show} from 'solid-js'
 import {formatDistance} from 'date-fns'
 import {Canvas, useState} from '@/state'
 import {Drawer, Label} from './Menu'
 import {Button, ButtonGroup, ButtonPrimary} from './Button'
 import {Card, CardContent, CardFooter, CardList, CardMenuButton} from './Layout'
 import CanvasPreview from './CanvasPreview'
-import {computeTooltipPosition} from './MenuTooltip'
+import {MenuTooltip} from './MenuTooltip'
 
 interface Props {
   onBack: () => void;
@@ -16,8 +15,8 @@ interface Props {
 export const CanvasesMenu = (props: Props) => {
   const [store, ctrl] = useState()
   const [current, setCurrent] = createSignal<Canvas>()
-  let tooltipRef: HTMLDivElement
-  let arrowRef: HTMLSpanElement
+  const [toolipAnchor, setTooltipAnchor] = createSignal<HTMLElement | undefined>()
+
   const canvases = () => store.canvases
     .filter((f) => f.lastModified)
     .sort((a, b) => b.lastModified!.getTime() - a.lastModified!.getTime())
@@ -37,10 +36,15 @@ export const CanvasesMenu = (props: Props) => {
     ctrl.canvas.newCanvas()
   }
 
+  const onTooltipClose = () => {
+    setCurrent(undefined)
+    setTooltipAnchor(undefined)
+  }
+
   const CanvasItem = (p: {canvas: Canvas}) => {
     const onTooltip = (e: MouseEvent) => {
       setCurrent(p.canvas)
-      computeTooltipPosition(e.target as HTMLElement, tooltipRef, arrowRef)
+      setTooltipAnchor(e.target as HTMLElement)
     }
 
     return (
@@ -63,32 +67,6 @@ export const CanvasesMenu = (props: Props) => {
     )
   }
 
-  const Tooltip = () => {
-    onMount(() => {
-      const listener = (e: MouseEvent) => {
-        if ((e.target as Element).closest('.canvas-tooltip')) return
-        setCurrent(undefined)
-      }
-
-      document.addEventListener('click', listener)
-      onCleanup(() => document.removeEventListener('click', listener))
-    })
-
-    const TooltipEl = styled('div')`
-      position: absolute;
-      min-width: 150px;
-    `
-
-    return (
-      <TooltipEl
-        ref={tooltipRef}
-        class="canvas-tooltip">
-        <div onClick={onRemove}>🗑️ Delete</div>
-        <span ref={arrowRef} class="arrow"></span>
-      </TooltipEl>
-    )
-  }
-
   return (
     <Drawer data-tauri-drag-region="true">
       <Label>Canvases</Label>
@@ -103,7 +81,11 @@ export const CanvasesMenu = (props: Props) => {
         <Button onClick={props.onBack} data-testid="back">↩ Back</Button>
         <ButtonPrimary onClick={onNew} data-testid="new_canvas">New canvas</ButtonPrimary>
       </ButtonGroup>
-      <Show when={current() !== undefined}><Tooltip /></Show>
+      <Show when={toolipAnchor() !== undefined}>
+        <MenuTooltip anchor={toolipAnchor()} onClose={onTooltipClose}>
+          <div onClick={onRemove}>🗑️ Delete</div>
+        </MenuTooltip>
+      </Show>
     </Drawer>
   )
 }

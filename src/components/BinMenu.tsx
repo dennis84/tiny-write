@@ -1,5 +1,4 @@
-import {For, Show, createSignal, onCleanup, onMount} from 'solid-js'
-import {styled} from 'solid-styled-components'
+import {For, Show, createSignal, onMount} from 'solid-js'
 import {compareDesc, formatDistance} from 'date-fns'
 import {File, Canvas, useState} from '@/state'
 import {Drawer, Label, Sub} from './Menu'
@@ -7,18 +6,17 @@ import {ButtonGroup, Button} from './Button'
 import {Card, CardContent, CardFooter, CardList, CardMenuButton} from './Layout'
 import {Excerpt} from './FilesMenu'
 import CanvasPreview from './CanvasPreview'
-import {computeTooltipPosition} from './MenuTooltip'
+import {MenuTooltip} from './MenuTooltip'
 
 interface Props {
   onBack: () => void;
 }
 
 export const BinMenu = (props: Props) => {
-  let tooltipRef: HTMLDivElement
-  let arrowRef: HTMLSpanElement
   const [, ctrl] = useState()
   const [items, setItems] = createSignal<(File | Canvas)[]>([])
   const [current, setCurrent] = createSignal()
+  const [tooltipAnchor, setTooltipAnchor] = createSignal<HTMLElement | undefined>()
 
   const isFile = (it: any): it is File => it.ydoc !== undefined
 
@@ -52,9 +50,14 @@ export const BinMenu = (props: Props) => {
     setCurrent(undefined)
   }
 
-  const showTooltip = (e: MouseEvent, id: string) => {
+  const showCardMenu = (e: MouseEvent, id: string) => {
     setCurrent(id)
-    computeTooltipPosition(e.target as HTMLElement, tooltipRef, arrowRef)
+    setTooltipAnchor(e.target as HTMLElement)
+  }
+
+  const onTooltipClose = () => {
+    setCurrent(undefined)
+    setTooltipAnchor(undefined)
   }
 
   const fetchItems = async () => {
@@ -77,7 +80,7 @@ export const BinMenu = (props: Props) => {
           <span>{formatDistance(new Date(p.file.lastModified!), new Date())}</span>
           <CardMenuButton
             selected={current() === p.file.id}
-            onClick={(e: MouseEvent) => showTooltip(e, p.file.id)}
+            onClick={(e: MouseEvent) => showCardMenu(e, p.file.id)}
           >︙</CardMenuButton>
         </CardFooter>
       </Card>
@@ -94,37 +97,10 @@ export const BinMenu = (props: Props) => {
           <span>{formatDistance(new Date(p.canvas.lastModified!), new Date())}</span>
           <CardMenuButton
             selected={current() === p.canvas.id}
-            onClick={(e: MouseEvent) => showTooltip(e, p.canvas.id)}
+            onClick={(e: MouseEvent) => showCardMenu(e, p.canvas.id)}
           >︙</CardMenuButton>
         </CardFooter>
       </Card>
-    )
-  }
-
-  const Tooltip = () => {
-    onMount(() => {
-      const listener = (e: MouseEvent) => {
-        if ((e.target as Element).closest('.canvas-tooltip')) return
-        setCurrent(undefined)
-      }
-
-      document.addEventListener('click', listener)
-      onCleanup(() => document.removeEventListener('click', listener))
-    })
-
-    const TooltipEl = styled('div')`
-      position: absolute;
-      min-width: 150px;
-    `
-
-    return (
-      <TooltipEl
-        ref={tooltipRef}
-        class="canvas-tooltip">
-        <div onClick={onRestore}>🔄 Restore</div>
-        <div onClick={onRemove}>⚠️ Delete forever</div>
-        <span ref={arrowRef} class="arrow"></span>
-      </TooltipEl>
     )
   }
 
@@ -143,7 +119,12 @@ export const BinMenu = (props: Props) => {
       <ButtonGroup>
         <Button onClick={onBack}>↩ Back</Button>
       </ButtonGroup>
-      <Show when={current() !== undefined}><Tooltip /></Show>
+      <Show when={tooltipAnchor() !== undefined}>
+        <MenuTooltip anchor={tooltipAnchor()} onClose={onTooltipClose}>
+          <div onClick={onRestore}>🔄 Restore</div>
+          <div onClick={onRemove}>⚠️ Delete forever</div>
+        </MenuTooltip>
+      </Show>
     </Drawer>
   )
 }

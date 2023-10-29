@@ -17,8 +17,7 @@ export const Layout = styled('div')`
   .block-tooltip,
   .table-menu-tooltip,
   .autocomplete-tooltip,
-  .file-tooltip,
-  .canvas-tooltip,
+  .menu-tooltip,
   .canvas-link-end-tooltip {
     position: absolute;
     width: max-content;
