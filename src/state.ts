@@ -168,7 +168,6 @@ export interface State {
   fullscreen: boolean;
   collab?: Collab;
   args?: Args;
-  storageSize: number;
   window?: Window;
   isSnapshot?: boolean;
 }
@@ -204,7 +203,6 @@ export const createState = (props: Partial<State> = {}): State => ({
   mode: Mode.Editor,
   loading: 'loading',
   fullscreen: false,
-  storageSize: 0,
   config: {
     fontSize: 14,
     contentWidth: 600,

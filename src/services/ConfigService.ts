@@ -384,7 +384,6 @@ export class ConfigService {
 
   private async saveConfig(state: State) {
     DB.setConfig(state.config)
-    DB.setSize('window', JSON.stringify(state.config).length)
     remote.info('💾 Save config')
   }
 

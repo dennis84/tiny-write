@@ -11,7 +11,6 @@ import {AppearanceMenu} from './AppearanceMenu'
 import {ChangeSetMenu} from './ChangeSetMenu'
 import {HelpMenu} from './HelpMenu'
 import SubmenuFile from './SubmenuFile'
-import SubmenuFileStats from './SubmenuFileStats'
 import SubmenuCanvas from './SubmenuCanvas'
 import SubmenuFileEdit from './SubmenuFileEdit'
 import SubmenuCollab from './SubmenuCollab'
@@ -325,10 +324,6 @@ export default () => {
           </Sub>
           {/* Submenu Collab */}
           <SubmenuCollab />
-          {/* Submenu File Stats */}
-          <Show when={store.mode === Mode.Editor}>
-            <SubmenuFileStats />
-          </Show>
           {/* Submenu Application */}
           <Label>Application</Label>
           <Sub data-tauri-drag-region="true">

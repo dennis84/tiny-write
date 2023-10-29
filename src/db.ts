@@ -57,10 +57,6 @@ interface MyDB extends DBSchema {
     key: string;
     value: PersistedFile;
   };
-  size: {
-    key: string;
-    value: number;
-  };
   meta: {
     key: string;
     value: Meta;
@@ -77,7 +73,6 @@ const dbPromise = openDB<MyDB>(DB_NAME, 1, {
     db.createObjectStore('deletedCanvases', {keyPath: 'id'})
     db.createObjectStore('files', {keyPath: 'id'})
     db.createObjectStore('deletedFiles', {keyPath: 'id'})
-    db.createObjectStore('size')
     db.createObjectStore('meta')
   }
 })
@@ -191,16 +186,6 @@ export class DB {
       await db.delete('deletedCanvases', id)
       return canvas
     }
-  }
-
-  static async setSize(key: string, value: number) {
-    return (await dbPromise).put('size', value, key)
-  }
-
-  static async getSize() {
-    const db = await dbPromise
-    const sizes = await db.getAll('size') ?? []
-    return sizes.reduce((a, b) => (a ?? 0) + (b ?? 0), 0)
   }
 
   static async deleteDatabase() {

@@ -1,6 +1,6 @@
 import {beforeEach, expect, test, vi} from 'vitest'
 import {mock, mockDeep} from 'vitest-mock-extended'
-import {clearMocks, mockIPC} from '@tauri-apps/api/mocks'
+import {clearMocks, mockConvertFileSrc, mockIPC} from '@tauri-apps/api/mocks'
 import {ImageService} from '@/services/ImageService'
 import {createCtrl, Ctrl} from '@/services'
 import {createState} from '@/state'
@@ -23,6 +23,7 @@ vi.mock('@/db', () => ({DB: mock()}))
 
 beforeEach(() => {
   clearMocks()
+  mockConvertFileSrc('macos')
   mockIPC((cmd, args: any) => {
     if (cmd === 'dirname') {
       return args.path
@@ -33,9 +34,7 @@ beforeEach(() => {
   })
 })
 
-vi.stubGlobal('__TAURI__', {
-  convertFileSrc: (x: string) => `asset://localhost/${encodeURIComponent(x)}`
-})
+vi.stubGlobal('__TAURI__', {})
 
 const ctrl = mockDeep<Ctrl>()
 

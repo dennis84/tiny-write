@@ -134,9 +134,6 @@ export class FileService {
         ydoc: v.ydoc,
       }))
     })
-
-    const files = await DB.getFiles() ?? []
-    DB.setSize('files', JSON.stringify(files).length)
   }
 
   async fetchFiles(): Promise<File[]> {

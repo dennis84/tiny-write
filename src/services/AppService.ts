@@ -152,7 +152,6 @@ export class AppService {
     if (!this.store.window) return
     const updatedWindow = unwrap(this.store.window)
     DB.setWindow(updatedWindow)
-    DB.setSize('window', JSON.stringify(updatedWindow).length)
     remote.info('💾 Save window state')
   }
 
@@ -171,7 +170,6 @@ export class AppService {
 
     const fetchedWindow = await DB.getWindow()
     const fetchedConfig = await DB.getConfig()
-    const fetchedSize = await DB.getSize()
     const files = await this.ctrl.file.fetchFiles() ?? []
     const canvases = await this.ctrl.canvas.fetchCanvases() ?? state.canvases ?? []
     const meta = await DB.getMeta()
@@ -195,7 +193,6 @@ export class AppService {
       files,
       config,
       window: fetchedWindow,
-      storageSize: fetchedSize ?? 0,
       collab: undefined,
       mode,
     }
