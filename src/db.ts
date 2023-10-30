@@ -1,5 +1,7 @@
 import {DBSchema, openDB} from 'idb'
-import {Camera, Config, ElementType, Mode, Window} from './state'
+import {differenceInDays} from 'date-fns'
+import {Camera, Config, ElementType, Mode, Window} from '@/state'
+import * as remote from '@/remote'
 
 export interface PersistedVersion {
   ydoc: Uint8Array;
@@ -185,6 +187,26 @@ export class DB {
       await db.put('canvases', canvas)
       await db.delete('deletedCanvases', id)
       return canvas
+    }
+  }
+
+  static async cleanup() {
+    const db = await dbPromise
+
+    for (const c of await db.getAll('deletedCanvases')) {
+      const days = differenceInDays(Date.now(), c.lastModified ?? 0)
+      if (days > 14) {
+        db.delete('deletedCanvases', c.id)
+        remote.info('💥 Deleted 14 days old canvas from bin')
+      }
+    }
+
+    for (const f of await db.getAll('deletedFiles')) {
+      const days = differenceInDays(Date.now(), f.lastModified ?? 0)
+      if (days > 14) {
+        db.delete('deletedFiles', f.id)
+        remote.info('💥 Deleted 14 days old file from bin')
+      }
     }
   }
 

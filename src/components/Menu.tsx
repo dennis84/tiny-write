@@ -122,6 +122,16 @@ const itemCss = `
 
 export const Text = styled('p')`${itemCss}`
 
+export const Note = styled('p')`
+  ${itemCss}
+  font-style: italic;
+  color: var(--foreground-80);
+  background: var(--foreground-5);
+  border-radius: 5px;
+  padding: 10px;
+  margin-bottom: 20px;
+`
+
 export const Link = styled('button')`
   ${itemCss}
   background: none;

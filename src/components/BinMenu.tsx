@@ -1,7 +1,7 @@
 import {For, Show, createSignal, onMount} from 'solid-js'
 import {compareDesc, formatDistance} from 'date-fns'
 import {File, Canvas, useState} from '@/state'
-import {Drawer, Label, Sub} from './Menu'
+import {Drawer, Label, Note, Sub} from './Menu'
 import {ButtonGroup, Button} from './Button'
 import {Card, CardContent, CardFooter, CardList, CardMenuButton} from './Layout'
 import {Excerpt} from './FilesMenu'
@@ -107,6 +107,9 @@ export const BinMenu = (props: Props) => {
   return (
     <Drawer data-tauri-drag-region="true">
       <Label>Bin</Label>
+      <Note>
+        💁 Items in bin will be automatically deleted after 14 days.
+      </Note>
       <Sub data-tauri-drag-region="true">
         <CardList
           data-tauri-drag-region="true"

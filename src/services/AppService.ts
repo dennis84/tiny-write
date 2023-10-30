@@ -121,6 +121,8 @@ export class AppService {
       this.setError(error)
     }
 
+    DB.cleanup()
+
     if (isTauri()) {
       await remote.show()
     }
