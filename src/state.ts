@@ -149,6 +149,7 @@ export interface Canvas {
   camera: Camera;
   elements: CanvasElement[];
   active?: boolean;
+  deleted?: boolean;
   lastModified?: Date;
   snapToGrid?: boolean;
 }
@@ -182,6 +183,7 @@ export interface File {
   path?: string;
   markdown?: boolean;
   active?: boolean;
+  deleted?: boolean;
   editorView?: EditorView;
 }
 

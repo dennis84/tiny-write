@@ -13,13 +13,19 @@ interface Props {
 }
 
 export const BinMenu = (props: Props) => {
-  const [, ctrl] = useState()
-  const [items, setItems] = createSignal<(File | Canvas)[]>([])
+  const [store, ctrl] = useState()
   const [current, setCurrent] = createSignal()
   const [tooltipAnchor, setTooltipAnchor] = createSignal<HTMLElement | undefined>()
 
-  const isFile = (it: any): it is File => it.ydoc !== undefined
+  const items = () => {
+    const files = store.files.filter((it) => it.deleted)
+    const canvases = store.canvases.filter((it) => it.deleted)
+    const items = [...files, ...canvases]
+      .sort((a, b) => compareDesc(a.lastModified ?? 0, b.lastModified ?? 0))
+    return items
+  }
 
+  const isFile = (it: any): it is File => it.ydoc !== undefined
   const onBack = () => {
     props.onBack()
   }
@@ -33,8 +39,8 @@ export const BinMenu = (props: Props) => {
       await ctrl.canvas.deleteForever(item.id)
     }
 
-    await fetchItems()
     setCurrent(undefined)
+    setTooltipAnchor(undefined)
   }
 
   const onRestore = async () => {
@@ -46,8 +52,8 @@ export const BinMenu = (props: Props) => {
       await ctrl.canvas.restore(item.id)
     }
 
-    await fetchItems()
     setCurrent(undefined)
+    setTooltipAnchor(undefined)
   }
 
   const showCardMenu = (e: MouseEvent, id: string) => {
@@ -60,15 +66,13 @@ export const BinMenu = (props: Props) => {
     setTooltipAnchor(undefined)
   }
 
-  const fetchItems = async () => {
-    const files = await ctrl.file.fetchDeletedFiles()
-    const canvases = await ctrl.canvas.fetchDeletedCanvases()
-    const items = [...files, ...canvases]
-      .sort((a, b) => compareDesc(a.lastModified ?? 0, b.lastModified ?? 0))
-    setItems(items)
-  }
-
-  onMount(fetchItems)
+  // const fetchItems = async () => {
+  //   const files = await ctrl.file.fetchDeletedFiles()
+  //   const canvases = await ctrl.canvas.fetchDeletedCanvases()
+  //   const items = [...files, ...canvases]
+  //     .sort((a, b) => compareDesc(a.lastModified ?? 0, b.lastModified ?? 0))
+  //   setItems(items)
+  // }
 
   const FileItem = (p: {file: File}) => {
     return (

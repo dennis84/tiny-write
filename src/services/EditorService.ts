@@ -93,32 +93,10 @@ export class EditorService {
     this.updateEditorState(node)
   }
 
-  async discard() {
+  async clear() {
     const currentFile = this.ctrl.file.currentFile
     const editorView = currentFile?.editorView
     if (!editorView) return
-
-    if (this.store.error) {
-      await this.deleteFile({id: currentFile.id})
-      this.setState('error', undefined)
-      return true
-    } else if (currentFile?.path) {
-      await this.discardText()
-      editorView?.focus()
-      return true
-    } else if (this.store.files.length > 1 && isEmpty(editorView?.state)) {
-      await this.discardText()
-      editorView?.focus()
-      return true
-    } else if (this.store.collab?.started) {
-      await this.discardText()
-      editorView?.focus()
-      return true
-    } else if (isEmpty(editorView?.state)) {
-      this.newFile()
-      editorView?.focus()
-      return true
-    }
 
     selectAll(editorView?.state, editorView?.dispatch)
     deleteSelection(editorView?.state, editorView?.dispatch)
@@ -166,22 +144,6 @@ export class EditorService {
     update.collab = this.ctrl.collab.create(file.id, state.mode, false)
     this.setState(update)
     if (text) this.updateText(text)
-  }
-
-  async deleteFile(req: OpenFile) {
-    const currentFile = this.ctrl.file.currentFile
-    if (currentFile?.id === req.id) {
-      await this.discardText()
-      return
-    }
-
-    const state: State = unwrap(this.store)
-    const files = state.files.filter((f: File) => f.id !== req.id)
-    const newState = {...state, files}
-
-    this.setState(newState)
-    await DB.deleteFile(req.id!)
-    remote.info('💾 Deleted file')
   }
 
   toggleMarkdown() {
@@ -311,41 +273,5 @@ export class EditorService {
       const text = serialize(currentFile.editorView.state)
       await remote.writeFile(currentFile.path, text)
     }
-  }
-
-  private async discardText() {
-    const currentFile = this.ctrl.file.currentFile
-    const state: State = unwrap(this.store)
-    const id = currentFile?.id
-    const files = state.files.filter((f) => f.id !== id)
-    const index = files.length - 1
-    let file: File | undefined
-    let text: FileText | undefined
-
-    if (index !== -1) {
-      file = this.ctrl.file.findFile({id: files[index].id})
-      if (file?.path) {
-        text = (await this.ctrl.file.loadFile(file.path)).text
-      }
-    }
-
-    if (!file) {
-      file = this.ctrl.file.createFile()
-    }
-
-    const newState = await this.activateFile({
-      args: {cwd: state.args?.cwd},
-      ...state,
-      files,
-    }, file)
-
-    newState.collab = this.ctrl.collab.create(file.id, state.mode, false)
-    currentFile?.editorView?.destroy()
-
-    this.setState(newState)
-
-    await DB.deleteFile(id!)
-
-    if (text) this.updateText(text)
   }
 }

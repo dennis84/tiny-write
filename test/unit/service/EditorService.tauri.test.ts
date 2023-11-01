@@ -4,7 +4,7 @@ import {clearMocks, mockIPC} from '@tauri-apps/api/mocks'
 import {DB} from '@/db'
 import {createCtrl} from '@/services'
 import {createState} from '@/state'
-import {createYUpdate, getText, insertText, waitFor} from './util'
+import {createYUpdate, getText, insertText, waitFor} from '../util'
 
 vi.stubGlobal('__TAURI__', {})
 vi.stubGlobal('matchMedia', vi.fn(() => ({
@@ -138,30 +138,5 @@ test('openFile - path and text', async () => {
 
   await waitFor(() => {
     expect(getText(ctrl)).toBe('File1')
-  })
-})
-
-test('discard - with path', async () => {
-  vi.mocked(DB.getFiles).mockResolvedValue([
-    {id: '1', path: 'file1', ydoc: createYUpdate('1', 'Test'), lastModified, active: true},
-    {id: '2', path: 'file2', ydoc: createYUpdate('2', 'Test 2'), lastModified},
-  ])
-
-  const {ctrl, store} = createCtrl(createState())
-  const target = document.createElement('div')
-
-  await ctrl.app.init()
-  ctrl.editor.renderEditor(target)
-
-  expect(store.files.length).toBe(2)
-
-  await ctrl.editor.discard()
-  expect(store.files.length).toBe(1)
-  expect(ctrl.file.currentFile?.id).toBe('2')
-  expect(ctrl.file.currentFile?.path).toBe('file2')
-  ctrl.editor.renderEditor(target)
-
-  await waitFor(() => {
-    expect(getText(ctrl)).toBe('File2')
   })
 })

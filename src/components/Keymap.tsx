@@ -41,9 +41,9 @@ export default () => {
     }
   }
 
-  const onDiscard = () => {
+  const onClear = () => {
     if (store.mode === Mode.Editor) {
-      ctrl.editor.discard()
+      ctrl.editor.clear()
     }
   }
 
@@ -98,7 +98,7 @@ export default () => {
     [`${mod}-r`]: onReload,
     [`${mod}-q`]: onQuit,
     [`${mod}-n`]: onNew,
-    [`${mod}-w`]: onDiscard,
+    [`${mod}-w`]: onClear,
     [`${mod}-s`]: onSave,
     [`${mod}-Enter`]: onFullscreen,
     'Alt-Enter': onFullscreen,

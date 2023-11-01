@@ -22,12 +22,16 @@ const GeneralError = () => {
     window.location.reload()
   }
 
-  const onDiscard = () => {
-    ctrl.editor.discard()
+  const onDeleteFile = () => {
+    const currentFile = ctrl.file.currentFile
+    if (!currentFile) return
+    ctrl.file.deleteForever(currentFile.id)
+    window.location.reload()
   }
 
   const onReset = () => {
     ctrl.app.reset()
+    window.location.reload()
   }
 
   const getMessage = () => {
@@ -42,7 +46,7 @@ const GeneralError = () => {
         <Pre><code>{getMessage()}</code></Pre>
         <ButtonGroup>
           <ButtonPrimary onClick={onReload}>Reload</ButtonPrimary>
-          <Button onClick={onDiscard}>Discard current file</Button>
+          <Button onClick={onDeleteFile}>Delete current file</Button>
           <Button onClick={onReset}>Reset</Button>
         </ButtonGroup>
       </Content>

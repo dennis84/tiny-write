@@ -272,11 +272,50 @@ test('deleteCanvas', () => {
   const service = new CanvasService(ctrl, store, setState)
 
   service.deleteCanvas('1')
+  expect(store.canvases.length).toBe(2)
+  expect(store.canvases[0].active).toBe(false)
+  expect(store.canvases[1].active).toBe(true)
+  expect(store.canvases[0].deleted).toBe(true)
+
+  service.deleteCanvas('2')
+  expect(store.canvases.length).toBe(2)
+  expect(store.canvases[1].deleted).toBe(true)
+})
+
+test('restore', () => {
+  const [store, setState] = createStore(createState({
+    mode: Mode.Canvas,
+    canvases: [
+      createCanvas({id: '1', active: true}),
+      createCanvas({id: '2', deleted: true}),
+    ]
+  }))
+
+  const service = new CanvasService(ctrl, store, setState)
+
+  service.restore('2')
+  expect(store.canvases.length).toBe(2)
+  expect(store.canvases[0].active).toBe(true)
+  expect(store.canvases[1].active).toBe(false)
+  expect(store.canvases[1].deleted).toBe(false)
+})
+
+test('deleteForever', () => {
+  const [store, setState] = createStore(createState({
+    mode: Mode.Canvas,
+    canvases: [
+      createCanvas({id: '1', active: true}),
+      createCanvas({id: '2', deleted: true}),
+    ]
+  }))
+
+  const service = new CanvasService(ctrl, store, setState)
+
+  service.deleteForever('2')
   expect(store.canvases.length).toBe(1)
   expect(store.canvases[0].active).toBe(true)
 
-  service.deleteCanvas('2')
-  expect(store.canvases.length).toBe(0)
+  expect(DB.deleteCanvas).toHaveBeenCalledWith('2')
 })
 
 test('select', () => {

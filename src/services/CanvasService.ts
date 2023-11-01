@@ -34,6 +34,7 @@ interface UpdateCanvas {
   elements?: CanvasElement[];
   lastModified?: Date;
   snapToGrid?: boolean;
+  deleted?: boolean;
 }
 
 type UpdateElement =
@@ -122,29 +123,31 @@ export class CanvasService {
   }
 
   deleteCanvas(id: string) {
-    const canvases = []
+    const canvas = this.findCanvas(id)
+    if (!canvas) return
+
+    this.updateCanvas(canvas.id, {
+      deleted: true,
+      lastModified: new Date(),
+    })
+
     let max = 0
     let maxId = undefined
 
     for (const c of this.store.canvases) {
-      if (c.id === id) {
-        c.elements.forEach((el) => {
-          if (isEditorElement(el)) el.editorView?.destroy()
-        })
-      } else {
-        canvases.push(c)
-        const t = c.lastModified?.getTime() ?? 0
-        if (!max || t > max) {
-          max = t
-          maxId = c.id
-        }
+      if (c.deleted) continue
+      const t = c.lastModified?.getTime() ?? 0
+      if (t > max) {
+        max = t
+        maxId = c.id
       }
     }
 
-    this.setState('canvases', canvases)
-    DB.deleteCanvas(id)
+    const updated = this.findCanvas(id)
+    this.saveCanvas(updated)
     remote.info('💾 Canvas deleted')
 
+    console.log({maxId})
     if (this.store.mode === Mode.Canvas && maxId) {
       this.open(maxId)
     }
@@ -697,19 +700,23 @@ export class CanvasService {
     return DB.getCanvases() as Promise<Canvas[]>
   }
 
-  fetchDeletedCanvases(): Promise<Canvas[]> {
-    return DB.getDeletedCanvases() as Promise<Canvas[]>
-  }
-
   async deleteForever(id: string) {
-    await DB.deleteDeletedCanvas(id)
+    const canvases = this.store.canvases.filter((it) => it.id !== id)
+    this.setState('canvases', canvases)
+    await DB.deleteCanvas(id)
     remote.info('Canvas forever deleted')
   }
 
   async restore(id: string) {
-    const canvas = await DB.restoreCanvas(id)
+    const canvas = this.findCanvas(id)
     if (!canvas) return
-    this.setState('canvases', [...this.store.canvases, canvas as Canvas])
+
+    this.updateCanvas(id, {deleted: false})
+
+    const updateCanvas = this.findCanvas(id)
+    if (!updateCanvas) return
+
+    this.saveCanvas(updateCanvas)
     remote.info('Canavs restored')
   }
 
@@ -775,6 +782,10 @@ export class CanvasService {
     }
 
     return all?.center
+  }
+
+  findCanvas(id: string): Canvas | undefined {
+    return this.store.canvases?.find((it) => it.id === id)
   }
 
   private async saveCanvas(canvas = this.currentCanvas) {

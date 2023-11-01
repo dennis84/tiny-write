@@ -18,25 +18,26 @@ export const CanvasesMenu = (props: Props) => {
   const [toolipAnchor, setTooltipAnchor] = createSignal<HTMLElement | undefined>()
 
   const canvases = () => store.canvases
-    .filter((f) => f.lastModified)
+    .filter((c) => c.lastModified && !c.deleted)
     .sort((a, b) => b.lastModified!.getTime() - a.lastModified!.getTime())
 
   const onOpenCanvas = (canvas: Canvas) => {
     ctrl.canvas.open(canvas.id)
+    closeTooltip()
     props.onOpen()
   }
 
   const onRemove = () => {
     const id = current()?.id
     if (id) ctrl.canvas.deleteCanvas(id)
-    setCurrent(undefined)
+    closeTooltip()
   }
 
   const onNew = () => {
     ctrl.canvas.newCanvas()
   }
 
-  const onTooltipClose = () => {
+  const closeTooltip = () => {
     setCurrent(undefined)
     setTooltipAnchor(undefined)
   }
@@ -82,7 +83,7 @@ export const CanvasesMenu = (props: Props) => {
         <ButtonPrimary onClick={onNew} data-testid="new_canvas">New canvas</ButtonPrimary>
       </ButtonGroup>
       <Show when={toolipAnchor() !== undefined}>
-        <MenuTooltip anchor={toolipAnchor()} onClose={onTooltipClose}>
+        <MenuTooltip anchor={toolipAnchor()} onClose={() => closeTooltip()}>
           <div onClick={onRemove}>🗑️ Delete</div>
         </MenuTooltip>
       </Show>

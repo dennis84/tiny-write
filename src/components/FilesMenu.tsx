@@ -76,13 +76,13 @@ export const FilesMenu = (props: Props) => {
   const [toolipAnchor, setTooltipAnchor] = createSignal<HTMLElement | undefined>()
 
   const files = () => store.files
-    .filter((f) => f.lastModified)
+    .filter((f) => f.lastModified && !f.deleted)
     .sort((a, b) => b.lastModified!.getTime() - a.lastModified!.getTime())
 
   const onOpenFile = async (file?: File) => {
     if (!file) return
     await ctrl.editor.openFile(unwrap(file))
-    setCurrent(undefined)
+    closeTooltip()
     props.onOpen()
   }
 
@@ -94,8 +94,8 @@ export const FilesMenu = (props: Props) => {
       ctrl.canvas.removeElement(f.id)
     }
 
-    if (f) ctrl.editor.deleteFile(f)
-    setCurrent(undefined)
+    if (f) ctrl.file.deleteFile(f)
+    closeTooltip()
   }
 
   const onNewFile = () => {
@@ -115,7 +115,7 @@ export const FilesMenu = (props: Props) => {
     props.onOpen()
   }
 
-  const onTooltipClose = () => {
+  const closeTooltip = () => {
     setCurrent(undefined)
     setTooltipAnchor(undefined)
   }
@@ -199,7 +199,7 @@ export const FilesMenu = (props: Props) => {
         <ButtonPrimary onClick={onNewFile} data-testid="new_doc">New doc</ButtonPrimary>
       </ButtonGroup>
       <Show when={toolipAnchor() !== undefined}>
-        <MenuTooltip anchor={toolipAnchor()} onClose={onTooltipClose}>
+        <MenuTooltip anchor={toolipAnchor()} onClose={() => closeTooltip()}>
           <Show when={store.mode === Mode.Canvas}>
             <div onClick={() => onOpenFile(current())}>↪️ Open in editor mode</div>
           </Show>

@@ -2,7 +2,7 @@ import {SetStoreFunction, Store} from 'solid-js/store'
 import {EditorView} from 'prosemirror-view'
 import * as Y from 'yjs'
 import {v4 as uuidv4} from 'uuid'
-import {File, FileText, ServiceError, State, Version} from '@/state'
+import {File, FileText, Mode, ServiceError, State, Version} from '@/state'
 import * as remote from '@/remote'
 import {DB, PersistedFile} from '@/db'
 import {createExtensions, createSchema} from '@/prosemirror-setup'
@@ -23,6 +23,8 @@ export interface UpdateFile {
   path?: string;
   editorView?: EditorView;
   versions?: Version[];
+  active?: boolean;
+  deleted?: boolean;
 }
 
 export class FileService {
@@ -89,24 +91,18 @@ export class FileService {
     const index = this.store.files.findIndex((file) => file.id === id)
     if (index === -1) return
 
+    let ydoc: Uint8Array | undefined = undefined
     const doc = this.store.collab!.ydoc!
-    const newDoc = new Y.Doc({gc: false})
-    const newType = newDoc.getXmlFragment(id)
-    const type = doc.getXmlFragment(id)
-    // @ts-ignore
-    newType.insert(0, type.toArray().map((el) => el instanceof Y.AbstractType ? el.clone() : el))
-    const ydoc = Y.encodeStateAsUpdate(newDoc)
+    if (doc.share.has(id)) {
+      const newDoc = new Y.Doc({gc: false})
+      const newType = newDoc.getXmlFragment(id)
+      const type = doc.getXmlFragment(id)
+      // @ts-ignore
+      newType.insert(0, type.toArray().map((el) => el instanceof Y.AbstractType ? el.clone() : el))
+      ydoc = Y.encodeStateAsUpdate(newDoc)
+    }
 
-    const hasOwn = (prop: string) => Object.hasOwn(update, prop)
-
-    this.setState('files', index, (prev) => ({
-      lastModified: hasOwn('lastModified') ? update.lastModified : prev?.lastModified,
-      markdown: hasOwn('markdown') ? update.markdown : prev?.markdown,
-      path: hasOwn('path') ? update.path : prev?.path,
-      editorView: hasOwn('editorView') ? update.editorView : prev?.editorView,
-      ydoc,
-      versions: hasOwn('versions') ? update.versions : prev?.versions,
-    }))
+    this.setState('files', index, {...update, ydoc})
   }
 
   destroy() {
@@ -129,6 +125,7 @@ export class FileService {
       path: file.path,
       markdown: file.markdown,
       active: file.active,
+      deleted: file.deleted,
       versions: file.versions.map((v) => ({
         date: v.date,
         ydoc: v.ydoc,
@@ -141,24 +138,58 @@ export class FileService {
     return this.toFiles(fetched)
   }
 
-  async fetchDeletedFiles(): Promise<File[]> {
-    const fetched = await DB.getDeletedFiles()
-    return this.toFiles(fetched)
+  async deleteFile(req: OpenFile) {
+    const currentFile = this.currentFile
+    const file = this.findFile(req)
+    if (!file) return
+
+    this.updateFile(file.id, {
+      deleted: true,
+      active: false,
+      lastModified: new Date(),
+    })
+
+    let max = 0
+    let maxId = undefined
+    if (currentFile?.id === file.id) {
+      for (const f of this.store.files) {
+        if (f.id === file.id) continue
+        const t = f.lastModified?.getTime() ?? 0
+        if (t >= max) {
+          max = t
+          maxId = f.id
+        }
+      }
+    }
+
+    const updatedFile = this.findFile(req)
+    if (!updatedFile) return
+
+    this.saveFile(updatedFile)
+    remote.info('💾 File deleted')
+
+    if (this.store.mode === Mode.Editor && maxId) {
+      await this.ctrl.editor.openFile({id: maxId})
+    }
   }
 
   async deleteForever(id: string) {
-    await DB.deleteDeletedFile(id)
+    const files = this.store.files.filter((it) => it.id !== id)
+    this.setState('files', files)
+    await DB.deleteFile(id)
     remote.info('File forever deleted')
   }
 
   async restore(id: string) {
-    const file = await DB.restoreFile(id)
+    const file = this.findFile({id})
     if (!file) return
-    this.setState('files', [
-      ...this.store.files,
-      ...this.toFiles([file])
-    ])
 
+    this.updateFile(id, {deleted: false})
+
+    const updateFile = this.findFile({id})
+    if (!updateFile) return
+
+    this.saveFile(updateFile)
     remote.info('File restored')
   }
 
@@ -174,6 +205,7 @@ export class FileService {
           path: file.path,
           markdown: file.markdown,
           active: file.active,
+          deleted: file.deleted,
           versions: (file.versions ?? []).map((v) => ({
             date: v.date,
             ydoc: v.ydoc,

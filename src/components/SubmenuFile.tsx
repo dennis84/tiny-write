@@ -2,28 +2,13 @@ import {createEffect, createSignal, Show} from 'solid-js'
 import {isMac, isTauri, mod} from '@/env'
 import {useState} from '@/state'
 import * as remote from '@/remote'
-import {isEmpty} from '@/prosemirror'
 import {Keys, Label, Link, Sub} from './Menu'
 
 export default ({maybeHide}: {maybeHide: () => void}) => {
-  const [store, ctrl] = useState()
+  const [, ctrl] = useState()
   const [relativePath, setRelativePath] = createSignal('')
-  const [isTextEmpty, setIsTextEmpty] = createSignal(false)
 
   const modKey = isMac ? '⌘' : mod
-
-  const clearText = () => {
-    if (ctrl.file.currentFile?.path || store.collab?.started) {
-      return 'Close ⚠️'
-    }
-    if (store.files.length > 0 && isTextEmpty()) {
-      return 'Discard ⚠️'
-    }
-    return 'Clear 🧽'
-  }
-
-  const clearEnabled = () =>
-    ctrl.file.currentFile?.path || ctrl.file.currentFile?.id || store.files.length > 0 || !isTextEmpty()
 
   const onNew = () => {
     const currentFile = ctrl.file.currentFile
@@ -40,19 +25,11 @@ export default ({maybeHide}: {maybeHide: () => void}) => {
     if (path) ctrl.editor.updatePath(path)
   }
 
-  const onDiscard = async () => {
-    const res = await ctrl.editor.discard()
-    if (res) maybeHide()
+  const onClear = async () => {
+    ctrl.editor.clear()
   }
 
   const onToggleMarkdown = () => ctrl.editor.toggleMarkdown()
-
-  createEffect(() => {
-    ctrl.file.currentFile?.lastModified
-    store.collab?.rendered
-    const currentFile = ctrl.file.currentFile
-    setIsTextEmpty(isEmpty(currentFile?.editorView?.state) ?? true)
-  })
 
   createEffect(async () => {
     if (!ctrl.file.currentFile?.path) return
@@ -75,10 +52,9 @@ export default ({maybeHide}: {maybeHide: () => void}) => {
           </Link>
         </Show>
         <Link
-          onClick={onDiscard}
-          disabled={!clearEnabled()}
-          data-testid="discard">
-          {clearText()} <Keys keys={[modKey, 'w']} />
+          onClick={onClear}
+          data-testid="clear">
+          Clear file 🧽 <Keys keys={[modKey, 'w']} />
         </Link>
         <Link onClick={onToggleMarkdown} data-testid="markdown">
           Markdown mode {ctrl.file.currentFile?.markdown && '✅'}

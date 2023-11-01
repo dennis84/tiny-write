@@ -21,7 +21,7 @@ test('on undo/redo', async ({page}) => {
   await expect(page.locator('.ProseMirror')).toHaveText('text123')
 })
 
-test('on new/discard', async ({page}) => {
+test('on new/clear', async ({page}) => {
   await page.locator('.ProseMirror').pressSequentially('first', {delay})
   await expect(page.locator('.ProseMirror')).toHaveText('first')
 
@@ -35,14 +35,9 @@ test('on new/discard', async ({page}) => {
   await page.click('[data-testid="files"]')
   await expect(page.locator('[data-testid="file_list"] > div')).toHaveCount(2)
 
-  // discard
+  // clear
 
   await page.keyboard.press(`${mod}+w`)
   await expect(page.locator('.ProseMirror')).toHaveText('Start typing ...')
   await expect(page.locator('[data-testid="file_list"] > div')).toHaveCount(2)
-
-  await page.keyboard.press(`${mod}+w`)
-  await page.waitForTimeout(100)
-  await expect(page.locator('.ProseMirror')).toHaveText('first')
-  await expect(page.locator('[data-testid="file_list"] > div')).toHaveCount(1)
 })

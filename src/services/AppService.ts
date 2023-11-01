@@ -140,7 +140,6 @@ export class AppService {
   async reset() {
     this.ctrl.collab.disconnectCollab()
     await DB.deleteDatabase()
-    window.location.reload()
   }
 
   setFullscreen(fullscreen: boolean) {

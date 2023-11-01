@@ -3,7 +3,7 @@ import {mock} from 'vitest-mock-extended'
 import {DB} from '@/db'
 import {createCtrl} from '@/services'
 import {createState} from '@/state'
-import {createYUpdate, getText, insertText, waitFor, pause} from './util'
+import {createYUpdate, getText, insertText, waitFor, pause} from '../util'
 
 vi.stubGlobal('matchMedia', vi.fn(() => ({
   matchMedia: () => ''
@@ -302,31 +302,7 @@ test('openFile - open from collab', async () => {
   })
 })
 
-test('discard - open collab', async () => {
-  vi.mocked(DB.getFiles).mockResolvedValue([
-    {id: 'room-123', ydoc: createYUpdate('room-123', 'Test'), lastModified},
-  ])
-
-  const {ctrl, store} = createCtrl(createState())
-
-  const target = document.createElement('div')
-  await ctrl.app.init()
-  ctrl.editor.renderEditor(target)
-
-  expect(store.files.length).toBe(2)
-
-  await ctrl.editor.discard()
-  expect(ctrl.file.currentFile?.editorView).toBe(undefined)
-  ctrl.editor.renderEditor(target)
-
-  await waitFor(() => {
-    expect(getText(ctrl)).toBe('Test')
-    expect(ctrl.file.currentFile?.id).toBe('room-123')
-    expect(store.files.length).toBe(1)
-  })
-})
-
-test('discard - with text', async () => {
+test('clear - with text', async () => {
   vi.mocked(DB.getFiles).mockResolvedValue([
     {id: '1', ydoc: createYUpdate('1', 'Test'), lastModified},
   ])
@@ -339,119 +315,11 @@ test('discard - with text', async () => {
   insertText(ctrl, '111')
   expect(store.files.length).toBe(2)
 
-  await ctrl.editor.discard()
+  await ctrl.editor.clear()
   expect(getText(ctrl)).toBe('')
-  expect(store.files.length).toBe(2)
-
-  await ctrl.editor.discard()
-  expect(ctrl.file.currentFile?.editorView).toBe(undefined)
-  ctrl.editor.renderEditor(target)
-
-  await waitFor(() => {
-    expect(getText(ctrl)).toBe('Test')
-    expect(store.files.length).toBe(1)
-  })
-})
-
-test('discard - close collab', async () => {
-  vi.mocked(DB.getFiles).mockResolvedValue([
-    {id: '1', ydoc: createYUpdate('1', 'Test'), lastModified},
-  ])
-
-  const {ctrl, store} = createCtrl(createState())
-  const target = document.createElement('div')
-  await ctrl.app.init()
-  ctrl.editor.renderEditor(target)
-
-  expect(store.files.length).toBe(2)
-
-  ctrl.collab.startCollab()
-  expect(store.files.length).toBe(2)
-  insertText(ctrl, '111')
-
-  await ctrl.editor.discard()
-  expect(ctrl.file.currentFile?.editorView).toBe(undefined)
-  ctrl.editor.renderEditor(target)
-
-  await waitFor(() => {
-    expect(getText(ctrl)).toBe('Test')
-    expect(store.files.length).toBe(1)
-  })
-})
-
-test('discard - error', async () => {
-  vi.mocked(DB.getFiles).mockResolvedValue([
-    {id: '1', ydoc: createYUpdate('1', 'Test'), lastModified, active: true},
-  ])
-
-  const {ctrl, store} = createCtrl(createState())
-  const target = document.createElement('div')
-  await ctrl.app.init()
-  ctrl.editor.renderEditor(target)
-
-  expect(ctrl.file.currentFile?.id).toBe('1')
-  expect(store.files.length).toBe(1)
-
-  const error = new Error('fail')
-  ctrl.app.setError(error)
-  expect(store.error?.id).toBe('exception')
-
-  await ctrl.editor.discard()
-  expect(store.error).toBe(undefined)
-  expect(ctrl.file.currentFile).toBe(undefined)
-  expect(store.files.length).toBe(0)
-})
-
-test('deleteFile - unused', async () => {
-  vi.mocked(DB.getFiles).mockResolvedValue([
-    {id: '1', ydoc: createYUpdate('1', 'Test'), lastModified, active: true},
-    {id: '2', ydoc: createYUpdate('2', 'Test2'), lastModified},
-  ])
-
-  const {ctrl, store} = createCtrl(createState())
-  const target = document.createElement('div')
-  await ctrl.app.init()
-  ctrl.editor.renderEditor(target)
-
-  await waitFor(() => {
-    expect(getText(ctrl)).toBe('Test')
-  })
-
-  expect(store.files.length).toBe(2)
-
-  await ctrl.editor.deleteFile({id: '2'})
-  expect(store.files.length).toBe(1)
-  expect(getText(ctrl)).toBe('Test')
-})
-
-test('deleteFile - current', async () => {
-  vi.mocked(DB.getFiles).mockResolvedValue([
-    {id: '1', ydoc: createYUpdate('1', 'Test'), lastModified, active: true},
-    {id: '2', ydoc: createYUpdate('2', 'Test2'), lastModified},
-  ])
-
-  const {ctrl, store} = createCtrl(createState())
-  const target = document.createElement('div')
-  await ctrl.app.init()
-  ctrl.editor.renderEditor(target)
-
-  await waitFor(() => {
-    expect(getText(ctrl)).toBe('Test')
-  })
-
-  expect(store.files.length).toBe(2)
-  await ctrl.editor.deleteFile({id: '1'})
-  expect(ctrl.file.currentFile?.editorView).toBe(undefined)
-  ctrl.editor.renderEditor(target)
-
-  await waitFor(() => {
-    expect(store.files.length).toBe(1)
-    expect(getText(ctrl)).toBe('Test2')
-  })
 })
 
 test('reset', async () => {
-  const loc = mock(window.location)
   const error = new Error('fail')
   const {ctrl, store} = createCtrl(createState())
   const target = document.createElement('div')
@@ -464,7 +332,6 @@ test('reset', async () => {
 
   await ctrl.app.reset()
   expect(DB.deleteDatabase).toHaveBeenCalledTimes(1)
-  expect(loc.reload).toHaveBeenCalledTimes(1)
 })
 
 test('startCollab - from empty state', async () => {
