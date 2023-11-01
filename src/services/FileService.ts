@@ -1,10 +1,9 @@
 import {SetStoreFunction, Store} from 'solid-js/store'
-import {EditorView} from 'prosemirror-view'
 import * as Y from 'yjs'
 import {v4 as uuidv4} from 'uuid'
-import {File, FileText, Mode, ServiceError, State, Version} from '@/state'
+import {File, FileText, Mode, ServiceError, State} from '@/state'
 import * as remote from '@/remote'
-import {DB, PersistedFile} from '@/db'
+import {DB} from '@/db'
 import {createExtensions, createSchema} from '@/prosemirror-setup'
 import {createMarkdownParser} from '@/markdown'
 import {Ctrl} from '.'
@@ -16,16 +15,6 @@ export interface LoadedFile {
 }
 
 export type OpenFile = {id?: string; path?: string}
-
-export interface UpdateFile {
-  lastModified?: Date;
-  markdown?: boolean;
-  path?: string;
-  editorView?: EditorView;
-  versions?: Version[];
-  active?: boolean;
-  deleted?: boolean;
-}
 
 export class FileService {
   constructor(
@@ -87,7 +76,7 @@ export class FileService {
     }
   }
 
-  updateFile(id: string, update: UpdateFile) {
+  updateFile(id: string, update: Partial<File>) {
     const index = this.store.files.findIndex((file) => file.id === id)
     if (index === -1) return
 
@@ -135,7 +124,28 @@ export class FileService {
 
   async fetchFiles(): Promise<File[]> {
     const fetched = await DB.getFiles()
-    return this.toFiles(fetched)
+    const files = []
+    for (const file of fetched ?? []) {
+      try {
+        files.push({
+          id: file.id,
+          ydoc: file.ydoc,
+          lastModified: new Date(file.lastModified),
+          path: file.path,
+          markdown: file.markdown,
+          active: file.active,
+          deleted: file.deleted,
+          versions: (file.versions ?? []).map((v) => ({
+            date: v.date,
+            ydoc: v.ydoc,
+          })),
+        })
+      } catch (err) {
+        remote.log('ERROR', 'Ignore file due to invalid ydoc.')
+      }
+    }
+
+    return files
   }
 
   async deleteFile(req: OpenFile) {
@@ -168,8 +178,8 @@ export class FileService {
     this.saveFile(updatedFile)
     remote.info('💾 File deleted')
 
-    if (this.store.mode === Mode.Editor && maxId) {
-      await this.ctrl.editor.openFile({id: maxId})
+    if (this.store.mode === Mode.Editor) {
+      if (maxId) await this.ctrl.editor.openFile({id: maxId})
     }
   }
 
@@ -191,32 +201,6 @@ export class FileService {
 
     this.saveFile(updateFile)
     remote.info('File restored')
-  }
-
-  private toFiles(persistedFiles: PersistedFile[]): File[] {
-    const files = []
-
-    for (const file of persistedFiles ?? []) {
-      try {
-        files.push({
-          id: file.id,
-          ydoc: file.ydoc,
-          lastModified: new Date(file.lastModified),
-          path: file.path,
-          markdown: file.markdown,
-          active: file.active,
-          deleted: file.deleted,
-          versions: (file.versions ?? []).map((v) => ({
-            date: v.date,
-            ydoc: v.ydoc,
-          })),
-        })
-      } catch (err) {
-        remote.log('ERROR', 'Ignore file due to invalid ydoc.')
-      }
-    }
-
-    return files
   }
 
   private createYdoc(bytes?: Uint8Array): Y.Doc {

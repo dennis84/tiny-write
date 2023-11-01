@@ -89,12 +89,7 @@ export const FilesMenu = (props: Props) => {
   const onRemove = () => {
     const f = unwrap(current())
     if (!f) return
-
-    if (store.mode === Mode.Canvas) {
-      ctrl.canvas.removeElement(f.id)
-    }
-
-    if (f) ctrl.file.deleteFile(f)
+    ctrl.file.deleteFile(f)
     closeTooltip()
   }
 
