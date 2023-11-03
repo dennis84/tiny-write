@@ -1,7 +1,7 @@
 import {SetStoreFunction, Store} from 'solid-js/store'
 import * as Y from 'yjs'
 import {v4 as uuidv4} from 'uuid'
-import {File, FileText, Mode, ServiceError, State} from '@/state'
+import {File, FileText, Mode, ServiceError, State, isLinkElement} from '@/state'
 import * as remote from '@/remote'
 import {DB} from '@/db'
 import {createExtensions, createSchema} from '@/prosemirror-setup'
@@ -185,7 +185,27 @@ export class FileService {
 
   async deleteForever(id: string) {
     const files = this.store.files.filter((it) => it.id !== id)
-    this.setState('files', files)
+    this.setState({files})
+
+    this.store.canvases.forEach((canvas, canvasIndex) => {
+      const elements = []
+      let shouldUpdate = false
+      for (const el of canvas.elements) {
+        if (el.id === id || (isLinkElement(el) && (el.to === id || el.from === id))) {
+          shouldUpdate = true
+          continue
+        }
+
+        elements.push(el)
+      }
+
+      if (shouldUpdate) {
+        this.setState('canvases', canvasIndex, 'elements', elements)
+        const updated = this.ctrl.canvas.findCanvas(canvas.id)
+        if (updated) DB.updateCanvas(updated)
+      }
+    })
+
     await DB.deleteFile(id)
     remote.info('File forever deleted')
   }

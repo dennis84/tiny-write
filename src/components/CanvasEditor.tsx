@@ -18,6 +18,9 @@ export default ({element, index}: {element: CanvasEditorElement; index: number})
     ctrl.canvas.select(element.id, true)
   }
 
+  const isDeleted = () =>
+    store.files.find((f) => f.id === element.id)?.deleted
+
   onMount(() => {
     ctrl.canvas.renderEditor(element, editorRef!)
   })
@@ -60,6 +63,9 @@ export default ({element, index}: {element: CanvasEditorElement; index: number})
             pointer-events: auto;
           ` : element.selected ? `
             box-shadow: 0 0 0 5px var(--border);
+          ` : isDeleted() ? `
+            opacity: 0.4;
+            box-shadow: 0 0 0 2px var(--border);
           ` : `
             box-shadow: 0 0 0 2px var(--border);
           `}
