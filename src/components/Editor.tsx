@@ -142,6 +142,7 @@ const codeBlock = (props: Props) => `
         user-select: none;
         background: var(--foreground-10);
         border-radius: var(--border-radius);
+        color: var(--foreground-60);
         &:hover {
           background: var(--foreground-20);
         }
