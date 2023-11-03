@@ -1,13 +1,13 @@
 import {For} from 'solid-js'
 import {useState} from '@/state'
 import {Drawer, Label, Link, Sub, Text} from './Menu'
-import {Button} from './Button'
+import {Button} from '@/components/Button'
 
 interface Props {
   onBack: () => void;
 }
 
-export const AppearanceMenu = (props: Props) => {
+export const Appearance = (props: Props) => {
   const [store, ctrl] = useState()
 
   const onChangeTheme = (theme: string) => () => {

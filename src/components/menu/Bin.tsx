@@ -1,18 +1,18 @@
-import {For, Show, createSignal, onMount} from 'solid-js'
+import {For, Show, createSignal} from 'solid-js'
 import {compareDesc, formatDistance} from 'date-fns'
 import {File, Canvas, useState} from '@/state'
 import {Drawer, Label, Note, Sub} from './Menu'
-import {ButtonGroup, Button} from './Button'
-import {Card, CardContent, CardFooter, CardList, CardMenuButton} from './Layout'
-import {Excerpt} from './FilesMenu'
+import {ButtonGroup, Button} from '@/components/Button'
+import {Card, CardContent, CardFooter, CardList, CardMenuButton} from '@/components/Layout'
+import {Excerpt} from './Files'
 import CanvasPreview from './CanvasPreview'
-import {MenuTooltip} from './MenuTooltip'
+import {Tooltip} from './Tooltip'
 
 interface Props {
   onBack: () => void;
 }
 
-export const BinMenu = (props: Props) => {
+export const Bin = (props: Props) => {
   const [store, ctrl] = useState()
   const [current, setCurrent] = createSignal()
   const [tooltipAnchor, setTooltipAnchor] = createSignal<HTMLElement | undefined>()
@@ -127,10 +127,10 @@ export const BinMenu = (props: Props) => {
         <Button onClick={onBack}>↩ Back</Button>
       </ButtonGroup>
       <Show when={tooltipAnchor() !== undefined}>
-        <MenuTooltip anchor={tooltipAnchor()} onClose={onTooltipClose}>
+        <Tooltip anchor={tooltipAnchor()} onClose={onTooltipClose}>
           <div onClick={onRestore}>🔄 Restore</div>
           <div onClick={onRemove}>⚠️ Delete forever</div>
-        </MenuTooltip>
+        </Tooltip>
       </Show>
     </Drawer>
   )

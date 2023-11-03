@@ -1,11 +1,11 @@
 import {Drawer, Keys, Label, Sub, Text} from './Menu'
-import {Button} from './Button'
+import {Button} from '@/components/Button'
 
 interface Props {
   onBack: () => void;
 }
 
-export const HelpMenu = (props: Props) => {
+export const Help = (props: Props) => {
   return (
     <Drawer data-tauri-drag-region="true">
       <Label>Markdown shortcuts</Label>

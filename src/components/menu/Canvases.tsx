@@ -2,17 +2,17 @@ import {createSignal, For, Show} from 'solid-js'
 import {formatDistance} from 'date-fns'
 import {Canvas, useState} from '@/state'
 import {Drawer, Label} from './Menu'
-import {Button, ButtonGroup, ButtonPrimary} from './Button'
-import {Card, CardContent, CardFooter, CardList, CardMenuButton} from './Layout'
+import {Button, ButtonGroup, ButtonPrimary} from '@/components/Button'
+import {Card, CardContent, CardFooter, CardList, CardMenuButton} from '@/components/Layout'
 import CanvasPreview from './CanvasPreview'
-import {MenuTooltip} from './MenuTooltip'
+import {Tooltip} from './Tooltip'
 
 interface Props {
   onBack: () => void;
   onOpen: () => void;
 }
 
-export const CanvasesMenu = (props: Props) => {
+export const Canvases = (props: Props) => {
   const [store, ctrl] = useState()
   const [current, setCurrent] = createSignal<Canvas>()
   const [toolipAnchor, setTooltipAnchor] = createSignal<HTMLElement | undefined>()
@@ -83,9 +83,9 @@ export const CanvasesMenu = (props: Props) => {
         <ButtonPrimary onClick={onNew} data-testid="new_canvas">New canvas</ButtonPrimary>
       </ButtonGroup>
       <Show when={toolipAnchor() !== undefined}>
-        <MenuTooltip anchor={toolipAnchor()} onClose={() => closeTooltip()}>
+        <Tooltip anchor={toolipAnchor()} onClose={() => closeTooltip()}>
           <div onClick={onRemove}>🗑️ Delete</div>
-        </MenuTooltip>
+        </Tooltip>
       </Show>
     </Drawer>
   )

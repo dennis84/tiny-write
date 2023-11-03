@@ -3,12 +3,12 @@ import {styled} from 'solid-styled-components'
 import {Gesture} from '@use-gesture/vanilla'
 import {Vec2d} from '@tldraw/primitives'
 import {isEditorElement, isLinkElement, isImageElement, useState, isVideoElement} from '@/state'
-import CanvasGrid from './CanvasGrid'
-import CanvasEditor from './CanvasEditor'
-import CanvasLink from './CanvasLink'
-import CanvasImage from './CanvasImage'
-import CanvasVideo from './CanvasVideo'
-import CanvasLinkEnd from './CanvasLinkEnd'
+import Grid from './Grid'
+import Editor from './Editor'
+import Link from './Link'
+import Image from './Image'
+import Video from './Video'
+import LinkEnd from './LinkEnd'
 
 const Container = styled('div')`
   width: 100%;
@@ -116,8 +116,8 @@ export default () => {
 
   return (
     <Container ref={ref} data-testid="canvas_container">
-      <CanvasLinkEnd />
-      <CanvasGrid onClick={onGridClick} />
+      <LinkEnd />
+      <Grid onClick={onGridClick} />
       <Board
         style={{
           transform: `
@@ -129,10 +129,10 @@ export default () => {
       >
         <For each={ctrl.canvas.currentCanvas?.elements}>
           {(element, index) =>
-            isEditorElement(element) ? <CanvasEditor element={element} index={index()} /> :
-            isLinkElement(element) ? <CanvasLink element={element} /> :
-            isImageElement(element) ? <CanvasImage element={element} index={index()} /> :
-            isVideoElement(element) ? <CanvasVideo element={element} index={index()} /> :
+            isEditorElement(element) ? <Editor element={element} index={index()} /> :
+            isLinkElement(element) ? <Link element={element} /> :
+            isImageElement(element) ? <Image element={element} index={index()} /> :
+            isVideoElement(element) ? <Video element={element} index={index()} /> :
             null
           }
         </For>

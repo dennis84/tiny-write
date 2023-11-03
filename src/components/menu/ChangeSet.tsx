@@ -2,13 +2,13 @@ import {For, Show, createSignal} from 'solid-js'
 import {format} from 'date-fns'
 import {Version, useState} from '@/state'
 import {Drawer, Label, Link, Sub} from './Menu'
-import {ButtonGroup, Button, ButtonPrimary} from './Button'
+import {ButtonGroup, Button, ButtonPrimary} from '@/components/Button'
 
 interface Props {
   onBack: () => void;
 }
 
-export const ChangeSetMenu = (props: Props) => {
+export const ChangeSet = (props: Props) => {
   const [, ctrl] = useState()
   const versions = () => ctrl.file.currentFile?.versions ?? []
   const [active, setActive] = createSignal<Version>()

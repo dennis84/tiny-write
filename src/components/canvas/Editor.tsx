@@ -1,8 +1,8 @@
 import {onCleanup, onMount, Show} from 'solid-js'
 import {css} from 'solid-styled-components'
 import {CanvasEditorElement, ElementType, useState} from '@/state'
-import {CanvasEditor} from './Editor'
-import {Scroll} from './Layout'
+import {CanvasEditor} from '@/components/editor/Editor'
+import {Scroll} from '@/components/Layout'
 import Bounds from './Bounds'
 
 export default ({element, index}: {element: CanvasEditorElement; index: number}) => {

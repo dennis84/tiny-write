@@ -9,9 +9,9 @@ import {File, Mode, useState} from '@/state'
 import * as remote from '@/remote'
 import {createExtensions, createSchema} from '@/prosemirror-setup'
 import {Drawer, Label} from './Menu'
-import {ButtonGroup, Button, ButtonPrimary} from './Button'
-import {Card, CardContent, CardFooter, CardList, CardMenuButton} from './Layout'
-import {MenuTooltip} from './MenuTooltip'
+import {ButtonGroup, Button, ButtonPrimary} from '@/components/Button'
+import {Card, CardContent, CardFooter, CardList, CardMenuButton} from '@/components/Layout'
+import {Tooltip} from './Tooltip'
 
 interface Props {
   onBack: () => void;
@@ -70,7 +70,7 @@ export const Excerpt = (p: {file: File}) => {
   return <>{content()}</>
 }
 
-export const FilesMenu = (props: Props) => {
+export const Files = (props: Props) => {
   const [store, ctrl] = useState()
   const [current, setCurrent] = createSignal<File>()
   const [toolipAnchor, setTooltipAnchor] = createSignal<HTMLElement | undefined>()
@@ -194,12 +194,12 @@ export const FilesMenu = (props: Props) => {
         <ButtonPrimary onClick={onNewFile} data-testid="new_doc">New doc</ButtonPrimary>
       </ButtonGroup>
       <Show when={toolipAnchor() !== undefined}>
-        <MenuTooltip anchor={toolipAnchor()} onClose={() => closeTooltip()}>
+        <Tooltip anchor={toolipAnchor()} onClose={() => closeTooltip()}>
           <Show when={store.mode === Mode.Canvas}>
             <div onClick={() => onOpenFile(current())}>↪️ Open in editor mode</div>
           </Show>
           <div onClick={onRemove}>🗑️ Delete</div>
-        </MenuTooltip>
+        </Tooltip>
       </Show>
     </Drawer>
   )

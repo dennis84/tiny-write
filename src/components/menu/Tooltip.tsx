@@ -13,7 +13,7 @@ interface Props {
   children: JSX.Element;
 }
 
-export const MenuTooltip = (props: Props) => {
+export const Tooltip = (props: Props) => {
   let tooltipRef: HTMLDivElement | undefined
   let arrowRef: HTMLSpanElement | undefined
 

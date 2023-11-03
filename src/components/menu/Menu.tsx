@@ -3,13 +3,13 @@ import {css, styled} from 'solid-styled-components'
 import {Mode, useState} from '@/state'
 import {isTauri, isMac, mod, version, VERSION_URL} from '@/env'
 import * as remote from '@/remote'
-import {BinMenu} from './BinMenu'
-import {FilesMenu} from './FilesMenu'
-import {CanvasesMenu} from './CanvasesMenu'
-import {CodeBlockMenu} from './CodeBlockMenu'
-import {AppearanceMenu} from './AppearanceMenu'
-import {ChangeSetMenu} from './ChangeSetMenu'
-import {HelpMenu} from './HelpMenu'
+import {Bin} from './Bin'
+import {Files} from './Files'
+import {Canvases} from './Canvases'
+import {CodeBlock} from './CodeBlock'
+import {Appearance} from './Appearance'
+import {ChangeSet} from './ChangeSet'
+import {Help} from './Help'
 import SubmenuFile from './SubmenuFile'
 import SubmenuCanvas from './SubmenuCanvas'
 import SubmenuFileEdit from './SubmenuFileEdit'
@@ -253,25 +253,25 @@ export default () => {
         <span />
       </Burger>
       <Show when={show() === 'files'}>
-        <FilesMenu onBack={() => setShow('main')} onOpen={() => maybeHide()} />
+        <Files onBack={() => setShow('main')} onOpen={() => maybeHide()} />
       </Show>
       <Show when={show() === 'canvases'}>
-        <CanvasesMenu onBack={() => setShow('main')} onOpen={() => maybeHide()} />
+        <Canvases onBack={() => setShow('main')} onOpen={() => maybeHide()} />
       </Show>
       <Show when={show() === 'bin'}>
-        <BinMenu onBack={() => setShow('main')} />
+        <Bin onBack={() => setShow('main')} />
       </Show>
       <Show when={show() === 'code_block'}>
-        <CodeBlockMenu onBack={() => setShow('main')} />
+        <CodeBlock onBack={() => setShow('main')} />
       </Show>
       <Show when={show() === 'theme'}>
-        <AppearanceMenu onBack={() => setShow('main')} />
+        <Appearance onBack={() => setShow('main')} />
       </Show>
       <Show when={show() === 'help'}>
-        <HelpMenu onBack={() => setShow('main')} />
+        <Help onBack={() => setShow('main')} />
       </Show>
       <Show when={show() === 'change_set'}>
-        <ChangeSetMenu onBack={() => setShow('main')} />
+        <ChangeSet onBack={() => setShow('main')} />
       </Show>
       <Show when={show() === 'main'}>
         <Drawer
