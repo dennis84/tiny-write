@@ -25,6 +25,8 @@ const Board = styled('div')`
   contain: layout style size;
   width: 1px;
   height: 1px;
+  user-select: none;
+  -webkit-user-select: none;
 `
 
 export default () => {

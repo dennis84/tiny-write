@@ -86,8 +86,7 @@ const LinkHandle = (props: EdgeProps) => {
     const currentCanvas = ctrl.canvas.currentCanvas
     if (!currentCanvas) return
 
-    const linkGesture = new DragGesture(linkRef, ({event, initial, first, last, movement}) => {
-      event.stopPropagation()
+    const linkGesture = new DragGesture(linkRef, ({initial, first, last, movement}) => {
       if (first) {
         setCurrentLink(uuidv4())
       }
@@ -134,8 +133,8 @@ const Edge = (props: EdgeProps) => {
     if (!currentCanvas) return
 
     const resizeGesture = new DragGesture(ref, ({event, movement: [mx, my], memo, first, shiftKey}) => {
-      const initial: Box2d = first ? new Box2d(props.x, props.y, props.width, props.height) : memo
       event.stopPropagation()
+      const initial: Box2d = first ? new Box2d(props.x, props.y, props.width, props.height) : memo
       const {zoom} = currentCanvas.camera
       const box = Box2d.Resize(initial, props.type, mx / zoom, my / zoom, shiftKey).box
 
