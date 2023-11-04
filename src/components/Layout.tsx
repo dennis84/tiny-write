@@ -1,6 +1,7 @@
 import {styled} from 'solid-styled-components'
 
 export const Layout = styled('div')`
+  cursor: var(--cursorDefault);
   touch-action: none;
   background: var(--background);
   display: flex;
@@ -33,7 +34,7 @@ export const Layout = styled('div')`
       z-index: 1;
       display: block;
       padding: 10px;
-      cursor: pointer;
+      cursor: var(--cursorPointer);
       &:hover, &.selected {
         background: var(--selection);
       }
@@ -130,7 +131,7 @@ export const CardContent = styled('div')`
   margin: 1px;
   padding: 4px;
   word-break: break-all;
-  cursor: pointer;
+  cursor: var(--cursorPointer);
   font-size: 10px;
   line-height: 1.2;
   color: var(--foreground);
@@ -202,7 +203,7 @@ export const CardMenuButton = styled('button')`
   background: none;
   border: 0;
   color: var(--foreground-60);
-  cursor: pointer;
+  cursor: var(--cursorPointer);
   padding: 0;
   ${(props: any) => props.selected ? `
     color: var(--primary-background);
