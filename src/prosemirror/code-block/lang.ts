@@ -1,4 +1,12 @@
-import {EditorView, ViewPlugin, ViewUpdate, keymap, tooltips} from '@codemirror/view'
+import {
+  EditorView,
+  ViewPlugin,
+  ViewUpdate,
+  crosshairCursor,
+  drawSelection,
+  keymap,
+  tooltips,
+} from '@codemirror/view'
 import {Extension} from '@codemirror/state'
 import {standardKeymap} from '@codemirror/commands'
 import {StreamLanguage, language, LanguageSupport, StreamParser} from '@codemirror/language'
@@ -141,6 +149,8 @@ export class LangInputEditor {
       extensions: [
         tooltips({parent: this.props.codeBlock.ctrl.app.layoutRef}),
         props.theme,
+        drawSelection(),
+        crosshairCursor(),
         autocompletion({
           defaultKeymap: false,
           override: [() => ({
