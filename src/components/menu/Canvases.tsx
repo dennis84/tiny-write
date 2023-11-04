@@ -21,47 +21,51 @@ export const Canvases = (props: Props) => {
     .filter((c) => c.lastModified && !c.deleted)
     .sort((a, b) => b.lastModified!.getTime() - a.lastModified!.getTime())
 
-  const onOpenCanvas = (canvas: Canvas) => {
-    ctrl.canvas.open(canvas.id)
-    closeTooltip()
+  const onOpenCanvas = () => {
+    const id = current()?.id
+    if (!id) return
+    ctrl.canvas.open(id)
+    closeCardMenu()
     props.onOpen()
   }
 
   const onRemove = () => {
     const id = current()?.id
     if (id) ctrl.canvas.deleteCanvas(id)
-    closeTooltip()
+    closeCardMenu()
   }
 
   const onNew = () => {
     ctrl.canvas.newCanvas()
   }
 
-  const closeTooltip = () => {
+  const showCardMenu = (anchor: HTMLElement, canvas: Canvas) => {
+    setCurrent(canvas)
+    setTooltipAnchor(anchor)
+  }
+
+  const closeCardMenu = () => {
     setCurrent(undefined)
     setTooltipAnchor(undefined)
   }
 
   const CanvasItem = (p: {canvas: Canvas}) => {
-    const onTooltip = (e: MouseEvent) => {
-      setCurrent(p.canvas)
-      setTooltipAnchor(e.target as HTMLElement)
-    }
-
+    let anchor!: HTMLElement
     return (
       <Card>
         <CardContent
-          onClick={() => onOpenCanvas(p.canvas)}
+          onClick={() => showCardMenu(anchor, p.canvas)}
           active={ctrl.canvas.currentCanvas?.id === p.canvas.id}
-          data-testid="open_canvas"
+          data-testid="open_card_menu"
         >
           <CanvasPreview canvas={p.canvas} />
         </CardContent>
         <CardFooter>
           <span>{formatDistance(new Date(p.canvas.lastModified!), new Date())}</span>
           <CardMenuButton
+            ref={anchor}
             selected={current() === p.canvas}
-            onClick={onTooltip}
+            onClick={() => showCardMenu(anchor, p.canvas)}
           >︙</CardMenuButton>
         </CardFooter>
       </Card>
@@ -83,7 +87,8 @@ export const Canvases = (props: Props) => {
         <ButtonPrimary onClick={onNew} data-testid="new_canvas">New canvas</ButtonPrimary>
       </ButtonGroup>
       <Show when={toolipAnchor() !== undefined}>
-        <Tooltip anchor={toolipAnchor()} onClose={() => closeTooltip()}>
+        <Tooltip anchor={toolipAnchor()} onClose={closeCardMenu}>
+          <div onClick={onOpenCanvas}>↪️ Open canvas</div>
           <div onClick={onRemove}>🗑️ Delete</div>
         </Tooltip>
       </Show>

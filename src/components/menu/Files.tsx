@@ -79,9 +79,10 @@ export const Files = (props: Props) => {
     .filter((f) => f.lastModified && !f.deleted)
     .sort((a, b) => b.lastModified!.getTime() - a.lastModified!.getTime())
 
-  const onOpenFile = async (file?: File) => {
-    if (!file) return
-    await ctrl.editor.openFile(unwrap(file))
+  const onOpenFile = async () => {
+    const f = unwrap(current())
+    if (!f) return
+    await ctrl.editor.openFile(unwrap(f))
     closeTooltip()
     props.onOpen()
   }
@@ -103,11 +104,22 @@ export const Files = (props: Props) => {
     props.onOpen()
   }
 
-  const onAddToCanvas = (file: File) => {
-    ctrl.canvas.addFile(file)
-    ctrl.canvas.select(file.id)
-    ctrl.canvas.focus(file.id)
+  const onAddToCanvas = () => {
+    const f = unwrap(current())
+    if (!f) return
+    ctrl.canvas.addFile(f)
+    ctrl.canvas.select(f.id)
+    ctrl.canvas.focus(f.id)
     props.onOpen()
+  }
+
+  const showCardMenu = (anchor: HTMLElement, file: File) => {
+    setCurrent(file)
+    setTooltipAnchor(anchor)
+    if (store.mode === Mode.Canvas) {
+      ctrl.canvas.select(file.id)
+      ctrl.canvas.focus(file.id)
+    }
   }
 
   const closeTooltip = () => {
@@ -115,16 +127,18 @@ export const Files = (props: Props) => {
     setTooltipAnchor(undefined)
   }
 
-  const FileItem = (p: {file: File}) => {
-    const [path, setPath] = createSignal<string>()
-
-    const onCardClick = () => {
-      if (store.mode === Mode.Canvas) {
-        onAddToCanvas(p.file)
-      } else {
-        onOpenFile(p.file)
-      }
+  const isOnCanvas = (file?: File): boolean => {
+    if (store.mode === Mode.Editor) {
+      return false
     }
+
+    const elements = ctrl.canvas.currentCanvas?.elements
+    return elements?.some((el) => el.id === file?.id) ?? false
+  }
+
+  const FileItem = (p: {file: File}) => {
+    let anchor!: HTMLElement
+    const [path, setPath] = createSignal<string>()
 
     const isActive = (): boolean => {
       if (store.mode === Mode.Editor) {
@@ -133,20 +147,6 @@ export const Files = (props: Props) => {
 
       const elements = ctrl.canvas.currentCanvas?.elements
       return elements?.some((el) => el.selected && el.id === p.file.id) ?? false
-    }
-
-    const isOnCanvas = (): boolean => {
-      if (store.mode === Mode.Editor) {
-        return false
-      }
-
-      const elements = ctrl.canvas.currentCanvas?.elements
-      return elements?.some((el) => el.id === p.file.id) ?? false
-    }
-
-    const onTooltip = (e: MouseEvent) => {
-      setCurrent(p.file)
-      setTooltipAnchor(e.target as HTMLElement)
     }
 
     onMount(async () => {
@@ -158,10 +158,10 @@ export const Files = (props: Props) => {
     return (
       <Card>
         <CardContent
-          onClick={onCardClick}
+          onClick={() => showCardMenu(anchor, p.file)}
           selected={current() === p.file}
           active={isActive()}
-          isOnCanvas={isOnCanvas()}
+          isOnCanvas={isOnCanvas(p.file)}
           data-testid="open">
           <Show
             when={p.file.path}
@@ -171,8 +171,9 @@ export const Files = (props: Props) => {
         <CardFooter>
           <span>{formatDistance(new Date(p.file.lastModified!), new Date())}</span>
           <CardMenuButton
+            ref={anchor}
             selected={current() === p.file}
-            onClick={onTooltip}
+            onClick={() => showCardMenu(anchor, p.file)}
           >︙</CardMenuButton>
         </CardFooter>
       </Card>
@@ -196,7 +197,13 @@ export const Files = (props: Props) => {
       <Show when={toolipAnchor() !== undefined}>
         <Tooltip anchor={toolipAnchor()} onClose={() => closeTooltip()}>
           <Show when={store.mode === Mode.Canvas}>
-            <div onClick={() => onOpenFile(current())}>↪️ Open in editor mode</div>
+            <Show when={!isOnCanvas(current())}>
+              <div onClick={onAddToCanvas}>🫳 Add to canvas</div>
+            </Show>
+            <div onClick={onOpenFile}>↪️ Open in editor mode</div>
+          </Show>
+          <Show when={store.mode === Mode.Editor}>
+            <div onClick={onOpenFile}>↪️ Open file</div>
           </Show>
           <div onClick={onRemove}>🗑️ Delete</div>
         </Tooltip>

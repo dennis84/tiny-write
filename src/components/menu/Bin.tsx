@@ -56,35 +56,29 @@ export const Bin = (props: Props) => {
     setTooltipAnchor(undefined)
   }
 
-  const showCardMenu = (e: MouseEvent, id: string) => {
+  const showCardMenu = (anchor: HTMLElement, id: string) => {
     setCurrent(id)
-    setTooltipAnchor(e.target as HTMLElement)
+    setTooltipAnchor(anchor)
   }
 
-  const onTooltipClose = () => {
+  const onCardMenuClose = () => {
     setCurrent(undefined)
     setTooltipAnchor(undefined)
   }
 
-  // const fetchItems = async () => {
-  //   const files = await ctrl.file.fetchDeletedFiles()
-  //   const canvases = await ctrl.canvas.fetchDeletedCanvases()
-  //   const items = [...files, ...canvases]
-  //     .sort((a, b) => compareDesc(a.lastModified ?? 0, b.lastModified ?? 0))
-  //   setItems(items)
-  // }
-
   const FileItem = (p: {file: File}) => {
+    let anchor!: HTMLElement
     return (
       <Card>
-        <CardContent>
+        <CardContent onClick={() => showCardMenu(anchor, p.file.id)}>
           <Excerpt file={p.file} />
         </CardContent>
         <CardFooter>
           <span>{formatDistance(new Date(p.file.lastModified!), new Date())}</span>
           <CardMenuButton
+            ref={anchor}
             selected={current() === p.file.id}
-            onClick={(e: MouseEvent) => showCardMenu(e, p.file.id)}
+            onClick={() => showCardMenu(anchor, p.file.id)}
           >︙</CardMenuButton>
         </CardFooter>
       </Card>
@@ -92,16 +86,18 @@ export const Bin = (props: Props) => {
   }
 
   const CanvasItem = (p: {canvas: Canvas}) => {
+    let anchor!: HTMLElement
     return (
       <Card>
-        <CardContent>
+        <CardContent onClick={() => showCardMenu(anchor, p.canvas.id)}>
           <CanvasPreview canvas={p.canvas} />
         </CardContent>
         <CardFooter>
           <span>{formatDistance(new Date(p.canvas.lastModified!), new Date())}</span>
           <CardMenuButton
+            ref={anchor}
             selected={current() === p.canvas.id}
-            onClick={(e: MouseEvent) => showCardMenu(e, p.canvas.id)}
+            onClick={() => showCardMenu(anchor, p.canvas.id)}
           >︙</CardMenuButton>
         </CardFooter>
       </Card>
@@ -127,7 +123,7 @@ export const Bin = (props: Props) => {
         <Button onClick={onBack}>↩ Back</Button>
       </ButtonGroup>
       <Show when={tooltipAnchor() !== undefined}>
-        <Tooltip anchor={tooltipAnchor()} onClose={onTooltipClose}>
+        <Tooltip anchor={tooltipAnchor()} onClose={onCardMenuClose}>
           <div onClick={onRestore}>🔄 Restore</div>
           <div onClick={onRemove}>⚠️ Delete forever</div>
         </Tooltip>
