@@ -1,7 +1,13 @@
 import {createEffect, onMount} from 'solid-js'
 import {Ctrl} from '@/services'
 import {useState} from '@/state'
-import { CURSOR_DEFAULT, CURSOR_GRAB, CURSOR_GRABBED, CURSOR_POINTER, CURSOR_RESIZE_NWSE, CURSOR_TEXT } from './Icons'
+import {
+  CURSOR_DEFAULT,
+  CURSOR_GRAB,
+  CURSOR_GRABBED,
+  CURSOR_POINTER,
+  CURSOR_TEXT,
+} from './Cursors'
 
 export default () => {
   const [, ctrl] = useState()
@@ -43,11 +49,11 @@ export default () => {
     root.style.setProperty('--border-radius', ctrl.config.borderRadius)
     root.style.setProperty('--menu-font-family', ctrl.config.DEFAULT_FONT)
     root.style.setProperty('--menu-font-size', '14px')
-    root.style.setProperty('--cursorDefault', CURSOR_DEFAULT)
-    root.style.setProperty('--cursorPointer', CURSOR_POINTER)
-    root.style.setProperty('--cursorGrab', CURSOR_GRAB)
-    root.style.setProperty('--cursorGrabbed', CURSOR_GRABBED)
-    root.style.setProperty('--cursorText', CURSOR_TEXT)
+    root.style.setProperty('--cursor-default', CURSOR_DEFAULT)
+    root.style.setProperty('--cursor-pointer', CURSOR_POINTER)
+    root.style.setProperty('--cursor-grab', CURSOR_GRAB)
+    root.style.setProperty('--cursor-grabbed', CURSOR_GRABBED)
+    root.style.setProperty('--cursor-text', CURSOR_TEXT)
   })
 
   return <></>

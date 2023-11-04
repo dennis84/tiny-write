@@ -81,7 +81,9 @@ export default () => {
             onClick={() => onNewFile(link)}
             data-testid="link_end_new_file"
           >🆕 New file</div>
-          <hr class="divider" />
+          <Show when={getFiles().length > 0}>
+            <hr class="divider" />
+          </Show>
           <For each={getFiles()}>
             {(file: File) => <FileName file={file} link={link} />}
           </For>

@@ -22,7 +22,7 @@ const Path = styled('path')`
   stroke: transparent;
   stroke-width: 30;
   stroke-linecap: round;
-  cursor: var(--cursorGrab);
+  cursor: var(--cursor-grab);
   pointer-events: auto;
   touch-action: none;
   fill: none;

@@ -95,7 +95,7 @@ const codeBlock = (props: Props) => `
         margin: 4px;
         height: 16px;
         line-height: 100%;
-        cursor: var(--cursorPointer);
+        cursor: var(--cursor-pointer);
         z-index: 10;
         user-select: none;
         img {
@@ -137,7 +137,7 @@ const codeBlock = (props: Props) => `
         display: flex;
         justify-content: center;
         align-items: center;
-        cursor: var(--cursorPointer);
+        cursor: var(--cursor-pointer);
         font-size: 10px;
         user-select: none;
         background: var(--foreground-10);
@@ -167,7 +167,7 @@ const proseMirror = (props: Props) => `
   .ProseMirror {
     ${codeBlock(props)}
     ${props.markdown ? 'white-space: pre-wrap' : ''};
-    cursor: var(--cursorText);
+    cursor: var(--cursor-text);
     tab-size: 4;
     word-wrap: break-word;
     white-space: pre-wrap;
@@ -285,7 +285,7 @@ const proseMirror = (props: Props) => `
         display: flex;
         justify-content: center;
         align-items: center;
-        cursor: var(--cursorPointer);
+        cursor: var(--cursor-pointer);
         user-select: none;
         z-index: 1;
         background: var(--background);
@@ -398,7 +398,7 @@ const proseMirror = (props: Props) => `
     .container-details {
       background: var(--foreground-10);
       > summary {
-        cursor: var(--cursorPointer);
+        cursor: var(--cursor-pointer);
       }
       &[open] > summary {
         margin-bottom: 10px;
@@ -415,7 +415,7 @@ const proseMirror = (props: Props) => `
       align-items: center;
       max-width: 100%;
       margin-right: 10px;
-      cursor: var(--cursorDefault);
+      cursor: var(--cursor-default);
       line-height: 0;
       &.error {
         background: var(--foreground-10);

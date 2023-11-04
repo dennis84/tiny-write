@@ -20,10 +20,10 @@ export default () => {
       <Label>Edit</Label>
       <Sub data-tauri-drag-region="true">
         <Link onClick={onUndo}>
-          Undo <Keys keys={[modKey, 'z']} />
+          Undo ↩️ <Keys keys={[modKey, 'z']} />
         </Link>
         <Link onClick={onRedo}>
-          Redo <Keys keys={[modKey, ...(isMac ? ['Shift', 'z'] : ['y'])]} />
+          Redo ↪️ <Keys keys={[modKey, ...(isMac ? ['Shift', 'z'] : ['y'])]} />
         </Link>
       </Sub>
     </>

@@ -16,11 +16,6 @@ export default ({maybeHide}: {maybeHide: () => void}) => {
     maybeHide()
   }
 
-  const onRemoveLinks = () => {
-    ctrl.canvas.removeLinks()
-    maybeHide()
-  }
-
   const onBackToContent = () => {
     ctrl.canvas.backToContent()
     maybeHide()
@@ -39,9 +34,8 @@ export default ({maybeHide}: {maybeHide: () => void}) => {
           New file 📝 <Keys keys={[modKey, 'n']} />
         </Link>
         <Link onClick={onClearCanvas}>Clear Canvas 🧽</Link>
-        <Link onClick={onRemoveLinks}>Remove links</Link>
         <Link onClick={onBackToContent}>Back to content 🎯</Link>
-        <Link onClick={onSnapToGrid}>Snap to grid 🫰 {ctrl.canvas.currentCanvas?.snapToGrid && '✅'}</Link>
+        <Link onClick={onSnapToGrid}>Snap to grid {ctrl.canvas.currentCanvas?.snapToGrid && '✅'}</Link>
       </Sub>
     </>
   )

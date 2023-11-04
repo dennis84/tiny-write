@@ -5,7 +5,7 @@ export const Common = `
   padding: 0 20px;
   border-radius: 30px;
   font-size: var(--menu-font-size);
-  cursor: var(--cursorPointer);
+  cursor: var(--cursor-pointer);
   display: inline-flex;
   justify-content: center;
   align-items: center;

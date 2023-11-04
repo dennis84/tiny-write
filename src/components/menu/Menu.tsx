@@ -44,7 +44,7 @@ const Burger = styled('button')`
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  cursor: var(--cursorPointer);
+  cursor: var(--cursor-pointer);
   border: 0;
   outline: none;
   @media (max-width: ${fullWidth.toString()}px) {
@@ -136,7 +136,7 @@ export const Link = styled('button')`
   ${itemCss}
   background: none;
   border: 0;
-  cursor: var(--cursorPointer);
+  cursor: var(--cursor-pointer);
   i {
     font-style: normal;
   }

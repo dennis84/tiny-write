@@ -42,7 +42,7 @@ const LinkHandleDot = styled('span')`
   height: ${CIRCLE_HOVER_RADIUS.toString()}px;
   border-radius: ${CIRCLE_HOVER_RADIUS.toString()}px;
   background: transparent;
-  cursor: var(--cursorPointer);
+  cursor: var(--cursor-pointer);
   z-index: 99999;
   display: flex;
   justify-content: center;
@@ -235,11 +235,11 @@ const Bounds = styled('svg')`
   height: ${(props) => Number(props.height) + BORDER_SIZE_2}px;
   left: ${(props) => Number(props.x) - BORDER_SIZE}px;
   top: ${(props) => Number(props.y) - BORDER_SIZE}px;
-  cursor: var(--cursorGrab);
+  cursor: var(--cursor-grab);
   touch-action: none;
   z-index: 2;
   &:active {
-    cursor: var(--cursorGrabbed);
+    cursor: var(--cursor-grabbed);
   }
 `
 

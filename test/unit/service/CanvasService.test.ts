@@ -682,27 +682,6 @@ test('clearCanvas', () => {
   expect(service.currentCanvas?.elements.length).toBe(0)
 })
 
-test('clearCanvas', () => {
-  const [store, setState] = createStore(createState({
-    canvases: [
-      createCanvas({
-        id: '1',
-        active: true,
-        elements: [
-          createEditorElement({id: '1'}),
-          createEditorElement({id: '2', x: 300, y: 300}),
-          createLinkElement({id: '3', from: '1', to: '2'}),
-        ],
-      }),
-    ],
-  }))
-
-  const service = new CanvasService(ctrl, store, setState)
-  service.removeLinks()
-
-  expect(service.currentCanvas?.elements.length).toBe(2)
-})
-
 test('renderEditor', async () => {
   const element = createEditorElement({id: '1'})
   const init = createState({

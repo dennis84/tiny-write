@@ -9,7 +9,7 @@ const Link = styled('a')`
   margin: 0;
   display: block;
   border-radius: 3px;
-  cursor: var(--cursorPointer);
+  cursor: var(--cursor-pointer);
   color: var(--foreground-60);
   &:hover {
     background: var(--foreground-10);

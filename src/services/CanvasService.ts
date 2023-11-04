@@ -604,27 +604,6 @@ export class CanvasService {
     remote.info('💾 All elements cleared')
   }
 
-  removeLinks() {
-    const currentCanvas = this.currentCanvas
-    if (!currentCanvas) return
-    const elements = []
-    const toRemove = []
-
-    for (const el of currentCanvas.elements) {
-      if (isLinkElement(el)) {
-        toRemove.push(el.id)
-        continue
-      }
-
-      elements.push(el)
-    }
-
-    this.ctrl.canvasCollab.removeMany(toRemove)
-    this.updateCanvas(currentCanvas.id, {elements})
-    this.saveCanvas()
-    remote.info('💾 All links removed')
-  }
-
   async renderEditor(element: CanvasEditorElement, node: HTMLElement) {
     const file = this.ctrl.file.findFile({id: element.id})
     if (file) Y.applyUpdate(this.store.collab!.ydoc!, file.ydoc)
