@@ -162,7 +162,7 @@ export const Files = (props: Props) => {
           selected={current() === p.file}
           active={isActive()}
           isOnCanvas={isOnCanvas(p.file)}
-          data-testid="open">
+        >
           <Show
             when={p.file.path}
             fallback={<Excerpt file={p.file} />}
@@ -198,14 +198,14 @@ export const Files = (props: Props) => {
         <Tooltip anchor={toolipAnchor()} onClose={() => closeTooltip()}>
           <Show when={store.mode === Mode.Canvas}>
             <Show when={!isOnCanvas(current())}>
-              <div onClick={onAddToCanvas}>🫳 Add to canvas</div>
+              <div onClick={onAddToCanvas} data-testid="add_to_canvas">🫳 Add to canvas</div>
             </Show>
-            <div onClick={onOpenFile}>↪️ Open in editor mode</div>
+            <div onClick={onOpenFile} data-testid="open_editor_mode">↪️ Open in editor mode</div>
           </Show>
           <Show when={store.mode === Mode.Editor}>
-            <div onClick={onOpenFile}>↪️ Open file</div>
+            <div onClick={onOpenFile} data-testid="open">↪️ Open file</div>
           </Show>
-          <div onClick={onRemove}>🗑️ Delete</div>
+          <div onClick={onRemove} data-testid="delete">🗑️ Delete</div>
         </Tooltip>
       </Show>
     </Drawer>

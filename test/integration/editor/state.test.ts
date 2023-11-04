@@ -41,6 +41,7 @@ test('open file', async ({page}) => {
   await expect(page.locator('[data-testid="file_list"] > div:nth-child(1)')).toContainText('test2')
   await expect(page.locator('[data-testid="file_list"] > div:nth-child(2)')).toContainText('test1')
   await page.click('[data-testid="file_list"] > div:nth-child(2) > div')
+  await page.click('[data-testid="open"]')
 
   await page.waitForTimeout(100)
   await lineTextEq(page, 1, 'test1')

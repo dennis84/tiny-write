@@ -37,10 +37,12 @@ test('html to markdown and back', async ({page}) => {
   await expect(page.locator('[data-testid="file_list"] > div:nth-child(1)')).toContainText('markdown')
   await expect(page.locator('[data-testid="file_list"] > div:nth-child(2)')).toContainText('title')
   await page.click('[data-testid="file_list"] > div:nth-child(2) > div')
+  await page.click('[data-testid="open"]')
 
   await expect(page.locator('.ProseMirror h1')).toHaveText('title')
   await expect(page.locator('.ProseMirror blockquote')).toHaveText('blockquote')
 
   await page.click('[data-testid="file_list"] > div:nth-child(1) > div')
+  await page.click('[data-testid="open"]')
   await lineTextEq(page, 2, '# markdown')
 })
