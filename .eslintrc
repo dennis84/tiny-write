@@ -17,7 +17,7 @@
     "indent": "off",
     "curly": ["error", "multi-line"],
     "object-curly-spacing": ["error", "never"],
-    "quotes": [2, "single", {"avoidEscape": true}, {"allowTemplateLiterals": true}],
+    "quotes": [2, "single", {"avoidEscape": true, "allowTemplateLiterals": true}],
     "no-trailing-spaces": ["error"],
     "no-multiple-empty-lines": ["error", {"max": 1, "maxEOF": 0}],
     "@typescript-eslint/indent": ["error", 2, {"flatTernaryExpressions": true}],
