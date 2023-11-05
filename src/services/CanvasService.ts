@@ -29,14 +29,6 @@ import * as remote from '@/remote'
 import {createEmptyText, createExtensions, createNodeViews, createSchema} from '@/prosemirror-setup'
 import {Ctrl} from '.'
 
-interface UpdateCanvas {
-  camera?: Camera;
-  elements?: CanvasElement[];
-  lastModified?: Date;
-  snapToGrid?: boolean;
-  deleted?: boolean;
-}
-
 type UpdateElement =
   Partial<CanvasLinkElement> |
   Partial<CanvasEditorElement> |
@@ -56,7 +48,7 @@ export class CanvasService {
     return this.store.canvases?.find((c) => c.active)
   }
 
-  updateCanvas(id: string, update: UpdateCanvas) {
+  updateCanvas(id: string, update: Partial<Canvas>) {
     const index = this.store.canvases.findIndex((canvas) => canvas.id === id)
     if (index === -1) return
     this.setState('canvases', index, update)
@@ -315,13 +307,7 @@ export class CanvasService {
 
   newFile(link?: CanvasLinkElement) {
     const file = this.ctrl.file.createFile()
-    const state = unwrap(this.store)
-    const update = {
-      ...state,
-      files: [...state.files, file],
-    }
-
-    this.setState(update)
+    this.setState('files', [...this.store.files, file])
     this.addFile(file, link)
     remote.info('💾 New file added')
   }

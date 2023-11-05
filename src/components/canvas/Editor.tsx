@@ -1,9 +1,10 @@
 import {onCleanup, onMount, Show} from 'solid-js'
 import {css} from 'solid-styled-components'
-import {CanvasEditorElement, ElementType, useState} from '@/state'
+import {CanvasEditorElement, useState} from '@/state'
 import {CanvasEditor} from '@/components/editor/Editor'
 import {Scroll} from '@/components/Layout'
 import Bounds from './Bounds'
+import LinkHandles from './LinkHandles'
 
 export default ({element, index}: {element: CanvasEditorElement; index: number}) => {
   const [store, ctrl] = useState()
@@ -34,7 +35,6 @@ export default ({element, index}: {element: CanvasEditorElement; index: number})
       <Show when={!element.active}>
         <Bounds
           id={element.id}
-          elementType={ElementType.Editor}
           x={element.x}
           y={element.y}
           width={element.width}
@@ -42,6 +42,13 @@ export default ({element, index}: {element: CanvasEditorElement; index: number})
           selected={element.selected}
           onSelect={onSelect}
           onDoubleClick={onDoubleClick}
+        />
+        <LinkHandles
+          id={element.id}
+          x={element.x}
+          y={element.y}
+          width={element.width}
+          height={element.height}
         />
       </Show>
       <Scroll
