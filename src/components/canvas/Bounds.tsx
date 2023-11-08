@@ -1,17 +1,19 @@
-import {createEffect, onCleanup, onMount} from 'solid-js'
+import {Show, createEffect, onCleanup, onMount, splitProps} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {DragGesture} from '@use-gesture/vanilla'
 import {CornerType, EdgeType, useState} from '@/state'
 import {Box2d, Vec2d} from '@tldraw/primitives'
 
 interface BoundsProps {
-  id: string;
+  ids: string[];
   x: number;
   y: number;
   width: number;
   height: number;
   selected?: boolean;
-  onSelect?: () => void;
+  visible?: boolean;
+  index?: number;
+  onSelect?: (e: MouseEvent) => void;
   onDoubleClick?: () => void;
 }
 
@@ -35,6 +37,7 @@ const Border = styled('rect')`
 const Edge = (props: EdgeProps) => {
   const [, ctrl] = useState()
 
+  const id = props.ids[0]
   const vert = props.type === EdgeType.Top || props.type === EdgeType.Bottom
   let ref!: SVGRectElement
 
@@ -51,8 +54,8 @@ const Edge = (props: EdgeProps) => {
       if (currentCanvas.snapToGrid) box.snapToGrid(10)
       const rect = {x: box.x, y: box.y, width: box.w, height: box.h}
 
-      ctrl.canvasCollab.updateElementThrottled({id: props.id, ...rect})
-      ctrl.canvas.updateCanvasElement(props.id, rect)
+      ctrl.canvasCollab.updateElementThrottled({id, ...rect})
+      ctrl.canvas.updateCanvasElement(id, rect)
       ctrl.canvas.updateCanvas(currentCanvas.id, {lastModified: new Date()})
       ctrl.canvas.saveCanvasDebounced()
       return initial
@@ -86,6 +89,7 @@ const Edge = (props: EdgeProps) => {
 const Corner = (props: CornerProps) => {
   let ref!: SVGRectElement
   const [, ctrl] = useState()
+  const id = props.ids[0]
   const left = props.type === CornerType.TopLeft || props.type === CornerType.BottomLeft
   const bottom = props.type === CornerType.BottomLeft || props.type === CornerType.BottomRight
   const cursor = props.type === CornerType.TopLeft ? 'nwse-resize'
@@ -109,8 +113,8 @@ const Corner = (props: CornerProps) => {
       if (currentCanvas.snapToGrid) box.snapToGrid(10)
 
       const rect = {x: box.x, y: box.y, width: box.w, height: box.h}
-      ctrl.canvasCollab.updateElementThrottled({id: props.id, ...rect})
-      ctrl.canvas.updateCanvasElement(props.id, rect)
+      ctrl.canvasCollab.updateElementThrottled({id, ...rect})
+      ctrl.canvas.updateCanvasElement(id, rect)
       ctrl.canvas.updateCanvas(currentCanvas.id, {lastModified: new Date()})
       ctrl.canvas.saveCanvasDebounced()
       return initial
@@ -147,7 +151,6 @@ const Bounds = styled('svg')`
   top: ${(props) => Number(props.y) - BORDER_SIZE}px;
   cursor: var(--cursor-grab);
   touch-action: none;
-  z-index: 2;
   &:active {
     cursor: var(--cursor-grabbed);
   }
@@ -155,7 +158,9 @@ const Bounds = styled('svg')`
 
 export default (props: BoundsProps) => {
   let ref!: SVGSVGElement
+  const [local, others] = splitProps(props, ['onSelect', 'onDoubleClick'])
   const [, ctrl] = useState()
+  const id = props.ids[0]
   const currentCanvas = ctrl.canvas.currentCanvas
   if (!currentCanvas) return
 
@@ -171,8 +176,8 @@ export default (props: BoundsProps) => {
       if (currentCanvas.snapToGrid) t.snapToGrid(10)
       const [x, y] = t.toArray()
 
-      ctrl.canvasCollab.updateElementThrottled({id: props.id, x, y})
-      ctrl.canvas.updateCanvasElement(props.id, {x, y})
+      ctrl.canvasCollab.updateElementThrottled({id, x, y})
+      ctrl.canvas.updateCanvasElement(id, {x, y})
       ctrl.canvas.updateCanvas(currentCanvas.id, {lastModified: new Date()})
       ctrl.canvas.saveCanvasDebounced()
       return initial
@@ -185,21 +190,83 @@ export default (props: BoundsProps) => {
 
   return (
     <Bounds
-      {...props}
+      {...others}
       ref={ref}
-      onMouseDown={props.onSelect}
-      onDblClick={props.onDoubleClick}
+      style={{'z-index': (props.index ?? 1) + 2}}
+      onMouseDown={local.onSelect}
+      onDblClick={local.onDoubleClick}
       version="1.1"
       xmlns="http://www.w3.org/2000/svg"
     >
-      <Edge {...props} type={EdgeType.Top} />
-      <Edge {...props} type={EdgeType.Right} />
-      <Edge {...props} type={EdgeType.Bottom} />
-      <Edge {...props} type={EdgeType.Left} />
-      <Corner {...props} type={CornerType.TopLeft} />
-      <Corner {...props} type={CornerType.TopRight} />
-      <Corner {...props} type={CornerType.BottomLeft} />
-      <Corner {...props} type={CornerType.BottomRight} />
+      <Edge {...others} type={EdgeType.Top} />
+      <Edge {...others} type={EdgeType.Right} />
+      <Edge {...others} type={EdgeType.Bottom} />
+      <Edge {...others} type={EdgeType.Left} />
+      <Corner {...others} type={CornerType.TopLeft} />
+      <Corner {...others} type={CornerType.TopRight} />
+      <Corner {...others} type={CornerType.BottomLeft} />
+      <Corner {...others} type={CornerType.BottomRight} />
+      <Show when={others.selected && props.visible}><Visible {...props} /></Show>
     </Bounds>
   )
+}
+
+const Visible = (props: BoundsProps) => {
+  const STROKE_WIDTH = 2
+  const RECT_WIDTH = 10
+  const [, ctrl] = useState()
+
+  const zoom = () => ctrl.canvas.currentCanvas?.camera.zoom ?? 1
+
+  const VisibleCorner = styled('rect')`
+    fill: var(--background);
+    stroke: var(--primary-background);
+    pointer-events: none;
+    user-select: none;
+  `
+
+  const VisibleBorder = styled('rect')`
+    fill: none;
+    stroke: var(--primary-background);
+    pointer-events: none;
+    user-select: none;
+  `
+
+  return <>
+    <VisibleBorder
+      x={BORDER_SIZE}
+      y={BORDER_SIZE}
+      width={props.width}
+      height={props.height}
+      style={{'stroke-width': (STROKE_WIDTH / zoom()).toString()}}
+    />
+    <VisibleCorner
+      x={BORDER_SIZE - (RECT_WIDTH / 2 / zoom())}
+      y={BORDER_SIZE - (RECT_WIDTH / 2 / zoom())}
+      width={RECT_WIDTH / zoom()}
+      height={RECT_WIDTH / zoom()}
+      style={{'stroke-width': (STROKE_WIDTH / zoom()).toString()}}
+    />
+    <VisibleCorner
+      x={props.width + BORDER_SIZE - (RECT_WIDTH / 2 / zoom())}
+      y={BORDER_SIZE - (RECT_WIDTH / 2 / zoom())}
+      width={RECT_WIDTH / zoom()}
+      height={RECT_WIDTH / zoom()}
+      style={{'stroke-width': (STROKE_WIDTH / zoom()).toString()}}
+    />
+    <VisibleCorner
+      x={BORDER_SIZE - (RECT_WIDTH / 2 / zoom())}
+      y={props.height + BORDER_SIZE - (RECT_WIDTH / 2 / zoom())}
+      width={RECT_WIDTH / zoom()}
+      height={RECT_WIDTH / zoom()}
+      style={{'stroke-width': (STROKE_WIDTH / zoom()).toString()}}
+    />
+    <VisibleCorner
+      x={props.width + BORDER_SIZE - (RECT_WIDTH / 2 / zoom())}
+      y={props.height + BORDER_SIZE - (RECT_WIDTH / 2 / zoom())}
+      width={RECT_WIDTH / zoom()}
+      height={RECT_WIDTH / zoom()}
+      style={{'stroke-width': (STROKE_WIDTH / zoom()).toString()}}
+    />
+  </>
 }

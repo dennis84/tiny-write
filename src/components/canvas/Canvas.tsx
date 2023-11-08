@@ -1,4 +1,4 @@
-import {createSignal, For, onCleanup, onMount} from 'solid-js'
+import {createSignal, For, onCleanup, onMount, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {Gesture} from '@use-gesture/vanilla'
 import {Vec2d} from '@tldraw/primitives'
@@ -9,6 +9,7 @@ import Link from './Link'
 import Image from './Image'
 import Video from './Video'
 import LinkEnd from './LinkEnd'
+import Bounds from './Bounds'
 
 const Container = styled('div')`
   width: 100%;
@@ -129,6 +130,20 @@ export default () => {
           `
         }}
       >
+        <Show when={ctrl.canvas.selection}>
+          {(sel) =>
+            <Bounds
+              ids={sel().elementIds}
+              x={sel().box.x}
+              y={sel().box.y}
+              width={sel().box.w}
+              height={sel().box.h}
+              selected={true}
+              visible={true}
+              index={99999}
+            />
+          }
+        </Show>
         <For each={ctrl.canvas.currentCanvas?.elements}>
           {(element, index) =>
             isEditorElement(element) ? <Editor element={element} index={index()} /> :

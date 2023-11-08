@@ -11,8 +11,8 @@ export default ({element, index}: {element: CanvasEditorElement; index: number})
   let containerRef!: HTMLDivElement
   let editorRef!: HTMLDivElement
 
-  const onSelect = () => {
-    ctrl.canvas.select(element.id)
+  const onSelect = (e: MouseEvent) => {
+    ctrl.canvas.select(element.id, false, e.shiftKey)
   }
 
   const onDoubleClick = () => {
@@ -34,7 +34,7 @@ export default ({element, index}: {element: CanvasEditorElement; index: number})
     <>
       <Show when={!element.active}>
         <Bounds
-          id={element.id}
+          ids={[element.id]}
           x={element.x}
           y={element.y}
           width={element.width}
@@ -42,6 +42,7 @@ export default ({element, index}: {element: CanvasEditorElement; index: number})
           selected={element.selected}
           onSelect={onSelect}
           onDoubleClick={onDoubleClick}
+          index={index}
         />
         <LinkHandles
           id={element.id}

@@ -34,6 +34,11 @@ type UpdateElement =
   Partial<CanvasEditorElement> |
   Partial<CanvasBoxElement>
 
+export interface Selection {
+  elementIds: string[];
+  box: Box2d;
+}
+
 export class CanvasService {
   public saveCanvasDebounced = debounce(() => this.saveCanvas(), 100)
   public canvasRef: HTMLElement | undefined
@@ -46,6 +51,24 @@ export class CanvasService {
 
   get currentCanvas() {
     return this.store.canvases?.find((c) => c.active)
+  }
+
+  get selection(): Selection | undefined {
+    const currentCanvas = this.currentCanvas
+    if (!currentCanvas) return
+    const elementIds = []
+    let box
+    for (const el of currentCanvas.elements) {
+      if (!el.selected) continue
+      if (isBoxElement(el)) {
+        if (!box) box = this.createBox(el)
+        else box.expand(this.createBox(el))
+        elementIds.push(el.id)
+      }
+    }
+
+    if (!box || elementIds.length < 2) return
+    return {box, elementIds}
   }
 
   updateCanvas(id: string, update: Partial<Canvas>) {
@@ -145,20 +168,22 @@ export class CanvasService {
     }
   }
 
-  select(id: string, active = false) {
+  select(id: string, active = false, extend = false) {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
-    const prevEl = currentCanvas.elements.find((el) => el.selected)
     const newEl = currentCanvas.elements.find((el) => el.id === id)
 
-    if (prevEl && prevEl?.id !== newEl?.id) {
-      this.updateCanvasElement(prevEl.id, {selected: false, active: false})
+    if (!extend) {
+      for (const el of currentCanvas.elements) {
+        if (el.id === id) continue
+        this.updateCanvasElement(el.id, {selected: false, active: false})
+      }
     }
 
     if (!newEl) return
     this.updateCanvasElement(newEl.id, {selected: true, active})
 
-    if (isEditorElement(newEl)) {
+    if (active && isEditorElement(newEl)) {
       newEl.editorView?.focus()
     }
   }
@@ -166,9 +191,9 @@ export class CanvasService {
   deselect() {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
-    const prevEl = currentCanvas.elements.find((el) => el.selected)
-    if (!prevEl) return
-    this.updateCanvasElement(prevEl.id, {selected: false, active: false})
+    for (const el of currentCanvas.elements) {
+      this.updateCanvasElement(el.id, {selected: false, active: false})
+    }
   }
 
   createCanvas(params: Partial<Canvas>): Canvas {
