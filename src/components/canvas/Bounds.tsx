@@ -1,8 +1,8 @@
 import {Show, createEffect, onCleanup, onMount, splitProps} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {DragGesture} from '@use-gesture/vanilla'
-import {CornerType, EdgeType, useState} from '@/state'
-import {Box2d, Vec2d} from '@tldraw/primitives'
+import {Canvas, CanvasBoxElement, CornerType, EdgeType, useState} from '@/state'
+import {Box2d, PI, Vec2d, rotateSelectionHandle} from '@tldraw/primitives'
 
 interface BoundsProps {
   ids: string[];
@@ -34,10 +34,58 @@ const Border = styled('rect')`
   touch-action: none;
 `
 
+interface GestureState {
+  bounds: Box2d;
+  elements: [string, Box2d][];
+}
+
+const createGestureState = (props: BoundsProps, canvas: Canvas): GestureState  => ({
+  bounds: new Box2d(props.x, props.y, props.width, props.height),
+  elements: props.ids.map((id) => {
+    const el = canvas.elements.find((it) => it.id === id) as CanvasBoxElement
+    return [id, new Box2d(el.x, el.y, el.width, el.height)]
+  }),
+})
+
+const resizeElements = (
+  context: GestureState,
+  handle: EdgeType | CornerType,
+  mx: number,
+  my: number,
+  shiftKey = false,
+  snapToGrid = false,
+): [string, Box2d][] => {
+  const oppositeHandle = rotateSelectionHandle(handle, PI)
+  const scalePoint = context.bounds.getHandlePoint(oppositeHandle)
+  return context.elements.map(([id, element]) => {
+    const result = Box2d.Resize(context.bounds, handle, mx, my, shiftKey)
+    const s = new Vec2d(result.scaleX, result.scaleY)
+    let {minX, minY, maxX, maxY} = element;
+
+    const flipX = s.x < 0
+    const flipY = s.y < 0
+    if (flipX) {
+      const t = maxX;
+      maxX = minX;
+      minX = t;
+    }
+    if (flipY) {
+      const t = maxY;
+      maxY = minY;
+      minY = t;
+    }
+
+    const tl = new Vec2d(minX, minY).sub(scalePoint).mulV(s).add(scalePoint)
+    const br = new Vec2d(maxX, maxY).sub(scalePoint).mulV(s).add(scalePoint)
+    const box = new Box2d(tl.x, tl.y, br.x-tl.x, br.y-tl.y)
+    if (snapToGrid) box.snapToGrid(10)
+    return [id, box]
+  })
+}
+
 const Edge = (props: EdgeProps) => {
   const [, ctrl] = useState()
 
-  const id = props.ids[0]
   const vert = props.type === EdgeType.Top || props.type === EdgeType.Bottom
   let ref!: SVGRectElement
 
@@ -47,18 +95,19 @@ const Edge = (props: EdgeProps) => {
 
     const resizeGesture = new DragGesture(ref, ({event, movement: [mx, my], memo, first, shiftKey}) => {
       event.stopPropagation()
-      const initial: Box2d = first ? new Box2d(props.x, props.y, props.width, props.height) : memo
+      const context: GestureState = first ? createGestureState(props, currentCanvas) : memo
       const {zoom} = currentCanvas.camera
-      const box = Box2d.Resize(initial, props.type, mx / zoom, my / zoom, shiftKey).box
 
-      if (currentCanvas.snapToGrid) box.snapToGrid(10)
-      const rect = {x: box.x, y: box.y, width: box.w, height: box.h}
+      resizeElements(context, props.type, mx / zoom, my / zoom, shiftKey, currentCanvas.snapToGrid)
+        .forEach(([id, box]) => {
+          const rect = {x: box.x, y: box.y, width: box.w, height: box.h}
+          ctrl.canvasCollab.updateElementThrottled({id, ...rect})
+          ctrl.canvas.updateCanvasElement(id, rect)
+        })
 
-      ctrl.canvasCollab.updateElementThrottled({id, ...rect})
-      ctrl.canvas.updateCanvasElement(id, rect)
       ctrl.canvas.updateCanvas(currentCanvas.id, {lastModified: new Date()})
       ctrl.canvas.saveCanvasDebounced()
-      return initial
+      return context
     })
 
     onCleanup(() => {
@@ -89,7 +138,6 @@ const Edge = (props: EdgeProps) => {
 const Corner = (props: CornerProps) => {
   let ref!: SVGRectElement
   const [, ctrl] = useState()
-  const id = props.ids[0]
   const left = props.type === CornerType.TopLeft || props.type === CornerType.BottomLeft
   const bottom = props.type === CornerType.BottomLeft || props.type === CornerType.BottomRight
   const cursor = props.type === CornerType.TopLeft ? 'nwse-resize'
@@ -104,20 +152,19 @@ const Corner = (props: CornerProps) => {
 
     const gesture = new DragGesture(ref, ({event, movement: [mx, my], shiftKey, memo, first}) => {
       event.stopPropagation()
-      const initial: Box2d = first ? new Box2d(props.x, props.y, props.width, props.height) : memo
+      const context: GestureState = first ? createGestureState(props, currentCanvas) : memo
       const {zoom} = currentCanvas.camera
-      const x = mx / zoom
-      const y = my / zoom
 
-      const box = Box2d.Resize(initial, props.type, x, y, shiftKey).box
-      if (currentCanvas.snapToGrid) box.snapToGrid(10)
+      resizeElements(context, props.type, mx / zoom, my / zoom, shiftKey, currentCanvas.snapToGrid)
+        .forEach(([id, box]) => {
+          const rect = {x: box.x, y: box.y, width: box.w, height: box.h}
+          ctrl.canvasCollab.updateElementThrottled({id, ...rect})
+          ctrl.canvas.updateCanvasElement(id, rect)
+        })
 
-      const rect = {x: box.x, y: box.y, width: box.w, height: box.h}
-      ctrl.canvasCollab.updateElementThrottled({id, ...rect})
-      ctrl.canvas.updateCanvasElement(id, rect)
       ctrl.canvas.updateCanvas(currentCanvas.id, {lastModified: new Date()})
       ctrl.canvas.saveCanvasDebounced()
-      return initial
+      return context
     })
 
     onCleanup(() => {
@@ -160,7 +207,6 @@ export default (props: BoundsProps) => {
   let ref!: SVGSVGElement
   const [local, others] = splitProps(props, ['onSelect', 'onDoubleClick'])
   const [, ctrl] = useState()
-  const id = props.ids[0]
   const currentCanvas = ctrl.canvas.currentCanvas
   if (!currentCanvas) return
 
@@ -169,18 +215,21 @@ export default (props: BoundsProps) => {
     if (!currentCanvas) return
 
     const gesture = new DragGesture(ref, ({first, movement: [mx, my], memo}) => {
-      const initial = first ? new Vec2d(props.x, props.y) : memo
+      const context: GestureState = first ? createGestureState(props, currentCanvas) : memo
       const {zoom} = currentCanvas.camera
 
-      const t = new Vec2d(mx, my).div(zoom).add(initial)
-      if (currentCanvas.snapToGrid) t.snapToGrid(10)
-      const [x, y] = t.toArray()
+      context.elements.forEach(([id, initial]) => {
+        const t = new Vec2d(mx, my).div(zoom).add(initial)
+        if (currentCanvas.snapToGrid) t.snapToGrid(10)
+        const [x, y] = t.toArray()
 
-      ctrl.canvasCollab.updateElementThrottled({id, x, y})
-      ctrl.canvas.updateCanvasElement(id, {x, y})
+        ctrl.canvasCollab.updateElementThrottled({id, x, y})
+        ctrl.canvas.updateCanvasElement(id, {x, y})
+      })
+
       ctrl.canvas.updateCanvas(currentCanvas.id, {lastModified: new Date()})
       ctrl.canvas.saveCanvasDebounced()
-      return initial
+      return context
     })
 
     onCleanup(() => {
