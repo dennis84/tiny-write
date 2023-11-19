@@ -1,7 +1,9 @@
+import {onMount} from 'solid-js'
 import {css} from 'solid-styled-components'
-import {CanvasVideoElement, ElementType, useState} from '@/state'
+import {CanvasVideoElement, useState} from '@/state'
+import {Selection} from '@/services/CanvasService'
 import Bounds from './Bounds'
-import {onMount} from 'solid-js';
+import LinkHandles from './LinkHandles'
 
 export default ({element, index}: {element: CanvasVideoElement; index: number}) => {
   let videoRef!: HTMLVideoElement
@@ -9,6 +11,11 @@ export default ({element, index}: {element: CanvasVideoElement; index: number}) 
 
   const onSelect = () => {
     ctrl.canvas.select(element.id)
+  }
+
+  const createSelection = (): Selection => {
+    const box = ctrl.canvas.createBox(element)
+    return {box, elements: [[element.id, box]]}
   }
 
   onMount(() => {
@@ -19,14 +26,16 @@ export default ({element, index}: {element: CanvasVideoElement; index: number}) 
 
   return <>
     <Bounds
+      selection={createSelection()}
+      selected={element.selected}
+      onSelect={onSelect}
+    />
+    <LinkHandles
       id={element.id}
-      elementType={ElementType.Video}
       x={element.x}
       y={element.y}
       width={element.width}
       height={element.height}
-      selected={element.selected}
-      onSelect={onSelect}
     />
     <video
       autoplay

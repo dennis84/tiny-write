@@ -1,6 +1,8 @@
 import {css} from 'solid-styled-components'
-import {CanvasImageElement, ElementType, useState} from '@/state'
+import {CanvasImageElement, useState} from '@/state'
+import {Selection} from '@/services/CanvasService'
 import Bounds from './Bounds'
+import LinkHandles from './LinkHandles'
 
 export default ({element, index}: {element: CanvasImageElement; index: number}) => {
   const [, ctrl] = useState()
@@ -9,16 +11,23 @@ export default ({element, index}: {element: CanvasImageElement; index: number}) 
     ctrl.canvas.select(element.id)
   }
 
+  const createSelection = (): Selection => {
+    const box = ctrl.canvas.createBox(element)
+    return {box, elements: [[element.id, box]]}
+  }
+
   return <>
     <Bounds
+      selection={createSelection()}
+      selected={element.selected}
+      onSelect={onSelect}
+    />
+    <LinkHandles
       id={element.id}
-      elementType={ElementType.Image}
       x={element.x}
       y={element.y}
       width={element.width}
       height={element.height}
-      selected={element.selected}
-      onSelect={onSelect}
     />
     <img
       src={element.src}

@@ -35,7 +35,7 @@ type UpdateElement =
   Partial<CanvasBoxElement>
 
 export interface Selection {
-  elementIds: string[];
+  elements: [string, Box2d][];
   box: Box2d;
 }
 
@@ -56,19 +56,20 @@ export class CanvasService {
   get selection(): Selection | undefined {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
-    const elementIds = []
+    const elements: [string, Box2d][] = []
     let box
     for (const el of currentCanvas.elements) {
       if (!el.selected) continue
       if (isBoxElement(el)) {
-        if (!box) box = this.createBox(el)
-        else box.expand(this.createBox(el))
-        elementIds.push(el.id)
+        const elBox = this.createBox(el)
+        if (!box) box = Box2d.From(elBox)
+        else box.expand(elBox)
+        elements.push([el.id, elBox])
       }
     }
 
-    if (!box || elementIds.length < 2) return
-    return {box, elementIds}
+    if (!box || elements.length < 2) return
+    return {box, elements}
   }
 
   updateCanvas(id: string, update: Partial<Canvas>) {
@@ -778,6 +779,11 @@ export class CanvasService {
     return this.store.canvases?.find((it) => it.id === id)
   }
 
+  createBox(el: CanvasBoxElement) {
+    const {x, y, width, height} = el
+    return new Box2d(x, y, width, height)
+  }
+
   private async saveCanvas(canvas = this.currentCanvas) {
     if (!canvas) return
     DB.updateCanvas(unwrap({
@@ -789,10 +795,5 @@ export class CanvasService {
         active: undefined,
       }))
     }))
-  }
-
-  private createBox(el: CanvasBoxElement) {
-    const {x, y, width, height} = el
-    return new Box2d(x, y, width, height)
   }
 }

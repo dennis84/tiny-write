@@ -1,6 +1,7 @@
 import {onCleanup, onMount, Show} from 'solid-js'
 import {css} from 'solid-styled-components'
 import {CanvasEditorElement, useState} from '@/state'
+import {Selection} from '@/services/CanvasService'
 import {CanvasEditor} from '@/components/editor/Editor'
 import {Scroll} from '@/components/Layout'
 import Bounds from './Bounds'
@@ -22,6 +23,11 @@ export default ({element, index}: {element: CanvasEditorElement; index: number})
   const isDeleted = () =>
     store.files.find((f) => f.id === element.id)?.deleted
 
+  const createSelection = (): Selection => {
+    const box = ctrl.canvas.createBox(element)
+    return {box, elements: [[element.id, box]]}
+  }
+
   onMount(() => {
     ctrl.canvas.renderEditor(element, editorRef!)
   })
@@ -34,11 +40,7 @@ export default ({element, index}: {element: CanvasEditorElement; index: number})
     <>
       <Show when={!element.active}>
         <Bounds
-          ids={[element.id]}
-          x={element.x}
-          y={element.y}
-          width={element.width}
-          height={element.height}
+          selection={createSelection()}
           selected={element.selected}
           onSelect={onSelect}
           onDoubleClick={onDoubleClick}

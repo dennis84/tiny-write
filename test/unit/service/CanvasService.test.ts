@@ -795,3 +795,34 @@ test('center', () => {
 
   expect(service.getCenterPoint()?.toArray()).toEqual([100, 100, 1])
 })
+
+test('get selection', () => {
+  const [store, setState] = createStore(createState({
+    canvases: [
+      createCanvas({
+        id: '1',
+        active: true,
+        elements: [
+          createEditorElement({id: '1', x: 0, y: 0, width: 100, height: 100}),
+          createEditorElement({id: '2', x: 100, y: 0, width: 100, height: 100}),
+          createEditorElement({id: '3', x: 0, y: 100, width: 100, height: 100}),
+        ],
+      }),
+    ],
+  }))
+
+  const service = new CanvasService(ctrl, store, setState)
+  expect(service.selection).toBe(undefined)
+
+  service.select('1')
+  expect(service.selection).toBe(undefined) // No selection if only one selected
+
+  service.select('2', false, true)
+  expect(service.selection).not.toBe(undefined)
+  expect(service.selection?.box.toJson()).toStrictEqual({x: 0, y: 0, w: 200, h: 100})
+  expect(service.selection?.elements.length).toBe(2)
+
+  service.select('3', false, true)
+  expect(service.selection?.box.toJson()).toStrictEqual({x: 0, y: 0, w: 200, h: 200})
+  expect(service.selection?.elements.length).toBe(3)
+})

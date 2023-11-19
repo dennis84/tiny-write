@@ -133,11 +133,7 @@ export default () => {
         <Show when={ctrl.canvas.selection}>
           {(sel) =>
             <Bounds
-              ids={sel().elementIds}
-              x={sel().box.x}
-              y={sel().box.y}
-              width={sel().box.w}
-              height={sel().box.h}
+              selection={sel()}
               selected={true}
               visible={true}
               index={99999}

@@ -1,15 +1,12 @@
 import {Show, createEffect, onCleanup, onMount, splitProps} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {DragGesture} from '@use-gesture/vanilla'
-import {Canvas, CanvasBoxElement, CornerType, EdgeType, useState} from '@/state'
 import {Box2d, PI, Vec2d, rotateSelectionHandle} from '@tldraw/primitives'
+import {CornerType, EdgeType, useState} from '@/state'
+import {Selection} from '@/services/CanvasService'
 
 interface BoundsProps {
-  ids: string[];
-  x: number;
-  y: number;
-  width: number;
-  height: number;
+  selection: Selection;
   selected?: boolean;
   visible?: boolean;
   index?: number;
@@ -34,21 +31,8 @@ const Border = styled('rect')`
   touch-action: none;
 `
 
-interface GestureState {
-  bounds: Box2d;
-  elements: [string, Box2d][];
-}
-
-const createGestureState = (props: BoundsProps, canvas: Canvas): GestureState  => ({
-  bounds: new Box2d(props.x, props.y, props.width, props.height),
-  elements: props.ids.map((id) => {
-    const el = canvas.elements.find((it) => it.id === id) as CanvasBoxElement
-    return [id, new Box2d(el.x, el.y, el.width, el.height)]
-  }),
-})
-
 const resizeElements = (
-  context: GestureState,
+  selection: Selection,
   handle: EdgeType | CornerType,
   mx: number,
   my: number,
@@ -56,10 +40,11 @@ const resizeElements = (
   snapToGrid = false,
 ): [string, Box2d][] => {
   const oppositeHandle = rotateSelectionHandle(handle, PI)
-  const scalePoint = context.bounds.getHandlePoint(oppositeHandle)
-  return context.elements.map(([id, element]) => {
-    const result = Box2d.Resize(context.bounds, handle, mx, my, shiftKey)
-    const s = new Vec2d(result.scaleX, result.scaleY)
+  const scalePoint = selection.box.getHandlePoint(oppositeHandle)
+  const result = Box2d.Resize(selection.box, handle, mx, my, shiftKey)
+  const s = new Vec2d(result.scaleX, result.scaleY)
+
+  return selection.elements.map(([id, element]) => {
     let {minX, minY, maxX, maxY} = element;
 
     const flipX = s.x < 0
@@ -95,10 +80,10 @@ const Edge = (props: EdgeProps) => {
 
     const resizeGesture = new DragGesture(ref, ({event, movement: [mx, my], memo, first, shiftKey}) => {
       event.stopPropagation()
-      const context: GestureState = first ? createGestureState(props, currentCanvas) : memo
+      const selection: Selection = first ? props.selection : memo
       const {zoom} = currentCanvas.camera
 
-      resizeElements(context, props.type, mx / zoom, my / zoom, shiftKey, currentCanvas.snapToGrid)
+      resizeElements(selection, props.type, mx / zoom, my / zoom, shiftKey, currentCanvas.snapToGrid)
         .forEach(([id, box]) => {
           const rect = {x: box.x, y: box.y, width: box.w, height: box.h}
           ctrl.canvasCollab.updateElementThrottled({id, ...rect})
@@ -107,7 +92,7 @@ const Edge = (props: EdgeProps) => {
 
       ctrl.canvas.updateCanvas(currentCanvas.id, {lastModified: new Date()})
       ctrl.canvas.saveCanvasDebounced()
-      return context
+      return selection
     })
 
     onCleanup(() => {
@@ -116,10 +101,10 @@ const Edge = (props: EdgeProps) => {
   })
 
   createEffect(() => {
-    const rw = vert ? props.width + BORDER_SIZE_2 : BORDER_SIZE
-    const rh = vert ? BORDER_SIZE : props.height + BORDER_SIZE_2
-    const rx = props.type === EdgeType.Right ? props.width + BORDER_SIZE : 0
-    const ry = props.type === EdgeType.Bottom ? props.height + BORDER_SIZE : 0
+    const rw = vert ? props.selection.box.width + BORDER_SIZE_2 : BORDER_SIZE
+    const rh = vert ? BORDER_SIZE : props.selection.box.height + BORDER_SIZE_2
+    const rx = props.type === EdgeType.Right ? props.selection.box.width + BORDER_SIZE : 0
+    const ry = props.type === EdgeType.Bottom ? props.selection.box.height + BORDER_SIZE : 0
     ref.setAttribute('x', rx.toString())
     ref.setAttribute('y', ry.toString())
     ref.setAttribute('width', rw.toString())
@@ -152,10 +137,10 @@ const Corner = (props: CornerProps) => {
 
     const gesture = new DragGesture(ref, ({event, movement: [mx, my], shiftKey, memo, first}) => {
       event.stopPropagation()
-      const context: GestureState = first ? createGestureState(props, currentCanvas) : memo
+      const selection: Selection = first ? props.selection : memo
       const {zoom} = currentCanvas.camera
 
-      resizeElements(context, props.type, mx / zoom, my / zoom, shiftKey, currentCanvas.snapToGrid)
+      resizeElements(selection, props.type, mx / zoom, my / zoom, shiftKey, currentCanvas.snapToGrid)
         .forEach(([id, box]) => {
           const rect = {x: box.x, y: box.y, width: box.w, height: box.h}
           ctrl.canvasCollab.updateElementThrottled({id, ...rect})
@@ -164,7 +149,7 @@ const Corner = (props: CornerProps) => {
 
       ctrl.canvas.updateCanvas(currentCanvas.id, {lastModified: new Date()})
       ctrl.canvas.saveCanvasDebounced()
-      return context
+      return selection
     })
 
     onCleanup(() => {
@@ -173,8 +158,8 @@ const Corner = (props: CornerProps) => {
   })
 
   createEffect(() => {
-    const ex = left ? 0 : props.width + BORDER_SIZE
-    const ey = bottom ? props.height + BORDER_SIZE   : 0
+    const ex = left ? 0 : props.selection.box.width + BORDER_SIZE
+    const ey = bottom ? props.selection.box.height + BORDER_SIZE   : 0
     ref.setAttribute('x', ex.toString())
     ref.setAttribute('y', ey.toString())
   })
@@ -192,10 +177,10 @@ const Corner = (props: CornerProps) => {
 
 const Bounds = styled('svg')`
   position: absolute;
-  width: ${(props) => Number(props.width) + BORDER_SIZE_2}px;
-  height: ${(props) => Number(props.height) + BORDER_SIZE_2}px;
-  left: ${(props) => Number(props.x) - BORDER_SIZE}px;
-  top: ${(props) => Number(props.y) - BORDER_SIZE}px;
+  width: ${(props: any) => Number(props.selection.box.width) + BORDER_SIZE_2}px;
+  height: ${(props: any) => Number(props.selection.box.height) + BORDER_SIZE_2}px;
+  left: ${(props: any) => Number(props.selection.box.x) - BORDER_SIZE}px;
+  top: ${(props: any) => Number(props.selection.box.y) - BORDER_SIZE}px;
   cursor: var(--cursor-grab);
   touch-action: none;
   &:active {
@@ -215,10 +200,10 @@ export default (props: BoundsProps) => {
     if (!currentCanvas) return
 
     const gesture = new DragGesture(ref, ({first, movement: [mx, my], memo}) => {
-      const context: GestureState = first ? createGestureState(props, currentCanvas) : memo
+      const selection: Selection = first ? props.selection : memo
       const {zoom} = currentCanvas.camera
 
-      context.elements.forEach(([id, initial]) => {
+      selection.elements.forEach(([id, initial]) => {
         const t = new Vec2d(mx, my).div(zoom).add(initial)
         if (currentCanvas.snapToGrid) t.snapToGrid(10)
         const [x, y] = t.toArray()
@@ -229,7 +214,7 @@ export default (props: BoundsProps) => {
 
       ctrl.canvas.updateCanvas(currentCanvas.id, {lastModified: new Date()})
       ctrl.canvas.saveCanvasDebounced()
-      return context
+      return selection
     })
 
     onCleanup(() => {
@@ -285,8 +270,8 @@ const Visible = (props: BoundsProps) => {
     <VisibleBorder
       x={BORDER_SIZE}
       y={BORDER_SIZE}
-      width={props.width}
-      height={props.height}
+      width={props.selection.box.width}
+      height={props.selection.box.height}
       style={{'stroke-width': (STROKE_WIDTH / zoom()).toString()}}
     />
     <VisibleCorner
@@ -297,7 +282,7 @@ const Visible = (props: BoundsProps) => {
       style={{'stroke-width': (STROKE_WIDTH / zoom()).toString()}}
     />
     <VisibleCorner
-      x={props.width + BORDER_SIZE - (RECT_WIDTH / 2 / zoom())}
+      x={props.selection.box.width + BORDER_SIZE - (RECT_WIDTH / 2 / zoom())}
       y={BORDER_SIZE - (RECT_WIDTH / 2 / zoom())}
       width={RECT_WIDTH / zoom()}
       height={RECT_WIDTH / zoom()}
@@ -305,14 +290,14 @@ const Visible = (props: BoundsProps) => {
     />
     <VisibleCorner
       x={BORDER_SIZE - (RECT_WIDTH / 2 / zoom())}
-      y={props.height + BORDER_SIZE - (RECT_WIDTH / 2 / zoom())}
+      y={props.selection.box.height + BORDER_SIZE - (RECT_WIDTH / 2 / zoom())}
       width={RECT_WIDTH / zoom()}
       height={RECT_WIDTH / zoom()}
       style={{'stroke-width': (STROKE_WIDTH / zoom()).toString()}}
     />
     <VisibleCorner
-      x={props.width + BORDER_SIZE - (RECT_WIDTH / 2 / zoom())}
-      y={props.height + BORDER_SIZE - (RECT_WIDTH / 2 / zoom())}
+      x={props.selection.box.width + BORDER_SIZE - (RECT_WIDTH / 2 / zoom())}
+      y={props.selection.box.height + BORDER_SIZE - (RECT_WIDTH / 2 / zoom())}
       width={RECT_WIDTH / zoom()}
       height={RECT_WIDTH / zoom()}
       style={{'stroke-width': (STROKE_WIDTH / zoom()).toString()}}
