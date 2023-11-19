@@ -7,8 +7,8 @@ import LinkHandles from './LinkHandles'
 export default ({element, index}: {element: CanvasImageElement; index: number}) => {
   const [, ctrl] = useState()
 
-  const onSelect = () => {
-    ctrl.canvas.select(element.id)
+  const onSelect = (e: MouseEvent) => {
+    ctrl.canvas.select(element.id, false, e.shiftKey)
   }
 
   const createSelection = (): Selection => {

@@ -20,7 +20,7 @@ const Link = styled('svg')`
 
 const Path = styled('path')`
   stroke: transparent;
-  stroke-width: 30;
+  stroke-width: ${(props: any) => 25 / props.zoom};
   stroke-linecap: round;
   cursor: var(--cursor-grab);
   pointer-events: auto;
@@ -37,7 +37,7 @@ const Path = styled('path')`
 
 const InnerPath = styled('path')`
   stroke: var(--border);
-  stroke-width: 1;
+  stroke-width: ${(props: any) => 0.7 / props.zoom};
   stroke-linecap: round;
   pointer-events: none;
   touch-action: none;
@@ -69,9 +69,6 @@ export default ({element}: {element: CanvasLinkElement}) => {
   }
 
   onMount(() => {
-    const currentCanvas = ctrl.canvas.currentCanvas
-    if (!currentCanvas) return
-
     const linkGesture = new DragGesture(pathRef, ({event, initial, first, last, movement, memo}) => {
       event.stopPropagation()
       const {point, zoom} = currentCanvas.camera
@@ -134,8 +131,13 @@ export default ({element}: {element: CanvasLinkElement}) => {
       xmlns="http://www.w3.org/2000/svg"
       index={index()}
     >
-      <Path ref={pathRef} onClick={onClick} selected={element.selected} />
-      <InnerPath ref={innerPathRef} />
+      <Path
+        ref={pathRef}
+        onClick={onClick}
+        selected={element.selected}
+        zoom={currentCanvas.camera.zoom}
+      />
+      <InnerPath ref={innerPathRef} zoom={currentCanvas.camera.zoom} />
       <ArrowHead ref={arrowheadRef} />
     </Link>
   )

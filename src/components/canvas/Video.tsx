@@ -9,8 +9,8 @@ export default ({element, index}: {element: CanvasVideoElement; index: number}) 
   let videoRef!: HTMLVideoElement
   const [, ctrl] = useState()
 
-  const onSelect = () => {
-    ctrl.canvas.select(element.id)
+  const onSelect = (e: MouseEvent) => {
+    ctrl.canvas.select(element.id, false, e.shiftKey)
   }
 
   const createSelection = (): Selection => {

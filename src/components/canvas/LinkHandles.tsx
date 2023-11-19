@@ -5,15 +5,15 @@ import {Box2d, Vec2d} from '@tldraw/primitives'
 import {DragGesture} from '@use-gesture/vanilla'
 import {EdgeType, useState} from '@/state'
 
-const BORDER_SIZE = 30
-const CIRCLE_RADIUS = 10
-const CIRCLE_HOVER_RADIUS = 50
+const BORDER_SIZE = 20
+const CIRCLE_RADIUS = 7
+const CIRCLE_HOVER_RADIUS = 40
 
 const LinkHandleDot = styled('span')`
   position: absolute;
-  width: ${CIRCLE_HOVER_RADIUS.toString()}px;
-  height: ${CIRCLE_HOVER_RADIUS.toString()}px;
-  border-radius: ${CIRCLE_HOVER_RADIUS.toString()}px;
+  width: ${(props: any) => (CIRCLE_HOVER_RADIUS / props.zoom).toString()}px;
+  height: ${(props: any) => (CIRCLE_HOVER_RADIUS / props.zoom).toString()}px;
+  border-radius: 999px;
   background: transparent;
   cursor: var(--cursor-pointer);
   z-index: 99999;
@@ -22,9 +22,9 @@ const LinkHandleDot = styled('span')`
   align-items: center;
   touch-action: none;
   > span {
-    width: ${CIRCLE_RADIUS.toString()}px;
-    height: ${CIRCLE_RADIUS.toString()}px;
-    border-radius: ${CIRCLE_RADIUS.toString()}px;
+    width: ${(props: any) => (CIRCLE_RADIUS / props.zoom).toString()}px;
+    height: ${(props: any) => (CIRCLE_RADIUS / props.zoom).toString()}px;
+    border-radius: 999px;
     background: transparent;
   }
   &:hover > span {
@@ -49,18 +49,21 @@ const LinkHandle = (props: EdgeProps) => {
 
   const [, ctrl] = useState()
   const [currentLink, setCurrentLink] = createSignal<string>()
+
+  const zoom = () => ctrl.canvas.currentCanvas?.camera.zoom ?? 1
+
   const coords = () => {
     const box = new Box2d(props.x, props.y, props.width, props.height)
     const p = box.getHandlePoint(props.type)
-    p.addXY(-CIRCLE_HOVER_RADIUS/2, -CIRCLE_HOVER_RADIUS/2)
+    p.addXY(-CIRCLE_HOVER_RADIUS/zoom()/2, -CIRCLE_HOVER_RADIUS/zoom()/2)
     if (props.type === EdgeType.Top) {
-      p.addXY(0, -BORDER_SIZE)
+      p.addXY(0, -BORDER_SIZE/zoom())
     } else if (props.type === EdgeType.Bottom) {
-      p.addXY(0, BORDER_SIZE)
+      p.addXY(0, BORDER_SIZE/zoom())
     } else if (props.type === EdgeType.Left) {
-      p.addXY(-BORDER_SIZE, 0)
+      p.addXY(-BORDER_SIZE/zoom(), 0)
     } else if (props.type === EdgeType.Right) {
-      p.addXY(BORDER_SIZE, 0)
+      p.addXY(BORDER_SIZE/zoom(), 0)
     }
 
     const [x, y] = p.toArray()
@@ -94,6 +97,7 @@ const LinkHandle = (props: EdgeProps) => {
 
   return (
     <LinkHandleDot
+      zoom={zoom()}
       style={{
         transform: `
           translate(${coords().map((n) => n + 'px').join(',')})
