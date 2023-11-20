@@ -113,13 +113,16 @@ export const Files = (props: Props) => {
     props.onOpen()
   }
 
+  const focusOnCanvas = () => {
+    const f = unwrap(current())
+    if (!f) return
+    ctrl.canvas.select(f.id)
+    ctrl.canvas.focus(f.id)
+  }
+
   const showCardMenu = (anchor: HTMLElement, file: File) => {
     setCurrent(file)
     setTooltipAnchor(anchor)
-    if (store.mode === Mode.Canvas) {
-      ctrl.canvas.select(file.id)
-      ctrl.canvas.focus(file.id)
-    }
   }
 
   const closeTooltip = () => {
@@ -197,7 +200,10 @@ export const Files = (props: Props) => {
       <Show when={toolipAnchor() !== undefined}>
         <Tooltip anchor={toolipAnchor()} onClose={() => closeTooltip()}>
           <Show when={store.mode === Mode.Canvas}>
-            <Show when={!isOnCanvas(current())}>
+            <Show
+              when={!isOnCanvas(current())}
+              fallback={<div onClick={focusOnCanvas}>🎯 Focus</div>}
+            >
               <div onClick={onAddToCanvas} data-testid="add_to_canvas">🫳 Add to canvas</div>
             </Show>
             <div onClick={onOpenFile} data-testid="open_editor_mode">↪️ Open in editor mode</div>
