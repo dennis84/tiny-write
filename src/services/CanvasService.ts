@@ -189,6 +189,20 @@ export class CanvasService {
     }
   }
 
+  selectBox(box: Box2d) {
+    const currentCanvas = this.currentCanvas
+    if (!currentCanvas) return
+    for (const el of currentCanvas.elements) {
+      if (!isBoxElement(el)) continue
+      const elBox = this.createBox(el)
+      if (box.collides(elBox)) {
+        this.updateCanvasElement(el.id, {selected: true})
+      } else {
+        this.updateCanvasElement(el.id, {selected: false})
+      }
+    }
+  }
+
   deselect() {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return

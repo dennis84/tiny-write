@@ -1,8 +1,8 @@
 import {createSignal, For, onCleanup, onMount, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {Gesture} from '@use-gesture/vanilla'
-import {Vec2d} from '@tldraw/primitives'
-import {isEditorElement, isLinkElement, isImageElement, useState, isVideoElement} from '@/state'
+import {Box2d, Vec2d} from '@tldraw/primitives'
+import {isEditorElement, isLinkElement, isImageElement, useState, isVideoElement, CornerType} from '@/state'
 import Grid from './Grid'
 import Editor from './Editor'
 import Link from './Link'
@@ -30,15 +30,26 @@ const Board = styled('div')`
   -webkit-user-select: none;
 `
 
+const SelectionFrame = styled('div')`
+  position: absolute;
+  background: var(--selection);
+  z-index: 99999;
+  border: 2px solid var(--primary-background);
+`
+
 export default () => {
   const [, ctrl] = useState()
   const [stopGesture, setStopGesture] = createSignal(false)
+  const [gesturing, setGesturing] = createSignal(false)
+  const [frame, setFrame] = createSignal<Box2d>()
+
   const scaleBounds = {min: 0.3, max: 10}
   let ref!: HTMLDivElement
 
   const onGridClick = () => {
     const currentCanvas = ctrl.canvas.currentCanvas
     if (!currentCanvas) return
+    if (gesturing()) return
     ctrl.canvas.deselect()
   }
 
@@ -63,6 +74,9 @@ export default () => {
   }
 
   onMount(() => {
+    const currentCanvas = ctrl.canvas.currentCanvas
+    if (!currentCanvas) return
+
     ctrl.canvas.canvasRef = ref
     const preventGesture = (e: TouchEvent) => e.preventDefault()
     // @ts-ignore
@@ -73,6 +87,20 @@ export default () => {
     document.addEventListener('gestureend', preventGesture)
 
     const gesture = new Gesture(ref, {
+      onDrag: ({first, last, initial: [x, y], movement: [mx, my], memo}) => {
+        const {zoom, point: [px, py]} = currentCanvas.camera
+        const initial: Box2d = first ? new Box2d(x / zoom - px, y / zoom - py, 0, 0): memo
+        const newBox = Box2d.Resize(initial, CornerType.TopLeft, mx / zoom, my / zoom).box
+        ctrl.canvas.selectBox(newBox)
+
+        setGesturing(true)
+        setFrame(newBox)
+        if (last) {
+          setFrame(undefined)
+          setTimeout(() => setGesturing(false), 100)
+        }
+        return initial
+      },
       onPinch: ({origin: [ox, oy], offset: [s]}) => {
         zoomTo(s, [ox, oy])
       },
@@ -94,6 +122,7 @@ export default () => {
     }, {
       target: ref,
       eventOptions: {passive: false},
+      drag: {delay: true, threshold: [10, 10]},
       wheel: {
         from: () => [
           -(ctrl.canvas.currentCanvas?.camera.point[0] ?? 0),
@@ -130,6 +159,19 @@ export default () => {
           `
         }}
       >
+        <Show when={frame()}>
+          {(f) =>
+            <SelectionFrame
+              style={{
+                top: `${f().y.toString()}px`,
+                left: `${f().x.toString()}px`,
+                width: `${f().w.toString()}px`,
+                height: `${f().h.toString()}px`,
+                'border-width': `${1 / (ctrl.canvas.currentCanvas?.camera.zoom ?? 1)}px`
+              }}
+            />
+          }
+        </Show>
         <Show when={ctrl.canvas.selection}>
           {(sel) =>
             <Bounds

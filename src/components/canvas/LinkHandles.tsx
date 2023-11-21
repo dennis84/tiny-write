@@ -74,7 +74,8 @@ const LinkHandle = (props: EdgeProps) => {
     const currentCanvas = ctrl.canvas.currentCanvas
     if (!currentCanvas) return
 
-    const linkGesture = new DragGesture(linkRef, ({initial, first, last, movement}) => {
+    const linkGesture = new DragGesture(linkRef, ({event, initial, first, last, movement}) => {
+      event.stopPropagation()
       if (first) {
         setCurrentLink(uuidv4())
       }

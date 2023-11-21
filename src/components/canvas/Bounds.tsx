@@ -80,6 +80,7 @@ const Edge = (props: EdgeProps) => {
 
     const resizeGesture = new DragGesture(ref, ({event, movement: [mx, my], memo, first, shiftKey}) => {
       event.stopPropagation()
+
       const selection: Selection = first ? props.selection : memo
       const {zoom} = currentCanvas.camera
 
@@ -199,7 +200,9 @@ export default (props: BoundsProps) => {
     const currentCanvas = ctrl.canvas.currentCanvas
     if (!currentCanvas) return
 
-    const gesture = new DragGesture(ref, ({first, movement: [mx, my], memo}) => {
+    const gesture = new DragGesture(ref, ({event, first, movement: [mx, my], memo}) => {
+      event.stopPropagation()
+
       const selection: Selection = first ? props.selection : memo
       const {zoom} = currentCanvas.camera
 
