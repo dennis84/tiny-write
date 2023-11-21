@@ -118,7 +118,12 @@ export default ({element}: {element: CanvasLinkElement}) => {
     const line = getLine(currentCanvas, element)
     if (!line) return
 
-    const [p, a] = getArrowPath(line, element.fromEdge, element.toEdge)
+    const [p, a] = getArrowPath(
+      line,
+      element.fromEdge,
+      element.toEdge,
+      10 / currentCanvas.camera.zoom
+    )
 
     pathRef.setAttribute('d', p)
     innerPathRef.setAttribute('d', p)
@@ -205,7 +210,8 @@ const getArrowhead = (point: VecLike, int: VecLike) => {
 const getArrowPath = (
   line: LineSegment2d,
   fromEdge: EdgeType,
-  toEdge?: EdgeType
+  toEdge?: EdgeType,
+  arrowSize = 10,
 ): [string, string] => {
   const [c1, c2] = getControlPoints(line, fromEdge, toEdge)
   const p = getPath(line, [c1, c2])
@@ -213,7 +219,6 @@ const getArrowPath = (
   const t = toEdge ?
     Vec2d.From(line.b).add(getControlPointByEdge(toEdge, 100)) :
     new LineSegment2d(c1, line.b).getPoint(0.5)
-  const arrowSize = 10
   const i = Vec2d.Nudge(line.b, t, arrowSize)
   const a = getArrowhead(line.b, i)
 
