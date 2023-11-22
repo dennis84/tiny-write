@@ -48,7 +48,6 @@ export default ({onClick}: {onClick: () => void}) => {
           width="100%"
           height="100%"
           fill={`url(#grid-${i})`}
-          data-tauri-drag-region="true"
         />
       ))}
     </Grid>

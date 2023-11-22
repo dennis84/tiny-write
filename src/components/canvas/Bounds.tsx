@@ -42,13 +42,12 @@ const resizeElements = (
   const oppositeHandle = rotateSelectionHandle(handle, PI)
   const scalePoint = selection.box.getHandlePoint(oppositeHandle)
   const result = Box2d.Resize(selection.box, handle, mx, my, shiftKey)
-  const s = new Vec2d(result.scaleX, result.scaleY)
+  const scale = new Vec2d(result.scaleX, result.scaleY)
 
   return selection.elements.map(([id, element]) => {
     let {minX, minY, maxX, maxY} = element;
-
-    const flipX = s.x < 0
-    const flipY = s.y < 0
+    const flipX = scale.x < 0
+    const flipY = scale.y < 0
     if (flipX) {
       const t = maxX;
       maxX = minX;
@@ -60,9 +59,9 @@ const resizeElements = (
       minY = t;
     }
 
-    const tl = new Vec2d(minX, minY).sub(scalePoint).mulV(s).add(scalePoint)
-    const br = new Vec2d(maxX, maxY).sub(scalePoint).mulV(s).add(scalePoint)
-    const box = new Box2d(tl.x, tl.y, br.x-tl.x, br.y-tl.y)
+    const tl = new Vec2d(minX, minY).sub(scalePoint).mulV(scale).add(scalePoint)
+    const br = new Vec2d(maxX, maxY).sub(scalePoint).mulV(scale).add(scalePoint)
+    const box = new Box2d(tl.x, tl.y, br.x - tl.x, br.y - tl.y)
     if (snapToGrid) box.snapToGrid(10)
     return [id, box]
   })

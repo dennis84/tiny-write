@@ -578,10 +578,19 @@ export class CanvasService {
     this.updateCanvasElement(element.id, {drawing: undefined})
 
     if (element.to) {
+      const data = {
+        from: element.from,
+        fromEdge: element.fromEdge,
+        id: element.id,
+        to: element.to,
+        toEdge: element.toEdge,
+        type: element.type,
+      }
+
       if (this.ctrl.canvasCollab.hasElement(id)) {
-        this.ctrl.canvasCollab.updateElement(element)
+        this.ctrl.canvasCollab.updateElement(data)
       } else {
-        this.ctrl.canvasCollab.addElement(element)
+        this.ctrl.canvasCollab.addElement(data)
       }
 
       this.saveCanvas()
