@@ -3,6 +3,7 @@ import {styled} from 'solid-styled-components'
 import {Gesture} from '@use-gesture/vanilla'
 import {Box2d, Vec2d} from '@tldraw/primitives'
 import {isEditorElement, isLinkElement, isImageElement, useState, isVideoElement, CornerType} from '@/state'
+import {isTauri} from '@/env'
 import Grid from './Grid'
 import Editor from './Editor'
 import Link from './Link'
@@ -35,6 +36,16 @@ const SelectionFrame = styled('div')`
   background: var(--selection);
   z-index: 99999;
   border: 2px solid var(--primary-background);
+`
+
+const DragArea = styled('div')`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 30px;
+  z-index: 999999;
+  cursor: var(--cursor-grab);
 `
 
 export default () => {
@@ -148,6 +159,7 @@ export default () => {
 
   return (
     <Container ref={ref} data-testid="canvas_container">
+      <Show when={isTauri}><DragArea data-tauri-drag-region="true" /></Show>
       <LinkEnd />
       <Grid onClick={onGridClick} />
       <Board
