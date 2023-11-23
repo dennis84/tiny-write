@@ -7,7 +7,6 @@ const config: PlaywrightTestConfig = {
   testDir: './test/integration',
   timeout,
   retries: process.env.CI ? 3 : 0,
-  workers: 1,
   webServer: {
     command: 'npm run dev',
     port: 3000,

@@ -58,8 +58,10 @@ test('mermaid', async ({page}) => {
   await page.locator('.ProseMirror').pressSequentially('```mermaid ', {delay})
   await page.waitForSelector('.cm-container')
   await page.locator(cmContent).pressSequentially(line1, {delay})
+  await expect(page.locator(cmContent)).toContainText(line1)
   await page.keyboard.press('Enter')
   await page.locator(cmContent).pressSequentially('  A --', {delay})
+  await expect(page.locator(cmContent)).toContainText('  A --')
 
   await expect(page.locator('.mermaid code')).toContainText('Parse error')
   await page.locator(cmContent).pressSequentially('> B', {delay})
