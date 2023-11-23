@@ -23,6 +23,7 @@ export const Layout = styled('div')`
     position: absolute;
     width: max-content;
     background: var(--tooltip-background);
+    border: 1px solid var(--foreground-50);
     border-radius: var(--border-radius);
     font-family: var(--menu-font-family);
     font-size: var(--menu-font-size);
@@ -46,11 +47,21 @@ export const Layout = styled('div')`
       margin: 0;
     }
     .arrow {
-      width: 8px;
-      height: 8px;
+      width: 6px;
+      height: 6px;
       background: var(--tooltip-background);
       position: absolute;
       transform: rotate(45deg);
+      box-shadow: -1px -1px 0 0 var(--foreground-50);
+      &.bottom {
+        box-shadow: 1px 1px 0 0 var(--foreground-50);
+      }
+      &.left {
+        box-shadow: -1px 1px 0 0 var(--foreground-50);
+      }
+      &.right {
+        box-shadow: 1px -1px 0 0 var(--foreground-50);
+      }
     }
   }
   .cm-tooltip-autocomplete {

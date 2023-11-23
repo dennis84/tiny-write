@@ -141,6 +141,7 @@ class CellMenuView {
 
       if (middlewareData.arrow) {
         const {x, y} = middlewareData.arrow
+        this.arrow?.classList.add(staticSide)
         Object.assign(this.arrow.style, {
           left: x != null ? `${x}px` : '',
           top: y != null ? `${y}px` : '',

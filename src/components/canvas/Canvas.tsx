@@ -159,7 +159,7 @@ export default () => {
 
   return (
     <Container ref={ref} data-testid="canvas_container">
-      <Show when={isTauri}><DragArea data-tauri-drag-region="true" /></Show>
+      <Show when={isTauri()}><DragArea data-tauri-drag-region="true" /></Show>
       <LinkEnd />
       <Grid onClick={onGridClick} />
       <Board

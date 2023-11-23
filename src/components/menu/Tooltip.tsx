@@ -55,6 +55,7 @@ export const Tooltip = (props: Props) => {
 
       if (middlewareData.arrow) {
         const {x, y} = middlewareData.arrow
+        arrowRef?.classList.add(staticSide)
         Object.assign(arrowRef!.style, {
           left: x != null ? `${x}px` : '',
           top: y != null ? `${y}px` : '',
