@@ -98,7 +98,10 @@ export default () => {
     document.addEventListener('gestureend', preventGesture)
 
     const gesture = new Gesture(ref, {
-      onDrag: ({first, last, initial: [x, y], movement: [mx, my], memo}) => {
+      onDrag: ({event, first, last, initial: [x, y], movement: [mx, my], memo}) => {
+        if ((event.target as HTMLElement).closest('.ProseMirror')) {
+          return
+        }
         const {zoom, point: [px, py]} = currentCanvas.camera
         const initial: Box2d = first ? new Box2d(x / zoom - px, y / zoom - py, 0, 0): memo
         const newBox = Box2d.Resize(initial, CornerType.TopLeft, mx / zoom, my / zoom).box
