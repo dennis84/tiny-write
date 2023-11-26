@@ -8,7 +8,6 @@ const SelectionFrame = styled('div')`
   position: absolute;
   background: var(--selection);
   z-index: 99999;
-  border: 2px solid var(--primary-background);
 `
 
 interface Props {

@@ -448,6 +448,10 @@ const proseMirror = (props: Props) => `
         border-radius: var(--border-radius);
       }
     }
+    > .selected::selection,
+    > .selected *::selection {
+      background: none;
+    }
     > *:not(.cm-container)::selection,
     > *:not(.cm-container) *::selection,
     > *:not(.cm-container).selected {

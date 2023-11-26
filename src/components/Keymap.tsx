@@ -83,13 +83,22 @@ export default () => {
     const currentCanvas = ctrl.canvas.currentCanvas
     if (!currentCanvas) return false
 
-    const selected = currentCanvas.elements.find((el) => {
-      if (isEditorElement(el)) return el.selected && !el.active
-      return el.selected
-    })
+    const elementIds: string[] = []
+    const selection = ctrl.canvas.selection
 
-    if (!selected) return false
-    ctrl.canvas.removeElement(selected.id)
+    if (selection) {
+      selection.elements.forEach(([id]) => elementIds.push(id))
+    } else {
+      const selected = currentCanvas.elements.find((el) => {
+        if (isEditorElement(el)) return el.selected && !el.active
+        return el.selected
+      })
+
+      if (!selected) return false
+      elementIds.push(selected.id)
+    }
+
+    ctrl.canvas.removeElements(elementIds)
     return true
   }
 

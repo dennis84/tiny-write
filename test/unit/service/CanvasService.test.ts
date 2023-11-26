@@ -414,7 +414,7 @@ test('newCanvas', () => {
   expect(ctrl.collab.disconnectCollab).toHaveBeenCalled()
 })
 
-test('removeElement', () => {
+test('removeElements', () => {
   const [store, setState] = createStore(createState({
     canvases: [
       createCanvas({
@@ -430,7 +430,7 @@ test('removeElement', () => {
   }))
 
   const service = new CanvasService(ctrl, store, setState)
-  service.removeElement('1')
+  service.removeElements(['1'])
 
   expect(service.currentCanvas?.elements.length).toBe(1)
   expect(service.currentCanvas?.elements[0].id).toBe('2')

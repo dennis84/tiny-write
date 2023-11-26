@@ -273,35 +273,39 @@ export class CanvasService {
     DB.setMeta({mode: state.mode})
   }
 
-  removeElement(elementId: string) {
+  removeElements(elementIds: string[]) {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
     const elements = []
-    const toRemove = [elementId]
+    const toRemove = new Set(elementIds)
 
-    for (const el of currentCanvas.elements) {
-      if (isEditorElement(el) && el.id === elementId) {
-        el.editorView?.destroy()
-        continue
-      }
+    outer: for (const el of currentCanvas.elements) {
+      for (const elementId of elementIds) {
+        if (isEditorElement(el) && el.id === elementId) {
+          el.editorView?.destroy()
+          continue outer
+        }
 
-      if (isLinkElement(el) && (el.from === elementId || el.to === elementId)) {
-        toRemove.push(el.id)
-        continue
-      }
+        if (isLinkElement(el) && (el.from === elementId || el.to === elementId)) {
+          toRemove.add(el.id)
+          continue outer
+        }
 
-      if (el.id === elementId) {
-        continue
+        if (el.id === elementId) {
+          continue outer
+        }
       }
 
       elements.push(el)
     }
 
-    const type = this.store.collab?.ydoc?.get(elementId)
-    if (type) this.store.collab?.undoManager?.removeFromScope(type)
+    for (const elementId of elementIds) {
+      const type = this.store.collab?.ydoc?.get(elementId)
+      if (type) this.store.collab?.undoManager?.removeFromScope(type)
+    }
 
-    this.ctrl.canvasCollab.removeMany(toRemove)
-    this.updateCanvas(currentCanvas.id, {elements})
+    this.ctrl.canvasCollab.removeMany([...toRemove])
+    this.updateCanvas(currentCanvas.id, {elements: [...elements]})
     this.saveCanvas()
     remote.info('💾 Element removed')
   }
