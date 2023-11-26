@@ -1,5 +1,5 @@
 import {SetStoreFunction, Store, unwrap} from 'solid-js/store'
-import {EditorState, Plugin, Transaction} from 'prosemirror-state'
+import {EditorState, Plugin, TextSelection, Transaction} from 'prosemirror-state'
 import {EditorView} from 'prosemirror-view'
 import * as Y from 'yjs'
 import {ySyncPluginKey} from 'y-prosemirror'
@@ -163,7 +163,6 @@ export class CanvasService {
     this.saveCanvas(updated)
     remote.info('💾 Canvas deleted')
 
-    console.log({maxId})
     if (this.store.mode === Mode.Canvas && maxId) {
       this.open(maxId)
     }
@@ -189,13 +188,30 @@ export class CanvasService {
     }
   }
 
-  selectBox(box: Box2d) {
+  selectBox(box: Box2d, first: boolean, last: boolean) {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
+
+    const active = currentCanvas.elements
+      .find((it) => isEditorElement(it) && it.active) as CanvasEditorElement
+
+    if (active?.editorView) {
+      this.ctrl.select.selectBox(box, active.editorView, first, last)
+      return
+    }
+
+    const {zoom, point: [x, y]} = currentCanvas.camera
+    const b = Box2d.From(box).set(
+      (box.x / zoom) - x,
+      (box.y / zoom) - y,
+      box.w / zoom,
+      box.h / zoom,
+    )
+
     for (const el of currentCanvas.elements) {
       if (!isBoxElement(el)) continue
       const elBox = this.createBox(el)
-      if (box.collides(elBox)) {
+      if (b.collides(elBox)) {
         this.updateCanvasElement(el.id, {selected: true})
       } else {
         this.updateCanvasElement(el.id, {selected: false})
@@ -207,6 +223,12 @@ export class CanvasService {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
     for (const el of currentCanvas.elements) {
+      if (isEditorElement(el) && el.active && el.editorView) {
+        const tr = el.editorView.state.tr
+        tr.setSelection(TextSelection.atStart(el.editorView.state.doc))
+        el.editorView.dispatch(tr)
+      }
+
       this.updateCanvasElement(el.id, {selected: false, active: false})
     }
   }

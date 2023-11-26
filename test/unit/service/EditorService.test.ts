@@ -1,5 +1,6 @@
 import {vi, expect, test, beforeEach} from 'vitest'
 import {mock} from 'vitest-mock-extended'
+import {Box2d} from '@tldraw/primitives'
 import {DB} from '@/db'
 import {createCtrl} from '@/services'
 import {createState} from '@/state'
@@ -400,4 +401,18 @@ test('startCollab - join existing file', async () => {
   expect(store.files.length).toBe(2)
   expect(store.collab?.started).toBe(true)
   expect(store.collab?.provider).not.toBe(undefined)
+})
+
+test('selectBox', async () => {
+  const {ctrl} = createCtrl(createState())
+  const target = document.createElement('div')
+
+  await ctrl.app.init()
+  ctrl.editor.renderEditor(target)
+
+  insertText(ctrl, 'Test')
+  expect(ctrl.file.currentFile?.editorView?.state.selection.empty).toBe(true)
+
+  ctrl.editor.selectBox(new Box2d(0, 0, 100, 100), true, false)
+  expect(ctrl.file.currentFile?.editorView?.state.selection.empty).toBe(false)
 })

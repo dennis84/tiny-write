@@ -171,6 +171,7 @@ export interface State {
   args?: Args;
   window?: Window;
   isSnapshot?: boolean;
+  selecting?: boolean;
 }
 
 export type FileText = {[key: string]: any}

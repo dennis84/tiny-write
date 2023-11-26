@@ -99,6 +99,7 @@ export const Scroll = styled('div')`
   overflow-y: auto;
   justify-content: center;
   scrollbar-width: none;
+  touch-action: none;
   &::-webkit-scrollbar {
     display: none;
   }

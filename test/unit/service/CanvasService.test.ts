@@ -846,20 +846,52 @@ test('selectBox', () => {
   const service = new CanvasService(ctrl, store, setState)
   expect(service.selection).toBe(undefined)
 
-  service.selectBox(new Box2d(0, 0, 10, 10))
+  service.selectBox(new Box2d(0, 0, 10, 10), true, false)
   expect(service.selection).toBe(undefined) // No selection if only one selected
   expect(store.canvases[0].elements[0].selected).toBe(true)
 
-  service.selectBox(new Box2d(0, 0, 110, 0))
+  service.selectBox(new Box2d(0, 0, 110, 0), false, false)
   expect(service.selection).not.toBe(undefined)
   expect(service.selection?.box.toJson()).toStrictEqual({x: 0, y: 0, w: 200, h: 100})
   expect(service.selection?.elements.length).toBe(2)
 
-  service.selectBox(new Box2d(0, 0, 110, 110))
+  service.selectBox(new Box2d(0, 0, 110, 110), false, false)
   expect(service.selection?.box.toJson()).toStrictEqual({x: 0, y: 0, w: 200, h: 200})
   expect(service.selection?.elements.length).toBe(3)
 
-  service.selectBox(new Box2d(0, 0, 110, 90))
+  service.selectBox(new Box2d(0, 0, 110, 90), false, false)
   expect(service.selection?.box.toJson()).toStrictEqual({x: 0, y: 0, w: 200, h: 100})
   expect(service.selection?.elements.length).toBe(2)
+})
+
+test('selectBox - active editor', () => {
+  const editorView = mock<EditorView>()
+  const [store, setState] = createStore(createState({
+    canvases: [
+      createCanvas({
+        id: '1',
+        active: true,
+        elements: [
+          createEditorElement({
+            id: '1',
+            x: 0,
+            y: 0,
+            width: 100,
+            height: 100,
+            active: true,
+            selected: true,
+            editorView
+          }),
+          createEditorElement({id: '2', x: 100, y: 0, width: 100, height: 100}),
+        ],
+      }),
+    ],
+  }))
+
+  const service = new CanvasService(ctrl, store, setState)
+  expect(service.selection).toBe(undefined)
+
+  service.selectBox(new Box2d(0, 0, 110, 10), true, false)
+  expect(service.selection).toBe(undefined)
+  expect(ctrl.select.selectBox).toHaveBeenCalled()
 })

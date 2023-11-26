@@ -15,7 +15,7 @@ import blockMenu from '@/prosemirror/block-menu'
 import pasteMarkdown from '@/prosemirror/paste-markdown'
 import table from '@/prosemirror/table'
 import {collab} from '@/prosemirror/collab'
-import select from '@/prosemirror/select'
+import selected from '@/prosemirror/selected'
 import position from '@/prosemirror/position'
 import container from '@/prosemirror/container'
 import fileListing from '@/prosemirror/autocomplete/file-listing'
@@ -64,7 +64,7 @@ export const createExtensions = (props: Props): ProseMirrorExtension[] => {
     table(props.ctrl),
     position(isDev),
     container(),
-    select(props.ctrl),
+    selected(),
     image(props.ctrl),
     pasteMarkdown(),
   ]

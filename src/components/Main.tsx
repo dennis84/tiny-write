@@ -14,11 +14,13 @@ import Dir from '@/components/Dir'
 import Keymap from '@/components/Keymap'
 import Variables from '@/components/Variables'
 import MouseCursor from '@/components/MouseCursor'
+import Select from '@/components/Select'
 
 export default (props: {state: State}) => {
   const {store, ctrl} = createCtrl(props.state)
   const mouseEnterCoords = createMutable({x: 0, y: 0})
   let editorRef!: HTMLDivElement
+  let scrollRef!: HTMLDivElement
   let layoutRef!: HTMLDivElement
 
   const onDragOver = (e: DragEvent) => {
@@ -211,7 +213,8 @@ export default (props: {state: State}) => {
         <Show when={store.args?.dir && !store.error}><Dir /></Show>
         <Show when={!store.error && !store.args?.dir && store.mode === Mode.Canvas}><Canvas /></Show>
         <Show when={!store.error && !store.args?.dir && store.mode === Mode.Editor}>
-          <Scroll data-tauri-drag-region="true">
+          <Scroll data-tauri-drag-region="true" ref={scrollRef}>
+            <Select target={() => scrollRef} />
             <Editor ref={editorRef} />
           </Scroll>
         </Show>

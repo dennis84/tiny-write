@@ -9,6 +9,7 @@ import {CollabService} from './CollabService'
 import {CanvasService} from './CanvasService'
 import {CanvasCollabService} from './CanvasCollabService'
 import {ImageService} from './ImageService'
+import {SelectService} from './SelectService'
 import {isDev} from '@/env'
 
 export class Ctrl {
@@ -21,6 +22,7 @@ export class Ctrl {
   canvas!: CanvasService
   canvasCollab!: CanvasCollabService
   image!: ImageService
+  select!: SelectService
 
   constructor(
     store: Store<State>,
@@ -35,6 +37,7 @@ export class Ctrl {
     this.canvas = new CanvasService(this, store, setState)
     this.canvasCollab = new CanvasCollabService(this.canvas, store)
     this.image = new ImageService(this)
+    this.select = new SelectService()
   }
 }
 

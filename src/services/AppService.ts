@@ -162,6 +162,10 @@ export class AppService {
     return [m === 'c' ? Mode.Canvas : Mode.Editor, r]
   }
 
+  setSelecting(selecting: boolean) {
+    this.setState('selecting', selecting)
+  }
+
   private async fetchData(): Promise<State> {
     const state = unwrap(this.store)
     const args = await remote.getArgs().catch(() => undefined) ?? state.args ?? {}

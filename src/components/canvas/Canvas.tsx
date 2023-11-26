@@ -1,8 +1,8 @@
 import {createSignal, For, onCleanup, onMount, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {Gesture} from '@use-gesture/vanilla'
-import {Box2d, Vec2d} from '@tldraw/primitives'
-import {isEditorElement, isLinkElement, isImageElement, useState, isVideoElement, CornerType} from '@/state'
+import {Vec2d} from '@tldraw/primitives'
+import {isEditorElement, isLinkElement, isImageElement, useState, isVideoElement} from '@/state'
 import {isTauri} from '@/env'
 import Grid from './Grid'
 import Editor from './Editor'
@@ -11,6 +11,7 @@ import Image from './Image'
 import Video from './Video'
 import LinkEnd from './LinkEnd'
 import Bounds from './Bounds'
+import Select from '../Select'
 
 const Container = styled('div')`
   width: 100%;
@@ -31,13 +32,6 @@ const Board = styled('div')`
   -webkit-user-select: none;
 `
 
-const SelectionFrame = styled('div')`
-  position: absolute;
-  background: var(--selection);
-  z-index: 99999;
-  border: 2px solid var(--primary-background);
-`
-
 const DragArea = styled('div')`
   position: absolute;
   top: 0;
@@ -49,10 +43,8 @@ const DragArea = styled('div')`
 `
 
 export default () => {
-  const [, ctrl] = useState()
+  const [state, ctrl] = useState()
   const [stopGesture, setStopGesture] = createSignal(false)
-  const [gesturing, setGesturing] = createSignal(false)
-  const [frame, setFrame] = createSignal<Box2d>()
 
   const scaleBounds = {min: 0.3, max: 10}
   let ref!: HTMLDivElement
@@ -60,7 +52,7 @@ export default () => {
   const onGridClick = () => {
     const currentCanvas = ctrl.canvas.currentCanvas
     if (!currentCanvas) return
-    if (gesturing()) return
+    if (state.selecting) return
     ctrl.canvas.deselect()
   }
 
@@ -98,23 +90,6 @@ export default () => {
     document.addEventListener('gestureend', preventGesture)
 
     const gesture = new Gesture(ref, {
-      onDrag: ({event, first, last, initial: [x, y], movement: [mx, my], memo}) => {
-        if ((event.target as HTMLElement).closest('.ProseMirror')) {
-          return
-        }
-        const {zoom, point: [px, py]} = currentCanvas.camera
-        const initial: Box2d = first ? new Box2d(x / zoom - px, y / zoom - py, 0, 0): memo
-        const newBox = Box2d.Resize(initial, CornerType.TopLeft, mx / zoom, my / zoom).box
-        ctrl.canvas.selectBox(newBox)
-
-        setGesturing(true)
-        setFrame(newBox)
-        if (last) {
-          setFrame(undefined)
-          setTimeout(() => setGesturing(false), 100)
-        }
-        return initial
-      },
       onPinch: ({origin: [ox, oy], offset: [s]}) => {
         zoomTo(s, [ox, oy])
       },
@@ -164,6 +139,7 @@ export default () => {
     <Container ref={ref} data-testid="canvas_container">
       <Show when={isTauri()}><DragArea data-tauri-drag-region="true" /></Show>
       <LinkEnd />
+      <Select target={() => ref} />
       <Grid onClick={onGridClick} />
       <Board
         style={{
@@ -174,19 +150,6 @@ export default () => {
           `
         }}
       >
-        <Show when={frame()}>
-          {(f) =>
-            <SelectionFrame
-              style={{
-                top: `${f().y.toString()}px`,
-                left: `${f().x.toString()}px`,
-                width: `${f().w.toString()}px`,
-                height: `${f().h.toString()}px`,
-                'border-width': `${1 / (ctrl.canvas.currentCanvas?.camera.zoom ?? 1)}px`
-              }}
-            />
-          }
-        </Show>
         <Show when={ctrl.canvas.selection}>
           {(sel) =>
             <Bounds
