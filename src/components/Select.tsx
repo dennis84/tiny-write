@@ -23,11 +23,18 @@ export default (props: Props) => {
     if (!target) return
 
     const gesture = new DragGesture(target, ({event, first, last, initial: [x, y], movement: [mx, my], memo}) => {
-      // If only clicked
-      if (!first && !memo) return
-
       // Prefer normal text selection
       if ((event.target as HTMLElement).closest('.ProseMirror')) {
+        return
+      }
+
+      // If only clicked
+      if (!first && !memo) {
+        if (state.mode === Mode.Canvas) {
+          ctrl.canvas.deselect()
+        } else {
+          ctrl.editor.deselect()
+        }
         return
       }
 

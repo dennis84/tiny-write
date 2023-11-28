@@ -282,4 +282,11 @@ export class EditorService {
     if (!editorView) return
     this.ctrl.select.selectBox(box, editorView, first, last)
   }
+
+  deselect() {
+    const currentFile = this.ctrl.file.currentFile
+    const editorView = currentFile?.editorView
+    if (!editorView) return
+    this.ctrl.select.deselect(editorView)
+  }
 }

@@ -36,12 +36,12 @@ test('selectBox', () => {
   service.selectBox(new Box2d(0, 0, 1, 10), v, true, false)
   expect(v.state.selection.toJSON()).toContain({anchor: 1, head: 4})
 
-  service.selectBox(new Box2d(0, 11, 0, 1), v, true, false)
+  service.selectBox(new Box2d(0, 12, 0, 1), v, true, false)
   expect(v.state.selection.toJSON()).toContain({anchor: 6, head: 9})
 
-  service.selectBox(new Box2d(0, 21, 0, 1), v, true, false)
+  service.selectBox(new Box2d(0, 22, 0, 1), v, true, false)
   expect(v.state.selection.toJSON()).toContain({anchor: 11, head: 14})
 
-  service.selectBox(new Box2d(0, 11, 0, 10), v, true, false)
+  service.selectBox(new Box2d(0, 12, 0, 10), v, true, false)
   expect(v.state.selection.toJSON()).toContain({anchor: 6, head: 14})
 })
