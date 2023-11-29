@@ -36,6 +36,7 @@ export class SelectService {
     for (let i = 0; i < positions.length; i++) {
       const pos = positions[i]
       const nextPos = positions[i+1]
+      // use next top pos because pos.bottom is always same as pos.top
       const end = nextPos?.top ?? pos.bottom
 
       const surrounded = minY <= pos.top && maxY >= end
@@ -64,10 +65,12 @@ export class SelectService {
     const from = resolvePos(min)
     const to = resolvePos(max)
     if (!from || !to) return
-    const sel = TextSelection.between(from, to)
+    const sel = new TextSelection(from, to)
     const tr = editorView.state.tr
     tr.setSelection(sel)
     editorView.dispatch(tr)
+    // focus at end otherwise rm with backspace sometimes doesn't work
+    if (last) editorView.focus()
   }
 
   private createPositions(editorView: EditorView) {

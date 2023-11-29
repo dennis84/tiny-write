@@ -9,8 +9,12 @@ const plugin = new Plugin({
       try {
         if (!state.selection.empty) {
           const {from, to} = state.selection
-          state.doc.nodesBetween(from ,to, (node, pos) => {
-            decos.push(Decoration.node(pos, pos + node.nodeSize, {class: 'selected'}))
+          state.doc.forEach((node, pos) => {
+            const end = pos + node.nodeSize
+            const surrounded = from <= pos && to >= end
+            if (surrounded) {
+              decos.push(Decoration.node(pos, end, {class: 'selected'}))
+            }
           })
         }
       } catch (e) {
