@@ -4,12 +4,13 @@ import {DragGesture} from '@use-gesture/vanilla'
 import {Box2d, PI, Vec2d, rotateSelectionHandle} from '@tldraw/primitives'
 import {CornerType, EdgeType, useState} from '@/state'
 import {Selection} from '@/services/CanvasService'
+import {IndexType, zIndex} from '@/utils/z-index'
 
 interface BoundsProps {
   selection: Selection;
   selected?: boolean;
   visible?: boolean;
-  index?: number;
+  index: number;
   onSelect?: (e: MouseEvent) => void;
   onDoubleClick?: () => void;
 }
@@ -228,7 +229,7 @@ export default (props: BoundsProps) => {
     <Bounds
       {...others}
       ref={ref}
-      style={{'z-index': (props.index ?? 1) + 2}}
+      style={{'z-index': zIndex(props.index, IndexType.BOUNDS)}}
       onMouseDown={local.onSelect}
       onDblClick={local.onDoubleClick}
       version="1.1"

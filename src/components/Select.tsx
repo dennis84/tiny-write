@@ -58,7 +58,6 @@ export default (props: Props) => {
       }
       return initial
     }, {
-      delay: 100,
       pointer: {keys: false},
       filterTaps: true,
       eventOptions: {passive: false},

@@ -4,6 +4,7 @@ import {v4 as uuidv4} from 'uuid'
 import {Box2d, Vec2d} from '@tldraw/primitives'
 import {DragGesture} from '@use-gesture/vanilla'
 import {EdgeType, useState} from '@/state'
+import {IndexType, zIndex} from '@/utils/z-index'
 
 const BORDER_SIZE = 20
 const CIRCLE_RADIUS = 7
@@ -16,7 +17,7 @@ const LinkHandleDot = styled('span')`
   border-radius: 999px;
   background: transparent;
   cursor: var(--cursor-pointer);
-  z-index: 99999;
+  z-index: ${(props: any) => zIndex(props.index, IndexType.HANDLE)};
   display: flex;
   justify-content: center;
   align-items: center;
@@ -38,6 +39,7 @@ interface Props {
   y: number;
   width: number;
   height: number;
+  index: number;
 }
 
 interface EdgeProps extends Props {
@@ -99,6 +101,7 @@ const LinkHandle = (props: EdgeProps) => {
   return (
     <LinkHandleDot
       zoom={zoom()}
+      index={props.index}
       style={{
         transform: `
           translate(${coords().map((n) => n + 'px').join(',')})

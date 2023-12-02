@@ -6,6 +6,7 @@ import {CanvasEditor} from '@/components/editor/Editor'
 import {Scroll} from '@/components/Layout'
 import Bounds from './Bounds'
 import LinkHandles from './LinkHandles'
+import {IndexType, zIndex} from '@/utils/z-index'
 
 export default ({element, index}: {element: CanvasEditorElement; index: number}) => {
   const [store, ctrl] = useState()
@@ -52,6 +53,7 @@ export default ({element, index}: {element: CanvasEditorElement; index: number})
           y={element.y}
           width={element.width}
           height={element.height}
+          index={index}
         />
       </Show>
       <Scroll
@@ -64,7 +66,7 @@ export default ({element, index}: {element: CanvasEditorElement; index: number})
           min-height: ${element.height.toString()}px;
           max-height: ${element.height.toString()}px;
           border-radius: 5px;
-          z-index: ${(index + 1).toString()};
+          z-index: ${zIndex(index, IndexType.CONTENT)};
           user-select: none;
           pointer-events: none;
           ${element.active ? `

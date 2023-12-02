@@ -3,6 +3,7 @@ import {styled} from 'solid-styled-components'
 import {Box2d, LineSegment2d, PI, Vec2d, VecLike} from '@tldraw/primitives'
 import {DragGesture} from '@use-gesture/vanilla'
 import {Canvas, CanvasBoxElement, CanvasLinkElement, EdgeType, useState} from '@/state'
+import {IndexType, zIndex} from '@/utils/z-index'
 
 const Link = styled('svg')`
   position: absolute;
@@ -15,7 +16,7 @@ const Link = styled('svg')`
   transform-origin: top left;
   overflow: visible;
   pointer-events: none;
-  z-index: ${(props: any) => props.index + 1};
+  z-index: ${(props: any) => zIndex(props.index, IndexType.LINK)};
 `
 
 const Path = styled('path')`
