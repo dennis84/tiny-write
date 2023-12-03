@@ -1,4 +1,4 @@
-import {Show, onCleanup, createEffect, onMount} from 'solid-js'
+import {onCleanup, createEffect, onMount, Switch, Match, ErrorBoundary} from 'solid-js'
 import {createMutable} from 'solid-js/store'
 import {appWindow} from '@tauri-apps/api/window'
 import {Mode, State, StateContext} from '@/state'
@@ -26,6 +26,11 @@ export default (props: {state: State}) => {
   const onDragOver = (e: DragEvent) => {
     mouseEnterCoords.x = e.pageX
     mouseEnterCoords.y = e.pageY
+  }
+
+  const onViewError = (e: any, reset: any) => {
+    ctrl.app.setError(e)
+    reset()
   }
 
   onMount(() => {
@@ -205,24 +210,28 @@ export default (props: {state: State}) => {
 
   return (
     <StateContext.Provider value={[store, ctrl]}>
-      <Layout
-        ref={layoutRef}
-        data-testid={store.error ? 'error' : store.loading}
-        onDragOver={onDragOver}>
-        <Show when={store.error}><ErrorView /></Show>
-        <Show when={store.args?.dir && !store.error}><Dir /></Show>
-        <Show when={!store.error && !store.args?.dir && store.mode === Mode.Canvas}><Canvas /></Show>
-        <Show when={!store.error && !store.args?.dir && store.mode === Mode.Editor}>
-          <Scroll data-tauri-drag-region="true" ref={scrollRef}>
-            <Select target={() => scrollRef} />
-            <Editor ref={editorRef} />
-          </Scroll>
-        </Show>
-        <MouseCursor />
-        <Menu />
-        <Keymap />
-        <Variables />
-      </Layout>
+      <ErrorBoundary fallback={onViewError}>
+        <Layout
+          ref={layoutRef}
+          data-testid={store.error ? 'error' : store.loading}
+          onDragOver={onDragOver}>
+          <Switch>
+            <Match when={store.error}><ErrorView /></Match>
+            <Match when={store.args?.dir}><Dir /></Match>
+            <Match when={store.mode === Mode.Canvas}><Canvas /></Match>
+            <Match when={store.mode === Mode.Editor}>
+              <Scroll data-tauri-drag-region="true" ref={scrollRef}>
+                <Select target={() => scrollRef} />
+                <Editor ref={editorRef} />
+              </Scroll>
+            </Match>
+          </Switch>
+          <MouseCursor />
+          <Menu />
+          <Keymap />
+          <Variables />
+        </Layout>
+      </ErrorBoundary>
     </StateContext.Provider>
   )
 }

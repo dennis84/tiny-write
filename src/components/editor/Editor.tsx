@@ -450,7 +450,7 @@ const proseMirror = (props: Props) => `
     }
     > .selected::selection,
     > .selected *::selection {
-      background: none;
+      background: none !important;
     }
     > *:not(.cm-container)::selection,
     > *:not(.cm-container) *::selection,

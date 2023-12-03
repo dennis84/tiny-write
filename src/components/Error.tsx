@@ -1,5 +1,6 @@
+import {Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
-import {useState} from '@/state'
+import {Mode, useState} from '@/state'
 import {ButtonGroup, Button, ButtonPrimary} from './Button'
 import {Content, Scroll} from './Layout'
 
@@ -29,6 +30,13 @@ const GeneralError = () => {
     window.location.reload()
   }
 
+  const onDeleteCanvas = () => {
+    const currentCanvas = ctrl.canvas.currentCanvas
+    if (!currentCanvas) return
+    ctrl.canvas.deleteForever(currentCanvas.id)
+    window.location.reload()
+  }
+
   const onReset = () => {
     ctrl.app.reset()
     window.location.reload()
@@ -46,8 +54,13 @@ const GeneralError = () => {
         <Pre><code>{getMessage()}</code></Pre>
         <ButtonGroup>
           <ButtonPrimary onClick={onReload}>Reload</ButtonPrimary>
-          <Button onClick={onDeleteFile}>Delete current file</Button>
-          <Button onClick={onReset}>Reset</Button>
+          <Show when={store.mode === Mode.Editor}>
+            <Button onClick={onDeleteFile}>Delete current file</Button>
+          </Show>
+          <Show when={store.mode === Mode.Canvas}>
+            <Button onClick={onDeleteCanvas}>Delete current canvas</Button>
+          </Show>
+          <Button onClick={onReset}>Reset All</Button>
         </ButtonGroup>
       </Content>
     </Scroll>
