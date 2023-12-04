@@ -44,7 +44,6 @@ const DragArea = styled('div')`
 
 export default () => {
   const [state, ctrl] = useState()
-  const [stopGesture, setStopGesture] = createSignal(false)
 
   const scaleBounds = {min: 0.3, max: 10}
   let ref!: HTMLDivElement
@@ -93,20 +92,17 @@ export default () => {
       onPinch: ({origin: [ox, oy], offset: [s]}) => {
         zoomTo(s, [ox, oy])
       },
-      onWheel: ({event, first, last, pinching, offset: [x, y]}) => {
+      onWheel: ({event, first, pinching, delta: [dx, dy]}) => {
         if (pinching) return false
-        const skip = stopGesture()
-        if (last) setStopGesture(false)
-        if (skip) return false
 
         const target = event.target as HTMLElement
         if (first && target.closest('.ProseMirror')) {
-          setStopGesture(true)
           return false
         }
 
         event.preventDefault()
-        ctrl.canvas.updateCameraPoint([-x, -y])
+        const {zoom, point: [x, y]} = currentCanvas.camera
+        ctrl.canvas.updateCameraPoint([x - dx / zoom , y - dy / zoom])
       },
     }, {
       target: ref,
