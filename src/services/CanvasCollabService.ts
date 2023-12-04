@@ -49,7 +49,7 @@ export class CanvasCollabService {
         for (const [key, action] of event.changes.keys) {
           if (action.action === 'delete') {
             if (event.path.length === 0) {
-              this.canvasService.removeElement(key)
+              this.canvasService.removeElements([key])
             } else {
               const elementId = event.path[0].toString().substring(PREFIX.length)
               this.canvasService.updateCanvasElement(elementId, {[key]: undefined})

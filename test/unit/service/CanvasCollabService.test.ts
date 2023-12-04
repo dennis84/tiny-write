@@ -80,7 +80,7 @@ test('init', () => {
     'el-1': {id: '1', type: ElementType.Editor, x: 0, y: 0, width: 100, height: 100}
   })
 
-  expect(canvasService.removeElement).toHaveBeenCalledWith('el-2')
+  expect(canvasService.removeElements).toHaveBeenCalledWith(['el-2'])
 })
 
 test('addElement', () => {
@@ -95,7 +95,7 @@ test('addElement', () => {
   undoManager.undo()
 
   expect(service.elements?.toJSON()).toEqual({})
-  expect(canvasService.removeElement).toHaveBeenCalledWith('el-1')
+  expect(canvasService.removeElements).toHaveBeenCalledWith(['el-1'])
 })
 
 test('addElements', () => {
@@ -118,7 +118,7 @@ test('addElements', () => {
   undoManager.undo()
 
   expect(service.elements?.toJSON()).toEqual({})
-  expect(canvasService.removeElement).toHaveBeenCalledTimes(2)
+  expect(canvasService.removeElements).toHaveBeenCalledTimes(2)
 })
 
 test('updateElement', () => {
