@@ -45,13 +45,13 @@ export interface Version {
 }
 
 export interface Collab {
-  started?: boolean;
-  rendered?: boolean;
-  provider?: WebsocketProvider;
-  permanentUserData?: Y.PermanentUserData;
-  ydoc?: Y.Doc;
+  started: boolean;
+  rendered: boolean;
+  provider: WebsocketProvider;
+  permanentUserData: Y.PermanentUserData;
+  ydoc: Y.Doc;
+  undoManager: UndoManager;
   snapshot?: Y.Doc;
-  undoManager?: UndoManager;
   error?: boolean;
 }
 

@@ -92,11 +92,11 @@ export default () => {
       onPinch: ({origin: [ox, oy], offset: [s]}) => {
         zoomTo(s, [ox, oy])
       },
-      onWheel: ({event, first, pinching, delta: [dx, dy]}) => {
+      onWheel: ({event, pinching, delta: [dx, dy]}) => {
         if (pinching) return false
 
         const target = event.target as HTMLElement
-        if (first && target.closest('.ProseMirror')) {
+        if (target.closest('.ProseMirror')) {
           return false
         }
 

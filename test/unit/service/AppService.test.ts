@@ -4,6 +4,7 @@ import {createStore} from 'solid-js/store'
 import {createState, Canvas, Mode} from '@/state'
 import {Ctrl} from '@/services'
 import {AppService} from '@/services/AppService'
+import {createCollabMock} from '../util'
 
 vi.mock('mermaid', () => ({}))
 vi.mock('@/db', () => ({DB: mock()}))
@@ -36,7 +37,7 @@ test('init - new canvas collab', async () => {
     return data
   })
 
-  ctrl.collab.create.mockReturnValue({started: true})
+  ctrl.collab.create.mockReturnValue(createCollabMock({started: true}))
 
   await service.init()
 
@@ -60,7 +61,7 @@ test('init - existing canvas collab', async () => {
     return data
   })
 
-  ctrl.collab.create.mockReturnValue({started: true})
+  ctrl.collab.create.mockReturnValue(createCollabMock({started: true}))
 
   await service.init()
 

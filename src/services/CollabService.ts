@@ -105,6 +105,7 @@ export class CollabService {
 
     return {
       started: connect,
+      rendered: false,
       ydoc,
       provider,
       permanentUserData,
@@ -114,7 +115,7 @@ export class CollabService {
 
   apply(file: File) {
     if (file.ydoc) {
-      const ydoc = this.store.collab!.ydoc!
+      const ydoc = this.store.collab!.ydoc
       if (!this.store.collab?.started) Y.applyUpdate(ydoc, file.ydoc)
       this.store.collab?.undoManager?.addToScope(ydoc.getXmlFragment(file.id))
     }

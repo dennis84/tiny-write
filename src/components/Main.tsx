@@ -31,6 +31,7 @@ export default (props: {state: State}) => {
   const onViewError = (e: any, reset: any) => {
     ctrl.app.setError(e)
     reset()
+    return <></>
   }
 
   onMount(() => {

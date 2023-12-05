@@ -17,7 +17,7 @@ import {
 import {DB} from '@/db'
 import {createCtrl, Ctrl} from '@/services'
 import {CanvasService} from '@/services/CanvasService'
-import {createYdoc, createYUpdate, waitFor} from '../util'
+import {createCollabMock, createYdoc, createYUpdate, waitFor} from '../util'
 
 vi.mock('mermaid', () => ({}))
 vi.mock('@/db', () => ({DB: mock()}))
@@ -389,7 +389,7 @@ test('newCanvas', () => {
     ],
   }))
 
-  ctrl.collab.create.mockReturnValue({})
+  ctrl.collab.create.mockReturnValue(createCollabMock())
 
   const service = new CanvasService(ctrl, store, setState)
 
@@ -492,7 +492,7 @@ test('newFile', () => {
   }))
 
   ctrl.file.createFile.mockReturnValue({id: '1', ydoc, versions: []})
-  ctrl.collab.create.mockReturnValue({})
+  ctrl.collab.create.mockReturnValue(createCollabMock())
 
   const service = new CanvasService(ctrl, store, setState)
   service.newFile()
@@ -525,7 +525,7 @@ test.each([
   }))
 
   ctrl.file.createFile.mockReturnValue({id: '3', ydoc, versions: []})
-  ctrl.collab.create.mockReturnValue({})
+  ctrl.collab.create.mockReturnValue(createCollabMock())
 
   const service = new CanvasService(ctrl, store, setState)
   service.newFile(link)
