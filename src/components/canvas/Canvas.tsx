@@ -1,4 +1,4 @@
-import {createSignal, For, onCleanup, onMount, Show} from 'solid-js'
+import {For, onCleanup, onMount, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {Gesture} from '@use-gesture/vanilla'
 import {Vec2d} from '@tldraw/primitives'
@@ -100,7 +100,6 @@ export default () => {
           return false
         }
 
-        event.preventDefault()
         const {zoom, point: [x, y]} = currentCanvas.camera
         ctrl.canvas.updateCameraPoint([x - dx / zoom , y - dy / zoom])
       },

@@ -1,4 +1,4 @@
-import {computePosition, offset} from '@floating-ui/dom'
+import {computePosition, flip, offset, shift} from '@floating-ui/dom'
 import {keymap} from 'prosemirror-keymap'
 import {EditorState, Plugin, PluginKey, Transaction} from 'prosemirror-state'
 import {EditorView} from 'prosemirror-view'
@@ -64,7 +64,11 @@ class AutocompleteView {
 
     computePosition(virtualEl, this.tooltip, {
       placement: 'bottom-start',
-      middleware: [offset(this.ctrl.config.fontSize + 5)],
+      middleware: [
+        offset(this.ctrl.config.fontSize + 5),
+        flip(),
+        shift(),
+      ],
     }).then(({x, y, placement}) => {
       this.tooltip.classList.add(placement)
       this.tooltip.style.left = `${x}px`

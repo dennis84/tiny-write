@@ -11,6 +11,7 @@ const Grid = styled('svg')`
   height: 100%;
   touch-action: none;
   fill: var(--foreground);
+  overscroll-behavior: none;
 `
 
 export default ({onClick}: {onClick: () => void}) => {
