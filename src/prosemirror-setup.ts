@@ -16,11 +16,9 @@ import pasteMarkdown from '@/prosemirror/paste-markdown'
 import table from '@/prosemirror/table'
 import {collab} from '@/prosemirror/collab'
 import selected from '@/prosemirror/selected'
-import position from '@/prosemirror/position'
 import container from '@/prosemirror/container'
 import fileListing from '@/prosemirror/autocomplete/file-listing'
 import wordCompletion from '@/prosemirror/autocomplete/word-completion'
-import {isDev} from '@/env'
 import {Ctrl} from '@/services'
 
 interface Props {
@@ -41,32 +39,33 @@ export const createExtensions = (props: Props): ProseMirrorExtension[] => {
     placeholder('Start typing ...'),
     scroll(props.ctrl),
     blockMenu(),
-    fileListing(props.ctrl),
-    wordCompletion(props.ctrl),
   ]
 
   if (props.type) {
     extensions.push(collab(props.ctrl, props.type))
   }
 
-  if (isMarkdown) {
-    return extensions
+  if (!isMarkdown) {
+    extensions.push(...[
+      markdown(),
+      todoList(),
+      codeBlock(props.ctrl),
+      code(),
+      emphasis(),
+      link(),
+      table(props.ctrl),
+      container(),
+      selected(),
+      image(props.ctrl),
+      pasteMarkdown(),
+    ])
   }
 
   return [
     ...extensions,
-    markdown(),
-    todoList(),
-    codeBlock(props.ctrl),
-    code(),
-    emphasis(),
-    link(),
-    table(props.ctrl),
-    position(isDev),
-    container(),
-    selected(),
-    image(props.ctrl),
-    pasteMarkdown(),
+    // Must be added after table for higher prio of keymap
+    fileListing(props.ctrl),
+    wordCompletion(props.ctrl),
   ]
 }
 
