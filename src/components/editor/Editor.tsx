@@ -231,7 +231,7 @@ const proseMirror = (props: Props) => `
       padding: 1px;
       font-family: var(--font-family-monospace) !important;
     }
-    a {
+    a, .edit-link {
       color: var(--primary-background);
     }
     .horizontal-rule {

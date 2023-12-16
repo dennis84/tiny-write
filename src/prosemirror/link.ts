@@ -128,7 +128,10 @@ const toMarkdown = (view: EditorView, tr: Transaction) => {
     const {href} = mark.attrs
     const range = findMarkPosition(mark, view.state.doc, textFrom, textTo)
     const text = view.state.doc.textBetween(range.from, range.to, '\0', '\0')
-    tr.replaceRangeWith(range.from, range.to, view.state.schema.text(`[${text}](${href})`))
+    const node = view.state.schema.text(`[${text}](${href})`)
+      .mark([view.state.schema.marks.edit_link.create()])
+
+    tr.replaceRangeWith(range.from, range.to, node)
     tr.setSelection(new TextSelection(tr.doc.resolve(sel.$head.pos + 1)))
     tr.setMeta(pluginKey, {pos: sel.$head.pos})
     return true
@@ -158,9 +161,19 @@ const handleMove = (view: EditorView) => {
   return false
 }
 
+const editLinkSchema = {
+  edit_link: {
+    toDOM: () => ['span', {class: 'edit-link'}],
+  },
+}
+
 export default (): ProseMirrorExtension => ({
+  schema: (prev) => ({
+    ...prev,
+    marks: (prev.marks as any).append(editLinkSchema),
+  }),
   plugins: (prev) => [
     ...prev,
     markdownLinks(),
-  ]
+  ],
 })
