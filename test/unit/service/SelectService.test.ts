@@ -34,14 +34,14 @@ test('selectBox', () => {
     .mockReturnValueOnce({top: 21, left: 0, right: 0, bottom: 30})
 
   service.selectBox(new Box2d(0, 0, 1, 10), v, true, false)
-  expect(v.state.selection.toJSON()).toContain({anchor: 0, head: 5})
+  expect(v.state.selection.toJSON()).toMatchObject({anchor: 0, head: 5})
 
   service.selectBox(new Box2d(0, 12, 0, 1), v, true, false)
-  expect(v.state.selection.toJSON()).toContain({anchor: 5, head: 10})
+  expect(v.state.selection.toJSON()).toMatchObject({anchor: 5, head: 10})
 
   service.selectBox(new Box2d(0, 22, 0, 1), v, true, false)
-  expect(v.state.selection.toJSON()).toContain({anchor: 10, head: 15})
+  expect(v.state.selection.toJSON()).toMatchObject({anchor: 10, head: 15})
 
   service.selectBox(new Box2d(0, 12, 0, 10), v, true, false)
-  expect(v.state.selection.toJSON()).toContain({anchor: 5, head: 15})
+  expect(v.state.selection.toJSON()).toMatchObject({anchor: 5, head: 15})
 })
