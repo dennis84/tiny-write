@@ -1,10 +1,9 @@
 import {Plugin} from 'prosemirror-state'
 import {EditorView} from 'prosemirror-view'
 import {Fragment, Node, Schema, Slice} from 'prosemirror-model'
+import {find as findLinks} from 'linkifyjs'
 import {createMarkdownParser} from '@/markdown'
 import {ProseMirrorExtension} from '@/prosemirror'
-
-const URL_REGEX = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-/]))?/g
 
 const isInlineContent = (f: Fragment) =>
   f.childCount === 1 && (
@@ -21,34 +20,41 @@ const transform = (view: EditorView, fragment: Fragment) => {
 
   fragment.forEach((child: Node) => {
     if (child.isText && child.text) {
-      let pos = 0
-      let match: any
-
       if (editLinkMark) {
         const node = child.mark(editLinkMark.addToSet(child.marks))
         nodes.push(node)
         return
       }
 
-      while ((match = URL_REGEX.exec(child.text)) !== null) {
-        const start = match.index
-        const end = start + match[0].length
-        const attrs = {href: match[0]}
+      const links = findLinks(child.text)
+      if (links.length > 0) {
+        for (let i = 0; i < links.length; i++) {
+          const cur = links[i]
+          const prev = links[i-1]
+          const next = links[i+1]
 
-        if (start > 0) {
-          nodes.push(child.cut(pos, start))
+          if (!prev && cur.start > 0) {
+            nodes.push(child.cut(0, cur.start))
+          }
+
+          if (prev && prev.end < cur.start) {
+            nodes.push(child.cut(prev.end, cur.start))
+          }
+
+          const node = child
+            .cut(cur.start, cur.end)
+            .mark(linkMarkType.create({href: cur.href}).addToSet(child.marks))
+          nodes.push(node)
+
+          if (!next && cur.end < child.text.length) {
+            nodes.push(child.cut(links[links.length-1].end))
+          }
         }
 
-        const node = child
-          .cut(start, end)
-          .mark(linkMarkType.create(attrs).addToSet(child.marks))
-        nodes.push(node)
-        pos = end
+        return
       }
 
-      if (pos < child.text.length) {
-        nodes.push(child.cut(pos))
-      }
+      nodes.push(child)
     } else {
       nodes.push(child.copy(transform(view, child.content)))
     }
