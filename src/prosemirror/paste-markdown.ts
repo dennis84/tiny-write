@@ -1,4 +1,5 @@
 import {Plugin} from 'prosemirror-state'
+import {EditorView} from 'prosemirror-view'
 import {Fragment, Node, Schema, Slice} from 'prosemirror-model'
 import {createMarkdownParser} from '@/markdown'
 import {ProseMirrorExtension} from '@/prosemirror'
@@ -11,12 +12,23 @@ const isInlineContent = (f: Fragment) =>
     f.firstChild?.type.name === 'text'
   )
 
-const transform = (schema: Schema, fragment: Fragment) => {
+const transform = (view: EditorView, fragment: Fragment) => {
   const nodes: Node[] = []
+  const selection = view.state.selection
+  const linkMarkType = view.state.schema.marks.link
+  const editLinkMarkType = view.state.schema.marks.edit_link
+  const editLinkMark = editLinkMarkType.isInSet(selection.$from.marks())
+
   fragment.forEach((child: Node) => {
     if (child.isText && child.text) {
       let pos = 0
       let match: any
+
+      if (editLinkMark) {
+        const node = child.mark(editLinkMark.addToSet(child.marks))
+        nodes.push(node)
+        return
+      }
 
       while ((match = URL_REGEX.exec(child.text)) !== null) {
         const start = match.index
@@ -29,7 +41,7 @@ const transform = (schema: Schema, fragment: Fragment) => {
 
         const node = child
           .cut(start, end)
-          .mark(schema.marks.link.create(attrs).addToSet(child.marks))
+          .mark(linkMarkType.create(attrs).addToSet(child.marks))
         nodes.push(node)
         pos = end
       }
@@ -38,7 +50,7 @@ const transform = (schema: Schema, fragment: Fragment) => {
         nodes.push(child.cut(pos))
       }
     } else {
-      nodes.push(child.copy(transform(schema, child.content)))
+      nodes.push(child.copy(transform(view, child.content)))
     }
   })
 
@@ -73,7 +85,7 @@ const pasteMarkdown = (schema: Schema) => {
         const paste = parser.parse(text)
         if (!paste) return false
         const slice = paste.slice(0)
-        let fragment = shiftKey ? slice.content : transform(schema, slice.content)
+        let fragment = shiftKey ? slice.content : transform(view, slice.content)
         const selection = view.state.selection
 
         if (isInlineContent(fragment)) {
