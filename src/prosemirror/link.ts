@@ -76,6 +76,7 @@ const toLink = (
   let hasLink = false
   let linkFrom = from
   let linkTo = to
+  let nextPos = newPos
 
   node.content.forEach((n, o) => {
     const m = linkMark.isInSet(n.marks)
@@ -83,6 +84,7 @@ const toLink = (
       hasLink = true
       linkFrom = from + o
       linkTo = linkFrom + n.nodeSize + 4 + m.attrs.href.length
+      if (nextPos > linkFrom) nextPos -= 4 + m.attrs.href.length
     }
   })
 
@@ -92,6 +94,7 @@ const toLink = (
 
   const tr = newState.tr
   tr.replaceWith(from, to, node.content)
+  tr.setSelection(TextSelection.near(tr.doc.resolve(nextPos)))
   return tr
 }
 
