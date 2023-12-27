@@ -15,11 +15,11 @@ test('create link', async ({page}) => {
   await lineTextEq(page, 1, 'foo title bar')
   await move(page, 'ArrowLeft')
   await lineTextEq(page, 1, 'foo [title](url) bar')
-  await move(page, 'ArrowRight', 7)
+  await move(page, 'ArrowRight', 6)
   await lineTextEq(page, 1, 'foo [title](url) bar')
   await move(page, 'ArrowRight')
   await lineTextEq(page, 1, 'foo title bar')
-  await move(page, 'ArrowRight', 3)
+  await move(page, 'ArrowRight', 4)
   await page.locator('.ProseMirror').pressSequentially(' [other](link) ', {delay})
   await lineTextEq(page, 1, 'foo title bar other ')
   await move(page, 'ArrowLeft', 2)
@@ -35,7 +35,7 @@ test('create link', async ({page}) => {
   await page.locator('.ProseMirror').pressSequentially('test [another](path).', {delay})
   await move(page, 'ArrowLeft', 7)
   await move(page, 'ArrowUp')
-  await move(page, 'ArrowLeft') // must move 1page,  to the side before expand
+  await move(page, 'ArrowLeft') // must move 1 to the side to expand
   await lineTextEq(page, 1, 'foo [title](url) bar other ')
   await lineTextEq(page, 2, 'test another.')
 

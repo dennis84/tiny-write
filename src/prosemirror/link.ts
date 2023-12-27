@@ -1,9 +1,123 @@
-import {Plugin, PluginKey, TextSelection, Transaction} from 'prosemirror-state'
-import {EditorView} from 'prosemirror-view'
-import {Mark, Node} from 'prosemirror-model'
-import {ProseMirrorExtension} from '@/prosemirror'
+import {EditorState, Plugin, TextSelection, Transaction} from 'prosemirror-state'
+import {Mark, Node, ResolvedPos} from 'prosemirror-model'
+import {MarkdownParser} from 'prosemirror-markdown'
+import {createMarkdownParser} from '@/markdown'
+import {ProseMirrorExtension} from '.'
 
-const REGEX = /(^|\W)\[([^[\]]+)\]\(([^ |)]+)(?: "(.+)")?\)/
+export default (): ProseMirrorExtension => ({
+  schema: (prev) => ({
+    ...prev,
+    marks: (prev.marks as any).append(editLinkSchema),
+  }),
+  plugins: (prev, schema) => [
+    plugin(createMarkdownParser(schema)),
+    ...prev
+  ],
+})
+
+const editLinkSchema = {
+  edit_link: {
+    toDOM: () => ['span', {class: 'edit-link'}],
+  },
+}
+
+const plugin = (parser: MarkdownParser) => new Plugin({
+  appendTransaction: (transactions, oldState, newState) => {
+    if (!newState.selection.empty) return
+
+    const oldPos = oldState.selection.from
+    const newPos = newState.selection.from
+    if (oldPos === newPos) return
+
+    const docChanges = transactions.some((tr) => tr.docChanged) && !oldState.doc.eq(newState.doc)
+
+    const tr = toLink(parser, docChanges ? newState : oldState, newState)
+    if (tr) return tr
+
+    const linkMark = newState.schema.marks.link
+    const mark = linkMark.isInSet(newState.selection.$from.marks())
+
+    // Transform to markdown
+    if (mark) {
+      const {href} = mark.attrs
+      const textFrom = newState.selection.$from.pos - newState.selection.$from.textOffset
+      const textTo = newState.selection.$from.after()
+      const range = findMarkPosition(mark, newState.doc, textFrom, textTo)
+      const text = newState.doc.textBetween(range.from, range.to, '\0', '\0')
+      const node = newState.schema.text(`[${text}](${href})`)
+        .mark([newState.schema.marks.edit_link.create()])
+
+      const tr = newState.tr
+      tr.replaceRangeWith(range.from, range.to, node)
+      tr.setSelection(new TextSelection(tr.doc.resolve(newPos + 1)))
+      return tr
+    }
+  }
+})
+
+const toLink = (
+  parser: MarkdownParser,
+  targetState: EditorState,
+  newState: EditorState,
+): Transaction | undefined => {
+  const newPos = newState.selection.from
+  const linkMark = newState.schema.marks.link
+
+  // Get text under target state cursor
+  const {from, to, text} = findWord(targetState, targetState.selection.$from)
+
+  // Do nothing if text has code marks
+  if (targetState.doc.rangeHasMark(from, to, newState.schema.marks.code)) {
+    return
+  }
+
+  const node = parser.parse(text)?.content.firstChild
+  if (!node) return
+  let hasLink = false
+  let linkFrom = from
+  let linkTo = to
+
+  node.content.forEach((n, o) => {
+    const m = linkMark.isInSet(n.marks)
+    if (!hasLink && m) {
+      hasLink = true
+      linkFrom = from + o
+      linkTo = linkFrom + n.nodeSize + 4 + m.attrs.href.length
+    }
+  })
+
+  if (!hasLink || (newPos > linkFrom && newPos < linkTo)) {
+    return
+  }
+
+  const tr = newState.tr
+  tr.replaceWith(from, to, node.content)
+  return tr
+}
+
+const findWord = (state: EditorState, pos: ResolvedPos) => {
+  let from = pos.pos - (pos.nodeBefore?.nodeSize ?? 0)
+  let to = pos.pos + (pos.nodeAfter?.nodeSize ?? 0)
+
+  // Use current pos if between two nodes
+  if (pos.textOffset === 0) {
+    to = pos.pos
+  }
+
+  let text = state.doc.textBetween(from, to)
+
+  // leading whitespace is dropped by md parser
+  if (text.startsWith(' ')) {
+    text = text.substring(1)
+    from += 1
+  }
+
+  return {
+    from,
+    to,
+    text,
+  }
+}
 
 const findMarkPosition = (mark: Mark, doc: Node, from: number, to: number) => {
   let markPos = {from: -1, to: -1}
@@ -16,164 +130,3 @@ const findMarkPosition = (mark: Mark, doc: Node, from: number, to: number) => {
 
   return markPos
 }
-
-const pluginKey = new PluginKey('markdown-links')
-
-const markdownLinks = () => new Plugin({
-  key: pluginKey,
-  state: {
-    init() {
-      return {pos: undefined}
-    },
-    apply(tr, state) {
-      const action = tr.getMeta(pluginKey)
-      if (action?.pos) {
-        state.pos = action.pos
-      }
-
-      return state
-    }
-  },
-  props: {
-    handleDOMEvents: {
-      keyup: (view) => {
-        return handleMove(view)
-      },
-      click: (view, e) => {
-        if (handleMove(view)) {
-          e.preventDefault()
-        }
-
-        return true
-      },
-    }
-  }
-})
-
-const resolvePos = (view: EditorView, pos: number) => {
-  try {
-    return view.state.doc.resolve(pos)
-  } catch (err) {
-    // ignore
-  }
-}
-
-const toLink = (view: EditorView, tr: Transaction) => {
-  const sel = view.state.selection
-  const state = pluginKey.getState(view.state)
-  const lastPos = state.pos
-
-  if (lastPos !== undefined) {
-    const $from = resolvePos(view, lastPos)
-    if (!$from || $from.depth === 0 || $from.parent.type.spec.code) {
-      return false
-    }
-
-    const lineFrom = $from.before()
-    const lineTo = $from.after()
-
-    const line = view.state.doc.textBetween(lineFrom, lineTo, '\0', '\0')
-    const match = REGEX.exec(line)
-
-    if (match) {
-      const [full,, text, href] = match
-      const spaceLeft = full.indexOf(text) - 1
-      const spaceRight = full.length - text.length - href.length - spaceLeft - 4
-      const start = match.index + $from.start() + spaceLeft
-      const end = start + full.length - spaceLeft - spaceRight
-
-      if (sel.$from.pos >= start && sel.$from.pos <= end) {
-        return false
-      }
-
-      const $startPos = resolvePos(view, start)
-
-      // Do not convert md links if content has specific marks
-      const ignoreMarks = $startPos?.marks().find((x) => x.type.name === 'code')
-      if (ignoreMarks) {
-        return false
-      }
-
-      const textStart = start + 1
-      const textEnd = textStart + text.length
-
-      if (textEnd < end) tr.delete(textEnd, end)
-      if (textStart > start) tr.delete(start, textStart)
-
-      const to = start + text.length
-      tr.addMark(start, to, view.state.schema.marks.link.create({href}))
-
-      const sub = end - textEnd + textStart - start
-      tr.setMeta(pluginKey, {pos: sel.$head.pos - sub})
-
-      return true
-    }
-  }
-
-  return false
-}
-
-const toMarkdown = (view: EditorView, tr: Transaction) => {
-  const schema = view.state.schema
-  const sel = view.state.selection
-  if (sel.$head.depth === 0 || sel.$head.parent.type.spec.code) {
-    return false
-  }
-
-  const mark = schema.marks.link.isInSet(sel.$head.marks())
-  const textFrom = sel.$head.pos - sel.$head.textOffset
-  const textTo = sel.$head.after()
-
-  if (mark) {
-    const {href} = mark.attrs
-    const range = findMarkPosition(mark, view.state.doc, textFrom, textTo)
-    const text = view.state.doc.textBetween(range.from, range.to, '\0', '\0')
-    const node = view.state.schema.text(`[${text}](${href})`)
-      .mark([view.state.schema.marks.edit_link.create()])
-
-    tr.replaceRangeWith(range.from, range.to, node)
-    tr.setSelection(new TextSelection(tr.doc.resolve(sel.$head.pos + 1)))
-    tr.setMeta(pluginKey, {pos: sel.$head.pos})
-    return true
-  }
-
-  return false
-}
-
-const handleMove = (view: EditorView) => {
-  const sel = view.state.selection
-  if (!sel.empty || !sel.$head) return false
-  const pos = sel.$head.pos
-  const tr = view.state.tr
-
-  if (toLink(view, tr)) {
-    view.dispatch(tr)
-    return true
-  }
-
-  if (toMarkdown(view, tr)) {
-    view.dispatch(tr)
-    return true
-  }
-
-  tr.setMeta(pluginKey, {pos})
-  view.dispatch(tr)
-  return false
-}
-
-const editLinkSchema = {
-  edit_link: {
-    toDOM: () => ['span', {class: 'edit-link'}],
-  },
-}
-
-export default (): ProseMirrorExtension => ({
-  schema: (prev) => ({
-    ...prev,
-    marks: (prev.marks as any).append(editLinkSchema),
-  }),
-  plugins: (prev) => [
-    ...prev,
-    markdownLinks(),
-  ],
-})
