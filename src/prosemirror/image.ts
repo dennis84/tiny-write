@@ -1,12 +1,8 @@
-import {Plugin} from 'prosemirror-state'
-import {Node, Schema} from 'prosemirror-model'
+import {Node} from 'prosemirror-model'
 import {EditorView} from 'prosemirror-view'
 import {isTauri} from '@/env'
 import {ProseMirrorExtension} from '@/prosemirror'
 import {Ctrl} from '@/services'
-
-const REGEX = /^!\[([^[\]]*?)\]\((.+?)\)\s+/
-const MAX_MATCH = 500
 
 const isUrl = (str: string) => {
   try {
@@ -16,37 +12,6 @@ const isUrl = (str: string) => {
     return false
   }
 }
-
-const isBlank = (text: string) => text === ' ' || text === '\xa0'
-
-const imageInput = (schema: Schema) => new Plugin({
-  props: {
-    handleTextInput(view, from, to, text) {
-      if (view.composing || !isBlank(text)) return false
-      const $from = view.state.doc.resolve(from)
-      if ($from.parent.type.spec.code) return false
-      const textBefore = $from.parent.textBetween(
-        Math.max(0, $from.parentOffset - MAX_MATCH),
-        $from.parentOffset,
-        null,
-        '\ufffc'
-      ) + text
-
-      const match = REGEX.exec(textBefore)
-      if (match) {
-        const [,title, src] = match
-        const node = schema.node('image', {src, title})
-        const start = from - (match[0].length - text.length)
-        const tr = view.state.tr
-        tr.delete(start, to)
-        tr.insert(start, node)
-        view.dispatch(tr)
-
-        return true
-      }
-    },
-  }
-})
 
 const imageSchema = {
   inline: true,
@@ -184,10 +149,6 @@ export default (ctrl: Ctrl): ProseMirrorExtension => ({
       .update('image', imageSchema)
       .append({video: videoSchema}),
   }),
-  plugins: (prev, schema) => [
-    ...prev,
-    imageInput(schema),
-  ],
   nodeViews: {
     image: (node, view, getPos) => {
       return new ImageView(node, view, getPos, ctrl)

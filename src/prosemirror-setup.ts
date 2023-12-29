@@ -3,6 +3,7 @@ import * as Y from 'yjs'
 import {NodeViewConfig, ProseMirrorExtension} from '@/prosemirror'
 import base from '@/prosemirror/base'
 import markdown from '@/prosemirror/markdown'
+import inputParser from '@/prosemirror/input-parser'
 import link from '@/prosemirror/link'
 import scroll from '@/prosemirror/scroll'
 import todoList from '@/prosemirror/task-list'
@@ -52,6 +53,7 @@ export const createExtensions = (props: Props): ProseMirrorExtension[] => {
       codeBlock(props.ctrl),
       code(),
       emphasis(),
+      inputParser(),
       link(),
       table(props.ctrl),
       container(),
