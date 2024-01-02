@@ -23,8 +23,12 @@ export default (props: Props) => {
     if (!target) return
 
     const gesture = new DragGesture(target, ({event, first, last, initial: [x, y], movement: [mx, my], memo}) => {
-      // Prefer normal text selection
-      if ((event.target as HTMLElement).closest('.ProseMirror')) {
+      if (
+        // Prefer normal text selection
+        (event.target as HTMLElement).closest('.ProseMirror') ||
+        // Allow click on tooltip
+        (event.target as HTMLElement).closest('.block-tooltip')
+      ) {
         return
       }
 

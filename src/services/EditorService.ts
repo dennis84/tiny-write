@@ -52,6 +52,7 @@ export class EditorService {
       const dispatchTransaction = (tr: Transaction) => {
         const newState = editorView!.state.apply(tr)
         editorView!.updateState(newState)
+        this.setState('lastTr', tr.time)
         if (!tr.docChanged) return
 
         const yMeta = tr.getMeta(ySyncPluginKey)

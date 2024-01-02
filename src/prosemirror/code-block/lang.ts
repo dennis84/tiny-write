@@ -161,6 +161,7 @@ export class LangInputEditor {
         EditorView.domEventHandlers({
           'blur': () => {
             this.reset()
+            console.log('blur')
             this.props.onClose()
             return true
           }

@@ -7,6 +7,7 @@ import * as remote from '@/remote'
 import {isTauri} from '@/env'
 import {Scroll, Layout} from '@/components/Layout'
 import {Editor} from '@/components/editor/Editor'
+import {BlockTooltip} from '@/components/editor/BlockTooltip'
 import Canvas from '@/components/canvas/Canvas'
 import Menu from '@/components/menu/Menu'
 import ErrorView from '@/components/Error'
@@ -227,6 +228,7 @@ export default (props: {state: State}) => {
               </Scroll>
             </Match>
           </Switch>
+          <BlockTooltip />
           <MouseCursor />
           <Menu />
           <Keymap />

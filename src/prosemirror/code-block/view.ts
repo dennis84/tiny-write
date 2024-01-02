@@ -352,7 +352,10 @@ export class CodeBlockView {
   }
 
   stopEvent(e: Event) {
-    // Allow mouse events to allow to drag the code block from prosemirror.
-    return !(e instanceof MouseEvent)
+    if ((e.target as HTMLElement).classList.contains('block-handle')) {
+      return false
+    }
+
+    return true
   }
 }

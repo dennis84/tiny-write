@@ -66,7 +66,7 @@ const toLink = (
   let hasLink = false
   let editing = false
   let nextPos = newPos
-  const diff = text.length - node.nodeSize + 1
+  const diff = text.length - node.nodeSize + 2
 
   node.content.forEach((n, o) => {
     const linkMark = linkMarkType.isInSet(n.marks)

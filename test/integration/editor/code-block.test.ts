@@ -7,11 +7,13 @@ const cmContent = '.cm-container > .cm-editor > .cm-scroller > .cm-content'
 
 test.beforeEach(async ({page}) => {
   await page.goto('/')
-  await page.waitForSelector('[data-testid="initialized"]')
+  await page.getByTestId('initialized').waitFor()
 })
 
 const openBlockMenu = async (page: Page, nth: number) => {
-  const box = (await page.locator(`.ProseMirror *:nth-child(${nth}) .block-handle`).boundingBox())!
+  const loc = page.locator(`.ProseMirror *:nth-child(${nth}) .block-handle`)
+  const box = await loc.boundingBox()
+  if (!box) return
   await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2)
   await page.mouse.down()
   await page.mouse.up()
@@ -25,7 +27,7 @@ test('code block', async ({page}) => {
 
   // prettify
   await openBlockMenu(page, 1)
-  await page.click('[data-testid="prettify"]')
+  await page.getByTestId('prettify').click()
   await expect(page.locator(cmContent)).toHaveText("const foo = 'bar'")
 
   // change lang
@@ -36,7 +38,7 @@ test('code block', async ({page}) => {
 
   // change lang via block menu
   await openBlockMenu(page, 1)
-  await page.click('[data-testid="change_lang"]')
+  await page.getByTestId('change_lang').click()
   await page.locator('.cm-container .lang-input').pressSequentially('js', {delay})
   await page.keyboard.press('Enter')
   await expect(page.locator('.cm-container .lang-toggle img')).toHaveAttribute('title', 'js')

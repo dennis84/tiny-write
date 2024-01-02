@@ -12,7 +12,7 @@ import emphasis from '@/prosemirror/emphasis'
 import placeholder from '@/prosemirror/placeholder'
 import codeBlock from '@/prosemirror/code-block'
 import image from '@/prosemirror/image'
-import blockMenu from '@/prosemirror/block-menu'
+import blockHandle from '@/prosemirror/block-handle'
 import pasteMarkdown from '@/prosemirror/paste-markdown'
 import table from '@/prosemirror/table'
 import {collab} from '@/prosemirror/collab'
@@ -39,7 +39,7 @@ export const createExtensions = (props: Props): ProseMirrorExtension[] => {
     }),
     placeholder('Start typing ...'),
     scroll(props.ctrl),
-    blockMenu(),
+    blockHandle(),
   ]
 
   if (props.type) {
