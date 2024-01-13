@@ -1,4 +1,4 @@
-import {SetStoreFunction, Store, createStore, unwrap} from 'solid-js/store';
+import {SetStoreFunction, Store, createMutable, unwrap} from 'solid-js/store';
 import {Canvas, File, State} from '@/state'
 
 type TreeNodeItem = File | Canvas;
@@ -15,20 +15,12 @@ interface TmpNode {
 
 export class TreeService {
 
-  private treeStore = createStore<TreeNode[]>([])
+  public tree = createMutable<TreeNode[]>([])
 
   constructor(
     private store: Store<State>,
     private setState: SetStoreFunction<State>,
   ) {}
-
-  get tree() {
-    return this.treeStore[0]
-  }
-
-  private get setTree() {
-    return this.treeStore[1]
-  }
 
   create() {
     const tmp: Record<string, TmpNode> = {}
@@ -53,7 +45,8 @@ export class TreeService {
 
     tree = tree as TreeNode[]
     tree = this.sortTree(tree)
-    this.setTree(tree)
+    this.tree.splice(0, this.tree.length)
+    this.tree.push(...tree)
   }
 
   add(node: TreeNode, to: TreeNode) {

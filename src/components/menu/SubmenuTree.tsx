@@ -13,6 +13,7 @@ const DropLine = styled('div')`
   background: var(--primary-background-50);
   pointer-events: none;
   z-index: 1;
+  margin-left: ${(props: any) => 20 * props.level}px;
 `
 
 interface DropState {
@@ -100,7 +101,7 @@ export default () => {
       <For each={props.tree}>
         {(node) => <>
           <Show when={isNode(node) && dropState()?.pos === 'above'}>
-            <DropLine />
+            <DropLine level={props.level} />
           </Show>
           <TreeNodeLink
             node={node}
@@ -115,7 +116,7 @@ export default () => {
             />
           </Show>
           <Show when={isNode(node) && dropState()?.pos === 'below'}>
-            <DropLine />
+            <DropLine level={props.level} />
           </Show>
         </>}
       </For>
