@@ -15,6 +15,7 @@ import SubmenuCanvas from './SubmenuCanvas'
 import SubmenuFileEdit from './SubmenuFileEdit'
 import SubmenuCollab from './SubmenuCollab'
 import SubmenuCanvasEdit from './SubmenuCanvasEdit'
+import SubmenuTree from './SubmenuTree'
 
 const fullWidth = 500
 
@@ -104,6 +105,7 @@ export const Label = styled('h3')`
 export const Sub = styled('nav')`
   margin: 10px 0;
   margin-bottom: 30px;
+  position: relative;
 `
 
 const itemCss = `
@@ -277,6 +279,7 @@ export default () => {
         <Drawer
           onClick={() => ctrl.file.currentFile?.editorView?.focus()}
           data-tauri-drag-region="true">
+          <SubmenuTree />
           <Label>Storage</Label>
           {/* Submenu Storage */}
           <Sub data-tauri-drag-region="true">

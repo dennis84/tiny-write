@@ -11,6 +11,7 @@ import {CanvasCollabService} from './CanvasCollabService'
 import {ImageService} from './ImageService'
 import {SelectService} from './SelectService'
 import {isDev} from '@/env'
+import {TreeService} from './TreeService'
 
 export class Ctrl {
   app!: AppService
@@ -23,6 +24,7 @@ export class Ctrl {
   canvasCollab!: CanvasCollabService
   image!: ImageService
   select!: SelectService
+  tree!: TreeService
 
   constructor(
     store: Store<State>,
@@ -35,6 +37,7 @@ export class Ctrl {
     this.file = new FileService(this, store, setState)
     this.collab = new CollabService(this, store, setState)
     this.canvas = new CanvasService(this, store, setState)
+    this.tree = new TreeService(store, setState)
     this.canvasCollab = new CanvasCollabService(this.canvas, store)
     this.image = new ImageService(this)
     this.select = new SelectService()

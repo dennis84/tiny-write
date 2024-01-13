@@ -80,7 +80,7 @@ export class FileService {
     const index = this.store.files.findIndex((file) => file.id === id)
     if (index === -1) return
 
-    let ydoc: Uint8Array | undefined = undefined
+    let ydoc = this.store.files[index].ydoc
     const doc = this.store.collab!.ydoc!
     if (doc.share.has(id)) {
       const newDoc = new Y.Doc({gc: false})

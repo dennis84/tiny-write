@@ -146,6 +146,8 @@ export const isVideoElement = (el?: CanvasElement): el is CanvasVideoElement =>
 
 export interface Canvas {
   id: string;
+  parentId?: string;
+  leftId?: string;
   camera: Camera;
   elements: CanvasElement[];
   active?: boolean;
@@ -179,6 +181,8 @@ export type FileText = {[key: string]: any}
 
 export interface File {
   id: string;
+  parentId?: string;
+  leftId?: string;
   ydoc: Uint8Array;
   versions: Version[];
   lastModified?: Date;
