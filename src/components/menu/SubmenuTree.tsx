@@ -1,7 +1,11 @@
 import {For, Show, createSignal, onCleanup, onMount} from 'solid-js'
 import {styled} from 'solid-styled-components'
+import {Node} from 'prosemirror-model'
+import * as Y from 'yjs'
+import {yDocToProsemirrorJSON} from 'y-prosemirror'
 import {DragGesture} from '@use-gesture/vanilla'
-import {useState} from '@/state'
+import {File, useState} from '@/state'
+import {createExtensions, createSchema} from '@/prosemirror-setup'
 import {TreeNode} from '@/services/TreeService'
 import {Label, Link, Sub} from './Menu'
 
@@ -29,14 +33,27 @@ export default () => {
 
   const isNode = (node: TreeNode) => dropState()?.id === node.item.id
 
+  const schema = createSchema(createExtensions({ctrl, markdown: false}))
+
   onMount(() => {
     ctrl.tree.create()
   })
 
   const TreeNodeLink = (props: {node: TreeNode; level: number; selected?: boolean}) => {
     let ref!: HTMLButtonElement
+    const [title, setTitle] = createSignal<string>()
 
     onMount(() => {
+      if (isFile(props.node.item)) {
+        const ydoc = new Y.Doc({gc: false})
+        Y.applyUpdate(ydoc, props.node.item.ydoc)
+        const state = yDocToProsemirrorJSON(ydoc, props.node.item.id)
+        const doc = Node.fromJSON(schema, state)
+        setTitle(doc.firstChild?.textContent?.substring(0, 50) ?? 'Untitled')
+      } else {
+        setTitle('Canvas')
+      }
+
       const offset = 10
 
       const gesture = new DragGesture(ref, ({xy: [x, y], last}) => {
@@ -86,12 +103,13 @@ export default () => {
         data-id={props.node.item.id}
         style={{
           'padding-left': `${20 * props.level}px`,
+          'touch-action': 'none',
           ...(props.selected ? {
             'background': 'var(--primary-background-20)',
           } : {}),
         }}
       >
-        {'>'} {isFile(props.node.item) ? 'Untitled' : 'Canvas'}
+        {'>'} {title()}
       </Link>
     )
   }
