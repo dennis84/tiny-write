@@ -109,6 +109,8 @@ export class FileService {
 
     DB.updateFile({
       id: file.id,
+      parentId: file.parentId,
+      leftId: file.leftId,
       ydoc: file.ydoc!,
       lastModified: file.lastModified,
       path: file.path,
@@ -129,6 +131,8 @@ export class FileService {
       try {
         files.push({
           id: file.id,
+          parentId: file.parentId,
+          leftId: file.leftId,
           ydoc: file.ydoc,
           lastModified: new Date(file.lastModified),
           path: file.path,

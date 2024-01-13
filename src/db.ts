@@ -10,6 +10,8 @@ export interface PersistedVersion {
 
 export interface PersistedFile {
   id: string;
+  parentId?: string;
+  leftId?: string;
   ydoc: Uint8Array;
   versions?: PersistedVersion[];
   lastModified: Date;
@@ -25,6 +27,8 @@ export interface PersistedCanvasElement {
 
 export interface PersistedCanvas {
   id: string;
+  parentId?: string;
+  leftId?: string;
   camera: Camera;
   elements: PersistedCanvasElement[];
   active?: boolean;

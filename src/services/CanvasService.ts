@@ -834,7 +834,7 @@ export class CanvasService {
     return new Box2d(x, y, width, height)
   }
 
-  private async saveCanvas(canvas = this.currentCanvas) {
+  async saveCanvas(canvas = this.currentCanvas) {
     if (!canvas) return
     DB.updateCanvas(unwrap({
       ...canvas,

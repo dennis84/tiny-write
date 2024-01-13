@@ -117,7 +117,7 @@ export default () => {
   const Tree = (props: {tree: TreeNode[]; level: number; selected?: boolean}) => {
     return (
       <For each={props.tree}>
-        {(node) => <>
+        {(node) => <Show when={!node.item.deleted}>
           <Show when={isNode(node) && dropState()?.pos === 'above'}>
             <DropLine level={props.level} />
           </Show>
@@ -136,7 +136,7 @@ export default () => {
           <Show when={isNode(node) && dropState()?.pos === 'below'}>
             <DropLine level={props.level} />
           </Show>
-        </>}
+        </Show>}
       </For>
     )
   }

@@ -1,7 +1,9 @@
 import {beforeEach, expect, test, vi} from 'vitest'
+import {mockDeep} from 'vitest-mock-extended'
 import {createStore} from 'solid-js/store'
 import {TreeService} from '@/services/TreeService'
 import {Canvas, ElementType, File, createState} from '@/state'
+import {Ctrl} from '@/services'
 
 beforeEach(() => {
   vi.restoreAllMocks()
@@ -9,6 +11,7 @@ beforeEach(() => {
 
 test('create', () => {
   const ydoc = new Uint8Array()
+  const ctrl = mockDeep<Ctrl>()
 
   const files: File[] = [
     {id: 'file_1', ydoc, versions: []},
@@ -27,7 +30,7 @@ test('create', () => {
 
   const initial = createState({files, canvases})
   const [store, setState] = createStore(initial)
-  const service = new TreeService(store, setState)
+  const service = new TreeService(ctrl, store, setState)
 
   // - F1
   // - F2

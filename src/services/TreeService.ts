@@ -1,5 +1,6 @@
 import {SetStoreFunction, Store, createMutable, unwrap} from 'solid-js/store';
 import {Canvas, File, State} from '@/state'
+import { Ctrl } from '.';
 
 type TreeNodeItem = File | Canvas;
 
@@ -18,6 +19,7 @@ export class TreeService {
   public tree = createMutable<TreeNode[]>([])
 
   constructor(
+    private ctrl: Ctrl,
     private store: Store<State>,
     private setState: SetStoreFunction<State>,
   ) {}
@@ -55,8 +57,10 @@ export class TreeService {
     const rightNode = this.findTreeNodeByLeftId(node.item.id)
     if (rightNode) {
       this.updateItem(rightNode.item.id, rightNode.item.parentId, node.item.leftId)
+      this.saveNode(rightNode)
     }
     this.updateItem(node.item.id, parentId, leftId)
+    this.saveNode(node)
     this.create()
   }
 
@@ -65,14 +69,17 @@ export class TreeService {
     const rightNode = this.findTreeNodeByLeftId(node.item.id)
     if (rightNode) {
       this.updateItem(rightNode.item.id, rightNode.item.parentId, node.item.leftId)
+      this.saveNode(rightNode)
     }
 
     const rightBefore = this.findTreeNodeByLeftId(before.item.id)
     if (rightBefore) {
       this.updateItem(rightBefore.item.id, rightBefore.item.parentId, node.item.leftId)
+      this.saveNode(rightBefore)
     }
 
     this.updateItem(node.item.id, parentId, before.item.id)
+    this.saveNode(node)
     this.create()
   }
 
@@ -81,9 +88,12 @@ export class TreeService {
     const rightNode = this.findTreeNodeByLeftId(node.item.id)
     if (rightNode) {
       this.updateItem(rightNode.item.id, rightNode.item.parentId, node.item.leftId)
+      this.saveNode(rightNode)
     }
     this.updateItem(node.item.id, parentId, after.item.leftId)
     this.updateItem(after.item.id, parentId, node.item.id)
+    this.saveNode(node)
+    this.saveNode(after)
     this.create()
   }
 
@@ -147,5 +157,17 @@ export class TreeService {
     }
 
     return [...sorted, ...nulls]
+  }
+
+  private saveNode(node: TreeNode) {
+    if (this.isFile(node.item)) {
+      this.ctrl.file.saveFile(node.item)
+    } else {
+      this.ctrl.canvas.saveCanvas(node.item)
+    }
+  }
+
+  private isFile(it: any): it is File {
+    return it.ydoc !== undefined
   }
 }

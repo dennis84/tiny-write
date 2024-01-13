@@ -37,7 +37,7 @@ export class Ctrl {
     this.file = new FileService(this, store, setState)
     this.collab = new CollabService(this, store, setState)
     this.canvas = new CanvasService(this, store, setState)
-    this.tree = new TreeService(store, setState)
+    this.tree = new TreeService(this, store, setState)
     this.canvasCollab = new CanvasCollabService(this.canvas, store)
     this.image = new ImageService(this)
     this.select = new SelectService()
