@@ -1,6 +1,6 @@
 import {SetStoreFunction, Store, createMutable, unwrap} from 'solid-js/store';
 import {Canvas, File, State} from '@/state'
-import { Ctrl } from '.';
+import {Ctrl} from '.'
 
 type TreeNodeItem = File | Canvas;
 
@@ -26,14 +26,14 @@ export class TreeService {
 
   create() {
     const tmp: Record<string, TmpNode> = {}
-    let tree = []
+    let root = []
 
     for (const file of this.store.files) {
       if (!tmp[file.id]) tmp[file.id] = {item: unwrap(file), tree: []}
       else tmp[file.id].item = unwrap(file)
       const node = tmp[file.id]
 
-      if (!file.parentId) tree.push(node)
+      if (!file.parentId) root.push(node)
       else if (!tmp[file.parentId]) tmp[file.parentId] = {tree: [node]}
       else tmp[file.parentId].tree.push(node)
     }
@@ -41,14 +41,14 @@ export class TreeService {
     for (const canvas of this.store.canvases) {
       const node = {item: unwrap(canvas), tree: []}
       tmp[canvas.id] = node
-      if (!canvas.parentId) tree.push(node)
+      if (!canvas.parentId) root.push(node)
       else tmp[canvas.parentId].tree.push(node)
     }
 
-    tree = tree as TreeNode[]
-    tree = this.sortTree(tree)
+    root = root as TreeNode[]
+    root = this.sortTree(root)
     this.tree.splice(0, this.tree.length)
-    this.tree.push(...tree)
+    this.tree.push(...root)
   }
 
   add(node: TreeNode, to: TreeNode) {
@@ -156,7 +156,7 @@ export class TreeService {
       }
     }
 
-    return [...sorted, ...nulls]
+    return [...sorted, ...nulls, ...unsorted]
   }
 
   private saveNode(node: TreeNode) {

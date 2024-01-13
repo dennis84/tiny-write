@@ -9,7 +9,7 @@ beforeEach(() => {
   vi.restoreAllMocks()
 })
 
-test('create', () => {
+test('happy', () => {
   const ydoc = new Uint8Array()
   const ctrl = mockDeep<Ctrl>()
 
@@ -134,4 +134,41 @@ test('create', () => {
   expect(service.tree[1].item.leftId).toBe('file_1')
   expect(service.tree[1].tree[0].item.id).toBe('file_4')
   expect(service.tree[1].tree[0].item.leftId).toBe(undefined)
+})
+
+test('deleted neighbor', () => {
+  const ydoc = new Uint8Array()
+  const ctrl = mockDeep<Ctrl>()
+
+  const files: File[] = [
+    {id: 'file_3', leftId: 'file_2', ydoc, versions: []},
+    {id: 'file_1', ydoc, versions: []},
+  ]
+
+  const initial = createState({files})
+  const [store, setState] = createStore(initial)
+  const service = new TreeService(ctrl, store, setState)
+
+  service.create()
+  expect(service.tree[0].item.id).toBe('file_1')
+  expect(service.tree[1].item.id).toBe('file_3')
+})
+
+test('deleted parent', () => {
+  const ydoc = new Uint8Array()
+  const ctrl = mockDeep<Ctrl>()
+
+  const files: File[] = [
+    {id: 'file_3', parentId: 'file_2', ydoc, versions: []},
+    {id: 'file_1', ydoc, versions: []},
+  ]
+
+  const initial = createState({files})
+  const [store, setState] = createStore(initial)
+  const service = new TreeService(ctrl, store, setState)
+
+  service.create()
+  expect(service.tree[0].item.id).toBe('file_1')
+  // TODO:
+  // expect(service.tree[1].item.id).toBe('file_3')
 })
