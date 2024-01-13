@@ -1,10 +1,10 @@
 import {For, Show, createSignal, onCleanup, onMount} from 'solid-js'
-import {styled} from 'solid-styled-components'
+import {css, styled} from 'solid-styled-components'
 import {Node} from 'prosemirror-model'
 import * as Y from 'yjs'
 import {yDocToProsemirrorJSON} from 'y-prosemirror'
 import {DragGesture} from '@use-gesture/vanilla'
-import {File, useState} from '@/state'
+import {File, Mode, useState} from '@/state'
 import {createExtensions, createSchema} from '@/prosemirror-setup'
 import {TreeNode} from '@/services/TreeService'
 import {Label, Link, Sub} from './Menu'
@@ -21,12 +21,12 @@ const DropLine = styled('div')`
 `
 
 interface DropState {
-  id: string;
-  pos: 'above' | 'below' | 'nested';
+  id?: string;
+  pos: 'above' | 'below' | 'nested' | 'open';
 }
 
 export default () => {
-  const [, ctrl] = useState()
+  const [state, ctrl] = useState()
   const [dropState, setDropState] = createSignal<DropState>()
 
   const isFile = (it: any): it is File => it.ydoc !== undefined
@@ -42,6 +42,15 @@ export default () => {
   const TreeNodeLink = (props: {node: TreeNode; level: number; selected?: boolean}) => {
     let ref!: HTMLButtonElement
     const [title, setTitle] = createSignal<string>()
+    const [grabbing, setGrabbing] = createSignal(false)
+
+    const onClick = async () => {
+      if (isFile(props.node.item)) {
+        await ctrl.editor.openFile(props.node.item)
+      } else {
+        ctrl.canvas.open(props.node.item.id)
+      }
+    }
 
     onMount(() => {
       if (isFile(props.node.item)) {
@@ -56,10 +65,12 @@ export default () => {
 
       const offset = 10
 
-      const gesture = new DragGesture(ref, ({xy: [x, y], last}) => {
+      const gesture = new DragGesture(ref, ({xy: [x, y], last, first}) => {
         const el = document.elementFromPoint(x, y) as HTMLElement
         const box = el?.getBoundingClientRect()
         const id = el.dataset.id
+
+        if (first) setGrabbing(true)
 
         if (id && id !== props.node.item.id && !ctrl.tree.isDescendant(id, props.node.tree)) {
           if (y < box.top + offset) {
@@ -69,13 +80,15 @@ export default () => {
           } else {
             setDropState({pos: 'nested', id})
           }
+        } else if (el.closest('svg')) {
+          setDropState({pos: 'open'})
         } else {
           setDropState(undefined)
         }
 
         if (last) {
           const ds = dropState()
-          if (ds) {
+          if (ds?.id) {
             const targetNode = ctrl.tree.findTreeNode(ds.id)
             if (targetNode) {
               if (ds.pos === 'nested' && isFile(targetNode.item)) {
@@ -88,9 +101,15 @@ export default () => {
             }
 
             setDropState(undefined)
+          } else if (ds?.pos === 'open') {
+            if (state.mode === Mode.Canvas && isFile(props.node.item)) {
+              ctrl.canvas.addFile(props.node.item)
+            }
           }
+
+          setGrabbing(false)
         }
-      })
+      }, {filterTaps: true})
 
       onCleanup(() => {
         gesture.destroy()
@@ -101,13 +120,17 @@ export default () => {
       <Link
         ref={ref}
         data-id={props.node.item.id}
-        style={{
-          'padding-left': `${20 * props.level}px`,
-          'touch-action': 'none',
-          ...(props.selected ? {
-            'background': 'var(--primary-background-20)',
-          } : {}),
-        }}
+        onClick={onClick}
+        class={css`
+          padding-left: ${String(20 * props.level)}px;
+          touch-action: none;
+          ${grabbing() ? `
+            cursor: var(--cursor-grabbed);
+          ` : ''}
+          ${props.selected ? `
+            background: var(--primary-background-20);
+          ` : ''}
+        `}
       >
         {'>'} {title()}
       </Link>
