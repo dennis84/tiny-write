@@ -51,7 +51,7 @@ export default () => {
         const doc = Node.fromJSON(schema, state)
         setTitle(doc.firstChild?.textContent?.substring(0, 50) ?? 'Untitled')
       } else {
-        setTitle('Canvas')
+        setTitle('🧑‍🎨 Canvas')
       }
 
       const offset = 10
@@ -61,7 +61,7 @@ export default () => {
         const box = el?.getBoundingClientRect()
         const id = el.dataset.id
 
-        if (id && id !== props.node.item.id) {
+        if (id && id !== props.node.item.id && !ctrl.tree.isDescendant(id, props.node.tree)) {
           if (y < box.top + offset) {
             setDropState({pos: 'above', id})
           } else if (y > box.bottom - offset) {

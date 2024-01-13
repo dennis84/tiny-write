@@ -87,6 +87,10 @@ export class TreeService {
     this.create()
   }
 
+  isDescendant(id: string, tree: TreeNode[] = this.tree): boolean {
+    return this.findTreeNode(id, tree) ? true : false
+  }
+
   findTreeNode(id: string, tree: TreeNode[] = this.tree): TreeNode | undefined {
     for (const n of tree) {
       if (n.item.id === id) return n
