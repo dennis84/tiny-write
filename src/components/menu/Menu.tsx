@@ -279,23 +279,7 @@ export default () => {
         <Drawer
           onClick={() => ctrl.file.currentFile?.editorView?.focus()}
           data-tauri-drag-region="true">
-          <SubmenuTree />
-          <Label>Storage</Label>
-          {/* Submenu Storage */}
-          <Sub data-tauri-drag-region="true">
-            <Link
-              onClick={() => setShow('files')}
-              data-testid="files"
-            >Files ✍️</Link>
-            <Link
-              onClick={() => setShow('canvases')}
-              data-testid="canvases"
-            >Canvases 🧑‍🎨</Link>
-            <Link
-              onClick={() => setShow('bin')}
-              data-testid="bin"
-            >Bin 🗑️</Link>
-          </Sub>
+          <SubmenuTree onBin={() => setShow('bin')}/>
           {/* Submenu File */}
           <Show when={store.mode === Mode.Editor}>
             <SubmenuFile maybeHide={maybeHide} />

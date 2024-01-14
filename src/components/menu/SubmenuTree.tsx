@@ -42,7 +42,11 @@ interface DropState {
   pos: 'above' | 'below' | 'nested' | 'open';
 }
 
-export default () => {
+interface Props {
+  onBin: () => void;
+}
+
+export default (props: Props) => {
   const [state, ctrl] = useState()
   const [dropState, setDropState] = createSignal<DropState>()
   const [toolipAnchor, setTooltipAnchor] = createSignal<HTMLElement | undefined>()
@@ -137,7 +141,7 @@ export default () => {
         const doc = Node.fromJSON(schema, state)
         setTitle(getTitle(doc))
       } else {
-        setTitle('🧑‍🎨 Canvas')
+        setTitle('Canvas 🧑‍🎨')
       }
 
       const offset = 10
@@ -212,8 +216,7 @@ export default () => {
           }
         `}
       >
-        {'└ '}
-        {title()}
+        └ {title()}
         <LinkMenu
           ref={anchor}
           selected={selected() === props.node}
@@ -253,9 +256,13 @@ export default () => {
 
   return (
     <>
-      <Label>Tree</Label>
+      <Label>Storage</Label>
       <Sub data-tauri-drag-region="true">
         <Tree tree={ctrl.tree.tree} level={0} />
+        <Link
+          onClick={props.onBin}
+          data-testid="bin"
+        >└ Bin 🗑️</Link>
       </Sub>
       <Show when={toolipAnchor() !== undefined}>
         <Tooltip anchor={toolipAnchor()} onClose={() => closeTooltip()}>
