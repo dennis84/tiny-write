@@ -2,7 +2,7 @@ import {SetStoreFunction, Store, createMutable, unwrap} from 'solid-js/store';
 import {Canvas, File, State} from '@/state'
 import {Ctrl} from '.'
 
-type TreeNodeItem = File | Canvas;
+export type TreeNodeItem = File | Canvas;
 
 export interface TreeNode {
   item: TreeNodeItem;
@@ -97,11 +97,18 @@ export class TreeService {
     this.create()
   }
 
-  isDescendant(id: string, tree: TreeNode[] = this.tree): boolean {
+  isDescendant(id: string, tree = this.tree): boolean {
     return this.findTreeNode(id, tree) ? true : false
   }
 
-  findTreeNode(id: string, tree: TreeNode[] = this.tree): TreeNode | undefined {
+  descendants(fn: (n: TreeNode) => void, tree = this.tree) {
+    for (const n of tree) {
+      fn(n)
+      this.descendants(fn, n.tree)
+    }
+  }
+
+  findTreeNode(id: string, tree = this.tree): TreeNode | undefined {
     for (const n of tree) {
       if (n.item.id === id) return n
       const c = this.findTreeNode(id, n.tree)
@@ -109,7 +116,7 @@ export class TreeService {
     }
   }
 
-  private findTreeNodeByLeftId(leftId: string, tree: TreeNode[] = this.tree): TreeNode | undefined {
+  private findTreeNodeByLeftId(leftId: string, tree = this.tree): TreeNode | undefined {
     for (const n of tree) {
       if (n.item.leftId === leftId) return n
       const c = this.findTreeNodeByLeftId(leftId, n.tree)

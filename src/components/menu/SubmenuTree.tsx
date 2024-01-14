@@ -1,4 +1,5 @@
-import {For, Show, createSignal, onCleanup, onMount} from 'solid-js'
+import {For, Show, createEffect, createSignal, onCleanup, onMount} from 'solid-js'
+import {unwrap} from 'solid-js/store'
 import {css, styled} from 'solid-styled-components'
 import {Node} from 'prosemirror-model'
 import * as Y from 'yjs'
@@ -6,8 +7,9 @@ import {yDocToProsemirrorJSON} from 'y-prosemirror'
 import {DragGesture} from '@use-gesture/vanilla'
 import {File, Mode, useState} from '@/state'
 import {createExtensions, createSchema} from '@/prosemirror-setup'
-import {TreeNode} from '@/services/TreeService'
+import {TreeNode, TreeNodeItem} from '@/services/TreeService'
 import {Label, Link, Sub} from './Menu'
+import {Tooltip} from './Tooltip'
 
 const DropLine = styled('div')`
   position: absolute;
@@ -20,6 +22,21 @@ const DropLine = styled('div')`
   margin-left: ${(props: any) => 20 * props.level}px;
 `
 
+const LinkMenu = styled('span')`
+  opacity: 0;
+  padding: 0 5px;
+  border-radius: 5px;
+  font-weight: bold;
+  color: var(--foreground);
+  ${(props: any) => props.selected ? `
+    opacity: 1;
+    background: var(--foreground-10);
+  ` : ''}
+  &:hover {
+    background: var(--foreground-10);
+  }
+`
+
 interface DropState {
   id?: string;
   pos: 'above' | 'below' | 'nested' | 'open';
@@ -28,12 +45,60 @@ interface DropState {
 export default () => {
   const [state, ctrl] = useState()
   const [dropState, setDropState] = createSignal<DropState>()
+  const [toolipAnchor, setTooltipAnchor] = createSignal<HTMLElement | undefined>()
+  const [selected, setSelected] = createSignal<TreeNode>()
 
-  const isFile = (it: any): it is File => it.ydoc !== undefined
+  const isFile = (it: any): it is File => it?.ydoc !== undefined
 
   const isNode = (node: TreeNode) => dropState()?.id === node.item.id
 
   const schema = createSchema(createExtensions({ctrl, markdown: false}))
+
+  const closeTooltip = () => {
+    setTooltipAnchor(undefined)
+    setSelected(undefined)
+  }
+
+  const showTooltip = (e: MouseEvent, anchor: HTMLElement, node: TreeNode) => {
+    e.stopPropagation()
+    setTooltipAnchor(anchor)
+    setSelected(node)
+  }
+
+  const onAddFile = async () => {
+    const target = unwrap(selected())
+    if (!target) return
+    await ctrl.editor.newFile()
+    const currentFile =  ctrl.file.currentFile
+    if (!currentFile) return
+    ctrl.tree.add({item: currentFile, tree: []}, target)
+    closeTooltip()
+  }
+
+  const onAddCanvas = () => {
+    const target = unwrap(selected())
+    if (!target) return
+    ctrl.canvas.newCanvas()
+    const currentCanvas =  ctrl.canvas.currentCanvas
+    if (!currentCanvas) return
+    ctrl.tree.add({item: currentCanvas, tree: []}, target)
+    closeTooltip()
+  }
+
+  const onDelete = async () => {
+    const node = unwrap(selected())
+    if (!node) return
+    const deleteItem = async (item: TreeNodeItem) => {
+      if (isFile(item)) await ctrl.file.deleteFile(item)
+      else ctrl.canvas.deleteCanvas(item.id)
+    }
+
+    const proms = [deleteItem(node.item)]
+    ctrl.tree.descendants((n) => proms.push(deleteItem(n.item)), node.tree)
+    await Promise.all(proms)
+
+    closeTooltip()
+  }
 
   onMount(() => {
     ctrl.tree.create()
@@ -41,6 +106,8 @@ export default () => {
 
   const TreeNodeLink = (props: {node: TreeNode; level: number; selected?: boolean}) => {
     let ref!: HTMLButtonElement
+    let anchor!: HTMLElement
+
     const [title, setTitle] = createSignal<string>()
     const [grabbing, setGrabbing] = createSignal(false)
 
@@ -52,13 +119,23 @@ export default () => {
       }
     }
 
+    const getTitle = (doc?: Node) => doc?.firstChild?.textContent.substring(0, 50) || 'Untitled'
+
+    createEffect(() => {
+      if (state.mode !== Mode.Editor) return
+      const currentFile = ctrl.file.currentFile
+      if (currentFile?.id !== props.node.item.id || !currentFile.editorView) return
+      state.lastTr
+      setTitle(getTitle(currentFile.editorView.state.doc))
+    })
+
     onMount(() => {
       if (isFile(props.node.item)) {
         const ydoc = new Y.Doc({gc: false})
         Y.applyUpdate(ydoc, props.node.item.ydoc)
         const state = yDocToProsemirrorJSON(ydoc, props.node.item.id)
         const doc = Node.fromJSON(schema, state)
-        setTitle(doc.firstChild?.textContent?.substring(0, 50) ?? 'Untitled')
+        setTitle(getTitle(doc))
       } else {
         setTitle('🧑‍🎨 Canvas')
       }
@@ -130,9 +207,19 @@ export default () => {
           ${props.selected ? `
             background: var(--primary-background-20);
           ` : ''}
+          &:hover > span {
+            opacity: 1;
+          }
         `}
       >
-        {'>'} {title()}
+        {'└ '}
+        {title()}
+        <LinkMenu
+          ref={anchor}
+          selected={selected() === props.node}
+          onClick={(e: MouseEvent) => showTooltip(e, anchor, props.node)}>
+          ⋯
+        </LinkMenu>
       </Link>
     )
   }
@@ -170,6 +257,16 @@ export default () => {
       <Sub data-tauri-drag-region="true">
         <Tree tree={ctrl.tree.tree} level={0} />
       </Sub>
+      <Show when={toolipAnchor() !== undefined}>
+        <Tooltip anchor={toolipAnchor()} onClose={() => closeTooltip()}>
+          <Show when={isFile(selected()?.item)}>
+            <div onClick={onAddFile} data-testid="add_file">✍️ Add file</div>
+            <div onClick={onAddCanvas} data-testid="add_canvas">🧑‍🎨 Add canvas</div>
+            <hr class="divider" />
+          </Show>
+          <div onClick={onDelete} data-testid="delete">🗑️ Delete</div>
+        </Tooltip>
+      </Show>
     </>
   )
 }

@@ -2,22 +2,24 @@ import {beforeEach, expect, test, vi} from 'vitest'
 import {mockDeep} from 'vitest-mock-extended'
 import {createStore} from 'solid-js/store'
 import {TreeService} from '@/services/TreeService'
-import {Canvas, ElementType, File, createState} from '@/state'
+import {Canvas, ElementType, File, State, createState} from '@/state'
 import {Ctrl} from '@/services'
 
 beforeEach(() => {
   vi.restoreAllMocks()
 })
 
+const createFile = (props: Partial<File> = {}) =>
+  ({id: 'file_1', ydoc: new Uint8Array(), versions: [], ...props})
+
 test('happy', () => {
-  const ydoc = new Uint8Array()
   const ctrl = mockDeep<Ctrl>()
 
   const files: File[] = [
-    {id: 'file_1', ydoc, versions: []},
-    {id: 'file_2', ydoc, versions: []},
-    {id: 'file_3', ydoc, versions: []},
-    {id: 'file_4', ydoc, versions: []},
+    createFile({id: 'file_1'}),
+    createFile({id: 'file_2'}),
+    createFile({id: 'file_3'}),
+    createFile({id: 'file_4'}),
   ]
 
   const canvases: Canvas[] = [
@@ -137,12 +139,11 @@ test('happy', () => {
 })
 
 test('deleted neighbor', () => {
-  const ydoc = new Uint8Array()
   const ctrl = mockDeep<Ctrl>()
 
   const files: File[] = [
-    {id: 'file_3', leftId: 'file_2', ydoc, versions: []},
-    {id: 'file_1', ydoc, versions: []},
+    createFile({id: 'file_3', leftId: 'file_2'}),
+    createFile({id: 'file_1'}),
   ]
 
   const initial = createState({files})
@@ -155,12 +156,11 @@ test('deleted neighbor', () => {
 })
 
 test('deleted parent', () => {
-  const ydoc = new Uint8Array()
   const ctrl = mockDeep<Ctrl>()
 
   const files: File[] = [
-    {id: 'file_3', parentId: 'file_2', ydoc, versions: []},
-    {id: 'file_1', ydoc, versions: []},
+    createFile({id: 'file_3', parentId: 'file_2'}),
+    createFile({id: 'file_1'}),
   ]
 
   const initial = createState({files})
@@ -171,4 +171,24 @@ test('deleted parent', () => {
   expect(service.tree[0].item.id).toBe('file_1')
   // TODO:
   // expect(service.tree[1].item.id).toBe('file_3')
+})
+
+test('add new file', () => {
+  const ctrl = mockDeep<Ctrl>()
+
+  const files: File[] = [
+    createFile({id: 'file_1'}),
+  ]
+
+  const initial = createState({files})
+  const [store, setState] = createStore<State>(initial)
+  const service = new TreeService(ctrl, store, setState)
+
+  service.create()
+  const newFile = createFile({id: 'file_2'})
+  setState('files', (prev) => [...prev, newFile])
+
+  service.add({item: newFile, tree: []}, service.tree[0])
+  expect(service.tree[0].item.id).toBe('file_1')
+  expect(service.tree[0].tree[0].item.id).toBe('file_2')
 })
