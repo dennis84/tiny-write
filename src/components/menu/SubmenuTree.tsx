@@ -38,8 +38,8 @@ const LinkMenu = styled('span')`
 `
 
 interface DropState {
-  id?: string;
-  pos: 'above' | 'below' | 'nested' | 'open';
+  targetId?: string;
+  pos: 'before' | 'after' | 'add' | 'open';
 }
 
 interface Props {
@@ -54,7 +54,7 @@ export default (props: Props) => {
 
   const isFile = (it: any): it is File => it?.ydoc !== undefined
 
-  const isNode = (node: TreeNode) => dropState()?.id === node.item.id
+  const isNode = (node: TreeNode) => dropState()?.targetId === node.item.id
 
   const schema = createSchema(createExtensions({ctrl, markdown: false}))
 
@@ -149,17 +149,17 @@ export default (props: Props) => {
       const gesture = new DragGesture(ref, ({xy: [x, y], last, first}) => {
         const el = document.elementFromPoint(x, y) as HTMLElement
         const box = el?.getBoundingClientRect()
-        const id = el.dataset.id
+        const targetId = el.dataset.id
 
         if (first) setGrabbing(true)
 
-        if (id && id !== props.node.item.id && !ctrl.tree.isDescendant(id, props.node.tree)) {
+        if (targetId && targetId !== props.node.item.id && !ctrl.tree.isDescendant(targetId, props.node.tree)) {
           if (y < box.top + offset) {
-            setDropState({pos: 'above', id})
+            setDropState({pos: 'before', targetId})
           } else if (y > box.bottom - offset) {
-            setDropState({pos: 'below', id})
+            setDropState({pos: 'after', targetId})
           } else {
-            setDropState({pos: 'nested', id})
+            setDropState({pos: 'add', targetId})
           }
         } else if (el.closest('svg')) {
           setDropState({pos: 'open'})
@@ -169,14 +169,14 @@ export default (props: Props) => {
 
         if (last) {
           const ds = dropState()
-          if (ds?.id) {
-            const targetNode = ctrl.tree.findTreeNode(ds.id)
+          if (ds?.targetId) {
+            const targetNode = ctrl.tree.findTreeNode(ds.targetId)
             if (targetNode) {
-              if (ds.pos === 'nested' && isFile(targetNode.item)) {
+              if (ds.pos === 'add' && isFile(targetNode.item)) {
                 ctrl.tree.add(props.node, targetNode)
-              } else if (ds.pos === 'above') {
+              } else if (ds.pos === 'before') {
                 ctrl.tree.before(props.node, targetNode)
-              } else if (ds.pos === 'below') {
+              } else if (ds.pos === 'after') {
                 ctrl.tree.after(props.node, targetNode)
               }
             }
@@ -230,26 +230,28 @@ export default (props: Props) => {
   const Tree = (props: {tree: TreeNode[]; level: number; selected?: boolean}) => {
     return (
       <For each={props.tree}>
-        {(node) => <Show when={!node.item.deleted}>
-          <Show when={isNode(node) && dropState()?.pos === 'above'}>
-            <DropLine level={props.level} />
-          </Show>
-          <TreeNodeLink
-            node={node}
-            selected={props.selected || (isNode(node) && dropState()?.pos === 'nested' && isFile(node.item))}
-            level={props.level}
-          />
-          <Show when={node.tree.length > 0}>
-            <Tree
-              tree={node.tree}
-              level={props.level + 1}
-              selected={isNode(node) && dropState()?.pos === 'nested'}
+        {(node) => (
+          <Show when={!node.item.deleted}>
+            <Show when={isNode(node) && dropState()?.pos === 'before'}>
+              <DropLine level={props.level} />
+            </Show>
+            <TreeNodeLink
+              node={node}
+              selected={props.selected || (isNode(node) && dropState()?.pos === 'add' && isFile(node.item))}
+              level={props.level}
             />
+            <Show when={node.tree.length > 0}>
+              <Tree
+                tree={node.tree}
+                level={props.level + 1}
+                selected={props.selected || isNode(node) && dropState()?.pos === 'add'}
+              />
+            </Show>
+            <Show when={isNode(node) && dropState()?.pos === 'after'}>
+              <DropLine level={props.level} />
+            </Show>
           </Show>
-          <Show when={isNode(node) && dropState()?.pos === 'below'}>
-            <DropLine level={props.level} />
-          </Show>
-        </Show>}
+        )}
       </For>
     )
   }
