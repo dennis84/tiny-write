@@ -48,6 +48,7 @@ export default () => {
     root.style.setProperty('--font-size-h3', `${ctrl.config.fontSize * 1.2}px`)
     root.style.setProperty('--border-radius', ctrl.config.borderRadius)
     root.style.setProperty('--menu-font-family', ctrl.config.DEFAULT_FONT)
+    root.style.setProperty('--menu-font-family-bold', ctrl.config.DEFAULT_FONT + ' bold')
     root.style.setProperty('--menu-font-size', '14px')
     root.style.setProperty('--cursor-default', CURSOR_DEFAULT)
     root.style.setProperty('--cursor-pointer', CURSOR_POINTER)

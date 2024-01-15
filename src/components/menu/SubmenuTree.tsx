@@ -39,7 +39,7 @@ const LinkMenu = styled('span')`
 
 interface DropState {
   targetId?: string;
-  pos: 'before' | 'after' | 'add' | 'open';
+  pos: 'before' | 'after' | 'add' | 'open' | 'delete';
 }
 
 interface Props {
@@ -89,18 +89,32 @@ export default (props: Props) => {
     closeTooltip()
   }
 
-  const onDelete = async () => {
-    const node = unwrap(selected())
-    if (!node) return
+  const deleteNode = async (node: TreeNode) => {
     const deleteItem = async (item: TreeNodeItem) => {
       if (isFile(item)) await ctrl.file.deleteFile(item)
       else ctrl.canvas.deleteCanvas(item.id)
     }
 
+    const currentFile = ctrl.file.currentFile
+    if (
+      state.mode === Mode.Editor &&
+      currentFile !== undefined &&
+      (node.item.id === currentFile.id || ctrl.tree.isDescendant(currentFile.id, node.tree))
+    ) {
+      await ctrl.editor.openFile({id: node.item.parentId})
+    }
+
     const proms = [deleteItem(node.item)]
     ctrl.tree.descendants((n) => proms.push(deleteItem(n.item)), node.tree)
-    await Promise.all(proms)
+    ctrl.tree.create()
 
+    await Promise.all(proms)
+  }
+
+  const onDelete = async () => {
+    const node = unwrap(selected())
+    if (!node) return
+    await deleteNode(node)
     closeTooltip()
   }
 
@@ -125,13 +139,8 @@ export default (props: Props) => {
 
     const getTitle = (doc?: Node) => doc?.firstChild?.textContent.substring(0, 50) || 'Untitled'
 
-    createEffect(() => {
-      if (state.mode !== Mode.Editor) return
-      const currentFile = ctrl.file.currentFile
-      if (currentFile?.id !== props.node.item.id || !currentFile.editorView) return
-      state.lastTr
-      setTitle(getTitle(currentFile.editorView.state.doc))
-    })
+    const getCurrentId = () =>
+      state.mode === Mode.Editor ? ctrl.file.currentFile?.id : ctrl.canvas.currentCanvas?.id
 
     onMount(() => {
       if (isFile(props.node.item)) {
@@ -151,7 +160,10 @@ export default (props: Props) => {
         const box = el?.getBoundingClientRect()
         const targetId = el.dataset.id
 
-        if (first) setGrabbing(true)
+        if (first) {
+          setGrabbing(true)
+          setTooltipAnchor(undefined)
+        }
 
         if (targetId && targetId !== props.node.item.id && !ctrl.tree.isDescendant(targetId, props.node.tree)) {
           if (y < box.top + offset) {
@@ -163,14 +175,10 @@ export default (props: Props) => {
           }
         } else if (el.closest('svg')) {
           setDropState({pos: 'open'})
+        } else if (el.closest('#bin')) {
+          setDropState({pos: 'delete'})
         } else {
           setDropState(undefined)
-        }
-
-        if (dropState()) {
-          console.log(`Currently moving ${props.node.item.id.substring(0, 4)} over ${dropState()?.targetId?.substring(0, 4)}`)
-        } else {
-          console.log(`Moving around ${props.node.item.id.substring(0, 4)}`)
         }
 
         if (last) {
@@ -183,18 +191,18 @@ export default (props: Props) => {
               } else if (ds.pos === 'before') {
                 ctrl.tree.before(props.node, targetNode)
               } else if (ds.pos === 'after') {
-                console.log(`Move ${props.node.item.id.substring(0, 4)} after ${ds.targetId.substring(0, 4)}`)
                 ctrl.tree.after(props.node, targetNode)
               }
             }
-
-            setDropState(undefined)
+          } else if (ds?.pos === 'delete') {
+            deleteNode(props.node)
           } else if (ds?.pos === 'open') {
             if (state.mode === Mode.Canvas && isFile(props.node.item)) {
               ctrl.canvas.addFile(props.node.item)
             }
           }
 
+          setDropState(undefined)
           setGrabbing(false)
         }
       }, {filterTaps: true})
@@ -202,6 +210,14 @@ export default (props: Props) => {
       onCleanup(() => {
         gesture.destroy()
       })
+    })
+
+    createEffect(() => {
+      if (state.mode !== Mode.Editor) return
+      const currentFile = ctrl.file.currentFile
+      if (currentFile?.id !== props.node.item.id || !currentFile.editorView) return
+      state.lastTr
+      setTitle(getTitle(currentFile.editorView.state.doc))
     })
 
     return (
@@ -214,6 +230,11 @@ export default (props: Props) => {
           touch-action: none;
           ${grabbing() ? `
             cursor: var(--cursor-grabbed);
+          ` : ''}
+          ${props.node.item.id === getCurrentId() ? `
+            font-family: var(--menu-font-family-bold);
+            font-weight: bold;
+            color: var(--primary-background);
           ` : ''}
           ${props.selected ? `
             background: var(--primary-background-20);
@@ -269,8 +290,12 @@ export default (props: Props) => {
       <Sub data-tauri-drag-region="true">
         <Tree tree={ctrl.tree.tree} level={0} />
         <Link
+          id="bin"
           onClick={props.onBin}
           data-testid="bin"
+          class={dropState()?.pos === 'delete' ? css`
+            background: var(--primary-background-20);
+          ` : undefined}
         >└ Bin 🗑️</Link>
       </Sub>
       <Show when={toolipAnchor() !== undefined}>

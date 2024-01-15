@@ -14,7 +14,6 @@ import * as remote from '@/remote'
 import {createExtensions, createEmptyText, createSchema, createNodeViews} from '@/prosemirror-setup'
 import {State, File, FileText, Mode} from '@/state'
 import {serialize, createMarkdownParser} from '@/markdown'
-import {isEmpty} from '@/prosemirror'
 import {DB} from '@/db'
 import {Ctrl} from '.'
 import {OpenFile} from './FileService'
@@ -106,12 +105,6 @@ export class EditorService {
   }
 
   async newFile() {
-    const currentFile = this.ctrl.file.currentFile
-    if (this.store.mode === Mode.Editor && isEmpty(currentFile?.editorView?.state)) {
-      this.setState('args', 'dir', undefined)
-      return
-    }
-
     const state: State = unwrap(this.store)
     const file = this.ctrl.file.createFile()
 
@@ -198,12 +191,6 @@ export class EditorService {
     const files = []
 
     for (const f of state.files) {
-      if (f.editorView && isEmpty(f.editorView?.state)) {
-        f.editorView.destroy()
-        await DB.deleteFile(f.id)
-        continue
-      }
-
       f.editorView?.destroy()
       const active = f.id === file.id
       const newFile = {...f, active, editorView: undefined}
