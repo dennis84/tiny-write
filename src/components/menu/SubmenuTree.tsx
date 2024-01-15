@@ -167,6 +167,12 @@ export default (props: Props) => {
           setDropState(undefined)
         }
 
+        if (dropState()) {
+          console.log(`Currently moving ${props.node.item.id.substring(0, 4)} over ${dropState()?.targetId?.substring(0, 4)}`)
+        } else {
+          console.log(`Moving around ${props.node.item.id.substring(0, 4)}`)
+        }
+
         if (last) {
           const ds = dropState()
           if (ds?.targetId) {
@@ -177,6 +183,7 @@ export default (props: Props) => {
               } else if (ds.pos === 'before') {
                 ctrl.tree.before(props.node, targetNode)
               } else if (ds.pos === 'after') {
+                console.log(`Move ${props.node.item.id.substring(0, 4)} after ${ds.targetId.substring(0, 4)}`)
                 ctrl.tree.after(props.node, targetNode)
               }
             }

@@ -65,25 +65,28 @@ export class TreeService {
   }
 
   after(node: TreeNode, before: TreeNode) {
-    const parentId = before.item.parentId
     const rightNode = this.findTreeNodeByLeftId(node.item.id)
     if (rightNode) {
+      console.log(`Update leftId of the old right node of the moved node to: (id=${rightNode.item.id.substring(0, 4)}, ${node.item.leftId?.substring(0, 4)})`)
       this.updateItem(rightNode.item.id, rightNode.item.parentId, node.item.leftId)
       this.saveNode(rightNode)
     }
 
     const rightBefore = this.findTreeNodeByLeftId(before.item.id)
     if (rightBefore) {
-      this.updateItem(rightBefore.item.id, rightBefore.item.parentId, node.item.leftId)
+      console.log(`Update leftId of the new right node of the moved node to: (id=${rightBefore.item.id.substring(0, 4)}, leftId=${node.item.id.substring(0, 4)})`)
+      this.updateItem(rightBefore.item.id, rightBefore.item.parentId, node.item.id)
       this.saveNode(rightBefore)
     }
 
-    this.updateItem(node.item.id, parentId, before.item.id)
+    console.log(`Update leftId of the moved node to: (id=${node.item.id.substring(0, 4)}, leftId=${before.item.id.substring(0, 4)})`)
+    this.updateItem(node.item.id, before.item.parentId, before.item.id)
     this.saveNode(node)
     this.create()
   }
 
   before(node: TreeNode, after: TreeNode) {
+    console.log('Before')
     const parentId = after.item.parentId
     const rightNode = this.findTreeNodeByLeftId(node.item.id)
     if (rightNode) {

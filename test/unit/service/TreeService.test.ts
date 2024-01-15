@@ -12,9 +12,9 @@ beforeEach(() => {
 const createFile = (props: Partial<File> = {}) =>
   ({id: 'file_1', ydoc: new Uint8Array(), versions: [], ...props})
 
-test('happy', () => {
-  const ctrl = mockDeep<Ctrl>()
+const ctrl = mockDeep<Ctrl>()
 
+test('happy', () => {
   const files: File[] = [
     createFile({id: 'file_1'}),
     createFile({id: 'file_2'}),
@@ -138,9 +138,27 @@ test('happy', () => {
   expect(service.tree[1].tree[0].item.leftId).toBe(undefined)
 })
 
-test('deleted neighbor', () => {
-  const ctrl = mockDeep<Ctrl>()
+test('after - from top', () => {
+  const files: File[] = [
+    createFile({id: 'file_1'}),
+    createFile({id: 'file_2', parentId: 'file_1'}),
+    createFile({id: 'file_3', parentId: 'file_1', leftId: 'file_2'}),
+    createFile({id: 'file_4', parentId: 'file_1', leftId: 'file_3'}),
+    createFile({id: 'file_5', parentId: 'file_1', leftId: 'file_4'}),
+  ]
 
+  const initial = createState({files})
+  const [store, setState] = createStore<State>(initial)
+  const service = new TreeService(ctrl, store, setState)
+
+  service.create()
+  service.after(service.tree[0].tree[0], service.tree[0].tree[2])
+  console.log(service.tree[0].tree)
+  // expect(service.tree[0].item.id).toBe('file_1')
+  // expect(service.tree[0].tree[0].item.id).toBe('file_2')
+})
+
+test('deleted neighbor', () => {
   const files: File[] = [
     createFile({id: 'file_3', leftId: 'file_2'}),
     createFile({id: 'file_1'}),
@@ -156,8 +174,6 @@ test('deleted neighbor', () => {
 })
 
 test('deleted parent', () => {
-  const ctrl = mockDeep<Ctrl>()
-
   const files: File[] = [
     createFile({id: 'file_3', parentId: 'file_2'}),
     createFile({id: 'file_1'}),
@@ -174,8 +190,6 @@ test('deleted parent', () => {
 })
 
 test('add new file', () => {
-  const ctrl = mockDeep<Ctrl>()
-
   const files: File[] = [
     createFile({id: 'file_1'}),
   ]
