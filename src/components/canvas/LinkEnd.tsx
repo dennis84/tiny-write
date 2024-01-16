@@ -70,6 +70,7 @@ export default () => {
     ctrl.tree.descendants((n) => {
       if (
         isFile(n.item) &&
+        !n.item.deleted &&
         !currentCanvas.elements.find((el) => el.id === n.item.id)
       ) {
         files.push(n.item)

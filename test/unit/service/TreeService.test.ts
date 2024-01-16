@@ -152,10 +152,22 @@ test('after - from top', () => {
   const service = new TreeService(ctrl, store, setState)
 
   service.create()
+
+  // - F1
+  //   - F3 (parentId=F1)
+  //   - F4 (parentId=F1, leftId=F3)
+  //   - F2 (parentId=F1, leftId=F4)
+  //   - F5 (parentId=F1, leftId=F2)
   service.after(service.tree[0].tree[0], service.tree[0].tree[2])
-  console.log(service.tree[0].tree)
-  // expect(service.tree[0].item.id).toBe('file_1')
-  // expect(service.tree[0].tree[0].item.id).toBe('file_2')
+  expect(service.tree[0].item.id).toBe('file_1')
+  expect(service.tree[0].tree[0].item.id).toBe('file_3')
+  expect(service.tree[0].tree[0].item.leftId).toBe(undefined)
+  expect(service.tree[0].tree[1].item.id).toBe('file_4')
+  expect(service.tree[0].tree[1].item.leftId).toBe('file_3')
+  expect(service.tree[0].tree[2].item.id).toBe('file_2')
+  expect(service.tree[0].tree[2].item.leftId).toBe('file_4')
+  expect(service.tree[0].tree[3].item.id).toBe('file_5')
+  expect(service.tree[0].tree[3].item.leftId).toBe('file_2')
 })
 
 test('deleted neighbor', () => {
