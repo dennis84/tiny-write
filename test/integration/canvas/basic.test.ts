@@ -1,21 +1,25 @@
-import {test, expect} from '@playwright/test'
+import {test, expect, Page} from '@playwright/test'
 
 test.beforeEach(async ({page}) => {
   await page.goto('/')
   await page.waitForSelector('[data-testid="initialized"]')
 })
 
+const clickTreeMenu = async (page: Page, nth: number, buttonId: string) => {
+  const box = await page.locator(`[data-testid="tree_link"]:nth-child(${nth})`).boundingBox()
+  await page.mouse.move(box?.x ?? 0, box?.y ?? 0)
+  await page.click('[data-testid="tree_link_menu"]')
+  await page.click(`[data-testid="${buttonId}"]`)
+}
+
 test('add file', async ({page}) => {
   await page.click('[data-testid="burger"]')
-  await page.click('[data-testid="canvases"]')
-  await page.click('[data-testid="new_canvas"]')
+  await clickTreeMenu(page, 1, 'add_canvas')
 
   await page.isVisible('[data-testid="canvas_container"]')
 
   // Create file
-  await page.click('[data-testid="back"]')
   await page.click('[data-testid="new_file"]')
-
   await expect(page.locator('[data-testid="canvas_editor"]')).toHaveCount(1)
 
   // Move mouse to left link handle

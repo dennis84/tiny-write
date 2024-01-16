@@ -32,12 +32,11 @@ test('on new/clear', async ({page}) => {
   await expect(page.locator('.ProseMirror')).toHaveText('second')
 
   await page.click('[data-testid="burger"]')
-  await page.click('[data-testid="files"]')
-  await expect(page.locator('[data-testid="file_list"] > div')).toHaveCount(2)
+  await expect(page.locator('[data-testid="tree_link"]')).toHaveCount(2)
 
   // clear
 
   await page.keyboard.press(`${mod}+w`)
   await expect(page.locator('.ProseMirror')).toHaveText('Start typing ...')
-  await expect(page.locator('[data-testid="file_list"] > div')).toHaveCount(2)
+  await expect(page.locator('[data-testid="tree_link"]')).toHaveCount(2)
 })

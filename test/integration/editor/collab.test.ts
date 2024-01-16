@@ -53,14 +53,12 @@ test('existing room - backup', async ({page}) => {
   await lineTextEq(page, 1, 'Hello')
 
   await page.click('[data-testid="burger"]')
-  await page.click('[data-testid="files"]')
-  await expect(page.locator('[data-testid="file_list"] > div')).toHaveCount(2)
-  await expect(page.locator('[data-testid="file_list"] > div:nth-child(1)')).toContainText('Hello')
-  await expect(page.locator('[data-testid="file_list"] > div:nth-child(2)')).toContainText('123')
+  await expect(page.locator('[data-testid="tree_link"]')).toHaveCount(2)
+  await expect(page.locator('[data-testid="tree_link"]:nth-child(1)')).toContainText('123')
+  await expect(page.locator('[data-testid="tree_link"]:nth-child(2)')).toContainText('Hello')
 
-  await page.click('[data-testid="file_list"] > div:nth-child(2) > div')
-  await page.click('[data-testid="open"]')
+  await page.click('[data-testid="tree_link"]:nth-child(1)')
   await lineTextEq(page, 1, '123')
 
-  await expect(page.locator('[data-testid="file_list"] > div')).toHaveCount(2)
+  await expect(page.locator('[data-testid="tree_link"]')).toHaveCount(2)
 })

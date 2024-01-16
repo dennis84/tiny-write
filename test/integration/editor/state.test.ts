@@ -22,35 +22,35 @@ test('load state from db', async ({page}) => {
 test('open file', async ({page}) => {
   await page.waitForSelector('[data-testid="initialized"]')
   await page.click('[data-testid="burger"]')
-  await page.click('[data-testid="files"]')
-  await expect(page.locator('[data-testid="file_list"] > div')).toHaveCount(0)
+  await expect(page.locator('[data-testid="tree_link"]')).toHaveCount(1)
+  await expect(page.locator('[data-testid="tree_link"]')).toContainText('Untitled')
 
   await page.locator('.ProseMirror').pressSequentially('test1', {delay})
-  await expect(page.locator('[data-testid="file_list"] > div')).toHaveCount(1)
+  await expect(page.locator('[data-testid="tree_link"]')).toHaveCount(1)
+  await expect(page.locator('[data-testid="tree_link"]')).toContainText('test1')
 
-  await page.click('[data-testid="new_doc"]')
-  await expect(page.locator('[data-testid="file_list"] > div')).toHaveCount(1)
+  await page.click('[data-testid="new_file"]')
+  await expect(page.locator('[data-testid="tree_link"]')).toHaveCount(2)
   await lineTextEq(page, 1, 'Start typing ...')
   await page.locator('.ProseMirror').pressSequentially('test2', {delay})
-  await expect(page.locator('[data-testid="file_list"] > div')).toHaveCount(2)
+  await expect(page.locator('[data-testid="tree_link"]')).toHaveCount(2)
+  await expect(page.locator('[data-testid="tree_link"]:nth-child(2)')).toContainText('test2')
 
-  await page.click('[data-testid="new_doc"]')
-  await expect(page.locator('[data-testid="file_list"] > div')).toHaveCount(2)
+  await page.click('[data-testid="new_file"]')
+  await expect(page.locator('[data-testid="tree_link"]')).toHaveCount(3)
   await lineTextEq(page, 1, 'Start typing ...')
 
-  await expect(page.locator('[data-testid="file_list"] > div:nth-child(1)')).toContainText('test2')
-  await expect(page.locator('[data-testid="file_list"] > div:nth-child(2)')).toContainText('test1')
-  await page.click('[data-testid="file_list"] > div:nth-child(2) > div')
-  await page.click('[data-testid="open"]')
-
+  await expect(page.locator('[data-testid="tree_link"]:nth-child(1)')).toContainText('test1')
+  await expect(page.locator('[data-testid="tree_link"]:nth-child(2)')).toContainText('test2')
+  await expect(page.locator('[data-testid="tree_link"]:nth-child(3)')).toContainText('Untitled')
+  await page.click('[data-testid="tree_link"]:nth-child(1)')
   await page.waitForTimeout(100)
   await lineTextEq(page, 1, 'test1')
-  await expect(page.locator('[data-testid="file_list"] > div')).toHaveCount(2)
+  await expect(page.locator('[data-testid="tree_link"]')).toHaveCount(3)
 
+  // Unmodified files are currently not saved
   await page.reload()
-
   await page.click('[data-testid="burger"]')
-  await page.click('[data-testid="files"]')
   await lineTextEq(page, 1, 'test1')
-  await expect(page.locator('[data-testid="file_list"] > div')).toHaveCount(2)
+  await expect(page.locator('[data-testid="tree_link"]')).toHaveCount(2)
 })

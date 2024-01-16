@@ -120,7 +120,7 @@ export default (props: Props) => {
     ctrl.tree.create()
   })
 
-  const TreeNodeLink = (props: {node: TreeNode; level: number; selected?: boolean}) => {
+  const TreeLink = (props: {node: TreeNode; level: number; selected?: boolean}) => {
     let ref!: HTMLButtonElement
     let anchor!: HTMLElement
 
@@ -222,6 +222,7 @@ export default (props: Props) => {
       <Link
         ref={ref}
         data-id={props.node.item.id}
+        data-testid="tree_link"
         onClick={onClick}
         class={css`
           padding-left: ${String(20 * props.level)}px;
@@ -246,7 +247,9 @@ export default (props: Props) => {
         <LinkMenu
           ref={anchor}
           selected={selected() === props.node}
-          onClick={(e: MouseEvent) => showTooltip(e, anchor, props.node)}>
+          onClick={(e: MouseEvent) => showTooltip(e, anchor, props.node)}
+          data-testid="tree_link_menu"
+        >
           ⋯
         </LinkMenu>
       </Link>
@@ -261,7 +264,7 @@ export default (props: Props) => {
             <Show when={isNode(node) && dropState()?.pos === 'before'}>
               <DropLine level={props.level} />
             </Show>
-            <TreeNodeLink
+            <TreeLink
               node={node}
               selected={props.selected || (isNode(node) && dropState()?.pos === 'add' && isFile(node.item))}
               level={props.level}

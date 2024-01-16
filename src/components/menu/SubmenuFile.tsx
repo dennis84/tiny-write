@@ -10,9 +10,10 @@ export default ({maybeHide}: {maybeHide: () => void}) => {
 
   const modKey = isMac ? '⌘' : mod
 
-  const onNew = () => {
+  const onNew = async () => {
     const currentFile = ctrl.file.currentFile
-    ctrl.editor.newFile()
+    await ctrl.editor.newFile()
+    ctrl.tree.create()
     maybeHide()
     currentFile?.editorView?.focus()
   }
