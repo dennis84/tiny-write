@@ -1,6 +1,6 @@
 import {For, Show, createSignal} from 'solid-js'
 import {compareDesc, formatDistance} from 'date-fns'
-import {File, Canvas, useState} from '@/state'
+import {File, Canvas, useState, isFile} from '@/state'
 import {Drawer, Label, Note, Sub} from './Menu'
 import {ButtonGroup, Button} from '@/components/Button'
 import {Card, CardContent, CardFooter, CardList, CardMenuButton} from '@/components/Layout'
@@ -25,7 +25,6 @@ export const Bin = (props: Props) => {
     return items
   }
 
-  const isFile = (it: any): it is File => it.ydoc !== undefined
   const onBack = () => {
     props.onBack()
   }

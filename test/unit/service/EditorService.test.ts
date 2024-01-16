@@ -152,9 +152,9 @@ test('newFile - empty', async () => {
   ctrl.editor.renderEditor(target)
 
   await ctrl.editor.newFile()
-  expect(store.files.length).toBe(1)
+  expect(store.files.length).toBe(2)
   await ctrl.editor.newFile()
-  expect(store.files.length).toBe(1)
+  expect(store.files.length).toBe(3)
 })
 
 test('newFile - collab', async () => {
@@ -224,7 +224,7 @@ test('openFile - not found', async () => {
   expect(ctrl.file.currentFile?.id).toBe(id)
 })
 
-test('openFile - delete empty', async () => {
+test('openFile - not delete empty', async () => {
   vi.mocked(DB.getFiles).mockResolvedValue([
     {id: '1', ydoc: createYUpdate('1', ''), lastModified, active: true},
     {id: '2', ydoc: createYUpdate('2', 'Test 2'), lastModified},
@@ -236,7 +236,7 @@ test('openFile - delete empty', async () => {
   ctrl.editor.renderEditor(target)
 
   await ctrl.editor.openFile({id: '2'})
-  expect(store.files.length).toBe(1)
+  expect(store.files.length).toBe(2)
   expect(ctrl.file.currentFile?.editorView).toBe(undefined)
   ctrl.editor.renderEditor(target)
 
@@ -269,7 +269,7 @@ test('openFile - open collab', async () => {
   await waitFor(() => {
     expect(getText(ctrl)).toBe('Test')
     expect(ctrl.file.currentFile?.id).toBe('room-123')
-    expect(store.files.length).toBe(1)
+    expect(store.files.length).toBe(2)
     expect(store.collab?.provider?.roomname).toBe('room-123')
   })
 })

@@ -5,7 +5,7 @@ import {Node} from 'prosemirror-model'
 import * as Y from 'yjs'
 import {yDocToProsemirrorJSON} from 'y-prosemirror'
 import {DragGesture} from '@use-gesture/vanilla'
-import {File, Mode, useState} from '@/state'
+import {File, Mode, isFile, useState} from '@/state'
 import {createExtensions, createSchema} from '@/prosemirror-setup'
 import {TreeNode, TreeNodeItem} from '@/services/TreeService'
 import {Label, Link, Sub} from './Menu'
@@ -51,8 +51,6 @@ export default (props: Props) => {
   const [dropState, setDropState] = createSignal<DropState>()
   const [toolipAnchor, setTooltipAnchor] = createSignal<HTMLElement | undefined>()
   const [selected, setSelected] = createSignal<TreeNode>()
-
-  const isFile = (it: any): it is File => it?.ydoc !== undefined
 
   const isNode = (node: TreeNode) => dropState()?.targetId === node.item.id
 

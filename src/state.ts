@@ -144,6 +144,8 @@ export const isImageElement = (el?: CanvasElement): el is CanvasImageElement =>
 export const isVideoElement = (el?: CanvasElement): el is CanvasVideoElement =>
   el?.type === ElementType.Video
 
+export const isFile = (it: any): it is File => it?.ydoc !== undefined
+
 export interface Canvas {
   id: string;
   parentId?: string;

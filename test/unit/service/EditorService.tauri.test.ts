@@ -133,7 +133,7 @@ test('openFile - path and text', async () => {
   expect(store.files.length).toBe(1)
 
   await ctrl.editor.openFile({path: 'file1'})
-  expect(store.files.length).toBe(1)
+  expect(store.files.length).toBe(2)
   ctrl.editor.renderEditor(target)
 
   await waitFor(() => {

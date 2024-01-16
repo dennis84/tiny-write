@@ -1,5 +1,5 @@
 import {SetStoreFunction, Store, createMutable, unwrap} from 'solid-js/store';
-import {Canvas, File, State} from '@/state'
+import {Canvas, File, State, isFile} from '@/state'
 import {Ctrl} from '.'
 
 export type TreeNodeItem = File | Canvas;
@@ -28,9 +28,10 @@ export class TreeService {
     const tmp: Record<string, TmpNode> = {}
     let root = []
 
-    for (const file of this.store.files) {
-      if (!tmp[file.id]) tmp[file.id] = {item: unwrap(file), tree: []}
-      else tmp[file.id].item = unwrap(file)
+    for (const f of this.store.files) {
+      const file = unwrap(f)
+      if (!tmp[file.id]) tmp[file.id] = {item: file, tree: []}
+      else tmp[file.id].item = file
       const node = tmp[file.id]
 
       if (!file.parentId) root.push(node)
@@ -38,8 +39,9 @@ export class TreeService {
       else tmp[file.parentId].tree.push(node)
     }
 
-    for (const canvas of this.store.canvases) {
-      const node = {item: unwrap(canvas), tree: []}
+    for (const c of this.store.canvases) {
+      const canvas = unwrap(c)
+      const node = {item: canvas, tree: []}
       tmp[canvas.id] = node
       if (!canvas.parentId) root.push(node)
       else tmp[canvas.parentId].tree.push(node)
@@ -170,14 +172,10 @@ export class TreeService {
   }
 
   private saveNode(node: TreeNode) {
-    if (this.isFile(node.item)) {
+    if (isFile(node.item)) {
       this.ctrl.file.saveFile(node.item)
     } else {
       this.ctrl.canvas.saveCanvas(node.item)
     }
-  }
-
-  private isFile(it: any): it is File {
-    return it.ydoc !== undefined
   }
 }

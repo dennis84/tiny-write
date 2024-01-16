@@ -1,10 +1,10 @@
-import {For, Show} from 'solid-js'
+import {For, Show, createEffect} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {Vec2d} from '@tldraw/primitives'
 import {Node} from 'prosemirror-model'
 import * as Y from 'yjs'
 import {yDocToProsemirrorJSON} from 'y-prosemirror'
-import {CanvasLinkElement, File, useState} from '@/state'
+import {CanvasLinkElement, File, isFile, useState} from '@/state'
 import {createExtensions, createSchema} from '@/prosemirror-setup'
 
 const Backdrop = styled('div')`
@@ -59,34 +59,40 @@ export default () => {
     )
   }
 
-  const getFiles = () => {
+  const getFiles = (): File[] => {
     const currentCanvas = ctrl.canvas.currentCanvas
     if (!currentCanvas) return []
-    return store.files
-      .filter((f) => f.lastModified)
-      .sort((a, b) => b.lastModified!.getTime() - a.lastModified!.getTime())
-      .filter((file) => !currentCanvas.elements.find((el) => el.id === file.id))
-      .slice(0, 10)
+    const tree = currentCanvas.parentId
+      ? ctrl.tree.findTreeNode(currentCanvas.parentId)?.tree
+      : undefined
+
+    const files: File[] = []
+    ctrl.tree.descendants((n) => {
+      if (
+        isFile(n.item) &&
+        !currentCanvas.elements.find((el) => el.id === n.item.id)
+      ) {
+        files.push(n.item)
+      }
+    }, tree)
+
+    return files
   }
 
   return (
     <Show when={ctrl.canvas.findDeadLinks()[0]} keyed>
       {(link) => <>
         <Backdrop onClick={onBackdropClick} />
-        <div
-          class="canvas-link-end-tooltip"
-          style={coordsStyle(link)}
-        >
-          <div
-            onClick={() => onNewFile(link)}
-            data-testid="link_end_new_file"
-          >🆕 New file</div>
-          <Show when={getFiles().length > 0}>
-            <hr class="divider" />
+        <div class="canvas-link-end-tooltip" style={coordsStyle(link)}>
+          <div onClick={() => onNewFile(link)} data-testid="link_end_new_file">🆕 New file</div>
+          <Show when={getFiles()}>
+            {(files) => <>
+              <hr class="divider" />
+              <For each={files()}>
+                {(file: File) => <FileName file={file} link={link} />}
+              </For>
+            </>}
           </Show>
-          <For each={getFiles()}>
-            {(file: File) => <FileName file={file} link={link} />}
-          </For>
         </div>
       </>}
     </Show>

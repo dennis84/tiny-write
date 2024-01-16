@@ -116,6 +116,8 @@ export class AppService {
       } else {
         this.ctrl.canvasCollab.init()
       }
+
+      this.ctrl.tree.create()
     } catch (error: any) {
       remote.log('error', `Error during init: ${error.message}`)
       this.setError(error)
