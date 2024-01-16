@@ -4,7 +4,7 @@ import {File, Canvas, useState, isFile} from '@/state'
 import {Drawer, Label, Note, Sub} from './Menu'
 import {ButtonGroup, Button} from '@/components/Button'
 import {Card, CardContent, CardFooter, CardList, CardMenuButton} from '@/components/Layout'
-import {Excerpt} from './Files'
+import FilePreview from './FilePreview'
 import CanvasPreview from './CanvasPreview'
 import {Tooltip} from './Tooltip'
 
@@ -70,7 +70,7 @@ export const Bin = (props: Props) => {
     return (
       <Card>
         <CardContent onClick={() => showCardMenu(anchor, p.file.id)}>
-          <Excerpt file={p.file} />
+          <FilePreview file={p.file} />
         </CardContent>
         <CardFooter>
           <span>{formatDistance(new Date(p.file.lastModified!), new Date())}</span>

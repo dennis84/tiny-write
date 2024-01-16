@@ -4,8 +4,6 @@ import {Mode, useState} from '@/state'
 import {isTauri, isMac, mod, version, VERSION_URL} from '@/env'
 import * as remote from '@/remote'
 import {Bin} from './Bin'
-import {Files} from './Files'
-import {Canvases} from './Canvases'
 import {CodeBlock} from './CodeBlock'
 import {Appearance} from './Appearance'
 import {ChangeSet} from './ChangeSet'
@@ -254,12 +252,6 @@ export default () => {
         <span />
         <span />
       </Burger>
-      <Show when={show() === 'files'}>
-        <Files onBack={() => setShow('main')} onOpen={() => maybeHide()} />
-      </Show>
-      <Show when={show() === 'canvases'}>
-        <Canvases onBack={() => setShow('main')} onOpen={() => maybeHide()} />
-      </Show>
       <Show when={show() === 'bin'}>
         <Bin onBack={() => setShow('main')} />
       </Show>
