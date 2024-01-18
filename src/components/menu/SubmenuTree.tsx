@@ -12,6 +12,17 @@ import {TreeNode, TreeNodeItem} from '@/services/TreeService'
 import {Label, Link, Sub, Text} from './Menu'
 import {Tooltip} from './Tooltip'
 
+const HighlightContent = styled('div')`
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 360px;
+  border: 10px solid var(--primary-background-50);
+  user-select: none;
+  pointer-events: none;
+`
+
 const GhostContainer = styled('div')`
   position: absolute;
   top: 0;
@@ -48,6 +59,8 @@ const TreeLinkCorner = styled('span')`
   padding-right: 10px;
   cursor: var(--cursor-pointer);
   font-family: monospace;
+  font-weight: normal;
+  display: flex;
 `
 
 const TreeLinkTitle = styled('span')`
@@ -186,7 +199,7 @@ export default (props: Props) => {
       })
     }
 
-    const getTitle = (doc?: Node) => doc?.firstChild?.textContent.substring(0, 50) || 'Untitled'
+    const getTitle = (doc?: Node) => doc?.firstChild?.textContent.substring(0, 25) || 'Untitled'
 
     const getCurrentId = () =>
       state.mode === Mode.Editor ? ctrl.file.currentFile?.id : ctrl.canvas.currentCanvas?.id
@@ -282,18 +295,20 @@ export default (props: Props) => {
         class={css`
           touch-action: none;
           user-select: none;
-          ${grabbing() ? `
-            cursor: var(--cursor-grabbed);
-          ` : ''}
+          align-items: flex-start;
           ${props.node.item.id === getCurrentId() ? `
             font-weight: bold;
+            font-family: var(--menu-font-family-bold);
             color: var(--primary-background);
           ` : ''}
           ${props.selected ? `
             background: var(--primary-background-20);
           ` : ''}
-          &:hover > span {
-            opacity: 1;
+          &:hover {
+            color: var(--primary-background);
+            > span {
+              opacity: 1;
+            }
           }
         `}
       >
@@ -308,6 +323,11 @@ export default (props: Props) => {
         <TreeLinkTitle
           ref={ref}
           onClick={onClick}
+          class={css`
+            ${grabbing() ? `
+              cursor: var(--cursor-grabbed);
+            ` : ''}
+          `}
           data-testid="tree_link">
           {title()}
         </TreeLinkTitle>
@@ -370,6 +390,9 @@ export default (props: Props) => {
           <GhostContainer>
             <Ghost ref={ghostRef} />
           </GhostContainer>
+        </Show>
+        <Show when={dropState()?.pos === 'open'}>
+          <HighlightContent />
         </Show>
       </Portal>
       <Show when={toolipAnchor() !== undefined}>
