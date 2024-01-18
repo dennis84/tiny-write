@@ -9,7 +9,7 @@ import {DragGesture} from '@use-gesture/vanilla'
 import {Mode, isFile, useState} from '@/state'
 import {createExtensions, createSchema} from '@/prosemirror-setup'
 import {TreeNode, TreeNodeItem} from '@/services/TreeService'
-import {Label, Link, Sub} from './Menu'
+import {Label, Link, Sub, Text} from './Menu'
 import {Tooltip} from './Tooltip'
 
 const GhostContainer = styled('div')`
@@ -44,7 +44,21 @@ const DropLine = styled('div')`
   margin-left: ${(props: any) => 20 * props.level}px;
 `
 
+const TreeLinkCorner = styled('span')`
+  padding-right: 10px;
+  cursor: var(--cursor-pointer);
+  font-family: monospace;
+`
+
+const TreeLinkTitle = styled('span')`
+  cursor: var(--cursor-pointer);
+  width: 100%;
+`
+
 const LinkMenu = styled('span')`
+  justify-self: flex-end;
+  margin-left: auto;
+  cursor: var(--cursor-pointer);
   opacity: 0;
   padding: 0 5px;
   border-radius: 5px;
@@ -76,6 +90,7 @@ export default (props: Props) => {
   const [toolipAnchor, setTooltipAnchor] = createSignal<HTMLElement | undefined>()
   const [selected, setSelected] = createSignal<TreeNode>()
   const [grabbing, setGrabbing] = createSignal(false)
+  const [collasped, setCollasped] = createSignal<string[]>([])
 
   const isNode = (node: TreeNode) => dropState()?.targetId === node.item.id
 
@@ -146,7 +161,7 @@ export default (props: Props) => {
   })
 
   const TreeLink = (props: {node: TreeNode; level: number; selected?: boolean}) => {
-    let ref!: HTMLButtonElement
+    let ref!: HTMLSpanElement
     let anchor!: HTMLElement
 
     const [title, setTitle] = createSignal<string>()
@@ -157,6 +172,18 @@ export default (props: Props) => {
       } else {
         ctrl.canvas.open(props.node.item.id)
       }
+    }
+
+    const onCornerClick = () => {
+      if (!props.node.tree.length) return
+      const id = props.node.item.id
+      setCollasped((prev) => {
+        if (prev.includes(props.node.item.id)) {
+          return prev.filter((other) => id !== other)
+        } else {
+          return [...prev, id]
+        }
+      })
     }
 
     const getTitle = (doc?: Node) => doc?.firstChild?.textContent.substring(0, 50) || 'Untitled'
@@ -178,7 +205,8 @@ export default (props: Props) => {
       const offset = 10
 
       const gesture = new DragGesture(ref, ({xy: [x, y], last, first}) => {
-        const el = document.elementFromPoint(x, y) as HTMLElement
+        let el = document.elementFromPoint(x, y) as HTMLElement
+        if (el.tagName === 'SPAN') el = el.parentNode as HTMLElement
         const box = el?.getBoundingClientRect()
         const targetId = el?.dataset.id
 
@@ -249,21 +277,15 @@ export default (props: Props) => {
     })
 
     return (
-      <Link
-        ref={ref}
+      <Text
         data-id={props.node.item.id}
-        data-testid="tree_link"
-        onClick={onClick}
         class={css`
-          padding-left: ${String(20 * props.level)}px;
           touch-action: none;
-          user-drag: element;
-          -webkit-user-drag: value;
+          user-select: none;
           ${grabbing() ? `
             cursor: var(--cursor-grabbed);
           ` : ''}
           ${props.node.item.id === getCurrentId() ? `
-            font-family: var(--menu-font-family-bold);
             font-weight: bold;
             color: var(--primary-background);
           ` : ''}
@@ -275,16 +297,28 @@ export default (props: Props) => {
           }
         `}
       >
-        └ {title()}
+        <TreeLinkCorner
+          onClick={onCornerClick}
+          class={css`
+            padding-left: ${String(20 * props.level)}px;
+          `}
+        >
+          {collasped().includes(props.node.item.id) ? '+' : '└'}
+        </TreeLinkCorner>
+        <TreeLinkTitle
+          ref={ref}
+          onClick={onClick}
+          data-testid="tree_link">
+          {title()}
+        </TreeLinkTitle>
         <LinkMenu
           ref={anchor}
           selected={selected() === props.node}
           onClick={(e: MouseEvent) => showTooltip(e, anchor, props.node)}
-          data-testid="tree_link_menu"
-        >
+          data-testid="tree_link_menu">
           ⋯
         </LinkMenu>
-      </Link>
+      </Text>
     )
   }
 
@@ -301,7 +335,7 @@ export default (props: Props) => {
               selected={props.selected || (isNode(node) && dropState()?.pos === 'add' && isFile(node.item))}
               level={props.level}
             />
-            <Show when={node.tree.length > 0}>
+            <Show when={node.tree.length > 0 && !collasped().includes(node.item.id)}>
               <Tree
                 tree={node.tree}
                 level={props.level + 1}
