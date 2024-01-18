@@ -28,23 +28,16 @@ export class TreeService {
     const tmp: Record<string, TmpNode> = {}
     let root = []
 
-    for (const f of this.store.files) {
-      const file = unwrap(f)
-      if (!tmp[file.id]) tmp[file.id] = {item: file, tree: []}
-      else tmp[file.id].item = file
-      const node = tmp[file.id]
+    const items = [...this.store.files, ...this.store.canvases]
+    for (const i of items) {
+      const item = unwrap(i)
+      if (!tmp[item.id]) tmp[item.id] = {item, tree: []}
+      else tmp[item.id].item = item
+      const node = tmp[item.id]
 
-      if (!file.parentId) root.push(node)
-      else if (!tmp[file.parentId]) tmp[file.parentId] = {tree: [node]}
-      else tmp[file.parentId].tree.push(node)
-    }
-
-    for (const c of this.store.canvases) {
-      const canvas = unwrap(c)
-      const node = {item: canvas, tree: []}
-      tmp[canvas.id] = node
-      if (!canvas.parentId) root.push(node)
-      else tmp[canvas.parentId].tree.push(node)
+      if (!item.parentId) root.push(node)
+      else if (!tmp[item.parentId]) tmp[item.parentId] = {tree: [node]}
+      else tmp[item.parentId].tree.push(node)
     }
 
     root = root as TreeNode[]
@@ -164,7 +157,19 @@ export class TreeService {
       }
     }
 
-    return [...sorted, ...nulls, ...unsorted]
+    for (const n of nulls) {
+      const nextLeftId = sorted[sorted.length-1]?.item.id
+      n.item.leftId = nextLeftId
+      sorted.push(n)
+    }
+
+    for (const u of unsorted) {
+      const nextLeftId = sorted[sorted.length-1]?.item.id
+      u.item.leftId = nextLeftId
+      sorted.push(u)
+    }
+
+    return sorted
   }
 
   private saveNode(node: TreeNode) {
