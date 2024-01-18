@@ -1,15 +1,37 @@
 import {For, Show, createEffect, createSignal, onCleanup, onMount} from 'solid-js'
+import {Portal} from 'solid-js/web'
 import {unwrap} from 'solid-js/store'
 import {css, styled} from 'solid-styled-components'
 import {Node} from 'prosemirror-model'
 import * as Y from 'yjs'
 import {yDocToProsemirrorJSON} from 'y-prosemirror'
 import {DragGesture} from '@use-gesture/vanilla'
-import {File, Mode, isFile, useState} from '@/state'
+import {Mode, isFile, useState} from '@/state'
 import {createExtensions, createSchema} from '@/prosemirror-setup'
 import {TreeNode, TreeNodeItem} from '@/services/TreeService'
 import {Label, Link, Sub} from './Menu'
 import {Tooltip} from './Tooltip'
+
+const GhostContainer = styled('div')`
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  overflow: hidden;
+  z-index: 0;
+  pointer-events: none;
+`
+
+const Ghost = styled('div')`
+  position: absolute;
+  display: none;
+  color: var(--foreground);
+  font-size: var(--menu-font-size);
+  font-family: var(--menu-font-family);
+  width: 400px;
+  overflow: hidden;
+`
 
 const DropLine = styled('div')`
   position: absolute;
@@ -47,10 +69,13 @@ interface Props {
 }
 
 export default (props: Props) => {
+  let ghostRef!: HTMLDivElement
+
   const [state, ctrl] = useState()
   const [dropState, setDropState] = createSignal<DropState>()
   const [toolipAnchor, setTooltipAnchor] = createSignal<HTMLElement | undefined>()
   const [selected, setSelected] = createSignal<TreeNode>()
+  const [grabbing, setGrabbing] = createSignal(false)
 
   const isNode = (node: TreeNode) => dropState()?.targetId === node.item.id
 
@@ -125,7 +150,6 @@ export default (props: Props) => {
     let anchor!: HTMLElement
 
     const [title, setTitle] = createSignal<string>()
-    const [grabbing, setGrabbing] = createSignal(false)
 
     const onClick = async () => {
       if (isFile(props.node.item)) {
@@ -161,7 +185,12 @@ export default (props: Props) => {
         if (first) {
           setGrabbing(true)
           setTooltipAnchor(undefined)
+          ghostRef.textContent = title() ?? ''
+          ghostRef.style.display = 'block'
         }
+
+        ghostRef.style.top = `${y}px`
+        ghostRef.style.left = `${x}px`
 
         if (targetId && targetId !== props.node.item.id && !ctrl.tree.isDescendant(targetId, props.node.tree)) {
           if (y < box.top + offset) {
@@ -202,6 +231,7 @@ export default (props: Props) => {
 
           setDropState(undefined)
           setGrabbing(false)
+          ghostRef.style.display = 'none'
         }
       }, {filterTaps: true})
 
@@ -227,6 +257,8 @@ export default (props: Props) => {
         class={css`
           padding-left: ${String(20 * props.level)}px;
           touch-action: none;
+          user-drag: element;
+          -webkit-user-drag: value;
           ${grabbing() ? `
             cursor: var(--cursor-grabbed);
           ` : ''}
@@ -299,6 +331,13 @@ export default (props: Props) => {
           ` : undefined}
         >└ Bin 🗑️</Link>
       </Sub>
+      <Portal mount={document.getElementById('container') as HTMLElement}>
+        <Show when={grabbing()}>
+          <GhostContainer>
+            <Ghost ref={ghostRef} />
+          </GhostContainer>
+        </Show>
+      </Portal>
       <Show when={toolipAnchor() !== undefined}>
         <Tooltip anchor={toolipAnchor()} onClose={() => closeTooltip()}>
           <Show when={isFile(selected()?.item)}>
