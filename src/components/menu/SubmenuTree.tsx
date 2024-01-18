@@ -180,7 +180,7 @@ export default (props: Props) => {
       const gesture = new DragGesture(ref, ({xy: [x, y], last, first}) => {
         const el = document.elementFromPoint(x, y) as HTMLElement
         const box = el?.getBoundingClientRect()
-        const targetId = el.dataset.id
+        const targetId = el?.dataset.id
 
         if (first) {
           setGrabbing(true)
@@ -225,7 +225,7 @@ export default (props: Props) => {
             deleteNode(props.node)
           } else if (ds?.pos === 'open') {
             if (state.mode === Mode.Canvas && isFile(props.node.item)) {
-              ctrl.canvas.addFile(props.node.item)
+              ctrl.canvas.addFile(props.node.item, undefined, [x, y])
             }
           }
 

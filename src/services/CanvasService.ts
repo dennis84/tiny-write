@@ -378,7 +378,7 @@ export class CanvasService {
     remote.info('💾 New file added')
   }
 
-  addFile(file: File, link?: CanvasLinkElement) {
+  addFile(file: File, link?: CanvasLinkElement, point?: [number, number]) {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
 
@@ -387,7 +387,7 @@ export class CanvasService {
 
     const width = 300
     const height = 350
-    const {point, zoom} = currentCanvas.camera
+    const camera = currentCanvas.camera
 
     const isLink = link?.toX !== undefined && link.toY !== undefined
     let linkToEdge
@@ -424,11 +424,17 @@ export class CanvasService {
         }
       }
     } else {
-      const center = new Vec2d(window.innerWidth / 2, window.innerHeight / 2).toFixed()
-      const p = Vec2d.FromArray(point)
-      const target = center.div(zoom).sub(p).subXY(width / 2, height / 2)
-      x = target.x
-      y = target.y
+      if (point) {
+        const p = Vec2d.FromArray(point)
+        x = (p.x / camera.zoom) - camera.point[0]
+        y = (p.y / camera.zoom) - camera.point[1]
+      } else {
+        const center = new Vec2d(window.innerWidth / 2, window.innerHeight / 2).toFixed()
+        const p = Vec2d.FromArray(camera.point)
+        const target = center.div(camera.zoom).sub(p).subXY(width / 2, height / 2)
+        x = target.x
+        y = target.y
+      }
     }
 
     const element: CanvasEditorElement = {
