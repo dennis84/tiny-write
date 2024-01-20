@@ -93,8 +93,9 @@ interface DropState {
 }
 
 interface Props {
-  onBin: () => void;
-  maybeHide: () => void;
+  onBin?: () => void;
+  maybeHide?: () => void;
+  showDeleted?: boolean;
 }
 
 export default (props: Props) => {
@@ -170,6 +171,29 @@ export default (props: Props) => {
     closeTooltip()
   }
 
+  const onDeleteForever = async () => {
+    const node = unwrap(selected())
+    if (!node) return
+    if (isFile(node.item)) {
+      await ctrl.file.deleteForever(node.item.id)
+    } else {
+      await ctrl.canvas.deleteForever(node.item.id)
+    }
+    closeTooltip()
+  }
+
+  const onRestore = async () => {
+    const node = unwrap(selected())
+    if (!node) return
+    if (isFile(node.item)) {
+      await ctrl.file.restore(node.item.id)
+    } else {
+      await ctrl.canvas.restore(node.item.id)
+    }
+
+    closeTooltip()
+  }
+
   onMount(() => {
     ctrl.tree.create()
   })
@@ -187,7 +211,7 @@ export default (props: Props) => {
         ctrl.canvas.open(p.node.item.id)
       }
 
-      props.maybeHide()
+      props.maybeHide?.()
     }
 
     const onCornerClick = () => {
@@ -296,6 +320,10 @@ export default (props: Props) => {
           -webkit-touch-callout: none;
           -webkit-user-select: none;
           align-items: flex-start;
+          ${props.showDeleted && !p.node.item.deleted ? `
+            opacity: 0.3;
+            pointer-events: none;
+          `: ''}
           ${p.node.item.id === getCurrentId() ? `
             font-weight: bold;
             font-family: var(--menu-font-family-bold);
@@ -343,28 +371,28 @@ export default (props: Props) => {
     )
   }
 
-  const Tree = (props: {tree: TreeNode[]; level: number; selected?: boolean}) => {
+  const Tree = (p: {tree: TreeNode[]; level: number; selected?: boolean}) => {
     return (
-      <For each={props.tree}>
+      <For each={p.tree}>
         {(node) => (
-          <Show when={!node.item.deleted}>
+          <Show when={props.showDeleted || !node.item.deleted}>
             <Show when={isNode(node) && dropState()?.pos === 'before'}>
-              <DropLine level={props.level} />
+              <DropLine level={p.level} />
             </Show>
             <TreeLink
               node={node}
-              selected={props.selected || (isNode(node) && dropState()?.pos === 'add' && isFile(node.item))}
-              level={props.level}
+              selected={p.selected || (isNode(node) && dropState()?.pos === 'add' && isFile(node.item))}
+              level={p.level}
             />
             <Show when={node.tree.length > 0 && !ctrl.tree.isCollapsed(node)}>
               <Tree
                 tree={node.tree}
-                level={props.level + 1}
-                selected={props.selected || isNode(node) && dropState()?.pos === 'add'}
+                level={p.level + 1}
+                selected={p.selected || isNode(node) && dropState()?.pos === 'add'}
               />
             </Show>
             <Show when={isNode(node) && dropState()?.pos === 'after'}>
-              <DropLine level={props.level} />
+              <DropLine level={p.level} />
             </Show>
           </Show>
         )}
@@ -377,17 +405,19 @@ export default (props: Props) => {
       <Label>Storage</Label>
       <Sub data-tauri-drag-region="true">
         <Tree tree={ctrl.tree.tree} level={0} />
-        <Link
-          id="bin"
-          onClick={props.onBin}
-          data-testid="bin"
-          class={dropState()?.pos === 'delete' ? css`
-            background: var(--primary-background-20);
-          ` : undefined}
-        >
-          <TreeLinkCorner>└ </TreeLinkCorner>
-          Bin 🗑️
-        </Link>
+        <Show when={!props.showDeleted}>
+          <Link
+            id="bin"
+            onClick={props.onBin}
+            data-testid="bin"
+            class={dropState()?.pos === 'delete' ? css`
+              background: var(--primary-background-20);
+            ` : undefined}
+          >
+            <TreeLinkCorner>└ </TreeLinkCorner>
+            Bin 🗑️
+          </Link>
+        </Show>
       </Sub>
       <Portal mount={document.getElementById('container') as HTMLElement}>
         <Show when={grabbing()}>
@@ -401,12 +431,18 @@ export default (props: Props) => {
       </Portal>
       <Show when={toolipAnchor() !== undefined}>
         <Tooltip anchor={toolipAnchor()} onClose={() => closeTooltip()}>
-          <Show when={isFile(selected()?.item)}>
+          <Show when={!selected()?.item.deleted && isFile(selected()?.item)}>
             <div onClick={onAddFile} data-testid="add_file">✍️ Add file</div>
             <div onClick={onAddCanvas} data-testid="add_canvas">🧑‍🎨 Add canvas</div>
             <hr class="divider" />
           </Show>
-          <div onClick={onDelete} data-testid="delete">🗑️ Delete</div>
+          <Show when={selected()?.item.deleted}>
+            <div onClick={onRestore} data-testid="restore">♻️ Restore</div>
+            <div onClick={onDeleteForever} data-testid="delete_forever">⚠️ Delete forever</div>
+          </Show>
+          <Show when={!selected()?.item.deleted}>
+            <div onClick={onDelete} data-testid="delete">🗑️ Delete</div>
+          </Show>
         </Tooltip>
       </Show>
     </>
