@@ -36,11 +36,11 @@ test('html to markdown and back', async ({page}) => {
   await expect(page.locator('[data-testid="tree_link"]')).toHaveCount(2)
   await expect(page.locator('[data-testid="tree_link"]:nth-child(1)')).toContainText('title')
   await expect(page.locator('[data-testid="tree_link"]:nth-child(2)')).toContainText('markdown')
-  await page.click('[data-testid="tree_link"]:nth-child(1)')
+  await page.click('[data-testid="tree_link"]:nth-child(1) span')
 
   await expect(page.locator('.ProseMirror h1')).toHaveText('title')
   await expect(page.locator('.ProseMirror blockquote')).toHaveText('blockquote')
 
-  await page.click('[data-testid="tree_link"]:nth-child(2)')
+  await page.click('[data-testid="tree_link"]:nth-child(2) span')
   await lineTextEq(page, 1, '# markdown')
 })

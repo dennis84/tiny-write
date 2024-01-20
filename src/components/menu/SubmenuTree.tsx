@@ -55,11 +55,12 @@ const DropLine = styled('div')`
   margin-left: ${(props: any) => 20 * props.level}px;
 `
 
-const TreeLinkCorner = styled('span')`
+const TreeLinkCorner = styled('i')`
   padding-right: 10px;
   cursor: var(--cursor-pointer);
   font-family: monospace;
   font-weight: normal;
+  font-style: normal;
   display: flex;
 `
 
@@ -93,6 +94,7 @@ interface DropState {
 
 interface Props {
   onBin: () => void;
+  maybeHide: () => void;
 }
 
 export default (props: Props) => {
@@ -103,7 +105,6 @@ export default (props: Props) => {
   const [toolipAnchor, setTooltipAnchor] = createSignal<HTMLElement | undefined>()
   const [selected, setSelected] = createSignal<TreeNode>()
   const [grabbing, setGrabbing] = createSignal(false)
-  const [collasped, setCollasped] = createSignal<string[]>([])
 
   const isNode = (node: TreeNode) => dropState()?.targetId === node.item.id
 
@@ -173,30 +174,24 @@ export default (props: Props) => {
     ctrl.tree.create()
   })
 
-  const TreeLink = (props: {node: TreeNode; level: number; selected?: boolean}) => {
+  const TreeLink = (p: {node: TreeNode; level: number; selected?: boolean}) => {
     let ref!: HTMLSpanElement
     let anchor!: HTMLElement
 
     const [title, setTitle] = createSignal<string>()
 
     const onClick = async () => {
-      if (isFile(props.node.item)) {
-        await ctrl.editor.openFile(props.node.item)
+      if (isFile(p.node.item)) {
+        await ctrl.editor.openFile(p.node.item)
       } else {
-        ctrl.canvas.open(props.node.item.id)
+        ctrl.canvas.open(p.node.item.id)
       }
+
+      props.maybeHide()
     }
 
     const onCornerClick = () => {
-      if (!props.node.tree.length) return
-      const id = props.node.item.id
-      setCollasped((prev) => {
-        if (prev.includes(props.node.item.id)) {
-          return prev.filter((other) => id !== other)
-        } else {
-          return [...prev, id]
-        }
-      })
+      ctrl.tree.collapse(p.node)
     }
 
     const getTitle = (doc?: Node) => doc?.firstChild?.textContent.substring(0, 25) || 'Untitled'
@@ -205,10 +200,10 @@ export default (props: Props) => {
       state.mode === Mode.Editor ? ctrl.file.currentFile?.id : ctrl.canvas.currentCanvas?.id
 
     onMount(() => {
-      if (isFile(props.node.item)) {
+      if (isFile(p.node.item)) {
         const ydoc = new Y.Doc({gc: false})
-        Y.applyUpdate(ydoc, props.node.item.ydoc)
-        const state = yDocToProsemirrorJSON(ydoc, props.node.item.id)
+        Y.applyUpdate(ydoc, p.node.item.ydoc)
+        const state = yDocToProsemirrorJSON(ydoc, p.node.item.id)
         const doc = Node.fromJSON(schema, state)
         setTitle(getTitle(doc))
       } else {
@@ -217,7 +212,8 @@ export default (props: Props) => {
 
       const offset = 10
 
-      const gesture = new DragGesture(ref, ({xy: [x, y], last, first}) => {
+      const gesture = new DragGesture(ref, ({xy: [x, y], last, first, event}) => {
+        event.preventDefault()
         let el = document.elementFromPoint(x, y) as HTMLElement
         if (el.tagName === 'SPAN') el = el.parentNode as HTMLElement
         const box = el?.getBoundingClientRect()
@@ -230,10 +226,12 @@ export default (props: Props) => {
           ghostRef.style.display = 'block'
         }
 
-        ghostRef.style.top = `${y}px`
-        ghostRef.style.left = `${x}px`
+        if (ghostRef) {
+          ghostRef.style.top = `${y}px`
+          ghostRef.style.left = `${x}px`
+        }
 
-        if (targetId && targetId !== props.node.item.id && !ctrl.tree.isDescendant(targetId, props.node.tree)) {
+        if (targetId && targetId !== p.node.item.id && !ctrl.tree.isDescendant(targetId, p.node.tree)) {
           if (y < box.top + offset) {
             setDropState({pos: 'before', targetId})
           } else if (y > box.bottom - offset) {
@@ -255,18 +253,18 @@ export default (props: Props) => {
             const targetNode = ctrl.tree.findTreeNode(ds.targetId)
             if (targetNode) {
               if (ds.pos === 'add' && isFile(targetNode.item)) {
-                ctrl.tree.add(props.node, targetNode)
+                ctrl.tree.add(p.node, targetNode)
               } else if (ds.pos === 'before') {
-                ctrl.tree.before(props.node, targetNode)
+                ctrl.tree.before(p.node, targetNode)
               } else if (ds.pos === 'after') {
-                ctrl.tree.after(props.node, targetNode)
+                ctrl.tree.after(p.node, targetNode)
               }
             }
           } else if (ds?.pos === 'delete') {
-            deleteNode(props.node)
+            deleteNode(p.node)
           } else if (ds?.pos === 'open') {
-            if (state.mode === Mode.Canvas && isFile(props.node.item)) {
-              ctrl.canvas.addFile(props.node.item, undefined, [x, y])
+            if (state.mode === Mode.Canvas && isFile(p.node.item)) {
+              ctrl.canvas.addFile(p.node.item, undefined, [x, y])
             }
           }
 
@@ -284,24 +282,26 @@ export default (props: Props) => {
     createEffect(() => {
       if (state.mode !== Mode.Editor) return
       const currentFile = ctrl.file.currentFile
-      if (currentFile?.id !== props.node.item.id || !currentFile.editorView) return
+      if (currentFile?.id !== p.node.item.id || !currentFile.editorView) return
       state.lastTr
       setTitle(getTitle(currentFile.editorView.state.doc))
     })
 
     return (
       <Text
-        data-id={props.node.item.id}
+        data-id={p.node.item.id}
+        data-testid="tree_link"
         class={css`
-          touch-action: none;
           user-select: none;
+          -webkit-touch-callout: none;
+          -webkit-user-select: none;
           align-items: flex-start;
-          ${props.node.item.id === getCurrentId() ? `
+          ${p.node.item.id === getCurrentId() ? `
             font-weight: bold;
             font-family: var(--menu-font-family-bold);
             color: var(--primary-background);
           ` : ''}
-          ${props.selected ? `
+          ${p.selected ? `
             background: var(--primary-background-20);
           ` : ''}
           &:hover {
@@ -315,26 +315,27 @@ export default (props: Props) => {
         <TreeLinkCorner
           onClick={onCornerClick}
           class={css`
-            padding-left: ${String(20 * props.level)}px;
+            padding-left: ${String(20 * p.level)}px;
           `}
         >
-          {collasped().includes(props.node.item.id) ? '+' : '└'}
+          {ctrl.tree.isCollapsed(p.node) ? '+' : '└'}
         </TreeLinkCorner>
         <TreeLinkTitle
           ref={ref}
           onClick={onClick}
           class={css`
+            touch-action: none;
             ${grabbing() ? `
               cursor: var(--cursor-grabbed);
             ` : ''}
           `}
-          data-testid="tree_link">
+        >
           {title()}
         </TreeLinkTitle>
         <LinkMenu
           ref={anchor}
-          selected={selected() === props.node}
-          onClick={(e: MouseEvent) => showTooltip(e, anchor, props.node)}
+          selected={selected() === p.node}
+          onClick={(e: MouseEvent) => showTooltip(e, anchor, p.node)}
           data-testid="tree_link_menu">
           ⋯
         </LinkMenu>
@@ -355,7 +356,7 @@ export default (props: Props) => {
               selected={props.selected || (isNode(node) && dropState()?.pos === 'add' && isFile(node.item))}
               level={props.level}
             />
-            <Show when={node.tree.length > 0 && !collasped().includes(node.item.id)}>
+            <Show when={node.tree.length > 0 && !ctrl.tree.isCollapsed(node)}>
               <Tree
                 tree={node.tree}
                 level={props.level + 1}
@@ -383,7 +384,10 @@ export default (props: Props) => {
           class={dropState()?.pos === 'delete' ? css`
             background: var(--primary-background-20);
           ` : undefined}
-        >└ Bin 🗑️</Link>
+        >
+          <TreeLinkCorner>└ </TreeLinkCorner>
+          Bin 🗑️
+        </Link>
       </Sub>
       <Portal mount={document.getElementById('container') as HTMLElement}>
         <Show when={grabbing()}>

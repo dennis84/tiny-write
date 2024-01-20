@@ -43,7 +43,7 @@ test('open file', async ({page}) => {
   await expect(page.locator('[data-testid="tree_link"]:nth-child(1)')).toContainText('test1')
   await expect(page.locator('[data-testid="tree_link"]:nth-child(2)')).toContainText('test2')
   await expect(page.locator('[data-testid="tree_link"]:nth-child(3)')).toContainText('Untitled')
-  await page.click('[data-testid="tree_link"]:nth-child(1)')
+  await page.click('[data-testid="tree_link"]:nth-child(1) span')
   await page.waitForTimeout(100)
   await lineTextEq(page, 1, 'test1')
   await expect(page.locator('[data-testid="tree_link"]')).toHaveCount(3)

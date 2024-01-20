@@ -372,9 +372,15 @@ export class CanvasService {
   }
 
   newFile(link?: CanvasLinkElement) {
+    const currentCanvas = this.currentCanvas
+    if (!currentCanvas) return
+
     const file = this.ctrl.file.createFile()
+    file.parentId = currentCanvas.parentId
+
     this.setState('files', [...this.store.files, file])
     this.addFile(file, link)
+    this.ctrl.tree.create()
     remote.info('💾 New file added')
   }
 
@@ -702,7 +708,6 @@ export class CanvasService {
       ctrl: this.ctrl,
       markdown: false,
       type,
-      dropcursor: false,
     })
 
     const nodeViews = createNodeViews(extensions)

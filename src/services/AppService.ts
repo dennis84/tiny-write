@@ -180,6 +180,7 @@ export class AppService {
     const files = await this.ctrl.file.fetchFiles() ?? []
     const canvases = await this.ctrl.canvas.fetchCanvases() ?? state.canvases ?? []
     const meta = await DB.getMeta()
+    const tree = await DB.getTree()
 
     let mode = meta?.mode ?? state.mode ?? Mode.Editor
     if (args.room) {
@@ -202,6 +203,7 @@ export class AppService {
       window: fetchedWindow,
       collab: undefined,
       mode,
+      tree,
     }
   }
 }

@@ -40,6 +40,10 @@ interface Meta {
   mode: Mode;
 }
 
+interface Tree {
+  collapsed: string[];
+}
+
 interface MyDB extends DBSchema {
   config: {
     key: string;
@@ -61,18 +65,32 @@ interface MyDB extends DBSchema {
     key: string;
     value: Meta;
   };
+  tree: {
+    key: string;
+    value: Tree;
+  };
 }
 
-const DB_NAME = 'keyval'
+const DB_NAME = 'tiny_write'
 
+// Increment version and add new scheme:
+// ```
+// openDB(DB_NAME, 2, { ... })
+//
+// if (newVersion === 2) { db.createObjectStore(...) }
+// ```
 const dbPromise = openDB<MyDB>(DB_NAME, 1, {
-  upgrade(db: any) {
-    db.createObjectStore('config')
-    db.createObjectStore('window')
-    db.createObjectStore('canvases', {keyPath: 'id'})
-    db.createObjectStore('files', {keyPath: 'id'})
-    db.createObjectStore('meta')
-  }
+  upgrade(db: any, oldVersion, newVersion) {
+    remote.info(`Upgrade DB from version ${oldVersion} to ${newVersion}`)
+    if (newVersion === 1) {
+      db.createObjectStore('config')
+      db.createObjectStore('window')
+      db.createObjectStore('canvases', {keyPath: 'id'})
+      db.createObjectStore('files', {keyPath: 'id'})
+      db.createObjectStore('meta')
+      db.createObjectStore('tree')
+    }
+  },
 })
 
 export class DB {
@@ -98,6 +116,14 @@ export class DB {
 
   static async getMeta() {
     return (await dbPromise).get('meta', 'main')
+  }
+
+  static async setTree(tree: Tree) {
+    return (await dbPromise).put('tree', tree, 'main')
+  }
+
+  static async getTree() {
+    return (await dbPromise).get('tree', 'main')
   }
 
   static async getFiles() {

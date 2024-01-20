@@ -271,7 +271,7 @@ export default () => {
         <Drawer
           onClick={() => ctrl.file.currentFile?.editorView?.focus()}
           data-tauri-drag-region="true">
-          <SubmenuTree onBin={() => setShow('bin')}/>
+          <SubmenuTree onBin={() => setShow('bin')} maybeHide={maybeHide} />
           {/* Submenu File */}
           <Show when={store.mode === Mode.Editor}>
             <SubmenuFile maybeHide={maybeHide} />

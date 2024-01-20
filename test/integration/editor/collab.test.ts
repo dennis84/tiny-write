@@ -57,7 +57,7 @@ test('existing room - backup', async ({page}) => {
   await expect(page.locator('[data-testid="tree_link"]:nth-child(1)')).toContainText('123')
   await expect(page.locator('[data-testid="tree_link"]:nth-child(2)')).toContainText('Hello')
 
-  await page.click('[data-testid="tree_link"]:nth-child(1)')
+  await page.click('[data-testid="tree_link"]:nth-child(1) span')
   await lineTextEq(page, 1, '123')
 
   await expect(page.locator('[data-testid="tree_link"]')).toHaveCount(2)

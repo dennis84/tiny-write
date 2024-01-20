@@ -163,9 +163,14 @@ export enum Mode {
   Canvas = 'canvas',
 }
 
+export interface Tree {
+  collapsed: string[];
+}
+
 export interface State {
   canvases: Canvas[];
   files: File[];
+  tree?: Tree;
   mode: Mode;
   config: Config;
   error?: ErrorObject;

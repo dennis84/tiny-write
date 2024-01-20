@@ -1,5 +1,5 @@
 import {beforeEach, expect, test, vi} from 'vitest'
-import {mockDeep} from 'vitest-mock-extended'
+import {mock, mockDeep} from 'vitest-mock-extended'
 import {createStore} from 'solid-js/store'
 import {TreeNode, TreeService} from '@/services/TreeService'
 import {Canvas, ElementType, File, State, createState} from '@/state'
@@ -8,6 +8,8 @@ import {Ctrl} from '@/services'
 beforeEach(() => {
   vi.restoreAllMocks()
 })
+
+vi.mock('@/db', () => ({DB: mock()}))
 
 const createFile = (props: Partial<File> = {}): File =>
   ({id: 'file_1', ydoc: new Uint8Array(), versions: [], ...props})

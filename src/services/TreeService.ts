@@ -1,6 +1,7 @@
 import {SetStoreFunction, Store, createMutable, unwrap} from 'solid-js/store';
 import {Canvas, File, State, isFile} from '@/state'
 import {Ctrl} from '.'
+import {DB} from '@/db'
 
 export type TreeNodeItem = File | Canvas;
 
@@ -108,6 +109,27 @@ export class TreeService {
       const c = this.findTreeNode(id, n.tree)
       if (c) return c
     }
+  }
+
+  collapse(node: TreeNode) {
+    if (!node.tree.length) return
+
+    this.setState('tree', (prev) => {
+      const collapsed = prev?.collapsed ?? []
+      if (collapsed.includes(node.item.id)) {
+        return {...prev, collapsed: collapsed.filter((id) => id !== node.item.id)}
+      } else {
+        return {...prev, collapsed: [...collapsed, node.item.id]}
+      }
+    })
+
+    const tree = unwrap(this.store.tree)
+    if (!tree) return
+    DB.setTree({...tree})
+  }
+
+  isCollapsed(node: TreeNode): boolean {
+    return this.store.tree?.collapsed.includes(node.item.id) ?? false
   }
 
   private findTreeNodeByLeftId(leftId: string, tree = this.tree): TreeNode | undefined {
