@@ -157,34 +157,37 @@ export class FileService {
     const file = this.findFile(req)
     if (!file) return
 
-    this.updateFile(file.id, {
-      deleted: true,
-      active: false,
-      lastModified: new Date(),
-    })
-
-    let max = 0
-    let maxId = undefined
-    if (currentFile?.id === file.id) {
+    if (this.store.mode === Mode.Editor && currentFile?.id === file.id) {
+      let max = 0
+      let maxId = undefined
       for (const f of this.store.files) {
-        if (f.id === file.id) continue
+        if (f.id === file.id || f.deleted) continue
         const t = f.lastModified?.getTime() ?? 0
         if (t >= max) {
           max = t
           maxId = f.id
         }
       }
+
+      if (maxId) {
+        await this.ctrl.editor.openFile({id: maxId})
+      } else {
+        await this.ctrl.editor.newFile()
+      }
     }
+
+    this.updateFile(file.id, {
+      deleted: true,
+      active: false,
+      lastModified: new Date(),
+    })
 
     const updatedFile = this.findFile(req)
     if (!updatedFile) return
 
     this.saveFile(updatedFile)
     remote.info('💾 File deleted')
-
-    if (this.store.mode === Mode.Editor) {
-      if (maxId) await this.ctrl.editor.openFile({id: maxId})
-    }
+    this.ctrl.tree.create()
   }
 
   async deleteForever(id: string) {

@@ -6,7 +6,7 @@ import {Node} from 'prosemirror-model'
 import * as Y from 'yjs'
 import {yDocToProsemirrorJSON} from 'y-prosemirror'
 import {DragGesture} from '@use-gesture/vanilla'
-import {Mode, isFile, useState} from '@/state'
+import {File, Mode, isFile, useState} from '@/state'
 import {createExtensions, createSchema} from '@/prosemirror-setup'
 import {TreeNode, TreeNodeItem} from '@/services/TreeService'
 import {Label, Link, Sub, Text} from './Menu'
@@ -194,6 +194,9 @@ export default (props: Props) => {
     closeTooltip()
   }
 
+  const isOnCanvas = (file: File): boolean =>
+    ctrl.canvas.currentCanvas?.elements.some((it) => it.id === file.id) ?? false
+
   onMount(() => {
     ctrl.tree.create()
   })
@@ -323,6 +326,9 @@ export default (props: Props) => {
           -webkit-touch-callout: none;
           -webkit-user-select: none;
           align-items: flex-start;
+          ${state.mode === Mode.Canvas && isFile(p.node.item) && isOnCanvas(p.node.item) ? `
+            opacity: 0.5;
+          ` : ''}
           ${props.showDeleted && !p.node.item.deleted ? `
             opacity: 0.3;
             pointer-events: none;

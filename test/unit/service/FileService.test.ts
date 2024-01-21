@@ -49,7 +49,8 @@ test('deleteFile', async () => {
   const [store, setState] = createStore(createState({
     files: [
       {id: '1', ydoc: Y.encodeStateAsUpdate(ydoc), versions: [], active: true},
-      {id: '2', ydoc: createYUpdate('2', 'Test2'), versions: []},
+      {id: '2', ydoc: new Uint8Array(), versions: [], deleted: true},
+      {id: '3', ydoc: createYUpdate('2', 'Test2'), versions: []},
     ],
   }))
 
@@ -57,15 +58,20 @@ test('deleteFile', async () => {
   setState('collab', {ydoc})
   setState('mode', Mode.Editor)
 
-  service.deleteFile({id: '1'})
-  expect(store.files.length).toBe(2)
+  await service.deleteFile({id: '1'})
+  expect(store.files.length).toBe(3)
   expect(store.files[0].deleted).toBe(true)
-  expect(store.files[0].active).toBe(false)
-  expect(ctrl.editor.openFile).toHaveBeenCalledWith({id: '2'})
-
-  await service.deleteFile({id: '2'})
-  expect(store.files.length).toBe(2)
   expect(store.files[1].deleted).toBe(true)
+  expect(store.files[0].active).toBe(false)
+  expect(ctrl.editor.openFile).toHaveBeenCalledWith({id: '3'})
+  setState('files', 2, 'active', true)
+
+  await service.deleteFile({id: '3'})
+  expect(store.files.length).toBe(3)
+  expect(store.files[0].deleted).toBe(true)
+  expect(store.files[1].deleted).toBe(true)
+  expect(store.files[2].deleted).toBe(true)
+  expect(ctrl.editor.newFile).toHaveBeenCalled()
 })
 
 test('restore', async () => {
