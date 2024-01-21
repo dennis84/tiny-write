@@ -296,7 +296,10 @@ export default (props: Props) => {
           setGrabbing(false)
           ghostRef.style.display = 'none'
         }
-      }, {filterTaps: true})
+      }, {
+        filterTaps: true,
+        eventOptions: {passive: false},
+      })
 
       onCleanup(() => {
         gesture.destroy()
