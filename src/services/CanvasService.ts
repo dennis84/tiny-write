@@ -371,7 +371,7 @@ export class CanvasService {
     }
   }
 
-  newFile(link?: CanvasLinkElement) {
+  newFile(link?: CanvasLinkElement, point?: Vec2d) {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
 
@@ -379,7 +379,7 @@ export class CanvasService {
     file.parentId = currentCanvas.parentId
 
     this.setState('files', [...this.store.files, file])
-    this.addFile(file, link)
+    this.addFile(file, link, point)
     this.ctrl.tree.create()
     remote.info('💾 New file added')
   }

@@ -1,4 +1,5 @@
-import {For, Show} from 'solid-js'
+import {For, Show, createSignal, onMount} from 'solid-js'
+import {Portal} from 'solid-js/web'
 import {styled} from 'solid-styled-components'
 import {Vec2d} from '@tldraw/primitives'
 import {CanvasLinkElement, File, isFile, useState} from '@/state'
@@ -16,32 +17,39 @@ const Backdrop = styled('div')`
 
 export default () => {
   const [, ctrl] = useState()
+  const [contextMenu, setContextMenu] = createSignal<Vec2d | undefined>()
 
-  const coordsStyle = (link: CanvasLinkElement) => {
+  const coordsStyle = (link?: CanvasLinkElement, cm?: Vec2d) => {
     const currentCanvas = ctrl.canvas.currentCanvas
     if (!currentCanvas) return
 
-    const {zoom, point: [px, py]} = currentCanvas.camera
-    const point = new Vec2d(px, py)
-    const {x, y} = point.addXY(link.toX ?? 0, link.toY ?? 0).mul(zoom)
+    const p = link ? new Vec2d(link.toX, link.toY) : cm
+    if (!p) return
+
+    const {camera} = currentCanvas
+    const {x, y} = Vec2d.FromArray(camera.point).add(p).mul(camera.zoom)
 
     return {left: `${x}px`, top: `${y}px`}
   }
 
   const onBackdropClick = () => {
     ctrl.canvas.removeDeadLinks()
+    setContextMenu(undefined)
   }
 
-  const onNewFile = (link: CanvasLinkElement) => {
-    ctrl.canvas.newFile(link)
+  const onNewFile = (link?: CanvasLinkElement, cm?: Vec2d) => {
+    ctrl.canvas.newFile(link, cm)
     ctrl.canvas.removeDeadLinks()
+    setContextMenu(undefined)
   }
 
   const schema = createSchema(createExtensions({ctrl, markdown: false}))
 
-  const FileName = (p: {file: File; link: CanvasLinkElement}) => {
+  const FileName = (p: {file: File; link?: CanvasLinkElement; cm?: Vec2d}) => {
     const onClick = () => {
-      ctrl.canvas.addFile(p.file, p.link)
+      ctrl.canvas.addFile(p.file, p.link, p.cm)
+      ctrl.canvas.removeDeadLinks()
+      setContextMenu(undefined)
     }
 
     return (
@@ -72,17 +80,35 @@ export default () => {
     return files
   }
 
+  const getContextMenu = (): [CanvasLinkElement | undefined, Vec2d | undefined] | undefined => {
+    const deadLink = ctrl.canvas.findDeadLinks()[0]
+    const cm = contextMenu()
+    if (!deadLink && !cm) return
+    return [deadLink, cm]
+  }
+
+  onMount(() => {
+    const onContextMenu = (e: MouseEvent) => {
+      e.preventDefault()
+      setContextMenu(ctrl.canvas.getPosition([e.clientX, e.clientY]))
+    }
+
+    document.oncontextmenu = onContextMenu
+  })
+
   return (
-    <Show when={ctrl.canvas.findDeadLinks()[0]} keyed>
-      {(link) => <>
-        <Backdrop onClick={onBackdropClick} />
-        <div class="canvas-link-end-tooltip" style={coordsStyle(link)}>
-          <div onClick={() => onNewFile(link)} data-testid="link_end_new_file">🆕 New file</div>
+    <Show when={getContextMenu()} keyed>
+      {([link, cm]) => <>
+        <Portal mount={document.getElementById('container') ?? undefined}>
+          <Backdrop onClick={onBackdropClick} />
+        </Portal>
+        <div class="canvas-link-end-tooltip" style={coordsStyle(link, cm)}>
+          <div onClick={() => onNewFile(link, cm)} data-testid="link_end_new_file">🆕 New file</div>
           <Show when={getFiles()}>
             {(files) => <>
               <hr class="divider" />
               <For each={files()}>
-                {(file: File) => <FileName file={file} link={link} />}
+                {(file: File) => <FileName file={file} link={link} cm={cm} />}
               </For>
             </>}
           </Show>

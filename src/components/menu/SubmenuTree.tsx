@@ -420,7 +420,7 @@ export default (props: Props) => {
           </Link>
         </Show>
       </Sub>
-      <Portal mount={document.getElementById('container') as HTMLElement}>
+      <Portal mount={document.getElementById('container') ?? undefined}>
         <Show when={grabbing()}>
           <GhostContainer>
             <Ghost ref={ghostRef} />
