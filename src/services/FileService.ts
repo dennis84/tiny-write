@@ -1,5 +1,7 @@
 import {SetStoreFunction, Store} from 'solid-js/store'
+import {Node, Schema} from 'prosemirror-model'
 import * as Y from 'yjs'
+import {yDocToProsemirrorJSON} from 'y-prosemirror'
 import {v4 as uuidv4} from 'uuid'
 import {File, FileText, Mode, ServiceError, State, isLinkElement} from '@/state'
 import * as remote from '@/remote'
@@ -228,6 +230,14 @@ export class FileService {
 
     this.saveFile(updateFile)
     remote.info('File restored')
+  }
+
+  getTitle(schema: Schema, file: File, len = 25): string {
+    const ydoc = new Y.Doc({gc: false})
+    Y.applyUpdate(ydoc, file.ydoc)
+    const state = yDocToProsemirrorJSON(ydoc, file.id)
+    const doc = Node.fromJSON(schema, state)
+    return doc?.firstChild?.textContent.substring(0, len) || 'Untitled'
   }
 
   private createYdoc(bytes?: Uint8Array): Y.Doc {

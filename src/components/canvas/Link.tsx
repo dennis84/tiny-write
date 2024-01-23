@@ -72,9 +72,10 @@ export default ({element}: {element: CanvasLinkElement}) => {
   onMount(() => {
     const linkGesture = new DragGesture(pathRef, ({event, initial, first, last, movement, memo}) => {
       event.stopPropagation()
-      const {point, zoom} = currentCanvas.camera
-      const p = Vec2d.FromArray(point)
-      const i = Vec2d.FromArray(initial).div(zoom).sub(p)
+      const {zoom} = currentCanvas.camera
+      const i = ctrl.canvas.getPosition(initial)
+      if (!i) return
+
       let [fromId, fromEdge] = memo ?? []
 
       if (first) {

@@ -384,7 +384,7 @@ export class CanvasService {
     remote.info('💾 New file added')
   }
 
-  addFile(file: File, link?: CanvasLinkElement, point?: [number, number]) {
+  addFile(file: File, link?: CanvasLinkElement, point?: Vec2d) {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
 
@@ -429,18 +429,14 @@ export class CanvasService {
           y -= height
         }
       }
+    } else if (point) {
+      [x, y] = point.toArray()
     } else {
-      if (point) {
-        const p = Vec2d.FromArray(point)
-        x = (p.x / camera.zoom) - camera.point[0]
-        y = (p.y / camera.zoom) - camera.point[1]
-      } else {
-        const center = new Vec2d(window.innerWidth / 2, window.innerHeight / 2).toFixed()
-        const p = Vec2d.FromArray(camera.point)
-        const target = center.div(camera.zoom).sub(p).subXY(width / 2, height / 2)
-        x = target.x
-        y = target.y
-      }
+      const center = new Vec2d(window.innerWidth / 2, window.innerHeight / 2).toFixed()
+      const p = Vec2d.FromArray(camera.point)
+      const target = center.div(camera.zoom).sub(p).subXY(width / 2, height / 2)
+      x = target.x
+      y = target.y
     }
 
     const element: CanvasEditorElement = {
@@ -480,8 +476,7 @@ export class CanvasService {
 
   addImage(
     src: string,
-    pageX: number,
-    pageY: number,
+    point: Vec2d,
     imageWidth: number,
     imageHeight: number
   ) {
@@ -490,9 +485,7 @@ export class CanvasService {
 
     const width = 300
     const height = width * imageHeight / imageWidth
-    const {zoom, point} = currentCanvas.camera
-    const p = Vec2d.FromArray(point)
-    const {x, y} = new Vec2d(pageX, pageY).div(zoom).sub(p).subXY(width / 2, height / 2)
+    const {x, y} = point.subXY(width / 2, height / 2)
 
     const id = uuidv4()
     const element: CanvasImageElement = {
@@ -518,8 +511,7 @@ export class CanvasService {
   addVideo(
     src: string,
     mime: string,
-    pageX: number,
-    pageY: number,
+    point: Vec2d,
     imageWidth: number,
     imageHeight: number
   ) {
@@ -528,9 +520,7 @@ export class CanvasService {
 
     const width = 300
     const height = width * imageHeight / imageWidth
-    const {zoom, point} = currentCanvas.camera
-    const p = Vec2d.FromArray(point)
-    const {x, y} = new Vec2d(pageX, pageY).div(zoom).sub(p).subXY(width / 2, height / 2)
+    const {x, y} = point.subXY(width / 2, height / 2)
 
     const id = uuidv4()
     const element: CanvasVideoElement = {
@@ -843,6 +833,14 @@ export class CanvasService {
   createBox(el: CanvasBoxElement) {
     const {x, y, width, height} = el
     return new Box2d(x, y, width, height)
+  }
+
+  getPosition([x, y]: [number, number]): Vec2d | undefined {
+    const currentCanvas = this.currentCanvas
+    if (!currentCanvas) return
+    const {camera} = currentCanvas
+    const point = new Vec2d(x, y)
+    return point.div(camera.zoom).sub(Vec2d.FromArray(camera.point))
   }
 
   async saveCanvas(canvas = this.currentCanvas) {

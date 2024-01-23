@@ -70,16 +70,19 @@ export default (props: {state: State}) => {
             } else if (store.mode === Mode.Canvas) {
               const p = await remote.toRelativePath(path)
               const src = await ctrl.image.getImagePath(p)
+              const point = ctrl.canvas.getPosition([x, y])
+              if (!point) return
+
               if (isImage) {
                 const img = new Image()
                 img.onload = () => {
-                  ctrl.canvas.addImage(src, x, y, img.width, img.height)
+                  ctrl.canvas.addImage(src, point, img.width, img.height)
                 }
                 img.src = src
               } else {
                 const video = document.createElement('video')
                 video.addEventListener('loadedmetadata', () => {
-                  ctrl.canvas.addVideo(p, mime, x, y, video.videoWidth, video.videoHeight)
+                  ctrl.canvas.addVideo(p, mime, point, video.videoWidth, video.videoHeight)
                 })
                 video.src = src
               }
@@ -138,7 +141,9 @@ export default (props: {state: State}) => {
               const img = new Image()
               img.src = data
               img.onload = () => {
-                ctrl.canvas.addImage(data, x, y, img.width, img.height)
+                const point = ctrl.canvas.getPosition([x, y])
+                if (!point) return
+                ctrl.canvas.addImage(data, point, img.width, img.height)
               }
             }
           }

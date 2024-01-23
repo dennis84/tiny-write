@@ -1,9 +1,6 @@
-import {For, Show, createEffect} from 'solid-js'
+import {For, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {Vec2d} from '@tldraw/primitives'
-import {Node} from 'prosemirror-model'
-import * as Y from 'yjs'
-import {yDocToProsemirrorJSON} from 'y-prosemirror'
 import {CanvasLinkElement, File, isFile, useState} from '@/state'
 import {createExtensions, createSchema} from '@/prosemirror-setup'
 
@@ -18,7 +15,7 @@ const Backdrop = styled('div')`
 `
 
 export default () => {
-  const [store, ctrl] = useState()
+  const [, ctrl] = useState()
 
   const coordsStyle = (link: CanvasLinkElement) => {
     const currentCanvas = ctrl.canvas.currentCanvas
@@ -43,18 +40,13 @@ export default () => {
   const schema = createSchema(createExtensions({ctrl, markdown: false}))
 
   const FileName = (p: {file: File; link: CanvasLinkElement}) => {
-    const ydoc = new Y.Doc({gc: false})
-    Y.applyUpdate(ydoc, p.file.ydoc)
-    const state = yDocToProsemirrorJSON(ydoc, p.file.id)
-    const doc = Node.fromJSON(schema, state)
-
     const onClick = () => {
       ctrl.canvas.addFile(p.file, p.link)
     }
 
     return (
       <div onClick={onClick}>
-        🔗 {doc.textBetween(0, Math.min(20, doc.content.size), ' ')}
+        🔗 {ctrl.file.getTitle(schema, p.file)}
       </div>
     )
   }

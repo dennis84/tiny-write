@@ -2,9 +2,6 @@ import {For, Show, createEffect, createSignal, onCleanup, onMount} from 'solid-j
 import {Portal} from 'solid-js/web'
 import {unwrap} from 'solid-js/store'
 import {css, styled} from 'solid-styled-components'
-import {Node} from 'prosemirror-model'
-import * as Y from 'yjs'
-import {yDocToProsemirrorJSON} from 'y-prosemirror'
 import {DragGesture} from '@use-gesture/vanilla'
 import {File, Mode, isFile, useState} from '@/state'
 import {createExtensions, createSchema} from '@/prosemirror-setup'
@@ -221,18 +218,12 @@ export default (props: Props) => {
       ctrl.tree.collapse(p.node)
     }
 
-    const getTitle = (doc?: Node) => doc?.firstChild?.textContent.substring(0, 25) || 'Untitled'
-
     const getCurrentId = () =>
       state.mode === Mode.Editor ? ctrl.file.currentFile?.id : ctrl.canvas.currentCanvas?.id
 
     onMount(() => {
       if (isFile(p.node.item)) {
-        const ydoc = new Y.Doc({gc: false})
-        Y.applyUpdate(ydoc, p.node.item.ydoc)
-        const state = yDocToProsemirrorJSON(ydoc, p.node.item.id)
-        const doc = Node.fromJSON(schema, state)
-        setTitle(getTitle(doc))
+        setTitle(ctrl.file.getTitle(schema, p.node.item))
       } else {
         setTitle('Canvas 🧑‍🎨')
       }
@@ -291,7 +282,8 @@ export default (props: Props) => {
             deleteNode(p.node)
           } else if (ds?.pos === 'open') {
             if (state.mode === Mode.Canvas && isFile(p.node.item)) {
-              ctrl.canvas.addFile(p.node.item, undefined, [x, y])
+              const point = ctrl.canvas.getPosition([x, y])
+              ctrl.canvas.addFile(p.node.item, undefined, point)
             }
           }
 
@@ -314,7 +306,7 @@ export default (props: Props) => {
       const currentFile = ctrl.file.currentFile
       if (currentFile?.id !== p.node.item.id || !currentFile.editorView) return
       state.lastTr
-      setTitle(getTitle(currentFile.editorView.state.doc))
+      setTitle(ctrl.file.getTitle(schema, currentFile))
     })
 
     return (
