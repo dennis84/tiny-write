@@ -1,3 +1,4 @@
+import {useState} from '@/state'
 import {Button, ButtonGroup} from '../Button'
 import {Drawer, Label, Note} from './Menu'
 import SubmenuTree from './SubmenuTree'
@@ -7,8 +8,22 @@ interface Props {
 }
 
 export const Bin = (props: Props) => {
+  const [state, ctrl] = useState()
+
   const onBack = () => {
     props.onBack()
+  }
+
+  const onEmptyBin = () => {
+    state.files.forEach((it) => {
+      if (it.deleted) ctrl.file.deleteForever(it.id)
+    })
+
+    state.canvases.forEach((it) => {
+      if (it.deleted) ctrl.canvas.deleteForever(it.id)
+    })
+
+    ctrl.tree.create()
   }
 
   return (
@@ -20,6 +35,7 @@ export const Bin = (props: Props) => {
       <SubmenuTree showDeleted={true} />
       <ButtonGroup>
         <Button onClick={onBack}>↩ Back</Button>
+        <Button onClick={onEmptyBin}>⚠️ Empty bin</Button>
       </ButtonGroup>
     </Drawer>
   )

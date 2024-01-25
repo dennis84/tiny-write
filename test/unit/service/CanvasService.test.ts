@@ -2,7 +2,7 @@ import {beforeEach, expect, test, vi} from 'vitest'
 import {mock, mockDeep} from 'vitest-mock-extended'
 import {createStore} from 'solid-js/store'
 import {EditorView} from 'prosemirror-view'
-import {Box2d} from '@tldraw/primitives'
+import {Box2d, Vec2d} from '@tldraw/primitives'
 import {
   Canvas,
   CanvasEditorElement,
@@ -551,7 +551,7 @@ test('addImage', () => {
   }))
 
   const service = new CanvasService(ctrl, store, setState)
-  service.addImage('/path/1.png', 100, 100, 1000, 2000)
+  service.addImage('/path/1.png', new Vec2d(100, 100), 1000, 2000)
 
   expect(service.currentCanvas?.elements.length).toBe(1)
   const imageEl = service.currentCanvas?.elements[0] as CanvasImageElement
@@ -569,7 +569,7 @@ test('addVideo', () => {
   }))
 
   const service = new CanvasService(ctrl, store, setState)
-  service.addVideo('/path/1.mp4', 'video/mp4', 100, 100, 1000, 2000)
+  service.addVideo('/path/1.mp4', 'video/mp4', new Vec2d(100, 100), 1000, 2000)
 
   expect(service.currentCanvas?.elements.length).toBe(1)
   const el = service.currentCanvas?.elements[0] as CanvasVideoElement
