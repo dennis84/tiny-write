@@ -3,7 +3,7 @@ import {Portal} from 'solid-js/web'
 import {unwrap} from 'solid-js/store'
 import {css, styled} from 'solid-styled-components'
 import {DragGesture} from '@use-gesture/vanilla'
-import {File, Mode, isFile, useState} from '@/state'
+import {Mode, isFile, useState} from '@/state'
 import {createExtensions, createSchema} from '@/prosemirror-setup'
 import {TreeNode, TreeNodeItem} from '@/services/TreeService'
 import {Label, Link, Sub, Text} from './Menu'
@@ -191,8 +191,17 @@ export default (props: Props) => {
     closeTooltip()
   }
 
-  const isOnCanvas = (file: File): boolean =>
-    ctrl.canvas.currentCanvas?.elements.some((it) => it.id === file.id) ?? false
+  const onFocus = () => {
+    const id = selected()?.item.id
+    if (!id) return
+    ctrl.canvas.focus(id)
+    closeTooltip()
+  }
+
+  const isOnCanvas = (item?: TreeNodeItem): boolean =>
+    state.mode === Mode.Canvas &&
+    isFile(item) &&
+    (ctrl.canvas.currentCanvas?.elements.some((it) => it.id === item.id) ?? false)
 
   onMount(() => {
     ctrl.tree.create()
@@ -233,7 +242,7 @@ export default (props: Props) => {
       const gesture = new DragGesture(ref, ({xy: [x, y], last, first, event}) => {
         event.preventDefault()
         let el = document.elementFromPoint(x, y) as HTMLElement
-        if (el.tagName === 'SPAN') el = el.parentNode as HTMLElement
+        if (el?.tagName === 'SPAN') el = el.parentNode as HTMLElement
         const box = el?.getBoundingClientRect()
         const targetId = el?.dataset.id
 
@@ -257,9 +266,9 @@ export default (props: Props) => {
           } else {
             setDropState({pos: 'add', targetId})
           }
-        } else if (el.closest('svg')) {
+        } else if (el?.closest('svg')) {
           setDropState({pos: 'open'})
-        } else if (el.closest('#bin')) {
+        } else if (el?.closest('#bin')) {
           setDropState({pos: 'delete'})
         } else {
           setDropState(undefined)
@@ -302,11 +311,10 @@ export default (props: Props) => {
     })
 
     createEffect(() => {
-      if (state.mode !== Mode.Editor) return
-      const currentFile = ctrl.file.currentFile
-      if (currentFile?.id !== p.node.item.id || !currentFile.editorView) return
       state.lastTr
-      setTitle(ctrl.file.getTitle(schema, currentFile))
+      if (isFile(p.node.item)) {
+        setTitle(ctrl.file.getTitle(schema, p.node.item))
+      }
     })
 
     return (
@@ -318,9 +326,6 @@ export default (props: Props) => {
           -webkit-touch-callout: none;
           -webkit-user-select: none;
           align-items: flex-start;
-          ${state.mode === Mode.Canvas && isFile(p.node.item) && isOnCanvas(p.node.item) ? `
-            opacity: 0.5;
-          ` : ''}
           ${props.showDeleted && !p.node.item.deleted ? `
             opacity: 0.3;
             pointer-events: none;
@@ -360,6 +365,7 @@ export default (props: Props) => {
           `}
         >
           {title()}
+          <Show when={isOnCanvas(p.node.item)}> ✅</Show>
         </TreeLinkTitle>
         <LinkMenu
           ref={anchor}
@@ -432,6 +438,9 @@ export default (props: Props) => {
       </Portal>
       <Show when={toolipAnchor() !== undefined}>
         <Tooltip anchor={toolipAnchor()} onClose={() => closeTooltip()}>
+          <Show when={isOnCanvas(selected()?.item)}>
+            <div onClick={onFocus} data-testid="focus_file">🎯 Focus file</div>
+          </Show>
           <Show when={!selected()?.item.deleted && isFile(selected()?.item)}>
             <div onClick={onAddFile} data-testid="add_file">✍️ Add file</div>
             <div onClick={onAddCanvas} data-testid="add_canvas">🧑‍🎨 Add canvas</div>
