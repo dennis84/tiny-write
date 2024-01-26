@@ -18,7 +18,7 @@ export default ({onClick}: {onClick: () => void}) => {
   const [, ctrl] = useState()
 
   return (
-    <Grid onClick={onClick} version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <Grid id="grid" onClick={onClick} version="1.1" xmlns="http://www.w3.org/2000/svg">
       <defs>
         {STEPS.map(([r, size], i) => {
           const grid = 10

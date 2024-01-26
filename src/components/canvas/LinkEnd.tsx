@@ -89,6 +89,11 @@ export default () => {
 
   onMount(() => {
     const onContextMenu = (e: MouseEvent) => {
+      const target = e.target as HTMLElement
+      if (!target.closest('#grid')) {
+        return
+      }
+
       e.preventDefault()
       setContextMenu(ctrl.canvas.getPosition([e.clientX, e.clientY]))
     }

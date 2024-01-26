@@ -131,7 +131,7 @@ export default () => {
   })
 
   return (
-    <Container ref={ref} data-testid="canvas_container">
+    <Container ref={ref} id="content" data-testid="canvas_container">
       <Show when={isTauri()}><DragArea data-tauri-drag-region="true" /></Show>
       <LinkEnd />
       <Select target={() => ref} />
