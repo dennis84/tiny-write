@@ -97,6 +97,7 @@ interface Props {
 
 export default (props: Props) => {
   let ghostRef!: HTMLDivElement
+  let binRef!: HTMLButtonElement
 
   const [state, ctrl] = useState()
   const [dropState, setDropState] = createSignal<DropState>()
@@ -194,6 +195,7 @@ export default (props: Props) => {
   const onFocus = () => {
     const id = selected()?.item.id
     if (!id) return
+    props.maybeHide?.()
     ctrl.canvas.focus(id)
     closeTooltip()
   }
@@ -266,9 +268,9 @@ export default (props: Props) => {
           } else {
             setDropState({pos: 'add', targetId})
           }
-        } else if (el?.closest('svg')) {
+        } else if (el?.closest('#grid')) {
           setDropState({pos: 'open'})
-        } else if (el?.closest('#bin')) {
+        } else if (el === binRef) {
           setDropState({pos: 'delete'})
         } else {
           setDropState(undefined)
@@ -414,7 +416,7 @@ export default (props: Props) => {
         <Tree tree={ctrl.tree.tree} level={0} />
         <Show when={!props.showDeleted}>
           <Link
-            id="bin"
+            ref={binRef}
             onClick={props.onBin}
             data-testid="bin"
             class={dropState()?.pos === 'delete' ? css`
