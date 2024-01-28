@@ -64,7 +64,7 @@ class ImageView {
   ) {
     this.container = document.createElement('span')
     this.container.classList.add('image-container')
-    if (node.attrs.width) this.setWidth(node.attrs.width)
+    if (node.attrs.width) this.setWidth(Number(node.attrs.width))
 
     let source: HTMLImageElement | HTMLSourceElement
     if (node.type.name === 'video') {
@@ -112,7 +112,11 @@ class ImageView {
     this.dom = this.container
   }
 
-  update() {
+  update(node: Node) {
+    if (Number(node.attrs.width) !== this.width) {
+      this.setWidth(Number(node.attrs.width))
+    }
+
     // Don't reinitialize view
     return true
   }
@@ -135,7 +139,8 @@ class ImageView {
     if (nodePos === undefined) return
     tr.setNodeMarkup(nodePos, undefined, {
       ...this.node.attrs,
-      width: this.width,
+      // Only string attributes are cloned in yjs
+      width: String(this.width),
     })
 
     this.view.dispatch(tr)
