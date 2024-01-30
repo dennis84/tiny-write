@@ -65,10 +65,10 @@ export interface Window {
 }
 
 export enum ElementType {
-  Editor,
-  Link,
-  Image,
-  Video,
+  Editor = 'editor',
+  Link = 'link',
+  Image = 'image',
+  Video = 'video',
 }
 
 export enum EdgeType {
