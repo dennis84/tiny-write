@@ -409,12 +409,10 @@ const proseMirror = (props: Props) => `
     }
     .image-container {
       position: relative;
-      float: left;
       display: flex;
       justify-content: center;
       align-items: center;
       max-width: 100%;
-      margin-right: 10px;
       cursor: var(--cursor-default);
       line-height: 0;
       &.error {
@@ -437,6 +435,23 @@ const proseMirror = (props: Props) => `
         bottom: -5px;
         right: -5px;
         cursor: nwse-resize;
+        touch-action: none;
+      }
+      &.float-left {
+        float: left;
+        margin-right: 10px;
+      }
+      &.float-right {
+        float: right;
+        margin-left: 10px;
+        .resize-handle {
+          left: -5px;
+          right: auto;
+          cursor: nesw-resize;
+        }
+      }
+      &.center {
+        margin: 10px auto;
       }
     }
     .ProseMirror-selectednode .image-container,

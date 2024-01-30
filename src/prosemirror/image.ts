@@ -1,8 +1,16 @@
 import {Node} from 'prosemirror-model'
 import {EditorView} from 'prosemirror-view'
+import {DragGesture} from '@use-gesture/vanilla'
 import {isTauri} from '@/env'
 import {ProseMirrorExtension} from '@/prosemirror'
 import {Ctrl} from '@/services'
+import {Mode} from '@/state'
+
+export enum Align {
+  FloatLeft = 'float-left',
+  FloatRight = 'float-right',
+  Center = 'center',
+}
 
 const isUrl = (str: string) => {
   try {
@@ -20,6 +28,7 @@ const imageSchema = {
     alt: {default: null},
     title: {default: null},
     width: {default: null},
+    align: {default: Align.FloatLeft}
   },
   group: 'inline',
   draggable: true,
@@ -38,6 +47,7 @@ const videoSchema = {
     type: {},
     title: {default: null},
     width: {default: null},
+    align: {default: Align.FloatLeft}
   },
   group: 'inline',
   draggable: true,
@@ -54,17 +64,20 @@ class ImageView {
   contentDOM?: HTMLElement
   container: HTMLElement
   handle: HTMLElement
-  width?: number
+  width!: number
+  align!: string
+  resize?: DragGesture
 
   constructor(
-    private node: Node,
+    node: Node,
     private view: EditorView,
     private getPos: () => number | undefined,
     private ctrl: Ctrl,
   ) {
     this.container = document.createElement('span')
-    this.container.classList.add('image-container')
-    if (node.attrs.width) this.setWidth(Number(node.attrs.width))
+    this.width = node.attrs.width ?? 0
+    this.align = node.attrs.align
+    this.container.classList.add('image-container', this.align)
 
     let source: HTMLImageElement | HTMLSourceElement
     if (node.type.name === 'video') {
@@ -93,6 +106,7 @@ class ImageView {
       !isUrl(node.attrs.src)
     ) {
       ctrl.image.getImagePath(node.attrs.src, this.ctrl?.file?.currentFile?.path).then((p) => {
+        this.container.classList.remove('error')
         source.setAttribute('src', p)
       })
     } else {
@@ -101,49 +115,57 @@ class ImageView {
 
     this.handle = document.createElement('span')
     this.handle.className = 'resize-handle'
-    this.handle.addEventListener('mousedown', (e) => {
-      if (e.buttons !== 1) return
-      e.preventDefault()
-      window.addEventListener('mousemove', this.onResize)
-      window.addEventListener('mouseup', this.onResizeEnd)
-    })
+
+    this.resize = new DragGesture(this.handle, ({event, first, last, memo, movement: [mx]}) => {
+      event.preventDefault()
+      if (first) {
+        let w = this.container.getBoundingClientRect().width
+        if (ctrl.app.mode === Mode.Canvas) {
+          const zoom = ctrl.canvas.currentCanvas?.camera.zoom ?? 1
+          w /= zoom
+        }
+
+        memo = w
+      }
+
+      this.width = memo + (this.align === Align.FloatRight ? -mx : mx)
+      this.setWidth(this.width)
+
+      if (last) {
+        const tr = this.view.state.tr
+        const nodePos = this.getPos()
+        if (nodePos === undefined) return
+        // Only string attributes are cloned in yjs
+        tr.setNodeAttribute(nodePos, 'width', String(this.width))
+        this.view.dispatch(tr)
+      }
+      return memo
+    }, {eventOptions: {passive: false}})
 
     this.container.appendChild(this.handle)
     this.dom = this.container
+    this.update(node)
   }
 
   update(node: Node) {
-    if (Number(node.attrs.width) !== this.width) {
-      this.setWidth(Number(node.attrs.width))
+    if (node.attrs.width) this.setWidth(Number(node.attrs.width))
+
+    if (node.attrs.align !== this.align) {
+      this.container.classList.remove(this.align)
+      this.container.classList.add(node.attrs.align)
+      this.align = node.attrs.align
     }
 
     // Don't reinitialize view
     return true
   }
 
+  destroy() {
+    this.resize?.destroy()
+  }
+
   private setWidth(width: number) {
     this.container.style.width = width + 'px'
-  }
-
-  private onResize = (e: MouseEvent) => {
-    this.width = e.pageX - this.container.getBoundingClientRect().left
-    this.setWidth(this.width)
-  }
-
-  private onResizeEnd = () => {
-    window.removeEventListener('mousemove', this.onResize)
-    window.removeEventListener('mouseup', this.onResizeEnd)
-    if (!this.width) return
-    const tr = this.view.state.tr
-    const nodePos = this.getPos()
-    if (nodePos === undefined) return
-    tr.setNodeMarkup(nodePos, undefined, {
-      ...this.node.attrs,
-      // Only string attributes are cloned in yjs
-      width: String(this.width),
-    })
-
-    this.view.dispatch(tr)
   }
 }
 

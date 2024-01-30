@@ -8,6 +8,7 @@ import {setBlockType} from 'prosemirror-commands'
 import {arrow, autoUpdate, computePosition, flip, offset, shift} from '@floating-ui/dom'
 import {CanvasEditorElement, Mode, isEditorElement, useState} from '@/state'
 import * as remote from '@/remote'
+import {Align} from '@/prosemirror/image'
 
 const TooltipEl = styled('div')`
   position: absolute;
@@ -149,6 +150,34 @@ export const BlockTooltip = () => {
     view.focus()
   }
 
+  const onAlign = (align: Align) => () => {
+    const block = selectedBlock()
+    if (!block) return
+    const view = getEditorView()
+    if (!view) return
+
+    const tr = view.state.tr
+    block.node.descendants((n, p) => {
+      if (n.type.name !== 'image' && n.type.name !== 'video') return
+      const pos = block.pos + p + 1
+      tr.setNodeAttribute(pos, 'align', align)
+    })
+
+    view.dispatch(tr)
+  }
+
+  const hasImage = () => {
+    const block = selectedBlock()
+    if (!block) return
+    let result = false
+    block.node.descendants((n) => {
+      if (n.type.name === 'image' || n.type.name === 'video') result = true
+      return result
+    })
+
+    return result
+  }
+
   createEffect(() => {
     store.lastTr
     const view = getEditorView()
@@ -229,6 +258,12 @@ export const BlockTooltip = () => {
                 {block().node.attrs.hidden ? '🙉 Show code' : '🙈 Hide code'}
               </div>
             </Show>
+            <hr class="divider" />
+          </Show>
+          <Show when={hasImage()}>
+            <div onClick={onAlign(Align.FloatLeft)}>👈 Float left</div>
+            <div onClick={onAlign(Align.FloatRight)}>👉 Float right</div>
+            <div onClick={onAlign(Align.Center)}>🖖 Center</div>
             <hr class="divider" />
           </Show>
           <div onClick={onToPlain}>🧽 remove text formats</div>
