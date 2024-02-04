@@ -261,9 +261,9 @@ export const BlockTooltip = () => {
             <hr class="divider" />
           </Show>
           <Show when={hasImage()}>
-            <div onClick={onAlign(Align.FloatLeft)}>👈 Float left</div>
-            <div onClick={onAlign(Align.FloatRight)}>👉 Float right</div>
-            <div onClick={onAlign(Align.Center)}>🖖 Center</div>
+            <div onClick={onAlign(Align.FloatLeft)} data-testid="align_float_left">👈 Float left</div>
+            <div onClick={onAlign(Align.FloatRight)} data-testid="align_float_right">👉 Float right</div>
+            <div onClick={onAlign(Align.Center)} data-testid="align_center">🖖 Center</div>
             <hr class="divider" />
           </Show>
           <div onClick={onToPlain}>🧽 remove text formats</div>

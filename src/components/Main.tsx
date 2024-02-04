@@ -1,6 +1,7 @@
 import {onCleanup, createEffect, onMount, Switch, Match, ErrorBoundary} from 'solid-js'
 import {createMutable} from 'solid-js/store'
 import {appWindow} from '@tauri-apps/api/window'
+import {WheelGesture} from '@use-gesture/vanilla'
 import {Mode, State, StateContext} from '@/state'
 import {createCtrl} from '@/services'
 import * as remote from '@/remote'
@@ -137,7 +138,7 @@ export default (props: {state: State}) => {
               const currentFile = ctrl.file.currentFile
               if (!currentFile?.editorView) return
               ctrl.image.insert(data, x, y)
-            } else if (store.mode === Mode.Canvas) {
+            } else {
               const img = new Image()
               img.src = data
               img.onload = () => {
@@ -165,19 +166,16 @@ export default (props: {state: State}) => {
   createEffect(async () => {
     if (store.mode === Mode.Canvas) return
 
-    const onWheel = (e: WheelEvent) => {
-      if (e.ctrlKey && e.buttons === 0) {
-        e.preventDefault()
-        const max = Math.min(document.body.clientWidth, 1800)
-        const currentWidth = store.config.contentWidth
-        ctrl.config.updateContentWidth(Math.max(400, Math.min(max, currentWidth - e.deltaY)))
-        return
-      }
-    }
+    const wheel = new WheelGesture(scrollRef, ({ctrlKey, event, delta: [, dy]}) => {
+      if (!ctrlKey) return
+      event.preventDefault()
+      const max = Math.min(document.body.clientWidth, 1800)
+      const currentWidth = store.config.contentWidth
+      ctrl.config.updateContentWidth(Math.max(400, Math.min(max, currentWidth - dy)))
+    }, {eventOptions: {passive: false}})
 
-    document.addEventListener('wheel', onWheel, {passive: false})
     onCleanup(() => {
-      document.removeEventListener('wheel', onWheel)
+      wheel.destroy()
     })
   })
 

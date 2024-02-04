@@ -1,5 +1,5 @@
-import {Page, test, expect} from '@playwright/test'
-import {delay, move} from '../utils'
+import {test, expect} from '@playwright/test'
+import {delay, move, openBlockMenu} from '../utils'
 
 const code = "const foo='bar'"
 
@@ -9,15 +9,6 @@ test.beforeEach(async ({page}) => {
   await page.goto('/')
   await page.getByTestId('initialized').waitFor()
 })
-
-const openBlockMenu = async (page: Page, nth: number) => {
-  const loc = page.locator(`.ProseMirror *:nth-child(${nth}) .block-handle`)
-  const box = await loc.boundingBox()
-  if (!box) return
-  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2)
-  await page.mouse.down()
-  await page.mouse.up()
-}
 
 test('code block', async ({page}) => {
   await page.locator('.ProseMirror').pressSequentially('```javascript ', {delay})

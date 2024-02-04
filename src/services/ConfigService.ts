@@ -141,8 +141,8 @@ export class ConfigService {
       primaryBackground: '#9854f1',
       primaryForeground: '#fff',
       selection: '#3760bf22',
-      tooltipBackground: '#cbcbd0',
-      border: '#9D9EA1',
+      tooltipBackground: '#dfdfe2',
+      border: '#9eacce',
       dark: false,
     },
     'soft-era': {
