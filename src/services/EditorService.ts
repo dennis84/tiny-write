@@ -34,7 +34,9 @@ export class EditorService {
     }
 
     const doc = this.store.collab?.snapshot ?? this.store.collab?.ydoc
-    const type = doc!.getXmlFragment(currentFile.id)
+    if (!doc) return // If error during init
+
+    const type = doc.getXmlFragment(currentFile.id)
     const extensions = createExtensions({
       ctrl: this.ctrl,
       markdown: currentFile?.markdown,
@@ -185,6 +187,7 @@ export class EditorService {
     if (!currentFile?.id) return
     const lastModified = new Date()
     this.ctrl.file.updateFile(currentFile.id, {lastModified, path})
+    this.saveEditor()
   }
 
   async activateFile(state: State, file: File): Promise<State> {

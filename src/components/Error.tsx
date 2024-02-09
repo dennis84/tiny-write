@@ -23,22 +23,22 @@ const GeneralError = () => {
     window.location.reload()
   }
 
-  const onDeleteFile = () => {
+  const onDeleteFile = async () => {
     const currentFile = ctrl.file.currentFile
     if (!currentFile) return
-    ctrl.file.deleteForever(currentFile.id)
+    await ctrl.file.deleteForever(currentFile.id)
     window.location.reload()
   }
 
-  const onDeleteCanvas = () => {
+  const onDeleteCanvas = async () => {
     const currentCanvas = ctrl.canvas.currentCanvas
     if (!currentCanvas) return
-    ctrl.canvas.deleteForever(currentCanvas.id)
+    await ctrl.canvas.deleteForever(currentCanvas.id)
     window.location.reload()
   }
 
-  const onReset = () => {
-    ctrl.app.reset()
+  const onReset = async () => {
+    await ctrl.app.reset()
     window.location.reload()
   }
 

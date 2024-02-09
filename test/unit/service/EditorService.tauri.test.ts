@@ -140,3 +140,23 @@ test('openFile - path and text', async () => {
     expect(getText(ctrl)).toBe('File1')
   })
 })
+
+test('init - error', async () => {
+  mockIPC((cmd) => {
+    if (cmd === 'resolve_path') throw new Error('Fail')
+  })
+
+  vi.mocked(DB.getFiles).mockResolvedValue([
+    {id: '1', path: 'file1', ydoc: createYUpdate('1', 'Test'), lastModified, active: true},
+    {id: '2', path: 'file2', ydoc: createYUpdate('2', 'Test 2'), lastModified}
+  ])
+
+  const {ctrl, store} = createCtrl(createState())
+  const target = document.createElement('div')
+  await ctrl.app.init()
+  ctrl.editor.renderEditor(target)
+
+  expect(store.error).toBeDefined()
+  expect(store.files.length).toBe(2)
+  expect(ctrl.file.currentFile?.id).toBe('1')
+})

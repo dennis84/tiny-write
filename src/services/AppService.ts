@@ -1,6 +1,6 @@
 import {Store, unwrap, SetStoreFunction} from 'solid-js/store'
 import * as remote from '@/remote'
-import {State, ServiceError, Window, File, FileText, Mode} from '@/state'
+import {State, ServiceError, Window, File, FileText, Mode, ErrorObject} from '@/state'
 import {DB} from '@/db'
 import {isTauri} from '@/env'
 import {Ctrl} from '.'
@@ -23,8 +23,9 @@ export class AppService {
   }
 
   async init() {
+    let data = await this.fetchData()
+
     try {
-      let data = await this.fetchData()
       let text: FileText | undefined
       remote.info(`Init app (mode=${data.mode}, args=${JSON.stringify(data.args)})`)
 
@@ -118,9 +119,10 @@ export class AppService {
       }
 
       this.ctrl.tree.create()
-    } catch (error: any) {
-      remote.log('error', `Error during init: ${error.message}`)
-      this.setError(error)
+    } catch (e: any) {
+      remote.log('error', `Error during init: ${e.message}`)
+      const error = this.createError(e)
+      this.setState({...data, error, loading: 'initialized'})
     }
 
     DB.cleanup()
@@ -130,13 +132,10 @@ export class AppService {
     }
   }
 
-  setError(error: Error) {
-    console.error(error)
-    if (error instanceof ServiceError) {
-      this.setState({error: error.errorObject, loading: 'initialized'})
-    } else {
-      this.setState({error: {id: 'exception', props: {error}}, loading: 'initialized'})
-    }
+  setError(err: Error) {
+    console.error(err)
+    const error = this.createError(err)
+    this.setState({error, loading: 'initialized'})
   }
 
   async reset() {
@@ -204,6 +203,14 @@ export class AppService {
       collab: undefined,
       mode,
       tree,
+    }
+  }
+
+  private createError(error: Error): ErrorObject {
+    if (error instanceof ServiceError) {
+      return error.errorObject
+    } else {
+      return {id: 'exception', props: {error}}
     }
   }
 }
