@@ -125,13 +125,18 @@ export class EditorService {
     let file = this.ctrl.file.findFile(req)
     let text: FileText | undefined
 
-    if (file?.path) {
-      text = (await this.ctrl.file.loadFile(file.path)).text
-    } else if (!file && req.path) {
-      const loadedFile = await this.ctrl.file.loadFile(req.path)
-      text = loadedFile.text
-      file = this.ctrl.file.createFile(loadedFile)
-      state.files.push(file as File)
+    try {
+      if (file?.path) {
+        text = (await this.ctrl.file.loadFile(file.path)).text
+      } else if (!file && req.path) {
+        const loadedFile = await this.ctrl.file.loadFile(req.path)
+        text = loadedFile.text
+        file = this.ctrl.file.createFile(loadedFile)
+        state.files.push(file as File)
+      }
+    } catch (e: any) {
+      this.ctrl.app.setError(e)
+      return
     }
 
     if (!file) return

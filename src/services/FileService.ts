@@ -51,8 +51,14 @@ export class FileService {
   }
 
   async loadFile(path: string): Promise<LoadedFile> {
+    let resolvedPath
     try {
-      const resolvedPath = await remote.resolvePath([path])
+      resolvedPath = await remote.resolvePath([path])
+    } catch(e: any) {
+      throw new ServiceError('file_not_found', `File not found: ${path}`)
+    }
+
+    try {
       const fileContent = await remote.readFile(resolvedPath)
       const lastModified = await remote.getFileLastModified(resolvedPath)
       const extensions = createExtensions({ctrl: this.ctrl})
@@ -73,8 +79,8 @@ export class FileService {
         lastModified,
         path: resolvedPath,
       }
-    } catch (e) {
-      throw new ServiceError('file_permission_denied', {error: e})
+    } catch (e: any) {
+      throw new ServiceError('file_permission_denied', e)
     }
   }
 

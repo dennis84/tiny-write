@@ -210,7 +210,7 @@ export class AppService {
     if (error instanceof ServiceError) {
       return error.errorObject
     } else {
-      return {id: 'exception', props: {error}}
+      return {id: 'exception', error}
     }
   }
 }

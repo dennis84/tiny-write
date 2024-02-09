@@ -36,7 +36,7 @@ export interface Config {
 
 export interface ErrorObject {
   id: string;
-  props?: unknown;
+  error?: Error | string;
 }
 
 export interface Version {
@@ -202,9 +202,9 @@ export interface File {
 
 export class ServiceError extends Error {
   public errorObject: ErrorObject
-  constructor(id: string, props: unknown) {
+  constructor(id: string, error: Error | string) {
     super(id)
-    this.errorObject = {id, props}
+    this.errorObject = {id, error}
   }
 }
 

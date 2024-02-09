@@ -42,10 +42,10 @@ const GeneralError = () => {
     window.location.reload()
   }
 
-  const getMessage = () => {
-    const err = (store.error?.props as any).error
-    return (typeof err === 'string') ? err : err.message
-  }
+  const getMessage = () =>
+    typeof store.error?.error === 'string'
+      ? store.error?.error
+      : store.error?.error?.message
 
   return (
     <Scroll data-tauri-drag-region="true">
