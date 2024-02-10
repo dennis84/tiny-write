@@ -6,6 +6,7 @@ import {v4 as uuidv4} from 'uuid'
 import {File, FileText, Mode, ServiceError, State, isLinkElement} from '@/state'
 import * as remote from '@/remote'
 import {DB} from '@/db'
+import {isTauri} from '@/env'
 import {createExtensions, createSchema} from '@/prosemirror-setup'
 import {createMarkdownParser} from '@/markdown'
 import {Ctrl} from '.'
@@ -238,7 +239,8 @@ export class FileService {
     remote.info('File restored')
   }
 
-  getTitle(schema: Schema, file: File, len = 25): string {
+  async getTitle(schema: Schema, file: File, len = 25): Promise<string> {
+    if (isTauri() && file.path) return remote.toRelativePath(file.path)
     const ydoc = new Y.Doc({gc: false})
     Y.applyUpdate(ydoc, file.ydoc)
     const state = yDocToProsemirrorJSON(ydoc, file.id)

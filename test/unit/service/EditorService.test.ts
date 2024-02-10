@@ -51,8 +51,8 @@ test('init', async () => {
 
 test('init - new file if no id', async () => {
   vi.mocked(DB.getFiles).mockResolvedValue([
-    {id: '1', ydoc: createYUpdate('1', 'Text'), lastModified},
-    {id: '2', ydoc: createYUpdate('2', 'Test 2'), lastModified},
+    {id: '1', ydoc: createYUpdate('1', ['Text']), lastModified},
+    {id: '2', ydoc: createYUpdate('2', ['Test 2']), lastModified},
   ])
 
   const {ctrl, store} = createCtrl(createState())
@@ -68,8 +68,8 @@ test('init - new file if no id', async () => {
 
 test('init - existing file', async () => {
   vi.mocked(DB.getFiles).mockResolvedValue([
-    {id: '1', ydoc: createYUpdate('1', 'Test'), lastModified},
-    {id: '2', ydoc: createYUpdate('2', 'Test 2'), lastModified, active: true},
+    {id: '1', ydoc: createYUpdate('1', ['Test']), lastModified},
+    {id: '2', ydoc: createYUpdate('2', ['Test 2']), lastModified, active: true},
   ])
 
   const {ctrl, store} = createCtrl(createState())
@@ -85,8 +85,8 @@ test('init - existing file', async () => {
 
 test('init - join', async () => {
   vi.mocked(DB.getFiles).mockResolvedValue([
-    {id: '1', ydoc: createYUpdate('1', 'Test'), lastModified, active: true},
-    {id: '2', ydoc: createYUpdate('2', 'Test 2'), lastModified},
+    {id: '1', ydoc: createYUpdate('1', ['Test']), lastModified, active: true},
+    {id: '2', ydoc: createYUpdate('2', ['Test 2']), lastModified},
   ])
 
   const {ctrl, store} = createCtrl(createState({args: {room: '3'}}))
@@ -101,7 +101,7 @@ test('init - join', async () => {
 
 test('init - dir', async () => {
   vi.mocked(DB.getFiles).mockResolvedValue([
-    {id: '1', ydoc: createYUpdate('1', 'Test'), lastModified, active: true},
+    {id: '1', ydoc: createYUpdate('1', ['Test']), lastModified, active: true},
   ])
 
   const {ctrl, store} = createCtrl(createState({args: {dir: ['~/Desktop/Aaaa.md']}}))
@@ -180,8 +180,8 @@ test('newFile - collab', async () => {
 
 test('openFile - existing', async () => {
   vi.mocked(DB.getFiles).mockResolvedValue([
-    {id: '1', ydoc: createYUpdate('1', 'Test'), lastModified, active: true},
-    {id: '2', ydoc: createYUpdate('2', 'Test 2'), lastModified},
+    {id: '1', ydoc: createYUpdate('1', ['Test']), lastModified, active: true},
+    {id: '2', ydoc: createYUpdate('2', ['Test 2']), lastModified},
   ])
 
   const {ctrl, store} = createCtrl(createState())
@@ -226,8 +226,8 @@ test('openFile - not found', async () => {
 
 test('openFile - not delete empty', async () => {
   vi.mocked(DB.getFiles).mockResolvedValue([
-    {id: '1', ydoc: createYUpdate('1', ''), lastModified, active: true},
-    {id: '2', ydoc: createYUpdate('2', 'Test 2'), lastModified},
+    {id: '1', ydoc: createYUpdate('1', []), lastModified, active: true},
+    {id: '2', ydoc: createYUpdate('2', ['Test 2']), lastModified},
   ])
 
   const {ctrl, store} = createCtrl(createState())
@@ -248,7 +248,7 @@ test('openFile - not delete empty', async () => {
 test('openFile - open collab', async () => {
   const file = {
     id: 'room-123',
-    ydoc: createYUpdate('room-123', 'Test'),
+    ydoc: createYUpdate('room-123', ['Test']),
     lastModified,
   }
 
@@ -276,8 +276,8 @@ test('openFile - open collab', async () => {
 
 test('openFile - open from collab', async () => {
   vi.mocked(DB.getFiles).mockResolvedValue([
-    {id: '1', ydoc: createYUpdate('1', 'Test'), lastModified, active: true},
-    {id: '2', ydoc: createYUpdate('2', 'Test 2'), lastModified},
+    {id: '1', ydoc: createYUpdate('1', ['Test']), lastModified, active: true},
+    {id: '2', ydoc: createYUpdate('2', ['Test 2']), lastModified},
   ])
 
   const {ctrl, store} = createCtrl(createState())
@@ -305,7 +305,7 @@ test('openFile - open from collab', async () => {
 
 test('clear - with text', async () => {
   vi.mocked(DB.getFiles).mockResolvedValue([
-    {id: '1', ydoc: createYUpdate('1', 'Test'), lastModified},
+    {id: '1', ydoc: createYUpdate('1', ['Test']), lastModified},
   ])
 
   const {ctrl, store} = createCtrl(createState())
@@ -369,7 +369,7 @@ test('startCollab - with text', async () => {
 
 test('startCollab - join new file', async () => {
   vi.mocked(DB.getFiles).mockResolvedValue([
-    {id: '1', ydoc: createYUpdate('1', 'Test'), lastModified, active: true},
+    {id: '1', ydoc: createYUpdate('1', ['Test']), lastModified, active: true},
   ])
 
   const {ctrl, store} = createCtrl(createState({args: {room: '2'}}))
@@ -386,8 +386,8 @@ test('startCollab - join new file', async () => {
 
 test('startCollab - join existing file', async () => {
   vi.mocked(DB.getFiles).mockResolvedValue([
-    {id: '1', ydoc: createYUpdate('1', 'Test'), lastModified, active: true},
-    {id: '2', ydoc: createYUpdate('2', 'Test 2'), lastModified},
+    {id: '1', ydoc: createYUpdate('1', ['Test']), lastModified, active: true},
+    {id: '2', ydoc: createYUpdate('2', ['Test 2']), lastModified},
   ])
 
   const {ctrl, store} = createCtrl(createState({args: {room: '2'}}))

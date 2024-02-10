@@ -687,7 +687,7 @@ test('renderEditor', async () => {
   const element = createEditorElement({id: '1'})
   const init = createState({
     files: [
-      {id: '1', ydoc: createYUpdate('1', 'Test'), versions: [], active: true},
+      {id: '1', ydoc: createYUpdate('1', ['Test']), versions: [], active: true},
     ],
     canvases: [
       createCanvas({
@@ -739,7 +739,7 @@ test('renderEditor - collab', async () => {
   const {ctrl, store} = createCtrl(init)
   const target = document.createElement('div')
   const collab = ctrl.collab.create('test')
-  collab.ydoc = createYdoc('1', 'Test')
+  collab.ydoc = createYdoc('1', ['Test'])
 
   const service = new CanvasService(ctrl, store, setState)
   setState('collab', collab)

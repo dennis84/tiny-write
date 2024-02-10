@@ -84,7 +84,7 @@ test('insert - markdown mode', async () => {
   vi.mocked(DB.getFiles).mockResolvedValue([
     {
       id: '1',
-      ydoc: createYUpdate('1', ''),
+      ydoc: createYUpdate('1', []),
       active: true,
       markdown: true,
       lastModified,

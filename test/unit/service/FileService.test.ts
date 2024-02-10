@@ -18,7 +18,7 @@ beforeEach(() => {
 const ctrl = mockDeep<Ctrl>()
 
 test('only save file type', async () => {
-  const ydoc = createYdoc('1', 'Test')
+  const ydoc = createYdoc('1', ['Test'])
 
   const [store, setState] = createStore(createState({
     files: [{id: '1', ydoc: Y.encodeStateAsUpdate(ydoc), versions: []}],
@@ -44,13 +44,13 @@ test('only save file type', async () => {
 })
 
 test('deleteFile', async () => {
-  const ydoc = createYdoc('1', 'Test')
+  const ydoc = createYdoc('1', ['Test'])
 
   const [store, setState] = createStore(createState({
     files: [
       {id: '1', ydoc: Y.encodeStateAsUpdate(ydoc), versions: [], active: true},
       {id: '2', ydoc: new Uint8Array(), versions: [], deleted: true},
-      {id: '3', ydoc: createYUpdate('2', 'Test2'), versions: []},
+      {id: '3', ydoc: createYUpdate('2', ['Test2']), versions: []},
     ],
   }))
 
@@ -75,12 +75,12 @@ test('deleteFile', async () => {
 })
 
 test('restore', async () => {
-  const ydoc = createYdoc('1', 'Test')
+  const ydoc = createYdoc('1', ['Test'])
 
   const [store, setState] = createStore(createState({
     files: [
       {id: '1', ydoc: Y.encodeStateAsUpdate(ydoc), versions: [], active: true},
-      {id: '2', ydoc: createYUpdate('2', 'Test2'), versions: [], active: false, deleted: true},
+      {id: '2', ydoc: createYUpdate('2', ['Test2']), versions: [], active: false, deleted: true},
     ],
   }))
 
@@ -96,12 +96,12 @@ test('restore', async () => {
 })
 
 test('deleteForever', async () => {
-  const ydoc = createYdoc('1', 'Test')
+  const ydoc = createYdoc('1', ['Test'])
 
   const [store, setState] = createStore(createState({
     files: [
       {id: '1', ydoc: Y.encodeStateAsUpdate(ydoc), versions: [], active: true},
-      {id: '2', ydoc: createYUpdate('2', 'Test2'), versions: [], active: false, deleted: true},
+      {id: '2', ydoc: createYUpdate('2', ['Test2']), versions: [], active: false, deleted: true},
     ],
     canvases: [
       {

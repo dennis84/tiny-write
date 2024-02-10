@@ -232,9 +232,9 @@ export default (props: Props) => {
     const getCurrentId = () =>
       state.mode === Mode.Editor ? ctrl.file.currentFile?.id : ctrl.canvas.currentCanvas?.id
 
-    onMount(() => {
+    onMount(async () => {
       if (isFile(p.node.item)) {
-        setTitle(ctrl.file.getTitle(schema, p.node.item))
+        setTitle(await ctrl.file.getTitle(schema, p.node.item))
       } else {
         setTitle('Canvas 🧑‍🎨')
       }
@@ -312,10 +312,10 @@ export default (props: Props) => {
       })
     })
 
-    createEffect(() => {
+    createEffect(async () => {
       state.lastTr
       if (isFile(p.node.item)) {
-        setTitle(ctrl.file.getTitle(schema, p.node.item))
+        setTitle(await ctrl.file.getTitle(schema, p.node.item))
       }
     })
 

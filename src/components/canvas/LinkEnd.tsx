@@ -46,16 +46,20 @@ export default () => {
   const schema = createSchema(createExtensions({ctrl, markdown: false}))
 
   const FileName = (p: {file: File; link?: CanvasLinkElement; cm?: Vec2d}) => {
+    const [title, setTitle] = createSignal<string>()
+
     const onClick = () => {
       ctrl.canvas.addFile(p.file, p.link, p.cm)
       ctrl.canvas.removeDeadLinks()
       setContextMenu(undefined)
     }
 
+    onMount(async () => {
+      setTitle(await ctrl.file.getTitle(schema, p.file))
+    })
+
     return (
-      <div onClick={onClick}>
-        🔗 {ctrl.file.getTitle(schema, p.file)}
-      </div>
+      <div onClick={onClick}>🔗 {title()}</div>
     )
   }
 

@@ -1,0 +1,95 @@
+import {vi, expect, test, beforeEach} from 'vitest'
+import {mock} from 'vitest-mock-extended'
+import {clearMocks, mockIPC} from '@tauri-apps/api/mocks'
+import {DB} from '@/db'
+import {createCtrl} from '@/services'
+import {createState} from '@/state'
+import {createYUpdate, getText, waitFor} from '../util'
+
+vi.stubGlobal('__TAURI__', {})
+vi.stubGlobal('matchMedia', vi.fn(() => ({
+  matchMedia: () => ''
+})))
+
+vi.mock('mermaid', () => ({}))
+vi.mock('@/db', () => ({DB: mock<DB>()}))
+
+const lastModified = new Date()
+
+beforeEach(() => {
+  vi.restoreAllMocks()
+  clearMocks()
+})
+
+test('init - load existing by path', async () => {
+  mockIPC((cmd, args: any) => {
+    if (cmd === 'get_args') {
+      return {}
+    } else if (cmd === 'resolve_path') {
+      return args.paths[0]
+    } else if (cmd === 'get_file_last_modified') {
+      return lastModified
+    } else if (args?.message?.cmd === 'readTextFile') {
+      return '# File1'
+    }
+  })
+
+  vi.mocked(DB.getFiles).mockResolvedValue([
+    {id: '1', ydoc: createYUpdate('1', []), path: 'file1', lastModified, active: true}
+  ])
+
+  const {ctrl} = createCtrl(createState())
+  const target = document.createElement('div')
+  await ctrl.app.init()
+  ctrl.editor.renderEditor(target)
+
+  expect(ctrl.file.currentFile?.path).toBe('file1')
+  await waitFor(() => {
+    expect(getText(ctrl)).toBe('File1')
+  })
+})
+
+test('init - check text', async () => {
+  clearMocks()
+  mockIPC((cmd, args: any) => {
+    if (cmd === 'get_args') {
+      return {file: 'file2'}
+    } else if (cmd === 'resolve_path') {
+      return args.paths[0]
+    } else if (cmd === 'get_file_last_modified') {
+      return lastModified
+    } else if (args?.message?.cmd === 'readTextFile') {
+      return '# File2'
+    }
+  })
+
+  const {ctrl} = createCtrl(createState())
+  const target = document.createElement('div')
+  await ctrl.app.init()
+  ctrl.editor.renderEditor(target)
+
+  expect(ctrl.file.currentFile?.path).toBe('file2')
+  await waitFor(() => {
+    expect(getText(ctrl)).toBe('File2')
+  })
+})
+
+test('init - error', async () => {
+  mockIPC((cmd) => {
+    if (cmd === 'resolve_path') throw new Error('Fail')
+  })
+
+  vi.mocked(DB.getFiles).mockResolvedValue([
+    {id: '1', path: 'file1', ydoc: createYUpdate('1', ['Test']), lastModified, active: true},
+    {id: '2', path: 'file2', ydoc: createYUpdate('2', ['Test 2']), lastModified}
+  ])
+
+  const {ctrl, store} = createCtrl(createState())
+  const target = document.createElement('div')
+  await ctrl.app.init()
+  ctrl.editor.renderEditor(target)
+
+  expect(store.error).toBeDefined()
+  expect(store.files.length).toBe(2)
+  expect(ctrl.file.currentFile?.id).toBe('1')
+})

@@ -55,7 +55,7 @@ test('updateConfig', () => {
   const [store, setState] = createStore(createState())
   const service = new ConfigService(ctrl, store, setState)
 
-  const ydoc = createYdoc('1', 'Test')
+  const ydoc = createYdoc('1', ['Test'])
   setState('collab', {ydoc})
 
   service.updateConfig({

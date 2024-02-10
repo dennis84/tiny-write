@@ -7,19 +7,19 @@ import {Ctrl} from '@/services'
 import {UndoManager} from '@/services/CollabService'
 import {Collab} from '@/state'
 
-export const createText = (text: string) => ({
+export const createText = (texts: string[]) => ({
   doc: {
     type: 'doc',
-    content: [{type: 'paragraph', content: [{type: 'text', text}]}]
+    content: texts.map((text) => ({type: 'paragraph', content: [{type: 'text', text}]}))
   },
 })
 
-export const createYUpdate = (id: string, str: string) => {
+export const createYUpdate = (id: string, str: string[]) => {
   const ydoc = createYdoc(id, str)
   return Y.encodeStateAsUpdate(ydoc)
 }
 
-export const createYdoc = (id: string, str: string) => {
+export const createYdoc = (id: string, str: string[]) => {
   const doc = str ? createText(str).doc : {type: 'doc', content: []}
   return prosemirrorJSONToYDoc(schema, doc, id)
 }
