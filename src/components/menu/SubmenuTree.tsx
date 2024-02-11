@@ -53,12 +53,20 @@ const DropLine = styled('div')`
 `
 
 const TreeLinkCorner = styled('i')`
-  padding-right: 10px;
+  padding-right: 8px;
+  padding-left: 8px;
+  margin-right: 5px;
   cursor: var(--cursor-pointer);
   font-family: monospace;
   font-weight: normal;
   font-style: normal;
   display: flex;
+  ${(props: any) => props.expandable ? `
+    &:hover {
+      background: var(--foreground-10);
+      border-radius: var(--border-radius);
+    }
+  ` : ''}
 `
 
 const TreeLinkTitle = styled('span')`
@@ -72,7 +80,7 @@ const LinkMenu = styled('span')`
   cursor: var(--cursor-pointer);
   opacity: 0;
   padding: 0 5px;
-  border-radius: 5px;
+  border-radius: var(--border-radius);
   font-weight: bold;
   color: var(--foreground);
   ${(props: any) => props.selected ? `
@@ -338,10 +346,12 @@ export default (props: Props) => {
             color: var(--primary-background);
           ` : ''}
           ${p.selected ? `
-            background: var(--primary-background-20);
+            background: var(--primary-background-10);
           ` : ''}
           &:hover {
             color: var(--primary-background);
+            background: var(--foreground-10);
+            border-radius: var(--border-radius);
             > span {
               opacity: 1;
             }
@@ -350,8 +360,9 @@ export default (props: Props) => {
       >
         <TreeLinkCorner
           onClick={onCornerClick}
+          expandable={p.node.tree.length > 0}
           class={css`
-            padding-left: ${String(20 * p.level)}px;
+            margin-left: ${String(20 * p.level)}px;
           `}
         >
           {ctrl.tree.isCollapsed(p.node) ? '+' : '└'}

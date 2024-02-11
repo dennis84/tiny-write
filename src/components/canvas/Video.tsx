@@ -50,7 +50,7 @@ export default ({element, index}: {element: CanvasVideoElement; index: number}) 
         position: absolute;
         left: ${element.x.toString()}px;
         top: ${element.y.toString()}px;
-        border-radius: 5px;
+        border-radius: var(--border-radius);
         user-select: none;
         z-index: ${zIndex(index, IndexType.CONTENT)};
         pointer-events: none;

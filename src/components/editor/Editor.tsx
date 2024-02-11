@@ -239,7 +239,7 @@ const proseMirror = (props: Props) => `
       height: 5px;
       line-height: 5px;
       background: var(--foreground-20);
-      border-radius: 5px;
+      border-radius: var(--border-radius);
       page-break-before: always;
       .block-handle {
         top: -10px;
@@ -435,7 +435,7 @@ const proseMirror = (props: Props) => `
         bottom: -5px;
         right: -5px;
         cursor: nwse-resize;
-        touch-action: none;
+      touch-action: none;
       }
       &.float-left {
         float: left;

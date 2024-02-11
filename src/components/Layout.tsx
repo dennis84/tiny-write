@@ -13,7 +13,7 @@ export const Layout = styled('div')`
   .drop-cursor {
     background: var(--primary-background) !important;
     height: 5px !important;
-    border-radius: 5px;
+    border-radius: var(--border-radius);
   }
   .block-tooltip,
   .table-menu-tooltip,

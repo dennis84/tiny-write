@@ -65,7 +65,7 @@ export default ({element, index}: {element: CanvasEditorElement; index: number})
           width: ${element.width.toString()}px;
           min-height: ${element.height.toString()}px;
           max-height: ${element.height.toString()}px;
-          border-radius: 5px;
+          border-radius: var(--border-radius);
           z-index: ${zIndex(index, IndexType.CONTENT)};
           user-select: none;
           pointer-events: none;

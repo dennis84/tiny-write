@@ -8,7 +8,7 @@ const Link = styled('a')`
   padding: 10px;
   margin: 0;
   display: block;
-  border-radius: 3px;
+  border-radius: var(--border-radius);
   cursor: var(--cursor-pointer);
   color: var(--foreground-60);
   &:hover {

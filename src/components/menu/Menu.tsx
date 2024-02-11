@@ -31,13 +31,13 @@ const Container = styled('div')`
 
 const Burger = styled('button')`
   position: absolute;
-  left: -42px;
+  left: -52px;
   top: 2px;
   z-index: 9999999;
   background: none;
-  border-radius: 20px;
-  width: 40px;
-  height: 40px;
+  border-radius: 50px;
+  width: 50px;
+  height: 50px;
   padding: 0;
   display: flex;
   flex-direction: column;
@@ -59,7 +59,7 @@ const Burger = styled('button')`
     margin: 2px 0;
   }
   &:hover {
-    background: var(--foreground-5);
+    background: var(--foreground-10);
   }
   ${(props: any) => props.active && `
     right: 2px;
@@ -74,7 +74,7 @@ const Burger = styled('button')`
 `
 
 export const Drawer = styled('div')`
-  background: var(--foreground-5);
+  background: var(--foreground-10);
   padding: 20px;
   height: 100%;
   display: ${(props: any) => props.hidden ? 'none' : 'block'};
@@ -108,7 +108,7 @@ export const Sub = styled('nav')`
 
 const itemCss = `
   width: 100%;
-  padding: 2px 0;
+  padding: 5px;
   margin: 0;
   outline: none;
   display: flex;
@@ -127,7 +127,7 @@ export const Note = styled('p')`
   font-style: italic;
   color: var(--foreground-80);
   background: var(--foreground-5);
-  border-radius: 5px;
+  border-radius: var(--border-radius);
   padding: 10px;
   margin-bottom: 20px;
 `
@@ -146,6 +146,8 @@ export const Link = styled('button')`
   }
   &:hover {
     color: var(--primary-background);
+    background: var(--foreground-10);
+    border-radius: var(--border-radius);
     > span i {
       position: relative;
       box-shadow: 0 3px 0 0 var(--foreground-60);
