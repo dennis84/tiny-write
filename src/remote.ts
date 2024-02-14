@@ -1,11 +1,11 @@
 import {currentMonitor, getCurrent, PhysicalPosition, PhysicalSize} from '@tauri-apps/api/window'
-import {invoke} from '@tauri-apps/api/tauri'
-import * as clipboard from '@tauri-apps/api/clipboard'
-import * as fs from '@tauri-apps/api/fs'
-import * as dialog from '@tauri-apps/api/dialog'
+import {invoke} from '@tauri-apps/api/core'
+import * as clipboard from '@tauri-apps/plugin-clipboard-manager'
+import * as fs from '@tauri-apps/plugin-fs'
+import * as logger from '@tauri-apps/plugin-log'
+import * as dialog from '@tauri-apps/plugin-dialog'
 import {EditorState} from 'prosemirror-state'
 import {toBase64} from 'js-base64'
-import * as logger from 'tauri-plugin-log-api'
 import {Args, Window} from '@/state'
 import {serialize} from '@/markdown'
 import {isTauri} from '@/env'
@@ -41,7 +41,7 @@ export const saveSvg = (svg: HTMLElement) => {
         if (!path) return
         const buffer = await blob.arrayBuffer()
         const contents = new Uint8Array(buffer)
-        await fs.writeBinaryFile({path, contents})
+        await fs.writeFile(path, contents)
         return
       }
 
@@ -114,12 +114,12 @@ export const readFile = async (path: string): Promise<string> => {
 
 export const readBinaryFile = async (path: string): Promise<Uint8Array> => {
   if (!isTauri()) throw Error('Must be run in tauri: readBinaryFile')
-  return fs.readBinaryFile(path)
+  return fs.readFile(path)
 }
 
 export const writeFile = async (path: string, contents: string): Promise<void> => {
   if (!isTauri()) throw Error('Must be run in tauri: writeFile')
-  return fs.writeFile({path, contents})
+  return fs.writeTextFile(path, contents)
 }
 
 export const resolvePath = async (paths: string[]): Promise<string> => {
@@ -141,13 +141,8 @@ export const save = async (state: EditorState): Promise<string> => {
   if (!isTauri()) throw Error('Must be run in tauri: save')
   const path = await dialog.save()
   if (!path) throw Error('No path returned')
-  await fs.writeFile({path, contents: serialize(state)})
+  await fs.writeTextFile(path, serialize(state))
   return path
-}
-
-export const log = (level: string, msg: string) => {
-  if (isTauri()) logger.info(msg, {level})
-  else console.info(msg)
 }
 
 export const info = (msg: string) => {
@@ -155,9 +150,19 @@ export const info = (msg: string) => {
   else console.info(msg)
 }
 
+export const warn = (msg: string) => {
+  if (isTauri()) logger.warn(msg)
+  else console.warn(msg)
+}
+
+export const error = (msg: string) => {
+  if (isTauri()) logger.error(msg)
+  else console.error(msg)
+}
+
 export const updateWindow = async ({width, height, x, y}: Window) => {
   if (!isTauri()) throw Error('Must be run in tauri: save')
-  log('info', `🖼️ Update window: (width=${width}, height=${height}, x=${x}, y=${y}`)
+  info(`🖼️ Update window: (width=${width}, height=${height}, x=${x}, y=${y}`)
 
   // Last size should not be too small, otherwise difficult to enlarge.
   if (width > 10 && height > 10) {

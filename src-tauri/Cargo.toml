@@ -7,13 +7,17 @@ repository = ""
 default-run = "app"
 edition = "2021"
 
+[lib]
+name = "tauri_app_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
 [build-dependencies]
-tauri-build = { version = "1", features = [] }
+tauri-build = { version = "2.0.0-beta", features = [] }
 
 [dependencies]
+tauri = { version = "2.0.0-beta", features = ["protocol-asset"] }
 serde_json = "1"
 serde = { version = "1", features = [ "derive" ] }
-tauri = { version = "1", features = ["api-all", "cli"] }
 mime_guess = "2"
 dirs = "5"
 url = "2"
@@ -22,8 +26,12 @@ chrono = "0"
 log = { version = "0", features = ["max_level_debug"] }
 ignore = "0"
 globset = "0"
-tauri-plugin-log = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
-tauri-plugin-websocket = { git = "https://github.com/tauri-apps/plugins-workspace", branch = "v1" }
+tauri-plugin-cli = "2.0.0-beta"
+tauri-plugin-fs = "2.0.0-beta"
+tauri-plugin-clipboard-manager = "2.0.0-beta"
+tauri-plugin-dialog = "2.0.0-beta"
+tauri-plugin-log = "2.0.0-beta"
+tauri-plugin-websocket = { version = "2.0.0-beta", features = ["native-tls"] }
 
 [features]
 default = [ "custom-protocol" ]

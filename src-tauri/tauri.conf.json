@@ -1,72 +1,14 @@
 {
-  "package": {
-    "productName": "TinyWrite",
-    "version": "../package.json"
-  },
+  "identifier": "com.github.dennis84.tinywrite",
+  "productName": "TinyWrite",
+  "version": "0.1.0",
   "build": {
-    "distDir": "../dist",
-    "devPath": "http://localhost:3000",
+    "beforeBuildCommand": "vite build",
     "beforeDevCommand": "vite",
-    "beforeBuildCommand": "vite build"
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:3000"
   },
-  "tauri": {
-    "cli": {
-      "description": "A markdown text editor",
-      "args": [
-        {
-          "name": "source",
-          "index": 1,
-          "takesValue": true
-        },
-        {
-          "name": "help",
-          "short": "h",
-          "takesValue": false
-        },
-        {
-          "name": "version",
-          "short": "v",
-          "takesValue": false
-        },
-        {
-          "name": "no-default-features",
-          "takesValue": false
-        }
-      ]
-    },
-    "bundle": {
-      "active": true,
-      "targets": "all",
-      "identifier": "com.github.dennis84.tinywrite",
-      "icon": [
-        "icons/32x32.png",
-        "icons/128x128.png",
-        "icons/128x128@2x.png"
-      ],
-      "resources": [],
-      "externalBin": [],
-      "copyright": "",
-      "category": "DeveloperTool",
-      "shortDescription": "",
-      "longDescription": "",
-      "deb": {
-        "depends": []
-      },
-      "macOS": {
-        "frameworks": [],
-        "exceptionDomain": ""
-      }
-    },
-    "allowlist": {
-      "all": true,
-      "fs": {
-        "scope": ["$HOME/**"]
-      },
-      "protocol": {
-        "asset": true,
-        "assetScope": ["$HOME/**"]
-      }
-    },
+  "app": {
     "windows": [
       {
         "title": "TinyWrite",
@@ -76,12 +18,40 @@
         "fullscreen": false,
         "hiddenTitle": true,
         "titleBarStyle": "Overlay",
-        "center": true,
-        "visible": false
+        "center": true
       }
     ],
     "security": {
-      "csp": null
+      "csp": null,
+      "assetProtocol": {
+        "enable": true,
+        "scope": ["$HOME/**"]
+      }
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png"
+    ]
+  },
+  "plugins": {
+    "cli": {
+      "description": "A markdown text editor",
+      "args": [
+        {
+          "name": "source",
+          "index": 1,
+          "takesValue": true
+        },
+        {
+          "name": "no-default-features",
+          "takesValue": false
+        }
+      ]
     }
   }
 }

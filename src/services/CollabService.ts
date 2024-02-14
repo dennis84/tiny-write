@@ -77,8 +77,10 @@ export class CollabService {
     })
 
     provider.on('connection-error', () => {
-      remote.log('ERROR', '🌐 Connection error')
+      remote.error('🌐 Connection error')
       this.setState('collab', 'error', true)
+      provider.wsconnected = false
+      provider.ws = null
     })
 
     provider.on('status', (e: any) => {

@@ -1,4 +1,4 @@
-import {convertFileSrc} from '@tauri-apps/api/tauri'
+import {convertFileSrc} from '@tauri-apps/api/core'
 import {EditorView} from 'prosemirror-view'
 import {resolvePath, dirname} from '@/remote'
 import {Ctrl} from '.'

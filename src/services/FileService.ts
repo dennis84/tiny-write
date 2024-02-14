@@ -154,7 +154,7 @@ export class FileService {
           })),
         })
       } catch (err) {
-        remote.log('ERROR', 'Ignore file due to invalid ydoc.')
+        remote.error('Ignore file due to invalid ydoc.')
       }
     }
 

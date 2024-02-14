@@ -120,7 +120,7 @@ export class AppService {
 
       this.ctrl.tree.create()
     } catch (e: any) {
-      remote.log('error', `Error during init: ${e.message}`)
+      remote.error(`Error during init: ${e.message}`)
       const error = this.createError(e)
       this.setState({...data, error, loading: 'initialized'})
     }

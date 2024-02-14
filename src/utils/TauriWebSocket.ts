@@ -1,4 +1,4 @@
-import WebSocket from 'tauri-plugin-websocket-api'
+import WebSocket from '@tauri-apps/plugin-websocket'
 import * as remote from '@/remote'
 
 export class TauriWebSocket {
@@ -17,6 +17,7 @@ export class TauriWebSocket {
   private onClose: any
 
   constructor(public url: string) {
+    remote.info(`🌐 Create WS connection (url=${url})`)
     WebSocket.connect(url).then((ws) => {
       this.ws = ws
       this.readyState = this.OPEN
@@ -26,8 +27,11 @@ export class TauriWebSocket {
         }
       })
 
-      remote.log('INFO', `🌐 Connection opened (url=${url})`)
+      remote.info(`🌐 Connection opened (url=${url})`)
       this.onOpen()
+    }).catch((err) => {
+      remote.error(`🌐 Could not establish WS connection (url=${url}, error=${err}})`)
+      this.onError()
     })
   }
 

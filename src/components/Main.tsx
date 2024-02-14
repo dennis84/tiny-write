@@ -1,6 +1,7 @@
 import {onCleanup, createEffect, onMount, Switch, Match, ErrorBoundary} from 'solid-js'
 import {createMutable} from 'solid-js/store'
-import {appWindow} from '@tauri-apps/api/window'
+import * as tauriWindow from '@tauri-apps/api/window'
+import * as webview from '@tauri-apps/api/webview'
 import {WheelGesture} from '@use-gesture/vanilla'
 import {Mode, State, StateContext} from '@/state'
 import {createCtrl} from '@/services'
@@ -46,7 +47,7 @@ export default (props: {state: State}) => {
 
   onMount(async () => {
     if (!isTauri()) return
-    const unlisten = await appWindow.onFileDropEvent(async (event) => {
+    const unlisten = await webview.getCurrent().onFileDropEvent(async (event) => {
       if (event.payload.type === 'hover') {
         remote.info('🔗 User hovering')
       } else if (event.payload.type === 'drop') {
@@ -103,11 +104,11 @@ export default (props: {state: State}) => {
 
   onMount(async () => {
     if (!isTauri()) return
-    const unlistenResize = await appWindow.onResized(async ({payload}) => {
+    const unlistenResize = await tauriWindow.getCurrent().onResized(async ({payload}) => {
       ctrl.app.updateWindow(payload)
     })
 
-    const unlistenMove = await appWindow.onMoved(async ({payload}) => {
+    const unlistenMove = await tauriWindow.getCurrent().onMoved(async ({payload}) => {
       ctrl.app.updateWindow(payload)
     })
 
