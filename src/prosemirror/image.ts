@@ -1,10 +1,11 @@
 import {Node} from 'prosemirror-model'
 import {EditorView} from 'prosemirror-view'
 import {DragGesture} from '@use-gesture/vanilla'
-import {isTauri} from '@/env'
+import {isMac, isTauri} from '@/env'
 import {ProseMirrorExtension} from '@/prosemirror'
 import {Ctrl} from '@/services'
 import {Mode} from '@/state'
+import * as remote from '@/remote'
 
 export enum Align {
   FloatLeft = 'float-left',
@@ -79,8 +80,9 @@ class ImageView {
     this.align = node.attrs.align
     this.container.classList.add('image-container', this.align)
 
+    // Videos in tauri on mac does not work at the moment
     let source: HTMLImageElement | HTMLSourceElement
-    if (node.type.name === 'video') {
+    if (node.type.name === 'video' && !(isTauri() && isMac)) {
       const video = document.createElement('video')
       video.setAttribute('title', node.attrs.title ?? '')
       video.setAttribute('controls', '')
@@ -96,6 +98,7 @@ class ImageView {
     }
 
     source.onerror = () => {
+      remote.error(`Could not load media (type=${node.type.name})`)
       this.container.classList.add('error')
     }
 
