@@ -65,6 +65,27 @@ export class CodeBlockView {
         return false
       }
     }, {
+      key: 'Enter',
+      run: (editorView) => {
+        const state = editorView.state
+        const selection = state.selection
+        const from = selection.main.head - 1
+        const to = selection.main.head
+
+        const isEnd = to === state.doc.length
+        const isNewLine = state.sliceDoc(from, to) === '\n'
+
+        if (isEnd && isNewLine) {
+          editorView.dispatch({changes: {from, to}})
+          if (exitCode(this.view.state, this.view.dispatch)) {
+            this.view.focus()
+            return true
+          }
+        }
+
+        return false
+      }
+    }, {
       key: 'Ctrl-Enter',
       run: () => {
         if (exitCode(this.view.state, this.view.dispatch)) this.view.focus()
