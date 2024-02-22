@@ -19,6 +19,7 @@ const lastModified = new Date()
 beforeEach(() => {
   vi.restoreAllMocks()
   clearMocks()
+  mockIPC((): any => {})
 })
 
 test('init - load existing by path', async () => {
@@ -29,7 +30,7 @@ test('init - load existing by path', async () => {
       return args.paths[0]
     } else if (cmd === 'get_file_last_modified') {
       return lastModified
-    } else if (args?.message?.cmd === 'readTextFile') {
+    } else if (cmd === 'plugin:fs|read_text_file') {
       return '# File1'
     }
   })
@@ -58,7 +59,7 @@ test('init - check text', async () => {
       return args.paths[0]
     } else if (cmd === 'get_file_last_modified') {
       return lastModified
-    } else if (args?.message?.cmd === 'readTextFile') {
+    } else if (cmd === 'plugin:fs|read_text_file') {
       return '# File2'
     }
   })
@@ -75,7 +76,7 @@ test('init - check text', async () => {
 })
 
 test('init - error', async () => {
-  mockIPC((cmd) => {
+  mockIPC((cmd): any => {
     if (cmd === 'resolve_path') throw new Error('Fail')
   })
 
@@ -92,4 +93,44 @@ test('init - error', async () => {
   expect(store.error).toBeDefined()
   expect(store.files.length).toBe(2)
   expect(ctrl.file.currentFile?.id).toBe('1')
+})
+
+test('init - dir', async () => {
+  vi.mocked(DB.getFiles).mockResolvedValue([
+    {id: '1', ydoc: createYUpdate('1', ['Test']), lastModified, active: true},
+  ])
+
+  const {ctrl, store} = createCtrl(createState({args: {dir: ['~/Desktop/Aaaa.md']}}))
+  await ctrl.app.init()
+
+  expect(store.files.length).toBe(1)
+  expect(ctrl.file.currentFile?.editorView).toBe(undefined)
+  expect(store.args?.dir).toEqual(['~/Desktop/Aaaa.md'])
+})
+
+test('init - empty dir', async () => {
+  vi.mocked(DB.getFiles).mockResolvedValue([
+    {id: '1', ydoc: createYUpdate('1', ['Test']), lastModified, active: true},
+  ])
+
+  const {ctrl, store} = createCtrl(createState({args: {dir: []}}))
+  await ctrl.app.init()
+
+  expect(store.files.length).toBe(1)
+  expect(ctrl.file.currentFile?.id).toBe('1')
+  expect(store.args?.dir).toEqual(undefined)
+})
+
+test('init - dir no current file', async () => {
+  const {ctrl, store} = createCtrl(createState({
+    args: {dir: ['~/Desktop/Aaaa.md']},
+  }))
+
+  const target = document.createElement('div')
+  await ctrl.app.init()
+  ctrl.editor.renderEditor(target)
+
+  expect(store.files.length).toBe(0)
+  expect(ctrl.file.currentFile).toBe(undefined)
+  expect(store.args?.dir).toEqual(['~/Desktop/Aaaa.md'])
 })

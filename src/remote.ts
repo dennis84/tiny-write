@@ -124,6 +124,7 @@ export const writeFile = async (path: string, contents: string): Promise<void> =
 
 export const resolvePath = async (paths: string[]): Promise<string> => {
   if (!isTauri()) throw Error('Must be run in tauri: resolvePath')
+  debug(`Resolve paths: ${JSON.stringify(paths)}`)
   return invoke('resolve_path', {paths})
 }
 
@@ -145,24 +146,29 @@ export const save = async (state: EditorState): Promise<string> => {
   return path
 }
 
-export const info = (msg: string) => {
+export const debug = (msg: string, ...data: any[]) => {
+  if (isTauri()) logger.debug(msg)
+  console.debug(msg, ...data)
+}
+
+export const info = (msg: string, ...data: any[]) => {
   if (isTauri()) logger.info(msg)
-  else console.info(msg)
+  console.info(msg, ...data)
 }
 
-export const warn = (msg: string) => {
+export const warn = (msg: string, ...data: any[]) => {
   if (isTauri()) logger.warn(msg)
-  else console.warn(msg)
+  console.warn(msg, ...data)
 }
 
-export const error = (msg: string) => {
+export const error = (msg: string, ...data: any[]) => {
   if (isTauri()) logger.error(msg)
-  else console.error(msg)
+  console.error(msg, ...data)
 }
 
 export const updateWindow = async ({width, height, x, y}: Window) => {
   if (!isTauri()) throw Error('Must be run in tauri: save')
-  info(`🖼️ Update window: (width=${width}, height=${height}, x=${x}, y=${y}`)
+  info(`🖼️ Update window: (width=${width}, height=${height}, x=${x}, y=${y})`)
 
   // Last size should not be too small, otherwise difficult to enlarge.
   if (width > 10 && height > 10) {

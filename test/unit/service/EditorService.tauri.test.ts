@@ -26,8 +26,8 @@ beforeEach(() => {
       return args.paths[0]
     } else if (cmd === 'get_file_last_modified') {
       return lastModified
-    } else if (args?.message?.cmd === 'readTextFile') {
-      return args.message.path === 'file1' ? '# File1' : '# File2'
+    } else if (cmd === 'plugin:fs|read_text_file') {
+      return args.path === 'file1' ? '# File1' : '# File2'
     }
   })
 })

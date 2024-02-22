@@ -88,7 +88,7 @@ test('restore', async () => {
   setState('collab', {ydoc})
   setState('mode', Mode.Editor)
 
-  service.restore('2')
+  await service.restore('2')
   expect(store.files.length).toBe(2)
   expect(store.files[0].active).toBe(true)
   expect(store.files[1].active).toBe(false)

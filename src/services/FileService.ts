@@ -45,9 +45,18 @@ export class FileService {
     }
   }
 
-  findFile(req: OpenFile): File | undefined {
+  async findFile(req: OpenFile): Promise<File | undefined> {
+    let path = req.path
+    if (isTauri() && path) {
+      try {
+        path = await remote.resolvePath([path])
+      } catch (e) {
+        throw new ServiceError('file_not_found', `File not found: ${path}`)
+      }
+    }
+
     return this.store.files.find((file) => {
-      return file.id === req.id || (file.path && file.path === req.path)
+      return file.id === req.id || (file.path && file.path === path)
     })
   }
 
@@ -163,7 +172,7 @@ export class FileService {
 
   async deleteFile(req: OpenFile) {
     const currentFile = this.currentFile
-    const file = this.findFile(req)
+    const file = await this.findFile(req)
     if (!file) return
 
     if (this.store.mode === Mode.Editor && currentFile?.id === file.id) {
@@ -191,7 +200,7 @@ export class FileService {
       lastModified: new Date(),
     })
 
-    const updatedFile = this.findFile(req)
+    const updatedFile = await this.findFile(req)
     if (!updatedFile) return
 
     this.saveFile(updatedFile)
@@ -227,12 +236,12 @@ export class FileService {
   }
 
   async restore(id: string) {
-    const file = this.findFile({id})
+    const file = await this.findFile({id})
     if (!file) return
 
     this.updateFile(id, {deleted: false})
 
-    const updateFile = this.findFile({id})
+    const updateFile = await this.findFile({id})
     if (!updateFile) return
 
     this.saveFile(updateFile)

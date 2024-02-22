@@ -11,6 +11,7 @@ import {
 } from 'y-prosemirror'
 import {Box2d} from '@tldraw/primitives'
 import * as remote from '@/remote'
+import {fileToString} from '@/utils/debug'
 import {createExtensions, createEmptyText, createSchema, createNodeViews} from '@/prosemirror-setup'
 import {State, File, FileText, Mode} from '@/state'
 import {serialize, createMarkdownParser} from '@/markdown'
@@ -121,11 +122,13 @@ export class EditorService {
   }
 
   async openFile(req: OpenFile) {
+    remote.debug(`Open file: ${fileToString(req)}`)
     const state: State = unwrap(this.store)
-    let file = this.ctrl.file.findFile(req)
-    let text: FileText | undefined
 
     try {
+      let file = await this.ctrl.file.findFile(req)
+      let text: FileText | undefined
+
       if (file?.path) {
         text = (await this.ctrl.file.loadFile(file.path)).text
       } else if (!file && req.path) {
@@ -134,18 +137,17 @@ export class EditorService {
         file = this.ctrl.file.createFile(loadedFile)
         state.files.push(file as File)
       }
+
+      if (!file) return
+      if (state.args?.room) state.args.room = undefined
+
+      const update = await this.activateFile(state, file)
+      update.collab = this.ctrl.collab.create(file.id, state.mode, false)
+      this.setState(update)
+      if (text) this.updateText(text)
     } catch (e: any) {
       this.ctrl.app.setError(e)
-      return
     }
-
-    if (!file) return
-    if (state.args?.room) state.args.room = undefined
-
-    const update = await this.activateFile(state, file)
-    update.collab = this.ctrl.collab.create(file.id, state.mode, false)
-    this.setState(update)
-    if (text) this.updateText(text)
   }
 
   toggleMarkdown() {

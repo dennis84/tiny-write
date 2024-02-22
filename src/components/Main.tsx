@@ -189,6 +189,7 @@ export default (props: {state: State}) => {
     } else if (
       // Render editor if change file
       store.mode === Mode.Editor &&
+      !store.args?.dir &&
       currentFile?.id &&
       currentFile.editorView === undefined
     ) {

@@ -99,33 +99,6 @@ test('init - join', async () => {
   expect(getText(ctrl)).toBe('')
 })
 
-test('init - dir', async () => {
-  vi.mocked(DB.getFiles).mockResolvedValue([
-    {id: '1', ydoc: createYUpdate('1', ['Test']), lastModified, active: true},
-  ])
-
-  const {ctrl, store} = createCtrl(createState({args: {dir: ['~/Desktop/Aaaa.md']}}))
-  await ctrl.app.init()
-
-  expect(store.files.length).toBe(1)
-  expect(ctrl.file.currentFile?.editorView).toBe(undefined)
-  expect(store.args?.dir).toEqual(['~/Desktop/Aaaa.md'])
-})
-
-test('init - dir no current file', async () => {
-  const {ctrl, store} = createCtrl(createState({
-    args: {dir: ['~/Desktop/Aaaa.md']},
-  }))
-
-  const target = document.createElement('div')
-  await ctrl.app.init()
-  ctrl.editor.renderEditor(target)
-
-  expect(store.files.length).toBe(0)
-  expect(ctrl.file.currentFile).toBe(undefined)
-  expect(store.args?.dir).toEqual(['~/Desktop/Aaaa.md'])
-})
-
 test('newFile', async () => {
   const {ctrl, store} = createCtrl(createState())
   const target = document.createElement('div')

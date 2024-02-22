@@ -1,4 +1,5 @@
 import {Store, unwrap, SetStoreFunction} from 'solid-js/store'
+import {stateToString} from '@/utils/debug'
 import * as remote from '@/remote'
 import {State, ServiceError, Window, File, FileText, Mode, ErrorObject} from '@/state'
 import {DB} from '@/db'
@@ -24,6 +25,7 @@ export class AppService {
 
   async init() {
     let data = await this.fetchData()
+    remote.debug(`Fetched data: ${stateToString(data)}`)
 
     try {
       let text: FileText | undefined
@@ -35,13 +37,14 @@ export class AppService {
 
       let currentFile
       let currentCanvas
+
       if (data.mode === Mode.Editor) {
         currentFile = data.files.find((it) => it.active)
       } else {
         currentCanvas = data.canvases.find((it) => it.active)
       }
 
-      if (data.args?.dir) { // If app was started with a directory as argument
+      if (data.args?.dir && data.args.dir.length > 0) { // If app was started with a directory as argument
         currentFile = undefined
       } else if (data.args?.file) { // If app was started with a file as argument
         const path = data.args.file
@@ -120,7 +123,7 @@ export class AppService {
 
       this.ctrl.tree.create()
     } catch (e: any) {
-      remote.error(`Error during init: ${e.message}`)
+      remote.error(`Error during init: ${e.message}`, e)
       const error = this.createError(e)
       this.setState({...data, error, loading: 'initialized'})
     }

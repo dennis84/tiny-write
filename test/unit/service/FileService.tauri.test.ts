@@ -16,16 +16,17 @@ vi.mock('mermaid', () => ({}))
 beforeEach(() => {
   vi.restoreAllMocks()
   clearMocks()
-  mockIPC((cmd, args: any) => {
-    if (cmd === 'to_relative_path') {
-      return '~' + args.path
-    }
-  })
 })
 
 const ctrl = mockDeep<Ctrl>()
 
 test('getTitle', async () => {
+  mockIPC((cmd, args: any): any => {
+    if (cmd === 'to_relative_path') {
+      return '~' + args.path
+    }
+  })
+
   const [store, setState] = createStore(createState({
     files: [
       {id: '1', ydoc: createYUpdate('1', ['Test1', 'foo']), versions: []},
@@ -40,4 +41,38 @@ test('getTitle', async () => {
   expect(await service.getTitle(schema, store.files[1])).toBe('Test2')
   expect(await service.getTitle(schema, store.files[2])).toBe('a'.repeat(25))
   expect(await service.getTitle(schema, store.files[3])).toBe('~/path/to/file4')
+})
+
+test('findFile - found', async () => {
+  mockIPC((cmd, args: any): any => {
+    if (cmd === 'resolve_path') {
+      return '/path/to' + args.paths[0]
+    }
+  })
+
+  const [store, setState] = createStore(createState({
+    files: [
+      {id: '1', ydoc: createYUpdate('1', ['Test1']), versions: []},
+      {id: '2', ydoc: createYUpdate('2', ['Test2']), versions: [], path: '/path/to/file2'},
+    ],
+  }))
+
+  const service = new FileService(ctrl, store, setState)
+  expect((await service.findFile({id: '1'}))?.id).toBe('1')
+  expect((await service.findFile({path: '/file2'}))?.id).toBe('2')
+})
+
+test('findFile - not found', async () => {
+  mockIPC((cmd): any => {
+    if (cmd === 'resolve_path') throw Error('Fail')
+  })
+
+  const [store, setState] = createStore(createState({
+    files: [
+      {id: '2', ydoc: createYUpdate('2', ['Test2']), versions: [], path: '/path/to/file2'},
+    ],
+  }))
+
+  const service = new FileService(ctrl, store, setState)
+  expect(service.findFile({path: '/path/to/file2'})).rejects.toThrowError()
 })
