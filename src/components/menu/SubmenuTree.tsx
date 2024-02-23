@@ -150,7 +150,7 @@ export default (props: Props) => {
 
   const deleteNode = async (node: TreeNode) => {
     const deleteItem = async (item: TreeNodeItem) => {
-      if (isFile(item)) await ctrl.file.deleteFile(item)
+      if (isFile(item)) await ctrl.file.deleteFile(item.id)
       else ctrl.canvas.deleteCanvas(item.id)
     }
 
@@ -158,9 +158,10 @@ export default (props: Props) => {
     if (
       state.mode === Mode.Editor &&
       currentFile !== undefined &&
-      (node.item.id === currentFile.id || ctrl.tree.isDescendant(currentFile.id, node.tree))
+      (node.item.id === currentFile.id || ctrl.tree.isDescendant(currentFile.id, node.tree)) &&
+      node.item.parentId
     ) {
-      await ctrl.editor.openFile({id: node.item.parentId})
+      await ctrl.editor.openFile(node.item.parentId)
     }
 
     const proms = [deleteItem(node.item)]
@@ -225,7 +226,7 @@ export default (props: Props) => {
 
     const onClick = async () => {
       if (isFile(p.node.item)) {
-        await ctrl.editor.openFile(p.node.item)
+        await ctrl.editor.openFile(p.node.item.id)
       } else {
         ctrl.canvas.open(p.node.item.id)
       }

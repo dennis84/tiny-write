@@ -28,7 +28,7 @@ export default () => {
 
   const FileLink = (props: {path: string}) => {
     const onClick = async () => {
-      await ctrl.editor.openFile({path: props.path})
+      await ctrl.editor.openFileByPath(props.path)
     }
 
     return (

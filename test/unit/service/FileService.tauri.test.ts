@@ -58,8 +58,8 @@ test('findFile - found', async () => {
   }))
 
   const service = new FileService(ctrl, store, setState)
-  expect((await service.findFile({id: '1'}))?.id).toBe('1')
-  expect((await service.findFile({path: '/file2'}))?.id).toBe('2')
+  expect(service.findFileById('1')?.id).toBe('1')
+  expect((await service.findFileByPath('/file2'))?.id).toBe('2')
 })
 
 test('findFile - not found', async () => {
@@ -74,5 +74,6 @@ test('findFile - not found', async () => {
   }))
 
   const service = new FileService(ctrl, store, setState)
-  expect(service.findFile({path: '/path/to/file2'})).rejects.toThrowError()
+  expect(service.findFileById('1')).toBe(undefined)
+  expect(service.findFileByPath('/path/to/file2')).rejects.toThrowError()
 })

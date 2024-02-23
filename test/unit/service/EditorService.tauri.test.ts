@@ -32,7 +32,7 @@ beforeEach(() => {
   })
 })
 
-test('openFile - path in files', async () => {
+test('openFileByPath - path in files', async () => {
   vi.mocked(DB.getFiles).mockResolvedValue([
     {id: '1', path: 'file1', ydoc: createYUpdate('1', ['Test']), lastModified},
     {id: '2', path: 'file2', ydoc: createYUpdate('2', ['Test 2']), lastModified, active: true},
@@ -48,7 +48,7 @@ test('openFile - path in files', async () => {
     expect(getText(ctrl)).toBe('File2')
   })
 
-  await ctrl.editor.openFile({path: 'file1'})
+  await ctrl.editor.openFileByPath('file1')
   expect(store.files.length).toBe(2)
   expect(ctrl.file.currentFile?.editorView).toBe(undefined)
   expect(ctrl.file.currentFile?.path).toBe('file1')
@@ -60,7 +60,7 @@ test('openFile - path in files', async () => {
   })
 })
 
-test('openFile - push path to files', async () => {
+test('openFileByPath - push path to files', async () => {
   const {ctrl, store} = createCtrl(createState())
   const target = document.createElement('div')
 
@@ -70,7 +70,7 @@ test('openFile - push path to files', async () => {
   expect(store.files.length).toBe(1)
   insertText(ctrl, 'Test')
 
-  await ctrl.editor.openFile({path: 'file1'})
+  await ctrl.editor.openFileByPath('file1')
   expect(store.files.length).toBe(2)
   expect(store.files[0].path).toBe(undefined)
   expect(store.files[1].path).toBe('file1')
@@ -83,7 +83,7 @@ test('openFile - push path to files', async () => {
   })
 })
 
-test('openFile - path and text', async () => {
+test('openFileByPath - path and text', async () => {
   const {ctrl, store} = createCtrl(createState())
   const target = document.createElement('div')
   await ctrl.app.init()
@@ -91,7 +91,7 @@ test('openFile - path and text', async () => {
 
   expect(store.files.length).toBe(1)
 
-  await ctrl.editor.openFile({path: 'file1'})
+  await ctrl.editor.openFileByPath('file1')
   expect(store.files.length).toBe(2)
   ctrl.editor.renderEditor(target)
 

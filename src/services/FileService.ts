@@ -17,8 +17,6 @@ export interface LoadedFile {
   path: string;
 }
 
-export type OpenFile = {id?: string; path?: string}
-
 export class FileService {
   constructor(
     private ctrl: Ctrl,
@@ -45,9 +43,12 @@ export class FileService {
     }
   }
 
-  async findFile(req: OpenFile): Promise<File | undefined> {
-    let path = req.path
-    if (isTauri() && path) {
+  findFileById(id: string): File | undefined {
+    return this.store.files.find((file) => file.id === id)
+  }
+
+  async findFileByPath(path: string): Promise<File | undefined> {
+    if (isTauri()) {
       try {
         path = await remote.resolvePath([path])
       } catch (e) {
@@ -55,9 +56,7 @@ export class FileService {
       }
     }
 
-    return this.store.files.find((file) => {
-      return file.id === req.id || (file.path && file.path === path)
-    })
+    return this.store.files.find((file) => file.path === path)
   }
 
   async loadFile(path: string): Promise<LoadedFile> {
@@ -170,9 +169,9 @@ export class FileService {
     return files
   }
 
-  async deleteFile(req: OpenFile) {
+  async deleteFile(id: string) {
     const currentFile = this.currentFile
-    const file = await this.findFile(req)
+    const file = this.findFileById(id)
     if (!file) return
 
     if (this.store.mode === Mode.Editor && currentFile?.id === file.id) {
@@ -188,7 +187,7 @@ export class FileService {
       }
 
       if (maxId) {
-        await this.ctrl.editor.openFile({id: maxId})
+        await this.ctrl.editor.openFile(maxId)
       } else {
         await this.ctrl.editor.newFile()
       }
@@ -200,7 +199,7 @@ export class FileService {
       lastModified: new Date(),
     })
 
-    const updatedFile = await this.findFile(req)
+    const updatedFile = this.findFileById(id)
     if (!updatedFile) return
 
     this.saveFile(updatedFile)
@@ -236,15 +235,15 @@ export class FileService {
   }
 
   async restore(id: string) {
-    const file = await this.findFile({id})
+    const file = this.findFileById(id)
     if (!file) return
 
     this.updateFile(id, {deleted: false})
 
-    const updateFile = await this.findFile({id})
+    const updateFile = this.findFileById(id)
     if (!updateFile) return
 
-    this.saveFile(updateFile)
+    await this.saveFile(updateFile)
     remote.info('File restored')
   }
 

@@ -171,7 +171,7 @@ test('openFile - existing', async () => {
   expect(store.files[0].active).toBe(true)
   expect(store.files[1].active).toBe(false)
 
-  await ctrl.editor.openFile({id: '2'})
+  await ctrl.editor.openFile('2')
   expect(store.files.length).toBe(2)
   expect(store.files[0].active).toBe(false)
   expect(store.files[1].active).toBe(true)
@@ -192,7 +192,7 @@ test('openFile - not found', async () => {
 
   const id = ctrl.file.currentFile?.id
   expect(store.files.length).toBe(1)
-  await ctrl.editor.openFile({id: '123'})
+  await ctrl.editor.openFile('123')
   expect(store.files.length).toBe(1)
   expect(ctrl.file.currentFile?.id).toBe(id)
 })
@@ -208,7 +208,7 @@ test('openFile - not delete empty', async () => {
   await ctrl.app.init()
   ctrl.editor.renderEditor(target)
 
-  await ctrl.editor.openFile({id: '2'})
+  await ctrl.editor.openFile('2')
   expect(store.files.length).toBe(2)
   expect(ctrl.file.currentFile?.editorView).toBe(undefined)
   ctrl.editor.renderEditor(target)
@@ -235,7 +235,7 @@ test('openFile - open collab', async () => {
   expect(ctrl.file.currentFile?.id).not.toBe('room-123')
   expect(store.collab?.provider?.roomname).toBe(ctrl.file.currentFile?.id)
 
-  await ctrl.editor.openFile(file)
+  await ctrl.editor.openFile(file.id)
   expect(ctrl.file.currentFile?.editorView).toBe(undefined)
   ctrl.editor.renderEditor(target)
 
@@ -265,7 +265,7 @@ test('openFile - open from collab', async () => {
   expect(store.files.length).toBe(2)
   expect(store.collab?.started).toBe(true)
 
-  await ctrl.editor.openFile({id: '2'})
+  await ctrl.editor.openFile('2')
   expect(store.files.length).toBe(2)
   expect(store.collab?.started).toBe(false)
   expect(ctrl.file.currentFile?.editorView).toBe(undefined)

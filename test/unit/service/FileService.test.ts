@@ -58,15 +58,15 @@ test('deleteFile', async () => {
   setState('collab', {ydoc})
   setState('mode', Mode.Editor)
 
-  await service.deleteFile({id: '1'})
+  await service.deleteFile('1')
   expect(store.files.length).toBe(3)
   expect(store.files[0].deleted).toBe(true)
   expect(store.files[1].deleted).toBe(true)
   expect(store.files[0].active).toBe(false)
-  expect(ctrl.editor.openFile).toHaveBeenCalledWith({id: '3'})
+  expect(ctrl.editor.openFile).toHaveBeenCalledWith('3')
   setState('files', 2, 'active', true)
 
-  await service.deleteFile({id: '3'})
+  await service.deleteFile('3')
   expect(store.files.length).toBe(3)
   expect(store.files[0].deleted).toBe(true)
   expect(store.files[1].deleted).toBe(true)

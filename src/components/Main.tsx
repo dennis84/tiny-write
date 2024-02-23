@@ -56,6 +56,7 @@ export default (props: {state: State}) => {
           const mime = await remote.getMimeType(path)
           const isImage = mime.startsWith('image/')
           const isVideo = mime.startsWith('video/')
+          const isText = mime.startsWith('text/')
 
           if (isImage || isVideo) {
             const x = mouseEnterCoords.x
@@ -89,9 +90,11 @@ export default (props: {state: State}) => {
                 video.src = src
               }
             }
-          } else if (mime.startsWith('text/')) {
-            await ctrl.editor.openFile({path})
+          } else if (isText) {
+            await ctrl.editor.openFileByPath(path)
             return
+          } else {
+            remote.info(`Ignore dropped file (mime=${mime})`)
           }
         }
       } else {

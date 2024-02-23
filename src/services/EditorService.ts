@@ -11,13 +11,11 @@ import {
 } from 'y-prosemirror'
 import {Box2d} from '@tldraw/primitives'
 import * as remote from '@/remote'
-import {fileToString} from '@/utils/debug'
 import {createExtensions, createEmptyText, createSchema, createNodeViews} from '@/prosemirror-setup'
 import {State, File, FileText, Mode} from '@/state'
 import {serialize, createMarkdownParser} from '@/markdown'
 import {DB} from '@/db'
 import {Ctrl} from '.'
-import {OpenFile} from './FileService'
 
 export class EditorService {
   constructor(
@@ -121,21 +119,30 @@ export class EditorService {
     this.setState(update)
   }
 
-  async openFile(req: OpenFile) {
-    remote.debug(`Open file: ${fileToString(req)}`)
+  async openFileByPath(path: string) {
+    remote.debug(`Open file by path: ${path}`)
+    const file = await this.ctrl.file.findFileByPath(path)
+
+    if (file) {
+      await this.openFile(file.id)
+    } else {
+      remote.debug(`Create new file by path: ${path}`)
+      const file = this.ctrl.file.createFile({path})
+      this.setState('files', (prev) => [...prev, file])
+      await this.openFile(file.id)
+    }
+  }
+
+  async openFile(id: string) {
+    remote.debug(`Open file: ${id}`)
     const state: State = unwrap(this.store)
 
     try {
-      let file = await this.ctrl.file.findFile(req)
+      const file = this.ctrl.file.findFileById(id)
       let text: FileText | undefined
 
       if (file?.path) {
         text = (await this.ctrl.file.loadFile(file.path)).text
-      } else if (!file && req.path) {
-        const loadedFile = await this.ctrl.file.loadFile(req.path)
-        text = loadedFile.text
-        file = this.ctrl.file.createFile(loadedFile)
-        state.files.push(file as File)
       }
 
       if (!file) return

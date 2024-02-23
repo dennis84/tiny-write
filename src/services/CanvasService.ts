@@ -667,13 +667,13 @@ export class CanvasService {
     remote.info('💾 All elements cleared')
   }
 
-  async renderEditor(element: CanvasEditorElement, node: HTMLElement) {
-    const file = await this.ctrl.file.findFile({id: element.id})
+  renderEditor(element: CanvasEditorElement, node: HTMLElement) {
+    const file = this.ctrl.file.findFileById(element.id)
     if (file) Y.applyUpdate(this.store.collab!.ydoc!, file.ydoc)
-    await this.updateEditorState(element.id, node)
+    this.updateEditorState(element.id, node)
   }
 
-  async updateEditorState(id: string, node?: Element) {
+  updateEditorState(id: string, node?: Element) {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
 
@@ -686,7 +686,7 @@ export class CanvasService {
     if (!editorView && !node) return
 
     const type = this.store.collab?.ydoc?.getXmlFragment(id)
-    let file = await this.ctrl.file.findFile({id})
+    let file = this.ctrl.file.findFileById(id)
     if (!file) {
       file = this.ctrl.file.createFile({id})
       this.setState('files', (prev) => [...prev, file!])
