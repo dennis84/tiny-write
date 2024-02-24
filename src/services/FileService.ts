@@ -203,7 +203,7 @@ export class FileService {
     if (!updatedFile) return
 
     this.saveFile(updatedFile)
-    remote.info('💾 File deleted')
+    remote.info('File deleted')
     this.ctrl.tree.create()
   }
 

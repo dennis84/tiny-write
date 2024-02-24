@@ -168,7 +168,7 @@ export const error = (msg: string, ...data: any[]) => {
 
 export const updateWindow = async ({width, height, x, y}: Window) => {
   if (!isTauri()) throw Error('Must be run in tauri: save')
-  info(`🖼️ Update window: (width=${width}, height=${height}, x=${x}, y=${y})`)
+  info(`Update window: (width=${width}, height=${height}, x=${x}, y=${y})`)
 
   // Last size should not be too small, otherwise difficult to enlarge.
   if (width > 10 && height > 10) {

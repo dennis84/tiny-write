@@ -68,7 +68,7 @@ export class EditorService {
         })
 
         this.saveEditor()
-        remote.info('💾 Saved updated text')
+        remote.info('Saved editor content')
       }
 
       editorView = new EditorView(node!, {
@@ -193,7 +193,7 @@ export class EditorService {
     })
 
     this.saveEditor()
-    remote.info('💾 Toggle markdown')
+    remote.info(`Toggled markdown mode (markdown=${markdown})`)
   }
 
   updatePath(path: string) {

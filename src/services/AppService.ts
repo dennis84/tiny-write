@@ -157,7 +157,7 @@ export class AppService {
     if (!this.store.window) return
     const updatedWindow = unwrap(this.store.window)
     DB.setWindow(updatedWindow)
-    remote.info('💾 Save window state')
+    remote.info('Saved window state')
   }
 
   parseRoom(room: string): [Mode, string] {

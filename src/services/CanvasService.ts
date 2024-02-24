@@ -100,7 +100,7 @@ export class CanvasService {
 
     this.updateCamera({zoom, point: [-x, -y]})
     this.saveCanvas()
-    remote.info('💾 Saved updated camera')
+    remote.info('Canvas saved after camera update')
   }
 
   backToContent() {
@@ -114,7 +114,7 @@ export class CanvasService {
       const [x, y] = center.sub(vp).toArray()
       this.updateCanvas(currentCanvas.id, {camera: {zoom, point: [-x, -y]}})
       this.saveCanvas()
-      remote.info('💾 Saved updated camera')
+      remote.info('Canvas saved after camera update')
     }
   }
 
@@ -161,7 +161,7 @@ export class CanvasService {
 
     const updated = this.findCanvas(id)
     this.saveCanvas(updated)
-    remote.info('💾 Canvas deleted')
+    remote.info('Set canvas as deleted')
 
     if (this.store.mode === Mode.Canvas && maxId) {
       this.open(maxId)
@@ -269,7 +269,7 @@ export class CanvasService {
     })
 
     this.saveCanvas()
-    remote.info('💾 New canvas created')
+    remote.info('New canvas created')
     DB.setMeta({mode: state.mode})
   }
 
@@ -307,7 +307,7 @@ export class CanvasService {
     this.ctrl.canvasCollab.removeMany([...toRemove])
     this.updateCanvas(currentCanvas.id, {elements: [...elements]})
     this.saveCanvas()
-    remote.info('💾 Element removed')
+    remote.info('Canvas saved after removing element')
   }
 
   destroyElement(elementId: string) {
@@ -339,7 +339,7 @@ export class CanvasService {
 
     this.saveCanvas()
     DB.setMeta({mode: state.mode})
-    remote.info('💾 Switched to canvas mode')
+    remote.info('Saved canvas and mode after open')
 
     this.ctrl.canvasCollab.init()
   }
@@ -381,7 +381,7 @@ export class CanvasService {
     this.setState('files', [...this.store.files, file])
     this.addFile(file, link, point)
     this.ctrl.tree.create()
-    remote.info('💾 New file added')
+    remote.info('New file added')
   }
 
   addFile(file: File, link?: CanvasLinkElement, point?: Vec2d) {
@@ -471,7 +471,7 @@ export class CanvasService {
 
     this.ctrl.canvasCollab.addElements(toAdd)
     this.saveCanvas()
-    remote.info('💾 Added file to canvas')
+    remote.info('File added to canvas')
   }
 
   addImage(
@@ -505,7 +505,7 @@ export class CanvasService {
     })
 
     this.saveCanvas()
-    remote.info('💾 Added image to canvas')
+    remote.info('Image added to canvas')
   }
 
   addVideo(
@@ -541,7 +541,7 @@ export class CanvasService {
     })
 
     this.saveCanvas()
-    remote.info('💾 Added video to canvas')
+    remote.info('Video added to canvas')
   }
 
   drawLink(id: string, from: string, fromEdge: EdgeType, toX: number, toY: number) {
@@ -653,7 +653,7 @@ export class CanvasService {
       this.ctrl.canvasCollab.removeMany(toRemove)
       this.updateCanvas(currentCanvas.id, {elements})
       this.saveCanvas()
-      remote.info('💾 Removed dead links')
+      remote.info('Removed dead links')
     }
   }
 
@@ -664,7 +664,7 @@ export class CanvasService {
     this.ctrl.canvasCollab.removeAll()
     this.updateCanvas(currentCanvas.id, {elements: []})
     this.saveCanvas()
-    remote.info('💾 All elements cleared')
+    remote.info('All elements cleared')
   }
 
   renderEditor(element: CanvasEditorElement, node: HTMLElement) {
@@ -723,7 +723,7 @@ export class CanvasService {
         const updatedFile = this.store.files.find((f) => f.id === id)
         if (!updatedFile) return
         this.ctrl.file.saveFile(updatedFile)
-        remote.info('💾 Saved updated text')
+        remote.info('Saved editor content')
       }
 
       editorView = new EditorView(node!, {

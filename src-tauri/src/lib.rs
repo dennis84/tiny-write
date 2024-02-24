@@ -1,4 +1,4 @@
-use log::{info, Level};
+use log::{info, LevelFilter};
 use tauri_plugin_log::{Target, TargetKind};
 use tauri_plugin_cli::CliExt;
 
@@ -12,18 +12,10 @@ mod pathutil;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let context = tauri::generate_context!("tauri.conf.json");
-
     let logger = tauri_plugin_log::Builder::default()
+        .level(if cfg!(dev) { LevelFilter::Debug } else { LevelFilter::Info })
         .format(move |out, message, record| {
-            match record.level() {
-                Level::Info => {
-                    out.finish(format_args!("{}", message))
-                }
-                level => {
-                    out.finish(format_args!("{}: {}", level, message));
-                }
-            }
+            out.finish(format_args!("{}: {}", record.level(), message));
         })
         .targets([
             Target::new(TargetKind::Stdout),
@@ -116,6 +108,6 @@ pub fn run() {
             cmd::path::dirname,
             cmd::path::to_relative_path,
         ])
-        .run(context)
+        .run(tauri::generate_context!("tauri.conf.json"))
         .expect("error while running tauri application");
 }

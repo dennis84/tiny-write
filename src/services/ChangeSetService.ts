@@ -27,7 +27,7 @@ export class ChangeSetService {
 
     this.ctrl.file.updateFile(currentFile.id, {versions})
     this.ctrl.editor.saveEditor()
-    remote.info('💾 Saved new snapshot version')
+    remote.info('Saved new snapshot version')
   }
 
   renderVersion(version: Version) {

@@ -384,7 +384,7 @@ export class ConfigService {
 
   private async saveConfig(state: State) {
     DB.setConfig(state.config)
-    remote.info('💾 Save config')
+    remote.info('Config saved')
   }
 
   private getDefaltTheme() {
