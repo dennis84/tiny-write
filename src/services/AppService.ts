@@ -38,59 +38,53 @@ export class AppService {
       let currentFile
       let currentCanvas
 
+      // Get last active editor or canvas
       if (data.mode === Mode.Editor) {
         currentFile = data.files.find((it) => it.active)
       } else {
         currentCanvas = data.canvases.find((it) => it.active)
       }
 
-      if (data.args?.dir && data.args.dir.length > 0) { // If app was started with a directory as argument
+      // Handle args:
+      // List files instead show editor if app was started with
+      // a directory argument.
+      if (data.args?.dir) {
         currentFile = undefined
-      } else if (data.args?.file) { // If app was started with a file as argument
+      }
+      // If app was started with a file as argument
+      else if (data.args?.file) {
         const path = data.args.file
         currentFile = data.files.find((f) => f.path === path)
-        if (currentFile?.path) {
-          text = (await this.ctrl.file.loadFile(currentFile.path)).text
-        } else if (!currentFile) {
+        if (!currentFile) {
           const loadedFile = await this.ctrl.file.loadFile(path)
           currentFile = this.ctrl.file.createFile(loadedFile)
           data.files.push(currentFile as File)
         }
-        data = await this.ctrl.editor.activateFile(data, currentFile)
-      } else if (data.args?.room) { // Join collab
+      }
+      // Join collab if room was passed
+      else if (data.args?.room) {
         if (data.mode === Mode.Editor) {
           currentFile = data.files.find((f) => f.id === data.args?.room)
-          if (currentFile?.path) {
-            text = (await this.ctrl.file.loadFile(currentFile.path)).text
-          } else if (!currentFile) {
+          if (!currentFile) {
             currentFile = this.ctrl.file.createFile({id: data.args.room})
             data.files.push(currentFile)
           }
-
-          data = await this.ctrl.editor.activateFile(data, currentFile)
         } else {
           currentCanvas = data.canvases.find((c) => c.id === data.args?.room)
           if (!currentCanvas) {
             currentCanvas = this.ctrl.canvas.createCanvas({id: data.args.room})
             data.canvases.push(currentCanvas)
           }
-
-          data = this.ctrl.canvas.activateCanvas(data, data.args.room)
-        }
-      } else if (currentFile?.id) { // Restore last saved file
-        data = await this.ctrl.editor.activateFile(data, currentFile)
-        if (currentFile?.path) {
-          text = (await this.ctrl.file.loadFile(currentFile.path)).text
         }
       }
 
-      // Init from empty state or file not found
+      // Create new file if no current file or canvas
       if (!data.args?.dir && !currentFile && !currentCanvas) {
         currentFile = this.ctrl.file.createFile({id: data.args?.room})
         data.files.push(currentFile)
-        data = await this.ctrl.editor.activateFile(data, currentFile)
       }
 
+      // Init ydoc and load text
       const mode = currentCanvas ? Mode.Canvas : Mode.Editor
       let collab
       if (mode === Mode.Editor && currentFile) {
@@ -98,6 +92,7 @@ export class AppService {
         if (currentFile?.path) {
           text = (await this.ctrl.file.loadFile(currentFile.path)).text
         }
+        data = await this.ctrl.editor.activateFile(data, currentFile)
       } else if (mode === Mode.Canvas && currentCanvas) {
         collab = this.ctrl.collab.create(currentCanvas.id, mode, !!data.args?.room)
       }
@@ -189,6 +184,11 @@ export class AppService {
       const [m, r] = this.parseRoom(args.room)
       mode = m
       args.room = r
+    }
+
+    // Only show dir is it's not empty
+    if (!args.dir?.length) {
+      args.dir = undefined
     }
 
     const config = {
