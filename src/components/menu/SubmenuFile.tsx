@@ -20,9 +20,8 @@ export default ({maybeHide}: {maybeHide: () => void}) => {
 
   const onSaveAs = async () => {
     const currentFile = ctrl.file.currentFile
-    const state = currentFile?.editorView?.state
-    if (!state) return
-    const path = await remote.save(state)
+    if (!currentFile) return
+    const path = await remote.saveFile(currentFile)
     if (path) ctrl.editor.updatePath(path)
   }
 

@@ -9,6 +9,7 @@ import {UndoManager} from './services/CollabService'
 export interface Args {
   cwd?: string;
   file?: string;
+  newFile?: string;
   dir?: string[];
   room?: string;
   text?: string;
@@ -194,6 +195,7 @@ export interface File {
   versions: Version[];
   lastModified?: Date;
   path?: string;
+  newFile?: string;
   markdown?: boolean;
   active?: boolean;
   deleted?: boolean;

@@ -6,7 +6,7 @@ import * as logger from '@tauri-apps/plugin-log'
 import * as dialog from '@tauri-apps/plugin-dialog'
 import {EditorState} from 'prosemirror-state'
 import {toBase64} from 'js-base64'
-import {Args, Window} from '@/state'
+import {Args, File, Window} from '@/state'
 import {serialize} from '@/markdown'
 import {isTauri} from '@/env'
 
@@ -138,11 +138,12 @@ export const toRelativePath = async (path: string, basePath?: string): Promise<s
   return invoke('to_relative_path', {path, basePath})
 }
 
-export const save = async (state: EditorState): Promise<string> => {
+export const saveFile = async (file: File): Promise<string> => {
   if (!isTauri()) throw Error('Must be run in tauri: save')
-  const path = await dialog.save()
-  if (!path) throw Error('No path returned')
-  await fs.writeTextFile(path, serialize(state))
+  const path = await dialog.save({defaultPath: file.newFile})
+  if (!path) throw new Error('No path returned')
+  if (!file.editorView?.state) throw new Error('EditorView is not defined')
+  await fs.writeTextFile(path, serialize(file.editorView.state))
   return path
 }
 

@@ -1,4 +1,4 @@
-use crate::pathutil::{dirname, path_buf_to_string, resolve_path, to_relative_path};
+use crate::pathutil::{dirname, path_buf_to_string, resolve_path, to_relative_path, expand_tilde};
 use std::collections::HashMap;
 use std::io::Error;
 use std::path::Path;
@@ -7,11 +7,14 @@ use url::Url;
 use base64::{engine::general_purpose, Engine as _};
 
 #[derive(Clone, Debug, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Args {
     // current working dir: `./path/to`
     pub cwd: Option<String>,
     // source file: `tinywrite ./path/to/file.md`
     pub file: Option<String>,
+    // source file: `tinywrite ./path/to/not_existing_file.md`
+    pub new_file: Option<String>,
     // text file paths in source dir: `tinywrite ./path/to/folder/`
     pub dir: Option<Vec<String>>,
     // collab room from deeplink
@@ -32,6 +35,7 @@ pub fn get_args(state: tauri::State<Args>) -> Args {
 
 pub fn create_args(source: String) -> Args {
     let mut file = None;
+    let mut new_file = None;
     let mut dir = None;
     let mut room = None;
     let mut text = None;
@@ -47,13 +51,19 @@ pub fn create_args(source: String) -> Args {
                 .and_then(|x| String::from_utf8(x).ok());
         }
     } else if !source.is_empty() {
-        if let Ok(p) = resolve_path(vec![source]) {
+        if let Ok(p) = resolve_path(vec![&source]) {
             if p.is_dir() {
                 dir = list_text_files(&p).ok();
                 cwd = path_buf_to_string(p).ok();
             } else {
                 file = path_buf_to_string(&p).ok();
                 cwd = dirname(p).and_then(path_buf_to_string).ok();
+            }
+        } else if let Some(p) = expand_tilde(source) {
+            if let Ok(d) = dirname(&p) {
+                if d.exists() {
+                    new_file = path_buf_to_string(p).ok();
+                }
             }
         }
     }
@@ -75,7 +85,7 @@ pub fn create_args(source: String) -> Args {
             .ok();
     }
 
-    Args { cwd, file, dir, room, text }
+    Args { cwd, file, new_file, dir, room, text }
 }
 
 fn list_text_files(p: &Path) -> Result<Vec<String>, Error> {
@@ -111,6 +121,7 @@ mod tests {
 
     #[test]
     fn test_create_args() {
+        // Empty stringsource
         let args = create_args("".to_string());
         assert_eq!(
             Path::new(&args.cwd.as_ref().unwrap()),
@@ -121,6 +132,7 @@ mod tests {
         assert!(args.room.is_none());
         assert!(args.text.is_none());
 
+        // Existing file
         let args = create_args("../README.md".to_string());
         assert_eq!(
             Path::new(&args.cwd.as_ref().unwrap()),
@@ -130,10 +142,28 @@ mod tests {
             Path::new(&args.file.as_ref().unwrap()),
             Path::new("../README.md").canonicalize().unwrap()
         );
+        assert!(args.new_file.is_none());
         assert!(args.dir.is_none());
         assert!(args.room.is_none());
         assert!(args.text.is_none());
 
+        // File not found and dirname not found
+        let args = create_args("../xyz/README.md".to_string());
+        assert!(args.file.is_none());
+        assert!(args.new_file.is_none());
+        assert!(args.dir.is_none());
+        assert!(args.room.is_none());
+        assert!(args.text.is_none());
+
+        // File not found but dirname exists
+        let args = create_args("../README.m".to_string());
+        assert!(args.file.is_none());
+        assert_eq!(&args.new_file.unwrap(), "../README.m");
+        assert!(args.dir.is_none());
+        assert!(args.room.is_none());
+        assert!(args.text.is_none());
+
+        // Existing dir
         let args = create_args("..".to_string());
         assert_eq!(
             Path::new(&args.cwd.as_ref().unwrap()),
@@ -142,9 +172,11 @@ mod tests {
         assert!(args.file.is_none());
         assert!(args.dir.unwrap()[0].ends_with("/README.md"));
 
+        // Deeplink collab room
         let args = create_args("tinywrite://test?room=123".to_string());
         assert_eq!(args.room, Some("123".to_string()));
 
+        // Deeplink text
         let args = create_args("tinywrite://test?text=dGVzdA==".to_string());
         assert_eq!(args.text, Some("test".to_string()));
     }

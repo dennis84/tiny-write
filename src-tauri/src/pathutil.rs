@@ -31,9 +31,10 @@ pub fn dirname<P: AsRef<Path>>(p: P) -> Result<PathBuf, Error> {
         return Ok(p);
     }
 
-    Ok(p.parent()
+    let p = p.parent()
         .ok_or(Error::new(ErrorKind::Other, "No parent dir"))?
-        .to_path_buf())
+        .to_path_buf();
+    Ok(p)
 }
 
 pub fn expand_tilde<P: AsRef<Path>>(path_user_input: P) -> Option<PathBuf> {

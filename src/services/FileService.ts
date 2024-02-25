@@ -60,6 +60,7 @@ export class FileService {
   }
 
   async loadFile(path: string): Promise<LoadedFile> {
+    remote.debug(`Load file (path=${path})`)
     let resolvedPath
     try {
       resolvedPath = await remote.resolvePath([path])
@@ -131,6 +132,7 @@ export class FileService {
       ydoc: file.ydoc!,
       lastModified: file.lastModified,
       path: file.path,
+      newFile: file.newFile,
       markdown: file.markdown,
       active: file.active,
       deleted: file.deleted,
@@ -153,6 +155,7 @@ export class FileService {
           ydoc: file.ydoc,
           lastModified: new Date(file.lastModified),
           path: file.path,
+          newFile: file.path,
           markdown: file.markdown,
           active: file.active,
           deleted: file.deleted,

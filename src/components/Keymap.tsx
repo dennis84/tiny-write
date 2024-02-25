@@ -49,9 +49,8 @@ export default () => {
 
   const onSave = async () => {
     const currentFile = ctrl.file.currentFile
-    const state = currentFile?.editorView?.state
-    if (!isTauri() || currentFile?.path || !state) return false
-    const path = await remote.save(state)
+    if (!isTauri() || currentFile?.path) return false
+    const path = await remote.saveFile(currentFile)
     if (path) ctrl.editor.updatePath(path)
   }
 

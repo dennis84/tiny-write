@@ -56,10 +56,14 @@ export class AppService {
         const path = data.args.file
         currentFile = data.files.find((f) => f.path === path)
         if (!currentFile) {
-          const loadedFile = await this.ctrl.file.loadFile(path)
-          currentFile = this.ctrl.file.createFile(loadedFile)
+          currentFile = this.ctrl.file.createFile({path})
           data.files.push(currentFile as File)
         }
+      }
+      // If source was passed but file not found
+      else if (data.args?.newFile) {
+        currentFile = this.ctrl.file.createFile({newFile: data.args.newFile})
+        data.files.push(currentFile as File)
       }
       // Join collab if room was passed
       else if (data.args?.room) {
@@ -90,7 +94,13 @@ export class AppService {
       if (mode === Mode.Editor && currentFile) {
         collab = this.ctrl.collab.create(currentFile.id, mode, !!data.args?.room)
         if (currentFile?.path) {
-          text = (await this.ctrl.file.loadFile(currentFile.path)).text
+          try {
+            text = (await this.ctrl.file.loadFile(currentFile.path)).text
+          } catch (e) {
+            remote.info(`Could not load current file with path, not found (path=${currentFile.path})`)
+            currentFile.newFile = currentFile.path
+            currentFile.path = undefined
+          }
         }
         data = await this.ctrl.editor.activateFile(data, currentFile)
       } else if (mode === Mode.Canvas && currentCanvas) {

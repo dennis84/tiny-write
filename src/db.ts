@@ -16,6 +16,7 @@ export interface PersistedFile {
   versions?: PersistedVersion[];
   lastModified: Date;
   path?: string;
+  newFile?: string;
   markdown?: boolean;
   active?: boolean;
   deleted?: boolean;

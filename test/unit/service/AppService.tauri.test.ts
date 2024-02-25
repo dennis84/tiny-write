@@ -75,7 +75,60 @@ test('init - check text', async () => {
   })
 })
 
-test('init - error', async () => {
+test('init - open file', async () => {
+  mockIPC((cmd, args: any) => {
+    if (cmd === 'get_args') {
+      return {file: 'file3'}
+    } else if (cmd === 'resolve_path') {
+      return args.paths[0]
+    } else if (cmd === 'get_file_last_modified') {
+      return lastModified
+    } else if (cmd === 'plugin:fs|read_text_file') {
+      return '# File3'
+    }
+  })
+
+  vi.mocked(DB.getFiles).mockResolvedValue([
+    {id: '1', path: 'file1', ydoc: createYUpdate('1', ['Test']), lastModified, active: true},
+    {id: '2', path: 'file2', ydoc: createYUpdate('2', ['Test 2']), lastModified}
+  ])
+
+  const {ctrl, store} = createCtrl(createState())
+  const target = document.createElement('div')
+  await ctrl.app.init()
+  ctrl.editor.renderEditor(target)
+
+  expect(store.error).toBe(undefined)
+  expect(store.files.length).toBe(3)
+  expect(ctrl.file.currentFile?.path).toBe('file3')
+})
+
+test('init - open file path not found', async () => {
+  mockIPC((cmd): any => {
+    if (cmd === 'get_args') {
+      return {newFile: 'file3'}
+    } else if (cmd === 'resolve_path') {
+      throw new Error('fail')
+    }
+  })
+
+  vi.mocked(DB.getFiles).mockResolvedValue([
+    {id: '1', path: 'file1', ydoc: createYUpdate('1', ['Test']), lastModified, active: true},
+    {id: '2', path: 'file2', ydoc: createYUpdate('2', ['Test 2']), lastModified}
+  ])
+
+  const {ctrl, store} = createCtrl(createState())
+  const target = document.createElement('div')
+  await ctrl.app.init()
+  ctrl.editor.renderEditor(target)
+
+  expect(store.error).toBe(undefined)
+  expect(store.files.length).toBe(3)
+  expect(ctrl.file.currentFile?.path).toBe(undefined)
+  expect(ctrl.file.currentFile?.newFile).toBe('file3')
+})
+
+test('init - persisted file path not found', async () => {
   mockIPC((cmd): any => {
     if (cmd === 'resolve_path') throw new Error('Fail')
   })
@@ -90,9 +143,11 @@ test('init - error', async () => {
   await ctrl.app.init()
   ctrl.editor.renderEditor(target)
 
-  expect(store.error).toBeDefined()
+  expect(store.error).toBe(undefined)
   expect(store.files.length).toBe(2)
   expect(ctrl.file.currentFile?.id).toBe('1')
+  expect(ctrl.file.currentFile?.path).toBe(undefined)
+  expect(ctrl.file.currentFile?.newFile).toBe('file1')
 })
 
 test('init - dir', async () => {
