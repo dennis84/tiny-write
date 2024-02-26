@@ -48,8 +48,9 @@
           "takesValue": true
         },
         {
-          "name": "no-default-features",
-          "takesValue": false
+          "short": "v",
+          "name": "verbose",
+          "description": "Verbosity level"
         }
       ]
     }

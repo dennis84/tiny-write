@@ -1,31 +1,14 @@
-use log::{info, LevelFilter};
-use tauri_plugin_log::{Target, TargetKind};
+use log::{info, debug};
+use tauri::{Manager, menu::*};
 use tauri_plugin_cli::CliExt;
-
-use tauri::{
-    Manager,
-    menu::*,
-};
 
 mod cmd;
 mod pathutil;
+mod logger;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
-    let logger = tauri_plugin_log::Builder::default()
-        .level(if cfg!(dev) { LevelFilter::Debug } else { LevelFilter::Info })
-        .format(move |out, message, record| {
-            out.finish(format_args!("{}: {}", record.level(), message));
-        })
-        .targets([
-            Target::new(TargetKind::Stdout),
-            Target::new(TargetKind::LogDir { file_name: None }),
-            Target::new(TargetKind::Webview),
-        ])
-        .build();
-
     tauri::Builder::default()
-        .plugin(logger)
         .plugin(tauri_plugin_websocket::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_clipboard_manager::init())
@@ -42,17 +25,14 @@ pub fn run() {
 
             match handle.cli().matches() {
                 Ok(matches) => {
-                    if let Some(source) = matches.args.get("source") {
-                        let source = source
-                            .value
-                            .as_str()
-                            .map(|s| s.to_string())
-                            .unwrap_or_default();
-                        let args = cmd::args::create_args(source);
-                        info!("Start app with {:?}", &args);
-                        info!("Log dir: {}", log_dir_string);
-                        app.manage(args);
-                    } else if let Some(help) = matches.args.get("help") {
+                    let verbose = matches.args.get("verbose")
+                        .map(|a| a.value.as_bool().unwrap_or(false))
+                        .unwrap_or(false);
+                    logger::register_logger(handle, verbose)?;
+
+                    debug!("Start app with cli args {:?}", &matches);
+
+                    if let Some(help) = matches.args.get("help") {
                        let help_text = help
                            .value
                            .as_str()
@@ -63,9 +43,19 @@ pub fn run() {
                     } else if matches.args.contains_key("version") {
                        println!("{} {}", app.package_info().name, app.package_info().version);
                        handle.exit(0);
+                    }
+
+                    if let Some(source) = matches.args.get("source") {
+                        let source = source
+                            .value
+                            .as_str()
+                            .map(|s| s.to_string())
+                            .unwrap_or_default();
+                        let args = cmd::args::create_args(source);
+                        info!("Log dir: {}", log_dir_string);
+                        app.manage(args);
                     } else {
                         let args = cmd::args::create_args("".to_string());
-                        info!("Start app with {:?}", &args);
                         info!("Log dir: {}", log_dir_string);
                         app.manage(args);
                     }

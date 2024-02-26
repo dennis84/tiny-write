@@ -108,11 +108,13 @@ export default (props: {state: State}) => {
   onMount(async () => {
     if (!isTauri()) return
     const unlistenResize = await tauriWindow.getCurrent().onResized(async ({payload}) => {
-      ctrl.app.updateWindow(payload)
+      const {width, height} = payload
+      ctrl.app.updateWindow({width, height})
     })
 
     const unlistenMove = await tauriWindow.getCurrent().onMoved(async ({payload}) => {
-      ctrl.app.updateWindow(payload)
+      const {x, y} = payload
+      ctrl.app.updateWindow({x, y})
     })
 
     onCleanup(() => {
