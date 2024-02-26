@@ -92,7 +92,7 @@ mod tests {
 
         assert_eq!(
             list_contents("./src/m".to_string()).unwrap(),
-            vec!["./src/main.rs"]
+            vec!["./src/main.rs", "./src/menu.rs"]
         );
 
         assert_eq!(

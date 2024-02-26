@@ -1,10 +1,11 @@
 use log::{info, debug};
-use tauri::{Manager, menu::*};
+use tauri::{Manager};
 use tauri_plugin_cli::CliExt;
 
 mod cmd;
 mod pathutil;
 mod logger;
+mod menu;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -66,25 +67,7 @@ pub fn run() {
                 }
             }
 
-            #[cfg(target_os = "macos")]
-            {
-                let submenu_app = SubmenuBuilder::new(handle, "TinyWrite")
-                    .quit()
-                    .build()?;
-                let submenu_edit = SubmenuBuilder::new(handle, "Edit")
-                    .undo()
-                    .redo()
-                    .separator()
-                    .cut()
-                    .copy()
-                    .paste()
-                    .build()?;
-                let menu = MenuBuilder::new(handle)
-                    .item(&submenu_app)
-                    .item(&submenu_edit)
-                    .build()?;
-                app.set_menu(menu)?;
-            }
+            menu::setup_menu(handle)?;
 
             Ok(())
         })
