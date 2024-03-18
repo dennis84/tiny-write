@@ -26,6 +26,7 @@ chrono = "0"
 log = { version = "0", features = ["max_level_debug"] }
 ignore = "0"
 globset = "0"
+anyhow = "1"
 tauri-plugin-cli = "2.0.0-beta"
 tauri-plugin-fs = "2.0.0-beta"
 tauri-plugin-clipboard-manager = "2.0.0-beta"

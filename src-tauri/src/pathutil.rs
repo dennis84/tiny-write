@@ -2,8 +2,9 @@ use std::env;
 use std::ffi::OsStr;
 use std::io::{Error, ErrorKind};
 use std::path::{Path, PathBuf};
+use anyhow::{Result, anyhow};
 
-pub fn resolve_path<P: AsRef<Path>>(paths: Vec<P>) -> Result<PathBuf, Error> {
+pub fn resolve_path<P: AsRef<Path>>(paths: Vec<P>) -> Result<PathBuf> {
     let mut path = env::current_dir()?;
 
     for p in paths {
@@ -16,14 +17,15 @@ pub fn resolve_path<P: AsRef<Path>>(paths: Vec<P>) -> Result<PathBuf, Error> {
 
                 path = path.join(path_buf);
             }
-            None => return Err(Error::new(ErrorKind::Other, "Error in expand_tilde")),
+            None => return Err(anyhow!("Error in expand_tilde")),
         }
     }
 
-    std::fs::canonicalize(&path)
+    let path = std::fs::canonicalize(&path)?;
+    Ok(path)
 }
 
-pub fn dirname<P: AsRef<Path>>(p: P) -> Result<PathBuf, Error> {
+pub fn dirname<P: AsRef<Path>>(p: P) -> Result<PathBuf> {
     let p = p.as_ref().to_path_buf();
     let p = expand_tilde(&p).unwrap_or(p);
 
@@ -32,7 +34,7 @@ pub fn dirname<P: AsRef<Path>>(p: P) -> Result<PathBuf, Error> {
     }
 
     let p = p.parent()
-        .ok_or(Error::new(ErrorKind::Other, "No parent dir"))?
+        .ok_or(anyhow!("No parent dir"))?
         .to_path_buf();
     Ok(p)
 }
@@ -58,14 +60,14 @@ pub fn expand_tilde<P: AsRef<Path>>(path_user_input: P) -> Option<PathBuf> {
     }
 }
 
-pub fn path_buf_to_string<P: AsRef<OsStr>>(path: P) -> Result<String, Error> {
+pub fn path_buf_to_string<P: AsRef<OsStr>>(path: P) -> Result<String> {
     path.as_ref()
         .to_os_string()
         .into_string()
-        .map_err(|_| Error::new(ErrorKind::Other, "Could not convert path to string"))
+        .map_err(|_| anyhow!("Could not convert path to string"))
 }
 
-pub fn to_relative_path<P: AsRef<Path>>(path: P, base_path: Option<P>) -> Result<PathBuf, Error> {
+pub fn to_relative_path<P: AsRef<Path>>(path: P, base_path: Option<P>) -> Result<PathBuf> {
     let path = path.as_ref();
     let cur = env::current_dir()?;
     let cur = base_path.map(|p| p.as_ref().to_path_buf()).unwrap_or(cur);

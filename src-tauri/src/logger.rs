@@ -1,8 +1,9 @@
 use log::LevelFilter;
-use tauri::{AppHandle, Error, Runtime};
+use tauri::{AppHandle, Runtime};
 use tauri_plugin_log::{Target, TargetKind};
+use anyhow::Result;
 
-pub fn register_logger<R: Runtime>(app: &AppHandle<R>, verbose: bool) -> Result<(), Error> {
+pub fn register_logger<R: Runtime>(app: &AppHandle<R>, verbose: bool) -> Result<()> {
     let logger = tauri_plugin_log::Builder::default()
         .level(if verbose { LevelFilter::Debug } else { LevelFilter::Info })
         .format(move |out, message, record| {
@@ -14,6 +15,7 @@ pub fn register_logger<R: Runtime>(app: &AppHandle<R>, verbose: bool) -> Result<
             Target::new(TargetKind::Webview),
         ])
         .build();
-    app.plugin(logger)
+    app.plugin(logger)?;
+    Ok(())
 }
 

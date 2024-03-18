@@ -1,10 +1,10 @@
 use crate::pathutil::{dirname, path_buf_to_string, resolve_path, to_relative_path, expand_tilde};
 use std::collections::HashMap;
-use std::io::Error;
 use std::path::Path;
 use std::{env, fs};
 use url::Url;
 use base64::{engine::general_purpose, Engine as _};
+use anyhow::Result;
 
 #[derive(Clone, Debug, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -69,26 +69,27 @@ pub fn create_args(source: String) -> Args {
     }
 
     if cwd.is_none() {
-        cwd = env::current_dir()
-            .and_then(|x| {
-                if x.parent().is_none() {
-                    if let Some(home) = dirs::home_dir() {
-                        env::set_current_dir(home)?;
-                    }
-
-                    return env::current_dir();
-                }
-
-                Ok(x)
-            })
-            .and_then(path_buf_to_string)
-            .ok();
+        cwd = get_cwd().ok();
     }
 
     Args { cwd, file, new_file, dir, room, text }
 }
 
-fn list_text_files(p: &Path) -> Result<Vec<String>, Error> {
+fn get_cwd() -> Result<String> {
+    let mut cwd = env::current_dir()?;
+    if cwd.parent().is_none() {
+        if let Some(home) = dirs::home_dir() {
+            env::set_current_dir(home)?;
+        }
+
+        cwd = env::current_dir()?;
+    }
+
+    let cwd = path_buf_to_string(cwd)?;
+    Ok(cwd)
+}
+
+fn list_text_files(p: &Path) -> Result<Vec<String>> {
     let mut files = Vec::new();
 
     for entry in fs::read_dir(p)? {

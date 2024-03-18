@@ -3,6 +3,7 @@ use globset::Glob;
 use ignore::WalkBuilder;
 use log::info;
 use std::path::PathBuf;
+use anyhow::Result;
 
 #[tauri::command]
 pub fn list_contents(file: String) -> Result<Vec<String>, String> {
@@ -105,9 +106,9 @@ mod tests {
             vec!["~/tinywrite", "~/tinywrite/test.txt"]
         );
 
-        assert!(list_contents("~/".to_string()).unwrap().len() > 0);
+        assert!(!list_contents("~/".to_string()).unwrap().is_empty());
 
-        assert!(list_contents("./icons/".to_string()).unwrap().len() > 0);
+        assert!(!list_contents("./icons/".to_string()).unwrap().is_empty());
 
         assert_eq!(list_contents("".to_string()).unwrap_err(), "No parent dir");
 
