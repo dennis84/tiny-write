@@ -1,11 +1,12 @@
 use log::{info, debug};
-use tauri::{Manager};
+use tauri::Manager;
 use tauri_plugin_cli::CliExt;
 
 mod cmd;
 mod pathutil;
 mod logger;
 mod menu;
+mod install_cli;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -34,16 +35,16 @@ pub fn run() {
                     debug!("Start app with cli args {:?}", &matches);
 
                     if let Some(help) = matches.args.get("help") {
-                       let help_text = help
-                           .value
-                           .as_str()
-                           .map(|s| s.to_string())
-                           .unwrap_or_default();
-                       println!("{}", help_text);
-                       handle.exit(0);
+                        let help_text = help
+                            .value
+                            .as_str()
+                            .map(|s| s.to_string())
+                            .unwrap_or_default();
+                        println!("{}", help_text);
+                        handle.exit(0);
                     } else if matches.args.contains_key("version") {
-                       println!("{} {}", app.package_info().name, app.package_info().version);
-                       handle.exit(0);
+                        println!("{} {}", app.package_info().name, app.package_info().version);
+                        handle.exit(0);
                     }
 
                     if let Some(source) = matches.args.get("source") {
@@ -68,7 +69,6 @@ pub fn run() {
             }
 
             menu::setup_menu(handle)?;
-
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
