@@ -61,6 +61,7 @@ const TreeLinkCorner = styled('i')`
   font-weight: normal;
   font-style: normal;
   display: flex;
+  ${(props: any) => props.level ? `margin-left: ${String(20 * props.level)}px;` : ''}
   ${(props: any) => props.expandable ? `
     &:hover {
       background: var(--foreground-10);
@@ -72,6 +73,8 @@ const TreeLinkCorner = styled('i')`
 const TreeLinkTitle = styled('span')`
   cursor: var(--cursor-pointer);
   width: 100%;
+  touch-action: none;
+  ${(props: any) => props.grabbing ? 'cursor: var(--cursor-grabbed);' : ''}
 `
 
 const LinkMenu = styled('span')`
@@ -362,21 +365,14 @@ export default (props: Props) => {
         <TreeLinkCorner
           onClick={onCornerClick}
           expandable={p.node.tree.length > 0}
-          class={css`
-            margin-left: ${String(20 * p.level)}px;
-          `}
+          level={p.level}
         >
           {ctrl.tree.isCollapsed(p.node) ? '+' : '└'}
         </TreeLinkCorner>
         <TreeLinkTitle
           ref={ref}
           onClick={onClick}
-          class={css`
-            touch-action: none;
-            ${grabbing() ? `
-              cursor: var(--cursor-grabbed);
-            ` : ''}
-          `}
+          grabbing={grabbing()}
         >
           {title()}
           <Show when={isOnCanvas(p.node.item)}> ✅</Show>
@@ -409,7 +405,7 @@ export default (props: Props) => {
               <Tree
                 tree={node.tree}
                 level={p.level + 1}
-                selected={p.selected || isNode(node) && dropState()?.pos === 'add'}
+                selected={p.selected || (isNode(node) && dropState()?.pos === 'add')}
               />
             </Show>
             <Show when={isNode(node) && dropState()?.pos === 'after'}>

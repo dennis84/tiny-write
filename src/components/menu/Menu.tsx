@@ -46,10 +46,6 @@ const Burger = styled('button')`
   cursor: var(--cursor-pointer);
   border: 0;
   outline: none;
-  @media (max-width: ${fullWidth.toString()}px) {
-    right: 2px;
-    left: auto;
-  }
   > span {
     background: var(--foreground);
     height: 3px;
