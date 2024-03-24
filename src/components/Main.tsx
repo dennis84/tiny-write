@@ -78,14 +78,14 @@ export default (props: {state: State}) => {
 
               if (isImage) {
                 const img = new Image()
-                img.onload = () => {
-                  ctrl.canvas.addImage(src, point, img.width, img.height)
+                img.onload = async () => {
+                  await ctrl.canvas.addImage(src, point, img.width, img.height)
                 }
                 img.src = src
               } else {
                 const video = document.createElement('video')
-                video.addEventListener('loadedmetadata', () => {
-                  ctrl.canvas.addVideo(p, mime, point, video.videoWidth, video.videoHeight)
+                video.addEventListener('loadedmetadata', async () => {
+                  await ctrl.canvas.addVideo(p, mime, point, video.videoWidth, video.videoHeight)
                 })
                 video.src = src
               }
@@ -109,12 +109,12 @@ export default (props: {state: State}) => {
     if (!isTauri()) return
     const unlistenResize = await tauriWindow.getCurrent().onResized(async ({payload}) => {
       const {width, height} = payload
-      ctrl.app.updateWindow({width, height})
+      await ctrl.app.updateWindow({width, height})
     })
 
     const unlistenMove = await tauriWindow.getCurrent().onMoved(async ({payload}) => {
       const {x, y} = payload
-      ctrl.app.updateWindow({x, y})
+      await ctrl.app.updateWindow({x, y})
     })
 
     onCleanup(() => {
@@ -147,10 +147,10 @@ export default (props: {state: State}) => {
             } else {
               const img = new Image()
               img.src = data
-              img.onload = () => {
+              img.onload = async () => {
                 const point = ctrl.canvas.getPosition([x, y])
                 if (!point) return
-                ctrl.canvas.addImage(data, point, img.width, img.height)
+                await ctrl.canvas.addImage(data, point, img.width, img.height)
               }
             }
           }
@@ -185,12 +185,12 @@ export default (props: {state: State}) => {
     })
   })
 
-  createEffect(() => {
+  createEffect(async () => {
     const currentFile = ctrl.file.currentFile
     const currentCanvas = ctrl.canvas.currentCanvas
     if (!currentFile && !currentCanvas) {
       // Init on first render
-      ctrl.app.init()
+      await ctrl.app.init()
     } else if (
       // Render editor if change file
       store.mode === Mode.Editor &&

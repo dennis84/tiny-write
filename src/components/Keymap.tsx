@@ -28,35 +28,35 @@ export default () => {
     return true
   }
 
-  const onQuit = () => {
+  const onQuit = async () => {
     if (!isTauri()) return
-    remote.quit()
+    await remote.quit()
   }
 
-  const onNew = () => {
+  const onNew = async () => {
     if (store.mode === Mode.Editor) {
-      ctrl.editor.newFile()
+      await ctrl.editor.newFile()
     } else {
-      ctrl.canvas.newFile()
+      await ctrl.canvas.newFile()
     }
   }
 
-  const onClear = () => {
+  const onClear = async () => {
     if (store.mode === Mode.Editor) {
-      ctrl.editor.clear()
+      await ctrl.editor.clear()
     }
   }
 
   const onSave = async () => {
     const currentFile = ctrl.file.currentFile
-    if (!isTauri() || currentFile?.path) return false
+    if (!isTauri() || !currentFile || currentFile?.path) return false
     const path = await remote.saveFile(currentFile)
-    if (path) ctrl.editor.updatePath(path)
+    if (path) await ctrl.editor.updatePath(path)
   }
 
-  const onFullscreen = () => {
+  const onFullscreen = async () => {
     if (!isTauri()) return false
-    ctrl.app.setFullscreen(!store.fullscreen)
+    await ctrl.app.setFullscreen(!store.fullscreen)
     return true
   }
 
@@ -76,7 +76,7 @@ export default () => {
     return true
   }
 
-  const onBackspace = () => {
+  const onBackspace = async () => {
     if (store.mode !== Mode.Canvas) return false
 
     const currentCanvas = ctrl.canvas.currentCanvas
@@ -97,11 +97,11 @@ export default () => {
       elementIds.push(selected.id)
     }
 
-    ctrl.canvas.removeElements(elementIds)
+    await ctrl.canvas.removeElements(elementIds)
     return true
   }
 
-  type Fn = (e: KeyboardEvent) => boolean | void
+  type Fn = (e: KeyboardEvent) => boolean | void | Promise<boolean | void>
   const keymap: Record<string, Fn> = {
     [`${mod}-r`]: onReload,
     [`${mod}-q`]: onQuit,
@@ -117,10 +117,11 @@ export default () => {
     'Backspace': onBackspace,
   }
 
-  const onKeyDown = (e: KeyboardEvent) => {
+  const onKeyDown = async (e: KeyboardEvent) => {
     const n = keyName(e)
     const k = modifiers(n, e)
-    const r = keymap[k]?.(e)
+    let r = keymap[k]?.(e) as any
+    if (r instanceof Promise) r = await r
     if (r) e.preventDefault()
   }
 

@@ -121,7 +121,7 @@ test('deleteForever', async () => {
   setState('collab', {ydoc})
   setState('mode', Mode.Editor)
 
-  service.deleteForever('2')
+  await service.deleteForever('2')
   expect(store.files.length).toBe(1)
   expect(store.files[0].active).toBe(true)
   expect(store.canvases[0].elements.length).toBe(1)

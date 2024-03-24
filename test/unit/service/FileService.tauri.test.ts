@@ -75,5 +75,5 @@ test('findFile - not found', async () => {
 
   const service = new FileService(ctrl, store, setState)
   expect(service.findFileById('1')).toBe(undefined)
-  expect(service.findFileByPath('/path/to/file2')).rejects.toThrowError()
+  await expect(service.findFileByPath('/path/to/file2')).rejects.toThrowError()
 })

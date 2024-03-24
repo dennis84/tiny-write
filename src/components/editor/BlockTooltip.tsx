@@ -95,13 +95,13 @@ export const BlockTooltip = () => {
     }))
   }
 
-  const onMermaidSave = () => {
+  const onMermaidSave = async () => {
     const block = selectedBlock()
     if (!block) return
 
     const id = `mermaid-graph-${block.pos}`
     const svg = document.getElementById(id)
-    if (svg) remote.saveSvg(svg)
+    if (svg) await remote.saveSvg(svg)
   }
 
   const onMermaidHideCode = () => {
@@ -207,8 +207,8 @@ export const BlockTooltip = () => {
     const handle = el?.querySelector('.block-handle')
     if (!handle) return
 
-    cleanup.fn = autoUpdate(handle, tooltipRef, () => {
-      computePosition(handle, tooltipRef, {
+    cleanup.fn = autoUpdate(handle, tooltipRef, async () => {
+      return computePosition(handle, tooltipRef, {
         placement: 'left',
         middleware: [
           offset(10),

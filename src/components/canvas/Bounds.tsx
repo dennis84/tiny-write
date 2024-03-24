@@ -87,12 +87,12 @@ const Edge = (props: EdgeProps) => {
       resizeElements(selection, props.type, mx / zoom, my / zoom, shiftKey, currentCanvas.snapToGrid)
         .forEach(([id, box]) => {
           const rect = {x: box.x, y: box.y, width: box.w, height: box.h}
-          ctrl.canvasCollab.updateElementThrottled({id, ...rect})
+          void ctrl.canvasCollab.updateElementThrottled({id, ...rect})
           ctrl.canvas.updateCanvasElement(id, rect)
         })
 
       ctrl.canvas.updateCanvas(currentCanvas.id, {lastModified: new Date()})
-      ctrl.canvas.saveCanvasDebounced()
+      void ctrl.canvas.saveCanvasDebounced()
       return selection
     })
 
@@ -144,12 +144,12 @@ const Corner = (props: CornerProps) => {
       resizeElements(selection, props.type, mx / zoom, my / zoom, shiftKey, currentCanvas.snapToGrid)
         .forEach(([id, box]) => {
           const rect = {x: box.x, y: box.y, width: box.w, height: box.h}
-          ctrl.canvasCollab.updateElementThrottled({id, ...rect})
+          void ctrl.canvasCollab.updateElementThrottled({id, ...rect})
           ctrl.canvas.updateCanvasElement(id, rect)
         })
 
       ctrl.canvas.updateCanvas(currentCanvas.id, {lastModified: new Date()})
-      ctrl.canvas.saveCanvasDebounced()
+      void ctrl.canvas.saveCanvasDebounced()
       return selection
     })
 
@@ -211,12 +211,12 @@ export default (props: BoundsProps) => {
         if (currentCanvas.snapToGrid) t.snapToGrid(10)
         const [x, y] = t.toArray()
 
-        ctrl.canvasCollab.updateElementThrottled({id, x, y})
+        void ctrl.canvasCollab.updateElementThrottled({id, x, y})
         ctrl.canvas.updateCanvasElement(id, {x, y})
       })
 
       ctrl.canvas.updateCanvas(currentCanvas.id, {lastModified: new Date()})
-      ctrl.canvas.saveCanvasDebounced()
+      void ctrl.canvas.saveCanvasDebounced()
       return selection
     })
 

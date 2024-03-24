@@ -1,17 +1,20 @@
 {
   "root": true,
   "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "sourceType": "module",
+    "ecmaVersion": 2022,
+    "project": ["./tsconfig.json"]
+  },
   "env": {
     "browser": true,
     "node": true,
     "es6": true
   },
-  "plugins": [
-    "@typescript-eslint"
-  ],
   "extends": [
     "eslint:recommended",
-    "plugin:@typescript-eslint/recommended"
+    "plugin:@typescript-eslint/recommended",
+    "plugin:@typescript-eslint/stylistic"
   ],
   "rules": {
     "indent": "off",
@@ -25,6 +28,8 @@
     "@typescript-eslint/ban-ts-comment": "off",
     "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/no-non-null-assertion": "off",
-    "@typescript-eslint/member-ordering": "error"
+    "@typescript-eslint/member-ordering": "error",
+    "@typescript-eslint/no-floating-promises": "error",
+    "@typescript-eslint/adjacent-overload-signatures": "off"
   }
 }

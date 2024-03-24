@@ -49,7 +49,7 @@ export class EditorService {
     const editorState = EditorState.fromJSON({schema, plugins}, createEmptyText())
 
     if (!editorView) {
-      const dispatchTransaction = (tr: Transaction) => {
+      const dispatchTransaction = async (tr: Transaction) => {
         const newState = editorView!.state.apply(tr)
         editorView!.updateState(newState)
         this.setState('lastTr', tr.time)
@@ -67,7 +67,7 @@ export class EditorService {
           lastModified: new Date(),
         })
 
-        this.saveEditor()
+        await this.saveEditor()
         remote.info('Saved editor content')
       }
 
@@ -157,7 +157,7 @@ export class EditorService {
     }
   }
 
-  toggleMarkdown() {
+  async toggleMarkdown() {
     const currentFile = this.ctrl.file.currentFile
     const editorState = currentFile?.editorView?.state
     if (!editorState) return
@@ -192,16 +192,16 @@ export class EditorService {
       lastModified: new Date(),
     })
 
-    this.saveEditor()
+    await this.saveEditor()
     remote.info(`Toggled markdown mode (markdown=${markdown})`)
   }
 
-  updatePath(path: string) {
+  async updatePath(path: string) {
     const currentFile = this.ctrl.file.currentFile
     if (!currentFile?.id) return
     const lastModified = new Date()
     this.ctrl.file.updateFile(currentFile.id, {lastModified, path})
-    this.saveEditor()
+    await this.saveEditor()
   }
 
   async activateFile(state: State, file: File): Promise<State> {
@@ -218,7 +218,7 @@ export class EditorService {
     }
 
     const mode = Mode.Editor
-    DB.setMeta({mode})
+    await DB.setMeta({mode})
 
     return {
       ...state,
@@ -229,7 +229,7 @@ export class EditorService {
     }
   }
 
-  updateText(text?: {[key: string]: any}) {
+  updateText(text?: FileText) {
     const currentFile = this.ctrl.file.currentFile
     if (!text || !currentFile) return
     let schema
@@ -273,7 +273,7 @@ export class EditorService {
 
     const file = this.ctrl.file.currentFile
     if (!file) return
-    this.ctrl.file.saveFile(file)
+    await this.ctrl.file.saveFile(file)
 
     if (currentFile?.path) {
       const text = serialize(currentFile.editorView.state)

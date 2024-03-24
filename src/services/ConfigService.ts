@@ -36,7 +36,7 @@ interface CodeTheme {
 
 export class ConfigService {
 
-  readonly themes: {[key: string]: Theme} = {
+  readonly themes: Record<string, Theme> = {
     'light': {
       value: 'light',
       label: 'Light',
@@ -161,7 +161,7 @@ export class ConfigService {
 
   readonly DEFAULT_FONT = 'ia-writer-mono'
 
-  readonly fonts: {[key: string]: Font} = {
+  readonly fonts: Record<string, Font> = {
     'system-ui': {
       label: 'System UI',
       value: 'system-ui',
@@ -213,7 +213,7 @@ export class ConfigService {
     },
   }
 
-  readonly codeThemes: {[key: string]: CodeTheme} = {
+  readonly codeThemes: Record<string, CodeTheme> = {
     'dracula': {
       label: 'Dracula',
       value: 'dracula',
@@ -346,12 +346,12 @@ export class ConfigService {
     return {}
   }
 
-  setAlwaysOnTop(alwaysOnTop: boolean) {
-    remote.setAlwaysOnTop(alwaysOnTop)
+  async setAlwaysOnTop(alwaysOnTop: boolean) {
+    await remote.setAlwaysOnTop(alwaysOnTop)
     this.setState('config', {alwaysOnTop})
   }
 
-  updateConfig(conf: Partial<Config>) {
+  async updateConfig(conf: Partial<Config>) {
     const state: State = unwrap(this.store)
     if (conf.font) state.collab?.ydoc?.getMap('config').set('font', conf.font)
     if (conf.fontSize) state.collab?.ydoc?.getMap('config').set('fontSize', conf.fontSize)
@@ -368,22 +368,22 @@ export class ConfigService {
       })
     }
 
-    this.saveConfig(unwrap(this.store))
+    await this.saveConfig(unwrap(this.store))
   }
 
   updateContentWidth(contentWidth: number) {
     this.store.collab?.ydoc?.getMap('config').set('contentWidth', contentWidth)
     this.setState('config', 'contentWidth', contentWidth)
-    this.saveConfigDebounced(unwrap(this.store))
+    void this.saveConfigDebounced(unwrap(this.store))
   }
 
-  updateTheme() {
+  async updateTheme() {
     this.setState('config', this.getTheme(unwrap(this.store), true))
-    this.saveConfig(unwrap(this.store))
+    await this.saveConfig(unwrap(this.store))
   }
 
   private async saveConfig(state: State) {
-    DB.setConfig(state.config)
+    await DB.setConfig(state.config)
     remote.info('Config saved')
   }
 

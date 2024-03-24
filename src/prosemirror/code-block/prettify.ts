@@ -16,7 +16,7 @@ export const prettifyView = (codeBlock: CodeBlockView) =>
     update(update: ViewUpdate) {
       if (update.transactions[0]?.isUserEvent('prettify')) {
         update.view.focus()
-        prettify(update.view, codeBlock.lang, codeBlock.ctrl.config.prettier)
+        void prettify(update.view, codeBlock.lang, codeBlock.ctrl.config.prettier)
         return true
       }
     }

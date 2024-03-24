@@ -174,7 +174,7 @@ export class DB {
       if (!c.deleted) continue
       const days = differenceInDays(Date.now(), c.lastModified ?? 0)
       if (days > 14) {
-        db.delete('canvases', c.id)
+        await db.delete('canvases', c.id)
         remote.info('💥 Deleted 14 days old canvas from bin')
       }
     }
@@ -183,7 +183,7 @@ export class DB {
       if (!f.deleted) continue
       const days = differenceInDays(Date.now(), f.lastModified ?? 0)
       if (days > 14) {
-        db.delete('files', f.id)
+        await db.delete('files', f.id)
         remote.info('💥 Deleted 14 days old file from bin')
       }
     }

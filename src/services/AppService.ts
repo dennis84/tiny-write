@@ -133,7 +133,7 @@ export class AppService {
       this.setState({...data, error, loading: 'initialized'})
     }
 
-    DB.cleanup()
+    await DB.cleanup()
 
     if (isTauri()) {
       await remote.show()
@@ -151,17 +151,17 @@ export class AppService {
     await DB.deleteDatabase()
   }
 
-  setFullscreen(fullscreen: boolean) {
-    remote.setFullscreen(fullscreen)
+  async setFullscreen(fullscreen: boolean) {
+    await remote.setFullscreen(fullscreen)
     this.setState('fullscreen', fullscreen)
   }
 
-  updateWindow(win: Partial<Window>) {
+  async updateWindow(win: Partial<Window>) {
     if (this.store.fullscreen) return
     this.setState('window', {...this.store.window, ...win})
     if (!this.store.window) return
     const updatedWindow = unwrap(this.store.window)
-    DB.setWindow(updatedWindow)
+    await DB.setWindow(updatedWindow)
     remote.info('Saved window state')
   }
 

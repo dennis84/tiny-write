@@ -19,7 +19,7 @@ const lastModified = new Date()
 beforeEach(() => {
   vi.restoreAllMocks()
   clearMocks()
-  mockIPC((): any => {})
+  mockIPC((): any => { /* ignore */ })
 })
 
 test('init - load existing by path', async () => {

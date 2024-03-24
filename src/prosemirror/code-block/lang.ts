@@ -226,7 +226,7 @@ export class LangInputEditor {
 const langSupport = (l: StreamParser<unknown>) =>
   new LanguageSupport(StreamLanguage.define(l))
 
-const mapping: {[key: string]: () => LanguageSupport} = {
+const mapping: Record<string, () => LanguageSupport> = {
   javascript: () => javascript(),
   js: () => javascript(),
   jsx: () => javascript({jsx: true}),

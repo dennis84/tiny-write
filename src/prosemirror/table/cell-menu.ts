@@ -118,7 +118,7 @@ class CellMenuView {
     if (!this.tooltip || !this.arrow) return
     document.addEventListener('mousedown', this.onClose)
 
-    computePosition(pluginState.virtualEl, this.tooltip, {
+    void computePosition(pluginState.virtualEl, this.tooltip, {
       placement: pluginState.virtualEl.direction,
       middleware: [
         offset(10),

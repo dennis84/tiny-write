@@ -22,12 +22,10 @@ export default ({maybeHide}: {maybeHide: () => void}) => {
     const currentFile = ctrl.file.currentFile
     if (!currentFile) return
     const path = await remote.saveFile(currentFile)
-    if (path) ctrl.editor.updatePath(path)
+    if (path) await ctrl.editor.updatePath(path)
   }
 
-  const onClear = async () => {
-    ctrl.editor.clear()
-  }
+  const onClear = () => ctrl.editor.clear()
 
   const onToggleMarkdown = () => ctrl.editor.toggleMarkdown()
 

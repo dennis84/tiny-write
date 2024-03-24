@@ -14,14 +14,14 @@ export const Bin = (props: Props) => {
     props.onBack()
   }
 
-  const onEmptyBin = () => {
-    state.files.forEach((it) => {
-      if (it.deleted) ctrl.file.deleteForever(it.id)
-    })
+  const onEmptyBin = async () => {
+    for (const it of state.files) {
+      if (it.deleted) await ctrl.file.deleteForever(it.id)
+    }
 
-    state.canvases.forEach((it) => {
-      if (it.deleted) ctrl.canvas.deleteForever(it.id)
-    })
+    for (const it of state.canvases) {
+      if (it.deleted) await ctrl.canvas.deleteForever(it.id)
+    }
 
     ctrl.tree.create()
   }

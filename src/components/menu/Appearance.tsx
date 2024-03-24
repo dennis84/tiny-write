@@ -10,25 +10,20 @@ interface Props {
 export const Appearance = (props: Props) => {
   const [store, ctrl] = useState()
 
-  const onChangeTheme = (theme: string) => () => {
+  const onChangeTheme = (theme: string) => () =>
     ctrl.config.updateConfig({theme})
-  }
 
-  const onChangeCodeTheme = (codeTheme: string) => () => {
+  const onChangeCodeTheme = (codeTheme: string) => () =>
     ctrl.config.updateConfig({codeTheme})
-  }
 
-  const onChangeFont = (font: string) => () => {
+  const onChangeFont = (font: string) => () =>
     ctrl.config.updateConfig({font})
-  }
 
-  const onChangeFontSize = (e: any) => {
+  const onChangeFontSize = (e: any) =>
     ctrl.config.updateConfig({fontSize: Number(e.target.value)})
-  }
 
-  const onChangeContentWidth = (e: any) => {
+  const onChangeContentWidth = (e: any) =>
     ctrl.config.updateConfig({contentWidth: Number(e.target.value)})
-  }
 
   return (
     <Drawer data-tauri-drag-region="true">

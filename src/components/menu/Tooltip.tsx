@@ -33,7 +33,7 @@ export const Tooltip = (props: Props) => {
 
     document.addEventListener('click', listener)
 
-    computePosition(target, tooltipRef!, {
+    void computePosition(target, tooltipRef!, {
       placement: 'bottom',
       middleware: [
         offset(10),

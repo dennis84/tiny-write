@@ -19,10 +19,9 @@ export default ({element, index}: {element: CanvasVideoElement; index: number}) 
     return {box, elements: [[element.id, box]]}
   }
 
-  onMount(() => {
-    ctrl.image.getImagePath(element.src).then((p) => {
-      videoRef.setAttribute('src', p)
-    })
+  onMount(async () => {
+    const p = await ctrl.image.getImagePath(element.src)
+    videoRef.setAttribute('src', p)
   })
 
   return <>

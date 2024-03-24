@@ -185,7 +185,7 @@ export interface State {
   lastTr?: number;
 }
 
-export type FileText = {[key: string]: any}
+export type FileText = Record<string, any>
 
 export interface File {
   id: string;

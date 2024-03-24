@@ -47,48 +47,48 @@ export class TreeService {
     this.tree.push(...root)
   }
 
-  add(node: TreeNode, to: TreeNode) {
+  async add(node: TreeNode, to: TreeNode) {
     const parentId = to.item.id
     const leftId = to.tree[to.tree.length-1]?.item.id
     const rightNode = this.findTreeNodeByLeftId(node.item.id)
     if (rightNode) {
       this.updateItem(rightNode.item.id, rightNode.item.parentId, node.item.leftId)
-      this.saveNode(rightNode)
+      await this.saveNode(rightNode)
     }
     this.updateItem(node.item.id, parentId, leftId)
-    this.saveNode(node)
+    await this.saveNode(node)
     this.create()
   }
 
-  after(node: TreeNode, before: TreeNode) {
+  async after(node: TreeNode, before: TreeNode) {
     const rightNode = this.findTreeNodeByLeftId(node.item.id)
     if (rightNode) {
       this.updateItem(rightNode.item.id, rightNode.item.parentId, node.item.leftId)
-      this.saveNode(rightNode)
+      await this.saveNode(rightNode)
     }
 
     const rightBefore = this.findTreeNodeByLeftId(before.item.id)
     if (rightBefore) {
       this.updateItem(rightBefore.item.id, rightBefore.item.parentId, node.item.id)
-      this.saveNode(rightBefore)
+      await this.saveNode(rightBefore)
     }
 
     this.updateItem(node.item.id, before.item.parentId, before.item.id)
-    this.saveNode(node)
+    await this.saveNode(node)
     this.create()
   }
 
-  before(node: TreeNode, after: TreeNode) {
+  async before(node: TreeNode, after: TreeNode) {
     const parentId = after.item.parentId
     const rightNode = this.findTreeNodeByLeftId(node.item.id)
     if (rightNode) {
       this.updateItem(rightNode.item.id, rightNode.item.parentId, node.item.leftId)
-      this.saveNode(rightNode)
+      await this.saveNode(rightNode)
     }
     this.updateItem(node.item.id, parentId, after.item.leftId)
     this.updateItem(after.item.id, parentId, node.item.id)
-    this.saveNode(node)
-    this.saveNode(after)
+    await this.saveNode(node)
+    await this.saveNode(after)
     this.create()
   }
 
@@ -111,7 +111,7 @@ export class TreeService {
     }
   }
 
-  collapse(node: TreeNode) {
+  async collapse(node: TreeNode) {
     if (!node.tree.length) return
 
     this.setState('tree', (prev) => {
@@ -125,7 +125,7 @@ export class TreeService {
 
     const tree = unwrap(this.store.tree)
     if (!tree) return
-    DB.setTree({...tree})
+    await DB.setTree({...tree})
   }
 
   isCollapsed(node: TreeNode): boolean {
@@ -194,11 +194,11 @@ export class TreeService {
     return sorted
   }
 
-  private saveNode(node: TreeNode) {
+  private async saveNode(node: TreeNode) {
     if (isFile(node.item)) {
-      this.ctrl.file.saveFile(node.item)
+      await this.ctrl.file.saveFile(node.item)
     } else {
-      this.ctrl.canvas.saveCanvas(node.item)
+      await this.ctrl.canvas.saveCanvas(node.item)
     }
   }
 }

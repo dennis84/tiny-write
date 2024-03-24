@@ -51,14 +51,14 @@ test('getters', () => {
   expect(service.theme.value).toBe('light')
 })
 
-test('updateConfig', () => {
+test('updateConfig', async () => {
   const [store, setState] = createStore(createState())
   const service = new ConfigService(ctrl, store, setState)
 
   const ydoc = createYdoc('1', ['Test'])
   setState('collab', {ydoc})
 
-  service.updateConfig({
+  await service.updateConfig({
     fontSize: 10,
     font: 'merriweather',
     contentWidth: 100,

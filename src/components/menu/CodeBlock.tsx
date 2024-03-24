@@ -9,11 +9,10 @@ interface Props {
 export const CodeBlock = (props: Props) => {
   const [store, ctrl] = useState()
 
-  const updatePrettier = (opt: Partial<PrettierConfig>) => {
+  const updatePrettier = (opt: Partial<PrettierConfig>) =>
     ctrl.config.updateConfig({
       prettier: {...store.config.prettier, ...opt}
     })
-  }
 
   return (
     <Drawer data-tauri-drag-region="true">

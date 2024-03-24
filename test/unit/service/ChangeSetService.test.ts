@@ -26,7 +26,7 @@ test('addVersion', async () => {
   expect(getText(ctrl)).toBe('Test')
   expect(ctrl.file.currentFile?.versions.length).toBe(0)
 
-  ctrl.changeSet.addVersion()
+  await ctrl.changeSet.addVersion()
   expect(ctrl.file.currentFile?.versions.length).toBe(1)
 
   insertText(ctrl, '123')

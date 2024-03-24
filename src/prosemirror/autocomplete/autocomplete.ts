@@ -62,7 +62,7 @@ class AutocompleteView {
       },
     }
 
-    computePosition(virtualEl, this.tooltip, {
+    void computePosition(virtualEl, this.tooltip, {
       placement: 'bottom-start',
       middleware: [
         offset(this.ctrl.config.fontSize + 5),
@@ -142,7 +142,7 @@ export const completionPlugin = (
         const matchTo = matchFrom + matchedText.length
 
         if (from >= matchFrom && to <= matchTo) {
-          getOptions(matchedText.substring(startSpaces), view.state).then((options) => {
+          void getOptions(matchedText.substring(startSpaces), view.state).then((options) => {
             const tr = view.state.tr
             view.dispatch(tr.setMeta(pluginKey, {
               from: matchFrom + startSpaces,

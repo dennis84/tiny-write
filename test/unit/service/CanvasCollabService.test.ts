@@ -7,6 +7,7 @@ import {Canvas, CanvasEditorElement, createState, ElementType} from '@/state'
 import {CanvasCollabService} from '@/services/CanvasCollabService'
 import {CanvasService} from '@/services/CanvasService'
 import {UndoManager} from '@/services/CollabService'
+import {waitFor} from '../util'
 
 beforeEach(() => {
   vi.restoreAllMocks()
@@ -98,7 +99,7 @@ test('addElement', () => {
   expect(canvasService.removeElements).toHaveBeenCalledWith(['el-1'])
 })
 
-test('addElements', () => {
+test('addElements', async () => {
   const {service, canvasService, undoManager} = setup()
 
   service.init()
@@ -117,8 +118,10 @@ test('addElements', () => {
   // Undo add
   undoManager.undo()
 
-  expect(service.elements?.toJSON()).toEqual({})
-  expect(canvasService.removeElements).toHaveBeenCalledTimes(2)
+  await waitFor(() => {
+    expect(service.elements?.toJSON()).toEqual({})
+    expect(canvasService.removeElements).toHaveBeenCalledTimes(2)
+  })
 })
 
 test('updateElement', () => {

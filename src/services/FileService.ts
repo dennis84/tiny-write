@@ -125,7 +125,7 @@ export class FileService {
       return
     }
 
-    DB.updateFile({
+    await DB.updateFile({
       id: file.id,
       parentId: file.parentId,
       leftId: file.leftId,
@@ -205,7 +205,7 @@ export class FileService {
     const updatedFile = this.findFileById(id)
     if (!updatedFile) return
 
-    this.saveFile(updatedFile)
+    await this.saveFile(updatedFile)
     remote.info('File deleted')
     this.ctrl.tree.create()
   }
@@ -214,7 +214,7 @@ export class FileService {
     const files = this.store.files.filter((it) => it.id !== id)
     this.setState({files})
 
-    this.store.canvases.forEach((canvas, canvasIndex) => {
+    for (const [canvasIndex, canvas] of this.store.canvases.entries()) {
       const elements = []
       let shouldUpdate = false
       for (const el of canvas.elements) {
@@ -229,9 +229,9 @@ export class FileService {
       if (shouldUpdate) {
         this.setState('canvases', canvasIndex, 'elements', elements)
         const updated = this.ctrl.canvas.findCanvas(canvas.id)
-        if (updated) DB.updateCanvas(updated)
+        if (updated) await DB.updateCanvas(updated)
       }
-    })
+    }
 
     await DB.deleteFile(id)
     remote.info('File forever deleted')

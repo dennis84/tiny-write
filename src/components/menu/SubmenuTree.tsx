@@ -137,25 +137,25 @@ export default (props: Props) => {
     await ctrl.editor.newFile()
     const currentFile =  ctrl.file.currentFile
     if (!currentFile) return
-    ctrl.tree.add({item: currentFile, tree: []}, target)
+    await ctrl.tree.add({item: currentFile, tree: []}, target)
     closeTooltip()
   }
 
-  const onAddCanvas = () => {
+  const onAddCanvas = async () => {
     const target = unwrap(selected())
     if (!target) return
-    ctrl.canvas.newCanvas()
+    await ctrl.canvas.newCanvas()
     const currentCanvas =  ctrl.canvas.currentCanvas
     if (!currentCanvas) return
-    ctrl.tree.add({item: currentCanvas, tree: []}, target)
+    await ctrl.tree.add({item: currentCanvas, tree: []}, target)
     closeTooltip()
   }
 
   const deleteNode = async (node: TreeNode) => {
-    const deleteItem = async (item: TreeNodeItem) => {
-      if (isFile(item)) await ctrl.file.deleteFile(item.id)
-      else ctrl.canvas.deleteCanvas(item.id)
-    }
+    const deleteItem = async (item: TreeNodeItem) =>
+      isFile(item)
+        ? ctrl.file.deleteFile(item.id)
+        : ctrl.canvas.deleteCanvas(item.id)
 
     const currentFile = ctrl.file.currentFile
     if (
@@ -204,11 +204,11 @@ export default (props: Props) => {
     closeTooltip()
   }
 
-  const onFocus = () => {
+  const onFocus = async () => {
     const id = selected()?.item.id
     if (!id) return
     props.maybeHide?.()
-    ctrl.canvas.focus(id)
+    await ctrl.canvas.focus(id)
     closeTooltip()
   }
 
@@ -231,15 +231,14 @@ export default (props: Props) => {
       if (isFile(p.node.item)) {
         await ctrl.editor.openFile(p.node.item.id)
       } else {
-        ctrl.canvas.open(p.node.item.id)
+        await ctrl.canvas.open(p.node.item.id)
       }
 
       props.maybeHide?.()
     }
 
-    const onCornerClick = () => {
+    const onCornerClick = () =>
       ctrl.tree.collapse(p.node)
-    }
 
     const getCurrentId = () =>
       state.mode === Mode.Editor ? ctrl.file.currentFile?.id : ctrl.canvas.currentCanvas?.id
@@ -253,7 +252,7 @@ export default (props: Props) => {
 
       const offset = 10
 
-      const gesture = new DragGesture(ref, ({xy: [x, y], last, first, event}) => {
+      const gesture = new DragGesture(ref, async ({xy: [x, y], last, first, event}) => {
         event.preventDefault()
         let el = document.elementFromPoint(x, y) as HTMLElement
         if (el?.tagName === 'SPAN') el = el.parentNode as HTMLElement
@@ -294,19 +293,19 @@ export default (props: Props) => {
             const targetNode = ctrl.tree.findTreeNode(ds.targetId)
             if (targetNode) {
               if (ds.pos === 'add' && isFile(targetNode.item)) {
-                ctrl.tree.add(p.node, targetNode)
+                await ctrl.tree.add(p.node, targetNode)
               } else if (ds.pos === 'before') {
-                ctrl.tree.before(p.node, targetNode)
+                await ctrl.tree.before(p.node, targetNode)
               } else if (ds.pos === 'after') {
-                ctrl.tree.after(p.node, targetNode)
+                await ctrl.tree.after(p.node, targetNode)
               }
             }
           } else if (ds?.pos === 'delete') {
-            deleteNode(p.node)
+            await deleteNode(p.node)
           } else if (ds?.pos === 'open') {
             if (state.mode === Mode.Canvas && isFile(p.node.item)) {
               const point = ctrl.canvas.getPosition([x, y])
-              ctrl.canvas.addFile(p.node.item, undefined, point)
+              await ctrl.canvas.addFile(p.node.item, undefined, point)
             }
           }
 

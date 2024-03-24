@@ -32,14 +32,14 @@ export default () => {
     return {left: `${x}px`, top: `${y}px`}
   }
 
-  const onBackdropClick = () => {
-    ctrl.canvas.removeDeadLinks()
+  const onBackdropClick = async () => {
+    await ctrl.canvas.removeDeadLinks()
     setContextMenu(undefined)
   }
 
-  const onNewFile = (link?: CanvasLinkElement, cm?: Vec2d) => {
-    ctrl.canvas.newFile(link, cm)
-    ctrl.canvas.removeDeadLinks()
+  const onNewFile = async (link?: CanvasLinkElement, cm?: Vec2d) => {
+    await ctrl.canvas.newFile(link, cm)
+    await ctrl.canvas.removeDeadLinks()
     setContextMenu(undefined)
   }
 
@@ -48,9 +48,9 @@ export default () => {
   const FileName = (p: {file: File; link?: CanvasLinkElement; cm?: Vec2d}) => {
     const [title, setTitle] = createSignal<string>()
 
-    const onClick = () => {
-      ctrl.canvas.addFile(p.file, p.link, p.cm)
-      ctrl.canvas.removeDeadLinks()
+    const onClick = async () => {
+      await ctrl.canvas.addFile(p.file, p.link, p.cm)
+      await ctrl.canvas.removeDeadLinks()
       setContextMenu(undefined)
     }
 

@@ -37,7 +37,7 @@ const plugin = new Plugin({
   },
   props: {
     handleTextInput(view) {
-      update(view)
+      void update(view)
       return false
     }
   }

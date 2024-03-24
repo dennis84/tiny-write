@@ -46,7 +46,7 @@ export class TauriWebSocket {
   set onmessage(fn) { this.onMessage = fn }
 
   close() {
-    this.ws?.disconnect()
+    void this.ws?.disconnect()
     this.readyState = this.CLOSED
   }
 

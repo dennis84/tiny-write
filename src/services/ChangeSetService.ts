@@ -11,7 +11,7 @@ export class ChangeSetService {
     private setState: SetStoreFunction<State>,
   ) {}
 
-  addVersion() {
+  async addVersion() {
     const currentFile = this.ctrl.file.currentFile
     if (!currentFile) return
 
@@ -26,7 +26,7 @@ export class ChangeSetService {
     ]
 
     this.ctrl.file.updateFile(currentFile.id, {versions})
-    this.ctrl.editor.saveEditor()
+    await this.ctrl.editor.saveEditor()
     remote.info('Saved new snapshot version')
   }
 

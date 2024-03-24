@@ -20,17 +20,14 @@ const Link = styled('a')`
 export default () => {
   const [store, ctrl] = useState()
 
-  const onNew = () => {
+  const onNew = async () => {
     const currentFile = ctrl.file.currentFile
-    ctrl.editor.newFile()
+    await ctrl.editor.newFile()
     currentFile?.editorView?.focus()
   }
 
   const FileLink = (props: {path: string}) => {
-    const onClick = async () => {
-      await ctrl.editor.openFileByPath(props.path)
-    }
-
+    const onClick = () => ctrl.editor.openFileByPath(props.path)
     return (
       <Link onClick={onClick}>{props.path}</Link>
     )

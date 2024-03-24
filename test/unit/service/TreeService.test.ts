@@ -49,7 +49,7 @@ test('init - flat', () => {
   `)
 })
 
-test('add', () => {
+test('add', async () => {
   const files = [
     createFile({id: 'file_1'}),
     createFile({id: 'file_2'}),
@@ -69,7 +69,7 @@ test('add', () => {
     └ file_4 (parentId=, leftId=file_3)
   `)
 
-  service.add(service.tree[1], service.tree[0])
+  await service.add(service.tree[1], service.tree[0])
   expectTree(service.tree, `
     └ file_1 (parentId=, leftId=)
       └ file_2 (parentId=file_1, leftId=)
@@ -77,7 +77,7 @@ test('add', () => {
     └ file_4 (parentId=, leftId=file_3)
   `)
 
-  service.add(service.tree[1], service.tree[0])
+  await service.add(service.tree[1], service.tree[0])
   expectTree(service.tree, `
     └ file_1 (parentId=, leftId=)
       └ file_2 (parentId=file_1, leftId=)
@@ -86,7 +86,7 @@ test('add', () => {
   `)
 })
 
-test('add - new file', () => {
+test('add - new file', async () => {
   const files: File[] = [
     createFile({id: 'file_1'}),
     createFile({id: 'file_2', parentId: 'file_1'}),
@@ -100,7 +100,7 @@ test('add - new file', () => {
   const newFile = createFile({id: 'file_3'})
   setState('files', (prev) => [...prev, newFile])
 
-  service.add({item: newFile, tree: []}, service.tree[0])
+  await service.add({item: newFile, tree: []}, service.tree[0])
   expectTree(service.tree, `
     └ file_1 (parentId=, leftId=)
       └ file_2 (parentId=file_1, leftId=)
@@ -108,7 +108,7 @@ test('add - new file', () => {
   `)
 })
 
-test('before - same tree', () => {
+test('before - same tree', async () => {
   const files = [
     createFile({id: 'file_1'}),
     createFile({id: 'file_2'}),
@@ -128,7 +128,7 @@ test('before - same tree', () => {
     └ file_4 (parentId=, leftId=file_3)
   `)
 
-  service.before(service.tree[0], service.tree[2])
+  await service.before(service.tree[0], service.tree[2])
   expectTree(service.tree, `
     └ file_2 (parentId=, leftId=)
     └ file_1 (parentId=, leftId=file_2)
@@ -136,7 +136,7 @@ test('before - same tree', () => {
     └ file_4 (parentId=, leftId=file_3)
   `)
 
-  service.before(service.tree[2], service.tree[0])
+  await service.before(service.tree[2], service.tree[0])
   expectTree(service.tree, `
     └ file_3 (parentId=, leftId=)
     └ file_2 (parentId=, leftId=file_3)
@@ -145,7 +145,7 @@ test('before - same tree', () => {
   `)
 })
 
-test('before - from other tree', () => {
+test('before - from other tree', async () => {
   const files = [
     createFile({id: 'file_1'}),
     createFile({id: 'file_2', parentId: 'file_1'}),
@@ -165,7 +165,7 @@ test('before - from other tree', () => {
     └ file_4 (parentId=, leftId=file_3)
   `)
 
-  service.before(service.tree[1], service.tree[0].tree[0])
+  await service.before(service.tree[1], service.tree[0].tree[0])
   expectTree(service.tree, `
     └ file_1 (parentId=, leftId=)
       └ file_3 (parentId=file_1, leftId=)
@@ -174,7 +174,7 @@ test('before - from other tree', () => {
   `)
 })
 
-test('after - same tree', () => {
+test('after - same tree', async () => {
   const files = [
     createFile({id: 'file_1'}),
     createFile({id: 'file_2'}),
@@ -194,7 +194,7 @@ test('after - same tree', () => {
     └ file_4 (parentId=, leftId=file_3)
   `)
 
-  service.after(service.tree[0], service.tree[2])
+  await service.after(service.tree[0], service.tree[2])
   expectTree(service.tree, `
     └ file_2 (parentId=, leftId=)
     └ file_3 (parentId=, leftId=file_2)
@@ -202,7 +202,7 @@ test('after - same tree', () => {
     └ file_4 (parentId=, leftId=file_1)
   `)
 
-  service.after(service.tree[2], service.tree[0])
+  await service.after(service.tree[2], service.tree[0])
   expectTree(service.tree, `
     └ file_2 (parentId=, leftId=)
     └ file_1 (parentId=, leftId=file_2)
@@ -211,7 +211,7 @@ test('after - same tree', () => {
   `)
 })
 
-test('after - from other tree', () => {
+test('after - from other tree', async () => {
   const files = [
     createFile({id: 'file_1'}),
     createFile({id: 'file_2', parentId: 'file_1'}),
@@ -231,7 +231,7 @@ test('after - from other tree', () => {
     └ file_4 (parentId=, leftId=file_3)
   `)
 
-  service.after(service.tree[1], service.tree[0].tree[0])
+  await service.after(service.tree[1], service.tree[0].tree[0])
   expectTree(service.tree, `
     └ file_1 (parentId=, leftId=)
       └ file_2 (parentId=file_1, leftId=)

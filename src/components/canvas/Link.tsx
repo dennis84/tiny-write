@@ -70,7 +70,7 @@ export default ({element}: {element: CanvasLinkElement}) => {
   }
 
   onMount(() => {
-    const linkGesture = new DragGesture(pathRef, ({event, initial, first, last, movement, memo}) => {
+    const linkGesture = new DragGesture(pathRef, async ({event, initial, first, last, movement, memo}) => {
       event.stopPropagation()
       const {zoom} = currentCanvas.camera
       const i = ctrl.canvas.getPosition(initial)
@@ -103,7 +103,7 @@ export default ({element}: {element: CanvasLinkElement}) => {
       if (currentCanvas.snapToGrid) t.snapToGrid(10)
 
       ctrl.canvas.drawLink(element.id, fromId, fromEdge, t.x, t.y)
-      if (last) ctrl.canvas.drawLinkEnd(element.id)
+      if (last) await ctrl.canvas.drawLinkEnd(element.id)
       return [fromId, fromEdge]
     })
 

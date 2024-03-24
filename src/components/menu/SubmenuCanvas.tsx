@@ -6,18 +6,18 @@ export default ({maybeHide}: {maybeHide: () => void}) => {
   const [, ctrl] = useState()
   const modKey = isMac ? '⌘' : mod
 
-  const onNewFile = () => {
-    ctrl.canvas.newFile()
+  const onNewFile = async () => {
+    await ctrl.canvas.newFile()
     maybeHide()
   }
 
-  const onClearCanvas = () => {
-    ctrl.canvas.clearCanvas()
+  const onClearCanvas = async () => {
+    await ctrl.canvas.clearCanvas()
     maybeHide()
   }
 
-  const onBackToContent = () => {
-    ctrl.canvas.backToContent()
+  const onBackToContent = async () => {
+    await ctrl.canvas.backToContent()
     maybeHide()
   }
 

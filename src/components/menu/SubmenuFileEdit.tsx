@@ -28,13 +28,12 @@ export default () => {
     setLastAction(cmd)
   }
 
-  const onCopyAllAsMd = () => {
+  const onCopyAllAsMd = async () => {
     const currentFile = ctrl.file.currentFile
     const state = currentFile?.editorView?.state
     if (!state) return
-    remote.copyAllAsMarkdown(state).then(() => {
-      setLastAction('copy-md')
-    })
+    await remote.copyAllAsMarkdown(state)
+    setLastAction('copy-md')
   }
 
   createEffect(() => {

@@ -42,14 +42,14 @@ export class CanvasCollabService {
 
     this.store.collab?.undoManager?.addToScope(this.elements!)
 
-    this.elements?.observeDeep((events, tr) => {
+    this.elements?.observeDeep(async (events, tr) => {
       if (this.ydoc?.clientID === tr.origin) return
 
       for (const event of events) {
         for (const [key, action] of event.changes.keys) {
           if (action.action === 'delete') {
             if (event.path.length === 0) {
-              this.canvasService.removeElements([key])
+              await this.canvasService.removeElements([key])
             } else {
               const elementId = event.path[0].toString().substring(PREFIX.length)
               this.canvasService.updateCanvasElement(elementId, {[key]: undefined})

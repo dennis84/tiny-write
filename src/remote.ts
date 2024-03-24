@@ -15,7 +15,7 @@ export const listContents = async (file: string) => {
   return await invoke('list_contents', {file}) as string[]
 }
 
-export const saveSvg = (svg: HTMLElement) => {
+export const saveSvg = async (svg: HTMLElement) => {
   const canvas = document.createElement('canvas')
   const ctx = canvas.getContext('2d')!
   const rect = svg.getBoundingClientRect()
@@ -30,27 +30,27 @@ export const saveSvg = (svg: HTMLElement) => {
     .replaceAll('<br>', '<br/>')
     .replaceAll(/<img([^>]*)>/g, (_, g: string) => `<img ${g} />`)
   image.src = `data:image/svg+xml;base64,${toBase64(svgString)}`
-  image.decode().then(() => {
-    ctx.drawImage(image, 0, 0, canvas.width, canvas.height)
-    canvas.toBlob(async (blob) => {
-      if (!blob) return
+  await image.decode()
 
-      const filename = 'mermaid-graph.png'
-      if (isTauri()) {
-        const path = await dialog.save({defaultPath: `./${filename}`})
-        if (!path) return
-        const buffer = await blob.arrayBuffer()
-        const contents = new Uint8Array(buffer)
-        await fs.writeFile(path, contents)
-        return
-      }
+  ctx.drawImage(image, 0, 0, canvas.width, canvas.height)
+  canvas.toBlob(async (blob) => {
+    if (!blob) return
 
-      const downloadLink = document.createElement('a')
-      downloadLink.setAttribute('download', filename)
-      const url = URL.createObjectURL(blob)
-      downloadLink.setAttribute('href', url)
-      downloadLink.click()
-    })
+    const filename = 'mermaid-graph.png'
+    if (isTauri()) {
+      const path = await dialog.save({defaultPath: `./${filename}`})
+      if (!path) return
+      const buffer = await blob.arrayBuffer()
+      const contents = new Uint8Array(buffer)
+      await fs.writeFile(path, contents)
+      return
+    }
+
+    const downloadLink = document.createElement('a')
+    downloadLink.setAttribute('download', filename)
+    const url = URL.createObjectURL(blob)
+    downloadLink.setAttribute('href', url)
+    downloadLink.click()
   })
 }
 
@@ -83,7 +83,7 @@ export const copy = async (text: string): Promise<void> => {
   if (isTauri()) {
     return clipboard.writeText(text)
   } else {
-    navigator.clipboard.writeText(text)
+    await navigator.clipboard.writeText(text)
   }
 }
 
@@ -92,7 +92,7 @@ export const copyAllAsMarkdown = async (state: EditorState): Promise<void> => {
   if (isTauri()) {
     return clipboard.writeText(text)
   } else {
-    navigator.clipboard.writeText(text)
+    await navigator.clipboard.writeText(text)
   }
 }
 
@@ -148,22 +148,22 @@ export const saveFile = async (file: File): Promise<string> => {
 }
 
 export const debug = (msg: string, ...data: any[]) => {
-  if (isTauri()) logger.debug(msg)
+  if (isTauri()) void logger.debug(msg)
   console.debug(msg, ...data)
 }
 
 export const info = (msg: string, ...data: any[]) => {
-  if (isTauri()) logger.info(msg)
+  if (isTauri()) void logger.info(msg)
   console.info(msg, ...data)
 }
 
 export const warn = (msg: string, ...data: any[]) => {
-  if (isTauri()) logger.warn(msg)
+  if (isTauri()) void logger.warn(msg)
   console.warn(msg, ...data)
 }
 
 export const error = (msg: string, ...data: any[]) => {
-  if (isTauri()) logger.error(msg)
+  if (isTauri()) void logger.error(msg)
   console.error(msg, ...data)
 }
 

@@ -52,7 +52,7 @@ export const mermaidView = (codeBlock: CodeBlockView) =>
       div.className = 'mermaid'
       this.output = div
       this.view.dom.appendChild(this.output)
-      this.updateDOM()
+      void this.updateDOM()
     }
 
     destroy() {
@@ -64,7 +64,7 @@ export const mermaidView = (codeBlock: CodeBlockView) =>
         update.docChanged ||
         update.startState.facet(language) != update.state.facet(language)
       ) {
-        this.updateDOM()
+        void this.updateDOM()
       }
     }
 

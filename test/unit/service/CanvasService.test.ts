@@ -168,7 +168,7 @@ test('updateCanvasElement', async () => {
   expect(editorEl2.editorView).toBe(undefined)
 })
 
-test('backToContent', () => {
+test('backToContent', async () => {
   const [store, setState] = createStore(createState({
     canvases: [
       createCanvas({
@@ -188,13 +188,13 @@ test('backToContent', () => {
     clientHeight: 1000,
   })
 
-  service.backToContent()
+  await service.backToContent()
 
   expect(service.currentCanvas?.camera.point).toEqual([500, 500])
   expect(service.currentCanvas?.camera.zoom).toEqual(0.5)
 })
 
-test('focus', () => {
+test('focus', async () => {
   const [store, setState] = createStore(createState({
     canvases: [
       createCanvas({
@@ -213,7 +213,7 @@ test('focus', () => {
     clientHeight: 1000,
   })
 
-  service.focus('2')
+  await service.focus('2')
 
   expect(service.currentCanvas?.camera.point).toEqual([-100, -100])
 })
@@ -261,7 +261,7 @@ test('updateCameraPoint', () => {
   expect(service.currentCanvas?.camera.point).toEqual([100, 100])
 })
 
-test('deleteCanvas', () => {
+test('deleteCanvas', async () => {
   const [store, setState] = createStore(createState({
     mode: Mode.Canvas,
     canvases: [
@@ -272,18 +272,18 @@ test('deleteCanvas', () => {
 
   const service = new CanvasService(ctrl, store, setState)
 
-  service.deleteCanvas('1')
+  await service.deleteCanvas('1')
   expect(store.canvases.length).toBe(2)
   expect(store.canvases[0].active).toBe(false)
   expect(store.canvases[1].active).toBe(true)
   expect(store.canvases[0].deleted).toBe(true)
 
-  service.deleteCanvas('2')
+  await service.deleteCanvas('2')
   expect(store.canvases.length).toBe(2)
   expect(store.canvases[1].deleted).toBe(true)
 })
 
-test('restore', () => {
+test('restore', async () => {
   const [store, setState] = createStore(createState({
     mode: Mode.Canvas,
     canvases: [
@@ -294,14 +294,14 @@ test('restore', () => {
 
   const service = new CanvasService(ctrl, store, setState)
 
-  service.restore('2')
+  await service.restore('2')
   expect(store.canvases.length).toBe(2)
   expect(store.canvases[0].active).toBe(true)
   expect(store.canvases[1].active).toBe(false)
   expect(store.canvases[1].deleted).toBe(false)
 })
 
-test('deleteForever', () => {
+test('deleteForever', async () => {
   const [store, setState] = createStore(createState({
     mode: Mode.Canvas,
     canvases: [
@@ -312,7 +312,7 @@ test('deleteForever', () => {
 
   const service = new CanvasService(ctrl, store, setState)
 
-  service.deleteForever('2')
+  await service.deleteForever('2')
   expect(store.canvases.length).toBe(1)
   expect(store.canvases[0].active).toBe(true)
 
@@ -375,7 +375,7 @@ test('deselect', () => {
   expect(editor.active).toBe(false)
 })
 
-test('newCanvas', () => {
+test('newCanvas', async () => {
   const editorView = mock<EditorView>()
   const [store, setState] = createStore(createState({
     canvases: [
@@ -394,7 +394,7 @@ test('newCanvas', () => {
   const service = new CanvasService(ctrl, store, setState)
 
   // new canvas
-  service.newCanvas()
+  await service.newCanvas()
   expect(store.canvases.length).toBe(2)
   expect(store.canvases[1].active).toBe(true)
 
@@ -404,7 +404,7 @@ test('newCanvas', () => {
   expect(editorView.destroy.mock.calls.length).toBe(1)
 
   // Add another canvas
-  service.newCanvas()
+  await service.newCanvas()
   expect(store.canvases.length).toBe(3)
   expect(store.canvases[0].active).toBe(false)
   expect(store.canvases[1].active).toBe(false)
@@ -414,7 +414,7 @@ test('newCanvas', () => {
   expect(ctrl.collab.disconnectCollab).toHaveBeenCalled()
 })
 
-test('removeElements', () => {
+test('removeElements', async () => {
   const [store, setState] = createStore(createState({
     canvases: [
       createCanvas({
@@ -430,7 +430,7 @@ test('removeElements', () => {
   }))
 
   const service = new CanvasService(ctrl, store, setState)
-  service.removeElements(['1'])
+  await service.removeElements(['1'])
 
   expect(service.currentCanvas?.elements.length).toBe(1)
   expect(service.currentCanvas?.elements[0].id).toBe('2')
@@ -459,7 +459,7 @@ test('destroyElement', () => {
   expect(editorView.destroy.mock.calls.length).toBe(1)
 })
 
-test('open', () => {
+test('open', async () => {
   const editorView = mock<EditorView>()
   const [store, setState] = createStore(createState({
     canvases: [
@@ -470,19 +470,19 @@ test('open', () => {
 
   const service = new CanvasService(ctrl, store, setState)
 
-  service.open('1')
+  await service.open('1')
   expect(service.currentCanvas?.id).toBe('1')
   expect(DB.updateCanvas).toHaveReturnedTimes(1)
   vi.mocked(DB.updateCanvas).mockClear()
 
-  service.open('2')
+  await service.open('2')
   expect(service.currentCanvas?.id).toBe('2')
   expect(DB.updateCanvas).toHaveReturnedTimes(2)
 
   expect(editorView.destroy.mock.calls.length).toBe(1)
 })
 
-test('newFile', () => {
+test('newFile', async () => {
   const ydoc = new Uint8Array()
 
   const [store, setState] = createStore(createState({
@@ -495,7 +495,7 @@ test('newFile', () => {
   ctrl.collab.create.mockReturnValue(createCollabMock())
 
   const service = new CanvasService(ctrl, store, setState)
-  service.newFile()
+  await service.newFile()
 
   expect(service.currentCanvas?.elements.length).toBe(1)
   const editorEl = service.currentCanvas?.elements[0] as CanvasEditorElement
@@ -507,7 +507,7 @@ test.each([
   {toX: -400, toY: 175, x: -700, y: 0, edge: EdgeType.Right},
   {toX: 150, toY: 400, x: 0, y: 400, edge: EdgeType.Top},
   {toX: 150, toY: -400, x: 0, y: -750, edge: EdgeType.Bottom},
-])('newFile - with link', ({toX, toY, x, y, edge}) => {
+])('newFile - with link', async ({toX, toY, x, y, edge}) => {
   const ydoc = new Uint8Array()
   const link = createLinkElement({id: '2', from: '1', toX, toY, to: undefined})
 
@@ -528,7 +528,7 @@ test.each([
   ctrl.collab.create.mockReturnValue(createCollabMock())
 
   const service = new CanvasService(ctrl, store, setState)
-  service.newFile(link)
+  await service.newFile(link)
 
   expect(service.currentCanvas?.elements.length).toBe(3)
   const editorEl = service.currentCanvas?.elements[2] as CanvasEditorElement
@@ -543,7 +543,7 @@ test.each([
   expect(linkEl.toEdge).toBe(edge)
 })
 
-test('addImage', () => {
+test('addImage', async () => {
   const [store, setState] = createStore(createState({
     canvases: [
       createCanvas({id: '1', active: true}),
@@ -551,7 +551,7 @@ test('addImage', () => {
   }))
 
   const service = new CanvasService(ctrl, store, setState)
-  service.addImage('/path/1.png', new Vec2d(100, 100), 1000, 2000)
+  await service.addImage('/path/1.png', new Vec2d(100, 100), 1000, 2000)
 
   expect(service.currentCanvas?.elements.length).toBe(1)
   const imageEl = service.currentCanvas?.elements[0] as CanvasImageElement
@@ -561,7 +561,7 @@ test('addImage', () => {
   expect(imageEl.height).toBe(600)
 })
 
-test('addVideo', () => {
+test('addVideo', async () => {
   const [store, setState] = createStore(createState({
     canvases: [
       createCanvas({id: '1', active: true}),
@@ -569,7 +569,7 @@ test('addVideo', () => {
   }))
 
   const service = new CanvasService(ctrl, store, setState)
-  service.addVideo('/path/1.mp4', 'video/mp4', new Vec2d(100, 100), 1000, 2000)
+  await service.addVideo('/path/1.mp4', 'video/mp4', new Vec2d(100, 100), 1000, 2000)
 
   expect(service.currentCanvas?.elements.length).toBe(1)
   const el = service.currentCanvas?.elements[0] as CanvasVideoElement
@@ -618,7 +618,7 @@ test('drawLink', () => {
   expect(link2.toY).toBe(undefined)
 })
 
-test('drawLink - abort', () => {
+test('drawLink - abort', async () => {
   const [store, setState] = createStore(createState({
     canvases: [
       createCanvas({
@@ -637,12 +637,12 @@ test('drawLink - abort', () => {
   service.drawLink('3', '1', EdgeType.Right, 100, 100)
   expect(service.currentCanvas?.elements.length).toBe(3)
 
-  service.drawLinkEnd('3')
+  await service.drawLinkEnd('3')
   expect(service.currentCanvas?.elements.length).toBe(3)
   expect(service.findDeadLinks().length).toBe(1)
 })
 
-test('removeDeadLinks', () => {
+test('removeDeadLinks', async () => {
   const [store, setState] = createStore(createState({
     canvases: [
       createCanvas({
@@ -659,12 +659,12 @@ test('removeDeadLinks', () => {
   const service = new CanvasService(ctrl, store, setState)
   expect(service.currentCanvas?.elements.length).toBe(2)
 
-  service.removeDeadLinks()
+  await service.removeDeadLinks()
 
   expect(service.currentCanvas?.elements.length).toBe(1)
 })
 
-test('clearCanvas', () => {
+test('clearCanvas', async () => {
   const [store, setState] = createStore(createState({
     canvases: [
       createCanvas({
@@ -678,7 +678,7 @@ test('clearCanvas', () => {
   }))
 
   const service = new CanvasService(ctrl, store, setState)
-  service.clearCanvas()
+  await service.clearCanvas()
 
   expect(service.currentCanvas?.elements.length).toBe(0)
 })

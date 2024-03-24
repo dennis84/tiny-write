@@ -17,11 +17,10 @@ export default () => {
     ctrl.collab.stopCollab()
   }
 
-  const onCopyCollabLink = () => {
+  const onCopyCollabLink = async () => {
     const m = store.mode === Mode.Canvas ? 'c/' : ''
-    remote.copy(`${WEB_URL}/${m + ctrl.collab.room}`).then(() => {
-      setLastAction('copy-collab-link')
-    })
+    await remote.copy(`${WEB_URL}/${m + ctrl.collab.room}`)
+    setLastAction('copy-collab-link')
   }
 
   createEffect(() => {

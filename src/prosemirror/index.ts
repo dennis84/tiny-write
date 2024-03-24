@@ -2,7 +2,7 @@ import {EditorState, Plugin} from 'prosemirror-state'
 import {Schema, SchemaSpec} from 'prosemirror-model'
 import {NodeViewConstructor} from 'prosemirror-view'
 
-export type NodeViewConfig = {[key: string]: NodeViewConstructor};
+export type NodeViewConfig = Record<string, NodeViewConstructor>;
 
 export interface ProseMirrorExtension {
   schema?: (prev: SchemaSpec) => SchemaSpec;

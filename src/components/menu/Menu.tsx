@@ -194,21 +194,17 @@ export default () => {
     setShow(show() ? undefined : 'main')
   }
 
-  const onToggleAlwaysOnTop = () => {
+  const onToggleAlwaysOnTop = () =>
     ctrl.config.setAlwaysOnTop(!store.config.alwaysOnTop)
-  }
 
-  const onToggleTypewriterMode = () => {
+  const onToggleTypewriterMode = () =>
     ctrl.config.updateConfig({typewriterMode: !store.config.typewriterMode})
-  }
 
-  const onToggleSpellcheck = () => {
+  const onToggleSpellcheck = () =>
     ctrl.config.updateConfig({spellcheck: !store.config.spellcheck})
-  }
 
-  const onToggleFullscreen = () => {
+  const onToggleFullscreen = () =>
     ctrl.app.setFullscreen(!store.fullscreen)
-  }
 
   const onVersion = () => {
     window.open(VERSION_URL, '_blank')
