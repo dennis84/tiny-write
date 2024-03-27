@@ -1,3 +1,4 @@
+import {Node} from 'prosemirror-model'
 import {ProseMirrorExtension} from '.'
 
 export default (): ProseMirrorExtension => ({
@@ -9,6 +10,7 @@ export default (): ProseMirrorExtension => ({
 
 const editLinkSchema = {
   edit_link: {
-    toDOM: () => ['span', {class: 'edit-link'}],
+    attrs: {href: {}},
+    toDOM: (n: Node) => ['span', {class: 'edit-link', 'data-href': n.attrs.href}],
   },
 }

@@ -1,7 +1,6 @@
 import {Show, createEffect, createSignal, onCleanup} from 'solid-js'
 import {createMutable} from 'solid-js/store'
 import {styled} from 'solid-styled-components'
-import {NodeSelection} from 'prosemirror-state'
 import {EditorView} from 'prosemirror-view'
 import {Node} from 'prosemirror-model'
 import {setBlockType} from 'prosemirror-commands'
@@ -9,6 +8,15 @@ import {arrow, autoUpdate, computePosition, flip, offset, shift} from '@floating
 import {CanvasEditorElement, Mode, isEditorElement, useState} from '@/state'
 import * as remote from '@/remote'
 import {Align} from '@/prosemirror/image'
+import {blockHandlePluginKey} from '@/prosemirror/block-handle'
+
+const TooltipBackground = styled('div')`
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+`
 
 const TooltipEl = styled('div')`
   position: absolute;
@@ -16,8 +24,10 @@ const TooltipEl = styled('div')`
 `
 
 interface Block {
-  pos: number;
-  node: Node;
+  blockPos: number;
+  blockNode: Node;
+  cursorPos?: number;
+  marks: string[];
 }
 
 interface Cleanup {
@@ -31,6 +41,14 @@ export const BlockTooltip = () => {
   const [store, ctrl] = useState()
   const [selectedBlock, setSelectedBlock] = createSignal<Block | undefined>()
   const cleanup = createMutable<Cleanup>({})
+
+  const onBackgroundClick = () => {
+    const view = getEditorView()
+    if (!view) return
+    const tr = view.state.tr
+    tr.setMeta(blockHandlePluginKey, {})
+    view.dispatch(tr)
+  }
 
   const deselect = () => {
     if (store.mode === Mode.Canvas) {
@@ -54,7 +72,7 @@ export const BlockTooltip = () => {
     const block = selectedBlock()
     if (!block) return
     const view = getEditorView()
-    const dom = view?.domAtPos(block.pos + 1)
+    const dom = view?.domAtPos(block.blockPos + 1)
     dom?.node.dispatchEvent(new CustomEvent('cm:user_event', {
       detail: {userEvent: 'prettify'},
     }))
@@ -66,7 +84,7 @@ export const BlockTooltip = () => {
     const block = selectedBlock()
     if (!block) return
     const view = getEditorView()
-    const dom = view?.domAtPos(block.pos + 1)
+    const dom = view?.domAtPos(block.blockPos + 1)
     dom?.node.dispatchEvent(new CustomEvent('cm:user_event', {
       detail: {userEvent: 'fold_all'},
     }))
@@ -81,15 +99,15 @@ export const BlockTooltip = () => {
     const view = getEditorView()
     if (!view) return
 
-    if (block.node.attrs.lang === 'mermaid') {
+    if (block.blockNode.attrs.lang === 'mermaid') {
       const tr = view.state.tr
-      tr.setNodeAttribute(block.pos, 'hidden', false)
+      tr.setNodeAttribute(block.blockPos, 'hidden', false)
       view.dispatch(tr)
     }
 
     deselect()
 
-    const dom = view.domAtPos(block.pos + 1)
+    const dom = view.domAtPos(block.blockPos + 1)
     dom.node.dispatchEvent(new CustomEvent('cm:user_event', {
       detail: {userEvent: 'change-lang'},
     }))
@@ -99,7 +117,7 @@ export const BlockTooltip = () => {
     const block = selectedBlock()
     if (!block) return
 
-    const id = `mermaid-graph-${block.pos}`
+    const id = `mermaid-graph-${block.blockPos}`
     const svg = document.getElementById(id)
     if (svg) await remote.saveSvg(svg)
   }
@@ -112,7 +130,7 @@ export const BlockTooltip = () => {
     if (!view) return
 
     const tr = view.state.tr
-    tr.setNodeAttribute(block.pos, 'hidden', !block.node.attrs.hidden)
+    tr.setNodeAttribute(block.blockPos, 'hidden', !block.blockNode.attrs.hidden)
     view.dispatch(tr)
     view.focus()
   }
@@ -128,7 +146,7 @@ export const BlockTooltip = () => {
     toPlain(view.state, view.dispatch)
 
     const tr = view.state.tr
-    const pos = tr.doc.resolve(block.pos)
+    const pos = tr.doc.resolve(block.blockPos)
     if (!pos.nodeAfter) return
     tr.removeMark(pos.pos, pos.pos + pos.nodeAfter.nodeSize)
     view.dispatch(tr)
@@ -143,7 +161,7 @@ export const BlockTooltip = () => {
     if (!view) return
 
     const tr = view.state.tr
-    const pos = tr.doc.resolve(block.pos)
+    const pos = tr.doc.resolve(block.blockPos)
     if (!pos.nodeAfter) return
     tr.delete(pos.pos, pos.pos + pos.nodeAfter.nodeSize)
     view.dispatch(tr)
@@ -157,20 +175,31 @@ export const BlockTooltip = () => {
     if (!view) return
 
     const tr = view.state.tr
-    block.node.descendants((n, p) => {
+    block.blockNode.descendants((n, p) => {
       if (n.type.name !== 'image' && n.type.name !== 'video') return
-      const pos = block.pos + p + 1
+      const pos = block.blockPos + p + 1
       tr.setNodeAttribute(pos, 'align', align)
     })
 
     view.dispatch(tr)
   }
 
-  const hasImage = () => {
+  const onOpenLink = async () => {
     const block = selectedBlock()
-    if (!block) return
+    if (block?.cursorPos === undefined) return
+    const view = getEditorView()
+    if (!view) return
+
+    const resolved = view.state.doc.resolve(block.cursorPos)
+    const href = resolved.marks()[0]?.attrs?.href
+    if (href) await remote.open(href)
+  }
+
+  const hasImage = (): boolean => {
+    const block = selectedBlock()
+    if (!block) return false
     let result = false
-    block.node.descendants((n) => {
+    block.blockNode.descendants((n) => {
       if (n.type.name === 'image' || n.type.name === 'video') result = true
       return result
     })
@@ -178,20 +207,34 @@ export const BlockTooltip = () => {
     return result
   }
 
+  const hasLink = (): boolean => {
+    const block = selectedBlock()
+    if (!block) return false
+
+    return block.marks.find((m) => m === 'link' || m === 'edit_link') !== undefined
+  }
+
   createEffect(() => {
     store.lastTr
     const view = getEditorView()
-    const sel = view?.state.selection
-    if (!view || !sel || sel.empty) {
-      setSelectedBlock(undefined)
-      return
-    }
+    if (!view) return
 
-    const blockPos = sel.$from.before(1)
-    const ns = NodeSelection.create(view.state.doc, blockPos)
+    const blockHandleState = blockHandlePluginKey.getState(view.state)
 
-    if (sel.eq(ns)) {
-      setSelectedBlock({pos: blockPos, node: ns.node})
+    if (blockHandleState.blockPos !== undefined) {
+      const pos = view.state.doc.resolve(blockHandleState.blockPos)
+      const cursorPos = blockHandleState.cursorPos
+      const marks: string[] = []
+      if (cursorPos !== undefined) {
+        view.state.doc.resolve(cursorPos).marks().forEach((m) => marks.push(m.type.name))
+      }
+
+      setSelectedBlock({
+        blockPos: blockHandleState.blockPos,
+        blockNode: pos.node(),
+        cursorPos,
+        marks,
+      })
     } else {
       setSelectedBlock(undefined)
     }
@@ -200,10 +243,10 @@ export const BlockTooltip = () => {
   createEffect(() => {
     const result = selectedBlock()
     if (!result) return
-    const {pos} = result
+    const {blockPos} = result
 
     const view = getEditorView()
-    const el = view?.domAtPos(pos + 1).node as HTMLElement
+    const el = view?.domAtPos(blockPos + 1).node as HTMLElement
     const handle = el?.querySelector('.block-handle')
     if (!handle) return
 
@@ -247,15 +290,16 @@ export const BlockTooltip = () => {
   return (
     <Show when={selectedBlock()}>
       {(block) => <>
+        <TooltipBackground onClick={onBackgroundClick} />
         <TooltipEl ref={tooltipRef} class="block-tooltip">
-          <Show when={block().node?.type.name === 'code_block'}>
+          <Show when={block().blockNode?.type.name === 'code_block'}>
             <div onClick={onChangeLang} data-testid="change_lang">💱 change language</div>
             <div onClick={onPrettify} data-testid="prettify">💅 prettify</div>
             <div onClick={onFoldAll}>🙏 fold all</div>
-            <Show when={block().node.attrs.lang === 'mermaid'}>
+            <Show when={block().blockNode.attrs.lang === 'mermaid'}>
               <div onClick={onMermaidSave}>💾 save as png</div>
               <div onClick={onMermaidHideCode}>
-                {block().node.attrs.hidden ? '🙉 Show code' : '🙈 Hide code'}
+                {block().blockNode.attrs.hidden ? '🙉 Show code' : '🙈 Hide code'}
               </div>
             </Show>
             <hr class="divider" />
@@ -265,6 +309,9 @@ export const BlockTooltip = () => {
             <div onClick={onAlign(Align.FloatRight)} data-testid="align_float_right">👉 Float right</div>
             <div onClick={onAlign(Align.Center)} data-testid="align_center">🖖 Center</div>
             <hr class="divider" />
+          </Show>
+          <Show when={hasLink()}>
+            <div onClick={onOpenLink} data-testid="open_link">↗️ Open Link</div>
           </Show>
           <div onClick={onToPlain}>🧽 remove text formats</div>
           <div onClick={onRemoveBlock} data-testid="remove_block">🗑️ remove block</div>

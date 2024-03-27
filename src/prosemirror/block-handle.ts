@@ -15,10 +15,23 @@ const createDragHandle = () => {
   return handle
 }
 
-const pluginKey = new PluginKey('block-handle')
+export const blockHandlePluginKey = new PluginKey('block-handle')
 
 const blockHandle = new Plugin({
-  key: pluginKey,
+  key: blockHandlePluginKey,
+  state: {
+    init() {
+      return {
+        blockPos: undefined,
+        cursorPos: undefined
+      }
+    },
+    apply(tr, prev) {
+      const meta = tr.getMeta(blockHandlePluginKey)
+      if (!meta) return prev
+      return meta
+    }
+  },
   props: {
     decorations(state) {
       const decos: Decoration[] = []
@@ -37,9 +50,20 @@ const blockHandle = new Plugin({
         if (target.classList.contains('block-handle')) {
           const pos = editorView.posAtCoords({left: event.x + 30, top: event.y})
           if (!pos) return false
-          const resolved = editorView.state.doc.resolve(pos.pos)
+          const state = editorView.state
+          const resolved = state.doc.resolve(pos.pos)
           const blockPos = resolved.before(1)
-          const tr = editorView.state.tr
+          const tr = state.tr
+          let cursorPos = undefined
+          if (
+            state.selection.empty &&
+            state.selection.head >= blockPos &&
+            state.selection.head <= resolved.after(1)
+          ) {
+            cursorPos = state.selection.head
+          }
+
+          tr.setMeta(blockHandlePluginKey, {blockPos, cursorPos})
           tr.setSelection(NodeSelection.create(editorView.state.doc, blockPos))
           editorView.focus() // unfocus CM and focus PM
           editorView.dispatch(tr)

@@ -25,21 +25,42 @@ const plugin = (parser: MarkdownParser) => new Plugin({
     if (tr) return tr
 
     const linkMarkType = newState.schema.marks.link
-    const mark = linkMarkType.isInSet(newState.selection.$from.marks())
+    const linkMark = linkMarkType.isInSet(newState.selection.$from.marks())
+
+    const editLinkMarkType = newState.schema.marks.edit_link
+    const editLinkMark = editLinkMarkType.isInSet(newState.selection.$from.marks())
 
     // Transform to markdown
-    if (mark) {
-      const {href} = mark.attrs
+    if (linkMark) {
+      const {href} = linkMark.attrs
       const textFrom = newState.selection.$from.pos - newState.selection.$from.textOffset
       const textTo = newState.selection.$from.after()
-      const range = findMarkPosition(mark, newState.doc, textFrom, textTo)
+      const range = findMarkPosition(linkMark, newState.doc, textFrom, textTo)
       const text = newState.doc.textBetween(range.from, range.to, '\0', '\0')
       const node = newState.schema.text(`[${text}](${href})`)
-        .mark([newState.schema.marks.edit_link.create()])
+        .mark([newState.schema.marks.edit_link.create({href})])
 
       const tr = newState.tr
       tr.replaceRangeWith(range.from, range.to, node)
       tr.setSelection(new TextSelection(tr.doc.resolve(newPos + 1)))
+      return tr
+    }
+
+    // Update edit link mark attrs
+    if (editLinkMark) {
+      const textFrom = newState.selection.$from.pos - newState.selection.$from.textOffset
+      const textTo = newState.selection.$from.after()
+      const range = findMarkPosition(editLinkMark, newState.doc, textFrom, textTo)
+      const text = newState.doc.textBetween(range.from, range.to, '\0', '\0')
+      const node = parser.parse(text)?.content.firstChild
+      const tr = newState.tr
+      let href = editLinkMark.attrs.href
+      node?.content.forEach((n) => {
+        const linkMark = linkMarkType.isInSet(n.marks)
+        if (linkMark) href = linkMark.attrs.href
+      })
+      tr.removeMark(range.from, range.to)
+      tr.addMark(range.from, range.to, newState.schema.marks.edit_link.create({href}))
       return tr
     }
   }

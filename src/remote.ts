@@ -4,6 +4,7 @@ import * as clipboard from '@tauri-apps/plugin-clipboard-manager'
 import * as fs from '@tauri-apps/plugin-fs'
 import * as logger from '@tauri-apps/plugin-log'
 import * as dialog from '@tauri-apps/plugin-dialog'
+import * as shell from '@tauri-apps/plugin-shell'
 import {EditorState} from 'prosemirror-state'
 import {toBase64} from 'js-base64'
 import {Args, File, Window} from '@/state'
@@ -194,4 +195,14 @@ export const updateWindow = async ({width, height, x, y}: Window) => {
 export const show = async () => {
   if (!isTauri()) throw Error('Must be run in tauri: show')
   return await invoke('show_main_window')
+}
+
+export const open = async (href: string) => {
+  info(`Open link: (href=${href})`)
+  if (!isTauri()) {
+    window.open(href, '_blank')
+    return
+  }
+
+  await shell.open(href)
 }
