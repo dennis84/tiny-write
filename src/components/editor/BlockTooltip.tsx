@@ -1,4 +1,4 @@
-import {Show, createEffect, createSignal, onCleanup} from 'solid-js'
+import {Show, createEffect, createSignal, onCleanup, onMount} from 'solid-js'
 import {createMutable} from 'solid-js/store'
 import {styled} from 'solid-styled-components'
 import {EditorView} from 'prosemirror-view'
@@ -10,14 +10,6 @@ import * as remote from '@/remote'
 import {Align} from '@/prosemirror/image'
 import {blockHandlePluginKey} from '@/prosemirror/block-handle'
 
-const TooltipBackground = styled('div')`
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-`
-
 const TooltipEl = styled('div')`
   position: absolute;
   z-index: 100;
@@ -27,6 +19,7 @@ interface Block {
   blockPos: number;
   blockNode: Node;
   cursorPos?: number;
+  cursorNode?: Node;
   marks: string[];
 }
 
@@ -41,14 +34,6 @@ export const BlockTooltip = () => {
   const [store, ctrl] = useState()
   const [selectedBlock, setSelectedBlock] = createSignal<Block | undefined>()
   const cleanup = createMutable<Cleanup>({})
-
-  const onBackgroundClick = () => {
-    const view = getEditorView()
-    if (!view) return
-    const tr = view.state.tr
-    tr.setMeta(blockHandlePluginKey, {})
-    view.dispatch(tr)
-  }
 
   const deselect = () => {
     if (store.mode === Mode.Canvas) {
@@ -195,23 +180,28 @@ export const BlockTooltip = () => {
     if (href) await remote.open(href)
   }
 
-  const hasImage = (): boolean => {
-    const block = selectedBlock()
-    if (!block) return false
-    let result = false
-    block.blockNode.descendants((n) => {
-      if (n.type.name === 'image' || n.type.name === 'video') result = true
-      return result
-    })
-
-    return result
-  }
-
   const hasLink = (): boolean => {
     const block = selectedBlock()
     if (!block) return false
 
     return block.marks.find((m) => m === 'link' || m === 'edit_link') !== undefined
+  }
+
+  const onBackgroundClick = (e: MouseEvent) => {
+    const block = selectedBlock()
+    if (!block) return
+
+    const view = getEditorView()
+    if (!view) return
+
+    const blockHandleState = blockHandlePluginKey.getState(view.state)
+    if (blockHandleState.blockPos === undefined) return
+
+    if (tooltipRef.contains(e.target as Element)) return
+
+    const tr = view.state.tr
+    tr.setMeta(blockHandlePluginKey, {})
+    view.dispatch(tr)
   }
 
   createEffect(() => {
@@ -222,17 +212,22 @@ export const BlockTooltip = () => {
     const blockHandleState = blockHandlePluginKey.getState(view.state)
 
     if (blockHandleState.blockPos !== undefined) {
-      const pos = view.state.doc.resolve(blockHandleState.blockPos)
+      const pos = view.state.doc.resolve(blockHandleState.blockPos + 1)
       const cursorPos = blockHandleState.cursorPos
       const marks: string[] = []
+      let cursorNode
+
       if (cursorPos !== undefined) {
-        view.state.doc.resolve(cursorPos).marks().forEach((m) => marks.push(m.type.name))
+        const resolved = view.state.doc.resolve(cursorPos)
+        resolved.marks().forEach((m) => marks.push(m.type.name))
+        cursorNode = resolved.nodeAfter ?? undefined
       }
 
       setSelectedBlock({
         blockPos: blockHandleState.blockPos,
         blockNode: pos.node(),
         cursorPos,
+        cursorNode,
         marks,
       })
     } else {
@@ -246,7 +241,9 @@ export const BlockTooltip = () => {
     const {blockPos} = result
 
     const view = getEditorView()
-    const el = view?.domAtPos(blockPos + 1).node as HTMLElement
+    if (!view) return
+
+    const el = view.domAtPos(blockPos + 1).node as HTMLElement
     const handle = el?.querySelector('.block-handle')
     if (!handle) return
 
@@ -283,14 +280,18 @@ export const BlockTooltip = () => {
     })
   })
 
+  onMount(() => {
+    document.addEventListener('mousedown', onBackgroundClick)
+  })
+
   onCleanup(() => {
     cleanup.fn?.()
+    document.removeEventListener('mousedown', onBackgroundClick)
   })
 
   return (
     <Show when={selectedBlock()}>
       {(block) => <>
-        <TooltipBackground onClick={onBackgroundClick} />
         <TooltipEl ref={tooltipRef} class="block-tooltip">
           <Show when={block().blockNode?.type.name === 'code_block'}>
             <div onClick={onChangeLang} data-testid="change_lang">💱 change language</div>
@@ -304,7 +305,7 @@ export const BlockTooltip = () => {
             </Show>
             <hr class="divider" />
           </Show>
-          <Show when={hasImage()}>
+          <Show when={block().cursorNode?.type.name === 'image' || block().cursorNode?.type.name === 'video'}>
             <div onClick={onAlign(Align.FloatLeft)} data-testid="align_float_left">👈 Float left</div>
             <div onClick={onAlign(Align.FloatRight)} data-testid="align_float_right">👉 Float right</div>
             <div onClick={onAlign(Align.Center)} data-testid="align_center">🖖 Center</div>

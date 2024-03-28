@@ -10,7 +10,7 @@ export default (): ProseMirrorExtension => ({
 
 const editLinkSchema = {
   edit_link: {
-    attrs: {href: {}},
+    attrs: {href: {default: null}},
     toDOM: (n: Node) => ['span', {class: 'edit-link', 'data-href': n.attrs.href}],
   },
 }

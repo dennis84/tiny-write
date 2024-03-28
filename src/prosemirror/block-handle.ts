@@ -1,4 +1,4 @@
-import {Plugin, NodeSelection, PluginKey} from 'prosemirror-state'
+import {Plugin, NodeSelection, PluginKey, EditorState, TextSelection} from 'prosemirror-state'
 import {DecorationSet, Decoration} from 'prosemirror-view'
 import {ProseMirrorExtension} from '@/prosemirror'
 
@@ -23,7 +23,7 @@ const blockHandle = new Plugin({
     init() {
       return {
         blockPos: undefined,
-        cursorPos: undefined
+        cursorPos: undefined,
       }
     },
     apply(tr, prev) {
@@ -37,9 +37,7 @@ const blockHandle = new Plugin({
       const decos: Decoration[] = []
       state.doc.forEach((node, pos) => {
         decos.push(Decoration.widget(pos + 1, createDragHandle))
-        decos.push(Decoration.node(pos, pos + node.nodeSize, {
-          class: 'draggable',
-        }))
+        decos.push(Decoration.node(pos, pos + node.nodeSize, {class: 'draggable'}))
       })
 
       return DecorationSet.create(state.doc, decos)
@@ -48,24 +46,34 @@ const blockHandle = new Plugin({
       mousedown: (editorView, event: MouseEvent) => {
         const target = event.target as Element
         if (target.classList.contains('block-handle')) {
-          const pos = editorView.posAtCoords({left: event.x + 30, top: event.y})
-          if (!pos) return false
+          event.preventDefault()
+          event.stopPropagation()
+
+          const handlePos = editorView.posAtCoords({left: event.x + 30, top: event.y})
+          if (!handlePos) return false
+
           const state = editorView.state
-          const resolved = state.doc.resolve(pos.pos)
-          const blockPos = resolved.before(1)
+          const sel = state.selection
+          const handle = state.doc.resolve(handlePos.pos)
+          const blockPos = handle.before(1)
           const tr = state.tr
           let cursorPos = undefined
-          if (
-            state.selection.empty &&
-            state.selection.head >= blockPos &&
-            state.selection.head <= resolved.after(1)
-          ) {
-            cursorPos = state.selection.head
+
+          if (sel.empty && sel.from >= blockPos && sel.head <= handle.after(1)) {
+            cursorPos = sel.from
+            const range = markAround(state, cursorPos)
+            if (range) {
+              tr.setSelection(TextSelection.create(editorView.state.doc, range.from, range.to))
+            } else {
+              tr.setSelection(NodeSelection.create(editorView.state.doc, blockPos))
+            }
+          } else if (sel.empty) {
+            tr.setSelection(NodeSelection.create(editorView.state.doc, blockPos))
+          } else if (sel.$from.nodeAfter?.isAtom) {
+            cursorPos = sel.from
           }
 
           tr.setMeta(blockHandlePluginKey, {blockPos, cursorPos})
-          tr.setSelection(NodeSelection.create(editorView.state.doc, blockPos))
-          editorView.focus() // unfocus CM and focus PM
           editorView.dispatch(tr)
           return false
         }
@@ -79,6 +87,32 @@ const blockHandle = new Plugin({
     }
   }
 })
+
+const markAround = (state: EditorState, pos: number) => {
+  const resolved = state.doc.resolve(pos)
+
+  const {parent, parentOffset} = resolved
+  const start = parent.childAfter(parentOffset)
+  if (!start.node) return
+
+  const mark = start.node.marks[0]
+  if (!mark) return
+
+  let startIndex = resolved.index()
+  let startPos = resolved.start() + start.offset
+  let endIndex = startIndex + 1
+  let endPos = startPos + start.node.nodeSize
+  while (startIndex > 0 && mark.isInSet(parent.child(startIndex - 1).marks)) {
+    startIndex -= 1
+    startPos -= parent.child(startIndex).nodeSize
+  }
+  while (endIndex < parent.childCount && mark.isInSet(parent.child(endIndex).marks)) {
+    endPos += parent.child(endIndex).nodeSize
+    endIndex += 1
+  }
+
+  return {from: startPos, to: endPos}
+}
 
 export default (): ProseMirrorExtension => ({
   plugins: (prev) => [...prev, blockHandle]

@@ -227,15 +227,16 @@ export default () => {
     if (window.innerWidth <= fullWidth) setShow(undefined)
   }
 
+  const onKeyDown = (e: KeyboardEvent) => {
+    if (e.key === 'Escape') setShow(undefined)
+  }
+
   createEffect(() => {
     if (!show()) return
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setShow(undefined)
-    }
-
     document.addEventListener('keydown', onKeyDown)
-    onCleanup(() => document.removeEventListener('keydown', onKeyDown))
   })
+
+  onCleanup(() => document.removeEventListener('keydown', onKeyDown))
 
   return (
     <Container>
