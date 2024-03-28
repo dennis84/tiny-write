@@ -46,7 +46,7 @@ const blockHandle = new Plugin({
       mousedown: (editorView, event: MouseEvent) => {
         const target = event.target as Element
         if (target.classList.contains('block-handle')) {
-          event.preventDefault()
+          // stop bubbling, otherwise tooltip background click will be triggered
           event.stopPropagation()
 
           const handlePos = editorView.posAtCoords({left: event.x + 30, top: event.y})

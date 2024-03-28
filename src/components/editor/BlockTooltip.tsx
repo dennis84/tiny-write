@@ -1,5 +1,5 @@
-import {Show, createEffect, createSignal, onCleanup, onMount} from 'solid-js'
-import {createMutable} from 'solid-js/store'
+import {Show, createEffect, createMemo, createSignal, onCleanup, onMount} from 'solid-js'
+import {createMutable, unwrap} from 'solid-js/store'
 import {styled} from 'solid-styled-components'
 import {EditorView} from 'prosemirror-view'
 import {Node} from 'prosemirror-model'
@@ -155,16 +155,13 @@ export const BlockTooltip = () => {
 
   const onAlign = (align: Align) => () => {
     const block = selectedBlock()
-    if (!block) return
+    if (block?.cursorPos === undefined) return
+
     const view = getEditorView()
     if (!view) return
 
     const tr = view.state.tr
-    block.blockNode.descendants((n, p) => {
-      if (n.type.name !== 'image' && n.type.name !== 'video') return
-      const pos = block.blockPos + p + 1
-      tr.setNodeAttribute(pos, 'align', align)
-    })
+    tr.setNodeAttribute(block.cursorPos, 'align', align)
 
     view.dispatch(tr)
   }
@@ -194,7 +191,7 @@ export const BlockTooltip = () => {
     const view = getEditorView()
     if (!view) return
 
-    const blockHandleState = blockHandlePluginKey.getState(view.state)
+    const blockHandleState = getBlockHandleState()
     if (blockHandleState.blockPos === undefined) return
 
     if (tooltipRef.contains(e.target as Element)) return
@@ -204,12 +201,18 @@ export const BlockTooltip = () => {
     view.dispatch(tr)
   }
 
-  createEffect(() => {
+  const getBlockHandleState = createMemo(() => {
     store.lastTr
     const view = getEditorView()
     if (!view) return
+    return blockHandlePluginKey.getState(view.state)
+  })
 
-    const blockHandleState = blockHandlePluginKey.getState(view.state)
+  createEffect(() => {
+    const view = getEditorView()
+    if (!view) return
+
+    const blockHandleState = getBlockHandleState()
 
     if (blockHandleState.blockPos !== undefined) {
       const pos = view.state.doc.resolve(blockHandleState.blockPos + 1)
@@ -247,6 +250,7 @@ export const BlockTooltip = () => {
     const handle = el?.querySelector('.block-handle')
     if (!handle) return
 
+    unwrap(cleanup).fn?.()
     cleanup.fn = autoUpdate(handle, tooltipRef, async () => {
       return computePosition(handle, tooltipRef, {
         placement: 'left',

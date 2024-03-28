@@ -10,6 +10,7 @@ export const Layout = styled('div')`
   font-family: var(--font-family);
   color: var(--foreground);
   position: relative;
+  overflow: hidden;
   .drop-cursor {
     background: var(--primary-background) !important;
     height: 5px !important;
