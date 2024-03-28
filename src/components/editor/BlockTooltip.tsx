@@ -20,7 +20,6 @@ interface Block {
   blockNode: Node;
   cursorPos?: number;
   cursorNode?: Node;
-  marks: string[];
 }
 
 interface Cleanup {
@@ -177,11 +176,21 @@ export const BlockTooltip = () => {
     if (href) await remote.open(href)
   }
 
-  const hasLink = (): boolean => {
+  const getLinkHref = (): string | undefined => {
     const block = selectedBlock()
-    if (!block) return false
+    if (!block?.cursorNode?.marks) return
 
-    return block.marks.find((m) => m === 'link' || m === 'edit_link') !== undefined
+    const view = getEditorView()
+    if (!view) return
+
+    const mark = view.state.schema.marks.link.isInSet(block.cursorNode?.marks ?? []) ||
+      view.state.schema.marks.edit_link.isInSet(block.cursorNode?.marks ?? [])
+    const href = mark?.attrs.href
+    const maxLen = 20
+
+    if (!href) return
+    if (href.length > maxLen) return href.substring(0, maxLen) + '…'
+    return href
   }
 
   const onBackgroundClick = (e: MouseEvent) => {
@@ -217,12 +226,10 @@ export const BlockTooltip = () => {
     if (blockHandleState.blockPos !== undefined) {
       const pos = view.state.doc.resolve(blockHandleState.blockPos + 1)
       const cursorPos = blockHandleState.cursorPos
-      const marks: string[] = []
       let cursorNode
 
       if (cursorPos !== undefined) {
         const resolved = view.state.doc.resolve(cursorPos)
-        resolved.marks().forEach((m) => marks.push(m.type.name))
         cursorNode = resolved.nodeAfter ?? undefined
       }
 
@@ -231,7 +238,6 @@ export const BlockTooltip = () => {
         blockNode: pos.node(),
         cursorPos,
         cursorNode,
-        marks,
       })
     } else {
       setSelectedBlock(undefined)
@@ -298,25 +304,29 @@ export const BlockTooltip = () => {
       {(block) => <>
         <TooltipEl ref={tooltipRef} class="block-tooltip">
           <Show when={block().blockNode?.type.name === 'code_block'}>
-            <div onClick={onChangeLang} data-testid="change_lang">💱 change language</div>
-            <div onClick={onPrettify} data-testid="prettify">💅 prettify</div>
-            <div onClick={onFoldAll}>🙏 fold all</div>
             <Show when={block().blockNode.attrs.lang === 'mermaid'}>
               <div onClick={onMermaidSave}>💾 save as png</div>
               <div onClick={onMermaidHideCode}>
                 {block().blockNode.attrs.hidden ? '🙉 Show code' : '🙈 Hide code'}
               </div>
+              <hr class="divider" />
             </Show>
+            <div onClick={onChangeLang} data-testid="change_lang">💱 change language</div>
+            <div onClick={onPrettify} data-testid="prettify">💅 prettify</div>
+            <div onClick={onFoldAll}>🙏 fold all</div>
             <hr class="divider" />
           </Show>
           <Show when={block().cursorNode?.type.name === 'image' || block().cursorNode?.type.name === 'video'}>
-            <div onClick={onAlign(Align.FloatLeft)} data-testid="align_float_left">👈 Float left</div>
-            <div onClick={onAlign(Align.FloatRight)} data-testid="align_float_right">👉 Float right</div>
-            <div onClick={onAlign(Align.Center)} data-testid="align_center">🖖 Center</div>
+            <div onClick={onAlign(Align.FloatLeft)} data-testid="align_float_left">👈 float left</div>
+            <div onClick={onAlign(Align.FloatRight)} data-testid="align_float_right">👉 float right</div>
+            <div onClick={onAlign(Align.Center)} data-testid="align_center">🖖 center</div>
             <hr class="divider" />
           </Show>
-          <Show when={hasLink()}>
-            <div onClick={onOpenLink} data-testid="open_link">↗️ Open Link</div>
+          <Show when={getLinkHref()}>
+            {(href) => <>
+              <div onClick={onOpenLink} data-testid="open_link">↗️ open: {href()}</div>
+              <hr class="divider" />
+            </>}
           </Show>
           <div onClick={onToPlain}>🧽 remove text formats</div>
           <div onClick={onRemoveBlock} data-testid="remove_block">🗑️ remove block</div>
