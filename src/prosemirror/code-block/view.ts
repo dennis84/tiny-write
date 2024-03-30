@@ -222,7 +222,7 @@ export class CodeBlockView {
 
     if (this.innerDecos instanceof DecorationSet) {
       this.innerDecos.find().map((d: any) => {
-        const elem = typeof d.type.toDOM === 'function' ? d.type.toDOM() : d.type.toDOM
+        const elem = typeof d.type.toDOM === 'function' ? d.type.toDOM(view, getPos) : d.type.toDOM
         this.dom.appendChild(elem)
       })
     }

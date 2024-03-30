@@ -1,12 +1,64 @@
 import {Plugin, NodeSelection, PluginKey, EditorState, TextSelection} from 'prosemirror-state'
-import {DecorationSet, Decoration} from 'prosemirror-view'
+import {DecorationSet, Decoration, EditorView} from 'prosemirror-view'
+import {DragGesture} from '@use-gesture/vanilla'
 import {ProseMirrorExtension} from '@/prosemirror'
 
 const handleIcon =
   '<svg viewBox="0 0 10 10" height="14" width="14"><path d="M3 2a1 1 0 110-2 1 1 0 010 2zm0 4a1 1 0 110-2 1 1 0 010 2zm0 4a1 1 0 110-2 1 1 0 010 2zm4-8a1 1 0 110-2 1 1 0 010 2zm0 4a1 1 0 110-2 1 1 0 010 2zm0 4a1 1 0 110-2 1 1 0 010 2z"/></svg>'
 
-const createDragHandle = () => {
+const createDragHandle = (editorView: EditorView, getPos: () => number | undefined) => {
   const handle = document.createElement('span')
+
+  // otherwise selection is lost
+  handle.addEventListener('mouseup', (e) => e.stopPropagation())
+  handle.style.touchAction = 'none'
+
+  new DragGesture(handle, ({event, first, last, movement: [, my], memo}) => {
+    const pos = getPos()
+    if (pos === undefined) return
+    const resolved = editorView.state.doc.resolve(pos)
+    const firstSel = memo ?? {
+      from: editorView.state.selection.from,
+      empty: editorView.state.selection.empty,
+      isAtom: editorView.state.selection.$from.nodeAfter?.isAtom,
+    }
+
+    // select block to allow native dragging
+    if (first) {
+      event.stopPropagation()
+      const tr = editorView.state.tr
+      tr.setSelection(NodeSelection.create(editorView.state.doc, resolved.before(1)))
+      editorView.dispatch(tr)
+      return firstSel
+    }
+
+    // open menu if no movement
+    if (last && my === 0) {
+      event.preventDefault()
+      event.stopPropagation()
+      const tr = editorView.state.tr
+      let cursorPos = undefined
+
+      if (firstSel.empty && firstSel.from >= pos && firstSel.from <= resolved.after(1)) {
+        const range = markAround(editorView.state, firstSel.from)
+        if (range) {
+          tr.setSelection(TextSelection.create(editorView.state.doc, range.from, range.to))
+        }
+      } else if (firstSel.isAtom) {
+        cursorPos = firstSel.from
+        tr.setSelection(NodeSelection.create(editorView.state.doc, firstSel.from))
+      } else {
+        cursorPos = undefined
+      }
+
+      tr.setMeta(blockHandlePluginKey, {blockPos: getPos(), cursorPos})
+      editorView.dispatch(tr)
+      return firstSel
+    }
+  }, {
+    eventOptions:{passive: false},
+  })
+
   handle.setAttribute('contenteditable', 'false')
   const icon = document.createElement('span')
   icon.innerHTML = handleIcon
@@ -42,49 +94,6 @@ const blockHandle = new Plugin({
 
       return DecorationSet.create(state.doc, decos)
     },
-    handleDOMEvents: {
-      mousedown: (editorView, event: MouseEvent) => {
-        const target = event.target as Element
-        if (target.classList.contains('block-handle')) {
-          // stop bubbling, otherwise tooltip background click will be triggered
-          event.stopPropagation()
-
-          const handlePos = editorView.posAtCoords({left: event.x + 30, top: event.y})
-          if (!handlePos) return false
-
-          const state = editorView.state
-          const sel = state.selection
-          const handle = state.doc.resolve(handlePos.pos)
-          const blockPos = handle.before(1)
-          const tr = state.tr
-          let cursorPos = undefined
-
-          if (sel.empty && sel.from >= blockPos && sel.head <= handle.after(1)) {
-            cursorPos = sel.from
-            const range = markAround(state, cursorPos)
-            if (range) {
-              tr.setSelection(TextSelection.create(editorView.state.doc, range.from, range.to))
-            } else {
-              tr.setSelection(NodeSelection.create(editorView.state.doc, blockPos))
-            }
-          } else if (sel.empty) {
-            tr.setSelection(NodeSelection.create(editorView.state.doc, blockPos))
-          } else if (sel.$from.nodeAfter?.isAtom) {
-            cursorPos = sel.from
-          }
-
-          tr.setMeta(blockHandlePluginKey, {blockPos, cursorPos})
-          editorView.dispatch(tr)
-          return false
-        }
-      },
-      mouseup: (_editorView, event: MouseEvent) => {
-        const target = event.target as Element
-        if (target.classList.contains('block-handle')) {
-          event.stopPropagation() // keep node selection
-        }
-      },
-    }
   }
 })
 
