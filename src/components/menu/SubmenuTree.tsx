@@ -249,9 +249,10 @@ export default (props: Props) => {
       } else {
         setTitle('Canvas 🧑‍🎨')
       }
+    })
 
+    onMount(() => {
       const offset = 10
-
       const gesture = new DragGesture(ref, async ({xy: [x, y], last, first, event}) => {
         event.preventDefault()
         let el = document.elementFromPoint(x, y) as HTMLElement

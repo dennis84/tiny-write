@@ -252,7 +252,7 @@ export const BlockTooltip = () => {
     const view = getEditorView()
     if (!view) return
 
-    const el = view.domAtPos(blockPos + 1).node as HTMLElement
+    const el = view.domAtPos(blockPos)?.node as HTMLElement | undefined
     const handle = el?.querySelector('.block-handle')
     if (!handle) return
 

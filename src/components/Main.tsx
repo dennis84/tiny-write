@@ -45,9 +45,9 @@ export default (props: {state: State}) => {
     onCleanup(() => matchDark().removeEventListener('change', onChangeTheme))
   })
 
-  onMount(async () => {
+  onMount(() => {
     if (!isTauri()) return
-    const unlisten = await webview.getCurrent().onFileDropEvent(async (event) => {
+    const unlistenProm = webview.getCurrent().onFileDropEvent(async (event) => {
       if (event.payload.type === 'hover') {
         remote.info('🔗 User hovering')
       } else if (event.payload.type === 'drop') {
@@ -102,28 +102,28 @@ export default (props: {state: State}) => {
       }
     })
 
-    onCleanup(() => unlisten())
+    onCleanup(async () => (await unlistenProm)())
   })
 
-  onMount(async () => {
+  onMount(() => {
     if (!isTauri()) return
-    const unlistenResize = await tauriWindow.getCurrent().onResized(async ({payload}) => {
+    const unlistenResizeProm = tauriWindow.getCurrent().onResized(async ({payload}) => {
       const {width, height} = payload
       await ctrl.app.updateWindow({width, height})
     })
 
-    const unlistenMove = await tauriWindow.getCurrent().onMoved(async ({payload}) => {
+    const unlistenMoveProm = tauriWindow.getCurrent().onMoved(async ({payload}) => {
       const {x, y} = payload
       await ctrl.app.updateWindow({x, y})
     })
 
-    onCleanup(() => {
-      unlistenResize()
-      unlistenMove()
+    onCleanup(async () => {
+      (await unlistenResizeProm)();
+      (await unlistenMoveProm)()
     })
   })
 
-  onMount(async () => {
+  onMount(() => {
     if (isTauri()) return
     const onDrop = (e: DragEvent) => {
       e.preventDefault()
@@ -169,7 +169,7 @@ export default (props: {state: State}) => {
     })
   })
 
-  createEffect(async () => {
+  createEffect(() => {
     if (store.mode === Mode.Canvas) return
 
     const wheel = new WheelGesture(scrollRef, ({ctrlKey, event, delta: [, dy]}) => {
