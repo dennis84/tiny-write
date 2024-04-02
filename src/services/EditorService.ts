@@ -9,7 +9,7 @@ import {
   prosemirrorJSONToYDoc,
   yDocToProsemirrorJSON,
 } from 'y-prosemirror'
-import {Box2d} from '@tldraw/primitives'
+import {Box} from '@tldraw/editor'
 import * as remote from '@/remote'
 import {createExtensions, createEmptyText, createSchema, createNodeViews} from '@/prosemirror-setup'
 import {State, File, FileText, Mode} from '@/state'
@@ -281,7 +281,7 @@ export class EditorService {
     }
   }
 
-  selectBox(box: Box2d, first: boolean, last: boolean) {
+  selectBox(box: Box, first: boolean, last: boolean) {
     const currentFile = this.ctrl.file.currentFile
     const editorView = currentFile?.editorView
     if (!editorView) return

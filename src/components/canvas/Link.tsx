@@ -1,6 +1,6 @@
 import {createEffect, onCleanup, onMount} from 'solid-js'
 import {styled} from 'solid-styled-components'
-import {Box2d, LineSegment2d, PI, Vec2d, VecLike} from '@tldraw/primitives'
+import {Box, Vec, PI, VecLike} from '@tldraw/editor'
 import {DragGesture} from '@use-gesture/vanilla'
 import {Canvas, CanvasBoxElement, CanvasLinkElement, EdgeType, useState} from '@/state'
 import {IndexType, zIndex} from '@/utils/z-index'
@@ -81,12 +81,12 @@ export default ({element}: {element: CanvasLinkElement}) => {
       if (first) {
         const fromEl = currentCanvas.elements.find((el) => el.id === element.from) as CanvasBoxElement
         const toEl = currentCanvas.elements.find((el) => el.id === element.to) as CanvasBoxElement
-        const fromBox = new Box2d(fromEl.x, fromEl.y, fromEl.width, fromEl.height)
-        const toBox = new Box2d(toEl.x, toEl.y, toEl.width, toEl.height)
+        const fromBox = new Box(fromEl.x, fromEl.y, fromEl.width, fromEl.height)
+        const toBox = new Box(toEl.x, toEl.y, toEl.width, toEl.height)
         const handleFrom = fromBox.getHandlePoint(element.fromEdge)
         const handleTo = toBox.getHandlePoint(element.toEdge!)
-        const distFrom = Vec2d.Dist(handleFrom, i)
-        const distTo = Vec2d.Dist(handleTo, i)
+        const distFrom = Vec.Dist(handleFrom, i)
+        const distTo = Vec.Dist(handleTo, i)
 
         if (distTo > distFrom) {
           fromId = element.to
@@ -97,7 +97,7 @@ export default ({element}: {element: CanvasLinkElement}) => {
         }
       }
 
-      const t = Vec2d.FromArray(movement).div(zoom).add(i)
+      const t = Vec.FromArray(movement).div(zoom).add(i)
       // If clicked and not dragged
       if (i.dist(t) <= 1) return [fromId, fromEdge]
       if (currentCanvas.snapToGrid) t.snapToGrid(10)
@@ -150,67 +150,67 @@ export default ({element}: {element: CanvasLinkElement}) => {
   )
 }
 
-const getLine = (canvas: Canvas, element: CanvasLinkElement): LineSegment2d | undefined => {
+const getLine = (canvas: Canvas, element: CanvasLinkElement): [Vec, Vec] | undefined => {
   const fromEl = canvas.elements.find((el) => el.id === element.from) as CanvasBoxElement
   if (!fromEl) return
 
-  const fromBox = new Box2d(fromEl.x, fromEl.y, fromEl.width, fromEl.height)
+  const fromBox = new Box(fromEl.x, fromEl.y, fromEl.width, fromEl.height)
   const a = fromBox.getHandlePoint(element.fromEdge)
-  let b!: Vec2d
+  let b!: Vec
 
   if (element.toX !== undefined && element.toY !== undefined) {
-    b = new Vec2d(element.toX, element.toY)
+    b = new Vec(element.toX, element.toY)
   } else if (element.to && element.toEdge !== undefined) {
     const toEl = canvas.elements.find((el) => el.id === element.to) as CanvasBoxElement
     if (!toEl) return
-    const toBox = new Box2d(toEl.x, toEl.y, toEl.width, toEl.height)
+    const toBox = new Box(toEl.x, toEl.y, toEl.width, toEl.height)
     b = toBox.getHandlePoint(element.toEdge)
   }
 
-  return new LineSegment2d(a, b)
+  return [a, b]
 }
 
-const getPath = (line: LineSegment2d, [c1, c2]: [Vec2d, Vec2d]): string => {
+const getPath = ([a, b]: [Vec, Vec], [c1, c2]: [Vec, Vec]): string => {
   const controlPoints = `C${c1.x},${c1.y} ${c2.x},${c2.y}`
-  return `M${line.a.x},${line.a.y} ${controlPoints} ${line.b.x},${line.b.y}`
+  return `M${a.x},${a.y} ${controlPoints} ${b.x},${b.y}`
 }
 
 const getControlPointByEdge = (edge: EdgeType, len: number) => {
   switch (edge) {
   case (EdgeType.Left):
-    return new Vec2d(-len, 0)
+    return new Vec(-len, 0)
   case (EdgeType.Right):
-    return new Vec2d(len, 0)
+    return new Vec(len, 0)
   case (EdgeType.Top):
-    return new Vec2d(0, -len)
+    return new Vec(0, -len)
   case (EdgeType.Bottom):
-    return new Vec2d(0, len)
+    return new Vec(0, len)
   }
 }
 
 const getControlPoints = (
-  line: LineSegment2d,
+  [a, b]: [Vec, Vec],
   fromEdge: EdgeType,
   toEdge?: EdgeType,
-): [Vec2d, Vec2d] => {
-  const box = Box2d.FromPoints([line.a, line.b])
+): [Vec, Vec] => {
+  const box = Box.FromPoints([a, b])
   const len = Math.max(box.height, box.width) / 2
 
-  const f = Vec2d.From(line.a).add(getControlPointByEdge(fromEdge, len))
-  const t = Vec2d.From(line.b)
+  const f = Vec.From(a).add(getControlPointByEdge(fromEdge, len))
+  const t = Vec.From(b)
   if (toEdge) t.add(getControlPointByEdge(toEdge, len))
 
   return [f, t]
 }
 
 const getArrowhead = (point: VecLike, int: VecLike) => {
-  const PL = Vec2d.RotWith(int, point, PI / 6)
-  const PR = Vec2d.RotWith(int, point, -PI / 6)
+  const PL = Vec.RotWith(int, point, PI / 6)
+  const PR = Vec.RotWith(int, point, -PI / 6)
   return `M ${PL.x} ${PL.y} L ${point.x} ${point.y} L ${PR.x} ${PR.y} Z`
 }
 
 const getArrowPath = (
-  line: LineSegment2d,
+  line: [Vec, Vec],
   fromEdge: EdgeType,
   toEdge?: EdgeType,
   arrowSize = 10,
@@ -218,11 +218,11 @@ const getArrowPath = (
   const [c1, c2] = getControlPoints(line, fromEdge, toEdge)
   const p = getPath(line, [c1, c2])
 
-  const t = toEdge ?
-    Vec2d.From(line.b).add(getControlPointByEdge(toEdge, 100)) :
-    new LineSegment2d(c1, line.b).getPoint(0.5)
-  const i = Vec2d.Nudge(line.b, t, arrowSize)
-  const a = getArrowhead(line.b, i)
+  const t = toEdge
+    ? Vec.From(line[1]).add(getControlPointByEdge(toEdge, 100))
+    : Vec.Lrp(c1, line[1], 0.5)
+  const i = Vec.Nudge(line[1], t, arrowSize)
+  const a = getArrowhead(line[1], i)
 
   return [p, a]
 }

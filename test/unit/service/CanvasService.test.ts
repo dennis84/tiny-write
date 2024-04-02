@@ -2,7 +2,7 @@ import {beforeEach, expect, test, vi} from 'vitest'
 import {mock, mockDeep} from 'vitest-mock-extended'
 import {createStore} from 'solid-js/store'
 import {EditorView} from 'prosemirror-view'
-import {Box2d, Vec2d} from '@tldraw/primitives'
+import {Box, Vec} from '@tldraw/editor'
 import {
   Canvas,
   CanvasEditorElement,
@@ -551,7 +551,7 @@ test('addImage', async () => {
   }))
 
   const service = new CanvasService(ctrl, store, setState)
-  await service.addImage('/path/1.png', new Vec2d(100, 100), 1000, 2000)
+  await service.addImage('/path/1.png', new Vec(100, 100), 1000, 2000)
 
   expect(service.currentCanvas?.elements.length).toBe(1)
   const imageEl = service.currentCanvas?.elements[0] as CanvasImageElement
@@ -569,7 +569,7 @@ test('addVideo', async () => {
   }))
 
   const service = new CanvasService(ctrl, store, setState)
-  await service.addVideo('/path/1.mp4', 'video/mp4', new Vec2d(100, 100), 1000, 2000)
+  await service.addVideo('/path/1.mp4', 'video/mp4', new Vec(100, 100), 1000, 2000)
 
   expect(service.currentCanvas?.elements.length).toBe(1)
   const el = service.currentCanvas?.elements[0] as CanvasVideoElement
@@ -846,20 +846,20 @@ test('selectBox', () => {
   const service = new CanvasService(ctrl, store, setState)
   expect(service.selection).toBe(undefined)
 
-  service.selectBox(new Box2d(0, 0, 10, 10), true, false)
+  service.selectBox(new Box(0, 0, 10, 10), true, false)
   expect(service.selection).toBe(undefined) // No selection if only one selected
   expect(store.canvases[0].elements[0].selected).toBe(true)
 
-  service.selectBox(new Box2d(0, 0, 110, 0), false, false)
+  service.selectBox(new Box(0, 0, 110, 0), false, false)
   expect(service.selection).not.toBe(undefined)
   expect(service.selection?.box.toJson()).toStrictEqual({x: 0, y: 0, w: 200, h: 100})
   expect(service.selection?.elements.length).toBe(2)
 
-  service.selectBox(new Box2d(0, 0, 110, 110), false, false)
+  service.selectBox(new Box(0, 0, 110, 110), false, false)
   expect(service.selection?.box.toJson()).toStrictEqual({x: 0, y: 0, w: 200, h: 200})
   expect(service.selection?.elements.length).toBe(3)
 
-  service.selectBox(new Box2d(0, 0, 110, 90), false, false)
+  service.selectBox(new Box(0, 0, 110, 90), false, false)
   expect(service.selection?.box.toJson()).toStrictEqual({x: 0, y: 0, w: 200, h: 100})
   expect(service.selection?.elements.length).toBe(2)
 })
@@ -891,7 +891,7 @@ test('selectBox - active editor', () => {
   const service = new CanvasService(ctrl, store, setState)
   expect(service.selection).toBe(undefined)
 
-  service.selectBox(new Box2d(0, 0, 110, 10), true, false)
+  service.selectBox(new Box(0, 0, 110, 10), true, false)
   expect(service.selection).toBe(undefined)
   expect(ctrl.select.selectBox).toHaveBeenCalled()
 })

@@ -1,6 +1,6 @@
 import {Show, createSignal, onCleanup, onMount} from 'solid-js'
 import {styled} from 'solid-styled-components'
-import {Box2d} from '@tldraw/primitives'
+import {Box} from '@tldraw/editor'
 import {DragGesture} from '@use-gesture/vanilla'
 import {CornerType, Mode, useState} from '@/state'
 
@@ -16,7 +16,7 @@ interface Props {
 
 export default (props: Props) => {
   const [state, ctrl] = useState()
-  const [frame, setFrame] = createSignal<Box2d>()
+  const [frame, setFrame] = createSignal<Box>()
 
   onMount(() => {
     const target = props.target()
@@ -45,8 +45,8 @@ export default (props: Props) => {
       event.preventDefault()
       event.stopPropagation()
 
-      const initial: Box2d = first ? new Box2d(x, y, 0, 0): memo
-      const newBox = Box2d.Resize(initial, CornerType.TopLeft, mx, my).box
+      const initial: Box = first ? new Box(x, y, 0, 0): memo
+      const newBox = Box.Resize(initial, CornerType.TopLeft, mx, my).box
 
       if (state.mode === Mode.Canvas) {
         ctrl.canvas.selectBox(newBox, first, last)

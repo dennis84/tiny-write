@@ -1,7 +1,7 @@
 import {For, Show, createSignal, onMount} from 'solid-js'
 import {Portal} from 'solid-js/web'
 import {styled} from 'solid-styled-components'
-import {Vec2d} from '@tldraw/primitives'
+import {Vec} from '@tldraw/editor'
 import {CanvasLinkElement, File, isFile, useState} from '@/state'
 import {createExtensions, createSchema} from '@/prosemirror-setup'
 
@@ -17,17 +17,17 @@ const Backdrop = styled('div')`
 
 export default () => {
   const [, ctrl] = useState()
-  const [contextMenu, setContextMenu] = createSignal<Vec2d | undefined>()
+  const [contextMenu, setContextMenu] = createSignal<Vec | undefined>()
 
-  const coordsStyle = (link?: CanvasLinkElement, cm?: Vec2d) => {
+  const coordsStyle = (link?: CanvasLinkElement, cm?: Vec) => {
     const currentCanvas = ctrl.canvas.currentCanvas
     if (!currentCanvas) return
 
-    const p = link ? new Vec2d(link.toX, link.toY) : cm
+    const p = link ? new Vec(link.toX, link.toY) : cm
     if (!p) return
 
     const {camera} = currentCanvas
-    const {x, y} = Vec2d.FromArray(camera.point).add(p).mul(camera.zoom)
+    const {x, y} = Vec.FromArray(camera.point).add(p).mul(camera.zoom)
 
     return {left: `${x}px`, top: `${y}px`}
   }
@@ -37,7 +37,7 @@ export default () => {
     setContextMenu(undefined)
   }
 
-  const onNewFile = async (link?: CanvasLinkElement, cm?: Vec2d) => {
+  const onNewFile = async (link?: CanvasLinkElement, cm?: Vec) => {
     await ctrl.canvas.newFile(link, cm)
     await ctrl.canvas.removeDeadLinks()
     setContextMenu(undefined)
@@ -45,7 +45,7 @@ export default () => {
 
   const schema = createSchema(createExtensions({ctrl, markdown: false}))
 
-  const FileName = (p: {file: File; link?: CanvasLinkElement; cm?: Vec2d}) => {
+  const FileName = (p: {file: File; link?: CanvasLinkElement; cm?: Vec}) => {
     const [title, setTitle] = createSignal<string>()
 
     const onClick = async () => {
@@ -84,7 +84,7 @@ export default () => {
     return files
   }
 
-  const getContextMenu = (): [CanvasLinkElement | undefined, Vec2d | undefined] | undefined => {
+  const getContextMenu = (): [CanvasLinkElement | undefined, Vec | undefined] | undefined => {
     const deadLink = ctrl.canvas.findDeadLinks()[0]
     const cm = contextMenu()
     if (!deadLink && !cm) return

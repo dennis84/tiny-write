@@ -1,7 +1,7 @@
 import {For, onCleanup, onMount, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {Gesture} from '@use-gesture/vanilla'
-import {Vec2d} from '@tldraw/primitives'
+import {Vec} from '@tldraw/editor'
 import {isEditorElement, isLinkElement, isImageElement, useState, isVideoElement} from '@/state'
 import {isTauri} from '@/env'
 import Grid from './Grid'
@@ -61,13 +61,13 @@ export default () => {
     let c
     if (center === undefined) {
       const {width, height} = ref.getBoundingClientRect()
-      c = new Vec2d(width / 2, height / 2).toFixed()
+      c = new Vec(width / 2, height / 2).toFixed()
     } else {
-      c = Vec2d.FromArray(center)
+      c = Vec.FromArray(center)
     }
 
     const {zoom, point} = ctrl.canvas.currentCanvas.camera
-    const p = Vec2d.FromArray(point)
+    const p = Vec.FromArray(point)
 
     const p0 = c.clone().div(zoom).sub(p)
     const p1 = c.clone().div(next).sub(p)

@@ -1,7 +1,7 @@
 import {Show, createEffect, onCleanup, onMount, splitProps} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {DragGesture} from '@use-gesture/vanilla'
-import {Box2d, PI, Vec2d, rotateSelectionHandle} from '@tldraw/primitives'
+import {Box, PI, Vec, rotateSelectionHandle} from '@tldraw/editor'
 import {CornerType, EdgeType, useState} from '@/state'
 import {Selection} from '@/services/CanvasService'
 import {IndexType, zIndex} from '@/utils/z-index'
@@ -39,11 +39,11 @@ const resizeElements = (
   my: number,
   shiftKey = false,
   snapToGrid = false,
-): [string, Box2d][] => {
+): [string, Box][] => {
   const oppositeHandle = rotateSelectionHandle(handle, PI)
   const scalePoint = selection.box.getHandlePoint(oppositeHandle)
-  const result = Box2d.Resize(selection.box, handle, mx, my, shiftKey)
-  const scale = new Vec2d(result.scaleX, result.scaleY)
+  const result = Box.Resize(selection.box, handle, mx, my, shiftKey)
+  const scale = new Vec(result.scaleX, result.scaleY)
 
   return selection.elements.map(([id, element]) => {
     let {minX, minY, maxX, maxY} = element;
@@ -60,9 +60,9 @@ const resizeElements = (
       minY = t;
     }
 
-    const tl = new Vec2d(minX, minY).sub(scalePoint).mulV(scale).add(scalePoint)
-    const br = new Vec2d(maxX, maxY).sub(scalePoint).mulV(scale).add(scalePoint)
-    const box = new Box2d(tl.x, tl.y, br.x - tl.x, br.y - tl.y)
+    const tl = new Vec(minX, minY).sub(scalePoint).mulV(scale).add(scalePoint)
+    const br = new Vec(maxX, maxY).sub(scalePoint).mulV(scale).add(scalePoint)
+    const box = new Box(tl.x, tl.y, br.x - tl.x, br.y - tl.y)
     if (snapToGrid) box.snapToGrid(10)
     return [id, box]
   })
@@ -207,7 +207,7 @@ export default (props: BoundsProps) => {
       const {zoom} = currentCanvas.camera
 
       selection.elements.forEach(([id, initial]) => {
-        const t = new Vec2d(mx, my).div(zoom).add(initial)
+        const t = new Vec(mx, my).div(zoom).add(initial)
         if (currentCanvas.snapToGrid) t.snapToGrid(10)
         const [x, y] = t.toArray()
 

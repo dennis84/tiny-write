@@ -1,6 +1,6 @@
 import {vi, expect, test, beforeEach} from 'vitest'
 import {mock} from 'vitest-mock-extended'
-import {Box2d} from '@tldraw/primitives'
+import {Box} from '@tldraw/editor'
 import {DB} from '@/db'
 import {createCtrl} from '@/services'
 import {createState} from '@/state'
@@ -386,6 +386,6 @@ test('selectBox', async () => {
   insertText(ctrl, 'Test')
   expect(ctrl.file.currentFile?.editorView?.state.selection.empty).toBe(true)
 
-  ctrl.editor.selectBox(new Box2d(0, 0, 100, 100), true, false)
+  ctrl.editor.selectBox(new Box(0, 0, 100, 100), true, false)
   expect(ctrl.file.currentFile?.editorView?.state.selection.empty).toBe(false)
 })

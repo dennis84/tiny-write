@@ -1,7 +1,7 @@
 import {createSignal, onCleanup, onMount} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {v4 as uuidv4} from 'uuid'
-import {Box2d, Vec2d} from '@tldraw/primitives'
+import {Box, Vec} from '@tldraw/editor'
 import {DragGesture} from '@use-gesture/vanilla'
 import {EdgeType, useState} from '@/state'
 import {IndexType, zIndex} from '@/utils/z-index'
@@ -55,7 +55,7 @@ const LinkHandle = (props: EdgeProps) => {
   const zoom = () => ctrl.canvas.currentCanvas?.camera.zoom ?? 1
 
   const coords = () => {
-    const box = new Box2d(props.x, props.y, props.width, props.height)
+    const box = new Box(props.x, props.y, props.width, props.height)
     const p = box.getHandlePoint(props.type)
     p.addXY(-CIRCLE_HOVER_RADIUS/zoom()/2, -CIRCLE_HOVER_RADIUS/zoom()/2)
     if (props.type === EdgeType.Top) {
@@ -82,9 +82,9 @@ const LinkHandle = (props: EdgeProps) => {
         setCurrentLink(uuidv4())
       }
       const {point, zoom} = currentCanvas.camera
-      const p = Vec2d.FromArray(point)
-      const i = Vec2d.FromArray(initial).div(zoom).sub(p)
-      const t = Vec2d.FromArray(movement).div(zoom).add(i)
+      const p = Vec.FromArray(point)
+      const i = Vec.FromArray(initial).div(zoom).sub(p)
+      const t = Vec.FromArray(movement).div(zoom).add(i)
       const id = currentLink()!
       ctrl.canvas.drawLink(id, props.id, props.type, t.x, t.y)
       if (last) {

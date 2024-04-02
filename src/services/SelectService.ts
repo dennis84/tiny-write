@@ -1,6 +1,6 @@
 import {EditorView} from 'prosemirror-view'
 import {TextSelection} from 'prosemirror-state'
-import {Box2d} from '@tldraw/primitives'
+import {Box} from '@tldraw/editor'
 
 interface Position {
   top: number;
@@ -22,7 +22,7 @@ export class SelectService {
     editorView.focus()
   }
 
-  selectBox(box: Box2d, editorView: EditorView, first: boolean, last: boolean) {
+  selectBox(box: Box, editorView: EditorView, first: boolean, last: boolean) {
     if (first) {
       this.deselect(editorView)
       this.createPositions(editorView)
