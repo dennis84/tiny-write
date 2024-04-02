@@ -76,7 +76,7 @@ export default ({element}: {element: CanvasLinkElement}) => {
       const i = ctrl.canvas.getPosition(initial)
       if (!i) return
 
-      let [fromId, fromEdge] = memo ?? []
+      let [fromId, fromEdge] = await memo ?? []
 
       if (first) {
         const fromEl = currentCanvas.elements.find((el) => el.id === element.from) as CanvasBoxElement

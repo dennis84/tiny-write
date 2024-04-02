@@ -1,7 +1,10 @@
 import {convertFileSrc} from '@tauri-apps/api/core'
 import {EditorView} from 'prosemirror-view'
+import markdownit from 'markdown-it'
 import {resolvePath, dirname} from '@/remote'
 import {Ctrl} from '.'
+
+const md = markdownit({html: false})
 
 export class ImageService {
   constructor(private ctrl: Ctrl) {}
@@ -18,7 +21,8 @@ export class ImageService {
     if (!currentFile?.editorView) return
 
     if (currentFile.markdown) {
-      const text = `![](${data})`
+      const link = md.normalizeLink(data)
+      const text = `![](${link})`
       const pos = currentFile.editorView.posAtCoords({left, top})
       const tr = currentFile.editorView.state.tr
       tr.insertText(text, pos?.pos ?? currentFile.editorView.state.doc.content.size)
