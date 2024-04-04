@@ -1,4 +1,4 @@
-import {resolve} from 'path'
+import {fileURLToPath, URL} from 'node:url'
 import {defineConfig} from 'vitest/config'
 
 export default defineConfig({
@@ -9,10 +9,15 @@ export default defineConfig({
       provider: 'v8',
       reporter: ['html'],
     },
+    server: {
+      deps: {
+        inline: ['@tldraw/editor']
+      }
+    },
   },
   resolve: {
-    alias: {
-      '@': resolve(__dirname, './src'),
-    }
+    alias: [
+      {find: '@', replacement: fileURLToPath(new URL('./src', import.meta.url))},
+    ]
   }
 })

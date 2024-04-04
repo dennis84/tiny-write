@@ -39,7 +39,7 @@ export class Ctrl {
     this.canvas = new CanvasService(this, store, setState)
     this.tree = new TreeService(this, store, setState)
     this.canvasCollab = new CanvasCollabService(this.canvas, store)
-    this.image = new ImageService(this)
+    this.image = new ImageService(this, store)
     this.select = new SelectService()
   }
 }

@@ -53,6 +53,12 @@ export class CanvasService {
     return this.store.canvases?.find((c) => c.active)
   }
 
+  get activeEditorElement(): CanvasEditorElement | undefined {
+    if (this.store.mode !== Mode.Canvas) return
+    const currentCanvas = this.currentCanvas
+    return currentCanvas?.elements.find((it) => isEditorElement(it) && it.active) as CanvasEditorElement
+  }
+
   get selection(): Selection | undefined {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return

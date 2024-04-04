@@ -98,6 +98,9 @@
     "lint": "eslint . --ext .ts,.tsx",
     "test": "cross-env CI=true vitest && cross-env CI=true npx playwright test"
   },
+  "engines": {
+    "node": ">=20.0.0"
+  },
   "browserslist": [
     "last 1 Chrome versions"
   ]

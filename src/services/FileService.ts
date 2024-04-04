@@ -143,8 +143,9 @@ export class FileService {
     })
   }
 
-  async fetchFiles(): Promise<File[]> {
+  async fetchFiles(): Promise<File[] | undefined> {
     const fetched = await DB.getFiles()
+    if (!fetched) return
     const files = []
     for (const file of fetched ?? []) {
       try {

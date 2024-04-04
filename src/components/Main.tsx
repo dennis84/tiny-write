@@ -53,49 +53,7 @@ export default (props: {state: State}) => {
       } else if (event.payload.type === 'drop') {
         remote.info('🔗 User dropped')
         for (const path of event.payload.paths) {
-          const mime = await remote.getMimeType(path)
-          const isImage = mime.startsWith('image/')
-          const isVideo = mime.startsWith('video/')
-          const isText = mime.startsWith('text/')
-
-          if (isImage || isVideo) {
-            const x = mouseEnterCoords.x
-            const y = mouseEnterCoords.y
-
-            if (store.mode === Mode.Editor) {
-              const currentFile = ctrl.file.currentFile
-              if (!currentFile?.editorView) return
-              const d = currentFile?.path
-                ? await remote.dirname(currentFile.path)
-                : undefined
-              const p = await remote.toRelativePath(path, d)
-              ctrl.image.insert(p, x, y, mime)
-            } else if (store.mode === Mode.Canvas) {
-              const p = await remote.toRelativePath(path)
-              const src = await ctrl.image.getImagePath(p)
-              const point = ctrl.canvas.getPosition([x, y])
-              if (!point) return
-
-              if (isImage) {
-                const img = new Image()
-                img.onload = async () => {
-                  await ctrl.canvas.addImage(src, point, img.width, img.height)
-                }
-                img.src = src
-              } else {
-                const video = document.createElement('video')
-                video.addEventListener('loadedmetadata', async () => {
-                  await ctrl.canvas.addVideo(p, mime, point, video.videoWidth, video.videoHeight)
-                })
-                video.src = src
-              }
-            }
-          } else if (isText) {
-            await ctrl.editor.openFileByPath(path)
-            return
-          } else {
-            remote.info(`Ignore dropped file (mime=${mime})`)
-          }
+          await ctrl.image.dropPath(path, [mouseEnterCoords.x, mouseEnterCoords.y])
         }
       } else {
         remote.info('🔗 File drop cancelled')
@@ -125,7 +83,7 @@ export default (props: {state: State}) => {
 
   onMount(() => {
     if (isTauri()) return
-    const onDrop = (e: DragEvent) => {
+    const onDrop = async (e: DragEvent) => {
       e.preventDefault()
 
       if ((e.target as Element).closest('.cm-container')) {
@@ -136,24 +94,7 @@ export default (props: {state: State}) => {
         if (file.type.startsWith('image/')) {
           const x = mouseEnterCoords.x
           const y = mouseEnterCoords.y
-          const reader = new FileReader()
-          reader.readAsDataURL(file)
-          reader.onloadend = () => {
-            const data = reader.result as string
-            if (store.mode === Mode.Editor) {
-              const currentFile = ctrl.file.currentFile
-              if (!currentFile?.editorView) return
-              ctrl.image.insert(data, x, y)
-            } else {
-              const img = new Image()
-              img.src = data
-              img.onload = async () => {
-                const point = ctrl.canvas.getPosition([x, y])
-                if (!point) return
-                await ctrl.canvas.addImage(data, point, img.width, img.height)
-              }
-            }
-          }
+          await ctrl.image.dropFile(file, [x, y])
         }
       }
     }

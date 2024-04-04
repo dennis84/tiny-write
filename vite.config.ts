@@ -1,4 +1,4 @@
-import {resolve} from 'path'
+import {fileURLToPath, URL} from 'node:url'
 import {defineConfig} from 'vite'
 import solidPlugin from 'vite-plugin-solid'
 import {visualizer} from "rollup-plugin-visualizer"
@@ -12,8 +12,8 @@ export default defineConfig({
     target: 'esnext',
   },
   resolve: {
-    alias: {
-      '@': resolve(__dirname, './src'),
-    }
+    alias: [
+      {find: '@', replacement: fileURLToPath(new URL('./src', import.meta.url))},
+    ]
   }
 })

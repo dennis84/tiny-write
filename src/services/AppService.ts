@@ -184,7 +184,7 @@ export class AppService {
 
     const fetchedWindow = await DB.getWindow()
     const fetchedConfig = await DB.getConfig()
-    const files = await this.ctrl.file.fetchFiles() ?? []
+    const files = await this.ctrl.file.fetchFiles() ?? state.files ?? []
     const canvases = await this.ctrl.canvas.fetchCanvases() ?? state.canvases ?? []
     const meta = await DB.getMeta()
     const tree = await DB.getTree()
