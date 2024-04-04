@@ -1,11 +1,11 @@
 import {beforeEach, expect, test, vi} from 'vitest'
 import {mock, mockDeep} from 'vitest-mock-extended'
-import {clearMocks, mockConvertFileSrc, mockIPC} from '@tauri-apps/api/mocks'
+import {clearMocks, mockConvertFileSrc} from '@tauri-apps/api/mocks'
 import {fromBase64, toBase64} from 'js-base64'
 import {ImageService} from '@/services/ImageService'
 import {createCtrl, Ctrl} from '@/services'
 import {CanvasEditorElement, CanvasImageElement, ElementType, Mode, createState} from '@/state'
-import {createYUpdate, getText} from '../util'
+import {createIpcMock, createYUpdate, getText} from '../util'
 
 document.elementFromPoint = () => null
 
@@ -25,25 +25,7 @@ beforeEach(() => {
   clearMocks()
   vi.clearAllMocks()
   mockConvertFileSrc('macos')
-  mockIPC((cmd, args: any) => {
-    if (cmd === 'get_mime_type') {
-      const [, ext] = args.path.split('.')
-      return ext === 'md' ? `text/${ext}` : `image/${ext}`
-    }
-    if (cmd === 'dirname') {
-      return args.path.substring(0, args.path.lastIndexOf('/'))
-    }
-    if (cmd === 'resolve_path') {
-      return args.paths.join('')
-    }
-    if (cmd === 'to_relative_path') {
-      if (args.basePath) return args.path.replace(args.basePath, '.')
-      else return args.path.replace('/users/me', '~')
-    }
-    if (cmd === 'plugin:fs|read_text_file') {
-      return 'text'
-    }
-  })
+  createIpcMock()
 })
 
 vi.stubGlobal('__TAURI__', {})

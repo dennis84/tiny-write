@@ -1,10 +1,10 @@
 import {vi, expect, test, beforeEach} from 'vitest'
 import {mock} from 'vitest-mock-extended'
-import {clearMocks, mockIPC} from '@tauri-apps/api/mocks'
+import {clearMocks} from '@tauri-apps/api/mocks'
 import {DB} from '@/db'
 import {createCtrl} from '@/services'
 import {createState} from '@/state'
-import {createYUpdate, getText, insertText, waitFor} from '../util'
+import {createIpcMock, createYUpdate, getText, insertText, waitFor} from '../util'
 
 vi.stubGlobal('__TAURI__', {})
 vi.stubGlobal('matchMedia', vi.fn(() => ({
@@ -19,16 +19,8 @@ const lastModified = new Date()
 beforeEach(() => {
   vi.restoreAllMocks()
   clearMocks()
-  mockIPC((cmd, args: any) => {
-    if (cmd === 'get_args') {
-      return {}
-    } else if (cmd === 'resolve_path') {
-      return args.paths[0]
-    } else if (cmd === 'get_file_last_modified') {
-      return lastModified
-    } else if (cmd === 'plugin:fs|read_text_file') {
-      return args.path === 'file1' ? '# File1' : '# File2'
-    }
+  createIpcMock({
+    'plugin:fs|read_text_file': (path) => path === 'file1' ? '# File1' : '# File2'
   })
 })
 

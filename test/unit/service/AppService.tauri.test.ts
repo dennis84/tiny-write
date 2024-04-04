@@ -1,10 +1,10 @@
 import {vi, expect, test, beforeEach} from 'vitest'
 import {mock} from 'vitest-mock-extended'
-import {clearMocks, mockIPC} from '@tauri-apps/api/mocks'
+import {clearMocks} from '@tauri-apps/api/mocks'
 import {DB} from '@/db'
 import {createCtrl} from '@/services'
 import {createState} from '@/state'
-import {createYUpdate, getText, waitFor} from '../util'
+import {createIpcMock, createYUpdate, getText, waitFor} from '../util'
 
 vi.stubGlobal('__TAURI__', {})
 vi.stubGlobal('matchMedia', vi.fn(() => ({
@@ -19,21 +19,11 @@ const lastModified = new Date()
 beforeEach(() => {
   vi.restoreAllMocks()
   clearMocks()
-  mockIPC((): any => { /* ignore */ })
+  createIpcMock()
 })
 
 test('init - load existing by path', async () => {
-  mockIPC((cmd, args: any) => {
-    if (cmd === 'get_args') {
-      return {}
-    } else if (cmd === 'resolve_path') {
-      return args.paths[0]
-    } else if (cmd === 'get_file_last_modified') {
-      return lastModified
-    } else if (cmd === 'plugin:fs|read_text_file') {
-      return '# File1'
-    }
-  })
+  createIpcMock()
 
   vi.mocked(DB.getFiles).mockResolvedValue([
     {id: '1', ydoc: createYUpdate('1', []), path: 'file1', lastModified, active: true}
@@ -52,16 +42,9 @@ test('init - load existing by path', async () => {
 
 test('init - check text', async () => {
   clearMocks()
-  mockIPC((cmd, args: any) => {
-    if (cmd === 'get_args') {
-      return {file: 'file2'}
-    } else if (cmd === 'resolve_path') {
-      return args.paths[0]
-    } else if (cmd === 'get_file_last_modified') {
-      return lastModified
-    } else if (cmd === 'plugin:fs|read_text_file') {
-      return '# File2'
-    }
+  createIpcMock({
+    'get_args': () => ({file: 'file2'}),
+    'plugin:fs|read_text_file': () => 'File2',
   })
 
   const {ctrl} = createCtrl(createState())
@@ -76,16 +59,9 @@ test('init - check text', async () => {
 })
 
 test('init - open file', async () => {
-  mockIPC((cmd, args: any) => {
-    if (cmd === 'get_args') {
-      return {file: 'file3'}
-    } else if (cmd === 'resolve_path') {
-      return args.paths[0]
-    } else if (cmd === 'get_file_last_modified') {
-      return lastModified
-    } else if (cmd === 'plugin:fs|read_text_file') {
-      return '# File3'
-    }
+  createIpcMock({
+    'get_args': () => ({file: 'file3'}),
+    'plugin:fs|read_text_file': () => 'File3',
   })
 
   vi.mocked(DB.getFiles).mockResolvedValue([
@@ -104,12 +80,9 @@ test('init - open file', async () => {
 })
 
 test('init - open file path not found', async () => {
-  mockIPC((cmd): any => {
-    if (cmd === 'get_args') {
-      return {newFile: 'file3'}
-    } else if (cmd === 'resolve_path') {
-      throw new Error('fail')
-    }
+  createIpcMock({
+    'get_args': () => ({newFile: 'file3'}),
+    'resolve_path': () => { throw new Error('fail') },
   })
 
   vi.mocked(DB.getFiles).mockResolvedValue([
@@ -129,8 +102,8 @@ test('init - open file path not found', async () => {
 })
 
 test('init - persisted file path not found', async () => {
-  mockIPC((cmd): any => {
-    if (cmd === 'resolve_path') throw new Error('Fail')
+  createIpcMock({
+    'resolve_path': () => { throw new Error('fail') },
   })
 
   vi.mocked(DB.getFiles).mockResolvedValue([
@@ -151,6 +124,10 @@ test('init - persisted file path not found', async () => {
 })
 
 test('init - dir', async () => {
+  createIpcMock({
+    'get_args': () => undefined
+  })
+
   vi.mocked(DB.getFiles).mockResolvedValue([
     {id: '1', ydoc: createYUpdate('1', ['Test']), lastModified, active: true},
   ])
@@ -164,6 +141,10 @@ test('init - dir', async () => {
 })
 
 test('init - empty dir', async () => {
+  createIpcMock({
+    'get_args': () => undefined
+  })
+
   vi.mocked(DB.getFiles).mockResolvedValue([
     {id: '1', ydoc: createYUpdate('1', ['Test']), lastModified, active: true},
   ])
@@ -177,6 +158,10 @@ test('init - empty dir', async () => {
 })
 
 test('init - dir no current file', async () => {
+  createIpcMock({
+    'get_args': () => undefined
+  })
+
   const {ctrl, store} = createCtrl(createState({
     args: {dir: ['~/Desktop/Aaaa.md']},
   }))
