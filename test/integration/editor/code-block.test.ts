@@ -47,7 +47,7 @@ test('code block', async ({page}) => {
 })
 
 test('mermaid', async ({page}) => {
-  const line1 = 'flowchart'
+  const line1 = 'flowchart ' // was sometimes flaky bc last char was removed
   await page.locator('.ProseMirror').pressSequentially('```mermaid ', {delay})
   await page.waitForSelector('.cm-container')
   await page.locator(cmContent).pressSequentially(line1, {delay})
