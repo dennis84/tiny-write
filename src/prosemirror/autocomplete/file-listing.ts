@@ -1,6 +1,6 @@
 import {PluginKey} from 'prosemirror-state'
 import {isTauri} from '@/env'
-import {dirname, listContents, resolvePath} from '@/remote'
+import {dirname, listContents} from '@/remote'
 import {ProseMirrorExtension} from '@/prosemirror'
 import {Ctrl} from '@/services'
 import {Mode} from '@/state'
@@ -14,7 +14,7 @@ export default (ctrl: Ctrl): ProseMirrorExtension => isTauri() ? ({
     ...prev,
     completionPlugin(
       pluginKey,
-      /(\.\.?|~)\/[^\s\]]*/g,
+      /(\.\.?|~)\/[^\s\])]*/g,
       async (text) => {
         let currentFile
         if (ctrl.app.mode === Mode.Canvas) {

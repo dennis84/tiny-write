@@ -91,10 +91,12 @@ class AutocompleteView {
   }
 }
 
+type GetOptions = (match: string, state: EditorState) => Promise<string[]>;
+
 export const completionPlugin = (
   pluginKey: PluginKey,
   regex: RegExp,
-  getOptions: (match: string, state: EditorState) => Promise<string[]>,
+  getOptions: GetOptions,
   ctrl: Ctrl
 ) => new Plugin({
   key: pluginKey,
@@ -221,11 +223,14 @@ export const completionKeymap = (pluginKey: PluginKey) => keymap({
     if (!pluginState?.options?.length) return false
 
     const tr = state.tr
-    tr.replaceWith(
-      pluginState.from + 1,
-      pluginState.to + 1,
-      state.schema.text(pluginState.options[pluginState.selected])
-    )
+    const option = pluginState.options[pluginState.selected]
+    if (!option) return false
+
+    const from = pluginState.from + 1
+    const to = pluginState.to + 1
+    const fromPos = tr.doc.resolve(from)
+
+    tr.replaceWith(from, to, state.schema.text(option, fromPos.marks()))
     tr.setMeta(pluginKey, {})
     dispatch?.(tr)
     return true
