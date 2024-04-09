@@ -11,11 +11,6 @@ import {Args, File, Window} from '@/state'
 import {serialize} from '@/markdown'
 import {isTauri} from '@/env'
 
-export const listContents = async (file: string) => {
-  if (!isTauri()) throw Error('Must be run in tauri: listContents')
-  return await invoke('list_contents', {file}) as string[]
-}
-
 export const saveSvg = async (svg: HTMLElement) => {
   const canvas = document.createElement('canvas')
   const ctx = canvas.getContext('2d')!
@@ -123,10 +118,10 @@ export const writeFile = async (path: string, contents: string): Promise<void> =
   return fs.writeTextFile(path, contents)
 }
 
-export const resolvePath = async (paths: string[]): Promise<string> => {
+export const resolvePath = async (path: string, basePath: string | undefined = undefined): Promise<string> => {
   if (!isTauri()) throw Error('Must be run in tauri: resolvePath')
-  debug(`Resolve paths: ${JSON.stringify(paths)}`)
-  return invoke('resolve_path', {paths})
+  debug(`Resolve paths (path=${path}, basePath=${basePath})`)
+  return invoke('resolve_path', {path, basePath})
 }
 
 export const dirname = async (path: string): Promise<string> => {
@@ -137,6 +132,11 @@ export const dirname = async (path: string): Promise<string> => {
 export const toRelativePath = async (path: string, basePath?: string): Promise<string> => {
   if (!isTauri()) throw Error('Must be run in tauri: toRelativePath')
   return invoke('to_relative_path', {path, basePath})
+}
+
+export const listContents = async (path: string, basePath: string | undefined = undefined) => {
+  if (!isTauri()) throw Error('Must be run in tauri: listContents')
+  return await invoke('list_contents', {path, basePath}) as string[]
 }
 
 export const saveFile = async (file: File): Promise<string> => {

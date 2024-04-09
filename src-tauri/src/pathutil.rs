@@ -4,24 +4,20 @@ use std::io::{Error, ErrorKind};
 use std::path::{Path, PathBuf};
 use anyhow::{Result, anyhow};
 
-pub fn resolve_path<P: AsRef<Path>>(paths: Vec<P>) -> Result<PathBuf> {
-    let mut path = env::current_dir()?;
+pub fn to_absolute_path<P: AsRef<Path>>(path: P, base_path: Option<P>) -> Result<PathBuf> {
+    let path = path.as_ref().to_path_buf();
+    let path = expand_tilde(&path).unwrap_or(path);
 
-    for p in paths {
-        match expand_tilde(p) {
-            Some(path_buf) => {
-                if path_buf.is_absolute() {
-                    path = path_buf;
-                    continue;
-                }
+    let cur = env::current_dir()?;
+    let base_path = base_path.map(|p| p.as_ref().to_path_buf()).unwrap_or(cur);
 
-                path = path.join(path_buf);
-            }
-            None => return Err(anyhow!("Error in expand_tilde")),
-        }
-    }
+    let path = base_path.join(path);
+    Ok(path)
+}
 
-    let path = std::fs::canonicalize(&path)?;
+pub fn resolve_path<P: AsRef<Path>>(path: P, base_path: Option<P>) -> Result<PathBuf> {
+    let path = to_absolute_path(path, base_path)?;
+    let path = std::fs::canonicalize(path)?;
     Ok(path)
 }
 
@@ -106,7 +102,7 @@ mod tests {
 
     #[test]
     fn test_resolve_path() {
-        let test_file_path = format!("{}/.tinywrite-test.txt", get_home());
+        let test_file_path = PathBuf::from(format!("{}/.tinywrite-test.txt", get_home()));
         File::create(&test_file_path).unwrap();
 
         let cur = env::current_dir()
@@ -116,27 +112,33 @@ mod tests {
             .unwrap();
 
         assert_eq!(
-            resolve_path(vec!["~/.tinywrite-test.txt"]).unwrap(),
-            PathBuf::from(&test_file_path),
+            resolve_path("~/.tinywrite-test.txt", None).unwrap(),
+            test_file_path,
         );
 
         assert_eq!(
-            resolve_path(vec![get_home().as_ref(), "./.tinywrite-test.txt"]).unwrap(),
-            PathBuf::from(&test_file_path),
+            resolve_path("./.tinywrite-test.txt", Some(&get_home())).unwrap(),
+            test_file_path,
         );
 
         assert_eq!(
-            resolve_path(vec![
-                get_home(),
-                format!("{}/.tinywrite-test.txt", get_home())
-            ])
+            resolve_path(
+                format!("{}/.tinywrite-test.txt", get_home()),
+                Some(get_home())
+            )
             .unwrap(),
-            PathBuf::from(format!("{}/.tinywrite-test.txt", get_home()))
+            test_file_path
         );
 
         assert_eq!(
-            resolve_path(vec!["./Cargo.toml"]).unwrap(),
+            resolve_path("./Cargo.toml", None).unwrap(),
             PathBuf::from(format!("{}/Cargo.toml", cur)),
+        );
+
+        // removes last slash ./ -> /users/me
+        assert_eq!(
+            resolve_path("./", Some(&get_home())).unwrap(),
+            PathBuf::from(&get_home())
         );
 
         std::fs::remove_file(test_file_path).unwrap();

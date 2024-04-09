@@ -51,7 +51,7 @@ pub fn create_args(source: String) -> Args {
                 .and_then(|x| String::from_utf8(x).ok());
         }
     } else if !source.is_empty() {
-        if let Ok(p) = resolve_path(vec![&source]) {
+        if let Ok(p) = resolve_path(&source, None) {
             if p.is_dir() {
                 dir = list_text_files(&p).ok();
                 cwd = path_buf_to_string(p).ok();

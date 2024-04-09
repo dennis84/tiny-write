@@ -1,9 +1,10 @@
 import {PluginKey} from 'prosemirror-state'
 import {isTauri} from '@/env'
-import {listContents} from '@/remote'
+import {dirname, listContents, resolvePath} from '@/remote'
 import {ProseMirrorExtension} from '@/prosemirror'
-import {completionKeymap, completionPlugin} from './autocomplete'
 import {Ctrl} from '@/services'
+import {Mode} from '@/state'
+import {completionKeymap, completionPlugin} from './autocomplete'
 
 const pluginKey = new PluginKey('file-listing')
 
@@ -14,7 +15,19 @@ export default (ctrl: Ctrl): ProseMirrorExtension => isTauri() ? ({
     completionPlugin(
       pluginKey,
       /(\.\.?|~)\/[^\s\]]*/g,
-      async (text) => listContents(text),
+      async (text) => {
+        let currentFile
+        if (ctrl.app.mode === Mode.Canvas) {
+          const id = ctrl.canvas.activeEditorElement?.id
+          if (id) currentFile = ctrl.file.findFileById(id)
+        } else {
+          currentFile = ctrl.file.currentFile
+        }
+        const filePath = currentFile?.newFile ?? currentFile?.path
+        const basePath = filePath ? await dirname(filePath) : undefined
+
+        return listContents(text, basePath)
+      },
       ctrl
     ),
   ]

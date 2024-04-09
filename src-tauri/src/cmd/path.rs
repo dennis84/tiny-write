@@ -1,4 +1,4 @@
-use crate::pathutil as pu;
+use crate::pathutil::{self as pu};
 use globset::Glob;
 use ignore::WalkBuilder;
 use log::info;
@@ -6,36 +6,37 @@ use std::path::PathBuf;
 use anyhow::Result;
 
 #[tauri::command]
-pub fn list_contents(file: String) -> Result<Vec<String>, String> {
+pub fn list_contents(path: String, base_path: Option<String>) -> Result<Vec<String>, String> {
+    let path = PathBuf::from(&path);
+    let base_path = base_path.map(PathBuf::from);
     let mut files = Vec::new();
-    let file = pu::expand_tilde(file).ok_or("Fail")?;
-    let dir = pu::dirname(&file).map_err(|e| e.to_string())?;
+
+    // ./my/filena -> /users/me/my/filena
+    let path = pu::to_absolute_path(path, base_path.clone()).map_err(|e| e.to_string())?;
+    // get dir: /users/me/my/filena -> /users/me/my
+    let dir = pu::dirname(&path).map_err(|e| e.to_string())?;
+    let dir = std::fs::canonicalize(dir).map_err(|e| e.to_string())?;
 
     let mut glob_pattern = dir.clone();
-    let file_name = PathBuf::from(&file);
-    if let Some(name) = file_name.file_name() {
-        if !file_name.is_dir() {
-            glob_pattern.push(name);
-        }
-    }
-    let glob_pattern = pu::path_buf_to_string(glob_pattern).map_err(|e| e.to_string())?;
-    let glob_pattern = format!("{}**", glob_pattern);
 
-    info!(
-        "List file contents in {} and glob fliter by {}",
-        pu::path_buf_to_string(&dir).unwrap_or("".into()),
-        glob_pattern
-    );
+    if path.is_dir() {
+        glob_pattern.push("*");
+    } else if let Some(name) = path.file_name() {
+        glob_pattern.push(format!("{}*", name.to_str().unwrap_or("")));
+    }
+
+    let glob_pattern = pu::path_buf_to_string(glob_pattern).map_err(|e| e.to_string())?;
+    info!("List files by glob fliter {}", glob_pattern);
 
     let glob = Glob::new(&glob_pattern).map_err(|e| e.to_string())?;
     let glob = glob.compile_matcher();
-    let walker = WalkBuilder::new(dir).max_depth(Some(3)).build();
+    let walker = WalkBuilder::new(dir).max_depth(Some(1)).build();
 
     for path in walker.flatten() {
         let path = path.into_path();
         if glob.is_match(&path) {
             let relative_path =
-                pu::to_relative_path(&path, None).and_then(pu::path_buf_to_string);
+                pu::to_relative_path(path, base_path.clone()).and_then(pu::path_buf_to_string);
             if let Ok(p) = relative_path {
                 files.push(p);
             }
@@ -55,8 +56,8 @@ pub fn dirname(path: String) -> Result<String, String> {
 }
 
 #[tauri::command]
-pub fn resolve_path(paths: Vec<String>) -> Result<String, String> {
-    pu::resolve_path(paths)
+pub fn resolve_path(path: String, base_path: Option<String>) -> Result<String, String> {
+    pu::resolve_path(path, base_path)
         .and_then(pu::path_buf_to_string)
         .map_err(|e| e.to_string())
 }
@@ -87,30 +88,40 @@ mod tests {
         File::create(format!("{}/tinywrite/test.txt", get_home())).ok();
 
         assert_eq!(
-            list_contents("./Ca".to_string()).unwrap(),
+            list_contents("./Ca".to_string(), None).unwrap(),
             vec!["./Cargo.lock", "./Cargo.toml"]
         );
 
         assert_eq!(
-            list_contents("./src/m".to_string()).unwrap(),
+            list_contents("./src/m".to_string(), None).unwrap(),
             vec!["./src/main.rs", "./src/menu.rs"]
         );
 
         assert_eq!(
-            list_contents("~/tinyw".to_string()).unwrap(),
-            vec!["~/tinywrite", "~/tinywrite/test.txt"]
+            list_contents("~/tinyw".to_string(), None).unwrap(),
+            vec!["~/tinywrite"]
         );
 
         assert_eq!(
-            list_contents("~/tinywrite/".to_string()).unwrap(),
-            vec!["~/tinywrite", "~/tinywrite/test.txt"]
+            list_contents("~/tinywrite/".to_string(), None).unwrap(),
+            vec!["~/tinywrite/test.txt"]
         );
 
-        assert!(!list_contents("~/".to_string()).unwrap().is_empty());
+        assert_eq!(
+            list_contents("./tinyw".to_string(), Some(get_home())).unwrap(),
+            vec!["./tinywrite"]
+        );
 
-        assert!(!list_contents("./icons/".to_string()).unwrap().is_empty());
+        assert_eq!(
+            list_contents("./tinywrite/".to_string(), Some(get_home())).unwrap(),
+            vec!["./tinywrite/test.txt"]
+        );
 
-        assert_eq!(list_contents("".to_string()).unwrap_err(), "No parent dir");
+        assert!(!list_contents("~/".to_string(), None).unwrap().is_empty());
+
+        assert!(!list_contents("./icons/".to_string(), None).unwrap().is_empty());
+
+        assert!(!list_contents("".to_string(), None).unwrap().is_empty());
 
         std::fs::remove_dir_all(format!("{}/tinywrite", get_home())).ok();
     }

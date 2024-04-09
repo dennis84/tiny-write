@@ -72,8 +72,8 @@ export class ImageService {
 
   async getImagePath(src: string, path?: string) {
     const s = decodeURIComponent(src)
-    const paths = path ? [await remote.dirname(path), s] : [s]
-    const absolutePath = await remote.resolvePath(paths)
+    const basePath = path ? await remote.dirname(path) : undefined
+    const absolutePath = await remote.resolvePath(s, basePath)
     return convertFileSrc(absolutePath)
   }
 

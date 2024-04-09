@@ -50,7 +50,7 @@ export class FileService {
   async findFileByPath(path: string): Promise<File | undefined> {
     if (isTauri()) {
       try {
-        path = await remote.resolvePath([path])
+        path = await remote.resolvePath(path)
       } catch (e) {
         throw new ServiceError('file_not_found', `File not found: ${path}`)
       }
@@ -63,7 +63,7 @@ export class FileService {
     remote.debug(`Load file (path=${path})`)
     let resolvedPath
     try {
-      resolvedPath = await remote.resolvePath([path])
+      resolvedPath = await remote.resolvePath(path)
     } catch(e: any) {
       throw new ServiceError('file_not_found', `File not found: ${path}`)
     }
