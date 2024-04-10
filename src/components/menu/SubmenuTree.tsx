@@ -138,6 +138,10 @@ export default (props: Props) => {
     const currentFile =  ctrl.file.currentFile
     if (!currentFile) return
     await ctrl.tree.add({item: currentFile, tree: []}, target)
+    if (ctrl.tree.isCollapsed(target)) {
+      await ctrl.tree.collapse(target)
+    }
+
     closeTooltip()
   }
 
