@@ -40,7 +40,7 @@ test('getImagePath', async () => {
   const path = await service.getImagePath(input)
   expect(path).toBe('asset://localhost/' + encodeURIComponent(input))
 
-  const p2 = await service.getImagePath(input, '/base/path/README.md')
+  const p2 = await service.getImagePath(input, '/base/path')
   expect(p2).toBe('asset://localhost/' + encodeURIComponent('/base/path' + input))
 })
 

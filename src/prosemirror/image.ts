@@ -108,10 +108,12 @@ class ImageView {
       !node.attrs.src.startsWith('data:') &&
       !isUrl(node.attrs.src)
     ) {
-      void ctrl.image.getImagePath(node.attrs.src, this.ctrl?.file?.currentFile?.path).then((p) => {
-        this.container.classList.remove('error')
-        source.setAttribute('src', p)
-      })
+      void ctrl.app.getBasePath()
+        .then((basePath) => ctrl.image.getImagePath(node.attrs.src, basePath))
+        .then((src) => {
+          this.container.classList.remove('error')
+          source.setAttribute('src', src)
+        })
     } else {
       source.setAttribute('src', node.attrs.src)
     }

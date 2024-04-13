@@ -42,16 +42,15 @@ export class ImageService {
     const isText = mime.startsWith('text/')
 
     if (isImage || isVideo) {
+      const basePath = await this.ctrl.app.getBasePath()
+      const relativePath = await remote.toRelativePath(path, basePath)
+
       if (this.store.mode === Mode.Editor) {
         const currentFile = this.ctrl.file.currentFile
         if (!currentFile?.editorView) return
-        const filePath = currentFile.path ?? currentFile.newFile
-        const d = filePath ? await remote.dirname(filePath) : undefined
-        const p = await remote.toRelativePath(path, d)
-        this.insert(currentFile.editorView, currentFile.markdown ?? false, p, x, y, mime)
-      } else if (this.store.mode === Mode.Canvas) {
-        const p = await remote.toRelativePath(path)
-        const src = await this.ctrl.image.getImagePath(p)
+        this.insert(currentFile.editorView, currentFile.markdown ?? false, relativePath, x, y, mime)
+      } else {
+        const src = await this.ctrl.image.getImagePath(relativePath, basePath)
         const point = this.ctrl.canvas.getPosition([x, y])
         if (!point) return
 
@@ -60,7 +59,7 @@ export class ImageService {
           await this.ctrl.canvas.addImage(src, point, img.width, img.height)
         } else {
           const video = await this.loadVideo(src)
-          await this.ctrl.canvas.addVideo(p, mime, point, video.videoWidth, video.videoHeight)
+          await this.ctrl.canvas.addVideo(src, mime, point, video.videoWidth, video.videoHeight)
         }
       }
     } else if (isText) {
@@ -70,9 +69,8 @@ export class ImageService {
     }
   }
 
-  async getImagePath(src: string, path?: string) {
-    const s = decodeURIComponent(src)
-    const basePath = path ? await remote.dirname(path) : undefined
+  async getImagePath(path: string, basePath?: string) {
+    const s = decodeURIComponent(path)
     const absolutePath = await remote.resolvePath(s, basePath)
     return convertFileSrc(absolutePath)
   }
