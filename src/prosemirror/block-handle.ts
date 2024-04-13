@@ -37,7 +37,7 @@ const createDragHandle = (editorView: EditorView, getPos: () => number | undefin
       event.preventDefault()
       event.stopPropagation()
       const tr = editorView.state.tr
-      let cursorPos = undefined
+      let cursorPos = firstSel.from
 
       if (firstSel.empty && firstSel.from >= pos && firstSel.from <= resolved.after(1)) {
         const range = markAround(editorView.state, firstSel.from)
@@ -45,7 +45,6 @@ const createDragHandle = (editorView: EditorView, getPos: () => number | undefin
           tr.setSelection(TextSelection.create(editorView.state.doc, range.from, range.to))
         }
       } else if (firstSel.isAtom) {
-        cursorPos = firstSel.from
         tr.setSelection(NodeSelection.create(editorView.state.doc, firstSel.from))
       } else {
         cursorPos = undefined

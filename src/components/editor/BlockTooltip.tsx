@@ -44,9 +44,8 @@ export const BlockTooltip = () => {
 
   const getEditorView = (): EditorView | undefined => {
     if (store.mode === Mode.Canvas) {
-      const currentCanvas = ctrl.canvas.currentCanvas
-      const element = currentCanvas?.elements?.find((el) => isEditorElement(el) && el.active) as CanvasEditorElement
-      return element?.editorView || undefined
+      const element = ctrl.canvas.activeEditorElement
+      return element?.editorView ?? undefined
     } else {
       return ctrl.file.currentFile?.editorView
     }
@@ -173,7 +172,37 @@ export const BlockTooltip = () => {
 
     const resolved = view.state.doc.resolve(block.cursorPos)
     const href = resolved.marks()[0]?.attrs?.href
-    if (href) await remote.open(href)
+    if (!href) return
+
+    try {
+      const url = new URL(href)
+      await remote.open(url.href)
+      setSelectedBlock(undefined)
+      return
+    } catch (e) {
+      // ...
+    }
+
+    let currentFile
+    if (store.mode === Mode.Editor) {
+      currentFile = ctrl.file.currentFile
+    } else if (store.mode === Mode.Canvas) {
+      const active = ctrl.canvas.activeEditorElement
+      if (active) currentFile = ctrl.file.findFileById(active.id)
+    }
+
+    const filePath = currentFile?.newFile ?? currentFile?.path
+    const basePath = filePath ? await remote.dirname(filePath) : undefined
+    const path = await remote.resolvePath(href, basePath)
+    const mime = await remote.getMimeType(path)
+
+    if (mime.startsWith('text/')) {
+      await ctrl.editor.openFileByPath(path)
+    } else {
+      await remote.open(path)
+    }
+
+    setSelectedBlock(undefined)
   }
 
   const getLinkHref = (): string | undefined => {

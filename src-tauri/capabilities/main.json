@@ -21,6 +21,7 @@
     "window:allow-outer-size",
     "window:allow-current-monitor",
     "window:allow-close",
+    "shell:allow-open",
     "log:allow-log",
     "websocket:allow-connect",
     "websocket:default",
