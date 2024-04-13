@@ -88,7 +88,7 @@ export const createIpcMock = (options?: Record<string, IpcMockFn>) => {
     }
 
     if (cmd === 'resolve_path') {
-      return args.paths.join('')
+      return (args.basePath ?? '') + args.path
     }
 
     if (cmd === 'to_relative_path') {

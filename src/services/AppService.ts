@@ -23,6 +23,21 @@ export class AppService {
     return this.store.fullscreen
   }
 
+  async getBasePath() {
+    let currentFile
+    if (this.mode === Mode.Editor) {
+      currentFile = this.ctrl.file.currentFile
+    } else {
+      const active = this.ctrl.canvas.activeEditorElement
+      if (active) currentFile = this.ctrl.file.findFileById(active.id)
+    }
+
+    const filePath = currentFile?.path ?? currentFile?.newFile
+    const basePath = filePath ? await remote.dirname(filePath) : undefined
+
+    return basePath ?? this.store.args?.cwd
+  }
+
   async init() {
     let data = await this.fetchData()
     remote.debug(`Fetched data: ${stateToString(data)}`)

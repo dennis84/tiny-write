@@ -183,16 +183,7 @@ export const BlockTooltip = () => {
       // ...
     }
 
-    let currentFile
-    if (store.mode === Mode.Editor) {
-      currentFile = ctrl.file.currentFile
-    } else if (store.mode === Mode.Canvas) {
-      const active = ctrl.canvas.activeEditorElement
-      if (active) currentFile = ctrl.file.findFileById(active.id)
-    }
-
-    const filePath = currentFile?.newFile ?? currentFile?.path
-    const basePath = filePath ? await remote.dirname(filePath) : undefined
+    const basePath = await ctrl.app.getBasePath()
     const path = await remote.resolvePath(href, basePath)
     const mime = await remote.getMimeType(path)
 

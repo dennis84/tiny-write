@@ -82,6 +82,23 @@ export default (props: {state: State}) => {
     })
   })
 
+  onMount(async () => {
+    await ctrl.app.init()
+  })
+
+  // Render editor if change file
+  createEffect(async () => {
+    const currentFile = ctrl.file.currentFile
+    if (
+      store.mode === Mode.Editor &&
+      !store.args?.dir &&
+      currentFile?.id &&
+      currentFile.editorView === undefined
+    ) {
+      ctrl.editor.renderEditor(editorRef!)
+    }
+  })
+
   onMount(() => {
     if (isTauri()) return
     const onDrop = async (e: DragEvent) => {
@@ -125,23 +142,6 @@ export default (props: {state: State}) => {
     onCleanup(() => {
       wheel.destroy()
     })
-  })
-
-  createEffect(async () => {
-    const currentFile = ctrl.file.currentFile
-    const currentCanvas = ctrl.canvas.currentCanvas
-    if (!currentFile && !currentCanvas) {
-      // Init on first render
-      await ctrl.app.init()
-    } else if (
-      // Render editor if change file
-      store.mode === Mode.Editor &&
-      !store.args?.dir &&
-      currentFile?.id &&
-      currentFile.editorView === undefined
-    ) {
-      ctrl.editor.renderEditor(editorRef!)
-    }
   })
 
   createEffect(() => {
