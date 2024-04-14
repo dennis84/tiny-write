@@ -31,8 +31,8 @@ export default (props: {state: State}) => {
     mouseEnterCoords.y = e.pageY
   }
 
-  const onViewError = (e: any, reset: any) => {
-    ctrl.app.setError(e)
+  const onViewError = (error: any, reset: any) => {
+    ctrl.app.setError({error})
     reset()
     return <></>
   }

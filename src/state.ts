@@ -37,6 +37,7 @@ export interface Config {
 
 export interface ErrorObject {
   id: string;
+  fileId?: string;
   error?: Error | string;
 }
 
@@ -204,9 +205,9 @@ export interface File {
 
 export class ServiceError extends Error {
   public errorObject: ErrorObject
-  constructor(id: string, error: Error | string) {
-    super(id)
-    this.errorObject = {id, error}
+  constructor(id: string, error: Error | string, fileId?: undefined) {
+    super(typeof error === 'string' ? error : error.message)
+    this.errorObject = {id, error, fileId}
   }
 }
 

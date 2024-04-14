@@ -5,7 +5,6 @@ import {DB} from '@/db'
 import {createCtrl} from '@/services'
 import {ElementType, Mode, createState} from '@/state'
 import {createIpcMock, createYUpdate, getText, waitFor} from '../util'
-import expand from '@/prosemirror/code-block/expand'
 
 vi.stubGlobal('__TAURI__', {})
 vi.stubGlobal('matchMedia', vi.fn(() => ({

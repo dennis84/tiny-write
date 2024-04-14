@@ -64,6 +64,7 @@ export class ImageService {
       }
     } else if (isText) {
       await this.ctrl.editor.openFileByPath(path)
+      this.ctrl.tree.create()
     } else {
       remote.info(`Ignore dropped file (mime=${mime})`)
     }

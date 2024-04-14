@@ -1,6 +1,6 @@
 import {Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
-import {Mode, useState} from '@/state'
+import {useState} from '@/state'
 import {ButtonGroup, Button, ButtonPrimary} from './Button'
 import {Content, Scroll} from './Layout'
 
@@ -24,21 +24,8 @@ const GeneralError = () => {
   }
 
   const onDeleteFile = async () => {
-    const currentFile = ctrl.file.currentFile
-    if (!currentFile) return
-    await ctrl.file.deleteForever(currentFile.id)
-    window.location.reload()
-  }
-
-  const onDeleteCanvas = async () => {
-    const currentCanvas = ctrl.canvas.currentCanvas
-    if (!currentCanvas) return
-    await ctrl.canvas.deleteForever(currentCanvas.id)
-    window.location.reload()
-  }
-
-  const onReset = async () => {
-    await ctrl.app.reset()
+    if (!store.error?.fileId) return
+    await ctrl.file.deleteForever(store.error.fileId)
     window.location.reload()
   }
 
@@ -54,13 +41,9 @@ const GeneralError = () => {
         <Pre><code>{getMessage()}</code></Pre>
         <ButtonGroup>
           <ButtonPrimary onClick={onReload}>Reload</ButtonPrimary>
-          <Show when={store.mode === Mode.Editor}>
-            <Button onClick={onDeleteFile}>Delete current file</Button>
+          <Show when={store.error?.fileId}>
+            <Button onClick={onDeleteFile}>Delete corrupt file</Button>
           </Show>
-          <Show when={store.mode === Mode.Canvas}>
-            <Button onClick={onDeleteCanvas}>Delete current canvas</Button>
-          </Show>
-          <Button onClick={onReset}>Reset All</Button>
         </ButtonGroup>
       </Content>
     </Scroll>

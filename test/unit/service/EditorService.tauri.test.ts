@@ -26,7 +26,7 @@ beforeEach(() => {
 
 test('openFileByPath - path in files', async () => {
   vi.mocked(DB.getFiles).mockResolvedValue([
-    {id: '1', path: 'file1', ydoc: createYUpdate('1', ['Test']), lastModified},
+    {id: '1', path: 'file1', ydoc: createYUpdate('1', ['Test']), lastModified, deleted: true},
     {id: '2', path: 'file2', ydoc: createYUpdate('2', ['Test 2']), lastModified, active: true},
   ])
 
@@ -45,6 +45,8 @@ test('openFileByPath - path in files', async () => {
   expect(ctrl.file.currentFile?.editorView).toBe(undefined)
   expect(ctrl.file.currentFile?.path).toBe('file1')
   expect(ctrl.file.currentFile?.lastModified).toEqual(lastModified)
+  expect(ctrl.file.currentFile?.deleted).toEqual(false)
+
   ctrl.editor.renderEditor(target)
 
   await waitFor(() => {
@@ -90,4 +92,22 @@ test('openFileByPath - path and text', async () => {
   await waitFor(() => {
     expect(getText(ctrl)).toBe('File1')
   })
+})
+
+test('openFileByPath - file not found', async () => {
+  createIpcMock({
+    'resolve_path': () => { throw new Error('Fail') }
+  })
+
+  const {ctrl, store} = createCtrl(createState())
+  const target = document.createElement('div')
+  await ctrl.app.init()
+  ctrl.editor.renderEditor(target)
+
+  expect(store.files.length).toBe(1)
+
+  await ctrl.editor.openFileByPath('file1')
+
+  expect(store.files.length).toBe(1)
+  expect(store.error).toBeDefined()
 })

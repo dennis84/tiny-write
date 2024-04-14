@@ -155,9 +155,9 @@ export class AppService {
     }
   }
 
-  setError(err: Error) {
-    console.error(err)
-    const error = this.createError(err)
+  setError(data: Partial<ErrorObject>) {
+    const error = this.createError(data)
+    remote.error(`Error thrown (error=${error}})`, error)
     this.setState({error, loading: 'initialized'})
   }
 
@@ -234,11 +234,11 @@ export class AppService {
     }
   }
 
-  private createError(error: Error): ErrorObject {
-    if (error instanceof ServiceError) {
-      return error.errorObject
+  private createError(data: Partial<ErrorObject>): ErrorObject {
+    if (data.error instanceof ServiceError) {
+      return {...data.error.errorObject, ...data}
     } else {
-      return {id: 'exception', error}
+      return {id: 'exception', ...data}
     }
   }
 }

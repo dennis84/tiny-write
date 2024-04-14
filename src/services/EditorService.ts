@@ -123,8 +123,16 @@ export class EditorService {
     remote.debug(`Open file by path: ${path}`)
     const file = await this.ctrl.file.findFileByPath(path)
 
+    try {
+      await remote.resolvePath(path)
+    } catch (error: any) {
+      this.ctrl.app.setError({error, fileId: file?.id})
+      return
+    }
+
     if (file) {
       await this.openFile(file.id)
+      this.ctrl.file.updateFile(file.id, {deleted: false})
     } else {
       remote.debug(`Create new file by path: ${path}`)
       const file = this.ctrl.file.createFile({path})
@@ -152,8 +160,8 @@ export class EditorService {
       update.collab = this.ctrl.collab.create(file.id, state.mode, false)
       this.setState(update)
       if (text) this.updateText(text)
-    } catch (e: any) {
-      this.ctrl.app.setError(e)
+    } catch (error: any) {
+      this.ctrl.app.setError({error, fileId: id})
     }
   }
 
