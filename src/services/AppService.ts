@@ -5,6 +5,9 @@ import {State, ServiceError, Window, File, FileText, Mode, ErrorObject} from '@/
 import {DB} from '@/db'
 import {isTauri} from '@/env'
 import {Ctrl} from '.'
+import {ConfigService} from './ConfigService'
+import {CanvasService} from './CanvasService'
+import {EditorService} from './EditorService'
 
 export class AppService {
   public layoutRef: HTMLElement | undefined
@@ -117,14 +120,15 @@ export class AppService {
             currentFile.path = undefined
           }
         }
-        data = await this.ctrl.editor.activateFile(data, currentFile)
+        data = await EditorService.activateFile(data, currentFile)
       } else if (mode === Mode.Canvas && currentCanvas) {
+        data = CanvasService.activateCanvas(data, currentCanvas.id)
         collab = this.ctrl.collab.create(currentCanvas.id, mode, !!data.args?.room)
       }
 
       const newState: State = {
         ...data,
-        config: {...data.config, ...this.ctrl.config.getTheme(data)},
+        config: {...data.config, ...ConfigService.getThemeConfig(data)},
         loading: 'initialized',
         collab,
         mode,

@@ -40,10 +40,9 @@ export default (props: {state: State}) => {
   onMount(() => {
     ctrl.app.layoutRef = layoutRef
     const matchDark = window.matchMedia('(prefers-color-scheme: dark)')
-    const maybeUpdateTheme = () => ctrl.config.updateTheme()
-    matchDark.addEventListener('change', maybeUpdateTheme)
-    void maybeUpdateTheme()
-    onCleanup(() => matchDark.removeEventListener('change', maybeUpdateTheme))
+    const onUpdateDarkMode = () => ctrl.config.updateDarkMode()
+    matchDark.addEventListener('change', onUpdateDarkMode)
+    onCleanup(() => matchDark.removeEventListener('change', onUpdateDarkMode))
   })
 
   onMount(() => {

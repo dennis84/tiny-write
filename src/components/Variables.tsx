@@ -1,5 +1,5 @@
 import {createEffect, onMount} from 'solid-js'
-import {Ctrl} from '@/services'
+import {ConfigService} from '@/services/ConfigService'
 import {useState} from '@/state'
 import {
   CURSOR_DEFAULT,
@@ -12,9 +12,7 @@ import {
 export default () => {
   const [, ctrl] = useState()
 
-  onMount(() => {
-    setupFonts(ctrl)
-  })
+  onMount(() => setupFonts())
 
   createEffect(() => {
     const root = document.documentElement
@@ -46,9 +44,9 @@ export default () => {
     root.style.setProperty('--font-size-h1', `${ctrl.config.fontSize * 1.8}px`)
     root.style.setProperty('--font-size-h2', `${ctrl.config.fontSize * 1.4}px`)
     root.style.setProperty('--font-size-h3', `${ctrl.config.fontSize * 1.2}px`)
-    root.style.setProperty('--border-radius', ctrl.config.borderRadius)
-    root.style.setProperty('--menu-font-family', ctrl.config.DEFAULT_FONT)
-    root.style.setProperty('--menu-font-family-bold', ctrl.config.DEFAULT_FONT + ' bold')
+    root.style.setProperty('--border-radius', ConfigService.BORDER_RADIUS)
+    root.style.setProperty('--menu-font-family', ConfigService.DEFAULT_FONT)
+    root.style.setProperty('--menu-font-family-bold', ConfigService.DEFAULT_FONT + ' bold')
     root.style.setProperty('--menu-font-size', '15px')
     root.style.setProperty('--cursor-default', CURSOR_DEFAULT)
     root.style.setProperty('--cursor-pointer', CURSOR_POINTER)
@@ -60,10 +58,10 @@ export default () => {
   return <></>
 }
 
-const setupFonts = (ctrl: Ctrl) => {
+const setupFonts = () => {
   let styles = ''
-  for (const k of Object.keys(ctrl.config.fonts)) {
-    const font = ctrl.config.fonts[k]
+  for (const k of Object.keys(ConfigService.fonts)) {
+    const font = ConfigService.fonts[k]
     if (font.regular) {
       styles += `
         @font-face {

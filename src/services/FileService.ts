@@ -32,6 +32,29 @@ export class FileService {
     return this.store.files.findIndex((f) => f.active)
   }
 
+  static async saveFile(file: File) {
+    if (!file.lastModified) {
+      return
+    }
+
+    await DB.updateFile({
+      id: file.id,
+      parentId: file.parentId,
+      leftId: file.leftId,
+      ydoc: file.ydoc!,
+      lastModified: file.lastModified,
+      path: file.path,
+      newFile: file.newFile,
+      markdown: file.markdown,
+      active: file.active,
+      deleted: file.deleted,
+      versions: file.versions.map((v) => ({
+        date: v.date,
+        ydoc: v.ydoc,
+      }))
+    })
+  }
+
   createFile(params: Partial<File> = {}): File {
     const ydoc = params.ydoc ?? Y.encodeStateAsUpdate(this.createYdoc())
     return {
@@ -120,29 +143,6 @@ export class FileService {
     this.setState('files', index, 'editorView', undefined)
   }
 
-  async saveFile(file: File) {
-    if (!file.lastModified) {
-      return
-    }
-
-    await DB.updateFile({
-      id: file.id,
-      parentId: file.parentId,
-      leftId: file.leftId,
-      ydoc: file.ydoc!,
-      lastModified: file.lastModified,
-      path: file.path,
-      newFile: file.newFile,
-      markdown: file.markdown,
-      active: file.active,
-      deleted: file.deleted,
-      versions: file.versions.map((v) => ({
-        date: v.date,
-        ydoc: v.ydoc,
-      }))
-    })
-  }
-
   async fetchFiles(): Promise<File[] | undefined> {
     const fetched = await DB.getFiles()
     if (!fetched) return
@@ -206,7 +206,7 @@ export class FileService {
     const updatedFile = this.findFileById(id)
     if (!updatedFile) return
 
-    await this.saveFile(updatedFile)
+    await FileService.saveFile(updatedFile)
     remote.info('File deleted')
     this.ctrl.tree.create()
   }
@@ -247,7 +247,7 @@ export class FileService {
     const updateFile = this.findFileById(id)
     if (!updateFile) return
 
-    await this.saveFile(updateFile)
+    await FileService.saveFile(updateFile)
     remote.info('File restored')
   }
 

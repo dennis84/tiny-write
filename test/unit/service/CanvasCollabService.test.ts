@@ -3,11 +3,13 @@ import {mock} from 'vitest-mock-extended'
 import {createStore} from 'solid-js/store'
 import * as Y from 'yjs'
 
-import {Canvas, CanvasEditorElement, createState, ElementType} from '@/state'
+import {Canvas, createState, ElementType} from '@/state'
 import {CanvasCollabService} from '@/services/CanvasCollabService'
 import {CanvasService} from '@/services/CanvasService'
 import {UndoManager} from '@/services/CollabService'
 import {waitFor} from '../util'
+
+vi.mock('@/db', () => ({DB: mock()}))
 
 beforeEach(() => {
   vi.restoreAllMocks()
@@ -40,16 +42,17 @@ const setup = (props: {canvas: Partial<Canvas>} = {canvas: {}}) => {
 }
 
 test('init', () => {
+  const element = {
+    id: '1',
+    type: ElementType.Editor,
+    x: 0,
+    y: 0,
+    width: 100,
+    height: 100,
+  }
   const {service, canvasService, undoManager} = setup({
     canvas: {
-      elements: [{
-        id: '1',
-        type: ElementType.Editor,
-        x: 0,
-        y: 0,
-        width: 100,
-        height: 100,
-      } as CanvasEditorElement]
+      elements: [element]
     }
   })
 

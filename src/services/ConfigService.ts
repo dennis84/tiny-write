@@ -36,7 +36,7 @@ interface CodeTheme {
 
 export class ConfigService {
 
-  readonly themes: Record<string, Theme> = {
+  static readonly themes: Record<string, Theme> = {
     'light': {
       value: 'light',
       label: 'Light',
@@ -159,9 +159,9 @@ export class ConfigService {
     },
   }
 
-  readonly DEFAULT_FONT = 'ia-writer-mono'
+  static readonly DEFAULT_FONT = 'ia-writer-mono'
 
-  readonly fonts: Record<string, Font> = {
+  static readonly fonts: Record<string, Font> = {
     'system-ui': {
       label: 'System UI',
       value: 'system-ui',
@@ -213,7 +213,7 @@ export class ConfigService {
     },
   }
 
-  readonly codeThemes: Record<string, CodeTheme> = {
+  static readonly codeThemes: Record<string, CodeTheme> = {
     'dracula': {
       label: 'Dracula',
       value: 'dracula',
@@ -266,7 +266,7 @@ export class ConfigService {
     },
   }
 
-  readonly borderRadius = '5px';
+  static readonly BORDER_RADIUS = '5px';
 
   private saveConfigDebounced = debounce((state) => this.saveConfig(state), 100)
 
@@ -290,22 +290,22 @@ export class ConfigService {
 
   get codeTheme() {
     const getDefaltCodeTheme = () => isDark()
-      ? this.codeThemes.dracula
-      : this.codeThemes['material-light']
+      ? ConfigService.codeThemes.dracula
+      : ConfigService.codeThemes['material-light']
     const currentCodeTheme = this.store.config.codeTheme
     return !currentCodeTheme
       ? getDefaltCodeTheme()
-      : this.codeThemes[currentCodeTheme]
-        ? this.codeThemes[currentCodeTheme]
+      : ConfigService.codeThemes[currentCodeTheme]
+        ? ConfigService.codeThemes[currentCodeTheme]
         : getDefaltCodeTheme()
   }
 
   get font() {
     return (
       this.store.config?.font
-        ? this.fonts[this.store.config.font]
+        ? ConfigService.fonts[this.store.config.font]
         : undefined
-    ) ?? this.fonts[this.DEFAULT_FONT]
+    ) ?? ConfigService.fonts[ConfigService.DEFAULT_FONT]
   }
 
   get fontFamily() {
@@ -314,8 +314,25 @@ export class ConfigService {
 
   get theme() {
     return !this.store.config?.theme
-      ? this.getDefaltTheme()
-      : this.themes[this.store.config.theme] ?? this.getDefaltTheme()
+      ? ConfigService.getDefaltTheme()
+      : ConfigService.themes[this.store.config.theme] ?? ConfigService.getDefaltTheme()
+  }
+
+  static getDefaltTheme() {
+    return isDark() ? ConfigService.themes.dark : ConfigService.themes.light
+  }
+
+  static getThemeConfig(state: State) {
+    const curTheme = ConfigService.themes[state.config.theme ?? -1]
+    const dark = isDark()
+
+    if (dark && (!curTheme || !curTheme.dark)) {
+      return {theme: 'dark', codeTheme: 'material-dark'}
+    } else if (!dark && (!curTheme || curTheme.dark)) {
+      return {theme: 'light', codeTheme: 'material-light'}
+    }
+
+    return {}
   }
 
   getFontFamily = (
@@ -323,7 +340,7 @@ export class ConfigService {
   ): string => {
     const font = this.font
     if (options.monospace && !font?.monospace) {
-      return this.fonts[this.DEFAULT_FONT].value
+      return ConfigService.fonts[ConfigService.DEFAULT_FONT].value
     } else if (options.bold && font?.bold) {
       return font.value + ' bold'
     } else if (options.italic && font?.italic) {
@@ -331,19 +348,6 @@ export class ConfigService {
     }
 
     return font.value
-  }
-
-  getTheme(state: State, force = false) {
-    const matchDark = window.matchMedia('(prefers-color-scheme: dark)')
-    const isDark = matchDark.matches
-    const update = force || !state.config.theme
-    if (update && isDark && !this.theme.dark) {
-      return {theme: 'dark', codeTheme: 'material-dark'}
-    } else if (update && !isDark && this.theme.dark) {
-      return {theme: 'light', codeTheme: 'material-light'}
-    }
-
-    return {}
   }
 
   async setAlwaysOnTop(alwaysOnTop: boolean) {
@@ -358,17 +362,8 @@ export class ConfigService {
     if (conf.contentWidth) state.collab?.ydoc?.getMap('config').set('contentWidth', conf.contentWidth)
     const config = {...state.config, ...conf}
     this.setState('config', config)
-    if (state.mode === Mode.Editor) {
-      this.ctrl.editor.updateEditorState()
-    } else if (state.mode == Mode.Canvas) {
-      this.ctrl.canvas.currentCanvas?.elements.forEach((el) => {
-        if (isEditorElement(el)) {
-          this.ctrl.canvas.updateEditorState(el.id)
-        }
-      })
-    }
-
     await this.saveConfig(unwrap(this.store))
+    this.updateEditors()
   }
 
   updateContentWidth(contentWidth: number) {
@@ -377,9 +372,11 @@ export class ConfigService {
     void this.saveConfigDebounced(unwrap(this.store))
   }
 
-  async updateTheme() {
-    this.setState('config', this.getTheme(unwrap(this.store), true))
+  async updateDarkMode() {
+    const config = ConfigService.getThemeConfig(this.store)
+    this.setState('config', config)
     await this.saveConfig(unwrap(this.store))
+    this.updateEditors()
   }
 
   private async saveConfig(state: State) {
@@ -387,7 +384,15 @@ export class ConfigService {
     remote.info('Config saved')
   }
 
-  private getDefaltTheme() {
-    return isDark() ? this.themes.dark : this.themes.light
+  private updateEditors() {
+    if (this.store.mode === Mode.Editor) {
+      this.ctrl.editor.updateEditorState()
+    } else if (this.store.mode == Mode.Canvas) {
+      this.ctrl.canvas.currentCanvas?.elements.forEach((el) => {
+        if (isEditorElement(el)) {
+          this.ctrl.canvas.updateEditorState(el.id)
+        }
+      })
+    }
   }
 }

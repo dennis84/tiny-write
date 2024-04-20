@@ -16,6 +16,7 @@ import {State, File, FileText, Mode} from '@/state'
 import {serialize, createMarkdownParser} from '@/markdown'
 import {DB} from '@/db'
 import {Ctrl} from '.'
+import {FileService} from './FileService'
 
 export class EditorService {
   constructor(
@@ -23,6 +24,31 @@ export class EditorService {
     private store: Store<State>,
     private setState: SetStoreFunction<State>,
   ) {}
+
+  static async activateFile(state: State, file: File): Promise<State> {
+    const files = []
+
+    for (const f of state.files) {
+      f.editorView?.destroy()
+      const active = f.id === file.id
+      const newFile = {...f, active, editorView: undefined}
+      files.push(newFile)
+      if (active || f.active) {
+        await FileService.saveFile(newFile)
+      }
+    }
+
+    const mode = Mode.Editor
+    await DB.setMeta({mode})
+
+    return {
+      ...state,
+      error: undefined,
+      args: {...state.args, dir: undefined},
+      files,
+      mode,
+    }
+  }
 
   updateEditorState(node?: Element) {
     const currentFile = this.ctrl.file.currentFile
@@ -109,7 +135,7 @@ export class EditorService {
     const state: State = unwrap(this.store)
     const file = this.ctrl.file.createFile()
 
-    const update = await this.activateFile({
+    const update = await EditorService.activateFile({
       ...state,
       args: {cwd: state.args?.cwd},
       files: [...state.files, file],
@@ -121,10 +147,9 @@ export class EditorService {
 
   async openFileByPath(path: string) {
     remote.debug(`Open file by path: ${path}`)
-    const file = await this.ctrl.file.findFileByPath(path)
-
+    let file
     try {
-      await remote.resolvePath(path)
+      file = await this.ctrl.file.findFileByPath(path)
     } catch (error: any) {
       this.ctrl.app.setError({error, fileId: file?.id})
       return
@@ -156,7 +181,7 @@ export class EditorService {
       if (!file) return
       if (state.args?.room) state.args.room = undefined
 
-      const update = await this.activateFile(state, file)
+      const update = await EditorService.activateFile(state, file)
       update.collab = this.ctrl.collab.create(file.id, state.mode, false)
       this.setState(update)
       if (text) this.updateText(text)
@@ -212,31 +237,6 @@ export class EditorService {
     await this.saveEditor()
   }
 
-  async activateFile(state: State, file: File): Promise<State> {
-    const files = []
-
-    for (const f of state.files) {
-      f.editorView?.destroy()
-      const active = f.id === file.id
-      const newFile = {...f, active, editorView: undefined}
-      files.push(newFile)
-      if (active || f.active) {
-        await this.ctrl.file.saveFile(newFile)
-      }
-    }
-
-    const mode = Mode.Editor
-    await DB.setMeta({mode})
-
-    return {
-      ...state,
-      error: undefined,
-      args: {...state.args, dir: undefined},
-      files,
-      mode,
-    }
-  }
-
   updateText(text?: FileText) {
     const currentFile = this.ctrl.file.currentFile
     if (!text || !currentFile) return
@@ -281,7 +281,7 @@ export class EditorService {
 
     const file = this.ctrl.file.currentFile
     if (!file) return
-    await this.ctrl.file.saveFile(file)
+    await FileService.saveFile(file)
 
     if (currentFile?.path) {
       const text = serialize(currentFile.editorView.state)

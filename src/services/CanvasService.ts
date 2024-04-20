@@ -28,6 +28,7 @@ import {DB} from '@/db'
 import * as remote from '@/remote'
 import {createEmptyText, createExtensions, createNodeViews, createSchema} from '@/prosemirror-setup'
 import {Ctrl} from '.'
+import {FileService} from './FileService'
 
 type UpdateElement =
   Partial<CanvasLinkElement> |
@@ -76,6 +77,33 @@ export class CanvasService {
 
     if (!box || elements.length < 2) return
     return {box, elements}
+  }
+
+  static activateCanvas(state: State, id: string) {
+    const canvases = []
+
+    for (const canvas of state.canvases) {
+      if (canvas.id === id) {
+        canvases.push({...canvas, active: true})
+      } else if (canvas.active) {
+        canvases.push({
+          ...canvas,
+          active: false,
+          elements: canvas.elements.map((el) => {
+            if (isEditorElement(el)) el.editorView?.destroy()
+            return {...el, editorView: undefined}
+          }),
+        })
+      } else {
+        canvases.push(canvas)
+      }
+    }
+
+    return {
+      ...state,
+      canvases,
+      mode: Mode.Canvas,
+    }
   }
 
   updateCanvas(id: string, update: Partial<Canvas>) {
@@ -331,7 +359,7 @@ export class CanvasService {
     this.ctrl.collab.disconnectCollab()
 
     const prevCanvas = this.currentCanvas
-    const state = this.activateCanvas(unwrap(this.store), id)
+    const state = CanvasService.activateCanvas(unwrap(this.store), id)
     const collab = this.ctrl.collab.create(id, Mode.Canvas, false)
 
     this.setState({
@@ -348,33 +376,6 @@ export class CanvasService {
     remote.info('Saved canvas and mode after open')
 
     this.ctrl.canvasCollab.init()
-  }
-
-  activateCanvas(state: State, id: string) {
-    const canvases = []
-
-    for (const canvas of state.canvases) {
-      if (canvas.id === id) {
-        canvases.push({...canvas, active: true})
-      } else if (canvas.active) {
-        canvases.push({
-          ...canvas,
-          active: false,
-          elements: canvas.elements.map((el) => {
-            if (isEditorElement(el)) el.editorView?.destroy()
-            return {...el, editorView: undefined}
-          }),
-        })
-      } else {
-        canvases.push(canvas)
-      }
-    }
-
-    return {
-      ...state,
-      canvases,
-      mode: Mode.Canvas,
-    }
   }
 
   async newFile(link?: CanvasLinkElement, point?: Vec) {
@@ -728,7 +729,7 @@ export class CanvasService {
 
         const updatedFile = this.store.files.find((f) => f.id === id)
         if (!updatedFile) return
-        await this.ctrl.file.saveFile(updatedFile)
+        await FileService.saveFile(updatedFile)
         remote.info('Saved editor content')
       }
 

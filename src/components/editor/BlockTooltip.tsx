@@ -5,7 +5,7 @@ import {EditorView} from 'prosemirror-view'
 import {Node} from 'prosemirror-model'
 import {setBlockType} from 'prosemirror-commands'
 import {arrow, autoUpdate, computePosition, flip, offset, shift} from '@floating-ui/dom'
-import {CanvasEditorElement, Mode, isEditorElement, useState} from '@/state'
+import {Mode, useState} from '@/state'
 import * as remote from '@/remote'
 import {Align} from '@/prosemirror/image'
 import {blockHandlePluginKey} from '@/prosemirror/block-handle'
@@ -61,6 +61,7 @@ export const BlockTooltip = () => {
     }))
 
     view?.focus()
+    setSelectedBlock(undefined)
   }
 
   const onFoldAll = () => {
@@ -73,6 +74,7 @@ export const BlockTooltip = () => {
     }))
 
     view?.focus()
+    setSelectedBlock(undefined)
   }
 
   const onChangeLang = () => {
@@ -94,6 +96,8 @@ export const BlockTooltip = () => {
     dom.node.dispatchEvent(new CustomEvent('cm:user_event', {
       detail: {userEvent: 'change-lang'},
     }))
+
+    setSelectedBlock(undefined)
   }
 
   const onMermaidSave = async () => {
@@ -103,6 +107,7 @@ export const BlockTooltip = () => {
     const id = `mermaid-graph-${block.blockPos}`
     const svg = document.getElementById(id)
     if (svg) await remote.saveSvg(svg)
+    setSelectedBlock(undefined)
   }
 
   const onMermaidHideCode = () => {
@@ -116,6 +121,7 @@ export const BlockTooltip = () => {
     tr.setNodeAttribute(block.blockPos, 'hidden', !block.blockNode.attrs.hidden)
     view.dispatch(tr)
     view.focus()
+    setSelectedBlock(undefined)
   }
 
   const onToPlain = () => {
@@ -134,6 +140,7 @@ export const BlockTooltip = () => {
     tr.removeMark(pos.pos, pos.pos + pos.nodeAfter.nodeSize)
     view.dispatch(tr)
     view.focus()
+    setSelectedBlock(undefined)
   }
 
   const onRemoveBlock = () => {
@@ -149,6 +156,7 @@ export const BlockTooltip = () => {
     tr.delete(pos.pos, pos.pos + pos.nodeAfter.nodeSize)
     view.dispatch(tr)
     view.focus()
+    setSelectedBlock(undefined)
   }
 
   const onAlign = (align: Align) => () => {
@@ -162,6 +170,7 @@ export const BlockTooltip = () => {
     tr.setNodeAttribute(block.cursorPos, 'align', align)
 
     view.dispatch(tr)
+    setSelectedBlock(undefined)
   }
 
   const onOpenLink = async () => {
@@ -272,7 +281,10 @@ export const BlockTooltip = () => {
     const view = getEditorView()
     if (!view) return
 
-    const el = view.domAtPos(blockPos)?.node as HTMLElement | undefined
+    // +1, otherwise root doc is found on code blocks
+    let el = view.domAtPos(blockPos + 1)?.node as HTMLElement | undefined
+    if (el?.nodeType !== 1) el = el?.parentNode as HTMLElement | undefined
+
     const handle = el?.querySelector('.block-handle')
     if (!handle) return
 

@@ -1,10 +1,15 @@
 import {beforeEach, expect, test, vi} from 'vitest'
 import {mock, mockDeep} from 'vitest-mock-extended'
 import {createStore} from 'solid-js/store'
-import {createState, Canvas, Mode} from '@/state'
+import {createState, Canvas, Mode, State} from '@/state'
 import {Ctrl} from '@/services'
 import {AppService} from '@/services/AppService'
+import {CanvasService} from '@/services/CanvasService'
 import {createCollabMock} from '../util'
+
+vi.stubGlobal('matchMedia', vi.fn(() => ({
+  matchMedia: () => ''
+})))
 
 vi.mock('mermaid', () => ({}))
 vi.mock('@/db', () => ({DB: mock()}))
@@ -32,16 +37,13 @@ test('init - new canvas collab', async () => {
 
   const canvas = createCanvas({id: '1'})
   ctrl.canvas.createCanvas.mockReturnValue(canvas)
-  ctrl.canvas.activateCanvas.mockImplementation((data) => {
-    data.canvases[0].active = true
-    return data
-  })
 
   ctrl.collab.create.mockReturnValue(createCollabMock({started: true}))
 
   await service.init()
 
   expect(store.mode).toBe(Mode.Canvas)
+  expect(store.canvases[0].active).toBe(true)
   expect(store.collab?.started).toBe(true)
 })
 
@@ -56,16 +58,12 @@ test('init - existing canvas collab', async () => {
   const [store, setState] = createStore(initial)
   const service = new AppService(ctrl, store, setState)
 
-  ctrl.canvas.activateCanvas.mockImplementation((data) => {
-    data.canvases[0].active = true
-    return data
-  })
-
   ctrl.collab.create.mockReturnValue(createCollabMock({started: true}))
 
   await service.init()
 
   expect(store.mode).toBe(Mode.Canvas)
   expect(store.collab?.started).toBe(true)
+  expect(store.canvases[0].active).toBe(true)
   expect(ctrl.canvas.createCanvas).not.toBeCalled()
 })

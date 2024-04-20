@@ -6,8 +6,9 @@ import {adjectives, animals, uniqueNamesGenerator} from 'unique-names-generator'
 import {Collab, File, Mode, State} from '@/state'
 import {COLLAB_URL, isTauri} from '@/env'
 import * as remote from '@/remote'
-import {Ctrl} from '.'
 import {TauriWebSocket} from '@/utils/TauriWebSocket'
+import {Ctrl} from '.'
+import {ConfigService} from './ConfigService'
 
 export class UndoManager extends Y.UndoManager {
   removeFromScope(type: Y.AbstractType<any>) {
@@ -89,7 +90,7 @@ export class CollabService {
       }
     })
 
-    const xs = Object.values(this.ctrl.config.themes)
+    const xs = Object.values(ConfigService.themes)
     const index = Math.floor(Math.random() * xs.length)
     const username = uniqueNamesGenerator({
       dictionaries: [adjectives, animals],

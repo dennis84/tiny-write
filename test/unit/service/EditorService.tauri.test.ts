@@ -95,9 +95,7 @@ test('openFileByPath - path and text', async () => {
 })
 
 test('openFileByPath - file not found', async () => {
-  createIpcMock({
-    'resolve_path': () => { throw new Error('Fail') }
-  })
+  createIpcMock()
 
   const {ctrl, store} = createCtrl(createState())
   const target = document.createElement('div')
@@ -105,6 +103,11 @@ test('openFileByPath - file not found', async () => {
   ctrl.editor.renderEditor(target)
 
   expect(store.files.length).toBe(1)
+
+  clearMocks()
+  createIpcMock({
+    'resolve_path': () => { throw new Error('Fail') }
+  })
 
   await ctrl.editor.openFileByPath('file1')
 
