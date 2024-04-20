@@ -353,7 +353,7 @@ const proseMirror = (props: Props) => `
         user-select: none;
       }
       &:hover > span {
-        background: var(foreground-10);
+        background: var(--foreground-10);
       }
       @media print {
         display: none;

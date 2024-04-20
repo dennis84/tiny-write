@@ -55,7 +55,7 @@ const createDragHandle = (editorView: EditorView, getPos: () => number | undefin
       return firstSel
     }
   }, {
-    eventOptions:{passive: false},
+    eventOptions: {passive: false},
   })
 
   handle.setAttribute('contenteditable', 'false')
