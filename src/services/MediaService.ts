@@ -8,7 +8,7 @@ import {Ctrl} from '.'
 
 const md = markdownit({html: false})
 
-export class ImageService {
+export class MediaService {
   constructor(
     private ctrl: Ctrl,
     private store: Store<State>,
@@ -50,7 +50,7 @@ export class ImageService {
         if (!currentFile?.editorView) return
         this.insert(currentFile.editorView, currentFile.markdown ?? false, relativePath, x, y, mime)
       } else {
-        const src = await this.ctrl.image.getImagePath(relativePath, basePath)
+        const src = await this.getImagePath(relativePath, basePath)
         const point = this.ctrl.canvas.getPosition([x, y])
         if (!point) return
 

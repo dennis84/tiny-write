@@ -336,7 +336,7 @@ const proseMirror = (props: Props) => `
       left: -30px;
       top: 0;
       height: calc(var(--font-size) * 1.6);
-      opacity: 1;
+      opacity: 0;
       cursor: move;
       transition: opacity 0.3s;
       display: inline-flex;

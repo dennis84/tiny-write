@@ -53,7 +53,7 @@ export default (props: {state: State}) => {
       } else if (event.payload.type === 'dropped') {
         remote.info('🔗 User dropped')
         for (const path of event.payload.paths) {
-          await ctrl.image.dropPath(path, [mouseEnterCoords.x, mouseEnterCoords.y])
+          await ctrl.media.dropPath(path, [mouseEnterCoords.x, mouseEnterCoords.y])
         }
       } else {
         remote.info('🔗 File drop cancelled')
@@ -111,7 +111,7 @@ export default (props: {state: State}) => {
         if (file.type.startsWith('image/')) {
           const x = mouseEnterCoords.x
           const y = mouseEnterCoords.y
-          await ctrl.image.dropFile(file, [x, y])
+          await ctrl.media.dropFile(file, [x, y])
         }
       }
     }

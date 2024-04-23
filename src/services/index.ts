@@ -8,7 +8,7 @@ import {FileService} from './FileService'
 import {CollabService} from './CollabService'
 import {CanvasService} from './CanvasService'
 import {CanvasCollabService} from './CanvasCollabService'
-import {ImageService} from './ImageService'
+import {MediaService} from './MediaService'
 import {SelectService} from './SelectService'
 import {isDev} from '@/env'
 import {TreeService} from './TreeService'
@@ -22,7 +22,7 @@ export class Ctrl {
   collab!: CollabService
   canvas!: CanvasService
   canvasCollab!: CanvasCollabService
-  image!: ImageService
+  media!: MediaService
   select!: SelectService
   tree!: TreeService
 
@@ -39,7 +39,7 @@ export class Ctrl {
     this.canvas = new CanvasService(this, store, setState)
     this.tree = new TreeService(this, store, setState)
     this.canvasCollab = new CanvasCollabService(this.canvas, store)
-    this.image = new ImageService(this, store)
+    this.media = new MediaService(this, store)
     this.select = new SelectService()
   }
 }

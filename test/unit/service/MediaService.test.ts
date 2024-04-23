@@ -2,7 +2,7 @@ import {beforeEach, expect, test, vi} from 'vitest'
 import {mock, mockDeep} from 'vitest-mock-extended'
 import {clearMocks, mockConvertFileSrc} from '@tauri-apps/api/mocks'
 import {fromBase64, toBase64} from 'js-base64'
-import {ImageService} from '@/services/ImageService'
+import {MediaService} from '@/services/MediaService'
 import {createCtrl, Ctrl} from '@/services'
 import {CanvasEditorElement, CanvasImageElement, ElementType, Mode, createState} from '@/state'
 import {createIpcMock, createYUpdate, getText} from '../util'
@@ -36,7 +36,7 @@ test('getImagePath', async () => {
   const ctrl = mockDeep<Ctrl>()
   const state = createState()
   const input = '/path/to/file.png'
-  const service = new ImageService(ctrl, state)
+  const service = new MediaService(ctrl, state)
   const path = await service.getImagePath(input)
   expect(path).toBe('asset://localhost/' + encodeURIComponent(input))
 
@@ -51,7 +51,7 @@ test('dropFile - image on editor', async () => {
   ctrl.editor.renderEditor(target)
 
   const blob = new Blob(['123'])
-  await ctrl.image.dropFile(blob, [0, 0])
+  await ctrl.media.dropFile(blob, [0, 0])
 
   const doc = ctrl.file.currentFile?.editorView?.state.doc
   const paragraph = doc?.firstChild
@@ -81,7 +81,7 @@ test('dropFile - image on editor in markdown mode', async () => {
 
   const blob = new Blob(['123'])
 
-  await ctrl.image.dropFile(blob, [0, 0])
+  await ctrl.media.dropFile(blob, [0, 0])
   expect(getText(ctrl)).toBe(`![](data:application/octet-stream;base64,${toBase64('123')})`)
 })
 
@@ -108,7 +108,7 @@ test('dropFile - image on canvas', async () => {
     ],
   }))
 
-  vi.spyOn(ImageService.prototype as any, 'loadImage')
+  vi.spyOn(MediaService.prototype as any, 'loadImage')
     .mockResolvedValue({width: 100, height: 200} as HTMLImageElement)
 
   const target = document.createElement('div')
@@ -119,7 +119,7 @@ test('dropFile - image on canvas', async () => {
   ctrl.canvas.renderEditor(editorEl, target)
 
   const blob = new Blob([], {type: 'image/png'})
-  await ctrl.image.dropFile(blob, [100, 100])
+  await ctrl.media.dropFile(blob, [100, 100])
 
   expect(currentCanvas?.elements).toHaveLength(2)
 
@@ -157,7 +157,7 @@ test('dropFile - image on canvas with active editor', async () => {
     ],
   }))
 
-  vi.spyOn(ImageService.prototype as any, 'loadImage')
+  vi.spyOn(MediaService.prototype as any, 'loadImage')
     .mockResolvedValue({width: 100, height: 200} as HTMLImageElement)
 
   const target = document.createElement('div')
@@ -168,7 +168,7 @@ test('dropFile - image on canvas with active editor', async () => {
   ctrl.canvas.renderEditor(editorEl, target)
 
   const blob = new Blob(['123'], {type: 'image/png'})
-  await ctrl.image.dropFile(blob, [0, 0])
+  await ctrl.media.dropFile(blob, [0, 0])
 
   expect(currentCanvas?.elements).toHaveLength(1)
 
@@ -186,7 +186,7 @@ test('dropPath - image on editor', async () => {
   await ctrl.app.init()
   ctrl.editor.renderEditor(target)
 
-  await ctrl.image.dropPath('/users/me/file.png', [0, 0])
+  await ctrl.media.dropPath('/users/me/file.png', [0, 0])
 
   const doc = ctrl.file.currentFile?.editorView?.state.doc
   const paragraph = doc?.firstChild
@@ -214,7 +214,7 @@ test('dropPath - image on editor with basePath', async () => {
   await ctrl.app.init()
   ctrl.editor.renderEditor(target)
 
-  await ctrl.image.dropPath('/users/me/project/file.png', [0, 0])
+  await ctrl.media.dropPath('/users/me/project/file.png', [0, 0])
 
   const doc = ctrl.file.currentFile?.editorView?.state.doc
   const paragraph = doc?.firstChild
@@ -231,7 +231,7 @@ test('dropPath - text file on editor', async () => {
   ctrl.editor.renderEditor(target)
 
   const path = '/users/me/project/README.md'
-  await ctrl.image.dropPath(path, [0, 0])
+  await ctrl.media.dropPath(path, [0, 0])
 
   expect(store.files).toHaveLength(2)
 
@@ -262,7 +262,7 @@ test('dropPath - image on canvas', async () => {
     ],
   }))
 
-  vi.spyOn(ImageService.prototype as any, 'loadImage')
+  vi.spyOn(MediaService.prototype as any, 'loadImage')
     .mockResolvedValue({width: 100, height: 200} as HTMLImageElement)
 
   const target = document.createElement('div')
@@ -272,7 +272,7 @@ test('dropPath - image on canvas', async () => {
   const editorEl = currentCanvas?.elements[0] as CanvasEditorElement
   ctrl.canvas.renderEditor(editorEl, target)
 
-  await ctrl.image.dropPath('/users/me/file.png', [100, 100])
+  await ctrl.media.dropPath('/users/me/file.png', [100, 100])
 
   expect(currentCanvas?.elements).toHaveLength(2)
 

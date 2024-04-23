@@ -109,7 +109,7 @@ class ImageView {
       !isUrl(node.attrs.src)
     ) {
       void ctrl.app.getBasePath()
-        .then((basePath) => ctrl.image.getImagePath(node.attrs.src, basePath))
+        .then((basePath) => ctrl.media.getImagePath(node.attrs.src, basePath))
         .then((src) => {
           this.container.classList.remove('error')
           source.setAttribute('src', src)
