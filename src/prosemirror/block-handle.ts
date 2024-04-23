@@ -13,7 +13,7 @@ const createDragHandle = (editorView: EditorView, getPos: () => number | undefin
   handle.addEventListener('mouseup', (e) => e.stopPropagation())
   handle.style.touchAction = 'none'
 
-  new DragGesture(handle, ({event, first, last, movement: [, my], memo}) => {
+  const gesture = new DragGesture(handle, ({event, first, last, movement: [, my], memo}) => {
     const pos = getPos()
     if (pos === undefined) return
     const resolved = editorView.state.doc.resolve(pos)
@@ -33,9 +33,8 @@ const createDragHandle = (editorView: EditorView, getPos: () => number | undefin
     }
 
     // open menu if no movement
-    if (last && my === 0) {
+    if (last && my < 1) {
       event.preventDefault()
-      event.stopPropagation()
       const tr = editorView.state.tr
       let cursorPos = firstSel.from
 
@@ -50,13 +49,18 @@ const createDragHandle = (editorView: EditorView, getPos: () => number | undefin
         cursorPos = undefined
       }
 
-      tr.setMeta(blockHandlePluginKey, {blockPos: getPos(), cursorPos})
+      const state = blockHandlePluginKey.getState(editorView.state)
+      const newState = {...state, blockPos: getPos(), cursorPos}
+      tr.setMeta(blockHandlePluginKey, newState)
       editorView.dispatch(tr)
       return firstSel
     }
   }, {
     eventOptions: {passive: false},
+    delay: 0
   })
+
+  ;(handle as any).gesture = gesture
 
   handle.setAttribute('contenteditable', 'false')
   const icon = document.createElement('span')
@@ -75,23 +79,33 @@ const blockHandle = new Plugin({
       return {
         blockPos: undefined,
         cursorPos: undefined,
+        decorations: DecorationSet.empty,
       }
     },
     apply(tr, prev) {
       const meta = tr.getMeta(blockHandlePluginKey)
-      if (!meta) return prev
-      return meta
+
+      if (meta && meta?.blockPos !== prev.blockPos) prev.blockPos = meta.blockPos
+      if (meta && meta?.cursorPos !== prev.cursorPos) prev.cursorPos = meta.cursorPos
+      if (!tr.docChanged) return prev
+
+      const decos: Decoration[] = []
+      tr.doc.forEach((node, offset) => {
+        decos.push(Decoration.node(offset, offset + node.nodeSize, {class: 'draggable'}))
+        decos.push(Decoration.widget(offset + 1, createDragHandle, {
+          destroy: (node: any) => {
+            node.gesture?.destroy?.()
+          }
+        }))
+      })
+
+      prev.decorations = DecorationSet.create(tr.doc, decos)
+      return prev
     }
   },
   props: {
     decorations(state) {
-      const decos: Decoration[] = []
-      state.doc.forEach((node, pos) => {
-        decos.push(Decoration.widget(pos + 1, createDragHandle))
-        decos.push(Decoration.node(pos, pos + node.nodeSize, {class: 'draggable'}))
-      })
-
-      return DecorationSet.create(state.doc, decos)
+      return blockHandlePluginKey.getState(state).decorations
     },
   }
 })

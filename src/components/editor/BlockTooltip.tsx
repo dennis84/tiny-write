@@ -235,7 +235,12 @@ export const BlockTooltip = () => {
     if (tooltipRef.contains(e.target as Element)) return
 
     const tr = view.state.tr
-    tr.setMeta(blockHandlePluginKey, {})
+    tr.setMeta(blockHandlePluginKey, {
+      ...blockHandleState,
+      blockPos: undefined,
+      cursorPos: undefined,
+    })
+
     view.dispatch(tr)
   }
 
@@ -247,6 +252,7 @@ export const BlockTooltip = () => {
   })
 
   createEffect(() => {
+    store.lastTr
     const view = getEditorView()
     if (!view) return
 

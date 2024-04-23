@@ -715,7 +715,14 @@ export class CanvasService {
     if (!editorView) {
       const dispatchTransaction = async (tr: Transaction) => {
         const newState = editorView!.state.apply(tr)
-        editorView!.updateState(newState)
+        try {
+          editorView!.updateState(newState)
+        } catch (error: any) {
+          remote.error('Sync error occurred', error)
+          this.ctrl.app.setError({id: 'editor_sync', error})
+          return
+        }
+
         this.setState('lastTr', tr.time)
         if (!tr.docChanged) return
 

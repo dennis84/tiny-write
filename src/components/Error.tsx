@@ -1,4 +1,4 @@
-import {Show} from 'solid-js'
+import {Match, Show, Switch} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {useState} from '@/state'
 import {ButtonGroup, Button, ButtonPrimary} from './Button'
@@ -14,7 +14,14 @@ const Pre = styled('pre')`
 `
 
 export default () => {
-  return <GeneralError />
+  const [store] = useState()
+  return (
+    <Switch fallback={<GeneralError />}>
+      <Match when={store.error?.id === 'editor_sync'}>
+        <EditorSyncError />
+      </Match>
+    </Switch>
+  )
 }
 
 const GeneralError = () => {
@@ -44,6 +51,24 @@ const GeneralError = () => {
           <Show when={store.error?.fileId}>
             <Button onClick={onDeleteFile}>Delete corrupt file</Button>
           </Show>
+        </ButtonGroup>
+      </Content>
+    </Scroll>
+  )
+}
+
+const EditorSyncError = () => {
+  const [store] = useState()
+  const onReload = () => {
+    window.location.reload()
+  }
+
+  return (
+    <Scroll data-tauri-drag-region="true">
+      <Content config={store.config} data-tauri-drag-region="true">
+        <h1>Sync error occurred. Please reload, sorry 😢</h1>
+        <ButtonGroup>
+          <ButtonPrimary onClick={onReload}>Reload</ButtonPrimary>
         </ButtonGroup>
       </Content>
     </Scroll>

@@ -75,9 +75,16 @@ export class EditorService {
     const editorState = EditorState.fromJSON({schema, plugins}, createEmptyText())
 
     if (!editorView) {
-      const dispatchTransaction = async (tr: Transaction) => {
+      const dispatchTransaction = (tr: Transaction) => {
         const newState = editorView!.state.apply(tr)
-        editorView!.updateState(newState)
+        try {
+          editorView!.updateState(newState)
+        } catch (error: any) {
+          remote.error('Sync error occurred', error)
+          this.ctrl.app.setError({id: 'editor_sync', error})
+          return
+        }
+
         this.setState('lastTr', tr.time)
         if (!tr.docChanged) return
 
@@ -93,7 +100,7 @@ export class EditorService {
           lastModified: new Date(),
         })
 
-        await this.saveEditor()
+        void this.saveEditor()
         remote.info('Saved editor content')
       }
 
