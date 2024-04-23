@@ -47,10 +47,10 @@ export default (props: {state: State}) => {
 
   onMount(() => {
     if (!isTauri()) return
-    const unlistenProm = webview.getCurrent().onFileDropEvent(async (event) => {
-      if (event.payload.type === 'hover') {
+    const unlistenProm = webview.getCurrent().onDragDropEvent(async (event) => {
+      if (event.payload.type === 'dragOver') {
         remote.info('🔗 User hovering')
-      } else if (event.payload.type === 'drop') {
+      } else if (event.payload.type === 'dropped') {
         remote.info('🔗 User dropped')
         for (const path of event.payload.paths) {
           await ctrl.image.dropPath(path, [mouseEnterCoords.x, mouseEnterCoords.y])

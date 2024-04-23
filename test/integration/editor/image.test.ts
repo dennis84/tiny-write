@@ -32,6 +32,7 @@ test('create image', async ({page}) => {
   await openBlockMenu(page, 1)
   await page.getByTestId('align_float_right').click()
   await expect(page.locator(`.ProseMirror p .image-container`)).toHaveClass(/float-right/)
+  await openBlockMenu(page, 1)
   await page.getByTestId('align_center').click()
   await expect(page.locator(`.ProseMirror p .image-container`)).toHaveClass(/center/)
 })
