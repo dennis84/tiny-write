@@ -1,10 +1,9 @@
 import {beforeEach, expect, test, vi} from 'vitest'
 import {mock, mockDeep} from 'vitest-mock-extended'
 import {createStore} from 'solid-js/store'
-import {createState, Canvas, Mode, State} from '@/state'
+import {createState, Canvas, Mode} from '@/state'
 import {Ctrl} from '@/services'
 import {AppService} from '@/services/AppService'
-import {CanvasService} from '@/services/CanvasService'
 import {createCollabMock} from '../util'
 
 vi.stubGlobal('matchMedia', vi.fn(() => ({

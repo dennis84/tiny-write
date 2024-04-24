@@ -434,7 +434,7 @@ const proseMirror = (props: Props) => `
         bottom: -5px;
         right: -5px;
         cursor: nwse-resize;
-      touch-action: none;
+        touch-action: none;
       }
       &.float-left {
         float: left;

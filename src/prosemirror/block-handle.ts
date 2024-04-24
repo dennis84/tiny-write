@@ -95,7 +95,9 @@ const blockHandle = new Plugin({
         decos.push(Decoration.widget(offset + 1, createDragHandle, {
           destroy: (node: any) => {
             node.gesture?.destroy?.()
-          }
+          },
+          // helps against the sync error if the handle button is clicked too quickly
+          stopEvent: () => true
         }))
       })
 

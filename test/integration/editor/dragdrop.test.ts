@@ -1,5 +1,5 @@
 import {test} from '@playwright/test'
-import {delay, lineTextEq} from '../utils'
+import {delay, lineTextEq, openBlockMenu} from '../utils'
 
 test.beforeEach(async ({page}) => {
   await page.goto('/')
@@ -25,4 +25,14 @@ test('drag drop', async ({page}) => {
   await lineTextEq(page, 1, 'Line 2')
   await lineTextEq(page, 2, 'Line 3')
   await lineTextEq(page, 3, 'Line 1')
+})
+
+test('no sync error', async ({page}) => {
+  await page.locator('.ProseMirror').pressSequentially('Line 1', {delay})
+
+  for (let i = 0; i < 10; i++) {
+    await openBlockMenu(page, 1)
+  }
+
+  await lineTextEq(page, 1, 'Line 1')
 })

@@ -68,7 +68,7 @@ export class ConfigService {
       foreground: '#ebdbb2',
       primaryBackground: '#d65d0e',
       primaryForeground: '#ffffff',
-      selection: '#dfbf8e22',
+      selection: '#689d6a80',
       tooltipBackground: '#474544',
       border: '#756D59',
       dark: true,
