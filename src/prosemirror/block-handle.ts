@@ -13,7 +13,7 @@ const createDragHandle = (editorView: EditorView, getPos: () => number | undefin
   handle.addEventListener('mouseup', (e) => e.stopPropagation())
   handle.style.touchAction = 'none'
 
-  const gesture = new DragGesture(handle, ({event, first, last, movement: [, my], memo}) => {
+  const gesture = new DragGesture(handle, ({event, pressed, first, last, movement: [, my], memo}) => {
     const pos = getPos()
     if (pos === undefined) return
     const resolved = editorView.state.doc.resolve(pos)
@@ -28,12 +28,13 @@ const createDragHandle = (editorView: EditorView, getPos: () => number | undefin
       event.stopPropagation()
       const tr = editorView.state.tr
       tr.setSelection(NodeSelection.create(editorView.state.doc, resolved.before(1)))
+      // after dispatch is pressed=false and last=true
       editorView.dispatch(tr)
-      return firstSel
+      return {...firstSel, first}
     }
 
     // open menu if no movement
-    if (last && my < 1) {
+    if (last && my === 0 && !pressed && !firstSel.first) {
       event.preventDefault()
       const tr = editorView.state.tr
       let cursorPos = firstSel.from
@@ -53,11 +54,11 @@ const createDragHandle = (editorView: EditorView, getPos: () => number | undefin
       const newState = {...state, blockPos: getPos(), cursorPos}
       tr.setMeta(blockHandlePluginKey, newState)
       editorView.dispatch(tr)
-      return firstSel
+      return {...firstSel, first: undefined}
     }
   }, {
     eventOptions: {passive: false},
-    delay: 0
+    delay: 0,
   })
 
   ;(handle as any).gesture = gesture

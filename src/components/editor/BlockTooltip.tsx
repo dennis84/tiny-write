@@ -288,11 +288,13 @@ export const BlockTooltip = () => {
     if (!view) return
 
     // +1, otherwise root doc is found on code blocks
-    let dom = view.domAtPos(blockPos)
-    if (dom.offset !== 0) dom = view.domAtPos(blockPos + 1)
-    const el = dom.node as HTMLElement | undefined
+    const dom = view.domAtPos(blockPos)
+    let node = dom.node as HTMLElement | undefined
+    if (dom.offset !== 0) {
+      node = node?.parentNode as HTMLElement | undefined
+    }
 
-    const handle = el?.querySelector('.block-handle')
+    const handle = node?.querySelector('.block-handle')
     if (!handle) return
 
     unwrap(cleanup).fn?.()
