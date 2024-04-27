@@ -13,29 +13,31 @@ const createDragHandle = (editorView: EditorView, getPos: () => number | undefin
   handle.addEventListener('mouseup', (e) => e.stopPropagation())
   handle.style.touchAction = 'none'
 
-  const gesture = new DragGesture(handle, ({event, pressed, first, last, movement: [, my], memo}) => {
-    const pos = getPos()
-    if (pos === undefined) return
-    const resolved = editorView.state.doc.resolve(pos)
+  const gesture = new DragGesture(handle, ({event, last, memo}) => {
     const firstSel = memo ?? {
       from: editorView.state.selection.from,
       empty: editorView.state.selection.empty,
       isAtom: editorView.state.selection.$from.nodeAfter?.isAtom,
-    }
-
-    // select block to allow native dragging
-    if (first) {
-      event.stopPropagation()
-      const tr = editorView.state.tr
-      tr.setSelection(NodeSelection.create(editorView.state.doc, resolved.before(1)))
-      // after dispatch is pressed=false and last=true
-      editorView.dispatch(tr)
-      return {...firstSel, first}
+      selectAll: setTimeout(() => {
+        const pos = getPos()
+        if (pos === undefined) return
+        firstSel.dragging = true
+        const resolved = editorView.state.doc.resolve(pos)
+        const tr = editorView.state.tr
+        tr.setSelection(NodeSelection.create(editorView.state.doc, resolved.before(1)))
+        editorView.dispatch(tr)
+      }, 200)
     }
 
     // open menu if no movement
-    if (last && my === 0 && !pressed && !firstSel.first) {
+    if (last && !firstSel.dragging) {
+      clearTimeout(firstSel.selectAll)
       event.preventDefault()
+
+      const pos = getPos()
+      if (pos === undefined) return
+
+      const resolved = editorView.state.doc.resolve(pos)
       const tr = editorView.state.tr
       let cursorPos = firstSel.from
 
@@ -54,8 +56,10 @@ const createDragHandle = (editorView: EditorView, getPos: () => number | undefin
       const newState = {...state, blockPos: getPos(), cursorPos}
       tr.setMeta(blockHandlePluginKey, newState)
       editorView.dispatch(tr)
-      return {...firstSel, first: undefined}
+      return firstSel
     }
+
+    return firstSel
   }, {
     eventOptions: {passive: false},
     delay: 0,

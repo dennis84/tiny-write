@@ -34,6 +34,23 @@ export const BlockTooltip = () => {
   const [selectedBlock, setSelectedBlock] = createSignal<Block | undefined>()
   const cleanup = createMutable<Cleanup>({})
 
+  const closeTooltip = () => {
+    setSelectedBlock(undefined)
+
+    const blockHandleState = getBlockHandleState()
+    const view = getEditorView()
+    if (!view) return
+
+    const tr = view.state.tr
+    tr.setMeta(blockHandlePluginKey, {
+      ...blockHandleState,
+      blockPos: undefined,
+      cursorPos: undefined,
+    })
+
+    view.dispatch(tr)
+  }
+
   const deselect = () => {
     if (store.mode === Mode.Canvas) {
       ctrl.canvas.deselect()
@@ -61,7 +78,7 @@ export const BlockTooltip = () => {
     }))
 
     view?.focus()
-    setSelectedBlock(undefined)
+    closeTooltip()
   }
 
   const onFoldAll = () => {
@@ -74,7 +91,7 @@ export const BlockTooltip = () => {
     }))
 
     view?.focus()
-    setSelectedBlock(undefined)
+    closeTooltip()
   }
 
   const onChangeLang = () => {
@@ -97,7 +114,7 @@ export const BlockTooltip = () => {
       detail: {userEvent: 'change-lang'},
     }))
 
-    setSelectedBlock(undefined)
+    closeTooltip()
   }
 
   const onMermaidSave = async () => {
@@ -107,7 +124,7 @@ export const BlockTooltip = () => {
     const id = `mermaid-graph-${block.blockPos}`
     const svg = document.getElementById(id)
     if (svg) await remote.saveSvg(svg)
-    setSelectedBlock(undefined)
+    closeTooltip()
   }
 
   const onMermaidHideCode = () => {
@@ -121,7 +138,7 @@ export const BlockTooltip = () => {
     tr.setNodeAttribute(block.blockPos, 'hidden', !block.blockNode.attrs.hidden)
     view.dispatch(tr)
     view.focus()
-    setSelectedBlock(undefined)
+    closeTooltip()
   }
 
   const onToPlain = () => {
@@ -140,7 +157,7 @@ export const BlockTooltip = () => {
     tr.removeMark(pos.pos, pos.pos + pos.nodeAfter.nodeSize)
     view.dispatch(tr)
     view.focus()
-    setSelectedBlock(undefined)
+    closeTooltip()
   }
 
   const onRemoveBlock = () => {
@@ -156,7 +173,7 @@ export const BlockTooltip = () => {
     tr.delete(pos.pos, pos.pos + pos.nodeAfter.nodeSize)
     view.dispatch(tr)
     view.focus()
-    setSelectedBlock(undefined)
+    closeTooltip()
   }
 
   const onAlign = (align: Align) => () => {
@@ -170,7 +187,7 @@ export const BlockTooltip = () => {
     tr.setNodeAttribute(block.cursorPos, 'align', align)
 
     view.dispatch(tr)
-    setSelectedBlock(undefined)
+    closeTooltip()
   }
 
   const onOpenLink = async () => {
@@ -186,7 +203,7 @@ export const BlockTooltip = () => {
     try {
       const url = new URL(href)
       await remote.open(url.href)
-      setSelectedBlock(undefined)
+      closeTooltip()
       return
     } catch (e) {
       // ...
@@ -202,7 +219,7 @@ export const BlockTooltip = () => {
       await remote.open(path)
     }
 
-    setSelectedBlock(undefined)
+    closeTooltip()
   }
 
   const getLinkHref = (): string | undefined => {
