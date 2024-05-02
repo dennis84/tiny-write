@@ -32,8 +32,8 @@ const imageSchema = {
     align: {default: Align.FloatLeft}
   },
   group: 'inline',
-  draggable: true,
   selectable: true,
+  draggable: true,
   toDOM: (node: Node) => ['img', {
     src: node.attrs.src,
     title: node.attrs.title,
@@ -153,6 +153,9 @@ class ImageView {
   }
 
   update(node: Node) {
+    // prevents drag/drop from creating a copy
+    if (node.type.name !== 'image') return false
+
     if (node.attrs.width) this.setWidth(Number(node.attrs.width))
 
     if (node.attrs.align !== this.align) {

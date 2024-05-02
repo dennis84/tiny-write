@@ -1,72 +1,81 @@
 import {Plugin, NodeSelection, PluginKey, EditorState, TextSelection} from 'prosemirror-state'
 import {DecorationSet, Decoration, EditorView} from 'prosemirror-view'
-import {DragGesture} from '@use-gesture/vanilla'
 import {ProseMirrorExtension} from '@/prosemirror'
 
 const handleIcon =
   '<svg viewBox="0 0 10 10" height="14" width="14"><path d="M3 2a1 1 0 110-2 1 1 0 010 2zm0 4a1 1 0 110-2 1 1 0 010 2zm0 4a1 1 0 110-2 1 1 0 010 2zm4-8a1 1 0 110-2 1 1 0 010 2zm0 4a1 1 0 110-2 1 1 0 010 2zm0 4a1 1 0 110-2 1 1 0 010 2z"/></svg>'
 
+interface DragMemo {
+  from: number;
+  empty: boolean;
+  isAtom: boolean;
+  isText: boolean;
+}
+
 const createDragHandle = (editorView: EditorView, getPos: () => number | undefined) => {
   const handle = document.createElement('span')
+  handle.id = `block-handle-${getPos()}`
 
-  // otherwise selection is lost
-  handle.addEventListener('mouseup', (e) => e.stopPropagation())
-  handle.style.touchAction = 'none'
+  let firstSel: DragMemo = {
+    empty: true,
+    from: 0,
+    isAtom: false,
+    isText: false,
+  }
 
-  const gesture = new DragGesture(handle, ({event, last, memo}) => {
-    const firstSel = memo ?? {
+  const onDown = () => {
+    const pos = getPos()
+    if (pos === undefined) return
+
+    const nodeAfter = editorView.state.selection.$from.nodeAfter
+    firstSel = {
       from: editorView.state.selection.from,
       empty: editorView.state.selection.empty,
-      isAtom: editorView.state.selection.$from.nodeAfter?.isAtom,
-      selectAll: setTimeout(() => {
-        const pos = getPos()
-        if (pos === undefined) return
-        firstSel.dragging = true
-        const resolved = editorView.state.doc.resolve(pos)
-        const tr = editorView.state.tr
-        tr.setSelection(NodeSelection.create(editorView.state.doc, resolved.before(1)))
-        editorView.dispatch(tr)
-      }, 200)
+      isAtom: nodeAfter?.isAtom ?? false,
+      isText: nodeAfter?.isText ?? false
     }
 
-    // open menu if no movement
-    if (last && !firstSel.dragging) {
-      clearTimeout(firstSel.selectAll)
-      event.preventDefault()
+    const resolved = editorView.state.doc.resolve(pos)
+    const tr = editorView.state.tr
+    tr.setSelection(NodeSelection.create(tr.doc, resolved.before(1)))
+    editorView.dispatch(tr)
+  }
 
-      const pos = getPos()
-      if (pos === undefined) return
+  const onUp = () => {
+    const pos = getPos()
+    if (pos === undefined) return
 
-      const resolved = editorView.state.doc.resolve(pos)
-      const tr = editorView.state.tr
-      let cursorPos = firstSel.from
+    const resolved = editorView.state.doc.resolve(pos)
+    const tr = editorView.state.tr
+    let cursorPos
 
-      if (firstSel.empty && firstSel.from >= pos && firstSel.from <= resolved.after(1)) {
-        const range = markAround(editorView.state, firstSel.from)
-        if (range) {
-          tr.setSelection(TextSelection.create(editorView.state.doc, range.from, range.to))
-        }
-      } else if (firstSel.isAtom) {
-        tr.setSelection(NodeSelection.create(editorView.state.doc, firstSel.from))
-      } else {
-        cursorPos = undefined
+    const inBlock = firstSel.from >= pos && firstSel.from <= resolved.after(1)
+
+    if (firstSel.empty && inBlock) {
+      cursorPos = firstSel.from
+      const range = markAround(editorView.state, firstSel.from)
+      if (range) {
+        tr.setSelection(TextSelection.create(editorView.state.doc, range.from, range.to))
       }
-
-      const state = blockHandlePluginKey.getState(editorView.state)
-      const newState = {...state, blockPos: getPos(), cursorPos}
-      tr.setMeta(blockHandlePluginKey, newState)
-      editorView.dispatch(tr)
-      return firstSel
+    } else if (inBlock && firstSel.isAtom && !firstSel.isText) {
+      cursorPos = firstSel.from
+      tr.setSelection(NodeSelection.create(editorView.state.doc, firstSel.from))
     }
 
-    return firstSel
-  }, {
-    eventOptions: {passive: false},
-    delay: 0,
-  })
+    const state = blockHandlePluginKey.getState(editorView.state)
+    const newState = {...state, blockPos: getPos(), cursorPos}
+    tr.setMeta(blockHandlePluginKey, newState)
+    editorView.dispatch(tr)
+  }
 
-  ;(handle as any).gesture = gesture
+  handle.addEventListener('pointerdown', onDown)
+  handle.addEventListener('pointerup', onUp)
+  ;(handle as any).destroy = () => {
+    handle.removeEventListener('pointerdown', onDown)
+    handle.removeEventListener('pointerup', onUp)
+  }
 
+  handle.style.touchAction = 'none'
   handle.setAttribute('contenteditable', 'false')
   const icon = document.createElement('span')
   icon.innerHTML = handleIcon
@@ -99,7 +108,7 @@ const blockHandle = new Plugin({
         decos.push(Decoration.node(offset, offset + node.nodeSize, {class: 'draggable'}))
         decos.push(Decoration.widget(offset + 1, createDragHandle, {
           destroy: (node: any) => {
-            node.gesture?.destroy?.()
+            node.destroy?.()
           },
           // helps against the sync error if the handle button is clicked too quickly
           stopEvent: () => true

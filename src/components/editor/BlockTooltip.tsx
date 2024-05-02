@@ -304,14 +304,7 @@ export const BlockTooltip = () => {
     const view = getEditorView()
     if (!view) return
 
-    // +1, otherwise root doc is found on code blocks
-    const dom = view.domAtPos(blockPos)
-    let node = dom.node as HTMLElement | undefined
-    if (dom.offset !== 0) {
-      node = node?.parentNode as HTMLElement | undefined
-    }
-
-    const handle = node?.querySelector('.block-handle')
+    const handle = view.dom.querySelector(`#block-handle-${blockPos}`)
     if (!handle) return
 
     unwrap(cleanup).fn?.()
@@ -320,7 +313,7 @@ export const BlockTooltip = () => {
         placement: 'left',
         middleware: [
           offset(10),
-          flip(),
+          flip({fallbackPlacements: ['left', 'bottom', 'top']}),
           shift(),
           arrow({element: arrowRef}),
         ],

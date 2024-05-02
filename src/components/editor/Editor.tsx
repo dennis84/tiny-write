@@ -453,7 +453,6 @@ const proseMirror = (props: Props) => `
         margin: 10px auto;
       }
     }
-    .ProseMirror-selectednode .image-container,
     .image-container.ProseMirror-selectednode,
     .image-container.selected {
       box-shadow: 0 0 0 5px var(--selection-border);
