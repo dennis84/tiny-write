@@ -68,11 +68,26 @@ const createDragHandle = (editorView: EditorView, getPos: () => number | undefin
     editorView.dispatch(tr)
   }
 
+  // prevent a change focus transaction from CM to PM
+  const onMouseDown = (e: MouseEvent) => {
+    e.preventDefault()
+  }
+
+  // prevent PM from dispatching another selection transaction
+  const onMouseUp = (e: MouseEvent) => {
+    e.stopPropagation()
+  }
+
   handle.addEventListener('pointerdown', onDown)
   handle.addEventListener('pointerup', onUp)
+  handle.addEventListener('mouseup', onMouseUp)
+  handle.addEventListener('mousedown', onMouseDown)
+
   ;(handle as any).destroy = () => {
     handle.removeEventListener('pointerdown', onDown)
     handle.removeEventListener('pointerup', onUp)
+    handle.removeEventListener('mouseup', onMouseUp)
+    handle.removeEventListener('mousedown', onMouseDown)
   }
 
   handle.style.touchAction = 'none'

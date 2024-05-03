@@ -7,6 +7,7 @@ import {setBlockType} from 'prosemirror-commands'
 import {arrow, autoUpdate, computePosition, flip, offset, shift} from '@floating-ui/dom'
 import {Mode, useState} from '@/state'
 import * as remote from '@/remote'
+import {isTauri} from '@/env'
 import {Align} from '@/prosemirror/image'
 import {blockHandlePluginKey} from '@/prosemirror/block-handle'
 
@@ -199,6 +200,11 @@ export const BlockTooltip = () => {
     const resolved = view.state.doc.resolve(block.cursorPos)
     const href = resolved.marks()[0]?.attrs?.href
     if (!href) return
+
+    if (!isTauri()) {
+      await remote.open(href)
+      return
+    }
 
     try {
       const url = new URL(href)
