@@ -68,12 +68,11 @@ const createDragHandle = (editorView: EditorView, getPos: () => number | undefin
     editorView.dispatch(tr)
   }
 
-  // prevent a change focus transaction from CM to PM
-  const onMouseDown = (e: MouseEvent) => {
-    e.preventDefault()
-  }
-
-  // prevent PM from dispatching another selection transaction
+  // Don't focus CM when selection is outside of code_block and keep
+  // node selection from pointerdown.
+  // Does not work if the selection is in the code_block. In this case,
+  // a preventDefault on mousedown would help, but it would also disable
+  // drag/drop.
   const onMouseUp = (e: MouseEvent) => {
     e.stopPropagation()
   }
@@ -81,13 +80,11 @@ const createDragHandle = (editorView: EditorView, getPos: () => number | undefin
   handle.addEventListener('pointerdown', onDown)
   handle.addEventListener('pointerup', onUp)
   handle.addEventListener('mouseup', onMouseUp)
-  handle.addEventListener('mousedown', onMouseDown)
 
   ;(handle as any).destroy = () => {
     handle.removeEventListener('pointerdown', onDown)
     handle.removeEventListener('pointerup', onUp)
     handle.removeEventListener('mouseup', onMouseUp)
-    handle.removeEventListener('mousedown', onMouseDown)
   }
 
   handle.style.touchAction = 'none'
