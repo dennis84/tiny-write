@@ -2,12 +2,11 @@ import {onCleanup, createEffect, onMount, Switch, Match, ErrorBoundary} from 'so
 import {createMutable} from 'solid-js/store'
 import * as tauriWindow from '@tauri-apps/api/window'
 import * as webview from '@tauri-apps/api/webview'
-import {WheelGesture} from '@use-gesture/vanilla'
 import {Mode, State, StateContext} from '@/state'
 import {createCtrl} from '@/services'
 import * as remote from '@/remote'
 import {isTauri} from '@/env'
-import {Scroll, Layout} from '@/components/Layout'
+import {Layout} from '@/components/Layout'
 import {Editor} from '@/components/editor/Editor'
 import {BlockTooltip} from '@/components/editor/BlockTooltip'
 import Canvas from '@/components/canvas/Canvas'
@@ -17,13 +16,10 @@ import Dir from '@/components/Dir'
 import Keymap from '@/components/Keymap'
 import Variables from '@/components/Variables'
 import MouseCursor from '@/components/MouseCursor'
-import Select from '@/components/Select'
 
 export default (props: {state: State}) => {
   const {store, ctrl} = createCtrl(props.state)
   const mouseEnterCoords = createMutable({x: 0, y: 0})
-  let editorRef!: HTMLDivElement
-  let scrollRef!: HTMLDivElement
   let layoutRef!: HTMLDivElement
 
   const onDragOver = (e: DragEvent) => {
@@ -85,19 +81,6 @@ export default (props: {state: State}) => {
     await ctrl.app.init()
   })
 
-  // Render editor if change file
-  createEffect(async () => {
-    const currentFile = ctrl.file.currentFile
-    if (
-      store.mode === Mode.Editor &&
-      !store.args?.dir &&
-      currentFile?.id &&
-      currentFile.editorView === undefined
-    ) {
-      ctrl.editor.renderEditor(editorRef!)
-    }
-  })
-
   onMount(() => {
     if (isTauri()) return
     const onDrop = async (e: DragEvent) => {
@@ -124,22 +107,6 @@ export default (props: {state: State}) => {
     onCleanup(() => {
       window.removeEventListener('drop', onDrop, false)
       window.removeEventListener('dragover', onDragOver, false)
-    })
-  })
-
-  createEffect(() => {
-    if (store.mode === Mode.Canvas) return
-
-    const wheel = new WheelGesture(scrollRef, ({ctrlKey, event, delta: [, dy]}) => {
-      if (!ctrlKey) return
-      event.preventDefault()
-      const max = Math.min(document.body.clientWidth, 1800)
-      const currentWidth = store.config.contentWidth
-      ctrl.config.updateContentWidth(Math.max(400, Math.min(max, currentWidth - dy)))
-    }, {eventOptions: {passive: false}})
-
-    onCleanup(() => {
-      wheel.destroy()
     })
   })
 
@@ -172,12 +139,7 @@ export default (props: {state: State}) => {
             <Match when={store.error}><ErrorView /></Match>
             <Match when={store.args?.dir}><Dir /></Match>
             <Match when={store.mode === Mode.Canvas}><Canvas /></Match>
-            <Match when={store.mode === Mode.Editor}>
-              <Scroll data-tauri-drag-region="true" ref={scrollRef}>
-                <Select target={() => scrollRef} />
-                <Editor ref={editorRef} />
-              </Scroll>
-            </Match>
+            <Match when={store.mode === Mode.Editor}><Editor /></Match>
           </Switch>
           <BlockTooltip />
           <MouseCursor />
