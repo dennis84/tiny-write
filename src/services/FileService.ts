@@ -55,8 +55,8 @@ export class FileService {
     })
   }
 
-  createFile(params: Partial<File> = {}): File {
-    const ydoc = params.ydoc ?? Y.encodeStateAsUpdate(this.createYdoc())
+  static createFile(params: Partial<File> = {}): File {
+    const ydoc = params.ydoc ?? Y.encodeStateAsUpdate(FileService.createYdoc())
     return {
       markdown: false,
       ...params,
@@ -64,6 +64,12 @@ export class FileService {
       ydoc,
       versions: [],
     }
+  }
+
+  private static createYdoc(bytes?: Uint8Array): Y.Doc {
+    const ydoc = new Y.Doc({gc: false})
+    if (bytes) Y.applyUpdate(ydoc, bytes)
+    return ydoc
   }
 
   findFileById(id: string): File | undefined {
@@ -258,11 +264,5 @@ export class FileService {
     const state = yDocToProsemirrorJSON(ydoc, file.id)
     const doc = Node.fromJSON(schema, state)
     return doc?.firstChild?.textContent.substring(0, len) || 'Untitled'
-  }
-
-  private createYdoc(bytes?: Uint8Array): Y.Doc {
-    const ydoc = new Y.Doc({gc: false})
-    if (bytes) Y.applyUpdate(ydoc, bytes)
-    return ydoc
   }
 }

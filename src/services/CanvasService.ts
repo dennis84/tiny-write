@@ -382,7 +382,7 @@ export class CanvasService {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
 
-    const file = this.ctrl.file.createFile()
+    const file = FileService.createFile()
     file.parentId = currentCanvas.parentId
 
     this.setState('files', [...this.store.files, file])
@@ -695,7 +695,7 @@ export class CanvasService {
     const type = this.store.collab?.ydoc?.getXmlFragment(id)
     let file = this.ctrl.file.findFileById(id)
     if (!file) {
-      file = this.ctrl.file.createFile({id})
+      file = FileService.createFile({id})
       this.setState('files', (prev) => [...prev, file!])
     }
 

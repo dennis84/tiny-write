@@ -140,7 +140,7 @@ export class EditorService {
 
   async newFile() {
     const state: State = unwrap(this.store)
-    const file = this.ctrl.file.createFile()
+    const file = FileService.createFile()
 
     const update = await EditorService.activateFile({
       ...state,
@@ -167,7 +167,7 @@ export class EditorService {
       this.ctrl.file.updateFile(file.id, {deleted: false})
     } else {
       remote.debug(`Create new file by path: ${path}`)
-      const file = this.ctrl.file.createFile({path})
+      const file = FileService.createFile({path})
       this.setState('files', (prev) => [...prev, file])
       await this.openFile(file.id)
     }

@@ -8,6 +8,7 @@ import {Ctrl} from '.'
 import {ConfigService} from './ConfigService'
 import {CanvasService} from './CanvasService'
 import {EditorService} from './EditorService'
+import {FileService} from './FileService'
 
 export class AppService {
   public layoutRef: HTMLElement | undefined
@@ -74,13 +75,13 @@ export class AppService {
         const path = data.args.file
         currentFile = data.files.find((f) => f.path === path)
         if (!currentFile) {
-          currentFile = this.ctrl.file.createFile({path})
+          currentFile = FileService.createFile({path})
           data.files.push(currentFile as File)
         }
       }
       // If source was passed but file not found
       else if (data.args?.newFile) {
-        currentFile = this.ctrl.file.createFile({newFile: data.args.newFile})
+        currentFile = FileService.createFile({newFile: data.args.newFile})
         data.files.push(currentFile as File)
       }
       // Join collab if room was passed
@@ -88,7 +89,7 @@ export class AppService {
         if (data.mode === Mode.Editor) {
           currentFile = data.files.find((f) => f.id === data.args?.room)
           if (!currentFile) {
-            currentFile = this.ctrl.file.createFile({id: data.args.room})
+            currentFile = FileService.createFile({id: data.args.room})
             data.files.push(currentFile)
           }
         } else {
@@ -102,7 +103,7 @@ export class AppService {
 
       // Create new file if no current file or canvas
       if (!data.args?.dir && !currentFile && !currentCanvas) {
-        currentFile = this.ctrl.file.createFile({id: data.args?.room})
+        currentFile = FileService.createFile({id: data.args?.room})
         data.files.push(currentFile)
       }
 
