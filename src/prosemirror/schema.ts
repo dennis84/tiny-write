@@ -6,6 +6,8 @@ import * as hardBreak from './hard-break'
 import * as emphasis from './emphasis'
 import * as link from './link'
 import * as code from './code'
+import * as image from './image'
+import * as markdown from './markdown'
 import * as collab from './collab'
 import * as container from './container'
 import * as codeBlock from './code-block'
@@ -40,6 +42,7 @@ export const schema = new Schema({
     text: {
       group: 'inline',
     },
+    ...markdown.schemaSpec.nodes,
     ...hardBreak.schemaSpec.nodes,
     blockquote: {
       content: 'block+',
@@ -50,6 +53,7 @@ export const schema = new Schema({
     ...codeBlock.schemaSpec.nodes,
     ...table.schemaSpec.nodes,
     ...taskList.schemaSpec.nodes,
+    ...image.schemaSpec.nodes,
   },
   marks: {
     ...link.schemaSpec.marks,

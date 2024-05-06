@@ -3,7 +3,7 @@ import {Portal} from 'solid-js/web'
 import {styled} from 'solid-styled-components'
 import {Vec} from '@tldraw/editor'
 import {CanvasLinkElement, File, isFile, useState} from '@/state'
-import {createExtensions, createSchema} from '@/prosemirror-setup'
+import {schema} from '@/prosemirror/schema'
 
 const Backdrop = styled('div')`
   position: absolute;
@@ -42,8 +42,6 @@ export default () => {
     await ctrl.canvas.removeDeadLinks()
     setContextMenu(undefined)
   }
-
-  const schema = createSchema(createExtensions({ctrl, markdown: false}))
 
   const FileName = (p: {file: File; link?: CanvasLinkElement; cm?: Vec}) => {
     const [title, setTitle] = createSignal<string>()

@@ -1,24 +1,27 @@
 import * as Y from 'yjs'
-import {NodeViewConfig, ProseMirrorExtension} from '@/prosemirror'
-import base from '@/prosemirror/base'
-import markdown from '@/prosemirror/markdown'
-import inputParser from '@/prosemirror/input-parser'
-import scroll from '@/prosemirror/scroll'
-import todoList from '@/prosemirror/task-list'
-import code from '@/prosemirror/code'
-import emphasis from '@/prosemirror/emphasis'
-import placeholder from '@/prosemirror/placeholder'
-import codeBlock from '@/prosemirror/code-block'
-import image from '@/prosemirror/image'
-import blockHandle from '@/prosemirror/block-handle'
-import pasteMarkdown from '@/prosemirror/paste-markdown'
-import table from '@/prosemirror/table'
-import {collab} from '@/prosemirror/collab'
-import selected from '@/prosemirror/selected'
-import container from '@/prosemirror/container'
-import fileListing from '@/prosemirror/autocomplete/file-listing'
-import wordCompletion from '@/prosemirror/autocomplete/word-completion'
+import {Plugin} from 'prosemirror-state'
+import * as base from '@/prosemirror/base'
+import * as markdown from '@/prosemirror/markdown'
+import * as inputParser from '@/prosemirror/input-parser'
+import * as scroll from '@/prosemirror/scroll'
+import * as todoList from '@/prosemirror/task-list'
+import * as code from '@/prosemirror/code'
+import * as emphasis from '@/prosemirror/emphasis'
+import * as placeholder from '@/prosemirror/placeholder'
+import * as codeBlock from '@/prosemirror/code-block'
+import * as blockHandle from '@/prosemirror/block-handle'
+import * as pasteMarkdown from '@/prosemirror/paste-markdown'
+import * as table from '@/prosemirror/table'
+import * as collab from '@/prosemirror/collab'
+import * as image from '@/prosemirror/image'
+import * as selected from '@/prosemirror/selected'
+import * as container from '@/prosemirror/container'
+import * as fileListing from '@/prosemirror/autocomplete/file-listing'
+import * as wordCompletion from '@/prosemirror/autocomplete/word-completion'
+import * as taskList from '@/prosemirror/task-list'
 import {Ctrl} from '@/services'
+import {plainSchema, schema} from '@/prosemirror/schema'
+import {isTauri} from '@/env'
 
 interface Props {
   ctrl: Ctrl;
@@ -27,49 +30,62 @@ interface Props {
   dropcursor?: boolean;
 }
 
-export const createExtensions = (props: Props): ProseMirrorExtension[] => {
+export const createPlugins = (props: Props): Plugin[] => {
   const isMarkdown = props.markdown ?? false
 
-  const extensions = [
-    base({
-      markdown: isMarkdown,
-      dropcursor: props.dropcursor,
-    }),
-    placeholder('Start typing ...'),
-    scroll(props.ctrl),
-    blockHandle(),
+  const s = isMarkdown ? plainSchema : schema
+
+  const plugins = [
+    ...base.plugins(s, props.dropcursor),
+    ...placeholder.plugins('Start typing ...'),
+    ...scroll.plugins(props.ctrl),
+    ...blockHandle.plugins(),
   ]
 
   if (props.type) {
-    extensions.push(collab(props.ctrl, props.type))
+    plugins.push(...collab.plugins(props.ctrl, props.type))
   }
 
   if (!isMarkdown) {
-    extensions.push(...[
-      markdown(),
-      todoList(),
-      codeBlock(props.ctrl),
-      code(),
-      emphasis(),
-      inputParser(),
-      table(props.ctrl),
-      container(),
-      selected(),
-      image(props.ctrl),
-      pasteMarkdown(),
+    plugins.push(...[
+      ...markdown.plugins(s),
+      ...todoList.plugins(s),
+      ...codeBlock.plugins(s),
+      ...code.plugins(s),
+      ...emphasis.plugins(s),
+      ...inputParser.plugins(s),
+      ...table.plugins(props.ctrl, s),
+      ...container.plugins(s),
+      ...selected.plugins(),
+      ...pasteMarkdown.plugins(s),
     ])
   }
 
-  return [
-    ...extensions,
-    // Must be added after table for higher prio of keymap
-    fileListing(props.ctrl),
-    wordCompletion(props.ctrl),
-  ]
+  // Must be added after table for higher prio of keymap
+  if (isTauri()) {
+    plugins.push(...fileListing.plugins(props.ctrl))
+  }
+  plugins.push(...wordCompletion.plugins(props.ctrl))
+
+  return plugins
 }
 
-export const createNodeViews = (extensions: ProseMirrorExtension[]) =>
-  extensions.reduce<NodeViewConfig>((acc, e) => e.nodeViews ? ({...acc, ...e.nodeViews}) : acc, {})
+export const createNodeViews = (ctrl: Ctrl) => {
+  let nodeViews = {}
+
+  const views = [
+    codeBlock.views(ctrl),
+    taskList.views(),
+    container.views(),
+    image.views(ctrl),
+  ]
+
+  for (const v of views) {
+    if (v.nodeViews) nodeViews = {...nodeViews, ...v.nodeViews}
+  }
+
+  return {nodeViews}
+}
 
 export const createEmptyText = () => ({
   doc: {

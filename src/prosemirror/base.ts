@@ -6,12 +6,6 @@ import {sinkListItem, liftListItem} from 'prosemirror-schema-list'
 import {dropCursor} from 'prosemirror-dropcursor'
 import {buildKeymap} from 'prosemirror-example-setup'
 import {keymap} from 'prosemirror-keymap'
-import {ProseMirrorExtension} from '@/prosemirror'
-
-interface Props {
-  markdown: boolean;
-  dropcursor?: boolean;
-}
 
 const onTab = (schema: Schema) => (
   state: EditorState,
@@ -32,15 +26,12 @@ const onTab = (schema: Schema) => (
   return false
 }
 
-export default (props: Props): ProseMirrorExtension => ({
-  plugins: (prev, schema) => [
-    ...prev,
-    keymap({
-      'Tab': onTab(schema),
-      'Shift-Tab': liftListItem(schema.nodes.list_item),
-    }),
-    keymap(buildKeymap(schema)),
-    keymap(baseKeymap),
-    ...(props.dropcursor !== false ? [dropCursor({class: 'drop-cursor'})] : []),
-  ]
-})
+export const plugins = (schema: Schema, enableDropCursor = true) => [
+  keymap({
+    'Tab': onTab(schema),
+    'Shift-Tab': liftListItem(schema.nodes.list_item),
+  }),
+  keymap(buildKeymap(schema)),
+  keymap(baseKeymap),
+  ...(enableDropCursor ? [dropCursor({class: 'drop-cursor'})] : []),
+]

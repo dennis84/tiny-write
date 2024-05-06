@@ -4,7 +4,7 @@ import {unwrap} from 'solid-js/store'
 import {css, styled} from 'solid-styled-components'
 import {DragGesture} from '@use-gesture/vanilla'
 import {Mode, isFile, useState} from '@/state'
-import {createExtensions, createSchema} from '@/prosemirror-setup'
+import {schema} from '@/prosemirror/schema'
 import {TreeNode, TreeNodeItem} from '@/services/TreeService'
 import {Label, Link, Sub, Text} from './Menu'
 import {Tooltip} from './Tooltip'
@@ -117,8 +117,6 @@ export default (props: Props) => {
   const [grabbing, setGrabbing] = createSignal(false)
 
   const isNode = (node: TreeNode) => dropState()?.targetId === node.item.id
-
-  const schema = createSchema(createExtensions({ctrl, markdown: false}))
 
   const closeTooltip = () => {
     setTooltipAnchor(undefined)

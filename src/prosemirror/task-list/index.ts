@@ -3,7 +3,7 @@ import {EditorView} from 'prosemirror-view'
 import {inputRules, wrappingInputRule} from 'prosemirror-inputrules'
 import {liftListItem, sinkListItem, splitListItem} from 'prosemirror-schema-list'
 import {keymap} from 'prosemirror-keymap'
-import {ProseMirrorExtension} from '@/prosemirror'
+import {ViewConfig} from '@/prosemirror'
 
 export const schemaSpec = {
   nodes: {
@@ -78,12 +78,12 @@ const todoListKeymap = (schema: Schema) => ({
   'Mod-]': sinkListItem(schema.nodes.task_list_item),
 })
 
-export default (): ProseMirrorExtension => ({
-  plugins: (prev, schema) => [
-    keymap(todoListKeymap(schema)),
-    ...prev,
-    inputRules({rules: [todoListRule(schema.nodes.task_list_item)]}),
-  ],
+export const plugins = (schema: Schema) => [
+  keymap(todoListKeymap(schema)),
+  inputRules({rules: [todoListRule(schema.nodes.task_list_item)]}),
+]
+
+export const views = (): ViewConfig => ({
   nodeViews: {
     task_list_item: (node, view, getPos) => {
       return new TaskListItemView(node, view, getPos)

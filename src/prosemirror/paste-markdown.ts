@@ -3,7 +3,6 @@ import {EditorView} from 'prosemirror-view'
 import {Fragment, Node, Schema, Slice} from 'prosemirror-model'
 import {find as findLinks} from 'linkifyjs'
 import {createMarkdownParser} from '@/markdown'
-import {ProseMirrorExtension} from '@/prosemirror'
 
 const isInlineContent = (f: Fragment) =>
   f.childCount === 1 && (
@@ -122,9 +121,6 @@ const pasteMarkdown = (schema: Schema) => {
   })
 }
 
-export default (): ProseMirrorExtension => ({
-  plugins: (prev, schema) => [
-    ...prev,
-    pasteMarkdown(schema),
-  ]
-})
+export const plugins = (schema: Schema) => [
+  pasteMarkdown(schema),
+]

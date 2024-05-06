@@ -1,6 +1,6 @@
 import {Store, unwrap, SetStoreFunction} from 'solid-js/store'
 import {EditorView} from 'prosemirror-view'
-import {EditorState, Plugin, Transaction} from 'prosemirror-state'
+import {EditorState, Transaction} from 'prosemirror-state'
 import {Node} from 'prosemirror-model'
 import {selectAll, deleteSelection} from 'prosemirror-commands'
 import * as Y from 'yjs'
@@ -11,7 +11,8 @@ import {
 } from 'y-prosemirror'
 import {Box} from '@tldraw/editor'
 import * as remote from '@/remote'
-import {createExtensions, createEmptyText, createSchema, createNodeViews} from '@/prosemirror-setup'
+import {createPlugins, createEmptyText, createNodeViews} from '@/prosemirror-setup'
+import {schema} from '@/prosemirror/schema'
 import {State, File, FileText, Mode} from '@/state'
 import {serialize, createMarkdownParser} from '@/markdown'
 import {DB} from '@/db'
@@ -62,16 +63,14 @@ export class EditorService {
     if (!doc) return // If error during init
 
     const type = doc.getXmlFragment(currentFile.id)
-    const extensions = createExtensions({
+    const plugins = createPlugins({
       ctrl: this.ctrl,
       markdown: currentFile?.markdown,
       type,
       dropcursor: true,
     })
 
-    const nodeViews = createNodeViews(extensions)
-    const schema = createSchema(extensions)
-    const plugins = extensions.reduce<Plugin[]>((acc, e) => e.plugins?.(acc, schema) ?? acc, [])
+    const {nodeViews} = createNodeViews(this.ctrl)
     const editorState = EditorState.fromJSON({schema, plugins}, createEmptyText())
 
     if (!editorView) {
@@ -213,8 +212,6 @@ export class EditorService {
 
       doc = {type: 'doc', content: nodes}
     } else {
-      const extensions = createExtensions({ctrl: this.ctrl, markdown})
-      const schema = createSchema(extensions)
       const parser = createMarkdownParser(schema)
       let textContent = ''
       editorState.doc.forEach((node: Node) => {
@@ -247,18 +244,7 @@ export class EditorService {
   updateText(text?: FileText) {
     const currentFile = this.ctrl.file.currentFile
     if (!text || !currentFile) return
-    let schema
-    if (currentFile.editorView) {
-      schema = currentFile.editorView.state.schema
-    } else {
-      const extensions = createExtensions({
-        ctrl: this.ctrl,
-        markdown: currentFile?.markdown
-      })
-      schema = createSchema(extensions)
-    }
-
-    if (!schema || !this.store.collab?.ydoc) {
+    if (!this.store.collab?.ydoc) {
       return
     }
 

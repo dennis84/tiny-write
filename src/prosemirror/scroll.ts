@@ -1,6 +1,5 @@
 import {Plugin} from 'prosemirror-state'
 import {EditorView} from 'prosemirror-view'
-import {ProseMirrorExtension} from '@/prosemirror'
 import {Ctrl} from '@/services'
 
 const scroll = (view: EditorView) => {
@@ -33,6 +32,6 @@ const scrollIntoView = (ctrl: Ctrl) => new Plugin({
   },
 })
 
-export default (ctrl: Ctrl): ProseMirrorExtension => ({
-  plugins: (prev) => [...prev, scrollIntoView(ctrl)]
-})
+export const plugins = (ctrl: Ctrl) => [
+  scrollIntoView(ctrl)
+]

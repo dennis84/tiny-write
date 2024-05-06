@@ -1,7 +1,6 @@
 import {Node} from 'prosemirror-model'
 import {Plugin, PluginKey} from 'prosemirror-state'
 import {debounce} from 'ts-debounce'
-import {ProseMirrorExtension} from '@/prosemirror'
 import {Ctrl} from '@/services'
 import {completionPlugin, completionKeymap} from './autocomplete'
 
@@ -56,20 +55,17 @@ const update = debounce((view) => {
 
 const wordCompletionKey = new PluginKey('word-completion')
 
-export default (ctrl: Ctrl): ProseMirrorExtension => ({
-  plugins: (prev) => [
-    completionKeymap(wordCompletionKey),
-    ...prev,
-    completionPlugin(
-      wordCompletionKey,
-      /(?:^|\s)[\w]*/g,
-      async (text, state) => {
-        const words = collectWordsKey.getState(state)
-        if (text.length < 1) return []
-        return [...words].filter((w) => w !== text && w.startsWith(text))
-      },
-      ctrl
-    ),
-    plugin,
-  ]
-})
+export const plugins = (ctrl: Ctrl) => [
+  completionKeymap(wordCompletionKey),
+  completionPlugin(
+    wordCompletionKey,
+    /(?:^|\s)[\w]*/g,
+    async (text, state) => {
+      const words = collectWordsKey.getState(state)
+      if (text.length < 1) return []
+      return [...words].filter((w) => w !== text && w.startsWith(text))
+    },
+    ctrl
+  ),
+  plugin,
+]

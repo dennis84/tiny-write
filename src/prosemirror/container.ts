@@ -1,8 +1,8 @@
-import {DOMOutputSpec, DOMSerializer, Node, NodeType} from 'prosemirror-model'
+import {DOMOutputSpec, DOMSerializer, Node, NodeType, Schema} from 'prosemirror-model'
 import {TextSelection} from 'prosemirror-state'
 import {EditorView} from 'prosemirror-view'
 import {inputRules, wrappingInputRule} from 'prosemirror-inputrules'
-import {ProseMirrorExtension} from '@/prosemirror'
+import {ViewConfig} from '.'
 
 export const schemaSpec = {
   nodes: {
@@ -77,13 +77,13 @@ class ContainerView {
   }
 }
 
-export default (): ProseMirrorExtension => ({
-  plugins: (prev, schema) => [
-    ...prev,
-    inputRules({rules: [
-      containerRule(schema.nodes.container),
-    ]}),
-  ],
+export const plugins = (schema: Schema) => [
+  inputRules({rules: [
+    containerRule(schema.nodes.container),
+  ]}),
+]
+
+export const views = (): ViewConfig => ({
   nodeViews: {
     container: (node, view, getPos) => {
       return new ContainerView(node, view, getPos)

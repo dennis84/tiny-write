@@ -6,8 +6,7 @@ import {
   emDash,
   ellipsis,
 } from 'prosemirror-inputrules'
-import {NodeType, Schema} from 'prosemirror-model'
-import {ProseMirrorExtension} from '@/prosemirror'
+import {DOMOutputSpec, NodeType, Schema} from 'prosemirror-model'
 import {nodeInputRule} from './rulebuilders'
 
 const blockQuoteRule = (nodeType: NodeType) =>
@@ -44,22 +43,21 @@ const markdownRules = (schema: Schema) => {
   return rules
 }
 
-const hr = {
-  content: 'inline*',
-  group: 'block',
-  atom: true,
-  draggable: true,
-  selectable: true,
-  toDOM: () => ['div', {class: 'horizontal-rule'}, 0],
+export const schemaSpec = {
+  nodes: {
+    horizontal_rule: {
+      content: 'inline*',
+      group: 'block',
+      atom: true,
+      draggable: true,
+      selectable: true,
+      toDOM(): DOMOutputSpec {
+        return ['div', {class: 'horizontal-rule'}, 0]
+      }
+    }
+  }
 }
 
-export default (): ProseMirrorExtension => ({
-  schema: (prev) => ({
-    ...prev,
-    nodes: (prev.nodes as any).update('horizontal_rule', hr),
-  }),
-  plugins: (prev, schema) => [
-    ...prev,
-    inputRules({rules: markdownRules(schema)}),
-  ]
-})
+export const plugins = (schema: Schema) => [
+  inputRules({rules: markdownRules(schema)}),
+]

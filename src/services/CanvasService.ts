@@ -1,5 +1,5 @@
 import {SetStoreFunction, Store, unwrap} from 'solid-js/store'
-import {EditorState, Plugin, TextSelection, Transaction} from 'prosemirror-state'
+import {EditorState, TextSelection, Transaction} from 'prosemirror-state'
 import {EditorView} from 'prosemirror-view'
 import * as Y from 'yjs'
 import {ySyncPluginKey} from 'y-prosemirror'
@@ -26,7 +26,7 @@ import {
 } from '@/state'
 import {DB} from '@/db'
 import * as remote from '@/remote'
-import {createEmptyText, createExtensions, createNodeViews} from '@/prosemirror-setup'
+import {createEmptyText, createPlugins, createNodeViews} from '@/prosemirror-setup'
 import {schema} from '@/prosemirror/schema'
 import {Ctrl} from '.'
 import {FileService} from './FileService'
@@ -702,14 +702,13 @@ export class CanvasService {
 
     this.store.collab?.undoManager?.addToScope(type!)
 
-    const extensions = createExtensions({
+    const plugins = createPlugins({
       ctrl: this.ctrl,
       markdown: false,
       type,
     })
 
-    const nodeViews = createNodeViews(extensions)
-    const plugins = extensions.reduce<Plugin[]>((acc, e) => e.plugins?.(acc, schema) ?? acc, [])
+    const {nodeViews} = createNodeViews(this.ctrl)
     const editorState = EditorState.fromJSON({schema, plugins}, createEmptyText())
 
     if (!editorView) {

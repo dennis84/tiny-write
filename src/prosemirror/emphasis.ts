@@ -1,7 +1,6 @@
 import {inputRules} from 'prosemirror-inputrules'
-import {DOMOutputSpec, MarkType} from 'prosemirror-model'
+import {DOMOutputSpec, MarkType, Schema} from 'prosemirror-model'
 import {markInputRule} from '@/prosemirror/rulebuilders'
-import {ProseMirrorExtension} from '@/prosemirror'
 
 export const schemaSpec = {
   marks: {
@@ -35,14 +34,11 @@ const strongRule2 = (nodeType: MarkType) =>
 const italicRule = (nodeType: MarkType) =>
   markInputRule(/(?:^|\s)(?:\*)((?:[^*]+))(?:\*)$/, nodeType)
 
-export default (): ProseMirrorExtension => ({
-  plugins: (prev, schema) => [
-    ...prev,
-    inputRules({rules: [
-      strikethroughRule(schema.marks.strikethrough),
-      strongRule(schema.marks.strong),
-      strongRule2(schema.marks.strong),
-      italicRule(schema.marks.em),
-    ]}),
-  ]
-})
+export const plugins = (schema: Schema) => [
+  inputRules({rules: [
+    strikethroughRule(schema.marks.strikethrough),
+    strongRule(schema.marks.strong),
+    strongRule2(schema.marks.strong),
+    italicRule(schema.marks.em),
+  ]}),
+]

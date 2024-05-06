@@ -1,11 +1,11 @@
-import {DOMOutputSpec, NodeType} from 'prosemirror-model'
+import {DOMOutputSpec, NodeType, Schema} from 'prosemirror-model'
 import {EditorView} from 'prosemirror-view'
 import {EditorState, Selection, Transaction, TextSelection} from 'prosemirror-state'
 import {keymap} from 'prosemirror-keymap'
 import {inputRules, textblockTypeInputRule} from 'prosemirror-inputrules'
 import {Ctrl} from '@/services'
-import {ProseMirrorExtension} from '@/prosemirror'
 import {CodeBlockView} from './view'
+import {ViewConfig} from '..'
 
 export const schemaSpec = {
   nodes: {
@@ -79,14 +79,14 @@ const codeBlockKeymap = {
   'Shift-ArrowDown': arrowHandler('down'),
 }
 
-export default (ctrl: Ctrl): ProseMirrorExtension => ({
-  plugins: (prev, schema) => [
-    ...prev,
-    inputRules({rules: [codeBlockRule(schema.nodes.code_block)]}),
-    keymap(codeBlockKeymap),
-  ],
+export const plugins = (schema: Schema) => [
+  inputRules({rules: [codeBlockRule(schema.nodes.code_block)]}),
+  keymap(codeBlockKeymap),
+]
+
+export const views = (ctrl: Ctrl): ViewConfig => ({
   nodeViews: {
     code_block: (node, view, getPos, _decos, innerDecos) =>
       new CodeBlockView(node, view, getPos, innerDecos, ctrl)
-  },
+  }
 })

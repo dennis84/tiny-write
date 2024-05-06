@@ -1,16 +1,61 @@
-import {Node} from 'prosemirror-model'
+import {DOMOutputSpec, Node} from 'prosemirror-model'
 import {EditorView} from 'prosemirror-view'
 import {DragGesture} from '@use-gesture/vanilla'
 import {isMac, isTauri} from '@/env'
-import {ProseMirrorExtension} from '@/prosemirror'
 import {Ctrl} from '@/services'
 import {Mode} from '@/state'
 import * as remote from '@/remote'
+import {ViewConfig} from '.'
 
 export enum Align {
   FloatLeft = 'float-left',
   FloatRight = 'float-right',
   Center = 'center',
+}
+
+export const schemaSpec = {
+  nodes: {
+    image: {
+      inline: true,
+      attrs: {
+        src: {},
+        alt: {default: null},
+        title: {default: null},
+        width: {default: null},
+        align: {default: Align.FloatLeft}
+      },
+      group: 'inline',
+      selectable: true,
+      draggable: true,
+      toDOM(node: Node): DOMOutputSpec {
+        return ['img', {
+          src: node.attrs.src,
+          title: node.attrs.title,
+          alt: node.attrs.alt,
+        }]
+      }
+    },
+    video: {
+      inline: true,
+      attrs: {
+        src: {},
+        type: {},
+        title: {default: null},
+        width: {default: null},
+        align: {default: Align.FloatLeft}
+      },
+      group: 'inline',
+      draggable: true,
+      selectable: true,
+      toDOM(node: Node): DOMOutputSpec {
+        return [
+          'video',
+          {title: node.attrs.title},
+          ['source', {src: node.attrs.src, type: node.attrs.type}]
+        ]
+      }
+    }
+  }
 }
 
 const isUrl = (str: string) => {
@@ -20,44 +65,6 @@ const isUrl = (str: string) => {
   } catch (_) {
     return false
   }
-}
-
-const imageSchema = {
-  inline: true,
-  attrs: {
-    src: {},
-    alt: {default: null},
-    title: {default: null},
-    width: {default: null},
-    align: {default: Align.FloatLeft}
-  },
-  group: 'inline',
-  selectable: true,
-  draggable: true,
-  toDOM: (node: Node) => ['img', {
-    src: node.attrs.src,
-    title: node.attrs.title,
-    alt: node.attrs.alt,
-  }]
-}
-
-const videoSchema = {
-  inline: true,
-  attrs: {
-    src: {},
-    type: {},
-    title: {default: null},
-    width: {default: null},
-    align: {default: Align.FloatLeft}
-  },
-  group: 'inline',
-  draggable: true,
-  selectable: true,
-  toDOM: (node: Node) => [
-    'video',
-    {title: node.attrs.title},
-    ['source', {src: node.attrs.src, type: node.attrs.type}]
-  ]
 }
 
 class ImageView {
@@ -177,13 +184,7 @@ class ImageView {
   }
 }
 
-export default (ctrl: Ctrl): ProseMirrorExtension => ({
-  schema: (prev) => ({
-    ...prev,
-    nodes: (prev.nodes as any)
-      .update('image', imageSchema)
-      .append({video: videoSchema}),
-  }),
+export const views = (ctrl: Ctrl): ViewConfig => ({
   nodeViews: {
     image: (node, view, getPos) => {
       return new ImageView(node, view, getPos, ctrl)

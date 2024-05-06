@@ -1,6 +1,5 @@
 import {Plugin, NodeSelection, PluginKey, EditorState, TextSelection} from 'prosemirror-state'
 import {DecorationSet, Decoration, EditorView} from 'prosemirror-view'
-import {ProseMirrorExtension} from '@/prosemirror'
 
 const handleIcon =
   '<svg viewBox="0 0 10 10" height="14" width="14"><path d="M3 2a1 1 0 110-2 1 1 0 010 2zm0 4a1 1 0 110-2 1 1 0 010 2zm0 4a1 1 0 110-2 1 1 0 010 2zm4-8a1 1 0 110-2 1 1 0 010 2zm0 4a1 1 0 110-2 1 1 0 010 2zm0 4a1 1 0 110-2 1 1 0 010 2z"/></svg>'
@@ -164,6 +163,4 @@ const markAround = (state: EditorState, pos: number) => {
   return {from: startPos, to: endPos}
 }
 
-export default (): ProseMirrorExtension => ({
-  plugins: (prev) => [...prev, blockHandle]
-})
+export const plugins = () => [blockHandle]

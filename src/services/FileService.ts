@@ -7,7 +7,7 @@ import {File, FileText, Mode, ServiceError, State, isLinkElement} from '@/state'
 import * as remote from '@/remote'
 import {DB} from '@/db'
 import {isTauri} from '@/env'
-import {createExtensions, createSchema} from '@/prosemirror-setup'
+import {schema} from '@/prosemirror/schema'
 import {createMarkdownParser} from '@/markdown'
 import {Ctrl} from '.'
 
@@ -100,8 +100,6 @@ export class FileService {
     try {
       const fileContent = await remote.readFile(resolvedPath)
       const lastModified = await remote.getFileLastModified(resolvedPath)
-      const extensions = createExtensions({ctrl: this.ctrl})
-      const schema = createSchema(extensions)
       const parser = createMarkdownParser(schema)
       const doc = parser.parse(fileContent)?.toJSON()
       const text = {
