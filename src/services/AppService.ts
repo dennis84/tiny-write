@@ -43,96 +43,58 @@ export class AppService {
   }
 
   async init() {
-    let data = await this.fetchData()
+    const data = await this.fetchData()
     remote.debug(`Fetched data: ${stateToString(data)}`)
+    remote.info(`Init app (mode=${data.mode}, args=${JSON.stringify(data.args)})`)
+
+    const factory = new StateFactory(this.ctrl)
 
     try {
-      let text: FileText | undefined
-      remote.info(`Init app (mode=${data.mode}, args=${JSON.stringify(data.args)})`)
-
       if (isTauri() && data.window) {
         await remote.updateWindow(data.window)
       }
 
-      let currentFile
-      let currentCanvas
+      let result
 
-      // Get last active editor or canvas
-      if (data.mode === Mode.Editor) {
-        currentFile = data.files.find((it) => it.active)
-      } else {
-        currentCanvas = data.canvases.find((it) => it.active)
-      }
-
-      // Handle args:
-      // List files instead show editor if app was started with
-      // a directory argument.
+      // List files
       if (data.args?.dir) {
-        currentFile = undefined
+        remote.info('Init with dir')
+        result = factory.showDir(data)
       }
-      // If app was started with a file as argument
+      // If app was started with a file argument
       else if (data.args?.file) {
-        const path = data.args.file
-        currentFile = data.files.find((f) => f.path === path)
-        if (!currentFile) {
-          currentFile = FileService.createFile({path})
-          data.files.push(currentFile as File)
-        }
+        remote.info('Init with file')
+        result = await factory.openFile(data)
       }
-      // If source was passed but file not found
+      // If app was started with a file argument but that file does not exist
       else if (data.args?.newFile) {
-        currentFile = FileService.createFile({newFile: data.args.newFile})
-        data.files.push(currentFile as File)
+        remote.info('Init with new file')
+        result = await factory.openFile(data, true)
       }
       // Join collab if room was passed
       else if (data.args?.room) {
-        if (data.mode === Mode.Editor) {
-          currentFile = data.files.find((f) => f.id === data.args?.room)
-          if (!currentFile) {
-            currentFile = FileService.createFile({id: data.args.room})
-            data.files.push(currentFile)
-          }
-        } else {
-          currentCanvas = data.canvases.find((c) => c.id === data.args?.room)
-          if (!currentCanvas) {
-            currentCanvas = this.ctrl.canvas.createCanvas({id: data.args.room})
-            data.canvases.push(currentCanvas)
-          }
-        }
+        remote.info('Init with join room')
+        result = await factory.joinRoom(data)
       }
-
-      // Create new file if no current file or canvas
-      if (!data.args?.dir && !currentFile && !currentCanvas) {
-        currentFile = FileService.createFile({id: data.args?.room})
-        data.files.push(currentFile)
+      // Normal init in editor mode
+      else if (data.mode === Mode.Editor) {
+        remote.info('Init without args in editor mode')
+        result = await factory.editorMode(data)
       }
-
-      // Init ydoc and load text
-      const mode = currentCanvas ? Mode.Canvas : Mode.Editor
-      let collab
-      if (mode === Mode.Editor && currentFile) {
-        collab = this.ctrl.collab.create(currentFile.id, mode, !!data.args?.room)
-        if (currentFile?.path) {
-          try {
-            text = (await this.ctrl.file.loadFile(currentFile.path)).text
-          } catch (e) {
-            remote.info(`Could not load current file with path, not found (path=${currentFile.path})`)
-            currentFile.newFile = currentFile.path
-            currentFile.path = undefined
-          }
-        }
-        data = await EditorService.activateFile(data, currentFile)
-      } else if (mode === Mode.Canvas && currentCanvas) {
-        data = CanvasService.activateCanvas(data, currentCanvas.id)
-        collab = this.ctrl.collab.create(currentCanvas.id, mode, !!data.args?.room)
+      // Normal init in canvas mode
+      else if (data.mode === Mode.Canvas) {
+        remote.info('Init without args in canvas mode')
+        result = await factory.canvasMode(data)
+      }
+      // Unknown mode
+      else {
+        throw new InitError(data, 'Mode not known')
       }
 
       const newState: State = {
-        ...data,
-        config: {...data.config, ...ConfigService.getThemeConfig(data)},
+        ...result.data,
+        config: {...result.data.config, ...ConfigService.getThemeConfig(data)},
         loading: 'initialized',
-        collab,
-        mode,
       }
 
       if (isTauri() && newState.config?.alwaysOnTop) {
@@ -140,16 +102,17 @@ export class AppService {
       }
 
       this.setState(newState)
-      if (mode === Mode.Editor) {
-        this.ctrl.editor.updateText(text)
+      if (data.mode === Mode.Editor) {
+        this.ctrl.editor.updateText(result.markdownDoc)
       } else {
         this.ctrl.canvasCollab.init()
       }
 
       this.ctrl.tree.create()
-    } catch (e: any) {
-      remote.error(`Error during init: ${e.message}`, e)
+    } catch(e: any) {
       const error = this.createError(e)
+      remote.error(`Error during init: ${e.message}`)
+      const data = e.data ?? {}
       this.setState({...data, error, loading: 'initialized'})
     }
 
@@ -183,12 +146,6 @@ export class AppService {
     const updatedWindow = unwrap(this.store.window)
     await DB.setWindow(updatedWindow)
     remote.info('Saved window state')
-  }
-
-  parseRoom(room: string): [Mode, string] {
-    const [m, r] = room.split('/')
-    if (!r) return [Mode.Editor, m]
-    return [m === 'c' ? Mode.Canvas : Mode.Editor, r]
   }
 
   setSelecting(selecting: boolean) {
@@ -245,5 +202,132 @@ export class AppService {
     } else {
       return {id: 'exception', ...data}
     }
+  }
+
+  private parseRoom(room: string): [Mode, string] {
+    const [m, r] = room.split('/')
+    if (!r) return [Mode.Editor, m]
+    return [m === 'c' ? Mode.Canvas : Mode.Editor, r]
+  }
+}
+
+interface StateResult {
+  data: State;
+  markdownDoc?: FileText;
+}
+
+class InitError extends Error {
+  constructor(public data: State, message?: string) {
+    super(message)
+  }
+}
+
+class StateFactory {
+  // @TODO: try to onlt use static methods and remove Ctrl dependency
+  // may: move as static methods in AppService.
+  constructor(private ctrl: Ctrl) {}
+
+  showDir(data: State): StateResult {
+    // do nothing
+    return {data}
+  }
+
+  async editorMode(data: State): Promise<StateResult> {
+    let currentFile = data.files.find((f) => f.active)
+    let markdownDoc
+
+    if (!currentFile) {
+      currentFile = FileService.createFile()
+      data.files.push(currentFile as File)
+    }
+
+    if (currentFile?.path) {
+      const result = await this.loadMarkdownFile(currentFile)
+      currentFile = result.file
+      markdownDoc = result.doc
+    }
+
+    data.collab = this.ctrl.collab.create(currentFile.id, data.mode, false)
+    data = await EditorService.activateFile(data, currentFile)
+    return {data, markdownDoc}
+  }
+
+  async canvasMode(data: State): Promise<StateResult> {
+    const currentCanvas = data.canvases.find((c) => c.active)
+    if (currentCanvas) {
+      data = CanvasService.activateCanvas(data, currentCanvas.id)
+      data.collab = this.ctrl.collab.create(currentCanvas.id, data.mode, false)
+      return {data}
+    } else {
+      throw new InitError(data, 'No current canvas')
+    }
+  }
+
+  async openFile(data: State, isNew = false): Promise<StateResult> {
+    const path = isNew ? data.args?.newFile : data.args?.file
+    if (!path) throw new InitError(data, 'No file arg')
+
+    let currentFile = data.files.find((f) => f.path === path)
+    let markdownDoc
+
+    if (!currentFile) {
+      const props = isNew ? {newFile: path} : {path}
+      currentFile = FileService.createFile(props)
+      data.files.push(currentFile as File)
+    }
+
+    if (currentFile.path) {
+      const result = await this.loadMarkdownFile(currentFile)
+      currentFile = result.file
+      markdownDoc = result.doc
+    }
+
+    data = await EditorService.activateFile(data, currentFile)
+    data.collab = this.ctrl.collab.create(currentFile.id, data.mode, false)
+    return {data, markdownDoc}
+  }
+
+  async joinRoom(data: State): Promise<StateResult> {
+    const room = data.args?.room
+    if (!room) throw new InitError(data, 'No room arg')
+
+    if (data.mode === Mode.Editor) {
+      let currentFile = data.files.find((f) => f.id === room)
+      if (!currentFile) {
+        currentFile = FileService.createFile({id: room})
+        data.files.push(currentFile)
+      }
+
+      // do not load file contents?
+
+      data = await EditorService.activateFile(data, currentFile)
+      data.collab = this.ctrl.collab.create(currentFile.id, data.mode, true)
+      return {data}
+    } else if (data.mode === Mode.Canvas) {
+      let currentCanvas = data.canvases.find((c) => c.id === room)
+      if (!currentCanvas) {
+        currentCanvas = this.ctrl.canvas.createCanvas({id: room})
+        data.canvases.push(currentCanvas)
+      }
+
+      data = CanvasService.activateCanvas(data, currentCanvas.id)
+      data.collab = this.ctrl.collab.create(currentCanvas.id, data.mode, true)
+      return {data}
+    } else {
+      throw new InitError(data, 'Unknown mode')
+    }
+  }
+
+  private async loadMarkdownFile(file: File): Promise<{file: File; doc?: FileText}> {
+    let doc: FileText | undefined
+    try {
+      doc = (await this.ctrl.file.loadFile(file.path!)).text
+    } catch (e) {
+      remote.info(`Could not load current file with path, not found (path=${file.path})`)
+      file.newFile = file.path
+      file.path = undefined
+    }
+
+    return {file, doc}
   }
 }

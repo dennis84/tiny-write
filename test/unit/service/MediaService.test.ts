@@ -228,6 +228,8 @@ test('dropPath - text file on editor', async () => {
 
   const target = document.createElement('div')
   await ctrl.app.init()
+  expect(store.files).toHaveLength(1)
+
   ctrl.editor.renderEditor(target)
 
   const path = '/users/me/project/README.md'
