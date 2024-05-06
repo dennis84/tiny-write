@@ -1,5 +1,5 @@
 import {EditorState, Selection} from 'prosemirror-state'
-import {Schema} from 'prosemirror-model'
+import {DOMOutputSpec, Schema} from 'prosemirror-model'
 import {InputRule, inputRules} from 'prosemirror-inputrules'
 import {keymap} from 'prosemirror-keymap'
 import {
@@ -13,6 +13,43 @@ import {
 import {ProseMirrorExtension} from '@/prosemirror'
 import {cellMenu} from './cell-menu'
 import {Ctrl} from '@/services'
+
+const defaultSchema = tableNodes({
+  tableGroup: 'block',
+  cellContent: 'text*',
+  cellAttributes: {
+    style: {
+      default: null,
+      getFromDOM(dom: HTMLElement) {
+        return dom.style.cssText
+      },
+      setDOMAttr(value, attrs) {
+        if (value) attrs.style = value
+      },
+    },
+  },
+})
+
+export const schemaSpec = {
+  nodes: {
+    ...defaultSchema,
+    table: {
+      ...defaultSchema.table,
+      selectable: true,
+      draggable: true,
+      toDOM(): DOMOutputSpec {
+        return [
+          'div',
+          {
+            class: 'table-container',
+            'data-type': 'table',
+          },
+          ['table', 0]
+        ]
+      }
+    },
+  }
+}
 
 const tableInputRule = (schema: Schema) => new InputRule(
   new RegExp('^\\|{2,}\\s$'),
@@ -33,44 +70,7 @@ const tableInputRule = (schema: Schema) => new InputRule(
   }
 )
 
-const defaultSchema = tableNodes({
-  tableGroup: 'block',
-  cellContent: 'text*',
-  cellAttributes: {
-    style: {
-      default: null,
-      getFromDOM(dom: HTMLElement) {
-        return dom.style.cssText
-      },
-      setDOMAttr(value, attrs) {
-        if (value) attrs.style = value
-      },
-    },
-  },
-})
-
-const schema = {
-  ...defaultSchema,
-  table: {
-    ...defaultSchema.table,
-    selectable: true,
-    draggable: true,
-    toDOM: () => [
-      'div',
-      {
-        class: 'table-container',
-        'data-type': 'table',
-      },
-      ['table', 0]
-    ],
-  },
-}
-
 export default (ctrl: Ctrl): ProseMirrorExtension => ({
-  schema: (prev) => ({
-    ...prev,
-    nodes: (prev.nodes as any).append(schema),
-  }),
   plugins: (prev, schema) => [
     keymap({
       'Ctrl-Enter': (state, dispatch) => {

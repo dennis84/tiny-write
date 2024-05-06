@@ -1,5 +1,5 @@
 import {inputRules} from 'prosemirror-inputrules'
-import {Mark, MarkType} from 'prosemirror-model'
+import {DOMOutputSpec, Mark, MarkType} from 'prosemirror-model'
 import {EditorState, Transaction} from 'prosemirror-state'
 import {EditorView} from 'prosemirror-view'
 import {keymap} from 'prosemirror-keymap'
@@ -52,3 +52,13 @@ export default (): ProseMirrorExtension => ({
     keymap(codeKeymap),
   ]
 })
+
+export const schemaSpec = {
+  marks: {
+    code: {
+      toDOM(): DOMOutputSpec {
+        return ['code']
+      },
+    },
+  }
+}

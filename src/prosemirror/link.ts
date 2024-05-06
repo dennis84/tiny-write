@@ -1,16 +1,22 @@
-import {Node} from 'prosemirror-model'
-import {ProseMirrorExtension} from '.'
+import {DOMOutputSpec, Mark} from 'prosemirror-model'
 
-export default (): ProseMirrorExtension => ({
-  schema: (prev) => ({
-    ...prev,
-    marks: (prev.marks as any).append(editLinkSchema),
-  }),
-})
-
-const editLinkSchema = {
-  edit_link: {
-    attrs: {href: {default: null}},
-    toDOM: (n: Node) => ['span', {class: 'edit-link', 'data-href': n.attrs.href}],
-  },
+export const schemaSpec = {
+  marks: {
+    link: {
+      attrs: {
+        href: {},
+        title: {default: null}
+      },
+      inclusive: false,
+      toDOM(node: Mark): DOMOutputSpec {
+        return ['a', node.attrs]
+      }
+    },
+    edit_link: {
+      attrs: {href: {default: null}},
+      toDOM(node: Mark): DOMOutputSpec {
+        return ['span', {class: 'edit-link', 'data-href': node.attrs.href}]
+      }
+    },
+  }
 }

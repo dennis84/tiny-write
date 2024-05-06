@@ -1,29 +1,35 @@
-import {DOMSerializer, Node, NodeType} from 'prosemirror-model'
+import {DOMOutputSpec, DOMSerializer, Node, NodeType} from 'prosemirror-model'
 import {TextSelection} from 'prosemirror-state'
 import {EditorView} from 'prosemirror-view'
 import {inputRules, wrappingInputRule} from 'prosemirror-inputrules'
 import {ProseMirrorExtension} from '@/prosemirror'
 
-const container = {
-  group: 'block',
-  selectable: true,
-  defining: true,
-  content: 'block+',
-  attrs: {
-    type: {default: 'tip'},
-    open: {default: true},
-    summary: {default: 'Details'},
-  },
-  toDOM: (node: Node) => node.attrs.type === 'details' ? [
-    'details',
-    {class: `container-${node.attrs.type}`, ...(node.attrs.open ? {open: ''} : {})},
-    ['summary', {contenteditable: 'false'}, node.attrs.summary],
-    ['div', 0],
-  ] : [
-    'div',
-    {class: `container-${node.attrs.type}`},
-    0
-  ],
+export const schemaSpec = {
+  nodes: {
+    container: {
+      group: 'block',
+      selectable: true,
+      defining: true,
+      content: 'block+',
+      attrs: {
+        type: {default: 'tip'},
+        open: {default: true},
+        summary: {default: 'Details'},
+      },
+      toDOM(node: Node): DOMOutputSpec {
+        return node.attrs.type === 'details' ? [
+          'details',
+          {class: `container-${node.attrs.type}`, ...(node.attrs.open ? {open: ''} : {})},
+          ['summary', {contenteditable: 'false'}, node.attrs.summary],
+          ['div', 0],
+        ] : [
+          'div',
+          {class: `container-${node.attrs.type}`},
+          0
+        ]
+      }
+    }
+  }
 }
 
 const containerRule = (nodeType: NodeType) =>
@@ -72,10 +78,6 @@ class ContainerView {
 }
 
 export default (): ProseMirrorExtension => ({
-  schema: (prev) => ({
-    ...prev,
-    nodes: (prev.nodes as any).update('container', container),
-  }),
   plugins: (prev, schema) => [
     ...prev,
     inputRules({rules: [

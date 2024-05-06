@@ -1,4 +1,4 @@
-import {NodeType} from 'prosemirror-model'
+import {DOMOutputSpec, NodeType} from 'prosemirror-model'
 import {EditorView} from 'prosemirror-view'
 import {EditorState, Selection, Transaction, TextSelection} from 'prosemirror-state'
 import {keymap} from 'prosemirror-keymap'
@@ -6,6 +6,26 @@ import {inputRules, textblockTypeInputRule} from 'prosemirror-inputrules'
 import {Ctrl} from '@/services'
 import {ProseMirrorExtension} from '@/prosemirror'
 import {CodeBlockView} from './view'
+
+export const schemaSpec = {
+  nodes: {
+    code_block: {
+      content: 'text*',
+      group: 'block',
+      code: true,
+      defining: true,
+      selectable: true,
+      // marks: 'ychange',
+      attrs: {
+        lang: {default: null},
+        hidden: {default: false},
+      },
+      toDOM(): DOMOutputSpec {
+        return ['pre', {}, ['code', 0]]
+      }
+    }
+  }
+}
 
 type Direction = 'left' | 'right' | 'up' | 'down' | 'forward' | 'backward'
 
@@ -59,25 +79,7 @@ const codeBlockKeymap = {
   'Shift-ArrowDown': arrowHandler('down'),
 }
 
-const codeBlockSchema = {
-  content: 'text*',
-  group: 'block',
-  code: true,
-  defining: true,
-  selectable: true,
-  //marks: 'ychange',
-  attrs: {
-    lang: {default: null},
-    hidden: {default: false},
-  },
-  toDOM: () => ['pre', {}, ['code', 0]]
-}
-
 export default (ctrl: Ctrl): ProseMirrorExtension => ({
-  schema: (prev) => ({
-    ...prev,
-    nodes: (prev.nodes as any).update('code_block', codeBlockSchema),
-  }),
   plugins: (prev, schema) => [
     ...prev,
     inputRules({rules: [codeBlockRule(schema.nodes.code_block)]}),

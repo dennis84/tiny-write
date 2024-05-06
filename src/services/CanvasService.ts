@@ -26,7 +26,8 @@ import {
 } from '@/state'
 import {DB} from '@/db'
 import * as remote from '@/remote'
-import {createEmptyText, createExtensions, createNodeViews, createSchema} from '@/prosemirror-setup'
+import {createEmptyText, createExtensions, createNodeViews} from '@/prosemirror-setup'
+import {schema} from '@/prosemirror/schema'
 import {Ctrl} from '.'
 import {FileService} from './FileService'
 
@@ -708,7 +709,6 @@ export class CanvasService {
     })
 
     const nodeViews = createNodeViews(extensions)
-    const schema = createSchema(extensions)
     const plugins = extensions.reduce<Plugin[]>((acc, e) => e.plugins?.(acc, schema) ?? acc, [])
     const editorState = EditorState.fromJSON({schema, plugins}, createEmptyText())
 

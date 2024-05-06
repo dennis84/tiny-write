@@ -1,9 +1,38 @@
-import {DOMSerializer, Node, NodeType, Schema} from 'prosemirror-model'
+import {DOMOutputSpec, DOMSerializer, Node, NodeType, Schema} from 'prosemirror-model'
 import {EditorView} from 'prosemirror-view'
 import {inputRules, wrappingInputRule} from 'prosemirror-inputrules'
 import {liftListItem, sinkListItem, splitListItem} from 'prosemirror-schema-list'
 import {keymap} from 'prosemirror-keymap'
 import {ProseMirrorExtension} from '@/prosemirror'
+
+export const schemaSpec = {
+  nodes: {
+    task_list_item: {
+      content: 'paragraph block*',
+      defining: true,
+      attrs: {checked: {default: false}},
+      toDOM(node: Node): DOMOutputSpec {
+        return [
+          'li',
+          {class: `task-list-item ${node.attrs.checked ? 'checked' : ''}`},
+          ['input', {
+            type: 'checkbox',
+            ...(node.attrs.checked ? {checked: 'checked'} : {}),
+          }],
+          ['div', 0],
+        ]
+      }
+    },
+    task_list: {
+      content: 'task_list_item+',
+      group: 'block',
+      attrs: {tight: {default: true}},
+      toDOM(): DOMOutputSpec {
+        return ['ul', {class: 'task-list'}, 0]
+      }
+    }
+  }
+}
 
 const todoListRule = (nodeType: NodeType) =>
   wrappingInputRule(
@@ -13,29 +42,6 @@ const todoListRule = (nodeType: NodeType) =>
       checked: match[1] === 'x',
     }),
   )
-
-const todoListSchema = {
-  task_list_item: {
-    content: 'paragraph block*',
-    defining: true,
-    attrs: {checked: {default: false}},
-    toDOM: (node: Node) => [
-      'li',
-      {class: `task-list-item ${node.attrs.checked ? 'checked' : ''}`},
-      ['input', {
-        type: 'checkbox',
-        ...(node.attrs.checked ? {checked: 'checked'} : {}),
-      }],
-      ['div', 0],
-    ]
-  },
-  task_list: {
-    content: 'task_list_item+',
-    group: 'block',
-    attrs: {tight: {default: true}},
-    toDOM: () => ['ul', {class: 'task-list'}, 0]
-  }
-}
 
 class TaskListItemView {
   dom: HTMLInputElement
@@ -73,10 +79,6 @@ const todoListKeymap = (schema: Schema) => ({
 })
 
 export default (): ProseMirrorExtension => ({
-  schema: (prev) => ({
-    ...prev,
-    nodes: (prev.nodes as any).append(todoListSchema),
-  }),
   plugins: (prev, schema) => [
     keymap(todoListKeymap(schema)),
     ...prev,
