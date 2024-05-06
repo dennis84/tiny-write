@@ -11,7 +11,7 @@ import {
 } from 'y-prosemirror'
 import {Box} from '@tldraw/editor'
 import * as remote from '@/remote'
-import {createPlugins, createEmptyText, createNodeViews} from '@/prosemirror-setup'
+import {createPlugins, createEmptyText, createNodeViews} from '@/prosemirror/setup'
 import {schema} from '@/prosemirror/schema'
 import {State, File, FileText, Mode} from '@/state'
 import {serialize, createMarkdownParser} from '@/markdown'
@@ -67,7 +67,7 @@ export class EditorService {
       ctrl: this.ctrl,
       markdown: currentFile?.markdown,
       type,
-      dropcursor: true,
+      dropCursor: true,
     })
 
     const {nodeViews} = createNodeViews(this.ctrl)

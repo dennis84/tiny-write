@@ -3,7 +3,7 @@ import {CompletionContext} from '@codemirror/autocomplete'
 import {Compartment, EditorState} from '@codemirror/state'
 import {javascript} from '@codemirror/lang-javascript'
 import {markdown} from '@codemirror/lang-markdown'
-import {findWords} from '@/prosemirror/code-block/completion'
+import {findWords} from '@/prosemirror/extensions/code-block/completion'
 
 test.each([
   ['abc', [], 3],

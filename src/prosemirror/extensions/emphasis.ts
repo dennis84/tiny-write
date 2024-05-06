@@ -1,6 +1,6 @@
 import {inputRules} from 'prosemirror-inputrules'
 import {DOMOutputSpec, MarkType, Schema} from 'prosemirror-model'
-import {markInputRule} from '@/prosemirror/rulebuilders'
+import {markInputRule} from '@/prosemirror/extensions/rulebuilders'
 
 export const schemaSpec = {
   marks: {

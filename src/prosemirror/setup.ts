@@ -1,24 +1,24 @@
 import * as Y from 'yjs'
 import {Plugin} from 'prosemirror-state'
-import * as base from '@/prosemirror/base'
-import * as markdown from '@/prosemirror/markdown'
-import * as inputParser from '@/prosemirror/input-parser'
-import * as scroll from '@/prosemirror/scroll'
-import * as todoList from '@/prosemirror/task-list'
-import * as code from '@/prosemirror/code'
-import * as emphasis from '@/prosemirror/emphasis'
-import * as placeholder from '@/prosemirror/placeholder'
-import * as codeBlock from '@/prosemirror/code-block'
-import * as blockHandle from '@/prosemirror/block-handle'
-import * as pasteMarkdown from '@/prosemirror/paste-markdown'
-import * as table from '@/prosemirror/table'
-import * as collab from '@/prosemirror/collab'
-import * as image from '@/prosemirror/image'
-import * as selected from '@/prosemirror/selected'
-import * as container from '@/prosemirror/container'
-import * as fileListing from '@/prosemirror/autocomplete/file-listing'
-import * as wordCompletion from '@/prosemirror/autocomplete/word-completion'
-import * as taskList from '@/prosemirror/task-list'
+import * as base from '@/prosemirror/extensions/base'
+import * as markdown from '@/prosemirror/extensions/markdown'
+import * as inputParser from '@/prosemirror/extensions/input-parser'
+import * as scroll from '@/prosemirror/extensions/scroll'
+import * as todoList from '@/prosemirror/extensions/task-list'
+import * as code from '@/prosemirror/extensions/code'
+import * as emphasis from '@/prosemirror/extensions/emphasis'
+import * as placeholder from '@/prosemirror/extensions/placeholder'
+import * as codeBlock from '@/prosemirror/extensions/code-block'
+import * as blockHandle from '@/prosemirror/extensions/block-handle'
+import * as pasteMarkdown from '@/prosemirror/extensions/paste-markdown'
+import * as table from '@/prosemirror/extensions/table'
+import * as collab from '@/prosemirror/extensions/collab'
+import * as image from '@/prosemirror/extensions/image'
+import * as selected from '@/prosemirror/extensions/selected'
+import * as container from '@/prosemirror/extensions/container'
+import * as fileListing from '@/prosemirror/extensions/autocomplete/file-listing'
+import * as wordCompletion from '@/prosemirror/extensions/autocomplete/word-completion'
+import * as taskList from '@/prosemirror/extensions/task-list'
 import {Ctrl} from '@/services'
 import {plainSchema, schema} from '@/prosemirror/schema'
 import {isTauri} from '@/env'
@@ -27,7 +27,7 @@ interface Props {
   ctrl: Ctrl;
   type?: Y.XmlFragment;
   markdown?: boolean;
-  dropcursor?: boolean;
+  dropCursor?: boolean;
 }
 
 export const createPlugins = (props: Props): Plugin[] => {
@@ -36,7 +36,7 @@ export const createPlugins = (props: Props): Plugin[] => {
   const s = isMarkdown ? plainSchema : schema
 
   const plugins = [
-    ...base.plugins(s, props.dropcursor),
+    ...base.plugins(s, props.dropCursor),
     ...placeholder.plugins('Start typing ...'),
     ...scroll.plugins(props.ctrl),
     ...blockHandle.plugins(),

@@ -26,7 +26,7 @@ import {
 } from '@/state'
 import {DB} from '@/db'
 import * as remote from '@/remote'
-import {createEmptyText, createPlugins, createNodeViews} from '@/prosemirror-setup'
+import {createEmptyText, createPlugins, createNodeViews} from '@/prosemirror/setup'
 import {schema} from '@/prosemirror/schema'
 import {Ctrl} from '.'
 import {FileService} from './FileService'
