@@ -52,42 +52,25 @@ export class CollabService {
     return this.store.collab?.snapshot !== undefined
   }
 
-  create(room: string, mode = Mode.Editor, connect = false): Collab {
+  static create(room: string, mode = Mode.Editor, connect = false): Collab {
     remote.info(`Create ydoc: (room=${room}, mode=${mode}, connect=${connect})`)
-    this.stopCollab()
 
     if (connect) {
       const m = mode === Mode.Canvas ? 'c/' : ''
       window.history.replaceState(null, '', `/${m + room}`)
     }
 
-    const WebSocketPolyfill = this.createWS()
+    const WebSocketPolyfill = CollabService.createWS()
 
     const ydoc = new Y.Doc({gc: false})
     const permanentUserData = new Y.PermanentUserData(ydoc)
     const provider = new WebsocketProvider(COLLAB_URL, room, ydoc, {connect, WebSocketPolyfill})
-
-    const configType = ydoc.getMap('config')
-    configType.observe(this.onCollabConfigUpdate)
 
     const undoManager = new UndoManager([], {
       doc: ydoc,
       trackedOrigins: new Set([ySyncPluginKey, ydoc.clientID]),
       deleteFilter: (item) => defaultDeleteFilter(item, defaultProtectedNodes),
       captureTransaction: tr => tr.meta.get('addToHistory') !== false,
-    })
-
-    provider.on('connection-error', () => {
-      remote.error('🌐 Connection error')
-      this.setState('collab', 'error', true)
-      provider.wsconnected = false
-      provider.ws = null
-    })
-
-    provider.on('status', (e: any) => {
-      if (e.status === 'connected') {
-        this.setState('collab', 'error', undefined)
-      }
     })
 
     const xs = Object.values(ConfigService.themes)
@@ -116,12 +99,44 @@ export class CollabService {
     }
   }
 
+  private static createWS(): typeof WebSocket {
+    if (!isTauri()) {
+      return window.WebSocket
+    }
+
+    return TauriWebSocket as any
+  }
+
   apply(file: File) {
     if (file.ydoc) {
       const ydoc = this.store.collab!.ydoc
       if (!this.store.collab?.started) Y.applyUpdate(ydoc, file.ydoc)
       this.store.collab?.undoManager?.addToScope(ydoc.getXmlFragment(file.id))
     }
+  }
+
+  init() {
+    if (!this.provider) {
+      throw new Error('Collab not created in state')
+    }
+
+    const configType = this.store.collab?.ydoc?.getMap('config')
+    configType?.observe(this.onCollabConfigUpdate)
+
+    this.provider.on('connection-error', () => {
+      remote.error('🌐 Connection error')
+      this.setState('collab', 'error', true)
+      if (this.provider) {
+        this.provider.wsconnected = false
+        this.provider.ws = null
+      }
+    })
+
+    this.provider.on('status', (e: any) => {
+      if (e.status === 'connected') {
+        this.setState('collab', 'error', undefined)
+      }
+    })
   }
 
   startCollab() {
@@ -157,11 +172,4 @@ export class CollabService {
     this.setState('config', update)
   }
 
-  private createWS(): typeof WebSocket {
-    if (!isTauri()) {
-      return window.WebSocket
-    }
-
-    return TauriWebSocket as any
-  }
 }

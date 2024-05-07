@@ -18,6 +18,7 @@ import {serialize, createMarkdownParser} from '@/markdown'
 import {DB} from '@/db'
 import {Ctrl} from '.'
 import {FileService} from './FileService'
+import {CollabService} from './CollabService'
 
 export class EditorService {
   constructor(
@@ -147,8 +148,9 @@ export class EditorService {
       files: [...state.files, file],
     }, file)
 
-    update.collab = this.ctrl.collab.create(file.id, state.mode, false)
+    update.collab = CollabService.create(file.id, state.mode, false)
     this.setState(update)
+    this.ctrl.collab.init()
   }
 
   async openFileByPath(path: string) {
@@ -188,8 +190,9 @@ export class EditorService {
       if (state.args?.room) state.args.room = undefined
 
       const update = await EditorService.activateFile(state, file)
-      update.collab = this.ctrl.collab.create(file.id, state.mode, false)
+      update.collab = CollabService.create(file.id, state.mode, false)
       this.setState(update)
+      this.ctrl.collab.init()
       if (text) this.updateText(text)
     } catch (error: any) {
       this.ctrl.app.setError({error, fileId: id})

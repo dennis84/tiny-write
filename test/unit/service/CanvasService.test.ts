@@ -18,6 +18,7 @@ import {DB} from '@/db'
 import {createCtrl, Ctrl} from '@/services'
 import {CanvasService} from '@/services/CanvasService'
 import {FileService} from '@/services/FileService'
+import {CollabService} from '@/services/CollabService'
 import {createCollabMock, createYdoc, createYUpdate, waitFor} from '../util'
 
 vi.mock('mermaid', () => ({}))
@@ -390,8 +391,7 @@ test('newCanvas', async () => {
     ],
   }))
 
-  ctrl.collab.create.mockReturnValue(createCollabMock())
-
+  const createCollabSpy = vi.spyOn(CollabService, 'create').mockReturnValue(createCollabMock())
   const service = new CanvasService(ctrl, store, setState)
 
   // new canvas
@@ -411,7 +411,7 @@ test('newCanvas', async () => {
   expect(store.canvases[1].active).toBe(false)
   expect(store.canvases[2].active).toBe(true)
 
-  expect(ctrl.collab.create.mock.calls.length).toBe(2)
+  expect(createCollabSpy.mock.calls.length).toBe(2)
   expect(ctrl.collab.disconnectCollab).toHaveBeenCalled()
 })
 
@@ -493,7 +493,7 @@ test('newFile', async () => {
   }))
 
   vi.spyOn(FileService, 'createFile').mockReturnValue({id: '1', ydoc, versions: []})
-  ctrl.collab.create.mockReturnValue(createCollabMock())
+  vi.spyOn(CollabService, 'create').mockReturnValue(createCollabMock())
 
   const service = new CanvasService(ctrl, store, setState)
   await service.newFile()
@@ -526,7 +526,7 @@ test.each([
   }))
 
   vi.spyOn(FileService, 'createFile').mockReturnValue({id: '3', ydoc, versions: []})
-  ctrl.collab.create.mockReturnValue(createCollabMock())
+  vi.spyOn(CollabService, 'create').mockReturnValue(createCollabMock())
 
   const service = new CanvasService(ctrl, store, setState)
   await service.newFile(link)
@@ -704,7 +704,7 @@ test('renderEditor', async () => {
   const target = document.createElement('div')
 
   const service = new CanvasService(ctrl, store, setState)
-  setState('collab', ctrl.collab.create('test'))
+  setState('collab', CollabService.create('test'))
 
   service.renderEditor(element, target)
 
@@ -739,7 +739,7 @@ test('renderEditor - collab', async () => {
   const [, setState] = createStore(init)
   const {ctrl, store} = createCtrl(init)
   const target = document.createElement('div')
-  const collab = ctrl.collab.create('test')
+  const collab = CollabService.create('test')
   collab.ydoc = createYdoc('1', ['Test'])
 
   const service = new CanvasService(ctrl, store, setState)

@@ -301,7 +301,7 @@ test('reset', async () => {
   await ctrl.app.init()
   ctrl.editor.renderEditor(target)
 
-  ctrl.app.setError(error)
+  ctrl.app.setError({error})
   expect(store.error?.id).toBe('exception')
 
   await ctrl.app.reset()

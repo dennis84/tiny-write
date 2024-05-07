@@ -30,6 +30,7 @@ import {createEmptyText, createPlugins, createNodeViews} from '@/prosemirror/set
 import {schema} from '@/prosemirror/schema'
 import {Ctrl} from '.'
 import {FileService} from './FileService'
+import {CollabService} from './CollabService'
 
 type UpdateElement =
   Partial<CanvasLinkElement> |
@@ -284,7 +285,7 @@ export class CanvasService {
 
     const state = unwrap(this.store)
     const id = uuidv4()
-    const collab = this.ctrl.collab.create(id, Mode.Canvas, false)
+    const collab = CollabService.create(id, Mode.Canvas, false)
     const canvas = CanvasService.createCanvas({id, active: true})
 
     const prev = state.canvases.map((c) => ({
@@ -303,6 +304,7 @@ export class CanvasService {
       mode: Mode.Canvas,
     })
 
+    this.ctrl.collab.init()
     await this.saveCanvas()
     remote.info('New canvas created')
     await DB.setMeta({mode: state.mode})
@@ -361,12 +363,10 @@ export class CanvasService {
 
     const prevCanvas = this.currentCanvas
     const state = CanvasService.activateCanvas(unwrap(this.store), id)
-    const collab = this.ctrl.collab.create(id, Mode.Canvas, false)
+    const collab = CollabService.create(id, Mode.Canvas, false)
 
-    this.setState({
-      ...state,
-      collab,
-    })
+    this.setState({...state, collab})
+    this.ctrl.collab.init()
 
     if (prevCanvas) {
       await this.saveCanvas({...prevCanvas, active: false})

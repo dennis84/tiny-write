@@ -9,6 +9,7 @@ import {ConfigService} from './ConfigService'
 import {CanvasService} from './CanvasService'
 import {EditorService} from './EditorService'
 import {FileService} from './FileService'
+import {CollabService} from './CollabService'
 
 export class AppService {
   public layoutRef: HTMLElement | undefined
@@ -47,7 +48,7 @@ export class AppService {
     remote.debug(`Fetched data: ${stateToString(data)}`)
     remote.info(`Init app (mode=${data.mode}, args=${JSON.stringify(data.args)})`)
 
-    const factory = new StateFactory(this.ctrl)
+    const factory = new StateFactory()
 
     try {
       if (isTauri() && data.window) {
@@ -102,12 +103,14 @@ export class AppService {
       }
 
       this.setState(newState)
+
       if (data.mode === Mode.Editor) {
         this.ctrl.editor.updateText(result.markdownDoc)
       } else {
         this.ctrl.canvasCollab.init()
       }
 
+      this.ctrl.collab.init()
       this.ctrl.tree.create()
     } catch(e: any) {
       const error = this.createError(e)
@@ -225,7 +228,6 @@ class InitError extends Error {
 class StateFactory {
   // @TODO: try to onlt use static methods and remove Ctrl dependency
   // may: move as static methods in AppService.
-  constructor(private ctrl: Ctrl) {}
 
   showDir(data: State): StateResult {
     // do nothing
@@ -247,7 +249,7 @@ class StateFactory {
       markdownDoc = result.doc
     }
 
-    data.collab = this.ctrl.collab.create(currentFile.id, data.mode, false)
+    data.collab = CollabService.create(currentFile.id, data.mode, false)
     data = await EditorService.activateFile(data, currentFile)
     return {data, markdownDoc}
   }
@@ -256,7 +258,7 @@ class StateFactory {
     const currentCanvas = data.canvases.find((c) => c.active)
     if (currentCanvas) {
       data = CanvasService.activateCanvas(data, currentCanvas.id)
-      data.collab = this.ctrl.collab.create(currentCanvas.id, data.mode, false)
+      data.collab = CollabService.create(currentCanvas.id, data.mode, false)
       return {data}
     } else {
       throw new InitError(data, 'No current canvas')
@@ -283,7 +285,7 @@ class StateFactory {
     }
 
     data = await EditorService.activateFile(data, currentFile)
-    data.collab = this.ctrl.collab.create(currentFile.id, data.mode, false)
+    data.collab = CollabService.create(currentFile.id, data.mode, false)
     return {data, markdownDoc}
   }
 
@@ -301,7 +303,7 @@ class StateFactory {
       // do not load file contents?
 
       data = await EditorService.activateFile(data, currentFile)
-      data.collab = this.ctrl.collab.create(currentFile.id, data.mode, true)
+      data.collab = CollabService.create(currentFile.id, data.mode, true)
       return {data}
     } else if (data.mode === Mode.Canvas) {
       let currentCanvas = data.canvases.find((c) => c.id === room)
@@ -311,7 +313,7 @@ class StateFactory {
       }
 
       data = CanvasService.activateCanvas(data, currentCanvas.id)
-      data.collab = this.ctrl.collab.create(currentCanvas.id, data.mode, true)
+      data.collab = CollabService.create(currentCanvas.id, data.mode, true)
       return {data}
     } else {
       throw new InitError(data, 'Unknown mode')

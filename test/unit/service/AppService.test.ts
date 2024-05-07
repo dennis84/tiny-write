@@ -5,6 +5,7 @@ import {createState, Canvas, Mode} from '@/state'
 import {Ctrl} from '@/services'
 import {AppService} from '@/services/AppService'
 import {CanvasService} from '@/services/CanvasService'
+import {CollabService} from '@/services/CollabService'
 import {createCollabMock} from '../util'
 
 vi.stubGlobal('matchMedia', vi.fn(() => ({
@@ -37,8 +38,7 @@ test('init - new canvas collab', async () => {
 
   const canvas = createCanvas({id: '1'})
   vi.spyOn(CanvasService, 'createCanvas').mockReturnValue(canvas)
-
-  ctrl.collab.create.mockReturnValue(createCollabMock({started: true}))
+  vi.spyOn(CollabService, 'create').mockReturnValue(createCollabMock({started: true}))
 
   await service.init()
 
@@ -58,12 +58,11 @@ test('init - existing canvas collab', async () => {
   const [store, setState] = createStore(initial)
   const service = new AppService(ctrl, store, setState)
 
-  ctrl.collab.create.mockReturnValue(createCollabMock({started: true}))
+  vi.spyOn(CollabService, 'create').mockReturnValue(createCollabMock({started: true}))
 
   await service.init()
 
   expect(store.mode).toBe(Mode.Canvas)
   expect(store.collab?.started).toBe(true)
   expect(store.canvases[0].active).toBe(true)
-  expect(ctrl.canvas.createCanvas).not.toBeCalled()
 })
