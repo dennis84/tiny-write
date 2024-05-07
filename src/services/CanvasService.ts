@@ -80,6 +80,16 @@ export class CanvasService {
     return {box, elements}
   }
 
+  static createCanvas(params: Partial<Canvas>): Canvas {
+    return {
+      camera: {point: [0, 0], zoom: 1},
+      elements: [],
+      lastModified: new Date(),
+      ...params,
+      id: params.id ?? uuidv4(),
+    }
+  }
+
   static activateCanvas(state: State, id: string) {
     const canvases = []
 
@@ -268,16 +278,6 @@ export class CanvasService {
     }
   }
 
-  createCanvas(params: Partial<Canvas>): Canvas {
-    return {
-      camera: {point: [0, 0], zoom: 1},
-      elements: [],
-      lastModified: new Date(),
-      ...params,
-      id: params.id ?? uuidv4(),
-    }
-  }
-
   async newCanvas() {
     await this.removeDeadLinks()
     this.ctrl.collab.disconnectCollab()
@@ -285,7 +285,7 @@ export class CanvasService {
     const state = unwrap(this.store)
     const id = uuidv4()
     const collab = this.ctrl.collab.create(id, Mode.Canvas, false)
-    const canvas = this.createCanvas({id, active: true})
+    const canvas = CanvasService.createCanvas({id, active: true})
 
     const prev = state.canvases.map((c) => ({
       ...c,

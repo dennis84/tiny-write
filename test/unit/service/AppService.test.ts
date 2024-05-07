@@ -4,6 +4,7 @@ import {createStore} from 'solid-js/store'
 import {createState, Canvas, Mode} from '@/state'
 import {Ctrl} from '@/services'
 import {AppService} from '@/services/AppService'
+import {CanvasService} from '@/services/CanvasService'
 import {createCollabMock} from '../util'
 
 vi.stubGlobal('matchMedia', vi.fn(() => ({
@@ -35,7 +36,7 @@ test('init - new canvas collab', async () => {
   const service = new AppService(ctrl, store, setState)
 
   const canvas = createCanvas({id: '1'})
-  ctrl.canvas.createCanvas.mockReturnValue(canvas)
+  vi.spyOn(CanvasService, 'createCanvas').mockReturnValue(canvas)
 
   ctrl.collab.create.mockReturnValue(createCollabMock({started: true}))
 

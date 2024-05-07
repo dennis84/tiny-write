@@ -306,7 +306,7 @@ class StateFactory {
     } else if (data.mode === Mode.Canvas) {
       let currentCanvas = data.canvases.find((c) => c.id === room)
       if (!currentCanvas) {
-        currentCanvas = this.ctrl.canvas.createCanvas({id: room})
+        currentCanvas = CanvasService.createCanvas({id: room})
         data.canvases.push(currentCanvas)
       }
 
@@ -321,7 +321,7 @@ class StateFactory {
   private async loadMarkdownFile(file: File): Promise<{file: File; doc?: FileText}> {
     let doc: FileText | undefined
     try {
-      doc = (await this.ctrl.file.loadFile(file.path!)).text
+      doc = (await FileService.loadFile(file.path!)).text
     } catch (e) {
       remote.info(`Could not load current file with path, not found (path=${file.path})`)
       file.newFile = file.path

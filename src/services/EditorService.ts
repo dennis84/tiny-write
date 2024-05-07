@@ -181,7 +181,7 @@ export class EditorService {
       let text: FileText | undefined
 
       if (file?.path) {
-        text = (await this.ctrl.file.loadFile(file.path)).text
+        text = (await FileService.loadFile(file.path)).text
       }
 
       if (!file) return

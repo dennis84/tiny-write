@@ -32,6 +32,39 @@ export class FileService {
     return this.store.files.findIndex((f) => f.active)
   }
 
+  static async loadFile(path: string): Promise<LoadedFile> {
+    remote.debug(`Load file (path=${path})`)
+    let resolvedPath
+    try {
+      resolvedPath = await remote.resolvePath(path)
+    } catch(e: any) {
+      throw new ServiceError('file_not_found', `File not found: ${path}`)
+    }
+
+    try {
+      const fileContent = await remote.readFile(resolvedPath)
+      const lastModified = await remote.getFileLastModified(resolvedPath)
+      const parser = createMarkdownParser(schema)
+      const doc = parser.parse(fileContent)?.toJSON()
+      const text = {
+        doc,
+        selection: {
+          type: 'text',
+          anchor: 1,
+          head: 1
+        }
+      }
+
+      return {
+        text,
+        lastModified,
+        path: resolvedPath,
+      }
+    } catch (e: any) {
+      throw new ServiceError('file_permission_denied', e)
+    }
+  }
+
   static async saveFile(file: File) {
     if (!file.lastModified) {
       return
@@ -86,39 +119,6 @@ export class FileService {
     }
 
     return this.store.files.find((file) => file.path === path)
-  }
-
-  async loadFile(path: string): Promise<LoadedFile> {
-    remote.debug(`Load file (path=${path})`)
-    let resolvedPath
-    try {
-      resolvedPath = await remote.resolvePath(path)
-    } catch(e: any) {
-      throw new ServiceError('file_not_found', `File not found: ${path}`)
-    }
-
-    try {
-      const fileContent = await remote.readFile(resolvedPath)
-      const lastModified = await remote.getFileLastModified(resolvedPath)
-      const parser = createMarkdownParser(schema)
-      const doc = parser.parse(fileContent)?.toJSON()
-      const text = {
-        doc,
-        selection: {
-          type: 'text',
-          anchor: 1,
-          head: 1
-        }
-      }
-
-      return {
-        text,
-        lastModified,
-        path: resolvedPath,
-      }
-    } catch (e: any) {
-      throw new ServiceError('file_permission_denied', e)
-    }
   }
 
   updateFile(id: string, update: Partial<File>) {
