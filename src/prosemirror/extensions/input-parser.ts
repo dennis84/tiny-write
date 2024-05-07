@@ -1,13 +1,8 @@
 import {EditorState, Plugin, TextSelection, Transaction} from 'prosemirror-state'
-import {Mark, Node, ResolvedPos, Schema} from 'prosemirror-model'
+import {Mark, Node, ResolvedPos} from 'prosemirror-model'
 import {MarkdownParser} from 'prosemirror-markdown'
-import {createMarkdownParser} from '@/markdown'
 
-export const plugins = (schema: Schema) => [
-  plugin(createMarkdownParser(schema))
-]
-
-const plugin = (parser: MarkdownParser) => new Plugin({
+export const plugin = (parser: MarkdownParser) => new Plugin({
   appendTransaction: (transactions, oldState, newState) => {
     if (!newState.selection.empty) return
 

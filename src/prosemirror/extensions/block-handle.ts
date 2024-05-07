@@ -97,7 +97,7 @@ const createDragHandle = (editorView: EditorView, getPos: () => number | undefin
 
 export const blockHandlePluginKey = new PluginKey('block-handle')
 
-const blockHandle = new Plugin({
+export const blockHandle = new Plugin({
   key: blockHandlePluginKey,
   state: {
     init() {
@@ -162,5 +162,3 @@ const markAround = (state: EditorState, pos: number) => {
 
   return {from: startPos, to: endPos}
 }
-
-export const plugins = () => [blockHandle]

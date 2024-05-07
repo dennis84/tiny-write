@@ -21,7 +21,7 @@ const scrollToElem = (node: Element) => {
   })
 }
 
-const scrollIntoView = (ctrl: Ctrl) => new Plugin({
+export const scrollIntoView = (ctrl: Ctrl) => new Plugin({
   props: {
     handleDOMEvents: {
       keyup: (view: EditorView) => {
@@ -31,7 +31,3 @@ const scrollIntoView = (ctrl: Ctrl) => new Plugin({
     }
   },
 })
-
-export const plugins = (ctrl: Ctrl) => [
-  scrollIntoView(ctrl)
-]

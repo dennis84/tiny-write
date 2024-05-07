@@ -15,7 +15,7 @@ const getWords = (node: Node) => {
 }
 
 const collectWordsKey = new PluginKey('collect-words')
-const plugin = new Plugin({
+const collectWords = new Plugin({
   key: collectWordsKey,
   state: {
     init() {
@@ -55,8 +55,9 @@ const update = debounce((view) => {
 
 const wordCompletionKey = new PluginKey('word-completion')
 
+export const keymap = completionKeymap(wordCompletionKey)
+
 export const plugins = (ctrl: Ctrl) => [
-  completionKeymap(wordCompletionKey),
   completionPlugin(
     wordCompletionKey,
     /(?:^|\s)[\w]*/g,
@@ -67,5 +68,5 @@ export const plugins = (ctrl: Ctrl) => [
     },
     ctrl
   ),
-  plugin,
+  collectWords,
 ]

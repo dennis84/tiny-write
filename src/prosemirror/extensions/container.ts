@@ -77,11 +77,9 @@ class ContainerView {
   }
 }
 
-export const plugins = (schema: Schema) => [
-  inputRules({rules: [
-    containerRule(schema.nodes.container),
-  ]}),
-]
+export const plugin = (schema: Schema) => inputRules({rules: [
+  containerRule(schema.nodes.container),
+]})
 
 export const views = (): ViewConfig => ({
   nodeViews: {

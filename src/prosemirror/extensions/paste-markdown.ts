@@ -64,7 +64,7 @@ const transform = (view: EditorView, fragment: Fragment) => {
 
 let shiftKey = false
 
-const pasteMarkdown = (schema: Schema) => {
+export const plugin = (schema: Schema) => {
   const parser = createMarkdownParser(schema)
   return new Plugin({
     props: {
@@ -120,7 +120,3 @@ const pasteMarkdown = (schema: Schema) => {
     }
   })
 }
-
-export const plugins = (schema: Schema) => [
-  pasteMarkdown(schema),
-]

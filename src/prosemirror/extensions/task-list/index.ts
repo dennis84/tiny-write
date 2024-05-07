@@ -2,7 +2,7 @@ import {DOMOutputSpec, DOMSerializer, Node, NodeType, Schema} from 'prosemirror-
 import {EditorView} from 'prosemirror-view'
 import {inputRules, wrappingInputRule} from 'prosemirror-inputrules'
 import {liftListItem, sinkListItem, splitListItem} from 'prosemirror-schema-list'
-import {keymap} from 'prosemirror-keymap'
+import {keymap as createKeymap} from 'prosemirror-keymap'
 import {ViewConfig} from '@/prosemirror'
 
 export const schemaSpec = {
@@ -78,10 +78,9 @@ const todoListKeymap = (schema: Schema) => ({
   'Mod-]': sinkListItem(schema.nodes.task_list_item),
 })
 
-export const plugins = (schema: Schema) => [
-  keymap(todoListKeymap(schema)),
-  inputRules({rules: [todoListRule(schema.nodes.task_list_item)]}),
-]
+export const keymap = (schema: Schema) => createKeymap(todoListKeymap(schema))
+
+export const plugin = (schema: Schema) => inputRules({rules: [todoListRule(schema.nodes.task_list_item)]})
 
 export const views = (): ViewConfig => ({
   nodeViews: {

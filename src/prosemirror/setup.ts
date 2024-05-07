@@ -1,15 +1,19 @@
 import * as Y from 'yjs'
 import {Plugin} from 'prosemirror-state'
-import * as base from '@/prosemirror/extensions/base'
+import {dropCursor} from 'prosemirror-dropcursor'
+import {baseKeymap} from 'prosemirror-commands'
+import {keymap} from 'prosemirror-keymap'
+import {buildKeymap} from 'prosemirror-example-setup'
+import * as tab from '@/prosemirror/extensions/tab'
 import * as markdown from '@/prosemirror/extensions/markdown'
 import * as inputParser from '@/prosemirror/extensions/input-parser'
-import * as scroll from '@/prosemirror/extensions/scroll'
-import * as todoList from '@/prosemirror/extensions/task-list'
+import {scrollIntoView} from '@/prosemirror/extensions/scroll'
+import * as taskList from '@/prosemirror/extensions/task-list'
 import * as code from '@/prosemirror/extensions/code'
 import * as emphasis from '@/prosemirror/extensions/emphasis'
-import * as placeholder from '@/prosemirror/extensions/placeholder'
+import {placeholder} from '@/prosemirror/extensions/placeholder'
 import * as codeBlock from '@/prosemirror/extensions/code-block'
-import * as blockHandle from '@/prosemirror/extensions/block-handle'
+import {blockHandle} from '@/prosemirror/extensions/block-handle'
 import * as pasteMarkdown from '@/prosemirror/extensions/paste-markdown'
 import * as table from '@/prosemirror/extensions/table'
 import * as collab from '@/prosemirror/extensions/collab'
@@ -18,10 +22,10 @@ import * as selected from '@/prosemirror/extensions/selected'
 import * as container from '@/prosemirror/extensions/container'
 import * as fileListing from '@/prosemirror/extensions/autocomplete/file-listing'
 import * as wordCompletion from '@/prosemirror/extensions/autocomplete/word-completion'
-import * as taskList from '@/prosemirror/extensions/task-list'
 import {Ctrl} from '@/services'
 import {plainSchema, schema} from '@/prosemirror/schema'
 import {isTauri} from '@/env'
+import {createMarkdownParser} from '@/markdown'
 
 interface Props {
   ctrl: Ctrl;
@@ -36,35 +40,47 @@ export const createPlugins = (props: Props): Plugin[] => {
   const s = isMarkdown ? plainSchema : schema
 
   const plugins = [
-    ...base.plugins(s, props.dropCursor),
-    ...placeholder.plugins('Start typing ...'),
-    ...scroll.plugins(props.ctrl),
-    ...blockHandle.plugins(),
+    // keymap
+    wordCompletion.keymap,
+    taskList.keymap(s),
+    tab.keymap(s),
+    table.keymap,
+    keymap(buildKeymap(s)),
+    keymap(baseKeymap),
+    codeBlock.keymap,
+    code.keymap,
+    fileListing.keymap,
+
+    // plugins for all modes
+    placeholder('Start typing ...'),
+    scrollIntoView(props.ctrl),
+    blockHandle,
   ]
 
   if (props.type) {
     plugins.push(...collab.plugins(props.ctrl, props.type))
   }
 
+  if (props.dropCursor) {
+    plugins.push(dropCursor())
+  }
+
   if (!isMarkdown) {
     plugins.push(...[
-      ...markdown.plugins(s),
-      ...todoList.plugins(s),
-      ...codeBlock.plugins(s),
-      ...code.plugins(s),
-      ...emphasis.plugins(s),
-      ...inputParser.plugins(s),
+      markdown.plugin(s),
+      taskList.plugin(s),
+      codeBlock.plugin(s),
+      code.plugin(s),
+      emphasis.plugin(s),
+      inputParser.plugin(createMarkdownParser(s)),
       ...table.plugins(props.ctrl, s),
-      ...container.plugins(s),
-      ...selected.plugins(),
-      ...pasteMarkdown.plugins(s),
+      container.plugin(s),
+      selected.plugin,
+      pasteMarkdown.plugin(s),
     ])
   }
 
-  // Must be added after table for higher prio of keymap
-  if (isTauri()) {
-    plugins.push(...fileListing.plugins(props.ctrl))
-  }
+  if (isTauri()) plugins.push(fileListing.plugin(props.ctrl))
   plugins.push(...wordCompletion.plugins(props.ctrl))
 
   return plugins

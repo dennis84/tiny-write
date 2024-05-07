@@ -58,6 +58,4 @@ export const schemaSpec = {
   }
 }
 
-export const plugins = (schema: Schema) => [
-  inputRules({rules: markdownRules(schema)}),
-]
+export const plugin = (schema: Schema) => inputRules({rules: markdownRules(schema)})

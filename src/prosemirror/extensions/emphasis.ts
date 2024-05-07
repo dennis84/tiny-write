@@ -34,11 +34,9 @@ const strongRule2 = (nodeType: MarkType) =>
 const italicRule = (nodeType: MarkType) =>
   markInputRule(/(?:^|\s)(?:\*)((?:[^*]+))(?:\*)$/, nodeType)
 
-export const plugins = (schema: Schema) => [
-  inputRules({rules: [
-    strikethroughRule(schema.marks.strikethrough),
-    strongRule(schema.marks.strong),
-    strongRule2(schema.marks.strong),
-    italicRule(schema.marks.em),
-  ]}),
-]
+export const plugin = (schema: Schema) => inputRules({rules: [
+  strikethroughRule(schema.marks.strikethrough),
+  strongRule(schema.marks.strong),
+  strongRule2(schema.marks.strong),
+  italicRule(schema.marks.em),
+]})

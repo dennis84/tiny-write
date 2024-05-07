@@ -5,7 +5,7 @@ import {isMac, isTauri} from '@/env'
 import {Ctrl} from '@/services'
 import {Mode} from '@/state'
 import * as remote from '@/remote'
-import {ViewConfig} from '.'
+import {ViewConfig} from '..'
 
 export enum Align {
   FloatLeft = 'float-left',
