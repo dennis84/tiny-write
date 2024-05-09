@@ -357,9 +357,7 @@ export class ConfigService {
 
   async updateConfig(conf: Partial<Config>) {
     const state: State = unwrap(this.store)
-    if (conf.font) state.collab?.ydoc?.getMap('config').set('font', conf.font)
-    if (conf.fontSize) state.collab?.ydoc?.getMap('config').set('fontSize', conf.fontSize)
-    if (conf.contentWidth) state.collab?.ydoc?.getMap('config').set('contentWidth', conf.contentWidth)
+    this.ctrl.collab.setConfig(conf)
     const config = {...state.config, ...conf}
     this.setState('config', config)
     await this.saveConfig(unwrap(this.store))
@@ -367,7 +365,7 @@ export class ConfigService {
   }
 
   updateContentWidth(contentWidth: number) {
-    this.store.collab?.ydoc?.getMap('config').set('contentWidth', contentWidth)
+    this.ctrl.collab.setConfig({contentWidth})
     this.setState('config', 'contentWidth', contentWidth)
     void this.saveConfigDebounced(unwrap(this.store))
   }

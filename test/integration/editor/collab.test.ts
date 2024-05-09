@@ -62,3 +62,32 @@ test('existing room - backup', async ({page}) => {
 
   await expect(page.locator('[data-testid="tree_link"]')).toHaveCount(2)
 })
+
+test('sync config', async ({page, browser}) => {
+  await page.goto('/')
+  const url = page.url()
+  await page.waitForSelector('[data-testid="initialized"]')
+  await page.click('[data-testid="burger"]')
+
+  // change font
+  await page.click('[data-testid="appearance"]')
+  await page.getByText('Scientifica').click()
+  await expect(page.getByText('Scientifica')).toContainText('✅')
+  await page.click('[data-testid="back"]')
+
+  // start collab
+  await page.click('[data-testid="collab"]')
+  expect(url).not.toBe(page.url())
+  await page.locator('.ProseMirror').pressSequentially('Hello', {delay})
+
+  // join room
+  const page2 = await browser.newPage()
+  await page2.goto(page.url())
+  await lineTextEq(page2, 1, 'Hello')
+  await page2.click('[data-testid="burger"]')
+  await page2.click('[data-testid="appearance"]')
+
+  // config applied
+  await page.click('[data-testid="appearance"]')
+  await expect(page.getByText('Scientifica')).toContainText('✅')
+})

@@ -3,7 +3,7 @@ import * as Y from 'yjs'
 import {WebsocketProvider} from 'y-websocket'
 import {defaultDeleteFilter, defaultProtectedNodes, ySyncPluginKey} from 'y-prosemirror'
 import {adjectives, animals, uniqueNamesGenerator} from 'unique-names-generator'
-import {Collab, File, Mode, State} from '@/state'
+import {Collab, Config, File, Mode, State} from '@/state'
 import {COLLAB_URL, isTauri} from '@/env'
 import * as remote from '@/remote'
 import {TauriWebSocket} from '@/utils/TauriWebSocket'
@@ -120,9 +120,6 @@ export class CollabService {
       throw new Error('Collab not created in state')
     }
 
-    const configType = this.store.collab?.ydoc?.getMap('config')
-    configType?.observe(this.onCollabConfigUpdate)
-
     this.provider.on('connection-error', () => {
       remote.error('🌐 Connection error')
       this.setState('collab', 'error', true)
@@ -137,6 +134,9 @@ export class CollabService {
         this.setState('collab', 'error', undefined)
       }
     })
+
+    const configType = this.store.collab?.ydoc?.getMap('config')
+    configType?.observe(this.onCollabConfigUpdate)
   }
 
   startCollab() {
@@ -161,6 +161,12 @@ export class CollabService {
     this.setState('collab', 'rendered', true)
   }
 
+  setConfig(conf: Partial<Config>) {
+    if (conf.font) this.store.collab?.ydoc?.getMap('config').set('font', conf.font)
+    if (conf.fontSize) this.store.collab?.ydoc?.getMap('config').set('fontSize', conf.fontSize)
+    if (conf.contentWidth) this.store.collab?.ydoc?.getMap('config').set('contentWidth', conf.contentWidth)
+  }
+
   private onCollabConfigUpdate = (event: Y.YMapEvent<unknown>) => {
     const font = event.target.get('font') as string
     const fontSize = event.target.get('fontSize') as number
@@ -171,5 +177,4 @@ export class CollabService {
     if (contentWidth) update.contentWidth = contentWidth
     this.setState('config', update)
   }
-
 }

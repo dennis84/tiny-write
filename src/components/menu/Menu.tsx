@@ -286,7 +286,7 @@ export default () => {
           {/* Submenu View */}
           <Label>View</Label>
           <Sub data-tauri-drag-region="true">
-            <Link onClick={() => setShow('theme')}>Appearance 🎨</Link>
+            <Link data-testid="appearance" onClick={() => setShow('theme')}>Appearance 🎨</Link>
             <Link onClick={() => setShow('code_block')}>Code Blocks 💅</Link>
             <Link onClick={() => setShow('change_set')}>Change Set 📆</Link>
             <Show when={isTauri()}>

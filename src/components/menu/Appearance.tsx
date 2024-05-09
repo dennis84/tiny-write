@@ -82,7 +82,7 @@ export const Appearance = (props: Props) => {
           {store.config.contentWidth}
         </Text>
       </Sub>
-      <Button onClick={props.onBack}>↩ Back</Button>
+      <Button data-testid="back" onClick={props.onBack}>↩ Back</Button>
     </Drawer>
   )
 }

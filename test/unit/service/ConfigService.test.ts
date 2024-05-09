@@ -11,7 +11,6 @@ import {createStore} from 'solid-js/store'
 import {createState} from '@/state'
 import {Ctrl} from '@/services'
 import {ConfigService} from '@/services/ConfigService'
-import {createYdoc} from '../util'
 
 beforeEach(() => {
   vi.restoreAllMocks()
@@ -55,9 +54,6 @@ test('updateConfig', async () => {
   const [store, setState] = createStore(createState())
   const service = new ConfigService(ctrl, store, setState)
 
-  const ydoc = createYdoc('1', ['Test'])
-  setState('collab', {ydoc})
-
   await service.updateConfig({
     fontSize: 10,
     font: 'merriweather',
@@ -67,7 +63,10 @@ test('updateConfig', async () => {
   expect(service.fontSize).toBe(10)
   expect(service.font.value).toBe('merriweather')
   expect(store.config.contentWidth).toBe(100)
-  expect(ydoc.getMap('config').get('fontSize')).toBe(10)
-  expect(ydoc.getMap('config').get('font')).toBe('merriweather')
-  expect(ydoc.getMap('config').get('contentWidth')).toBe(100)
+
+  expect(ctrl.collab.setConfig).toBeCalledWith({
+    fontSize: 10,
+    font: 'merriweather',
+    contentWidth: 100,
+  })
 })
