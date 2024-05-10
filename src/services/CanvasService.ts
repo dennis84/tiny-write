@@ -676,8 +676,13 @@ export class CanvasService {
   }
 
   renderEditor(element: CanvasEditorElement, node: HTMLElement) {
-    const file = this.ctrl.file.findFileById(element.id)
-    if (file) Y.applyUpdate(this.store.collab!.ydoc!, file.ydoc)
+    let file = this.ctrl.file.findFileById(element.id)
+    if (!file) {
+      file = FileService.createFile({id: element.id})
+      this.setState('files', (prev) => [...prev, file!])
+    }
+
+    this.ctrl.collab.apply(file)
     this.updateEditorState(element.id, node)
   }
 
@@ -694,14 +699,6 @@ export class CanvasService {
     if (!editorView && !node) return
 
     const type = this.store.collab?.ydoc?.getXmlFragment(id)
-    let file = this.ctrl.file.findFileById(id)
-    if (!file) {
-      file = FileService.createFile({id})
-      this.setState('files', (prev) => [...prev, file!])
-    }
-
-    this.store.collab?.undoManager?.addToScope(type!)
-
     const plugins = createPlugins({
       ctrl: this.ctrl,
       markdown: false,

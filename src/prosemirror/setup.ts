@@ -62,7 +62,7 @@ export const createPlugins = (props: Props): Plugin[] => {
   }
 
   if (props.dropCursor) {
-    plugins.push(dropCursor())
+    plugins.push(dropCursor({class: 'drop-cursor'}))
   }
 
   if (!isMarkdown) {
