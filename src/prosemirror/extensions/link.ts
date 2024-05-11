@@ -1,6 +1,6 @@
 import {DOMOutputSpec, Mark} from 'prosemirror-model'
 
-export const schemaSpec = {
+export const linkSchemaSpec = {
   marks: {
     link: {
       attrs: {

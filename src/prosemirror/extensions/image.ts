@@ -13,7 +13,7 @@ export enum Align {
   Center = 'center',
 }
 
-export const schemaSpec = {
+export const imageSchemaSpec = {
   nodes: {
     image: {
       inline: true,
@@ -184,7 +184,7 @@ class ImageView {
   }
 }
 
-export const views = (ctrl: Ctrl): ViewConfig => ({
+export const createImageViews = (ctrl: Ctrl): ViewConfig => ({
   nodeViews: {
     image: (node, view, getPos) => {
       return new ImageView(node, view, getPos, ctrl)

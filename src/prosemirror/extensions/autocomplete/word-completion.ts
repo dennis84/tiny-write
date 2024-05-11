@@ -55,9 +55,9 @@ const update = debounce((view) => {
 
 const wordCompletionKey = new PluginKey('word-completion')
 
-export const keymap = completionKeymap(wordCompletionKey)
+export const wordCompletionKeymap = completionKeymap(wordCompletionKey)
 
-export const plugins = (ctrl: Ctrl) => [
+export const createWordCompletionPlugins = (ctrl: Ctrl) => [
   completionPlugin(
     wordCompletionKey,
     /(?:^|\s)[\w]*/g,

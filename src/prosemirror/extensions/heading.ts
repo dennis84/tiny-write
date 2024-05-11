@@ -1,6 +1,6 @@
 import {DOMOutputSpec, Node} from 'prosemirror-model'
 
-export const schemaSpec = {
+export const headingSchemaSpec = {
   nodes: {
     heading: {
       attrs: {level: {default: 1}},

@@ -30,20 +30,19 @@ const headingRule = (nodeType: NodeType, maxLevel: number) =>
     match => ({level: match[1].length})
   )
 
-const hrRule = (nodeType: NodeType) =>
-  nodeInputRule(/^(?:---|—-|___\s|\*\*\*\s)$/, nodeType)
+const hrRule = nodeInputRule(/^(?:---|—-|___\s|\*\*\*\s)$/, 'horizontal_rule')
 
-const markdownRules = (schema: Schema) => {
+export const markdownInputRules = (schema: Schema) => {
   const rules = smartQuotes.concat(ellipsis, emDash)
   if (schema.nodes.blockquote) rules.push(blockQuoteRule(schema.nodes.blockquote))
   if (schema.nodes.ordered_list) rules.push(orderedListRule(schema.nodes.ordered_list))
   if (schema.nodes.bullet_list) rules.push(bulletListRule(schema.nodes.bullet_list))
   if (schema.nodes.heading) rules.push(headingRule(schema.nodes.heading, 6))
-  if (schema.nodes.horizontal_rule) rules.push(hrRule(schema.nodes.horizontal_rule))
+  if (schema.nodes.horizontal_rule) rules.push(hrRule)
   return rules
 }
 
-export const schemaSpec = {
+export const markdownSchemaSpec = {
   nodes: {
     horizontal_rule: {
       content: 'inline*',
@@ -58,4 +57,4 @@ export const schemaSpec = {
   }
 }
 
-export const plugin = (schema: Schema) => inputRules({rules: markdownRules(schema)})
+export const createMarkdownPlugins = (schema: Schema) => inputRules({rules: markdownInputRules(schema)})

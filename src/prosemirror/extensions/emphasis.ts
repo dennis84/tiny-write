@@ -1,8 +1,7 @@
-import {inputRules} from 'prosemirror-inputrules'
-import {DOMOutputSpec, MarkType, Schema} from 'prosemirror-model'
+import {DOMOutputSpec} from 'prosemirror-model'
 import {markInputRule} from '@/prosemirror/extensions/rulebuilders'
 
-export const schemaSpec = {
+export const emphasisSchemaSpec = {
   marks: {
     em: {
       toDOM(): DOMOutputSpec {
@@ -22,21 +21,13 @@ export const schemaSpec = {
   }
 }
 
-const strikethroughRule = (nodeType: MarkType) =>
-  markInputRule(/(?:~~)(.+)(?:~~)$/, nodeType)
-
-const strongRule = (nodeType: MarkType) =>
-  markInputRule(/(?:\*\*)(.+)(?:\*\*)$/, nodeType)
-
-const strongRule2 = (nodeType: MarkType) =>
-  markInputRule(/(?:__)(.+)(?:__)$/, nodeType)
-
-const italicRule = (nodeType: MarkType) =>
-  markInputRule(/(?:^|\s)(?:\*)((?:[^*]+))(?:\*)$/, nodeType)
-
-export const plugin = (schema: Schema) => inputRules({rules: [
-  strikethroughRule(schema.marks.strikethrough),
-  strongRule(schema.marks.strong),
-  strongRule2(schema.marks.strong),
-  italicRule(schema.marks.em),
-]})
+export const strikethroughRule = markInputRule(/(?:~~)(.+)(?:~~)$/, 'strikethrough')
+export const strongRule = markInputRule(/(?:\*\*)(.+)(?:\*\*)$/, 'strong')
+export const strongRule2 = markInputRule(/(?:__)(.+)(?:__)$/, 'strong')
+export const italicRule = markInputRule(/(?:^|\s)(?:\*)((?:[^*]+))(?:\*)$/, 'em')
+export const emphasisInputRules = [
+  strikethroughRule,
+  strongRule,
+  strongRule2,
+  italicRule,
+]

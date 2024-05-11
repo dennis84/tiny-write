@@ -5,9 +5,9 @@ import {completionKeymap, completionPlugin} from './autocomplete'
 
 const pluginKey = new PluginKey('file-listing')
 
-export const keymap = completionKeymap(pluginKey)
+export const fileListingKeymap = completionKeymap(pluginKey)
 
-export const plugin = (ctrl: Ctrl) => completionPlugin(
+export const createFileListingPlugin = (ctrl: Ctrl) => completionPlugin(
   pluginKey,
   /(\.\.?|~)\/[^\s\])]*/g,
   async (text) => {

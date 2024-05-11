@@ -1,8 +1,7 @@
-import {inputRules} from 'prosemirror-inputrules'
-import {DOMOutputSpec, Mark, MarkType, Schema} from 'prosemirror-model'
+import {DOMOutputSpec, Mark} from 'prosemirror-model'
 import {EditorState, Transaction} from 'prosemirror-state'
 import {EditorView} from 'prosemirror-view'
-import {keymap as createKeymap} from 'prosemirror-keymap'
+import {keymap} from 'prosemirror-keymap'
 import {markInputRule} from '@/prosemirror/extensions/rulebuilders'
 
 const blank = '\xa0'
@@ -34,19 +33,14 @@ const onArrow = (dir: 'left' | 'right') => (
   return false
 }
 
-const codeKeymap = {
+export const codeInputRule = markInputRule(/(?:`)([^`]+)(?:`)$/, 'code')
+
+export const codeKeymap = keymap({
   'ArrowLeft': onArrow('left'),
   'ArrowRight': onArrow('right'),
-}
+})
 
-const codeRule = (nodeType: MarkType) =>
-  markInputRule(/(?:`)([^`]+)(?:`)$/, nodeType)
-
-export const keymap = createKeymap(codeKeymap)
-
-export const plugin = (schema: Schema) => inputRules({rules: [codeRule(schema.marks.code)]})
-
-export const schemaSpec = {
+export const codeSchemaSpec = {
   marks: {
     code: {
       toDOM(): DOMOutputSpec {

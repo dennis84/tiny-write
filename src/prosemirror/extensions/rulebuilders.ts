@@ -1,9 +1,8 @@
 import {InputRule} from 'prosemirror-inputrules'
-import {MarkType, NodeType} from 'prosemirror-model'
 
 export const markInputRule = (
   regexp: RegExp,
-  nodeType: MarkType,
+  name: string,
   getAttrs: any = undefined
 ) => new InputRule(regexp, (state, match, start, end) => {
   const attrs = getAttrs ? getAttrs(match) : getAttrs
@@ -29,14 +28,15 @@ export const markInputRule = (
     end = start + match[1].length
   }
 
-  tr.addMark(start, end, nodeType.create(attrs))
-  tr.removeStoredMark(nodeType)
+  const markType = state.schema.marks[name]
+  tr.addMark(start, end, markType.create(attrs))
+  tr.removeStoredMark(markType)
   return tr
 })
 
 export const nodeInputRule = (
   regexp: RegExp,
-  nodeType: NodeType,
+  name: string,
   getAttrs: any = undefined
 ) => new InputRule(regexp, (state, match, start, end) => {
   const attrs = getAttrs ? getAttrs(match) : getAttrs
@@ -56,6 +56,7 @@ export const nodeInputRule = (
 
     tr.insertText(lastChar, start + match[0].length - 1)
 
+    const nodeType = state.schema.nodes[name]
     // insert node from input rule
     tr.replaceWith(matchStart, end, nodeType.create(attrs))
     return tr

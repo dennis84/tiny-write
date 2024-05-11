@@ -1,7 +1,6 @@
 import {SetStoreFunction, Store, unwrap} from 'solid-js/store'
 import {EditorState, TextSelection, Transaction} from 'prosemirror-state'
 import {EditorView} from 'prosemirror-view'
-import * as Y from 'yjs'
 import {ySyncPluginKey} from 'y-prosemirror'
 import {v4 as uuidv4} from 'uuid'
 import {debounce} from 'ts-debounce'

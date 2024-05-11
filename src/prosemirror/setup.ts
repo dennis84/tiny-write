@@ -3,25 +3,26 @@ import {Plugin} from 'prosemirror-state'
 import {dropCursor} from 'prosemirror-dropcursor'
 import {baseKeymap} from 'prosemirror-commands'
 import {keymap} from 'prosemirror-keymap'
+import {inputRules} from 'prosemirror-inputrules'
 import {buildKeymap} from 'prosemirror-example-setup'
-import * as tab from '@/prosemirror/extensions/tab'
-import * as markdown from '@/prosemirror/extensions/markdown'
-import * as inputParser from '@/prosemirror/extensions/input-parser'
+import {createTabKeymap} from '@/prosemirror/extensions/tab'
+import {createMarkdownPlugins} from '@/prosemirror/extensions/markdown'
+import {createInputParserPlugin} from '@/prosemirror/extensions/input-parser'
 import {scrollIntoView} from '@/prosemirror/extensions/scroll'
-import * as taskList from '@/prosemirror/extensions/task-list'
-import * as code from '@/prosemirror/extensions/code'
-import * as emphasis from '@/prosemirror/extensions/emphasis'
+import {createTaskListPlugin, createTaskListKeymap, taskListViews} from '@/prosemirror/extensions/task-list'
+import {codeInputRule, codeKeymap} from '@/prosemirror/extensions/code'
+import {emphasisInputRules} from '@/prosemirror/extensions/emphasis'
 import {placeholder} from '@/prosemirror/extensions/placeholder'
-import * as codeBlock from '@/prosemirror/extensions/code-block'
+import {codeBlockKeymap, createCodeBlockPlugin, createCodeBlockViews} from '@/prosemirror/extensions/code-block'
 import {blockHandle} from '@/prosemirror/extensions/block-handle'
-import * as pasteMarkdown from '@/prosemirror/extensions/paste-markdown'
-import * as table from '@/prosemirror/extensions/table'
-import * as collab from '@/prosemirror/extensions/collab'
-import * as image from '@/prosemirror/extensions/image'
-import * as selected from '@/prosemirror/extensions/selected'
-import * as container from '@/prosemirror/extensions/container'
-import * as fileListing from '@/prosemirror/extensions/autocomplete/file-listing'
-import * as wordCompletion from '@/prosemirror/extensions/autocomplete/word-completion'
+import {createPasteMarkdownPlugin} from '@/prosemirror/extensions/paste-markdown'
+import {createTablePlugins, tableKeymap} from '@/prosemirror/extensions/table'
+import {createCollabPlugins} from '@/prosemirror/extensions/collab'
+import {createImageViews} from '@/prosemirror/extensions/image'
+import {selectedPlugin} from '@/prosemirror/extensions/selected'
+import {containerViews, createContainerPlugin} from '@/prosemirror/extensions/container'
+import {createFileListingPlugin, fileListingKeymap} from '@/prosemirror/extensions/autocomplete/file-listing'
+import {createWordCompletionPlugins, wordCompletionKeymap} from '@/prosemirror/extensions/autocomplete/word-completion'
 import {Ctrl} from '@/services'
 import {plainSchema, schema} from '@/prosemirror/schema'
 import {isTauri} from '@/env'
@@ -41,15 +42,15 @@ export const createPlugins = (props: Props): Plugin[] => {
 
   const plugins = [
     // keymap
-    wordCompletion.keymap,
-    taskList.keymap(s),
-    tab.keymap(s),
-    table.keymap,
+    wordCompletionKeymap,
+    createTaskListKeymap(s),
+    createTabKeymap(s),
+    tableKeymap,
     keymap(buildKeymap(s)),
     keymap(baseKeymap),
-    codeBlock.keymap,
-    code.keymap,
-    fileListing.keymap,
+    codeBlockKeymap,
+    codeKeymap,
+    fileListingKeymap,
 
     // plugins for all modes
     placeholder('Start typing ...'),
@@ -58,7 +59,7 @@ export const createPlugins = (props: Props): Plugin[] => {
   ]
 
   if (props.type) {
-    plugins.push(...collab.plugins(props.ctrl, props.type))
+    plugins.push(...createCollabPlugins(props.ctrl, props.type))
   }
 
   if (props.dropCursor) {
@@ -67,21 +68,23 @@ export const createPlugins = (props: Props): Plugin[] => {
 
   if (!isMarkdown) {
     plugins.push(...[
-      markdown.plugin(s),
-      taskList.plugin(s),
-      codeBlock.plugin(s),
-      code.plugin(s),
-      emphasis.plugin(s),
-      inputParser.plugin(createMarkdownParser(s)),
-      ...table.plugins(props.ctrl, s),
-      container.plugin(s),
-      selected.plugin,
-      pasteMarkdown.plugin(s),
+      createMarkdownPlugins(s),
+      createTaskListPlugin(s),
+      createCodeBlockPlugin(s),
+      inputRules({rules: [
+        codeInputRule,
+        ...emphasisInputRules,
+      ]}),
+      createInputParserPlugin(createMarkdownParser(s)),
+      ...createTablePlugins(props.ctrl, s),
+      createContainerPlugin(s),
+      selectedPlugin,
+      createPasteMarkdownPlugin(s),
     ])
   }
 
-  if (isTauri()) plugins.push(fileListing.plugin(props.ctrl))
-  plugins.push(...wordCompletion.plugins(props.ctrl))
+  if (isTauri()) plugins.push(createFileListingPlugin(props.ctrl))
+  plugins.push(...createWordCompletionPlugins(props.ctrl))
 
   return plugins
 }
@@ -90,10 +93,10 @@ export const createNodeViews = (ctrl: Ctrl) => {
   let nodeViews = {}
 
   const views = [
-    codeBlock.views(ctrl),
-    taskList.views(),
-    container.views(),
-    image.views(ctrl),
+    createCodeBlockViews(ctrl),
+    taskListViews,
+    containerViews,
+    createImageViews(ctrl),
   ]
 
   for (const v of views) {

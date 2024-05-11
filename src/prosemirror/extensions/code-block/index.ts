@@ -1,13 +1,13 @@
 import {DOMOutputSpec, NodeType, Schema} from 'prosemirror-model'
 import {EditorView} from 'prosemirror-view'
 import {EditorState, Selection, Transaction, TextSelection} from 'prosemirror-state'
-import {keymap as createKeymap} from 'prosemirror-keymap'
+import {keymap} from 'prosemirror-keymap'
 import {inputRules, textblockTypeInputRule} from 'prosemirror-inputrules'
 import {Ctrl} from '@/services'
 import {CodeBlockView} from './view'
 import {ViewConfig} from '../..'
 
-export const schemaSpec = {
+export const codeBlockSchemaSpec = {
   nodes: {
     code_block: {
       content: 'text*',
@@ -68,7 +68,7 @@ const arrowHandler = (dir: Direction) => (
   return true
 }
 
-const codeBlockKeymap = {
+export const codeBlockKeymap = keymap({
   ArrowLeft: arrowHandler('left'),
   ArrowRight: arrowHandler('right'),
   ArrowUp: arrowHandler('up'),
@@ -77,13 +77,12 @@ const codeBlockKeymap = {
   'Shift-ArrowRight': arrowHandler('right'),
   'Shift-ArrowUp': arrowHandler('up'),
   'Shift-ArrowDown': arrowHandler('down'),
-}
+})
 
-export const keymap = createKeymap(codeBlockKeymap)
+export const createCodeBlockPlugin = (schema: Schema) =>
+  inputRules({rules: [codeBlockRule(schema.nodes.code_block)]})
 
-export const plugin = (schema: Schema) => inputRules({rules: [codeBlockRule(schema.nodes.code_block)]})
-
-export const views = (ctrl: Ctrl): ViewConfig => ({
+export const createCodeBlockViews = (ctrl: Ctrl): ViewConfig => ({
   nodeViews: {
     code_block: (node, view, getPos, _decos, innerDecos) =>
       new CodeBlockView(node, view, getPos, innerDecos, ctrl)

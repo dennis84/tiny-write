@@ -1,6 +1,6 @@
 import {DOMOutputSpec, Node} from 'prosemirror-model'
 
-export const schemaSpec = {
+export const listSchemaSpec = {
   nodes: {
     ordered_list: {
       content: 'list_item+',

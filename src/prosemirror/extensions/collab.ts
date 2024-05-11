@@ -11,7 +11,7 @@ const cursorBuilder = (user: any): HTMLElement => {
   return cursor
 }
 
-export const schemaSpec = {
+export const collabSchemaSpec = {
   marks: {
     ychange: {
       attrs: {
@@ -27,7 +27,7 @@ export const schemaSpec = {
   }
 }
 
-export const plugins = (ctrl: Ctrl, type: Y.XmlFragment) => [
+export const createCollabPlugins = (ctrl: Ctrl, type: Y.XmlFragment) => [
   ySyncPlugin(type, {
     permanentUserData: ctrl.collab?.permanentUserData,
     onFirstRender: () => ctrl.collab.setRendered(),

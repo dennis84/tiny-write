@@ -2,7 +2,7 @@ import {EditorState, Transaction} from 'prosemirror-state'
 import {EditorView} from 'prosemirror-view'
 import {Schema} from 'prosemirror-model'
 import {sinkListItem, liftListItem} from 'prosemirror-schema-list'
-import {keymap as createKeymap} from 'prosemirror-keymap'
+import {keymap} from 'prosemirror-keymap'
 
 const onTab = (schema: Schema) => (
   state: EditorState,
@@ -23,7 +23,7 @@ const onTab = (schema: Schema) => (
   return false
 }
 
-export const keymap = (schema: Schema) => createKeymap({
+export const createTabKeymap = (schema: Schema) => keymap({
   'Tab': onTab(schema),
   'Shift-Tab': liftListItem(schema.nodes.list_item),
 })

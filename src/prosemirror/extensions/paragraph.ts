@@ -1,6 +1,6 @@
 import {DOMOutputSpec} from 'prosemirror-model'
 
-export const schemaSpec = {
+export const paragraphSchemaSpec = {
   nodes: {
     paragraph: {
       content: 'inline*',

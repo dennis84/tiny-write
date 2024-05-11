@@ -1,7 +1,7 @@
 import {EditorState, Selection} from 'prosemirror-state'
 import {DOMOutputSpec, Schema} from 'prosemirror-model'
 import {InputRule, inputRules} from 'prosemirror-inputrules'
-import {keymap as createKeymap} from 'prosemirror-keymap'
+import {keymap} from 'prosemirror-keymap'
 import {
   addRowAfter,
   deleteRow,
@@ -29,7 +29,7 @@ const defaultSchema = tableNodes({
   },
 })
 
-export const schemaSpec = {
+export const tableSchemaSpec = {
   nodes: {
     ...defaultSchema,
     table: {
@@ -69,7 +69,7 @@ const tableInputRule = (schema: Schema) => new InputRule(
   }
 )
 
-export const keymap = createKeymap({
+export const tableKeymap = keymap({
   'Ctrl-Enter': (state, dispatch) => {
     const cellPos = getSelectionCell(state)
     if (!cellPos) return false
@@ -170,7 +170,7 @@ export const keymap = createKeymap({
   },
 })
 
-export const plugins = (ctrl: Ctrl, schema: Schema) => [
+export const createTablePlugins = (ctrl: Ctrl, schema: Schema) => [
   inputRules({rules: [tableInputRule(schema)]}),
   cellMenu(ctrl.app.layoutRef),
 ]

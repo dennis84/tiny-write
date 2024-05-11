@@ -4,7 +4,7 @@ import {EditorView} from 'prosemirror-view'
 import {inputRules, wrappingInputRule} from 'prosemirror-inputrules'
 import {ViewConfig} from '..'
 
-export const schemaSpec = {
+export const containerSchemaSpec = {
   nodes: {
     container: {
       group: 'block',
@@ -77,14 +77,14 @@ class ContainerView {
   }
 }
 
-export const plugin = (schema: Schema) => inputRules({rules: [
+export const createContainerPlugin = (schema: Schema) => inputRules({rules: [
   containerRule(schema.nodes.container),
 ]})
 
-export const views = (): ViewConfig => ({
+export const containerViews: ViewConfig = {
   nodeViews: {
     container: (node, view, getPos) => {
       return new ContainerView(node, view, getPos)
     }
   }
-})
+}

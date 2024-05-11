@@ -1,7 +1,7 @@
 import {Plugin} from 'prosemirror-state'
 import {Decoration, DecorationSet} from 'prosemirror-view'
 
-export const plugin = new Plugin({
+export const selectedPlugin = new Plugin({
   props: {
     decorations(state) {
       const decos: Decoration[] = []
