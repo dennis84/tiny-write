@@ -1,4 +1,4 @@
-import {Node, Schema} from 'prosemirror-model'
+import {Schema} from 'prosemirror-model'
 import {paragraphSchemaSpec} from './extensions/paragraph'
 import {headingSchemaSpec} from './extensions/heading'
 import {listSchemaSpec} from './extensions/list'
@@ -13,23 +13,6 @@ import {containerSchemaSpec} from './extensions/container'
 import {codeBlockSchemaSpec} from './extensions/code-block'
 import {tableSchemaSpec} from './extensions/table'
 import {taskListSchemaSpec} from './extensions/task-list'
-
-export const plainSchema = new Schema({
-  nodes: {
-    doc: {
-      content: 'block+'
-    },
-    paragraph: {
-      content: 'inline*',
-      group: 'block',
-      draggable: true,
-      toDOM: (node: Node) => ['p', {class: node.content.size > 500 ? 'truncate' : undefined}, 0],
-    },
-    text: {
-      group: 'inline'
-    },
-  }
-})
 
 export const schema = new Schema({
   nodes: {

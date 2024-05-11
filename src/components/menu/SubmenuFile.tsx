@@ -27,8 +27,6 @@ export default ({maybeHide}: {maybeHide: () => void}) => {
 
   const onClear = () => ctrl.editor.clear()
 
-  const onToggleMarkdown = () => ctrl.editor.toggleMarkdown()
-
   createEffect(async () => {
     if (!ctrl.file.currentFile?.path) return
     const rel = await remote.toRelativePath(ctrl.file.currentFile?.path)
@@ -53,9 +51,6 @@ export default ({maybeHide}: {maybeHide: () => void}) => {
           onClick={onClear}
           data-testid="clear">
           Clear file 🧽 <Keys keys={[modKey, 'w']} />
-        </Link>
-        <Link onClick={onToggleMarkdown} data-testid="markdown">
-          Markdown mode {ctrl.file.currentFile?.markdown && '✅'}
         </Link>
       </Sub>
     </>

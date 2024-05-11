@@ -52,7 +52,6 @@ export const Editor = () => {
         config={store.config}
         mode={store.mode}
         spellcheck={store.config.spellcheck}
-        markdown={ctrl.file.currentFile?.markdown}
         data-tauri-drag-region="true"
       />
     </Scroll>

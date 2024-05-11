@@ -197,7 +197,6 @@ export interface File {
   lastModified?: Date;
   path?: string;
   newFile?: string;
-  markdown?: boolean;
   active?: boolean;
   deleted?: boolean;
   editorView?: EditorView;

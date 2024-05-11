@@ -1,12 +1,9 @@
 import {Store} from 'solid-js/store'
 import {convertFileSrc} from '@tauri-apps/api/core'
 import {EditorView} from 'prosemirror-view'
-import markdownit from 'markdown-it'
 import * as remote from '@/remote'
 import {Mode, State} from '@/state'
 import {Ctrl} from '.'
-
-const md = markdownit({html: false})
 
 export class MediaService {
   constructor(
@@ -20,12 +17,11 @@ export class MediaService {
     if (this.store.mode === Mode.Editor) {
       const currentFile = this.ctrl.file.currentFile
       if (!currentFile?.editorView) return
-      this.insert(currentFile.editorView, currentFile.markdown ?? false, data, x, y)
+      this.insert(currentFile.editorView, data, x, y)
     } else if (this.store.mode === Mode.Canvas) {
       const active = this.ctrl.canvas.activeEditorElement
       if (active?.editorView) {
-        const file = this.ctrl.file.findFileById(active?.id)
-        this.insert(active.editorView, file?.markdown ?? false, data, x, y)
+        this.insert(active.editorView, data, x, y)
       } else {
         const img = await this.loadImage(data)
         const point = this.ctrl.canvas.getPosition([x, y])
@@ -48,7 +44,7 @@ export class MediaService {
       if (this.store.mode === Mode.Editor) {
         const currentFile = this.ctrl.file.currentFile
         if (!currentFile?.editorView) return
-        this.insert(currentFile.editorView, currentFile.markdown ?? false, relativePath, x, y, mime)
+        this.insert(currentFile.editorView, relativePath, x, y, mime)
       } else {
         const src = await this.getImagePath(relativePath, basePath)
         const point = this.ctrl.canvas.getPosition([x, y])
@@ -76,15 +72,8 @@ export class MediaService {
     return convertFileSrc(absolutePath)
   }
 
-  private insert(view: EditorView, markdown: boolean, data: string, left: number, top: number, mime?: string) {
-    if (markdown) {
-      const link = md.normalizeLink(data)
-      const text = `![](${link})`
-      const pos = view.posAtCoords({left, top})
-      const tr = view.state.tr
-      tr.insertText(text, pos?.pos ?? view.state.doc.content.size)
-      view.dispatch(tr)
-    } else if (mime && mime.startsWith('video/')) {
+  private insert(view: EditorView, data: string, left: number, top: number, mime?: string) {
+    if (mime && mime.startsWith('video/')) {
       this.insertVideo(view, data, mime, left, top)
     } else {
       this.insertImage(view, data, left, top)

@@ -78,7 +78,6 @@ export class FileService {
       lastModified: file.lastModified,
       path: file.path,
       newFile: file.newFile,
-      markdown: file.markdown,
       active: file.active,
       deleted: file.deleted,
       versions: file.versions.map((v) => ({
@@ -91,7 +90,6 @@ export class FileService {
   static createFile(params: Partial<File> = {}): File {
     const ydoc = params.ydoc ?? Y.encodeStateAsUpdate(FileService.createYdoc())
     return {
-      markdown: false,
       ...params,
       id: params.id ?? uuidv4(),
       ydoc,
@@ -161,7 +159,6 @@ export class FileService {
           lastModified: new Date(file.lastModified),
           path: file.path,
           newFile: file.path,
-          markdown: file.markdown,
           active: file.active,
           deleted: file.deleted,
           versions: (file.versions ?? []).map((v) => ({

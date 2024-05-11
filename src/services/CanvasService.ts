@@ -698,11 +698,7 @@ export class CanvasService {
     if (!editorView && !node) return
 
     const type = this.store.collab?.ydoc?.getXmlFragment(id)
-    const plugins = createPlugins({
-      ctrl: this.ctrl,
-      markdown: false,
-      type,
-    })
+    const plugins = createPlugins({ctrl: this.ctrl, type})
 
     const {nodeViews} = createNodeViews(this.ctrl)
     const editorState = EditorState.fromJSON({schema, plugins}, createEmptyText())

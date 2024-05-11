@@ -61,30 +61,6 @@ test('dropFile - image on editor', async () => {
   expect(fromBase64(data)).toBe('123')
 })
 
-test('dropFile - image on editor in markdown mode', async () => {
-  const {ctrl} = createCtrl(createState({
-    mode: Mode.Editor,
-    files: [
-      {
-        id: '1',
-        ydoc: createYUpdate('1', []),
-        active: true,
-        markdown: true,
-        lastModified,
-        versions: [],
-      }
-    ],
-  }))
-  const target = document.createElement('div')
-  await ctrl.app.init()
-  ctrl.editor.renderEditor(target)
-
-  const blob = new Blob(['123'])
-
-  await ctrl.media.dropFile(blob, [0, 0])
-  expect(getText(ctrl)).toBe(`![](data:application/octet-stream;base64,${toBase64('123')})`)
-})
-
 test('dropFile - image on canvas', async () => {
   const editorElement = {
     id: '1',
@@ -144,7 +120,7 @@ test('dropFile - image on canvas with active editor', async () => {
   const {ctrl} = createCtrl(createState({
     mode: Mode.Canvas,
     files: [
-      {id: '1', ydoc: createYUpdate('1', []), versions: [], markdown: false}
+      {id: '1', ydoc: createYUpdate('1', []), versions: []}
     ],
     canvases: [
       {

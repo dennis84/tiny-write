@@ -6,38 +6,6 @@ test.beforeEach(async ({page}) => {
   await page.waitForSelector('[data-testid="initialized"]')
 })
 
-test('markdown table to html and back', async ({page}) => {
-  await page.click('[data-testid="burger"]')
-  await page.click('[data-testid="markdown"]')
-
-  await page.locator('.ProseMirror').pressSequentially('| Foo | Bar | Baz |', {delay})
-  await page.keyboard.press('Enter')
-  await page.locator('.ProseMirror').pressSequentially('| - | - | -: |', {delay})
-  await page.keyboard.press('Enter')
-  await page.locator('.ProseMirror').pressSequentially('| 1 | 2 | 3 |', {delay})
-
-  await page.click('[data-testid="markdown"]')
-
-  await expect(page.locator('.ProseMirror table tr th:nth-of-type(1)')).toHaveText('Foo')
-  await expect(page.locator('.ProseMirror table tr th:nth-of-type(2)')).toHaveText('Bar')
-  await expect(page.locator('.ProseMirror table tr th:nth-of-type(3)')).toHaveText('Baz')
-  await expect(page.locator('.ProseMirror table tr td:nth-of-type(1)')).toHaveText('1')
-  await expect(page.locator('.ProseMirror table tr td:nth-of-type(2)')).toHaveText('2')
-  await expect(page.locator('.ProseMirror table tr td:nth-of-type(3)')).toHaveText('3')
-
-  await expect(page.locator('.ProseMirror table tr th:nth-of-type(3)')).toHaveCSS('text-align', 'right')
-  await expect(page.locator('.ProseMirror table tr td:nth-of-type(3)')).toHaveCSS('text-align', 'right')
-
-  await page.click('[data-testid="markdown"]')
-
-  await lineTextEq(page, 1, '| Foo | Bar | Baz |')
-  await lineTextEq(page, 2, '| --- | --- | ---:|')
-  await lineTextEq(page, 3, '| 1 | 2 | 3 |')
-
-  await page.click('[data-testid="markdown"]')
-  await page.click('[data-testid="burger"]')
-})
-
 test('table keymap', async ({page}) => {
   await page.locator('.ProseMirror').pressSequentially('||| ', {delay})
   await expect(page.locator('.ProseMirror table tr th:nth-of-type(1)')).toHaveText('')

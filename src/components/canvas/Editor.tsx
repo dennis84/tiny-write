@@ -85,7 +85,6 @@ export default ({element, index}: {element: CanvasEditorElement; index: number})
       >
         <CanvasEditor
           config={store.config}
-          markdown={false}
           ref={editorRef}
           data-testid="canvas_editor"
         />

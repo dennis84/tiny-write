@@ -4,7 +4,6 @@ import {Config, Mode} from '@/state'
 interface Props {
   config: Config;
   mode: Mode;
-  markdown: boolean;
 }
 
 const codeBlock = (props: Props) => `
@@ -165,7 +164,6 @@ const codeBlock = (props: Props) => `
 const proseMirror = (props: Props) => `
   .ProseMirror {
     ${codeBlock(props)}
-    ${props.markdown ? 'white-space: pre-wrap' : ''};
     cursor: var(--cursor-text);
     tab-size: 4;
     word-wrap: break-word;

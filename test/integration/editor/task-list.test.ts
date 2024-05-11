@@ -26,25 +26,3 @@ test('create tasks', async ({page}) => {
   await page.click(`${getItem(1, 1)} input`)
   await expect(page.locator(`${getItem(1, 1)} input`)).toBeChecked()
 })
-
-test('from/to markdown', async ({page}) => {
-  await page.locator('.ProseMirror').pressSequentially('[ ] task1', {delay})
-  await page.keyboard.press('Enter')
-  await page.locator('.ProseMirror').pressSequentially('task2', {delay})
-  await page.keyboard.press('Enter')
-  await page.locator('.ProseMirror').pressSequentially('task3')
-  await page.click(`${getItem(1, 3)} input`)
-
-  await page.click('[data-testid="burger"]')
-  await page.click('[data-testid="markdown"]')
-
-  await lineTextEq(page, 1, '- [ ] task1')
-  await lineTextEq(page, 2, '- [ ] task2')
-  await lineTextEq(page, 3, '- [x] task3')
-
-  await page.click('[data-testid="markdown"]')
-
-  await expect(page.locator(getItem(1, 1))).toHaveText('task1')
-  await expect(page.locator(getItem(1, 2))).toHaveText('task2')
-  await expect(page.locator(getItem(1, 3))).toHaveText('task3')
-})

@@ -14,7 +14,7 @@ import * as remote from '@/remote'
 import {createPlugins, createEmptyText, createNodeViews} from '@/prosemirror/setup'
 import {schema} from '@/prosemirror/schema'
 import {State, File, FileText, Mode} from '@/state'
-import {serialize, createMarkdownParser} from '@/markdown'
+import {serialize} from '@/markdown'
 import {DB} from '@/db'
 import {Ctrl} from '.'
 import {FileService} from './FileService'
@@ -66,7 +66,6 @@ export class EditorService {
     const type = doc.getXmlFragment(currentFile.id)
     const plugins = createPlugins({
       ctrl: this.ctrl,
-      markdown: currentFile?.markdown,
       type,
       dropCursor: true,
     })
@@ -197,43 +196,6 @@ export class EditorService {
     } catch (error: any) {
       this.ctrl.app.setError({error, fileId: id})
     }
-  }
-
-  async toggleMarkdown() {
-    const currentFile = this.ctrl.file.currentFile
-    const editorState = currentFile?.editorView?.state
-    if (!editorState) return
-
-    const markdown = !currentFile?.markdown
-    let doc: any
-
-    if (markdown) {
-      const lines = serialize(editorState).split('\n')
-      const nodes = lines.map((text) => {
-        return text ? {type: 'paragraph', content: [{type: 'text', text}]} : {type: 'paragraph'}
-      })
-
-      doc = {type: 'doc', content: nodes}
-    } else {
-      const parser = createMarkdownParser(schema)
-      let textContent = ''
-      editorState.doc.forEach((node: Node) => {
-        textContent += `${node.textContent}\n`
-      })
-      const text = parser.parse(textContent)
-      doc = text?.toJSON()
-    }
-
-    this.ctrl.file.updateFile(currentFile!.id, {markdown})
-    this.updateEditorState()
-
-    this.updateText({...createEmptyText(), doc})
-    this.ctrl.file.updateFile(currentFile!.id, {
-      lastModified: new Date(),
-    })
-
-    await this.saveEditor()
-    remote.info(`Toggled markdown mode (markdown=${markdown})`)
   }
 
   async updatePath(path: string) {

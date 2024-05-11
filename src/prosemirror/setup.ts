@@ -24,38 +24,44 @@ import {containerViews, createContainerPlugin} from '@/prosemirror/extensions/co
 import {createFileListingPlugin, fileListingKeymap} from '@/prosemirror/extensions/autocomplete/file-listing'
 import {createWordCompletionPlugins, wordCompletionKeymap} from '@/prosemirror/extensions/autocomplete/word-completion'
 import {Ctrl} from '@/services'
-import {plainSchema, schema} from '@/prosemirror/schema'
+import {schema} from '@/prosemirror/schema'
 import {isTauri} from '@/env'
 import {createMarkdownParser} from '@/markdown'
 
 interface Props {
   ctrl: Ctrl;
   type?: Y.XmlFragment;
-  markdown?: boolean;
   dropCursor?: boolean;
 }
 
 export const createPlugins = (props: Props): Plugin[] => {
-  const isMarkdown = props.markdown ?? false
-
-  const s = isMarkdown ? plainSchema : schema
-
   const plugins = [
     // keymap
     wordCompletionKeymap,
-    createTaskListKeymap(s),
-    createTabKeymap(s),
+    createTaskListKeymap(schema),
+    createTabKeymap(schema),
     tableKeymap,
-    keymap(buildKeymap(s)),
+    keymap(buildKeymap(schema)),
     keymap(baseKeymap),
     codeBlockKeymap,
     codeKeymap,
     fileListingKeymap,
 
-    // plugins for all modes
     placeholder('Start typing ...'),
     scrollIntoView(props.ctrl),
     blockHandle,
+    createMarkdownPlugins(schema),
+    createTaskListPlugin(schema),
+    createCodeBlockPlugin(schema),
+    inputRules({rules: [
+      codeInputRule,
+      ...emphasisInputRules,
+    ]}),
+    createInputParserPlugin(createMarkdownParser(schema)),
+    ...createTablePlugins(props.ctrl, schema),
+    createContainerPlugin(schema),
+    selectedPlugin,
+    createPasteMarkdownPlugin(schema),
   ]
 
   if (props.type) {
@@ -64,23 +70,6 @@ export const createPlugins = (props: Props): Plugin[] => {
 
   if (props.dropCursor) {
     plugins.push(dropCursor({class: 'drop-cursor'}))
-  }
-
-  if (!isMarkdown) {
-    plugins.push(...[
-      createMarkdownPlugins(s),
-      createTaskListPlugin(s),
-      createCodeBlockPlugin(s),
-      inputRules({rules: [
-        codeInputRule,
-        ...emphasisInputRules,
-      ]}),
-      createInputParserPlugin(createMarkdownParser(s)),
-      ...createTablePlugins(props.ctrl, s),
-      createContainerPlugin(s),
-      selectedPlugin,
-      createPasteMarkdownPlugin(s),
-    ])
   }
 
   if (isTauri()) plugins.push(createFileListingPlugin(props.ctrl))
