@@ -80,12 +80,6 @@ const createDragHandle = (editorView: EditorView, getPos: () => number | undefin
   handle.addEventListener('pointerup', onUp)
   handle.addEventListener('mouseup', onMouseUp)
 
-  ;(handle as any).destroy = () => {
-    handle.removeEventListener('pointerdown', onDown)
-    handle.removeEventListener('pointerup', onUp)
-    handle.removeEventListener('mouseup', onMouseUp)
-  }
-
   handle.style.touchAction = 'none'
   handle.setAttribute('contenteditable', 'false')
   const icon = document.createElement('span')
@@ -118,11 +112,9 @@ export const blockHandle = new Plugin({
       tr.doc.forEach((node, offset) => {
         decos.push(Decoration.node(offset, offset + node.nodeSize, {class: 'draggable'}))
         decos.push(Decoration.widget(offset + 1, createDragHandle, {
-          destroy: (node: any) => {
-            node.destroy?.()
-          },
+          // NOTE: disabled bc a conflict with exitCode() from code_block
           // helps against the sync error if the handle button is clicked too quickly
-          stopEvent: () => true
+          // stopEvent: (e) => true
         }))
       })
 

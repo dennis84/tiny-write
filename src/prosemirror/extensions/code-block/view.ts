@@ -88,7 +88,8 @@ export class CodeBlockView {
     }, {
       key: 'Ctrl-Enter',
       run: () => {
-        if (exitCode(this.view.state, this.view.dispatch)) this.view.focus()
+        if (!exitCode(this.view.state, this.view.dispatch)) return false
+        this.view.focus()
         return true
       }
     }, {
