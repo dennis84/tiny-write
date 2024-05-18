@@ -3,7 +3,6 @@ import {Portal} from 'solid-js/web'
 import {styled} from 'solid-styled-components'
 import {Vec} from '@tldraw/editor'
 import {CanvasLinkElement, File, isFile, useState} from '@/state'
-import {schema} from '@/prosemirror/schema'
 
 const Backdrop = styled('div')`
   position: absolute;
@@ -37,8 +36,8 @@ export default () => {
     setContextMenu(undefined)
   }
 
-  const onNewFile = async (link?: CanvasLinkElement, cm?: Vec) => {
-    await ctrl.canvas.newFile(link, cm)
+  const onNewFile = async (code = false, link?: CanvasLinkElement, cm?: Vec) => {
+    await ctrl.canvas.newFile(code, link, cm)
     await ctrl.canvas.removeDeadLinks()
     setContextMenu(undefined)
   }
@@ -53,7 +52,7 @@ export default () => {
     }
 
     onMount(async () => {
-      setTitle(await ctrl.file.getTitle(schema, p.file))
+      setTitle(await ctrl.file.getTitle(p.file))
     })
 
     return (
@@ -110,7 +109,16 @@ export default () => {
           <Backdrop onClick={onBackdropClick} />
         </Portal>
         <div class="canvas-link-end-tooltip" style={coordsStyle(link, cm)}>
-          <div onClick={() => onNewFile(link, cm)} data-testid="link_end_new_file">🆕 New file</div>
+          <div
+            onClick={() => onNewFile(false, link, cm)}
+            data-testid="link_end_new_file">
+            ✍️ New file
+          </div>
+          <div
+            onClick={() => onNewFile(true, link, cm)}
+            data-testid="link_end_new_code_file">
+            🖥️ New code file
+          </div>
           <Show when={getFiles()}>
             {(files) => <>
               <hr class="divider" />

@@ -1,14 +1,14 @@
 import {onCleanup, onMount, Show} from 'solid-js'
 import {css} from 'solid-styled-components'
-import {CanvasEditorElement, useState} from '@/state'
+import {CanvasCodeElement, useState} from '@/state'
 import {Selection} from '@/services/CanvasService'
-import {CanvasEditor} from '@/components/editor/Style'
 import {Scroll} from '@/components/Layout'
 import Bounds from './Bounds'
 import LinkHandles from './LinkHandles'
 import {IndexType, zIndex} from '@/utils/z-index'
+import {CodeMirror} from '../code/CodeEditor'
 
-export default ({element, index}: {element: CanvasEditorElement; index: number}) => {
+export default ({element, index}: {element: CanvasCodeElement; index: number}) => {
   const [store, ctrl] = useState()
   let containerRef!: HTMLDivElement
   let editorRef!: HTMLDivElement
@@ -30,7 +30,7 @@ export default ({element, index}: {element: CanvasEditorElement; index: number})
   }
 
   onMount(() => {
-    ctrl.editor.renderEditor(element.id, editorRef!)
+    ctrl.code.renderEditor(element.id, editorRef)
   })
 
   onCleanup(() => {
@@ -83,10 +83,9 @@ export default ({element, index}: {element: CanvasEditorElement; index: number})
           `}
         `}
       >
-        <CanvasEditor
-          config={store.config}
+        <CodeMirror
           ref={editorRef}
-          data-testid="canvas_editor"
+          data-testid="canvas_code_editor"
         />
       </Scroll>
     </>

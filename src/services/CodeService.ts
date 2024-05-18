@@ -1,0 +1,188 @@
+import {SetStoreFunction, Store, unwrap} from 'solid-js/store'
+import {EditorView, drawSelection, highlightActiveLine, keymap, lineNumbers} from '@codemirror/view'
+import {Compartment, EditorState} from '@codemirror/state'
+import {defaultKeymap, indentWithTab} from '@codemirror/commands'
+import {autocompletion, closeBrackets, closeBracketsKeymap, completionKeymap} from '@codemirror/autocomplete'
+import {bracketMatching, foldGutter, foldKeymap, indentOnInput, indentUnit} from '@codemirror/language'
+import {linter} from '@codemirror/lint'
+import {yCollab} from 'y-codemirror.next'
+import {getTheme} from '@/prosemirror/extensions/code-block/theme'
+import {highlight} from '@/prosemirror/extensions/code-block/lang'
+import {findWords, tabCompletionKeymap} from '@/prosemirror/extensions/code-block/completion'
+import {File, Mode, State} from '@/state'
+import * as remote from '@/remote'
+import {Ctrl} from '.'
+import {FileService} from './FileService'
+import {CollabService} from './CollabService'
+import {PrettierService} from './PrettierService'
+
+export class CodeService {
+  private prettier = new PrettierService()
+
+  constructor(
+    private ctrl: Ctrl,
+    private store: Store<State>,
+    private setState: SetStoreFunction<State>,
+  ) {}
+
+  async newFile() {
+    const state = unwrap(this.store)
+    const file = FileService.createFile({code: true})
+
+    const update = await FileService.activateFile({
+      ...state,
+      args: {cwd: state.args?.cwd},
+      files: [...state.files, file],
+    }, file)
+
+    update.collab = CollabService.create(file.id, state.mode, false)
+    this.setState(update)
+  }
+
+  async openFile(id: string) {
+    remote.debug(`Open file: ${id}`)
+    const state: State = unwrap(this.store)
+
+    try {
+      const file = this.ctrl.file.findFileById(id)
+      let text: string | undefined
+
+      if (file?.path) {
+        text = (await FileService.loadTextFile(file.path)).text
+      }
+
+      if (!file) return
+      if (state.args?.room) state.args.room = undefined
+
+      const update = await FileService.activateFile(state, file)
+      update.collab = CollabService.create(file.id, update.mode, false)
+      this.setState(update)
+      this.ctrl.collab.init()
+      if (text) this.updateText(text)
+    } catch (error: any) {
+      this.ctrl.app.setError({error, fileId: id})
+    }
+  }
+
+  renderEditor(id: string, el: HTMLElement) {
+    let file = this.ctrl.file.findFileById(id)
+
+    if (!file) {
+      file = FileService.createFile({id, code: true})
+      this.setState('files', (prev) => [...prev, file!])
+    }
+
+    if (!file?.path) {
+      this.ctrl.collab.apply(file)
+    }
+
+    this.updateEditorState(file, el)
+  }
+
+  updateText(doc: string | undefined) {
+    if (!doc) return
+    console.log('updateText', doc)
+  }
+
+  updateConfig(file: File) {
+    this.updateEditorState(file)
+  }
+
+  async prettify() {
+    const currentFile = this.ctrl.file.currentFile
+    if (!currentFile) return
+    const doc = this.store.collab?.ydoc.getText(currentFile.id)
+    const code = doc?.toString()
+    if (code) {
+      try {
+        const value = await this.prettier.format(code, 'js', this.store.config.prettier)
+        doc?.delete(0, doc.length)
+        doc?.insert(0, value)
+      } catch (e) {
+        // ignore
+      }
+    }
+
+  }
+
+  private updateEditorState(file: File, el?: HTMLElement) {
+    if (!file.codeEditorView && !el) {
+      return
+    }
+
+    const doc = this.store.collab?.ydoc.getText(file.id)
+    if (!doc) return
+
+    const langExt = new Compartment
+    const theme = getTheme(this.ctrl.config.codeTheme.value)
+    const langSupport = highlight('js')
+
+    const parent = file.codeEditorView?.dom.parentElement ?? el
+    file.codeEditorView?.destroy()
+
+    const extensions = [
+      keymap.of(closeBracketsKeymap),
+      keymap.of(foldKeymap),
+      keymap.of([
+        ...defaultKeymap,
+        ...completionKeymap,
+        ...tabCompletionKeymap,
+        indentWithTab,
+      ]),
+      theme,
+      drawSelection(),
+      EditorState.allowMultipleSelections.of(true),
+      indentOnInput(),
+      bracketMatching(),
+      closeBrackets(),
+      highlightActiveLine(),
+      yCollab(doc, this.store.collab?.provider.awareness, {
+        undoManager: this.store.collab?.undoManager ?? false
+      }),
+      linter(() => []),
+      EditorState.tabSize.of(this.ctrl.config.prettier.tabWidth),
+      indentUnit.of(
+        this.ctrl.config.prettier.useTabs ?
+          '\t' :
+          ' '.repeat(this.ctrl.config.prettier.tabWidth)
+      ),
+      langExt.of(langSupport),
+      EditorView.updateListener.of(() => this.onUpdate()),
+      langSupport.language.data.of({autocomplete: findWords}),
+      autocompletion(),
+    ]
+
+    if (this.store.mode !== Mode.Canvas) {
+      extensions.push([
+        lineNumbers(),
+        foldGutter(),
+        EditorView.lineWrapping,
+      ])
+    }
+
+    const editorView = new EditorView({
+      parent,
+      doc: doc.toString(),
+      extensions,
+    })
+
+    const fileIndex = this.store.files.findIndex((f) => f.id === file.id)
+    this.setState('files', fileIndex, 'codeEditorView', editorView)
+  }
+
+  private async onUpdate() {
+    const currentFile = this.ctrl.file.currentFile
+    if (!currentFile) return
+    this.ctrl.file.updateFile(currentFile.id, {
+      lastModified: new Date()
+    })
+    await this.saveEditor()
+  }
+
+  private async saveEditor() {
+    const file = this.ctrl.file.currentFile
+    if (!file) return
+    await FileService.saveFile(file)
+    // TODO: write to file
+  }
+}

@@ -15,11 +15,11 @@ import {
   CanvasVideoElement,
 } from '@/state'
 import {DB} from '@/db'
-import {createCtrl, Ctrl} from '@/services'
+import {Ctrl} from '@/services'
 import {CanvasService} from '@/services/CanvasService'
 import {FileService} from '@/services/FileService'
 import {CollabService} from '@/services/CollabService'
-import {createCollabMock, createYdoc, createYUpdate, waitFor} from '../util'
+import {createCollabMock, createYUpdate} from '../util'
 
 vi.mock('mermaid', () => ({}))
 vi.mock('@/db', () => ({DB: mock()}))
@@ -158,16 +158,6 @@ test('updateCanvasElement', async () => {
   const imageEl = service.currentCanvas?.elements[3] as CanvasImageElement
   expect(imageEl.width).toBe(200)
   expect(imageEl.height).toBe(200)
-
-  // unset editorView
-  const editorView = mock<EditorView>()
-  service.updateCanvasElement('1', {editorView})
-  const editorEl1 = service.currentCanvas?.elements[0] as CanvasEditorElement
-  expect(editorEl1.editorView).toBe(editorView)
-
-  service.updateCanvasElement('1', {editorView: undefined})
-  const editorEl2 = service.currentCanvas?.elements[0] as CanvasEditorElement
-  expect(editorEl2.editorView).toBe(undefined)
 })
 
 test('backToContent', async () => {
@@ -380,12 +370,15 @@ test('deselect', () => {
 test('newCanvas', async () => {
   const editorView = mock<EditorView>()
   const [store, setState] = createStore(createState({
+    files: [
+      {id: '1', ydoc: createYUpdate('1', []), versions: [], editorView},
+    ],
     canvases: [
       createCanvas({
         id: '1',
         active: true,
         elements: [
-          createEditorElement({id: '1', selected: true, active: true, editorView}),
+          createEditorElement({id: '1', selected: true, active: true}),
         ],
       }),
     ],
@@ -400,8 +393,7 @@ test('newCanvas', async () => {
   expect(store.canvases[1].active).toBe(true)
 
   // old editor views are destroyed
-  const editorEl = store.canvases[0]?.elements[0] as CanvasEditorElement
-  expect(editorEl.editorView).toBeUndefined()
+  expect(store.files[0]?.editorView).toBeUndefined()
   expect(editorView.destroy.mock.calls.length).toBe(1)
 
   // Add another canvas
@@ -437,34 +429,14 @@ test('removeElements', async () => {
   expect(service.currentCanvas?.elements[0].id).toBe('2')
 })
 
-test('destroyElement', () => {
-  const editorView = mock<EditorView>()
-  const [store, setState] = createStore(createState({
-    canvases: [
-      createCanvas({
-        id: '1',
-        active: true,
-        elements: [
-          createEditorElement({id: '1', editorView}),
-        ],
-      }),
-    ],
-  }))
-
-  const service = new CanvasService(ctrl, store, setState)
-  service.destroyElement('1')
-
-  const editorEl = service.currentCanvas?.elements[0] as CanvasEditorElement
-  expect(editorEl.editorView).toBeNull()
-
-  expect(editorView.destroy.mock.calls.length).toBe(1)
-})
-
 test('open', async () => {
   const editorView = mock<EditorView>()
   const [store, setState] = createStore(createState({
+    files: [
+      {id: '1', ydoc: createYUpdate('1', []), versions: [], editorView},
+    ],
     canvases: [
-      createCanvas({id: '1', elements: [createEditorElement({editorView})]}),
+      createCanvas({id: '1', elements: [createEditorElement({id: '1'})]}),
       createCanvas({id: '2'}),
     ],
   }))
@@ -480,6 +452,7 @@ test('open', async () => {
   expect(service.currentCanvas?.id).toBe('2')
   expect(DB.updateCanvas).toHaveReturnedTimes(2)
 
+  expect(store.files[0].editorView).toBeUndefined()
   expect(editorView.destroy.mock.calls.length).toBe(1)
 })
 
@@ -529,7 +502,7 @@ test.each([
   vi.spyOn(CollabService, 'create').mockReturnValue(createCollabMock())
 
   const service = new CanvasService(ctrl, store, setState)
-  await service.newFile(link)
+  await service.newFile(false, link)
 
   expect(service.currentCanvas?.elements.length).toBe(3)
   const editorEl = service.currentCanvas?.elements[2] as CanvasEditorElement
@@ -684,76 +657,6 @@ test('clearCanvas', async () => {
   expect(service.currentCanvas?.elements.length).toBe(0)
 })
 
-test('renderEditor', async () => {
-  const element = createEditorElement({id: '1'})
-  const init = createState({
-    files: [
-      {id: '1', ydoc: createYUpdate('1', ['Test']), versions: [], active: true},
-    ],
-    canvases: [
-      createCanvas({
-        id: '1',
-        active: true,
-        elements: [element],
-      }),
-    ],
-  })
-
-  const [, setState] = createStore(init)
-  const {ctrl, store} = createCtrl(init)
-  const target = document.createElement('div')
-
-  const service = new CanvasService(ctrl, store, setState)
-  setState('collab', CollabService.create('test'))
-
-  service.renderEditor(element, target)
-
-  const editor = service.currentCanvas?.elements[0] as CanvasEditorElement
-
-  await waitFor(() => {
-    expect(editor?.editorView?.state.doc.textContent).toBe('Test')
-  })
-
-  const tr = editor?.editorView?.state.tr
-  tr!.insertText('123')
-  editor?.editorView?.dispatch(tr!)
-
-  await waitFor(() => {
-    expect(editor?.editorView?.state.doc.textContent).toBe('Test123')
-  })
-})
-
-test('renderEditor - collab', async () => {
-  const element = createEditorElement({id: '1'})
-  const init = createState({
-    files: [],
-    canvases: [
-      createCanvas({
-        id: 'c1',
-        active: true,
-        elements: [element],
-      }),
-    ],
-  })
-
-  const [, setState] = createStore(init)
-  const {ctrl, store} = createCtrl(init)
-  const target = document.createElement('div')
-  const collab = CollabService.create('test')
-  collab.ydoc = createYdoc('1', ['Test'])
-
-  const service = new CanvasService(ctrl, store, setState)
-  setState('collab', collab)
-
-  service.renderEditor(element, target)
-
-  const editor = service.currentCanvas?.elements[0] as CanvasEditorElement
-
-  await waitFor(() => {
-    expect(editor?.editorView?.state.doc.textContent).toBe('Test')
-  })
-})
-
 test('getElementNear', () => {
   const [store, setState] = createStore(createState({
     canvases: [
@@ -881,13 +784,19 @@ test('selectBox - active editor', () => {
             height: 100,
             active: true,
             selected: true,
-            editorView
           }),
           createEditorElement({id: '2', x: 100, y: 0, width: 100, height: 100}),
         ],
       }),
     ],
   }))
+
+  ctrl.file.findFileById.mockReturnValue({
+    id: '1',
+    ydoc: createYUpdate('1', []),
+    versions: [],
+    editorView,
+  })
 
   const service = new CanvasService(ctrl, store, setState)
   expect(service.selection).toBe(undefined)

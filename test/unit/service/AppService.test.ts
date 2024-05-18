@@ -31,7 +31,7 @@ const createCanvas = (props: Partial<Canvas> = {}): Canvas => ({
 const ctrl = mockDeep<Ctrl>()
 
 test('init - new canvas collab', async () => {
-  vi.stubGlobal('location', ({pathname: '/c/1'}))
+  vi.stubGlobal('location', ({pathname: '/canvas/1'}))
   const initial = createState()
   const [store, setState] = createStore(initial)
   const service = new AppService(ctrl, store, setState)
@@ -48,7 +48,7 @@ test('init - new canvas collab', async () => {
 })
 
 test('init - existing canvas collab', async () => {
-  vi.stubGlobal('location', ({pathname: '/c/1'}))
+  vi.stubGlobal('location', ({pathname: '/canvas/1'}))
 
   const canvas = createCanvas({id: '1'})
   const initial = createState({

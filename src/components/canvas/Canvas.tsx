@@ -2,7 +2,7 @@ import {For, onCleanup, onMount, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {Gesture} from '@use-gesture/vanilla'
 import {Vec} from '@tldraw/editor'
-import {isEditorElement, isLinkElement, isImageElement, useState, isVideoElement} from '@/state'
+import {isEditorElement, isLinkElement, isImageElement, useState, isVideoElement, isCodeElement} from '@/state'
 import {isTauri} from '@/env'
 import Grid from './Grid'
 import Editor from './Editor'
@@ -12,6 +12,7 @@ import Video from './Video'
 import LinkEnd from './LinkEnd'
 import Bounds from './Bounds'
 import Select from '../Select'
+import CodeEditor from './CodeEditor'
 
 const Container = styled('div')`
   width: 100%;
@@ -96,7 +97,7 @@ export default () => {
         if (pinching) return false
 
         const target = event.target as HTMLElement
-        if (target.closest('.ProseMirror')) {
+        if (target.closest('.ProseMirror') || target.closest('.cm-editor')) {
           return false
         }
 
@@ -158,6 +159,7 @@ export default () => {
         <For each={ctrl.canvas.currentCanvas?.elements}>
           {(element, index) =>
             isEditorElement(element) ? <Editor element={element} index={index()} /> :
+            isCodeElement(element) ? <CodeEditor element={element} index={index()} /> :
             isLinkElement(element) ? <Link element={element} /> :
             isImageElement(element) ? <Image element={element} index={index()} /> :
             isVideoElement(element) ? <Video element={element} index={index()} /> :

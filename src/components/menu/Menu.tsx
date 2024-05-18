@@ -287,19 +287,23 @@ export default () => {
           <Label>View</Label>
           <Sub data-tauri-drag-region="true">
             <Link data-testid="appearance" onClick={() => setShow('theme')}>Appearance 🎨</Link>
-            <Link onClick={() => setShow('code_block')}>Code Blocks 💅</Link>
-            <Link onClick={() => setShow('change_set')}>Change Set 📆</Link>
+            <Link onClick={() => setShow('code_block')}>Code Format 💅</Link>
+            <Show when={store.mode === Mode.Editor}>
+              <Link onClick={() => setShow('change_set')}>Change Set 📆</Link>
+            </Show>
             <Show when={isTauri()}>
               <Link onClick={onToggleFullscreen}>
                 Fullscreen {store.fullscreen && '✅'} <Keys keys={[modKey, 'Enter']} />
               </Link>
             </Show>
-            <Link onClick={onToggleTypewriterMode}>
-              Typewriter mode {store.config.typewriterMode && '✅'}
-            </Link>
-            <Link onClick={onToggleSpellcheck}>
-              Spellcheck {store.config.spellcheck && '✅'}
-            </Link>
+            <Show when={store.mode === Mode.Editor}>
+              <Link onClick={onToggleTypewriterMode}>
+                Typewriter mode {store.config.typewriterMode && '✅'}
+              </Link>
+              <Link onClick={onToggleSpellcheck}>
+                Spellcheck {store.config.spellcheck && '✅'}
+              </Link>
+            </Show>
             <Show when={isTauri()}>
               <Link onClick={onToggleAlwaysOnTop}>
                 Always on Top {store.config.alwaysOnTop && '✅'}

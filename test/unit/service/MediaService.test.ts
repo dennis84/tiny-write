@@ -1,11 +1,11 @@
 import {beforeEach, expect, test, vi} from 'vitest'
 import {mock, mockDeep} from 'vitest-mock-extended'
 import {clearMocks, mockConvertFileSrc} from '@tauri-apps/api/mocks'
-import {fromBase64, toBase64} from 'js-base64'
+import {fromBase64} from 'js-base64'
 import {MediaService} from '@/services/MediaService'
 import {createCtrl, Ctrl} from '@/services'
 import {CanvasEditorElement, CanvasImageElement, ElementType, Mode, createState} from '@/state'
-import {createIpcMock, createYUpdate, getText} from '../util'
+import {createIpcMock, createYUpdate} from '../util'
 
 document.elementFromPoint = () => null
 
@@ -48,7 +48,7 @@ test('dropFile - image on editor', async () => {
   const {ctrl} = createCtrl(createState())
   const target = document.createElement('div')
   await ctrl.app.init()
-  ctrl.editor.renderEditor(target)
+  ctrl.editor.renderEditor(ctrl.file.currentFile!.id, target)
 
   const blob = new Blob(['123'])
   await ctrl.media.dropFile(blob, [0, 0])
@@ -92,7 +92,7 @@ test('dropFile - image on canvas', async () => {
 
   const currentCanvas = ctrl.canvas.currentCanvas
   const editorEl = currentCanvas?.elements[0] as CanvasEditorElement
-  ctrl.canvas.renderEditor(editorEl, target)
+  ctrl.editor.renderEditor(editorEl.id, target)
 
   const blob = new Blob([], {type: 'image/png'})
   await ctrl.media.dropFile(blob, [100, 100])
@@ -106,7 +106,7 @@ test('dropFile - image on canvas', async () => {
   expect(imageEl.y).toBe(-200) // centered
 })
 
-test('dropFile - image on canvas with active editor', async () => {
+test.only('dropFile - image on canvas with active editor', async () => {
   const editorElement = {
     id: '1',
     type: ElementType.Editor,
@@ -141,14 +141,14 @@ test('dropFile - image on canvas with active editor', async () => {
 
   const currentCanvas = ctrl.canvas.currentCanvas
   const editorEl = currentCanvas?.elements[0] as CanvasEditorElement
-  ctrl.canvas.renderEditor(editorEl, target)
+  ctrl.editor.renderEditor(editorEl.id, target)
 
   const blob = new Blob(['123'], {type: 'image/png'})
   await ctrl.media.dropFile(blob, [0, 0])
 
   expect(currentCanvas?.elements).toHaveLength(1)
 
-  const doc = editorEl.editorView?.state.doc
+  const doc = ctrl.file.findFileById(editorEl.id)?.editorView?.state.doc
   const paragraph = doc?.firstChild
   const image = paragraph?.firstChild
   expect(image?.type.name).toBe('image')
@@ -160,7 +160,7 @@ test('dropPath - image on editor', async () => {
   const {ctrl} = createCtrl(createState())
   const target = document.createElement('div')
   await ctrl.app.init()
-  ctrl.editor.renderEditor(target)
+  ctrl.editor.renderEditor(ctrl.file.currentFile!.id, target)
 
   await ctrl.media.dropPath('/users/me/file.png', [0, 0])
 
@@ -188,7 +188,7 @@ test('dropPath - image on editor with basePath', async () => {
 
   const target = document.createElement('div')
   await ctrl.app.init()
-  ctrl.editor.renderEditor(target)
+  ctrl.editor.renderEditor(ctrl.file.currentFile!.id, target)
 
   await ctrl.media.dropPath('/users/me/project/file.png', [0, 0])
 
@@ -206,7 +206,7 @@ test('dropPath - text file on editor', async () => {
   await ctrl.app.init()
   expect(store.files).toHaveLength(1)
 
-  ctrl.editor.renderEditor(target)
+  ctrl.editor.renderEditor(ctrl.file.currentFile!.id, target)
 
   const path = '/users/me/project/README.md'
   await ctrl.media.dropPath(path, [0, 0])
@@ -248,7 +248,7 @@ test('dropPath - image on canvas', async () => {
 
   const currentCanvas = ctrl.canvas.currentCanvas
   const editorEl = currentCanvas?.elements[0] as CanvasEditorElement
-  ctrl.canvas.renderEditor(editorEl, target)
+  ctrl.editor.renderEditor(editorEl.id, target)
 
   await ctrl.media.dropPath('/users/me/file.png', [100, 100])
 

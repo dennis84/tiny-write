@@ -3,8 +3,7 @@ import {Portal} from 'solid-js/web'
 import {unwrap} from 'solid-js/store'
 import {css, styled} from 'solid-styled-components'
 import {DragGesture} from '@use-gesture/vanilla'
-import {Mode, isFile, useState} from '@/state'
-import {schema} from '@/prosemirror/schema'
+import {Mode, isCodeFile, isFile, useState} from '@/state'
 import {TreeNode, TreeNodeItem} from '@/services/TreeService'
 import {Label, Link, Sub, Text} from './Menu'
 import {Tooltip} from './Tooltip'
@@ -153,6 +152,16 @@ export default (props: Props) => {
     closeTooltip()
   }
 
+  const onAddCode = async () => {
+    const target = unwrap(selected())
+    if (!target) return
+    await ctrl.code.newFile()
+    const currentFile =  ctrl.file.currentFile
+    if (!currentFile) return
+    await ctrl.tree.add({item: currentFile, tree: []}, target)
+    closeTooltip()
+  }
+
   const deleteNode = async (node: TreeNode) => {
     const deleteItem = async (item: TreeNodeItem) =>
       isFile(item)
@@ -230,7 +239,9 @@ export default (props: Props) => {
     const [title, setTitle] = createSignal<string>()
 
     const onClick = async () => {
-      if (isFile(p.node.item)) {
+      if (isCodeFile(p.node.item) ) {
+        await ctrl.code.openFile(p.node.item.id)
+      } else if (isFile(p.node.item) ) {
         await ctrl.editor.openFile(p.node.item.id)
       } else {
         await ctrl.canvas.open(p.node.item.id)
@@ -243,11 +254,13 @@ export default (props: Props) => {
       ctrl.tree.collapse(p.node)
 
     const getCurrentId = () =>
-      state.mode === Mode.Editor ? ctrl.file.currentFile?.id : ctrl.canvas.currentCanvas?.id
+      state.mode === Mode.Canvas ?
+        ctrl.canvas.currentCanvas?.id :
+        ctrl.file.currentFile?.id
 
     onMount(async () => {
       if (isFile(p.node.item)) {
-        setTitle(await ctrl.file.getTitle(schema, p.node.item))
+        setTitle(await ctrl.file.getTitle(p.node.item))
       } else {
         setTitle('Canvas 🧑‍🎨')
       }
@@ -329,7 +342,7 @@ export default (props: Props) => {
     createEffect(async () => {
       state.lastTr
       if (isFile(p.node.item)) {
-        setTitle(await ctrl.file.getTitle(schema, p.node.item))
+        setTitle(await ctrl.file.getTitle(p.node.item))
       }
     })
 
@@ -456,6 +469,7 @@ export default (props: Props) => {
           <Show when={!selected()?.item.deleted && isFile(selected()?.item)}>
             <div onClick={onAddFile} data-testid="add_file">✍️ Add file</div>
             <div onClick={onAddCanvas} data-testid="add_canvas">🧑‍🎨 Add canvas</div>
+            <div onClick={onAddCode} data-testid="add_code">🖥️ Add code file</div>
             <hr class="divider" />
           </Show>
           <Show when={selected()?.item.deleted}>

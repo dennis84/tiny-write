@@ -31,23 +31,28 @@ export class ChangeSetService {
   }
 
   renderVersion(version: Version) {
+    const currentFile = this.ctrl.file.currentFile
+    if (!currentFile) return
     const ydoc = new Y.Doc({gc: false})
     Y.applyUpdate(ydoc, version.ydoc)
     this.setState('collab', 'snapshot', ydoc)
-    this.ctrl.editor.updateEditorState()
+    this.ctrl.editor.updateEditorState(currentFile)
   }
 
   unrenderVersion() {
+    const currentFile = this.ctrl.file.currentFile
+    if (!currentFile) return
     this.setState('collab', 'snapshot', undefined)
-    this.ctrl.editor.updateEditorState()
+    this.ctrl.editor.updateEditorState(currentFile)
   }
 
   applyVersion(version: Version) {
     const currentFile = this.ctrl.file.currentFile
+    if (!currentFile) return
     const ydoc = this.store.collab!.ydoc!
-    const type = ydoc.getXmlFragment(currentFile?.id)
+    const type = ydoc.getXmlFragment(currentFile.id)
     type.delete(0, type.length)
     Y.applyUpdate(ydoc, version.ydoc)
-    this.ctrl.editor.updateEditorState()
+    this.ctrl.editor.updateEditorState(currentFile)
   }
 }

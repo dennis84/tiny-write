@@ -6,7 +6,7 @@ interface Props {
   mode: Mode;
 }
 
-const codeBlock = (props: Props) => `
+export const codeBlock = (props: Props) => `
   .cm-container {
     position: relative;
     margin: 10px 0;

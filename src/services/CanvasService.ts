@@ -1,7 +1,5 @@
 import {SetStoreFunction, Store, unwrap} from 'solid-js/store'
-import {EditorState, TextSelection, Transaction} from 'prosemirror-state'
-import {EditorView} from 'prosemirror-view'
-import {ySyncPluginKey} from 'y-prosemirror'
+import {TextSelection} from 'prosemirror-state'
 import {v4 as uuidv4} from 'uuid'
 import {debounce} from 'ts-debounce'
 import {Box, Vec} from '@tldraw/editor'
@@ -25,8 +23,6 @@ import {
 } from '@/state'
 import {DB} from '@/db'
 import * as remote from '@/remote'
-import {createEmptyText, createPlugins, createNodeViews} from '@/prosemirror/setup'
-import {schema} from '@/prosemirror/schema'
 import {Ctrl} from '.'
 import {FileService} from './FileService'
 import {CollabService} from './CollabService'
@@ -92,19 +88,19 @@ export class CanvasService {
 
   static activateCanvas(state: State, id: string) {
     const canvases = []
+    const files = []
+
+    for (const file of state.files) {
+      file.editorView?.destroy()
+      file.codeEditorView?.destroy()
+      files.push({...file, editorView: undefined, codeEditorView: undefined})
+    }
 
     for (const canvas of state.canvases) {
       if (canvas.id === id) {
         canvases.push({...canvas, active: true})
       } else if (canvas.active) {
-        canvases.push({
-          ...canvas,
-          active: false,
-          elements: canvas.elements.map((el) => {
-            if (isEditorElement(el)) el.editorView?.destroy()
-            return {...el, editorView: undefined}
-          }),
-        })
+        canvases.push({...canvas, active: false})
       } else {
         canvases.push(canvas)
       }
@@ -113,6 +109,7 @@ export class CanvasService {
     return {
       ...state,
       canvases,
+      files,
       mode: Mode.Canvas,
     }
   }
@@ -229,7 +226,8 @@ export class CanvasService {
     this.updateCanvasElement(newEl.id, {selected: true, active})
 
     if (active && isEditorElement(newEl)) {
-      newEl.editorView?.focus()
+      const file = this.ctrl.file.findFileById(newEl.id)
+      file?.editorView?.focus()
     }
   }
 
@@ -239,9 +237,10 @@ export class CanvasService {
 
     const active = currentCanvas.elements
       .find((it) => isEditorElement(it) && it.active) as CanvasEditorElement
+    const file = this.ctrl.file.findFileById(active?.id)
 
-    if (active?.editorView) {
-      this.ctrl.select.selectBox(box, active.editorView, first, last)
+    if (file?.editorView) {
+      this.ctrl.select.selectBox(box, file.editorView, first, last)
       return
     }
 
@@ -268,10 +267,13 @@ export class CanvasService {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
     for (const el of currentCanvas.elements) {
-      if (isEditorElement(el) && el.active && el.editorView) {
-        const tr = el.editorView.state.tr
-        tr.setSelection(TextSelection.atStart(el.editorView.state.doc))
-        el.editorView.dispatch(tr)
+      if (isEditorElement(el) && el.active) {
+        const file = this.ctrl.file.findFileById(el.id)
+        if (file?.editorView) {
+          const tr = file.editorView.state.tr
+          tr.setSelection(TextSelection.atStart(file.editorView.state.doc))
+          file.editorView.dispatch(tr)
+        }
       }
 
       this.updateCanvasElement(el.id, {selected: false, active: false})
@@ -287,19 +289,19 @@ export class CanvasService {
     const collab = CollabService.create(id, Mode.Canvas, false)
     const canvas = CanvasService.createCanvas({id, active: true})
 
-    const prev = state.canvases.map((c) => ({
-      ...c,
-      active: false,
-      elements: c.elements.map((el) => {
-        if (isEditorElement(el)) el.editorView?.destroy()
-        return {...el, editorView: undefined}
-      }),
-    }))
+    const canvases = state.canvases.map((c) => ({...c, active: false}))
+
+    const files = state.files.map((f) => {
+      f.editorView?.destroy()
+      f.codeEditorView?.destroy()
+      return {...f, editorView: undefined, codeEditorView: undefined}
+    })
 
     this.setState({
       ...state,
       collab,
-      canvases: [...prev, canvas],
+      files,
+      canvases: [...canvases, canvas],
       mode: Mode.Canvas,
     })
 
@@ -318,7 +320,9 @@ export class CanvasService {
     outer: for (const el of currentCanvas.elements) {
       for (const elementId of elementIds) {
         if (isEditorElement(el) && el.id === elementId) {
-          el.editorView?.destroy()
+          const file = this.ctrl.file.findFileById(el.id)
+          file?.editorView?.destroy()
+          file?.codeEditorView?.destroy()
           continue outer
         }
 
@@ -346,16 +350,6 @@ export class CanvasService {
     remote.info('Canvas saved after removing element')
   }
 
-  destroyElement(elementId: string) {
-    const currentCanvas = this.currentCanvas
-    if (!currentCanvas) return
-    const element = currentCanvas.elements.find((el) => el.id === elementId)
-    if (!element || !isEditorElement(element)) return
-
-    element.editorView?.destroy()
-    this.updateCanvasElement(element.id, {editorView: null})
-  }
-
   async open(id: string) {
     await this.removeDeadLinks()
     this.ctrl.collab.disconnectCollab()
@@ -378,11 +372,11 @@ export class CanvasService {
     this.ctrl.canvasCollab.init()
   }
 
-  async newFile(link?: CanvasLinkElement, point?: Vec) {
+  async newFile(code = false, link?: CanvasLinkElement, point?: Vec) {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
 
-    const file = FileService.createFile()
+    const file = FileService.createFile({code})
     file.parentId = currentCanvas.parentId
 
     this.setState('files', [...this.store.files, file])
@@ -446,8 +440,8 @@ export class CanvasService {
       y = target.y
     }
 
-    const element: CanvasEditorElement = {
-      type: ElementType.Editor,
+    const element = {
+      type: file.code ? ElementType.Code : ElementType.Editor,
       id: file.id,
       x,
       y,
@@ -672,75 +666,6 @@ export class CanvasService {
     this.updateCanvas(currentCanvas.id, {elements: []})
     await this.saveCanvas()
     remote.info('All elements cleared')
-  }
-
-  renderEditor(element: CanvasEditorElement, node: HTMLElement) {
-    let file = this.ctrl.file.findFileById(element.id)
-    if (!file) {
-      file = FileService.createFile({id: element.id})
-      this.setState('files', (prev) => [...prev, file!])
-    }
-
-    this.ctrl.collab.apply(file)
-    this.updateEditorState(element.id, node)
-  }
-
-  updateEditorState(id: string, node?: Element) {
-    const currentCanvas = this.currentCanvas
-    if (!currentCanvas) return
-
-    const element = currentCanvas?.elements.find((el) => el.id === id) as CanvasEditorElement
-    if (!element) {
-      return
-    }
-
-    let editorView = element?.editorView
-    if (!editorView && !node) return
-
-    const type = this.store.collab?.ydoc?.getXmlFragment(id)
-    const plugins = createPlugins({ctrl: this.ctrl, type})
-
-    const {nodeViews} = createNodeViews(this.ctrl)
-    const editorState = EditorState.fromJSON({schema, plugins}, createEmptyText())
-
-    if (!editorView) {
-      const dispatchTransaction = async (tr: Transaction) => {
-        const newState = editorView!.state.apply(tr)
-        try {
-          editorView!.updateState(newState)
-        } catch (error: any) {
-          remote.error('Sync error occurred', error)
-          this.ctrl.app.setError({id: 'editor_sync', error})
-          return
-        }
-
-        this.setState('lastTr', tr.time)
-        if (!tr.docChanged) return
-
-        const yMeta = tr.getMeta(ySyncPluginKey)
-        const maybeSkip = tr.getMeta('addToHistory') === false
-        const isUndo = yMeta?.isUndoRedoOperation
-
-        if ((maybeSkip && !isUndo) || this.store.isSnapshot) return
-
-        this.ctrl.file.updateFile(id, {lastModified: new Date()})
-
-        const updatedFile = this.store.files.find((f) => f.id === id)
-        if (!updatedFile) return
-        await FileService.saveFile(updatedFile)
-        remote.info('Saved editor content')
-      }
-
-      editorView = new EditorView(node!, {
-        state: editorState,
-        nodeViews,
-        dispatchTransaction,
-      })
-
-      this.updateCanvasElement(element.id, {editorView})
-    }
-
-    editorView.setProps({state: editorState, nodeViews})
   }
 
   fetchCanvases(): Promise<Canvas[]> {

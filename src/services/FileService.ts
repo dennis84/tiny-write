@@ -1,5 +1,5 @@
 import {SetStoreFunction, Store} from 'solid-js/store'
-import {Node, Schema} from 'prosemirror-model'
+import {Node} from 'prosemirror-model'
 import * as Y from 'yjs'
 import {yDocToProsemirrorJSON} from 'y-prosemirror'
 import {v4 as uuidv4} from 'uuid'
@@ -11,7 +11,13 @@ import {schema} from '@/prosemirror/schema'
 import {createMarkdownParser} from '@/markdown'
 import {Ctrl} from '.'
 
-export interface LoadedFile {
+export interface LoadedTextFile {
+  text: string;
+  lastModified: Date;
+  path: string;
+}
+
+export interface LoadedMarkdownFile {
   text: FileText;
   lastModified: Date;
   path: string;
@@ -32,7 +38,25 @@ export class FileService {
     return this.store.files.findIndex((f) => f.active)
   }
 
-  static async loadFile(path: string): Promise<LoadedFile> {
+  static async loadTextFile(path: string): Promise<LoadedTextFile> {
+    remote.debug(`Load text file (path=${path})`)
+    let resolvedPath
+    try {
+      resolvedPath = await remote.resolvePath(path)
+    } catch(e: any) {
+      throw new ServiceError('file_not_found', `File not found: ${path}`)
+    }
+
+    try {
+      const text = await remote.readFile(resolvedPath)
+      const lastModified = await remote.getFileLastModified(resolvedPath)
+      return {text, lastModified, path: resolvedPath}
+    } catch (e: any) {
+      throw new ServiceError('file_permission_denied', e)
+    }
+  }
+
+  static async loadMarkdownFile(path: string): Promise<LoadedMarkdownFile> {
     remote.debug(`Load file (path=${path})`)
     let resolvedPath
     try {
@@ -80,6 +104,7 @@ export class FileService {
       newFile: file.newFile,
       active: file.active,
       deleted: file.deleted,
+      code: file.code,
       versions: file.versions.map((v) => ({
         date: v.date,
         ydoc: v.ydoc,
@@ -94,6 +119,32 @@ export class FileService {
       id: params.id ?? uuidv4(),
       ydoc,
       versions: [],
+    }
+  }
+
+  static async activateFile(state: State, file: File): Promise<State> {
+    const files = []
+
+    for (const f of state.files) {
+      f.editorView?.destroy()
+      f.codeEditorView?.destroy()
+      const active = f.id === file.id
+      const newFile = {...f, active, editorView: undefined, codeEditorView: undefined}
+      files.push(newFile)
+      if (active || f.active) {
+        await FileService.saveFile(newFile)
+      }
+    }
+
+    const mode = file.code ? Mode.Code : Mode.Editor
+    await DB.setMeta({mode})
+
+    return {
+      ...state,
+      error: undefined,
+      args: {...state.args, dir: undefined},
+      files,
+      mode,
     }
   }
 
@@ -123,26 +174,36 @@ export class FileService {
     const index = this.store.files.findIndex((file) => file.id === id)
     if (index === -1) return
 
-    let ydoc = this.store.files[index].ydoc
+    const file = this.store.files[index]
+    let ydoc = file.ydoc
     const doc = this.store.collab!.ydoc!
     if (doc.share.has(id)) {
       const newDoc = new Y.Doc({gc: false})
-      const newType = newDoc.getXmlFragment(id)
-      const type = doc.getXmlFragment(id)
-      // @ts-ignore
-      newType.insert(0, type.toArray().map((el) => el instanceof Y.AbstractType ? el.clone() : el))
+      if (file.code) {
+        const copy = newDoc.getText(id)
+        const org = doc.getText(id)
+        copy.applyDelta(org.toDelta())
+      } else {
+        const newType = newDoc.getXmlFragment(id)
+        const type = doc.getXmlFragment(id)
+        // @ts-ignore
+        newType.insert(0, type.toArray().map((el) => el instanceof Y.AbstractType ? el.clone() : el))
+      }
+
       ydoc = Y.encodeStateAsUpdate(newDoc)
     }
 
     this.setState('files', index, {...update, ydoc})
   }
 
-  destroy() {
-    if (!this.currentFile) return
-    this.currentFile?.editorView?.destroy()
-    const index = this.currentFileIndex
+  destroy(id?: string) {
+    const file = id ? this.findFileById(id) : this.currentFile
+    if (!file) return
+    file.editorView?.destroy()
+    file.codeEditorView?.destroy()
+    const index = this.store.files.findIndex((f) => f.id === file.id)
     if (index === -1) return
-    this.setState('files', index, 'editorView', undefined)
+    this.setState('files', index, {editorView: undefined, codeEditorView: undefined})
   }
 
   async fetchFiles(): Promise<File[] | undefined> {
@@ -161,6 +222,7 @@ export class FileService {
           newFile: file.path,
           active: file.active,
           deleted: file.deleted,
+          code: file.code,
           versions: (file.versions ?? []).map((v) => ({
             date: v.date,
             ydoc: v.ydoc,
@@ -252,8 +314,9 @@ export class FileService {
     remote.info('File restored')
   }
 
-  async getTitle(schema: Schema, file: File, len = 25): Promise<string> {
+  async getTitle(file: File, len = 25): Promise<string> {
     if (isTauri() && file.path) return remote.toRelativePath(file.path)
+    if (file.code) return 'Code 🖥️'
     const ydoc = new Y.Doc({gc: false})
     Y.applyUpdate(ydoc, file.ydoc)
     const state = yDocToProsemirrorJSON(ydoc, file.id)

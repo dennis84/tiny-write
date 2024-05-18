@@ -8,6 +8,7 @@ import * as remote from '@/remote'
 import {isTauri} from '@/env'
 import {Layout} from '@/components/Layout'
 import {Editor} from '@/components/editor/Editor'
+import {CodeEditor} from '@/components/code/CodeEditor'
 import {BlockTooltip} from '@/components/editor/BlockTooltip'
 import Canvas from '@/components/canvas/Canvas'
 import Menu from '@/components/menu/Menu'
@@ -140,6 +141,7 @@ export default (props: {state: State}) => {
             <Match when={store.args?.dir}><Dir /></Match>
             <Match when={store.mode === Mode.Canvas}><Canvas /></Match>
             <Match when={store.mode === Mode.Editor}><Editor /></Match>
+            <Match when={store.mode === Mode.Code}><CodeEditor /></Match>
           </Switch>
           <BlockTooltip />
           <MouseCursor />

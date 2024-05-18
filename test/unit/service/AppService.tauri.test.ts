@@ -32,7 +32,8 @@ test('init - load existing by path', async () => {
   const {ctrl} = createCtrl(createState())
   const target = document.createElement('div')
   await ctrl.app.init()
-  ctrl.editor.renderEditor(target)
+  expect(ctrl.file.currentFile?.id).toBe('1')
+  ctrl.editor.renderEditor('1', target)
 
   expect(ctrl.file.currentFile?.path).toBe('file1')
   await waitFor(() => {
@@ -50,7 +51,7 @@ test('init - check text', async () => {
   const {ctrl} = createCtrl(createState())
   const target = document.createElement('div')
   await ctrl.app.init()
-  ctrl.editor.renderEditor(target)
+  ctrl.editor.renderEditor(ctrl.file.currentFile!.id, target)
 
   expect(ctrl.file.currentFile?.path).toBe('file2')
   await waitFor(() => {
@@ -72,10 +73,12 @@ test('init - open file', async () => {
   const {ctrl, store} = createCtrl(createState())
   const target = document.createElement('div')
   await ctrl.app.init()
-  ctrl.editor.renderEditor(target)
+
+  expect(store.files.length).toBe(3)
+  expect(ctrl.file.currentFile?.id).not.toBe('1')
+  ctrl.editor.renderEditor(ctrl.file.currentFile!.id, target)
 
   expect(store.error).toBe(undefined)
-  expect(store.files.length).toBe(3)
   expect(ctrl.file.currentFile?.path).toBe('file3')
 })
 
@@ -92,11 +95,14 @@ test('init - open file path not found', async () => {
 
   const {ctrl, store} = createCtrl(createState())
   const target = document.createElement('div')
+
   await ctrl.app.init()
-  ctrl.editor.renderEditor(target)
+  expect(ctrl.file.currentFile?.id).not.toBe('1')
+  expect(store.files.length).toBe(3)
+
+  ctrl.editor.renderEditor(ctrl.file.currentFile!.id, target)
 
   expect(store.error).toBe(undefined)
-  expect(store.files.length).toBe(3)
   expect(ctrl.file.currentFile?.path).toBe(undefined)
   expect(ctrl.file.currentFile?.newFile).toBe('file3')
 })
@@ -114,7 +120,8 @@ test('init - persisted file path not found', async () => {
   const {ctrl, store} = createCtrl(createState())
   const target = document.createElement('div')
   await ctrl.app.init()
-  ctrl.editor.renderEditor(target)
+  expect(ctrl.file.currentFile?.id).toBe('1')
+  ctrl.editor.renderEditor('1', target)
 
   expect(store.error).toBe(undefined)
   expect(store.files.length).toBe(2)
@@ -166,9 +173,8 @@ test('init - dir no current file', async () => {
     args: {dir: ['~/Desktop/Aaaa.md']},
   }))
 
-  const target = document.createElement('div')
   await ctrl.app.init()
-  ctrl.editor.renderEditor(target)
+  expect(ctrl.file.currentFile?.id).toBeUndefined()
 
   expect(store.files.length).toBe(0)
   expect(ctrl.file.currentFile).toBe(undefined)

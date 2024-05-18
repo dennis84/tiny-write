@@ -1,6 +1,7 @@
-import {PrettierConfig, useState} from '@/state'
+import {Show} from 'solid-js'
+import {Mode, PrettierConfig, useState} from '@/state'
 import {Drawer, Label, Link, Sub, Text} from './Menu'
-import {Button} from '@/components/Button'
+import {Button, ButtonGroup, ButtonPrimary} from '@/components/Button'
 
 interface Props {
   onBack: () => void;
@@ -13,6 +14,10 @@ export const CodeBlock = (props: Props) => {
     ctrl.config.updateConfig({
       prettier: {...store.config.prettier, ...opt}
     })
+
+  const onPrettify = async () => {
+    await ctrl.code.prettify()
+  }
 
   return (
     <Drawer data-tauri-drag-region="true">
@@ -53,7 +58,14 @@ export const CodeBlock = (props: Props) => {
           Single Quote {store.config.prettier.singleQuote && '✅'}
         </Link>
       </Sub>
-      <Button onClick={props.onBack}>↩ Back</Button>
+      <ButtonGroup>
+        <Button onClick={props.onBack}>↩ Back</Button>
+        <Show when={store.mode === Mode.Code}>
+          <ButtonPrimary onClick={onPrettify}>
+            Prettify
+          </ButtonPrimary>
+        </Show>
+      </ButtonGroup>
     </Drawer>
   )
 }

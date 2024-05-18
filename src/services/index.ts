@@ -12,6 +12,7 @@ import {MediaService} from './MediaService'
 import {SelectService} from './SelectService'
 import {isDev} from '@/env'
 import {TreeService} from './TreeService'
+import {CodeService} from './CodeService'
 
 export class Ctrl {
   app!: AppService
@@ -25,6 +26,7 @@ export class Ctrl {
   media!: MediaService
   select!: SelectService
   tree!: TreeService
+  code!: CodeService
 
   constructor(
     store: Store<State>,
@@ -41,6 +43,7 @@ export class Ctrl {
     this.canvasCollab = new CanvasCollabService(this.canvas, store)
     this.media = new MediaService(this, store)
     this.select = new SelectService()
+    this.code = new CodeService(this, store, setState)
   }
 }
 

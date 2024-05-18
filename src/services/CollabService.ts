@@ -43,9 +43,9 @@ export class CollabService {
   }
 
   get room() {
-    return this.store.mode === Mode.Editor ?
-      this.ctrl.file.currentFile?.id :
-      this.ctrl.canvas.currentCanvas?.id
+    return this.store.mode === Mode.Canvas ?
+      this.ctrl.canvas.currentCanvas?.id :
+      this.ctrl.file.currentFile?.id
   }
 
   get isSnapshot(): boolean {
@@ -56,8 +56,9 @@ export class CollabService {
     remote.info(`Create ydoc: (room=${room}, mode=${mode}, connect=${connect})`)
 
     if (connect) {
-      const m = mode === Mode.Canvas ? 'c/' : ''
-      window.history.replaceState(null, '', `/${m + room}`)
+      window.history.replaceState(null, '', `/${mode}/${room}`)
+    } else {
+      window.history.replaceState(null, '', '/')
     }
 
     const WebSocketPolyfill = CollabService.createWS()
@@ -110,8 +111,11 @@ export class CollabService {
   apply(file: File) {
     if (file.ydoc) {
       const ydoc = this.store.collab!.ydoc
-      if (!this.store.collab?.started) Y.applyUpdate(ydoc, file.ydoc)
-      this.store.collab?.undoManager?.addToScope(ydoc.getXmlFragment(file.id))
+      if (!this.store.collab?.started) {
+        Y.applyUpdate(ydoc, file.ydoc)
+      }
+      const type = file.code ? ydoc.getText(file.id) : ydoc.getXmlFragment(file.id)
+      this.store.collab?.undoManager?.addToScope(type)
     }
   }
 
@@ -140,8 +144,7 @@ export class CollabService {
   }
 
   startCollab() {
-    const m = this.store.mode === Mode.Canvas ? 'c/' : ''
-    window.history.replaceState(null, '', `/${m + this.room}`)
+    window.history.replaceState(null, '', `/${this.store.mode}/${this.room}`)
     this.store.collab?.provider?.connect()
     this.setState('collab', {started: true})
   }

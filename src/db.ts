@@ -17,6 +17,7 @@ export interface PersistedFile {
   lastModified: Date;
   path?: string;
   newFile?: string;
+  code?: boolean;
   active?: boolean;
   deleted?: boolean;
 }

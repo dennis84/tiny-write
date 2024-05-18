@@ -47,7 +47,7 @@ export class CodeBlockView {
       this.editorView.dispatch({userEvent: event.detail.userEvent})
     })
 
-    const codeMirrorKeymap = keymap.of([{
+    const embeddedCodeMirrorKeymap = keymap.of([{
       key: 'Backspace',
       run: () => {
         if (!this.editorView.state.doc.length) {
@@ -154,12 +154,13 @@ export class CodeBlockView {
 
     const theme = getTheme(this.ctrl.config.codeTheme.value)
     const langSupport = highlight(this.lang)
+    console.log('aaaaaa')
 
     this.editorView = new EditorView({
       doc: this.node.textContent,
       extensions: [
         tooltips({parent: this.ctrl.app.layoutRef}),
-        codeMirrorKeymap,
+        embeddedCodeMirrorKeymap,
         keymap.of(closeBracketsKeymap),
         keymap.of(foldKeymap),
         keymap.of([

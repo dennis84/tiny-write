@@ -13,9 +13,8 @@ import {Box} from '@tldraw/editor'
 import * as remote from '@/remote'
 import {createPlugins, createEmptyText, createNodeViews} from '@/prosemirror/setup'
 import {schema} from '@/prosemirror/schema'
-import {State, File, FileText, Mode} from '@/state'
+import {State, FileText, File} from '@/state'
 import {serialize} from '@/markdown'
-import {DB} from '@/db'
 import {Ctrl} from '.'
 import {FileService} from './FileService'
 import {CollabService} from './CollabService'
@@ -27,43 +26,17 @@ export class EditorService {
     private setState: SetStoreFunction<State>,
   ) {}
 
-  static async activateFile(state: State, file: File): Promise<State> {
-    const files = []
+  updateEditorState(file: File, node?: Element) {
+    let editorView = file.editorView
 
-    for (const f of state.files) {
-      f.editorView?.destroy()
-      const active = f.id === file.id
-      const newFile = {...f, active, editorView: undefined}
-      files.push(newFile)
-      if (active || f.active) {
-        await FileService.saveFile(newFile)
-      }
-    }
-
-    const mode = Mode.Editor
-    await DB.setMeta({mode})
-
-    return {
-      ...state,
-      error: undefined,
-      args: {...state.args, dir: undefined},
-      files,
-      mode,
-    }
-  }
-
-  updateEditorState(node?: Element) {
-    const currentFile = this.ctrl.file.currentFile
-    let editorView = currentFile?.editorView
-
-    if ((!editorView && !node) || !currentFile?.id) {
+    if ((!editorView && !node) || !file?.id) {
       return
     }
 
     const doc = this.store.collab?.snapshot ?? this.store.collab?.ydoc
     if (!doc) return // If error during init
 
-    const type = doc.getXmlFragment(currentFile.id)
+    const type = doc.getXmlFragment(file.id)
     const plugins = createPlugins({
       ctrl: this.ctrl,
       type,
@@ -90,16 +63,16 @@ export class EditorService {
         const yMeta = tr.getMeta(ySyncPluginKey)
         const maybeSkip = tr.getMeta('addToHistory') === false
         const isUndo = yMeta?.isUndoRedoOperation
-        const currentFile = this.ctrl.file.currentFile
 
         if ((maybeSkip && !isUndo) || this.store.isSnapshot) return
-        if (!currentFile) return
 
-        this.ctrl.file.updateFile(currentFile.id, {
+        this.ctrl.file.updateFile(file.id, {
           lastModified: new Date(),
         })
 
-        void this.saveEditor()
+        const updatedFile = this.ctrl.file.findFileById(file.id)
+        if (!updatedFile) return
+        void FileService.saveFile(updatedFile)
         remote.info('Saved editor content')
       }
 
@@ -110,21 +83,26 @@ export class EditorService {
         editable: () => !this.ctrl.collab.isSnapshot,
       })
 
-      const currentFileIndex = this.ctrl.file.currentFileIndex
-      this.setState('files', currentFileIndex, 'editorView', editorView)
+      const fileIndex = this.store.files.findIndex((f) => f.id === file.id)
+      this.setState('files', fileIndex, 'editorView', editorView)
     }
 
     editorView.setProps({state: editorState, nodeViews})
-    editorView.focus()
   }
 
-  renderEditor(node: Element) {
-    const currentFile = this.ctrl.file.currentFile
-    if (!currentFile?.path && currentFile?.ydoc) {
-      this.ctrl.collab.apply(currentFile)
+  renderEditor(id: string, node: Element) {
+    let file = this.ctrl.file.findFileById(id)
+
+    if (!file) {
+      file = FileService.createFile({id})
+      this.setState('files', (prev) => [...prev, file!])
     }
 
-    this.updateEditorState(node)
+    if (!file?.path) {
+      this.ctrl.collab.apply(file)
+    }
+
+    this.updateEditorState(file, node)
   }
 
   async clear() {
@@ -141,7 +119,7 @@ export class EditorService {
     const state: State = unwrap(this.store)
     const file = FileService.createFile()
 
-    const update = await EditorService.activateFile({
+    const update = await FileService.activateFile({
       ...state,
       args: {cwd: state.args?.cwd},
       files: [...state.files, file],
@@ -182,14 +160,14 @@ export class EditorService {
       let text: FileText | undefined
 
       if (file?.path) {
-        text = (await FileService.loadFile(file.path)).text
+        text = (await FileService.loadMarkdownFile(file.path)).text
       }
 
       if (!file) return
       if (state.args?.room) state.args.room = undefined
 
-      const update = await EditorService.activateFile(state, file)
-      update.collab = CollabService.create(file.id, state.mode, false)
+      const update = await FileService.activateFile(state, file)
+      update.collab = CollabService.create(file.id, update.mode, false)
       this.setState(update)
       this.ctrl.collab.init()
       if (text) this.updateText(text)

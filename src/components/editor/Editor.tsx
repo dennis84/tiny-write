@@ -20,7 +20,8 @@ export const Editor = () => {
       currentFile?.id &&
       currentFile.editorView === undefined
     ) {
-      ctrl.editor.renderEditor(editorRef!)
+      ctrl.editor.renderEditor(currentFile.id, editorRef!)
+      ctrl.file.currentFile?.editorView?.focus()
     }
   })
 
@@ -41,7 +42,7 @@ export const Editor = () => {
   })
 
   onCleanup(() => {
-    ctrl.file.destroy()
+    ctrl.file.destroy(ctrl.file.currentFile?.id)
   })
 
   return (

@@ -20,7 +20,7 @@ test('addVersion', async () => {
   const {ctrl} = createCtrl(createState())
   const target = document.createElement('div')
   await ctrl.app.init()
-  ctrl.editor.renderEditor(target)
+  ctrl.editor.renderEditor(ctrl.file.currentFile!.id, target)
 
   insertText(ctrl, 'Test')
   expect(getText(ctrl)).toBe('Test')

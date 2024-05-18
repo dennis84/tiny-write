@@ -383,14 +383,10 @@ export class ConfigService {
   }
 
   private updateEditors() {
-    if (this.store.mode === Mode.Editor) {
-      this.ctrl.editor.updateEditorState()
-    } else if (this.store.mode == Mode.Canvas) {
-      this.ctrl.canvas.currentCanvas?.elements.forEach((el) => {
-        if (isEditorElement(el)) {
-          this.ctrl.canvas.updateEditorState(el.id)
-        }
-      })
-    }
+    this.store.files.forEach((f) => {
+      if (!f.active) return
+      else if (f.code) this.ctrl.code.updateConfig(f)
+      else this.ctrl.editor.updateEditorState(f)
+    })
   }
 }

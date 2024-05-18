@@ -7,13 +7,13 @@ import {isTauri} from '@/env'
 import {Ctrl} from '.'
 import {ConfigService} from './ConfigService'
 import {CanvasService} from './CanvasService'
-import {EditorService} from './EditorService'
 import {FileService} from './FileService'
 import {CollabService} from './CollabService'
 
 interface InitResult {
   data: State;
   markdownDoc?: FileText;
+  textDoc?: string;
 }
 
 class InitError extends Error {
@@ -64,7 +64,7 @@ export class AppService {
     }
 
     data.collab = CollabService.create(currentFile.id, data.mode, false)
-    data = await EditorService.activateFile(data, currentFile)
+    data = await FileService.activateFile(data, currentFile)
     return {data, markdownDoc}
   }
 
@@ -78,6 +78,27 @@ export class AppService {
     } else {
       throw new InitError(data, 'No current canvas')
     }
+  }
+
+  // Normal init in code mode
+  static async codeMode(data: State): Promise<InitResult> {
+    let currentFile = data.files.find((f) => f.active)
+    let textDoc
+
+    if (!currentFile) {
+      currentFile = FileService.createFile({code: true})
+      data.files.push(currentFile as File)
+    }
+
+    if (currentFile?.path) {
+      const result = await this.loadTextFile(currentFile)
+      currentFile = result.file
+      textDoc = result.doc
+    }
+
+    data.collab = CollabService.create(currentFile.id, data.mode, false)
+    data = await FileService.activateFile(data, currentFile)
+    return {data, textDoc}
   }
 
   // If app was started with a file argument
@@ -101,7 +122,7 @@ export class AppService {
       markdownDoc = result.doc
     }
 
-    data = await EditorService.activateFile(data, currentFile)
+    data = await FileService.activateFile(data, currentFile)
     data.collab = CollabService.create(currentFile.id, data.mode, false)
     return {data, markdownDoc}
   }
@@ -110,17 +131,18 @@ export class AppService {
   static async joinRoom(data: State): Promise<InitResult> {
     const room = data.args?.room
     if (!room) throw new InitError(data, 'No room arg')
+    const code = data.mode === Mode.Code
 
-    if (data.mode === Mode.Editor) {
+    if (data.mode === Mode.Editor || code) {
       let currentFile = data.files.find((f) => f.id === room)
       if (!currentFile) {
-        currentFile = FileService.createFile({id: room})
+        currentFile = FileService.createFile({id: room, code})
         data.files.push(currentFile)
       }
 
       // do not load file contents?
 
-      data = await EditorService.activateFile(data, currentFile)
+      data = await FileService.activateFile(data, currentFile)
       data.collab = CollabService.create(currentFile.id, data.mode, true)
       return {data}
     } else if (data.mode === Mode.Canvas) {
@@ -138,10 +160,23 @@ export class AppService {
     }
   }
 
+  private static async loadTextFile(file: File): Promise<{file: File; doc?: string}> {
+    let doc: string | undefined
+    try {
+      doc = (await FileService.loadTextFile(file.path!)).text
+    } catch (e) {
+      remote.info(`Could not load current file with path, not found (path=${file.path})`)
+      file.newFile = file.path
+      file.path = undefined
+    }
+
+    return {file, doc}
+  }
+
   private static async loadMarkdownFile(file: File): Promise<{file: File; doc?: FileText}> {
     let doc: FileText | undefined
     try {
-      doc = (await FileService.loadFile(file.path!)).text
+      doc = (await FileService.loadMarkdownFile(file.path!)).text
     } catch (e) {
       remote.info(`Could not load current file with path, not found (path=${file.path})`)
       file.newFile = file.path
@@ -181,6 +216,9 @@ export class AppService {
       } else if (data.mode === Mode.Canvas) {
         remote.info('Init without args in canvas mode')
         result = await AppService.canvasMode(data)
+      } else if (data.mode === Mode.Code) {
+        remote.info('Init without args in code mode')
+        result = await AppService.codeMode(data)
       } else {
         throw new InitError(data, 'Mode not known')
       }
@@ -199,7 +237,9 @@ export class AppService {
 
       if (data.mode === Mode.Editor) {
         this.ctrl.editor.updateText(result.markdownDoc)
-      } else {
+      } else if (data.mode === Mode.Code) {
+        this.ctrl.code.updateText(result.textDoc)
+      } else if (data.mode === Mode.Canvas) {
         this.ctrl.canvasCollab.init()
       }
 
@@ -221,9 +261,9 @@ export class AppService {
 
   async getBasePath() {
     let currentFile
-    if (this.mode === Mode.Editor) {
+    if (this.mode === Mode.Editor || this.mode === Mode.Code) {
       currentFile = this.ctrl.file.currentFile
-    } else {
+    } else if (this.mode === Mode.Canvas) {
       const active = this.ctrl.canvas.activeEditorElement
       if (active) currentFile = this.ctrl.file.findFileById(active.id)
     }
@@ -318,6 +358,11 @@ export class AppService {
   private parseRoom(room: string): [Mode, string] {
     const [m, r] = room.split('/')
     if (!r) return [Mode.Editor, m]
-    return [m === 'c' ? Mode.Canvas : Mode.Editor, r]
+    let mode: Mode
+    if (m === 'editor') mode = Mode.Editor
+    else if (m === 'canvas') mode = Mode.Canvas
+    else if (m === 'code') mode = Mode.Code
+    else throw new ServiceError('invalid_mode', `Invalid mode "${m}"`)
+    return [mode, r]
   }
 }

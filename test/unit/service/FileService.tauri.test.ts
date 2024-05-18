@@ -2,8 +2,6 @@ import {beforeEach, expect, test, vi} from 'vitest'
 import {mock, mockDeep} from 'vitest-mock-extended'
 import {clearMocks} from '@tauri-apps/api/mocks'
 import {createStore} from 'solid-js/store'
-import {schema} from 'prosemirror-markdown'
-
 import {createState} from '@/state'
 import {FileService} from '@/services/FileService'
 import {Ctrl} from '@/services'
@@ -33,10 +31,10 @@ test('getTitle', async () => {
   }))
 
   const service = new FileService(ctrl, store, setState)
-  expect(await service.getTitle(schema, store.files[0])).toBe('Test1')
-  expect(await service.getTitle(schema, store.files[1])).toBe('Test2')
-  expect(await service.getTitle(schema, store.files[2])).toBe('a'.repeat(25))
-  expect(await service.getTitle(schema, store.files[3])).toBe('~/project/README.md')
+  expect(await service.getTitle(store.files[0])).toBe('Test1')
+  expect(await service.getTitle(store.files[1])).toBe('Test2')
+  expect(await service.getTitle(store.files[2])).toBe('a'.repeat(25))
+  expect(await service.getTitle(store.files[3])).toBe('~/project/README.md')
 })
 
 test('findFile - found', async () => {

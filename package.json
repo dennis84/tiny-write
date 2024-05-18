@@ -60,6 +60,7 @@
     "ts-debounce": "^4.0.0",
     "unique-names-generator": "^4.7.1",
     "uuid": "^9.0.1",
+    "y-codemirror.next": "^0.3.3",
     "y-prosemirror": "^1.2.3",
     "y-protocols": "^1.0.6",
     "y-websocket": "^2.0.2",

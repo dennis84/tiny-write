@@ -20,8 +20,9 @@ export class MediaService {
       this.insert(currentFile.editorView, data, x, y)
     } else if (this.store.mode === Mode.Canvas) {
       const active = this.ctrl.canvas.activeEditorElement
-      if (active?.editorView) {
-        this.insert(active.editorView, data, x, y)
+      const file = active ? this.ctrl.file.findFileById(active.id) : undefined
+      if (file?.editorView) {
+        this.insert(file.editorView, data, x, y)
       } else {
         const img = await this.loadImage(data)
         const point = this.ctrl.canvas.getPosition([x, y])

@@ -1,6 +1,7 @@
 import {createContext, useContext} from 'solid-js'
 import {Store} from 'solid-js/store'
 import {EditorView} from 'prosemirror-view'
+import {EditorView as CmEditorView} from '@codemirror/view'
 import * as Y from 'yjs'
 import {WebsocketProvider} from 'y-websocket'
 import {Ctrl} from '@/services'
@@ -68,6 +69,7 @@ export interface Window {
 
 export enum ElementType {
   Editor = 'editor',
+  Code = 'code',
   Link = 'link',
   Image = 'image',
   Video = 'video',
@@ -106,7 +108,10 @@ export interface CanvasBoxElement extends CanvasElement {
 }
 
 export interface CanvasEditorElement extends CanvasBoxElement {
-  editorView?: EditorView | null;
+  active?: boolean;
+}
+
+export interface CanvasCodeElement extends CanvasBoxElement {
   active?: boolean;
 }
 
@@ -131,11 +136,15 @@ export interface CanvasVideoElement extends CanvasBoxElement {
 
 export const isBoxElement = (el?: CanvasElement): el is CanvasBoxElement =>
   el?.type === ElementType.Editor ||
+    el?.type === ElementType.Code ||
     el?.type === ElementType.Image ||
     el?.type === ElementType.Video
 
 export const isEditorElement = (el?: CanvasElement): el is CanvasEditorElement =>
   el?.type === ElementType.Editor
+
+export const isCodeElement = (el?: CanvasElement): el is CanvasCodeElement =>
+  el?.type === ElementType.Code
 
 export const isLinkElement = (el?: CanvasElement): el is CanvasLinkElement =>
   el?.type === ElementType.Link
@@ -147,6 +156,8 @@ export const isVideoElement = (el?: CanvasElement): el is CanvasVideoElement =>
   el?.type === ElementType.Video
 
 export const isFile = (it: any): it is File => it?.ydoc !== undefined
+
+export const isCodeFile = (it: any): it is File => it?.code
 
 export interface Canvas {
   id: string;
@@ -163,6 +174,7 @@ export interface Canvas {
 export enum Mode {
   Editor = 'editor',
   Canvas = 'canvas',
+  Code = 'code',
 }
 
 export interface Tree {
@@ -197,9 +209,11 @@ export interface File {
   lastModified?: Date;
   path?: string;
   newFile?: string;
+  code?: boolean;
   active?: boolean;
   deleted?: boolean;
   editorView?: EditorView;
+  codeEditorView?: CmEditorView;
 }
 
 export class ServiceError extends Error {
