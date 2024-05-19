@@ -2,35 +2,26 @@ import {Node} from 'prosemirror-model'
 import {DecorationSet, DecorationSource, EditorView as ProsemirrorEditorView} from 'prosemirror-view'
 import {Selection, TextSelection} from 'prosemirror-state'
 import {exitCode} from 'prosemirror-commands'
-import {Compartment, EditorState} from '@codemirror/state'
-import {EditorView, ViewUpdate, keymap, tooltips, drawSelection} from '@codemirror/view'
-import {defaultKeymap, indentWithTab} from '@codemirror/commands'
-import {
-  autocompletion,
-  completionKeymap,
-  closeBrackets,
-  closeBracketsKeymap,
-} from '@codemirror/autocomplete'
-import {indentOnInput, indentUnit, bracketMatching, foldGutter, foldKeymap} from '@codemirror/language'
-import {linter, setDiagnostics} from '@codemirror/lint'
+import {Compartment} from '@codemirror/state'
+import {EditorView, ViewUpdate, keymap, tooltips} from '@codemirror/view'
+import {autocompletion} from '@codemirror/autocomplete'
+import {setDiagnostics} from '@codemirror/lint'
 import {Ctrl} from '@/services'
-import {Mode} from '@/state'
-import {findWords, tabCompletionKeymap} from './completion'
-import {highlight, changeLang} from './lang'
-import {getTheme} from './theme'
+import {highlight} from '@/codemirror/highlight'
+import {findWords} from '@/codemirror/completion'
+import {mermaidKeywords} from '@/codemirror/mermaid'
+import {changeLang} from './change-lang'
 import expand from './expand'
 import {prettifyView} from './prettify'
-import {mermaidKeywords, mermaidView} from './mermaid'
+import {mermaidView} from './mermaid-preview'
 import {foldAll} from './fold'
 
 export class CodeBlockView {
   public dom: HTMLElement
   private editorView: EditorView
+  private compartments: Record<string, Compartment>
   private updating = false
   private clicked = false
-  private langExt: Compartment
-  private findWordsExt: Compartment
-  private keywordsExt: Compartment
 
   constructor(
     private node: Node,
@@ -148,43 +139,12 @@ export class CodeBlockView {
       }
     }])
 
-    this.langExt = new Compartment
-    this.findWordsExt = new Compartment
-    this.keywordsExt = new Compartment
-
-    const theme = getTheme(this.ctrl.config.codeTheme.value)
-    const langSupport = highlight(this.lang)
-    console.log('aaaaaa')
-
-    this.editorView = new EditorView({
+    const editor = ctrl.codeMirror.createEditor({
+      lang: this.lang,
       doc: this.node.textContent,
       extensions: [
         tooltips({parent: this.ctrl.app.layoutRef}),
         embeddedCodeMirrorKeymap,
-        keymap.of(closeBracketsKeymap),
-        keymap.of(foldKeymap),
-        keymap.of([
-          ...defaultKeymap,
-          ...completionKeymap,
-          ...tabCompletionKeymap,
-          indentWithTab,
-        ]),
-        theme,
-        ...(this.ctrl.app.mode == Mode.Editor ? [
-          drawSelection(),
-          EditorState.allowMultipleSelections.of(true),
-          foldGutter(),
-        ] : []),
-        indentOnInput(),
-        bracketMatching(),
-        closeBrackets(),
-        linter(() => []),
-        EditorState.tabSize.of(this.ctrl.config.prettier.tabWidth),
-        indentUnit.of(
-          this.ctrl.config.prettier.useTabs ?
-            '\t' :
-            ' '.repeat(this.ctrl.config.prettier.tabWidth)
-        ),
         expand(this),
         mermaidView(this),
         prettifyView(this),
@@ -202,16 +162,8 @@ export class CodeBlockView {
             this.editorView.focus()
           }
         }),
-        this.langExt.of(langSupport),
         EditorView.updateListener.of((update) => this.forwardUpdate(update)),
-        this.findWordsExt.of(langSupport.language.data.of({autocomplete: findWords})),
-        ...(this.lang === 'mermaid' ? [
-          this.keywordsExt.of(langSupport.language.data.of({
-            autocomplete: mermaidKeywords,
-          })),
-        ] : []),
         autocompletion(),
-        EditorView.lineWrapping,
         EditorView.domEventHandlers({
           'mousedown': () => {
             this.clicked = true
@@ -220,7 +172,9 @@ export class CodeBlockView {
       ]
     })
 
-    this.dom.appendChild(this.editorView.dom)
+    this.editorView = editor.editorView
+    this.compartments = editor.compartments
+    this.dom.appendChild(editor.editorView.dom)
 
     if (this.innerDecos instanceof DecorationSet) {
       this.innerDecos.find().map((d: any) => {
@@ -352,22 +306,18 @@ export class CodeBlockView {
 
   reconfigure() {
     const langSupport = highlight(this.lang)
+    const effects = [
+      this.compartments.lang.reconfigure(langSupport),
+      this.compartments.findWords.reconfigure(
+        langSupport.language.data.of({autocomplete: findWords})
+      ),
+    ]
 
-    this.editorView.dispatch({
-      effects: [
-        this.langExt.reconfigure(langSupport),
-        this.findWordsExt.reconfigure(
-          langSupport.language.data.of({autocomplete: findWords})
-        ),
-        ...(this.lang === 'mermaid' ? [
-          this.keywordsExt.reconfigure(
-            langSupport.language.data.of({
-              autocomplete: mermaidKeywords,
-            })
-          )
-        ] : []),
-      ]
-    })
+    if (this.lang === 'mermaid') {
+      effects.push(this.compartments.keywords.reconfigure(langSupport.language.data.of({autocomplete: mermaidKeywords})))
+    }
+
+    this.editorView.dispatch({effects})
   }
 
   destroy() {

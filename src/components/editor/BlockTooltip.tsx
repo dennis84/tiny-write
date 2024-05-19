@@ -63,7 +63,9 @@ export const BlockTooltip = () => {
   const getEditorView = (): EditorView | undefined => {
     if (store.mode === Mode.Canvas) {
       const element = ctrl.canvas.activeEditorElement
-      return element?.editorView ?? undefined
+      if (!element) return
+      const file = ctrl.file.findFileById(element.id)
+      return file?.editorView
     } else {
       return ctrl.file.currentFile?.editorView
     }

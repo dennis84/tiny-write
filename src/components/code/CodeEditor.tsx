@@ -9,6 +9,7 @@ export const CodeMirror = styled('div')`
   .cm-editor {
     outline: none;
     font-size: var(--font-size);
+    cursor: var(--cursor-text);
     .cm-content, .cm-gutter {
       padding: 0;
       font-family: var(--font-family-monospace);

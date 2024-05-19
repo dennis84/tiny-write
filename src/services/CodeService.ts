@@ -1,15 +1,7 @@
 import {SetStoreFunction, Store, unwrap} from 'solid-js/store'
-import {EditorView, drawSelection, highlightActiveLine, keymap, lineNumbers} from '@codemirror/view'
-import {Compartment, EditorState} from '@codemirror/state'
-import {defaultKeymap, indentWithTab} from '@codemirror/commands'
-import {autocompletion, closeBrackets, closeBracketsKeymap, completionKeymap} from '@codemirror/autocomplete'
-import {bracketMatching, foldGutter, foldKeymap, indentOnInput, indentUnit} from '@codemirror/language'
-import {linter} from '@codemirror/lint'
+import {EditorView} from '@codemirror/view'
 import {yCollab} from 'y-codemirror.next'
-import {getTheme} from '@/prosemirror/extensions/code-block/theme'
-import {highlight} from '@/prosemirror/extensions/code-block/lang'
-import {findWords, tabCompletionKeymap} from '@/prosemirror/extensions/code-block/completion'
-import {File, Mode, State} from '@/state'
+import {File, State} from '@/state'
 import * as remote from '@/remote'
 import {Ctrl} from '.'
 import {FileService} from './FileService'
@@ -102,7 +94,6 @@ export class CodeService {
         // ignore
       }
     }
-
   }
 
   private updateEditorState(file: File, el?: HTMLElement) {
@@ -113,61 +104,22 @@ export class CodeService {
     const doc = this.store.collab?.ydoc.getText(file.id)
     if (!doc) return
 
-    const langExt = new Compartment
-    const theme = getTheme(this.ctrl.config.codeTheme.value)
-    const langSupport = highlight('js')
-
     const parent = file.codeEditorView?.dom.parentElement ?? el
     file.codeEditorView?.destroy()
 
-    const extensions = [
-      keymap.of(closeBracketsKeymap),
-      keymap.of(foldKeymap),
-      keymap.of([
-        ...defaultKeymap,
-        ...completionKeymap,
-        ...tabCompletionKeymap,
-        indentWithTab,
-      ]),
-      theme,
-      drawSelection(),
-      EditorState.allowMultipleSelections.of(true),
-      indentOnInput(),
-      bracketMatching(),
-      closeBrackets(),
-      highlightActiveLine(),
-      yCollab(doc, this.store.collab?.provider.awareness, {
-        undoManager: this.store.collab?.undoManager ?? false
-      }),
-      linter(() => []),
-      EditorState.tabSize.of(this.ctrl.config.prettier.tabWidth),
-      indentUnit.of(
-        this.ctrl.config.prettier.useTabs ?
-          '\t' :
-          ' '.repeat(this.ctrl.config.prettier.tabWidth)
-      ),
-      langExt.of(langSupport),
-      EditorView.updateListener.of(() => this.onUpdate()),
-      langSupport.language.data.of({autocomplete: findWords}),
-      autocompletion(),
-    ]
-
-    if (this.store.mode !== Mode.Canvas) {
-      extensions.push([
-        lineNumbers(),
-        foldGutter(),
-        EditorView.lineWrapping,
-      ])
-    }
-
-    const editorView = new EditorView({
+    const editor = this.ctrl.codeMirror.createEditor({
       parent,
       doc: doc.toString(),
-      extensions,
+      extensions: [
+        EditorView.updateListener.of(() => this.onUpdate()),
+        yCollab(doc, this.store.collab?.provider.awareness, {
+          undoManager: this.store.collab?.undoManager ?? false
+        }),
+      ]
     })
 
     const fileIndex = this.store.files.findIndex((f) => f.id === file.id)
-    this.setState('files', fileIndex, 'codeEditorView', editorView)
+    this.setState('files', fileIndex, 'codeEditorView', editor.editorView)
   }
 
   private async onUpdate() {

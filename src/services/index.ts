@@ -13,6 +13,7 @@ import {SelectService} from './SelectService'
 import {isDev} from '@/env'
 import {TreeService} from './TreeService'
 import {CodeService} from './CodeService'
+import {CodeMirrorService} from './CodeMirrorService'
 
 export class Ctrl {
   app!: AppService
@@ -27,6 +28,7 @@ export class Ctrl {
   select!: SelectService
   tree!: TreeService
   code!: CodeService
+  codeMirror!: CodeMirrorService
 
   constructor(
     store: Store<State>,
@@ -44,6 +46,7 @@ export class Ctrl {
     this.media = new MediaService(this, store)
     this.select = new SelectService()
     this.code = new CodeService(this, store, setState)
+    this.codeMirror = new CodeMirrorService(this, store)
   }
 }
 
