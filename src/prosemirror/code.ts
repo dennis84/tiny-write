@@ -2,7 +2,7 @@ import {DOMOutputSpec, Mark} from 'prosemirror-model'
 import {EditorState, Transaction} from 'prosemirror-state'
 import {EditorView} from 'prosemirror-view'
 import {keymap} from 'prosemirror-keymap'
-import {markInputRule} from '@/prosemirror/extensions/rulebuilders'
+import {markInputRule} from '@/prosemirror/rulebuilders'
 
 const blank = '\xa0'
 

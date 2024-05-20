@@ -106,7 +106,7 @@ test('dropFile - image on canvas', async () => {
   expect(imageEl.y).toBe(-200) // centered
 })
 
-test.only('dropFile - image on canvas with active editor', async () => {
+test('dropFile - image on canvas with active editor', async () => {
   const editorElement = {
     id: '1',
     type: ElementType.Editor,

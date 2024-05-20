@@ -3,7 +3,7 @@ import {EditorView} from 'prosemirror-view'
 import {inputRules, wrappingInputRule} from 'prosemirror-inputrules'
 import {liftListItem, sinkListItem, splitListItem} from 'prosemirror-schema-list'
 import {keymap} from 'prosemirror-keymap'
-import {ViewConfig} from '@/prosemirror'
+import {ViewConfig} from '@/services/ProseMirrorService'
 
 export const taskListSchemaSpec = {
   nodes: {

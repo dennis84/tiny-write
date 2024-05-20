@@ -5,7 +5,7 @@ import {keymap} from 'prosemirror-keymap'
 import {inputRules, textblockTypeInputRule} from 'prosemirror-inputrules'
 import {Ctrl} from '@/services'
 import {CodeBlockView} from './view'
-import {ViewConfig} from '../..'
+import {ViewConfig} from '@/services/ProseMirrorService'
 
 export const codeBlockSchemaSpec = {
   nodes: {

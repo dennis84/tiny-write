@@ -1,5 +1,5 @@
 import {DOMOutputSpec} from 'prosemirror-model'
-import {markInputRule} from '@/prosemirror/extensions/rulebuilders'
+import {markInputRule} from '@/prosemirror/rulebuilders'
 
 export const emphasisSchemaSpec = {
   marks: {

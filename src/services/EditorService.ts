@@ -11,13 +11,12 @@ import {
 } from 'y-prosemirror'
 import {Box} from '@tldraw/editor'
 import * as remote from '@/remote'
-import {createPlugins, createEmptyText, createNodeViews} from '@/prosemirror/setup'
-import {schema} from '@/prosemirror/schema'
 import {State, FileText, File} from '@/state'
 import {serialize} from '@/markdown'
 import {Ctrl} from '.'
 import {FileService} from './FileService'
 import {CollabService} from './CollabService'
+import {ProseMirrorService, schema} from './ProseMirrorService'
 
 export class EditorService {
   constructor(
@@ -37,14 +36,14 @@ export class EditorService {
     if (!doc) return // If error during init
 
     const type = doc.getXmlFragment(file.id)
-    const plugins = createPlugins({
+    const plugins = ProseMirrorService.createPlugins({
       ctrl: this.ctrl,
       type,
       dropCursor: true,
     })
 
-    const {nodeViews} = createNodeViews(this.ctrl)
-    const editorState = EditorState.fromJSON({schema, plugins}, createEmptyText())
+    const {nodeViews} = ProseMirrorService.createNodeViews(this.ctrl)
+    const editorState = EditorState.fromJSON({schema, plugins}, ProseMirrorService.createEmptyText())
 
     if (!editorView) {
       const dispatchTransaction = (tr: Transaction) => {

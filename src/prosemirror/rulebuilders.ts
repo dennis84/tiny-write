@@ -41,6 +41,8 @@ export const nodeInputRule = (
 ) => new InputRule(regexp, (state, match, start, end) => {
   const attrs = getAttrs ? getAttrs(match) : getAttrs
   const tr = state.tr
+  const nodeType = state.schema.nodes[name]
+
   if (match[1]) {
     const offset = match[0].lastIndexOf(match[1])
     let matchStart = start + offset
@@ -56,7 +58,6 @@ export const nodeInputRule = (
 
     tr.insertText(lastChar, start + match[0].length - 1)
 
-    const nodeType = state.schema.nodes[name]
     // insert node from input rule
     tr.replaceWith(matchStart, end, nodeType.create(attrs))
     return tr

@@ -8,8 +8,8 @@ import {arrow, autoUpdate, computePosition, flip, offset, shift} from '@floating
 import {Mode, useState} from '@/state'
 import * as remote from '@/remote'
 import {isTauri} from '@/env'
-import {Align} from '@/prosemirror/extensions/image'
-import {blockHandlePluginKey} from '@/prosemirror/extensions/block-handle'
+import {Align} from '@/prosemirror/image'
+import {blockHandlePluginKey} from '@/prosemirror/block-handle'
 
 const TooltipEl = styled('div')`
   position: absolute;

@@ -14,6 +14,7 @@ import {isDev} from '@/env'
 import {TreeService} from './TreeService'
 import {CodeService} from './CodeService'
 import {CodeMirrorService} from './CodeMirrorService'
+import {PrettierService} from './PrettierService'
 
 export class Ctrl {
   app!: AppService
@@ -29,6 +30,7 @@ export class Ctrl {
   tree!: TreeService
   code!: CodeService
   codeMirror!: CodeMirrorService
+  prettier!: PrettierService
 
   constructor(
     store: Store<State>,
@@ -47,6 +49,7 @@ export class Ctrl {
     this.select = new SelectService()
     this.code = new CodeService(this, store, setState)
     this.codeMirror = new CodeMirrorService(this, store)
+    this.prettier = new PrettierService()
   }
 }
 

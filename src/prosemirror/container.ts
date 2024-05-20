@@ -2,7 +2,7 @@ import {DOMOutputSpec, DOMSerializer, Node, NodeType, Schema} from 'prosemirror-
 import {TextSelection} from 'prosemirror-state'
 import {EditorView} from 'prosemirror-view'
 import {inputRules, wrappingInputRule} from 'prosemirror-inputrules'
-import {ViewConfig} from '..'
+import {ViewConfig} from '@/services/ProseMirrorService'
 
 export const containerSchemaSpec = {
   nodes: {

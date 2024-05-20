@@ -1,12 +1,9 @@
 import {ViewPlugin, ViewUpdate} from '@codemirror/view'
 import {setDiagnostics} from '@codemirror/lint'
 import {CodeBlockView} from './view'
-import {PrettierService} from '@/services/PrettierService'
 
 export const prettifyView = (codeBlock: CodeBlockView) =>
   ViewPlugin.fromClass(class {
-    private prettier = new PrettierService()
-
     update(update: ViewUpdate) {
       if (update.transactions[0]?.isUserEvent('prettify')) {
         update.view.focus()
@@ -19,7 +16,7 @@ export const prettifyView = (codeBlock: CodeBlockView) =>
       const view = update.view
       try {
         const doc = view.state.doc.toString()
-        const value = await this.prettier.format(doc, codeBlock.lang, codeBlock.ctrl.config.prettier)
+        const value = await codeBlock.ctrl.prettier.format(doc, codeBlock.lang, codeBlock.ctrl.config.prettier)
         view.dispatch({
           changes: {
             from: 0,

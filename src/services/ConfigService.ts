@@ -1,5 +1,5 @@
 import {SetStoreFunction, Store, unwrap} from 'solid-js/store'
-import {Config, isEditorElement, Mode, State} from '@/state'
+import {Config, Mode, State} from '@/state'
 import * as remote from '@/remote'
 import {DB} from '@/db'
 import {isDark} from '@/env'

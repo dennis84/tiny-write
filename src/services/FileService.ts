@@ -7,9 +7,9 @@ import {File, FileText, Mode, ServiceError, State, isLinkElement} from '@/state'
 import * as remote from '@/remote'
 import {DB} from '@/db'
 import {isTauri} from '@/env'
-import {schema} from '@/prosemirror/schema'
 import {createMarkdownParser} from '@/markdown'
 import {Ctrl} from '.'
+import {schema} from './ProseMirrorService'
 
 export interface LoadedTextFile {
   text: string;

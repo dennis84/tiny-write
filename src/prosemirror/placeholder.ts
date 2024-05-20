@@ -1,11 +1,11 @@
 import {Plugin} from 'prosemirror-state'
 import {DecorationSet, Decoration} from 'prosemirror-view'
-import {isEmpty} from '@/prosemirror'
+import {ProseMirrorService} from '@/services/ProseMirrorService'
 
 export const placeholder = (text: string) => new Plugin({
   props: {
     decorations(state) {
-      if (isEmpty(state)) {
+      if (ProseMirrorService.isEmpty(state)) {
         const el = document.createElement('span')
         el.setAttribute('contenteditable', 'false')
         el.classList.add('placeholder')

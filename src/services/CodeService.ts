@@ -6,11 +6,8 @@ import * as remote from '@/remote'
 import {Ctrl} from '.'
 import {FileService} from './FileService'
 import {CollabService} from './CollabService'
-import {PrettierService} from './PrettierService'
 
 export class CodeService {
-  private prettier = new PrettierService()
-
   constructor(
     private ctrl: Ctrl,
     private store: Store<State>,
@@ -87,7 +84,7 @@ export class CodeService {
     const code = doc?.toString()
     if (code) {
       try {
-        const value = await this.prettier.format(code, 'js', this.store.config.prettier)
+        const value = await this.ctrl.prettier.format(code, 'js', this.store.config.prettier)
         doc?.delete(0, doc.length)
         doc?.insert(0, value)
       } catch (e) {
