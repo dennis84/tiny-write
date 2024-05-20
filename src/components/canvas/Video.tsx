@@ -2,11 +2,11 @@ import {onMount} from 'solid-js'
 import {css} from 'solid-styled-components'
 import {CanvasVideoElement, useState} from '@/state'
 import {Selection} from '@/services/CanvasService'
-import Bounds from './Bounds'
-import LinkHandles from './LinkHandles'
+import {Bounds} from './Bounds'
+import {LinkHandles} from './LinkHandles'
 import {IndexType, zIndex} from '@/utils/z-index'
 
-export default ({element, index}: {element: CanvasVideoElement; index: number}) => {
+export const Video = ({element, index}: {element: CanvasVideoElement; index: number}) => {
   let videoRef!: HTMLVideoElement
   const [, ctrl] = useState()
 
@@ -21,7 +21,7 @@ export default ({element, index}: {element: CanvasVideoElement; index: number}) 
 
   onMount(async () => {
     const basePath = await ctrl.app.getBasePath()
-    const p = await ctrl.image.getImagePath(element.src, basePath)
+    const p = await ctrl.media.getImagePath(element.src, basePath)
     videoRef.setAttribute('src', p)
   })
 

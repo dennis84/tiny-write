@@ -1,7 +1,7 @@
 import {EditorView, ViewPlugin, ViewUpdate} from '@codemirror/view'
 import {foldable, foldEffect} from '@codemirror/language'
 
-export const foldAll = () =>
+export const createFoldAllPlugin = () =>
   ViewPlugin.fromClass(class {
     update(update: ViewUpdate) {
       if (update.transactions[0]?.isUserEvent('fold_all')) {

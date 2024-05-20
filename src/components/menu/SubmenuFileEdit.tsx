@@ -5,7 +5,7 @@ import * as remote from '@/remote'
 import {isMac, isTauri, mod} from '@/env'
 import {Keys, Label, Link, Sub} from './Menu'
 
-export default () => {
+export const SubmenuFileEdit = () => {
   const [, ctrl] = useState()
   const [lastAction, setLastAction] = createSignal<string | undefined>()
 

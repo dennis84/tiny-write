@@ -10,15 +10,15 @@ import {Layout} from '@/components/Layout'
 import {Editor} from '@/components/editor/Editor'
 import {CodeEditor} from '@/components/code/CodeEditor'
 import {BlockTooltip} from '@/components/editor/BlockTooltip'
-import Canvas from '@/components/canvas/Canvas'
-import Menu from '@/components/menu/Menu'
-import ErrorView from '@/components/Error'
-import Dir from '@/components/Dir'
-import Keymap from '@/components/Keymap'
-import Variables from '@/components/Variables'
-import MouseCursor from '@/components/MouseCursor'
+import {Canvas} from '@/components/canvas/Canvas'
+import {Menu} from '@/components/menu/Menu'
+import {Error} from '@/components/Error'
+import {Dir} from '@/components/Dir'
+import {Keymap} from '@/components/Keymap'
+import {Variables} from '@/components/Variables'
+import {MouseCursor} from '@/components/MouseCursor'
 
-export default (props: {state: State}) => {
+export const Main = (props: {state: State}) => {
   const {store, ctrl} = createCtrl(props.state)
   const mouseEnterCoords = createMutable({x: 0, y: 0})
   let layoutRef!: HTMLDivElement
@@ -137,7 +137,7 @@ export default (props: {state: State}) => {
           data-testid={store.error ? 'error' : store.loading}
           onDragOver={onDragOver}>
           <Switch>
-            <Match when={store.error}><ErrorView /></Match>
+            <Match when={store.error}><Error /></Match>
             <Match when={store.args?.dir}><Dir /></Match>
             <Match when={store.mode === Mode.Canvas}><Canvas /></Match>
             <Match when={store.mode === Mode.Editor}><Editor /></Match>

@@ -1,7 +1,7 @@
 import {EditorView, ViewPlugin, ViewUpdate} from '@codemirror/view'
 import {CodeBlockView} from './view'
 
-export default (codeBlock: CodeBlockView) =>
+export const createExpandPlugin = (codeBlock: CodeBlockView) =>
   ViewPlugin.fromClass(class {
     expand: HTMLElement | undefined
     expanded = false

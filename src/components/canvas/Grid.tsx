@@ -3,7 +3,7 @@ import {styled} from 'solid-styled-components'
 
 const STEPS = [[1.5, 5], [1, 1]]
 
-const Grid = styled('svg')`
+const GridSvg = styled('svg')`
   position: absolute;
   top: 0;
   left: 0;
@@ -14,11 +14,11 @@ const Grid = styled('svg')`
   overscroll-behavior: none;
 `
 
-export default ({onClick}: {onClick: () => void}) => {
+export const Grid = ({onClick}: {onClick: () => void}) => {
   const [, ctrl] = useState()
 
   return (
-    <Grid id="grid" onClick={onClick} version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <GridSvg id="grid" onClick={onClick} version="1.1" xmlns="http://www.w3.org/2000/svg">
       <defs>
         {STEPS.map(([r, size], i) => {
           const grid = 10
@@ -51,6 +51,6 @@ export default ({onClick}: {onClick: () => void}) => {
           fill={`url(#grid-${i})`}
         />
       ))}
-    </Grid>
+    </GridSvg>
   )
 }

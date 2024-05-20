@@ -1,11 +1,11 @@
 import {css} from 'solid-styled-components'
 import {CanvasImageElement, useState} from '@/state'
 import {Selection} from '@/services/CanvasService'
-import Bounds from './Bounds'
-import LinkHandles from './LinkHandles'
+import {Bounds} from './Bounds'
+import {LinkHandles} from './LinkHandles'
 import {IndexType, zIndex} from '@/utils/z-index'
 
-export default ({element, index}: {element: CanvasImageElement; index: number}) => {
+export const Image = ({element, index}: {element: CanvasImageElement; index: number}) => {
   const [, ctrl] = useState()
 
   const onSelect = (e: MouseEvent) => {

@@ -176,7 +176,7 @@ const Corner = (props: CornerProps) => {
   )
 }
 
-const Bounds = styled('svg')`
+const BoundsSvg = styled('svg')`
   position: absolute;
   width: ${(props: any) => Number(props.selection.box.width) + BORDER_SIZE_2}px;
   height: ${(props: any) => Number(props.selection.box.height) + BORDER_SIZE_2}px;
@@ -189,7 +189,7 @@ const Bounds = styled('svg')`
   }
 `
 
-export default (props: BoundsProps) => {
+export const Bounds = (props: BoundsProps) => {
   let ref!: SVGSVGElement
   const [local, others] = splitProps(props, ['onSelect', 'onDoubleClick'])
   const [, ctrl] = useState()
@@ -226,7 +226,7 @@ export default (props: BoundsProps) => {
   })
 
   return (
-    <Bounds
+    <BoundsSvg
       {...others}
       ref={ref}
       style={{'z-index': zIndex(props.index, IndexType.BOUNDS)}}
@@ -244,7 +244,7 @@ export default (props: BoundsProps) => {
       <Corner {...others} type={CornerType.BottomLeft} />
       <Corner {...others} type={CornerType.BottomRight} />
       <Show when={others.selected && props.visible}><Visible {...props} /></Show>
-    </Bounds>
+    </BoundsSvg>
   )
 }
 

@@ -4,7 +4,7 @@ import * as remote from '@/remote'
 import {Label, Link, Sub, Text} from './Menu'
 import {WEB_URL} from '@/env'
 
-export default () => {
+export const SubmenuCollab = () => {
   const [store, ctrl] = useState()
   const [collabUsers, setCollabUsers] = createSignal(0)
   const [lastAction, setLastAction] = createSignal<string | undefined>()

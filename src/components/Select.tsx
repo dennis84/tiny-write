@@ -14,7 +14,7 @@ interface Props {
   target: () => HTMLElement;
 }
 
-export default (props: Props) => {
+export const Select = (props: Props) => {
   const [state, ctrl] = useState()
   const [frame, setFrame] = createSignal<Box>()
 

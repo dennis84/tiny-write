@@ -4,15 +4,15 @@ import {Gesture} from '@use-gesture/vanilla'
 import {Vec} from '@tldraw/editor'
 import {isEditorElement, isLinkElement, isImageElement, useState, isVideoElement, isCodeElement} from '@/state'
 import {isTauri} from '@/env'
-import Grid from './Grid'
-import Editor from './Editor'
-import Link from './Link'
-import Image from './Image'
-import Video from './Video'
-import LinkEnd from './LinkEnd'
-import Bounds from './Bounds'
-import Select from '../Select'
-import CodeEditor from './CodeEditor'
+import {Grid} from './Grid'
+import {Editor} from './Editor'
+import {Link} from './Link'
+import {Image} from './Image'
+import {Video} from './Video'
+import {LinkEnd} from './LinkEnd'
+import {Bounds} from './Bounds'
+import {Select} from '../Select'
+import {CodeEditor} from './CodeEditor'
 
 const Container = styled('div')`
   width: 100%;
@@ -43,7 +43,7 @@ const DragArea = styled('div')`
   cursor: var(--cursor-grab);
 `
 
-export default () => {
+export const Canvas = () => {
   const [state, ctrl] = useState()
 
   const scaleBounds = {min: 0.3, max: 10}

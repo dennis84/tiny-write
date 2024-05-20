@@ -17,7 +17,7 @@ const Link = styled('a')`
   }
 `
 
-export default () => {
+export const Dir = () => {
   const [store, ctrl] = useState()
 
   const onNew = async () => {

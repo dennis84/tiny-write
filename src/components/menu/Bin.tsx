@@ -1,7 +1,7 @@
 import {useState} from '@/state'
 import {Button, ButtonGroup} from '../Button'
 import {Drawer, Label, Note} from './Menu'
-import SubmenuTree from './SubmenuTree'
+import {SubmenuTree} from './SubmenuTree'
 
 interface Props {
   onBack: () => void;

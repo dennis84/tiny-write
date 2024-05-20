@@ -1,7 +1,7 @@
 import {createEffect, onCleanup} from 'solid-js'
 import {WheelGesture} from '@use-gesture/vanilla'
 import {Mode, useState} from '@/state'
-import Select from '../Select';
+import {Select} from '../Select';
 import {Scroll} from '../Layout'
 import {FullEditor} from './Style'
 

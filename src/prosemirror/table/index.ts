@@ -10,7 +10,7 @@ import {
   selectionCell,
   tableNodes,
 } from 'prosemirror-tables'
-import {cellMenu} from './cell-menu'
+import {createCellMenuPlugin} from './cell-menu'
 import {Ctrl} from '@/services'
 
 const defaultSchema = tableNodes({
@@ -172,7 +172,7 @@ export const tableKeymap = keymap({
 
 export const createTablePlugins = (ctrl: Ctrl, schema: Schema) => [
   inputRules({rules: [tableInputRule(schema)]}),
-  cellMenu(ctrl.app.layoutRef),
+  createCellMenuPlugin(ctrl.app.layoutRef),
 ]
 
 const getSelectionCell = (state: EditorState) => {

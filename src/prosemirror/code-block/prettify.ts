@@ -2,7 +2,7 @@ import {ViewPlugin, ViewUpdate} from '@codemirror/view'
 import {setDiagnostics} from '@codemirror/lint'
 import {CodeBlockView} from './view'
 
-export const prettifyView = (codeBlock: CodeBlockView) =>
+export const createPrettifyPlugin = (codeBlock: CodeBlockView) =>
   ViewPlugin.fromClass(class {
     update(update: ViewUpdate) {
       if (update.transactions[0]?.isUserEvent('prettify')) {

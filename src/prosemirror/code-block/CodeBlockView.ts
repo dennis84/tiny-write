@@ -10,11 +10,11 @@ import {Ctrl} from '@/services'
 import {highlight} from '@/codemirror/highlight'
 import {findWords} from '@/codemirror/completion'
 import {mermaidKeywords} from '@/codemirror/mermaid'
-import {changeLang} from './change-lang'
-import expand from './expand'
-import {prettifyView} from './prettify'
-import {mermaidView} from './mermaid-preview'
-import {foldAll} from './fold'
+import {createChangeLangPlugin} from './change-lang'
+import {createExpandPlugin} from './expand'
+import {createPrettifyPlugin} from './prettify'
+import {createMermaidPlugin} from './mermaid-preview'
+import {createFoldAllPlugin} from './fold'
 
 export class CodeBlockView {
   public dom: HTMLElement
@@ -145,11 +145,11 @@ export class CodeBlockView {
       extensions: [
         tooltips({parent: this.ctrl.app.layoutRef}),
         embeddedCodeMirrorKeymap,
-        expand(this),
-        mermaidView(this),
-        prettifyView(this),
-        foldAll(),
-        changeLang(this, {
+        createExpandPlugin(this),
+        createMermaidPlugin(this),
+        createPrettifyPlugin(this),
+        createFoldAllPlugin(),
+        createChangeLangPlugin(this, {
           onClose: () => this.editorView.focus(),
           onChange: (lang: string) => {
             const tr = this.view.state.tr

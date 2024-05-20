@@ -9,7 +9,7 @@ import {
   CURSOR_TEXT,
 } from './Cursors'
 
-export default () => {
+export const Variables = () => {
   const [, ctrl] = useState()
 
   onMount(() => setupFonts())

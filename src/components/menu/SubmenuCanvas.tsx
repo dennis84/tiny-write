@@ -2,7 +2,7 @@ import {isMac, mod} from '@/env'
 import {useState} from '@/state'
 import {Keys, Label, Link, Sub} from './Menu'
 
-export default ({maybeHide}: {maybeHide: () => void}) => {
+export const SubmenuCanvas = ({maybeHide}: {maybeHide: () => void}) => {
   const [, ctrl] = useState()
   const modKey = isMac ? '⌘' : mod
 

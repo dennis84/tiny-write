@@ -4,7 +4,7 @@ import {EditorState, Selection, Transaction, TextSelection} from 'prosemirror-st
 import {keymap} from 'prosemirror-keymap'
 import {inputRules, textblockTypeInputRule} from 'prosemirror-inputrules'
 import {Ctrl} from '@/services'
-import {CodeBlockView} from './view'
+import {CodeBlockView} from './CodeBlockView'
 import {ViewConfig} from '@/services/ProseMirrorService'
 
 export const codeBlockSchemaSpec = {

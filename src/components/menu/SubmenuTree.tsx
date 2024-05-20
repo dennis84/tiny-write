@@ -105,7 +105,7 @@ interface Props {
   showDeleted?: boolean;
 }
 
-export default (props: Props) => {
+export const SubmenuTree = (props: Props) => {
   let ghostRef!: HTMLDivElement
   let binRef!: HTMLButtonElement
 

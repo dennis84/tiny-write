@@ -4,11 +4,11 @@ import {CanvasEditorElement, useState} from '@/state'
 import {Selection} from '@/services/CanvasService'
 import {CanvasEditor} from '@/components/editor/Style'
 import {Scroll} from '@/components/Layout'
-import Bounds from './Bounds'
-import LinkHandles from './LinkHandles'
+import {Bounds} from './Bounds'
+import {LinkHandles} from './LinkHandles'
 import {IndexType, zIndex} from '@/utils/z-index'
 
-export default ({element, index}: {element: CanvasEditorElement; index: number}) => {
+export const Editor = ({element, index}: {element: CanvasEditorElement; index: number}) => {
   const [store, ctrl] = useState()
   let containerRef!: HTMLDivElement
   let editorRef!: HTMLDivElement

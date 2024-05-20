@@ -69,7 +69,7 @@ interface Cursor {
   foreground: string;
 }
 
-export default () => {
+export const MouseCursor = () => {
   const [store, ctrl] = useState()
   const [awareness, setAwareness] = createSignal<Awareness>()
   const [cursors, setCursors] = createStore<Cursor[]>([])

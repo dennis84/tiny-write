@@ -4,7 +4,7 @@ import {isEditorElement, Mode, useState} from '@/state'
 import {isTauri, mod} from '@/env'
 import * as remote from '@/remote'
 
-export default () => {
+export const Keymap = () => {
   const [store, ctrl] = useState()
 
   onMount(() => {

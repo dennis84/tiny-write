@@ -217,7 +217,7 @@ class CellMenuView {
   }
 }
 
-export const cellMenu = (tooltipParent?: HTMLElement) => new Plugin({
+export const createCellMenuPlugin = (tooltipParent?: HTMLElement) => new Plugin({
   key: pluginKey,
   state: {
     init() {

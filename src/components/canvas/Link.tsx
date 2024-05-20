@@ -5,7 +5,7 @@ import {DragGesture} from '@use-gesture/vanilla'
 import {Canvas, CanvasBoxElement, CanvasLinkElement, EdgeType, useState} from '@/state'
 import {IndexType, zIndex} from '@/utils/z-index'
 
-const Link = styled('svg')`
+const LinkSvg = styled('svg')`
   position: absolute;
   top: 0;
   left: 0;
@@ -51,7 +51,7 @@ const ArrowHead = styled('path')`
   fill: var(--border);
 `
 
-export default ({element}: {element: CanvasLinkElement}) => {
+export const Link = ({element}: {element: CanvasLinkElement}) => {
   let pathRef!: SVGLineElement
   let innerPathRef!: SVGLineElement
   let arrowheadRef!: SVGLineElement
@@ -133,7 +133,7 @@ export default ({element}: {element: CanvasLinkElement}) => {
   })
 
   return (
-    <Link
+    <LinkSvg
       version="1.1"
       xmlns="http://www.w3.org/2000/svg"
       index={index()}
@@ -146,7 +146,7 @@ export default ({element}: {element: CanvasLinkElement}) => {
       />
       <InnerPath ref={innerPathRef} zoom={currentCanvas.camera.zoom} />
       <ArrowHead ref={arrowheadRef} />
-    </Link>
+    </LinkSvg>
   )
 }
 

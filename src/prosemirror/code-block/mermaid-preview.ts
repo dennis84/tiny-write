@@ -3,7 +3,7 @@ import {language} from '@codemirror/language'
 import mermaid from 'mermaid'
 import {CodeBlockView} from './view'
 
-export const mermaidView = (codeBlock: CodeBlockView) =>
+export const createMermaidPlugin = (codeBlock: CodeBlockView) =>
   ViewPlugin.fromClass(class {
     id = codeBlock.getPos()
     output: HTMLElement

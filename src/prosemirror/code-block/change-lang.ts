@@ -21,7 +21,7 @@ interface Config {
   onChange: (lang: string) => void;
 }
 
-export const changeLang = (codeBlock: CodeBlockView, config: Config) =>
+export const createChangeLangPlugin = (codeBlock: CodeBlockView, config: Config) =>
   ViewPlugin.fromClass(class {
     toggle!: HTMLElement
     input!: HTMLElement

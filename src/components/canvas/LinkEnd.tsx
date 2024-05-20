@@ -14,7 +14,7 @@ const Backdrop = styled('div')`
   z-index: 100;
 `
 
-export default () => {
+export const LinkEnd = () => {
   const [, ctrl] = useState()
   const [contextMenu, setContextMenu] = createSignal<Vec | undefined>()
 

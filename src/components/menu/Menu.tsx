@@ -8,12 +8,12 @@ import {CodeBlock} from './CodeBlock'
 import {Appearance} from './Appearance'
 import {ChangeSet} from './ChangeSet'
 import {Help} from './Help'
-import SubmenuFile from './SubmenuFile'
-import SubmenuCanvas from './SubmenuCanvas'
-import SubmenuFileEdit from './SubmenuFileEdit'
-import SubmenuCollab from './SubmenuCollab'
-import SubmenuCanvasEdit from './SubmenuCanvasEdit'
-import SubmenuTree from './SubmenuTree'
+import {SubmenuFile} from './SubmenuFile'
+import {SubmenuCanvas} from './SubmenuCanvas'
+import {SubmenuFileEdit} from './SubmenuFileEdit'
+import {SubmenuCollab} from './SubmenuCollab'
+import {SubmenuCanvasEdit} from './SubmenuCanvasEdit'
+import {SubmenuTree} from './SubmenuTree'
 
 const fullWidth = 500
 
@@ -183,7 +183,7 @@ export const Keys = (props: {keys: string[]}) => (
   >{props.keys.map((k: string) => <i>{k}</i>)}</span>
 )
 
-export default () => {
+export const Menu = () => {
   const [store, ctrl] = useState()
   const [show, setShow] = createSignal()
 

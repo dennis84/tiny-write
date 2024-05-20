@@ -115,7 +115,7 @@ const LinkHandle = (props: EdgeProps) => {
   )
 }
 
-export default (props: Props) => <>
+export const LinkHandles = (props: Props) => <>
   <LinkHandle {...props} type={EdgeType.Top} />
   <LinkHandle {...props} type={EdgeType.Right} />
   <LinkHandle {...props} type={EdgeType.Bottom} />
