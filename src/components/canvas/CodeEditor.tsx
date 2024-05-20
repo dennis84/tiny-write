@@ -3,10 +3,10 @@ import {css} from 'solid-styled-components'
 import {CanvasCodeElement, useState} from '@/state'
 import {Selection} from '@/services/CanvasService'
 import {Scroll} from '@/components/Layout'
+import {CodeMirrorContainer} from '@/components/code/CodeEditor'
 import Bounds from './Bounds'
 import LinkHandles from './LinkHandles'
 import {IndexType, zIndex} from '@/utils/z-index'
-import {CodeMirror} from '../code/CodeEditor'
 
 export default ({element, index}: {element: CanvasCodeElement; index: number}) => {
   const [store, ctrl] = useState()
@@ -83,7 +83,7 @@ export default ({element, index}: {element: CanvasCodeElement; index: number}) =
           `}
         `}
       >
-        <CodeMirror
+        <CodeMirrorContainer
           ref={editorRef}
           data-testid="canvas_code_editor"
         />
