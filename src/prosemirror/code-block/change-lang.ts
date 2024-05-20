@@ -14,7 +14,7 @@ import {acceptCompletion, autocompletion, moveCompletionSelection} from '@codemi
 import {languages} from '@/codemirror/highlight'
 import * as logos from '@/codemirror/logos'
 import {getTheme} from '@/codemirror/theme'
-import {CodeBlockView} from './view'
+import {CodeBlockView} from './CodeBlockView'
 
 interface Config {
   onClose: () => void;

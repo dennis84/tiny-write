@@ -1,7 +1,7 @@
 import {EditorView, ViewPlugin, ViewUpdate} from '@codemirror/view'
 import {language} from '@codemirror/language'
 import mermaid from 'mermaid'
-import {CodeBlockView} from './view'
+import {CodeBlockView} from './CodeBlockView'
 
 export const createMermaidPlugin = (codeBlock: CodeBlockView) =>
   ViewPlugin.fromClass(class {

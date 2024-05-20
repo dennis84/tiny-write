@@ -10,11 +10,11 @@ import {Ctrl} from '@/services'
 import {highlight} from '@/codemirror/highlight'
 import {findWords} from '@/codemirror/completion'
 import {mermaidKeywords} from '@/codemirror/mermaid'
+import {format} from '@/codemirror/prettify'
+import {foldAll} from '@/codemirror/fold-all'
 import {createChangeLangPlugin} from './change-lang'
 import {createExpandPlugin} from './expand'
-import {createPrettifyPlugin} from './prettify'
 import {createMermaidPlugin} from './mermaid-preview'
-import {createFoldAllPlugin} from './fold'
 
 export class CodeBlockView {
   public dom: HTMLElement
@@ -35,7 +35,12 @@ export class CodeBlockView {
     this.dom.classList.add('cm-container')
 
     this.dom.addEventListener('cm:user_event', (event: any) => {
-      this.editorView.dispatch({userEvent: event.detail.userEvent})
+      const action = event.detail.userEvent
+      if (action === 'prettify') {
+        void format(this.editorView, this.lang, this.ctrl.config.prettier)
+      } else if (action === 'fold_all') {
+        foldAll(this.editorView)
+      }
     })
 
     const embeddedCodeMirrorKeymap = keymap.of([{
@@ -147,8 +152,6 @@ export class CodeBlockView {
         embeddedCodeMirrorKeymap,
         createExpandPlugin(this),
         createMermaidPlugin(this),
-        createPrettifyPlugin(this),
-        createFoldAllPlugin(),
         createChangeLangPlugin(this, {
           onClose: () => this.editorView.focus(),
           onChange: (lang: string) => {

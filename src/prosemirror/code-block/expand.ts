@@ -1,5 +1,5 @@
 import {EditorView, ViewPlugin, ViewUpdate} from '@codemirror/view'
-import {CodeBlockView} from './view'
+import {CodeBlockView} from './CodeBlockView'
 
 export const createExpandPlugin = (codeBlock: CodeBlockView) =>
   ViewPlugin.fromClass(class {

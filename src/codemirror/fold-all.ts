@@ -1,17 +1,7 @@
-import {EditorView, ViewPlugin, ViewUpdate} from '@codemirror/view'
+import {EditorView} from '@codemirror/view'
 import {foldable, foldEffect} from '@codemirror/language'
 
-export const createFoldAllPlugin = () =>
-  ViewPlugin.fromClass(class {
-    update(update: ViewUpdate) {
-      if (update.transactions[0]?.isUserEvent('fold_all')) {
-        update.view.focus()
-        setTimeout(() => foldLines(update.view))
-      }
-    }
-  })
-
-const foldLines = (view: EditorView) => {
+export const foldAll = (view: EditorView) => {
   const effects = []
 
   for (let i = 1; i <= view.state.doc.lines; i++) {
@@ -23,5 +13,8 @@ const foldLines = (view: EditorView) => {
 
   if (effects.length) {
     view.dispatch({effects})
+    return true
   }
+
+  return false
 }

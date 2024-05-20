@@ -87,7 +87,8 @@ export const Main = (props: {state: State}) => {
     const onDrop = async (e: DragEvent) => {
       e.preventDefault()
 
-      if ((e.target as Element).closest('.cm-container')) {
+      // don't drop files in codemirror
+      if ((e.target as Element).closest('.cm-editor')) {
         return
       }
 
@@ -95,6 +96,7 @@ export const Main = (props: {state: State}) => {
         if (file.type.startsWith('image/')) {
           const x = mouseEnterCoords.x
           const y = mouseEnterCoords.y
+          console.log('aaaaa')
           await ctrl.media.dropFile(file, [x, y])
         }
       }
