@@ -77,6 +77,11 @@ export class CodeService {
     this.updateEditorState(file)
   }
 
+  updateLang(file: File, lang: string) {
+    this.ctrl.file.updateFile(file.id, {codeLang: lang})
+    this.updateEditorState(file)
+  }
+
   async prettify() {
     const currentFile = this.ctrl.file.currentFile
     if (!currentFile) return
@@ -107,6 +112,7 @@ export class CodeService {
     const editor = this.ctrl.codeMirror.createEditor({
       parent,
       doc: doc.toString(),
+      lang: file.codeLang,
       extensions: [
         EditorView.updateListener.of(() => this.onUpdate()),
         yCollab(doc, this.store.collab?.provider.awareness, {

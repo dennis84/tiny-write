@@ -210,6 +210,7 @@ export interface File {
   path?: string;
   newFile?: string;
   code?: boolean;
+  codeLang?: string;
   active?: boolean;
   deleted?: boolean;
   editorView?: EditorView;

@@ -5,14 +5,12 @@ import {exitCode} from 'prosemirror-commands'
 import {Compartment} from '@codemirror/state'
 import {EditorView, ViewUpdate, keymap, tooltips} from '@codemirror/view'
 import {autocompletion} from '@codemirror/autocomplete'
-import {setDiagnostics} from '@codemirror/lint'
 import {Ctrl} from '@/services'
 import {highlight} from '@/codemirror/highlight'
 import {findWords} from '@/codemirror/completion'
 import {mermaidKeywords} from '@/codemirror/mermaid'
 import {format} from '@/codemirror/prettify'
 import {foldAll} from '@/codemirror/fold-all'
-import {createChangeLangPlugin} from './change-lang'
 import {createExpandPlugin} from './expand'
 import {createMermaidPlugin} from './mermaid-preview'
 
@@ -152,19 +150,6 @@ export class CodeBlockView {
         embeddedCodeMirrorKeymap,
         createExpandPlugin(this),
         createMermaidPlugin(this),
-        createChangeLangPlugin(this, {
-          onClose: () => this.editorView.focus(),
-          onChange: (lang: string) => {
-            const tr = this.view.state.tr
-            const nodePos = this.getPos()
-            if (nodePos === undefined) return
-            tr.setNodeMarkup(nodePos, undefined, {...this.node.attrs, lang})
-            this.view.dispatch(tr)
-            this.reconfigure()
-            this.editorView.dispatch(setDiagnostics(this.editorView.state, []))
-            this.editorView.focus()
-          }
-        }),
         EditorView.updateListener.of((update) => this.forwardUpdate(update)),
         autocompletion(),
         EditorView.domEventHandlers({

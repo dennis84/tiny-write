@@ -18,6 +18,7 @@ export interface PersistedFile {
   path?: string;
   newFile?: string;
   code?: boolean;
+  codeLang?: string;
   active?: boolean;
   deleted?: boolean;
 }

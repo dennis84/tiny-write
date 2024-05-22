@@ -26,43 +26,11 @@ export const codeBlock = (props: Props) => `
     ${codeMirror}
     .cm-editor {
       .cm-line {
-        line-height: calc(var(--font-size) * 1.6) !important;
+        line-height: var(--line-height) !important;
       }
     }
     > .cm-editor {
       flex-direction: ${props.mode === Mode.Editor && props.config.contentWidth > 1000 ? 'row' : 'column'};
-      .lang-input {
-        position: absolute;
-        outline: none;
-        margin-left: 15px;
-        z-index: 1;
-        .cm-editor {
-          width: 100%;
-          padding: 5px;
-          flex-direction: row;
-          &::before {
-            content: "\`\`\`";
-          }
-          .cm-line {
-            padding: 0;
-          }
-        }
-      }
-      .lang-toggle {
-        position: absolute;
-        box-sizing: border-box;
-        top: 0;
-        right: 0;
-        margin: 4px;
-        height: 16px;
-        line-height: 100%;
-        cursor: var(--cursor-pointer);
-        z-index: 10;
-        user-select: none;
-        img {
-          width: 16px;
-        }
-      }
       .mermaid {
         padding: 30px;
         background: #ffffff11;
@@ -109,8 +77,7 @@ export const codeBlock = (props: Props) => `
         }
       }
       @media print {
-        .expand,
-        .lang-toggle {
+        .expand {
           display: none !important;
         }
       }
@@ -132,7 +99,7 @@ const proseMirror = (props: Props) => `
     font-size: var(--font-size);
     font-family: var(--font-family);
     color: var(--foreground);
-    line-height: calc(var(--font-size) * 1.6);
+    line-height: var(--line-height);
     outline: none !important;
     background: transparent;
     strong {
@@ -146,9 +113,9 @@ const proseMirror = (props: Props) => `
     h1 {
       font-size: var(--font-size-h1);
       font-weight: 800;
-      line-height: calc(var(--font-size-h1) * 1.6);
+      line-height: var(--line-height-h1);
       .block-handle {
-        height: calc(var(--font-size-h1) * 1.6);
+        height: var(--line-height-h1);
       }
     }
     h2 {
@@ -292,7 +259,7 @@ const proseMirror = (props: Props) => `
       position: absolute;
       left: -30px;
       top: 0;
-      height: calc(var(--font-size) * 1.6);
+      height: var(--line-height);
       opacity: 0;
       cursor: move;
       transition: opacity 0.3s;

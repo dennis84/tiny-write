@@ -136,8 +136,9 @@ export const Main = (props: {state: State}) => {
       <ErrorBoundary fallback={onViewError}>
         <Layout
           ref={layoutRef}
+          onDragOver={onDragOver}
           data-testid={store.error ? 'error' : store.loading}
-          onDragOver={onDragOver}>
+        >
           <Switch>
             <Match when={store.error}><Error /></Match>
             <Match when={store.args?.dir}><Dir /></Match>

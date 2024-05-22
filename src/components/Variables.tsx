@@ -18,6 +18,7 @@ export const Variables = () => {
     const root = document.documentElement
 
     root.style.setProperty('--background', ctrl.config.theme.background)
+    root.style.setProperty('--background-60', `${ctrl.config.theme.background}99`)
     root.style.setProperty('--foreground', ctrl.config.theme.foreground)
     root.style.setProperty('--foreground-80', `${ctrl.config.theme.foreground}cc`)
     root.style.setProperty('--foreground-60', `${ctrl.config.theme.foreground}99`)
@@ -44,10 +45,13 @@ export const Variables = () => {
     root.style.setProperty('--font-size-h1', `${ctrl.config.fontSize * 1.8}px`)
     root.style.setProperty('--font-size-h2', `${ctrl.config.fontSize * 1.4}px`)
     root.style.setProperty('--font-size-h3', `${ctrl.config.fontSize * 1.2}px`)
+    root.style.setProperty('--line-height', `${ctrl.config.fontSize * 1.6}px`)
+    root.style.setProperty('--line-height-h1', `${ctrl.config.fontSize * 1.8 * 1.6}px`)
     root.style.setProperty('--border-radius', ConfigService.BORDER_RADIUS)
     root.style.setProperty('--menu-font-family', ConfigService.DEFAULT_FONT)
     root.style.setProperty('--menu-font-family-bold', ConfigService.DEFAULT_FONT + ' bold')
     root.style.setProperty('--menu-font-size', '15px')
+    root.style.setProperty('--menu-line-height', `${15 * 1.6}px`)
     root.style.setProperty('--cursor-default', CURSOR_DEFAULT)
     root.style.setProperty('--cursor-pointer', CURSOR_POINTER)
     root.style.setProperty('--cursor-grab', CURSOR_GRAB)

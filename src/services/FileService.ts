@@ -105,6 +105,7 @@ export class FileService {
       active: file.active,
       deleted: file.deleted,
       code: file.code,
+      codeLang: file.codeLang,
       versions: file.versions.map((v) => ({
         date: v.date,
         ydoc: v.ydoc,
@@ -223,6 +224,7 @@ export class FileService {
           active: file.active,
           deleted: file.deleted,
           code: file.code,
+          codeLang: file.codeLang,
           versions: (file.versions ?? []).map((v) => ({
             date: v.date,
             ydoc: v.ydoc,

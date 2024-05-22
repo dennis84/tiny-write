@@ -2,6 +2,7 @@ import {Show, createEffect, createMemo, createSignal, onCleanup, onMount} from '
 import {createMutable, unwrap} from 'solid-js/store'
 import {styled} from 'solid-styled-components'
 import {EditorView} from 'prosemirror-view'
+import {TextSelection} from 'prosemirror-state'
 import {Node} from 'prosemirror-model'
 import {setBlockType} from 'prosemirror-commands'
 import {arrow, autoUpdate, computePosition, flip, offset, shift} from '@floating-ui/dom'
@@ -10,6 +11,7 @@ import * as remote from '@/remote'
 import {isTauri} from '@/env'
 import {Align} from '@/prosemirror/image'
 import {blockHandlePluginKey} from '@/prosemirror/block-handle'
+import {InputLine, InputLineConfig} from '@/components/dialog/InputLine'
 
 const TooltipEl = styled('div')`
   position: absolute;
@@ -33,6 +35,7 @@ export const BlockTooltip = () => {
 
   const [store, ctrl] = useState()
   const [selectedBlock, setSelectedBlock] = createSignal<Block | undefined>()
+  const [inputLine, setInputLine] = createSignal<InputLineConfig>()
   const cleanup = createMutable<Cleanup>({})
 
   const closeTooltip = () => {
@@ -50,14 +53,6 @@ export const BlockTooltip = () => {
     })
 
     view.dispatch(tr)
-  }
-
-  const deselect = () => {
-    if (store.mode === Mode.Canvas) {
-      ctrl.canvas.deselect()
-    } else {
-      ctrl.editor.deselect()
-    }
   }
 
   const getEditorView = (): EditorView | undefined => {
@@ -110,12 +105,18 @@ export const BlockTooltip = () => {
       view.dispatch(tr)
     }
 
-    deselect()
-
-    const dom = view.domAtPos(block.blockPos + 1)
-    dom.node.dispatchEvent(new CustomEvent('cm:user_event', {
-      detail: {userEvent: 'change-lang'},
-    }))
+    const lang = block.blockNode.attrs.lang
+    setInputLine({
+      value: lang,
+      onEnter: (lang: string) => {
+        view.focus()
+        const tr = view.state.tr
+        const pos = tr.doc.resolve(block.cursorPos ?? block.blockPos)
+        tr.setSelection(new TextSelection(pos))
+        tr.setNodeAttribute(block.blockPos, 'lang', lang)
+        view.dispatch(tr)
+      }
+    })
 
     closeTooltip()
   }
@@ -358,7 +359,7 @@ export const BlockTooltip = () => {
     document.removeEventListener('mousedown', onBackgroundClick)
   })
 
-  return (
+  return <>
     <Show when={selectedBlock()}>
       {(block) => <>
         <TooltipEl ref={tooltipRef} class="block-tooltip">
@@ -393,5 +394,6 @@ export const BlockTooltip = () => {
         </TooltipEl>
       </>}
     </Show>
-  )
+    <InputLine getter={inputLine} setter={setInputLine} />
+  </>
 }
