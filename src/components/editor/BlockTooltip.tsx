@@ -2,7 +2,7 @@ import {Show, createEffect, createMemo, createSignal, onCleanup, onMount} from '
 import {createMutable, unwrap} from 'solid-js/store'
 import {styled} from 'solid-styled-components'
 import {EditorView} from 'prosemirror-view'
-import {TextSelection} from 'prosemirror-state'
+import {NodeSelection, TextSelection} from 'prosemirror-state'
 import {Node} from 'prosemirror-model'
 import {setBlockType} from 'prosemirror-commands'
 import {arrow, autoUpdate, computePosition, flip, offset, shift} from '@floating-ui/dom'
@@ -313,7 +313,8 @@ export const BlockTooltip = () => {
     const view = getEditorView()
     if (!view) return
 
-    const handle = view.dom.querySelector(`#block-handle-${blockPos}`)
+    const sel = NodeSelection.near(view.state.doc.resolve(blockPos))
+    const handle = view.dom.querySelector(`#block-${sel.head} .block-handle`)
     if (!handle) return
 
     unwrap(cleanup).fn?.()

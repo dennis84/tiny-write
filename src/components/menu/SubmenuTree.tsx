@@ -258,14 +258,6 @@ export const SubmenuTree = (props: Props) => {
         ctrl.canvas.currentCanvas?.id :
         ctrl.file.currentFile?.id
 
-    onMount(async () => {
-      if (isFile(p.node.item)) {
-        setTitle(await ctrl.file.getTitle(p.node.item))
-      } else {
-        setTitle('Canvas 🧑‍🎨')
-      }
-    })
-
     onMount(() => {
       const offset = 10
       const gesture = new DragGesture(ref, async ({xy: [x, y], last, first, event}) => {
@@ -341,8 +333,12 @@ export const SubmenuTree = (props: Props) => {
 
     createEffect(async () => {
       state.lastTr
-      if (isFile(p.node.item)) {
+      if (isFile(p.node.item) && p.node.item.codeLang) {
+        setTitle('Code 🖥️')
+      } else if (isFile(p.node.item)) {
         setTitle(await ctrl.file.getTitle(p.node.item))
+      } else {
+        setTitle('Canvas 🧑‍🎨')
       }
     })
 

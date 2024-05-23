@@ -36,6 +36,7 @@ export class CodeMirrorService {
     const langSupport = highlight(props.lang ?? 'js')
 
     const extensions = [
+      ...props.extensions ?? [],
       keymap.of(closeBracketsKeymap),
       keymap.of(foldKeymap),
       keymap.of([
@@ -62,7 +63,6 @@ export class CodeMirrorService {
       EditorView.lineWrapping,
       compartments.lang.of(langSupport),
       compartments.findWords.of(langSupport.language.data.of({autocomplete: findWords})),
-      ...props.extensions ?? [],
     ]
 
     if (props.lang === 'mermaid') {

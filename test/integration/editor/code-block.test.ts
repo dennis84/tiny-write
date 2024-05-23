@@ -3,7 +3,7 @@ import {delay, move, openBlockMenu} from '../utils'
 
 const code = "const foo='bar'"
 
-const cmContent = '.cm-container > .cm-editor > .cm-scroller > .cm-content'
+const cmContent = '.cm-editor > .cm-scroller > .cm-content'
 
 test.beforeEach(async ({page}) => {
   await page.goto('/')
@@ -14,7 +14,7 @@ test('code block', async ({page}) => {
   await page.locator('.ProseMirror').pressSequentially('```javascript ', {delay})
   await page.waitForSelector('.cm-container')
   await page.locator(cmContent).pressSequentially(code, {delay})
-  await expect(page.locator('.cm-container .lang-toggle img')).toHaveAttribute('title', 'javascript')
+  await expect(page.locator(cmContent)).toHaveAttribute('data-language', 'javascript')
 
   // prettify
   await openBlockMenu(page, 1)
@@ -22,17 +22,11 @@ test('code block', async ({page}) => {
   await expect(page.locator(cmContent)).toHaveText("const foo = 'bar'")
 
   // change lang
-  await page.click('.cm-container .lang-toggle')
-  await page.locator('.cm-container .lang-input').pressSequentially('typescript', {delay})
-  await page.keyboard.press('Enter')
-  await expect(page.locator('.cm-container .lang-toggle img')).toHaveAttribute('title', 'typescript')
-
-  // change lang via block menu
   await openBlockMenu(page, 1)
   await page.getByTestId('change_lang').click()
-  await page.locator('.cm-container .lang-input').pressSequentially('js', {delay})
+  await page.locator(`[data-testid=input_line] > ${cmContent}`).pressSequentially('typescript', {delay})
   await page.keyboard.press('Enter')
-  await expect(page.locator('.cm-container .lang-toggle img')).toHaveAttribute('title', 'js')
+  await expect(page.locator('.cm-content')).toHaveAttribute('data-language', 'typescript')
 
   // create line above
   await move(page, 'ArrowUp')

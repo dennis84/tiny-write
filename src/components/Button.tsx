@@ -1,7 +1,7 @@
 import {styled} from 'solid-styled-components'
 
 export const Common = `
-  height: 50px;
+  height: 40px;
   padding: 0 20px;
   border-radius: 30px;
   font-size: var(--menu-font-size);

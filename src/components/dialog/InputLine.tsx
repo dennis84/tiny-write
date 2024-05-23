@@ -78,7 +78,7 @@ export const InputLine = (props: Props) => {
     <Show when={props.getter() !== undefined}>
       <Portal mount={ctrl.app.layoutRef}>
         <Layer>
-          <Container ref={ref} />
+          <Container ref={ref} data-testid="input_line" />
         </Layer>
       </Portal>
     </Show>

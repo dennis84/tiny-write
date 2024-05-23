@@ -13,7 +13,6 @@ interface DragMemo {
 
 const createDragHandle = (editorView: EditorView, getPos: () => number | undefined) => {
   const handle = document.createElement('span')
-  handle.id = `block-handle-${getPos()}`
 
   let firstSel: DragMemo = {
     empty: true,
@@ -110,7 +109,7 @@ export const blockHandle = new Plugin({
 
       const decos: Decoration[] = []
       tr.doc.forEach((node, offset) => {
-        decos.push(Decoration.node(offset, offset + node.nodeSize, {class: 'draggable'}))
+        decos.push(Decoration.node(offset, offset + node.nodeSize, {class: 'draggable', id: `block-${offset + 1}`}))
         decos.push(Decoration.widget(offset + 1, createDragHandle, {
           // NOTE: disabled bc a conflict with exitCode() from code_block
           // helps against the sync error if the handle button is clicked too quickly
