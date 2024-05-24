@@ -3,6 +3,10 @@ export const codeMirror = `
     outline: none;
     font-size: var(--font-size);
     cursor: var(--cursor-text);
+    height: 100%;
+    width: 100%;
+    border-radius: var(--border-radius);
+    flex-direction: row;
     .cm-content, .cm-gutter {
       padding: 0;
       font-family: var(--font-family-monospace);
@@ -14,6 +18,11 @@ export const codeMirror = `
       white-space: pre;
     }
     .cm-scroller {
+      flex-grow: 1;
+      flex-shrink: 1;
+      padding: 30px;
+      padding-left: 20px;
+      width: 100%;
       -ms-overflow-style: none;
       scrollbar-width: none;
       &::-webkit-scrollbar {
@@ -30,19 +39,6 @@ export const codeMirror = `
     }
     .cm-tooltip ul {
       font-family: var(--font-family-monospace);
-    }
-  }
-  > .cm-editor {
-    height: 100%;
-    width: 100%;
-    border-radius: var(--border-radius);
-    flex-direction: row;
-    > .cm-scroller {
-      flex-grow: 1;
-      flex-shrink: 1;
-      padding: 30px;
-      padding-left: 20px;
-      width: 100%;
     }
     @media print {
       .cm-scroller {

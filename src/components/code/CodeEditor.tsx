@@ -8,6 +8,9 @@ export const CodeMirrorContainer = styled('div')`
   width: 100%;
   height: 100%;
   ${codeMirror}
+  .cm-editor {
+    border-radius: 0;
+  }
 `
 
 export const CodeEditor = () => {

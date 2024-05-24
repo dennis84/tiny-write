@@ -25,6 +25,7 @@ const Container = styled('div')`
   .cm-editor {
     border-radius: var(--border-radius);
     border: 2px solid var(--primary-background);
+    box-shadow: 5px 6px 0 0 #00000033;
     .cm-scroller {
       padding: 10px !important;
       &::before {
