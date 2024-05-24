@@ -332,7 +332,6 @@ export const SubmenuTree = (props: Props) => {
     })
 
     createEffect(async () => {
-      state.lastTr
       if (isFile(p.node.item) && p.node.item.codeLang) {
         setTitle('Code 🖥️')
       } else if (isFile(p.node.item)) {

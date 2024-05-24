@@ -26,6 +26,8 @@ export const Select = (props: Props) => {
       if (
         // Prefer normal text selection
         (event.target as HTMLElement).closest('.ProseMirror') ||
+        // Prefer normal text selection
+        (event.target as HTMLElement).closest('.cm-editor') ||
         // Allow click on tooltip
         (event.target as HTMLElement).closest('.block-tooltip')
       ) {

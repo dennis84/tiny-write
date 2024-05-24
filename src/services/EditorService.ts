@@ -169,6 +169,7 @@ export class EditorService {
       update.collab = CollabService.create(file.id, update.mode, false)
       this.setState(update)
       this.ctrl.collab.init()
+      this.ctrl.tree.create()
       if (text) this.updateText(text)
     } catch (error: any) {
       this.ctrl.app.setError({error, fileId: id})

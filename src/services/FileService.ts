@@ -171,30 +171,33 @@ export class FileService {
     return this.store.files.find((file) => file.path === path)
   }
 
-  updateFile(id: string, update: Partial<File>) {
+  updateFile(id: string, u: Partial<File>) {
     const index = this.store.files.findIndex((file) => file.id === id)
     if (index === -1) return
+    const update = {...u}
 
-    const file = this.store.files[index]
-    let ydoc = file.ydoc
-    const doc = this.store.collab!.ydoc!
-    if (doc.share.has(id)) {
-      const newDoc = new Y.Doc({gc: false})
-      if (file.code) {
-        const copy = newDoc.getText(id)
-        const org = doc.getText(id)
-        copy.applyDelta(org.toDelta())
-      } else {
-        const newType = newDoc.getXmlFragment(id)
-        const type = doc.getXmlFragment(id)
-        // @ts-ignore
-        newType.insert(0, type.toArray().map((el) => el instanceof Y.AbstractType ? el.clone() : el))
+    // Only update ydoc if lastmod has changed
+    if (u.lastModified) {
+      const file = this.store.files[index]
+      const doc = this.store.collab!.ydoc!
+      if (doc.share.has(id)) {
+        const newDoc = new Y.Doc({gc: false})
+        if (file.code) {
+          const copy = newDoc.getText(id)
+          const org = doc.getText(id)
+          copy.applyDelta(org.toDelta())
+        } else {
+          const newType = newDoc.getXmlFragment(id)
+          const type = doc.getXmlFragment(id)
+          // @ts-ignore
+          newType.insert(0, type.toArray().map((el) => el instanceof Y.AbstractType ? el.clone() : el))
+        }
+
+        update.ydoc = Y.encodeStateAsUpdate(newDoc)
       }
-
-      ydoc = Y.encodeStateAsUpdate(newDoc)
     }
 
-    this.setState('files', index, {...update, ydoc})
+    this.setState('files', index, update)
   }
 
   destroy(id?: string) {

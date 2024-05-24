@@ -1,6 +1,6 @@
 import {onCleanup, onMount} from 'solid-js'
 import {keyName} from 'w3c-keyname'
-import {isEditorElement, Mode, useState} from '@/state'
+import {isCodeElement, isEditorElement, Mode, useState} from '@/state'
 import {isTauri, mod} from '@/env'
 import * as remote from '@/remote'
 
@@ -90,7 +90,8 @@ export const Keymap = () => {
     } else {
       const selected = currentCanvas.elements.find((el) => {
         if (isEditorElement(el)) return el.selected && !el.active
-        return el.selected
+        else if (isCodeElement(el)) return el.selected && !el.active
+        else return el.selected
       })
 
       if (!selected) return false
