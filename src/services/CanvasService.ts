@@ -20,6 +20,7 @@ import {
   isEditorElement,
   isLinkElement,
   isBoxElement,
+  isCodeElement,
 } from '@/state'
 import {DB} from '@/db'
 import * as remote from '@/remote'
@@ -225,9 +226,11 @@ export class CanvasService {
     if (!newEl) return
     this.updateCanvasElement(newEl.id, {selected: true, active})
 
-    if (active && isEditorElement(newEl)) {
+    if (active && (isEditorElement(newEl) || isCodeElement(newEl))) {
       const file = this.ctrl.file.findFileById(newEl.id)
+      this.ctrl.file.setActive(newEl.id)
       file?.editorView?.focus()
+      file?.codeEditorView?.focus()
     }
   }
 
@@ -267,12 +270,14 @@ export class CanvasService {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
     for (const el of currentCanvas.elements) {
-      if (isEditorElement(el) && el.active) {
+      if ((isEditorElement(el) || isCodeElement(el)) && el.active) {
         const file = this.ctrl.file.findFileById(el.id)
         if (file?.editorView) {
           const tr = file.editorView.state.tr
           tr.setSelection(TextSelection.atStart(file.editorView.state.doc))
           file.editorView.dispatch(tr)
+        } else if (file?.codeEditorView) {
+          file.codeEditorView.dispatch({selection: {anchor: 0}})
         }
       }
 

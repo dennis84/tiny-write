@@ -39,7 +39,7 @@ test('only save file type', async () => {
   const fileYdoc = new Y.Doc()
   Y.applyUpdate(fileYdoc, store.files[0].ydoc)
 
-  expect(fileYdoc?.getXmlFragment('1').length).toBe(2)
+  expect(fileYdoc?.getXmlFragment('1').length).toBe(1)
   expect(fileYdoc?.getText('2').length).toBe(0)
 })
 

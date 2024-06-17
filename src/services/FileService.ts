@@ -155,6 +155,17 @@ export class FileService {
     return ydoc
   }
 
+  setActive(id: string) {
+    for (let i = 0; i < this.store.files.length; i++) {
+      const cur = this.store.files[i]
+      if (cur.id === id) {
+        this.setState('files', i, 'active', true)
+      } else if (cur.active){
+        this.setState('files', i, 'active', false)
+      }
+    }
+  }
+
   findFileById(id: string): File | undefined {
     return this.store.files.find((file) => file.id === id)
   }
