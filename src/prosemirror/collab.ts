@@ -1,6 +1,7 @@
 import * as Y from 'yjs'
 import {DOMOutputSpec} from 'prosemirror-model'
 import {ySyncPlugin, yCursorPlugin, yUndoPlugin} from 'y-prosemirror'
+import {ProsemirrorMapping} from 'y-prosemirror/dist/src/lib'
 import {Ctrl} from '@/services'
 
 const cursorBuilder = (user: any): HTMLElement => {
@@ -27,8 +28,9 @@ export const collabSchemaSpec = {
   }
 }
 
-export const createCollabPlugins = (ctrl: Ctrl, type: Y.XmlFragment) => [
+export const createCollabPlugins = (ctrl: Ctrl, type: Y.XmlFragment, mapping: ProsemirrorMapping) => [
   ySyncPlugin(type, {
+    mapping,
     permanentUserData: ctrl.collab?.permanentUserData,
     onFirstRender: () => ctrl.collab.setRendered(),
   }),

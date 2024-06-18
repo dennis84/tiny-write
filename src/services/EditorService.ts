@@ -32,18 +32,18 @@ export class EditorService {
       return
     }
 
-    const doc = this.store.collab?.snapshot ?? this.store.collab?.ydoc
-    if (!doc) return // If error during init
+    const ydoc = this.store.collab?.snapshot ?? this.store.collab?.ydoc
+    if (!ydoc) return // If error during init
 
-    const type = doc.getXmlFragment(file.id)
-    const plugins = ProseMirrorService.createPlugins({
+    const type = ydoc.getXmlFragment(file.id)
+    const {plugins, doc} = ProseMirrorService.createPlugins({
       ctrl: this.ctrl,
       type,
       dropCursor: true,
     })
 
     const {nodeViews} = ProseMirrorService.createNodeViews(this.ctrl)
-    const editorState = EditorState.fromJSON({schema, plugins}, ProseMirrorService.createEmptyText())
+    const editorState = EditorState.create({doc, schema, plugins})
 
     if (!editorView) {
       const dispatchTransaction = (tr: Transaction) => {

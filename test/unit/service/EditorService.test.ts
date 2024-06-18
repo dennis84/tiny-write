@@ -27,6 +27,7 @@ vi.mock('y-websocket', () => ({
       on: vi.fn(),
       off: vi.fn(),
       getLocalState: vi.fn(),
+      getStates: vi.fn().mockImplementation(() => []),
     },
     disconnect: vi.fn(),
     connect: vi.fn(),

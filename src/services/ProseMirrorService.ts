@@ -1,12 +1,13 @@
 import {EditorState, Plugin} from 'prosemirror-state'
 import {NodeViewConstructor} from 'prosemirror-view'
-import {Schema} from 'prosemirror-model'
+import {Node, Schema} from 'prosemirror-model'
 import {dropCursor} from 'prosemirror-dropcursor'
 import {baseKeymap} from 'prosemirror-commands'
 import {keymap} from 'prosemirror-keymap'
 import {inputRules} from 'prosemirror-inputrules'
 import {buildKeymap} from 'prosemirror-example-setup'
 import * as Y from 'yjs'
+import {initProseMirrorDoc} from 'y-prosemirror'
 import {paragraphSchemaSpec} from '@/prosemirror/paragraph'
 import {headingSchemaSpec} from '@/prosemirror/heading'
 import {listSchemaSpec} from '@/prosemirror/list'
@@ -42,7 +43,7 @@ export type NodeViewConfig = Record<string, NodeViewConstructor>;
 
 interface CreatePlugins {
   ctrl: Ctrl;
-  type?: Y.XmlFragment;
+  type: Y.XmlFragment;
   dropCursor?: boolean;
 }
 
@@ -81,7 +82,7 @@ export const schema = new Schema({
 export class ProseMirrorService {
 
   static isEmpty(state?: EditorState) {
-    return !state || (
+    return !state || state.doc.childCount === 0 || (
       state.doc.childCount == 1 &&
       !state.doc.firstChild?.type.spec.code &&
       state.doc.firstChild?.isTextblock &&
@@ -89,7 +90,7 @@ export class ProseMirrorService {
     )
   }
 
-  static createPlugins(props: CreatePlugins): Plugin[] {
+  static createPlugins(props: CreatePlugins): {plugins: Plugin[], doc: Node | undefined} {
     const plugins = [
       // keymap
       wordCompletionKeymap,
@@ -101,7 +102,7 @@ export class ProseMirrorService {
       codeBlockKeymap,
       codeKeymap,
       fileListingKeymap,
-
+      // plugins
       placeholder('Start typing ...'),
       scrollIntoView(props.ctrl),
       blockHandle,
@@ -119,9 +120,9 @@ export class ProseMirrorService {
       createPasteMarkdownPlugin(schema),
     ]
 
-    if (props.type) {
-      plugins.push(...createCollabPlugins(props.ctrl, props.type))
-    }
+    let {doc, mapping} = initProseMirrorDoc(props.type, schema)
+    if (doc.childCount === 0) doc = schema.topNodeType.create({}, schema.nodes.paragraph.create())
+    plugins.push(...createCollabPlugins(props.ctrl, props.type, mapping))
 
     if (props.dropCursor) {
       plugins.push(dropCursor({class: 'drop-cursor'}))
@@ -130,7 +131,7 @@ export class ProseMirrorService {
     if (isTauri()) plugins.push(createFileListingPlugin(props.ctrl))
     plugins.push(...createWordCompletionPlugins(props.ctrl))
 
-    return plugins
+    return {plugins, doc}
   }
 
   static createNodeViews(ctrl: Ctrl) {

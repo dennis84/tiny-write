@@ -1,4 +1,5 @@
 import {SetStoreFunction, Store} from 'solid-js/store'
+import {TextSelection} from 'prosemirror-state'
 import * as Y from 'yjs'
 import {State, Version} from '@/state'
 import * as remote from '@/remote'
@@ -48,11 +49,16 @@ export class ChangeSetService {
 
   applyVersion(version: Version) {
     const currentFile = this.ctrl.file.currentFile
-    if (!currentFile) return
+    if (!currentFile?.editorView) return
     const ydoc = this.store.collab!.ydoc!
     const type = ydoc.getXmlFragment(currentFile.id)
     type.delete(0, type.length)
     Y.applyUpdate(ydoc, version.ydoc)
     this.ctrl.editor.updateEditorState(currentFile)
+    this.setState('collab', 'snapshot', undefined)
+    // trigger EditorProps.editable function
+    const tr = currentFile.editorView.state.tr
+    tr.setSelection(TextSelection.atStart(currentFile.editorView.state.doc))
+    currentFile.editorView.dispatch(tr)
   }
 }
