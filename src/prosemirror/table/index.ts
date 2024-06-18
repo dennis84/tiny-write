@@ -178,7 +178,7 @@ export const createTablePlugins = (ctrl: Ctrl, schema: Schema) => [
 const getSelectionCell = (state: EditorState) => {
   try {
     return selectionCell(state)
-  } catch (err) {
+  } catch (_err) {
     return undefined
   }
 }

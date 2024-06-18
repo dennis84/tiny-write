@@ -214,7 +214,7 @@ export const BlockTooltip = () => {
       await remote.open(url.href)
       closeTooltip()
       return
-    } catch (e) {
+    } catch (_e) {
       // ...
     }
 
@@ -271,14 +271,14 @@ export const BlockTooltip = () => {
   }
 
   const getBlockHandleState = createMemo(() => {
-    store.lastTr
+    if (!store.lastTr) return
     const view = getEditorView()
     if (!view) return
     return blockHandlePluginKey.getState(view.state)
   })
 
   createEffect(() => {
-    store.lastTr
+    if (!store.lastTr) return
     const view = getEditorView()
     if (!view) return
 

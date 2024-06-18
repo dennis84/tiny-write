@@ -57,7 +57,7 @@ export class SelectService {
     const resolvePos = (pos: number) => {
       try {
         return editorView.state.doc.resolve(pos)
-      } catch (err) {
+      } catch (_e) {
         // ignore
       }
     }

@@ -78,7 +78,8 @@ export const MouseCursor = () => {
   const zoom = () => store.mode === Mode.Canvas ? (ctrl.canvas.currentCanvas?.camera.zoom ?? 1) : 1
 
   createEffect(() => {
-    store.config.contentWidth
+    if (store.config.contentWidth === undefined) return
+
     if (store.mode === Mode.Canvas) {
       setOffset(ctrl.canvas.currentCanvas?.camera.point ?? [0, 0])
       return

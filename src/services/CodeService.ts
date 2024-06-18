@@ -92,7 +92,7 @@ export class CodeService {
         const value = await this.ctrl.prettier.format(code, 'js', this.store.config.prettier)
         doc?.delete(0, doc.length)
         doc?.insert(0, value)
-      } catch (e) {
+      } catch (_e) {
         // ignore
       }
     }

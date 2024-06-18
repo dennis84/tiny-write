@@ -120,9 +120,10 @@ export class ProseMirrorService {
       createPasteMarkdownPlugin(schema),
     ]
 
-    let {doc, mapping} = initProseMirrorDoc(props.type, schema)
-    if (doc.childCount === 0) doc = schema.topNodeType.create({}, schema.nodes.paragraph.create())
-    plugins.push(...createCollabPlugins(props.ctrl, props.type, mapping))
+    let doc
+    const result = initProseMirrorDoc(props.type, schema)
+    if (result.doc.childCount === 0) doc = schema.topNodeType.create({}, schema.nodes.paragraph.create())
+    plugins.push(...createCollabPlugins(props.ctrl, props.type, result.mapping))
 
     if (props.dropCursor) {
       plugins.push(dropCursor({class: 'drop-cursor'}))

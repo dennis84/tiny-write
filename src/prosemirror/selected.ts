@@ -16,7 +16,7 @@ export const selectedPlugin = new Plugin({
             }
           })
         }
-      } catch (e) {
+      } catch (_e) {
         // ignore
       }
 

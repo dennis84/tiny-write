@@ -64,7 +64,7 @@ export const createMermaidPlugin = (codeBlock: CodeBlockView) =>
       try {
         const result = await mermaid.render(`mermaid-graph-${this.id}`, content)
         this.output.innerHTML = result.svg
-      } catch (err) {
+      } catch (_err) {
         // ignore
       }
     }

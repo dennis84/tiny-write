@@ -82,11 +82,11 @@ export const Canvas = () => {
 
     ctrl.canvas.canvasRef = ref
     const preventGesture = (e: TouchEvent) => e.preventDefault()
-    // @ts-ignore
+    // @ts-expect-error ???
     document.addEventListener('gesturestart', preventGesture)
-    // @ts-ignore
+    // @ts-expect-error ???
     document.addEventListener('gesturechange', preventGesture)
-    // @ts-ignore
+    // @ts-expect-error ???
     document.addEventListener('gestureend', preventGesture)
 
     const gesture = new Gesture(ref, {
@@ -122,11 +122,11 @@ export const Canvas = () => {
 
     onCleanup(() => {
       gesture.destroy()
-      // @ts-ignore
+      // @ts-expect-error ???
       document.removeEventListener('gesturestart', preventGesture)
-      // @ts-ignore
+      // @ts-expect-error ???
       document.removeEventListener('gesturechange', preventGesture)
-      // @ts-ignore
+      // @ts-expect-error ???
       document.removeEventListener('gestureend', preventGesture)
     })
   })

@@ -1,7 +1,7 @@
 import {SetStoreFunction, Store} from 'solid-js/store'
 import {Node} from 'prosemirror-model'
 import * as Y from 'yjs'
-import {yDocToProsemirrorJSON} from 'y-prosemirror'
+import {yXmlFragmentToProseMirrorRootNode} from 'y-prosemirror'
 import {v4 as uuidv4} from 'uuid'
 import {File, FileText, Mode, ServiceError, State, isLinkElement} from '@/state'
 import * as remote from '@/remote'
@@ -43,7 +43,7 @@ export class FileService {
     let resolvedPath
     try {
       resolvedPath = await remote.resolvePath(path)
-    } catch(e: any) {
+    } catch(_e: any) {
       throw new ServiceError('file_not_found', `File not found: ${path}`)
     }
 
@@ -61,7 +61,7 @@ export class FileService {
     let resolvedPath
     try {
       resolvedPath = await remote.resolvePath(path)
-    } catch(e: any) {
+    } catch(_e: any) {
       throw new ServiceError('file_not_found', `File not found: ${path}`)
     }
 
@@ -174,7 +174,7 @@ export class FileService {
     if (isTauri()) {
       try {
         path = await remote.resolvePath(path)
-      } catch (e) {
+      } catch (_error) {
         throw new ServiceError('file_not_found', `File not found: ${path}`)
       }
     }
@@ -200,7 +200,7 @@ export class FileService {
         } else {
           const newType = newDoc.getXmlFragment(id)
           const type = doc.getXmlFragment(id)
-          // @ts-ignore
+          // @ts-expect-error is ok
           newType.insert(0, type.toArray().map((el) => el instanceof Y.AbstractType ? el.clone() : el))
         }
 
@@ -244,7 +244,7 @@ export class FileService {
             ydoc: v.ydoc,
           })),
         })
-      } catch (err) {
+      } catch (_err) {
         remote.error('Ignore file due to invalid ydoc.')
       }
     }
@@ -335,7 +335,9 @@ export class FileService {
     if (file.code) return 'Code 🖥️'
     const ydoc = new Y.Doc({gc: false})
     Y.applyUpdate(ydoc, file.ydoc)
-    const state = yDocToProsemirrorJSON(ydoc, file.id)
+
+    const type = ydoc.getXmlFragment(file.id)
+    const state = yXmlFragmentToProseMirrorRootNode(type, schema)
     const doc = Node.fromJSON(schema, state)
     return doc?.firstChild?.textContent.substring(0, len) || 'Untitled'
   }

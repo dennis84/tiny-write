@@ -164,7 +164,7 @@ export class AppService {
     let doc: string | undefined
     try {
       doc = (await FileService.loadTextFile(file.path!)).text
-    } catch (e) {
+    } catch (_e) {
       remote.info(`Could not load current file with path, not found (path=${file.path})`)
       file.newFile = file.path
       file.path = undefined
@@ -177,7 +177,7 @@ export class AppService {
     let doc: FileText | undefined
     try {
       doc = (await FileService.loadMarkdownFile(file.path!)).text
-    } catch (e) {
+    } catch (_e) {
       remote.info(`Could not load current file with path, not found (path=${file.path})`)
       file.newFile = file.path
       file.path = undefined

@@ -250,7 +250,7 @@ export const createCellMenuPlugin = (tooltipParent?: HTMLElement) => new Plugin(
             decos.push(Decoration.widget(cell + 1, createMenu('left')))
           }
         }
-      } catch (e) {
+      } catch (_e) {
         // nextCell throws errors if undo removes a column
       }
 

@@ -40,7 +40,7 @@ class AutocompleteView {
     if (!pluginState?.options?.length || !inRange) return
     try {
       coords = view.coordsAtPos(pluginState.from + 1)
-    } catch (e) {
+    } catch (_e) {
       // return if fail to find coords. can happen if e.g. an input rule
       // tranforms the text before the view update.
       return

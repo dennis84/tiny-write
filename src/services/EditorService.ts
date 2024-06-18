@@ -7,7 +7,7 @@ import * as Y from 'yjs'
 import {
   ySyncPluginKey,
   prosemirrorJSONToYDoc,
-  yDocToProsemirrorJSON,
+  yXmlFragmentToProseMirrorRootNode,
 } from 'y-prosemirror'
 import {Box} from '@tldraw/editor'
 import * as remote from '@/remote'
@@ -193,9 +193,10 @@ export class EditorService {
 
     let ynode: Node
     try {
-      const json = yDocToProsemirrorJSON(this.store.collab.ydoc, currentFile.id)
+      const type = this.store.collab.ydoc.getXmlFragment(currentFile.id)
+      const json = yXmlFragmentToProseMirrorRootNode(type, schema)
       ynode = Node.fromJSON(schema, json)
-    } catch(e) {
+    } catch(_e) {
       ynode = new Node()
     }
 

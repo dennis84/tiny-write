@@ -1,5 +1,5 @@
 import {test, expect} from '@playwright/test'
-import {delay, lineTextEq} from '../utils'
+import {delay} from '../utils'
 
 const getItem = (listN: number, taskN: number) =>
   `.ProseMirror .task-list:nth-of-type(${listN}) .task-list-item:nth-of-type(${taskN})`
