@@ -37,9 +37,9 @@ test('existing room', async ({page, browser}) => {
   const page2 = await browser.newPage()
   await page2.goto(`/${room}`)
   await lineTextEq(page2, 1, 'Hello')
-  await page2.locator('.ProseMirror').pressSequentially(' World', {delay})
+  await page2.locator('.ProseMirror').pressSequentially('World', {delay})
 
-  await lineTextEq(page, 1, 'Hello World')
+  await lineTextEq(page, 1, 'WorldHello')
 })
 
 test('existing room - backup', async ({page}) => {

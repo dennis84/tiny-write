@@ -47,6 +47,8 @@ export class EditorService {
 
     if (!editorView) {
       const dispatchTransaction = (tr: Transaction) => {
+        if (editorView?.isDestroyed) return
+
         const newState = editorView!.state.apply(tr)
         try {
           editorView!.updateState(newState)

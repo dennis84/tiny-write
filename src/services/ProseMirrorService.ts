@@ -123,6 +123,8 @@ export class ProseMirrorService {
     let doc
     const result = initProseMirrorDoc(props.type, schema)
     if (result.doc.childCount === 0) doc = schema.topNodeType.create({}, schema.nodes.paragraph.create())
+    else doc = result.doc
+
     plugins.push(...createCollabPlugins(props.ctrl, props.type, result.mapping))
 
     if (props.dropCursor) {

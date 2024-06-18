@@ -203,7 +203,6 @@ export class FileService {
           // @ts-expect-error is ok
           newType.insert(0, type.toArray().map((el) => el instanceof Y.AbstractType ? el.clone() : el))
         }
-
         update.ydoc = Y.encodeStateAsUpdate(newDoc)
       }
     }
@@ -337,8 +336,7 @@ export class FileService {
     Y.applyUpdate(ydoc, file.ydoc)
 
     const type = ydoc.getXmlFragment(file.id)
-    const state = yXmlFragmentToProseMirrorRootNode(type, schema)
-    const doc = Node.fromJSON(schema, state)
+    const doc = yXmlFragmentToProseMirrorRootNode(type, schema)
     return doc?.firstChild?.textContent.substring(0, len) || 'Untitled'
   }
 }
