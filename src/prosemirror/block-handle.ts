@@ -1,4 +1,4 @@
-import {Plugin, NodeSelection, PluginKey, EditorState, TextSelection} from 'prosemirror-state'
+import {Plugin, NodeSelection, PluginKey, EditorState, TextSelection, Transaction} from 'prosemirror-state'
 import {DecorationSet, Decoration, EditorView} from 'prosemirror-view'
 
 const handleIcon =
@@ -88,16 +88,36 @@ const createDragHandle = (editorView: EditorView, getPos: () => number | undefin
   return handle
 }
 
+const createDecorations = (tr: Transaction): DecorationSet => {
+  const decos: Decoration[] = []
+  tr.doc.forEach((node, offset) => {
+    decos.push(Decoration.node(offset, offset + node.nodeSize, {class: 'draggable', id: `block-${offset + 1}`}))
+    decos.push(Decoration.widget(offset + 1, createDragHandle, {
+      // NOTE: disabled bc a conflict with exitCode() from code_block
+      // helps against the sync error if the handle button is clicked too quickly
+      // stopEvent: (e) => true
+    }))
+  })
+
+  return DecorationSet.create(tr.doc, decos)
+}
+
 export const blockHandlePluginKey = new PluginKey('block-handle')
 
-export const blockHandle = new Plugin({
+interface BlockState {
+  blockPos?: number;
+  cursorPos?: number;
+  decorations?: DecorationSet;
+}
+
+export const blockHandle = new Plugin<BlockState>({
   key: blockHandlePluginKey,
   state: {
     init() {
       return {
         blockPos: undefined,
         cursorPos: undefined,
-        decorations: DecorationSet.empty,
+        decorations: undefined,
       }
     },
     apply(tr, prev) {
@@ -107,23 +127,13 @@ export const blockHandle = new Plugin({
       if (meta && meta?.cursorPos !== prev.cursorPos) prev.cursorPos = meta.cursorPos
       if (!tr.docChanged) return prev
 
-      const decos: Decoration[] = []
-      tr.doc.forEach((node, offset) => {
-        decos.push(Decoration.node(offset, offset + node.nodeSize, {class: 'draggable', id: `block-${offset + 1}`}))
-        decos.push(Decoration.widget(offset + 1, createDragHandle, {
-          // NOTE: disabled bc a conflict with exitCode() from code_block
-          // helps against the sync error if the handle button is clicked too quickly
-          // stopEvent: (e) => true
-        }))
-      })
-
-      prev.decorations = DecorationSet.create(tr.doc, decos)
+      prev.decorations = createDecorations(tr)
       return prev
     }
   },
   props: {
     decorations(state) {
-      return blockHandlePluginKey.getState(state).decorations
+      return blockHandlePluginKey.getState(state).decorations ?? createDecorations(state.tr)
     },
   }
 })

@@ -173,10 +173,12 @@ export const BlockTooltip = () => {
 
     const tr = view.state.tr
     const pos = tr.doc.resolve(block.blockPos)
-    if (!pos.nodeAfter) return
-    tr.delete(pos.pos, pos.pos + pos.nodeAfter.nodeSize)
+    const from = pos.before(1)
+    const to = pos.after(1)
+    tr.delete(from, to)
     view.dispatch(tr)
     view.focus()
+
     closeTooltip()
   }
 
@@ -256,7 +258,7 @@ export const BlockTooltip = () => {
     if (!view) return
 
     const blockHandleState = getBlockHandleState()
-    if (blockHandleState.blockPos === undefined) return
+    if (blockHandleState?.blockPos === undefined) return
 
     if (tooltipRef.contains(e.target as Element)) return
 
@@ -284,22 +286,27 @@ export const BlockTooltip = () => {
 
     const blockHandleState = getBlockHandleState()
 
-    if (blockHandleState.blockPos !== undefined) {
-      const pos = view.state.doc.resolve(blockHandleState.blockPos + 1)
-      const cursorPos = blockHandleState.cursorPos
-      let cursorNode
+    if (blockHandleState?.blockPos !== undefined) {
+      // Catch "position out of range" error after remove last node
+      try {
+        const pos = view.state.doc.resolve(blockHandleState.blockPos + 1)
+        const cursorPos = blockHandleState.cursorPos
+        let cursorNode
 
-      if (cursorPos !== undefined) {
-        const resolved = view.state.doc.resolve(cursorPos)
-        cursorNode = resolved.nodeAfter ?? undefined
+        if (cursorPos !== undefined) {
+          const resolved = view.state.doc.resolve(cursorPos)
+          cursorNode = resolved.nodeAfter ?? undefined
+        }
+
+        setSelectedBlock({
+          blockPos: blockHandleState.blockPos,
+          blockNode: pos.node(),
+          cursorPos,
+          cursorNode,
+        })
+      } catch (_e) {
+        setSelectedBlock(undefined)
       }
-
-      setSelectedBlock({
-        blockPos: blockHandleState.blockPos,
-        blockNode: pos.node(),
-        cursorPos,
-        cursorNode,
-      })
     } else {
       setSelectedBlock(undefined)
     }
