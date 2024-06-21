@@ -19,8 +19,7 @@ export class MediaService {
       if (!currentFile?.editorView) return
       this.insert(currentFile.editorView, data, x, y)
     } else if (this.store.mode === Mode.Canvas) {
-      const active = this.ctrl.canvas.activeEditorElement
-      const file = active ? this.ctrl.file.findFileById(active.id) : undefined
+      const file = this.ctrl.file.currentFile
       if (file?.editorView) {
         this.insert(file.editorView, data, x, y)
       } else {

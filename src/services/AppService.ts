@@ -260,14 +260,7 @@ export class AppService {
   }
 
   async getBasePath() {
-    let currentFile
-    if (this.mode === Mode.Editor || this.mode === Mode.Code) {
-      currentFile = this.ctrl.file.currentFile
-    } else if (this.mode === Mode.Canvas) {
-      const active = this.ctrl.canvas.activeEditorElement
-      if (active) currentFile = this.ctrl.file.findFileById(active.id)
-    }
-
+    const currentFile = this.ctrl.file.currentFile
     const filePath = currentFile?.path ?? currentFile?.newFile
     const basePath = filePath ? await remote.dirname(filePath) : undefined
 

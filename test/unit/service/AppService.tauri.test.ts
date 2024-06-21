@@ -185,14 +185,13 @@ test.each([
   {fileActive: true, expected: '/users/me/project', cwd: '/users/me/cwd'},
   {fileActive: false, expected: undefined},
   {fileActive: false, cwd: '/users/me/cwd', expected: '/users/me/cwd'},
-  {fileActive: true, canvasEditorActive: true, mode: Mode.Canvas, expected: '/users/me/project'},
-  {canvasEditorActive: true, mode: Mode.Canvas, expected: '/users/me/project'},
-  {canvasEditorActive: false, mode: Mode.Canvas, expected: undefined},
+  {fileActive: true, mode: Mode.Canvas, expected: '/users/me/project'},
+  {fileActive: false, mode: Mode.Canvas, expected: undefined},
 ])('getBasePath - from file', async (data) => {
   const canvasEditor = {
     id: '1',
     type: ElementType.Editor,
-    active: data.canvasEditorActive ?? false,
+    active: data.fileActive && data.mode === Mode.Canvas,
     x: 0,
     y: 0,
     width: 100,

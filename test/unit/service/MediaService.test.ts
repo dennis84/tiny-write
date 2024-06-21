@@ -110,7 +110,6 @@ test('dropFile - image on canvas with active editor', async () => {
   const editorElement = {
     id: '1',
     type: ElementType.Editor,
-    active: true,
     x: 0,
     y: 0,
     width: 100,
@@ -142,6 +141,7 @@ test('dropFile - image on canvas with active editor', async () => {
   const currentCanvas = ctrl.canvas.currentCanvas
   const editorEl = currentCanvas?.elements[0] as CanvasEditorElement
   ctrl.editor.renderEditor(editorEl.id, target)
+  ctrl.canvas.select('1', true)
 
   const blob = new Blob(['123'], {type: 'image/png'})
   await ctrl.media.dropFile(blob, [0, 0])

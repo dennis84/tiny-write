@@ -1,5 +1,4 @@
 import {SetStoreFunction, Store} from 'solid-js/store'
-import {Node} from 'prosemirror-model'
 import * as Y from 'yjs'
 import {yXmlFragmentToProseMirrorRootNode} from 'y-prosemirror'
 import {v4 as uuidv4} from 'uuid'

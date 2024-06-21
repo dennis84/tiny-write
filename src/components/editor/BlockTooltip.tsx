@@ -1,12 +1,11 @@
 import {Show, createEffect, createMemo, createSignal, onCleanup, onMount} from 'solid-js'
 import {createMutable, unwrap} from 'solid-js/store'
 import {styled} from 'solid-styled-components'
-import {EditorView} from 'prosemirror-view'
 import {NodeSelection, TextSelection} from 'prosemirror-state'
 import {Node} from 'prosemirror-model'
 import {setBlockType} from 'prosemirror-commands'
 import {arrow, autoUpdate, computePosition, flip, offset, shift} from '@floating-ui/dom'
-import {Mode, useState} from '@/state'
+import {useState} from '@/state'
 import * as remote from '@/remote'
 import {isTauri} from '@/env'
 import {Align} from '@/prosemirror/image'
@@ -42,7 +41,7 @@ export const BlockTooltip = () => {
     setSelectedBlock(undefined)
 
     const blockHandleState = getBlockHandleState()
-    const view = getEditorView()
+    const view = ctrl.file.currentFile?.editorView
     if (!view) return
 
     const tr = view.state.tr
@@ -55,40 +54,32 @@ export const BlockTooltip = () => {
     view.dispatch(tr)
   }
 
-  const getEditorView = (): EditorView | undefined => {
-    if (store.mode === Mode.Canvas) {
-      const element = ctrl.canvas.activeEditorElement
-      if (!element) return
-      const file = ctrl.file.findFileById(element.id)
-      return file?.editorView
-    } else {
-      return ctrl.file.currentFile?.editorView
-    }
-  }
-
   const onPrettify = () => {
     const block = selectedBlock()
     if (!block) return
-    const view = getEditorView()
-    const dom = view?.domAtPos(block.blockPos + 1)
-    dom?.node.dispatchEvent(new CustomEvent('cm:user_event', {
+    const view = ctrl.file.currentFile?.editorView
+    if (!view) return
+
+    const dom = view.domAtPos(block.blockPos + 1)
+    dom.node.dispatchEvent(new CustomEvent('cm:user_event', {
       detail: {userEvent: 'prettify'},
     }))
 
-    view?.focus()
+    view.focus()
     closeTooltip()
   }
 
   const onFoldAll = () => {
     const block = selectedBlock()
     if (!block) return
-    const view = getEditorView()
-    const dom = view?.domAtPos(block.blockPos + 1)
-    dom?.node.dispatchEvent(new CustomEvent('cm:user_event', {
+    const view = ctrl.file.currentFile?.editorView
+    if (!view) return
+    const dom = view.domAtPos(block.blockPos + 1)
+    dom.node.dispatchEvent(new CustomEvent('cm:user_event', {
       detail: {userEvent: 'fold_all'},
     }))
 
-    view?.focus()
+    view.focus()
     closeTooltip()
   }
 
@@ -96,7 +87,7 @@ export const BlockTooltip = () => {
     const block = selectedBlock()
     if (!block) return
 
-    const view = getEditorView()
+    const view = ctrl.file.currentFile?.editorView
     if (!view) return
 
     if (block.blockNode.attrs.lang === 'mermaid') {
@@ -135,7 +126,7 @@ export const BlockTooltip = () => {
     const block = selectedBlock()
     if (!block) return
 
-    const view = getEditorView()
+    const view = ctrl.file.currentFile?.editorView
     if (!view) return
 
     const tr = view.state.tr
@@ -149,7 +140,7 @@ export const BlockTooltip = () => {
     const block = selectedBlock()
     if (!block) return
 
-    const view = getEditorView()
+    const view = ctrl.file.currentFile?.editorView
     if (!view) return
 
     const toPlain = setBlockType(view.state.schema.nodes.paragraph)
@@ -168,7 +159,7 @@ export const BlockTooltip = () => {
     const block = selectedBlock()
     if (!block) return
 
-    const view = getEditorView()
+    const view = ctrl.file.currentFile?.editorView
     if (!view) return
 
     const tr = view.state.tr
@@ -186,7 +177,7 @@ export const BlockTooltip = () => {
     const block = selectedBlock()
     if (block?.cursorPos === undefined) return
 
-    const view = getEditorView()
+    const view = ctrl.file.currentFile?.editorView
     if (!view) return
 
     const tr = view.state.tr
@@ -199,7 +190,7 @@ export const BlockTooltip = () => {
   const onOpenLink = async () => {
     const block = selectedBlock()
     if (block?.cursorPos === undefined) return
-    const view = getEditorView()
+    const view = ctrl.file.currentFile?.editorView
     if (!view) return
 
     const resolved = view.state.doc.resolve(block.cursorPos)
@@ -237,7 +228,7 @@ export const BlockTooltip = () => {
     const block = selectedBlock()
     if (!block?.cursorNode?.marks) return
 
-    const view = getEditorView()
+    const view = ctrl.file.currentFile?.editorView
     if (!view) return
 
     const mark = view.state.schema.marks.link.isInSet(block.cursorNode?.marks ?? []) ||
@@ -254,7 +245,7 @@ export const BlockTooltip = () => {
     const block = selectedBlock()
     if (!block) return
 
-    const view = getEditorView()
+    const view = ctrl.file.currentFile?.editorView
     if (!view) return
 
     const blockHandleState = getBlockHandleState()
@@ -274,14 +265,14 @@ export const BlockTooltip = () => {
 
   const getBlockHandleState = createMemo(() => {
     if (!store.lastTr) return
-    const view = getEditorView()
+    const view = ctrl.file.currentFile?.editorView
     if (!view) return
     return blockHandlePluginKey.getState(view.state)
   })
 
   createEffect(() => {
     if (!store.lastTr) return
-    const view = getEditorView()
+    const view = ctrl.file.currentFile?.editorView
     if (!view) return
 
     const blockHandleState = getBlockHandleState()
@@ -317,7 +308,7 @@ export const BlockTooltip = () => {
     if (!result) return
     const {blockPos} = result
 
-    const view = getEditorView()
+    const view = ctrl.file.currentFile?.editorView
     if (!view) return
 
     const sel = NodeSelection.near(view.state.doc.resolve(blockPos))
