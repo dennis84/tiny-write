@@ -5,7 +5,8 @@ import {fromBase64} from 'js-base64'
 import {MediaService} from '@/services/MediaService'
 import {createCtrl, Ctrl} from '@/services'
 import {CanvasEditorElement, CanvasImageElement, ElementType, Mode, createState} from '@/state'
-import {createIpcMock, createYUpdate} from '../util'
+import {createIpcMock} from '../util/util'
+import {createYUpdate} from '../util/prosemirror-util'
 
 document.elementFromPoint = () => null
 

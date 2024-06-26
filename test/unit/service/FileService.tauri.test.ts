@@ -5,7 +5,8 @@ import {createStore} from 'solid-js/store'
 import {createState} from '@/state'
 import {FileService} from '@/services/FileService'
 import {Ctrl} from '@/services'
-import {createIpcMock, createYUpdate} from '../util'
+import {createIpcMock} from '../util/util'
+import {createYUpdate} from '../util/prosemirror-util'
 
 vi.stubGlobal('__TAURI__', {})
 vi.mock('@/db', () => ({DB: mock()}))

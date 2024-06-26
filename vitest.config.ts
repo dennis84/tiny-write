@@ -8,6 +8,8 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['html'],
+      include: ['src/**'],
+      exclude: ['node_modules/**', 'src-tauri/**']
     },
     server: {
       deps: {

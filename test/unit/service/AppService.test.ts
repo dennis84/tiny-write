@@ -6,7 +6,7 @@ import {Ctrl} from '@/services'
 import {AppService} from '@/services/AppService'
 import {CanvasService} from '@/services/CanvasService'
 import {CollabService} from '@/services/CollabService'
-import {createCollabMock} from '../util'
+import {createCollabMock} from '../util/util'
 
 vi.stubGlobal('matchMedia', vi.fn(() => ({
   matchMedia: () => ''

@@ -3,7 +3,8 @@ import {mock} from 'vitest-mock-extended'
 
 import {createState} from '@/state'
 import {createCtrl} from '@/services'
-import {getText, insertText, waitFor} from '../util'
+import {waitFor} from '../util/util'
+import {getText, insertText} from '../util/prosemirror-util'
 
 vi.mock('@/db', () => ({DB: mock()}))
 vi.mock('mermaid', () => ({}))

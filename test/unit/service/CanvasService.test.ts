@@ -19,7 +19,8 @@ import {Ctrl} from '@/services'
 import {CanvasService} from '@/services/CanvasService'
 import {FileService} from '@/services/FileService'
 import {CollabService} from '@/services/CollabService'
-import {createCollabMock, createYUpdate} from '../util'
+import {createCollabMock} from '../util/util'
+import {createYUpdate} from '../util/prosemirror-util'
 
 vi.mock('mermaid', () => ({}))
 vi.mock('@/db', () => ({DB: mock()}))

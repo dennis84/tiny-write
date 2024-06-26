@@ -7,7 +7,7 @@ import {Canvas, createState, ElementType} from '@/state'
 import {CanvasCollabService} from '@/services/CanvasCollabService'
 import {CanvasService} from '@/services/CanvasService'
 import {UndoManager} from '@/services/CollabService'
-import {waitFor} from '../util'
+import {waitFor} from '../util/util'
 
 vi.mock('@/db', () => ({DB: mock()}))
 

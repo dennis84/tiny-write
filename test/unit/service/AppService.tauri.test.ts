@@ -4,7 +4,8 @@ import {clearMocks} from '@tauri-apps/api/mocks'
 import {DB} from '@/db'
 import {createCtrl} from '@/services'
 import {ElementType, Mode, createState} from '@/state'
-import {createIpcMock, createYUpdate, getText, waitFor} from '../util'
+import {createIpcMock, waitFor} from '../util/util'
+import {createYUpdate, getText} from '../util/prosemirror-util'
 
 vi.stubGlobal('__TAURI__', {})
 vi.stubGlobal('matchMedia', vi.fn(() => ({

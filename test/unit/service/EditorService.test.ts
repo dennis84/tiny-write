@@ -4,7 +4,8 @@ import {Box} from '@tldraw/editor'
 import {DB} from '@/db'
 import {createCtrl} from '@/services'
 import {createState} from '@/state'
-import {createYUpdate, getText, insertText, waitFor, pause} from '../util'
+import {waitFor, pause} from '../util/util'
+import {createYUpdate, getText, insertText} from '../util/prosemirror-util'
 
 vi.stubGlobal('matchMedia', vi.fn(() => ({
   matchMedia: () => ''

@@ -6,7 +6,7 @@ import * as Y from 'yjs'
 import {CanvasEditorElement, CanvasLinkElement, ElementType, Mode, createState} from '@/state'
 import {FileService} from '@/services/FileService'
 import {Ctrl} from '@/services'
-import {createYUpdate, createYdoc} from '../util'
+import {createYUpdate, createYdoc} from '../util/prosemirror-util'
 
 vi.mock('@/db', () => ({DB: mock()}))
 vi.mock('mermaid', () => ({}))
