@@ -57,8 +57,10 @@ export class CodeService {
     let file = this.ctrl.file.findFileById(id)
 
     if (!file) {
-      file = FileService.createFile({id, code: true})
+      const parentId = this.ctrl.canvas.currentCanvas?.id
+      file = FileService.createFile({id, parentId, code: true})
       this.setState('files', (prev) => [...prev, file!])
+      this.saveEditor()
     }
 
     if (!file?.path) {

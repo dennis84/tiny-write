@@ -61,11 +61,7 @@ export class EditorService {
         this.setState('lastTr', tr.time)
         if (!tr.docChanged) return
 
-        const yMeta = tr.getMeta(ySyncPluginKey)
-        const maybeSkip = tr.getMeta('addToHistory') === false
-        const isUndo = yMeta?.isUndoRedoOperation
-
-        if ((maybeSkip && !isUndo) || this.store.isSnapshot) return
+        if (this.store.isSnapshot) return
 
         this.ctrl.file.updateFile(file.id, {
           lastModified: new Date(),
@@ -95,8 +91,10 @@ export class EditorService {
     let file = this.ctrl.file.findFileById(id)
 
     if (!file) {
-      file = FileService.createFile({id})
+      const parentId = this.ctrl.canvas.currentCanvas?.id
+      file = FileService.createFile({id, parentId})
       this.setState('files', (prev) => [...prev, file!])
+      this.saveEditor()
     }
 
     if (!file?.path) {

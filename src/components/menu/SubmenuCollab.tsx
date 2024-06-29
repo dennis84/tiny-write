@@ -18,8 +18,7 @@ export const SubmenuCollab = () => {
   }
 
   const onCopyCollabLink = async () => {
-    const m = store.mode === Mode.Canvas ? 'c/' : ''
-    await remote.copy(`${WEB_URL}/${m + ctrl.collab.room}`)
+    await remote.copy(`${WEB_URL}/${store.mode}/${ctrl.collab.room}`)
     setLastAction('copy-collab-link')
   }
 

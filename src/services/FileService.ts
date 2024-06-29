@@ -124,6 +124,7 @@ export class FileService {
 
   static async activateFile(state: State, file: File): Promise<State> {
     const files = []
+    const canvases = []
 
     for (const f of state.files) {
       f.editorView?.destroy()
@@ -136,6 +137,10 @@ export class FileService {
       }
     }
 
+    for (const c of state.canvases) {
+      canvases.push({...c, active: false})
+    }
+
     const mode = file.code ? Mode.Code : Mode.Editor
     await DB.setMeta({mode})
 
@@ -144,6 +149,7 @@ export class FileService {
       error: undefined,
       args: {...state.args, dir: undefined},
       files,
+      canvases,
       mode,
     }
   }
@@ -328,7 +334,8 @@ export class FileService {
     remote.info('File restored')
   }
 
-  async getTitle(file: File, len = 25): Promise<string> {
+  async getTitle(file?: File, len = 25): Promise<string> {
+    if (!file) return 'Undefined'
     if (isTauri() && file.path) return remote.toRelativePath(file.path)
     if (file.code) return 'Code 🖥️'
     const ydoc = new Y.Doc({gc: false})
