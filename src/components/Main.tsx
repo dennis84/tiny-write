@@ -96,7 +96,6 @@ export const Main = (props: {state: State}) => {
         if (file.type.startsWith('image/')) {
           const x = mouseEnterCoords.x
           const y = mouseEnterCoords.y
-          console.log('aaaaa')
           await ctrl.media.dropFile(file, [x, y])
         }
       }

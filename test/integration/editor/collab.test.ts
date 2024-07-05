@@ -91,3 +91,25 @@ test('sync config', async ({page, browser}) => {
   await page.click('[data-testid="appearance"]')
   await expect(page.getByText('Scientifica')).toContainText('✅')
 })
+
+// I only see subdocs as a solution, the cloned Doc does not
+// merge with the remote doc.
+test.fail('rejoin room', async ({page}) => {
+  await page.goto('/')
+  await page.waitForSelector('[data-testid="initialized"]')
+  await page.click('[data-testid="burger"]')
+  await page.click('[data-testid="collab"]')
+
+  await page.locator('.ProseMirror').pressSequentially('Hello', {delay})
+  await expect(page.locator('.ProseMirror > *')).toHaveCount(1)
+
+  await page.click('[data-testid="new_file"]')
+  await page.locator('.ProseMirror').pressSequentially('New', {delay})
+
+  // open first file again and start collab
+  await page.click('[data-testid="tree_link"]:nth-child(1) span')
+  await page.click('[data-testid="collab"]')
+
+  // "Hello" text should not be duplicated after clone, persist and reload the Y.Doc
+  await expect(page.locator('.ProseMirror > *')).toHaveCount(1)
+})

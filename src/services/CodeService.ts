@@ -72,7 +72,6 @@ export class CodeService {
 
   updateText(doc: string | undefined) {
     if (!doc) return
-    console.log('updateText', doc)
   }
 
   updateConfig(file: File) {
