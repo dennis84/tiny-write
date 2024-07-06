@@ -5,7 +5,6 @@ import {Node} from 'prosemirror-model'
 import {selectAll, deleteSelection} from 'prosemirror-commands'
 import * as Y from 'yjs'
 import {
-  ySyncPluginKey,
   prosemirrorJSONToYDoc,
   yXmlFragmentToProseMirrorRootNode,
 } from 'y-prosemirror'

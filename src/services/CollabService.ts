@@ -174,7 +174,7 @@ export class CollabService {
     const font = event.target.get('font') as string
     const fontSize = event.target.get('fontSize') as number
     const contentWidth = event.target.get('contentWidth') as number
-    const update: any = {}
+    const update: Partial<Config> = {}
     if (font) update.font = font
     if (fontSize) update.fontSize = fontSize
     if (contentWidth) update.contentWidth = contentWidth
