@@ -92,9 +92,7 @@ test('sync config', async ({page, browser}) => {
   await expect(page.getByText('Scientifica')).toContainText('✅')
 })
 
-// I only see subdocs as a solution, the cloned Doc does not
-// merge with the remote doc.
-test.fail('rejoin room', async ({page}) => {
+test('rejoin room', async ({page}) => {
   await page.goto('/')
   await page.waitForSelector('[data-testid="initialized"]')
   await page.click('[data-testid="burger"]')

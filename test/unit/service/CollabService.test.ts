@@ -30,7 +30,7 @@ test('init', () => {
 
   // create new collab (open another file)
 
-  // no sync without init no
+  // no sync without init
   const newCollab = CollabService.create('1234', Mode.Editor, true)
   setState('collab', newCollab)
   collab.ydoc.getMap('config').set('font', 'test123')

@@ -6,7 +6,7 @@ import * as Y from 'yjs'
 import {CanvasEditorElement, CanvasLinkElement, ElementType, Mode, createState} from '@/state'
 import {FileService} from '@/services/FileService'
 import {Ctrl} from '@/services'
-import {createYUpdate, createYdoc} from '../util/prosemirror-util'
+import {createYUpdate, createSubdoc, createYdoc} from '../util/prosemirror-util'
 
 vi.mock('@/db', () => ({DB: mock()}))
 vi.mock('mermaid', () => ({}))
@@ -18,7 +18,7 @@ beforeEach(() => {
 const ctrl = mockDeep<Ctrl>()
 
 test('only save file type', async () => {
-  const ydoc = createYdoc('1', ['Test'])
+  const ydoc = createSubdoc('1', ['Test'])
 
   const [store, setState] = createStore(createState({
     files: [{id: '1', ydoc: Y.encodeStateAsUpdate(ydoc), versions: []}],
@@ -44,15 +44,18 @@ test('only save file type', async () => {
 })
 
 test('deleteFile', async () => {
-  const ydoc = createYdoc('1', ['Test'])
+  const subdoc = createSubdoc('1', ['Test'])
+  const ydoc = createYdoc([subdoc])
 
   const [store, setState] = createStore(createState({
     files: [
-      {id: '1', ydoc: Y.encodeStateAsUpdate(ydoc), versions: [], active: true},
+      {id: '1', ydoc: Y.encodeStateAsUpdate(subdoc), versions: [], active: true},
       {id: '2', ydoc: new Uint8Array(), versions: [], deleted: true},
       {id: '3', ydoc: createYUpdate('2', ['Test2']), versions: []},
     ],
   }))
+
+  vi.mocked(ctrl.collab.getSubdoc).mockReturnValue(subdoc)
 
   const service = new FileService(ctrl, store, setState)
   setState('collab', {ydoc})
@@ -75,7 +78,7 @@ test('deleteFile', async () => {
 })
 
 test('restore', async () => {
-  const ydoc = createYdoc('1', ['Test'])
+  const ydoc = createSubdoc('1', ['Test'])
 
   const [store, setState] = createStore(createState({
     files: [
@@ -96,7 +99,7 @@ test('restore', async () => {
 })
 
 test('deleteForever', async () => {
-  const ydoc = createYdoc('1', ['Test'])
+  const ydoc = createSubdoc('1', ['Test'])
 
   const [store, setState] = createStore(createState({
     files: [

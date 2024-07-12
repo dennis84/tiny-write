@@ -16,10 +16,8 @@ export class ChangeSetService {
     const currentFile = this.ctrl.file.currentFile
     if (!currentFile) return
 
-    const newDoc = new Y.Doc({gc: false})
-    const type = newDoc.getXmlFragment(currentFile.id)
-    this.store.collab?.ydoc?.getXmlFragment(currentFile.id).forEach((x) => type.push([x.clone()]))
-    const ydoc = Y.encodeStateAsUpdate(newDoc)
+    const subdoc = this.ctrl.collab.getSubdoc(currentFile.id)
+    const ydoc = Y.encodeStateAsUpdate(subdoc)
 
     const versions = [
       ...currentFile.versions,
@@ -50,10 +48,10 @@ export class ChangeSetService {
   applyVersion(version: Version) {
     const currentFile = this.ctrl.file.currentFile
     if (!currentFile?.editorView) return
-    const ydoc = this.store.collab!.ydoc!
-    const type = ydoc.getXmlFragment(currentFile.id)
+    const subdoc = this.ctrl.collab.getSubdoc(currentFile.id)
+    const type = subdoc.getXmlFragment(currentFile.id)
     type.delete(0, type.length)
-    Y.applyUpdate(ydoc, version.ydoc)
+    Y.applyUpdate(subdoc, version.ydoc)
     this.ctrl.editor.updateEditorState(currentFile)
     this.setState('collab', 'snapshot', undefined)
     // trigger EditorProps.editable function

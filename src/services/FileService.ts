@@ -113,10 +113,11 @@ export class FileService {
   }
 
   static createFile(params: Partial<File> = {}): File {
-    const ydoc = params.ydoc ?? Y.encodeStateAsUpdate(FileService.createYdoc())
+    const id = params.id ?? uuidv4()
+    const ydoc = params.ydoc ?? Y.encodeStateAsUpdate(FileService.createYdoc(id))
     return {
       ...params,
-      id: params.id ?? uuidv4(),
+      id,
       ydoc,
       versions: [],
     }
@@ -154,8 +155,8 @@ export class FileService {
     }
   }
 
-  private static createYdoc(bytes?: Uint8Array): Y.Doc {
-    const ydoc = new Y.Doc({gc: false})
+  private static createYdoc(id: string, bytes?: Uint8Array): Y.Doc {
+    const ydoc = new Y.Doc({gc: false, guid: id})
     if (bytes) Y.applyUpdate(ydoc, bytes)
     return ydoc
   }
@@ -194,22 +195,8 @@ export class FileService {
 
     // Only update ydoc if lastmod has changed
     if (u.lastModified) {
-      const file = this.store.files[index]
-      const doc = this.store.collab!.ydoc!
-      if (doc.share.has(id)) {
-        const newDoc = new Y.Doc({gc: false})
-        if (file.code) {
-          const copy = newDoc.getText(id)
-          const org = doc.getText(id)
-          copy.applyDelta(org.toDelta())
-        } else {
-          const newType = newDoc.getXmlFragment(id)
-          const type = doc.getXmlFragment(id)
-          // @ts-expect-error is ok
-          newType.insert(0, type.toArray().map((el) => el instanceof Y.AbstractType ? el.clone() : el))
-        }
-        update.ydoc = Y.encodeStateAsUpdate(newDoc)
-      }
+      const subdoc = this.ctrl.collab.getSubdoc(id)
+      update.ydoc = Y.encodeStateAsUpdate(subdoc)
     }
 
     this.setState('files', index, update)

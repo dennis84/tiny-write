@@ -86,13 +86,14 @@ export class CodeService {
   async prettify() {
     const currentFile = this.ctrl.file.currentFile
     if (!currentFile) return
-    const doc = this.store.collab?.ydoc.getText(currentFile.id)
-    const code = doc?.toString()
+    const subdoc = this.ctrl.collab.getSubdoc(currentFile.id)
+    const type = subdoc.getText(currentFile.id)
+    const code = type?.toString()
     if (code) {
       try {
         const value = await this.ctrl.prettier.format(code, 'js', this.store.config.prettier)
-        doc?.delete(0, doc.length)
-        doc?.insert(0, value)
+        type?.delete(0, type.length)
+        type?.insert(0, value)
       } catch (_e) {
         // ignore
       }
@@ -104,19 +105,20 @@ export class CodeService {
       return
     }
 
-    const doc = this.store.collab?.ydoc.getText(file.id)
-    if (!doc) return
+    const subdoc = this.ctrl.collab.getSubdoc(file.id)
+    const type = subdoc.getText(file.id)
+    if (!type) return
 
     const parent = file.codeEditorView?.dom.parentElement ?? el
     file.codeEditorView?.destroy()
 
     const editor = this.ctrl.codeMirror.createEditor({
       parent,
-      doc: doc.toString(),
+      doc: type.toString(),
       lang: file.codeLang,
       extensions: [
         EditorView.updateListener.of(() => this.onUpdate()),
-        yCollab(doc, this.store.collab?.provider.awareness, {
+        yCollab(type, this.store.collab?.provider.awareness, {
           undoManager: this.store.collab?.undoManager ?? false
         }),
       ]

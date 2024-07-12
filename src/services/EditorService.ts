@@ -31,10 +31,9 @@ export class EditorService {
       return
     }
 
-    const ydoc = this.store.collab?.snapshot ?? this.store.collab?.ydoc
-    if (!ydoc) return // If error during init
+    const subdoc = this.store.collab?.snapshot ?? this.ctrl.collab.getSubdoc(file.id)
+    const type = subdoc.getXmlFragment(file.id)
 
-    const type = ydoc.getXmlFragment(file.id)
     const {plugins, doc} = ProseMirrorService.createPlugins({
       ctrl: this.ctrl,
       type,
@@ -192,7 +191,8 @@ export class EditorService {
 
     let ynode: Node
     try {
-      const type = this.store.collab.ydoc.getXmlFragment(currentFile.id)
+      const subdoc = this.ctrl.collab.getSubdoc(currentFile.id)
+      const type = subdoc.getXmlFragment(currentFile.id)
       const json = yXmlFragmentToProseMirrorRootNode(type, schema)
       ynode = Node.fromJSON(schema, json)
     } catch(_e) {
@@ -203,9 +203,10 @@ export class EditorService {
     if (!node.eq(ynode)) {
       const ydoc = prosemirrorJSONToYDoc(schema, text.doc, currentFile.id)
       const update = Y.encodeStateAsUpdate(ydoc)
-      const type = this.store.collab.ydoc.getXmlFragment(currentFile.id)
+      const subdoc = this.ctrl.collab.getSubdoc(currentFile.id)
+      const type = subdoc.getXmlFragment(currentFile.id)
       type.delete(0, type.length)
-      Y.applyUpdate(this.store.collab.ydoc, update)
+      Y.applyUpdate(subdoc, update)
     }
   }
 

@@ -247,7 +247,7 @@ test('openFile - open collab', async () => {
   expect(ctrl.file.currentFile?.id).not.toBe('room-123')
   ctrl.editor.renderEditor(ctrl.file.currentFile!.id, target)
 
-  expect(store.collab?.provider?.roomname).toBe(ctrl.file.currentFile?.id)
+  expect(store.collab?.provider?.roomname).toBe('editor/' + ctrl.file.currentFile?.id)
 
   await ctrl.editor.openFile(file.id)
   expect(ctrl.file.currentFile?.editorView).toBe(undefined)
@@ -257,7 +257,7 @@ test('openFile - open collab', async () => {
   await waitFor(() => {
     expect(getText(ctrl)).toBe('Test')
     expect(store.files.length).toBe(2)
-    expect(store.collab?.provider?.roomname).toBe('room-123')
+    expect(store.collab?.provider?.roomname).toBe('editor/room-123')
   })
 })
 

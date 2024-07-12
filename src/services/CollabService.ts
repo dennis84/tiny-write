@@ -24,6 +24,8 @@ export class UndoManager extends Y.UndoManager {
 }
 
 export class CollabService {
+  private providers: Record<string, WebsocketProvider> = {}
+
   constructor(
     private ctrl: Ctrl,
     private store: Store<State>,
@@ -42,21 +44,24 @@ export class CollabService {
     return this.store.collab?.undoManager
   }
 
-  get room() {
-    return this.store.mode === Mode.Canvas ?
+  get room(): string {
+    const room = this.store.mode === Mode.Canvas ?
       this.ctrl.canvas.currentCanvas?.id :
       this.ctrl.file.currentFile?.id
+    if (!room) throw Error('asas')
+    return room
   }
 
   get isSnapshot(): boolean {
     return this.store.collab?.snapshot !== undefined
   }
 
-  static create(room: string, mode = Mode.Editor, connect = false): Collab {
-    remote.info(`Create ydoc: (room=${room}, mode=${mode}, connect=${connect})`)
+  static create(id: string, mode = Mode.Editor, connect = false): Collab {
+    remote.info(`Create ydoc: (id=${id}, mode=${mode}, connect=${connect})`)
+    const room = `${mode}/${id}`
 
     if (connect) {
-      window.history.replaceState(null, '', `/${mode}/${room}`)
+      window.history.replaceState(null, '', `/${room}`)
     } else {
       window.history.replaceState(null, '', '/')
     }
@@ -110,11 +115,12 @@ export class CollabService {
 
   apply(file: File) {
     if (file.ydoc) {
-      const ydoc = this.store.collab!.ydoc
+      const subdoc = this.getSubdoc(file.id)
+
       if (!this.store.collab?.started) {
-        Y.applyUpdate(ydoc, file.ydoc)
+        Y.applyUpdate(subdoc, file.ydoc)
       }
-      const type = file.code ? ydoc.getText(file.id) : ydoc.getXmlFragment(file.id)
+      const type = file.code ? subdoc.getText(file.id) : subdoc.getXmlFragment(file.id)
       this.store.collab?.undoManager?.addToScope(type)
     }
   }
@@ -141,11 +147,16 @@ export class CollabService {
 
     const configType = this.store.collab?.ydoc?.getMap('config')
     configType?.observe(this.onCollabConfigUpdate)
+
+    this.store.collab?.ydoc.on('subdocs', ({loaded}) => {
+      loaded.forEach((subdoc) => this.getSubdoc(subdoc.guid))
+    })
   }
 
   startCollab() {
     window.history.replaceState(null, '', `/${this.store.mode}/${this.room}`)
     this.store.collab?.provider?.connect()
+    for (const p of Object.values(this.providers)) p.connect()
     this.setState('collab', {started: true})
   }
 
@@ -156,6 +167,7 @@ export class CollabService {
   disconnectCollab() {
     this.store.collab?.ydoc?.getMap('config').unobserve(this.onCollabConfigUpdate)
     this.store.collab?.provider?.disconnect()
+    for (const p of Object.values(this.providers)) p.disconnect()
     window.history.replaceState(null, '', '/')
     this.setState('collab', {started: false, error: undefined})
   }
@@ -168,6 +180,30 @@ export class CollabService {
     if (conf.font) this.store.collab?.ydoc?.getMap('config').set('font', conf.font)
     if (conf.fontSize) this.store.collab?.ydoc?.getMap('config').set('fontSize', conf.fontSize)
     if (conf.contentWidth) this.store.collab?.ydoc?.getMap('config').set('contentWidth', conf.contentWidth)
+  }
+
+  getSubdoc(id: string): Y.Doc {
+    const ydoc = this.store.collab?.ydoc
+    if (!ydoc) throw new Error('Collab state was not created')
+
+    let subdoc = ydoc.getMap<Y.Doc>().get(id)
+    if (!subdoc) {
+      subdoc = new Y.Doc({gc: false, guid: id})
+      ydoc.getMap().set(id, subdoc)
+    }
+
+    const connect = this.store.collab?.started ?? false
+    if (id in this.providers === false) {
+      const WebSocketPolyfill = CollabService.createWS()
+      const provider = new WebsocketProvider(COLLAB_URL, id, subdoc, {connect, WebSocketPolyfill})
+      this.providers[id] = provider
+    }
+
+    return subdoc
+  }
+
+  getProvider(id: string): WebsocketProvider {
+    return this.providers[id]
   }
 
   private onCollabConfigUpdate = (event: Y.YMapEvent<unknown>) => {

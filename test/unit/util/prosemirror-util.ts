@@ -11,13 +11,19 @@ export const createText = (texts: string[]) => ({
 })
 
 export const createYUpdate = (id: string, str: string[]) => {
-  const ydoc = createYdoc(id, str)
+  const ydoc = createSubdoc(id, str)
   return Y.encodeStateAsUpdate(ydoc)
 }
 
-export const createYdoc = (id: string, str: string[]) => {
+export const createSubdoc = (id: string, str: string[]) => {
   const doc = str ? createText(str).doc : {type: 'doc', content: []}
   return prosemirrorJSONToYDoc(schema, doc, id)
+}
+
+export const createYdoc = (subdocs: Y.Doc[]) => {
+  const ydoc = new Y.Doc({gc: false})
+  subdocs.forEach((subdoc) => ydoc.getMap().set(subdoc.guid, subdoc))
+  return ydoc
 }
 
 export const insertText = (ctrl: Ctrl, text: string) => {
