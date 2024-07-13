@@ -90,7 +90,7 @@ export class ProseMirrorService {
     )
   }
 
-  static createPlugins(props: CreatePlugins): {plugins: Plugin[], doc: Node | undefined} {
+  static createPlugins(props: CreatePlugins): {plugins: Plugin[]; doc: Node | undefined} {
     const plugins = [
       // keymap
       wordCompletionKeymap,
