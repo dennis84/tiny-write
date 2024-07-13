@@ -1,6 +1,6 @@
 import * as Y from 'yjs'
 import {DOMOutputSpec} from 'prosemirror-model'
-import {ySyncPlugin, yCursorPlugin, yUndoPlugin} from 'y-prosemirror'
+import {ySyncPlugin, yCursorPlugin} from 'y-prosemirror'
 import {ProsemirrorMapping} from 'y-prosemirror/dist/src/lib'
 import {Ctrl} from '@/services'
 
@@ -35,5 +35,4 @@ export const createCollabPlugins = (ctrl: Ctrl, type: Y.XmlFragment, mapping: Pr
     onFirstRender: () => ctrl.collab.setRendered(),
   }),
   ...(ctrl.collab.isSnapshot ? [] : [yCursorPlugin(ctrl.collab.provider!.awareness, {cursorBuilder})]),
-  yUndoPlugin({undoManager: ctrl.collab.undoManager}),
 ]

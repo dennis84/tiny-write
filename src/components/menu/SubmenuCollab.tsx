@@ -1,5 +1,5 @@
 import {createEffect, createSignal, onCleanup, Show} from 'solid-js'
-import {Mode, useState} from '@/state'
+import {useState} from '@/state'
 import * as remote from '@/remote'
 import {Label, Link, Sub, Text} from './Menu'
 import {WEB_URL} from '@/env'

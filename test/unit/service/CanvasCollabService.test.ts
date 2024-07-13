@@ -2,11 +2,11 @@ import {beforeEach, expect, test, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
 import {createStore} from 'solid-js/store'
 import * as Y from 'yjs'
+import {YMultiDocUndoManager} from 'y-utility/y-multidoc-undomanager'
 
 import {Canvas, createState, ElementType} from '@/state'
 import {CanvasCollabService} from '@/services/CanvasCollabService'
 import {CanvasService} from '@/services/CanvasService'
-import {UndoManager} from '@/services/CollabService'
 import {waitFor} from '../util/util'
 
 vi.mock('@/db', () => ({DB: mock()}))
@@ -34,7 +34,7 @@ const setup = (props: {canvas: Partial<Canvas>} = {canvas: {}}) => {
   const ydoc = new Y.Doc({gc: false})
   setState('collab', {ydoc})
 
-  const undoManager = new UndoManager(service.elements!, {
+  const undoManager = new YMultiDocUndoManager(service.elements!, {
     trackedOrigins: new Set([ydoc.clientID]),
   })
 

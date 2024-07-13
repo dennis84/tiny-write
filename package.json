@@ -63,8 +63,9 @@
     "y-codemirror.next": "^0.3.4",
     "y-prosemirror": "^1.2.9",
     "y-protocols": "^1.0.6",
+    "y-utility": "^0.1.4",
     "y-websocket": "^2.0.3",
-    "yjs": "^13.6.17"
+    "yjs": "^13.6.18"
   },
   "devDependencies": {
     "@playwright/test": "^1.44.1",
@@ -97,7 +98,7 @@
     "dev": "vite & y-websocket",
     "build": "vite build",
     "tauri": "tauri",
-    "lint": "eslint . --ext .ts,.tsx",
+    "lint": "eslint",
     "test": "cross-env CI=true vitest && cross-env CI=true npx playwright test"
   },
   "engines": {

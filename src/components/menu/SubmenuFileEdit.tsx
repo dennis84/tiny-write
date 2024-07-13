@@ -1,25 +1,24 @@
 import {createEffect, createSignal, onCleanup} from 'solid-js'
-import {undo, redo} from 'y-prosemirror'
 import {useState} from '@/state'
 import * as remote from '@/remote'
 import {isMac, isTauri, mod} from '@/env'
 import {Keys, Label, Link, Sub} from './Menu'
 
 export const SubmenuFileEdit = () => {
-  const [, ctrl] = useState()
+  const [store, ctrl] = useState()
   const [lastAction, setLastAction] = createSignal<string | undefined>()
 
   const modKey = isMac ? '⌘' : mod
 
   const onUndo = () => {
     const currentFile = ctrl.file.currentFile
-    undo(currentFile?.editorView?.state)
+    store.collab?.undoManager.undo()
     currentFile?.editorView?.focus()
   }
 
   const onRedo = () => {
     const currentFile = ctrl.file.currentFile
-    redo(currentFile?.editorView?.state)
+    store.collab?.undoManager.undo()
     currentFile?.editorView?.focus()
   }
 
