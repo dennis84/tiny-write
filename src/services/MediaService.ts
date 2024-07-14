@@ -52,10 +52,10 @@ export class MediaService {
 
         if (isImage) {
           const img = await this.loadImage(src)
-          await this.ctrl.canvas.addImage(src, point, img.width, img.height)
+          await this.ctrl.canvas.addImage(relativePath, point, img.width, img.height)
         } else {
           const video = await this.loadVideo(src)
-          await this.ctrl.canvas.addVideo(src, mime, point, video.videoWidth, video.videoHeight)
+          await this.ctrl.canvas.addVideo(relativePath, mime, point, video.videoWidth, video.videoHeight)
         }
       }
     } else if (isText) {

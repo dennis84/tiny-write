@@ -12,10 +12,9 @@ const CIRCLE_HOVER_RADIUS = 40
 
 const LinkHandleDot = styled('span')`
   position: absolute;
-  width: ${(props: any) => (CIRCLE_HOVER_RADIUS / props.zoom).toString()}px;
-  height: ${(props: any) => (CIRCLE_HOVER_RADIUS / props.zoom).toString()}px;
+  width: ${CIRCLE_HOVER_RADIUS.toString()}px;
+  height: ${CIRCLE_HOVER_RADIUS.toString()}px;
   border-radius: 999px;
-  background: transparent;
   cursor: var(--cursor-pointer);
   z-index: ${(props: any) => zIndex(props.index, IndexType.HANDLE)};
   display: flex;
@@ -23,8 +22,8 @@ const LinkHandleDot = styled('span')`
   align-items: center;
   touch-action: none;
   > span {
-    width: ${(props: any) => (CIRCLE_RADIUS / props.zoom).toString()}px;
-    height: ${(props: any) => (CIRCLE_RADIUS / props.zoom).toString()}px;
+    width: ${CIRCLE_RADIUS.toString()}px;
+    height: ${CIRCLE_RADIUS.toString()}px;
     border-radius: 999px;
     background: transparent;
   }
@@ -57,7 +56,7 @@ const LinkHandle = (props: EdgeProps) => {
   const coords = () => {
     const box = new Box(props.x, props.y, props.width, props.height)
     const p = box.getHandlePoint(props.type)
-    p.addXY(-CIRCLE_HOVER_RADIUS/zoom()/2, -CIRCLE_HOVER_RADIUS/zoom()/2)
+    p.addXY(-CIRCLE_HOVER_RADIUS/2, -CIRCLE_HOVER_RADIUS/2)
     if (props.type === EdgeType.Top) {
       p.addXY(0, -BORDER_SIZE/zoom())
     } else if (props.type === EdgeType.Bottom) {
@@ -104,7 +103,8 @@ const LinkHandle = (props: EdgeProps) => {
       index={props.index}
       style={{
         transform: `
-          translate(${coords().map((n) => n + 'px').join(',')})
+          scale(${1 / zoom()})
+          translate(${coords().map((n) => (n * zoom()) + 'px').join(',')})
         `
       }}
       ref={linkRef}

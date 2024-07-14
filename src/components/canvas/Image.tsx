@@ -1,11 +1,26 @@
-import {css} from 'solid-styled-components'
+import {onMount} from 'solid-js'
+import {styled} from 'solid-styled-components'
 import {CanvasImageElement, useState} from '@/state'
 import {Selection} from '@/services/CanvasService'
 import {Bounds} from './Bounds'
 import {LinkHandles} from './LinkHandles'
 import {IndexType, zIndex} from '@/utils/z-index'
+import {isTauri} from '@/env'
+
+const CanvasImage = styled('img')((props: any) => `
+  position: absolute;
+  border-radius: var(--border-radius);
+  user-select: none;
+  z-index: ${zIndex(props.index, IndexType.CONTENT)};
+  -webkit-user-select: none;
+  pointer-events: none;
+  ${props.selected && `
+    box-shadow: 0 0 0 5px var(--border);
+  `}
+`)
 
 export const Image = ({element, index}: {element: CanvasImageElement; index: number}) => {
+  let imageRef!: HTMLImageElement
   const [, ctrl] = useState()
 
   const onSelect = (e: MouseEvent) => {
@@ -16,6 +31,16 @@ export const Image = ({element, index}: {element: CanvasImageElement; index: num
     const box = ctrl.canvas.createBox(element)
     return {box, elements: [[element.id, box]]}
   }
+
+  onMount(async () => {
+    if (isTauri()) {
+      const basePath = await ctrl.app.getBasePath()
+      const p = await ctrl.media.getImagePath(element.src, basePath)
+      imageRef.setAttribute('src', p)
+    } else {
+      imageRef.setAttribute('src', element.src)
+    }
+  })
 
   return <>
     <Bounds
@@ -32,23 +57,16 @@ export const Image = ({element, index}: {element: CanvasImageElement; index: num
       height={element.height}
       index={index}
     />
-    <img
-      src={element.src}
+    <CanvasImage
+      ref={imageRef}
       width={element.width}
       height={element.height}
-      class={css`
-        position: absolute;
-        left: ${element.x.toString()}px;
-        top: ${element.y.toString()}px;
-        border-radius: var(--border-radius);
-        user-select: none;
-        z-index: ${zIndex(index, IndexType.CONTENT)};
-        -webkit-user-select: none;
-        pointer-events: none;
-        ${element.selected ? `
-          box-shadow: 0 0 0 5px var(--border);
-        `: ''}
-      `}
+      index={index}
+      selected={element.selected}
+      style={{
+        left: `${element.x.toString()}px`,
+        top: `${element.y.toString()}px`,
+      }}
     />
   </>
 }

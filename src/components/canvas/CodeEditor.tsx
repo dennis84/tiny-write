@@ -1,5 +1,5 @@
 import {onCleanup, onMount, Show} from 'solid-js'
-import {css} from 'solid-styled-components'
+import {styled} from 'solid-styled-components'
 import {CanvasCodeElement, useState} from '@/state'
 import {Selection} from '@/services/CanvasService'
 import {Scroll} from '@/components/Layout'
@@ -7,6 +7,26 @@ import {CodeMirrorContainer} from '@/components/code/CodeEditor'
 import {Bounds} from './Bounds'
 import {LinkHandles} from './LinkHandles'
 import {IndexType, zIndex} from '@/utils/z-index'
+
+const CodeEditorScroll = styled(Scroll)(
+  (props: any) => `
+    position: absolute;
+    border-radius: var(--border-radius);
+    z-index: ${zIndex(props.index, IndexType.CONTENT)};
+    user-select: none;
+    pointer-events: none;
+    box-shadow: 0 0 0 2px var(--border);
+    ${props.selected && `box-shadow: 0 0 0 5px var(--border);`}
+    ${props.active && `
+      box-shadow: 0 0 0 5px var(--primary-background);
+      user-select: auto;
+      pointer-events: auto;
+    `}
+    ${props.deleted && `
+      opacity: 0.4;
+    `}
+  `
+)
 
 export const CodeEditor = ({element, index}: {element: CanvasCodeElement; index: number}) => {
   const [store, ctrl] = useState()
@@ -21,8 +41,7 @@ export const CodeEditor = ({element, index}: {element: CanvasCodeElement; index:
     ctrl.canvas.select(element.id, true)
   }
 
-  const isDeleted = () =>
-    store.files.find((f) => f.id === element.id)?.deleted
+  const isDeleted = () => store.files.find((f) => f.id === element.id)?.deleted
 
   const createSelection = (): Selection => {
     const box = ctrl.canvas.createBox(element)
@@ -56,38 +75,22 @@ export const CodeEditor = ({element, index}: {element: CanvasCodeElement; index:
           index={index}
         />
       </Show>
-      <Scroll
+      <CodeEditorScroll
         ref={containerRef}
-        class={css`
-          position: absolute;
-          left: ${element.x.toString()}px;
-          top: ${element.y.toString()}px;
-          width: ${element.width.toString()}px;
-          min-height: ${element.height.toString()}px;
-          max-height: ${element.height.toString()}px;
-          border-radius: var(--border-radius);
-          z-index: ${zIndex(index, IndexType.CONTENT)};
-          user-select: none;
-          pointer-events: none;
-          ${element.active ? `
-            box-shadow: 0 0 0 5px var(--primary-background);
-            user-select: auto;
-            pointer-events: auto;
-          ` : element.selected ? `
-            box-shadow: 0 0 0 5px var(--border);
-          ` : isDeleted() ? `
-            opacity: 0.4;
-            box-shadow: 0 0 0 2px var(--border);
-          ` : `
-            box-shadow: 0 0 0 2px var(--border);
-          `}
-        `}
+        index={index}
+        selected={element.selected}
+        active={element.active}
+        deleted={isDeleted()}
+        style={{
+          'left': `${element.x}px`,
+          'top': `${element.y}px`,
+          'width': `${element.width}px`,
+          'min-height': `${element.height}px`,
+          'max-height': `${element.height}px`,
+        }}
       >
-        <CodeMirrorContainer
-          ref={editorRef}
-          data-testid="canvas_code_editor"
-        />
-      </Scroll>
+        <CodeMirrorContainer ref={editorRef} data-testid="canvas_code_editor" />
+      </CodeEditorScroll>
     </>
   )
 }

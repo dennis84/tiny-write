@@ -50,7 +50,8 @@ export const Main = (props: {state: State}) => {
       } else if (event.payload.type === 'dropped') {
         remote.info('🔗 User dropped')
         for (const path of event.payload.paths) {
-          await ctrl.media.dropPath(path, [mouseEnterCoords.x, mouseEnterCoords.y])
+          const {x, y} = event.payload.position
+          await ctrl.media.dropPath(path, [x, y])
         }
       } else {
         remote.info('🔗 File drop cancelled')

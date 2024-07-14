@@ -21,7 +21,6 @@ const LinkSvg = styled('svg')`
 
 const Path = styled('path')`
   stroke: transparent;
-  stroke-width: ${(props: any) => 25 / props.zoom};
   stroke-linecap: round;
   cursor: var(--cursor-grab);
   pointer-events: auto;
@@ -38,7 +37,6 @@ const Path = styled('path')`
 
 const InnerPath = styled('path')`
   stroke: var(--border);
-  stroke-width: ${(props: any) => 0.7 / props.zoom};
   stroke-linecap: round;
   pointer-events: none;
   touch-action: none;
@@ -142,9 +140,12 @@ export const Link = ({element}: {element: CanvasLinkElement}) => {
         ref={pathRef}
         onClick={onClick}
         selected={element.selected}
-        zoom={currentCanvas.camera.zoom}
+        style={{'stroke-width': `${25 / currentCanvas.camera.zoom}`}}
       />
-      <InnerPath ref={innerPathRef} zoom={currentCanvas.camera.zoom} />
+      <InnerPath
+        ref={innerPathRef}
+        style={{'stroke-width': `${0.7 / currentCanvas.camera.zoom}`}}
+      />
       <ArrowHead ref={arrowheadRef} />
     </LinkSvg>
   )

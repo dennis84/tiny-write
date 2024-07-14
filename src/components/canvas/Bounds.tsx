@@ -178,10 +178,6 @@ const Corner = (props: CornerProps) => {
 
 const BoundsSvg = styled('svg')`
   position: absolute;
-  width: ${(props: any) => Number(props.selection.box.width) + BORDER_SIZE_2}px;
-  height: ${(props: any) => Number(props.selection.box.height) + BORDER_SIZE_2}px;
-  left: ${(props: any) => Number(props.selection.box.x) - BORDER_SIZE}px;
-  top: ${(props: any) => Number(props.selection.box.y) - BORDER_SIZE}px;
   cursor: var(--cursor-grab);
   touch-action: none;
   &:active {
@@ -229,7 +225,13 @@ export const Bounds = (props: BoundsProps) => {
     <BoundsSvg
       {...others}
       ref={ref}
-      style={{'z-index': zIndex(props.index, IndexType.BOUNDS)}}
+      style={{
+        'z-index': zIndex(props.index, IndexType.BOUNDS),
+        'width': `${Number(props.selection.box.width) + BORDER_SIZE_2}px`,
+        'height': `${Number(props.selection.box.height) + BORDER_SIZE_2}px`,
+        'left': `${Number(props.selection.box.x) - BORDER_SIZE}px`,
+        'top': `${Number(props.selection.box.y) - BORDER_SIZE}px`,
+      }}
       onMouseDown={local.onSelect}
       onDblClick={local.onDoubleClick}
       version="1.1"
@@ -243,7 +245,9 @@ export const Bounds = (props: BoundsProps) => {
       <Corner {...others} type={CornerType.TopRight} />
       <Corner {...others} type={CornerType.BottomLeft} />
       <Corner {...others} type={CornerType.BottomRight} />
-      <Show when={others.selected && props.visible}><Visible {...props} /></Show>
+      <Show when={others.selected && props.visible}>
+        <Visible {...props} />
+      </Show>
     </BoundsSvg>
   )
 }

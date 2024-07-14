@@ -1,5 +1,5 @@
 import {onCleanup, onMount, Show} from 'solid-js'
-import {css} from 'solid-styled-components'
+import {styled} from 'solid-styled-components'
 import {CanvasEditorElement, useState} from '@/state'
 import {Selection} from '@/services/CanvasService'
 import {CanvasEditor} from '@/components/editor/Style'
@@ -7,6 +7,26 @@ import {Scroll} from '@/components/Layout'
 import {Bounds} from './Bounds'
 import {LinkHandles} from './LinkHandles'
 import {IndexType, zIndex} from '@/utils/z-index'
+
+const EditorScroll = styled(Scroll)((props: any) => `
+  position: absolute;
+  border-radius: var(--border-radius);
+  z-index: ${zIndex(props.index, IndexType.CONTENT)};
+  user-select: none;
+  pointer-events: none;
+  box-shadow: 0 0 0 2px var(--border);
+  ${props.selected && `
+    box-shadow: 0 0 0 5px var(--border);
+  `}
+  ${props.active && `
+    box-shadow: 0 0 0 5px var(--primary-background);
+    user-select: auto;
+    pointer-events: auto;
+  `}
+  ${props.deleted && `
+    opacity: 0.4;
+  `}
+`)
 
 export const Editor = ({element, index}: {element: CanvasEditorElement; index: number}) => {
   const [store, ctrl] = useState()
@@ -56,39 +76,22 @@ export const Editor = ({element, index}: {element: CanvasEditorElement; index: n
           index={index}
         />
       </Show>
-      <Scroll
+      <EditorScroll
         ref={containerRef}
-        class={css`
-          position: absolute;
-          left: ${element.x.toString()}px;
-          top: ${element.y.toString()}px;
-          width: ${element.width.toString()}px;
-          min-height: ${element.height.toString()}px;
-          max-height: ${element.height.toString()}px;
-          border-radius: var(--border-radius);
-          z-index: ${zIndex(index, IndexType.CONTENT)};
-          user-select: none;
-          pointer-events: none;
-          ${element.active ? `
-            box-shadow: 0 0 0 5px var(--primary-background);
-            user-select: auto;
-            pointer-events: auto;
-          ` : element.selected ? `
-            box-shadow: 0 0 0 5px var(--border);
-          ` : isDeleted() ? `
-            opacity: 0.4;
-            box-shadow: 0 0 0 2px var(--border);
-          ` : `
-            box-shadow: 0 0 0 2px var(--border);
-          `}
-        `}
+        index={index}
+        selected={element.selected}
+        active={element.active}
+        deleted={isDeleted()}
+        style={{
+          'left': `${element.x}px`,
+          'top': `${element.y}px`,
+          'width': `${element.width}px`,
+          'min-height': `${element.height}px`,
+          'max-height': `${element.height}px`,
+        }}
       >
-        <CanvasEditor
-          config={store.config}
-          ref={editorRef}
-          data-testid="canvas_editor"
-        />
-      </Scroll>
+        <CanvasEditor config={store.config} ref={editorRef} data-testid="canvas_editor" />
+      </EditorScroll>
     </>
   )
 }

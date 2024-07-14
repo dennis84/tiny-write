@@ -1,10 +1,22 @@
 import {onMount} from 'solid-js'
-import {css} from 'solid-styled-components'
+import {styled} from 'solid-styled-components'
 import {CanvasVideoElement, useState} from '@/state'
 import {Selection} from '@/services/CanvasService'
 import {Bounds} from './Bounds'
 import {LinkHandles} from './LinkHandles'
 import {IndexType, zIndex} from '@/utils/z-index'
+
+const CanvasVideo = styled('video')((props: any) => `
+  position: absolute;
+  border-radius: var(--border-radius);
+  user-select: none;
+  z-index: ${zIndex(props.index, IndexType.CONTENT)};
+  pointer-events: none;
+  -webkit-user-select: none;
+  ${props.selected && `
+    box-shadow: 0 0 0 5px var(--border);
+  `}
+`)
 
 export const Video = ({element, index}: {element: CanvasVideoElement; index: number}) => {
   let videoRef!: HTMLVideoElement
@@ -40,25 +52,18 @@ export const Video = ({element, index}: {element: CanvasVideoElement; index: num
       height={element.height}
       index={index}
     />
-    <video
+    <CanvasVideo
       autoplay
       loop={true}
+      ref={videoRef}
+      index={index}
+      selected={element.selected}
       width={element.width}
       height={element.height}
-      ref={videoRef}
-      class={css`
-        position: absolute;
-        left: ${element.x.toString()}px;
-        top: ${element.y.toString()}px;
-        border-radius: var(--border-radius);
-        user-select: none;
-        z-index: ${zIndex(index, IndexType.CONTENT)};
-        pointer-events: none;
-        -webkit-user-select: none;
-        ${element.selected ? `
-          box-shadow: 0 0 0 5px var(--border);
-        `: ''}
-      `}
+      style={{
+        left: `${element.x.toString()}px`,
+        top: `${element.y.toString()}px`,
+      }}
     />
   </>
 }

@@ -338,11 +338,6 @@ export class CanvasService {
       elements.push(el)
     }
 
-    for (const elementId of elementIds) {
-      const type = this.store.collab?.ydoc?.get(elementId)
-      if (type) this.store.collab?.undoManager?.removeFromScope(type)
-    }
-
     this.ctrl.canvasCollab.removeMany([...toRemove])
     this.updateCanvas(currentCanvas.id, {elements: [...elements]})
     await this.saveCanvas()
