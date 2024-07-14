@@ -7,12 +7,19 @@ const config: PlaywrightTestConfig = {
   testDir: './test/integration',
   timeout,
   retries: process.env.CI ? 3 : 0,
-  webServer: {
-    command: 'npm run dev',
-    port: 3000,
-    timeout: 120 * second,
-    reuseExistingServer: !process.env.CI,
-  },
+  webServer: [
+    {
+      command: 'vite',
+      port: 3000,
+      timeout: 120 * second,
+      reuseExistingServer: false,
+    }, {
+      command: 'y-websocket',
+      port: 1234,
+      timeout: 120 * second,
+      reuseExistingServer: false,
+    }
+  ],
   use: {
     baseURL: 'http://localhost:3000/',
     viewport: {width: 600, height: 600},
