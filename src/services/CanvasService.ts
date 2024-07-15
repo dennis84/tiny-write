@@ -349,6 +349,8 @@ export class CanvasService {
     this.ctrl.collab.disconnectCollab()
 
     const prevCanvas = this.currentCanvas
+    if (prevCanvas?.id === id) return
+
     const state = CanvasService.activateCanvas(unwrap(this.store), id)
     const collab = CollabService.create(id, Mode.Canvas, false)
 
