@@ -11,7 +11,6 @@ const CanvasImage = styled('img')((props: any) => `
   position: absolute;
   border-radius: var(--border-radius);
   user-select: none;
-  z-index: ${zIndex(props.index, IndexType.CONTENT)};
   -webkit-user-select: none;
   pointer-events: none;
   ${props.selected && `
@@ -42,31 +41,28 @@ export const Image = ({element, index}: {element: CanvasImageElement; index: num
     }
   })
 
-  return <>
-    <Bounds
-      selection={createSelection()}
-      selected={element.selected}
-      onSelect={onSelect}
-      index={index}
-    />
-    <LinkHandles
-      id={element.id}
-      x={element.x}
-      y={element.y}
-      width={element.width}
-      height={element.height}
-      index={index}
-    />
-    <CanvasImage
-      ref={imageRef}
-      width={element.width}
-      height={element.height}
-      index={index}
-      selected={element.selected}
-      style={{
-        left: `${element.x.toString()}px`,
-        top: `${element.y.toString()}px`,
-      }}
-    />
-  </>
+  return (
+    <>
+      <Bounds selection={createSelection()} selected={element.selected} onSelect={onSelect} index={index} />
+      <LinkHandles
+        id={element.id}
+        x={element.x}
+        y={element.y}
+        width={element.width}
+        height={element.height}
+        index={index}
+      />
+      <CanvasImage
+        ref={imageRef}
+        width={element.width}
+        height={element.height}
+        selected={element.selected}
+        style={{
+          'left': `${element.x.toString()}px`,
+          'top': `${element.y.toString()}px`,
+          'z-index': `${zIndex(index, IndexType.CONTENT)}`,
+        }}
+      />
+    </>
+  )
 }

@@ -3,6 +3,7 @@ import {EditorView} from '@codemirror/view'
 import {yCollab} from 'y-codemirror.next'
 import {File, State} from '@/state'
 import * as remote from '@/remote'
+import {format} from '@/codemirror/prettify'
 import {Ctrl} from '.'
 import {FileService} from './FileService'
 import {CollabService} from './CollabService'
@@ -18,11 +19,14 @@ export class CodeService {
     const state = unwrap(this.store)
     const file = FileService.createFile({code: true})
 
-    const update = await FileService.activateFile({
-      ...state,
-      args: {cwd: state.args?.cwd},
-      files: [...state.files, file],
-    }, file)
+    const update = await FileService.activateFile(
+      {
+        ...state,
+        args: {cwd: state.args?.cwd},
+        files: [...state.files, file],
+      },
+      file,
+    )
 
     update.collab = CollabService.create(file.id, state.mode, false)
     this.setState(update)
@@ -85,19 +89,10 @@ export class CodeService {
 
   async prettify() {
     const currentFile = this.ctrl.file.currentFile
-    if (!currentFile) return
-    const subdoc = this.ctrl.collab.getSubdoc(currentFile.id)
-    const type = subdoc.getText(currentFile.id)
-    const code = type?.toString()
-    if (code) {
-      try {
-        const value = await this.ctrl.prettier.format(code, 'js', this.store.config.prettier)
-        type?.delete(0, type.length)
-        type?.insert(0, value)
-      } catch (_e) {
-        // ignore
-      }
-    }
+    if (!currentFile?.codeEditorView) return
+    const lang = currentFile?.codeEditorView?.contentDOM.dataset.language ?? ''
+    const config = unwrap(this.store.config.prettier)
+    return format(currentFile.codeEditorView, lang, config)
   }
 
   private updateEditorState(file: File, el?: HTMLElement) {
@@ -119,9 +114,9 @@ export class CodeService {
       extensions: [
         EditorView.updateListener.of(() => this.onUpdate()),
         yCollab(type, this.store.collab?.provider.awareness, {
-          undoManager: this.store.collab?.undoManager ?? false
+          undoManager: this.store.collab?.undoManager ?? false,
         }),
-      ]
+      ],
     })
 
     const fileIndex = this.store.files.findIndex((f) => f.id === file.id)
@@ -132,7 +127,7 @@ export class CodeService {
     const currentFile = this.ctrl.file.currentFile
     if (!currentFile) return
     this.ctrl.file.updateFile(currentFile.id, {
-      lastModified: new Date()
+      lastModified: new Date(),
     })
     await this.saveEditor()
   }

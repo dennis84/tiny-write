@@ -4,7 +4,7 @@ import {Mode, useState} from '@/state'
 import {isTauri, isMac, mod, version, VERSION_URL} from '@/env'
 import * as remote from '@/remote'
 import {Bin} from './Bin'
-import {CodeBlock} from './CodeBlock'
+import {CodeFormat} from './CodeFormat'
 import {Appearance} from './Appearance'
 import {ChangeSet} from './ChangeSet'
 import {Help} from './Help'
@@ -239,6 +239,13 @@ export const Menu = () => {
 
   onCleanup(() => document.removeEventListener('keydown', onKeyDown))
 
+  const showCodeFormat = () => {
+    const currentFile = ctrl.file.currentFile
+    if (!currentFile?.codeEditorView) return true
+    const language = currentFile.codeEditorView.contentDOM.dataset.language ?? ''
+    return ctrl.prettier.supports(language)
+  }
+
   return (
     <Container>
       <Burger
@@ -251,8 +258,8 @@ export const Menu = () => {
       <Show when={show() === 'bin'}>
         <Bin onBack={() => setShow('main')} />
       </Show>
-      <Show when={show() === 'code_block'}>
-        <CodeBlock onBack={() => setShow('main')} />
+      <Show when={show() === 'code_format'}>
+        <CodeFormat onBack={() => setShow('main')} />
       </Show>
       <Show when={show() === 'theme'}>
         <Appearance onBack={() => setShow('main')} />
@@ -292,7 +299,9 @@ export const Menu = () => {
           <Label>View</Label>
           <Sub data-tauri-drag-region="true">
             <Link data-testid="appearance" onClick={() => setShow('theme')}>Appearance 🎨</Link>
-            <Link onClick={() => setShow('code_block')}>Code Format 💅</Link>
+            <Show when={showCodeFormat()}>
+              <Link onClick={() => setShow('code_format')}>Code Format 💅</Link>
+            </Show>
             <Show when={store.mode === Mode.Editor}>
               <Link onClick={() => setShow('change_set')}>Change Set 📆</Link>
             </Show>

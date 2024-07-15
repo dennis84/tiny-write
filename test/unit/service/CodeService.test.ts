@@ -85,5 +85,5 @@ test('prettify', async () => {
 
   await ctrl.code.prettify()
 
-  expect(ctrl.file.currentFile?.codeEditorView?.state.doc.toString()).toBe('const a = 1\n')
+  expect(ctrl.file.currentFile?.codeEditorView?.state.doc.toString()).toBe('const a = 1')
 })

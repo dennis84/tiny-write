@@ -16,7 +16,6 @@ const LinkHandleDot = styled('span')`
   height: ${CIRCLE_HOVER_RADIUS.toString()}px;
   border-radius: 999px;
   cursor: var(--cursor-pointer);
-  z-index: ${(props: any) => zIndex(props.index, IndexType.HANDLE)};
   display: flex;
   justify-content: center;
   align-items: center;
@@ -99,13 +98,12 @@ const LinkHandle = (props: EdgeProps) => {
 
   return (
     <LinkHandleDot
-      zoom={zoom()}
-      index={props.index}
       style={{
-        transform: `
+        'transform': `
           scale(${1 / zoom()})
           translate(${coords().map((n) => (n * zoom()) + 'px').join(',')})
-        `
+        `,
+        'z-index': `${zIndex(props.index, IndexType.HANDLE)}`,
       }}
       ref={linkRef}
       data-testid={`edge_${props.type}_link_handle`}

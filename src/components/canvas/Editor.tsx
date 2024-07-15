@@ -11,7 +11,6 @@ import {IndexType, zIndex} from '@/utils/z-index'
 const EditorScroll = styled(Scroll)((props: any) => `
   position: absolute;
   border-radius: var(--border-radius);
-  z-index: ${zIndex(props.index, IndexType.CONTENT)};
   user-select: none;
   pointer-events: none;
   box-shadow: 0 0 0 2px var(--border);
@@ -78,7 +77,6 @@ export const Editor = ({element, index}: {element: CanvasEditorElement; index: n
       </Show>
       <EditorScroll
         ref={containerRef}
-        index={index}
         selected={element.selected}
         active={element.active}
         deleted={isDeleted()}
@@ -88,6 +86,7 @@ export const Editor = ({element, index}: {element: CanvasEditorElement; index: n
           'width': `${element.width}px`,
           'min-height': `${element.height}px`,
           'max-height': `${element.height}px`,
+          'z-index': `${zIndex(index, IndexType.CONTENT)}`,
         }}
       >
         <CanvasEditor config={store.config} ref={editorRef} data-testid="canvas_editor" />

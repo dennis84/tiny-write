@@ -12,7 +12,6 @@ const CodeEditorScroll = styled(Scroll)(
   (props: any) => `
     position: absolute;
     border-radius: var(--border-radius);
-    z-index: ${zIndex(props.index, IndexType.CONTENT)};
     user-select: none;
     pointer-events: none;
     box-shadow: 0 0 0 2px var(--border);
@@ -77,7 +76,6 @@ export const CodeEditor = ({element, index}: {element: CanvasCodeElement; index:
       </Show>
       <CodeEditorScroll
         ref={containerRef}
-        index={index}
         selected={element.selected}
         active={element.active}
         deleted={isDeleted()}
@@ -87,6 +85,7 @@ export const CodeEditor = ({element, index}: {element: CanvasCodeElement; index:
           'width': `${element.width}px`,
           'min-height': `${element.height}px`,
           'max-height': `${element.height}px`,
+          'z-index': `${zIndex(index, IndexType.CONTENT)}`,
         }}
       >
         <CodeMirrorContainer ref={editorRef} data-testid="canvas_code_editor" />

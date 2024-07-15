@@ -6,17 +6,21 @@ import {Bounds} from './Bounds'
 import {LinkHandles} from './LinkHandles'
 import {IndexType, zIndex} from '@/utils/z-index'
 
-const CanvasVideo = styled('video')((props: any) => `
-  position: absolute;
-  border-radius: var(--border-radius);
-  user-select: none;
-  z-index: ${zIndex(props.index, IndexType.CONTENT)};
-  pointer-events: none;
-  -webkit-user-select: none;
-  ${props.selected && `
-    box-shadow: 0 0 0 5px var(--border);
-  `}
-`)
+const CanvasVideo = styled('video')(
+  (props: any) => `
+    position: absolute;
+    border-radius: var(--border-radius);
+    user-select: none;
+    pointer-events: none;
+    -webkit-user-select: none;
+    ${
+      props.selected &&
+      `
+      box-shadow: 0 0 0 5px var(--border);
+    `
+    }
+  `,
+)
 
 export const Video = ({element, index}: {element: CanvasVideoElement; index: number}) => {
   let videoRef!: HTMLVideoElement
@@ -37,33 +41,30 @@ export const Video = ({element, index}: {element: CanvasVideoElement; index: num
     videoRef.setAttribute('src', p)
   })
 
-  return <>
-    <Bounds
-      selection={createSelection()}
-      selected={element.selected}
-      onSelect={onSelect}
-      index={index}
-    />
-    <LinkHandles
-      id={element.id}
-      x={element.x}
-      y={element.y}
-      width={element.width}
-      height={element.height}
-      index={index}
-    />
-    <CanvasVideo
-      autoplay
-      loop={true}
-      ref={videoRef}
-      index={index}
-      selected={element.selected}
-      width={element.width}
-      height={element.height}
-      style={{
-        left: `${element.x.toString()}px`,
-        top: `${element.y.toString()}px`,
-      }}
-    />
-  </>
+  return (
+    <>
+      <Bounds selection={createSelection()} selected={element.selected} onSelect={onSelect} index={index} />
+      <LinkHandles
+        id={element.id}
+        x={element.x}
+        y={element.y}
+        width={element.width}
+        height={element.height}
+        index={index}
+      />
+      <CanvasVideo
+        autoplay
+        loop={true}
+        ref={videoRef}
+        selected={element.selected}
+        width={element.width}
+        height={element.height}
+        style={{
+          'left': `${element.x.toString()}px`,
+          'top': `${element.y.toString()}px`,
+          'z-index': `${zIndex(index, IndexType.CONTENT)}`,
+        }}
+      />
+    </>
+  )
 }

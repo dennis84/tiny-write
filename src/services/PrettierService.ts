@@ -8,46 +8,50 @@ import markdownPlugin from 'prettier/plugins/markdown'
 import yamlPlugin from 'prettier/plugins/yaml'
 import {PrettierConfig} from '@/state'
 
+type PrettierLang = [string, prettier.Plugin[]]
+
 export class PrettierService {
+  private js: PrettierLang = ['babel', [babelPlugin, estreePlugin]]
+  private ts: PrettierLang = ['typescript', [typescriptPlugin, estreePlugin]]
+  private json: PrettierLang = ['json', [babelPlugin, estreePlugin]]
+  private css: PrettierLang = ['css', [cssPlugin]]
+  private markdown: PrettierLang = ['markdown', [markdownPlugin]]
+  private html: PrettierLang = ['html', [htmlPlugin]]
+  private yaml: PrettierLang = ['yaml', [yamlPlugin]]
+
+  private mapping = new Map<string, PrettierLang>([
+    ['javascript', this.js],
+    ['js', this.js],
+    ['jsx', this.js],
+    ['typescript', this.ts],
+    ['ts', this.ts],
+    ['tsx', this.ts],
+    ['json', this.json],
+    ['css', this.css],
+    ['less', this.css],
+    ['scss', this.css],
+    ['markdown', this.markdown],
+    ['html', this.html],
+    ['yaml', this.yaml],
+  ])
 
   async format(code: string, lang: string, options: PrettierConfig): Promise<string> {
-    const [parser, plugins] = this.getParserAndPlugins(lang)
-    if (!parser) return code
-    return await prettier.format(code, {
+    const prettierLang = this.mapping.get(lang)
+    if (!prettierLang) throw new Error(`No parser and plugins for ${lang}`)
+    const [parser, plugins] = prettierLang
+
+    const formatted = await prettier.format(code, {
       parser,
       plugins,
       trailingComma: 'all',
       bracketSpacing: false,
       ...options,
     })
+
+    return formatted
   }
 
-  private getParserAndPlugins(lang: string): [string, prettier.Plugin[]] {
-    switch (lang) {
-    case 'javascript':
-    case 'js':
-    case 'jsx':
-      return ['babel', [babelPlugin, estreePlugin]]
-    case 'typescript':
-    case 'ts':
-    case 'tsx':
-      return ['typescript', [typescriptPlugin, estreePlugin]]
-    case 'json':
-      return ['json', [babelPlugin, estreePlugin]]
-    case 'css':
-      return ['css', [cssPlugin]]
-    case 'markdown':
-      return ['markdown', [markdownPlugin]]
-    case 'html':
-      return ['html', [htmlPlugin]]
-    case 'less':
-      return ['less', [cssPlugin]]
-    case 'scss':
-      return ['scss', [cssPlugin]]
-    case 'yaml':
-      return ['yaml', [yamlPlugin]]
-    }
-
-    throw new Error(`No parser and plugins for ${lang}`)
+  supports(lang: string): boolean {
+    return this.mapping.has(lang)
   }
 }

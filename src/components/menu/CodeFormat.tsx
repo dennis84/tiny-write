@@ -7,7 +7,7 @@ interface Props {
   onBack: () => void;
 }
 
-export const CodeBlock = (props: Props) => {
+export const CodeFormat = (props: Props) => {
   const [store, ctrl] = useState()
 
   const updatePrettier = (opt: Partial<PrettierConfig>) =>

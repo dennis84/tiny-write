@@ -14,7 +14,7 @@ export const format = async (view: EditorView, lang: string, config: PrettierCon
         from: 0,
         to: view.state.doc.length,
         insert: value.substring(0, value.lastIndexOf('\n')),
-      }
+      },
     })
   } catch (err: any) {
     if (!err.loc?.start?.line) return

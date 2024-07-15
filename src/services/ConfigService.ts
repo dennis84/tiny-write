@@ -384,8 +384,7 @@ export class ConfigService {
 
   private updateEditors() {
     this.store.files.forEach((f) => {
-      if (!f.active) return
-      else if (f.code) this.ctrl.code.updateConfig(f)
+      if (f.code) this.ctrl.code.updateConfig(f)
       else this.ctrl.editor.updateEditorState(f)
     })
   }
