@@ -1,7 +1,7 @@
 import {Show, createEffect, createSignal, onCleanup} from 'solid-js'
 import {css, styled} from 'solid-styled-components'
 import {Mode, useState} from '@/state'
-import {isTauri, isMac, mod, version, VERSION_URL} from '@/env'
+import {isTauri, isMac, mod, shortHash, version, VERSION_URL} from '@/env'
 import * as remote from '@/remote'
 import {Bin} from './Bin'
 import {CodeFormat} from './CodeFormat'
@@ -334,7 +334,7 @@ export const Menu = () => {
               <Link onClick={onOpenInApp}>Open in App ⚡</Link>
             </Show>
             <Link onClick={onVersion}>
-              About Version {version}
+              About Version {version} ({shortHash})
             </Link>
             <Link onClick={() => setShow('help')}>Help</Link>
             <Show when={isTauri()}>

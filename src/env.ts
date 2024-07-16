@@ -1,4 +1,7 @@
 import {version as v} from '../package.json'
+import h from '../.git/refs/heads/main?raw'
+
+export const shortHash = h.substring(0, 7)
 
 export const version = v
 
