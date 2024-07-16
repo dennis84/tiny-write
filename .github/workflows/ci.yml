@@ -10,16 +10,15 @@ on:
 
 jobs:
   install:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
-    - uses: actions/checkout@v3
-    - name: Use Node.js
-      uses: actions/setup-node@v3
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
       with:
-        node-version: 16
+        node-version: 20
     - name: Cache npm
       id: cache-npm
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: |
           ~/.npm
@@ -29,17 +28,16 @@ jobs:
     - run: npm install
 
   test:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     needs: install
     steps:
-    - uses: actions/checkout@v3
-    - name: Use Node.js
-      uses: actions/setup-node@v3
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
       with:
-        node-version: 16
+        node-version: 20
     - name: Cache npm
       id: cache-npm
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: |
           ~/.npm
@@ -50,20 +48,17 @@ jobs:
     - run: npm test
 
   tauri:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     needs: install
     steps:
-    - uses: actions/checkout@v3
-    - run: |
-        sudo apt-get update
-        sudo apt-get install -y webkit2gtk-4.0
-    - name: Use Node.js
-      uses: actions/setup-node@v3
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
       with:
-        node-version: 16
+        node-version: 20
+    - uses: actions-rust-lang/setup-rust-toolchain@v1
     - name: Cache npm
       id: cache-npm
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: |
           ~/.npm
@@ -71,17 +66,13 @@ jobs:
         key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
         restore-keys: ${{ runner.os }}-node-
     - name: Cache cargo
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: |
           ~/.cargo
           ./src-tauri/target
         key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
         restore-keys: ${{ runner.os }}-cargo-
-    - run: npm run tauri build
-    - name: install stable
-      uses: actions-rs/toolchain@v1
-      with:
-        toolchain: stable
+    - run: npx tauri build
     - run: cargo test
       working-directory: ./src-tauri

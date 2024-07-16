@@ -1,5 +1,6 @@
 import {expect, test} from '@playwright/test'
 import {delay, lineTextEq} from '../utils'
+import {v4 as uuidv4} from 'uuid'
 
 test('create room', async ({page, browser}) => {
   await page.goto('/')
@@ -29,7 +30,7 @@ test('create room - existing content file', async ({page, browser}) => {
 })
 
 test('existing room', async ({page, browser}) => {
-  const room = 'test-1'
+  const room = uuidv4()
   await page.goto(`/${room}`)
   await page.waitForSelector('[data-testid="initialized"]')
   await page.locator('.ProseMirror').pressSequentially('Hello', {delay})
@@ -39,11 +40,12 @@ test('existing room', async ({page, browser}) => {
   await lineTextEq(page2, 1, 'Hello')
   await page2.locator('.ProseMirror').pressSequentially('World', {delay})
 
+  await lineTextEq(page2, 1, 'WorldHello')
   await lineTextEq(page, 1, 'WorldHello')
 })
 
 test('existing room - backup', async ({page}) => {
-  const room = 'test-2'
+  const room = uuidv4()
   await page.goto('/')
   await page.locator('.ProseMirror').pressSequentially('123', {delay})
 

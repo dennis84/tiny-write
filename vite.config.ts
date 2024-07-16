@@ -2,6 +2,9 @@ import {fileURLToPath, URL} from 'node:url'
 import {defineConfig} from 'vite'
 import solidPlugin from 'vite-plugin-solid'
 import {visualizer} from 'rollup-plugin-visualizer'
+import {execSync} from 'node:child_process'
+
+const commitHash = execSync('git rev-parse --short HEAD').toString().replace('\n', '')
 
 export default defineConfig({
   plugins: [solidPlugin(), visualizer()],
@@ -10,6 +13,9 @@ export default defineConfig({
   },
   build: {
     target: 'esnext',
+  },
+  define: {
+    __COMMIT_HASH__: JSON.stringify(commitHash),
   },
   resolve: {
     alias: [

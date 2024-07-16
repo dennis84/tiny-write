@@ -1,7 +1,6 @@
 import {onCleanup, createEffect, onMount, Switch, Match, ErrorBoundary} from 'solid-js'
 import {createMutable} from 'solid-js/store'
 import * as tauriWindow from '@tauri-apps/api/window'
-import * as webview from '@tauri-apps/api/webview'
 import {Mode, State, StateContext} from '@/state'
 import {createCtrl} from '@/services'
 import * as remote from '@/remote'
@@ -44,10 +43,10 @@ export const Main = (props: {state: State}) => {
 
   onMount(() => {
     if (!isTauri()) return
-    const unlistenProm = webview.getCurrent().onDragDropEvent(async (event) => {
-      if (event.payload.type === 'dragOver') {
+    const unlistenProm = tauriWindow.getCurrentWindow().onDragDropEvent(async (event) => {
+      if (event.payload.type === 'over') {
         remote.info('🔗 User hovering')
-      } else if (event.payload.type === 'dropped') {
+      } else if (event.payload.type === 'drop') {
         remote.info('🔗 User dropped')
         for (const path of event.payload.paths) {
           const {x, y} = event.payload.position
@@ -63,12 +62,12 @@ export const Main = (props: {state: State}) => {
 
   onMount(() => {
     if (!isTauri()) return
-    const unlistenResizeProm = tauriWindow.getCurrent().onResized(async ({payload}) => {
+    const unlistenResizeProm = tauriWindow.getCurrentWindow().onResized(async ({payload}) => {
       const {width, height} = payload
       await ctrl.app.updateWindow({width, height})
     })
 
-    const unlistenMoveProm = tauriWindow.getCurrent().onMoved(async ({payload}) => {
+    const unlistenMoveProm = tauriWindow.getCurrentWindow().onMoved(async ({payload}) => {
       const {x, y} = payload
       await ctrl.app.updateWindow({x, y})
     })

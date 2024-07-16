@@ -1,4 +1,4 @@
-import {currentMonitor, getCurrent, PhysicalPosition, PhysicalSize} from '@tauri-apps/api/window'
+import {currentMonitor, getCurrentWindow, PhysicalPosition, PhysicalSize} from '@tauri-apps/api/window'
 import {invoke} from '@tauri-apps/api/core'
 import * as clipboard from '@tauri-apps/plugin-clipboard-manager'
 import * as fs from '@tauri-apps/plugin-fs'
@@ -57,22 +57,22 @@ export const getArgs = async (): Promise<Args> => {
 
 export const setAlwaysOnTop = (alwaysOnTop: boolean): Promise<void> => {
   if (!isTauri()) throw Error('Must be run in tauri')
-  return getCurrent().setAlwaysOnTop(alwaysOnTop)
+  return getCurrentWindow().setAlwaysOnTop(alwaysOnTop)
 }
 
 export const quit = (): Promise<void> => {
   if (!isTauri()) throw Error('Must be run in tauri')
-  return getCurrent().close()
+  return getCurrentWindow().close()
 }
 
 export const isFullscreen = (): Promise<boolean> => {
   if (!isTauri()) throw Error('Must be run in tauri')
-  return getCurrent().isFullscreen()
+  return getCurrentWindow().isFullscreen()
 }
 
 export const setFullscreen = (status: boolean): Promise<void> => {
   if (!isTauri()) throw Error('Must be run in tauri')
-  return getCurrent().setFullscreen(status)
+  return getCurrentWindow().setFullscreen(status)
 }
 
 export const copy = async (text: string): Promise<void> => {
@@ -99,7 +99,7 @@ export const getMimeType = async (path: string): Promise<string> => {
 
 export const getFileLastModified = async (path: string): Promise<Date> => {
   if (!isTauri()) throw Error('Must be run in tauri: getFileLastModified')
-  const ts = await invoke('get_file_last_modified', {path}) as string
+  const ts = (await invoke('get_file_last_modified', {path})) as string
   return new Date(ts)
 }
 
@@ -136,7 +136,7 @@ export const toRelativePath = async (path: string, basePath?: string): Promise<s
 
 export const listContents = async (path: string, basePath: string | undefined = undefined) => {
   if (!isTauri()) throw Error('Must be run in tauri: listContents')
-  return await invoke('list_contents', {path, basePath}) as string[]
+  return (await invoke('list_contents', {path, basePath})) as string[]
 }
 
 export const saveFile = async (file: File): Promise<string> => {
@@ -174,21 +174,16 @@ export const updateWindow = async ({width, height, x, y}: Window) => {
 
   // Last size should not be too small, otherwise difficult to enlarge.
   if (width > 10 && height > 10) {
-    await getCurrent().setSize(new PhysicalSize(width, height))
+    await getCurrentWindow().setSize(new PhysicalSize(width, height))
   }
 
-  const size = await getCurrent().outerSize()
+  const size = await getCurrentWindow().outerSize()
   const monitor = await currentMonitor()
   if (!monitor) return
 
   // Last pos must fit in current screen size.
-  if (
-    x >= 0 &&
-    x < monitor.size.width - size.width &&
-    y >= 0 &&
-    y < monitor.size.height - size.height
-  ) {
-    await getCurrent().setPosition(new PhysicalPosition(x, y))
+  if (x >= 0 && x < monitor.size.width - size.width && y >= 0 && y < monitor.size.height - size.height) {
+    await getCurrentWindow().setPosition(new PhysicalPosition(x, y))
   }
 }
 
