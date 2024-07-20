@@ -17,7 +17,7 @@ jobs:
         with:
           node-version: 20
       - run: npm install
-      - run: npm build
+      - run: npm run build
       - uses: cloudflare/pages-action@v1
         with:
           apiToken: ${{ secrets.CLOUDFARE_DEPLOY_KEY }}
