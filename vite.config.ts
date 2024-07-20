@@ -18,8 +18,6 @@ export default defineConfig({
     __COMMIT_HASH__: JSON.stringify(commitHash),
   },
   resolve: {
-    alias: [
-      {find: '@', replacement: fileURLToPath(new URL('./src', import.meta.url))},
-    ]
-  }
+    alias: [{find: '@', replacement: fileURLToPath(new URL('./src', import.meta.url))}],
+  },
 })
