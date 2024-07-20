@@ -5,11 +5,25 @@ on:
     workflows: [CI]
     branches: [main]
     types: [completed]
+  workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     name: Deploy
     steps:
-      - name: Call deploy hook
-        run: curl -X POST https://api.cloudflare.com/client/v4/pages/webhooks/deploy_hooks/${{secrets.CLOUDFARE_DEPLOY_KEY}}
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install
+      - run: npm build
+      - uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFARE_DEPLOY_KEY }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: tiny-write
+          directory: ./dist
+          branch: main
+          workingDirectory: .
+          wranglerVersion: '3'

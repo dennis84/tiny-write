@@ -4,7 +4,8 @@ import solidPlugin from 'vite-plugin-solid'
 import {visualizer} from 'rollup-plugin-visualizer'
 import {execSync} from 'node:child_process'
 
-const commitHash = execSync('git rev-parse --short HEAD').toString().replace('\n', '')
+const commitHash =
+  process.env.COMMIT_HASH ?? execSync('git rev-parse --short HEAD').toString().replace('\n', '')
 
 export default defineConfig({
   plugins: [solidPlugin(), visualizer()],
@@ -18,8 +19,6 @@ export default defineConfig({
     __COMMIT_HASH__: JSON.stringify(commitHash),
   },
   resolve: {
-    alias: [
-      {find: '@', replacement: fileURLToPath(new URL('./src', import.meta.url))},
-    ]
-  }
+    alias: [{find: '@', replacement: fileURLToPath(new URL('./src', import.meta.url))}],
+  },
 })
