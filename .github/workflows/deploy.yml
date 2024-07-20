@@ -20,7 +20,7 @@ jobs:
       - run: npm run build
       - uses: cloudflare/pages-action@v1
         with:
-          apiToken: ${{ secrets.CLOUDFARE_DEPLOY_KEY }}
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           projectName: tiny-write
           directory: ./dist
