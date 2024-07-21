@@ -77,9 +77,6 @@ export const Canvas = () => {
   }
 
   onMount(() => {
-    const currentCanvas = ctrl.canvas.currentCanvas
-    if (!currentCanvas) return
-
     ctrl.canvas.canvasRef = ref
     const preventGesture = (e: TouchEvent) => e.preventDefault()
     // @ts-expect-error ???
@@ -100,6 +97,9 @@ export const Canvas = () => {
         if (target.closest('.ProseMirror') || target.closest('.cm-editor')) {
           return false
         }
+
+        const currentCanvas = ctrl.canvas.currentCanvas
+        if (!currentCanvas) return
 
         const {zoom, point: [x, y]} = currentCanvas.camera
         ctrl.canvas.updateCameraPoint([x - dx / zoom , y - dy / zoom])

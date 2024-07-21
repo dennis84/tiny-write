@@ -1,6 +1,6 @@
 import {version as v} from '../package.json'
 
-export const shortHash = window.__COMMIT_HASH__
+export const shortHash = __COMMIT_HASH__
 
 export const version = v
 
