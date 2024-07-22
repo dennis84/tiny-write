@@ -27,7 +27,6 @@ export class LangInputEditor {
       doc: this.props.doc,
       parent: this.props.parent,
       extensions: [
-        //tooltips({parent: this.props.codeBlock.ctrl.app.layoutRef}),
         props.theme,
         drawSelection(),
         crosshairCursor(),

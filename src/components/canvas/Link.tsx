@@ -16,7 +16,6 @@ const LinkSvg = styled('svg')`
   transform-origin: top left;
   overflow: visible;
   pointer-events: none;
-  z-index: ${(props: any) => zIndex(props.index, IndexType.LINK)};
 `
 
 const Path = styled('path')`
@@ -134,7 +133,9 @@ export const Link = ({element}: {element: CanvasLinkElement}) => {
     <LinkSvg
       version="1.1"
       xmlns="http://www.w3.org/2000/svg"
-      index={index()}
+      style={{
+        'z-index': zIndex(index(), IndexType.LINK),
+      }}
     >
       <Path
         ref={pathRef}

@@ -13,12 +13,7 @@ const CanvasVideo = styled('video')(
     user-select: none;
     pointer-events: none;
     -webkit-user-select: none;
-    ${
-      props.selected &&
-      `
-      box-shadow: 0 0 0 5px var(--border);
-    `
-    }
+    ${props.selected && `box-shadow: 0 0 0 5px var(--border);`}
   `,
 )
 
@@ -43,7 +38,12 @@ export const Video = ({element, index}: {element: CanvasVideoElement; index: num
 
   return (
     <>
-      <Bounds selection={createSelection()} selected={element.selected} onSelect={onSelect} index={index} />
+      <Bounds
+        selection={createSelection()}
+        selected={element.selected}
+        onSelect={onSelect}
+        index={index}
+      />
       <LinkHandles
         id={element.id}
         x={element.x}

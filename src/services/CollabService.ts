@@ -101,12 +101,10 @@ export class CollabService {
   }
 
   apply(file: File) {
-    if (file.ydoc) {
-      const subdoc = this.getSubdoc(file.id)
-      Y.applyUpdate(subdoc, file.ydoc)
-      const type = file.code ? subdoc.getText(file.id) : subdoc.getXmlFragment(file.id)
-      this.store.collab?.undoManager?.addToScope([type])
-    }
+    const subdoc = this.getSubdoc(file.id)
+    Y.applyUpdate(subdoc, file.ydoc)
+    const type = file.code ? subdoc.getText(file.id) : subdoc.getXmlFragment(file.id)
+    this.store.collab?.undoManager?.addToScope([type])
   }
 
   init() {

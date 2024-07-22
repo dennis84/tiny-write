@@ -7,16 +7,16 @@ import {LinkHandles} from './LinkHandles'
 import {IndexType, zIndex} from '@/utils/z-index'
 import {isTauri} from '@/env'
 
-const CanvasImage = styled('img')((props: any) => `
-  position: absolute;
-  border-radius: var(--border-radius);
-  user-select: none;
-  -webkit-user-select: none;
-  pointer-events: none;
-  ${props.selected && `
-    box-shadow: 0 0 0 5px var(--border);
-  `}
-`)
+const CanvasImage = styled('img')(
+  (props: any) => `
+    position: absolute;
+    border-radius: var(--border-radius);
+    user-select: none;
+    -webkit-user-select: none;
+    pointer-events: none;
+    ${props.selected && `box-shadow: 0 0 0 5px var(--border);`}
+  `,
+)
 
 export const Image = ({element, index}: {element: CanvasImageElement; index: number}) => {
   let imageRef!: HTMLImageElement
@@ -43,7 +43,12 @@ export const Image = ({element, index}: {element: CanvasImageElement; index: num
 
   return (
     <>
-      <Bounds selection={createSelection()} selected={element.selected} onSelect={onSelect} index={index} />
+      <Bounds
+        selection={createSelection()}
+        selected={element.selected}
+        onSelect={onSelect}
+        index={index}
+      />
       <LinkHandles
         id={element.id}
         x={element.x}
