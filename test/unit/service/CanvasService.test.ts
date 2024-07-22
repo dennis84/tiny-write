@@ -395,7 +395,7 @@ test('newCanvas', async () => {
 
   // old editor views are destroyed
   expect(store.files[0]?.editorView).toBeUndefined()
-  expect(editorView.destroy.mock.calls.length).toBe(1)
+  expect(vi.mocked(editorView).destroy.mock.calls.length).toBe(1)
 
   // Add another canvas
   await service.newCanvas()
@@ -454,7 +454,7 @@ test('open', async () => {
   expect(DB.updateCanvas).toHaveReturnedTimes(2)
 
   expect(store.files[0].editorView).toBeUndefined()
-  expect(editorView.destroy.mock.calls.length).toBe(1)
+  expect(vi.mocked(editorView).destroy.mock.calls.length).toBe(1)
 })
 
 test('newFile', async () => {
@@ -792,7 +792,7 @@ test('selectBox - active editor', () => {
     ],
   }))
 
-  ctrl.file.findFileById.mockReturnValue({
+  vi.mocked(ctrl.file.findFileById).mockReturnValue({
     id: '1',
     ydoc: createYUpdate('1', []),
     versions: [],

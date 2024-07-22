@@ -384,8 +384,7 @@ test('startCollab - join existing file', async () => {
   await ctrl.app.init()
   ctrl.editor.renderEditor(ctrl.file.currentFile!.id, target)
 
-  // Not sure if updateText should be called.
-  expect(getText(ctrl)).toBe('')
+  expect(getText(ctrl)).toBe('Test 2')
   expect(ctrl.file.currentFile?.id).toBe('2')
   expect(store.files.length).toBe(2)
   expect(store.collab?.started).toBe(true)

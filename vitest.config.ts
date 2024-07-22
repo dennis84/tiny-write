@@ -16,6 +16,9 @@ export default defineConfig({
         inline: ['@tldraw/editor']
       }
     },
+    setupFiles: [
+      './test/unit/setup.ts',
+    ]
   },
   resolve: {
     alias: [
