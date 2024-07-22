@@ -273,6 +273,8 @@ export class CanvasService {
         } else if (file?.codeEditorView) {
           file.codeEditorView.dispatch({selection: {anchor: 0}})
         }
+
+        this.ctrl.file.setActive(el.id, false)
       }
 
       this.updateCanvasElement(el.id, {selected: false, active: false})

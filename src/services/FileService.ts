@@ -161,12 +161,12 @@ export class FileService {
     return ydoc
   }
 
-  setActive(id: string) {
+  setActive(id: string, active = true) {
     for (let i = 0; i < this.store.files.length; i++) {
       const cur = this.store.files[i]
       if (cur.id === id) {
-        this.setState('files', i, 'active', true)
-      } else if (cur.active){
+        this.setState('files', i, 'active', active)
+      } else if (cur.active) {
         this.setState('files', i, 'active', false)
       }
     }

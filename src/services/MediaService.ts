@@ -20,7 +20,7 @@ export class MediaService {
       this.insert(currentFile.editorView, data, x, y)
     } else if (this.store.mode === Mode.Canvas) {
       const file = this.ctrl.file.currentFile
-      if (file?.editorView) {
+      if (file?.active && file.editorView) {
         this.insert(file.editorView, data, x, y)
       } else {
         const img = await this.loadImage(data)
