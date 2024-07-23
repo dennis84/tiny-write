@@ -55,7 +55,7 @@ test('deleteFile', async () => {
     ],
   }))
 
-  vi.mocked(ctrl.collab.getSubdoc).mockReturnValue(subdoc)
+  ctrl.collab.getSubdoc.mockReturnValue(subdoc)
 
   const service = new FileService(ctrl, store, setState)
   setState('collab', {ydoc})

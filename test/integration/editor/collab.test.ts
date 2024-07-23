@@ -31,13 +31,18 @@ test('create room - existing content file', async ({page, browser}) => {
 
 test('existing room', async ({page, browser}) => {
   const room = uuidv4()
-  await page.goto(`/${room}`)
+  await page.goto(`/editor/${room}`)
   await page.waitForSelector('[data-testid="initialized"]')
   await page.locator('.ProseMirror').pressSequentially('Hello', {delay})
 
   const page2 = await browser.newPage()
-  await page2.goto(`/${room}`)
+  await page2.goto(`/editor/${room}`)
   await lineTextEq(page2, 1, 'Hello')
+
+  // make sure that cursor is at the start position
+  await page2.locator('.ProseMirror').focus()
+  await page2.keyboard.press(`Control+ArrowLeft`)
+
   await page2.locator('.ProseMirror').pressSequentially('World', {delay})
 
   await lineTextEq(page2, 1, 'WorldHello')
@@ -49,7 +54,7 @@ test('existing room - backup', async ({page}) => {
   await page.goto('/')
   await page.locator('.ProseMirror').pressSequentially('123', {delay})
 
-  await page.goto(`/${room}`)
+  await page.goto(`/editor/${room}`)
   await page.waitForSelector('[data-testid="initialized"]')
   await page.locator('.ProseMirror').pressSequentially('Hello', {delay})
   await lineTextEq(page, 1, 'Hello')
