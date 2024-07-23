@@ -59,6 +59,10 @@ export class CanvasCollabService {
             if (event.path.length > 0) {
               const elementId = event.path[0].toString().substring(PREFIX.length)
               this.canvasService.updateCanvasElement(elementId, {[key]: event.target.get(key)})
+            } else {
+              const elementId = key.substring(PREFIX.length)
+              const data = event.target.get(key).toJSON()
+              this.canvasService.updateCanvasElement(elementId, data)
             }
           } else if (action.action === 'add') {
             const element = event.target.get(key).toJSON()
