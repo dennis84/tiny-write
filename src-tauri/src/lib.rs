@@ -1,12 +1,12 @@
-use log::{info, debug};
+use log::{debug, info};
 use tauri::Manager;
 use tauri_plugin_cli::CliExt;
 
 mod cmd;
-mod pathutil;
+mod install_cli;
 mod logger;
 mod menu;
-mod install_cli;
+mod pathutil;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -28,7 +28,9 @@ pub fn run() {
 
             match handle.cli().matches() {
                 Ok(matches) => {
-                    let verbose = matches.args.get("verbose")
+                    let verbose = matches
+                        .args
+                        .get("verbose")
                         .map(|a| a.value.as_bool().unwrap_or(false))
                         .unwrap_or(false);
                     logger::register_logger(handle, verbose)?;

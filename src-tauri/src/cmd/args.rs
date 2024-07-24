@@ -1,10 +1,10 @@
-use crate::pathutil::{dirname, path_buf_to_string, resolve_path, to_relative_path, expand_tilde};
+use crate::pathutil::{dirname, expand_tilde, path_buf_to_string, resolve_path, to_relative_path};
+use anyhow::Result;
+use base64::{engine::general_purpose, Engine as _};
 use std::collections::HashMap;
 use std::path::Path;
 use std::{env, fs};
 use url::Url;
-use base64::{engine::general_purpose, Engine as _};
-use anyhow::Result;
 
 #[derive(Clone, Debug, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -72,7 +72,14 @@ pub fn create_args(source: String) -> Args {
         cwd = get_cwd().ok();
     }
 
-    Args { cwd, file, new_file, dir, room, text }
+    Args {
+        cwd,
+        file,
+        new_file,
+        dir,
+        room,
+        text,
+    }
 }
 
 fn get_cwd() -> Result<String> {
@@ -103,8 +110,7 @@ fn list_text_files(p: &Path) -> Result<Vec<String>> {
 
         if let Some(mime) = m.first_raw() {
             if mime.ends_with("/markdown") || mime.ends_with("/plain") {
-                let relative_path =
-                    to_relative_path(&path, None).and_then(path_buf_to_string);
+                let relative_path = to_relative_path(&path, None).and_then(path_buf_to_string);
                 if let Ok(p) = relative_path {
                     files.push(p);
                 }

@@ -1,8 +1,8 @@
+use anyhow::{anyhow, Result};
 use std::env;
 use std::ffi::OsStr;
 use std::io::{Error, ErrorKind};
 use std::path::{Path, PathBuf};
-use anyhow::{Result, anyhow};
 
 pub fn to_absolute_path<P: AsRef<Path>>(path: P, base_path: Option<P>) -> Result<PathBuf> {
     let path = path.as_ref().to_path_buf();
@@ -29,9 +29,7 @@ pub fn dirname<P: AsRef<Path>>(p: P) -> Result<PathBuf> {
         return Ok(p);
     }
 
-    let p = p.parent()
-        .ok_or(anyhow!("No parent dir"))?
-        .to_path_buf();
+    let p = p.parent().ok_or(anyhow!("No parent dir"))?.to_path_buf();
     Ok(p)
 }
 

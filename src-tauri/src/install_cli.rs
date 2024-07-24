@@ -1,8 +1,8 @@
 use std::path::{Path, PathBuf};
 
-use tauri::{AppHandle, Runtime, Manager};
 use anyhow::{anyhow, Result};
 use std::fs;
+use tauri::{AppHandle, Manager, Runtime};
 
 pub fn install_cli<R: Runtime>(app: &AppHandle<R>) -> Result<PathBuf> {
     let cli_path = tauri::process::current_binary(&app.env()).unwrap();

@@ -1,9 +1,9 @@
 use crate::pathutil::{self as pu};
+use anyhow::Result;
 use globset::Glob;
 use ignore::WalkBuilder;
 use log::info;
 use std::path::PathBuf;
-use anyhow::Result;
 
 #[tauri::command]
 pub fn list_contents(path: String, base_path: Option<String>) -> Result<Vec<String>, String> {
@@ -119,7 +119,9 @@ mod tests {
 
         assert!(!list_contents("~/".to_string(), None).unwrap().is_empty());
 
-        assert!(!list_contents("./icons/".to_string(), None).unwrap().is_empty());
+        assert!(!list_contents("./icons/".to_string(), None)
+            .unwrap()
+            .is_empty());
 
         assert!(!list_contents("".to_string(), None).unwrap().is_empty());
 
