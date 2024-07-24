@@ -5,20 +5,20 @@ import {isMac, isTauri, mod} from '@/env'
 import {Keys, Label, Link, Sub} from './Menu'
 
 export const SubmenuFileEdit = () => {
-  const [store, ctrl] = useState()
+  const [, ctrl] = useState()
   const [lastAction, setLastAction] = createSignal<string | undefined>()
 
   const modKey = isMac ? '⌘' : mod
 
   const onUndo = () => {
     const currentFile = ctrl.file.currentFile
-    store.collab?.undoManager.undo()
+    ctrl.collab.undoManager?.undo()
     currentFile?.editorView?.focus()
   }
 
   const onRedo = () => {
     const currentFile = ctrl.file.currentFile
-    store.collab?.undoManager.undo()
+    ctrl.collab.undoManager?.undo()
     currentFile?.editorView?.focus()
   }
 

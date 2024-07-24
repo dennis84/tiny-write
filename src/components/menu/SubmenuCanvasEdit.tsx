@@ -3,16 +3,16 @@ import {isMac, mod} from '@/env'
 import {Keys, Label, Link, Sub} from './Menu'
 
 export const SubmenuCanvasEdit = () => {
-  const [store] = useState()
+  const [, ctrl] = useState()
 
   const modKey = isMac ? '⌘' : mod
 
   const onUndo = () => {
-    store.collab?.undoManager?.undo()
+    ctrl.collab?.undoManager?.undo()
   }
 
   const onRedo = () => {
-    store.collab?.undoManager?.redo()
+    ctrl.collab?.undoManager?.redo()
   }
 
   return (

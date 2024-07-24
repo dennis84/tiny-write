@@ -3,6 +3,7 @@ import * as Y from 'yjs'
 import {debounce} from 'ts-debounce'
 import {State} from '@/state'
 import {CanvasService} from './CanvasService'
+import {CollabService} from './CollabService'
 
 type Elements = Y.Map<Y.Map<any>>
 
@@ -17,11 +18,12 @@ export class CanvasCollabService {
   updateElementThrottled = debounce((el) => this.updateElement(el), 20, {maxWait: 20})
 
   constructor(
+    private collabService: CollabService,
     private canvasService: CanvasService,
     private store: Store<State>,
   ) {}
 
-  get ydoc(): Y.Doc | undefined {
+  private get ydoc(): Y.Doc | undefined {
     return this.store.collab?.ydoc
   }
 
@@ -40,7 +42,7 @@ export class CanvasCollabService {
       this.elements?.set(PREFIX + element.id, el)
     })
 
-    this.store.collab?.undoManager?.addToScope(this.elements!)
+    this.collabService.undoManager?.addToScope(this.elements!)
 
     this.elements?.observeDeep(async (events, tr) => {
       if (this.ydoc?.clientID === tr.origin) return

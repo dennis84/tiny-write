@@ -243,7 +243,6 @@ export class AppService {
         this.ctrl.canvasCollab.init()
       }
 
-      this.ctrl.collab.init()
       this.ctrl.tree.create()
     } catch(e: any) {
       const error = this.createError(e)

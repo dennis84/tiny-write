@@ -61,12 +61,12 @@ export const Keymap = () => {
   }
 
   const onUndo = () => {
-    store.collab?.undoManager?.undo()
+    ctrl.collab.undoManager?.undo()
     return true
   }
 
   const onRedo = () => {
-    store.collab?.undoManager?.redo()
+    ctrl.collab.undoManager?.redo()
     return true
   }
 

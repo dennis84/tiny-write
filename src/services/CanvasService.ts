@@ -306,7 +306,6 @@ export class CanvasService {
       mode: Mode.Canvas,
     })
 
-    this.ctrl.collab.init()
     await this.saveCanvas()
     remote.info('New canvas created')
     await DB.setMeta({mode: state.mode})
@@ -357,7 +356,6 @@ export class CanvasService {
     const collab = CollabService.create(id, Mode.Canvas, false)
 
     this.setState({...state, collab})
-    this.ctrl.collab.init()
 
     if (prevCanvas) {
       await this.saveCanvas({...prevCanvas, active: false})

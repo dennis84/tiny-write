@@ -13,6 +13,7 @@ import {ConfigService} from './ConfigService'
 
 export class CollabService {
   private providers = new Map<string, WebsocketProvider>()
+  private _undoManager: YMultiDocUndoManager | undefined
 
   constructor(
     private ctrl: Ctrl,
@@ -29,7 +30,7 @@ export class CollabService {
   }
 
   get undoManager() {
-    return this.store.collab?.undoManager
+    return this._undoManager
   }
 
   get room(): string {
@@ -60,12 +61,6 @@ export class CollabService {
     const permanentUserData = new Y.PermanentUserData(ydoc)
     const provider = new WebsocketProvider(COLLAB_URL, room, ydoc, {connect, WebSocketPolyfill})
 
-    const undoManager = new YMultiDocUndoManager([], {
-      trackedOrigins: new Set([ySyncPluginKey, ydoc.clientID]),
-      deleteFilter: (item: any) => defaultDeleteFilter(item, defaultProtectedNodes),
-      captureTransaction: (tr: any) => tr.meta.get('addToHistory') !== false,
-    })
-
     const xs = Object.values(ConfigService.themes)
     const index = Math.floor(Math.random() * xs.length)
     const username = uniqueNamesGenerator({
@@ -88,7 +83,6 @@ export class CollabService {
       ydoc,
       provider,
       permanentUserData,
-      undoManager,
     }
   }
 
@@ -100,17 +94,16 @@ export class CollabService {
     return TauriWebSocket as any
   }
 
-  apply(file: File) {
-    const subdoc = this.getSubdoc(file.id)
-    Y.applyUpdate(subdoc, file.ydoc)
-    const type = file.code ? subdoc.getText(file.id) : subdoc.getXmlFragment(file.id)
-    this.store.collab?.undoManager?.addToScope([type])
-  }
-
-  init() {
+  init(file: File) {
     if (!this.provider) {
       throw new Error('Collab not created in state')
     }
+
+    this._undoManager = new YMultiDocUndoManager([], {
+      trackedOrigins: new Set([ySyncPluginKey, this.store.collab?.ydoc.clientID]),
+      deleteFilter: (item: any) => defaultDeleteFilter(item, defaultProtectedNodes),
+      captureTransaction: (tr: any) => tr.meta.get('addToHistory') !== false,
+    })
 
     this.provider.on('connection-error', () => {
       remote.error('🌐 Connection error')
@@ -133,6 +126,11 @@ export class CollabService {
     this.store.collab?.ydoc.on('subdocs', ({loaded}) => {
       loaded.forEach((subdoc) => this.getSubdoc(subdoc.guid))
     })
+
+    const subdoc = this.getSubdoc(file.id)
+    if (!file.path) Y.applyUpdate(subdoc, file.ydoc)
+    const type = file.code ? subdoc.getText(file.id) : subdoc.getXmlFragment(file.id)
+    this._undoManager.addToScope([type])
   }
 
   startCollab() {

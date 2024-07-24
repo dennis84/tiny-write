@@ -44,7 +44,7 @@ export class Ctrl {
     this.collab = new CollabService(this, store, setState)
     this.canvas = new CanvasService(this, store, setState)
     this.tree = new TreeService(this, store, setState)
-    this.canvasCollab = new CanvasCollabService(this.canvas, store)
+    this.canvasCollab = new CanvasCollabService(this.collab, this.canvas, store)
     this.media = new MediaService(this, store)
     this.select = new SelectService()
     this.code = new CodeService(this, store, setState)

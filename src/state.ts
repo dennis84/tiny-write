@@ -5,7 +5,6 @@ import {EditorView as CmEditorView} from '@codemirror/view'
 import * as Y from 'yjs'
 import {WebsocketProvider} from 'y-websocket'
 import {Ctrl} from '@/services'
-import {UndoManager} from './services/CollabService'
 
 export interface Args {
   cwd?: string;
@@ -53,7 +52,6 @@ export interface Collab {
   provider: WebsocketProvider;
   permanentUserData: Y.PermanentUserData;
   ydoc: Y.Doc;
-  undoManager: UndoManager;
   snapshot?: Y.Doc;
   error?: boolean;
 }

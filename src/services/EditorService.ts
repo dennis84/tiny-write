@@ -95,10 +95,7 @@ export class EditorService {
       this.saveEditor()
     }
 
-    if (!file?.path) {
-      this.ctrl.collab.apply(file)
-    }
-
+    this.ctrl.collab.init(file)
     this.updateEditorState(file, node)
   }
 
@@ -124,7 +121,6 @@ export class EditorService {
 
     update.collab = CollabService.create(file.id, state.mode, false)
     this.setState(update)
-    this.ctrl.collab.init()
   }
 
   async openFileByPath(path: string) {
@@ -166,7 +162,6 @@ export class EditorService {
       const update = await FileService.activateFile(state, file)
       update.collab = CollabService.create(file.id, update.mode, false)
       this.setState(update)
-      this.ctrl.collab.init()
       this.ctrl.tree.create()
       if (text) this.updateText(text)
     } catch (error: any) {

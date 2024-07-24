@@ -50,7 +50,6 @@ export class CodeService {
       const update = await FileService.activateFile(state, file)
       update.collab = CollabService.create(file.id, update.mode, false)
       this.setState(update)
-      this.ctrl.collab.init()
       if (text) this.updateText(text)
     } catch (error: any) {
       this.ctrl.app.setError({error, fileId: id})
@@ -67,10 +66,7 @@ export class CodeService {
       this.saveEditor()
     }
 
-    if (!file?.path) {
-      this.ctrl.collab.apply(file)
-    }
-
+    this.ctrl.collab.init(file)
     this.updateEditorState(file, el)
   }
 
@@ -113,9 +109,7 @@ export class CodeService {
       lang: file.codeLang,
       extensions: [
         EditorView.updateListener.of(() => this.onUpdate()),
-        yCollab(type, this.store.collab?.provider.awareness, {
-          undoManager: this.store.collab?.undoManager ?? false,
-        }),
+        yCollab(type, this.store.collab?.provider.awareness, {undoManager: false}),
       ],
     })
 

@@ -4,7 +4,7 @@ import {createStore} from 'solid-js/store'
 import {Mode, createState} from '@/state'
 import {Ctrl, createCtrl} from '@/services'
 import {CollabService} from '@/services/CollabService'
-import {getText, insertText} from '../util/prosemirror-util'
+import {createYUpdate, getText, insertText} from '../util/prosemirror-util'
 
 vi.mock('@/db', () => ({DB: mock()}))
 
@@ -27,9 +27,10 @@ test('init', () => {
   const [store, setState] = createStore(createState({collab}))
 
   const service = new CollabService(ctrl, store, setState)
+  const file = {id: '1', ydoc: createYUpdate('1', []), versions: []}
 
   // register events
-  service.init()
+  service.init(file)
   collab.ydoc.getMap('config').set('font', 'test')
   expect(store.config.font).toBe('test')
 
@@ -42,7 +43,7 @@ test('init', () => {
   expect(store.config.font).toBe('test')
 
   // after init
-  service.init()
+  service.init(file)
   collab.ydoc.getMap('config').set('font', 'test123')
   expect(store.config.font).toBe('test123')
 })
@@ -60,7 +61,7 @@ test('undoManager', async () => {
 
   insertText(ctrl, 'Test')
 
-  ctrl.collab.undoManager.stopCapturing()
+  ctrl.collab.undoManager?.stopCapturing()
 
   insertText(ctrl, '123')
 
