@@ -4,12 +4,14 @@ import {createStore} from 'solid-js/store'
 import {Mode, createState} from '@/state'
 import {Ctrl, createCtrl} from '@/services'
 import {CollabService} from '@/services/CollabService'
-import {createYUpdate, getText, insertText} from '../util/prosemirror-util'
+import * as pmUtil from '../util/prosemirror-util'
+import * as cmUtil from '../util/codemirror-util'
 
 vi.mock('@/db', () => ({DB: mock()}))
 
 vi.stubGlobal('matchMedia', vi.fn(() => ({
-  matchMedia: () => ''
+  matchMedia: () => '',
+  addEventListener: () => undefined,
 })))
 
 const ctrl = mockDeep<Ctrl>()
@@ -27,7 +29,7 @@ test('init', () => {
   const [store, setState] = createStore(createState({collab}))
 
   const service = new CollabService(ctrl, store, setState)
-  const file = {id: '1', ydoc: createYUpdate('1', []), versions: []}
+  const file = {id: '1', ydoc: pmUtil.createYUpdate('1', []), versions: []}
 
   // register events
   service.init(file)
@@ -48,7 +50,7 @@ test('init', () => {
   expect(store.config.font).toBe('test123')
 })
 
-test('undoManager', async () => {
+test('undoManager - text', async () => {
   const {ctrl, store} = createCtrl(createState())
   const target = document.createElement('div')
   await ctrl.app.init()
@@ -57,17 +59,46 @@ test('undoManager', async () => {
   ctrl.editor.renderEditor(currentFileId!, target)
 
   expect(store.files.length).toBe(1)
-  expect(getText(ctrl)).toBe('')
+  expect(pmUtil.getText(ctrl)).toBe('')
 
-  insertText(ctrl, 'Test')
+  pmUtil.insertText(ctrl, 'Test')
 
   ctrl.collab.undoManager?.stopCapturing()
 
-  insertText(ctrl, '123')
+  pmUtil.insertText(ctrl, '123')
 
-  expect(getText(ctrl)).toBe('Test123')
+  expect(pmUtil.getText(ctrl)).toBe('Test123')
 
   ctrl.collab.undoManager?.undo()
 
-  expect(getText(ctrl)).toBe('Test')
+  expect(pmUtil.getText(ctrl)).toBe('Test')
+})
+
+test('undoManager - code', async () => {
+  const {ctrl, store} = createCtrl(createState({
+    files: [
+      {id: '1', ydoc: cmUtil.createYUpdate('1', ''), active: true, versions: [], code: true},
+    ],
+    mode: Mode.Code,
+  }))
+
+  const target = document.createElement('div')
+  await ctrl.app.init()
+
+  const currentFileId = ctrl.file.currentFile?.id
+  ctrl.code.renderEditor(currentFileId!, target)
+  expect(store.files.length).toBe(1)
+
+  expect(ctrl.file.currentFile?.codeEditorView?.state.doc.toString()).toBe('')
+
+  ctrl.file.currentFile?.codeEditorView?.dispatch({changes: {from: 0, insert: 'Test'}})
+  ctrl.collab.undoManager?.stopCapturing()
+
+  ctrl.file.currentFile?.codeEditorView?.dispatch({changes: {from: 4, insert: '123'}})
+
+  expect(ctrl.file.currentFile?.codeEditorView?.state.doc.toString()).toBe('Test123')
+
+  ctrl.collab.undoManager?.undo()
+
+  expect(ctrl.file.currentFile?.codeEditorView?.state.doc.toString()).toBe('Test')
 })

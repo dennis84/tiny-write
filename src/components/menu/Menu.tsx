@@ -8,11 +8,10 @@ import {CodeFormat} from './CodeFormat'
 import {Appearance} from './Appearance'
 import {ChangeSet} from './ChangeSet'
 import {Help} from './Help'
-import {SubmenuFile} from './SubmenuFile'
+import {SubmenuEditor} from './SubmenuEditor'
 import {SubmenuCanvas} from './SubmenuCanvas'
-import {SubmenuFileEdit} from './SubmenuFileEdit'
+import {SubmenuEdit} from './SubmenuEdit'
 import {SubmenuCollab} from './SubmenuCollab'
-import {SubmenuCanvasEdit} from './SubmenuCanvasEdit'
 import {SubmenuTree} from './SubmenuTree'
 import {SubmenuCode} from './SubmenuCode'
 
@@ -277,24 +276,18 @@ export const Menu = () => {
           <SubmenuTree onBin={() => setShow('bin')} maybeHide={maybeHide} />
           {/* Submenu File */}
           <Show when={store.mode === Mode.Editor}>
-            <SubmenuFile maybeHide={maybeHide} />
+            <SubmenuEditor maybeHide={maybeHide} />
           </Show>
           {/* Submenu Canvas */}
           <Show when={store.mode === Mode.Canvas}>
             <SubmenuCanvas maybeHide={maybeHide} />
           </Show>
-          {/* Submenu File Edit */}
-          <Show when={store.mode === Mode.Editor}>
-            <SubmenuFileEdit />
-          </Show>
-          {/* Submenu Canvas Edit */}
-          <Show when={store.mode === Mode.Canvas}>
-            <SubmenuCanvasEdit />
-          </Show>
           {/* Submenu Code */}
           <Show when={store.mode === Mode.Code}>
             <SubmenuCode />
           </Show>
+          {/* undo, redo, copy, paste, ... */}
+          <SubmenuEdit />
           {/* Submenu View */}
           <Label>View</Label>
           <Sub data-tauri-drag-region="true">

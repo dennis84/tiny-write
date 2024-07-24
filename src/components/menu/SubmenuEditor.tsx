@@ -4,7 +4,7 @@ import {useState} from '@/state'
 import * as remote from '@/remote'
 import {Keys, Label, Link, Sub} from './Menu'
 
-export const SubmenuFile = ({maybeHide}: {maybeHide: () => void}) => {
+export const SubmenuEditor = ({maybeHide}: {maybeHide: () => void}) => {
   const [, ctrl] = useState()
   const [relativePath, setRelativePath] = createSignal('')
 

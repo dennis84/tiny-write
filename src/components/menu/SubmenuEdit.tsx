@@ -1,25 +1,21 @@
-import {createEffect, createSignal, onCleanup} from 'solid-js'
+import {createEffect, createSignal, onCleanup, Show} from 'solid-js'
 import {useState} from '@/state'
 import * as remote from '@/remote'
 import {isMac, isTauri, mod} from '@/env'
 import {Keys, Label, Link, Sub} from './Menu'
 
-export const SubmenuFileEdit = () => {
+export const SubmenuEdit = () => {
   const [, ctrl] = useState()
   const [lastAction, setLastAction] = createSignal<string | undefined>()
 
   const modKey = isMac ? '⌘' : mod
 
   const onUndo = () => {
-    const currentFile = ctrl.file.currentFile
     ctrl.collab.undoManager?.undo()
-    currentFile?.editorView?.focus()
   }
 
   const onRedo = () => {
-    const currentFile = ctrl.file.currentFile
-    ctrl.collab.undoManager?.undo()
-    currentFile?.editorView?.focus()
+    ctrl.collab.undoManager?.redo()
   }
 
   const cmd = (cmd: string) => {
@@ -62,9 +58,11 @@ export const SubmenuFileEdit = () => {
         <Link onClick={() => cmd('copy')}>
           Copy {lastAction() === 'copy' && '📋'} <Keys keys={[modKey, 'c']} />
         </Link>
-        <Link onClick={onCopyAllAsMd}>
-          Copy all as markdown {lastAction() === 'copy-md' && '📋'}
-        </Link>
+        <Show when={ctrl.file.currentFile?.editorView}>
+          <Link onClick={onCopyAllAsMd}>
+            Copy all as markdown {lastAction() === 'copy-md' && '📋'}
+          </Link>
+        </Show>
       </Sub>
     </>
   )

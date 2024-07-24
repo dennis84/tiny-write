@@ -1,6 +1,7 @@
 import {SetStoreFunction, Store} from 'solid-js/store'
 import * as Y from 'yjs'
 import {yXmlFragmentToProseMirrorRootNode} from 'y-prosemirror'
+import {ySyncFacet} from 'y-codemirror.next'
 import {v4 as uuidv4} from 'uuid'
 import {File, FileText, Mode, ServiceError, State, isLinkElement} from '@/state'
 import * as remote from '@/remote'
@@ -206,7 +207,12 @@ export class FileService {
     const file = id ? this.findFileById(id) : this.currentFile
     if (!file) return
     file.editorView?.destroy()
-    file.codeEditorView?.destroy()
+
+    if (file.codeEditorView) {
+      this.ctrl.collab.undoManager?.removeTrackedOrigin(file.codeEditorView.state.facet(ySyncFacet))
+      file.codeEditorView?.destroy()
+    }
+
     const index = this.store.files.findIndex((f) => f.id === file.id)
     if (index === -1) return
     this.setState('files', index, {editorView: undefined, codeEditorView: undefined})

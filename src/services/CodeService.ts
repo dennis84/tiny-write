@@ -1,6 +1,6 @@
 import {SetStoreFunction, Store, unwrap} from 'solid-js/store'
 import {EditorView} from '@codemirror/view'
-import {yCollab} from 'y-codemirror.next'
+import {yCollab, ySyncFacet} from 'y-codemirror.next'
 import {File, State} from '@/state'
 import * as remote from '@/remote'
 import {format} from '@/codemirror/prettify'
@@ -112,6 +112,8 @@ export class CodeService {
         yCollab(type, this.store.collab?.provider.awareness, {undoManager: false}),
       ],
     })
+
+    this.ctrl.collab.undoManager?.addTrackedOrigin(editor.editorView.state.facet(ySyncFacet))
 
     const fileIndex = this.store.files.findIndex((f) => f.id === file.id)
     this.setState('files', fileIndex, 'codeEditorView', editor.editorView)
