@@ -16,9 +16,7 @@ pub fn install_cli<R: Runtime>(app: &AppHandle<R>) -> Result<PathBuf> {
 
     // If the symlink is not there or is outdated, first try replacing it
     // without escalating.
-    fs::remove_file(link_path).unwrap_or_else(|err| {
-        println!("{:?}", err);
-    });
+    fs::remove_file(link_path)?;
 
     if std::os::unix::fs::symlink(&cli_path, link_path).is_ok() {
         return Ok(link_path.into());
