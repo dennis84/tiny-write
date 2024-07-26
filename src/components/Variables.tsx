@@ -50,7 +50,7 @@ export const Variables = () => {
     root.style.setProperty('--border-radius', ConfigService.BORDER_RADIUS)
     root.style.setProperty('--menu-font-family', ConfigService.DEFAULT_FONT)
     root.style.setProperty('--menu-font-family-bold', ConfigService.DEFAULT_FONT + ' bold')
-    root.style.setProperty('--menu-font-size', '15px')
+    root.style.setProperty('--menu-font-size', '14px')
     root.style.setProperty('--menu-line-height', `${15 * 1.6}px`)
     root.style.setProperty('--cursor-default', CURSOR_DEFAULT)
     root.style.setProperty('--cursor-pointer', CURSOR_POINTER)

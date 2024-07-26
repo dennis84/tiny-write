@@ -74,7 +74,7 @@ export const Drawer = styled('div')`
   padding: 20px;
   height: 100%;
   display: ${(props: any) => props.hidden ? 'none' : 'block'};
-  width: 360px;
+  width: 400px;
   overflow-y: auto;
   scrollbar-width: none;
   @media (max-width: ${fullWidth.toString()}px) {

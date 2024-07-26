@@ -1,6 +1,6 @@
 import {JSX, createEffect, onCleanup} from 'solid-js'
 import {styled} from 'solid-styled-components'
-import {arrow, computePosition, flip, offset, shift} from '@floating-ui/dom'
+import {arrow, computePosition, flip, limitShift, offset, shift} from '@floating-ui/dom'
 
 const TooltipEl = styled('div')`
   position: absolute;
@@ -38,7 +38,7 @@ export const Tooltip = (props: Props) => {
       middleware: [
         offset(10),
         flip(),
-        shift(),
+        shift({padding: 20}),
         arrow({element: arrowRef!}),
       ],
     }).then(({x, y, placement, middlewareData}) => {

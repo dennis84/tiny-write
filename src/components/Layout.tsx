@@ -24,28 +24,33 @@ export const Layout = styled('div')`
     position: absolute;
     width: max-content;
     background: var(--tooltip-background);
-    border: 1px solid var(--foreground-50);
     border-radius: var(--border-radius);
     font-family: var(--menu-font-family);
     font-size: var(--menu-font-size);
     line-height: 1.4;
     z-index: 200;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 12px 24px 0 rgba(0, 0, 0, 0.24);
+    padding: 6px 8px;
     div {
       position: relative;
       z-index: 1;
       display: block;
-      padding: 10px;
+      padding: 6px 8px;
+      margin: 2px 0;
+      min-height: 32px;
       cursor: var(--cursor-pointer);
+      border-radius: var(--border-radius);
       &:hover, &.selected {
-        background: var(--selection);
+        background: var(--primary-background);
+        color: var(--primary-foreground);
       }
     }
     .divider {
-      height: 1px;
+      height: 3px;
       border: 0;
-      background: var(--foreground-20);
-      margin: 0;
+      border-radius: 5px;
+      background: var(--foreground-10);
+      margin: 5px 0;
     }
     .arrow {
       width: 6px;
@@ -53,16 +58,6 @@ export const Layout = styled('div')`
       background: var(--tooltip-background);
       position: absolute;
       transform: rotate(45deg);
-      box-shadow: -1px -1px 0 0 var(--foreground-50);
-      &.bottom {
-        box-shadow: 1px 1px 0 0 var(--foreground-50);
-      }
-      &.left {
-        box-shadow: -1px 1px 0 0 var(--foreground-50);
-      }
-      &.right {
-        box-shadow: 1px -1px 0 0 var(--foreground-50);
-      }
     }
   }
   .cm-tooltip-autocomplete {

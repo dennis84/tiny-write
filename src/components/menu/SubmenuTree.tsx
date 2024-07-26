@@ -83,7 +83,7 @@ const LinkMenu = styled('span')`
   opacity: 0;
   padding: 0 5px;
   border-radius: var(--border-radius);
-  font-weight: bold;
+  font-weight: 900;
   color: var(--foreground);
   ${(props: any) => props.selected ? `
     opacity: 1;
@@ -111,7 +111,7 @@ export const SubmenuTree = (props: Props) => {
 
   const [state, ctrl] = useState()
   const [dropState, setDropState] = createSignal<DropState>()
-  const [toolipAnchor, setTooltipAnchor] = createSignal<HTMLElement | undefined>()
+  const [tooltipAnchor, setTooltipAnchor] = createSignal<HTMLElement | undefined>()
   const [selected, setSelected] = createSignal<TreeNode>()
   const [grabbing, setGrabbing] = createSignal(false)
 
@@ -456,8 +456,8 @@ export const SubmenuTree = (props: Props) => {
           <HighlightContent />
         </Show>
       </Portal>
-      <Show when={toolipAnchor() !== undefined}>
-        <Tooltip anchor={toolipAnchor()} onClose={() => closeTooltip()}>
+      <Show when={tooltipAnchor() !== undefined}>
+        <Tooltip anchor={tooltipAnchor()} onClose={() => closeTooltip()}>
           <Show when={isOnCanvas(selected()?.item)}>
             <div onClick={onFocus} data-testid="focus_file">🎯 Focus file</div>
           </Show>

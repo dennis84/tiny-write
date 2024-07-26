@@ -4,7 +4,7 @@ import {Drawer, Label, Note} from './Menu'
 import {SubmenuTree} from './SubmenuTree'
 
 interface Props {
-  onBack: () => void;
+  onBack: () => void
 }
 
 export const Bin = (props: Props) => {
@@ -13,6 +13,9 @@ export const Bin = (props: Props) => {
   const onBack = () => {
     props.onBack()
   }
+
+  const hasDeletedFiles = () =>
+    state.files.some((f) => f.deleted) || state.canvases.some((f) => f.deleted)
 
   const onEmptyBin = async () => {
     for (const it of state.files) {
@@ -29,13 +32,13 @@ export const Bin = (props: Props) => {
   return (
     <Drawer data-tauri-drag-region="true">
       <Label>Bin</Label>
-      <Note>
-        💁 Items in bin will be automatically deleted after 14 days.
-      </Note>
+      <Note>💁 Items in bin will be automatically deleted after 14 days.</Note>
       <SubmenuTree showDeleted={true} />
       <ButtonGroup>
         <Button onClick={onBack}>↩ Back</Button>
-        <Button onClick={onEmptyBin}>⚠️ Empty bin</Button>
+        <Button onClick={onEmptyBin} disabled={!hasDeletedFiles()}>
+          ⚠️ Empty bin
+        </Button>
       </ButtonGroup>
     </Drawer>
   )

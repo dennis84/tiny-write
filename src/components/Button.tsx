@@ -15,6 +15,10 @@ export const Common = `
   &:hover {
     opacity: 0.8;
   }
+  &[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 `
 
 export const Button = styled('button')`
