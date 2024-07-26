@@ -1,20 +1,9 @@
-import {For, Show, createSignal, onMount} from 'solid-js'
-import {Portal} from 'solid-js/web'
-import {styled} from 'solid-styled-components'
+import {For, Show, createEffect, createSignal, onCleanup, onMount} from 'solid-js'
 import {Vec} from '@tldraw/editor'
 import {CanvasLinkElement, File, isFile, useState} from '@/state'
 
-const Backdrop = styled('div')`
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: transparent;
-  z-index: 100;
-`
-
 export const LinkEnd = () => {
+  let tooltipRef!: HTMLDivElement
   const [, ctrl] = useState()
   const [contextMenu, setContextMenu] = createSignal<Vec | undefined>()
 
@@ -29,11 +18,6 @@ export const LinkEnd = () => {
     const {x, y} = Vec.FromArray(camera.point).add(p).mul(camera.zoom)
 
     return {left: `${x}px`, top: `${y}px`}
-  }
-
-  const onBackdropClick = async () => {
-    await ctrl.canvas.removeDeadLinks()
-    setContextMenu(undefined)
   }
 
   const onNewFile = async (code = false, link?: CanvasLinkElement, cm?: Vec) => {
@@ -55,17 +39,14 @@ export const LinkEnd = () => {
       setTitle(await ctrl.file.getTitle(p.file))
     })
 
-    return (
-      <div onClick={onClick}>🔗 {title()}</div>
-    )
+    return <div onClick={onClick}>🔗 {title()}</div>
   }
 
   const getFiles = (): File[] => {
     const currentCanvas = ctrl.canvas.currentCanvas
     if (!currentCanvas) return []
-    const tree = currentCanvas.parentId
-      ? ctrl.tree.findTreeNode(currentCanvas.parentId)?.tree
-      : undefined
+    const tree =
+      currentCanvas.parentId ? ctrl.tree.findTreeNode(currentCanvas.parentId)?.tree : undefined
 
     const files: File[] = []
     ctrl.tree.descendants((n) => {
@@ -102,33 +83,45 @@ export const LinkEnd = () => {
     document.oncontextmenu = onContextMenu
   })
 
+  createEffect(() => {
+    if (!getContextMenu()) return
+    const onClick = async (e: MouseEvent) => {
+      const target = e.target as Element
+      if (tooltipRef === target || tooltipRef.contains(target)) return
+      await ctrl.canvas.removeDeadLinks()
+      setContextMenu(undefined)
+    }
+
+    document.body.addEventListener('mousedown', onClick)
+    onCleanup(() => {
+      document.body.removeEventListener('mousedown', onClick)
+    })
+  })
+
   return (
     <Show when={getContextMenu()} keyed>
-      {([link, cm]) => <>
-        <Portal mount={document.getElementById('container') ?? undefined}>
-          <Backdrop onClick={onBackdropClick} />
-        </Portal>
-        <div class="canvas-link-end-tooltip" style={coordsStyle(link, cm)}>
-          <div
-            onClick={() => onNewFile(false, link, cm)}
-            data-testid="link_end_new_file">
-            ✍️ New file
+      {([link, cm]) => (
+        <>
+          <div class="canvas-link-end-tooltip" style={coordsStyle(link, cm)} ref={tooltipRef}>
+            <div onClick={() => onNewFile(false, link, cm)} data-testid="link_end_new_file">
+              ✍️ New file
+            </div>
+            <div onClick={() => onNewFile(true, link, cm)} data-testid="link_end_new_code_file">
+              🖥️ New code file
+            </div>
+            <Show when={getFiles()}>
+              {(files) => (
+                <>
+                  <hr class="divider" />
+                  <For each={files()}>
+                    {(file: File) => <FileName file={file} link={link} cm={cm} />}
+                  </For>
+                </>
+              )}
+            </Show>
           </div>
-          <div
-            onClick={() => onNewFile(true, link, cm)}
-            data-testid="link_end_new_code_file">
-            🖥️ New code file
-          </div>
-          <Show when={getFiles()}>
-            {(files) => <>
-              <hr class="divider" />
-              <For each={files()}>
-                {(file: File) => <FileName file={file} link={link} cm={cm} />}
-              </For>
-            </>}
-          </Show>
-        </div>
-      </>}
+        </>
+      )}
     </Show>
   )
 }
