@@ -1,7 +1,9 @@
-import {onCleanup, onMount, Show} from 'solid-js'
+import {createEffect, onCleanup, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {CanvasCodeElement, useState} from '@/state'
+import * as remote from '@/remote'
 import {Selection} from '@/services/CanvasService'
+import {FileService} from '@/services/FileService'
 import {Scroll} from '@/components/Layout'
 import {CodeMirrorContainer} from '@/components/code/CodeEditor'
 import {Bounds} from './Bounds'
@@ -47,8 +49,24 @@ export const CodeEditor = ({element, index}: {element: CanvasCodeElement; index:
     return {box, elements: [[element.id, box]]}
   }
 
-  onMount(() => {
-    ctrl.code.renderEditor(element.id, editorRef)
+  createEffect(async () => {
+    const currentCanvas = ctrl.canvas.currentCanvas
+    let file = ctrl.file.findFileById(element.id)
+
+    if (!file) {
+      remote.info('No file for code element', element.id)
+      file = FileService.createFile({id: element.id, parentId: currentCanvas?.id, code: true})
+      await ctrl.file.addFile(file)
+    }
+
+    const provider = ctrl.collab.getProvider(file.id)
+    if (!provider) {
+      ctrl.collab.init(file)
+    }
+
+    if (provider && file.codeEditorView === undefined) {
+      ctrl.code.renderEditor(file, editorRef)
+    }
   })
 
   onCleanup(() => {

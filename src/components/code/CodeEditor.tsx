@@ -20,8 +20,15 @@ export const CodeEditor = () => {
 
   createEffect(() => {
     const currentFile = ctrl.file.currentFile
-    if (currentFile && currentFile?.codeEditorView === undefined) {
-      ctrl.code.renderEditor(currentFile.id, containerRef)
+    if (!currentFile) return
+
+    const provider = ctrl.collab.getProvider(currentFile.id)
+    if (!provider) {
+      ctrl.collab.init(currentFile)
+    }
+
+    if (provider && currentFile?.codeEditorView === undefined) {
+      ctrl.code.renderEditor(currentFile, containerRef)
     }
   })
 

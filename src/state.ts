@@ -5,6 +5,7 @@ import {EditorView as CmEditorView} from '@codemirror/view'
 import * as Y from 'yjs'
 import {WebsocketProvider} from 'y-websocket'
 import {Ctrl} from '@/services'
+import { YMultiDocUndoManager } from 'y-utility/y-multidoc-undomanager'
 
 export interface Args {
   cwd?: string;
@@ -50,6 +51,8 @@ export interface Collab {
   started: boolean;
   rendered: boolean;
   provider: WebsocketProvider;
+  providers: Record<string, WebsocketProvider>;
+  undoManager: YMultiDocUndoManager;
   permanentUserData: Y.PermanentUserData;
   ydoc: Y.Doc;
   snapshot?: Y.Doc;

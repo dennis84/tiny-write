@@ -14,7 +14,7 @@ import {Ctrl} from '.'
 
 interface CreateEditor {
   lang?: string;
-  parent?: HTMLElement;
+  parent?: Element;
   doc?: string;
   extensions?: Extension[];
 }

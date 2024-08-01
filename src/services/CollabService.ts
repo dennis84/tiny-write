@@ -12,9 +12,6 @@ import {Ctrl} from '.'
 import {ConfigService} from './ConfigService'
 
 export class CollabService {
-  private providers = new Map<string, WebsocketProvider>()
-  private _undoManager: YMultiDocUndoManager | undefined
-
   constructor(
     private ctrl: Ctrl,
     private store: Store<State>,
@@ -25,12 +22,16 @@ export class CollabService {
     return this.store.collab?.provider
   }
 
+  get providers() {
+    return this.store.collab?.providers ?? {}
+  }
+
   get permanentUserData() {
     return this.store.collab?.permanentUserData
   }
 
   get undoManager() {
-    return this._undoManager
+    return this.store.collab?.undoManager
   }
 
   get room(): string {
@@ -55,10 +56,9 @@ export class CollabService {
       window.history.replaceState(null, '', '/')
     }
 
-    const WebSocketPolyfill = CollabService.createWS()
-
-    const ydoc = new Y.Doc({gc: false})
+    const ydoc = new Y.Doc({gc: false, guid: room})
     const permanentUserData = new Y.PermanentUserData(ydoc)
+    const WebSocketPolyfill = CollabService.createWS()
     const provider = new WebsocketProvider(COLLAB_URL, room, ydoc, {connect, WebSocketPolyfill})
 
     const xs = Object.values(ConfigService.themes)
@@ -77,33 +77,33 @@ export class CollabService {
       foreground: xs[index].primaryForeground,
     })
 
+    const undoManager = new YMultiDocUndoManager([], {
+      trackedOrigins: new Set([ySyncPluginKey, ydoc.clientID]),
+      deleteFilter: (item: any) => defaultDeleteFilter(item, defaultProtectedNodes),
+      captureTransaction: (tr: any) => tr.meta.get('addToHistory') !== false,
+    })
+
     return {
       started: connect,
       rendered: false,
       ydoc,
       provider,
+      providers: {},
+      undoManager,
       permanentUserData,
     }
   }
 
-  private static createWS(): typeof WebSocket {
-    if (!isTauri()) {
-      return window.WebSocket
-    }
-
-    return TauriWebSocket as any
+  private static createWS() {
+    return !isTauri() ? window.WebSocket : TauriWebSocket as any
   }
 
   init(file: File) {
+    remote.info(`Init provider for file (id=${file.id})`)
+
     if (!this.provider) {
       throw new Error('Collab not created in state')
     }
-
-    this._undoManager = new YMultiDocUndoManager([], {
-      trackedOrigins: new Set([ySyncPluginKey, this.store.collab?.ydoc.clientID]),
-      deleteFilter: (item: any) => defaultDeleteFilter(item, defaultProtectedNodes),
-      captureTransaction: (tr: any) => tr.meta.get('addToHistory') !== false,
-    })
 
     this.provider.on('connection-error', () => {
       remote.error('🌐 Connection error')
@@ -127,16 +127,27 @@ export class CollabService {
       loaded.forEach((subdoc) => this.getSubdoc(subdoc.guid))
     })
 
-    const subdoc = this.getSubdoc(file.id)
-    if (!file.path) Y.applyUpdate(subdoc, file.ydoc)
-    const type = file.code ? subdoc.getText(file.id) : subdoc.getXmlFragment(file.id)
-    this._undoManager.addToScope([type])
+    this.store.collab?.provider.on('loaded', () => {
+      console.log('Main provider loaded')
+    })
+
+    this.provider.on('synced', () => {
+      const subdoc = this.getSubdoc(file.id)
+      if (!file.path) Y.applyUpdate(subdoc, file.ydoc)
+
+      const type = file.code ? subdoc.getText(file.id) : subdoc.getXmlFragment(file.id)
+      this.undoManager?.addToScope([type])
+    })
+
+    if (!this.store.collab?.started) {
+      this.provider.emit('synced', [])
+    }
   }
 
   startCollab() {
     window.history.replaceState(null, '', `/${this.store.mode}/${this.room}`)
     this.store.collab?.provider?.connect()
-    for (const p of this.providers.values()) p.connect()
+    for (const p of Object.values(this.providers)) p.connect()
     this.setState('collab', {started: true})
   }
 
@@ -147,7 +158,7 @@ export class CollabService {
   disconnectCollab() {
     this.store.collab?.ydoc?.getMap('config').unobserve(this.onCollabConfigUpdate)
     this.store.collab?.provider?.disconnect()
-    for (const p of this.providers.values()) p.disconnect()
+    for (const p of Object.values(this.providers)) p.disconnect()
     window.history.replaceState(null, '', '/')
     this.setState('collab', {started: false, error: undefined})
   }
@@ -173,17 +184,18 @@ export class CollabService {
     }
 
     const connect = this.store.collab?.started ?? false
-    if (!this.providers.has(id)) {
+    if (!this.providers[id]) {
+      remote.info(`Create provider for subdoc (id=${id}, connect=${connect})`)
       const WebSocketPolyfill = CollabService.createWS()
       const provider = new WebsocketProvider(COLLAB_URL, id, subdoc, {connect, WebSocketPolyfill})
-      this.providers.set(id, provider)
+      this.setState('collab', 'providers', id, provider)
     }
 
     return subdoc
   }
 
   getProvider(id: string): WebsocketProvider {
-    return this.providers.get(id)!
+    return this.providers[id]!
   }
 
   private onCollabConfigUpdate = (event: Y.YMapEvent<unknown>) => {

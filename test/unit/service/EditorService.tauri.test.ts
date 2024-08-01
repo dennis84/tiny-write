@@ -4,7 +4,7 @@ import {clearMocks} from '@tauri-apps/api/mocks'
 import {DB} from '@/db'
 import {createCtrl} from '@/services'
 import {createState} from '@/state'
-import {createIpcMock, waitFor} from '../util/util'
+import {createIpcMock, renderEditor, waitFor} from '../util/util'
 import {createYUpdate, getText, insertText} from '../util/prosemirror-util'
 
 vi.stubGlobal('__TAURI__', {})
@@ -36,7 +36,7 @@ test('openFileByPath - path in files', async () => {
 
   await ctrl.app.init()
   expect(ctrl.file.currentFile?.id).toBe('2')
-  ctrl.editor.renderEditor('2', target)
+  await renderEditor('2', ctrl, target)
 
   await waitFor(() => {
     expect(getText(ctrl)).toBe('File2')
@@ -50,7 +50,7 @@ test('openFileByPath - path in files', async () => {
   expect(ctrl.file.currentFile?.deleted).toEqual(false)
 
   expect(ctrl.file.currentFile?.id).toBe('1')
-  ctrl.editor.renderEditor('1', target)
+  await renderEditor('1', ctrl, target)
 
   await waitFor(() => {
     expect(getText(ctrl)).toBe('File1')
@@ -62,7 +62,7 @@ test('openFileByPath - push path to files', async () => {
   const target = document.createElement('div')
 
   await ctrl.app.init()
-  ctrl.editor.renderEditor(ctrl.file.currentFile!.id, target)
+  await renderEditor(ctrl.file.currentFile!.id, ctrl, target)
 
   expect(store.files.length).toBe(1)
   insertText(ctrl, 'Test')
@@ -73,7 +73,7 @@ test('openFileByPath - push path to files', async () => {
   expect(store.files[1].path).toBe('file1')
   expect(ctrl.file.currentFile?.path).toBe('file1')
   expect(ctrl.file.currentFile?.editorView).toBe(undefined)
-  ctrl.editor.renderEditor(ctrl.file.currentFile!.id, target)
+  await renderEditor(ctrl.file.currentFile!.id, ctrl, target)
 
   await waitFor(() => {
     expect(getText(ctrl)).toBe('File1')
@@ -84,13 +84,13 @@ test('openFileByPath - path and text', async () => {
   const {ctrl, store} = createCtrl(createState())
   const target = document.createElement('div')
   await ctrl.app.init()
-  ctrl.editor.renderEditor(ctrl.file.currentFile!.id, target)
+  await renderEditor(ctrl.file.currentFile!.id, ctrl, target)
 
   expect(store.files.length).toBe(1)
 
   await ctrl.editor.openFileByPath('file1')
   expect(store.files.length).toBe(2)
-  ctrl.editor.renderEditor(ctrl.file.currentFile!.id, target)
+  await renderEditor(ctrl.file.currentFile!.id, ctrl, target)
 
   await waitFor(() => {
     expect(getText(ctrl)).toBe('File1')
@@ -103,7 +103,7 @@ test('openFileByPath - file not found', async () => {
   const {ctrl, store} = createCtrl(createState())
   const target = document.createElement('div')
   await ctrl.app.init()
-  ctrl.editor.renderEditor(ctrl.file.currentFile!.id, target)
+  await renderEditor(ctrl.file.currentFile!.id, ctrl, target)
 
   expect(store.files.length).toBe(1)
 

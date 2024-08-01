@@ -1,19 +1,44 @@
+import {expect, vi} from 'vitest'
 import * as Y from 'yjs'
 import {WebsocketProvider} from 'y-websocket'
+import {YMultiDocUndoManager} from 'y-utility/y-multidoc-undomanager'
 import {mock} from 'vitest-mock-extended'
 import {mockIPC} from '@tauri-apps/api/mocks'
-import {UndoManager} from '@/services/CollabService'
-import {Collab} from '@/state'
+import {Collab, File} from '@/state'
+import {Ctrl} from '@/services'
 
 export const createCollabMock = (props: Partial<Collab> = {}): Collab => ({
   started: false,
   rendered: false,
   ydoc: new Y.Doc(),
   provider: mock<WebsocketProvider>(),
-  undoManager: mock<UndoManager>(),
+  providers: {},
+  undoManager: mock<YMultiDocUndoManager>(),
   permanentUserData: mock<Y.PermanentUserData>(),
   ...props,
 })
+
+const collabInit = async (file: File, ctrl: Ctrl, join = false) => {
+  ctrl.collab.init(file)
+
+  if (join) ctrl.collab.provider!.synced = true // emit synced
+
+  await vi.waitFor(() => {
+    expect(ctrl.collab.getProvider(file.id)).toBeDefined()
+  })
+}
+
+export const renderEditor = async (id: string, ctrl: Ctrl, target: Element, join = false) => {
+  const file = ctrl.file.findFileById(id)
+  await collabInit(file!, ctrl, join)
+  ctrl.editor.renderEditor(file!, target)
+}
+
+export const renderCodeEditor = async (id: string, ctrl: Ctrl, target: Element, join = false) => {
+  const file = ctrl.file.findFileById(id)
+  await collabInit(file!, ctrl, join)
+  ctrl.code.renderEditor(file!, target)
+}
 
 export const waitFor = async (fn: () => unknown, retries = 10): Promise<void> => {
   try {

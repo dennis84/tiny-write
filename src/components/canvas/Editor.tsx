@@ -1,5 +1,6 @@
-import {onCleanup, onMount, Show} from 'solid-js'
+import {createEffect, onCleanup, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
+import * as remote from '@/remote'
 import {CanvasEditorElement, useState} from '@/state'
 import {Selection} from '@/services/CanvasService'
 import {CanvasEditor} from '@/components/editor/Style'
@@ -7,6 +8,7 @@ import {Scroll} from '@/components/Layout'
 import {Bounds} from './Bounds'
 import {LinkHandles} from './LinkHandles'
 import {IndexType, zIndex} from '@/utils/z-index'
+import { FileService } from '@/services/FileService'
 
 const EditorScroll = styled(Scroll)((props: any) => `
   position: absolute;
@@ -48,8 +50,24 @@ export const Editor = ({element, index}: {element: CanvasEditorElement; index: n
     return {box, elements: [[element.id, box]]}
   }
 
-  onMount(() => {
-    ctrl.editor.renderEditor(element.id, editorRef!)
+  createEffect(async () => {
+    const currentCanvas = ctrl.canvas.currentCanvas
+    let file = ctrl.file.findFileById(element.id)
+
+    if (!file) {
+      remote.info('No file for editor element', element.id)
+      file = FileService.createFile({id: element.id, parentId: currentCanvas?.id})
+      await ctrl.file.addFile(file)
+    }
+
+    const provider = ctrl.collab.getProvider(file.id)
+    if (!provider) {
+      ctrl.collab.init(file)
+    }
+
+    if (provider && file.editorView === undefined) {
+      ctrl.editor.renderEditor(file, editorRef!)
+    }
   })
 
   onCleanup(() => {

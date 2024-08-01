@@ -3,7 +3,7 @@ import {mock} from 'vitest-mock-extended'
 
 import {createState} from '@/state'
 import {createCtrl} from '@/services'
-import {waitFor} from '../util/util'
+import {renderEditor, waitFor} from '../util/util'
 import {getText, insertText} from '../util/prosemirror-util'
 
 vi.mock('@/db', () => ({DB: mock()}))
@@ -21,7 +21,7 @@ test('addVersion', async () => {
   const {ctrl} = createCtrl(createState())
   const target = document.createElement('div')
   await ctrl.app.init()
-  ctrl.editor.renderEditor(ctrl.file.currentFile!.id, target)
+  await renderEditor(ctrl.file.currentFile!.id, ctrl, target)
 
   insertText(ctrl, 'Test')
   expect(getText(ctrl)).toBe('Test')

@@ -162,6 +162,11 @@ export class FileService {
     return ydoc
   }
 
+  async addFile(file: File) {
+    this.setState('files', (prev) => [...prev, file!])
+    await FileService.saveFile(file)
+  }
+
   setActive(id: string, active = true) {
     for (let i = 0; i < this.store.files.length; i++) {
       const cur = this.store.files[i]

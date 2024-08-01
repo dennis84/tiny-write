@@ -13,14 +13,20 @@ export const Editor = () => {
 
   // Render editor if change file
   createEffect(async () => {
+    if (store.args?.dir) {
+      return
+    }
+
     const currentFile = ctrl.file.currentFile
-    if (
-      store.mode === Mode.Editor &&
-      !store.args?.dir &&
-      currentFile?.id &&
-      currentFile.editorView === undefined
-    ) {
-      ctrl.editor.renderEditor(currentFile.id, editorRef!)
+    if (!currentFile) return
+
+    const provider = ctrl.collab.getProvider(currentFile.id)
+    if (!provider) {
+      ctrl.collab.init(currentFile)
+    }
+
+    if (provider && currentFile.editorView === undefined) {
+      ctrl.editor.renderEditor(currentFile, editorRef!)
       ctrl.file.currentFile?.editorView?.focus()
     }
   })

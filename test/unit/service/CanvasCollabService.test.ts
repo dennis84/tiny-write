@@ -7,6 +7,7 @@ import {YMultiDocUndoManager} from 'y-utility/y-multidoc-undomanager'
 import {Canvas, createState, ElementType} from '@/state'
 import {CanvasCollabService} from '@/services/CanvasCollabService'
 import {CanvasService} from '@/services/CanvasService'
+import {CollabService} from '@/services/CollabService'
 import {waitFor} from '../util/util'
 
 vi.mock('@/db', () => ({DB: mock()}))
@@ -27,9 +28,12 @@ const createCanvas = (props: Partial<Canvas> = {}): Canvas => ({
 const setup = (props: {canvas: Partial<Canvas>} = {canvas: {}}) => {
   const canvas = createCanvas(props.canvas)
   const canvasService = mock<CanvasService>({currentCanvas: canvas})
+  const collabService = mock<CollabService>({
+    undoManager: mock<YMultiDocUndoManager>()
+  })
 
   const [store, setState] = createStore(createState({canvases: []}))
-  const service = new CanvasCollabService(canvasService, store)
+  const service = new CanvasCollabService(collabService, canvasService, store)
 
   const ydoc = new Y.Doc({gc: false})
   setState('collab', {ydoc})

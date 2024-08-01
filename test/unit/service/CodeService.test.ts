@@ -3,6 +3,7 @@ import {mock} from 'vitest-mock-extended'
 import {Mode, createState} from '@/state'
 import {createCtrl} from '@/services'
 import {createYUpdate} from '../util/codemirror-util'
+import {renderCodeEditor} from '../util/util'
 
 vi.mock('@/db', () => ({DB: mock()}))
 vi.mock('mermaid', () => ({}))
@@ -60,7 +61,7 @@ test('renderEditor - existing file', async () => {
   expect(ctrl.file.currentFile?.id).toBe('1')
 
   const node = document.createElement('div')
-  ctrl.code.renderEditor('1', node)
+  await renderCodeEditor('1', ctrl, node)
 
   expect(ctrl.file.currentFile?.codeEditorView).toBeDefined()
 })
@@ -79,7 +80,7 @@ test('prettify', async () => {
   expect(ctrl.file.currentFile?.id).toBe('1')
 
   const node = document.createElement('div')
-  ctrl.code.renderEditor('1', node)
+  await renderCodeEditor('1', ctrl, node)
 
   expect(ctrl.file.currentFile?.codeEditorView).toBeDefined()
 

@@ -56,17 +56,7 @@ export class CodeService {
     }
   }
 
-  renderEditor(id: string, el: HTMLElement) {
-    let file = this.ctrl.file.findFileById(id)
-
-    if (!file) {
-      const parentId = this.ctrl.canvas.currentCanvas?.id
-      file = FileService.createFile({id, parentId, code: true})
-      this.setState('files', (prev) => [...prev, file!])
-      this.saveEditor()
-    }
-
-    this.ctrl.collab.init(file)
+  renderEditor(file: File, el: Element) {
     this.updateEditorState(file, el)
   }
 
@@ -91,7 +81,7 @@ export class CodeService {
     return format(currentFile.codeEditorView, lang, config)
   }
 
-  private updateEditorState(file: File, el?: HTMLElement) {
+  private updateEditorState(file: File, el?: Element) {
     if (!file.codeEditorView && !el) {
       return
     }

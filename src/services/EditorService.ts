@@ -85,17 +85,7 @@ export class EditorService {
     editorView.setProps({state: editorState, nodeViews})
   }
 
-  renderEditor(id: string, node: Element) {
-    let file = this.ctrl.file.findFileById(id)
-
-    if (!file) {
-      const parentId = this.ctrl.canvas.currentCanvas?.id
-      file = FileService.createFile({id, parentId})
-      this.setState('files', (prev) => [...prev, file!])
-      this.saveEditor()
-    }
-
-    this.ctrl.collab.init(file)
+  renderEditor(file: File, node: Element) {
     this.updateEditorState(file, node)
   }
 

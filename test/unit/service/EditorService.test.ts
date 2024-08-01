@@ -4,7 +4,7 @@ import {Box} from '@tldraw/editor'
 import {DB} from '@/db'
 import {createCtrl} from '@/services'
 import {createState} from '@/state'
-import {waitFor, pause} from '../util/util'
+import {waitFor, pause, renderEditor} from '../util/util'
 import {createYUpdate, getText, insertText} from '../util/prosemirror-util'
 
 vi.stubGlobal('matchMedia', vi.fn(() => ({
@@ -16,25 +16,15 @@ vi.stubGlobal('location', ({
   reload: vi.fn(),
 }))
 
+const WsMock = vi.fn(() => ({
+  close: vi.fn()
+}))
+
+vi.stubGlobal('WebSocket', WsMock)
+
 vi.mock('mermaid', () => ({}))
 
 vi.mock('@/db', () => ({DB: mock<DB>()}))
-
-vi.mock('y-websocket', () => ({
-  WebsocketProvider: vi.fn((_, roomname) => ({
-    roomname,
-    awareness: {
-      setLocalStateField: vi.fn(),
-      on: vi.fn(),
-      off: vi.fn(),
-      getLocalState: vi.fn(),
-      getStates: vi.fn().mockImplementation(() => []),
-    },
-    disconnect: vi.fn(),
-    connect: vi.fn(),
-    on: vi.fn(),
-  }))
-}))
 
 beforeEach(() => {
   vi.restoreAllMocks()
@@ -58,12 +48,12 @@ test('init - new file if no id', async () => {
   const target = document.createElement('div')
   await ctrl.app.init()
 
-  const currentFileId = ctrl.file.currentFile?.id
-  expect(currentFileId).toBeDefined()
+  const currentFile = ctrl.file.currentFile
+  expect(currentFile).toBeDefined()
 
-  expect(currentFileId).not.toBe('1')
-  expect(currentFileId).not.toBe('2')
-  ctrl.editor.renderEditor(currentFileId!, target)
+  expect(currentFile?.id).not.toBe('1')
+  expect(currentFile?.id).not.toBe('2')
+  await renderEditor(ctrl.file.currentFile!.id, ctrl, target)
 
   expect(store.files.length).toBe(3)
   expect(getText(ctrl)).toBe('')
@@ -79,10 +69,12 @@ test('init - existing file', async () => {
   const target = document.createElement('div')
   await ctrl.app.init()
 
-  expect(store.files.length).toBe(2)
-  expect(ctrl.file.currentFile?.id).toBe('2')
+  const currentFile = ctrl.file.currentFile
 
-  ctrl.editor.renderEditor('2', target)
+  expect(store.files.length).toBe(2)
+  expect(currentFile?.id).toBe('2')
+
+  await renderEditor(currentFile!.id, ctrl, target)
 
   await waitFor(() => {
     expect(getText(ctrl)).toBe('Test 2')
@@ -99,10 +91,12 @@ test('init - join', async () => {
   const target = document.createElement('div')
   await ctrl.app.init()
 
-  expect(store.files.length).toBe(3)
-  expect(ctrl.file.currentFile?.id).toBe('3')
+  const currentFile = ctrl.file.currentFile
 
-  ctrl.editor.renderEditor('3', target)
+  expect(store.files.length).toBe(3)
+  expect(currentFile?.id).toBe('3')
+
+  await renderEditor(currentFile!.id, ctrl, target, true)
 
   expect(getText(ctrl)).toBe('')
 })
@@ -113,14 +107,14 @@ test('newFile', async () => {
 
   await ctrl.app.init()
 
-  const id = ctrl.file.currentFile?.id
-  ctrl.editor.renderEditor(id!, target)
+  const currentFile = ctrl.file.currentFile
+  await renderEditor(currentFile!.id, ctrl, target)
 
   insertText(ctrl, 'Test')
   expect(getText(ctrl)).toEqual('Test')
 
   await ctrl.editor.newFile()
-  expect(ctrl.file.currentFile?.id).not.toBe(id)
+  expect(ctrl.file.currentFile?.id).not.toBe(currentFile?.id)
   expect(ctrl.file.currentFile?.editorView).toBe(undefined)
   expect(store.files.length).toBe(2)
   expect(store.files[0].ydoc).not.toBe(undefined)
@@ -142,8 +136,9 @@ test('newFile - collab', async () => {
   const target = document.createElement('div')
 
   await ctrl.app.init()
-  const id = ctrl.file.currentFile?.id
-  ctrl.editor.renderEditor(id!, target)
+
+  const currentFile = ctrl.file.currentFile
+  await renderEditor(currentFile!.id, ctrl, target)
 
   insertText(ctrl, 'Test')
   ctrl.collab.startCollab()
@@ -151,10 +146,10 @@ test('newFile - collab', async () => {
   await ctrl.editor.newFile()
   expect(store.files.length).toBe(2)
   expect(ctrl.file.currentFile?.editorView).toBe(undefined)
-  expect(ctrl.file.currentFile?.id).not.toEqual(id)
+  expect(ctrl.file.currentFile?.id).not.toEqual(currentFile?.id)
   expect(store.collab?.started).toBe(false)
   expect(store.files[0].ydoc).not.toBe(undefined)
-  expect(store.files.find((f) => f.id === id)).not.toBeNull()
+  expect(store.files.find((f) => f.id === currentFile?.id)).not.toBeNull()
 })
 
 test('openFile - existing', async () => {
@@ -167,8 +162,11 @@ test('openFile - existing', async () => {
   const target = document.createElement('div')
 
   await ctrl.app.init()
-  expect(ctrl.file.currentFile?.id).toBe('1')
-  ctrl.editor.renderEditor('1', target)
+
+  let currentFile = ctrl.file.currentFile
+  expect(currentFile?.id).toBe('1')
+
+  await renderEditor(currentFile!.id, ctrl, target)
 
   vi.mocked(DB.updateFile).mockClear()
 
@@ -187,7 +185,12 @@ test('openFile - existing', async () => {
   expect(ctrl.file.currentFile?.editorView).toBe(undefined)
 
   expect(DB.updateFile).toHaveReturnedTimes(2)
-  ctrl.editor.renderEditor('2', target)
+
+  currentFile = ctrl.file.currentFile
+  expect(currentFile?.id).toBe('2')
+
+  await renderEditor(currentFile!.id, ctrl, target)
+
   await waitFor(() => {
     expect(getText(ctrl)).toBe('Test 2')
   })
@@ -198,13 +201,13 @@ test('openFile - not found', async () => {
   const target = document.createElement('div')
   await ctrl.app.init()
 
-  const id = ctrl.file.currentFile?.id
-  ctrl.editor.renderEditor(id!, target)
+  const currentFile = ctrl.file.currentFile
+  await renderEditor(currentFile!.id, ctrl, target)
 
   expect(store.files.length).toBe(1)
   await ctrl.editor.openFile('123')
   expect(store.files.length).toBe(1)
-  expect(ctrl.file.currentFile?.id).toBe(id)
+  expect(ctrl.file.currentFile?.id).toBe(currentFile?.id)
 })
 
 test('openFile - not delete empty', async () => {
@@ -217,14 +220,17 @@ test('openFile - not delete empty', async () => {
   const target = document.createElement('div')
   await ctrl.app.init()
 
-  expect(ctrl.file.currentFile?.id).toBe('1')
-  ctrl.editor.renderEditor('1', target)
+  const currentFile = ctrl.file.currentFile
+  expect(currentFile?.id).toBe('1')
+
+  await renderEditor(currentFile!.id, ctrl, target)
 
   await ctrl.editor.openFile('2')
   expect(store.files.length).toBe(2)
   expect(ctrl.file.currentFile?.editorView).toBe(undefined)
   expect(ctrl.file.currentFile?.id).toBe('2')
-  ctrl.editor.renderEditor('2', target)
+
+  await renderEditor('2', ctrl, target)
 
   await waitFor(() => {
     expect(getText(ctrl)).toBe('Test 2')
@@ -245,14 +251,15 @@ test('openFile - open collab', async () => {
   await ctrl.app.init()
 
   expect(ctrl.file.currentFile?.id).not.toBe('room-123')
-  ctrl.editor.renderEditor(ctrl.file.currentFile!.id, target)
+  await renderEditor(ctrl.file.currentFile!.id, ctrl, target)
 
   expect(store.collab?.provider?.roomname).toBe('editor/' + ctrl.file.currentFile?.id)
 
   await ctrl.editor.openFile(file.id)
   expect(ctrl.file.currentFile?.editorView).toBe(undefined)
   expect(ctrl.file.currentFile?.id).toBe('room-123')
-  ctrl.editor.renderEditor('room-123', target)
+
+  renderEditor(ctrl.file.currentFile!.id, ctrl, target)
 
   await waitFor(() => {
     expect(getText(ctrl)).toBe('Test')
@@ -271,7 +278,8 @@ test('openFile - open from collab', async () => {
   const target = document.createElement('div')
   await ctrl.app.init()
   expect(ctrl.file.currentFile?.id).toBe('1')
-  ctrl.editor.renderEditor('1', target)
+
+  await renderEditor('1', ctrl, target)
 
   expect(store.files.length).toBe(2)
   ctrl.collab.startCollab()
@@ -285,7 +293,7 @@ test('openFile - open from collab', async () => {
   expect(store.collab?.started).toBe(false)
   expect(ctrl.file.currentFile?.editorView).toBe(undefined)
   expect(ctrl.file.currentFile?.id).toBe('2')
-  ctrl.editor.renderEditor('2', target)
+  await renderEditor('2', ctrl, target)
 
   await waitFor(() => {
     expect(getText(ctrl)).toBe('Test 2')
@@ -300,7 +308,8 @@ test('clear - with text', async () => {
   const {ctrl, store} = createCtrl(createState())
   const target = document.createElement('div')
   await ctrl.app.init()
-  ctrl.editor.renderEditor(ctrl.file.currentFile!.id, target)
+
+  await renderEditor(ctrl.file.currentFile!.id, ctrl, target)
 
   insertText(ctrl, '111')
   expect(store.files.length).toBe(2)
@@ -315,7 +324,7 @@ test('reset', async () => {
   const target = document.createElement('div')
 
   await ctrl.app.init()
-  ctrl.editor.renderEditor(ctrl.file.currentFile!.id, target)
+  await renderEditor(ctrl.file.currentFile!.id, ctrl, target)
 
   ctrl.app.setError({error})
   expect(store.error?.id).toBe('exception')
@@ -328,7 +337,7 @@ test('startCollab - from empty state', async () => {
   const {ctrl, store} = createCtrl(createState())
   const target = document.createElement('div')
   await ctrl.app.init()
-  ctrl.editor.renderEditor(ctrl.file.currentFile!.id, target)
+  await renderEditor(ctrl.file.currentFile!.id, ctrl, target)
 
   ctrl.collab.startCollab()
   expect(getText(ctrl)).toBe('')
@@ -344,7 +353,7 @@ test('startCollab - with text', async () => {
   const target = document.createElement('div')
 
   await ctrl.app.init()
-  ctrl.editor.renderEditor(ctrl.file.currentFile!.id, target)
+  await renderEditor(ctrl.file.currentFile!.id, ctrl, target)
 
   expect(ctrl.file.currentFile?.editorView).not.toBe(undefined)
   insertText(ctrl, 'Test')
@@ -364,7 +373,7 @@ test('startCollab - join new file', async () => {
   const {ctrl, store} = createCtrl(createState({args: {room: '2'}}))
   const target = document.createElement('div')
   await ctrl.app.init()
-  ctrl.editor.renderEditor(ctrl.file.currentFile!.id, target)
+  await renderEditor(ctrl.file.currentFile!.id, ctrl, target, true)
 
   expect(getText(ctrl)).toBe('')
   expect(ctrl.file.currentFile?.id).toBe('2')
@@ -382,7 +391,7 @@ test('startCollab - join existing file', async () => {
   const {ctrl, store} = createCtrl(createState({args: {room: '2'}}))
   const target = document.createElement('div')
   await ctrl.app.init()
-  ctrl.editor.renderEditor(ctrl.file.currentFile!.id, target)
+  await renderEditor('2', ctrl, target, true)
 
   expect(getText(ctrl)).toBe('Test 2')
   expect(ctrl.file.currentFile?.id).toBe('2')
@@ -396,7 +405,7 @@ test('selectBox', async () => {
   const target = document.createElement('div')
 
   await ctrl.app.init()
-  ctrl.editor.renderEditor(ctrl.file.currentFile!.id, target)
+  await renderEditor(ctrl.file.currentFile!.id, ctrl, target)
 
   insertText(ctrl, 'Test')
   expect(ctrl.file.currentFile?.editorView?.state.selection.empty).toBe(true)
