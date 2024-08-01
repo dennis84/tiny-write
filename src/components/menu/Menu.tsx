@@ -57,7 +57,7 @@ const Burger = styled('button')`
   &:hover {
     background: var(--foreground-10);
   }
-  ${(props: any) => props.active && `
+  ${(props: any) => props.active ? `
     right: 2px;
     left: auto;
     > span:nth-of-type(1) {
@@ -66,7 +66,7 @@ const Burger = styled('button')`
     > span:nth-of-type(2) {
       transform: rotate(45deg) translate(-2.5px, -2.5px);
     }
-  `}
+  ` : ''}
 `
 
 export const Drawer = styled('div')`

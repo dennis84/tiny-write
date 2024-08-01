@@ -6,9 +6,11 @@ export const lineTextEq = (page: Page, nth: number, text: string) =>
   expect(page.locator(`.ProseMirror > *:nth-child(${nth})`)).toHaveText(text)
 
 export const lineCodeEq = async (page: Page, nth: number, text: string) => {
-  const locator = page.locator(`.cm-content > .cm-line:nth-child(${nth}) > span:not(.cm-ySelectionCaret)`)
-  const texts = await locator.allTextContents()
-  expect(texts.join('')).toBe(text)
+  await expect.poll(async () => {
+    const locator = page.locator(`.cm-content > .cm-line:nth-child(${nth}) > span:not(.cm-ySelectionCaret)`)
+    const texts = await locator.allTextContents()
+    return texts.join('')
+  }).toBe(text)
 }
 
 export const move = async (page: Page, key: string, repeat = 1) => {

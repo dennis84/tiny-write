@@ -13,7 +13,7 @@ const CanvasVideo = styled('video')(
     user-select: none;
     pointer-events: none;
     -webkit-user-select: none;
-    ${props.selected && `box-shadow: 0 0 0 5px var(--border);`}
+    ${props.selected ? `box-shadow: 0 0 0 5px var(--border);` : ''}
   `,
 )
 

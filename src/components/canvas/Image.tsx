@@ -14,7 +14,7 @@ const CanvasImage = styled('img')(
     user-select: none;
     -webkit-user-select: none;
     pointer-events: none;
-    ${props.selected && `box-shadow: 0 0 0 5px var(--border);`}
+    ${props.selected ? `box-shadow: 0 0 0 5px var(--border);` : ''}
   `,
 )
 
