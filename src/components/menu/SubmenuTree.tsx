@@ -5,8 +5,10 @@ import {css, styled} from 'solid-styled-components'
 import {DragGesture} from '@use-gesture/vanilla'
 import {Mode, isCodeFile, isFile, useState} from '@/state'
 import {TreeNode, TreeNodeItem} from '@/services/TreeService'
+import {FileService} from '@/services/FileService'
 import {Label, Link, Sub, Text} from './Menu'
 import {Tooltip} from './Tooltip'
+import {InputLine, InputLineConfig} from '../dialog/InputLine'
 
 const HighlightContent = styled('div')`
   position: absolute;
@@ -114,6 +116,7 @@ export const SubmenuTree = (props: Props) => {
   const [tooltipAnchor, setTooltipAnchor] = createSignal<HTMLElement | undefined>()
   const [selected, setSelected] = createSignal<TreeNode>()
   const [grabbing, setGrabbing] = createSignal(false)
+  const [inputLine, setInputLine] = createSignal<InputLineConfig>()
 
   const isNode = (node: TreeNode) => dropState()?.targetId === node.item.id
 
@@ -126,6 +129,26 @@ export const SubmenuTree = (props: Props) => {
     e.stopPropagation()
     setTooltipAnchor(anchor)
     setSelected(node)
+  }
+
+  const onRename = async () => {
+    const item = selected()?.item
+    if (!item) return
+
+    setInputLine({
+      value: item?.title ?? '',
+      onEnter: (title: string) => {
+        if (isFile(item)) {
+          ctrl.file.updateFile(item.id, {title})
+          FileService.saveFile(item)
+        } else {
+          ctrl.canvas.updateCanvas(item.id, {title})
+          ctrl.canvas.saveCanvas(item)
+        }
+
+        closeTooltip()
+      }
+    })
   }
 
   const onAddFile = async () => {
@@ -332,12 +355,10 @@ export const SubmenuTree = (props: Props) => {
     })
 
     createEffect(async () => {
-      if (isFile(p.node.item) && p.node.item.codeLang) {
-        setTitle('Code 🖥️')
-      } else if (isFile(p.node.item)) {
+      if (isFile(p.node.item)) {
         setTitle(await ctrl.file.getTitle(p.node.item))
       } else {
-        setTitle('Canvas 🧑‍🎨')
+        setTitle((p.node.item.title ?? 'Canvas') + ' 🧑‍🎨')
       }
     })
 
@@ -458,6 +479,7 @@ export const SubmenuTree = (props: Props) => {
       </Portal>
       <Show when={tooltipAnchor() !== undefined}>
         <Tooltip anchor={tooltipAnchor()} onClose={() => closeTooltip()}>
+          <div onClick={onRename} data-testid="rename">❝ Rename</div>
           <Show when={isOnCanvas(selected()?.item)}>
             <div onClick={onFocus} data-testid="focus_file">🎯 Focus file</div>
           </Show>
@@ -476,6 +498,7 @@ export const SubmenuTree = (props: Props) => {
           </Show>
         </Tooltip>
       </Show>
+      <InputLine getter={inputLine} setter={setInputLine} />
     </>
   )
 }

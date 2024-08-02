@@ -164,6 +164,7 @@ export interface Canvas {
   id: string;
   parentId?: string;
   leftId?: string;
+  title?: string;
   camera: Camera;
   elements: CanvasElement[];
   active?: boolean;
@@ -205,6 +206,7 @@ export interface File {
   id: string;
   parentId?: string;
   leftId?: string;
+  title?: string;
   ydoc: Uint8Array;
   versions: Version[];
   lastModified?: Date;

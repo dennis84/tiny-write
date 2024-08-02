@@ -99,6 +99,7 @@ export class FileService {
       parentId: file.parentId,
       leftId: file.leftId,
       ydoc: file.ydoc!,
+      title: file.title,
       lastModified: file.lastModified,
       path: file.path,
       newFile: file.newFile,
@@ -233,6 +234,7 @@ export class FileService {
           id: file.id,
           parentId: file.parentId,
           leftId: file.leftId,
+          title: file.title,
           ydoc: file.ydoc,
           lastModified: new Date(file.lastModified),
           path: file.path,
@@ -335,7 +337,9 @@ export class FileService {
   async getTitle(file?: File, len = 25): Promise<string> {
     if (!file) return 'Undefined'
     if (isTauri() && file.path) return remote.toRelativePath(file.path)
-    if (file.code) return 'Code 🖥️'
+    if (file.code) return (file.title ?? 'Code') + ' 🖥️'
+    else if (file.title) return file.title
+
     const ydoc = new Y.Doc({gc: false})
     Y.applyUpdate(ydoc, file.ydoc)
 
