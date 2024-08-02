@@ -3,10 +3,6 @@ import {mock, mockDeep} from 'vitest-mock-extended'
 
 vi.mock('@/db', () => ({DB: mock()}))
 
-vi.stubGlobal('matchMedia', vi.fn(() => ({
-  matchMedia: () => ''
-})))
-
 import {createStore} from 'solid-js/store'
 import {createState} from '@/state'
 import {Ctrl} from '@/services'

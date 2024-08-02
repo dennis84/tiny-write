@@ -8,10 +8,6 @@ import {CanvasService} from '@/services/CanvasService'
 import {CollabService} from '@/services/CollabService'
 import {createCollabMock} from '../util/util'
 
-vi.stubGlobal('matchMedia', vi.fn(() => ({
-  matchMedia: () => ''
-})))
-
 vi.mock('mermaid', () => ({}))
 vi.mock('@/db', () => ({DB: mock()}))
 

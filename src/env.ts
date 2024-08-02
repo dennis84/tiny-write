@@ -11,20 +11,14 @@ export const isDark = () => (window as any).matchMedia('(prefers-color-scheme: d
 export const isTest = import.meta.env.NODE_ENV === 'test'
 export const isDev = import.meta.env.DEV
 
-export const isMac =
-  window.process?.platform === 'darwin' ||
-  window.navigator.platform.indexOf('Mac') !== -1
+export const isMac = navigator.userAgent.includes('Mac')
 
 export const mod = isMac ? 'Meta' : 'Ctrl'
 export const alt = isMac ? 'Meta' : 'Alt'
 
-export const WEB_URL =
-  (isTest || isDev) ? 'http://localhost:3000' :
-  'https://tiny-write.pages.dev'
+export const WEB_URL = isTest || isDev ? 'http://localhost:3000' : 'https://tiny-write.pages.dev'
 
 export const COLLAB_URL =
-  (isTest || isDev) ? 'ws://localhost:1234' :
-  'wss://y-websocket-88ps.onrender.com'
+  isTest || isDev ? 'ws://localhost:1234' : 'wss://y-websocket-88ps.onrender.com'
 
-export const VERSION_URL =
-  `https://github.com/dennis84/tiny-write/releases/tag/v${version}`
+export const VERSION_URL = `https://github.com/dennis84/tiny-write/releases/tag/v${version}`

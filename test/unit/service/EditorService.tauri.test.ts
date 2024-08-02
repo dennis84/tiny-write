@@ -4,13 +4,10 @@ import {clearMocks} from '@tauri-apps/api/mocks'
 import {DB} from '@/db'
 import {createCtrl} from '@/services'
 import {createState} from '@/state'
-import {createIpcMock, renderEditor, waitFor} from '../util/util'
+import {createIpcMock, renderEditor} from '../util/util'
 import {createYUpdate, getText, insertText} from '../util/prosemirror-util'
 
 vi.stubGlobal('__TAURI__', {})
-vi.stubGlobal('matchMedia', vi.fn(() => ({
-  matchMedia: () => ''
-})))
 
 vi.mock('mermaid', () => ({}))
 vi.mock('@/db', () => ({DB: mock<DB>()}))
@@ -38,7 +35,7 @@ test('openFileByPath - path in files', async () => {
   expect(ctrl.file.currentFile?.id).toBe('2')
   await renderEditor('2', ctrl, target)
 
-  await waitFor(() => {
+  await vi.waitFor(() => {
     expect(getText(ctrl)).toBe('File2')
   })
 
@@ -52,7 +49,7 @@ test('openFileByPath - path in files', async () => {
   expect(ctrl.file.currentFile?.id).toBe('1')
   await renderEditor('1', ctrl, target)
 
-  await waitFor(() => {
+  await vi.waitFor(() => {
     expect(getText(ctrl)).toBe('File1')
   })
 })
@@ -75,7 +72,7 @@ test('openFileByPath - push path to files', async () => {
   expect(ctrl.file.currentFile?.editorView).toBe(undefined)
   await renderEditor(ctrl.file.currentFile!.id, ctrl, target)
 
-  await waitFor(() => {
+  await vi.waitFor(() => {
     expect(getText(ctrl)).toBe('File1')
   })
 })
@@ -92,7 +89,7 @@ test('openFileByPath - path and text', async () => {
   expect(store.files.length).toBe(2)
   await renderEditor(ctrl.file.currentFile!.id, ctrl, target)
 
-  await waitFor(() => {
+  await vi.waitFor(() => {
     expect(getText(ctrl)).toBe('File1')
   })
 })

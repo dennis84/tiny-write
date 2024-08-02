@@ -4,12 +4,8 @@ import {Box} from '@tldraw/editor'
 import {DB} from '@/db'
 import {createCtrl} from '@/services'
 import {createState} from '@/state'
-import {waitFor, pause, renderEditor} from '../util/util'
+import {renderEditor} from '../util/util'
 import {createYUpdate, getText, insertText} from '../util/prosemirror-util'
-
-vi.stubGlobal('matchMedia', vi.fn(() => ({
-  matchMedia: () => ''
-})))
 
 vi.stubGlobal('location', ({
   pathname: '',
@@ -76,7 +72,7 @@ test('init - existing file', async () => {
 
   await renderEditor(currentFile!.id, ctrl, target)
 
-  await waitFor(() => {
+  await vi.waitFor(() => {
     expect(getText(ctrl)).toBe('Test 2')
   })
 })
@@ -170,7 +166,7 @@ test('openFile - existing', async () => {
 
   vi.mocked(DB.updateFile).mockClear()
 
-  await waitFor(() => {
+  await vi.waitFor(() => {
     expect(getText(ctrl)).toBe('Test')
   })
 
@@ -191,7 +187,7 @@ test('openFile - existing', async () => {
 
   await renderEditor(currentFile!.id, ctrl, target)
 
-  await waitFor(() => {
+  await vi.waitFor(() => {
     expect(getText(ctrl)).toBe('Test 2')
   })
 })
@@ -232,7 +228,7 @@ test('openFile - not delete empty', async () => {
 
   await renderEditor('2', ctrl, target)
 
-  await waitFor(() => {
+  await vi.waitFor(() => {
     expect(getText(ctrl)).toBe('Test 2')
   })
 })
@@ -261,7 +257,7 @@ test('openFile - open collab', async () => {
 
   renderEditor(ctrl.file.currentFile!.id, ctrl, target)
 
-  await waitFor(() => {
+  await vi.waitFor(() => {
     expect(getText(ctrl)).toBe('Test')
     expect(store.files.length).toBe(2)
     expect(store.collab?.provider?.roomname).toBe('editor/room-123')
@@ -283,7 +279,6 @@ test('openFile - open from collab', async () => {
 
   expect(store.files.length).toBe(2)
   ctrl.collab.startCollab()
-  await pause(10)
 
   expect(store.files.length).toBe(2)
   expect(store.collab?.started).toBe(true)
@@ -295,7 +290,7 @@ test('openFile - open from collab', async () => {
   expect(ctrl.file.currentFile?.id).toBe('2')
   await renderEditor('2', ctrl, target)
 
-  await waitFor(() => {
+  await vi.waitFor(() => {
     expect(getText(ctrl)).toBe('Test 2')
   })
 })

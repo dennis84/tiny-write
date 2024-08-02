@@ -8,11 +8,6 @@ import {renderCodeEditor} from '../util/util'
 vi.mock('@/db', () => ({DB: mock()}))
 vi.mock('mermaid', () => ({}))
 
-vi.stubGlobal('matchMedia', vi.fn(() => ({
-  matchMedia: () => '',
-  addEventListener: () => undefined
-})))
-
 beforeEach(() => {
   vi.restoreAllMocks()
 })

@@ -40,23 +40,6 @@ export const renderCodeEditor = async (id: string, ctrl: Ctrl, target: Element, 
   ctrl.code.renderEditor(file!, target)
 }
 
-export const waitFor = async (fn: () => unknown, retries = 10): Promise<void> => {
-  try {
-    fn()
-  } catch (error) {
-    if (retries === 0) {
-      console.error(error)
-      throw error
-    }
-
-    await new Promise((resolve) => setTimeout(resolve, 10))
-    return waitFor(fn, retries - 1)
-  }
-}
-
-export const pause = (ms: number) =>
-  new Promise((resolve) => setTimeout(() => resolve(1), ms))
-
 type IpcMockFn = (...args: any[]) => any
 
 export const createIpcMock = (options?: Record<string, IpcMockFn>) => {

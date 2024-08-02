@@ -4,13 +4,10 @@ import {clearMocks} from '@tauri-apps/api/mocks'
 import {DB} from '@/db'
 import {createCtrl} from '@/services'
 import {ElementType, Mode, createState} from '@/state'
-import {createIpcMock, renderEditor, waitFor} from '../util/util'
+import {createIpcMock, renderEditor} from '../util/util'
 import {createYUpdate, getText} from '../util/prosemirror-util'
 
 vi.stubGlobal('__TAURI__', {})
-vi.stubGlobal('matchMedia', vi.fn(() => ({
-  matchMedia: () => ''
-})))
 
 vi.mock('mermaid', () => ({}))
 vi.mock('@/db', () => ({DB: mock<DB>()}))
@@ -37,7 +34,7 @@ test('init - load existing by path', async () => {
   await renderEditor('1', ctrl, target)
 
   expect(ctrl.file.currentFile?.path).toBe('file1')
-  await waitFor(() => {
+  await vi.waitFor(() => {
     expect(getText(ctrl)).toBe('File1')
   })
 })
@@ -55,7 +52,7 @@ test('init - check text', async () => {
   await renderEditor(ctrl.file.currentFile!.id, ctrl, target)
 
   expect(ctrl.file.currentFile?.path).toBe('file2')
-  await waitFor(() => {
+  await vi.waitFor(() => {
     expect(getText(ctrl)).toBe('File2')
   })
 })

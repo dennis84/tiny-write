@@ -3,15 +3,11 @@ import {mock} from 'vitest-mock-extended'
 
 import {createState} from '@/state'
 import {createCtrl} from '@/services'
-import {renderEditor, waitFor} from '../util/util'
+import {renderEditor} from '../util/util'
 import {getText, insertText} from '../util/prosemirror-util'
 
 vi.mock('@/db', () => ({DB: mock()}))
 vi.mock('mermaid', () => ({}))
-
-vi.stubGlobal('matchMedia', vi.fn(() => ({
-  matchMedia: () => ''
-})))
 
 beforeEach(() => {
   vi.restoreAllMocks()
@@ -34,12 +30,12 @@ test('addVersion', async () => {
   expect(getText(ctrl)).toBe('Test123')
 
   ctrl.changeSet.renderVersion(ctrl.file.currentFile!.versions[0]!)
-  await waitFor(() => {
+  await vi.waitFor(() => {
     expect(getText(ctrl)).toBe('Test')
   })
 
   ctrl.changeSet.applyVersion(ctrl.file.currentFile!.versions[0]!)
-  await waitFor(() => {
+  await vi.waitFor(() => {
     expect(getText(ctrl)).toBe('Test')
   })
 })

@@ -8,7 +8,6 @@ import {Canvas, createState, ElementType} from '@/state'
 import {CanvasCollabService} from '@/services/CanvasCollabService'
 import {CanvasService} from '@/services/CanvasService'
 import {CollabService} from '@/services/CollabService'
-import {waitFor} from '../util/util'
 
 vi.mock('@/db', () => ({DB: mock()}))
 
@@ -125,7 +124,7 @@ test('addElements', async () => {
   // Undo add
   undoManager.undo()
 
-  await waitFor(() => {
+  await vi.waitFor(() => {
     expect(service.elements?.toJSON()).toEqual({})
     expect(canvasService.removeElements).toHaveBeenCalledTimes(2)
   })

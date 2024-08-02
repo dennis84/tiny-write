@@ -8,11 +8,6 @@ import {renderCodeEditor, renderEditor} from '../util/util'
 
 vi.mock('@/db', () => ({DB: mock()}))
 
-vi.stubGlobal('matchMedia', vi.fn(() => ({
-  matchMedia: () => '',
-  addEventListener: () => undefined,
-})))
-
 const WsMock = vi.fn()
 vi.stubGlobal('WebSocket', WsMock)
 

@@ -4,73 +4,73 @@ import {Camera, Config, ElementType, Mode, Window} from '@/state'
 import * as remote from '@/remote'
 
 export interface PersistedVersion {
-  ydoc: Uint8Array;
-  date: Date;
+  ydoc: Uint8Array
+  date: Date
 }
 
 export interface PersistedFile {
-  id: string;
-  parentId?: string;
-  leftId?: string;
-  ydoc: Uint8Array;
-  versions?: PersistedVersion[];
-  lastModified: Date;
-  path?: string;
-  newFile?: string;
-  code?: boolean;
-  codeLang?: string;
-  active?: boolean;
-  deleted?: boolean;
+  id: string
+  parentId?: string
+  leftId?: string
+  ydoc: Uint8Array
+  versions?: PersistedVersion[]
+  lastModified: Date
+  path?: string
+  newFile?: string
+  code?: boolean
+  codeLang?: string
+  active?: boolean
+  deleted?: boolean
 }
 
 export interface PersistedCanvasElement {
-  type: ElementType;
+  type: ElementType
 }
 
 export interface PersistedCanvas {
-  id: string;
-  parentId?: string;
-  leftId?: string;
-  camera: Camera;
-  elements: PersistedCanvasElement[];
-  active?: boolean;
-  lastModified?: Date;
-  deleted?: boolean;
+  id: string
+  parentId?: string
+  leftId?: string
+  camera: Camera
+  elements: PersistedCanvasElement[]
+  active?: boolean
+  lastModified?: Date
+  deleted?: boolean
 }
 
 interface Meta {
-  mode: Mode;
+  mode: Mode
 }
 
 interface Tree {
-  collapsed: string[];
+  collapsed: string[]
 }
 
 interface MyDB extends DBSchema {
   config: {
-    key: string;
-    value: Config;
-  };
+    key: string
+    value: Config
+  }
   canvases: {
-    key: string;
-    value: PersistedCanvas;
-  };
+    key: string
+    value: PersistedCanvas
+  }
   window: {
-    key: string;
-    value: Window;
-  };
+    key: string
+    value: Window
+  }
   files: {
-    key: string;
-    value: PersistedFile;
-  };
+    key: string
+    value: PersistedFile
+  }
   meta: {
-    key: string;
-    value: Meta;
-  };
+    key: string
+    value: Meta
+  }
   tree: {
-    key: string;
-    value: Tree;
-  };
+    key: string
+    value: Tree
+  }
 }
 
 const DB_NAME = 'tiny_write'

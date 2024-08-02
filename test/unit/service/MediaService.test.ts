@@ -10,10 +10,6 @@ import {createYUpdate} from '../util/prosemirror-util'
 
 document.elementFromPoint = () => null
 
-vi.stubGlobal('matchMedia', vi.fn(() => ({
-  matchMedia: () => ''
-})))
-
 vi.stubGlobal('location', ({
   pathname: '',
   reload: vi.fn(),
