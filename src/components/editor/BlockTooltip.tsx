@@ -11,6 +11,7 @@ import {isTauri} from '@/env'
 import {Align} from '@/prosemirror/image'
 import {blockHandlePluginKey} from '@/prosemirror/block-handle'
 import {InputLine, InputLineConfig} from '@/components/dialog/InputLine'
+import {Icon} from '../Icon'
 
 const TooltipEl = styled('div')`
   position: absolute;
@@ -18,14 +19,14 @@ const TooltipEl = styled('div')`
 `
 
 interface Block {
-  blockPos: number;
-  blockNode: Node;
-  cursorPos?: number;
-  cursorNode?: Node;
+  blockPos: number
+  blockNode: Node
+  cursorPos?: number
+  cursorNode?: Node
 }
 
 interface Cleanup {
-  fn?: () => void;
+  fn?: () => void
 }
 
 export const BlockTooltip = () => {
@@ -61,9 +62,11 @@ export const BlockTooltip = () => {
     if (!view) return
 
     const dom = view.domAtPos(block.blockPos + 1)
-    dom.node.dispatchEvent(new CustomEvent('cm:user_event', {
-      detail: {userEvent: 'prettify'},
-    }))
+    dom.node.dispatchEvent(
+      new CustomEvent('cm:user_event', {
+        detail: {userEvent: 'prettify'},
+      }),
+    )
 
     view.focus()
     closeTooltip()
@@ -75,9 +78,11 @@ export const BlockTooltip = () => {
     const view = ctrl.file.currentFile?.editorView
     if (!view) return
     const dom = view.domAtPos(block.blockPos + 1)
-    dom.node.dispatchEvent(new CustomEvent('cm:user_event', {
-      detail: {userEvent: 'fold_all'},
-    }))
+    dom.node.dispatchEvent(
+      new CustomEvent('cm:user_event', {
+        detail: {userEvent: 'fold_all'},
+      }),
+    )
 
     view.focus()
     closeTooltip()
@@ -106,7 +111,7 @@ export const BlockTooltip = () => {
         tr.setSelection(new TextSelection(pos))
         tr.setNodeAttribute(block.blockPos, 'lang', lang)
         view.dispatch(tr)
-      }
+      },
     })
 
     closeTooltip()
@@ -231,7 +236,8 @@ export const BlockTooltip = () => {
     const view = ctrl.file.currentFile?.editorView
     if (!view) return
 
-    const mark = view.state.schema.marks.link.isInSet(block.cursorNode?.marks ?? []) ||
+    const mark =
+      view.state.schema.marks.link.isInSet(block.cursorNode?.marks ?? []) ||
       view.state.schema.marks.edit_link.isInSet(block.cursorNode?.marks ?? [])
     const href = mark?.attrs.href
     const maxLen = 20
@@ -329,12 +335,13 @@ export const BlockTooltip = () => {
         tooltipRef.style.left = `${x}px`
         tooltipRef.style.top = `${y}px`
         const side = placement.split('-')[0]
-        const staticSide = {
-          top: 'bottom',
-          right: 'left',
-          bottom: 'top',
-          left: 'right'
-        }[side] ?? 'top'
+        const staticSide =
+          {
+            top: 'bottom',
+            right: 'left',
+            bottom: 'top',
+            left: 'right',
+          }[side] ?? 'top'
 
         if (middlewareData.arrow) {
           const {x, y} = middlewareData.arrow
@@ -342,8 +349,8 @@ export const BlockTooltip = () => {
           Object.assign(arrowRef.style, {
             left: x != null ? `${x}px` : '',
             top: y != null ? `${y}px` : '',
-            [staticSide]: `${-arrowRef.offsetWidth / 2}px`
-          });
+            [staticSide]: `${-arrowRef.offsetWidth / 2}px`,
+          })
         }
       })
     })
@@ -358,41 +365,81 @@ export const BlockTooltip = () => {
     document.removeEventListener('mousedown', onBackgroundClick)
   })
 
-  return <>
-    <Show when={selectedBlock()}>
-      {(block) => <>
-        <TooltipEl ref={tooltipRef} class="block-tooltip">
-          <Show when={block().blockNode?.type.name === 'code_block'}>
-            <Show when={block().blockNode.attrs.lang === 'mermaid'}>
-              <div onClick={onMermaidSave}>💾 save as png</div>
-              <div onClick={onMermaidHideCode}>
-                {block().blockNode.attrs.hidden ? '🙉 Show code' : '🙈 Hide code'}
+  return (
+    <>
+      <Show when={selectedBlock()}>
+        {(block) => (
+          <>
+            <TooltipEl ref={tooltipRef} class="block-tooltip">
+              <Show when={block().blockNode?.type.name === 'code_block'}>
+                <Show when={block().blockNode.attrs.lang === 'mermaid'}>
+                  <div onClick={onMermaidSave}>
+                    <Icon>file_save</Icon> save as png
+                  </div>
+                  <div onClick={onMermaidHideCode}>
+                    <Show
+                      when={block().blockNode.attrs.hidden}
+                      fallback={
+                        <>
+                          <Icon>visibility_off</Icon> Hide code
+                        </>
+                      }
+                    >
+                      <Icon>visibility</Icon> Show code
+                    </Show>
+                  </div>
+                  <hr class="divider" />
+                </Show>
+                <div onClick={onChangeLang} data-testid="change_lang">
+                  <Icon>javascript</Icon> change language
+                </div>
+                <div onClick={onPrettify} data-testid="prettify">
+                  <Icon>code_blocks</Icon> prettify
+                </div>
+                <div onClick={onFoldAll}>
+                  <Icon>unfold_less</Icon> fold all
+                </div>
+                <hr class="divider" />
+              </Show>
+              <Show
+                when={
+                  block().cursorNode?.type.name === 'image' ||
+                  block().cursorNode?.type.name === 'video'
+                }
+              >
+                <div onClick={onAlign(Align.FloatLeft)} data-testid="align_float_left">
+                  <Icon>format_image_left</Icon> float left
+                </div>
+                <div onClick={onAlign(Align.FloatRight)} data-testid="align_float_right">
+                  <Icon>format_image_right</Icon> float right
+                </div>
+                <div onClick={onAlign(Align.Center)} data-testid="align_center">
+                  <Icon>panorama</Icon> center
+                </div>
+                <hr class="divider" />
+              </Show>
+              <Show when={getLinkHref()}>
+                {(href) => (
+                  <>
+                    <div onClick={onOpenLink} data-testid="open_link">
+                      <Icon>open_in_new</Icon> open: {href()}
+                    </div>
+                    <hr class="divider" />
+                  </>
+                )}
+              </Show>
+              <div onClick={onToPlain}>
+                <Icon>format_clear</Icon> remove text formats
               </div>
-              <hr class="divider" />
-            </Show>
-            <div onClick={onChangeLang} data-testid="change_lang">💱 change language</div>
-            <div onClick={onPrettify} data-testid="prettify">💅 prettify</div>
-            <div onClick={onFoldAll}>🙏 fold all</div>
-            <hr class="divider" />
-          </Show>
-          <Show when={block().cursorNode?.type.name === 'image' || block().cursorNode?.type.name === 'video'}>
-            <div onClick={onAlign(Align.FloatLeft)} data-testid="align_float_left">👈 float left</div>
-            <div onClick={onAlign(Align.FloatRight)} data-testid="align_float_right">👉 float right</div>
-            <div onClick={onAlign(Align.Center)} data-testid="align_center">🖖 center</div>
-            <hr class="divider" />
-          </Show>
-          <Show when={getLinkHref()}>
-            {(href) => <>
-              <div onClick={onOpenLink} data-testid="open_link">↗️ open: {href()}</div>
-              <hr class="divider" />
-            </>}
-          </Show>
-          <div onClick={onToPlain}>🧽 remove text formats</div>
-          <div onClick={onRemoveBlock} data-testid="remove_block">🗑️ remove block</div>
-          <span ref={arrowRef} class="arrow"></span>
-        </TooltipEl>
-      </>}
-    </Show>
-    <InputLine getter={inputLine} setter={setInputLine} />
-  </>
+              <div onClick={onRemoveBlock} data-testid="remove_block">
+                <Icon>variable_remove</Icon> remove block
+              </div>
+              <span ref={arrowRef} class="arrow"></span>
+            </TooltipEl>
+          </>
+        )}
+      </Show>
+      <InputLine getter={inputLine} setter={setInputLine} />
+    </>
+  )
 }

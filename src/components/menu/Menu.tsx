@@ -14,6 +14,7 @@ import {SubmenuEdit} from './SubmenuEdit'
 import {SubmenuCollab} from './SubmenuCollab'
 import {SubmenuTree} from './SubmenuTree'
 import {SubmenuCode} from './SubmenuCode'
+import {Icon} from '../Icon'
 
 const fullWidth = 500
 
@@ -73,7 +74,7 @@ export const Drawer = styled('div')`
   background: var(--foreground-10);
   padding: 20px;
   height: 100%;
-  display: ${(props: any) => props.hidden ? 'none' : 'block'};
+  display: ${(props: any) => (props.hidden ? 'none' : 'block')};
   width: 400px;
   overflow-y: auto;
   scrollbar-width: none;
@@ -116,7 +117,9 @@ const itemCss = `
   text-align: left;
 `
 
-export const Text = styled('p')`${itemCss}`
+export const Text = styled('p')`
+  ${itemCss}
+`
 
 export const Note = styled('p')`
   ${itemCss}
@@ -136,7 +139,10 @@ export const Link = styled('button')`
   i {
     font-style: normal;
   }
-  > span {
+  > .icon {
+    margin-right: 6px;
+  }
+  > .keys {
     justify-self: flex-end;
     margin-left: auto;
   }
@@ -165,22 +171,29 @@ export const Link = styled('button')`
 
 export const Keys = (props: {keys: string[]}) => (
   <span
-    class={css`
-      margin-top: -4px;
-      > i {
-        color: var(--foreground);
-        background: var(--foreground-10);
-        border: 1px solid var(--foreground-60);
-        box-shadow: 0 2px 0 0 var(--foreground-60);
-        border-radius: 2px;
-        font-style: normal;
-        font-size: 13px;
-        line-height: 1.4;
-        padding: 1px 4px;
-        margin: 0 1px;
-      }
-    `}
-  >{props.keys.map((k: string) => <i>{k}</i>)}</span>
+    class={
+      'keys ' +
+      css`
+        margin-top: -4px;
+        > i {
+          color: var(--foreground);
+          background: var(--foreground-10);
+          border: 1px solid var(--foreground-60);
+          box-shadow: 0 2px 0 0 var(--foreground-60);
+          border-radius: 2px;
+          font-style: normal;
+          font-size: 13px;
+          line-height: 1.4;
+          padding: 1px 4px;
+          margin: 0 1px;
+        }
+      `
+    }
+  >
+    {props.keys.map((k: string) => (
+      <i>{k}</i>
+    ))}
+  </span>
 )
 
 export const Menu = () => {
@@ -194,17 +207,14 @@ export const Menu = () => {
     setShow(show() ? undefined : 'main')
   }
 
-  const onToggleAlwaysOnTop = () =>
-    ctrl.config.setAlwaysOnTop(!store.config.alwaysOnTop)
+  const onToggleAlwaysOnTop = () => ctrl.config.setAlwaysOnTop(!store.config.alwaysOnTop)
 
   const onToggleTypewriterMode = () =>
     ctrl.config.updateConfig({typewriterMode: !store.config.typewriterMode})
 
-  const onToggleSpellcheck = () =>
-    ctrl.config.updateConfig({spellcheck: !store.config.spellcheck})
+  const onToggleSpellcheck = () => ctrl.config.updateConfig({spellcheck: !store.config.spellcheck})
 
-  const onToggleFullscreen = () =>
-    ctrl.app.setFullscreen(!store.fullscreen)
+  const onToggleFullscreen = () => ctrl.app.setFullscreen(!store.fullscreen)
 
   const onVersion = () => {
     window.open(VERSION_URL, '_blank')
@@ -247,10 +257,7 @@ export const Menu = () => {
 
   return (
     <Container>
-      <Burger
-        active={show() !== undefined}
-        onClick={onBurgerClick}
-        data-testid="burger">
+      <Burger active={show() !== undefined} onClick={onBurgerClick} data-testid="burger">
         <span />
         <span />
       </Burger>
@@ -272,7 +279,8 @@ export const Menu = () => {
       <Show when={show() === 'main'}>
         <Drawer
           onClick={() => ctrl.file.currentFile?.editorView?.focus()}
-          data-tauri-drag-region="true">
+          data-tauri-drag-region="true"
+        >
           <SubmenuTree onBin={() => setShow('bin')} maybeHide={maybeHide} />
           {/* Submenu File */}
           <Show when={store.mode === Mode.Editor}>
@@ -291,29 +299,36 @@ export const Menu = () => {
           {/* Submenu View */}
           <Label>View</Label>
           <Sub data-tauri-drag-region="true">
-            <Link data-testid="appearance" onClick={() => setShow('theme')}>Appearance 🎨</Link>
+            <Link data-testid="appearance" onClick={() => setShow('theme')}>
+              <Icon>contrast</Icon> Appearance
+            </Link>
             <Show when={showCodeFormat()}>
-              <Link onClick={() => setShow('code_format')}>Code Format 💅</Link>
+              <Link onClick={() => setShow('code_format')}>
+                <Icon>code_blocks</Icon> Code Format
+              </Link>
             </Show>
             <Show when={store.mode === Mode.Editor}>
-              <Link onClick={() => setShow('change_set')}>Change Set 📆</Link>
+              <Link onClick={() => setShow('change_set')}>
+                <Icon>history</Icon> Change Set
+              </Link>
             </Show>
             <Show when={isTauri()}>
               <Link onClick={onToggleFullscreen}>
-                Fullscreen {store.fullscreen && '✅'} <Keys keys={[modKey, 'Enter']} />
+                <Icon>fullscreen</Icon> Fullscreen {store.fullscreen && '✅'} <Keys keys={[modKey, 'Enter']} />
               </Link>
             </Show>
             <Show when={store.mode === Mode.Editor}>
               <Link onClick={onToggleTypewriterMode}>
-                Typewriter mode {store.config.typewriterMode && '✅'}
+                <Icon>vertical_align_center</Icon> Typewriter mode{' '}
+                {store.config.typewriterMode && '✅'}
               </Link>
               <Link onClick={onToggleSpellcheck}>
-                Spellcheck {store.config.spellcheck && '✅'}
+                <Icon>spellcheck</Icon> Spellcheck {store.config.spellcheck && '✅'}
               </Link>
             </Show>
             <Show when={isTauri()}>
               <Link onClick={onToggleAlwaysOnTop}>
-                Always on Top {store.config.alwaysOnTop && '✅'}
+                <Icon>desktop_landscape</Icon> Always on Top {store.config.alwaysOnTop && '✅'}
               </Link>
             </Show>
           </Sub>
@@ -323,7 +338,7 @@ export const Menu = () => {
           <Label>Application</Label>
           <Sub data-tauri-drag-region="true">
             {/* doesn't work with tauri */}
-            <Show when={(!isTauri() && false)}>
+            <Show when={!isTauri() && false}>
               <Link onClick={onOpenInApp}>Open in App ⚡</Link>
             </Show>
             <Link onClick={onVersion}>
@@ -331,8 +346,7 @@ export const Menu = () => {
             </Link>
             <Link onClick={() => setShow('help')}>Help</Link>
             <Show when={isTauri()}>
-              <Link
-                onClick={() => remote.quit()}>
+              <Link onClick={() => remote.quit()}>
                 Quit <Keys keys={[modKey, 'q']} />
               </Link>
             </Show>

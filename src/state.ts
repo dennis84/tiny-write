@@ -160,6 +160,8 @@ export const isFile = (it: any): it is File => it?.ydoc !== undefined
 
 export const isCodeFile = (it: any): it is File => it?.code
 
+export const isCanvas = (it: any): it is Canvas => it?.camera
+
 export interface Canvas {
   id: string;
   parentId?: string;

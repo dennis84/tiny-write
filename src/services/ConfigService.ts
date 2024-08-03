@@ -289,15 +289,12 @@ export class ConfigService {
   }
 
   get codeTheme() {
-    const getDefaltCodeTheme = () => isDark()
-      ? ConfigService.codeThemes.dracula
-      : ConfigService.codeThemes['material-light']
     const currentCodeTheme = this.store.config.codeTheme
     return !currentCodeTheme
-      ? getDefaltCodeTheme()
+      ? ConfigService.getDefaltCodeTheme()
       : ConfigService.codeThemes[currentCodeTheme]
         ? ConfigService.codeThemes[currentCodeTheme]
-        : getDefaltCodeTheme()
+        : ConfigService.getDefaltCodeTheme()
   }
 
   get font() {
@@ -320,6 +317,10 @@ export class ConfigService {
 
   static getDefaltTheme() {
     return isDark() ? ConfigService.themes.dark : ConfigService.themes.light
+  }
+
+  static getDefaltCodeTheme(dark: boolean | undefined = undefined) {
+    return (dark ?? isDark()) ? ConfigService.codeThemes.dracula : ConfigService.codeThemes['material-light']
   }
 
   static getThemeConfig(state: State) {

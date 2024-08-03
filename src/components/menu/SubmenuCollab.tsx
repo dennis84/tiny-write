@@ -3,6 +3,7 @@ import {useState} from '@/state'
 import * as remote from '@/remote'
 import {Label, Link, Sub, Text} from './Menu'
 import {WEB_URL} from '@/env'
+import {Icon} from '../Icon'
 
 export const SubmenuCollab = () => {
   const [store, ctrl] = useState()
@@ -52,7 +53,7 @@ export const SubmenuCollab = () => {
           <Link
             onClick={onCollabStart}
             data-testid="collab">
-            Share 🌐
+            <Icon>groups</Icon> Share
           </Link>
         </Show>
         <Show when={store.collab?.started}>

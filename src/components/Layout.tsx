@@ -34,7 +34,8 @@ export const Layout = styled('div')`
     div {
       position: relative;
       z-index: 1;
-      display: block;
+      display: flex;
+      align-items: center;
       padding: 6px 8px;
       margin: 2px 0;
       min-height: 32px;
@@ -43,6 +44,9 @@ export const Layout = styled('div')`
       &:hover, &.selected {
         background: var(--primary-background);
         color: var(--primary-foreground);
+      }
+      > span {
+        margin-right: 10px;
       }
     }
     .divider {

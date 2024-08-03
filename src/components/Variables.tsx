@@ -92,6 +92,14 @@ const setupFonts = () => {
     }
   }
 
+  styles += `
+    @font-face {
+      font-family: 'Material Symbols Outlined';
+      font-style: normal;
+      src: url(./material-symbols.woff2) format('woff2');
+    }
+  `
+
   const style = document.createElement('style')
   style.textContent = styles
   document.head.append(style)

@@ -4,6 +4,7 @@ import {styled} from 'solid-styled-components'
 import {getTheme} from '@/codemirror/theme'
 import {LangInputEditor} from './InputLineEditor'
 import {useState} from '@/state'
+import {ConfigService} from '@/services/ConfigService'
 import {codeMirror} from '@/components/code/Style'
 
 const Layer = styled('div')`
@@ -29,7 +30,7 @@ const Container = styled('div')`
     .cm-scroller {
       padding: 10px !important;
       &::before {
-        content: "❯";
+        content: '❯';
         color: var(--primary-background);
       }
     }
@@ -37,13 +38,13 @@ const Container = styled('div')`
 `
 
 export interface InputLineConfig {
-  value: string;
-  onEnter: (lang: string) => void;
+  value: string
+  onEnter: (lang: string) => void
 }
 
 interface Props {
-  getter: Accessor<InputLineConfig | undefined>;
-  setter: Setter<InputLineConfig | undefined>;
+  getter: Accessor<InputLineConfig | undefined>
+  setter: Setter<InputLineConfig | undefined>
 }
 
 export const InputLine = (props: Props) => {
@@ -55,17 +56,22 @@ export const InputLine = (props: Props) => {
     const config = props.getter()
     if (config === undefined) return
 
+    let codeTheme = ctrl.config.codeTheme
+    if (ctrl.config.theme.dark !== codeTheme.dark) {
+      codeTheme = ConfigService.getDefaltCodeTheme(ctrl.config.theme.dark)
+    }
+
     const editor = new LangInputEditor({
       doc: config.value,
       parent: ref,
-      theme: getTheme(ctrl.config.codeTheme.value),
+      theme: getTheme(codeTheme.value),
       onEnter: (lang) => {
         config.onEnter(lang)
         props.setter(undefined)
       },
       onClose: () => {
         props.setter(undefined)
-      }
+      },
     })
 
     editor.focus()

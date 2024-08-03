@@ -2,6 +2,7 @@ import {createSignal} from 'solid-js'
 import {useState} from '@/state'
 import {Label, Link, Sub} from './Menu'
 import {InputLine, InputLineConfig} from '../dialog/InputLine'
+import {Icon} from '../Icon'
 
 export const SubmenuCode = () => {
   const [, ctrl] = useState()
@@ -25,7 +26,7 @@ export const SubmenuCode = () => {
     <>
       <Label>Code</Label>
       <Sub data-tauri-drag-region="true">
-        <Link onClick={onChangeLang}>Change language 💱</Link>
+        <Link onClick={onChangeLang}><Icon>javascript</Icon> Change language</Link>
       </Sub>
       <InputLine getter={inputLine} setter={setInputLine} />
     </>

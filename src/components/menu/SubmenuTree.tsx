@@ -1,21 +1,22 @@
-import {For, Show, createEffect, createSignal, onCleanup, onMount} from 'solid-js'
+import {For, Match, Show, Switch, createEffect, createSignal, onCleanup, onMount} from 'solid-js'
 import {Portal} from 'solid-js/web'
 import {unwrap} from 'solid-js/store'
 import {css, styled} from 'solid-styled-components'
 import {DragGesture} from '@use-gesture/vanilla'
-import {Mode, isCodeFile, isFile, useState} from '@/state'
+import {Mode, isCanvas, isCodeFile, isFile, useState} from '@/state'
 import {TreeNode, TreeNodeItem} from '@/services/TreeService'
 import {FileService} from '@/services/FileService'
 import {Label, Link, Sub, Text} from './Menu'
 import {Tooltip} from './Tooltip'
 import {InputLine, InputLineConfig} from '../dialog/InputLine'
+import {Icon} from '../Icon'
 
 const HighlightContent = styled('div')`
   position: absolute;
   top: 0;
   bottom: 0;
   left: 0;
-  right: 360px;
+  right: 400px;
   border: 10px solid var(--primary-background-50);
   user-select: none;
   pointer-events: none;
@@ -54,14 +55,14 @@ const DropLine = styled('div')`
 `
 
 const TreeLinkCorner = styled('i')`
-  padding-right: 8px;
-  padding-left: 8px;
   margin-right: 5px;
   cursor: var(--cursor-pointer);
   font-family: monospace;
   font-weight: normal;
   font-style: normal;
   display: flex;
+  color: var(--foreground-50);
+  ${(props: any) => props.highlight ? `color: var(--primary-background);` : ''}
   ${(props: any) => props.level ? `margin-left: ${String(20 * props.level)}px;` : ''}
   ${(props: any) => props.expandable ? `
     &:hover {
@@ -75,17 +76,18 @@ const TreeLinkTitle = styled('span')`
   cursor: var(--cursor-pointer);
   width: 100%;
   touch-action: none;
+  ${(props: any) => props.highlight ? `color: var(--primary-background-80);` : ''}
   ${(props: any) => props.grabbing ? 'cursor: var(--cursor-grabbed);' : ''}
 `
 
 const LinkMenu = styled('span')`
   justify-self: flex-end;
+  display: flex;
+  align-items: center;
   margin-left: auto;
   cursor: var(--cursor-pointer);
   opacity: 0;
-  padding: 0 5px;
   border-radius: var(--border-radius);
-  font-weight: 900;
   color: var(--foreground);
   ${(props: any) => props.selected ? `
     opacity: 1;
@@ -135,9 +137,11 @@ export const SubmenuTree = (props: Props) => {
     const item = selected()?.item
     if (!item) return
 
+    closeTooltip()
     setInputLine({
       value: item?.title ?? '',
-      onEnter: (title: string) => {
+      onEnter: (value: string) => {
+        const title = value.trim() || undefined
         if (isFile(item)) {
           ctrl.file.updateFile(item.id, {title})
           FileService.saveFile(item)
@@ -145,8 +149,6 @@ export const SubmenuTree = (props: Props) => {
           ctrl.canvas.updateCanvas(item.id, {title})
           ctrl.canvas.saveCanvas(item)
         }
-
-        closeTooltip()
       }
     })
   }
@@ -358,7 +360,7 @@ export const SubmenuTree = (props: Props) => {
       if (isFile(p.node.item)) {
         setTitle(await ctrl.file.getTitle(p.node.item))
       } else {
-        setTitle((p.node.item.title ?? 'Canvas') + ' 🧑‍🎨')
+        setTitle(p.node.item.title ?? 'Canvas')
       }
     })
 
@@ -397,23 +399,28 @@ export const SubmenuTree = (props: Props) => {
           onClick={onCornerClick}
           expandable={p.node.tree.length > 0}
           level={p.level}
+          highlight={ctrl.tree.isCollapsed(p.node)}
         >
-          {ctrl.tree.isCollapsed(p.node) ? '+' : '└'}
+          <Switch>
+            <Match when={isCanvas(p.node.item)}><Icon>gesture</Icon></Match>
+            <Match when={isCodeFile(p.node.item)}><Icon>code_blocks</Icon></Match>
+            <Match when={!isCodeFile(p.node.item)}><Icon>text_snippet</Icon></Match>
+          </Switch>
         </TreeLinkCorner>
         <TreeLinkTitle
           ref={ref}
           onClick={onClick}
           grabbing={grabbing()}
+          highlight={isOnCanvas(p.node.item)}
         >
           {title()}
-          <Show when={isOnCanvas(p.node.item)}> ✅</Show>
         </TreeLinkTitle>
         <LinkMenu
           ref={anchor}
           selected={selected() === p.node}
           onClick={(e: MouseEvent) => showTooltip(e, anchor, p.node)}
           data-testid="tree_link_menu">
-          ⋯
+          <Icon>more_horiz</Icon>
         </LinkMenu>
       </Text>
     )
@@ -462,8 +469,7 @@ export const SubmenuTree = (props: Props) => {
               background: var(--primary-background-20);
             ` : undefined}
           >
-            <TreeLinkCorner>└ </TreeLinkCorner>
-            Bin 🗑️
+            <TreeLinkCorner><Icon>delete</Icon></TreeLinkCorner> Bin
           </Link>
         </Show>
       </Sub>
@@ -479,22 +485,46 @@ export const SubmenuTree = (props: Props) => {
       </Portal>
       <Show when={tooltipAnchor() !== undefined}>
         <Tooltip anchor={tooltipAnchor()} onClose={() => closeTooltip()}>
-          <div onClick={onRename} data-testid="rename">❝ Rename</div>
+          <div onClick={onRename} data-testid="rename">
+            <Icon>edit</Icon>
+            Rename
+          </div>
           <Show when={isOnCanvas(selected()?.item)}>
-            <div onClick={onFocus} data-testid="focus_file">🎯 Focus file</div>
+            <div onClick={onFocus} data-testid="focus_file">
+              <Icon>adjust</Icon>
+              Focus file
+            </div>
           </Show>
           <Show when={!selected()?.item.deleted && isFile(selected()?.item)}>
-            <div onClick={onAddFile} data-testid="add_file">✍️ Add file</div>
-            <div onClick={onAddCanvas} data-testid="add_canvas">🧑‍🎨 Add canvas</div>
-            <div onClick={onAddCode} data-testid="add_code">🖥️ Add code file</div>
+            <div onClick={onAddFile} data-testid="add_file">
+              <Icon>add</Icon>
+              Add file
+            </div>
+            <div onClick={onAddCanvas} data-testid="add_canvas">
+              <Icon>draw</Icon>
+              Add canvas
+            </div>
+            <div onClick={onAddCode} data-testid="add_code">
+              <Icon>code</Icon>
+              Add code file
+            </div>
             <hr class="divider" />
           </Show>
           <Show when={selected()?.item.deleted}>
-            <div onClick={onRestore} data-testid="restore">♻️ Restore</div>
-            <div onClick={onDeleteForever} data-testid="delete_forever">⚠️ Delete forever</div>
+            <div onClick={onRestore} data-testid="restore">
+              <Icon>restore_page</Icon>
+              Restore
+            </div>
+            <div onClick={onDeleteForever} data-testid="delete_forever">
+              <Icon>delete_forever</Icon>
+              Delete forever
+            </div>
           </Show>
           <Show when={!selected()?.item.deleted}>
-            <div onClick={onDelete} data-testid="delete">🗑️ Delete</div>
+            <div onClick={onDelete} data-testid="delete">
+              <Icon>delete</Icon>
+              Delete
+            </div>
           </Show>
         </Tooltip>
       </Show>

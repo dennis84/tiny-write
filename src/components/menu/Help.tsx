@@ -69,6 +69,9 @@ export const Help = (props: Props) => {
           <Keys keys={['```', 'lang', '␣']} /> Code block with highlighting
         </Text>
         <Text>
+          <Keys keys={['```', 'mermaid', '␣']} /> Create diagrams with mermaid
+        </Text>
+        <Text>
           Inline <Keys keys={['`']} />code
           <Keys keys={['`']} />
         </Text>

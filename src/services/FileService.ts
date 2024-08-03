@@ -337,7 +337,7 @@ export class FileService {
   async getTitle(file?: File, len = 25): Promise<string> {
     if (!file) return 'Undefined'
     if (isTauri() && file.path) return remote.toRelativePath(file.path)
-    if (file.code) return (file.title ?? 'Code') + ' 🖥️'
+    if (file.code) return (file.title ?? 'Code')
     else if (file.title) return file.title
 
     const ydoc = new Y.Doc({gc: false})

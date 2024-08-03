@@ -1,6 +1,7 @@
-import {For, Show, createEffect, createSignal, onCleanup, onMount} from 'solid-js'
+import {For, Match, Show, Switch, createEffect, createSignal, onCleanup, onMount} from 'solid-js'
 import {Vec} from '@tldraw/editor'
-import {CanvasLinkElement, File, isFile, useState} from '@/state'
+import {CanvasLinkElement, File, isCanvas, isCodeFile, isFile, useState} from '@/state'
+import {Icon} from '../Icon'
 
 export const LinkEnd = () => {
   let tooltipRef!: HTMLDivElement
@@ -39,7 +40,22 @@ export const LinkEnd = () => {
       setTitle(await ctrl.file.getTitle(p.file))
     })
 
-    return <div onClick={onClick}>🔗 {title()}</div>
+    return (
+      <div onClick={onClick}>
+        <Switch>
+          <Match when={isCanvas(p.file)}>
+            <Icon>gesture</Icon>
+          </Match>
+          <Match when={isCodeFile(p.file)}>
+            <Icon>code_blocks</Icon>
+          </Match>
+          <Match when={!isCodeFile(p.file)}>
+            <Icon>text_snippet</Icon>
+          </Match>
+        </Switch>
+        {title()}
+      </div>
+    )
   }
 
   const getFiles = (): File[] => {
@@ -104,10 +120,10 @@ export const LinkEnd = () => {
         <>
           <div class="canvas-link-end-tooltip" style={coordsStyle(link, cm)} ref={tooltipRef}>
             <div onClick={() => onNewFile(false, link, cm)} data-testid="link_end_new_file">
-              ✍️ New file
+              <Icon>post_add</Icon> New file
             </div>
             <div onClick={() => onNewFile(true, link, cm)} data-testid="link_end_new_code_file">
-              🖥️ New code file
+              <Icon>code_blocks</Icon> New code file
             </div>
             <Show when={getFiles()}>
               {(files) => (

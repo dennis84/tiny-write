@@ -1,6 +1,7 @@
 import {isMac, mod} from '@/env'
 import {useState} from '@/state'
 import {Keys, Label, Link, Sub} from './Menu'
+import {Icon} from '../Icon'
 
 export const SubmenuCanvas = ({maybeHide}: {maybeHide: () => void}) => {
   const [, ctrl] = useState()
@@ -31,11 +32,17 @@ export const SubmenuCanvas = ({maybeHide}: {maybeHide: () => void}) => {
       <Label>Canvas</Label>
       <Sub data-tauri-drag-region="true">
         <Link onClick={onNewFile} data-testid="new_file">
-          New file 📝 <Keys keys={[modKey, 'n']} />
+          <Icon>post_add</Icon> New file <Keys keys={[modKey, 'n']} />
         </Link>
-        <Link onClick={onClearCanvas}>Clear Canvas 🧽</Link>
-        <Link onClick={onBackToContent}>Back to content 🎯</Link>
-        <Link onClick={onSnapToGrid}>Snap to grid {ctrl.canvas.currentCanvas?.snapToGrid && '✅'}</Link>
+        <Link onClick={onClearCanvas}>
+          <Icon>clear</Icon> Clear canvas
+        </Link>
+        <Link onClick={onBackToContent}>
+          <Icon>adjust</Icon> Back to content
+        </Link>
+        <Link onClick={onSnapToGrid}>
+          <Icon>grid_3x3</Icon> Snap to grid {ctrl.canvas.currentCanvas?.snapToGrid && '✅'}
+        </Link>
       </Sub>
     </>
   )

@@ -3,6 +3,7 @@ import {isMac, isTauri, mod} from '@/env'
 import {useState} from '@/state'
 import * as remote from '@/remote'
 import {Keys, Label, Link, Sub} from './Menu'
+import {Icon} from '../Icon'
 
 export const SubmenuEditor = ({maybeHide}: {maybeHide: () => void}) => {
   const [, ctrl] = useState()
@@ -35,22 +36,18 @@ export const SubmenuEditor = ({maybeHide}: {maybeHide: () => void}) => {
 
   return (
     <>
-      <Label>
-        File {ctrl.file.currentFile?.path && <i>({relativePath()})</i>}
-      </Label>
+      <Label>File {ctrl.file.currentFile?.path && <i>({relativePath()})</i>}</Label>
       <Sub data-tauri-drag-region="true">
         <Link onClick={onNew} data-testid="new_file">
-          New file 🆕 <Keys keys={[modKey, 'n']} />
+          <Icon>post_add</Icon> New file <Keys keys={[modKey, 'n']} />
         </Link>
         <Show when={isTauri() && !ctrl.file.currentFile?.path}>
           <Link onClick={onSaveAs}>
-            Save to file 💾 <Keys keys={[modKey, 's']} />
+            <Icon>save_as</Icon> Save to file 💾 <Keys keys={[modKey, 's']} />
           </Link>
         </Show>
-        <Link
-          onClick={onClear}
-          data-testid="clear">
-          Clear file 🧽 <Keys keys={[modKey, 'w']} />
+        <Link onClick={onClear} data-testid="clear">
+          <Icon>clear</Icon> Clear file <Keys keys={[modKey, 'w']} />
         </Link>
       </Sub>
     </>

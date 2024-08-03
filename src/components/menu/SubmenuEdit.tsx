@@ -3,6 +3,7 @@ import {useState} from '@/state'
 import * as remote from '@/remote'
 import {isMac, isTauri, mod} from '@/env'
 import {Keys, Label, Link, Sub} from './Menu'
+import {Icon} from '../Icon'
 
 export const SubmenuEdit = () => {
   const [, ctrl] = useState()
@@ -44,23 +45,23 @@ export const SubmenuEdit = () => {
       <Label>Edit</Label>
       <Sub data-tauri-drag-region="true">
         <Link onClick={onUndo}>
-          Undo ↩️ <Keys keys={[modKey, 'z']} />
+          <Icon>undo</Icon> Undo <Keys keys={[modKey, 'z']} />
         </Link>
         <Link onClick={onRedo}>
-          Redo ↪️ <Keys keys={[modKey, ...(isMac ? ['Shift', 'z'] : ['y'])]} />
+          <Icon>redo</Icon> Redo <Keys keys={[modKey, ...(isMac ? ['Shift', 'z'] : ['y'])]} />
         </Link>
         <Link onClick={() => cmd('cut')}>
-          Cut <Keys keys={[modKey, 'x']} />
+          <Icon>content_cut</Icon> Cut <Keys keys={[modKey, 'x']} />
         </Link>
         <Link onClick={() => cmd('paste')} disabled={!isTauri()}>
-          Paste <Keys keys={[modKey, 'p']} />
+          <Icon>content_paste</Icon> Paste <Keys keys={[modKey, 'p']} />
         </Link>
         <Link onClick={() => cmd('copy')}>
-          Copy {lastAction() === 'copy' && '📋'} <Keys keys={[modKey, 'c']} />
+          <Icon>content_copy</Icon> Copy {lastAction() === 'copy' && '📋'} <Keys keys={[modKey, 'c']} />
         </Link>
         <Show when={ctrl.file.currentFile?.editorView}>
           <Link onClick={onCopyAllAsMd}>
-            Copy all as markdown {lastAction() === 'copy-md' && '📋'}
+            <Icon>markdown_copy</Icon> Copy all as markdown {lastAction() === 'copy-md' && '📋'}
           </Link>
         </Show>
       </Sub>
