@@ -8,14 +8,13 @@ import {useState} from '@/state'
 import * as remote from '@/remote'
 import {isTauri} from '@/env'
 import {Align} from '@/prosemirror/image'
-import {ZIndex} from '@/utils/z-index'
 import {InputLine, InputLineConfig} from '@/components/dialog/InputLine'
 import {Icon} from '../Icon'
 import {Block} from './BlockHandle'
 
 const TooltipEl = styled('div')`
   position: absolute;
-  z-index: ${ZIndex.MAX};
+  z-index: var(--z-index-max);
 `
 
 interface Cleanup {

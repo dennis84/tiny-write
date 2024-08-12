@@ -4,7 +4,7 @@ import {DragGesture} from '@use-gesture/vanilla'
 import {Box, PI, Vec, rotateSelectionHandle} from '@tldraw/editor'
 import {CornerType, EdgeType, useState} from '@/state'
 import {Selection} from '@/services/CanvasService'
-import {IndexType, zIndex} from '@/utils/z-index'
+import {IndexType, ZIndex} from '@/utils/z-index'
 
 interface BoundsProps {
   selection: Selection;
@@ -226,7 +226,7 @@ export const Bounds = (props: BoundsProps) => {
       {...others}
       ref={ref}
       style={{
-        'z-index': zIndex(props.index, IndexType.BOUNDS),
+        'z-index': ZIndex.element(props.index, IndexType.BOUNDS),
         'width': `${Number(props.selection.box.width) + BORDER_SIZE_2}px`,
         'height': `${Number(props.selection.box.height) + BORDER_SIZE_2}px`,
         'left': `${Number(props.selection.box.x) - BORDER_SIZE}px`,

@@ -3,7 +3,7 @@ import {styled} from 'solid-styled-components'
 import {Box, Vec, PI, VecLike} from '@tldraw/editor'
 import {DragGesture} from '@use-gesture/vanilla'
 import {Canvas, CanvasBoxElement, CanvasLinkElement, EdgeType, useState} from '@/state'
-import {IndexType, zIndex} from '@/utils/z-index'
+import {IndexType, ZIndex} from '@/utils/z-index'
 
 const LinkSvg = styled('svg')`
   position: absolute;
@@ -134,7 +134,7 @@ export const Link = ({element}: {element: CanvasLinkElement}) => {
       version="1.1"
       xmlns="http://www.w3.org/2000/svg"
       style={{
-        'z-index': zIndex(index(), IndexType.LINK),
+        'z-index': ZIndex.element(index(), IndexType.LINK),
       }}
     >
       <Path

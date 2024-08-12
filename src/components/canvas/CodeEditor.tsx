@@ -8,7 +8,7 @@ import {Scroll} from '@/components/Layout'
 import {CodeMirrorContainer} from '@/components/code/CodeEditor'
 import {Bounds} from './Bounds'
 import {LinkHandles} from './LinkHandles'
-import {IndexType, zIndex} from '@/utils/z-index'
+import {IndexType, ZIndex} from '@/utils/z-index'
 
 const CodeEditorScroll = styled(Scroll)(
   (props: any) => `
@@ -101,7 +101,7 @@ export const CodeEditor = ({element, index}: {element: CanvasCodeElement; index:
           'width': `${element.width}px`,
           'min-height': `${element.height}px`,
           'max-height': `${element.height}px`,
-          'z-index': `${zIndex(index, IndexType.CONTENT)}`,
+          'z-index': `${ZIndex.element(index, IndexType.CONTENT)}`,
         }}
       >
         <CodeMirrorContainer ref={editorRef} data-testid="canvas_code_editor" />

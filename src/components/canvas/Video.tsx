@@ -4,7 +4,7 @@ import {CanvasVideoElement, useState} from '@/state'
 import {Selection} from '@/services/CanvasService'
 import {Bounds} from './Bounds'
 import {LinkHandles} from './LinkHandles'
-import {IndexType, zIndex} from '@/utils/z-index'
+import {IndexType, ZIndex} from '@/utils/z-index'
 
 const CanvasVideo = styled('video')(
   (props: any) => `
@@ -62,7 +62,7 @@ export const Video = ({element, index}: {element: CanvasVideoElement; index: num
         style={{
           'left': `${element.x.toString()}px`,
           'top': `${element.y.toString()}px`,
-          'z-index': `${zIndex(index, IndexType.CONTENT)}`,
+          'z-index': `${ZIndex.element(index, IndexType.CONTENT)}`,
         }}
       />
     </>

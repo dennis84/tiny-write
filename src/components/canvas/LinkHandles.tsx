@@ -4,7 +4,7 @@ import {v4 as uuidv4} from 'uuid'
 import {Box, Vec} from '@tldraw/editor'
 import {DragGesture} from '@use-gesture/vanilla'
 import {EdgeType, useState} from '@/state'
-import {IndexType, zIndex} from '@/utils/z-index'
+import {IndexType, ZIndex} from '@/utils/z-index'
 
 const BORDER_SIZE = 20
 const CIRCLE_RADIUS = 7
@@ -103,7 +103,7 @@ const LinkHandle = (props: EdgeProps) => {
           scale(${1 / zoom()})
           translate(${coords().map((n) => (n * zoom()) + 'px').join(',')})
         `,
-        'z-index': `${zIndex(props.index, IndexType.HANDLE)}`,
+        'z-index': `${ZIndex.element(props.index, IndexType.HANDLE)}`,
       }}
       ref={linkRef}
       data-testid={`edge_${props.type}_link_handle`}

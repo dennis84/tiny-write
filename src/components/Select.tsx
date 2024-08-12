@@ -7,7 +7,7 @@ import {CornerType, Mode, useState} from '@/state'
 const SelectionFrame = styled('div')`
   position: absolute;
   background: var(--selection);
-  z-index: 99999;
+  z-index: var(--z-index-max);
 `
 
 interface Props {

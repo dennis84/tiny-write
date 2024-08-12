@@ -1,7 +1,3 @@
-export class ZIndex {
-  static MAX = Number.MAX_SAFE_INTEGER.toString()
-}
-
 export enum IndexType {
   CONTENT = 1,
   LINK = 2,
@@ -9,5 +5,12 @@ export enum IndexType {
   HANDLE = 4,
 }
 
-export const zIndex = (index: number, type: IndexType) =>
-  String(index * 10 + type)
+export class ZIndex {
+  // For overlays drag handle etc.
+  static MAX = Number.MAX_SAFE_INTEGER.toString()
+
+  // Get z-index for an canvas element
+  static element(index: number, type: IndexType) {
+    return String(index * 10 + type)
+  }
+}

@@ -5,7 +5,6 @@ import {EditorState, NodeSelection, TextSelection} from 'prosemirror-state'
 // @ts-ignore
 import {__serializeForClipboard} from 'prosemirror-view'
 import {File} from '@/state'
-import {ZIndex} from '@/utils/z-index'
 import {Icon} from '../Icon'
 import {BlockTooltip} from './BlockTooltip'
 
@@ -17,7 +16,7 @@ const DragHandle = styled('div')`
   align-items: center;
   justify-content: center;
   cursor: var(--cursor-pointer);
-  z-index: ${ZIndex.MAX};
+  z-index: var(--z-index-max);
   > span {
     color: var(--foreground-60);
     border-radius: var(--border-radius);

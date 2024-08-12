@@ -3,13 +3,13 @@ import {styled} from 'solid-styled-components'
 import * as remote from '@/remote'
 import {CanvasEditorElement, useState} from '@/state'
 import {Selection} from '@/services/CanvasService'
+import {FileService} from '@/services/FileService'
+import {BlockHandle} from '@/components/editor/BlockHandle'
 import {CanvasEditor} from '@/components/editor/Style'
 import {Scroll} from '@/components/Layout'
 import {Bounds} from './Bounds'
 import {LinkHandles} from './LinkHandles'
-import {IndexType, zIndex} from '@/utils/z-index'
-import {FileService} from '@/services/FileService'
-import {BlockHandle} from '../editor/BlockHandle'
+import {IndexType, ZIndex} from '@/utils/z-index'
 
 const EditorScroll = styled(Scroll)(
   (props: any) => `
@@ -106,7 +106,7 @@ export const Editor = ({element, index}: {element: CanvasEditorElement; index: n
           'width': `${element.width}px`,
           'min-height': `${element.height}px`,
           'max-height': `${element.height}px`,
-          'z-index': `${zIndex(index, IndexType.CONTENT)}`,
+          'z-index': `${ZIndex.element(index, IndexType.CONTENT)}`,
         }}
       >
         <CanvasEditor config={store.config} ref={editorRef} data-testid="canvas_editor" />

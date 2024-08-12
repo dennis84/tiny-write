@@ -13,6 +13,7 @@ import {LinkEnd} from './LinkEnd'
 import {Bounds} from './Bounds'
 import {Select} from '../Select'
 import {CodeEditor} from './CodeEditor'
+import {ZIndex} from '@/utils/z-index'
 
 const Container = styled('div')`
   width: 100%;
@@ -39,7 +40,7 @@ const DragArea = styled('div')`
   left: 0;
   right: 0;
   height: 30px;
-  z-index: 999999;
+  z-index: ${ZIndex.MAX};
   cursor: var(--cursor-grab);
 `
 

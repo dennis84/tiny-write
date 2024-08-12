@@ -3,6 +3,7 @@ import {css, styled} from 'solid-styled-components'
 import {Mode, useState} from '@/state'
 import {isTauri, isMac, mod, shortHash, version, VERSION_URL} from '@/env'
 import * as remote from '@/remote'
+import {ZIndex} from '@/utils/z-index'
 import {Bin} from './Bin'
 import {CodeFormat} from './CodeFormat'
 import {Appearance} from './Appearance'
@@ -34,7 +35,7 @@ const Burger = styled('button')`
   position: absolute;
   left: -52px;
   top: 2px;
-  z-index: 9999999;
+  z-index: var(--z-index-max);
   background: none;
   border-radius: 50px;
   width: 50px;

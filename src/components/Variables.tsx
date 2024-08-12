@@ -1,6 +1,7 @@
 import {createEffect, onMount} from 'solid-js'
 import {ConfigService} from '@/services/ConfigService'
 import {useState} from '@/state'
+import {ZIndex} from '@/utils/z-index'
 import {
   CURSOR_DEFAULT,
   CURSOR_GRAB,
@@ -57,6 +58,7 @@ export const Variables = () => {
     root.style.setProperty('--cursor-grab', CURSOR_GRAB)
     root.style.setProperty('--cursor-grabbed', CURSOR_GRABBED)
     root.style.setProperty('--cursor-text', CURSOR_TEXT)
+    root.style.setProperty('--z-index-max', ZIndex.MAX)
   })
 
   return <></>

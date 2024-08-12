@@ -4,7 +4,7 @@ import {CanvasImageElement, useState} from '@/state'
 import {Selection} from '@/services/CanvasService'
 import {Bounds} from './Bounds'
 import {LinkHandles} from './LinkHandles'
-import {IndexType, zIndex} from '@/utils/z-index'
+import {IndexType, ZIndex} from '@/utils/z-index'
 import {isTauri} from '@/env'
 
 const CanvasImage = styled('img')(
@@ -65,7 +65,7 @@ export const Image = ({element, index}: {element: CanvasImageElement; index: num
         style={{
           'left': `${element.x.toString()}px`,
           'top': `${element.y.toString()}px`,
-          'z-index': `${zIndex(index, IndexType.CONTENT)}`,
+          'z-index': `${ZIndex.element(index, IndexType.CONTENT)}`,
         }}
       />
     </>
