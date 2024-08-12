@@ -61,10 +61,10 @@ test('existing room - backup', async ({page}) => {
 
   await page.click('[data-testid="burger"]')
   await expect(page.locator('[data-testid="tree_link"]')).toHaveCount(2)
-  await expect(page.locator('[data-testid="tree_link"]:nth-child(1)')).toContainText('123')
-  await expect(page.locator('[data-testid="tree_link"]:nth-child(2)')).toContainText('Hello')
+  await expect(page.locator('[data-testid="tree_link"]').nth(0)).toContainText('123')
+  await expect(page.locator('[data-testid="tree_link"]').nth(1)).toContainText('Hello')
 
-  await page.click('[data-testid="tree_link"]:nth-child(1) span')
+  await page.locator('[data-testid="tree_link"]').nth(0).click()
   await lineTextEq(page, 1, '123')
 
   await expect(page.locator('[data-testid="tree_link"]')).toHaveCount(2)
@@ -112,7 +112,7 @@ test('rejoin room', async ({page}) => {
   await page.locator('.ProseMirror').pressSequentially('New', {delay})
 
   // open first file again and start collab
-  await page.click('[data-testid="tree_link"]:nth-child(1) span')
+  await page.locator('[data-testid="tree_link"]').nth(0).click()
   await page.click('[data-testid="collab"]')
 
   // "Hello" text should not be duplicated after clone, persist and reload the Y.Doc

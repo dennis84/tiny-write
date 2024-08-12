@@ -161,7 +161,7 @@ export const BlockHandle = (props: Props) => {
     if (!editorView) return
 
     const blockPos = getBlockPos([e.clientX, e.clientY])
-    if (!blockPos) return
+    if (blockPos === undefined) return
 
     const tr = editorView.state.tr
     tr.setSelection(NodeSelection.create(editorView.state.doc, blockPos))

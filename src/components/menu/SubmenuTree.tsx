@@ -412,6 +412,7 @@ export const SubmenuTree = (props: Props) => {
           onClick={onClick}
           grabbing={grabbing()}
           highlight={isOnCanvas(p.node.item)}
+          data-testid="tree_link_title"
         >
           {title()}
         </TreeLinkTitle>
