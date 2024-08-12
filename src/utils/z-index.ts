@@ -1,3 +1,7 @@
+export class ZIndex {
+  static MAX = Number.MAX_SAFE_INTEGER.toString()
+}
+
 export enum IndexType {
   CONTENT = 1,
   LINK = 2,

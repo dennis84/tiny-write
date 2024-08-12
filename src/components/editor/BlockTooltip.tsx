@@ -1,62 +1,46 @@
-import {Show, createEffect, createMemo, createSignal, onCleanup, onMount} from 'solid-js'
+import {Show, createEffect, createSignal, onCleanup, onMount} from 'solid-js'
 import {createMutable, unwrap} from 'solid-js/store'
 import {styled} from 'solid-styled-components'
 import {NodeSelection, TextSelection} from 'prosemirror-state'
-import {Node} from 'prosemirror-model'
 import {setBlockType} from 'prosemirror-commands'
 import {arrow, autoUpdate, computePosition, flip, offset, shift} from '@floating-ui/dom'
 import {useState} from '@/state'
 import * as remote from '@/remote'
 import {isTauri} from '@/env'
 import {Align} from '@/prosemirror/image'
-import {blockHandlePluginKey} from '@/prosemirror/block-handle'
+import {ZIndex} from '@/utils/z-index'
 import {InputLine, InputLineConfig} from '@/components/dialog/InputLine'
 import {Icon} from '../Icon'
+import {Block} from './BlockHandle'
 
 const TooltipEl = styled('div')`
   position: absolute;
-  z-index: 100;
+  z-index: ${ZIndex.MAX};
 `
-
-interface Block {
-  blockPos: number
-  blockNode: Node
-  cursorPos?: number
-  cursorNode?: Node
-}
 
 interface Cleanup {
   fn?: () => void
 }
 
-export const BlockTooltip = () => {
+interface Props {
+  selectedBlock?: Block
+  resetBlock: () => void
+}
+
+export const BlockTooltip = (props: Props) => {
   let tooltipRef!: HTMLDivElement
   let arrowRef!: HTMLSpanElement
 
-  const [store, ctrl] = useState()
-  const [selectedBlock, setSelectedBlock] = createSignal<Block | undefined>()
+  const [, ctrl] = useState()
   const [inputLine, setInputLine] = createSignal<InputLineConfig>()
   const cleanup = createMutable<Cleanup>({})
 
   const closeTooltip = () => {
-    setSelectedBlock(undefined)
-
-    const blockHandleState = getBlockHandleState()
-    const view = ctrl.file.currentFile?.editorView
-    if (!view) return
-
-    const tr = view.state.tr
-    tr.setMeta(blockHandlePluginKey, {
-      ...blockHandleState,
-      blockPos: undefined,
-      cursorPos: undefined,
-    })
-
-    view.dispatch(tr)
+    props.resetBlock()
   }
 
   const onPrettify = () => {
-    const block = selectedBlock()
+    const block = props.selectedBlock
     if (!block) return
     const view = ctrl.file.currentFile?.editorView
     if (!view) return
@@ -73,7 +57,7 @@ export const BlockTooltip = () => {
   }
 
   const onFoldAll = () => {
-    const block = selectedBlock()
+    const block = props.selectedBlock
     if (!block) return
     const view = ctrl.file.currentFile?.editorView
     if (!view) return
@@ -89,7 +73,7 @@ export const BlockTooltip = () => {
   }
 
   const onChangeLang = () => {
-    const block = selectedBlock()
+    const block = props.selectedBlock
     if (!block) return
 
     const view = ctrl.file.currentFile?.editorView
@@ -118,7 +102,7 @@ export const BlockTooltip = () => {
   }
 
   const onMermaidSave = async () => {
-    const block = selectedBlock()
+    const block = props.selectedBlock
     if (!block) return
 
     const id = `mermaid-graph-${block.blockPos}`
@@ -128,7 +112,7 @@ export const BlockTooltip = () => {
   }
 
   const onMermaidHideCode = () => {
-    const block = selectedBlock()
+    const block = props.selectedBlock
     if (!block) return
 
     const view = ctrl.file.currentFile?.editorView
@@ -142,36 +126,43 @@ export const BlockTooltip = () => {
   }
 
   const onToPlain = () => {
-    const block = selectedBlock()
+    const block = props.selectedBlock
     if (!block) return
 
     const view = ctrl.file.currentFile?.editorView
     if (!view) return
 
+    const pos = view.state.doc.resolve(block.blockPos)
+
+    // select block
+    const selectionTr = view.state.tr
+    selectionTr.setSelection(NodeSelection.near(pos))
+    view.dispatch(selectionTr)
+
+    // set blocktype to paragraph
     const toPlain = setBlockType(view.state.schema.nodes.paragraph)
     toPlain(view.state, view.dispatch)
 
-    const tr = view.state.tr
-    const pos = tr.doc.resolve(block.blockPos)
+    // remove marks
+    const removeMarkTr = view.state.tr
     if (!pos.nodeAfter) return
-    tr.removeMark(pos.pos, pos.pos + pos.nodeAfter.nodeSize)
-    view.dispatch(tr)
+    removeMarkTr.removeMark(pos.pos, pos.pos + pos.nodeAfter.nodeSize)
+    view.dispatch(removeMarkTr)
+
     view.focus()
     closeTooltip()
   }
 
   const onRemoveBlock = () => {
-    const block = selectedBlock()
+    const block = props.selectedBlock
     if (!block) return
 
     const view = ctrl.file.currentFile?.editorView
     if (!view) return
 
     const tr = view.state.tr
-    const pos = tr.doc.resolve(block.blockPos)
-    const from = pos.before(1)
-    const to = pos.after(1)
-    tr.delete(from, to)
+    tr.setSelection(NodeSelection.create(view.state.doc, block.blockPos))
+    tr.deleteSelection()
     view.dispatch(tr)
     view.focus()
 
@@ -179,7 +170,7 @@ export const BlockTooltip = () => {
   }
 
   const onAlign = (align: Align) => () => {
-    const block = selectedBlock()
+    const block = props.selectedBlock
     if (block?.cursorPos === undefined) return
 
     const view = ctrl.file.currentFile?.editorView
@@ -193,7 +184,7 @@ export const BlockTooltip = () => {
   }
 
   const onOpenLink = async () => {
-    const block = selectedBlock()
+    const block = props.selectedBlock
     if (block?.cursorPos === undefined) return
     const view = ctrl.file.currentFile?.editorView
     if (!view) return
@@ -230,7 +221,7 @@ export const BlockTooltip = () => {
   }
 
   const getLinkHref = (): string | undefined => {
-    const block = selectedBlock()
+    const block = props.selectedBlock
     if (!block?.cursorNode?.marks) return
 
     const view = ctrl.file.currentFile?.editorView
@@ -248,82 +239,24 @@ export const BlockTooltip = () => {
   }
 
   const onBackgroundClick = (e: MouseEvent) => {
-    const block = selectedBlock()
+    const block = props.selectedBlock
     if (!block) return
 
     const view = ctrl.file.currentFile?.editorView
     if (!view) return
 
-    const blockHandleState = getBlockHandleState()
-    if (blockHandleState?.blockPos === undefined) return
-
     if (tooltipRef.contains(e.target as Element)) return
 
-    const tr = view.state.tr
-    tr.setMeta(blockHandlePluginKey, {
-      ...blockHandleState,
-      blockPos: undefined,
-      cursorPos: undefined,
-    })
-
-    view.dispatch(tr)
+    props.resetBlock()
   }
 
-  const getBlockHandleState = createMemo(() => {
-    if (!store.lastTr) return
-    const view = ctrl.file.currentFile?.editorView
-    if (!view) return
-    return blockHandlePluginKey.getState(view.state)
-  })
-
   createEffect(() => {
-    if (!store.lastTr) return
-    const view = ctrl.file.currentFile?.editorView
-    if (!view) return
-
-    const blockHandleState = getBlockHandleState()
-
-    if (blockHandleState?.blockPos !== undefined) {
-      // Catch "position out of range" error after remove last node
-      try {
-        const pos = view.state.doc.resolve(blockHandleState.blockPos + 1)
-        const cursorPos = blockHandleState.cursorPos
-        let cursorNode
-
-        if (cursorPos !== undefined) {
-          const resolved = view.state.doc.resolve(cursorPos)
-          cursorNode = resolved.nodeAfter ?? undefined
-        }
-
-        setSelectedBlock({
-          blockPos: blockHandleState.blockPos,
-          blockNode: pos.node(),
-          cursorPos,
-          cursorNode,
-        })
-      } catch (_e) {
-        setSelectedBlock(undefined)
-      }
-    } else {
-      setSelectedBlock(undefined)
-    }
-  })
-
-  createEffect(() => {
-    const result = selectedBlock()
+    const result = props.selectedBlock
     if (!result) return
-    const {blockPos} = result
-
-    const view = ctrl.file.currentFile?.editorView
-    if (!view) return
-
-    const sel = NodeSelection.near(view.state.doc.resolve(blockPos))
-    const handle = view.dom.querySelector(`#block-${sel.head} .block-handle`)
-    if (!handle) return
 
     unwrap(cleanup).fn?.()
-    cleanup.fn = autoUpdate(handle, tooltipRef, async () => {
-      return computePosition(handle, tooltipRef, {
+    cleanup.fn = autoUpdate(result.dragHandle, tooltipRef, async () => {
+      return computePosition(result.dragHandle, tooltipRef, {
         placement: 'left',
         middleware: [
           offset(10),
@@ -367,10 +300,10 @@ export const BlockTooltip = () => {
 
   return (
     <>
-      <Show when={selectedBlock()}>
+      <Show when={props.selectedBlock}>
         {(block) => (
           <>
-            <TooltipEl ref={tooltipRef} class="block-tooltip">
+            <TooltipEl ref={tooltipRef} id="block-tooltip" class="block-tooltip">
               <Show when={block().blockNode?.type.name === 'code_block'}>
                 <Show when={block().blockNode.attrs.lang === 'mermaid'}>
                   <div onClick={onMermaidSave}>

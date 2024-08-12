@@ -8,26 +8,29 @@ import {Scroll} from '@/components/Layout'
 import {Bounds} from './Bounds'
 import {LinkHandles} from './LinkHandles'
 import {IndexType, zIndex} from '@/utils/z-index'
-import { FileService } from '@/services/FileService'
+import {FileService} from '@/services/FileService'
+import {BlockHandle} from '../editor/BlockHandle'
 
-const EditorScroll = styled(Scroll)((props: any) => `
-  position: absolute;
-  border-radius: var(--border-radius);
-  user-select: none;
-  pointer-events: none;
-  box-shadow: 0 0 0 2px var(--border);
-  ${props.selected ? `
-    box-shadow: 0 0 0 5px var(--border);
-  ` : ''}
-  ${props.active ? `
-    box-shadow: 0 0 0 5px var(--primary-background);
-    user-select: auto;
-    pointer-events: auto;
-  ` : ''}
-  ${props.deleted ? `
-    opacity: 0.4;
-  ` : ''}
-`)
+const EditorScroll = styled(Scroll)(
+  (props: any) => `
+    position: absolute;
+    border-radius: var(--border-radius);
+    user-select: none;
+    pointer-events: none;
+    box-shadow: 0 0 0 2px var(--border);
+    ${props.selected ? `
+      box-shadow: 0 0 0 5px var(--border);
+    ` : ''}
+    ${props.active ? `
+      box-shadow: 0 0 0 5px var(--primary-background);
+      user-select: auto;
+      pointer-events: auto;
+    ` : ''}
+    ${props.deleted ? `
+      opacity: 0.4;
+    ` : ''}
+  `,
+)
 
 export const Editor = ({element, index}: {element: CanvasEditorElement; index: number}) => {
   const [store, ctrl] = useState()
@@ -42,8 +45,7 @@ export const Editor = ({element, index}: {element: CanvasEditorElement; index: n
     ctrl.canvas.select(element.id, true)
   }
 
-  const isDeleted = () =>
-    store.files.find((f) => f.id === element.id)?.deleted
+  const isDeleted = () => store.files.find((f) => f.id === element.id)?.deleted
 
   const createSelection = (): Selection => {
     const box = ctrl.canvas.createBox(element)
@@ -108,6 +110,7 @@ export const Editor = ({element, index}: {element: CanvasEditorElement; index: n
         }}
       >
         <CanvasEditor config={store.config} ref={editorRef} data-testid="canvas_editor" />
+        <BlockHandle file={ctrl.file.findFileById(element.id)} mouseMoveArea={() => containerRef} />
       </EditorScroll>
     </>
   )

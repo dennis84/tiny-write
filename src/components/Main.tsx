@@ -145,7 +145,6 @@ export const Main = (props: {state: State}) => {
             <Match when={store.mode === Mode.Editor}><Editor /></Match>
             <Match when={store.mode === Mode.Code}><CodeEditor /></Match>
           </Switch>
-          <BlockTooltip />
           <MouseCursor />
           <Menu />
           <Keymap />

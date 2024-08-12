@@ -26,7 +26,6 @@ import {createTabKeymap} from '@/prosemirror/tab'
 import {createInputParserPlugin} from '@/prosemirror/input-parser'
 import {scrollIntoView} from '@/prosemirror/scroll'
 import {placeholder} from '@/prosemirror/placeholder'
-import {blockHandle} from '@/prosemirror/block-handle'
 import {createPasteMarkdownPlugin} from '@/prosemirror/paste-markdown'
 import {selectedPlugin} from '@/prosemirror/selected'
 import {createFileListingPlugin, fileListingKeymap} from '@/prosemirror/autocomplete/file-listing'
@@ -105,7 +104,6 @@ export class ProseMirrorService {
       // plugins
       placeholder('Start typing ...'),
       scrollIntoView(props.ctrl),
-      blockHandle,
       createMarkdownPlugins(schema),
       createTaskListPlugin(schema),
       createCodeBlockPlugin(schema),
