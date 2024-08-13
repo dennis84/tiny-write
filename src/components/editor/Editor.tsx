@@ -66,7 +66,11 @@ export const Editor = () => {
         spellcheck={store.config.spellcheck}
         data-tauri-drag-region="true"
       />
-      <BlockHandle file={ctrl.file.currentFile} mouseMoveArea={() => scrollRef} />
+      <BlockHandle
+        file={ctrl.file.currentFile}
+        mouseMoveArea={() => scrollRef}
+        scrollContainer={() => scrollRef}
+      />
     </Scroll>
   )
 }

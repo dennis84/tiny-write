@@ -44,6 +44,7 @@ export interface Block {
 interface Props {
   file?: File
   mouseMoveArea?: () => HTMLElement
+  scrollContainer?: () => HTMLElement
 }
 
 export const BlockHandle = (props: Props) => {
@@ -51,6 +52,10 @@ export const BlockHandle = (props: Props) => {
 
   const [selectedBlock, setSelectedBlock] = createSignal<Block | undefined>()
   const [cursorPos, setCursorPos] = createSignal<number | undefined>()
+
+  const getScrollTop = (): number => {
+    return props.scrollContainer?.().scrollTop ?? window.scrollY
+  }
 
   const getBlockPos = ([x, y]: [number, number]): number | undefined => {
     const editorView = props.file?.editorView
@@ -144,9 +149,10 @@ export const BlockHandle = (props: Props) => {
 
     const cstyle = window.getComputedStyle(node)
     const lineHeight = parseInt(cstyle.lineHeight, 10)
+    const scrollTop = getScrollTop()
 
     const x = node.offsetLeft + editorView.dom.offsetLeft
-    const y = node.offsetTop + editorView.dom.offsetTop
+    const y = node.offsetTop + editorView.dom.offsetTop - scrollTop
     const top = y - 2 + (lineHeight - 24) / 2
 
     dragHandle.style.opacity = '1'
