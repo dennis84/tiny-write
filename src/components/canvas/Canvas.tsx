@@ -13,7 +13,7 @@ import {LinkEnd} from './LinkEnd'
 import {Bounds} from './Bounds'
 import {Select} from '../Select'
 import {CodeEditor} from './CodeEditor'
-import {ZIndex} from '@/utils/z-index'
+import {ZIndex} from '@/utils/ZIndex'
 
 const Container = styled('div')`
   width: 100%;

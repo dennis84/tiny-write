@@ -200,8 +200,7 @@ export class FileService {
     if (index === -1) return
     const update = {...u}
 
-    // Only update ydoc if lastmod has changed
-    if (u.lastModified) {
+    if (u.lastModified && this.ctrl.collab.hasSubdoc(id)) {
       const subdoc = this.ctrl.collab.getSubdoc(id)
       update.ydoc = Y.encodeStateAsUpdate(subdoc)
     }

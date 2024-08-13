@@ -4,7 +4,7 @@ import {CanvasVideoElement, useState} from '@/state'
 import {Selection} from '@/services/CanvasService'
 import {Bounds} from './Bounds'
 import {LinkHandles} from './LinkHandles'
-import {IndexType, ZIndex} from '@/utils/z-index'
+import {IndexType, ZIndex} from '@/utils/ZIndex'
 
 const CanvasVideo = styled('video')(
   (props: any) => `

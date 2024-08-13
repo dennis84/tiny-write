@@ -3,7 +3,7 @@ import {css, styled} from 'solid-styled-components'
 import {Mode, useState} from '@/state'
 import {isTauri, isMac, mod, shortHash, version, VERSION_URL} from '@/env'
 import * as remote from '@/remote'
-import {ZIndex} from '@/utils/z-index'
+import {ZIndex} from '@/utils/ZIndex'
 import {Bin} from './Bin'
 import {CodeFormat} from './CodeFormat'
 import {Appearance} from './Appearance'
@@ -116,6 +116,9 @@ const itemCss = `
   line-height: calc(var(--menu-font-size) * 1.6);
   font-family: var(--menu-font-family);
   text-align: left;
+  > .icon {
+    margin-right: 6px;
+  }
 `
 
 export const Text = styled('p')`
@@ -139,9 +142,6 @@ export const Link = styled('button')`
   cursor: var(--cursor-pointer);
   i {
     font-style: normal;
-  }
-  > .icon {
-    margin-right: 6px;
   }
   > .keys {
     justify-self: flex-end;

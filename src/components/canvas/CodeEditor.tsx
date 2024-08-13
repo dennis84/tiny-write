@@ -8,7 +8,7 @@ import {Scroll} from '@/components/Layout'
 import {CodeMirrorContainer} from '@/components/code/CodeEditor'
 import {Bounds} from './Bounds'
 import {LinkHandles} from './LinkHandles'
-import {IndexType, ZIndex} from '@/utils/z-index'
+import {IndexType, ZIndex} from '@/utils/ZIndex'
 
 const CodeEditorScroll = styled(Scroll)(
   (props: any) => `

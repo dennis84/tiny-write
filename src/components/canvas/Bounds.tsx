@@ -4,7 +4,7 @@ import {DragGesture} from '@use-gesture/vanilla'
 import {Box, PI, Vec, rotateSelectionHandle} from '@tldraw/editor'
 import {CornerType, EdgeType, useState} from '@/state'
 import {Selection} from '@/services/CanvasService'
-import {IndexType, ZIndex} from '@/utils/z-index'
+import {IndexType, ZIndex} from '@/utils/ZIndex'
 
 interface BoundsProps {
   selection: Selection;

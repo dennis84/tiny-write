@@ -1,7 +1,7 @@
 import {createEffect, onMount} from 'solid-js'
 import {ConfigService} from '@/services/ConfigService'
 import {useState} from '@/state'
-import {ZIndex} from '@/utils/z-index'
+import {ZIndex} from '@/utils/ZIndex'
 import {
   CURSOR_DEFAULT,
   CURSOR_GRAB,
@@ -30,7 +30,8 @@ export const Variables = () => {
     root.style.setProperty('--primary-background', ctrl.config.theme.primaryBackground)
     root.style.setProperty('--primary-background-80', `${ctrl.config.theme.primaryBackground}cc`)
     root.style.setProperty('--primary-background-50', `${ctrl.config.theme.primaryBackground}80`)
-    root.style.setProperty('--primary-background-10', `${ctrl.config.theme.primaryBackground}1A`)
+    root.style.setProperty('--primary-background-20', `${ctrl.config.theme.primaryBackground}33`)
+    root.style.setProperty('--primary-background-10', `${ctrl.config.theme.primaryBackground}1a`)
     root.style.setProperty('--primary-foreground', ctrl.config.theme.primaryForeground)
     root.style.setProperty('--selection-border', `${ctrl.config.theme.primaryBackground}44`)
     root.style.setProperty('--selection', ctrl.config.theme.selection)
@@ -98,7 +99,7 @@ const setupFonts = () => {
     @font-face {
       font-family: 'Material Symbols Outlined';
       font-style: normal;
-      src: url(./material-symbols.woff2) format('woff2');
+      src: url(/material-symbols.woff2) format('woff2');
     }
   `
 

@@ -4,7 +4,7 @@ import {v4 as uuidv4} from 'uuid'
 import {Box, Vec} from '@tldraw/editor'
 import {DragGesture} from '@use-gesture/vanilla'
 import {EdgeType, useState} from '@/state'
-import {IndexType, ZIndex} from '@/utils/z-index'
+import {IndexType, ZIndex} from '@/utils/ZIndex'
 
 const BORDER_SIZE = 20
 const CIRCLE_RADIUS = 7

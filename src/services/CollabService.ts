@@ -173,6 +173,11 @@ export class CollabService {
     if (conf.contentWidth) this.store.collab?.ydoc?.getMap('config').set('contentWidth', conf.contentWidth)
   }
 
+  hasSubdoc(id: string): boolean {
+    const ydoc = this.store.collab?.ydoc
+    return ydoc?.getMap().has(id) ?? false
+  }
+
   getSubdoc(id: string): Y.Doc {
     const ydoc = this.store.collab?.ydoc
     if (!ydoc) throw new Error('Collab state was not created')

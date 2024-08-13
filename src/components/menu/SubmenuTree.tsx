@@ -468,6 +468,7 @@ export const SubmenuTree = (props: Props) => {
             data-testid="bin"
             class={dropState()?.pos === 'delete' ? css`
               background: var(--primary-background-20);
+              border-radius: var(--border-radius);
             ` : undefined}
           >
             <TreeLinkCorner><Icon>delete</Icon></TreeLinkCorner> Bin
@@ -498,15 +499,15 @@ export const SubmenuTree = (props: Props) => {
           </Show>
           <Show when={!selected()?.item.deleted && isFile(selected()?.item)}>
             <div onClick={onAddFile} data-testid="add_file">
-              <Icon>add</Icon>
+              <Icon>post_add</Icon>
               Add file
             </div>
             <div onClick={onAddCanvas} data-testid="add_canvas">
-              <Icon>draw</Icon>
+              <Icon>gesture</Icon>
               Add canvas
             </div>
             <div onClick={onAddCode} data-testid="add_code">
-              <Icon>code</Icon>
+              <Icon>code_blocks</Icon>
               Add code file
             </div>
             <hr class="divider" />

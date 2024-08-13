@@ -53,20 +53,20 @@ export const SubmenuCollab = () => {
           <Link
             onClick={onCollabStart}
             data-testid="collab">
-            <Icon>groups</Icon> Share
+            <Icon>cloud</Icon> Share
           </Link>
         </Show>
         <Show when={store.collab?.started}>
           <Link
             onClick={onCollabStop}
             data-testid="collab">
-            Disconnect
+            <Icon>cloud_off</Icon> Disconnect
           </Link>
           <Link onClick={onCopyCollabLink}>
-            Copy Link 🔗 {lastAction() === 'copy-collab-link' && '📋'}
+            <Icon>link</Icon> Copy Link {lastAction() === 'copy-collab-link' && '📋'}
           </Link>
           <Text>
-            {collabUsers()} {collabUsers() === 1 ? 'user' : 'users'} connected
+            <Icon>group</Icon> {collabUsers()} {collabUsers() === 1 ? 'user' : 'users'} connected
           </Text>
         </Show>
       </Sub>

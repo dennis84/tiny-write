@@ -9,7 +9,7 @@ import {CanvasEditor} from '@/components/editor/Style'
 import {Scroll} from '@/components/Layout'
 import {Bounds} from './Bounds'
 import {LinkHandles} from './LinkHandles'
-import {IndexType, ZIndex} from '@/utils/z-index'
+import {IndexType, ZIndex} from '@/utils/ZIndex'
 
 const EditorScroll = styled(Scroll)(
   (props: any) => `

@@ -4,7 +4,7 @@ import {CanvasImageElement, useState} from '@/state'
 import {Selection} from '@/services/CanvasService'
 import {Bounds} from './Bounds'
 import {LinkHandles} from './LinkHandles'
-import {IndexType, ZIndex} from '@/utils/z-index'
+import {IndexType, ZIndex} from '@/utils/ZIndex'
 import {isTauri} from '@/env'
 
 const CanvasImage = styled('img')(
