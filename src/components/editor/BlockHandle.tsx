@@ -1,9 +1,11 @@
 import {createEffect, createSignal, onCleanup} from 'solid-js'
+import {createMutable} from 'solid-js/store'
 import {styled} from 'solid-styled-components'
 import {Node} from 'prosemirror-model'
 import {EditorState, NodeSelection, TextSelection} from 'prosemirror-state'
 // @ts-ignore
 import {__serializeForClipboard} from 'prosemirror-view'
+import {autoUpdate} from '@floating-ui/dom'
 import {File} from '@/state'
 import {Icon} from '../Icon'
 import {BlockTooltip} from './BlockTooltip'
@@ -11,7 +13,7 @@ import {BlockTooltip} from './BlockTooltip'
 const DragHandle = styled('div')`
   position: absolute;
   opacity: 0;
-  transition: opacity 0.3s;
+  transition: opacity 0.2s;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -52,6 +54,7 @@ export const BlockHandle = (props: Props) => {
 
   const [selectedBlock, setSelectedBlock] = createSignal<Block | undefined>()
   const [cursorPos, setCursorPos] = createSignal<number | undefined>()
+  const follow = createMutable<{cleanup?: () => void}>({cleanup: undefined})
 
   const getScrollTop = (): number => {
     return props.scrollContainer?.().scrollTop ?? window.scrollY
@@ -121,6 +124,7 @@ export const BlockHandle = (props: Props) => {
   const hideDragHandle = () => {
     if (selectedBlock()) return
     dragHandle.style.opacity = '0'
+    follow.cleanup?.()
   }
 
   const onMouseMove = (e: MouseEvent) => {
@@ -149,15 +153,18 @@ export const BlockHandle = (props: Props) => {
 
     const cstyle = window.getComputedStyle(node)
     const lineHeight = parseInt(cstyle.lineHeight, 10)
-    const scrollTop = getScrollTop()
 
-    const x = node.offsetLeft + editorView.dom.offsetLeft
-    const y = node.offsetTop + editorView.dom.offsetTop - scrollTop
-    const top = y - 2 + (lineHeight - 24) / 2
+    follow.cleanup = autoUpdate(node, dragHandle, () => {
+      const scrollTop = getScrollTop()
 
-    dragHandle.style.opacity = '1'
-    dragHandle.style.top = `${top}px`
-    dragHandle.style.left = `${x - WIDTH}px`
+      const x = node.offsetLeft + editorView.dom.offsetLeft
+      const y = node.offsetTop + editorView.dom.offsetTop - scrollTop
+      const top = y - 2 + (lineHeight - 24) / 2
+
+      dragHandle.style.opacity = '1'
+      dragHandle.style.top = `${top}px`
+      dragHandle.style.left = `${x - WIDTH}px`
+    })
   }
 
   const onDragStart = (e: DragEvent) => {
