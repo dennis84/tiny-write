@@ -5,6 +5,7 @@ import {Select} from '../Select'
 import {Scroll} from '../Layout'
 import {FullEditor} from './Style'
 import {BlockHandle} from './BlockHandle'
+import {TableControls} from './TableControl'
 
 export const Editor = () => {
   let scrollRef!: HTMLDivElement
@@ -71,6 +72,7 @@ export const Editor = () => {
         mouseMoveArea={() => scrollRef}
         scrollContainer={() => scrollRef}
       />
+      <TableControls file={ctrl.file.currentFile} />
     </Scroll>
   )
 }

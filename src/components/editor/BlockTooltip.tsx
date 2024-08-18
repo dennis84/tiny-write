@@ -14,7 +14,7 @@ import {Block} from './BlockHandle'
 
 const TooltipEl = styled('div')`
   position: absolute;
-  z-index: var(--z-index-max);
+  z-index: var(--z-index-tooltip);
 `
 
 interface Cleanup {

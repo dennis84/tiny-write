@@ -172,7 +172,7 @@ export const tableKeymap = keymap({
 
 export const createTablePlugins = (ctrl: Ctrl, schema: Schema) => [
   inputRules({rules: [tableInputRule(schema)]}),
-  createCellMenuPlugin(ctrl.app.layoutRef),
+  //createCellMenuPlugin(ctrl.app.layoutRef),
 ]
 
 const getSelectionCell = (state: EditorState) => {

@@ -1,11 +1,9 @@
 import {createEffect, createSignal, onCleanup} from 'solid-js'
-import {createMutable} from 'solid-js/store'
 import {styled} from 'solid-styled-components'
 import {Node} from 'prosemirror-model'
 import {EditorState, NodeSelection, TextSelection} from 'prosemirror-state'
 // @ts-ignore
 import {__serializeForClipboard} from 'prosemirror-view'
-import {autoUpdate} from '@floating-ui/dom'
 import {File} from '@/state'
 import {Icon} from '../Icon'
 import {BlockTooltip} from './BlockTooltip'
@@ -18,7 +16,7 @@ const DragHandle = styled('div')`
   align-items: center;
   justify-content: center;
   cursor: var(--cursor-pointer);
-  z-index: var(--z-index-max);
+  z-index: var(--z-index-handle);
   > span {
     color: var(--foreground-60);
     border-radius: var(--border-radius);
@@ -54,7 +52,7 @@ export const BlockHandle = (props: Props) => {
 
   const [selectedBlock, setSelectedBlock] = createSignal<Block | undefined>()
   const [cursorPos, setCursorPos] = createSignal<number | undefined>()
-  const follow = createMutable<{cleanup?: () => void}>({cleanup: undefined})
+  const [blockDom, setBlockDom] = createSignal<HTMLElement>()
 
   const getScrollTop = (): number => {
     return props.scrollContainer?.().scrollTop ?? window.scrollY
@@ -89,6 +87,8 @@ export const BlockHandle = (props: Props) => {
     const blockPos = getBlockPos([e.clientX, e.clientY]) ?? 0
     const blockInnerPos = editorView.state.doc.resolve(blockPos + 1)
     const blockNode = blockInnerPos.node()
+    const blockDom = editorView.domAtPos(blockInnerPos.pos).node as HTMLElement
+    setBlockDom(blockDom)
 
     let cursorNode
     const cp = cursorPos()
@@ -124,13 +124,33 @@ export const BlockHandle = (props: Props) => {
   const hideDragHandle = () => {
     if (selectedBlock()) return
     dragHandle.style.opacity = '0'
-    follow.cleanup?.()
+    setBlockDom(undefined)
+  }
+
+  const calcPos = (node: HTMLElement) => {
+    const editorView = props.file?.editorView
+    if (!editorView) {
+      return
+    }
+
+    const cstyle = window.getComputedStyle(node)
+    const lineHeight = parseInt(cstyle.lineHeight, 10)
+    const scrollTop = getScrollTop()
+
+    const x = node.offsetLeft + editorView.dom.offsetLeft
+    const y = node.offsetTop + editorView.dom.offsetTop - scrollTop
+    const top = y - 2 + (lineHeight - 24) / 2
+
+    dragHandle.style.opacity = '1'
+    dragHandle.style.top = `${top}px`
+    dragHandle.style.left = `${x - WIDTH}px`
   }
 
   const onMouseMove = (e: MouseEvent) => {
     if (selectedBlock()) {
       return
     }
+
     if (e.target === dragHandle) {
       return
     }
@@ -151,20 +171,14 @@ export const BlockHandle = (props: Props) => {
       return hideDragHandle()
     }
 
-    const cstyle = window.getComputedStyle(node)
-    const lineHeight = parseInt(cstyle.lineHeight, 10)
+    setBlockDom(node)
+    calcPos(node)
+  }
 
-    follow.cleanup = autoUpdate(node, dragHandle, () => {
-      const scrollTop = getScrollTop()
-
-      const x = node.offsetLeft + editorView.dom.offsetLeft
-      const y = node.offsetTop + editorView.dom.offsetTop - scrollTop
-      const top = y - 2 + (lineHeight - 24) / 2
-
-      dragHandle.style.opacity = '1'
-      dragHandle.style.top = `${top}px`
-      dragHandle.style.left = `${x - WIDTH}px`
-    })
+  const onWheel = () => {
+    const b = blockDom()
+    if (!b) return
+    calcPos(b)
   }
 
   const onDragStart = (e: DragEvent) => {
@@ -201,11 +215,13 @@ export const BlockHandle = (props: Props) => {
     const dom = props.mouseMoveArea?.() ?? editorView.dom
 
     dom.addEventListener('mousemove', onMouseMove)
-    dom.addEventListener('mouseout', hideDragHandle)
+    dom.addEventListener('mouseleave', hideDragHandle)
+    window.addEventListener('wheel', onWheel)
 
     onCleanup(() => {
       dom.removeEventListener('mousemove', onMouseMove)
-      dom.removeEventListener('mouseout', hideDragHandle)
+      dom.removeEventListener('mouseleave', hideDragHandle)
+      window.removeEventListener('wheel', onWheel)
     })
   })
 

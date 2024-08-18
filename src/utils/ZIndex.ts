@@ -5,9 +5,12 @@ export enum IndexType {
   HANDLE = 4,
 }
 
+const MAX = Number.MAX_SAFE_INTEGER
+
 export class ZIndex {
-  // For overlays drag handle etc.
-  static MAX = Number.MAX_SAFE_INTEGER.toString()
+  static MAX = MAX.toString()
+  static TOOLTIP = MAX.toString()
+  static HANDLE = (MAX - 1).toString()
 
   // Get z-index for an canvas element
   static element(index: number, type: IndexType) {

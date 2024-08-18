@@ -17,6 +17,7 @@ export const Layout = styled('div')`
     border-radius: var(--border-radius);
   }
   .block-tooltip,
+  .table-tooltip,
   .table-menu-tooltip,
   .autocomplete-tooltip,
   .menu-tooltip,
@@ -28,7 +29,7 @@ export const Layout = styled('div')`
     font-family: var(--menu-font-family);
     font-size: var(--menu-font-size);
     line-height: 1.4;
-    z-index: 200;
+    z-index: var(--z-index-tooltip);
     box-shadow: 0 12px 24px 0 rgba(0, 0, 0, 0.24);
     padding: 6px 8px;
     div {
