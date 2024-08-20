@@ -9,7 +9,7 @@ import * as remote from '@/remote'
 import {isTauri} from '@/env'
 import {Align} from '@/prosemirror/image'
 import {InputLine, InputLineConfig} from '@/components/dialog/InputLine'
-import {Icon} from '../Icon'
+import {Icon, IconFloatCenter} from '../Icon'
 import {Block} from './BlockHandle'
 
 const TooltipEl = styled('div')`
@@ -346,7 +346,7 @@ export const BlockTooltip = (props: Props) => {
                   <Icon>format_image_right</Icon> float right
                 </div>
                 <div onClick={onAlign(Align.Center)} data-testid="align_center">
-                  <Icon>panorama</Icon> center
+                  <IconFloatCenter /> center
                 </div>
                 <hr class="divider" />
               </Show>

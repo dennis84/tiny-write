@@ -24,6 +24,7 @@ export const Variables = () => {
     root.style.setProperty('--foreground-80', `${ctrl.config.theme.foreground}cc`)
     root.style.setProperty('--foreground-60', `${ctrl.config.theme.foreground}99`)
     root.style.setProperty('--foreground-50', `${ctrl.config.theme.foreground}80`)
+    root.style.setProperty('--foreground-40', `${ctrl.config.theme.foreground}66`)
     root.style.setProperty('--foreground-20', `${ctrl.config.theme.foreground}33`)
     root.style.setProperty('--foreground-10', `${ctrl.config.theme.foreground}1a`)
     root.style.setProperty('--foreground-5', `${ctrl.config.theme.foreground}0D`)

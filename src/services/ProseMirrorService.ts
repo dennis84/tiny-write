@@ -112,7 +112,7 @@ export class ProseMirrorService {
         ...emphasisInputRules,
       ]}),
       createInputParserPlugin(createMarkdownParser(schema)),
-      ...createTablePlugins(props.ctrl, schema),
+      ...createTablePlugins(schema),
       createContainerPlugin(schema),
       selectedPlugin,
       createPasteMarkdownPlugin(schema),

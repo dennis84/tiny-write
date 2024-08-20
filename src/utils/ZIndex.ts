@@ -5,12 +5,13 @@ export enum IndexType {
   HANDLE = 4,
 }
 
-const MAX = Number.MAX_SAFE_INTEGER
+const MAX = 2147483647
 
 export class ZIndex {
   static MAX = MAX.toString()
   static TOOLTIP = MAX.toString()
   static HANDLE = (MAX - 1).toString()
+  static TABLE_SELECTION = (MAX - 2).toString()
 
   // Get z-index for an canvas element
   static element(index: number, type: IndexType) {

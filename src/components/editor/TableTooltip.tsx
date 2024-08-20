@@ -5,6 +5,8 @@ import {arrow, autoUpdate, computePosition, flip, offset, Placement, shift} from
 import {
   addColumnAfter,
   addColumnBefore,
+  addRowAfter,
+  addRowBefore,
   CellSelection,
   deleteColumn,
   deleteRow,
@@ -12,8 +14,8 @@ import {
   TableMap,
   toggleHeaderRow,
 } from 'prosemirror-tables'
-import {Icon} from '../Icon'
-import {CellState, SelectedHandle, TableState} from './TableControl'
+import {Icon, IconColumnRemove, IconRowRemove} from '../Icon'
+import {CurrentCell, ActiveHandle, CurrentTable} from './TableControl'
 import {useState} from '@/state'
 
 const TooltipEl = styled('div')`
@@ -26,10 +28,10 @@ interface Cleanup {
 }
 
 interface Props {
-  selectedHandle: SelectedHandle
-  cell: CellState
-  table: TableState
-  tableMap: TableMap
+  activeHandle: ActiveHandle
+  currentCell: CurrentCell
+  currentTable: CurrentTable
+  currentTableMap: TableMap
   reset: () => void
 }
 
@@ -40,7 +42,7 @@ export const TableTooltip = (props: Props) => {
   const [, ctrl] = useState()
 
   const onBackgroundClick = (e: MouseEvent) => {
-    const block = props.selectedHandle
+    const block = props.activeHandle
     if (!block) return
 
     if (tooltipRef.contains(e.target as Element)) return
@@ -52,15 +54,15 @@ export const TableTooltip = (props: Props) => {
     const editorView = ctrl.file.currentFile?.editorView
     if (!editorView) return
     const tr = editorView.state.tr
-    const p = editorView.state.doc.resolve(props.cell.pos - 1)
+    const p = editorView.state.doc.resolve(props.currentCell.pos)
     tr.setSelection(new CellSelection(p))
     editorView.dispatch(tr)
   }
 
   const isFirstRow = () => {
-    const pos = props.cell.pos
-    const offset = props.table.pos
-    const tableMap = props.tableMap
+    const pos = props.currentCell.pos
+    const offset = props.currentTable.pos
+    const tableMap = props.currentTableMap
     const isFirst = pos >= tableMap.map[0] + offset && pos <= tableMap.map[tableMap.width] + offset
     return isFirst
   }
@@ -70,6 +72,26 @@ export const TableTooltip = (props: Props) => {
     if (!editorView) return
     setCellSelection()
     toggleHeaderRow(editorView.state, editorView.dispatch)
+    setTimeout(() => editorView.focus())
+    props.reset()
+    return true
+  }
+
+  const onAddRowAbove = () => {
+    const editorView = ctrl.file.currentFile?.editorView
+    if (!editorView) return
+    setCellSelection()
+    addRowBefore(editorView.state, editorView.dispatch)
+    setTimeout(() => editorView.focus())
+    props.reset()
+    return true
+  }
+
+  const onAddRowBelow = () => {
+    const editorView = ctrl.file.currentFile?.editorView
+    if (!editorView) return
+    setCellSelection()
+    addRowAfter(editorView.state, editorView.dispatch)
     setTimeout(() => editorView.focus())
     props.reset()
     return true
@@ -100,7 +122,7 @@ export const TableTooltip = (props: Props) => {
     if (!editorView) return
 
     setCellSelection()
-    if (props.tableMap.width <= 1) {
+    if (props.currentTableMap.width <= 1) {
       deleteTable(editorView.state, editorView.dispatch)
     } else {
       deleteColumn(editorView.state, editorView.dispatch)
@@ -116,7 +138,7 @@ export const TableTooltip = (props: Props) => {
     if (!editorView) return
 
     setCellSelection()
-    if (props.tableMap.height <= 1) {
+    if (props.currentTableMap.height <= 1) {
       deleteTable(editorView.state, editorView.dispatch)
     } else {
       deleteRow(editorView.state, editorView.dispatch)
@@ -128,15 +150,15 @@ export const TableTooltip = (props: Props) => {
   }
 
   createEffect(() => {
-    const result = props.selectedHandle
+    const result = props.activeHandle
 
     const placement = result.direction === 'horiz' ? 'left' : 'top'
     const fallbackPlacements: Placement[] =
       result.direction === 'horiz' ? ['left', 'bottom', 'top'] : ['top', 'left', 'right']
 
     unwrap(cleanup).fn?.()
-    cleanup.fn = autoUpdate(result.node, tooltipRef, async () => {
-      return computePosition(result.node, tooltipRef, {
+    cleanup.fn = autoUpdate(result.element, tooltipRef, async () => {
+      return computePosition(result.element, tooltipRef, {
         placement,
         middleware: [offset(10), flip({fallbackPlacements}), shift(), arrow({element: arrowRef})],
       }).then(({x, y, placement, middlewareData}) => {
@@ -179,19 +201,30 @@ export const TableTooltip = (props: Props) => {
         <div onClick={onToggleHeaderRow}>
           <Icon>toggle_on</Icon> Toggle table header row
         </div>
+        <hr class="divider" />
       </Show>
-      <div onClick={onAddColumnBefore}>
-        <Icon>add_column_left</Icon> Add column before
-      </div>
-      <div onClick={onAddColumnAfter}>
-        <Icon>add_column_right</Icon> Add column after
-      </div>
-      <div onClick={onRemoveColumn}>
-        <Icon>disabled_by_default</Icon> Remove column
-      </div>
-      <div onClick={onRemoveRow}>
-        <Icon>variable_remove</Icon> Remove row
-      </div>
+      <Show when={props.activeHandle.direction === 'horiz'}>
+        <div onClick={onAddRowAbove}>
+          <Icon>add_row_above</Icon> Add row above
+        </div>
+        <div onClick={onAddRowBelow}>
+          <Icon>add_row_below</Icon> Add row below
+        </div>
+        <div onClick={onRemoveRow}>
+          <IconRowRemove /> Remove row
+        </div>
+      </Show>
+      <Show when={props.activeHandle.direction === 'vert'}>
+        <div onClick={onAddColumnBefore}>
+          <Icon>add_column_left</Icon> Add column before
+        </div>
+        <div onClick={onAddColumnAfter}>
+          <Icon>add_column_right</Icon> Add column after
+        </div>
+        <div onClick={onRemoveColumn}>
+          <IconColumnRemove/> Remove column
+        </div>
+      </Show>
       <span ref={arrowRef} class="arrow"></span>
     </TooltipEl>
   )

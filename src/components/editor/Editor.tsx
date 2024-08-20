@@ -72,7 +72,7 @@ export const Editor = () => {
         mouseMoveArea={() => scrollRef}
         scrollContainer={() => scrollRef}
       />
-      <TableControls file={ctrl.file.currentFile} />
+      <TableControls file={ctrl.file.currentFile} scrollContainer={() => scrollRef} />
     </Scroll>
   )
 }

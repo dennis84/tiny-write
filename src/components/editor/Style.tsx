@@ -16,9 +16,6 @@ export const codeBlock = (props: Props) => `
     display: flex;
     font-family: var(--font-family-monospace);
     font-variant-ligatures: none;
-    .block-handle {
-      top: 2px;
-    }
     &.ProseMirror-selectednode,
     &.selected {
       box-shadow: 0 0 0 5px var(--selection-border);
@@ -114,9 +111,6 @@ const proseMirror = (props: Props) => `
       font-size: var(--font-size-h1);
       font-weight: 800;
       line-height: var(--line-height-h1);
-      .block-handle {
-        height: var(--line-height-h1);
-      }
     }
     h2 {
       font-size: var(--font-size-h2);
@@ -164,84 +158,40 @@ const proseMirror = (props: Props) => `
       background: var(--foreground-20);
       border-radius: var(--border-radius);
       page-break-before: always;
-      .block-handle {
-        top: -10px;
-      }
       @media print {
         opacity: 0;
         margin: 0;
         height: 0;
       }
     }
-    .table-container {
-      table {
-        width: 100%;
-        margin: 5px 0;
-        border-collapse: separate;
-        border-spacing: 0;
-        border-radius: var(--border-radius);
-        border: 1px solid var(--foreground-50);
-        text-align: left;
-        background: var(--foreground-10);
-        th, td {
-          padding: 10px 15px;
-          vertical-align: top;
-          border: 1px solid var(--foreground-50);
-          border-top: 0;
-          border-right: 0;
-          position: relative;
-        }
-        th:first-child, td:first-child {
-          border-left: 0;
-        }
-        th {
-          background: var(--foreground-10);
-          color: var(--foreground-80);
-          font-family: var(--font-family-bold);
-        }
-        tr:last-child td {
-          border-bottom: 0;
-        }
+    table {
+      width: 100%;
+      margin: 5px 0;
+      border-collapse: separate;
+      border-spacing: 0;
+      border-radius: var(--border-radius);
+      border: 1px solid var(--foreground-20);
+      text-align: left;
+      th, td {
+        padding: 10px 15px;
+        vertical-align: top;
+        border: 1px solid var(--foreground-20);
+        border-top: 0;
+        border-right: 0;
+        position: relative;
       }
-      .table-menu-button {
-        position: absolute;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        cursor: var(--cursor-pointer);
-        user-select: none;
-        z-index: 1;
-        background: var(--background);
-        border: 1px solid var(--foreground-50);
-        border-radius: var(--border-radius);
-        svg {
-          pointer-events: none;
-          fill: var(--foreground-60);
-          height: 10px;
-        }
+      th:first-child, td:first-child {
+        border-left: 0;
       }
-      .table-menu-right {
-        top: calc(50% - 8px);
-        right: -8.5px;
-        width: 16px;
-        height: 16px;
+      th {
+        background: var(--foreground-5);
+        color: var(--foreground-80);
+        font-family: var(--font-family-bold);
       }
-      .table-menu-left {
-        top: calc(50% - 8px);
-        left: -8.5px;
-        width: 16px;
-        height: 16px;
+      tr:last-child td {
+        border-bottom: 0;
       }
-      .table-menu-bottom {
-        left: calc(50% - 8px);
-        bottom: -8.5px;
-        width: 16px;
-        height: 16px;
-        svg {
-          transform: rotate(90deg);
-        }
-      }
-      &.selected table {
+      &.selected {
         box-shadow: 0 0 0 5px var(--selection-border);
       }
     }
@@ -254,38 +204,6 @@ const proseMirror = (props: Props) => `
     }
     .draggable {
       position: relative;
-    }
-    .block-handle {
-      position: absolute;
-      left: -30px;
-      top: 0;
-      height: var(--line-height);
-      opacity: 0;
-      cursor: move;
-      transition: opacity 0.3s;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      > span {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: var(--border-radius);
-        padding: 6px;
-        fill: var(--foreground-60);
-        pointer-events: none;
-        user-select: none;
-      }
-      &:hover > span {
-        background: var(--foreground-10);
-      }
-      @media print {
-        display: none;
-      }
-    }
-    .draggable:hover .block-handle,
-    .ProseMirror-selectednode .block-handle {
-      opacity: 1;
     }
     .task-list {
       margin: 10px 0;
@@ -409,7 +327,7 @@ export const CanvasEditor = styled('div')`
   min-height: 100%;
   height: fit-content;
   background: var(--background);
-  padding: 10px 30px;
+  padding: 10px 40px;
   ${(props: any) => proseMirror(props)}
 `
 

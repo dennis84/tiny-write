@@ -15,7 +15,7 @@ import {SubmenuEdit} from './SubmenuEdit'
 import {SubmenuCollab} from './SubmenuCollab'
 import {SubmenuTree} from './SubmenuTree'
 import {SubmenuCode} from './SubmenuCode'
-import {Icon} from '../Icon'
+import {Icon, IconPrettier} from '../Icon'
 
 const fullWidth = 500
 
@@ -305,7 +305,7 @@ export const Menu = () => {
             </Link>
             <Show when={showCodeFormat()}>
               <Link onClick={() => setShow('code_format')}>
-                <Icon>code_blocks</Icon> Code Format
+                <IconPrettier/> Code Format
               </Link>
             </Show>
             <Show when={store.mode === Mode.Editor}>

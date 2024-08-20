@@ -10,6 +10,7 @@ import {Scroll} from '@/components/Layout'
 import {Bounds} from './Bounds'
 import {LinkHandles} from './LinkHandles'
 import {IndexType, ZIndex} from '@/utils/ZIndex'
+import { TableControls } from '../editor/TableControl'
 
 const EditorScroll = styled(Scroll)(
   (props: any) => `
@@ -111,6 +112,7 @@ export const Editor = ({element, index}: {element: CanvasEditorElement; index: n
       >
         <CanvasEditor config={store.config} ref={editorRef} data-testid="canvas_editor" />
         <BlockHandle file={ctrl.file.findFileById(element.id)} mouseMoveArea={() => containerRef} />
+        <TableControls file={ctrl.file.findFileById(element.id)} />
       </EditorScroll>
     </>
   )

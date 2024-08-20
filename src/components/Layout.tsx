@@ -18,7 +18,6 @@ export const Layout = styled('div')`
   }
   .block-tooltip,
   .table-tooltip,
-  .table-menu-tooltip,
   .autocomplete-tooltip,
   .menu-tooltip,
   .canvas-link-end-tooltip {

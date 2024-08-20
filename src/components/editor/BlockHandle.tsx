@@ -1,10 +1,11 @@
-import {createEffect, createSignal, onCleanup} from 'solid-js'
+import {createEffect, createSignal, onCleanup, Show} from 'solid-js'
+import {Portal} from 'solid-js/web'
 import {styled} from 'solid-styled-components'
 import {Node} from 'prosemirror-model'
 import {EditorState, NodeSelection, TextSelection} from 'prosemirror-state'
 // @ts-ignore
 import {__serializeForClipboard} from 'prosemirror-view'
-import {File} from '@/state'
+import {File, useState} from '@/state'
 import {Icon} from '../Icon'
 import {BlockTooltip} from './BlockTooltip'
 
@@ -19,8 +20,9 @@ const DragHandle = styled('div')`
   z-index: var(--z-index-handle);
   > span {
     color: var(--foreground-60);
-    border-radius: var(--border-radius);
-    padding: 4px;
+    border-radius: 20px;
+    padding: 10px;
+    margin-top: -6px;
   }
   &:hover > span {
     color: var(--foreground-80);
@@ -31,7 +33,7 @@ const DragHandle = styled('div')`
   }
 `
 
-const WIDTH = 30
+const WIDTH = 40
 
 export interface Block {
   dragHandle: Element
@@ -53,6 +55,7 @@ export const BlockHandle = (props: Props) => {
   const [selectedBlock, setSelectedBlock] = createSignal<Block | undefined>()
   const [cursorPos, setCursorPos] = createSignal<number | undefined>()
   const [blockDom, setBlockDom] = createSignal<HTMLElement>()
+  const [, ctrl] = useState()
 
   const getScrollTop = (): number => {
     return props.scrollContainer?.().scrollTop ?? window.scrollY
@@ -226,7 +229,7 @@ export const BlockHandle = (props: Props) => {
   })
 
   return (
-    <>
+    <Show when={blockDom()}>
       <DragHandle
         ref={dragHandle}
         id="block-handle"
@@ -237,8 +240,10 @@ export const BlockHandle = (props: Props) => {
       >
         <Icon>drag_indicator</Icon>
       </DragHandle>
-      <BlockTooltip selectedBlock={selectedBlock()} resetBlock={onResetBlock} />
-    </>
+      <Portal mount={ctrl.app.layoutRef}>
+        <BlockTooltip selectedBlock={selectedBlock()} resetBlock={onResetBlock} />
+      </Portal>
+    </Show>
   )
 }
 

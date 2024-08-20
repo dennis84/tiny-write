@@ -10,8 +10,6 @@ import {
   selectionCell,
   tableNodes,
 } from 'prosemirror-tables'
-import {createCellMenuPlugin} from './cell-menu'
-import {Ctrl} from '@/services'
 
 const defaultSchema = tableNodes({
   tableGroup: 'block',
@@ -37,14 +35,7 @@ export const tableSchemaSpec = {
       selectable: true,
       draggable: true,
       toDOM(): DOMOutputSpec {
-        return [
-          'div',
-          {
-            class: 'table-container',
-            'data-type': 'table',
-          },
-          ['table', 0]
-        ]
+        return ['table', 0]
       }
     },
   }
@@ -170,9 +161,8 @@ export const tableKeymap = keymap({
   },
 })
 
-export const createTablePlugins = (ctrl: Ctrl, schema: Schema) => [
+export const createTablePlugins = (schema: Schema) => [
   inputRules({rules: [tableInputRule(schema)]}),
-  //createCellMenuPlugin(ctrl.app.layoutRef),
 ]
 
 const getSelectionCell = (state: EditorState) => {
