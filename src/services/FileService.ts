@@ -279,17 +279,22 @@ export class FileService {
       }
     }
 
-    this.updateFile(file.id, {
-      deleted: true,
-      active: false,
-      lastModified: new Date(),
-    })
+    if (!file.lastModified) {
+      await this.deleteForever(file.id)
+    } else {
+      this.updateFile(file.id, {
+        deleted: true,
+        active: false,
+        lastModified: new Date(),
+      })
 
-    const updatedFile = this.findFileById(id)
-    if (!updatedFile) return
+      const updatedFile = this.findFileById(id)
+      if (!updatedFile) return
 
-    await FileService.saveFile(updatedFile)
-    remote.info('File deleted')
+      await FileService.saveFile(updatedFile)
+      remote.info('File deleted')
+    }
+
     this.ctrl.tree.create()
   }
 

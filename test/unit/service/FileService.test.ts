@@ -46,12 +46,13 @@ test('only save file type', async () => {
 test('deleteFile', async () => {
   const subdoc = createSubdoc('1', ['Test'])
   const ydoc = createYdoc([subdoc])
+  const lastModified = new Date()
 
   const [store, setState] = createStore(createState({
     files: [
-      {id: '1', ydoc: Y.encodeStateAsUpdate(subdoc), versions: [], active: true},
-      {id: '2', ydoc: new Uint8Array(), versions: [], deleted: true},
-      {id: '3', ydoc: createYUpdate('2', ['Test2']), versions: []},
+      {id: '1', ydoc: Y.encodeStateAsUpdate(subdoc), versions: [], active: true, lastModified},
+      {id: '2', ydoc: new Uint8Array(), versions: [], deleted: true, lastModified},
+      {id: '3', ydoc: createYUpdate('2', ['Test2']), versions: [], lastModified},
     ],
   }))
 
@@ -75,6 +76,29 @@ test('deleteFile', async () => {
   expect(store.files[1].deleted).toBe(true)
   expect(store.files[2].deleted).toBe(true)
   expect(ctrl.editor.newFile).toHaveBeenCalled()
+})
+
+test('deleteFile - new file', async () => {
+  const subdoc = createSubdoc('1', ['Test'])
+  const ydoc = createYdoc([subdoc])
+  const lastModified = new Date()
+
+  const [store, setState] = createStore(createState({
+    files: [
+      {id: '1', ydoc: Y.encodeStateAsUpdate(subdoc), versions: [], lastModified},
+      {id: '2', ydoc: new Uint8Array(), versions: [], active: true},
+    ],
+  }))
+
+  ctrl.collab.getSubdoc.mockReturnValue(subdoc)
+
+  const service = new FileService(ctrl, store, setState)
+  setState('collab', {ydoc})
+  setState('mode', Mode.Editor)
+
+  await service.deleteFile('2')
+  expect(store.files.length).toBe(1)
+  expect(ctrl.editor.openFile).toHaveBeenCalledWith('1')
 })
 
 test('restore', async () => {
