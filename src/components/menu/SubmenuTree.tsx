@@ -7,7 +7,7 @@ import {Mode, isCanvas, isCodeFile, isFile, useState} from '@/state'
 import {TreeNode, TreeNodeItem} from '@/services/TreeService'
 import {FileService} from '@/services/FileService'
 import {Label, Link, Sub, Text} from './Menu'
-import {Tooltip} from './Tooltip'
+import {Tooltip} from '../Tooltip'
 import {InputLine, InputLineConfig} from '../dialog/InputLine'
 import {Icon} from '../Icon'
 
@@ -486,7 +486,7 @@ export const SubmenuTree = (props: Props) => {
         </Show>
       </Portal>
       <Show when={tooltipAnchor() !== undefined}>
-        <Tooltip anchor={tooltipAnchor()} onClose={() => closeTooltip()}>
+        <Tooltip anchor={tooltipAnchor()!} onClose={() => closeTooltip()}>
           <div onClick={onRename} data-testid="rename">
             <Icon>edit</Icon>
             Rename

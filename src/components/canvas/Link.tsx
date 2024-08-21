@@ -100,7 +100,10 @@ export const Link = ({element}: {element: CanvasLinkElement}) => {
       if (currentCanvas.snapToGrid) t.snapToGrid(10)
 
       ctrl.canvas.drawLink(element.id, fromId, fromEdge, t.x, t.y)
-      if (last) await ctrl.canvas.drawLinkEnd(element.id)
+      if (last) {
+        await ctrl.canvas.drawLinkEnd(element.id)
+      }
+
       return [fromId, fromEdge]
     })
 

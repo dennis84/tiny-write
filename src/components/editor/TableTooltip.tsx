@@ -1,7 +1,5 @@
-import {createEffect, onCleanup, onMount, Show} from 'solid-js'
-import {createMutable, unwrap} from 'solid-js/store'
-import {styled} from 'solid-styled-components'
-import {arrow, autoUpdate, computePosition, flip, offset, Placement, shift} from '@floating-ui/dom'
+import {createEffect, createSignal, Show} from 'solid-js'
+import {ReferenceElement} from '@floating-ui/dom'
 import {
   addColumnAfter,
   addColumnBefore,
@@ -17,15 +15,7 @@ import {
 import {Icon, IconColumnRemove, IconRowRemove} from '../Icon'
 import {CurrentCell, ActiveHandle, CurrentTable} from './TableControl'
 import {useState} from '@/state'
-
-const TooltipEl = styled('div')`
-  position: absolute;
-  z-index: var(--z-index-tooltip);
-`
-
-interface Cleanup {
-  fn?: () => void
-}
+import {Tooltip} from '../Tooltip'
 
 interface Props {
   activeHandle: ActiveHandle
@@ -36,19 +26,8 @@ interface Props {
 }
 
 export const TableTooltip = (props: Props) => {
-  let tooltipRef!: HTMLDivElement
-  let arrowRef!: HTMLSpanElement
-  const cleanup = createMutable<Cleanup>({})
   const [, ctrl] = useState()
-
-  const onBackgroundClick = (e: MouseEvent) => {
-    const block = props.activeHandle
-    if (!block) return
-
-    if (tooltipRef.contains(e.target as Element)) return
-
-    props.reset()
-  }
+  const [tooltipAnchor, setTooltipAnchor] = createSignal<ReferenceElement | undefined>()
 
   const setCellSelection = () => {
     const editorView = ctrl.file.currentFile?.editorView
@@ -151,52 +130,20 @@ export const TableTooltip = (props: Props) => {
 
   createEffect(() => {
     const result = props.activeHandle
-
-    const placement = result.direction === 'horiz' ? 'left' : 'top'
-    const fallbackPlacements: Placement[] =
-      result.direction === 'horiz' ? ['left', 'bottom', 'top'] : ['top', 'left', 'right']
-
-    unwrap(cleanup).fn?.()
-    cleanup.fn = autoUpdate(result.element, tooltipRef, async () => {
-      return computePosition(result.element, tooltipRef, {
-        placement,
-        middleware: [offset(10), flip({fallbackPlacements}), shift(), arrow({element: arrowRef})],
-      }).then(({x, y, placement, middlewareData}) => {
-        tooltipRef.style.left = `${x}px`
-        tooltipRef.style.top = `${y}px`
-        const side = placement.split('-')[0]
-        const staticSide =
-          {
-            top: 'bottom',
-            right: 'left',
-            bottom: 'top',
-            left: 'right',
-          }[side] ?? 'top'
-
-        if (middlewareData.arrow) {
-          const {x, y} = middlewareData.arrow
-          arrowRef.classList.add(staticSide)
-          Object.assign(arrowRef.style, {
-            left: x != null ? `${x}px` : '',
-            top: y != null ? `${y}px` : '',
-            [staticSide]: `${-arrowRef.offsetWidth / 2}px`,
-          })
-        }
-      })
-    })
-  })
-
-  onMount(() => {
-    document.addEventListener('mousedown', onBackgroundClick)
-  })
-
-  onCleanup(() => {
-    cleanup.fn?.()
-    document.removeEventListener('mousedown', onBackgroundClick)
+    setTooltipAnchor(result.element)
   })
 
   return (
-    <TooltipEl ref={tooltipRef} id="table-tooltip" class="table-tooltip">
+    <Tooltip
+      anchor={tooltipAnchor()}
+      onClose={props.reset}
+      placement={props.activeHandle.direction === 'horiz' ? 'left' : 'top'}
+      fallbackPlacements={
+        props.activeHandle.direction === 'horiz' ?
+          ['left', 'bottom', 'top']
+        : ['top', 'left', 'right']
+      }
+    >
       <Show when={isFirstRow()}>
         <div onClick={onToggleHeaderRow}>
           <Icon>toggle_on</Icon> Toggle table header row
@@ -222,10 +169,9 @@ export const TableTooltip = (props: Props) => {
           <Icon>add_column_right</Icon> Add column after
         </div>
         <div onClick={onRemoveColumn}>
-          <IconColumnRemove/> Remove column
+          <IconColumnRemove /> Remove column
         </div>
       </Show>
-      <span ref={arrowRef} class="arrow"></span>
-    </TooltipEl>
+    </Tooltip>
   )
 }

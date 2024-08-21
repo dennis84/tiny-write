@@ -16,54 +16,6 @@ export const Layout = styled('div')`
     height: 5px !important;
     border-radius: var(--border-radius);
   }
-  .block-tooltip,
-  .table-tooltip,
-  .autocomplete-tooltip,
-  .menu-tooltip,
-  .canvas-link-end-tooltip {
-    position: absolute;
-    width: max-content;
-    background: var(--tooltip-background);
-    border-radius: var(--border-radius);
-    font-family: var(--menu-font-family);
-    font-size: var(--menu-font-size);
-    line-height: 1.4;
-    z-index: var(--z-index-tooltip);
-    box-shadow: 0 12px 24px 0 rgba(0, 0, 0, 0.24);
-    padding: 6px 8px;
-    div {
-      position: relative;
-      z-index: 1;
-      display: flex;
-      align-items: center;
-      padding: 6px 8px;
-      margin: 2px 0;
-      min-height: 32px;
-      cursor: var(--cursor-pointer);
-      border-radius: var(--border-radius);
-      &:hover, &.selected {
-        background: var(--primary-background);
-        color: var(--primary-foreground);
-      }
-      > span {
-        margin-right: 10px;
-      }
-    }
-    .divider {
-      height: 3px;
-      border: 0;
-      border-radius: 5px;
-      background: var(--foreground-10);
-      margin: 5px 0;
-    }
-    .arrow {
-      width: 6px;
-      height: 6px;
-      background: var(--tooltip-background);
-      position: absolute;
-      transform: rotate(45deg);
-    }
-  }
   .cm-tooltip-autocomplete {
     border-radius: var(--border-radius) !important;
     border: 0 !important;

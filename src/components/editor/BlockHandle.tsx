@@ -75,6 +75,7 @@ export const BlockHandle = (props: Props) => {
 
   const onResetBlock = () => {
     setSelectedBlock(undefined)
+    setCursorPos(undefined)
   }
 
   const onDragHandleDown = () => {

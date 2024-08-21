@@ -28,8 +28,8 @@ export const Select = (props: Props) => {
         (event.target as HTMLElement).closest('.ProseMirror') ||
         // Prefer normal text selection
         (event.target as HTMLElement).closest('.cm-editor') ||
-        // Allow click on block tooltip
-        (event.target as HTMLElement).closest('#block-tooltip') ||
+        // Allow click on tooltip
+        (event.target as HTMLElement).closest('#tooltip') ||
         // Allow click on block-handle
         (event.target as HTMLElement).closest('#block-handle') ||
         // Allow click on table-handle

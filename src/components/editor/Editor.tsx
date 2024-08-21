@@ -74,7 +74,7 @@ export const Editor = () => {
         scrollContainer={() => scrollRef}
       />
       <TableControls file={ctrl.file.currentFile} scrollContainer={() => scrollRef} />
-      <AutocompleteTooltip />
+      <AutocompleteTooltip file={ctrl.file.currentFile} />
     </Scroll>
   )
 }

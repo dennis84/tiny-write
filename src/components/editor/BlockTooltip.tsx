@@ -1,9 +1,7 @@
-import {Show, createEffect, createSignal, onCleanup, onMount} from 'solid-js'
-import {createMutable, unwrap} from 'solid-js/store'
-import {styled} from 'solid-styled-components'
+import {Show, createEffect, createSignal} from 'solid-js'
 import {NodeSelection, TextSelection} from 'prosemirror-state'
 import {setBlockType} from 'prosemirror-commands'
-import {arrow, autoUpdate, computePosition, flip, offset, shift} from '@floating-ui/dom'
+import {ReferenceElement} from '@floating-ui/dom'
 import {useState} from '@/state'
 import * as remote from '@/remote'
 import {isTauri} from '@/env'
@@ -11,15 +9,7 @@ import {Align} from '@/prosemirror/image'
 import {InputLine, InputLineConfig} from '@/components/dialog/InputLine'
 import {Icon, IconFloatCenter} from '../Icon'
 import {Block} from './BlockHandle'
-
-const TooltipEl = styled('div')`
-  position: absolute;
-  z-index: var(--z-index-tooltip);
-`
-
-interface Cleanup {
-  fn?: () => void
-}
+import {Tooltip} from '../Tooltip'
 
 interface Props {
   selectedBlock?: Block
@@ -27,15 +17,13 @@ interface Props {
 }
 
 export const BlockTooltip = (props: Props) => {
-  let tooltipRef!: HTMLDivElement
-  let arrowRef!: HTMLSpanElement
-
   const [, ctrl] = useState()
   const [inputLine, setInputLine] = createSignal<InputLineConfig>()
-  const cleanup = createMutable<Cleanup>({})
+  const [tooltipAnchor, setTooltipAnchor] = createSignal<ReferenceElement | undefined>()
 
   const closeTooltip = () => {
     props.resetBlock()
+    setTooltipAnchor(undefined)
   }
 
   const onPrettify = () => {
@@ -237,64 +225,10 @@ export const BlockTooltip = (props: Props) => {
     return href
   }
 
-  const onBackgroundClick = (e: MouseEvent) => {
-    const block = props.selectedBlock
-    if (!block) return
-
-    const view = ctrl.file.currentFile?.editorView
-    if (!view) return
-
-    if (tooltipRef.contains(e.target as Element)) return
-
-    props.resetBlock()
-  }
-
   createEffect(() => {
     const result = props.selectedBlock
     if (!result) return
-
-    unwrap(cleanup).fn?.()
-    cleanup.fn = autoUpdate(result.dragHandle, tooltipRef, async () => {
-      return computePosition(result.dragHandle, tooltipRef, {
-        placement: 'left',
-        middleware: [
-          offset(10),
-          flip({fallbackPlacements: ['left', 'bottom', 'top']}),
-          shift(),
-          arrow({element: arrowRef}),
-        ],
-      }).then(({x, y, placement, middlewareData}) => {
-        tooltipRef.style.left = `${x}px`
-        tooltipRef.style.top = `${y}px`
-        const side = placement.split('-')[0]
-        const staticSide =
-          {
-            top: 'bottom',
-            right: 'left',
-            bottom: 'top',
-            left: 'right',
-          }[side] ?? 'top'
-
-        if (middlewareData.arrow) {
-          const {x, y} = middlewareData.arrow
-          arrowRef.classList.add(staticSide)
-          Object.assign(arrowRef.style, {
-            left: x != null ? `${x}px` : '',
-            top: y != null ? `${y}px` : '',
-            [staticSide]: `${-arrowRef.offsetWidth / 2}px`,
-          })
-        }
-      })
-    })
-  })
-
-  onMount(() => {
-    document.addEventListener('mousedown', onBackgroundClick)
-  })
-
-  onCleanup(() => {
-    cleanup.fn?.()
-    document.removeEventListener('mousedown', onBackgroundClick)
+    setTooltipAnchor(result.dragHandle)
   })
 
   return (
@@ -302,7 +236,12 @@ export const BlockTooltip = (props: Props) => {
       <Show when={props.selectedBlock}>
         {(block) => (
           <>
-            <TooltipEl ref={tooltipRef} id="block-tooltip" class="block-tooltip">
+            <Tooltip
+              anchor={tooltipAnchor()!}
+              onClose={closeTooltip}
+              placement="left"
+              fallbackPlacements={['left', 'bottom', 'top']}
+            >
               <Show when={block().blockNode?.type.name === 'code_block'}>
                 <Show when={block().blockNode.attrs.lang === 'mermaid'}>
                   <div onClick={onMermaidSave}>
@@ -366,8 +305,7 @@ export const BlockTooltip = (props: Props) => {
               <div onClick={onRemoveBlock} data-testid="remove_block">
                 <Icon>variable_remove</Icon> remove block
               </div>
-              <span ref={arrowRef} class="arrow"></span>
-            </TooltipEl>
+            </Tooltip>
           </>
         )}
       </Show>

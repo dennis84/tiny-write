@@ -1,25 +1,13 @@
-import {For, Match, Show, Switch, createEffect, createSignal, onCleanup, onMount} from 'solid-js'
+import {For, Match, Show, Switch, createSignal, onMount} from 'solid-js'
 import {Vec} from '@tldraw/editor'
 import {CanvasLinkElement, File, isCanvas, isCodeFile, isFile, useState} from '@/state'
 import {Icon} from '../Icon'
+import {Tooltip} from '../Tooltip'
+import {ReferenceElement} from '@floating-ui/dom'
 
 export const LinkEnd = () => {
-  let tooltipRef!: HTMLDivElement
   const [, ctrl] = useState()
   const [contextMenu, setContextMenu] = createSignal<Vec | undefined>()
-
-  const coordsStyle = (link?: CanvasLinkElement, cm?: Vec) => {
-    const currentCanvas = ctrl.canvas.currentCanvas
-    if (!currentCanvas) return
-
-    const p = link ? new Vec(link.toX, link.toY) : cm
-    if (!p) return
-
-    const {camera} = currentCanvas
-    const {x, y} = Vec.FromArray(camera.point).add(p).mul(camera.zoom)
-
-    return {left: `${x}px`, top: `${y}px`}
-  }
 
   const onNewFile = async (code = false, link?: CanvasLinkElement, cm?: Vec) => {
     await ctrl.canvas.newFile(code, link, cm)
@@ -78,11 +66,43 @@ export const LinkEnd = () => {
     return files
   }
 
-  const getContextMenu = (): [CanvasLinkElement | undefined, Vec | undefined] | undefined => {
+  const getContextMenu = ():
+    | [CanvasLinkElement | undefined, Vec | undefined, ReferenceElement]
+    | undefined => {
     const deadLink = ctrl.canvas.findDeadLinks()[0]
     const cm = contextMenu()
     if (!deadLink && !cm) return
-    return [deadLink, cm]
+
+    const currentCanvas = ctrl.canvas.currentCanvas
+    if (!currentCanvas) return
+
+    const p = deadLink ? new Vec(deadLink.toX, deadLink.toY) : cm
+    if (!p) return
+
+    const {camera} = currentCanvas
+    const {x, y} = Vec.FromArray(camera.point).add(p).mul(camera.zoom)
+
+    const virtualEl = {
+      getBoundingClientRect() {
+        return {
+          x,
+          y,
+          top: y,
+          left: x,
+          bottom: y,
+          right: x,
+          width: 1,
+          height: 1,
+        }
+      },
+    }
+
+    return [deadLink, cm, virtualEl]
+  }
+
+  const onTooltipClose = async () => {
+    await ctrl.canvas.removeDeadLinks()
+    setContextMenu(undefined)
   }
 
   onMount(() => {
@@ -99,44 +119,27 @@ export const LinkEnd = () => {
     document.oncontextmenu = onContextMenu
   })
 
-  createEffect(() => {
-    if (!getContextMenu()) return
-    const onClick = async (e: MouseEvent) => {
-      const target = e.target as Element
-      if (tooltipRef === target || tooltipRef.contains(target)) return
-      await ctrl.canvas.removeDeadLinks()
-      setContextMenu(undefined)
-    }
-
-    document.body.addEventListener('mousedown', onClick)
-    onCleanup(() => {
-      document.body.removeEventListener('mousedown', onClick)
-    })
-  })
-
   return (
     <Show when={getContextMenu()} keyed>
-      {([link, cm]) => (
-        <>
-          <div class="canvas-link-end-tooltip" style={coordsStyle(link, cm)} ref={tooltipRef}>
-            <div onClick={() => onNewFile(false, link, cm)} data-testid="link_end_new_file">
-              <Icon>post_add</Icon> New file
-            </div>
-            <div onClick={() => onNewFile(true, link, cm)} data-testid="link_end_new_code_file">
-              <Icon>code_blocks</Icon> New code file
-            </div>
-            <Show when={getFiles()}>
-              {(files) => (
-                <>
-                  <hr class="divider" />
-                  <For each={files()}>
-                    {(file: File) => <FileName file={file} link={link} cm={cm} />}
-                  </For>
-                </>
-              )}
-            </Show>
+      {([link, cm, tooltipAnchor]) => (
+        <Tooltip anchor={tooltipAnchor} onClose={onTooltipClose}>
+          <div onClick={() => onNewFile(false, link, cm)} data-testid="link_end_new_file">
+            <Icon>post_add</Icon> New file
           </div>
-        </>
+          <div onClick={() => onNewFile(true, link, cm)} data-testid="link_end_new_code_file">
+            <Icon>code_blocks</Icon> New code file
+          </div>
+          <Show when={getFiles()}>
+            {(files) => (
+              <>
+                <hr class="divider" />
+                <For each={files()}>
+                  {(file: File) => <FileName file={file} link={link} cm={cm} />}
+                </For>
+              </>
+            )}
+          </Show>
+        </Tooltip>
       )}
     </Show>
   )

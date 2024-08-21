@@ -114,7 +114,7 @@ export const Editor = ({element, index}: {element: CanvasEditorElement; index: n
         <CanvasEditor config={store.config} ref={editorRef} data-testid="canvas_editor" />
         <BlockHandle file={ctrl.file.findFileById(element.id)} mouseMoveArea={() => containerRef} />
         <TableControls file={ctrl.file.findFileById(element.id)} />
-        <AutocompleteTooltip />
+        <AutocompleteTooltip file={ctrl.file.findFileById(element.id)} />
       </EditorScroll>
     </>
   )
