@@ -150,7 +150,7 @@ export const BlockHandle = (props: Props) => {
   }
 
   const onMouseMove = (e: MouseEvent) => {
-    if (selectedBlock()) {
+    if (selectedBlock() || cursorPos() !== undefined) {
       return
     }
 

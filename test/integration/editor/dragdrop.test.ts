@@ -18,11 +18,11 @@ test('drag drop', async ({page}) => {
 
   await page.locator('.ProseMirror > p:nth-of-type(1)').hover()
 
-  const box = (await page.locator('#block-handle').boundingBox())!
-  await page.locator('#block-handle').hover()
-  await page.mouse.down()
-  await page.mouse.move(box.x + 100, box.y + 500)
-  await page.mouse.up()
+  const handle = page.locator('#block-handle')
+  const pm = page.locator('.ProseMirror')
+  await handle.dragTo(pm, {
+    targetPosition: {x: 100, y: 500},
+  })
 
   await lineTextEq(page, 1, 'Line 2')
   await lineTextEq(page, 2, 'Line 3')
