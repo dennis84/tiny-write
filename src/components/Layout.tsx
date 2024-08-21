@@ -1,4 +1,5 @@
 import {styled} from 'solid-styled-components'
+import {codeMirrorTooltip} from './code/Style'
 
 export const Layout = styled('div')`
   cursor: var(--cursor-default);
@@ -11,24 +12,11 @@ export const Layout = styled('div')`
   color: var(--foreground);
   position: relative;
   overflow: hidden;
+  ${codeMirrorTooltip}
   .drop-cursor {
     background: var(--primary-background) !important;
     height: 5px !important;
     border-radius: var(--border-radius);
-  }
-  .cm-tooltip-autocomplete {
-    border-radius: var(--border-radius) !important;
-    border: 0 !important;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2) !important;
-    font-family: var(--font-family-monospace);
-    font-size: var(--font-size);
-    line-height: 1.4;
-    ul {
-      max-height: 300px !important;
-      li {
-        padding: 10px !important;
-      }
-    }
   }
   .yjs-cursor {
     position: relative;

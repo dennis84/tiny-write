@@ -47,3 +47,33 @@ export const codeMirror = `
     }
   }
 `
+
+export const codeMirrorTooltip = `
+  .cm-tooltip-autocomplete {
+    background: var(--tooltip-background);
+    border-radius: var(--border-radius) !important;
+    border: 0 !important;
+    box-shadow: 0 12px 24px 0 rgba(0, 0, 0, 0.24);
+    padding: 6px 8px;
+    font-family: var(--menu-font-family);
+    font-size: var(--menu-font-size);
+    line-height: 1.4;
+    ul {
+      max-height: 300px !important;
+      li {
+        padding: 6px 8px !important;
+        margin: 2px 0;
+        min-height: 32px;
+        cursor: var(--cursor-pointer);
+        border-radius: var(--border-radius);
+        &:hover, &.selected {
+          background: var(--primary-background);
+          color: var(--primary-foreground);
+        }
+        .cm-completionIcon {
+          margin-right: 10px;
+        }
+      }
+    }
+  }
+`

@@ -1,5 +1,5 @@
 import {Store} from 'solid-js/store'
-import {EditorView, drawSelection, highlightActiveLine, keymap, lineNumbers} from '@codemirror/view'
+import {EditorView, drawSelection, highlightActiveLine, keymap, lineNumbers, tooltips} from '@codemirror/view'
 import {Compartment, EditorState, Extension} from '@codemirror/state'
 import {defaultKeymap, indentWithTab} from '@codemirror/commands'
 import {autocompletion, closeBrackets, closeBracketsKeymap, completionKeymap} from '@codemirror/autocomplete'
@@ -46,6 +46,7 @@ export class CodeMirrorService {
         indentWithTab,
       ]),
       theme,
+      tooltips({parent: this.ctrl.app.layoutRef}),
       drawSelection(),
       EditorState.allowMultipleSelections.of(true),
       indentOnInput(),

@@ -3,7 +3,7 @@ import {DecorationSet, DecorationSource, EditorView as ProsemirrorEditorView} fr
 import {Selection, TextSelection} from 'prosemirror-state'
 import {exitCode} from 'prosemirror-commands'
 import {Compartment} from '@codemirror/state'
-import {EditorView, ViewUpdate, keymap, tooltips} from '@codemirror/view'
+import {EditorView, ViewUpdate, keymap} from '@codemirror/view'
 import {autocompletion} from '@codemirror/autocomplete'
 import {Ctrl} from '@/services'
 import {highlight} from '@/codemirror/highlight'
@@ -146,7 +146,6 @@ export class CodeBlockView {
       lang: this.lang,
       doc: this.node.textContent,
       extensions: [
-        tooltips({parent: this.ctrl.app.layoutRef}),
         embeddedCodeMirrorKeymap,
         createExpandPlugin(this),
         createMermaidPlugin(this),
