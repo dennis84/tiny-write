@@ -76,6 +76,7 @@ export const BlockHandle = (props: Props) => {
   const onResetBlock = () => {
     setSelectedBlock(undefined)
     setCursorPos(undefined)
+    setBlockDom(undefined)
   }
 
   const onDragHandleDown = () => {
@@ -212,6 +213,10 @@ export const BlockHandle = (props: Props) => {
     editorView.dragging = {slice, move: true}
   }
 
+  const onDragEnd = () => {
+    onResetBlock()
+  }
+
   createEffect(() => {
     const editorView = props.file?.editorView
     if (!editorView) return
@@ -237,6 +242,7 @@ export const BlockHandle = (props: Props) => {
         onClick={onDragHandleClick}
         onMouseDown={onDragHandleDown}
         onDragStart={onDragStart}
+        onDragEnd={onResetBlock}
         draggable={true}
       >
         <Icon>drag_indicator</Icon>
