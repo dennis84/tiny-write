@@ -130,7 +130,7 @@ export class ProseMirrorService {
     }
 
     if (isTauri()) plugins.push(createFileListingPlugin(props.ctrl))
-    plugins.push(...createWordCompletionPlugins(props.ctrl))
+    plugins.push(...createWordCompletionPlugins)
 
     return {plugins, doc}
   }

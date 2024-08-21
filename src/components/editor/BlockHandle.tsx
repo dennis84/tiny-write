@@ -126,7 +126,7 @@ export const BlockHandle = (props: Props) => {
 
   const hideDragHandle = () => {
     if (selectedBlock()) return
-    dragHandle.style.opacity = '0'
+    if (dragHandle) dragHandle.style.opacity = '0'
     setBlockDom(undefined)
   }
 

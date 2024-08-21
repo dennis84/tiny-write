@@ -6,6 +6,7 @@ import {Scroll} from '../Layout'
 import {FullEditor} from './Style'
 import {BlockHandle} from './BlockHandle'
 import {TableControls} from './TableControl'
+import {AutocompleteTooltip} from './AutocompleteTooltip'
 
 export const Editor = () => {
   let scrollRef!: HTMLDivElement
@@ -73,6 +74,7 @@ export const Editor = () => {
         scrollContainer={() => scrollRef}
       />
       <TableControls file={ctrl.file.currentFile} scrollContainer={() => scrollRef} />
+      <AutocompleteTooltip />
     </Scroll>
   )
 }

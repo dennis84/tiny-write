@@ -4,13 +4,14 @@ import * as remote from '@/remote'
 import {CanvasEditorElement, useState} from '@/state'
 import {Selection} from '@/services/CanvasService'
 import {FileService} from '@/services/FileService'
+import {IndexType, ZIndex} from '@/utils/ZIndex'
 import {BlockHandle} from '@/components/editor/BlockHandle'
 import {CanvasEditor} from '@/components/editor/Style'
+import {TableControls} from '@/components/editor/TableControl'
+import {AutocompleteTooltip} from '@/components/editor/AutocompleteTooltip'
 import {Scroll} from '@/components/Layout'
 import {Bounds} from './Bounds'
 import {LinkHandles} from './LinkHandles'
-import {IndexType, ZIndex} from '@/utils/ZIndex'
-import { TableControls } from '../editor/TableControl'
 
 const EditorScroll = styled(Scroll)(
   (props: any) => `
@@ -113,6 +114,7 @@ export const Editor = ({element, index}: {element: CanvasEditorElement; index: n
         <CanvasEditor config={store.config} ref={editorRef} data-testid="canvas_editor" />
         <BlockHandle file={ctrl.file.findFileById(element.id)} mouseMoveArea={() => containerRef} />
         <TableControls file={ctrl.file.findFileById(element.id)} />
+        <AutocompleteTooltip />
       </EditorScroll>
     </>
   )
