@@ -70,6 +70,7 @@ export const BlockHandle = (props: Props) => {
     if (!pos) return
 
     const resolved = editorView.state.doc.resolve(pos.pos)
+    if (resolved.node().type.name === 'doc') return
     return resolved.before(1)
   }
 
