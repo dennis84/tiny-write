@@ -1,7 +1,7 @@
 import {For} from 'solid-js'
 import {useState} from '@/state'
 import {ConfigService} from '@/services/ConfigService'
-import {Drawer, Label, Link, Sub, Text} from './Menu'
+import {Drawer, Label, Link, Sub, Text} from './Style'
 import {Button} from '@/components/Button'
 
 interface Props {

@@ -34,7 +34,8 @@ const TooltipEl = styled('div')`
     min-height: 32px;
     cursor: var(--cursor-pointer);
     border-radius: var(--border-radius);
-    &:hover, &.selected {
+    &:hover,
+    &.selected {
       background: var(--primary-background);
       color: var(--primary-foreground);
     }

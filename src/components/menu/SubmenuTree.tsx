@@ -6,7 +6,7 @@ import {DragGesture} from '@use-gesture/vanilla'
 import {Mode, isCanvas, isCodeFile, isFile, useState} from '@/state'
 import {TreeNode, TreeNodeItem} from '@/services/TreeService'
 import {FileService} from '@/services/FileService'
-import {itemCss, Label, Link, Sub} from './Menu'
+import {itemCss, Label, Link, Sub} from './Style'
 import {Tooltip} from '../Tooltip'
 import {Icon} from '../Icon'
 

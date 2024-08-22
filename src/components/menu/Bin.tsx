@@ -1,6 +1,6 @@
 import {useState} from '@/state'
 import {Button, ButtonGroup} from '../Button'
-import {Drawer, Label, Note} from './Menu'
+import {Drawer, Label, Note} from './Style'
 import {SubmenuTree} from './SubmenuTree'
 
 interface Props {

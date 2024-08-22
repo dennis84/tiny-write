@@ -1,6 +1,6 @@
 import {Show} from 'solid-js'
 import {Mode, PrettierConfig, useState} from '@/state'
-import {Drawer, Label, Link, Sub, Text} from './Menu'
+import {Drawer, Label, Link, Sub, Text} from './Style'
 import {Button, ButtonGroup, ButtonPrimary} from '@/components/Button'
 
 interface Props {

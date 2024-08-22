@@ -1,4 +1,4 @@
-import {Drawer, Keys, Label, Sub, Text} from './Menu'
+import {Drawer, Keys, Label, Sub, Text} from './Style'
 import {Button} from '@/components/Button'
 
 interface Props {

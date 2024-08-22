@@ -1,7 +1,7 @@
 import {For, Show, createSignal} from 'solid-js'
 import {format} from 'date-fns'
 import {Version, useState} from '@/state'
-import {Drawer, Label, Link, Sub} from './Menu'
+import {Drawer, Label, Link, Sub} from './Style'
 import {ButtonGroup, Button, ButtonPrimary} from '@/components/Button'
 
 interface Props {

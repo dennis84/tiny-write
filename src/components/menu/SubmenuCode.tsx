@@ -1,5 +1,5 @@
 import {useState} from '@/state'
-import {Label, Link, Sub} from './Menu'
+import {Label, Link, Sub} from './Style'
 import {Icon} from '../Icon'
 
 export const SubmenuCode = () => {

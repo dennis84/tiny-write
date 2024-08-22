@@ -1,7 +1,7 @@
 import {createEffect, createSignal, onCleanup, Show} from 'solid-js'
 import {useState} from '@/state'
 import * as remote from '@/remote'
-import {Label, Link, Sub, Text} from './Menu'
+import {Label, Link, Sub, Text} from './Style'
 import {WEB_URL} from '@/env'
 import {Icon} from '../Icon'
 

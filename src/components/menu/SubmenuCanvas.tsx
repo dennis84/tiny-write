@@ -1,6 +1,6 @@
 import {isMac, mod} from '@/env'
 import {useState} from '@/state'
-import {Keys, Label, Link, Sub} from './Menu'
+import {Keys, Label, Link, Sub} from './Style'
 import {Icon} from '../Icon'
 
 export const SubmenuCanvas = ({maybeHide}: {maybeHide: () => void}) => {

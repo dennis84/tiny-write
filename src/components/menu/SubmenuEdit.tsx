@@ -2,7 +2,7 @@ import {createEffect, createSignal, onCleanup, Show} from 'solid-js'
 import {useState} from '@/state'
 import * as remote from '@/remote'
 import {isMac, isTauri, mod} from '@/env'
-import {Keys, Label, Link, Sub} from './Menu'
+import {Keys, Label, Link, Sub} from './Style'
 import {Icon} from '../Icon'
 
 export const SubmenuEdit = () => {
