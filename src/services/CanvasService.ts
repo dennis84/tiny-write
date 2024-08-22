@@ -1,8 +1,8 @@
 import {SetStoreFunction, Store, unwrap} from 'solid-js/store'
 import {TextSelection} from 'prosemirror-state'
 import {v4 as uuidv4} from 'uuid'
-import {debounce} from 'ts-debounce'
 import {Box, Vec} from '@tldraw/editor'
+import {throttle} from 'throttle-debounce'
 import {
   Camera,
   Canvas,
@@ -39,7 +39,7 @@ export interface Selection {
 }
 
 export class CanvasService {
-  public saveCanvasDebounced = debounce(() => this.saveCanvas(), 100)
+  public saveCanvasThrottled = throttle(100, () => this.saveCanvas())
   public canvasRef: HTMLElement | undefined
 
   constructor(
@@ -165,14 +165,14 @@ export class CanvasService {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
     this.updateCanvas(currentCanvas.id, {camera})
-    void this.saveCanvasDebounced()
+    void this.saveCanvasThrottled()
   }
 
   updateCameraPoint(point: [number, number]) {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
     this.updateCanvas(currentCanvas.id, {camera: {...currentCanvas.camera, point}})
-    void this.saveCanvasDebounced()
+    void this.saveCanvasThrottled()
   }
 
   async deleteCanvas(id: string) {

@@ -92,7 +92,7 @@ const Edge = (props: EdgeProps) => {
         })
 
       ctrl.canvas.updateCanvas(currentCanvas.id, {lastModified: new Date()})
-      void ctrl.canvas.saveCanvasDebounced()
+      void ctrl.canvas.saveCanvasThrottled()
       return selection
     })
 
@@ -149,7 +149,7 @@ const Corner = (props: CornerProps) => {
         })
 
       ctrl.canvas.updateCanvas(currentCanvas.id, {lastModified: new Date()})
-      void ctrl.canvas.saveCanvasDebounced()
+      void ctrl.canvas.saveCanvasThrottled()
       return selection
     })
 
@@ -212,7 +212,7 @@ export const Bounds = (props: BoundsProps) => {
       })
 
       ctrl.canvas.updateCanvas(currentCanvas.id, {lastModified: new Date()})
-      void ctrl.canvas.saveCanvasDebounced()
+      void ctrl.canvas.saveCanvasThrottled()
       return selection
     })
 

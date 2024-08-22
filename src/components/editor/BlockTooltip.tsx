@@ -1,4 +1,4 @@
-import {Show, createEffect, createSignal} from 'solid-js'
+import {Setter, Show, createEffect, createSignal} from 'solid-js'
 import {NodeSelection, TextSelection} from 'prosemirror-state'
 import {setBlockType} from 'prosemirror-commands'
 import {ReferenceElement} from '@floating-ui/dom'
@@ -6,7 +6,7 @@ import {useState} from '@/state'
 import * as remote from '@/remote'
 import {isTauri} from '@/env'
 import {Align} from '@/prosemirror/image'
-import {InputLine, InputLineConfig} from '@/components/dialog/InputLine'
+import {InputLineConfig} from '@/components/dialog/InputLine'
 import {Icon, IconFloatCenter} from '../Icon'
 import {Block} from './BlockHandle'
 import {Tooltip} from '../Tooltip'
@@ -14,11 +14,11 @@ import {Tooltip} from '../Tooltip'
 interface Props {
   selectedBlock?: Block
   resetBlock: () => void
+  setInputLine: Setter<InputLineConfig | undefined>
 }
 
 export const BlockTooltip = (props: Props) => {
   const [, ctrl] = useState()
-  const [inputLine, setInputLine] = createSignal<InputLineConfig>()
   const [tooltipAnchor, setTooltipAnchor] = createSignal<ReferenceElement | undefined>()
 
   const closeTooltip = () => {
@@ -60,11 +60,13 @@ export const BlockTooltip = (props: Props) => {
   }
 
   const onChangeLang = () => {
+    console.log('onChangeLang')
     const block = props.selectedBlock
     if (!block) return
 
     const view = ctrl.file.currentFile?.editorView
     if (!view) return
+    console.log(block)
 
     if (block.blockNode.attrs.lang === 'mermaid') {
       const tr = view.state.tr
@@ -73,7 +75,7 @@ export const BlockTooltip = (props: Props) => {
     }
 
     const lang = block.blockNode.attrs.lang
-    setInputLine({
+    props.setInputLine({
       value: lang,
       onEnter: (lang: string) => {
         view.focus()
@@ -232,84 +234,78 @@ export const BlockTooltip = (props: Props) => {
   })
 
   return (
-    <>
-      <Show when={props.selectedBlock}>
-        {(block) => (
-          <>
-            <Tooltip
-              anchor={tooltipAnchor()!}
-              onClose={closeTooltip}
-              placement="left"
-              fallbackPlacements={['left', 'bottom', 'top']}
-            >
-              <Show when={block().blockNode?.type.name === 'code_block'}>
-                <Show when={block().blockNode.attrs.lang === 'mermaid'}>
-                  <div onClick={onMermaidSave}>
-                    <Icon>file_save</Icon> save as png
-                  </div>
-                  <div onClick={onMermaidHideCode}>
-                    <Show
-                      when={block().blockNode.attrs.hidden}
-                      fallback={
-                        <>
-                          <Icon>visibility_off</Icon> Hide code
-                        </>
-                      }
-                    >
-                      <Icon>visibility</Icon> Show code
-                    </Show>
-                  </div>
-                  <hr class="divider" />
+    <Show when={props.selectedBlock}>
+      {(block) => (
+        <Tooltip
+          anchor={tooltipAnchor()!}
+          onClose={closeTooltip}
+          placement="left"
+          fallbackPlacements={['left', 'bottom', 'top']}
+        >
+          <Show when={block().blockNode?.type.name === 'code_block'}>
+            <Show when={block().blockNode.attrs.lang === 'mermaid'}>
+              <div onClick={onMermaidSave}>
+                <Icon>file_save</Icon> save as png
+              </div>
+              <div onClick={onMermaidHideCode}>
+                <Show
+                  when={block().blockNode.attrs.hidden}
+                  fallback={
+                    <>
+                      <Icon>visibility_off</Icon> Hide code
+                    </>
+                  }
+                >
+                  <Icon>visibility</Icon> Show code
                 </Show>
-                <div onClick={onChangeLang} data-testid="change_lang">
-                  <Icon>javascript</Icon> change language
-                </div>
-                <div onClick={onPrettify} data-testid="prettify">
-                  <Icon>code_blocks</Icon> prettify
-                </div>
-                <div onClick={onFoldAll}>
-                  <Icon>unfold_less</Icon> fold all
+              </div>
+              <hr class="divider" />
+            </Show>
+            <div onClick={onChangeLang} data-testid="change_lang">
+              <Icon>javascript</Icon> change language
+            </div>
+            <div onClick={onPrettify} data-testid="prettify">
+              <Icon>code_blocks</Icon> prettify
+            </div>
+            <div onClick={onFoldAll}>
+              <Icon>unfold_less</Icon> fold all
+            </div>
+            <hr class="divider" />
+          </Show>
+          <Show
+            when={
+              block().cursorNode?.type.name === 'image' || block().cursorNode?.type.name === 'video'
+            }
+          >
+            <div onClick={onAlign(Align.FloatLeft)} data-testid="align_float_left">
+              <Icon>format_image_left</Icon> float left
+            </div>
+            <div onClick={onAlign(Align.FloatRight)} data-testid="align_float_right">
+              <Icon>format_image_right</Icon> float right
+            </div>
+            <div onClick={onAlign(Align.Center)} data-testid="align_center">
+              <IconFloatCenter /> center
+            </div>
+            <hr class="divider" />
+          </Show>
+          <Show when={getLinkHref()}>
+            {(href) => (
+              <>
+                <div onClick={onOpenLink} data-testid="open_link">
+                  <Icon>open_in_new</Icon> open: {href()}
                 </div>
                 <hr class="divider" />
-              </Show>
-              <Show
-                when={
-                  block().cursorNode?.type.name === 'image' ||
-                  block().cursorNode?.type.name === 'video'
-                }
-              >
-                <div onClick={onAlign(Align.FloatLeft)} data-testid="align_float_left">
-                  <Icon>format_image_left</Icon> float left
-                </div>
-                <div onClick={onAlign(Align.FloatRight)} data-testid="align_float_right">
-                  <Icon>format_image_right</Icon> float right
-                </div>
-                <div onClick={onAlign(Align.Center)} data-testid="align_center">
-                  <IconFloatCenter /> center
-                </div>
-                <hr class="divider" />
-              </Show>
-              <Show when={getLinkHref()}>
-                {(href) => (
-                  <>
-                    <div onClick={onOpenLink} data-testid="open_link">
-                      <Icon>open_in_new</Icon> open: {href()}
-                    </div>
-                    <hr class="divider" />
-                  </>
-                )}
-              </Show>
-              <div onClick={onToPlain}>
-                <Icon>format_clear</Icon> remove text formats
-              </div>
-              <div onClick={onRemoveBlock} data-testid="remove_block">
-                <Icon>variable_remove</Icon> remove block
-              </div>
-            </Tooltip>
-          </>
-        )}
-      </Show>
-      <InputLine getter={inputLine} setter={setInputLine} />
-    </>
+              </>
+            )}
+          </Show>
+          <div onClick={onToPlain}>
+            <Icon>format_clear</Icon> remove text formats
+          </div>
+          <div onClick={onRemoveBlock} data-testid="remove_block">
+            <Icon>variable_remove</Icon> remove block
+          </div>
+        </Tooltip>
+      )}
+    </Show>
   )
 }

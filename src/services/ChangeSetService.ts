@@ -4,6 +4,7 @@ import * as Y from 'yjs'
 import {State, Version} from '@/state'
 import * as remote from '@/remote'
 import {Ctrl} from '.'
+import { FileService } from './FileService'
 
 export class ChangeSetService {
   constructor(
@@ -25,7 +26,10 @@ export class ChangeSetService {
     ]
 
     this.ctrl.file.updateFile(currentFile.id, {versions})
-    await this.ctrl.editor.saveEditor()
+    const updatedFile = this.ctrl.file.currentFile
+    if (!updatedFile) return
+    await FileService.saveFile(updatedFile)
+    await this.ctrl.editor.writeFile(updatedFile)
     remote.info('Saved new snapshot version')
   }
 

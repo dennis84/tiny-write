@@ -4,10 +4,8 @@ import {EditorState, Transaction} from 'prosemirror-state'
 import {Node} from 'prosemirror-model'
 import {selectAll, deleteSelection} from 'prosemirror-commands'
 import * as Y from 'yjs'
-import {
-  prosemirrorJSONToYDoc,
-  yXmlFragmentToProseMirrorRootNode,
-} from 'y-prosemirror'
+import {prosemirrorJSONToYDoc, yXmlFragmentToProseMirrorRootNode} from 'y-prosemirror'
+import {throttle} from 'throttle-debounce'
 import {Box} from '@tldraw/editor'
 import * as remote from '@/remote'
 import {State, FileText, File} from '@/state'
@@ -23,6 +21,8 @@ export class EditorService {
     private store: Store<State>,
     private setState: SetStoreFunction<State>,
   ) {}
+
+  private writeFileThrottled = throttle(1000, this.writeFile.bind(this))
 
   updateEditorState(file: File, node?: Element) {
     let editorView = file.editorView
@@ -44,7 +44,7 @@ export class EditorService {
     const editorState = EditorState.create({doc, schema, plugins})
 
     if (!editorView) {
-      const dispatchTransaction = (tr: Transaction) => {
+      const dispatchTransaction = async (tr: Transaction) => {
         if (editorView?.isDestroyed) return
         // selection is deleted after dragstart
         if (editorView?.dragging) return
@@ -69,7 +69,10 @@ export class EditorService {
 
         const updatedFile = this.ctrl.file.findFileById(file.id)
         if (!updatedFile) return
-        void FileService.saveFile(updatedFile)
+
+        await FileService.saveFile(file)
+        await this.writeFileThrottled(file)
+
         remote.info('Saved editor content')
       }
 
@@ -105,11 +108,14 @@ export class EditorService {
     const state: State = unwrap(this.store)
     const file = FileService.createFile()
 
-    const update = await FileService.activateFile({
-      ...state,
-      args: {cwd: state.args?.cwd},
-      files: [...state.files, file],
-    }, file)
+    const update = await FileService.activateFile(
+      {
+        ...state,
+        args: {cwd: state.args?.cwd},
+        files: [...state.files, file],
+      },
+      file,
+    )
 
     update.collab = CollabService.create(file.id, state.mode, false)
     this.setState(update)
@@ -166,7 +172,11 @@ export class EditorService {
     if (!currentFile?.id) return
     const lastModified = new Date()
     this.ctrl.file.updateFile(currentFile.id, {lastModified, path})
-    await this.saveEditor()
+
+    const updatedFile = this.ctrl.file.currentFile
+    if (!updatedFile) return
+    await FileService.saveFile(updatedFile)
+    await this.writeFile(updatedFile)
   }
 
   updateText(text?: FileText) {
@@ -182,7 +192,7 @@ export class EditorService {
       const type = subdoc.getXmlFragment(currentFile.id)
       const json = yXmlFragmentToProseMirrorRootNode(type, schema)
       ynode = Node.fromJSON(schema, json)
-    } catch(_e) {
+    } catch (_e) {
       ynode = new Node()
     }
 
@@ -194,22 +204,6 @@ export class EditorService {
       const type = subdoc.getXmlFragment(currentFile.id)
       type.delete(0, type.length)
       Y.applyUpdate(subdoc, update)
-    }
-  }
-
-  async saveEditor() {
-    const currentFile = this.ctrl.file.currentFile
-    if (!currentFile || !currentFile?.editorView) {
-      return
-    }
-
-    const file = this.ctrl.file.currentFile
-    if (!file) return
-    await FileService.saveFile(file)
-
-    if (currentFile?.path) {
-      const text = serialize(currentFile.editorView.state)
-      await remote.writeFile(currentFile.path, text)
     }
   }
 
@@ -225,5 +219,13 @@ export class EditorService {
     const editorView = currentFile?.editorView
     if (!editorView) return
     this.ctrl.select.deselect(editorView)
+  }
+
+  async writeFile(file: File) {
+    if (file?.path && file.editorView) {
+      remote.info('Write file')
+      const text = serialize(file.editorView.state)
+      await remote.writeFile(file.path, text)
+    }
   }
 }

@@ -1,10 +1,10 @@
 import {SetStoreFunction, Store, unwrap} from 'solid-js/store'
+import {debounce} from 'throttle-debounce'
 import {Config, Mode, State} from '@/state'
 import * as remote from '@/remote'
 import {DB} from '@/db'
 import {isDark} from '@/env'
 import {Ctrl} from '.'
-import {debounce} from 'ts-debounce'
 
 export interface Font {
   label: string;
@@ -268,7 +268,7 @@ export class ConfigService {
 
   static readonly BORDER_RADIUS = '5px';
 
-  private saveConfigDebounced = debounce((state) => this.saveConfig(state), 100)
+  private saveConfigDebounced = debounce(100, (state) => this.saveConfig(state))
 
   constructor(
     private ctrl: Ctrl,

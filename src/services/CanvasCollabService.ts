@@ -1,6 +1,6 @@
 import {Store, unwrap} from 'solid-js/store'
 import * as Y from 'yjs'
-import {debounce} from 'ts-debounce'
+import {throttle} from 'throttle-debounce'
 import {State} from '@/state'
 import {CanvasService} from './CanvasService'
 import {CollabService} from './CollabService'
@@ -8,14 +8,14 @@ import {CollabService} from './CollabService'
 type Elements = Y.Map<Y.Map<any>>
 
 interface CollabElement {
-  [key: string]: any;
-  id: string;
+  [key: string]: any
+  id: string
 }
 
 const PREFIX = 'el-'
 
 export class CanvasCollabService {
-  updateElementThrottled = debounce((el) => this.updateElement(el), 20, {maxWait: 20})
+  updateElementThrottled = throttle(20, (el) => this.updateElement(el))
 
   constructor(
     private collabService: CollabService,
@@ -69,7 +69,7 @@ export class CanvasCollabService {
           } else if (action.action === 'add') {
             const element = event.target.get(key).toJSON()
             this.canvasService.updateCanvas(currentCanvas.id, {
-              elements: [...currentCanvas.elements, element]
+              elements: [...currentCanvas.elements, element],
             })
           }
         }
