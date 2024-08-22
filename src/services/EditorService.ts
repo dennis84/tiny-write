@@ -71,7 +71,7 @@ export class EditorService {
         if (!updatedFile) return
 
         await FileService.saveFile(file)
-        await this.writeFileThrottled(file)
+        this.writeFileThrottled(file)
 
         remote.info('Saved editor content')
       }

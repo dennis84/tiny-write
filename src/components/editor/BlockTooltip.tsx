@@ -238,7 +238,7 @@ export const BlockTooltip = (props: Props) => {
           anchor={tooltipAnchor()!}
           onClose={closeTooltip}
           placement="left"
-          fallbackPlacements={['left', 'bottom', 'top']}
+          fallbackPlacements={['left-start', 'left', 'bottom', 'top']}
         >
           <Show when={block().blockNode?.type.name === 'code_block'}>
             <Show when={block().blockNode.attrs.lang === 'mermaid'}>
