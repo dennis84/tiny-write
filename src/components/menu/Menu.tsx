@@ -3,7 +3,6 @@ import {css, styled} from 'solid-styled-components'
 import {Mode, useState} from '@/state'
 import {isTauri, isMac, mod, shortHash, version, VERSION_URL} from '@/env'
 import * as remote from '@/remote'
-import {ZIndex} from '@/utils/ZIndex'
 import {Bin} from './Bin'
 import {CodeFormat} from './CodeFormat'
 import {Appearance} from './Appearance'
@@ -104,7 +103,7 @@ export const Sub = styled('nav')`
   position: relative;
 `
 
-const itemCss = `
+export const itemCss = `
   width: 100%;
   padding: 5px;
   margin: 0;

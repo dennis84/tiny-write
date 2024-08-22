@@ -6,7 +6,7 @@ import {DragGesture} from '@use-gesture/vanilla'
 import {Mode, isCanvas, isCodeFile, isFile, useState} from '@/state'
 import {TreeNode, TreeNodeItem} from '@/services/TreeService'
 import {FileService} from '@/services/FileService'
-import {Label, Link, Sub, Text} from './Menu'
+import {itemCss, Label, Link, Sub, Text} from './Menu'
 import {Tooltip} from '../Tooltip'
 import {Icon} from '../Icon'
 
@@ -53,6 +53,36 @@ const DropLine = styled('div')`
   margin-left: ${(props: any) => 20 * props.level}px;
 `
 
+// prettier-ignore
+const TreeLinkItem = styled('div')`
+  ${itemCss}
+  user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  align-items: flex-start;
+  ${(props: any) => props.deleted ? `
+      opacity: 0.3;
+      pointer-events: none;
+  ` : ''}
+  ${(props: any) => props.active ? `
+    font-weight: bold;
+    font-family: var(--menu-font-family-bold);
+    color: var(--primary-background);
+  ` : ''}
+  ${(props: any) => props.selected ? `
+    background: var(--primary-background-10);
+  ` : ''}
+  &:hover {
+    color: var(--primary-background);
+    background: var(--foreground-10);
+    border-radius: var(--border-radius);
+    > span {
+      opacity: 1;
+    }
+  }
+`
+
+// prettier-ignore
 const TreeLinkCorner = styled('i')`
   margin-right: 5px;
   cursor: var(--cursor-pointer);
@@ -75,10 +105,11 @@ const TreeLinkTitle = styled('span')`
   cursor: var(--cursor-pointer);
   width: 100%;
   touch-action: none;
-  ${(props: any) => props.highlight ? `color: var(--primary-background-80);` : ''}
-  ${(props: any) => props.grabbing ? 'cursor: var(--cursor-grabbed);' : ''}
+  ${(props: any) => (props.highlight ? `color: var(--primary-background-80);` : '')}
+  ${(props: any) => (props.grabbing ? 'cursor: var(--cursor-grabbed);' : '')}
 `
 
+// prettier-ignore
 const LinkMenu = styled('span')`
   justify-self: flex-end;
   display: flex;
@@ -98,14 +129,14 @@ const LinkMenu = styled('span')`
 `
 
 interface DropState {
-  targetId?: string;
-  pos: 'before' | 'after' | 'add' | 'open' | 'delete';
+  targetId?: string
+  pos: 'before' | 'after' | 'add' | 'open' | 'delete'
 }
 
 interface Props {
-  onBin?: () => void;
-  maybeHide?: () => void;
-  showDeleted?: boolean;
+  onBin?: () => void
+  maybeHide?: () => void
+  showDeleted?: boolean
 }
 
 export const SubmenuTree = (props: Props) => {
@@ -147,7 +178,7 @@ export const SubmenuTree = (props: Props) => {
           ctrl.canvas.updateCanvas(item.id, {title})
           ctrl.canvas.saveCanvas(item)
         }
-      }
+      },
     })
   }
 
@@ -155,7 +186,7 @@ export const SubmenuTree = (props: Props) => {
     const target = unwrap(selected())
     if (!target) return
     await ctrl.editor.newFile()
-    const currentFile =  ctrl.file.currentFile
+    const currentFile = ctrl.file.currentFile
     if (!currentFile) return
     await ctrl.tree.add({item: currentFile, tree: []}, target)
     if (ctrl.tree.isCollapsed(target)) {
@@ -169,7 +200,7 @@ export const SubmenuTree = (props: Props) => {
     const target = unwrap(selected())
     if (!target) return
     await ctrl.canvas.newCanvas()
-    const currentCanvas =  ctrl.canvas.currentCanvas
+    const currentCanvas = ctrl.canvas.currentCanvas
     if (!currentCanvas) return
     await ctrl.tree.add({item: currentCanvas, tree: []}, target)
     closeTooltip()
@@ -179,7 +210,7 @@ export const SubmenuTree = (props: Props) => {
     const target = unwrap(selected())
     if (!target) return
     await ctrl.code.newFile()
-    const currentFile =  ctrl.file.currentFile
+    const currentFile = ctrl.file.currentFile
     if (!currentFile) return
     await ctrl.tree.add({item: currentFile, tree: []}, target)
     closeTooltip()
@@ -187,9 +218,7 @@ export const SubmenuTree = (props: Props) => {
 
   const deleteNode = async (node: TreeNode) => {
     const deleteItem = async (item: TreeNodeItem) =>
-      isFile(item)
-        ? ctrl.file.deleteFile(item.id)
-        : ctrl.canvas.deleteCanvas(item.id)
+      isFile(item) ? ctrl.file.deleteFile(item.id) : ctrl.canvas.deleteCanvas(item.id)
 
     const currentFile = ctrl.file.currentFile
     if (
@@ -262,9 +291,9 @@ export const SubmenuTree = (props: Props) => {
     const [title, setTitle] = createSignal<string>()
 
     const onClick = async () => {
-      if (isCodeFile(p.node.item) ) {
+      if (isCodeFile(p.node.item)) {
         await ctrl.code.openFile(p.node.item.id)
-      } else if (isFile(p.node.item) ) {
+      } else if (isFile(p.node.item)) {
         await ctrl.editor.openFile(p.node.item.id)
       } else {
         await ctrl.canvas.open(p.node.item.id)
@@ -273,81 +302,86 @@ export const SubmenuTree = (props: Props) => {
       props.maybeHide?.()
     }
 
-    const onCornerClick = () =>
-      ctrl.tree.collapse(p.node)
+    const onCornerClick = () => ctrl.tree.collapse(p.node)
 
     const getCurrentId = () =>
-      state.mode === Mode.Canvas ?
-        ctrl.canvas.currentCanvas?.id :
-        ctrl.file.currentFile?.id
+      state.mode === Mode.Canvas ? ctrl.canvas.currentCanvas?.id : ctrl.file.currentFile?.id
 
     onMount(() => {
       const offset = 10
-      const gesture = new DragGesture(ref, async ({xy: [x, y], last, first, event}) => {
-        event.preventDefault()
-        let el = document.elementFromPoint(x, y) as HTMLElement
-        if (el?.tagName === 'SPAN') el = el.parentNode as HTMLElement
-        const box = el?.getBoundingClientRect()
-        const targetId = el?.dataset.id
+      const gesture = new DragGesture(
+        ref,
+        async ({xy: [x, y], last, first, event}) => {
+          event.preventDefault()
+          let el = document.elementFromPoint(x, y) as HTMLElement
+          if (el?.tagName === 'SPAN') el = el.parentNode as HTMLElement
+          const box = el?.getBoundingClientRect()
+          const targetId = el?.dataset.id
 
-        if (first) {
-          setGrabbing(true)
-          setTooltipAnchor(undefined)
-          ghostRef.textContent = title() ?? ''
-          ghostRef.style.display = 'block'
-        }
-
-        if (ghostRef) {
-          ghostRef.style.top = `${y}px`
-          ghostRef.style.left = `${x}px`
-        }
-
-        if (targetId && targetId !== p.node.item.id && !ctrl.tree.isDescendant(targetId, p.node.tree)) {
-          if (y < box.top + offset) {
-            setDropState({pos: 'before', targetId})
-          } else if (y > box.bottom - offset) {
-            setDropState({pos: 'after', targetId})
-          } else {
-            setDropState({pos: 'add', targetId})
+          if (first) {
+            setGrabbing(true)
+            setTooltipAnchor(undefined)
+            ghostRef.textContent = title() ?? ''
+            ghostRef.style.display = 'block'
           }
-        } else if (el?.closest('#grid')) {
-          setDropState({pos: 'open'})
-        } else if (el === binRef) {
-          setDropState({pos: 'delete'})
-        } else {
-          setDropState(undefined)
-        }
 
-        if (last) {
-          const ds = dropState()
-          if (ds?.targetId) {
-            const targetNode = ctrl.tree.findTreeNode(ds.targetId)
-            if (targetNode) {
-              if (ds.pos === 'add' && isFile(targetNode.item)) {
-                await ctrl.tree.add(p.node, targetNode)
-              } else if (ds.pos === 'before') {
-                await ctrl.tree.before(p.node, targetNode)
-              } else if (ds.pos === 'after') {
-                await ctrl.tree.after(p.node, targetNode)
+          if (ghostRef) {
+            ghostRef.style.top = `${y}px`
+            ghostRef.style.left = `${x}px`
+          }
+
+          if (
+            targetId &&
+            targetId !== p.node.item.id &&
+            !ctrl.tree.isDescendant(targetId, p.node.tree)
+          ) {
+            if (y < box.top + offset) {
+              setDropState({pos: 'before', targetId})
+            } else if (y > box.bottom - offset) {
+              setDropState({pos: 'after', targetId})
+            } else {
+              setDropState({pos: 'add', targetId})
+            }
+          } else if (el?.closest('#grid')) {
+            setDropState({pos: 'open'})
+          } else if (el === binRef) {
+            setDropState({pos: 'delete'})
+          } else {
+            setDropState(undefined)
+          }
+
+          if (last) {
+            const ds = dropState()
+            if (ds?.targetId) {
+              const targetNode = ctrl.tree.findTreeNode(ds.targetId)
+              if (targetNode) {
+                if (ds.pos === 'add' && isFile(targetNode.item)) {
+                  await ctrl.tree.add(p.node, targetNode)
+                } else if (ds.pos === 'before') {
+                  await ctrl.tree.before(p.node, targetNode)
+                } else if (ds.pos === 'after') {
+                  await ctrl.tree.after(p.node, targetNode)
+                }
+              }
+            } else if (ds?.pos === 'delete') {
+              await deleteNode(p.node)
+            } else if (ds?.pos === 'open') {
+              if (state.mode === Mode.Canvas && isFile(p.node.item)) {
+                const point = ctrl.canvas.getPosition([x, y])
+                await ctrl.canvas.addFile(p.node.item, undefined, point)
               }
             }
-          } else if (ds?.pos === 'delete') {
-            await deleteNode(p.node)
-          } else if (ds?.pos === 'open') {
-            if (state.mode === Mode.Canvas && isFile(p.node.item)) {
-              const point = ctrl.canvas.getPosition([x, y])
-              await ctrl.canvas.addFile(p.node.item, undefined, point)
-            }
-          }
 
-          setDropState(undefined)
-          setGrabbing(false)
-          ghostRef.style.display = 'none'
-        }
-      }, {
-        filterTaps: true,
-        eventOptions: {passive: false},
-      })
+            setDropState(undefined)
+            setGrabbing(false)
+            ghostRef.style.display = 'none'
+          }
+        },
+        {
+          filterTaps: true,
+          eventOptions: {passive: false},
+        },
+      )
 
       onCleanup(() => {
         gesture.destroy()
@@ -363,35 +397,12 @@ export const SubmenuTree = (props: Props) => {
     })
 
     return (
-      <Text
+      <TreeLinkItem
+        deleted={props.showDeleted && !p.node.item.deleted}
+        active={p.node.item.id === getCurrentId()}
+        selected={p.selected}
         data-id={p.node.item.id}
         data-testid="tree_link"
-        class={css`
-          user-select: none;
-          -webkit-touch-callout: none;
-          -webkit-user-select: none;
-          align-items: flex-start;
-          ${props.showDeleted && !p.node.item.deleted ? `
-            opacity: 0.3;
-            pointer-events: none;
-          `: ''}
-          ${p.node.item.id === getCurrentId() ? `
-            font-weight: bold;
-            font-family: var(--menu-font-family-bold);
-            color: var(--primary-background);
-          ` : ''}
-          ${p.selected ? `
-            background: var(--primary-background-10);
-          ` : ''}
-          &:hover {
-            color: var(--primary-background);
-            background: var(--foreground-10);
-            border-radius: var(--border-radius);
-            > span {
-              opacity: 1;
-            }
-          }
-        `}
       >
         <TreeLinkCorner
           onClick={onCornerClick}
@@ -400,9 +411,15 @@ export const SubmenuTree = (props: Props) => {
           highlight={ctrl.tree.isCollapsed(p.node)}
         >
           <Switch>
-            <Match when={isCanvas(p.node.item)}><Icon>gesture</Icon></Match>
-            <Match when={isCodeFile(p.node.item)}><Icon>code_blocks</Icon></Match>
-            <Match when={!isCodeFile(p.node.item)}><Icon>text_snippet</Icon></Match>
+            <Match when={isCanvas(p.node.item)}>
+              <Icon>gesture</Icon>
+            </Match>
+            <Match when={isCodeFile(p.node.item)}>
+              <Icon>code_blocks</Icon>
+            </Match>
+            <Match when={!isCodeFile(p.node.item)}>
+              <Icon>text_snippet</Icon>
+            </Match>
           </Switch>
         </TreeLinkCorner>
         <TreeLinkTitle
@@ -418,10 +435,11 @@ export const SubmenuTree = (props: Props) => {
           ref={anchor}
           selected={selected() === p.node}
           onClick={(e: MouseEvent) => showTooltip(e, anchor, p.node)}
-          data-testid="tree_link_menu">
+          data-testid="tree_link_menu"
+        >
           <Icon>more_horiz</Icon>
         </LinkMenu>
-      </Text>
+      </TreeLinkItem>
     )
   }
 
@@ -435,7 +453,9 @@ export const SubmenuTree = (props: Props) => {
             </Show>
             <TreeLink
               node={node}
-              selected={p.selected || (isNode(node) && dropState()?.pos === 'add' && isFile(node.item))}
+              selected={
+                p.selected || (isNode(node) && dropState()?.pos === 'add' && isFile(node.item))
+              }
               level={p.level}
             />
             <Show when={node.tree.length > 0 && !ctrl.tree.isCollapsed(node)}>
@@ -464,12 +484,19 @@ export const SubmenuTree = (props: Props) => {
             ref={binRef}
             onClick={props.onBin}
             data-testid="bin"
-            class={dropState()?.pos === 'delete' ? css`
-              background: var(--primary-background-20);
-              border-radius: var(--border-radius);
-            ` : undefined}
+            class={
+              dropState()?.pos === 'delete' ?
+                css`
+                  background: var(--primary-background-20);
+                  border-radius: var(--border-radius);
+                `
+              : undefined
+            }
           >
-            <TreeLinkCorner><Icon>delete</Icon></TreeLinkCorner> Bin
+            <TreeLinkCorner>
+              <Icon>delete</Icon>
+            </TreeLinkCorner>{' '}
+            Bin
           </Link>
         </Show>
       </Sub>

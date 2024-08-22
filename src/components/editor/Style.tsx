@@ -22,12 +22,10 @@ export const codeBlock = (props: Props) => `
     }
     ${codeMirror}
     .cm-editor {
+      flex-direction: ${props.mode === Mode.Editor && props.config.contentWidth > 1000 ? 'row' : 'column'};
       .cm-line {
         line-height: var(--line-height) !important;
       }
-    }
-    > .cm-editor {
-      flex-direction: ${props.mode === Mode.Editor && props.config.contentWidth > 1000 ? 'row' : 'column'};
       .mermaid {
         padding: 30px;
         background: #ffffff11;
