@@ -6,7 +6,7 @@ import {DragGesture} from '@use-gesture/vanilla'
 import {Mode, isCanvas, isCodeFile, isFile, useState} from '@/state'
 import {TreeNode, TreeNodeItem} from '@/services/TreeService'
 import {FileService} from '@/services/FileService'
-import {itemCss, Label, Link, Sub, Text} from './Menu'
+import {itemCss, Label, Link, Sub} from './Menu'
 import {Tooltip} from '../Tooltip'
 import {Icon} from '../Icon'
 
@@ -61,8 +61,8 @@ const TreeLinkItem = styled('div')`
   -webkit-user-select: none;
   align-items: flex-start;
   ${(props: any) => props.deleted ? `
-      opacity: 0.3;
-      pointer-events: none;
+    opacity: 0.3;
+    pointer-events: none;
   ` : ''}
   ${(props: any) => props.active ? `
     font-weight: bold;

@@ -5,7 +5,7 @@ import {Drawer, Label, Link, Sub} from './Menu'
 import {ButtonGroup, Button, ButtonPrimary} from '@/components/Button'
 
 interface Props {
-  onBack: () => void;
+  onBack: () => void
 }
 
 export const ChangeSet = (props: Props) => {
@@ -17,7 +17,7 @@ export const ChangeSet = (props: Props) => {
     if (active() != version) {
       setActive(version)
       ctrl.changeSet.renderVersion(version)
-    } else  {
+    } else {
       setActive(undefined)
       ctrl.changeSet.unrenderVersion()
     }
@@ -43,8 +43,7 @@ export const ChangeSet = (props: Props) => {
       <Sub data-tauri-drag-region="true">
         <For each={versions()} fallback={<p>No snapshots yet</p>}>
           {(version) => (
-            <Link
-              onClick={() => renderVersion(version)}>
+            <Link onClick={() => renderVersion(version)}>
               {format(version.date, 'dd MMMM HH:mm:ss')}
               {version.date === active()?.date && ' ✅'}
             </Link>
@@ -54,14 +53,10 @@ export const ChangeSet = (props: Props) => {
       <ButtonGroup>
         <Button onClick={onBack}>↩ Back</Button>
         <Show when={active() === undefined}>
-          <ButtonPrimary onClick={() => ctrl.changeSet.addVersion()}>
-            Create Snapshot
-          </ButtonPrimary>
+          <ButtonPrimary onClick={() => ctrl.changeSet.addVersion()}>Create Snapshot</ButtonPrimary>
         </Show>
         <Show when={active() !== undefined}>
-          <ButtonPrimary onClick={() => applyVersion()}>
-            Apply Snapshot
-          </ButtonPrimary>
+          <ButtonPrimary onClick={() => applyVersion()}>Apply Snapshot</ButtonPrimary>
         </Show>
       </ButtonGroup>
     </Drawer>

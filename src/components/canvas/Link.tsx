@@ -18,6 +18,7 @@ const LinkSvg = styled('svg')`
   pointer-events: none;
 `
 
+// prettier-ignore
 const Path = styled('path')`
   stroke: transparent;
   stroke-linecap: round;
@@ -67,45 +68,50 @@ export const Link = ({element}: {element: CanvasLinkElement}) => {
   }
 
   onMount(() => {
-    const linkGesture = new DragGesture(pathRef, async ({event, initial, first, last, movement, memo}) => {
-      event.stopPropagation()
-      const {zoom} = currentCanvas.camera
-      const i = ctrl.canvas.getPosition(initial)
-      if (!i) return
+    const linkGesture = new DragGesture(
+      pathRef,
+      async ({event, initial, first, last, movement, memo}) => {
+        event.stopPropagation()
+        const {zoom} = currentCanvas.camera
+        const i = ctrl.canvas.getPosition(initial)
+        if (!i) return
 
-      let [fromId, fromEdge] = await memo ?? []
+        let [fromId, fromEdge] = (await memo) ?? []
 
-      if (first) {
-        const fromEl = currentCanvas.elements.find((el) => el.id === element.from) as CanvasBoxElement
-        const toEl = currentCanvas.elements.find((el) => el.id === element.to) as CanvasBoxElement
-        const fromBox = new Box(fromEl.x, fromEl.y, fromEl.width, fromEl.height)
-        const toBox = new Box(toEl.x, toEl.y, toEl.width, toEl.height)
-        const handleFrom = fromBox.getHandlePoint(element.fromEdge)
-        const handleTo = toBox.getHandlePoint(element.toEdge!)
-        const distFrom = Vec.Dist(handleFrom, i)
-        const distTo = Vec.Dist(handleTo, i)
+        if (first) {
+          const fromEl = currentCanvas.elements.find(
+            (el) => el.id === element.from,
+          ) as CanvasBoxElement
+          const toEl = currentCanvas.elements.find((el) => el.id === element.to) as CanvasBoxElement
+          const fromBox = new Box(fromEl.x, fromEl.y, fromEl.width, fromEl.height)
+          const toBox = new Box(toEl.x, toEl.y, toEl.width, toEl.height)
+          const handleFrom = fromBox.getHandlePoint(element.fromEdge)
+          const handleTo = toBox.getHandlePoint(element.toEdge!)
+          const distFrom = Vec.Dist(handleFrom, i)
+          const distTo = Vec.Dist(handleTo, i)
 
-        if (distTo > distFrom) {
-          fromId = element.to
-          fromEdge = element.toEdge
-        } else {
-          fromId = element.from
-          fromEdge = element.fromEdge
+          if (distTo > distFrom) {
+            fromId = element.to
+            fromEdge = element.toEdge
+          } else {
+            fromId = element.from
+            fromEdge = element.fromEdge
+          }
         }
-      }
 
-      const t = Vec.FromArray(movement).div(zoom).add(i)
-      // If clicked and not dragged
-      if (i.dist(t) <= 1) return [fromId, fromEdge]
-      if (currentCanvas.snapToGrid) t.snapToGrid(10)
+        const t = Vec.FromArray(movement).div(zoom).add(i)
+        // If clicked and not dragged
+        if (i.dist(t) <= 1) return [fromId, fromEdge]
+        if (currentCanvas.snapToGrid) t.snapToGrid(10)
 
-      ctrl.canvas.drawLink(element.id, fromId, fromEdge, t.x, t.y)
-      if (last) {
-        await ctrl.canvas.drawLinkEnd(element.id)
-      }
+        ctrl.canvas.drawLink(element.id, fromId, fromEdge, t.x, t.y)
+        if (last) {
+          await ctrl.canvas.drawLinkEnd(element.id)
+        }
 
-      return [fromId, fromEdge]
-    })
+        return [fromId, fromEdge]
+      },
+    )
 
     onCleanup(() => {
       linkGesture.destroy()
@@ -124,7 +130,7 @@ export const Link = ({element}: {element: CanvasLinkElement}) => {
       line,
       element.fromEdge,
       element.toEdge,
-      10 / currentCanvas.camera.zoom
+      10 / currentCanvas.camera.zoom,
     )
 
     pathRef.setAttribute('d', p)
@@ -182,14 +188,14 @@ const getPath = ([a, b]: [Vec, Vec], [c1, c2]: [Vec, Vec]): string => {
 
 const getControlPointByEdge = (edge: EdgeType, len: number) => {
   switch (edge) {
-  case (EdgeType.Left):
-    return new Vec(-len, 0)
-  case (EdgeType.Right):
-    return new Vec(len, 0)
-  case (EdgeType.Top):
-    return new Vec(0, -len)
-  case (EdgeType.Bottom):
-    return new Vec(0, len)
+    case EdgeType.Left:
+      return new Vec(-len, 0)
+    case EdgeType.Right:
+      return new Vec(len, 0)
+    case EdgeType.Top:
+      return new Vec(0, -len)
+    case EdgeType.Bottom:
+      return new Vec(0, len)
   }
 }
 
@@ -223,9 +229,8 @@ const getArrowPath = (
   const [c1, c2] = getControlPoints(line, fromEdge, toEdge)
   const p = getPath(line, [c1, c2])
 
-  const t = toEdge
-    ? Vec.From(line[1]).add(getControlPointByEdge(toEdge, 100))
-    : Vec.Lrp(c1, line[1], 0.5)
+  const t =
+    toEdge ? Vec.From(line[1]).add(getControlPointByEdge(toEdge, 100)) : Vec.Lrp(c1, line[1], 0.5)
   const i = Vec.Nudge(line[1], t, arrowSize)
   const a = getArrowhead(line[1], i)
 

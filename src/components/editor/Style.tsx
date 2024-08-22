@@ -1,10 +1,10 @@
 import {styled} from 'solid-styled-components'
 import {Config, Mode} from '@/state'
-import {codeMirror} from '../code/Style';
+import {codeMirror} from '../code/Style'
 
 interface Props {
-  config: Config;
-  mode: Mode;
+  config: Config
+  mode: Mode
 }
 
 export const codeBlock = (props: Props) => `

@@ -30,6 +30,7 @@ const Container = styled('div')`
   }
 `
 
+// prettier-ignore
 const Burger = styled('button')`
   position: absolute;
   left: -52px;
@@ -304,7 +305,7 @@ export const Menu = () => {
             </Link>
             <Show when={showCodeFormat()}>
               <Link onClick={() => setShow('code_format')}>
-                <IconPrettier/> Code Format
+                <IconPrettier /> Code Format
               </Link>
             </Show>
             <Show when={store.mode === Mode.Editor}>
@@ -314,7 +315,8 @@ export const Menu = () => {
             </Show>
             <Show when={isTauri()}>
               <Link onClick={onToggleFullscreen}>
-                <Icon>fullscreen</Icon> Fullscreen {store.fullscreen && '✅'} <Keys keys={[modKey, 'Enter']} />
+                <Icon>fullscreen</Icon> Fullscreen {store.fullscreen && '✅'}{' '}
+                <Keys keys={[modKey, 'Enter']} />
               </Link>
             </Show>
             <Show when={store.mode === Mode.Editor}>

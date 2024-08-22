@@ -28,9 +28,7 @@ export const Dir = () => {
 
   const FileLink = (props: {path: string}) => {
     const onClick = () => ctrl.editor.openFileByPath(props.path)
-    return (
-      <Link onClick={onClick}>{props.path}</Link>
-    )
+    return <Link onClick={onClick}>{props.path}</Link>
   }
 
   const Empty = () => (
@@ -43,9 +41,7 @@ export const Dir = () => {
   )
 
   return (
-    <Scroll
-      data-testid="content"
-      data-tauri-drag-region="true">
+    <Scroll data-testid="content" data-tauri-drag-region="true">
       <Content config={store.config} data-tauri-drag-region="true">
         <Show when={store.args?.dir && store.args.dir.length > 0}>
           <p>Click to open file:</p>

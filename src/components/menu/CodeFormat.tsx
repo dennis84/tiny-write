@@ -4,7 +4,7 @@ import {Drawer, Label, Link, Sub, Text} from './Menu'
 import {Button, ButtonGroup, ButtonPrimary} from '@/components/Button'
 
 interface Props {
-  onBack: () => void;
+  onBack: () => void
 }
 
 export const CodeFormat = (props: Props) => {
@@ -12,7 +12,7 @@ export const CodeFormat = (props: Props) => {
 
   const updatePrettier = (opt: Partial<PrettierConfig>) =>
     ctrl.config.updateConfig({
-      prettier: {...store.config.prettier, ...opt}
+      prettier: {...store.config.prettier, ...opt},
     })
 
   const onPrettify = async () => {
@@ -31,7 +31,8 @@ export const CodeFormat = (props: Props) => {
             max="8"
             step="2"
             value={store.config.prettier.tabWidth}
-            onInput={(e: any) => updatePrettier({tabWidth: Number(e.target.value)})} />
+            onInput={(e: any) => updatePrettier({tabWidth: Number(e.target.value)})}
+          />
           {store.config.prettier.tabWidth}
         </Text>
         <Link onClick={() => updatePrettier({useTabs: !store.config.prettier.useTabs})}>
@@ -48,7 +49,8 @@ export const CodeFormat = (props: Props) => {
             max="160"
             step="10"
             value={store.config.prettier.printWidth}
-            onInput={(e: any) => updatePrettier({printWidth: Number(e.target.value)})} />
+            onInput={(e: any) => updatePrettier({printWidth: Number(e.target.value)})}
+          />
           {store.config.prettier.printWidth}
         </Text>
         <Link onClick={() => updatePrettier({semi: !store.config.prettier.semi})}>
@@ -61,9 +63,7 @@ export const CodeFormat = (props: Props) => {
       <ButtonGroup>
         <Button onClick={props.onBack}>↩ Back</Button>
         <Show when={store.mode === Mode.Code}>
-          <ButtonPrimary onClick={onPrettify}>
-            Prettify
-          </ButtonPrimary>
+          <ButtonPrimary onClick={onPrettify}>Prettify</ButtonPrimary>
         </Show>
       </ButtonGroup>
     </Drawer>

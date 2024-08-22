@@ -10,6 +10,7 @@ import {Bounds} from './Bounds'
 import {LinkHandles} from './LinkHandles'
 import {IndexType, ZIndex} from '@/utils/ZIndex'
 
+// prettier-ignore
 const CodeEditorScroll = styled(Scroll)(
   (props: any) => `
     position: absolute;

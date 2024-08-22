@@ -20,7 +20,7 @@ export const SubmenuEdit = () => {
   }
 
   const cmd = (cmd: string) => {
-    (document as any).execCommand(cmd)
+    ;(document as any).execCommand(cmd)
     setLastAction(cmd)
   }
 
@@ -57,7 +57,8 @@ export const SubmenuEdit = () => {
           <Icon>content_paste</Icon> Paste <Keys keys={[modKey, 'p']} />
         </Link>
         <Link onClick={() => cmd('copy')}>
-          <Icon>content_copy</Icon> Copy {lastAction() === 'copy' && '📋'} <Keys keys={[modKey, 'c']} />
+          <Icon>content_copy</Icon> Copy {lastAction() === 'copy' && '📋'}{' '}
+          <Keys keys={[modKey, 'c']} />
         </Link>
         <Show when={ctrl.file.currentFile?.editorView}>
           <Link onClick={onCopyAllAsMd}>

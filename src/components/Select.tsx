@@ -11,7 +11,7 @@ const SelectionFrame = styled('div')`
 `
 
 interface Props {
-  target: () => HTMLElement;
+  target: () => HTMLElement
 }
 
 export const Select = (props: Props) => {
@@ -22,76 +22,82 @@ export const Select = (props: Props) => {
     const target = props.target()
     if (!target) return
 
-    const gesture = new DragGesture(target, ({event, first, last, initial: [x, y], movement: [mx, my], memo}) => {
-      if (
-        // Prefer normal text selection
-        (event.target as HTMLElement).closest('.ProseMirror') ||
-        // Prefer normal text selection
-        (event.target as HTMLElement).closest('.cm-editor') ||
-        // Allow click on tooltip
-        (event.target as HTMLElement).closest('#tooltip') ||
-        // Allow click on block-handle
-        (event.target as HTMLElement).closest('#block-handle') ||
-        // Allow click on table-handle
-        (event.target as HTMLElement).closest('#table-handle-vert') ||
-        (event.target as HTMLElement).closest('#table-handle-horiz')
-      ) {
-        return
-      }
-
-      // If only clicked
-      if (!first && !memo) {
-        if (state.mode === Mode.Canvas) {
-          ctrl.canvas.deselect()
-        } else {
-          ctrl.editor.deselect()
+    const gesture = new DragGesture(
+      target,
+      ({event, first, last, initial: [x, y], movement: [mx, my], memo}) => {
+        if (
+          // Prefer normal text selection
+          (event.target as HTMLElement).closest('.ProseMirror') ||
+          // Prefer normal text selection
+          (event.target as HTMLElement).closest('.cm-editor') ||
+          // Allow click on tooltip
+          (event.target as HTMLElement).closest('#tooltip') ||
+          // Allow click on block-handle
+          (event.target as HTMLElement).closest('#block-handle') ||
+          // Allow click on table-handle
+          (event.target as HTMLElement).closest('#table-handle-vert') ||
+          (event.target as HTMLElement).closest('#table-handle-horiz')
+        ) {
+          return
         }
-        return
-      }
 
-      event.preventDefault()
-      event.stopPropagation()
+        // If only clicked
+        if (!first && !memo) {
+          if (state.mode === Mode.Canvas) {
+            ctrl.canvas.deselect()
+          } else {
+            ctrl.editor.deselect()
+          }
+          return
+        }
 
-      const initial: Box = first ? new Box(x, y, 0, 0): memo
-      const newBox = Box.Resize(initial, CornerType.TopLeft, mx, my).box
+        event.preventDefault()
+        event.stopPropagation()
 
-      if (state.mode === Mode.Canvas) {
-        ctrl.canvas.selectBox(newBox, first, last)
-      } else {
-        ctrl.editor.selectBox(newBox, first, last)
-      }
+        const initial: Box = first ? new Box(x, y, 0, 0) : memo
+        const newBox = Box.Resize(initial, CornerType.TopLeft, mx, my).box
 
-      ctrl.app.setSelecting(true)
-      setFrame(newBox)
-      if (last) {
-        setFrame(undefined)
-        setTimeout(() => ctrl.app.setSelecting(false), 100)
-      }
-      return initial
-    }, {
-      pointer: {keys: false},
-      filterTaps: true,
-      eventOptions: {passive: false},
-    })
+        if (state.mode === Mode.Canvas) {
+          ctrl.canvas.selectBox(newBox, first, last)
+        } else {
+          ctrl.editor.selectBox(newBox, first, last)
+        }
+
+        ctrl.app.setSelecting(true)
+        setFrame(newBox)
+        if (last) {
+          setFrame(undefined)
+          setTimeout(() => ctrl.app.setSelecting(false), 100)
+        }
+        return initial
+      },
+      {
+        pointer: {keys: false},
+        filterTaps: true,
+        eventOptions: {passive: false},
+      },
+    )
 
     onCleanup(() => {
       gesture.destroy()
     })
   })
 
-  return <>
-    <Show when={frame()}>
-      {(f) =>
-        <SelectionFrame
-          style={{
-            top: `${f().y.toString()}px`,
-            left: `${f().x.toString()}px`,
-            width: `${f().w.toString()}px`,
-            height: `${f().h.toString()}px`,
-            'border-width': '1px',
-          }}
-        />
-      }
-    </Show>
-  </>
+  return (
+    <>
+      <Show when={frame()}>
+        {(f) => (
+          <SelectionFrame
+            style={{
+              'top': `${f().y.toString()}px`,
+              'left': `${f().x.toString()}px`,
+              'width': `${f().w.toString()}px`,
+              'height': `${f().h.toString()}px`,
+              'border-width': '1px',
+            }}
+          />
+        )}
+      </Show>
+    </>
+  )
 }

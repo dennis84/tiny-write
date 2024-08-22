@@ -37,15 +37,15 @@ const GeneralError = () => {
   }
 
   const getMessage = () =>
-    typeof store.error?.error === 'string'
-      ? store.error?.error
-      : store.error?.error?.message
+    typeof store.error?.error === 'string' ? store.error?.error : store.error?.error?.message
 
   return (
     <Scroll data-tauri-drag-region="true">
       <Content config={store.config} data-tauri-drag-region="true">
         <h1>An error occurred.</h1>
-        <Pre><code>{getMessage()}</code></Pre>
+        <Pre>
+          <code>{getMessage()}</code>
+        </Pre>
         <ButtonGroup>
           <ButtonPrimary onClick={onReload}>Reload</ButtonPrimary>
           <Show when={store.error?.fileId}>

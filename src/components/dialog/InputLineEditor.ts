@@ -1,20 +1,15 @@
-import {
-  EditorView,
-  crosshairCursor,
-  drawSelection,
-  keymap,
-} from '@codemirror/view'
+import {EditorView, crosshairCursor, drawSelection, keymap} from '@codemirror/view'
 import {Extension} from '@codemirror/state'
 import {standardKeymap} from '@codemirror/commands'
 import {acceptCompletion, autocompletion, moveCompletionSelection} from '@codemirror/autocomplete'
 import {languages} from '@/codemirror/highlight'
 
 interface Props {
-  doc: string;
-  parent: Element;
-  theme: Extension;
-  onClose: () => void;
-  onEnter: (lang: string) => void;
+  doc: string
+  parent: Element
+  theme: Extension
+  onClose: () => void
+  onEnter: (lang: string) => void
 }
 
 export class LangInputEditor {
@@ -32,17 +27,19 @@ export class LangInputEditor {
         crosshairCursor(),
         autocompletion({
           defaultKeymap: false,
-          override: [() => ({
-            options: Object.keys(languages).map((label) => ({label, type: 'word'})),
-            from: 0,
-          })]
+          override: [
+            () => ({
+              options: Object.keys(languages).map((label) => ({label, type: 'word'})),
+              from: 0,
+            }),
+          ],
         }),
         EditorView.domEventHandlers({
-          'blur': () => {
+          blur: () => {
             this.reset()
             this.props.onClose()
             return true
-          }
+          },
         }),
         keymap.of([
           {
@@ -62,16 +59,17 @@ export class LangInputEditor {
               this.props.onEnter(lang)
               return true
             },
-          }, {
+          },
+          {
             key: 'Escape',
             run: () => {
               this.reset()
               this.props.onClose()
               return true
-            }
+            },
           },
           ...standardKeymap,
-        ])
+        ]),
       ],
     })
   }
@@ -83,7 +81,7 @@ export class LangInputEditor {
   focus() {
     this.view.focus()
     this.view.dispatch({
-      selection: {anchor: 0, head: this.view.state.doc.length}
+      selection: {anchor: 0, head: this.view.state.doc.length},
     })
   }
 
@@ -97,7 +95,7 @@ export class LangInputEditor {
         from: 0,
         to: this.view.state.doc.length,
         insert: this.doc,
-      }
+      },
     })
   }
 }

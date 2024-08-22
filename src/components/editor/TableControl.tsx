@@ -17,7 +17,9 @@ const Handle = styled('div')`
   width: 4px;
   z-index: var(--z-index-handle);
   background: var(--background);
-  box-shadow: 0 0 0 2px var(--background), inset 0 0 0 20px var(--foreground-40);
+  box-shadow:
+    0 0 0 2px var(--background),
+    inset 0 0 0 20px var(--foreground-40);
   color: var(--background);
   margin-left: -2px;
   margin-top: -13px;
@@ -293,7 +295,12 @@ export const TableControls = (props: Props) => {
   return (
     <Show when={table()}>
       {(t) => (
-        <HandleGrid file={props.file} currentTable={t()} currentTableMap={TableMap.get(t().node)} scrollContainer={props.scrollContainer} />
+        <HandleGrid
+          file={props.file}
+          currentTable={t()}
+          currentTableMap={TableMap.get(t().node)}
+          scrollContainer={props.scrollContainer}
+        />
       )}
     </Show>
   )

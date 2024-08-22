@@ -1,7 +1,10 @@
 import {useState} from '@/state'
 import {styled} from 'solid-styled-components'
 
-const STEPS = [[1.5, 5], [1, 1]]
+const STEPS = [
+  [1.5, 5],
+  [1, 1],
+]
 
 const GridSvg = styled('svg')`
   position: absolute;
@@ -33,23 +36,14 @@ export const Grid = ({onClick}: {onClick: () => void}) => {
           const opacity = 0.1
 
           return (
-            <pattern
-              id={`grid-${i}`}
-              width={s}
-              height={s}
-              patternUnits="userSpaceOnUse"
-            >
+            <pattern id={`grid-${i}`} width={s} height={s} patternUnits="userSpaceOnUse">
               <circle cx={gxo} cy={gyo} r={r} opacity={opacity} />
             </pattern>
           )
         })}
       </defs>
       {STEPS.map((_, i) => (
-        <rect
-          width="100%"
-          height="100%"
-          fill={`url(#grid-${i})`}
-        />
+        <rect width="100%" height="100%" fill={`url(#grid-${i})`} />
       ))}
     </GridSvg>
   )

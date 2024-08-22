@@ -13,6 +13,7 @@ import {Scroll} from '@/components/Layout'
 import {Bounds} from './Bounds'
 import {LinkHandles} from './LinkHandles'
 
+// prettier-ignore
 const EditorScroll = styled(Scroll)(
   (props: any) => `
     position: absolute;

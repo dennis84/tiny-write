@@ -46,20 +46,14 @@ export const SubmenuCollab = () => {
     <>
       <Label>Collab</Label>
       <Sub data-tauri-drag-region="true">
-        <Show when={store.collab?.error}>
-          ⚠️ Connection error, reconnecting ...
-        </Show>
+        <Show when={store.collab?.error}>⚠️ Connection error, reconnecting ...</Show>
         <Show when={!store.collab?.started}>
-          <Link
-            onClick={onCollabStart}
-            data-testid="collab">
+          <Link onClick={onCollabStart} data-testid="collab">
             <Icon>cloud</Icon> Share
           </Link>
         </Show>
         <Show when={store.collab?.started}>
-          <Link
-            onClick={onCollabStop}
-            data-testid="collab">
+          <Link onClick={onCollabStop} data-testid="collab">
             <Icon>cloud_off</Icon> Disconnect
           </Link>
           <Link onClick={onCopyCollabLink}>

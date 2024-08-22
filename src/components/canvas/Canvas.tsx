@@ -2,7 +2,14 @@ import {For, onCleanup, onMount, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {Gesture} from '@use-gesture/vanilla'
 import {Vec} from '@tldraw/editor'
-import {isEditorElement, isLinkElement, isImageElement, useState, isVideoElement, isCodeElement} from '@/state'
+import {
+  isEditorElement,
+  isLinkElement,
+  isImageElement,
+  useState,
+  isVideoElement,
+  isCodeElement,
+} from '@/state'
 import {isTauri} from '@/env'
 import {Grid} from './Grid'
 import {Editor} from './Editor'
@@ -87,39 +94,46 @@ export const Canvas = () => {
     // @ts-expect-error ???
     document.addEventListener('gestureend', preventGesture)
 
-    const gesture = new Gesture(ref, {
-      onPinch: ({origin: [ox, oy], offset: [s]}) => {
-        zoomTo(s, [ox, oy])
-      },
-      onWheel: ({event, pinching, delta: [dx, dy]}) => {
-        if (pinching) return false
+    const gesture = new Gesture(
+      ref,
+      {
+        onPinch: ({origin: [ox, oy], offset: [s]}) => {
+          zoomTo(s, [ox, oy])
+        },
+        onWheel: ({event, pinching, delta: [dx, dy]}) => {
+          if (pinching) return false
 
-        const target = event.target as HTMLElement
-        if (target.closest('.ProseMirror') || target.closest('.cm-editor')) {
-          return false
-        }
+          const target = event.target as HTMLElement
+          if (target.closest('.ProseMirror') || target.closest('.cm-editor')) {
+            return false
+          }
 
-        const currentCanvas = ctrl.canvas.currentCanvas
-        if (!currentCanvas) return
+          const currentCanvas = ctrl.canvas.currentCanvas
+          if (!currentCanvas) return
 
-        const {zoom, point: [x, y]} = currentCanvas.camera
-        ctrl.canvas.updateCameraPoint([x - dx / zoom , y - dy / zoom])
+          const {
+            zoom,
+            point: [x, y],
+          } = currentCanvas.camera
+          ctrl.canvas.updateCameraPoint([x - dx / zoom, y - dy / zoom])
+        },
       },
-    }, {
-      target: ref,
-      eventOptions: {passive: false},
-      drag: {delay: true, threshold: [10, 10]},
-      wheel: {
-        from: () => [
-          -(ctrl.canvas.currentCanvas?.camera.point[0] ?? 0),
-          -(ctrl.canvas.currentCanvas?.camera.point[1] ?? 0),
-        ],
+      {
+        target: ref,
+        eventOptions: {passive: false},
+        drag: {delay: true, threshold: [10, 10]},
+        wheel: {
+          from: () => [
+            -(ctrl.canvas.currentCanvas?.camera.point[0] ?? 0),
+            -(ctrl.canvas.currentCanvas?.camera.point[1] ?? 0),
+          ],
+        },
+        pinch: {
+          scaleBounds,
+          from: () => [ctrl.canvas.currentCanvas!.camera.zoom ?? 0, 0],
+        },
       },
-      pinch: {
-        scaleBounds,
-        from: () => [(ctrl.canvas.currentCanvas!.camera.zoom ?? 0), 0]
-      },
-    })
+    )
 
     onCleanup(() => {
       gesture.destroy()
@@ -134,7 +148,9 @@ export const Canvas = () => {
 
   return (
     <Container ref={ref} id="content" data-testid="canvas_container">
-      <Show when={isTauri()}><DragArea data-tauri-drag-region="true" /></Show>
+      <Show when={isTauri()}>
+        <DragArea data-tauri-drag-region="true" />
+      </Show>
       <LinkEnd />
       <Select target={() => ref} />
       <Grid onClick={onGridClick} />
@@ -144,27 +160,20 @@ export const Canvas = () => {
             scale(${ctrl.canvas.currentCanvas?.camera.zoom})
             translateX(${ctrl.canvas.currentCanvas?.camera.point[0]}px)
             translateY(${ctrl.canvas.currentCanvas?.camera.point[1]}px)
-          `
+          `,
         }}
       >
         <Show when={ctrl.canvas.selection}>
-          {(sel) =>
-            <Bounds
-              selection={sel()}
-              selected={true}
-              visible={true}
-              index={99999}
-            />
-          }
+          {(sel) => <Bounds selection={sel()} selected={true} visible={true} index={99999} />}
         </Show>
         <For each={ctrl.canvas.currentCanvas?.elements}>
           {(element, index) =>
-            isEditorElement(element) ? <Editor element={element} index={index()} /> :
-            isCodeElement(element) ? <CodeEditor element={element} index={index()} /> :
-            isLinkElement(element) ? <Link element={element} /> :
-            isImageElement(element) ? <Image element={element} index={index()} /> :
-            isVideoElement(element) ? <Video element={element} index={index()} /> :
-            null
+            isEditorElement(element) ? <Editor element={element} index={index()} />
+            : isCodeElement(element) ? <CodeEditor element={element} index={index()} />
+            : isLinkElement(element) ? <Link element={element} />
+            : isImageElement(element) ? <Image element={element} index={index()} />
+            : isVideoElement(element) ? <Video element={element} index={index()} />
+            : null
           }
         </For>
       </Board>

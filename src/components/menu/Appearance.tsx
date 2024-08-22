@@ -5,23 +5,19 @@ import {Drawer, Label, Link, Sub, Text} from './Menu'
 import {Button} from '@/components/Button'
 
 interface Props {
-  onBack: () => void;
+  onBack: () => void
 }
 
 export const Appearance = (props: Props) => {
   const [store, ctrl] = useState()
 
-  const onChangeTheme = (theme: string) => () =>
-    ctrl.config.updateConfig({theme})
+  const onChangeTheme = (theme: string) => () => ctrl.config.updateConfig({theme})
 
-  const onChangeCodeTheme = (codeTheme: string) => () =>
-    ctrl.config.updateConfig({codeTheme})
+  const onChangeCodeTheme = (codeTheme: string) => () => ctrl.config.updateConfig({codeTheme})
 
-  const onChangeFont = (font: string) => () =>
-    ctrl.config.updateConfig({font})
+  const onChangeFont = (font: string) => () => ctrl.config.updateConfig({font})
 
-  const onChangeFontSize = (e: any) =>
-    ctrl.config.updateConfig({fontSize: Number(e.target.value)})
+  const onChangeFontSize = (e: any) => ctrl.config.updateConfig({fontSize: Number(e.target.value)})
 
   const onChangeContentWidth = (e: any) =>
     ctrl.config.updateConfig({contentWidth: Number(e.target.value)})
@@ -33,7 +29,7 @@ export const Appearance = (props: Props) => {
         <For each={Object.entries(ConfigService.themes)}>
           {([key, value]) => (
             <Link onClick={onChangeTheme(key)}>
-              {value.label}{' '}{key === ctrl.config.theme.value && '✅'}
+              {value.label} {key === ctrl.config.theme.value && '✅'}
             </Link>
           )}
         </For>
@@ -43,7 +39,7 @@ export const Appearance = (props: Props) => {
         <For each={Object.entries(ConfigService.codeThemes)}>
           {([key, value]) => (
             <Link onClick={onChangeCodeTheme(key)}>
-              {value.label}{' '}{key === ctrl.config.codeTheme.value && '✅'}
+              {value.label} {key === ctrl.config.codeTheme.value && '✅'}
             </Link>
           )}
         </For>
@@ -53,7 +49,7 @@ export const Appearance = (props: Props) => {
         <For each={Object.entries(ConfigService.fonts)}>
           {([key, value]) => (
             <Link onClick={onChangeFont(key)}>
-              {value.label}{' '}{key === ctrl.config.font.value && '✅'}
+              {value.label} {key === ctrl.config.font.value && '✅'}
             </Link>
           )}
         </For>
@@ -67,7 +63,8 @@ export const Appearance = (props: Props) => {
             min="8"
             max="48"
             value={store.config.fontSize}
-            onInput={onChangeFontSize} />
+            onInput={onChangeFontSize}
+          />
           {store.config.fontSize}
         </Text>
         <Text>
@@ -78,11 +75,14 @@ export const Appearance = (props: Props) => {
             max="1800"
             step="100"
             value={store.config.contentWidth}
-            onInput={onChangeContentWidth} />
+            onInput={onChangeContentWidth}
+          />
           {store.config.contentWidth}
         </Text>
       </Sub>
-      <Button data-testid="back" onClick={props.onBack}>↩ Back</Button>
+      <Button data-testid="back" onClick={props.onBack}>
+        ↩ Back
+      </Button>
     </Drawer>
   )
 }

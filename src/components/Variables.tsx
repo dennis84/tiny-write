@@ -2,13 +2,7 @@ import {createEffect, onMount} from 'solid-js'
 import {ConfigService} from '@/services/ConfigService'
 import {useState} from '@/state'
 import {ZIndex} from '@/utils/ZIndex'
-import {
-  CURSOR_DEFAULT,
-  CURSOR_GRAB,
-  CURSOR_GRABBED,
-  CURSOR_POINTER,
-  CURSOR_TEXT,
-} from './Cursors'
+import {CURSOR_DEFAULT, CURSOR_GRAB, CURSOR_GRABBED, CURSOR_POINTER, CURSOR_TEXT} from './Cursors'
 
 export const Variables = () => {
   const [, ctrl] = useState()

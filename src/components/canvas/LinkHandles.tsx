@@ -32,16 +32,16 @@ const LinkHandleDot = styled('span')`
 `
 
 interface Props {
-  id: string;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
-  index: number;
+  id: string
+  x: number
+  y: number
+  width: number
+  height: number
+  index: number
 }
 
 interface EdgeProps extends Props {
-  type: EdgeType;
+  type: EdgeType
 }
 
 const LinkHandle = (props: EdgeProps) => {
@@ -55,15 +55,15 @@ const LinkHandle = (props: EdgeProps) => {
   const coords = () => {
     const box = new Box(props.x, props.y, props.width, props.height)
     const p = box.getHandlePoint(props.type)
-    p.addXY(-CIRCLE_HOVER_RADIUS/2, -CIRCLE_HOVER_RADIUS/2)
+    p.addXY(-CIRCLE_HOVER_RADIUS / 2, -CIRCLE_HOVER_RADIUS / 2)
     if (props.type === EdgeType.Top) {
-      p.addXY(0, -BORDER_SIZE/zoom())
+      p.addXY(0, -BORDER_SIZE / zoom())
     } else if (props.type === EdgeType.Bottom) {
-      p.addXY(0, BORDER_SIZE/zoom())
+      p.addXY(0, BORDER_SIZE / zoom())
     } else if (props.type === EdgeType.Left) {
-      p.addXY(-BORDER_SIZE/zoom(), 0)
+      p.addXY(-BORDER_SIZE / zoom(), 0)
     } else if (props.type === EdgeType.Right) {
-      p.addXY(BORDER_SIZE/zoom(), 0)
+      p.addXY(BORDER_SIZE / zoom(), 0)
     }
 
     const [x, y] = p.toArray()
@@ -74,22 +74,25 @@ const LinkHandle = (props: EdgeProps) => {
     const currentCanvas = ctrl.canvas.currentCanvas
     if (!currentCanvas) return
 
-    const linkGesture = new DragGesture(linkRef, async ({event, initial, first, last, movement}) => {
-      event.stopPropagation()
-      if (first) {
-        setCurrentLink(uuidv4())
-      }
-      const {point, zoom} = currentCanvas.camera
-      const p = Vec.FromArray(point)
-      const i = Vec.FromArray(initial).div(zoom).sub(p)
-      const t = Vec.FromArray(movement).div(zoom).add(i)
-      const id = currentLink()!
-      ctrl.canvas.drawLink(id, props.id, props.type, t.x, t.y)
-      if (last) {
-        await ctrl.canvas.drawLinkEnd(id)
-        setCurrentLink(undefined)
-      }
-    })
+    const linkGesture = new DragGesture(
+      linkRef,
+      async ({event, initial, first, last, movement}) => {
+        event.stopPropagation()
+        if (first) {
+          setCurrentLink(uuidv4())
+        }
+        const {point, zoom} = currentCanvas.camera
+        const p = Vec.FromArray(point)
+        const i = Vec.FromArray(initial).div(zoom).sub(p)
+        const t = Vec.FromArray(movement).div(zoom).add(i)
+        const id = currentLink()!
+        ctrl.canvas.drawLink(id, props.id, props.type, t.x, t.y)
+        if (last) {
+          await ctrl.canvas.drawLinkEnd(id)
+          setCurrentLink(undefined)
+        }
+      },
+    )
 
     onCleanup(() => {
       linkGesture.destroy()
@@ -101,7 +104,9 @@ const LinkHandle = (props: EdgeProps) => {
       style={{
         'transform': `
           scale(${1 / zoom()})
-          translate(${coords().map((n) => (n * zoom()) + 'px').join(',')})
+          translate(${coords()
+            .map((n) => n * zoom() + 'px')
+            .join(',')})
         `,
         'z-index': `${ZIndex.element(props.index, IndexType.HANDLE)}`,
       }}
@@ -113,9 +118,11 @@ const LinkHandle = (props: EdgeProps) => {
   )
 }
 
-export const LinkHandles = (props: Props) => <>
-  <LinkHandle {...props} type={EdgeType.Top} />
-  <LinkHandle {...props} type={EdgeType.Right} />
-  <LinkHandle {...props} type={EdgeType.Bottom} />
-  <LinkHandle {...props} type={EdgeType.Left} />
-</>
+export const LinkHandles = (props: Props) => (
+  <>
+    <LinkHandle {...props} type={EdgeType.Top} />
+    <LinkHandle {...props} type={EdgeType.Right} />
+    <LinkHandle {...props} type={EdgeType.Bottom} />
+    <LinkHandle {...props} type={EdgeType.Left} />
+  </>
+)

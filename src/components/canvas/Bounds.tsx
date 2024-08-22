@@ -7,28 +7,28 @@ import {Selection} from '@/services/CanvasService'
 import {IndexType, ZIndex} from '@/utils/ZIndex'
 
 interface BoundsProps {
-  selection: Selection;
-  selected?: boolean;
-  visible?: boolean;
-  index: number;
-  onSelect?: (e: MouseEvent) => void;
-  onDoubleClick?: () => void;
+  selection: Selection
+  selected?: boolean
+  visible?: boolean
+  index: number
+  onSelect?: (e: MouseEvent) => void
+  onDoubleClick?: () => void
 }
 
 interface EdgeProps extends BoundsProps {
-  type: EdgeType;
+  type: EdgeType
 }
 
 interface CornerProps extends BoundsProps {
-  type: CornerType;
+  type: CornerType
 }
 
 const BORDER_SIZE = 30
-const BORDER_SIZE_2 = (BORDER_SIZE * 2)
+const BORDER_SIZE_2 = BORDER_SIZE * 2
 
 const Border = styled('rect')`
   fill: transparent;
-  cursor: ${(props: any) => props.vert ? 'ns-resize' : 'ew-resize'};
+  cursor: ${(props: any) => (props.vert ? 'ns-resize' : 'ew-resize')};
   touch-action: none;
 `
 
@@ -46,18 +46,18 @@ const resizeElements = (
   const scale = new Vec(result.scaleX, result.scaleY)
 
   return selection.elements.map(([id, element]) => {
-    let {minX, minY, maxX, maxY} = element;
+    let {minX, minY, maxX, maxY} = element
     const flipX = scale.x < 0
     const flipY = scale.y < 0
     if (flipX) {
-      const t = maxX;
-      maxX = minX;
-      minX = t;
+      const t = maxX
+      maxX = minX
+      minX = t
     }
     if (flipY) {
-      const t = maxY;
-      maxY = minY;
-      minY = t;
+      const t = maxY
+      maxY = minY
+      minY = t
     }
 
     const tl = new Vec(minX, minY).sub(scalePoint).mulV(scale).add(scalePoint)
@@ -78,23 +78,32 @@ const Edge = (props: EdgeProps) => {
     const currentCanvas = ctrl.canvas.currentCanvas
     if (!currentCanvas) return
 
-    const resizeGesture = new DragGesture(ref, ({event, movement: [mx, my], memo, first, shiftKey}) => {
-      event.stopPropagation()
+    const resizeGesture = new DragGesture(
+      ref,
+      ({event, movement: [mx, my], memo, first, shiftKey}) => {
+        event.stopPropagation()
 
-      const selection: Selection = first ? props.selection : memo
-      const {zoom} = currentCanvas.camera
+        const selection: Selection = first ? props.selection : memo
+        const {zoom} = currentCanvas.camera
 
-      resizeElements(selection, props.type, mx / zoom, my / zoom, shiftKey, currentCanvas.snapToGrid)
-        .forEach(([id, box]) => {
+        resizeElements(
+          selection,
+          props.type,
+          mx / zoom,
+          my / zoom,
+          shiftKey,
+          currentCanvas.snapToGrid,
+        ).forEach(([id, box]) => {
           const rect = {x: box.x, y: box.y, width: box.w, height: box.h}
           void ctrl.canvasCollab.updateElementThrottled({id, ...rect})
           ctrl.canvas.updateCanvasElement(id, rect)
         })
 
-      ctrl.canvas.updateCanvas(currentCanvas.id, {lastModified: new Date()})
-      void ctrl.canvas.saveCanvasThrottled()
-      return selection
-    })
+        ctrl.canvas.updateCanvas(currentCanvas.id, {lastModified: new Date()})
+        void ctrl.canvas.saveCanvasThrottled()
+        return selection
+      },
+    )
 
     onCleanup(() => {
       resizeGesture.destroy()
@@ -112,13 +121,7 @@ const Edge = (props: EdgeProps) => {
     ref.setAttribute('height', rh.toString())
   })
 
-  return (
-    <Border
-      ref={ref}
-      vert={vert}
-      data-testid={`edge_${props.type}`}
-    />
-  )
+  return <Border ref={ref} vert={vert} data-testid={`edge_${props.type}`} />
 }
 
 const Corner = (props: CornerProps) => {
@@ -126,7 +129,8 @@ const Corner = (props: CornerProps) => {
   const [, ctrl] = useState()
   const left = props.type === CornerType.TopLeft || props.type === CornerType.BottomLeft
   const bottom = props.type === CornerType.BottomLeft || props.type === CornerType.BottomRight
-  const cursor = props.type === CornerType.TopLeft ? 'nwse-resize'
+  const cursor =
+    props.type === CornerType.TopLeft ? 'nwse-resize'
     : props.type === CornerType.TopRight ? 'nesw-resize'
     : props.type === CornerType.BottomLeft ? 'nesw-resize'
     : props.type === CornerType.BottomRight ? 'nwse-resize'
@@ -141,12 +145,18 @@ const Corner = (props: CornerProps) => {
       const selection: Selection = first ? props.selection : memo
       const {zoom} = currentCanvas.camera
 
-      resizeElements(selection, props.type, mx / zoom, my / zoom, shiftKey, currentCanvas.snapToGrid)
-        .forEach(([id, box]) => {
-          const rect = {x: box.x, y: box.y, width: box.w, height: box.h}
-          void ctrl.canvasCollab.updateElementThrottled({id, ...rect})
-          ctrl.canvas.updateCanvasElement(id, rect)
-        })
+      resizeElements(
+        selection,
+        props.type,
+        mx / zoom,
+        my / zoom,
+        shiftKey,
+        currentCanvas.snapToGrid,
+      ).forEach(([id, box]) => {
+        const rect = {x: box.x, y: box.y, width: box.w, height: box.h}
+        void ctrl.canvasCollab.updateElementThrottled({id, ...rect})
+        ctrl.canvas.updateCanvasElement(id, rect)
+      })
 
       ctrl.canvas.updateCanvas(currentCanvas.id, {lastModified: new Date()})
       void ctrl.canvas.saveCanvasThrottled()
@@ -160,7 +170,7 @@ const Corner = (props: CornerProps) => {
 
   createEffect(() => {
     const ex = left ? 0 : props.selection.box.width + BORDER_SIZE
-    const ey = bottom ? props.selection.box.height + BORDER_SIZE   : 0
+    const ey = bottom ? props.selection.box.height + BORDER_SIZE : 0
     ref.setAttribute('x', ex.toString())
     ref.setAttribute('y', ey.toString())
   })
@@ -170,7 +180,7 @@ const Corner = (props: CornerProps) => {
       ref={ref}
       width={BORDER_SIZE}
       height={BORDER_SIZE}
-      style={{cursor, fill: 'transparent', 'touch-action': 'none'}}
+      style={{cursor, 'fill': 'transparent', 'touch-action': 'none'}}
       data-testid={`corner_${props.type}`}
     />
   )
@@ -273,41 +283,43 @@ const Visible = (props: BoundsProps) => {
     user-select: none;
   `
 
-  return <>
-    <VisibleBorder
-      x={BORDER_SIZE}
-      y={BORDER_SIZE}
-      width={props.selection.box.width}
-      height={props.selection.box.height}
-      style={{'stroke-width': (STROKE_WIDTH / zoom()).toString()}}
-    />
-    <VisibleCorner
-      x={BORDER_SIZE - (RECT_WIDTH / 2 / zoom())}
-      y={BORDER_SIZE - (RECT_WIDTH / 2 / zoom())}
-      width={RECT_WIDTH / zoom()}
-      height={RECT_WIDTH / zoom()}
-      style={{'stroke-width': (STROKE_WIDTH / zoom()).toString()}}
-    />
-    <VisibleCorner
-      x={props.selection.box.width + BORDER_SIZE - (RECT_WIDTH / 2 / zoom())}
-      y={BORDER_SIZE - (RECT_WIDTH / 2 / zoom())}
-      width={RECT_WIDTH / zoom()}
-      height={RECT_WIDTH / zoom()}
-      style={{'stroke-width': (STROKE_WIDTH / zoom()).toString()}}
-    />
-    <VisibleCorner
-      x={BORDER_SIZE - (RECT_WIDTH / 2 / zoom())}
-      y={props.selection.box.height + BORDER_SIZE - (RECT_WIDTH / 2 / zoom())}
-      width={RECT_WIDTH / zoom()}
-      height={RECT_WIDTH / zoom()}
-      style={{'stroke-width': (STROKE_WIDTH / zoom()).toString()}}
-    />
-    <VisibleCorner
-      x={props.selection.box.width + BORDER_SIZE - (RECT_WIDTH / 2 / zoom())}
-      y={props.selection.box.height + BORDER_SIZE - (RECT_WIDTH / 2 / zoom())}
-      width={RECT_WIDTH / zoom()}
-      height={RECT_WIDTH / zoom()}
-      style={{'stroke-width': (STROKE_WIDTH / zoom()).toString()}}
-    />
-  </>
+  return (
+    <>
+      <VisibleBorder
+        x={BORDER_SIZE}
+        y={BORDER_SIZE}
+        width={props.selection.box.width}
+        height={props.selection.box.height}
+        style={{'stroke-width': (STROKE_WIDTH / zoom()).toString()}}
+      />
+      <VisibleCorner
+        x={BORDER_SIZE - RECT_WIDTH / 2 / zoom()}
+        y={BORDER_SIZE - RECT_WIDTH / 2 / zoom()}
+        width={RECT_WIDTH / zoom()}
+        height={RECT_WIDTH / zoom()}
+        style={{'stroke-width': (STROKE_WIDTH / zoom()).toString()}}
+      />
+      <VisibleCorner
+        x={props.selection.box.width + BORDER_SIZE - RECT_WIDTH / 2 / zoom()}
+        y={BORDER_SIZE - RECT_WIDTH / 2 / zoom()}
+        width={RECT_WIDTH / zoom()}
+        height={RECT_WIDTH / zoom()}
+        style={{'stroke-width': (STROKE_WIDTH / zoom()).toString()}}
+      />
+      <VisibleCorner
+        x={BORDER_SIZE - RECT_WIDTH / 2 / zoom()}
+        y={props.selection.box.height + BORDER_SIZE - RECT_WIDTH / 2 / zoom()}
+        width={RECT_WIDTH / zoom()}
+        height={RECT_WIDTH / zoom()}
+        style={{'stroke-width': (STROKE_WIDTH / zoom()).toString()}}
+      />
+      <VisibleCorner
+        x={props.selection.box.width + BORDER_SIZE - RECT_WIDTH / 2 / zoom()}
+        y={props.selection.box.height + BORDER_SIZE - RECT_WIDTH / 2 / zoom()}
+        width={RECT_WIDTH / zoom()}
+        height={RECT_WIDTH / zoom()}
+        style={{'stroke-width': (STROKE_WIDTH / zoom()).toString()}}
+      />
+    </>
+  )
 }

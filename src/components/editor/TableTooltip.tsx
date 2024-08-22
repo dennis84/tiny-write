@@ -135,7 +135,7 @@ export const TableTooltip = (props: Props) => {
 
   return (
     <Tooltip
-      anchor={tooltipAnchor()}
+      anchor={tooltipAnchor()!}
       onClose={props.reset}
       placement={props.activeHandle.direction === 'horiz' ? 'left' : 'top'}
       fallbackPlacements={
