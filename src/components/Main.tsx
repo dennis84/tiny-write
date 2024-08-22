@@ -15,10 +15,13 @@ import {Dir} from '@/components/Dir'
 import {Keymap} from '@/components/Keymap'
 import {Variables} from '@/components/Variables'
 import {MouseCursor} from '@/components/MouseCursor'
+import {InputLine} from '@/components/dialog/InputLine'
 
 export const Main = (props: {state: State}) => {
   const {store, ctrl} = createCtrl(props.state)
   const mouseEnterCoords = createMutable({x: 0, y: 0})
+  const [inputLine, setInputLine] = ctrl.app.inputLine
+
   let layoutRef!: HTMLDivElement
 
   const onDragOver = (e: DragEvent) => {
@@ -72,8 +75,8 @@ export const Main = (props: {state: State}) => {
     })
 
     onCleanup(async () => {
-      (await unlistenResizeProm)();
-      (await unlistenMoveProm)()
+      ;(await unlistenResizeProm)()
+      ;(await unlistenMoveProm)()
     })
   })
 
@@ -138,16 +141,27 @@ export const Main = (props: {state: State}) => {
           data-testid={store.error ? 'error' : store.loading}
         >
           <Switch>
-            <Match when={store.error}><Error /></Match>
-            <Match when={store.args?.dir}><Dir /></Match>
-            <Match when={store.mode === Mode.Canvas}><Canvas /></Match>
-            <Match when={store.mode === Mode.Editor}><Editor /></Match>
-            <Match when={store.mode === Mode.Code}><CodeEditor /></Match>
+            <Match when={store.error}>
+              <Error />
+            </Match>
+            <Match when={store.args?.dir}>
+              <Dir />
+            </Match>
+            <Match when={store.mode === Mode.Canvas}>
+              <Canvas />
+            </Match>
+            <Match when={store.mode === Mode.Editor}>
+              <Editor />
+            </Match>
+            <Match when={store.mode === Mode.Code}>
+              <CodeEditor />
+            </Match>
           </Switch>
           <MouseCursor />
           <Menu />
           <Keymap />
           <Variables />
+          <InputLine getter={inputLine} setter={setInputLine} />
         </Layout>
       </ErrorBoundary>
     </StateContext.Provider>

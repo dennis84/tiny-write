@@ -1,4 +1,4 @@
-import {Setter, Show, createEffect, createSignal} from 'solid-js'
+import {Show, createEffect, createSignal} from 'solid-js'
 import {NodeSelection, TextSelection} from 'prosemirror-state'
 import {setBlockType} from 'prosemirror-commands'
 import {ReferenceElement} from '@floating-ui/dom'
@@ -6,7 +6,6 @@ import {useState} from '@/state'
 import * as remote from '@/remote'
 import {isTauri} from '@/env'
 import {Align} from '@/prosemirror/image'
-import {InputLineConfig} from '@/components/dialog/InputLine'
 import {Icon, IconFloatCenter} from '../Icon'
 import {Block} from './BlockHandle'
 import {Tooltip} from '../Tooltip'
@@ -14,7 +13,6 @@ import {Tooltip} from '../Tooltip'
 interface Props {
   selectedBlock?: Block
   resetBlock: () => void
-  setInputLine: Setter<InputLineConfig | undefined>
 }
 
 export const BlockTooltip = (props: Props) => {
@@ -75,7 +73,7 @@ export const BlockTooltip = (props: Props) => {
     }
 
     const lang = block.blockNode.attrs.lang
-    props.setInputLine({
+    ctrl.app.setInputLine({
       value: lang,
       onEnter: (lang: string) => {
         view.focus()

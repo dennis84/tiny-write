@@ -8,7 +8,6 @@ import {__serializeForClipboard} from 'prosemirror-view'
 import {File, useState} from '@/state'
 import {Icon} from '../Icon'
 import {BlockTooltip} from './BlockTooltip'
-import {InputLine, InputLineConfig} from '../dialog/InputLine'
 
 const DragHandle = styled('div')`
   position: absolute;
@@ -56,7 +55,6 @@ export const BlockHandle = (props: Props) => {
   const [selectedBlock, setSelectedBlock] = createSignal<Block | undefined>()
   const [cursorPos, setCursorPos] = createSignal<number | undefined>()
   const [blockDom, setBlockDom] = createSignal<HTMLElement>()
-  const [inputLine, setInputLine] = createSignal<InputLineConfig>()
   const [, ctrl] = useState()
 
   const getScrollTop = (): number => {
@@ -235,29 +233,22 @@ export const BlockHandle = (props: Props) => {
   })
 
   return (
-    <>
-      <Show when={blockDom()}>
-        <DragHandle
-          ref={dragHandle}
-          id="block-handle"
-          onClick={onDragHandleClick}
-          onMouseDown={onDragHandleDown}
-          onDragStart={onDragStart}
-          onDragEnd={onResetBlock}
-          draggable={true}
-        >
-          <Icon>drag_indicator</Icon>
-        </DragHandle>
-        <Portal mount={ctrl.app.layoutRef}>
-          <BlockTooltip
-            selectedBlock={selectedBlock()}
-            resetBlock={onResetBlock}
-            setInputLine={setInputLine}
-          />
-        </Portal>
-      </Show>
-      <InputLine getter={inputLine} setter={setInputLine} />
-    </>
+    <Show when={blockDom()}>
+      <DragHandle
+        ref={dragHandle}
+        id="block-handle"
+        onClick={onDragHandleClick}
+        onMouseDown={onDragHandleDown}
+        onDragStart={onDragStart}
+        onDragEnd={onResetBlock}
+        draggable={true}
+      >
+        <Icon>drag_indicator</Icon>
+      </DragHandle>
+      <Portal mount={ctrl.app.layoutRef}>
+        <BlockTooltip selectedBlock={selectedBlock()} resetBlock={onResetBlock} />
+      </Portal>
+    </Show>
   )
 }
 

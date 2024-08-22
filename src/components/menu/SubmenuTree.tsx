@@ -8,7 +8,6 @@ import {TreeNode, TreeNodeItem} from '@/services/TreeService'
 import {FileService} from '@/services/FileService'
 import {Label, Link, Sub, Text} from './Menu'
 import {Tooltip} from '../Tooltip'
-import {InputLine, InputLineConfig} from '../dialog/InputLine'
 import {Icon} from '../Icon'
 
 const HighlightContent = styled('div')`
@@ -118,7 +117,6 @@ export const SubmenuTree = (props: Props) => {
   const [tooltipAnchor, setTooltipAnchor] = createSignal<HTMLElement | undefined>()
   const [selected, setSelected] = createSignal<TreeNode>()
   const [grabbing, setGrabbing] = createSignal(false)
-  const [inputLine, setInputLine] = createSignal<InputLineConfig>()
 
   const isNode = (node: TreeNode) => dropState()?.targetId === node.item.id
 
@@ -138,7 +136,7 @@ export const SubmenuTree = (props: Props) => {
     if (!item) return
 
     closeTooltip()
-    setInputLine({
+    ctrl.app.setInputLine({
       value: item?.title ?? '',
       onEnter: (value: string) => {
         const title = value.trim() || undefined
@@ -530,7 +528,6 @@ export const SubmenuTree = (props: Props) => {
           </Show>
         </Tooltip>
       </Show>
-      <InputLine getter={inputLine} setter={setInputLine} />
     </>
   )
 }

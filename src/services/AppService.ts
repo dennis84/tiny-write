@@ -1,9 +1,11 @@
 import {Store, unwrap, SetStoreFunction} from 'solid-js/store'
+import {createSignal} from 'solid-js'
 import {stateToString} from '@/utils/debug'
 import * as remote from '@/remote'
 import {State, ServiceError, Window, File, FileText, Mode, ErrorObject} from '@/state'
 import {DB} from '@/db'
 import {isTauri} from '@/env'
+import {InputLineConfig} from '@/components/dialog/InputLine'
 import {Ctrl} from '.'
 import {ConfigService} from './ConfigService'
 import {CanvasService} from './CanvasService'
@@ -11,19 +13,24 @@ import {FileService} from './FileService'
 import {CollabService} from './CollabService'
 
 interface InitResult {
-  data: State;
-  markdownDoc?: FileText;
-  textDoc?: string;
+  data: State
+  markdownDoc?: FileText
+  textDoc?: string
 }
 
 class InitError extends Error {
-  constructor(public data: State, message?: string) {
+  constructor(
+    public data: State,
+    message?: string,
+  ) {
     super(message)
   }
 }
 
 export class AppService {
   public layoutRef: HTMLElement | undefined
+
+  public inputLine = createSignal<InputLineConfig>()
 
   constructor(
     private ctrl: Ctrl,
@@ -244,7 +251,7 @@ export class AppService {
       }
 
       this.ctrl.tree.create()
-    } catch(e: any) {
+    } catch (e: any) {
       const error = this.createError(e)
       remote.error(`Error during init: ${e.message}`)
       const data = e.data ?? {}
@@ -272,6 +279,10 @@ export class AppService {
     this.setState({error, loading: 'initialized'})
   }
 
+  setInputLine(inputLine: InputLineConfig) {
+    this.inputLine[1](inputLine)
+  }
+
   async reset() {
     this.ctrl.collab.disconnectCollab()
     await DB.deleteDatabase()
@@ -297,15 +308,15 @@ export class AppService {
 
   private async fetchData(): Promise<State> {
     const state = unwrap(this.store)
-    const args = await remote.getArgs().catch(() => undefined) ?? state.args ?? {}
+    const args = (await remote.getArgs().catch(() => undefined)) ?? state.args ?? {}
 
     const room = window.location.pathname?.slice(1).trim()
     if (room) args.room = room
 
     const fetchedWindow = await DB.getWindow()
     const fetchedConfig = await DB.getConfig()
-    const files = await this.ctrl.file.fetchFiles() ?? state.files ?? []
-    const canvases = await this.ctrl.canvas.fetchCanvases() ?? state.canvases ?? []
+    const files = (await this.ctrl.file.fetchFiles()) ?? state.files ?? []
+    const canvases = (await this.ctrl.canvas.fetchCanvases()) ?? state.canvases ?? []
     const meta = await DB.getMeta()
     const tree = await DB.getTree()
 
