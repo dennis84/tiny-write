@@ -4,7 +4,7 @@ const second = 1000
 const timeout = process.env.CI ? 10 * second : 10 * second
 
 const config: PlaywrightTestConfig = {
-  testDir: './test/integration',
+  testDir: './test/browser',
   timeout,
   retries: process.env.CI ? 3 : 0,
   webServer: [
