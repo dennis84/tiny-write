@@ -17,33 +17,29 @@ export const containerSchemaSpec = {
         summary: {default: 'Details'},
       },
       toDOM(node: Node): DOMOutputSpec {
-        return node.attrs.type === 'details' ? [
-          'details',
-          {class: `container-${node.attrs.type}`, ...(node.attrs.open ? {open: ''} : {})},
-          ['summary', {contenteditable: 'false'}, node.attrs.summary],
-          ['div', 0],
-        ] : [
-          'div',
-          {class: `container-${node.attrs.type}`},
-          0
-        ]
-      }
-    }
-  }
+        return node.attrs.type === 'details' ?
+            [
+              'details',
+              {class: `container-${node.attrs.type}`, ...(node.attrs.open ? {open: ''} : {})},
+              ['summary', {contenteditable: 'false'}, node.attrs.summary],
+              ['div', 0],
+            ]
+          : ['div', {class: `container-${node.attrs.type}`}, 0]
+      },
+    },
+  },
 }
 
 const containerRule = (nodeType: NodeType) =>
-  wrappingInputRule(
-    /^:::([a-z]*)?\s$/,
-    nodeType,
-    match => {
-      const type = match[1]
-      return type === 'tip' ? {type}
-        : type === 'warning' ? {type}
-        : type === 'details' ? {type}
-        : {}
-    }
-  )
+  wrappingInputRule(/^:::([a-z]*)?\s$/, nodeType, (match) => {
+    const type = match[1]
+    return (
+      type === 'tip' ? {type}
+      : type === 'warning' ? {type}
+      : type === 'details' ? {type}
+      : {}
+    )
+  })
 
 class ContainerView {
   dom: HTMLElement
@@ -77,14 +73,13 @@ class ContainerView {
   }
 }
 
-export const createContainerPlugin = (schema: Schema) => inputRules({rules: [
-  containerRule(schema.nodes.container),
-]})
+export const createContainerPlugin = (schema: Schema) =>
+  inputRules({rules: [containerRule(schema.nodes.container)]})
 
 export const containerViews: ViewConfig = {
   nodeViews: {
     container: (node, view, getPos) => {
       return new ContainerView(node, view, getPos)
-    }
-  }
+    },
+  },
 }

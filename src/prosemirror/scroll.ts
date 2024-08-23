@@ -21,13 +21,14 @@ const scrollToElem = (node: Element) => {
   })
 }
 
-export const scrollIntoView = (ctrl: Ctrl) => new Plugin({
-  props: {
-    handleDOMEvents: {
-      keyup: (view: EditorView) => {
-        if (ctrl.config.typewriterMode) scroll(view)
-        return false
-      }
-    }
-  },
-})
+export const scrollIntoView = (ctrl: Ctrl) =>
+  new Plugin({
+    props: {
+      handleDOMEvents: {
+        keyup: (view: EditorView) => {
+          if (ctrl.config.typewriterMode) scroll(view)
+          return false
+        },
+      },
+    },
+  })

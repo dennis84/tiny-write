@@ -10,5 +10,5 @@ export const hardBreakSchemaSpec = {
         return ['br']
       },
     },
-  }
+  },
 }

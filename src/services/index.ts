@@ -32,10 +32,7 @@ export class Ctrl {
   codeMirror!: CodeMirrorService
   prettier!: PrettierService
 
-  constructor(
-    store: Store<State>,
-    setState: SetStoreFunction<State>,
-  ) {
+  constructor(store: Store<State>, setState: SetStoreFunction<State>) {
     this.app = new AppService(this, store, setState)
     this.config = new ConfigService(this, store, setState)
     this.editor = new EditorService(this, store, setState)

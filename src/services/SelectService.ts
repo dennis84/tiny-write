@@ -3,12 +3,12 @@ import {TextSelection} from 'prosemirror-state'
 import {Box} from '@tldraw/editor'
 
 interface Position {
-  top: number;
-  bottom: number;
-  left: number;
-  right: number;
-  pos: number;
-  nodeSize: number;
+  top: number
+  bottom: number
+  left: number
+  right: number
+  pos: number
+  nodeSize: number
 }
 
 export class SelectService {
@@ -35,7 +35,7 @@ export class SelectService {
 
     for (let i = 0; i < positions.length; i++) {
       const pos = positions[i]
-      const nextPos = positions[i+1]
+      const nextPos = positions[i + 1]
       // use next top pos because pos.bottom is always same as pos.top
       const end = nextPos?.top ?? pos.bottom
 

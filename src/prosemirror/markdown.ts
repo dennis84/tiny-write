@@ -9,26 +9,22 @@ import {
 import {DOMOutputSpec, NodeType, Schema} from 'prosemirror-model'
 import {nodeInputRule} from './rulebuilders'
 
-const blockQuoteRule = (nodeType: NodeType) =>
-  wrappingInputRule(/^\s*>\s$/, nodeType)
+const blockQuoteRule = (nodeType: NodeType) => wrappingInputRule(/^\s*>\s$/, nodeType)
 
 const orderedListRule = (nodeType: NodeType) =>
   wrappingInputRule(
     /^(\d+)\.\s$/,
     nodeType,
-    match => ({order: +match[1]}),
-    (match, node) => node.childCount + node.attrs.order == +match[1]
+    (match) => ({order: +match[1]}),
+    (match, node) => node.childCount + node.attrs.order == +match[1],
   )
 
-const bulletListRule = (nodeType: NodeType) =>
-  wrappingInputRule(/^\s*([-+*])\s$/, nodeType)
+const bulletListRule = (nodeType: NodeType) => wrappingInputRule(/^\s*([-+*])\s$/, nodeType)
 
 const headingRule = (nodeType: NodeType, maxLevel: number) =>
-  textblockTypeInputRule(
-    new RegExp('^(#{1,' + maxLevel + '})\\s$'),
-    nodeType,
-    match => ({level: match[1].length})
-  )
+  textblockTypeInputRule(new RegExp('^(#{1,' + maxLevel + '})\\s$'), nodeType, (match) => ({
+    level: match[1].length,
+  }))
 
 const hrRule = nodeInputRule(/^(?:---|—-|___\s|\*\*\*\s)$/, 'horizontal_rule')
 
@@ -52,9 +48,10 @@ export const markdownSchemaSpec = {
       selectable: true,
       toDOM(): DOMOutputSpec {
         return ['div', {class: 'horizontal-rule'}, 0]
-      }
-    }
-  }
+      },
+    },
+  },
 }
 
-export const createMarkdownPlugins = (schema: Schema) => inputRules({rules: markdownInputRules(schema)})
+export const createMarkdownPlugins = (schema: Schema) =>
+  inputRules({rules: markdownInputRules(schema)})

@@ -35,9 +35,6 @@ export {
   default as tsx,
   default as ts,
 } from 'devicon/icons/typescript/typescript-original.svg'
-export {
-  default as vim,
-  default as viml,
-} from 'devicon/icons/vim/vim-original.svg'
+export {default as vim, default as viml} from 'devicon/icons/vim/vim-original.svg'
 export {default as markdown} from 'devicon/icons/markdown/markdown-original.svg'
 export {default as graphql} from 'devicon/icons/graphql/graphql-plain.svg'

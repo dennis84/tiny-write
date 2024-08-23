@@ -12,15 +12,15 @@ import {Ctrl} from '.'
 import {schema} from './ProseMirrorService'
 
 export interface LoadedTextFile {
-  text: string;
-  lastModified: Date;
-  path: string;
+  text: string
+  lastModified: Date
+  path: string
 }
 
 export interface LoadedMarkdownFile {
-  text: FileText;
-  lastModified: Date;
-  path: string;
+  text: FileText
+  lastModified: Date
+  path: string
 }
 
 export class FileService {
@@ -43,7 +43,7 @@ export class FileService {
     let resolvedPath
     try {
       resolvedPath = await remote.resolvePath(path)
-    } catch(_e: any) {
+    } catch (_e: any) {
       throw new ServiceError('file_not_found', `File not found: ${path}`)
     }
 
@@ -61,7 +61,7 @@ export class FileService {
     let resolvedPath
     try {
       resolvedPath = await remote.resolvePath(path)
-    } catch(_e: any) {
+    } catch (_e: any) {
       throw new ServiceError('file_not_found', `File not found: ${path}`)
     }
 
@@ -75,8 +75,8 @@ export class FileService {
         selection: {
           type: 'text',
           anchor: 1,
-          head: 1
-        }
+          head: 1,
+        },
       }
 
       return {
@@ -110,7 +110,7 @@ export class FileService {
       versions: file.versions.map((v) => ({
         date: v.date,
         ydoc: v.ydoc,
-      }))
+      })),
     })
   }
 
@@ -341,7 +341,7 @@ export class FileService {
   async getTitle(file?: File, len = 25): Promise<string> {
     if (!file) return 'Undefined'
     if (isTauri() && file.path) return remote.toRelativePath(file.path)
-    if (file.code) return (file.title ?? 'Code')
+    if (file.code) return file.title ?? 'Code'
     else if (file.title) return file.title
 
     const ydoc = new Y.Doc({gc: false})

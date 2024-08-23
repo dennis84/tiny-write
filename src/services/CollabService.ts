@@ -35,9 +35,10 @@ export class CollabService {
   }
 
   get room(): string {
-    const room = this.store.mode === Mode.Canvas ?
-      this.ctrl.canvas.currentCanvas?.id :
-      this.ctrl.file.currentFile?.id
+    const room =
+      this.store.mode === Mode.Canvas ?
+        this.ctrl.canvas.currentCanvas?.id
+      : this.ctrl.file.currentFile?.id
     if (!room) throw Error('asas')
     return room
   }
@@ -95,7 +96,7 @@ export class CollabService {
   }
 
   private static createWS() {
-    return !isTauri() ? window.WebSocket : TauriWebSocket as any
+    return !isTauri() ? window.WebSocket : (TauriWebSocket as any)
   }
 
   init(file: File) {
@@ -170,7 +171,8 @@ export class CollabService {
   setConfig(conf: Partial<Config>) {
     if (conf.font) this.store.collab?.ydoc?.getMap('config').set('font', conf.font)
     if (conf.fontSize) this.store.collab?.ydoc?.getMap('config').set('fontSize', conf.fontSize)
-    if (conf.contentWidth) this.store.collab?.ydoc?.getMap('config').set('contentWidth', conf.contentWidth)
+    if (conf.contentWidth)
+      this.store.collab?.ydoc?.getMap('config').set('contentWidth', conf.contentWidth)
   }
 
   hasSubdoc(id: string): boolean {

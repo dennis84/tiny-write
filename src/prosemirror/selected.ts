@@ -21,6 +21,6 @@ export const selectedPlugin = new Plugin({
       }
 
       return DecorationSet.create(state.doc, decos)
-    }
+    },
   },
 })

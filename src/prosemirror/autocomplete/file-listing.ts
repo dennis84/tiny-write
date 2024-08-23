@@ -7,11 +7,8 @@ export const fileListingPluginKey = new PluginKey('file-listing')
 
 export const fileListingKeymap = completionKeymap(fileListingPluginKey)
 
-export const createFileListingPlugin = (ctrl: Ctrl) => completionPlugin(
-  fileListingPluginKey,
-  /(\.\.?|~)\/[^\s\])]*/g,
-  async (text) => {
+export const createFileListingPlugin = (ctrl: Ctrl) =>
+  completionPlugin(fileListingPluginKey, /(\.\.?|~)\/[^\s\])]*/g, async (text) => {
     const basePath = await ctrl.app.getBasePath()
     return listContents(text, basePath)
-  },
-)
+  })

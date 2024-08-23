@@ -22,57 +22,51 @@ export const codeBlockSchemaSpec = {
       },
       toDOM(): DOMOutputSpec {
         return ['pre', {}, ['code', 0]]
-      }
-    }
-  }
+      },
+    },
+  },
 }
 
 type Direction = 'left' | 'right' | 'up' | 'down' | 'forward' | 'backward'
 
 const codeBlockRule = (nodeType: NodeType) =>
-  textblockTypeInputRule(
-    /^```([a-z]*)?\s$/,
-    nodeType,
-    match => {
-      const lang = match[1]
-      if (lang) return {lang}
-      return {}
+  textblockTypeInputRule(/^```([a-z]*)?\s$/, nodeType, (match) => {
+    const lang = match[1]
+    if (lang) return {lang}
+    return {}
+  })
+
+const arrowHandler =
+  (dir: Direction) =>
+  (state: EditorState, dispatch?: (tr: Transaction) => void, view?: EditorView) => {
+    if (!view?.endOfTextblock(dir)) return false
+    const side = dir == 'left' || dir == 'up' ? -1 : 1
+    const $head = state.selection.$head
+    const nextPos = Selection.near(
+      state.doc.resolve(side > 0 ? $head.after() : $head.before()),
+      side,
+    )
+
+    if (nextPos.$head?.parent.type.name !== 'code_block') {
+      return false
     }
-  )
 
-const arrowHandler = (dir: Direction) => (
-  state: EditorState,
-  dispatch?: (tr: Transaction) => void,
-  view?: EditorView
-) => {
-  if (!view?.endOfTextblock(dir)) return false
-  const side = dir == 'left' || dir == 'up' ? -1 : 1
-  const $head = state.selection.$head
-  const nextPos = Selection.near(
-    state.doc.resolve(side > 0 ? $head.after() : $head.before()),
-    side
-  )
+    if (state.selection.empty) {
+      dispatch?.(state.tr.setSelection(nextPos))
+      return true
+    }
 
-  if (nextPos.$head?.parent.type.name !== 'code_block') {
-    return false
-  }
-
-  if (state.selection.empty) {
-    dispatch?.(state.tr.setSelection(nextPos))
+    const to = state.doc.resolve(nextPos.$head.pos + nextPos.$head.parent.nodeSize * side)
+    const sel = new TextSelection(state.selection.$anchor, to)
+    dispatch?.(state.tr.setSelection(sel))
     return true
   }
 
-  const to = state.doc.resolve(nextPos.$head.pos + nextPos.$head.parent.nodeSize * side)
-  const sel = new TextSelection(state.selection.$anchor, to)
-  dispatch?.(state.tr.setSelection(sel))
-  return true
-}
-
 export const codeBlockKeymap = keymap({
-  ArrowLeft: arrowHandler('left'),
-  ArrowRight: arrowHandler('right'),
-  ArrowUp: arrowHandler('up'),
-  ArrowDown: arrowHandler('down'),
+  'ArrowLeft': arrowHandler('left'),
+  'ArrowRight': arrowHandler('right'),
+  'ArrowUp': arrowHandler('up'),
+  'ArrowDown': arrowHandler('down'),
   'Shift-ArrowLeft': arrowHandler('left'),
   'Shift-ArrowRight': arrowHandler('right'),
   'Shift-ArrowUp': arrowHandler('up'),
@@ -85,6 +79,6 @@ export const createCodeBlockPlugin = (schema: Schema) =>
 export const createCodeBlockViews = (ctrl: Ctrl): ViewConfig => ({
   nodeViews: {
     code_block: (node, view, getPos, _decos, innerDecos) =>
-      new CodeBlockView(node, view, getPos, innerDecos, ctrl)
-  }
+      new CodeBlockView(node, view, getPos, innerDecos, ctrl),
+  },
 })

@@ -20,8 +20,7 @@ import {cpp} from '@codemirror/lang-cpp'
 import {markdown} from '@codemirror/lang-markdown'
 import {xml} from '@codemirror/lang-xml'
 
-const langSupport = (l: StreamParser<unknown>) =>
-  new LanguageSupport(StreamLanguage.define(l))
+const langSupport = (l: StreamParser<unknown>) => new LanguageSupport(StreamLanguage.define(l))
 
 export const languages: Record<string, () => LanguageSupport> = {
   javascript: () => javascript(),

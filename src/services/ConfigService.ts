@@ -7,35 +7,34 @@ import {isDark} from '@/env'
 import {Ctrl} from '.'
 
 export interface Font {
-  label: string;
-  value: string;
-  regular?: string;
-  bold?: string;
-  italic?: string;
-  monospace?: boolean;
+  label: string
+  value: string
+  regular?: string
+  bold?: string
+  italic?: string
+  monospace?: boolean
 }
 
 interface Theme {
-  value: string;
-  label: string;
-  background: string;
-  foreground: string;
-  primaryForeground: string;
-  primaryBackground: string;
-  tooltipBackground: string;
-  selection: string;
-  border: string;
-  dark: boolean;
+  value: string
+  label: string
+  background: string
+  foreground: string
+  primaryForeground: string
+  primaryBackground: string
+  tooltipBackground: string
+  selection: string
+  border: string
+  dark: boolean
 }
 
 interface CodeTheme {
-  label: string;
-  value: string;
-  dark: boolean;
+  label: string
+  value: string
+  dark: boolean
 }
 
 export class ConfigService {
-
   static readonly themes: Record<string, Theme> = {
     'light': {
       value: 'light',
@@ -266,7 +265,7 @@ export class ConfigService {
     },
   }
 
-  static readonly BORDER_RADIUS = '5px';
+  static readonly BORDER_RADIUS = '5px'
 
   private saveConfigDebounced = debounce(100, (state) => this.saveConfig(state))
 
@@ -290,19 +289,18 @@ export class ConfigService {
 
   get codeTheme() {
     const currentCodeTheme = this.store.config.codeTheme
-    return !currentCodeTheme
-      ? ConfigService.getDefaltCodeTheme()
-      : ConfigService.codeThemes[currentCodeTheme]
-        ? ConfigService.codeThemes[currentCodeTheme]
-        : ConfigService.getDefaltCodeTheme()
+    return (
+      !currentCodeTheme ? ConfigService.getDefaltCodeTheme()
+      : ConfigService.codeThemes[currentCodeTheme] ? ConfigService.codeThemes[currentCodeTheme]
+      : ConfigService.getDefaltCodeTheme()
+    )
   }
 
   get font() {
     return (
-      this.store.config?.font
-        ? ConfigService.fonts[this.store.config.font]
-        : undefined
-    ) ?? ConfigService.fonts[ConfigService.DEFAULT_FONT]
+      (this.store.config?.font ? ConfigService.fonts[this.store.config.font] : undefined) ??
+      ConfigService.fonts[ConfigService.DEFAULT_FONT]
+    )
   }
 
   get fontFamily() {
@@ -310,9 +308,9 @@ export class ConfigService {
   }
 
   get theme() {
-    return !this.store.config?.theme
-      ? ConfigService.getDefaltTheme()
-      : ConfigService.themes[this.store.config.theme] ?? ConfigService.getDefaltTheme()
+    return !this.store.config?.theme ?
+        ConfigService.getDefaltTheme()
+      : (ConfigService.themes[this.store.config.theme] ?? ConfigService.getDefaltTheme())
   }
 
   static getDefaltTheme() {
@@ -320,7 +318,9 @@ export class ConfigService {
   }
 
   static getDefaltCodeTheme(dark: boolean | undefined = undefined) {
-    return (dark ?? isDark()) ? ConfigService.codeThemes.dracula : ConfigService.codeThemes['material-light']
+    return (dark ?? isDark()) ?
+        ConfigService.codeThemes.dracula
+      : ConfigService.codeThemes['material-light']
   }
 
   static getThemeConfig(state: State) {
@@ -337,7 +337,7 @@ export class ConfigService {
   }
 
   getFontFamily = (
-    options: {monospace?: boolean; bold?: boolean; italic?: boolean} = {}
+    options: {monospace?: boolean; bold?: boolean; italic?: boolean} = {},
   ): string => {
     const font = this.font
     if (options.monospace && !font?.monospace) {

@@ -22,18 +22,21 @@ export const imageSchemaSpec = {
         alt: {default: null},
         title: {default: null},
         width: {default: null},
-        align: {default: Align.FloatLeft}
+        align: {default: Align.FloatLeft},
       },
       group: 'inline',
       selectable: true,
       draggable: true,
       toDOM(node: Node): DOMOutputSpec {
-        return ['img', {
-          src: node.attrs.src,
-          title: node.attrs.title,
-          alt: node.attrs.alt,
-        }]
-      }
+        return [
+          'img',
+          {
+            src: node.attrs.src,
+            title: node.attrs.title,
+            alt: node.attrs.alt,
+          },
+        ]
+      },
     },
     video: {
       inline: true,
@@ -42,7 +45,7 @@ export const imageSchemaSpec = {
         type: {},
         title: {default: null},
         width: {default: null},
-        align: {default: Align.FloatLeft}
+        align: {default: Align.FloatLeft},
       },
       group: 'inline',
       draggable: true,
@@ -51,11 +54,11 @@ export const imageSchemaSpec = {
         return [
           'video',
           {title: node.attrs.title},
-          ['source', {src: node.attrs.src, type: node.attrs.type}]
+          ['source', {src: node.attrs.src, type: node.attrs.type}],
         ]
-      }
-    }
-  }
+      },
+    },
+  },
 }
 
 const isUrl = (str: string) => {
@@ -115,7 +118,8 @@ class ImageView {
       !node.attrs.src.startsWith('data:') &&
       !isUrl(node.attrs.src)
     ) {
-      void ctrl.app.getBasePath()
+      void ctrl.app
+        .getBasePath()
         .then((basePath) => ctrl.media.getImagePath(node.attrs.src, basePath))
         .then((src) => {
           this.container.classList.remove('error')
@@ -128,31 +132,35 @@ class ImageView {
     this.handle = document.createElement('span')
     this.handle.className = 'resize-handle'
 
-    this.resize = new DragGesture(this.handle, ({event, first, last, memo, movement: [mx]}) => {
-      event.preventDefault()
-      if (first) {
-        let w = this.container.getBoundingClientRect().width
-        if (ctrl.app.mode === Mode.Canvas) {
-          const zoom = ctrl.canvas.currentCanvas?.camera.zoom ?? 1
-          w /= zoom
+    this.resize = new DragGesture(
+      this.handle,
+      ({event, first, last, memo, movement: [mx]}) => {
+        event.preventDefault()
+        if (first) {
+          let w = this.container.getBoundingClientRect().width
+          if (ctrl.app.mode === Mode.Canvas) {
+            const zoom = ctrl.canvas.currentCanvas?.camera.zoom ?? 1
+            w /= zoom
+          }
+
+          memo = w
         }
 
-        memo = w
-      }
+        this.width = memo + (this.align === Align.FloatRight ? -mx : mx)
+        this.setWidth(this.width)
 
-      this.width = memo + (this.align === Align.FloatRight ? -mx : mx)
-      this.setWidth(this.width)
-
-      if (last) {
-        const tr = this.view.state.tr
-        const nodePos = this.getPos()
-        if (nodePos === undefined) return
-        // Only string attributes are cloned in yjs
-        tr.setNodeAttribute(nodePos, 'width', String(this.width))
-        this.view.dispatch(tr)
-      }
-      return memo
-    }, {eventOptions: {passive: false}})
+        if (last) {
+          const tr = this.view.state.tr
+          const nodePos = this.getPos()
+          if (nodePos === undefined) return
+          // Only string attributes are cloned in yjs
+          tr.setNodeAttribute(nodePos, 'width', String(this.width))
+          this.view.dispatch(tr)
+        }
+        return memo
+      },
+      {eventOptions: {passive: false}},
+    )
 
     this.container.appendChild(this.handle)
     this.dom = this.container
@@ -191,6 +199,6 @@ export const createImageViews = (ctrl: Ctrl): ViewConfig => ({
     },
     video: (node, view, getPos) => {
       return new ImageView(node, view, getPos, ctrl)
-    }
+    },
   },
 })

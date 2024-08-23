@@ -18,21 +18,27 @@ export const collabSchemaSpec = {
       attrs: {
         user: {default: null},
         type: {default: null},
-        color: {default: null}
+        color: {default: null},
       },
       inclusive: false,
       toDOM(): DOMOutputSpec {
         return ['ychange', {}]
-      }
-    }
-  }
+      },
+    },
+  },
 }
 
-export const createCollabPlugins = (ctrl: Ctrl, type: Y.XmlFragment, mapping: ProsemirrorMapping) => [
+export const createCollabPlugins = (
+  ctrl: Ctrl,
+  type: Y.XmlFragment,
+  mapping: ProsemirrorMapping,
+) => [
   ySyncPlugin(type, {
     mapping,
     permanentUserData: ctrl.collab?.permanentUserData,
     onFirstRender: () => ctrl.collab.setRendered(),
   }),
-  ...(ctrl.collab.isSnapshot ? [] : [yCursorPlugin(ctrl.collab.provider!.awareness, {cursorBuilder})]),
+  ...(ctrl.collab.isSnapshot ?
+    []
+  : [yCursorPlugin(ctrl.collab.provider!.awareness, {cursorBuilder})]),
 ]

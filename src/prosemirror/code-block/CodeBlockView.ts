@@ -1,5 +1,9 @@
 import {Node} from 'prosemirror-model'
-import {DecorationSet, DecorationSource, EditorView as ProsemirrorEditorView} from 'prosemirror-view'
+import {
+  DecorationSet,
+  DecorationSource,
+  EditorView as ProsemirrorEditorView,
+} from 'prosemirror-view'
 import {Selection, TextSelection} from 'prosemirror-state'
 import {exitCode} from 'prosemirror-commands'
 import {Compartment} from '@codemirror/state'
@@ -41,106 +45,112 @@ export class CodeBlockView {
       }
     })
 
-    const embeddedCodeMirrorKeymap = keymap.of([{
-      key: 'Backspace',
-      run: () => {
-        if (!this.editorView.state.doc.length) {
-          const offset = this.getPos()
-          if (offset === undefined) return false
-          const tr = this.view.state.tr.deleteRange(
-            Math.max(0, offset - 1),
-            offset + this.node.content.size + 1
-          )
-          this.view.dispatch(tr)
-          this.view.focus()
-          return true
-        }
-
-        return false
-      }
-    }, {
-      key: 'Enter',
-      run: (editorView) => {
-        const state = editorView.state
-        const selection = state.selection
-        const from = selection.main.head - 2
-        const to = selection.main.head
-
-        const isEnd = to === state.doc.length
-        const isNewLine = state.sliceDoc(from, to) === '\n\n'
-
-        if (isEnd && isNewLine) {
-          editorView.dispatch({changes: {from, to}})
-          if (exitCode(this.view.state, this.view.dispatch)) {
+    const embeddedCodeMirrorKeymap = keymap.of([
+      {
+        key: 'Backspace',
+        run: () => {
+          if (!this.editorView.state.doc.length) {
+            const offset = this.getPos()
+            if (offset === undefined) return false
+            const tr = this.view.state.tr.deleteRange(
+              Math.max(0, offset - 1),
+              offset + this.node.content.size + 1,
+            )
+            this.view.dispatch(tr)
             this.view.focus()
             return true
           }
-        }
 
-        return false
-      }
-    }, {
-      key: 'Ctrl-Enter',
-      run: () => {
-        if (!exitCode(this.view.state, this.view.dispatch)) return false
-        this.view.focus()
-        return true
-      }
-    }, {
-      key: 'ArrowUp',
-      run: (editorView) => {
-        const state = editorView.state
-        const selection = state.selection
-        const startPos = selection.main.head
-        if (!selection.main.empty) return false
-        const line = editorView.state.doc.lineAt(startPos)
+          return false
+        },
+      },
+      {
+        key: 'Enter',
+        run: (editorView) => {
+          const state = editorView.state
+          const selection = state.selection
+          const from = selection.main.head - 2
+          const to = selection.main.head
 
-        if (line.number === 1) {
-          let tr = this.view.state.tr
-          const nodePos = this.getPos()
-          if (nodePos === undefined) return false
-          let targetPos = nodePos - 1
-          if (nodePos === 0) {
-            tr.insert(0, this.view.state.schema.node('paragraph'))
-            targetPos = 0
+          const isEnd = to === state.doc.length
+          const isNewLine = state.sliceDoc(from, to) === '\n\n'
+
+          if (isEnd && isNewLine) {
+            editorView.dispatch({changes: {from, to}})
+            if (exitCode(this.view.state, this.view.dispatch)) {
+              this.view.focus()
+              return true
+            }
           }
 
-          this.view.dispatch(tr)
-          tr = this.view.state.tr
-          const selection = Selection.near(tr.doc.resolve(targetPos))
-          tr.setSelection(selection).scrollIntoView()
-          this.view.dispatch(tr)
+          return false
+        },
+      },
+      {
+        key: 'Ctrl-Enter',
+        run: () => {
+          if (!exitCode(this.view.state, this.view.dispatch)) return false
           this.view.focus()
           return true
-        }
+        },
+      },
+      {
+        key: 'ArrowUp',
+        run: (editorView) => {
+          const state = editorView.state
+          const selection = state.selection
+          const startPos = selection.main.head
+          if (!selection.main.empty) return false
+          const line = editorView.state.doc.lineAt(startPos)
 
-        return false
-      }
-    }, {
-      key: 'ArrowDown',
-      run: (editorView) => {
-        const state = editorView.state
-        const selection = state.selection
-        const startPos = selection.main.head
-        if (!selection.main.empty) return false
-        const line = editorView.state.doc.lineAt(startPos)
+          if (line.number === 1) {
+            let tr = this.view.state.tr
+            const nodePos = this.getPos()
+            if (nodePos === undefined) return false
+            let targetPos = nodePos - 1
+            if (nodePos === 0) {
+              tr.insert(0, this.view.state.schema.node('paragraph'))
+              targetPos = 0
+            }
 
-        if (line.number === editorView.state.doc.lines) {
-          const tr = this.view.state.tr
-          const nodePos = this.getPos()
-          if (nodePos === undefined) return false
-          const targetPos = nodePos + editorView.state.doc.length + 2
-          const selection = Selection.near(tr.doc.resolve(targetPos))
+            this.view.dispatch(tr)
+            tr = this.view.state.tr
+            const selection = Selection.near(tr.doc.resolve(targetPos))
+            tr.setSelection(selection).scrollIntoView()
+            this.view.dispatch(tr)
+            this.view.focus()
+            return true
+          }
 
-          tr.setSelection(selection).scrollIntoView()
-          this.view.dispatch(tr)
-          this.view.focus()
-          return true
-        }
+          return false
+        },
+      },
+      {
+        key: 'ArrowDown',
+        run: (editorView) => {
+          const state = editorView.state
+          const selection = state.selection
+          const startPos = selection.main.head
+          if (!selection.main.empty) return false
+          const line = editorView.state.doc.lineAt(startPos)
 
-        return false
-      }
-    }])
+          if (line.number === editorView.state.doc.lines) {
+            const tr = this.view.state.tr
+            const nodePos = this.getPos()
+            if (nodePos === undefined) return false
+            const targetPos = nodePos + editorView.state.doc.length + 2
+            const selection = Selection.near(tr.doc.resolve(targetPos))
+
+            tr.setSelection(selection).scrollIntoView()
+            this.view.dispatch(tr)
+            this.view.focus()
+            return true
+          }
+
+          return false
+        },
+      },
+    ])
 
     const editor = ctrl.codeMirror.createEditor({
       lang: this.lang,
@@ -152,11 +162,11 @@ export class CodeBlockView {
         EditorView.updateListener.of((update) => this.forwardUpdate(update)),
         autocompletion(),
         EditorView.domEventHandlers({
-          'mousedown': () => {
+          mousedown: () => {
             this.clicked = true
-          }
-        })
-      ]
+          },
+        }),
+      ],
     })
 
     this.editorView = editor.editorView
@@ -193,15 +203,11 @@ export class CodeBlockView {
       const tr = this.view.state.tr
       update.changes.iterChanges((fromA, toA, fromB, toB, text) => {
         if (text.length) {
-          tr.replaceWith(
-            offset + fromA,
-            offset + toA,
-            this.view.state.schema.text(text.toString())
-          )
+          tr.replaceWith(offset + fromA, offset + toA, this.view.state.schema.text(text.toString()))
         } else {
           tr.delete(offset + fromA, offset + toA)
         }
-        offset += (toB - fromB) - (toA - fromA)
+        offset += toB - fromB - (toA - fromA)
       })
       tr.setSelection(TextSelection.create(tr.doc, selFrom, selTo))
       this.view.dispatch(tr)
@@ -260,10 +266,7 @@ export class CodeBlockView {
       let start = 0
       let curEnd = curText.length
       let newEnd = newText.length
-      while (
-        start < curEnd &&
-        curText.charCodeAt(start) == newText.charCodeAt(start)
-      ) {
+      while (start < curEnd && curText.charCodeAt(start) == newText.charCodeAt(start)) {
         ++start
       }
 
@@ -281,8 +284,8 @@ export class CodeBlockView {
         changes: {
           from: start,
           to: curEnd,
-          insert: newText.slice(start, newEnd)
-        }
+          insert: newText.slice(start, newEnd),
+        },
       })
 
       this.updating = false
@@ -296,12 +299,16 @@ export class CodeBlockView {
     const effects = [
       this.compartments.lang.reconfigure(langSupport),
       this.compartments.findWords.reconfigure(
-        langSupport.language.data.of({autocomplete: findWords})
+        langSupport.language.data.of({autocomplete: findWords}),
       ),
     ]
 
     if (this.lang === 'mermaid') {
-      effects.push(this.compartments.keywords.reconfigure(langSupport.language.data.of({autocomplete: mermaidKeywords})))
+      effects.push(
+        this.compartments.keywords.reconfigure(
+          langSupport.language.data.of({autocomplete: mermaidKeywords}),
+        ),
+      )
     }
 
     this.editorView.dispatch({effects})

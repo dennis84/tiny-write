@@ -4,7 +4,7 @@ import * as Y from 'yjs'
 import {State, Version} from '@/state'
 import * as remote from '@/remote'
 import {Ctrl} from '.'
-import { FileService } from './FileService'
+import {FileService} from './FileService'
 
 export class ChangeSetService {
   constructor(
@@ -20,10 +20,7 @@ export class ChangeSetService {
     const subdoc = this.ctrl.collab.getSubdoc(currentFile.id)
     const ydoc = Y.encodeStateAsUpdate(subdoc)
 
-    const versions = [
-      ...currentFile.versions,
-      {ydoc, date: new Date()}
-    ]
+    const versions = [...currentFile.versions, {ydoc, date: new Date()}]
 
     this.ctrl.file.updateFile(currentFile.id, {versions})
     const updatedFile = this.ctrl.file.currentFile

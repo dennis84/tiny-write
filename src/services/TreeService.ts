@@ -1,23 +1,22 @@
-import {SetStoreFunction, Store, createMutable, unwrap} from 'solid-js/store';
+import {SetStoreFunction, Store, createMutable, unwrap} from 'solid-js/store'
 import {Canvas, File, State, isFile} from '@/state'
 import {DB} from '@/db'
 import {Ctrl} from '.'
-import {FileService} from './FileService';
+import {FileService} from './FileService'
 
-export type TreeNodeItem = File | Canvas;
+export type TreeNodeItem = File | Canvas
 
 export interface TreeNode {
-  item: TreeNodeItem;
-  tree: TreeNode[];
+  item: TreeNodeItem
+  tree: TreeNode[]
 }
 
 interface TmpNode {
-  item?: File | Canvas;
-  tree: TmpNode[];
+  item?: File | Canvas
+  tree: TmpNode[]
 }
 
 export class TreeService {
-
   public tree = createMutable<TreeNode[]>([])
 
   constructor(
@@ -50,7 +49,7 @@ export class TreeService {
 
   async add(node: TreeNode, to: TreeNode) {
     const parentId = to.item.id
-    const leftId = to.tree[to.tree.length-1]?.item.id
+    const leftId = to.tree[to.tree.length - 1]?.item.id
     const rightNode = this.findTreeNodeByLeftId(node.item.id)
     if (rightNode) {
       this.updateItem(rightNode.item.id, rightNode.item.parentId, node.item.leftId)
@@ -160,7 +159,7 @@ export class TreeService {
     const nulls = []
 
     outer: for (const node of tree) {
-      const nextLeftId = sorted[sorted.length-1]?.item.id
+      const nextLeftId = sorted[sorted.length - 1]?.item.id
 
       if (node.tree.length > 0) {
         node.tree = this.sortTree(node.tree)
@@ -181,13 +180,13 @@ export class TreeService {
     }
 
     for (const n of nulls) {
-      const nextLeftId = sorted[sorted.length-1]?.item.id
+      const nextLeftId = sorted[sorted.length - 1]?.item.id
       n.item.leftId = nextLeftId
       sorted.push(n)
     }
 
     for (const u of unsorted) {
-      const nextLeftId = sorted[sorted.length-1]?.item.id
+      const nextLeftId = sorted[sorted.length - 1]?.item.id
       u.item.leftId = nextLeftId
       sorted.push(u)
     }

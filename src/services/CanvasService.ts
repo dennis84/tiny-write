@@ -29,13 +29,13 @@ import {FileService} from './FileService'
 import {CollabService} from './CollabService'
 
 type UpdateElement =
-  Partial<CanvasLinkElement> |
-  Partial<CanvasEditorElement> |
-  Partial<CanvasBoxElement>
+  | Partial<CanvasLinkElement>
+  | Partial<CanvasEditorElement>
+  | Partial<CanvasBoxElement>
 
 export interface Selection {
-  elements: [string, Box][];
-  box: Box;
+  elements: [string, Box][]
+  box: Box
 }
 
 export class CanvasService {
@@ -232,8 +232,9 @@ export class CanvasService {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
 
-    const active = currentCanvas.elements
-      .find((it) => isEditorElement(it) && it.active) as CanvasEditorElement
+    const active = currentCanvas.elements.find(
+      (it) => isEditorElement(it) && it.active,
+    ) as CanvasEditorElement
     const file = this.ctrl.file.findFileById(active?.id)
 
     if (file?.editorView) {
@@ -241,13 +242,11 @@ export class CanvasService {
       return
     }
 
-    const {zoom, point: [x, y]} = currentCanvas.camera
-    const b = Box.From(box).set(
-      (box.x / zoom) - x,
-      (box.y / zoom) - y,
-      box.w / zoom,
-      box.h / zoom,
-    )
+    const {
+      zoom,
+      point: [x, y],
+    } = currentCanvas.camera
+    const b = Box.From(box).set(box.x / zoom - x, box.y / zoom - y, box.w / zoom, box.h / zoom)
 
     for (const el of currentCanvas.elements) {
       if (!isBoxElement(el)) continue
@@ -427,11 +426,14 @@ export class CanvasService {
         }
       }
     } else if (point) {
-      [x, y] = point.toArray()
+      ;[x, y] = point.toArray()
     } else {
       const center = new Vec(window.innerWidth / 2, window.innerHeight / 2).toFixed()
       const p = Vec.FromArray(camera.point)
-      const target = center.div(camera.zoom).sub(p).subXY(width / 2, height / 2)
+      const target = center
+        .div(camera.zoom)
+        .sub(p)
+        .subXY(width / 2, height / 2)
       x = target.x
       y = target.y
     }
@@ -471,17 +473,12 @@ export class CanvasService {
     remote.info('File added to canvas')
   }
 
-  async addImage(
-    src: string,
-    point: Vec,
-    imageWidth: number,
-    imageHeight: number
-  ) {
+  async addImage(src: string, point: Vec, imageWidth: number, imageHeight: number) {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
 
     const width = 300
-    const height = width * imageHeight / imageWidth
+    const height = (width * imageHeight) / imageWidth
     const {x, y} = point.subXY(width / 2, height / 2)
 
     const id = uuidv4()
@@ -505,18 +502,12 @@ export class CanvasService {
     remote.info('Image added to canvas')
   }
 
-  async addVideo(
-    src: string,
-    mime: string,
-    point: Vec,
-    imageWidth: number,
-    imageHeight: number
-  ) {
+  async addVideo(src: string, mime: string, point: Vec, imageWidth: number, imageHeight: number) {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
 
     const width = 300
-    const height = width * imageHeight / imageWidth
+    const height = (width * imageHeight) / imageWidth
     const {x, y} = point.subXY(width / 2, height / 2)
 
     const id = uuidv4()
@@ -557,23 +548,25 @@ export class CanvasService {
       }
 
       this.updateCanvasElement(existing.id, {
-        ...(toBox ? {
-          from,
-          fromEdge,
-          to: toBox.id,
-          toEdge: toBox.edge,
-          toX: undefined,
-          toY: undefined,
-          drawing: true,
-        } : {
-          from,
-          fromEdge,
-          toX,
-          toY,
-          to: undefined,
-          toEdge: undefined,
-          drawing: true,
-        }),
+        ...(toBox ?
+          {
+            from,
+            fromEdge,
+            to: toBox.id,
+            toEdge: toBox.edge,
+            toX: undefined,
+            toY: undefined,
+            drawing: true,
+          }
+        : {
+            from,
+            fromEdge,
+            toX,
+            toY,
+            to: undefined,
+            toEdge: undefined,
+            drawing: true,
+          }),
       })
       return
     }
@@ -701,22 +694,22 @@ export class CanvasService {
       const distT = Vec.DistanceToLineSegment(
         box.getHandlePoint('top_left').addXY(1, 0),
         box.getHandlePoint('top_right').subXY(1, 0),
-        p
+        p,
       )
       const distB = Vec.DistanceToLineSegment(
         box.getHandlePoint('bottom_left').addXY(1, 0),
         box.getHandlePoint('bottom_right').subXY(1, 0),
-        p
+        p,
       )
       const distL = Vec.DistanceToLineSegment(
         box.getHandlePoint('top_left').addXY(0, 1),
         box.getHandlePoint('bottom_left').subXY(0, 1),
-        p
+        p,
       )
       const distR = Vec.DistanceToLineSegment(
         box.getHandlePoint('top_right').addXY(0, 1),
         box.getHandlePoint('bottom_right').subXY(0, 1),
-        p
+        p,
       )
 
       const corners = [
@@ -771,14 +764,16 @@ export class CanvasService {
 
   async saveCanvas(canvas = this.currentCanvas) {
     if (!canvas) return
-    await DB.updateCanvas(unwrap({
-      ...canvas,
-      elements: canvas.elements.map((el) => ({
-        ...el,
-        editorView: undefined,
-        selected: undefined,
-        active: undefined,
-      }))
-    }))
+    await DB.updateCanvas(
+      unwrap({
+        ...canvas,
+        elements: canvas.elements.map((el) => ({
+          ...el,
+          editorView: undefined,
+          selected: undefined,
+          active: undefined,
+        })),
+      }),
+    )
   }
 }

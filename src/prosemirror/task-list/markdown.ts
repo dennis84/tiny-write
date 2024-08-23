@@ -10,13 +10,13 @@ export const taskList = (md: MarkdownIt) => {
     for (let i = 2; i < tokens.length; i++) {
       const cur = tokens[i]
       if (isTodoItem(tokens, i)) {
-        const prev3 = tokens[i-3]
+        const prev3 = tokens[i - 3]
         if (prev3.type === 'bullet_list_open') {
           prev3.type = 'task_list_open'
           closers[prev3.level] = 'task_list_close'
         }
 
-        const prev2 = tokens[i-2]
+        const prev2 = tokens[i - 2]
         prev2.type = 'task_list_item_open'
         const checked = /^\[[xX]\][ \u00A0]/.test(cur.content)
         if (checked) {
@@ -48,5 +48,4 @@ const isListItem = (token: Token) => token.type === 'list_item_open'
 // The leading whitespace in a list item (token.content) is already trimmed off by markdown-it.
 // The regex below checks for '[ ] ' or '[x] ' or '[X] ' at the start of the string token.content,
 // where the space is either a normal space or a non-breaking space (character 160 = \u00A0).
-const startsWithTodoMarkdown = (token: Token) =>
-  /^\[[xX \u00A0]\][ \u00A0]/.test(token.content)
+const startsWithTodoMarkdown = (token: Token) => /^\[[xX \u00A0]\][ \u00A0]/.test(token.content)

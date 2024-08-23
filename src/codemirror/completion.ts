@@ -21,8 +21,7 @@ export const findWords: CompletionSource = (context) => {
         text = text.substring(1, text.length - 1)
       }
 
-      const xs = text.split(/[^\w]/)
-        .filter(x => x.length > 2)
+      const xs = text.split(/[^\w]/).filter((x) => x.length > 2)
 
       words.push(...xs)
     }
@@ -39,18 +38,20 @@ export const findWords: CompletionSource = (context) => {
   }
 }
 
-export const tabCompletionKeymap = [{
-  key: 'Tab',
-  run: (editorView: EditorView) => {
-    const completions = currentCompletions(editorView.state)
-    if (completions.length === 0) {
-      return false
-    } else if (completions.length === 1) {
-      acceptCompletion(editorView)
-    } else {
-      moveCompletionSelection(true)(editorView)
-    }
+export const tabCompletionKeymap = [
+  {
+    key: 'Tab',
+    run: (editorView: EditorView) => {
+      const completions = currentCompletions(editorView.state)
+      if (completions.length === 0) {
+        return false
+      } else if (completions.length === 1) {
+        acceptCompletion(editorView)
+      } else {
+        moveCompletionSelection(true)(editorView)
+      }
 
-    return true
-  }
-}]
+      return true
+    },
+  },
+]

@@ -13,11 +13,7 @@ export interface CompletionState {
 
 type GetOptions = (match: string, state: EditorState) => Promise<string[]>
 
-export const completionPlugin = (
-  pluginKey: PluginKey,
-  regex: RegExp,
-  getOptions: GetOptions,
-) =>
+export const completionPlugin = (pluginKey: PluginKey, regex: RegExp, getOptions: GetOptions) =>
   new Plugin({
     key: pluginKey,
     state: {

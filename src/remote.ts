@@ -1,4 +1,9 @@
-import {currentMonitor, getCurrentWindow, PhysicalPosition, PhysicalSize} from '@tauri-apps/api/window'
+import {
+  currentMonitor,
+  getCurrentWindow,
+  PhysicalPosition,
+  PhysicalSize,
+} from '@tauri-apps/api/window'
 import {invoke} from '@tauri-apps/api/core'
 import * as clipboard from '@tauri-apps/plugin-clipboard-manager'
 import * as fs from '@tauri-apps/plugin-fs'
@@ -118,7 +123,10 @@ export const writeFile = async (path: string, contents: string): Promise<void> =
   return fs.writeTextFile(path, contents)
 }
 
-export const resolvePath = async (path: string, basePath: string | undefined = undefined): Promise<string> => {
+export const resolvePath = async (
+  path: string,
+  basePath: string | undefined = undefined,
+): Promise<string> => {
   if (!isTauri()) throw Error('Must be run in tauri: resolvePath')
   debug(`Resolve paths (path=${path}, basePath=${basePath})`)
   return invoke('resolve_path', {path, basePath})
@@ -182,7 +190,12 @@ export const updateWindow = async ({width, height, x, y}: Window) => {
   if (!monitor) return
 
   // Last pos must fit in current screen size.
-  if (x >= 0 && x < monitor.size.width - size.width && y >= 0 && y < monitor.size.height - size.height) {
+  if (
+    x >= 0 &&
+    x < monitor.size.width - size.width &&
+    y >= 0 &&
+    y < monitor.size.height - size.height
+  ) {
     await getCurrentWindow().setPosition(new PhysicalPosition(x, y))
   }
 }

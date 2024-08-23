@@ -7,7 +7,7 @@ export const paragraphSchemaSpec = {
       group: 'block',
       toDOM(): DOMOutputSpec {
         return ['p', 0]
-      }
+      },
     },
-  }
+  },
 }

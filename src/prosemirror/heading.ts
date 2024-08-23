@@ -11,5 +11,5 @@ export const headingSchemaSpec = {
         return ['h' + node.attrs.level, 0]
       },
     },
-  }
+  },
 }

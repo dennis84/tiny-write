@@ -15,13 +15,16 @@ export const taskListSchemaSpec = {
         return [
           'li',
           {class: `task-list-item ${node.attrs.checked ? 'checked' : ''}`},
-          ['input', {
-            type: 'checkbox',
-            ...(node.attrs.checked ? {checked: 'checked'} : {}),
-          }],
+          [
+            'input',
+            {
+              type: 'checkbox',
+              ...(node.attrs.checked ? {checked: 'checked'} : {}),
+            },
+          ],
           ['div', 0],
         ]
-      }
+      },
     },
     task_list: {
       content: 'task_list_item+',
@@ -29,19 +32,15 @@ export const taskListSchemaSpec = {
       attrs: {tight: {default: true}},
       toDOM(): DOMOutputSpec {
         return ['ul', {class: 'task-list'}, 0]
-      }
-    }
-  }
+      },
+    },
+  },
 }
 
 const todoListRule = (nodeType: NodeType) =>
-  wrappingInputRule(
-    new RegExp('^\\[( |x)]\\s$'),
-    nodeType,
-    match => ({
-      checked: match[1] === 'x',
-    }),
-  )
+  wrappingInputRule(new RegExp('^\\[( |x)]\\s$'), nodeType, (match) => ({
+    checked: match[1] === 'x',
+  }))
 
 class TaskListItemView {
   dom: HTMLInputElement
@@ -50,7 +49,7 @@ class TaskListItemView {
   constructor(
     private node: Node,
     private view: EditorView,
-    private getPos: () => number | undefined
+    private getPos: () => number | undefined,
   ) {
     const dom = this.node.type.spec.toDOM!(this.node)
     const res = DOMSerializer.renderSpec(document, dom)
@@ -80,12 +79,13 @@ const todoListKeymap = (schema: Schema) => ({
 
 export const createTaskListKeymap = (schema: Schema) => keymap(todoListKeymap(schema))
 
-export const createTaskListPlugin = (schema: Schema) => inputRules({rules: [todoListRule(schema.nodes.task_list_item)]})
+export const createTaskListPlugin = (schema: Schema) =>
+  inputRules({rules: [todoListRule(schema.nodes.task_list_item)]})
 
 export const taskListViews: ViewConfig = {
   nodeViews: {
     task_list_item: (node, view, getPos) => {
       return new TaskListItemView(node, view, getPos)
-    }
-  }
+    },
+  },
 }

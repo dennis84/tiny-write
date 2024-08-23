@@ -9,5 +9,4 @@ export const stateToString = (state: State) =>
     files: state.files.map((f) => ({...f, ydoc, editorView})),
   } as any)
 
-export const fileToString = (file: Partial<File>) =>
-  JSON.stringify({...file, ydoc, editorView})
+export const fileToString = (file: Partial<File>) => JSON.stringify({...file, ydoc, editorView})

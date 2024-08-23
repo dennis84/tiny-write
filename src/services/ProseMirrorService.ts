@@ -19,9 +19,19 @@ import {createImageViews, imageSchemaSpec} from '@/prosemirror/image'
 import {createMarkdownPlugins, markdownSchemaSpec} from '@/prosemirror/markdown'
 import {createCollabPlugins, collabSchemaSpec} from '@/prosemirror/collab'
 import {containerViews, createContainerPlugin, containerSchemaSpec} from '@/prosemirror/container'
-import {codeBlockKeymap, createCodeBlockPlugin, createCodeBlockViews, codeBlockSchemaSpec} from '@/prosemirror/code-block'
+import {
+  codeBlockKeymap,
+  createCodeBlockPlugin,
+  createCodeBlockViews,
+  codeBlockSchemaSpec,
+} from '@/prosemirror/code-block'
 import {createTablePlugins, tableKeymap, tableSchemaSpec} from '@/prosemirror/table'
-import {createTaskListPlugin, createTaskListKeymap, taskListViews, taskListSchemaSpec} from '@/prosemirror/task-list'
+import {
+  createTaskListPlugin,
+  createTaskListKeymap,
+  taskListViews,
+  taskListSchemaSpec,
+} from '@/prosemirror/task-list'
 import {createTabKeymap} from '@/prosemirror/tab'
 import {createInputParserPlugin} from '@/prosemirror/input-parser'
 import {scrollIntoView} from '@/prosemirror/scroll'
@@ -29,21 +39,24 @@ import {placeholder} from '@/prosemirror/placeholder'
 import {createPasteMarkdownPlugin} from '@/prosemirror/paste-markdown'
 import {selectedPlugin} from '@/prosemirror/selected'
 import {createFileListingPlugin, fileListingKeymap} from '@/prosemirror/autocomplete/file-listing'
-import {createWordCompletionPlugins, wordCompletionKeymap} from '@/prosemirror/autocomplete/word-completion'
+import {
+  createWordCompletionPlugins,
+  wordCompletionKeymap,
+} from '@/prosemirror/autocomplete/word-completion'
 import {Ctrl} from '@/services'
 import {isTauri} from '@/env'
 import {createMarkdownParser} from '@/markdown'
 
 export interface ViewConfig {
-  nodeViews?: NodeViewConfig;
+  nodeViews?: NodeViewConfig
 }
 
-export type NodeViewConfig = Record<string, NodeViewConstructor>;
+export type NodeViewConfig = Record<string, NodeViewConstructor>
 
 interface CreatePlugins {
-  ctrl: Ctrl;
-  type: Y.XmlFragment;
-  dropCursor?: boolean;
+  ctrl: Ctrl
+  type: Y.XmlFragment
+  dropCursor?: boolean
 }
 
 export const schema = new Schema({
@@ -79,13 +92,14 @@ export const schema = new Schema({
 })
 
 export class ProseMirrorService {
-
   static isEmpty(state?: EditorState) {
-    return !state || state.doc.childCount === 0 || (
-      state.doc.childCount == 1 &&
-      !state.doc.firstChild?.type.spec.code &&
-      state.doc.firstChild?.isTextblock &&
-      state.doc.firstChild.content.size == 0
+    return (
+      !state ||
+      state.doc.childCount === 0 ||
+      (state.doc.childCount == 1 &&
+        !state.doc.firstChild?.type.spec.code &&
+        state.doc.firstChild?.isTextblock &&
+        state.doc.firstChild.content.size == 0)
     )
   }
 
@@ -107,10 +121,7 @@ export class ProseMirrorService {
       createMarkdownPlugins(schema),
       createTaskListPlugin(schema),
       createCodeBlockPlugin(schema),
-      inputRules({rules: [
-        codeInputRule,
-        ...emphasisInputRules,
-      ]}),
+      inputRules({rules: [codeInputRule, ...emphasisInputRules]}),
       createInputParserPlugin(createMarkdownParser(schema)),
       ...createTablePlugins(schema),
       createContainerPlugin(schema),
@@ -120,7 +131,8 @@ export class ProseMirrorService {
 
     let doc
     const result = initProseMirrorDoc(props.type, schema)
-    if (result.doc.childCount === 0) doc = schema.topNodeType.create({}, schema.nodes.paragraph.create())
+    if (result.doc.childCount === 0)
+      doc = schema.topNodeType.create({}, schema.nodes.paragraph.create())
     else doc = result.doc
 
     plugins.push(...createCollabPlugins(props.ctrl, props.type, result.mapping))
@@ -153,16 +165,16 @@ export class ProseMirrorService {
   }
 
   static createEmptyText() {
-    return ({
+    return {
       doc: {
         type: 'doc',
-        content: [{type: 'paragraph'}]
+        content: [{type: 'paragraph'}],
       },
       selection: {
         type: 'text',
         anchor: 1,
-        head: 1
-      }
-    })
+        head: 1,
+      },
+    }
   }
 }

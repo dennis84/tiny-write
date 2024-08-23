@@ -5,18 +5,18 @@ export const linkSchemaSpec = {
     link: {
       attrs: {
         href: {},
-        title: {default: null}
+        title: {default: null},
       },
       inclusive: false,
       toDOM(node: Mark): DOMOutputSpec {
         return ['a', node.attrs]
-      }
+      },
     },
     edit_link: {
       attrs: {href: {default: null}},
       toDOM(node: Mark): DOMOutputSpec {
-        return ['span', {class: 'edit-link', 'data-href': node.attrs.href}]
-      }
+        return ['span', {'class': 'edit-link', 'data-href': node.attrs.href}]
+      },
     },
-  }
+  },
 }

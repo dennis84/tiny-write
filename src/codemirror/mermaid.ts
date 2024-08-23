@@ -1,21 +1,9 @@
 import {CompletionSource} from '@codemirror/autocomplete'
 
 const syntax: Record<string, string[]> = {
-  flowchart: [
-    'subgraph',
-  ],
-  sequenceDiagram: [
-    'actor',
-    'activate',
-    'deactivate',
-    'participant',
-    'autonumber',
-  ],
-  classDiagram: [
-    'class',
-    '<<interface>>',
-    '<<enumeration>>',
-  ],
+  flowchart: ['subgraph'],
+  sequenceDiagram: ['actor', 'activate', 'deactivate', 'participant', 'autonumber'],
+  classDiagram: ['class', '<<interface>>', '<<enumeration>>'],
   erDiagram: [],
 }
 

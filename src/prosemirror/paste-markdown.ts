@@ -5,10 +5,8 @@ import {find as findLinks} from 'linkifyjs'
 import {createMarkdownParser} from '@/markdown'
 
 const isInlineContent = (f: Fragment) =>
-  f.childCount === 1 && (
-    f.firstChild?.type.name === 'paragraph' ||
-    f.firstChild?.type.name === 'text'
-  )
+  f.childCount === 1 &&
+  (f.firstChild?.type.name === 'paragraph' || f.firstChild?.type.name === 'text')
 
 const transform = (view: EditorView, fragment: Fragment) => {
   const nodes: Node[] = []
@@ -29,8 +27,8 @@ const transform = (view: EditorView, fragment: Fragment) => {
       if (links.length > 0) {
         for (let i = 0; i < links.length; i++) {
           const cur = links[i]
-          const prev = links[i-1]
-          const next = links[i+1]
+          const prev = links[i - 1]
+          const next = links[i + 1]
 
           if (!prev && cur.start > 0) {
             nodes.push(child.cut(0, cur.start))
@@ -46,7 +44,7 @@ const transform = (view: EditorView, fragment: Fragment) => {
           nodes.push(node)
 
           if (!next && cur.end < child.text.length) {
-            nodes.push(child.cut(links[links.length-1].end))
+            nodes.push(child.cut(links[links.length - 1].end))
           }
         }
 
@@ -76,7 +74,7 @@ export const createPasteMarkdownPlugin = (schema: Schema) => {
         keyup: () => {
           shiftKey = false
           return false
-        }
+        },
       },
       handlePaste: (view, event) => {
         if (!event.clipboardData) return false
@@ -108,15 +106,13 @@ export const createPasteMarkdownPlugin = (schema: Schema) => {
           return true
         }
 
-        const tr = view.state.tr.replaceSelection(new Slice(
-          fragment,
-          slice.openStart,
-          slice.openEnd
-        ))
+        const tr = view.state.tr.replaceSelection(
+          new Slice(fragment, slice.openStart, slice.openEnd),
+        )
 
         view.dispatch(tr)
         return true
-      }
-    }
+      },
+    },
   })
 }
