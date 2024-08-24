@@ -681,6 +681,10 @@ export class CanvasService {
     remote.info('Canavs restored')
   }
 
+  setMoving(moving: boolean) {
+    this.setState('moving', moving)
+  }
+
   getElementNear(point: [number, number]): {id: string; edge: EdgeType} | undefined {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return

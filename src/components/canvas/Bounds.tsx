@@ -206,7 +206,7 @@ export const Bounds = (props: BoundsProps) => {
     const currentCanvas = ctrl.canvas.currentCanvas
     if (!currentCanvas) return
 
-    const gesture = new DragGesture(ref, ({event, first, movement: [mx, my], memo}) => {
+    const gesture = new DragGesture(ref, ({event, first, last, movement: [mx, my], memo}) => {
       event.stopPropagation()
 
       const selection: Selection = first ? props.selection : memo
@@ -223,6 +223,7 @@ export const Bounds = (props: BoundsProps) => {
 
       ctrl.canvas.updateCanvas(currentCanvas.id, {lastModified: new Date()})
       void ctrl.canvas.saveCanvasThrottled()
+      ctrl.canvas.setMoving(!last)
       return selection
     })
 

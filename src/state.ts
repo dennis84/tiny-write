@@ -199,6 +199,7 @@ export interface State {
   window?: Window
   isSnapshot?: boolean
   selecting?: boolean
+  moving?: boolean
   lastTr?: number
 }
 

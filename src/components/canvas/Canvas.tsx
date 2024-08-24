@@ -11,6 +11,7 @@ import {
   isCodeElement,
 } from '@/state'
 import {isTauri} from '@/env'
+import {ZIndex} from '@/utils/ZIndex'
 import {Grid} from './Grid'
 import {Editor} from './Editor'
 import {Link} from './Link'
@@ -20,7 +21,7 @@ import {LinkEnd} from './LinkEnd'
 import {Bounds} from './Bounds'
 import {Select} from '../Select'
 import {CodeEditor} from './CodeEditor'
-import {ZIndex} from '@/utils/ZIndex'
+import {Toolbar} from './Toolbar'
 
 const Container = styled('div')`
   width: 100%;
@@ -97,10 +98,11 @@ export const Canvas = () => {
     const gesture = new Gesture(
       ref,
       {
-        onPinch: ({origin: [ox, oy], offset: [s]}) => {
+        onPinch: ({origin: [ox, oy], offset: [s], last}) => {
           zoomTo(s, [ox, oy])
+          ctrl.canvas.setMoving(!last)
         },
-        onWheel: ({event, pinching, delta: [dx, dy]}) => {
+        onWheel: ({event, pinching, last, delta: [dx, dy]}) => {
           if (pinching) return false
 
           const target = event.target as HTMLElement
@@ -116,6 +118,7 @@ export const Canvas = () => {
             point: [x, y],
           } = currentCanvas.camera
           ctrl.canvas.updateCameraPoint([x - dx / zoom, y - dy / zoom])
+          ctrl.canvas.setMoving(!last)
         },
       },
       {
@@ -154,6 +157,7 @@ export const Canvas = () => {
       <LinkEnd />
       <Select target={() => ref} />
       <Grid onClick={onGridClick} />
+      <Toolbar />
       <Board
         style={{
           transform: `
