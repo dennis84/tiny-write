@@ -3,57 +3,59 @@ import {TextSelection} from 'prosemirror-state'
 import * as Y from 'yjs'
 import {State, Version} from '@/state'
 import * as remote from '@/remote'
-import {Ctrl} from '.'
 import {FileService} from './FileService'
+import {CollabService} from './CollabService'
+import {EditorService} from './EditorService'
 
 export class ChangeSetService {
   constructor(
-    private ctrl: Ctrl,
+    private fileService: FileService,
+    private collabService: CollabService,
+    private editorService: EditorService,
     private store: Store<State>,
     private setState: SetStoreFunction<State>,
   ) {}
 
   async addVersion() {
-    const currentFile = this.ctrl.file.currentFile
+    const currentFile = this.fileService.currentFile
     if (!currentFile) return
 
-    const subdoc = this.ctrl.collab.getSubdoc(currentFile.id)
+    const subdoc = this.collabService.getSubdoc(currentFile.id)
     const ydoc = Y.encodeStateAsUpdate(subdoc)
 
     const versions = [...currentFile.versions, {ydoc, date: new Date()}]
 
-    this.ctrl.file.updateFile(currentFile.id, {versions})
-    const updatedFile = this.ctrl.file.currentFile
+    this.fileService.updateFile(currentFile.id, {versions})
+    const updatedFile = this.fileService.currentFile
     if (!updatedFile) return
     await FileService.saveFile(updatedFile)
-    await this.ctrl.editor.writeFile(updatedFile)
     remote.info('Saved new snapshot version')
   }
 
   renderVersion(version: Version) {
-    const currentFile = this.ctrl.file.currentFile
+    const currentFile = this.fileService.currentFile
     if (!currentFile) return
     const ydoc = new Y.Doc({gc: false})
     Y.applyUpdate(ydoc, version.ydoc)
     this.setState('collab', 'snapshot', ydoc)
-    this.ctrl.editor.updateEditorState(currentFile)
+    this.editorService.updateEditorState(currentFile)
   }
 
   unrenderVersion() {
-    const currentFile = this.ctrl.file.currentFile
+    const currentFile = this.fileService.currentFile
     if (!currentFile) return
     this.setState('collab', 'snapshot', undefined)
-    this.ctrl.editor.updateEditorState(currentFile)
+    this.editorService.updateEditorState(currentFile)
   }
 
   applyVersion(version: Version) {
-    const currentFile = this.ctrl.file.currentFile
+    const currentFile = this.fileService.currentFile
     if (!currentFile?.editorView) return
-    const subdoc = this.ctrl.collab.getSubdoc(currentFile.id)
+    const subdoc = this.collabService.getSubdoc(currentFile.id)
     const type = subdoc.getXmlFragment(currentFile.id)
     type.delete(0, type.length)
     Y.applyUpdate(subdoc, version.ydoc)
-    this.ctrl.editor.updateEditorState(currentFile)
+    this.editorService.updateEditorState(currentFile)
     this.setState('collab', 'snapshot', undefined)
     // trigger EditorProps.editable function
     const tr = currentFile.editorView.state.tr

@@ -48,6 +48,7 @@ export interface Version {
 }
 
 export interface Collab {
+  id: string
   started: boolean
   rendered: boolean
   provider: WebsocketProvider

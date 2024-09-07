@@ -1,12 +1,12 @@
 import {beforeEach, expect, test, vi} from 'vitest'
-import {mock, mockDeep} from 'vitest-mock-extended'
+import {mock} from 'vitest-mock-extended'
 import {createStore} from 'solid-js/store'
 import * as Y from 'yjs'
-
-import {CanvasEditorElement, CanvasLinkElement, ElementType, Mode, createState} from '@/state'
+import {Mode, createState} from '@/state'
 import {FileService} from '@/services/FileService'
-import {Ctrl} from '@/services'
-import {createYUpdate, createSubdoc, createYdoc} from '../util/prosemirror-util'
+import {CollabService} from '@/services/CollabService'
+import {createYUpdate, createSubdoc} from '../util/prosemirror-util'
+import {createIpcMock} from '../util/util'
 
 vi.mock('@/db', () => ({DB: mock()}))
 vi.mock('mermaid', () => ({}))
@@ -15,16 +15,18 @@ beforeEach(() => {
   vi.restoreAllMocks()
 })
 
-const ctrl = mockDeep<Ctrl>()
+const collabService = mock<CollabService>()
 
 test('only save file type', async () => {
   const ydoc = createSubdoc('1', ['Test'])
 
-  const [store, setState] = createStore(createState({
-    files: [{id: '1', ydoc: Y.encodeStateAsUpdate(ydoc), versions: []}],
-  }))
+  const [store, setState] = createStore(
+    createState({
+      files: [{id: '1', ydoc: Y.encodeStateAsUpdate(ydoc), versions: []}],
+    }),
+  )
 
-  const service = new FileService(ctrl, store, setState)
+  const service = new FileService(collabService, store, setState)
   setState('collab', {ydoc})
 
   ydoc.getText('2').insert(0, '1')
@@ -43,75 +45,19 @@ test('only save file type', async () => {
   expect(fileYdoc?.getText('2').length).toBe(0)
 })
 
-test('deleteFile', async () => {
-  const subdoc = createSubdoc('1', ['Test'])
-  const ydoc = createYdoc([subdoc])
-  const lastModified = new Date()
-
-  const [store, setState] = createStore(createState({
-    files: [
-      {id: '1', ydoc: Y.encodeStateAsUpdate(subdoc), versions: [], active: true, lastModified},
-      {id: '2', ydoc: new Uint8Array(), versions: [], deleted: true, lastModified},
-      {id: '3', ydoc: createYUpdate('2', ['Test2']), versions: [], lastModified},
-    ],
-  }))
-
-  ctrl.collab.getSubdoc.mockReturnValue(subdoc)
-
-  const service = new FileService(ctrl, store, setState)
-  setState('collab', {ydoc})
-  setState('mode', Mode.Editor)
-
-  await service.deleteFile('1')
-  expect(store.files.length).toBe(3)
-  expect(store.files[0].deleted).toBe(true)
-  expect(store.files[1].deleted).toBe(true)
-  expect(store.files[0].active).toBe(false)
-  expect(ctrl.editor.openFile).toHaveBeenCalledWith('3')
-  setState('files', 2, 'active', true)
-
-  await service.deleteFile('3')
-  expect(store.files.length).toBe(3)
-  expect(store.files[0].deleted).toBe(true)
-  expect(store.files[1].deleted).toBe(true)
-  expect(store.files[2].deleted).toBe(true)
-  expect(ctrl.editor.newFile).toHaveBeenCalled()
-})
-
-test('deleteFile - new file', async () => {
-  const subdoc = createSubdoc('1', ['Test'])
-  const ydoc = createYdoc([subdoc])
-  const lastModified = new Date()
-
-  const [store, setState] = createStore(createState({
-    files: [
-      {id: '1', ydoc: Y.encodeStateAsUpdate(subdoc), versions: [], lastModified},
-      {id: '2', ydoc: new Uint8Array(), versions: [], active: true},
-    ],
-  }))
-
-  ctrl.collab.getSubdoc.mockReturnValue(subdoc)
-
-  const service = new FileService(ctrl, store, setState)
-  setState('collab', {ydoc})
-  setState('mode', Mode.Editor)
-
-  await service.deleteFile('2')
-  expect(store.files.length).toBe(1)
-  expect(ctrl.editor.openFile).toHaveBeenCalledWith('1')
-})
-
 test('restore', async () => {
   const ydoc = createSubdoc('1', ['Test'])
 
-  const [store, setState] = createStore(createState({
-    files: [
-      {id: '1', ydoc: Y.encodeStateAsUpdate(ydoc), versions: [], active: true},
-      {id: '2', ydoc: createYUpdate('2', ['Test2']), versions: [], active: false, deleted: true},
-    ],
-  }))
+  const [store, setState] = createStore(
+    createState({
+      files: [
+        {id: '1', ydoc: Y.encodeStateAsUpdate(ydoc), versions: [], active: true},
+        {id: '2', ydoc: createYUpdate('2', ['Test2']), versions: [], active: false, deleted: true},
+      ],
+    }),
+  )
 
-  const service = new FileService(ctrl, store, setState)
+  const service = new FileService(collabService, store, setState)
   setState('collab', {ydoc})
   setState('mode', Mode.Editor)
 
@@ -122,35 +68,67 @@ test('restore', async () => {
   expect(store.files[1].deleted).toBe(false)
 })
 
-test('deleteForever', async () => {
-  const ydoc = createSubdoc('1', ['Test'])
+test('getTitle', async () => {
+  createIpcMock()
 
-  const [store, setState] = createStore(createState({
-    files: [
-      {id: '1', ydoc: Y.encodeStateAsUpdate(ydoc), versions: [], active: true},
-      {id: '2', ydoc: createYUpdate('2', ['Test2']), versions: [], active: false, deleted: true},
-    ],
-    canvases: [
-      {
-        id: '1',
-        active: true,
-        camera: {point: [0, 0], zoom: 1},
-        elements: [
-          {id: '1', type: ElementType.Editor, x: 0, y: 0, width: 100, height: 100} as CanvasEditorElement,
-          {id: '2', type: ElementType.Editor, x: 0, y: 0, width: 100, height: 100} as CanvasEditorElement,
-          {id: '3', type: ElementType.Link, from: '1', to: '2'} as CanvasLinkElement,
-        ]
-      }
-    ]
-  }))
+  const [store, setState] = createStore(
+    createState({
+      files: [
+        {id: '1', ydoc: createYUpdate('1', ['Test1', 'foo']), versions: []},
+        {id: '2', ydoc: createYUpdate('2', ['Test2', 'bar']), versions: []},
+        {id: '3', ydoc: createYUpdate('3', ['a'.repeat(30), 'bar']), versions: []},
+        {
+          id: '4',
+          ydoc: createYUpdate('4', ['Test4']),
+          versions: [],
+          path: '/users/me/project/README.md',
+        },
+      ],
+    }),
+  )
 
-  const service = new FileService(ctrl, store, setState)
-  setState('collab', {ydoc})
-  setState('mode', Mode.Editor)
+  const service = new FileService(collabService, store, setState)
+  expect(await service.getTitle(store.files[0])).toBe('Test1')
+  expect(await service.getTitle(store.files[1])).toBe('Test2')
+  expect(await service.getTitle(store.files[2])).toBe('a'.repeat(25))
+  expect(await service.getTitle(store.files[3])).toBe('~/project/README.md')
+})
 
-  await service.deleteForever('2')
-  expect(store.files.length).toBe(1)
-  expect(store.files[0].active).toBe(true)
-  expect(store.canvases[0].elements.length).toBe(1)
-  expect(store.canvases[0].elements[0].id).toBe('1')
+test('findFile - found', async () => {
+  vi.stubGlobal('__TAURI__', {})
+  createIpcMock({
+    resolve_path: (path) => '/path/to' + path,
+  })
+
+  const [store, setState] = createStore(
+    createState({
+      files: [
+        {id: '1', ydoc: createYUpdate('1', ['Test1']), versions: []},
+        {id: '2', ydoc: createYUpdate('2', ['Test2']), versions: [], path: '/path/to/file2'},
+      ],
+    }),
+  )
+
+  const service = new FileService(collabService, store, setState)
+  expect(service.findFileById('1')?.id).toBe('1')
+  expect((await service.findFileByPath('/file2'))?.id).toBe('2')
+})
+
+test('findFile - not found', async () => {
+  vi.stubGlobal('__TAURI__', {})
+  createIpcMock({
+    resolve_path: () => {
+      throw new Error('Fail')
+    },
+  })
+
+  const [store, setState] = createStore(
+    createState({
+      files: [{id: '2', ydoc: createYUpdate('2', ['Test2']), versions: [], path: '/path/to/file2'}],
+    }),
+  )
+
+  const service = new FileService(collabService, store, setState)
+  expect(service.findFileById('1')).toBe(undefined)
+  await expect(service.findFileByPath('/path/to/file2')).rejects.toThrowError()
 })

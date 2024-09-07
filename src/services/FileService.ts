@@ -3,12 +3,12 @@ import * as Y from 'yjs'
 import {yXmlFragmentToProseMirrorRootNode} from 'y-prosemirror'
 import {ySyncFacet} from 'y-codemirror.next'
 import {v4 as uuidv4} from 'uuid'
-import {File, FileText, Mode, ServiceError, State, isLinkElement} from '@/state'
+import {File, FileText, Mode, ServiceError, State} from '@/state'
 import * as remote from '@/remote'
 import {DB} from '@/db'
 import {isTauri} from '@/env'
 import {createMarkdownParser} from '@/markdown'
-import {Ctrl} from '.'
+import {CollabService} from './CollabService'
 import {schema} from './ProseMirrorService'
 
 export interface LoadedTextFile {
@@ -25,7 +25,7 @@ export interface LoadedMarkdownFile {
 
 export class FileService {
   constructor(
-    private ctrl: Ctrl,
+    private collabService: CollabService,
     private store: Store<State>,
     private setState: SetStoreFunction<State>,
   ) {}
@@ -157,6 +157,38 @@ export class FileService {
     }
   }
 
+  static async fetchFiles(): Promise<File[] | undefined> {
+    const fetched = await DB.getFiles()
+    if (!fetched) return
+    const files = []
+    for (const file of fetched ?? []) {
+      try {
+        files.push({
+          id: file.id,
+          parentId: file.parentId,
+          leftId: file.leftId,
+          title: file.title,
+          ydoc: file.ydoc,
+          lastModified: new Date(file.lastModified),
+          path: file.path,
+          newFile: file.path,
+          active: file.active,
+          deleted: file.deleted,
+          code: file.code,
+          codeLang: file.codeLang,
+          versions: (file.versions ?? []).map((v) => ({
+            date: v.date,
+            ydoc: v.ydoc,
+          })),
+        })
+      } catch (_err) {
+        remote.error('Ignore file due to invalid ydoc.')
+      }
+    }
+
+    return files
+  }
+
   private static createYdoc(id: string, bytes?: Uint8Array): Y.Doc {
     const ydoc = new Y.Doc({gc: false, guid: id})
     if (bytes) Y.applyUpdate(ydoc, bytes)
@@ -200,8 +232,8 @@ export class FileService {
     if (index === -1) return
     const update = {...u}
 
-    if (u.lastModified && this.ctrl.collab.hasSubdoc(id)) {
-      const subdoc = this.ctrl.collab.getSubdoc(id)
+    if (u.lastModified && this.collabService.hasSubdoc(id)) {
+      const subdoc = this.collabService.getSubdoc(id)
       update.ydoc = Y.encodeStateAsUpdate(subdoc)
     }
 
@@ -214,115 +246,15 @@ export class FileService {
     file.editorView?.destroy()
 
     if (file.codeEditorView) {
-      this.ctrl.collab.undoManager?.removeTrackedOrigin(file.codeEditorView.state.facet(ySyncFacet))
+      this.collabService.undoManager?.removeTrackedOrigin(
+        file.codeEditorView.state.facet(ySyncFacet),
+      )
       file.codeEditorView?.destroy()
     }
 
     const index = this.store.files.findIndex((f) => f.id === file.id)
     if (index === -1) return
     this.setState('files', index, {editorView: undefined, codeEditorView: undefined})
-  }
-
-  async fetchFiles(): Promise<File[] | undefined> {
-    const fetched = await DB.getFiles()
-    if (!fetched) return
-    const files = []
-    for (const file of fetched ?? []) {
-      try {
-        files.push({
-          id: file.id,
-          parentId: file.parentId,
-          leftId: file.leftId,
-          title: file.title,
-          ydoc: file.ydoc,
-          lastModified: new Date(file.lastModified),
-          path: file.path,
-          newFile: file.path,
-          active: file.active,
-          deleted: file.deleted,
-          code: file.code,
-          codeLang: file.codeLang,
-          versions: (file.versions ?? []).map((v) => ({
-            date: v.date,
-            ydoc: v.ydoc,
-          })),
-        })
-      } catch (_err) {
-        remote.error('Ignore file due to invalid ydoc.')
-      }
-    }
-
-    return files
-  }
-
-  async deleteFile(id: string) {
-    const currentFile = this.currentFile
-    const file = this.findFileById(id)
-    if (!file) return
-
-    if (this.store.mode === Mode.Editor && currentFile?.id === file.id) {
-      let max = 0
-      let maxId = undefined
-      for (const f of this.store.files) {
-        if (f.id === file.id || f.deleted) continue
-        const t = f.lastModified?.getTime() ?? 0
-        if (t >= max) {
-          max = t
-          maxId = f.id
-        }
-      }
-
-      if (maxId) {
-        await this.ctrl.editor.openFile(maxId)
-      } else {
-        await this.ctrl.editor.newFile()
-      }
-    }
-
-    if (!file.lastModified) {
-      await this.deleteForever(file.id)
-    } else {
-      this.updateFile(file.id, {
-        deleted: true,
-        active: false,
-        lastModified: new Date(),
-      })
-
-      const updatedFile = this.findFileById(id)
-      if (!updatedFile) return
-
-      await FileService.saveFile(updatedFile)
-      remote.info('File deleted')
-    }
-
-    this.ctrl.tree.create()
-  }
-
-  async deleteForever(id: string) {
-    const files = this.store.files.filter((it) => it.id !== id)
-    this.setState({files})
-
-    for (const [canvasIndex, canvas] of this.store.canvases.entries()) {
-      const elements = []
-      let shouldUpdate = false
-      for (const el of canvas.elements) {
-        if (el.id === id || (isLinkElement(el) && (el.to === id || el.from === id))) {
-          shouldUpdate = true
-          continue
-        }
-
-        elements.push(el)
-      }
-
-      if (shouldUpdate) {
-        this.setState('canvases', canvasIndex, 'elements', elements)
-        const updated = this.ctrl.canvas.findCanvas(canvas.id)
-        if (updated) await DB.updateCanvas(updated)
-      }
-    }
-
-    await DB.deleteFile(id)
-    remote.info('File forever deleted')
   }
 
   async restore(id: string) {

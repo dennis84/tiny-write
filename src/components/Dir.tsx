@@ -1,4 +1,5 @@
 import {For, Show} from 'solid-js'
+import {useNavigate} from '@solidjs/router'
 import {styled} from 'solid-styled-components'
 import {useState} from '@/state'
 import {Content, Scroll} from './Layout'
@@ -19,16 +20,22 @@ const Link = styled('a')`
 
 export const Dir = () => {
   const [store, ctrl] = useState()
+  const navigate = useNavigate()
 
   const onNew = async () => {
-    const currentFile = ctrl.file.currentFile
-    await ctrl.editor.newFile()
-    currentFile?.editorView?.focus()
+    const file = await ctrl.editor.newFile()
+    navigate(`/editor/${file.id}`)
   }
 
   const FileLink = (props: {path: string}) => {
-    const onClick = () => ctrl.editor.openFileByPath(props.path)
-    return <Link onClick={onClick}>{props.path}</Link>
+    const onClick = async () => {
+      let file = await ctrl.file.findFileByPath(props.path)
+      if (!file) file = await ctrl.editor.newFile({path: props.path})
+      console.log('navigate', `/editor/${file.id}`)
+      navigate(`/editor/${file.id}`)
+    }
+
+    return <Link data-testid="link" onClick={onClick}>{props.path}</Link>
   }
 
   const Empty = () => (
@@ -41,7 +48,7 @@ export const Dir = () => {
   )
 
   return (
-    <Scroll data-testid="content" data-tauri-drag-region="true">
+    <Scroll data-testid="dir" data-tauri-drag-region="true">
       <Content config={store.config} data-tauri-drag-region="true">
         <Show when={store.args?.dir && store.args.dir.length > 0}>
           <p>Click to open file:</p>

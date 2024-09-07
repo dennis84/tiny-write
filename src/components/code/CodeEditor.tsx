@@ -16,11 +16,11 @@ export const CodeMirrorContainer = styled('div')`
 export const CodeEditor = () => {
   let containerRef!: HTMLDivElement
 
-  const [, ctrl] = useState()
+  const [store, ctrl] = useState()
 
   createEffect(() => {
     const currentFile = ctrl.file.currentFile
-    if (!currentFile) return
+    if (!currentFile || !store.collab) return
 
     const provider = ctrl.collab.getProvider(currentFile.id)
     if (!provider) {
@@ -37,7 +37,7 @@ export const CodeEditor = () => {
   })
 
   return (
-    <Scroll>
+    <Scroll data-testid="code_scroll">
       <CodeMirrorContainer ref={containerRef} />
     </Scroll>
   )

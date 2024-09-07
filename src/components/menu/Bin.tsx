@@ -18,14 +18,7 @@ export const Bin = (props: Props) => {
     state.files.some((f) => f.deleted) || state.canvases.some((f) => f.deleted)
 
   const onEmptyBin = async () => {
-    for (const it of state.files) {
-      if (it.deleted) await ctrl.file.deleteForever(it.id)
-    }
-
-    for (const it of state.canvases) {
-      if (it.deleted) await ctrl.canvas.deleteForever(it.id)
-    }
-
+    const result = await ctrl.delete.emptyBin()
     ctrl.tree.create()
   }
 

@@ -1,4 +1,5 @@
 import {createEffect, Show} from 'solid-js'
+import {useNavigate} from '@solidjs/router'
 import {styled} from 'solid-styled-components'
 import {Box, Vec} from '@tldraw/editor'
 import {arrow, computePosition, flip, offset, shift} from '@floating-ui/dom'
@@ -51,12 +52,13 @@ export const Toolbar = () => {
   let arrowRef: HTMLSpanElement | undefined
 
   const [state, ctrl] = useState()
+  const navigate = useNavigate()
 
   const open = async (element: CanvasElement) => {
     if (isEditorElement(element)) {
-      await ctrl.editor.openFile(element.id)
+      navigate(`/editor/${element.id}`)
     } else if (isCodeElement(element)) {
-      await ctrl.code.openFile(element.id)
+      navigate(`/code/${element.id}`)
     }
   }
 

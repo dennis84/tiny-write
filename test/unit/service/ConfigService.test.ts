@@ -1,18 +1,22 @@
 import {beforeEach, expect, test, vi} from 'vitest'
-import {mock, mockDeep} from 'vitest-mock-extended'
+import {mock} from 'vitest-mock-extended'
 
 vi.mock('@/db', () => ({DB: mock()}))
 
 import {createStore} from 'solid-js/store'
 import {createState} from '@/state'
-import {Ctrl} from '@/services'
 import {ConfigService} from '@/services/ConfigService'
+import {EditorService} from '@/services/EditorService'
+import {CodeService} from '@/services/CodeService'
+import {CollabService} from '@/services/CollabService'
 
 beforeEach(() => {
   vi.restoreAllMocks()
 })
 
-const ctrl = mockDeep<Ctrl>()
+const editorService = mock<EditorService>()
+const codeService = mock<CodeService>()
+const collabService = mock<CollabService>()
 
 test('getters', () => {
   const prettier = {
@@ -23,20 +27,22 @@ test('getters', () => {
     singleQuote: true,
   }
 
-  const [store, setState] = createStore(createState({
-    config: {
-      font: 'ia-writer-mono',
-      codeTheme: 'dracula',
-      fontSize: 12,
-      contentWidth: 200,
-      alwaysOnTop: true,
-      typewriterMode: true,
-      spellcheck: true,
-      prettier,
-    }
-  }))
+  const [store, setState] = createStore(
+    createState({
+      config: {
+        font: 'ia-writer-mono',
+        codeTheme: 'dracula',
+        fontSize: 12,
+        contentWidth: 200,
+        alwaysOnTop: true,
+        typewriterMode: true,
+        spellcheck: true,
+        prettier,
+      },
+    }),
+  )
 
-  const service = new ConfigService(ctrl, store, setState)
+  const service = new ConfigService(editorService, codeService, collabService, store, setState)
   expect(service.fontSize).toBe(12)
   expect(service.typewriterMode).toBe(true)
   expect(service.prettier).toEqual(prettier)
@@ -48,7 +54,7 @@ test('getters', () => {
 
 test('updateConfig', async () => {
   const [store, setState] = createStore(createState())
-  const service = new ConfigService(ctrl, store, setState)
+  const service = new ConfigService(editorService, codeService, collabService, store, setState)
 
   await service.updateConfig({
     fontSize: 10,
@@ -60,7 +66,7 @@ test('updateConfig', async () => {
   expect(service.font.value).toBe('merriweather')
   expect(store.config.contentWidth).toBe(100)
 
-  expect(ctrl.collab.setConfig).toBeCalledWith({
+  expect(collabService.setConfig).toBeCalledWith({
     fontSize: 10,
     font: 'merriweather',
     contentWidth: 100,

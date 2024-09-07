@@ -4,13 +4,13 @@ import {v4 as uuidv4} from 'uuid'
 
 test('existing room', async ({page, browser}) => {
   const room = uuidv4()
-  await page.goto(`/code/${room}`)
+  await page.goto(`/code/${room}?share=true`)
   await page.waitForSelector('[data-testid="initialized"]')
   await page.locator('.cm-content').pressSequentially('Hello', {delay})
   await lineCodeEq(page, 1, 'Hello')
 
   const page2 = await browser.newPage()
-  await page2.goto(`/code/${room}`)
+  await page2.goto(`/code/${room}?share=true`)
   await lineCodeEq(page2, 1, 'Hello')
 
   // make sure that cursor is at the start position

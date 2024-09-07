@@ -106,7 +106,8 @@ export const Link = ({element}: {element: CanvasLinkElement}) => {
 
         ctrl.canvas.drawLink(element.id, fromId, fromEdge, t.x, t.y)
         if (last) {
-          await ctrl.canvas.drawLinkEnd(element.id)
+          const el = await ctrl.canvas.drawLinkEnd(element.id)
+          if (el) ctrl.canvasCollab.addElement(el)
         }
 
         return [fromId, fromEdge]

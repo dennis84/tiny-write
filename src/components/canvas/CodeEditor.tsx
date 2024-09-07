@@ -60,7 +60,7 @@ export const CodeEditor = ({element, index}: {element: CanvasCodeElement; index:
 
     const provider = ctrl.collab.getProvider(file.id)
     if (!provider) {
-      ctrl.collab.init(file)
+      ctrl.collab.initFile(file)
     }
 
     if (provider && file.codeEditorView === undefined) {

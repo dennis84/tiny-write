@@ -28,7 +28,8 @@ import {highlight} from '@/codemirror/highlight'
 import {findWords, tabCompletionKeymap} from '@/codemirror/completion'
 import {mermaidKeywords} from '@/codemirror/mermaid'
 import {Mode, State} from '@/state'
-import {Ctrl} from '.'
+import {ConfigService} from './ConfigService'
+import {AppService} from './AppService'
 
 interface CreateEditor {
   lang?: string
@@ -39,7 +40,8 @@ interface CreateEditor {
 
 export class CodeMirrorService {
   constructor(
-    private ctrl: Ctrl,
+    private configService: ConfigService,
+    private appService: AppService,
     private store: Store<State>,
   ) {}
 
@@ -50,7 +52,7 @@ export class CodeMirrorService {
       keywords: new Compartment(),
     }
 
-    const theme = getTheme(this.ctrl.config.codeTheme.value)
+    const theme = getTheme(this.configService.codeTheme.value)
     const langSupport = highlight(props.lang ?? 'js')
 
     const extensions = [
@@ -59,16 +61,18 @@ export class CodeMirrorService {
       keymap.of(foldKeymap),
       keymap.of([...defaultKeymap, ...completionKeymap, ...tabCompletionKeymap, indentWithTab]),
       theme,
-      tooltips({parent: this.ctrl.app.layoutRef}),
+      tooltips({parent: this.appService.layoutRef}),
       drawSelection(),
       EditorState.allowMultipleSelections.of(true),
       indentOnInput(),
       bracketMatching(),
       closeBrackets(),
       linter(() => []),
-      EditorState.tabSize.of(this.ctrl.config.prettier.tabWidth),
+      EditorState.tabSize.of(this.configService.prettier.tabWidth),
       indentUnit.of(
-        this.ctrl.config.prettier.useTabs ? '\t' : ' '.repeat(this.ctrl.config.prettier.tabWidth),
+        this.configService.prettier.useTabs ?
+          '\t'
+        : ' '.repeat(this.configService.prettier.tabWidth),
       ),
       autocompletion(),
       foldGutter(),

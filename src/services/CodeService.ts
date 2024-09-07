@@ -4,55 +4,52 @@ import {yCollab, ySyncFacet} from 'y-codemirror.next'
 import {File, State} from '@/state'
 import * as remote from '@/remote'
 import {format} from '@/codemirror/prettify'
-import {Ctrl} from '.'
 import {FileService} from './FileService'
 import {CollabService} from './CollabService'
+import {AppService} from './AppService'
+import {CodeMirrorService} from './CodeMirrorService'
 
 export class CodeService {
   constructor(
-    private ctrl: Ctrl,
+    private fileService: FileService,
+    private appService: AppService,
+    private collabService: CollabService,
+    private codeMirrorService: CodeMirrorService,
     private store: Store<State>,
     private setState: SetStoreFunction<State>,
   ) {}
 
-  async newFile() {
-    const state = unwrap(this.store)
+  async newFile(): Promise<File> {
     const file = FileService.createFile({code: true})
-
-    const update = await FileService.activateFile(
-      {
-        ...state,
-        args: {cwd: state.args?.cwd},
-        files: [...state.files, file],
-      },
-      file,
-    )
-
-    update.collab = CollabService.create(file.id, state.mode, false)
-    this.setState(update)
+    this.setState('files', (prev) => [...prev, file])
+    return file
   }
 
-  async openFile(id: string) {
-    remote.debug(`Open file: ${id}`)
+  async openFile(id: string, share = false) {
+    remote.debug(`Open file: (id=${id}, share=${share}, mode=code)`)
     const state: State = unwrap(this.store)
 
     try {
-      const file = this.ctrl.file.findFileById(id)
+      let file = this.fileService.findFileById(id)
       let text: string | undefined
+
+      if (!file) {
+        file = FileService.createFile({id, code: true})
+        state.files.push(file)
+      }
 
       if (file?.path) {
         text = (await FileService.loadTextFile(file.path)).text
       }
 
-      if (!file) return
       if (state.args?.room) state.args.room = undefined
 
       const update = await FileService.activateFile(state, file)
-      update.collab = CollabService.create(file.id, update.mode, false)
+      update.collab = CollabService.create(file.id, update.mode, share)
       this.setState(update)
       if (text) this.updateText(text)
     } catch (error: any) {
-      this.ctrl.app.setError({error, fileId: id})
+      this.appService.setError({error, fileId: id})
     }
   }
 
@@ -69,12 +66,12 @@ export class CodeService {
   }
 
   updateLang(file: File, lang: string) {
-    this.ctrl.file.updateFile(file.id, {codeLang: lang})
+    this.fileService.updateFile(file.id, {codeLang: lang})
     this.updateEditorState(file)
   }
 
   async prettify() {
-    const currentFile = this.ctrl.file.currentFile
+    const currentFile = this.fileService.currentFile
     if (!currentFile?.codeEditorView) return
     const lang = currentFile?.codeEditorView?.contentDOM.dataset.language ?? ''
     const config = unwrap(this.store.config.prettier)
@@ -86,14 +83,14 @@ export class CodeService {
       return
     }
 
-    const subdoc = this.ctrl.collab.getSubdoc(file.id)
+    const subdoc = this.collabService.getSubdoc(file.id)
     const type = subdoc.getText(file.id)
     if (!type) return
 
     const parent = file.codeEditorView?.dom.parentElement ?? el
     file.codeEditorView?.destroy()
 
-    const editor = this.ctrl.codeMirror.createEditor({
+    const editor = this.codeMirrorService.createEditor({
       parent,
       doc: type.toString(),
       lang: file.codeLang,
@@ -103,23 +100,23 @@ export class CodeService {
       ],
     })
 
-    this.ctrl.collab.undoManager?.addTrackedOrigin(editor.editorView.state.facet(ySyncFacet))
+    this.collabService.undoManager?.addTrackedOrigin(editor.editorView.state.facet(ySyncFacet))
 
     const fileIndex = this.store.files.findIndex((f) => f.id === file.id)
     this.setState('files', fileIndex, 'codeEditorView', editor.editorView)
   }
 
   private async onUpdate() {
-    const currentFile = this.ctrl.file.currentFile
+    const currentFile = this.fileService.currentFile
     if (!currentFile) return
-    this.ctrl.file.updateFile(currentFile.id, {
+    this.fileService.updateFile(currentFile.id, {
       lastModified: new Date(),
     })
     await this.saveEditor()
   }
 
   private async saveEditor() {
-    const file = this.ctrl.file.currentFile
+    const file = this.fileService.currentFile
     if (!file) return
     await FileService.saveFile(file)
     // TODO: write to file

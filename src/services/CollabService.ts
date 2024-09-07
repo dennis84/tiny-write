@@ -6,14 +6,12 @@ import {defaultDeleteFilter, defaultProtectedNodes, ySyncPluginKey} from 'y-pros
 import {adjectives, animals, uniqueNamesGenerator} from 'unique-names-generator'
 import {Collab, Config, File, Mode, State} from '@/state'
 import {COLLAB_URL, isTauri} from '@/env'
-import * as remote from '@/remote'
+import {error, info} from '@/remote'
 import {TauriWebSocket} from '@/utils/TauriWebSocket'
-import {Ctrl} from '.'
 import {ConfigService} from './ConfigService'
 
 export class CollabService {
   constructor(
-    private ctrl: Ctrl,
     private store: Store<State>,
     private setState: SetStoreFunction<State>,
   ) {}
@@ -34,33 +32,18 @@ export class CollabService {
     return this.store.collab?.undoManager
   }
 
-  get room(): string {
-    const room =
-      this.store.mode === Mode.Canvas ?
-        this.ctrl.canvas.currentCanvas?.id
-      : this.ctrl.file.currentFile?.id
-    if (!room) throw Error('asas')
-    return room
-  }
-
   get isSnapshot(): boolean {
     return this.store.collab?.snapshot !== undefined
   }
 
   static create(id: string, mode = Mode.Editor, connect = false): Collab {
-    remote.info(`Create ydoc: (id=${id}, mode=${mode}, connect=${connect})`)
+    info(`Create ydoc: (id=${id}, mode=${mode}, connect=${connect})`)
     const room = `${mode}/${id}`
-
-    if (connect) {
-      window.history.replaceState(null, '', `/${room}`)
-    } else {
-      window.history.replaceState(null, '', '/')
-    }
 
     const ydoc = new Y.Doc({gc: false, guid: room})
     const permanentUserData = new Y.PermanentUserData(ydoc)
     const WebSocketPolyfill = CollabService.createWS()
-    const provider = new WebsocketProvider(COLLAB_URL, room, ydoc, {connect, WebSocketPolyfill})
+    const provider = new WebsocketProvider(COLLAB_URL, room, ydoc, {connect: false, WebSocketPolyfill})
 
     const xs = Object.values(ConfigService.themes)
     const index = Math.floor(Math.random() * xs.length)
@@ -85,6 +68,7 @@ export class CollabService {
     })
 
     return {
+      id,
       started: connect,
       rendered: false,
       ydoc,
@@ -99,15 +83,15 @@ export class CollabService {
     return !isTauri() ? window.WebSocket : (TauriWebSocket as any)
   }
 
-  init(file: File) {
-    remote.info(`Init provider for file (id=${file.id})`)
+  init(file?: File) {
+    info(`Init collab (fileId=${file?.id}, connect=${this.store.collab?.started})`)
 
     if (!this.provider) {
       throw new Error('Collab not created in state')
     }
 
     this.provider.on('connection-error', () => {
-      remote.error('🌐 Connection error')
+      error('🌐 Connection error')
       this.setState('collab', 'error', true)
       if (this.provider) {
         this.provider.wsconnected = false
@@ -128,25 +112,30 @@ export class CollabService {
       loaded.forEach((subdoc) => this.getSubdoc(subdoc.guid))
     })
 
-    this.store.collab?.provider.on('loaded', () => {
-      console.log('Main provider loaded')
-    })
-
     this.provider.on('synced', () => {
-      const subdoc = this.getSubdoc(file.id)
-      if (!file.path) Y.applyUpdate(subdoc, file.ydoc)
-
-      const type = file.code ? subdoc.getText(file.id) : subdoc.getXmlFragment(file.id)
-      this.undoManager?.addToScope([type])
+      if (!file) return
+      this.initFile(file)
     })
 
     if (!this.store.collab?.started) {
       this.provider.emit('synced', [])
+    } else {
+      this.provider.connect()
     }
   }
 
+  initFile(file: File) {
+    const subdoc = this.getSubdoc(file.id)
+    if (!file.path) {
+      info('Apply collab update after synced')
+      Y.applyUpdate(subdoc, file.ydoc)
+    }
+
+    const type = file.code ? subdoc.getText(file.id) : subdoc.getXmlFragment(file.id)
+    this.undoManager?.addToScope([type])
+  }
+
   startCollab() {
-    window.history.replaceState(null, '', `/${this.store.mode}/${this.room}`)
     this.store.collab?.provider?.connect()
     for (const p of Object.values(this.providers)) p.connect()
     this.setState('collab', {started: true})
@@ -160,7 +149,6 @@ export class CollabService {
     this.store.collab?.ydoc?.getMap('config').unobserve(this.onCollabConfigUpdate)
     this.store.collab?.provider?.disconnect()
     for (const p of Object.values(this.providers)) p.disconnect()
-    window.history.replaceState(null, '', '/')
     this.setState('collab', {started: false, error: undefined})
   }
 
@@ -192,7 +180,7 @@ export class CollabService {
 
     const connect = this.store.collab?.started ?? false
     if (!this.providers[id]) {
-      remote.info(`Create provider for subdoc (id=${id}, connect=${connect})`)
+      info(`Create provider for subdoc (id=${id}, connect=${connect})`)
       const WebSocketPolyfill = CollabService.createWS()
       const provider = new WebsocketProvider(COLLAB_URL, id, subdoc, {connect, WebSocketPolyfill})
       this.setState('collab', 'providers', id, provider)

@@ -9,21 +9,24 @@ test('selectBox', () => {
   const service = new SelectService()
   const node = document.createElement('div')
   const v = new EditorView(node, {
-    state: EditorState.fromJSON({schema}, {
-      doc: {
-        type: 'doc',
-        content: [
-          {type: 'paragraph', content: [{type: 'text', text: '123'}]},
-          {type: 'paragraph', content: [{type: 'text', text: '456'}]},
-          {type: 'paragraph', content: [{type: 'text', text: '789'}]},
-        ]
+    state: EditorState.fromJSON(
+      {schema},
+      {
+        doc: {
+          type: 'doc',
+          content: [
+            {type: 'paragraph', content: [{type: 'text', text: '123'}]},
+            {type: 'paragraph', content: [{type: 'text', text: '456'}]},
+            {type: 'paragraph', content: [{type: 'text', text: '789'}]},
+          ],
+        },
+        selection: {
+          type: 'text',
+          anchor: 1,
+          head: 1,
+        },
       },
-      selection: {
-        type: 'text',
-        anchor: 1,
-        head: 1
-      }
-    })
+    ),
   })
 
   const coordsAtPos = vi.fn()

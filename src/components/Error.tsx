@@ -40,7 +40,7 @@ const GeneralError = () => {
     typeof store.error?.error === 'string' ? store.error?.error : store.error?.error?.message
 
   return (
-    <Scroll data-tauri-drag-region="true">
+    <Scroll data-tauri-drag-region="true" data-testid="error">
       <Content config={store.config} data-tauri-drag-region="true">
         <h1>An error occurred.</h1>
         <Pre>
@@ -64,7 +64,7 @@ const EditorSyncError = () => {
   }
 
   return (
-    <Scroll data-tauri-drag-region="true">
+    <Scroll data-tauri-drag-region="true" data-testid="sync_error">
       <Content config={store.config} data-tauri-drag-region="true">
         <h1>Sync error occurred. Please reload, sorry 😢</h1>
         <ButtonGroup>

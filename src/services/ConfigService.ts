@@ -4,7 +4,9 @@ import {Config, Mode, State} from '@/state'
 import * as remote from '@/remote'
 import {DB} from '@/db'
 import {isDark} from '@/env'
-import {Ctrl} from '.'
+import {EditorService} from './EditorService'
+import {CodeService} from './CodeService'
+import {CollabService} from './CollabService'
 
 export interface Font {
   label: string
@@ -270,7 +272,9 @@ export class ConfigService {
   private saveConfigDebounced = debounce(100, (state) => this.saveConfig(state))
 
   constructor(
-    private ctrl: Ctrl,
+    private editorService: EditorService,
+    private codeService: CodeService,
+    private collabService: CollabService,
     private store: Store<State>,
     private setState: SetStoreFunction<State>,
   ) {}
@@ -358,7 +362,7 @@ export class ConfigService {
 
   async updateConfig(conf: Partial<Config>) {
     const state: State = unwrap(this.store)
-    this.ctrl.collab.setConfig(conf)
+    this.collabService.setConfig(conf)
     const config = {...state.config, ...conf}
     this.setState('config', config)
     await this.saveConfig(unwrap(this.store))
@@ -366,7 +370,7 @@ export class ConfigService {
   }
 
   updateContentWidth(contentWidth: number) {
-    this.ctrl.collab.setConfig({contentWidth})
+    this.collabService.setConfig({contentWidth})
     this.setState('config', 'contentWidth', contentWidth)
     void this.saveConfigDebounced(unwrap(this.store))
   }
@@ -385,8 +389,8 @@ export class ConfigService {
 
   private updateEditors() {
     this.store.files.forEach((f) => {
-      if (f.code) this.ctrl.code.updateConfig(f)
-      else this.ctrl.editor.updateEditorState(f)
+      if (f.code) this.codeService.updateConfig(f)
+      else this.editorService.updateEditorState(f)
     })
   }
 }

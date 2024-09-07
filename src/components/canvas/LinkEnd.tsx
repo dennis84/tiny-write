@@ -10,8 +10,9 @@ export const LinkEnd = () => {
   const [contextMenu, setContextMenu] = createSignal<Vec | undefined>()
 
   const onNewFile = async (code = false, link?: CanvasLinkElement, cm?: Vec) => {
-    await ctrl.canvas.newFile(code, link, cm)
+    const el = await ctrl.canvas.newFile(code, link, cm)
     await ctrl.canvas.removeDeadLinks()
+    if (el) ctrl.canvasCollab.addElement(el)
     setContextMenu(undefined)
   }
 
@@ -19,8 +20,9 @@ export const LinkEnd = () => {
     const [title, setTitle] = createSignal<string>()
 
     const onClick = async () => {
-      await ctrl.canvas.addFile(p.file, p.link, p.cm)
+      const added = await ctrl.canvas.addFile(p.file, p.link, p.cm)
       await ctrl.canvas.removeDeadLinks()
+      ctrl.canvasCollab.addElements(added ?? [])
       setContextMenu(undefined)
     }
 

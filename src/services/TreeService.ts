@@ -1,8 +1,8 @@
 import {SetStoreFunction, Store, createMutable, unwrap} from 'solid-js/store'
 import {Canvas, File, State, isFile} from '@/state'
 import {DB} from '@/db'
-import {Ctrl} from '.'
 import {FileService} from './FileService'
+import {CanvasService} from './CanvasService'
 
 export type TreeNodeItem = File | Canvas
 
@@ -20,7 +20,6 @@ export class TreeService {
   public tree = createMutable<TreeNode[]>([])
 
   constructor(
-    private ctrl: Ctrl,
     private store: Store<State>,
     private setState: SetStoreFunction<State>,
   ) {}
@@ -198,7 +197,7 @@ export class TreeService {
     if (isFile(node.item)) {
       await FileService.saveFile(node.item)
     } else {
-      await this.ctrl.canvas.saveCanvas(node.item)
+      await CanvasService.saveCanvas(node.item)
     }
   }
 }

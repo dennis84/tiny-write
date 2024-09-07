@@ -1,10 +1,10 @@
 import {vi, test, beforeEach, expect} from 'vitest'
-import {mock, mockDeep} from 'vitest-mock-extended'
+import {mock} from 'vitest-mock-extended'
 import {createStore} from 'solid-js/store'
 import {State, createState} from '@/state'
-import {Ctrl} from '@/services'
 import {CodeMirrorService} from '@/services/CodeMirrorService'
 import {ConfigService} from '@/services/ConfigService'
+import {AppService} from '@/services/AppService'
 
 vi.mock('@/db', () => ({DB: mock()}))
 
@@ -13,15 +13,16 @@ beforeEach(() => {
 })
 
 test('createEditor', () => {
-  const ctrl = mockDeep<Ctrl>({
-    config: mockDeep<ConfigService>({
-      codeTheme: ConfigService.codeThemes.dracula
-    })
+  const appService = mock<AppService>()
+  const configService = mock<ConfigService>({
+    codeTheme: ConfigService.codeThemes.dracula,
+    prettier: {tabWidth: 2, useTabs: false},
   })
 
+  const parent = document.createElement('div')
   const [store] = createStore<State>(createState())
-  const service = new CodeMirrorService(ctrl, store)
-  const {editorView, compartments} = service.createEditor({lang: 'mermaid'})
+  const service = new CodeMirrorService(configService, appService, store)
+  const {editorView, compartments} = service.createEditor({lang: 'mermaid', parent})
 
   expect(editorView).toBeDefined()
   expect(compartments).toBeDefined()

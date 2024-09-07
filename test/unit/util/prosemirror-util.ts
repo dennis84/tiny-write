@@ -1,12 +1,21 @@
-import {schema} from 'prosemirror-markdown'
+import {EditorView} from 'prosemirror-view'
+import {EditorState} from 'prosemirror-state'
+import {schema} from '@/services/ProseMirrorService'
 import * as Y from 'yjs'
 import {prosemirrorJSONToYDoc} from 'y-prosemirror'
-import {Ctrl} from '@/services'
+
+export const createEditorView = (texts: string[]) => {
+  const node = document.createElement('div')
+  const selection = {type: 'text', anchor: 1, head: 1}
+  return new EditorView(node, {
+    state: EditorState.fromJSON({schema}, {...createText(texts), selection}),
+  })
+}
 
 export const createText = (texts: string[]) => ({
   doc: {
     type: 'doc',
-    content: texts.map((text) => ({type: 'paragraph', content: [{type: 'text', text}]}))
+    content: texts.map((text) => ({type: 'paragraph', content: [{type: 'text', text}]})),
   },
 })
 
@@ -25,13 +34,3 @@ export const createYdoc = (subdocs: Y.Doc[]) => {
   subdocs.forEach((subdoc) => ydoc.getMap().set(subdoc.guid, subdoc))
   return ydoc
 }
-
-export const insertText = (ctrl: Ctrl, text: string) => {
-  const currentFile = ctrl.file.currentFile
-  const tr = currentFile?.editorView?.state.tr
-  tr!.insertText(text)
-  currentFile?.editorView?.dispatch(tr!)
-}
-
-export const getText = (ctrl: Ctrl) =>
-  ctrl.file.currentFile?.editorView?.state.doc.textContent

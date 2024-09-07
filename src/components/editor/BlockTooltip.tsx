@@ -1,4 +1,5 @@
 import {Show, createEffect, createSignal} from 'solid-js'
+import {useNavigate} from '@solidjs/router'
 import {NodeSelection, TextSelection} from 'prosemirror-state'
 import {setBlockType} from 'prosemirror-commands'
 import {ReferenceElement} from '@floating-ui/dom'
@@ -18,6 +19,7 @@ interface Props {
 export const BlockTooltip = (props: Props) => {
   const [, ctrl] = useState()
   const [tooltipAnchor, setTooltipAnchor] = createSignal<ReferenceElement | undefined>()
+  const navigate = useNavigate()
 
   const closeTooltip = () => {
     props.resetBlock()
@@ -58,13 +60,11 @@ export const BlockTooltip = (props: Props) => {
   }
 
   const onChangeLang = () => {
-    console.log('onChangeLang')
     const block = props.selectedBlock
     if (!block) return
 
     const view = ctrl.file.currentFile?.editorView
     if (!view) return
-    console.log(block)
 
     if (block.blockNode.attrs.lang === 'mermaid') {
       const tr = view.state.tr
@@ -199,7 +199,9 @@ export const BlockTooltip = (props: Props) => {
     const mime = await remote.getMimeType(path)
 
     if (mime.startsWith('text/')) {
-      await ctrl.editor.openFileByPath(path)
+      let file = await ctrl.file.findFileByPath(path)
+      if (!file) file = await ctrl.editor.newFile({path})
+      navigate(`/editor/${file.id}`)
     } else {
       await remote.open(path)
     }

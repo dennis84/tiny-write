@@ -88,7 +88,8 @@ const LinkHandle = (props: EdgeProps) => {
         const id = currentLink()!
         ctrl.canvas.drawLink(id, props.id, props.type, t.x, t.y)
         if (last) {
-          await ctrl.canvas.drawLinkEnd(id)
+          const el = await ctrl.canvas.drawLinkEnd(id)
+          if (el) ctrl.canvasCollab.addElement(el)
           setCurrentLink(undefined)
         }
       },

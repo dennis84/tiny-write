@@ -8,12 +8,14 @@ export const SubmenuCanvas = ({maybeHide}: {maybeHide: () => void}) => {
   const modKey = isMac ? '⌘' : mod
 
   const onNewFile = async () => {
-    await ctrl.canvas.newFile()
+    const el = await ctrl.canvas.newFile()
+    if (el) ctrl.canvasCollab.addElement(el)
     maybeHide()
   }
 
   const onClearCanvas = async () => {
     await ctrl.canvas.clearCanvas()
+    ctrl.canvasCollab.removeAll()
     maybeHide()
   }
 

@@ -2,12 +2,24 @@ import {Store} from 'solid-js/store'
 import {convertFileSrc} from '@tauri-apps/api/core'
 import {EditorView} from 'prosemirror-view'
 import * as remote from '@/remote'
-import {Mode, State} from '@/state'
-import {Ctrl} from '.'
+import {File, Mode, State} from '@/state'
+import {FileService} from './FileService'
+import {CanvasService} from './CanvasService'
+import {AppService} from './AppService'
+import {EditorService} from './EditorService'
+import {CanvasCollabService} from './CanvasCollabService'
+
+interface DropResult {
+  file?: File
+}
 
 export class MediaService {
   constructor(
-    private ctrl: Ctrl,
+    private fileService: FileService,
+    private canvasService: CanvasService,
+    private canvasCollabService: CanvasCollabService,
+    private appService: AppService,
+    private editorService: EditorService,
     private store: Store<State>,
   ) {}
 
@@ -15,47 +27,54 @@ export class MediaService {
     const data = (await this.readFile(blob)) as string
 
     if (this.store.mode === Mode.Editor) {
-      const currentFile = this.ctrl.file.currentFile
+      const currentFile = this.fileService.currentFile
       if (!currentFile?.editorView) return
       this.insert(currentFile.editorView, data, x, y)
     } else if (this.store.mode === Mode.Canvas) {
-      const file = this.ctrl.file.currentFile
+      const file = this.fileService.currentFile
       if (file?.active && file.editorView) {
         this.insert(file.editorView, data, x, y)
       } else {
         const img = await this.loadImage(data)
-        const point = this.ctrl.canvas.getPosition([x, y])
+        const point = this.canvasService.getPosition([x, y])
         if (!point) return
-        await this.ctrl.canvas.addImage(data, point, img.width, img.height)
+        const el = await this.canvasService.addImage(data, point, img.width, img.height)
+        if (el) this.canvasCollabService.addElement(el)
       }
     }
   }
 
-  async dropPath(path: string, [x, y]: [number, number]) {
+  async dropPath(path: string, [x, y]: [number, number]): Promise<DropResult | undefined> {
     const mime = await remote.getMimeType(path)
     const isImage = mime.startsWith('image/')
     const isVideo = mime.startsWith('video/')
     const isText = mime.startsWith('text/')
 
     if (isImage || isVideo) {
-      const basePath = await this.ctrl.app.getBasePath()
+      const basePath = await this.appService.getBasePath()
       const relativePath = await remote.toRelativePath(path, basePath)
 
       if (this.store.mode === Mode.Editor) {
-        const currentFile = this.ctrl.file.currentFile
+        const currentFile = this.fileService.currentFile
         if (!currentFile?.editorView) return
         this.insert(currentFile.editorView, relativePath, x, y, mime)
       } else {
         const src = await this.getImagePath(relativePath, basePath)
-        const point = this.ctrl.canvas.getPosition([x, y])
+        const point = this.canvasService.getPosition([x, y])
         if (!point) return
 
+        let addedElement
         if (isImage) {
           const img = await this.loadImage(src)
-          await this.ctrl.canvas.addImage(relativePath, point, img.width, img.height)
+          addedElement = await this.canvasService.addImage(
+            relativePath,
+            point,
+            img.width,
+            img.height,
+          )
         } else {
           const video = await this.loadVideo(src)
-          await this.ctrl.canvas.addVideo(
+          addedElement = await this.canvasService.addVideo(
             relativePath,
             mime,
             point,
@@ -63,10 +82,13 @@ export class MediaService {
             video.videoHeight,
           )
         }
+
+        if (addedElement) this.canvasCollabService.addElement(addedElement)
       }
     } else if (isText) {
-      await this.ctrl.editor.openFileByPath(path)
-      this.ctrl.tree.create()
+      let file = await this.fileService.findFileByPath(path)
+      if (!file) file = await this.editorService.newFile({path})
+      return {file}
     } else {
       remote.info(`Ignore dropped file (mime=${mime})`)
     }

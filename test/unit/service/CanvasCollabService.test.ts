@@ -26,9 +26,10 @@ const createCanvas = (props: Partial<Canvas> = {}): Canvas => ({
 
 const setup = (props: {canvas: Partial<Canvas>} = {canvas: {}}) => {
   const canvas = createCanvas(props.canvas)
-  const canvasService = mock<CanvasService>({currentCanvas: canvas})
+  const canvasService = mock<CanvasService>()
+  Object.defineProperty(canvasService, 'currentCanvas', {get: vi.fn().mockReturnValue(canvas)})
   const collabService = mock<CollabService>({
-    undoManager: mock<YMultiDocUndoManager>()
+    undoManager: mock<YMultiDocUndoManager>(),
   })
 
   const [store, setState] = createStore(createState({canvases: []}))
@@ -55,21 +56,21 @@ test('init', () => {
   }
   const {service, canvasService, undoManager} = setup({
     canvas: {
-      elements: [element]
-    }
+      elements: [element],
+    },
   })
 
   service.init()
 
   expect(service.elements?.toJSON()).toEqual({
-    'el-1': {id: '1', type: ElementType.Editor, x: 0, y: 0, width: 100, height: 100}
+    'el-1': {id: '1', type: ElementType.Editor, x: 0, y: 0, width: 100, height: 100},
   })
 
   // Undo do nothing
   undoManager.undo()
 
   expect(service.elements?.toJSON()).toEqual({
-    'el-1': {id: '1', type: ElementType.Editor, x: 0, y: 0, width: 100, height: 100}
+    'el-1': {id: '1', type: ElementType.Editor, x: 0, y: 0, width: 100, height: 100},
   })
 
   // Add element
@@ -84,7 +85,7 @@ test('init', () => {
   undoManager.undo()
 
   expect(service.elements?.toJSON()).toEqual({
-    'el-1': {id: '1', type: ElementType.Editor, x: 0, y: 0, width: 100, height: 100}
+    'el-1': {id: '1', type: ElementType.Editor, x: 0, y: 0, width: 100, height: 100},
   })
 
   expect(canvasService.removeElements).toHaveBeenCalledWith(['2'])

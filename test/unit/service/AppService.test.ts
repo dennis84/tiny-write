@@ -1,64 +1,64 @@
-import {beforeEach, expect, test, vi} from 'vitest'
-import {mock, mockDeep} from 'vitest-mock-extended'
-import {createStore} from 'solid-js/store'
-import {createState, Canvas, Mode} from '@/state'
-import {Ctrl} from '@/services'
-import {AppService} from '@/services/AppService'
-import {CanvasService} from '@/services/CanvasService'
-import {CollabService} from '@/services/CollabService'
-import {createCollabMock} from '../util/util'
+import {vi, expect, test, beforeEach} from 'vitest'
+import {mock} from 'vitest-mock-extended'
+import {clearMocks} from '@tauri-apps/api/mocks'
+import {DB} from '@/db'
+import {createCtrl} from '@/services'
+import {ElementType, Mode, createState} from '@/state'
+import {createIpcMock} from '../util/util'
+import {createYUpdate} from '../util/prosemirror-util'
 
-vi.mock('mermaid', () => ({}))
-vi.mock('@/db', () => ({DB: mock()}))
+vi.stubGlobal('__TAURI__', {})
+
+vi.mock('@/db', () => ({DB: mock<DB>()}))
+
+const lastModified = new Date()
 
 beforeEach(() => {
-  vi.restoreAllMocks()
+  clearMocks()
+  createIpcMock()
 })
 
-const createCanvas = (props: Partial<Canvas> = {}): Canvas => ({
-  id: 'c1',
-  camera: {point: [0, 0], zoom: 1},
-  elements: [],
-  active: false,
-  lastModified: new Date(),
-  ...props,
-})
+test.each([
+  {fileActive: true, expected: '/users/me/project', cwd: '/users/me/cwd'},
+  {fileActive: false, expected: undefined},
+  {fileActive: false, cwd: '/users/me/cwd', expected: '/users/me/cwd'},
+  {fileActive: true, mode: Mode.Canvas, expected: '/users/me/project'},
+  {fileActive: false, mode: Mode.Canvas, expected: undefined},
+])('getBasePath - from file', async (data) => {
+  const canvasEditor = {
+    id: '1',
+    type: ElementType.Editor,
+    active: data.fileActive && data.mode === Mode.Canvas,
+    x: 0,
+    y: 0,
+    width: 100,
+    height: 100,
+  }
 
-const ctrl = mockDeep<Ctrl>()
-
-test('init - new canvas collab', async () => {
-  vi.stubGlobal('location', ({pathname: '/canvas/1'}))
-  const initial = createState()
-  const [store, setState] = createStore(initial)
-  const service = new AppService(ctrl, store, setState)
-
-  const canvas = createCanvas({id: '1'})
-  vi.spyOn(CanvasService, 'createCanvas').mockReturnValue(canvas)
-  vi.spyOn(CollabService, 'create').mockReturnValue(createCollabMock({started: true}))
-
-  await service.init()
-
-  expect(store.mode).toBe(Mode.Canvas)
-  expect(store.canvases[0].active).toBe(true)
-  expect(store.collab?.started).toBe(true)
-})
-
-test('init - existing canvas collab', async () => {
-  vi.stubGlobal('location', ({pathname: '/canvas/1'}))
-
-  const canvas = createCanvas({id: '1'})
-  const initial = createState({
-    canvases: [canvas],
+  const state = createState({
+    args: {cwd: data.cwd},
+    mode: data.mode ?? Mode.Editor,
+    files: [
+      {
+        id: '1',
+        ydoc: createYUpdate('1', ['Test']),
+        lastModified,
+        active: data.fileActive ?? false,
+        versions: [],
+        path: '/users/me/project/file1',
+      },
+    ],
+    canvases: [
+      {
+        id: '1',
+        camera: {point: [0, 0], zoom: 1},
+        active: true,
+        elements: [canvasEditor],
+      },
+    ],
   })
 
-  const [store, setState] = createStore(initial)
-  const service = new AppService(ctrl, store, setState)
-
-  vi.spyOn(CollabService, 'create').mockReturnValue(createCollabMock({started: true}))
-
-  await service.init()
-
-  expect(store.mode).toBe(Mode.Canvas)
-  expect(store.collab?.started).toBe(true)
-  expect(store.canvases[0].active).toBe(true)
+  const {ctrl} = createCtrl(state)
+  const basePath = await ctrl.app.getBasePath()
+  expect(basePath).toBe(data.expected)
 })

@@ -1,19 +1,26 @@
 import {beforeEach, expect, test, vi} from 'vitest'
-import {mock, mockDeep} from 'vitest-mock-extended'
-import {clearMocks, mockConvertFileSrc} from '@tauri-apps/api/mocks'
+import {mock} from 'vitest-mock-extended'
+import {clearMocks, mockConvertFileSrc, mockWindows} from '@tauri-apps/api/mocks'
 import {fromBase64} from 'js-base64'
+import {render, waitFor} from '@solidjs/testing-library'
 import {MediaService} from '@/services/MediaService'
-import {createCtrl, Ctrl} from '@/services'
+import {createCtrl} from '@/services'
 import {CanvasEditorElement, CanvasImageElement, ElementType, Mode, createState} from '@/state'
-import {createIpcMock, renderEditor} from '../util/util'
+import {Main} from '@/components/Main'
+import {FileService} from '@/services/FileService'
+import {CanvasService} from '@/services/CanvasService'
+import {AppService} from '@/services/AppService'
+import {EditorService} from '@/services/EditorService'
+import {createIpcMock} from '../util/util'
 import {createYUpdate} from '../util/prosemirror-util'
+import {CanvasCollabService} from '@/services/CanvasCollabService'
 
 document.elementFromPoint = () => null
 
-vi.stubGlobal('location', ({
+vi.stubGlobal('location', {
   pathname: '',
   reload: vi.fn(),
-}))
+})
 
 vi.mock('mermaid', () => ({}))
 vi.mock('@/db', () => ({DB: mock()}))
@@ -21,6 +28,7 @@ vi.mock('@/db', () => ({DB: mock()}))
 beforeEach(() => {
   clearMocks()
   vi.clearAllMocks()
+  mockWindows('main')
   mockConvertFileSrc('macos')
   createIpcMock()
 })
@@ -30,10 +38,23 @@ vi.stubGlobal('__TAURI__', {})
 const lastModified = new Date()
 
 test('getImagePath', async () => {
-  const ctrl = mockDeep<Ctrl>()
+  const fileService = mock<FileService>()
+  const canvasService = mock<CanvasService>()
+  const canvasCollabService = mock<CanvasCollabService>()
+  const appService = mock<AppService>()
+  const editorService = mock<EditorService>()
+
   const state = createState()
   const input = '/path/to/file.png'
-  const service = new MediaService(ctrl, state)
+  const service = new MediaService(
+    fileService,
+    canvasService,
+    canvasCollabService,
+    appService,
+    editorService,
+    state,
+  )
+
   const path = await service.getImagePath(input)
   expect(path).toBe('asset://localhost/' + encodeURIComponent(input))
 
@@ -42,10 +63,15 @@ test('getImagePath', async () => {
 })
 
 test('dropFile - image on editor', async () => {
-  const {ctrl} = createCtrl(createState())
-  const target = document.createElement('div')
-  await ctrl.app.init()
-  await renderEditor(ctrl.file.currentFile!.id, ctrl, target)
+  vi.stubGlobal('location', new URL('http://localhost:3000/editor/1'))
+
+  const initial = createState()
+  const {store, ctrl} = createCtrl(initial)
+  const {getByTestId} = render(() => <Main state={store} />)
+
+  await waitFor(() => {
+    expect(getByTestId('editor_scroll')).toBeDefined()
+  })
 
   const blob = new Blob(['123'])
   await ctrl.media.dropFile(blob, [0, 0])
@@ -59,6 +85,8 @@ test('dropFile - image on editor', async () => {
 })
 
 test('dropFile - image on canvas', async () => {
+  vi.stubGlobal('location', new URL('http://localhost:3000/canvas/1'))
+
   const editorElement = {
     id: '1',
     type: ElementType.Editor,
@@ -68,11 +96,9 @@ test('dropFile - image on canvas', async () => {
     height: 100,
   }
 
-  const {ctrl} = createCtrl(createState({
+  const initial = createState({
     mode: Mode.Canvas,
-    files: [
-      {id: '1', ydoc: createYUpdate('1', []), versions: []}
-    ],
+    files: [{id: '1', ydoc: createYUpdate('1', []), versions: []}],
     canvases: [
       {
         id: '1',
@@ -82,23 +108,30 @@ test('dropFile - image on canvas', async () => {
         elements: [editorElement],
       },
     ],
-  }))
+  })
 
-  vi.spyOn(MediaService.prototype as any, 'loadImage')
-    .mockResolvedValue({width: 100, height: 200} as HTMLImageElement)
+  const {store, ctrl} = createCtrl(initial)
+  const {getByTestId} = render(() => <Main state={store} />)
 
-  const target = document.createElement('div')
-  await ctrl.app.init()
+  await waitFor(() => {
+    expect(getByTestId('canvas_container')).toBeDefined()
+  })
+
+  vi.spyOn(MediaService.prototype as any, 'loadImage').mockResolvedValue({
+    width: 100,
+    height: 200,
+  } as HTMLImageElement)
 
   const currentCanvas = ctrl.canvas.currentCanvas
-  await renderEditor('1', ctrl, target)
 
   const blob = new Blob([], {type: 'image/png'})
   await ctrl.media.dropFile(blob, [100, 100])
 
   expect(currentCanvas?.elements).toHaveLength(2)
 
-  const imageEl = currentCanvas?.elements.find((it) => it.type === ElementType.Image) as CanvasImageElement
+  const imageEl = currentCanvas?.elements.find(
+    (it) => it.type === ElementType.Image,
+  ) as CanvasImageElement
   expect(imageEl.width).toBe(300) // fixed
   expect(imageEl.height).toBe(600) // keep ratio
   expect(imageEl.x).toBe(-50) // centered
@@ -106,6 +139,8 @@ test('dropFile - image on canvas', async () => {
 })
 
 test('dropFile - image on canvas with active editor', async () => {
+  vi.stubGlobal('location', new URL('http://localhost:3000/canvas/1'))
+
   const editorElement = {
     id: '1',
     type: ElementType.Editor,
@@ -115,11 +150,9 @@ test('dropFile - image on canvas with active editor', async () => {
     height: 100,
   }
 
-  const {ctrl} = createCtrl(createState({
+  const initial = createState({
     mode: Mode.Canvas,
-    files: [
-      {id: '1', ydoc: createYUpdate('1', []), versions: []}
-    ],
+    files: [{id: '1', ydoc: createYUpdate('1', []), versions: []}],
     canvases: [
       {
         id: '1',
@@ -129,17 +162,22 @@ test('dropFile - image on canvas with active editor', async () => {
         elements: [editorElement],
       },
     ],
-  }))
+  })
 
-  vi.spyOn(MediaService.prototype as any, 'loadImage')
-    .mockResolvedValue({width: 100, height: 200} as HTMLImageElement)
+  const {store, ctrl} = createCtrl(initial)
+  const {getByTestId} = render(() => <Main state={store} />)
 
-  const target = document.createElement('div')
-  await ctrl.app.init()
+  await waitFor(() => {
+    expect(getByTestId('canvas_container')).toBeDefined()
+  })
+
+  vi.spyOn(MediaService.prototype as any, 'loadImage').mockResolvedValue({
+    width: 100,
+    height: 200,
+  } as HTMLImageElement)
 
   const currentCanvas = ctrl.canvas.currentCanvas
   const editorEl = currentCanvas?.elements[0] as CanvasEditorElement
-  await renderEditor(editorEl.id, ctrl, target)
   ctrl.canvas.select('1', true)
 
   const blob = new Blob(['123'], {type: 'image/png'})
@@ -156,10 +194,15 @@ test('dropFile - image on canvas with active editor', async () => {
 })
 
 test('dropPath - image on editor', async () => {
-  const {ctrl} = createCtrl(createState())
-  const target = document.createElement('div')
-  await ctrl.app.init()
-  await renderEditor(ctrl.file.currentFile!.id, ctrl, target)
+  vi.stubGlobal('location', new URL('http://localhost:3000/editor/1'))
+
+  const initial = createState()
+  const {store, ctrl} = createCtrl(initial)
+  const {getByTestId} = render(() => <Main state={store} />)
+
+  await waitFor(() => {
+    expect(getByTestId('editor_scroll')).toBeDefined()
+  })
 
   await ctrl.media.dropPath('/users/me/file.png', [0, 0])
 
@@ -171,7 +214,9 @@ test('dropPath - image on editor', async () => {
 })
 
 test('dropPath - image on editor with basePath', async () => {
-  const {ctrl} = createCtrl(createState({
+  vi.stubGlobal('location', new URL('http://localhost:3000/editor/1'))
+
+  const initial = createState({
     mode: Mode.Editor,
     files: [
       {
@@ -181,13 +226,16 @@ test('dropPath - image on editor with basePath', async () => {
         active: true,
         lastModified,
         versions: [],
-      }
+      },
     ],
-  }))
+  })
 
-  const target = document.createElement('div')
-  await ctrl.app.init()
-  await renderEditor(ctrl.file.currentFile!.id, ctrl, target)
+  const {store, ctrl} = createCtrl(initial)
+  const {getByTestId} = render(() => <Main state={store} />)
+
+  await waitFor(() => {
+    expect(getByTestId('editor_scroll')).toBeDefined()
+  })
 
   await ctrl.media.dropPath('/users/me/project/file.png', [0, 0])
 
@@ -199,24 +247,28 @@ test('dropPath - image on editor with basePath', async () => {
 })
 
 test('dropPath - text file on editor', async () => {
-  const {store, ctrl} = createCtrl(createState())
+  vi.stubGlobal('location', new URL('http://localhost:3000/editor/1'))
 
-  const target = document.createElement('div')
-  await ctrl.app.init()
+  const initial = createState()
+  const {store, ctrl} = createCtrl(initial)
+  const {getByTestId} = render(() => <Main state={store} />)
+
+  await waitFor(() => {
+    expect(getByTestId('editor_scroll')).toBeDefined()
+  })
+
   expect(store.files).toHaveLength(1)
 
-  await renderEditor(ctrl.file.currentFile!.id, ctrl, target)
-
   const path = '/users/me/project/README.md'
-  await ctrl.media.dropPath(path, [0, 0])
+  const result = await ctrl.media.dropPath(path, [0, 0])
 
   expect(store.files).toHaveLength(2)
-
-  const currentFile = ctrl.file.currentFile
-  expect(currentFile?.path).toBe(path)
+  expect(result?.file?.path).toBe(path)
 })
 
 test('dropPath - image on canvas', async () => {
+  vi.stubGlobal('location', new URL('http://localhost:3000/canvas/1'))
+
   const editorElement = {
     id: '1',
     type: ElementType.Editor,
@@ -226,11 +278,9 @@ test('dropPath - image on canvas', async () => {
     height: 100,
   }
 
-  const {ctrl} = createCtrl(createState({
+  const initial = createState({
     mode: Mode.Canvas,
-    files: [
-      {id: '1', ydoc: createYUpdate('1', []), versions: []}
-    ],
+    files: [{id: '1', ydoc: createYUpdate('1', []), versions: []}],
     canvases: [
       {
         id: '1',
@@ -240,23 +290,29 @@ test('dropPath - image on canvas', async () => {
         elements: [editorElement],
       },
     ],
-  }))
+  })
 
-  vi.spyOn(MediaService.prototype as any, 'loadImage')
-    .mockResolvedValue({width: 100, height: 200} as HTMLImageElement)
+  const {store, ctrl} = createCtrl(initial)
+  const {getByTestId} = render(() => <Main state={store} />)
 
-  const target = document.createElement('div')
-  await ctrl.app.init()
+  await waitFor(() => {
+    expect(getByTestId('canvas_container')).toBeDefined()
+  })
+
+  vi.spyOn(MediaService.prototype as any, 'loadImage').mockResolvedValue({
+    width: 100,
+    height: 200,
+  } as HTMLImageElement)
 
   const currentCanvas = ctrl.canvas.currentCanvas
-  const editorEl = currentCanvas?.elements[0] as CanvasEditorElement
-  await renderEditor(editorEl.id, ctrl, target)
 
   await ctrl.media.dropPath('/users/me/file.png', [100, 100])
 
   expect(currentCanvas?.elements).toHaveLength(2)
 
-  const imageEl = currentCanvas?.elements.find((it) => it.type === ElementType.Image) as CanvasImageElement
+  const imageEl = currentCanvas?.elements.find(
+    (it) => it.type === ElementType.Image,
+  ) as CanvasImageElement
   expect(imageEl.width).toBe(300) // fixed
   expect(imageEl.height).toBe(600) // keep ratio
   expect(imageEl.x).toBe(-50) // centered

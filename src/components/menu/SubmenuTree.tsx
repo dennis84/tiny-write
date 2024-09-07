@@ -9,6 +9,8 @@ import {FileService} from '@/services/FileService'
 import {itemCss, Label, Link, Sub} from './Style'
 import {Tooltip} from '../Tooltip'
 import {Icon} from '../Icon'
+import { useNavigate } from '@solidjs/router'
+import { CanvasService } from '@/services/CanvasService'
 
 const HighlightContent = styled('div')`
   position: absolute;
@@ -148,6 +150,7 @@ export const SubmenuTree = (props: Props) => {
   const [tooltipAnchor, setTooltipAnchor] = createSignal<HTMLElement | undefined>()
   const [selected, setSelected] = createSignal<TreeNode>()
   const [grabbing, setGrabbing] = createSignal(false)
+  const navigate = useNavigate()
 
   const isNode = (node: TreeNode) => dropState()?.targetId === node.item.id
 
@@ -176,7 +179,7 @@ export const SubmenuTree = (props: Props) => {
           FileService.saveFile(item)
         } else {
           ctrl.canvas.updateCanvas(item.id, {title})
-          ctrl.canvas.saveCanvas(item)
+          CanvasService.saveCanvas(item)
         }
       },
     })
@@ -185,73 +188,47 @@ export const SubmenuTree = (props: Props) => {
   const onAddFile = async () => {
     const target = unwrap(selected())
     if (!target) return
-    await ctrl.editor.newFile()
-    const currentFile = ctrl.file.currentFile
-    if (!currentFile) return
-    await ctrl.tree.add({item: currentFile, tree: []}, target)
+    const file = await ctrl.editor.newFile()
+    await ctrl.tree.add({item: file, tree: []}, target)
     if (ctrl.tree.isCollapsed(target)) {
       await ctrl.tree.collapse(target)
     }
 
+    navigate(`/editor/${file.id}`)
     closeTooltip()
   }
 
   const onAddCanvas = async () => {
     const target = unwrap(selected())
     if (!target) return
-    await ctrl.canvas.newCanvas()
-    const currentCanvas = ctrl.canvas.currentCanvas
-    if (!currentCanvas) return
-    await ctrl.tree.add({item: currentCanvas, tree: []}, target)
+    const canvas = await ctrl.canvas.newCanvas()
+    await ctrl.tree.add({item: canvas, tree: []}, target)
+    navigate(`/canvas/${canvas.id}`)
     closeTooltip()
   }
 
   const onAddCode = async () => {
     const target = unwrap(selected())
     if (!target) return
-    await ctrl.code.newFile()
-    const currentFile = ctrl.file.currentFile
-    if (!currentFile) return
-    await ctrl.tree.add({item: currentFile, tree: []}, target)
+    const file = await ctrl.code.newFile()
+    await ctrl.tree.add({item: file, tree: []}, target)
+    navigate(`/code/${file.id}`)
     closeTooltip()
-  }
-
-  const deleteNode = async (node: TreeNode) => {
-    const deleteItem = async (item: TreeNodeItem) =>
-      isFile(item) ? ctrl.file.deleteFile(item.id) : ctrl.canvas.deleteCanvas(item.id)
-
-    const currentFile = ctrl.file.currentFile
-    if (
-      state.mode === Mode.Editor &&
-      currentFile !== undefined &&
-      (node.item.id === currentFile.id || ctrl.tree.isDescendant(currentFile.id, node.tree)) &&
-      node.item.parentId
-    ) {
-      await ctrl.editor.openFile(node.item.parentId)
-    }
-
-    const proms = [deleteItem(node.item)]
-    ctrl.tree.descendants((n) => proms.push(deleteItem(n.item)), node.tree)
-    ctrl.tree.create()
-
-    await Promise.all(proms)
   }
 
   const onDelete = async () => {
     const node = unwrap(selected())
     if (!node) return
-    await deleteNode(node)
+    const result = await ctrl.delete.delete(node)
+    if (result.navigateTo) navigate(result.navigateTo)
     closeTooltip()
   }
 
   const onDeleteForever = async () => {
     const node = unwrap(selected())
     if (!node) return
-    if (isFile(node.item)) {
-      await ctrl.file.deleteForever(node.item.id)
-    } else {
-      await ctrl.canvas.deleteForever(node.item.id)
-    }
+    const result = await ctrl.delete.delete(node, true)
+    if (result.navigateTo) navigate(result.navigateTo)
     closeTooltip()
   }
 
@@ -292,11 +269,11 @@ export const SubmenuTree = (props: Props) => {
 
     const onClick = async () => {
       if (isCodeFile(p.node.item)) {
-        await ctrl.code.openFile(p.node.item.id)
+        navigate(`/code/${p.node.item.id}`)
       } else if (isFile(p.node.item)) {
-        await ctrl.editor.openFile(p.node.item.id)
+        navigate(`/editor/${p.node.item.id}`)
       } else {
-        await ctrl.canvas.open(p.node.item.id)
+        navigate(`/canvas/${p.node.item.id}`)
       }
 
       props.maybeHide?.()
@@ -364,11 +341,12 @@ export const SubmenuTree = (props: Props) => {
                 }
               }
             } else if (ds?.pos === 'delete') {
-              await deleteNode(p.node)
+              await ctrl.delete.delete(p.node)
             } else if (ds?.pos === 'open') {
               if (state.mode === Mode.Canvas && isFile(p.node.item)) {
                 const point = ctrl.canvas.getPosition([x, y])
-                await ctrl.canvas.addFile(p.node.item, undefined, point)
+                const added = await ctrl.canvas.addFile(p.node.item, undefined, point)
+                ctrl.canvasCollab.addElements(added ?? [])
               }
             }
 

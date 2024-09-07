@@ -38,7 +38,8 @@ export class CanvasCollabService {
     if (!currentCanvas) return
 
     currentCanvas.elements.forEach((element) => {
-      const el = new Y.Map(this.getProps(unwrap(element)))
+      const props = this.getProps(unwrap(element))
+      const el = new Y.Map(props)
       this.elements?.set(PREFIX + element.id, el)
     })
 
@@ -82,10 +83,14 @@ export class CanvasCollabService {
   }
 
   addElement(element: CollabElement) {
-    const el = new Y.Map(this.getProps(element))
-    this.ydoc?.transact(() => {
-      this.elements?.set(PREFIX + element.id, el)
-    }, this.ydoc.clientID)
+    if (this.hasElement(element.id)) {
+      this.updateElement(element)
+    } else {
+      const el = new Y.Map(this.getProps(element))
+      this.ydoc?.transact(() => {
+        this.elements?.set(PREFIX + element.id, el)
+      }, this.ydoc.clientID)
+    }
   }
 
   addElements(elements: CollabElement[]) {

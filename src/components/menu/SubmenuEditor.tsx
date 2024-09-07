@@ -4,19 +4,20 @@ import {useState} from '@/state'
 import * as remote from '@/remote'
 import {Keys, Label, Link, Sub} from './Style'
 import {Icon} from '../Icon'
+import { useNavigate } from '@solidjs/router'
 
 export const SubmenuEditor = ({maybeHide}: {maybeHide: () => void}) => {
   const [, ctrl] = useState()
   const [relativePath, setRelativePath] = createSignal('')
+  const navigate = useNavigate()
 
   const modKey = isMac ? '⌘' : mod
 
   const onNew = async () => {
-    const currentFile = ctrl.file.currentFile
-    await ctrl.editor.newFile()
+    const file = await ctrl.editor.newFile()
     ctrl.tree.create()
+    navigate(`/editor/${file.id}`)
     maybeHide()
-    currentFile?.editorView?.focus()
   }
 
   const onSaveAs = async () => {

@@ -12,6 +12,9 @@ vi.stubGlobal(
   })),
 )
 
+// stubs for solidjs/router
+window.scrollTo = vi.fn()
+
 // stubs for PM
 Range.prototype.getBoundingClientRect = vi.fn<any>(() => ({
   bottom: 0,

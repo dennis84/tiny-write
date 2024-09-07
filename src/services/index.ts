@@ -15,6 +15,7 @@ import {TreeService} from './TreeService'
 import {CodeService} from './CodeService'
 import {CodeMirrorService} from './CodeMirrorService'
 import {PrettierService} from './PrettierService'
+import {DeleteService} from './DeleteService'
 
 export class Ctrl {
   app!: AppService
@@ -28,25 +29,41 @@ export class Ctrl {
   media!: MediaService
   select!: SelectService
   tree!: TreeService
+  delete!: DeleteService
   code!: CodeService
   codeMirror!: CodeMirrorService
   prettier!: PrettierService
 
   constructor(store: Store<State>, setState: SetStoreFunction<State>) {
-    this.app = new AppService(this, store, setState)
-    this.config = new ConfigService(this, store, setState)
+    // collab
+    // ctrl (pm plugins)
+    // app
+    // file
+    // tree
+    // select
     this.editor = new EditorService(this, store, setState)
-    this.changeSet = new ChangeSetService(this, store, setState)
-    this.file = new FileService(this, store, setState)
-    this.collab = new CollabService(this, store, setState)
-    this.canvas = new CanvasService(this, store, setState)
-    this.tree = new TreeService(this, store, setState)
-    this.canvasCollab = new CanvasCollabService(this.collab, this.canvas, store)
-    this.media = new MediaService(this, store)
+
+    this.collab = new CollabService(store, setState)
+    this.tree = new TreeService(store, setState)
+    this.file = new FileService(this.collab, store, setState)
     this.select = new SelectService()
-    this.code = new CodeService(this, store, setState)
-    this.codeMirror = new CodeMirrorService(this, store)
     this.prettier = new PrettierService()
+    this.delete = new DeleteService(this.file, this.canvas, this.tree, store, setState)
+    this.app = new AppService(this.file, this.tree, store, setState)
+    this.config = new ConfigService(this.editor, this.code, this.collab, store, setState)
+    this.codeMirror = new CodeMirrorService(this.config, this.app, store)
+    this.code = new CodeService(this.file, this.app, this.collab, this.codeMirror, store, setState)
+    this.changeSet = new ChangeSetService(this.file, this.collab, this.editor, store, setState)
+    this.canvas = new CanvasService(this.file, this.select, this.tree, store, setState)
+    this.canvasCollab = new CanvasCollabService(this.collab, this.canvas, store)
+    this.media = new MediaService(
+      this.file,
+      this.canvas,
+      this.canvasCollab,
+      this.app,
+      this.editor,
+      store,
+    )
   }
 }
 

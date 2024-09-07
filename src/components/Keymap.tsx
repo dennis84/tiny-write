@@ -1,4 +1,5 @@
 import {onCleanup, onMount} from 'solid-js'
+import {useNavigate} from '@solidjs/router'
 import {keyName} from 'w3c-keyname'
 import {isCodeElement, isEditorElement, Mode, useState} from '@/state'
 import {isTauri, mod} from '@/env'
@@ -6,6 +7,7 @@ import * as remote from '@/remote'
 
 export const Keymap = () => {
   const [store, ctrl] = useState()
+  const navigate = useNavigate()
 
   onMount(() => {
     document.addEventListener('keydown', onKeyDown)
@@ -35,9 +37,11 @@ export const Keymap = () => {
 
   const onNew = async () => {
     if (store.mode === Mode.Editor) {
-      await ctrl.editor.newFile()
+      const file = await ctrl.editor.newFile()
+      navigate(`/editor/${file.id}`)
     } else {
-      await ctrl.canvas.newFile()
+      const el = await ctrl.canvas.newFile()
+      if (el) ctrl.canvasCollab.addElement(el)
     }
   }
 
@@ -98,7 +102,8 @@ export const Keymap = () => {
       elementIds.push(selected.id)
     }
 
-    await ctrl.canvas.removeElements(elementIds)
+    const removed = await ctrl.canvas.removeElements(elementIds)
+    ctrl.canvasCollab.removeMany(removed)
     return true
   }
 

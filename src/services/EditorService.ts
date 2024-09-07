@@ -104,61 +104,33 @@ export class EditorService {
     editorView?.focus()
   }
 
-  async newFile() {
-    const state: State = unwrap(this.store)
-    const file = FileService.createFile()
-
-    const update = await FileService.activateFile(
-      {
-        ...state,
-        args: {cwd: state.args?.cwd},
-        files: [...state.files, file],
-      },
-      file,
-    )
-
-    update.collab = CollabService.create(file.id, state.mode, false)
-    this.setState(update)
+  async newFile(params: Partial<File> = {}): Promise<File> {
+    const file = FileService.createFile(params)
+    this.setState('files', (prev) => [...prev, file])
+    return file
   }
 
-  async openFileByPath(path: string) {
-    remote.debug(`Open file by path: ${path}`)
-    let file
-    try {
-      file = await this.ctrl.file.findFileByPath(path)
-    } catch (error: any) {
-      this.ctrl.app.setError({error, fileId: file?.id})
-      return
-    }
-
-    if (file) {
-      await this.openFile(file.id)
-      this.ctrl.file.updateFile(file.id, {deleted: false})
-    } else {
-      remote.debug(`Create new file by path: ${path}`)
-      const file = FileService.createFile({path})
-      this.setState('files', (prev) => [...prev, file])
-      await this.openFile(file.id)
-    }
-  }
-
-  async openFile(id: string) {
-    remote.debug(`Open file: ${id}`)
+  async openFile(id: string, share = false) {
+    remote.debug(`Open file: (id=${id}, share=${share}, mode=editor)`)
     const state: State = unwrap(this.store)
 
     try {
-      const file = this.ctrl.file.findFileById(id)
+      let file = this.ctrl.file.findFileById(id)
       let text: FileText | undefined
+
+      if (!file) {
+        file = FileService.createFile({id})
+        state.files.push(file)
+      }
 
       if (file?.path) {
         text = (await FileService.loadMarkdownFile(file.path)).text
       }
 
-      if (!file) return
       if (state.args?.room) state.args.room = undefined
 
       const update = await FileService.activateFile(state, file)
-      update.collab = CollabService.create(file.id, update.mode, false)
+      update.collab = CollabService.create(file.id, update.mode, share)
       this.setState(update)
       this.ctrl.tree.create()
       if (text) this.updateText(text)

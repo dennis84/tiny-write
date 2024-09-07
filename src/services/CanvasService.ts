@@ -24,9 +24,10 @@ import {
 } from '@/state'
 import {DB} from '@/db'
 import * as remote from '@/remote'
-import {Ctrl} from '.'
 import {FileService} from './FileService'
 import {CollabService} from './CollabService'
+import {TreeService} from './TreeService'
+import {SelectService} from './SelectService'
 
 type UpdateElement =
   | Partial<CanvasLinkElement>
@@ -42,8 +43,28 @@ export class CanvasService {
   public saveCanvasThrottled = throttle(100, () => this.saveCanvas())
   public canvasRef: HTMLElement | undefined
 
+  static async saveCanvas(canvas: Canvas) {
+    await DB.updateCanvas(
+      unwrap({
+        ...canvas,
+        elements: canvas.elements.map((el) => ({
+          ...el,
+          editorView: undefined,
+          selected: undefined,
+          active: undefined,
+        })),
+      }),
+    )
+  }
+
+  static async fetchCanvases(): Promise<Canvas[]> {
+    return DB.getCanvases() as Promise<Canvas[]>
+  }
+
   constructor(
-    private ctrl: Ctrl,
+    private fileService: FileService,
+    private selectService: SelectService,
+    private treeService: TreeService,
     private store: Store<State>,
     private setState: SetStoreFunction<State>,
   ) {}
@@ -175,36 +196,6 @@ export class CanvasService {
     void this.saveCanvasThrottled()
   }
 
-  async deleteCanvas(id: string) {
-    const canvas = this.findCanvas(id)
-    if (!canvas) return
-
-    this.updateCanvas(canvas.id, {
-      deleted: true,
-      lastModified: new Date(),
-    })
-
-    let max = 0
-    let maxId = undefined
-
-    for (const c of this.store.canvases) {
-      if (c.deleted) continue
-      const t = c.lastModified?.getTime() ?? 0
-      if (t > max) {
-        max = t
-        maxId = c.id
-      }
-    }
-
-    const updated = this.findCanvas(id)
-    await this.saveCanvas(updated)
-    remote.info('Set canvas as deleted')
-
-    if (this.store.mode === Mode.Canvas && maxId) {
-      await this.open(maxId)
-    }
-  }
-
   select(id: string, active = false, extend = false) {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
@@ -221,8 +212,8 @@ export class CanvasService {
     this.updateCanvasElement(newEl.id, {selected: true, active})
 
     if (active && (isEditorElement(newEl) || isCodeElement(newEl))) {
-      const file = this.ctrl.file.findFileById(newEl.id)
-      this.ctrl.file.setActive(newEl.id)
+      const file = this.fileService.findFileById(newEl.id)
+      this.fileService.setActive(newEl.id)
       file?.editorView?.focus()
       file?.codeEditorView?.focus()
     }
@@ -235,10 +226,10 @@ export class CanvasService {
     const active = currentCanvas.elements.find(
       (it) => isEditorElement(it) && it.active,
     ) as CanvasEditorElement
-    const file = this.ctrl.file.findFileById(active?.id)
+    const file = this.fileService.findFileById(active?.id)
 
     if (file?.editorView) {
-      this.ctrl.select.selectBox(box, file.editorView, first, last)
+      this.selectService.selectBox(box, file.editorView, first, last)
       return
     }
 
@@ -264,7 +255,7 @@ export class CanvasService {
     if (!currentCanvas) return
     for (const el of currentCanvas.elements) {
       if ((isEditorElement(el) || isCodeElement(el)) && el.active) {
-        const file = this.ctrl.file.findFileById(el.id)
+        const file = this.fileService.findFileById(el.id)
         if (file?.editorView) {
           const tr = file.editorView.state.tr
           tr.setSelection(TextSelection.atStart(file.editorView.state.doc))
@@ -273,60 +264,42 @@ export class CanvasService {
           file.codeEditorView.dispatch({selection: {anchor: 0}})
         }
 
-        this.ctrl.file.setActive(el.id, false)
+        this.fileService.setActive(el.id, false)
       }
 
       this.updateCanvasElement(el.id, {selected: false, active: false})
     }
   }
 
-  async newCanvas() {
+  async newCanvas(): Promise<Canvas> {
     await this.removeDeadLinks()
-    this.ctrl.collab.disconnectCollab()
 
-    const state = unwrap(this.store)
     const id = uuidv4()
-    const collab = CollabService.create(id, Mode.Canvas, false)
-    const canvas = CanvasService.createCanvas({id, active: true})
+    const canvas = CanvasService.createCanvas({id})
 
-    const canvases = state.canvases.map((c) => ({...c, active: false}))
-
-    const files = state.files.map((f) => {
-      f.editorView?.destroy()
-      f.codeEditorView?.destroy()
-      return {...f, editorView: undefined, codeEditorView: undefined}
-    })
-
-    this.setState({
-      ...state,
-      collab,
-      files,
-      canvases: [...canvases, canvas],
-      mode: Mode.Canvas,
-    })
-
-    await this.saveCanvas()
+    this.setState('canvases', (prev) => [...prev, canvas])
     remote.info('New canvas created')
-    await DB.setMeta({mode: state.mode})
+
+    return canvas
   }
 
-  async removeElements(elementIds: string[]) {
+  async removeElements(elementIds: string[]): Promise<string[]> {
     const currentCanvas = this.currentCanvas
-    if (!currentCanvas) return
+    if (!currentCanvas) return []
     const elements = []
-    const toRemove = new Set(elementIds)
+    const removedIds = new Set(elementIds)
 
     outer: for (const el of currentCanvas.elements) {
       for (const elementId of elementIds) {
         if (isEditorElement(el) && el.id === elementId) {
-          const file = this.ctrl.file.findFileById(el.id)
+          const file = this.fileService.findFileById(el.id)
           file?.editorView?.destroy()
           file?.codeEditorView?.destroy()
           continue outer
         }
 
         if (isLinkElement(el) && (el.from === elementId || el.to === elementId)) {
-          toRemove.add(el.id)
+          removedIds.add(el.id)
           continue outer
         }
 
@@ -338,21 +311,27 @@ export class CanvasService {
       elements.push(el)
     }
 
-    this.ctrl.canvasCollab.removeMany([...toRemove])
     this.updateCanvas(currentCanvas.id, {elements: [...elements]})
     await this.saveCanvas()
     remote.info('Canvas saved after removing element')
+
+    return [...removedIds]
   }
 
-  async open(id: string) {
-    await this.removeDeadLinks()
-    this.ctrl.collab.disconnectCollab()
+  async open(id: string, share = false) {
+    remote.info(`Open canvas (id=${id}, share=${share})`)
 
     const prevCanvas = this.currentCanvas
-    if (prevCanvas?.id === id) return
 
-    const state = CanvasService.activateCanvas(unwrap(this.store), id)
-    const collab = CollabService.create(id, Mode.Canvas, false)
+    let state = unwrap(this.store)
+
+    if (!this.findCanvas(id)) {
+      const canvas = CanvasService.createCanvas({id})
+      state.canvases.push(canvas)
+    }
+
+    state = CanvasService.activateCanvas(state, id)
+    const collab = CollabService.create(id, Mode.Canvas, share)
 
     this.setState({...state, collab})
 
@@ -363,11 +342,13 @@ export class CanvasService {
     await this.saveCanvas()
     await DB.setMeta({mode: state.mode})
     remote.info('Saved canvas and mode after open')
-
-    this.ctrl.canvasCollab.init()
   }
 
-  async newFile(code = false, link?: CanvasLinkElement, point?: Vec) {
+  async newFile(
+    code = false,
+    link?: CanvasLinkElement,
+    point?: Vec,
+  ): Promise<CanvasElement | undefined> {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
 
@@ -375,12 +356,18 @@ export class CanvasService {
     file.parentId = currentCanvas.parentId
 
     this.setState('files', [...this.store.files, file])
-    await this.addFile(file, link, point)
-    this.ctrl.tree.create()
+    const added = await this.addFile(file, link, point)
+    this.treeService.create()
     remote.info('New file added')
+
+    return added?.[0]
   }
 
-  async addFile(file: File, link?: CanvasLinkElement, point?: Vec) {
+  async addFile(
+    file: File,
+    link?: CanvasLinkElement,
+    point?: Vec,
+  ): Promise<CanvasElement[] | undefined> {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
 
@@ -447,7 +434,7 @@ export class CanvasService {
       height,
     }
 
-    const toAdd: CanvasElement[] = [element]
+    const addedElements: CanvasElement[] = [element]
 
     this.updateCanvas(currentCanvas.id, {
       elements: [...currentCanvas.elements, element],
@@ -465,15 +452,21 @@ export class CanvasService {
       })
 
       const updatedLink = currentCanvas.elements.find((el) => el.id === link.id)
-      if (updatedLink) toAdd.push(unwrap(updatedLink))
+      if (updatedLink) addedElements.push(unwrap(updatedLink))
     }
 
-    this.ctrl.canvasCollab.addElements(toAdd)
     await this.saveCanvas()
     remote.info('File added to canvas')
+
+    return addedElements
   }
 
-  async addImage(src: string, point: Vec, imageWidth: number, imageHeight: number) {
+  async addImage(
+    src: string,
+    point: Vec,
+    imageWidth: number,
+    imageHeight: number,
+  ): Promise<CanvasImageElement | undefined> {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
 
@@ -492,7 +485,6 @@ export class CanvasService {
       height,
     }
 
-    this.ctrl.canvasCollab.addElement(element)
     this.updateCanvas(currentCanvas.id, {
       elements: [...currentCanvas.elements, element],
       lastModified: new Date(),
@@ -500,9 +492,17 @@ export class CanvasService {
 
     await this.saveCanvas()
     remote.info('Image added to canvas')
+
+    return element
   }
 
-  async addVideo(src: string, mime: string, point: Vec, imageWidth: number, imageHeight: number) {
+  async addVideo(
+    src: string,
+    mime: string,
+    point: Vec,
+    imageWidth: number,
+    imageHeight: number,
+  ): Promise<CanvasVideoElement | undefined> {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
 
@@ -522,7 +522,6 @@ export class CanvasService {
       height,
     }
 
-    this.ctrl.canvasCollab.addElement(element)
     this.updateCanvas(currentCanvas.id, {
       elements: [...currentCanvas.elements, element],
       lastModified: new Date(),
@@ -530,6 +529,8 @@ export class CanvasService {
 
     await this.saveCanvas()
     remote.info('Video added to canvas')
+
+    return element
   }
 
   drawLink(id: string, from: string, fromEdge: EdgeType, toX: number, toY: number) {
@@ -586,7 +587,7 @@ export class CanvasService {
     })
   }
 
-  async drawLinkEnd(id: string) {
+  async drawLinkEnd(id: string): Promise<CanvasLinkElement | undefined> {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
 
@@ -596,22 +597,8 @@ export class CanvasService {
     this.updateCanvasElement(element.id, {drawing: undefined})
 
     if (element.to) {
-      const data = {
-        from: element.from,
-        fromEdge: element.fromEdge,
-        id: element.id,
-        to: element.to,
-        toEdge: element.toEdge,
-        type: element.type,
-      }
-
-      if (this.ctrl.canvasCollab.hasElement(id)) {
-        this.ctrl.canvasCollab.updateElement(data)
-      } else {
-        this.ctrl.canvasCollab.addElement(data)
-      }
-
       await this.saveCanvas()
+      return unwrap(element)
     }
   }
 
@@ -623,16 +610,16 @@ export class CanvasService {
     }) as CanvasLinkElement[]
   }
 
-  async removeDeadLinks() {
+  async removeDeadLinks(): Promise<string[]> {
     const currentCanvas = this.currentCanvas
-    if (!currentCanvas) return false
+    if (!currentCanvas) return []
 
     const elements = []
-    const toRemove = []
+    const removedIds = []
 
     for (const el of currentCanvas.elements) {
       if (isLinkElement(el) && el.to === undefined) {
-        toRemove.push(el.id)
+        removedIds.push(el.id)
         continue
       }
 
@@ -640,32 +627,21 @@ export class CanvasService {
     }
 
     if (elements.length !== currentCanvas.elements.length) {
-      this.ctrl.canvasCollab.removeMany(toRemove)
       this.updateCanvas(currentCanvas.id, {elements})
       await this.saveCanvas()
       remote.info('Removed dead links')
     }
+
+    return removedIds
   }
 
   async clearCanvas() {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
 
-    this.ctrl.canvasCollab.removeAll()
     this.updateCanvas(currentCanvas.id, {elements: []})
     await this.saveCanvas()
     remote.info('All elements cleared')
-  }
-
-  fetchCanvases(): Promise<Canvas[]> {
-    return DB.getCanvases() as Promise<Canvas[]>
-  }
-
-  async deleteForever(id: string) {
-    const canvases = this.store.canvases.filter((it) => it.id !== id)
-    this.setState('canvases', canvases)
-    await DB.deleteCanvas(id)
-    remote.info('Canvas forever deleted')
   }
 
   async restore(id: string) {
@@ -768,16 +744,6 @@ export class CanvasService {
 
   async saveCanvas(canvas = this.currentCanvas) {
     if (!canvas) return
-    await DB.updateCanvas(
-      unwrap({
-        ...canvas,
-        elements: canvas.elements.map((el) => ({
-          ...el,
-          editorView: undefined,
-          selected: undefined,
-          active: undefined,
-        })),
-      }),
-    )
+    CanvasService.saveCanvas(canvas)
   }
 }

@@ -1,4 +1,5 @@
 import {createEffect, createSignal, onCleanup, Show} from 'solid-js'
+import {useSearchParams} from '@solidjs/router'
 import {useState} from '@/state'
 import * as remote from '@/remote'
 import {Label, Link, Sub, Text} from './Style'
@@ -9,17 +10,20 @@ export const SubmenuCollab = () => {
   const [store, ctrl] = useState()
   const [collabUsers, setCollabUsers] = createSignal(0)
   const [lastAction, setLastAction] = createSignal<string | undefined>()
+  const [, setSearchParams] = useSearchParams();
 
   const onCollabStart = () => {
     ctrl.collab.startCollab()
+    setSearchParams({share: 'true'})
   }
 
   const onCollabStop = () => {
     ctrl.collab.stopCollab()
+    setSearchParams({share: undefined})
   }
 
   const onCopyCollabLink = async () => {
-    await remote.copy(`${WEB_URL}/${store.mode}/${ctrl.collab.room}`)
+    await remote.copy(`${WEB_URL}/${ctrl.collab.provider?.roomname}?share=true`)
     setLastAction('copy-collab-link')
   }
 

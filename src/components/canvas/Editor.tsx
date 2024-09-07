@@ -67,7 +67,7 @@ export const Editor = ({element, index}: {element: CanvasEditorElement; index: n
 
     const provider = ctrl.collab.getProvider(file.id)
     if (!provider) {
-      ctrl.collab.init(file)
+      ctrl.collab.initFile(file)
     }
 
     if (provider && file.editorView === undefined) {
