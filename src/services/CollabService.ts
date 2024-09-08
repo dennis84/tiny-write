@@ -70,7 +70,6 @@ export class CollabService {
     return {
       id,
       started: connect,
-      rendered: false,
       ydoc,
       provider,
       providers: {},
@@ -150,10 +149,6 @@ export class CollabService {
     this.store.collab?.provider?.disconnect()
     for (const p of Object.values(this.providers)) p.disconnect()
     this.setState('collab', {started: false, error: undefined})
-  }
-
-  setRendered() {
-    this.setState('collab', 'rendered', true)
   }
 
   setConfig(conf: Partial<Config>) {

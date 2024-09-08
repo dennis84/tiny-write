@@ -36,7 +36,6 @@ export const createCollabPlugins = (
   ySyncPlugin(type, {
     mapping,
     permanentUserData: ctrl.collab?.permanentUserData,
-    onFirstRender: () => ctrl.collab.setRendered(),
   }),
   ...(ctrl.collab.isSnapshot ?
     []

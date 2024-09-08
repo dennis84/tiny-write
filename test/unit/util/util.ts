@@ -9,7 +9,6 @@ import {Collab} from '@/state'
 export const createCollabMock = (props: Partial<Collab> = {}): Collab => ({
   id: '1',
   started: false,
-  rendered: false,
   ydoc: new Y.Doc(),
   provider: mock<WebsocketProvider>(),
   providers: {},
