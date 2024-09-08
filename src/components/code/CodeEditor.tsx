@@ -32,6 +32,14 @@ export const CodeEditor = () => {
     }
   })
 
+  createEffect((prev) => {
+    if (!prev) return
+    const currentFile = ctrl.file.currentFile
+    if (!currentFile) return
+    ctrl.code.updateConfig(currentFile)
+    return store.config
+  })
+
   onCleanup(() => {
     ctrl.file.destroy(ctrl.file.currentFile?.id)
   })

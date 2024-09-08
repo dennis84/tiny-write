@@ -47,6 +47,14 @@ export const Editor = () => {
     }
   })
 
+  createEffect((prev) => {
+    if (!prev) return
+    const currentFile = ctrl.file.currentFile
+    if (!currentFile) return
+    ctrl.editor.updateConfig(currentFile)
+    return store.config
+  })
+
   onCleanup(() => {
     ctrl.file.destroy(ctrl.file.currentFile?.id)
   })

@@ -272,8 +272,6 @@ export class ConfigService {
   private saveConfigDebounced = debounce(100, (state) => this.saveConfig(state))
 
   constructor(
-    private editorService: EditorService,
-    private codeService: CodeService,
     private collabService: CollabService,
     private store: Store<State>,
     private setState: SetStoreFunction<State>,
@@ -366,7 +364,6 @@ export class ConfigService {
     const config = {...state.config, ...conf}
     this.setState('config', config)
     await this.saveConfig(unwrap(this.store))
-    this.updateEditors()
   }
 
   updateContentWidth(contentWidth: number) {
@@ -379,18 +376,10 @@ export class ConfigService {
     const config = ConfigService.getThemeConfig(this.store)
     this.setState('config', config)
     await this.saveConfig(unwrap(this.store))
-    this.updateEditors()
   }
 
   private async saveConfig(state: State) {
     await DB.setConfig(state.config)
     remote.info('Config saved')
-  }
-
-  private updateEditors() {
-    this.store.files.forEach((f) => {
-      if (f.code) this.codeService.updateConfig(f)
-      else this.editorService.updateEditorState(f)
-    })
   }
 }

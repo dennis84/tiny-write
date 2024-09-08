@@ -6,16 +6,12 @@ vi.mock('@/db', () => ({DB: mock()}))
 import {createStore} from 'solid-js/store'
 import {createState} from '@/state'
 import {ConfigService} from '@/services/ConfigService'
-import {EditorService} from '@/services/EditorService'
-import {CodeService} from '@/services/CodeService'
 import {CollabService} from '@/services/CollabService'
 
 beforeEach(() => {
   vi.restoreAllMocks()
 })
 
-const editorService = mock<EditorService>()
-const codeService = mock<CodeService>()
 const collabService = mock<CollabService>()
 
 test('getters', () => {
@@ -42,7 +38,7 @@ test('getters', () => {
     }),
   )
 
-  const service = new ConfigService(editorService, codeService, collabService, store, setState)
+  const service = new ConfigService(collabService, store, setState)
   expect(service.fontSize).toBe(12)
   expect(service.typewriterMode).toBe(true)
   expect(service.prettier).toEqual(prettier)
@@ -54,7 +50,7 @@ test('getters', () => {
 
 test('updateConfig', async () => {
   const [store, setState] = createStore(createState())
-  const service = new ConfigService(editorService, codeService, collabService, store, setState)
+  const service = new ConfigService(collabService, store, setState)
 
   await service.updateConfig({
     fontSize: 10,

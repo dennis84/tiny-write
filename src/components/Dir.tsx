@@ -31,7 +31,6 @@ export const Dir = () => {
     const onClick = async () => {
       let file = await ctrl.file.findFileByPath(props.path)
       if (!file) file = await ctrl.editor.newFile({path: props.path})
-      console.log('navigate', `/editor/${file.id}`)
       navigate(`/editor/${file.id}`)
     }
 

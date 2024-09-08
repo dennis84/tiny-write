@@ -24,6 +24,10 @@ export class EditorService {
 
   private writeFileThrottled = throttle(1000, this.writeFile.bind(this))
 
+  updateConfig(file: File) {
+    this.updateEditorState(file)
+  }
+
   updateEditorState(file: File, node?: Element) {
     let editorView = file.editorView
 

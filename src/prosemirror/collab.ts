@@ -1,8 +1,8 @@
 import * as Y from 'yjs'
+import {Awareness} from 'y-protocols/awareness'
+import {ProsemirrorMapping} from 'y-prosemirror/dist/src/lib'
 import {DOMOutputSpec} from 'prosemirror-model'
 import {ySyncPlugin, yCursorPlugin} from 'y-prosemirror'
-import {ProsemirrorMapping} from 'y-prosemirror/dist/src/lib'
-import {Ctrl} from '@/services'
 
 const cursorBuilder = (user: any): HTMLElement => {
   const cursor = document.createElement('span')
@@ -29,15 +29,15 @@ export const collabSchemaSpec = {
 }
 
 export const createCollabPlugins = (
-  ctrl: Ctrl,
   type: Y.XmlFragment,
+  permanentUserData: Y.PermanentUserData,
+  awareness: Awareness,
   mapping: ProsemirrorMapping,
+  isSnapshot: boolean,
 ) => [
   ySyncPlugin(type, {
     mapping,
-    permanentUserData: ctrl.collab?.permanentUserData,
+    permanentUserData,
   }),
-  ...(ctrl.collab.isSnapshot ?
-    []
-  : [yCursorPlugin(ctrl.collab.provider!.awareness, {cursorBuilder})]),
+  ...(isSnapshot ? [] : [yCursorPlugin(awareness, {cursorBuilder})]),
 ]

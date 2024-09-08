@@ -51,7 +51,6 @@ export class AppService {
         await remote.setAlwaysOnTop(true)
       }
 
-      console.log('setState')
       this.setState(newState)
 
       this.treeService.create()

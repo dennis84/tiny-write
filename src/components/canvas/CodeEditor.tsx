@@ -68,6 +68,14 @@ export const CodeEditor = ({element, index}: {element: CanvasCodeElement; index:
     }
   })
 
+  createEffect((prev) => {
+    if (!prev) return
+    let file = ctrl.file.findFileById(element.id)
+    if (!file) return
+    ctrl.code.updateConfig(file)
+    return store.config
+  })
+
   onCleanup(() => {
     ctrl.file.destroy(element.id)
   })
