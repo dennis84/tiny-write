@@ -14,6 +14,12 @@ interface DropResult {
 }
 
 export class MediaService {
+  static async getImagePath(path: string, basePath?: string) {
+    const s = decodeURIComponent(path)
+    const absolutePath = await remote.resolvePath(s, basePath)
+    return convertFileSrc(absolutePath)
+  }
+
   constructor(
     private fileService: FileService,
     private canvasService: CanvasService,
@@ -59,7 +65,7 @@ export class MediaService {
         if (!currentFile?.editorView) return
         this.insert(currentFile.editorView, relativePath, x, y, mime)
       } else {
-        const src = await this.getImagePath(relativePath, basePath)
+        const src = await MediaService.getImagePath(relativePath, basePath)
         const point = this.canvasService.getPosition([x, y])
         if (!point) return
 
@@ -92,12 +98,6 @@ export class MediaService {
     } else {
       remote.info(`Ignore dropped file (mime=${mime})`)
     }
-  }
-
-  async getImagePath(path: string, basePath?: string) {
-    const s = decodeURIComponent(path)
-    const absolutePath = await remote.resolvePath(s, basePath)
-    return convertFileSrc(absolutePath)
   }
 
   private insert(view: EditorView, data: string, left: number, top: number, mime?: string) {

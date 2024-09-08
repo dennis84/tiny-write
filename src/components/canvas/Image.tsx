@@ -6,6 +6,7 @@ import {Bounds} from './Bounds'
 import {LinkHandles} from './LinkHandles'
 import {IndexType, ZIndex} from '@/utils/ZIndex'
 import {isTauri} from '@/env'
+import {MediaService} from '@/services/MediaService'
 
 const CanvasImage = styled('img')(
   (props: any) => `
@@ -34,7 +35,7 @@ export const Image = ({element, index}: {element: CanvasImageElement; index: num
   onMount(async () => {
     if (isTauri()) {
       const basePath = await ctrl.app.getBasePath()
-      const p = await ctrl.media.getImagePath(element.src, basePath)
+      const p = await MediaService.getImagePath(element.src, basePath)
       imageRef.setAttribute('src', p)
     } else {
       imageRef.setAttribute('src', element.src)

@@ -5,6 +5,7 @@ import {Selection} from '@/services/CanvasService'
 import {Bounds} from './Bounds'
 import {LinkHandles} from './LinkHandles'
 import {IndexType, ZIndex} from '@/utils/ZIndex'
+import {MediaService} from '@/services/MediaService'
 
 const CanvasVideo = styled('video')(
   (props: any) => `
@@ -32,7 +33,7 @@ export const Video = ({element, index}: {element: CanvasVideoElement; index: num
 
   onMount(async () => {
     const basePath = await ctrl.app.getBasePath()
-    const p = await ctrl.media.getImagePath(element.src, basePath)
+    const p = await MediaService.getImagePath(element.src, basePath)
     videoRef.setAttribute('src', p)
   })
 

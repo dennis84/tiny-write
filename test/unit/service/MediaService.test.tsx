@@ -7,13 +7,8 @@ import {MediaService} from '@/services/MediaService'
 import {createCtrl} from '@/services'
 import {CanvasEditorElement, CanvasImageElement, ElementType, Mode, createState} from '@/state'
 import {Main} from '@/components/Main'
-import {FileService} from '@/services/FileService'
-import {CanvasService} from '@/services/CanvasService'
-import {AppService} from '@/services/AppService'
-import {EditorService} from '@/services/EditorService'
 import {createIpcMock} from '../util/util'
 import {createYUpdate} from '../util/prosemirror-util'
-import {CanvasCollabService} from '@/services/CanvasCollabService'
 
 document.elementFromPoint = () => null
 
@@ -38,27 +33,12 @@ vi.stubGlobal('__TAURI__', {})
 const lastModified = new Date()
 
 test('getImagePath', async () => {
-  const fileService = mock<FileService>()
-  const canvasService = mock<CanvasService>()
-  const canvasCollabService = mock<CanvasCollabService>()
-  const appService = mock<AppService>()
-  const editorService = mock<EditorService>()
-
-  const state = createState()
   const input = '/path/to/file.png'
-  const service = new MediaService(
-    fileService,
-    canvasService,
-    canvasCollabService,
-    appService,
-    editorService,
-    state,
-  )
 
-  const path = await service.getImagePath(input)
+  const path = await MediaService.getImagePath(input)
   expect(path).toBe('asset://localhost/' + encodeURIComponent(input))
 
-  const p2 = await service.getImagePath(input, '/base/path')
+  const p2 = await MediaService.getImagePath(input, '/base/path')
   expect(p2).toBe('asset://localhost/' + encodeURIComponent('/base/path' + input))
 })
 

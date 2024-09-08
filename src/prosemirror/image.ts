@@ -6,6 +6,7 @@ import {Ctrl} from '@/services'
 import {Mode} from '@/state'
 import * as remote from '@/remote'
 import {ViewConfig} from '@/services/ProseMirrorService'
+import {MediaService} from '@/services/MediaService'
 
 export enum Align {
   FloatLeft = 'float-left',
@@ -120,7 +121,7 @@ class ImageView {
     ) {
       void ctrl.app
         .getBasePath()
-        .then((basePath) => ctrl.media.getImagePath(node.attrs.src, basePath))
+        .then((basePath) => MediaService.getImagePath(node.attrs.src, basePath))
         .then((src) => {
           this.container.classList.remove('error')
           source.setAttribute('src', src)
