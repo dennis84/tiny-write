@@ -6,6 +6,8 @@ import {inputRules, textblockTypeInputRule} from 'prosemirror-inputrules'
 import {Ctrl} from '@/services'
 import {CodeBlockView} from './CodeBlockView'
 import {ViewConfig} from '@/services/ProseMirrorService'
+import {ConfigService} from '@/services/ConfigService'
+import {CodeMirrorService} from '@/services/CodeMirrorService'
 
 export const codeBlockSchemaSpec = {
   nodes: {
@@ -76,9 +78,12 @@ export const codeBlockKeymap = keymap({
 export const createCodeBlockPlugin = (schema: Schema) =>
   inputRules({rules: [codeBlockRule(schema.nodes.code_block)]})
 
-export const createCodeBlockViews = (ctrl: Ctrl): ViewConfig => ({
+export const createCodeBlockViews = (
+  configService: ConfigService,
+  codeMirrorService: CodeMirrorService,
+): ViewConfig => ({
   nodeViews: {
     code_block: (node, view, getPos, _decos, innerDecos) =>
-      new CodeBlockView(node, view, getPos, innerDecos, ctrl),
+      new CodeBlockView(node, view, getPos, innerDecos, configService, codeMirrorService),
   },
 })

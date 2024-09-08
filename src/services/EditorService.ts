@@ -10,14 +10,21 @@ import {Box} from '@tldraw/editor'
 import * as remote from '@/remote'
 import {State, FileText, File} from '@/state'
 import {serialize} from '@/markdown'
-import {Ctrl} from '.'
 import {FileService} from './FileService'
 import {CollabService} from './CollabService'
 import {ProseMirrorService, schema} from './ProseMirrorService'
+import {AppService} from './AppService'
+import {TreeService} from './TreeService'
+import {SelectService} from './SelectService'
 
 export class EditorService {
   constructor(
-    private ctrl: Ctrl,
+    private fileService: FileService,
+    private collabService: CollabService,
+    private proseMirrorService: ProseMirrorService,
+    private appService: AppService,
+    private treeService: TreeService,
+    private selectService: SelectService,
     private store: Store<State>,
     private setState: SetStoreFunction<State>,
   ) {}
@@ -35,16 +42,15 @@ export class EditorService {
       return
     }
 
-    const subdoc = this.store.collab?.snapshot ?? this.ctrl.collab.getSubdoc(file.id)
+    const subdoc = this.store.collab?.snapshot ?? this.collabService.getSubdoc(file.id)
     const type = subdoc.getXmlFragment(file.id)
 
-    const {plugins, doc} = ProseMirrorService.createPlugins({
-      ctrl: this.ctrl,
+    const {plugins, doc} = this.proseMirrorService.createPlugins({
       type,
       dropCursor: true,
     })
 
-    const {nodeViews} = ProseMirrorService.createNodeViews(this.ctrl)
+    const {nodeViews} = this.proseMirrorService.createNodeViews()
     const editorState = EditorState.create({doc, schema, plugins})
 
     if (!editorView) {
@@ -58,7 +64,7 @@ export class EditorService {
           editorView!.updateState(newState)
         } catch (error: any) {
           remote.error('Sync error occurred', error)
-          this.ctrl.app.setError({id: 'editor_sync', error})
+          this.appService.setError({id: 'editor_sync', error})
           return
         }
 
@@ -67,11 +73,11 @@ export class EditorService {
 
         if (this.store.isSnapshot) return
 
-        this.ctrl.file.updateFile(file.id, {
+        this.fileService.updateFile(file.id, {
           lastModified: new Date(),
         })
 
-        const updatedFile = this.ctrl.file.findFileById(file.id)
+        const updatedFile = this.fileService.findFileById(file.id)
         if (!updatedFile) return
 
         await FileService.saveFile(file)
@@ -84,7 +90,7 @@ export class EditorService {
         state: editorState,
         nodeViews,
         dispatchTransaction,
-        editable: () => !this.ctrl.collab.isSnapshot,
+        editable: () => !this.collabService.isSnapshot,
       })
 
       const fileIndex = this.store.files.findIndex((f) => f.id === file.id)
@@ -99,7 +105,7 @@ export class EditorService {
   }
 
   async clear() {
-    const currentFile = this.ctrl.file.currentFile
+    const currentFile = this.fileService.currentFile
     const editorView = currentFile?.editorView
     if (!editorView) return
 
@@ -119,7 +125,7 @@ export class EditorService {
     const state: State = unwrap(this.store)
 
     try {
-      let file = this.ctrl.file.findFileById(id)
+      let file = this.fileService.findFileById(id)
       let text: FileText | undefined
 
       if (!file) {
@@ -136,27 +142,27 @@ export class EditorService {
       const update = await FileService.activateFile(state, file)
       update.collab = CollabService.create(file.id, update.mode, share)
       this.setState(update)
-      this.ctrl.tree.create()
+      this.treeService.create()
       if (text) this.updateText(text)
     } catch (error: any) {
-      this.ctrl.app.setError({error, fileId: id})
+      this.appService.setError({error, fileId: id})
     }
   }
 
   async updatePath(path: string) {
-    const currentFile = this.ctrl.file.currentFile
+    const currentFile = this.fileService.currentFile
     if (!currentFile?.id) return
     const lastModified = new Date()
-    this.ctrl.file.updateFile(currentFile.id, {lastModified, path})
+    this.fileService.updateFile(currentFile.id, {lastModified, path})
 
-    const updatedFile = this.ctrl.file.currentFile
+    const updatedFile = this.fileService.currentFile
     if (!updatedFile) return
     await FileService.saveFile(updatedFile)
     await this.writeFile(updatedFile)
   }
 
   updateText(text?: FileText) {
-    const currentFile = this.ctrl.file.currentFile
+    const currentFile = this.fileService.currentFile
     if (!text || !currentFile) return
     if (!this.store.collab?.ydoc) {
       return
@@ -164,7 +170,7 @@ export class EditorService {
 
     let ynode: Node
     try {
-      const subdoc = this.ctrl.collab.getSubdoc(currentFile.id)
+      const subdoc = this.collabService.getSubdoc(currentFile.id)
       const type = subdoc.getXmlFragment(currentFile.id)
       const json = yXmlFragmentToProseMirrorRootNode(type, schema)
       ynode = Node.fromJSON(schema, json)
@@ -176,7 +182,7 @@ export class EditorService {
     if (!node.eq(ynode)) {
       const ydoc = prosemirrorJSONToYDoc(schema, text.doc, currentFile.id)
       const update = Y.encodeStateAsUpdate(ydoc)
-      const subdoc = this.ctrl.collab.getSubdoc(currentFile.id)
+      const subdoc = this.collabService.getSubdoc(currentFile.id)
       const type = subdoc.getXmlFragment(currentFile.id)
       type.delete(0, type.length)
       Y.applyUpdate(subdoc, update)
@@ -184,17 +190,17 @@ export class EditorService {
   }
 
   selectBox(box: Box, first: boolean, last: boolean) {
-    const currentFile = this.ctrl.file.currentFile
+    const currentFile = this.fileService.currentFile
     const editorView = currentFile?.editorView
     if (!editorView) return
-    this.ctrl.select.selectBox(box, editorView, first, last)
+    this.selectService.selectBox(box, editorView, first, last)
   }
 
   deselect() {
-    const currentFile = this.ctrl.file.currentFile
+    const currentFile = this.fileService.currentFile
     const editorView = currentFile?.editorView
     if (!editorView) return
-    this.ctrl.select.deselect(editorView)
+    this.selectService.deselect(editorView)
   }
 
   async writeFile(file: File) {

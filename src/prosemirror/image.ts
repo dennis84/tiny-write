@@ -2,11 +2,12 @@ import {DOMOutputSpec, Node} from 'prosemirror-model'
 import {EditorView} from 'prosemirror-view'
 import {DragGesture} from '@use-gesture/vanilla'
 import {isMac, isTauri} from '@/env'
-import {Ctrl} from '@/services'
 import {Mode} from '@/state'
 import * as remote from '@/remote'
 import {ViewConfig} from '@/services/ProseMirrorService'
 import {MediaService} from '@/services/MediaService'
+import {AppService} from '@/services/AppService'
+import {CanvasService} from '@/services/CanvasService'
 
 export enum Align {
   FloatLeft = 'float-left',
@@ -84,7 +85,8 @@ class ImageView {
     node: Node,
     private view: EditorView,
     private getPos: () => number | undefined,
-    private ctrl: Ctrl,
+    private appService: AppService,
+    private canvasService: CanvasService,
   ) {
     this.container = document.createElement('span')
     this.width = node.attrs.width ?? 0
@@ -119,7 +121,7 @@ class ImageView {
       !node.attrs.src.startsWith('data:') &&
       !isUrl(node.attrs.src)
     ) {
-      void ctrl.app
+      void appService
         .getBasePath()
         .then((basePath) => MediaService.getImagePath(node.attrs.src, basePath))
         .then((src) => {
@@ -139,8 +141,8 @@ class ImageView {
         event.preventDefault()
         if (first) {
           let w = this.container.getBoundingClientRect().width
-          if (ctrl.app.mode === Mode.Canvas) {
-            const zoom = ctrl.canvas.currentCanvas?.camera.zoom ?? 1
+          if (appService.mode === Mode.Canvas) {
+            const zoom = canvasService.currentCanvas?.camera.zoom ?? 1
             w /= zoom
           }
 
@@ -193,13 +195,16 @@ class ImageView {
   }
 }
 
-export const createImageViews = (ctrl: Ctrl): ViewConfig => ({
+export const createImageViews = (
+  appService: AppService,
+  canvasService: CanvasService,
+): ViewConfig => ({
   nodeViews: {
     image: (node, view, getPos) => {
-      return new ImageView(node, view, getPos, ctrl)
+      return new ImageView(node, view, getPos, appService, canvasService)
     },
     video: (node, view, getPos) => {
-      return new ImageView(node, view, getPos, ctrl)
+      return new ImageView(node, view, getPos, appService, canvasService)
     },
   },
 })

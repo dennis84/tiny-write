@@ -43,9 +43,13 @@ import {
   createWordCompletionPlugins,
   wordCompletionKeymap,
 } from '@/prosemirror/autocomplete/word-completion'
-import {Ctrl} from '@/services'
 import {isTauri} from '@/env'
 import {createMarkdownParser} from '@/markdown'
+import {ConfigService} from './ConfigService'
+import {CollabService} from './CollabService'
+import { AppService } from './AppService'
+import { CodeMirrorService } from './CodeMirrorService'
+import { CanvasService } from './CanvasService'
 
 export interface ViewConfig {
   nodeViews?: NodeViewConfig
@@ -54,7 +58,6 @@ export interface ViewConfig {
 export type NodeViewConfig = Record<string, NodeViewConstructor>
 
 interface CreatePlugins {
-  ctrl: Ctrl
   type: Y.XmlFragment
   dropCursor?: boolean
 }
@@ -92,6 +95,14 @@ export const schema = new Schema({
 })
 
 export class ProseMirrorService {
+  constructor(
+    private configService: ConfigService,
+    private collabService: CollabService,
+    private appService: AppService,
+    private codeMirrorService: CodeMirrorService,
+    private canvasService: CanvasService,
+  ) {}
+
   static isEmpty(state?: EditorState) {
     return (
       !state ||
@@ -103,7 +114,21 @@ export class ProseMirrorService {
     )
   }
 
-  static createPlugins(props: CreatePlugins): {plugins: Plugin[]; doc: Node | undefined} {
+  static createEmptyText() {
+    return {
+      doc: {
+        type: 'doc',
+        content: [{type: 'paragraph'}],
+      },
+      selection: {
+        type: 'text',
+        anchor: 1,
+        head: 1,
+      },
+    }
+  }
+
+  createPlugins(props: CreatePlugins): {plugins: Plugin[]; doc: Node | undefined} {
     const plugins = [
       // keymap
       wordCompletionKeymap,
@@ -117,7 +142,7 @@ export class ProseMirrorService {
       fileListingKeymap,
       // plugins
       placeholder('Start typing ...'),
-      scrollIntoView(props.ctrl),
+      scrollIntoView(this.configService),
       createMarkdownPlugins(schema),
       createTaskListPlugin(schema),
       createCodeBlockPlugin(schema),
@@ -135,36 +160,34 @@ export class ProseMirrorService {
       doc = schema.topNodeType.create({}, schema.nodes.paragraph.create())
     else doc = result.doc
 
-    if (props.ctrl.collab) {
-      plugins.push(
-        ...createCollabPlugins(
-          props.type,
-          props.ctrl.collab.permanentUserData!,
-          props.ctrl.collab.provider!.awareness,
-          result.mapping,
-          props.ctrl.collab.isSnapshot
-        ),
-      )
-    }
+    plugins.push(
+      ...createCollabPlugins(
+        props.type,
+        this.collabService.permanentUserData!,
+        this.collabService.provider!.awareness,
+        result.mapping,
+        this.collabService.isSnapshot,
+      ),
+    )
 
     if (props.dropCursor) {
       plugins.push(dropCursor({class: 'drop-cursor'}))
     }
 
-    if (isTauri()) plugins.push(createFileListingPlugin(props.ctrl))
+    if (isTauri()) plugins.push(createFileListingPlugin(this.appService))
     plugins.push(...createWordCompletionPlugins)
 
     return {plugins, doc}
   }
 
-  static createNodeViews(ctrl: Ctrl) {
+  createNodeViews() {
     let nodeViews = {}
 
     const views = [
-      createCodeBlockViews(ctrl),
+      createCodeBlockViews(this.configService, this.codeMirrorService),
       taskListViews,
       containerViews,
-      createImageViews(ctrl),
+      createImageViews(this.appService, this.canvasService),
     ]
 
     for (const v of views) {
@@ -172,19 +195,5 @@ export class ProseMirrorService {
     }
 
     return {nodeViews}
-  }
-
-  static createEmptyText() {
-    return {
-      doc: {
-        type: 'doc',
-        content: [{type: 'paragraph'}],
-      },
-      selection: {
-        type: 'text',
-        anchor: 1,
-        head: 1,
-      },
-    }
   }
 }

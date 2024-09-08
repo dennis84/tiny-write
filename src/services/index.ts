@@ -16,6 +16,7 @@ import {CodeService} from './CodeService'
 import {CodeMirrorService} from './CodeMirrorService'
 import {PrettierService} from './PrettierService'
 import {DeleteService} from './DeleteService'
+import {ProseMirrorService} from './ProseMirrorService'
 
 export class Ctrl {
   app!: AppService
@@ -31,18 +32,11 @@ export class Ctrl {
   tree!: TreeService
   delete!: DeleteService
   code!: CodeService
+  proseMirror!: ProseMirrorService
   codeMirror!: CodeMirrorService
   prettier!: PrettierService
 
   constructor(store: Store<State>, setState: SetStoreFunction<State>) {
-    // collab
-    // ctrl (pm plugins)
-    // app
-    // file
-    // tree
-    // select
-    this.editor = new EditorService(this, store, setState)
-
     this.collab = new CollabService(store, setState)
     this.config = new ConfigService(this.collab, store, setState)
     this.tree = new TreeService(store, setState)
@@ -51,10 +45,27 @@ export class Ctrl {
     this.prettier = new PrettierService()
     this.delete = new DeleteService(this.file, this.canvas, this.tree, store, setState)
     this.app = new AppService(this.file, this.tree, store, setState)
+    this.canvas = new CanvasService(this.file, this.select, this.tree, store, setState)
     this.codeMirror = new CodeMirrorService(this.config, this.app, store)
+    this.proseMirror = new ProseMirrorService(
+      this.config,
+      this.collab,
+      this.app,
+      this.codeMirror,
+      this.canvas,
+    )
+    this.editor = new EditorService(
+      this.file,
+      this.collab,
+      this.proseMirror,
+      this.app,
+      this.tree,
+      this.select,
+      store,
+      setState,
+    )
     this.code = new CodeService(this.file, this.app, this.collab, this.codeMirror, store, setState)
     this.changeSet = new ChangeSetService(this.file, this.collab, this.editor, store, setState)
-    this.canvas = new CanvasService(this.file, this.select, this.tree, store, setState)
     this.canvasCollab = new CanvasCollabService(this.collab, this.canvas, store)
     this.media = new MediaService(
       this.file,

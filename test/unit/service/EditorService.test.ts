@@ -1,13 +1,18 @@
 import {vi, expect, test, beforeEach} from 'vitest'
-import {mock, mockDeep} from 'vitest-mock-extended'
+import {mock} from 'vitest-mock-extended'
 import {Box} from '@tldraw/editor'
 import {DB} from '@/db'
-import {Ctrl} from '@/services'
 import {createState} from '@/state'
 import {createCollabMock} from '../util/util'
 import {createEditorView, createYUpdate} from '../util/prosemirror-util'
 import {EditorService} from '@/services/EditorService'
 import {createStore} from 'solid-js/store'
+import {FileService} from '@/services/FileService'
+import {CollabService} from '@/services/CollabService'
+import {ProseMirrorService} from '@/services/ProseMirrorService'
+import {AppService} from '@/services/AppService'
+import {SelectService} from '@/services/SelectService'
+import {TreeService} from '@/services/TreeService'
 
 vi.stubGlobal('location', {
   pathname: '',
@@ -26,14 +31,29 @@ vi.mock('@/db', () => ({DB: mock<DB>()}))
 
 const lastModified = new Date()
 
+const collabService = mock<CollabService>()
+const proseMirrorService = mock<ProseMirrorService>()
+const appService = mock<AppService>()
+const treeService = mock<TreeService>()
+const selectService = mock<SelectService>()
+
 beforeEach(() => {
   vi.restoreAllMocks()
 })
 
 test('newFile', async () => {
-  const ctrl = mockDeep<Ctrl>()
   const [store, setState] = createStore(createState({}))
-  const service = new EditorService(ctrl, store, setState)
+  const fileService = mock<FileService>()
+  const service = new EditorService(
+    fileService,
+    collabService,
+    proseMirrorService,
+    appService,
+    treeService,
+    selectService,
+    store,
+    setState,
+  )
 
   const file = await service.newFile()
 
@@ -43,7 +63,6 @@ test('newFile', async () => {
 })
 
 test('openFile - stop collab', async () => {
-  const ctrl = mockDeep<Ctrl>()
   const initial = createState({
     files: [
       {id: '1', ydoc: createYUpdate('1', ['Text']), lastModified, versions: [], active: true},
@@ -53,10 +72,20 @@ test('openFile - stop collab', async () => {
   })
 
   const [store, setState] = createStore(initial)
+  const fileService = mock<FileService>()
 
-  const service = new EditorService(ctrl, store, setState)
+  const service = new EditorService(
+    fileService,
+    collabService,
+    proseMirrorService,
+    appService,
+    treeService,
+    selectService,
+    store,
+    setState,
+  )
 
-  ctrl.file.findFileById.mockImplementation(() => initial.files[1])
+  fileService.findFileById.mockImplementation(() => initial.files[1])
 
   await service.openFile('2')
   expect(store.files.length).toBe(2)
@@ -65,7 +94,6 @@ test('openFile - stop collab', async () => {
 })
 
 test('openFile - existing', async () => {
-  const ctrl = mockDeep<Ctrl>()
   const initial = createState({
     files: [
       {id: '1', ydoc: createYUpdate('1', ['Text']), lastModified, versions: [], active: true},
@@ -75,10 +103,20 @@ test('openFile - existing', async () => {
   })
 
   const [store, setState] = createStore(initial)
+  const fileService = mock<FileService>()
 
-  const service = new EditorService(ctrl, store, setState)
+  const service = new EditorService(
+    fileService,
+    collabService,
+    proseMirrorService,
+    appService,
+    treeService,
+    selectService,
+    store,
+    setState,
+  )
 
-  ctrl.file.findFileById.mockImplementation(() => initial.files[1])
+  fileService.findFileById.mockImplementation(() => initial.files[1])
 
   await service.openFile('2')
   expect(store.files.length).toBe(2)
@@ -90,7 +128,6 @@ test('openFile - existing', async () => {
 })
 
 test('openFile - not found', async () => {
-  const ctrl = mockDeep<Ctrl>()
   const initial = createState({
     files: [
       {id: '1', ydoc: createYUpdate('1', ['Text']), lastModified, versions: [], active: true},
@@ -100,10 +137,20 @@ test('openFile - not found', async () => {
   })
 
   const [store, setState] = createStore(initial)
+  const fileService = mock<FileService>()
 
-  const service = new EditorService(ctrl, store, setState)
+  const service = new EditorService(
+    fileService,
+    collabService,
+    proseMirrorService,
+    appService,
+    treeService,
+    selectService,
+    store,
+    setState,
+  )
 
-  ctrl.file.findFileById.mockImplementation(() => undefined)
+  fileService.findFileById.mockImplementation(() => undefined)
 
   await service.openFile('123')
   expect(store.files.length).toBe(3)
@@ -114,7 +161,6 @@ test('openFile - not found', async () => {
 })
 
 test('openFile - share', async () => {
-  const ctrl = mockDeep<Ctrl>()
   const file = {
     id: 'room-123',
     ydoc: createYUpdate('room-123', ['Test']),
@@ -128,10 +174,20 @@ test('openFile - share', async () => {
   })
 
   const [store, setState] = createStore(initial)
+  const fileService = mock<FileService>()
 
-  const service = new EditorService(ctrl, store, setState)
+  const service = new EditorService(
+    fileService,
+    collabService,
+    proseMirrorService,
+    appService,
+    treeService,
+    selectService,
+    store,
+    setState,
+  )
 
-  ctrl.file.findFileById.mockImplementation(() => file)
+  fileService.findFileById.mockImplementation(() => file)
 
   await service.openFile('room-123', true)
   expect(store.files.length).toBe(1)
@@ -142,8 +198,8 @@ test('openFile - share', async () => {
 })
 
 test('clear - with text', async () => {
-  const ctrl = mockDeep<Ctrl>()
   const editorView = createEditorView(['Test'])
+  const fileService = mock<FileService>()
 
   const file = {
     id: '1',
@@ -153,11 +209,20 @@ test('clear - with text', async () => {
     editorView,
   }
 
-  Object.defineProperty(ctrl.file, 'currentFile', {get: vi.fn().mockReturnValue(file)})
+  Object.defineProperty(fileService, 'currentFile', {get: vi.fn().mockReturnValue(file)})
 
   const initial = createState()
   const [store, setState] = createStore(initial)
-  const service = new EditorService(ctrl, store, setState)
+  const service = new EditorService(
+    fileService,
+    collabService,
+    proseMirrorService,
+    appService,
+    treeService,
+    selectService,
+    store,
+    setState,
+  )
 
   expect(editorView.state.doc.textContent).toBe('Test')
 
@@ -167,8 +232,8 @@ test('clear - with text', async () => {
 })
 
 test('selectBox', async () => {
-  const ctrl = mockDeep<Ctrl>()
   const editorView = createEditorView(['Test'])
+  const fileService = mock<FileService>()
 
   const file = {
     id: '1',
@@ -178,14 +243,23 @@ test('selectBox', async () => {
     editorView,
   }
 
-  Object.defineProperty(ctrl.file, 'currentFile', {get: vi.fn().mockReturnValue(file)})
+  Object.defineProperty(fileService, 'currentFile', {get: vi.fn().mockReturnValue(file)})
 
   const initial = createState()
   const [store, setState] = createStore(initial)
-  const service = new EditorService(ctrl, store, setState)
+  const service = new EditorService(
+    fileService,
+    collabService,
+    proseMirrorService,
+    appService,
+    treeService,
+    selectService,
+    store,
+    setState,
+  )
 
   const box = new Box(0, 0, 100, 100)
   service.selectBox(box, true, false)
 
-  expect(ctrl.select.selectBox).toBeCalledWith(box, editorView, true, false)
+  expect(selectService.selectBox).toBeCalledWith(box, editorView, true, false)
 })

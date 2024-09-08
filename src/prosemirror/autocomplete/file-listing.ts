@@ -1,14 +1,14 @@
 import {PluginKey} from 'prosemirror-state'
 import {listContents} from '@/remote'
-import {Ctrl} from '@/services'
+import {AppService} from '@/services/AppService'
 import {completionKeymap, completionPlugin} from './autocomplete'
 
 export const fileListingPluginKey = new PluginKey('file-listing')
 
 export const fileListingKeymap = completionKeymap(fileListingPluginKey)
 
-export const createFileListingPlugin = (ctrl: Ctrl) =>
+export const createFileListingPlugin = (appService: AppService) =>
   completionPlugin(fileListingPluginKey, /(\.\.?|~)\/[^\s\])]*/g, async (text) => {
-    const basePath = await ctrl.app.getBasePath()
+    const basePath = await appService.getBasePath()
     return listContents(text, basePath)
   })

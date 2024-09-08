@@ -45,8 +45,8 @@ export const createMermaidPlugin = (codeBlock: CodeBlockView) =>
         this.output.style.display = 'flex'
         mermaid.initialize({
           startOnLoad: false,
-          theme: codeBlock.ctrl.config.codeTheme.dark ? 'dark' : 'default',
-          fontFamily: `${codeBlock.ctrl.config.fontFamily}, monospace`,
+          theme: codeBlock.configService.codeTheme.dark ? 'dark' : 'default',
+          fontFamily: `${codeBlock.configService.fontFamily}, monospace`,
         })
 
         try {

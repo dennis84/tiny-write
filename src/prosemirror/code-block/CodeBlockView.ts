@@ -9,7 +9,8 @@ import {exitCode} from 'prosemirror-commands'
 import {Compartment} from '@codemirror/state'
 import {EditorView, ViewUpdate, keymap} from '@codemirror/view'
 import {autocompletion} from '@codemirror/autocomplete'
-import {Ctrl} from '@/services'
+import {ConfigService} from '@/services/ConfigService'
+import {CodeMirrorService} from '@/services/CodeMirrorService'
 import {highlight} from '@/codemirror/highlight'
 import {findWords} from '@/codemirror/completion'
 import {mermaidKeywords} from '@/codemirror/mermaid'
@@ -30,7 +31,8 @@ export class CodeBlockView {
     private view: ProsemirrorEditorView,
     readonly getPos: () => number | undefined,
     private innerDecos: DecorationSource,
-    readonly ctrl: Ctrl,
+    readonly configService: ConfigService,
+    private codeMirrorService: CodeMirrorService,
   ) {
     this.dom = document.createElement('div')
     this.dom.setAttribute('contenteditable', 'false')
@@ -39,7 +41,7 @@ export class CodeBlockView {
     this.dom.addEventListener('cm:user_event', (event: any) => {
       const action = event.detail.userEvent
       if (action === 'prettify') {
-        void format(this.editorView, this.lang, this.ctrl.config.prettier)
+        void format(this.editorView, this.lang, this.configService.prettier)
       } else if (action === 'fold_all') {
         foldAll(this.editorView)
       }
@@ -152,7 +154,7 @@ export class CodeBlockView {
       },
     ])
 
-    const editor = ctrl.codeMirror.createEditor({
+    const editor = this.codeMirrorService.createEditor({
       lang: this.lang,
       doc: this.node.textContent,
       extensions: [
@@ -223,7 +225,7 @@ export class CodeBlockView {
       this.editorView.hasFocus &&
       sel.empty &&
       (update.docChanged || update.selectionSet) &&
-      this.ctrl.config.typewriterMode
+      this.configService.typewriterMode
     ) {
       const lineBlock = this.editorView.lineBlockAt(sel.from)
       let {node} = this.editorView.domAtPos(lineBlock.from)
