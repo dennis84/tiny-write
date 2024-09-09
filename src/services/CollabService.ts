@@ -43,7 +43,10 @@ export class CollabService {
     const ydoc = new Y.Doc({gc: false, guid: room})
     const permanentUserData = new Y.PermanentUserData(ydoc)
     const WebSocketPolyfill = CollabService.createWS()
-    const provider = new WebsocketProvider(COLLAB_URL, room, ydoc, {connect: false, WebSocketPolyfill})
+    const provider = new WebsocketProvider(COLLAB_URL, room, ydoc, {
+      connect: false,
+      WebSocketPolyfill,
+    })
 
     const xs = Object.values(ConfigService.themes)
     const index = Math.floor(Math.random() * xs.length)

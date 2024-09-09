@@ -21,7 +21,7 @@ const createCanvas = (props: Partial<Canvas> = {}): Canvas => ({
 })
 
 test('share - new', async () => {
-  vi.stubGlobal('location', ({pathname: '/canvas/1', search: '?share=true&'}))
+  vi.stubGlobal('location', {pathname: '/canvas/1', search: '?share=true&'})
 
   const initial = createState()
   const {store} = createCtrl(initial)
@@ -37,7 +37,7 @@ test('share - new', async () => {
 })
 
 test('share - existing canvas', async () => {
-  vi.stubGlobal('location', ({pathname: '/canvas/1', search: '?share=true&'}))
+  vi.stubGlobal('location', {pathname: '/canvas/1', search: '?share=true&'})
 
   const canvas = createCanvas({id: '1'})
   const initial = createState({

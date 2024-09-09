@@ -17,7 +17,8 @@ export const Appearance = (props: Props) => {
 
   const onChangeFont = (font: string) => () => configService.updateConfig({font})
 
-  const onChangeFontSize = (e: any) => configService.updateConfig({fontSize: Number(e.target.value)})
+  const onChangeFontSize = (e: any) =>
+    configService.updateConfig({fontSize: Number(e.target.value)})
 
   const onChangeContentWidth = (e: any) =>
     configService.updateConfig({contentWidth: Number(e.target.value)})

@@ -1,10 +1,10 @@
 import {createEffect, createSignal, Show} from 'solid-js'
+import {useNavigate} from '@solidjs/router'
 import {isMac, isTauri, mod} from '@/env'
 import {useState} from '@/state'
 import * as remote from '@/remote'
 import {Keys, Label, Link, Sub} from './Style'
 import {Icon} from '../Icon'
-import { useNavigate } from '@solidjs/router'
 
 export const SubmenuEditor = ({maybeHide}: {maybeHide: () => void}) => {
   const {editorService, fileService, treeService} = useState()

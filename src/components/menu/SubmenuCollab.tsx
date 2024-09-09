@@ -10,7 +10,7 @@ export const SubmenuCollab = () => {
   const {store, collabService} = useState()
   const [collabUsers, setCollabUsers] = createSignal(0)
   const [lastAction, setLastAction] = createSignal<string | undefined>()
-  const [, setSearchParams] = useSearchParams();
+  const [, setSearchParams] = useSearchParams()
 
   const onCollabStart = () => {
     collabService.startCollab()

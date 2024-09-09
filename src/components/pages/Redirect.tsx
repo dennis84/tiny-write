@@ -23,7 +23,9 @@ export const Redirect = () => {
         const newFile = store.args?.newFile
         const path = store.args?.file
         file = await editorService.newFile({newFile, path, code})
-        info(`Created new file with path (id=${file.id}, code=${code}, path=${path}, newFile=${newFile})`)
+        info(
+          `Created new file with path (id=${file.id}, code=${code}, path=${path}, newFile=${newFile})`,
+        )
       }
 
       redirectTo(`/${file.code ? 'code' : 'editor'}/${file.id}`)

@@ -34,7 +34,11 @@ export const Dir = () => {
       navigate(`/editor/${file.id}`)
     }
 
-    return <Link data-testid="link" onClick={onClick}>{props.path}</Link>
+    return (
+      <Link data-testid="link" onClick={onClick}>
+        {props.path}
+      </Link>
+    )
   }
 
   const Empty = () => (

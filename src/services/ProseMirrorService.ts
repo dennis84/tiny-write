@@ -47,9 +47,9 @@ import {isTauri} from '@/env'
 import {createMarkdownParser} from '@/markdown'
 import {ConfigService} from './ConfigService'
 import {CollabService} from './CollabService'
-import { AppService } from './AppService'
-import { CodeMirrorService } from './CodeMirrorService'
-import { CanvasService } from './CanvasService'
+import {AppService} from './AppService'
+import {CodeMirrorService} from './CodeMirrorService'
+import {CanvasService} from './CanvasService'
 
 export interface ViewConfig {
   nodeViews?: NodeViewConfig

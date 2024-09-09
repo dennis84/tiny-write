@@ -8,7 +8,7 @@ vi.mock('mermaid', () => ({}))
 it('mermaid keywords - diagrams', async () => {
   const state = EditorState.create({
     doc: 'a',
-    extensions: []
+    extensions: [],
   })
 
   const context = new CompletionContext(state, 1, false)

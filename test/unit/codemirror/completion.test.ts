@@ -17,7 +17,7 @@ test.each([
   const language = new Compartment()
   const state = EditorState.create({
     doc,
-    extensions: [language.of(javascript())]
+    extensions: [language.of(javascript())],
   })
 
   const context = new CompletionContext(state, pos, false)
@@ -28,13 +28,11 @@ test.each([
   })
 })
 
-test.each([
-  ['K("Kafka")', ['Kafka'], 11],
-])('findWords - markdown', async (doc, words, pos) => {
+test.each([['K("Kafka")', ['Kafka'], 11]])('findWords - markdown', async (doc, words, pos) => {
   const language = new Compartment()
   const state = EditorState.create({
     doc,
-    extensions: [language.of(markdown())]
+    extensions: [language.of(markdown())],
   })
 
   const context = new CompletionContext(state, pos, false)

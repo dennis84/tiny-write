@@ -40,5 +40,7 @@ test('create image', async ({page}) => {
 test('image from url does not exist', async ({page}) => {
   const url = 'http://localhost:3000/123.png'
   await page.locator('.ProseMirror').pressSequentially(`![](${url}) `, {delay})
-  await page.waitForSelector(`.ProseMirror p .image-container img[src="${url}"]`, {state: 'attached'})
+  await page.waitForSelector(`.ProseMirror p .image-container img[src="${url}"]`, {
+    state: 'attached',
+  })
 })

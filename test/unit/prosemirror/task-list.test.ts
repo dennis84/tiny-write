@@ -5,11 +5,14 @@ import {taskList} from '@/prosemirror/task-list/markdown'
 const md = markdownit({html: false}).use(taskList)
 
 test('render', () => {
-  const tokens = md.parse(`
-  - [ ] aaa
-  - [x] bbb
-      - [ ] ccc
-  `, {})
+  const tokens = md.parse(
+    `
+- [ ] aaa
+- [x] bbb
+    - [ ] ccc
+    `,
+    {},
+  )
 
   expect(tokens[0].type).toBe('task_list_open')
 

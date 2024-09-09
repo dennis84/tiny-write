@@ -24,7 +24,9 @@ test('code block', async ({page}) => {
   // change lang
   await openBlockMenu(page, 1)
   await page.getByTestId('change_lang').click()
-  await page.locator(`[data-testid=input_line] > ${cmContent}`).pressSequentially('typescript', {delay})
+  await page
+    .locator(`[data-testid=input_line] > ${cmContent}`)
+    .pressSequentially('typescript', {delay})
   await page.keyboard.press('Enter')
   await expect(page.locator('.cm-content')).toHaveAttribute('data-language', 'typescript')
 

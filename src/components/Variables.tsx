@@ -35,7 +35,10 @@ export const Variables = () => {
     root.style.setProperty('--border-30', `${configService.theme.border}4d`)
     root.style.setProperty('--border-20', `${configService.theme.border}33`)
     root.style.setProperty('--font-family', configService.fontFamily)
-    root.style.setProperty('--font-family-monospace', configService.getFontFamily({monospace: true}))
+    root.style.setProperty(
+      '--font-family-monospace',
+      configService.getFontFamily({monospace: true}),
+    )
     root.style.setProperty('--font-family-bold', configService.getFontFamily({bold: true}))
     root.style.setProperty('--font-family-italic', configService.getFontFamily({italic: true}))
     root.style.setProperty('--font-size', `${configService.fontSize}px`)

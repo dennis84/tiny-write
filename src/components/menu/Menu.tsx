@@ -32,7 +32,8 @@ export const Menu = () => {
   const onToggleTypewriterMode = () =>
     configService.updateConfig({typewriterMode: !store.config.typewriterMode})
 
-  const onToggleSpellcheck = () => configService.updateConfig({spellcheck: !store.config.spellcheck})
+  const onToggleSpellcheck = () =>
+    configService.updateConfig({spellcheck: !store.config.spellcheck})
 
   const onToggleFullscreen = () => appService.setFullscreen(!store.fullscreen)
 

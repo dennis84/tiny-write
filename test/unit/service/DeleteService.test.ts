@@ -189,7 +189,9 @@ test('emptyBin', async () => {
     ],
   })
 
-  Object.defineProperty(fileService, 'currentFile', {get: vi.fn().mockReturnValue(initial.files[2])})
+  Object.defineProperty(fileService, 'currentFile', {
+    get: vi.fn().mockReturnValue(initial.files[2]),
+  })
   fileService.findFileById.mockReturnValue(initial.files[1])
 
   const [store, setState] = createStore(initial)

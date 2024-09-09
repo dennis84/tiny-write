@@ -53,7 +53,9 @@ export const ChangeSet = (props: Props) => {
       <ButtonGroup>
         <Button onClick={onBack}>↩ Back</Button>
         <Show when={active() === undefined}>
-          <ButtonPrimary onClick={() => changeSetService.addVersion()}>Create Snapshot</ButtonPrimary>
+          <ButtonPrimary onClick={() => changeSetService.addVersion()}>
+            Create Snapshot
+          </ButtonPrimary>
         </Show>
         <Show when={active() !== undefined}>
           <ButtonPrimary onClick={() => applyVersion()}>Apply Snapshot</ButtonPrimary>

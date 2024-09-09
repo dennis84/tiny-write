@@ -9,7 +9,7 @@ import {InputLineConfig} from '@/components/dialog/InputLine'
 import {ConfigService} from './ConfigService'
 import {CanvasService} from './CanvasService'
 import {FileService} from './FileService'
-import { TreeService } from './TreeService'
+import {TreeService} from './TreeService'
 
 export class AppService {
   public layoutRef: HTMLElement | undefined

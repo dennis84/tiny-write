@@ -32,7 +32,7 @@ const GeneralError = () => {
 
   const onDeleteFile = async () => {
     if (!store.error?.fileId) return
-    const treeNode =  treeService.findTreeNode(store.error.fileId)
+    const treeNode = treeService.findTreeNode(store.error.fileId)
     if (!treeNode) return
     await deleteService.delete(treeNode, true)
     window.location.reload()
