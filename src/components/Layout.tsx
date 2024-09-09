@@ -31,6 +31,7 @@ export const Layout = styled('div')`
 `
 
 export const Scroll = styled('div')`
+  position: relative;
   display: flex;
   height: 100%;
   width: 100%;

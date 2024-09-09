@@ -1,5 +1,5 @@
 import {createEffect, Show} from 'solid-js'
-import {useNavigate} from '@solidjs/router'
+import {useLocation, useNavigate} from '@solidjs/router'
 import {styled} from 'solid-styled-components'
 import {Box, Vec} from '@tldraw/editor'
 import {arrow, computePosition, flip, offset, shift} from '@floating-ui/dom'
@@ -53,12 +53,13 @@ export const Toolbar = () => {
 
   const {store, canvasService} = useState()
   const navigate = useNavigate()
+  const location = useLocation()
 
   const open = async (element: CanvasElement) => {
     if (isEditorElement(element)) {
-      navigate(`/editor/${element.id}`)
+      navigate(`/editor/${element.id}`, {state: {prev: location.pathname}})
     } else if (isCodeElement(element)) {
-      navigate(`/code/${element.id}`)
+      navigate(`/code/${element.id}`, {state: {prev: location.pathname}})
     }
   }
 

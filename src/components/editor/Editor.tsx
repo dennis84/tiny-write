@@ -3,6 +3,7 @@ import {WheelGesture} from '@use-gesture/vanilla'
 import {useState} from '@/state'
 import {Select} from '../Select'
 import {Scroll} from '../Layout'
+import {Back} from '../Back'
 import {FullEditor} from './Style'
 import {BlockHandle} from './BlockHandle'
 import {TableControls} from './TableControl'
@@ -76,6 +77,7 @@ export const Editor = () => {
       />
       <TableControls file={fileService.currentFile} scrollContainer={() => scrollRef} />
       <AutocompleteTooltip file={fileService.currentFile} />
+      <Back />
     </Scroll>
   )
 }
