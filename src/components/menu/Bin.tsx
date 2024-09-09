@@ -1,3 +1,4 @@
+import {useNavigate} from '@solidjs/router'
 import {useState} from '@/state'
 import {Button, ButtonGroup} from '../Button'
 import {Drawer, Label, Note} from './Style'
@@ -8,18 +9,20 @@ interface Props {
 }
 
 export const Bin = (props: Props) => {
-  const [state, ctrl] = useState()
+  const {store, deleteService, treeService} = useState()
+  const navigate = useNavigate()
 
   const onBack = () => {
     props.onBack()
   }
 
   const hasDeletedFiles = () =>
-    state.files.some((f) => f.deleted) || state.canvases.some((f) => f.deleted)
+    store.files.some((f) => f.deleted) || store.canvases.some((f) => f.deleted)
 
   const onEmptyBin = async () => {
-    const result = await ctrl.delete.emptyBin()
-    ctrl.tree.create()
+    const result = await deleteService.emptyBin()
+    if (result.navigateTo) navigate(result.navigateTo)
+    treeService.create()
   }
 
   return (

@@ -17,24 +17,24 @@ import {Icon, IconPrettier} from '../Icon'
 import {fullWidth, Burger, Container, Drawer, Keys, Label, Link, Sub} from './Style'
 
 export const Menu = () => {
-  const [store, ctrl] = useState()
+  const {store, appService, configService, fileService, prettierService} = useState()
   const [show, setShow] = createSignal()
 
   const modKey = isMac ? '⌘' : mod
 
   const onBurgerClick = () => {
-    ctrl.file.currentFile?.editorView?.focus()
+    fileService.currentFile?.editorView?.focus()
     setShow(show() ? undefined : 'main')
   }
 
-  const onToggleAlwaysOnTop = () => ctrl.config.setAlwaysOnTop(!store.config.alwaysOnTop)
+  const onToggleAlwaysOnTop = () => configService.setAlwaysOnTop(!store.config.alwaysOnTop)
 
   const onToggleTypewriterMode = () =>
-    ctrl.config.updateConfig({typewriterMode: !store.config.typewriterMode})
+    configService.updateConfig({typewriterMode: !store.config.typewriterMode})
 
-  const onToggleSpellcheck = () => ctrl.config.updateConfig({spellcheck: !store.config.spellcheck})
+  const onToggleSpellcheck = () => configService.updateConfig({spellcheck: !store.config.spellcheck})
 
-  const onToggleFullscreen = () => ctrl.app.setFullscreen(!store.fullscreen)
+  const onToggleFullscreen = () => appService.setFullscreen(!store.fullscreen)
 
   const onVersion = () => {
     window.open(VERSION_URL, '_blank')
@@ -42,7 +42,7 @@ export const Menu = () => {
 
   const onOpenInApp = () => {
     if (isTauri()) return
-    const currentFile = ctrl.file.currentFile
+    const currentFile = fileService.currentFile
     if (store.collab?.started) {
       window.open(`tinywrite://main?room=${currentFile?.id}`, '_self')
     } else {
@@ -69,10 +69,10 @@ export const Menu = () => {
   onCleanup(() => document.removeEventListener('keydown', onKeyDown))
 
   const showCodeFormat = () => {
-    const currentFile = ctrl.file.currentFile
+    const currentFile = fileService.currentFile
     if (!currentFile?.codeEditorView) return true
     const language = currentFile.codeEditorView.contentDOM.dataset.language ?? ''
-    return ctrl.prettier.supports(language)
+    return prettierService.supports(language)
   }
 
   return (
@@ -98,7 +98,7 @@ export const Menu = () => {
       </Show>
       <Show when={show() === 'main'}>
         <Drawer
-          onClick={() => ctrl.file.currentFile?.editorView?.focus()}
+          onClick={() => fileService.currentFile?.editorView?.focus()}
           data-tauri-drag-region="true"
         >
           <SubmenuTree onBin={() => setShow('bin')} maybeHide={maybeHide} />

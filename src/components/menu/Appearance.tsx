@@ -9,18 +9,18 @@ interface Props {
 }
 
 export const Appearance = (props: Props) => {
-  const [store, ctrl] = useState()
+  const {store, configService} = useState()
 
-  const onChangeTheme = (theme: string) => () => ctrl.config.updateConfig({theme})
+  const onChangeTheme = (theme: string) => () => configService.updateConfig({theme})
 
-  const onChangeCodeTheme = (codeTheme: string) => () => ctrl.config.updateConfig({codeTheme})
+  const onChangeCodeTheme = (codeTheme: string) => () => configService.updateConfig({codeTheme})
 
-  const onChangeFont = (font: string) => () => ctrl.config.updateConfig({font})
+  const onChangeFont = (font: string) => () => configService.updateConfig({font})
 
-  const onChangeFontSize = (e: any) => ctrl.config.updateConfig({fontSize: Number(e.target.value)})
+  const onChangeFontSize = (e: any) => configService.updateConfig({fontSize: Number(e.target.value)})
 
   const onChangeContentWidth = (e: any) =>
-    ctrl.config.updateConfig({contentWidth: Number(e.target.value)})
+    configService.updateConfig({contentWidth: Number(e.target.value)})
 
   return (
     <Drawer data-tauri-drag-region="true">
@@ -29,7 +29,7 @@ export const Appearance = (props: Props) => {
         <For each={Object.entries(ConfigService.themes)}>
           {([key, value]) => (
             <Link onClick={onChangeTheme(key)}>
-              {value.label} {key === ctrl.config.theme.value && '✅'}
+              {value.label} {key === configService.theme.value && '✅'}
             </Link>
           )}
         </For>
@@ -39,7 +39,7 @@ export const Appearance = (props: Props) => {
         <For each={Object.entries(ConfigService.codeThemes)}>
           {([key, value]) => (
             <Link onClick={onChangeCodeTheme(key)}>
-              {value.label} {key === ctrl.config.codeTheme.value && '✅'}
+              {value.label} {key === configService.codeTheme.value && '✅'}
             </Link>
           )}
         </For>
@@ -49,7 +49,7 @@ export const Appearance = (props: Props) => {
         <For each={Object.entries(ConfigService.fonts)}>
           {([key, value]) => (
             <Link onClick={onChangeFont(key)}>
-              {value.label} {key === ctrl.config.font.value && '✅'}
+              {value.label} {key === configService.font.value && '✅'}
             </Link>
           )}
         </For>

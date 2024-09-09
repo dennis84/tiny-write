@@ -6,13 +6,13 @@ import {Tooltip} from '../Tooltip'
 import {ReferenceElement} from '@floating-ui/dom'
 
 export const LinkEnd = () => {
-  const [, ctrl] = useState()
+  const {canvasService, canvasCollabService, fileService, treeService} = useState()
   const [contextMenu, setContextMenu] = createSignal<Vec | undefined>()
 
   const onNewFile = async (code = false, link?: CanvasLinkElement, cm?: Vec) => {
-    const el = await ctrl.canvas.newFile(code, link, cm)
-    await ctrl.canvas.removeDeadLinks()
-    if (el) ctrl.canvasCollab.addElement(el)
+    const el = await canvasService.newFile(code, link, cm)
+    await canvasService.removeDeadLinks()
+    if (el) canvasCollabService.addElement(el)
     setContextMenu(undefined)
   }
 
@@ -20,14 +20,14 @@ export const LinkEnd = () => {
     const [title, setTitle] = createSignal<string>()
 
     const onClick = async () => {
-      const added = await ctrl.canvas.addFile(p.file, p.link, p.cm)
-      await ctrl.canvas.removeDeadLinks()
-      ctrl.canvasCollab.addElements(added ?? [])
+      const added = await canvasService.addFile(p.file, p.link, p.cm)
+      await canvasService.removeDeadLinks()
+      canvasCollabService.addElements(added ?? [])
       setContextMenu(undefined)
     }
 
     onMount(async () => {
-      setTitle(await ctrl.file.getTitle(p.file))
+      setTitle(await fileService.getTitle(p.file))
     })
 
     return (
@@ -49,13 +49,13 @@ export const LinkEnd = () => {
   }
 
   const getFiles = (): File[] => {
-    const currentCanvas = ctrl.canvas.currentCanvas
+    const currentCanvas = canvasService.currentCanvas
     if (!currentCanvas) return []
     const tree =
-      currentCanvas.parentId ? ctrl.tree.findTreeNode(currentCanvas.parentId)?.tree : undefined
+      currentCanvas.parentId ? treeService.findTreeNode(currentCanvas.parentId)?.tree : undefined
 
     const files: File[] = []
-    ctrl.tree.descendants((n) => {
+    treeService.descendants((n) => {
       if (
         isFile(n.item) &&
         !n.item.deleted &&
@@ -71,11 +71,11 @@ export const LinkEnd = () => {
   const getContextMenu = ():
     | [CanvasLinkElement | undefined, Vec | undefined, ReferenceElement]
     | undefined => {
-    const deadLink = ctrl.canvas.findDeadLinks()[0]
+    const deadLink = canvasService.findDeadLinks()[0]
     const cm = contextMenu()
     if (!deadLink && !cm) return
 
-    const currentCanvas = ctrl.canvas.currentCanvas
+    const currentCanvas = canvasService.currentCanvas
     if (!currentCanvas) return
 
     const p = deadLink ? new Vec(deadLink.toX, deadLink.toY) : cm
@@ -103,7 +103,7 @@ export const LinkEnd = () => {
   }
 
   const onTooltipClose = async () => {
-    await ctrl.canvas.removeDeadLinks()
+    await canvasService.removeDeadLinks()
     setContextMenu(undefined)
   }
 
@@ -115,7 +115,7 @@ export const LinkEnd = () => {
       }
 
       e.preventDefault()
-      setContextMenu(ctrl.canvas.getPosition([e.clientX, e.clientY]))
+      setContextMenu(canvasService.getPosition([e.clientX, e.clientY]))
     }
 
     document.oncontextmenu = onContextMenu

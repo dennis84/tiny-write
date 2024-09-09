@@ -2,14 +2,14 @@ import {createEffect} from 'solid-js'
 import {Mode, useState} from '@/state'
 
 export const Title = () => {
-  const [store, ctrl] = useState()
+  const {store, canvasService, fileService} = useState()
 
   createEffect(async () => {
     if (store.mode === Mode.Canvas) {
-      const currentCanvas = ctrl.canvas.currentCanvas
+      const currentCanvas = canvasService.currentCanvas
       document.title = currentCanvas?.title ?? 'Canvas'
     } else {
-      document.title = await ctrl.file.getTitle(ctrl.file.currentFile)
+      document.title = await fileService.getTitle(fileService.currentFile)
     }
   })
 

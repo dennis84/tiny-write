@@ -7,12 +7,12 @@ import {Canvas} from '../canvas/Canvas'
 
 export const CanvasPage = (props: RouteSectionProps) => {
   const OpenCanvas = () => {
-    const [store, ctrl] = useState()
+    const {store, canvasService, canvasCollabService, collabService} = useState()
     onMount(async () => {
       const share = props.location.query.share === 'true'
-      await ctrl.canvas.open(props.params.id, share)
-      ctrl.canvasCollab.init()
-      ctrl.collab.init()
+      await canvasService.open(props.params.id, share)
+      canvasCollabService.init()
+      collabService.init()
     })
 
     return (

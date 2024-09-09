@@ -36,55 +36,55 @@ const EditorScroll = styled(Scroll)(
 )
 
 export const Editor = ({element, index}: {element: CanvasEditorElement; index: number}) => {
-  const [store, ctrl] = useState()
+  const {store, canvasService, collabService, fileService, editorService} = useState()
   let containerRef!: HTMLDivElement
   let editorRef!: HTMLDivElement
 
   const onSelect = (e: MouseEvent) => {
-    ctrl.canvas.select(element.id, false, e.shiftKey)
+    canvasService.select(element.id, false, e.shiftKey)
   }
 
   const onDoubleClick = () => {
-    ctrl.canvas.select(element.id, true)
+    canvasService.select(element.id, true)
   }
 
   const isDeleted = () => store.files.find((f) => f.id === element.id)?.deleted
 
   const createSelection = (): Selection => {
-    const box = ctrl.canvas.createBox(element)
+    const box = canvasService.createBox(element)
     return {box, elements: [[element.id, box]]}
   }
 
   createEffect(async () => {
-    const currentCanvas = ctrl.canvas.currentCanvas
-    let file = ctrl.file.findFileById(element.id)
+    const currentCanvas = canvasService.currentCanvas
+    let file = fileService.findFileById(element.id)
 
     if (!file) {
       remote.info('No file for editor element', element.id)
       file = FileService.createFile({id: element.id, parentId: currentCanvas?.id})
-      await ctrl.file.addFile(file)
+      await fileService.addFile(file)
     }
 
-    const provider = ctrl.collab.getProvider(file.id)
+    const provider = collabService.getProvider(file.id)
     if (!provider) {
-      ctrl.collab.initFile(file)
+      collabService.initFile(file)
     }
 
     if (provider && file.editorView === undefined) {
-      ctrl.editor.renderEditor(file, editorRef!)
+      editorService.renderEditor(file, editorRef!)
     }
   })
 
   createEffect((prev) => {
     if (!prev) return
-    let file = ctrl.file.findFileById(element.id)
+    let file = fileService.findFileById(element.id)
     if (!file) return
-    ctrl.editor.updateConfig(file)
+    editorService.updateConfig(file)
     return store.config
   })
 
   onCleanup(() => {
-    ctrl.file.destroy(element.id)
+    fileService.destroy(element.id)
   })
 
   return (
@@ -121,9 +121,12 @@ export const Editor = ({element, index}: {element: CanvasEditorElement; index: n
         }}
       >
         <CanvasEditor config={store.config} ref={editorRef} data-testid="canvas_editor" />
-        <BlockHandle file={ctrl.file.findFileById(element.id)} mouseMoveArea={() => containerRef} />
-        <TableControls file={ctrl.file.findFileById(element.id)} />
-        <AutocompleteTooltip file={ctrl.file.findFileById(element.id)} />
+        <BlockHandle
+          file={fileService.findFileById(element.id)}
+          mouseMoveArea={() => containerRef}
+        />
+        <TableControls file={fileService.findFileById(element.id)} />
+        <AutocompleteTooltip file={fileService.findFileById(element.id)} />
       </EditorScroll>
     </>
   )

@@ -26,11 +26,11 @@ interface Props {
 }
 
 export const TableTooltip = (props: Props) => {
-  const [, ctrl] = useState()
+  const {fileService} = useState()
   const [tooltipAnchor, setTooltipAnchor] = createSignal<ReferenceElement | undefined>()
 
   const setCellSelection = () => {
-    const editorView = ctrl.file.currentFile?.editorView
+    const editorView = fileService.currentFile?.editorView
     if (!editorView) return
     const tr = editorView.state.tr
     const p = editorView.state.doc.resolve(props.currentCell.pos)
@@ -47,7 +47,7 @@ export const TableTooltip = (props: Props) => {
   }
 
   const onToggleHeaderRow = () => {
-    const editorView = ctrl.file.currentFile?.editorView
+    const editorView = fileService.currentFile?.editorView
     if (!editorView) return
     setCellSelection()
     toggleHeaderRow(editorView.state, editorView.dispatch)
@@ -57,7 +57,7 @@ export const TableTooltip = (props: Props) => {
   }
 
   const onAddRowAbove = () => {
-    const editorView = ctrl.file.currentFile?.editorView
+    const editorView = fileService.currentFile?.editorView
     if (!editorView) return
     setCellSelection()
     addRowBefore(editorView.state, editorView.dispatch)
@@ -67,7 +67,7 @@ export const TableTooltip = (props: Props) => {
   }
 
   const onAddRowBelow = () => {
-    const editorView = ctrl.file.currentFile?.editorView
+    const editorView = fileService.currentFile?.editorView
     if (!editorView) return
     setCellSelection()
     addRowAfter(editorView.state, editorView.dispatch)
@@ -77,7 +77,7 @@ export const TableTooltip = (props: Props) => {
   }
 
   const onAddColumnBefore = () => {
-    const editorView = ctrl.file.currentFile?.editorView
+    const editorView = fileService.currentFile?.editorView
     if (!editorView) return
     setCellSelection()
     addColumnBefore(editorView.state, editorView.dispatch)
@@ -87,7 +87,7 @@ export const TableTooltip = (props: Props) => {
   }
 
   const onAddColumnAfter = () => {
-    const editorView = ctrl.file.currentFile?.editorView
+    const editorView = fileService.currentFile?.editorView
     if (!editorView) return
     setCellSelection()
     addColumnAfter(editorView.state, editorView.dispatch)
@@ -97,7 +97,7 @@ export const TableTooltip = (props: Props) => {
   }
 
   const onRemoveColumn = () => {
-    const editorView = ctrl.file.currentFile?.editorView
+    const editorView = fileService.currentFile?.editorView
     if (!editorView) return
 
     setCellSelection()
@@ -113,7 +113,7 @@ export const TableTooltip = (props: Props) => {
   }
 
   const onRemoveRow = () => {
-    const editorView = ctrl.file.currentFile?.editorView
+    const editorView = fileService.currentFile?.editorView
     if (!editorView) return
 
     setCellSelection()

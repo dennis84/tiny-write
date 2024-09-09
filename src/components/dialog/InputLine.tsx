@@ -50,15 +50,15 @@ interface Props {
 export const InputLine = (props: Props) => {
   let ref!: HTMLDivElement
 
-  const [, ctrl] = useState()
+  const {appService, configService} = useState()
 
   createEffect(() => {
     const config = props.getter()
     if (config === undefined) return
 
-    let codeTheme = ctrl.config.codeTheme
-    if (ctrl.config.theme.dark !== codeTheme.dark) {
-      codeTheme = ConfigService.getDefaltCodeTheme(ctrl.config.theme.dark)
+    let codeTheme = configService.codeTheme
+    if (configService.theme.dark !== codeTheme.dark) {
+      codeTheme = ConfigService.getDefaltCodeTheme(configService.theme.dark)
     }
 
     const editor = new LangInputEditor({
@@ -83,7 +83,7 @@ export const InputLine = (props: Props) => {
 
   return (
     <Show when={props.getter() !== undefined}>
-      <Portal mount={ctrl.app.layoutRef}>
+      <Portal mount={appService.layoutRef}>
         <Layer>
           <Container ref={ref} data-testid="input_line" />
         </Layer>

@@ -18,14 +18,14 @@ const GridSvg = styled('svg')`
 `
 
 export const Grid = ({onClick}: {onClick: () => void}) => {
-  const [, ctrl] = useState()
+  const {canvasService} = useState()
 
   return (
     <GridSvg id="grid" onClick={onClick} version="1.1" xmlns="http://www.w3.org/2000/svg">
       <defs>
         {STEPS.map(([r, size], i) => {
           const grid = 10
-          const camera = ctrl.canvas.currentCanvas?.camera
+          const camera = canvasService.currentCanvas?.camera
           if (!camera) return
 
           const s = size * grid * camera.zoom

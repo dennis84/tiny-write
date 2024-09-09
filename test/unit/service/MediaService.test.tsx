@@ -46,7 +46,7 @@ test('dropFile - image on editor', async () => {
   vi.stubGlobal('location', new URL('http://localhost:3000/editor/1'))
 
   const initial = createState()
-  const {store, ctrl} = createCtrl(initial)
+  const {store, fileService, mediaService} = createCtrl(initial)
   const {getByTestId} = render(() => <Main state={store} />)
 
   await waitFor(() => {
@@ -54,9 +54,9 @@ test('dropFile - image on editor', async () => {
   })
 
   const blob = new Blob(['123'])
-  await ctrl.media.dropFile(blob, [0, 0])
+  await mediaService.dropFile(blob, [0, 0])
 
-  const doc = ctrl.file.currentFile?.editorView?.state.doc
+  const doc = fileService.currentFile?.editorView?.state.doc
   const paragraph = doc?.firstChild
   const image = paragraph?.firstChild
   expect(image?.type.name).toBe('image')
@@ -90,7 +90,7 @@ test('dropFile - image on canvas', async () => {
     ],
   })
 
-  const {store, ctrl} = createCtrl(initial)
+  const {store, canvasService, mediaService} = createCtrl(initial)
   const {getByTestId} = render(() => <Main state={store} />)
 
   await waitFor(() => {
@@ -102,10 +102,10 @@ test('dropFile - image on canvas', async () => {
     height: 200,
   } as HTMLImageElement)
 
-  const currentCanvas = ctrl.canvas.currentCanvas
+  const currentCanvas = canvasService.currentCanvas
 
   const blob = new Blob([], {type: 'image/png'})
-  await ctrl.media.dropFile(blob, [100, 100])
+  await mediaService.dropFile(blob, [100, 100])
 
   expect(currentCanvas?.elements).toHaveLength(2)
 
@@ -144,7 +144,7 @@ test('dropFile - image on canvas with active editor', async () => {
     ],
   })
 
-  const {store, ctrl} = createCtrl(initial)
+  const {store, canvasService, fileService, mediaService} = createCtrl(initial)
   const {getByTestId} = render(() => <Main state={store} />)
 
   await waitFor(() => {
@@ -156,16 +156,16 @@ test('dropFile - image on canvas with active editor', async () => {
     height: 200,
   } as HTMLImageElement)
 
-  const currentCanvas = ctrl.canvas.currentCanvas
+  const currentCanvas = canvasService.currentCanvas
   const editorEl = currentCanvas?.elements[0] as CanvasEditorElement
-  ctrl.canvas.select('1', true)
+  canvasService.select('1', true)
 
   const blob = new Blob(['123'], {type: 'image/png'})
-  await ctrl.media.dropFile(blob, [0, 0])
+  await mediaService.dropFile(blob, [0, 0])
 
   expect(currentCanvas?.elements).toHaveLength(1)
 
-  const doc = ctrl.file.findFileById(editorEl.id)?.editorView?.state.doc
+  const doc = fileService.findFileById(editorEl.id)?.editorView?.state.doc
   const paragraph = doc?.firstChild
   const image = paragraph?.firstChild
   expect(image?.type.name).toBe('image')
@@ -177,16 +177,16 @@ test('dropPath - image on editor', async () => {
   vi.stubGlobal('location', new URL('http://localhost:3000/editor/1'))
 
   const initial = createState()
-  const {store, ctrl} = createCtrl(initial)
+  const {store, fileService, mediaService} = createCtrl(initial)
   const {getByTestId} = render(() => <Main state={store} />)
 
   await waitFor(() => {
     expect(getByTestId('editor_scroll')).toBeDefined()
   })
 
-  await ctrl.media.dropPath('/users/me/file.png', [0, 0])
+  await mediaService.dropPath('/users/me/file.png', [0, 0])
 
-  const doc = ctrl.file.currentFile?.editorView?.state.doc
+  const doc = fileService.currentFile?.editorView?.state.doc
   const paragraph = doc?.firstChild
   const image = paragraph?.firstChild
   expect(image?.type.name).toBe('image')
@@ -210,16 +210,16 @@ test('dropPath - image on editor with basePath', async () => {
     ],
   })
 
-  const {store, ctrl} = createCtrl(initial)
+  const {store, mediaService, fileService} = createCtrl(initial)
   const {getByTestId} = render(() => <Main state={store} />)
 
   await waitFor(() => {
     expect(getByTestId('editor_scroll')).toBeDefined()
   })
 
-  await ctrl.media.dropPath('/users/me/project/file.png', [0, 0])
+  await mediaService.dropPath('/users/me/project/file.png', [0, 0])
 
-  const doc = ctrl.file.currentFile?.editorView?.state.doc
+  const doc = fileService.currentFile?.editorView?.state.doc
   const paragraph = doc?.firstChild
   const image = paragraph?.firstChild
   expect(image?.type.name).toBe('image')
@@ -230,7 +230,7 @@ test('dropPath - text file on editor', async () => {
   vi.stubGlobal('location', new URL('http://localhost:3000/editor/1'))
 
   const initial = createState()
-  const {store, ctrl} = createCtrl(initial)
+  const {store, mediaService} = createCtrl(initial)
   const {getByTestId} = render(() => <Main state={store} />)
 
   await waitFor(() => {
@@ -240,7 +240,7 @@ test('dropPath - text file on editor', async () => {
   expect(store.files).toHaveLength(1)
 
   const path = '/users/me/project/README.md'
-  const result = await ctrl.media.dropPath(path, [0, 0])
+  const result = await mediaService.dropPath(path, [0, 0])
 
   expect(store.files).toHaveLength(2)
   expect(result?.file?.path).toBe(path)
@@ -272,7 +272,7 @@ test('dropPath - image on canvas', async () => {
     ],
   })
 
-  const {store, ctrl} = createCtrl(initial)
+  const {store, canvasService, mediaService} = createCtrl(initial)
   const {getByTestId} = render(() => <Main state={store} />)
 
   await waitFor(() => {
@@ -284,9 +284,9 @@ test('dropPath - image on canvas', async () => {
     height: 200,
   } as HTMLImageElement)
 
-  const currentCanvas = ctrl.canvas.currentCanvas
+  const currentCanvas = canvasService.currentCanvas
 
-  await ctrl.media.dropPath('/users/me/file.png', [100, 100])
+  await mediaService.dropPath('/users/me/file.png', [100, 100])
 
   expect(currentCanvas?.elements).toHaveLength(2)
 

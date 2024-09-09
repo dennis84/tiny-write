@@ -71,23 +71,23 @@ interface Cursor {
 }
 
 export const MouseCursor = () => {
-  const [store, ctrl] = useState()
+  const {store, canvasService, fileService} = useState()
   const [awareness, setAwareness] = createSignal<Awareness>()
   const [cursors, setCursors] = createStore<Cursor[]>([])
   const [offset, setOffset] = createSignal<[number, number]>([0, 0])
 
   const zoom = () =>
-    store.mode === Mode.Canvas ? (ctrl.canvas.currentCanvas?.camera.zoom ?? 1) : 1
+    store.mode === Mode.Canvas ? (canvasService.currentCanvas?.camera.zoom ?? 1) : 1
 
   createEffect(() => {
     if (store.config.contentWidth === undefined) return
 
     if (store.mode === Mode.Canvas) {
-      setOffset(ctrl.canvas.currentCanvas?.camera.point ?? [0, 0])
+      setOffset(canvasService.currentCanvas?.camera.point ?? [0, 0])
       return
     }
 
-    const rect = ctrl.file.currentFile?.editorView?.dom.getBoundingClientRect()
+    const rect = fileService.currentFile?.editorView?.dom.getBoundingClientRect()
     setOffset([rect?.left ?? 0, rect?.top ?? 0])
   })
 

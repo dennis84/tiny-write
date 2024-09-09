@@ -8,15 +8,15 @@ interface Props {
 }
 
 export const CodeFormat = (props: Props) => {
-  const [store, ctrl] = useState()
+  const {store, configService, codeService} = useState()
 
   const updatePrettier = (opt: Partial<PrettierConfig>) =>
-    ctrl.config.updateConfig({
+    configService.updateConfig({
       prettier: {...store.config.prettier, ...opt},
     })
 
   const onPrettify = async () => {
-    await ctrl.code.prettify()
+    await codeService.prettify()
   }
 
   return (

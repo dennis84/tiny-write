@@ -16,7 +16,7 @@ beforeEach(() => {
 test('prettify', async () => {
   vi.stubGlobal('location', new URL('http://localhost:3000/code/1'))
 
-  const {store, ctrl} = createCtrl(
+  const {store, codeService, fileService} = createCtrl(
     createState({
       files: [
         {id: '1', ydoc: createYUpdate('1', 'const a=1;'), active: true, versions: [], code: true},
@@ -32,10 +32,10 @@ test('prettify', async () => {
   })
 
   expect(store.mode).toBe(Mode.Code)
-  expect(ctrl.file.currentFile?.id).toBe('1')
-  expect(ctrl.file.currentFile?.codeEditorView).toBeDefined()
+  expect(fileService.currentFile?.id).toBe('1')
+  expect(fileService.currentFile?.codeEditorView).toBeDefined()
 
-  await ctrl.code.prettify()
+  await codeService.prettify()
 
-  expect(ctrl.file.currentFile?.codeEditorView?.state.doc.toString()).toBe('const a = 1')
+  expect(fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('const a = 1')
 })

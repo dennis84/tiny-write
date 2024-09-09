@@ -9,30 +9,30 @@ interface Props {
 }
 
 export const ChangeSet = (props: Props) => {
-  const [, ctrl] = useState()
-  const versions = () => ctrl.file.currentFile?.versions ?? []
+  const {changeSetService, fileService} = useState()
+  const versions = () => fileService.currentFile?.versions ?? []
   const [active, setActive] = createSignal<Version>()
 
   const renderVersion = (version: Version) => {
     if (active() != version) {
       setActive(version)
-      ctrl.changeSet.renderVersion(version)
+      changeSetService.renderVersion(version)
     } else {
       setActive(undefined)
-      ctrl.changeSet.unrenderVersion()
+      changeSetService.unrenderVersion()
     }
   }
 
   const applyVersion = () => {
     const version = active()
     if (!version) return
-    ctrl.changeSet.applyVersion(version)
+    changeSetService.applyVersion(version)
     setActive(undefined)
   }
 
   const onBack = () => {
-    const currentFile = ctrl.file.currentFile
-    ctrl.changeSet.unrenderVersion()
+    const currentFile = fileService.currentFile
+    changeSetService.unrenderVersion()
     currentFile?.editorView?.focus()
     props.onBack()
   }
@@ -53,7 +53,7 @@ export const ChangeSet = (props: Props) => {
       <ButtonGroup>
         <Button onClick={onBack}>↩ Back</Button>
         <Show when={active() === undefined}>
-          <ButtonPrimary onClick={() => ctrl.changeSet.addVersion()}>Create Snapshot</ButtonPrimary>
+          <ButtonPrimary onClick={() => changeSetService.addVersion()}>Create Snapshot</ButtonPrimary>
         </Show>
         <Show when={active() !== undefined}>
           <ButtonPrimary onClick={() => applyVersion()}>Apply Snapshot</ButtonPrimary>

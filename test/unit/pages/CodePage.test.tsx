@@ -26,7 +26,7 @@ test('open - new file', async () => {
 
   const initial = createState()
 
-  const {store, ctrl} = createCtrl(initial)
+  const {store, fileService} = createCtrl(initial)
   const {getByTestId} = render(() => <Main state={store} />)
 
   await waitFor(() => {
@@ -36,7 +36,7 @@ test('open - new file', async () => {
   expect(store.mode).toBe(Mode.Code)
   expect(store.files.length).toBe(1)
   expect(store.files[0].active).toBeTruthy()
-  expect(ctrl.file.currentFile?.codeEditorView?.state.doc.toString()).toBe('')
+  expect(fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('')
 })
 
 test('open - active', async () => {
@@ -57,7 +57,7 @@ test('open - active', async () => {
     ],
   })
 
-  const {store, ctrl} = createCtrl(initial)
+  const {store, fileService} = createCtrl(initial)
   const {getByTestId} = render(() => <Main state={store} />)
 
   await waitFor(() => {
@@ -68,7 +68,7 @@ test('open - active', async () => {
   expect(store.files.length).toBe(2)
   expect(store.files[0].active).toBeFalsy()
   expect(store.files[1].active).toBeTruthy()
-  expect(ctrl.file.currentFile?.codeEditorView?.state.doc.toString()).toBe('Code2')
+  expect(fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('Code2')
 })
 
 test('open - new file with id', async () => {
@@ -81,7 +81,7 @@ test('open - new file with id', async () => {
     ],
   })
 
-  const {store, ctrl} = createCtrl(initial)
+  const {store, fileService} = createCtrl(initial)
   const {getByTestId} = render(() => <Main state={store} />)
 
   await waitFor(() => {
@@ -93,7 +93,7 @@ test('open - new file with id', async () => {
   expect(store.files[0].active).toBeFalsy()
   expect(store.files[1].active).toBeFalsy()
   expect(store.files[2].active).toBeTruthy()
-  expect(ctrl.file.currentFile?.codeEditorView?.state.doc.toString()).toBe('')
+  expect(fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('')
 })
 
 test('open - existing file', async () => {
@@ -106,7 +106,7 @@ test('open - existing file', async () => {
     ],
   })
 
-  const {store, ctrl} = createCtrl(initial)
+  const {store, fileService} = createCtrl(initial)
   const {getByTestId} = render(() => <Main state={store} />)
 
   await waitFor(() => {
@@ -117,7 +117,7 @@ test('open - existing file', async () => {
   expect(store.files.length).toBe(2)
   expect(store.files[0].active).toBeTruthy()
   expect(store.files[1].active).toBeFalsy()
-  expect(ctrl.file.currentFile?.codeEditorView?.state.doc.toString()).toBe('Code1')
+  expect(fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('Code1')
 })
 
 test('open - share', async () => {
@@ -130,7 +130,7 @@ test('open - share', async () => {
     ],
   })
 
-  const {store, ctrl} = createCtrl(initial)
+  const {store, fileService} = createCtrl(initial)
   const {getByTestId} = render(() => <Main state={store} />)
 
   await waitFor(() => {
@@ -149,7 +149,7 @@ test('open - share', async () => {
   expect(store.collab?.started).toBe(true)
 
   await waitFor(() => {
-    expect(ctrl.file.currentFile?.codeEditorView?.state.doc.toString()).toBe('Code1')
+    expect(fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('Code1')
   })
 })
 
@@ -164,13 +164,13 @@ test('open - file arg', async () => {
   })
 
   const initial = createState({args: {file: 'code1.yaml'}})
-  const {store, ctrl} = createCtrl(initial)
+  const {store, fileService} = createCtrl(initial)
   const {getByTestId} = render(() => <Main state={store} />)
 
   await waitFor(() => {
     expect(getByTestId('code_scroll')).toBeDefined()
   })
 
-  expect(ctrl.file.currentFile?.path).toBe('code1.yaml')
-  expect(ctrl.file.currentFile?.codeEditorView?.state.doc.toString()).toBe('') // TODO: implement
+  expect(fileService.currentFile?.path).toBe('code1.yaml')
+  expect(fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('') // TODO: implement
 })

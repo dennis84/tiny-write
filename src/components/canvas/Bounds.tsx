@@ -69,13 +69,13 @@ const resizeElements = (
 }
 
 const Edge = (props: EdgeProps) => {
-  const [, ctrl] = useState()
+  const {canvasService, canvasCollabService} = useState()
 
   const vert = props.type === EdgeType.Top || props.type === EdgeType.Bottom
   let ref!: SVGRectElement
 
   onMount(() => {
-    const currentCanvas = ctrl.canvas.currentCanvas
+    const currentCanvas = canvasService.currentCanvas
     if (!currentCanvas) return
 
     const resizeGesture = new DragGesture(
@@ -95,12 +95,12 @@ const Edge = (props: EdgeProps) => {
           currentCanvas.snapToGrid,
         ).forEach(([id, box]) => {
           const rect = {x: box.x, y: box.y, width: box.w, height: box.h}
-          void ctrl.canvasCollab.updateElementThrottled({id, ...rect})
-          ctrl.canvas.updateCanvasElement(id, rect)
+          void canvasCollabService.updateElementThrottled({id, ...rect})
+          canvasService.updateCanvasElement(id, rect)
         })
 
-        ctrl.canvas.updateCanvas(currentCanvas.id, {lastModified: new Date()})
-        void ctrl.canvas.saveCanvasThrottled()
+        canvasService.updateCanvas(currentCanvas.id, {lastModified: new Date()})
+        void canvasService.saveCanvasThrottled()
         return selection
       },
     )
@@ -126,7 +126,7 @@ const Edge = (props: EdgeProps) => {
 
 const Corner = (props: CornerProps) => {
   let ref!: SVGRectElement
-  const [, ctrl] = useState()
+  const {canvasService, canvasCollabService} = useState()
   const left = props.type === CornerType.TopLeft || props.type === CornerType.BottomLeft
   const bottom = props.type === CornerType.BottomLeft || props.type === CornerType.BottomRight
   const cursor =
@@ -137,7 +137,7 @@ const Corner = (props: CornerProps) => {
     : ''
 
   onMount(() => {
-    const currentCanvas = ctrl.canvas.currentCanvas
+    const currentCanvas = canvasService.currentCanvas
     if (!currentCanvas) return
 
     const gesture = new DragGesture(ref, ({event, movement: [mx, my], shiftKey, memo, first}) => {
@@ -154,12 +154,12 @@ const Corner = (props: CornerProps) => {
         currentCanvas.snapToGrid,
       ).forEach(([id, box]) => {
         const rect = {x: box.x, y: box.y, width: box.w, height: box.h}
-        void ctrl.canvasCollab.updateElementThrottled({id, ...rect})
-        ctrl.canvas.updateCanvasElement(id, rect)
+        void canvasCollabService.updateElementThrottled({id, ...rect})
+        canvasService.updateCanvasElement(id, rect)
       })
 
-      ctrl.canvas.updateCanvas(currentCanvas.id, {lastModified: new Date()})
-      void ctrl.canvas.saveCanvasThrottled()
+      canvasService.updateCanvas(currentCanvas.id, {lastModified: new Date()})
+      void canvasService.saveCanvasThrottled()
       return selection
     })
 
@@ -198,12 +198,12 @@ const BoundsSvg = styled('svg')`
 export const Bounds = (props: BoundsProps) => {
   let ref!: SVGSVGElement
   const [local, others] = splitProps(props, ['onSelect', 'onDoubleClick'])
-  const [, ctrl] = useState()
-  const currentCanvas = ctrl.canvas.currentCanvas
+  const {canvasService, canvasCollabService} = useState()
+  const currentCanvas = canvasService.currentCanvas
   if (!currentCanvas) return
 
   onMount(() => {
-    const currentCanvas = ctrl.canvas.currentCanvas
+    const currentCanvas = canvasService.currentCanvas
     if (!currentCanvas) return
 
     const gesture = new DragGesture(ref, ({event, first, last, movement: [mx, my], memo}) => {
@@ -217,13 +217,13 @@ export const Bounds = (props: BoundsProps) => {
         if (currentCanvas.snapToGrid) t.snapToGrid(10)
         const [x, y] = t.toArray()
 
-        void ctrl.canvasCollab.updateElementThrottled({id, x, y})
-        ctrl.canvas.updateCanvasElement(id, {x, y})
+        void canvasCollabService.updateElementThrottled({id, x, y})
+        canvasService.updateCanvasElement(id, {x, y})
       })
 
-      ctrl.canvas.updateCanvas(currentCanvas.id, {lastModified: new Date()})
-      void ctrl.canvas.saveCanvasThrottled()
-      ctrl.canvas.setMoving(!last)
+      canvasService.updateCanvas(currentCanvas.id, {lastModified: new Date()})
+      void canvasService.saveCanvasThrottled()
+      canvasService.setMoving(!last)
       return selection
     })
 
@@ -266,9 +266,9 @@ export const Bounds = (props: BoundsProps) => {
 const Visible = (props: BoundsProps) => {
   const STROKE_WIDTH = 2
   const RECT_WIDTH = 10
-  const [, ctrl] = useState()
+  const {canvasService} = useState()
 
-  const zoom = () => ctrl.canvas.currentCanvas?.camera.zoom ?? 1
+  const zoom = () => canvasService.currentCanvas?.camera.zoom ?? 1
 
   const VisibleCorner = styled('rect')`
     fill: var(--background);

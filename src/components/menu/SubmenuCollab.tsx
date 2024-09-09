@@ -7,23 +7,23 @@ import {WEB_URL} from '@/env'
 import {Icon} from '../Icon'
 
 export const SubmenuCollab = () => {
-  const [store, ctrl] = useState()
+  const {store, collabService} = useState()
   const [collabUsers, setCollabUsers] = createSignal(0)
   const [lastAction, setLastAction] = createSignal<string | undefined>()
   const [, setSearchParams] = useSearchParams();
 
   const onCollabStart = () => {
-    ctrl.collab.startCollab()
+    collabService.startCollab()
     setSearchParams({share: 'true'})
   }
 
   const onCollabStop = () => {
-    ctrl.collab.stopCollab()
+    collabService.stopCollab()
     setSearchParams({share: undefined})
   }
 
   const onCopyCollabLink = async () => {
-    await remote.copy(`${WEB_URL}/${ctrl.collab.provider?.roomname}?share=true`)
+    await remote.copy(`${WEB_URL}/${collabService.provider?.roomname}?share=true`)
     setLastAction('copy-collab-link')
   }
 

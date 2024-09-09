@@ -51,7 +51,7 @@ export const Toolbar = () => {
   let tooltipRef!: HTMLDivElement
   let arrowRef: HTMLSpanElement | undefined
 
-  const [state, ctrl] = useState()
+  const {store, canvasService} = useState()
   const navigate = useNavigate()
 
   const open = async (element: CanvasElement) => {
@@ -63,8 +63,8 @@ export const Toolbar = () => {
   }
 
   const getSelected = () => {
-    if (state.selecting || state.moving) return
-    const currentCanvas = ctrl.canvas.currentCanvas
+    if (store.selecting || store.moving) return
+    const currentCanvas = canvasService.currentCanvas
     if (!currentCanvas) return
     const selected = currentCanvas.elements.filter(
       (e) => (isEditorElement(e) || isCodeElement(e)) && e.selected,

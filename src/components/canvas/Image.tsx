@@ -21,20 +21,20 @@ const CanvasImage = styled('img')(
 
 export const Image = ({element, index}: {element: CanvasImageElement; index: number}) => {
   let imageRef!: HTMLImageElement
-  const [, ctrl] = useState()
+  const {appService, canvasService} = useState()
 
   const onSelect = (e: MouseEvent) => {
-    ctrl.canvas.select(element.id, false, e.shiftKey)
+    canvasService.select(element.id, false, e.shiftKey)
   }
 
   const createSelection = (): Selection => {
-    const box = ctrl.canvas.createBox(element)
+    const box = canvasService.createBox(element)
     return {box, elements: [[element.id, box]]}
   }
 
   onMount(async () => {
     if (isTauri()) {
-      const basePath = await ctrl.app.getBasePath()
+      const basePath = await appService.getBasePath()
       const p = await MediaService.getImagePath(element.src, basePath)
       imageRef.setAttribute('src', p)
     } else {

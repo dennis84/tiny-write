@@ -7,11 +7,11 @@ import {Editor} from '../editor/Editor'
 
 export const EditorPage = (props: RouteSectionProps) => {
   const OpenEditor = () => {
-    const [store, ctrl] = useState()
+    const {store, editorService, fileService} = useState()
     onMount(async () => {
       const share = props.location.query.share === 'true'
-      await ctrl.editor.openFile(props.params.id, share)
-      ctrl.file.currentFile?.editorView?.focus()
+      await editorService.openFile(props.params.id, share)
+      fileService.currentFile?.editorView?.focus()
     })
 
     return (

@@ -15,7 +15,7 @@ interface Props {
 }
 
 export const Select = (props: Props) => {
-  const [state, ctrl] = useState()
+  const {store, appService, canvasService, editorService} = useState()
   const [frame, setFrame] = createSignal<Box>()
 
   onMount(() => {
@@ -45,10 +45,10 @@ export const Select = (props: Props) => {
 
         // If only clicked
         if (!first && !memo) {
-          if (state.mode === Mode.Canvas) {
-            ctrl.canvas.deselect()
+          if (store.mode === Mode.Canvas) {
+            canvasService.deselect()
           } else {
-            ctrl.editor.deselect()
+            editorService.deselect()
           }
           return
         }
@@ -59,17 +59,17 @@ export const Select = (props: Props) => {
         const initial: Box = first ? new Box(x, y, 0, 0) : memo
         const newBox = Box.Resize(initial, CornerType.TopLeft, mx, my).box
 
-        if (state.mode === Mode.Canvas) {
-          ctrl.canvas.selectBox(newBox, first, last)
+        if (store.mode === Mode.Canvas) {
+          canvasService.selectBox(newBox, first, last)
         } else {
-          ctrl.editor.selectBox(newBox, first, last)
+          editorService.selectBox(newBox, first, last)
         }
 
-        ctrl.app.setSelecting(true)
+        appService.setSelecting(true)
         setFrame(newBox)
         if (last) {
           setFrame(undefined)
-          setTimeout(() => ctrl.app.setSelecting(false), 100)
+          setTimeout(() => appService.setSelecting(false), 100)
         }
         return initial
       },

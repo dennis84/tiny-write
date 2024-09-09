@@ -1,5 +1,6 @@
-import {Store, createStore, SetStoreFunction} from 'solid-js/store'
+import {Store, createStore} from 'solid-js/store'
 import {State} from '@/state'
+import {isDev} from '@/env'
 import {AppService} from './AppService'
 import {ChangeSetService} from './ChangeSetService'
 import {ConfigService} from './ConfigService'
@@ -10,7 +11,6 @@ import {CanvasService} from './CanvasService'
 import {CanvasCollabService} from './CanvasCollabService'
 import {MediaService} from './MediaService'
 import {SelectService} from './SelectService'
-import {isDev} from '@/env'
 import {TreeService} from './TreeService'
 import {CodeService} from './CodeService'
 import {CodeMirrorService} from './CodeMirrorService'
@@ -18,69 +18,81 @@ import {PrettierService} from './PrettierService'
 import {DeleteService} from './DeleteService'
 import {ProseMirrorService} from './ProseMirrorService'
 
-export class Ctrl {
-  app!: AppService
-  config!: ConfigService
-  editor!: EditorService
-  changeSet!: ChangeSetService
-  file!: FileService
-  collab!: CollabService
-  canvas!: CanvasService
-  canvasCollab!: CanvasCollabService
-  media!: MediaService
-  select!: SelectService
-  tree!: TreeService
-  delete!: DeleteService
-  code!: CodeService
-  proseMirror!: ProseMirrorService
-  codeMirror!: CodeMirrorService
-  prettier!: PrettierService
-
-  constructor(store: Store<State>, setState: SetStoreFunction<State>) {
-    this.collab = new CollabService(store, setState)
-    this.config = new ConfigService(this.collab, store, setState)
-    this.tree = new TreeService(store, setState)
-    this.file = new FileService(this.collab, store, setState)
-    this.select = new SelectService()
-    this.prettier = new PrettierService()
-    this.delete = new DeleteService(this.file, this.canvas, this.tree, store, setState)
-    this.app = new AppService(this.file, this.tree, store, setState)
-    this.canvas = new CanvasService(this.file, this.select, this.tree, store, setState)
-    this.codeMirror = new CodeMirrorService(this.config, this.app, store)
-    this.proseMirror = new ProseMirrorService(
-      this.config,
-      this.collab,
-      this.app,
-      this.codeMirror,
-      this.canvas,
-    )
-    this.editor = new EditorService(
-      this.file,
-      this.collab,
-      this.proseMirror,
-      this.app,
-      this.tree,
-      this.select,
-      store,
-      setState,
-    )
-    this.code = new CodeService(this.file, this.app, this.collab, this.codeMirror, store, setState)
-    this.changeSet = new ChangeSetService(this.file, this.collab, this.editor, store, setState)
-    this.canvasCollab = new CanvasCollabService(this.collab, this.canvas, store)
-    this.media = new MediaService(
-      this.file,
-      this.canvas,
-      this.canvasCollab,
-      this.app,
-      this.editor,
-      store,
-    )
-  }
-}
-
 export const createCtrl = (initial: State) => {
   const [store, setState] = createStore<Store<State>>(initial)
   if (isDev) (window as any).__STORE__ = store
-  const ctrl = new Ctrl(store, setState)
-  return {store, ctrl}
+
+  const collabService = new CollabService(store, setState)
+  const configService = new ConfigService(collabService, store, setState)
+  const treeService = new TreeService(store, setState)
+  const fileService = new FileService(collabService, store, setState)
+  const selectService = new SelectService()
+  const prettierService = new PrettierService()
+  const canvasService = new CanvasService(fileService, selectService, treeService, store, setState)
+  const deleteService = new DeleteService(fileService, canvasService, treeService, store, setState)
+  const appService = new AppService(fileService, treeService, store, setState)
+  const codeMirrorService = new CodeMirrorService(configService, appService, store)
+  const proseMirrorService = new ProseMirrorService(
+    configService,
+    collabService,
+    appService,
+    codeMirrorService,
+    canvasService,
+  )
+  const editorService = new EditorService(
+    fileService,
+    collabService,
+    proseMirrorService,
+    appService,
+    treeService,
+    selectService,
+    store,
+    setState,
+  )
+  const codeService = new CodeService(
+    fileService,
+    appService,
+    collabService,
+    codeMirrorService,
+    store,
+    setState,
+  )
+  const changeSetService = new ChangeSetService(
+    fileService,
+    collabService,
+    editorService,
+    store,
+    setState,
+  )
+  const canvasCollabService = new CanvasCollabService(collabService, canvasService, store)
+  const mediaService = new MediaService(
+    fileService,
+    canvasService,
+    canvasCollabService,
+    appService,
+    editorService,
+    store,
+  )
+
+  return {
+    store,
+    collabService,
+    configService,
+    treeService,
+    fileService,
+    selectService,
+    prettierService,
+    canvasService,
+    deleteService,
+    appService,
+    codeMirrorService,
+    proseMirrorService,
+    editorService,
+    codeService,
+    changeSetService,
+    canvasCollabService,
+    mediaService,
+  }
 }
+
+export type Ctrl = ReturnType<typeof createCtrl>

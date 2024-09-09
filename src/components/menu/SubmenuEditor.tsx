@@ -7,42 +7,42 @@ import {Icon} from '../Icon'
 import { useNavigate } from '@solidjs/router'
 
 export const SubmenuEditor = ({maybeHide}: {maybeHide: () => void}) => {
-  const [, ctrl] = useState()
+  const {editorService, fileService, treeService} = useState()
   const [relativePath, setRelativePath] = createSignal('')
   const navigate = useNavigate()
 
   const modKey = isMac ? '⌘' : mod
 
   const onNew = async () => {
-    const file = await ctrl.editor.newFile()
-    ctrl.tree.create()
+    const file = await editorService.newFile()
+    treeService.create()
     navigate(`/editor/${file.id}`)
     maybeHide()
   }
 
   const onSaveAs = async () => {
-    const currentFile = ctrl.file.currentFile
+    const currentFile = fileService.currentFile
     if (!currentFile) return
     const path = await remote.saveFile(currentFile)
-    if (path) await ctrl.editor.updatePath(path)
+    if (path) await editorService.updatePath(path)
   }
 
-  const onClear = () => ctrl.editor.clear()
+  const onClear = () => editorService.clear()
 
   createEffect(async () => {
-    if (!ctrl.file.currentFile?.path) return
-    const rel = await remote.toRelativePath(ctrl.file.currentFile?.path)
+    if (!fileService.currentFile?.path) return
+    const rel = await remote.toRelativePath(fileService.currentFile?.path)
     setRelativePath(rel)
-  }, ctrl.file.currentFile?.path)
+  }, fileService.currentFile?.path)
 
   return (
     <>
-      <Label>File {ctrl.file.currentFile?.path && <i>({relativePath()})</i>}</Label>
+      <Label>File {fileService.currentFile?.path && <i>({relativePath()})</i>}</Label>
       <Sub data-tauri-drag-region="true">
         <Link onClick={onNew} data-testid="new_file">
           <Icon>post_add</Icon> New file <Keys keys={[modKey, 'n']} />
         </Link>
-        <Show when={isTauri() && !ctrl.file.currentFile?.path}>
+        <Show when={isTauri() && !fileService.currentFile?.path}>
           <Link onClick={onSaveAs}>
             <Icon>save_as</Icon> Save to file 💾 <Keys keys={[modKey, 's']} />
           </Link>

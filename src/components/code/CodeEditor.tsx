@@ -16,32 +16,32 @@ export const CodeMirrorContainer = styled('div')`
 export const CodeEditor = () => {
   let containerRef!: HTMLDivElement
 
-  const [store, ctrl] = useState()
+  const {store, codeService, collabService, fileService} = useState()
 
   createEffect(() => {
-    const currentFile = ctrl.file.currentFile
+    const currentFile = fileService.currentFile
     if (!currentFile || !store.collab) return
 
-    const provider = ctrl.collab.getProvider(currentFile.id)
+    const provider = collabService.getProvider(currentFile.id)
     if (!provider) {
-      ctrl.collab.init(currentFile)
+      collabService.init(currentFile)
     }
 
     if (provider && currentFile?.codeEditorView === undefined) {
-      ctrl.code.renderEditor(currentFile, containerRef)
+      codeService.renderEditor(currentFile, containerRef)
     }
   })
 
   createEffect((prev) => {
     if (!prev) return
-    const currentFile = ctrl.file.currentFile
+    const currentFile = fileService.currentFile
     if (!currentFile) return
-    ctrl.code.updateConfig(currentFile)
+    codeService.updateConfig(currentFile)
     return store.config
   })
 
   onCleanup(() => {
-    ctrl.file.destroy(ctrl.file.currentFile?.id)
+    fileService.destroy(fileService.currentFile?.id)
   })
 
   return (

@@ -6,7 +6,15 @@ import {isTauri, mod} from '@/env'
 import * as remote from '@/remote'
 
 export const Keymap = () => {
-  const [store, ctrl] = useState()
+  const {
+    store,
+    appService,
+    editorService,
+    fileService,
+    collabService,
+    canvasService,
+    canvasCollabService,
+  } = useState()
   const navigate = useNavigate()
 
   onMount(() => {
@@ -37,40 +45,40 @@ export const Keymap = () => {
 
   const onNew = async () => {
     if (store.mode === Mode.Editor) {
-      const file = await ctrl.editor.newFile()
+      const file = await editorService.newFile()
       navigate(`/editor/${file.id}`)
     } else {
-      const el = await ctrl.canvas.newFile()
-      if (el) ctrl.canvasCollab.addElement(el)
+      const el = await canvasService.newFile()
+      if (el) canvasCollabService.addElement(el)
     }
   }
 
   const onClear = async () => {
     if (store.mode === Mode.Editor) {
-      await ctrl.editor.clear()
+      await editorService.clear()
     }
   }
 
   const onSave = async () => {
-    const currentFile = ctrl.file.currentFile
+    const currentFile = fileService.currentFile
     if (!isTauri() || !currentFile || currentFile?.path) return false
     const path = await remote.saveFile(currentFile)
-    if (path) await ctrl.editor.updatePath(path)
+    if (path) await editorService.updatePath(path)
   }
 
   const onFullscreen = async () => {
     if (!isTauri()) return false
-    await ctrl.app.setFullscreen(!store.fullscreen)
+    await appService.setFullscreen(!store.fullscreen)
     return true
   }
 
   const onUndo = () => {
-    ctrl.collab.undoManager?.undo()
+    collabService.undoManager?.undo()
     return true
   }
 
   const onRedo = () => {
-    ctrl.collab.undoManager?.redo()
+    collabService.undoManager?.redo()
     return true
   }
 
@@ -83,11 +91,11 @@ export const Keymap = () => {
   const onBackspace = async () => {
     if (store.mode !== Mode.Canvas) return false
 
-    const currentCanvas = ctrl.canvas.currentCanvas
+    const currentCanvas = canvasService.currentCanvas
     if (!currentCanvas) return false
 
     const elementIds: string[] = []
-    const selection = ctrl.canvas.selection
+    const selection = canvasService.selection
 
     if (selection) {
       selection.elements.forEach(([id]) => elementIds.push(id))
@@ -102,8 +110,8 @@ export const Keymap = () => {
       elementIds.push(selected.id)
     }
 
-    const removed = await ctrl.canvas.removeElements(elementIds)
-    ctrl.canvasCollab.removeMany(removed)
+    const removed = await canvasService.removeElements(elementIds)
+    canvasCollabService.removeMany(removed)
     return true
   }
 

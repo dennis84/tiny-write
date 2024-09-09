@@ -1,11 +1,10 @@
 import {createContext, useContext} from 'solid-js'
-import {Store} from 'solid-js/store'
 import {EditorView} from 'prosemirror-view'
 import {EditorView as CmEditorView} from '@codemirror/view'
 import * as Y from 'yjs'
 import {WebsocketProvider} from 'y-websocket'
-import {Ctrl} from '@/services'
 import {YMultiDocUndoManager} from 'y-utility/y-multidoc-undomanager'
+import {Ctrl} from './services'
 
 export interface Args {
   cwd?: string
@@ -231,7 +230,7 @@ export class ServiceError extends Error {
   }
 }
 
-export const StateContext = createContext<[Store<State>, Ctrl]>([{} as any, {} as any])
+export const StateContext = createContext<Ctrl>({} as Ctrl)
 
 export const useState = () => useContext(StateContext)
 

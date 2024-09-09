@@ -21,7 +21,7 @@ beforeEach(() => {
 test('undoManager - text', async () => {
   vi.stubGlobal('location', new URL('http://localhost:3000/editor/1'))
 
-  const {ctrl, store} = createCtrl(createState())
+  const {store, collabService} = createCtrl(createState())
   const {getByTestId} = render(() => <Main state={store} />)
 
   await waitFor(() => {
@@ -33,13 +33,13 @@ test('undoManager - text', async () => {
 
   await userEvent.keyboard('Test')
 
-  ctrl.collab.undoManager?.stopCapturing()
+  collabService.undoManager?.stopCapturing()
 
   await userEvent.keyboard('123')
 
   expect(getByTestId('editor_scroll')).toHaveTextContent(/^Test123$/)
 
-  ctrl.collab.undoManager?.undo()
+  collabService.undoManager?.undo()
 
   expect(getByTestId('editor_scroll')).toHaveTextContent(/^Test$/)
 })
@@ -47,7 +47,7 @@ test('undoManager - text', async () => {
 test('undoManager - code', async () => {
   vi.stubGlobal('location', new URL('http://localhost:3000/code/1'))
 
-  const {ctrl, store} = createCtrl(createState())
+  const {store, collabService, fileService} = createCtrl(createState())
   const {getByTestId} = render(() => <Main state={store} />)
 
   await waitFor(() => {
@@ -55,25 +55,25 @@ test('undoManager - code', async () => {
   })
 
   expect(store.files.length).toBe(1)
-  expect(ctrl.file.currentFile?.codeEditorView?.state.doc.toString()).toBe('')
+  expect(fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('')
 
   await userEvent.keyboard('Test')
 
-  ctrl.collab.undoManager?.stopCapturing()
+  collabService.undoManager?.stopCapturing()
 
   await userEvent.keyboard('123')
 
-  expect(ctrl.file.currentFile?.codeEditorView?.state.doc.toString()).toBe('Test123')
+  expect(fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('Test123')
 
-  ctrl.collab.undoManager?.undo()
+  collabService.undoManager?.undo()
 
-  expect(ctrl.file.currentFile?.codeEditorView?.state.doc.toString()).toBe('Test')
+  expect(fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('Test')
 })
 
 test('startCollab', async () => {
   vi.stubGlobal('location', new URL('http://localhost:3000/editor/1'))
 
-  const {ctrl, store} = createCtrl(createState())
+  const {store, collabService} = createCtrl(createState())
   const {getByTestId} = render(() => <Main state={store} />)
 
   await waitFor(() => {
@@ -83,17 +83,17 @@ test('startCollab', async () => {
   await userEvent.keyboard('Test')
   expect(getByTestId('editor_scroll')).toHaveTextContent(/^Test$/)
 
-  ctrl.collab.startCollab()
+  collabService.startCollab()
 
   expect(store.collab?.started).toBe(true)
   expect(getByTestId('editor_scroll')).toHaveTextContent(/^Test$/)
 
-  ctrl.collab.stopCollab()
+  collabService.stopCollab()
 
   expect(store.collab?.started).toBe(false)
   expect(getByTestId('editor_scroll')).toHaveTextContent(/^Test$/)
 
-  ctrl.collab.startCollab()
+  collabService.startCollab()
 
   expect(store.collab?.started).toBe(true)
   expect(getByTestId('editor_scroll')).toHaveTextContent(/^Test$/)

@@ -25,11 +25,11 @@ export const Main = (props: {state: State}) => {
       `Open route (path=${p.location.pathname}, search=${JSON.stringify(p.location.query)})`,
     )
 
-    const {store, ctrl} = createCtrl(props.state)
+    const ctrl = createCtrl(props.state)
     const navigate = useNavigate()
 
     const mouseEnterCoords = createMutable({x: 0, y: 0})
-    const [inputLine, setInputLine] = ctrl.app.inputLine
+    const [inputLine, setInputLine] = ctrl.appService.inputLine
 
     let layoutRef!: HTMLDivElement
 
@@ -39,21 +39,21 @@ export const Main = (props: {state: State}) => {
     }
 
     const onViewError = (error: any, reset: any) => {
-      ctrl.app.setError({error})
+      ctrl.appService.setError({error})
       reset()
       return <></>
     }
 
     onMount(() => {
-      ctrl.app.layoutRef = layoutRef
+      ctrl.appService.layoutRef = layoutRef
       const matchDark = window.matchMedia('(prefers-color-scheme: dark)')
-      const onUpdateDarkMode = () => ctrl.config.updateDarkMode()
+      const onUpdateDarkMode = () => ctrl.configService.updateDarkMode()
       matchDark.addEventListener('change', onUpdateDarkMode)
       onCleanup(() => matchDark.removeEventListener('change', onUpdateDarkMode))
     })
 
     onMount(async () => {
-      await ctrl.app.init()
+      await ctrl.appService.init()
     })
 
     onMount(() => {
@@ -65,7 +65,7 @@ export const Main = (props: {state: State}) => {
           remote.info('🔗 User dropped')
           for (const path of event.payload.paths) {
             const {x, y} = event.payload.position
-            const result = await ctrl.media.dropPath(path, [x, y])
+            const result = await ctrl.mediaService.dropPath(path, [x, y])
             if (result?.file) {
               navigate(`/${result.file.code ? 'code' : 'editor'}/${result.file.id}`)
             }
@@ -82,12 +82,12 @@ export const Main = (props: {state: State}) => {
       if (!isTauri()) return
       const unlistenResizeProm = tauriWindow.getCurrentWindow().onResized(async ({payload}) => {
         const {width, height} = payload
-        await ctrl.app.updateWindow({width, height})
+        await ctrl.appService.updateWindow({width, height})
       })
 
       const unlistenMoveProm = tauriWindow.getCurrentWindow().onMoved(async ({payload}) => {
         const {x, y} = payload
-        await ctrl.app.updateWindow({x, y})
+        await ctrl.appService.updateWindow({x, y})
       })
 
       onCleanup(async () => {
@@ -110,7 +110,7 @@ export const Main = (props: {state: State}) => {
           if (file.type.startsWith('image/')) {
             const x = mouseEnterCoords.x
             const y = mouseEnterCoords.y
-            await ctrl.media.dropFile(file, [x, y])
+            await ctrl.mediaService.dropFile(file, [x, y])
           }
         }
       }
@@ -127,21 +127,17 @@ export const Main = (props: {state: State}) => {
     })
 
     return (
-      <StateContext.Provider value={[store, ctrl]}>
+      <StateContext.Provider value={ctrl}>
         <ErrorBoundary fallback={onViewError}>
-          <Layout ref={layoutRef} onDragOver={onDragOver} data-testid={store.loading}>
+          <Layout ref={layoutRef} onDragOver={onDragOver} data-testid={ctrl.store.loading}>
             <Switch>
-              <Match when={store.error}>
+              <Match when={ctrl.store.error}>
                 <Error />
               </Match>
-              <Match
-                when={
-                  store.args?.dir && store.args.dir.length > 0 && store.loading === 'initialized'
-                }
-              >
+              <Match when={ctrl.store.args?.dir?.length && ctrl.store.loading === 'initialized'}>
                 <Dir />
               </Match>
-              <Match when={store.loading === 'initialized'}>{p.children}</Match>
+              <Match when={ctrl.store.loading === 'initialized'}>{p.children}</Match>
             </Switch>
             <MouseCursor />
             <Menu />

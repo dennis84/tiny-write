@@ -12,7 +12,7 @@ export const Editor = () => {
   let scrollRef!: HTMLDivElement
   let editorRef!: HTMLDivElement
 
-  const [store, ctrl] = useState()
+  const {store, configService, collabService, editorService, fileService} = useState()
 
   onMount(() => {
     const wheel = new WheelGesture(
@@ -22,7 +22,7 @@ export const Editor = () => {
         event.preventDefault()
         const max = Math.min(document.body.clientWidth, 1800)
         const currentWidth = store.config.contentWidth
-        ctrl.config.updateContentWidth(Math.max(400, Math.min(max, currentWidth - dy)))
+        configService.updateContentWidth(Math.max(400, Math.min(max, currentWidth - dy)))
       },
       {eventOptions: {passive: false}},
     )
@@ -33,30 +33,30 @@ export const Editor = () => {
   })
 
   createEffect(async () => {
-    const currentFile = ctrl.file.currentFile
+    const currentFile = fileService.currentFile
     if (!currentFile || !store.collab) return
 
-    const provider = ctrl.collab.getProvider(currentFile.id)
+    const provider = collabService.getProvider(currentFile.id)
     if (!provider) {
-      ctrl.collab.init(currentFile)
+      collabService.init(currentFile)
     }
 
     if (provider && currentFile.editorView === undefined) {
-      ctrl.editor.renderEditor(currentFile, editorRef!)
-      ctrl.file.currentFile?.editorView?.focus()
+      editorService.renderEditor(currentFile, editorRef!)
+      fileService.currentFile?.editorView?.focus()
     }
   })
 
   createEffect((prev) => {
     if (!prev) return
-    const currentFile = ctrl.file.currentFile
+    const currentFile = fileService.currentFile
     if (!currentFile) return
-    ctrl.editor.updateConfig(currentFile)
+    editorService.updateConfig(currentFile)
     return store.config
   })
 
   onCleanup(() => {
-    ctrl.file.destroy(ctrl.file.currentFile?.id)
+    fileService.destroy(fileService.currentFile?.id)
   })
 
   return (
@@ -70,12 +70,12 @@ export const Editor = () => {
         data-tauri-drag-region="true"
       />
       <BlockHandle
-        file={ctrl.file.currentFile}
+        file={fileService.currentFile}
         mouseMoveArea={() => scrollRef}
         scrollContainer={() => scrollRef}
       />
-      <TableControls file={ctrl.file.currentFile} scrollContainer={() => scrollRef} />
-      <AutocompleteTooltip file={ctrl.file.currentFile} />
+      <TableControls file={fileService.currentFile} scrollContainer={() => scrollRef} />
+      <AutocompleteTooltip file={fileService.currentFile} />
     </Scroll>
   )
 }

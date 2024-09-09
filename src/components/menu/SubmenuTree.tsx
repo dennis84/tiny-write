@@ -1,16 +1,16 @@
 import {For, Match, Show, Switch, createEffect, createSignal, onCleanup, onMount} from 'solid-js'
 import {Portal} from 'solid-js/web'
 import {unwrap} from 'solid-js/store'
+import {useNavigate} from '@solidjs/router'
 import {css, styled} from 'solid-styled-components'
 import {DragGesture} from '@use-gesture/vanilla'
 import {Mode, isCanvas, isCodeFile, isFile, useState} from '@/state'
 import {TreeNode, TreeNodeItem} from '@/services/TreeService'
 import {FileService} from '@/services/FileService'
+import {CanvasService} from '@/services/CanvasService'
 import {itemCss, Label, Link, Sub} from './Style'
 import {Tooltip} from '../Tooltip'
 import {Icon} from '../Icon'
-import { useNavigate } from '@solidjs/router'
-import { CanvasService } from '@/services/CanvasService'
 
 const HighlightContent = styled('div')`
   position: absolute;
@@ -145,7 +145,17 @@ export const SubmenuTree = (props: Props) => {
   let ghostRef!: HTMLDivElement
   let binRef!: HTMLButtonElement
 
-  const [state, ctrl] = useState()
+  const {
+    store,
+    appService,
+    canvasService,
+    canvasCollabService,
+    codeService,
+    deleteService,
+    editorService,
+    fileService,
+    treeService,
+  } = useState()
   const [dropState, setDropState] = createSignal<DropState>()
   const [tooltipAnchor, setTooltipAnchor] = createSignal<HTMLElement | undefined>()
   const [selected, setSelected] = createSignal<TreeNode>()
@@ -170,15 +180,15 @@ export const SubmenuTree = (props: Props) => {
     if (!item) return
 
     closeTooltip()
-    ctrl.app.setInputLine({
+    appService.setInputLine({
       value: item?.title ?? '',
       onEnter: (value: string) => {
         const title = value.trim() || undefined
         if (isFile(item)) {
-          ctrl.file.updateFile(item.id, {title})
+          fileService.updateFile(item.id, {title})
           FileService.saveFile(item)
         } else {
-          ctrl.canvas.updateCanvas(item.id, {title})
+          canvasService.updateCanvas(item.id, {title})
           CanvasService.saveCanvas(item)
         }
       },
@@ -188,10 +198,10 @@ export const SubmenuTree = (props: Props) => {
   const onAddFile = async () => {
     const target = unwrap(selected())
     if (!target) return
-    const file = await ctrl.editor.newFile()
-    await ctrl.tree.add({item: file, tree: []}, target)
-    if (ctrl.tree.isCollapsed(target)) {
-      await ctrl.tree.collapse(target)
+    const file = await editorService.newFile()
+    await treeService.add({item: file, tree: []}, target)
+    if (treeService.isCollapsed(target)) {
+      await treeService.collapse(target)
     }
 
     navigate(`/editor/${file.id}`)
@@ -201,8 +211,8 @@ export const SubmenuTree = (props: Props) => {
   const onAddCanvas = async () => {
     const target = unwrap(selected())
     if (!target) return
-    const canvas = await ctrl.canvas.newCanvas()
-    await ctrl.tree.add({item: canvas, tree: []}, target)
+    const canvas = await canvasService.newCanvas()
+    await treeService.add({item: canvas, tree: []}, target)
     navigate(`/canvas/${canvas.id}`)
     closeTooltip()
   }
@@ -210,8 +220,8 @@ export const SubmenuTree = (props: Props) => {
   const onAddCode = async () => {
     const target = unwrap(selected())
     if (!target) return
-    const file = await ctrl.code.newFile()
-    await ctrl.tree.add({item: file, tree: []}, target)
+    const file = await codeService.newFile()
+    await treeService.add({item: file, tree: []}, target)
     navigate(`/code/${file.id}`)
     closeTooltip()
   }
@@ -219,7 +229,7 @@ export const SubmenuTree = (props: Props) => {
   const onDelete = async () => {
     const node = unwrap(selected())
     if (!node) return
-    const result = await ctrl.delete.delete(node)
+    const result = await deleteService.delete(node)
     if (result.navigateTo) navigate(result.navigateTo)
     closeTooltip()
   }
@@ -227,7 +237,7 @@ export const SubmenuTree = (props: Props) => {
   const onDeleteForever = async () => {
     const node = unwrap(selected())
     if (!node) return
-    const result = await ctrl.delete.delete(node, true)
+    const result = await deleteService.delete(node, true)
     if (result.navigateTo) navigate(result.navigateTo)
     closeTooltip()
   }
@@ -236,9 +246,9 @@ export const SubmenuTree = (props: Props) => {
     const node = unwrap(selected())
     if (!node) return
     if (isFile(node.item)) {
-      await ctrl.file.restore(node.item.id)
+      await fileService.restore(node.item.id)
     } else {
-      await ctrl.canvas.restore(node.item.id)
+      await canvasService.restore(node.item.id)
     }
 
     closeTooltip()
@@ -248,17 +258,17 @@ export const SubmenuTree = (props: Props) => {
     const id = selected()?.item.id
     if (!id) return
     props.maybeHide?.()
-    await ctrl.canvas.focus(id)
+    await canvasService.focus(id)
     closeTooltip()
   }
 
   const isOnCanvas = (item?: TreeNodeItem): boolean =>
-    state.mode === Mode.Canvas &&
+    store.mode === Mode.Canvas &&
     isFile(item) &&
-    (ctrl.canvas.currentCanvas?.elements.some((it) => it.id === item.id) ?? false)
+    (canvasService.currentCanvas?.elements.some((it) => it.id === item.id) ?? false)
 
   onMount(() => {
-    ctrl.tree.create()
+    treeService.create()
   })
 
   const TreeLink = (p: {node: TreeNode; level: number; selected?: boolean}) => {
@@ -279,10 +289,10 @@ export const SubmenuTree = (props: Props) => {
       props.maybeHide?.()
     }
 
-    const onCornerClick = () => ctrl.tree.collapse(p.node)
+    const onCornerClick = () => treeService.collapse(p.node)
 
     const getCurrentId = () =>
-      state.mode === Mode.Canvas ? ctrl.canvas.currentCanvas?.id : ctrl.file.currentFile?.id
+      store.mode === Mode.Canvas ? canvasService.currentCanvas?.id : fileService.currentFile?.id
 
     onMount(() => {
       const offset = 10
@@ -310,7 +320,7 @@ export const SubmenuTree = (props: Props) => {
           if (
             targetId &&
             targetId !== p.node.item.id &&
-            !ctrl.tree.isDescendant(targetId, p.node.tree)
+            !treeService.isDescendant(targetId, p.node.tree)
           ) {
             if (y < box.top + offset) {
               setDropState({pos: 'before', targetId})
@@ -330,23 +340,23 @@ export const SubmenuTree = (props: Props) => {
           if (last) {
             const ds = dropState()
             if (ds?.targetId) {
-              const targetNode = ctrl.tree.findTreeNode(ds.targetId)
+              const targetNode = treeService.findTreeNode(ds.targetId)
               if (targetNode) {
                 if (ds.pos === 'add' && isFile(targetNode.item)) {
-                  await ctrl.tree.add(p.node, targetNode)
+                  await treeService.add(p.node, targetNode)
                 } else if (ds.pos === 'before') {
-                  await ctrl.tree.before(p.node, targetNode)
+                  await treeService.before(p.node, targetNode)
                 } else if (ds.pos === 'after') {
-                  await ctrl.tree.after(p.node, targetNode)
+                  await treeService.after(p.node, targetNode)
                 }
               }
             } else if (ds?.pos === 'delete') {
-              await ctrl.delete.delete(p.node)
+              await deleteService.delete(p.node)
             } else if (ds?.pos === 'open') {
-              if (state.mode === Mode.Canvas && isFile(p.node.item)) {
-                const point = ctrl.canvas.getPosition([x, y])
-                const added = await ctrl.canvas.addFile(p.node.item, undefined, point)
-                ctrl.canvasCollab.addElements(added ?? [])
+              if (store.mode === Mode.Canvas && isFile(p.node.item)) {
+                const point = canvasService.getPosition([x, y])
+                const added = await canvasService.addFile(p.node.item, undefined, point)
+                canvasCollabService.addElements(added ?? [])
               }
             }
 
@@ -368,7 +378,7 @@ export const SubmenuTree = (props: Props) => {
 
     createEffect(async () => {
       if (isFile(p.node.item)) {
-        setTitle(await ctrl.file.getTitle(p.node.item))
+        setTitle(await fileService.getTitle(p.node.item))
       } else {
         setTitle(p.node.item.title ?? 'Canvas')
       }
@@ -386,7 +396,7 @@ export const SubmenuTree = (props: Props) => {
           onClick={onCornerClick}
           expandable={p.node.tree.length > 0}
           level={p.level}
-          highlight={ctrl.tree.isCollapsed(p.node)}
+          highlight={treeService.isCollapsed(p.node)}
         >
           <Switch>
             <Match when={isCanvas(p.node.item)}>
@@ -436,7 +446,7 @@ export const SubmenuTree = (props: Props) => {
               }
               level={p.level}
             />
-            <Show when={node.tree.length > 0 && !ctrl.tree.isCollapsed(node)}>
+            <Show when={node.tree.length > 0 && !treeService.isCollapsed(node)}>
               <Tree
                 tree={node.tree}
                 level={p.level + 1}
@@ -456,7 +466,7 @@ export const SubmenuTree = (props: Props) => {
     <>
       <Label>Storage</Label>
       <Sub data-tauri-drag-region="true">
-        <Tree tree={ctrl.tree.tree} level={0} />
+        <Tree tree={treeService.tree} level={0} />
         <Show when={!props.showDeleted}>
           <Link
             ref={binRef}

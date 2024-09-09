@@ -58,7 +58,7 @@ test.each([
     ],
   })
 
-  const {ctrl} = createCtrl(state)
-  const basePath = await ctrl.app.getBasePath()
+  const {appService} = createCtrl(state)
+  const basePath = await appService.getBasePath()
   expect(basePath).toBe(data.expected)
 })

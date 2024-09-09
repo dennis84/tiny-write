@@ -6,17 +6,17 @@ import {Keys, Label, Link, Sub} from './Style'
 import {Icon} from '../Icon'
 
 export const SubmenuEdit = () => {
-  const [, ctrl] = useState()
+  const {collabService, fileService} = useState()
   const [lastAction, setLastAction] = createSignal<string | undefined>()
 
   const modKey = isMac ? '⌘' : mod
 
   const onUndo = () => {
-    ctrl.collab.undoManager?.undo()
+    collabService.undoManager?.undo()
   }
 
   const onRedo = () => {
-    ctrl.collab.undoManager?.redo()
+    collabService.undoManager?.redo()
   }
 
   const cmd = (cmd: string) => {
@@ -25,7 +25,7 @@ export const SubmenuEdit = () => {
   }
 
   const onCopyAllAsMd = async () => {
-    const currentFile = ctrl.file.currentFile
+    const currentFile = fileService.currentFile
     const state = currentFile?.editorView?.state
     if (!state) return
     await remote.copyAllAsMarkdown(state)
@@ -60,7 +60,7 @@ export const SubmenuEdit = () => {
           <Icon>content_copy</Icon> Copy {lastAction() === 'copy' && '📋'}{' '}
           <Keys keys={[modKey, 'c']} />
         </Link>
-        <Show when={ctrl.file.currentFile?.editorView}>
+        <Show when={fileService.currentFile?.editorView}>
           <Link onClick={onCopyAllAsMd}>
             <Icon>markdown_copy</Icon> Copy all as markdown {lastAction() === 'copy-md' && '📋'}
           </Link>

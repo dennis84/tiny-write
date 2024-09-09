@@ -90,7 +90,7 @@ const HandleGrid = (props: HandleGridProps) => {
   const [activeHandle, setActiveHandle] = createSignal<ActiveHandle>()
   const [handlePosition, setHandlePosition] = createSignal<HandlePosition>()
   const [selection, setSelection] = createSignal<Box>()
-  const [, ctrl] = useState()
+  const {appService} = useState()
 
   const getScrollTop = (): number => {
     return props.scrollContainer?.().scrollTop ?? window.scrollY
@@ -240,7 +240,7 @@ const HandleGrid = (props: HandleGridProps) => {
         )}
       </Show>
       <Show when={activeHandle()}>
-        <Portal mount={ctrl.app.layoutRef}>
+        <Portal mount={appService.layoutRef}>
           <TableTooltip
             activeHandle={activeHandle()!}
             currentCell={currentCell()!}
@@ -272,14 +272,14 @@ interface Props {
 }
 
 export const TableControls = (props: Props) => {
-  const [state] = useState()
+  const {store} = useState()
   const [table, setTable] = createSignal<CurrentTable | undefined>()
 
   createEffect(() => {
     const editorView = props.file?.editorView
     if (!editorView) return
 
-    if (!state.lastTr) return
+    if (!store.lastTr) return
     if (!editorView.state.selection.empty) return
 
     const pos = editorView.state.selection.$from.before(1)

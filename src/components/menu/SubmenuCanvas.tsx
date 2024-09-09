@@ -4,28 +4,28 @@ import {Keys, Label, Link, Sub} from './Style'
 import {Icon} from '../Icon'
 
 export const SubmenuCanvas = ({maybeHide}: {maybeHide: () => void}) => {
-  const [, ctrl] = useState()
+  const {canvasService, canvasCollabService} = useState()
   const modKey = isMac ? '⌘' : mod
 
   const onNewFile = async () => {
-    const el = await ctrl.canvas.newFile()
-    if (el) ctrl.canvasCollab.addElement(el)
+    const el = await canvasService.newFile()
+    if (el) canvasCollabService.addElement(el)
     maybeHide()
   }
 
   const onClearCanvas = async () => {
-    await ctrl.canvas.clearCanvas()
-    ctrl.canvasCollab.removeAll()
+    await canvasService.clearCanvas()
+    canvasCollabService.removeAll()
     maybeHide()
   }
 
   const onBackToContent = async () => {
-    await ctrl.canvas.backToContent()
+    await canvasService.backToContent()
     maybeHide()
   }
 
   const onSnapToGrid = () => {
-    ctrl.canvas.snapToGrid()
+    canvasService.snapToGrid()
     maybeHide()
   }
 
@@ -43,7 +43,7 @@ export const SubmenuCanvas = ({maybeHide}: {maybeHide: () => void}) => {
           <Icon>adjust</Icon> Back to content
         </Link>
         <Link onClick={onSnapToGrid}>
-          <Icon>grid_3x3</Icon> Snap to grid {ctrl.canvas.currentCanvas?.snapToGrid && '✅'}
+          <Icon>grid_3x3</Icon> Snap to grid {canvasService.currentCanvas?.snapToGrid && '✅'}
         </Link>
       </Sub>
     </>

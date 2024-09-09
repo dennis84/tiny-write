@@ -3,17 +3,17 @@ import {Label, Link, Sub} from './Style'
 import {Icon} from '../Icon'
 
 export const SubmenuCode = () => {
-  const [, ctrl] = useState()
+  const {appService, codeService, fileService} = useState()
 
   const onChangeLang = () => {
-    const currentFile = ctrl.file.currentFile
+    const currentFile = fileService.currentFile
     if (!currentFile) return
     const language = currentFile.codeEditorView?.contentDOM.dataset.language ?? ''
 
-    ctrl.app.setInputLine({
+    appService.setInputLine({
       value: language,
       onEnter: (lang) => {
-        ctrl.code.updateLang(currentFile, lang)
+        codeService.updateLang(currentFile, lang)
       },
     })
   }

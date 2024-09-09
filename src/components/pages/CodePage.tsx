@@ -7,11 +7,11 @@ import {CodeEditor} from '../code/CodeEditor'
 
 export const CodePage = (props: RouteSectionProps) => {
   const OpenCodeEditor = () => {
-    const [store, ctrl] = useState()
+    const {store, codeService, fileService} = useState()
     onMount(async () => {
       const share = props.location.query.share === 'true'
-      await ctrl.code.openFile(props.params.id, share)
-      ctrl.file.currentFile?.codeEditorView?.focus()
+      await codeService.openFile(props.params.id, share)
+      fileService.currentFile?.codeEditorView?.focus()
     })
 
     return (

@@ -14,7 +14,7 @@ const Pre = styled('pre')`
 `
 
 export const Error = () => {
-  const [store] = useState()
+  const {store} = useState()
   return (
     <Switch fallback={<GeneralError />}>
       <Match when={store.error?.id === 'editor_sync'}>
@@ -25,14 +25,16 @@ export const Error = () => {
 }
 
 const GeneralError = () => {
-  const [store, ctrl] = useState()
+  const {store, treeService, deleteService} = useState()
   const onReload = () => {
     window.location.reload()
   }
 
   const onDeleteFile = async () => {
     if (!store.error?.fileId) return
-    await ctrl.file.deleteForever(store.error.fileId)
+    const treeNode =  treeService.findTreeNode(store.error.fileId)
+    if (!treeNode) return
+    await deleteService.delete(treeNode, true)
     window.location.reload()
   }
 
@@ -58,7 +60,7 @@ const GeneralError = () => {
 }
 
 const EditorSyncError = () => {
-  const [store] = useState()
+  const {store} = useState()
   const onReload = () => {
     window.location.reload()
   }

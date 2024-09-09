@@ -53,8 +53,8 @@ export const Link = ({element}: {element: CanvasLinkElement}) => {
   let pathRef!: SVGLineElement
   let innerPathRef!: SVGLineElement
   let arrowheadRef!: SVGLineElement
-  const [, ctrl] = useState()
-  const currentCanvas = ctrl.canvas.currentCanvas
+  const {canvasService, canvasCollabService} = useState()
+  const currentCanvas = canvasService.currentCanvas
   if (!currentCanvas) return
 
   const index = () => {
@@ -64,7 +64,7 @@ export const Link = ({element}: {element: CanvasLinkElement}) => {
   }
 
   const onClick = () => {
-    ctrl.canvas.select(element.id)
+    canvasService.select(element.id)
   }
 
   onMount(() => {
@@ -73,7 +73,7 @@ export const Link = ({element}: {element: CanvasLinkElement}) => {
       async ({event, initial, first, last, movement, memo}) => {
         event.stopPropagation()
         const {zoom} = currentCanvas.camera
-        const i = ctrl.canvas.getPosition(initial)
+        const i = canvasService.getPosition(initial)
         if (!i) return
 
         let [fromId, fromEdge] = (await memo) ?? []
@@ -104,10 +104,10 @@ export const Link = ({element}: {element: CanvasLinkElement}) => {
         if (i.dist(t) <= 1) return [fromId, fromEdge]
         if (currentCanvas.snapToGrid) t.snapToGrid(10)
 
-        ctrl.canvas.drawLink(element.id, fromId, fromEdge, t.x, t.y)
+        canvasService.drawLink(element.id, fromId, fromEdge, t.x, t.y)
         if (last) {
-          const el = await ctrl.canvas.drawLinkEnd(element.id)
-          if (el) ctrl.canvasCollab.addElement(el)
+          const el = await canvasService.drawLinkEnd(element.id)
+          if (el) canvasCollabService.addElement(el)
         }
 
         return [fromId, fromEdge]

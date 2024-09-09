@@ -29,55 +29,55 @@ const CodeEditorScroll = styled(Scroll)(
 )
 
 export const CodeEditor = ({element, index}: {element: CanvasCodeElement; index: number}) => {
-  const [store, ctrl] = useState()
+  const {store, canvasService, codeService, collabService, fileService} = useState()
   let containerRef!: HTMLDivElement
   let editorRef!: HTMLDivElement
 
   const onSelect = (e: MouseEvent) => {
-    ctrl.canvas.select(element.id, false, e.shiftKey)
+    canvasService.select(element.id, false, e.shiftKey)
   }
 
   const onDoubleClick = () => {
-    ctrl.canvas.select(element.id, true)
+    canvasService.select(element.id, true)
   }
 
   const isDeleted = () => store.files.find((f) => f.id === element.id)?.deleted
 
   const createSelection = (): Selection => {
-    const box = ctrl.canvas.createBox(element)
+    const box = canvasService.createBox(element)
     return {box, elements: [[element.id, box]]}
   }
 
   createEffect(async () => {
-    const currentCanvas = ctrl.canvas.currentCanvas
-    let file = ctrl.file.findFileById(element.id)
+    const currentCanvas = canvasService.currentCanvas
+    let file = fileService.findFileById(element.id)
 
     if (!file) {
       remote.info('No file for code element', element.id)
       file = FileService.createFile({id: element.id, parentId: currentCanvas?.id, code: true})
-      await ctrl.file.addFile(file)
+      await fileService.addFile(file)
     }
 
-    const provider = ctrl.collab.getProvider(file.id)
+    const provider = collabService.getProvider(file.id)
     if (!provider) {
-      ctrl.collab.initFile(file)
+      collabService.initFile(file)
     }
 
     if (provider && file.codeEditorView === undefined) {
-      ctrl.code.renderEditor(file, editorRef)
+      codeService.renderEditor(file, editorRef)
     }
   })
 
   createEffect((prev) => {
     if (!prev) return
-    let file = ctrl.file.findFileById(element.id)
+    let file = fileService.findFileById(element.id)
     if (!file) return
-    ctrl.code.updateConfig(file)
+    codeService.updateConfig(file)
     return store.config
   })
 
   onCleanup(() => {
-    ctrl.file.destroy(element.id)
+    fileService.destroy(element.id)
   })
 
   return (

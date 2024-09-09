@@ -47,10 +47,10 @@ interface EdgeProps extends Props {
 const LinkHandle = (props: EdgeProps) => {
   let linkRef!: HTMLSpanElement
 
-  const [, ctrl] = useState()
+  const {canvasService, canvasCollabService} = useState()
   const [currentLink, setCurrentLink] = createSignal<string>()
 
-  const zoom = () => ctrl.canvas.currentCanvas?.camera.zoom ?? 1
+  const zoom = () => canvasService.currentCanvas?.camera.zoom ?? 1
 
   const coords = () => {
     const box = new Box(props.x, props.y, props.width, props.height)
@@ -71,7 +71,7 @@ const LinkHandle = (props: EdgeProps) => {
   }
 
   onMount(() => {
-    const currentCanvas = ctrl.canvas.currentCanvas
+    const currentCanvas = canvasService.currentCanvas
     if (!currentCanvas) return
 
     const linkGesture = new DragGesture(
@@ -86,10 +86,10 @@ const LinkHandle = (props: EdgeProps) => {
         const i = Vec.FromArray(initial).div(zoom).sub(p)
         const t = Vec.FromArray(movement).div(zoom).add(i)
         const id = currentLink()!
-        ctrl.canvas.drawLink(id, props.id, props.type, t.x, t.y)
+        canvasService.drawLink(id, props.id, props.type, t.x, t.y)
         if (last) {
-          const el = await ctrl.canvas.drawLinkEnd(id)
-          if (el) ctrl.canvasCollab.addElement(el)
+          const el = await canvasService.drawLinkEnd(id)
+          if (el) canvasCollabService.addElement(el)
           setCurrentLink(undefined)
         }
       },

@@ -55,7 +55,7 @@ export const BlockHandle = (props: Props) => {
   const [selectedBlock, setSelectedBlock] = createSignal<Block | undefined>()
   const [cursorPos, setCursorPos] = createSignal<number | undefined>()
   const [blockDom, setBlockDom] = createSignal<HTMLElement>()
-  const [, ctrl] = useState()
+  const {appService} = useState()
 
   const getScrollTop = (): number => {
     return props.scrollContainer?.().scrollTop ?? window.scrollY
@@ -245,7 +245,7 @@ export const BlockHandle = (props: Props) => {
       >
         <Icon>drag_indicator</Icon>
       </DragHandle>
-      <Portal mount={ctrl.app.layoutRef}>
+      <Portal mount={appService.layoutRef}>
         <BlockTooltip selectedBlock={selectedBlock()} resetBlock={onResetBlock} />
       </Portal>
     </Show>

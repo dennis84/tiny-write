@@ -4,7 +4,7 @@ import {Mode, useState} from '@/state'
 import {getMimeType, info} from '@/remote'
 
 export const Redirect = () => {
-  const [store, ctrl] = useState()
+  const {store, canvasService, fileService, editorService} = useState()
   const navigate = useNavigate()
 
   const redirectTo = (to: string) => {
@@ -16,25 +16,25 @@ export const Redirect = () => {
     const argPath = store.args?.newFile ?? store.args?.file
 
     if (argPath) {
-      let file = await ctrl.file.findFileByPath(argPath)
+      let file = await fileService.findFileByPath(argPath)
       if (!file) {
         const mime = await getMimeType(argPath)
         const code = !mime.startsWith('text/')
         const newFile = store.args?.newFile
         const path = store.args?.file
-        file = await ctrl.editor.newFile({newFile, path, code})
+        file = await editorService.newFile({newFile, path, code})
         info(`Created new file with path (id=${file.id}, code=${code}, path=${path}, newFile=${newFile})`)
       }
 
       redirectTo(`/${file.code ? 'code' : 'editor'}/${file.id}`)
-    } else if (store.mode === Mode.Editor && ctrl.file.currentFile) {
-      redirectTo(`/${store.mode}/${ctrl.file.currentFile?.id}`)
-    } else if (store.mode === Mode.Code && ctrl.file.currentFile) {
-      redirectTo(`/${store.mode}/${ctrl.file.currentFile?.id}`)
-    } else if (store.mode === Mode.Canvas && ctrl.canvas.currentCanvas) {
-      redirectTo(`/${store.mode}/${ctrl.canvas.currentCanvas?.id}`)
+    } else if (store.mode === Mode.Editor && fileService.currentFile) {
+      redirectTo(`/${store.mode}/${fileService.currentFile?.id}`)
+    } else if (store.mode === Mode.Code && fileService.currentFile) {
+      redirectTo(`/${store.mode}/${fileService.currentFile?.id}`)
+    } else if (store.mode === Mode.Canvas && canvasService.currentCanvas) {
+      redirectTo(`/${store.mode}/${canvasService.currentCanvas?.id}`)
     } else {
-      const file = await ctrl.editor.newFile()
+      const file = await editorService.newFile()
       info(`Created new file (id=${file.id})`)
       redirectTo(`/editor/${file.id}`)
     }

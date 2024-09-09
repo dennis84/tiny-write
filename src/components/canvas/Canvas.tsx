@@ -53,20 +53,20 @@ const DragArea = styled('div')`
 `
 
 export const Canvas = () => {
-  const [state, ctrl] = useState()
+  const {store, canvasService} = useState()
 
   const scaleBounds = {min: 0.3, max: 10}
   let ref!: HTMLDivElement
 
   const onGridClick = () => {
-    const currentCanvas = ctrl.canvas.currentCanvas
+    const currentCanvas = canvasService.currentCanvas
     if (!currentCanvas) return
-    if (state.selecting) return
-    ctrl.canvas.deselect()
+    if (store.selecting) return
+    canvasService.deselect()
   }
 
   const zoomTo = (next: number, center?: number[]) => {
-    if (!ctrl.canvas.currentCanvas?.camera) return
+    if (!canvasService.currentCanvas?.camera) return
 
     let c
     if (center === undefined) {
@@ -76,17 +76,17 @@ export const Canvas = () => {
       c = Vec.FromArray(center)
     }
 
-    const {zoom, point} = ctrl.canvas.currentCanvas.camera
+    const {zoom, point} = canvasService.currentCanvas.camera
     const p = Vec.FromArray(point)
 
     const p0 = c.clone().div(zoom).sub(p)
     const p1 = c.clone().div(next).sub(p)
     const [x, y] = p1.sub(p0).add(p).toFixed().toArray()
-    ctrl.canvas.updateCamera({zoom: next, point: [x, y]})
+    canvasService.updateCamera({zoom: next, point: [x, y]})
   }
 
   onMount(() => {
-    ctrl.canvas.canvasRef = ref
+    canvasService.canvasRef = ref
     const preventGesture = (e: TouchEvent) => e.preventDefault()
     // @ts-expect-error ???
     document.addEventListener('gesturestart', preventGesture)
@@ -100,7 +100,7 @@ export const Canvas = () => {
       {
         onPinch: ({origin: [ox, oy], offset: [s], last}) => {
           zoomTo(s, [ox, oy])
-          ctrl.canvas.setMoving(!last)
+          canvasService.setMoving(!last)
         },
         onWheel: ({event, pinching, last, delta: [dx, dy]}) => {
           if (pinching) return false
@@ -110,15 +110,15 @@ export const Canvas = () => {
             return false
           }
 
-          const currentCanvas = ctrl.canvas.currentCanvas
+          const currentCanvas = canvasService.currentCanvas
           if (!currentCanvas) return
 
           const {
             zoom,
             point: [x, y],
           } = currentCanvas.camera
-          ctrl.canvas.updateCameraPoint([x - dx / zoom, y - dy / zoom])
-          ctrl.canvas.setMoving(!last)
+          canvasService.updateCameraPoint([x - dx / zoom, y - dy / zoom])
+          canvasService.setMoving(!last)
         },
       },
       {
@@ -127,13 +127,13 @@ export const Canvas = () => {
         drag: {delay: true, threshold: [10, 10]},
         wheel: {
           from: () => [
-            -(ctrl.canvas.currentCanvas?.camera.point[0] ?? 0),
-            -(ctrl.canvas.currentCanvas?.camera.point[1] ?? 0),
+            -(canvasService.currentCanvas?.camera.point[0] ?? 0),
+            -(canvasService.currentCanvas?.camera.point[1] ?? 0),
           ],
         },
         pinch: {
           scaleBounds,
-          from: () => [ctrl.canvas.currentCanvas!.camera.zoom ?? 0, 0],
+          from: () => [canvasService.currentCanvas!.camera.zoom ?? 0, 0],
         },
       },
     )
@@ -161,16 +161,16 @@ export const Canvas = () => {
       <Board
         style={{
           transform: `
-            scale(${ctrl.canvas.currentCanvas?.camera.zoom})
-            translateX(${ctrl.canvas.currentCanvas?.camera.point[0]}px)
-            translateY(${ctrl.canvas.currentCanvas?.camera.point[1]}px)
+            scale(${canvasService.currentCanvas?.camera.zoom})
+            translateX(${canvasService.currentCanvas?.camera.point[0]}px)
+            translateY(${canvasService.currentCanvas?.camera.point[1]}px)
           `,
         }}
       >
-        <Show when={ctrl.canvas.selection}>
+        <Show when={canvasService.selection}>
           {(sel) => <Bounds selection={sel()} selected={true} visible={true} index={99999} />}
         </Show>
-        <For each={ctrl.canvas.currentCanvas?.elements}>
+        <For each={canvasService.currentCanvas?.elements}>
           {(element, index) =>
             isEditorElement(element) ? <Editor element={element} index={index()} />
             : isCodeElement(element) ? <CodeEditor element={element} index={index()} />

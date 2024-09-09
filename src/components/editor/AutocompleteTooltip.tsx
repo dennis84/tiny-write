@@ -12,7 +12,7 @@ interface Props {
 }
 
 export const AutocompleteTooltip = (props: Props) => {
-  const [store] = useState()
+  const {store} = useState()
   const [completion, setCompletion] = createSignal<CompletionState>()
   const [tooltipAnchor, setTooltipAnchor] = createSignal<ReferenceElement | undefined>()
 

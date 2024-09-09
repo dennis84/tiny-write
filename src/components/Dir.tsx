@@ -1,4 +1,4 @@
-import {For, Show} from 'solid-js'
+import {For} from 'solid-js'
 import {useNavigate} from '@solidjs/router'
 import {styled} from 'solid-styled-components'
 import {useState} from '@/state'
@@ -19,18 +19,18 @@ const Link = styled('a')`
 `
 
 export const Dir = () => {
-  const [store, ctrl] = useState()
+  const {store, editorService, fileService} = useState()
   const navigate = useNavigate()
 
   const onNew = async () => {
-    const file = await ctrl.editor.newFile()
+    const file = await editorService.newFile()
     navigate(`/editor/${file.id}`)
   }
 
   const FileLink = (props: {path: string}) => {
     const onClick = async () => {
-      let file = await ctrl.file.findFileByPath(props.path)
-      if (!file) file = await ctrl.editor.newFile({path: props.path})
+      let file = await fileService.findFileByPath(props.path)
+      if (!file) file = await editorService.newFile({path: props.path})
       navigate(`/editor/${file.id}`)
     }
 
@@ -49,9 +49,7 @@ export const Dir = () => {
   return (
     <Scroll data-testid="dir" data-tauri-drag-region="true">
       <Content config={store.config} data-tauri-drag-region="true">
-        <Show when={store.args?.dir && store.args.dir.length > 0}>
-          <p>Click to open file:</p>
-        </Show>
+        <p>Click to open file:</p>
         <For each={store.args?.dir} fallback={<Empty />}>
           {(path) => <FileLink path={path} />}
         </For>

@@ -17,7 +17,7 @@ interface Props {
 }
 
 export const BlockTooltip = (props: Props) => {
-  const [, ctrl] = useState()
+  const {appService, editorService, fileService} = useState()
   const [tooltipAnchor, setTooltipAnchor] = createSignal<ReferenceElement | undefined>()
   const navigate = useNavigate()
 
@@ -29,7 +29,7 @@ export const BlockTooltip = (props: Props) => {
   const onPrettify = () => {
     const block = props.selectedBlock
     if (!block) return
-    const view = ctrl.file.currentFile?.editorView
+    const view = fileService.currentFile?.editorView
     if (!view) return
 
     const dom = view.domAtPos(block.blockPos + 1)
@@ -46,7 +46,7 @@ export const BlockTooltip = (props: Props) => {
   const onFoldAll = () => {
     const block = props.selectedBlock
     if (!block) return
-    const view = ctrl.file.currentFile?.editorView
+    const view = fileService.currentFile?.editorView
     if (!view) return
     const dom = view.domAtPos(block.blockPos + 1)
     dom.node.dispatchEvent(
@@ -63,7 +63,7 @@ export const BlockTooltip = (props: Props) => {
     const block = props.selectedBlock
     if (!block) return
 
-    const view = ctrl.file.currentFile?.editorView
+    const view = fileService.currentFile?.editorView
     if (!view) return
 
     if (block.blockNode.attrs.lang === 'mermaid') {
@@ -73,7 +73,7 @@ export const BlockTooltip = (props: Props) => {
     }
 
     const lang = block.blockNode.attrs.lang
-    ctrl.app.setInputLine({
+    appService.setInputLine({
       value: lang,
       onEnter: (lang: string) => {
         view.focus()
@@ -102,7 +102,7 @@ export const BlockTooltip = (props: Props) => {
     const block = props.selectedBlock
     if (!block) return
 
-    const view = ctrl.file.currentFile?.editorView
+    const view = fileService.currentFile?.editorView
     if (!view) return
 
     const tr = view.state.tr
@@ -116,7 +116,7 @@ export const BlockTooltip = (props: Props) => {
     const block = props.selectedBlock
     if (!block) return
 
-    const view = ctrl.file.currentFile?.editorView
+    const view = fileService.currentFile?.editorView
     if (!view) return
 
     const pos = view.state.doc.resolve(block.blockPos)
@@ -144,7 +144,7 @@ export const BlockTooltip = (props: Props) => {
     const block = props.selectedBlock
     if (!block) return
 
-    const view = ctrl.file.currentFile?.editorView
+    const view = fileService.currentFile?.editorView
     if (!view) return
 
     const tr = view.state.tr
@@ -160,7 +160,7 @@ export const BlockTooltip = (props: Props) => {
     const block = props.selectedBlock
     if (block?.cursorPos === undefined) return
 
-    const view = ctrl.file.currentFile?.editorView
+    const view = fileService.currentFile?.editorView
     if (!view) return
 
     const tr = view.state.tr
@@ -173,7 +173,7 @@ export const BlockTooltip = (props: Props) => {
   const onOpenLink = async () => {
     const block = props.selectedBlock
     if (block?.cursorPos === undefined) return
-    const view = ctrl.file.currentFile?.editorView
+    const view = fileService.currentFile?.editorView
     if (!view) return
 
     const resolved = view.state.doc.resolve(block.cursorPos)
@@ -194,13 +194,13 @@ export const BlockTooltip = (props: Props) => {
       // ...
     }
 
-    const basePath = await ctrl.app.getBasePath()
+    const basePath = await appService.getBasePath()
     const path = await remote.resolvePath(href, basePath)
     const mime = await remote.getMimeType(path)
 
     if (mime.startsWith('text/')) {
-      let file = await ctrl.file.findFileByPath(path)
-      if (!file) file = await ctrl.editor.newFile({path})
+      let file = await fileService.findFileByPath(path)
+      if (!file) file = await editorService.newFile({path})
       navigate(`/editor/${file.id}`)
     } else {
       await remote.open(path)
@@ -213,7 +213,7 @@ export const BlockTooltip = (props: Props) => {
     const block = props.selectedBlock
     if (!block?.cursorNode?.marks) return
 
-    const view = ctrl.file.currentFile?.editorView
+    const view = fileService.currentFile?.editorView
     if (!view) return
 
     const mark =
