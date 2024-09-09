@@ -2,8 +2,8 @@ import {For} from 'solid-js'
 import {useNavigate} from '@solidjs/router'
 import {styled} from 'solid-styled-components'
 import {useState} from '@/state'
-import {Content, Scroll} from './Layout'
-import {ButtonPrimary} from './Button'
+import {Content, Scroll} from '../Layout'
+import {ButtonPrimary} from '../Button'
 
 const Link = styled('a')`
   padding: 10px;
