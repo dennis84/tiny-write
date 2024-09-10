@@ -359,9 +359,8 @@ export class ConfigService {
   }
 
   async updateConfig(conf: Partial<Config>) {
-    const state: State = unwrap(this.store)
     this.collabService.setConfig(conf)
-    const config = {...state.config, ...conf}
+    const config = {...this.store.config, ...conf}
     this.setState('config', config)
     await this.saveConfig(unwrap(this.store))
   }

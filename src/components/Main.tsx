@@ -1,4 +1,4 @@
-import {onMount, Switch, Match, ErrorBoundary} from 'solid-js'
+import {onMount, Switch, Match, ErrorBoundary, createEffect, untrack} from 'solid-js'
 import {Route, Router, RouteSectionProps} from '@solidjs/router'
 import {State, StateContext} from '@/state'
 import {createCtrl} from '@/services'
@@ -38,6 +38,19 @@ export const Main = (props: {state: State}) => {
     onMount(async () => {
       ctrl.appService.layoutRef = layoutRef
       await ctrl.appService.init()
+    })
+
+    createEffect((prev) => {
+      if (!prev) return ctrl.store.config.codeTheme
+      untrack(() => {
+        for (const f of ctrl.store.files) {
+          if (!f.editorView && !f.codeEditorView) continue
+          if (f.code) ctrl.codeService.updateConfig(f)
+          else ctrl.editorService.updateEditorState(f)
+        }
+      })
+
+      return ctrl.store.config.codeTheme
     })
 
     return (

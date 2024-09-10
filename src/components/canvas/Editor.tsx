@@ -75,14 +75,6 @@ export const Editor = ({element, index}: {element: CanvasEditorElement; index: n
     }
   })
 
-  createEffect((prev) => {
-    if (!prev) return
-    let file = fileService.findFileById(element.id)
-    if (!file) return
-    editorService.updateConfig(file)
-    return store.config
-  })
-
   onCleanup(() => {
     fileService.destroy(element.id)
   })

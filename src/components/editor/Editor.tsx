@@ -48,14 +48,6 @@ export const Editor = () => {
     }
   })
 
-  createEffect((prev) => {
-    if (!prev) return
-    const currentFile = fileService.currentFile
-    if (!currentFile) return
-    editorService.updateConfig(currentFile)
-    return store.config
-  })
-
   onCleanup(() => {
     fileService.destroy(fileService.currentFile?.id)
   })

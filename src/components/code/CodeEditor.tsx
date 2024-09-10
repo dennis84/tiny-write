@@ -3,7 +3,7 @@ import {styled} from 'solid-styled-components'
 import {useState} from '@/state'
 import {Scroll} from '../Layout'
 import {codeMirror} from './Style'
-import { Back } from '../Back'
+import {Back} from '../Back'
 
 export const CodeMirrorContainer = styled('div')`
   width: 100%;
@@ -31,14 +31,6 @@ export const CodeEditor = () => {
     if (provider && currentFile?.codeEditorView === undefined) {
       codeService.renderEditor(currentFile, containerRef)
     }
-  })
-
-  createEffect((prev) => {
-    if (!prev) return
-    const currentFile = fileService.currentFile
-    if (!currentFile) return
-    codeService.updateConfig(currentFile)
-    return store.config
   })
 
   onCleanup(() => {
