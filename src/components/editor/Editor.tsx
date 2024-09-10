@@ -62,12 +62,8 @@ export const Editor = () => {
         spellcheck={store.config.spellcheck}
         data-tauri-drag-region="true"
       />
-      <BlockHandle
-        file={fileService.currentFile}
-        mouseMoveArea={() => scrollRef}
-        scrollContainer={() => scrollRef}
-      />
-      <TableControls file={fileService.currentFile} scrollContainer={() => scrollRef} />
+      <BlockHandle file={fileService.currentFile} mouseMoveArea={() => scrollRef} />
+      <TableControls file={fileService.currentFile} />
       <AutocompleteTooltip file={fileService.currentFile} />
       <Back />
     </Scroll>

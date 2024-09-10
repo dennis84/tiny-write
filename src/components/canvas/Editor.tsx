@@ -117,9 +117,9 @@ export const Editor = ({element, index}: {element: CanvasEditorElement; index: n
           file={fileService.findFileById(element.id)}
           mouseMoveArea={() => containerRef}
         />
+        <TableControls file={fileService.findFileById(element.id)} />
+        <AutocompleteTooltip file={fileService.findFileById(element.id)} />
       </EditorScroll>
-      <TableControls file={fileService.findFileById(element.id)} />
-      <AutocompleteTooltip file={fileService.findFileById(element.id)} />
     </>
   )
 }

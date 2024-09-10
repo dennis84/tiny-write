@@ -82,7 +82,6 @@ interface HandleGridProps {
   file?: File
   currentTable: CurrentTable
   currentTableMap: TableMap
-  scrollContainer?: () => HTMLElement
 }
 
 const HandleGrid = (props: HandleGridProps) => {
@@ -91,10 +90,6 @@ const HandleGrid = (props: HandleGridProps) => {
   const [handlePosition, setHandlePosition] = createSignal<HandlePosition>()
   const [selection, setSelection] = createSignal<Box>()
   const {appService} = useState()
-
-  const getScrollTop = (): number => {
-    return props.scrollContainer?.().scrollTop ?? window.scrollY
-  }
 
   const hideHandles = () => {
     if (activeHandle()) return
@@ -128,11 +123,10 @@ const HandleGrid = (props: HandleGridProps) => {
     const tableBox = tableNode.getBoundingClientRect()
     const cellBox = element.getBoundingClientRect()
 
-    const scrollTop = getScrollTop()
     const cellX = editorView.dom.offsetLeft + element.offsetLeft
-    const cellY = editorView.dom.offsetTop + element.offsetTop - scrollTop
+    const cellY = editorView.dom.offsetTop + element.offsetTop
     const tableX = editorView.dom.offsetLeft + tableNode.offsetLeft
-    const tableY = editorView.dom.offsetTop + tableNode.offsetTop - scrollTop
+    const tableY = editorView.dom.offsetTop + tableNode.offsetTop
 
     const colBox = new Box(cellX, tableY, cellBox.width, tableBox.height)
     const rowBox = new Box(tableX, cellY, tableBox.width, cellBox.height)
@@ -161,15 +155,14 @@ const HandleGrid = (props: HandleGridProps) => {
     const editorView = props.file?.editorView
     if (!editorView) return
 
-    const scrollTop = getScrollTop()
     const tableNode = element.parentNode?.parentNode as HTMLElement
     const tableBox = tableNode.getBoundingClientRect()
     const cellBox = element.getBoundingClientRect()
 
     const cellX = editorView.dom.offsetLeft + element.offsetLeft
-    const cellY = editorView.dom.offsetTop + element.offsetTop - scrollTop
+    const cellY = editorView.dom.offsetTop + element.offsetTop
     const tableX = editorView.dom.offsetLeft + tableNode.offsetLeft
-    const tableY = editorView.dom.offsetTop + tableNode.offsetTop - scrollTop
+    const tableY = editorView.dom.offsetTop + tableNode.offsetTop
 
     const box =
       direction === 'horiz' ?
@@ -268,7 +261,6 @@ const HandleGrid = (props: HandleGridProps) => {
 
 interface Props {
   file?: File
-  scrollContainer?: () => HTMLElement
 }
 
 export const TableControls = (props: Props) => {
@@ -299,7 +291,6 @@ export const TableControls = (props: Props) => {
           file={props.file}
           currentTable={t()}
           currentTableMap={TableMap.get(t().node)}
-          scrollContainer={props.scrollContainer}
         />
       )}
     </Show>
