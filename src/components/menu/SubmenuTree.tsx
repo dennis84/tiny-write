@@ -527,7 +527,7 @@ export const SubmenuTree = (props: Props) => {
           </Show>
           <Show when={selected()?.item.deleted}>
             <div onClick={onRestore} data-testid="restore">
-              <Icon>restore_page</Icon>
+              <Icon>history</Icon>
               Restore
             </div>
             <div onClick={onDeleteForever} data-testid="delete_forever">

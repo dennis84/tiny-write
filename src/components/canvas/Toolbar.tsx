@@ -33,8 +33,11 @@ const Container = styled('div')`
       color: var(--primary-foreground);
     }
     > span {
-      margin-right: 10px;
+      margin-right: 5px;
     }
+  }
+  div:not(:last-of-type) {
+    margin-right: 10px;
   }
   .arrow {
     width: 6px;
@@ -51,7 +54,7 @@ export const Toolbar = () => {
   let tooltipRef!: HTMLDivElement
   let arrowRef: HTMLSpanElement | undefined
 
-  const {store, canvasService} = useState()
+  const {store, canvasService, fileService} = useState()
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -61,6 +64,11 @@ export const Toolbar = () => {
     } else if (isCodeElement(element)) {
       navigate(`/code/${element.id}`, {state: {prev: location.pathname}})
     }
+  }
+
+  const restore = async (element: CanvasElement) => {
+    await fileService.restore(element.id)
+    calcPosition()
   }
 
   const getSelected = () => {
@@ -88,7 +96,7 @@ export const Toolbar = () => {
     return {element, box}
   }
 
-  createEffect(() => {
+  const calcPosition = () => {
     const selected = getSelected()
     if (!selected) return
 
@@ -138,6 +146,10 @@ export const Toolbar = () => {
         })
       }
     })
+  }
+
+  createEffect(() => {
+    calcPosition()
   })
 
   return (
@@ -147,6 +159,12 @@ export const Toolbar = () => {
           <Item onClick={() => open(selected().element)}>
             <Icon>open_in_full</Icon> Open in full
           </Item>
+          <Show when={fileService.findFileById(selected().element.id)?.deleted}>
+            <Item onClick={() => restore(selected().element)}>
+              <Icon>history</Icon>
+              Restore
+            </Item>
+          </Show>
           <span ref={arrowRef} class="arrow"></span>
         </Container>
       )}

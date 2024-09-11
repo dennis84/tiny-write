@@ -24,12 +24,12 @@ const CodeEditorScroll = styled(Scroll)(
       user-select: auto;
       pointer-events: auto;
     ` : ''}
-    ${props.deleted ? `opacity: 0.4` : ''}
+    ${props.deleted ? `opacity: 0.4;` : ''}
   `
 )
 
 export const CodeEditor = ({element, index}: {element: CanvasCodeElement; index: number}) => {
-  const {store, canvasService, codeService, collabService, fileService} = useState()
+  const {canvasService, codeService, collabService, fileService} = useState()
   let containerRef!: HTMLDivElement
   let editorRef!: HTMLDivElement
 
@@ -41,7 +41,7 @@ export const CodeEditor = ({element, index}: {element: CanvasCodeElement; index:
     canvasService.select(element.id, true)
   }
 
-  const isDeleted = () => store.files.find((f) => f.id === element.id)?.deleted
+  const isDeleted = () => fileService.findFileById(element.id)?.deleted
 
   const createSelection = (): Selection => {
     const box = canvasService.createBox(element)
