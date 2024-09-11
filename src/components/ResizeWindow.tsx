@@ -1,5 +1,5 @@
 import {onCleanup, onMount} from 'solid-js'
-import {getCurrentWindow} from '@tauri-apps/api/window'
+import {getCurrent} from '@tauri-apps/api/window'
 import {isTauri} from '@/env'
 import {useState} from '@/state'
 
@@ -8,13 +8,13 @@ export const ResizeWindow = () => {
 
   onMount(() => {
     if (!isTauri()) return
-    const unlistenResizeProm = getCurrentWindow().onResized(async ({payload}) => {
-      const {width, height} = payload
+    const unlistenResizeProm = getCurrent().onResized(async (event) => {
+      const {width, height} = event.payload
       await appService.updateWindow({width, height})
     })
 
-    const unlistenMoveProm = getCurrentWindow().onMoved(async ({payload}) => {
-      const {x, y} = payload
+    const unlistenMoveProm = getCurrent().onMoved(async (event) => {
+      const {x, y} = event.payload
       await appService.updateWindow({x, y})
     })
 

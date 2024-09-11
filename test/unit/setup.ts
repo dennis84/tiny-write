@@ -9,6 +9,7 @@ vi.stubGlobal(
   vi.fn(() => ({
     matchMedia: () => '',
     addEventListener: () => undefined,
+    removeEventListener: () => undefined,
   })),
 )
 
