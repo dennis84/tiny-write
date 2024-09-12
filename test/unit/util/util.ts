@@ -1,4 +1,3 @@
-import {expect, vi} from 'vitest'
 import * as Y from 'yjs'
 import {WebsocketProvider} from 'y-websocket'
 import {YMultiDocUndoManager} from 'y-utility/y-multidoc-undomanager'

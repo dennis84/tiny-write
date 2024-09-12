@@ -4,8 +4,6 @@ import {Config, Mode, State} from '@/state'
 import * as remote from '@/remote'
 import {DB} from '@/db'
 import {isDark} from '@/env'
-import {EditorService} from './EditorService'
-import {CodeService} from './CodeService'
 import {CollabService} from './CollabService'
 
 export interface Font {

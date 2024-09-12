@@ -548,8 +548,8 @@ export class CanvasService {
         toBox = undefined
       }
 
-      this.updateCanvasElement(existing.id, {
-        ...(toBox ?
+      const element =
+        toBox ?
           {
             from,
             fromEdge,
@@ -567,8 +567,9 @@ export class CanvasService {
             to: undefined,
             toEdge: undefined,
             drawing: true,
-          }),
-      })
+          }
+
+      this.updateCanvasElement(existing.id, element)
       return
     }
 
