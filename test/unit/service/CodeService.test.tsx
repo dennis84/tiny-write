@@ -35,7 +35,7 @@ test('prettify', async () => {
   expect(fileService.currentFile?.id).toBe('1')
   expect(fileService.currentFile?.codeEditorView).toBeDefined()
 
-  await codeService.prettify()
+  await codeService.prettify(fileService.currentFile!)
 
   expect(fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('const a = 1')
 })

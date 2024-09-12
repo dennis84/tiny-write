@@ -70,12 +70,12 @@ export class CodeService {
     this.updateEditorState(file)
   }
 
-  async prettify() {
-    const currentFile = this.fileService.currentFile
-    if (!currentFile?.codeEditorView) return
-    const lang = currentFile?.codeEditorView?.contentDOM.dataset.language ?? ''
+  async prettify(file: File) {
+    const codeEditorView = file.codeEditorView
+    if (!codeEditorView) return
+    const lang = codeEditorView.contentDOM.dataset.language ?? ''
     const config = unwrap(this.store.config.prettier)
-    return format(currentFile.codeEditorView, lang, config)
+    return format(codeEditorView, lang, config)
   }
 
   private updateEditorState(file: File, el?: Element) {
@@ -95,7 +95,7 @@ export class CodeService {
       doc: type.toString(),
       lang: file.codeLang,
       extensions: [
-        EditorView.updateListener.of(() => this.onUpdate()),
+        EditorView.updateListener.of(() => this.onUpdate(file)),
         yCollab(type, this.store.collab?.provider.awareness, {undoManager: false}),
       ],
     })
@@ -106,10 +106,8 @@ export class CodeService {
     this.setState('files', fileIndex, 'codeEditorView', editor.editorView)
   }
 
-  private async onUpdate() {
-    const currentFile = this.fileService.currentFile
-    if (!currentFile) return
-    this.fileService.updateFile(currentFile.id, {
+  private async onUpdate(file: File) {
+    this.fileService.updateFile(file.id, {
       lastModified: new Date(),
     })
     await this.saveEditor()

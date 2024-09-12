@@ -1,5 +1,5 @@
 import {Show} from 'solid-js'
-import {Mode, PrettierConfig, useState} from '@/state'
+import {File, Mode, PrettierConfig, useState} from '@/state'
 import {Drawer, Label, Link, Sub, Text} from './Style'
 import {Button, ButtonGroup, ButtonPrimary} from '@/components/Button'
 
@@ -8,15 +8,28 @@ interface Props {
 }
 
 export const CodeFormat = (props: Props) => {
-  const {store, configService, codeService} = useState()
+  const {store, configService, codeService, canvasService, fileService} = useState()
 
   const updatePrettier = (opt: Partial<PrettierConfig>) =>
     configService.updateConfig({
       prettier: {...store.config.prettier, ...opt},
     })
 
+  const getSelectedFile = (): File | undefined => {
+    if (store.mode === Mode.Code) return fileService.currentFile
+    if (store.mode === Mode.Canvas) {
+      const elementId = canvasService.currentCanvas?.elements.find((el) => el.selected)?.id
+      if (!elementId) return
+      return fileService.findFileById(elementId)
+    }
+  }
+
+  const isCodeFile = (): boolean => getSelectedFile()?.code ?? false
+
   const onPrettify = async () => {
-    await codeService.prettify()
+    const file = getSelectedFile()
+    if (!file) return
+    await codeService.prettify(file)
   }
 
   return (
@@ -62,7 +75,7 @@ export const CodeFormat = (props: Props) => {
       </Sub>
       <ButtonGroup>
         <Button onClick={props.onBack}>↩ Back</Button>
-        <Show when={store.mode === Mode.Code}>
+        <Show when={isCodeFile()}>
           <ButtonPrimary onClick={onPrettify}>Prettify</ButtonPrimary>
         </Show>
       </ButtonGroup>
