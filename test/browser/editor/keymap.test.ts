@@ -1,4 +1,4 @@
-import os from 'os'
+import os from 'node:os'
 import {expect, test} from '@playwright/test'
 import {delay} from '../utils'
 
