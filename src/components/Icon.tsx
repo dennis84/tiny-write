@@ -27,8 +27,8 @@ export const Icon = (props: {children: JSXElement}) => (
 const SvgIcon = styled('span')`
   display: flex;
   svg {
-    height: 20px;
-    width: 20px;
+    height: 16px;
+    width: 16px;
   }
 `
 

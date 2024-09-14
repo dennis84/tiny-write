@@ -35,6 +35,16 @@ export class PrettierService {
     ['yaml', this.yaml],
   ])
 
+  async check(code: string, lang: string, options: PrettierConfig): Promise<boolean> {
+    try {
+      let formatted = await this.format(code, lang, options)
+      formatted = formatted.trim()
+      return formatted !== code
+    } catch (e) {
+      return false
+    }
+  }
+
   async format(code: string, lang: string, options: PrettierConfig): Promise<string> {
     const prettierLang = this.mapping.get(lang)
     if (!prettierLang) throw new Error(`No parser and plugins for ${lang}`)

@@ -1,4 +1,5 @@
 import {useState} from '@/state'
+import {languages} from '@/codemirror/highlight'
 import {Label, Link, Sub} from './Style'
 import {Icon} from '../Icon'
 
@@ -12,6 +13,7 @@ export const SubmenuCode = () => {
 
     appService.setInputLine({
       value: language,
+      words: Object.keys(languages),
       onEnter: (lang) => {
         codeService.updateLang(currentFile, lang)
       },

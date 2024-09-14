@@ -2,12 +2,12 @@ import {EditorView, crosshairCursor, drawSelection, keymap} from '@codemirror/vi
 import {Extension} from '@codemirror/state'
 import {standardKeymap} from '@codemirror/commands'
 import {acceptCompletion, autocompletion, moveCompletionSelection} from '@codemirror/autocomplete'
-import {languages} from '@/codemirror/highlight'
 
 interface Props {
   doc: string
   parent: Element
   theme: Extension
+  words?: string[]
   onClose: () => void
   onEnter: (lang: string) => void
 }
@@ -29,7 +29,8 @@ export class LangInputEditor {
           defaultKeymap: false,
           override: [
             () => ({
-              options: Object.keys(languages).map((label) => ({label, type: 'word'})),
+              options: props.words?.map((label) => ({label, type: 'word'})) ?? [],
+              //Object.keys(languages).map((label) => ({label, type: 'word'})),
               from: 0,
             }),
           ],

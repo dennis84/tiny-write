@@ -105,6 +105,9 @@ const proseMirror = (props: Props) => `
       font-family: var(--font-family-italic);
       font-style: normal;
     }
+    h1, h2, h3, h4, h5, h6 {
+      margin: 0;
+    }
     h1 {
       font-size: var(--font-size-h1);
       font-weight: 800;
@@ -227,10 +230,16 @@ const proseMirror = (props: Props) => `
       }
     }
     .container-tip, .container-warning, .container-details {
-      padding: 30px;
+      padding: 20px;
       border-radius: var(--border-radius);
       &.ProseMirror-selectednode, &.selected {
         box-shadow: 0 0 0 5px var(--selection-border);
+      }
+      > *:first-child {
+        margin-top: 0;
+      }
+      > *:last-child {
+        margin-bottom: 0;
       }
     }
     .container-tip,
@@ -325,7 +334,7 @@ export const CanvasEditor = styled('div')`
   min-height: 100%;
   height: fit-content;
   background: var(--background);
-  padding: 10px 40px;
+  padding: 30px 40px;
   ${(props: any) => proseMirror(props)}
 `
 

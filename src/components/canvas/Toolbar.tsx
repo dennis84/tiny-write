@@ -1,10 +1,11 @@
-import {createEffect, Show} from 'solid-js'
+import {createEffect, createSignal, Show} from 'solid-js'
 import {useLocation, useNavigate} from '@solidjs/router'
 import {styled} from 'solid-styled-components'
 import {Box, Vec} from '@tldraw/editor'
 import {arrow, computePosition, flip, offset, shift} from '@floating-ui/dom'
 import {CanvasBoxElement, CanvasElement, isCodeElement, isEditorElement, useState} from '@/state'
-import {Icon} from '../Icon'
+import {languages} from '@/codemirror/highlight'
+import {Icon, IconPrettier} from '../Icon'
 
 const Container = styled('div')`
   position: absolute;
@@ -54,7 +55,8 @@ export const Toolbar = () => {
   let tooltipRef!: HTMLDivElement
   let arrowRef: HTMLSpanElement | undefined
 
-  const {store, canvasService, fileService} = useState()
+  const {store, appService, canvasService, codeService, fileService} = useState()
+  const [ugly, setUgly] = createSignal(false)
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -69,6 +71,26 @@ export const Toolbar = () => {
   const restore = async (element: CanvasElement) => {
     await fileService.restore(element.id)
     calcPosition()
+  }
+
+  const prettify = async (element: CanvasElement) => {
+    const file = fileService.findFileById(element.id)
+    if (!file) return
+    await codeService.prettify(file)
+  }
+
+  const changeLang = async (element: CanvasElement) => {
+    const file = fileService.findFileById(element.id)
+    if (!file) return
+    const language = file.codeEditorView?.contentDOM.dataset.language ?? ''
+
+    appService.setInputLine({
+      value: language,
+      words: Object.keys(languages),
+      onEnter: (lang) => {
+        codeService.updateLang(file, lang)
+      },
+    })
   }
 
   const getSelected = () => {
@@ -152,6 +174,18 @@ export const Toolbar = () => {
     calcPosition()
   })
 
+  createEffect(async () => {
+    const selected = getSelected()
+    if (!selected) return
+    const file = fileService.findFileById(selected.element.id)
+    if (!file?.lastModified) return
+    const result = await codeService.prettifyCheck(file)
+    if (result != ugly()) {
+      setUgly(result)
+      calcPosition()
+    }
+  })
+
   return (
     <Show when={getSelected()}>
       {(selected) => (
@@ -164,6 +198,16 @@ export const Toolbar = () => {
               <Icon>history</Icon>
               Restore
             </Item>
+          </Show>
+          <Show when={isCodeElement(selected().element)}>
+            <Item onClick={() => changeLang(selected().element)}>
+              <Icon>javascript</Icon> Change language
+            </Item>
+            <Show when={ugly()}>
+              <Item onClick={() => prettify(selected().element)}>
+                <IconPrettier /> Prettify
+              </Item>
+            </Show>
           </Show>
           <span ref={arrowRef} class="arrow"></span>
         </Container>

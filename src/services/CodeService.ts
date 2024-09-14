@@ -4,10 +4,12 @@ import {yCollab, ySyncFacet} from 'y-codemirror.next'
 import {File, State} from '@/state'
 import * as remote from '@/remote'
 import {format} from '@/codemirror/prettify'
+import {language} from '@codemirror/language'
 import {FileService} from './FileService'
 import {CollabService} from './CollabService'
 import {AppService} from './AppService'
 import {CodeMirrorService} from './CodeMirrorService'
+import {PrettierService} from './PrettierService'
 
 export class CodeService {
   constructor(
@@ -15,6 +17,7 @@ export class CodeService {
     private appService: AppService,
     private collabService: CollabService,
     private codeMirrorService: CodeMirrorService,
+    private prettierService: PrettierService,
     private store: Store<State>,
     private setState: SetStoreFunction<State>,
   ) {}
@@ -70,12 +73,24 @@ export class CodeService {
     this.updateEditorState(file)
   }
 
-  async prettify(file: File) {
+  async prettify(file: File): Promise<void> {
     const codeEditorView = file.codeEditorView
     if (!codeEditorView) return
-    const lang = codeEditorView.contentDOM.dataset.language ?? ''
+    const lang = codeEditorView.contentDOM.dataset.language
+    if (!lang) return
+
     const config = unwrap(this.store.config.prettier)
-    return format(codeEditorView, lang, config)
+    await format(codeEditorView, lang, config)
+  }
+
+  async prettifyCheck(file: File): Promise<boolean> {
+    const codeEditorView = file.codeEditorView
+    if (!codeEditorView) return false
+    const lang = codeEditorView.contentDOM.dataset.language
+    if (!lang) return false
+
+    const config = unwrap(this.store.config.prettier)
+    return this.prettierService.check(codeEditorView.state.doc.toString(), lang, config)
   }
 
   private updateEditorState(file: File, el?: Element) {
@@ -110,6 +125,7 @@ export class CodeService {
     this.fileService.updateFile(file.id, {
       lastModified: new Date(),
     })
+
     await this.saveEditor()
   }
 

@@ -7,6 +7,7 @@ import {useState} from '@/state'
 import * as remote from '@/remote'
 import {isTauri} from '@/env'
 import {Align} from '@/prosemirror/image'
+import {languages} from '@/codemirror/highlight'
 import {Icon, IconFloatCenter} from '../Icon'
 import {Block} from './BlockHandle'
 import {Tooltip} from '../Tooltip'
@@ -75,6 +76,7 @@ export const BlockTooltip = (props: Props) => {
     const lang = block.blockNode.attrs.lang
     appService.setInputLine({
       value: lang,
+      words: Object.keys(languages),
       onEnter: (lang: string) => {
         view.focus()
         const tr = view.state.tr

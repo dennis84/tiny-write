@@ -40,6 +40,7 @@ const Container = styled('div')`
 export interface InputLineConfig {
   value: string
   onEnter: (lang: string) => void
+  words?: string[]
 }
 
 interface Props {
@@ -65,6 +66,7 @@ export const InputLine = (props: Props) => {
       doc: config.value,
       parent: ref,
       theme: getTheme(codeTheme.value),
+      words: config.words,
       onEnter: (lang) => {
         config.onEnter(lang)
         props.setter(undefined)
