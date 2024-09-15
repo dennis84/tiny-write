@@ -21,6 +21,7 @@ export interface PrettierConfig {
   useTabs: boolean
   semi: boolean
   singleQuote: boolean
+  bracketSpacing: boolean
 }
 
 export interface Config {
@@ -252,6 +253,8 @@ export const createState = (props: Partial<State> = {}): State => ({
       useTabs: false,
       semi: false,
       singleQuote: true,
+      trailingComma: 'all',
+      bracketSpacing: false,
     },
   },
   ...props,

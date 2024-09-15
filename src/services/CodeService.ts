@@ -3,8 +3,6 @@ import {EditorView} from '@codemirror/view'
 import {yCollab, ySyncFacet} from 'y-codemirror.next'
 import {File, State} from '@/state'
 import * as remote from '@/remote'
-import {format} from '@/codemirror/prettify'
-import {language} from '@codemirror/language'
 import {FileService} from './FileService'
 import {CollabService} from './CollabService'
 import {AppService} from './AppService'
@@ -80,7 +78,7 @@ export class CodeService {
     if (!lang) return
 
     const config = unwrap(this.store.config.prettier)
-    await format(codeEditorView, lang, config)
+    await this.codeMirrorService.format(codeEditorView, lang, config)
   }
 
   async prettifyCheck(file: File): Promise<boolean> {

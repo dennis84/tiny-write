@@ -14,7 +14,6 @@ import {CodeMirrorService} from '@/services/CodeMirrorService'
 import {highlight} from '@/codemirror/highlight'
 import {findWords} from '@/codemirror/completion'
 import {mermaidKeywords} from '@/codemirror/mermaid'
-import {format} from '@/codemirror/prettify'
 import {foldAll} from '@/codemirror/fold-all'
 import {createExpandPlugin} from './expand'
 import {createMermaidPlugin} from './mermaid-preview'
@@ -41,7 +40,7 @@ export class CodeBlockView {
     this.dom.addEventListener('cm:user_event', (event: any) => {
       const action = event.detail.userEvent
       if (action === 'prettify') {
-        void format(this.editorView, this.lang, this.configService.prettier)
+        void codeMirrorService.format(this.editorView, this.lang, this.configService.prettier)
       } else if (action === 'fold_all') {
         foldAll(this.editorView)
       }

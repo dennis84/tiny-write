@@ -72,6 +72,9 @@ export const CodeFormat = (props: Props) => {
         <Link onClick={() => updatePrettier({singleQuote: !store.config.prettier.singleQuote})}>
           Single Quote {store.config.prettier.singleQuote && '✅'}
         </Link>
+        <Link onClick={() => updatePrettier({bracketSpacing: !store.config.prettier.bracketSpacing})}>
+          Bracket Spacing {store.config.prettier.bracketSpacing && '✅'}
+        </Link>
       </Sub>
       <ButtonGroup>
         <Button onClick={props.onBack}>↩ Back</Button>

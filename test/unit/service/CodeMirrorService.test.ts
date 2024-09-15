@@ -1,10 +1,12 @@
 import {vi, test, beforeEach, expect} from 'vitest'
 import {mock} from 'vitest-mock-extended'
 import {createStore} from 'solid-js/store'
+import {diagnosticCount} from '@codemirror/lint'
 import {State, createState} from '@/state'
 import {CodeMirrorService} from '@/services/CodeMirrorService'
 import {ConfigService} from '@/services/ConfigService'
 import {AppService} from '@/services/AppService'
+import {PrettierService} from '@/services/PrettierService'
 
 vi.mock('@/db', () => ({DB: mock()}))
 
@@ -14,6 +16,7 @@ beforeEach(() => {
 
 test('createEditor', () => {
   const appService = mock<AppService>()
+  const prettierService = mock<PrettierService>()
   const configService = mock<ConfigService>({
     codeTheme: ConfigService.codeThemes.dracula,
     prettier: {tabWidth: 2, useTabs: false},
@@ -21,9 +24,53 @@ test('createEditor', () => {
 
   const parent = document.createElement('div')
   const [store] = createStore<State>(createState())
-  const service = new CodeMirrorService(configService, appService, store)
+  const service = new CodeMirrorService(configService, appService, prettierService, store)
   const {editorView, compartments} = service.createEditor({lang: 'mermaid', parent})
 
   expect(editorView).toBeDefined()
   expect(compartments).toBeDefined()
+})
+
+test('format', async () => {
+  const [store] = createStore<State>(createState())
+  const appService = mock<AppService>()
+  const prettierService = new PrettierService()
+  const configService = mock<ConfigService>({
+    codeTheme: ConfigService.codeThemes.dracula,
+    prettier: store.config.prettier,
+  })
+
+  const doc = 'const test=123'
+
+  const parent = document.createElement('div')
+  const service = new CodeMirrorService(configService, appService, prettierService, store)
+  const {editorView} = service.createEditor({lang: 'typescript', parent, doc})
+
+  await service.format(editorView, 'typescript', store.config.prettier)
+
+  expect(editorView.state.doc.toString()).toBe('const test = 123')
+})
+
+test('format - error', async () => {
+  const [store] = createStore<State>(createState())
+  const appService = mock<AppService>()
+  const prettierService = new PrettierService()
+  const configService = mock<ConfigService>({
+    codeTheme: ConfigService.codeThemes.dracula,
+    prettier: store.config.prettier,
+  })
+
+  const doc = 'const test - 1'
+
+  const parent = document.createElement('div')
+  const service = new CodeMirrorService(configService, appService, prettierService, store)
+  const {editorView} = service.createEditor({lang: 'typescript', parent, doc})
+
+  expect(diagnosticCount(editorView.state)).toBe(0)
+
+  await service.format(editorView, 'typescript', store.config.prettier)
+
+  expect(editorView.state.doc.toString()).toBe('const test - 1')
+
+  expect(diagnosticCount(editorView.state)).toBeGreaterThan(0)
 })
