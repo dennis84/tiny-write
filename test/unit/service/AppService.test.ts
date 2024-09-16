@@ -62,3 +62,28 @@ test.each([
   const basePath = await appService.getBasePath()
   expect(basePath).toBe(data.expected)
 })
+
+test('reset', () => {
+  const initial = createState({
+    args: {cwd: '/home', file: 'test.md'},
+    mode: Mode.Editor,
+    files: [
+      {
+        id: '1',
+        ydoc: createYUpdate('1', ['Test']),
+        lastModified,
+        active: true,
+        versions: [],
+      },
+    ],
+  })
+  const {store, appService} = createCtrl(initial)
+
+  appService.reset()
+
+  expect(store.files).toHaveLength(0)
+  expect(store.args?.cwd).toBe('/home')
+  expect(store.args?.file).toBe(undefined)
+
+  expect(DB.deleteDatabase).toHaveBeenCalled()
+})

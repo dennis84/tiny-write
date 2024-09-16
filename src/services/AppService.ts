@@ -1,8 +1,8 @@
-import {Store, unwrap, SetStoreFunction} from 'solid-js/store'
+import {Store, unwrap, SetStoreFunction, reconcile} from 'solid-js/store'
 import {createSignal} from 'solid-js'
 import {stateToString} from '@/utils/debug'
 import * as remote from '@/remote'
-import {State, ServiceError, Window, Mode, ErrorObject} from '@/state'
+import {State, ServiceError, Window, Mode, ErrorObject, createState} from '@/state'
 import {DB} from '@/db'
 import {isTauri} from '@/env'
 import {InputLineConfig} from '@/components/dialog/InputLine'
@@ -86,8 +86,11 @@ export class AppService {
     this.inputLine[1](inputLine)
   }
 
-  async reset() {
+  async reset(): Promise<void> {
     remote.info('Delete database')
+    this.setState(
+      reconcile(createState({loading: 'initialized', args: {cwd: this.store.args?.cwd}})),
+    )
     await DB.deleteDatabase()
   }
 
