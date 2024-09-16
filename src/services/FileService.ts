@@ -150,7 +150,13 @@ export class FileService {
     return {
       ...state,
       error: undefined,
-      args: {...state.args, dir: undefined},
+      args: {
+        cwd: state.args?.cwd,
+        file: undefined,
+        newFile: undefined,
+        dir: undefined,
+        text: undefined,
+      },
       files,
       canvases,
       mode,

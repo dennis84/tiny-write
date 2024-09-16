@@ -87,6 +87,7 @@ export class AppService {
   }
 
   async reset() {
+    remote.info('Delete database')
     await DB.deleteDatabase()
   }
 

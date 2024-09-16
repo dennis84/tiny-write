@@ -34,7 +34,9 @@ export const createIpcMock = (options?: Record<string, IpcMockFn>) => {
 
     if (cmd === 'get_mime_type') {
       const [, ext] = args.path.split('.')
-      return ext === 'md' ? `text/${ext}` : `image/${ext}`
+      if (ext === 'md') return `text/markdown`
+      if (ext === 'png') return `image/${ext}`
+      return `text/${ext}`
     }
 
     if (cmd === 'dirname') {

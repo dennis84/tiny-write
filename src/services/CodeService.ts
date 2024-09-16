@@ -60,6 +60,17 @@ export class CodeService {
 
   updateText(doc: string | undefined) {
     if (!doc) return
+    const currentFile = this.fileService.currentFile
+    if (!currentFile) return
+    if (!this.store.collab?.ydoc) {
+      return
+    }
+
+    const subdoc = this.collabService.getSubdoc(currentFile.id)
+    const type = subdoc.getText(currentFile.id)
+    type.delete(0, type.length)
+    type.insert(0, doc)
+    remote.info(`Updated text from file`)
   }
 
   updateConfig(file: File) {

@@ -253,7 +253,6 @@ export const createState = (props: Partial<State> = {}): State => ({
       useTabs: false,
       semi: false,
       singleQuote: true,
-      trailingComma: 'all',
       bracketSpacing: false,
     },
   },

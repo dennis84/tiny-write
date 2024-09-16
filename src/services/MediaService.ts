@@ -54,7 +54,7 @@ export class MediaService {
     const mime = await remote.getMimeType(path)
     const isImage = mime.startsWith('image/')
     const isVideo = mime.startsWith('video/')
-    const isText = mime.startsWith('text/')
+    const isMarkdown = mime.startsWith('text/markdown')
 
     if (isImage || isVideo) {
       const basePath = await this.appService.getBasePath()
@@ -91,13 +91,11 @@ export class MediaService {
 
         if (addedElement) this.canvasCollabService.addElement(addedElement)
       }
-    } else if (isText) {
-      let file = await this.fileService.findFileByPath(path)
-      if (!file) file = await this.editorService.newFile({path})
-      return {file}
-    } else {
-      remote.info(`Ignore dropped file (mime=${mime})`)
     }
+
+    let file = await this.fileService.findFileByPath(path)
+    if (!file) file = await this.editorService.newFile({path, code: !isMarkdown})
+    return {file}
   }
 
   private insert(view: EditorView, data: string, left: number, top: number, mime?: string) {

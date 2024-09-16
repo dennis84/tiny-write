@@ -49,6 +49,7 @@ const createLinkElement = (props: Partial<CanvasLinkElement> = {}) => ({
 })
 
 const initial = createState({
+  args: {file: './file.txt', cwd: '/home'},
   files: [
     createFile({id: '1'}),
     createFile({id: '2', parentId: '1', code: true}),
@@ -118,6 +119,9 @@ test.each([
   expect(result.navigateTo).toBe(data.navigateTo)
 
   expect(fileService.updateFile).toBeCalled()
+
+  expect(store.args?.cwd).toBeDefined()
+  expect(store.args?.file).toBe(undefined)
 })
 
 test.each([

@@ -172,5 +172,5 @@ test('open - file arg', async () => {
   })
 
   expect(fileService.currentFile?.path).toBe('code1.yaml')
-  expect(fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('') // TODO: implement
+  expect(fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('Code1')
 })
