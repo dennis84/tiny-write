@@ -77,13 +77,14 @@ export const Tooltip = (props: Props) => {
   const cleanup = createMutable<Cleanup>({})
 
   const listener = (e: MouseEvent) => {
-    if ((e.target as Element).closest('.tooltip')) return
-    props.onClose?.()
+    if (!tooltipRef?.contains(e.target as Node)) {
+      props.onClose?.()
+    }
   }
 
   onMount(() => {
-    // Click is triggered immediately when link is drawn
-    setTimeout(() => document.addEventListener('click', listener))
+    // Cannot use click, otherwise click is triggerd after last gesture event (lostpointercapture)
+    document.addEventListener('pointerdown', listener)
 
     const placement = props.placement ?? 'bottom'
     const fallbackPlacements = props.fallbackPlacements ?? undefined
@@ -123,7 +124,7 @@ export const Tooltip = (props: Props) => {
     })
 
     onCleanup(() => {
-      document.removeEventListener('click', listener)
+      document.removeEventListener('pointerdown', listener)
       unwrap(cleanup).fn?.()
     })
   })
