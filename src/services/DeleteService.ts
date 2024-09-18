@@ -3,7 +3,7 @@ import {CanvasService} from './CanvasService'
 import {FileService} from './FileService'
 import {TreeNode, TreeService} from './TreeService'
 import {info} from '@/remote'
-import {SetStoreFunction, unwrap} from 'solid-js/store'
+import {reconcile, SetStoreFunction, unwrap} from 'solid-js/store'
 import {DB} from '@/db'
 
 interface DeleteResult {
@@ -165,12 +165,6 @@ export class DeleteService {
   }
 
   private resetArgs() {
-    this.setState('args', {
-      cwd: this.store.args?.cwd,
-      file: undefined,
-      newFile: undefined,
-      dir: undefined,
-      text: undefined,
-    })
+    this.setState('args', reconcile({cwd: this.store.args?.cwd}))
   }
 }

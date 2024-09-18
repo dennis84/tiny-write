@@ -1,8 +1,14 @@
+use std::{sync::Arc, time::Duration};
+use editor_state::EditorState;
+use tokio::sync::Mutex;
+
 use log::{debug, info};
-use tauri::Manager;
+use tauri::{Listener, Manager};
 use tauri_plugin_cli::CliExt;
 
 mod cmd;
+mod debouncer;
+mod editor_state;
 mod install_cli;
 mod logger;
 mod menu;
@@ -72,6 +78,26 @@ pub fn run() {
             }
 
             menu::setup_menu(handle)?;
+
+            let editor_state = Arc::new(Mutex::new(EditorState::new()));
+            let editor_state_2 = Arc::clone(&editor_state);
+            app.manage(editor_state);
+
+            let (sender, receiver) = debouncer::unbounded();
+
+            handle.listen_any("write_documents", move |path| {
+                sender.send(path, Duration::from_millis(3000)).unwrap();
+            });
+
+            tauri::async_runtime::spawn(async move {
+                loop {
+                    if receiver.recv().is_ok() {
+                        let mut state = editor_state_2.lock().await;
+                        let _ = state.write_all();
+                    }
+                }
+            });
+
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
@@ -83,6 +109,8 @@ pub fn run() {
             cmd::path::resolve_path,
             cmd::path::dirname,
             cmd::path::to_relative_path,
+            cmd::code::rope_insert,
+            cmd::code::rope_delete,
         ])
         .run(tauri::generate_context!("tauri.conf.json"))
         .expect("error while running tauri application");

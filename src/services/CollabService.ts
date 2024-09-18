@@ -81,6 +81,16 @@ export class CollabService {
     }
   }
 
+  static getSubdoc(ydoc: Y.Doc, id: string): Y.Doc {
+    let subdoc = ydoc.getMap<Y.Doc>().get(id)
+    if (!subdoc) {
+      subdoc = new Y.Doc({gc: false, guid: id})
+      ydoc.getMap().set(id, subdoc)
+    }
+
+    return subdoc
+  }
+
   private static createWS() {
     return !isTauri() ? window.WebSocket : (TauriWebSocket as any)
   }
@@ -170,13 +180,9 @@ export class CollabService {
     const ydoc = this.store.collab?.ydoc
     if (!ydoc) throw new Error('Collab state was not created')
 
-    let subdoc = ydoc.getMap<Y.Doc>().get(id)
-    if (!subdoc) {
-      subdoc = new Y.Doc({gc: false, guid: id})
-      ydoc.getMap().set(id, subdoc)
-    }
-
+    const subdoc = CollabService.getSubdoc(ydoc, id)
     const connect = this.store.collab?.started ?? false
+
     if (!this.providers[id]) {
       info(`Create provider for subdoc (id=${id}, connect=${connect})`)
       const WebSocketPolyfill = CollabService.createWS()

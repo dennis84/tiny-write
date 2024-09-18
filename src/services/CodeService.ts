@@ -1,5 +1,6 @@
 import {SetStoreFunction, Store, unwrap} from 'solid-js/store'
-import {EditorView} from '@codemirror/view'
+import {EditorView, ViewUpdate} from '@codemirror/view'
+import * as Y from 'yjs'
 import {yCollab, ySyncFacet} from 'y-codemirror.next'
 import {File, State} from '@/state'
 import * as remote from '@/remote'
@@ -47,8 +48,9 @@ export class CodeService {
 
       const update = await FileService.activateFile(state, file)
       update.collab = CollabService.create(file.id, update.mode, share)
+      const subdoc = CollabService.getSubdoc(update.collab.ydoc, file.id)
+      if (text) this.updateText(file, subdoc, text)
       this.setState(update)
-      if (text) this.updateText(text)
     } catch (error: any) {
       this.appService.setError({error, fileId: id})
     }
@@ -58,16 +60,9 @@ export class CodeService {
     this.updateEditorState(file, el)
   }
 
-  updateText(doc: string | undefined) {
+  updateText(file: File, subdoc: Y.Doc, doc: string | undefined) {
     if (!doc) return
-    const currentFile = this.fileService.currentFile
-    if (!currentFile) return
-    if (!this.store.collab?.ydoc) {
-      return
-    }
-
-    const subdoc = this.collabService.getSubdoc(currentFile.id)
-    const type = subdoc.getText(currentFile.id)
+    const type = subdoc.getText(file.id)
     type.delete(0, type.length)
     type.insert(0, doc)
     remote.info(`Updated text from file`)
@@ -119,7 +114,7 @@ export class CodeService {
       doc: type.toString(),
       lang: file.codeLang,
       extensions: [
-        EditorView.updateListener.of(() => this.onUpdate(file)),
+        EditorView.updateListener.of((update) => this.onUpdate(file, update)),
         yCollab(type, this.store.collab?.provider.awareness, {undoManager: false}),
       ],
     })
@@ -130,18 +125,31 @@ export class CodeService {
     this.setState('files', fileIndex, 'codeEditorView', editor.editorView)
   }
 
-  private async onUpdate(file: File) {
+  private async onUpdate(file: File, update: ViewUpdate) {
     this.fileService.updateFile(file.id, {
       lastModified: new Date(),
     })
 
-    await this.saveEditor()
+    await this.saveEditor(file, update)
   }
 
-  private async saveEditor() {
-    const file = this.fileService.currentFile
-    if (!file) return
+  private async saveEditor(file: File, update: ViewUpdate) {
     await FileService.saveFile(file)
-    // TODO: write to file
+
+    if (!update.docChanged) {
+      return
+    }
+
+    if (file.path) {
+      update.changes.iterChanges((fromA, toA, _fromB, _toB, insert) => {
+        const text = insert.sliceString(0, insert.length, '\n')
+        if (fromA !== toA) {
+          remote.ropeDelete(file.path!, {from: fromA, to: toA})
+        }
+        if (text.length > 0) {
+          remote.ropeInsert(file.path!, {from: fromA, text})
+        }
+      })
+    }
   }
 }

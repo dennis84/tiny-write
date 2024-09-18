@@ -13,7 +13,7 @@ export interface PersistedFile {
   parentId?: string
   leftId?: string
   title?: string
-  ydoc: Uint8Array
+  ydoc?: Uint8Array
   versions?: PersistedVersion[]
   lastModified: Date
   path?: string

@@ -118,6 +118,16 @@ export const writeFile = async (path: string, contents: string): Promise<void> =
   return fs.writeTextFile(path, contents)
 }
 
+export const ropeInsert = async (path: string, data: any) => {
+  if (!isTauri()) throw Error('Must be run in tauri: ropeInsert')
+  return await invoke('rope_insert', {path, data})
+}
+
+export const ropeDelete = async (path: string, data: any) => {
+  if (!isTauri()) throw Error('Must be run in tauri: ropeDelete')
+  return await invoke('rope_delete', {path, data})
+}
+
 export const resolvePath = async (
   path: string,
   basePath: string | undefined = undefined,

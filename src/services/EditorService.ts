@@ -141,9 +141,10 @@ export class EditorService {
 
       const update = await FileService.activateFile(state, file)
       update.collab = CollabService.create(file.id, update.mode, share)
+      const subdoc = CollabService.getSubdoc(update.collab.ydoc, file.id)
+      if (text) this.updateText(file, subdoc, text)
       this.setState(update)
       this.treeService.create()
-      if (text) this.updateText(text)
     } catch (error: any) {
       this.appService.setError({error, fileId: id})
     }
@@ -161,32 +162,12 @@ export class EditorService {
     await this.writeFile(updatedFile)
   }
 
-  updateText(text?: FileText) {
-    const currentFile = this.fileService.currentFile
-    if (!text || !currentFile) return
-    if (!this.store.collab?.ydoc) {
-      return
-    }
-
-    let ynode: Node
-    try {
-      const subdoc = this.collabService.getSubdoc(currentFile.id)
-      const type = subdoc.getXmlFragment(currentFile.id)
-      const json = yXmlFragmentToProseMirrorRootNode(type, schema)
-      ynode = Node.fromJSON(schema, json)
-    } catch (_e) {
-      ynode = new Node()
-    }
-
-    const node = Node.fromJSON(schema, text.doc)
-    if (!node.eq(ynode)) {
-      const ydoc = prosemirrorJSONToYDoc(schema, text.doc, currentFile.id)
-      const update = Y.encodeStateAsUpdate(ydoc)
-      const subdoc = this.collabService.getSubdoc(currentFile.id)
-      const type = subdoc.getXmlFragment(currentFile.id)
-      type.delete(0, type.length)
-      Y.applyUpdate(subdoc, update)
-    }
+  updateText(file: File, subdoc: Y.Doc, text: FileText) {
+    const ydoc = prosemirrorJSONToYDoc(schema, text.doc, file.id)
+    const update = Y.encodeStateAsUpdate(ydoc)
+    const type = subdoc.getXmlFragment(file.id)
+    type.delete(0, type.length)
+    Y.applyUpdate(subdoc, update)
   }
 
   selectBox(box: Box, first: boolean, last: boolean) {
