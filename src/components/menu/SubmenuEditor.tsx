@@ -23,8 +23,12 @@ export const SubmenuEditor = ({maybeHide}: {maybeHide: () => void}) => {
   const onSaveAs = async () => {
     const currentFile = fileService.currentFile
     if (!currentFile) return
-    const path = await remote.saveFile(currentFile)
-    if (path) await editorService.updatePath(path)
+    try {
+      const path = await remote.saveFile(currentFile)
+      if (path) await editorService.updatePath(path)
+    } catch (_e) {
+      remote.info(`Save as cancelled`)
+    }
   }
 
   const onClear = () => editorService.clear()

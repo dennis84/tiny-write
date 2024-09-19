@@ -16,7 +16,11 @@ export const Redirect = () => {
     const argPath = store.args?.newFile ?? store.args?.file
 
     if (argPath) {
-      let file = await fileService.findFileByPath(argPath)
+      let file
+      if (store.args?.file) {
+        file = await fileService.findFileByPath(store.args.file)
+      }
+
       if (!file) {
         const mime = await getMimeType(argPath)
         const code = !mime.startsWith('text/markdown')
@@ -26,8 +30,6 @@ export const Redirect = () => {
         info(
           `Created new file with path (id=${file.id}, code=${code}, path=${path}, newFile=${newFile}, mime=${mime})`,
         )
-      } else {
-        info(`File exists delete DB does not worrk :(`)
       }
 
       redirectTo(`/${file.code ? 'code' : 'editor'}/${file.id}`)
