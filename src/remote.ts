@@ -113,9 +113,9 @@ export const readBinaryFile = async (path: string): Promise<Uint8Array> => {
   return fs.readFile(path)
 }
 
-export const writeFile = async (path: string, contents: string): Promise<void> => {
-  if (!isTauri()) throw Error('Must be run in tauri: writeFile')
-  return fs.writeTextFile(path, contents)
+export const ropeFromString = async (path: string, data: string): Promise<void> => {
+  if (!isTauri()) throw Error('Must be run in tauri: ropeFromString')
+  return await invoke('rope_from_string', {path, data})
 }
 
 export const ropeInsert = async (path: string, data: any) => {

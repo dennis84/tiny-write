@@ -1,4 +1,5 @@
 use std::sync::Arc;
+use ropey::Rope;
 use tauri::{Emitter, State};
 use tokio::sync::Mutex;
 
@@ -14,6 +15,18 @@ pub struct Insert {
 pub struct Delete {
     from: usize,
     to: usize,
+}
+
+#[tauri::command]
+pub async fn rope_from_string(
+    path: String,
+    data: String,
+    state: State<'_, Arc<Mutex<EditorState>>>,
+    app_handle: tauri::AppHandle,
+) -> Result<(), String> {
+    from_string(path, data, state, app_handle)
+        .await
+        .map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -38,6 +51,22 @@ pub async fn rope_delete(
     delete(path, data, state, app_handle)
         .await
         .map_err(|e| e.to_string())
+}
+
+async fn from_string(
+    path: String,
+    data: String,
+    state: State<'_, Arc<Mutex<EditorState>>>,
+    app_handle: tauri::AppHandle,
+) -> anyhow::Result<()> {
+    let mut state = state.lock().await;
+    let doc = state.get_document(path.clone())?;
+
+    doc.text = Rope::from_str(&data);
+    doc.changed = true;
+    app_handle.emit("write_documents", path.clone())?;
+
+    Ok(())
 }
 
 async fn insert(

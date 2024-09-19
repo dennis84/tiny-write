@@ -60,6 +60,7 @@ export const Variables = () => {
     root.style.setProperty('--z-index-max', ZIndex.MAX)
     root.style.setProperty('--z-index-handle', ZIndex.HANDLE)
     root.style.setProperty('--z-index-tooltip', ZIndex.TOOLTIP)
+    root.style.setProperty('--z-index-above-content', ZIndex.ABOVE_CONTENT)
   })
 
   return <></>

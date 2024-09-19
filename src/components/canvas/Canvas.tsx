@@ -10,8 +10,7 @@ import {
   isVideoElement,
   isCodeElement,
 } from '@/state'
-import {isTauri} from '@/env'
-import {ZIndex} from '@/utils/ZIndex'
+import {Select} from '../Select'
 import {Grid} from './Grid'
 import {Editor} from './Editor'
 import {Link} from './Link'
@@ -19,7 +18,6 @@ import {Image} from './Image'
 import {Video} from './Video'
 import {LinkEnd} from './LinkEnd'
 import {Bounds} from './Bounds'
-import {Select} from '../Select'
 import {CodeEditor} from './CodeEditor'
 import {Toolbar} from './Toolbar'
 
@@ -40,16 +38,6 @@ const Board = styled('div')`
   height: 1px;
   user-select: none;
   -webkit-user-select: none;
-`
-
-const DragArea = styled('div')`
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 30px;
-  z-index: ${ZIndex.MAX};
-  cursor: var(--cursor-grab);
 `
 
 export const Canvas = () => {
@@ -151,9 +139,6 @@ export const Canvas = () => {
 
   return (
     <Container ref={ref} id="content" data-testid="canvas_container">
-      <Show when={isTauri()}>
-        <DragArea data-tauri-drag-region="true" />
-      </Show>
       <LinkEnd />
       <Select target={() => ref} />
       <Grid onClick={onGridClick} />

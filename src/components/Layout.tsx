@@ -64,3 +64,13 @@ export const Content = styled('div')`
     font-family: var(--font-family-monospace);
   }
 `
+
+export const DragArea = styled('div')`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 30px;
+  z-index: var(--z-index-above-content);
+  cursor: var(--cursor-grab);
+`

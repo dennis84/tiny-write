@@ -2,8 +2,8 @@ import {createEffect, onCleanup} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {useState} from '@/state'
 import {Scroll} from '../Layout'
-import {codeMirror} from './Style'
 import {Back} from '../Back'
+import {codeMirror} from './Style'
 
 export const CodeMirrorContainer = styled('div')`
   width: 100%;

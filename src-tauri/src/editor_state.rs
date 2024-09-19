@@ -42,7 +42,7 @@ impl EditorState {
                 continue;
             }
 
-            info!("Write to file (path={})", path);
+            info!("Write rope to file (path={})", path);
             doc.text.write_to(BufWriter::new(File::create(path)?))?;
             doc.changed = false;
         }

@@ -20,7 +20,7 @@ export const Burger = styled('button')`
   position: absolute;
   left: -52px;
   top: 2px;
-  z-index: var(--z-index-handle);
+  z-index: var(--z-index-max);
   background: none;
   border-radius: 50px;
   width: 50px;

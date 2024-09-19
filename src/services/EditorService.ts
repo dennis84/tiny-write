@@ -1,13 +1,12 @@
 import {Store, unwrap, SetStoreFunction} from 'solid-js/store'
 import {EditorView} from 'prosemirror-view'
 import {EditorState, Transaction} from 'prosemirror-state'
-import {Node} from 'prosemirror-model'
 import {selectAll, deleteSelection} from 'prosemirror-commands'
 import * as Y from 'yjs'
-import {prosemirrorJSONToYDoc, yXmlFragmentToProseMirrorRootNode} from 'y-prosemirror'
-import {throttle} from 'throttle-debounce'
+import {prosemirrorJSONToYDoc} from 'y-prosemirror'
+import {debounce} from 'throttle-debounce'
 import {Box} from '@tldraw/editor'
-import * as remote from '@/remote'
+import {debug, info, error, ropeFromString} from '@/remote'
 import {State, FileText, File} from '@/state'
 import {serialize} from '@/markdown'
 import {FileService} from './FileService'
@@ -29,7 +28,7 @@ export class EditorService {
     private setState: SetStoreFunction<State>,
   ) {}
 
-  private writeFileThrottled = throttle(1000, this.writeFile.bind(this))
+  private writeFileThrottled = debounce(1000, this.writeFile.bind(this))
 
   updateConfig(file: File) {
     this.updateEditorState(file)
@@ -62,9 +61,9 @@ export class EditorService {
         const newState = editorView!.state.apply(tr)
         try {
           editorView!.updateState(newState)
-        } catch (error: any) {
-          remote.error('Sync error occurred', error)
-          this.appService.setError({id: 'editor_sync', error})
+        } catch (e: any) {
+          error('Sync error occurred', e)
+          this.appService.setError({id: 'editor_sync', error: e})
           return
         }
 
@@ -83,7 +82,7 @@ export class EditorService {
         await FileService.saveFile(file)
         this.writeFileThrottled(file)
 
-        remote.info('Saved editor content')
+        info('Saved editor content')
       }
 
       editorView = new EditorView(node!, {
@@ -121,7 +120,7 @@ export class EditorService {
   }
 
   async openFile(id: string, share = false) {
-    remote.debug(`Open file: (id=${id}, share=${share}, mode=editor)`)
+    debug(`Open file: (id=${id}, share=${share}, mode=editor)`)
     const state: State = unwrap(this.store)
 
     try {
@@ -145,8 +144,8 @@ export class EditorService {
       if (text) this.updateText(file, subdoc, text)
       this.setState(update)
       this.treeService.create()
-    } catch (error: any) {
-      this.appService.setError({error, fileId: id})
+    } catch (e: any) {
+      this.appService.setError({error: e, fileId: id})
     }
   }
 
@@ -186,9 +185,9 @@ export class EditorService {
 
   async writeFile(file: File) {
     if (file?.path && file.editorView) {
-      remote.info('Write file')
+      info('Serialize to markdown and write file')
       const text = serialize(file.editorView.state)
-      await remote.writeFile(file.path, text)
+      await ropeFromString(file.path, text)
     }
   }
 }

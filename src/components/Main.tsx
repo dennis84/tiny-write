@@ -1,9 +1,10 @@
-import {onMount, Switch, Match, ErrorBoundary, createEffect, untrack} from 'solid-js'
+import {onMount, Switch, Match, ErrorBoundary, createEffect, untrack, Show} from 'solid-js'
 import {Route, Router, RouteSectionProps} from '@solidjs/router'
 import {State, StateContext} from '@/state'
 import {createCtrl} from '@/services'
 import * as remote from '@/remote'
-import {Layout} from '@/components/Layout'
+import {isTauri} from '@/env'
+import {DragArea, Layout} from '@/components/Layout'
 import {Menu} from '@/components/menu/Menu'
 import {Error} from '@/components/Error'
 import {Keymap} from '@/components/Keymap'
@@ -66,6 +67,9 @@ export const Main = (props: {state: State}) => {
               </Match>
               <Match when={ctrl.store.loading === 'initialized'}>{p.children}</Match>
             </Switch>
+            <Show when={isTauri()}>
+              <DragArea data-tauri-drag-region="true" />
+            </Show>
             <MouseCursor />
             <Menu />
             <Keymap />
