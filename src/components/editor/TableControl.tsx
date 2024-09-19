@@ -287,11 +287,7 @@ export const TableControls = (props: Props) => {
   return (
     <Show when={table()}>
       {(t) => (
-        <HandleGrid
-          file={props.file}
-          currentTable={t()}
-          currentTableMap={TableMap.get(t().node)}
-        />
+        <HandleGrid file={props.file} currentTable={t()} currentTableMap={TableMap.get(t().node)} />
       )}
     </Show>
   )

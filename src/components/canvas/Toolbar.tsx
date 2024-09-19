@@ -82,7 +82,7 @@ export const Toolbar = () => {
   const changeLang = async (element: CanvasElement) => {
     const file = fileService.findFileById(element.id)
     if (!file) return
-    const language = file.codeEditorView?.contentDOM.dataset.language ?? ''
+    const language = file.codeLang ?? ''
 
     appService.setInputLine({
       value: language,

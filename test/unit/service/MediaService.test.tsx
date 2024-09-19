@@ -298,3 +298,81 @@ test('dropPath - image on canvas', async () => {
   expect(imageEl.x).toBe(-50) // centered
   expect(imageEl.y).toBe(-200) // centered
 })
+
+test('dropPath - text file on canvas', async () => {
+  vi.stubGlobal('location', new URL('http://localhost:3000/canvas/1'))
+
+  const initial = createState({
+    mode: Mode.Canvas,
+    files: [],
+    canvases: [
+      {
+        id: '1',
+        camera: {point: [0, 0], zoom: 1},
+        lastModified,
+        active: true,
+        elements: [],
+      },
+    ],
+  })
+
+  const {store, canvasService, mediaService} = createCtrl(initial)
+  const {getByTestId} = render(() => <Main state={store} />)
+
+  await waitFor(() => {
+    expect(getByTestId('canvas_container')).toBeDefined()
+  })
+
+  const currentCanvas = canvasService.currentCanvas
+
+  const path = '/users/me/project/README.md'
+  const result = await mediaService.dropPath(path, [0, 0])
+
+  expect(result?.file).toBe(undefined)
+  expect(store.files).toHaveLength(1)
+
+  expect(currentCanvas?.elements).toHaveLength(1)
+  expect(store.files[0].id).toBe(currentCanvas?.elements[0].id)
+  expect(store.files[0].path).toBe(path)
+})
+
+test('dropPath - text file on code', async () => {
+  vi.stubGlobal('location', new URL('http://localhost:3000/code/1'))
+
+  const initial = createState()
+  const {store, mediaService} = createCtrl(initial)
+  const {getByTestId} = render(() => <Main state={store} />)
+
+  await waitFor(() => {
+    expect(getByTestId('code_scroll')).toBeDefined()
+  })
+
+  expect(store.files).toHaveLength(1)
+
+  const path = '/users/me/project/README.md'
+  const result = await mediaService.dropPath(path, [0, 0])
+
+  expect(result?.file).toBeDefined()
+  expect(store.files).toHaveLength(2)
+})
+
+test('dropPath - image on code', async () => {
+  vi.stubGlobal('location', new URL('http://localhost:3000/code/1'))
+
+  const initial = createState()
+  const {store, fileService, mediaService} = createCtrl(initial)
+  const {getByTestId} = render(() => <Main state={store} />)
+
+  await waitFor(() => {
+    expect(getByTestId('code_scroll')).toBeDefined()
+  })
+
+  expect(store.files).toHaveLength(1)
+
+  const path = '/users/me/file.png'
+  const result = await mediaService.dropPath(path, [0, 0])
+
+  expect(result?.file).toBeDefined()
+  expect(store.files).toHaveLength(2)
+  expect(fileService.findFileById(result?.file?.id!)?.path).toBe(path)
+})

@@ -56,41 +56,46 @@ export class MediaService {
     const isVideo = mime.startsWith('video/')
     const isMarkdown = mime.startsWith('text/markdown')
 
-    if (isImage || isVideo) {
-      const basePath = await this.appService.getBasePath()
-      const relativePath = await remote.toRelativePath(path, basePath)
+    const basePath = await this.appService.getBasePath()
+    const relativePath = await remote.toRelativePath(path, basePath)
 
-      if (this.store.mode === Mode.Editor) {
+    if (this.store.mode === Mode.Editor) {
+      if (isImage || isVideo) {
         const currentFile = this.fileService.currentFile
         if (!currentFile?.editorView) return
         this.insert(currentFile.editorView, relativePath, x, y, mime)
       } else {
-        const src = await MediaService.getImagePath(relativePath, basePath)
-        const point = this.canvasService.getPosition([x, y])
-        if (!point) return
-
-        let addedElement
-        if (isImage) {
-          const img = await this.loadImage(src)
-          addedElement = await this.canvasService.addImage(
-            relativePath,
-            point,
-            img.width,
-            img.height,
-          )
-        } else {
-          const video = await this.loadVideo(src)
-          addedElement = await this.canvasService.addVideo(
-            relativePath,
-            mime,
-            point,
-            video.videoWidth,
-            video.videoHeight,
-          )
-        }
-
-        if (addedElement) this.canvasCollabService.addElement(addedElement)
+        let file = await this.fileService.findFileByPath(path)
+        if (!file) file = await this.editorService.newFile({path, code: !isMarkdown})
+        return {file}
       }
+    } else if (this.store.mode === Mode.Canvas) {
+      const point = this.canvasService.getPosition([x, y])
+      if (!point) return
+
+      let addedElement
+      if (isImage) {
+        const src = await MediaService.getImagePath(relativePath, basePath)
+        const img = await this.loadImage(src)
+        addedElement = await this.canvasService.addImage(relativePath, point, img.width, img.height)
+      } else if (isVideo) {
+        const src = await MediaService.getImagePath(relativePath, basePath)
+        const video = await this.loadVideo(src)
+        addedElement = await this.canvasService.addVideo(
+          relativePath,
+          mime,
+          point,
+          video.videoWidth,
+          video.videoHeight,
+        )
+      } else {
+        let file = await this.fileService.findFileByPath(path)
+        if (!file) file = await this.editorService.newFile({path, code: !isMarkdown})
+        addedElement = (await this.canvasService.addFile(file))?.[0]
+      }
+
+      if (addedElement) this.canvasCollabService.addElement(addedElement)
+      return
     }
 
     let file = await this.fileService.findFileByPath(path)
