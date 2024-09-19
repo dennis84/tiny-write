@@ -8,11 +8,13 @@ export const lineTextEq = (page: Page, nth: number, text: string) =>
 export const lineCodeEq = async (page: Page, nth: number, text: string) => {
   await expect
     .poll(async () => {
-      const locator = page.locator(
-        `.cm-content > .cm-line:nth-child(${nth}) > span:not(.cm-ySelectionCaret)`,
-      )
-      const texts = await locator.allTextContents()
-      return texts.join('')
+      const locator = page.locator(`.cm-content > .cm-line:nth-child(${nth})`)
+      const text = await locator.evaluate((node) => {
+        node.querySelector('.cm-ySelectionCaret')?.remove()
+        return node.textContent
+      })
+
+      return text
     })
     .toBe(text)
 }

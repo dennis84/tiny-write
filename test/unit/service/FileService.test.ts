@@ -97,7 +97,7 @@ test('getTitle', async () => {
 test('findFile - found', async () => {
   vi.stubGlobal('__TAURI__', {})
   createIpcMock({
-    resolve_path: (path) => '/path/to' + path,
+    to_absolute_path: (path) => '/path/to' + path,
   })
 
   const [store, setState] = createStore(
@@ -117,7 +117,7 @@ test('findFile - found', async () => {
 test('findFile - not found', async () => {
   vi.stubGlobal('__TAURI__', {})
   createIpcMock({
-    resolve_path: () => {
+    to_absolute_path: () => {
       throw new Error('Fail')
     },
   })
@@ -131,4 +131,17 @@ test('findFile - not found', async () => {
   const service = new FileService(collabService, store, setState)
   expect(service.findFileById('1')).toBe(undefined)
   await expect(service.findFileByPath('/path/to/file2')).rejects.toThrowError()
+})
+
+test.each([
+  {code: true, path: '/path/name.md', expected: 'markdown'},
+  {code: true, path: '/path/name.rs', expected: 'rust'},
+  {code: true, path: '/path/name.test.ts', expected: 'typescript'},
+  {code: true, path: '/path/name.test/', expected: undefined}, // should not be possible
+  {code: false, path: '/path/name.ts', expected: undefined},
+  {code: true, newFile: '/path/name.ts', expected: 'typescript'},
+  {code: true, newFile: '/path/name.ts', codeLang: 'markdown', expected: 'markdown'},
+])('createFile - codeLang', ({code, codeLang, path, newFile, expected}) => {
+  const file = FileService.createFile({code, codeLang, path, newFile})
+  expect(file.codeLang).toBe(expected)
 })

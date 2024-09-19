@@ -63,6 +63,13 @@ pub fn resolve_path(path: String, base_path: Option<String>) -> Result<String, S
 }
 
 #[tauri::command]
+pub fn to_absolute_path(path: String, base_path: Option<String>) -> Result<String, String> {
+    pu::to_absolute_path(path, base_path)
+        .and_then(pu::path_buf_to_string)
+        .map_err(|e| e.to_string())
+}
+
+#[tauri::command]
 pub fn to_relative_path(path: String, base_path: Option<String>) -> Result<String, String> {
     pu::to_relative_path(path, base_path)
         .and_then(pu::path_buf_to_string)
@@ -146,6 +153,31 @@ mod tests {
         assert_eq!(
             to_relative_path(test_base_path, Some(test_path)).unwrap(),
             "~/foo".to_string()
+        );
+    }
+
+    #[test]
+    fn test_to_absolute_path() {
+        let test_base_path = format!("{}/foo", get_home());
+
+        assert_eq!(
+            to_absolute_path("~/foo/bar".to_string(), None).unwrap(),
+            format!("{}/foo/bar", get_home()).to_string()
+        );
+
+        assert_eq!(
+            to_absolute_path("~/../foo/bar".to_string(), None).unwrap(),
+            format!("{}/../foo/bar", get_home()).to_string()
+        );
+
+        assert_eq!(
+            to_absolute_path("./foo/bar".to_string(), Some(test_base_path)).unwrap(),
+            format!("{}/foo/foo/bar", get_home()).to_string()
+        );
+
+        assert_eq!(
+            to_absolute_path("./foo/bar".to_string(), Some("/".to_string())).unwrap(),
+            "/foo/bar".to_string()
         );
     }
 }

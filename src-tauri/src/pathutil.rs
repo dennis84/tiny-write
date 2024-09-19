@@ -6,7 +6,10 @@ use std::path::{Path, PathBuf};
 
 pub fn to_absolute_path<P: AsRef<Path>>(path: P, base_path: Option<P>) -> Result<PathBuf> {
     let path = path.as_ref().to_path_buf();
-    let path = expand_tilde(&path).unwrap_or(path);
+    let mut path = expand_tilde(&path).unwrap_or(path);
+    if path.starts_with("./") {
+        path = path.strip_prefix(".")?.to_path_buf();
+    }
 
     let cur = env::current_dir()?;
     let base_path = base_path.map(|p| p.as_ref().to_path_buf()).unwrap_or(cur);

@@ -19,7 +19,14 @@ test('prettify', async () => {
   const {store, codeService, fileService} = createCtrl(
     createState({
       files: [
-        {id: '1', ydoc: createYUpdate('1', 'const a=1;'), active: true, versions: [], code: true},
+        {
+          id: '1',
+          ydoc: createYUpdate('1', 'const a=1;'),
+          active: true,
+          versions: [],
+          code: true,
+          codeLang: 'typescript',
+        },
       ],
       mode: Mode.Code,
     }),

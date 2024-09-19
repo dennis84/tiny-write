@@ -47,6 +47,11 @@ export const createIpcMock = (options?: Record<string, IpcMockFn>) => {
       return (args.basePath ?? '') + args.path
     }
 
+    if (cmd === 'to_absolute_path') {
+      if (args.basePath) return args.path.replace(args.basePath, '.')
+      else return args.path.replace('~/', '/users/me/').replace('./', '/users/me/')
+    }
+
     if (cmd === 'to_relative_path') {
       if (args.basePath) return args.path.replace(args.basePath, '.')
       else return args.path.replace('/users/me', '~')

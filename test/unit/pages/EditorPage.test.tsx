@@ -350,7 +350,7 @@ test('open - newFile arg - newFile exists', async () => {
     expect(getByTestId('editor_scroll')).toBeDefined()
   })
 
-  expect(store.files.length).toBe(2)
+  expect(store.files.length).toBe(1)
   expect(fileService.currentFile?.newFile).toBe('file2.md')
-  expect(getByTestId('editor_scroll')).toHaveTextContent(/^Start typing ...$/)
+  expect(getByTestId('editor_scroll')).toHaveTextContent('Text')
 })

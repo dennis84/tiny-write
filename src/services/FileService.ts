@@ -8,6 +8,7 @@ import * as remote from '@/remote'
 import {DB} from '@/db'
 import {isTauri} from '@/env'
 import {createMarkdownParser} from '@/markdown'
+import {findCodeLang} from '@/codemirror/highlight'
 import {CollabService} from './CollabService'
 import {schema} from './ProseMirrorService'
 
@@ -102,11 +103,11 @@ export class FileService {
       title: file.title,
       lastModified: file.lastModified,
       path: file.path,
-      newFile: file.newFile,
+      newFile: file.path ? undefined : file.newFile,
       active: file.active,
       deleted: file.deleted,
-      code: file.code,
-      codeLang: file.codeLang,
+      code: file.path ? undefined : file.code,
+      codeLang: file.path ? undefined : file.codeLang,
       versions: file.versions.map((v) => ({
         date: v.date,
         ydoc: v.ydoc,
@@ -117,10 +118,18 @@ export class FileService {
   static createFile(params: Partial<File> = {}): File {
     const id = params.id ?? uuidv4()
     const ydoc = params.ydoc ?? Y.encodeStateAsUpdate(FileService.createYdoc(id))
+    let codeLang = params.codeLang
+    const filePath = params.path ?? params.newFile
+    if (!codeLang && params.code && filePath) {
+      const ext = filePath.substring(filePath.lastIndexOf('.') + 1)
+      codeLang = findCodeLang(ext)
+    }
+
     return {
       ...params,
       id,
       ydoc,
+      codeLang,
       versions: [],
     }
   }
@@ -223,14 +232,10 @@ export class FileService {
 
   async findFileByPath(path: string): Promise<File | undefined> {
     if (isTauri()) {
-      try {
-        path = await remote.resolvePath(path)
-      } catch (_error) {
-        throw new ServiceError('file_not_found', `File not found: ${path}`)
-      }
+      path = await remote.toAbsolutePath(path)
     }
 
-    return this.store.files.find((file) => file.path === path)
+    return this.store.files.find((file) => file.path === path || file.newFile === path)
   }
 
   updateFile(id: string, u: Partial<File>) {

@@ -16,10 +16,7 @@ export const Redirect = () => {
     const argPath = store.args?.newFile ?? store.args?.file
 
     if (argPath) {
-      let file
-      if (store.args?.file) {
-        file = await fileService.findFileByPath(store.args.file)
-      }
+      let file = await fileService.findFileByPath(argPath)
 
       if (!file) {
         const mime = await getMimeType(argPath)

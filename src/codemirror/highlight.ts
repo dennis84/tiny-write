@@ -1,4 +1,9 @@
-import {StreamLanguage, LanguageSupport, StreamParser} from '@codemirror/language'
+import {
+  StreamLanguage,
+  LanguageSupport,
+  StreamParser,
+  LanguageDescription,
+} from '@codemirror/language'
 import {haskell} from '@codemirror/legacy-modes/mode/haskell'
 import {clojure} from '@codemirror/legacy-modes/mode/clojure'
 import {erlang} from '@codemirror/legacy-modes/mode/erlang'
@@ -22,35 +27,113 @@ import {xml} from '@codemirror/lang-xml'
 
 const langSupport = (l: StreamParser<unknown>) => new LanguageSupport(StreamLanguage.define(l))
 
-export const languages: Record<string, () => LanguageSupport> = {
-  javascript: () => javascript(),
-  js: () => javascript(),
-  jsx: () => javascript({jsx: true}),
-  typescript: () => javascript({typescript: true}),
-  ts: () => javascript({typescript: true}),
-  tsx: () => javascript({jsx: true, typescript: true}),
-  java: () => java(),
-  kotlin: () => java(),
-  rust: () => rust(),
-  sql: () => sql(),
-  json: () => json(),
-  python: () => python(),
-  html: () => html(),
-  css: () => css(),
-  cpp: () => cpp(),
-  markdown: () => markdown(),
-  xml: () => xml(),
-  haskell: () => langSupport(haskell),
-  clojure: () => langSupport(clojure),
-  erlang: () => langSupport(erlang),
-  groovy: () => langSupport(groovy),
-  ruby: () => langSupport(ruby),
-  hcl: () => langSupport(ruby),
-  mermaid: () => langSupport(haskell),
-  bash: () => langSupport(shell),
-  yaml: () => langSupport(yaml),
-  go: () => langSupport(go),
-  toml: () => langSupport(toml),
+interface LangConfig {
+  highlight: () => LanguageSupport
+  aliases?: string[]
 }
 
-export const highlight = (lang: string) => languages[lang]?.() ?? markdown()
+export const languages: Record<string, LangConfig> = {
+  javascript: {
+    highlight: () => javascript(),
+    aliases: ['js'],
+  },
+  jsx: {
+    highlight: () => javascript({jsx: true}),
+  },
+  typescript: {
+    highlight: () => javascript({typescript: true}),
+    aliases: ['ts'],
+  },
+  tsx: {
+    highlight: () => javascript({jsx: true, typescript: true}),
+  },
+  java: {
+    highlight: () => java(),
+  },
+  kotlin: {
+    highlight: () => java(),
+    aliases: ['kt'],
+  },
+  rust: {
+    highlight: () => rust(),
+    aliases: ['rs'],
+  },
+  sql: {
+    highlight: () => sql(),
+  },
+  json: {
+    highlight: () => json(),
+  },
+  python: {
+    highlight: () => python(),
+    aliases: ['py'],
+  },
+  html: {
+    highlight: () => html(),
+    aliases: ['htm'],
+  },
+  css: {
+    highlight: () => css(),
+  },
+  scss: {
+    highlight: () => css(),
+  },
+  cpp: {
+    highlight: () => cpp(),
+  },
+  markdown: {
+    highlight: () => markdown(),
+    aliases: ['md'],
+  },
+  xml: {
+    highlight: () => xml(),
+  },
+  haskell: {
+    highlight: () => langSupport(haskell),
+    aliases: ['hs'],
+  },
+  clojure: {
+    highlight: () => langSupport(clojure),
+    aliases: ['clj'],
+  },
+  erlang: {
+    highlight: () => langSupport(erlang),
+  },
+  groovy: {
+    highlight: () => langSupport(groovy),
+  },
+  ruby: {
+    highlight: () => langSupport(ruby),
+    aliases: ['rb'],
+  },
+  hcl: {
+    highlight: () => langSupport(ruby),
+  },
+  mermaid: {
+    highlight: () => langSupport(haskell),
+  },
+  bash: {
+    highlight: () => langSupport(shell),
+  },
+  sh: {
+    highlight: () => langSupport(shell),
+  },
+  yaml: {
+    highlight: () => langSupport(yaml),
+    aliases: ['yml'],
+  },
+  go: {
+    highlight: () => langSupport(go),
+  },
+  toml: {
+    highlight: () => langSupport(toml),
+  },
+}
+
+export const highlight = (lang: string) => languages[lang]?.highlight() ?? markdown()
+
+export const findCodeLang = (lang: string): string | undefined => {
+  for (const [name, config] of Object.entries(languages)) {
+    if (lang === name || config.aliases?.includes(lang)) return name
+  }
+}

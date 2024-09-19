@@ -147,6 +147,11 @@ export const toRelativePath = async (path: string, basePath?: string): Promise<s
   return invoke('to_relative_path', {path, basePath})
 }
 
+export const toAbsolutePath = async (path: string, basePath?: string): Promise<string> => {
+  if (!isTauri()) throw Error('Must be run in tauri: toAbsolutePath')
+  return invoke('to_absolute_path', {path, basePath})
+}
+
 export const listContents = async (path: string, basePath: string | undefined = undefined) => {
   if (!isTauri()) throw Error('Must be run in tauri: listContents')
   return (await invoke('list_contents', {path, basePath})) as string[]
