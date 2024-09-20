@@ -18,7 +18,7 @@ const Link = styled('a')`
   }
 `
 
-export const Dir = () => {
+export const DirPage = () => {
   const {store, editorService, fileService} = useState()
   const navigate = useNavigate()
 

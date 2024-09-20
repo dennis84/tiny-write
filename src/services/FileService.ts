@@ -91,6 +91,10 @@ export class FileService {
   }
 
   static async saveFile(file: File) {
+    if (file.path) {
+      return
+    }
+
     if (!file.lastModified) {
       return
     }

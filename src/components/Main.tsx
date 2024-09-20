@@ -17,8 +17,8 @@ import {InputLine} from '@/components/dialog/InputLine'
 import {EditorPage} from '@/components/pages/EditorPage'
 import {CanvasPage} from '@/components/pages/CanvasPage'
 import {CodePage} from '@/components/pages/CodePage'
+import {DirPage} from '@/components/pages/DirPage'
 import {Redirect} from '@/components/pages/Redirect'
-import {Dir} from '@/components/pages/Dir'
 
 export const Main = (props: {state: State}) => {
   const Root = (p: RouteSectionProps) => {
@@ -62,9 +62,6 @@ export const Main = (props: {state: State}) => {
               <Match when={ctrl.store.error}>
                 <Error />
               </Match>
-              <Match when={ctrl.store.args?.dir?.length && ctrl.store.loading === 'initialized'}>
-                <Dir />
-              </Match>
               <Match when={ctrl.store.loading === 'initialized'}>{p.children}</Match>
             </Switch>
             <Show when={isTauri()}>
@@ -89,6 +86,7 @@ export const Main = (props: {state: State}) => {
       <Route path="/editor/:id" component={EditorPage} />
       <Route path="/canvas/:id" component={CanvasPage} />
       <Route path="/code/:id" component={CodePage} />
+      <Show when={isTauri()}><Route path="/dir" component={DirPage} /></Show>
       <Route path="*" component={Redirect} />
     </Router>
   )
