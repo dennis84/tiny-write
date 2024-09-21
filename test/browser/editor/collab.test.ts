@@ -108,6 +108,7 @@ test('rejoin room', async ({page}) => {
   await page.locator('.ProseMirror').pressSequentially('Hello', {delay})
   await expect(page.locator('.ProseMirror > *')).toHaveCount(1)
 
+  await page.click('[data-testid="new"]')
   await page.click('[data-testid="new_file"]')
   await page.locator('.ProseMirror').pressSequentially('New', {delay})
 

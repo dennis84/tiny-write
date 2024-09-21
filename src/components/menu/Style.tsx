@@ -120,6 +120,7 @@ export const Note = styled('p')`
   margin-bottom: 20px;
 `
 
+// prettier-ignore
 export const Link = styled('button')`
   ${itemCss}
   background: none;
@@ -153,6 +154,10 @@ export const Link = styled('button')`
     color: var(--foreground-60);
     cursor: not-allowed;
   }
+  ${(props: any) => props.active ? `
+    background: var(--primary-background-20);
+    border-radius: var(--border-radius);
+  ` : ''}
 `
 
 export const Keys = (props: {keys: string[]}) => (

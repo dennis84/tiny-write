@@ -5,7 +5,7 @@ import {Icon} from '../Icon'
 import {Tooltip} from '../Tooltip'
 import {ReferenceElement} from '@floating-ui/dom'
 
-export const LinkEnd = () => {
+export const ContextMenu = () => {
   const {canvasService, canvasCollabService, fileService, treeService} = useState()
   const [contextMenu, setContextMenu] = createSignal<Vec | undefined>()
 
@@ -125,10 +125,10 @@ export const LinkEnd = () => {
     <Show when={getContextMenu()} keyed>
       {([link, cm, tooltipAnchor]) => (
         <Tooltip anchor={tooltipAnchor} onClose={onTooltipClose}>
-          <div onClick={() => onNewFile(false, link, cm)} data-testid="link_end_new_file">
+          <div onClick={() => onNewFile(false, link, cm)} data-testid="context_menu_new_file">
             <Icon>post_add</Icon> New file
           </div>
-          <div onClick={() => onNewFile(true, link, cm)} data-testid="link_end_new_code_file">
+          <div onClick={() => onNewFile(true, link, cm)} data-testid="context_menu_new_code_file">
             <Icon>code_blocks</Icon> New code file
           </div>
           <Show when={getFiles()}>

@@ -112,7 +112,7 @@ export const Menu = () => {
           <SubmenuTree onBin={() => setShow('bin')} maybeHide={maybeHide} />
           {/* Submenu File */}
           <Show when={store.mode === Mode.Editor}>
-            <SubmenuEditor maybeHide={maybeHide} />
+            <SubmenuEditor />
           </Show>
           {/* Submenu Canvas */}
           <Show when={store.mode === Mode.Canvas}>

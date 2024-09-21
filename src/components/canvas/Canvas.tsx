@@ -16,7 +16,7 @@ import {Editor} from './Editor'
 import {Link} from './Link'
 import {Image} from './Image'
 import {Video} from './Video'
-import {LinkEnd} from './LinkEnd'
+import {ContextMenu} from './ContextMenu'
 import {Bounds} from './Bounds'
 import {CodeEditor} from './CodeEditor'
 import {Toolbar} from './Toolbar'
@@ -139,7 +139,7 @@ export const Canvas = () => {
 
   return (
     <Container ref={ref} id="content" data-testid="canvas_container">
-      <LinkEnd />
+      <ContextMenu />
       <Select target={() => ref} />
       <Grid onClick={onGridClick} />
       <Toolbar />

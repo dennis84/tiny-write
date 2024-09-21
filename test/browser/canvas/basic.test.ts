@@ -19,7 +19,8 @@ test('add file', async ({page}) => {
   await page.isVisible('[data-testid="canvas_container"]')
 
   // Create file
-  await page.click('[data-testid="new_file"]')
+  await page.locator('[data-testid="canvas_container"]').click({button: 'right'})
+  await page.click('[data-testid="context_menu_new_file"]')
   await expect(page.locator('[data-testid="canvas_editor"]')).toHaveCount(1)
 
   // Move mouse to left link handle
@@ -33,7 +34,7 @@ test('add file', async ({page}) => {
   await page.mouse.up()
 
   // Create another file
-  await page.click('[data-testid="link_end_new_file"]')
+  await page.click('[data-testid="context_menu_new_file"]')
 
   await expect(page.locator('[data-testid="canvas_editor"]')).toHaveCount(2)
 })

@@ -73,6 +73,7 @@ const TreeLinkItem = styled('div')`
   ` : ''}
   ${(props: any) => props.selected ? `
     background: var(--primary-background-10);
+    border-radius: var(--border-radius);
   ` : ''}
   &:hover {
     color: var(--primary-background);
@@ -193,6 +194,27 @@ export const SubmenuTree = (props: Props) => {
         }
       },
     })
+  }
+
+  const onNewFile = async () => {
+    const file = await editorService.newFile()
+    navigate(`/editor/${file.id}`)
+    treeService.create()
+    closeTooltip()
+  }
+
+  const onNewCanvas = async () => {
+    const canvas = await canvasService.newCanvas()
+    navigate(`/canvas/${canvas.id}`)
+    treeService.create()
+    closeTooltip()
+  }
+
+  const onNewCode = async () => {
+    const file = await codeService.newFile()
+    navigate(`/code/${file.id}`)
+    treeService.create()
+    closeTooltip()
   }
 
   const onAddFile = async () => {
@@ -388,7 +410,7 @@ export const SubmenuTree = (props: Props) => {
       <TreeLinkItem
         deleted={props.showDeleted && !p.node.item.deleted}
         active={p.node.item.id === getCurrentId()}
-        selected={p.selected}
+        selected={p.selected || anchor === tooltipAnchor()}
         data-id={p.node.item.id}
         data-testid="tree_link"
       >
@@ -431,6 +453,20 @@ export const SubmenuTree = (props: Props) => {
     )
   }
 
+  const NewLink = () => {
+    let anchor!: HTMLButtonElement
+    const onNew = (e: MouseEvent) => {
+      e.stopPropagation()
+      setTooltipAnchor(anchor)
+    }
+
+    return (
+      <Link ref={anchor} active={anchor === tooltipAnchor()} onClick={onNew} data-testid="new">
+        <Icon>add</Icon> New
+      </Link>
+    )
+  }
+
   const Tree = (p: {tree: TreeNode[]; level: number; selected?: boolean}) => {
     return (
       <For each={p.tree}>
@@ -468,18 +504,12 @@ export const SubmenuTree = (props: Props) => {
       <Sub data-tauri-drag-region="true">
         <Tree tree={treeService.tree} level={0} />
         <Show when={!props.showDeleted}>
+          <NewLink />
           <Link
             ref={binRef}
             onClick={props.onBin}
             data-testid="bin"
-            class={
-              dropState()?.pos === 'delete' ?
-                css`
-                  background: var(--primary-background-20);
-                  border-radius: var(--border-radius);
-                `
-              : undefined
-            }
+            active={dropState()?.pos === 'delete'}
           >
             <TreeLinkCorner>
               <Icon>delete</Icon>
@@ -500,10 +530,12 @@ export const SubmenuTree = (props: Props) => {
       </Portal>
       <Show when={tooltipAnchor() !== undefined}>
         <Tooltip anchor={tooltipAnchor()!} onClose={() => closeTooltip()}>
-          <div onClick={onRename} data-testid="rename">
-            <Icon>edit</Icon>
-            Rename
-          </div>
+          <Show when={selected()}>
+            <div onClick={onRename} data-testid="rename">
+              <Icon>edit</Icon>
+              Rename
+            </div>
+          </Show>
           <Show when={isOnCanvas(selected()?.item)}>
             <div onClick={onFocus} data-testid="focus_file">
               <Icon>adjust</Icon>
@@ -535,10 +567,24 @@ export const SubmenuTree = (props: Props) => {
               Delete forever
             </div>
           </Show>
-          <Show when={!selected()?.item.deleted}>
+          <Show when={selected() && !selected()?.item.deleted}>
             <div onClick={onDelete} data-testid="delete">
               <Icon>delete</Icon>
               Delete
+            </div>
+          </Show>
+          <Show when={!selected()}>
+            <div onClick={onNewFile} data-testid="new_file">
+              <Icon>post_add</Icon>
+              New file
+            </div>
+            <div onClick={onNewCanvas} data-testid="new_canvas">
+              <Icon>gesture</Icon>
+              New canvas
+            </div>
+            <div onClick={onNewCode} data-testid="new_code">
+              <Icon>code_blocks</Icon>
+              New code file
             </div>
           </Show>
         </Tooltip>
