@@ -86,7 +86,7 @@ export const Main = (props: {state: State}) => {
       <Route path="/editor/:id" component={EditorPage} />
       <Route path="/canvas/:id" component={CanvasPage} />
       <Route path="/code/:id" component={CodePage} />
-      <Show when={isTauri()}><Route path="/dir" component={DirPage} /></Show>
+      <Route path="/dir" component={DirPage} />
       <Route path="*" component={Redirect} />
     </Router>
   )

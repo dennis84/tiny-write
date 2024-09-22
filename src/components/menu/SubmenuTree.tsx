@@ -2,7 +2,7 @@ import {For, Match, Show, Switch, createEffect, createSignal, onCleanup, onMount
 import {Portal} from 'solid-js/web'
 import {unwrap} from 'solid-js/store'
 import {useNavigate} from '@solidjs/router'
-import {css, styled} from 'solid-styled-components'
+import {styled} from 'solid-styled-components'
 import {DragGesture} from '@use-gesture/vanilla'
 import {Mode, isCanvas, isCodeFile, isFile, useState} from '@/state'
 import {TreeNode, TreeNodeItem} from '@/services/TreeService'

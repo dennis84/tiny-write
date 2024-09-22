@@ -2,6 +2,7 @@ import {For} from 'solid-js'
 import {useNavigate} from '@solidjs/router'
 import {styled} from 'solid-styled-components'
 import {useState} from '@/state'
+import {getMimeType, info} from '@/remote'
 import {Content, Scroll} from '../Layout'
 import {ButtonPrimary} from '../Button'
 
@@ -30,8 +31,13 @@ export const DirPage = () => {
   const FileLink = (props: {path: string}) => {
     const onClick = async () => {
       let file = await fileService.findFileByPath(props.path)
-      if (!file) file = await editorService.newFile({path: props.path})
-      navigate(`/editor/${file.id}`)
+      const mime = await getMimeType(props.path)
+      const code = !mime.startsWith('text/markdown')
+      info(`Open from dir (path=${props.path}, mime=${mime})`)
+
+      if (!file) file = await editorService.newFile({path: props.path, code})
+
+      navigate(`/${code ? 'code' : 'editor'}/${file.id}`)
     }
 
     return (

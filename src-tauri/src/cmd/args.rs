@@ -109,7 +109,7 @@ fn list_text_files(p: &Path) -> Result<Vec<String>> {
         let m = mime_guess::from_path(&path);
 
         if let Some(mime) = m.first_raw() {
-            if mime.ends_with("/markdown") || mime.ends_with("/plain") {
+            if mime.starts_with("text/") || mime.starts_with("application/") {
                 let relative_path = to_relative_path(&path, None).and_then(path_buf_to_string);
                 if let Ok(p) = relative_path {
                     files.push(p);
@@ -177,7 +177,11 @@ mod tests {
             env::current_dir().unwrap().parent().unwrap()
         );
         assert!(args.file.is_none());
-        assert!(args.dir.unwrap()[0].ends_with("/README.md"));
+        let dir = args.dir.as_ref().unwrap();
+        assert!(dir.iter().any(|f| f.ends_with("/README.md")));
+        assert!(dir.iter().any(|f| f.ends_with("/index.html")));
+        assert!(dir.iter().any(|f| f.ends_with("/package.json")));
+        assert!(!dir.iter().any(|f| f.ends_with(".png")));
 
         // Deeplink collab room
         let args = create_args("tinywrite://test?room=123".to_string());
