@@ -15,8 +15,6 @@ pub struct Args {
     pub file: Option<String>,
     // source file: `tinywrite ./path/to/not_existing_file.md`
     pub new_file: Option<String>,
-    // text file paths in source dir: `tinywrite ./path/to/folder/`
-    pub dir: Option<Vec<String>>,
     // collab room from deeplink
     pub room: Option<String>,
     // text from deeplink
@@ -36,7 +34,6 @@ pub fn get_args(state: tauri::State<Args>) -> Args {
 pub fn create_args(source: String) -> Args {
     let mut file = None;
     let mut new_file = None;
-    let mut dir = None;
     let mut room = None;
     let mut text = None;
     let mut cwd = None;
@@ -53,7 +50,6 @@ pub fn create_args(source: String) -> Args {
     } else if !source.is_empty() {
         if let Ok(p) = resolve_path(&source, None) {
             if p.is_dir() {
-                dir = list_text_files(&p).ok();
                 cwd = path_buf_to_string(p).ok();
             } else {
                 file = path_buf_to_string(&p).ok();
@@ -76,7 +72,6 @@ pub fn create_args(source: String) -> Args {
         cwd,
         file,
         new_file,
-        dir,
         room,
         text,
     }
@@ -135,7 +130,6 @@ mod tests {
             env::current_dir().unwrap()
         );
         assert!(args.file.is_none());
-        assert!(args.dir.is_none());
         assert!(args.room.is_none());
         assert!(args.text.is_none());
 
@@ -150,7 +144,6 @@ mod tests {
             Path::new("../README.md").canonicalize().unwrap()
         );
         assert!(args.new_file.is_none());
-        assert!(args.dir.is_none());
         assert!(args.room.is_none());
         assert!(args.text.is_none());
 
@@ -158,7 +151,6 @@ mod tests {
         let args = create_args("../xyz/README.md".to_string());
         assert!(args.file.is_none());
         assert!(args.new_file.is_none());
-        assert!(args.dir.is_none());
         assert!(args.room.is_none());
         assert!(args.text.is_none());
 
@@ -166,22 +158,8 @@ mod tests {
         let args = create_args("../README.m".to_string());
         assert!(args.file.is_none());
         assert_eq!(&args.new_file.unwrap(), "../README.m");
-        assert!(args.dir.is_none());
         assert!(args.room.is_none());
         assert!(args.text.is_none());
-
-        // Existing dir
-        let args = create_args("..".to_string());
-        assert_eq!(
-            Path::new(&args.cwd.as_ref().unwrap()),
-            env::current_dir().unwrap().parent().unwrap()
-        );
-        assert!(args.file.is_none());
-        let dir = args.dir.as_ref().unwrap();
-        assert!(dir.iter().any(|f| f.ends_with("/README.md")));
-        assert!(dir.iter().any(|f| f.ends_with("/index.html")));
-        assert!(dir.iter().any(|f| f.ends_with("/package.json")));
-        assert!(!dir.iter().any(|f| f.ends_with(".png")));
 
         // Deeplink collab room
         let args = create_args("tinywrite://test?room=123".to_string());

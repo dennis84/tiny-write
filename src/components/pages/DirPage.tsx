@@ -1,10 +1,12 @@
-import {For} from 'solid-js'
+import {createSignal, For, onMount} from 'solid-js'
 import {useNavigate} from '@solidjs/router'
 import {styled} from 'solid-styled-components'
 import {useState} from '@/state'
-import {getMimeType, info} from '@/remote'
+import {getMimeType, info, resolvePath} from '@/remote'
 import {Content, Scroll} from '../Layout'
 import {ButtonPrimary} from '../Button'
+import {DirEntry, readDir} from '@tauri-apps/plugin-fs'
+import path from 'node:path'
 
 const Link = styled('a')`
   padding: 10px;
@@ -21,6 +23,7 @@ const Link = styled('a')`
 
 export const DirPage = () => {
   const {store, editorService, fileService} = useState()
+  const [dirEntries, setDirEntries] = createSignal<DirEntry[]>()
   const navigate = useNavigate()
 
   const onNew = async () => {
@@ -28,21 +31,33 @@ export const DirPage = () => {
     navigate(`/editor/${file.id}`)
   }
 
-  const FileLink = (props: {path: string}) => {
-    const onClick = async () => {
-      let file = await fileService.findFileByPath(props.path)
-      const mime = await getMimeType(props.path)
-      const code = !mime.startsWith('text/markdown')
-      info(`Open from dir (path=${props.path}, mime=${mime})`)
+  const listDir = async (path: string) => {
+    const entries = await readDir(path)
+    setDirEntries(entries)
+  }
 
-      if (!file) file = await editorService.newFile({path: props.path, code})
+  const FileLink = (props: {baseDir: string; entry: DirEntry}) => {
+    const onClick = async () => {
+      if (props.entry.isDirectory) {
+        const path = await resolvePath(props.entry.name, props.baseDir)
+        await listDir(path)
+        return
+      }
+
+      const path = await resolvePath(props.entry.name, props.baseDir)
+      let file = await fileService.findFileByPath(path)
+      const mime = await getMimeType(path)
+      const code = !mime.startsWith('text/markdown')
+      info(`Open from dir (path=${path}, mime=${mime})`)
+
+      if (!file) file = await editorService.newFile({path, code})
 
       navigate(`/${code ? 'code' : 'editor'}/${file.id}`)
     }
 
     return (
       <Link data-testid="link" onClick={onClick}>
-        {props.path}
+        {props.entry.name}{props.entry.isDirectory && '/'}
       </Link>
     )
   }
@@ -56,12 +71,18 @@ export const DirPage = () => {
     </>
   )
 
+  onMount(async () => {
+    const root = store.args?.cwd
+    if (!root) return
+    await listDir(root)
+  })
+
   return (
     <Scroll data-testid="dir" data-tauri-drag-region="true">
       <Content config={store.config} data-tauri-drag-region="true">
         <p>Click to open file:</p>
-        <For each={store.args?.dir} fallback={<Empty />}>
-          {(path) => <FileLink path={path} />}
+        <For each={dirEntries()} fallback={<Empty />}>
+          {(entry) => <FileLink baseDir={store.args?.cwd!} entry={entry} />}
         </For>
       </Content>
     </Scroll>

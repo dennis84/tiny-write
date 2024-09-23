@@ -57,6 +57,10 @@ export const createIpcMock = (options?: Record<string, IpcMockFn>) => {
       else return args.path.replace('/users/me', '~')
     }
 
+    if (cmd === 'plugin:fs|read_dir') {
+      return []
+    }
+
     if (cmd === 'plugin:fs|read_text_file') {
       return 'File1'
     }

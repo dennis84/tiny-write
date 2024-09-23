@@ -33,21 +33,33 @@
     "clipboard-manager:allow-write-text",
     "dialog:allow-save",
     {
+      "identifier": "fs:allow-app-read",
+      "allow": [
+        {"path": "/**"}
+      ]
+    },
+    {
+      "identifier": "fs:allow-app-read-recursive",
+      "allow": [
+        {"path": "/**"}
+      ]
+    },
+    {
       "identifier": "fs:allow-read-text-file",
       "allow": [
-        {"path": "$HOME/**"}
+        {"path": "/**"}
       ]
     },
     {
       "identifier": "fs:allow-write-file",
       "allow": [
-        {"path": "$HOME/**"}
+        {"path": "/**"}
       ]
     },
     {
       "identifier": "fs:allow-write-text-file",
       "allow": [
-        {"path": "$HOME/**"}
+        {"path": "/**"}
       ]
     }
   ]

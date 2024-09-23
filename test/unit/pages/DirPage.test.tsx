@@ -20,27 +20,49 @@ beforeEach(() => {
 test('dir', async () => {
   vi.stubGlobal('location', new URL('http://localhost:3000'))
   vi.stubGlobal('__TAURI__', {})
-
-  const initial = createState({
-    args: {
-      dir: ['./README.md'],
-    },
+  mockWindows('main')
+  createIpcMock({
+    'plugin:fs|read_dir': async () => [{name: 'README.md'}],
+    'get_args': () => ({cwd: '/users/me/project'}),
   })
 
+  const initial = createState()
+  const {store} = createCtrl(initial)
+  const {getByTestId} = render(() => <Main state={store} />)
+
+  await waitFor(() => {
+    expect(getByTestId('dir')).toBeDefined()
+    expect(getByTestId('link')).toBeDefined()
+  })
+})
+
+test('dir - empty', async () => {
+  vi.stubGlobal('location', new URL('http://localhost:3000'))
+  vi.stubGlobal('__TAURI__', {})
+  mockWindows('main')
+  createIpcMock({
+    'plugin:fs|read_dir': async () => [],
+    'get_args': () => ({cwd: '/users/me/project'}),
+  })
+
+  const initial = createState()
   const {store} = createCtrl(initial)
   const {getByTestId} = render(() => <Main state={store} />)
 
   await waitFor(() => {
     expect(getByTestId('dir')).toBeDefined()
   })
-
-  expect(getByTestId('link')).toBeDefined()
 })
 
-test('dir - empty', async () => {
+test('dir - file args', async () => {
   vi.stubGlobal('location', new URL('http://localhost:3000'))
+  vi.stubGlobal('__TAURI__', {})
+  mockWindows('main')
+  createIpcMock({
+    'get_args': () => ({cwd: '/users/me/project', file: 'file1.md'}),
+  })
 
-  const initial = createState({args: {dir: []}})
+  const initial = createState()
   const {store} = createCtrl(initial)
   const {getByTestId} = render(() => <Main state={store} />)
 
@@ -50,14 +72,15 @@ test('dir - empty', async () => {
 })
 
 test.each([
-  {path: 'file2.md', code: false, expectContainer: 'editor_scroll'},
-  {path: 'file2.rs', code: true, expectContainer: 'code_scroll'},
-])('dir - open', async ({path, code, expectContainer}) => {
+  {name: 'file2.md', code: false, expectContainer: 'editor_scroll'},
+  {name: 'file2.rs', code: true, expectContainer: 'code_scroll'},
+])('dir - open', async ({name, code, expectContainer}) => {
   vi.stubGlobal('location', new URL('http://localhost:3000'))
   vi.stubGlobal('__TAURI__', {})
   mockWindows('main')
   createIpcMock({
-    get_args: () => ({dir: [path]}),
+    'plugin:fs|read_dir': async () => [{name}],
+    'get_args': () => ({cwd: '/users/me/project/'}),
   })
 
   const initial = createState()
@@ -67,6 +90,7 @@ test.each([
 
   await waitFor(() => {
     expect(getByTestId('dir')).toBeDefined()
+    expect(getByTestId('link')).toBeDefined()
   })
 
   getByTestId('link').click()
@@ -75,6 +99,6 @@ test.each([
     expect(getByTestId(expectContainer)).toBeDefined()
   })
 
-  expect(store.files[0].path).toBe(path)
+  expect(store.files[0].path).toBe(`/users/me/project/${name}`)
   expect(store.files[0].code).toBe(code)
 })

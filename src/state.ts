@@ -10,7 +10,6 @@ export interface Args {
   cwd?: string
   file?: string
   newFile?: string
-  dir?: string[]
   room?: string
   text?: string
 }

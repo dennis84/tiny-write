@@ -167,7 +167,6 @@ export class FileService {
         cwd: state.args?.cwd,
         file: undefined,
         newFile: undefined,
-        dir: undefined,
         text: undefined,
       },
       files,

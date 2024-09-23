@@ -125,11 +125,6 @@ export class AppService {
 
     let mode = meta?.mode ?? state.mode ?? Mode.Editor
 
-    // Only show dir is it's not empty
-    if (!args.dir?.length) {
-      args.dir = undefined
-    }
-
     const config = {
       ...state.config,
       ...fetchedConfig,

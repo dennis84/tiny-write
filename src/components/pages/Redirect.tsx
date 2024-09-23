@@ -13,7 +13,7 @@ export const Redirect = () => {
   }
 
   onMount(async () => {
-    if (store.args?.dir?.length) {
+    if (store.args?.cwd && !(store.args.file || store.args.newFile)) {
       redirectTo('/dir')
       return
     }
