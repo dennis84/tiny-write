@@ -1,12 +1,11 @@
-import {createSignal, For, onMount} from 'solid-js'
-import {useNavigate} from '@solidjs/router'
+import {createEffect, createSignal, For, Show} from 'solid-js'
+import {useLocation, useNavigate} from '@solidjs/router'
 import {styled} from 'solid-styled-components'
+import {DirEntry, readDir} from '@tauri-apps/plugin-fs'
 import {useState} from '@/state'
 import {getMimeType, info, resolvePath} from '@/remote'
 import {Content, Scroll} from '../Layout'
 import {ButtonPrimary} from '../Button'
-import {DirEntry, readDir} from '@tauri-apps/plugin-fs'
-import path from 'node:path'
 
 const Link = styled('a')`
   padding: 10px;
@@ -21,30 +20,41 @@ const Link = styled('a')`
   }
 `
 
+interface DirState {
+  path?: string[]
+}
+
 export const DirPage = () => {
   const {store, editorService, fileService} = useState()
   const [dirEntries, setDirEntries] = createSignal<DirEntry[]>()
   const navigate = useNavigate()
+  const location = useLocation<DirState>()
+
+  const getResolvedPath = async (name?: string) => {
+    const path = location.state?.path ?? []
+    if (name) path.push(name)
+    return await resolvePath(path.join('/'), store.args?.cwd)
+  }
 
   const onNew = async () => {
     const file = await editorService.newFile()
     navigate(`/editor/${file.id}`)
   }
 
-  const listDir = async (path: string) => {
-    const entries = await readDir(path)
-    setDirEntries(entries)
+  const onBack = async () => {
+    history.back()
   }
 
-  const FileLink = (props: {baseDir: string; entry: DirEntry}) => {
+  const FileLink = (p: {baseDir: string; entry: DirEntry}) => {
     const onClick = async () => {
-      if (props.entry.isDirectory) {
-        const path = await resolvePath(props.entry.name, props.baseDir)
-        await listDir(path)
+      if (p.entry.isDirectory) {
+        const path = location.state?.path ?? []
+        path.push(p.entry.name)
+        navigate('/dir', {state: {path}})
         return
       }
 
-      const path = await resolvePath(props.entry.name, props.baseDir)
+      const path = await getResolvedPath(p.entry.name)
       let file = await fileService.findFileByPath(path)
       const mime = await getMimeType(path)
       const code = !mime.startsWith('text/markdown')
@@ -57,7 +67,8 @@ export const DirPage = () => {
 
     return (
       <Link data-testid="link" onClick={onClick}>
-        {props.entry.name}{props.entry.isDirectory && '/'}
+        {p.entry.name}
+        {p.entry.isDirectory && '/'}
       </Link>
     )
   }
@@ -71,10 +82,20 @@ export const DirPage = () => {
     </>
   )
 
-  onMount(async () => {
-    const root = store.args?.cwd
-    if (!root) return
-    await listDir(root)
+  createEffect(async () => {
+    const path = await getResolvedPath()
+    if (!path) return
+    const entries = await readDir(path)
+    const sorted = entries.sort((a, b) => a.name.localeCompare(b.name))
+    const dirs = []
+    const files = []
+
+    for (const entry of sorted) {
+      if (entry.isDirectory) dirs.push(entry)
+      else files.push(entry)
+    }
+
+    setDirEntries([...dirs, ...files])
   })
 
   return (
@@ -82,8 +103,12 @@ export const DirPage = () => {
       <Content config={store.config} data-tauri-drag-region="true">
         <p>Click to open file:</p>
         <For each={dirEntries()} fallback={<Empty />}>
-          {(entry) => <FileLink baseDir={store.args?.cwd!} entry={entry} />}
+          {(entry) => <FileLink entry={entry} />}
         </For>
+        <br />
+        <Show when={location.state?.path?.length}>
+          <ButtonPrimary onClick={onBack}>Back</ButtonPrimary>
+        </Show>
       </Content>
     </Scroll>
   )

@@ -29,6 +29,7 @@ test('open file', async ({page}) => {
   await expect(page.locator('[data-testid="tree_link"]')).toHaveCount(1)
   await expect(page.locator('[data-testid="tree_link"]')).toContainText('test1')
 
+  await page.click('[data-testid="new"]')
   await page.click('[data-testid="new_file"]')
   await expect(page.locator('[data-testid="tree_link"]')).toHaveCount(2)
   await lineTextEq(page, 1, 'Start typing ...')
@@ -36,6 +37,7 @@ test('open file', async ({page}) => {
   await expect(page.locator('[data-testid="tree_link"]')).toHaveCount(2)
   await expect(page.locator('[data-testid="tree_link"]').nth(1)).toContainText('test2')
 
+  await page.click('[data-testid="new"]')
   await page.click('[data-testid="new_file"]')
   await expect(page.locator('[data-testid="tree_link"]')).toHaveCount(3)
   await lineTextEq(page, 1, 'Start typing ...')

@@ -91,31 +91,6 @@ fn get_cwd() -> Result<String> {
     Ok(cwd)
 }
 
-fn list_text_files(p: &Path) -> Result<Vec<String>> {
-    let mut files = Vec::new();
-
-    for entry in fs::read_dir(p)? {
-        let dir_entry = &entry.as_ref();
-        if dir_entry.is_err() {
-            continue;
-        }
-
-        let path = dir_entry.unwrap().path();
-        let m = mime_guess::from_path(&path);
-
-        if let Some(mime) = m.first_raw() {
-            if mime.starts_with("text/") || mime.starts_with("application/") {
-                let relative_path = to_relative_path(&path, None).and_then(path_buf_to_string);
-                if let Ok(p) = relative_path {
-                    files.push(p);
-                }
-            }
-        }
-    }
-
-    Ok(files)
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
