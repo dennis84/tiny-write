@@ -12,11 +12,14 @@ const Container = styled('div')`
 `
 
 export const Back = () => {
-  const location = useLocation<{prev: string}>()
+  const location = useLocation<{prev: string, path?: string[]}>()
   const navigate = useNavigate()
 
   const onBack = () => {
-    if (location.state?.prev) navigate(location.state.prev)
+    if (location.state?.prev) {
+      const path = location.state.path
+      navigate(location.state.prev, {state: {path}})
+    }
   }
 
   return (

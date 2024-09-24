@@ -53,6 +53,9 @@
           "description": "Verbosity level"
         }
       ]
+    },
+    "fs": {
+      "requireLiteralLeadingDot": false
     }
   }
 }

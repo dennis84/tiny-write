@@ -1,9 +1,8 @@
-use crate::pathutil::{dirname, expand_tilde, path_buf_to_string, resolve_path, to_relative_path};
+use crate::pathutil::{dirname, expand_tilde, path_buf_to_string, resolve_path};
 use anyhow::Result;
 use base64::{engine::general_purpose, Engine as _};
 use std::collections::HashMap;
-use std::path::Path;
-use std::{env, fs};
+use std::env;
 use url::Url;
 
 #[derive(Clone, Debug, serde::Serialize)]

@@ -37,13 +37,13 @@ impl EditorState {
     }
 
     pub fn write_all(&mut self) -> Result<()> {
-        for (path, doc) in self.documents.iter_mut() {
+        for (_, doc) in self.documents.iter_mut() {
             if !doc.changed {
                 continue;
             }
 
-            info!("Write rope to file (path={})", path);
-            doc.text.write_to(BufWriter::new(File::create(path)?))?;
+            info!("Write rope to file (path={})", doc.path);
+            doc.text.write_to(BufWriter::new(File::create(&doc.path)?))?;
             doc.changed = false;
         }
         Ok(())

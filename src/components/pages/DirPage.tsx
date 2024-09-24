@@ -1,21 +1,48 @@
-import {createEffect, createSignal, For, Show} from 'solid-js'
+import {createEffect, createSignal, For, onMount} from 'solid-js'
 import {useLocation, useNavigate} from '@solidjs/router'
 import {styled} from 'solid-styled-components'
 import {DirEntry, readDir} from '@tauri-apps/plugin-fs'
+import {homeDir} from '@tauri-apps/api/path'
 import {useState} from '@/state'
-import {getMimeType, info, resolvePath} from '@/remote'
+import {getMimeType, info, resolvePath, toRelativePath} from '@/remote'
 import {Content, Scroll} from '../Layout'
-import {ButtonPrimary} from '../Button'
+import {Icon} from '../Icon'
+
+const CurrentPath = styled('div')`
+  display: flex;
+  align-items: center;
+  padding: 5px;
+  color: var(--foreground-60);
+  flex-wrap: wrap;
+  line-height: 1.5;
+  .icon {
+    margin-right: 5px;
+  }
+`
 
 const Link = styled('a')`
-  padding: 10px;
+  display: flex;
+  align-items: center;
+  padding: 3px;
   margin: 0;
-  display: block;
   border-radius: var(--border-radius);
   cursor: var(--cursor-pointer);
   color: var(--foreground-60);
+  line-height: 1.5;
+  ${(props: any) => (props.isDirectory ? `font-weight: bold;` : '')}
+  .icon {
+    margin-right: 5px;
+  }
   &:hover {
     background: var(--foreground-10);
+    color: var(--foreground);
+  }
+`
+
+const PathSegment = styled('span')`
+  color: var(--foreground-60);
+  cursor: var(--cursor-pointer);
+  &:hover {
     color: var(--foreground);
   }
 `
@@ -27,11 +54,12 @@ interface DirState {
 export const DirPage = () => {
   const {store, editorService, fileService} = useState()
   const [dirEntries, setDirEntries] = createSignal<DirEntry[]>()
+  const [currentPath, setCurrentPath] = createSignal<string>()
   const navigate = useNavigate()
   const location = useLocation<DirState>()
 
   const getResolvedPath = async (name?: string) => {
-    const path = location.state?.path ?? []
+    const path = [...(location.state?.path ?? [])]
     if (name) path.push(name)
     return await resolvePath(path.join('/'), store.args?.cwd)
   }
@@ -41,11 +69,13 @@ export const DirPage = () => {
     navigate(`/editor/${file.id}`)
   }
 
-  const onBack = async () => {
-    history.back()
+  const clickPathSegment = (index: number) => {
+    const path = [...(location.state?.path ?? [])]
+    path.splice(index)
+    navigate('/dir', {state: {path}})
   }
 
-  const FileLink = (p: {baseDir: string; entry: DirEntry}) => {
+  const DirEntryLink = (p: {entry: DirEntry}) => {
     const onClick = async () => {
       if (p.entry.isDirectory) {
         const path = location.state?.path ?? []
@@ -62,25 +92,25 @@ export const DirPage = () => {
 
       if (!file) file = await editorService.newFile({path, code})
 
-      navigate(`/${code ? 'code' : 'editor'}/${file.id}`)
+      const prev = location.pathname
+      navigate(`/${code ? 'code' : 'editor'}/${file.id}`, {
+        state: {prev, path: location.state?.path},
+      })
     }
 
     return (
-      <Link data-testid="link" onClick={onClick}>
-        {p.entry.name}
+      <Link data-testid="link" onClick={onClick} isDirectory={p.entry.isDirectory}>
+        <Icon>{p.entry.isDirectory ? 'folder' : 'description'}</Icon> {p.entry.name}
         {p.entry.isDirectory && '/'}
       </Link>
     )
   }
 
-  const Empty = () => (
-    <>
-      <p>
-        No markdown/plain text file in: <code>{store.args?.cwd}</code>
-      </p>
-      <ButtonPrimary onClick={onNew}>New File</ButtonPrimary>
-    </>
-  )
+  onMount(async () => {
+    const home = await homeDir()
+    const relative = await toRelativePath(store.args?.cwd ?? '', home)
+    setCurrentPath(relative)
+  })
 
   createEffect(async () => {
     const path = await getResolvedPath()
@@ -100,15 +130,17 @@ export const DirPage = () => {
 
   return (
     <Scroll data-testid="dir" data-tauri-drag-region="true">
-      <Content config={store.config} data-tauri-drag-region="true">
-        <p>Click to open file:</p>
-        <For each={dirEntries()} fallback={<Empty />}>
-          {(entry) => <FileLink entry={entry} />}
+      <Content style={{width: '100%'}} config={store.config} data-tauri-drag-region="true">
+        <CurrentPath>
+          <Icon>folder_open</Icon>
+          <PathSegment onClick={() => clickPathSegment(0)}>{currentPath()}/</PathSegment>
+          <For each={location.state?.path}>
+            {(p, i) => <PathSegment onClick={() => clickPathSegment(i() + 1)}>{p}/</PathSegment>}
+          </For>
+        </CurrentPath>
+        <For each={dirEntries()}>
+          {(entry) => <DirEntryLink entry={entry} />}
         </For>
-        <br />
-        <Show when={location.state?.path?.length}>
-          <ButtonPrimary onClick={onBack}>Back</ButtonPrimary>
-        </Show>
       </Content>
     </Scroll>
   )
