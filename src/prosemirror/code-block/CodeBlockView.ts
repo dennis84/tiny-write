@@ -40,7 +40,7 @@ export class CodeBlockView {
     this.dom.addEventListener('cm:user_event', (event: any) => {
       const action = event.detail.userEvent
       if (action === 'prettify') {
-        void codeMirrorService.format(this.editorView, this.lang, this.configService.prettier)
+        codeMirrorService.format(this.editorView, this.lang, this.configService.prettier)
       } else if (action === 'fold_all') {
         foldAll(this.editorView)
       }
@@ -297,6 +297,8 @@ export class CodeBlockView {
 
   reconfigure() {
     const langSupport = highlight(this.lang)
+    if (!langSupport) return
+
     const effects = [
       this.compartments.lang.reconfigure(langSupport),
       this.compartments.findWords.reconfigure(

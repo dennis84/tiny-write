@@ -1,5 +1,6 @@
-import {Drawer, Keys, Label, Sub, Text} from './Style'
+import {Icon} from '@/components/Icon'
 import {Button} from '@/components/Button'
+import {Drawer, Keys, Label, Sub, Text} from './Style'
 
 interface Props {
   onBack: () => void
@@ -146,7 +147,9 @@ export const Help = (props: Props) => {
           <Keys keys={[':::', 'details', '␣']} /> Container of type details
         </Text>
       </Sub>
-      <Button onClick={props.onBack}>↩ Back</Button>
+      <Button onClick={props.onBack}>
+        <Icon>arrow_back</Icon> Back
+      </Button>
     </Drawer>
   )
 }

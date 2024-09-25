@@ -41,6 +41,8 @@ export const ButtonPrimary = styled('button')`
 `
 
 export const ButtonGroup = styled('div')`
+  display: flex;
+  flex-wrap: wrap;
   > button {
     margin-right: 10px;
     margin-bottom: 10px;

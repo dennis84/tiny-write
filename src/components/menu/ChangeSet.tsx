@@ -1,8 +1,9 @@
 import {For, Show, createSignal} from 'solid-js'
 import {format} from 'date-fns'
 import {Version, useState} from '@/state'
-import {Drawer, Label, Link, Sub} from './Style'
 import {ButtonGroup, Button, ButtonPrimary} from '@/components/Button'
+import {Icon} from '@/components/Icon'
+import {Drawer, Label, Link, Sub} from './Style'
 
 interface Props {
   onBack: () => void
@@ -51,7 +52,9 @@ export const ChangeSet = (props: Props) => {
         </For>
       </Sub>
       <ButtonGroup>
-        <Button onClick={onBack}>↩ Back</Button>
+        <Button onClick={onBack}>
+          <Icon>arrow_back</Icon> Back
+        </Button>
         <Show when={active() === undefined}>
           <ButtonPrimary onClick={() => changeSetService.addVersion()}>
             Create Snapshot

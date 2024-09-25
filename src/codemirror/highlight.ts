@@ -1,9 +1,4 @@
-import {
-  StreamLanguage,
-  LanguageSupport,
-  StreamParser,
-  LanguageDescription,
-} from '@codemirror/language'
+import {StreamLanguage, LanguageSupport, StreamParser} from '@codemirror/language'
 import {haskell} from '@codemirror/legacy-modes/mode/haskell'
 import {clojure} from '@codemirror/legacy-modes/mode/clojure'
 import {erlang} from '@codemirror/legacy-modes/mode/erlang'
@@ -130,7 +125,11 @@ export const languages: Record<string, LangConfig> = {
   },
 }
 
-export const highlight = (lang: string) => languages[lang]?.highlight() ?? markdown()
+export const highlight = (lang: string): LanguageSupport | undefined => {
+  const codeLang = findCodeLang(lang)
+  if (!codeLang) return
+  return languages[codeLang]?.highlight()
+}
 
 export const findCodeLang = (lang: string): string | undefined => {
   for (const [name, config] of Object.entries(languages)) {

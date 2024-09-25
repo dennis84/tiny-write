@@ -64,11 +64,6 @@ export const DirPage = () => {
     return await resolvePath(path.join('/'), store.args?.cwd)
   }
 
-  const onNew = async () => {
-    const file = await editorService.newFile()
-    navigate(`/editor/${file.id}`)
-  }
-
   const clickPathSegment = (index: number) => {
     const path = [...(location.state?.path ?? [])]
     path.splice(index)
@@ -138,9 +133,7 @@ export const DirPage = () => {
             {(p, i) => <PathSegment onClick={() => clickPathSegment(i() + 1)}>{p}/</PathSegment>}
           </For>
         </CurrentPath>
-        <For each={dirEntries()}>
-          {(entry) => <DirEntryLink entry={entry} />}
-        </For>
+        <For each={dirEntries()}>{(entry) => <DirEntryLink entry={entry} />}</For>
       </Content>
     </Scroll>
   )

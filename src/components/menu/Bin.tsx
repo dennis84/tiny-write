@@ -1,6 +1,7 @@
 import {useNavigate} from '@solidjs/router'
 import {useState} from '@/state'
 import {Button, ButtonGroup} from '../Button'
+import {Icon} from '../Icon'
 import {Drawer, Label, Note} from './Style'
 import {SubmenuTree} from './SubmenuTree'
 
@@ -31,7 +32,9 @@ export const Bin = (props: Props) => {
       <Note>💁 Items in bin will be automatically deleted after 14 days.</Note>
       <SubmenuTree showDeleted={true} />
       <ButtonGroup>
-        <Button onClick={onBack}>↩ Back</Button>
+        <Button onClick={onBack}>
+          <Icon>arrow_back</Icon> Back
+        </Button>
         <Button onClick={onEmptyBin} disabled={!hasDeletedFiles()}>
           ⚠️ Empty bin
         </Button>

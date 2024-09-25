@@ -374,5 +374,5 @@ test('dropPath - image on code', async () => {
 
   expect(result?.file).toBeDefined()
   expect(store.files).toHaveLength(2)
-  expect(fileService.findFileById(result?.file?.id!)?.path).toBe(path)
+  expect(fileService.findFileById(result!.file!.id)?.path).toBe(path)
 })

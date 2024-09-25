@@ -1,8 +1,9 @@
 import {For} from 'solid-js'
 import {useState} from '@/state'
 import {ConfigService} from '@/services/ConfigService'
-import {Drawer, Label, Link, Sub, Text} from './Style'
 import {Button} from '@/components/Button'
+import {Icon} from '@/components/Icon'
+import {Drawer, Label, Link, Sub, Text} from './Style'
 
 interface Props {
   onBack: () => void
@@ -82,7 +83,7 @@ export const Appearance = (props: Props) => {
         </Text>
       </Sub>
       <Button data-testid="back" onClick={props.onBack}>
-        ↩ Back
+        <Icon>arrow_back</Icon> Back
       </Button>
     </Drawer>
   )

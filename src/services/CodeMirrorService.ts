@@ -55,7 +55,7 @@ export class CodeMirrorService {
     }
 
     const theme = getTheme(this.configService.codeTheme.value)
-    const langSupport = highlight(props.lang ?? 'js')
+    const langSupport = props.lang ? highlight(props.lang) : undefined
 
     const extensions = [
       ...(props.extensions ?? []),
@@ -79,14 +79,19 @@ export class CodeMirrorService {
       autocompletion(),
       foldGutter(),
       EditorView.lineWrapping,
-      compartments.lang.of(langSupport),
-      compartments.findWords.of(langSupport.language.data.of({autocomplete: findWords})),
     ]
 
-    if (props.lang === 'mermaid') {
-      extensions.push(
-        compartments.keywords.of(langSupport.language.data.of({autocomplete: mermaidKeywords})),
-      )
+    if (langSupport) {
+      extensions.push([
+        compartments.lang.of(langSupport),
+        compartments.findWords.of(langSupport.language.data.of({autocomplete: findWords})),
+      ])
+
+      if (props.lang === 'mermaid') {
+        extensions.push(
+          compartments.keywords.of(langSupport.language.data.of({autocomplete: mermaidKeywords})),
+        )
+      }
     }
 
     if (this.store.mode === Mode.Code) {
@@ -106,6 +111,7 @@ export class CodeMirrorService {
     try {
       const doc = view.state.doc.toString()
       const value = await this.prettierService.format(doc, lang, config)
+      view.focus() // otherwise update is not forwarded to PM
       view.dispatch({
         changes: {
           from: 0,
