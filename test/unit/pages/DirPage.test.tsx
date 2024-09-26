@@ -23,7 +23,7 @@ test('dir', async () => {
   mockWindows('main')
   createIpcMock({
     'plugin:fs|read_dir': async () => [{name: 'README.md'}],
-    'get_args': () => ({cwd: '/users/me/project'}),
+    'get_args': () => ({cwd: '/users/me/project', source: './'}),
   })
 
   const initial = createState()
@@ -42,7 +42,7 @@ test('dir - empty', async () => {
   mockWindows('main')
   createIpcMock({
     'plugin:fs|read_dir': async () => [],
-    'get_args': () => ({cwd: '/users/me/project'}),
+    'get_args': () => ({cwd: '/users/me/project', source: './'}),
   })
 
   const initial = createState()
@@ -59,7 +59,7 @@ test('dir - file args', async () => {
   vi.stubGlobal('__TAURI__', {})
   mockWindows('main')
   createIpcMock({
-    'get_args': () => ({cwd: '/users/me/project', file: 'file1.md'}),
+    'get_args': () => ({cwd: '/users/me/project', source: 'file1.md', file: 'file1.md'}),
   })
 
   const initial = createState()
@@ -80,7 +80,7 @@ test.each([
   mockWindows('main')
   createIpcMock({
     'plugin:fs|read_dir': async () => [{name}],
-    'get_args': () => ({cwd: '/users/me/project/'}),
+    'get_args': () => ({cwd: '/users/me/project/', source: './'}),
   })
 
   const initial = createState()

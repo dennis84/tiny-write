@@ -13,12 +13,13 @@ export const Redirect = () => {
   }
 
   onMount(async () => {
-    if (store.args?.cwd && !(store.args.file || store.args.newFile)) {
+    const argPath = store.args?.newFile ?? store.args?.file
+
+    if (store.args?.source && !argPath) {
       redirectTo('/dir')
       return
     }
 
-    const argPath = store.args?.newFile ?? store.args?.file
     if (argPath) {
       let file = await fileService.findFileByPath(argPath)
 

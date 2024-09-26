@@ -10,6 +10,8 @@ use url::Url;
 pub struct Args {
     // current working dir: `./path/to`
     pub cwd: Option<String>,
+    // source arg: `tinywrite ./source`
+    pub source: Option<String>,
     // source file: `tinywrite ./path/to/file.md`
     pub file: Option<String>,
     // source file: `tinywrite ./path/to/not_existing_file.md`
@@ -54,7 +56,7 @@ pub fn create_args(source: String) -> Args {
                 file = path_buf_to_string(&p).ok();
                 cwd = dirname(p).and_then(path_buf_to_string).ok();
             }
-        } else if let Some(p) = expand_tilde(source) {
+        } else if let Some(p) = expand_tilde(&source) {
             if let Ok(d) = dirname(&p) {
                 if d.exists() {
                     new_file = path_buf_to_string(p).ok();
@@ -73,6 +75,7 @@ pub fn create_args(source: String) -> Args {
         new_file,
         room,
         text,
+        source: Some(source),
     }
 }
 

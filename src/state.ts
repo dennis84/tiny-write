@@ -8,6 +8,7 @@ import {Ctrl} from './services'
 
 export interface Args {
   cwd?: string
+  source?: string
   file?: string
   newFile?: string
   room?: string
