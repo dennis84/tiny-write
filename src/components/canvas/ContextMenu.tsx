@@ -124,7 +124,7 @@ export const ContextMenu = () => {
   return (
     <Show when={getContextMenu()} keyed>
       {([link, cm, tooltipAnchor]) => (
-        <Tooltip anchor={tooltipAnchor} onClose={onTooltipClose}>
+        <Tooltip anchor={tooltipAnchor} onClose={onTooltipClose} backdrop={true}>
           <div onClick={() => onNewFile(false, link, cm)} data-testid="context_menu_new_file">
             <Icon>post_add</Icon> New file
           </div>

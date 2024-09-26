@@ -29,7 +29,7 @@ const Handle = styled('div')`
   align-items: center;
   cursor: var(--cursor-pointer);
   user-select: none;
-  > span {
+  > .icon {
     display: none;
     font-size: 14px;
   }
@@ -40,7 +40,7 @@ const Handle = styled('div')`
     border-radius: var(--border-radius);
     background: var(--primary-background);
     box-shadow: 0 0 0 2px var(--background);
-    > span {
+    > .icon {
       display: block;
       color: var(--primary-foreground);
     }

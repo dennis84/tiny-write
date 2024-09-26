@@ -1,4 +1,4 @@
-import {JSX, onCleanup, onMount} from 'solid-js'
+import {JSX, onCleanup, onMount, Show} from 'solid-js'
 import {createMutable, unwrap} from 'solid-js/store'
 import {styled} from 'solid-styled-components'
 import {
@@ -77,6 +77,7 @@ interface Props {
   placement?: Placement
   fallbackPlacements?: Placement[]
   onClose?: () => void
+  backdrop?: boolean
   children: JSX.Element
 }
 
@@ -84,6 +85,25 @@ export const Tooltip = (props: Props) => {
   let tooltipRef: HTMLDivElement | undefined
   let arrowRef: HTMLSpanElement | undefined
   const cleanup = createMutable<Cleanup>({})
+
+  const CloseOnBackgroundClick = () => {
+    const listener = (e: MouseEvent) => {
+      if (!tooltipRef?.contains(e.target as Node)) {
+        props.onClose?.()
+      }
+    }
+
+    onMount(() => {
+      // Cannot use click, otherwise click is triggerd after last gesture event (lostpointercapture)
+      document.addEventListener('pointerdown', listener)
+    })
+
+    onCleanup(() => {
+      document.removeEventListener('pointerdown', listener)
+    })
+
+    return <></>
+  }
 
   onMount(() => {
     const placement = props.placement ?? 'bottom'
@@ -130,7 +150,9 @@ export const Tooltip = (props: Props) => {
 
   return (
     <>
-      <Backdrop onClick={() => props.onClose?.()} />
+      <Show when={props.backdrop} fallback={<CloseOnBackgroundClick />}>
+        <Backdrop onClick={() => props.onClose?.()} />
+      </Show>
       <TooltipEl ref={tooltipRef} id="tooltip" class="tooltip">
         {props.children}
         <span ref={arrowRef} class="arrow"></span>

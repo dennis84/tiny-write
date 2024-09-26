@@ -529,7 +529,7 @@ export const SubmenuTree = (props: Props) => {
         </Show>
       </Portal>
       <Show when={tooltipAnchor() !== undefined}>
-        <Tooltip anchor={tooltipAnchor()!} onClose={() => closeTooltip()}>
+        <Tooltip anchor={tooltipAnchor()!} onClose={() => closeTooltip()} backdrop={true}>
           <Show when={isOnCanvas(selected()?.item)}>
             <div onClick={onFocus} data-testid="focus_file">
               <Icon>adjust</Icon>
