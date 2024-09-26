@@ -12,7 +12,8 @@ const Container = styled('div')`
 `
 
 export const Back = () => {
-  const location = useLocation<{prev: string, path?: string[]}>()
+  let container!: HTMLDivElement
+  const location = useLocation<{prev: string; path?: string[]}>()
   const navigate = useNavigate()
 
   const onBack = () => {
@@ -24,7 +25,7 @@ export const Back = () => {
 
   return (
     <Show when={location.state?.prev}>
-      <Container>
+      <Container ref={container}>
         <ButtonPrimary onClick={onBack}>
           <Icon>arrow_back</Icon> Back
         </ButtonPrimary>

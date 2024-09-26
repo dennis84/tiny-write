@@ -33,7 +33,7 @@ export const Layout = styled('div')`
     font-weight: normal;
     font-style: normal;
     font-size: 20px;
-    display: inline-block;
+    display: inline-flex;
     line-height: 1;
     text-transform: none;
     letter-spacing: normal;
@@ -44,6 +44,17 @@ export const Layout = styled('div')`
       transform: rotate(90deg);
     }
   }
+`
+
+export const PageContent = styled('div')`
+  position: relative;
+  display: flex;
+  height: 100%;
+  width: 100%;
+  min-height: 100vh;
+  max-height: 100vh;
+  touch-action: none;
+  overflow: hidden;
 `
 
 export const Scroll = styled('div')`

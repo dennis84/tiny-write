@@ -4,7 +4,7 @@ import {State, StateContext} from '@/state'
 import {createCtrl} from '@/services'
 import * as remote from '@/remote'
 import {isTauri} from '@/env'
-import {DragArea, Layout} from '@/components/Layout'
+import {DragArea, Layout, PageContent} from '@/components/Layout'
 import {Menu} from '@/components/menu/Menu'
 import {Error} from '@/components/Error'
 import {Keymap} from '@/components/Keymap'
@@ -13,6 +13,7 @@ import {MouseCursor} from '@/components/MouseCursor'
 import {DropFile} from '@/components/DropFile'
 import {ResizeWindow} from '@/components/ResizeWindow'
 import {DarkMode} from '@/components/DarkMode'
+import {Back} from '@/components/Back'
 import {InputLine} from '@/components/dialog/InputLine'
 import {EditorPage} from '@/components/pages/EditorPage'
 import {CanvasPage} from '@/components/pages/CanvasPage'
@@ -62,7 +63,12 @@ export const Main = (props: {state: State}) => {
               <Match when={ctrl.store.error}>
                 <Error />
               </Match>
-              <Match when={ctrl.store.loading === 'initialized'}>{p.children}</Match>
+              <Match when={ctrl.store.loading === 'initialized'}>
+                <PageContent>
+                  {p.children}
+                  <Back />
+                </PageContent>
+              </Match>
             </Switch>
             <Show when={isTauri()}>
               <DragArea data-tauri-drag-region="true" />
