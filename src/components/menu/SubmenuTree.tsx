@@ -530,12 +530,6 @@ export const SubmenuTree = (props: Props) => {
       </Portal>
       <Show when={tooltipAnchor() !== undefined}>
         <Tooltip anchor={tooltipAnchor()!} onClose={() => closeTooltip()}>
-          <Show when={selected()}>
-            <div onClick={onRename} data-testid="rename">
-              <Icon>edit</Icon>
-              Rename
-            </div>
-          </Show>
           <Show when={isOnCanvas(selected()?.item)}>
             <div onClick={onFocus} data-testid="focus_file">
               <Icon>adjust</Icon>
@@ -556,6 +550,12 @@ export const SubmenuTree = (props: Props) => {
               Add code file
             </div>
             <hr class="divider" />
+          </Show>
+          <Show when={selected()}>
+            <div onClick={onRename} data-testid="rename">
+              <Icon>edit</Icon>
+              Rename
+            </div>
           </Show>
           <Show when={selected()?.item.deleted}>
             <div onClick={onRestore} data-testid="restore">

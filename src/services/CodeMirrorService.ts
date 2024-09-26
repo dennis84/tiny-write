@@ -77,7 +77,17 @@ export class CodeMirrorService {
         : ' '.repeat(this.configService.prettier.tabWidth),
       ),
       autocompletion(),
-      foldGutter(),
+      foldGutter({
+        markerDOM: (open) => {
+          const el = document.createElement('span')
+          el.classList.add('icon')
+          el.textContent = 'chevron_right'
+          el.style.fontSize = '14px'
+          el.style.lineHeight = 'inherit'
+          if (open) el.classList.add('rot-90')
+          return el
+        }
+      }),
       EditorView.lineWrapping,
     ]
 

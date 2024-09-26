@@ -28,6 +28,22 @@ export const Layout = styled('div')`
     word-break: normal;
     pointer-events: none;
   }
+  .icon {
+    font-family: 'Material Symbols Outlined';
+    font-weight: normal;
+    font-style: normal;
+    font-size: 20px;
+    display: inline-block;
+    line-height: 1;
+    text-transform: none;
+    letter-spacing: normal;
+    word-wrap: normal;
+    white-space: nowrap;
+    direction: ltr;
+    &.rot-90 {
+      transform: rotate(90deg);
+    }
+  }
 `
 
 export const Scroll = styled('div')`
