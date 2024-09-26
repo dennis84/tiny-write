@@ -59,6 +59,15 @@ const TooltipEl = styled('div')`
   }
 `
 
+const Backdrop = styled('div')`
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--z-index-tooltip);
+`
+
 interface Cleanup {
   fn?: () => void
 }
@@ -76,16 +85,7 @@ export const Tooltip = (props: Props) => {
   let arrowRef: HTMLSpanElement | undefined
   const cleanup = createMutable<Cleanup>({})
 
-  const listener = (e: MouseEvent) => {
-    if (!tooltipRef?.contains(e.target as Node)) {
-      props.onClose?.()
-    }
-  }
-
   onMount(() => {
-    // Cannot use click, otherwise click is triggerd after last gesture event (lostpointercapture)
-    document.addEventListener('pointerdown', listener)
-
     const placement = props.placement ?? 'bottom'
     const fallbackPlacements = props.fallbackPlacements ?? undefined
 
@@ -124,15 +124,17 @@ export const Tooltip = (props: Props) => {
     })
 
     onCleanup(() => {
-      document.removeEventListener('pointerdown', listener)
       unwrap(cleanup).fn?.()
     })
   })
 
   return (
-    <TooltipEl ref={tooltipRef} id="tooltip" class="tooltip">
-      {props.children}
-      <span ref={arrowRef} class="arrow"></span>
-    </TooltipEl>
+    <>
+      <Backdrop onClick={() => props.onClose?.()} />
+      <TooltipEl ref={tooltipRef} id="tooltip" class="tooltip">
+        {props.children}
+        <span ref={arrowRef} class="arrow"></span>
+      </TooltipEl>
+    </>
   )
 }

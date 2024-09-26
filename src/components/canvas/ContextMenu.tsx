@@ -48,7 +48,7 @@ export const ContextMenu = () => {
     )
   }
 
-  const getFiles = (): File[] => {
+  const getFiles = (): File[] | undefined => {
     const currentCanvas = canvasService.currentCanvas
     if (!currentCanvas) return []
     const tree =
@@ -65,7 +65,7 @@ export const ContextMenu = () => {
       }
     }, tree)
 
-    return files
+    return files.length > 0 ? files : undefined
   }
 
   const getContextMenu = ():

@@ -30,7 +30,6 @@ export class LangInputEditor {
           override: [
             () => ({
               options: props.words?.map((label) => ({label, type: 'word'})) ?? [],
-              //Object.keys(languages).map((label) => ({label, type: 'word'})),
               from: 0,
             }),
           ],
