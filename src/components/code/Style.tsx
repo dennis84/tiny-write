@@ -20,9 +20,8 @@ export const codeMirror = `
     .cm-scroller {
       flex-grow: 1;
       flex-shrink: 1;
-      padding: 30px;
-      padding-left: 20px;
       width: 100%;
+      line-height: 1.5;
       -ms-overflow-style: none;
       scrollbar-width: none;
       &::-webkit-scrollbar {
@@ -31,6 +30,10 @@ export const codeMirror = `
     }
     .cm-foldGutter {
       user-select: none;
+    }
+    .cm-lineNumbers {
+      opacity: 0.5;
+      margin-right: 10px;
     }
     &:not(.cm-focused) {
       .cm-activeLine {

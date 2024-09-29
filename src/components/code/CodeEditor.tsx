@@ -10,6 +10,10 @@ export const CodeMirrorContainer = styled('div')`
   ${codeMirror}
   .cm-editor {
     border-radius: 0;
+    .cm-scroller {
+      padding-top: 30px;
+      padding-left: 20px;
+    }
   }
 `
 

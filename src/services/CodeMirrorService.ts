@@ -77,17 +77,6 @@ export class CodeMirrorService {
         : ' '.repeat(this.configService.prettier.tabWidth),
       ),
       autocompletion(),
-      foldGutter({
-        markerDOM: (open) => {
-          const el = document.createElement('span')
-          el.classList.add('icon')
-          el.textContent = 'chevron_right'
-          el.style.fontSize = '14px'
-          el.style.lineHeight = 'inherit'
-          if (open) el.classList.add('rot-90')
-          return el
-        }
-      }),
       EditorView.lineWrapping,
     ]
 
@@ -106,6 +95,22 @@ export class CodeMirrorService {
 
     if (this.store.mode === Mode.Code) {
       extensions.push([highlightActiveLine(), lineNumbers()])
+    }
+
+    if (this.store.mode !== Mode.Canvas) {
+      extensions.push(
+        foldGutter({
+          markerDOM: (open) => {
+            const el = document.createElement('span')
+            el.classList.add('icon')
+            el.textContent = 'chevron_right'
+            el.style.fontSize = '14px'
+            el.style.lineHeight = 'inherit'
+            if (open) el.classList.add('rot-90')
+            return el
+          },
+        }),
+      )
     }
 
     const editorView = new EditorView({
