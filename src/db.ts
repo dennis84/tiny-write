@@ -193,6 +193,9 @@ export class DB {
   }
 
   static async deleteDatabase() {
-    indexedDB.deleteDatabase(DB_NAME)
+    const db = await dbPromise
+    for (const name of db.objectStoreNames) {
+      await db.clear(name)
+    }
   }
 }

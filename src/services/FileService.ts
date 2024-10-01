@@ -1,4 +1,4 @@
-import {SetStoreFunction, Store} from 'solid-js/store'
+import {SetStoreFunction, Store, unwrap} from 'solid-js/store'
 import * as Y from 'yjs'
 import {yXmlFragmentToProseMirrorRootNode} from 'y-prosemirror'
 import {ySyncFacet} from 'y-codemirror.next'
@@ -91,10 +91,6 @@ export class FileService {
   }
 
   static async saveFile(file: File) {
-    if (file.path) {
-      return
-    }
-
     if (!file.lastModified) {
       return
     }
@@ -122,34 +118,33 @@ export class FileService {
   static createFile(params: Partial<File> = {}): File {
     const id = params.id ?? uuidv4()
     const ydoc = params.ydoc ?? Y.encodeStateAsUpdate(FileService.createYdoc(id))
-    let codeLang = params.codeLang
-    const filePath = params.path ?? params.newFile
-    if (!codeLang && params.code && filePath) {
-      const ext = filePath.substring(filePath.lastIndexOf('.') + 1)
-      codeLang = findCodeLang(ext)
-    }
+    const versions = params.versions ?? []
+    const codeLang = FileService.getCodeLang(params)
 
     return {
       ...params,
       id,
       ydoc,
       codeLang,
-      versions: [],
+      versions,
     }
   }
 
-  static async activateFile(state: State, file: File): Promise<State> {
+  static async activateFile(state: State, fileId: string, code = false): Promise<State> {
     const files = []
     const canvases = []
+    let activeFile
 
     for (const f of state.files) {
       f.editorView?.destroy()
       f.codeEditorView?.destroy()
-      const active = f.id === file.id
-      const newFile = {...f, active, editorView: undefined, codeEditorView: undefined}
+      const active = f.id === fileId
+      const codeLang = FileService.getCodeLang(f)
+      const newFile = {...f, code, codeLang, active, editorView: undefined, codeEditorView: undefined}
       files.push(newFile)
       if (active || f.active) {
         await FileService.saveFile(newFile)
+        activeFile = newFile
       }
     }
 
@@ -157,7 +152,7 @@ export class FileService {
       canvases.push({...c, active: false})
     }
 
-    const mode = file.code ? Mode.Code : Mode.Editor
+    const mode = activeFile?.code ? Mode.Code : Mode.Editor
     await DB.setMeta({mode})
 
     return {
@@ -205,6 +200,17 @@ export class FileService {
     }
 
     return files
+  }
+
+  static getCodeLang(file: Partial<File>): string | undefined {
+    let codeLang = file.codeLang
+    const filePath = file.path ?? file.newFile
+    if (!codeLang && filePath) {
+      const ext = filePath.substring(filePath.lastIndexOf('.') + 1)
+      codeLang = findCodeLang(ext)
+    }
+
+    return codeLang
   }
 
   private static createYdoc(id: string, bytes?: Uint8Array): Y.Doc {

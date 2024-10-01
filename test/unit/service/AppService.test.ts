@@ -63,7 +63,7 @@ test.each([
   expect(basePath).toBe(data.expected)
 })
 
-test('reset', () => {
+test('reset', async () => {
   const initial = createState({
     args: {cwd: '/home', file: 'test.md'},
     mode: Mode.Editor,
@@ -79,7 +79,7 @@ test('reset', () => {
   })
   const {store, appService} = createCtrl(initial)
 
-  appService.reset()
+  await appService.reset()
 
   expect(store.files).toHaveLength(0)
   expect(store.args?.cwd).toBe('/home')

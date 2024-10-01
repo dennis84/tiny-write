@@ -1,6 +1,6 @@
 import {onMount} from 'solid-js'
 import {useNavigate} from '@solidjs/router'
-import {Mode, useState} from '@/state'
+import {isCodeFile, Mode, useState} from '@/state'
 import {getMimeType, info} from '@/remote'
 
 export const Redirect = () => {
@@ -34,18 +34,29 @@ export const Redirect = () => {
         )
       }
 
-      redirectTo(`/${file.code ? 'code' : 'editor'}/${file.id}`)
-    } else if (store.mode === Mode.Editor && fileService.currentFile) {
-      redirectTo(`/${store.mode}/${fileService.currentFile?.id}`)
-    } else if (store.mode === Mode.Code && fileService.currentFile) {
-      redirectTo(`/${store.mode}/${fileService.currentFile?.id}`)
-    } else if (store.mode === Mode.Canvas && canvasService.currentCanvas) {
-      redirectTo(`/${store.mode}/${canvasService.currentCanvas?.id}`)
-    } else {
-      const file = await editorService.newFile()
-      info(`Created new file (id=${file.id})`)
-      redirectTo(`/editor/${file.id}`)
+      return redirectTo(`/${file.code ? 'code' : 'editor'}/${file.id}`)
     }
+
+    if (store.mode === Mode.Editor && fileService.currentFile) {
+      return redirectTo(`/${store.mode}/${fileService.currentFile?.id}`)
+    }
+
+    if (store.mode === Mode.Code && fileService.currentFile) {
+      return redirectTo(`/${store.mode}/${fileService.currentFile?.id}`)
+    }
+
+    if (store.mode === Mode.Canvas && canvasService.currentCanvas) {
+      return redirectTo(`/${store.mode}/${canvasService.currentCanvas?.id}`)
+    }
+
+    const first = store.files.find((f) => !f.deleted)
+    if (first) {
+      return redirectTo(`/${isCodeFile(first) ? 'code' : 'editor'}/${first.id}`)
+    }
+
+    const file = await editorService.newFile()
+    info(`Created new file (id=${file.id})`)
+    redirectTo(`/editor/${file.id}`)
   })
 
   return <></>

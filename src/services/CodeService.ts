@@ -32,7 +32,7 @@ export class CodeService {
     const state: State = unwrap(this.store)
 
     try {
-      let file = this.fileService.findFileById(id)
+      let file = unwrap(this.fileService.findFileById(id))
       let text: string | undefined
 
       if (!file) {
@@ -46,7 +46,7 @@ export class CodeService {
 
       if (state.args?.room) state.args.room = undefined
 
-      const update = await FileService.activateFile(state, file)
+      const update = await FileService.activateFile(state, file.id, true)
       update.collab = CollabService.create(file.id, update.mode, share)
       const subdoc = CollabService.getSubdoc(update.collab.ydoc, file.id)
       if (text) this.updateText(file, subdoc, text)
@@ -65,7 +65,7 @@ export class CodeService {
     const type = subdoc.getText(file.id)
     type.delete(0, type.length)
     type.insert(0, doc)
-    remote.info(`Updated text from file`)
+    remote.info(`Updated code text from file`)
   }
 
   updateConfig(file: File) {

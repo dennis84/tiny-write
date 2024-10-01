@@ -13,6 +13,9 @@ export const CodeMirrorContainer = styled('div')`
     .cm-scroller {
       padding-top: 30px;
       padding-left: 20px;
+      .cm-content {
+        padding-bottom: 90vh;
+      }
     }
   }
 `

@@ -138,7 +138,7 @@ test.each([
   {code: true, path: '/path/name.rs', expected: 'rust'},
   {code: true, path: '/path/name.test.ts', expected: 'typescript'},
   {code: true, path: '/path/name.test/', expected: undefined}, // should not be possible
-  {code: false, path: '/path/name.ts', expected: undefined},
+  {code: false, path: '/path/name.ts', expected: 'typescript'}, // from path
   {code: true, newFile: '/path/name.ts', expected: 'typescript'},
   {code: true, newFile: '/path/name.ts', codeLang: 'markdown', expected: 'markdown'},
 ])('createFile - codeLang', ({code, codeLang, path, newFile, expected}) => {

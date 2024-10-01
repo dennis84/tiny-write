@@ -201,6 +201,7 @@ export const SubmenuTree = (props: Props) => {
     navigate(`/editor/${file.id}`)
     treeService.create()
     closeTooltip()
+    props.maybeHide?.()
   }
 
   const onNewCanvas = async () => {
@@ -208,6 +209,7 @@ export const SubmenuTree = (props: Props) => {
     navigate(`/canvas/${canvas.id}`)
     treeService.create()
     closeTooltip()
+    props.maybeHide?.()
   }
 
   const onNewCode = async () => {
@@ -215,6 +217,7 @@ export const SubmenuTree = (props: Props) => {
     navigate(`/code/${file.id}`)
     treeService.create()
     closeTooltip()
+    props.maybeHide?.()
   }
 
   const onAddFile = async () => {

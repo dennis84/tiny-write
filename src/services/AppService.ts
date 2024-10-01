@@ -88,10 +88,10 @@ export class AppService {
 
   async reset(): Promise<void> {
     remote.info('Delete database')
+    await DB.deleteDatabase()
     this.setState(
       reconcile(createState({loading: 'initialized', args: {cwd: this.store.args?.cwd}})),
     )
-    await DB.deleteDatabase()
   }
 
   async setFullscreen(fullscreen: boolean) {

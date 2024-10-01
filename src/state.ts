@@ -5,6 +5,7 @@ import * as Y from 'yjs'
 import {WebsocketProvider} from 'y-websocket'
 import {YMultiDocUndoManager} from 'y-utility/y-multidoc-undomanager'
 import {Ctrl} from './services'
+import {FileService} from './services/FileService'
 
 export interface Args {
   cwd?: string
@@ -158,7 +159,11 @@ export const isVideoElement = (el?: CanvasElement): el is CanvasVideoElement =>
 
 export const isFile = (it: any): it is File => it?.ydoc !== undefined
 
-export const isCodeFile = (it: any): it is File => it?.code
+export const isCodeFile = (it: any): it is File => {
+  if (it.code) return true
+  const codeLang = FileService.getCodeLang(it)
+  return codeLang !== undefined && codeLang !== 'markdown'
+}
 
 export const isCanvas = (it: any): it is Canvas => it?.camera
 
