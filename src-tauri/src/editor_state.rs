@@ -77,18 +77,38 @@ impl EditorState {
 
 #[cfg(test)]
 mod tests {
+    use serial_test::serial;
+
     use crate::editor_state::EditorState;
+    use crate::testutil::{create_test_workspace, get_test_dir_as_string};
 
     #[test]
+    #[serial]
     fn test_editor_state() {
-        let mut editor_state = EditorState::new();
-        let doc = editor_state
-            .get_document("../README.md".to_string())
-            .unwrap();
+        create_test_workspace();
 
-        assert_eq!(doc.path, "../README.md".to_string());
-        assert_ne!(doc.text.to_string(), "".to_string());
+        let path = format!("{}/README.md", get_test_dir_as_string()).to_string();
+
+        let mut editor_state = EditorState::new();
+        let doc = editor_state.get_document(path.clone()).unwrap();
+
+        assert_eq!(doc.path, path);
+        assert_eq!(doc.text.to_string(), "".to_string());
+
+        doc.text.insert(0, "test");
+
+        let doc = editor_state.get_document(path.clone()).unwrap();
+        assert_eq!(doc.text.to_string(), "test".to_string());
+
+        let doc = editor_state.load_document(path.clone()).unwrap();
+        assert_eq!(doc.text.to_string(), "".to_string());
+
+        doc.text.insert(0, "test");
+        doc.changed = true;
 
         editor_state.write_all().unwrap();
+
+        let doc = editor_state.load_document(path.clone()).unwrap();
+        assert_eq!(doc.text.to_string(), "test".to_string());
     }
 }

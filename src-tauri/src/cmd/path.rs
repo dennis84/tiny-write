@@ -70,21 +70,16 @@ pub fn to_relative_path(path: String, base_path: Option<String>) -> tauri::Resul
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use std::fs::File;
+    use serial_test::serial;
 
-    fn get_home() -> String {
-        pu::home_dir()
-            .unwrap()
-            .into_os_string()
-            .into_string()
-            .unwrap()
-    }
+    use super::*;
+
+    use crate::testutil::{create_test_workspace, get_home_as_string};
 
     #[test]
+    #[serial]
     fn test_list_contents() {
-        std::fs::create_dir(format!("{}/tinywrite", get_home())).ok();
-        File::create(format!("{}/tinywrite/test.txt", get_home())).ok();
+        create_test_workspace();
 
         assert_eq!(
             list_contents("./Ca".to_string(), None).unwrap(),
@@ -103,17 +98,17 @@ mod tests {
 
         assert_eq!(
             list_contents("~/tinywrite/".to_string(), None).unwrap(),
-            vec!["~/tinywrite/test.txt"]
+            vec!["~/tinywrite/README.md", "~/tinywrite/main.rs"]
         );
 
         assert_eq!(
-            list_contents("./tinyw".to_string(), Some(get_home())).unwrap(),
+            list_contents("./tinyw".to_string(), Some(get_home_as_string())).unwrap(),
             vec!["./tinywrite"]
         );
 
         assert_eq!(
-            list_contents("./tinywrite/".to_string(), Some(get_home())).unwrap(),
-            vec!["./tinywrite/test.txt"]
+            list_contents("./tinywrite/".to_string(), Some(get_home_as_string())).unwrap(),
+            vec!["./tinywrite/README.md", "./tinywrite/main.rs"]
         );
 
         assert!(!list_contents("~/".to_string(), None).unwrap().is_empty());
@@ -123,14 +118,12 @@ mod tests {
             .is_empty());
 
         assert!(!list_contents("".to_string(), None).unwrap().is_empty());
-
-        std::fs::remove_dir_all(format!("{}/tinywrite", get_home())).ok();
     }
 
     #[test]
     fn test_to_relative_path() {
-        let test_base_path = format!("{}/foo", get_home());
-        let test_path = format!("{}/foo/bar", get_home());
+        let test_base_path = format!("{}/foo", get_home_as_string());
+        let test_path = format!("{}/foo/bar", get_home_as_string());
 
         assert_eq!(
             to_relative_path(test_path.clone(), None).unwrap(),
@@ -150,21 +143,21 @@ mod tests {
 
     #[test]
     fn test_to_absolute_path() {
-        let test_base_path = format!("{}/foo", get_home());
+        let test_base_path = format!("{}/foo", get_home_as_string());
 
         assert_eq!(
             to_absolute_path("~/foo/bar".to_string(), None).unwrap(),
-            format!("{}/foo/bar", get_home()).to_string()
+            format!("{}/foo/bar", get_home_as_string()).to_string()
         );
 
         assert_eq!(
             to_absolute_path("~/../foo/bar".to_string(), None).unwrap(),
-            format!("{}/../foo/bar", get_home()).to_string()
+            format!("{}/../foo/bar", get_home_as_string()).to_string()
         );
 
         assert_eq!(
             to_absolute_path("./foo/bar".to_string(), Some(test_base_path)).unwrap(),
-            format!("{}/foo/foo/bar", get_home()).to_string()
+            format!("{}/foo/foo/bar", get_home_as_string()).to_string()
         );
 
         assert_eq!(

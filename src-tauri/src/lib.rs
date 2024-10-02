@@ -13,6 +13,8 @@ mod install_cli;
 mod logger;
 mod menu;
 mod pathutil;
+#[cfg(test)]
+mod testutil;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
