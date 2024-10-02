@@ -61,7 +61,7 @@ export const createIpcMock = (options?: Record<string, IpcMockFn>) => {
       return []
     }
 
-    if (cmd === 'rope_get_text') {
+    if (cmd === 'read_text') {
       return 'File1'
     }
   })

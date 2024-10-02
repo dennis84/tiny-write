@@ -144,10 +144,10 @@ export class CodeService {
       update.changes.iterChanges((fromA, toA, _fromB, _toB, insert) => {
         const text = insert.sliceString(0, insert.length, '\n')
         if (fromA !== toA) {
-          remote.ropeDelete(file.path!, {from: fromA, to: toA})
+          remote.deleteText(file.path!, {from: fromA, to: toA})
         }
         if (text.length > 0) {
-          remote.ropeInsert(file.path!, {from: fromA, text})
+          remote.insertText(file.path!, {from: fromA, text})
         }
       })
     }

@@ -18,57 +18,22 @@ pub struct Delete {
 }
 
 #[tauri::command]
-pub async fn rope_get_text(
+pub async fn read_text(
     path: String,
     state: State<'_, Arc<Mutex<EditorState>>>,
-) -> Result<String, String> {
+) -> tauri::Result<String> {
     let mut state = state.lock().await;
-    let doc = state.load_document(path).map_err(|e| e.to_string())?;
+    let doc = state.load_document(path)?;
     Ok(doc.text.to_string())
 }
 
 #[tauri::command]
-pub async fn rope_from_string(
+pub async fn write_text(
     path: String,
     data: String,
     state: State<'_, Arc<Mutex<EditorState>>>,
     app_handle: tauri::AppHandle,
-) -> Result<(), String> {
-    from_string(path, data, state, app_handle)
-        .await
-        .map_err(|e| e.to_string())
-}
-
-#[tauri::command]
-pub async fn rope_insert(
-    path: String,
-    data: Insert,
-    state: State<'_, Arc<Mutex<EditorState>>>,
-    app_handle: tauri::AppHandle,
-) -> Result<(), String> {
-    insert(path, data, state, app_handle)
-        .await
-        .map_err(|e| e.to_string())
-}
-
-#[tauri::command]
-pub async fn rope_delete(
-    path: String,
-    data: Delete,
-    state: State<'_, Arc<Mutex<EditorState>>>,
-    app_handle: tauri::AppHandle,
-) -> Result<(), String> {
-    delete(path, data, state, app_handle)
-        .await
-        .map_err(|e| e.to_string())
-}
-
-async fn from_string(
-    path: String,
-    data: String,
-    state: State<'_, Arc<Mutex<EditorState>>>,
-    app_handle: tauri::AppHandle,
-) -> anyhow::Result<()> {
+) -> tauri::Result<()> {
     let mut state = state.lock().await;
     let doc = state.get_document(path.clone())?;
 
@@ -79,12 +44,13 @@ async fn from_string(
     Ok(())
 }
 
-async fn insert(
+#[tauri::command]
+pub async fn insert_text(
     path: String,
     data: Insert,
     state: State<'_, Arc<Mutex<EditorState>>>,
     app_handle: tauri::AppHandle,
-) -> anyhow::Result<()> {
+) -> tauri::Result<()> {
     let mut state = state.lock().await;
     let doc = state.get_document(path.clone())?;
 
@@ -95,12 +61,13 @@ async fn insert(
     Ok(())
 }
 
-async fn delete(
+#[tauri::command]
+pub async fn delete_text(
     path: String,
     data: Delete,
     state: State<'_, Arc<Mutex<EditorState>>>,
     app_handle: tauri::AppHandle,
-) -> anyhow::Result<()> {
+) -> tauri::Result<()> {
     let mut state = state.lock().await;
     let doc = state.get_document(path.clone())?;
 

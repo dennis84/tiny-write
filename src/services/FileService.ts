@@ -49,7 +49,7 @@ export class FileService {
     }
 
     try {
-      const text = await remote.ropeGetText(resolvedPath)
+      const text = await remote.readText(resolvedPath)
       const lastModified = await remote.getFileLastModified(resolvedPath)
       return {text, lastModified, path: resolvedPath}
     } catch (e: any) {
@@ -67,7 +67,7 @@ export class FileService {
     }
 
     try {
-      const fileContent = await remote.ropeGetText(resolvedPath)
+      const fileContent = await remote.readText(resolvedPath)
       const lastModified = await remote.getFileLastModified(resolvedPath)
       const parser = createMarkdownParser(schema)
       const doc = parser.parse(fileContent)?.toJSON()

@@ -108,24 +108,24 @@ export const readBinaryFile = async (path: string): Promise<Uint8Array> => {
   return fs.readFile(path)
 }
 
-export const ropeGetText = async (path: string): Promise<string> => {
-  if (!isTauri()) throw Error('Must be run in tauri: ropeGetText')
-  return invoke('rope_get_text', {path})
+export const readText = async (path: string): Promise<string> => {
+  if (!isTauri()) throw Error('Must be run in tauri: readText')
+  return invoke('read_text', {path})
 }
 
-export const ropeFromString = async (path: string, data: string): Promise<void> => {
-  if (!isTauri()) throw Error('Must be run in tauri: ropeFromString')
-  return await invoke('rope_from_string', {path, data})
+export const writeText = async (path: string, data: string): Promise<void> => {
+  if (!isTauri()) throw Error('Must be run in tauri: writeText')
+  return await invoke('write_text', {path, data})
 }
 
-export const ropeInsert = async (path: string, data: any) => {
-  if (!isTauri()) throw Error('Must be run in tauri: ropeInsert')
-  return await invoke('rope_insert', {path, data})
+export const insertText = async (path: string, data: any) => {
+  if (!isTauri()) throw Error('Must be run in tauri: insertText')
+  return await invoke('insert_text', {path, data})
 }
 
-export const ropeDelete = async (path: string, data: any) => {
-  if (!isTauri()) throw Error('Must be run in tauri: ropeDelete')
-  return await invoke('rope_delete', {path, data})
+export const deleteText = async (path: string, data: any) => {
+  if (!isTauri()) throw Error('Must be run in tauri: deleteText')
+  return await invoke('delete_text', {path, data})
 }
 
 export const resolvePath = async (

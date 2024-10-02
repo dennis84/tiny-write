@@ -6,7 +6,7 @@ import * as Y from 'yjs'
 import {prosemirrorJSONToYDoc} from 'y-prosemirror'
 import {debounce} from 'throttle-debounce'
 import {Box} from '@tldraw/editor'
-import {debug, info, error, ropeFromString} from '@/remote'
+import {debug, info, error, writeText} from '@/remote'
 import {State, FileText, File} from '@/state'
 import {serialize} from '@/markdown'
 import {FileService} from './FileService'
@@ -187,7 +187,7 @@ export class EditorService {
     if (file?.path && file.editorView) {
       info('Serialize to markdown and write file')
       const text = serialize(file.editorView.state)
-      await ropeFromString(file.path, text)
+      await writeText(file.path, text)
     }
   }
 }

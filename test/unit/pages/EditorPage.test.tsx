@@ -151,7 +151,7 @@ test('open - file with path', async () => {
 
   mockWindows('main')
   createIpcMock({
-    rope_get_text: (path) => (path === 'file1' ? '# File1' : '# File2'),
+    read_text: (path) => (path === 'file1' ? '# File1' : '# File2'),
   })
 
   const initial = createState({
@@ -220,7 +220,7 @@ test('open - file arg', async () => {
   mockWindows('main')
   createIpcMock({
     get_args: () => ({file: 'file2.md'}),
-    rope_get_text: () => 'File2',
+    read_text: () => 'File2',
   })
 
   const initial = createState({args: {file: 'file2.md'}})
@@ -242,7 +242,7 @@ test('open - file arg exists', async () => {
   mockWindows('main')
   createIpcMock({
     get_args: () => ({file: 'file2.md'}),
-    rope_get_text: () => 'File2',
+    read_text: () => 'File2',
   })
 
   const initial = createState({
@@ -296,7 +296,7 @@ test('open - newFile arg - path exists', async () => {
   mockWindows('main')
   createIpcMock({
     get_args: () => ({newFile: 'file2.md'}),
-    rope_get_text: () => 'File2',
+    read_text: () => 'File2',
   })
 
   const initial = createState({

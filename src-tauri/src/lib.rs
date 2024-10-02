@@ -110,10 +110,10 @@ pub fn run() {
             cmd::path::dirname,
             cmd::path::to_relative_path,
             cmd::path::to_absolute_path,
-            cmd::editor::rope_insert,
-            cmd::editor::rope_delete,
-            cmd::editor::rope_from_string,
-            cmd::editor::rope_get_text,
+            cmd::editor::read_text,
+            cmd::editor::write_text,
+            cmd::editor::insert_text,
+            cmd::editor::delete_text,
         ])
         .run(tauri::generate_context!("tauri.conf.json"))
         .expect("error while running tauri application");
