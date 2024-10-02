@@ -159,8 +159,8 @@ test('open - file arg', async () => {
 
   mockWindows('main')
   createIpcMock({
-    'get_args': () => ({file: 'code1.yaml'}),
-    'plugin:fs|read_text_file': () => 'Code1',
+    get_args: () => ({file: 'code1.yaml'}),
+    rope_get_text: () => 'Code1',
   })
 
   const initial = createState({args: {file: 'code1.yaml'}})

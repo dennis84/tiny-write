@@ -113,6 +113,7 @@ pub fn run() {
             cmd::editor::rope_insert,
             cmd::editor::rope_delete,
             cmd::editor::rope_from_string,
+            cmd::editor::rope_get_text,
         ])
         .run(tauri::generate_context!("tauri.conf.json"))
         .expect("error while running tauri application");

@@ -24,13 +24,37 @@ impl EditorState {
         }
     }
 
+    pub fn load_document(&mut self, path: String) -> anyhow::Result<&mut Document> {
+        let file = File::open(&path)?;
+        let text = ropey::Rope::from_reader(file)?;
+        match self.documents.entry(path.clone()) {
+            Entry::Occupied(doc) => {
+                let doc = doc.into_mut();
+                doc.text = text;
+                Ok(doc)
+            }
+            Entry::Vacant(map) => {
+                let doc = Document {
+                    path,
+                    text,
+                    changed: false,
+                };
+                Ok(map.insert(doc))
+            }
+        }
+    }
+
     pub fn get_document(&mut self, path: String) -> anyhow::Result<&mut Document> {
         match self.documents.entry(path.clone()) {
             Entry::Occupied(doc) => Ok(doc.into_mut()),
             Entry::Vacant(map) => {
                 let file = File::open(&path)?;
                 let text = ropey::Rope::from_reader(file)?;
-                let doc = Document { path, text, changed: false };
+                let doc = Document {
+                    path,
+                    text,
+                    changed: false,
+                };
                 Ok(map.insert(doc))
             }
         }
@@ -43,7 +67,8 @@ impl EditorState {
             }
 
             info!("Write rope to file (path={})", doc.path);
-            doc.text.write_to(BufWriter::new(File::create(&doc.path)?))?;
+            doc.text
+                .write_to(BufWriter::new(File::create(&doc.path)?))?;
             doc.changed = false;
         }
         Ok(())
@@ -57,7 +82,9 @@ mod tests {
     #[test]
     fn test_editor_state() {
         let mut editor_state = EditorState::new();
-        let doc = editor_state.get_document("../README.md".to_string()).unwrap();
+        let doc = editor_state
+            .get_document("../README.md".to_string())
+            .unwrap();
 
         assert_eq!(doc.path, "../README.md".to_string());
         assert_ne!(doc.text.to_string(), "".to_string());

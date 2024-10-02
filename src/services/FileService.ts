@@ -1,4 +1,4 @@
-import {SetStoreFunction, Store, unwrap} from 'solid-js/store'
+import {SetStoreFunction, Store} from 'solid-js/store'
 import * as Y from 'yjs'
 import {yXmlFragmentToProseMirrorRootNode} from 'y-prosemirror'
 import {ySyncFacet} from 'y-codemirror.next'
@@ -49,7 +49,7 @@ export class FileService {
     }
 
     try {
-      const text = await remote.readFile(resolvedPath)
+      const text = await remote.ropeGetText(resolvedPath)
       const lastModified = await remote.getFileLastModified(resolvedPath)
       return {text, lastModified, path: resolvedPath}
     } catch (e: any) {
@@ -67,7 +67,7 @@ export class FileService {
     }
 
     try {
-      const fileContent = await remote.readFile(resolvedPath)
+      const fileContent = await remote.ropeGetText(resolvedPath)
       const lastModified = await remote.getFileLastModified(resolvedPath)
       const parser = createMarkdownParser(schema)
       const doc = parser.parse(fileContent)?.toJSON()

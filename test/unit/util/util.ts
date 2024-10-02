@@ -61,7 +61,7 @@ export const createIpcMock = (options?: Record<string, IpcMockFn>) => {
       return []
     }
 
-    if (cmd === 'plugin:fs|read_text_file') {
+    if (cmd === 'rope_get_text') {
       return 'File1'
     }
   })

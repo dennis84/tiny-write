@@ -1,5 +1,5 @@
-use std::sync::Arc;
 use ropey::Rope;
+use std::sync::Arc;
 use tauri::{Emitter, State};
 use tokio::sync::Mutex;
 
@@ -15,6 +15,16 @@ pub struct Insert {
 pub struct Delete {
     from: usize,
     to: usize,
+}
+
+#[tauri::command]
+pub async fn rope_get_text(
+    path: String,
+    state: State<'_, Arc<Mutex<EditorState>>>,
+) -> Result<String, String> {
+    let mut state = state.lock().await;
+    let doc = state.load_document(path).map_err(|e| e.to_string())?;
+    Ok(doc.text.to_string())
 }
 
 #[tauri::command]

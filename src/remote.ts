@@ -103,14 +103,14 @@ export const getFileLastModified = async (path: string): Promise<Date> => {
   return new Date(ts)
 }
 
-export const readFile = async (path: string): Promise<string> => {
-  if (!isTauri()) throw Error('Must be run in tauri: readFile')
-  return fs.readTextFile(path)
-}
-
 export const readBinaryFile = async (path: string): Promise<Uint8Array> => {
   if (!isTauri()) throw Error('Must be run in tauri: readBinaryFile')
   return fs.readFile(path)
+}
+
+export const ropeGetText = async (path: string): Promise<string> => {
+  if (!isTauri()) throw Error('Must be run in tauri: ropeGetText')
+  return invoke('rope_get_text', {path})
 }
 
 export const ropeFromString = async (path: string, data: string): Promise<void> => {
