@@ -1,4 +1,4 @@
-use crate::pathutil::{dirname, expand_tilde, path_buf_to_string, resolve_path};
+use crate::pathutil::{dirname, expand_tilde, home_dir, path_buf_to_string, resolve_path};
 use anyhow::Result;
 use base64::{engine::general_purpose, Engine as _};
 use std::collections::HashMap;
@@ -20,11 +20,6 @@ pub struct Args {
     pub room: Option<String>,
     // text from deeplink
     pub text: Option<String>,
-}
-
-#[tauri::command]
-pub async fn show_main_window(window: tauri::Window) {
-    window.show().unwrap();
 }
 
 #[tauri::command]
@@ -82,7 +77,7 @@ pub fn create_args(source: String) -> Args {
 fn get_cwd() -> Result<String> {
     let mut cwd = env::current_dir()?;
     if cwd.parent().is_none() {
-        if let Some(home) = dirs::home_dir() {
+        if let Some(home) = home_dir() {
             env::set_current_dir(home)?;
         }
 

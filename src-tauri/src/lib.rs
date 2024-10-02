@@ -101,7 +101,6 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
-            cmd::args::show_main_window,
             cmd::args::get_args,
             cmd::file::get_mime_type,
             cmd::file::get_file_last_modified,

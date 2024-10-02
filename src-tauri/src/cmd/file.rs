@@ -1,5 +1,5 @@
 use chrono::{DateTime, Utc};
-use std::fs;
+use std::{fs, time::SystemTime};
 
 #[tauri::command]
 pub fn get_mime_type(path: String) -> String {
@@ -8,13 +8,13 @@ pub fn get_mime_type(path: String) -> String {
 }
 
 #[tauri::command]
-pub fn get_file_last_modified(path: String) -> Result<String, String> {
-    let metadata = fs::metadata(path).map_err(|e| e.to_string())?;
+pub fn get_file_last_modified(path: String) -> tauri::Result<String> {
+    let metadata = fs::metadata(path)?;
 
-    if let Ok(time) = metadata.modified() {
+    let last_modified = metadata.modified().map(|time: SystemTime| {
         let dt: DateTime<Utc> = time.into();
-        Ok(dt.to_rfc3339())
-    } else {
-        Err("Not supported on this platform".to_string())
-    }
+        dt.to_rfc3339()
+    })?;
+
+    Ok(last_modified)
 }

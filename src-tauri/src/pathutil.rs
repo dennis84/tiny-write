@@ -1,7 +1,7 @@
 use anyhow::{anyhow, Result};
-use std::env;
+use std::env::{self, temp_dir};
 use std::ffi::OsStr;
-use std::io::{Error, ErrorKind};
+use std::fs;
 use std::path::{Path, PathBuf};
 
 pub fn to_absolute_path<P: AsRef<Path>>(path: P, base_path: Option<P>) -> Result<PathBuf> {
@@ -42,18 +42,18 @@ pub fn expand_tilde<P: AsRef<Path>>(path_user_input: P) -> Option<PathBuf> {
         return Some(p.to_path_buf());
     }
 
-    let mut home_dir = dirs::home_dir()?;
+    let mut home = home_dir()?;
     if p == Path::new("~") {
-        return Some(home_dir);
+        return Some(home);
     }
 
-    if home_dir == Path::new("/") {
+    if home == Path::new("/") {
         // Corner case: `h` root directory;
         // don't prepend extra `/`, just drop the tilde.
         Some(p.strip_prefix("~").ok()?.to_path_buf())
     } else {
-        home_dir.push(p.strip_prefix("~/").unwrap());
-        Some(home_dir)
+        home.push(p.strip_prefix("~/").unwrap());
+        Some(home)
     }
 }
 
@@ -76,7 +76,7 @@ pub fn to_relative_path<P: AsRef<Path>>(path: P, base_path: Option<P>) -> Result
         }
     }
 
-    let home = dirs::home_dir().ok_or(Error::new(ErrorKind::Other, "Could not get home_dir"))?;
+    let home = home_dir().ok_or(anyhow!("Could not get home_dir"))?;
     let home = path_buf_to_string(home)?;
 
     if path.starts_with(&home) {
@@ -88,13 +88,23 @@ pub fn to_relative_path<P: AsRef<Path>>(path: P, base_path: Option<P>) -> Result
     Ok(path.to_path_buf())
 }
 
+pub fn home_dir() -> Option<PathBuf> {
+    if cfg!(test) {
+        let home = temp_dir().join("tw-home");
+        fs::create_dir_all(&home).unwrap();
+        fs::canonicalize(home).ok()
+    } else {
+        dirs::home_dir()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use std::fs::File;
 
     fn get_home() -> String {
-        dirs::home_dir()
+        home_dir()
             .unwrap()
             .into_os_string()
             .into_string()

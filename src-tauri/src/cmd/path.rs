@@ -1,21 +1,21 @@
 use crate::pathutil::{self as pu};
-use anyhow::Result;
+use anyhow::anyhow;
 use globset::Glob;
 use ignore::WalkBuilder;
 use log::info;
 use std::path::PathBuf;
 
 #[tauri::command]
-pub fn list_contents(path: String, base_path: Option<String>) -> Result<Vec<String>, String> {
+pub fn list_contents(path: String, base_path: Option<String>) -> tauri::Result<Vec<String>> {
     let path = PathBuf::from(&path);
     let base_path = base_path.map(PathBuf::from);
     let mut files = Vec::new();
 
     // ./my/filena -> /users/me/my/filena
-    let path = pu::to_absolute_path(path, base_path.clone()).map_err(|e| e.to_string())?;
+    let path = pu::to_absolute_path(path, base_path.clone())?;
     // get dir: /users/me/my/filena -> /users/me/my
-    let dir = pu::dirname(&path).map_err(|e| e.to_string())?;
-    let dir = std::fs::canonicalize(dir).map_err(|e| e.to_string())?;
+    let dir = pu::dirname(&path)?;
+    let dir = std::fs::canonicalize(dir)?;
 
     let mut glob_pattern = dir.clone();
 
@@ -25,10 +25,10 @@ pub fn list_contents(path: String, base_path: Option<String>) -> Result<Vec<Stri
         glob_pattern.push(format!("{}*", name.to_str().unwrap_or("")));
     }
 
-    let glob_pattern = pu::path_buf_to_string(glob_pattern).map_err(|e| e.to_string())?;
+    let glob_pattern = pu::path_buf_to_string(glob_pattern)?;
     info!("List files by glob fliter {}", glob_pattern);
 
-    let glob = Glob::new(&glob_pattern).map_err(|e| e.to_string())?;
+    let glob = Glob::new(&glob_pattern).map_err(|e| anyhow!(e.to_string()))?;
     let glob = glob.compile_matcher();
     let walker = WalkBuilder::new(dir).max_depth(Some(1)).build();
 
@@ -49,31 +49,23 @@ pub fn list_contents(path: String, base_path: Option<String>) -> Result<Vec<Stri
 }
 
 #[tauri::command]
-pub fn dirname(path: String) -> Result<String, String> {
-    pu::dirname(path)
-        .and_then(pu::path_buf_to_string)
-        .map_err(|e| e.to_string())
+pub fn dirname(path: String) -> tauri::Result<String> {
+    Ok(pu::dirname(path).and_then(pu::path_buf_to_string)?)
 }
 
 #[tauri::command]
-pub fn resolve_path(path: String, base_path: Option<String>) -> Result<String, String> {
-    pu::resolve_path(path, base_path)
-        .and_then(pu::path_buf_to_string)
-        .map_err(|e| e.to_string())
+pub fn resolve_path(path: String, base_path: Option<String>) -> tauri::Result<String> {
+    Ok(pu::resolve_path(path, base_path).and_then(pu::path_buf_to_string)?)
 }
 
 #[tauri::command]
-pub fn to_absolute_path(path: String, base_path: Option<String>) -> Result<String, String> {
-    pu::to_absolute_path(path, base_path)
-        .and_then(pu::path_buf_to_string)
-        .map_err(|e| e.to_string())
+pub fn to_absolute_path(path: String, base_path: Option<String>) -> tauri::Result<String> {
+    Ok(pu::to_absolute_path(path, base_path).and_then(pu::path_buf_to_string)?)
 }
 
 #[tauri::command]
-pub fn to_relative_path(path: String, base_path: Option<String>) -> Result<String, String> {
-    pu::to_relative_path(path, base_path)
-        .and_then(pu::path_buf_to_string)
-        .map_err(|e| e.to_string())
+pub fn to_relative_path(path: String, base_path: Option<String>) -> tauri::Result<String> {
+    Ok(pu::to_relative_path(path, base_path).and_then(pu::path_buf_to_string)?)
 }
 
 #[cfg(test)]
@@ -82,7 +74,7 @@ mod tests {
     use std::fs::File;
 
     fn get_home() -> String {
-        dirs::home_dir()
+        pu::home_dir()
             .unwrap()
             .into_os_string()
             .into_string()

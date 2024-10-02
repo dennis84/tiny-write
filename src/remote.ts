@@ -212,7 +212,7 @@ export const updateWindow = async ({width, height, x, y}: Window) => {
 
 export const show = async () => {
   if (!isTauri()) throw Error('Must be run in tauri: show')
-  return await invoke('show_main_window')
+  return await getCurrent().show()
 }
 
 export const open = async (href: string) => {
