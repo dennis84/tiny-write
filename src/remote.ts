@@ -1,4 +1,4 @@
-import {currentMonitor, getCurrent, PhysicalPosition, PhysicalSize} from '@tauri-apps/api/window'
+import {currentMonitor, getCurrentWindow, PhysicalPosition, PhysicalSize} from '@tauri-apps/api/window'
 import {invoke} from '@tauri-apps/api/core'
 import * as clipboard from '@tauri-apps/plugin-clipboard-manager'
 import * as fs from '@tauri-apps/plugin-fs'
@@ -57,22 +57,22 @@ export const getArgs = async (): Promise<Args> => {
 
 export const setAlwaysOnTop = (alwaysOnTop: boolean): Promise<void> => {
   if (!isTauri()) throw Error('Must be run in tauri')
-  return getCurrent().setAlwaysOnTop(alwaysOnTop)
+  return getCurrentWindow().setAlwaysOnTop(alwaysOnTop)
 }
 
 export const quit = (): Promise<void> => {
   if (!isTauri()) throw Error('Must be run in tauri')
-  return getCurrent().close()
+  return getCurrentWindow().close()
 }
 
 export const isFullscreen = (): Promise<boolean> => {
   if (!isTauri()) throw Error('Must be run in tauri')
-  return getCurrent().isFullscreen()
+  return getCurrentWindow().isFullscreen()
 }
 
 export const setFullscreen = (status: boolean): Promise<void> => {
   if (!isTauri()) throw Error('Must be run in tauri')
-  return getCurrent().setFullscreen(status)
+  return getCurrentWindow().setFullscreen(status)
 }
 
 export const copy = async (text: string): Promise<void> => {
@@ -192,10 +192,10 @@ export const updateWindow = async ({width, height, x, y}: Window) => {
 
   // Last size should not be too small, otherwise difficult to enlarge.
   if (width > 10 && height > 10) {
-    await getCurrent().setSize(new PhysicalSize(width, height))
+    await getCurrentWindow().setSize(new PhysicalSize(width, height))
   }
 
-  const size = await getCurrent().outerSize()
+  const size = await getCurrentWindow().outerSize()
   const monitor = await currentMonitor()
   if (!monitor) return
 
@@ -206,13 +206,13 @@ export const updateWindow = async ({width, height, x, y}: Window) => {
     y >= 0 &&
     y < monitor.size.height - size.height
   ) {
-    await getCurrent().setPosition(new PhysicalPosition(x, y))
+    await getCurrentWindow().setPosition(new PhysicalPosition(x, y))
   }
 }
 
 export const show = async () => {
   if (!isTauri()) throw Error('Must be run in tauri: show')
-  return await getCurrent().show()
+  return await getCurrentWindow().show()
 }
 
 export const open = async (href: string) => {

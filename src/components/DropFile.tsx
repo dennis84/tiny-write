@@ -1,7 +1,7 @@
 import {onCleanup, onMount} from 'solid-js'
 import {createMutable} from 'solid-js/store'
 import {useNavigate} from '@solidjs/router'
-import {getCurrent} from '@tauri-apps/api/window'
+import {getCurrentWindow} from '@tauri-apps/api/window'
 import {isTauri} from '@/env'
 import {info} from '@/remote'
 import {useState} from '@/state'
@@ -19,10 +19,10 @@ export const DropFile = () => {
 
   onMount(() => {
     if (!isTauri()) return
-    const unlistenProm = getCurrent().onDragDropEvent(async (event) => {
-      if (event.payload.type === 'dragOver') {
+    const unlistenProm = getCurrentWindow().onDragDropEvent(async (event) => {
+      if (event.payload.type === 'over') {
         info('🔗 User hovering')
-      } else if (event.payload.type === 'dropped') {
+      } else if (event.payload.type === 'drop') {
         info('🔗 User dropped')
         for (const path of event.payload.paths) {
           const {x, y} = event.payload.position
