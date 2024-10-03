@@ -132,6 +132,7 @@ export class ProseMirrorService {
     const plugins = [
       // keymap
       wordCompletionKeymap,
+      fileListingKeymap,
       createTaskListKeymap(schema),
       createTabKeymap(schema),
       tableKeymap,
@@ -139,7 +140,6 @@ export class ProseMirrorService {
       keymap(baseKeymap),
       codeBlockKeymap,
       codeKeymap,
-      fileListingKeymap,
       // plugins
       placeholder('Start typing ...'),
       scrollIntoView(this.configService),
