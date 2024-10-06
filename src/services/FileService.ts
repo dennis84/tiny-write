@@ -106,8 +106,8 @@ export class FileService {
       newFile: file.path ? undefined : file.newFile,
       active: file.active,
       deleted: file.deleted,
-      code: file.path ? undefined : file.code,
-      codeLang: file.path ? undefined : file.codeLang,
+      code: file.code,
+      codeLang: file.codeLang,
       versions: file.versions.map((v) => ({
         date: v.date,
         ydoc: v.ydoc,

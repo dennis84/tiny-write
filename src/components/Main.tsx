@@ -1,5 +1,5 @@
 import {onMount, Switch, Match, ErrorBoundary, createEffect, untrack, Show} from 'solid-js'
-import {Route, Router, RouteSectionProps} from '@solidjs/router'
+import {cache, Route, Router, RouteSectionProps} from '@solidjs/router'
 import {State, StateContext} from '@/state'
 import {createCtrl} from '@/services'
 import * as remote from '@/remote'
@@ -39,7 +39,11 @@ export const Main = (props: {state: State}) => {
 
     onMount(async () => {
       ctrl.appService.layoutRef = layoutRef
-      await ctrl.appService.init()
+      try {
+        await ctrl.appService.init()
+      } catch (error: any) {
+        ctrl.appService.setError({id: 'init_failed', error})
+      }
     })
 
     createEffect((prev) => {

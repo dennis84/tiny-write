@@ -1,4 +1,5 @@
 import {createEffect, onCleanup, Show} from 'solid-js'
+import {unwrap} from 'solid-js/store'
 import {styled} from 'solid-styled-components'
 import {CanvasCodeElement, useState} from '@/state'
 import * as remote from '@/remote'
@@ -9,6 +10,7 @@ import {CodeMirrorContainer} from '@/components/code/CodeEditor'
 import {Bounds} from './Bounds'
 import {LinkHandles} from './LinkHandles'
 import {IndexType, ZIndex} from '@/utils/ZIndex'
+import {CollabService} from '@/services/CollabService'
 
 // prettier-ignore
 const CodeEditorScroll = styled(Scroll)(
@@ -32,7 +34,7 @@ const CodeEditorScroll = styled(Scroll)(
 )
 
 export const CodeEditor = ({element, index}: {element: CanvasCodeElement; index: number}) => {
-  const {canvasService, codeService, collabService, fileService} = useState()
+  const {store, canvasService, codeService, collabService, fileService} = useState()
   let containerRef!: HTMLDivElement
   let editorRef!: HTMLDivElement
 
@@ -59,6 +61,12 @@ export const CodeEditor = ({element, index}: {element: CanvasCodeElement; index:
       remote.info('No file for code element', element.id)
       file = FileService.createFile({id: element.id, parentId: currentCanvas?.id, code: true})
       await fileService.addFile(file)
+    }
+
+    if (file?.path) {
+      const text = (await FileService.loadTextFile(file.path)).text
+      const subdoc = CollabService.getSubdoc(store.collab!.ydoc, file.id)
+      if (text) codeService.updateText(file, subdoc, text)
     }
 
     const provider = collabService.getProvider(file.id)
