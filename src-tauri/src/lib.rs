@@ -1,9 +1,9 @@
-use std::{sync::Arc, time::Duration};
+use std::sync::Arc;
 use editor_state::EditorState;
 use tokio::sync::Mutex;
 
 use log::{debug, info};
-use tauri::{Listener, Manager};
+use tauri::Manager;
 use tauri_plugin_cli::CliExt;
 
 mod cmd;
@@ -81,19 +81,15 @@ pub fn run() {
 
             menu::setup_menu(handle)?;
 
-            let editor_state = Arc::new(Mutex::new(EditorState::new()));
+            let editor_state = EditorState::new();
+            let debounced_write_rx = editor_state.debounced_write_rx.clone();
+            let editor_state = Arc::new(Mutex::new(editor_state));
             let editor_state_2 = Arc::clone(&editor_state);
             app.manage(editor_state);
 
-            let (sender, receiver) = debouncer::unbounded();
-
-            handle.listen_any("write_documents", move |path| {
-                sender.send(path, Duration::from_millis(3000)).unwrap();
-            });
-
             tauri::async_runtime::spawn(async move {
                 loop {
-                    if receiver.recv().is_ok() {
+                    if debounced_write_rx.recv().is_ok() {
                         let mut state = editor_state_2.lock().await;
                         let _ = state.write_all();
                     }

@@ -1,6 +1,6 @@
 use ropey::Rope;
-use std::sync::Arc;
-use tauri::{Emitter, State};
+use std::{sync::Arc, time::Duration};
+use tauri::{Runtime, Manager};
 use tokio::sync::Mutex;
 
 use crate::editor_state::EditorState;
@@ -18,62 +18,66 @@ pub struct Delete {
 }
 
 #[tauri::command]
-pub async fn read_text(
+pub async fn read_text<R: Runtime>(
     path: String,
-    state: State<'_, Arc<Mutex<EditorState>>>,
+    app_handle: tauri::AppHandle<R>,
 ) -> tauri::Result<String> {
+    let state = app_handle.state::<Arc<Mutex<EditorState>>>();
     let mut state = state.lock().await;
     let doc = state.load_document(path)?;
     Ok(doc.text.to_string())
 }
 
 #[tauri::command]
-pub async fn write_text(
+pub async fn write_text<R: Runtime>(
     path: String,
     data: String,
-    state: State<'_, Arc<Mutex<EditorState>>>,
-    app_handle: tauri::AppHandle,
+    app_handle: tauri::AppHandle<R>,
 ) -> tauri::Result<()> {
+    let state = app_handle.state::<Arc<Mutex<EditorState>>>();
     let mut state = state.lock().await;
     let doc = state.get_document(path.clone())?;
 
     doc.text = Rope::from_str(&data);
     doc.changed = true;
-    app_handle.emit("write_documents", path.clone())?;
+
+    state.debounced_write_tx.send(path, Duration::from_millis(3000))?;
 
     Ok(())
 }
 
 #[tauri::command]
-pub async fn insert_text(
+pub async fn insert_text<R: Runtime>(
     path: String,
     data: Insert,
-    state: State<'_, Arc<Mutex<EditorState>>>,
-    app_handle: tauri::AppHandle,
+    app_handle: tauri::AppHandle<R>,
 ) -> tauri::Result<()> {
+    let state = app_handle.state::<Arc<Mutex<EditorState>>>();
     let mut state = state.lock().await;
     let doc = state.get_document(path.clone())?;
 
     doc.text.insert(data.from, &data.text);
     doc.changed = true;
-    app_handle.emit("write_documents", path.clone())?;
+
+    state.debounced_write_tx.send(path, Duration::from_millis(3000))?;
 
     Ok(())
 }
 
 #[tauri::command]
-pub async fn delete_text(
+pub async fn delete_text<R: Runtime>(
     path: String,
     data: Delete,
-    state: State<'_, Arc<Mutex<EditorState>>>,
-    app_handle: tauri::AppHandle,
+    app_handle: tauri::AppHandle<R>,
 ) -> tauri::Result<()> {
+    let state = app_handle.state::<Arc<Mutex<EditorState>>>();
     let mut state = state.lock().await;
     let doc = state.get_document(path.clone())?;
 
     doc.text.remove(data.from..data.to);
     doc.changed = true;
-    app_handle.emit("write_documents", path.clone())?;
+
+    state.debounced_write_tx.send(path, Duration::from_millis(3000))?;
 
     Ok(())
 }

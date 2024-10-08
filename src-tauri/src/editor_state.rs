@@ -5,6 +5,8 @@ use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::{fs::File, io::BufWriter};
 
+use crate::debouncer::{self, Receiver, Sender};
+
 #[derive(Debug, Clone)]
 pub struct Document {
     pub path: String,
@@ -12,15 +14,19 @@ pub struct Document {
     pub changed: bool,
 }
 
-#[derive(Debug)]
 pub struct EditorState {
     pub documents: HashMap<String, Document>,
+    pub debounced_write_tx: Sender<String>,
+    pub debounced_write_rx: Receiver<String>,
 }
 
 impl EditorState {
     pub fn new() -> Self {
+        let (debounced_write_tx, debounced_write_rx) = debouncer::unbounded();
         Self {
             documents: HashMap::new(),
+            debounced_write_tx,
+            debounced_write_rx,
         }
     }
 
