@@ -98,7 +98,7 @@ mod tests {
 
         assert_eq!(
             list_contents("~/tinywrite/".to_string(), None).unwrap(),
-            vec!["~/tinywrite/README.md", "~/tinywrite/main.rs"]
+            vec!["~/tinywrite/README.md", "~/tinywrite/src"]
         );
 
         assert_eq!(
@@ -108,7 +108,7 @@ mod tests {
 
         assert_eq!(
             list_contents("./tinywrite/".to_string(), Some(get_home_as_string())).unwrap(),
-            vec!["./tinywrite/README.md", "./tinywrite/main.rs"]
+            vec!["./tinywrite/README.md", "./tinywrite/src"]
         );
 
         assert!(!list_contents("~/".to_string(), None).unwrap().is_empty());

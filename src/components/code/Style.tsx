@@ -52,6 +52,7 @@ export const codeMirror = `
 `
 
 export const codeMirrorTooltip = `
+  .cm-tooltip-lsp-hover,
   .cm-tooltip-autocomplete {
     background: var(--tooltip-background);
     border-radius: var(--border-radius) !important;
@@ -61,6 +62,15 @@ export const codeMirrorTooltip = `
     font-family: var(--menu-font-family);
     font-size: var(--menu-font-size);
     line-height: 1.4;
+    white-space: pre-line;
+    padding: 1em;
+    margin: 0;
+    max-width: 600px;
+    max-height: 100%;
+    overflow-y: scroll;
+    &::-webkit-scrollbar {
+      display: none;
+    }
     ul {
       max-height: 300px !important;
       li {

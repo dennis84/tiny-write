@@ -115,6 +115,7 @@ export class CodeService {
       parent,
       doc: type.toString(),
       lang: file.codeLang,
+      path: file.path,
       extensions: [
         EditorView.updateListener.of((update) => this.onUpdate(file, update)),
         yCollab(type, this.store.collab?.provider.awareness, {undoManager: false}),

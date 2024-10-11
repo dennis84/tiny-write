@@ -3,6 +3,7 @@ import {
   EditorView,
   drawSelection,
   highlightActiveLine,
+  hoverTooltip,
   keymap,
   lineNumbers,
   tooltips,
@@ -27,7 +28,9 @@ import {getTheme} from '@/codemirror/theme'
 import {highlight} from '@/codemirror/highlight'
 import {findWords, tabCompletionKeymap} from '@/codemirror/completion'
 import {mermaidKeywords} from '@/codemirror/mermaid'
+import {lspHoverSource} from '@/codemirror/lsp-hover'
 import {Mode, PrettierConfig, State} from '@/state'
+import {isTauri} from '@/env'
 import {ConfigService} from './ConfigService'
 import {AppService} from './AppService'
 import {PrettierService} from './PrettierService'
@@ -37,6 +40,7 @@ interface CreateEditor {
   parent?: Element
   doc?: string
   extensions?: Extension[]
+  path?: string
 }
 
 export class CodeMirrorService {
@@ -95,6 +99,10 @@ export class CodeMirrorService {
 
     if (this.store.mode === Mode.Code) {
       extensions.push([highlightActiveLine(), lineNumbers()])
+    }
+
+    if (props.path && isTauri()) {
+      extensions.push(hoverTooltip(lspHoverSource(props.path)))
     }
 
     if (this.store.mode !== Mode.Canvas) {

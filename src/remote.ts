@@ -166,6 +166,11 @@ export const saveFile = async (file: File): Promise<string> => {
   return path
 }
 
+export const lspHover = async (path: string, row: number, column: number) => {
+  if (!isTauri()) throw Error('Must be run in tauri: lspHover')
+  return (await invoke('lsp_hover', {path, row, column}))
+}
+
 export const debug = (msg: string, ...data: any[]) => {
   if (isTauri()) void logger.debug(msg)
   console.debug(msg, ...data)

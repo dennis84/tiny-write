@@ -15,7 +15,7 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
-tauri = { version = "2", features = ["protocol-asset"] }
+tauri = { version = "2", features = ["protocol-asset", "test"] }
 serde_json = "1"
 serde = { version = "1", features = [ "derive" ] }
 mime_guess = "2"
@@ -29,10 +29,12 @@ globset = "0"
 anyhow = "1"
 ropey = "1"
 debounced = "0"
-tokio = "1"
+tokio = { version = "1", features = ["full"] }
 futures = "0"
 futures-channel = "0"
 crossbeam-channel = "0"
+async-lsp-client = "0"
+lsp-types = "0"
 tauri-plugin-cli = "2"
 tauri-plugin-fs = "2"
 tauri-plugin-clipboard-manager = "2"

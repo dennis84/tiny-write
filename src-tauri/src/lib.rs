@@ -1,16 +1,21 @@
-use std::sync::Arc;
-use editor_state::EditorState;
-use tokio::sync::Mutex;
-
+use async_lsp_client::ServerMessage;
 use log::{debug, info};
+use std::sync::Arc;
 use tauri::Manager;
 use tauri_plugin_cli::CliExt;
+use tokio::sync::Mutex;
+
+use editor_state::EditorState;
+use lsp_registry::LspRegistry;
+use lsp_service::LspService;
 
 mod cmd;
 mod debouncer;
 mod editor_state;
 mod install_cli;
 mod logger;
+mod lsp_registry;
+mod lsp_service;
 mod menu;
 mod pathutil;
 #[cfg(test)]
@@ -81,17 +86,63 @@ pub fn run() {
 
             menu::setup_menu(handle)?;
 
+            let lsp_registry = LspRegistry::new(handle.clone());
+            let language_server_registered_rx = lsp_registry.language_server_registered_rx.clone();
+            let lsp_registry = Arc::new(Mutex::new(lsp_registry));
+            let lsp_registry_2 = Arc::clone(&lsp_registry);
+            app.manage(lsp_registry);
+
             let editor_state = EditorState::new();
             let debounced_write_rx = editor_state.debounced_write_rx.clone();
+            let open_doc_rx = editor_state.open_doc_rx.clone();
             let editor_state = Arc::new(Mutex::new(editor_state));
             let editor_state_2 = Arc::clone(&editor_state);
             app.manage(editor_state);
+
+            let lsp_service = LspService::new(handle.clone());
+            let lsp_service = Arc::new(lsp_service);
+            app.manage(lsp_service);
 
             tauri::async_runtime::spawn(async move {
                 loop {
                     if debounced_write_rx.recv().is_ok() {
                         let mut state = editor_state_2.lock().await;
                         let _ = state.write_all();
+                        drop(state);
+                    }
+                }
+            });
+
+            tauri::async_runtime::spawn(async move {
+                loop {
+                    if let Ok(path) = open_doc_rx.recv() {
+                        let mut lsp_registry = lsp_registry_2.lock().await;
+                        let _ = lsp_registry.register_language_server(path).await;
+                        drop(lsp_registry);
+                    }
+                }
+            });
+
+            tauri::async_runtime::spawn(async move {
+                loop {
+                    if let Ok(mut rx) = language_server_registered_rx.recv() {
+                        println!("language_server_registered");
+                        tauri::async_runtime::spawn(async move {
+                            loop {
+                                if let Some(message) = rx.recv().await {
+                                    println!("message from server received");
+                                    match message {
+                                        ServerMessage::Notification(n) => {
+                                            println!("Received notification from lsp server: {:?}", n);
+                                        }
+                                        // For requests, you need to send a response
+                                        ServerMessage::Request(r) => {
+                                            println!("Received request from lsp server: {:?}", r);
+                                        }
+                                    }
+                                }
+                            }
+                        });
                     }
                 }
             });
@@ -111,6 +162,7 @@ pub fn run() {
             cmd::editor::write_text,
             cmd::editor::insert_text,
             cmd::editor::delete_text,
+            cmd::lsp::lsp_hover,
         ])
         .run(tauri::generate_context!("tauri.conf.json"))
         .expect("error while running tauri application");

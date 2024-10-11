@@ -115,6 +115,26 @@ export const Keymap = () => {
     return true
   }
 
+  const onHover = async () => {
+    const currentFile = fileService.currentFile
+    const path = currentFile?.path
+    const codeEditorView = currentFile?.codeEditorView
+    if (!codeEditorView || !path) return
+
+    const sel = codeEditorView.state.selection.main
+    const line = codeEditorView.state.doc.lineAt(sel.head)
+    const row = line.number - 1
+    const column = sel.head - line.from
+
+    remote.info(`LSP: hover (path=${path}, row=${row}, column=${column})`)
+    try {
+      const response = await remote.lspHover(path, row, column)
+      remote.info(`LSP: hover response`, response)
+    } catch (e) {
+      remote.info('LSP request not successful', e)
+    }
+  }
+
   type Fn = (e: KeyboardEvent) => boolean | void | Promise<boolean | void>
   const keymap: Record<string, Fn> = {
     [`${mod}-r`]: onReload,
@@ -128,6 +148,7 @@ export const Keymap = () => {
     [`Shift-${mod}-Z`]: onRedo,
     [`${mod}-y`]: onRedo,
     [`${mod}-p`]: onPrint,
+    [`${mod}-k`]: onHover,
     'Backspace': onBackspace,
   }
 
