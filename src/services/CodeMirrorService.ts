@@ -102,7 +102,7 @@ export class CodeMirrorService {
     }
 
     if (props.path && isTauri()) {
-      extensions.push(hoverTooltip(lspHoverSource(props.path)))
+      extensions.push(hoverTooltip(lspHoverSource(props.path), {hoverTime: 600}))
     }
 
     if (this.store.mode !== Mode.Canvas) {

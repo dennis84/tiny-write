@@ -9,14 +9,13 @@ use std::path::{Path, PathBuf};
 use std::{fs::File, io::BufWriter};
 
 use crate::editor::debouncer;
-use crate::editor::pathutil::path_buf_to_string;
 
 #[derive(Debug, Clone, PartialEq, Hash, Eq, Serialize, Deserialize)]
 pub struct Language(pub String);
 
 #[derive(Debug, Clone)]
 pub struct Document {
-    pub path: String,
+    pub path: PathBuf,
     pub worktree_path: Option<PathBuf>,
     pub text: Rope,
     pub changed: bool,
@@ -24,11 +23,8 @@ pub struct Document {
 }
 
 impl Document {
-    pub fn get_worktree_path(&self) -> String {
-        self.worktree_path
-            .clone()
-            .and_then(|w| path_buf_to_string(w).ok())
-            .unwrap_or(self.path.clone())
+    pub fn get_worktree_path(&self) -> PathBuf {
+        self.worktree_path.clone().unwrap_or(self.path.clone())
     }
 
     pub fn get_language_id(&self) -> String {
@@ -37,11 +33,11 @@ impl Document {
 }
 
 pub struct EditorState {
-    pub documents: HashMap<String, Document>,
-    pub debounced_write_tx: debouncer::Sender<String>,
-    pub debounced_write_rx: debouncer::Receiver<String>,
-    pub open_doc_tx: crossbeam_channel::Sender<String>,
-    pub open_doc_rx: crossbeam_channel::Receiver<String>,
+    pub documents: HashMap<PathBuf, Document>,
+    pub debounced_write_tx: debouncer::Sender<PathBuf>,
+    pub debounced_write_rx: debouncer::Receiver<PathBuf>,
+    pub open_doc_tx: crossbeam_channel::Sender<PathBuf>,
+    pub open_doc_rx: crossbeam_channel::Receiver<PathBuf>,
 }
 
 impl EditorState {
@@ -57,13 +53,13 @@ impl EditorState {
         }
     }
 
-    pub fn load_document(&mut self, path: String) -> anyhow::Result<&mut Document> {
-        let file = File::open(&path)?;
+    pub fn load_document(&mut self, path: &Path) -> anyhow::Result<&mut Document> {
+        let file = File::open(path)?;
         let text = ropey::Rope::from_reader(file)?;
-        let language = Self::get_language(&path);
-        let worktree_path = Self::get_worktree_path(&path);
+        let language = Self::get_language(path);
+        let worktree_path = Self::get_worktree_path(path);
 
-        let result = match self.documents.entry(path.clone()) {
+        let result = match self.documents.entry(path.to_path_buf()) {
             Entry::Occupied(doc) => {
                 let doc = doc.into_mut();
                 doc.text = text;
@@ -71,7 +67,7 @@ impl EditorState {
             }
             Entry::Vacant(map) => {
                 let doc = Document {
-                    path: path.clone(),
+                    path: path.to_path_buf(),
                     text,
                     changed: false,
                     worktree_path,
@@ -81,22 +77,22 @@ impl EditorState {
             }
         };
 
-        self.open_doc_tx.send(path)?;
+        self.open_doc_tx.send(path.to_path_buf())?;
 
         result
     }
 
-    pub fn get_document(&mut self, path: String) -> anyhow::Result<&mut Document> {
-        let language = Self::get_language(&path);
-        let worktree_path = Self::get_worktree_path(&path);
+    pub fn get_document(&mut self, path: &Path) -> anyhow::Result<&mut Document> {
+        let language = Self::get_language(path);
+        let worktree_path = Self::get_worktree_path(path);
 
-        match self.documents.entry(path.clone()) {
+        match self.documents.entry(path.to_path_buf()) {
             Entry::Occupied(doc) => Ok(doc.into_mut()),
             Entry::Vacant(map) => {
-                let file = File::open(&path)?;
+                let file = File::open(path)?;
                 let text = ropey::Rope::from_reader(file)?;
                 let doc = Document {
-                    path,
+                    path: path.to_path_buf(),
                     text,
                     changed: false,
                     worktree_path,
@@ -113,7 +109,7 @@ impl EditorState {
                 continue;
             }
 
-            info!("Write rope to file (path={})", doc.path);
+            info!("Write rope to file (path={:?})", doc.path);
             doc.text
                 .write_to(BufWriter::new(File::create(&doc.path)?))?;
             doc.changed = false;
@@ -123,7 +119,7 @@ impl EditorState {
 
     fn get_language<P: AsRef<Path>>(path: P) -> Option<Language> {
         match path.as_ref().extension().and_then(OsStr::to_str) {
-            Some("ts") => Some(Language("typescript".to_string())),
+            Some("ts") | Some("tsx") => Some(Language("typescript".to_string())),
             Some("rs") => Some(Language("rust".to_string())),
             _ => None,
         }
@@ -150,17 +146,17 @@ mod tests {
     use serial_test::serial;
 
     use crate::editor::editor_state::EditorState;
-    use crate::editor::testutil::{create_test_workspace, get_test_dir_as_string};
+    use crate::editor::testutil::{create_test_workspace, get_test_dir};
 
     #[tokio::test]
     #[serial]
     async fn test_get_document_err() {
         create_test_workspace();
 
-        let path = get_test_dir_as_string();
+        let path = get_test_dir();
 
         let mut editor_state = EditorState::new();
-        let doc = editor_state.get_document(path.clone());
+        let doc = editor_state.get_document(path.as_ref());
 
         assert!(doc.is_err());
     }
@@ -170,20 +166,20 @@ mod tests {
     async fn test_editor_state() {
         create_test_workspace();
 
-        let path = format!("{}/README.md", get_test_dir_as_string()).to_string();
+        let path = get_test_dir().join("README.md");
 
         let mut editor_state = EditorState::new();
-        let doc = editor_state.get_document(path.clone()).unwrap();
+        let doc = editor_state.get_document(path.as_ref()).unwrap();
 
-        assert_eq!(doc.path, path);
+        assert_eq!(doc.path, path.to_path_buf());
         assert_eq!(doc.text.to_string(), "".to_string());
 
         doc.text.insert(0, "test");
 
-        let doc = editor_state.get_document(path.clone()).unwrap();
+        let doc = editor_state.get_document(path.as_ref()).unwrap();
         assert_eq!(doc.text.to_string(), "test".to_string());
 
-        let doc = editor_state.load_document(path.clone()).unwrap();
+        let doc = editor_state.load_document(path.as_ref()).unwrap();
         assert_eq!(doc.text.to_string(), "".to_string());
 
         doc.text.insert(0, "test");
@@ -191,7 +187,7 @@ mod tests {
 
         editor_state.write_all().unwrap();
 
-        let doc = editor_state.load_document(path.clone()).unwrap();
+        let doc = editor_state.load_document(path.as_ref()).unwrap();
         assert_eq!(doc.text.to_string(), "test".to_string());
     }
 }

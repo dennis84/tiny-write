@@ -112,7 +112,7 @@ pub fn run() {
                 loop {
                     if let Ok(path) = open_doc_rx.recv() {
                         let mut lsp_registry = lsp_registry_2.lock().await;
-                        let _ = lsp_registry.register_language_server(path).await;
+                        let _ = lsp_registry.register_language_server(path.as_ref()).await;
                         drop(lsp_registry);
                     }
                 }
@@ -121,18 +121,17 @@ pub fn run() {
             tauri::async_runtime::spawn(async move {
                 loop {
                     if let Ok(mut rx) = language_server_registered_rx.recv() {
-                        println!("language_server_registered");
+                        info!("receive requests and notifications from language server");
                         tauri::async_runtime::spawn(async move {
                             loop {
                                 if let Some(message) = rx.recv().await {
-                                    println!("message from server received");
                                     match message {
                                         ServerMessage::Notification(n) => {
-                                            println!("Received notification from lsp server: {:?}", n);
+                                            info!("Received notification from lsp server: {:?}", n);
                                         }
                                         // For requests, you need to send a response
                                         ServerMessage::Request(r) => {
-                                            println!("Received request from lsp server: {:?}", r);
+                                            info!("Received request from lsp server: {:?}", r);
                                         }
                                     }
                                 }

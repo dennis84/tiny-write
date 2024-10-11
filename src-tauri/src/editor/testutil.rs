@@ -30,8 +30,3 @@ pub fn get_home_as_string() -> String {
 pub fn get_test_dir() -> PathBuf {
     get_home().join("tinywrite")
 }
-
-
-pub fn get_test_dir_as_string() -> String {
-    path_buf_to_string(get_home().join("tinywrite")).unwrap()
-}

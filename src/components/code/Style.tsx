@@ -52,24 +52,32 @@ export const codeMirror = `
 `
 
 export const codeMirrorTooltip = `
-  .cm-tooltip-lsp-hover,
-  .cm-tooltip-autocomplete {
+  .cm-tooltip {
     background: var(--tooltip-background);
     border-radius: var(--border-radius) !important;
     border: 0 !important;
     box-shadow: 0 12px 24px 0 rgba(0, 0, 0, 0.24);
-    padding: 6px 8px;
-    font-family: var(--menu-font-family);
-    font-size: var(--menu-font-size);
+    font-family: var(--font-family-monospace);
+    font-size: var(--font-size);
     line-height: 1.4;
-    white-space: pre-line;
-    padding: 1em;
-    margin: 0;
+    padding: 6px 8px;
     max-width: 600px;
     max-height: 100%;
     overflow-y: scroll;
     &::-webkit-scrollbar {
       display: none;
+    }
+    p {
+      margin: 10px 0;
+    }
+    pre {
+      margin: 0;
+      padding: 6px 8px !important;
+      border-radius: var(--border-radius);
+      background: var(--foreground-10);
+    }
+    a {
+      color: var(--primary-background);
     }
     ul {
       max-height: 300px !important;

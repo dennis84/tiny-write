@@ -1,3 +1,4 @@
+use std::path::Path;
 use std::sync::Arc;
 
 use anyhow::anyhow;
@@ -27,7 +28,7 @@ impl<R: Runtime> LspService<R> {
     }
 
     pub async fn initialize(&self, server: &LspServer, doc: &Document) -> anyhow::Result<()> {
-        info!("LspService::initialize - initialize");
+        info!("LSP - initialize doc");
         let root_uri = lsp_types::Url::from_file_path(doc.get_worktree_path())
             .map_err(|_| anyhow!("invalid root_uri"))?;
         server
@@ -41,7 +42,7 @@ impl<R: Runtime> LspService<R> {
             })
             .await;
 
-        info!("LspService::initialize - send initialized notification");
+        info!("LSP - send initialized notification");
         server.initialized().await;
         Ok(())
     }
@@ -49,7 +50,7 @@ impl<R: Runtime> LspService<R> {
     pub async fn open_document(&self, server: &LspServer, doc: &Document) -> anyhow::Result<()> {
         let file_uri = lsp_types::Url::from_file_path(doc.path.clone())
             .map_err(|_| anyhow!("invalid file_uri"))?;
-        info!("LspService::open_document (file_uri={:?})", file_uri);
+        info!("LSP - open document (file_uri={:?})", file_uri);
         server
             .send_notification::<DidOpenTextDocument>(DidOpenTextDocumentParams {
                 text_document: TextDocumentItem {
@@ -63,22 +64,19 @@ impl<R: Runtime> LspService<R> {
         Ok(())
     }
 
-    pub async fn hover(&self, path: String, row: u32, column: u32) -> anyhow::Result<Hover> {
-        info!("LspService::hover - get editor_state");
+    pub async fn hover(&self, path: &Path, row: u32, column: u32) -> anyhow::Result<Hover> {
         let editor_state = self.app_handle.state::<Arc<Mutex<EditorState>>>();
         let mut editor_state = editor_state.lock().await;
 
-        info!("LspService::hover - get lsp_registry");
         let lsp_registry = self.app_handle.state::<Arc<Mutex<LspRegistry<R>>>>();
         let mut lsp_registry = lsp_registry.lock().await;
 
-        info!("LspService::hover - get_document");
-        let doc = editor_state.get_document(path.clone())?;
+        let doc = editor_state.get_document(path)?;
         let server = lsp_registry
             .get_language_server(doc)
             .ok_or(anyhow!("No language server"))?;
 
-        info!("LspService::hover - send hover request");
+        info!("LSP - send hover request");
         let response = server
             .send_request::<HoverRequest>(HoverParams {
                 text_document_position_params: TextDocumentPositionParams {
@@ -90,7 +88,6 @@ impl<R: Runtime> LspService<R> {
                 work_done_progress_params: Default::default(),
             })
             .await;
-        info!("LspService::hover - response: {:?}", response);
 
         response.ok_or(anyhow!("No response"))
     }

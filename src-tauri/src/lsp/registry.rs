@@ -3,6 +3,7 @@ use async_lsp_client::{LspServer, ServerMessage};
 use log::info;
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
+use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use tauri::{AppHandle, Manager, Runtime};
 use tokio::sync::mpsc::Receiver;
@@ -12,7 +13,7 @@ use crate::editor::editor_state::{Document, EditorState, Language};
 use crate::lsp::service::LspService;
 
 // One language server for each workspace and language
-pub type LanguageServerId = (String, Language);
+pub type LanguageServerId = (PathBuf, Language);
 
 pub struct LspRegistry<R: Runtime> {
     pub language_servers: HashMap<LanguageServerId, LspServer>,
@@ -37,34 +38,34 @@ impl<R: Runtime> LspRegistry<R> {
         let language = doc.language.clone()?;
         let path = doc.get_worktree_path();
         info!(
-            "LspRegistry::get_language_server (path={:?}, language={:?})",
+            "get language server (path={:?}, language={:?})",
             &path, &language
         );
 
         self.language_servers.get(&(path, language))
     }
 
-    pub async fn register_language_server(&mut self, path: String) -> anyhow::Result<()> {
+    pub async fn register_language_server(&mut self, path: &Path) -> anyhow::Result<()> {
         let lsp_service = self.app_handle.state::<Arc<LspService<R>>>();
 
         let editor_state = self.app_handle.state::<Arc<Mutex<EditorState>>>();
         let mut editor_state = editor_state.lock().await;
 
-        let doc = editor_state.get_document(path.clone())?.clone();
+        let doc = editor_state.get_document(path)?.clone();
         let language = doc.language.clone().ok_or(anyhow!("No language"))?;
         drop(editor_state);
 
         let workspace_path = doc.get_worktree_path();
-        info!(
-            "LspRegistry::register_language_server (wordspace_path={:?}, language={:?})",
-            &workspace_path, &language
-        );
 
         match self
             .language_servers
-            .entry((workspace_path, language.clone()))
+            .entry((workspace_path.clone(), language.clone()))
         {
             Entry::Vacant(entry) => {
+                info!(
+                    "register new language server (wordspace_path={:?}, language={:?})",
+                    &workspace_path, &language
+                );
                 let (server, rx) = Self::create_language_server(&language)?;
                 entry.insert(server.clone());
                 self.language_server_registered_tx.send(rx)?;
@@ -72,7 +73,10 @@ impl<R: Runtime> LspRegistry<R> {
                 lsp_service.open_document(&server, &doc).await?;
             }
             Entry::Occupied(entry) => {
-                info!("LspRegistry::register_language_server - language server already exists");
+                info!(
+                    "language server already exists (workspace_path={:?}, language={:?})",
+                    &workspace_path, &language
+                );
                 lsp_service.open_document(entry.get(), &doc).await?;
             }
         }
@@ -80,15 +84,14 @@ impl<R: Runtime> LspRegistry<R> {
         Ok(())
     }
 
-    fn create_language_server(language: &Language) -> anyhow::Result<(LspServer, Receiver<ServerMessage>)> {
-        info!(
-            "LspRegistry::create_language_server (language={:?})",
-            language
-        );
+    fn create_language_server(
+        language: &Language,
+    ) -> anyhow::Result<(LspServer, Receiver<ServerMessage>)> {
+        info!("create language server (language={:?})", language);
         match language.0.as_str() {
             "typescript" => Ok(LspServer::new("typescript-language-server", ["--stdio"])),
             "rust" => Ok(LspServer::new("rust-analyzer", [])),
-            _ => Err(anyhow!("No language server found"))
+            _ => Err(anyhow!("No language server found")),
         }
     }
 }
@@ -102,7 +105,7 @@ mod tests {
     use tokio::sync::Mutex;
 
     use crate::editor::editor_state::{EditorState, Language};
-    use crate::editor::testutil::{create_test_workspace, get_test_dir_as_string};
+    use crate::editor::testutil::{create_test_workspace, get_test_dir};
     use crate::lsp::registry::LspRegistry;
     use crate::lsp::service::LspService;
 
@@ -111,7 +114,7 @@ mod tests {
     async fn test_lsp_registry() {
         create_test_workspace();
 
-        let path = format!("{}/src/index.ts", get_test_dir_as_string()).to_string();
+        let path = get_test_dir().join("src").join("index.ts");
         let app = tauri::test::mock_builder()
             .build(tauri::generate_context!())
             .unwrap();
@@ -123,12 +126,15 @@ mod tests {
         app.manage(lsp_service);
 
         let mut lsp_registry = LspRegistry::new(app.app_handle().clone());
-        lsp_registry.register_language_server(path).await.unwrap();
+        lsp_registry
+            .register_language_server(path.as_ref())
+            .await
+            .unwrap();
 
         let language = Language("typescript".to_string());
 
         assert!(lsp_registry
             .language_servers
-            .contains_key(&(get_test_dir_as_string(), language)));
+            .contains_key(&(get_test_dir(), language)));
     }
 }
