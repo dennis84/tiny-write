@@ -8,8 +8,8 @@ use tauri::{AppHandle, Manager, Runtime};
 use tokio::sync::mpsc::Receiver;
 use tokio::sync::Mutex;
 
-use crate::editor_state::{Document, EditorState, Language};
-use crate::lsp_service::LspService;
+use crate::editor::editor_state::{Document, EditorState, Language};
+use crate::lsp::service::LspService;
 
 // One language server for each workspace and language
 pub type LanguageServerId = (String, Language);
@@ -101,10 +101,10 @@ mod tests {
     use tauri::Manager;
     use tokio::sync::Mutex;
 
-    use crate::editor_state::{EditorState, Language};
-    use crate::lsp_registry::LspRegistry;
-    use crate::lsp_service::LspService;
-    use crate::testutil::{create_test_workspace, get_test_dir_as_string};
+    use crate::editor::editor_state::{EditorState, Language};
+    use crate::editor::testutil::{create_test_workspace, get_test_dir_as_string};
+    use crate::lsp::registry::LspRegistry;
+    use crate::lsp::service::LspService;
 
     #[tokio::test]
     #[serial]

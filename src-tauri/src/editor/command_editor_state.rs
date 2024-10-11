@@ -3,7 +3,7 @@ use std::{sync::Arc, time::Duration};
 use tauri::{Runtime, Manager};
 use tokio::sync::Mutex;
 
-use crate::editor_state::EditorState;
+use crate::editor::editor_state::EditorState;
 
 #[derive(Clone, Debug, serde::Deserialize)]
 pub struct Insert {

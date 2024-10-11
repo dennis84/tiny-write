@@ -1,6 +1,6 @@
 use std::{fs::File, path::PathBuf};
 
-use crate::pathutil::{home_dir, path_buf_to_string};
+use crate::editor::pathutil::{home_dir, path_buf_to_string};
 
 pub fn create_test_workspace() {
     let _ = std::fs::remove_dir_all(get_test_dir());

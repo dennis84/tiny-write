@@ -1,4 +1,4 @@
-use crate::pathutil::{self as pu};
+use crate::editor::pathutil::{self as pu};
 use anyhow::anyhow;
 use globset::Glob;
 use ignore::WalkBuilder;
@@ -48,33 +48,13 @@ pub fn list_contents(path: String, base_path: Option<String>) -> tauri::Result<V
     Ok(files)
 }
 
-#[tauri::command]
-pub fn dirname(path: String) -> tauri::Result<String> {
-    Ok(pu::dirname(path).and_then(pu::path_buf_to_string)?)
-}
-
-#[tauri::command]
-pub fn resolve_path(path: String, base_path: Option<String>) -> tauri::Result<String> {
-    Ok(pu::resolve_path(path, base_path).and_then(pu::path_buf_to_string)?)
-}
-
-#[tauri::command]
-pub fn to_absolute_path(path: String, base_path: Option<String>) -> tauri::Result<String> {
-    Ok(pu::to_absolute_path(path, base_path).and_then(pu::path_buf_to_string)?)
-}
-
-#[tauri::command]
-pub fn to_relative_path(path: String, base_path: Option<String>) -> tauri::Result<String> {
-    Ok(pu::to_relative_path(path, base_path).and_then(pu::path_buf_to_string)?)
-}
-
 #[cfg(test)]
 mod tests {
     use serial_test::serial;
 
     use super::*;
 
-    use crate::testutil::{create_test_workspace, get_home_as_string};
+    use crate::editor::testutil::{create_test_workspace, get_home_as_string};
 
     #[test]
     #[serial]
@@ -88,7 +68,7 @@ mod tests {
 
         assert_eq!(
             list_contents("./src/m".to_string(), None).unwrap(),
-            vec!["./src/main.rs", "./src/menu.rs"]
+            vec!["./src/main.rs", "./src/menu"]
         );
 
         assert_eq!(
@@ -118,51 +98,5 @@ mod tests {
             .is_empty());
 
         assert!(!list_contents("".to_string(), None).unwrap().is_empty());
-    }
-
-    #[test]
-    fn test_to_relative_path() {
-        let test_base_path = format!("{}/foo", get_home_as_string());
-        let test_path = format!("{}/foo/bar", get_home_as_string());
-
-        assert_eq!(
-            to_relative_path(test_path.clone(), None).unwrap(),
-            "~/foo/bar".to_string()
-        );
-
-        assert_eq!(
-            to_relative_path(test_path.clone(), Some(test_base_path.clone())).unwrap(),
-            "./bar".to_string()
-        );
-
-        assert_eq!(
-            to_relative_path(test_base_path, Some(test_path)).unwrap(),
-            "~/foo".to_string()
-        );
-    }
-
-    #[test]
-    fn test_to_absolute_path() {
-        let test_base_path = format!("{}/foo", get_home_as_string());
-
-        assert_eq!(
-            to_absolute_path("~/foo/bar".to_string(), None).unwrap(),
-            format!("{}/foo/bar", get_home_as_string()).to_string()
-        );
-
-        assert_eq!(
-            to_absolute_path("~/../foo/bar".to_string(), None).unwrap(),
-            format!("{}/../foo/bar", get_home_as_string()).to_string()
-        );
-
-        assert_eq!(
-            to_absolute_path("./foo/bar".to_string(), Some(test_base_path)).unwrap(),
-            format!("{}/foo/foo/bar", get_home_as_string()).to_string()
-        );
-
-        assert_eq!(
-            to_absolute_path("./foo/bar".to_string(), Some("/".to_string())).unwrap(),
-            "/foo/bar".to_string()
-        );
     }
 }

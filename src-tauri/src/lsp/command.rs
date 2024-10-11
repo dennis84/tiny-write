@@ -3,7 +3,7 @@ use std::sync::Arc;
 use tauri::{AppHandle, Manager, Runtime};
 use lsp_types::Hover;
 
-use crate::lsp_service::LspService;
+use crate::lsp::service::LspService;
 
 #[tauri::command]
 pub async fn lsp_hover<R: Runtime>(

@@ -1,4 +1,4 @@
-use crate::pathutil::{dirname, expand_tilde, home_dir, path_buf_to_string, resolve_path};
+use crate::editor::pathutil::{dirname, expand_tilde, home_dir, path_buf_to_string, resolve_path};
 use anyhow::Result;
 use base64::{engine::general_purpose, Engine as _};
 use std::collections::HashMap;

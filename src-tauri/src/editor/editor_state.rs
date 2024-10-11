@@ -8,8 +8,8 @@ use std::ffi::OsStr;
 use std::path::{Path, PathBuf};
 use std::{fs::File, io::BufWriter};
 
-use crate::debouncer;
-use crate::pathutil::path_buf_to_string;
+use crate::editor::debouncer;
+use crate::editor::pathutil::path_buf_to_string;
 
 #[derive(Debug, Clone, PartialEq, Hash, Eq, Serialize, Deserialize)]
 pub struct Language(pub String);
@@ -149,8 +149,8 @@ impl EditorState {
 mod tests {
     use serial_test::serial;
 
-    use crate::editor_state::EditorState;
-    use crate::testutil::{create_test_workspace, get_test_dir_as_string};
+    use crate::editor::editor_state::EditorState;
+    use crate::editor::testutil::{create_test_workspace, get_test_dir_as_string};
 
     #[tokio::test]
     #[serial]

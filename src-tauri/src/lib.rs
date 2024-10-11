@@ -5,21 +5,16 @@ use tauri::Manager;
 use tauri_plugin_cli::CliExt;
 use tokio::sync::Mutex;
 
-use editor_state::EditorState;
-use lsp_registry::LspRegistry;
-use lsp_service::LspService;
+use editor::editor_state::EditorState;
+use lsp::registry::LspRegistry;
+use lsp::service::LspService;
 
-mod cmd;
-mod debouncer;
-mod editor_state;
+mod editor;
 mod install_cli;
-mod logger;
-mod lsp_registry;
-mod lsp_service;
+mod lsp;
 mod menu;
-mod pathutil;
-#[cfg(test)]
-mod testutil;
+mod fs;
+mod logger;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -69,11 +64,11 @@ pub fn run() {
                             .as_str()
                             .map(|s| s.to_string())
                             .unwrap_or_default();
-                        let args = cmd::args::create_args(source);
+                        let args = editor::command_args::create_args(source);
                         info!("Log dir: {}", log_dir_string);
                         app.manage(args);
                     } else {
-                        let args = cmd::args::create_args("".to_string());
+                        let args = editor::command_args::create_args("".to_string());
                         info!("Log dir: {}", log_dir_string);
                         app.manage(args);
                     }
@@ -150,19 +145,19 @@ pub fn run() {
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
-            cmd::args::get_args,
-            cmd::file::get_mime_type,
-            cmd::file::get_file_last_modified,
-            cmd::path::list_contents,
-            cmd::path::resolve_path,
-            cmd::path::dirname,
-            cmd::path::to_relative_path,
-            cmd::path::to_absolute_path,
-            cmd::editor::read_text,
-            cmd::editor::write_text,
-            cmd::editor::insert_text,
-            cmd::editor::delete_text,
-            cmd::lsp::lsp_hover,
+            editor::command_args::get_args,
+            fs::metadata::get_mime_type,
+            fs::metadata::get_file_last_modified,
+            fs::list::list_contents,
+            fs::path::resolve_path,
+            fs::path::dirname,
+            fs::path::to_relative_path,
+            fs::path::to_absolute_path,
+            editor::command_editor_state::read_text,
+            editor::command_editor_state::write_text,
+            editor::command_editor_state::insert_text,
+            editor::command_editor_state::delete_text,
+            lsp::command::lsp_hover,
         ])
         .run(tauri::generate_context!("tauri.conf.json"))
         .expect("error while running tauri application");

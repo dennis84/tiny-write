@@ -14,8 +14,8 @@ use lsp_types::{
 use tauri::{AppHandle, Manager, Runtime};
 use tokio::sync::Mutex;
 
-use crate::editor_state::{Document, EditorState};
-use crate::lsp_registry::LspRegistry;
+use crate::editor::editor_state::{Document, EditorState};
+use crate::lsp::registry::LspRegistry;
 
 pub struct LspService<R: Runtime> {
     pub app_handle: AppHandle<R>,
