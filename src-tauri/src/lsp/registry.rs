@@ -1,87 +1,82 @@
 use anyhow::anyhow;
 use async_lsp_client::{LspServer, ServerMessage};
 use log::info;
+use lsp_types::InitializeResult;
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
-use std::path::{Path, PathBuf};
-use std::sync::Arc;
-use tauri::{AppHandle, Manager, Runtime};
+use std::path::PathBuf;
 use tokio::sync::mpsc::Receiver;
-use tokio::sync::Mutex;
 
-use crate::editor::editor_state::{Document, EditorState, Language};
-use crate::lsp::service::LspService;
+use crate::editor::editor_state::{Document, Language};
 
 // One language server for each workspace and language
 pub type LanguageServerId = (PathBuf, Language);
 
-pub struct LspRegistry<R: Runtime> {
+pub struct LspRegistry {
     pub language_servers: HashMap<LanguageServerId, LspServer>,
+    pub language_server_configs: HashMap<LanguageServerId, InitializeResult>,
     pub language_server_registered_tx: crossbeam_channel::Sender<Receiver<ServerMessage>>,
     pub language_server_registered_rx: crossbeam_channel::Receiver<Receiver<ServerMessage>>,
-    pub app_handle: AppHandle<R>,
 }
 
-impl<R: Runtime> LspRegistry<R> {
-    pub fn new(app_handle: AppHandle<R>) -> Self {
+impl LspRegistry {
+    pub fn new() -> Self {
         let (language_server_registered_tx, language_server_registered_rx) =
             crossbeam_channel::unbounded();
         Self {
             language_servers: HashMap::new(),
+            language_server_configs: HashMap::new(),
             language_server_registered_tx,
             language_server_registered_rx,
-            app_handle,
         }
     }
 
     pub fn get_language_server(&mut self, doc: &Document) -> Option<&LspServer> {
-        let language = doc.language.clone()?;
-        let path = doc.get_worktree_path();
-        info!(
-            "get language server (path={:?}, language={:?})",
-            &path, &language
-        );
-
-        self.language_servers.get(&(path, language))
+        self.language_servers
+            .get(&self.get_language_server_id(doc)?)
     }
 
-    pub async fn register_language_server(&mut self, path: &Path) -> anyhow::Result<()> {
-        let lsp_service = self.app_handle.state::<Arc<LspService<R>>>();
+    pub fn get_language_server_config(&mut self, doc: &Document) -> Option<&InitializeResult> {
+        self.language_server_configs
+            .get(&self.get_language_server_id(doc)?)
+    }
 
-        let editor_state = self.app_handle.state::<Arc<Mutex<EditorState>>>();
-        let mut editor_state = editor_state.lock().await;
+    pub fn register_language_server(
+        &mut self,
+        doc: &Document,
+    ) -> anyhow::Result<(LspServer, bool)> {
+        let language_server_id = self
+            .get_language_server_id(doc)
+            .ok_or(anyhow!("No language"))?;
 
-        let doc = editor_state.get_document(path)?.clone();
-        let language = doc.language.clone().ok_or(anyhow!("No language"))?;
-        drop(editor_state);
-
-        let workspace_path = doc.get_worktree_path();
-
-        match self
-            .language_servers
-            .entry((workspace_path.clone(), language.clone()))
-        {
+        match self.language_servers.entry(language_server_id.clone()) {
             Entry::Vacant(entry) => {
                 info!(
-                    "register new language server (wordspace_path={:?}, language={:?})",
-                    &workspace_path, &language
+                    "register new language server (id={:?})",
+                    &language_server_id
                 );
-                let (server, rx) = Self::create_language_server(&language)?;
-                entry.insert(server.clone());
+                let (server, rx) = Self::create_language_server(&language_server_id.1)?;
+                let server = entry.insert(server.clone());
                 self.language_server_registered_tx.send(rx)?;
-                lsp_service.initialize(&server, &doc).await?;
-                lsp_service.open_document(&server, &doc).await?;
+                Ok((server.clone(), true))
             }
             Entry::Occupied(entry) => {
                 info!(
-                    "language server already exists (workspace_path={:?}, language={:?})",
-                    &workspace_path, &language
+                    "language server already exists (id={:?})",
+                    &language_server_id
                 );
-                lsp_service.open_document(entry.get(), &doc).await?;
+                Ok((entry.get().clone(), false))
             }
         }
+    }
 
-        Ok(())
+    pub fn set_language_server_config(
+        &mut self,
+        doc: &Document,
+        config: InitializeResult,
+    ) -> Option<InitializeResult> {
+        self.language_server_configs
+            .insert(self.get_language_server_id(doc)?, config)
     }
 
     fn create_language_server(
@@ -94,20 +89,22 @@ impl<R: Runtime> LspRegistry<R> {
             _ => Err(anyhow!("No language server found")),
         }
     }
+
+    fn get_language_server_id(&self, doc: &Document) -> Option<LanguageServerId> {
+        let language = doc.language.clone()?;
+        let path = doc.get_worktree_path();
+        Some((path, language))
+    }
 }
 
 #[cfg(test)]
 mod tests {
-    use std::sync::Arc;
-
+    use ropey::Rope;
     use serial_test::serial;
-    use tauri::Manager;
-    use tokio::sync::Mutex;
 
-    use crate::editor::editor_state::{EditorState, Language};
+    use crate::editor::editor_state::{Document, Language};
     use crate::editor::testutil::{create_test_workspace, get_test_dir};
     use crate::lsp::registry::LspRegistry;
-    use crate::lsp::service::LspService;
 
     #[tokio::test]
     #[serial]
@@ -115,21 +112,18 @@ mod tests {
         create_test_workspace();
 
         let path = get_test_dir().join("src").join("index.ts");
-        let app = tauri::test::mock_builder()
-            .build(tauri::generate_context!())
-            .unwrap();
+        let language = Language("typescript".to_string());
 
-        let editor_state = Arc::new(Mutex::new(EditorState::new()));
-        app.manage(editor_state);
+        let doc = Document {
+            path,
+            worktree_path: Some(get_test_dir()),
+            language: Some(language.clone()),
+            text: Rope::new(),
+            changed: false,
+        };
 
-        let lsp_service = Arc::new(LspService::new(app.app_handle().clone()));
-        app.manage(lsp_service);
-
-        let mut lsp_registry = LspRegistry::new(app.app_handle().clone());
-        lsp_registry
-            .register_language_server(path.as_ref())
-            .await
-            .unwrap();
+        let mut lsp_registry = LspRegistry::new();
+        lsp_registry.register_language_server(&doc).unwrap();
 
         let language = Language("typescript".to_string());
 

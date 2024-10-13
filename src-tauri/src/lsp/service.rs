@@ -10,7 +10,8 @@ use lsp_types::{
     TextDocumentPositionParams, Url,
 };
 use lsp_types::{
-    DidOpenTextDocumentParams, Hover, InitializeParams, TextDocumentItem, WorkspaceFolder,
+    DidOpenTextDocumentParams, Hover, InitializeParams, InitializeResult, TextDocumentItem,
+    WorkspaceFolder,
 };
 use tauri::{AppHandle, Manager, Runtime};
 use tokio::sync::Mutex;
@@ -27,11 +28,38 @@ impl<R: Runtime> LspService<R> {
         LspService { app_handle }
     }
 
-    pub async fn initialize(&self, server: &LspServer, doc: &Document) -> anyhow::Result<()> {
+    pub async fn register_language_server(&self, path: &Path) -> anyhow::Result<()> {
+        let editor_state = self.app_handle.state::<Arc<Mutex<EditorState>>>();
+        let mut editor_state = editor_state.lock().await;
+
+        let lsp_registry = self.app_handle.state::<Arc<Mutex<LspRegistry>>>();
+        let mut lsp_registry = lsp_registry.lock().await;
+
+        let doc = editor_state.get_document(path)?;
+        match lsp_registry.register_language_server(doc)? {
+            (server, true) => {
+                let result = self.initialize(&server, doc).await?;
+                let _ = lsp_registry.set_language_server_config(doc, result);
+                self.initialized(&server).await?;
+                self.open_document(&server, doc).await?;
+            }
+            (server, false) => {
+                self.open_document(&server, doc).await?;
+            }
+        }
+
+        Ok(())
+    }
+
+    pub async fn initialize(
+        &self,
+        server: &LspServer,
+        doc: &Document,
+    ) -> anyhow::Result<InitializeResult> {
         info!("LSP - initialize doc");
         let root_uri = lsp_types::Url::from_file_path(doc.get_worktree_path())
             .map_err(|_| anyhow!("invalid root_uri"))?;
-        server
+        let result = server
             .initialize(InitializeParams {
                 root_uri: Some(root_uri.clone()),
                 workspace_folders: Some(vec![WorkspaceFolder {
@@ -41,7 +69,10 @@ impl<R: Runtime> LspService<R> {
                 ..InitializeParams::default()
             })
             .await;
+        Ok(result)
+    }
 
+    pub async fn initialized(&self, server: &LspServer) -> anyhow::Result<()> {
         info!("LSP - send initialized notification");
         server.initialized().await;
         Ok(())
@@ -68,7 +99,7 @@ impl<R: Runtime> LspService<R> {
         let editor_state = self.app_handle.state::<Arc<Mutex<EditorState>>>();
         let mut editor_state = editor_state.lock().await;
 
-        let lsp_registry = self.app_handle.state::<Arc<Mutex<LspRegistry<R>>>>();
+        let lsp_registry = self.app_handle.state::<Arc<Mutex<LspRegistry>>>();
         let mut lsp_registry = lsp_registry.lock().await;
 
         let doc = editor_state.get_document(path)?;

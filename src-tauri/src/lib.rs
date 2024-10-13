@@ -81,10 +81,9 @@ pub fn run() {
 
             menu::setup_menu(handle)?;
 
-            let lsp_registry = LspRegistry::new(handle.clone());
+            let lsp_registry = LspRegistry::new();
             let language_server_registered_rx = lsp_registry.language_server_registered_rx.clone();
             let lsp_registry = Arc::new(Mutex::new(lsp_registry));
-            let lsp_registry_2 = Arc::clone(&lsp_registry);
             app.manage(lsp_registry);
 
             let editor_state = EditorState::new();
@@ -96,6 +95,7 @@ pub fn run() {
 
             let lsp_service = LspService::new(handle.clone());
             let lsp_service = Arc::new(lsp_service);
+            let lsp_service_2 = Arc::clone(&lsp_service);
             app.manage(lsp_service);
 
             tauri::async_runtime::spawn(async move {
@@ -111,9 +111,7 @@ pub fn run() {
             tauri::async_runtime::spawn(async move {
                 loop {
                     if let Ok(path) = open_doc_rx.recv() {
-                        let mut lsp_registry = lsp_registry_2.lock().await;
-                        let _ = lsp_registry.register_language_server(path.as_ref()).await;
-                        drop(lsp_registry);
+                        let _ = lsp_service_2.register_language_server(path.as_ref()).await;
                     }
                 }
             });
