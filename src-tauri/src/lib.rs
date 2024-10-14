@@ -156,6 +156,7 @@ pub fn run() {
             editor::command_editor_state::delete_text,
             lsp::command::lsp_hover,
             lsp::command::lsp_completion,
+            lsp::command::lsp_goto,
         ])
         .run(tauri::generate_context!("tauri.conf.json"))
         .expect("error while running tauri application");

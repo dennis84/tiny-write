@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use lsp_types::{CompletionResponse, Hover};
+use lsp_types::{CompletionResponse, GotoDefinitionResponse, Hover};
 use tauri::{path::SafePathBuf, AppHandle, Manager, Runtime};
 
 use crate::lsp::service::LspService;
@@ -24,8 +24,17 @@ pub async fn lsp_completion<R: Runtime>(
     app_handle: AppHandle<R>,
 ) -> tauri::Result<CompletionResponse> {
     let lsp_service = app_handle.state::<Arc<LspService<R>>>();
-    let result = lsp_service
-        .completion(path.as_ref(), pos, trigger)
-        .await?;
+    let result = lsp_service.completion(path.as_ref(), pos, trigger).await?;
+    Ok(result)
+}
+
+#[tauri::command]
+pub async fn lsp_goto<R: Runtime>(
+    path: SafePathBuf,
+    pos: usize,
+    app_handle: AppHandle<R>,
+) -> tauri::Result<GotoDefinitionResponse> {
+    let lsp_service = app_handle.state::<Arc<LspService<R>>>();
+    let result = lsp_service.goto(path.as_ref(), pos).await?;
     Ok(result)
 }

@@ -176,6 +176,11 @@ export const lspCompletion = async (path: string, pos: number, trigger: string) 
   return (await invoke('lsp_completion', {path, pos, trigger}))
 }
 
+export const lspGoto = async (path: string, pos: number) => {
+  if (!isTauri()) throw Error('Must be run in tauri: lspGoto')
+  return (await invoke('lsp_goto', {path, pos}))
+}
+
 export const debug = (msg: string, ...data: any[]) => {
   if (isTauri()) void logger.debug(msg)
   console.debug(msg, ...data)

@@ -6,15 +6,16 @@ use anyhow::anyhow;
 use async_lsp_client::LspServer;
 use log::info;
 use lsp_types::notification::{DidChangeTextDocument, DidOpenTextDocument};
-use lsp_types::request::Completion;
+use lsp_types::request::{Completion, GotoDefinition};
 use lsp_types::{
     request::HoverRequest, HoverParams, Position, Range, TextDocumentIdentifier,
     TextDocumentPositionParams, Url,
 };
 use lsp_types::{
     CompletionContext, CompletionParams, CompletionResponse, CompletionTriggerKind,
-    DidChangeTextDocumentParams, DidOpenTextDocumentParams, Hover, InitializeParams,
-    InitializeResult, TextDocumentContentChangeEvent, TextDocumentItem, TextDocumentSyncCapability,
+    DidChangeTextDocumentParams, DidOpenTextDocumentParams, GotoDefinitionParams,
+    GotoDefinitionResponse, Hover, InitializeParams, InitializeResult,
+    TextDocumentContentChangeEvent, TextDocumentItem, TextDocumentSyncCapability,
     TextDocumentSyncKind, VersionedTextDocumentIdentifier, WorkspaceFolder,
 };
 use ropey::Rope;
@@ -253,10 +254,39 @@ impl<R: Runtime> LspService<R> {
                 partial_result_params: Default::default(),
             })
             .await;
-        println!("AAAAAAAAAAAA: {:?}", response);
 
         drop(lsp_registry);
         drop(editor_state);
+
+        response.ok_or(anyhow!("No response"))
+    }
+
+    pub async fn goto(&self, path: &Path, pos: usize) -> anyhow::Result<GotoDefinitionResponse> {
+        let editor_state = self.app_handle.state::<Arc<Mutex<EditorState>>>();
+        let mut editor_state = editor_state.lock().await;
+
+        let lsp_registry = self.app_handle.state::<Arc<Mutex<LspRegistry>>>();
+        let lsp_registry = lsp_registry.lock().await;
+
+        let doc = editor_state.get_document(path)?;
+
+        let server = lsp_registry
+            .get_language_server(doc)
+            .ok_or(anyhow!("No language server"))?;
+
+        info!("LSP - goto definition request (pos={})", pos);
+        let file_uri = Url::from_file_path(path).unwrap();
+
+        let response = server
+            .send_request::<GotoDefinition>(GotoDefinitionParams {
+                text_document_position_params: TextDocumentPositionParams::new(
+                    TextDocumentIdentifier::new(file_uri),
+                    Self::pos_to_lsp_pos(&doc.text, pos),
+                ),
+                work_done_progress_params: Default::default(),
+                partial_result_params: Default::default(),
+            })
+            .await;
 
         response.ok_or(anyhow!("No response"))
     }
