@@ -8,11 +8,8 @@ export const lspHoverSource =
   (path: string): HoverTooltipSource =>
   async (view: EditorView, pos: number) => {
     const word = view.state.wordAt(pos) ?? {from: pos, to: pos}
-    const line = view.state.doc.lineAt(word.from)
-    const row = line.number - 1
-    const column = word.from - line.from
 
-    const response = await lspHover(path, row, column)
+    const response = await lspHover(path, pos)
     const text = (response as any)?.contents?.value?.trim()
     if (!text) return null
 

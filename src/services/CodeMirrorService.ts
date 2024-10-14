@@ -28,6 +28,7 @@ import {getTheme} from '@/codemirror/theme'
 import {highlight} from '@/codemirror/highlight'
 import {findWords, tabCompletionKeymap} from '@/codemirror/completion'
 import {mermaidKeywords} from '@/codemirror/mermaid'
+import {lspCompletionSource} from '@/codemirror/lsp-completion'
 import {lspHoverSource} from '@/codemirror/lsp-hover'
 import {Mode, PrettierConfig, State} from '@/state'
 import {isTauri} from '@/env'
@@ -56,6 +57,7 @@ export class CodeMirrorService {
       lang: new Compartment(),
       findWords: new Compartment(),
       keywords: new Compartment(),
+      lsp: new Compartment(),
     }
 
     const theme = getTheme(this.configService.codeTheme.value)
@@ -80,7 +82,9 @@ export class CodeMirrorService {
           '\t'
         : ' '.repeat(this.configService.prettier.tabWidth),
       ),
-      autocompletion(),
+      autocompletion({
+        override: props.path && isTauri() ? [lspCompletionSource(props.path)] : undefined,
+      }),
       EditorView.lineWrapping,
     ]
 
@@ -102,7 +106,9 @@ export class CodeMirrorService {
     }
 
     if (props.path && isTauri()) {
-      extensions.push(hoverTooltip(lspHoverSource(props.path), {hoverTime: 600}))
+      extensions.push([
+        hoverTooltip(lspHoverSource(props.path), {hoverTime: 600}),
+      ])
     }
 
     if (this.store.mode !== Mode.Canvas) {

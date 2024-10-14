@@ -31,12 +31,12 @@ impl LspRegistry {
         }
     }
 
-    pub fn get_language_server(&mut self, doc: &Document) -> Option<&LspServer> {
+    pub fn get_language_server(&self, doc: &Document) -> Option<&LspServer> {
         self.language_servers
             .get(&self.get_language_server_id(doc)?)
     }
 
-    pub fn get_language_server_config(&mut self, doc: &Document) -> Option<&InitializeResult> {
+    pub fn get_language_server_config(&self, doc: &Document) -> Option<&InitializeResult> {
         self.language_server_configs
             .get(&self.get_language_server_id(doc)?)
     }
@@ -120,6 +120,7 @@ mod tests {
             language: Some(language.clone()),
             text: Rope::new(),
             changed: false,
+            version: 0,
         };
 
         let mut lsp_registry = LspRegistry::new();

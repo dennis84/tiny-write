@@ -20,6 +20,7 @@ pub struct Document {
     pub text: Rope,
     pub changed: bool,
     pub language: Option<Language>,
+    pub version: i32,
 }
 
 impl Document {
@@ -72,6 +73,7 @@ impl EditorState {
                     changed: false,
                     worktree_path,
                     language,
+                    version: 0,
                 };
                 Ok(map.insert(doc))
             }
@@ -97,6 +99,7 @@ impl EditorState {
                     changed: false,
                     worktree_path,
                     language,
+                    version: 0,
                 };
                 Ok(map.insert(doc))
             }

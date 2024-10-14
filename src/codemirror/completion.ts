@@ -28,7 +28,7 @@ export const findWords: CompletionSource = (context) => {
   } while (c.next())
 
   const options = words.map((label) => ({
-    label,
+    label: label,
     type: 'word',
   }))
 
