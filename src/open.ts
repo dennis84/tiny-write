@@ -52,5 +52,12 @@ export const useOpen = () => {
     navigate('/dir', {state})
   }
 
-  return {open, openDir}
+  const openFile = (file: string, selection?: any, back = false) => {
+    info(`Redirect to (to=/)`)
+    const prev = back ? location.pathname : undefined
+    const state = {prev, file, selection}
+    navigate('/', {state})
+  }
+
+  return {open, openDir, openFile}
 }

@@ -18,9 +18,9 @@ interface Props {
 }
 
 export const BlockTooltip = (props: Props) => {
-  const {appService, editorService, fileService} = useState()
+  const {store, appService, editorService, fileService} = useState()
   const [tooltipAnchor, setTooltipAnchor] = createSignal<ReferenceElement | undefined>()
-  const {open} = useOpen()
+  const {openFile} = useOpen()
 
   const closeTooltip = () => {
     props.resetBlock()
@@ -198,16 +198,7 @@ export const BlockTooltip = (props: Props) => {
 
     const basePath = await appService.getBasePath()
     const path = await remote.resolvePath(href, basePath)
-    const mime = await remote.getMimeType(path)
-
-    if (mime.startsWith('text/')) {
-      let file = await fileService.findFileByPath(path)
-      if (!file) file = await editorService.newFile({path})
-      open(file)
-    } else {
-      await remote.open(path)
-    }
-
+    openFile(path, undefined, true)
     closeTooltip()
   }
 

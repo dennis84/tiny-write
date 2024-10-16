@@ -19,6 +19,7 @@ export interface Args {
   cwd?: string
   source?: string
   file?: string
+  selection?: {anchor: number, head?: number},
   newFile?: string
   room?: string
   text?: string

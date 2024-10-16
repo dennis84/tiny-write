@@ -25,6 +25,7 @@ use tokio::sync::Mutex;
 
 use crate::editor::editor_state::{Document, EditorState};
 use crate::lsp::registry::LspRegistry;
+use crate::lsp::util::pos_to_lsp_pos;
 
 pub struct LspService<R: Runtime> {
     pub app_handle: AppHandle<R>,
@@ -181,7 +182,7 @@ impl<R: Runtime> LspService<R> {
                     text_document: TextDocumentIdentifier {
                         uri: Url::from_file_path(path).unwrap(),
                     },
-                    position: Self::pos_to_lsp_pos(&doc.text, pos),
+                    position: pos_to_lsp_pos(&doc.text, pos),
                 },
                 work_done_progress_params: Default::default(),
             })
@@ -244,7 +245,7 @@ impl<R: Runtime> LspService<R> {
             .send_request::<Completion>(CompletionParams {
                 text_document_position: TextDocumentPositionParams::new(
                     TextDocumentIdentifier::new(file_uri),
-                    Self::pos_to_lsp_pos(&doc.text, pos),
+                    pos_to_lsp_pos(&doc.text, pos),
                 ),
                 context: Some(CompletionContext {
                     trigger_kind,
@@ -281,7 +282,7 @@ impl<R: Runtime> LspService<R> {
             .send_request::<GotoDefinition>(GotoDefinitionParams {
                 text_document_position_params: TextDocumentPositionParams::new(
                     TextDocumentIdentifier::new(file_uri),
-                    Self::pos_to_lsp_pos(&doc.text, pos),
+                    pos_to_lsp_pos(&doc.text, pos),
                 ),
                 work_done_progress_params: Default::default(),
                 partial_result_params: Default::default(),
@@ -289,13 +290,5 @@ impl<R: Runtime> LspService<R> {
             .await;
 
         response.ok_or(anyhow!("No response"))
-    }
-
-    fn pos_to_lsp_pos(doc: &Rope, pos: usize) -> Position {
-        let line = doc.char_to_line(pos);
-        let line_start = doc.line_to_byte(line);
-        let col = doc.char_to_byte(pos) - line_start;
-
-        Position::new(line as u32, col as u32)
     }
 }

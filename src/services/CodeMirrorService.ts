@@ -42,6 +42,7 @@ interface CreateEditor {
   doc?: string
   extensions?: Extension[]
   path?: string
+  selection?: {anchor: number, head?: number}
 }
 
 export class CodeMirrorService {
@@ -131,6 +132,7 @@ export class CodeMirrorService {
       parent: props.parent,
       doc: props.doc,
       extensions,
+      selection: props.selection,
     })
 
     return {editorView, compartments}

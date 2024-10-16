@@ -116,6 +116,7 @@ export class CodeService {
       doc: type.toString(),
       lang: file.codeLang,
       path: file.path,
+      selection: this.store.args?.selection,
       extensions: [
         EditorView.updateListener.of((update) => this.onUpdate(file, update)),
         yCollab(type, this.store.collab?.provider.awareness, {undoManager: false}),
@@ -125,6 +126,7 @@ export class CodeService {
     this.collabService.undoManager?.addTrackedOrigin(editor.editorView.state.facet(ySyncFacet))
 
     const fileIndex = this.store.files.findIndex((f) => f.id === file.id)
+    console.log('set code editor view')
     this.setState('files', fileIndex, 'codeEditorView', editor.editorView)
   }
 

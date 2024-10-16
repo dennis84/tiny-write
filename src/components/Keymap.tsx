@@ -15,7 +15,7 @@ export const Keymap = () => {
     canvasService,
     canvasCollabService,
   } = useState()
-  const {open} = useOpen()
+  const {open, openFile} = useOpen()
 
   onMount(() => {
     document.addEventListener('keydown', onKeyDown)
@@ -123,8 +123,20 @@ export const Keymap = () => {
 
     const sel = codeEditorView.state.selection.main
 
-    const response = await remote.lspGoto(path, sel.from)
-    remote.info(`LSP: goto response`, response)
+    const response = (await remote.lspGoto(path, sel.from)) as any
+
+    const first = response?.[0] // file:///Users/../file.ts
+    if (!first) return
+    console.log({first})
+
+    const url = new URL(first.uri)
+    const anchor = codeEditorView.state.doc.line(first.range.start.line).from + first.range.start.character
+    const head = codeEditorView.state.doc.line(first.range.end.line).from + first.range.end.character
+
+    const file = url.pathname
+    const selection = {anchor, head}
+
+    openFile(file, selection)
   }
 
   type Fn = (e: KeyboardEvent) => boolean | void | Promise<boolean | void>
