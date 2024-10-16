@@ -127,14 +127,11 @@ export const Keymap = () => {
 
     const first = response?.[0] // file:///Users/../file.ts
     if (!first) return
-    console.log({first})
 
     const url = new URL(first.uri)
-    const anchor = codeEditorView.state.doc.line(first.range.start.line).from + first.range.start.character
-    const head = codeEditorView.state.doc.line(first.range.end.line).from + first.range.end.character
 
     const file = url.pathname
-    const selection = {anchor, head}
+    const selection = first.range
 
     openFile(file, selection)
   }

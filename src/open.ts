@@ -7,6 +7,7 @@ import {
   isEditorElement,
   isFile,
   Openable,
+  VisualPositionRange,
 } from './state'
 import {info} from './remote'
 
@@ -52,7 +53,7 @@ export const useOpen = () => {
     navigate('/dir', {state})
   }
 
-  const openFile = (file: string, selection?: any, back = false) => {
+  const openFile = (file: string, selection?: VisualPositionRange, back = false) => {
     info(`Redirect to (to=/)`)
     const prev = back ? location.pathname : undefined
     const state = {prev, file, selection}

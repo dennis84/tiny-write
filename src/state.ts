@@ -13,13 +13,29 @@ export interface LocationState {
   prev?: string // prev location pathname
   file?: string
   newFile?: string
+  selection?: VisualPositionRange
+}
+
+export interface VisualPosition {
+  line: number
+  character: number
+}
+
+export interface VisualPositionRange {
+  start: VisualPosition
+  end?: VisualPosition
+}
+
+export interface SelectionRange {
+  anchor: number
+  head?: number
 }
 
 export interface Args {
   cwd?: string
   source?: string
   file?: string
-  selection?: {anchor: number, head?: number},
+  selection?: VisualPositionRange,
   newFile?: string
   room?: string
   text?: string

@@ -2,7 +2,7 @@ import {SetStoreFunction, Store, unwrap} from 'solid-js/store'
 import {EditorView, ViewUpdate} from '@codemirror/view'
 import * as Y from 'yjs'
 import {yCollab, ySyncFacet} from 'y-codemirror.next'
-import {File, State} from '@/state'
+import {File, SelectionRange, State, VisualPositionRange} from '@/state'
 import * as remote from '@/remote'
 import {FileService, OpenFile} from './FileService'
 import {CollabService} from './CollabService'
@@ -116,17 +116,22 @@ export class CodeService {
       doc: type.toString(),
       lang: file.codeLang,
       path: file.path,
-      selection: this.store.args?.selection,
       extensions: [
         EditorView.updateListener.of((update) => this.onUpdate(file, update)),
         yCollab(type, this.store.collab?.provider.awareness, {undoManager: false}),
       ],
     })
 
+    if (this.store.args?.selection) {
+      editor.editorView.dispatch({
+        selection: this.createSelection(editor.editorView, this.store.args.selection),
+        scrollIntoView: true,
+      })
+    }
+
     this.collabService.undoManager?.addTrackedOrigin(editor.editorView.state.facet(ySyncFacet))
 
     const fileIndex = this.store.files.findIndex((f) => f.id === file.id)
-    console.log('set code editor view')
     this.setState('files', fileIndex, 'codeEditorView', editor.editorView)
   }
 
@@ -155,6 +160,19 @@ export class CodeService {
           remote.insertText(file.path!, {from: fromA, text})
         }
       })
+    }
+  }
+
+  private createSelection(view: EditorView, range: VisualPositionRange): SelectionRange {
+    const anchor = view.state.doc.line(range.start.line).from + range.start.character + 1
+    let head
+    if (range.end) {
+      head = view.state.doc.line(range.end.line).from + range.end.character + 1
+    }
+
+    return {
+      anchor,
+      head
     }
   }
 }
