@@ -1,9 +1,9 @@
 import {onCleanup, onMount} from 'solid-js'
-import {useNavigate} from '@solidjs/router'
 import {keyName} from 'w3c-keyname'
 import {isCodeElement, isEditorElement, Mode, useState} from '@/state'
 import {isTauri, mod} from '@/env'
 import * as remote from '@/remote'
+import {useOpen} from '@/open'
 
 export const Keymap = () => {
   const {
@@ -15,7 +15,7 @@ export const Keymap = () => {
     canvasService,
     canvasCollabService,
   } = useState()
-  const navigate = useNavigate()
+  const {open} = useOpen()
 
   onMount(() => {
     document.addEventListener('keydown', onKeyDown)
@@ -46,7 +46,7 @@ export const Keymap = () => {
   const onNew = async () => {
     if (store.mode === Mode.Editor) {
       const file = await editorService.newFile()
-      navigate(`/editor/${file.id}`)
+      open(file)
     } else {
       const el = await canvasService.newFile()
       if (el) canvasCollabService.addElement(el)

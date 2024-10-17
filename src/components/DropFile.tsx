@@ -1,14 +1,14 @@
 import {onCleanup, onMount} from 'solid-js'
 import {createMutable} from 'solid-js/store'
-import {useNavigate} from '@solidjs/router'
 import {getCurrentWindow} from '@tauri-apps/api/window'
 import {isTauri} from '@/env'
 import {info} from '@/remote'
 import {useState} from '@/state'
+import {useOpen} from '@/open'
 
 export const DropFile = () => {
   const {mediaService} = useState()
-  const navigate = useNavigate()
+  const {open} = useOpen()
   const mouseEnterCoords = createMutable({x: 0, y: 0})
 
   const onDragOver = (e: DragEvent) => {
@@ -27,9 +27,7 @@ export const DropFile = () => {
         for (const path of event.payload.paths) {
           const {x, y} = event.payload.position
           const result = await mediaService.dropPath(path, [x, y])
-          if (result?.file) {
-            navigate(`/${result.file.code ? 'code' : 'editor'}/${result.file.id}`)
-          }
+          if (result?.file) open(result.file)
         }
       } else {
         info('🔗 File drop cancelled')

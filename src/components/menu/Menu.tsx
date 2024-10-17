@@ -1,8 +1,8 @@
 import {Show, createEffect, createSignal, onCleanup} from 'solid-js'
-import {useNavigate} from '@solidjs/router'
 import {Mode, useState} from '@/state'
 import {isTauri, isMac, mod, shortHash, version, VERSION_URL, isDev} from '@/env'
 import * as remote from '@/remote'
+import {useOpen} from '@/open'
 import {Bin} from './Bin'
 import {CodeFormat} from './CodeFormat'
 import {Appearance} from './Appearance'
@@ -20,7 +20,7 @@ import {fullWidth, Burger, Container, Drawer, Keys, Label, Link, Sub} from './St
 export const Menu = () => {
   const {store, appService, configService, fileService, prettierService} = useState()
   const [show, setShow] = createSignal()
-  const navigate = useNavigate()
+  const {open} = useOpen()
 
   const modKey = isMac ? '⌘' : mod
 
@@ -58,7 +58,7 @@ export const Menu = () => {
 
   const onReset = async () => {
     await appService.reset()
-    navigate('/')
+    open(undefined)
   }
 
   const maybeHide = () => {

@@ -1,10 +1,10 @@
 import {For, Match, Show, Switch, createEffect, createSignal, onCleanup, onMount} from 'solid-js'
 import {Portal} from 'solid-js/web'
 import {unwrap} from 'solid-js/store'
-import {useNavigate} from '@solidjs/router'
 import {styled} from 'solid-styled-components'
 import {DragGesture} from '@use-gesture/vanilla'
 import {Mode, isCanvas, isCodeFile, isFile, useState} from '@/state'
+import {useOpen} from '@/open'
 import {TreeNode, TreeNodeItem} from '@/services/TreeService'
 import {FileService} from '@/services/FileService'
 import {CanvasService} from '@/services/CanvasService'
@@ -161,7 +161,7 @@ export const SubmenuTree = (props: Props) => {
   const [tooltipAnchor, setTooltipAnchor] = createSignal<HTMLElement | undefined>()
   const [selected, setSelected] = createSignal<TreeNode>()
   const [grabbing, setGrabbing] = createSignal(false)
-  const navigate = useNavigate()
+  const {open} = useOpen()
 
   const isNode = (node: TreeNode) => dropState()?.targetId === node.item.id
 
@@ -198,7 +198,7 @@ export const SubmenuTree = (props: Props) => {
 
   const onNewFile = async () => {
     const file = await editorService.newFile()
-    navigate(`/editor/${file.id}`)
+    open(file)
     treeService.create()
     closeTooltip()
     props.maybeHide?.()
@@ -206,7 +206,7 @@ export const SubmenuTree = (props: Props) => {
 
   const onNewCanvas = async () => {
     const canvas = await canvasService.newCanvas()
-    navigate(`/canvas/${canvas.id}`)
+    open(canvas)
     treeService.create()
     closeTooltip()
     props.maybeHide?.()
@@ -214,7 +214,7 @@ export const SubmenuTree = (props: Props) => {
 
   const onNewCode = async () => {
     const file = await codeService.newFile()
-    navigate(`/code/${file.id}`)
+    open(file)
     treeService.create()
     closeTooltip()
     props.maybeHide?.()
@@ -229,7 +229,7 @@ export const SubmenuTree = (props: Props) => {
       await treeService.collapse(target)
     }
 
-    navigate(`/editor/${file.id}`)
+    open(file)
     closeTooltip()
   }
 
@@ -238,7 +238,7 @@ export const SubmenuTree = (props: Props) => {
     if (!target) return
     const canvas = await canvasService.newCanvas()
     await treeService.add({item: canvas, tree: []}, target)
-    navigate(`/canvas/${canvas.id}`)
+    open(canvas)
     closeTooltip()
   }
 
@@ -247,7 +247,7 @@ export const SubmenuTree = (props: Props) => {
     if (!target) return
     const file = await codeService.newFile()
     await treeService.add({item: file, tree: []}, target)
-    navigate(`/code/${file.id}`)
+    open(file)
     closeTooltip()
   }
 
@@ -255,7 +255,7 @@ export const SubmenuTree = (props: Props) => {
     const node = unwrap(selected())
     if (!node) return
     const result = await deleteService.delete(node)
-    if (result.navigateTo) navigate(result.navigateTo)
+    if (result.navigateTo) open(result.navigateTo)
     closeTooltip()
   }
 
@@ -263,7 +263,7 @@ export const SubmenuTree = (props: Props) => {
     const node = unwrap(selected())
     if (!node) return
     const result = await deleteService.delete(node, true)
-    if (result.navigateTo) navigate(result.navigateTo)
+    if (result.navigateTo) open(result.navigateTo)
     closeTooltip()
   }
 
@@ -303,14 +303,7 @@ export const SubmenuTree = (props: Props) => {
     const [title, setTitle] = createSignal<string>()
 
     const onClick = async () => {
-      if (isCodeFile(p.node.item)) {
-        navigate(`/code/${p.node.item.id}`)
-      } else if (isFile(p.node.item)) {
-        navigate(`/editor/${p.node.item.id}`)
-      } else {
-        navigate(`/canvas/${p.node.item.id}`)
-      }
-
+      open(p.node.item)
       props.maybeHide?.()
     }
 

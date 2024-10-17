@@ -1,5 +1,5 @@
-import {useNavigate} from '@solidjs/router'
 import {useState} from '@/state'
+import {useOpen} from '@/open'
 import {Button, ButtonGroup} from '../Button'
 import {Icon} from '../Icon'
 import {Drawer, Label, Note} from './Style'
@@ -11,7 +11,7 @@ interface Props {
 
 export const Bin = (props: Props) => {
   const {store, deleteService, treeService} = useState()
-  const navigate = useNavigate()
+  const {open} = useOpen()
 
   const onBack = () => {
     props.onBack()
@@ -22,7 +22,7 @@ export const Bin = (props: Props) => {
 
   const onEmptyBin = async () => {
     const result = await deleteService.emptyBin()
-    if (result.navigateTo) navigate(result.navigateTo)
+    if (result.navigateTo) open(result.navigateTo)
     treeService.create()
   }
 

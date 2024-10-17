@@ -1,5 +1,5 @@
 import {onMount, Switch, Match, ErrorBoundary, createEffect, untrack, Show} from 'solid-js'
-import {cache, Route, Router, RouteSectionProps} from '@solidjs/router'
+import {Route, Router, RouteSectionProps} from '@solidjs/router'
 import {State, StateContext} from '@/state'
 import {createCtrl} from '@/services'
 import * as remote from '@/remote'

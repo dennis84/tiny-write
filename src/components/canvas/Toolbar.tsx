@@ -1,9 +1,9 @@
 import {createEffect, createSignal, Show} from 'solid-js'
-import {useLocation, useNavigate} from '@solidjs/router'
 import {styled} from 'solid-styled-components'
 import {Box, Vec} from '@tldraw/editor'
 import {arrow, computePosition, flip, offset, shift} from '@floating-ui/dom'
 import {CanvasBoxElement, CanvasElement, isCodeElement, isEditorElement, useState} from '@/state'
+import {useOpen} from '@/open'
 import {languages} from '@/codemirror/highlight'
 import {Icon, IconPrettier} from '../Icon'
 
@@ -57,16 +57,7 @@ export const Toolbar = () => {
 
   const {store, appService, canvasService, codeService, fileService} = useState()
   const [ugly, setUgly] = createSignal(false)
-  const navigate = useNavigate()
-  const location = useLocation()
-
-  const open = async (element: CanvasElement) => {
-    if (isEditorElement(element)) {
-      navigate(`/editor/${element.id}`, {state: {prev: location.pathname}})
-    } else if (isCodeElement(element)) {
-      navigate(`/code/${element.id}`, {state: {prev: location.pathname}})
-    }
-  }
+  const {open} = useOpen()
 
   const restore = async (element: CanvasElement) => {
     await fileService.restore(element.id)
@@ -190,7 +181,7 @@ export const Toolbar = () => {
     <Show when={getSelected()}>
       {(selected) => (
         <Container ref={tooltipRef} id="toolbar">
-          <Item onClick={() => open(selected().element)}>
+          <Item onClick={() => open(selected().element, true)}>
             <Icon>open_in_full</Icon> Open in full
           </Item>
           <Show when={fileService.findFileById(selected().element.id)?.deleted}>

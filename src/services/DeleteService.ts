@@ -1,4 +1,4 @@
-import {isCanvas, isEditorElement, isFile, isLinkElement, Mode, State} from '@/state'
+import {isCanvas, isEditorElement, isFile, isLinkElement, Mode, Openable, State} from '@/state'
 import {CanvasService} from './CanvasService'
 import {FileService} from './FileService'
 import {TreeNode, TreeService} from './TreeService'
@@ -7,7 +7,7 @@ import {reconcile, SetStoreFunction, unwrap} from 'solid-js/store'
 import {DB} from '@/db'
 
 interface DeleteResult {
-  navigateTo?: string
+  navigateTo?: Openable
 }
 
 export class DeleteService {
@@ -20,7 +20,7 @@ export class DeleteService {
   ) {}
 
   async emptyBin(): Promise<DeleteResult> {
-    let navigateTo: string | undefined = undefined
+    let navigateTo: Openable | undefined = undefined
 
     const doEmptyBin = async (node: TreeNode): Promise<boolean> => {
       let shouldDelete = node.item.deleted ?? false
@@ -68,10 +68,10 @@ export class DeleteService {
     return {navigateTo}
   }
 
-  private getNavigateTo(node: TreeNode) {
+  private getNavigateTo(node: TreeNode): Openable | undefined {
     // Navigate to root if no parent
     if (node.item.parentId === undefined) {
-      return '/'
+      return undefined
     }
 
     const currentFile = this.fileService.currentFile
@@ -86,10 +86,10 @@ export class DeleteService {
       node.item.parentId !== undefined
     ) {
       const file = this.fileService.findFileById(node.item.parentId)
-      if (file) return `/${file.code ? 'code' : 'editor'}/${node.item.parentId}`
+      return file//`/${file.code ? 'code' : 'editor'}/${node.item.parentId}`
     }
 
-    return '/'
+    // return undefined
   }
 
   private async deleteNode(node: TreeNode, forever = false) {

@@ -7,6 +7,8 @@ import {YMultiDocUndoManager} from 'y-utility/y-multidoc-undomanager'
 import {Ctrl} from './services'
 import {FileService} from './services/FileService'
 
+export type Openable = File | Canvas | CanvasElement
+
 export interface Args {
   cwd?: string
   source?: string

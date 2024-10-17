@@ -78,24 +78,24 @@ test.each([
   {
     node: initial.files[2],
     current: initial.files[2],
-    navigateTo: '/code/2',
+    navigateTo: {code: true, id: '2'},
     fileUpdated: true,
   },
   {
     node: initial.files[1],
     current: initial.files[1],
-    navigateTo: '/editor/1',
+    navigateTo: {id: '1'},
   },
   {
     node: initial.files[1],
     current: initial.files[2],
     descendant: true,
-    navigateTo: '/editor/1',
+    navigateTo: {id: '1'},
   },
   {
     node: initial.files[0],
     current: initial.files[0],
-    navigateTo: '/',
+    navigateTo: undefined,
   },
 ])('delete - soft %#', async (data) => {
   const fileService = mock<FileService>()
@@ -116,7 +116,11 @@ test.each([
 
   const result = await service.delete(node)
 
-  expect(result.navigateTo).toBe(data.navigateTo)
+  if (!data.navigateTo) {
+    expect(result.navigateTo).toBeUndefined()
+  } else {
+    expect(result.navigateTo).toMatchObject(data.navigateTo)
+  }
 
   expect(fileService.updateFile).toBeCalled()
 
@@ -128,14 +132,14 @@ test.each([
   {
     node: initial.files[2],
     current: initial.files[2],
-    navigateTo: '/code/2',
+    navigateTo: {code: true, id: '2'},
     expectedFiles: 2,
     expectedElements: 3,
   },
   {
     node: initial.files[1],
     current: initial.files[1],
-    navigateTo: '/editor/1',
+    navigateTo: {id: '1'},
     expectedFiles: 1,
     expectedElements: 1,
   },
@@ -143,14 +147,14 @@ test.each([
     node: initial.files[1],
     current: initial.files[2],
     descendant: true,
-    navigateTo: '/editor/1',
+    navigateTo: {id: '1'},
     expectedFiles: 1,
     expectedElements: 1,
   },
   {
     node: initial.files[0],
     current: initial.files[0],
-    navigateTo: '/',
+    navigateTo: undefined,
     expectedFiles: 0,
     expectedElements: 0,
   },
@@ -173,7 +177,12 @@ test.each([
 
   const result = await service.delete(node, true)
 
-  expect(result.navigateTo).toBe(data.navigateTo)
+  if (!data.navigateTo) {
+    expect(result.navigateTo).toBeUndefined()
+  } else {
+    expect(result.navigateTo).toMatchObject(data.navigateTo)
+  }
+
   expect(store.files.length).toBe(data.expectedFiles)
   expect(store.canvases[0].elements.length).toBe(data.expectedElements)
   expect(DB.deleteFile).toBeCalled()
@@ -207,7 +216,7 @@ test('emptyBin', async () => {
 
   const result = await service.emptyBin()
 
-  expect(result.navigateTo).toBe(`/editor/2`)
+  expect(result.navigateTo).toMatchObject({id: '2'})
   expect(DB.deleteFile).toBeCalledWith('3')
   expect(DB.deleteFile).toBeCalledWith('4')
   expect(DB.deleteFile).toBeCalledWith('5')

@@ -1,5 +1,4 @@
 import {Show, createEffect, createSignal} from 'solid-js'
-import {useNavigate} from '@solidjs/router'
 import {NodeSelection, TextSelection} from 'prosemirror-state'
 import {setBlockType} from 'prosemirror-commands'
 import {ReferenceElement} from '@floating-ui/dom'
@@ -11,6 +10,7 @@ import {languages} from '@/codemirror/highlight'
 import {Icon, IconFloatCenter} from '../Icon'
 import {Block} from './BlockHandle'
 import {Tooltip} from '../Tooltip'
+import {useOpen} from '@/open'
 
 interface Props {
   selectedBlock?: Block
@@ -20,7 +20,7 @@ interface Props {
 export const BlockTooltip = (props: Props) => {
   const {appService, editorService, fileService} = useState()
   const [tooltipAnchor, setTooltipAnchor] = createSignal<ReferenceElement | undefined>()
-  const navigate = useNavigate()
+  const {open} = useOpen()
 
   const closeTooltip = () => {
     props.resetBlock()
@@ -203,7 +203,7 @@ export const BlockTooltip = (props: Props) => {
     if (mime.startsWith('text/')) {
       let file = await fileService.findFileByPath(path)
       if (!file) file = await editorService.newFile({path})
-      navigate(`/editor/${file.id}`)
+      open(file)
     } else {
       await remote.open(path)
     }

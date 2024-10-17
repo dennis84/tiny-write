@@ -1,5 +1,5 @@
 import {Show} from 'solid-js'
-import {useLocation, useNavigate} from '@solidjs/router'
+import {useLocation} from '@solidjs/router'
 import {styled} from 'solid-styled-components'
 import {ButtonPrimary} from './Button'
 import {Icon} from './Icon'
@@ -13,14 +13,10 @@ const Container = styled('div')`
 
 export const Back = () => {
   let container!: HTMLDivElement
-  const location = useLocation<{prev: string; path?: string[]}>()
-  const navigate = useNavigate()
+  const location = useLocation<{prev: string}>()
 
   const onBack = () => {
-    if (location.state?.prev) {
-      const path = location.state.path
-      navigate(location.state.prev, {state: {path}})
-    }
+    history.back()
   }
 
   return (

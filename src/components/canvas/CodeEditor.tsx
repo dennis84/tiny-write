@@ -1,5 +1,4 @@
 import {createEffect, onCleanup, Show} from 'solid-js'
-import {unwrap} from 'solid-js/store'
 import {styled} from 'solid-styled-components'
 import {CanvasCodeElement, useState} from '@/state'
 import * as remote from '@/remote'

@@ -1,10 +1,11 @@
 import {createEffect, createSignal, For, onMount} from 'solid-js'
-import {useLocation, useNavigate} from '@solidjs/router'
+import {useLocation} from '@solidjs/router'
 import {styled} from 'solid-styled-components'
 import {DirEntry, readDir} from '@tauri-apps/plugin-fs'
 import {homeDir} from '@tauri-apps/api/path'
 import {useState} from '@/state'
 import {getMimeType, info, resolvePath, toRelativePath} from '@/remote'
+import {useOpen} from '@/open'
 import {Content, Scroll} from '../Layout'
 import {Icon} from '../Icon'
 
@@ -55,7 +56,7 @@ export const DirPage = () => {
   const {store, editorService, fileService} = useState()
   const [dirEntries, setDirEntries] = createSignal<DirEntry[]>()
   const [currentPath, setCurrentPath] = createSignal<string>()
-  const navigate = useNavigate()
+  const {open, openDir} = useOpen()
   const location = useLocation<DirState>()
 
   const getResolvedPath = async (name?: string) => {
@@ -67,7 +68,7 @@ export const DirPage = () => {
   const clickPathSegment = (index: number) => {
     const path = [...(location.state?.path ?? [])]
     path.splice(index)
-    navigate('/dir', {state: {path}})
+    openDir(path)
   }
 
   const DirEntryLink = (p: {entry: DirEntry}) => {
@@ -75,7 +76,7 @@ export const DirPage = () => {
       if (p.entry.isDirectory) {
         const path = location.state?.path ?? []
         path.push(p.entry.name)
-        navigate('/dir', {state: {path}})
+        openDir(path)
         return
       }
 
@@ -86,11 +87,7 @@ export const DirPage = () => {
       info(`Open from dir (path=${path}, mime=${mime})`)
 
       if (!file) file = await editorService.newFile({path, code})
-
-      const prev = location.pathname
-      navigate(`/${code ? 'code' : 'editor'}/${file.id}`, {
-        state: {prev, path: location.state?.path},
-      })
+      open(file, true)
     }
 
     return (
