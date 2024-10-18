@@ -46,7 +46,7 @@ export class CodeService {
 
       if (state.args?.room) state.args.room = undefined
 
-      const update = await FileService.activateFile(state, file.id, true)
+      const update = await FileService.activateFile(state, file.id)
       update.collab = CollabService.create(file.id, update.mode, share)
       const subdoc = CollabService.getSubdoc(update.collab.ydoc, file.id)
       if (text) this.updateText(file, subdoc, text)

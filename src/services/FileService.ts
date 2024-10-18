@@ -130,7 +130,7 @@ export class FileService {
     }
   }
 
-  static async activateFile(state: State, fileId: string, code = false): Promise<State> {
+  static async activateFile(state: State, fileId: string): Promise<State> {
     const files = []
     const canvases = []
     let activeFile
@@ -140,7 +140,7 @@ export class FileService {
       f.codeEditorView?.destroy()
       const active = f.id === fileId
       const codeLang = FileService.getCodeLang(f)
-      const newFile = {...f, code, codeLang, active, editorView: undefined, codeEditorView: undefined}
+      const newFile = {...f, codeLang, active, editorView: undefined, codeEditorView: undefined}
       files.push(newFile)
       if (active || f.active) {
         await FileService.saveFile(newFile)
