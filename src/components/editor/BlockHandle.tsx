@@ -52,7 +52,6 @@ export const BlockHandle = (props: Props) => {
   let dragHandle!: HTMLDivElement
 
   const [selectedBlock, setSelectedBlock] = createSignal<Block | undefined>()
-  const [cursorPos, setCursorPos] = createSignal<number | undefined>()
   const [blockDom, setBlockDom] = createSignal<HTMLElement>()
   const {appService} = useState()
 
@@ -72,20 +71,14 @@ export const BlockHandle = (props: Props) => {
 
   const onResetBlock = () => {
     setSelectedBlock(undefined)
-    setCursorPos(undefined)
     setBlockDom(undefined)
   }
 
-  const onDragHandleDown = () => {
-    const editorView = props.file?.editorView
-    if (!editorView) return
-    setCursorPos(editorView.state.selection.from)
-  }
-
-  const onDragHandleClick = (e: MouseEvent) => {
+  const onMouseDown = (e: MouseEvent) => {
     const editorView = props.file?.editorView
     if (!editorView) return
 
+    const cursorPos = editorView.state.selection.from
     const blockPos = getBlockPos([e.clientX, e.clientY]) ?? 0
     const blockInnerPos = editorView.state.doc.resolve(blockPos + 1)
     const blockNode = blockInnerPos.node()
@@ -93,19 +86,18 @@ export const BlockHandle = (props: Props) => {
     setBlockDom(blockDom)
 
     let cursorNode
-    const cp = cursorPos()
-    if (cp !== undefined) {
-      const resolved = editorView.state.doc.resolve(cp)
+    if (cursorPos !== undefined) {
+      const resolved = editorView.state.doc.resolve(cursorPos)
       cursorNode = resolved.nodeAfter ?? undefined
 
       const tr = editorView.state.tr
-      const range = markAround(editorView.state, cp)
-      const inBlock = cp >= blockPos && cp <= blockInnerPos.after(1)
+      const range = markAround(editorView.state, cursorPos)
+      const inBlock = cursorPos >= blockPos && cursorPos <= blockInnerPos.after(1)
 
       if (editorView.state.selection.empty && range && inBlock) {
         tr.setSelection(TextSelection.create(editorView.state.doc, range.from, range.to))
       } else if (inBlock && cursorNode?.isAtom && !cursorNode.isText) {
-        tr.setSelection(NodeSelection.create(editorView.state.doc, cp))
+        tr.setSelection(NodeSelection.create(editorView.state.doc, cursorPos))
       } else {
         tr.setSelection(NodeSelection.create(editorView.state.doc, blockPos))
       }
@@ -117,7 +109,7 @@ export const BlockHandle = (props: Props) => {
     setSelectedBlock({
       blockPos,
       blockNode,
-      cursorPos: cp,
+      cursorPos,
       cursorNode,
       dragHandle,
     })
@@ -148,7 +140,7 @@ export const BlockHandle = (props: Props) => {
   }
 
   const onMouseMove = (e: MouseEvent) => {
-    if (selectedBlock() || cursorPos() !== undefined) {
+    if (selectedBlock()) {
       return
     }
 
@@ -231,8 +223,7 @@ export const BlockHandle = (props: Props) => {
       <DragHandle
         ref={dragHandle}
         id="block-handle"
-        onClick={onDragHandleClick}
-        onMouseDown={onDragHandleDown}
+        onMouseDown={onMouseDown}
         onDragStart={onDragStart}
         onDragEnd={onResetBlock}
         draggable={true}
