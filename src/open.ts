@@ -23,7 +23,9 @@ export const useOpen = () => {
 
   const open = (item: Openable | undefined, back = false) => {
     const prev = back ? location.pathname : undefined
-    const state = {prev}
+    const file = isFile(item) ? item.path : undefined
+    const newFile = isFile(item) ? item.newFile : undefined
+    const state = {prev, file, newFile}
 
     if (!item) {
       info(`Redirect to (to=/)`)

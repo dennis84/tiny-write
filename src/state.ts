@@ -9,6 +9,12 @@ import {FileService} from './services/FileService'
 
 export type Openable = File | Canvas | CanvasElement
 
+export interface LocationState {
+  prev?: string // prev location pathname
+  file?: string
+  newFile?: string
+}
+
 export interface Args {
   cwd?: string
   source?: string

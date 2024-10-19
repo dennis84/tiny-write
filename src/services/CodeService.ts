@@ -33,15 +33,17 @@ export class CodeService {
 
     try {
       let file = unwrap(this.fileService.findFileById(id))
+      const path = file?.path ?? state.args?.file
+
       let text: string | undefined
 
       if (!file) {
-        file = FileService.createFile({id, code: true})
+        file = FileService.createFile({id, code: true, path, newFile: state.args?.newFile})
         state.files.push(file)
       }
 
-      if (file?.path) {
-        text = (await FileService.loadTextFile(file.path)).text
+      if (path) {
+        text = (await FileService.loadTextFile(path)).text
       }
 
       if (state.args?.room) state.args.room = undefined

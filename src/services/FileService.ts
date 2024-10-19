@@ -91,7 +91,7 @@ export class FileService {
   }
 
   static async saveFile(file: File) {
-    if (!file.lastModified) {
+    if (!file.lastModified || file.path) {
       return
     }
 
@@ -158,12 +158,6 @@ export class FileService {
     return {
       ...state,
       error: undefined,
-      args: {
-        cwd: state.args?.cwd,
-        file: undefined,
-        newFile: undefined,
-        text: undefined,
-      },
       files,
       canvases,
       mode,

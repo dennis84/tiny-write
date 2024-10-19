@@ -5,6 +5,7 @@ import {Mode, createState} from '@/state'
 import {createCtrl} from '@/services'
 import {Main} from '@/components/Main'
 import {createYUpdate} from '../util/codemirror-util'
+import {stubLocation} from '../util/util'
 
 vi.mock('@/db', () => ({DB: mock()}))
 vi.mock('mermaid', () => ({}))
@@ -14,7 +15,7 @@ beforeEach(() => {
 })
 
 test('prettify', async () => {
-  vi.stubGlobal('location', new URL('http://localhost:3000/code/1'))
+  stubLocation('/code/1')
 
   const {store, codeService, fileService} = createCtrl(
     createState({

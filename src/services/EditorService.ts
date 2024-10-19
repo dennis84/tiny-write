@@ -125,15 +125,16 @@ export class EditorService {
 
     try {
       let file = this.fileService.findFileById(id)
+      const path = file?.path ?? state.args?.file
       let text: FileText | undefined
 
       if (!file) {
-        file = FileService.createFile({id})
+        file = FileService.createFile({id, path, newFile: state.args?.newFile})
         state.files.push(file)
       }
 
-      if (file?.path) {
-        text = (await FileService.loadMarkdownFile(file.path)).text
+      if (path) {
+        text = (await FileService.loadMarkdownFile(path)).text
       }
 
       if (state.args?.room) state.args.room = undefined

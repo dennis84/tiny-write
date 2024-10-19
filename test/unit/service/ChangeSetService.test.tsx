@@ -5,6 +5,7 @@ import userEvent from '@testing-library/user-event'
 import {createState} from '@/state'
 import {createCtrl} from '@/services'
 import {Main} from '@/components/Main'
+import {stubLocation} from '../util/util'
 
 vi.mock('@/db', () => ({DB: mock()}))
 vi.mock('mermaid', () => ({}))
@@ -17,7 +18,7 @@ beforeEach(() => {
 })
 
 test('addVersion', async () => {
-  vi.stubGlobal('location', new URL('http://localhost:3000/editor/1'))
+  stubLocation('/editor/1')
 
   const initial = createState()
   const {store, changeSetService, fileService} = createCtrl(initial)

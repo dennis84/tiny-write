@@ -5,6 +5,7 @@ import {render, waitFor} from '@solidjs/testing-library'
 import {createState} from '@/state'
 import {createCtrl} from '@/services'
 import {Main} from '@/components/Main'
+import {stubLocation} from '../util/util'
 
 vi.mock('@/db', () => ({DB: mock()}))
 
@@ -19,7 +20,7 @@ beforeEach(() => {
 })
 
 test('undoManager - text', async () => {
-  vi.stubGlobal('location', new URL('http://localhost:3000/editor/1'))
+  stubLocation('/editor/1')
 
   const {store, collabService} = createCtrl(createState())
   const {getByTestId} = render(() => <Main state={store} />)
@@ -45,7 +46,7 @@ test('undoManager - text', async () => {
 })
 
 test('undoManager - code', async () => {
-  vi.stubGlobal('location', new URL('http://localhost:3000/code/1'))
+  stubLocation('/code/1')
 
   const {store, collabService, fileService} = createCtrl(createState())
   const {getByTestId} = render(() => <Main state={store} />)
@@ -71,7 +72,7 @@ test('undoManager - code', async () => {
 })
 
 test('startCollab', async () => {
-  vi.stubGlobal('location', new URL('http://localhost:3000/editor/1'))
+  stubLocation('/editor/1')
 
   const {store, collabService} = createCtrl(createState())
   const {getByTestId} = render(() => <Main state={store} />)

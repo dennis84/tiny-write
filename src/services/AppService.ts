@@ -2,7 +2,7 @@ import {Store, unwrap, SetStoreFunction, reconcile} from 'solid-js/store'
 import {createSignal} from 'solid-js'
 import {stateToString} from '@/utils/debug'
 import * as remote from '@/remote'
-import {State, ServiceError, Window, Mode, ErrorObject, createState} from '@/state'
+import {State, ServiceError, Window, Mode, ErrorObject, createState, LocationState} from '@/state'
 import {DB} from '@/db'
 import {isTauri} from '@/env'
 import {InputLineConfig} from '@/components/dialog/InputLine'
@@ -31,7 +31,8 @@ export class AppService {
     return this.store.fullscreen
   }
 
-  async init() {
+  async init(location?: LocationState) {
+    console.log({location})
     const data = await this.fetchData()
     remote.debug(`Fetched data: ${stateToString(data)}`)
     remote.info(`Init app (mode=${data.mode}, args=${JSON.stringify(data.args)})`)
@@ -43,6 +44,7 @@ export class AppService {
 
       const newState: State = {
         ...data,
+        args: {...data.args, ...location},
         config: {...data.config, ...ConfigService.getThemeConfig(data)},
         loading: 'initialized',
       }

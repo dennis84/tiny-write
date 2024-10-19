@@ -1,6 +1,6 @@
 import {onMount, Switch, Match, ErrorBoundary, createEffect, untrack, Show} from 'solid-js'
-import {Route, Router, RouteSectionProps} from '@solidjs/router'
-import {State, StateContext} from '@/state'
+import {Route, Router, RouteSectionProps, useLocation} from '@solidjs/router'
+import {LocationState, State, StateContext} from '@/state'
 import {createCtrl} from '@/services'
 import * as remote from '@/remote'
 import {isTauri} from '@/env'
@@ -21,12 +21,13 @@ import {CodePage} from '@/components/pages/CodePage'
 import {DirPage} from '@/components/pages/DirPage'
 import {Redirect} from '@/components/pages/Redirect'
 
-export const Main = (props: {state: State}) => {
+export const Main = (props: {state: State, location?: LocationState}) => {
   const Root = (p: RouteSectionProps) => {
     remote.info(
       `Open route (path=${p.location.pathname}, search=${JSON.stringify(p.location.query)})`,
     )
 
+    const location = useLocation()
     const ctrl = createCtrl(props.state)
     const [inputLine, setInputLine] = ctrl.appService.inputLine
     let layoutRef!: HTMLDivElement
@@ -40,7 +41,7 @@ export const Main = (props: {state: State}) => {
     onMount(async () => {
       ctrl.appService.layoutRef = layoutRef
       try {
-        await ctrl.appService.init()
+        await ctrl.appService.init(props.location ?? location.state ?? undefined)
       } catch (error: any) {
         ctrl.appService.setError({id: 'init_failed', error})
       }

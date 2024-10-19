@@ -21,6 +21,7 @@ test('getters', () => {
     useTabs: true,
     semi: true,
     singleQuote: true,
+    bracketSpacing: false,
   }
 
   const [store, setState] = createStore(

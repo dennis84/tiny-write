@@ -7,7 +7,7 @@ import {DB} from '@/db'
 import {createCtrl} from '@/services'
 import {Main} from '@/components/Main'
 import {createYUpdate} from '../util/prosemirror-util'
-import {createIpcMock} from '../util/util'
+import {createIpcMock, stubLocation} from '../util/util'
 
 vi.mock('@/db', () => ({DB: mock<DB>()}))
 
@@ -22,7 +22,7 @@ beforeEach(() => {
 })
 
 test('open - new file', async () => {
-  vi.stubGlobal('location', new URL('http://localhost:3000'))
+  stubLocation('/')
 
   const initial = createState()
 
@@ -40,7 +40,7 @@ test('open - new file', async () => {
 })
 
 test('open - active', async () => {
-  vi.stubGlobal('location', new URL('http://localhost:3000'))
+  stubLocation('/')
 
   const initial = createState({
     files: [
@@ -64,7 +64,7 @@ test('open - active', async () => {
 })
 
 test('open - new file with id', async () => {
-  vi.stubGlobal('location', new URL('http://localhost:3000/editor/3'))
+  stubLocation('/editor/3')
 
   const initial = createState({
     files: [
@@ -89,7 +89,7 @@ test('open - new file with id', async () => {
 })
 
 test('open - existing file', async () => {
-  vi.stubGlobal('location', new URL('http://localhost:3000/editor/1'))
+  stubLocation('/editor/1')
 
   const initial = createState({
     files: [
@@ -113,7 +113,7 @@ test('open - existing file', async () => {
 })
 
 test('open - share', async () => {
-  vi.stubGlobal('location', new URL('http://localhost:3000/editor/1?share=true'))
+  stubLocation('/editor/1?share=true')
 
   const initial = createState({
     files: [
@@ -146,7 +146,7 @@ test('open - share', async () => {
 })
 
 test('open - file with path', async () => {
-  vi.stubGlobal('location', new URL('http://localhost:3000/editor/1'))
+  stubLocation('/editor/1')
   vi.stubGlobal('__TAURI__', {})
 
   mockWindows('main')
@@ -181,7 +181,8 @@ test('open - file with path', async () => {
 })
 
 test('open - file not found', async () => {
-  vi.stubGlobal('location', new URL('http://localhost:3000/editor/1'))
+  stubLocation('/editor/1')
+
   vi.stubGlobal('__TAURI__', {})
 
   mockWindows('main')
@@ -214,7 +215,7 @@ test('open - file not found', async () => {
 })
 
 test('open - file arg', async () => {
-  vi.stubGlobal('location', new URL('http://localhost:3000'))
+  stubLocation('/')
   vi.stubGlobal('__TAURI__', {})
 
   mockWindows('main')
@@ -223,9 +224,9 @@ test('open - file arg', async () => {
     read_text: () => 'File2',
   })
 
-  const initial = createState({args: {file: 'file2.md'}})
+  const initial = createState()
   const {store, fileService} = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={store} />)
+  const {getByTestId, container, unmount} = render(() => <Main state={store} location={{}} />)
 
   await waitFor(() => {
     expect(getByTestId('editor_scroll')).toBeDefined()
@@ -236,7 +237,7 @@ test('open - file arg', async () => {
 })
 
 test('open - file arg exists', async () => {
-  vi.stubGlobal('location', new URL('http://localhost:3000'))
+  stubLocation('/')
   vi.stubGlobal('__TAURI__', {})
 
   mockWindows('main')
@@ -269,8 +270,7 @@ test('open - file arg exists', async () => {
 })
 
 test('open - newFile arg', async () => {
-  vi.stubGlobal('location', new URL('http://localhost:3000'))
-  vi.stubGlobal('__TAURI__', {})
+  stubLocation('/')
 
   mockWindows('main')
   createIpcMock({
@@ -279,7 +279,8 @@ test('open - newFile arg', async () => {
 
   const initial = createState()
   const {store, fileService} = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={store} />)
+  const baseElement = document.createElement('div')
+  const {getByTestId} = render(() => <Main state={store} />, {baseElement})
 
   await waitFor(() => {
     expect(getByTestId('editor_scroll')).toBeDefined()
@@ -290,7 +291,7 @@ test('open - newFile arg', async () => {
 })
 
 test('open - newFile arg - path exists', async () => {
-  vi.stubGlobal('location', new URL('http://localhost:3000'))
+  stubLocation('/')
   vi.stubGlobal('__TAURI__', {})
 
   mockWindows('main')
@@ -323,7 +324,7 @@ test('open - newFile arg - path exists', async () => {
 })
 
 test('open - newFile arg - newFile exists', async () => {
-  vi.stubGlobal('location', new URL('http://localhost:3000'))
+  stubLocation('/')
   vi.stubGlobal('__TAURI__', {})
 
   mockWindows('main')

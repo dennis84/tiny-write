@@ -7,7 +7,7 @@ import {DB} from '@/db'
 import {createCtrl} from '@/services'
 import {Main} from '@/components/Main'
 import {createYUpdate} from '../util/codemirror-util'
-import {createIpcMock} from '../util/util'
+import {createIpcMock, stubLocation} from '../util/util'
 
 vi.mock('@/db', () => ({DB: mock<DB>()}))
 
@@ -22,7 +22,7 @@ beforeEach(() => {
 })
 
 test('open - new file', async () => {
-  vi.stubGlobal('location', new URL('http://localhost:3000/code/1'))
+  stubLocation('/code/1')
 
   const initial = createState()
 
@@ -40,7 +40,7 @@ test('open - new file', async () => {
 })
 
 test('open - active', async () => {
-  vi.stubGlobal('location', new URL('http://localhost:3000'))
+  stubLocation('/')
 
   const initial = createState({
     mode: Mode.Code,
@@ -72,7 +72,7 @@ test('open - active', async () => {
 })
 
 test('open - new file with id', async () => {
-  vi.stubGlobal('location', new URL('http://localhost:3000/code/3'))
+  stubLocation('/code/3')
 
   const initial = createState({
     files: [
@@ -97,7 +97,7 @@ test('open - new file with id', async () => {
 })
 
 test('open - existing file', async () => {
-  vi.stubGlobal('location', new URL('http://localhost:3000/code/1'))
+  stubLocation('/code/1')
 
   const initial = createState({
     files: [
@@ -121,7 +121,7 @@ test('open - existing file', async () => {
 })
 
 test('open - share', async () => {
-  vi.stubGlobal('location', new URL('http://localhost:3000/code/1?share=true'))
+  stubLocation('/code/1?share=true')
 
   const initial = createState({
     files: [
@@ -154,7 +154,7 @@ test('open - share', async () => {
 })
 
 test('open - file arg', async () => {
-  vi.stubGlobal('location', new URL('http://localhost:3000'))
+  stubLocation('/')
   vi.stubGlobal('__TAURI__', {})
 
   mockWindows('main')

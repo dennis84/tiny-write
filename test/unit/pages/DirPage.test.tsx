@@ -5,7 +5,7 @@ import {createState} from '@/state'
 import {DB} from '@/db'
 import {createCtrl} from '@/services'
 import {Main} from '@/components/Main'
-import {createIpcMock} from '../util/util'
+import {createIpcMock, stubLocation} from '../util/util'
 import {mockWindows} from '@tauri-apps/api/mocks'
 
 vi.mock('@/db', () => ({DB: mock<DB>()}))
@@ -18,7 +18,7 @@ beforeEach(() => {
 })
 
 test('dir', async () => {
-  vi.stubGlobal('location', new URL('http://localhost:3000'))
+  stubLocation('/')
   vi.stubGlobal('__TAURI__', {})
   mockWindows('main')
   createIpcMock({
@@ -37,7 +37,7 @@ test('dir', async () => {
 })
 
 test('dir - empty', async () => {
-  vi.stubGlobal('location', new URL('http://localhost:3000'))
+  stubLocation('/')
   vi.stubGlobal('__TAURI__', {})
   mockWindows('main')
   createIpcMock({
@@ -55,11 +55,11 @@ test('dir - empty', async () => {
 })
 
 test('dir - file args', async () => {
-  vi.stubGlobal('location', new URL('http://localhost:3000'))
+  stubLocation('/')
   vi.stubGlobal('__TAURI__', {})
   mockWindows('main')
   createIpcMock({
-    'get_args': () => ({cwd: '/users/me/project', source: 'file1.md', file: 'file1.md'}),
+    get_args: () => ({cwd: '/users/me/project', source: 'file1.md', file: 'file1.md'}),
   })
 
   const initial = createState()
@@ -75,7 +75,7 @@ test.each([
   {name: 'file2.md', code: false, expectContainer: 'editor_scroll'},
   {name: 'file2.rs', code: true, expectContainer: 'code_scroll'},
 ])('dir - open', async ({name, code, expectContainer}) => {
-  vi.stubGlobal('location', new URL('http://localhost:3000'))
+  stubLocation('/')
   vi.stubGlobal('__TAURI__', {})
   mockWindows('main')
   createIpcMock({

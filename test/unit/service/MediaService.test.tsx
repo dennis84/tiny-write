@@ -7,7 +7,7 @@ import {MediaService} from '@/services/MediaService'
 import {createCtrl} from '@/services'
 import {CanvasEditorElement, CanvasImageElement, ElementType, Mode, createState} from '@/state'
 import {Main} from '@/components/Main'
-import {createIpcMock} from '../util/util'
+import {createIpcMock, stubLocation} from '../util/util'
 import {createYUpdate} from '../util/prosemirror-util'
 
 document.elementFromPoint = () => null
@@ -43,7 +43,7 @@ test('getImagePath', async () => {
 })
 
 test('dropFile - image on editor', async () => {
-  vi.stubGlobal('location', new URL('http://localhost:3000/editor/1'))
+  stubLocation('/editor/1')
 
   const initial = createState()
   const {store, fileService, mediaService} = createCtrl(initial)
@@ -65,7 +65,7 @@ test('dropFile - image on editor', async () => {
 })
 
 test('dropFile - image on canvas', async () => {
-  vi.stubGlobal('location', new URL('http://localhost:3000/canvas/1'))
+  stubLocation('/canvas/1')
 
   const editorElement = {
     id: '1',
@@ -119,7 +119,7 @@ test('dropFile - image on canvas', async () => {
 })
 
 test('dropFile - image on canvas with active editor', async () => {
-  vi.stubGlobal('location', new URL('http://localhost:3000/canvas/1'))
+  stubLocation('/canvas/1')
 
   const editorElement = {
     id: '1',
@@ -174,7 +174,7 @@ test('dropFile - image on canvas with active editor', async () => {
 })
 
 test('dropPath - image on editor', async () => {
-  vi.stubGlobal('location', new URL('http://localhost:3000/editor/1'))
+  stubLocation('/editor/1')
 
   const initial = createState()
   const {store, fileService, mediaService} = createCtrl(initial)
@@ -194,7 +194,7 @@ test('dropPath - image on editor', async () => {
 })
 
 test('dropPath - image on editor with basePath', async () => {
-  vi.stubGlobal('location', new URL('http://localhost:3000/editor/1'))
+  stubLocation('/editor/1')
 
   const initial = createState({
     mode: Mode.Editor,
@@ -227,7 +227,7 @@ test('dropPath - image on editor with basePath', async () => {
 })
 
 test('dropPath - text file on editor', async () => {
-  vi.stubGlobal('location', new URL('http://localhost:3000/editor/1'))
+  stubLocation('/editor/1')
 
   const initial = createState()
   const {store, mediaService} = createCtrl(initial)
@@ -247,7 +247,7 @@ test('dropPath - text file on editor', async () => {
 })
 
 test('dropPath - image on canvas', async () => {
-  vi.stubGlobal('location', new URL('http://localhost:3000/canvas/1'))
+  stubLocation('/canvas/1')
 
   const editorElement = {
     id: '1',
@@ -300,7 +300,7 @@ test('dropPath - image on canvas', async () => {
 })
 
 test('dropPath - text file on canvas', async () => {
-  vi.stubGlobal('location', new URL('http://localhost:3000/canvas/1'))
+  stubLocation('/canvas/1')
 
   const initial = createState({
     mode: Mode.Canvas,
@@ -337,7 +337,7 @@ test('dropPath - text file on canvas', async () => {
 })
 
 test('dropPath - text file on code', async () => {
-  vi.stubGlobal('location', new URL('http://localhost:3000/code/1'))
+  stubLocation('/code/1')
 
   const initial = createState()
   const {store, mediaService} = createCtrl(initial)
@@ -357,7 +357,7 @@ test('dropPath - text file on code', async () => {
 })
 
 test('dropPath - image on code', async () => {
-  vi.stubGlobal('location', new URL('http://localhost:3000/code/1'))
+  stubLocation('/code/1')
 
   const initial = createState()
   const {store, fileService, mediaService} = createCtrl(initial)
