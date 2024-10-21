@@ -32,7 +32,6 @@ export class AppService {
   }
 
   async init(location?: LocationState) {
-    console.log({location})
     const data = await this.fetchData()
     remote.debug(`Fetched data: ${stateToString(data)}`)
     remote.info(`Init app (mode=${data.mode}, args=${JSON.stringify(data.args)})`)

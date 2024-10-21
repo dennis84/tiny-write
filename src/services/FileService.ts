@@ -99,11 +99,10 @@ export class FileService {
       id: file.id,
       parentId: file.parentId,
       leftId: file.leftId,
-      ydoc: file.path ? undefined : file.ydoc,
+      ydoc: file.ydoc,
       title: file.title,
       lastModified: file.lastModified,
-      path: file.path,
-      newFile: file.path ? undefined : file.newFile,
+      newFile: file.newFile,
       active: file.active,
       deleted: file.deleted,
       code: file.code,
@@ -142,9 +141,9 @@ export class FileService {
       const codeLang = FileService.getCodeLang(f)
       const newFile = {...f, codeLang, active, editorView: undefined, codeEditorView: undefined}
       files.push(newFile)
+      if (active) activeFile = newFile
       if (active || f.active) {
         await FileService.saveFile(newFile)
-        activeFile = newFile
       }
     }
 
@@ -177,8 +176,7 @@ export class FileService {
           title: file.title,
           ydoc: file.ydoc ?? new Uint8Array(),
           lastModified: new Date(file.lastModified),
-          path: file.path,
-          newFile: file.path,
+          newFile: file.newFile,
           active: file.active,
           deleted: file.deleted,
           code: file.code,

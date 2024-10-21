@@ -1,6 +1,8 @@
 import {RouteSectionProps} from '@solidjs/router'
 import {onMount, Show} from 'solid-js'
 import {Mode, useState} from '@/state'
+import {info} from '@/remote'
+import {locationToString} from '@/utils/debug'
 import {Loading} from './Loading'
 import {Title} from './Title'
 import {Editor} from '../editor/Editor'
@@ -8,6 +10,9 @@ import {Editor} from '../editor/Editor'
 export const EditorPage = (props: RouteSectionProps) => {
   const OpenEditor = () => {
     const {store, editorService, fileService} = useState()
+
+    info(`Open editor page (location=${locationToString(props.location)})`)
+
     onMount(async () => {
       const share = props.location.query.share === 'true'
       await editorService.openFile(props.params.id, share)

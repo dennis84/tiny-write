@@ -16,7 +16,6 @@ export interface PersistedFile {
   ydoc?: Uint8Array
   versions?: PersistedVersion[]
   lastModified: Date
-  path?: string
   newFile?: string
   code?: boolean
   codeLang?: string

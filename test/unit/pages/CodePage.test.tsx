@@ -174,3 +174,25 @@ test('open - file arg', async () => {
   expect(fileService.currentFile?.path).toBe('code1.yaml')
   expect(fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('Code1')
 })
+
+test('open - location arg', async () => {
+  stubLocation('/code/1')
+  vi.spyOn(window.history, 'state', 'get').mockReturnValue({file: 'code1.yaml'})
+  vi.stubGlobal('__TAURI__', {})
+
+  mockWindows('main')
+  createIpcMock({
+    read_text: () => 'Code1',
+  })
+
+  const initial = createState()
+  const {store, fileService} = createCtrl(initial)
+  const {getByTestId} = render(() => <Main state={store} />)
+
+  await waitFor(() => {
+    expect(getByTestId('code_scroll')).toBeDefined()
+  })
+
+  expect(fileService.currentFile?.path).toBe('code1.yaml')
+  expect(fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('Code1')
+})

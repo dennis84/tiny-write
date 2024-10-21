@@ -20,17 +20,16 @@ import {CanvasPage} from '@/components/pages/CanvasPage'
 import {CodePage} from '@/components/pages/CodePage'
 import {DirPage} from '@/components/pages/DirPage'
 import {Redirect} from '@/components/pages/Redirect'
+import {locationToString} from '@/utils/debug'
 
-export const Main = (props: {state: State, location?: LocationState}) => {
+export const Main = (props: {state: State}) => {
   const Root = (p: RouteSectionProps) => {
-    remote.info(
-      `Open route (path=${p.location.pathname}, search=${JSON.stringify(p.location.query)})`,
-    )
-
-    const location = useLocation()
+    let layoutRef!: HTMLDivElement
+    const location = useLocation<LocationState>()
     const ctrl = createCtrl(props.state)
     const [inputLine, setInputLine] = ctrl.appService.inputLine
-    let layoutRef!: HTMLDivElement
+
+    remote.info(`Open root (location=${locationToString(location)})`)
 
     const onViewError = (error: any, reset: any) => {
       ctrl.appService.setError({error})
@@ -41,7 +40,7 @@ export const Main = (props: {state: State, location?: LocationState}) => {
     onMount(async () => {
       ctrl.appService.layoutRef = layoutRef
       try {
-        await ctrl.appService.init(props.location ?? location.state ?? undefined)
+        await ctrl.appService.init(location.state ?? undefined)
       } catch (error: any) {
         ctrl.appService.setError({id: 'init_failed', error})
       }
