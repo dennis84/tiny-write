@@ -9,7 +9,8 @@ import {Box} from '@tldraw/editor'
 import {debug, info, error, writeText} from '@/remote'
 import {State, FileText, File} from '@/state'
 import {serialize} from '@/markdown'
-import {FileService} from './FileService'
+import {openFileToString} from '@/utils/debug'
+import {FileService, OpenFile} from './FileService'
 import {CollabService} from './CollabService'
 import {ProseMirrorService, schema} from './ProseMirrorService'
 import {AppService} from './AppService'
@@ -119,17 +120,18 @@ export class EditorService {
     return file
   }
 
-  async openFile(id: string, share = false) {
-    debug(`Open file: (id=${id}, share=${share}, mode=editor)`)
+  async openFile(params: OpenFile) {
+    debug(`Open file: (params=${openFileToString(params)}, mode=editor)`)
     const state: State = unwrap(this.store)
 
     try {
-      let file = this.fileService.findFileById(id)
-      const path = file?.path ?? state.args?.file
+      let file = this.fileService.findFileById(params.id)
+      const path = file?.path ?? params.file
+      const newFile = file?.newFile ?? params.newFile
       let text: FileText | undefined
 
       if (!file) {
-        file = FileService.createFile({id, path, newFile: state.args?.newFile})
+        file = FileService.createFile({id: params.id, path, newFile})
         state.files.push(file)
       }
 
@@ -137,16 +139,14 @@ export class EditorService {
         text = (await FileService.loadMarkdownFile(path)).text
       }
 
-      if (state.args?.room) state.args.room = undefined
-
       const update = await FileService.activateFile(state, file.id)
-      update.collab = CollabService.create(file.id, update.mode, share)
+      update.collab = CollabService.create(file.id, update.mode, params.share)
       const subdoc = CollabService.getSubdoc(update.collab.ydoc, file.id)
       if (text) this.updateText(file, subdoc, text)
       this.setState(update)
       this.treeService.create()
     } catch (e: any) {
-      this.appService.setError({error: e, fileId: id})
+      this.appService.setError({error: e, fileId: params.id})
     }
   }
 

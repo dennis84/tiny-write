@@ -12,6 +12,13 @@ import {findCodeLang} from '@/codemirror/highlight'
 import {CollabService} from './CollabService'
 import {schema} from './ProseMirrorService'
 
+export interface OpenFile {
+  id: string
+  share?: boolean
+  file?: string
+  newFile?: string
+}
+
 export interface LoadedTextFile {
   text: string
   lastModified: Date

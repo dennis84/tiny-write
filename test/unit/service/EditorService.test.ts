@@ -87,7 +87,7 @@ test('openFile - stop collab', async () => {
 
   fileService.findFileById.mockImplementation(() => initial.files[1])
 
-  await service.openFile('2')
+  await service.openFile({id: '2'})
   expect(store.files.length).toBe(2)
   expect(store.files[1].active).toBeTruthy()
   expect(store.collab?.started).toBe(false)
@@ -118,7 +118,7 @@ test('openFile - existing', async () => {
 
   fileService.findFileById.mockImplementation(() => initial.files[1])
 
-  await service.openFile('2')
+  await service.openFile({id: '2'})
   expect(store.files.length).toBe(2)
   expect(store.files[0].active).toBeFalsy()
   expect(store.files[1].active).toBeTruthy()
@@ -152,7 +152,7 @@ test('openFile - not found', async () => {
 
   fileService.findFileById.mockImplementation(() => undefined)
 
-  await service.openFile('123')
+  await service.openFile({id: '123'})
   expect(store.files.length).toBe(3)
   expect(store.files[0].active).toBeFalsy()
   expect(store.files[1].active).toBeFalsy()
@@ -189,7 +189,7 @@ test('openFile - share', async () => {
 
   fileService.findFileById.mockImplementation(() => file)
 
-  await service.openFile('room-123', true)
+  await service.openFile({id: 'room-123', share: true})
   expect(store.files.length).toBe(1)
   expect(store.files[0].active).toBeTruthy()
   expect(store.files[0].id).toBe('room-123')

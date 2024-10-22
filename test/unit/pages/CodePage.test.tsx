@@ -1,6 +1,6 @@
 import {beforeEach, expect, test, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
-import {render, waitFor} from '@solidjs/testing-library'
+import {fireEvent, render, waitFor} from '@solidjs/testing-library'
 import {clearMocks, mockWindows} from '@tauri-apps/api/mocks'
 import {createState, Mode} from '@/state'
 import {DB} from '@/db'
@@ -8,6 +8,7 @@ import {createCtrl} from '@/services'
 import {Main} from '@/components/Main'
 import {createYUpdate} from '../util/codemirror-util'
 import {createIpcMock, stubLocation} from '../util/util'
+import { useOpen } from '@/open'
 
 vi.mock('@/db', () => ({DB: mock<DB>()}))
 
@@ -21,7 +22,7 @@ beforeEach(() => {
   clearMocks()
 })
 
-test('open - new file', async () => {
+test('init - new file', async () => {
   stubLocation('/code/1')
 
   const initial = createState()
@@ -39,7 +40,7 @@ test('open - new file', async () => {
   expect(fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('')
 })
 
-test('open - active', async () => {
+test('init - active', async () => {
   stubLocation('/')
 
   const initial = createState({
@@ -71,7 +72,7 @@ test('open - active', async () => {
   expect(fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('Code2')
 })
 
-test('open - new file with id', async () => {
+test('init - new file with id', async () => {
   stubLocation('/code/3')
 
   const initial = createState({
@@ -96,7 +97,7 @@ test('open - new file with id', async () => {
   expect(fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('')
 })
 
-test('open - existing file', async () => {
+test('init - existing file', async () => {
   stubLocation('/code/1')
 
   const initial = createState({
@@ -120,7 +121,7 @@ test('open - existing file', async () => {
   expect(fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('Code1')
 })
 
-test('open - share', async () => {
+test('init - share', async () => {
   stubLocation('/code/1?share=true')
 
   const initial = createState({
@@ -153,7 +154,7 @@ test('open - share', async () => {
   })
 })
 
-test('open - file arg', async () => {
+test('init - file arg', async () => {
   stubLocation('/')
   vi.stubGlobal('__TAURI__', {})
 
@@ -175,9 +176,8 @@ test('open - file arg', async () => {
   expect(fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('Code1')
 })
 
-test('open - location arg', async () => {
+test('open', async () => {
   stubLocation('/code/1')
-  vi.spyOn(window.history, 'state', 'get').mockReturnValue({file: 'code1.yaml'})
   vi.stubGlobal('__TAURI__', {})
 
   mockWindows('main')
@@ -185,9 +185,15 @@ test('open - location arg', async () => {
     read_text: () => 'Code1',
   })
 
-  const initial = createState()
+  const initial = createState({
+    files: [
+      {id: '1', path: 'code1.yaml', ydoc: createYUpdate('1', 'Code1'), lastModified, versions: [], code: true},
+      {id: '2', path: 'code2.yaml', ydoc: createYUpdate('2', 'Code2'), lastModified, versions: [], code: true},
+    ],
+  })
+
   const {store, fileService} = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={store} />)
+  const {getByTestId, getAllByTestId} = render(() => <Main state={store} />)
 
   await waitFor(() => {
     expect(getByTestId('code_scroll')).toBeDefined()
@@ -195,4 +201,13 @@ test('open - location arg', async () => {
 
   expect(fileService.currentFile?.path).toBe('code1.yaml')
   expect(fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('Code1')
+
+  fireEvent.click(getByTestId('burger'))
+  fireEvent.click(getAllByTestId('tree_link_title')[1])
+
+  await waitFor(() => {
+    expect(fileService.currentFile?.id).toBe('2')
+  })
+
+  expect(fileService.currentFile?.path).toBe('code2.yaml')
 })

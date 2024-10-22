@@ -1,5 +1,6 @@
 import {Location} from '@solidjs/router'
 import {File, LocationState, State} from '@/state'
+import {OpenFile} from '@/services/FileService'
 
 const ydoc = 'Uint8Array'
 const editorView = undefined
@@ -22,3 +23,5 @@ export const locationToString = (location: Location<LocationState>) =>
     file: location.state?.file,
     newFile: location.state?.newFile,
   })
+
+export const openFileToString = (openFile: OpenFile) => JSON.stringify(openFile)

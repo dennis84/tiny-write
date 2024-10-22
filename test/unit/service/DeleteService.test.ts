@@ -123,9 +123,6 @@ test.each([
   }
 
   expect(fileService.updateFile).toBeCalled()
-
-  expect(store.args?.cwd).toBeDefined()
-  expect(store.args?.file).toBe(undefined)
 })
 
 test.each([

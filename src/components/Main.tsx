@@ -40,7 +40,7 @@ export const Main = (props: {state: State}) => {
     onMount(async () => {
       ctrl.appService.layoutRef = layoutRef
       try {
-        await ctrl.appService.init(location.state ?? undefined)
+        await ctrl.appService.init()
       } catch (error: any) {
         ctrl.appService.setError({id: 'init_failed', error})
       }

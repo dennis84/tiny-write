@@ -1,14 +1,18 @@
 import {onMount} from 'solid-js'
-import {Mode, useState} from '@/state'
+import {useLocation} from '@solidjs/router'
+import {LocationState, Mode, useState} from '@/state'
 import {getMimeType, info} from '@/remote'
 import {useOpen} from '@/open'
 
 export const Redirect = () => {
   const {store, canvasService, fileService, editorService} = useState()
   const {open, openDir} = useOpen()
+  const location = useLocation<LocationState>()
 
   onMount(async () => {
-    const argPath = store.args?.newFile ?? store.args?.file
+    const path = location.state?.file ?? store.args?.file
+    const newFile = location.state?.newFile ?? store.args?.newFile
+    const argPath = newFile ?? path
 
     if (store.args?.source && !argPath) {
       openDir()
@@ -21,8 +25,6 @@ export const Redirect = () => {
       if (!file) {
         const mime = await getMimeType(argPath)
         const code = !mime.startsWith('text/markdown')
-        const newFile = store.args?.newFile
-        const path = store.args?.file
         file = await editorService.newFile({newFile, path, code})
         info(
           `Created new file with path (id=${file.id}, code=${code}, path=${path}, newFile=${newFile}, mime=${mime})`,

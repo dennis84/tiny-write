@@ -4,11 +4,12 @@ import * as Y from 'yjs'
 import {yCollab, ySyncFacet} from 'y-codemirror.next'
 import {File, State} from '@/state'
 import * as remote from '@/remote'
-import {FileService} from './FileService'
+import {FileService, OpenFile} from './FileService'
 import {CollabService} from './CollabService'
 import {AppService} from './AppService'
 import {CodeMirrorService} from './CodeMirrorService'
 import {PrettierService} from './PrettierService'
+import {openFileToString} from '@/utils/debug'
 
 export class CodeService {
   constructor(
@@ -27,18 +28,19 @@ export class CodeService {
     return file
   }
 
-  async openFile(id: string, share = false) {
-    remote.debug(`Open file: (id=${id}, share=${share}, mode=code)`)
+  async openFile(params: OpenFile) {
+    remote.debug(`Open file: (params=${openFileToString(params)}, mode=code)`)
     const state: State = unwrap(this.store)
 
     try {
-      let file = unwrap(this.fileService.findFileById(id))
-      const path = file?.path ?? state.args?.file
+      let file = unwrap(this.fileService.findFileById(params.id))
+      const path = file?.path ?? params.file
+      const newFile = file?.newFile ?? params.file
 
       let text: string | undefined
 
       if (!file) {
-        file = FileService.createFile({id, code: true, path, newFile: state.args?.newFile})
+        file = FileService.createFile({id: params.id, code: true, path, newFile})
         state.files.push(file)
       }
 
@@ -46,15 +48,13 @@ export class CodeService {
         text = (await FileService.loadTextFile(path)).text
       }
 
-      if (state.args?.room) state.args.room = undefined
-
       const update = await FileService.activateFile(state, file.id)
-      update.collab = CollabService.create(file.id, update.mode, share)
+      update.collab = CollabService.create(file.id, update.mode, params.share)
       const subdoc = CollabService.getSubdoc(update.collab.ydoc, file.id)
       if (text) this.updateText(file, subdoc, text)
       this.setState(update)
     } catch (error: any) {
-      this.appService.setError({error, fileId: id})
+      this.appService.setError({error, fileId: params.id})
     }
   }
 

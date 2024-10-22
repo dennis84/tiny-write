@@ -31,7 +31,7 @@ export class AppService {
     return this.store.fullscreen
   }
 
-  async init(location?: LocationState) {
+  async init() {
     const data = await this.fetchData()
     remote.debug(`Fetched data: ${stateToString(data)}`)
     remote.info(`Init app (mode=${data.mode}, args=${JSON.stringify(data.args)})`)
@@ -43,7 +43,7 @@ export class AppService {
 
       const newState: State = {
         ...data,
-        args: {...data.args, ...location},
+        args: {...data.args},
         config: {...data.config, ...ConfigService.getThemeConfig(data)},
         loading: 'initialized',
       }

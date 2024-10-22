@@ -3,7 +3,7 @@ import {CanvasService} from './CanvasService'
 import {FileService} from './FileService'
 import {TreeNode, TreeService} from './TreeService'
 import {info} from '@/remote'
-import {reconcile, SetStoreFunction, unwrap} from 'solid-js/store'
+import {SetStoreFunction, unwrap} from 'solid-js/store'
 import {DB} from '@/db'
 
 interface DeleteResult {
@@ -45,10 +45,6 @@ export class DeleteService {
       await doEmptyBin(n)
     }
 
-    if (navigateTo) {
-      this.resetArgs()
-    }
-
     return {navigateTo}
   }
 
@@ -60,10 +56,6 @@ export class DeleteService {
     await Promise.all(proms)
 
     this.treeService.create()
-
-    if (navigateTo) {
-      this.resetArgs()
-    }
 
     return {navigateTo}
   }
@@ -162,9 +154,5 @@ export class DeleteService {
       await DB.deleteFile(id)
       info('File forever deleted')
     }
-  }
-
-  private resetArgs() {
-    this.setState('args', reconcile({cwd: this.store.args?.cwd}))
   }
 }
