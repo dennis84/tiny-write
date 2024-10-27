@@ -41,27 +41,6 @@ beforeEach(() => {
   vi.restoreAllMocks()
 })
 
-test('newFile', async () => {
-  const [store, setState] = createStore(createState({}))
-  const fileService = mock<FileService>()
-  const service = new EditorService(
-    fileService,
-    collabService,
-    proseMirrorService,
-    appService,
-    treeService,
-    selectService,
-    store,
-    setState,
-  )
-
-  const file = await service.newFile()
-
-  expect(file).toBeDefined()
-  expect(store.files.length).toBe(1)
-  expect(store.files[0].active).toBeFalsy()
-})
-
 test('openFile - stop collab', async () => {
   const initial = createState({
     files: [

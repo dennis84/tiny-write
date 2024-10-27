@@ -18,9 +18,9 @@ interface Props {
 }
 
 export const BlockTooltip = (props: Props) => {
-  const {store, appService, editorService, fileService} = useState()
+  const {appService, fileService} = useState()
   const [tooltipAnchor, setTooltipAnchor] = createSignal<ReferenceElement | undefined>()
-  const {openFile} = useOpen()
+  const {open} = useOpen()
 
   const closeTooltip = () => {
     props.resetBlock()
@@ -198,7 +198,9 @@ export const BlockTooltip = (props: Props) => {
 
     const basePath = await appService.getBasePath()
     const path = await remote.resolvePath(href, basePath)
-    openFile(path, undefined, true)
+    const file = await fileService.newFileByPath(path)
+    if (!file) return
+    open(file, true, undefined)
     closeTooltip()
   }
 

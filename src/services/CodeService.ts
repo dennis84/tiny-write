@@ -4,12 +4,19 @@ import * as Y from 'yjs'
 import {yCollab, ySyncFacet} from 'y-codemirror.next'
 import {File, SelectionRange, State, VisualPositionRange} from '@/state'
 import * as remote from '@/remote'
-import {FileService, OpenFile} from './FileService'
+import {FileService} from './FileService'
 import {CollabService} from './CollabService'
 import {AppService} from './AppService'
 import {CodeMirrorService} from './CodeMirrorService'
 import {PrettierService} from './PrettierService'
-import {openFileToString} from '@/utils/debug'
+
+export interface OpenFile {
+  id: string
+  share?: boolean
+  file?: string
+  newFile?: string
+  selection?: VisualPositionRange
+}
 
 export class CodeService {
   constructor(
@@ -29,7 +36,7 @@ export class CodeService {
   }
 
   async openFile(params: OpenFile) {
-    remote.debug(`Open file: (params=${openFileToString(params)}, mode=code)`)
+    remote.debug(`Open file: (params=${JSON.stringify(params)}, mode=code)`)
     const state: State = unwrap(this.store)
 
     try {
@@ -49,6 +56,7 @@ export class CodeService {
       }
 
       const update = await FileService.activateFile(state, file.id)
+      update.args = {...update.args, selection: params.selection}
       update.collab = CollabService.create(file.id, update.mode, params.share)
       const subdoc = CollabService.getSubdoc(update.collab.ydoc, file.id)
       if (text) this.updateText(file, subdoc, text)
@@ -164,10 +172,10 @@ export class CodeService {
   }
 
   private createSelection(view: EditorView, range: VisualPositionRange): SelectionRange {
-    const anchor = view.state.doc.line(range.start.line).from + range.start.character + 1
+    const anchor = view.state.doc.line(range.start.line + 1).from + range.start.character
     let head
     if (range.end) {
-      head = view.state.doc.line(range.end.line).from + range.end.character + 1
+      head = view.state.doc.line(range.end.line + 1).from + range.end.character
     }
 
     return {

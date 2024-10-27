@@ -226,7 +226,7 @@ test('open - file arg', async () => {
 
   const initial = createState()
   const {store, fileService} = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={store} location={{}} />)
+  const {getByTestId} = render(() => <Main state={store} />)
 
   await waitFor(() => {
     expect(getByTestId('editor_scroll')).toBeDefined()

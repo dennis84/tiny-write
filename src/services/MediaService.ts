@@ -6,7 +6,6 @@ import {File, Mode, State} from '@/state'
 import {FileService} from './FileService'
 import {CanvasService} from './CanvasService'
 import {AppService} from './AppService'
-import {EditorService} from './EditorService'
 import {CanvasCollabService} from './CanvasCollabService'
 
 interface DropResult {
@@ -25,7 +24,6 @@ export class MediaService {
     private canvasService: CanvasService,
     private canvasCollabService: CanvasCollabService,
     private appService: AppService,
-    private editorService: EditorService,
     private store: Store<State>,
   ) {}
 
@@ -66,7 +64,7 @@ export class MediaService {
         this.insert(currentFile.editorView, relativePath, x, y, mime)
       } else {
         let file = await this.fileService.findFileByPath(path)
-        if (!file) file = await this.editorService.newFile({path, code: !isMarkdown})
+        if (!file) file = await this.fileService.newFile({path, code: !isMarkdown})
         return {file}
       }
     } else if (this.store.mode === Mode.Canvas) {
@@ -90,7 +88,7 @@ export class MediaService {
         )
       } else {
         let file = await this.fileService.findFileByPath(path)
-        if (!file) file = await this.editorService.newFile({path, code: !isMarkdown})
+        if (!file) file = await this.fileService.newFile({path, code: !isMarkdown})
         addedElement = (await this.canvasService.addFile(file))?.[0]
       }
 
@@ -99,7 +97,7 @@ export class MediaService {
     }
 
     let file = await this.fileService.findFileByPath(path)
-    if (!file) file = await this.editorService.newFile({path, code: !isMarkdown})
+    if (!file) file = await this.fileService.newFile({path, code: !isMarkdown})
     return {file}
   }
 

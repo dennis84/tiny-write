@@ -12,13 +12,6 @@ import {findCodeLang} from '@/codemirror/highlight'
 import {CollabService} from './CollabService'
 import {schema} from './ProseMirrorService'
 
-export interface OpenFile {
-  id: string
-  share?: boolean
-  file?: string
-  newFile?: string
-}
-
 export interface LoadedTextFile {
   text: string
   lastModified: Date
@@ -210,6 +203,32 @@ export class FileService {
     }
 
     return codeLang
+  }
+
+  async newFile(params: Partial<File> = {}): Promise<File> {
+    const file = FileService.createFile(params)
+    this.setState('files', (prev) => [...prev, file])
+    return file
+  }
+
+  async newFileByPath(
+    path: string | undefined,
+    newFile: string | undefined = undefined,
+  ): Promise<File | undefined> {
+    const p = path ?? newFile
+    if (!p) return
+
+    let file = await this.findFileByPath(p)
+    if (!file) {
+      const mime = await remote.getMimeType(p)
+      const code = !mime.startsWith('text/markdown')
+      file = await this.newFile({newFile, path, code})
+      remote.info(
+        `Created new file with path (id=${file.id}, code=${code}, path=${path}, newFile=${newFile}, mime=${mime})`,
+      )
+    }
+
+    return file
   }
 
   private static createYdoc(id: string, bytes?: Uint8Array): Y.Doc {

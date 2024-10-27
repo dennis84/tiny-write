@@ -21,6 +21,7 @@ export const CodePage = (props: RouteSectionProps) => {
         share,
         file: location.state?.file,
         newFile: location.state?.newFile,
+        selection: location.state?.selection,
       })
 
       fileService.currentFile?.codeEditorView?.focus()

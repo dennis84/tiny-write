@@ -15,7 +15,7 @@ export const Keymap = () => {
     canvasService,
     canvasCollabService,
   } = useState()
-  const {open, openFile} = useOpen()
+  const {open} = useOpen()
 
   onMount(() => {
     document.addEventListener('keydown', onKeyDown)
@@ -45,7 +45,7 @@ export const Keymap = () => {
 
   const onNew = async () => {
     if (store.mode === Mode.Editor) {
-      const file = await editorService.newFile()
+      const file = await fileService.newFile()
       open(file)
     } else {
       const el = await canvasService.newFile()
@@ -129,11 +129,11 @@ export const Keymap = () => {
     if (!first) return
 
     const url = new URL(first.uri)
-
-    const file = url.pathname
     const selection = first.range
 
-    openFile(file, selection)
+    const file = await fileService.newFileByPath(url.pathname)
+
+    open(file, true, selection)
   }
 
   type Fn = (e: KeyboardEvent) => boolean | void | Promise<boolean | void>

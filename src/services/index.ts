@@ -71,7 +71,6 @@ export const createCtrl = (initial: State) => {
     canvasService,
     canvasCollabService,
     appService,
-    editorService,
     store,
   )
 

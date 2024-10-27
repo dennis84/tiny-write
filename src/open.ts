@@ -22,11 +22,15 @@ export const useOpen = () => {
     el.type === ElementType.Video ||
     el.type === ElementType.Editor
 
-  const open = (item: Openable | undefined, back = false) => {
+  const open = (
+    item: Openable | undefined,
+    back = false,
+    selection: VisualPositionRange | undefined = undefined,
+  ) => {
     const prev = back ? location.pathname : undefined
     const file = isFile(item) ? item.path : undefined
     const newFile = isFile(item) ? item.newFile : undefined
-    const state = {prev, file, newFile}
+    const state = {prev, file, newFile, selection}
 
     if (!item) {
       info(`Redirect to (to=/)`)
@@ -53,12 +57,5 @@ export const useOpen = () => {
     navigate('/dir', {state})
   }
 
-  const openFile = (file: string, selection?: VisualPositionRange, back = false) => {
-    info(`Redirect to (to=/)`)
-    const prev = back ? location.pathname : undefined
-    const state = {prev, file, selection}
-    navigate('/', {state})
-  }
-
-  return {open, openDir, openFile}
+  return {open, openDir}
 }

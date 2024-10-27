@@ -8,7 +8,6 @@ import {createCtrl} from '@/services'
 import {Main} from '@/components/Main'
 import {createYUpdate} from '../util/codemirror-util'
 import {createIpcMock, stubLocation} from '../util/util'
-import { useOpen } from '@/open'
 
 vi.mock('@/db', () => ({DB: mock<DB>()}))
 

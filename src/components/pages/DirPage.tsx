@@ -4,7 +4,7 @@ import {styled} from 'solid-styled-components'
 import {DirEntry, readDir} from '@tauri-apps/plugin-fs'
 import {homeDir} from '@tauri-apps/api/path'
 import {useState} from '@/state'
-import {getMimeType, info, resolvePath, toRelativePath} from '@/remote'
+import {resolvePath, toRelativePath} from '@/remote'
 import {useOpen} from '@/open'
 import {Content, Scroll} from '../Layout'
 import {Icon} from '../Icon'
@@ -53,7 +53,7 @@ interface DirState {
 }
 
 export const DirPage = () => {
-  const {store, editorService, fileService} = useState()
+  const {store, fileService} = useState()
   const [dirEntries, setDirEntries] = createSignal<DirEntry[]>()
   const [currentPath, setCurrentPath] = createSignal<string>()
   const {open, openDir} = useOpen()
@@ -81,12 +81,8 @@ export const DirPage = () => {
       }
 
       const path = await getResolvedPath(p.entry.name)
-      let file = await fileService.findFileByPath(path)
-      const mime = await getMimeType(path)
-      const code = !mime.startsWith('text/markdown')
-      info(`Open from dir (path=${path}, mime=${mime})`)
+      let file = await fileService.newFileByPath(path)
 
-      if (!file) file = await editorService.newFile({path, code})
       open(file, true)
     }
 

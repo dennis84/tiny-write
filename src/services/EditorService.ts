@@ -9,13 +9,19 @@ import {Box} from '@tldraw/editor'
 import {debug, info, error, writeText} from '@/remote'
 import {State, FileText, File} from '@/state'
 import {serialize} from '@/markdown'
-import {openFileToString} from '@/utils/debug'
-import {FileService, OpenFile} from './FileService'
+import {FileService} from './FileService'
 import {CollabService} from './CollabService'
 import {ProseMirrorService, schema} from './ProseMirrorService'
 import {AppService} from './AppService'
 import {TreeService} from './TreeService'
 import {SelectService} from './SelectService'
+
+export interface OpenFile {
+  id: string
+  share?: boolean
+  file?: string
+  newFile?: string
+}
 
 export class EditorService {
   constructor(
@@ -114,14 +120,8 @@ export class EditorService {
     editorView?.focus()
   }
 
-  async newFile(params: Partial<File> = {}): Promise<File> {
-    const file = FileService.createFile(params)
-    this.setState('files', (prev) => [...prev, file])
-    return file
-  }
-
   async openFile(params: OpenFile) {
-    debug(`Open file: (params=${openFileToString(params)}, mode=editor)`)
+    debug(`Open file: (params=${JSON.stringify(params)}, mode=editor)`)
     const state: State = unwrap(this.store)
 
     try {

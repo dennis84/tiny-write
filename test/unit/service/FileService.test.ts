@@ -145,3 +145,14 @@ test.each([
   const file = FileService.createFile({code, codeLang, path, newFile})
   expect(file.codeLang).toBe(expected)
 })
+
+test('newFile', async () => {
+  const [store, setState] = createStore(createState({}))
+  const service = new FileService(collabService, store, setState)
+
+  const file = await service.newFile()
+
+  expect(file).toBeDefined()
+  expect(store.files.length).toBe(1)
+  expect(store.files[0].active).toBeFalsy()
+})

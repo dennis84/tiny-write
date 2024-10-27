@@ -153,7 +153,6 @@ export const SubmenuTree = (props: Props) => {
     canvasCollabService,
     codeService,
     deleteService,
-    editorService,
     fileService,
     treeService,
   } = useState()
@@ -197,7 +196,7 @@ export const SubmenuTree = (props: Props) => {
   }
 
   const onNewFile = async () => {
-    const file = await editorService.newFile()
+    const file = await fileService.newFile()
     open(file)
     treeService.create()
     closeTooltip()
@@ -223,7 +222,7 @@ export const SubmenuTree = (props: Props) => {
   const onAddFile = async () => {
     const target = unwrap(selected())
     if (!target) return
-    const file = await editorService.newFile()
+    const file = await fileService.newFile()
     await treeService.add({item: file, tree: []}, target)
     if (treeService.isCollapsed(target)) {
       await treeService.collapse(target)
