@@ -8,9 +8,10 @@ import {Title} from './Title'
 import {CodeEditor} from '../code/CodeEditor'
 
 export const CodePage = (props: RouteSectionProps) => {
+  const location = useLocation<LocationState>()
+
   const OpenCodeEditor = () => {
     const {store, codeService, fileService} = useState()
-    const location = useLocation<LocationState>()
 
     info(`Open code page (location=${locationToString(props.location)})`)
 
@@ -39,7 +40,7 @@ export const CodePage = (props: RouteSectionProps) => {
   }
 
   return (
-    <Show when={props.params.id} keyed>
+    <Show when={props.params.id && location.state} keyed>
       <OpenCodeEditor />
     </Show>
   )
