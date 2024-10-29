@@ -193,4 +193,25 @@ mod tests {
         let doc = editor_state.load_document(path.as_ref()).unwrap();
         assert_eq!(doc.text.to_string(), "test".to_string());
     }
+
+    #[tokio::test]
+    #[serial]
+    async fn test_editor_state_2() {
+        create_test_workspace();
+        //
+        let path = get_test_dir().join("README.md");
+
+        let mut editor_state = EditorState::new();
+        let doc = editor_state.get_document(path.as_ref()).unwrap();
+
+        assert_eq!(doc.text.to_string(), "".to_string());
+
+        doc.text.insert(0, "🧜‍♂️"); // PM: 0-5
+
+        let from = doc.text.utf16_cu_to_char(5);
+
+        doc.text.insert(from, "1"); // PM: 5-6
+
+        assert_eq!(doc.text.to_string(), "🧜‍♂️1".to_string());
+    }
 }
