@@ -99,6 +99,8 @@ impl LspRegistry {
 
 #[cfg(test)]
 mod tests {
+    use std::time::SystemTime;
+
     use ropey::Rope;
     use serial_test::serial;
 
@@ -120,7 +122,7 @@ mod tests {
             language: Some(language.clone()),
             text: Rope::new(),
             changed: false,
-            version: 0,
+            version: SystemTime::now(),
         };
 
         let mut lsp_registry = LspRegistry::new();

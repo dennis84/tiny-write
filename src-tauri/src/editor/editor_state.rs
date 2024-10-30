@@ -4,7 +4,9 @@ use serde::{Deserialize, Serialize};
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::ffi::OsStr;
+use std::fs;
 use std::path::{Path, PathBuf};
+use std::time::SystemTime;
 use std::{fs::File, io::BufWriter};
 
 use crate::editor::debouncer;
@@ -19,7 +21,7 @@ pub struct Document {
     pub text: Rope,
     pub changed: bool,
     pub language: Option<Language>,
-    pub version: i32,
+    pub version: SystemTime,
 }
 
 #[derive(Clone, Debug, serde::Deserialize)]
@@ -67,25 +69,32 @@ impl EditorState {
     }
 
     pub fn load_document(&mut self, path: &Path) -> anyhow::Result<&mut Document> {
-        let file = File::open(path)?;
-        let text = ropey::Rope::from_reader(file)?;
-        let language = Self::get_language(path);
-        let worktree_path = Self::get_worktree_path(path);
+        let version = fs::metadata(path)?.modified()?;
 
         let result = match self.documents.entry(path.to_path_buf()) {
             Entry::Occupied(doc) => {
                 let doc = doc.into_mut();
-                doc.text = text;
+                if version > doc.version {
+                    let file = File::open(path)?;
+                    let text = ropey::Rope::from_reader(file)?;
+                    doc.text = text;
+                    doc.version = version;
+                }
+
                 Ok(doc)
             }
             Entry::Vacant(map) => {
+                let file = File::open(path)?;
+                let text = ropey::Rope::from_reader(file)?;
+                let language = Self::get_language(path);
+                let worktree_path = Self::get_worktree_path(path);
                 let doc = Document {
                     path: path.to_path_buf(),
                     text,
                     changed: false,
                     worktree_path,
                     language,
-                    version: 0,
+                    version,
                 };
                 Ok(map.insert(doc))
             }
@@ -97,12 +106,11 @@ impl EditorState {
     }
 
     pub fn get_document(&mut self, path: &Path) -> anyhow::Result<&mut Document> {
-        let language = Self::get_language(path);
-        let worktree_path = Self::get_worktree_path(path);
-
         match self.documents.entry(path.to_path_buf()) {
             Entry::Occupied(doc) => Ok(doc.into_mut()),
             Entry::Vacant(map) => {
+                let language = Self::get_language(path);
+                let worktree_path = Self::get_worktree_path(path);
                 let file = File::open(path)?;
                 let text = ropey::Rope::from_reader(file)?;
                 let doc = Document {
@@ -111,7 +119,7 @@ impl EditorState {
                     changed: false,
                     worktree_path,
                     language,
-                    version: 0,
+                    version: SystemTime::now(),
                 };
                 Ok(map.insert(doc))
             }
@@ -124,7 +132,7 @@ impl EditorState {
 
         doc.text.insert(from, &data.text);
         doc.changed = true;
-        doc.version += 1;
+        doc.version = SystemTime::now();
 
         Ok(())
     }
@@ -136,7 +144,17 @@ impl EditorState {
 
         doc.text.remove(from..to);
         doc.changed = true;
-        doc.version += 1;
+        doc.version = SystemTime::now();
+
+        Ok(())
+    }
+
+    pub fn replace_text(&mut self, path: &Path, data: &str) -> anyhow::Result<()> {
+        let doc = self.get_document(path)?;
+
+        doc.text = Rope::from_str(data);
+        doc.changed = true;
+        doc.version = SystemTime::now();
 
         Ok(())
     }
@@ -181,9 +199,13 @@ impl EditorState {
 
 #[cfg(test)]
 mod tests {
+    use std::fs::File;
+    use std::io::prelude::*;
+    use std::{thread, time};
+
     use serial_test::serial;
 
-    use crate::editor::editor_state::EditorState;
+    use crate::editor::editor_state::{EditorState, Insert};
     use crate::editor::testutil::{create_test_workspace, get_test_dir};
 
     #[tokio::test]
@@ -207,33 +229,46 @@ mod tests {
         let path = get_test_dir().join("README.md");
 
         let mut editor_state = EditorState::new();
-        let doc = editor_state.get_document(path.as_ref()).unwrap();
 
-        assert_eq!(doc.path, path.to_path_buf());
-        assert_eq!(doc.text.to_string(), "".to_string());
+        let version_0_doc = editor_state.get_document(path.as_ref()).unwrap().clone();
+        assert_eq!(version_0_doc.path, path.to_path_buf());
+        assert_eq!(version_0_doc.text.to_string(), "".to_string());
 
-        doc.text.insert(0, "test");
+        editor_state
+            .insert_text(
+                path.as_ref(),
+                &Insert {
+                    from: 0,
+                    to: 5,
+                    text: "test".to_string(),
+                },
+            )
+            .unwrap();
 
-        let doc = editor_state.get_document(path.as_ref()).unwrap();
-        assert_eq!(doc.text.to_string(), "test".to_string());
+        let version_1_doc = editor_state.get_document(path.as_ref()).unwrap().clone();
+        assert_ne!(version_1_doc.version, version_0_doc.version);
 
-        let doc = editor_state.load_document(path.as_ref()).unwrap();
-        assert_eq!(doc.text.to_string(), "".to_string());
+        let get_again_doc = editor_state.get_document(path.as_ref()).unwrap();
+        assert_eq!(get_again_doc.text, version_1_doc.text);
 
-        doc.text.insert(0, "test");
-        doc.changed = true;
+        let load_doc = editor_state.load_document(path.as_ref()).unwrap();
+        assert_eq!(load_doc.text, version_1_doc.text);
+        assert_eq!(load_doc.version, version_1_doc.version);
 
-        editor_state.write_all().unwrap();
+        thread::sleep(time::Duration::from_millis(10));
+        let mut file = File::create(&path).unwrap();
+        file.write_all(b"updated").unwrap();
 
-        let doc = editor_state.load_document(path.as_ref()).unwrap();
-        assert_eq!(doc.text.to_string(), "test".to_string());
+        let load_doc = editor_state.load_document(path.as_ref()).unwrap();
+        assert_ne!(load_doc.text, version_1_doc.text);
+        assert_ne!(load_doc.version, version_1_doc.version);
     }
 
     #[tokio::test]
     #[serial]
     async fn test_editor_state_2() {
         create_test_workspace();
-        //
+
         let path = get_test_dir().join("README.md");
 
         let mut editor_state = EditorState::new();

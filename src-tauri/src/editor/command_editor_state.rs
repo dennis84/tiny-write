@@ -1,4 +1,3 @@
-use ropey::Rope;
 use std::{sync::Arc, time::Duration};
 use tauri::{path::SafePathBuf, Manager, Runtime};
 use tokio::sync::Mutex;
@@ -26,13 +25,11 @@ pub async fn write_text<R: Runtime>(
 ) -> tauri::Result<()> {
     let state = app_handle.state::<Arc<Mutex<EditorState>>>();
     let mut state = state.lock().await;
-    let doc = state.get_document(path.as_ref())?;
 
-    doc.text = Rope::from_str(&data);
-    doc.changed = true;
-    doc.version += 1;
-
-    state.debounced_write_tx.send(path.as_ref().to_path_buf(), Duration::from_millis(3000))?;
+    state.replace_text(path.as_ref(), &data)?;
+    state
+        .debounced_write_tx
+        .send(path.as_ref().to_path_buf(), Duration::from_millis(3000))?;
 
     Ok(())
 }
@@ -52,7 +49,9 @@ pub async fn insert_text<R: Runtime>(
     let lsp_service = app_handle.state::<Arc<LspService<R>>>();
     lsp_service.insert_document(doc, &data).await?;
 
-    state.debounced_write_tx.send(path.as_ref().to_path_buf(), Duration::from_millis(3000))?;
+    state
+        .debounced_write_tx
+        .send(path.as_ref().to_path_buf(), Duration::from_millis(3000))?;
 
     Ok(())
 }
@@ -72,7 +71,9 @@ pub async fn delete_text<R: Runtime>(
     let lsp_service = app_handle.state::<Arc<LspService<R>>>();
     lsp_service.delete_document(doc, &data).await?;
 
-    state.debounced_write_tx.send(path.as_ref().to_path_buf(), Duration::from_millis(3000))?;
+    state
+        .debounced_write_tx
+        .send(path.as_ref().to_path_buf(), Duration::from_millis(3000))?;
 
     Ok(())
 }

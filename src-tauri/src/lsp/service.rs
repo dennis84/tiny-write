@@ -1,5 +1,6 @@
 use std::path::Path;
 use std::sync::Arc;
+use std::time::SystemTime;
 
 use anyhow::anyhow;
 use async_lsp_client::LspServer;
@@ -20,7 +21,7 @@ use lsp_types::{
 use tauri::{AppHandle, Manager, Runtime};
 use tokio::sync::Mutex;
 
-use crate::editor::editor_state::{Document, EditorState, Delete, Insert};
+use crate::editor::editor_state::{Delete, Document, EditorState, Insert};
 use crate::lsp::registry::LspRegistry;
 use crate::lsp::util::pos_to_lsp_pos;
 
@@ -103,7 +104,7 @@ impl<R: Runtime> LspService<R> {
                 text_document: TextDocumentItem {
                     uri: file_uri,
                     language_id: doc.get_language_id(),
-                    version: 0,
+                    version: self.get_version(doc)?,
                     text: doc.text.to_string(),
                 },
             })
@@ -153,7 +154,7 @@ impl<R: Runtime> LspService<R> {
             .send_notification::<DidChangeTextDocument>(DidChangeTextDocumentParams {
                 text_document: VersionedTextDocumentIdentifier {
                     uri: Url::from_file_path(doc.path.clone()).unwrap(),
-                    version: doc.version,
+                    version: self.get_version(doc)?,
                 },
                 content_changes,
             })
@@ -203,7 +204,7 @@ impl<R: Runtime> LspService<R> {
             .send_notification::<DidChangeTextDocument>(DidChangeTextDocumentParams {
                 text_document: VersionedTextDocumentIdentifier {
                     uri: Url::from_file_path(doc.path.clone()).unwrap(),
-                    version: doc.version,
+                    version: self.get_version(doc)?,
                 },
                 content_changes,
             })
@@ -375,5 +376,10 @@ impl<R: Runtime> LspService<R> {
                 TextDocumentSyncCapability::Kind(kind) => Some(*kind),
                 TextDocumentSyncCapability::Options(options) => options.change,
             })
+    }
+
+    fn get_version(&self, doc: &Document) -> anyhow::Result<i32> {
+        let duration = SystemTime::now().duration_since(doc.version)?;
+        Ok(duration.as_secs() as i32)
     }
 }
