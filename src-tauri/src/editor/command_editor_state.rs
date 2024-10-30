@@ -5,18 +5,7 @@ use tokio::sync::Mutex;
 
 use crate::{editor::editor_state::EditorState, lsp::service::LspService};
 
-#[derive(Clone, Debug, serde::Deserialize)]
-pub struct Insert {
-    pub from: usize,
-    pub to: usize,
-    pub text: String,
-}
-
-#[derive(Clone, Debug, serde::Deserialize)]
-pub struct Delete {
-    pub from: usize,
-    pub to: usize,
-}
+use super::editor_state::{Delete, Insert};
 
 #[tauri::command]
 pub async fn read_text<R: Runtime>(
@@ -56,14 +45,10 @@ pub async fn insert_text<R: Runtime>(
 ) -> tauri::Result<()> {
     let state = app_handle.state::<Arc<Mutex<EditorState>>>();
     let mut state = state.lock().await;
+
+    state.insert_text(path.as_ref(), &data)?;
+
     let doc = state.get_document(path.as_ref())?;
-
-    let from = doc.text.utf16_cu_to_char(data.from);
-
-    doc.text.insert(from, &data.text);
-    doc.changed = true;
-    doc.version += 1;
-
     let lsp_service = app_handle.state::<Arc<LspService<R>>>();
     lsp_service.insert_document(doc, &data).await?;
 
@@ -80,15 +65,10 @@ pub async fn delete_text<R: Runtime>(
 ) -> tauri::Result<()> {
     let state = app_handle.state::<Arc<Mutex<EditorState>>>();
     let mut state = state.lock().await;
+
+    state.delete_text(path.as_ref(), &data)?;
+
     let doc = state.get_document(path.as_ref())?;
-
-    let from = doc.text.utf16_cu_to_char(data.from);
-    let to = doc.text.utf16_cu_to_char(data.to);
-
-    doc.text.remove(from..to);
-    doc.changed = true;
-    doc.version += 1;
-
     let lsp_service = app_handle.state::<Arc<LspService<R>>>();
     lsp_service.delete_document(doc, &data).await?;
 

@@ -20,8 +20,7 @@ use lsp_types::{
 use tauri::{AppHandle, Manager, Runtime};
 use tokio::sync::Mutex;
 
-use crate::editor::command_editor_state::{Delete, Insert};
-use crate::editor::editor_state::{Document, EditorState};
+use crate::editor::editor_state::{Document, EditorState, Delete, Insert};
 use crate::lsp::registry::LspRegistry;
 use crate::lsp::util::pos_to_lsp_pos;
 

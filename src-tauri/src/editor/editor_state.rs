@@ -1,4 +1,3 @@
-use anyhow::Result;
 use log::info;
 use ropey::Rope;
 use serde::{Deserialize, Serialize};
@@ -21,6 +20,19 @@ pub struct Document {
     pub changed: bool,
     pub language: Option<Language>,
     pub version: i32,
+}
+
+#[derive(Clone, Debug, serde::Deserialize)]
+pub struct Insert {
+    pub from: usize,
+    pub to: usize,
+    pub text: String,
+}
+
+#[derive(Clone, Debug, serde::Deserialize)]
+pub struct Delete {
+    pub from: usize,
+    pub to: usize,
 }
 
 impl Document {
@@ -106,7 +118,30 @@ impl EditorState {
         }
     }
 
-    pub fn write_all(&mut self) -> Result<()> {
+    pub fn insert_text(&mut self, path: &Path, data: &Insert) -> anyhow::Result<()> {
+        let doc = self.get_document(path)?;
+        let from = doc.text.utf16_cu_to_char(data.from);
+
+        doc.text.insert(from, &data.text);
+        doc.changed = true;
+        doc.version += 1;
+
+        Ok(())
+    }
+
+    pub fn delete_text(&mut self, path: &Path, data: &Delete) -> anyhow::Result<()> {
+        let doc = self.get_document(path)?;
+        let from = doc.text.utf16_cu_to_char(data.from);
+        let to = doc.text.utf16_cu_to_char(data.to);
+
+        doc.text.remove(from..to);
+        doc.changed = true;
+        doc.version += 1;
+
+        Ok(())
+    }
+
+    pub fn write_all(&mut self) -> anyhow::Result<()> {
         for (_, doc) in self.documents.iter_mut() {
             if !doc.changed {
                 continue;
