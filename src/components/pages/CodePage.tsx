@@ -40,7 +40,7 @@ export const CodePage = (props: RouteSectionProps) => {
   }
 
   return (
-    <Show when={props.params.id && location.state} keyed>
+    <Show when={props.params.id && (location.state || !location.state)} keyed>
       <OpenCodeEditor />
     </Show>
   )
