@@ -35,7 +35,6 @@ export const CodeEditor = () => {
     }
 
     if (provider && currentFile?.codeEditorView === undefined) {
-      console.log('renderEditor')
       codeService.renderEditor(currentFile, containerRef)
     }
   })

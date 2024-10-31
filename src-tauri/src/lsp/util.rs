@@ -30,3 +30,36 @@ pub fn pos_to_lsp_pos(doc: &Rope, pos: usize, offset_encoding: OffsetEncoding) -
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use lsp_types::Position;
+    use ropey::Rope;
+
+    use super::pos_to_lsp_pos;
+
+    use crate::lsp::service::OffsetEncoding;
+
+    #[tokio::test]
+    async fn test_pos_to_lsp_pos() {
+        let mut doc = Rope::new();
+        let lsp_pos = pos_to_lsp_pos(&doc, 0, OffsetEncoding::Utf16);
+        assert_eq!(lsp_pos, Position::new(0, 0));
+
+        doc.insert(0, "1");
+        let lsp_pos = pos_to_lsp_pos(&doc, 0, OffsetEncoding::Utf16);
+        assert_eq!(lsp_pos, Position::new(0, 0));
+
+        doc.insert(1, "2");
+        let lsp_pos = pos_to_lsp_pos(&doc, 1, OffsetEncoding::Utf16);
+        assert_eq!(lsp_pos, Position::new(0, 1));
+
+        doc.insert(2, "\n");
+        let lsp_pos = pos_to_lsp_pos(&doc, 2, OffsetEncoding::Utf16);
+        assert_eq!(lsp_pos, Position::new(0, 2));
+
+        doc.remove(2..3);
+        let lsp_pos = pos_to_lsp_pos(&doc, 1, OffsetEncoding::Utf16);
+        assert_eq!(lsp_pos, Position::new(0, 1));
+    }
+}

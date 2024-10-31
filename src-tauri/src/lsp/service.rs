@@ -175,7 +175,6 @@ impl<R: Runtime> LspService<R> {
 
         let document_sync_kind = self.document_sync_kind(config);
         let offset_encoding = self.offset_encoding(config);
-        println!("PM : FROM {} TO {}", data.from, data.to);
         let from = pos_to_lsp_pos(&doc.text, data.from, offset_encoding);
         let to = pos_to_lsp_pos(&doc.text, data.to, offset_encoding);
 

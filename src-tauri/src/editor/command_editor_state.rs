@@ -47,7 +47,7 @@ pub async fn insert_text<R: Runtime>(
 
     let doc = state.get_document(path.as_ref())?;
     let lsp_service = app_handle.state::<Arc<LspService<R>>>();
-    lsp_service.insert_document(doc, &data).await?;
+    let _ = lsp_service.insert_document(doc, &data).await;
 
     state
         .debounced_write_tx
@@ -65,11 +65,11 @@ pub async fn delete_text<R: Runtime>(
     let state = app_handle.state::<Arc<Mutex<EditorState>>>();
     let mut state = state.lock().await;
 
-    state.delete_text(path.as_ref(), &data)?;
-
     let doc = state.get_document(path.as_ref())?;
     let lsp_service = app_handle.state::<Arc<LspService<R>>>();
-    lsp_service.delete_document(doc, &data).await?;
+    let _ = lsp_service.delete_document(doc, &data).await;
+
+    state.delete_text(path.as_ref(), &data)?;
 
     state
         .debounced_write_tx

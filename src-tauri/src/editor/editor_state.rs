@@ -279,16 +279,33 @@ mod tests {
         let path = get_test_dir().join("README.md");
 
         let mut editor_state = EditorState::new();
-        let doc = editor_state.get_document(path.as_ref()).unwrap();
+        let doc = editor_state.get_document(path.as_ref()).unwrap().clone();
 
         assert_eq!(doc.text.to_string(), "".to_string());
 
-        doc.text.insert(0, "🧜‍♂️"); // PM: 0-5
+        editor_state
+            .insert_text(
+                path.as_ref(),
+                &Insert {
+                    from: 0,
+                    to: 5,
+                    text: "🧜‍♂️".to_string(),
+                },
+            )
+            .unwrap();
 
-        let from = doc.text.utf16_cu_to_char(5);
+        editor_state
+            .insert_text(
+                path.as_ref(),
+                &Insert {
+                    from: 5,
+                    to: 6,
+                    text: "1".to_string(),
+                },
+            )
+            .unwrap();
 
-        doc.text.insert(from, "1"); // PM: 5-6
-
+        let doc = editor_state.get_document(path.as_ref()).unwrap().clone();
         assert_eq!(doc.text.to_string(), "🧜‍♂️1".to_string());
     }
 }
