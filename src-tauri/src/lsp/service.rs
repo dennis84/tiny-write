@@ -4,7 +4,7 @@ use std::time::SystemTime;
 
 use anyhow::anyhow;
 use async_lsp_client::LspServer;
-use log::info;
+use log::debug;
 use lsp_types::notification::{DidChangeTextDocument, DidOpenTextDocument};
 use lsp_types::request::{Completion, GotoDefinition};
 use lsp_types::{
@@ -73,7 +73,7 @@ impl<R: Runtime> LspService<R> {
         server: &LspServer,
         doc: &Document,
     ) -> anyhow::Result<InitializeResult> {
-        info!("LSP - initialize doc");
+        debug!("LSP - initialize doc");
         let root_uri = lsp_types::Url::from_file_path(doc.get_worktree_path())
             .map_err(|_| anyhow!("invalid root_uri"))?;
         let result = server
@@ -90,7 +90,7 @@ impl<R: Runtime> LspService<R> {
     }
 
     pub async fn initialized(&self, server: &LspServer) -> anyhow::Result<()> {
-        info!("LSP - send initialized notification");
+        debug!("LSP - send initialized notification");
         server.initialized().await;
         Ok(())
     }
@@ -98,7 +98,7 @@ impl<R: Runtime> LspService<R> {
     pub async fn open_document(&self, server: &LspServer, doc: &Document) -> anyhow::Result<()> {
         let file_uri = lsp_types::Url::from_file_path(doc.path.clone())
             .map_err(|_| anyhow!("invalid file_uri"))?;
-        info!("LSP - open document (file_uri={:?})", file_uri);
+        debug!("LSP - open document (file_uri={:?})", file_uri);
         server
             .send_notification::<DidOpenTextDocument>(DidOpenTextDocumentParams {
                 text_document: TextDocumentItem {
@@ -145,7 +145,7 @@ impl<R: Runtime> LspService<R> {
             _ => Vec::new(),
         };
 
-        info!(
+        debug!(
             "LSP - insert document (from=[{}, {}], to=[{}, {}], text={})",
             from.line, from.character, to.line, to.character, data.text
         );
@@ -195,7 +195,7 @@ impl<R: Runtime> LspService<R> {
             _ => Vec::new(),
         };
 
-        info!(
+        debug!(
             "LSP - delete document (from=[{}, {}], to=[{}, {}])",
             from.line, from.character, to.line, to.character
         );
@@ -230,7 +230,7 @@ impl<R: Runtime> LspService<R> {
 
         let offset_encoding = self.offset_encoding(config);
 
-        info!("LSP - send hover request");
+        debug!("LSP - send hover request");
         let response = server
             .send_request::<HoverRequest>(HoverParams {
                 text_document_position_params: TextDocumentPositionParams {
@@ -288,7 +288,7 @@ impl<R: Runtime> LspService<R> {
             .get_language_server(doc)
             .ok_or(anyhow!("No language server"))?;
 
-        info!(
+        debug!(
             "LSP - send completion request (pos={}, trigger={:?}, kind={:?})",
             pos, trigger_character, trigger_kind
         );
@@ -333,7 +333,7 @@ impl<R: Runtime> LspService<R> {
             .get_language_server(doc)
             .ok_or(anyhow!("No language server"))?;
 
-        info!("LSP - goto definition request (pos={})", pos);
+        debug!("LSP - goto definition request (pos={})", pos);
         let file_uri = Url::from_file_path(path).unwrap();
         let offset_encoding = self.offset_encoding(config);
 
