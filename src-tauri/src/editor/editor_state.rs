@@ -21,7 +21,8 @@ pub struct Document {
     pub text: Rope,
     pub changed: bool,
     pub language: Option<Language>,
-    pub version: SystemTime,
+    pub last_modified: SystemTime,
+    pub version: i32,
 }
 
 #[derive(Clone, Debug, serde::Deserialize)]
@@ -69,16 +70,17 @@ impl EditorState {
     }
 
     pub fn load_document(&mut self, path: &Path) -> anyhow::Result<&mut Document> {
-        let version = fs::metadata(path)?.modified()?;
+        let last_modified = fs::metadata(path)?.modified()?;
 
         let result = match self.documents.entry(path.to_path_buf()) {
             Entry::Occupied(doc) => {
                 let doc = doc.into_mut();
-                if version > doc.version {
+                if last_modified > doc.last_modified {
                     let file = File::open(path)?;
                     let text = ropey::Rope::from_reader(file)?;
                     doc.text = text;
-                    doc.version = version;
+                    doc.last_modified = last_modified;
+                    doc.version += 1
                 }
 
                 Ok(doc)
@@ -94,7 +96,8 @@ impl EditorState {
                     changed: false,
                     worktree_path,
                     language,
-                    version,
+                    last_modified,
+                    version: 0,
                 };
                 Ok(map.insert(doc))
             }
@@ -119,7 +122,8 @@ impl EditorState {
                     changed: false,
                     worktree_path,
                     language,
-                    version: SystemTime::now(),
+                    last_modified: SystemTime::now(),
+                    version: 0,
                 };
                 Ok(map.insert(doc))
             }
@@ -132,7 +136,8 @@ impl EditorState {
 
         doc.text.insert(from, &data.text);
         doc.changed = true;
-        doc.version = SystemTime::now();
+        doc.last_modified = SystemTime::now();
+        doc.version += 1;
 
         Ok(())
     }
@@ -144,7 +149,8 @@ impl EditorState {
 
         doc.text.remove(from..to);
         doc.changed = true;
-        doc.version = SystemTime::now();
+        doc.last_modified = SystemTime::now();
+        doc.version += 1;
 
         Ok(())
     }
@@ -154,7 +160,8 @@ impl EditorState {
 
         doc.text = Rope::from_str(data);
         doc.changed = true;
-        doc.version = SystemTime::now();
+        doc.last_modified = SystemTime::now();
+        doc.version += 1;
 
         Ok(())
     }
@@ -230,9 +237,9 @@ mod tests {
 
         let mut editor_state = EditorState::new();
 
-        let version_0_doc = editor_state.get_document(path.as_ref()).unwrap().clone();
-        assert_eq!(version_0_doc.path, path.to_path_buf());
-        assert_eq!(version_0_doc.text.to_string(), "".to_string());
+        let v0_doc = editor_state.get_document(path.as_ref()).unwrap().clone();
+        assert_eq!(v0_doc.path, path.to_path_buf());
+        assert_eq!(v0_doc.text.to_string(), "".to_string());
 
         editor_state
             .insert_text(
@@ -245,23 +252,23 @@ mod tests {
             )
             .unwrap();
 
-        let version_1_doc = editor_state.get_document(path.as_ref()).unwrap().clone();
-        assert_ne!(version_1_doc.version, version_0_doc.version);
+        let v1_doc = editor_state.get_document(path.as_ref()).unwrap().clone();
+        assert_ne!(v1_doc.last_modified, v0_doc.last_modified);
 
         let get_again_doc = editor_state.get_document(path.as_ref()).unwrap();
-        assert_eq!(get_again_doc.text, version_1_doc.text);
+        assert_eq!(get_again_doc.text, v1_doc.text);
 
         let load_doc = editor_state.load_document(path.as_ref()).unwrap();
-        assert_eq!(load_doc.text, version_1_doc.text);
-        assert_eq!(load_doc.version, version_1_doc.version);
+        assert_eq!(load_doc.text, v1_doc.text);
+        assert_eq!(load_doc.last_modified, v1_doc.last_modified);
 
         thread::sleep(time::Duration::from_millis(10));
         let mut file = File::create(&path).unwrap();
         file.write_all(b"updated").unwrap();
 
         let load_doc = editor_state.load_document(path.as_ref()).unwrap();
-        assert_ne!(load_doc.text, version_1_doc.text);
-        assert_ne!(load_doc.version, version_1_doc.version);
+        assert_ne!(load_doc.text, v1_doc.text);
+        assert_ne!(load_doc.last_modified, v1_doc.last_modified);
     }
 
     #[tokio::test]

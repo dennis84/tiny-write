@@ -122,7 +122,8 @@ mod tests {
             language: Some(language.clone()),
             text: Rope::new(),
             changed: false,
-            version: SystemTime::now(),
+            last_modified: SystemTime::now(),
+            version: 0,
         };
 
         let mut lsp_registry = LspRegistry::new();

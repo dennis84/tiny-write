@@ -1,6 +1,5 @@
 use std::path::Path;
 use std::sync::Arc;
-use std::time::SystemTime;
 
 use anyhow::anyhow;
 use async_lsp_client::LspServer;
@@ -104,7 +103,7 @@ impl<R: Runtime> LspService<R> {
                 text_document: TextDocumentItem {
                     uri: file_uri,
                     language_id: doc.get_language_id(),
-                    version: self.get_version(doc)?,
+                    version: doc.version,
                     text: doc.text.to_string(),
                 },
             })
@@ -146,15 +145,15 @@ impl<R: Runtime> LspService<R> {
         };
 
         debug!(
-            "LSP - insert document (from=[{}, {}], to=[{}, {}], text={})",
-            from.line, from.character, to.line, to.character, data.text
+            "LSP - insert document (from=[{}, {}], to=[{}, {}], text={}, version={})",
+            from.line, from.character, to.line, to.character, data.text, doc.version
         );
 
         server
             .send_notification::<DidChangeTextDocument>(DidChangeTextDocumentParams {
                 text_document: VersionedTextDocumentIdentifier {
                     uri: Url::from_file_path(doc.path.clone()).unwrap(),
-                    version: self.get_version(doc)?,
+                    version: doc.version,
                 },
                 content_changes,
             })
@@ -176,6 +175,7 @@ impl<R: Runtime> LspService<R> {
 
         let document_sync_kind = self.document_sync_kind(config);
         let offset_encoding = self.offset_encoding(config);
+        println!("PM : FROM {} TO {}", data.from, data.to);
         let from = pos_to_lsp_pos(&doc.text, data.from, offset_encoding);
         let to = pos_to_lsp_pos(&doc.text, data.to, offset_encoding);
 
@@ -196,15 +196,15 @@ impl<R: Runtime> LspService<R> {
         };
 
         debug!(
-            "LSP - delete document (from=[{}, {}], to=[{}, {}])",
-            from.line, from.character, to.line, to.character
+            "LSP - delete document (from=[{}, {}], to=[{}, {}], version={})",
+            from.line, from.character, to.line, to.character, doc.version
         );
 
         server
             .send_notification::<DidChangeTextDocument>(DidChangeTextDocumentParams {
                 text_document: VersionedTextDocumentIdentifier {
                     uri: Url::from_file_path(doc.path.clone()).unwrap(),
-                    version: self.get_version(doc)?,
+                    version: doc.version,
                 },
                 content_changes,
             })
@@ -376,10 +376,5 @@ impl<R: Runtime> LspService<R> {
                 TextDocumentSyncCapability::Kind(kind) => Some(*kind),
                 TextDocumentSyncCapability::Options(options) => options.change,
             })
-    }
-
-    fn get_version(&self, doc: &Document) -> anyhow::Result<i32> {
-        let duration = SystemTime::now().duration_since(doc.version)?;
-        Ok(duration.as_secs() as i32)
     }
 }
