@@ -63,7 +63,7 @@ export const Keymap = () => {
     const currentFile = fileService.currentFile
     if (!isTauri() || !currentFile || currentFile?.path) return false
     const path = await remote.saveFile(currentFile)
-    if (path) await editorService.updatePath(path)
+    if (path) await fileService.updatePath(currentFile.id, path)
   }
 
   const onFullscreen = async () => {

@@ -91,7 +91,12 @@ export class FileService {
   }
 
   static async saveFile(file: File) {
-    if (!file.lastModified || file.path) {
+    if (!file.lastModified) {
+      return
+    }
+
+    if (file.path) {
+      await DB.deleteFile(file.id)
       return
     }
 
@@ -276,6 +281,15 @@ export class FileService {
     }
 
     this.setState('files', index, update)
+  }
+
+  async updatePath(fileId: string, path: string) {
+    const lastModified = new Date()
+    this.updateFile(fileId, {lastModified, path})
+
+    const updatedFile = this.findFileById(fileId)
+    if (!updatedFile) return
+    await FileService.saveFile(updatedFile)
   }
 
   destroy(id?: string) {

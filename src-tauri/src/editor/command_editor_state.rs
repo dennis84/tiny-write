@@ -13,8 +13,9 @@ pub async fn read_text<R: Runtime>(
 ) -> tauri::Result<String> {
     let state = app_handle.state::<Arc<Mutex<EditorState>>>();
     let mut state = state.lock().await;
-    let doc = state.load_document(path.as_ref())?;
-    Ok(doc.text.to_string())
+    let doc = state.get_document(path.as_ref())?;
+    let text = doc.text.to_string();
+    Ok(text)
 }
 
 #[tauri::command]

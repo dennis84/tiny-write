@@ -1,13 +1,13 @@
-use log::info;
+use log::{debug, info};
 use ropey::Rope;
 use serde::{Deserialize, Serialize};
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::ffi::OsStr;
-use std::fs;
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
-use std::{fs::File, io::BufWriter};
+use std::fs::{self, File};
+use std::io::BufWriter;
 
 use crate::editor::debouncer;
 
@@ -69,13 +69,20 @@ impl EditorState {
         }
     }
 
-    pub fn load_document(&mut self, path: &Path) -> anyhow::Result<&mut Document> {
+    pub fn get_document(&mut self, path: &Path) -> anyhow::Result<&mut Document> {
+        debug!("Get document (path={:?})", path);
+        if !fs::exists(path)? {
+            debug!("Create file (path={:?})", path);
+            File::create(path)?;
+        }
+
         let last_modified = fs::metadata(path)?.modified()?;
 
         let result = match self.documents.entry(path.to_path_buf()) {
             Entry::Occupied(doc) => {
                 let doc = doc.into_mut();
                 if last_modified > doc.last_modified {
+                    debug!("Update file contents (path={:?})", path);
                     let file = File::open(path)?;
                     let text = ropey::Rope::from_reader(file)?;
                     doc.text = text;
@@ -86,36 +93,11 @@ impl EditorState {
                 Ok(doc)
             }
             Entry::Vacant(map) => {
-                let file = File::open(path)?;
-                let text = ropey::Rope::from_reader(file)?;
-                let language = Self::get_language(path);
-                let worktree_path = Self::get_worktree_path(path);
-                let doc = Document {
-                    path: path.to_path_buf(),
-                    text,
-                    changed: false,
-                    worktree_path,
-                    language,
-                    last_modified,
-                    version: 0,
-                };
-                Ok(map.insert(doc))
-            }
-        };
-
-        self.open_doc_tx.send(path.to_path_buf())?;
-
-        result
-    }
-
-    pub fn get_document(&mut self, path: &Path) -> anyhow::Result<&mut Document> {
-        match self.documents.entry(path.to_path_buf()) {
-            Entry::Occupied(doc) => Ok(doc.into_mut()),
-            Entry::Vacant(map) => {
                 let language = Self::get_language(path);
                 let worktree_path = Self::get_worktree_path(path);
                 let file = File::open(path)?;
                 let text = ropey::Rope::from_reader(file)?;
+
                 let doc = Document {
                     path: path.to_path_buf(),
                     text,
@@ -125,9 +107,14 @@ impl EditorState {
                     last_modified: SystemTime::now(),
                     version: 0,
                 };
-                Ok(map.insert(doc))
+
+                let value = map.insert(doc);
+                self.open_doc_tx.send(path.to_path_buf())?;
+                Ok(value)
             }
-        }
+        };
+
+        result
     }
 
     pub fn insert_text(&mut self, path: &Path, data: &Insert) -> anyhow::Result<()> {
@@ -257,18 +244,15 @@ mod tests {
 
         let get_again_doc = editor_state.get_document(path.as_ref()).unwrap();
         assert_eq!(get_again_doc.text, v1_doc.text);
-
-        let load_doc = editor_state.load_document(path.as_ref()).unwrap();
-        assert_eq!(load_doc.text, v1_doc.text);
-        assert_eq!(load_doc.last_modified, v1_doc.last_modified);
+        assert_eq!(get_again_doc.last_modified, v1_doc.last_modified);
 
         thread::sleep(time::Duration::from_millis(10));
         let mut file = File::create(&path).unwrap();
         file.write_all(b"updated").unwrap();
 
-        let load_doc = editor_state.load_document(path.as_ref()).unwrap();
-        assert_ne!(load_doc.text, v1_doc.text);
-        assert_ne!(load_doc.last_modified, v1_doc.last_modified);
+        let get_after_write = editor_state.get_document(path.as_ref()).unwrap();
+        assert_ne!(get_after_write.text, v1_doc.text);
+        assert_ne!(get_after_write.last_modified, v1_doc.last_modified);
     }
 
     #[tokio::test]

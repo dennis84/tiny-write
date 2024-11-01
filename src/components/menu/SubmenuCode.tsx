@@ -1,10 +1,15 @@
+import {Show} from 'solid-js'
+import {isMac, isTauri, mod} from '@/env'
 import {useState} from '@/state'
+import {info, saveFile} from '@/remote'
 import {languages} from '@/codemirror/highlight'
-import {Label, Link, Sub} from './Style'
+import {Keys, Label, Link, Sub} from './Style'
 import {Icon} from '../Icon'
 
 export const SubmenuCode = () => {
   const {appService, codeService, fileService} = useState()
+
+  const modKey = isMac ? '⌘' : mod
 
   const onChangeLang = () => {
     const currentFile = fileService.currentFile
@@ -20,6 +25,17 @@ export const SubmenuCode = () => {
     })
   }
 
+  const onSaveAs = async () => {
+    const currentFile = fileService.currentFile
+    if (!currentFile) return
+    try {
+      const path = await saveFile(currentFile)
+      if (path) await fileService.updatePath(currentFile.id, path)
+    } catch (e) {
+      info(`Save as cancelled`, e)
+    }
+  }
+
   return (
     <>
       <Label>Code</Label>
@@ -27,6 +43,11 @@ export const SubmenuCode = () => {
         <Link onClick={onChangeLang}>
           <Icon>javascript</Icon> Change language
         </Link>
+        <Show when={isTauri() && !fileService.currentFile?.path}>
+          <Link onClick={onSaveAs}>
+            <Icon>save_as</Icon> Save to file <Keys keys={[modKey, 's']} />
+          </Link>
+        </Show>
       </Sub>
     </>
   )

@@ -161,8 +161,12 @@ export const saveFile = async (file: File): Promise<string> => {
   if (!isTauri()) throw Error('Must be run in tauri: save')
   const path = await dialog.save({defaultPath: file.newFile})
   if (!path) throw new Error('No path returned')
-  if (!file.editorView?.state) throw new Error('EditorView is not defined')
-  await fs.writeTextFile(path, serialize(file.editorView.state))
+  if (file.editorView?.state) {
+    await writeText(path, serialize(file.editorView.state))
+  } else if (file.codeEditorView) {
+    await writeText(path, file.codeEditorView.state.doc.toString())
+  }
+
   return path
 }
 
