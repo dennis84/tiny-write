@@ -9,6 +9,7 @@ import {CollabService} from './CollabService'
 import {AppService} from './AppService'
 import {CodeMirrorService} from './CodeMirrorService'
 import {PrettierService} from './PrettierService'
+import {TreeService} from './TreeService'
 
 export interface OpenFile {
   id: string
@@ -25,6 +26,7 @@ export class CodeService {
     private collabService: CollabService,
     private codeMirrorService: CodeMirrorService,
     private prettierService: PrettierService,
+    private treeService: TreeService,
     private store: Store<State>,
     private setState: SetStoreFunction<State>,
   ) {}
@@ -61,6 +63,7 @@ export class CodeService {
       const subdoc = CollabService.getSubdoc(update.collab.ydoc, file.id)
       if (text) this.updateText(file, subdoc, text)
       this.setState(update)
+      this.treeService.create()
     } catch (error: any) {
       this.appService.setError({error, fileId: params.id})
     }
@@ -180,7 +183,7 @@ export class CodeService {
 
     return {
       anchor,
-      head
+      head,
     }
   }
 }

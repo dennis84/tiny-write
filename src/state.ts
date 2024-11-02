@@ -184,6 +184,8 @@ export const isVideoElement = (el?: CanvasElement): el is CanvasVideoElement =>
 
 export const isFile = (it: any): it is File => it?.ydoc !== undefined
 
+export const isLocalFile = (it: any): it is File => isFile(it) && it.path !== undefined
+
 export const isCodeFile = (it: any): it is File => {
   if (it.code) return true
   const codeLang = FileService.getCodeLang(it)

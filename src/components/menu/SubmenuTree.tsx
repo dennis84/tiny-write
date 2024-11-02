@@ -3,7 +3,7 @@ import {Portal} from 'solid-js/web'
 import {unwrap} from 'solid-js/store'
 import {styled} from 'solid-styled-components'
 import {DragGesture} from '@use-gesture/vanilla'
-import {Mode, isCanvas, isCodeFile, isFile, useState} from '@/state'
+import {Mode, isCanvas, isCodeFile, isFile, isLocalFile, useState} from '@/state'
 import {useOpen} from '@/open'
 import {TreeNode, TreeNodeItem} from '@/services/TreeService'
 import {FileService} from '@/services/FileService'
@@ -254,7 +254,7 @@ export const SubmenuTree = (props: Props) => {
     const node = unwrap(selected())
     if (!node) return
     const result = await deleteService.delete(node)
-    if (result.navigateTo) open(result.navigateTo)
+    open(result.navigateTo)
     closeTooltip()
   }
 
@@ -262,7 +262,7 @@ export const SubmenuTree = (props: Props) => {
     const node = unwrap(selected())
     if (!node) return
     const result = await deleteService.delete(node, true)
-    if (result.navigateTo) open(result.navigateTo)
+    open(result.navigateTo)
     closeTooltip()
   }
 
@@ -546,7 +546,7 @@ export const SubmenuTree = (props: Props) => {
             </div>
             <hr class="divider" />
           </Show>
-          <Show when={selected()}>
+          <Show when={selected() && !isLocalFile(selected()?.item)}>
             <div onClick={onRename} data-testid="rename">
               <Icon>edit</Icon>
               Rename
@@ -562,10 +562,16 @@ export const SubmenuTree = (props: Props) => {
               Delete forever
             </div>
           </Show>
-          <Show when={selected() && !selected()?.item.deleted}>
+          <Show when={selected() && !selected()?.item.deleted && !isLocalFile(selected()?.item)}>
             <div onClick={onDelete} data-testid="delete">
               <Icon>delete</Icon>
               Delete
+            </div>
+          </Show>
+          <Show when={selected() && isLocalFile(selected()?.item)}>
+            <div onClick={onDeleteForever} data-testid="delete">
+              <Icon>delete</Icon>
+              Close
             </div>
           </Show>
           <Show when={!selected()}>
