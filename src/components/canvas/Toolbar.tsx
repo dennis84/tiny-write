@@ -57,6 +57,7 @@ export const Toolbar = () => {
 
   const {store, appService, canvasService, codeService, fileService} = useState()
   const [ugly, setUgly] = createSignal(false)
+  const [collides, setCollides] = createSignal(false)
   const {open} = useOpen()
 
   const restore = async (element: CanvasElement) => {
@@ -82,6 +83,15 @@ export const Toolbar = () => {
         codeService.updateLang(file, lang)
       },
     })
+  }
+
+  const onBackToContent = async () => {
+    const currentCanvas = canvasService.currentCanvas
+    if (!currentCanvas) return
+    const selected = getSelected()
+    if (!selected) return
+    const box = canvasService.createBox(selected.element)
+    canvasService.backToContent(box.center, currentCanvas.camera.zoom)
   }
 
   const getSelected = () => {
@@ -113,6 +123,17 @@ export const Toolbar = () => {
     const selected = getSelected()
     if (!selected) return
 
+    const currentCanvas = canvasService.currentCanvas
+    if (!currentCanvas) return
+
+    const point = Vec.FromArray(currentCanvas.camera.point).mul(-currentCanvas.camera.zoom)
+    const vp = new Box(0, 0, window.innerWidth, window.innerHeight)
+      .scale(currentCanvas.camera.zoom)
+      .translate(point)
+
+    const box = canvasService.createBox(selected.element)
+    setCollides(vp.collides(box))
+
     const reference = {
       getBoundingClientRect() {
         return {
@@ -133,7 +154,7 @@ export const Toolbar = () => {
       middleware: [
         offset(100),
         flip({fallbackPlacements: ['top']}),
-        shift({padding: 20}),
+        shift({padding: 20, crossAxis: true}),
         arrow({element: arrowRef!}),
       ],
     }).then(({x, y, placement, middlewareData}) => {
@@ -171,7 +192,7 @@ export const Toolbar = () => {
     const file = fileService.findFileById(selected.element.id)
     if (!file?.lastModified) return
     const result = await codeService.prettifyCheck(file)
-    if (result != ugly()) {
+    if (result !== ugly()) {
       setUgly(result)
       calcPosition()
     }
@@ -181,24 +202,31 @@ export const Toolbar = () => {
     <Show when={getSelected()}>
       {(selected) => (
         <Container ref={tooltipRef} id="toolbar">
-          <Item onClick={() => open(selected().element, true)}>
-            <Icon>open_in_full</Icon> Open in full
-          </Item>
-          <Show when={fileService.findFileById(selected().element.id)?.deleted}>
-            <Item onClick={() => restore(selected().element)}>
-              <Icon>history</Icon>
-              Restore
+          <Show when={collides()}>
+            <Item onClick={() => open(selected().element, true)}>
+              <Icon>open_in_full</Icon> Open in full
             </Item>
-          </Show>
-          <Show when={isCodeElement(selected().element)}>
-            <Item onClick={() => changeLang(selected().element)}>
-              <Icon>javascript</Icon> Change language
-            </Item>
-            <Show when={ugly()}>
-              <Item onClick={() => prettify(selected().element)}>
-                <IconPrettier /> Prettify
+            <Show when={fileService.findFileById(selected().element.id)?.deleted}>
+              <Item onClick={() => restore(selected().element)}>
+                <Icon>history</Icon>
+                Restore
               </Item>
             </Show>
+            <Show when={isCodeElement(selected().element)}>
+              <Item onClick={() => changeLang(selected().element)}>
+                <Icon>javascript</Icon> Change language
+              </Item>
+              <Show when={ugly()}>
+                <Item onClick={() => prettify(selected().element)}>
+                  <IconPrettier /> Prettify
+                </Item>
+              </Show>
+            </Show>
+          </Show>
+          <Show when={!collides()}>
+            <Item onClick={onBackToContent}>
+              <Icon>adjust</Icon> Back to content
+            </Item>
           </Show>
           <span ref={arrowRef} class="arrow"></span>
         </Container>

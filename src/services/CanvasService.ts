@@ -161,11 +161,10 @@ export class CanvasService {
     remote.info('Canvas saved after camera update')
   }
 
-  async backToContent() {
+  async backToContent(point: Vec | undefined = undefined, zoom = 0.5) {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
-    const center = this.getCenterPoint()
-    const zoom = 0.5
+    const center = point ?? this.getCenterPoint()
     if (center) {
       const canvasRef = this.canvasRef!
       const vp = new Vec(canvasRef.clientWidth / 2, canvasRef.clientHeight / 2).div(zoom)

@@ -144,6 +144,7 @@ export const Canvas = () => {
       <Grid onClick={onGridClick} />
       <Toolbar />
       <Board
+        id="board"
         style={{
           transform: `
             scale(${canvasService.currentCanvas?.camera.zoom})
