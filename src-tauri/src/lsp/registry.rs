@@ -10,13 +10,22 @@ use tokio::sync::mpsc::Receiver;
 use crate::editor::editor_state::{Document, Language};
 
 // One language server for each workspace and language
-pub type LanguageServerId = (PathBuf, Language);
+#[derive(Eq, Hash, PartialEq, Debug, Clone)]
+pub struct LanguageServerId(PathBuf, Language);
 
 pub struct LspRegistry {
     pub language_servers: HashMap<LanguageServerId, LspServer>,
     pub language_server_configs: HashMap<LanguageServerId, InitializeResult>,
     pub language_server_registered_tx: crossbeam_channel::Sender<Receiver<ServerMessage>>,
     pub language_server_registered_rx: crossbeam_channel::Receiver<Receiver<ServerMessage>>,
+}
+
+impl Document {
+    pub fn get_language_server_id(&self) -> Option<LanguageServerId> {
+        let language = self.language.clone()?;
+        let path = self.get_worktree_path();
+        Some(LanguageServerId(path, language))
+    }
 }
 
 impl LspRegistry {
@@ -32,22 +41,19 @@ impl LspRegistry {
     }
 
     pub fn get_language_server(&self, doc: &Document) -> Option<&LspServer> {
-        self.language_servers
-            .get(&self.get_language_server_id(doc)?)
+        self.language_servers.get(&doc.get_language_server_id()?)
     }
 
     pub fn get_language_server_config(&self, doc: &Document) -> Option<&InitializeResult> {
         self.language_server_configs
-            .get(&self.get_language_server_id(doc)?)
+            .get(&doc.get_language_server_id()?)
     }
 
     pub fn register_language_server(
         &mut self,
         doc: &Document,
     ) -> anyhow::Result<(LspServer, bool)> {
-        let language_server_id = self
-            .get_language_server_id(doc)
-            .ok_or(anyhow!("No language"))?;
+        let language_server_id = doc.get_language_server_id().ok_or(anyhow!("No language"))?;
 
         match self.language_servers.entry(language_server_id.clone()) {
             Entry::Vacant(entry) => {
@@ -76,7 +82,7 @@ impl LspRegistry {
         config: InitializeResult,
     ) -> Option<InitializeResult> {
         self.language_server_configs
-            .insert(self.get_language_server_id(doc)?, config)
+            .insert(doc.get_language_server_id()?, config)
     }
 
     fn create_language_server(
@@ -89,12 +95,6 @@ impl LspRegistry {
             _ => Err(anyhow!("No language server found")),
         }
     }
-
-    fn get_language_server_id(&self, doc: &Document) -> Option<LanguageServerId> {
-        let language = doc.language.clone()?;
-        let path = doc.get_worktree_path();
-        Some((path, language))
-    }
 }
 
 #[cfg(test)]
@@ -106,7 +106,7 @@ mod tests {
 
     use crate::editor::editor_state::{Document, Language};
     use crate::editor::testutil::{create_test_workspace, get_test_dir};
-    use crate::lsp::registry::LspRegistry;
+    use crate::lsp::registry::{LanguageServerId, LspRegistry};
 
     #[tokio::test]
     #[serial]
@@ -129,10 +129,8 @@ mod tests {
         let mut lsp_registry = LspRegistry::new();
         lsp_registry.register_language_server(&doc).unwrap();
 
-        let language = Language("typescript".to_string());
-
         assert!(lsp_registry
             .language_servers
-            .contains_key(&(get_test_dir(), language)));
+            .contains_key(&LanguageServerId(get_test_dir(), language)));
     }
 }
