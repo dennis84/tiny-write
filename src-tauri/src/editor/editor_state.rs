@@ -1,15 +1,16 @@
+use anyhow::anyhow;
+use async_channel::{unbounded, Receiver, Sender};
 use log::{debug, info};
 use ropey::Rope;
 use serde::{Deserialize, Serialize};
 use std::collections::hash_map::Entry;
 use std::collections::HashMap;
 use std::ffi::OsStr;
-use std::path::{Path, PathBuf};
-use std::time::SystemTime;
 use std::fs::{self, File};
 use std::io::BufWriter;
-
-use crate::editor::debouncer;
+use std::path::{Path, PathBuf};
+use std::sync::RwLock;
+use std::time::SystemTime;
 
 #[derive(Debug, Clone, PartialEq, Hash, Eq, Serialize, Deserialize)]
 pub struct Language(pub String);
@@ -26,16 +27,18 @@ pub struct Document {
 }
 
 #[derive(Clone, Debug, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Insert {
-    pub from: usize,
-    pub to: usize,
+    pub from_a: usize,
+    pub to_b: usize,
     pub text: String,
 }
 
 #[derive(Clone, Debug, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Delete {
-    pub from: usize,
-    pub to: usize,
+    pub from_a: usize,
+    pub to_a: usize,
 }
 
 impl Document {
@@ -49,36 +52,34 @@ impl Document {
 }
 
 pub struct EditorState {
-    pub documents: HashMap<PathBuf, Document>,
-    pub debounced_write_tx: debouncer::Sender<PathBuf>,
-    pub debounced_write_rx: debouncer::Receiver<PathBuf>,
-    pub open_doc_tx: crossbeam_channel::Sender<PathBuf>,
-    pub open_doc_rx: crossbeam_channel::Receiver<PathBuf>,
+    pub documents: RwLock<HashMap<PathBuf, Document>>,
+    pub open_doc_tx: Sender<PathBuf>,
+    pub open_doc_rx: Receiver<PathBuf>,
 }
 
 impl EditorState {
     pub fn new() -> Self {
-        let (debounced_write_tx, debounced_write_rx) = debouncer::unbounded();
-        let (open_doc_tx, open_doc_rx) = crossbeam_channel::unbounded();
+        let (open_doc_tx, open_doc_rx) = unbounded();
+
         Self {
-            documents: HashMap::new(),
-            debounced_write_tx,
-            debounced_write_rx,
+            documents: RwLock::new(HashMap::new()),
             open_doc_tx,
             open_doc_rx,
         }
     }
 
-    pub fn get_document(&mut self, path: &Path) -> anyhow::Result<&mut Document> {
+    pub async fn get_document(&self, path: &Path) -> anyhow::Result<Document> {
         debug!("Get document (path={:?})", path);
+
         if !fs::exists(path)? {
             debug!("Create file (path={:?})", path);
             File::create(path)?;
         }
 
         let last_modified = fs::metadata(path)?.modified()?;
+        let mut new_doc = false;
 
-        let result = match self.documents.entry(path.to_path_buf()) {
+        match self.documents.write().unwrap().entry(path.to_path_buf()) {
             Entry::Occupied(doc) => {
                 let doc = doc.into_mut();
                 if last_modified > doc.last_modified {
@@ -89,8 +90,6 @@ impl EditorState {
                     doc.last_modified = last_modified;
                     doc.version += 1
                 }
-
-                Ok(doc)
             }
             Entry::Vacant(map) => {
                 let language = Self::get_language(path);
@@ -108,18 +107,30 @@ impl EditorState {
                     version: 0,
                 };
 
-                let value = map.insert(doc);
-                self.open_doc_tx.send(path.to_path_buf())?;
-                Ok(value)
+                map.insert(doc);
+                new_doc = true;
             }
         };
 
-        result
+        if new_doc {
+            self.open_doc_tx.send(path.to_path_buf()).await?;
+        }
+
+        let doc = self
+            .documents
+            .read()
+            .unwrap()
+            .get(&path.to_path_buf())
+            .cloned()
+            .ok_or(anyhow!("Document not found"))?;
+        Ok(doc)
     }
 
-    pub fn insert_text(&mut self, path: &Path, data: &Insert) -> anyhow::Result<()> {
-        let doc = self.get_document(path)?;
-        let from = doc.text.utf16_cu_to_char(data.from);
+    pub fn insert_text(&self, path: &Path, data: &Insert) -> anyhow::Result<()> {
+        let mut docs = self.documents.write().unwrap();
+
+        let doc = docs.get_mut(path).ok_or(anyhow!("No doc"))?;
+        let from = doc.text.utf16_cu_to_char(data.from_a);
 
         doc.text.insert(from, &data.text);
         doc.changed = true;
@@ -129,10 +140,12 @@ impl EditorState {
         Ok(())
     }
 
-    pub fn delete_text(&mut self, path: &Path, data: &Delete) -> anyhow::Result<()> {
-        let doc = self.get_document(path)?;
-        let from = doc.text.utf16_cu_to_char(data.from);
-        let to = doc.text.utf16_cu_to_char(data.to);
+    pub fn delete_text(&self, path: &Path, data: &Delete) -> anyhow::Result<()> {
+        let mut docs = self.documents.write().unwrap();
+        let doc = docs.get_mut(path).ok_or(anyhow!("No doc"))?;
+
+        let from = doc.text.utf16_cu_to_char(data.from_a);
+        let to = doc.text.utf16_cu_to_char(data.to_a);
 
         doc.text.remove(from..to);
         doc.changed = true;
@@ -142,8 +155,9 @@ impl EditorState {
         Ok(())
     }
 
-    pub fn replace_text(&mut self, path: &Path, data: &str) -> anyhow::Result<()> {
-        let doc = self.get_document(path)?;
+    pub fn replace_text(&self, path: &Path, data: &str) -> anyhow::Result<()> {
+        let mut docs = self.documents.write().unwrap();
+        let doc = docs.get_mut(path).ok_or(anyhow!("No doc"))?;
 
         doc.text = Rope::from_str(data);
         doc.changed = true;
@@ -153,17 +167,15 @@ impl EditorState {
         Ok(())
     }
 
-    pub fn write_all(&mut self) -> anyhow::Result<()> {
-        for (_, doc) in self.documents.iter_mut() {
-            if !doc.changed {
-                continue;
-            }
+    pub fn write_document(&self, path: &Path) -> anyhow::Result<()> {
+        let docs = self.documents.read().unwrap();
+        let doc = docs
+            .get(&path.to_path_buf())
+            .ok_or(anyhow!("Document not found"))?;
 
-            info!("Write rope to file (path={:?})", doc.path);
-            doc.text
-                .write_to(BufWriter::new(File::create(&doc.path)?))?;
-            doc.changed = false;
-        }
+        info!("Write rope to file (path={:?})", doc.path);
+        doc.text
+            .write_to(BufWriter::new(File::create(&doc.path)?))?;
         Ok(())
     }
 
@@ -209,8 +221,8 @@ mod tests {
 
         let path = get_test_dir();
 
-        let mut editor_state = EditorState::new();
-        let doc = editor_state.get_document(path.as_ref());
+        let editor_state = EditorState::new();
+        let doc = editor_state.get_document(path.as_ref()).await;
 
         assert!(doc.is_err());
     }
@@ -222,9 +234,9 @@ mod tests {
 
         let path = get_test_dir().join("README.md");
 
-        let mut editor_state = EditorState::new();
+        let editor_state = EditorState::new();
 
-        let v0_doc = editor_state.get_document(path.as_ref()).unwrap().clone();
+        let v0_doc = editor_state.get_document(path.as_ref()).await.unwrap();
         assert_eq!(v0_doc.path, path.to_path_buf());
         assert_eq!(v0_doc.text.to_string(), "".to_string());
 
@@ -232,17 +244,17 @@ mod tests {
             .insert_text(
                 path.as_ref(),
                 &Insert {
-                    from: 0,
-                    to: 5,
+                    from_a: 0,
+                    to_b: 5,
                     text: "test".to_string(),
                 },
             )
             .unwrap();
 
-        let v1_doc = editor_state.get_document(path.as_ref()).unwrap().clone();
+        let v1_doc = editor_state.get_document(path.as_ref()).await.unwrap();
         assert_ne!(v1_doc.last_modified, v0_doc.last_modified);
 
-        let get_again_doc = editor_state.get_document(path.as_ref()).unwrap();
+        let get_again_doc = editor_state.get_document(path.as_ref()).await.unwrap();
         assert_eq!(get_again_doc.text, v1_doc.text);
         assert_eq!(get_again_doc.last_modified, v1_doc.last_modified);
 
@@ -250,7 +262,7 @@ mod tests {
         let mut file = File::create(&path).unwrap();
         file.write_all(b"updated").unwrap();
 
-        let get_after_write = editor_state.get_document(path.as_ref()).unwrap();
+        let get_after_write = editor_state.get_document(path.as_ref()).await.unwrap();
         assert_ne!(get_after_write.text, v1_doc.text);
         assert_ne!(get_after_write.last_modified, v1_doc.last_modified);
     }
@@ -262,8 +274,8 @@ mod tests {
 
         let path = get_test_dir().join("README.md");
 
-        let mut editor_state = EditorState::new();
-        let doc = editor_state.get_document(path.as_ref()).unwrap().clone();
+        let editor_state = EditorState::new();
+        let doc = editor_state.get_document(path.as_ref()).await.unwrap();
 
         assert_eq!(doc.text.to_string(), "".to_string());
 
@@ -271,8 +283,8 @@ mod tests {
             .insert_text(
                 path.as_ref(),
                 &Insert {
-                    from: 0,
-                    to: 5,
+                    from_a: 0,
+                    to_b: 5,
                     text: "🧜‍♂️".to_string(),
                 },
             )
@@ -282,14 +294,14 @@ mod tests {
             .insert_text(
                 path.as_ref(),
                 &Insert {
-                    from: 5,
-                    to: 6,
+                    from_a: 5,
+                    to_b: 6,
                     text: "1".to_string(),
                 },
             )
             .unwrap();
 
-        let doc = editor_state.get_document(path.as_ref()).unwrap().clone();
+        let doc = editor_state.get_document(path.as_ref()).await.unwrap();
         assert_eq!(doc.text.to_string(), "🧜‍♂️1".to_string());
     }
 }

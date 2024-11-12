@@ -113,9 +113,14 @@ export const readText = async (path: string): Promise<string> => {
   return invoke('read_text', {path})
 }
 
-export const writeText = async (path: string, data: string): Promise<void> => {
-  if (!isTauri()) throw Error('Must be run in tauri: writeText')
-  return await invoke('write_text', {path, data})
+export const replaceText = async (path: string, data: string): Promise<void> => {
+  if (!isTauri()) throw Error('Must be run in tauri: replaceText')
+  return await invoke('replace_text', {path, data})
+}
+
+export const writeFile = async (path: string): Promise<void> => {
+  if (!isTauri()) throw Error('Must be run in tauri: writeFile')
+  return await invoke('write_file', {path})
 }
 
 export const insertText = async (path: string, data: any) => {
@@ -162,9 +167,9 @@ export const saveFile = async (file: File): Promise<string> => {
   const path = await dialog.save({defaultPath: file.newFile})
   if (!path) throw new Error('No path returned')
   if (file.editorView?.state) {
-    await writeText(path, serialize(file.editorView.state))
+    await replaceText(path, serialize(file.editorView.state))
   } else if (file.codeEditorView) {
-    await writeText(path, file.codeEditorView.state.doc.toString())
+    await replaceText(path, file.codeEditorView.state.doc.toString())
   }
 
   return path

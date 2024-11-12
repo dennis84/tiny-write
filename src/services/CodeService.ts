@@ -2,6 +2,7 @@ import {SetStoreFunction, Store, unwrap} from 'solid-js/store'
 import {EditorView, ViewUpdate} from '@codemirror/view'
 import * as Y from 'yjs'
 import {yCollab, ySyncFacet} from 'y-codemirror.next'
+import {debounce} from 'throttle-debounce'
 import {File, SelectionRange, State, VisualPositionRange} from '@/state'
 import * as remote from '@/remote'
 import {FileService} from './FileService'
@@ -30,6 +31,8 @@ export class CodeService {
     private store: Store<State>,
     private setState: SetStoreFunction<State>,
   ) {}
+
+  private writeFileThrottled = debounce(1000, this.writeFile.bind(this))
 
   async newFile(): Promise<File> {
     const file = FileService.createFile({code: true})
@@ -162,15 +165,23 @@ export class CodeService {
     }
 
     if (file.path) {
-      update.changes.iterChanges((fromA, toA, _fromB, toB, insert) => {
+      update.changes.iterChanges(async (fromA, toA, _fromB, toB, insert) => {
         const text = insert.sliceString(0, insert.length, '\n')
         if (fromA !== toA) {
-          remote.deleteText(file.path!, {from: fromA, to: toA})
+          await remote.deleteText(file.path!, {fromA, toA})
         }
         if (text.length > 0) {
-          remote.insertText(file.path!, {from: fromA, to: toB, text})
+          await remote.insertText(file.path!, {fromA, toB, text})
         }
       })
+
+      this.writeFileThrottled(file)
+    }
+  }
+
+  private async writeFile(file: File) {
+    if (file.path) {
+      await remote.writeFile(file.path)
     }
   }
 

@@ -1,9 +1,7 @@
 use async_lsp_client::ServerMessage;
 use log::{debug, info};
-use std::sync::Arc;
-use tauri::Manager;
+use tauri::{Builder, Manager, Runtime};
 use tauri_plugin_cli::CliExt;
-use tokio::sync::Mutex;
 
 use editor::editor_state::EditorState;
 use lsp::registry::LspRegistry;
@@ -17,8 +15,8 @@ mod fs;
 mod logger;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
-pub fn run() {
-    tauri::Builder::default()
+pub fn run<R: Runtime>(builder: Builder<R>) {
+    builder
         .plugin(tauri_plugin_websocket::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_clipboard_manager::init())
@@ -82,59 +80,44 @@ pub fn run() {
             menu::setup_menu(handle)?;
 
             let lsp_registry = LspRegistry::new();
-            let language_server_registered_rx = lsp_registry.language_server_registered_rx.clone();
-            let lsp_registry = Arc::new(Mutex::new(lsp_registry));
             app.manage(lsp_registry);
 
             let editor_state = EditorState::new();
-            let debounced_write_rx = editor_state.debounced_write_rx.clone();
-            let open_doc_rx = editor_state.open_doc_rx.clone();
-            let editor_state = Arc::new(Mutex::new(editor_state));
-            let editor_state_2 = Arc::clone(&editor_state);
             app.manage(editor_state);
 
             let lsp_service = LspService::new(handle.clone());
-            let lsp_service = Arc::new(lsp_service);
-            let lsp_service_2 = Arc::clone(&lsp_service);
-            app.manage(lsp_service);
+            app.manage::<LspService<R>>(lsp_service);
 
+            let handle2 = handle.clone();
             tauri::async_runtime::spawn(async move {
-                loop {
-                    if debounced_write_rx.recv().is_ok() {
-                        let mut state = editor_state_2.lock().await;
-                        let _ = state.write_all();
-                        drop(state);
-                    }
-                }
-            });
+                let editor_state = handle2.state::<EditorState>();
+                let lsp_service = handle2.state::<LspService<R>>();
+                let lsp_registry = handle2.state::<LspRegistry>();
 
-            tauri::async_runtime::spawn(async move {
                 loop {
-                    if let Ok(path) = open_doc_rx.recv() {
-                        let _ = lsp_service_2.register_language_server(path.as_ref()).await;
-                    }
-                }
-            });
+                    tokio::select! {
+                        Ok(path) = editor_state.open_doc_rx.recv() => {
+                            let _ = lsp_service.register_language_server(path.as_ref()).await;
+                        },
 
-            tauri::async_runtime::spawn(async move {
-                loop {
-                    if let Ok(mut rx) = language_server_registered_rx.recv() {
-                        info!("receive requests and notifications from language server");
-                        tauri::async_runtime::spawn(async move {
-                            loop {
-                                if let Some(message) = rx.recv().await {
-                                    match message {
-                                        ServerMessage::Notification(n) => {
-                                            info!("Received notification from lsp server: {:?}", n);
-                                        }
-                                        // For requests, you need to send a response
-                                        ServerMessage::Request(r) => {
-                                            info!("Received request from lsp server: {:?}", r);
+                        Ok(mut rx) = lsp_registry.language_server_registered_rx.recv() => {
+                            info!("receive requests and notifications from language server");
+                            tauri::async_runtime::spawn(async move {
+                                loop {
+                                    if let Some(message) = rx.recv().await {
+                                        match message {
+                                            ServerMessage::Notification(n) => {
+                                                info!("Received notification from lsp server: {:?}", n);
+                                            }
+                                            // For requests, you need to send a response
+                                            ServerMessage::Request(r) => {
+                                                info!("Received request from lsp server: {:?}", r);
+                                            }
                                         }
                                     }
                                 }
-                            }
-                        });
+                            });
+                        }
                     }
                 }
             });
@@ -151,9 +134,10 @@ pub fn run() {
             fs::path::to_relative_path,
             fs::path::to_absolute_path,
             editor::command_editor_state::read_text,
-            editor::command_editor_state::write_text,
+            editor::command_editor_state::replace_text,
             editor::command_editor_state::insert_text,
             editor::command_editor_state::delete_text,
+            editor::command_editor_state::write_file,
             lsp::command::lsp_hover,
             lsp::command::lsp_completion,
             lsp::command::lsp_goto,
