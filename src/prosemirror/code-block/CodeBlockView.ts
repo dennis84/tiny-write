@@ -15,6 +15,7 @@ import {highlight} from '@/codemirror/highlight'
 import {findWords} from '@/codemirror/completion'
 import {mermaidKeywords} from '@/codemirror/mermaid'
 import {foldAll} from '@/codemirror/fold-all'
+import {copilot} from '@/codemirror/copilot'
 import {createExpandPlugin} from './expand'
 import {createMermaidPlugin} from './mermaid-preview'
 
@@ -162,6 +163,12 @@ export class CodeBlockView {
         createMermaidPlugin(this),
         EditorView.updateListener.of((update) => this.forwardUpdate(update)),
         autocompletion(),
+        copilot({
+          configure: () => {
+            const path = `buffer://editor-${getPos()}-${this.lang}`
+            return {path, language: this.lang}
+          },
+        }),
         EditorView.domEventHandlers({
           mousedown: () => {
             this.clicked = true
@@ -184,7 +191,7 @@ export class CodeBlockView {
     this.update(node)
   }
 
-  get lang() {
+  get lang(): string {
     return this.node.attrs.lang ?? ''
   }
 

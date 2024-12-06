@@ -188,7 +188,7 @@ export class EditorService {
     if (file?.path && file.editorView) {
       info('Serialize to markdown and write file')
       const text = serialize(file.editorView.state)
-      await replaceText(file.path, text)
+      await replaceText(file.path, {text})
       await writeFile(file.path)
     }
   }

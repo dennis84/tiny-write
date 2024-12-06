@@ -4,6 +4,7 @@ import * as Y from 'yjs'
 import {yCollab, ySyncFacet} from 'y-codemirror.next'
 import {debounce} from 'throttle-debounce'
 import {File, SelectionRange, State, VisualPositionRange} from '@/state'
+import {copilot} from '@/codemirror/copilot'
 import * as remote from '@/remote'
 import {FileService} from './FileService'
 import {CollabService} from './CollabService'
@@ -11,6 +12,7 @@ import {AppService} from './AppService'
 import {CodeMirrorService} from './CodeMirrorService'
 import {PrettierService} from './PrettierService'
 import {TreeService} from './TreeService'
+import { isTauri } from '@/env'
 
 export interface OpenFile {
   id: string
@@ -133,6 +135,15 @@ export class CodeService {
       extensions: [
         EditorView.updateListener.of((update) => this.onUpdate(file, update)),
         yCollab(type, this.store.collab?.provider.awareness, {undoManager: false}),
+        ...(isTauri() ? [
+          copilot({
+            configure: () => {
+              const path = file.path ?? `buffer://${file.id}`
+              const language = file.codeEditorView?.contentDOM.dataset.language ?? ''
+              return {path, language}
+            }
+          }),
+        ] : []),
       ],
     })
 

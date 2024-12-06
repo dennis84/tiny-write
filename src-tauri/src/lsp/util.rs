@@ -1,5 +1,9 @@
-use lsp_types::Position;
+use std::path::Path;
+
+use lsp_types::{InitializeResult, Position, Url};
 use ropey::Rope;
+
+use crate::editor::editor_state::is_buffer;
 
 use super::service::OffsetEncoding;
 
@@ -28,6 +32,33 @@ pub fn pos_to_lsp_pos(doc: &Rope, pos: usize, offset_encoding: OffsetEncoding) -
 
             Position::new(line as u32, col as u32)
         }
+    }
+}
+
+pub fn get_offset_encoding(config: &InitializeResult) -> OffsetEncoding {
+    config
+        .capabilities
+        .position_encoding
+        .as_ref()
+        .and_then(|encoding| match encoding.as_str() {
+            "utf-8" => Some(OffsetEncoding::Utf8),
+            "utf-16" => Some(OffsetEncoding::Utf16),
+            "utf-32" => Some(OffsetEncoding::Utf32),
+            encoding => {
+                log::error!(
+                    "Server provided invalid position encoding {encoding}, defaulting to utf-16"
+                );
+                None
+            }
+        })
+        .unwrap_or_default()
+}
+
+pub fn url_for_path(path: &Path) -> Url {
+    if is_buffer(path) {
+        Url::parse(&path.to_string_lossy()).unwrap()
+    } else {
+        Url::from_file_path(path).unwrap()
     }
 }
 

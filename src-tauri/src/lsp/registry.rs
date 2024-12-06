@@ -1,8 +1,8 @@
 use anyhow::anyhow;
 use async_lsp_client::{LspServer, ServerMessage};
-use log::info;
+use log::{debug, info};
 use lsp_types::InitializeResult;
-use std::collections::hash_map::Entry;
+use std::{collections::hash_map::Entry, path::Path};
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::RwLock;
@@ -12,7 +12,7 @@ use crate::editor::editor_state::{Document, Language};
 
 // One language server for each workspace and language
 #[derive(Eq, Hash, PartialEq, Debug, Clone)]
-pub struct LanguageServerId(PathBuf, Language);
+pub struct LanguageServerId(pub PathBuf, pub Language);
 
 pub struct LspRegistry {
     pub language_servers: RwLock<HashMap<LanguageServerId, LspServer>>,
@@ -24,7 +24,14 @@ pub struct LspRegistry {
 impl Document {
     pub fn get_language_server_id(&self) -> Option<LanguageServerId> {
         let language = self.language.clone()?;
-        let path = self.get_worktree_path();
+        let path = self.worktree_path.clone().unwrap_or_else(|| {
+            if cfg!(target_os = "windows") {
+                Path::new("C:/").to_path_buf()
+            } else {
+                Path::new("/").to_path_buf()
+            }
+        });
+
         Some(LanguageServerId(path, language))
     }
 }
@@ -41,19 +48,22 @@ impl LspRegistry {
         }
     }
 
-    pub fn get_language_server(&self, doc: &Document) -> Option<LspServer> {
+    pub fn get_language_server(&self, language_server_id: &LanguageServerId) -> Option<LspServer> {
         self.language_servers
             .read()
             .unwrap()
-            .get(&doc.get_language_server_id()?)
+            .get(language_server_id)
             .cloned()
     }
 
-    pub fn get_language_server_config(&self, doc: &Document) -> Option<InitializeResult> {
+    pub fn get_language_server_config(
+        &self,
+        language_server_id: &LanguageServerId,
+    ) -> Option<InitializeResult> {
         self.language_server_configs
             .read()
             .unwrap()
-            .get(&doc.get_language_server_id()?)
+            .get(language_server_id)
             .cloned()
     }
 
@@ -66,7 +76,7 @@ impl LspRegistry {
         match language_servers.entry(id.clone()) {
             Entry::Vacant(entry) => {
                 info!("register new language server (id={:?})", &id);
-                let (server, rx) = Self::create_language_server(&id.1)?;
+                let (server, rx) = Self::create_language_server(id)?;
                 let server = entry.insert(server.clone());
                 Ok((server.clone(), Some(rx)))
             }
@@ -79,11 +89,9 @@ impl LspRegistry {
 
     pub async fn register_language_server(
         &self,
-        doc: &Document,
+        language_server_id: &LanguageServerId,
     ) -> anyhow::Result<(LspServer, bool)> {
-        let language_server_id = doc.get_language_server_id().ok_or(anyhow!("No language"))?;
-
-        match self.insert_language_server(&language_server_id)? {
+        match self.insert_language_server(language_server_id)? {
             (server, Some(rx)) => {
                 self.language_server_registered_tx.send(rx).await?;
                 Ok((server, true))
@@ -92,22 +100,33 @@ impl LspRegistry {
         }
     }
 
+    pub fn remove_language_server(
+        &self,
+        language_server_id: &LanguageServerId,
+    ) -> anyhow::Result<()> {
+        let mut language_servers = self.language_servers.write().unwrap();
+        language_servers.remove(language_server_id);
+        Ok(())
+    }
+
     pub fn insert_language_server_config(
         &self,
-        doc: &Document,
+        language_server_id: &LanguageServerId,
         config: InitializeResult,
     ) -> Option<InitializeResult> {
+        debug!("insert language server config (id={language_server_id:?}, config={config:?})");
         let mut language_servers = self.language_server_configs.write().unwrap();
-        language_servers.insert(doc.get_language_server_id()?, config)
+        language_servers.insert(language_server_id.clone(), config)
     }
 
     fn create_language_server(
-        language: &Language,
+        language_server_id: &LanguageServerId,
     ) -> anyhow::Result<(LspServer, Receiver<ServerMessage>)> {
-        info!("create language server (language={:?})", language);
-        match language.0.as_str() {
-            "typescript" => Ok(LspServer::new("typescript-language-server", ["--stdio"])),
-            "rust" => Ok(LspServer::new("rust-analyzer", [])),
+        info!("create language server (language_server_id={:?})", language_server_id);
+        match language_server_id.1.0.as_str() {
+            "typescript" => Ok(LspServer::new("sh", ["-c", "typescript-language-server --stdio"])),
+            "rust" => Ok(LspServer::new("sh", ["-c", "rust-analyzer"])),
+            "copilot" => Ok(LspServer::new("sh", ["-c", "copilot-language-server --stdio"])),
             _ => Err(anyhow!("No language server found")),
         }
     }
@@ -137,13 +156,15 @@ mod tests {
             worktree_path: Some(get_test_dir()),
             language: Some(language.clone()),
             text: Rope::new(),
-            changed: false,
             last_modified: SystemTime::now(),
             version: 0,
         };
 
         let lsp_registry = LspRegistry::new();
-        lsp_registry.register_language_server(&doc).await.unwrap();
+        lsp_registry
+            .register_language_server(&doc.get_language_server_id().unwrap())
+            .await
+            .unwrap();
 
         assert!(lsp_registry
             .language_servers

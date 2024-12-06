@@ -17,11 +17,13 @@ import {CodeMirrorService} from './CodeMirrorService'
 import {PrettierService} from './PrettierService'
 import {DeleteService} from './DeleteService'
 import {ProseMirrorService} from './ProseMirrorService'
+import {CopilotService} from './CopilotService'
 
 export const createCtrl = (initial: State) => {
   const [store, setState] = createStore<Store<State>>(initial)
   if (isDev) (window as any).__STORE__ = store
 
+  const copilotService = new CopilotService(store, setState)
   const collabService = new CollabService(store, setState)
   const configService = new ConfigService(collabService, store, setState)
   const treeService = new TreeService(store, setState)
@@ -93,6 +95,7 @@ export const createCtrl = (initial: State) => {
     changeSetService,
     canvasCollabService,
     mediaService,
+    copilotService,
   }
 }
 

@@ -8,13 +8,14 @@ import {CodeFormat} from './CodeFormat'
 import {Appearance} from './Appearance'
 import {ChangeSet} from './ChangeSet'
 import {Help} from './Help'
+import {AiConfig} from './AiConfig'
 import {SubmenuEditor} from './SubmenuEditor'
 import {SubmenuCanvas} from './SubmenuCanvas'
 import {SubmenuEdit} from './SubmenuEdit'
 import {SubmenuCollab} from './SubmenuCollab'
 import {SubmenuTree} from './SubmenuTree'
 import {SubmenuCode} from './SubmenuCode'
-import {Icon, IconPrettier} from '../Icon'
+import {Icon, IconAi, IconPrettier} from '../Icon'
 import {fullWidth, Burger, Container, Drawer, Keys, Label, Link, Sub} from './Style'
 
 export const Menu = () => {
@@ -104,6 +105,9 @@ export const Menu = () => {
       <Show when={show() === 'change_set'}>
         <ChangeSet onBack={() => setShow('main')} />
       </Show>
+      <Show when={show() === 'ai_config'}>
+        <AiConfig onBack={() => setShow('main')} />
+      </Show>
       <Show when={show() === 'main'}>
         <Drawer
           onClick={() => fileService.currentFile?.editorView?.focus()}
@@ -163,6 +167,15 @@ export const Menu = () => {
           </Sub>
           {/* Submenu Collab */}
           <SubmenuCollab />
+          {/* Submenu Ai */}
+          <Show when={isTauri()}>
+            <Label>AI</Label>
+            <Sub data-tauri-drag-region="true">
+              <Link data-testid="ai_config" onClick={() => setShow('ai_config')}>
+                <IconAi /> Configure
+              </Link>
+            </Sub>
+          </Show>
           {/* Submenu Application */}
           <Label>Application</Label>
           <Sub data-tauri-drag-region="true">

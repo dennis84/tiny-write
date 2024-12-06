@@ -1,4 +1,4 @@
-import {StreamLanguage, LanguageSupport, StreamParser} from '@codemirror/language'
+import {StreamLanguage, LanguageSupport, StreamParser, StringStream} from '@codemirror/language'
 import {haskell} from '@codemirror/legacy-modes/mode/haskell'
 import {clojure} from '@codemirror/legacy-modes/mode/clojure'
 import {erlang} from '@codemirror/legacy-modes/mode/erlang'
@@ -8,6 +8,7 @@ import {shell} from '@codemirror/legacy-modes/mode/shell'
 import {yaml} from '@codemirror/legacy-modes/mode/yaml'
 import {go} from '@codemirror/legacy-modes/mode/go'
 import {toml} from '@codemirror/legacy-modes/mode/toml'
+import {lua} from '@codemirror/legacy-modes/mode/lua'
 import {javascript} from '@codemirror/lang-javascript'
 import {java} from '@codemirror/lang-java'
 import {rust} from '@codemirror/lang-rust'
@@ -123,11 +124,24 @@ export const languages: Record<string, LangConfig> = {
   toml: {
     highlight: () => langSupport(toml),
   },
+  lua: {
+    highlight: () => langSupport(lua),
+  },
 }
 
 export const highlight = (lang: string): LanguageSupport | undefined => {
   const codeLang = findCodeLang(lang)
-  if (!codeLang) return
+  if (!codeLang) {
+    const unknown = {
+      name: lang,
+      token: (stream: StringStream) => {
+        stream.next()
+        return null
+      }
+    }
+
+    return langSupport(unknown)
+  }
   return languages[codeLang]?.highlight()
 }
 

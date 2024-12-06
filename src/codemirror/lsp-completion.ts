@@ -41,22 +41,25 @@ export const lspCompletionSource =
     const char = context.state.sliceDoc(word.from - 1, word.from)
     const pos = word.from
 
-    const response = (await lspCompletion(path, pos, char)) as any
+    const options = []
 
-    if (!response?.items?.length) {
+    const completions = (await lspCompletion(path, pos, char)) as any
+    for (const item of completions?.items ?? []) {
+      options.push({
+        label: item.label,
+        boost: parseInt(item.sortText, 10) * -1 + 1000,
+        type: typeMapping[item.kind ?? -1] ?? 'word',
+        detail: item.detail,
+      })
+    }
+
+    if (!options.length) {
       return null
     }
 
     return {
       from: word.from,
       to: word.to,
-      options: response.items.map((i: any) => {
-        return {
-          label: i.label,
-          boost: parseInt(i.sortText, 10) * -1 + 1000,
-          type: typeMapping[i.kind ?? -1] ?? 'word',
-          detail: i.detail,
-        }
-      }),
+      options,
     }
   }

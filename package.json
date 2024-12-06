@@ -33,6 +33,7 @@
     "@tauri-apps/plugin-websocket": "2.0.0",
     "@tldraw/editor": "3.4.0",
     "@use-gesture/vanilla": "10.3.1",
+    "codemirror-extension-inline-suggestion": "^0.0.3",
     "date-fns": "4.1.0",
     "file-type": "19.6.0",
     "idb": "8.0.0",

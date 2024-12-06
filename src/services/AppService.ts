@@ -1,6 +1,7 @@
 import {Store, unwrap, SetStoreFunction, reconcile} from 'solid-js/store'
 import {createSignal} from 'solid-js'
 import {stateToString} from '@/utils/debug'
+import {timeout} from '@/utils/promise'
 import * as remote from '@/remote'
 import {State, ServiceError, Window, Mode, ErrorObject, createState} from '@/state'
 import {DB} from '@/db'
@@ -52,14 +53,20 @@ export class AppService {
         await remote.setAlwaysOnTop(true)
       }
 
+      if (isTauri() && newState.ai?.copilot?.enabled) {
+        await Promise.race([remote.enableCopilot(), timeout(2000)])
+        const status = await Promise.race([remote.copilotStatus(), timeout(2000)]) as any
+        newState.ai.copilot.user = status.user
+      }
+
       this.setState(newState)
 
       this.treeService.create()
-    } catch (e: any) {
-      const error = this.createError(e)
-      remote.error(`Error during init: ${e.message}`)
-      const data = e.data ?? {}
-      this.setState({...data, error, loading: 'initialized'})
+    } catch (error: any) {
+      const errorObject = this.createError({error})
+      remote.error(`Error during init: ${error.message}`)
+      const data = error.data ?? {}
+      this.setState({...data, error: errorObject, loading: 'initialized'})
     }
 
     await DB.cleanup()
@@ -123,6 +130,7 @@ export class AppService {
     const canvases = (await CanvasService.fetchCanvases()) ?? state.canvases ?? []
     const meta = await DB.getMeta()
     const tree = await DB.getTree()
+    const ai = await DB.getAi()
 
     let mode = meta?.mode ?? state.mode ?? Mode.Editor
 
@@ -141,6 +149,7 @@ export class AppService {
       collab: undefined,
       mode,
       tree,
+      ai,
     }
   }
 

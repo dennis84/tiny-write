@@ -1,3 +1,4 @@
+use log::error;
 use lsp_types::{CompletionResponse, GotoDefinitionResponse, Hover};
 use tauri::{path::SafePathBuf, AppHandle, Manager, Runtime};
 
@@ -10,8 +11,10 @@ pub async fn lsp_hover<R: Runtime>(
     app_handle: AppHandle<R>,
 ) -> tauri::Result<Hover> {
     let lsp_service = app_handle.state::<LspService<R>>();
-    let result = lsp_service.hover(path.as_ref(), pos).await?;
-    Ok(result)
+    lsp_service.hover(path.as_ref(), pos).await.map_err(|e| {
+        error!("lsp_hover failed {e:?}");
+        tauri::Error::Anyhow(e)
+    })
 }
 
 #[tauri::command]

@@ -35,7 +35,7 @@ export interface Args {
   cwd?: string
   source?: string
   file?: string
-  selection?: VisualPositionRange,
+  selection?: VisualPositionRange
   newFile?: string
   room?: string
   text?: string
@@ -60,6 +60,10 @@ export interface Config {
   typewriterMode: boolean
   spellcheck: boolean
   prettier: PrettierConfig
+}
+
+export interface AiConfig {
+  copilot?: {enabled: boolean, user?: string}
 }
 
 export interface ErrorObject {
@@ -233,6 +237,7 @@ export interface State {
   selecting?: boolean
   moving?: boolean
   lastTr?: number
+  ai?: AiConfig
 }
 
 export type FileText = Record<string, any>

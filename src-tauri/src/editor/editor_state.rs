@@ -12,6 +12,8 @@ use std::path::{Path, PathBuf};
 use std::sync::RwLock;
 use std::time::SystemTime;
 
+use super::pathutil::to_relative_path;
+
 #[derive(Debug, Clone, PartialEq, Hash, Eq, Serialize, Deserialize)]
 pub struct Language(pub String);
 
@@ -20,10 +22,19 @@ pub struct Document {
     pub path: PathBuf,
     pub worktree_path: Option<PathBuf>,
     pub text: Rope,
-    pub changed: bool,
     pub language: Option<Language>,
     pub last_modified: SystemTime,
     pub version: i32,
+}
+
+impl Document {
+    pub fn get_language_id(&self) -> String {
+        self.language.clone().map(|l| l.0).unwrap_or("".to_string())
+    }
+
+    pub fn get_relative_path(&self) -> PathBuf {
+        to_relative_path(&self.path, self.worktree_path.as_ref()).unwrap_or(self.path.clone())
+    }
 }
 
 #[derive(Clone, Debug, serde::Deserialize)]
@@ -41,14 +52,11 @@ pub struct Delete {
     pub to_a: usize,
 }
 
-impl Document {
-    pub fn get_worktree_path(&self) -> PathBuf {
-        self.worktree_path.clone().unwrap_or(self.path.clone())
-    }
-
-    pub fn get_language_id(&self) -> String {
-        self.language.clone().map(|l| l.0).unwrap_or("".to_string())
-    }
+#[derive(Clone, Debug, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UpdateDocument {
+    pub text: String,
+    pub language: Option<Language>,
 }
 
 pub struct EditorState {
@@ -71,18 +79,25 @@ impl EditorState {
     pub async fn get_document(&self, path: &Path) -> anyhow::Result<Document> {
         debug!("Get document (path={:?})", path);
 
-        if !fs::exists(path)? {
+        let is_buffer = is_buffer(path);
+
+        if !is_buffer && !fs::exists(path)? {
             debug!("Create file (path={:?})", path);
             File::create(path)?;
         }
 
-        let last_modified = fs::metadata(path)?.modified()?;
+        let last_modified = if is_buffer {
+            SystemTime::now()
+        } else {
+            fs::metadata(path)?.modified()?
+        };
+
         let mut new_doc = false;
 
         match self.documents.write().unwrap().entry(path.to_path_buf()) {
             Entry::Occupied(doc) => {
                 let doc = doc.into_mut();
-                if last_modified > doc.last_modified {
+                if !is_buffer && last_modified > doc.last_modified {
                     debug!("Update file contents (path={:?})", path);
                     let file = File::open(path)?;
                     let text = ropey::Rope::from_reader(file)?;
@@ -94,13 +109,17 @@ impl EditorState {
             Entry::Vacant(map) => {
                 let language = Self::get_language(path);
                 let worktree_path = Self::get_worktree_path(path);
-                let file = File::open(path)?;
-                let text = ropey::Rope::from_reader(file)?;
+
+                let text = if is_buffer {
+                    ropey::Rope::new()
+                } else {
+                    let file = File::open(path)?;
+                    ropey::Rope::from_reader(file)?
+                };
 
                 let doc = Document {
                     path: path.to_path_buf(),
                     text,
-                    changed: false,
                     worktree_path,
                     language,
                     last_modified: SystemTime::now(),
@@ -133,7 +152,6 @@ impl EditorState {
         let from = doc.text.utf16_cu_to_char(data.from_a);
 
         doc.text.insert(from, &data.text);
-        doc.changed = true;
         doc.last_modified = SystemTime::now();
         doc.version += 1;
 
@@ -148,19 +166,18 @@ impl EditorState {
         let to = doc.text.utf16_cu_to_char(data.to_a);
 
         doc.text.remove(from..to);
-        doc.changed = true;
         doc.last_modified = SystemTime::now();
         doc.version += 1;
 
         Ok(())
     }
 
-    pub fn replace_text(&self, path: &Path, data: &str) -> anyhow::Result<()> {
+    pub fn replace_text(&self, path: &Path, data: &UpdateDocument) -> anyhow::Result<()> {
         let mut docs = self.documents.write().unwrap();
         let doc = docs.get_mut(path).ok_or(anyhow!("No doc"))?;
 
-        doc.text = Rope::from_str(data);
-        doc.changed = true;
+        doc.text = Rope::from_str(&data.text);
+        doc.language = data.language.clone();
         doc.last_modified = SystemTime::now();
         doc.version += 1;
 
@@ -203,16 +220,47 @@ impl EditorState {
     }
 }
 
+pub fn is_buffer(path: &Path) -> bool {
+    path.starts_with("buffer://")
+}
+
 #[cfg(test)]
 mod tests {
     use std::fs::File;
     use std::io::prelude::*;
+    use std::path::Path;
+    use std::time::SystemTime;
     use std::{thread, time};
 
+    use ropey::Rope;
     use serial_test::serial;
 
-    use crate::editor::editor_state::{EditorState, Insert};
+    use crate::editor::editor_state::{EditorState, Insert, UpdateDocument};
     use crate::editor::testutil::{create_test_workspace, get_test_dir};
+
+    use super::{Document, Language};
+
+    #[test]
+    #[serial]
+    fn test_document() {
+        create_test_workspace();
+
+        let path = get_test_dir().join("src").join("index.ts");
+
+        let doc = Document {
+            path: path.clone(),
+            worktree_path: Some(get_test_dir()),
+            language: Some(Language("javascript".to_string())),
+            text: Rope::new(),
+            last_modified: SystemTime::now(),
+            version: 0,
+        };
+
+        assert_eq!(
+            "./src/index.ts".to_string(),
+            doc.get_relative_path().to_string_lossy().to_string()
+        );
+    }
 
     #[tokio::test]
     #[serial]
@@ -225,6 +273,36 @@ mod tests {
         let doc = editor_state.get_document(path.as_ref()).await;
 
         assert!(doc.is_err());
+    }
+
+    #[tokio::test]
+    #[serial]
+    async fn test_buffer() {
+        create_test_workspace();
+
+        let editor_state = EditorState::new();
+        let path = Path::new("buffer://123");
+        let doc = editor_state.get_document(path.as_ref()).await.unwrap();
+
+        assert_eq!(doc.path, path.to_path_buf());
+        assert_eq!(doc.text.to_string(), "".to_string());
+        assert_eq!(doc.language, None);
+
+        let language = Language("typescript".to_string());
+
+        editor_state
+            .replace_text(
+                path.as_ref(),
+                &UpdateDocument {
+                    text: "test".to_string(),
+                    language: Some(language.clone()),
+                },
+            )
+            .unwrap();
+
+        let doc = editor_state.get_document(path.as_ref()).await.unwrap();
+        assert_eq!(doc.text.to_string(), "test".to_string());
+        assert_eq!(doc.language, Some(language));
     }
 
     #[tokio::test]

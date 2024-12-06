@@ -104,11 +104,7 @@ mod tests {
     use std::fs::File;
 
     fn get_home() -> String {
-        home_dir()
-            .unwrap()
-            .into_os_string()
-            .into_string()
-            .unwrap()
+        home_dir().unwrap().into_os_string().into_string().unwrap()
     }
 
     #[test]

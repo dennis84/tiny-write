@@ -113,7 +113,7 @@ export const readText = async (path: string): Promise<string> => {
   return invoke('read_text', {path})
 }
 
-export const replaceText = async (path: string, data: string): Promise<void> => {
+export const replaceText = async (path: string, data: any): Promise<void> => {
   if (!isTauri()) throw Error('Must be run in tauri: replaceText')
   return await invoke('replace_text', {path, data})
 }
@@ -167,9 +167,9 @@ export const saveFile = async (file: File): Promise<string> => {
   const path = await dialog.save({defaultPath: file.newFile})
   if (!path) throw new Error('No path returned')
   if (file.editorView?.state) {
-    await replaceText(path, serialize(file.editorView.state))
+    await replaceText(path, {text: serialize(file.editorView.state)})
   } else if (file.codeEditorView) {
-    await replaceText(path, file.codeEditorView.state.doc.toString())
+    await replaceText(path, {text: file.codeEditorView.state.doc.toString()})
   }
 
   return path
@@ -188,6 +188,36 @@ export const lspCompletion = async (path: string, pos: number, trigger: string) 
 export const lspGoto = async (path: string, pos: number) => {
   if (!isTauri()) throw Error('Must be run in tauri: lspGoto')
   return (await invoke('lsp_goto', {path, pos}))
+}
+
+export const connectCopilot = async () => {
+  if (!isTauri()) throw Error('Must be run in tauri: connectCopilot')
+  return (await invoke('connect_copilot'))
+}
+
+export const enableCopilot = async () => {
+  if (!isTauri()) throw Error('Must be run in tauri: enableCopilot')
+  return (await invoke('enable_copilot'))
+}
+
+export const disableCopilot = async () => {
+  if (!isTauri()) throw Error('Must be run in tauri: disableCopilot')
+  return (await invoke('disable_copilot'))
+}
+
+export const copilotStatus = async () => {
+  if (!isTauri()) throw Error('Must be run in tauri: copilotStatus')
+  return (await invoke('copilot_status'))
+}
+
+export const copilotSignIn = async () => {
+  if (!isTauri()) throw Error('Must be run in tauri: copilotSignIn')
+  return (await invoke('copilot_sign_in'))
+}
+
+export const copilotCompletion = async (path: string | undefined, pos: number) => {
+  if (!isTauri()) throw Error('Must be run in tauri: copilotCompletion')
+  return (await invoke('copilot_completion', {path, pos}))
 }
 
 export const debug = (msg: string, ...data: any[]) => {

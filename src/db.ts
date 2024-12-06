@@ -1,6 +1,6 @@
 import {DBSchema, openDB} from 'idb'
 import {differenceInDays} from 'date-fns'
-import {Camera, Config, ElementType, Mode, Window} from '@/state'
+import {AiConfig, Camera, Config, ElementType, Mode, Window} from '@/state'
 import * as remote from '@/remote'
 
 export interface PersistedVersion {
@@ -72,6 +72,10 @@ interface MyDB extends DBSchema {
     key: string
     value: Tree
   }
+  ai: {
+    key: string
+    value: AiConfig
+  }
 }
 
 const DB_NAME = 'tiny_write'
@@ -80,18 +84,23 @@ const DB_NAME = 'tiny_write'
 // ```
 // openDB(DB_NAME, 2, { ... })
 //
-// if (newVersion === 2) { db.createObjectStore(...) }
+// if (newVersion >= 2) { db.createObjectStore(...) }
 // ```
-const dbPromise = openDB<MyDB>(DB_NAME, 1, {
+const dbPromise = openDB<MyDB>(DB_NAME, 2, {
   upgrade(db: any, oldVersion, newVersion) {
+    if (!newVersion) return
+
     remote.info(`Upgrade DB from version ${oldVersion} to ${newVersion}`)
-    if (newVersion === 1) {
+    if (newVersion >= 1) {
       db.createObjectStore('config')
       db.createObjectStore('window')
       db.createObjectStore('canvases', {keyPath: 'id'})
       db.createObjectStore('files', {keyPath: 'id'})
       db.createObjectStore('meta')
       db.createObjectStore('tree')
+    }
+    if (newVersion >= 2) {
+      db.createObjectStore('ai')
     }
   },
 })
@@ -127,6 +136,14 @@ export class DB {
 
   static async getTree() {
     return (await dbPromise).get('tree', 'main')
+  }
+
+  static async setAi(ai: AiConfig) {
+    return (await dbPromise).put('ai', ai, 'main')
+  }
+
+  static async getAi() {
+    return (await dbPromise).get('ai', 'main')
   }
 
   static async getFiles() {

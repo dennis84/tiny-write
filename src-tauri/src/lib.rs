@@ -3,16 +3,18 @@ use log::{debug, info};
 use tauri::{Builder, Manager, Runtime};
 use tauri_plugin_cli::CliExt;
 
+use copilot::service::CopilotService;
 use editor::editor_state::EditorState;
 use lsp::registry::LspRegistry;
 use lsp::service::LspService;
 
+mod copilot;
 mod editor;
+mod fs;
 mod install_cli;
+mod logger;
 mod lsp;
 mod menu;
-mod fs;
-mod logger;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run<R: Runtime>(builder: Builder<R>) {
@@ -88,16 +90,22 @@ pub fn run<R: Runtime>(builder: Builder<R>) {
             let lsp_service = LspService::new(handle.clone());
             app.manage::<LspService<R>>(lsp_service);
 
+            let copilot_service = CopilotService::new(handle.clone());
+            app.manage(copilot_service);
+
             let handle2 = handle.clone();
+
             tauri::async_runtime::spawn(async move {
                 let editor_state = handle2.state::<EditorState>();
                 let lsp_service = handle2.state::<LspService<R>>();
                 let lsp_registry = handle2.state::<LspRegistry>();
+                let copilot_service = handle2.state::<CopilotService<R>>();
 
                 loop {
                     tokio::select! {
                         Ok(path) = editor_state.open_doc_rx.recv() => {
                             let _ = lsp_service.register_language_server(path.as_ref()).await;
+                            let _ = copilot_service.register_language_server(path.as_ref()).await;
                         },
 
                         Ok(mut rx) = lsp_registry.language_server_registered_rx.recv() => {
@@ -141,6 +149,11 @@ pub fn run<R: Runtime>(builder: Builder<R>) {
             lsp::command::lsp_hover,
             lsp::command::lsp_completion,
             lsp::command::lsp_goto,
+            copilot::command::enable_copilot,
+            copilot::command::disable_copilot,
+            copilot::command::copilot_sign_in,
+            copilot::command::copilot_status,
+            copilot::command::copilot_completion,
         ])
         .run(tauri::generate_context!("tauri.conf.json"))
         .expect("error while running tauri application");

@@ -14,13 +14,15 @@ use lsp_types::{
     DidChangeTextDocumentParams, DidOpenTextDocumentParams, GotoDefinitionParams,
     GotoDefinitionResponse, Hover, InitializeParams, InitializeResult,
     TextDocumentContentChangeEvent, TextDocumentItem, TextDocumentSyncCapability,
-    TextDocumentSyncKind, VersionedTextDocumentIdentifier, WorkspaceFolder,
+    TextDocumentSyncKind, TraceValue, VersionedTextDocumentIdentifier, WorkspaceFolder,
 };
 use tauri::{AppHandle, Manager, Runtime};
 
 use crate::editor::editor_state::{Delete, Document, EditorState, Insert};
 use crate::lsp::registry::LspRegistry;
-use crate::lsp::util::pos_to_lsp_pos;
+use crate::lsp::util::{get_offset_encoding, pos_to_lsp_pos, url_for_path};
+
+use super::registry::LanguageServerId;
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum OffsetEncoding {
@@ -47,10 +49,15 @@ impl<R: Runtime> LspService<R> {
         let lsp_registry = self.app_handle.state::<LspRegistry>();
 
         let doc = editor_state.get_document(path).await?;
-        match lsp_registry.register_language_server(&doc).await? {
+        let language_server_id = doc.get_language_server_id().ok_or(anyhow!("No language"))?;
+
+        match lsp_registry
+            .register_language_server(&language_server_id)
+            .await?
+        {
             (server, true) => {
-                let result = self.initialize(&server, &doc).await?;
-                let _ = lsp_registry.insert_language_server_config(&doc, result);
+                let result = self.initialize(&server, &language_server_id).await?;
+                let _ = lsp_registry.insert_language_server_config(&language_server_id, result);
                 self.initialized(&server).await?;
                 self.open_document(&server, &doc).await?;
             }
@@ -65,14 +72,15 @@ impl<R: Runtime> LspService<R> {
     pub async fn initialize(
         &self,
         server: &LspServer,
-        doc: &Document,
+        language_server_id: &LanguageServerId,
     ) -> anyhow::Result<InitializeResult> {
-        debug!("LSP - initialize doc");
-        let root_uri = lsp_types::Url::from_file_path(doc.get_worktree_path())
+        debug!("LSP - send initialize request");
+        let root_uri = lsp_types::Url::from_file_path(&language_server_id.0)
             .map_err(|_| anyhow!("invalid root_uri"))?;
         let result = server
             .initialize(InitializeParams {
                 root_uri: Some(root_uri.clone()),
+                trace: Some(TraceValue::Verbose),
                 workspace_folders: Some(vec![WorkspaceFolder {
                     uri: root_uri,
                     name: Default::default(),
@@ -80,6 +88,7 @@ impl<R: Runtime> LspService<R> {
                 ..InitializeParams::default()
             })
             .await;
+        debug!("LSP - send initialize response {:?}", result);
         Ok(result)
     }
 
@@ -90,8 +99,7 @@ impl<R: Runtime> LspService<R> {
     }
 
     pub async fn open_document(&self, server: &LspServer, doc: &Document) -> anyhow::Result<()> {
-        let file_uri = lsp_types::Url::from_file_path(doc.path.clone())
-            .map_err(|_| anyhow!("invalid file_uri"))?;
+        let file_uri = url_for_path(doc.path.as_ref());
         debug!("LSP - open document (file_uri={:?})", file_uri);
         server
             .send_notification::<DidOpenTextDocument>(DidOpenTextDocumentParams {
@@ -106,35 +114,75 @@ impl<R: Runtime> LspService<R> {
         Ok(())
     }
 
-    pub async fn insert_document(&self, doc: &Document, data: &Insert) -> anyhow::Result<()> {
+    pub async fn update_document(
+        &self,
+        language_server_id: &LanguageServerId,
+        doc: &Document,
+    ) -> anyhow::Result<()> {
+        let lsp_registry = self.app_handle.state::<LspRegistry>();
+
+        let server = lsp_registry
+            .get_language_server(language_server_id)
+            .ok_or(anyhow!("No language server"))?;
+
+        let content_changes = vec![TextDocumentContentChangeEvent {
+            range: None,
+            range_length: None,
+            text: doc.text.to_string(),
+        }];
+
+        debug!("LSP - update document (version={})", doc.version);
+
+        server
+            .send_notification::<DidChangeTextDocument>(DidChangeTextDocumentParams {
+                text_document: VersionedTextDocumentIdentifier {
+                    uri: url_for_path(doc.path.as_ref()),
+                    version: doc.version,
+                },
+                content_changes,
+            })
+            .await;
+        Ok(())
+    }
+
+    pub async fn insert_document(
+        &self,
+        language_server_id: &LanguageServerId,
+        doc: &Document,
+        data: &Insert,
+    ) -> anyhow::Result<()> {
         let lsp_registry = self.app_handle.state::<LspRegistry>();
 
         let config = lsp_registry
-            .get_language_server_config(doc)
+            .get_language_server_config(language_server_id)
             .ok_or(anyhow!("No language server config"))?;
 
         let server = lsp_registry
-            .get_language_server(doc)
+            .get_language_server(language_server_id)
             .ok_or(anyhow!("No language server"))?;
 
         let document_sync_kind = self.document_sync_kind(&config);
-        let offset_encoding = self.offset_encoding(&config);
+        let offset_encoding = get_offset_encoding(&config);
         let from = pos_to_lsp_pos(&doc.text, data.from_a, offset_encoding);
         let to = pos_to_lsp_pos(&doc.text, data.to_b, offset_encoding);
 
         let content_changes: Vec<_> = match document_sync_kind {
             Some(TextDocumentSyncKind::FULL) => {
+                debug!("LSP - full document update");
                 vec![TextDocumentContentChangeEvent {
                     range: None,
                     range_length: None,
                     text: doc.text.to_string(),
                 }]
             }
-            Some(TextDocumentSyncKind::INCREMENTAL) => vec![TextDocumentContentChangeEvent {
-                range: Some(Range::new(from, to)),
-                range_length: None,
-                text: data.text.clone(),
-            }],
+            Some(TextDocumentSyncKind::INCREMENTAL) => {
+                debug!("LSP - incremental document update");
+                vec![TextDocumentContentChangeEvent {
+                    range: Some(Range::new(from, to)),
+                    range_length: None,
+                    text: data.text.clone(),
+                }]
+            }
             _ => Vec::new(),
         };
 
@@ -155,19 +203,24 @@ impl<R: Runtime> LspService<R> {
         Ok(())
     }
 
-    pub async fn delete_document(&self, doc: &Document, data: &Delete) -> anyhow::Result<()> {
+    pub async fn delete_document(
+        &self,
+        language_server_id: &LanguageServerId,
+        doc: &Document,
+        data: &Delete,
+    ) -> anyhow::Result<()> {
         let lsp_registry = self.app_handle.state::<LspRegistry>();
 
         let config = lsp_registry
-            .get_language_server_config(doc)
+            .get_language_server_config(language_server_id)
             .ok_or(anyhow!("No language server config"))?;
 
         let server = lsp_registry
-            .get_language_server(doc)
+            .get_language_server(language_server_id)
             .ok_or(anyhow!("No language server"))?;
 
         let document_sync_kind = self.document_sync_kind(&config);
-        let offset_encoding = self.offset_encoding(&config);
+        let offset_encoding = get_offset_encoding(&config);
         let from = pos_to_lsp_pos(&doc.text, data.from_a, offset_encoding);
         let to = pos_to_lsp_pos(&doc.text, data.to_a, offset_encoding);
 
@@ -205,19 +258,22 @@ impl<R: Runtime> LspService<R> {
     }
 
     pub async fn hover(&self, path: &Path, pos: usize) -> anyhow::Result<Hover> {
+        debug!("Hover");
         let editor_state = self.app_handle.state::<EditorState>();
         let lsp_registry = self.app_handle.state::<LspRegistry>();
 
         let doc = editor_state.get_document(path).await?;
+        let language_server_id = doc.get_language_server_id().ok_or(anyhow!("No language"))?;
+
         let server = lsp_registry
-            .get_language_server(&doc)
+            .get_language_server(&language_server_id)
             .ok_or(anyhow!("No language server"))?;
 
         let config = lsp_registry
-            .get_language_server_config(&doc)
+            .get_language_server_config(&language_server_id)
             .ok_or(anyhow!("No language server config"))?;
 
-        let offset_encoding = self.offset_encoding(&config);
+        let offset_encoding = get_offset_encoding(&config);
 
         debug!("LSP - send hover request");
         let response = server
@@ -245,9 +301,10 @@ impl<R: Runtime> LspService<R> {
         let lsp_registry = self.app_handle.state::<LspRegistry>();
 
         let doc = editor_state.get_document(path).await?;
+        let language_server_id = doc.get_language_server_id().ok_or(anyhow!("No language"))?;
 
         let config = lsp_registry
-            .get_language_server_config(&doc)
+            .get_language_server_config(&language_server_id)
             .ok_or(anyhow!("No language server config"))?;
 
         let trigger_character =
@@ -271,7 +328,7 @@ impl<R: Runtime> LspService<R> {
         let trigger_character = trigger_character.cloned();
 
         let server = lsp_registry
-            .get_language_server(&doc)
+            .get_language_server(&language_server_id)
             .ok_or(anyhow!("No language server"))?;
 
         debug!(
@@ -279,7 +336,7 @@ impl<R: Runtime> LspService<R> {
             pos, trigger_character, trigger_kind
         );
         let file_uri = Url::from_file_path(path).unwrap();
-        let offset_encoding = self.offset_encoding(&config);
+        let offset_encoding = get_offset_encoding(&config);
 
         let response = server
             .send_request::<Completion>(CompletionParams {
@@ -304,18 +361,19 @@ impl<R: Runtime> LspService<R> {
         let lsp_registry = self.app_handle.state::<LspRegistry>();
 
         let doc = editor_state.get_document(path).await?;
+        let language_server_id = doc.get_language_server_id().ok_or(anyhow!("No language"))?;
 
         let config = lsp_registry
-            .get_language_server_config(&doc)
+            .get_language_server_config(&language_server_id)
             .ok_or(anyhow!("No language server config"))?;
 
         let server = lsp_registry
-            .get_language_server(&doc)
+            .get_language_server(&language_server_id)
             .ok_or(anyhow!("No language server"))?;
 
         debug!("LSP - goto definition request (pos={})", pos);
         let file_uri = Url::from_file_path(path).unwrap();
-        let offset_encoding = self.offset_encoding(&config);
+        let offset_encoding = get_offset_encoding(&config);
 
         let response = server
             .send_request::<GotoDefinition>(GotoDefinitionParams {
@@ -329,22 +387,6 @@ impl<R: Runtime> LspService<R> {
             .await;
 
         response.ok_or(anyhow!("No response"))
-    }
-
-    fn offset_encoding(&self, config: &InitializeResult) -> OffsetEncoding {
-        config.capabilities
-            .position_encoding
-            .as_ref()
-            .and_then(|encoding| match encoding.as_str() {
-                "utf-8" => Some(OffsetEncoding::Utf8),
-                "utf-16" => Some(OffsetEncoding::Utf16),
-                "utf-32" => Some(OffsetEncoding::Utf32),
-                encoding => {
-                    log::error!("Server provided invalid position encoding {encoding}, defaulting to utf-16");
-                    None
-                },
-            })
-            .unwrap_or_default()
     }
 
     fn document_sync_kind(&self, config: &InitializeResult) -> Option<TextDocumentSyncKind> {
