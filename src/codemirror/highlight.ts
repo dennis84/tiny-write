@@ -20,6 +20,7 @@ import {css} from '@codemirror/lang-css'
 import {cpp} from '@codemirror/lang-cpp'
 import {markdown} from '@codemirror/lang-markdown'
 import {xml} from '@codemirror/lang-xml'
+import {php} from '@codemirror/lang-php'
 
 const langSupport = (l: StreamParser<unknown>) => new LanguageSupport(StreamLanguage.define(l))
 
@@ -83,6 +84,9 @@ export const languages: Record<string, LangConfig> = {
   },
   xml: {
     highlight: () => xml(),
+  },
+  php: {
+    highlight: () => php(),
   },
   haskell: {
     highlight: () => langSupport(haskell),
