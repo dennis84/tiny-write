@@ -79,9 +79,9 @@ export class AppService {
   async getBasePath() {
     const currentFile = this.fileService.currentFile
     const filePath = currentFile?.path ?? currentFile?.newFile
-    const basePath = filePath ? await remote.dirname(filePath) : undefined
+    const doc = filePath ? await remote.getDocument(filePath) : undefined
 
-    return basePath ?? this.store.args?.cwd
+    return doc?.worktreePath ?? this.store.args?.cwd
   }
 
   setError(data: Partial<ErrorObject>) {

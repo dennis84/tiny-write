@@ -223,7 +223,7 @@ test('dropPath - image on editor with basePath', async () => {
   const paragraph = doc?.firstChild
   const image = paragraph?.firstChild
   expect(image?.type.name).toBe('image')
-  expect(image?.attrs.src).toBe('./file.png')
+  expect(image?.attrs.src).toBe('~/project/file.png')
 })
 
 test('dropPath - text file on editor', async () => {

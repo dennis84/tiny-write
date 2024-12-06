@@ -1,10 +1,22 @@
 use tauri::{path::SafePathBuf, Manager, Runtime};
 
 use crate::{
-    copilot::service::CopilotService, editor::editor_state::EditorState, lsp::service::LspService,
+    copilot::service::CopilotService,
+    editor::editor_state::{EditorState, Document},
+    lsp::service::LspService,
 };
 
 use super::editor_state::{Delete, Insert, UpdateDocument};
+
+#[tauri::command]
+pub async fn get_document<R: Runtime>(
+    path: SafePathBuf,
+    app_handle: tauri::AppHandle<R>,
+) -> tauri::Result<Document> {
+    let state = app_handle.state::<EditorState>();
+    let doc = state.get_document(path.as_ref()).await?;
+    Ok(doc)
+}
 
 #[tauri::command]
 pub async fn read_text<R: Runtime>(

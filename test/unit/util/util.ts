@@ -34,8 +34,14 @@ export const createIpcMock = (options?: Record<string, IpcMockFn>) => {
       return {}
     }
 
-    if (cmd === 'get_file_last_modified') {
-      return new Date()
+    if (cmd === 'get_document') {
+      return {
+        path: args.path,
+        worktreePath: undefined,
+        language: undefined,
+        lastModified: new Date(),
+        version: 1,
+      }
     }
 
     if (cmd === 'get_mime_type') {

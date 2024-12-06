@@ -1,4 +1,9 @@
-import {currentMonitor, getCurrentWindow, PhysicalPosition, PhysicalSize} from '@tauri-apps/api/window'
+import {
+  currentMonitor,
+  getCurrentWindow,
+  PhysicalPosition,
+  PhysicalSize,
+} from '@tauri-apps/api/window'
 import {invoke} from '@tauri-apps/api/core'
 import * as clipboard from '@tauri-apps/plugin-clipboard-manager'
 import * as fs from '@tauri-apps/plugin-fs'
@@ -10,6 +15,14 @@ import {toBase64} from 'js-base64'
 import {Args, File, Window} from '@/state'
 import {serialize} from '@/markdown'
 import {isTauri} from '@/env'
+
+interface Document {
+  path: string
+  worktreePath?: string
+  language?: string
+  lastModified: Date
+  version: number
+}
 
 export const saveSvg = async (svg: HTMLElement) => {
   const canvas = document.createElement('canvas')
@@ -97,12 +110,6 @@ export const getMimeType = async (path: string): Promise<string> => {
   return invoke('get_mime_type', {path})
 }
 
-export const getFileLastModified = async (path: string): Promise<Date> => {
-  if (!isTauri()) throw Error('Must be run in tauri: getFileLastModified')
-  const ts = (await invoke('get_file_last_modified', {path})) as string
-  return new Date(ts)
-}
-
 export const readBinaryFile = async (path: string): Promise<Uint8Array> => {
   if (!isTauri()) throw Error('Must be run in tauri: readBinaryFile')
   return fs.readFile(path)
@@ -131,6 +138,10 @@ export const insertText = async (path: string, data: any) => {
 export const deleteText = async (path: string, data: any) => {
   if (!isTauri()) throw Error('Must be run in tauri: deleteText')
   return await invoke('delete_text', {path, data})
+}
+
+export const getDocument = async (path: string): Promise<Document> => {
+  return invoke('get_document', {path})
 }
 
 export const resolvePath = async (
@@ -177,47 +188,47 @@ export const saveFile = async (file: File): Promise<string> => {
 
 export const lspHover = async (path: string, pos: number) => {
   if (!isTauri()) throw Error('Must be run in tauri: lspHover')
-  return (await invoke('lsp_hover', {path, pos}))
+  return await invoke('lsp_hover', {path, pos})
 }
 
 export const lspCompletion = async (path: string, pos: number, trigger: string) => {
   if (!isTauri()) throw Error('Must be run in tauri: lspCompletion')
-  return (await invoke('lsp_completion', {path, pos, trigger}))
+  return await invoke('lsp_completion', {path, pos, trigger})
 }
 
 export const lspGoto = async (path: string, pos: number) => {
   if (!isTauri()) throw Error('Must be run in tauri: lspGoto')
-  return (await invoke('lsp_goto', {path, pos}))
+  return await invoke('lsp_goto', {path, pos})
 }
 
 export const connectCopilot = async () => {
   if (!isTauri()) throw Error('Must be run in tauri: connectCopilot')
-  return (await invoke('connect_copilot'))
+  return await invoke('connect_copilot')
 }
 
 export const enableCopilot = async () => {
   if (!isTauri()) throw Error('Must be run in tauri: enableCopilot')
-  return (await invoke('enable_copilot'))
+  return await invoke('enable_copilot')
 }
 
 export const disableCopilot = async () => {
   if (!isTauri()) throw Error('Must be run in tauri: disableCopilot')
-  return (await invoke('disable_copilot'))
+  return await invoke('disable_copilot')
 }
 
 export const copilotStatus = async () => {
   if (!isTauri()) throw Error('Must be run in tauri: copilotStatus')
-  return (await invoke('copilot_status'))
+  return await invoke('copilot_status')
 }
 
 export const copilotSignIn = async () => {
   if (!isTauri()) throw Error('Must be run in tauri: copilotSignIn')
-  return (await invoke('copilot_sign_in'))
+  return await invoke('copilot_sign_in')
 }
 
 export const copilotCompletion = async (path: string | undefined, pos: number) => {
   if (!isTauri()) throw Error('Must be run in tauri: copilotCompletion')
-  return (await invoke('copilot_completion', {path, pos}))
+  return await invoke('copilot_completion', {path, pos})
 }
 
 export const debug = (msg: string, ...data: any[]) => {

@@ -141,6 +141,7 @@ pub fn run<R: Runtime>(builder: Builder<R>) {
             fs::path::dirname,
             fs::path::to_relative_path,
             fs::path::to_absolute_path,
+            editor::command_editor_state::get_document,
             editor::command_editor_state::read_text,
             editor::command_editor_state::replace_text,
             editor::command_editor_state::insert_text,

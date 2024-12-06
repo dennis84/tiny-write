@@ -19,12 +19,18 @@ beforeEach(() => {
 })
 
 test.each([
-  {fileActive: true, expected: '/users/me/project', cwd: '/users/me/cwd'},
-  {fileActive: false, expected: undefined},
-  {fileActive: false, cwd: '/users/me/cwd', expected: '/users/me/cwd'},
-  {fileActive: true, mode: Mode.Canvas, expected: '/users/me/project'},
-  {fileActive: false, mode: Mode.Canvas, expected: undefined},
+  {fileActive: true, expected: '/users/me/cwd'},
+  {fileActive: true, worktreePath: '/users/me/project', expected: '/users/me/project'},
+  {fileActive: false, expected: '/users/me/cwd'},
+  {fileActive: true, mode: Mode.Canvas, expected: '/users/me/cwd'},
+  {fileActive: false, mode: Mode.Canvas, expected: '/users/me/cwd'},
 ])('getBasePath - from file', async (data) => {
+  createIpcMock({
+    'get_document': () => ({
+      worktreePath: data.worktreePath
+    })
+  })
+
   const canvasEditor = {
     id: '1',
     type: ElementType.Editor,
@@ -36,7 +42,7 @@ test.each([
   }
 
   const state = createState({
-    args: {cwd: data.cwd},
+    args: {cwd: '/users/me/cwd'},
     mode: data.mode ?? Mode.Editor,
     files: [
       {

@@ -17,10 +17,12 @@ use super::pathutil::to_relative_path;
 #[derive(Debug, Clone, PartialEq, Hash, Eq, Serialize, Deserialize)]
 pub struct Language(pub String);
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Document {
     pub path: PathBuf,
     pub worktree_path: Option<PathBuf>,
+    #[serde(skip)]
     pub text: Rope,
     pub language: Option<Language>,
     pub last_modified: SystemTime,

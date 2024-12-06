@@ -50,7 +50,8 @@ export class FileService {
 
     try {
       const text = await remote.readText(resolvedPath)
-      const lastModified = await remote.getFileLastModified(resolvedPath)
+      const doc = await remote.getDocument(resolvedPath)
+      const lastModified = doc.lastModified
       return {text, lastModified, path: resolvedPath}
     } catch (e: any) {
       throw new ServiceError('file_permission_denied', e)
@@ -68,7 +69,7 @@ export class FileService {
 
     try {
       const fileContent = await remote.readText(resolvedPath)
-      const lastModified = await remote.getFileLastModified(resolvedPath)
+      const lastModified = (await remote.getDocument(resolvedPath)).lastModified
       const parser = createMarkdownParser(schema)
       const doc = parser.parse(fileContent)?.toJSON()
       const text = {
@@ -324,7 +325,10 @@ export class FileService {
 
   async getTitle(file?: File, len = 25): Promise<string> {
     if (!file) return 'Undefined'
-    if (isTauri() && file.path) return remote.toRelativePath(file.path)
+    if (isTauri() && file.path) {
+      return remote.toRelativePath(file.path)
+    }
+
     if (file.code) return file.title ?? 'Code'
     else if (file.title) return file.title
 

@@ -1,4 +1,8 @@
-use crate::editor::pathutil::{self as pu};
+use std::path::PathBuf;
+
+use tauri::{Manager, Runtime};
+
+use crate::editor::{editor_state::EditorState, pathutil::{self as pu}};
 
 #[tauri::command]
 pub fn dirname(path: String) -> tauri::Result<String> {
@@ -16,8 +20,18 @@ pub fn to_absolute_path(path: String, base_path: Option<String>) -> tauri::Resul
 }
 
 #[tauri::command]
-pub fn to_relative_path(path: String, base_path: Option<String>) -> tauri::Result<String> {
-    Ok(pu::to_relative_path(path, base_path).and_then(pu::path_buf_to_string)?)
+pub async fn to_relative_path<R: Runtime>(
+    path: PathBuf,
+    base_path: Option<PathBuf>,
+    app_handle: tauri::AppHandle<R>,
+) -> tauri::Result<String> {
+    let state = app_handle.state::<EditorState>();
+    let doc = state.get_document(path.as_ref()).await?;
+    let bp = doc.worktree_path.or(base_path);
+    println!("to_relative_path {:?} {:?}", bp, path);
+    let relative_path = pu::to_relative_path(path, bp).and_then(pu::path_buf_to_string)?;
+    println!("==> {:?}", relative_path);
+    Ok(relative_path)
 }
 
 #[cfg(test)]

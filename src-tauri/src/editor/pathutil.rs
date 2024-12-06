@@ -79,7 +79,11 @@ pub fn to_relative_path<P: AsRef<Path>>(path: P, base_path: Option<P>) -> Result
     let home = home_dir().ok_or(anyhow!("Could not get home_dir"))?;
     let home = path_buf_to_string(home)?;
 
-    if path.starts_with(&home) {
+    if path.starts_with(&cur) {
+        if let Ok(p) = path.strip_prefix(&cur) {
+            return Ok(Path::new(".").join(p));
+        }
+    } else if path.starts_with(&home) {
         if let Ok(p) = path.strip_prefix(&home) {
             return Ok(Path::new("~").join(p));
         }
