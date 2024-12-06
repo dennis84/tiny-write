@@ -1,7 +1,7 @@
 import {createEffect, createSignal, onCleanup, Show} from 'solid-js'
 import {useSearchParams} from '@solidjs/router'
 import {useState} from '@/state'
-import * as remote from '@/remote'
+import {copy} from '@/remote/clipboard'
 import {Label, Link, Sub, Text} from './Style'
 import {WEB_URL} from '@/env'
 import {Icon} from '../Icon'
@@ -23,7 +23,7 @@ export const SubmenuCollab = () => {
   }
 
   const onCopyCollabLink = async () => {
-    await remote.copy(`${WEB_URL}/${collabService.provider?.roomname}?share=true`)
+    await copy(`${WEB_URL}/${collabService.provider?.roomname}?share=true`)
     setLastAction('copy-collab-link')
   }
 

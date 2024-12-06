@@ -4,7 +4,15 @@ import {yXmlFragmentToProseMirrorRootNode} from 'y-prosemirror'
 import {ySyncFacet} from 'y-codemirror.next'
 import {v4 as uuidv4} from 'uuid'
 import {File, FileText, Mode, ServiceError, State} from '@/state'
-import * as remote from '@/remote'
+import {
+  getDocument,
+  getMimeType,
+  readText,
+  resolvePath,
+  toAbsolutePath,
+  toRelativePath,
+} from '@/remote/editor'
+import {debug, error, info} from '@/remote/log'
 import {DB} from '@/db'
 import {isTauri} from '@/env'
 import {createMarkdownParser} from '@/markdown'
@@ -40,17 +48,17 @@ export class FileService {
   }
 
   static async loadTextFile(path: string): Promise<LoadedTextFile> {
-    remote.debug(`Load text file (path=${path})`)
+    debug(`Load text file (path=${path})`)
     let resolvedPath
     try {
-      resolvedPath = await remote.resolvePath(path)
+      resolvedPath = await resolvePath(path)
     } catch (_e: any) {
       throw new ServiceError('file_not_found', `File not found: ${path}`)
     }
 
     try {
-      const text = await remote.readText(resolvedPath)
-      const doc = await remote.getDocument(resolvedPath)
+      const text = await readText(resolvedPath)
+      const doc = await getDocument(resolvedPath)
       const lastModified = doc.lastModified
       return {text, lastModified, path: resolvedPath}
     } catch (e: any) {
@@ -59,17 +67,17 @@ export class FileService {
   }
 
   static async loadMarkdownFile(path: string): Promise<LoadedMarkdownFile> {
-    remote.debug(`Load file (path=${path})`)
+    debug(`Load file (path=${path})`)
     let resolvedPath
     try {
-      resolvedPath = await remote.resolvePath(path)
+      resolvedPath = await resolvePath(path)
     } catch (_e: any) {
       throw new ServiceError('file_not_found', `File not found: ${path}`)
     }
 
     try {
-      const fileContent = await remote.readText(resolvedPath)
-      const lastModified = (await remote.getDocument(resolvedPath)).lastModified
+      const fileContent = await readText(resolvedPath)
+      const lastModified = (await getDocument(resolvedPath)).lastModified
       const parser = createMarkdownParser(schema)
       const doc = parser.parse(fileContent)?.toJSON()
       const text = {
@@ -193,7 +201,7 @@ export class FileService {
           })),
         })
       } catch (_err) {
-        remote.error('Ignore file due to invalid ydoc.')
+        error('Ignore file due to invalid ydoc.')
       }
     }
 
@@ -226,10 +234,10 @@ export class FileService {
 
     let file = await this.findFileByPath(p)
     if (!file) {
-      const mime = await remote.getMimeType(p)
+      const mime = await getMimeType(p)
       const code = !mime.startsWith('text/markdown')
       file = await this.newFile({newFile, path, code})
-      remote.info(
+      info(
         `Created new file with path (id=${file.id}, code=${code}, path=${path}, newFile=${newFile}, mime=${mime})`,
       )
     }
@@ -265,7 +273,7 @@ export class FileService {
 
   async findFileByPath(path: string): Promise<File | undefined> {
     if (isTauri()) {
-      path = await remote.toAbsolutePath(path)
+      path = await toAbsolutePath(path)
     }
 
     return this.store.files.find((file) => file.path === path || file.newFile === path)
@@ -320,13 +328,13 @@ export class FileService {
     if (!updateFile) return
 
     await FileService.saveFile(updateFile)
-    remote.info('File restored')
+    info('File restored')
   }
 
   async getTitle(file?: File, len = 25): Promise<string> {
     if (!file) return 'Undefined'
     if (isTauri() && file.path) {
-      return remote.toRelativePath(file.path)
+      return toRelativePath(file.path)
     }
 
     if (file.code) return file.title ?? 'Code'

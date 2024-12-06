@@ -2,7 +2,9 @@ import {onCleanup, onMount} from 'solid-js'
 import {keyName} from 'w3c-keyname'
 import {isCodeElement, isEditorElement, Mode, useState} from '@/state'
 import {isTauri, mod} from '@/env'
-import * as remote from '@/remote'
+import {saveFile} from '@/remote/editor'
+import {quit} from '@/remote/app'
+import {lspGoto} from '@/remote/lsp'
 import {useOpen} from '@/open'
 
 export const Keymap = () => {
@@ -40,7 +42,7 @@ export const Keymap = () => {
 
   const onQuit = async () => {
     if (!isTauri()) return
-    await remote.quit()
+    await quit()
   }
 
   const onNew = async () => {
@@ -62,7 +64,7 @@ export const Keymap = () => {
   const onSave = async () => {
     const currentFile = fileService.currentFile
     if (!isTauri() || !currentFile || currentFile?.path) return false
-    const path = await remote.saveFile(currentFile)
+    const path = await saveFile(currentFile)
     if (path) await fileService.updatePath(currentFile.id, path)
   }
 
@@ -123,7 +125,7 @@ export const Keymap = () => {
 
     const sel = codeEditorView.state.selection.main
 
-    const response = (await remote.lspGoto(path, sel.from)) as any
+    const response = (await lspGoto(path, sel.from)) as any
 
     const first = response?.[0] // file:///Users/../file.ts
     if (!first) return

@@ -2,7 +2,7 @@ import {onCleanup, onMount} from 'solid-js'
 import {createMutable} from 'solid-js/store'
 import {getCurrentWindow} from '@tauri-apps/api/window'
 import {isTauri} from '@/env'
-import {info} from '@/remote'
+import {info} from '@/remote/log'
 import {useState} from '@/state'
 import {useOpen} from '@/open'
 

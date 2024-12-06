@@ -65,7 +65,6 @@ export const createCtrl = (initial: State) => {
     fileService,
     collabService,
     editorService,
-    store,
     setState,
   )
   const canvasCollabService = new CanvasCollabService(collabService, canvasService, store)

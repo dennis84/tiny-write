@@ -1,7 +1,7 @@
 import {RouteSectionProps, useLocation} from '@solidjs/router'
 import {onMount, Show} from 'solid-js'
 import {LocationState, Mode, useState} from '@/state'
-import {info} from '@/remote'
+import {info} from '@/remote/log'
 import {locationToString} from '@/utils/debug'
 import {Loading} from './Loading'
 import {Title} from './Title'

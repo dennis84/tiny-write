@@ -1,7 +1,7 @@
 import {DBSchema, openDB} from 'idb'
 import {differenceInDays} from 'date-fns'
 import {AiConfig, Camera, Config, ElementType, Mode, Window} from '@/state'
-import * as remote from '@/remote'
+import {info} from './remote/log'
 
 export interface PersistedVersion {
   ydoc: Uint8Array
@@ -90,7 +90,7 @@ const dbPromise = openDB<MyDB>(DB_NAME, 2, {
   upgrade(db: any, oldVersion, newVersion) {
     if (!newVersion) return
 
-    remote.info(`Upgrade DB from version ${oldVersion} to ${newVersion}`)
+    info(`Upgrade DB from version ${oldVersion} to ${newVersion}`)
     if (newVersion >= 1) {
       db.createObjectStore('config')
       db.createObjectStore('window')
@@ -194,7 +194,7 @@ export class DB {
       const days = differenceInDays(Date.now(), c.lastModified ?? 0)
       if (days > 14) {
         await db.delete('canvases', c.id)
-        remote.info('💥 Deleted 14 days old canvas from bin')
+        info('💥 Deleted 14 days old canvas from bin')
       }
     }
 
@@ -203,7 +203,7 @@ export class DB {
       const days = differenceInDays(Date.now(), f.lastModified ?? 0)
       if (days > 14) {
         await db.delete('files', f.id)
-        remote.info('💥 Deleted 14 days old file from bin')
+        info('💥 Deleted 14 days old file from bin')
       }
     }
   }

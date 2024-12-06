@@ -1,7 +1,8 @@
 import {SetStoreFunction, Store, unwrap} from 'solid-js/store'
 import {debounce} from 'throttle-debounce'
 import {Config, Mode, State} from '@/state'
-import * as remote from '@/remote'
+import {setAlwaysOnTop} from '@/remote/app'
+import {info} from '@/remote/log'
 import {DB} from '@/db'
 import {isDark} from '@/env'
 import {CollabService} from './CollabService'
@@ -352,7 +353,7 @@ export class ConfigService {
   }
 
   async setAlwaysOnTop(alwaysOnTop: boolean) {
-    await remote.setAlwaysOnTop(alwaysOnTop)
+    await setAlwaysOnTop(alwaysOnTop)
     this.setState('config', {alwaysOnTop})
   }
 
@@ -377,6 +378,6 @@ export class ConfigService {
 
   private async saveConfig(state: State) {
     await DB.setConfig(state.config)
-    remote.info('Config saved')
+    info('Config saved')
   }
 }

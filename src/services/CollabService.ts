@@ -6,7 +6,7 @@ import {defaultDeleteFilter, defaultProtectedNodes, ySyncPluginKey} from 'y-pros
 import {adjectives, animals, uniqueNamesGenerator} from 'unique-names-generator'
 import {Collab, Config, File, Mode, State} from '@/state'
 import {COLLAB_URL, isTauri} from '@/env'
-import {error, info} from '@/remote'
+import {error, info} from '@/remote/log'
 import {TauriWebSocket} from '@/utils/TauriWebSocket'
 import {ConfigService} from './ConfigService'
 

@@ -9,7 +9,9 @@ import {
   Openable,
   VisualPositionRange,
 } from './state'
-import {info} from './remote'
+import {info} from './remote/log'
+import {open as shellOpen} from './remote/app'
+import {isTauri} from './env'
 
 export const useOpen = () => {
   const navigate = useNavigate()
@@ -57,5 +59,22 @@ export const useOpen = () => {
     navigate('/dir', {state})
   }
 
-  return {open, openDir}
+  const openUrl = async (url: string) => {
+    info(`Open url (url=${url})`)
+
+    if (url.startsWith('/')) {
+      const prev = location.pathname
+      const state = {prev}
+      return navigate(url, {state})
+    }
+
+    if (isTauri()) {
+      await shellOpen(url)
+      return
+    }
+
+    window.open(url, '_blank')
+  }
+
+  return {open, openDir, openUrl}
 }

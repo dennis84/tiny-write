@@ -1,7 +1,7 @@
 import {Store} from 'solid-js/store'
 import {convertFileSrc} from '@tauri-apps/api/core'
 import {EditorView} from 'prosemirror-view'
-import * as remote from '@/remote'
+import {getMimeType, resolvePath, toRelativePath} from '@/remote/editor'
 import {File, Mode, State} from '@/state'
 import {FileService} from './FileService'
 import {CanvasService} from './CanvasService'
@@ -15,7 +15,7 @@ interface DropResult {
 export class MediaService {
   static async getImagePath(path: string, basePath?: string) {
     const s = decodeURIComponent(path)
-    const absolutePath = await remote.resolvePath(s, basePath)
+    const absolutePath = await resolvePath(s, basePath)
     return convertFileSrc(absolutePath)
   }
 
@@ -49,7 +49,7 @@ export class MediaService {
   }
 
   async dropPath(path: string, [x, y]: [number, number]): Promise<DropResult | undefined> {
-    const mime = await remote.getMimeType(path)
+    const mime = await getMimeType(path)
     const isImage = mime.startsWith('image/')
     const isVideo = mime.startsWith('video/')
     const isMarkdown = mime.startsWith('text/markdown')
@@ -57,7 +57,7 @@ export class MediaService {
     console.log({mime})
     const basePath = await this.appService.getBasePath()
     console.log({basePath})
-    const relativePath = await remote.toRelativePath(path, basePath)
+    const relativePath = await toRelativePath(path, basePath)
     console.log({relativePath})
     console.log(this.store.mode)
 

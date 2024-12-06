@@ -1,7 +1,7 @@
 import {Show, createEffect, createSignal, onCleanup} from 'solid-js'
 import {Mode, useState} from '@/state'
 import {isTauri, isMac, mod, shortHash, version, VERSION_URL, isDev} from '@/env'
-import * as remote from '@/remote'
+import {quit} from '@/remote/app'
 import {useOpen} from '@/open'
 import {Bin} from './Bin'
 import {CodeFormat} from './CodeFormat'
@@ -188,7 +188,7 @@ export const Menu = () => {
             </Link>
             <Link onClick={() => setShow('help')}>Help</Link>
             <Show when={isTauri()}>
-              <Link onClick={() => remote.quit()}>
+              <Link onClick={() => quit()}>
                 Quit <Keys keys={[modKey, 'q']} />
               </Link>
             </Show>

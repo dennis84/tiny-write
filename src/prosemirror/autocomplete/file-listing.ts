@@ -1,5 +1,5 @@
 import {PluginKey} from 'prosemirror-state'
-import {listContents} from '@/remote'
+import {listContents} from '@/remote/editor'
 import {AppService} from '@/services/AppService'
 import {completionKeymap, completionPlugin} from './autocomplete'
 

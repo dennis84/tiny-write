@@ -1,7 +1,7 @@
 import {SetStoreFunction, Store} from 'solid-js/store'
 import {DB} from '@/db'
 import {State} from '@/state'
-import {connectCopilot, disableCopilot, enableCopilot} from '@/remote'
+import {connectCopilot, disableCopilot, enableCopilot} from '@/remote/copilot'
 
 export class CopilotService {
   constructor(

@@ -23,7 +23,7 @@ import {
   isCodeElement,
 } from '@/state'
 import {DB} from '@/db'
-import * as remote from '@/remote'
+import {info} from '@/remote/log'
 import {FileService} from './FileService'
 import {CollabService} from './CollabService'
 import {TreeService} from './TreeService'
@@ -158,7 +158,7 @@ export class CanvasService {
 
     this.updateCamera({zoom, point: [-x, -y]})
     await this.saveCanvas()
-    remote.info('Canvas saved after camera update')
+    info('Canvas saved after camera update')
   }
 
   async backToContent(point: Vec | undefined = undefined, zoom = 0.5) {
@@ -171,7 +171,7 @@ export class CanvasService {
       const [x, y] = center.sub(vp).toArray()
       this.updateCanvas(currentCanvas.id, {camera: {zoom, point: [-x, -y]}})
       await this.saveCanvas()
-      remote.info('Canvas saved after camera update')
+      info('Canvas saved after camera update')
     }
   }
 
@@ -277,7 +277,7 @@ export class CanvasService {
     const canvas = CanvasService.createCanvas({id})
 
     this.setState('canvases', (prev) => [...prev, canvas])
-    remote.info('New canvas created')
+    info('New canvas created')
 
     return canvas
   }
@@ -312,13 +312,13 @@ export class CanvasService {
 
     this.updateCanvas(currentCanvas.id, {elements: [...elements]})
     await this.saveCanvas()
-    remote.info('Canvas saved after removing element')
+    info('Canvas saved after removing element')
 
     return [...removedIds]
   }
 
   async open(id: string, share = false) {
-    remote.info(`Open canvas (id=${id}, share=${share})`)
+    info(`Open canvas (id=${id}, share=${share})`)
 
     const prevCanvas = this.currentCanvas
 
@@ -340,7 +340,7 @@ export class CanvasService {
 
     await this.saveCanvas()
     await DB.setMeta({mode: state.mode})
-    remote.info('Saved canvas and mode after open')
+    info('Saved canvas and mode after open')
   }
 
   async newFile(
@@ -357,7 +357,7 @@ export class CanvasService {
     this.setState('files', [...this.store.files, file])
     const added = await this.addFile(file, link, point)
     this.treeService.create()
-    remote.info('New file added')
+    info('New file added')
 
     return added?.[0]
   }
@@ -455,7 +455,7 @@ export class CanvasService {
     }
 
     await this.saveCanvas()
-    remote.info('File added to canvas')
+    info('File added to canvas')
 
     return addedElements
   }
@@ -490,7 +490,7 @@ export class CanvasService {
     })
 
     await this.saveCanvas()
-    remote.info('Image added to canvas')
+    info('Image added to canvas')
 
     return element
   }
@@ -527,7 +527,7 @@ export class CanvasService {
     })
 
     await this.saveCanvas()
-    remote.info('Video added to canvas')
+    info('Video added to canvas')
 
     return element
   }
@@ -629,7 +629,7 @@ export class CanvasService {
     if (elements.length !== currentCanvas.elements.length) {
       this.updateCanvas(currentCanvas.id, {elements})
       await this.saveCanvas()
-      remote.info('Removed dead links')
+      info('Removed dead links')
     }
 
     return removedIds
@@ -641,7 +641,7 @@ export class CanvasService {
 
     this.updateCanvas(currentCanvas.id, {elements: []})
     await this.saveCanvas()
-    remote.info('All elements cleared')
+    info('All elements cleared')
   }
 
   async restore(id: string) {
@@ -654,7 +654,7 @@ export class CanvasService {
     if (!updateCanvas) return
 
     await this.saveCanvas(updateCanvas)
-    remote.info('Canavs restored')
+    info('Canavs restored')
   }
 
   setMoving(moving: boolean) {

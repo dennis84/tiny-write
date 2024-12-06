@@ -3,14 +3,14 @@ import {NodeSelection, TextSelection} from 'prosemirror-state'
 import {setBlockType} from 'prosemirror-commands'
 import {ReferenceElement} from '@floating-ui/dom'
 import {useState} from '@/state'
-import * as remote from '@/remote'
-import {isTauri} from '@/env'
+import {resolvePath} from '@/remote/editor'
+import {saveSvg} from '@/remote/svg'
 import {Align} from '@/prosemirror/image'
 import {languages} from '@/codemirror/highlight'
+import {useOpen} from '@/open'
 import {Icon, IconFloatCenter} from '../Icon'
 import {Block} from './BlockHandle'
 import {Tooltip} from '../Tooltip'
-import {useOpen} from '@/open'
 
 interface Props {
   selectedBlock?: Block
@@ -20,7 +20,7 @@ interface Props {
 export const BlockTooltip = (props: Props) => {
   const {appService, fileService} = useState()
   const [tooltipAnchor, setTooltipAnchor] = createSignal<ReferenceElement | undefined>()
-  const {open} = useOpen()
+  const {openUrl} = useOpen()
 
   const closeTooltip = () => {
     props.resetBlock()
@@ -96,7 +96,7 @@ export const BlockTooltip = (props: Props) => {
 
     const id = `mermaid-graph-${block.blockPos}`
     const svg = document.getElementById(id)
-    if (svg) await remote.saveSvg(svg)
+    if (svg) await saveSvg(svg)
     closeTooltip()
   }
 
@@ -182,25 +182,7 @@ export const BlockTooltip = (props: Props) => {
     const href = resolved.marks()[0]?.attrs?.href
     if (!href) return
 
-    if (!isTauri()) {
-      await remote.open(href)
-      return
-    }
-
-    try {
-      const url = new URL(href)
-      await remote.open(url.href)
-      closeTooltip()
-      return
-    } catch (_e) {
-      // ...
-    }
-
-    const basePath = await appService.getBasePath()
-    const path = await remote.resolvePath(href, basePath)
-    const file = await fileService.newFileByPath(path)
-    if (!file) return
-    open(file, true, undefined)
+    await openUrl(href)
     closeTooltip()
   }
 

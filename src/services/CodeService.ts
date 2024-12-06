@@ -5,14 +5,15 @@ import {yCollab, ySyncFacet} from 'y-codemirror.next'
 import {debounce} from 'throttle-debounce'
 import {File, SelectionRange, State, VisualPositionRange} from '@/state'
 import {copilot} from '@/codemirror/copilot'
-import * as remote from '@/remote'
+import {deleteText, insertText, writeFile} from '@/remote/editor'
+import {debug, info} from '@/remote/log'
+import {isTauri} from '@/env'
 import {FileService} from './FileService'
 import {CollabService} from './CollabService'
 import {AppService} from './AppService'
 import {CodeMirrorService} from './CodeMirrorService'
 import {PrettierService} from './PrettierService'
 import {TreeService} from './TreeService'
-import { isTauri } from '@/env'
 
 export interface OpenFile {
   id: string
@@ -43,7 +44,7 @@ export class CodeService {
   }
 
   async openFile(params: OpenFile) {
-    remote.debug(`Open file: (params=${JSON.stringify(params)}, mode=code)`)
+    debug(`Open file: (params=${JSON.stringify(params)}, mode=code)`)
     const state: State = unwrap(this.store)
 
     try {
@@ -83,7 +84,7 @@ export class CodeService {
     const type = subdoc.getText(file.id)
     type.delete(0, type.length)
     type.insert(0, doc)
-    remote.info(`Updated code text from file`)
+    info(`Updated code text from file`)
   }
 
   updateConfig(file: File) {
@@ -135,15 +136,17 @@ export class CodeService {
       extensions: [
         EditorView.updateListener.of((update) => this.onUpdate(file, update)),
         yCollab(type, this.store.collab?.provider.awareness, {undoManager: false}),
-        ...(isTauri() ? [
-          copilot({
-            configure: () => {
-              const path = file.path ?? `buffer://${file.id}`
-              const language = file.codeEditorView?.contentDOM.dataset.language ?? ''
-              return {path, language}
-            }
-          }),
-        ] : []),
+        ...(isTauri() ?
+          [
+            copilot({
+              configure: () => {
+                const path = file.path ?? `buffer://${file.id}`
+                const language = file.codeEditorView?.contentDOM.dataset.language ?? ''
+                return {path, language}
+              },
+            }),
+          ]
+        : []),
       ],
     })
 
@@ -179,10 +182,10 @@ export class CodeService {
       update.changes.iterChanges(async (fromA, toA, _fromB, toB, insert) => {
         const text = insert.sliceString(0, insert.length, '\n')
         if (fromA !== toA) {
-          await remote.deleteText(file.path!, {fromA, toA})
+          await deleteText(file.path!, {fromA, toA})
         }
         if (text.length > 0) {
-          await remote.insertText(file.path!, {fromA, toB, text})
+          await insertText(file.path!, {fromA, toB, text})
         }
       })
 
@@ -192,7 +195,7 @@ export class CodeService {
 
   private async writeFile(file: File) {
     if (file.path) {
-      await remote.writeFile(file.path)
+      await writeFile(file.path)
     }
   }
 

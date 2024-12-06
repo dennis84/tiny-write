@@ -1,7 +1,7 @@
 import {createEffect, onCleanup, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {CanvasCodeElement, useState} from '@/state'
-import * as remote from '@/remote'
+import {info} from '@/remote/log'
 import {Selection} from '@/services/CanvasService'
 import {FileService} from '@/services/FileService'
 import {Scroll} from '@/components/Layout'
@@ -57,7 +57,7 @@ export const CodeEditor = ({element, index}: {element: CanvasCodeElement; index:
     let file = fileService.findFileById(element.id)
 
     if (!file) {
-      remote.info('No file for code element', element.id)
+      info('No file for code element', element.id)
       file = FileService.createFile({id: element.id, parentId: currentCanvas?.id, code: true})
       await fileService.addFile(file)
     }

@@ -2,7 +2,7 @@ import {onMount, Switch, Match, ErrorBoundary, createEffect, untrack, Show} from
 import {Route, Router, RouteSectionProps, useLocation} from '@solidjs/router'
 import {LocationState, State, StateContext} from '@/state'
 import {createCtrl} from '@/services'
-import * as remote from '@/remote'
+import {info} from '@/remote/log'
 import {isTauri} from '@/env'
 import {DragArea, Layout, PageContent} from '@/components/Layout'
 import {Menu} from '@/components/menu/Menu'
@@ -29,7 +29,7 @@ export const Main = (props: {state: State}) => {
     const ctrl = createCtrl(props.state)
     const [inputLine, setInputLine] = ctrl.appService.inputLine
 
-    remote.info(`Open root (location=${locationToString(location)})`)
+    info(`Open root (location=${locationToString(location)})`)
 
     const onViewError = (error: any, reset: any) => {
       ctrl.appService.setError({error})

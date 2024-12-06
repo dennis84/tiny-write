@@ -1,7 +1,8 @@
 import {Show} from 'solid-js'
 import {isMac, isTauri, mod} from '@/env'
 import {useState} from '@/state'
-import * as remote from '@/remote'
+import {saveFile} from '@/remote/editor'
+import {info} from '@/remote/log'
 import {Keys, Label, Link, Sub} from './Style'
 import {Icon} from '../Icon'
 
@@ -14,10 +15,10 @@ export const SubmenuEditor = () => {
     const currentFile = fileService.currentFile
     if (!currentFile) return
     try {
-      const path = await remote.saveFile(currentFile)
+      const path = await saveFile(currentFile)
       if (path) await fileService.updatePath(currentFile.id, path)
     } catch (e) {
-      remote.info(`Save as cancelled`, e)
+      info(`Save as cancelled`, e)
     }
   }
 

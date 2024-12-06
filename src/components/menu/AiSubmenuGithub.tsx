@@ -1,6 +1,7 @@
 import {createEffect, createSignal, onCleanup, Show} from 'solid-js'
 import {useState} from '@/state'
-import {copilotSignIn as signIn, copilotStatus, open} from '@/remote'
+import {copilotSignIn, copilotStatus} from '@/remote/copilot'
+import {open} from '@/remote/app'
 import {Label, Link, Sub, Text} from './Style'
 import {Icon} from '../Icon'
 
@@ -15,7 +16,7 @@ export const AiSubmenuGithub = () => {
 
   const onConnect = async () => {
     await copilotService.enable()
-    const result = await signIn() as any
+    const result = await copilotSignIn() as any
 
     if (result.userCode) {
       setUserCode(result.userCode)

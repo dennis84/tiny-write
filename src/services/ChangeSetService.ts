@@ -1,8 +1,8 @@
-import {SetStoreFunction, Store} from 'solid-js/store'
+import {SetStoreFunction} from 'solid-js/store'
 import {TextSelection} from 'prosemirror-state'
 import * as Y from 'yjs'
 import {State, Version} from '@/state'
-import * as remote from '@/remote'
+import {info} from '@/remote/log'
 import {FileService} from './FileService'
 import {CollabService} from './CollabService'
 import {EditorService} from './EditorService'
@@ -12,7 +12,6 @@ export class ChangeSetService {
     private fileService: FileService,
     private collabService: CollabService,
     private editorService: EditorService,
-    private store: Store<State>,
     private setState: SetStoreFunction<State>,
   ) {}
 
@@ -29,7 +28,7 @@ export class ChangeSetService {
     const updatedFile = this.fileService.currentFile
     if (!updatedFile) return
     await FileService.saveFile(updatedFile)
-    remote.info('Saved new snapshot version')
+    info('Saved new snapshot version')
   }
 
   renderVersion(version: Version) {

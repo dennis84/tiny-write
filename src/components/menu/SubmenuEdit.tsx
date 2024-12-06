@@ -1,6 +1,6 @@
 import {createEffect, createSignal, onCleanup, Show} from 'solid-js'
 import {useState} from '@/state'
-import * as remote from '@/remote'
+import {copyAllAsMarkdown} from '@/remote/clipboard'
 import {isMac, isTauri, mod} from '@/env'
 import {Keys, Label, Link, Sub} from './Style'
 import {Icon} from '../Icon'
@@ -28,7 +28,7 @@ export const SubmenuEdit = () => {
     const currentFile = fileService.currentFile
     const state = currentFile?.editorView?.state
     if (!state) return
-    await remote.copyAllAsMarkdown(state)
+    await copyAllAsMarkdown(state)
     setLastAction('copy-md')
   }
 

@@ -3,7 +3,7 @@ import {EditorView} from 'prosemirror-view'
 import {DragGesture} from '@use-gesture/vanilla'
 import {isMac, isTauri} from '@/env'
 import {Mode} from '@/state'
-import * as remote from '@/remote'
+import {error} from '@/remote/log'
 import {ViewConfig} from '@/services/ProseMirrorService'
 import {MediaService} from '@/services/MediaService'
 import {AppService} from '@/services/AppService'
@@ -111,7 +111,7 @@ class ImageView {
     }
 
     source.onerror = () => {
-      remote.error(`Could not load media (type=${node.type.name})`)
+      error(`Could not load media (type=${node.type.name})`)
       this.container.classList.add('error')
     }
 

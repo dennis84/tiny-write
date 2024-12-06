@@ -2,7 +2,11 @@ import {Store, unwrap, SetStoreFunction, reconcile} from 'solid-js/store'
 import {createSignal} from 'solid-js'
 import {stateToString} from '@/utils/debug'
 import {timeout} from '@/utils/promise'
-import * as remote from '@/remote'
+import {getDocument} from '@/remote/editor'
+import {debug, error, info} from '@/remote/log'
+import {show, updateWindow} from '@/remote/window'
+import {getArgs, setAlwaysOnTop, setFullscreen} from '@/remote/app'
+import {copilotStatus, enableCopilot} from '@/remote/copilot'
 import {State, ServiceError, Window, Mode, ErrorObject, createState} from '@/state'
 import {DB} from '@/db'
 import {isTauri} from '@/env'
@@ -34,12 +38,12 @@ export class AppService {
 
   async init() {
     const data = await this.fetchData()
-    remote.debug(`Fetched data: ${stateToString(data)}`)
-    remote.info(`Init app (mode=${data.mode}, args=${JSON.stringify(data.args)})`)
+    debug(`Fetched data: ${stateToString(data)}`)
+    info(`Init app (mode=${data.mode}, args=${JSON.stringify(data.args)})`)
 
     try {
       if (isTauri() && data.window) {
-        await remote.updateWindow(data.window)
+        await updateWindow(data.window)
       }
 
       const newState: State = {
@@ -50,44 +54,44 @@ export class AppService {
       }
 
       if (isTauri() && newState.config?.alwaysOnTop) {
-        await remote.setAlwaysOnTop(true)
+        await setAlwaysOnTop(true)
       }
 
       if (isTauri() && newState.ai?.copilot?.enabled) {
-        await Promise.race([remote.enableCopilot(), timeout(2000)])
-        const status = await Promise.race([remote.copilotStatus(), timeout(2000)]) as any
+        await Promise.race([enableCopilot(), timeout(2000)])
+        const status = (await Promise.race([copilotStatus(), timeout(2000)])) as any
         newState.ai.copilot.user = status.user
       }
 
       this.setState(newState)
 
       this.treeService.create()
-    } catch (error: any) {
-      const errorObject = this.createError({error})
-      remote.error(`Error during init: ${error.message}`)
-      const data = error.data ?? {}
+    } catch (err: any) {
+      const errorObject = this.createError({error: err})
+      error(`Error during init: ${err.message}`)
+      const data = err.data ?? {}
       this.setState({...data, error: errorObject, loading: 'initialized'})
     }
 
     await DB.cleanup()
 
     if (isTauri()) {
-      await remote.show()
+      await show()
     }
   }
 
   async getBasePath() {
     const currentFile = this.fileService.currentFile
     const filePath = currentFile?.path ?? currentFile?.newFile
-    const doc = filePath ? await remote.getDocument(filePath) : undefined
+    const doc = filePath ? await getDocument(filePath) : undefined
 
     return doc?.worktreePath ?? this.store.args?.cwd
   }
 
   setError(data: Partial<ErrorObject>) {
-    const error = this.createError(data)
-    remote.error(`Error thrown (error=${error}})`, error)
-    this.setState({error, loading: 'initialized'})
+    const err = this.createError(data)
+    error(`Error thrown (error=${err}})`, err)
+    this.setState({error: err, loading: 'initialized'})
   }
 
   setInputLine(inputLine: InputLineConfig) {
@@ -95,7 +99,7 @@ export class AppService {
   }
 
   async reset(): Promise<void> {
-    remote.info('Delete database')
+    info('Delete database')
     await DB.deleteDatabase()
     this.setState(
       reconcile(createState({loading: 'initialized', args: {cwd: this.store.args?.cwd}})),
@@ -103,7 +107,7 @@ export class AppService {
   }
 
   async setFullscreen(fullscreen: boolean) {
-    await remote.setFullscreen(fullscreen)
+    await setFullscreen(fullscreen)
     this.setState('fullscreen', fullscreen)
   }
 
@@ -113,7 +117,7 @@ export class AppService {
     if (!this.store.window) return
     const updatedWindow = unwrap(this.store.window)
     await DB.setWindow(updatedWindow)
-    remote.info('Saved window state')
+    info('Saved window state')
   }
 
   setSelecting(selecting: boolean) {
@@ -122,7 +126,7 @@ export class AppService {
 
   private async fetchData(): Promise<State> {
     const state = unwrap(this.store)
-    const args = (await remote.getArgs().catch(() => undefined)) ?? state.args ?? {}
+    const args = (await getArgs().catch(() => undefined)) ?? state.args ?? {}
 
     const fetchedWindow = await DB.getWindow()
     const fetchedConfig = await DB.getConfig()
