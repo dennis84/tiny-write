@@ -10,7 +10,7 @@ export const lspHoverSource =
     const word = view.state.wordAt(pos) ?? {from: pos, to: pos}
 
     const response = await lspHover(path, pos)
-    const text = (response as any)?.contents?.value?.trim()
+    const text = response.contents?.value?.trim()
     if (!text) return null
 
     const parsed = md.render(text, {})

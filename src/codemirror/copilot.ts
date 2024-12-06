@@ -17,7 +17,7 @@ export const copilot = (options: Options) => {
       await replaceText(path, {text, language})
     }
 
-    const result = (await copilotCompletion(path, editorState.selection.main.head)) as any
+    const result = await copilotCompletion(path, editorState.selection.main.head)
     return result?.completions?.[0]?.displayText
   }
 

@@ -2,7 +2,6 @@ import {invoke} from '@tauri-apps/api/core'
 import * as fs from '@tauri-apps/plugin-fs'
 import * as dialog from '@tauri-apps/plugin-dialog'
 import {File} from '@/state'
-import {isTauri} from '@/env'
 import {serialize} from '@/markdown'
 import {debug} from './log'
 
@@ -71,7 +70,6 @@ export const listContents = async (path: string, basePath: string | undefined = 
 }
 
 export const saveFile = async (file: File): Promise<string> => {
-  if (!isTauri()) throw Error('Must be run in tauri: save')
   const path = await dialog.save({defaultPath: file.newFile})
   if (!path) throw new Error('No path returned')
   if (file.editorView?.state) {

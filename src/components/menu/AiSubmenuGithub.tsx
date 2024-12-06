@@ -16,19 +16,16 @@ export const AiSubmenuGithub = () => {
 
   const onConnect = async () => {
     await copilotService.enable()
-    const result = await copilotSignIn() as any
-
-    if (result.userCode) {
-      setUserCode(result.userCode)
-      await open(result.verificationUri)
-    }
+    const result = await copilotSignIn()
+    setUserCode(result.userCode)
+    await open(result.verificationUri)
   }
 
   createEffect(() => {
     if (!userCode()) return
 
     const interval = setInterval(async () => {
-      const status = await copilotStatus() as any
+      const status = await copilotStatus()
       if (status.user) {
         copilotService.setUser(status.user)
         setUserCode(undefined)

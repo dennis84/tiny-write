@@ -125,7 +125,7 @@ export const Keymap = () => {
 
     const sel = codeEditorView.state.selection.main
 
-    const response = (await lspGoto(path, sel.from)) as any
+    const response = await lspGoto(path, sel.from)
 
     const first = response?.[0] // file:///Users/../file.ts
     if (!first) return

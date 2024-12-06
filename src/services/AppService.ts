@@ -58,8 +58,8 @@ export class AppService {
       }
 
       if (isTauri() && newState.ai?.copilot?.enabled) {
-        await Promise.race([enableCopilot(), timeout(2000)])
-        const status = (await Promise.race([copilotStatus(), timeout(2000)])) as any
+        await enableCopilot()
+        const status = await copilotStatus()
         newState.ai.copilot.user = status.user
       }
 

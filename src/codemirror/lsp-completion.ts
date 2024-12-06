@@ -43,7 +43,7 @@ export const lspCompletionSource =
 
     const options = []
 
-    const completions = (await lspCompletion(path, pos, char)) as any
+    const completions = await lspCompletion(path, pos, char)
     for (const item of completions?.items ?? []) {
       options.push({
         label: item.label,
