@@ -91,14 +91,15 @@ export const Sub = styled('nav')`
 
 export const itemCss = `
   width: 100%;
-  padding: 5px;
+  padding: 3px;
+  padding-left: 5px;
   margin: 0;
   outline: none;
   display: flex;
   align-items: center;
   color: var(--foreground);
   font-size: var(--menu-font-size);
-  line-height: calc(var(--menu-font-size) * 1.6);
+  line-height: calc(var(--menu-font-size) * 2);
   font-family: var(--menu-font-family);
   text-align: left;
   > .icon {

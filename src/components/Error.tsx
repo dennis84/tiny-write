@@ -1,6 +1,7 @@
 import {Match, Show, Switch} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {useState} from '@/state'
+import {DB} from '@/db'
 import {ButtonGroup, Button, ButtonPrimary} from './Button'
 import {Content, Scroll} from './Layout'
 
@@ -25,17 +26,15 @@ export const Error = () => {
 }
 
 const GeneralError = () => {
-  const {store, treeService, deleteService} = useState()
+  const {store} = useState()
   const onReload = () => {
     window.location.reload()
   }
 
   const onDeleteFile = async () => {
     if (!store.error?.fileId) return
-    const treeNode = treeService.findTreeNode(store.error.fileId)
-    if (!treeNode) return
-    await deleteService.delete(treeNode, true)
-    window.location.reload()
+    await DB.deleteFile(store.error.fileId)
+    window.location.href = '/'
   }
 
   const getMessage = () =>

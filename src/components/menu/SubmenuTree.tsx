@@ -61,7 +61,7 @@ const TreeLinkItem = styled('div')`
   user-select: none;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
-  align-items: flex-start;
+  align-items: center;
   ${(props: any) => props.deleted ? `
     opacity: 0.3;
     pointer-events: none;
@@ -117,6 +117,9 @@ const LinkMenu = styled('span')`
   justify-self: flex-end;
   display: flex;
   align-items: center;
+  justify-content: center;
+  align-self: stretch;
+  width: calc(var(--menu-font-size) * 2.4);
   margin-left: auto;
   cursor: var(--cursor-pointer);
   opacity: 0;
@@ -128,6 +131,9 @@ const LinkMenu = styled('span')`
   ` : ''}
   &:hover {
     background: var(--foreground-10);
+    .icon {
+      font-weight: bold;
+    }
   }
 `
 

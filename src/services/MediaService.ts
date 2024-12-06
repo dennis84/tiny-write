@@ -62,6 +62,7 @@ export class MediaService {
         const currentFile = this.fileService.currentFile
         if (!currentFile?.editorView) return
         this.insert(currentFile.editorView, relativePath, x, y, mime)
+        return
       } else {
         let file = await this.fileService.findFileByPath(path)
         if (!file) file = await this.fileService.newFile({path, code: !isMarkdown})
