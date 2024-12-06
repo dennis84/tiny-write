@@ -59,7 +59,7 @@ mod tests {
     #[test]
     #[serial]
     fn test_list_contents() {
-        create_test_workspace();
+        create_test_workspace(true);
 
         assert_eq!(
             list_contents("./Ca".to_string(), None).unwrap(),

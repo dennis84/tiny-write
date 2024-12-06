@@ -245,7 +245,7 @@ mod tests {
     #[test]
     #[serial]
     fn test_document() {
-        create_test_workspace();
+        create_test_workspace(true);
 
         let path = get_test_dir().join("src").join("index.ts");
 
@@ -267,7 +267,7 @@ mod tests {
     #[tokio::test]
     #[serial]
     async fn test_get_document_err() {
-        create_test_workspace();
+        create_test_workspace(true);
 
         let path = get_test_dir();
 
@@ -280,7 +280,7 @@ mod tests {
     #[tokio::test]
     #[serial]
     async fn test_buffer() {
-        create_test_workspace();
+        create_test_workspace(true);
 
         let editor_state = EditorState::new();
         let path = Path::new("buffer://123");
@@ -310,7 +310,7 @@ mod tests {
     #[tokio::test]
     #[serial]
     async fn test_editor_state() {
-        create_test_workspace();
+        create_test_workspace(true);
 
         let path = get_test_dir().join("README.md");
 
@@ -350,7 +350,7 @@ mod tests {
     #[tokio::test]
     #[serial]
     async fn test_editor_state_2() {
-        create_test_workspace();
+        create_test_workspace(true);
 
         let path = get_test_dir().join("README.md");
 

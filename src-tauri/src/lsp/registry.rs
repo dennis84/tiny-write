@@ -146,7 +146,7 @@ mod tests {
     #[tokio::test]
     #[serial]
     async fn test_lsp_registry() {
-        create_test_workspace();
+        create_test_workspace(true);
 
         let path = get_test_dir().join("src").join("index.ts");
         let language = Language("typescript".to_string());
