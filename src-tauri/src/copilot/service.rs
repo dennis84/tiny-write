@@ -45,9 +45,10 @@ impl<R: Runtime> CopilotService<R> {
         let language_server_id = Self::language_server_id(None);
         let language_server = lsp_registry
             .get_language_server(&language_server_id)
+            .await
             .ok_or(anyhow!("No language server"))?;
         self.sign_out(&language_server).await?;
-        lsp_registry.remove_language_server(&language_server_id)?;
+        lsp_registry.remove_language_server(&language_server_id).await?;
         Ok(())
     }
 
@@ -57,6 +58,7 @@ impl<R: Runtime> CopilotService<R> {
         let language_server_id = Self::language_server_id(None);
         let language_server = lsp_registry
             .get_language_server(&language_server_id)
+            .await
             .ok_or(anyhow!("No language server"))?;
         self.check_status(&language_server).await
     }
@@ -68,6 +70,7 @@ impl<R: Runtime> CopilotService<R> {
         let language_server_id = Self::language_server_id(None);
         let language_server = lsp_registry
             .get_language_server(&language_server_id)
+            .await
             .ok_or(anyhow!("No language server"))?;
 
         let response = language_server
@@ -199,10 +202,12 @@ impl<R: Runtime> CopilotService<R> {
 
         let config = lsp_registry
             .get_language_server_config(&language_server_id)
+            .await
             .ok_or(anyhow!("No language server config"))?;
 
         let server = lsp_registry
             .get_language_server(&language_server_id)
+            .await
             .ok_or(anyhow!("No language server"))?;
 
         debug!(

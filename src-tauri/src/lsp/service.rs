@@ -57,7 +57,9 @@ impl<R: Runtime> LspService<R> {
         {
             (server, true) => {
                 let result = self.initialize(&server, &language_server_id).await?;
-                let _ = lsp_registry.insert_language_server_config(&language_server_id, result);
+                lsp_registry
+                    .insert_language_server_config(&language_server_id, result)
+                    .await;
                 self.initialized(&server).await?;
                 self.open_document(&server, &doc).await?;
             }
@@ -123,6 +125,7 @@ impl<R: Runtime> LspService<R> {
 
         let server = lsp_registry
             .get_language_server(language_server_id)
+            .await
             .ok_or(anyhow!("No language server"))?;
 
         let content_changes = vec![TextDocumentContentChangeEvent {
@@ -155,10 +158,12 @@ impl<R: Runtime> LspService<R> {
 
         let config = lsp_registry
             .get_language_server_config(language_server_id)
+            .await
             .ok_or(anyhow!("No language server config"))?;
 
         let server = lsp_registry
             .get_language_server(language_server_id)
+            .await
             .ok_or(anyhow!("No language server"))?;
 
         let document_sync_kind = self.document_sync_kind(&config);
@@ -213,10 +218,12 @@ impl<R: Runtime> LspService<R> {
 
         let config = lsp_registry
             .get_language_server_config(language_server_id)
+            .await
             .ok_or(anyhow!("No language server config"))?;
 
         let server = lsp_registry
             .get_language_server(language_server_id)
+            .await
             .ok_or(anyhow!("No language server"))?;
 
         let document_sync_kind = self.document_sync_kind(&config);
@@ -267,10 +274,12 @@ impl<R: Runtime> LspService<R> {
 
         let server = lsp_registry
             .get_language_server(&language_server_id)
+            .await
             .ok_or(anyhow!("No language server"))?;
 
         let config = lsp_registry
             .get_language_server_config(&language_server_id)
+            .await
             .ok_or(anyhow!("No language server config"))?;
 
         let offset_encoding = get_offset_encoding(&config);
@@ -305,6 +314,7 @@ impl<R: Runtime> LspService<R> {
 
         let config = lsp_registry
             .get_language_server_config(&language_server_id)
+            .await
             .ok_or(anyhow!("No language server config"))?;
 
         let trigger_character =
@@ -329,6 +339,7 @@ impl<R: Runtime> LspService<R> {
 
         let server = lsp_registry
             .get_language_server(&language_server_id)
+            .await
             .ok_or(anyhow!("No language server"))?;
 
         debug!(
@@ -365,10 +376,12 @@ impl<R: Runtime> LspService<R> {
 
         let config = lsp_registry
             .get_language_server_config(&language_server_id)
+            .await
             .ok_or(anyhow!("No language server config"))?;
 
         let server = lsp_registry
             .get_language_server(&language_server_id)
+            .await
             .ok_or(anyhow!("No language server"))?;
 
         debug!("LSP - goto definition request (pos={})", pos);

@@ -1,6 +1,6 @@
 use async_lsp_client::ServerMessage;
 use log::{debug, info};
-use tauri::{Builder, Manager, Runtime};
+use tauri::{Builder, Manager, Runtime, WindowEvent};
 use tauri_plugin_cli::CliExt;
 
 use copilot::service::CopilotService;
@@ -156,6 +156,22 @@ pub fn run<R: Runtime>(builder: Builder<R>) {
             copilot::command::copilot_status,
             copilot::command::copilot_completion,
         ])
-        .run(tauri::generate_context!("tauri.conf.json"))
-        .expect("error while running tauri application");
+        .build(tauri::generate_context!("tauri.conf.json"))
+        .expect("error while running tauri application")
+        .run(|app_handle, event| {
+            if let tauri::RunEvent::ExitRequested { .. } = event {
+                println!("Destroyed");
+                let lsp_registry = app_handle.state::<LspRegistry>();
+                println!("block_on");
+                tauri::async_runtime::block_on(async {
+                    println!("AAAAAAA");
+                    lsp_registry.shutdown().await
+                });
+                println!("block_on::done");
+            }
+        });
 }
+        // .on_window_event(move |window, event| {
+        //     if let WindowEvent::Destroyed = event {
+        //     }
+        // })

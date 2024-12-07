@@ -34,7 +34,7 @@ async-channel = "2"
 futures = "0"
 futures-channel = "0"
 crossbeam-channel = "0"
-async-lsp-client = "0"
+async-lsp-client = { path = "/Users/dennisdietrich/code/async-lsp-client/" }
 fix-path-env = { git = "https://github.com/tauri-apps/fix-path-env-rs" }
 lsp-types = "0.94.1"
 tauri-plugin-cli = "2"
