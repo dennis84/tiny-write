@@ -37,8 +37,8 @@ pub async fn to_relative_path<R: Runtime>(
 
 #[cfg(test)]
 mod tests {
-    use tauri::test::mock_app;
     use serial_test::serial;
+    use tauri::test::mock_app;
 
     use super::*;
 

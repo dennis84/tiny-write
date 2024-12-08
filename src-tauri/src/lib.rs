@@ -1,6 +1,5 @@
-use async_lsp_client::ServerMessage;
 use log::{debug, info};
-use tauri::{Builder, Manager, Runtime, WindowEvent};
+use tauri::{Builder, Manager, Runtime};
 use tauri_plugin_cli::CliExt;
 
 use copilot::service::CopilotService;
@@ -98,7 +97,6 @@ pub fn run<R: Runtime>(builder: Builder<R>) {
             tauri::async_runtime::spawn(async move {
                 let editor_state = handle2.state::<EditorState>();
                 let lsp_service = handle2.state::<LspService<R>>();
-                let lsp_registry = handle2.state::<LspRegistry>();
                 let copilot_service = handle2.state::<CopilotService<R>>();
 
                 loop {
@@ -107,25 +105,6 @@ pub fn run<R: Runtime>(builder: Builder<R>) {
                             let _ = lsp_service.register_language_server(path.as_ref()).await;
                             let _ = copilot_service.register_language_server(path.as_ref()).await;
                         },
-
-                        Ok(mut rx) = lsp_registry.language_server_registered_rx.recv() => {
-                            info!("receive requests and notifications from language server");
-                            tauri::async_runtime::spawn(async move {
-                                loop {
-                                    if let Some(message) = rx.recv().await {
-                                        match message {
-                                            ServerMessage::Notification(n) => {
-                                                info!("Received notification from lsp server: {:?}", n);
-                                            }
-                                            // For requests, you need to send a response
-                                            ServerMessage::Request(r) => {
-                                                info!("Received request from lsp server: {:?}", r);
-                                            }
-                                        }
-                                    }
-                                }
-                            });
-                        }
                     }
                 }
             });
@@ -160,18 +139,8 @@ pub fn run<R: Runtime>(builder: Builder<R>) {
         .expect("error while running tauri application")
         .run(|app_handle, event| {
             if let tauri::RunEvent::ExitRequested { .. } = event {
-                println!("Destroyed");
                 let lsp_registry = app_handle.state::<LspRegistry>();
-                println!("block_on");
-                tauri::async_runtime::block_on(async {
-                    println!("AAAAAAA");
-                    lsp_registry.shutdown().await
-                });
-                println!("block_on::done");
+                tauri::async_runtime::block_on(async { lsp_registry.shutdown().await });
             }
         });
 }
-        // .on_window_event(move |window, event| {
-        //     if let WindowEvent::Destroyed = event {
-        //     }
-        // })

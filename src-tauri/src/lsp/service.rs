@@ -1,21 +1,20 @@
 use std::path::Path;
 
 use anyhow::anyhow;
-use async_lsp_client::LspServer;
-use log::debug;
-use lsp_types::notification::{DidChangeTextDocument, DidOpenTextDocument};
-use lsp_types::request::{Completion, GotoDefinition};
-use lsp_types::{
+use async_lsp::lsp_types::notification::{DidChangeTextDocument, DidOpenTextDocument};
+use async_lsp::lsp_types::request::{Completion, GotoDefinition};
+use async_lsp::lsp_types::{
     request::HoverRequest, HoverParams, Range, TextDocumentIdentifier, TextDocumentPositionParams,
     Url,
 };
-use lsp_types::{
+use async_lsp::lsp_types::{
     CompletionContext, CompletionParams, CompletionResponse, CompletionTriggerKind,
     DidChangeTextDocumentParams, DidOpenTextDocumentParams, GotoDefinitionParams,
     GotoDefinitionResponse, Hover, InitializeParams, InitializeResult,
     TextDocumentContentChangeEvent, TextDocumentItem, TextDocumentSyncCapability,
     TextDocumentSyncKind, TraceValue, VersionedTextDocumentIdentifier, WorkspaceFolder,
 };
+use log::debug;
 use tauri::{AppHandle, Manager, Runtime};
 
 use crate::editor::editor_state::{Delete, Document, EditorState, Insert};
@@ -23,6 +22,7 @@ use crate::lsp::registry::LspRegistry;
 use crate::lsp::util::{get_offset_encoding, pos_to_lsp_pos, url_for_path};
 
 use super::registry::LanguageServerId;
+use super::server::LspServer;
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum OffsetEncoding {
@@ -77,11 +77,10 @@ impl<R: Runtime> LspService<R> {
         language_server_id: &LanguageServerId,
     ) -> anyhow::Result<InitializeResult> {
         debug!("LSP - send initialize request");
-        let root_uri = lsp_types::Url::from_file_path(&language_server_id.0)
+        let root_uri = async_lsp::lsp_types::Url::from_file_path(&language_server_id.0)
             .map_err(|_| anyhow!("invalid root_uri"))?;
         let result = server
             .initialize(InitializeParams {
-                root_uri: Some(root_uri.clone()),
                 trace: Some(TraceValue::Verbose),
                 workspace_folders: Some(vec![WorkspaceFolder {
                     uri: root_uri,
@@ -89,14 +88,14 @@ impl<R: Runtime> LspService<R> {
                 }]),
                 ..InitializeParams::default()
             })
-            .await;
+            .await?;
         debug!("LSP - send initialize response {:?}", result);
         Ok(result)
     }
 
     pub async fn initialized(&self, server: &LspServer) -> anyhow::Result<()> {
         debug!("LSP - send initialized notification");
-        server.initialized().await;
+        server.initialized().await?;
         Ok(())
     }
 
@@ -104,7 +103,7 @@ impl<R: Runtime> LspService<R> {
         let file_uri = url_for_path(doc.path.as_ref());
         debug!("LSP - open document (file_uri={:?})", file_uri);
         server
-            .send_notification::<DidOpenTextDocument>(DidOpenTextDocumentParams {
+            .notify::<DidOpenTextDocument>(DidOpenTextDocumentParams {
                 text_document: TextDocumentItem {
                     uri: file_uri,
                     language_id: doc.get_language_id(),
@@ -112,7 +111,7 @@ impl<R: Runtime> LspService<R> {
                     text: doc.text.to_string(),
                 },
             })
-            .await;
+            .await?;
         Ok(())
     }
 
@@ -137,14 +136,14 @@ impl<R: Runtime> LspService<R> {
         debug!("LSP - update document (version={})", doc.version);
 
         server
-            .send_notification::<DidChangeTextDocument>(DidChangeTextDocumentParams {
+            .notify::<DidChangeTextDocument>(DidChangeTextDocumentParams {
                 text_document: VersionedTextDocumentIdentifier {
                     uri: url_for_path(doc.path.as_ref()),
                     version: doc.version,
                 },
                 content_changes,
             })
-            .await;
+            .await?;
         Ok(())
     }
 
@@ -197,14 +196,14 @@ impl<R: Runtime> LspService<R> {
         );
 
         server
-            .send_notification::<DidChangeTextDocument>(DidChangeTextDocumentParams {
+            .notify::<DidChangeTextDocument>(DidChangeTextDocumentParams {
                 text_document: VersionedTextDocumentIdentifier {
                     uri: Url::from_file_path(doc.path.clone()).unwrap(),
                     version: doc.version,
                 },
                 content_changes,
             })
-            .await;
+            .await?;
         Ok(())
     }
 
@@ -253,19 +252,19 @@ impl<R: Runtime> LspService<R> {
         );
 
         server
-            .send_notification::<DidChangeTextDocument>(DidChangeTextDocumentParams {
+            .notify::<DidChangeTextDocument>(DidChangeTextDocumentParams {
                 text_document: VersionedTextDocumentIdentifier {
                     uri: Url::from_file_path(doc.path.clone()).unwrap(),
                     version: doc.version,
                 },
                 content_changes,
             })
-            .await;
+            .await?;
         Ok(())
     }
 
     pub async fn hover(&self, path: &Path, pos: usize) -> anyhow::Result<Hover> {
-        debug!("Hover");
+        debug!("LSP - hover");
         let editor_state = self.app_handle.state::<EditorState>();
         let lsp_registry = self.app_handle.state::<LspRegistry>();
 
@@ -286,7 +285,7 @@ impl<R: Runtime> LspService<R> {
 
         debug!("LSP - send hover request");
         let response = server
-            .send_request::<HoverRequest>(HoverParams {
+            .request::<HoverRequest>(HoverParams {
                 text_document_position_params: TextDocumentPositionParams {
                     text_document: TextDocumentIdentifier {
                         uri: Url::from_file_path(path).unwrap(),
@@ -295,7 +294,7 @@ impl<R: Runtime> LspService<R> {
                 },
                 work_done_progress_params: Default::default(),
             })
-            .await;
+            .await?;
 
         response.ok_or(anyhow!("No response"))
     }
@@ -350,7 +349,7 @@ impl<R: Runtime> LspService<R> {
         let offset_encoding = get_offset_encoding(&config);
 
         let response = server
-            .send_request::<Completion>(CompletionParams {
+            .request::<Completion>(CompletionParams {
                 text_document_position: TextDocumentPositionParams::new(
                     TextDocumentIdentifier::new(file_uri),
                     pos_to_lsp_pos(&doc.text, pos, offset_encoding),
@@ -362,7 +361,7 @@ impl<R: Runtime> LspService<R> {
                 work_done_progress_params: Default::default(),
                 partial_result_params: Default::default(),
             })
-            .await;
+            .await?;
 
         response.ok_or(anyhow!("No response"))
     }
@@ -389,7 +388,7 @@ impl<R: Runtime> LspService<R> {
         let offset_encoding = get_offset_encoding(&config);
 
         let response = server
-            .send_request::<GotoDefinition>(GotoDefinitionParams {
+            .request::<GotoDefinition>(GotoDefinitionParams {
                 text_document_position_params: TextDocumentPositionParams::new(
                     TextDocumentIdentifier::new(file_uri),
                     pos_to_lsp_pos(&doc.text, pos, offset_encoding),
@@ -397,7 +396,7 @@ impl<R: Runtime> LspService<R> {
                 work_done_progress_params: Default::default(),
                 partial_result_params: Default::default(),
             })
-            .await;
+            .await?;
 
         response.ok_or(anyhow!("No response"))
     }

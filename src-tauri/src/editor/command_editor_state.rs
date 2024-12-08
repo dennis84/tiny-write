@@ -2,7 +2,7 @@ use tauri::{path::SafePathBuf, Manager, Runtime};
 
 use crate::{
     copilot::service::CopilotService,
-    editor::editor_state::{EditorState, Document},
+    editor::editor_state::{Document, EditorState},
     lsp::service::LspService,
 };
 

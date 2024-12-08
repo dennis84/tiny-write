@@ -1,14 +1,15 @@
 use anyhow::anyhow;
-use async_lsp_client::{LspServer, ServerMessage};
+use async_lsp::lsp_types::InitializeResult;
 use log::{debug, info};
-use lsp_types::InitializeResult;
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::{collections::hash_map::Entry, path::Path};
-use tokio::sync::mpsc::Receiver;
 use tokio::sync::RwLock;
+use tokio::task::JoinHandle;
 
 use crate::editor::editor_state::{Document, Language};
+
+use super::server::LspServer;
 
 // One language server for each workspace and language
 #[derive(Eq, Hash, PartialEq, Debug, Clone)]
@@ -17,8 +18,6 @@ pub struct LanguageServerId(pub PathBuf, pub Language);
 pub struct LspRegistry {
     pub language_servers: RwLock<HashMap<LanguageServerId, LspServer>>,
     pub language_server_configs: RwLock<HashMap<LanguageServerId, InitializeResult>>,
-    pub language_server_registered_tx: async_channel::Sender<Receiver<ServerMessage>>,
-    pub language_server_registered_rx: async_channel::Receiver<Receiver<ServerMessage>>,
 }
 
 impl Document {
@@ -38,13 +37,9 @@ impl Document {
 
 impl LspRegistry {
     pub fn new() -> Self {
-        let (language_server_registered_tx, language_server_registered_rx) =
-            async_channel::unbounded();
         Self {
             language_servers: RwLock::new(HashMap::new()),
             language_server_configs: RwLock::new(HashMap::new()),
-            language_server_registered_tx,
-            language_server_registered_rx,
         }
     }
 
@@ -70,36 +65,29 @@ impl LspRegistry {
             .cloned()
     }
 
-    async fn insert_language_server(
-        &self,
-        id: &LanguageServerId,
-    ) -> anyhow::Result<(LspServer, Option<Receiver<ServerMessage>>)> {
-        let mut language_servers = self.language_servers.write().await;
-
-        match language_servers.entry(id.clone()) {
-            Entry::Vacant(entry) => {
-                info!("register new language server (id={:?})", &id);
-                let (server, rx) = Self::create_language_server(id)?;
-                let server = entry.insert(server.clone());
-                Ok((server.clone(), Some(rx)))
-            }
-            Entry::Occupied(entry) => {
-                info!("language server already exists (id={:?})", &id);
-                Ok((entry.get().clone(), None))
-            }
-        }
-    }
-
     pub async fn register_language_server(
         &self,
         language_server_id: &LanguageServerId,
     ) -> anyhow::Result<(LspServer, bool)> {
-        match self.insert_language_server(language_server_id).await? {
-            (server, Some(rx)) => {
-                self.language_server_registered_tx.send(rx).await?;
-                Ok((server, true))
+        let mut language_servers = self.language_servers.write().await;
+
+        match language_servers.entry(language_server_id.clone()) {
+            Entry::Vacant(entry) => {
+                info!(
+                    "register new language server (id={:?})",
+                    &language_server_id
+                );
+                let (server, _) = Self::create_language_server(language_server_id)?;
+                let server = entry.insert(server.clone());
+                Ok((server.clone(), true))
             }
-            (server, None) => Ok((server, false)),
+            Entry::Occupied(entry) => {
+                info!(
+                    "language server already exists (id={:?})",
+                    &language_server_id
+                );
+                Ok((entry.get().clone(), false))
+            }
         }
     }
 
@@ -109,7 +97,7 @@ impl LspRegistry {
     ) -> anyhow::Result<()> {
         let mut language_servers = self.language_servers.write().await;
         if let Some(server) = language_servers.remove(language_server_id) {
-            server.shutdown().await;
+            server.shutdown().await?;
         }
         Ok(())
     }
@@ -128,7 +116,7 @@ impl LspRegistry {
         debug!("shutdown all language servers");
         let mut language_servers = self.language_servers.write().await;
         for (_, server) in language_servers.iter() {
-            server.shutdown().await;
+            let _ = server.shutdown().await;
         }
 
         language_servers.clear();
@@ -136,21 +124,15 @@ impl LspRegistry {
 
     fn create_language_server(
         language_server_id: &LanguageServerId,
-    ) -> anyhow::Result<(LspServer, Receiver<ServerMessage>)> {
+    ) -> anyhow::Result<(LspServer, JoinHandle<()>)> {
         info!(
             "create language server (language_server_id={:?})",
             language_server_id
         );
         match language_server_id.1 .0.as_str() {
-            "typescript" => Ok(LspServer::new(
-                "sh",
-                ["-c", "typescript-language-server --stdio"],
-            )),
-            "rust" => Ok(LspServer::new("sh", ["-c", "rust-analyzer"])),
-            "copilot" => Ok(LspServer::new(
-                "sh",
-                ["-c", "copilot-language-server --stdio"],
-            )),
+            "typescript" => Ok(LspServer::new("typescript-language-server --stdio")),
+            "rust" => Ok(LspServer::new("rust-analyzer")),
+            "copilot" => Ok(LspServer::new("copilot-language-server --stdio")),
             _ => Err(anyhow!("No language server found")),
         }
     }

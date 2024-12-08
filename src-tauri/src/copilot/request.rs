@@ -1,4 +1,4 @@
-use lsp_types as lsp;
+use async_lsp::lsp_types::{self as lsp, notification::Notification};
 use serde::{Deserialize, Serialize};
 
 pub enum CheckStatus {}
@@ -223,4 +223,19 @@ impl lsp::request::Request for NotifyRejected {
     type Params = NotifyRejectedParams;
     type Result = String;
     const METHOD: &'static str = "notifyRejected";
+}
+
+pub enum FeatureFlagsNotification {}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct FeatureFlagsNotificationParams {
+    pub rt: bool,
+    pub sn: bool,
+    pub chat: bool,
+}
+
+impl Notification for FeatureFlagsNotification {
+    type Params = FeatureFlagsNotificationParams;
+    const METHOD: &'static str = "featureFlagsNotification";
 }

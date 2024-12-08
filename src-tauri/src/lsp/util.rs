@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use lsp_types::{InitializeResult, Position, Url};
+use async_lsp::lsp_types::{InitializeResult, Position, Url};
 use ropey::Rope;
 
 use crate::editor::editor_state::is_buffer;
@@ -64,7 +64,7 @@ pub fn url_for_path(path: &Path) -> Url {
 
 #[cfg(test)]
 mod tests {
-    use lsp_types::Position;
+    use async_lsp::lsp_types::Position;
     use ropey::Rope;
 
     use super::pos_to_lsp_pos;

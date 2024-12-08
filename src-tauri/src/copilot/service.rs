@@ -1,7 +1,6 @@
 use std::path::{Path, PathBuf};
 
 use anyhow::anyhow;
-use async_lsp_client::LspServer;
 use log::{debug, info};
 use tauri::{AppHandle, Manager, Runtime};
 use tokio::sync::Mutex;
@@ -10,6 +9,7 @@ use crate::{
     editor::editor_state::{is_buffer, Delete, Document, EditorState, Insert, Language},
     lsp::{
         registry::{LanguageServerId, LspRegistry},
+        server::LspServer,
         service::LspService,
         util::{get_offset_encoding, pos_to_lsp_pos, url_for_path},
     },
@@ -48,7 +48,9 @@ impl<R: Runtime> CopilotService<R> {
             .await
             .ok_or(anyhow!("No language server"))?;
         self.sign_out(&language_server).await?;
-        lsp_registry.remove_language_server(&language_server_id).await?;
+        lsp_registry
+            .remove_language_server(&language_server_id)
+            .await?;
         Ok(())
     }
 
@@ -74,8 +76,8 @@ impl<R: Runtime> CopilotService<R> {
             .ok_or(anyhow!("No language server"))?;
 
         let response = language_server
-            .send_request::<request::SignInInitiate>(request::SignInInitiateParams {})
-            .await;
+            .request::<request::SignInInitiate>(request::SignInInitiateParams {})
+            .await?;
         debug!("SignInInitiate response {:?}", response);
 
         Ok(response)
@@ -102,7 +104,9 @@ impl<R: Runtime> CopilotService<R> {
         {
             (server, true) => {
                 let result = lsp_service.initialize(&server, &language_server_id).await?;
-                let _ = lsp_registry.insert_language_server_config(&language_server_id, result);
+                let _ = lsp_registry
+                    .insert_language_server_config(&language_server_id, result)
+                    .await;
                 lsp_service.initialized(&server).await?;
                 self.check_status(&server).await?;
                 self.send_editor_info(&server).await?;
@@ -148,10 +152,10 @@ impl<R: Runtime> CopilotService<R> {
         debug!("Copilot - send check status request");
 
         let response = server
-            .send_request::<request::CheckStatus>(request::CheckStatusParams {
+            .request::<request::CheckStatus>(request::CheckStatusParams {
                 local_checks_only: false,
             })
-            .await;
+            .await?;
         debug!("Copilot - CheckStatus response {:?}", response);
         Ok(response)
     }
@@ -160,7 +164,7 @@ impl<R: Runtime> CopilotService<R> {
         debug!("Copilot - send editor info request");
 
         let response = server
-            .send_request::<request::SetEditorInfo>(request::SetEditorInfoParams {
+            .request::<request::SetEditorInfo>(request::SetEditorInfoParams {
                 editor_info: request::EditorInfo {
                     name: "TinyWrite".to_string(),
                     version: "0.8.0".to_string(),
@@ -170,7 +174,7 @@ impl<R: Runtime> CopilotService<R> {
                     version: "0.8.0".to_string(),
                 },
             })
-            .await;
+            .await?;
         debug!("Copilot - SetEditorInfo response {:?}", response);
         Ok(())
     }
@@ -178,8 +182,8 @@ impl<R: Runtime> CopilotService<R> {
     pub async fn sign_out(&self, server: &LspServer) -> anyhow::Result<request::SignOutResult> {
         debug!("Copilot - send sign-out request");
         let response = server
-            .send_request::<request::SignOut>(request::SignOutParams {})
-            .await;
+            .request::<request::SignOut>(request::SignOutParams {})
+            .await?;
         debug!("Copilot - SignOut response {:?}", response);
         Ok(response)
     }
@@ -227,7 +231,7 @@ impl<R: Runtime> CopilotService<R> {
         let position = pos_to_lsp_pos(&doc.text, pos, offset_encoding);
 
         let response = server
-            .send_request::<request::GetCompletions>(request::GetCompletionsParams {
+            .request::<request::GetCompletions>(request::GetCompletionsParams {
                 doc: request::GetCompletionsDocument {
                     uri: file_uri,
                     tab_size,
@@ -238,7 +242,7 @@ impl<R: Runtime> CopilotService<R> {
                     version: doc.version as usize,
                 },
             })
-            .await;
+            .await?;
         debug!("Copilot - GetCompletions response {:?}", response);
 
         Ok(response)

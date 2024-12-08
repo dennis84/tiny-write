@@ -1,5 +1,5 @@
+use async_lsp::lsp_types::{CompletionResponse, GotoDefinitionResponse, Hover};
 use log::error;
-use lsp_types::{CompletionResponse, GotoDefinitionResponse, Hover};
 use tauri::{path::SafePathBuf, AppHandle, Manager, Runtime};
 
 use crate::lsp::service::LspService;
