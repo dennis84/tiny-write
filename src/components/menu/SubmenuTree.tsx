@@ -8,7 +8,7 @@ import {useOpen} from '@/open'
 import {TreeNode, TreeNodeItem} from '@/services/TreeService'
 import {FileService} from '@/services/FileService'
 import {CanvasService} from '@/services/CanvasService'
-import {itemCss, Label, Link, Sub} from './Style'
+import {ITEM_HEIGHT, itemCss, Label, Link, Sub} from './Style'
 import {Tooltip} from '../Tooltip'
 import {Icon} from '../Icon'
 
@@ -61,7 +61,7 @@ const TreeLinkItem = styled('div')`
   user-select: none;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
-  align-items: center;
+  align-items: start;
   ${(props: any) => props.deleted ? `
     opacity: 0.3;
     pointer-events: none;
@@ -93,7 +93,11 @@ const TreeLinkCorner = styled('i')`
   font-weight: normal;
   font-style: normal;
   display: flex;
+  align-items: center;
+  justify-content: center;
   color: var(--foreground-50);
+  height: ${ITEM_HEIGHT};
+  width: ${ITEM_HEIGHT};
   ${(props: any) => props.highlight ? `color: var(--primary-background);` : ''}
   ${(props: any) => props.level ? `margin-left: ${String(20 * props.level)}px;` : ''}
   ${(props: any) => props.expandable ? `
@@ -108,6 +112,7 @@ const TreeLinkTitle = styled('span')`
   cursor: var(--cursor-pointer);
   width: 100%;
   touch-action: none;
+  word-break: break-all;
   ${(props: any) => (props.highlight ? `color: var(--primary-background-80);` : '')}
   ${(props: any) => (props.grabbing ? 'cursor: var(--cursor-grabbed);' : '')}
 `
@@ -118,8 +123,8 @@ const LinkMenu = styled('span')`
   display: flex;
   align-items: center;
   justify-content: center;
-  align-self: stretch;
-  width: calc(var(--menu-font-size) * 2.4);
+  height: ${ITEM_HEIGHT};
+  width: ${ITEM_HEIGHT};
   margin-left: auto;
   cursor: var(--cursor-pointer);
   opacity: 0;

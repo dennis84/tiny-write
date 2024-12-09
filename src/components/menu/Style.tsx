@@ -89,17 +89,18 @@ export const Sub = styled('nav')`
   position: relative;
 `
 
+export const ITEM_HEIGHT = 'calc(var(--menu-font-size) * 2)'
+
 export const itemCss = `
   width: 100%;
   padding: 3px;
-  padding-left: 5px;
   margin: 0;
   outline: none;
   display: flex;
   align-items: center;
   color: var(--foreground);
   font-size: var(--menu-font-size);
-  line-height: calc(var(--menu-font-size) * 2);
+  line-height: ${ITEM_HEIGHT};
   font-family: var(--menu-font-family);
   text-align: left;
   > .icon {

@@ -32,11 +32,9 @@ pub struct LspServer {
 
 impl LspServer {
     pub fn new(script: &str) -> (LspServer, JoinHandle<()>) {
-        let (indexed_tx, indexed_rx) = oneshot::channel();
-
         let (mainloop, server) = async_lsp::MainLoop::new_client(|_server| {
             let mut router = Router::new(ClientState {
-                indexed_tx: Some(indexed_tx),
+                indexed_tx: None,
             });
             router
                 .notification::<Progress>(|this, prog| {
@@ -72,12 +70,10 @@ impl LspServer {
         });
 
         let child = async_process::Command::new("sh")
-            //.current_dir(&root_dir)
             .args(["-c", script])
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .stderr(Stdio::inherit())
-            //.kill_on_drop(true)
             .spawn()
             .unwrap();
         let stdout = child.stdout.unwrap();

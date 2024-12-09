@@ -9,6 +9,7 @@ export const Layout = styled('div')`
   width: 100%;
   height: 100%;
   font-family: var(--font-family);
+  font-variant-ligatures: none;
   color: var(--foreground);
   position: relative;
   overflow: hidden;

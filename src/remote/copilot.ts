@@ -6,7 +6,7 @@ export const connectCopilot = async () => {
 }
 
 export const enableCopilot = async (): Promise<void> => {
-  await Promise.race([invoke('enable_copilot'), timeout(2000)])
+  await Promise.race([invoke('enable_copilot'), timeout(5000)])
 }
 
 export const disableCopilot = async () => {
@@ -16,7 +16,7 @@ export const disableCopilot = async () => {
 type CopilotStatus = {user: string}
 
 export const copilotStatus = async (): Promise<CopilotStatus> => {
-  return await Promise.race<CopilotStatus>([invoke('copilot_status'), timeout(2000)])
+  return await Promise.race<CopilotStatus>([invoke('copilot_status'), timeout(5000)])
 }
 
 type CopilotSignIn = {userCode: string; verificationUri: string}

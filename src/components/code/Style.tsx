@@ -10,6 +10,7 @@ export const codeMirror = `
     .cm-content, .cm-gutter {
       padding: 0;
       font-family: var(--font-family-monospace);
+      font-variant-ligatures: none;
     }
     .cm-lineWrapping {
       word-break: break-all;

@@ -1,7 +1,6 @@
 import {Store, unwrap, SetStoreFunction, reconcile} from 'solid-js/store'
 import {createSignal} from 'solid-js'
 import {stateToString} from '@/utils/debug'
-import {timeout} from '@/utils/promise'
 import {getDocument} from '@/remote/editor'
 import {debug, error, info} from '@/remote/log'
 import {show, updateWindow} from '@/remote/window'
