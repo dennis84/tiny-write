@@ -22,7 +22,7 @@
     "@codemirror/lint": "6.8.2",
     "@codemirror/state": "6.4.1",
     "@codemirror/view": "6.34.1",
-    "@ddietr/codemirror-themes": "1.4.4",
+    "@ddietr/codemirror-themes": "1.5.0",
     "@floating-ui/dom": "1.6.12",
     "@solidjs/router": "0.15.0",
     "@tauri-apps/api": "2.0.3",

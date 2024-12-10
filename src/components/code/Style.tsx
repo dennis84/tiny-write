@@ -33,8 +33,10 @@ export const codeMirror = `
       user-select: none;
     }
     .cm-lineNumbers {
-      opacity: 0.5;
       margin-right: 10px;
+    }
+    .cm-activeLineGutter {
+      font-weight: bold;
     }
     &:not(.cm-focused) {
       .cm-activeLine {

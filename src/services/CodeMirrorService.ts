@@ -3,8 +3,10 @@ import {
   EditorView,
   drawSelection,
   highlightActiveLine,
+  highlightActiveLineGutter,
   hoverTooltip,
   keymap,
+  lineNumberMarkers,
   lineNumbers,
   tooltips,
 } from '@codemirror/view'
@@ -103,7 +105,11 @@ export class CodeMirrorService {
     }
 
     if (this.store.mode === Mode.Code) {
-      extensions.push([highlightActiveLine(), lineNumbers()])
+      extensions.push([
+        highlightActiveLine(),
+        highlightActiveLineGutter(),
+        lineNumbers(),
+      ])
     }
 
     if (props.path && isTauri()) {
