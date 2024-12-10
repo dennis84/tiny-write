@@ -154,6 +154,7 @@ const proseMirror = (props: Props) => `
     }
     a, .edit-link {
       color: var(--primary-background);
+      pointer-events: none;
     }
     .horizontal-rule {
       margin: 40px 0;
