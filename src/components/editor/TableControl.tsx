@@ -182,6 +182,7 @@ const HandleGrid = (props: HandleGridProps) => {
   }
 
   const onHandleClick = (direction: Direction) => (e: MouseEvent) => {
+    e.preventDefault()
     const cell = currentCell()
     if (!cell) return
     calcSelection(cell.element, direction)
@@ -216,7 +217,7 @@ const HandleGrid = (props: HandleGridProps) => {
             <Handle
               id="table-handle-horiz"
               style={{transform: `translate3d(${h().horiz.x}px, ${h().horiz.y}px, 0)`}}
-              onClick={onHandleClick('horiz')}
+              onMouseDown={onHandleClick('horiz')}
               class={activeHandle()?.direction === 'horiz' ? 'active' : ''}
             >
               <Icon>drag_indicator</Icon>
@@ -224,7 +225,7 @@ const HandleGrid = (props: HandleGridProps) => {
             <Handle
               id="table-handle-vert"
               style={{transform: `translate3d(${h().vert.x}px, ${h().vert.y}px, 0) rotate(90deg)`}}
-              onClick={onHandleClick('vert')}
+              onMouseDown={onHandleClick('vert')}
               class={activeHandle()?.direction === 'vert' ? 'active' : ''}
             >
               <Icon>drag_indicator</Icon>
@@ -285,9 +286,9 @@ export const TableControls = (props: Props) => {
   })
 
   return (
-    <Show when={table()}>
+    <Show when={table()} keyed>
       {(t) => (
-        <HandleGrid file={props.file} currentTable={t()} currentTableMap={TableMap.get(t().node)} />
+        <HandleGrid file={props.file} currentTable={t} currentTableMap={TableMap.get(t.node)} />
       )}
     </Show>
   )
