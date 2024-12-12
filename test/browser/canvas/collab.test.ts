@@ -8,7 +8,7 @@ test('share', async ({page, browser}) => {
 
   await page.isVisible('[data-testid="canvas_container"]')
 
-  await page.click('[data-testid="burger"]')
+  await page.click('[data-testid="menu_button"]')
   await page.click('[data-testid="collab"]')
 
   await page

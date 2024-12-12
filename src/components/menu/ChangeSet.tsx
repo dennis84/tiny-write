@@ -1,15 +1,10 @@
-import {For, Show, createSignal} from 'solid-js'
+import {For, Show, createSignal, onCleanup} from 'solid-js'
 import {format} from 'date-fns'
 import {Version, useState} from '@/state'
-import {ButtonGroup, Button, ButtonPrimary} from '@/components/Button'
-import {Icon} from '@/components/Icon'
+import {ButtonGroup, ButtonPrimary} from '@/components/Button'
 import {Drawer, Label, Link, Sub} from './Style'
 
-interface Props {
-  onBack: () => void
-}
-
-export const ChangeSet = (props: Props) => {
+export const ChangeSet = () => {
   const {changeSetService, fileService} = useState()
   const versions = () => fileService.currentFile?.versions ?? []
   const [active, setActive] = createSignal<Version>()
@@ -31,12 +26,11 @@ export const ChangeSet = (props: Props) => {
     setActive(undefined)
   }
 
-  const onBack = () => {
+  onCleanup(() => {
     const currentFile = fileService.currentFile
     changeSetService.unrenderVersion()
     currentFile?.editorView?.focus()
-    props.onBack()
-  }
+  })
 
   return (
     <Drawer data-tauri-drag-region="true">
@@ -52,9 +46,6 @@ export const ChangeSet = (props: Props) => {
         </For>
       </Sub>
       <ButtonGroup>
-        <Button onClick={onBack}>
-          <Icon>arrow_back</Icon> Back
-        </Button>
         <Show when={active() === undefined}>
           <ButtonPrimary onClick={() => changeSetService.addVersion()}>
             Create Snapshot

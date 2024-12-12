@@ -12,6 +12,7 @@ export const Common = `
   outline: none;
   text-decoration: none;
   font-family: var(--menu-font-family);
+  border: 0;
   &:hover {
     opacity: 0.8;
   }
@@ -23,13 +24,10 @@ export const Common = `
 
 export const Button = styled('button')`
   ${Common}
-  background: none;
+  background: var(--background-60);
   color: var(--foreground);
-  border: 1px solid var(--foreground);
   &:hover {
-    border-color: var(--primary-background);
     color: var(--primary-background);
-    box-shadow: 0 0 0 1px var(--primary-background);
   }
 `
 

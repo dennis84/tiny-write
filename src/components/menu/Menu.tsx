@@ -1,8 +1,9 @@
-import {Show, createEffect, createSignal, onCleanup} from 'solid-js'
+import {Match, Show, Switch, createEffect, createSignal, onCleanup} from 'solid-js'
 import {Mode, useState} from '@/state'
 import {isTauri, isMac, mod, shortHash, version, VERSION_URL, isDev} from '@/env'
 import {quit} from '@/remote/app'
 import {useOpen} from '@/open'
+import {Button} from '@/components/Button'
 import {Bin} from './Bin'
 import {CodeFormat} from './CodeFormat'
 import {Appearance} from './Appearance'
@@ -16,7 +17,7 @@ import {SubmenuCollab} from './SubmenuCollab'
 import {SubmenuTree} from './SubmenuTree'
 import {SubmenuCode} from './SubmenuCode'
 import {Icon, IconAi, IconPrettier} from '../Icon'
-import {fullWidth, Burger, Container, Drawer, Keys, Label, Link, Sub} from './Style'
+import {fullWidth, Container, Drawer, Keys, Label, Link, Sub, Control} from './Style'
 
 export const Menu = () => {
   const {store, appService, configService, fileService, prettierService} = useState()
@@ -25,7 +26,7 @@ export const Menu = () => {
 
   const modKey = isMac ? '⌘' : mod
 
-  const onBurgerClick = () => {
+  const onMenuButtonClick = () => {
     fileService.currentFile?.editorView?.focus()
     setShow(show() ? undefined : 'main')
   }
@@ -86,27 +87,42 @@ export const Menu = () => {
 
   return (
     <Container>
-      <Burger active={show() !== undefined} onClick={onBurgerClick} data-testid="burger">
-        <span />
-        <span />
-      </Burger>
+      <Control active={show() !== undefined}>
+        <Switch>
+          <Match when={show() === undefined}>
+            <Button class="menu-button" onClick={onMenuButtonClick} data-testid="menu_button">
+              <Icon>more_vert</Icon>
+            </Button>
+          </Match>
+          <Match when={show() === 'main'}>
+            <Button class="menu-button" onClick={onMenuButtonClick} data-testid="menu_button">
+              <Icon>close</Icon>
+            </Button>
+          </Match>
+          <Match when={show() !== undefined && show() !== 'main'}>
+            <Button onClick={() => setShow('main')} data-testid="menu_back_button">
+              <Icon>arrow_back</Icon> Back
+            </Button>
+          </Match>
+        </Switch>
+      </Control>
       <Show when={show() === 'bin'}>
-        <Bin onBack={() => setShow('main')} />
+        <Bin />
       </Show>
       <Show when={show() === 'code_format'}>
-        <CodeFormat onBack={() => setShow('main')} />
+        <CodeFormat />
       </Show>
       <Show when={show() === 'theme'}>
-        <Appearance onBack={() => setShow('main')} />
+        <Appearance />
       </Show>
       <Show when={show() === 'help'}>
-        <Help onBack={() => setShow('main')} />
+        <Help />
       </Show>
       <Show when={show() === 'change_set'}>
-        <ChangeSet onBack={() => setShow('main')} />
+        <ChangeSet />
       </Show>
       <Show when={show() === 'ai_config'}>
-        <AiConfig onBack={() => setShow('main')} />
+        <AiConfig />
       </Show>
       <Show when={show() === 'main'}>
         <Drawer

@@ -1,15 +1,9 @@
 import {For} from 'solid-js'
 import {useState} from '@/state'
 import {ConfigService} from '@/services/ConfigService'
-import {Button} from '@/components/Button'
-import {Icon} from '@/components/Icon'
 import {Drawer, Label, Link, Sub, Text} from './Style'
 
-interface Props {
-  onBack: () => void
-}
-
-export const Appearance = (props: Props) => {
+export const Appearance = () => {
   const {store, configService} = useState()
 
   const onChangeTheme = (theme: string) => () => configService.updateConfig({theme})
@@ -82,9 +76,6 @@ export const Appearance = (props: Props) => {
           {store.config.contentWidth}
         </Text>
       </Sub>
-      <Button data-testid="back" onClick={props.onBack}>
-        <Icon>arrow_back</Icon> Back
-      </Button>
     </Drawer>
   )
 }

@@ -1,12 +1,6 @@
-import {Icon} from '@/components/Icon'
-import {Button} from '@/components/Button'
 import {Drawer, Keys, Label, Sub, Text} from './Style'
 
-interface Props {
-  onBack: () => void
-}
-
-export const Help = (props: Props) => {
+export const Help = () => {
   return (
     <Drawer data-tauri-drag-region="true">
       <Label>Markdown shortcuts</Label>
@@ -147,9 +141,6 @@ export const Help = (props: Props) => {
           <Keys keys={[':::', 'details', '␣']} /> Container of type details
         </Text>
       </Sub>
-      <Button onClick={props.onBack}>
-        <Icon>arrow_back</Icon> Back
-      </Button>
     </Drawer>
   )
 }

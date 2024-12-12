@@ -1,21 +1,12 @@
 import {useState} from '@/state'
 import {useOpen} from '@/open'
 import {Button, ButtonGroup} from '../Button'
-import {Icon} from '../Icon'
 import {Drawer, Label, Note} from './Style'
 import {SubmenuTree} from './SubmenuTree'
 
-interface Props {
-  onBack: () => void
-}
-
-export const Bin = (props: Props) => {
+export const Bin = () => {
   const {store, deleteService, treeService} = useState()
   const {open} = useOpen()
-
-  const onBack = () => {
-    props.onBack()
-  }
 
   const hasDeletedFiles = () =>
     store.files.some((f) => f.deleted) || store.canvases.some((f) => f.deleted)
@@ -32,9 +23,6 @@ export const Bin = (props: Props) => {
       <Note>💁 Items in bin will be automatically deleted after 14 days.</Note>
       <SubmenuTree showDeleted={true} />
       <ButtonGroup>
-        <Button onClick={onBack}>
-          <Icon>arrow_back</Icon> Back
-        </Button>
         <Button onClick={onEmptyBin} disabled={!hasDeletedFiles()}>
           ⚠️ Empty bin
         </Button>

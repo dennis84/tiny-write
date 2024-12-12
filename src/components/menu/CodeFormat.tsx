@@ -1,14 +1,9 @@
 import {Show} from 'solid-js'
 import {File, Mode, PrettierConfig, useState} from '@/state'
-import {Button, ButtonGroup, ButtonPrimary} from '@/components/Button'
-import {Icon} from '@/components/Icon'
+import {ButtonGroup, ButtonPrimary} from '@/components/Button'
 import {Drawer, Label, Link, Sub, Text} from './Style'
 
-interface Props {
-  onBack: () => void
-}
-
-export const CodeFormat = (props: Props) => {
+export const CodeFormat = () => {
   const {store, configService, codeService, canvasService, fileService} = useState()
 
   const updatePrettier = (opt: Partial<PrettierConfig>) =>
@@ -80,9 +75,6 @@ export const CodeFormat = (props: Props) => {
         </Link>
       </Sub>
       <ButtonGroup>
-        <Button onClick={props.onBack}>
-          <Icon>arrow_back</Icon> Back
-        </Button>
         <Show when={isCodeFile()}>
           <ButtonPrimary onClick={onPrettify}>Prettify</ButtonPrimary>
         </Show>

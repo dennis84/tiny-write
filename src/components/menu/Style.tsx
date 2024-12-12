@@ -1,5 +1,6 @@
 import {css, styled} from 'solid-styled-components'
 import {isTauri} from '@/env'
+import { Common } from '../Button'
 
 export const fullWidth = 500
 
@@ -16,44 +17,25 @@ export const Container = styled('div')`
 `
 
 // prettier-ignore
-export const Burger = styled('button')`
+export const Control = styled('div')`
   position: absolute;
-  left: -52px;
   top: 2px;
+  right: 2px;
   z-index: var(--z-index-max);
-  background: none;
-  border-radius: 50px;
-  width: 50px;
-  height: 50px;
-  padding: 0;
   display: flex;
-  flex-direction: column;
-  justify-content: center;
   align-items: center;
-  cursor: var(--cursor-pointer);
-  border: 0;
-  outline: none;
-  > span {
-    background: var(--foreground);
-    height: 3px;
-    width: 15px;
-    border-radius: 4px;
-    transition: 0.4s;
-    margin: 2px 0;
+  padding: 5px;
+  > *:not(:last-child) {
+    margin-right: 5px;
   }
-  &:hover {
-    background: var(--foreground-10);
+  .menu-button {
+    width: 40px;
+    ${(props: any) => !props.active ? `
+      &:not(:hover) {
+        background: none;
+      }
+    ` : ''}
   }
-  ${(props: any) => props.active ? `
-    right: 2px;
-    left: auto;
-    > span:nth-of-type(1) {
-      transform: rotate(-45deg) translate(-2.5px, 2.5px);
-    }
-    > span:nth-of-type(2) {
-      transform: rotate(45deg) translate(-2.5px, -2.5px);
-    }
-  ` : ''}
 `
 
 export const Drawer = styled('div')`
