@@ -81,17 +81,13 @@ interface MyDB extends DBSchema {
 const DB_NAME = 'tiny_write'
 
 // Increment version and add new scheme:
-// ```
-// openDB(DB_NAME, 2, { ... })
-//
-// if (newVersion >= 2) { db.createObjectStore(...) }
-// ```
 const dbPromise = openDB<MyDB>(DB_NAME, 2, {
   upgrade(db: any, oldVersion, newVersion) {
     if (!newVersion) return
 
     info(`Upgrade DB from version ${oldVersion} to ${newVersion}`)
-    if (newVersion >= 1) {
+
+    if (!db.objectStoreNames.contains('config')) {
       db.createObjectStore('config')
       db.createObjectStore('window')
       db.createObjectStore('canvases', {keyPath: 'id'})
@@ -99,7 +95,8 @@ const dbPromise = openDB<MyDB>(DB_NAME, 2, {
       db.createObjectStore('meta')
       db.createObjectStore('tree')
     }
-    if (newVersion >= 2) {
+
+    if (!db.objectStoreNames.contains('ai')) {
       db.createObjectStore('ai')
     }
   },
