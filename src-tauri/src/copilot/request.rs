@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use async_lsp::lsp_types::{self as lsp, notification::Notification};
 use serde::{Deserialize, Serialize};
 

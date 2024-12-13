@@ -192,6 +192,8 @@ impl<R: Runtime> CopilotService<R> {
         &self,
         path: &Path,
         pos: usize,
+        tab_width: u32,
+        use_tabs: bool,
     ) -> anyhow::Result<request::GetCompletionsResult> {
         let editor_state = self.app_handle.state::<EditorState>();
         let lsp_registry = self.app_handle.state::<LspRegistry>();
@@ -215,13 +217,11 @@ impl<R: Runtime> CopilotService<R> {
             .ok_or(anyhow!("No language server"))?;
 
         debug!(
-            "Copilot - send copilot completion request (pos={}, language={:?})",
-            pos, doc.language
+            "Copilot - send copilot completion request (pos={}, language={:?}, tab_width={}, use_tabs={})",
+            pos, doc.language, tab_width, use_tabs
         );
         let file_uri = url_for_path(path);
         let offset_encoding = get_offset_encoding(&config);
-        let tab_size = 4;
-        let hard_tabs = false;
         let relative_path = if is_buffer(path) {
             "".to_string()
         } else {
@@ -234,9 +234,9 @@ impl<R: Runtime> CopilotService<R> {
             .request::<request::GetCompletions>(request::GetCompletionsParams {
                 doc: request::GetCompletionsDocument {
                     uri: file_uri,
-                    tab_size,
-                    indent_size: 1,
-                    insert_spaces: !hard_tabs,
+                    tab_size: tab_width,
+                    indent_size: tab_width,
+                    insert_spaces: !use_tabs,
                     relative_path: relative_path.to_string(),
                     position,
                     version: doc.version as usize,

@@ -39,9 +39,11 @@ pub async fn copilot_status<R: Runtime>(app_handle: AppHandle<R>) -> Result<requ
 pub async fn copilot_completion<R: Runtime>(
     path: SafePathBuf,
     pos: usize,
+    tab_width: u32,
+    use_tabs: bool,
     app_handle: AppHandle<R>,
 ) -> Result<request::GetCompletionsResult> {
     let service = app_handle.state::<CopilotService<R>>();
-    let result = service.completion(path.as_ref(), pos).await?;
+    let result = service.completion(path.as_ref(), pos, tab_width, use_tabs).await?;
     Ok(result)
 }

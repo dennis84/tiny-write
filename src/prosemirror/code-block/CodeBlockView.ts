@@ -165,8 +165,9 @@ export class CodeBlockView {
         autocompletion(),
         copilot({
           configure: () => {
+            const prettier = this.configService.prettier
             const path = `buffer://editor-${getPos()}-${this.lang}`
-            return {path, language: this.lang}
+            return {path, language: this.lang, tabWidth: prettier.tabWidth, useTabs: prettier.useTabs}
           },
         }),
         EditorView.domEventHandlers({

@@ -30,6 +30,8 @@ type CopilotCompletion = {completions: {displayText: string}[]}
 export const copilotCompletion = async (
   path: string | undefined,
   pos: number,
+  tabWidth: number,
+  useTabs: boolean,
 ): Promise<CopilotCompletion> => {
-  return await invoke('copilot_completion', {path, pos})
+  return await invoke('copilot_completion', {path, pos, tabWidth, useTabs})
 }
