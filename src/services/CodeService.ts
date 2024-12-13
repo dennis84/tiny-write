@@ -14,6 +14,7 @@ import {AppService} from './AppService'
 import {CodeMirrorService} from './CodeMirrorService'
 import {PrettierService} from './PrettierService'
 import {TreeService} from './TreeService'
+import {ConfigService} from './ConfigService'
 
 export interface OpenFile {
   id: string
@@ -27,6 +28,7 @@ export class CodeService {
   constructor(
     private fileService: FileService,
     private appService: AppService,
+    private configService: ConfigService,
     private collabService: CollabService,
     private codeMirrorService: CodeMirrorService,
     private prettierService: PrettierService,
@@ -140,9 +142,10 @@ export class CodeService {
           [
             copilot({
               configure: () => {
+                const {tabWidth, useTabs} = this.configService.prettier
                 const path = file.path ?? `buffer://${file.id}`
                 const language = file.codeEditorView?.contentDOM.dataset.language ?? ''
-                return {path, language}
+                return {path, language, tabWidth, useTabs}
               },
             }),
           ]

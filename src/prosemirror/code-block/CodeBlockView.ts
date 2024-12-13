@@ -165,9 +165,9 @@ export class CodeBlockView {
         autocompletion(),
         copilot({
           configure: () => {
-            const prettier = this.configService.prettier
+            const {tabWidth, useTabs} = this.configService.prettier
             const path = `buffer://editor-${getPos()}-${this.lang}`
-            return {path, language: this.lang, tabWidth: prettier.tabWidth, useTabs: prettier.useTabs}
+            return {path, language: this.lang, tabWidth, useTabs}
           },
         }),
         EditorView.domEventHandlers({
