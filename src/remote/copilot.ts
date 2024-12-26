@@ -1,4 +1,4 @@
-import {invoke} from '@tauri-apps/api/core'
+import {Channel, invoke} from '@tauri-apps/api/core'
 import {timeout} from '@/utils/promise'
 
 export const connectCopilot = async () => {
@@ -34,4 +34,23 @@ export const copilotCompletion = async (
   useTabs: boolean,
 ): Promise<CopilotCompletion> => {
   return await invoke('copilot_completion', {path, pos, tabWidth, useTabs})
+}
+
+export const copilotChatModels = (): Promise<string[]> => invoke('copilot_chat_models')
+
+type ChatEvent = string
+
+export type ChatRole = 'user' | 'assistant' | 'system'
+
+export interface ChatMessage {
+  role: ChatRole
+  content: string
+}
+
+export const sendChatMessage = async (
+  model: string,
+  messages: ChatMessage[],
+  onEvent: Channel<ChatEvent>,
+) => {
+  await invoke('copilot_chat_message', {model, messages, onEvent})
 }

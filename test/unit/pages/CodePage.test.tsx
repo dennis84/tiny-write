@@ -186,8 +186,22 @@ test('open', async () => {
 
   const initial = createState({
     files: [
-      {id: '1', path: 'code1.yaml', ydoc: createYUpdate('1', 'Code1'), lastModified, versions: [], code: true},
-      {id: '2', path: 'code2.yaml', ydoc: createYUpdate('2', 'Code2'), lastModified, versions: [], code: true},
+      {
+        id: '1',
+        path: 'code1.yaml',
+        ydoc: createYUpdate('1', 'Code1'),
+        lastModified,
+        versions: [],
+        code: true,
+      },
+      {
+        id: '2',
+        path: 'code2.yaml',
+        ydoc: createYUpdate('2', 'Code2'),
+        lastModified,
+        versions: [],
+        code: true,
+      },
     ],
   })
 

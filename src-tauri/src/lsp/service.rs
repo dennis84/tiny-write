@@ -16,6 +16,7 @@ use async_lsp::lsp_types::{
 };
 use log::debug;
 use tauri::{AppHandle, Manager, Runtime};
+use tauri_plugin_cli::CliExt;
 
 use crate::editor::editor_state::{Delete, Document, EditorState, Insert};
 use crate::lsp::registry::LspRegistry;
@@ -79,9 +80,24 @@ impl<R: Runtime> LspService<R> {
         debug!("LSP - send initialize request");
         let root_uri = async_lsp::lsp_types::Url::from_file_path(&language_server_id.0)
             .map_err(|_| anyhow!("invalid root_uri"))?;
+        let trace = self
+            .app_handle
+            .cli()
+            .matches()
+            .ok()
+            .and_then(|m| m.args.get("verbose").and_then(|a| a.value.as_bool()))
+            .map(|verbose| {
+                if verbose {
+                    TraceValue::Verbose
+                } else {
+                    TraceValue::Off
+                }
+            })
+            .or(Some(TraceValue::Off));
+
         let result = server
             .initialize(InitializeParams {
-                trace: Some(TraceValue::Verbose),
+                trace,
                 workspace_folders: Some(vec![WorkspaceFolder {
                     uri: root_uri,
                     name: Default::default(),

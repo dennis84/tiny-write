@@ -1,7 +1,8 @@
-import {SetStoreFunction, Store} from 'solid-js/store'
+import {SetStoreFunction, Store, unwrap} from 'solid-js/store'
 import {DB} from '@/db'
 import {State} from '@/state'
-import {connectCopilot, disableCopilot, enableCopilot} from '@/remote/copilot'
+import {info} from '@/remote/log'
+import {connectCopilot, copilotChatModels, disableCopilot, enableCopilot} from '@/remote/copilot'
 
 export class CopilotService {
   constructor(
@@ -31,5 +32,16 @@ export class CopilotService {
 
   setUser(user: string) {
     this.setState('ai', 'copilot', 'user', user)
+  }
+
+  async getChatModels(): Promise<string[]> {
+    return copilotChatModels()
+  }
+
+  async setChatModel(model: string) {
+    info(`Set chat model (model=${model})`)
+    this.setState('ai', 'copilot', 'chatModel', model)
+    const ai = unwrap(this.store.ai)
+    if (ai) DB.setAi(ai)
   }
 }

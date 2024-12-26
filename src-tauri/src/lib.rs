@@ -2,7 +2,8 @@ use log::{debug, info};
 use tauri::{Builder, Manager, Runtime};
 use tauri_plugin_cli::CliExt;
 
-use copilot::service::CopilotService;
+use copilot::chat_service::CopilotChatService;
+use copilot::lsp_service::CopilotLspService;
 use editor::editor_state::EditorState;
 use lsp::registry::LspRegistry;
 use lsp::service::LspService;
@@ -89,15 +90,17 @@ pub fn run<R: Runtime>(builder: Builder<R>) {
             let lsp_service = LspService::new(handle.clone());
             app.manage::<LspService<R>>(lsp_service);
 
-            let copilot_service = CopilotService::new(handle.clone());
-            app.manage(copilot_service);
+            let copilot_lsp_service = CopilotLspService::new(handle.clone());
+            app.manage(copilot_lsp_service);
+            let copilot_chat_service = CopilotChatService::new().unwrap();
+            app.manage(copilot_chat_service);
 
             let handle2 = handle.clone();
 
             tauri::async_runtime::spawn(async move {
                 let editor_state = handle2.state::<EditorState>();
                 let lsp_service = handle2.state::<LspService<R>>();
-                let copilot_service = handle2.state::<CopilotService<R>>();
+                let copilot_service = handle2.state::<CopilotLspService<R>>();
 
                 loop {
                     tokio::select! {
@@ -134,6 +137,8 @@ pub fn run<R: Runtime>(builder: Builder<R>) {
             copilot::command::copilot_sign_in,
             copilot::command::copilot_status,
             copilot::command::copilot_completion,
+            copilot::command::copilot_chat_models,
+            copilot::command::copilot_chat_message,
         ])
         .build(tauri::generate_context!("tauri.conf.json"))
         .expect("error while running tauri application")

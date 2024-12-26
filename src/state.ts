@@ -63,7 +63,7 @@ export interface Config {
 }
 
 export interface AiConfig {
-  copilot?: {enabled: boolean, user?: string}
+  copilot?: {enabled: boolean; user?: string; chatModel?: string}
 }
 
 export interface ErrorObject {

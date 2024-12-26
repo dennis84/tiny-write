@@ -62,12 +62,7 @@ export const createCtrl = (initial: State) => {
     store,
     setState,
   )
-  const changeSetService = new ChangeSetService(
-    fileService,
-    collabService,
-    editorService,
-    setState,
-  )
+  const changeSetService = new ChangeSetService(fileService, collabService, editorService, setState)
   const canvasCollabService = new CanvasCollabService(collabService, canvasService, store)
   const mediaService = new MediaService(
     fileService,

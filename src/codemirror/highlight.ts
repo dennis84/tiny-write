@@ -141,7 +141,7 @@ export const highlight = (lang: string): LanguageSupport | undefined => {
       token: (stream: StringStream) => {
         stream.next()
         return null
-      }
+      },
     }
 
     return langSupport(unknown)

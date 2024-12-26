@@ -17,12 +17,12 @@ use crate::{
 
 use super::request;
 
-pub struct CopilotService<R: Runtime> {
+pub struct CopilotLspService<R: Runtime> {
     pub app_handle: AppHandle<R>,
     pub enabled: Mutex<bool>,
 }
 
-impl<R: Runtime> CopilotService<R> {
+impl<R: Runtime> CopilotLspService<R> {
     pub fn new(app_handle: AppHandle<R>) -> Self {
         Self {
             app_handle,

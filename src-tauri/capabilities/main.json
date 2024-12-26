@@ -1,9 +1,7 @@
 {
   "identifier": "main-capability",
   "description": "Capability for the main window",
-  "windows": [
-    "main"
-  ],
+  "windows": ["main"],
   "permissions": [
     "core:path:default",
     "core:event:default",
@@ -37,14 +35,13 @@
     {
       "identifier": "fs:read-all",
       "allow": [
-        {"path": "/**"}
+        {"path": "/**"},
+        {"path": "$HOME/**"}
       ]
     },
     {
       "identifier": "fs:write-all",
-      "allow": [
-        {"path": "/**"}
-      ]
+      "allow": [{"path": "/**"}]
     }
   ]
 }

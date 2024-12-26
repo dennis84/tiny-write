@@ -1,4 +1,9 @@
-import {currentMonitor, getCurrentWindow, PhysicalPosition, PhysicalSize} from '@tauri-apps/api/window'
+import {
+  currentMonitor,
+  getCurrentWindow,
+  PhysicalPosition,
+  PhysicalSize,
+} from '@tauri-apps/api/window'
 import {Window} from '@/state'
 import {info} from './log'
 

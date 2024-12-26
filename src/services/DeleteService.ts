@@ -77,11 +77,8 @@ export class DeleteService {
         this.treeService.isDescendant(currentFile.id, node.tree)) &&
       node.item.parentId !== undefined
     ) {
-      const file = this.fileService.findFileById(node.item.parentId)
-      return file//`/${file.code ? 'code' : 'editor'}/${node.item.parentId}`
+      return this.fileService.findFileById(node.item.parentId)
     }
-
-    // return undefined
   }
 
   private async deleteNode(node: TreeNode, forever = false) {

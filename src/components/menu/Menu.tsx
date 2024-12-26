@@ -10,13 +10,14 @@ import {Appearance} from './Appearance'
 import {ChangeSet} from './ChangeSet'
 import {Help} from './Help'
 import {AiConfig} from './AiConfig'
+import {AiChat} from './AiChat'
 import {SubmenuEditor} from './SubmenuEditor'
 import {SubmenuCanvas} from './SubmenuCanvas'
 import {SubmenuEdit} from './SubmenuEdit'
 import {SubmenuCollab} from './SubmenuCollab'
 import {SubmenuTree} from './SubmenuTree'
 import {SubmenuCode} from './SubmenuCode'
-import {Icon, IconAi, IconPrettier} from '../Icon'
+import {Icon, IconAi, IconAiChat, IconPrettier} from '../Icon'
 import {fullWidth, Container, Drawer, Keys, Label, Link, Sub, Control} from './Style'
 
 export const Menu = () => {
@@ -124,6 +125,9 @@ export const Menu = () => {
       <Show when={show() === 'ai_config'}>
         <AiConfig />
       </Show>
+      <Show when={show() === 'ai_chat'}>
+        <AiChat />
+      </Show>
       <Show when={show() === 'main'}>
         <Drawer
           onClick={() => fileService.currentFile?.editorView?.focus()}
@@ -189,6 +193,9 @@ export const Menu = () => {
             <Sub data-tauri-drag-region="true">
               <Link data-testid="ai_config" onClick={() => setShow('ai_config')}>
                 <IconAi /> Configure
+              </Link>
+              <Link data-testid="ai_chat" onClick={() => setShow('ai_chat')}>
+                <IconAiChat /> Chat
               </Link>
             </Sub>
           </Show>

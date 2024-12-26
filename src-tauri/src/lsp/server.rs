@@ -33,9 +33,7 @@ pub struct LspServer {
 impl LspServer {
     pub fn new(script: &str) -> (LspServer, JoinHandle<()>) {
         let (mainloop, server) = async_lsp::MainLoop::new_client(|_server| {
-            let mut router = Router::new(ClientState {
-                indexed_tx: None,
-            });
+            let mut router = Router::new(ClientState { indexed_tx: None });
             router
                 .notification::<Progress>(|this, prog| {
                     info!("{:?} {:?}", prog.token, prog.value);

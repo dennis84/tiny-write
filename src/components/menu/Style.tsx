@@ -1,6 +1,5 @@
 import {css, styled} from 'solid-styled-components'
 import {isTauri} from '@/env'
-import { Common } from '../Button'
 
 export const fullWidth = 500
 
@@ -43,7 +42,7 @@ export const Drawer = styled('div')`
   padding: 20px;
   height: 100%;
   display: ${(props: any) => (props.hidden ? 'none' : 'block')};
-  width: 400px;
+  width: ${(props: any) => props.width ?? '400px'};
   overflow-y: auto;
   scrollbar-width: none;
   @media (max-width: ${fullWidth.toString()}px) {

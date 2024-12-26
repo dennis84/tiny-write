@@ -6,7 +6,6 @@ import {
   highlightActiveLineGutter,
   hoverTooltip,
   keymap,
-  lineNumberMarkers,
   lineNumbers,
   tooltips,
 } from '@codemirror/view'
@@ -44,7 +43,7 @@ interface CreateEditor {
   doc?: string
   extensions?: Extension[]
   path?: string
-  selection?: {anchor: number, head?: number}
+  selection?: {anchor: number; head?: number}
 }
 
 export class CodeMirrorService {
@@ -105,17 +104,11 @@ export class CodeMirrorService {
     }
 
     if (this.store.mode === Mode.Code) {
-      extensions.push([
-        highlightActiveLine(),
-        highlightActiveLineGutter(),
-        lineNumbers(),
-      ])
+      extensions.push([highlightActiveLine(), highlightActiveLineGutter(), lineNumbers()])
     }
 
     if (props.path && isTauri()) {
-      extensions.push([
-        hoverTooltip(lspHoverSource(props.path), {hoverTime: 600}),
-      ])
+      extensions.push([hoverTooltip(lspHoverSource(props.path), {hoverTime: 600})])
     }
 
     if (this.store.mode !== Mode.Canvas) {

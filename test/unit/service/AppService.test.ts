@@ -26,9 +26,9 @@ test.each([
   {fileActive: false, mode: Mode.Canvas, expected: '/users/me/cwd'},
 ])('getBasePath - from file', async (data) => {
   createIpcMock({
-    'get_document': () => ({
-      worktreePath: data.worktreePath
-    })
+    get_document: () => ({
+      worktreePath: data.worktreePath,
+    }),
   })
 
   const canvasEditor = {

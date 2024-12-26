@@ -1,20 +1,24 @@
+use log::error;
+use strum::IntoEnumIterator;
+use tauri::ipc::Channel;
 use tauri::path::SafePathBuf;
 use tauri::{AppHandle, Manager, Result, Runtime};
 
-use crate::copilot::service::CopilotService;
+use crate::copilot::lsp_service::CopilotLspService;
 
+use super::chat_service::{ChatMessage, CopilotChatService, Model};
 use super::request;
 
 #[tauri::command]
 pub async fn enable_copilot<R: Runtime>(app_handle: AppHandle<R>) -> Result<String> {
-    let service = app_handle.state::<CopilotService<R>>();
+    let service = app_handle.state::<CopilotLspService<R>>();
     service.enable().await?;
     Ok("Ok".to_string())
 }
 
 #[tauri::command]
 pub async fn disable_copilot<R: Runtime>(app_handle: AppHandle<R>) -> Result<String> {
-    let service = app_handle.state::<CopilotService<R>>();
+    let service = app_handle.state::<CopilotLspService<R>>();
     service.disable().await?;
     Ok("Ok".to_string())
 }
@@ -23,14 +27,14 @@ pub async fn disable_copilot<R: Runtime>(app_handle: AppHandle<R>) -> Result<Str
 pub async fn copilot_sign_in<R: Runtime>(
     app_handle: AppHandle<R>,
 ) -> Result<request::SignInInitiateResult> {
-    let service = app_handle.state::<CopilotService<R>>();
+    let service = app_handle.state::<CopilotLspService<R>>();
     let response = service.sign_in().await?;
     Ok(response)
 }
 
 #[tauri::command]
 pub async fn copilot_status<R: Runtime>(app_handle: AppHandle<R>) -> Result<request::SignInStatus> {
-    let service = app_handle.state::<CopilotService<R>>();
+    let service = app_handle.state::<CopilotLspService<R>>();
     let response = service.get_status().await?;
     Ok(response)
 }
@@ -43,7 +47,28 @@ pub async fn copilot_completion<R: Runtime>(
     use_tabs: bool,
     app_handle: AppHandle<R>,
 ) -> Result<request::GetCompletionsResult> {
-    let service = app_handle.state::<CopilotService<R>>();
-    let result = service.completion(path.as_ref(), pos, tab_width, use_tabs).await?;
+    let service = app_handle.state::<CopilotLspService<R>>();
+    let result = service
+        .completion(path.as_ref(), pos, tab_width, use_tabs)
+        .await?;
     Ok(result)
+}
+
+#[tauri::command]
+pub fn copilot_chat_models() -> Vec<Model> {
+    Model::iter().collect()
+}
+
+#[tauri::command]
+pub async fn copilot_chat_message<R: Runtime>(
+    app_handle: AppHandle<R>,
+    model: Model,
+    messages: Vec<ChatMessage>,
+    on_event: Channel<String>,
+) -> Result<()> {
+    let service = app_handle.state::<CopilotChatService>();
+    service.send(model, messages, on_event).await.map_err(|e| {
+        error!("copilot_chat_message failed {e:?}");
+        tauri::Error::Anyhow(e)
+    })
 }

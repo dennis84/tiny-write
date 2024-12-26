@@ -1,7 +1,7 @@
 use tauri::{path::SafePathBuf, Manager, Runtime};
 
 use crate::{
-    copilot::service::CopilotService,
+    copilot::lsp_service::CopilotLspService,
     editor::editor_state::{Document, EditorState},
     lsp::service::LspService,
 };
@@ -60,7 +60,7 @@ pub async fn insert_text<R: Runtime>(
             .await;
     }
 
-    let copilot_service = app_handle.state::<CopilotService<R>>();
+    let copilot_service = app_handle.state::<CopilotLspService<R>>();
     let _ = copilot_service.insert_document(&doc, &data).await;
 
     Ok(())
@@ -82,7 +82,7 @@ pub async fn delete_text<R: Runtime>(
             .await;
     }
 
-    let copilot_service = app_handle.state::<CopilotService<R>>();
+    let copilot_service = app_handle.state::<CopilotLspService<R>>();
     let _ = copilot_service.delete_document(&doc, &data).await;
 
     state.delete_text(path.as_ref(), &data)?;
