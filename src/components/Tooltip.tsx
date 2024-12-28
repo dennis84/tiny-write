@@ -39,8 +39,8 @@ const TooltipEl = styled('div')`
       background: var(--primary-background);
       color: var(--primary-foreground);
     }
-    > span {
-      margin-right: 10px;
+    .icon {
+      margin-right: 5px;
     }
   }
   .divider {

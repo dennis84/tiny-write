@@ -3,21 +3,21 @@ import {Mode, useState} from '@/state'
 import {isTauri, isMac, mod, shortHash, version, VERSION_URL, isDev} from '@/env'
 import {quit} from '@/remote/app'
 import {useOpen} from '@/open'
-import {Button} from '@/components/Button'
+import {Button, IconButton} from '@/components/Button'
 import {Bin} from './Bin'
 import {CodeFormat} from './CodeFormat'
 import {Appearance} from './Appearance'
 import {ChangeSet} from './ChangeSet'
 import {Help} from './Help'
 import {AiConfig} from './AiConfig'
-import {AiChat} from './AiChat'
+import {Chat} from '../assistant/Chat'
 import {SubmenuEditor} from './SubmenuEditor'
 import {SubmenuCanvas} from './SubmenuCanvas'
 import {SubmenuEdit} from './SubmenuEdit'
 import {SubmenuCollab} from './SubmenuCollab'
 import {SubmenuTree} from './SubmenuTree'
 import {SubmenuCode} from './SubmenuCode'
-import {Icon, IconAi, IconAiChat, IconPrettier} from '../Icon'
+import {Icon, IconAi, IconAiAssistant, IconPrettier} from '../Icon'
 import {fullWidth, Container, Drawer, Keys, Label, Link, Sub, Control} from './Style'
 
 export const Menu = () => {
@@ -91,14 +91,19 @@ export const Menu = () => {
       <Control active={show() !== undefined}>
         <Switch>
           <Match when={show() === undefined}>
-            <Button class="menu-button" onClick={onMenuButtonClick} data-testid="menu_button">
+            <Show when={store.ai?.copilot?.enabled}>
+              <IconButton onClick={() => setShow('ai_assistant')}>
+                <IconAiAssistant />
+              </IconButton>
+            </Show>
+            <IconButton onClick={onMenuButtonClick} data-testid="menu_button">
               <Icon>more_vert</Icon>
-            </Button>
+            </IconButton>
           </Match>
           <Match when={show() === 'main'}>
-            <Button class="menu-button" onClick={onMenuButtonClick} data-testid="menu_button">
+            <IconButton onClick={onMenuButtonClick} data-testid="menu_button">
               <Icon>close</Icon>
-            </Button>
+            </IconButton>
           </Match>
           <Match when={show() !== undefined && show() !== 'main'}>
             <Button onClick={() => setShow('main')} data-testid="menu_back_button">
@@ -125,8 +130,8 @@ export const Menu = () => {
       <Show when={show() === 'ai_config'}>
         <AiConfig />
       </Show>
-      <Show when={show() === 'ai_chat'}>
-        <AiChat />
+      <Show when={show() === 'ai_assistant'}>
+        <Chat />
       </Show>
       <Show when={show() === 'main'}>
         <Drawer
@@ -194,8 +199,8 @@ export const Menu = () => {
               <Link data-testid="ai_config" onClick={() => setShow('ai_config')}>
                 <IconAi /> Configure
               </Link>
-              <Link data-testid="ai_chat" onClick={() => setShow('ai_chat')}>
-                <IconAiChat /> Chat
+              <Link data-testid="ai_assistant" onClick={() => setShow('ai_assistant')}>
+                <IconAiAssistant /> Assistant
               </Link>
             </Sub>
           </Show>

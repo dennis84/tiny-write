@@ -27,11 +27,10 @@ export const Control = styled('div')`
   > *:not(:last-child) {
     margin-right: 5px;
   }
-  .menu-button {
-    width: 40px;
-    ${(props: any) => !props.active ? `
+  > button {
+    ${(props: any) => props.active ? `
       &:not(:hover) {
-        background: none;
+        background: var(--background-60);
       }
     ` : ''}
   }

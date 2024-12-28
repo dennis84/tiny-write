@@ -20,6 +20,9 @@ export const Common = `
     opacity: 0.5;
     cursor: not-allowed;
   }
+  .icon {
+    margin-right: 5px;
+  }
 `
 
 export const Button = styled('button')`
@@ -44,5 +47,20 @@ export const ButtonGroup = styled('div')`
   > button {
     margin-right: 10px;
     margin-bottom: 10px;
+  }
+`
+
+export const IconButton = styled('button')`
+  ${Common}
+  width: 40px;
+  padding: 0;
+  background: none;
+  color: var(--foreground);
+  &:hover {
+    background: var(--background-60);
+    color: var(--primary-background);
+  }
+  .icon {
+    margin: 0;
   }
 `

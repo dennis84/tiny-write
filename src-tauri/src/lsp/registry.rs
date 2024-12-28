@@ -113,7 +113,7 @@ impl LspRegistry {
     }
 
     pub async fn shutdown(&self) {
-        debug!("shutdown all language servers");
+        info!("shutdown all language servers");
         let mut language_servers = self.language_servers.write().await;
         for (_, server) in language_servers.iter() {
             let _ = server.shutdown().await;

@@ -143,7 +143,7 @@ pub fn run<R: Runtime>(builder: Builder<R>) {
         .build(tauri::generate_context!("tauri.conf.json"))
         .expect("error while running tauri application")
         .run(|app_handle, event| {
-            if let tauri::RunEvent::ExitRequested { .. } = event {
+            if let tauri::RunEvent::Exit = event {
                 let lsp_registry = app_handle.state::<LspRegistry>();
                 tauri::async_runtime::block_on(async { lsp_registry.shutdown().await });
             }
