@@ -11,7 +11,7 @@ import {EditorView, ViewUpdate, keymap} from '@codemirror/view'
 import {autocompletion} from '@codemirror/autocomplete'
 import {ConfigService} from '@/services/ConfigService'
 import {CodeMirrorService} from '@/services/CodeMirrorService'
-import {highlight} from '@/codemirror/highlight'
+import {getLanguageConfig} from '@/codemirror/highlight'
 import {findWords} from '@/codemirror/completion'
 import {mermaidKeywords} from '@/codemirror/mermaid'
 import {foldAll} from '@/codemirror/fold-all'
@@ -304,9 +304,8 @@ export class CodeBlockView {
   }
 
   reconfigure() {
-    const langSupport = highlight(this.lang)
-    if (!langSupport) return
-
+    const lang = getLanguageConfig(this.lang)
+    const langSupport = lang.highlight()
     const effects = [
       this.compartments.lang.reconfigure(langSupport),
       this.compartments.findWords.reconfigure(

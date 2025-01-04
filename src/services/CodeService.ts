@@ -3,6 +3,7 @@ import {EditorView, ViewUpdate} from '@codemirror/view'
 import * as Y from 'yjs'
 import {yCollab, ySyncFacet} from 'y-codemirror.next'
 import {debounce} from 'throttle-debounce'
+import {indentationMarkers} from '@replit/codemirror-indentation-markers'
 import {File, SelectionRange, State, VisualPositionRange} from '@/state'
 import {copilot} from '@/codemirror/copilot'
 import {deleteText, insertText, writeFile} from '@/remote/editor'
@@ -138,6 +139,7 @@ export class CodeService {
       extensions: [
         EditorView.updateListener.of((update) => this.onUpdate(file, update)),
         yCollab(type, this.store.collab?.provider.awareness, {undoManager: false}),
+        indentationMarkers({markerType: 'fullScope'}),
         ...(isTauri() ?
           [
             copilot({

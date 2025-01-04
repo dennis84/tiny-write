@@ -89,7 +89,9 @@ export const ChatInput = (props: Props) => {
     closeTooltip()
   }
 
-  const Message = ({content}: {content: string}) => <>{content}</>
+  const Message = ({content, html}: {content: string, html: string}) => {
+    return <div innerHTML={html ?? content} />
+  }
 
   const onSend = () => {
     const view = editorView()

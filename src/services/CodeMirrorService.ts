@@ -26,7 +26,7 @@ import {
 } from '@codemirror/language'
 import {linter, setDiagnostics} from '@codemirror/lint'
 import {getTheme} from '@/codemirror/theme'
-import {highlight} from '@/codemirror/highlight'
+import {getLanguageConfig, LangConfig} from '@/codemirror/highlight'
 import {findWords, tabCompletionKeymap} from '@/codemirror/completion'
 import {mermaidKeywords} from '@/codemirror/mermaid'
 import {lspCompletionSource} from '@/codemirror/lsp-completion'
@@ -63,7 +63,9 @@ export class CodeMirrorService {
     }
 
     const theme = getTheme(this.configService.codeTheme.value)
-    const langSupport = props.lang ? highlight(props.lang) : undefined
+    const lang = getLanguageConfig(props.lang)
+    const langSupport = lang.highlight()
+    const [tabWidth, indentString] = this.getIndentConfig(props.lang, lang)
 
     const extensions = [
       ...(props.extensions ?? []),
@@ -78,29 +80,23 @@ export class CodeMirrorService {
       bracketMatching(),
       closeBrackets(),
       linter(() => []),
-      EditorState.tabSize.of(this.configService.prettier.tabWidth),
-      indentUnit.of(
-        this.configService.prettier.useTabs ?
-          '\t'
-        : ' '.repeat(this.configService.prettier.tabWidth),
-      ),
+      EditorState.tabSize.of(tabWidth),
+      indentUnit.of(indentString),
       autocompletion({
         override: props.path && isTauri() ? [lspCompletionSource(props.path)] : undefined,
       }),
       EditorView.lineWrapping,
     ]
 
-    if (langSupport) {
-      extensions.push([
-        compartments.lang.of(langSupport),
-        compartments.findWords.of(langSupport.language.data.of({autocomplete: findWords})),
-      ])
+    extensions.push([
+      compartments.lang.of(langSupport),
+      compartments.findWords.of(langSupport.language.data.of({autocomplete: findWords})),
+    ])
 
-      if (props.lang === 'mermaid') {
-        extensions.push(
-          compartments.keywords.of(langSupport.language.data.of({autocomplete: mermaidKeywords})),
-        )
-      }
+    if (props.lang === 'mermaid') {
+      extensions.push(
+        compartments.keywords.of(langSupport.language.data.of({autocomplete: mermaidKeywords})),
+      )
     }
 
     if (this.store.mode === Mode.Code) {
@@ -162,5 +158,24 @@ export class CodeMirrorService {
 
       view.dispatch(setDiagnostics(view.state, diagnostics))
     }
+  }
+
+  private getIndentConfig(
+    lang: string = '',
+    langConfig: LangConfig,
+  ): [number, string] {
+      if (this.prettierService.supports(lang)) {
+        return [
+          this.configService.prettier.tabWidth,
+          this.configService.prettier.useTabs ?
+            '\t'
+          : ' '.repeat(this.configService.prettier.tabWidth),
+        ]
+      }
+
+    return [
+      1,
+      langConfig.indentUnit ?? '  '
+    ]
   }
 }

@@ -8,12 +8,12 @@ import markdownit from 'markdown-it'
 import iterator from 'markdown-it-for-inline'
 import {v4 as uuidv4} from 'uuid'
 import {getTheme} from '@/codemirror/theme'
-import {highlight} from '@/codemirror/highlight'
+import {getLanguageConfig} from '@/codemirror/highlight'
 import {useState} from '@/state'
 import {ChatRole} from '@/remote/copilot'
 import {Drawer, Text} from '../menu/Style'
 import {Icon, IconCopilot} from '../Icon'
-import {Button, ButtonGroup, IconButton} from '../Button'
+import {Button, IconButton} from '../Button'
 import {ChatInput, ChatInputMessage, RenderMessage} from './ChatInput'
 import {ModelSelect} from './ModelSelect'
 import {Tooltip} from '../Tooltip'
@@ -124,7 +124,7 @@ export const Chat = () => {
       if (!parent) return
 
       const theme = getTheme(configService.codeTheme.value)
-      const langSupport = highlight(ed.lang)
+      const lang = getLanguageConfig(ed.lang)
       const doc = ed.doc.trim()
 
       new EditorView({
@@ -135,7 +135,7 @@ export const Chat = () => {
           EditorState.readOnly.of(true),
           EditorView.lineWrapping,
           theme,
-          ...(langSupport ? [langSupport] : []),
+          lang.highlight(),
         ],
       })
     }
@@ -165,9 +165,11 @@ export const Chat = () => {
 
   const addUserMessage = (input: ChatInputMessage) => {
     if (!input.content) return
-    const message: Message = {...input, role: 'user'}
+    const html = finalMd.render(input.content)
+    const message: Message = {...input, html, role: 'user'}
     setChatState('messages', (prev) => [...prev, message])
     scrollToBottom()
+    renderMessageEditors()
   }
 
   const sendMessages = async () => {
@@ -242,7 +244,11 @@ export const Chat = () => {
     return (
       <QuestionBubble>
         <Show when={props.message.render}>
-          <Dynamic component={props.message.render?.component} {...props.message.render?.props} />
+          <Dynamic
+            component={props.message.render?.component}
+            html={props.message.html}
+            {...props.message.render?.props}
+          />
         </Show>
         <div>
           {props.message.error ? ` (This question has errors: ${props.message.error})` : ''}

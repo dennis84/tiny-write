@@ -24,6 +24,7 @@
     "@codemirror/view": "6.36.1",
     "@ddietr/codemirror-themes": "1.5.1",
     "@floating-ui/dom": "1.6.12",
+    "@replit/codemirror-indentation-markers": "^6.5.3",
     "@solidjs/router": "0.15.2",
     "@tauri-apps/api": "2.1.1",
     "@tauri-apps/plugin-clipboard-manager": "2.2.0",

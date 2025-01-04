@@ -3,7 +3,7 @@ import {styled} from 'solid-styled-components'
 import {EditorState} from '@codemirror/state'
 import {EditorView} from '@codemirror/view'
 import {File, Mode, useState} from '@/state'
-import {highlight} from '@/codemirror/highlight'
+import {getLanguageConfig} from '@/codemirror/highlight'
 import {getTheme} from '@/codemirror/theme'
 import {Button} from '@/components/Button'
 import {Icon} from '@/components/Icon'
@@ -61,7 +61,7 @@ export const SelectionButton = (props: TooltipButtonProps) => {
   )
 }
 
-export const Selection = (props: {doc: string; lang?: string}) => {
+const Selection = (props: {doc: string; lang?: string}) => {
   let editorRef!: HTMLDivElement
   const [editorView, setEditorView] = createSignal<EditorView>()
   const {configService} = useState()
@@ -80,7 +80,7 @@ export const Selection = (props: {doc: string; lang?: string}) => {
     }
 
     const theme = getTheme(configService.codeTheme.value)
-    const langSupport = highlight(props.lang ?? '')
+    const lang = getLanguageConfig(props.lang ?? '')
 
     const view = new EditorView({
       parent: editorRef,
@@ -90,7 +90,7 @@ export const Selection = (props: {doc: string; lang?: string}) => {
         EditorState.readOnly.of(true),
         EditorView.lineWrapping,
         theme,
-        ...(langSupport ? [langSupport] : []),
+        lang.highlight(),
       ],
     })
 

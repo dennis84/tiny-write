@@ -24,9 +24,10 @@ import {php} from '@codemirror/lang-php'
 
 const langSupport = (l: StreamParser<unknown>) => new LanguageSupport(StreamLanguage.define(l))
 
-interface LangConfig {
+export interface LangConfig {
   highlight: () => LanguageSupport
   aliases?: string[]
+  indentUnit?: string
 }
 
 export const languages: Record<string, LangConfig> = {
@@ -46,14 +47,17 @@ export const languages: Record<string, LangConfig> = {
   },
   java: {
     highlight: () => java(),
+    indentUnit: '    ',
   },
   kotlin: {
     highlight: () => java(),
     aliases: ['kt'],
+    indentUnit: '    ',
   },
   rust: {
     highlight: () => rust(),
     aliases: ['rs'],
+    indentUnit: '    ',
   },
   sql: {
     highlight: () => sql(),
@@ -64,6 +68,7 @@ export const languages: Record<string, LangConfig> = {
   python: {
     highlight: () => python(),
     aliases: ['py'],
+    indentUnit: '    ',
   },
   html: {
     highlight: () => html(),
@@ -124,29 +129,32 @@ export const languages: Record<string, LangConfig> = {
   },
   go: {
     highlight: () => langSupport(go),
+    indentUnit: '\t',
   },
   toml: {
     highlight: () => langSupport(toml),
+    indentUnit: '    ',
   },
   lua: {
     highlight: () => langSupport(lua),
+    indentUnit: '\t',
   },
 }
 
-export const highlight = (lang: string): LanguageSupport | undefined => {
+export const getLanguageConfig = (lang: string = ''): LangConfig => {
   const codeLang = findCodeLang(lang)
-  if (!codeLang) {
-    const unknown = {
-      name: lang,
-      token: (stream: StringStream) => {
-        stream.next()
-        return null
-      },
+  return (
+    languages[codeLang ?? ''] ?? {
+      highlight: () =>
+        langSupport({
+          name: lang,
+          token: (stream: StringStream) => {
+            stream.next()
+            return null
+          },
+        }),
     }
-
-    return langSupport(unknown)
-  }
-  return languages[codeLang]?.highlight()
+  )
 }
 
 export const findCodeLang = (lang: string): string | undefined => {
