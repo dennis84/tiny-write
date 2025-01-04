@@ -91,7 +91,7 @@ export const Menu = () => {
       <Control active={show() !== undefined}>
         <Switch>
           <Match when={show() === undefined}>
-            <Show when={store.ai?.copilot?.enabled}>
+            <Show when={store.ai?.copilot?.user}>
               <IconButton onClick={() => setShow('ai_assistant')}>
                 <IconAiAssistant />
               </IconButton>
@@ -193,17 +193,17 @@ export const Menu = () => {
           {/* Submenu Collab */}
           <SubmenuCollab />
           {/* Submenu Ai */}
-          <Show when={isTauri()}>
-            <Label>AI</Label>
-            <Sub data-tauri-drag-region="true">
-              <Link data-testid="ai_config" onClick={() => setShow('ai_config')}>
-                <IconAi /> Configure
-              </Link>
+          <Label>AI</Label>
+          <Sub data-tauri-drag-region="true">
+            <Link data-testid="ai_config" onClick={() => setShow('ai_config')}>
+              <IconAi /> Configure
+            </Link>
+            <Show when={store.ai?.copilot?.user}>
               <Link data-testid="ai_assistant" onClick={() => setShow('ai_assistant')}>
                 <IconAiAssistant /> Assistant
               </Link>
-            </Sub>
-          </Show>
+            </Show>
+          </Sub>
           {/* Submenu Application */}
           <Label>Application</Label>
           <Sub data-tauri-drag-region="true">

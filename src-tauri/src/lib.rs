@@ -132,13 +132,12 @@ pub fn run<R: Runtime>(builder: Builder<R>) {
             lsp::command::lsp_hover,
             lsp::command::lsp_completion,
             lsp::command::lsp_goto,
-            copilot::command::enable_copilot,
-            copilot::command::disable_copilot,
+            copilot::command::copilot_start_language_server,
+            copilot::command::copilot_disconnect,
             copilot::command::copilot_sign_in,
             copilot::command::copilot_status,
             copilot::command::copilot_completion,
-            copilot::command::copilot_chat_models,
-            copilot::command::copilot_chat_message,
+            copilot::command::copilot_chat_completions,
         ])
         .build(tauri::generate_context!("tauri.conf.json"))
         .expect("error while running tauri application")

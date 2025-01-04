@@ -1,25 +1,22 @@
 import {Channel, invoke} from '@tauri-apps/api/core'
 import {timeout} from '@/utils/promise'
+import {Model} from '@/services/CopilotService'
 
-export const connectCopilot = async () => {
-  return await invoke('connect_copilot')
+export const startLanguageServer = async (): Promise<void> => {
+  await Promise.race([invoke('copilot_start_language_server'), timeout(5000)])
 }
 
-export const enableCopilot = async (): Promise<void> => {
-  await Promise.race([invoke('enable_copilot'), timeout(5000)])
+export const disconnectCopilot = async () => {
+  return await invoke('copilot_disconnect')
 }
 
-export const disableCopilot = async () => {
-  return await invoke('disable_copilot')
-}
-
-type CopilotStatus = {user: string}
+export type CopilotStatus = {user: string; accessToken?: string}
 
 export const copilotStatus = async (): Promise<CopilotStatus> => {
   return await Promise.race<CopilotStatus>([invoke('copilot_status'), timeout(5000)])
 }
 
-type CopilotSignIn = {userCode: string; verificationUri: string}
+export type CopilotSignIn = {userCode: string; deviceCode?: string; verificationUri: string}
 
 export const copilotSignIn = async (): Promise<CopilotSignIn> => {
   return await invoke('copilot_sign_in')
@@ -36,8 +33,6 @@ export const copilotCompletion = async (
   return await invoke('copilot_completion', {path, pos, tabWidth, useTabs})
 }
 
-export const copilotChatModels = (): Promise<string[]> => invoke('copilot_chat_models')
-
 type ChatEvent = string
 
 export type ChatRole = 'user' | 'assistant' | 'system'
@@ -48,9 +43,9 @@ export interface ChatMessage {
 }
 
 export const sendChatMessage = async (
-  model: string,
+  model: Model,
   messages: ChatMessage[],
   onEvent: Channel<ChatEvent>,
 ) => {
-  await invoke('copilot_chat_message', {model, messages, onEvent})
+  await invoke('copilot_chat_completions', {model, messages, onEvent})
 }

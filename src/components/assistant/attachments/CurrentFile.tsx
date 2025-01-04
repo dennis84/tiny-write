@@ -2,7 +2,7 @@ import {createSignal, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {EditorState} from '@codemirror/state'
 import {EditorView} from '@codemirror/view'
-import {useState} from '@/state'
+import {File, Mode, useState} from '@/state'
 import {highlight} from '@/codemirror/highlight'
 import {getTheme} from '@/codemirror/theme'
 import {Button} from '@/components/Button'
@@ -14,15 +14,21 @@ interface TooltipButtonProps {
 }
 
 export const CurrentFileButton = (props: TooltipButtonProps) => {
-  const {fileService} = useState()
+  const {store, canvasService, fileService} = useState()
 
-  const isCode = () => {
-    const currentFile = fileService.currentFile
-    return currentFile?.code ?? false
+  const getSelectedFile = (): File | undefined => {
+    if (store.mode === Mode.Code) return fileService.currentFile
+    if (store.mode === Mode.Canvas) {
+      const elementId = canvasService.currentCanvas?.elements.find((el) => el.selected)?.id
+      if (!elementId) return
+      return fileService.findFileById(elementId)
+    }
   }
 
+  const isCodeFile = (): boolean => getSelectedFile()?.code ?? false
+
   const onClick = () => {
-    const currentFile = fileService.currentFile
+    const currentFile = getSelectedFile()
     const editorView = currentFile?.codeEditorView
     if (!editorView) return
     const doc = editorView.state.doc.toString()
@@ -43,7 +49,7 @@ export const CurrentFileButton = (props: TooltipButtonProps) => {
   }
 
   return (
-    <Show when={isCode()}>
+    <Show when={isCodeFile()}>
       <div onClick={onClick}>
         <Icon>code_blocks</Icon>
         Add current file

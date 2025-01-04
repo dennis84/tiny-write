@@ -1,5 +1,4 @@
 use log::error;
-use strum::IntoEnumIterator;
 use tauri::ipc::Channel;
 use tauri::path::SafePathBuf;
 use tauri::{AppHandle, Manager, Result, Runtime};
@@ -10,16 +9,16 @@ use super::chat_service::{ChatMessage, CopilotChatService, Model};
 use super::request;
 
 #[tauri::command]
-pub async fn enable_copilot<R: Runtime>(app_handle: AppHandle<R>) -> Result<String> {
+pub async fn copilot_start_language_server<R: Runtime>(app_handle: AppHandle<R>) -> Result<String> {
     let service = app_handle.state::<CopilotLspService<R>>();
-    service.enable().await?;
+    service.start().await?;
     Ok("Ok".to_string())
 }
 
 #[tauri::command]
-pub async fn disable_copilot<R: Runtime>(app_handle: AppHandle<R>) -> Result<String> {
+pub async fn copilot_disconnect<R: Runtime>(app_handle: AppHandle<R>) -> Result<String> {
     let service = app_handle.state::<CopilotLspService<R>>();
-    service.disable().await?;
+    service.disconnect().await?;
     Ok("Ok".to_string())
 }
 
@@ -55,20 +54,18 @@ pub async fn copilot_completion<R: Runtime>(
 }
 
 #[tauri::command]
-pub fn copilot_chat_models() -> Vec<Model> {
-    Model::iter().collect()
-}
-
-#[tauri::command]
-pub async fn copilot_chat_message<R: Runtime>(
+pub async fn copilot_chat_completions<R: Runtime>(
     app_handle: AppHandle<R>,
     model: Model,
     messages: Vec<ChatMessage>,
     on_event: Channel<String>,
 ) -> Result<()> {
     let service = app_handle.state::<CopilotChatService>();
-    service.send(model, messages, on_event).await.map_err(|e| {
-        error!("copilot_chat_message failed {e:?}");
-        tauri::Error::Anyhow(e)
-    })
+    service
+        .completions(model, messages, on_event)
+        .await
+        .map_err(|e| {
+            error!("chat_completion failed {e:?}");
+            tauri::Error::Anyhow(e)
+        })
 }

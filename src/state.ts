@@ -62,8 +62,14 @@ export interface Config {
   prettier: PrettierConfig
 }
 
+export interface Copilot {
+  user?: string
+  chatModel?: string
+  accessToken?: string
+}
+
 export interface AiConfig {
-  copilot?: {enabled: boolean; user?: string; chatModel?: string}
+  copilot?: Copilot
 }
 
 export interface ErrorObject {

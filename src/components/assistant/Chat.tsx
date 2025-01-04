@@ -4,14 +4,13 @@ import {createStore} from 'solid-js/store'
 import {styled} from 'solid-styled-components'
 import {EditorView} from '@codemirror/view'
 import {EditorState} from '@codemirror/state'
-import {Channel} from '@tauri-apps/api/core'
 import markdownit from 'markdown-it'
 import iterator from 'markdown-it-for-inline'
 import {v4 as uuidv4} from 'uuid'
 import {getTheme} from '@/codemirror/theme'
 import {highlight} from '@/codemirror/highlight'
 import {useState} from '@/state'
-import {ChatRole, sendChatMessage} from '@/remote/copilot'
+import {ChatRole} from '@/remote/copilot'
 import {Drawer, Text} from '../menu/Style'
 import {Icon, IconCopilot} from '../Icon'
 import {IconButton} from '../Button'
@@ -108,7 +107,7 @@ interface MessageEditor {
 export const Chat = () => {
   let drawerRef!: HTMLElement
 
-  const {store, configService} = useState()
+  const {configService, copilotService} = useState()
   const [chatState, setChatState] = createStore<ChatState>({messages: []})
   const [messageEditors, setMessageEditors] = createSignal<MessageEditor[]>([])
   const [tooltipAnchor, setTooltipAnchor] = createSignal<HTMLElement | undefined>()
@@ -122,10 +121,11 @@ export const Chat = () => {
 
       const theme = getTheme(configService.codeTheme.value)
       const langSupport = highlight(ed.lang)
+      const doc = ed.doc.trim()
 
       new EditorView({
         parent,
-        doc: ed.doc,
+        doc,
         extensions: [
           EditorView.editable.of(false),
           EditorState.readOnly.of(true),
@@ -155,46 +155,43 @@ export const Chat = () => {
     tokens[idx].attrPush(['target', '_blank'])
   })
 
-  const addUserMessage = (input: ChatInputMessage) => {
-    const message: Message = {...input, role: 'user'}
-    setChatState('messages', (prev) => [...prev, message])
+  const scrollToBottom = () => {
     drawerRef.scrollTo(0, drawerRef.scrollHeight)
   }
 
-  const sendMessage = async (message: ChatInputMessage) => {
-    const model = store.ai?.copilot?.chatModel
-    if (!model) return
+  const addUserMessage = (input: ChatInputMessage) => {
+    if (!input.content) return
+    const message: Message = {...input, role: 'user'}
+    setChatState('messages', (prev) => [...prev, message])
+    scrollToBottom()
+  }
 
-    addUserMessage(message)
-
-    const channel = new Channel<string>()
-    channel.onmessage = (message) => {
-      if (message.startsWith('[DONE]')) {
-        const cur = chatState.currentAnswer
-        if (cur) {
-          const content = cur.content
-          const html = finalMd.render(content)
-          const message: Message = {role: 'assistant', content, html}
-          setChatState('messages', (prev) => [...prev, message])
-          setChatState('currentAnswer', undefined)
-          renderMessageEditors()
-        }
-      } else {
-        const json = JSON.parse(message) as any
-        for (const choice of json.choices) {
-          const cur = chatState.currentAnswer
-          let content = (cur?.content ?? '') + (choice.delta.content || '')
-          const html = streamMd.render(content)
-          setChatState('currentAnswer', {content, html})
-        }
-      }
-    }
-
+  const sendMessages = async () => {
     try {
-      await sendChatMessage(
-        model,
+      await copilotService.completions(
         chatState.messages.filter((m) => !m.error),
-        channel,
+        (message: any) => {
+          for (const choice of message.choices) {
+            const cur = chatState.currentAnswer
+            let content =
+              (cur?.content ?? '') + (choice.delta?.content ?? choice.message?.content ?? '')
+            const html = streamMd.render(content)
+            setChatState('currentAnswer', {content, html})
+            scrollToBottom()
+          }
+        },
+        () => {
+          const cur = chatState.currentAnswer
+          if (cur) {
+            const content = cur.content
+            const html = finalMd.render(content)
+            const message: Message = {role: 'assistant', content, html}
+            setChatState('messages', (prev) => [...prev, message])
+            setChatState('currentAnswer', undefined)
+            renderMessageEditors()
+            scrollToBottom()
+          }
+        },
       )
     } catch (error) {
       setChatState('messages', chatState.messages.length - 1, {error: error as string})
@@ -202,8 +199,9 @@ export const Chat = () => {
   }
 
   const onInputMessage = (message: ChatInputMessage) => {
-    if (message.attachment) addUserMessage(message)
-    else sendMessage(message)
+    addUserMessage(message)
+    setChatState('currentAnswer', {content: ''})
+    if (!message.attachment) sendMessages()
   }
 
   const closeBubbleMenu = () => {
@@ -259,14 +257,19 @@ export const Chat = () => {
         <AnswerBadge>
           <IconCopilot /> Assistant:
         </AnswerBadge>
+        <Show when={props.currentAnswer?.content === ''}>
+          <div>Loading ...</div>
+        </Show>
         <Show when={props.message?.html ?? props.currentAnswer?.html}>
           <div innerHTML={props.message?.html ?? props.currentAnswer?.html} />
         </Show>
-        <BubbleMenu>
-          <IconButton onClick={onBubbleMenu}>
-            <Icon>more_vert</Icon>
-          </IconButton>
-        </BubbleMenu>
+        <Show when={props.message !== undefined}>
+          <BubbleMenu>
+            <IconButton onClick={onBubbleMenu}>
+              <Icon>more_vert</Icon>
+            </IconButton>
+          </BubbleMenu>
+        </Show>
       </AnswerBubble>
     )
   }

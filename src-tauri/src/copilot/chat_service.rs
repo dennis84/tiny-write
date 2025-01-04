@@ -10,7 +10,6 @@ use log::debug;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use strum::EnumIter;
 use tauri::ipc::Channel;
 use tokio::sync::RwLock;
 
@@ -20,32 +19,6 @@ pub enum Role {
     User,
     Assistant,
     System,
-}
-
-#[derive(Clone, Debug, Default, Serialize, Deserialize, PartialEq, EnumIter)]
-pub enum Model {
-    #[default]
-    #[serde(alias = "gpt-4o", rename = "gpt-4o-2024-05-13")]
-    Gpt4o,
-    #[serde(alias = "gpt-4", rename = "gpt-4")]
-    Gpt4,
-    #[serde(alias = "gpt-3.5-turbo", rename = "gpt-3.5-turbo")]
-    Gpt3_5Turbo,
-    #[serde(alias = "o1-preview", rename = "o1-preview-2024-09-12")]
-    O1Preview,
-    #[serde(alias = "o1-mini", rename = "o1-mini-2024-09-12")]
-    O1Mini,
-    #[serde(alias = "claude-3-5-sonnet", rename = "claude-3.5-sonnet")]
-    Claude3_5Sonnet,
-}
-
-impl Model {
-    pub fn uses_streaming(&self) -> bool {
-        match self {
-            Self::Gpt4o | Self::Gpt4 | Self::Gpt3_5Turbo | Self::Claude3_5Sonnet => true,
-            Self::O1Mini | Self::O1Preview => false,
-        }
-    }
 }
 
 #[derive(Serialize, Deserialize, Debug, Eq, PartialEq)]
@@ -60,8 +33,14 @@ pub struct Request {
     pub n: usize,
     pub stream: bool,
     pub temperature: f32,
-    pub model: Model,
+    pub model: String,
     pub messages: Vec<ChatMessage>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Model {
+    pub name: String,
+    pub streaming: bool,
 }
 
 impl Request {
@@ -69,9 +48,9 @@ impl Request {
         Self {
             intent: true,
             n: 1,
-            stream: model.uses_streaming(),
+            stream: model.streaming,
             temperature: 0.1,
-            model,
+            model: model.name,
             messages,
         }
     }
@@ -111,7 +90,7 @@ impl CopilotChatService {
         })
     }
 
-    pub async fn send(
+    pub async fn completions(
         &self,
         model: Model,
         messages: Vec<ChatMessage>,

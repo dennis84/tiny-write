@@ -5,7 +5,7 @@ import {getDocument} from '@/remote/editor'
 import {debug, error, info} from '@/remote/log'
 import {show, updateWindow} from '@/remote/window'
 import {getArgs, setAlwaysOnTop, setFullscreen} from '@/remote/app'
-import {copilotStatus, enableCopilot} from '@/remote/copilot'
+import {startLanguageServer} from '@/remote/copilot'
 import {State, ServiceError, Window, Mode, ErrorObject, createState} from '@/state'
 import {DB} from '@/db'
 import {isTauri} from '@/env'
@@ -56,10 +56,8 @@ export class AppService {
         await setAlwaysOnTop(true)
       }
 
-      if (isTauri() && newState.ai?.copilot?.enabled) {
-        await enableCopilot()
-        const status = await copilotStatus()
-        newState.ai.copilot.user = status.user
+      if (newState.ai?.copilot?.user) {
+        if (isTauri()) await startLanguageServer()
       }
 
       this.setState(newState)

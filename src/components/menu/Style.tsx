@@ -94,12 +94,11 @@ export const Text = styled('p')`
 
 export const Note = styled('p')`
   ${itemCss}
-  font-style: italic;
   color: var(--foreground-80);
   background: var(--foreground-5);
   border-radius: var(--border-radius);
   padding: 10px;
-  margin-bottom: 20px;
+  margin: 10px 0;
 `
 
 // prettier-ignore

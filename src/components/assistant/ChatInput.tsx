@@ -94,16 +94,14 @@ export const ChatInput = (props: Props) => {
     const view = editorView()
     if (!view) return
     const content = view.state.doc.toString().trim()
-    if (content) {
-      props.onMessage({
-        content,
-        attachment: false,
-        render: {
-          component: Message,
-          props: {content},
-        },
-      })
-    }
+    props.onMessage({
+      content,
+      attachment: false,
+      render: {
+        component: Message,
+        props: {content},
+      },
+    })
 
     view.dispatch({
       changes: {from: 0, to: content.length, insert: ''},

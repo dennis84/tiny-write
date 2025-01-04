@@ -30,16 +30,16 @@ impl<R: Runtime> CopilotLspService<R> {
         }
     }
 
-    pub async fn enable(&self) -> anyhow::Result<()> {
-        info!("Copilot - enable");
+    pub async fn start(&self) -> anyhow::Result<()> {
+        info!("Copilot - start language server");
         *self.enabled.lock().await = true;
         let language_server_id = Self::language_server_id(None);
         self.register_language_server(&language_server_id.0).await?;
         Ok(())
     }
 
-    pub async fn disable(&self) -> anyhow::Result<()> {
-        info!("Copilot - disable");
+    pub async fn disconnect(&self) -> anyhow::Result<()> {
+        info!("Copilot - disconnect");
         *self.enabled.lock().await = false;
         let lsp_registry = self.app_handle.state::<LspRegistry>();
         let language_server_id = Self::language_server_id(None);
