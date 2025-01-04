@@ -13,7 +13,7 @@ import {useState} from '@/state'
 import {ChatRole} from '@/remote/copilot'
 import {Drawer, Text} from '../menu/Style'
 import {Icon, IconCopilot} from '../Icon'
-import {IconButton} from '../Button'
+import {Button, ButtonGroup, IconButton} from '../Button'
 import {ChatInput, ChatInputMessage, RenderMessage} from './ChatInput'
 import {ModelSelect} from './ModelSelect'
 import {Tooltip} from '../Tooltip'
@@ -78,6 +78,10 @@ const BubbleMenu = styled('div')`
   position: absolute;
   top: 5px;
   right: 5px;
+`
+
+const ChatActions  = styled('div')`
+  margin-top: 20px;
 `
 
 interface Message {
@@ -200,8 +204,10 @@ export const Chat = () => {
 
   const onInputMessage = (message: ChatInputMessage) => {
     addUserMessage(message)
-    setChatState('currentAnswer', {content: ''})
-    if (!message.attachment) sendMessages()
+    if (!message.attachment) {
+      setChatState('currentAnswer', {content: ''})
+      sendMessages()
+    }
   }
 
   const closeBubbleMenu = () => {
@@ -215,6 +221,10 @@ export const Chat = () => {
     const index = chatState.messages.indexOf(message)
     setChatState('messages', (prev: Message[]) => prev.filter((_, i) => i !== index))
     closeBubbleMenu()
+  }
+
+  const onClear = () => {
+    setChatState({messages: [], currentAnswer: undefined})
   }
 
   const Empty = () => (
@@ -290,6 +300,11 @@ export const Chat = () => {
         </Show>
       </Messages>
       <ChatInput onMessage={onInputMessage} />
+      <ChatActions>
+        <Show when={chatState.messages.length > 0}>
+          <Button onClick={onClear}><Icon>clear</Icon> Clear thread</Button>
+        </Show>
+      </ChatActions>
       <Show when={tooltipAnchor() !== undefined}>
         <Tooltip anchor={tooltipAnchor()!} onClose={closeBubbleMenu} backdrop={true}>
           <div onClick={onRemoveMessage}>

@@ -13,7 +13,7 @@ interface TooltipButtonProps {
   onAttachment: (message: ChatInputMessage) => void
 }
 
-export const CurrentFileButton = (props: TooltipButtonProps) => {
+export const SelectionButton = (props: TooltipButtonProps) => {
   const {store, canvasService, fileService} = useState()
 
   const getSelectedFile = (): File | undefined => {
@@ -25,13 +25,16 @@ export const CurrentFileButton = (props: TooltipButtonProps) => {
     }
   }
 
-  const isCodeFile = (): boolean => getSelectedFile()?.code ?? false
+  const hasSelection = (): boolean => !getSelectedFile()?.codeEditorView?.state.selection.main.empty
 
   const onClick = () => {
     const currentFile = getSelectedFile()
     const editorView = currentFile?.codeEditorView
     if (!editorView) return
-    const doc = editorView.state.doc.toString()
+    const doc = editorView.state.sliceDoc(
+      editorView.state.selection.main.from,
+      editorView.state.selection.main.to,
+    )
     let content = '```'
     content += currentFile.codeLang ?? ''
     content += currentFile.path ? ' ' + currentFile.path : ''
@@ -42,23 +45,23 @@ export const CurrentFileButton = (props: TooltipButtonProps) => {
       content,
       attachment: true,
       render: {
-        component: CurrentFile,
+        component: Selection,
         props: {doc, lang: currentFile.codeLang},
       },
     })
   }
 
   return (
-    <Show when={isCodeFile()}>
+    <Show when={hasSelection()}>
       <div onClick={onClick}>
-        <Icon>code_blocks</Icon>
-        Add current file
+        <Icon>text_select_start</Icon>
+        Add selection
       </div>
     </Show>
   )
 }
 
-const CurrentFile = (props: {doc: string; lang?: string}) => {
+export const Selection = (props: {doc: string; lang?: string}) => {
   let editorRef!: HTMLDivElement
   const [editorView, setEditorView] = createSignal<EditorView>()
   const {configService} = useState()
@@ -97,7 +100,7 @@ const CurrentFile = (props: {doc: string; lang?: string}) => {
   return (
     <div>
       <Button onClick={onToggle}>
-        <Icon>code_blocks</Icon> Current File
+        <Icon>text_select_start</Icon> Selection
       </Button>
       <CodeContainer ref={editorRef} />
     </div>

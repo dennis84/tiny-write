@@ -8,6 +8,7 @@ import {Common} from '../Button'
 import {Icon} from '../Icon'
 import {Tooltip} from '../Tooltip'
 import {CurrentFileButton} from './attachments/CurrentFile'
+import {SelectionButton} from './attachments/Selection'
 
 const ChatInputContainer = styled('div')`
   margin-top: 20px;
@@ -152,6 +153,7 @@ export const ChatInput = (props: Props) => {
       <Show when={tooltipAnchor() !== undefined}>
         <Tooltip anchor={tooltipAnchor()!} onClose={() => closeTooltip()} backdrop={true}>
           <CurrentFileButton onAttachment={onAttachment} />
+          <SelectionButton onAttachment={onAttachment} />
         </Tooltip>
       </Show>
     </>
