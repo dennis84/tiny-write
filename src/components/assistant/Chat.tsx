@@ -14,9 +14,9 @@ import {ChatRole} from '@/remote/copilot'
 import {Drawer, Text} from '../menu/Style'
 import {Icon, IconCopilot} from '../Icon'
 import {Button, IconButton} from '../Button'
+import {Tooltip} from '../Tooltip'
 import {ChatInput, ChatInputMessage, RenderMessage} from './ChatInput'
 import {ModelSelect} from './ModelSelect'
-import {Tooltip} from '../Tooltip'
 
 const Messages = styled('div')`
   margin-top: 20px;
@@ -80,8 +80,14 @@ const BubbleMenu = styled('div')`
   right: 5px;
 `
 
-const ChatActions  = styled('div')`
-  margin-top: 20px;
+const ChatActions = styled('div')`
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  > * {
+    margin-right: 5px;
+    margin-bottom: 5px;
+  }
 `
 
 interface Message {
@@ -165,7 +171,7 @@ export const Chat = () => {
 
   const addUserMessage = (input: ChatInputMessage) => {
     if (!input.content) return
-    const html = finalMd.render(input.content)
+    const html = input.attachment ? undefined : finalMd.render(input.content)
     const message: Message = {...input, html, role: 'user'}
     setChatState('messages', (prev) => [...prev, message])
     scrollToBottom()
@@ -173,9 +179,15 @@ export const Chat = () => {
   }
 
   const sendMessages = async () => {
+    const messages = chatState.messages.filter((m) => !m.error)
+    // final must be role user
+    if (messages[messages.length - 1].role !== 'user') {
+      return
+    }
+
     try {
       await copilotService.completions(
-        chatState.messages.filter((m) => !m.error),
+        messages,
         (message: any) => {
           for (const choice of message.choices) {
             const cur = chatState.currentAnswer
@@ -292,7 +304,6 @@ export const Chat = () => {
 
   return (
     <Drawer data-tauri-drag-region="true" ref={drawerRef} width="50vw">
-      <ModelSelect />
       <Messages>
         <For each={chatState.messages} fallback={<Empty />}>
           {(message) => (
@@ -308,8 +319,11 @@ export const Chat = () => {
       <ChatInput onMessage={onInputMessage} />
       <ChatActions>
         <Show when={chatState.messages.length > 0}>
-          <Button onClick={onClear}><Icon>clear</Icon> Clear thread</Button>
+          <Button onClick={onClear}>
+            <Icon>clear</Icon> Clear thread
+          </Button>
         </Show>
+        <ModelSelect />
       </ChatActions>
       <Show when={tooltipAnchor() !== undefined}>
         <Tooltip anchor={tooltipAnchor()!} onClose={closeBubbleMenu} backdrop={true}>

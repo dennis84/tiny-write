@@ -2,7 +2,7 @@ import {SetStoreFunction, Store, unwrap} from 'solid-js/store'
 import {DB} from '@/db'
 import {State} from '@/state'
 import {isTauri} from '@/env'
-import {debug, info} from '@/remote/log'
+import {debug, error, info} from '@/remote/log'
 import {
   ChatMessage,
   CopilotSignIn,
@@ -257,9 +257,14 @@ export class CopilotService {
     let buffer = ''
 
     const parseLine = (s: string) => {
-      const data = s.substring('data: '.length)
-      if (data === '[DONE]') return undefined
-      else return JSON.parse(data)
+      try {
+        const data = s.substring('data: '.length)
+        if (data === '[DONE]') return undefined
+        else return JSON.parse(data)
+      } catch (e) {
+        error(`Failed to parse line (s=${s})`, e)
+        throw e
+      }
     }
 
     while (true) {

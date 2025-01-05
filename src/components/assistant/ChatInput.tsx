@@ -55,6 +55,12 @@ const ChatInputButton = styled('button')`
   }
 `
 
+const MessageEl = styled('div')`
+  > * {
+    margin: 0;
+  }
+`
+
 export interface RenderMessage {
   component?: Component<any>
   props?: any
@@ -90,7 +96,7 @@ export const ChatInput = (props: Props) => {
   }
 
   const Message = ({content, html}: {content: string, html: string}) => {
-    return <div innerHTML={html ?? content} />
+    return <MessageEl innerHTML={html ?? content} />
   }
 
   const onSend = () => {
