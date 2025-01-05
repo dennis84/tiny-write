@@ -100,12 +100,12 @@ export const Menu = () => {
               <Icon>more_vert</Icon>
             </IconButton>
           </Match>
-          <Match when={show() === 'main'}>
+          <Match when={show() === 'main' || show() === 'ai_assistant'}>
             <IconButton onClick={onMenuButtonClick} data-testid="menu_button">
               <Icon>close</Icon>
             </IconButton>
           </Match>
-          <Match when={show() !== undefined && show() !== 'main'}>
+          <Match when={show() !== undefined && show() !== 'main' && show() !== 'ai_assistant'}>
             <Button onClick={() => setShow('main')} data-testid="menu_back_button">
               <Icon>arrow_back</Icon> Back
             </Button>
@@ -130,7 +130,7 @@ export const Menu = () => {
       <Show when={show() === 'ai_config'}>
         <AiConfig />
       </Show>
-      <Show when={show() === 'ai_assistant'}>
+      <Show when={show() === 'ai_assistant' || show() === 'ai_assistant_menu'}>
         <Chat />
       </Show>
       <Show when={show() === 'main'}>
@@ -195,11 +195,11 @@ export const Menu = () => {
           {/* Submenu Ai */}
           <Label>AI</Label>
           <Sub data-tauri-drag-region="true">
-            <Link data-testid="ai_config" onClick={() => setShow('ai_config')}>
+            <Link onClick={() => setShow('ai_config')}>
               <IconAi /> Configure
             </Link>
             <Show when={store.ai?.copilot?.user}>
-              <Link data-testid="ai_assistant" onClick={() => setShow('ai_assistant')}>
+              <Link onClick={() => setShow('ai_assistant_menu')}>
                 <IconAiAssistant /> Assistant
               </Link>
             </Show>
