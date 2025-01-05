@@ -129,11 +129,9 @@ export class AppService {
     const fetchedConfig = await DB.getConfig()
     const files = (await FileService.fetchFiles()) ?? state.files ?? []
     const canvases = (await CanvasService.fetchCanvases()) ?? state.canvases ?? []
-    const meta = await DB.getMeta()
+    const mode = (await DB.getMode()) ?? state.mode ?? Mode.Editor
     const tree = await DB.getTree()
     const ai = await DB.getAi()
-
-    let mode = meta?.mode ?? state.mode ?? Mode.Editor
 
     const config = {
       ...state.config,

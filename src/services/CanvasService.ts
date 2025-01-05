@@ -339,7 +339,7 @@ export class CanvasService {
     }
 
     await this.saveCanvas()
-    await DB.setMeta({mode: state.mode})
+    await DB.setMode(state.mode)
     info('Saved canvas and mode after open')
   }
 

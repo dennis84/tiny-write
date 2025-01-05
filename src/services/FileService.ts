@@ -166,7 +166,7 @@ export class FileService {
     }
 
     const mode = activeFile?.code ? Mode.Code : Mode.Editor
-    await DB.setMeta({mode})
+    await DB.setMode(mode)
 
     return {
       ...state,

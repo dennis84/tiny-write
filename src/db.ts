@@ -66,7 +66,7 @@ interface MyDB extends DBSchema {
   }
   meta: {
     key: string
-    value: Meta
+    value: unknown
   }
   tree: {
     key: string
@@ -119,12 +119,12 @@ export class DB {
     return (await dbPromise).get('window', 'main')
   }
 
-  static async setMeta(meta: Meta) {
-    return (await dbPromise).put('meta', meta, 'main')
+  static async setMode(mode: Mode) {
+    return (await dbPromise).put('meta', mode, 'mode')
   }
 
-  static async getMeta() {
-    return (await dbPromise).get('meta', 'main')
+  static async getMode(): Promise<Mode> {
+    return (await dbPromise).get('meta', 'mode') as Promise<Mode>
   }
 
   static async setTree(tree: Tree) {
