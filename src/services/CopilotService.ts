@@ -66,7 +66,8 @@ export class CopilotService {
 
   updateStatus(status: CopilotStatus) {
     info(`Set github status (status=${JSON.stringify(status)})`)
-    this.setState('ai', 'copilot', (prev) => ({...prev, ...status}))
+    const copilot = this.store.ai?.copilot
+    this.setState('ai', {copilot: {...copilot, ...status}})
     const ai = unwrap(this.store.ai)
     if (ai) DB.setAi(ai)
   }
