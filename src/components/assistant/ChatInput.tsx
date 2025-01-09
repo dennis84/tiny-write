@@ -1,4 +1,4 @@
-import {Component, createSignal, onMount, Show} from 'solid-js'
+import {createSignal, onMount, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {EditorView, keymap, placeholder} from '@codemirror/view'
 import {defaultKeymap} from '@codemirror/commands'
@@ -55,21 +55,9 @@ const ChatInputButton = styled('button')`
   }
 `
 
-const MessageEl = styled('div')`
-  > * {
-    margin: 0;
-  }
-`
-
-export interface RenderMessage {
-  component?: Component<any>
-  props?: any
-}
-
 export interface ChatInputMessage {
   content: string
   attachment: boolean
-  render: RenderMessage
 }
 
 interface Props {
@@ -95,22 +83,11 @@ export const ChatInput = (props: Props) => {
     closeTooltip()
   }
 
-  const Message = ({content, html}: {content: string, html: string}) => {
-    return <MessageEl innerHTML={html ?? content} />
-  }
-
   const onSend = () => {
     const view = editorView()
     if (!view) return
     const content = view.state.doc.toString().trim()
-    props.onMessage({
-      content,
-      attachment: false,
-      render: {
-        component: Message,
-        props: {content},
-      },
-    })
+    props.onMessage({content, attachment: false})
 
     view.dispatch({
       changes: {from: 0, to: content.length, insert: ''},

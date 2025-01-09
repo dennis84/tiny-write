@@ -227,6 +227,22 @@ export interface Tree {
   collapsed: string[]
 }
 
+export type ChatRole = 'user' | 'assistant' | 'system'
+
+export interface Message {
+  content: string
+  html?: string
+  role: ChatRole
+  error?: string
+}
+
+export interface Thread {
+  id: string
+  lastModified?: Date
+  messages: Message[]
+  active: boolean
+}
+
 export interface State {
   canvases: Canvas[]
   files: File[]
@@ -244,6 +260,7 @@ export interface State {
   moving?: boolean
   lastTr?: number
   ai?: AiConfig
+  threads: Thread[]
 }
 
 export type FileText = Record<string, any>
@@ -284,6 +301,7 @@ export const createState = (props: Partial<State> = {}): State => ({
   mode: Mode.Editor,
   loading: 'loading',
   fullscreen: false,
+  threads: [],
   config: {
     fontSize: 14,
     contentWidth: 600,

@@ -132,6 +132,7 @@ export class AppService {
     const mode = (await DB.getMode()) ?? state.mode ?? Mode.Editor
     const tree = await DB.getTree()
     const ai = await DB.getAi()
+    const threads = await DB.getThreads()
 
     const config = {
       ...state.config,
@@ -149,6 +150,7 @@ export class AppService {
       mode,
       tree,
       ai,
+      threads,
     }
   }
 

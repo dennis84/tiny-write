@@ -12,6 +12,7 @@
         "caughtErrorsIgnorePattern": "^_",
         "varsIgnorePattern": "^_"
       }
-    ]
+    ],
+    "eslint/no-console": ["error", {"allow": ["debug", "info", "warn", "error"]}]
   }
 }

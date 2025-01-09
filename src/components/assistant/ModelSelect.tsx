@@ -25,12 +25,17 @@ const SelectModel = styled('div')`
   }
 `
 
-export const ModelSelect = () => {
+interface Props {
+  onChange: () => void
+}
+
+export const ModelSelect = (props: Props) => {
   const {store, copilotService} = useState()
   const [models, setModels] = createSignal<string[]>()
 
   const onModelChange = (e: Event) => {
     copilotService.setChatModel((e.target as HTMLSelectElement).value)
+    props.onChange()
   }
 
   onMount(async () => {

@@ -1,6 +1,7 @@
 import {Channel, invoke} from '@tauri-apps/api/core'
 import {timeout} from '@/utils/promise'
 import {Model} from '@/services/CopilotService'
+import {Message} from '@/state'
 
 export const startLanguageServer = async (): Promise<void> => {
   await Promise.race([invoke('copilot_start_language_server'), timeout(5000)])
@@ -35,16 +36,9 @@ export const copilotCompletion = async (
 
 type ChatEvent = string
 
-export type ChatRole = 'user' | 'assistant' | 'system'
-
-export interface ChatMessage {
-  role: ChatRole
-  content: string
-}
-
 export const sendChatMessage = async (
   model: Model,
-  messages: ChatMessage[],
+  messages: Message[],
   onEvent: Channel<ChatEvent>,
 ) => {
   await invoke('copilot_chat_completions', {model, messages, onEvent})

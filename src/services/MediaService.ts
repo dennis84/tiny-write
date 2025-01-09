@@ -54,26 +54,18 @@ export class MediaService {
     const isVideo = mime.startsWith('video/')
     const isMarkdown = mime.startsWith('text/markdown')
 
-    console.log({mime})
     const basePath = await this.appService.getBasePath()
-    console.log({basePath})
     const relativePath = await toRelativePath(path, basePath)
-    console.log({relativePath})
-    console.log(this.store.mode)
 
     if (this.store.mode === Mode.Editor) {
       if (isImage || isVideo) {
-        console.log('aaa')
         const currentFile = this.fileService.currentFile
         if (!currentFile?.editorView) return
         this.insert(currentFile.editorView, relativePath, x, y, mime)
         return
       } else {
-        console.log('findFileByPath')
         let file = await this.fileService.findFileByPath(path)
-        console.log({file})
         if (!file) file = await this.fileService.newFile({path, code: !isMarkdown})
-        console.log({file})
         return {file}
       }
     } else if (this.store.mode === Mode.Canvas) {

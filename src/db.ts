@@ -1,6 +1,6 @@
 import {DBSchema, openDB} from 'idb'
 import {differenceInDays} from 'date-fns'
-import {AiConfig, Camera, Config, ElementType, Mode, Window} from '@/state'
+import {AiConfig, Camera, Config, ElementType, Mode, Thread, Window} from '@/state'
 import {info} from './remote/log'
 
 export interface PersistedVersion {
@@ -39,10 +39,6 @@ export interface PersistedCanvas {
   deleted?: boolean
 }
 
-interface Meta {
-  mode: Mode
-}
-
 interface Tree {
   collapsed: string[]
 }
@@ -76,6 +72,10 @@ interface MyDB extends DBSchema {
     key: string
     value: AiConfig
   }
+  threads: {
+    key: string
+    value: Thread
+  }
 }
 
 const DB_NAME = 'tiny_write'
@@ -98,6 +98,10 @@ const dbPromise = openDB<MyDB>(DB_NAME, 2, {
 
     if (!db.objectStoreNames.contains('ai')) {
       db.createObjectStore('ai')
+    }
+
+    if (!db.objectStoreNames.contains('threads')) {
+      db.createObjectStore('threads', {keyPath: 'id'})
     }
   },
 })
@@ -181,6 +185,26 @@ export class DB {
   static async deleteCanvas(id: string) {
     const db = await dbPromise
     return db.delete('canvases', id)
+  }
+
+  static async getThreads() {
+    return (await dbPromise).getAll('threads')
+  }
+
+  static async updateThread(thread: Thread) {
+    const db = await dbPromise
+    const existing = await db.get('threads', thread.id)
+    if (existing) {
+      await db.put('threads', thread)
+      return
+    }
+
+    await db.add('threads', thread)
+  }
+
+  static async deleteThread(id: string) {
+    const db = await dbPromise
+    return db.delete('threads', id)
   }
 
   static async cleanup() {

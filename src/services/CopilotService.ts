@@ -1,10 +1,10 @@
 import {SetStoreFunction, Store, unwrap} from 'solid-js/store'
+import {Channel} from '@tauri-apps/api/core'
 import {DB} from '@/db'
-import {State} from '@/state'
+import {Message, State} from '@/state'
 import {isTauri} from '@/env'
 import {debug, error, info} from '@/remote/log'
 import {
-  ChatMessage,
   CopilotSignIn,
   copilotSignIn,
   CopilotStatus,
@@ -14,10 +14,9 @@ import {
   sendChatMessage,
 } from '@/remote/copilot'
 import {open} from '@/remote/app'
-import { Channel } from '@tauri-apps/api/core'
 
 interface ApiTokenEndpoints {
-  api: String
+  api: string
 }
 
 interface ApiTokenResponse {
@@ -32,7 +31,7 @@ interface CompletionsRequest {
   stream: boolean
   temperature: number
   model: string
-  messages: ChatMessage[]
+  messages: Message[]
 }
 
 export interface Model {
@@ -186,7 +185,7 @@ export class CopilotService {
   }
 
   async completions(
-    messages: ChatMessage[],
+    messages: Message[],
     onChunk: (chunk: any) => void,
     onDone: () => void,
   ): Promise<void> {
@@ -307,7 +306,7 @@ export class CopilotService {
     return model!
   }
 
-  private createRequest(model: Model, messages: ChatMessage[]): CompletionsRequest {
+  private createRequest(model: Model, messages: Message[]): CompletionsRequest {
     return {
       intent: true,
       n: 1,

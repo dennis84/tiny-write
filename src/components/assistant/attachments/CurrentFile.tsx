@@ -1,19 +1,13 @@
-import {createSignal, Show} from 'solid-js'
-import {styled} from 'solid-styled-components'
-import {EditorState} from '@codemirror/state'
-import {EditorView} from '@codemirror/view'
+import {Show} from 'solid-js'
 import {File, Mode, useState} from '@/state'
-import {getLanguageConfig} from '@/codemirror/highlight'
-import {getTheme} from '@/codemirror/theme'
-import {Button} from '@/components/Button'
 import {Icon} from '@/components/Icon'
 import {ChatInputMessage} from '../ChatInput'
 
-interface TooltipButtonProps {
+interface Props {
   onAttachment: (message: ChatInputMessage) => void
 }
 
-export const CurrentFileButton = (props: TooltipButtonProps) => {
+export const CurrentFileButton = (props: Props) => {
   const {store, canvasService, fileService} = useState()
 
   const getSelectedFile = (): File | undefined => {
@@ -32,19 +26,18 @@ export const CurrentFileButton = (props: TooltipButtonProps) => {
     const editorView = currentFile?.codeEditorView
     if (!editorView) return
     const doc = editorView.state.doc.toString()
-    let content = '```'
+    let content = ''
+    content += '::: details Current File\n'
+    content += '```'
     content += currentFile.codeLang ?? ''
     content += currentFile.path ? ' ' + currentFile.path : ''
     content += '\n'
     content += doc
-    content += '\n```'
+    content += '\n```\n'
+    content += ':::'
     props.onAttachment({
       content,
       attachment: true,
-      render: {
-        component: CurrentFile,
-        props: {doc, lang: currentFile.codeLang},
-      },
     })
   }
 
@@ -55,51 +48,5 @@ export const CurrentFileButton = (props: TooltipButtonProps) => {
         Add current file
       </div>
     </Show>
-  )
-}
-
-const CurrentFile = (props: {doc: string; lang?: string}) => {
-  let editorRef!: HTMLDivElement
-  const [editorView, setEditorView] = createSignal<EditorView>()
-  const {configService} = useState()
-
-  const CodeContainer = styled('div')`
-    .cm-editor {
-      margin-top: 10px;
-    }
-  `
-
-  const onToggle = () => {
-    if (editorView()) {
-      editorView()?.destroy()
-      setEditorView(undefined)
-      return
-    }
-
-    const theme = getTheme(configService.codeTheme.value)
-    const lang = getLanguageConfig(props.lang ?? '')
-
-    const view = new EditorView({
-      parent: editorRef,
-      doc: props.doc,
-      extensions: [
-        EditorView.editable.of(false),
-        EditorState.readOnly.of(true),
-        EditorView.lineWrapping,
-        theme,
-        lang.highlight(),
-      ],
-    })
-
-    setEditorView(view)
-  }
-
-  return (
-    <div>
-      <Button onClick={onToggle}>
-        <Icon>code_blocks</Icon> Current File
-      </Button>
-      <CodeContainer ref={editorRef} />
-    </div>
   )
 }

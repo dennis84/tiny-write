@@ -18,6 +18,7 @@ import {PrettierService} from './PrettierService'
 import {DeleteService} from './DeleteService'
 import {ProseMirrorService} from './ProseMirrorService'
 import {CopilotService} from './CopilotService'
+import {ThreadService} from './ThreadService'
 
 export const createCtrl = (initial: State) => {
   const [store, setState] = createStore<Store<State>>(initial)
@@ -72,6 +73,8 @@ export const createCtrl = (initial: State) => {
     store,
   )
 
+  const threadService = new ThreadService(store, setState)
+
   return {
     store,
     collabService,
@@ -91,6 +94,7 @@ export const createCtrl = (initial: State) => {
     canvasCollabService,
     mediaService,
     copilotService,
+    threadService,
   }
 }
 
