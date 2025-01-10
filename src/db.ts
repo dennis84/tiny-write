@@ -81,7 +81,7 @@ interface MyDB extends DBSchema {
 const DB_NAME = 'tiny_write'
 
 // Increment version and add new scheme:
-const dbPromise = openDB<MyDB>(DB_NAME, 2, {
+const dbPromise = openDB<MyDB>(DB_NAME, 3, {
   upgrade(db: any, oldVersion, newVersion) {
     if (!newVersion) return
 
