@@ -7,34 +7,51 @@ interface Props {
   onAttachment: (message: ChatInputMessage) => void
 }
 
-export const CurrentFileButton = (props: Props) => {
+export const useCurrentFile = (): File | undefined => {
   const {store, canvasService, fileService} = useState()
-
-  const getSelectedFile = (): File | undefined => {
-    if (store.mode === Mode.Code) return fileService.currentFile
-    if (store.mode === Mode.Canvas) {
-      const elementId = canvasService.currentCanvas?.elements.find((el) => el.selected)?.id
-      if (!elementId) return
-      return fileService.findFileById(elementId)
-    }
+  if (store.mode === Mode.Code) return fileService.currentFile
+  if (store.mode === Mode.Canvas) {
+    const elementId = canvasService.currentCanvas?.elements.find((el) => el.selected)?.id
+    if (!elementId) return
+    return fileService.findFileById(elementId)
   }
+}
 
-  const isCodeFile = (): boolean => getSelectedFile()?.code ?? false
+interface CodeDetails {
+  code: string
+  title: string
+  lang?: string
+  path?: string
+}
+
+export const createCodeDetails = (props: CodeDetails) => {
+  let content = ''
+  content += `::: details ${props.title}\n`
+  content += '```'
+  content += props.lang ?? ''
+  content += props.path ? ' ' + props.path : ''
+  content += '\n'
+  content += props.code
+  content += '\n```\n'
+  content += ':::'
+  return content
+}
+
+export const CurrentFileButton = (props: Props) => {
+  const currentFile = useCurrentFile()
+
+  const isCodeFile = (): boolean => currentFile?.code ?? false
 
   const onClick = () => {
-    const currentFile = getSelectedFile()
     const editorView = currentFile?.codeEditorView
     if (!editorView) return
-    const doc = editorView.state.doc.toString()
-    let content = ''
-    content += '::: details Current File\n'
-    content += '```'
-    content += currentFile.codeLang ?? ''
-    content += currentFile.path ? ' ' + currentFile.path : ''
-    content += '\n'
-    content += doc
-    content += '\n```\n'
-    content += ':::'
+    const content = createCodeDetails({
+      title: 'Current File',
+      code: editorView.state.doc.toString(),
+      lang: currentFile.codeLang,
+      path: currentFile.path,
+    })
+
     props.onAttachment({
       content,
       attachment: true,

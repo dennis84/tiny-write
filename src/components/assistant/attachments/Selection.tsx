@@ -1,42 +1,34 @@
 import {createEffect, createSignal, Show} from 'solid-js'
-import {File, Mode, useState} from '@/state'
+import {useState} from '@/state'
 import {Icon} from '@/components/Icon'
 import {ChatInputMessage} from '../ChatInput'
+import {createCodeDetails, useCurrentFile} from './CurrentFile'
 
 interface Props {
   onAttachment: (message: ChatInputMessage) => void
 }
 
 export const SelectionButton = (props: Props) => {
-  const {store, canvasService, fileService} = useState()
+  const {store} = useState()
   const [show, setShow] = createSignal(false)
-
-  const getSelectedFile = (): File | undefined => {
-    if (store.mode === Mode.Code) return fileService.currentFile
-    if (store.mode === Mode.Canvas) {
-      const elementId = canvasService.currentCanvas?.elements.find((el) => el.selected)?.id
-      if (!elementId) return
-      return fileService.findFileById(elementId)
-    }
-  }
+  const currentFile = useCurrentFile()
 
   const onClick = () => {
-    const currentFile = getSelectedFile()
     const editorView = currentFile?.codeEditorView
     if (!editorView) return
-    const doc = editorView.state.sliceDoc(
+
+    const code = editorView.state.sliceDoc(
       editorView.state.selection.main.from,
       editorView.state.selection.main.to,
     )
-    let content = ''
-    content += '::: details Selection\n'
-    content += '```'
-    content += currentFile.codeLang ?? ''
-    content += currentFile.path ? ' ' + currentFile.path : ''
-    content += '\n'
-    content += doc
-    content += '\n```\n'
-    content += ':::'
+
+    const content = createCodeDetails({
+      title: 'Selection',
+      code,
+      lang: currentFile.codeLang,
+      path: currentFile.path,
+    })
+
     props.onAttachment({
       content,
       attachment: true,
@@ -45,7 +37,7 @@ export const SelectionButton = (props: Props) => {
 
   createEffect(() => {
     store.lastTr
-    const editorView = getSelectedFile()?.codeEditorView
+    const editorView = currentFile?.codeEditorView
     if (!editorView) return false
     setShow(!editorView.state.selection.main.empty)
   })
