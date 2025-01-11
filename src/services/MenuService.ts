@@ -1,21 +1,30 @@
 import {createSignal} from 'solid-js'
 
 export class MenuService {
-  private currentSignal = createSignal<string>()
+  private menuSignal = createSignal<string>()
+  private assistantSignal = createSignal<boolean>()
 
-  get current() {
-    return this.currentSignal[0]
+  get menu() {
+    return this.menuSignal[0]
+  }
+
+  get assistant() {
+    return this.assistantSignal[0]
   }
 
   show(menu: string) {
-    this.currentSignal[1](menu)
+    this.menuSignal[1](menu)
   }
 
   toggleMenu() {
-    this.currentSignal[1](this.current() ? undefined : 'main')
+    this.menuSignal[1](this.menu() ? undefined : 'main')
   }
 
   hide() {
-    this.currentSignal[1](undefined)
+    this.menuSignal[1](undefined)
+  }
+
+  toggleAssistant() {
+    this.assistantSignal[1](!this.assistant())
   }
 }

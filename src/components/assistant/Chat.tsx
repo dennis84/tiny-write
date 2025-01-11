@@ -1,7 +1,8 @@
 import {createSignal, For, onMount, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {Message, useState} from '@/state'
-import {Drawer, itemCss, Text} from '../menu/Style'
+import {isTauri} from '@/env'
+import {fullWidth, itemCss, Text} from '../menu/Style'
 import {Icon} from '../Icon'
 import {Button} from '../Button'
 import {ChatInput, ChatInputMessage} from './ChatInput'
@@ -10,6 +11,22 @@ import {Threads} from './Threads'
 import {ChatMessage} from './ChatMessage'
 import {CurrentFileButton} from './attachments/CurrentFile'
 import {SelectionButton} from './attachments/Selection'
+
+const Drawer = styled('div')`
+  background: var(--foreground-5);
+  padding: 20px;
+  height: 100%;
+  width: 50vw;
+  overflow-y: auto;
+  scrollbar-width: none;
+  @media (max-width: ${fullWidth.toString()}px) {
+    width: 100vw;
+    ${isTauri() ? 'padding-top: 40px' : ''}
+  }
+  &::-webkit-scrollbar {
+    display: none;
+  }
+`
 
 const EmptyContainer = styled('div')`
   width: 100%;
@@ -50,7 +67,7 @@ interface CurrentAnswer extends Message {
 }
 
 export const Chat = () => {
-  let drawerRef!: HTMLElement
+  let drawerRef!: HTMLDivElement
 
   const {copilotService, threadService} = useState()
   const [currentAnswer, setCurrentAnswer] = createSignal<CurrentAnswer>()
@@ -144,7 +161,7 @@ export const Chat = () => {
   )
 
   return (
-    <Drawer data-tauri-drag-region="true" ref={drawerRef} width="50vw">
+    <Drawer data-tauri-drag-region="true" ref={drawerRef}>
       <Messages>
         <For each={threadService.currentThread?.messages} fallback={<Empty />}>
           {(message) => <ChatMessage message={message} />}

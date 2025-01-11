@@ -72,7 +72,7 @@ export const Menu = () => {
   }
 
   createEffect(() => {
-    if (!menuService.current()) return
+    if (!menuService.menu()) return
     document.addEventListener('keydown', onKeyDown)
   })
 
@@ -87,65 +87,50 @@ export const Menu = () => {
 
   return (
     <Container>
-      <Control active={menuService.current() !== undefined}>
-        <Show when={store.ai?.copilot?.user && menuService.current() === undefined}>
-          <IconButton onClick={() => menuService.show('ai_assistant')}>
+      <Control active={menuService.menu() !== undefined || menuService.assistant() !== undefined}>
+        <Show when={store.ai?.copilot?.user}>
+          <IconButton onClick={() => menuService.toggleAssistant()}>
             <IconAiAssistant />
           </IconButton>
         </Show>
-        <Show when={store.ai?.copilot?.user && menuService.current() === 'main'}>
-          <IconButton onClick={() => menuService.show('ai_assistant_menu')}>
-            <IconAiAssistant />
-          </IconButton>
-        </Show>
-        <Show when={menuService.current() === undefined}>
+        <Show when={menuService.menu() === undefined}>
           <IconButton onClick={onMenuButtonClick} data-testid="menu_button">
             <Icon>more_vert</Icon>
           </IconButton>
         </Show>
-        <Show when={menuService.current() === 'main' || menuService.current() === 'ai_assistant'}>
+        <Show when={menuService.menu() === 'main'}>
           <IconButton onClick={onMenuButtonClick} data-testid="menu_button">
             <Icon>close</Icon>
           </IconButton>
         </Show>
-        <Show
-          when={
-            menuService.current() !== undefined &&
-            menuService.current() !== 'main' &&
-            menuService.current() !== 'ai_assistant'
-          }
-        >
+        <Show when={menuService.menu() !== undefined && menuService.menu() !== 'main'}>
           <Button onClick={() => menuService.show('main')} data-testid="menu_back_button">
             <Icon>arrow_back</Icon> Back
           </Button>
         </Show>
       </Control>
-      <Show when={menuService.current() === 'bin'}>
+      <Show when={menuService.menu() === 'bin'}>
         <Bin />
       </Show>
-      <Show when={menuService.current() === 'code_format'}>
+      <Show when={menuService.menu() === 'code_format'}>
         <CodeFormat />
       </Show>
-      <Show when={menuService.current() === 'theme'}>
+      <Show when={menuService.menu() === 'theme'}>
         <Appearance />
       </Show>
-      <Show when={menuService.current() === 'help'}>
+      <Show when={menuService.menu() === 'help'}>
         <Help />
       </Show>
-      <Show when={menuService.current() === 'change_set'}>
+      <Show when={menuService.menu() === 'change_set'}>
         <ChangeSet />
       </Show>
-      <Show when={menuService.current() === 'ai_config'}>
+      <Show when={menuService.menu() === 'ai_config'}>
         <AiConfig />
       </Show>
-      <Show
-        when={
-          menuService.current() === 'ai_assistant' || menuService.current() === 'ai_assistant_menu'
-        }
-      >
+      <Show when={menuService.assistant()}>
         <Chat />
       </Show>
-      <Show when={menuService.current() === 'main'}>
+      <Show when={menuService.menu() === 'main'}>
         <Drawer
           onClick={() => fileService.currentFile?.editorView?.focus()}
           data-tauri-drag-region="true"
@@ -211,7 +196,7 @@ export const Menu = () => {
               <IconAi /> Configure
             </Link>
             <Show when={store.ai?.copilot?.user}>
-              <Link onClick={() => menuService.show('ai_assistant_menu')}>
+              <Link onClick={() => menuService.toggleAssistant()}>
                 <IconAiAssistant /> Assistant
               </Link>
             </Show>

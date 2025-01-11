@@ -5,9 +5,11 @@ export const fullWidth = 500
 
 export const Container = styled('div')`
   position: relative;
+  display: flex;
   flex-shrink: 0;
   flex-grow: 1;
   height: 100%;
+  max-width: 50vw;
   font-family: var(--menu-font-family);
   background: var(--background);
   @media print {
