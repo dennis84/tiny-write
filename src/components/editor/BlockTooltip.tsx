@@ -9,8 +9,8 @@ import {languages} from '@/codemirror/highlight'
 import {useOpen} from '@/open'
 import {createCodeDetails} from '@/components/assistant/attachments/CurrentFile'
 import {Icon, IconAiAssistant, IconFloatCenter} from '../Icon'
-import {Block} from './BlockHandle'
 import {Tooltip} from '../Tooltip'
+import {Block} from './BlockHandle'
 
 interface Props {
   selectedBlock?: Block
@@ -118,7 +118,7 @@ export const BlockTooltip = (props: Props) => {
     const block = props.selectedBlock
     if (!block) return
 
-    menuService.show('ai_assistant')
+    menuService.showAssistant()
     threadService.addMessage({
       role: 'user',
       content: createCodeDetails({

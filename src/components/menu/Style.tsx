@@ -15,6 +15,9 @@ export const Container = styled('div')`
   @media print {
     display: none;
   }
+  @media (max-width: ${fullWidth.toString()}px) {
+    max-width: 100vw;
+  }
 `
 
 // prettier-ignore

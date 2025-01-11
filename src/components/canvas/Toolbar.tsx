@@ -5,7 +5,8 @@ import {arrow, computePosition, flip, offset, shift} from '@floating-ui/dom'
 import {CanvasBoxElement, CanvasElement, isCodeElement, isEditorElement, useState} from '@/state'
 import {useOpen} from '@/open'
 import {languages} from '@/codemirror/highlight'
-import {Icon, IconPrettier} from '../Icon'
+import {Icon, IconAiAssistant, IconPrettier} from '../Icon'
+import { createCodeDetails } from '../assistant/attachments/CurrentFile'
 
 const Container = styled('div')`
   position: absolute;
@@ -55,7 +56,8 @@ export const Toolbar = () => {
   let tooltipRef!: HTMLDivElement
   let arrowRef: HTMLSpanElement | undefined
 
-  const {store, appService, canvasService, codeService, fileService} = useState()
+  const {store, appService, canvasService, codeService, fileService, menuService, threadService} =
+    useState()
   const [ugly, setUgly] = createSignal(false)
   const [collides, setCollides] = createSignal(false)
   const {open} = useOpen()
@@ -92,6 +94,24 @@ export const Toolbar = () => {
     if (!selected) return
     const box = canvasService.createBox(selected.element)
     canvasService.backToContent(box.center, currentCanvas.camera.zoom)
+  }
+
+  const onCopilot = () => {
+    const selected = getSelected()
+    if (!selected) return
+    const file = fileService.findFileById(selected.element.id)
+    if (!file?.codeEditorView) return
+
+    menuService.showAssistant()
+    threadService.addMessage({
+      role: 'user',
+      content: createCodeDetails({
+        title: 'Code File',
+        code: file.codeEditorView.state.doc.toString(),
+        lang: file.codeLang,
+        path: file.path,
+      }),
+    })
   }
 
   const getSelected = () => {
@@ -219,6 +239,11 @@ export const Toolbar = () => {
               <Show when={ugly()}>
                 <Item onClick={() => prettify(selected().element)}>
                   <IconPrettier /> Prettify
+                </Item>
+              </Show>
+              <Show when={store.ai?.copilot?.user}>
+                <Item onClick={onCopilot}>
+                  <IconAiAssistant /> Ask Copilot
                 </Item>
               </Show>
             </Show>

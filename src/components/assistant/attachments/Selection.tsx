@@ -14,7 +14,7 @@ export const SelectionButton = (props: Props) => {
   const currentFile = useCurrentFile()
 
   const onClick = () => {
-    const editorView = currentFile?.codeEditorView
+    const editorView = currentFile()?.codeEditorView
     if (!editorView) return
 
     const code = editorView.state.sliceDoc(
@@ -25,8 +25,8 @@ export const SelectionButton = (props: Props) => {
     const content = createCodeDetails({
       title: 'Selection',
       code,
-      lang: currentFile.codeLang,
-      path: currentFile.path,
+      lang: currentFile()?.codeLang,
+      path: currentFile()?.path,
     })
 
     props.onAttachment({
@@ -37,7 +37,7 @@ export const SelectionButton = (props: Props) => {
 
   createEffect(() => {
     store.lastTr
-    const editorView = currentFile?.codeEditorView
+    const editorView = currentFile()?.codeEditorView
     if (!editorView) return false
     setShow(!editorView.state.selection.main.empty)
   })

@@ -1,7 +1,17 @@
 import {createSignal} from 'solid-js'
 
+export enum MenuId {
+  MAIN = 'main',
+  BIN = 'bin',
+  CODE_FORMAT = 'code_format',
+  APPEARANCE = 'appearance',
+  HELP = 'help',
+  CHANGE_SET = 'change_set',
+  AI_CONFIG = 'ai_config',
+}
+
 export class MenuService {
-  private menuSignal = createSignal<string>()
+  private menuSignal = createSignal<MenuId>()
   private assistantSignal = createSignal<boolean>()
 
   get menu() {
@@ -12,16 +22,20 @@ export class MenuService {
     return this.assistantSignal[0]
   }
 
-  show(menu: string) {
+  show(menu: MenuId) {
     this.menuSignal[1](menu)
   }
 
   toggleMenu() {
-    this.menuSignal[1](this.menu() ? undefined : 'main')
+    this.menuSignal[1](this.menu() ? undefined : MenuId.MAIN)
   }
 
   hide() {
     this.menuSignal[1](undefined)
+  }
+
+  showAssistant() {
+    this.assistantSignal[1](true)
   }
 
   toggleAssistant() {
