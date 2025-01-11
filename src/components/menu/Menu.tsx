@@ -1,4 +1,4 @@
-import {Match, Show, Switch, createEffect, createSignal, onCleanup} from 'solid-js'
+import {Show, createEffect, createSignal, onCleanup} from 'solid-js'
 import {Mode, useState} from '@/state'
 import {isTauri, isMac, mod, shortHash, version, VERSION_URL, isDev} from '@/env'
 import {quit} from '@/remote/app'
@@ -89,28 +89,31 @@ export const Menu = () => {
   return (
     <Container>
       <Control active={show() !== undefined}>
-        <Switch>
-          <Match when={show() === undefined}>
-            <Show when={store.ai?.copilot?.user}>
-              <IconButton onClick={() => setShow('ai_assistant')}>
-                <IconAiAssistant />
-              </IconButton>
-            </Show>
-            <IconButton onClick={onMenuButtonClick} data-testid="menu_button">
-              <Icon>more_vert</Icon>
-            </IconButton>
-          </Match>
-          <Match when={show() === 'main' || show() === 'ai_assistant'}>
-            <IconButton onClick={onMenuButtonClick} data-testid="menu_button">
-              <Icon>close</Icon>
-            </IconButton>
-          </Match>
-          <Match when={show() !== undefined && show() !== 'main' && show() !== 'ai_assistant'}>
-            <Button onClick={() => setShow('main')} data-testid="menu_back_button">
-              <Icon>arrow_back</Icon> Back
-            </Button>
-          </Match>
-        </Switch>
+        <Show when={store.ai?.copilot?.user && show() === undefined}>
+          <IconButton onClick={() => setShow('ai_assistant')}>
+            <IconAiAssistant />
+          </IconButton>
+        </Show>
+        <Show when={store.ai?.copilot?.user && show() === 'main'}>
+          <IconButton onClick={() => setShow('ai_assistant_menu')}>
+            <IconAiAssistant />
+          </IconButton>
+        </Show>
+        <Show when={show() === undefined}>
+          <IconButton onClick={onMenuButtonClick} data-testid="menu_button">
+            <Icon>more_vert</Icon>
+          </IconButton>
+        </Show>
+        <Show when={show() === 'main' || show() === 'ai_assistant'}>
+          <IconButton onClick={onMenuButtonClick} data-testid="menu_button">
+            <Icon>close</Icon>
+          </IconButton>
+        </Show>
+        <Show when={show() !== undefined && show() !== 'main' && show() !== 'ai_assistant'}>
+          <Button onClick={() => setShow('main')} data-testid="menu_back_button">
+            <Icon>arrow_back</Icon> Back
+          </Button>
+        </Show>
       </Control>
       <Show when={show() === 'bin'}>
         <Bin />

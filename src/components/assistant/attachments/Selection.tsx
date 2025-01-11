@@ -1,4 +1,4 @@
-import {Show} from 'solid-js'
+import {createEffect, createSignal, Show} from 'solid-js'
 import {File, Mode, useState} from '@/state'
 import {Icon} from '@/components/Icon'
 import {ChatInputMessage} from '../ChatInput'
@@ -9,6 +9,7 @@ interface Props {
 
 export const SelectionButton = (props: Props) => {
   const {store, canvasService, fileService} = useState()
+  const [show, setShow] = createSignal(false)
 
   const getSelectedFile = (): File | undefined => {
     if (store.mode === Mode.Code) return fileService.currentFile
@@ -18,8 +19,6 @@ export const SelectionButton = (props: Props) => {
       return fileService.findFileById(elementId)
     }
   }
-
-  const hasSelection = (): boolean => !getSelectedFile()?.codeEditorView?.state.selection.main.empty
 
   const onClick = () => {
     const currentFile = getSelectedFile()
@@ -44,8 +43,15 @@ export const SelectionButton = (props: Props) => {
     })
   }
 
+  createEffect(() => {
+    store.lastTr
+    const editorView = getSelectedFile()?.codeEditorView
+    if (!editorView) return false
+    setShow(!editorView.state.selection.main.empty)
+  })
+
   return (
-    <Show when={hasSelection()}>
+    <Show when={show()}>
       <div onClick={onClick}>
         <Icon>text_select_start</Icon>
         Add selection

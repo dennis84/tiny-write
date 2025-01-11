@@ -1,13 +1,31 @@
 import {createSignal, For, onMount, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {Message, useState} from '@/state'
-import {Drawer, Text} from '../menu/Style'
+import {Drawer, itemCss, Text} from '../menu/Style'
 import {Icon} from '../Icon'
 import {Button} from '../Button'
 import {ChatInput, ChatInputMessage} from './ChatInput'
 import {ModelSelect} from './ModelSelect'
 import {Threads} from './Threads'
 import {ChatMessage} from './ChatMessage'
+import {CurrentFileButton} from './attachments/CurrentFile'
+import {SelectionButton} from './attachments/Selection'
+
+const EmptyContainer = styled('div')`
+  width: 100%;
+  p {
+    margin-bottom: 10px;
+  }
+  div {
+    ${itemCss}
+    cursor: var(--cursor-pointer);
+    &:hover {
+      color: var(--primary-background);
+      background: var(--foreground-10);
+      border-radius: var(--border-radius);
+    }
+  }
+`
 
 const Messages = styled('div')`
   margin-top: 20px;
@@ -118,9 +136,11 @@ export const Chat = () => {
   })
 
   const Empty = () => (
-    <>
-      <Text>Ask Copilot a question ...</Text>
-    </>
+    <EmptyContainer>
+      <Text>Add to context:</Text>
+      <CurrentFileButton onAttachment={onInputMessage} />
+      <SelectionButton onAttachment={onInputMessage} />
+    </EmptyContainer>
   )
 
   return (
@@ -145,9 +165,7 @@ export const Chat = () => {
             <Icon>add</Icon> New thread
           </Button>
         </Show>
-        <Show when={threadService.currentThread && threadService.isThreadEmpty(threadService.currentThread)}>
-          <Threads onChange={() => focusInput()} />
-        </Show>
+        <Threads onChange={() => focusInput()} />
         <ModelSelect onChange={() => focusInput()} />
       </ChatActions>
     </Drawer>

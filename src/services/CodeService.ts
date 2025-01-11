@@ -172,6 +172,7 @@ export class CodeService {
     this.fileService.updateFile(file.id, {
       lastModified: new Date(),
     })
+    this.setState('lastTr', Date.now())
 
     await this.saveEditor(file, update)
   }
