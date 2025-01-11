@@ -19,6 +19,7 @@ import {DeleteService} from './DeleteService'
 import {ProseMirrorService} from './ProseMirrorService'
 import {CopilotService} from './CopilotService'
 import {ThreadService} from './ThreadService'
+import {MenuService} from './MenuService'
 
 export const createCtrl = (initial: State) => {
   const [store, setState] = createStore<Store<State>>(initial)
@@ -74,6 +75,7 @@ export const createCtrl = (initial: State) => {
   )
 
   const threadService = new ThreadService(store, setState)
+  const menuService = new MenuService()
 
   return {
     store,
@@ -95,6 +97,7 @@ export const createCtrl = (initial: State) => {
     mediaService,
     copilotService,
     threadService,
+    menuService,
   }
 }
 

@@ -7,7 +7,8 @@ import {saveSvg} from '@/remote/svg'
 import {Align} from '@/prosemirror/image'
 import {languages} from '@/codemirror/highlight'
 import {useOpen} from '@/open'
-import {Icon, IconFloatCenter} from '../Icon'
+import {createCodeDetails} from '@/components/assistant/attachments/CurrentFile'
+import {Icon, IconAiAssistant, IconFloatCenter} from '../Icon'
 import {Block} from './BlockHandle'
 import {Tooltip} from '../Tooltip'
 
@@ -17,7 +18,7 @@ interface Props {
 }
 
 export const BlockTooltip = (props: Props) => {
-  const {appService, fileService} = useState()
+  const {appService, fileService, menuService, threadService} = useState()
   const [tooltipAnchor, setTooltipAnchor] = createSignal<ReferenceElement | undefined>()
   const {openUrl} = useOpen()
 
@@ -110,6 +111,23 @@ export const BlockTooltip = (props: Props) => {
     tr.setNodeAttribute(block.blockPos, 'hidden', !block.blockNode.attrs.hidden)
     view.dispatch(tr)
     view.focus()
+    closeTooltip()
+  }
+
+  const onCopilot = () => {
+    const block = props.selectedBlock
+    if (!block) return
+
+    menuService.show('ai_assistant')
+    threadService.addMessage({
+      role: 'user',
+      content: createCodeDetails({
+        title: 'Code Block',
+        code: block.blockNode.textContent,
+        lang: block.blockNode.attrs.lang,
+      }),
+    })
+
     closeTooltip()
   }
 
@@ -245,6 +263,9 @@ export const BlockTooltip = (props: Props) => {
             </div>
             <div onClick={onFoldAll}>
               <Icon>unfold_less</Icon> fold all
+            </div>
+            <div onClick={onCopilot}>
+              <IconAiAssistant /> Ask copilot
             </div>
             <hr class="divider" />
           </Show>

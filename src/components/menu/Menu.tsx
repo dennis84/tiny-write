@@ -1,4 +1,4 @@
-import {Show, createEffect, createSignal, onCleanup} from 'solid-js'
+import {Show, createEffect, onCleanup} from 'solid-js'
 import {Mode, useState} from '@/state'
 import {isTauri, isMac, mod, shortHash, version, VERSION_URL, isDev} from '@/env'
 import {quit} from '@/remote/app'
@@ -21,15 +21,14 @@ import {Icon, IconAi, IconAiAssistant, IconPrettier} from '../Icon'
 import {fullWidth, Container, Drawer, Keys, Label, Link, Sub, Control} from './Style'
 
 export const Menu = () => {
-  const {store, appService, configService, fileService, prettierService} = useState()
-  const [show, setShow] = createSignal()
+  const {store, appService, menuService, configService, fileService, prettierService} = useState()
   const {open} = useOpen()
 
   const modKey = isMac ? '⌘' : mod
 
   const onMenuButtonClick = () => {
     fileService.currentFile?.editorView?.focus()
-    setShow(show() ? undefined : 'main')
+    menuService.toggleMenu()
   }
 
   const onToggleAlwaysOnTop = () => configService.setAlwaysOnTop(!store.config.alwaysOnTop)
@@ -65,15 +64,15 @@ export const Menu = () => {
   }
 
   const maybeHide = () => {
-    if (window.innerWidth <= fullWidth) setShow(undefined)
+    if (window.innerWidth <= fullWidth) menuService.hide()
   }
 
   const onKeyDown = (e: KeyboardEvent) => {
-    if (e.key === 'Escape') setShow(undefined)
+    if (e.key === 'Escape') menuService.hide()
   }
 
   createEffect(() => {
-    if (!show()) return
+    if (!menuService.current()) return
     document.addEventListener('keydown', onKeyDown)
   })
 
@@ -88,60 +87,70 @@ export const Menu = () => {
 
   return (
     <Container>
-      <Control active={show() !== undefined}>
-        <Show when={store.ai?.copilot?.user && show() === undefined}>
-          <IconButton onClick={() => setShow('ai_assistant')}>
+      <Control active={menuService.current() !== undefined}>
+        <Show when={store.ai?.copilot?.user && menuService.current() === undefined}>
+          <IconButton onClick={() => menuService.show('ai_assistant')}>
             <IconAiAssistant />
           </IconButton>
         </Show>
-        <Show when={store.ai?.copilot?.user && show() === 'main'}>
-          <IconButton onClick={() => setShow('ai_assistant_menu')}>
+        <Show when={store.ai?.copilot?.user && menuService.current() === 'main'}>
+          <IconButton onClick={() => menuService.show('ai_assistant_menu')}>
             <IconAiAssistant />
           </IconButton>
         </Show>
-        <Show when={show() === undefined}>
+        <Show when={menuService.current() === undefined}>
           <IconButton onClick={onMenuButtonClick} data-testid="menu_button">
             <Icon>more_vert</Icon>
           </IconButton>
         </Show>
-        <Show when={show() === 'main' || show() === 'ai_assistant'}>
+        <Show when={menuService.current() === 'main' || menuService.current() === 'ai_assistant'}>
           <IconButton onClick={onMenuButtonClick} data-testid="menu_button">
             <Icon>close</Icon>
           </IconButton>
         </Show>
-        <Show when={show() !== undefined && show() !== 'main' && show() !== 'ai_assistant'}>
-          <Button onClick={() => setShow('main')} data-testid="menu_back_button">
+        <Show
+          when={
+            menuService.current() !== undefined &&
+            menuService.current() !== 'main' &&
+            menuService.current() !== 'ai_assistant'
+          }
+        >
+          <Button onClick={() => menuService.show('main')} data-testid="menu_back_button">
             <Icon>arrow_back</Icon> Back
           </Button>
         </Show>
       </Control>
-      <Show when={show() === 'bin'}>
+      <Show when={menuService.current() === 'bin'}>
         <Bin />
       </Show>
-      <Show when={show() === 'code_format'}>
+      <Show when={menuService.current() === 'code_format'}>
         <CodeFormat />
       </Show>
-      <Show when={show() === 'theme'}>
+      <Show when={menuService.current() === 'theme'}>
         <Appearance />
       </Show>
-      <Show when={show() === 'help'}>
+      <Show when={menuService.current() === 'help'}>
         <Help />
       </Show>
-      <Show when={show() === 'change_set'}>
+      <Show when={menuService.current() === 'change_set'}>
         <ChangeSet />
       </Show>
-      <Show when={show() === 'ai_config'}>
+      <Show when={menuService.current() === 'ai_config'}>
         <AiConfig />
       </Show>
-      <Show when={show() === 'ai_assistant' || show() === 'ai_assistant_menu'}>
+      <Show
+        when={
+          menuService.current() === 'ai_assistant' || menuService.current() === 'ai_assistant_menu'
+        }
+      >
         <Chat />
       </Show>
-      <Show when={show() === 'main'}>
+      <Show when={menuService.current() === 'main'}>
         <Drawer
           onClick={() => fileService.currentFile?.editorView?.focus()}
           data-tauri-drag-region="true"
         >
-          <SubmenuTree onBin={() => setShow('bin')} maybeHide={maybeHide} />
+          <SubmenuTree onBin={() => menuService.show('bin')} maybeHide={maybeHide} />
           {/* Submenu File */}
           <Show when={store.mode === Mode.Editor}>
             <SubmenuEditor />
@@ -159,16 +168,16 @@ export const Menu = () => {
           {/* Submenu View */}
           <Label>View</Label>
           <Sub data-tauri-drag-region="true">
-            <Link data-testid="appearance" onClick={() => setShow('theme')}>
+            <Link data-testid="appearance" onClick={() => menuService.show('theme')}>
               <Icon>contrast</Icon> Appearance
             </Link>
             <Show when={showCodeFormat()}>
-              <Link onClick={() => setShow('code_format')}>
+              <Link onClick={() => menuService.show('code_format')}>
                 <IconPrettier /> Code Format
               </Link>
             </Show>
             <Show when={store.mode === Mode.Editor}>
-              <Link onClick={() => setShow('change_set')}>
+              <Link onClick={() => menuService.show('change_set')}>
                 <Icon>history</Icon> Change Set
               </Link>
             </Show>
@@ -198,11 +207,11 @@ export const Menu = () => {
           {/* Submenu Ai */}
           <Label>AI</Label>
           <Sub data-tauri-drag-region="true">
-            <Link onClick={() => setShow('ai_config')}>
+            <Link onClick={() => menuService.show('ai_config')}>
               <IconAi /> Configure
             </Link>
             <Show when={store.ai?.copilot?.user}>
-              <Link onClick={() => setShow('ai_assistant_menu')}>
+              <Link onClick={() => menuService.show('ai_assistant_menu')}>
                 <IconAiAssistant /> Assistant
               </Link>
             </Show>
@@ -217,7 +226,7 @@ export const Menu = () => {
             <Link onClick={onVersion}>
               About Version {version} ({shortHash})
             </Link>
-            <Link onClick={() => setShow('help')}>Help</Link>
+            <Link onClick={() => menuService.show('help')}>Help</Link>
             <Show when={isTauri()}>
               <Link onClick={() => quit()}>
                 Quit <Keys keys={[modKey, 'q']} />
