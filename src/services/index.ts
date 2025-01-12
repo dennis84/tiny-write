@@ -74,7 +74,7 @@ export const createCtrl = (initial: State) => {
     store,
   )
 
-  const threadService = new ThreadService(store, setState)
+  const threadService = new ThreadService(store, setState, copilotService)
   const menuService = new MenuService()
 
   return {

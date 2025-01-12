@@ -3,11 +3,13 @@ import {v4 as uuidv4} from 'uuid'
 import {Message, State, Thread} from '@/state'
 import {DB} from '@/db'
 import {info} from '@/remote/log'
+import {CopilotService} from './CopilotService'
 
 export class ThreadService {
   constructor(
     private store: Store<State>,
     private setState: SetStoreFunction<State>,
+    private copilotService: CopilotService,
   ) {}
 
   get currentThread(): Thread | undefined {
@@ -30,12 +32,12 @@ export class ThreadService {
     const threads = []
     for (let i = 0; i < this.store.threads.length; i++) {
       const cur = this.store.threads[i]
-      if (!this.isThreadEmpty(cur)) {
+      if (cur.title) {
         threads.push({...cur, active: false})
       }
     }
 
-    threads.push(thread)
+    threads.unshift(thread)
     this.setState('threads', threads)
   }
 
@@ -49,7 +51,7 @@ export class ThreadService {
     })
 
     const updated = this.currentThread
-    if (!this.isThreadEmpty(updated)) {
+    if (updated.title) {
       await DB.updateThread(unwrap(updated))
     }
   }
@@ -63,7 +65,7 @@ export class ThreadService {
     this.updateThread({messages, lastModified: new Date()})
 
     const updated = this.currentThread
-    if (!this.isThreadEmpty(updated)) {
+    if (updated.title) {
       await DB.updateThread(unwrap(updated))
     }
   }
@@ -90,6 +92,23 @@ export class ThreadService {
     )
   }
 
+  async updateTitle(title: string) {
+    const currentThread = this.currentThread
+    if (!currentThread) return
+    info(`Set title to current thread (title=${title})`)
+    this.setState(
+      'threads',
+      this.currentThreadIndex,
+      'title',
+      title,
+    )
+
+    const updated = this.currentThread
+    if (updated.title) {
+      await DB.updateThread(unwrap(updated))
+    }
+  }
+
   open(threadId: string) {
     info(`Open thread (id=${threadId})`)
     const threads = []
@@ -97,7 +116,7 @@ export class ThreadService {
       const cur = this.store.threads[i]
       if (cur.id === threadId) {
         threads.push({...cur, active: true})
-      } else if (!this.isThreadEmpty(cur)) {
+      } else if (cur.title) {
         threads.push({...cur, active: false})
       }
     }
@@ -114,10 +133,30 @@ export class ThreadService {
     this.newThread()
   }
 
-  isThreadEmpty(thread: Thread): boolean {
-    return (
-      !thread.lastModified || thread.messages.filter((m) => m.role === 'assistant').length === 0
-    )
+  async generateTitle(): Promise<string | undefined> {
+    const currentThread = this.currentThread
+    if (!currentThread) return
+
+    return new Promise(async (resolve, reject) => {
+      const question: Message = {
+        role: 'user',
+        content: 'What title would you give this conversation. Return only the name',
+      }
+
+      let title: string
+
+      await this.copilotService.completions(
+        [...currentThread.messages, question],
+        (chunk) => {
+          title = chunk.choices?.[0]?.message?.content
+        },
+        () => {
+          if (title) resolve(title)
+          else reject('Cannot guess a title for current thread.')
+        },
+        false,
+      )
+    })
   }
 
   private updateThread(u: Partial<Thread>) {

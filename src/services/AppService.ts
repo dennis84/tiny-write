@@ -6,7 +6,7 @@ import {debug, error, info} from '@/remote/log'
 import {show, updateWindow} from '@/remote/window'
 import {getArgs, setAlwaysOnTop, setFullscreen} from '@/remote/app'
 import {startLanguageServer} from '@/remote/copilot'
-import {State, ServiceError, Window, Mode, ErrorObject, createState} from '@/state'
+import {State, ServiceError, Window, Mode, ErrorObject, createState, Thread} from '@/state'
 import {DB} from '@/db'
 import {isTauri} from '@/env'
 import {InputLineConfig} from '@/components/dialog/InputLine'
@@ -132,7 +132,9 @@ export class AppService {
     const mode = (await DB.getMode()) ?? state.mode ?? Mode.Editor
     const tree = await DB.getTree()
     const ai = await DB.getAi()
-    const threads = await DB.getThreads()
+    const threads = (await DB.getThreads()).sort((a, b) => {
+      return (b.lastModified?.getTime() ?? 0) - (a.lastModified?.getTime() ?? 0)
+    })
 
     const config = {
       ...state.config,

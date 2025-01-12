@@ -188,6 +188,7 @@ export class CopilotService {
     messages: Message[],
     onChunk: (chunk: any) => void,
     onDone: () => void,
+    streaming: boolean | undefined = undefined,
   ): Promise<void> {
     if (isTauri()) {
       return new Promise((resolve) => {
@@ -211,7 +212,7 @@ export class CopilotService {
     if (!accessToken) return
     const tokenResponse = await this.getApiToken(accessToken)
     const url = this.proxy(`${tokenResponse.endpoints.api}/chat/completions`)
-    const body = JSON.stringify(this.createRequest(model, messages))
+    const body = JSON.stringify(this.createRequest(model, messages, streaming))
 
     debug(`Copilot chat - (url=${url}, token=${JSON.stringify(tokenResponse)}, body=${body})`)
     const data = await fetch(url, {
@@ -230,7 +231,7 @@ export class CopilotService {
       throw new Error(`Failed to connect to API: ${data.status} ${text}`)
     }
 
-    if (model.streaming) {
+    if (streaming ?? model.streaming) {
       this.getStreamResponse(data, onDone, onChunk)
     } else {
       const json = await data.json()
@@ -306,11 +307,15 @@ export class CopilotService {
     return model!
   }
 
-  private createRequest(model: Model, messages: Message[]): CompletionsRequest {
+  private createRequest(
+    model: Model,
+    messages: Message[],
+    streaming: boolean | undefined = undefined,
+  ): CompletionsRequest {
     return {
       intent: true,
       n: 1,
-      stream: model.streaming,
+      stream: streaming ?? model.streaming,
       temperature: 0.1,
       model: model.name,
       messages,

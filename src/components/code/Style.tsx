@@ -46,6 +46,11 @@ export const codeMirror = `
     .cm-tooltip ul {
       font-family: var(--font-family-monospace);
     }
+    .cm-deletedChunk {
+      .cm-chunkButtons {
+        z-index: 1;
+      }
+    }
     @media print {
       .cm-scroller {
         max-height: 100% !important;

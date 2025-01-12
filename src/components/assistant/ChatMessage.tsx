@@ -4,9 +4,9 @@ import {v4 as uuidv4} from 'uuid'
 import markdownit from 'markdown-it'
 import iterator from 'markdown-it-for-inline'
 import container from 'markdown-it-container'
-import {EditorView} from '@codemirror/view'
+import {EditorView, Panel, showPanel} from '@codemirror/view'
 import {EditorState} from '@codemirror/state'
-import {Message, useState} from '@/state'
+import {Message, Mode, useState} from '@/state'
 import {getTheme} from '@/codemirror/theme'
 import {getLanguageConfig} from '@/codemirror/highlight'
 import {IconButton} from '../Button'
@@ -89,7 +89,7 @@ interface Props {
 }
 
 export const ChatMessage = (props: Props) => {
-  const {configService, threadService} = useState()
+  const {store, codeService, configService, fileService, threadService} = useState()
   const [messageEditors, setMessageEditors] = createSignal<MessageEditor[]>([])
   const [html, setHtml] = createSignal<string>()
   const [tooltipAnchor, setTooltipAnchor] = createSignal<HTMLElement | undefined>()
@@ -141,12 +141,32 @@ export const ChatMessage = (props: Props) => {
           EditorView.lineWrapping,
           theme,
           lang.highlight(),
+          copilotApply(),
         ],
       })
     }
 
     setMessageEditors([])
   }
+
+  const applyPanel = (view: EditorView): Panel => {
+    let dom = document.createElement('div')
+    dom.classList.add('copilot-panel')
+    const apply = document.createElement('button')
+    apply.textContent = 'Apply'
+    apply.addEventListener('click', () => {
+      if (store.mode === Mode.Code) {
+        const file = fileService.currentFile
+        if (!file) return
+        codeService.merge(file, view.state.doc.toString())
+      }
+    })
+
+    dom.appendChild(apply)
+    return {top: true, dom}
+  }
+
+  const copilotApply = () => showPanel.of(applyPanel)
 
   const onBubbleMenu = (event: MouseEvent) => {
     setTooltipAnchor(event.target as HTMLElement)

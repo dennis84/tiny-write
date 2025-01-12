@@ -118,6 +118,11 @@ export const Chat = () => {
             await threadService.addMessage(message)
             setCurrentAnswer(undefined)
             scrollToBottom()
+
+            if (!currentThread.title) {
+              const title = await threadService.generateTitle()
+              if (title) await threadService.updateTitle(title)
+            }
           }
         },
       )

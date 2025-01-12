@@ -1,7 +1,6 @@
 import {For} from 'solid-js'
 import {styled} from 'solid-styled-components'
-import {format} from 'date-fns'
-import {Thread, useState} from '@/state'
+import {useState} from '@/state'
 import {Common, IconButton} from '../Button'
 import {Icon} from '../Icon'
 
@@ -35,11 +34,6 @@ interface Props {
 export const Threads = (props: Props) => {
   const {store, threadService} = useState()
 
-  const getLabel = (thread: Thread) => {
-    const firstMessage = thread.messages[0]?.content
-    return `${format(thread.lastModified!, 'dd MMM')}: ${firstMessage}`
-  }
-
   const onChange = async (e: Event) => {
     const target = e.target as HTMLSelectElement
     threadService.open(target.value)
@@ -51,7 +45,7 @@ export const Threads = (props: Props) => {
       <select onChange={onChange}>
         <option value="">Select an old chat</option>
         <For each={store.threads.filter((t) => !t.active)}>
-          {(t) => <option value={t.id}>{getLabel(t)}</option>}
+          {(t) => <option value={t.id}>{t.title}</option>}
         </For>
       </select>
       <IconButton>

@@ -238,6 +238,7 @@ export interface Message {
 
 export interface Thread {
   id: string
+  title?: string
   lastModified?: Date
   messages: Message[]
   active: boolean

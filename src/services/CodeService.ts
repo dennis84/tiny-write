@@ -1,5 +1,6 @@
 import {SetStoreFunction, Store, unwrap} from 'solid-js/store'
 import {EditorView, ViewUpdate} from '@codemirror/view'
+import {getChunks, unifiedMergeView} from '@codemirror/merge'
 import * as Y from 'yjs'
 import {yCollab, ySyncFacet} from 'y-codemirror.next'
 import {debounce} from 'throttle-debounce'
@@ -117,6 +118,45 @@ export class CodeService {
 
     const config = unwrap(this.store.config.prettier)
     return this.prettierService.check(codeEditorView.state.doc.toString(), lang, config)
+  }
+
+  merge(file: File, newDoc: string) {
+    const subdoc = this.collabService.getSubdoc(file.id)
+    const type = subdoc.getText(file.id)
+    if (!type) return
+
+    const parent = file.codeEditorView?.dom.parentElement
+    if (!parent) return
+
+    file.codeEditorView?.destroy()
+
+    const editor = this.codeMirrorService.createEditor({
+      parent,
+      doc: newDoc,
+      lang: file.codeLang,
+      extensions: [
+        indentationMarkers({markerType: 'fullScope'}),
+        unifiedMergeView({original: type.toString()}),
+        EditorView.updateListener.of((update) => {
+          const chunks = getChunks(update.view.state)
+          // check if all diffs resolved
+          if (!chunks?.chunks.length) {
+            console.log('Restore normal editor')
+            const currentFile = this.fileService.findFileById(file.id)
+            if (!currentFile) return
+
+            const subdoc = this.collabService.getSubdoc(currentFile.id)
+            const type = subdoc.getText(currentFile.id)
+            type.delete(0, type.length)
+            type.insert(0, update.state.doc.toString())
+            this.updateEditorState(currentFile)
+          }
+        }),
+      ],
+    })
+
+    const fileIndex = this.store.files.findIndex((f) => f.id === file.id)
+    this.setState('files', fileIndex, 'codeEditorView', editor.editorView)
   }
 
   private updateEditorState(file: File, el?: Element) {

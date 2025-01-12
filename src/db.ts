@@ -187,7 +187,7 @@ export class DB {
     return db.delete('canvases', id)
   }
 
-  static async getThreads() {
+  static async getThreads(): Promise<Thread[]> {
     return (await dbPromise).getAll('threads')
   }
 
