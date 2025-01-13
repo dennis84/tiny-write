@@ -87,7 +87,6 @@
     "@types/uuid": "10.0.0",
     "@vitest/coverage-v8": "2.1.8",
     "cross-env": "7.0.3",
-    "devicon": "github:devicons/devicon#master",
     "jsdom": "25.0.1",
     "oxlint": "^0.15.4",
     "rollup-plugin-visualizer": "5.13.1",
