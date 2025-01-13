@@ -2,7 +2,7 @@ import {createEffect, createSignal, Show} from 'solid-js'
 import {useState} from '@/state'
 import {Icon} from '@/components/Icon'
 import {ChatInputMessage} from '../ChatInput'
-import {createCodeDetails, useCurrentFile} from './CurrentFile'
+import {createCodeDetails, useCurrentFile} from '../util'
 
 interface Props {
   onAttachment: (message: ChatInputMessage) => void

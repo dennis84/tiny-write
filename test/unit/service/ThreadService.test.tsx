@@ -3,6 +3,7 @@ import {mock} from 'vitest-mock-extended'
 import {createStore} from 'solid-js/store'
 import {createState, Message} from '@/state'
 import {ThreadService} from '@/services/ThreadService'
+import {CopilotService} from '@/services/CopilotService'
 
 beforeEach(() => {
   vi.restoreAllMocks()
@@ -29,6 +30,7 @@ test('newThread', () => {
       {
         id: '2',
         active: false,
+        title: 'Test',
         lastModified,
         messages: [
           {role: 'user', content: 'test'},
@@ -39,13 +41,15 @@ test('newThread', () => {
   })
 
   const [store, setState] = createStore(initial)
-  const service = new ThreadService(store, setState)
+  const copilotService = mock<CopilotService>()
+
+  const service = new ThreadService(store, setState, copilotService)
 
   service.newThread()
 
   expect(store.threads).toHaveLength(2)
-  expect(store.threads[0].active).toBe(false)
-  expect(store.threads[1].active).toBe(true)
+  expect(store.threads[0].active).toBe(true)
+  expect(store.threads[1].active).toBe(false)
 })
 
 test('addMessage', async () => {
@@ -60,7 +64,8 @@ test('addMessage', async () => {
   })
 
   const [store, setState] = createStore(initial)
-  const service = new ThreadService(store, setState)
+  const copilotService = mock<CopilotService>()
+  const service = new ThreadService(store, setState, copilotService)
 
   await service.addMessage({role: 'user', content: '1'})
   await service.addMessage({role: 'user', content: '2'})
@@ -80,7 +85,8 @@ test('removeMessage', async () => {
   })
 
   const [store, setState] = createStore(initial)
-  const service = new ThreadService(store, setState)
+  const copilotService = mock<CopilotService>()
+  const service = new ThreadService(store, setState, copilotService)
 
   await service.removeMessage(store.threads[0].messages[0])
 
@@ -99,7 +105,8 @@ test('clear', async () => {
   })
 
   const [store, setState] = createStore(initial)
-  const service = new ThreadService(store, setState)
+  const copilotService = mock<CopilotService>()
+  const service = new ThreadService(store, setState, copilotService)
 
   await service.clear()
 
@@ -118,11 +125,32 @@ test('setError', async () => {
   })
 
   const [store, setState] = createStore(initial)
-  const service = new ThreadService(store, setState)
+  const copilotService = mock<CopilotService>()
+  const service = new ThreadService(store, setState, copilotService)
 
   service.setError('fail')
 
   expect(store.threads[0].messages[0].error).toBe('fail')
+})
+
+test('updateTitle', async () => {
+  const initial = createState({
+    threads: [
+      {
+        id: '1',
+        active: true,
+        messages: [{role: 'user', content: '1'}],
+      },
+    ],
+  })
+
+  const [store, setState] = createStore(initial)
+  const copilotService = mock<CopilotService>()
+  const service = new ThreadService(store, setState, copilotService)
+
+  service.updateTitle('Test')
+
+  expect(store.threads[0].title).toBe('Test')
 })
 
 test('open', () => {
@@ -136,6 +164,7 @@ test('open', () => {
       {
         id: '2',
         active: false,
+        title: '1',
         lastModified,
         messages: [
           {role: 'user', content: '1'},
@@ -145,6 +174,7 @@ test('open', () => {
       {
         id: '3',
         active: false,
+        title: '2',
         lastModified,
         messages: [
           {role: 'user', content: '3'},
@@ -155,7 +185,8 @@ test('open', () => {
   })
 
   const [store, setState] = createStore(initial)
-  const service = new ThreadService(store, setState)
+  const copilotService = mock<CopilotService>()
+  const service = new ThreadService(store, setState, copilotService)
 
   service.open('2')
 
@@ -195,7 +226,8 @@ test('deleteAll', async () => {
   })
 
   const [store, setState] = createStore(initial)
-  const service = new ThreadService(store, setState)
+  const copilotService = mock<CopilotService>()
+  const service = new ThreadService(store, setState, copilotService)
 
   await service.deleteAll()
 
@@ -204,25 +236,34 @@ test('deleteAll', async () => {
   expect(store.threads[0].id).not.toBe('2')
 })
 
-test.each([
-  {messages: [], lastModified, expected: true},
-  {messages: [], lastModified: undefined, expected: true},
-  {messages: [createMessage({role: 'user'})], lastModified, expected: true},
-  {
-    messages: [createMessage({role: 'user'}), createMessage({role: 'assistant'})],
-    lastModified,
-    expected: false,
-  },
-  {
-    messages: [createMessage({role: 'user'}), createMessage({role: 'assistant'})],
-    lastModified: undefined,
-    expected: true,
-  },
-])('isThreadEmpty', ({messages, lastModified, expected}) => {
-  const initial = createState()
-  const [store, setState] = createStore(initial)
-  const service = new ThreadService(store, setState)
-  const thread = {id: '1', active: true, messages, lastModified}
+test('generateTitle', async () => {
+  const initial = createState({
+    threads: [
+      {
+        id: '1',
+        active: true,
+        lastModified,
+        messages: [
+          {role: 'user', content: '1'},
+          {role: 'assistant', content: '2'},
+        ],
+      },
+    ],
+  })
 
-  expect(service.isThreadEmpty(thread)).toBe(expected)
+  const [store, setState] = createStore(initial)
+  const copilotService = mock<CopilotService>()
+  const service = new ThreadService(store, setState, copilotService)
+
+  copilotService.completions.mockImplementation(async (messages, onChunk, onDone) => {
+    expect(messages).toHaveLength(3)
+    expect(messages[2].content).toBe('What title would you give this conversation. Return only the name')
+    const choices = [{message: {content: 'Test'}}]
+    onChunk({choices})
+    onDone()
+  })
+
+  const title = await service.generateTitle()
+
+  expect(title).toBe('Test')
 })

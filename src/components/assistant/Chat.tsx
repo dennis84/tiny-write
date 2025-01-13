@@ -1,16 +1,18 @@
-import {createSignal, For, onMount, Show} from 'solid-js'
+import {createSignal, For, Match, onMount, Show, Switch} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {Message, useState} from '@/state'
 import {isTauri} from '@/env'
 import {fullWidth, itemCss, Text} from '../menu/Style'
 import {Icon} from '../Icon'
 import {Button} from '../Button'
+import {Tooltip} from '../Tooltip'
 import {ChatInput, ChatInputMessage} from './ChatInput'
 import {ModelSelect} from './ModelSelect'
 import {Threads} from './Threads'
-import {ChatMessage} from './ChatMessage'
+import {ChatQuestion} from './ChatQuestion'
 import {CurrentFileButton} from './attachments/CurrentFile'
 import {SelectionButton} from './attachments/Selection'
+import {ChatAnswer} from './ChatAnswer'
 
 const Drawer = styled('div')`
   background: var(--foreground-5);
@@ -72,6 +74,8 @@ export const Chat = () => {
   const {copilotService, threadService} = useState()
   const [currentAnswer, setCurrentAnswer] = createSignal<CurrentAnswer>()
   const [focus, setFocus] = createSignal(true)
+  const [tooltipAnchor, setTooltipAnchor] = createSignal<HTMLElement>()
+  const [selectedMessage, setSelectedMessage] = createSignal<Message>()
 
   const scrollToBottom = () => {
     drawerRef.scrollTo(0, drawerRef.scrollHeight)
@@ -80,6 +84,22 @@ export const Chat = () => {
   const focusInput = () => {
     setFocus(false)
     setFocus(true)
+  }
+
+  const onBubbleMenu = (event: MouseEvent, message: Message) => {
+    setTooltipAnchor(event.target as HTMLElement)
+    setSelectedMessage(message)
+  }
+
+  const closeBubbleMenu = () => {
+    setTooltipAnchor(undefined)
+  }
+
+  const onRemoveMessage = async () => {
+    const message = selectedMessage()
+    if (!message) return
+    await threadService.removeMessage(message)
+    closeBubbleMenu()
   }
 
   const addUserMessage = async (input: ChatInputMessage) => {
@@ -169,10 +189,19 @@ export const Chat = () => {
     <Drawer data-tauri-drag-region="true" ref={drawerRef}>
       <Messages>
         <For each={threadService.currentThread?.messages} fallback={<Empty />}>
-          {(message) => <ChatMessage message={message} />}
+          {(message) => (
+            <Switch>
+              <Match when={message.role === 'user'}>
+                <ChatQuestion message={message} onBubbleMenu={onBubbleMenu} />
+              </Match>
+              <Match when={message.role === 'assistant'}>
+                <ChatAnswer message={message} onBubbleMenu={onBubbleMenu} />
+              </Match>
+            </Switch>
+          )}
         </For>
         <Show when={currentAnswer()}>
-          {(cur) => <ChatMessage streaming={true} message={cur()} />}
+          {(cur) => <ChatAnswer streaming={true} message={cur()} />}
         </Show>
       </Messages>
       <Show when={focus()}>
@@ -190,6 +219,14 @@ export const Chat = () => {
         <Threads onChange={() => focusInput()} />
         <ModelSelect onChange={() => focusInput()} />
       </ChatActions>
+      <Show when={tooltipAnchor() !== undefined}>
+        <Tooltip anchor={tooltipAnchor()!} onClose={closeBubbleMenu} backdrop={true}>
+          <div onClick={onRemoveMessage}>
+            <Icon>close</Icon>
+            Remove message
+          </div>
+        </Tooltip>
+      </Show>
     </Drawer>
   )
 }

@@ -44,7 +44,7 @@ export class ThreadService {
   async addMessage(message: Message) {
     const currentThread = this.currentThread
     if (!currentThread) return
-    info(`Add new message to thread (message=${message})`)
+    info(`Add new message to thread (message=${JSON.stringify(message)})`)
     this.updateThread({
       messages: [...currentThread.messages, message],
       lastModified: new Date(),
@@ -59,7 +59,7 @@ export class ThreadService {
   async removeMessage(message: Message) {
     const currentThread = this.currentThread
     if (!currentThread) return
-    info(`Remove message from thread (message=${message})`)
+    info(`Remove message from thread (message=${JSON.stringify(message)})`)
     const index = currentThread.messages.indexOf(message)
     const messages = currentThread.messages.filter((_, i) => i !== index)
     this.updateThread({messages, lastModified: new Date()})

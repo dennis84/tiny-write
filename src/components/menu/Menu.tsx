@@ -6,7 +6,7 @@ import {useOpen} from '@/open'
 import {MenuId} from '@/services/MenuService'
 import {Button, IconButton} from '@/components/Button'
 import {Chat} from '@/components/assistant/Chat'
-import {Icon, IconAi, IconAiAssistant, IconAiAssistantClose, IconPrettier} from '@/components/Icon'
+import {Icon, IconAi, IconAiAssistant, IconPrettier} from '@/components/Icon'
 import {Bin} from './Bin'
 import {CodeFormat} from './CodeFormat'
 import {Appearance} from './Appearance'
@@ -91,7 +91,7 @@ export const Menu = () => {
       <Control active={menuService.menu() !== undefined || menuService.assistant() !== undefined}>
         <Show when={store.ai?.copilot?.user}>
           <IconButton onClick={() => menuService.toggleAssistant()}>
-            {menuService.assistant() ? <IconAiAssistantClose /> : <IconAiAssistant />}
+            {menuService.assistant() ? <Icon>chat_error</Icon> : <IconAiAssistant />}
           </IconButton>
         </Show>
         <Show when={menuService.menu() === undefined}>

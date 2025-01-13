@@ -132,7 +132,7 @@ export class AppService {
     const mode = (await DB.getMode()) ?? state.mode ?? Mode.Editor
     const tree = await DB.getTree()
     const ai = await DB.getAi()
-    const threads = (await DB.getThreads()).sort((a, b) => {
+    const threads = (await DB.getThreads())?.sort((a, b) => {
       return (b.lastModified?.getTime() ?? 0) - (a.lastModified?.getTime() ?? 0)
     })
 

@@ -7,9 +7,9 @@ import {saveSvg} from '@/remote/svg'
 import {Align} from '@/prosemirror/image'
 import {languages} from '@/codemirror/highlight'
 import {useOpen} from '@/open'
-import {createCodeDetails} from '@/components/assistant/attachments/CurrentFile'
-import {Icon, IconAiAssistant, IconFloatCenter} from '../Icon'
-import {Tooltip} from '../Tooltip'
+import {Icon, IconAiAssistant, IconFloatCenter} from '@/components/Icon'
+import {Tooltip} from '@/components/Tooltip'
+import {createCodeDetails} from '@/components/assistant/util'
 import {Block} from './BlockHandle'
 
 interface Props {

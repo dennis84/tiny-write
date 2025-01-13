@@ -5,8 +5,8 @@ import {arrow, computePosition, flip, offset, shift} from '@floating-ui/dom'
 import {CanvasBoxElement, CanvasElement, isCodeElement, isEditorElement, useState} from '@/state'
 import {useOpen} from '@/open'
 import {languages} from '@/codemirror/highlight'
-import {Icon, IconAiAssistant, IconPrettier} from '../Icon'
-import { createCodeDetails } from '../assistant/attachments/CurrentFile'
+import {Icon, IconAiAssistant, IconPrettier} from '@/components/Icon'
+import {createCodeDetails} from '@/components/assistant/util'
 
 const Container = styled('div')`
   position: absolute;

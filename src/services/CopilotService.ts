@@ -39,6 +39,14 @@ export interface Model {
   streaming: boolean
 }
 
+export interface Choice {
+  message: {content: string}
+}
+
+export interface Chunk {
+  choices: Choice[]
+}
+
 const models: Map<string, Model> = new Map([
   ['gpt-4o', {name: 'gpt-4o-2024-05-13', streaming: true}],
   ['gpt-4', {name: 'gpt-4', streaming: true}],
@@ -186,7 +194,7 @@ export class CopilotService {
 
   async completions(
     messages: Message[],
-    onChunk: (chunk: any) => void,
+    onChunk: (chunk: Chunk) => void,
     onDone: () => void,
     streaming: boolean | undefined = undefined,
   ): Promise<void> {
