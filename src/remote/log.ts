@@ -1,22 +1,22 @@
-import * as logger from '@tauri-apps/plugin-log'
+import {invoke} from '@tauri-apps/api/core'
 import {isTauri} from '@/env'
 
-export const debug = (msg: string, ...data: any[]) => {
-  if (isTauri()) void logger.debug(msg)
-  console.debug(msg, ...data)
+export const debug = (message: string, ...data: any[]) => {
+  if (isTauri()) void invoke('log_debug', {message})
+  console.debug(message, ...data)
 }
 
-export const info = (msg: string, ...data: any[]) => {
-  if (isTauri()) void logger.info(msg)
-  console.info(msg, ...data)
+export const info = (message: string, ...data: any[]) => {
+  if (isTauri()) void invoke('log_info', {message})
+  console.info(message, ...data)
 }
 
-export const warn = (msg: string, ...data: any[]) => {
-  if (isTauri()) void logger.warn(msg)
-  console.warn(msg, ...data)
+export const warn = (message: string, ...data: any[]) => {
+  if (isTauri()) void invoke('log_warn', {message})
+  console.warn(message, ...data)
 }
 
-export const error = (msg: string, ...data: any[]) => {
-  if (isTauri()) void logger.error(msg)
-  console.error(msg, ...data)
+export const error = (message: string, ...data: any[]) => {
+  if (isTauri()) void invoke('log_error', {message})
+  console.error(message, ...data)
 }

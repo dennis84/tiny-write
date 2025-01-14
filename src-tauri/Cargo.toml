@@ -24,6 +24,9 @@ url = "2"
 base64 = "0"
 chrono = "0"
 log = { version = "0", features = ["max_level_debug"] }
+tracing = "0"
+tracing-subscriber = { version = "0", features = ["env-filter", "registry"] }
+tracing-appender = "0"
 ignore = "0"
 globset = "0"
 anyhow = "1"

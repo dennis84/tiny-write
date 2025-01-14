@@ -1,4 +1,3 @@
-use log::{debug, info};
 use tauri::{Builder, Manager, Runtime};
 use tauri_plugin_cli::CliExt;
 
@@ -7,6 +6,7 @@ use copilot::lsp_service::CopilotLspService;
 use editor::editor_state::EditorState;
 use lsp::registry::LspRegistry;
 use lsp::service::LspService;
+use tracing::debug;
 
 mod copilot;
 mod editor;
@@ -27,12 +27,6 @@ pub fn run<R: Runtime>(builder: Builder<R>) {
         .plugin(tauri_plugin_shell::init())
         .setup(|app| {
             let handle = app.handle();
-            let log_dir_string = app
-                .path()
-                .app_log_dir()?
-                .into_os_string()
-                .into_string()
-                .unwrap();
 
             match handle.cli().matches() {
                 Ok(matches) => {
@@ -41,7 +35,7 @@ pub fn run<R: Runtime>(builder: Builder<R>) {
                         .get("verbose")
                         .map(|a| a.value.as_bool().unwrap_or(false))
                         .unwrap_or(false);
-                    logger::register_logger(handle, verbose)?;
+                    logger::setup::register_logger(handle, verbose)?;
 
                     debug!("Start app with cli args {:?}", &matches);
 
@@ -64,12 +58,12 @@ pub fn run<R: Runtime>(builder: Builder<R>) {
                             .as_str()
                             .map(|s| s.to_string())
                             .unwrap_or_default();
+                        debug!("AAAAAAAAAAAAAA:L GET ARGS WITH SOURCE");
                         let args = editor::command_args::create_args(source);
-                        info!("Log dir: {}", log_dir_string);
                         app.manage(args);
                     } else {
+                        debug!("AAAAAAAAAAAAAA:L GET ARGS");
                         let args = editor::command_args::create_args("".to_string());
-                        info!("Log dir: {}", log_dir_string);
                         app.manage(args);
                     }
                 }
@@ -138,6 +132,10 @@ pub fn run<R: Runtime>(builder: Builder<R>) {
             copilot::command::copilot_status,
             copilot::command::copilot_completion,
             copilot::command::copilot_chat_completions,
+            logger::command::log_debug,
+            logger::command::log_info,
+            logger::command::log_warn,
+            logger::command::log_error,
         ])
         .build(tauri::generate_context!("tauri.conf.json"))
         .expect("error while running tauri application")
