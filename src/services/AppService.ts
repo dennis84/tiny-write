@@ -6,7 +6,7 @@ import {debug, error, info} from '@/remote/log'
 import {show, updateWindow} from '@/remote/window'
 import {getArgs, setAlwaysOnTop, setFullscreen} from '@/remote/app'
 import {startLanguageServer} from '@/remote/copilot'
-import {State, ServiceError, Window, Mode, ErrorObject, createState, Thread} from '@/state'
+import {State, ServiceError, Window, Mode, ErrorObject, createState} from '@/state'
 import {DB} from '@/db'
 import {isTauri} from '@/env'
 import {InputLineConfig} from '@/components/dialog/InputLine'
@@ -57,7 +57,8 @@ export class AppService {
       }
 
       if (newState.ai?.copilot?.user) {
-        if (isTauri()) await startLanguageServer()
+        // takes about 1.5s
+        if (isTauri()) void startLanguageServer()
       }
 
       this.setState(newState)

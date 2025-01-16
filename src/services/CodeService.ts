@@ -141,7 +141,6 @@ export class CodeService {
           const chunks = getChunks(update.view.state)
           // check if all diffs resolved
           if (!chunks?.chunks.length) {
-            console.log('Restore normal editor')
             const currentFile = this.fileService.findFileById(file.id)
             if (!currentFile) return
 

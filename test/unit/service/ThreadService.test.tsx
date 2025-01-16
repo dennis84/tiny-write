@@ -1,7 +1,7 @@
 import {beforeEach, expect, test, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
 import {createStore} from 'solid-js/store'
-import {createState, Message} from '@/state'
+import {createState} from '@/state'
 import {ThreadService} from '@/services/ThreadService'
 import {CopilotService} from '@/services/CopilotService'
 
@@ -10,12 +10,6 @@ beforeEach(() => {
 })
 
 vi.mock('@/db', () => ({DB: mock()}))
-
-const createMessage = (props: Partial<Message>): Message => ({
-  role: 'user',
-  content: '1',
-  ...props,
-})
 
 const lastModified = new Date()
 

@@ -137,7 +137,7 @@ export class ThreadService {
     const currentThread = this.currentThread
     if (!currentThread) return
 
-    return new Promise(async (resolve, reject) => {
+    return new Promise((resolve, reject) => {
       const question: Message = {
         role: 'user',
         content: 'What title would you give this conversation. Return only the name',
@@ -145,7 +145,7 @@ export class ThreadService {
 
       let title: string
 
-      await this.copilotService.completions(
+      return this.copilotService.completions(
         [...currentThread.messages, question],
         (chunk) => {
           title = chunk.choices?.[0]?.message?.content

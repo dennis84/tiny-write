@@ -20,3 +20,15 @@ export const error = (message: string, ...data: any[]) => {
   if (isTauri()) void invoke('log_error', {message})
   console.error(message, ...data)
 }
+
+export const span = async <T>(name: string, fn: () => Promise<T>): Promise<T> => {
+  if (!isTauri()) {
+    return await fn()
+  }
+  const rid = await invoke('log_span_start', {name})
+  try {
+    return await fn()
+  } finally {
+    await invoke('log_span_end', {rid})
+  }
+}

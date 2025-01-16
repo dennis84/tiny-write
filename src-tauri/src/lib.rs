@@ -136,6 +136,8 @@ pub fn run<R: Runtime>(builder: Builder<R>) {
             logger::command::log_info,
             logger::command::log_warn,
             logger::command::log_error,
+            logger::command::log_span_start,
+            logger::command::log_span_end,
         ])
         .build(tauri::generate_context!("tauri.conf.json"))
         .expect("error while running tauri application")
