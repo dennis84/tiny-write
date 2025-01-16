@@ -124,13 +124,13 @@ export class CollabService {
       loaded.forEach((subdoc) => this.getSubdoc(subdoc.guid))
     })
 
-    this.provider.on('synced', () => {
+    this.provider.on('sync', () => {
       if (!file) return
       this.initFile(file)
     })
 
     if (!this.store.collab?.started) {
-      this.provider.emit('synced', [])
+      this.provider.emit('sync', [true])
     } else {
       this.provider.connect()
     }
