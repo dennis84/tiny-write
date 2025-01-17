@@ -111,12 +111,8 @@ export const Chat = () => {
 
   const sendMessages = async () => {
     const currentThread = threadService.currentThread
-    if (!currentThread) return
-    const messages = currentThread.messages.filter((m) => !m.error)
-    // final must be role user
-    if (messages[messages.length - 1].role !== 'user') {
-      return
-    }
+    const messages = threadService.getMessages()
+    if (!currentThread || !messages) return
 
     try {
       await copilotService.completions(
@@ -140,8 +136,12 @@ export const Chat = () => {
             scrollToBottom()
 
             if (!currentThread.title) {
-              const title = await threadService.generateTitle()
-              if (title) await threadService.updateTitle(title)
+              try {
+                const title = await threadService.generateTitle()
+                if (title) await threadService.updateTitle(title)
+              } catch (e) {
+                // ignore
+              }
             }
           }
         },

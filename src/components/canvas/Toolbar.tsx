@@ -107,6 +107,7 @@ export const Toolbar = () => {
       role: 'user',
       content: createCodeDetails({
         title: 'Code File',
+        id: file.id,
         code: file.codeEditorView.state.doc.toString(),
         lang: file.codeLang,
         path: file.path,

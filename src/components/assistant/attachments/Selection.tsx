@@ -24,6 +24,7 @@ export const SelectionButton = (props: Props) => {
 
     const content = createCodeDetails({
       title: 'Selection',
+      id: currentFile()?.id,
       code,
       lang: currentFile()?.codeLang,
       path: currentFile()?.path,

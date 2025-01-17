@@ -6,12 +6,13 @@ import iterator from 'markdown-it-for-inline'
 import {EditorView, Panel, showPanel} from '@codemirror/view'
 import {EditorState} from '@codemirror/state'
 import {Message, Mode, useState} from '@/state'
+import {copy} from '@/remote/clipboard'
 import {getTheme} from '@/codemirror/theme'
 import {getLanguageConfig} from '@/codemirror/highlight'
 import {IconButton} from '../Button'
 import {Icon, IconCopilot} from '../Icon'
 import {chatBubble} from './Style'
-import {useCurrentFile} from './util'
+import {parseCodeBlockAttrs} from './util'
 
 const AnswerBubble = styled('div')`
   ${chatBubble}
@@ -39,9 +40,11 @@ const BubbleMenu = styled('div')`
 const streamMd = markdownit({html: true})
 
 interface MessageEditor {
-  id: string
+  elementId: string
   doc: string
-  lang: string
+  lang?: string
+  id?: string
+  range?: [number, number]
 }
 
 interface Props {
@@ -54,16 +57,16 @@ export const ChatAnswer = (props: Props) => {
   const {store, codeService, configService, fileService} = useState()
   const [messageEditors, setMessageEditors] = createSignal<MessageEditor[]>([])
   const [html, setHtml] = createSignal<string>()
-  const currentFile = useCurrentFile()
 
   const finalMd = markdownit({
     html: true,
-    highlight: (doc: string, lang: string) => {
-      const id = uuidv4()
+    highlight: (doc: string, lang: string, attrs: string) => {
+      const elementId = uuidv4()
       const parent = document.createElement('pre')
-      parent.id = id
+      parent.id = elementId
       parent.className = 'cm-rendered'
-      setMessageEditors((prev) => [...prev, {id, doc, lang}])
+      const attributes = parseCodeBlockAttrs(attrs)
+      setMessageEditors((prev) => [...prev, {elementId, doc, lang, ...attributes}])
       return parent.outerHTML
     },
   }).use(iterator, 'url_new_win', 'link_open', (tokens: any, idx: any) => {
@@ -73,7 +76,7 @@ export const ChatAnswer = (props: Props) => {
   const renderMessageEditors = () => {
     const editors = messageEditors()
     for (const ed of editors ?? []) {
-      const parent = document.getElementById(ed.id)
+      const parent = document.getElementById(ed.elementId)
       if (!parent) return
 
       const theme = getTheme(configService.codeTheme.value)
@@ -89,7 +92,7 @@ export const ChatAnswer = (props: Props) => {
           EditorView.lineWrapping,
           theme,
           lang.highlight(),
-          ...(currentFile()?.code ? [copilotApply()] : []),
+          ...(ed.id ? [copilotApply(ed.id)] : []),
         ],
       })
     }
@@ -97,24 +100,42 @@ export const ChatAnswer = (props: Props) => {
     setMessageEditors([])
   }
 
-  const applyPanel = (view: EditorView): Panel => {
-    let dom = document.createElement('div')
-    dom.classList.add('copilot-panel')
-    const apply = document.createElement('button')
-    apply.textContent = 'Apply'
-    apply.addEventListener('click', () => {
-      if (store.mode === Mode.Code) {
-        const file = fileService.currentFile
-        if (!file) return
-        codeService.merge(file, view.state.doc.toString())
-      }
-    })
+  const applyPanel =
+    (id: string) =>
+    (view: EditorView): Panel => {
+      const file = fileService.findFileById(id)
+      let dom = document.createElement('div')
+      dom.classList.add('copilot-panel')
 
-    dom.appendChild(apply)
-    return {top: true, dom}
-  }
+      const title = document.createElement('span')
+      title.textContent = ''
+      fileService.getTitle(file).then((value) => {
+        title.textContent = value
+      })
 
-  const copilotApply = () => showPanel.of(applyPanel)
+      const copyButton = document.createElement('button')
+      copyButton.textContent = 'Copy'
+      copyButton.addEventListener('click', () => {
+        copy(view.state.doc.toString())
+      })
+
+      const apply = document.createElement('button')
+      apply.textContent = 'Apply'
+      apply.addEventListener('click', () => {
+        if (store.mode === Mode.Code) {
+          if (!file) return
+          codeService.merge(file, view.state.doc.toString())
+        }
+      })
+
+      dom.appendChild(title)
+      dom.appendChild(copyButton)
+      dom.appendChild(apply)
+
+      return {top: true, dom}
+    }
+
+  const copilotApply = (id: string) => showPanel.of(applyPanel(id))
 
   createEffect(() => {
     if (props.streaming) {

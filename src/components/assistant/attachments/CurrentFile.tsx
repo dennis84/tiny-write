@@ -13,8 +13,10 @@ export const CurrentFileButton = (props: Props) => {
   const onClick = () => {
     const editorView = currentFile()?.codeEditorView
     if (!editorView) return
+
     const content = createCodeDetails({
       title: 'Current File',
+      id: currentFile()?.id,
       code: editorView.state.doc.toString(),
       lang: currentFile()?.codeLang,
       path: currentFile()?.path,

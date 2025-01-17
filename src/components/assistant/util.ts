@@ -20,20 +20,37 @@ export const useCurrentFile = (): Accessor<File | undefined> => {
 
 interface CodeDetails {
   code: string
+  id?: string
   title: string
   lang?: string
   path?: string
+  rows?: [number, number]
 }
 
 export const createCodeDetails = (props: CodeDetails) => {
   let content = ''
-  content += `::: details ${props.title}\n`
+
+  // 2 additional newlines, otherwise the answer will contain the container
+  content += `::: details ${props.title}\n\n\n`
   content += '```'
   content += props.lang ?? ''
-  content += props.path ? ' ' + props.path : ''
+  content += props.id ? ` id=${props.id}` : ''
+  content += props.rows ? ` range=:${props.rows[0] + 1}-${props.rows[1] + 1}` : ''
   content += '\n'
   content += props.code
-  content += '\n```\n'
+  content += '\n```\n\n\n'
   content += ':::'
+
   return content
+}
+
+export const parseCodeBlockAttrs = (input: string): Record<string, string> => {
+  const pairs = input.split(' ')
+  const result: Record<string, string> = {}
+  pairs.forEach((pair) => {
+    const [key, value] = pair.split('=')
+    result[key] = value
+  })
+
+  return result
 }

@@ -96,12 +96,7 @@ export class ThreadService {
     const currentThread = this.currentThread
     if (!currentThread) return
     info(`Set title to current thread (title=${title})`)
-    this.setState(
-      'threads',
-      this.currentThreadIndex,
-      'title',
-      title,
-    )
+    this.setState('threads', this.currentThreadIndex, 'title', title)
 
     const updated = this.currentThread
     if (updated.title) {
@@ -157,6 +152,24 @@ export class ThreadService {
         false,
       )
     })
+  }
+
+  getMessages(): Message[] {
+    const currentThread = this.currentThread
+    if (!currentThread) return []
+    const messages = currentThread.messages.filter((m) => !m.error)
+    // final must be role user
+    if (messages[messages.length - 1].role !== 'user') {
+      return []
+    }
+
+    return [
+      {
+        role: 'system',
+        content: 'Keep attributes on fenced code blocks if present: e.g. ```rust id=1 range=1-5',
+      },
+      ...messages,
+    ]
   }
 
   private updateThread(u: Partial<Thread>) {

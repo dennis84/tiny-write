@@ -10,22 +10,30 @@ export const chatBubble = `
     border-radius: var(--border-radius);
     position: relative;
     .cm-panels {
-      top: 2px !important;
-      right: 2px !important;
-      position: absolute;
-      background: none;
-      display: flex;
-      justify-content: flex-end;
-      border: 0;
-      button {
+      border-bottom: 1px solid #00000066;
+      .copilot-panel {
         padding: 2px;
-        background: var(--primary-background);
-        color: var(--primary-foreground);
-        border: 0;
-        border-radius: var(--border-radius);
-        font-size: var(--menu-font-size);
-        font-family: var(--menu-font-family);
-        cursor: var(--cursor-pointer);
+        padding-left: 5px;
+        border-top-left-radius: var(--border-radius);
+        border-top-right-radius: var(--border-radius);
+        width: 100%;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) min-content min-content;
+        align-items: center;
+        font-size: 12px;
+        span {}
+        button {
+          padding: 2px;
+          background: var(--foreground-10);
+          color: var(--foreground);
+          border: 0;
+          border-radius: var(--border-radius);
+          font-family: var(--menu-font-family);
+          cursor: var(--cursor-pointer);
+          &:hover {
+            background: var(--foreground-20);
+          }
+        }
       }
     }
   }

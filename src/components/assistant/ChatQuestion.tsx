@@ -53,7 +53,7 @@ export const ChatQuestion = (props: Props) => {
 
   const finalMd = markdownit({
     html: true,
-    highlight: (doc: string, lang: string) => {
+    highlight: (doc: string, lang: string, attrs) => {
       const id = uuidv4()
       const parent = document.createElement('pre')
       parent.id = id
