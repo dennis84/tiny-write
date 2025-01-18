@@ -5,7 +5,7 @@ import markdownit from 'markdown-it'
 import iterator from 'markdown-it-for-inline'
 import {EditorView, Panel, showPanel} from '@codemirror/view'
 import {EditorState} from '@codemirror/state'
-import {Message, Mode, useState} from '@/state'
+import {Message, useState} from '@/state'
 import {copy} from '@/remote/clipboard'
 import {getTheme} from '@/codemirror/theme'
 import {getLanguageConfig} from '@/codemirror/highlight'
@@ -54,7 +54,7 @@ interface Props {
 }
 
 export const ChatAnswer = (props: Props) => {
-  const {store, codeService, configService, fileService} = useState()
+  const {codeService, configService, fileService} = useState()
   const [messageEditors, setMessageEditors] = createSignal<MessageEditor[]>([])
   const [html, setHtml] = createSignal<string>()
 
@@ -81,7 +81,7 @@ export const ChatAnswer = (props: Props) => {
 
       const theme = getTheme(configService.codeTheme.value)
       const lang = getLanguageConfig(ed.lang)
-      const doc = ed.doc.trim()
+      const doc = ed.doc.replace(/\n$/, '')
 
       new EditorView({
         parent,
@@ -92,7 +92,7 @@ export const ChatAnswer = (props: Props) => {
           EditorView.lineWrapping,
           theme,
           lang.highlight(),
-          ...(ed.id ? [copilotApply(ed.id)] : []),
+          copilotApply(ed.id, ed.range),
         ],
       })
     }
@@ -101,41 +101,41 @@ export const ChatAnswer = (props: Props) => {
   }
 
   const applyPanel =
-    (id: string) =>
+    (id?: string, range?: [number, number]) =>
     (view: EditorView): Panel => {
-      const file = fileService.findFileById(id)
       let dom = document.createElement('div')
       dom.classList.add('copilot-panel')
 
+      const file = id ? fileService.findFileById(id) : undefined
       const title = document.createElement('span')
       title.textContent = ''
       fileService.getTitle(file).then((value) => {
-        title.textContent = value
+        const t = range ? `${value}:${range[0]}-${range[1]}` : value
+        title.textContent = t
       })
+      dom.appendChild(title)
 
       const copyButton = document.createElement('button')
       copyButton.textContent = 'Copy'
       copyButton.addEventListener('click', () => {
         copy(view.state.doc.toString())
       })
-
-      const apply = document.createElement('button')
-      apply.textContent = 'Apply'
-      apply.addEventListener('click', () => {
-        if (store.mode === Mode.Code) {
-          if (!file) return
-          codeService.merge(file, view.state.doc.toString())
-        }
-      })
-
-      dom.appendChild(title)
       dom.appendChild(copyButton)
-      dom.appendChild(apply)
+
+      if (file) {
+        const apply = document.createElement('button')
+        apply.textContent = 'Apply'
+        apply.addEventListener('click', () => {
+          codeService.merge(file, view.state.doc.toString(), range)
+        })
+        dom.appendChild(apply)
+      }
 
       return {top: true, dom}
     }
 
-  const copilotApply = (id: string) => showPanel.of(applyPanel(id))
+  const copilotApply = (id?: string, range?: [number, number]) =>
+    showPanel.of(applyPanel(id, range))
 
   createEffect(() => {
     if (props.streaming) {

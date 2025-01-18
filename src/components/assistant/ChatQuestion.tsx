@@ -14,7 +14,6 @@ import {chatBubble} from './Style'
 
 const QuestionBubble = styled('div')`
   ${chatBubble}
-  max-width: 80%;
   padding: 20px;
   justify-self: flex-end;
   margin-left: auto;
@@ -53,7 +52,7 @@ export const ChatQuestion = (props: Props) => {
 
   const finalMd = markdownit({
     html: true,
-    highlight: (doc: string, lang: string, attrs) => {
+    highlight: (doc: string, lang: string) => {
       const id = uuidv4()
       const parent = document.createElement('pre')
       parent.id = id
@@ -81,7 +80,7 @@ export const ChatQuestion = (props: Props) => {
 
       const theme = getTheme(configService.codeTheme.value)
       const lang = getLanguageConfig(ed.lang)
-      const doc = ed.doc.trim()
+      const doc = ed.doc.replace(/\n$/, '')
 
       new EditorView({
         parent,

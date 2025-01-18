@@ -1,4 +1,5 @@
 import {Show} from 'solid-js'
+import {useState} from '@/state'
 import {Icon} from '@/components/Icon'
 import {ChatInputMessage} from '../ChatInput'
 import {createCodeDetails, useCurrentFile} from '../util'
@@ -10,12 +11,15 @@ interface Props {
 export const CurrentFileButton = (props: Props) => {
   const currentFile = useCurrentFile()
 
-  const onClick = () => {
+  const {fileService} = useState()
+
+  const onClick = async () => {
     const editorView = currentFile()?.codeEditorView
     if (!editorView) return
 
+    const title = await fileService.getTitle(currentFile())
     const content = createCodeDetails({
-      title: 'Current File',
+      title,
       id: currentFile()?.id,
       code: editorView.state.doc.toString(),
       lang: currentFile()?.codeLang,

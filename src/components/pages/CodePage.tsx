@@ -8,7 +8,7 @@ import {Title} from './Title'
 import {CodeEditor} from '../code/CodeEditor'
 
 export const CodePage = (props: RouteSectionProps) => {
-  const location = useLocation<LocationState>()
+  const location = useLocation<LocationState | undefined>()
 
   const OpenCodeEditor = () => {
     const {store, codeService, fileService} = useState()
@@ -40,8 +40,11 @@ export const CodePage = (props: RouteSectionProps) => {
   }
 
   return (
-    <Show when={props.params.id && (location.state || !location.state)} keyed>
-      <OpenCodeEditor />
-    </Show>
+    <>
+      {/* eslint-disable-next-line */}
+      <Show when={props.params.id && (location.state || !location.state)} keyed>
+        <OpenCodeEditor />
+      </Show>
+    </>
   )
 }

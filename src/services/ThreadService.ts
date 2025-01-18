@@ -166,7 +166,7 @@ export class ThreadService {
     return [
       {
         role: 'system',
-        content: 'Keep attributes on fenced code blocks if present: e.g. ```rust id=1 range=1-5',
+        content: 'Keep attributes on fenced code blocks if present: e.g. ```rust id=1 range=1-5. Omit containers that start and end with ":::". Also keep indentation in code blocks',
       },
       ...messages,
     ]

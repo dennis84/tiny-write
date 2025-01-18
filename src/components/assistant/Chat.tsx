@@ -139,7 +139,7 @@ export const Chat = () => {
               try {
                 const title = await threadService.generateTitle()
                 if (title) await threadService.updateTitle(title)
-              } catch (e) {
+              } catch (_e) {
                 // ignore
               }
             }

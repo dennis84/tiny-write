@@ -46,9 +46,13 @@ export const codeMirror = `
     .cm-tooltip ul {
       font-family: var(--font-family-monospace);
     }
-    .cm-deletedChunk {
-      .cm-chunkButtons {
-        z-index: 1;
+    .cm-chunkButtons {
+      z-index: 1;
+      button {
+        cursor: var(--cursor-pointer);
+        font-family: var(--font-family-monospace);
+        padding: 2px 4px;
+        border-radius: var(--border-radius);
       }
     }
     @media print {

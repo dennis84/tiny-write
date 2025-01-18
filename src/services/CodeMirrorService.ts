@@ -54,6 +54,17 @@ export class CodeMirrorService {
     private store: Store<State>,
   ) {}
 
+  static replaceSlice(doc: string, slice: string, range: [number, number]): string {
+    const docArr = CodeMirrorService.stringToUtf16Array(doc)
+    const sliceArr = CodeMirrorService.stringToUtf16Array(slice)
+
+    return CodeMirrorService.utf16ArrayToString([
+      ...docArr.slice(0, range[0]),
+      ...sliceArr,
+      ...docArr.slice(range[1]),
+    ])
+  }
+
   createEditor(props: CreateEditor) {
     const compartments = {
       lang: new Compartment(),
@@ -160,22 +171,28 @@ export class CodeMirrorService {
     }
   }
 
-  private getIndentConfig(
-    lang: string = '',
-    langConfig: LangConfig,
-  ): [number, string] {
-      if (this.prettierService.supports(lang)) {
-        return [
-          this.configService.prettier.tabWidth,
-          this.configService.prettier.useTabs ?
-            '\t'
-          : ' '.repeat(this.configService.prettier.tabWidth),
-        ]
-      }
+  private getIndentConfig(lang: string = '', langConfig: LangConfig): [number, string] {
+    if (this.prettierService.supports(lang)) {
+      return [
+        this.configService.prettier.tabWidth,
+        this.configService.prettier.useTabs ?
+          '\t'
+        : ' '.repeat(this.configService.prettier.tabWidth),
+      ]
+    }
 
-    return [
-      1,
-      langConfig.indentUnit ?? '  '
-    ]
+    return [1, langConfig.indentUnit ?? '  ']
+  }
+
+  private static stringToUtf16Array(str: string): number[] {
+    const utf16Array = []
+    for (let i = 0; i < str.length; i++) {
+      utf16Array.push(str.charCodeAt(i))
+    }
+    return utf16Array
+  }
+
+  private static utf16ArrayToString(utf16Array: number[]): string {
+    return String.fromCharCode(...utf16Array)
   }
 }

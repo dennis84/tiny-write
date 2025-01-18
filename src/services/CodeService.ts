@@ -120,7 +120,7 @@ export class CodeService {
     return this.prettierService.check(codeEditorView.state.doc.toString(), lang, config)
   }
 
-  merge(file: File, newDoc: string) {
+  merge(file: File, newDoc: string, range?: [number, number]) {
     const subdoc = this.collabService.getSubdoc(file.id)
     const type = subdoc.getText(file.id)
     if (!type) return
@@ -130,13 +130,16 @@ export class CodeService {
 
     file.codeEditorView?.destroy()
 
+    const original = type.toString()
+    const doc = range ? CodeMirrorService.replaceSlice(original, newDoc, range) : newDoc
+
     const editor = this.codeMirrorService.createEditor({
       parent,
-      doc: newDoc,
+      doc,
       lang: file.codeLang,
       extensions: [
         indentationMarkers({markerType: 'fullScope'}),
-        unifiedMergeView({original: type.toString()}),
+        unifiedMergeView({original}),
         EditorView.updateListener.of((update) => {
           const chunks = getChunks(update.view.state)
           // check if all diffs resolved

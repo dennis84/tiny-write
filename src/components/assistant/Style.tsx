@@ -11,6 +11,8 @@ export const chatBubble = `
     position: relative;
     .cm-panels {
       border-bottom: 1px solid #00000066;
+      border-top-left-radius: var(--border-radius);
+      border-top-right-radius: var(--border-radius);
       .copilot-panel {
         padding: 2px;
         padding-left: 5px;
@@ -24,6 +26,7 @@ export const chatBubble = `
         span {}
         button {
           padding: 2px;
+          margin-left: 5px;
           background: var(--foreground-10);
           color: var(--foreground);
           border: 0;

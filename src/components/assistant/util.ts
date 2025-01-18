@@ -24,7 +24,7 @@ interface CodeDetails {
   title: string
   lang?: string
   path?: string
-  rows?: [number, number]
+  range?: [number, number]
 }
 
 export const createCodeDetails = (props: CodeDetails) => {
@@ -35,7 +35,7 @@ export const createCodeDetails = (props: CodeDetails) => {
   content += '```'
   content += props.lang ?? ''
   content += props.id ? ` id=${props.id}` : ''
-  content += props.rows ? ` range=:${props.rows[0] + 1}-${props.rows[1] + 1}` : ''
+  content += props.range ? ` range=${props.range[0]}-${props.range[1]}` : ''
   content += '\n'
   content += props.code
   content += '\n```\n\n\n'
@@ -44,13 +44,22 @@ export const createCodeDetails = (props: CodeDetails) => {
   return content
 }
 
-export const parseCodeBlockAttrs = (input: string): Record<string, string> => {
+interface CodeBlockAttrs {
+  id?: string
+  range?: [number, number]
+}
+
+export const parseCodeBlockAttrs = (input: string): CodeBlockAttrs => {
+  // input: id=123 range=1-12
   const pairs = input.split(' ')
-  const result: Record<string, string> = {}
+  const obj: Record<string, string> = {}
   pairs.forEach((pair) => {
     const [key, value] = pair.split('=')
-    result[key] = value
+    obj[key] = value
   })
 
-  return result
+  return {
+    id: obj['id'],
+    range: obj['range']?.split('-').map((s) => parseInt(s, 10)) as [number, number],
+  }
 }

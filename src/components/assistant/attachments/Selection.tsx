@@ -9,25 +9,27 @@ interface Props {
 }
 
 export const SelectionButton = (props: Props) => {
-  const {store} = useState()
+  const {store, fileService} = useState()
   const [show, setShow] = createSignal(false)
   const currentFile = useCurrentFile()
 
-  const onClick = () => {
+  const onClick = async () => {
     const editorView = currentFile()?.codeEditorView
     if (!editorView) return
 
-    const code = editorView.state.sliceDoc(
-      editorView.state.selection.main.from,
-      editorView.state.selection.main.to,
-    )
+    const from = editorView.state.selection.main.from
+    const to = editorView.state.selection.main.to
+    const code = editorView.state.sliceDoc(from, to)
+    let title = await fileService.getTitle(currentFile())
+    title = `${title}:${from}-${to}`
 
     const content = createCodeDetails({
-      title: 'Selection',
+      title,
       id: currentFile()?.id,
       code,
       lang: currentFile()?.codeLang,
       path: currentFile()?.path,
+      range: [from, to],
     })
 
     props.onAttachment({
