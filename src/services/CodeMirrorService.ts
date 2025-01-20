@@ -172,16 +172,14 @@ export class CodeMirrorService {
   }
 
   private getIndentConfig(lang: string = '', langConfig: LangConfig): [number, string] {
+    const useTabs = langConfig.indentUnit === '\t' || this.configService.prettier.useTabs
+    const tabWidth = useTabs ? 4 : this.configService.prettier.tabWidth
+
     if (this.prettierService.supports(lang)) {
-      return [
-        this.configService.prettier.tabWidth,
-        this.configService.prettier.useTabs ?
-          '\t'
-        : ' '.repeat(this.configService.prettier.tabWidth),
-      ]
+      return [tabWidth, useTabs ? '\t' : ' '.repeat(tabWidth)]
     }
 
-    return [1, langConfig.indentUnit ?? '  ']
+    return [tabWidth, langConfig.indentUnit ?? '  ']
   }
 
   private static stringToUtf16Array(str: string): number[] {

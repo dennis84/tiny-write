@@ -135,7 +135,8 @@ export class ThreadService {
     return new Promise((resolve, reject) => {
       const question: Message = {
         role: 'user',
-        content: 'What title would you give this conversation. Return only the name',
+        content:
+          "Generate a concise 3-7 word title for this conversation, omitting punctuation. Go straight to the title, without any preamble and prefix like `Here's a concise suggestion:...` or `Title:`",
       }
 
       let title: string
@@ -166,7 +167,8 @@ export class ThreadService {
     return [
       {
         role: 'system',
-        content: 'Keep attributes on fenced code blocks if present: e.g. ```rust id=1 range=1-5. Omit containers that start and end with ":::". Also keep indentation in code blocks',
+        content:
+          'Keep attributes on fenced code blocks if present: e.g. ```rust id=1 range=1-5. Omit containers that start and end with ":::". Also keep indentation in code blocks',
       },
       ...messages,
     ]
