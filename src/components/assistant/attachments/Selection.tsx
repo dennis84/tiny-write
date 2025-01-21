@@ -1,4 +1,5 @@
 import {createEffect, createSignal, Show} from 'solid-js'
+import {v4 as uuidv4} from 'uuid'
 import {useState} from '@/state'
 import {Icon} from '@/components/Icon'
 import {ChatInputMessage} from '../ChatInput'
@@ -33,6 +34,8 @@ export const SelectionButton = (props: Props) => {
     })
 
     props.onAttachment({
+      id: uuidv4(),
+      role: 'user',
       content,
       attachment: true,
     })

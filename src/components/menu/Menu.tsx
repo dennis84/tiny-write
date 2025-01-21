@@ -91,7 +91,9 @@ export const Menu = () => {
       <Control active={menuService.menu() !== undefined || menuService.assistant() !== undefined}>
         <Show when={store.ai?.copilot?.user}>
           <IconButton onClick={() => menuService.toggleAssistant()}>
-            {menuService.assistant() ? <Icon>chat_error</Icon> : <IconAiAssistant />}
+            {menuService.assistant() ?
+              <Icon>chat_error</Icon>
+            : <IconAiAssistant />}
           </IconButton>
         </Show>
         <Show when={menuService.menu() === undefined}>

@@ -2,6 +2,7 @@ import {createEffect, createSignal, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {Box, Vec} from '@tldraw/editor'
 import {arrow, computePosition, flip, offset, shift} from '@floating-ui/dom'
+import {v4 as uuidv4} from 'uuid'
 import {CanvasBoxElement, CanvasElement, isCodeElement, isEditorElement, useState} from '@/state'
 import {useOpen} from '@/open'
 import {languages} from '@/codemirror/highlight'
@@ -104,6 +105,7 @@ export const Toolbar = () => {
 
     menuService.showAssistant()
     threadService.addMessage({
+      id: uuidv4(),
       role: 'user',
       content: createCodeDetails({
         title: 'Code File',

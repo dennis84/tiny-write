@@ -27,8 +27,8 @@ test('newThread', () => {
         title: 'Test',
         lastModified,
         messages: [
-          {role: 'user', content: 'test'},
-          {role: 'assistant', content: 'test'},
+          {id: '1', role: 'user', content: 'test'},
+          {id: '2', role: 'assistant', content: 'test'},
         ],
       },
     ],
@@ -61,10 +61,31 @@ test('addMessage', async () => {
   const copilotService = mock<CopilotService>()
   const service = new ThreadService(store, setState, copilotService)
 
-  await service.addMessage({role: 'user', content: '1'})
-  await service.addMessage({role: 'user', content: '2'})
+  await service.addMessage({id: '1', role: 'user', content: '1'})
+  await service.addMessage({id: '2', role: 'user', content: '2'})
 
   expect(store.threads[0].messages).toHaveLength(2)
+})
+
+test('updateMessage', async () => {
+  const initial = createState({
+    threads: [
+      {
+        id: '1',
+        active: true,
+        messages: [{id: '1', role: 'user', content: '1'}],
+      },
+    ],
+  })
+
+  const [store, setState] = createStore(initial)
+  const copilotService = mock<CopilotService>()
+  const service = new ThreadService(store, setState, copilotService)
+
+  await service.updateMessage({id: '1', role: 'user', content: '111'})
+
+  expect(store.threads[0].messages).toHaveLength(1)
+  expect(store.threads[0].messages[0].content).toBe('111')
 })
 
 test('removeMessage', async () => {
@@ -73,7 +94,7 @@ test('removeMessage', async () => {
       {
         id: '1',
         active: true,
-        messages: [{role: 'user', content: '1'}],
+        messages: [{id: '1', role: 'user', content: '1'}],
       },
     ],
   })
@@ -93,7 +114,7 @@ test('clear', async () => {
       {
         id: '1',
         active: true,
-        messages: [{role: 'user', content: '1'}],
+        messages: [{id: '1', role: 'user', content: '1'}],
       },
     ],
   })
@@ -113,7 +134,7 @@ test('setError', async () => {
       {
         id: '1',
         active: true,
-        messages: [{role: 'user', content: '1'}],
+        messages: [{id: '1', role: 'user', content: '1'}],
       },
     ],
   })
@@ -133,7 +154,7 @@ test('updateTitle', async () => {
       {
         id: '1',
         active: true,
-        messages: [{role: 'user', content: '1'}],
+        messages: [{id: '1', role: 'user', content: '1'}],
       },
     ],
   })
@@ -161,8 +182,8 @@ test('open', () => {
         title: '1',
         lastModified,
         messages: [
-          {role: 'user', content: '1'},
-          {role: 'assistant', content: '2'},
+          {id: '1', role: 'user', content: '1'},
+          {id: '2', role: 'assistant', content: '2'},
         ],
       },
       {
@@ -171,8 +192,8 @@ test('open', () => {
         title: '2',
         lastModified,
         messages: [
-          {role: 'user', content: '3'},
-          {role: 'assistant', content: '4'},
+          {id: '3', role: 'user', content: '3'},
+          {id: '4', role: 'assistant', content: '4'},
         ],
       },
     ],
@@ -203,8 +224,8 @@ test('deleteAll', async () => {
         active: false,
         lastModified,
         messages: [
-          {role: 'user', content: '1'},
-          {role: 'assistant', content: '2'},
+          {id: '1', role: 'user', content: '1'},
+          {id: '2', role: 'assistant', content: '2'},
         ],
       },
       {
@@ -212,8 +233,8 @@ test('deleteAll', async () => {
         active: false,
         lastModified,
         messages: [
-          {role: 'user', content: '3'},
-          {role: 'assistant', content: '4'},
+          {id: '3', role: 'user', content: '3'},
+          {id: '4', role: 'assistant', content: '4'},
         ],
       },
     ],
@@ -238,8 +259,8 @@ test('generateTitle', async () => {
         active: true,
         lastModified,
         messages: [
-          {role: 'user', content: '1'},
-          {role: 'assistant', content: '2'},
+          {id: '1', role: 'user', content: '1'},
+          {id: '2', role: 'assistant', content: '2'},
         ],
       },
     ],
@@ -251,7 +272,7 @@ test('generateTitle', async () => {
 
   copilotService.completions.mockImplementation(async (messages, onChunk, onDone) => {
     expect(messages).toHaveLength(3)
-    expect(messages[2].content).toBe('What title would you give this conversation. Return only the name')
+    expect(messages[2].content.startsWith('Generate a concise')).toBeTruthy()
     const choices = [{message: {content: 'Test'}}]
     onChunk({choices})
     onDone()

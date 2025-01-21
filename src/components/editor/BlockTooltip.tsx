@@ -2,6 +2,7 @@ import {Show, createEffect, createSignal} from 'solid-js'
 import {NodeSelection, TextSelection} from 'prosemirror-state'
 import {setBlockType} from 'prosemirror-commands'
 import {ReferenceElement} from '@floating-ui/dom'
+import {v4 as uuidv4} from 'uuid'
 import {useState} from '@/state'
 import {saveSvg} from '@/remote/svg'
 import {Align} from '@/prosemirror/image'
@@ -120,6 +121,7 @@ export const BlockTooltip = (props: Props) => {
 
     menuService.showAssistant()
     threadService.addMessage({
+      id: uuidv4(),
       role: 'user',
       content: createCodeDetails({
         title: 'Code Block',

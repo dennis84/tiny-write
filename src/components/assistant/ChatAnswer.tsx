@@ -1,4 +1,4 @@
-import {createEffect, createSignal, onMount, Show} from 'solid-js'
+import {createEffect, createSignal, Show, untrack} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {v4 as uuidv4} from 'uuid'
 import markdownit from 'markdown-it'
@@ -147,9 +147,9 @@ export const ChatAnswer = (props: Props) => {
 
   const Html = (p: {content: string}) => {
     let ref!: HTMLDivElement
-    onMount(() => {
+    createEffect(() => {
       ref.innerHTML = p.content
-      renderMessageEditors()
+      untrack(() => renderMessageEditors())
     })
 
     return <div class="html-container" ref={ref} />

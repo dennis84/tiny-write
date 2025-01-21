@@ -1,9 +1,10 @@
 import {createSignal, onMount, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
+import {v4 as uuidv4} from 'uuid'
 import {EditorView, keymap, placeholder} from '@codemirror/view'
 import {defaultKeymap} from '@codemirror/commands'
 import {getTheme} from '@/codemirror/theme'
-import {useState} from '@/state'
+import {Message, useState} from '@/state'
 import {Common} from '../Button'
 import {Icon} from '../Icon'
 import {Tooltip} from '../Tooltip'
@@ -55,13 +56,14 @@ const ChatInputButton = styled('button')`
   }
 `
 
-export interface ChatInputMessage {
-  content: string
+export interface ChatInputMessage extends Message {
   attachment: boolean
 }
 
 interface Props {
   onMessage: (message: ChatInputMessage) => void
+  onCancel: () => void
+  message?: Message
 }
 
 export const ChatInput = (props: Props) => {
@@ -86,9 +88,25 @@ export const ChatInput = (props: Props) => {
   const onSend = () => {
     const view = editorView()
     if (!view) return
-    const content = view.state.doc.toString().trim()
-    props.onMessage({content, attachment: false})
+    const content = view.state.doc.toString()
+    props.onMessage({
+      attachment: false,
+      id: uuidv4(),
+      role: 'user',
+      ...props.message,
+      content,
+    })
 
+    view.dispatch({
+      changes: {from: 0, to: content.length, insert: ''},
+    })
+  }
+
+  const onCancel = () => {
+    const view = editorView()
+    if (!view) return
+    const content = view.state.doc.toString()
+    props.onCancel()
     view.dispatch({
       changes: {from: 0, to: content.length, insert: ''},
     })
@@ -98,7 +116,7 @@ export const ChatInput = (props: Props) => {
     const theme = getTheme(configService.codeTheme.value)
     const view = new EditorView({
       parent: chatInputRef,
-      doc: '',
+      doc: props.message?.content ?? '',
       extensions: [
         theme,
         keymap.of([
@@ -130,8 +148,13 @@ export const ChatInput = (props: Props) => {
           <ChatInputButton onClick={onAttachmentMenu}>
             <Icon>attachment</Icon>
           </ChatInputButton>
+          <Show when={props.message}>
+            <ChatInputButton onClick={onCancel}>
+              <Icon>close</Icon>
+            </ChatInputButton>
+          </Show>
           <ChatInputButton onClick={onSend}>
-            <Icon>send</Icon>
+            <Icon>{props.message ? 'check' : 'send'}</Icon>
           </ChatInputButton>
         </ChatInputAction>
       </ChatInputContainer>

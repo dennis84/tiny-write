@@ -230,6 +230,7 @@ export interface Tree {
 export type ChatRole = 'user' | 'assistant' | 'system'
 
 export interface Message {
+  id: string
   content: string
   html?: string
   role: ChatRole

@@ -44,11 +44,30 @@ export class ThreadService {
   async addMessage(message: Message) {
     const currentThread = this.currentThread
     if (!currentThread) return
-    info(`Add new message to thread (message=${JSON.stringify(message)})`)
-    this.updateThread({
+
+    info(`Add new message (message=${JSON.stringify(message)})`)
+    this.setState('threads', this.currentThreadIndex, {
       messages: [...currentThread.messages, message],
       lastModified: new Date(),
     })
+
+    const updated = this.currentThread
+    if (updated.title) {
+      await DB.updateThread(unwrap(updated))
+    }
+  }
+
+  async updateMessage(message: Message) {
+    const currentThread = this.currentThread
+    if (!currentThread) return
+
+    info(`Update message (message=${JSON.stringify(message)})`)
+
+    const existingIndex = currentThread.messages.findIndex((m) => m.id === message.id)
+    if (existingIndex !== -1) {
+      this.setState('threads', this.currentThreadIndex, 'messages', existingIndex, message)
+      this.setState('threads', this.currentThreadIndex, 'lastModified', new Date())
+    }
 
     const updated = this.currentThread
     if (updated.title) {
@@ -62,7 +81,11 @@ export class ThreadService {
     info(`Remove message from thread (message=${JSON.stringify(message)})`)
     const index = currentThread.messages.indexOf(message)
     const messages = currentThread.messages.filter((_, i) => i !== index)
-    this.updateThread({messages, lastModified: new Date()})
+    this.setState('threads', this.currentThreadIndex, (prev) => ({
+      ...prev,
+      messages,
+      lastModified: new Date(),
+    }))
 
     const updated = this.currentThread
     if (updated.title) {
@@ -74,7 +97,12 @@ export class ThreadService {
     const currentThread = this.currentThread
     if (!currentThread) return
     info(`Clear current thread (id=${currentThread.id})`)
-    this.updateThread({messages: [], lastModified: new Date()})
+    this.setState('threads', this.currentThreadIndex, (prev) => ({
+      ...prev,
+      messages: [],
+      lastModified: new Date(),
+    }))
+
     await DB.deleteThread(currentThread.id)
   }
 
@@ -134,6 +162,7 @@ export class ThreadService {
 
     return new Promise((resolve, reject) => {
       const question: Message = {
+        id: 'generate_title',
         role: 'user',
         content:
           "Generate a concise 3-7 word title for this conversation, omitting punctuation. Go straight to the title, without any preamble and prefix like `Here's a concise suggestion:...` or `Title:`",
@@ -166,18 +195,12 @@ export class ThreadService {
 
     return [
       {
+        id: 'code_blocks',
         role: 'system',
         content:
           'Keep attributes on fenced code blocks if present: e.g. ```rust id=1 range=1-5. Omit containers that start and end with ":::". Also keep indentation in code blocks',
       },
       ...messages,
     ]
-  }
-
-  private updateThread(u: Partial<Thread>) {
-    const index = this.currentThreadIndex
-    if (index === -1) return
-    const update = {...u}
-    this.setState('threads', index, update)
   }
 }

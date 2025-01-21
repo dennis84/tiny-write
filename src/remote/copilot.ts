@@ -4,9 +4,10 @@ import {Model} from '@/services/CopilotService'
 import {Message} from '@/state'
 import {span} from './log'
 
-export const startLanguageServer = () => span('start_language_server', () => {
-  return Promise.race([invoke('copilot_start_language_server'), timeout(5000)])
-})
+export const startLanguageServer = () =>
+  span('start_language_server', () => {
+    return Promise.race([invoke('copilot_start_language_server'), timeout(5000)])
+  })
 
 export const disconnectCopilot = async () => {
   return await invoke('copilot_disconnect')
