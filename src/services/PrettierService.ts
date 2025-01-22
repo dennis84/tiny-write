@@ -11,9 +11,9 @@ import {PrettierConfig} from '@/state'
 type PrettierLang = [string, prettier.Plugin[]]
 
 export class PrettierService {
-  private js: PrettierLang = ['babel', [babelPlugin, estreePlugin]]
-  private ts: PrettierLang = ['typescript', [typescriptPlugin, estreePlugin]]
-  private json: PrettierLang = ['json', [babelPlugin, estreePlugin]]
+  private js: PrettierLang = ['babel', [babelPlugin, estreePlugin as any]]
+  private ts: PrettierLang = ['typescript', [typescriptPlugin, estreePlugin as any]]
+  private json: PrettierLang = ['json', [babelPlugin, estreePlugin as any]]
   private css: PrettierLang = ['css', [cssPlugin]]
   private markdown: PrettierLang = ['markdown', [markdownPlugin]]
   private html: PrettierLang = ['html', [htmlPlugin]]

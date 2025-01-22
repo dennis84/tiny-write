@@ -13,9 +13,6 @@ export const Common = `
   text-decoration: none;
   font-family: var(--menu-font-family);
   border: 0;
-  &:hover {
-    opacity: 0.8;
-  }
   &[disabled] {
     opacity: 0.5;
     cursor: not-allowed;
@@ -31,6 +28,7 @@ export const Button = styled('button')`
   color: var(--foreground);
   &:hover {
     color: var(--primary-background);
+    background: var(--foreground-10);
   }
 `
 
@@ -39,6 +37,9 @@ export const ButtonPrimary = styled('button')`
   color: var(--primary-foreground);
   border: 0;
   background: var(--primary-background);
+  &:hover {
+    background: var(--primary-background-80);
+  }
 `
 
 export const ButtonGroup = styled('div')`
@@ -57,7 +58,7 @@ export const IconButton = styled('button')`
   background: none;
   color: var(--foreground);
   &:hover {
-    background: var(--background-60);
+    background: var(--foreground-10);
     color: var(--primary-background);
   }
   .icon {

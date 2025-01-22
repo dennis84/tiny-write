@@ -73,7 +73,7 @@ interface CurrentAnswer extends Message {
 export const Chat = () => {
   let drawerRef!: HTMLDivElement
 
-  const {copilotService, threadService} = useState()
+  const {copilotService, threadService, toastService} = useState()
   const [currentAnswer, setCurrentAnswer] = createSignal<CurrentAnswer>()
   const [focus, setFocus] = createSignal(true)
   const [tooltipAnchor, setTooltipAnchor] = createSignal<HTMLElement>()
@@ -169,9 +169,9 @@ export const Chat = () => {
           }
         },
       )
-    } catch (error) {
+    } catch (error: any) {
       setCurrentAnswer(undefined)
-      threadService.setError(error as string)
+      toastService.open({message: error?.message ?? error, action: 'Close'})
     }
   }
 

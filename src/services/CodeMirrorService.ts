@@ -36,6 +36,7 @@ import {isTauri} from '@/env'
 import {ConfigService} from './ConfigService'
 import {AppService} from './AppService'
 import {PrettierService} from './PrettierService'
+import {ToastService} from './ToastService'
 
 interface CreateEditor {
   lang?: string
@@ -51,6 +52,7 @@ export class CodeMirrorService {
     private configService: ConfigService,
     private appService: AppService,
     private prettierService: PrettierService,
+    private toastService: ToastService,
     private store: Store<State>,
   ) {}
 
@@ -156,6 +158,7 @@ export class CodeMirrorService {
           insert: value.substring(0, value.lastIndexOf('\n')),
         },
       })
+      this.toastService.open({message: 'Code formatted ✨', duration: 2000})
     } catch (err: any) {
       if (!err.loc?.start?.line) return
       const line = view.state.doc.line(err.loc.start.line)

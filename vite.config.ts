@@ -9,6 +9,7 @@ const commitHash = execSync('git rev-parse --short ${GITHUB_SHA:-HEAD}').toStrin
 export default defineConfig({
   plugins: [solidPlugin(), visualizer()],
   server: {
+    host: process.env.TAURI_DEV_HOST || 'localhost',
     port: 3000,
   },
   build: {

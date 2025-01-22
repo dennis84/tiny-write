@@ -4,6 +4,7 @@ import {LocationState, State, StateContext} from '@/state'
 import {createCtrl} from '@/services'
 import {info} from '@/remote/log'
 import {isTauri} from '@/env'
+import {locationToString} from '@/utils/debug'
 import {DragArea, Layout, PageContent} from '@/components/Layout'
 import {Menu} from '@/components/menu/Menu'
 import {Error} from '@/components/Error'
@@ -14,13 +15,13 @@ import {DropFile} from '@/components/DropFile'
 import {ResizeWindow} from '@/components/ResizeWindow'
 import {DarkMode} from '@/components/DarkMode'
 import {Back} from '@/components/Back'
+import {Toast} from '@/components/Toast'
 import {InputLine} from '@/components/dialog/InputLine'
 import {EditorPage} from '@/components/pages/EditorPage'
 import {CanvasPage} from '@/components/pages/CanvasPage'
 import {CodePage} from '@/components/pages/CodePage'
 import {DirPage} from '@/components/pages/DirPage'
 import {Redirect} from '@/components/pages/Redirect'
-import {locationToString} from '@/utils/debug'
 
 export const Main = (props: {state: State}) => {
   const Root = (p: RouteSectionProps) => {
@@ -85,6 +86,7 @@ export const Main = (props: {state: State}) => {
             <ResizeWindow />
             <DarkMode />
             <InputLine getter={inputLine} setter={setInputLine} />
+            <Toast />
           </Layout>
         </ErrorBoundary>
       </StateContext.Provider>

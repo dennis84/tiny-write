@@ -7,6 +7,7 @@ import {CodeMirrorService} from '@/services/CodeMirrorService'
 import {ConfigService} from '@/services/ConfigService'
 import {AppService} from '@/services/AppService'
 import {PrettierService} from '@/services/PrettierService'
+import {ToastService} from '@/services/ToastService'
 
 vi.mock('@/db', () => ({DB: mock()}))
 
@@ -21,10 +22,17 @@ test('createEditor', () => {
     codeTheme: ConfigService.codeThemes.dracula,
     prettier: {tabWidth: 2, useTabs: false},
   })
+  const toastService = mock<ToastService>()
 
   const parent = document.createElement('div')
   const [store] = createStore<State>(createState())
-  const service = new CodeMirrorService(configService, appService, prettierService, store)
+  const service = new CodeMirrorService(
+    configService,
+    appService,
+    prettierService,
+    toastService,
+    store,
+  )
   const {editorView, compartments} = service.createEditor({lang: 'mermaid', parent})
 
   expect(editorView).toBeDefined()
@@ -39,11 +47,18 @@ test('format', async () => {
     codeTheme: ConfigService.codeThemes.dracula,
     prettier: store.config.prettier,
   })
+  const toastService = mock<ToastService>()
 
   const doc = 'const test=123'
 
   const parent = document.createElement('div')
-  const service = new CodeMirrorService(configService, appService, prettierService, store)
+  const service = new CodeMirrorService(
+    configService,
+    appService,
+    prettierService,
+    toastService,
+    store,
+  )
   const {editorView} = service.createEditor({lang: 'typescript', parent, doc})
 
   await service.format(editorView, 'typescript', store.config.prettier)
@@ -59,11 +74,18 @@ test('format - error', async () => {
     codeTheme: ConfigService.codeThemes.dracula,
     prettier: store.config.prettier,
   })
+  const toastService = mock<ToastService>()
 
   const doc = 'const test - 1'
 
   const parent = document.createElement('div')
-  const service = new CodeMirrorService(configService, appService, prettierService, store)
+  const service = new CodeMirrorService(
+    configService,
+    appService,
+    prettierService,
+    toastService,
+    store,
+  )
   const {editorView} = service.createEditor({lang: 'typescript', parent, doc})
 
   expect(diagnosticCount(editorView.state)).toBe(0)
