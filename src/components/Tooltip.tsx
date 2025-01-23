@@ -14,7 +14,6 @@ import {
 
 const TooltipEl = styled('div')`
   position: absolute;
-  min-width: 150px;
   width: max-content;
   background: var(--tooltip-background);
   border-radius: var(--border-radius);

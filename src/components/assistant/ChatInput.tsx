@@ -8,6 +8,7 @@ import {Message, useState} from '@/state'
 import {Common} from '../Button'
 import {Icon} from '../Icon'
 import {Tooltip} from '../Tooltip'
+import {TooltipHelp} from '../TooltipHelp'
 import {CurrentFileButton} from './attachments/CurrentFile'
 import {SelectionButton} from './attachments/Selection'
 
@@ -145,17 +146,21 @@ export const ChatInput = (props: Props) => {
       <ChatInputContainer>
         <div ref={chatInputRef}></div>
         <ChatInputAction>
-          <ChatInputButton onClick={onAttachmentMenu}>
-            <Icon>attachment</Icon>
-          </ChatInputButton>
+          <TooltipHelp title="Add an attachment to context">
+            <ChatInputButton onClick={onAttachmentMenu}>
+              <Icon>attachment</Icon>
+            </ChatInputButton>
+          </TooltipHelp>
           <Show when={props.message}>
             <ChatInputButton onClick={onCancel}>
               <Icon>close</Icon>
             </ChatInputButton>
           </Show>
-          <ChatInputButton onClick={onSend}>
-            <Icon>{props.message ? 'check' : 'send'}</Icon>
-          </ChatInputButton>
+          <TooltipHelp title="Send message">
+            <ChatInputButton onClick={onSend}>
+              <Icon>{props.message ? 'check' : 'send'}</Icon>
+            </ChatInputButton>
+          </TooltipHelp>
         </ChatInputAction>
       </ChatInputContainer>
       <Show when={tooltipAnchor() !== undefined}>
