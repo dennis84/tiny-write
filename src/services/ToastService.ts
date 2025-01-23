@@ -7,7 +7,6 @@ interface Toast {
 }
 
 export class ToastService {
-
   static readonly DEFAULT_DURATION = 10_000
 
   private toastSignal = createSignal<Toast>()

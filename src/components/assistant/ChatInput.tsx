@@ -65,6 +65,7 @@ interface Props {
   onMessage: (message: ChatInputMessage) => void
   onCancel: () => void
   message?: Message
+  ref?: HTMLDivElement
 }
 
 export const ChatInput = (props: Props) => {
@@ -143,7 +144,7 @@ export const ChatInput = (props: Props) => {
 
   return (
     <>
-      <ChatInputContainer>
+      <ChatInputContainer ref={props.ref}>
         <div ref={chatInputRef}></div>
         <ChatInputAction>
           <TooltipHelp title="Add an attachment to context">

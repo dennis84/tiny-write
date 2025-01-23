@@ -71,7 +71,7 @@ interface CurrentAnswer extends Message {
 }
 
 export const Chat = () => {
-  let drawerRef!: HTMLDivElement
+  let inputRef!: HTMLDivElement
 
   const {copilotService, threadService, toastService} = useState()
   const [currentAnswer, setCurrentAnswer] = createSignal<CurrentAnswer>()
@@ -80,8 +80,11 @@ export const Chat = () => {
   const [selectedMessage, setSelectedMessage] = createSignal<Message>()
   const [editMessage, setEditMessage] = createSignal<Message>()
 
-  const scrollToBottom = () => {
-    drawerRef.scrollTo(0, drawerRef.scrollHeight)
+  const scrollToInput = () => {
+    inputRef.scrollIntoView({
+      behavior: 'instant',
+      block: 'start',
+    })
   }
 
   const focusInput = () => {
@@ -116,6 +119,7 @@ export const Chat = () => {
     setFocus(false)
     setFocus(true)
     closeBubbleMenu()
+    scrollToInput()
   }
 
   const addUserMessage = async (input: ChatInputMessage) => {
@@ -128,8 +132,6 @@ export const Chat = () => {
     } else {
       await threadService.addMessage(input)
     }
-
-    scrollToBottom()
   }
 
   const sendMessages = async () => {
@@ -146,7 +148,6 @@ export const Chat = () => {
             let content =
               (cur?.content ?? '') + (choice.delta?.content ?? choice.message?.content ?? '')
             setCurrentAnswer({id: 'current_answer', content, role: 'assistant'})
-            scrollToBottom()
           }
         },
         async () => {
@@ -156,7 +157,6 @@ export const Chat = () => {
             const message: Message = {role: 'assistant', content, id: uuidv4()}
             await threadService.addMessage(message)
             setCurrentAnswer(undefined)
-            scrollToBottom()
 
             if (!currentThread.title) {
               try {
@@ -176,14 +176,13 @@ export const Chat = () => {
   }
 
   const onInputMessage = (message: ChatInputMessage) => {
+    focusInput()
     addUserMessage(message)
     if (!message.attachment && message.role === 'user') {
       const cur = currentAnswer()
       setCurrentAnswer({...cur, id: 'current_answer', content: '', role: 'assistant'})
       void sendMessages()
     }
-
-    focusInput()
   }
 
   const onClearThread = () => {
@@ -212,7 +211,7 @@ export const Chat = () => {
   )
 
   return (
-    <Drawer data-tauri-drag-region="true" ref={drawerRef}>
+    <Drawer data-tauri-drag-region="true">
       <Messages>
         <For each={threadService.currentThread?.messages} fallback={<Empty />}>
           {(message) => (
@@ -232,6 +231,7 @@ export const Chat = () => {
       </Messages>
       <Show when={focus()} keyed>
         <ChatInput
+          ref={inputRef}
           onMessage={onInputMessage}
           onCancel={() => setEditMessage(undefined)}
           message={editMessage()}

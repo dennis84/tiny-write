@@ -120,7 +120,7 @@ export class CodeService {
     return this.prettierService.check(codeEditorView.state.doc.toString(), lang, config)
   }
 
-  merge(file: File, newDoc: string, range?: [number, number]) {
+  merge(file: File, newDoc: string, range?: [number, number], done?: () => void) {
     const subdoc = this.collabService.getSubdoc(file.id)
     const type = subdoc.getText(file.id)
     if (!type) return
@@ -152,6 +152,7 @@ export class CodeService {
             type.delete(0, type.length)
             type.insert(0, update.state.doc.toString())
             this.updateEditorState(currentFile)
+            done?.()
           }
         }),
       ],
