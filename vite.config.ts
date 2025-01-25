@@ -2,12 +2,15 @@ import {fileURLToPath, URL} from 'node:url'
 import {defineConfig} from 'vite'
 import solidPlugin from 'vite-plugin-solid'
 import {visualizer} from 'rollup-plugin-visualizer'
+import Icons from 'unplugin-icons/vite'
 import {execSync} from 'node:child_process'
 
-const commitHash = execSync('git rev-parse --short ${GITHUB_SHA:-HEAD}').toString().replace('\n', '')
+const commitHash = execSync('git rev-parse --short ${GITHUB_SHA:-HEAD}')
+  .toString()
+  .replace('\n', '')
 
 export default defineConfig({
-  plugins: [solidPlugin(), visualizer()],
+  plugins: [solidPlugin(), visualizer(), Icons({compiler: 'solid', jsx: 'preact'})],
   server: {
     host: process.env.TAURI_DEV_HOST || 'localhost',
     port: 3000,

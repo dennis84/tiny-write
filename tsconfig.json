@@ -2,7 +2,13 @@
   "compilerOptions": {
     "target": "ESNext",
     "lib": ["DOM", "DOM.Iterable", "ESNext"],
-    "types": ["vite/client", "@types/node", "./vite-env.d.ts", "@testing-library/jest-dom"],
+    "types": [
+      "vite/client",
+      "@types/node",
+      "./vite-env.d.ts",
+      "@testing-library/jest-dom",
+      "unplugin-icons/types/solid"
+    ],
     "allowJs": false,
     "esModuleInterop": false,
     "allowSyntheticDefaultImports": true,

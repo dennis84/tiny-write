@@ -15,10 +15,9 @@ export const SubmenuCode = () => {
   const onChangeLang = () => {
     const currentFile = fileService.currentFile
     if (!currentFile) return
-    const language = currentFile.codeEditorView?.contentDOM.dataset.language ?? ''
 
     appService.setInputLine({
-      value: language,
+      value: currentFile.codeLang ?? '',
       words: Object.keys(languages),
       onEnter: (lang) => {
         codeService.updateLang(currentFile, lang)

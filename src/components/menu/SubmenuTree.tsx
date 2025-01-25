@@ -10,7 +10,7 @@ import {FileService} from '@/services/FileService'
 import {CanvasService} from '@/services/CanvasService'
 import {ITEM_HEIGHT, itemCss, Label, Link, Sub} from './Style'
 import {Tooltip} from '../Tooltip'
-import {Icon} from '../Icon'
+import {CodeIcon, Icon} from '../Icon'
 
 const HighlightContent = styled('div')`
   position: absolute;
@@ -431,7 +431,7 @@ export const SubmenuTree = (props: Props) => {
               <Icon>gesture</Icon>
             </Match>
             <Match when={isCodeFile(p.node.item)}>
-              <Icon>code_blocks</Icon>
+              <CodeIcon lang={isFile(p.node.item) ? p.node.item.codeLang : undefined} />
             </Match>
             <Match when={!isCodeFile(p.node.item)}>
               <Icon>text_snippet</Icon>

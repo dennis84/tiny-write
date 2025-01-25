@@ -1,5 +1,15 @@
-import {JSXElement} from 'solid-js'
+import {JSXElement, Match, Switch} from 'solid-js'
 import {styled} from 'solid-styled-components'
+import OcticonCopilot24 from '~icons/octicon/copilot-24?width=24px&height=24px'
+import MingcuteAiLine from '~icons/mingcute/ai-line?width=24px&height=24px'
+import OcticonCopilotError16 from '~icons/octicon/copilot-error-16?width=16px&height=16px'
+import SimpleIconsTypescript from '~icons/simple-icons/typescript?width=24px&height=24px'
+import SimpleIconsJavascript from '~icons/simple-icons/javascript?width=24px&height=24px'
+import SimpleIconsJson from '~icons/simple-icons/json?width=24px&height=24px'
+import SimpleIconsPython from '~icons/simple-icons/python?width=24px&height=24px'
+import SimpleIconsRust from '~icons/simple-icons/rust?width=24px&height=24px'
+import SimpleIconsReact from '~icons/simple-icons/react?width=24px&height=24px'
+import {findCodeLang} from '@/codemirror/highlight'
 
 export const Icon = (props: {children: JSXElement}) => <span class="icon">{props.children}</span>
 
@@ -59,36 +69,62 @@ export const IconPrettier = () => (
 
 export const IconAi = () => (
   <SvgIcon class="icon">
-    <svg viewBox="0 0 24 24">
-      <g fill="none">
-        <path d="m12.594 23.258l-.012.002l-.071.035l-.02.004l-.014-.004l-.071-.036q-.016-.004-.024.006l-.004.01l-.017.428l.005.02l.01.013l.104.074l.015.004l.012-.004l.104-.074l.012-.016l.004-.017l-.017-.427q-.004-.016-.016-.018m.264-.113l-.014.002l-.184.093l-.01.01l-.003.011l.018.43l.005.012l.008.008l.201.092q.019.005.029-.008l.004-.014l-.034-.614q-.005-.019-.02-.022m-.715.002a.02.02 0 0 0-.027.006l-.006.014l-.034.614q.001.018.017.024l.015-.002l.201-.093l.01-.008l.003-.011l.018-.43l-.003-.012l-.01-.01z"></path>
-        <path
-          fill="currentColor"
-          d="M9.107 5.448c.598-1.75 3.016-1.803 3.725-.159l.06.16l.807 2.36a4 4 0 0 0 2.276 2.411l.217.081l2.36.806c1.75.598 1.803 3.016.16 3.725l-.16.06l-2.36.807a4 4 0 0 0-2.412 2.276l-.081.216l-.806 2.361c-.598 1.75-3.016 1.803-3.724.16l-.062-.16l-.806-2.36a4 4 0 0 0-2.276-2.412l-.216-.081l-2.36-.806c-1.751-.598-1.804-3.016-.16-3.724l.16-.062l2.36-.806A4 4 0 0 0 8.22 8.025l.081-.216zM11 6.094l-.806 2.36a6 6 0 0 1-3.49 3.649l-.25.091l-2.36.806l2.36.806a6 6 0 0 1 3.649 3.49l.091.25l.806 2.36l.806-2.36a6 6 0 0 1 3.49-3.649l.25-.09l2.36-.807l-2.36-.806a6 6 0 0 1-3.649-3.49l-.09-.25zM19 2a1 1 0 0 1 .898.56l.048.117l.35 1.026l1.027.35a1 1 0 0 1 .118 1.845l-.118.048l-1.026.35l-.35 1.027a1 1 0 0 1-1.845.117l-.048-.117l-.35-1.026l-1.027-.35a1 1 0 0 1-.118-1.845l.118-.048l1.026-.35l.35-1.027A1 1 0 0 1 19 2"
-        ></path>
-      </g>
-    </svg>
+    <MingcuteAiLine />
   </SvgIcon>
 )
 
 export const IconAiAssistant = () => (
   <SvgIcon class="icon">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-      <path
-        fill="currentColor"
-        d="m20.713 8.128l-.246.566a.506.506 0 0 1-.934 0l-.246-.566a4.36 4.36 0 0 0-2.22-2.25l-.759-.339a.53.53 0 0 1 0-.963l.717-.319a4.37 4.37 0 0 0 2.251-2.326l.253-.611a.506.506 0 0 1 .942 0l.253.61a4.37 4.37 0 0 0 2.25 2.327l.718.32a.53.53 0 0 1 0 .962l-.76.338a4.36 4.36 0 0 0-2.219 2.251M10 3h4v2h-4a6 6 0 0 0-6 6c0 3.61 2.462 5.966 8 8.48V17h2a6 6 0 0 0 6-6h2a8 8 0 0 1-8 8v3.5c-5-2-12-5-12-11.5a8 8 0 0 1 8-8"
-      />
-    </svg>
+    <OcticonCopilot24 />
   </SvgIcon>
 )
 
 export const IconCopilot = () => (
   <SvgIcon class="icon">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-      <path
-        fill="currentColor"
-        d="M8.662 14.484a1.001 1.001 0 1 1 2.003 0v1.997a1.001 1.001 0 1 1-2.003 0zm6.675 0a1.001 1.001 0 1 0-2.003 0v1.997a1.001 1.001 0 1 0 2.003 0zM11.999 4.028c-.845-1.219-2.598-1.31-3.945-1.188c-1.543.154-2.843.685-3.574 1.464c-1.268 1.386-1.326 4.291-.715 5.89c-.061.274-.12.551-.162.845c-1.13.297-2.283 1.898-2.283 3.043v2.162c0 .6.28 1.148.775 1.522C4.919 19.864 8.439 21.49 12 21.49s7.08-1.626 9.904-3.724a1.89 1.89 0 0 0 .775-1.521v-2.163c0-1.145-1.153-2.746-2.283-3.043c-.042-.294-.1-.57-.162-.844c.611-1.6.552-4.505-.715-5.89c-.731-.78-2.03-1.31-3.574-1.465c-1.347-.121-3.1-.03-3.946 1.188m6.675 13.46c-1.535.854-4.085 2-6.674 2s-5.14-1.146-6.675-2v-5.799c2.477.96 5.327.465 6.673-1.758H12c1.346 2.223 4.196 2.717 6.673 1.758zm-8.01-10.66c0 1.586-.48 3.312-2.67 3.312s-2.606-.524-2.606-1.997c0-2.336.356-3.336 3.316-3.336c1.71 0 1.96.55 1.96 2.022m2.67 0c0-1.472.25-2.02 1.961-2.02c2.96 0 3.316 1 3.316 3.335c0 1.473-.417 1.997-2.607 1.997s-2.67-1.726-2.67-3.311"
-      ></path>
-    </svg>
+    <OcticonCopilot24 />
   </SvgIcon>
 )
+
+export const IconAiAssistantClose = () => (
+  <SvgIcon class="icon">
+    <OcticonCopilotError16 />
+  </SvgIcon>
+)
+
+export const CodeIcon = (props: {lang?: string}) => {
+  const lang = findCodeLang(props.lang ?? '')
+  return (
+    <Switch fallback={<Icon>code_blocks</Icon>}>
+      <Match when={lang === 'typescript'}>
+        <SvgIcon class="icon">
+          <SimpleIconsTypescript />
+        </SvgIcon>
+      </Match>
+      <Match when={lang === 'javascript'}>
+        <SvgIcon class="icon">
+          <SimpleIconsJavascript />
+        </SvgIcon>
+      </Match>
+      <Match when={lang === 'jsx' || lang === 'tsx'}>
+        <SvgIcon class="icon">
+          <SimpleIconsReact />
+        </SvgIcon>
+      </Match>
+      <Match when={lang === 'json'}>
+        <SvgIcon class="icon">
+          <SimpleIconsJson />
+        </SvgIcon>
+      </Match>
+      <Match when={lang === 'python'}>
+        <SvgIcon class="icon">
+          <SimpleIconsPython />
+        </SvgIcon>
+      </Match>
+      <Match when={lang === 'rust'}>
+        <SvgIcon class="icon">
+          <SimpleIconsRust />
+        </SvgIcon>
+      </Match>
+    </Switch>
+  )
+}

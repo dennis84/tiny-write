@@ -4,9 +4,9 @@ import {isTauri, isMac, mod, shortHash, version, VERSION_URL, isDev} from '@/env
 import {quit} from '@/remote/app'
 import {useOpen} from '@/open'
 import {MenuId} from '@/services/MenuService'
-import {Button, IconButton, RippleButton} from '@/components/Button'
+import {Button, IconButton} from '@/components/Button'
 import {Chat} from '@/components/assistant/Chat'
-import {Icon, IconAi, IconAiAssistant, IconPrettier} from '@/components/Icon'
+import {Icon, IconAi, IconAiAssistant, IconAiAssistantClose, IconPrettier} from '@/components/Icon'
 import {TooltipHelp} from '@/components/TooltipHelp'
 import {Bin} from './Bin'
 import {CodeFormat} from './CodeFormat'
@@ -83,8 +83,7 @@ export const Menu = () => {
   const showCodeFormat = () => {
     const currentFile = fileService.currentFile
     if (!currentFile?.codeEditorView) return true
-    const language = currentFile.codeEditorView.contentDOM.dataset.language ?? ''
-    return prettierService.supports(language)
+    return prettierService.supports(currentFile.codeLang ?? '')
   }
 
   return (
@@ -94,7 +93,7 @@ export const Menu = () => {
           <TooltipHelp title={menuService.assistant() ? 'Close' : 'Open Chat'}>
             <IconButton onClick={() => menuService.toggleAssistant()}>
               {menuService.assistant() ?
-                <Icon>chat_error</Icon>
+                <IconAiAssistantClose />
               : <IconAiAssistant />}
             </IconButton>
           </TooltipHelp>
