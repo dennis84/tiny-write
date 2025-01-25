@@ -4,7 +4,7 @@ import {isTauri, isMac, mod, shortHash, version, VERSION_URL, isDev} from '@/env
 import {quit} from '@/remote/app'
 import {useOpen} from '@/open'
 import {MenuId} from '@/services/MenuService'
-import {Button, IconButton} from '@/components/Button'
+import {Button, IconButton, RippleButton} from '@/components/Button'
 import {Chat} from '@/components/assistant/Chat'
 import {Icon, IconAi, IconAiAssistant, IconPrettier} from '@/components/Icon'
 import {TooltipHelp} from '@/components/TooltipHelp'
@@ -99,14 +99,9 @@ export const Menu = () => {
             </IconButton>
           </TooltipHelp>
         </Show>
-        <Show when={menuService.menu() === undefined}>
+        <Show when={!menuService.menu() || menuService.menu() === MenuId.MAIN}>
           <IconButton onClick={onMenuButtonClick} data-testid="menu_button">
-            <Icon>more_vert</Icon>
-          </IconButton>
-        </Show>
-        <Show when={menuService.menu() === MenuId.MAIN}>
-          <IconButton onClick={onMenuButtonClick} data-testid="menu_button">
-            <Icon>close</Icon>
+            <Icon>{!menuService.menu() ? 'more_vert' : 'close'}</Icon>
           </IconButton>
         </Show>
         <Show when={menuService.menu() !== undefined && menuService.menu() !== 'main'}>
