@@ -6,7 +6,7 @@ import {EditorState, NodeSelection, TextSelection} from 'prosemirror-state'
 // @ts-ignore
 import {__serializeForClipboard} from 'prosemirror-view'
 import {File, useState} from '@/state'
-import {Icon} from '../Icon'
+import {IconDragIndicator} from '../Icon'
 import {BlockTooltip} from './BlockTooltip'
 
 const DragHandle = styled('div')`
@@ -228,7 +228,7 @@ export const BlockHandle = (props: Props) => {
         onDragEnd={onResetBlock}
         draggable={true}
       >
-        <Icon>drag_indicator</Icon>
+        <IconDragIndicator />
       </DragHandle>
       <Portal mount={appService.layoutRef}>
         <BlockTooltip selectedBlock={selectedBlock()} resetBlock={onResetBlock} />

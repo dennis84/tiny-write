@@ -9,7 +9,7 @@ import {Message, useState} from '@/state'
 import {getTheme} from '@/codemirror/theme'
 import {getLanguageConfig} from '@/codemirror/highlight'
 import {IconButton} from '../Button'
-import {Icon} from '../Icon'
+import {IconMoreVert} from '../Icon'
 import {chatBubble} from './Style'
 
 const QuestionBubble = styled('div')`
@@ -118,7 +118,7 @@ export const ChatQuestion = (props: Props) => {
       <div>{props.message.error ? ` (This question has errors: ${props.message.error})` : ''}</div>
       <BubbleMenu>
         <IconButton onClick={(e) => props.onBubbleMenu?.(e, props.message)}>
-          <Icon>more_vert</Icon>
+          <IconMoreVert />
         </IconButton>
       </BubbleMenu>
     </QuestionBubble>

@@ -10,7 +10,20 @@ import {FileService} from '@/services/FileService'
 import {CanvasService} from '@/services/CanvasService'
 import {ITEM_HEIGHT, itemCss, Label, Link, Sub} from './Style'
 import {Tooltip} from '../Tooltip'
-import {CodeIcon, Icon} from '../Icon'
+import {
+  IconAdd,
+  IconAdjust,
+  IconCodeBlocks,
+  IconDelete,
+  IconGesture,
+  IconMoreHoriz,
+  IconPostAdd,
+  IconEdit,
+  IconTextSnippet,
+  IconHistory,
+  IconDeleteForever,
+  LangIcon,
+} from '../Icon'
 
 const HighlightContent = styled('div')`
   position: absolute;
@@ -97,7 +110,6 @@ const TreeLinkCorner = styled('i')`
   justify-content: center;
   color: var(--foreground-50);
   height: ${ITEM_HEIGHT};
-  width: ${ITEM_HEIGHT};
   ${(props: any) => props.highlight ? `color: var(--primary-background);` : ''}
   ${(props: any) => props.level ? `margin-left: ${String(20 * props.level)}px;` : ''}
   ${(props: any) => props.expandable ? `
@@ -428,13 +440,21 @@ export const SubmenuTree = (props: Props) => {
         >
           <Switch>
             <Match when={isCanvas(p.node.item)}>
-              <Icon>gesture</Icon>
+              <IconGesture />
             </Match>
             <Match when={isCodeFile(p.node.item)}>
-              <CodeIcon lang={isFile(p.node.item) ? p.node.item.codeLang : undefined} />
+              <Show
+                when={
+                  isFile(p.node.item) &&
+                  (p.node.item.codeLang || !p.node.item.codeLang) /* eslint-disable-line */
+                }
+                keyed
+              >
+                <LangIcon name={isFile(p.node.item) ? p.node.item.codeLang : undefined} />
+              </Show>
             </Match>
             <Match when={!isCodeFile(p.node.item)}>
-              <Icon>text_snippet</Icon>
+              <IconTextSnippet />
             </Match>
           </Switch>
         </TreeLinkCorner>
@@ -453,7 +473,7 @@ export const SubmenuTree = (props: Props) => {
           onClick={(e: MouseEvent) => showTooltip(e, anchor, p.node)}
           data-testid="tree_link_menu"
         >
-          <Icon>more_horiz</Icon>
+          <IconMoreHoriz />
         </LinkMenu>
       </TreeLinkItem>
     )
@@ -468,7 +488,7 @@ export const SubmenuTree = (props: Props) => {
 
     return (
       <Link ref={anchor} active={anchor === tooltipAnchor()} onClick={onNew} data-testid="new">
-        <Icon>add</Icon> New
+        <IconAdd /> New
       </Link>
     )
   }
@@ -517,10 +537,7 @@ export const SubmenuTree = (props: Props) => {
             data-testid="bin"
             active={dropState()?.pos === 'delete'}
           >
-            <TreeLinkCorner>
-              <Icon>delete</Icon>
-            </TreeLinkCorner>{' '}
-            Bin
+            <IconDelete /> Bin
           </Link>
         </Show>
       </Sub>
@@ -538,64 +555,64 @@ export const SubmenuTree = (props: Props) => {
         <Tooltip anchor={tooltipAnchor()!} onClose={() => closeTooltip()} backdrop={true}>
           <Show when={isOnCanvas(selected()?.item)}>
             <div onClick={onFocus} data-testid="focus_file">
-              <Icon>adjust</Icon>
+              <IconAdjust />
               Focus file
             </div>
           </Show>
           <Show when={!selected()?.item.deleted && isFile(selected()?.item)}>
             <div onClick={onAddFile} data-testid="add_file">
-              <Icon>post_add</Icon>
+              <IconPostAdd />
               Add file
             </div>
             <div onClick={onAddCanvas} data-testid="add_canvas">
-              <Icon>gesture</Icon>
+              <IconGesture />
               Add canvas
             </div>
             <div onClick={onAddCode} data-testid="add_code">
-              <Icon>code_blocks</Icon>
+              <IconCodeBlocks />
               Add code file
             </div>
             <hr class="divider" />
           </Show>
           <Show when={selected() && !isLocalFile(selected()?.item)}>
             <div onClick={onRename} data-testid="rename">
-              <Icon>edit</Icon>
+              <IconEdit />
               Rename
             </div>
           </Show>
           <Show when={selected()?.item.deleted}>
             <div onClick={onRestore} data-testid="restore">
-              <Icon>history</Icon>
+              <IconHistory />
               Restore
             </div>
             <div onClick={onDeleteForever} data-testid="delete_forever">
-              <Icon>delete_forever</Icon>
+              <IconDeleteForever />
               Delete forever
             </div>
           </Show>
           <Show when={selected() && !selected()?.item.deleted && !isLocalFile(selected()?.item)}>
             <div onClick={onDelete} data-testid="delete">
-              <Icon>delete</Icon>
+              <IconDelete />
               Delete
             </div>
           </Show>
           <Show when={selected() && isLocalFile(selected()?.item)}>
             <div onClick={onDeleteForever} data-testid="delete">
-              <Icon>delete</Icon>
+              <IconDelete />
               Close
             </div>
           </Show>
           <Show when={!selected()}>
             <div onClick={onNewFile} data-testid="new_file">
-              <Icon>post_add</Icon>
+              <IconPostAdd />
               New file
             </div>
             <div onClick={onNewCanvas} data-testid="new_canvas">
-              <Icon>gesture</Icon>
+              <IconGesture />
               New canvas
             </div>
             <div onClick={onNewCode} data-testid="new_code">
-              <Icon>code_blocks</Icon>
+              <IconCodeBlocks />
               New code file
             </div>
           </Show>

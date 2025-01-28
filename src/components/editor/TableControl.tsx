@@ -6,7 +6,7 @@ import {cellAround, TableMap} from 'prosemirror-tables'
 import {Box, Vec} from '@tldraw/editor'
 import {File, useState} from '@/state'
 import {ZIndex} from '@/utils/ZIndex'
-import {Icon} from '../Icon'
+import {IconDragIndicator} from '../Icon'
 import {TableTooltip} from './TableTooltip'
 
 const Handle = styled('div')`
@@ -220,7 +220,7 @@ const HandleGrid = (props: HandleGridProps) => {
               onMouseDown={onHandleClick('horiz')}
               class={activeHandle()?.direction === 'horiz' ? 'active' : ''}
             >
-              <Icon>drag_indicator</Icon>
+              <IconDragIndicator />
             </Handle>
             <Handle
               id="table-handle-vert"
@@ -228,7 +228,7 @@ const HandleGrid = (props: HandleGridProps) => {
               onMouseDown={onHandleClick('vert')}
               class={activeHandle()?.direction === 'vert' ? 'active' : ''}
             >
-              <Icon>drag_indicator</Icon>
+              <IconDragIndicator />
             </Handle>
           </>
         )}

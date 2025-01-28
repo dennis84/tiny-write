@@ -6,7 +6,21 @@ import {useOpen} from '@/open'
 import {MenuId} from '@/services/MenuService'
 import {Button, IconButton} from '@/components/Button'
 import {Chat} from '@/components/assistant/Chat'
-import {Icon, IconAi, IconAiAssistant, IconAiAssistantClose, IconPrettier} from '@/components/Icon'
+import {
+  IconAi,
+  IconAiAssistant,
+  IconAiAssistantClose,
+  IconArrowBack,
+  IconClose,
+  IconContrast,
+  IconDesktopLandscape,
+  IconFullscreen,
+  IconHistory,
+  IconMoreVert,
+  IconPrettier,
+  IconSpellcheck,
+  IconVerticalAlignCenter,
+} from '@/components/Icon'
 import {TooltipHelp} from '@/components/TooltipHelp'
 import {Bin} from './Bin'
 import {CodeFormat} from './CodeFormat'
@@ -100,12 +114,14 @@ export const Menu = () => {
         </Show>
         <Show when={!menuService.menu() || menuService.menu() === MenuId.MAIN}>
           <IconButton onClick={onMenuButtonClick} data-testid="menu_button">
-            <Icon>{!menuService.menu() ? 'more_vert' : 'close'}</Icon>
+            {menuService.menu() ?
+              <IconClose />
+            : <IconMoreVert />}
           </IconButton>
         </Show>
         <Show when={menuService.menu() !== undefined && menuService.menu() !== 'main'}>
           <Button onClick={() => menuService.show(MenuId.MAIN)} data-testid="menu_back_button">
-            <Icon>arrow_back</Icon> Back
+            <IconArrowBack /> Back
           </Button>
         </Show>
       </Control>
@@ -154,7 +170,7 @@ export const Menu = () => {
           <Label>View</Label>
           <Sub data-tauri-drag-region="true">
             <Link data-testid="appearance" onClick={() => menuService.show(MenuId.APPEARANCE)}>
-              <Icon>contrast</Icon> Appearance
+              <IconContrast /> Appearance
             </Link>
             <Show when={showCodeFormat()}>
               <Link onClick={() => menuService.show(MenuId.CODE_FORMAT)}>
@@ -163,27 +179,26 @@ export const Menu = () => {
             </Show>
             <Show when={store.mode === Mode.Editor}>
               <Link onClick={() => menuService.show(MenuId.CHANGE_SET)}>
-                <Icon>history</Icon> Change Set
+                <IconHistory /> Change Set
               </Link>
             </Show>
             <Show when={isTauri()}>
               <Link onClick={onToggleFullscreen}>
-                <Icon>fullscreen</Icon> Fullscreen {store.fullscreen && '✅'}{' '}
+                <IconFullscreen /> Fullscreen {store.fullscreen && '✅'}{' '}
                 <Keys keys={[modKey, 'Enter']} />
               </Link>
             </Show>
             <Show when={store.mode === Mode.Editor}>
               <Link onClick={onToggleTypewriterMode}>
-                <Icon>vertical_align_center</Icon> Typewriter mode{' '}
-                {store.config.typewriterMode && '✅'}
+                <IconVerticalAlignCenter /> Typewriter mode {store.config.typewriterMode && '✅'}
               </Link>
               <Link onClick={onToggleSpellcheck}>
-                <Icon>spellcheck</Icon> Spellcheck {store.config.spellcheck && '✅'}
+                <IconSpellcheck /> Spellcheck {store.config.spellcheck && '✅'}
               </Link>
             </Show>
             <Show when={isTauri()}>
               <Link onClick={onToggleAlwaysOnTop}>
-                <Icon>desktop_landscape</Icon> Always on Top {store.config.alwaysOnTop && '✅'}
+                <IconDesktopLandscape /> Always on Top {store.config.alwaysOnTop && '✅'}
               </Link>
             </Show>
           </Sub>

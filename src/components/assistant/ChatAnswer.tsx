@@ -9,7 +9,7 @@ import {Message, useState} from '@/state'
 import {getTheme} from '@/codemirror/theme'
 import {getLanguageConfig} from '@/codemirror/highlight'
 import {IconButton} from '../Button'
-import {Icon, IconCopilot} from '../Icon'
+import {IconAiAssistant, IconMoreVert} from '../Icon'
 import {chatBubble} from './Style'
 import {parseCodeBlockAttrs} from './util'
 import {ApplyPanel, ApplyPanelState} from './ApplyPanel'
@@ -138,7 +138,7 @@ export const ChatAnswer = (props: Props) => {
   return (
     <AnswerBubble>
       <AnswerBadge>
-        <IconCopilot /> Assistant:
+        <IconAiAssistant /> Assistant:
       </AnswerBadge>
       <Show when={props.message?.content === ''}>
         <div>Loading ...</div>
@@ -149,7 +149,7 @@ export const ChatAnswer = (props: Props) => {
       <Show when={props.message !== undefined}>
         <BubbleMenu>
           <IconButton onClick={(e) => props.onBubbleMenu?.(e, props.message)}>
-            <Icon>more_vert</Icon>
+            <IconMoreVert />
           </IconButton>
         </BubbleMenu>
       </Show>

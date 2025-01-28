@@ -4,7 +4,7 @@ import {useState} from '@/state'
 import {copy} from '@/remote/clipboard'
 import {CopilotSignIn} from '@/remote/copilot'
 import {Label, Link, Note, Sub, Text} from './Style'
-import {Icon} from '../Icon'
+import {IconCheck, IconContentCopy, IconOpenInNew, IconToggleOff, IconToggleOn} from '../Icon'
 import {IconButton} from '../Button'
 
 const UserCode = styled('code')`
@@ -75,7 +75,7 @@ export const AiSubmenuGithub = () => {
       <Sub data-tauri-drag-region="true">
         <Show when={!store.ai?.copilot?.user}>
           <Link onClick={onConnect}>
-            <Icon>toggle_on</Icon> Connect to GitHub
+            <IconToggleOn /> Connect to GitHub
           </Link>
         </Show>
         <Show when={codeResult()?.userCode}>
@@ -86,11 +86,13 @@ export const AiSubmenuGithub = () => {
           <Text>
             User Code: <UserCode>{codeResult()?.userCode}</UserCode>
             <IconButton onClick={onCopy}>
-              <Icon>{copied() ? 'check' : 'content_copy'}</Icon>
+              {copied() ?
+                <IconCheck />
+              : <IconContentCopy />}
             </IconButton>
           </Text>
           <Link onClick={onVerify}>
-            <Icon>open_in_new</Icon> Open GitHub Verification URL
+            <IconOpenInNew /> Open GitHub Verification URL
           </Link>
         </Show>
         <Show when={!codeResult()}>
@@ -99,7 +101,7 @@ export const AiSubmenuGithub = () => {
               <>
                 <Text>Signed in with: {name()}</Text>
                 <Link onClick={onDisconnect}>
-                  <Icon>toggle_off</Icon> Disconnect
+                  <IconToggleOff /> Disconnect
                 </Link>
                 <Show when={done()}>
                   <Note>GitHub Copilot is now ready!</Note>

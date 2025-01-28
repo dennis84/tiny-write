@@ -1,19 +1,145 @@
-import {JSXElement, Match, Switch} from 'solid-js'
+import {Dynamic} from 'solid-js/web'
+import {JSX} from 'solid-js'
 import {styled} from 'solid-styled-components'
-import OcticonCopilot24 from '~icons/octicon/copilot-24?width=24px&height=24px'
-import MingcuteAiLine from '~icons/mingcute/ai-line?width=24px&height=24px'
+
+import OcticonCopilot16 from '~icons/octicon/copilot-16?width=16px&height=16px'
 import OcticonCopilotError16 from '~icons/octicon/copilot-error-16?width=16px&height=16px'
-import SimpleIconsTypescript from '~icons/simple-icons/typescript?width=24px&height=24px'
-import SimpleIconsJavascript from '~icons/simple-icons/javascript?width=24px&height=24px'
-import SimpleIconsJson from '~icons/simple-icons/json?width=24px&height=24px'
-import SimpleIconsPython from '~icons/simple-icons/python?width=24px&height=24px'
-import SimpleIconsRust from '~icons/simple-icons/rust?width=24px&height=24px'
-import SimpleIconsReact from '~icons/simple-icons/react?width=24px&height=24px'
+import MingcuteAiLine from '~icons/mingcute/ai-line?width=24px&height=24px'
+
+import SimpleIconsPrettier from '~icons/simple-icons/prettier?width=24px&height=24px'
+import MaterialSymbolsMoreVert from '~icons/material-symbols/more-vert?width=24px&height=24px'
+import MaterialSymbolsMoreHoriz from '~icons/material-symbols/more-horiz?width=24px&height=24px'
+import MaterialSymbolsClose from '~icons/material-symbols/close?width=24px&height=24px'
+import MaterialSymbolsArrowBack from '~icons/material-symbols/arrow-back?width=24px&height=24px'
+import MaterialSymbolsContrast from '~icons/material-symbols/contrast?width=24px&height=24px'
+import MaterialSymbolsHistory from '~icons/material-symbols/history?width=24px&height=24px'
+import MaterialSymbolsFullscreen from '~icons/material-symbols/fullscreen?width=24px&height=24px'
+import MaterialSymbolsVerticalAlignCenter from '~icons/material-symbols/vertical-align-center?width=24px&height=24px'
+import MaterialSymbolsSpellcheck from '~icons/material-symbols/spellcheck?width=24px&height=24px'
+import MaterialSymbolsDesktopLandscape from '~icons/material-symbols/desktop-landscape?width=24px&height=24px'
+import MaterialSymbolsLanguage from '~icons/material-symbols/language?width=24px&height=24px'
+import MaterialSymbolsSaveAs from '~icons/material-symbols/save-as?width=24px&height=24px'
+import MaterialSymbolsGesture from '~icons/material-symbols/gesture?width=24px&height=24px'
+import MaterialSymbolsTextSnippet from '~icons/material-symbols/text-snippet?width=24px&height=24px'
+import MaterialSymbolsAdd from '~icons/material-symbols/add?width=24px&height=24px'
+import MaterialSymbolsDelete from '~icons/material-symbols/delete?width=24px&height=24px'
+import MaterialSymbolsDeleteForever from '~icons/material-symbols/delete-forever?width=24px&height=24px'
+import MaterialSymbolsAdjust from '~icons/material-symbols/adjust?width=24px&height=24px'
+import MaterialSymbolsPostAdd from '~icons/material-symbols/post-add?width=24px&height=24px'
+import MaterialSymbolsEdit from '~icons/material-symbols/edit?width=24px&height=24px'
+import MaterialSymbolsCodeBlocks from '~icons/material-symbols/code-blocks?width=24px&height=24px'
+import MaterialSymbolsContentCopy from '~icons/material-symbols/content-copy?width=24px&height=24px'
+import MaterialSymbolsUndo from '~icons/material-symbols/undo?width=24px&height=24px'
+import MaterialSymbolsRedo from '~icons/material-symbols/redo?width=24px&height=24px'
+import MaterialSymbolsContentCut from '~icons/material-symbols/content-cut?width=24px&height=24px'
+import MaterialSymbolsContentPaste from '~icons/material-symbols/content-paste?width=24px&height=24px'
+import MaterialSymbolsMarkdownCopy from '~icons/material-symbols/markdown-copy?width=24px&height=24px'
+import MaterialSymbolsMerge from '~icons/material-symbols/merge?width=24px&height=24px'
+import MaterialSymbolsAttachment from '~icons/material-symbols/attachment?width=24px&height=24px'
+import MaterialSymbolsCheck from '~icons/material-symbols/check?width=24px&height=24px'
+import MaterialSymbolsSend from '~icons/material-symbols/send?width=24px&height=24px'
+import MaterialSymbolsKeyboardArrowDown from '~icons/material-symbols/keyboard-arrow-down?width=24px&height=24px'
+import MaterialSymbolsTextSelectStart from '~icons/material-symbols/text-select-start?width=24px&height=24px'
+import MaterialSymbolsOpenInFull from '~icons/material-symbols/open-in-full?width=24px&height=24px'
+import MaterialSymbolsOpenInNew from '~icons/material-symbols/open-in-new?width=24px&height=24px'
+import MaterialSymbolsDragIndicator from '~icons/material-symbols/drag-indicator?width=24px&height=24px'
+import MaterialSymbolsFileSave from '~icons/material-symbols/file-save?width=24px&height=24px'
+import MaterialSymbolsVisibility from '~icons/material-symbols/visibility?width=24px&height=24px'
+import MaterialSymbolsVisibilityOff from '~icons/material-symbols/visibility-off?width=24px&height=24px'
+import MaterialSymbolsUnfoldLess from '~icons/material-symbols/unfold-less?width=24px&height=24px'
+import MaterialSymbolsFormatImageLeft from '~icons/material-symbols/format-image-left?width=24px&height=24px'
+import MaterialSymbolsFormatImageRight from '~icons/material-symbols/format-image-right?width=24px&height=24px'
+import MaterialSymbolsFormatClear from '~icons/material-symbols/format-clear?width=24px&height=24px'
+import MaterialSymbolsVariableRemove from '~icons/material-symbols/variable-remove?width=24px&height=24px'
+import MaterialSymbolsToggleOn from '~icons/material-symbols/toggle-on?width=24px&height=24px'
+import MaterialSymbolsToggleOff from '~icons/material-symbols/toggle-off?width=24px&height=24px'
+import MaterialSymbolsAddRowAbove from '~icons/material-symbols/add-row-above?width=24px&height=24px'
+import MaterialSymbolsAddRowBelow from '~icons/material-symbols/add-row-below?width=24px&height=24px'
+import MaterialSymbolsAddColumnLeftOutline from '~icons/material-symbols/add-column-left-outline?width=24px&height=24px'
+import MaterialSymbolsAddColumnRightOutline from '~icons/material-symbols/add-column-right-outline?width=24px&height=24px'
+import MaterialSymbolsGrid3x3 from '~icons/material-symbols/grid-3x3?width=24px&height=24px'
+import MaterialSymbolsCloud from '~icons/material-symbols/cloud?width=24px&height=24px'
+import MaterialSymbolsCloudOff from '~icons/material-symbols/cloud-off?width=24px&height=24px'
+import MaterialSymbolsLink from '~icons/material-symbols/link?width=24px&height=24px'
+import MaterialSymbolsGroup from '~icons/material-symbols/group?width=24px&height=24px'
+import MaterialSymbolsFolder from '~icons/material-symbols/folder?width=24px&height=24px'
+import MaterialSymbolsFolderOpen from '~icons/material-symbols/folder-open?width=24px&height=24px'
+import MaterialSymbolsDescription from '~icons/material-symbols/description?width=24px&height=24px'
+
+import PixelarticonsFloatCenter from '~icons/pixelarticons/float-center?width=24px&height=24px'
+import MdiTableColumnRemove from '~icons/mdi/table-column-remove?width=24px&height=24px'
+import MdiTableRowRemove from '~icons/mdi/table-row-remove?width=24px&height=24px'
+
+import javascript from '~icons/simple-icons/javascript'
+import typescript from '~icons/simple-icons/typescript'
+import react from '~icons/simple-icons/react'
+import python from '~icons/simple-icons/python'
+import rust from '~icons/simple-icons/rust'
+import html from '~icons/simple-icons/html5'
+import css from '~icons/simple-icons/css'
+import java from '~icons/mdi/language-java'
+import kotlin from '~icons/simple-icons/kotlin'
+import json from '~icons/simple-icons/json'
+import cpp from '~icons/simple-icons/cplusplus'
+import markdown from '~icons/simple-icons/markdown'
+import xml from '~icons/simple-icons/xml'
+import php from '~icons/simple-icons/php'
+import haskell from '~icons/simple-icons/haskell'
+import clojure from '~icons/simple-icons/clojure'
+import erlang from '~icons/simple-icons/erlang'
+import groovy from '~icons/simple-icons/apachegroovy'
+import ruby from '~icons/simple-icons/ruby'
+import hcl from '~icons/simple-icons/hcl'
+import mermaid from '~icons/simple-icons/mermaid'
+import sh from '~icons/mdi/dollar'
+import yaml from '~icons/simple-icons/yaml'
+import go from '~icons/simple-icons/go'
+import toml from '~icons/simple-icons/toml'
+import lua from '~icons/simple-icons/lua'
+
 import {findCodeLang} from '@/codemirror/highlight'
 
-export const Icon = (props: {children: JSXElement}) => <span class="icon">{props.children}</span>
+const langIcons: Record<string, any> = {
+  javascript,
+  typescript,
+  tsx: react,
+  jsx: react,
+  python,
+  rust,
+  html,
+  css,
+  java,
+  kotlin,
+  json,
+  cpp,
+  markdown,
+  xml,
+  php,
+  haskell,
+  clojure,
+  erlang,
+  groovy,
+  ruby,
+  hcl,
+  mermaid,
+  sh,
+  yaml,
+  go,
+  toml,
+  lua,
+}
 
-const SvgIcon = styled('span')`
+export const LangIcon = (props: {name?: string}) => {
+  const lang = findCodeLang(props.name ?? '')
+  const Icon = langIcons[lang ?? ''] ?? (() => <MaterialSymbolsCodeBlocks />)
+  return lang ?
+      <SvgIcon>
+        <Dynamic component={Icon} />
+      </SvgIcon>
+    : <IconCodeBlocks />
+}
+
+const SvgIconEl = styled('span')`
   display: flex;
   align-items: center;
   justify-content: center;
@@ -23,108 +149,404 @@ const SvgIcon = styled('span')`
   }
 `
 
-export const IconRowRemove = () => (
-  <SvgIcon class="icon">
-    <svg viewBox="0 0 24 24">
-      <path
-        fill="currentColor"
-        d="M9.41 13L12 15.59L14.59 13L16 14.41L13.41 17L16 19.59L14.59 21L12 18.41L9.41 21L8 19.59L10.59 17L8 14.41zM22 9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2zM4 9h4V6H4zm6 0h4V6h-4zm6 0h4V6h-4z"
-      ></path>
-    </svg>
-  </SvgIcon>
+const SvgIcon = ({children}: {children: JSX.Element}) => (
+  <SvgIconEl class="icon">{children}</SvgIconEl>
 )
 
-export const IconColumnRemove = () => (
-  <SvgIcon class="icon">
-    <svg viewBox="0 0 24 24">
-      <path
-        fill="currentColor"
-        d="M4 2h7a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2m0 8v4h7v-4zm0 6v4h7v-4zM4 4v4h7V4zm13.59 8L15 9.41L16.41 8L19 10.59L21.59 8L23 9.41L20.41 12L23 14.59L21.59 16L19 13.41L16.41 16L15 14.59z"
-      ></path>
-    </svg>
-  </SvgIcon>
-)
-
-export const IconFloatCenter = () => (
-  <SvgIcon class="icon">
-    <svg viewBox="0 0 1024 1024">
-      <path
-        fill="currentColor"
-        d="M952 792H72c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h880c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8m0-632H72c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h880c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8M848 660c8.8 0 16-7.2 16-16V380c0-8.8-7.2-16-16-16H176c-8.8 0-16 7.2-16 16v264c0 8.8 7.2 16 16 16zM232 436h560v152H232z"
-      ></path>
-    </svg>
-  </SvgIcon>
-)
-
-export const IconPrettier = () => (
-  <SvgIcon class="icon">
-    <svg viewBox="0 0 24 24">
-      <path
-        fill="currentColor"
-        d="M8.571 23.429A.57.57 0 0 1 8 24H2.286a.571.571 0 0 1 0-1.143H8c.316 0 .571.256.571.572M8 20.57H6.857a.571.571 0 0 0 0 1.143H8a.571.571 0 0 0 0-1.143m-5.714 1.143H4.57a.571.571 0 0 0 0-1.143H2.286a.571.571 0 0 0 0 1.143M8 18.286H2.286a.571.571 0 0 0 0 1.143H8a.571.571 0 0 0 0-1.143M16 16H5.714a.571.571 0 0 0 0 1.143H16A.571.571 0 0 0 16 16M2.286 17.143h1.143a.571.571 0 0 0 0-1.143H2.286a.571.571 0 0 0 0 1.143m17.143-3.429H16a.571.571 0 0 0 0 1.143h3.429a.571.571 0 0 0 0-1.143M9.143 14.857h4.571a.571.571 0 0 0 0-1.143H9.143a.571.571 0 0 0 0 1.143m-6.857 0h4.571a.571.571 0 0 0 0-1.143H2.286a.571.571 0 0 0 0 1.143M20.57 11.43h-9.14a.571.571 0 0 0 0 1.142h9.142a.571.571 0 0 0 0-1.142zM9.714 12a.57.57 0 0 0-.571-.571H5.714a.571.571 0 0 0 0 1.142h3.429A.57.57 0 0 0 9.714 12m-7.428.571h1.143a.571.571 0 0 0 0-1.142H2.286a.571.571 0 0 0 0 1.142m19.428-3.428H16a.571.571 0 0 0 0 1.143h5.714a.571.571 0 0 0 0-1.143M2.286 10.286H8a.571.571 0 0 0 0-1.143H2.286a.571.571 0 0 0 0 1.143m13.143-2.857A.57.57 0 0 0 16 8h5.714a.571.571 0 0 0 0-1.143H16a.57.57 0 0 0-.571.572m-8.572-.572a.571.571 0 0 0 0 1.143H8a.571.571 0 0 0 0-1.143zM2.286 8H4.57a.571.571 0 0 0 0-1.143H2.286a.571.571 0 0 0 0 1.143m16.571-2.857c0 .315.256.571.572.571h1.142a.571.571 0 0 0 0-1.143H19.43a.57.57 0 0 0-.572.572zm-1.143 0a.57.57 0 0 0-.571-.572H12.57a.571.571 0 0 0 0 1.143h4.572a.57.57 0 0 0 .571-.571zm-15.428.571h8a.571.571 0 0 0 0-1.143h-8a.571.571 0 0 0 0 1.143m5.143-2.857c0 .316.255.572.571.572h11.429a.571.571 0 0 0 0-1.143H8a.57.57 0 0 0-.571.571m-5.143.572h3.428a.571.571 0 0 0 0-1.143H2.286a.571.571 0 0 0 0 1.143m0-2.286H16A.571.571 0 0 0 16 0H2.286a.571.571 0 0 0 0 1.143"
-      ></path>
-    </svg>
-  </SvgIcon>
-)
+// ai icons
 
 export const IconAi = () => (
-  <SvgIcon class="icon">
+  <SvgIcon>
     <MingcuteAiLine />
   </SvgIcon>
 )
 
 export const IconAiAssistant = () => (
-  <SvgIcon class="icon">
-    <OcticonCopilot24 />
-  </SvgIcon>
-)
-
-export const IconCopilot = () => (
-  <SvgIcon class="icon">
-    <OcticonCopilot24 />
+  <SvgIcon>
+    <OcticonCopilot16 />
   </SvgIcon>
 )
 
 export const IconAiAssistantClose = () => (
-  <SvgIcon class="icon">
+  <SvgIcon>
     <OcticonCopilotError16 />
   </SvgIcon>
 )
 
-export const CodeIcon = (props: {lang?: string}) => {
-  const lang = findCodeLang(props.lang ?? '')
-  return (
-    <Switch fallback={<Icon>code_blocks</Icon>}>
-      <Match when={lang === 'typescript'}>
-        <SvgIcon class="icon">
-          <SimpleIconsTypescript />
-        </SvgIcon>
-      </Match>
-      <Match when={lang === 'javascript'}>
-        <SvgIcon class="icon">
-          <SimpleIconsJavascript />
-        </SvgIcon>
-      </Match>
-      <Match when={lang === 'jsx' || lang === 'tsx'}>
-        <SvgIcon class="icon">
-          <SimpleIconsReact />
-        </SvgIcon>
-      </Match>
-      <Match when={lang === 'json'}>
-        <SvgIcon class="icon">
-          <SimpleIconsJson />
-        </SvgIcon>
-      </Match>
-      <Match when={lang === 'python'}>
-        <SvgIcon class="icon">
-          <SimpleIconsPython />
-        </SvgIcon>
-      </Match>
-      <Match when={lang === 'rust'}>
-        <SvgIcon class="icon">
-          <SimpleIconsRust />
-        </SvgIcon>
-      </Match>
-    </Switch>
-  )
-}
+// logos
+
+export const IconPrettier = () => (
+  <SvgIcon>
+    <SimpleIconsPrettier />
+  </SvgIcon>
+)
+
+// material
+
+export const IconMoreVert = () => (
+  <SvgIcon>
+    <MaterialSymbolsMoreVert />
+  </SvgIcon>
+)
+
+export const IconMoreHoriz = () => (
+  <SvgIcon>
+    <MaterialSymbolsMoreHoriz />
+  </SvgIcon>
+)
+
+export const IconClose = () => (
+  <SvgIcon>
+    <MaterialSymbolsClose />
+  </SvgIcon>
+)
+
+export const IconArrowBack = () => (
+  <SvgIcon>
+    <MaterialSymbolsArrowBack />
+  </SvgIcon>
+)
+
+export const IconContrast = () => (
+  <SvgIcon>
+    <MaterialSymbolsContrast />
+  </SvgIcon>
+)
+
+export const IconHistory = () => (
+  <SvgIcon>
+    <MaterialSymbolsHistory />
+  </SvgIcon>
+)
+
+export const IconFullscreen = () => (
+  <SvgIcon>
+    <MaterialSymbolsFullscreen />
+  </SvgIcon>
+)
+
+export const IconVerticalAlignCenter = () => (
+  <SvgIcon>
+    <MaterialSymbolsVerticalAlignCenter />
+  </SvgIcon>
+)
+
+export const IconSpellcheck = () => (
+  <SvgIcon>
+    <MaterialSymbolsSpellcheck />
+  </SvgIcon>
+)
+
+export const IconDesktopLandscape = () => (
+  <SvgIcon>
+    <MaterialSymbolsDesktopLandscape />
+  </SvgIcon>
+)
+
+export const IconLanguage = () => (
+  <SvgIcon>
+    <MaterialSymbolsLanguage />
+  </SvgIcon>
+)
+
+export const IconSaveAs = () => (
+  <SvgIcon>
+    <MaterialSymbolsSaveAs />
+  </SvgIcon>
+)
+
+export const IconGesture = () => (
+  <SvgIcon>
+    <MaterialSymbolsGesture />
+  </SvgIcon>
+)
+
+export const IconTextSnippet = () => (
+  <SvgIcon>
+    <MaterialSymbolsTextSnippet />
+  </SvgIcon>
+)
+
+export const IconAdd = () => (
+  <SvgIcon>
+    <MaterialSymbolsAdd />
+  </SvgIcon>
+)
+
+export const IconDelete = () => (
+  <SvgIcon>
+    <MaterialSymbolsDelete />
+  </SvgIcon>
+)
+
+export const IconDeleteForever = () => (
+  <SvgIcon>
+    <MaterialSymbolsDeleteForever />
+  </SvgIcon>
+)
+
+export const IconAdjust = () => (
+  <SvgIcon>
+    <MaterialSymbolsAdjust />
+  </SvgIcon>
+)
+
+export const IconPostAdd = () => (
+  <SvgIcon>
+    <MaterialSymbolsPostAdd />
+  </SvgIcon>
+)
+
+export const IconEdit = () => (
+  <SvgIcon>
+    <MaterialSymbolsEdit />
+  </SvgIcon>
+)
+
+export const IconCodeBlocks = () => (
+  <SvgIcon>
+    <MaterialSymbolsCodeBlocks />
+  </SvgIcon>
+)
+
+export const IconContentCopy = () => (
+  <SvgIcon>
+    <MaterialSymbolsContentCopy />
+  </SvgIcon>
+)
+
+export const IconContentCut = () => (
+  <SvgIcon>
+    <MaterialSymbolsContentCut />
+  </SvgIcon>
+)
+
+export const IconContentPaste = () => (
+  <SvgIcon>
+    <MaterialSymbolsContentPaste />
+  </SvgIcon>
+)
+
+export const IconMarkdownCopy = () => (
+  <SvgIcon>
+    <MaterialSymbolsMarkdownCopy />
+  </SvgIcon>
+)
+
+export const IconUndo = () => (
+  <SvgIcon>
+    <MaterialSymbolsUndo />
+  </SvgIcon>
+)
+
+export const IconRedo = () => (
+  <SvgIcon>
+    <MaterialSymbolsRedo />
+  </SvgIcon>
+)
+
+export const IconMerge = () => (
+  <SvgIcon>
+    <MaterialSymbolsMerge />
+  </SvgIcon>
+)
+
+export const IconAttachment = () => (
+  <SvgIcon>
+    <MaterialSymbolsAttachment />
+  </SvgIcon>
+)
+
+export const IconCheck = () => (
+  <SvgIcon>
+    <MaterialSymbolsCheck />
+  </SvgIcon>
+)
+
+export const IconSend = () => (
+  <SvgIcon>
+    <MaterialSymbolsSend />
+  </SvgIcon>
+)
+
+export const IconKeyboardArrowDown = () => (
+  <SvgIcon>
+    <MaterialSymbolsKeyboardArrowDown />
+  </SvgIcon>
+)
+
+export const IconTextSelectStart = () => (
+  <SvgIcon>
+    <MaterialSymbolsTextSelectStart />
+  </SvgIcon>
+)
+
+export const IconOpenInFull = () => (
+  <SvgIcon>
+    <MaterialSymbolsOpenInFull />
+  </SvgIcon>
+)
+
+export const IconOpenInNew = () => (
+  <SvgIcon>
+    <MaterialSymbolsOpenInNew />
+  </SvgIcon>
+)
+
+export const IconDragIndicator = () => (
+  <SvgIcon>
+    <MaterialSymbolsDragIndicator />
+  </SvgIcon>
+)
+
+export const IconFileSave = () => (
+  <SvgIcon>
+    <MaterialSymbolsFileSave />
+  </SvgIcon>
+)
+
+export const IconVisibility = () => (
+  <SvgIcon>
+    <MaterialSymbolsVisibility />
+  </SvgIcon>
+)
+
+export const IconVisibilityOff = () => (
+  <SvgIcon>
+    <MaterialSymbolsVisibilityOff />
+  </SvgIcon>
+)
+
+export const IconUnfoldLess = () => (
+  <SvgIcon>
+    <MaterialSymbolsUnfoldLess />
+  </SvgIcon>
+)
+
+export const IconFormatImageLeft = () => (
+  <SvgIcon>
+    <MaterialSymbolsFormatImageLeft />
+  </SvgIcon>
+)
+
+export const IconFormatImageRight = () => (
+  <SvgIcon>
+    <MaterialSymbolsFormatImageRight />
+  </SvgIcon>
+)
+
+export const IconFormatClear = () => (
+  <SvgIcon>
+    <MaterialSymbolsFormatClear />
+  </SvgIcon>
+)
+
+export const IconVariableRemove = () => (
+  <SvgIcon>
+    <MaterialSymbolsVariableRemove />
+  </SvgIcon>
+)
+
+export const IconToggleOn = () => (
+  <SvgIcon>
+    <MaterialSymbolsToggleOn />
+  </SvgIcon>
+)
+
+export const IconToggleOff = () => (
+  <SvgIcon>
+    <MaterialSymbolsToggleOff />
+  </SvgIcon>
+)
+
+export const IconAddRowAbove = () => (
+  <SvgIcon>
+    <MaterialSymbolsAddRowAbove />
+  </SvgIcon>
+)
+
+export const IconAddRowBelow = () => (
+  <SvgIcon>
+    <MaterialSymbolsAddRowBelow />
+  </SvgIcon>
+)
+
+export const IconAddColumnLeft = () => (
+  <SvgIcon>
+    <MaterialSymbolsAddColumnLeftOutline />
+  </SvgIcon>
+)
+
+export const IconAddColumnRight = () => (
+  <SvgIcon>
+    <MaterialSymbolsAddColumnRightOutline />
+  </SvgIcon>
+)
+
+export const IconGrid3x3 = () => (
+  <SvgIcon>
+    <MaterialSymbolsGrid3x3 />
+  </SvgIcon>
+)
+
+export const IconCloud = () => (
+  <SvgIcon>
+    <MaterialSymbolsCloud />
+  </SvgIcon>
+)
+
+export const IconCloudOff = () => (
+  <SvgIcon>
+    <MaterialSymbolsCloudOff />
+  </SvgIcon>
+)
+
+export const IconLink = () => (
+  <SvgIcon>
+    <MaterialSymbolsLink />
+  </SvgIcon>
+)
+
+export const IconGroup = () => (
+  <SvgIcon>
+    <MaterialSymbolsGroup />
+  </SvgIcon>
+)
+
+export const IconFolder = () => (
+  <SvgIcon>
+    <MaterialSymbolsFolder />
+  </SvgIcon>
+)
+
+export const IconFolderOpen = () => (
+  <SvgIcon>
+    <MaterialSymbolsFolderOpen />
+  </SvgIcon>
+)
+
+export const IconDescription = () => (
+  <SvgIcon>
+    <MaterialSymbolsDescription />
+  </SvgIcon>
+)
+
+// other
+
+export const IconFloatCenter = () => (
+  <SvgIcon>
+    <PixelarticonsFloatCenter />
+  </SvgIcon>
+)
+
+export const IconColumnRemove = () => (
+  <SvgIcon>
+    <MdiTableColumnRemove />
+  </SvgIcon>
+)
+
+export const IconRowRemove = () => (
+  <SvgIcon>
+    <MdiTableRowRemove />
+  </SvgIcon>
+)

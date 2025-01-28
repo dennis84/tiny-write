@@ -4,7 +4,7 @@ import {v4 as uuidv4} from 'uuid'
 import {Message, useState} from '@/state'
 import {isTauri} from '@/env'
 import {fullWidth, itemCss, Text} from '../menu/Style'
-import {Icon} from '../Icon'
+import {IconAdd, IconClose, IconEdit} from '../Icon'
 import {Button} from '../Button'
 import {Tooltip} from '../Tooltip'
 import {ChatInput, ChatInputMessage} from './ChatInput'
@@ -240,10 +240,10 @@ export const Chat = () => {
       <ChatActions>
         <Show when={threadService.currentThread?.messages?.length}>
           <Button onClick={onClearThread}>
-            <Icon>clear</Icon> Clear thread
+            <IconClose /> Clear thread
           </Button>
           <Button onClick={onNewThread}>
-            <Icon>add</Icon> New thread
+            <IconAdd /> New thread
           </Button>
         </Show>
         <Threads onChange={() => focusInput()} />
@@ -252,11 +252,11 @@ export const Chat = () => {
       <Show when={tooltipAnchor() !== undefined}>
         <Tooltip anchor={tooltipAnchor()!} onClose={closeBubbleMenu} backdrop={true}>
           <div onClick={onRemoveMessage}>
-            <Icon>close</Icon>
+            <IconClose />
             Remove message
           </div>
           <div onClick={onEditMessage}>
-            <Icon>edit</Icon>
+            <IconEdit />
             Edit message
           </div>
         </Tooltip>

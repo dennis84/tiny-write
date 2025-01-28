@@ -2,7 +2,7 @@ import {createSignal, For, onMount} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {useState} from '@/state'
 import {Common, IconButton} from '../Button'
-import {Icon} from '../Icon'
+import {IconKeyboardArrowDown} from '../Icon'
 
 const SelectModel = styled('div')`
   position: relative;
@@ -50,7 +50,7 @@ export const ModelSelect = (props: Props) => {
         </For>
       </select>
       <IconButton>
-        <Icon>keyboard_arrow_down</Icon>
+        <IconKeyboardArrowDown />
       </IconButton>
     </SelectModel>
   )

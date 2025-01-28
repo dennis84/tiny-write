@@ -6,7 +6,14 @@ import {v4 as uuidv4} from 'uuid'
 import {CanvasBoxElement, CanvasElement, isCodeElement, isEditorElement, useState} from '@/state'
 import {useOpen} from '@/open'
 import {languages} from '@/codemirror/highlight'
-import {Icon, IconAiAssistant, IconPrettier} from '@/components/Icon'
+import {
+  IconAdjust,
+  IconAiAssistant,
+  IconHistory,
+  IconLanguage,
+  IconOpenInFull,
+  IconPrettier,
+} from '@/components/Icon'
 import {createCodeDetails} from '@/components/assistant/util'
 
 const Container = styled('div')`
@@ -227,17 +234,17 @@ export const Toolbar = () => {
         <Container ref={tooltipRef} id="toolbar">
           <Show when={collides()}>
             <Item onClick={() => open(selected().element, true)}>
-              <Icon>open_in_full</Icon> Open in full
+              <IconOpenInFull /> Open in full
             </Item>
             <Show when={fileService.findFileById(selected().element.id)?.deleted}>
               <Item onClick={() => restore(selected().element)}>
-                <Icon>history</Icon>
+                <IconHistory />
                 Restore
               </Item>
             </Show>
             <Show when={isCodeElement(selected().element)}>
               <Item onClick={() => changeLang(selected().element)}>
-                <Icon>javascript</Icon> Change language
+                <IconLanguage /> Change language
               </Item>
               <Show when={ugly()}>
                 <Item onClick={() => prettify(selected().element)}>
@@ -253,7 +260,7 @@ export const Toolbar = () => {
           </Show>
           <Show when={!collides()}>
             <Item onClick={onBackToContent}>
-              <Icon>adjust</Icon> Back to content
+              <IconAdjust /> Back to content
             </Item>
           </Show>
           <span ref={arrowRef} class="arrow"></span>

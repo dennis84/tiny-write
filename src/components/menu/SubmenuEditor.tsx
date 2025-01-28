@@ -4,7 +4,7 @@ import {useState} from '@/state'
 import {saveFile} from '@/remote/editor'
 import {info} from '@/remote/log'
 import {Keys, Label, Link, Sub} from './Style'
-import {Icon} from '../Icon'
+import {IconClose, IconSaveAs} from '../Icon'
 
 export const SubmenuEditor = () => {
   const {editorService, fileService} = useState()
@@ -30,11 +30,11 @@ export const SubmenuEditor = () => {
       <Sub data-tauri-drag-region="true">
         <Show when={isTauri() && !fileService.currentFile?.path}>
           <Link onClick={onSaveAs}>
-            <Icon>save_as</Icon> Save to file <Keys keys={[modKey, 's']} />
+            <IconSaveAs /> Save to file <Keys keys={[modKey, 's']} />
           </Link>
         </Show>
         <Link onClick={onClear} data-testid="clear">
-          <Icon>clear</Icon> Clear file <Keys keys={[modKey, 'w']} />
+          <IconClose /> Clear file <Keys keys={[modKey, 'w']} />
         </Link>
       </Sub>
     </>

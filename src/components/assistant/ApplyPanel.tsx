@@ -6,7 +6,7 @@ import {copy} from '@/remote/clipboard'
 import {Portal} from 'solid-js/web'
 import {TooltipHelp} from '../TooltipHelp'
 import {IconButton} from '../Button'
-import {Icon} from '../Icon'
+import {IconContentCopy, IconMerge} from '../Icon'
 
 const ApplyPanelEl = styled('div')`
   padding: 2px;
@@ -61,13 +61,13 @@ export const ApplyPanel = (p: {state: ApplyPanelState}) => {
         <span>{title()}</span>
         <TooltipHelp title="Copy">
           <IconButton onClick={onCopy}>
-            <Icon>content_copy</Icon>
+            <IconContentCopy />
           </IconButton>
         </TooltipHelp>
         <Show when={file()}>
           <TooltipHelp title="Apply in editor">
             <IconButton onClick={onApply}>
-              <Icon>merge</Icon>
+              <IconMerge />
             </IconButton>
           </TooltipHelp>
         </Show>

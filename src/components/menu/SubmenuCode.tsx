@@ -5,7 +5,7 @@ import {saveFile} from '@/remote/editor'
 import {info} from '@/remote/log'
 import {languages} from '@/codemirror/highlight'
 import {Keys, Label, Link, Sub} from './Style'
-import {Icon} from '../Icon'
+import {IconLanguage, IconSaveAs} from '../Icon'
 
 export const SubmenuCode = () => {
   const {appService, codeService, fileService} = useState()
@@ -41,11 +41,11 @@ export const SubmenuCode = () => {
       <Label>Code</Label>
       <Sub data-tauri-drag-region="true">
         <Link onClick={onChangeLang}>
-          <Icon>javascript</Icon> Change language
+          <IconLanguage /> Change language
         </Link>
         <Show when={isTauri() && !fileService.currentFile?.path}>
           <Link onClick={onSaveAs}>
-            <Icon>save_as</Icon> Save to file <Keys keys={[modKey, 's']} />
+            <IconSaveAs /> Save to file <Keys keys={[modKey, 's']} />
           </Link>
         </Show>
       </Sub>

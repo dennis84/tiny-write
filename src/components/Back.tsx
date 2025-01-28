@@ -3,7 +3,7 @@ import {useLocation, useNavigate} from '@solidjs/router'
 import {styled} from 'solid-styled-components'
 import {LocationState} from '@/state'
 import {ButtonPrimary} from './Button'
-import {Icon} from './Icon'
+import {IconArrowBack} from './Icon'
 
 const Container = styled('div')`
   position: absolute;
@@ -24,7 +24,7 @@ export const Back = () => {
     <Show when={location.state?.prev}>
       <Container>
         <ButtonPrimary onClick={onBack}>
-          <Icon>arrow_back</Icon> Back
+          <IconArrowBack /> Back
         </ButtonPrimary>
       </Container>
     </Show>

@@ -1,7 +1,7 @@
 import {For, Match, Show, Switch, createSignal, onMount} from 'solid-js'
 import {Vec} from '@tldraw/editor'
 import {CanvasLinkElement, File, isCanvas, isCodeFile, isFile, useState} from '@/state'
-import {Icon} from '../Icon'
+import {IconCodeBlocks, IconGesture, IconPostAdd, IconTextSnippet} from '../Icon'
 import {Tooltip} from '../Tooltip'
 import {ReferenceElement} from '@floating-ui/dom'
 
@@ -34,13 +34,13 @@ export const ContextMenu = () => {
       <div onClick={onClick}>
         <Switch>
           <Match when={isCanvas(p.file)}>
-            <Icon>gesture</Icon>
+            <IconGesture />
           </Match>
           <Match when={isCodeFile(p.file)}>
-            <Icon>code_blocks</Icon>
+            <IconCodeBlocks />
           </Match>
           <Match when={!isCodeFile(p.file)}>
-            <Icon>text_snippet</Icon>
+            <IconTextSnippet />
           </Match>
         </Switch>
         {title()}
@@ -126,10 +126,10 @@ export const ContextMenu = () => {
       {([link, cm, tooltipAnchor]) => (
         <Tooltip anchor={tooltipAnchor} onClose={onTooltipClose} backdrop={true}>
           <div onClick={() => onNewFile(false, link, cm)} data-testid="context_menu_new_file">
-            <Icon>post_add</Icon> New file
+            <IconPostAdd /> New file
           </div>
           <div onClick={() => onNewFile(true, link, cm)} data-testid="context_menu_new_code_file">
-            <Icon>code_blocks</Icon> New code file
+            <IconCodeBlocks /> New code file
           </div>
           <Show when={getFiles()}>
             {(files) => (

@@ -2,7 +2,7 @@ import {For} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {useState} from '@/state'
 import {Common, IconButton} from '../Button'
-import {Icon} from '../Icon'
+import {IconKeyboardArrowDown} from '../Icon'
 
 const ThreadList = styled('div')`
   position: relative;
@@ -49,7 +49,7 @@ export const Threads = (props: Props) => {
         </For>
       </select>
       <IconButton>
-        <Icon>keyboard_arrow_down</Icon>
+        <IconKeyboardArrowDown />
       </IconButton>
     </ThreadList>
   )

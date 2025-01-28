@@ -8,7 +8,21 @@ import {saveSvg} from '@/remote/svg'
 import {Align} from '@/prosemirror/image'
 import {languages} from '@/codemirror/highlight'
 import {useOpen} from '@/open'
-import {Icon, IconAiAssistant, IconFloatCenter} from '@/components/Icon'
+import {
+  IconAiAssistant,
+  IconCodeBlocks,
+  IconFileSave,
+  IconFloatCenter,
+  IconFormatClear,
+  IconFormatImageLeft,
+  IconFormatImageRight,
+  IconLanguage,
+  IconOpenInNew,
+  IconUnfoldLess,
+  IconVariableRemove,
+  IconVisibility,
+  IconVisibilityOff,
+} from '@/components/Icon'
 import {Tooltip} from '@/components/Tooltip'
 import {createCodeDetails} from '@/components/assistant/util'
 import {Block} from './BlockHandle'
@@ -241,30 +255,30 @@ export const BlockTooltip = (props: Props) => {
           <Show when={block().blockNode?.type.name === 'code_block'}>
             <Show when={block().blockNode.attrs.lang === 'mermaid'}>
               <div onClick={onMermaidSave}>
-                <Icon>file_save</Icon> save as png
+                <IconFileSave /> save as png
               </div>
               <div onClick={onMermaidHideCode}>
                 <Show
                   when={block().blockNode.attrs.hidden}
                   fallback={
                     <>
-                      <Icon>visibility_off</Icon> Hide code
+                      <IconVisibilityOff /> Hide code
                     </>
                   }
                 >
-                  <Icon>visibility</Icon> Show code
+                  <IconVisibility /> Show code
                 </Show>
               </div>
               <hr class="divider" />
             </Show>
             <div onClick={onChangeLang} data-testid="change_lang">
-              <Icon>javascript</Icon> change language
+              <IconLanguage /> change language
             </div>
             <div onClick={onPrettify} data-testid="prettify">
-              <Icon>code_blocks</Icon> prettify
+              <IconCodeBlocks /> prettify
             </div>
             <div onClick={onFoldAll}>
-              <Icon>unfold_less</Icon> fold all
+              <IconUnfoldLess /> fold all
             </div>
             <div onClick={onCopilot}>
               <IconAiAssistant /> Ask copilot
@@ -277,10 +291,10 @@ export const BlockTooltip = (props: Props) => {
             }
           >
             <div onClick={onAlign(Align.FloatLeft)} data-testid="align_float_left">
-              <Icon>format_image_left</Icon> float left
+              <IconFormatImageLeft /> float left
             </div>
             <div onClick={onAlign(Align.FloatRight)} data-testid="align_float_right">
-              <Icon>format_image_right</Icon> float right
+              <IconFormatImageRight /> float right
             </div>
             <div onClick={onAlign(Align.Center)} data-testid="align_center">
               <IconFloatCenter /> center
@@ -291,17 +305,17 @@ export const BlockTooltip = (props: Props) => {
             {(href) => (
               <>
                 <div onClick={onOpenLink} data-testid="open_link">
-                  <Icon>open_in_new</Icon> open: {href()}
+                  <IconOpenInNew /> open: {href()}
                 </div>
                 <hr class="divider" />
               </>
             )}
           </Show>
           <div onClick={onToPlain}>
-            <Icon>format_clear</Icon> remove text formats
+            <IconFormatClear /> remove text formats
           </div>
           <div onClick={onRemoveBlock} data-testid="remove_block">
-            <Icon>variable_remove</Icon> remove block
+            <IconVariableRemove /> remove block
           </div>
         </Tooltip>
       )}

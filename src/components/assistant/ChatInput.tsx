@@ -6,7 +6,7 @@ import {defaultKeymap} from '@codemirror/commands'
 import {getTheme} from '@/codemirror/theme'
 import {Message, useState} from '@/state'
 import {Common} from '../Button'
-import {Icon} from '../Icon'
+import {IconAttachment, IconCheck, IconClose, IconSend} from '../Icon'
 import {Tooltip} from '../Tooltip'
 import {TooltipHelp} from '../TooltipHelp'
 import {CurrentFileButton} from './attachments/CurrentFile'
@@ -149,17 +149,19 @@ export const ChatInput = (props: Props) => {
         <ChatInputAction>
           <TooltipHelp title="Add an attachment to context">
             <ChatInputButton onClick={onAttachmentMenu}>
-              <Icon>attachment</Icon>
+              <IconAttachment />
             </ChatInputButton>
           </TooltipHelp>
           <Show when={props.message}>
             <ChatInputButton onClick={onCancel}>
-              <Icon>close</Icon>
+              <IconClose />
             </ChatInputButton>
           </Show>
           <TooltipHelp title="Send message">
             <ChatInputButton onClick={onSend}>
-              <Icon>{props.message ? 'check' : 'send'}</Icon>
+              {props.message ?
+                <IconCheck />
+              : <IconSend />}
             </ChatInputButton>
           </TooltipHelp>
         </ChatInputAction>

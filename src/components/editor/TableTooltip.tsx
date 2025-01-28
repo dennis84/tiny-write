@@ -12,7 +12,15 @@ import {
   TableMap,
   toggleHeaderRow,
 } from 'prosemirror-tables'
-import {Icon, IconColumnRemove, IconRowRemove} from '../Icon'
+import {
+  IconAddColumnLeft,
+  IconAddColumnRight,
+  IconAddRowAbove,
+  IconAddRowBelow,
+  IconColumnRemove,
+  IconRowRemove,
+  IconToggleOn,
+} from '../Icon'
 import {CurrentCell, ActiveHandle, CurrentTable} from './TableControl'
 import {useState} from '@/state'
 import {Tooltip} from '../Tooltip'
@@ -146,16 +154,16 @@ export const TableTooltip = (props: Props) => {
     >
       <Show when={isFirstRow()}>
         <div onClick={onToggleHeaderRow}>
-          <Icon>toggle_on</Icon> Toggle table header row
+          <IconToggleOn /> Toggle table header row
         </div>
         <hr class="divider" />
       </Show>
       <Show when={props.activeHandle.direction === 'horiz'}>
         <div onClick={onAddRowAbove}>
-          <Icon>add_row_above</Icon> Add row above
+          <IconAddRowAbove /> Add row above
         </div>
         <div onClick={onAddRowBelow}>
-          <Icon>add_row_below</Icon> Add row below
+          <IconAddRowBelow /> Add row below
         </div>
         <div onClick={onRemoveRow}>
           <IconRowRemove /> Remove row
@@ -163,10 +171,10 @@ export const TableTooltip = (props: Props) => {
       </Show>
       <Show when={props.activeHandle.direction === 'vert'}>
         <div onClick={onAddColumnBefore}>
-          <Icon>add_column_left</Icon> Add column before
+          <IconAddColumnLeft /> Add column before
         </div>
         <div onClick={onAddColumnAfter}>
-          <Icon>add_column_right</Icon> Add column after
+          <IconAddColumnRight /> Add column after
         </div>
         <div onClick={onRemoveColumn}>
           <IconColumnRemove /> Remove column

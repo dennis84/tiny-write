@@ -4,7 +4,7 @@ import {useState} from '@/state'
 import {copy} from '@/remote/clipboard'
 import {Label, Link, Sub, Text} from './Style'
 import {WEB_URL} from '@/env'
-import {Icon} from '../Icon'
+import {IconCloud, IconCloudOff, IconGroup, IconLink} from '../Icon'
 
 export const SubmenuCollab = () => {
   const {store, collabService} = useState()
@@ -53,18 +53,18 @@ export const SubmenuCollab = () => {
         <Show when={store.collab?.error}>⚠️ Connection error, reconnecting ...</Show>
         <Show when={!store.collab?.started}>
           <Link onClick={onCollabStart} data-testid="collab">
-            <Icon>cloud</Icon> Share
+            <IconCloud /> Share
           </Link>
         </Show>
         <Show when={store.collab?.started}>
           <Link onClick={onCollabStop} data-testid="collab">
-            <Icon>cloud_off</Icon> Disconnect
+            <IconCloudOff /> Disconnect
           </Link>
           <Link onClick={onCopyCollabLink}>
-            <Icon>link</Icon> Copy Link {lastAction() === 'copy-collab-link' && '📋'}
+            <IconLink /> Copy Link {lastAction() === 'copy-collab-link' && '📋'}
           </Link>
           <Text>
-            <Icon>group</Icon> {collabUsers()} {collabUsers() === 1 ? 'user' : 'users'} connected
+            <IconGroup /> {collabUsers()} {collabUsers() === 1 ? 'user' : 'users'} connected
           </Text>
         </Show>
       </Sub>

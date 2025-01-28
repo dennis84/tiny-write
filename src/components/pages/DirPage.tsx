@@ -7,7 +7,7 @@ import {useState} from '@/state'
 import {resolvePath, toRelativePath} from '@/remote/editor'
 import {useOpen} from '@/open'
 import {Content, Scroll} from '../Layout'
-import {Icon} from '../Icon'
+import {IconDescription, IconFolder, IconFolderOpen} from '../Icon'
 
 const CurrentPath = styled('div')`
   display: flex;
@@ -88,7 +88,10 @@ export const DirPage = () => {
 
     return (
       <Link data-testid="link" onClick={onClick} isDirectory={p.entry.isDirectory}>
-        <Icon>{p.entry.isDirectory ? 'folder' : 'description'}</Icon> {p.entry.name}
+        {p.entry.isDirectory ?
+          <IconFolder />
+        : <IconDescription />}{' '}
+        {p.entry.name}
         {p.entry.isDirectory && '/'}
       </Link>
     )
@@ -120,7 +123,7 @@ export const DirPage = () => {
     <Scroll data-testid="dir" data-tauri-drag-region="true">
       <Content style={{width: '100%'}} config={store.config} data-tauri-drag-region="true">
         <CurrentPath>
-          <Icon>folder_open</Icon>
+          <IconFolderOpen />
           <PathSegment onClick={() => clickPathSegment(0)}>{currentPath()}/</PathSegment>
           <For each={location.state?.path}>
             {(p, i) => <PathSegment onClick={() => clickPathSegment(i() + 1)}>{p}/</PathSegment>}
