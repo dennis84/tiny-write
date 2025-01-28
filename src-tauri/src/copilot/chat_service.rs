@@ -4,8 +4,8 @@ use std::{fs::File, path::PathBuf, time::Duration};
 
 use anyhow::{anyhow, Result};
 use dirs::home_dir;
-use futures::io::AsyncBufReadExt;
-use futures::{StreamExt, TryStreamExt};
+use futures::{AsyncBufReadExt, TryStreamExt};
+use futures::stream::StreamExt;
 use log::debug;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};

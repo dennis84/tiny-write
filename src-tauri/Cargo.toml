@@ -40,7 +40,7 @@ crossbeam-channel = "0"
 async-lsp = "0"
 tower = "0"
 async-process = "2"
-reqwest = "0"
+reqwest = { version ="0", features = ["json", "stream"] }
 fix-path-env = { git = "https://github.com/tauri-apps/fix-path-env-rs" }
 tauri-plugin-cli = "2"
 tauri-plugin-fs = "2"
