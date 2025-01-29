@@ -29,9 +29,6 @@ export const Control = styled('div')`
   display: flex;
   align-items: center;
   padding: 5px;
-  > *:not(:last-child) {
-    margin-right: 5px;
-  }
   > button {
     ${(props: any) => props.active ? `
       &:not(:hover) {
@@ -89,7 +86,7 @@ export const itemCss = `
   font-family: var(--menu-font-family);
   text-align: left;
   > .icon {
-    margin-right: 6px;
+    margin-right: 10px;
   }
 `
 

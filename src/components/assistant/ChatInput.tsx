@@ -3,58 +3,19 @@ import {styled} from 'solid-styled-components'
 import {v4 as uuidv4} from 'uuid'
 import {EditorView, keymap, placeholder} from '@codemirror/view'
 import {defaultKeymap} from '@codemirror/commands'
+import {markdown} from '@codemirror/lang-markdown'
 import {getTheme} from '@/codemirror/theme'
 import {Message, useState} from '@/state'
-import {Common} from '../Button'
-import {IconAttachment, IconCheck, IconClose, IconSend} from '../Icon'
+import {IconAttachment, IconSend} from '../Icon'
 import {Tooltip} from '../Tooltip'
 import {TooltipHelp} from '../TooltipHelp'
+import {IconButton} from '../Button'
 import {CurrentFileButton} from './attachments/CurrentFile'
 import {SelectionButton} from './attachments/Selection'
+import {ChatInputAction, ChatInputContainer} from './Style'
 
-const ChatInputContainer = styled('div')`
+const Container = styled('div')`
   margin-top: 20px;
-  position: relative;
-  .cm-editor {
-    border: 1px solid var(--border);
-    border-radius: var(--border-radius);
-    padding: 10px;
-    padding-right: 60px;
-    cursor: var(--cursor-text);
-    font-size: var(--menu-font-size);
-    font-family: var(--menu-font-family);
-    outline: none;
-    &.cm-focused {
-      border-color: var(--primary-background);
-      box-shadow: 0 0 0 1px var(--primary-background);
-    }
-  }
-`
-
-const ChatInputAction = styled('div')`
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  height: 50px;
-  align-items: center;
-  display: flex;
-  padding: 10px;
-`
-
-const ChatInputButton = styled('button')`
-  ${Common}
-  background: none;
-  width: 30px;
-  height: 30px;
-  padding: 0;
-  color: var(--foreground-50);
-  border-radius: var(--border-radius);
-  &:hover {
-    background: var(--background-60);
-  }
-  .icon {
-    margin: 0;
-  }
 `
 
 export interface ChatInputMessage extends Message {
@@ -64,7 +25,6 @@ export interface ChatInputMessage extends Message {
 interface Props {
   onMessage: (message: ChatInputMessage) => void
   onCancel: () => void
-  message?: Message
   ref?: HTMLDivElement
 }
 
@@ -102,18 +62,7 @@ export const ChatInput = (props: Props) => {
       attachment: false,
       id: uuidv4(),
       role: 'user',
-      ...props.message,
       content,
-    })
-  }
-
-  const onCancel = () => {
-    const view = editorView()
-    if (!view) return
-    const content = view.state.doc.toString()
-    props.onCancel()
-    view.dispatch({
-      changes: {from: 0, to: content.length, insert: ''},
     })
   }
 
@@ -121,15 +70,22 @@ export const ChatInput = (props: Props) => {
     const theme = getTheme(configService.codeTheme.value)
     const view = new EditorView({
       parent: chatInputRef,
-      doc: props.message?.content ?? '',
+      doc: '',
       extensions: [
         theme,
+        markdown(),
         keymap.of([
           {
             key: 'Enter',
-            run: () => {
-              onSend()
-              return true
+            run: (editorView) => {
+              const selection = editorView.state.selection.main
+              if (!selection.empty) return true
+              if (selection.from === editorView.state.doc.length) {
+                onSend()
+                return true
+              }
+
+              return false
             },
           },
         ]),
@@ -147,28 +103,23 @@ export const ChatInput = (props: Props) => {
 
   return (
     <>
-      <ChatInputContainer ref={props.ref}>
-        <div ref={chatInputRef}></div>
-        <ChatInputAction>
-          <TooltipHelp title="Add an attachment to context">
-            <ChatInputButton onClick={onAttachmentMenu}>
-              <IconAttachment />
-            </ChatInputButton>
-          </TooltipHelp>
-          <Show when={props.message}>
-            <ChatInputButton onClick={onCancel}>
-              <IconClose />
-            </ChatInputButton>
-          </Show>
-          <TooltipHelp title="Send message">
-            <ChatInputButton onClick={onSend}>
-              {props.message ?
-                <IconCheck />
-              : <IconSend />}
-            </ChatInputButton>
-          </TooltipHelp>
-        </ChatInputAction>
-      </ChatInputContainer>
+      <Container>
+        <ChatInputContainer ref={props.ref}>
+          <div onClick={() => editorView()?.focus()} ref={chatInputRef}></div>
+          <ChatInputAction>
+            <TooltipHelp title="Add an attachment to context">
+              <IconButton onClick={onAttachmentMenu}>
+                <IconAttachment />
+              </IconButton>
+            </TooltipHelp>
+            <TooltipHelp title="Send message">
+              <IconButton onClick={onSend}>
+                <IconSend />
+              </IconButton>
+            </TooltipHelp>
+          </ChatInputAction>
+        </ChatInputContainer>
+      </Container>
       <Show when={tooltipAnchor() !== undefined}>
         <Tooltip anchor={tooltipAnchor()!} onClose={() => closeTooltip()} backdrop={true}>
           <CurrentFileButton onAttachment={onAttachment} />

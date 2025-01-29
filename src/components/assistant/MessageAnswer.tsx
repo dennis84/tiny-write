@@ -9,7 +9,8 @@ import {Message, useState} from '@/state'
 import {getTheme} from '@/codemirror/theme'
 import {getLanguageConfig} from '@/codemirror/highlight'
 import {IconButton} from '../Button'
-import {IconAiAssistant, IconMoreVert} from '../Icon'
+import {IconAiAssistant, IconClose, IconMoreVert, Spinner} from '../Icon'
+import {Tooltip} from '../Tooltip'
 import {chatBubble} from './Style'
 import {parseCodeBlockAttrs} from './util'
 import {ApplyPanel, ApplyPanelState} from './ApplyPanel'
@@ -50,11 +51,12 @@ interface Props {
   onBubbleMenu?: (event: MouseEvent, message: Message) => void
 }
 
-export const ChatAnswer = (props: Props) => {
-  const {configService} = useState()
+export const MessageAnswer = (props: Props) => {
+  const {configService, threadService} = useState()
   const [messageEditors, setMessageEditors] = createSignal<MessageEditor[]>([])
   const [html, setHtml] = createSignal<string>()
   const [applyPanels, setApplyPanels] = createSignal<ApplyPanelState[]>([])
+  const [tooltipAnchor, setTooltipAnchor] = createSignal<HTMLElement>()
 
   const finalMd = markdownit({
     html: true,
@@ -114,6 +116,18 @@ export const ChatAnswer = (props: Props) => {
   const copilotApply = (id?: string, range?: [number, number]) =>
     showPanel.of(applyPanel(id, range))
 
+  const onBubbleMenu = (event: MouseEvent) => {
+    setTooltipAnchor(event.target as HTMLElement)
+  }
+
+  const closeBubbleMenu = () => {
+    setTooltipAnchor(undefined)
+  }
+
+  const onRemoveMessage = async () => {
+    await threadService.removeMessage(props.message)
+    closeBubbleMenu()
+  }
   createEffect(() => {
     setHtml(finalMd.render(props.message.content))
   })
@@ -129,24 +143,34 @@ export const ChatAnswer = (props: Props) => {
   }
 
   return (
-    <AnswerBubble>
-      <AnswerBadge>
-        <IconAiAssistant /> Assistant:
-      </AnswerBadge>
-      <Show when={props.message?.content === ''}>
-        <div>Loading ...</div>
-      </Show>
-      <Show when={props.message?.content !== ''}>
+    <>
+      <AnswerBubble>
+        <AnswerBadge>
+          <IconAiAssistant /> Assistant:
+        </AnswerBadge>
         <Html content={html() ?? props.message.content} />
+        <Show when={props.message?.streaming}>
+          <p>
+            <Spinner />
+          </p>
+        </Show>
+        <Show when={props.message !== undefined}>
+          <BubbleMenu>
+            <IconButton onClick={onBubbleMenu}>
+              <IconMoreVert />
+            </IconButton>
+          </BubbleMenu>
+        </Show>
+        <For each={applyPanels()}>{(s) => <ApplyPanel state={s} />}</For>
+      </AnswerBubble>
+      <Show when={tooltipAnchor() !== undefined}>
+        <Tooltip anchor={tooltipAnchor()!} onClose={closeBubbleMenu} backdrop={true}>
+          <div onClick={onRemoveMessage}>
+            <IconClose />
+            Remove message
+          </div>
+        </Tooltip>
       </Show>
-      <Show when={props.message !== undefined}>
-        <BubbleMenu>
-          <IconButton onClick={(e) => props.onBubbleMenu?.(e, props.message)}>
-            <IconMoreVert />
-          </IconButton>
-        </BubbleMenu>
-      </Show>
-      <For each={applyPanels()}>{(s) => <ApplyPanel state={s} />}</For>
-    </AnswerBubble>
+    </>
   )
 }

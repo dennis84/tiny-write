@@ -104,7 +104,7 @@ export const Menu = () => {
     <Container>
       <Control active={menuService.menu() !== undefined || menuService.assistant() !== undefined}>
         <Show when={store.ai?.copilot?.user}>
-          <TooltipHelp title={menuService.assistant() ? 'Close' : 'Open Chat'}>
+          <TooltipHelp title={menuService.assistant() ? 'Close Chat' : 'Open Chat'}>
             <IconButton onClick={() => menuService.toggleAssistant()}>
               {menuService.assistant() ?
                 <IconAiAssistantClose />
@@ -113,11 +113,13 @@ export const Menu = () => {
           </TooltipHelp>
         </Show>
         <Show when={!menuService.menu() || menuService.menu() === MenuId.MAIN}>
-          <IconButton onClick={onMenuButtonClick} data-testid="menu_button">
-            {menuService.menu() ?
-              <IconClose />
-            : <IconMoreVert />}
-          </IconButton>
+          <TooltipHelp title={menuService.menu() ? 'Close Menu' : 'Open Menu'}>
+            <IconButton onClick={onMenuButtonClick} data-testid="menu_button">
+              {menuService.menu() ?
+                <IconClose />
+              : <IconMoreVert />}
+            </IconButton>
+          </TooltipHelp>
         </Show>
         <Show when={menuService.menu() !== undefined && menuService.menu() !== 'main'}>
           <Button onClick={() => menuService.show(MenuId.MAIN)} data-testid="menu_back_button">

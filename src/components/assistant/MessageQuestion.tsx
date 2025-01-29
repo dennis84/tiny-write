@@ -1,4 +1,4 @@
-import {createEffect, createSignal, untrack} from 'solid-js'
+import {createEffect, createSignal, Show, untrack} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {v4 as uuidv4} from 'uuid'
 import markdownit from 'markdown-it'
@@ -9,8 +9,15 @@ import {Message, useState} from '@/state'
 import {getTheme} from '@/codemirror/theme'
 import {getLanguageConfig} from '@/codemirror/highlight'
 import {IconButton} from '../Button'
-import {IconMoreVert} from '../Icon'
+import {IconClose, IconEdit, IconMoreVert} from '../Icon'
+import {Tooltip} from '../Tooltip'
 import {chatBubble} from './Style'
+import {MessageInput} from './MessageInput'
+
+const EditBubble = styled('div')`
+  flex-basis: 100%;
+  margin-bottom: 20px;
+`
 
 const QuestionBubble = styled('div')`
   ${chatBubble}
@@ -42,13 +49,14 @@ interface MessageEditor {
 
 interface Props {
   message: Message
-  onBubbleMenu?: (event: MouseEvent, message: Message) => void
 }
 
-export const ChatQuestion = (props: Props) => {
-  const {configService} = useState()
+export const MessageQuestion = (props: Props) => {
+  const {configService, threadService} = useState()
   const [messageEditors, setMessageEditors] = createSignal<MessageEditor[]>([])
   const [html, setHtml] = createSignal<string>()
+  const [tooltipAnchor, setTooltipAnchor] = createSignal<HTMLElement>()
+  const [editing, setEditing] = createSignal(false)
 
   const finalMd = markdownit({
     html: true,
@@ -98,8 +106,31 @@ export const ChatQuestion = (props: Props) => {
     setMessageEditors([])
   }
 
+  const onBubbleMenu = (event: MouseEvent) => {
+    setTooltipAnchor(event.target as HTMLElement)
+  }
+
+  const closeBubbleMenu = () => {
+    setTooltipAnchor(undefined)
+  }
+
+  const onRemoveMessage = async () => {
+    await threadService.removeMessage(props.message)
+    closeBubbleMenu()
+  }
+
+  const onEditMessage = async () => {
+    closeBubbleMenu()
+    setEditing(true)
+  }
+
+  const onUpdate = (message: Message) => {
+    threadService.updateMessage(message)
+    setEditing(false)
+  }
+
   createEffect(() => {
-    setHtml(finalMd.render(props.message.content))
+    if (!editing()) setHtml(finalMd.render(props.message.content))
   })
 
   const Html = (p: {content: string}) => {
@@ -113,14 +144,38 @@ export const ChatQuestion = (props: Props) => {
   }
 
   return (
-    <QuestionBubble>
-      <Html content={html() ?? props.message.content} />
-      <div>{props.message.error ? ` (This question has errors: ${props.message.error})` : ''}</div>
-      <BubbleMenu>
-        <IconButton onClick={(e) => props.onBubbleMenu?.(e, props.message)}>
-          <IconMoreVert />
-        </IconButton>
-      </BubbleMenu>
-    </QuestionBubble>
+    <>
+      <Show when={editing()}>
+        <EditBubble>
+          <MessageInput
+            onUpdate={onUpdate}
+            onCancel={() => setEditing(false)}
+            message={props.message}
+          />
+        </EditBubble>
+      </Show>
+      <Show when={!editing()}>
+        <QuestionBubble>
+          <Html content={html() ?? props.message.content} />
+          <BubbleMenu>
+            <IconButton onClick={onBubbleMenu}>
+              <IconMoreVert />
+            </IconButton>
+          </BubbleMenu>
+        </QuestionBubble>
+      </Show>
+      <Show when={tooltipAnchor() !== undefined}>
+        <Tooltip anchor={tooltipAnchor()!} onClose={closeBubbleMenu} backdrop={true}>
+          <div onClick={onRemoveMessage}>
+            <IconClose />
+            Remove message
+          </div>
+          <div onClick={onEditMessage}>
+            <IconEdit />
+            Edit message
+          </div>
+        </Tooltip>
+      </Show>
+    </>
   )
 }

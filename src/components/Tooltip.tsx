@@ -50,8 +50,8 @@ const TooltipEl = styled('div')`
     margin: 5px 0;
   }
   .arrow {
-    width: 6px;
-    height: 6px;
+    width: 10px;
+    height: 10px;
     background: var(--tooltip-background);
     position: absolute;
     transform: rotate(45deg);
@@ -114,7 +114,7 @@ export const Tooltip = (props: Props) => {
         middleware: [
           offset(10),
           flip({fallbackPlacements}),
-          shift({padding: 20}),
+          shift({padding: 10}),
           arrow({element: arrowRef!}),
         ],
       }).then(({x, y, placement, middlewareData}) => {

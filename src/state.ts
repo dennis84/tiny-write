@@ -235,6 +235,7 @@ export interface Message {
   html?: string
   role: ChatRole
   error?: string
+  streaming?: boolean
 }
 
 export interface Thread {

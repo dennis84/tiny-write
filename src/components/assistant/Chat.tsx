@@ -4,16 +4,15 @@ import {v4 as uuidv4} from 'uuid'
 import {Message, useState} from '@/state'
 import {isTauri} from '@/env'
 import {fullWidth, itemCss, Text} from '../menu/Style'
-import {IconAdd, IconClose, IconEdit} from '../Icon'
+import {IconAdd, IconClose} from '../Icon'
 import {Button} from '../Button'
-import {Tooltip} from '../Tooltip'
 import {ChatInput, ChatInputMessage} from './ChatInput'
 import {ModelSelect} from './ModelSelect'
 import {Threads} from './Threads'
-import {ChatQuestion} from './ChatQuestion'
+import {MessageQuestion} from './MessageQuestion'
+import {MessageAnswer} from './MessageAnswer'
 import {CurrentFileButton} from './attachments/CurrentFile'
 import {SelectionButton} from './attachments/Selection'
-import {ChatAnswer} from './ChatAnswer'
 
 const Drawer = styled('div')`
   background: var(--foreground-5);
@@ -68,8 +67,6 @@ export const Chat = () => {
 
   const {copilotService, threadService, toastService} = useState()
   const [focus, setFocus] = createSignal(true)
-  const [tooltipAnchor, setTooltipAnchor] = createSignal<HTMLElement>()
-  const [selectedMessage, setSelectedMessage] = createSignal<Message>()
   const [editMessage, setEditMessage] = createSignal<Message>()
 
   const scrollToInput = () => {
@@ -82,36 +79,6 @@ export const Chat = () => {
   const focusInput = () => {
     setFocus(false)
     setFocus(true)
-  }
-
-  const onBubbleMenu = (event: MouseEvent, message: Message) => {
-    setTooltipAnchor(event.target as HTMLElement)
-    setSelectedMessage(message)
-  }
-
-  const closeBubbleMenu = () => {
-    setTooltipAnchor(undefined)
-  }
-
-  const onRemoveMessage = async () => {
-    const message = selectedMessage()
-    if (!message) return
-    if (message === editMessage()) {
-      setEditMessage(undefined)
-    }
-
-    await threadService.removeMessage(message)
-    closeBubbleMenu()
-  }
-
-  const onEditMessage = async () => {
-    const message = selectedMessage()
-    if (!message) return
-    setEditMessage(message)
-    setFocus(false)
-    setFocus(true)
-    closeBubbleMenu()
-    scrollToInput()
   }
 
   const addUserMessage = async (input: ChatInputMessage) => {
@@ -138,7 +105,7 @@ export const Chat = () => {
         messages,
         (message: any) => {
           for (const choice of message.choices) {
-            threadService.updateLastMessage(
+            threadService.streamLastMessage(
               messageId,
               choice.delta?.content ?? choice.message?.content ?? '',
             )
@@ -147,6 +114,7 @@ export const Chat = () => {
           scrollToInput()
         },
         async () => {
+          threadService.streamLastMessageEnd(messageId)
           if (!currentThread.title) {
             try {
               const title = await threadService.generateTitle()
@@ -173,7 +141,6 @@ export const Chat = () => {
 
   const onClearThread = () => {
     setEditMessage(undefined)
-    setSelectedMessage(undefined)
     threadService.clear()
     focusInput()
   }
@@ -202,10 +169,10 @@ export const Chat = () => {
           {(message) => (
             <Switch>
               <Match when={message.role === 'user'}>
-                <ChatQuestion message={message} onBubbleMenu={onBubbleMenu} />
+                <MessageQuestion message={message} />
               </Match>
               <Match when={message.role === 'assistant'}>
-                <ChatAnswer message={message} onBubbleMenu={onBubbleMenu} />
+                <MessageAnswer message={message} />
               </Match>
             </Switch>
           )}
@@ -216,7 +183,6 @@ export const Chat = () => {
           ref={inputRef}
           onMessage={onInputMessage}
           onCancel={() => setEditMessage(undefined)}
-          message={editMessage()}
         />
       </Show>
       <ChatActions>
@@ -231,18 +197,6 @@ export const Chat = () => {
         <Threads onChange={() => focusInput()} />
         <ModelSelect onChange={() => focusInput()} />
       </ChatActions>
-      <Show when={tooltipAnchor() !== undefined}>
-        <Tooltip anchor={tooltipAnchor()!} onClose={closeBubbleMenu} backdrop={true}>
-          <div onClick={onRemoveMessage}>
-            <IconClose />
-            Remove message
-          </div>
-          <div onClick={onEditMessage}>
-            <IconEdit />
-            Edit message
-          </div>
-        </Tooltip>
-      </Show>
     </Drawer>
   )
 }

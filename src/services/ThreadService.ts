@@ -57,7 +57,7 @@ export class ThreadService {
     }
   }
 
-  async updateLastMessage(id: string, chunk: string) {
+  streamLastMessage(id: string, chunk: string) {
     const currentThread = this.currentThread
     if (!currentThread) return
 
@@ -68,14 +68,17 @@ export class ThreadService {
       messageIndex = currentThread.messages.length - 1
     }
 
-    this.setState(
-      'threads',
-      this.currentThreadIndex,
-      'messages',
-      messageIndex,
-      'content',
-      (prev) => prev + chunk,
-    )
+    this.setState('threads', this.currentThreadIndex, 'messages', messageIndex, (prev) => ({
+      content: prev.content + chunk,
+      streaming: true,
+    }))
+  }
+
+  streamLastMessageEnd(id: string) {
+    const currentThread = this.currentThread
+    if (!currentThread) return
+    let messageIndex = currentThread.messages.findIndex((m) => m.id === id)
+    this.setState('threads', this.currentThreadIndex, 'messages', messageIndex, 'streaming', false)
   }
 
   async updateMessage(message: Message) {

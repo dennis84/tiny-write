@@ -100,7 +100,7 @@ const TreeLinkItem = styled('div')`
 
 // prettier-ignore
 const TreeLinkCorner = styled('i')`
-  margin-right: 5px;
+  margin-right: 10px;
   cursor: var(--cursor-pointer);
   font-family: monospace;
   font-weight: normal;
@@ -558,6 +558,7 @@ export const SubmenuTree = (props: Props) => {
               <IconAdjust />
               Focus file
             </div>
+            <hr class="divider" />
           </Show>
           <Show when={!selected()?.item.deleted && isFile(selected()?.item)}>
             <div onClick={onAddFile} data-testid="add_file">
