@@ -57,6 +57,27 @@ export class ThreadService {
     }
   }
 
+  async updateLastMessage(id: string, chunk: string) {
+    const currentThread = this.currentThread
+    if (!currentThread) return
+
+    let messageIndex = currentThread.messages.findIndex((m) => m.id === id)
+    if (messageIndex === -1) {
+      const newMessage: Message = {id, content: '', role: 'assistant'} as Message
+      this.setState('threads', this.currentThreadIndex, 'messages', (prev) => [...prev, newMessage])
+      messageIndex = currentThread.messages.length - 1
+    }
+
+    this.setState(
+      'threads',
+      this.currentThreadIndex,
+      'messages',
+      messageIndex,
+      'content',
+      (prev) => prev + chunk,
+    )
+  }
+
   async updateMessage(message: Message) {
     const currentThread = this.currentThread
     if (!currentThread) return

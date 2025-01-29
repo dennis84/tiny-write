@@ -63,18 +63,10 @@ const ChatActions = styled('div')`
   }
 `
 
-interface CurrentAnswer extends Message {
-  id: 'current_answer'
-  content: string
-  html?: string
-  role: 'assistant'
-}
-
 export const Chat = () => {
   let inputRef!: HTMLDivElement
 
   const {copilotService, threadService, toastService} = useState()
-  const [currentAnswer, setCurrentAnswer] = createSignal<CurrentAnswer>()
   const [focus, setFocus] = createSignal(true)
   const [tooltipAnchor, setTooltipAnchor] = createSignal<HTMLElement>()
   const [selectedMessage, setSelectedMessage] = createSignal<Message>()
@@ -125,9 +117,9 @@ export const Chat = () => {
   const addUserMessage = async (input: ChatInputMessage) => {
     if (!input.content) return
     const isUpdate = editMessage() !== undefined
-    setEditMessage(undefined)
 
     if (isUpdate) {
+      setEditMessage(undefined)
       await threadService.updateMessage(input)
     } else {
       await threadService.addMessage(input)
@@ -139,54 +131,47 @@ export const Chat = () => {
     const messages = threadService.getMessages()
     if (!currentThread || !messages) return
 
+    const messageId = uuidv4()
+
     try {
       await copilotService.completions(
         messages,
         (message: any) => {
           for (const choice of message.choices) {
-            const cur = currentAnswer()
-            let content =
-              (cur?.content ?? '') + (choice.delta?.content ?? choice.message?.content ?? '')
-            setCurrentAnswer({id: 'current_answer', content, role: 'assistant'})
+            threadService.updateLastMessage(
+              messageId,
+              choice.delta?.content ?? choice.message?.content ?? '',
+            )
           }
+
+          scrollToInput()
         },
         async () => {
-          const cur = currentAnswer()
-          if (cur) {
-            const content = cur.content
-            const message: Message = {role: 'assistant', content, id: uuidv4()}
-            await threadService.addMessage(message)
-            setCurrentAnswer(undefined)
-
-            if (!currentThread.title) {
-              try {
-                const title = await threadService.generateTitle()
-                if (title) await threadService.updateTitle(title)
-              } catch (_e) {
-                // ignore
-              }
+          if (!currentThread.title) {
+            try {
+              const title = await threadService.generateTitle()
+              if (title) await threadService.updateTitle(title)
+            } catch (_e) {
+              // ignore
             }
           }
         },
       )
     } catch (error: any) {
-      setCurrentAnswer(undefined)
       toastService.open({message: error?.message ?? error, action: 'Close'})
     }
   }
 
   const onInputMessage = (message: ChatInputMessage) => {
-    focusInput()
     addUserMessage(message)
+    focusInput()
+
     if (!message.attachment && message.role === 'user') {
-      const cur = currentAnswer()
-      setCurrentAnswer({...cur, id: 'current_answer', content: '', role: 'assistant'})
       void sendMessages()
     }
   }
 
   const onClearThread = () => {
-    setCurrentAnswer(undefined)
     setEditMessage(undefined)
     setSelectedMessage(undefined)
     threadService.clear()
@@ -225,9 +210,6 @@ export const Chat = () => {
             </Switch>
           )}
         </For>
-        <Show when={currentAnswer()}>
-          {(cur) => <ChatAnswer streaming={true} message={cur()} />}
-        </Show>
       </Messages>
       <Show when={focus()} keyed>
         <ChatInput

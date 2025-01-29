@@ -37,8 +37,6 @@ const BubbleMenu = styled('div')`
   right: 5px;
 `
 
-const streamMd = markdownit({html: true})
-
 interface MessageEditor {
   elementId: string
   doc: string
@@ -49,7 +47,6 @@ interface MessageEditor {
 
 interface Props {
   message: Message
-  streaming?: boolean
   onBubbleMenu?: (event: MouseEvent, message: Message) => void
 }
 
@@ -118,11 +115,7 @@ export const ChatAnswer = (props: Props) => {
     showPanel.of(applyPanel(id, range))
 
   createEffect(() => {
-    if (props.streaming) {
-      setHtml(streamMd.render(props.message.content))
-    } else {
-      setHtml(finalMd.render(props.message.content))
-    }
+    setHtml(finalMd.render(props.message.content))
   })
 
   const Html = (p: {content: string}) => {

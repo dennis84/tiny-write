@@ -90,17 +90,20 @@ export const ChatInput = (props: Props) => {
   const onSend = () => {
     const view = editorView()
     if (!view) return
+
     const content = view.state.doc.toString()
+    if (!content) return
+
+    view.dispatch({
+      changes: {from: 0, to: content.length, insert: ''},
+    })
+
     props.onMessage({
       attachment: false,
       id: uuidv4(),
       role: 'user',
       ...props.message,
       content,
-    })
-
-    view.dispatch({
-      changes: {from: 0, to: content.length, insert: ''},
     })
   }
 
