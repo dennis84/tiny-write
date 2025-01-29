@@ -48,6 +48,7 @@ export const Variables = () => {
     root.style.setProperty('--line-height', `${configService.fontSize * 1.6}px`)
     root.style.setProperty('--line-height-h1', `${configService.fontSize * 1.8 * 1.6}px`)
     root.style.setProperty('--border-radius', ConfigService.BORDER_RADIUS)
+    root.style.setProperty('--border-radius-small', ConfigService.BORDER_RADIUS_SMALL)
     root.style.setProperty('--menu-font-family', ConfigService.DEFAULT_FONT)
     root.style.setProperty('--menu-font-family-bold', ConfigService.DEFAULT_FONT + ' bold')
     root.style.setProperty('--menu-font-size', '14px')

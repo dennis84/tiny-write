@@ -36,7 +36,7 @@ const Container = styled('div')`
     margin: 2px 0;
     min-height: 32px;
     cursor: var(--cursor-pointer);
-    border-radius: var(--border-radius);
+    border-radius: var(--border-radius-small);
     &:hover,
     &.selected {
       background: var(--primary-background);

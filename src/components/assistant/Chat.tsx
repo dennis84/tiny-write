@@ -41,7 +41,7 @@ const EmptyContainer = styled('div')`
     &:hover {
       color: var(--primary-background);
       background: var(--foreground-10);
-      border-radius: var(--border-radius);
+      border-radius: var(--border-radius-small);
     }
   }
 `

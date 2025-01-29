@@ -86,12 +86,12 @@ const TreeLinkItem = styled('div')`
   ` : ''}
   ${(props: any) => props.selected ? `
     background: var(--primary-background-10);
-    border-radius: var(--border-radius);
+    border-radius: var(--border-radius-small);
   ` : ''}
   &:hover {
     color: var(--primary-background);
     background: var(--foreground-10);
-    border-radius: var(--border-radius);
+    border-radius: var(--border-radius-small);
     > span {
       opacity: 1;
     }
@@ -115,7 +115,7 @@ const TreeLinkCorner = styled('i')`
   ${(props: any) => props.expandable ? `
     &:hover {
       background: var(--foreground-10);
-      border-radius: var(--border-radius);
+      border-radius: var(--border-radius-small);
     }
   ` : ''}
 `

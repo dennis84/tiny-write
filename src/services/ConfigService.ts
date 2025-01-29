@@ -54,8 +54,8 @@ export class ConfigService {
       label: 'Dark',
       background: '#16161a',
       foreground: '#dadfe5',
-      primaryBackground: '#68ffb8',
-      primaryForeground: '#32825B',
+      primaryBackground: '#838eff',
+      primaryForeground: '#ffffff',
       selection: '#3d375e7f',
       tooltipBackground: '#111114',
       border: '#687b93',
@@ -266,7 +266,8 @@ export class ConfigService {
     },
   }
 
-  static readonly BORDER_RADIUS = '10px'
+  static readonly BORDER_RADIUS_SMALL = '10px'
+  static readonly BORDER_RADIUS = '20px'
 
   private saveConfigDebounced = debounce(100, (state) => this.saveConfig(state))
 

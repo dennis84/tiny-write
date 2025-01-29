@@ -144,8 +144,8 @@ const SvgIconEl = styled('span')`
   align-items: center;
   justify-content: center;
   svg {
-    height: 18px;
-    width: 18px;
+    height: 20px;
+    width: 20px;
   }
 `
 

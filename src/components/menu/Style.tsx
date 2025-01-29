@@ -119,7 +119,7 @@ export const Link = styled('button')`
   &:hover {
     color: var(--primary-background);
     background: var(--foreground-10);
-    border-radius: var(--border-radius);
+    border-radius: var(--border-radius-small);
     > span i {
       position: relative;
       box-shadow: 0 3px 0 0 var(--foreground-60);
