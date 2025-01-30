@@ -1,29 +1,8 @@
-import {createSignal, For, onMount} from 'solid-js'
-import {styled} from 'solid-styled-components'
+import {createSignal, For, onMount, Show} from 'solid-js'
 import {useState} from '@/state'
-import {Common, IconButton} from '../Button'
-import {IconKeyboardArrowDown} from '../Icon'
-
-const SelectModel = styled('div')`
-  position: relative;
-  display: inline-flex;
-  select {
-    ${Common}
-    padding-right: 40px;
-    appearance: none;
-    background: var(--background-60);
-    color: var(--foreground);
-    &:hover {
-      color: var(--primary-background);
-    }
-  }
-  button {
-    pointer-events: none;
-    position: absolute;
-    right: 0;
-    top: 0;
-  }
-`
+import {Button} from '../Button'
+import {IconCheckBox, IconCheckBoxBlank, IconKeyboardArrowDown} from '../Icon'
+import {Tooltip, TooltipButton} from '../Tooltip'
 
 interface Props {
   onChange: () => void
@@ -32,10 +11,19 @@ interface Props {
 export const ModelSelect = (props: Props) => {
   const {store, copilotService} = useState()
   const [models, setModels] = createSignal<string[]>()
+  const [tooltipAnchor, setTooltipAnchor] = createSignal<HTMLElement>()
 
-  const onModelChange = (e: Event) => {
-    copilotService.setChatModel((e.target as HTMLSelectElement).value)
+  const onSelect = (model: string) => {
+    copilotService.setChatModel(model)
     props.onChange()
+  }
+
+  const onMenuClick = (e: MouseEvent) => {
+    setTooltipAnchor(e.target as HTMLElement)
+  }
+
+  const onMenuClose = () => {
+    setTooltipAnchor(undefined)
   }
 
   onMount(async () => {
@@ -43,15 +31,25 @@ export const ModelSelect = (props: Props) => {
   })
 
   return (
-    <SelectModel>
-      <select onChange={onModelChange}>
-        <For each={models()}>
-          {(m) => <option selected={store.ai?.copilot?.chatModel === m}>{m}</option>}
-        </For>
-      </select>
-      <IconButton>
+    <>
+      <Button onClick={onMenuClick}>
         <IconKeyboardArrowDown />
-      </IconButton>
-    </SelectModel>
+        Select Model
+      </Button>
+      <Show when={tooltipAnchor() !== undefined}>
+        <Tooltip anchor={tooltipAnchor()!} onClose={onMenuClose}>
+          <For each={models()}>
+            {(m) => (
+              <TooltipButton onClick={() => onSelect(m)}>
+                {store.ai?.copilot?.chatModel === m ?
+                  <IconCheckBox />
+                : <IconCheckBoxBlank />}
+                {m}
+              </TooltipButton>
+            )}
+          </For>
+        </Tooltip>
+      </Show>
+    </>
   )
 }

@@ -8,6 +8,7 @@ import {
   flip,
   offset,
   shift,
+  size,
   Placement,
   ReferenceElement,
 } from '@floating-ui/dom'
@@ -23,39 +24,47 @@ const TooltipEl = styled('div')`
   z-index: var(--z-index-tooltip);
   box-shadow: 0 12px 24px 0 rgba(0, 0, 0, 0.24);
   padding: 6px 8px;
-  div {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    align-items: center;
-    padding: 6px 8px;
-    margin: 2px 0;
-    min-height: 32px;
-    cursor: var(--cursor-pointer);
-    border-radius: var(--border-radius-small);
-    &:hover,
-    &.selected {
-      background: var(--primary-background);
-      color: var(--primary-foreground);
-    }
-    .icon {
-      margin-right: 5px;
-    }
+  display: flex;
+  flex-direction: column;
+  &::-webkit-scrollbar {
+    display: none;
   }
-  .divider {
-    height: 3px;
-    border: 0;
-    border-radius: 5px;
-    background: var(--foreground-10);
-    margin: 5px 0;
+`
+
+export const TooltipButton = styled('div')`
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  padding: 6px 8px;
+  margin: 2px 0;
+  min-height: 32px;
+  cursor: var(--cursor-pointer);
+  border-radius: var(--border-radius-small);
+  &:hover,
+  &.selected {
+    background: var(--primary-background);
+    color: var(--primary-foreground);
   }
-  .arrow {
-    width: 10px;
-    height: 10px;
-    background: var(--tooltip-background);
-    position: absolute;
-    transform: rotate(45deg);
+  .icon {
+    margin-right: 5px;
   }
+`
+
+export const TooltipDivider = styled('hr')`
+  height: 3px;
+  border: 0;
+  border-radius: 5px;
+  background: var(--foreground-10);
+  margin: 5px 0;
+`
+
+export const TooltipArrow = styled('span')`
+  width: 10px;
+  height: 10px;
+  background: var(--tooltip-background);
+  position: absolute;
+  transform: rotate(45deg);
 `
 
 const Backdrop = styled('div')`
@@ -116,6 +125,15 @@ export const Tooltip = (props: Props) => {
           flip({fallbackPlacements}),
           shift({padding: 10}),
           arrow({element: arrowRef!}),
+          size({
+            apply({availableWidth, availableHeight, elements}) {
+              // Change styles, e.g.
+              Object.assign(elements.floating.style, {
+                maxWidth: `${Math.max(0, availableWidth)}px`,
+                maxHeight: `${Math.max(0, availableHeight)}px`,
+              })
+            },
+          }),
         ],
       }).then(({x, y, placement, middlewareData}) => {
         tooltipRef!.style.left = `${x}px`
@@ -154,7 +172,7 @@ export const Tooltip = (props: Props) => {
       </Show>
       <TooltipEl ref={tooltipRef} id="tooltip" class="tooltip">
         {props.children}
-        <span ref={arrowRef} class="arrow"></span>
+        <TooltipArrow ref={arrowRef} />
       </TooltipEl>
     </>
   )

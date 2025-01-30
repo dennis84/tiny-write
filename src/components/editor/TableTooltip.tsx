@@ -23,7 +23,7 @@ import {
 } from '../Icon'
 import {CurrentCell, ActiveHandle, CurrentTable} from './TableControl'
 import {useState} from '@/state'
-import {Tooltip} from '../Tooltip'
+import {Tooltip, TooltipButton, TooltipDivider} from '../Tooltip'
 
 interface Props {
   activeHandle: ActiveHandle
@@ -153,32 +153,32 @@ export const TableTooltip = (props: Props) => {
       }
     >
       <Show when={isFirstRow()}>
-        <div onClick={onToggleHeaderRow}>
+        <TooltipButton onClick={onToggleHeaderRow}>
           <IconToggleOn /> Toggle table header row
-        </div>
-        <hr class="divider" />
+        </TooltipButton>
+        <TooltipDivider />
       </Show>
       <Show when={props.activeHandle.direction === 'horiz'}>
-        <div onClick={onAddRowAbove}>
+        <TooltipButton onClick={onAddRowAbove}>
           <IconAddRowAbove /> Add row above
-        </div>
-        <div onClick={onAddRowBelow}>
+        </TooltipButton>
+        <TooltipButton onClick={onAddRowBelow}>
           <IconAddRowBelow /> Add row below
-        </div>
-        <div onClick={onRemoveRow}>
+        </TooltipButton>
+        <TooltipButton onClick={onRemoveRow}>
           <IconRowRemove /> Remove row
-        </div>
+        </TooltipButton>
       </Show>
       <Show when={props.activeHandle.direction === 'vert'}>
-        <div onClick={onAddColumnBefore}>
+        <TooltipButton onClick={onAddColumnBefore}>
           <IconAddColumnLeft /> Add column before
-        </div>
-        <div onClick={onAddColumnAfter}>
+        </TooltipButton>
+        <TooltipButton onClick={onAddColumnAfter}>
           <IconAddColumnRight /> Add column after
-        </div>
-        <div onClick={onRemoveColumn}>
+        </TooltipButton>
+        <TooltipButton onClick={onRemoveColumn}>
           <IconColumnRemove /> Remove column
-        </div>
+        </TooltipButton>
       </Show>
     </Tooltip>
   )

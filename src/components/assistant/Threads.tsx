@@ -1,30 +1,20 @@
-import {For} from 'solid-js'
+import {createSignal, For, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {useState} from '@/state'
-import {Common, IconButton} from '../Button'
+import {Button} from '../Button'
 import {IconKeyboardArrowDown} from '../Icon'
+import {Tooltip, TooltipButton} from '../Tooltip'
 
-const ThreadList = styled('div')`
-  position: relative;
-  display: inline-flex;
-  max-width: 220px;
-  select {
-    ${Common}
-    padding-right: 40px;
-    width: 100%;
-    appearance: none;
-    background: var(--background-60);
-    color: var(--foreground);
-    &:hover {
-      color: var(--primary-background);
-    }
+const Scroller = styled('div')`
+  height: 100%;
+  overflow-y: auto;
+  &::-webkit-scrollbar {
+    display: none;
   }
-  button {
-    pointer-events: none;
-    position: absolute;
-    right: 0;
-    top: 0;
-  }
+`
+
+const Content = styled('div')`
+  heigth: 100%;
 `
 
 interface Props {
@@ -33,24 +23,39 @@ interface Props {
 
 export const Threads = (props: Props) => {
   const {store, threadService} = useState()
+  const [tooltipAnchor, setTooltipAnchor] = createSignal<HTMLElement>()
 
-  const onChange = async (e: Event) => {
-    const target = e.target as HTMLSelectElement
-    threadService.open(target.value)
+  const onSelect = (id: string) => {
+    setTooltipAnchor(undefined)
+    threadService.open(id)
     props.onChange()
   }
 
+  const onMenuClick = (e: MouseEvent) => {
+    setTooltipAnchor(e.currentTarget as HTMLElement)
+  }
+
+  const onMenuClose = () => {
+    setTooltipAnchor(undefined)
+  }
+
   return (
-    <ThreadList>
-      <select onChange={onChange}>
-        <option value="">Select an old chat</option>
-        <For each={store.threads.filter((t) => !t.active)}>
-          {(t) => <option value={t.id}>{t.title}</option>}
-        </For>
-      </select>
-      <IconButton>
+    <>
+      <Button onClick={onMenuClick}>
         <IconKeyboardArrowDown />
-      </IconButton>
-    </ThreadList>
+        Select an old chat
+      </Button>
+      <Show when={tooltipAnchor()}>
+        <Tooltip anchor={tooltipAnchor()!} onClose={onMenuClose}>
+          <Scroller>
+            <Content>
+              <For each={store.threads.filter((t) => !t.active)}>
+                {(t) => <TooltipButton onClick={() => onSelect(t.id)}>{t.title}</TooltipButton>}
+              </For>
+            </Content>
+          </Scroller>
+        </Tooltip>
+      </Show>
+    </>
   )
 }

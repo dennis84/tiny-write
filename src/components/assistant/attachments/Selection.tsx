@@ -2,6 +2,7 @@ import {createEffect, createSignal, Show} from 'solid-js'
 import {v4 as uuidv4} from 'uuid'
 import {useState} from '@/state'
 import {IconTextSelectStart} from '@/components/Icon'
+import {TooltipButton} from '@/components/Tooltip'
 import {ChatInputMessage} from '../ChatInput'
 import {createCodeDetails, useCurrentFile} from '../util'
 
@@ -50,10 +51,10 @@ export const SelectionButton = (props: Props) => {
 
   return (
     <Show when={show()}>
-      <div onClick={onClick}>
+      <TooltipButton onClick={onClick}>
         <IconTextSelectStart />
         Add selection
-      </div>
+      </TooltipButton>
     </Show>
   )
 }

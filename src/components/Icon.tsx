@@ -37,6 +37,8 @@ import MaterialSymbolsMarkdownCopy from '~icons/material-symbols/markdown-copy?w
 import MaterialSymbolsMerge from '~icons/material-symbols/merge?width=24px&height=24px'
 import MaterialSymbolsAttachment from '~icons/material-symbols/attachment?width=24px&height=24px'
 import MaterialSymbolsCheck from '~icons/material-symbols/check?width=24px&height=24px'
+import MaterialSymbolsCheckBoxOutlineBlank from '~icons/material-symbols/check-box-outline-blank?width=24px&height=24px'
+import MaterialSymbolsCheckBoxOutline from '~icons/material-symbols/check-box-outline?width=24px&height=24px'
 import MaterialSymbolsSend from '~icons/material-symbols/send?width=24px&height=24px'
 import MaterialSymbolsKeyboardArrowDown from '~icons/material-symbols/keyboard-arrow-down?width=24px&height=24px'
 import MaterialSymbolsTextSelectStart from '~icons/material-symbols/text-select-start?width=24px&height=24px'
@@ -360,6 +362,18 @@ export const IconAttachment = () => (
 export const IconCheck = () => (
   <SvgIcon>
     <MaterialSymbolsCheck />
+  </SvgIcon>
+)
+
+export const IconCheckBox = () => (
+  <SvgIcon>
+    <MaterialSymbolsCheckBoxOutline />
+  </SvgIcon>
+)
+
+export const IconCheckBoxBlank = () => (
+  <SvgIcon>
+    <MaterialSymbolsCheckBoxOutlineBlank />
   </SvgIcon>
 )
 

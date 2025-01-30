@@ -5,7 +5,7 @@ import {ReferenceElement} from '@floating-ui/dom'
 import {CompletionState} from '@/prosemirror/autocomplete/autocomplete'
 import {EditorView} from 'prosemirror-view'
 import {fileListingPluginKey} from '@/prosemirror/autocomplete/file-listing'
-import {Tooltip} from '../Tooltip'
+import {Tooltip, TooltipButton} from '../Tooltip'
 
 interface Props {
   file?: File
@@ -87,7 +87,9 @@ export const AutocompleteTooltip = (props: Props) => {
       <Tooltip anchor={tooltipAnchor()!} placement="bottom-start">
         <For each={completion()?.options}>
           {(option, i) => (
-            <div class={i() === completion()?.selected ? 'selected' : ''}>{option}</div>
+            <TooltipButton class={i() === completion()?.selected ? 'selected' : ''}>
+              {option}
+            </TooltipButton>
           )}
         </For>
       </Tooltip>

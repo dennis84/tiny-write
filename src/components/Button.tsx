@@ -20,6 +20,8 @@ export const Common = `
   }
   .icon {
     margin-right: 5px;
+    margin-top: 1px;
+    margin-left: -5px;
   }
 `
 

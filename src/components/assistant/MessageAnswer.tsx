@@ -10,7 +10,7 @@ import {getTheme} from '@/codemirror/theme'
 import {getLanguageConfig} from '@/codemirror/highlight'
 import {IconButton} from '../Button'
 import {IconAiAssistant, IconClose, IconMoreVert, Spinner} from '../Icon'
-import {Tooltip} from '../Tooltip'
+import {Tooltip, TooltipButton} from '../Tooltip'
 import {chatBubble} from './Style'
 import {parseCodeBlockAttrs} from './util'
 import {ApplyPanel, ApplyPanelState} from './ApplyPanel'
@@ -165,10 +165,10 @@ export const MessageAnswer = (props: Props) => {
       </AnswerBubble>
       <Show when={tooltipAnchor() !== undefined}>
         <Tooltip anchor={tooltipAnchor()!} onClose={closeBubbleMenu} backdrop={true}>
-          <div onClick={onRemoveMessage}>
+          <TooltipButton onClick={onRemoveMessage}>
             <IconClose />
             Remove message
-          </div>
+          </TooltipButton>
         </Tooltip>
       </Show>
     </>

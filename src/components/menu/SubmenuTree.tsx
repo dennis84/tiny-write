@@ -9,7 +9,7 @@ import {TreeNode, TreeNodeItem} from '@/services/TreeService'
 import {FileService} from '@/services/FileService'
 import {CanvasService} from '@/services/CanvasService'
 import {ITEM_HEIGHT, itemCss, Label, Link, Sub} from './Style'
-import {Tooltip} from '../Tooltip'
+import {Tooltip, TooltipButton, TooltipDivider} from '../Tooltip'
 import {
   IconAdd,
   IconAdjust,
@@ -554,68 +554,68 @@ export const SubmenuTree = (props: Props) => {
       <Show when={tooltipAnchor() !== undefined}>
         <Tooltip anchor={tooltipAnchor()!} onClose={() => closeTooltip()} backdrop={true}>
           <Show when={isOnCanvas(selected()?.item)}>
-            <div onClick={onFocus} data-testid="focus_file">
+            <TooltipButton onClick={onFocus} data-testid="focus_file">
               <IconAdjust />
               Focus file
-            </div>
-            <hr class="divider" />
+            </TooltipButton>
+            <TooltipDivider />
           </Show>
           <Show when={!selected()?.item.deleted && isFile(selected()?.item)}>
-            <div onClick={onAddFile} data-testid="add_file">
+            <TooltipButton onClick={onAddFile} data-testid="add_file">
               <IconPostAdd />
               Add file
-            </div>
-            <div onClick={onAddCanvas} data-testid="add_canvas">
+            </TooltipButton>
+            <TooltipButton onClick={onAddCanvas} data-testid="add_canvas">
               <IconGesture />
               Add canvas
-            </div>
-            <div onClick={onAddCode} data-testid="add_code">
+            </TooltipButton>
+            <TooltipButton onClick={onAddCode} data-testid="add_code">
               <IconCodeBlocks />
               Add code file
-            </div>
-            <hr class="divider" />
+            </TooltipButton>
+            <TooltipDivider />
           </Show>
           <Show when={selected() && !isLocalFile(selected()?.item)}>
-            <div onClick={onRename} data-testid="rename">
+            <TooltipButton onClick={onRename} data-testid="rename">
               <IconEdit />
               Rename
-            </div>
+            </TooltipButton>
           </Show>
           <Show when={selected()?.item.deleted}>
-            <div onClick={onRestore} data-testid="restore">
+            <TooltipButton onClick={onRestore} data-testid="restore">
               <IconHistory />
               Restore
-            </div>
-            <div onClick={onDeleteForever} data-testid="delete_forever">
+            </TooltipButton>
+            <TooltipButton onClick={onDeleteForever} data-testid="delete_forever">
               <IconDeleteForever />
               Delete forever
-            </div>
+            </TooltipButton>
           </Show>
           <Show when={selected() && !selected()?.item.deleted && !isLocalFile(selected()?.item)}>
-            <div onClick={onDelete} data-testid="delete">
+            <TooltipButton onClick={onDelete} data-testid="delete">
               <IconDelete />
               Delete
-            </div>
+            </TooltipButton>
           </Show>
           <Show when={selected() && isLocalFile(selected()?.item)}>
-            <div onClick={onDeleteForever} data-testid="delete">
+            <TooltipButton onClick={onDeleteForever} data-testid="delete">
               <IconDelete />
               Close
-            </div>
+            </TooltipButton>
           </Show>
           <Show when={!selected()}>
-            <div onClick={onNewFile} data-testid="new_file">
+            <TooltipButton onClick={onNewFile} data-testid="new_file">
               <IconPostAdd />
               New file
-            </div>
-            <div onClick={onNewCanvas} data-testid="new_canvas">
+            </TooltipButton>
+            <TooltipButton onClick={onNewCanvas} data-testid="new_canvas">
               <IconGesture />
               New canvas
-            </div>
-            <div onClick={onNewCode} data-testid="new_code">
+            </TooltipButton>
+            <TooltipButton onClick={onNewCode} data-testid="new_code">
               <IconCodeBlocks />
               New code file
-            </div>
+            </TooltipButton>
           </Show>
         </Tooltip>
       </Show>

@@ -2,7 +2,7 @@ import {For, Match, Show, Switch, createSignal, onMount} from 'solid-js'
 import {Vec} from '@tldraw/editor'
 import {CanvasLinkElement, File, isCanvas, isCodeFile, isFile, useState} from '@/state'
 import {IconCodeBlocks, IconGesture, IconPostAdd, IconTextSnippet} from '../Icon'
-import {Tooltip} from '../Tooltip'
+import {Tooltip, TooltipButton, TooltipDivider} from '../Tooltip'
 import {ReferenceElement} from '@floating-ui/dom'
 
 export const ContextMenu = () => {
@@ -125,16 +125,22 @@ export const ContextMenu = () => {
     <Show when={getContextMenu()} keyed>
       {([link, cm, tooltipAnchor]) => (
         <Tooltip anchor={tooltipAnchor} onClose={onTooltipClose} backdrop={true}>
-          <div onClick={() => onNewFile(false, link, cm)} data-testid="context_menu_new_file">
+          <TooltipButton
+            onClick={() => onNewFile(false, link, cm)}
+            data-testid="context_menu_new_file"
+          >
             <IconPostAdd /> New file
-          </div>
-          <div onClick={() => onNewFile(true, link, cm)} data-testid="context_menu_new_code_file">
+          </TooltipButton>
+          <TooltipButton
+            onClick={() => onNewFile(true, link, cm)}
+            data-testid="context_menu_new_code_file"
+          >
             <IconCodeBlocks /> New code file
-          </div>
+          </TooltipButton>
           <Show when={getFiles()}>
             {(files) => (
               <>
-                <hr class="divider" />
+                <TooltipDivider />
                 <For each={files()}>
                   {(file: File) => <FileName file={file} link={link} cm={cm} />}
                 </For>

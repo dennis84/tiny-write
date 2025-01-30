@@ -23,7 +23,7 @@ import {
   IconVisibility,
   IconVisibilityOff,
 } from '@/components/Icon'
-import {Tooltip} from '@/components/Tooltip'
+import {Tooltip, TooltipButton, TooltipDivider} from '@/components/Tooltip'
 import {createCodeDetails} from '@/components/assistant/util'
 import {Block} from './BlockHandle'
 
@@ -254,10 +254,10 @@ export const BlockTooltip = (props: Props) => {
         >
           <Show when={block().blockNode?.type.name === 'code_block'}>
             <Show when={block().blockNode.attrs.lang === 'mermaid'}>
-              <div onClick={onMermaidSave}>
+              <TooltipButton onClick={onMermaidSave}>
                 <IconFileSave /> save as png
-              </div>
-              <div onClick={onMermaidHideCode}>
+              </TooltipButton>
+              <TooltipButton onClick={onMermaidHideCode}>
                 <Show
                   when={block().blockNode.attrs.hidden}
                   fallback={
@@ -268,55 +268,55 @@ export const BlockTooltip = (props: Props) => {
                 >
                   <IconVisibility /> Show code
                 </Show>
-              </div>
-              <hr class="divider" />
+              </TooltipButton>
+              <TooltipDivider />
             </Show>
-            <div onClick={onChangeLang} data-testid="change_lang">
+            <TooltipButton onClick={onChangeLang} data-testid="change_lang">
               <IconLanguage /> change language
-            </div>
-            <div onClick={onPrettify} data-testid="prettify">
+            </TooltipButton>
+            <TooltipButton onClick={onPrettify} data-testid="prettify">
               <IconCodeBlocks /> prettify
-            </div>
-            <div onClick={onFoldAll}>
+            </TooltipButton>
+            <TooltipButton onClick={onFoldAll}>
               <IconUnfoldLess /> fold all
-            </div>
-            <div onClick={onCopilot}>
+            </TooltipButton>
+            <TooltipButton onClick={onCopilot}>
               <IconAiAssistant /> Ask copilot
-            </div>
-            <hr class="divider" />
+            </TooltipButton>
+            <TooltipDivider />
           </Show>
           <Show
             when={
               block().cursorNode?.type.name === 'image' || block().cursorNode?.type.name === 'video'
             }
           >
-            <div onClick={onAlign(Align.FloatLeft)} data-testid="align_float_left">
+            <TooltipButton onClick={onAlign(Align.FloatLeft)} data-testid="align_float_left">
               <IconFormatImageLeft /> float left
-            </div>
-            <div onClick={onAlign(Align.FloatRight)} data-testid="align_float_right">
+            </TooltipButton>
+            <TooltipButton onClick={onAlign(Align.FloatRight)} data-testid="align_float_right">
               <IconFormatImageRight /> float right
-            </div>
-            <div onClick={onAlign(Align.Center)} data-testid="align_center">
+            </TooltipButton>
+            <TooltipButton onClick={onAlign(Align.Center)} data-testid="align_center">
               <IconFloatCenter /> center
-            </div>
-            <hr class="divider" />
+            </TooltipButton>
+            <TooltipDivider />
           </Show>
           <Show when={getLinkHref()}>
             {(href) => (
               <>
-                <div onClick={onOpenLink} data-testid="open_link">
+                <TooltipButton onClick={onOpenLink} data-testid="open_link">
                   <IconOpenInNew /> open: {href()}
-                </div>
-                <hr class="divider" />
+                </TooltipButton>
+                <TooltipDivider />
               </>
             )}
           </Show>
-          <div onClick={onToPlain}>
+          <TooltipButton onClick={onToPlain}>
             <IconFormatClear /> remove text formats
-          </div>
-          <div onClick={onRemoveBlock} data-testid="remove_block">
+          </TooltipButton>
+          <TooltipButton onClick={onRemoveBlock} data-testid="remove_block">
             <IconVariableRemove /> remove block
-          </div>
+          </TooltipButton>
         </Tooltip>
       )}
     </Show>

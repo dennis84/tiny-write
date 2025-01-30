@@ -2,6 +2,7 @@ import {Show} from 'solid-js'
 import {v4 as uuidv4} from 'uuid'
 import {useState} from '@/state'
 import {IconCodeBlocks} from '@/components/Icon'
+import {TooltipButton} from '@/components/Tooltip'
 import {ChatInputMessage} from '../ChatInput'
 import {createCodeDetails, useCurrentFile} from '../util'
 
@@ -37,10 +38,10 @@ export const CurrentFileButton = (props: Props) => {
 
   return (
     <Show when={currentFile()?.code}>
-      <div onClick={onClick}>
+      <TooltipButton onClick={onClick}>
         <IconCodeBlocks />
         Add current file
-      </div>
+      </TooltipButton>
     </Show>
   )
 }
