@@ -100,18 +100,21 @@ export const Menu = () => {
     return prettierService.supports(currentFile.codeLang ?? '')
   }
 
+  const onAssistantClick = () => {
+    if (!store.ai?.copilot?.user) menuService.show(MenuId.AI_CONFIG)
+    else menuService.toggleAssistant()
+  }
+
   return (
     <Container>
       <Control active={menuService.menu() !== undefined || menuService.assistant() !== undefined}>
-        <Show when={store.ai?.copilot?.user}>
-          <TooltipHelp title={menuService.assistant() ? 'Close Chat' : 'Open Chat'}>
-            <IconButton onClick={() => menuService.toggleAssistant()}>
-              {menuService.assistant() ?
-                <IconAiAssistantClose />
-              : <IconAiAssistant />}
-            </IconButton>
-          </TooltipHelp>
-        </Show>
+        <TooltipHelp title={menuService.assistant() ? 'Close Chat' : 'Open Chat'}>
+          <IconButton onClick={onAssistantClick}>
+            {menuService.assistant() ?
+              <IconAiAssistantClose />
+            : <IconAiAssistant />}
+          </IconButton>
+        </TooltipHelp>
         <Show when={!menuService.menu() || menuService.menu() === MenuId.MAIN}>
           <TooltipHelp title={menuService.menu() ? 'Close Menu' : 'Open Menu'}>
             <IconButton onClick={onMenuButtonClick} data-testid="menu_button">
