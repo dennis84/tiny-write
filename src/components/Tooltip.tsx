@@ -36,7 +36,7 @@ export const TooltipButton = styled('div')`
   z-index: 1;
   display: flex;
   align-items: center;
-  padding: 6px 8px;
+  padding: 2px 6px;
   margin: 2px 0;
   min-height: 32px;
   cursor: var(--cursor-pointer);
@@ -83,8 +83,10 @@ interface Cleanup {
 interface Props {
   anchor: ReferenceElement
   placement?: Placement
+  offset?: number
   fallbackPlacements?: Placement[]
   onClose?: () => void
+  closeable?: boolean
   backdrop?: boolean
   children: JSX.Element
 }
@@ -94,8 +96,15 @@ export const Tooltip = (props: Props) => {
   let arrowRef: HTMLSpanElement | undefined
   const cleanup = createMutable<Cleanup>({})
 
+  const onBackdropClick = (e: MouseEvent) => {
+    e.stopPropagation()
+    e.stopImmediatePropagation()
+    props.onClose?.()
+  }
+
   const CloseOnBackgroundClick = () => {
     const listener = (e: MouseEvent) => {
+      e.stopPropagation()
       if (!tooltipRef?.contains(e.target as Node)) {
         props.onClose?.()
       }
@@ -121,7 +130,7 @@ export const Tooltip = (props: Props) => {
       void computePosition(props.anchor, tooltipRef!, {
         placement,
         middleware: [
-          offset(10),
+          offset(props.offset ?? 10),
           flip({fallbackPlacements}),
           shift({padding: 10}),
           arrow({element: arrowRef!}),
@@ -167,8 +176,10 @@ export const Tooltip = (props: Props) => {
 
   return (
     <>
-      <Show when={props.backdrop} fallback={<CloseOnBackgroundClick />}>
-        <Backdrop onClick={() => props.onClose?.()} />
+      <Show when={props.closeable !== false}>
+        <Show when={props.backdrop} fallback={<CloseOnBackgroundClick />}>
+          <Backdrop onClick={onBackdropClick} />
+        </Show>
       </Show>
       <TooltipEl ref={tooltipRef} id="tooltip" class="tooltip">
         {props.children}

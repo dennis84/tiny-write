@@ -1,7 +1,7 @@
 import {beforeEach, expect, test, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
 import {createStore} from 'solid-js/store'
-import {createState} from '@/state'
+import {createState, Message} from '@/state'
 import {ThreadService} from '@/services/ThreadService'
 import {CopilotService} from '@/services/CopilotService'
 
@@ -65,6 +65,35 @@ test('addMessage', async () => {
   await service.addMessage({id: '2', role: 'user', content: '2'})
 
   expect(store.threads[0].messages).toHaveLength(2)
+})
+
+test('streamLastMessage', async () => {
+  const initial = createState({
+    threads: [
+      {
+        id: '1',
+        active: true,
+        messages: [{id: '1', role: 'user', content: 'Test'}],
+      },
+    ],
+  })
+
+  const [store, setState] = createStore(initial)
+  const copilotService = mock<CopilotService>()
+  const service = new ThreadService(store, setState, copilotService)
+
+  service.streamLastMessage('2', 'A')
+  expect(store.threads[0].messages[1].content).toBe('A')
+  service.streamLastMessage('2', 'b')
+  expect(store.threads[0].messages[1].content).toBe('Ab')
+  service.streamLastMessage('2', 'c')
+  expect(store.threads[0].messages[1].content).toBe('Abc')
+
+  expect(store.threads[0].messages).toHaveLength(2)
+  expect(store.threads[0].messages[1].streaming).toBeTruthy()
+
+  service.streamLastMessageEnd('2')
+  expect(store.threads[0].messages[1].streaming).toBeFalsy()
 })
 
 test('updateMessage', async () => {
@@ -216,6 +245,43 @@ test('open', () => {
   expect(store.threads[1].active).toBe(true)
 })
 
+test('delete', async () => {
+  const initial = createState({
+    threads: [
+      {
+        id: '1',
+        active: false,
+        lastModified,
+        messages: [
+          {id: '1', role: 'user', content: '1'},
+          {id: '2', role: 'assistant', content: '2'},
+        ],
+      },
+      {
+        id: '2',
+        active: false,
+        lastModified,
+        messages: [
+          {id: '3', role: 'user', content: '3'},
+          {id: '4', role: 'assistant', content: '4'},
+        ],
+      },
+    ],
+  })
+
+  const [store, setState] = createStore(initial)
+  const copilotService = mock<CopilotService>()
+  const service = new ThreadService(store, setState, copilotService)
+
+  await service.delete(store.threads[0])
+
+  expect(store.threads).toHaveLength(1)
+  expect(store.threads[0].id).toBe('2')
+
+  await service.delete(store.threads[0])
+  expect(store.threads).toHaveLength(0)
+})
+
 test('deleteAll', async () => {
   const initial = createState({
     threads: [
@@ -281,4 +347,35 @@ test('generateTitle', async () => {
   const title = await service.generateTitle()
 
   expect(title).toBe('Test')
+})
+
+test.each<[Message[], number]>([
+  [[], 0],
+  [[{id: '1', role: 'assistant', content: ''}], 0],
+  [
+    [
+      {id: '1', role: 'user', content: ''},
+      {id: '2', role: 'user', content: '', error: 'error'},
+    ],
+    2,
+  ],
+])('getMessages', async (messages, count) => {
+  const initial = createState({
+    threads: [
+      {
+        id: '1',
+        active: true,
+        lastModified,
+        messages,
+      },
+    ],
+  })
+
+  const [store, setState] = createStore(initial)
+  const copilotService = mock<CopilotService>()
+  const service = new ThreadService(store, setState, copilotService)
+
+  const result = service.getMessages()
+
+  expect(result).toHaveLength(count)
 })

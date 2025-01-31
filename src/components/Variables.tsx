@@ -14,6 +14,7 @@ export const Variables = () => {
 
     root.style.setProperty('--background', configService.theme.background)
     root.style.setProperty('--background-60', `${configService.theme.background}99`)
+    root.style.setProperty('--background-20', `${configService.theme.background}33`)
     root.style.setProperty('--foreground', configService.theme.foreground)
     root.style.setProperty('--foreground-80', `${configService.theme.foreground}cc`)
     root.style.setProperty('--foreground-60', `${configService.theme.foreground}99`)

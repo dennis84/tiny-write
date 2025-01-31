@@ -1,7 +1,8 @@
-import {createSignal, For, onMount, Show} from 'solid-js'
+import {createSignal, For, Show} from 'solid-js'
 import {useState} from '@/state'
+import {ModelId} from '@/services/CopilotService'
 import {Button} from '../Button'
-import {IconCheckBox, IconCheckBoxBlank, IconKeyboardArrowDown} from '../Icon'
+import {IconAi} from '../Icon'
 import {Tooltip, TooltipButton} from '../Tooltip'
 
 interface Props {
@@ -9,11 +10,10 @@ interface Props {
 }
 
 export const ModelSelect = (props: Props) => {
-  const {store, copilotService} = useState()
-  const [models, setModels] = createSignal<string[]>()
+  const {copilotService} = useState()
   const [tooltipAnchor, setTooltipAnchor] = createSignal<HTMLElement>()
 
-  const onSelect = (model: string) => {
+  const onSelect = (model: ModelId) => {
     copilotService.setChatModel(model)
     props.onChange()
   }
@@ -26,24 +26,20 @@ export const ModelSelect = (props: Props) => {
     setTooltipAnchor(undefined)
   }
 
-  onMount(async () => {
-    setModels(await copilotService.getChatModels())
-  })
-
   return (
     <>
       <Button onClick={onMenuClick}>
-        <IconKeyboardArrowDown />
-        Select Model
+        <IconAi />
+        AI Model
       </Button>
       <Show when={tooltipAnchor() !== undefined}>
         <Tooltip anchor={tooltipAnchor()!} onClose={onMenuClose}>
-          <For each={models()}>
+          <For each={copilotService.getChatModelIds()}>
             {(m) => (
-              <TooltipButton onClick={() => onSelect(m)}>
-                {store.ai?.copilot?.chatModel === m ?
-                  <IconCheckBox />
-                : <IconCheckBoxBlank />}
+              <TooltipButton
+                onClick={() => onSelect(m)}
+                class={copilotService.chatModelId === m ? 'selected' : undefined}
+              >
                 {m}
               </TooltipButton>
             )}

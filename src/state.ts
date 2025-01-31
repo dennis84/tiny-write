@@ -6,6 +6,7 @@ import {WebsocketProvider} from 'y-websocket'
 import {YMultiDocUndoManager} from 'y-utility/y-multidoc-undomanager'
 import {Ctrl} from './services'
 import {FileService} from './services/FileService'
+import {ModelId} from './services/CopilotService'
 
 export type Openable = File | Canvas | CanvasElement
 
@@ -64,7 +65,7 @@ export interface Config {
 
 export interface Copilot {
   user?: string
-  chatModel?: string
+  chatModel?: ModelId
   accessToken?: string
 }
 

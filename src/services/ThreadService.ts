@@ -51,10 +51,7 @@ export class ThreadService {
       lastModified: new Date(),
     })
 
-    const updated = this.currentThread
-    if (updated.title) {
-      await DB.updateThread(unwrap(updated))
-    }
+    this.saveThread()
   }
 
   streamLastMessage(id: string, chunk: string) {
@@ -93,10 +90,7 @@ export class ThreadService {
       this.setState('threads', this.currentThreadIndex, 'lastModified', new Date())
     }
 
-    const updated = this.currentThread
-    if (updated.title) {
-      await DB.updateThread(unwrap(updated))
-    }
+    this.saveThread()
   }
 
   async removeMessage(message: Message) {
@@ -111,10 +105,7 @@ export class ThreadService {
       lastModified: new Date(),
     }))
 
-    const updated = this.currentThread
-    if (updated.title) {
-      await DB.updateThread(unwrap(updated))
-    }
+    this.saveThread()
   }
 
   async clear() {
@@ -149,10 +140,13 @@ export class ThreadService {
     if (!currentThread) return
     info(`Set title to current thread (title=${title})`)
     this.setState('threads', this.currentThreadIndex, 'title', title)
+    this.saveThread()
+  }
 
-    const updated = this.currentThread
-    if (updated.title) {
-      await DB.updateThread(unwrap(updated))
+  async saveThread(thread = this.currentThread) {
+    info(`Save thread (id=${thread?.id}, title=${thread?.title})`)
+    if (thread?.title) {
+      await DB.updateThread(unwrap(thread))
     }
   }
 
@@ -169,6 +163,14 @@ export class ThreadService {
     }
 
     this.setState('threads', threads)
+  }
+
+  async delete(thread: Thread) {
+    this.setState(
+      'threads',
+      this.store.threads.filter((t) => t.id !== thread.id),
+    )
+    await DB.deleteThread(thread.id)
   }
 
   async deleteAll() {
@@ -213,7 +215,7 @@ export class ThreadService {
     if (!currentThread) return []
     const messages = currentThread.messages.filter((m) => !m.error)
     // final must be role user
-    if (messages[messages.length - 1].role !== 'user') {
+    if (messages[messages.length - 1]?.role !== 'user') {
       return []
     }
 

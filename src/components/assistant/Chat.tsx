@@ -115,6 +115,8 @@ export const Chat = () => {
         },
         async () => {
           threadService.streamLastMessageEnd(messageId)
+          await threadService.saveThread()
+
           if (!currentThread.title) {
             try {
               const title = await threadService.generateTitle()
@@ -188,10 +190,10 @@ export const Chat = () => {
       <ChatActions>
         <Show when={threadService.currentThread?.messages?.length}>
           <Button onClick={onClearThread}>
-            <IconClose /> Clear thread
+            <IconClose /> Clear Thread
           </Button>
           <Button onClick={onNewThread}>
-            <IconAdd /> New thread
+            <IconAdd /> New Thread
           </Button>
         </Show>
         <Threads onChange={() => focusInput()} />

@@ -47,16 +47,22 @@ export interface Chunk {
   choices: Choice[]
 }
 
-const models: Map<string, Model> = new Map([
-  ['gpt-4o', {name: 'gpt-4o-2024-05-13', streaming: true}],
-  ['gpt-4', {name: 'gpt-4', streaming: true}],
-  ['gpt-3.5-turbo', {name: 'gpt-3.5-turbo', streaming: true}],
-  ['o1-preview', {name: 'o1-preview-2024-09-12', streaming: false}],
-  ['o1-mini', {name: 'o1-mini-2024-09-12', streaming: false}],
-  ['claude-3-5-sonnet', {name: 'claude-3.5-sonnet', streaming: true}],
-])
+const models = {
+  'gpt-4o': {name: 'gpt-4o-2024-05-13', streaming: true},
+  'gpt-4': {name: 'gpt-4', streaming: true},
+  'gpt-3.5-turbo': {name: 'gpt-3.5-turbo', streaming: true},
+  'o1-preview': {name: 'o1-preview-2024-09-12', streaming: false},
+  'o1-mini': {name: 'o1-mini-2024-09-12', streaming: false},
+  'claude-3-5-sonnet': {name: 'claude-3.5-sonnet', streaming: true},
+} as const
+
+export type ModelId = keyof typeof models
 
 export class CopilotService {
+  get chatModelId(): ModelId {
+    return this.store.ai?.copilot?.chatModel ?? 'gpt-4'
+  }
+
   constructor(
     private store: Store<State>,
     private setState: SetStoreFunction<State>,
@@ -79,11 +85,11 @@ export class CopilotService {
     if (ai) DB.setAi(ai)
   }
 
-  async getChatModels(): Promise<string[]> {
-    return [...models.keys()]
+  getChatModelIds(): ModelId[] {
+    return Object.keys(models) as ModelId[]
   }
 
-  async setChatModel(model: string) {
+  async setChatModel(model: ModelId) {
     info(`Set chat model (model=${model})`)
     this.setState('ai', 'copilot', 'chatModel', model)
     const ai = unwrap(this.store.ai)
@@ -311,7 +317,7 @@ export class CopilotService {
 
   private getModel(): Model {
     const modelName = this.store.ai?.copilot?.chatModel ?? 'gpt-4'
-    const model = models.get(modelName) ?? models.get('gpt-4')
+    const model = models[modelName] ?? models['gpt-4']
     return model!
   }
 
