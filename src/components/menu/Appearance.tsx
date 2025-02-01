@@ -1,7 +1,8 @@
 import {For} from 'solid-js'
 import {useState} from '@/state'
 import {ConfigService} from '@/services/ConfigService'
-import {Drawer, Label, Link, Sub, Text} from './Style'
+import {Label, Link, Sub, Text} from './Style'
+import {MenuDrawer} from './Menu'
 
 export const Appearance = () => {
   const {store, configService} = useState()
@@ -19,7 +20,7 @@ export const Appearance = () => {
     configService.updateConfig({contentWidth: Number(e.target.value)})
 
   return (
-    <Drawer data-tauri-drag-region="true">
+    <MenuDrawer>
       <Label>Theme</Label>
       <Sub data-tauri-drag-region="true">
         <For each={Object.entries(ConfigService.themes)}>
@@ -76,6 +77,6 @@ export const Appearance = () => {
           {store.config.contentWidth}
         </Text>
       </Sub>
-    </Drawer>
+    </MenuDrawer>
   )
 }

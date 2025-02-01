@@ -1,8 +1,9 @@
 import {useState} from '@/state'
 import {useOpen} from '@/open'
 import {Button, ButtonGroup} from '../Button'
-import {Drawer, Label, Note} from './Style'
+import {Label, Note} from './Style'
 import {SubmenuTree} from './SubmenuTree'
+import {MenuDrawer} from './Menu'
 
 export const Bin = () => {
   const {store, deleteService, treeService} = useState()
@@ -18,7 +19,7 @@ export const Bin = () => {
   }
 
   return (
-    <Drawer data-tauri-drag-region="true">
+    <MenuDrawer>
       <Label>Bin</Label>
       <Note>💁 Items in bin will be automatically deleted after 14 days.</Note>
       <SubmenuTree showDeleted={true} />
@@ -27,6 +28,6 @@ export const Bin = () => {
           ⚠️ Empty bin
         </Button>
       </ButtonGroup>
-    </Drawer>
+    </MenuDrawer>
   )
 }

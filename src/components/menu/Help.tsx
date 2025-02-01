@@ -1,8 +1,9 @@
-import {Drawer, Keys, Label, Sub, Text} from './Style'
+import {MenuDrawer} from './Menu'
+import {Keys, Label, Sub, Text} from './Style'
 
 export const Help = () => {
   return (
-    <Drawer data-tauri-drag-region="true">
+    <MenuDrawer>
       <Label>Markdown shortcuts</Label>
       <Sub data-tauri-drag-region="true">
         <Text>
@@ -141,6 +142,6 @@ export const Help = () => {
           <Keys keys={[':::', 'details', '␣']} /> Container of type details
         </Text>
       </Sub>
-    </Drawer>
+    </MenuDrawer>
   )
 }

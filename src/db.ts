@@ -131,6 +131,14 @@ export class DB {
     return (await dbPromise).get('meta', 'mode') as Promise<Mode>
   }
 
+  static async setMenuWidth(width: number) {
+    return (await dbPromise).put('meta', width, 'menuWidth')
+  }
+
+  static async getMenuWidth(): Promise<number | undefined> {
+    return (await dbPromise).get('meta', 'menuWidth') as Promise<number | undefined>
+  }
+
   static async setTree(tree: Tree) {
     return (await dbPromise).put('tree', tree, 'main')
   }

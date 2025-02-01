@@ -1,6 +1,8 @@
 import {styled} from 'solid-styled-components'
 import {codeMirrorTooltip} from './code/Style'
 
+export const FULL_WIDTH = 500
+
 export const Layout = styled('div')`
   cursor: var(--cursor-default);
   touch-action: none;

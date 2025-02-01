@@ -1,10 +1,10 @@
-import {Drawer} from './Style'
 import {AiSubmenuGithub} from './AiSubmenuGithub'
+import {MenuDrawer} from './Menu'
 
 export const AiConfig = () => {
   return (
-    <Drawer data-tauri-drag-region="true">
+    <MenuDrawer>
       <AiSubmenuGithub />
-    </Drawer>
+    </MenuDrawer>
   )
 }

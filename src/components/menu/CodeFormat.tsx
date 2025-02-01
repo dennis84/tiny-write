@@ -1,7 +1,8 @@
 import {Show} from 'solid-js'
 import {File, Mode, PrettierConfig, useState} from '@/state'
 import {ButtonGroup, ButtonPrimary} from '@/components/Button'
-import {Drawer, Label, Link, Sub, Text} from './Style'
+import {Label, Link, Sub, Text} from './Style'
+import {MenuDrawer} from './Menu'
 
 export const CodeFormat = () => {
   const {store, configService, codeService, canvasService, fileService} = useState()
@@ -29,7 +30,7 @@ export const CodeFormat = () => {
   }
 
   return (
-    <Drawer data-tauri-drag-region="true">
+    <MenuDrawer>
       <Label>Indentation</Label>
       <Sub data-tauri-drag-region="true">
         <Text>
@@ -79,6 +80,6 @@ export const CodeFormat = () => {
           <ButtonPrimary onClick={onPrettify}>Prettify</ButtonPrimary>
         </Show>
       </ButtonGroup>
-    </Drawer>
+    </MenuDrawer>
   )
 }

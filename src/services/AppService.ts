@@ -131,6 +131,7 @@ export class AppService {
     const files = (await FileService.fetchFiles()) ?? state.files ?? []
     const canvases = (await CanvasService.fetchCanvases()) ?? state.canvases ?? []
     const mode = (await DB.getMode()) ?? state.mode ?? Mode.Editor
+    const menuWidth = (await DB.getMenuWidth()) ?? state.menuWidth
     const tree = await DB.getTree()
     const ai = await DB.getAi()
     const threads = (await DB.getThreads())?.sort((a, b) => {
@@ -151,6 +152,7 @@ export class AppService {
       window: fetchedWindow,
       collab: undefined,
       mode,
+      menuWidth,
       tree,
       ai,
       threads,

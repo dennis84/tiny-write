@@ -21,12 +21,14 @@ import {CopilotService} from './CopilotService'
 import {ThreadService} from './ThreadService'
 import {MenuService} from './MenuService'
 import {ToastService} from './ToastService'
+import {AiService} from './AiService'
 
 export const createCtrl = (initial: State) => {
   const [store, setState] = createStore<Store<State>>(initial)
   if (isDev) (window as any).__STORE__ = store
 
   const toastService = new ToastService()
+  const aiService = new AiService(store, setState)
   const copilotService = new CopilotService(store, setState)
   const collabService = new CollabService(store, setState)
   const configService = new ConfigService(collabService, store, setState)
@@ -83,7 +85,7 @@ export const createCtrl = (initial: State) => {
   )
 
   const threadService = new ThreadService(store, setState, copilotService)
-  const menuService = new MenuService()
+  const menuService = new MenuService(store, setState)
 
   return {
     store,
@@ -103,6 +105,7 @@ export const createCtrl = (initial: State) => {
     changeSetService,
     canvasCollabService,
     mediaService,
+    aiService,
     copilotService,
     threadService,
     menuService,

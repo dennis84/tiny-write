@@ -1,4 +1,4 @@
-import {Show, createEffect, onCleanup} from 'solid-js'
+import {JSX, Show, createEffect, onCleanup} from 'solid-js'
 import {Mode, useState} from '@/state'
 import {isTauri, isMac, mod, shortHash, version, VERSION_URL, isDev} from '@/env'
 import {quit} from '@/remote/app'
@@ -22,6 +22,8 @@ import {
   IconVerticalAlignCenter,
 } from '@/components/Icon'
 import {TooltipHelp} from '@/components/TooltipHelp'
+import {Drawer} from '../Drawer'
+import {FULL_WIDTH} from '../Layout'
 import {Bin} from './Bin'
 import {CodeFormat} from './CodeFormat'
 import {Appearance} from './Appearance'
@@ -34,7 +36,20 @@ import {SubmenuEdit} from './SubmenuEdit'
 import {SubmenuCollab} from './SubmenuCollab'
 import {SubmenuTree} from './SubmenuTree'
 import {SubmenuCode} from './SubmenuCode'
-import {fullWidth, Container, Drawer, Keys, Label, Link, Sub, Control} from './Style'
+import {Container, Keys, Label, Link, Sub, Control} from './Style'
+
+export const MenuDrawer = ({children}: {children: JSX.Element}) => {
+  const {menuService, fileService} = useState()
+  return (
+    <Drawer
+      onClick={() => fileService.currentFile?.editorView?.focus()}
+      onResized={(width) => menuService.setMenuWidth(width)}
+      width={menuService.menuWidth}
+    >
+      {children}
+    </Drawer>
+  )
+}
 
 export const Menu = () => {
   const {store, appService, menuService, configService, fileService, prettierService} = useState()
@@ -80,7 +95,7 @@ export const Menu = () => {
   }
 
   const maybeHide = () => {
-    if (window.innerWidth <= fullWidth) menuService.hide()
+    if (window.innerWidth <= FULL_WIDTH) menuService.hide()
   }
 
   const onKeyDown = (e: KeyboardEvent) => {
@@ -152,10 +167,7 @@ export const Menu = () => {
         <AiConfig />
       </Show>
       <Show when={menuService.menu() === MenuId.MAIN}>
-        <Drawer
-          onClick={() => fileService.currentFile?.editorView?.focus()}
-          data-tauri-drag-region="true"
-        >
+        <MenuDrawer>
           <SubmenuTree onBin={() => menuService.show(MenuId.BIN)} maybeHide={maybeHide} />
           {/* Submenu File */}
           <Show when={store.mode === Mode.Editor}>
@@ -241,7 +253,7 @@ export const Menu = () => {
               <Link onClick={onReset}>Reset DB</Link>
             </Show>
           </Sub>
-        </Drawer>
+        </MenuDrawer>
       </Show>
     </Container>
   )

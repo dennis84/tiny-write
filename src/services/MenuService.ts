@@ -1,4 +1,7 @@
 import {createSignal} from 'solid-js'
+import {SetStoreFunction, Store} from 'solid-js/store'
+import {DB} from '@/db'
+import {State} from '@/state'
 
 export enum MenuId {
   MAIN = 'main',
@@ -22,6 +25,16 @@ export class MenuService {
     return this.assistantSignal[0]
   }
 
+  get menuWidth() {
+    const w = this.store.menuWidth
+    return w ? `${w}px` : '400px'
+  }
+
+  constructor(
+    private store: Store<State>,
+    private setState: SetStoreFunction<State>,
+  ) {}
+
   show(menu: MenuId) {
     this.menuSignal[1](menu)
   }
@@ -40,5 +53,10 @@ export class MenuService {
 
   toggleAssistant() {
     this.assistantSignal[1](!this.assistant())
+  }
+
+  setMenuWidth(width: number) {
+    this.setState('menuWidth', width)
+    DB.setMenuWidth(width)
   }
 }

@@ -93,8 +93,6 @@ interface Ripple {
   size: number
 }
 
-type ButtonAttrs = JSX.HTMLAttributes<HTMLButtonElement>
-
 const Ripples = () => {
   const [ripples, setRipples] = createSignal<Ripple[]>([])
   let ref!: HTMLSpanElement
@@ -141,6 +139,8 @@ const Ripples = () => {
     </span>
   )
 }
+
+type ButtonAttrs = JSX.ButtonHTMLAttributes<HTMLButtonElement>
 
 export const Button = (props: ButtonAttrs) => (
   <ButtonEl {...props}>

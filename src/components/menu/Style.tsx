@@ -1,21 +1,19 @@
 import {css, styled} from 'solid-styled-components'
-import {isTauri} from '@/env'
-
-export const fullWidth = 500
+import {FULL_WIDTH} from '../Layout'
 
 export const Container = styled('div')`
   position: relative;
   display: flex;
-  flex-shrink: 0;
+  flex-shrink: 1;
   flex-grow: 1;
   height: 100%;
-  max-width: 50vw;
+  max-width: 100%;
   font-family: var(--menu-font-family);
   background: var(--background);
   @media print {
     display: none;
   }
-  @media (max-width: ${fullWidth.toString()}px) {
+  @media (max-width: ${FULL_WIDTH.toString()}px) {
     max-width: 100vw;
   }
 `
@@ -35,23 +33,6 @@ export const Control = styled('div')`
         background: var(--background-60);
       }
     ` : ''}
-  }
-`
-
-export const Drawer = styled('div')`
-  background: var(--foreground-10);
-  padding: 20px;
-  height: 100%;
-  display: ${(props: any) => (props.hidden ? 'none' : 'block')};
-  width: ${(props: any) => props.width ?? '400px'};
-  overflow-y: auto;
-  scrollbar-width: none;
-  @media (max-width: ${fullWidth.toString()}px) {
-    width: 100vw;
-    ${isTauri() ? 'padding-top: 40px' : ''}
-  }
-  &::-webkit-scrollbar {
-    display: none;
   }
 `
 

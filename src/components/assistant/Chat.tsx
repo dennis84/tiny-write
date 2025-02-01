@@ -2,10 +2,10 @@ import {createSignal, For, Match, onMount, Show, Switch} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {v4 as uuidv4} from 'uuid'
 import {Message, useState} from '@/state'
-import {isTauri} from '@/env'
-import {fullWidth, itemCss, Text} from '../menu/Style'
+import {itemCss, Text} from '../menu/Style'
 import {IconAdd, IconClose} from '../Icon'
 import {Button} from '../Button'
+import {Drawer} from '../Drawer'
 import {ChatInput, ChatInputMessage} from './ChatInput'
 import {ModelSelect} from './ModelSelect'
 import {Threads} from './Threads'
@@ -13,22 +13,6 @@ import {MessageQuestion} from './MessageQuestion'
 import {MessageAnswer} from './MessageAnswer'
 import {CurrentFileButton} from './attachments/CurrentFile'
 import {SelectionButton} from './attachments/Selection'
-
-const Drawer = styled('div')`
-  background: var(--foreground-5);
-  padding: 20px;
-  height: 100%;
-  width: 50vw;
-  overflow-y: auto;
-  scrollbar-width: none;
-  @media (max-width: ${fullWidth.toString()}px) {
-    width: 100vw;
-    ${isTauri() ? 'padding-top: 40px' : ''}
-  }
-  &::-webkit-scrollbar {
-    display: none;
-  }
-`
 
 const EmptyContainer = styled('div')`
   width: 100%;
@@ -65,7 +49,7 @@ const ChatActions = styled('div')`
 export const Chat = () => {
   let inputRef!: HTMLDivElement
 
-  const {copilotService, threadService, toastService} = useState()
+  const {aiService, copilotService, threadService, toastService} = useState()
   const [focus, setFocus] = createSignal(true)
   const [editMessage, setEditMessage] = createSignal<Message>()
 
@@ -152,6 +136,10 @@ export const Chat = () => {
     focusInput()
   }
 
+  const onDrawerResized = (width: number) => {
+    aiService.setSidebarWidth(width)
+  }
+
   onMount(() => {
     threadService.newThread()
   })
@@ -165,7 +153,12 @@ export const Chat = () => {
   )
 
   return (
-    <Drawer data-tauri-drag-region="true">
+    <Drawer
+      width={aiService.sidebarWidth}
+      onResized={onDrawerResized}
+      background={10}
+      data-tauri-drag-region="true"
+    >
       <Messages>
         <For each={threadService.currentThread?.messages} fallback={<Empty />}>
           {(message) => (

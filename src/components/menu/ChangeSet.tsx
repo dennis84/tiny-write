@@ -2,7 +2,8 @@ import {For, Show, createSignal, onCleanup} from 'solid-js'
 import {format} from 'date-fns'
 import {Version, useState} from '@/state'
 import {ButtonGroup, ButtonPrimary} from '@/components/Button'
-import {Drawer, Label, Link, Sub} from './Style'
+import {Label, Link, Sub} from './Style'
+import {MenuDrawer} from './Menu'
 
 export const ChangeSet = () => {
   const {changeSetService, fileService} = useState()
@@ -33,7 +34,7 @@ export const ChangeSet = () => {
   })
 
   return (
-    <Drawer data-tauri-drag-region="true">
+    <MenuDrawer>
       <Label>Change Set</Label>
       <Sub data-tauri-drag-region="true">
         <For each={versions()} fallback={<p>No snapshots yet</p>}>
@@ -55,6 +56,6 @@ export const ChangeSet = () => {
           <ButtonPrimary onClick={() => applyVersion()}>Apply Snapshot</ButtonPrimary>
         </Show>
       </ButtonGroup>
-    </Drawer>
+    </MenuDrawer>
   )
 }

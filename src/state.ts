@@ -71,6 +71,7 @@ export interface Copilot {
 
 export interface AiConfig {
   copilot?: Copilot
+  sidebarWidth?: number
 }
 
 export interface ErrorObject {
@@ -256,6 +257,7 @@ export interface State {
   error?: ErrorObject
   loading: LoadingType
   fullscreen: boolean
+  menuWidth?: number
   collab?: Collab
   args?: Args
   window?: Window
