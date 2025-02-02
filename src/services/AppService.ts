@@ -1,5 +1,4 @@
 import {Store, unwrap, SetStoreFunction, reconcile} from 'solid-js/store'
-import {createSignal} from 'solid-js'
 import {stateToString} from '@/utils/debug'
 import {getDocument} from '@/remote/editor'
 import {debug, error, info} from '@/remote/log'
@@ -9,7 +8,6 @@ import {startLanguageServer} from '@/remote/copilot'
 import {State, ServiceError, Window, Mode, ErrorObject, createState} from '@/state'
 import {DB} from '@/db'
 import {isTauri} from '@/env'
-import {InputLineConfig} from '@/components/dialog/InputLine'
 import {ConfigService} from './ConfigService'
 import {CanvasService} from './CanvasService'
 import {FileService} from './FileService'
@@ -17,8 +15,6 @@ import {TreeService} from './TreeService'
 
 export class AppService {
   public layoutRef: HTMLElement | undefined
-
-  public inputLine = createSignal<InputLineConfig>()
 
   constructor(
     private fileService: FileService,
@@ -90,10 +86,6 @@ export class AppService {
     const err = this.createError(data)
     error(`Error thrown (error=${err}})`, err)
     this.setState({error: err, loading: 'initialized'})
-  }
-
-  setInputLine(inputLine: InputLineConfig) {
-    this.inputLine[1](inputLine)
   }
 
   async reset(): Promise<void> {

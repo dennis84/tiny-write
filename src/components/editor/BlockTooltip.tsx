@@ -6,7 +6,7 @@ import {v4 as uuidv4} from 'uuid'
 import {useState} from '@/state'
 import {saveSvg} from '@/remote/svg'
 import {Align} from '@/prosemirror/image'
-import {languages} from '@/codemirror/highlight'
+import {getLanguageNames} from '@/codemirror/highlight'
 import {useOpen} from '@/open'
 import {
   IconAiAssistant,
@@ -33,7 +33,7 @@ interface Props {
 }
 
 export const BlockTooltip = (props: Props) => {
-  const {appService, fileService, menuService, threadService} = useState()
+  const {fileService, menuService, threadService, inputLineService} = useState()
   const [tooltipAnchor, setTooltipAnchor] = createSignal<ReferenceElement | undefined>()
   const {openUrl} = useOpen()
 
@@ -89,9 +89,9 @@ export const BlockTooltip = (props: Props) => {
     }
 
     const lang = block.blockNode.attrs.lang
-    appService.setInputLine({
+    inputLineService.setInputLine({
       value: lang,
-      words: Object.keys(languages),
+      words: getLanguageNames(),
       onEnter: (lang: string) => {
         view.focus()
         const tr = view.state.tr

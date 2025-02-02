@@ -30,7 +30,7 @@ export interface LangConfig {
   indentUnit?: string
 }
 
-export const languages: Record<string, LangConfig> = {
+const languages: Record<string, LangConfig> = {
   javascript: {
     highlight: () => javascript(),
     aliases: ['js'],
@@ -161,4 +161,13 @@ export const findCodeLang = (lang: string): string | undefined => {
   for (const [name, config] of Object.entries(languages)) {
     if (lang === name || config.aliases?.includes(lang)) return name
   }
+}
+
+export const getLanguageNames = () => {
+  const names = []
+  for (const [name, config] of Object.entries(languages)) {
+    names.push(name, ...(config.aliases ?? []))
+  }
+
+  return names
 }

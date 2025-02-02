@@ -27,7 +27,7 @@ export class MenuService {
 
   get menuWidth() {
     const w = this.store.menuWidth
-    return w ? `${w}px` : '400px'
+    return w ? `${w}px` : '280px'
   }
 
   constructor(

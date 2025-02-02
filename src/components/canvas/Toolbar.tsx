@@ -5,7 +5,7 @@ import {arrow, computePosition, flip, offset, shift} from '@floating-ui/dom'
 import {v4 as uuidv4} from 'uuid'
 import {CanvasBoxElement, CanvasElement, isCodeElement, isEditorElement, useState} from '@/state'
 import {useOpen} from '@/open'
-import {languages} from '@/codemirror/highlight'
+import {getLanguageNames} from '@/codemirror/highlight'
 import {
   IconAdjust,
   IconAiAssistant,
@@ -64,8 +64,15 @@ export const Toolbar = () => {
   let tooltipRef!: HTMLDivElement
   let arrowRef: HTMLSpanElement | undefined
 
-  const {store, appService, canvasService, codeService, fileService, menuService, threadService} =
-    useState()
+  const {
+    store,
+    inputLineService,
+    canvasService,
+    codeService,
+    fileService,
+    menuService,
+    threadService,
+  } = useState()
   const [ugly, setUgly] = createSignal(false)
   const [collides, setCollides] = createSignal(false)
   const {open} = useOpen()
@@ -86,9 +93,9 @@ export const Toolbar = () => {
     if (!file) return
     const language = file.codeLang ?? ''
 
-    appService.setInputLine({
+    inputLineService.setInputLine({
       value: language,
-      words: Object.keys(languages),
+      words: getLanguageNames(),
       onEnter: (lang) => {
         codeService.updateLang(file, lang)
       },
@@ -156,7 +163,7 @@ export const Toolbar = () => {
     const currentCanvas = canvasService.currentCanvas
     if (!currentCanvas) return
 
-    const point = Vec.FromArray(currentCanvas.camera.point).mul(-currentCanvas.camera.zoom)
+    const point = Vec.FromArray(currentCanvas.camera.point).mul(-1)
     const vp = new Box(0, 0, window.innerWidth, window.innerHeight)
       .scale(currentCanvas.camera.zoom)
       .translate(point)

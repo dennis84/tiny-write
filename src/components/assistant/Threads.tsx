@@ -44,7 +44,7 @@ interface Props {
 }
 
 export const Threads = (props: Props) => {
-  const {store, appService, threadService} = useState()
+  const {store, inputLineService, threadService} = useState()
   const [menuTooltipAnchor, setMenuTooltipAnchor] = createSignal<HTMLElement>()
   const [submenuTooltipAnchor, setSubmenuTooltipAnchor] = createSignal<HTMLElement>()
   const [selectedThread, setSelectedThread] = createSignal<Thread>()
@@ -97,7 +97,7 @@ export const Threads = (props: Props) => {
     const thread = selectedThread()
     if (!thread) return
     setSubmenuTooltipAnchor(undefined)
-    appService.setInputLine({
+    inputLineService.setInputLine({
       value: thread.title ?? '',
       onEnter: async (value: string) => {
         const title = value.trim() || undefined

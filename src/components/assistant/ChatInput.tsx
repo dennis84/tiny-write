@@ -39,7 +39,7 @@ export const ChatInput = (props: Props) => {
   }
 
   const onAttachmentMenu = (e: MouseEvent) => {
-    setTooltipAnchor(e.target as HTMLElement)
+    setTooltipAnchor(e.currentTarget as HTMLElement)
   }
 
   const onAttachment = (message: ChatInputMessage) => {

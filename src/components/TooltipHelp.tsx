@@ -10,7 +10,7 @@ export const TooltipHelp = (props: Props) => {
   const [anchor, setAnchor] = createSignal<HTMLElement>()
 
   const onMouseEnter = (e: MouseEvent) => {
-    setAnchor(e.target as HTMLElement)
+    setAnchor(e.currentTarget as HTMLElement)
   }
 
   const onMouseLeave = () => {
@@ -19,7 +19,8 @@ export const TooltipHelp = (props: Props) => {
 
   return (
     <>
-      <span onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
+      {/* onClick: close tooltip on touch */}
+      <span onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} onClick={onMouseLeave}>
         {props.children}
       </span>
       <Show when={anchor() !== undefined}>

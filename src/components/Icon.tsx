@@ -24,7 +24,7 @@ import MaterialSymbolsTextSnippet from '~icons/material-symbols/text-snippet?wid
 import MaterialSymbolsAdd from '~icons/material-symbols/add?width=24px&height=24px'
 import MaterialSymbolsDelete from '~icons/material-symbols/delete?width=24px&height=24px'
 import MaterialSymbolsDeleteForever from '~icons/material-symbols/delete-forever?width=24px&height=24px'
-import MaterialSymbolsAdjust from '~icons/material-symbols/adjust?width=24px&height=24px'
+import MaterialSymbolsCenterFocusWeakOutline from '~icons/material-symbols/center-focus-weak-outline?width=24px&height=24px'
 import MaterialSymbolsPostAdd from '~icons/material-symbols/post-add?width=24px&height=24px'
 import MaterialSymbolsEdit from '~icons/material-symbols/edit?width=24px&height=24px'
 import MaterialSymbolsCodeBlocks from '~icons/material-symbols/code-blocks?width=24px&height=24px'
@@ -289,7 +289,7 @@ export const IconDeleteForever = () => (
 
 export const IconAdjust = () => (
   <SvgIcon>
-    <MaterialSymbolsAdjust />
+    <MaterialSymbolsCenterFocusWeakOutline />
   </SvgIcon>
 )
 

@@ -171,7 +171,7 @@ export const SubmenuTree = (props: Props) => {
 
   const {
     store,
-    appService,
+    inputLineService,
     canvasService,
     canvasCollabService,
     codeService,
@@ -203,7 +203,7 @@ export const SubmenuTree = (props: Props) => {
     if (!item) return
 
     closeTooltip()
-    appService.setInputLine({
+    inputLineService.setInputLine({
       value: item?.title ?? '',
       onEnter: (value: string) => {
         const title = value.trim() || undefined

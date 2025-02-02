@@ -1,4 +1,4 @@
-import {Accessor, Setter, Show, createEffect, onCleanup} from 'solid-js'
+import {Show, createEffect, onCleanup} from 'solid-js'
 import {Portal} from 'solid-js/web'
 import {styled} from 'solid-styled-components'
 import {getTheme} from '@/codemirror/theme'
@@ -26,7 +26,7 @@ const Container = styled('div')`
   .cm-editor {
     border-radius: var(--border-radius);
     border: 2px solid var(--primary-background);
-    box-shadow: 5px 6px 0 0 #00000033;
+    box-shadow: 0 12px 24px 0 rgba(0, 0, 0, 0.24);
     .cm-scroller {
       padding: 10px !important;
       &::before {
@@ -43,18 +43,13 @@ export interface InputLineConfig {
   words?: string[]
 }
 
-interface Props {
-  getter: Accessor<InputLineConfig | undefined>
-  setter: Setter<InputLineConfig | undefined>
-}
-
-export const InputLine = (props: Props) => {
+export const InputLine = () => {
   let ref!: HTMLDivElement
 
-  const {appService, configService} = useState()
+  const {appService, configService, inputLineService} = useState()
 
   createEffect(() => {
-    const config = props.getter()
+    const config = inputLineService.inputLine()
     if (config === undefined) return
 
     let codeTheme = configService.codeTheme
@@ -69,10 +64,10 @@ export const InputLine = (props: Props) => {
       words: config.words,
       onEnter: (lang) => {
         config.onEnter(lang)
-        props.setter(undefined)
+        inputLineService.setInputLine(undefined)
       },
       onClose: () => {
-        props.setter(undefined)
+        inputLineService.setInputLine(undefined)
       },
     })
 
@@ -84,7 +79,7 @@ export const InputLine = (props: Props) => {
   })
 
   return (
-    <Show when={props.getter() !== undefined}>
+    <Show when={inputLineService.inputLine() !== undefined}>
       <Portal mount={appService.layoutRef}>
         <Layer>
           <Container ref={ref} data-testid="input_line" />

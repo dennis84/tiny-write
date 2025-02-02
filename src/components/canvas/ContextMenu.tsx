@@ -16,7 +16,7 @@ export const ContextMenu = () => {
     setContextMenu(undefined)
   }
 
-  const FileName = (p: {file: File; link?: CanvasLinkElement; cm?: Vec}) => {
+  const FileNameTooltipButton = (p: {file: File; link?: CanvasLinkElement; cm?: Vec}) => {
     const [title, setTitle] = createSignal<string>()
 
     const onClick = async () => {
@@ -31,7 +31,7 @@ export const ContextMenu = () => {
     })
 
     return (
-      <div onClick={onClick}>
+      <TooltipButton onClick={onClick}>
         <Switch>
           <Match when={isCanvas(p.file)}>
             <IconGesture />
@@ -44,7 +44,7 @@ export const ContextMenu = () => {
           </Match>
         </Switch>
         {title()}
-      </div>
+      </TooltipButton>
     )
   }
 
@@ -142,7 +142,7 @@ export const ContextMenu = () => {
               <>
                 <TooltipDivider />
                 <For each={files()}>
-                  {(file: File) => <FileName file={file} link={link} cm={cm} />}
+                  {(file: File) => <FileNameTooltipButton file={file} link={link} cm={cm} />}
                 </For>
               </>
             )}

@@ -3,12 +3,12 @@ import {isMac, isTauri, mod} from '@/env'
 import {useState} from '@/state'
 import {saveFile} from '@/remote/editor'
 import {info} from '@/remote/log'
-import {languages} from '@/codemirror/highlight'
+import {getLanguageNames} from '@/codemirror/highlight'
 import {Keys, Label, Link, Sub} from './Style'
 import {IconLanguage, IconSaveAs} from '../Icon'
 
 export const SubmenuCode = () => {
-  const {appService, codeService, fileService} = useState()
+  const {codeService, fileService, inputLineService} = useState()
 
   const modKey = isMac ? '⌘' : mod
 
@@ -16,9 +16,9 @@ export const SubmenuCode = () => {
     const currentFile = fileService.currentFile
     if (!currentFile) return
 
-    appService.setInputLine({
+    inputLineService.setInputLine({
       value: currentFile.codeLang ?? '',
-      words: Object.keys(languages),
+      words: getLanguageNames(),
       onEnter: (lang) => {
         codeService.updateLang(currentFile, lang)
       },

@@ -22,6 +22,7 @@ import {ThreadService} from './ThreadService'
 import {MenuService} from './MenuService'
 import {ToastService} from './ToastService'
 import {AiService} from './AiService'
+import {InputLineService} from './InputLineService'
 
 export const createCtrl = (initial: State) => {
   const [store, setState] = createStore<Store<State>>(initial)
@@ -86,6 +87,7 @@ export const createCtrl = (initial: State) => {
 
   const threadService = new ThreadService(store, setState, copilotService)
   const menuService = new MenuService(store, setState)
+  const inputLineService = new InputLineService()
 
   return {
     store,
@@ -110,6 +112,7 @@ export const createCtrl = (initial: State) => {
     threadService,
     menuService,
     toastService,
+    inputLineService,
   }
 }
 

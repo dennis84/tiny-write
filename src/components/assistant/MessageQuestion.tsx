@@ -107,7 +107,7 @@ export const MessageQuestion = (props: Props) => {
   }
 
   const onBubbleMenu = (event: MouseEvent) => {
-    setTooltipAnchor(event.target as HTMLElement)
+    setTooltipAnchor(event.currentTarget as HTMLElement)
   }
 
   const closeBubbleMenu = () => {

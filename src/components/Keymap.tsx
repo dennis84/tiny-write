@@ -16,6 +16,7 @@ export const Keymap = () => {
     collabService,
     canvasService,
     canvasCollabService,
+    inputLineService,
   } = useState()
   const {open} = useOpen()
 
@@ -91,7 +92,7 @@ export const Keymap = () => {
   }
 
   const onBackspace = async () => {
-    if (store.mode !== Mode.Canvas) return false
+    if (store.mode !== Mode.Canvas || inputLineService.inputLine() !== undefined) return false
 
     const currentCanvas = canvasService.currentCanvas
     if (!currentCanvas) return false

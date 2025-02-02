@@ -28,7 +28,6 @@ export const Main = (props: {state: State}) => {
     let layoutRef!: HTMLDivElement
     const location = useLocation<LocationState>()
     const ctrl = createCtrl(props.state)
-    const [inputLine, setInputLine] = ctrl.appService.inputLine
 
     info(`Open root (location=${locationToString(location)})`)
 
@@ -85,7 +84,7 @@ export const Main = (props: {state: State}) => {
             <DropFile />
             <ResizeWindow />
             <DarkMode />
-            <InputLine getter={inputLine} setter={setInputLine} />
+            <InputLine />
             <Toast />
           </Layout>
         </ErrorBoundary>
