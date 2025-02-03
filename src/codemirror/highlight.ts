@@ -25,6 +25,8 @@ import {php} from '@codemirror/lang-php'
 const langSupport = (l: StreamParser<unknown>) => new LanguageSupport(StreamLanguage.define(l))
 
 export interface LangConfig {
+  id: string
+  name: string
   highlight: () => LanguageSupport
   aliases?: string[]
   indentUnit?: string
@@ -32,110 +34,170 @@ export interface LangConfig {
 
 const languages: Record<string, LangConfig> = {
   javascript: {
+    id: 'javascript',
+    name: 'JavaScript',
     highlight: () => javascript(),
     aliases: ['js'],
   },
   jsx: {
+    id: 'jsx',
+    name: 'JSX',
     highlight: () => javascript({jsx: true}),
   },
   typescript: {
+    id: 'typescript',
+    name: 'TypeScript',
     highlight: () => javascript({typescript: true}),
     aliases: ['ts'],
   },
   tsx: {
+    id: 'tsx',
+    name: 'TSX',
     highlight: () => javascript({jsx: true, typescript: true}),
   },
   java: {
+    id: 'java',
+    name: 'Java',
     highlight: () => java(),
     indentUnit: '    ',
   },
   kotlin: {
+    id: 'kotlin',
+    name: 'Kotlin',
     highlight: () => java(),
     aliases: ['kt'],
     indentUnit: '    ',
   },
   rust: {
+    id: 'rust',
+    name: 'Rust',
     highlight: () => rust(),
     aliases: ['rs'],
     indentUnit: '    ',
   },
   sql: {
+    id: 'sql',
+    name: 'SQL',
     highlight: () => sql(),
   },
   json: {
+    id: 'json',
+    name: 'JSON',
     highlight: () => json(),
   },
   python: {
+    id: 'python',
+    name: 'Python',
     highlight: () => python(),
     aliases: ['py'],
     indentUnit: '    ',
   },
   html: {
+    id: 'html',
+    name: 'HTML',
     highlight: () => html(),
     aliases: ['htm'],
   },
   css: {
+    id: 'css',
+    name: 'CSS',
     highlight: () => css(),
   },
   scss: {
+    id: 'scss',
+    name: 'SCSS',
     highlight: () => css(),
   },
   cpp: {
+    id: 'cpp',
+    name: 'C++',
     highlight: () => cpp(),
   },
   markdown: {
+    id: 'markdown',
+    name: 'Markdown',
     highlight: () => markdown(),
     aliases: ['md'],
   },
   xml: {
+    id: 'xml',
+    name: 'XML',
     highlight: () => xml(),
   },
   php: {
+    id: 'php',
+    name: 'PHP',
     highlight: () => php(),
   },
   haskell: {
+    id: 'haskell',
+    name: 'Haskell',
     highlight: () => langSupport(haskell),
     aliases: ['hs'],
   },
   clojure: {
+    id: 'clojure',
+    name: 'Clojure',
     highlight: () => langSupport(clojure),
     aliases: ['clj'],
   },
   erlang: {
+    id: 'erlang',
+    name: 'Erlang',
     highlight: () => langSupport(erlang),
   },
   groovy: {
+    id: 'groovy',
+    name: 'Groovy',
     highlight: () => langSupport(groovy),
   },
   ruby: {
+    id: 'ruby',
+    name: 'Ruby',
     highlight: () => langSupport(ruby),
     aliases: ['rb'],
   },
   hcl: {
+    id: 'hcl',
+    name: 'HCL',
     highlight: () => langSupport(ruby),
   },
   mermaid: {
+    id: 'mermaid',
+    name: 'Mermaid',
     highlight: () => langSupport(haskell),
   },
   bash: {
+    id: 'bash',
+    name: 'Bash',
     highlight: () => langSupport(shell),
   },
   sh: {
+    id: 'sh',
+    name: 'Shell',
     highlight: () => langSupport(shell),
   },
   yaml: {
+    id: 'yaml',
+    name: 'YAML',
     highlight: () => langSupport(yaml),
     aliases: ['yml'],
   },
   go: {
+    id: 'go',
+    name: 'GO',
     highlight: () => langSupport(go),
     indentUnit: '\t',
   },
   toml: {
+    id: 'toml',
+    name: 'TOML',
     highlight: () => langSupport(toml),
     indentUnit: '    ',
   },
   lua: {
+    id: 'lua',
+    name: 'Lua',
     highlight: () => langSupport(lua),
     indentUnit: '\t',
   },

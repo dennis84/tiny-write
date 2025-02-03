@@ -4,13 +4,14 @@ import {v4 as uuidv4} from 'uuid'
 import {Message, useState} from '@/state'
 import {itemCss, Text} from '../menu/Style'
 import {IconAdd, IconClose} from '../Icon'
-import {Button} from '../Button'
+import {Button, ButtonGroup} from '../Button'
 import {Drawer} from '../Drawer'
-import {ChatInput, ChatInputMessage} from './ChatInput'
+import {ChatInput} from './ChatInput'
 import {ModelSelect} from './ModelSelect'
 import {Threads} from './Threads'
 import {MessageQuestion} from './MessageQuestion'
 import {MessageAnswer} from './MessageAnswer'
+import {Suggestions} from './Suggestions'
 import {CurrentFileButton} from './attachments/CurrentFile'
 import {SelectionButton} from './attachments/Selection'
 
@@ -34,16 +35,8 @@ const Messages = styled('div')`
   margin-top: 20px;
   display: flex;
   flex-wrap: wrap;
-`
-
-const ChatActions = styled('div')`
-  margin-top: 20px;
-  display: flex;
-  flex-wrap: wrap;
-  > * {
-    margin-right: 5px;
-    margin-bottom: 5px;
-  }
+  flex-direction: column;
+  gap: 5px;
 `
 
 export const Chat = () => {
@@ -65,7 +58,7 @@ export const Chat = () => {
     setFocus(true)
   }
 
-  const addUserMessage = async (input: ChatInputMessage) => {
+  const addUserMessage = async (input: Message) => {
     if (!input.content) return
     const isUpdate = editMessage() !== undefined
 
@@ -116,11 +109,10 @@ export const Chat = () => {
     }
   }
 
-  const onInputMessage = (message: ChatInputMessage) => {
+  const onInputMessage = (message: Message) => {
     addUserMessage(message)
     focusInput()
-
-    if (!message.attachment && message.role === 'user') {
+    if (!message.type && message.role === 'user') {
       void sendMessages()
     }
   }
@@ -159,6 +151,18 @@ export const Chat = () => {
       background={10}
       data-tauri-drag-region="true"
     >
+      <ButtonGroup>
+        <Show when={threadService.currentThread?.messages?.length}>
+          <Button onClick={onClearThread}>
+            <IconClose /> Clear
+          </Button>
+          <Button onClick={onNewThread}>
+            <IconAdd /> New
+          </Button>
+        </Show>
+        <Threads onChange={() => focusInput()} />
+        <ModelSelect onChange={() => focusInput()} />
+      </ButtonGroup>
       <Messages>
         <For each={threadService.currentThread?.messages} fallback={<Empty />}>
           {(message) => (
@@ -180,18 +184,7 @@ export const Chat = () => {
           onCancel={() => setEditMessage(undefined)}
         />
       </Show>
-      <ChatActions>
-        <Show when={threadService.currentThread?.messages?.length}>
-          <Button onClick={onClearThread}>
-            <IconClose /> Clear Thread
-          </Button>
-          <Button onClick={onNewThread}>
-            <IconAdd /> New Thread
-          </Button>
-        </Show>
-        <Threads onChange={() => focusInput()} />
-        <ModelSelect onChange={() => focusInput()} />
-      </ChatActions>
+      <Suggestions onSuggestion={onInputMessage} />
     </Drawer>
   )
 }

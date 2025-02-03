@@ -3,7 +3,14 @@ import {styled} from 'solid-styled-components'
 import {Box, Vec} from '@tldraw/editor'
 import {arrow, computePosition, flip, offset, shift} from '@floating-ui/dom'
 import {v4 as uuidv4} from 'uuid'
-import {CanvasBoxElement, CanvasElement, isCodeElement, isEditorElement, useState} from '@/state'
+import {
+  CanvasBoxElement,
+  CanvasElement,
+  isCodeElement,
+  isEditorElement,
+  MessageType,
+  useState,
+} from '@/state'
 import {useOpen} from '@/open'
 import {getLanguageNames} from '@/codemirror/highlight'
 import {
@@ -14,7 +21,7 @@ import {
   IconOpenInFull,
   IconPrettier,
 } from '@/components/Icon'
-import {createCodeDetails} from '@/components/assistant/util'
+import {createCodeFence} from '@/components/assistant/util'
 
 const Container = styled('div')`
   position: absolute;
@@ -27,6 +34,7 @@ const Container = styled('div')`
   box-shadow: 0 12px 24px 0 rgba(0, 0, 0, 0.24);
   padding: 6px 8px;
   display: flex;
+  gap: 5px;
   div {
     position: relative;
     z-index: 1;
@@ -45,9 +53,6 @@ const Container = styled('div')`
     > span {
       margin-right: 5px;
     }
-  }
-  div:not(:last-of-type) {
-    margin-right: 10px;
   }
   .arrow {
     width: 6px;
@@ -121,8 +126,9 @@ export const Toolbar = () => {
     threadService.addMessage({
       id: uuidv4(),
       role: 'user',
-      content: createCodeDetails({
-        title: 'Code File',
+      type: MessageType.File,
+      fileId: file.id,
+      content: createCodeFence({
         id: file.id,
         code: file.codeEditorView.state.doc.toString(),
         lang: file.codeLang,

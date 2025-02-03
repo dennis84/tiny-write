@@ -1,17 +1,16 @@
 import {createEffect, createSignal, Show} from 'solid-js'
 import {v4 as uuidv4} from 'uuid'
-import {useState} from '@/state'
+import {Message, MessageType, useState} from '@/state'
 import {IconTextSelectStart} from '@/components/Icon'
 import {TooltipButton} from '@/components/Tooltip'
-import {ChatInputMessage} from '../ChatInput'
-import {createCodeDetails, useCurrentFile} from '../util'
+import {createCodeFence, useCurrentFile} from '../util'
 
 interface Props {
-  onAttachment: (message: ChatInputMessage) => void
+  onAttachment: (message: Message) => void
 }
 
 export const SelectionButton = (props: Props) => {
-  const {store, fileService} = useState()
+  const {store} = useState()
   const [show, setShow] = createSignal(false)
   const currentFile = useCurrentFile()
 
@@ -22,11 +21,8 @@ export const SelectionButton = (props: Props) => {
     const from = editorView.state.selection.main.from
     const to = editorView.state.selection.main.to
     const code = editorView.state.sliceDoc(from, to)
-    let title = await fileService.getTitle(currentFile())
-    title = `${title}:${from}-${to}`
 
-    const content = createCodeDetails({
-      title,
+    const content = createCodeFence({
       id: currentFile()?.id,
       code,
       lang: currentFile()?.codeLang,
@@ -38,7 +34,9 @@ export const SelectionButton = (props: Props) => {
       id: uuidv4(),
       role: 'user',
       content,
-      attachment: true,
+      type: MessageType.Selection,
+      fileId: currentFile()?.id,
+      selection: [from, to],
     })
   }
 

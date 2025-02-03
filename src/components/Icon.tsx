@@ -39,7 +39,7 @@ import MaterialSymbolsAttachment from '~icons/material-symbols/attachment?width=
 import MaterialSymbolsCheck from '~icons/material-symbols/check?width=24px&height=24px'
 import MaterialSymbolsCheckBoxOutlineBlank from '~icons/material-symbols/check-box-outline-blank?width=24px&height=24px'
 import MaterialSymbolsCheckBoxOutline from '~icons/material-symbols/check-box-outline?width=24px&height=24px'
-import MaterialSymbolsSend from '~icons/material-symbols/send?width=24px&height=24px'
+import MaterialSymbolsArrowUpwardRounded from '~icons/material-symbols/arrow-upward-rounded?width=24px&height=24px'
 import MaterialSymbolsKeyboardArrowDown from '~icons/material-symbols/keyboard-arrow-down?width=24px&height=24px'
 import MaterialSymbolsTextSelectStart from '~icons/material-symbols/text-select-start?width=24px&height=24px'
 import MaterialSymbolsOpenInFull from '~icons/material-symbols/open-in-full?width=24px&height=24px'
@@ -67,6 +67,9 @@ import MaterialSymbolsGroup from '~icons/material-symbols/group?width=24px&heigh
 import MaterialSymbolsFolder from '~icons/material-symbols/folder?width=24px&height=24px'
 import MaterialSymbolsFolderOpen from '~icons/material-symbols/folder-open?width=24px&height=24px'
 import MaterialSymbolsDescription from '~icons/material-symbols/description?width=24px&height=24px'
+import MaterialSymbolsHomeRepairServiceOutlineRounded from '~icons/material-symbols/home-repair-service-outline-rounded?width=24px&height=24px'
+import MaterialSymbolsHelpCenterOutline from '~icons/material-symbols/help-center-outline?width=24px&height=24px'
+import MaterialSymbolsChevronRight from '~icons/material-symbols/chevron-right?width=24px&height=24px'
 
 import PixelarticonsFloatCenter from '~icons/pixelarticons/float-center?width=24px&height=24px'
 import MdiTableColumnRemove from '~icons/mdi/table-column-remove?width=24px&height=24px'
@@ -379,7 +382,7 @@ export const IconCheckBoxBlank = () => (
 
 export const IconSend = () => (
   <SvgIcon>
-    <MaterialSymbolsSend />
+    <MaterialSymbolsArrowUpwardRounded />
   </SvgIcon>
 )
 
@@ -542,6 +545,24 @@ export const IconFolderOpen = () => (
 export const IconDescription = () => (
   <SvgIcon>
     <MaterialSymbolsDescription />
+  </SvgIcon>
+)
+
+export const IconRepair = () => (
+  <SvgIcon>
+    <MaterialSymbolsHomeRepairServiceOutlineRounded />
+  </SvgIcon>
+)
+
+export const IconHelp = () => (
+  <SvgIcon>
+    <MaterialSymbolsHelpCenterOutline />
+  </SvgIcon>
+)
+
+export const IconChevronRight = () => (
+  <SvgIcon>
+    <MaterialSymbolsChevronRight />
   </SvgIcon>
 )
 

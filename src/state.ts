@@ -7,6 +7,7 @@ import {YMultiDocUndoManager} from 'y-utility/y-multidoc-undomanager'
 import {Ctrl} from './services'
 import {FileService} from './services/FileService'
 import {ModelId} from './services/CopilotService'
+import {CodeThemeName} from './services/ConfigService'
 
 export type Openable = File | Canvas | CanvasElement
 
@@ -53,7 +54,7 @@ export interface PrettierConfig {
 
 export interface Config {
   theme?: string
-  codeTheme?: string
+  codeTheme?: CodeThemeName
   font?: string
   fontSize: number
   contentWidth: number
@@ -231,13 +232,21 @@ export interface Tree {
 
 export type ChatRole = 'user' | 'assistant' | 'system'
 
+export enum MessageType {
+  File = 'file',
+  Selection = 'selection',
+}
+
 export interface Message {
   id: string
   content: string
-  html?: string
   role: ChatRole
   error?: string
   streaming?: boolean
+  type?: MessageType
+  fileId?: string
+  selection?: [number, number]
+  codeLang?: string
 }
 
 export interface Thread {

@@ -331,13 +331,13 @@ export class FileService {
     info('File restored')
   }
 
-  async getTitle(file?: File, len = 25): Promise<string> {
-    if (!file) return 'Undefined'
+  async getTitle(file?: File, len = 25, fallback = true): Promise<string | undefined> {
+    if (!file) return fallback ? 'Undefined' : undefined
     if (isTauri() && file.path) {
       return toRelativePath(file.path)
     }
 
-    if (file.code) return file.title ?? 'Code'
+    if (file.code) return file.title ?? (fallback ? 'Code' : undefined)
     else if (file.title) return file.title
 
     const ydoc = new Y.Doc({gc: false})
@@ -345,6 +345,6 @@ export class FileService {
 
     const type = ydoc.getXmlFragment(file.id)
     const doc = yXmlFragmentToProseMirrorRootNode(type, schema)
-    return doc?.firstChild?.textContent.substring(0, len) || 'Untitled'
+    return doc?.firstChild?.textContent.substring(0, len) || (fallback ? 'Untitled' : undefined)
   }
 }

@@ -3,7 +3,7 @@ import {NodeSelection, TextSelection} from 'prosemirror-state'
 import {setBlockType} from 'prosemirror-commands'
 import {ReferenceElement} from '@floating-ui/dom'
 import {v4 as uuidv4} from 'uuid'
-import {useState} from '@/state'
+import {MessageType, useState} from '@/state'
 import {saveSvg} from '@/remote/svg'
 import {Align} from '@/prosemirror/image'
 import {getLanguageNames} from '@/codemirror/highlight'
@@ -24,7 +24,7 @@ import {
   IconVisibilityOff,
 } from '@/components/Icon'
 import {Tooltip, TooltipButton, TooltipDivider} from '@/components/Tooltip'
-import {createCodeDetails} from '@/components/assistant/util'
+import {createCodeFence} from '@/components/assistant/util'
 import {Block} from './BlockHandle'
 
 interface Props {
@@ -137,8 +137,9 @@ export const BlockTooltip = (props: Props) => {
     threadService.addMessage({
       id: uuidv4(),
       role: 'user',
-      content: createCodeDetails({
-        title: 'Code Block',
+      type: MessageType.File,
+      codeLang: block.blockNode.attrs.lang,
+      content: createCodeFence({
         code: block.blockNode.textContent,
         lang: block.blockNode.attrs.lang,
       }),

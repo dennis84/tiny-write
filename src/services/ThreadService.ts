@@ -3,7 +3,7 @@ import {v4 as uuidv4} from 'uuid'
 import {Message, State, Thread} from '@/state'
 import {DB} from '@/db'
 import {info} from '@/remote/log'
-import {CopilotService} from './CopilotService'
+import {ChatMessage, CopilotService} from './CopilotService'
 
 export class ThreadService {
   constructor(
@@ -187,8 +187,7 @@ export class ThreadService {
     if (!currentThread) return
 
     return new Promise((resolve, reject) => {
-      const question: Message = {
-        id: 'generate_title',
+      const question: ChatMessage = {
         role: 'user',
         content:
           "Generate a concise 3-7 word title for this conversation, omitting punctuation. Go straight to the title, without any preamble and prefix like `Here's a concise suggestion:...` or `Title:`",
@@ -210,10 +209,19 @@ export class ThreadService {
     })
   }
 
-  getMessages(): Message[] {
+  getMessages(): ChatMessage[] {
     const currentThread = this.currentThread
     if (!currentThread) return []
-    const messages = currentThread.messages.filter((m) => !m.error)
+    const messages = []
+
+    for (const message of currentThread.messages) {
+      if (message.error) {
+        continue
+      }
+
+      messages.push({role: message.role, content: message.content})
+    }
+
     // final must be role user
     if (messages[messages.length - 1]?.role !== 'user') {
       return []
@@ -221,10 +229,9 @@ export class ThreadService {
 
     return [
       {
-        id: 'code_blocks',
         role: 'system',
         content:
-          'Keep attributes on fenced code blocks if present: e.g. ```rust id=1 range=1-5. Omit containers that start and end with ":::". Also keep indentation in code blocks',
+          'Keep attributes on fenced code blocks if present: e.g. ```rust id=1 range=1-5. Keep indentation in code blocks',
       },
       ...messages,
     ]

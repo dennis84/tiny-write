@@ -10,7 +10,7 @@ import {IconContentCopy, IconMerge} from '../Icon'
 
 const ApplyPanelEl = styled('div')`
   padding: 2px;
-  padding-left: 5px;
+  padding-left: 10px;
   border-top-left-radius: var(--border-radius);
   border-top-right-radius: var(--border-radius);
   width: 100%;
@@ -36,9 +36,9 @@ export const ApplyPanel = (p: {state: ApplyPanelState}) => {
     const file = p.state.id ? fileService.findFileById(p.state.id) : undefined
     setFile(file)
 
-    fileService.getTitle(file).then((value) => {
+    fileService.getTitle(file, 25, false).then((value) => {
       const t = p.state.range ? `${value}:${p.state.range[0]}-${p.state.range[1]}` : value
-      setTitle(t)
+      setTitle(t ?? '')
     })
   })
 

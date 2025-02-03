@@ -1,15 +1,12 @@
-import {createEffect, createSignal, Show, untrack} from 'solid-js'
+import {createSignal, Match, onMount, Show, Switch} from 'solid-js'
 import {styled} from 'solid-styled-components'
-import {v4 as uuidv4} from 'uuid'
-import markdownit from 'markdown-it'
-import container from 'markdown-it-container'
 import {EditorView} from '@codemirror/view'
 import {EditorState} from '@codemirror/state'
-import {Message, useState} from '@/state'
+import {Message, MessageType, useState} from '@/state'
 import {getTheme} from '@/codemirror/theme'
 import {getLanguageConfig} from '@/codemirror/highlight'
-import {IconButton} from '../Button'
-import {IconClose, IconEdit, IconMoreVert} from '../Icon'
+import {Button, IconButton} from '../Button'
+import {IconClose, IconEdit, IconMoreVert, IconTextSelectStart, LangIcon} from '../Icon'
 import {Tooltip, TooltipButton} from '../Tooltip'
 import {chatBubble} from './Style'
 import {MessageInput} from './MessageInput'
@@ -22,16 +19,12 @@ const EditBubble = styled('div')`
 const QuestionBubble = styled('div')`
   ${chatBubble}
   padding: 20px;
+  background: var(--foreground-10);
   justify-self: flex-end;
   margin-left: auto;
-  background: var(--foreground-10);
-  .html-container {
-    > p:first-child {
-      margin-top: 0;
-    }
-    > p:last-child {
-      margin-bottom: 0;
-    }
+  width: fit-content;
+  .cm-editor {
+    margin-top: 10px;
   }
 `
 
@@ -41,70 +34,19 @@ const BubbleMenu = styled('div')`
   right: 5px;
 `
 
-interface MessageEditor {
-  id: string
-  doc: string
-  lang: string
-}
-
 interface Props {
   message: Message
 }
 
 export const MessageQuestion = (props: Props) => {
-  const {configService, threadService} = useState()
-  const [messageEditors, setMessageEditors] = createSignal<MessageEditor[]>([])
-  const [html, setHtml] = createSignal<string>()
+  const {configService, threadService, fileService} = useState()
   const [tooltipAnchor, setTooltipAnchor] = createSignal<HTMLElement>()
   const [editing, setEditing] = createSignal(false)
+  const [fileTitle, setFileTitle] = createSignal<string>()
+  const [showContent, setShowContent] = createSignal(false)
 
-  const finalMd = markdownit({
-    html: true,
-    highlight: (doc: string, lang: string) => {
-      const id = uuidv4()
-      const parent = document.createElement('pre')
-      parent.id = id
-      parent.className = 'cm-rendered'
-      setMessageEditors((prev) => [...prev, {id, doc, lang}])
-      return parent.outerHTML
-    },
-  }).use(container, 'details', {
-    render: (tokens: any, idx: any) => {
-      const detailsInfo = tokens[idx].info.trim().match(/^details\s+(.*)$/)
-      const detailsTitle = detailsInfo ? `${detailsInfo[1]}` : ''
-      if (tokens[idx].nesting === 1) {
-        return `<details><summary>${finalMd.utils.escapeHtml(detailsTitle)}</summary>\n`
-      } else {
-        return '</details>\n'
-      }
-    },
-  })
-
-  const renderMessageEditors = () => {
-    const editors = messageEditors()
-    for (const ed of editors ?? []) {
-      const parent = document.getElementById(ed.id)
-      if (!parent) return
-
-      const theme = getTheme(configService.codeTheme.value)
-      const lang = getLanguageConfig(ed.lang)
-      const doc = ed.doc.replace(/\n$/, '')
-
-      new EditorView({
-        parent,
-        doc,
-        extensions: [
-          EditorView.editable.of(false),
-          EditorState.readOnly.of(true),
-          EditorView.lineWrapping,
-          theme,
-          lang.highlight(),
-        ],
-      })
-    }
-
-    setMessageEditors([])
-  }
+  const file = props.message.fileId ? fileService.findFileById(props.message.fileId) : undefined
+  const langConfig = getLanguageConfig(props.message.codeLang ?? file?.codeLang)
 
   const onBubbleMenu = (event: MouseEvent) => {
     setTooltipAnchor(event.currentTarget as HTMLElement)
@@ -129,18 +71,37 @@ export const MessageQuestion = (props: Props) => {
     setEditing(false)
   }
 
-  createEffect(() => {
-    if (!editing()) setHtml(finalMd.render(props.message.content))
+  const onShowContent = () => {
+    setShowContent(!showContent())
+  }
+
+  onMount(async () => {
+    setFileTitle(await fileService.getTitle(file, 25, false))
   })
 
-  const Html = (p: {content: string}) => {
+  const CodeBlock = () => {
     let ref!: HTMLDivElement
-    createEffect(() => {
-      ref.innerHTML = p.content
-      untrack(() => renderMessageEditors())
+    onMount(() => {
+      const theme = getTheme(configService.codeTheme.value)
+
+      const lines = props.message.content.split('\n')
+      lines.shift()
+      lines.pop()
+
+      new EditorView({
+        parent: ref,
+        doc: lines.join('\n'),
+        extensions: [
+          EditorView.editable.of(false),
+          EditorState.readOnly.of(true),
+          EditorView.lineWrapping,
+          theme,
+          langConfig.highlight(),
+        ],
+      })
     })
 
-    return <div class="html-container" ref={ref} />
+    return <div ref={ref} />
   }
 
   return (
@@ -156,7 +117,27 @@ export const MessageQuestion = (props: Props) => {
       </Show>
       <Show when={!editing()}>
         <QuestionBubble>
-          <Html content={html() ?? props.message.content} />
+          <Switch>
+            <Match when={props.message.type === MessageType.File}>
+              <Button onClick={onShowContent}>
+                <LangIcon name={langConfig.id} /> {fileTitle() ?? `${langConfig?.name} File`}
+              </Button>
+              <Show when={showContent()}>
+                <CodeBlock />
+              </Show>
+            </Match>
+            <Match when={props.message.type === MessageType.Selection}>
+              <Button onClick={onShowContent}>
+                <IconTextSelectStart />
+                {fileTitle() ?? `${langConfig?.name} File`}:{props.message.selection?.[0]}-
+                {props.message.selection?.[1]}
+              </Button>
+              <Show when={showContent()}>
+                <CodeBlock />
+              </Show>
+            </Match>
+            <Match when={true}>{props.message.content}</Match>
+          </Switch>
           <BubbleMenu>
             <IconButton onClick={onBubbleMenu}>
               <IconMoreVert />

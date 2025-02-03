@@ -15,15 +15,11 @@ import {SelectionButton} from './attachments/Selection'
 import {ChatInputAction, ChatInputContainer} from './Style'
 
 const Container = styled('div')`
-  margin-top: 20px;
+  margin: 20px 0;
 `
 
-export interface ChatInputMessage extends Message {
-  attachment: boolean
-}
-
 interface Props {
-  onMessage: (message: ChatInputMessage) => void
+  onMessage: (message: Message) => void
   onCancel: () => void
   ref?: HTMLDivElement
 }
@@ -42,7 +38,7 @@ export const ChatInput = (props: Props) => {
     setTooltipAnchor(e.currentTarget as HTMLElement)
   }
 
-  const onAttachment = (message: ChatInputMessage) => {
+  const onAttachment = (message: Message) => {
     props.onMessage(message)
     closeTooltip()
   }
@@ -59,7 +55,6 @@ export const ChatInput = (props: Props) => {
     })
 
     props.onMessage({
-      attachment: false,
       id: uuidv4(),
       role: 'user',
       content,

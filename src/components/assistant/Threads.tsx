@@ -31,7 +31,7 @@ const TooltipButtonMenu = styled('span')`
     background: var(--background-20);
   }
   .icon {
-    margin: 0;
+    margin: 0 !important;
   }
 `
 
@@ -110,7 +110,7 @@ export const Threads = (props: Props) => {
     <>
       <Button onClick={onMenuClick}>
         <IconHistory />
-        Chat History
+        History
       </Button>
       <Show when={menuTooltipAnchor()}>
         <Tooltip anchor={menuTooltipAnchor()!} onClose={onMenuClose} backdrop={true}>

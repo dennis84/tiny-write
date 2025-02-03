@@ -1,7 +1,6 @@
 import {Channel, invoke} from '@tauri-apps/api/core'
 import {timeout} from '@/utils/promise'
-import {Model} from '@/services/CopilotService'
-import {Message} from '@/state'
+import {ChatMessage, Model} from '@/services/CopilotService'
 import {span} from './log'
 
 export const startLanguageServer = () =>
@@ -40,7 +39,7 @@ type ChatEvent = string
 
 export const sendChatMessage = async (
   model: Model,
-  messages: Message[],
+  messages: ChatMessage[],
   onEvent: Channel<ChatEvent>,
 ) => {
   await invoke('copilot_chat_completions', {model, messages, onEvent})

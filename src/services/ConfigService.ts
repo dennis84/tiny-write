@@ -35,6 +35,10 @@ interface CodeTheme {
   dark: boolean
 }
 
+export type ThemeName = keyof typeof ConfigService.themes
+export type CodeThemeName = keyof typeof ConfigService.codeThemes
+export type FontName = keyof typeof ConfigService.fonts
+
 export class ConfigService {
   static readonly themes: Record<string, Theme> = {
     'light': {
@@ -159,7 +163,7 @@ export class ConfigService {
     },
   }
 
-  static readonly DEFAULT_FONT = 'ia-writer-mono'
+  static readonly DEFAULT_FONT: FontName = 'ia-writer-mono'
 
   static readonly fonts: Record<string, Font> = {
     'system-ui': {
@@ -325,12 +329,12 @@ export class ConfigService {
       : ConfigService.codeThemes['material-light']
   }
 
-  static getThemeConfig(state: State) {
+  static getThemeConfig(state: State): Partial<Config> {
     const curTheme = ConfigService.themes[state.config.theme ?? -1]
     const dark = isDark()
 
     if (dark && (!curTheme || !curTheme.dark)) {
-      return {theme: 'dark', codeTheme: 'material-dark'}
+      return {theme: 'dark', codeTheme: 'tokyo-night'}
     } else if (!dark && (!curTheme || curTheme.dark)) {
       return {theme: 'light', codeTheme: 'material-light'}
     }

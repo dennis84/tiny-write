@@ -21,25 +21,21 @@ export const useCurrentFile = (): Accessor<File | undefined> => {
 interface CodeDetails {
   code: string
   id?: string
-  title: string
   lang?: string
   path?: string
   range?: [number, number]
 }
 
-export const createCodeDetails = (props: CodeDetails) => {
+export const createCodeFence = (props: CodeDetails) => {
   let content = ''
 
-  // 2 additional newlines, otherwise the answer will contain the container
-  content += `::: details ${props.title}\n\n\n`
   content += '```'
   content += props.lang ?? ''
   content += props.id ? ` id=${props.id}` : ''
   content += props.range ? ` range=${props.range[0]}-${props.range[1]}` : ''
   content += '\n'
   content += props.code
-  content += '\n```\n\n\n'
-  content += ':::'
+  content += '\n```'
 
   return content
 }

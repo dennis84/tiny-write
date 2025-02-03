@@ -1,7 +1,7 @@
 import {SetStoreFunction, Store, unwrap} from 'solid-js/store'
 import {Channel} from '@tauri-apps/api/core'
 import {DB} from '@/db'
-import {Message, State} from '@/state'
+import {ChatRole, State} from '@/state'
 import {isTauri} from '@/env'
 import {debug, error, info} from '@/remote/log'
 import {
@@ -31,7 +31,12 @@ interface CompletionsRequest {
   stream: boolean
   temperature: number
   model: string
-  messages: Message[]
+  messages: ChatMessage[]
+}
+
+export interface ChatMessage {
+  role: ChatRole
+  content: string
 }
 
 export interface Model {
@@ -199,7 +204,7 @@ export class CopilotService {
   }
 
   async completions(
-    messages: Message[],
+    messages: ChatMessage[],
     onChunk: (chunk: Chunk) => void,
     onDone: () => void,
     streaming: boolean | undefined = undefined,
@@ -323,7 +328,7 @@ export class CopilotService {
 
   private createRequest(
     model: Model,
-    messages: Message[],
+    messages: ChatMessage[],
     streaming: boolean | undefined = undefined,
   ): CompletionsRequest {
     return {

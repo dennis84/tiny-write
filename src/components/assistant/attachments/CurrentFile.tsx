@@ -1,27 +1,22 @@
 import {Show} from 'solid-js'
 import {v4 as uuidv4} from 'uuid'
-import {useState} from '@/state'
+import {Message, MessageType} from '@/state'
 import {IconCodeBlocks} from '@/components/Icon'
 import {TooltipButton} from '@/components/Tooltip'
-import {ChatInputMessage} from '../ChatInput'
-import {createCodeDetails, useCurrentFile} from '../util'
+import {createCodeFence, useCurrentFile} from '../util'
 
 interface Props {
-  onAttachment: (message: ChatInputMessage) => void
+  onAttachment: (message: Message) => void
 }
 
 export const CurrentFileButton = (props: Props) => {
   const currentFile = useCurrentFile()
 
-  const {fileService} = useState()
-
-  const onClick = async () => {
+  const onClick = () => {
     const editorView = currentFile()?.codeEditorView
     if (!editorView) return
 
-    const title = await fileService.getTitle(currentFile())
-    const content = createCodeDetails({
-      title,
+    const content = createCodeFence({
       id: currentFile()?.id,
       code: editorView.state.doc.toString(),
       lang: currentFile()?.codeLang,
@@ -32,7 +27,8 @@ export const CurrentFileButton = (props: Props) => {
       id: uuidv4(),
       role: 'user',
       content,
-      attachment: true,
+      type: MessageType.File,
+      fileId: currentFile()?.id,
     })
   }
 

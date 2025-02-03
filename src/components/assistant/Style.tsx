@@ -2,8 +2,6 @@ import {styled} from 'solid-styled-components'
 
 export const chatBubble = `
   position: relative;
-  flex-basis: 100%;
-  margin-bottom: 20px;
   border-radius: var(--border-radius);
   font-size: var(--menu-font-size);
   .cm-editor {
@@ -11,6 +9,9 @@ export const chatBubble = `
     font-family: var(--menu-font-family);
     border-radius: var(--border-radius);
     position: relative;
+    .cm-content {
+      padding: 10px;
+    }
     .cm-panels {
       position: static;
       border-bottom: 1px solid #00000066;
@@ -34,7 +35,7 @@ export const chatBubble = `
 export const ChatInputContainer = styled('div')`
   position: relative;
   .cm-editor {
-    border: 1px solid var(--border);
+    border: 1px solid var(--primary-background);
     border-radius: var(--border-radius);
     padding: 10px;
     padding-bottom: 50px;
@@ -43,8 +44,7 @@ export const ChatInputContainer = styled('div')`
     font-family: var(--menu-font-family);
     outline: none;
     &.cm-focused {
-      border-color: var(--primary-background);
-      box-shadow: 0 0 0 1px var(--primary-background);
+      box-shadow: 0 0 0 2px var(--primary-background);
     }
   }
 `

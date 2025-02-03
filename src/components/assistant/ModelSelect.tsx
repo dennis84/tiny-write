@@ -30,7 +30,7 @@ export const ModelSelect = (props: Props) => {
     <>
       <Button onClick={onMenuClick}>
         <IconAi />
-        AI Model
+        Model
       </Button>
       <Show when={tooltipAnchor() !== undefined}>
         <Tooltip anchor={tooltipAnchor()!} onClose={onMenuClose}>

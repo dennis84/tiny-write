@@ -68,7 +68,7 @@ const ButtonPrimaryEl = styled('button')`
 export const ButtonGroup = styled('div')`
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 5px;
 `
 
 export const IconButtonEl = styled('button')`
