@@ -1,4 +1,5 @@
 import {createSignal, onMount} from 'solid-js'
+import {styled} from 'solid-styled-components'
 import {EditorView, keymap} from '@codemirror/view'
 import {defaultKeymap} from '@codemirror/commands'
 import {markdown} from '@codemirror/lang-markdown'
@@ -7,7 +8,12 @@ import {Message, useState} from '@/state'
 import {IconCheck, IconClose} from '../Icon'
 import {TooltipHelp} from '../TooltipHelp'
 import {IconButton} from '../Button'
-import {ChatInputAction, ChatInputContainer} from './Style'
+import {ChatInputAction, inputEditor} from './Style'
+
+const MessageInputContainer = styled('div')`
+  position: relative;
+  ${inputEditor}
+`
 
 interface Props {
   onUpdate: (message: Message) => void
@@ -79,7 +85,7 @@ export const MessageInput = (props: Props) => {
   })
 
   return (
-    <ChatInputContainer>
+    <MessageInputContainer>
       <div ref={chatInputRef}></div>
       <ChatInputAction>
         <TooltipHelp title="Cancel">
@@ -93,6 +99,6 @@ export const MessageInput = (props: Props) => {
           </IconButton>
         </TooltipHelp>
       </ChatInputAction>
-    </ChatInputContainer>
+    </MessageInputContainer>
   )
 }

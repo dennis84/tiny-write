@@ -70,6 +70,7 @@ import MaterialSymbolsDescription from '~icons/material-symbols/description?widt
 import MaterialSymbolsHomeRepairServiceOutlineRounded from '~icons/material-symbols/home-repair-service-outline-rounded?width=24px&height=24px'
 import MaterialSymbolsHelpCenterOutline from '~icons/material-symbols/help-center-outline?width=24px&height=24px'
 import MaterialSymbolsChevronRight from '~icons/material-symbols/chevron-right?width=24px&height=24px'
+import MaterialSymbolsStop from '~icons/material-symbols/stop?width=24px&height=24px'
 
 import PixelarticonsFloatCenter from '~icons/pixelarticons/float-center?width=24px&height=24px'
 import MdiTableColumnRemove from '~icons/mdi/table-column-remove?width=24px&height=24px'
@@ -563,6 +564,12 @@ export const IconHelp = () => (
 export const IconChevronRight = () => (
   <SvgIcon>
     <MaterialSymbolsChevronRight />
+  </SvgIcon>
+)
+
+export const IconStop = () => (
+  <SvgIcon>
+    <MaterialSymbolsStop />
   </SvgIcon>
 )
 

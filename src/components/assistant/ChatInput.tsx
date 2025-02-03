@@ -6,21 +6,24 @@ import {defaultKeymap} from '@codemirror/commands'
 import {markdown} from '@codemirror/lang-markdown'
 import {getTheme} from '@/codemirror/theme'
 import {Message, useState} from '@/state'
-import {IconAttachment, IconSend} from '../Icon'
+import {IconAttachment, IconSend, IconStop} from '../Icon'
 import {Tooltip} from '../Tooltip'
 import {TooltipHelp} from '../TooltipHelp'
 import {IconButton} from '../Button'
 import {CurrentFileButton} from './attachments/CurrentFile'
 import {SelectionButton} from './attachments/Selection'
-import {ChatInputAction, ChatInputContainer} from './Style'
+import {ChatInputAction, inputEditor} from './Style'
 
-const Container = styled('div')`
+const ChatInputContainer = styled('div')`
   margin: 20px 0;
+  position: relative;
+  justify-self: flex-end;
+  margin-top: auto;
+  ${inputEditor}
 `
 
 interface Props {
   onMessage: (message: Message) => void
-  onCancel: () => void
   ref?: HTMLDivElement
 }
 
@@ -28,7 +31,7 @@ export const ChatInput = (props: Props) => {
   let chatInputRef!: HTMLDivElement
   const [tooltipAnchor, setTooltipAnchor] = createSignal<HTMLElement | undefined>()
   const [editorView, setEditorView] = createSignal<EditorView>()
-  const {configService} = useState()
+  const {configService, copilotService} = useState()
 
   const closeTooltip = () => {
     setTooltipAnchor(undefined)
@@ -59,6 +62,10 @@ export const ChatInput = (props: Props) => {
       role: 'user',
       content,
     })
+  }
+
+  const onStop = () => {
+    copilotService.stop()
   }
 
   onMount(() => {
@@ -98,23 +105,30 @@ export const ChatInput = (props: Props) => {
 
   return (
     <>
-      <Container>
-        <ChatInputContainer ref={props.ref}>
-          <div onClick={() => editorView()?.focus()} ref={chatInputRef}></div>
-          <ChatInputAction>
-            <TooltipHelp title="Add an attachment to context">
-              <IconButton onClick={onAttachmentMenu}>
-                <IconAttachment />
+      <ChatInputContainer ref={props.ref}>
+        <div onClick={() => editorView()?.focus()} ref={chatInputRef}></div>
+        <ChatInputAction>
+          <TooltipHelp title="Add an attachment to context">
+            <IconButton onClick={onAttachmentMenu}>
+              <IconAttachment />
+            </IconButton>
+          </TooltipHelp>
+          <Show when={copilotService.streaming()}>
+            <TooltipHelp title="Stop">
+              <IconButton onClick={onStop}>
+                <IconStop />
               </IconButton>
             </TooltipHelp>
+          </Show>
+          <Show when={!copilotService.streaming()}>
             <TooltipHelp title="Send message">
               <IconButton onClick={onSend}>
                 <IconSend />
               </IconButton>
             </TooltipHelp>
-          </ChatInputAction>
-        </ChatInputContainer>
-      </Container>
+          </Show>
+        </ChatInputAction>
+      </ChatInputContainer>
       <Show when={tooltipAnchor() !== undefined}>
         <Tooltip anchor={tooltipAnchor()!} onClose={() => closeTooltip()} backdrop={true}>
           <CurrentFileButton onAttachment={onAttachment} />

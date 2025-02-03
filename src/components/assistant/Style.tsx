@@ -32,8 +32,7 @@ export const chatBubble = `
   }
 `
 
-export const ChatInputContainer = styled('div')`
-  position: relative;
+export const inputEditor = `
   .cm-editor {
     border: 1px solid var(--primary-background);
     border-radius: var(--border-radius);

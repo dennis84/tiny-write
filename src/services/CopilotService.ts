@@ -1,4 +1,5 @@
 import {SetStoreFunction, Store, unwrap} from 'solid-js/store'
+import {createSignal} from 'solid-js'
 import {Channel} from '@tauri-apps/api/core'
 import {DB} from '@/db'
 import {ChatRole, State} from '@/state'
@@ -46,6 +47,7 @@ export interface Model {
 
 export interface Choice {
   message: {content: string}
+  delta?: {content: string}
 }
 
 export interface Chunk {
@@ -64,8 +66,14 @@ const models = {
 export type ModelId = keyof typeof models
 
 export class CopilotService {
+  private streamingSignal = createSignal(false)
+
   get chatModelId(): ModelId {
     return this.store.ai?.copilot?.chatModel ?? 'gpt-4'
+  }
+
+  get streaming() {
+    return this.streamingSignal[0]
   }
 
   constructor(
@@ -215,14 +223,16 @@ export class CopilotService {
         const channel = new Channel<string>()
         channel.onmessage = (message: string) => {
           if (message.startsWith('[DONE]')) {
+            this.streamingSignal[1](false)
             onDone()
             resolve(undefined)
-          } else {
+          } else if (this.streaming()) {
             onChunk(JSON.parse(message))
           }
         }
 
-        sendChatMessage(model, messages, channel)
+        sendChatMessage(model, messages, channel, streaming)
+        this.streamingSignal[1](true)
       })
     }
 
@@ -259,6 +269,10 @@ export class CopilotService {
     }
   }
 
+  stop() {
+    this.streamingSignal[1](false)
+  }
+
   verify(url: string) {
     if (isTauri()) {
       return open(url)
@@ -287,9 +301,17 @@ export class CopilotService {
       }
     }
 
+    this.streamingSignal[1](true)
+
+    const finish = () => {
+      this.streamingSignal[1](false)
+      onDone()
+    }
+
     while (true) {
       const {value, done} = await reader.read()
-      if (done) {
+      if (done || !this.streaming()) {
+        finish()
         break
       }
 
@@ -298,7 +320,7 @@ export class CopilotService {
 
       for (let i = 0; i < lines.length - 1; i++) {
         const data = parseLine(lines[i])
-        if (!data) onDone()
+        if (!data) finish()
         else onChunk(data)
       }
 
@@ -307,7 +329,7 @@ export class CopilotService {
 
     if (buffer) {
       const data = parseLine(buffer)
-      if (!data) onDone()
+      if (!data) finish()
       else onChunk(data)
     }
   }

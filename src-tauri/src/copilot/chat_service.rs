@@ -4,8 +4,8 @@ use std::{fs::File, path::PathBuf, time::Duration};
 
 use anyhow::{anyhow, Result};
 use dirs::home_dir;
-use futures::{AsyncBufReadExt, TryStreamExt};
 use futures::stream::StreamExt;
+use futures::{AsyncBufReadExt, TryStreamExt};
 use log::debug;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
@@ -94,6 +94,7 @@ impl CopilotChatService {
         &self,
         model: Model,
         messages: Vec<ChatMessage>,
+        streaming: bool,
         on_event: Channel<String>,
     ) -> Result<()> {
         let request = Request::new(model, messages);
@@ -125,7 +126,7 @@ impl CopilotChatService {
             ));
         }
 
-        if request.stream {
+        if streaming && request.stream {
             let mut stream = response
                 .bytes_stream()
                 .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))
@@ -133,6 +134,16 @@ impl CopilotChatService {
                 .lines();
 
             while let Some(Ok(line)) = stream.next().await {
+                if let Some(data) = line.strip_prefix("data: ") {
+                    debug!("send data {}", data);
+                    on_event.send(data.to_string())?;
+                }
+            }
+        } else {
+            let text = response.text().await?;
+            let lines = text.split("\n");
+
+            for line in lines {
                 if let Some(data) = line.strip_prefix("data: ") {
                     debug!("send data {}", data);
                     on_event.send(data.to_string())?;

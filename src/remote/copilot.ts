@@ -41,6 +41,7 @@ export const sendChatMessage = async (
   model: Model,
   messages: ChatMessage[],
   onEvent: Channel<ChatEvent>,
+  streaming = true,
 ) => {
-  await invoke('copilot_chat_completions', {model, messages, onEvent})
+  await invoke('copilot_chat_completions', {model, messages, onEvent, streaming})
 }

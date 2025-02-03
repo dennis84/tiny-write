@@ -20,6 +20,10 @@ export class ThreadService {
     return this.store.threads.findIndex((t) => t.active)
   }
 
+  get lastMessage(): Message | undefined {
+    return this.currentThread?.messages[this.currentThread.messages.length]
+  }
+
   newThread() {
     const thread: Thread = {
       id: uuidv4(),
@@ -183,6 +187,7 @@ export class ThreadService {
   }
 
   async generateTitle(): Promise<string | undefined> {
+    info(`Generate title for current thread`)
     const currentThread = this.currentThread
     if (!currentThread) return
 
@@ -193,12 +198,17 @@ export class ThreadService {
           "Generate a concise 3-7 word title for this conversation, omitting punctuation. Go straight to the title, without any preamble and prefix like `Here's a concise suggestion:...` or `Title:`",
       }
 
-      let title: string
+      let title = ''
+      const messages = currentThread.messages.map((m) => ({role: m.role, content: m.content}))
+      messages.push(question)
 
       return this.copilotService.completions(
-        [...currentThread.messages, question],
+        messages,
         (chunk) => {
-          title = chunk.choices?.[0]?.message?.content
+          for (const choice of chunk.choices) {
+            const content = choice.delta?.content ?? choice.message?.content ?? ''
+            title += content
+          }
         },
         () => {
           if (title) resolve(title)

@@ -2,6 +2,7 @@ import {createSignal, For, Match, onMount, Show, Switch} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {v4 as uuidv4} from 'uuid'
 import {Message, useState} from '@/state'
+import {Chunk} from '@/services/CopilotService'
 import {itemCss, Text} from '../menu/Style'
 import {IconAdd, IconClose} from '../Icon'
 import {Button, ButtonGroup} from '../Button'
@@ -35,7 +36,7 @@ const Messages = styled('div')`
   margin-top: 20px;
   display: flex;
   flex-wrap: wrap;
-  flex-direction: column;
+  flex-direction: row;
   gap: 5px;
 `
 
@@ -80,8 +81,8 @@ export const Chat = () => {
     try {
       await copilotService.completions(
         messages,
-        (message: any) => {
-          for (const choice of message.choices) {
+        (chunk: Chunk) => {
+          for (const choice of chunk.choices) {
             threadService.streamLastMessage(
               messageId,
               choice.delta?.content ?? choice.message?.content ?? '',
@@ -178,11 +179,7 @@ export const Chat = () => {
         </For>
       </Messages>
       <Show when={focus()} keyed>
-        <ChatInput
-          ref={inputRef}
-          onMessage={onInputMessage}
-          onCancel={() => setEditMessage(undefined)}
-        />
+        <ChatInput ref={inputRef} onMessage={onInputMessage} />
       </Show>
       <Suggestions onSuggestion={onInputMessage} />
     </Drawer>

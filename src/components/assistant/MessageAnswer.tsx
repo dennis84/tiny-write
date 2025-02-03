@@ -147,13 +147,11 @@ export const MessageAnswer = (props: Props) => {
     <>
       <AnswerBubble>
         <AnswerBadge>
-          <IconAiAssistant /> Assistant:
+          <IconAiAssistant /> Assistant
         </AnswerBadge>
         <Html content={html() ?? props.message.content} />
         <Show when={props.message?.streaming}>
-          <p>
-            <Spinner />
-          </p>
+          <Spinner />
         </Show>
         <Show when={props.message !== undefined}>
           <BubbleMenu>

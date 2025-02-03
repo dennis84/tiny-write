@@ -58,11 +58,12 @@ pub async fn copilot_chat_completions<R: Runtime>(
     app_handle: AppHandle<R>,
     model: Model,
     messages: Vec<ChatMessage>,
+    streaming: bool,
     on_event: Channel<String>,
 ) -> Result<()> {
     let service = app_handle.state::<CopilotChatService>();
     service
-        .completions(model, messages, on_event)
+        .completions(model, messages, streaming, on_event)
         .await
         .map_err(|e| {
             error!("chat_completion failed {e:?}");

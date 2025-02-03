@@ -10,6 +10,8 @@ const DrawerEl = styled('div')`
   height: 100%;
   overflow-y: auto;
   scrollbar-width: none;
+  display: flex;
+  flex-direction: column;
   @media (max-width: ${FULL_WIDTH.toString()}px) {
     width: 100vw;
     ${isTauri() ? 'padding-top: 40px' : ''}
@@ -20,7 +22,7 @@ const DrawerEl = styled('div')`
 `
 
 const ResizeHandle = styled('div')`
-  position: absolute;
+  position: fixed;
   top: 0;
   bottom: 0;
   width: 15px;
