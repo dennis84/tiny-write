@@ -186,6 +186,18 @@ export class ThreadService {
     this.newThread()
   }
 
+  regenerate(message: Message) {
+    const currentThread = this.currentThread
+    if (!currentThread) return
+
+    const messages = currentThread.messages
+    const index = messages.findIndex((m) => m.id === message.id)
+    const slice = messages.slice(0, index)
+
+    const currentThreadIndex = this.currentThreadIndex
+    this.setState('threads', currentThreadIndex, 'messages', slice)
+  }
+
   async generateTitle(): Promise<string | undefined> {
     info(`Generate title for current thread`)
     const currentThread = this.currentThread

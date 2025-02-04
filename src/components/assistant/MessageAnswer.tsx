@@ -8,12 +8,21 @@ import {EditorState} from '@codemirror/state'
 import {Message, useState} from '@/state'
 import {getTheme} from '@/codemirror/theme'
 import {getLanguageConfig} from '@/codemirror/highlight'
-import {IconButton} from '../Button'
-import {IconAiAssistant, IconClose, IconMoreVert, Spinner} from '../Icon'
+import {copy} from '@/remote/clipboard'
+import {ButtonGroup, IconButton} from '../Button'
+import {
+  IconAiAssistant,
+  IconClose,
+  IconContentCopy,
+  IconMoreVert,
+  IconRefresh,
+  Spinner,
+} from '../Icon'
 import {Tooltip, TooltipButton} from '../Tooltip'
 import {chatBubble} from './Style'
 import {parseCodeBlockAttrs} from './util'
 import {ApplyPanel, ApplyPanelState} from './ApplyPanel'
+import {TooltipHelp} from '../TooltipHelp'
 
 const AnswerBubble = styled('div')`
   ${chatBubble}
@@ -49,7 +58,7 @@ interface MessageEditor {
 
 interface Props {
   message: Message
-  onBubbleMenu?: (event: MouseEvent, message: Message) => void
+  onRegenerate?: (message: Message) => void
 }
 
 export const MessageAnswer = (props: Props) => {
@@ -129,6 +138,13 @@ export const MessageAnswer = (props: Props) => {
     await threadService.removeMessage(props.message)
     closeBubbleMenu()
   }
+
+  const onCopy = () => copy(props.message.content)
+
+  const onRegenerate = () => {
+    props.onRegenerate?.(props.message)
+  }
+
   createEffect(() => {
     setHtml(finalMd.render(props.message.content))
   })
@@ -150,9 +166,23 @@ export const MessageAnswer = (props: Props) => {
           <IconAiAssistant /> Assistant
         </AnswerBadge>
         <Html content={html() ?? props.message.content} />
-        <Show when={props.message?.streaming}>
-          <Spinner />
-        </Show>
+        <ButtonGroup>
+          <TooltipHelp title="Copy">
+            <IconButton onClick={onCopy}>
+              <IconContentCopy />
+            </IconButton>
+          </TooltipHelp>
+          <TooltipHelp title="Regenerate">
+            <IconButton onClick={onRegenerate}>
+              <IconRefresh />
+            </IconButton>
+          </TooltipHelp>
+          <Show when={props.message?.streaming}>
+            <IconButton>
+              <Spinner />
+            </IconButton>
+          </Show>
+        </ButtonGroup>
         <Show when={props.message !== undefined}>
           <BubbleMenu>
             <IconButton onClick={onBubbleMenu}>
@@ -164,6 +194,14 @@ export const MessageAnswer = (props: Props) => {
       </AnswerBubble>
       <Show when={tooltipAnchor() !== undefined}>
         <Tooltip anchor={tooltipAnchor()!} onClose={closeBubbleMenu} backdrop={true}>
+          <TooltipButton onClick={onCopy}>
+            <IconContentCopy />
+            Copy
+          </TooltipButton>
+          <TooltipButton onClick={onRegenerate}>
+            <IconRefresh />
+            Regenerate
+          </TooltipButton>
           <TooltipButton onClick={onRemoveMessage}>
             <IconClose />
             Remove message

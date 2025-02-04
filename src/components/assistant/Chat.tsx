@@ -35,8 +35,7 @@ const EmptyContainer = styled('div')`
 const Messages = styled('div')`
   margin-top: 20px;
   display: flex;
-  flex-wrap: wrap;
-  flex-direction: row;
+  flex-direction: column;
   gap: 5px;
 `
 
@@ -133,6 +132,11 @@ export const Chat = () => {
     aiService.setSidebarWidth(width)
   }
 
+  const onRegenerate = (message: Message) => {
+    threadService.regenerate(message)
+    void sendMessages()
+  }
+
   onMount(() => {
     threadService.newThread()
   })
@@ -172,7 +176,7 @@ export const Chat = () => {
                 <MessageQuestion message={message} />
               </Match>
               <Match when={message.role === 'assistant'}>
-                <MessageAnswer message={message} />
+                <MessageAnswer message={message} onRegenerate={onRegenerate} />
               </Match>
             </Switch>
           )}
