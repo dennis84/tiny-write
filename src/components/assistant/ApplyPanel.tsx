@@ -11,8 +11,6 @@ import {IconContentCopy, IconMerge} from '../Icon'
 const ApplyPanelEl = styled('div')`
   padding: 2px;
   padding-left: 10px;
-  border-top-left-radius: var(--border-radius);
-  border-top-right-radius: var(--border-radius);
   width: 100%;
   display: grid;
   grid-template-columns: minmax(0, 1fr) min-content min-content;

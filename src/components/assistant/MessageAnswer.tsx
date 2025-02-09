@@ -10,15 +10,7 @@ import {getTheme} from '@/codemirror/theme'
 import {getLanguageConfig} from '@/codemirror/highlight'
 import {copy} from '@/remote/clipboard'
 import {ButtonGroup, IconButton} from '../Button'
-import {
-  IconAiAssistant,
-  IconClose,
-  IconContentCopy,
-  IconMoreVert,
-  IconRefresh,
-  Spinner,
-} from '../Icon'
-import {Tooltip, TooltipButton} from '../Tooltip'
+import {IconAiAssistant, IconContentCopy, IconRefresh, Spinner} from '../Icon'
 import {chatBubble} from './Style'
 import {parseCodeBlockAttrs} from './util'
 import {ApplyPanel, ApplyPanelState} from './ApplyPanel'
@@ -42,12 +34,6 @@ const AnswerBadge = styled('span')`
   }
 `
 
-const BubbleMenu = styled('div')`
-  position: absolute;
-  top: 5px;
-  right: 5px;
-`
-
 interface MessageEditor {
   elementId: string
   doc: string
@@ -62,11 +48,10 @@ interface Props {
 }
 
 export const MessageAnswer = (props: Props) => {
-  const {configService, threadService} = useState()
+  const {configService} = useState()
   const [messageEditors, setMessageEditors] = createSignal<MessageEditor[]>([])
   const [html, setHtml] = createSignal<string>()
   const [applyPanels, setApplyPanels] = createSignal<ApplyPanelState[]>([])
-  const [tooltipAnchor, setTooltipAnchor] = createSignal<HTMLElement>()
 
   const finalMd = markdownit({
     html: true,
@@ -126,19 +111,6 @@ export const MessageAnswer = (props: Props) => {
   const copilotApply = (id?: string, range?: [number, number]) =>
     showPanel.of(applyPanel(id, range))
 
-  const onBubbleMenu = (event: MouseEvent) => {
-    setTooltipAnchor(event.currentTarget as HTMLElement)
-  }
-
-  const closeBubbleMenu = () => {
-    setTooltipAnchor(undefined)
-  }
-
-  const onRemoveMessage = async () => {
-    await threadService.removeMessage(props.message)
-    closeBubbleMenu()
-  }
-
   const onCopy = () => copy(props.message.content)
 
   const onRegenerate = () => {
@@ -160,54 +132,29 @@ export const MessageAnswer = (props: Props) => {
   }
 
   return (
-    <>
-      <AnswerBubble>
-        <AnswerBadge>
-          <IconAiAssistant /> Assistant
-        </AnswerBadge>
-        <Html content={html() ?? props.message.content} />
-        <ButtonGroup>
-          <TooltipHelp title="Copy">
-            <IconButton onClick={onCopy}>
-              <IconContentCopy />
-            </IconButton>
-          </TooltipHelp>
-          <TooltipHelp title="Regenerate">
-            <IconButton onClick={onRegenerate}>
-              <IconRefresh />
-            </IconButton>
-          </TooltipHelp>
-          <Show when={props.message?.streaming}>
-            <IconButton>
-              <Spinner />
-            </IconButton>
-          </Show>
-        </ButtonGroup>
-        <Show when={props.message !== undefined}>
-          <BubbleMenu>
-            <IconButton onClick={onBubbleMenu}>
-              <IconMoreVert />
-            </IconButton>
-          </BubbleMenu>
-        </Show>
-        <For each={applyPanels()}>{(s) => <ApplyPanel state={s} />}</For>
-      </AnswerBubble>
-      <Show when={tooltipAnchor() !== undefined}>
-        <Tooltip anchor={tooltipAnchor()!} onClose={closeBubbleMenu} backdrop={true}>
-          <TooltipButton onClick={onCopy}>
+    <AnswerBubble>
+      <AnswerBadge>
+        <IconAiAssistant /> Assistant
+      </AnswerBadge>
+      <Html content={html() ?? props.message.content} />
+      <ButtonGroup>
+        <TooltipHelp title="Copy">
+          <IconButton onClick={onCopy}>
             <IconContentCopy />
-            Copy
-          </TooltipButton>
-          <TooltipButton onClick={onRegenerate}>
+          </IconButton>
+        </TooltipHelp>
+        <TooltipHelp title="Regenerate">
+          <IconButton onClick={onRegenerate}>
             <IconRefresh />
-            Regenerate
-          </TooltipButton>
-          <TooltipButton onClick={onRemoveMessage}>
-            <IconClose />
-            Remove message
-          </TooltipButton>
-        </Tooltip>
-      </Show>
-    </>
+          </IconButton>
+        </TooltipHelp>
+        <Show when={props.message?.streaming}>
+          <IconButton>
+            <Spinner />
+          </IconButton>
+        </Show>
+      </ButtonGroup>
+      <For each={applyPanels()}>{(s) => <ApplyPanel state={s} />}</For>
+    </AnswerBubble>
   )
 }

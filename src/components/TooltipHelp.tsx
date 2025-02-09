@@ -24,7 +24,7 @@ export const TooltipHelp = (props: Props) => {
         {props.children}
       </span>
       <Show when={anchor() !== undefined}>
-        <Tooltip anchor={anchor()!} backdrop={false}>
+        <Tooltip anchor={anchor()!} backdrop={false} delay={300}>
           {props.title}
         </Tooltip>
       </Show>

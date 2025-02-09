@@ -21,7 +21,7 @@ const Container = styled('div')`
   position: absolute;
   width: 50vw;
   margin-top: 10vh;
-  z-index: 1000;
+  z-index: var(--z-index-max);
   ${codeMirror}
   .cm-editor {
     border-radius: var(--border-radius);

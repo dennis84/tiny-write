@@ -16,7 +16,6 @@ export const Keymap = () => {
     collabService,
     canvasService,
     canvasCollabService,
-    inputLineService,
   } = useState()
   const {open} = useOpen()
 
@@ -26,6 +25,10 @@ export const Keymap = () => {
       document.removeEventListener('keydown', onKeyDown)
     })
   })
+
+  const stopEvent = () => {
+    return document.activeElement?.hasAttribute('contenteditable')
+  }
 
   const modifiers = (name: string, event: KeyboardEvent, shift = true) => {
     if (event.altKey) name = 'Alt-' + name
@@ -92,7 +95,7 @@ export const Keymap = () => {
   }
 
   const onBackspace = async () => {
-    if (store.mode !== Mode.Canvas || inputLineService.inputLine() !== undefined) return false
+    if (store.mode !== Mode.Canvas || stopEvent()) return false
 
     const currentCanvas = canvasService.currentCanvas
     if (!currentCanvas) return false

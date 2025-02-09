@@ -147,7 +147,7 @@ export const Threads = (props: Props) => {
         <Tooltip anchor={submenuTooltipAnchor()!} closeable={false} placement="right" offset={20}>
           <TooltipButton onClick={onEdit}>
             <IconEdit />
-            Edit
+            Rename
           </TooltipButton>
           <TooltipButton onClick={onDelete}>
             <IconDelete />

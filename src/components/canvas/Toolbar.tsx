@@ -35,6 +35,9 @@ const Container = styled('div')`
   padding: 6px 8px;
   display: flex;
   gap: 5px;
+  opacity: 0;
+  animation: fadeIn 0.3s forwards;
+  animation-delay: 0.3s;
   div {
     position: relative;
     z-index: 1;
@@ -60,6 +63,11 @@ const Container = styled('div')`
     background: var(--tooltip-background);
     position: absolute;
     transform: rotate(45deg);
+  }
+  @keyframes fadeIn {
+    to {
+      opacity: 1;
+    }
   }
 `
 

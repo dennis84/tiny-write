@@ -173,7 +173,7 @@ export const Chat = () => {
           {(message) => (
             <Switch>
               <Match when={message.role === 'user'}>
-                <MessageQuestion message={message} />
+                <MessageQuestion message={message} onUpdate={onRegenerate} />
               </Match>
               <Match when={message.role === 'assistant'}>
                 <MessageAnswer message={message} onRegenerate={onRegenerate} />

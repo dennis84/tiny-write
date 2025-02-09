@@ -14,9 +14,8 @@ export const chatBubble = `
     }
     .cm-panels {
       position: static;
-      border-bottom: 1px solid #00000066;
-      border-top-left-radius: var(--border-radius);
-      border-top-right-radius: var(--border-radius);
+      background: none;
+      border: 0;
     }
   }
   .cm-gap {

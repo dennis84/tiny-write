@@ -25,9 +25,17 @@ const TooltipEl = styled('div')`
   box-shadow: 0 12px 24px 0 rgba(0, 0, 0, 0.24);
   padding: 6px 8px;
   display: flex;
+  opacity: 0;
   flex-direction: column;
+  animation: fadeIn 0.3s forwards;
+  animation-delay: ${(p: any) => `${p.delay ?? 0}ms`};
   &::-webkit-scrollbar {
     display: none;
+  }
+  @keyframes fadeIn {
+    to {
+      opacity: 1;
+    }
   }
 `
 
@@ -60,8 +68,8 @@ export const TooltipDivider = styled('hr')`
 `
 
 export const TooltipArrow = styled('span')`
-  width: 10px;
-  height: 10px;
+  width: 20px;
+  height: 20px;
   background: var(--tooltip-background);
   position: absolute;
   transform: rotate(45deg);
@@ -89,6 +97,7 @@ interface Props {
   closeable?: boolean
   backdrop?: boolean
   children: JSX.Element
+  delay?: number
 }
 
 export const Tooltip = (props: Props) => {
@@ -181,7 +190,7 @@ export const Tooltip = (props: Props) => {
           <Backdrop onClick={onBackdropClick} />
         </Show>
       </Show>
-      <TooltipEl ref={tooltipRef} id="tooltip" class="tooltip">
+      <TooltipEl ref={tooltipRef} id="tooltip" class="tooltip" delay={props.delay}>
         {props.children}
         <TooltipArrow ref={arrowRef} />
       </TooltipEl>

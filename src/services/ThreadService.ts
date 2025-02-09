@@ -191,7 +191,12 @@ export class ThreadService {
     if (!currentThread) return
 
     const messages = currentThread.messages
-    const index = messages.findIndex((m) => m.id === message.id)
+    let index = messages.findIndex((m) => m.id === message.id)
+
+    if (messages[index].role ==='user') {
+      index += 1
+    }
+
     const slice = messages.slice(0, index)
 
     const currentThreadIndex = this.currentThreadIndex

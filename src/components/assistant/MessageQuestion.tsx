@@ -6,8 +6,8 @@ import {Message, MessageType, useState} from '@/state'
 import {getTheme} from '@/codemirror/theme'
 import {getLanguageConfig} from '@/codemirror/highlight'
 import {Button, IconButton} from '../Button'
-import {IconClose, IconEdit, IconMoreVert, IconTextSelectStart, LangIcon} from '../Icon'
-import {Tooltip, TooltipButton} from '../Tooltip'
+import {IconEdit, IconTextSelectStart, LangIcon} from '../Icon'
+import {TooltipHelp} from '../TooltipHelp'
 import {chatBubble} from './Style'
 import {MessageInput} from './MessageInput'
 
@@ -16,31 +16,37 @@ const EditBubble = styled('div')`
   margin-bottom: 20px;
 `
 
+const QuestionActions = styled('div')`
+  display: flex;
+  padding: 10px 0;
+  height: fit-content;
+`
+
+const QuestionContainer = styled('div')`
+  display: flex;
+  justify-items: flex-end;
+  width: fit-content;
+  margin-left: auto;
+  gap: 5px;
+`
+
 const QuestionBubble = styled('div')`
   ${chatBubble}
   padding: 20px;
   background: var(--foreground-10);
-  justify-self: flex-end;
-  margin-left: auto;
-  width: fit-content;
+  white-space: pre-wrap;
   .cm-editor {
     margin-top: 10px;
   }
 `
 
-const BubbleMenu = styled('div')`
-  position: absolute;
-  top: 5px;
-  right: 5px;
-`
-
 interface Props {
   message: Message
+  onUpdate?: (message: Message) => void
 }
 
 export const MessageQuestion = (props: Props) => {
   const {configService, threadService, fileService} = useState()
-  const [tooltipAnchor, setTooltipAnchor] = createSignal<HTMLElement>()
   const [editing, setEditing] = createSignal(false)
   const [fileTitle, setFileTitle] = createSignal<string>()
   const [showContent, setShowContent] = createSignal(false)
@@ -48,27 +54,14 @@ export const MessageQuestion = (props: Props) => {
   const file = props.message.fileId ? fileService.findFileById(props.message.fileId) : undefined
   const langConfig = getLanguageConfig(props.message.codeLang ?? file?.codeLang)
 
-  const onBubbleMenu = (event: MouseEvent) => {
-    setTooltipAnchor(event.currentTarget as HTMLElement)
-  }
-
-  const closeBubbleMenu = () => {
-    setTooltipAnchor(undefined)
-  }
-
-  const onRemoveMessage = async () => {
-    await threadService.removeMessage(props.message)
-    closeBubbleMenu()
-  }
-
   const onEditMessage = async () => {
-    closeBubbleMenu()
     setEditing(true)
   }
 
   const onUpdate = (message: Message) => {
     threadService.updateMessage(message)
     setEditing(false)
+    props.onUpdate?.(message)
   }
 
   const onShowContent = () => {
@@ -116,46 +109,38 @@ export const MessageQuestion = (props: Props) => {
         </EditBubble>
       </Show>
       <Show when={!editing()}>
-        <QuestionBubble>
-          <Switch>
-            <Match when={props.message.type === MessageType.File}>
-              <Button onClick={onShowContent}>
-                <LangIcon name={langConfig.id} /> {fileTitle() ?? `${langConfig?.name} File`}
-              </Button>
-              <Show when={showContent()}>
-                <CodeBlock />
-              </Show>
-            </Match>
-            <Match when={props.message.type === MessageType.Selection}>
-              <Button onClick={onShowContent}>
-                <IconTextSelectStart />
-                {fileTitle() ?? `${langConfig?.name} File`}:{props.message.selection?.[0]}-
-                {props.message.selection?.[1]}
-              </Button>
-              <Show when={showContent()}>
-                <CodeBlock />
-              </Show>
-            </Match>
-            <Match when={true}>{props.message.content}</Match>
-          </Switch>
-          <BubbleMenu>
-            <IconButton onClick={onBubbleMenu}>
-              <IconMoreVert />
-            </IconButton>
-          </BubbleMenu>
-        </QuestionBubble>
-      </Show>
-      <Show when={tooltipAnchor() !== undefined}>
-        <Tooltip anchor={tooltipAnchor()!} onClose={closeBubbleMenu} backdrop={true}>
-          <TooltipButton onClick={onRemoveMessage}>
-            <IconClose />
-            Remove message
-          </TooltipButton>
-          <TooltipButton onClick={onEditMessage}>
-            <IconEdit />
-            Edit message
-          </TooltipButton>
-        </Tooltip>
+        <QuestionContainer>
+          <QuestionActions>
+            <TooltipHelp title="Edit message">
+              <IconButton onClick={onEditMessage}>
+                <IconEdit />
+              </IconButton>
+            </TooltipHelp>
+          </QuestionActions>
+          <QuestionBubble>
+            <Switch>
+              <Match when={props.message.type === MessageType.File}>
+                <Button onClick={onShowContent}>
+                  <LangIcon name={langConfig.id} /> {fileTitle() ?? `${langConfig?.name} File`}
+                </Button>
+                <Show when={showContent()}>
+                  <CodeBlock />
+                </Show>
+              </Match>
+              <Match when={props.message.type === MessageType.Selection}>
+                <Button onClick={onShowContent}>
+                  <IconTextSelectStart />
+                  {fileTitle() ?? `${langConfig?.name} File`}:{props.message.selection?.[0]}-
+                  {props.message.selection?.[1]}
+                </Button>
+                <Show when={showContent()}>
+                  <CodeBlock />
+                </Show>
+              </Match>
+              <Match when={true}>{props.message.content}</Match>
+            </Switch>
+          </QuestionBubble>
+        </QuestionContainer>
       </Show>
     </>
   )
