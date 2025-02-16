@@ -1,124 +1,90 @@
-import {SetStoreFunction, Store, createMutable, unwrap} from 'solid-js/store'
+import {SetStoreFunction, Store, unwrap} from 'solid-js/store'
 import {Canvas, File, State, isFile} from '@/state'
+import {createTreeStore, TreeItem, Tree, TreeState} from '@/tree'
+import {info} from '@/remote/log'
 import {DB} from '@/db'
 import {FileService} from './FileService'
 import {CanvasService} from './CanvasService'
 
-export type TreeNodeItem = File | Canvas
-
-export interface TreeNode {
-  item: TreeNodeItem
-  tree: TreeNode[]
-}
-
-interface TmpNode {
-  item?: File | Canvas
-  tree: TmpNode[]
-}
+export type MenuTree = TreeState<File | Canvas>
+export type MenuTreeItem = TreeItem<File | Canvas>
 
 export class TreeService {
-  public tree = createMutable<TreeNode[]>([])
+  public tree: Tree<File | Canvas>
 
   constructor(
     private store: Store<State>,
     private setState: SetStoreFunction<State>,
-  ) {}
-
-  create() {
-    const tmp: Record<string, TmpNode> = {}
-    let root = []
-
+    private fileService: FileService,
+    private canvasService: CanvasService,
+  ) {
     const items = [...this.store.files, ...this.store.canvases]
-    for (const i of items) {
-      const item = unwrap(i)
-      if (!tmp[item.id]) tmp[item.id] = {item, tree: []}
-      else tmp[item.id].item = item
-      const node = tmp[item.id]
-
-      if (!item.parentId) root.push(node)
-      else if (!tmp[item.parentId]) tmp[item.parentId] = {tree: [node]}
-      else tmp[item.parentId].tree.push(node)
-    }
-
-    root = root as TreeNode[]
-    root = this.sortTree(root)
-    this.tree.splice(0, this.tree.length)
-    this.tree.push(...root)
+    this.tree = createTreeStore({items})
   }
 
-  async add(node: TreeNode, to: TreeNode) {
-    const parentId = to.item.id
-    const leftId = to.tree[to.tree.length - 1]?.item.id
-    const rightNode = this.findTreeNodeByLeftId(node.item.id)
-    if (rightNode) {
-      this.updateItem(rightNode.item.id, rightNode.item.parentId, node.item.leftId)
-      await this.saveNode(rightNode)
-    }
-    this.updateItem(node.item.id, parentId, leftId)
-    await this.saveNode(node)
-    this.create()
+  updateAll() {
+    const items = [...this.store.files, ...this.store.canvases]
+    this.tree.updateAll(items)
   }
 
-  async after(node: TreeNode, before: TreeNode) {
-    const rightNode = this.findTreeNodeByLeftId(node.item.id)
-    if (rightNode) {
-      this.updateItem(rightNode.item.id, rightNode.item.parentId, node.item.leftId)
-      await this.saveNode(rightNode)
-    }
-
-    const rightBefore = this.findTreeNodeByLeftId(before.item.id)
-    if (rightBefore) {
-      this.updateItem(rightBefore.item.id, rightBefore.item.parentId, node.item.id)
-      await this.saveNode(rightBefore)
-    }
-
-    this.updateItem(node.item.id, before.item.parentId, before.item.id)
-    await this.saveNode(node)
-    this.create()
+  updateValue(item: File | Canvas) {
+    this.tree.updateValue(item)
   }
 
-  async before(node: TreeNode, after: TreeNode) {
-    const parentId = after.item.parentId
-    const rightNode = this.findTreeNodeByLeftId(node.item.id)
-    if (rightNode) {
-      this.updateItem(rightNode.item.id, rightNode.item.parentId, node.item.leftId)
-      await this.saveNode(rightNode)
-    }
-    this.updateItem(node.item.id, parentId, after.item.leftId)
-    this.updateItem(after.item.id, parentId, node.item.id)
-    await this.saveNode(node)
-    await this.saveNode(after)
-    this.create()
-  }
-
-  isDescendant(id: string, tree = this.tree): boolean {
-    return this.findTreeNode(id, tree) ? true : false
-  }
-
-  descendants(fn: (n: TreeNode) => void, tree = this.tree) {
-    for (const n of tree) {
-      fn(n)
-      this.descendants(fn, n.tree)
+  async add(item: File | Canvas) {
+    const ids = this.tree.add(item)
+    for (const i of ids) {
+      this.saveItem(i)
     }
   }
 
-  findTreeNode(id: string, tree = this.tree): TreeNode | undefined {
-    for (const n of tree) {
-      if (n.item.id === id) return n
-      const c = this.findTreeNode(id, n.tree)
-      if (c) return c
+  remove(id: string) {
+    this.tree.remove(id)
+  }
+
+  async move(id: string, toId: string | undefined) {
+    const ids = this.tree.move(id, toId)
+    for (const i of ids) {
+      await this.saveItem(i)
     }
   }
 
-  async collapse(node: TreeNode) {
-    if (!node.tree.length) return
+  async after(id: string, toId: string) {
+    const ids = this.tree.after(id, toId)
+    for (const i of ids) {
+      await this.saveItem(i)
+    }
+  }
+
+  async before(id: string, toId: string) {
+    const ids = this.tree.before(id, toId)
+    for (const i of ids) {
+      await this.saveItem(i)
+    }
+  }
+
+  isDescendant(id: string, parentId: string): boolean {
+    return this.tree.isDescendant(id, parentId)
+  }
+
+  descendants(fn: (n: TreeItem<any>) => void, parentId: string | undefined = undefined) {
+    return this.tree.descendants(fn, parentId)
+  }
+
+  getItem(id: string): TreeItem<any> | undefined {
+    return this.tree.getItem(id)
+  }
+
+  async collapse(id: string) {
+    const item = this.tree.getItem(id)!
+    if (!item.childrenIds.length) return
 
     this.setState('tree', (prev) => {
       const collapsed = prev?.collapsed ?? []
-      if (collapsed.includes(node.item.id)) {
-        return {...prev, collapsed: collapsed.filter((id) => id !== node.item.id)}
+      if (collapsed.includes(item.id)) {
+        return {...prev, collapsed: collapsed.filter((id) => id !== item.id)}
       } else {
-        return {...prev, collapsed: [...collapsed, node.item.id]}
+        return {...prev, collapsed: [...collapsed, item.id]}
       }
     })
 
@@ -127,77 +93,21 @@ export class TreeService {
     await DB.setTree({...tree})
   }
 
-  isCollapsed(node: TreeNode): boolean {
-    return this.store.tree?.collapsed.includes(node.item.id) ?? false
+  isCollapsed(id: string): boolean {
+    return this.store.tree?.collapsed.includes(id) ?? false
   }
 
-  private findTreeNodeByLeftId(leftId: string, tree = this.tree): TreeNode | undefined {
-    for (const n of tree) {
-      if (n.item.leftId === leftId) return n
-      const c = this.findTreeNodeByLeftId(leftId, n.tree)
-      if (c) return c
-    }
-  }
-
-  private updateItem(id: string, parentId?: string, leftId?: string) {
-    const fileIndex = this.store.files.findIndex((f) => f.id === id)
-    if (fileIndex !== -1) {
-      this.setState('files', fileIndex, {parentId, leftId})
-      return
-    }
-
-    const canvasIndex = this.store.canvases.findIndex((it) => it.id === id)
-    if (canvasIndex !== -1) {
-      this.setState('canvases', canvasIndex, {parentId, leftId})
-    }
-  }
-
-  private sortTree(tree: TreeNode[]): TreeNode[] {
-    const sorted: TreeNode[] = []
-    const unsorted = [...tree]
-    const nulls = []
-
-    outer: for (const node of tree) {
-      const nextLeftId = sorted[sorted.length - 1]?.item.id
-
-      if (node.tree.length > 0) {
-        node.tree = this.sortTree(node.tree)
-      }
-
-      for (let i = 0; i < unsorted.length; i++) {
-        const searchNode = unsorted[i]
-        if (searchNode.item.leftId === nextLeftId) {
-          sorted.push(searchNode)
-          unsorted.splice(i, 1)
-          continue outer
-        } else if (!searchNode.item.leftId) {
-          nulls.push(searchNode)
-          unsorted.splice(i, 1)
-          continue outer
-        }
-      }
-    }
-
-    for (const n of nulls) {
-      const nextLeftId = sorted[sorted.length - 1]?.item.id
-      n.item.leftId = nextLeftId
-      sorted.push(n)
-    }
-
-    for (const u of unsorted) {
-      const nextLeftId = sorted[sorted.length - 1]?.item.id
-      u.item.leftId = nextLeftId
-      sorted.push(u)
-    }
-
-    return sorted
-  }
-
-  private async saveNode(node: TreeNode) {
-    if (isFile(node.item)) {
-      await FileService.saveFile(node.item)
+  private async saveItem(id: string) {
+    const item = this.tree.getItem(id)
+    if (!item) return
+    const {parentId, leftId} = item
+    info(`Save tree item (id=${id}, parentId=${parentId}, leftId=${leftId})`)
+    if (isFile(item.value)) {
+      this.fileService.updateFile(id, {leftId, parentId})
+      await FileService.saveFile({...item.value, leftId, parentId})
     } else {
-      await CanvasService.saveCanvas(node.item)
+      this.canvasService.updateCanvas(id, {leftId, parentId})
+      await CanvasService.saveCanvas({...item.value, leftId, parentId})
     }
   }
 }

@@ -40,9 +40,13 @@ import {Container, Keys, Label, Link, Sub, Control} from './Style'
 
 export const MenuDrawer = ({children}: {children: JSX.Element}) => {
   const {menuService, fileService} = useState()
+  const onClick = () => {
+    fileService.currentFile?.editorView?.focus()
+  }
+
   return (
     <Drawer
-      onClick={() => fileService.currentFile?.editorView?.focus()}
+      onClick={onClick}
       onResized={(width) => menuService.setMenuWidth(width)}
       width={menuService.menuWidth}
     >

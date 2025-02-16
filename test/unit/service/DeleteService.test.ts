@@ -95,6 +95,11 @@ test.each([
   {
     node: initial.files[0],
     current: initial.files[0],
+    navigateTo: '/',
+  },
+  {
+    node: initial.files[1],
+    current: initial.canvases[0],
     navigateTo: undefined,
   },
 ])('delete - soft %#', async (data) => {
@@ -110,16 +115,21 @@ test.each([
   treeService.isDescendant.mockReturnValue(data.descendant ?? false)
 
   const node = {
-    item: data.node,
-    tree: [],
+    id: data.node.id,
+    parentId: data.node.parentId,
+    leftId: data.node.leftId,
+    value: data.node,
+    childrenIds: [],
   }
 
   const result = await service.delete(node)
 
   if (!data.navigateTo) {
     expect(result.navigateTo).toBeUndefined()
+  } else if (typeof result.navigateTo === 'string') {
+    expect(result.navigateTo).toEqual(data.navigateTo)
   } else {
-    expect(result.navigateTo).toMatchObject(data.navigateTo)
+    expect(result.navigateTo).toMatchObject(data.navigateTo as any)
   }
 
   expect(fileService.updateFile).toBeCalled()
@@ -168,14 +178,17 @@ test.each([
   treeService.isDescendant.mockReturnValue(data.descendant ?? false)
 
   const node = {
-    item: data.node,
-    tree: [],
+    id: data.node.id,
+    parentId: data.node.parentId,
+    leftId: data.node.leftId,
+    value: data.node,
+    childrenIds: [],
   }
 
   const result = await service.delete(node, true)
 
   if (!data.navigateTo) {
-    expect(result.navigateTo).toBeUndefined()
+    expect(result.navigateTo).toBe('/')
   } else {
     expect(result.navigateTo).toMatchObject(data.navigateTo)
   }
@@ -206,8 +219,8 @@ test('emptyBin', async () => {
 
   const [store, setState] = createStore(initial)
 
-  const treeService = new TreeService(store, setState)
-  treeService.create()
+  const treeService = new TreeService(store, setState, fileService, canvasService)
+  treeService.updateAll()
 
   const service = new DeleteService(fileService, canvasService, treeService, store, setState)
 

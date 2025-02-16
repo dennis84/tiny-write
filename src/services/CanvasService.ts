@@ -26,7 +26,6 @@ import {DB} from '@/db'
 import {info} from '@/remote/log'
 import {FileService} from './FileService'
 import {CollabService} from './CollabService'
-import {TreeService} from './TreeService'
 import {SelectService} from './SelectService'
 
 type UpdateElement =
@@ -64,7 +63,6 @@ export class CanvasService {
   constructor(
     private fileService: FileService,
     private selectService: SelectService,
-    private treeService: TreeService,
     private store: Store<State>,
     private setState: SetStoreFunction<State>,
   ) {}
@@ -270,11 +268,11 @@ export class CanvasService {
     }
   }
 
-  async newCanvas(): Promise<Canvas> {
+  async newCanvas(params: Partial<Canvas> = {}): Promise<Canvas> {
     await this.removeDeadLinks()
 
     const id = uuidv4()
-    const canvas = CanvasService.createCanvas({id})
+    const canvas = CanvasService.createCanvas({...params, id})
 
     this.setState('canvases', (prev) => [...prev, canvas])
     info('New canvas created')
@@ -352,11 +350,10 @@ export class CanvasService {
     if (!currentCanvas) return
 
     const file = FileService.createFile({code})
-    file.parentId = currentCanvas.parentId
+    file.parentId = currentCanvas.id
 
     this.setState('files', [...this.store.files, file])
     const added = await this.addFile(file, link, point)
-    this.treeService.create()
     info('New file added')
 
     return added?.[0]

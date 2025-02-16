@@ -12,7 +12,12 @@ export const ContextMenu = () => {
   const onNewFile = async (code = false, link?: CanvasLinkElement, cm?: Vec) => {
     const el = await canvasService.newFile(code, link, cm)
     await canvasService.removeDeadLinks()
-    if (el) canvasCollabService.addElement(el)
+    if (el) {
+      canvasCollabService.addElement(el)
+      const file = fileService.findFileById(el.id)
+      if (file) treeService.add(file)
+    }
+
     setContextMenu(undefined)
   }
 
@@ -51,19 +56,17 @@ export const ContextMenu = () => {
   const getFiles = (): File[] | undefined => {
     const currentCanvas = canvasService.currentCanvas
     if (!currentCanvas) return []
-    const tree =
-      currentCanvas.parentId ? treeService.findTreeNode(currentCanvas.parentId)?.tree : undefined
 
     const files: File[] = []
     treeService.descendants((n) => {
       if (
-        isFile(n.item) &&
-        !n.item.deleted &&
-        !currentCanvas.elements.find((el) => el.id === n.item.id)
+        isFile(n.value) &&
+        !n.value.deleted &&
+        !currentCanvas.elements.find((el) => el.id === n.id)
       ) {
-        files.push(n.item)
+        files.push(n.value)
       }
-    }, tree)
+    }, currentCanvas.parentId)
 
     return files.length > 0 ? files : undefined
   }

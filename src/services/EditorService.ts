@@ -145,7 +145,6 @@ export class EditorService {
       const subdoc = CollabService.getSubdoc(update.collab.ydoc, file.id)
       if (text) this.updateText(file, subdoc, text)
       this.setState(update)
-      this.treeService.create()
     } catch (e: any) {
       this.appService.setError({error: e, fileId: params.id})
     }

@@ -11,14 +11,12 @@ import {isTauri} from '@/env'
 import {ConfigService} from './ConfigService'
 import {CanvasService} from './CanvasService'
 import {FileService} from './FileService'
-import {TreeService} from './TreeService'
 
 export class AppService {
   public layoutRef: HTMLElement | undefined
 
   constructor(
     private fileService: FileService,
-    private treeService: TreeService,
     private store: Store<State>,
     private setState: SetStoreFunction<State>,
   ) {}
@@ -58,8 +56,6 @@ export class AppService {
       }
 
       this.setState(newState)
-
-      this.treeService.create()
     } catch (err: any) {
       const errorObject = this.createError({error: err})
       error(`Error during init: ${err.message}`)

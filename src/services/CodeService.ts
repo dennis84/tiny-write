@@ -41,8 +41,8 @@ export class CodeService {
 
   private writeFileThrottled = debounce(1000, this.writeFile.bind(this))
 
-  async newFile(): Promise<File> {
-    const file = FileService.createFile({code: true})
+  async newFile(params: Partial<File> = {}): Promise<File> {
+    const file = FileService.createFile({...params, code: true})
     this.setState('files', (prev) => [...prev, file])
     return file
   }
@@ -73,7 +73,6 @@ export class CodeService {
       const subdoc = CollabService.getSubdoc(update.collab.ydoc, file.id)
       if (text) this.updateText(file, subdoc, text)
       this.setState(update)
-      this.treeService.create()
     } catch (error: any) {
       this.appService.setError({error, fileId: params.id})
     }

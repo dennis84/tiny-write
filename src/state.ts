@@ -9,7 +9,7 @@ import {FileService} from './services/FileService'
 import {ModelId} from './services/CopilotService'
 import {CodeThemeName} from './services/ConfigService'
 
-export type Openable = File | Canvas | CanvasElement
+export type Openable = File | Canvas | CanvasElement | '/'
 
 export interface LocationState {
   prev?: string // prev location pathname

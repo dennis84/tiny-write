@@ -29,12 +29,14 @@ export const useOpen = () => {
     back = false,
     selection: VisualPositionRange | undefined = undefined,
   ) => {
+    if (!item) return
+
     const prev = back ? location.pathname : undefined
     const file = isFile(item) ? item.path : undefined
     const newFile = isFile(item) ? item.newFile : undefined
     const state = {prev, file, newFile, selection}
 
-    if (!item) {
+    if (item === '/') {
       info(`Redirect to (to=/)`)
       return navigate('/', {state})
     } else if (isCodeFile(item)) {

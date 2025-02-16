@@ -5,7 +5,7 @@ import {styled} from 'solid-styled-components'
 import {DragGesture} from '@use-gesture/vanilla'
 import {Mode, isCanvas, isCodeFile, isFile, isLocalFile, useState} from '@/state'
 import {useOpen} from '@/open'
-import {TreeNode, TreeNodeItem} from '@/services/TreeService'
+import {MenuTreeItem} from '@/services/TreeService'
 import {FileService} from '@/services/FileService'
 import {CanvasService} from '@/services/CanvasService'
 import {ITEM_HEIGHT, itemCss, Label, Link, Sub} from './Style'
@@ -181,25 +181,27 @@ export const SubmenuTree = (props: Props) => {
   } = useState()
   const [dropState, setDropState] = createSignal<DropState>()
   const [tooltipAnchor, setTooltipAnchor] = createSignal<HTMLElement | undefined>()
-  const [selected, setSelected] = createSignal<TreeNode>()
+  const [selected, setSelected] = createSignal<MenuTreeItem>()
   const [grabbing, setGrabbing] = createSignal(false)
   const {open} = useOpen()
 
-  const isNode = (node: TreeNode) => dropState()?.targetId === node.item.id
+  const isNode = (node: MenuTreeItem) => dropState()?.targetId === node.id
 
   const closeTooltip = () => {
     setTooltipAnchor(undefined)
     setSelected(undefined)
   }
 
-  const showTooltip = (e: MouseEvent, anchor: HTMLElement, node: TreeNode) => {
+  const showTooltip = (e: MouseEvent, anchor: HTMLElement, node: MenuTreeItem) => {
     e.stopPropagation()
     setTooltipAnchor(anchor)
     setSelected(node)
   }
 
-  const onRename = async () => {
-    const item = selected()?.item
+  const onRename = async (e: MouseEvent) => {
+    e.stopPropagation() // prevent bubble to drawer onClick
+
+    const item = selected()?.value
     if (!item) return
 
     closeTooltip()
@@ -220,24 +222,24 @@ export const SubmenuTree = (props: Props) => {
 
   const onNewFile = async () => {
     const file = await fileService.newFile()
+    await treeService.add(file)
     open(file)
-    treeService.create()
     closeTooltip()
     props.maybeHide?.()
   }
 
   const onNewCanvas = async () => {
     const canvas = await canvasService.newCanvas()
+    await treeService.add(canvas)
     open(canvas)
-    treeService.create()
     closeTooltip()
     props.maybeHide?.()
   }
 
   const onNewCode = async () => {
     const file = await codeService.newFile()
+    await treeService.add(file)
     open(file)
-    treeService.create()
     closeTooltip()
     props.maybeHide?.()
   }
@@ -245,10 +247,10 @@ export const SubmenuTree = (props: Props) => {
   const onAddFile = async () => {
     const target = unwrap(selected())
     if (!target) return
-    const file = await fileService.newFile()
-    await treeService.add({item: file, tree: []}, target)
-    if (treeService.isCollapsed(target)) {
-      await treeService.collapse(target)
+    const file = await fileService.newFile({parentId: target.id})
+    await treeService.add(file)
+    if (treeService.isCollapsed(target.id)) {
+      await treeService.collapse(target.id)
     }
 
     open(file)
@@ -258,8 +260,8 @@ export const SubmenuTree = (props: Props) => {
   const onAddCanvas = async () => {
     const target = unwrap(selected())
     if (!target) return
-    const canvas = await canvasService.newCanvas()
-    await treeService.add({item: canvas, tree: []}, target)
+    const canvas = await canvasService.newCanvas({parentId: target.id})
+    await treeService.add(canvas)
     open(canvas)
     closeTooltip()
   }
@@ -267,8 +269,8 @@ export const SubmenuTree = (props: Props) => {
   const onAddCode = async () => {
     const target = unwrap(selected())
     if (!target) return
-    const file = await codeService.newFile()
-    await treeService.add({item: file, tree: []}, target)
+    const file = await codeService.newFile({parentId: target.id})
+    await treeService.add(file)
     open(file)
     closeTooltip()
   }
@@ -277,6 +279,7 @@ export const SubmenuTree = (props: Props) => {
     const node = unwrap(selected())
     if (!node) return
     const result = await deleteService.delete(node)
+    treeService.remove(node.id)
     open(result.navigateTo)
     closeTooltip()
   }
@@ -285,6 +288,7 @@ export const SubmenuTree = (props: Props) => {
     const node = unwrap(selected())
     if (!node) return
     const result = await deleteService.delete(node, true)
+    treeService.remove(node.id)
     open(result.navigateTo)
     closeTooltip()
   }
@@ -292,44 +296,42 @@ export const SubmenuTree = (props: Props) => {
   const onRestore = async () => {
     const node = unwrap(selected())
     if (!node) return
-    if (isFile(node.item)) {
-      await fileService.restore(node.item.id)
+    if (isFile(node.value)) {
+      await fileService.restore(node.id)
     } else {
-      await canvasService.restore(node.item.id)
+      await canvasService.restore(node.id)
     }
+
+    treeService.updateValue(node.value)
 
     closeTooltip()
   }
 
   const onFocus = async () => {
-    const id = selected()?.item.id
+    const id = selected()?.id
     if (!id) return
     props.maybeHide?.()
     await canvasService.focus(id)
     closeTooltip()
   }
 
-  const isOnCanvas = (item?: TreeNodeItem): boolean =>
+  const isOnCanvas = (item?: MenuTreeItem): boolean =>
     store.mode === Mode.Canvas &&
-    isFile(item) &&
+    isFile(item?.value) &&
     (canvasService.currentCanvas?.elements.some((it) => it.id === item.id) ?? false)
 
-  onMount(() => {
-    treeService.create()
-  })
-
-  const TreeLink = (p: {node: TreeNode; level: number; selected?: boolean}) => {
+  const TreeLink = (p: {node: MenuTreeItem; level: number; selected?: boolean}) => {
     let ref!: HTMLSpanElement
     let anchor!: HTMLElement
 
     const [title, setTitle] = createSignal<string>()
 
     const onClick = async () => {
-      open(p.node.item)
+      open(p.node.value)
       props.maybeHide?.()
     }
 
-    const onCornerClick = () => treeService.collapse(p.node)
+    const onCornerClick = () => treeService.collapse(p.node.id)
 
     const getCurrentId = () =>
       store.mode === Mode.Canvas ? canvasService.currentCanvas?.id : fileService.currentFile?.id
@@ -359,8 +361,8 @@ export const SubmenuTree = (props: Props) => {
 
           if (
             targetId &&
-            targetId !== p.node.item.id &&
-            !treeService.isDescendant(targetId, p.node.tree)
+            targetId !== p.node.id &&
+            !treeService.isDescendant(targetId, p.node.id)
           ) {
             if (y < box.top + offset) {
               setDropState({pos: 'before', targetId})
@@ -380,22 +382,22 @@ export const SubmenuTree = (props: Props) => {
           if (last) {
             const ds = dropState()
             if (ds?.targetId) {
-              const targetNode = treeService.findTreeNode(ds.targetId)
+              const targetNode = treeService.getItem(ds.targetId)
               if (targetNode) {
-                if (ds.pos === 'add' && isFile(targetNode.item)) {
-                  await treeService.add(p.node, targetNode)
+                if (ds.pos === 'add' && isFile(targetNode.value)) {
+                  await treeService.move(p.node.id, targetNode.id)
                 } else if (ds.pos === 'before') {
-                  await treeService.before(p.node, targetNode)
+                  await treeService.before(p.node.id, targetNode.id)
                 } else if (ds.pos === 'after') {
-                  await treeService.after(p.node, targetNode)
+                  await treeService.after(p.node.id, targetNode.id)
                 }
               }
             } else if (ds?.pos === 'delete') {
               await deleteService.delete(p.node)
             } else if (ds?.pos === 'open') {
-              if (store.mode === Mode.Canvas && isFile(p.node.item)) {
+              if (store.mode === Mode.Canvas && isFile(p.node.value)) {
                 const point = canvasService.getPosition([x, y])
-                const added = await canvasService.addFile(p.node.item, undefined, point)
+                const added = await canvasService.addFile(p.node.value, undefined, point)
                 canvasCollabService.addElements(added ?? [])
               }
             }
@@ -417,43 +419,44 @@ export const SubmenuTree = (props: Props) => {
     })
 
     createEffect(async () => {
-      if (isFile(p.node.item)) {
-        setTitle(await fileService.getTitle(p.node.item))
+      if (isFile(p.node.value)) {
+        const file = fileService.findFileById(p.node.id)
+        setTitle(await fileService.getTitle(file))
       } else {
-        setTitle(p.node.item.title ?? 'Canvas')
+        setTitle(p.node.value.title ?? 'Canvas')
       }
     })
 
     return (
       <TreeLinkItem
-        deleted={props.showDeleted && !p.node.item.deleted}
-        active={p.node.item.id === getCurrentId()}
+        deleted={props.showDeleted && !p.node.value.deleted}
+        active={p.node.value.id === getCurrentId()}
         selected={p.selected || anchor === tooltipAnchor()}
-        data-id={p.node.item.id}
+        data-id={p.node.value.id}
         data-testid="tree_link"
       >
         <TreeLinkCorner
           onClick={onCornerClick}
-          expandable={p.node.tree.length > 0}
+          expandable={p.node.childrenIds.length > 0}
           level={p.level}
-          highlight={treeService.isCollapsed(p.node)}
+          highlight={treeService.isCollapsed(p.node.id)}
         >
           <Switch>
-            <Match when={isCanvas(p.node.item)}>
+            <Match when={isCanvas(p.node.value)}>
               <IconGesture />
             </Match>
-            <Match when={isCodeFile(p.node.item)}>
+            <Match when={isCodeFile(p.node.value)}>
               <Show
                 when={
-                  isFile(p.node.item) &&
-                  (p.node.item.codeLang || !p.node.item.codeLang) /* eslint-disable-line */
+                  isFile(p.node.value) &&
+                  (p.node.value.codeLang || !p.node.value.codeLang) /* eslint-disable-line */
                 }
                 keyed
               >
-                <LangIcon name={isFile(p.node.item) ? p.node.item.codeLang : undefined} />
+                <LangIcon name={isFile(p.node.value) ? p.node.value.codeLang : undefined} />
               </Show>
             </Match>
-            <Match when={!isCodeFile(p.node.item)}>
+            <Match when={!isCodeFile(p.node.value)}>
               <IconTextSnippet />
             </Match>
           </Switch>
@@ -462,7 +465,7 @@ export const SubmenuTree = (props: Props) => {
           ref={ref}
           onClick={onClick}
           grabbing={grabbing()}
-          highlight={isOnCanvas(p.node.item)}
+          highlight={isOnCanvas(p.node)}
           data-testid="tree_link_title"
         >
           {title()}
@@ -493,42 +496,50 @@ export const SubmenuTree = (props: Props) => {
     )
   }
 
-  const Tree = (p: {tree: TreeNode[]; level: number; selected?: boolean}) => {
-    return (
-      <For each={p.tree}>
-        {(node) => (
-          <Show when={props.showDeleted || !node.item.deleted}>
-            <Show when={isNode(node) && dropState()?.pos === 'before'}>
-              <DropLine level={p.level} />
-            </Show>
-            <TreeLink
-              node={node}
-              selected={
-                p.selected || (isNode(node) && dropState()?.pos === 'add' && isFile(node.item))
-              }
-              level={p.level}
-            />
-            <Show when={node.tree.length > 0 && !treeService.isCollapsed(node)}>
-              <Tree
-                tree={node.tree}
-                level={p.level + 1}
-                selected={p.selected || (isNode(node) && dropState()?.pos === 'add')}
-              />
-            </Show>
-            <Show when={isNode(node) && dropState()?.pos === 'after'}>
-              <DropLine level={p.level} />
-            </Show>
+  const TreeItem = (p: {id: string; level: number; selected?: boolean}) => (
+    <Show when={treeService.getItem(p.id)}>
+      {(item) => (
+        <Show when={props.showDeleted || !item().value.deleted}>
+          <Show when={isNode(item()) && dropState()?.pos === 'before'}>
+            <DropLine level={p.level} />
           </Show>
-        )}
-      </For>
-    )
-  }
+          <TreeLink
+            node={item()}
+            selected={
+              p.selected || (isNode(item()) && dropState()?.pos === 'add' && isFile(item().value))
+            }
+            level={p.level}
+          />
+          <Show when={item().childrenIds.length > 0 && !treeService.isCollapsed(item().id)}>
+            <Tree
+              parent={item()}
+              level={p.level + 1}
+              selected={p.selected || (isNode(item()) && dropState()?.pos === 'add')}
+            />
+          </Show>
+          <Show when={isNode(item()) && dropState()?.pos === 'after'}>
+            <DropLine level={p.level} />
+          </Show>
+        </Show>
+      )}
+    </Show>
+  )
+
+  const Tree = (p: {parent: MenuTreeItem; level: number; selected?: boolean}) => (
+    <For each={p.parent.childrenIds}>
+      {(id) => <TreeItem id={id} level={p.level} selected={p.selected} />}
+    </For>
+  )
+
+  onMount(() => {
+    treeService.updateAll()
+  })
 
   return (
     <>
       <Label>Storage</Label>
       <Sub data-tauri-drag-region="true">
-        <Tree tree={treeService.tree} level={0} />
+        <Tree parent={treeService.tree.root} level={0} />
         <Show when={!props.showDeleted}>
           <NewLink />
           <Link
@@ -553,14 +564,14 @@ export const SubmenuTree = (props: Props) => {
       </Portal>
       <Show when={tooltipAnchor() !== undefined}>
         <Tooltip anchor={tooltipAnchor()!} onClose={() => closeTooltip()} backdrop={true}>
-          <Show when={isOnCanvas(selected()?.item)}>
+          <Show when={isOnCanvas(selected())}>
             <TooltipButton onClick={onFocus} data-testid="focus_file">
               <IconAdjust />
               Focus file
             </TooltipButton>
             <TooltipDivider />
           </Show>
-          <Show when={!selected()?.item.deleted && isFile(selected()?.item)}>
+          <Show when={!selected()?.value.deleted && isFile(selected()?.value)}>
             <TooltipButton onClick={onAddFile} data-testid="add_file">
               <IconPostAdd />
               Add file
@@ -575,13 +586,13 @@ export const SubmenuTree = (props: Props) => {
             </TooltipButton>
             <TooltipDivider />
           </Show>
-          <Show when={selected() && !isLocalFile(selected()?.item)}>
+          <Show when={selected() && !isLocalFile(selected())}>
             <TooltipButton onClick={onRename} data-testid="rename">
               <IconEdit />
               Rename
             </TooltipButton>
           </Show>
-          <Show when={selected()?.item.deleted}>
+          <Show when={selected()?.value.deleted}>
             <TooltipButton onClick={onRestore} data-testid="restore">
               <IconHistory />
               Restore
@@ -591,13 +602,13 @@ export const SubmenuTree = (props: Props) => {
               Delete forever
             </TooltipButton>
           </Show>
-          <Show when={selected() && !selected()?.item.deleted && !isLocalFile(selected()?.item)}>
+          <Show when={selected() && !selected()?.value.deleted && !isLocalFile(selected()?.value)}>
             <TooltipButton onClick={onDelete} data-testid="delete">
               <IconDelete />
               Delete
             </TooltipButton>
           </Show>
-          <Show when={selected() && isLocalFile(selected()?.item)}>
+          <Show when={selected() && isLocalFile(selected()?.value)}>
             <TooltipButton onClick={onDeleteForever} data-testid="delete">
               <IconDelete />
               Close

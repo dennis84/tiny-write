@@ -16,6 +16,8 @@ export const Keymap = () => {
     collabService,
     canvasService,
     canvasCollabService,
+    inputLineService,
+    treeService,
   } = useState()
   const {open} = useOpen()
 
@@ -52,10 +54,15 @@ export const Keymap = () => {
   const onNew = async () => {
     if (store.mode === Mode.Editor) {
       const file = await fileService.newFile()
+      treeService.add(file)
       open(file)
     } else {
       const el = await canvasService.newFile()
-      if (el) canvasCollabService.addElement(el)
+      if (el) {
+        canvasCollabService.addElement(el)
+        const file = fileService.findFileById(el.id)
+        if (file) treeService.add(file)
+      }
     }
   }
 

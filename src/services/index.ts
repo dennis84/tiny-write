@@ -33,13 +33,13 @@ export const createCtrl = (initial: State) => {
   const copilotService = new CopilotService(store, setState)
   const collabService = new CollabService(store, setState)
   const configService = new ConfigService(collabService, store, setState)
-  const treeService = new TreeService(store, setState)
   const fileService = new FileService(collabService, store, setState)
   const selectService = new SelectService()
   const prettierService = new PrettierService()
-  const canvasService = new CanvasService(fileService, selectService, treeService, store, setState)
+  const canvasService = new CanvasService(fileService, selectService, store, setState)
+  const treeService = new TreeService(store, setState, fileService, canvasService)
   const deleteService = new DeleteService(fileService, canvasService, treeService, store, setState)
-  const appService = new AppService(fileService, treeService, store, setState)
+  const appService = new AppService(fileService, store, setState)
   const codeMirrorService = new CodeMirrorService(
     configService,
     appService,

@@ -15,7 +15,7 @@ export const Bin = () => {
   const onEmptyBin = async () => {
     const result = await deleteService.emptyBin()
     if (result.navigateTo) open(result.navigateTo)
-    treeService.create()
+    treeService.updateAll()
   }
 
   return (
