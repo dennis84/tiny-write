@@ -9,12 +9,14 @@ import {Message, useState} from '@/state'
 import {getTheme} from '@/codemirror/theme'
 import {getLanguageConfig} from '@/codemirror/highlight'
 import {copy} from '@/remote/clipboard'
+import {TreeItem} from '@/tree'
 import {ButtonGroup, IconButton} from '../Button'
 import {IconAiAssistant, IconContentCopy, IconRefresh, Spinner} from '../Icon'
+import {TooltipHelp} from '../TooltipHelp'
 import {chatBubble} from './Style'
 import {parseCodeBlockAttrs} from './util'
 import {ApplyPanel, ApplyPanelState} from './ApplyPanel'
-import {TooltipHelp} from '../TooltipHelp'
+import {Pagination} from './Pagination'
 
 const AnswerBubble = styled('div')`
   ${chatBubble}
@@ -43,7 +45,8 @@ interface MessageEditor {
 }
 
 interface Props {
-  message: Message
+  message: TreeItem<Message>
+  childrenIds: string[]
   onRegenerate?: (message: Message) => void
 }
 
@@ -111,14 +114,14 @@ export const MessageAnswer = (props: Props) => {
   const copilotApply = (id?: string, range?: [number, number]) =>
     showPanel.of(applyPanel(id, range))
 
-  const onCopy = () => copy(props.message.content)
+  const onCopy = () => copy(props.message.value.content)
 
   const onRegenerate = () => {
-    props.onRegenerate?.(props.message)
+    props.onRegenerate?.(props.message.value)
   }
 
   createEffect(() => {
-    setHtml(finalMd.render(props.message.content))
+    setHtml(finalMd.render(props.message.value.content))
   })
 
   const Html = (p: {content: string}) => {
@@ -136,7 +139,7 @@ export const MessageAnswer = (props: Props) => {
       <AnswerBadge>
         <IconAiAssistant /> Assistant
       </AnswerBadge>
-      <Html content={html() ?? props.message.content} />
+      <Html content={html() ?? props.message.value.content} />
       <ButtonGroup>
         <TooltipHelp title="Copy">
           <IconButton onClick={onCopy}>
@@ -148,11 +151,16 @@ export const MessageAnswer = (props: Props) => {
             <IconRefresh />
           </IconButton>
         </TooltipHelp>
-        <Show when={props.message?.streaming}>
+        <Show when={props.message?.value.streaming}>
           <IconButton>
             <Spinner />
           </IconButton>
         </Show>
+        <Pagination
+          id={props.message.id}
+          parentId={props.message.parentId}
+          childrenIds={props.childrenIds}
+        />
       </ButtonGroup>
       <For each={applyPanels()}>{(s) => <ApplyPanel state={s} />}</For>
     </AnswerBubble>

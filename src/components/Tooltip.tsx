@@ -68,8 +68,8 @@ export const TooltipDivider = styled('hr')`
 `
 
 export const TooltipArrow = styled('span')`
-  width: 20px;
-  height: 20px;
+  width: 10px;
+  height: 10px;
   background: var(--tooltip-background);
   position: absolute;
   transform: rotate(45deg);

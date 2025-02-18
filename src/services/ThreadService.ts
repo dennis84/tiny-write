@@ -3,9 +3,16 @@ import {v4 as uuidv4} from 'uuid'
 import {Message, State, Thread} from '@/state'
 import {DB} from '@/db'
 import {info} from '@/remote/log'
+import {createTreeStore, TreeItem} from '@/tree'
 import {ChatMessage, CopilotService} from './CopilotService'
+import {createSignal} from 'solid-js'
+
+type PathMap = Map<string | undefined, string>
 
 export class ThreadService {
+  public messageTree = createTreeStore<Message>()
+  private pathMap = createSignal<PathMap>(new Map())
+
   constructor(
     private store: Store<State>,
     private setState: SetStoreFunction<State>,
@@ -43,59 +50,81 @@ export class ThreadService {
 
     threads.unshift(thread)
     this.setState('threads', threads)
+    this.pathMap[1](new Map())
+    this.messageTree.updateAll([])
   }
 
   async addMessage(message: Message) {
     const currentThread = this.currentThread
     if (!currentThread) return
 
-    info(`Add new message (message=${JSON.stringify(message)})`)
+    const parentId =
+      message.parentId ?? currentThread.messages[currentThread.messages.length - 1]?.id
+    const newMessage = {...message, parentId}
+
+    info(`Add new message (message=${JSON.stringify(newMessage)})`)
     this.setState('threads', this.currentThreadIndex, {
-      messages: [...currentThread.messages, message],
+      messages: [...currentThread.messages, newMessage],
       lastModified: new Date(),
     })
 
-    this.saveThread()
+    this.messageTree.add(newMessage)
+
+    await this.saveThread()
   }
 
-  streamLastMessage(id: string, chunk: string) {
+  streamLastMessage(id: string, parentId: string | undefined, chunk: string) {
     const currentThread = this.currentThread
     if (!currentThread) return
 
+    const currentThreadIndex = this.currentThreadIndex
+
     let messageIndex = currentThread.messages.findIndex((m) => m.id === id)
     if (messageIndex === -1) {
-      const newMessage: Message = {id, content: '', role: 'assistant'} as Message
-      this.setState('threads', this.currentThreadIndex, 'messages', (prev) => [...prev, newMessage])
+      info(`Create new message to stream to (id=${id}, parentId=${parentId})`)
+      const newMessage: Message = {id, content: '', role: 'assistant', parentId} as Message
+      this.setState('threads', currentThreadIndex, 'messages', (prev) => [...prev, newMessage])
       messageIndex = currentThread.messages.length - 1
     }
 
-    this.setState('threads', this.currentThreadIndex, 'messages', messageIndex, (prev) => ({
+    this.setState('threads', currentThreadIndex, 'messages', messageIndex, (prev) => ({
       content: prev.content + chunk,
       streaming: true,
     }))
+
+    const message = this.store.threads[currentThreadIndex].messages[messageIndex]
+    this.messageTree.updateValue(message)
   }
 
   streamLastMessageEnd(id: string) {
     const currentThread = this.currentThread
     if (!currentThread) return
-    let messageIndex = currentThread.messages.findIndex((m) => m.id === id)
-    this.setState('threads', this.currentThreadIndex, 'messages', messageIndex, 'streaming', false)
+
+    const currentThreadIndex = this.currentThreadIndex
+    const messageIndex = currentThread.messages.findIndex((m) => m.id === id)
+
+    this.setState('threads', currentThreadIndex, 'messages', messageIndex, 'streaming', false)
+
+    const message = this.store.threads[currentThreadIndex].messages[messageIndex]
+    this.messageTree.updateValue(message)
   }
 
-  async updateMessage(message: Message) {
-    const currentThread = this.currentThread
-    if (!currentThread) return
-
-    info(`Update message (message=${JSON.stringify(message)})`)
-
-    const existingIndex = currentThread.messages.findIndex((m) => m.id === message.id)
-    if (existingIndex !== -1) {
-      this.setState('threads', this.currentThreadIndex, 'messages', existingIndex, message)
-      this.setState('threads', this.currentThreadIndex, 'lastModified', new Date())
-    }
-
-    this.saveThread()
-  }
+  // async updateMessage(message: Message) {
+  //   const currentThread = this.currentThread
+  //   if (!currentThread) return
+  //
+  //   info(`Update message (message=${JSON.stringify(message)})`)
+  //
+  //   const currentThreadIndex = this.currentThreadIndex
+  //
+  //   const existingIndex = currentThread.messages.findIndex((m) => m.id === message.id)
+  //   if (existingIndex !== -1) {
+  //     this.setState('threads', currentThreadIndex, 'messages', existingIndex, message)
+  //     this.setState('threads', currentThreadIndex, 'lastModified', new Date())
+  //   }
+  //
+  //   await this.saveThread()
+  // }
 
   async removeMessage(message: Message) {
     const currentThread = this.currentThread
@@ -109,7 +138,9 @@ export class ThreadService {
       lastModified: new Date(),
     }))
 
-    this.saveThread()
+    this.messageTree.remove(message.id)
+
+    await this.saveThread()
   }
 
   async clear() {
@@ -122,21 +153,24 @@ export class ThreadService {
       lastModified: new Date(),
     }))
 
+    this.pathMap[1](new Map())
+    this.messageTree.updateAll([])
+
     await DB.deleteThread(currentThread.id)
   }
 
   setError(error: string) {
     const currentThread = this.currentThread
     if (!currentThread) return
+
+    const currentThreadIndex = this.currentThreadIndex
+    const messageIndex = currentThread.messages.length - 1
+
     info(`Set error to last message (error=${error})`)
-    this.setState(
-      'threads',
-      this.currentThreadIndex,
-      'messages',
-      currentThread.messages.length - 1,
-      'error',
-      error,
-    )
+    this.setState('threads', currentThreadIndex, 'messages', messageIndex, 'error', error)
+
+    const message = this.store.threads[currentThreadIndex].messages[messageIndex]
+    this.messageTree.updateValue(message)
   }
 
   async updateTitle(title: string) {
@@ -144,7 +178,7 @@ export class ThreadService {
     if (!currentThread) return
     info(`Set title to current thread (title=${title})`)
     this.setState('threads', this.currentThreadIndex, 'title', title)
-    this.saveThread()
+    await this.saveThread()
   }
 
   async saveThread(thread = this.currentThread) {
@@ -167,6 +201,8 @@ export class ThreadService {
     }
 
     this.setState('threads', threads)
+    this.pathMap[1](new Map())
+    this.messageTree.updateAll(this.currentThread?.messages ?? [])
   }
 
   async delete(thread: Thread) {
@@ -186,21 +222,42 @@ export class ThreadService {
     this.newThread()
   }
 
-  regenerate(message: Message) {
+  async regenerate(message: Message) {
     const currentThread = this.currentThread
     if (!currentThread) return
 
-    const messages = currentThread.messages
-    let index = messages.findIndex((m) => m.id === message.id)
+    if (message.role === 'user') {
+      const newMessage = {
+        ...message,
+        id: uuidv4(),
+        leftId: message.id,
+      }
 
-    if (messages[index].role ==='user') {
-      index += 1
+      info(`Regenerate user message (message=${JSON.stringify(newMessage)})`)
+      const messages = [...currentThread.messages, newMessage]
+
+      this.setState('threads', this.currentThreadIndex, {
+        messages,
+        lastModified: new Date(),
+      })
+
+      this.updatePath(message.parentId, newMessage.id)
+      this.messageTree.add(newMessage)
+
+      await this.saveThread()
+    } else if (message.role === 'assistant') {
+      this.updatePath(message.parentId, uuidv4())
     }
+  }
 
-    const slice = messages.slice(0, index)
+  updatePath(parentId: string | undefined, childId: string) {
+    this.pathMap[1]((prev) => new Map(prev).set(parentId, childId))
+  }
 
-    const currentThreadIndex = this.currentThreadIndex
-    this.setState('threads', currentThreadIndex, 'messages', slice)
+  getItem(parentId: string | undefined, childrenIds: string[]): TreeItem<Message> | undefined {
+    const overridePath = this.pathMap[0]().get(parentId)
+    const nextId = overridePath ?? childrenIds[childrenIds.length - 1]
+    if (nextId) return this.messageTree.getItem(nextId)
   }
 
   async generateTitle(): Promise<string | undefined> {
@@ -236,31 +293,43 @@ export class ThreadService {
     })
   }
 
-  getMessages(): ChatMessage[] {
+  getMessages(): {messages: ChatMessage[]; nextId?: string; parentId?: string} {
     const currentThread = this.currentThread
-    if (!currentThread) return []
-    const messages = []
+    if (!currentThread) return {messages: []}
 
-    for (const message of currentThread.messages) {
-      if (message.error) {
-        continue
+    const messages = []
+    const pathMap = this.pathMap[0]()
+    let nextId =
+      pathMap.get(undefined) ??
+      this.messageTree.rootItemIds[this.messageTree.rootItemIds.length - 1]
+    let next
+    let parentId
+
+    while ((next = this.messageTree.getItem(nextId))) {
+      if (!next.value.error) {
+        messages.push({role: next.value.role, content: next.value.content})
+        parentId = next.value.id
       }
 
-      messages.push({role: message.role, content: message.content})
+      nextId = pathMap.get(next.id) ?? next.childrenIds[next.childrenIds.length - 1]
     }
 
     // final must be role user
     if (messages[messages.length - 1]?.role !== 'user') {
-      return []
+      return {messages: []}
     }
 
-    return [
-      {
-        role: 'system',
-        content:
-          'Keep attributes on fenced code blocks if present: e.g. ```rust id=1 range=1-5. Keep indentation in code blocks',
-      },
-      ...messages,
-    ]
+    return {
+      nextId,
+      parentId,
+      messages: [
+        {
+          role: 'system',
+          content:
+            'Keep attributes on fenced code blocks if present: e.g. ```rust id=1 range=1-5. Keep indentation in code blocks',
+        },
+        ...messages,
+      ],
+    }
   }
 }

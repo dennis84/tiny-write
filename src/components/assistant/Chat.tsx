@@ -1,4 +1,4 @@
-import {createSignal, For, Match, onMount, Show, Switch} from 'solid-js'
+import {createSignal, Match, onMount, Show, Switch} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {v4 as uuidv4} from 'uuid'
 import {Message, useState} from '@/state'
@@ -15,6 +15,7 @@ import {MessageAnswer} from './MessageAnswer'
 import {Suggestions} from './Suggestions'
 import {CurrentFileButton} from './attachments/CurrentFile'
 import {SelectionButton} from './attachments/Selection'
+import {TreeItem} from '@/tree'
 
 const EmptyContainer = styled('div')`
   width: 100%;
@@ -44,7 +45,6 @@ export const Chat = () => {
 
   const {aiService, copilotService, threadService, toastService} = useState()
   const [focus, setFocus] = createSignal(true)
-  const [editMessage, setEditMessage] = createSignal<Message>()
 
   const scrollToInput = () => {
     inputRef.scrollIntoView({
@@ -60,22 +60,15 @@ export const Chat = () => {
 
   const addUserMessage = async (input: Message) => {
     if (!input.content) return
-    const isUpdate = editMessage() !== undefined
-
-    if (isUpdate) {
-      setEditMessage(undefined)
-      await threadService.updateMessage(input)
-    } else {
-      await threadService.addMessage(input)
-    }
+    await threadService.addMessage(input)
   }
 
   const sendMessages = async () => {
     const currentThread = threadService.currentThread
-    const messages = threadService.getMessages()
+    const {messages, nextId, parentId} = threadService.getMessages()
     if (!currentThread || !messages) return
 
-    const messageId = uuidv4()
+    const messageId = nextId ?? uuidv4()
 
     try {
       await copilotService.completions(
@@ -84,6 +77,7 @@ export const Chat = () => {
           for (const choice of chunk.choices) {
             threadService.streamLastMessage(
               messageId,
+              parentId,
               choice.delta?.content ?? choice.message?.content ?? '',
             )
           }
@@ -118,7 +112,6 @@ export const Chat = () => {
   }
 
   const onClearThread = () => {
-    setEditMessage(undefined)
     threadService.clear()
     focusInput()
   }
@@ -149,6 +142,34 @@ export const Chat = () => {
     </EmptyContainer>
   )
 
+  const MessageTree = (p: {id: string | undefined; childrenIds: string[]}) => (
+    <Show when={threadService.getItem(p.id, p.childrenIds)} fallback={<Empty />}>
+      {(message) => (
+        <>
+          <Switch>
+            <Match when={message().value.role === 'user'}>
+              <MessageQuestion
+                message={message()}
+                onUpdate={onRegenerate}
+                childrenIds={p.childrenIds}
+              />
+            </Match>
+            <Match when={message().value.role === 'assistant'}>
+              <MessageAnswer
+                message={message()}
+                onRegenerate={onRegenerate}
+                childrenIds={p.childrenIds}
+              />
+            </Match>
+          </Switch>
+          <Show when={message().childrenIds.length}>
+            <MessageTree id={message().id} childrenIds={message().childrenIds} />
+          </Show>
+        </>
+      )}
+    </Show>
+  )
+
   return (
     <Drawer
       width={aiService.sidebarWidth}
@@ -169,18 +190,7 @@ export const Chat = () => {
         <ModelSelect onChange={() => focusInput()} />
       </ButtonGroup>
       <Messages>
-        <For each={threadService.currentThread?.messages} fallback={<Empty />}>
-          {(message) => (
-            <Switch>
-              <Match when={message.role === 'user'}>
-                <MessageQuestion message={message} onUpdate={onRegenerate} />
-              </Match>
-              <Match when={message.role === 'assistant'}>
-                <MessageAnswer message={message} onRegenerate={onRegenerate} />
-              </Match>
-            </Switch>
-          )}
-        </For>
+        <MessageTree id={undefined} childrenIds={threadService.messageTree.rootItemIds} />
       </Messages>
       <Show when={focus()} keyed>
         <ChatInput ref={inputRef} onMessage={onInputMessage} />

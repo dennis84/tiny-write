@@ -28,6 +28,6 @@ export function printTree<T>(tree: Tree<T>) {
     }
   }
 
-  printIds(tree.root.childrenIds, 0)
+  printIds(tree.rootItemIds, 0)
   return out
 }

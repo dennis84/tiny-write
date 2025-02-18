@@ -239,6 +239,9 @@ export enum MessageType {
 
 export interface Message {
   id: string
+  parentId?: string
+  leftId?: string
+  active?: boolean
   content: string
   role: ChatRole
   error?: string

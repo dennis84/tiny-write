@@ -1,4 +1,4 @@
-import {createStore, SetStoreFunction} from 'solid-js/store'
+import {createStore, reconcile, SetStoreFunction} from 'solid-js/store'
 
 export type TreeMap<T> = Record<string, TreeItem<T>>
 
@@ -21,7 +21,7 @@ export interface TreeState<T> {
 }
 
 interface Options<T> {
-  items: TreeItemInput<T>[]
+  items?: TreeItemInput<T>[]
 }
 
 const ROOT_ID = 'root'
@@ -30,8 +30,8 @@ export class Tree<T> {
   private state!: TreeState<T>
   private setState!: SetStoreFunction<TreeState<T>>
 
-  get root() {
-    return this.state.items[ROOT_ID]
+  get rootItemIds() {
+    return this.state.items[ROOT_ID].childrenIds
   }
 
   get items(): TreeItem<T>[] {
@@ -39,7 +39,7 @@ export class Tree<T> {
   }
 
   constructor(options: Options<T>) {
-    const items = this.generateMap(options.items)
+    const items = this.generateMap(options.items ?? [])
     const [getter, setter] = createStore<TreeState<T>>({items})
     this.state = getter
     this.setState = setter
@@ -47,11 +47,15 @@ export class Tree<T> {
 
   updateAll(input: TreeItemInput<T>[]) {
     const items = this.generateMap(input)
-    this.setState('items', items)
+    this.setState('items', reconcile(items))
   }
 
   updateValue(input: TreeItemInput<T>) {
-    this.setState('items', input.id, 'value', input)
+    if (!this.state.items[input.id]) {
+      this.add(input)
+    } else {
+      this.setState('items', input.id, 'value', input)
+    }
   }
 
   add(item: TreeItemInput<T>): string[] {
@@ -326,7 +330,7 @@ export class Tree<T> {
     }
   }
 
-  getItem(id: string): TreeItem<any> | undefined {
+  getItem(id: string): TreeItem<T> | undefined {
     return this.state.items[id]
   }
 
@@ -408,6 +412,6 @@ export class Tree<T> {
   }
 }
 
-export const createTreeStore = <T>(options: Options<T>) => {
+export const createTreeStore = <T>(options: Options<T> = {}) => {
   return new Tree(options)
 }
