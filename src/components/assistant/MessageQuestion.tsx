@@ -121,7 +121,7 @@ export const MessageQuestion = (props: Props) => {
             <Switch>
               <Match when={props.message.type === MessageType.File}>
                 <Button onClick={onShowContent}>
-                  <LangIcon name={langConfig.id} /> {fileTitle() ?? `${langConfig?.name} File`}
+                  <LangIcon name={langConfig.id} /> {fileTitle() ?? `${langConfig?.name ?? ''} File`}
                 </Button>
                 <Show when={showContent()}>
                   <CodeBlock />

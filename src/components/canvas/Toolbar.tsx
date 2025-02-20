@@ -1,5 +1,4 @@
 import {createEffect, createSignal, Show} from 'solid-js'
-import {styled} from 'solid-styled-components'
 import {Box, Vec} from '@tldraw/editor'
 import {arrow, computePosition, flip, offset, shift} from '@floating-ui/dom'
 import {v4 as uuidv4} from 'uuid'
@@ -22,56 +21,7 @@ import {
   IconPrettier,
 } from '@/components/Icon'
 import {createCodeFence} from '@/components/assistant/util'
-
-const Container = styled('div')`
-  position: absolute;
-  background: var(--tooltip-background);
-  border-radius: var(--border-radius);
-  font-family: var(--menu-font-family);
-  font-size: var(--menu-font-size);
-  line-height: 1.4;
-  z-index: var(--z-index-tooltip);
-  box-shadow: 0 12px 24px 0 rgba(0, 0, 0, 0.24);
-  padding: 6px 8px;
-  display: flex;
-  gap: 5px;
-  opacity: 0;
-  animation: fadeIn 0.3s forwards;
-  animation-delay: 0.3s;
-  div {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    align-items: center;
-    padding: 6px 8px;
-    margin: 2px 0;
-    min-height: 32px;
-    cursor: var(--cursor-pointer);
-    border-radius: var(--border-radius-small);
-    &:hover,
-    &.selected {
-      background: var(--primary-background);
-      color: var(--primary-foreground);
-    }
-    > span {
-      margin-right: 5px;
-    }
-  }
-  .arrow {
-    width: 6px;
-    height: 6px;
-    background: var(--tooltip-background);
-    position: absolute;
-    transform: rotate(45deg);
-  }
-  @keyframes fadeIn {
-    to {
-      opacity: 1;
-    }
-  }
-`
-
-const Item = styled('div')``
+import {TooltipArrow, TooltipButton, TooltipContainer} from '@/components/Tooltip'
 
 export const Toolbar = () => {
   let tooltipRef!: HTMLDivElement
@@ -252,40 +202,40 @@ export const Toolbar = () => {
   return (
     <Show when={getSelected()}>
       {(selected) => (
-        <Container ref={tooltipRef} id="toolbar">
+        <TooltipContainer ref={tooltipRef} id="toolbar" direction="row" gap={5}>
           <Show when={collides()}>
-            <Item onClick={() => open(selected().element, true)}>
+            <TooltipButton onClick={() => open(selected().element, true)}>
               <IconOpenInFull /> Open in full
-            </Item>
+            </TooltipButton>
             <Show when={fileService.findFileById(selected().element.id)?.deleted}>
-              <Item onClick={() => restore(selected().element)}>
+              <TooltipButton onClick={() => restore(selected().element)}>
                 <IconHistory />
                 Restore
-              </Item>
+              </TooltipButton>
             </Show>
             <Show when={isCodeElement(selected().element)}>
-              <Item onClick={() => changeLang(selected().element)}>
+              <TooltipButton onClick={() => changeLang(selected().element)}>
                 <IconLanguage /> Change language
-              </Item>
+              </TooltipButton>
               <Show when={ugly()}>
-                <Item onClick={() => prettify(selected().element)}>
+                <TooltipButton onClick={() => prettify(selected().element)}>
                   <IconPrettier /> Prettify
-                </Item>
+                </TooltipButton>
               </Show>
               <Show when={store.ai?.copilot?.user}>
-                <Item onClick={onCopilot}>
+                <TooltipButton onClick={onCopilot}>
                   <IconAiAssistant /> Ask Copilot
-                </Item>
+                </TooltipButton>
               </Show>
             </Show>
           </Show>
           <Show when={!collides()}>
-            <Item onClick={onBackToContent}>
+            <TooltipButton onClick={onBackToContent}>
               <IconAdjust /> Back to content
-            </Item>
+            </TooltipButton>
           </Show>
-          <span ref={arrowRef} class="arrow"></span>
-        </Container>
+          <TooltipArrow ref={arrowRef} />
+        </TooltipContainer>
       )}
     </Show>
   )

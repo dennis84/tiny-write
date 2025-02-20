@@ -13,7 +13,7 @@ import {
   ReferenceElement,
 } from '@floating-ui/dom'
 
-const TooltipEl = styled('div')`
+export const TooltipContainer = styled('div')`
   position: absolute;
   width: max-content;
   background: var(--tooltip-background);
@@ -26,7 +26,8 @@ const TooltipEl = styled('div')`
   padding: 6px 8px;
   display: flex;
   opacity: 0;
-  flex-direction: column;
+  flex-direction: ${(p: any) => `${p.direction ?? 'column'}`};
+  gap: ${(p: any) => `${p.gap}px`};
   animation: fadeIn 0.3s forwards;
   animation-delay: ${(p: any) => `${p.delay ?? 0}ms`};
   &::-webkit-scrollbar {
@@ -68,8 +69,8 @@ export const TooltipDivider = styled('hr')`
 `
 
 export const TooltipArrow = styled('span')`
-  width: 20px;
-  height: 20px;
+  width: 10px;
+  height: 10px;
   background: var(--tooltip-background);
   position: absolute;
   transform: rotate(45deg);
@@ -190,10 +191,10 @@ export const Tooltip = (props: Props) => {
           <Backdrop onClick={onBackdropClick} />
         </Show>
       </Show>
-      <TooltipEl ref={tooltipRef} id="tooltip" class="tooltip" delay={props.delay}>
+      <TooltipContainer ref={tooltipRef} id="tooltip" class="tooltip" delay={props.delay}>
         {props.children}
         <TooltipArrow ref={arrowRef} />
-      </TooltipEl>
+      </TooltipContainer>
     </>
   )
 }
