@@ -1,4 +1,4 @@
-import {createStore, reconcile, SetStoreFunction} from 'solid-js/store'
+import {createStore, reconcile, SetStoreFunction, unwrap} from 'solid-js/store'
 
 export type TreeMap<T> = Record<string, TreeItem<T>>
 
@@ -331,7 +331,7 @@ export class Tree<T> {
   }
 
   getItem(id: string): TreeItem<T> | undefined {
-    return this.state.items[id]
+    return unwrap(this.state.items[id])
   }
 
   private generateMap(input: TreeItemInput<T>[]): TreeMap<T> {

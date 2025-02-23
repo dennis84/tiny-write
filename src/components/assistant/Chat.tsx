@@ -15,7 +15,6 @@ import {MessageAnswer} from './MessageAnswer'
 import {Suggestions} from './Suggestions'
 import {CurrentFileButton} from './attachments/CurrentFile'
 import {SelectionButton} from './attachments/Selection'
-import {TreeItem} from '@/tree'
 
 const EmptyContainer = styled('div')`
   width: 100%;

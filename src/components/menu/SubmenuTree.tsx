@@ -512,7 +512,7 @@ export const SubmenuTree = (props: Props) => {
           />
           <Show when={item().childrenIds.length > 0 && !treeService.isCollapsed(item().id)}>
             <Tree
-              parent={item()}
+              childrenIds={item().childrenIds}
               level={p.level + 1}
               selected={p.selected || (isNode(item()) && dropState()?.pos === 'add')}
             />

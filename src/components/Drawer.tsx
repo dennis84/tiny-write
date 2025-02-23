@@ -54,6 +54,7 @@ export const Drawer = (props: Props) => {
   onMount(() => {
     const gestrure = new DragGesture(resizeHandleRef, ({delta: [x]}) => {
       const w = drawerRef.offsetWidth - x
+      resizeHandleRef.style.left = `${window.innerWidth - w + 20}px`
       local.onResized?.(w)
     })
 
