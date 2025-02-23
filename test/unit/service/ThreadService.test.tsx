@@ -81,40 +81,21 @@ test('streamLastMessage', async () => {
   const [store, setState] = createStore(initial)
   const copilotService = mock<CopilotService>()
   const service = new ThreadService(store, setState, copilotService)
+  service.messageTree.updateAll(store.threads[0].messages)
 
-  service.streamLastMessage('2', 'A')
+  service.streamLastMessage('2', '1', 'A')
   expect(store.threads[0].messages[1].content).toBe('A')
-  service.streamLastMessage('2', 'b')
+  service.streamLastMessage('2', '1', 'b')
   expect(store.threads[0].messages[1].content).toBe('Ab')
-  service.streamLastMessage('2', 'c')
+  service.streamLastMessage('2', '1', 'c')
   expect(store.threads[0].messages[1].content).toBe('Abc')
 
   expect(store.threads[0].messages).toHaveLength(2)
   expect(store.threads[0].messages[1].streaming).toBeTruthy()
+  expect(store.threads[0].messages[1].parentId).toBe('1')
 
   service.streamLastMessageEnd('2')
   expect(store.threads[0].messages[1].streaming).toBeFalsy()
-})
-
-test('updateMessage', async () => {
-  const initial = createState({
-    threads: [
-      {
-        id: '1',
-        active: true,
-        messages: [{id: '1', role: 'user', content: '1'}],
-      },
-    ],
-  })
-
-  const [store, setState] = createStore(initial)
-  const copilotService = mock<CopilotService>()
-  const service = new ThreadService(store, setState, copilotService)
-
-  await service.updateMessage({id: '1', role: 'user', content: '111'})
-
-  expect(store.threads[0].messages).toHaveLength(1)
-  expect(store.threads[0].messages[0].content).toBe('111')
 })
 
 test('removeMessage', async () => {
@@ -131,6 +112,7 @@ test('removeMessage', async () => {
   const [store, setState] = createStore(initial)
   const copilotService = mock<CopilotService>()
   const service = new ThreadService(store, setState, copilotService)
+  service.messageTree.updateAll(store.threads[0].messages)
 
   await service.removeMessage(store.threads[0].messages[0])
 
@@ -317,6 +299,61 @@ test('deleteAll', async () => {
   expect(store.threads[0].id).not.toBe('2')
 })
 
+test('regenerate - user message', async () => {
+  const initial = createState({
+    threads: [
+      {
+        id: '1',
+        active: true,
+        messages: [
+          {id: '1', role: 'user', content: '1'},
+          {id: '2', parentId: '1', role: 'assistant', content: '2'},
+        ],
+      },
+    ],
+  })
+
+  const [store, setState] = createStore(initial)
+  const copilotService = mock<CopilotService>()
+  const service = new ThreadService(store, setState, copilotService)
+  service.messageTree.updateAll(store.threads[0].messages)
+
+  await service.regenerate({id: '1', role: 'user', content: '111'})
+
+  expect(service.messageTree.rootItemIds).toHaveLength(2)
+
+  const {messages} = service.getMessages()
+  expect(messages[1].content).toBe('111')
+})
+
+test('regenerate - assistant message', async () => {
+  const initial = createState({
+    threads: [
+      {
+        id: '1',
+        active: true,
+        messages: [
+          {id: '1', role: 'user', content: '1'},
+          {id: '2', parentId: '1', role: 'assistant', content: '2'},
+        ],
+      },
+    ],
+  })
+
+  const [store, setState] = createStore(initial)
+  const copilotService = mock<CopilotService>()
+  const service = new ThreadService(store, setState, copilotService)
+  service.messageTree.updateAll(store.threads[0].messages)
+
+  expect(service.getMessages().messages).toHaveLength(0)
+
+  await service.regenerate(store.threads[0].messages[1])
+
+  const {messages, nextId} = service.getMessages()
+  expect(messages).toHaveLength(2)
+  expect(nextId).toBeDefined()
+})
+
 test('generateTitle', async () => {
   const initial = createState({
     threads: [
@@ -355,7 +392,7 @@ test.each<[Message[], number]>([
   [
     [
       {id: '1', role: 'user', content: ''},
-      {id: '2', role: 'user', content: '', error: 'error'},
+      {id: '2', parentId: '1', role: 'user', content: '', error: 'error'},
     ],
     2,
   ],
@@ -374,8 +411,9 @@ test.each<[Message[], number]>([
   const [store, setState] = createStore(initial)
   const copilotService = mock<CopilotService>()
   const service = new ThreadService(store, setState, copilotService)
+  service.messageTree.updateAll(store.threads[0].messages)
 
   const result = service.getMessages()
 
-  expect(result).toHaveLength(count)
+  expect(result.messages).toHaveLength(count)
 })

@@ -512,7 +512,7 @@ export const SubmenuTree = (props: Props) => {
           />
           <Show when={item().childrenIds.length > 0 && !treeService.isCollapsed(item().id)}>
             <Tree
-              parent={item()}
+              childrenIds={item().childrenIds}
               level={p.level + 1}
               selected={p.selected || (isNode(item()) && dropState()?.pos === 'add')}
             />
@@ -525,8 +525,8 @@ export const SubmenuTree = (props: Props) => {
     </Show>
   )
 
-  const Tree = (p: {parent: MenuTreeItem; level: number; selected?: boolean}) => (
-    <For each={p.parent.childrenIds}>
+  const Tree = (p: {childrenIds: string[]; level: number; selected?: boolean}) => (
+    <For each={p.childrenIds}>
       {(id) => <TreeItem id={id} level={p.level} selected={p.selected} />}
     </For>
   )
@@ -539,7 +539,7 @@ export const SubmenuTree = (props: Props) => {
     <>
       <Label>Storage</Label>
       <Sub data-tauri-drag-region="true">
-        <Tree parent={treeService.tree.root} level={0} />
+        <Tree childrenIds={treeService.tree.rootItemIds} level={0} />
         <Show when={!props.showDeleted}>
           <NewLink />
           <Link

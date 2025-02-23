@@ -67,11 +67,11 @@ export class TreeService {
     return this.tree.isDescendant(id, parentId)
   }
 
-  descendants(fn: (n: TreeItem<any>) => void, parentId: string | undefined = undefined) {
+  descendants(fn: (n: MenuTreeItem) => void, parentId: string | undefined = undefined) {
     return this.tree.descendants(fn, parentId)
   }
 
-  getItem(id: string): TreeItem<any> | undefined {
+  getItem(id: string): MenuTreeItem | undefined {
     return this.tree.getItem(id)
   }
 
