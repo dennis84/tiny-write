@@ -11,7 +11,11 @@ type PathMap = Map<string | undefined, string>
 
 export class ThreadService {
   public messageTree = createTreeStore<Message>()
-  private pathMap = createSignal<PathMap>(new Map())
+  private pathMapSignal = createSignal<PathMap>(new Map())
+
+  get pathMap() {
+    return this.pathMapSignal[0]
+  }
 
   constructor(
     private store: Store<State>,
@@ -50,7 +54,7 @@ export class ThreadService {
 
     threads.unshift(thread)
     this.setState('threads', threads)
-    this.pathMap[1](new Map())
+    this.pathMapSignal[1](new Map())
     this.messageTree.updateAll([])
   }
 
@@ -153,7 +157,7 @@ export class ThreadService {
       lastModified: new Date(),
     }))
 
-    this.pathMap[1](new Map())
+    this.pathMapSignal[1](new Map())
     this.messageTree.updateAll([])
 
     await DB.deleteThread(currentThread.id)
@@ -201,7 +205,7 @@ export class ThreadService {
     }
 
     this.setState('threads', threads)
-    this.pathMap[1](new Map())
+    this.pathMapSignal[1](new Map())
     this.messageTree.updateAll(this.currentThread?.messages ?? [])
   }
 
@@ -251,11 +255,11 @@ export class ThreadService {
   }
 
   updatePath(parentId: string | undefined, childId: string) {
-    this.pathMap[1]((prev) => new Map(prev).set(parentId, childId))
+    this.pathMapSignal[1]((prev) => new Map(prev).set(parentId, childId))
   }
 
   getItem(parentId: string | undefined, childrenIds: string[]): TreeItem<Message> | undefined {
-    const overridePath = this.pathMap[0]().get(parentId)
+    const overridePath = this.pathMap().get(parentId)
     const nextId = overridePath ?? childrenIds[childrenIds.length - 1]
     if (nextId) return this.messageTree.getItem(nextId)
   }
@@ -298,7 +302,7 @@ export class ThreadService {
     if (!currentThread) return {messages: []}
 
     const messages = []
-    const pathMap = this.pathMap[0]()
+    const pathMap = this.pathMap()
     let nextId =
       pathMap.get(undefined) ??
       this.messageTree.rootItemIds[this.messageTree.rootItemIds.length - 1]

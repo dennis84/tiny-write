@@ -15,10 +15,9 @@ import {SelectionButton} from './attachments/Selection'
 import {ChatInputAction, inputEditor} from './Style'
 
 const ChatInputContainer = styled('div')`
-  margin: 20px 0;
+  margin-top: 20px;
   position: relative;
   justify-self: flex-end;
-  margin-top: auto;
   ${inputEditor}
 `
 

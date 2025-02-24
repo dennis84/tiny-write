@@ -20,7 +20,6 @@ import {Pagination} from './Pagination'
 
 const AnswerBubble = styled('div')`
   ${chatBubble}
-  margin: 15px 0;
 `
 
 const AnswerBadge = styled('span')`

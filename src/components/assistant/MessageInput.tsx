@@ -11,6 +11,7 @@ import {IconButton} from '../Button'
 import {ChatInputAction, inputEditor} from './Style'
 
 const MessageInputContainer = styled('div')`
+  margin-top: 20px;
   position: relative;
   ${inputEditor}
 `

@@ -1,11 +1,11 @@
-import {createSignal, Match, onMount, Show, Switch} from 'solid-js'
+import {createEffect, createSignal, Match, onCleanup, onMount, Show, Switch} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {v4 as uuidv4} from 'uuid'
 import {Message, useState} from '@/state'
 import {Chunk} from '@/services/CopilotService'
 import {itemCss, Text} from '../menu/Style'
-import {IconAdd, IconClose} from '../Icon'
-import {Button, ButtonGroup} from '../Button'
+import {IconAdd, IconClose, IconKeyboardArrowDown} from '../Icon'
+import {Button, ButtonGroup, IconButton} from '../Button'
 import {Drawer} from '../Drawer'
 import {ChatInput} from './ChatInput'
 import {ModelSelect} from './ModelSelect'
@@ -15,6 +15,7 @@ import {MessageAnswer} from './MessageAnswer'
 import {Suggestions} from './Suggestions'
 import {CurrentFileButton} from './attachments/CurrentFile'
 import {SelectionButton} from './attachments/Selection'
+import {ScrollGesture} from '@use-gesture/vanilla'
 
 const EmptyContainer = styled('div')`
   width: 100%;
@@ -36,14 +37,26 @@ const Messages = styled('div')`
   margin-top: 20px;
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 20px;
+`
+
+const ScrollDown = styled('div')`
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: var(--z-index-above-content);
+  button {
+    background: var(--foreground-10);
+  }
 `
 
 export const Chat = () => {
+  let drawerRef!: HTMLDivElement
   let inputRef!: HTMLDivElement
 
   const {aiService, copilotService, threadService, toastService} = useState()
   const [focus, setFocus] = createSignal(true)
+  const [scrollDown, setScrollDown] = createSignal(false)
 
   const scrollToInput = () => {
     inputRef.scrollIntoView({
@@ -129,8 +142,28 @@ export const Chat = () => {
     void sendMessages()
   }
 
+  const onChangeThread = () => {
+    focusInput()
+    scrollToInput()
+  }
+
   onMount(() => {
     threadService.newThread()
+    const gesture = new ScrollGesture(drawerRef, () => {
+      const box = inputRef.getBoundingClientRect()
+      setScrollDown(box.top > window.innerHeight)
+    })
+
+    onCleanup(() => {
+      gesture.destroy()
+    })
+  })
+
+  createEffect(() => {
+    // hide scroll down button if switch to other branch in message tree
+    if (threadService.pathMap()) {
+      setScrollDown(false)
+    }
   })
 
   const Empty = () => (
@@ -171,6 +204,7 @@ export const Chat = () => {
 
   return (
     <Drawer
+      ref={drawerRef}
       width={aiService.sidebarWidth}
       onResized={onDrawerResized}
       background={10}
@@ -185,7 +219,7 @@ export const Chat = () => {
             <IconAdd /> New
           </Button>
         </Show>
-        <Threads onChange={() => focusInput()} />
+        <Threads onChange={onChangeThread} />
         <ModelSelect onChange={() => focusInput()} />
       </ButtonGroup>
       <Messages>
@@ -195,6 +229,13 @@ export const Chat = () => {
         <ChatInput ref={inputRef} onMessage={onInputMessage} />
       </Show>
       <Suggestions onSuggestion={onInputMessage} />
+      <Show when={scrollDown()}>
+        <ScrollDown>
+          <IconButton onClick={() => scrollToInput()}>
+            <IconKeyboardArrowDown />
+          </IconButton>
+        </ScrollDown>
+      </Show>
     </Drawer>
   )
 }

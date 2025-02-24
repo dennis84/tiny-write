@@ -9,6 +9,7 @@ import {IconButton} from '../Button'
 import {IconContentCopy, IconMerge} from '../Icon'
 
 const ApplyPanelEl = styled('div')`
+  position: ${(props: any) => (props.hasTitle ? 'static' : 'absolute')};
   padding: 2px;
   padding-left: 10px;
   width: 100%;
@@ -55,7 +56,7 @@ export const ApplyPanel = (p: {state: ApplyPanelState}) => {
 
   return (
     <Portal mount={p.state.dom}>
-      <ApplyPanelEl>
+      <ApplyPanelEl hasTitle={title() !== ''}>
         <span>{title()}</span>
         <TooltipHelp title="Copy">
           <IconButton onClick={onCopy}>

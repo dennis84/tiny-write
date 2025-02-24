@@ -15,7 +15,6 @@ import {Pagination} from './Pagination'
 
 const EditBubble = styled('div')`
   flex-basis: 100%;
-  margin-bottom: 20px;
 `
 
 const QuestionActions = styled('div')`
@@ -133,7 +132,8 @@ export const MessageQuestion = (props: Props) => {
             <Switch>
               <Match when={props.message.value.type === MessageType.File}>
                 <Button onClick={onShowContent}>
-                  <LangIcon name={langConfig.id} /> {fileTitle() ?? `${langConfig?.name ?? ''} File`}
+                  <LangIcon name={langConfig.id} />{' '}
+                  {fileTitle() ?? `${langConfig?.name ?? ''} File`}
                 </Button>
                 <Show when={showContent()}>
                   <CodeBlock />

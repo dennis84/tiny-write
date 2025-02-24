@@ -40,6 +40,7 @@ const ResizeHandle = styled('div')`
 
 type Props = JSX.HTMLAttributes<HTMLDivElement> & {
   children: JSX.Element
+  ref?: HTMLDivElement
   width?: string
   background?: number
   onResized?: (width: number) => void
@@ -47,13 +48,12 @@ type Props = JSX.HTMLAttributes<HTMLDivElement> & {
 
 export const Drawer = (props: Props) => {
   let resizeHandleRef!: HTMLDivElement
-  let drawerRef!: HTMLDivElement
 
   const [local, rest] = splitProps(props, ['width', 'onResized', 'children', 'background'])
 
   onMount(() => {
     const gestrure = new DragGesture(resizeHandleRef, ({delta: [x]}) => {
-      const w = drawerRef.offsetWidth - x
+      const w = props.ref!.offsetWidth - x
       resizeHandleRef.style.left = `${window.innerWidth - w + 20}px`
       local.onResized?.(w)
     })
@@ -66,7 +66,7 @@ export const Drawer = (props: Props) => {
   return (
     <DrawerEl
       {...rest}
-      ref={drawerRef}
+      ref={props.ref}
       data-tauri-drag-region="true"
       style={{
         width: local.width ?? '400px',

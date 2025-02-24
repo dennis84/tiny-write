@@ -10,7 +10,7 @@ export const chatBubble = `
     border-radius: var(--border-radius);
     position: relative;
     .cm-content {
-      padding: 10px;
+      padding: 12px;
     }
     .cm-panels {
       position: static;
