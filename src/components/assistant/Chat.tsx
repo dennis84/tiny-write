@@ -204,7 +204,7 @@ export const Chat = () => {
 
   return (
     <Drawer
-      ref={drawerRef}
+      ref={drawerRef as any}
       width={aiService.sidebarWidth}
       onResized={onDrawerResized}
       background={10}

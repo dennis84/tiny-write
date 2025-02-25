@@ -5,7 +5,6 @@ import {isTauri} from '@/env'
 import {FULL_WIDTH} from './Layout'
 
 const DrawerEl = styled('div')`
-  position: relative;
   padding: 20px;
   height: 100%;
   overflow-y: auto;
@@ -40,7 +39,7 @@ const ResizeHandle = styled('div')`
 
 type Props = JSX.HTMLAttributes<HTMLDivElement> & {
   children: JSX.Element
-  ref?: HTMLDivElement
+  ref?: () => HTMLDivElement
   width?: string
   background?: number
   onResized?: (width: number) => void
@@ -48,12 +47,13 @@ type Props = JSX.HTMLAttributes<HTMLDivElement> & {
 
 export const Drawer = (props: Props) => {
   let resizeHandleRef!: HTMLDivElement
+  let ref!: HTMLDivElement
 
   const [local, rest] = splitProps(props, ['width', 'onResized', 'children', 'background'])
 
   onMount(() => {
     const gestrure = new DragGesture(resizeHandleRef, ({delta: [x]}) => {
-      const w = props.ref!.offsetWidth - x
+      const w = ref.offsetWidth - x
       resizeHandleRef.style.left = `${window.innerWidth - w + 20}px`
       local.onResized?.(w)
     })
@@ -66,7 +66,7 @@ export const Drawer = (props: Props) => {
   return (
     <DrawerEl
       {...rest}
-      ref={props.ref}
+      ref={(el) => (ref = el) && props.ref?.(el)}
       data-tauri-drag-region="true"
       style={{
         width: local.width ?? '400px',

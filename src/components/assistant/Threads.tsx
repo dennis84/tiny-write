@@ -1,9 +1,11 @@
 import {createSignal, For, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
+import {formatDate, isToday} from 'date-fns'
 import {Thread, useState} from '@/state'
 import {Button, ButtonGroup} from '../Button'
 import {IconAdd, IconDelete, IconEdit, IconHistory, IconMoreHoriz} from '../Icon'
 import {Tooltip, TooltipButton} from '../Tooltip'
+import {Label} from '../menu/Style'
 
 const TooltipFooter = styled('div')`
   margin-top: 10px;
@@ -106,6 +108,28 @@ export const Threads = (props: Props) => {
     })
   }
 
+  const getThreads = (): [Thread, string | undefined][] => {
+    const result: [Thread, string | undefined][] = []
+    let currentMonth = -1
+    for (const thread of store.threads) {
+      if (!thread.lastModified) continue
+      if (isToday(thread.lastModified)) {
+        if (!result.length) result.push([thread, 'Today'])
+        else result.push([thread, undefined])
+      } else {
+        const month = thread.lastModified.getMonth()
+        if (currentMonth !== month) {
+          result.push([thread, formatDate(thread.lastModified, 'MMMM')])
+          currentMonth = month
+        } else {
+          result.push([thread, undefined])
+        }
+      }
+    }
+
+    return result
+  }
+
   return (
     <>
       <Button onClick={onMenuClick}>
@@ -116,17 +140,22 @@ export const Threads = (props: Props) => {
         <Tooltip anchor={menuTooltipAnchor()!} onClose={onMenuClose} backdrop={true}>
           <Scroller>
             <Content>
-              <For each={store.threads}>
-                {(t) => (
-                  <TooltipButton
-                    onClick={() => onSelect(t.id)}
-                    class={t.id === threadService.currentThread?.id ? 'selected' : ''}
-                  >
-                    {t.title ?? 'Untitled'}
-                    <TooltipButtonMenu onClick={(e) => onSubmenuClick(e, t)}>
-                      <IconMoreHoriz />
-                    </TooltipButtonMenu>
-                  </TooltipButton>
+              <For each={getThreads()}>
+                {([thread, label]) => (
+                  <>
+                    <Show when={label}>
+                      <Label>{label}</Label>
+                    </Show>
+                    <TooltipButton
+                      onClick={() => onSelect(thread.id)}
+                      class={thread.id === threadService.currentThread?.id ? 'selected' : ''}
+                    >
+                      {thread.title ?? 'Untitled'}
+                      <TooltipButtonMenu onClick={(e) => onSubmenuClick(e, thread)}>
+                        <IconMoreHoriz />
+                      </TooltipButtonMenu>
+                    </TooltipButton>
+                  </>
                 )}
               </For>
             </Content>

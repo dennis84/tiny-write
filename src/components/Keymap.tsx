@@ -16,7 +16,6 @@ export const Keymap = () => {
     collabService,
     canvasService,
     canvasCollabService,
-    inputLineService,
     treeService,
   } = useState()
   const {open} = useOpen()
