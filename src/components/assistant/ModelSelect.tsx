@@ -1,6 +1,7 @@
 import {createSignal, For, Show} from 'solid-js'
+import {createAsync} from '@solidjs/router'
 import {useState} from '@/state'
-import {ModelId} from '@/services/CopilotService'
+import {Model} from '@/services/CopilotService'
 import {Button} from '../Button'
 import {IconAi} from '../Icon'
 import {Tooltip, TooltipButton} from '../Tooltip'
@@ -13,7 +14,9 @@ export const ModelSelect = (props: Props) => {
   const {copilotService} = useState()
   const [tooltipAnchor, setTooltipAnchor] = createSignal<HTMLElement>()
 
-  const onSelect = (model: ModelId) => {
+  const models = createAsync(() => copilotService.getChatModels())
+
+  const onSelect = (model: Model) => {
     copilotService.setChatModel(model)
     props.onChange()
   }
@@ -34,13 +37,13 @@ export const ModelSelect = (props: Props) => {
       </Button>
       <Show when={tooltipAnchor() !== undefined}>
         <Tooltip anchor={tooltipAnchor()!} onClose={onMenuClose}>
-          <For each={copilotService.getChatModelIds()}>
+          <For each={models()}>
             {(m) => (
               <TooltipButton
                 onClick={() => onSelect(m)}
-                class={copilotService.chatModelId === m ? 'selected' : undefined}
+                class={copilotService.chatModel.id === m.id ? 'selected' : undefined}
               >
-                {m}
+                {m.name}
               </TooltipButton>
             )}
           </For>

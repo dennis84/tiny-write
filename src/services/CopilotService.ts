@@ -41,6 +41,7 @@ export interface ChatMessage {
 }
 
 export interface Model {
+  id: string
   name: string
   streaming: boolean
 }
@@ -53,6 +54,8 @@ export interface Choice {
 export interface Chunk {
   choices: Choice[]
 }
+
+const fallbackModel: Model = {id: 'gpt-4o-2024-05-13', name: 'gpt-4o', streaming: true}
 
 const models = {
   'gpt-4o': {name: 'gpt-4o-2024-05-13', streaming: true},
@@ -68,8 +71,8 @@ export type ModelId = keyof typeof models
 export class CopilotService {
   private streamingSignal = createSignal(false)
 
-  get chatModelId(): ModelId {
-    return this.store.ai?.copilot?.chatModel ?? 'gpt-4'
+  get chatModel(): Model {
+    return this.store.ai?.copilot?.model ?? fallbackModel
   }
 
   get streaming() {
@@ -102,9 +105,40 @@ export class CopilotService {
     return Object.keys(models) as ModelId[]
   }
 
-  async setChatModel(model: ModelId) {
+  async getChatModels(): Promise<Model[] | undefined> {
+    const accessToken = this.store.ai?.copilot?.accessToken
+    if (!accessToken) return
+    const tokenResponse = await this.getApiToken(accessToken)
+    const url = this.proxy(`${tokenResponse.endpoints.api}/models`)
+
+    debug(`Copilot get models - (url=${url}, token=${JSON.stringify(tokenResponse)})`)
+    const data = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${tokenResponse.token}`,
+        'Editor-Version': this.appVersion(),
+        'Copilot-Integration-Id': 'vscode-chat',
+      },
+    })
+
+    const json = await data.json()
+
+    const models = []
+    for (const item of json.data) {
+      if (!item.model_picker_enabled) continue
+      models.push({
+        id: item.id,
+        name: item.name,
+        streaming: item.capabilities.supports.streaming,
+      })
+    }
+
+    return models
+  }
+
+  async setChatModel(model: Model) {
     info(`Set chat model (model=${model})`)
-    this.setState('ai', 'copilot', 'chatModel', model)
+    this.setState('ai', 'copilot', 'model', model)
     const ai = unwrap(this.store.ai)
     if (ai) DB.setAi(ai)
   }
@@ -219,7 +253,7 @@ export class CopilotService {
   ): Promise<void> {
     if (isTauri()) {
       return new Promise((resolve) => {
-        const model = this.getModel()
+        const model = this.chatModel
         const channel = new Channel<string>()
         channel.onmessage = (message: string) => {
           if (message.startsWith('[DONE]')) {
@@ -236,7 +270,7 @@ export class CopilotService {
       })
     }
 
-    const model = this.getModel()
+    const model = this.chatModel
     const accessToken = this.store.ai?.copilot?.accessToken
     if (!accessToken) return
     const tokenResponse = await this.getApiToken(accessToken)
@@ -342,12 +376,6 @@ export class CopilotService {
     return `https://bitter-sound-ded1.ddietr.workers.dev/?url=${url}`
   }
 
-  private getModel(): Model {
-    const modelName = this.store.ai?.copilot?.chatModel ?? 'gpt-4'
-    const model = models[modelName] ?? models['gpt-4']
-    return model!
-  }
-
   private createRequest(
     model: Model,
     messages: ChatMessage[],
@@ -358,7 +386,7 @@ export class CopilotService {
       n: 1,
       stream: streaming ?? model.streaming,
       temperature: 0.1,
-      model: model.name,
+      model: model.id,
       messages,
     }
   }

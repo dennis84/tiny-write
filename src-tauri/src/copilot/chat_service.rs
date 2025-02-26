@@ -39,7 +39,7 @@ pub struct Request {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Model {
-    pub name: String,
+    pub id: String,
     pub streaming: bool,
 }
 
@@ -50,7 +50,7 @@ impl Request {
             n: 1,
             stream: model.streaming,
             temperature: 0.1,
-            model: model.name,
+            model: model.id,
             messages,
         }
     }
