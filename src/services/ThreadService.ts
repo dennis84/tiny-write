@@ -328,9 +328,9 @@ export class ThreadService {
       parentId,
       messages: [
         {
-          role: 'system',
+          role: 'user',
           content:
-            'Keep attributes on fenced code blocks if present: e.g. ```rust id=1 range=1-5. Keep indentation in code blocks',
+            'Keep attributes on fenced code blocks if present: e.g. ```rust id=1 range=1-5. Keep indentation in code blocks. Try to add a filename to the fenced code block like: ```ts file=components/App.tsx',
         },
         ...messages,
       ],

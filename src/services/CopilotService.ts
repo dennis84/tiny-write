@@ -55,7 +55,7 @@ export interface Chunk {
   choices: Choice[]
 }
 
-const fallbackModel: Model = {id: 'gpt-4o-2024-05-13', name: 'gpt-4o', streaming: true}
+const fallbackModel: Model = {id: 'gpt-4o', name: 'gpt-4o', streaming: true}
 
 const models = {
   'gpt-4o': {name: 'gpt-4o-2024-05-13', streaming: true},
@@ -129,7 +129,7 @@ export class CopilotService {
       models.push({
         id: item.id,
         name: item.name,
-        streaming: item.capabilities.supports.streaming,
+        streaming: item.capabilities.supports.streaming ?? false,
       })
     }
 
@@ -137,7 +137,7 @@ export class CopilotService {
   }
 
   async setChatModel(model: Model) {
-    info(`Set chat model (model=${model})`)
+    info(`Set chat model (model=${JSON.stringify(model)})`)
     this.setState('ai', 'copilot', 'model', model)
     const ai = unwrap(this.store.ai)
     if (ai) DB.setAi(ai)

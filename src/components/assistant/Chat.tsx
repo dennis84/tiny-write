@@ -175,7 +175,7 @@ export const Chat = () => {
   )
 
   const MessageTree = (p: {id: string | undefined; childrenIds: string[]}) => (
-    <Show when={threadService.getItem(p.id, p.childrenIds)} fallback={<Empty />}>
+    <Show when={threadService.getItem(p.id, p.childrenIds)}>
       {(message) => (
         <>
           <Switch>
@@ -223,7 +223,9 @@ export const Chat = () => {
         <ModelSelect onChange={() => focusInput()} />
       </ButtonGroup>
       <Messages>
-        <MessageTree id={undefined} childrenIds={threadService.messageTree.rootItemIds} />
+        <Show when={threadService.messageTree.rootItemIds} fallback={<Empty />}>
+          <MessageTree id={undefined} childrenIds={threadService.messageTree.rootItemIds} />
+        </Show>
       </Messages>
       <Show when={focus()} keyed>
         <ChatInput ref={inputRef} onMessage={onInputMessage} />

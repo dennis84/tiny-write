@@ -1,17 +1,20 @@
 import {createSignal, onMount, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {EditorView} from '@codemirror/view'
+import * as Y from 'yjs'
+import {v4 as uuidv4} from 'uuid'
 import {File, useState} from '@/state'
+import {useOpen} from '@/open'
 import {copy} from '@/remote/clipboard'
 import {Portal} from 'solid-js/web'
 import {TooltipHelp} from '../TooltipHelp'
 import {IconButton} from '../Button'
-import {IconContentCopy, IconMerge} from '../Icon'
+import {IconAdd, IconContentCopy, IconMerge} from '../Icon'
 
 const ApplyPanelEl = styled('div')`
   position: ${(props: any) => (props.hasTitle ? 'static' : 'absolute')};
   padding: 2px;
-  padding-left: 10px;
+  padding-left: 20px;
   width: 100%;
   display: grid;
   grid-template-columns: minmax(0, 1fr) min-content min-content;
@@ -24,21 +27,26 @@ export interface ApplyPanelState {
   dom: Element
   id?: string
   range?: [number, number]
+  file?: string
 }
 
 export const ApplyPanel = (p: {state: ApplyPanelState}) => {
-  const {codeService, fileService, toastService} = useState()
+  const {codeService, fileService, toastService, treeService} = useState()
   const [title, setTitle] = createSignal('')
   const [file, setFile] = createSignal<File>()
+  const {open} = useOpen()
 
   onMount(() => {
     const file = p.state.id ? fileService.findFileById(p.state.id) : undefined
-    setFile(file)
-
-    fileService.getTitle(file, 25, false).then((value) => {
-      const t = p.state.range ? `${value}:${p.state.range[0]}-${p.state.range[1]}` : value
-      setTitle(t ?? '')
-    })
+    if (file) {
+      setFile(file)
+      fileService.getTitle(file, 25, false).then((value) => {
+        const t = p.state.range ? `${value}:${p.state.range[0]}-${p.state.range[1]}` : value
+        setTitle(t ?? '')
+      })
+    } else if (p.state.file) {
+      setTitle(p.state.file)
+    }
   })
 
   const onCopy = () => {
@@ -54,6 +62,23 @@ export const ApplyPanel = (p: {state: ApplyPanelState}) => {
     })
   }
 
+  const onCreateFile = async () => {
+    const id = uuidv4()
+    const ydoc = new Y.Doc({gc: false, guid: id})
+    const doc = p.state.editorView.state.doc.toString()
+    ydoc.getText(id).insert(0, doc)
+
+    const file = await fileService.newFile({
+      id,
+      newFile: p.state.file,
+      ydoc: Y.encodeStateAsUpdate(ydoc),
+      code: true,
+    })
+
+    await treeService.add(file)
+    open(file)
+  }
+
   return (
     <Portal mount={p.state.dom}>
       <ApplyPanelEl hasTitle={title() !== ''}>
@@ -63,6 +88,13 @@ export const ApplyPanel = (p: {state: ApplyPanelState}) => {
             <IconContentCopy />
           </IconButton>
         </TooltipHelp>
+        <Show when={!file() && p.state.file}>
+          <TooltipHelp title="Create file">
+            <IconButton onClick={onCreateFile}>
+              <IconAdd />
+            </IconButton>
+          </TooltipHelp>
+        </Show>
         <Show when={file()}>
           <TooltipHelp title="Apply in editor">
             <IconButton onClick={onApply}>

@@ -19,6 +19,7 @@ export const ModelSelect = (props: Props) => {
   const onSelect = (model: Model) => {
     copilotService.setChatModel(model)
     props.onChange()
+    setTooltipAnchor(undefined)
   }
 
   const onMenuClick = (e: MouseEvent) => {

@@ -40,6 +40,7 @@ interface MessageEditor {
   doc: string
   lang?: string
   id?: string
+  file?: string
   range?: [number, number]
 }
 
@@ -89,7 +90,7 @@ export const MessageAnswer = (props: Props) => {
           EditorView.lineWrapping,
           theme,
           lang.highlight(),
-          copilotApply(ed.id, ed.range),
+          copilotApply(ed.id, ed.range, ed.file),
         ],
       })
     }
@@ -98,20 +99,20 @@ export const MessageAnswer = (props: Props) => {
   }
 
   const applyPanel =
-    (id?: string, range?: [number, number]) =>
+    (id?: string, range?: [number, number], file?: string) =>
     (editorView: EditorView): Panel => {
       let dom = document.createElement('div')
       return {
         top: true,
         dom,
         mount: () => {
-          setApplyPanels((prev) => [...prev, {dom, editorView, id, range}])
+          setApplyPanels((prev) => [...prev, {dom, editorView, id, range, file}])
         },
       }
     }
 
-  const copilotApply = (id?: string, range?: [number, number]) =>
-    showPanel.of(applyPanel(id, range))
+  const copilotApply = (id?: string, range?: [number, number], file?: string) =>
+    showPanel.of(applyPanel(id, range, file))
 
   const onCopy = () => copy(props.message.value.content)
 
