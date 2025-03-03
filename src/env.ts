@@ -8,7 +8,7 @@ export const isTauri = () => (window as any).__TAURI_INTERNALS__ !== undefined
 
 export const isDark = () => (window as any).matchMedia('(prefers-color-scheme: dark)').matches
 
-export const isTest = import.meta.env.NODE_ENV === 'test'
+export const isTest = import.meta.env.MODE === 'test'
 export const isDev = import.meta.env.DEV
 
 export const isMac = navigator.userAgent.includes('Mac')

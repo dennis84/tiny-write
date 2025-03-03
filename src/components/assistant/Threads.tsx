@@ -132,7 +132,7 @@ export const Threads = (props: Props) => {
 
   return (
     <>
-      <Button onClick={onMenuClick}>
+      <Button onClick={onMenuClick} data-testid="history">
         <IconHistory />
         History
       </Button>
@@ -149,6 +149,7 @@ export const Threads = (props: Props) => {
                     <TooltipButton
                       onClick={() => onSelect(thread.id)}
                       class={thread.id === threadService.currentThread?.id ? 'selected' : ''}
+                      data-testid="thread_item"
                     >
                       {thread.title ?? 'Untitled'}
                       <TooltipButtonMenu onClick={(e) => onSubmenuClick(e, thread)}>

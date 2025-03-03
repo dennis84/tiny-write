@@ -128,7 +128,7 @@ export const Menu = () => {
     <Container>
       <Control active={menuService.menu() !== undefined || menuService.assistant() !== undefined}>
         <TooltipHelp title={menuService.assistant() ? 'Close Chat' : 'Open Chat'}>
-          <IconButton onClick={onAssistantClick}>
+          <IconButton onClick={onAssistantClick} data-testid="ai_assistant_button">
             {menuService.assistant() ?
               <IconAiAssistantClose />
             : <IconAiAssistant />}

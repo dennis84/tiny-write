@@ -82,6 +82,9 @@ export const Chat = () => {
 
     const messageId = nextId ?? uuidv4()
 
+    // Create answer message directly to visualize loading
+    threadService.streamLastMessage(messageId, parentId, '')
+
     try {
       await copilotService.completions(
         messages,
@@ -209,6 +212,7 @@ export const Chat = () => {
       onResized={onDrawerResized}
       background={10}
       data-tauri-drag-region="true"
+      data-testid="ai_assistant_drawer"
     >
       <ButtonGroup>
         <Show when={threadService.currentThread?.messages?.length}>
@@ -222,8 +226,8 @@ export const Chat = () => {
         <Threads onChange={onChangeThread} />
         <ModelSelect onChange={() => focusInput()} />
       </ButtonGroup>
-      <Messages>
-        <Show when={threadService.messageTree.rootItemIds} fallback={<Empty />}>
+      <Messages data-testid="messages">
+        <Show when={threadService.messageTree.rootItemIds.length} fallback={<Empty />}>
           <MessageTree id={undefined} childrenIds={threadService.messageTree.rootItemIds} />
         </Show>
       </Messages>

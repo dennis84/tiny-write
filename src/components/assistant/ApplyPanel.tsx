@@ -81,23 +81,23 @@ export const ApplyPanel = (p: {state: ApplyPanelState}) => {
 
   return (
     <Portal mount={p.state.dom}>
-      <ApplyPanelEl hasTitle={title() !== ''}>
+      <ApplyPanelEl hasTitle={title() !== ''} data-testid="apply_panel">
         <span>{title()}</span>
         <TooltipHelp title="Copy">
-          <IconButton onClick={onCopy}>
+          <IconButton onClick={onCopy} data-testid="panel_button_copy">
             <IconContentCopy />
           </IconButton>
         </TooltipHelp>
         <Show when={!file() && p.state.file}>
           <TooltipHelp title="Create file">
-            <IconButton onClick={onCreateFile}>
+            <IconButton onClick={onCreateFile} data-testid="panel_button_create">
               <IconAdd />
             </IconButton>
           </TooltipHelp>
         </Show>
         <Show when={file()}>
           <TooltipHelp title="Apply in editor">
-            <IconButton onClick={onApply}>
+            <IconButton onClick={onApply} data-testid="panel_button_apply">
               <IconMerge />
             </IconButton>
           </TooltipHelp>

@@ -1,5 +1,6 @@
 import {createEffect, createSignal, onCleanup, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
+import {isTest} from '@/env'
 import {useState} from '@/state'
 import {copy} from '@/remote/clipboard'
 import {CopilotSignIn} from '@/remote/copilot'
@@ -13,6 +14,8 @@ const UserCode = styled('code')`
   padding: 0 5px;
   border-radius: var(--border-radius);
 `
+
+const POLL_INTERVAL = isTest ? 10 : 6_000
 
 export const AiSubmenuGithub = () => {
   const {store, copilotService} = useState()
@@ -54,7 +57,7 @@ export const AiSubmenuGithub = () => {
         setCodeResult(undefined)
         setDone(true)
       }
-    }, 6000)
+    }, POLL_INTERVAL)
 
     onCleanup(() => {
       clearInterval(interval)
@@ -74,7 +77,7 @@ export const AiSubmenuGithub = () => {
       <Label>GitHub Copilot</Label>
       <Sub data-tauri-drag-region="true">
         <Show when={!store.ai?.copilot?.user}>
-          <Link onClick={onConnect}>
+          <Link onClick={onConnect} data-testid="connect">
             <IconToggleOn /> Connect to GitHub
           </Link>
         </Show>
@@ -85,7 +88,7 @@ export const AiSubmenuGithub = () => {
           </Note>
           <Text>
             User Code: <UserCode>{codeResult()?.userCode}</UserCode>
-            <IconButton onClick={onCopy}>
+            <IconButton onClick={onCopy} data-testid="copy_verification_uri">
               {copied() ?
                 <IconCheck />
               : <IconContentCopy />}

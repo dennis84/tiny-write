@@ -333,8 +333,9 @@ export class FileService {
 
   async getTitle(file?: File, len = 25, fallback = true): Promise<string | undefined> {
     if (!file) return fallback ? 'Undefined' : undefined
-    if (isTauri() && file.path) {
-      return toRelativePath(file.path)
+
+    if (file.path || file.newFile) {
+      return toRelativePath(file.path ?? file.newFile ?? '')
     }
 
     if (file.code) return file.title ?? (fallback ? 'Code' : undefined)

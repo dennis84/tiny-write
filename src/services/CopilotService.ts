@@ -57,17 +57,6 @@ export interface Chunk {
 
 const fallbackModel: Model = {id: 'gpt-4o', name: 'gpt-4o', streaming: true}
 
-const models = {
-  'gpt-4o': {name: 'gpt-4o-2024-05-13', streaming: true},
-  'gpt-4': {name: 'gpt-4', streaming: true},
-  'gpt-3.5-turbo': {name: 'gpt-3.5-turbo', streaming: true},
-  'o1-preview': {name: 'o1-preview-2024-09-12', streaming: false},
-  'o1-mini': {name: 'o1-mini-2024-09-12', streaming: false},
-  'claude-3-5-sonnet': {name: 'claude-3.5-sonnet', streaming: true},
-} as const
-
-export type ModelId = keyof typeof models
-
 export class CopilotService {
   private streamingSignal = createSignal(false)
 
@@ -99,10 +88,6 @@ export class CopilotService {
     this.setState('ai', {copilot: {...copilot, ...status}})
     const ai = unwrap(this.store.ai)
     if (ai) DB.setAi(ai)
-  }
-
-  getChatModelIds(): ModelId[] {
-    return Object.keys(models) as ModelId[]
   }
 
   async getChatModels(): Promise<Model[] | undefined> {
@@ -166,7 +151,6 @@ export class CopilotService {
         Accept: 'application/json',
       },
     })
-
     const json = await data.json()
     const user = json.login
 

@@ -16,7 +16,7 @@ test('add file', async ({page}) => {
   await page.click('[data-testid="menu_button"]')
   await clickTreeMenu(page, 1, 'add_canvas')
 
-  await page.isVisible('[data-testid="canvas_container"]')
+  expect(page.locator('[data-testid="canvas_container"]')).toBeVisible()
 
   // Create file
   await page.locator('[data-testid="canvas_container"]').click({button: 'right'})

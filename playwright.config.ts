@@ -9,7 +9,7 @@ const config: PlaywrightTestConfig = {
   retries: process.env.CI ? 3 : 0,
   webServer: [
     {
-      command: 'vite',
+      command: 'vite --mode=test',
       port: 3000,
       timeout: 120 * second,
       reuseExistingServer: false,

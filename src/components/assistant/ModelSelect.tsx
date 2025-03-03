@@ -32,7 +32,7 @@ export const ModelSelect = (props: Props) => {
 
   return (
     <>
-      <Button onClick={onMenuClick}>
+      <Button onClick={onMenuClick} data-testid="model_select">
         <IconAi />
         Model
       </Button>

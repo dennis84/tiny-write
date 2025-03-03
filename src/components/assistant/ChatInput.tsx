@@ -105,7 +105,11 @@ export const ChatInput = (props: Props) => {
   return (
     <>
       <ChatInputContainer ref={props.ref}>
-        <div onClick={() => editorView()?.focus()} ref={chatInputRef}></div>
+        <div
+          onClick={() => editorView()?.focus()}
+          ref={chatInputRef}
+          data-testid="chat_input"
+        ></div>
         <ChatInputAction>
           <TooltipHelp title="Add an attachment to context">
             <IconButton onClick={onAttachmentMenu}>
@@ -121,7 +125,7 @@ export const ChatInput = (props: Props) => {
           </Show>
           <Show when={!copilotService.streaming()}>
             <TooltipHelp title="Send message">
-              <IconButton onClick={onSend}>
+              <IconButton onClick={onSend} data-testid="send">
                 <IconSend />
               </IconButton>
             </TooltipHelp>

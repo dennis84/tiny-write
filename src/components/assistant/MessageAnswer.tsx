@@ -22,19 +22,6 @@ const AnswerBubble = styled('div')`
   ${chatBubble}
 `
 
-const AnswerBadge = styled('span')`
-  background: var(--primary-background);
-  color: var(--primary-foreground);
-  border-radius: var(--border-radius);
-  padding: 2px;
-  display: inline-flex;
-  align-items: center;
-  margin-bottom: 10px;
-  .icon {
-    margin-right: 5px;
-  }
-`
-
 interface MessageEditor {
   elementId: string
   doc: string
@@ -135,10 +122,8 @@ export const MessageAnswer = (props: Props) => {
   }
 
   return (
-    <AnswerBubble>
-      <AnswerBadge>
-        <IconAiAssistant /> Assistant
-      </AnswerBadge>
+    <AnswerBubble data-testid="answer_bubble">
+      <div><IconAiAssistant /></div>
       <Html content={html() ?? props.message.value.content} />
       <ButtonGroup>
         <TooltipHelp title="Copy">

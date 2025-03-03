@@ -6,7 +6,7 @@ test('share', async ({page, browser}) => {
   const id = uuidv4()
   await page.goto(`/canvas/${id}`)
 
-  await page.isVisible('[data-testid="canvas_container"]')
+  expect(page.locator('[data-testid="canvas_container"]')).toBeVisible()
 
   await page.click('[data-testid="menu_button"]')
   await page.click('[data-testid="collab"]')

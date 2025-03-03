@@ -128,7 +128,7 @@ export const MessageQuestion = (props: Props) => {
               </IconButton>
             </TooltipHelp>
           </QuestionActions>
-          <QuestionBubble>
+          <QuestionBubble data-testid="question_bubble">
             <Switch>
               <Match when={props.message.value.type === MessageType.File}>
                 <Button onClick={onShowContent}>

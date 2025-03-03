@@ -3,6 +3,7 @@ import * as fs from '@tauri-apps/plugin-fs'
 import * as dialog from '@tauri-apps/plugin-dialog'
 import {File} from '@/state'
 import {serialize} from '@/markdown'
+import {isTauri} from '@/env'
 import {debug} from './log'
 
 interface Document {
@@ -58,6 +59,7 @@ export const dirname = async (path: string): Promise<string> => {
 }
 
 export const toRelativePath = async (path: string, basePath?: string): Promise<string> => {
+  if (!isTauri()) return path
   return invoke('to_relative_path', {path, basePath})
 }
 
