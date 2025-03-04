@@ -31,7 +31,11 @@ test('chat', async ({page}) => {
   await page.click('[data-testid="send"]')
 
   await expect(page.locator('[data-testid="question_bubble"]').locator('nth=0')).toHaveText('Hello')
-  await expect(page.locator('[data-testid="answer_bubble"]').locator('nth=0')).toContainText('Test123')
+  await expect(page.locator('[data-testid="answer_bubble"]').locator('nth=0')).toContainText(
+    'Test123',
+  )
   await expect(page.locator('[data-testid="question_bubble"]').locator('nth=1')).toHaveText('Zzz')
-  await expect(page.locator('[data-testid="answer_bubble"]').locator('nth=1')).toContainText('Aaabbb')
+  await expect(page.locator('[data-testid="answer_bubble"]').locator('nth=1')).toContainText(
+    'Aaabbb',
+  )
 })

@@ -1,4 +1,5 @@
 import {SetStoreFunction, Store, unwrap} from 'solid-js/store'
+import {createSignal} from 'solid-js'
 import {EditorView, ViewUpdate} from '@codemirror/view'
 import {getChunks, unifiedMergeView} from '@codemirror/merge'
 import * as Y from 'yjs'
@@ -27,6 +28,12 @@ export interface OpenFile {
 }
 
 export class CodeService {
+  private mergeViewSignal = createSignal(false)
+
+  get isMergeView() {
+    return this.mergeViewSignal[0]
+  }
+
   constructor(
     private fileService: FileService,
     private appService: AppService,
@@ -34,7 +41,6 @@ export class CodeService {
     private collabService: CollabService,
     private codeMirrorService: CodeMirrorService,
     private prettierService: PrettierService,
-    private treeService: TreeService,
     private store: Store<State>,
     private setState: SetStoreFunction<State>,
   ) {}
@@ -151,6 +157,7 @@ export class CodeService {
             type.delete(0, type.length)
             type.insert(0, update.state.doc.toString())
             this.updateEditorState(currentFile)
+            this.mergeViewSignal[1](false)
             done?.()
           }
         }),
@@ -159,6 +166,7 @@ export class CodeService {
 
     const fileIndex = this.store.files.findIndex((f) => f.id === file.id)
     this.setState('files', fileIndex, 'codeEditorView', editor.editorView)
+    this.mergeViewSignal[1](true)
   }
 
   private updateEditorState(file: File, el?: Element) {

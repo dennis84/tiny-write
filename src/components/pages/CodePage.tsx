@@ -6,6 +6,7 @@ import {locationToString} from '@/utils/debug'
 import {Loading} from './Loading'
 import {Title} from './Title'
 import {CodeEditor} from '../code/CodeEditor'
+import {MergeMenu} from '../code/MergeMenu'
 
 export const CodePage = (props: RouteSectionProps) => {
   const location = useLocation<LocationState | undefined>()
@@ -35,6 +36,7 @@ export const CodePage = (props: RouteSectionProps) => {
       >
         <Title />
         <CodeEditor />
+        <MergeMenu />
       </Show>
     )
   }

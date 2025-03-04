@@ -123,7 +123,9 @@ export const MessageAnswer = (props: Props) => {
 
   return (
     <AnswerBubble data-testid="answer_bubble">
-      <div><IconAiAssistant /></div>
+      <div>
+        <IconAiAssistant />
+      </div>
       <Html content={html() ?? props.message.value.content} />
       <ButtonGroup>
         <TooltipHelp title="Copy">

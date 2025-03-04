@@ -71,7 +71,6 @@ export const createCtrl = (initial: State) => {
     collabService,
     codeMirrorService,
     prettierService,
-    treeService,
     store,
     setState,
   )

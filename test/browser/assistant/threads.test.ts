@@ -11,9 +11,7 @@ test('threads', async ({page}) => {
         id: '1',
         title: 'Test Thread',
         lastModified: new Date(),
-        messages: [
-          {id: '1', role: 'user', content: 'Hello'},
-        ],
+        messages: [{id: '1', role: 'user', content: 'Hello'}],
       },
     ],
   })

@@ -8,7 +8,9 @@ export const lineTextEq = (page: Page, nth: number, text: string) =>
 export const lineCodeEq = async (page: Page, nth: number, text: string) => {
   await expect
     .poll(async () => {
-      const locator = page.locator(`[data-testid="code_scroll"] .cm-content > .cm-line:nth-child(${nth})`)
+      const locator = page.locator(
+        `[data-testid="code_scroll"] .cm-content > .cm-line:nth-child(${nth})`,
+      )
       const text = await locator.evaluate((node) => {
         node.querySelector('.cm-ySelectionCaret')?.remove()
         return node.textContent

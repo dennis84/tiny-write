@@ -67,7 +67,9 @@ test('create file', async ({page}) => {
   await lineCodeEq(page, 1, "const test1 = '111'")
 
   await page.click('[data-testid="menu_button"]')
-  await expect(page.locator('[data-testid="tree_link"]').locator('nth=1')).toContainText('src/main.ts')
+  await expect(page.locator('[data-testid="tree_link"]').locator('nth=1')).toContainText(
+    'src/main.ts',
+  )
 })
 
 test('apply', async ({page}) => {
