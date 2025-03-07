@@ -83,7 +83,7 @@ export const DirPage = () => {
       const path = await getResolvedPath(p.entry.name)
       let file = await fileService.newFileByPath(path)
 
-      open(file, true)
+      open(file, {back: true})
     }
 
     return (

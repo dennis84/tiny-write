@@ -23,29 +23,29 @@ export const Redirect = () => {
 
     if (argPath) {
       let file = await fileService.newFileByPath(path, newFile)
-      return open(file, back, selection)
+      return open(file, {back, selection})
     }
 
     if (store.mode === Mode.Editor && fileService.currentFile) {
-      return open(fileService.currentFile, back, selection)
+      return open(fileService.currentFile, {back, selection})
     }
 
     if (store.mode === Mode.Code && fileService.currentFile) {
-      return open(fileService.currentFile, back, selection)
+      return open(fileService.currentFile, {back, selection})
     }
 
     if (store.mode === Mode.Canvas && canvasService.currentCanvas) {
-      return open(canvasService.currentCanvas, back, selection)
+      return open(canvasService.currentCanvas, {back, selection})
     }
 
     const first = store.files.find((f) => !f.deleted)
     if (first) {
-      return open(first, back, selection)
+      return open(first, {back, selection})
     }
 
     const file = await fileService.newFile()
     info(`Created new file (id=${file.id})`)
-    open(file, back, selection)
+    open(file, {back, selection})
   })
 
   return <></>

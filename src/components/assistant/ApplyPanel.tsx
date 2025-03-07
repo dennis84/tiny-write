@@ -56,6 +56,7 @@ export const ApplyPanel = (p: {state: ApplyPanelState}) => {
   const onApply = () => {
     const f = file()
     if (!f) return
+
     const newCode = p.state.editorView.state.doc.toString()
     codeService.merge(f, newCode, p.state.range, () => {
       toastService.open({message: 'All chunks applied ✅', duration: 2000})

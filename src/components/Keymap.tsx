@@ -145,7 +145,7 @@ export const Keymap = () => {
 
     const file = await fileService.newFileByPath(url.pathname)
 
-    open(file, true, selection)
+    open(file, {back: true, selection})
   }
 
   type Fn = (e: KeyboardEvent) => boolean | void | Promise<boolean | void>

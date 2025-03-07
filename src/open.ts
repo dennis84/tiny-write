@@ -13,6 +13,11 @@ import {info} from './remote/log'
 import {open as shellOpen} from './remote/app'
 import {isTauri} from './env'
 
+interface OpenOptions {
+  back?: boolean
+  selection?: VisualPositionRange
+}
+
 export const useOpen = () => {
   const navigate = useNavigate()
   const location = useLocation()
@@ -26,15 +31,14 @@ export const useOpen = () => {
 
   const open = (
     item: Openable | undefined,
-    back = false,
-    selection: VisualPositionRange | undefined = undefined,
+    options?: OpenOptions
   ) => {
     if (!item) return
 
-    const prev = back ? location.pathname : undefined
+    const prev = options?.back ? location.pathname : undefined
     const file = isFile(item) ? item.path : undefined
     const newFile = isFile(item) ? item.newFile : undefined
-    const state = {prev, file, newFile, selection}
+    const state = {prev, file, newFile, selection: options?.selection}
 
     if (item === '/') {
       info(`Redirect to (to=/)`)

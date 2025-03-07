@@ -138,6 +138,7 @@ export class CodeService {
     const original = type.toString()
     const doc = range ? CodeMirrorService.replaceSlice(original, newDoc, range) : newDoc
 
+    console.log('aaa')
     const editor = this.codeMirrorService.createEditor({
       parent,
       doc,
