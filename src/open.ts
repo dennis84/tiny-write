@@ -6,6 +6,7 @@ import {
   isCodeFile,
   isEditorElement,
   isFile,
+  MergeState,
   Openable,
   VisualPositionRange,
 } from './state'
@@ -16,6 +17,7 @@ import {isTauri} from './env'
 interface OpenOptions {
   back?: boolean
   selection?: VisualPositionRange
+  merge?: MergeState
 }
 
 export const useOpen = () => {
@@ -29,16 +31,13 @@ export const useOpen = () => {
     el.type === ElementType.Video ||
     el.type === ElementType.Editor
 
-  const open = (
-    item: Openable | undefined,
-    options?: OpenOptions
-  ) => {
+  const open = (item: Openable | undefined, options?: OpenOptions) => {
     if (!item) return
 
     const prev = options?.back ? location.pathname : undefined
     const file = isFile(item) ? item.path : undefined
     const newFile = isFile(item) ? item.newFile : undefined
-    const state = {prev, file, newFile, selection: options?.selection}
+    const state = {prev, file, newFile, selection: options?.selection, merge: options?.merge}
 
     if (item === '/') {
       info(`Redirect to (to=/)`)

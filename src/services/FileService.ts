@@ -1,3 +1,4 @@
+import {batch} from 'solid-js'
 import {SetStoreFunction, Store} from 'solid-js/store'
 import * as Y from 'yjs'
 import {yXmlFragmentToProseMirrorRootNode} from 'y-prosemirror'
@@ -315,7 +316,10 @@ export class FileService {
 
     const index = this.store.files.findIndex((f) => f.id === file.id)
     if (index === -1) return
-    this.setState('files', index, {editorView: undefined, codeEditorView: undefined})
+    batch(() => {
+      this.setState('files', index, {editorView: undefined, codeEditorView: undefined})
+      this.setState('collab', undefined)
+    })
   }
 
   async restore(id: string) {

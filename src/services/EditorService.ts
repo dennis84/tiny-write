@@ -142,6 +142,12 @@ export class EditorService {
 
       const update = await FileService.activateFile(state, file.id)
       update.collab = CollabService.create(file.id, update.mode, params.share)
+      update.args = {
+        ...update.args,
+        selection: undefined,
+        merge: undefined,
+      }
+
       const subdoc = CollabService.getSubdoc(update.collab.ydoc, file.id)
       if (text) this.updateText(file, subdoc, text)
       this.setState(update)

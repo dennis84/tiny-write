@@ -328,6 +328,12 @@ export class CanvasService {
     }
 
     state = CanvasService.activateCanvas(state, id)
+    state.args = {
+      ...state.args,
+      selection: undefined,
+      merge: undefined,
+    }
+
     const collab = CollabService.create(id, Mode.Canvas, share)
 
     this.setState({...state, collab})

@@ -87,6 +87,26 @@ test('apply', async ({page}) => {
   await lineCodeEq(page, 1, "const test2 = '222'")
 })
 
+test('apply - open file', async ({page}) => {
+  await page.goto(`/code/222`)
+  await page.waitForSelector('[data-testid="initialized"]')
+
+  await page.goto(`/code/444`)
+  await page.waitForSelector('[data-testid="initialized"]')
+
+  await page.click('[data-testid="ai_assistant_button"]')
+  await page.click('[data-testid="history"]')
+  await page.click('[data-testid="thread_item"]')
+
+  await page.locator('[data-testid="panel_button_apply"]').click()
+  await page.locator('button[name="accept"]').click()
+
+  expect(page.getByText('All chunks applied')).toBeVisible()
+  expect(page.url()).toContain('/code/222')
+
+  await lineCodeEq(page, 1, "const test2 = '222'")
+})
+
 test('apply - range', async ({page}) => {
   await page.goto(`/code/333`)
 

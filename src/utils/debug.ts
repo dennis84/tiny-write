@@ -22,6 +22,7 @@ export const locationToString = (location: Location<LocationState>) =>
     prev: location.state?.prev,
     file: location.state?.file,
     newFile: location.state?.newFile,
+    merge: location.state?.merge,
   })
 
 export const renderPoint = (point: Vec, id = 'point') => {

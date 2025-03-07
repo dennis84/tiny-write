@@ -11,11 +11,17 @@ import {CodeThemeName} from './services/ConfigService'
 
 export type Openable = File | Canvas | CanvasElement | '/'
 
+export interface MergeState {
+  doc: string
+  range?: [number, number]
+}
+
 export interface LocationState {
   prev?: string // prev location pathname
   file?: string
   newFile?: string
   selection?: VisualPositionRange
+  merge?: MergeState
 }
 
 export interface VisualPosition {
@@ -41,6 +47,7 @@ export interface Args {
   newFile?: string
   room?: string
   text?: string
+  merge?: MergeState
 }
 
 export interface PrettierConfig {

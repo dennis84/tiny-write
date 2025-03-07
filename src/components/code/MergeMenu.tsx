@@ -1,10 +1,10 @@
-import {useState} from '@/state'
-import {TooltipButton, TooltipContainer} from '../Tooltip'
 import {Show} from 'solid-js'
-import {IconAdd, IconCheck, IconClose} from '../Icon'
 import {styled} from 'solid-styled-components'
 import {acceptChunk, getChunks, rejectChunk} from '@codemirror/merge'
-import {fireEvent} from '@solidjs/testing-library'
+import {useOpen} from '@/open'
+import {useState} from '@/state'
+import {IconCheck, IconClose} from '../Icon'
+import {TooltipButton, TooltipContainer} from '../Tooltip'
 
 const MergeMenuContainer = styled('div')`
   position: fixed;
@@ -26,7 +26,8 @@ const MergeMenuContainer = styled('div')`
 
 export const MergeMenu = () => {
   let tooltipRef!: HTMLDivElement
-  const {codeService, fileService} = useState()
+  const {store, fileService} = useState()
+  const {open} = useOpen()
 
   const onAccept = () => {
     const view = fileService.currentFile?.codeEditorView
@@ -35,13 +36,15 @@ export const MergeMenu = () => {
   }
 
   const onReject = () => {
-    const view = fileService.currentFile?.codeEditorView
+    const currentFile = fileService.currentFile
+    const view = currentFile?.codeEditorView
     if (!view) return
     getChunks(view.state)?.chunks.forEach((chunk) => rejectChunk(view, chunk.fromA))
+    open(currentFile)
   }
 
   return (
-    <Show when={codeService.isMergeView()}>
+    <Show when={store.args?.merge}>
       <MergeMenuContainer>
         <TooltipContainer ref={tooltipRef} direction="row" gap={5}>
           <TooltipButton onClick={onAccept}>

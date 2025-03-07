@@ -1,4 +1,4 @@
-import {createSignal, onMount, Show} from 'solid-js'
+import {createEffect, createSignal, onMount, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {EditorView} from '@codemirror/view'
 import * as Y from 'yjs'
@@ -31,7 +31,7 @@ export interface ApplyPanelState {
 }
 
 export const ApplyPanel = (p: {state: ApplyPanelState}) => {
-  const {codeService, fileService, toastService, treeService} = useState()
+  const {store, fileService, toastService, treeService} = useState()
   const [title, setTitle] = createSignal('')
   const [file, setFile] = createSignal<File>()
   const {open} = useOpen()
@@ -57,10 +57,10 @@ export const ApplyPanel = (p: {state: ApplyPanelState}) => {
     const f = file()
     if (!f) return
 
-    const newCode = p.state.editorView.state.doc.toString()
-    codeService.merge(f, newCode, p.state.range, () => {
-      toastService.open({message: 'All chunks applied ✅', duration: 2000})
-    })
+    const doc = p.state.editorView.state.doc.toString()
+    const range = p.state.range
+
+    open(f, {merge: {doc, range}})
   }
 
   const onCreateFile = async () => {
@@ -79,6 +79,19 @@ export const ApplyPanel = (p: {state: ApplyPanelState}) => {
     await treeService.add(file)
     open(file)
   }
+
+  createEffect<{id?: string; isMergeView: boolean}>((prev) => {
+    const currentFile = fileService.currentFile
+    const isMergeView = store.args?.merge !== undefined
+
+    // Don't show if merge is canceled by changing file
+    if (prev && currentFile?.id === prev.id && prev.isMergeView === true && isMergeView === false) {
+      toastService.open({message: 'All chunks applied ✅', duration: 2000})
+      open(fileService.currentFile)
+    }
+
+    return {id: currentFile?.id, isMergeView}
+  })
 
   return (
     <Portal mount={p.state.dom}>

@@ -1,12 +1,11 @@
 import {SetStoreFunction, Store, unwrap} from 'solid-js/store'
-import {createSignal} from 'solid-js'
 import {EditorView, ViewUpdate} from '@codemirror/view'
 import {getChunks, unifiedMergeView} from '@codemirror/merge'
 import * as Y from 'yjs'
 import {yCollab, ySyncFacet} from 'y-codemirror.next'
 import {debounce} from 'throttle-debounce'
 import {indentationMarkers} from '@replit/codemirror-indentation-markers'
-import {File, SelectionRange, State, VisualPositionRange} from '@/state'
+import {File, MergeState, SelectionRange, State, VisualPositionRange} from '@/state'
 import {copilot} from '@/codemirror/copilot'
 import {deleteText, insertText, writeFile} from '@/remote/editor'
 import {debug, info} from '@/remote/log'
@@ -16,7 +15,6 @@ import {CollabService} from './CollabService'
 import {AppService} from './AppService'
 import {CodeMirrorService} from './CodeMirrorService'
 import {PrettierService} from './PrettierService'
-import {TreeService} from './TreeService'
 import {ConfigService} from './ConfigService'
 
 export interface OpenFile {
@@ -25,15 +23,10 @@ export interface OpenFile {
   file?: string
   newFile?: string
   selection?: VisualPositionRange
+  merge?: MergeState
 }
 
 export class CodeService {
-  private mergeViewSignal = createSignal(false)
-
-  get isMergeView() {
-    return this.mergeViewSignal[0]
-  }
-
   constructor(
     private fileService: FileService,
     private appService: AppService,
@@ -74,7 +67,12 @@ export class CodeService {
       }
 
       const update = await FileService.activateFile(state, file.id)
-      update.args = {...update.args, selection: params.selection}
+      update.args = {
+        ...update.args,
+        selection: params.selection,
+        merge: params.merge,
+      }
+
       update.collab = CollabService.create(file.id, update.mode, params.share)
       const subdoc = CollabService.getSubdoc(update.collab.ydoc, file.id)
       if (text) this.updateText(file, subdoc, text)
@@ -125,51 +123,6 @@ export class CodeService {
     return this.prettierService.check(codeEditorView.state.doc.toString(), lang, config)
   }
 
-  merge(file: File, newDoc: string, range?: [number, number], done?: () => void) {
-    const subdoc = this.collabService.getSubdoc(file.id)
-    const type = subdoc.getText(file.id)
-    if (!type) return
-
-    const parent = file.codeEditorView?.dom.parentElement
-    if (!parent) return
-
-    file.codeEditorView?.destroy()
-
-    const original = type.toString()
-    const doc = range ? CodeMirrorService.replaceSlice(original, newDoc, range) : newDoc
-
-    console.log('aaa')
-    const editor = this.codeMirrorService.createEditor({
-      parent,
-      doc,
-      lang: file.codeLang,
-      extensions: [
-        indentationMarkers({markerType: 'fullScope'}),
-        unifiedMergeView({original}),
-        EditorView.updateListener.of((update) => {
-          const chunks = getChunks(update.view.state)
-          // check if all diffs resolved
-          if (!chunks?.chunks.length) {
-            const currentFile = this.fileService.findFileById(file.id)
-            if (!currentFile) return
-
-            const subdoc = this.collabService.getSubdoc(currentFile.id)
-            const type = subdoc.getText(currentFile.id)
-            type.delete(0, type.length)
-            type.insert(0, update.state.doc.toString())
-            this.updateEditorState(currentFile)
-            this.mergeViewSignal[1](false)
-            done?.()
-          }
-        }),
-      ],
-    })
-
-    const fileIndex = this.store.files.findIndex((f) => f.id === file.id)
-    this.setState('files', fileIndex, 'codeEditorView', editor.editorView)
-    this.mergeViewSignal[1](true)
-  }
-
   private updateEditorState(file: File, el?: Element) {
     if (!file.codeEditorView && !el) {
       return
@@ -182,28 +135,57 @@ export class CodeService {
     const parent = file.codeEditorView?.dom.parentElement ?? el
     file.codeEditorView?.destroy()
 
-    const editor = this.codeMirrorService.createEditor({
-      parent,
-      doc: type.toString(),
-      lang: file.codeLang,
-      path: file.path,
-      extensions: [
+    const merge = this.store.args?.merge
+
+    let doc = type.toString()
+    if (merge?.doc) {
+      doc = merge.range ? CodeMirrorService.replaceSlice(doc, merge.doc, merge.range) : merge.doc
+    }
+
+    const extensions = [...indentationMarkers({markerType: 'fullScope'})]
+
+    if (merge) {
+      extensions.push(
+        unifiedMergeView({original: type.toString()}),
+        EditorView.updateListener.of((update) => {
+          const chunks = getChunks(update.view.state)
+          // check if all diffs resolved
+          if (!chunks?.chunks.length) {
+            const subdoc = this.collabService.getSubdoc(file.id)
+            const type = subdoc.getText(file.id)
+            type.delete(0, type.length)
+            type.insert(0, update.state.doc.toString())
+            this.fileService.updateFile(file.id, {lastModified: new Date()})
+            this.setState('args', 'merge', undefined)
+          }
+        }),
+      )
+    } else {
+      extensions.push(
         EditorView.updateListener.of((update) => this.onUpdate(file, update)),
         yCollab(type, this.store.collab?.provider.awareness, {undoManager: false}),
-        indentationMarkers({markerType: 'fullScope'}),
-        ...(isTauri() ?
-          [
-            copilot({
-              configure: () => {
-                const {tabWidth, useTabs} = this.configService.prettier
-                const path = file.path ?? `buffer://${file.id}`
-                const language = file.codeEditorView?.contentDOM.dataset.language ?? ''
-                return {path, language, tabWidth, useTabs}
-              },
-            }),
-          ]
-        : []),
-      ],
+      )
+
+      if (isTauri()) {
+        extensions.push(
+          copilot({
+            configure: () => {
+              const {tabWidth, useTabs} = this.configService.prettier
+              const path = file.path ?? `buffer://${file.id}`
+              const language = file.codeEditorView?.contentDOM.dataset.language ?? ''
+              return {path, language, tabWidth, useTabs}
+            },
+          }),
+        )
+      }
+    }
+
+    const editor = this.codeMirrorService.createEditor({
+      parent,
+      doc,
+      lang: file.codeLang,
+      path: file.path,
+      extensions,
     })
 
     if (this.store.args?.selection) {
