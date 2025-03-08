@@ -4,6 +4,7 @@ import {EditorView, keymap} from '@codemirror/view'
 import {defaultKeymap} from '@codemirror/commands'
 import {markdown} from '@codemirror/lang-markdown'
 import {getTheme} from '@/codemirror/theme'
+import {onEnterDoubleNewline} from '@/codemirror/key-bindings'
 import {Message, useState} from '@/state'
 import {IconCheck, IconClose} from '../Icon'
 import {TooltipHelp} from '../TooltipHelp'
@@ -59,21 +60,7 @@ export const MessageInput = (props: Props) => {
       extensions: [
         theme,
         markdown(),
-        keymap.of([
-          {
-            key: 'Enter',
-            run: (editorView) => {
-              const selection = editorView.state.selection.main
-              if (!selection.empty) return true
-              if (selection.from === editorView.state.doc.length) {
-                onUpdate()
-                return true
-              }
-
-              return false
-            },
-          },
-        ]),
+        keymap.of([onEnterDoubleNewline(() => onUpdate())]),
         keymap.of(defaultKeymap),
         EditorView.lineWrapping,
       ],

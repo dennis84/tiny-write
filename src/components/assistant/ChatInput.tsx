@@ -5,6 +5,7 @@ import {EditorView, keymap, placeholder} from '@codemirror/view'
 import {defaultKeymap} from '@codemirror/commands'
 import {markdown} from '@codemirror/lang-markdown'
 import {getTheme} from '@/codemirror/theme'
+import {onEnterDoubleNewline} from '@/codemirror/key-bindings'
 import {Message, useState} from '@/state'
 import {IconAttachment, IconSend, IconStop} from '../Icon'
 import {Tooltip} from '../Tooltip'
@@ -49,7 +50,7 @@ export const ChatInput = (props: Props) => {
     const view = editorView()
     if (!view) return
 
-    const content = view.state.doc.toString()
+    const content = view.state.doc.toString().trim()
     if (!content) return
 
     view.dispatch({
@@ -75,21 +76,7 @@ export const ChatInput = (props: Props) => {
       extensions: [
         theme,
         markdown(),
-        keymap.of([
-          {
-            key: 'Enter',
-            run: (editorView) => {
-              const selection = editorView.state.selection.main
-              if (!selection.empty) return true
-              if (selection.from === editorView.state.doc.length) {
-                onSend()
-                return true
-              }
-
-              return false
-            },
-          },
-        ]),
+        keymap.of([onEnterDoubleNewline(() => onSend())]),
         placeholder('Ask Copilot'),
         keymap.of(defaultKeymap),
         EditorView.lineWrapping,

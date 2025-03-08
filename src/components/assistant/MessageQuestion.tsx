@@ -25,11 +25,11 @@ const QuestionActions = styled('div')`
 `
 
 const QuestionContainer = styled('div')`
-  display: flex;
+  display: grid;
+  grid-template-columns: auto 1fr;
   justify-items: flex-end;
   margin-left: auto;
   gap: 5px;
-  flex-wrap: wrap;
 `
 
 const QuestionBubble = styled('div')`
@@ -45,9 +45,11 @@ const QuestionBubble = styled('div')`
 `
 
 const PaginationContainer = styled('div')`
+  grid-column: 2 / 2;
   width: 100%;
   display: flex;
   justify-content: flex-end;
+  margin-left: auto;
 `
 
 interface Props {

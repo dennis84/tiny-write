@@ -16,6 +16,7 @@ import {findWords} from '@/codemirror/completion'
 import {mermaidKeywords} from '@/codemirror/mermaid'
 import {foldAll} from '@/codemirror/fold-all'
 import {copilot} from '@/codemirror/copilot'
+import {onEnterDoubleNewline} from '@/codemirror/key-bindings'
 import {isTauri} from '@/env'
 import {createExpandPlugin} from './expand'
 import {createMermaidPlugin} from './mermaid-preview'
@@ -67,28 +68,12 @@ export class CodeBlockView {
           return false
         },
       },
-      {
-        key: 'Enter',
-        run: (editorView) => {
-          const state = editorView.state
-          const selection = state.selection
-          const from = selection.main.head - 2
-          const to = selection.main.head
-
-          const isEnd = to === state.doc.length
-          const isNewLine = state.sliceDoc(from, to) === '\n\n'
-
-          if (isEnd && isNewLine) {
-            editorView.dispatch({changes: {from, to}})
-            if (exitCode(this.view.state, this.view.dispatch)) {
-              this.view.focus()
-              return true
-            }
-          }
-
-          return false
-        },
-      },
+      onEnterDoubleNewline(() => {
+        if (exitCode(this.view.state, this.view.dispatch)) {
+          this.view.focus()
+          return true
+        }
+      }),
       {
         key: 'Ctrl-Enter',
         run: () => {

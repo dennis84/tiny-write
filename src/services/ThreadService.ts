@@ -335,7 +335,7 @@ export class ThreadService {
       parentId,
       messages: [
         {
-          role: 'user',
+          role: 'system',
           content: instructions,
         },
         ...messages,
