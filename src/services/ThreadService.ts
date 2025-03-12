@@ -1,11 +1,14 @@
+import {createSignal} from 'solid-js'
 import {SetStoreFunction, Store, unwrap} from 'solid-js/store'
 import {v4 as uuidv4} from 'uuid'
-import {Message, State, Thread} from '@/state'
+import {Message, MessageType, State, Thread} from '@/state'
 import {DB} from '@/db'
 import {info} from '@/remote/log'
 import {createTreeStore, TreeItem} from '@/tree'
 import {ChatMessage, CopilotService} from './CopilotService'
-import {createSignal} from 'solid-js'
+import {FileService} from './FileService'
+import { title } from 'process'
+import { createCodeFence } from '@/components/assistant/util'
 
 type PathMap = Map<string | undefined, string>
 
@@ -21,6 +24,7 @@ export class ThreadService {
     private store: Store<State>,
     private setState: SetStoreFunction<State>,
     private copilotService: CopilotService,
+    private fileService: FileService,
   ) {}
 
   get currentThread(): Thread | undefined {
@@ -112,23 +116,6 @@ export class ThreadService {
     const message = this.store.threads[currentThreadIndex].messages[messageIndex]
     this.messageTree.updateValue(message)
   }
-
-  // async updateMessage(message: Message) {
-  //   const currentThread = this.currentThread
-  //   if (!currentThread) return
-  //
-  //   info(`Update message (message=${JSON.stringify(message)})`)
-  //
-  //   const currentThreadIndex = this.currentThreadIndex
-  //
-  //   const existingIndex = currentThread.messages.findIndex((m) => m.id === message.id)
-  //   if (existingIndex !== -1) {
-  //     this.setState('threads', currentThreadIndex, 'messages', existingIndex, message)
-  //     this.setState('threads', currentThreadIndex, 'lastModified', new Date())
-  //   }
-  //
-  //   await this.saveThread()
-  // }
 
   async removeMessage(message: Message) {
     const currentThread = this.currentThread
@@ -341,5 +328,37 @@ export class ThreadService {
         ...messages,
       ],
     }
+  }
+
+  async insertAutoContext() {
+    const currentFile = this.fileService.currentFile
+    const editorView = currentFile?.codeEditorView
+
+    const currentThread = this.currentThread
+
+    if (!editorView || !currentThread) return
+
+    const existing = currentThread.messages.find((m) => m.fileId === currentFile.id)
+    const content = createCodeFence({
+      code: editorView.state.doc.toString(),
+      id: currentFile.id,
+      lang: currentFile.codeLang,
+      path: currentFile.path,
+    })
+
+    if (existing?.content === content) {
+      // Skip is same content already in thread
+      return
+    }
+
+    const message: Message = {
+      id: uuidv4(),
+      role: 'user',
+      fileId: currentFile.id,
+      type: MessageType.File,
+      content,
+    }
+
+    await this.addMessage(message)
   }
 }

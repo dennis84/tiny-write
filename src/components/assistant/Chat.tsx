@@ -1,6 +1,7 @@
 import {createEffect, createSignal, Match, onCleanup, onMount, Show, Switch} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {v4 as uuidv4} from 'uuid'
+import {ScrollGesture} from '@use-gesture/vanilla'
 import {Message, useState} from '@/state'
 import {Chunk} from '@/services/CopilotService'
 import {itemCss, Text} from '../menu/Style'
@@ -15,7 +16,7 @@ import {MessageAnswer} from './MessageAnswer'
 import {Suggestions} from './Suggestions'
 import {CurrentFileButton} from './attachments/CurrentFile'
 import {SelectionButton} from './attachments/Selection'
-import {ScrollGesture} from '@use-gesture/vanilla'
+import {AutoContextButton} from './attachments/AutoContext'
 
 const EmptyContainer = styled('div')`
   width: 100%;
@@ -54,7 +55,7 @@ export const Chat = () => {
   let drawerRef!: HTMLDivElement
   let inputRef!: HTMLDivElement
 
-  const {aiService, copilotService, threadService, toastService} = useState()
+  const {store, aiService, copilotService, threadService, toastService} = useState()
   const [focus, setFocus] = createSignal(true)
   const [scrollDown, setScrollDown] = createSignal(false)
 
@@ -77,6 +78,8 @@ export const Chat = () => {
 
   const sendMessages = async () => {
     const currentThread = threadService.currentThread
+    await threadService.insertAutoContext()
+
     const {messages, nextId, parentId} = threadService.getMessages()
     if (!currentThread || !messages) return
 
@@ -136,8 +139,8 @@ export const Chat = () => {
     focusInput()
   }
 
-  const onDrawerResized = (width: number) => {
-    aiService.setSidebarWidth(width)
+  const onDrawerResized = async (width: number) => {
+    await aiService.setSidebarWidth(width)
   }
 
   const onRegenerate = (message: Message) => {
@@ -171,9 +174,12 @@ export const Chat = () => {
 
   const Empty = () => (
     <EmptyContainer>
-      <Text>Add to context:</Text>
-      <CurrentFileButton onAttachment={onInputMessage} />
-      <SelectionButton onAttachment={onInputMessage} />
+      <Show when={!store.ai?.autoContext}>
+        <Text>Add to context:</Text>
+        <AutoContextButton onAttachment={onInputMessage} />
+        <CurrentFileButton onAttachment={onInputMessage} />
+        <SelectionButton onAttachment={onInputMessage} />
+      </Show>
     </EmptyContainer>
   )
 

@@ -13,9 +13,15 @@ export class AiService {
     private setState: SetStoreFunction<State>,
   ) {}
 
-  setSidebarWidth(width: number) {
+  async setSidebarWidth(width: number) {
     this.setState('ai', 'sidebarWidth', width)
     const ai = unwrap(this.store.ai)
-    if (ai) DB.setAi(ai)
+    if (ai) await DB.setAi(ai)
+  }
+
+  async setAutoContext(autoContext: boolean) {
+    this.setState('ai', 'autoContext', autoContext)
+    const ai = unwrap(this.store.ai)
+    if (ai) await DB.setAi(ai)
   }
 }
