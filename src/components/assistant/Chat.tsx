@@ -4,10 +4,11 @@ import {v4 as uuidv4} from 'uuid'
 import {ScrollGesture} from '@use-gesture/vanilla'
 import {Message, useState} from '@/state'
 import {Chunk} from '@/services/CopilotService'
-import {itemCss, Text} from '../menu/Style'
+import {itemCss} from '../menu/Style'
 import {IconAdd, IconClose, IconKeyboardArrowDown} from '../Icon'
 import {Button, ButtonGroup, IconButton} from '../Button'
 import {Drawer} from '../Drawer'
+import {TooltipDivider} from '../Tooltip'
 import {ChatInput} from './ChatInput'
 import {ModelSelect} from './ModelSelect'
 import {Threads} from './Threads'
@@ -20,18 +21,6 @@ import {AutoContextButton} from './attachments/AutoContext'
 
 const EmptyContainer = styled('div')`
   width: 100%;
-  p {
-    margin-bottom: 10px;
-  }
-  div {
-    ${itemCss}
-    cursor: var(--cursor-pointer);
-    &:hover {
-      color: var(--primary-background);
-      background: var(--foreground-10);
-      border-radius: var(--border-radius-small);
-    }
-  }
 `
 
 const Messages = styled('div')`
@@ -175,11 +164,11 @@ export const Chat = () => {
   const Empty = () => (
     <EmptyContainer>
       <Show when={!store.ai?.autoContext}>
-        <Text>Add to context:</Text>
-        <AutoContextButton onAttachment={onInputMessage} />
         <CurrentFileButton onAttachment={onInputMessage} />
         <SelectionButton onAttachment={onInputMessage} />
+        <TooltipDivider />
       </Show>
+      <AutoContextButton />
     </EmptyContainer>
   )
 

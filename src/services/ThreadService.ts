@@ -1,4 +1,4 @@
-import {createSignal} from 'solid-js'
+import {batch, createSignal} from 'solid-js'
 import {SetStoreFunction, Store, unwrap} from 'solid-js/store'
 import {v4 as uuidv4} from 'uuid'
 import {Message, MessageType, State, Thread} from '@/state'
@@ -7,8 +7,7 @@ import {info} from '@/remote/log'
 import {createTreeStore, TreeItem} from '@/tree'
 import {ChatMessage, CopilotService} from './CopilotService'
 import {FileService} from './FileService'
-import { title } from 'process'
-import { createCodeFence } from '@/components/assistant/util'
+import {createCodeFence} from '@/components/assistant/util'
 
 type PathMap = Map<string | undefined, string>
 
@@ -27,6 +26,10 @@ export class ThreadService {
     private fileService: FileService,
   ) {}
 
+  static createId() {
+    return uuidv4()
+  }
+
   get currentThread(): Thread | undefined {
     return this.store.threads.find((t) => t.active)
   }
@@ -41,7 +44,7 @@ export class ThreadService {
 
   newThread() {
     const thread: Thread = {
-      id: uuidv4(),
+      id: ThreadService.createId(),
       messages: [],
       active: true,
     }
@@ -220,7 +223,7 @@ export class ThreadService {
     if (message.role === 'user') {
       const newMessage = {
         ...message,
-        id: uuidv4(),
+        id: ThreadService.createId(),
         leftId: message.id,
       }
 
@@ -237,7 +240,7 @@ export class ThreadService {
 
       await this.saveThread()
     } else if (message.role === 'assistant') {
-      this.updatePath(message.parentId, uuidv4())
+      this.updatePath(message.parentId, ThreadService.createId())
     }
   }
 
@@ -338,7 +341,19 @@ export class ThreadService {
 
     if (!editorView || !currentThread) return
 
-    const existing = currentThread.messages.find((m) => m.fileId === currentFile.id)
+    const messages: Message[] = []
+    const pathMap = this.pathMap()
+    let nextId =
+      pathMap.get(undefined) ??
+      this.messageTree.rootItemIds[this.messageTree.rootItemIds.length - 1]
+    let next
+
+    while ((next = this.messageTree.getItem(nextId))) {
+      messages.push(next.value)
+      nextId = pathMap.get(next.id) ?? next.childrenIds[next.childrenIds.length - 1]
+    }
+
+    const existing = messages.find((m) => m.fileId === currentFile.id)
     const content = createCodeFence({
       code: editorView.state.doc.toString(),
       id: currentFile.id,
@@ -351,14 +366,40 @@ export class ThreadService {
       return
     }
 
+    const before = messages[messages.length - 1]
+
     const message: Message = {
-      id: uuidv4(),
+      id: ThreadService.createId(),
       role: 'user',
       fileId: currentFile.id,
       type: MessageType.File,
       content,
+      parentId: before.parentId,
     }
 
-    await this.addMessage(message)
+    info(`Auto add context message (message=${JSON.stringify(message)})`)
+
+    const updates: string[] = []
+    updates.push(...this.messageTree.add(message))
+    updates.push(...this.messageTree.move(before.id, message.id))
+
+    const updatedMessages = currentThread.messages.map((message) => {
+      if (updates.includes(message.id)) {
+        const item = this.messageTree.getItem(message.id)
+        return {...message, parentId: item?.parentId}
+      } else {
+        return message
+      }
+    })
+
+    updatedMessages.push(message)
+
+    this.setState('threads', this.currentThreadIndex, (prev) => ({
+      ...prev,
+      messages: updatedMessages,
+      lastModified: new Date(),
+    }))
+
+    await this.saveThread()
   }
 }

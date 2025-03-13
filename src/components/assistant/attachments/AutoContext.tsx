@@ -1,47 +1,24 @@
 import {Show} from 'solid-js'
-import {v4 as uuidv4} from 'uuid'
-import {Message, MessageType, useState} from '@/state'
-import {IconCodeBlocks, IconToggleOn} from '@/components/Icon'
+import {useState} from '@/state'
+import {IconToggleOff, IconToggleOn} from '@/components/Icon'
 import {TooltipButton} from '@/components/Tooltip'
-import {createCodeFence, useCurrentFile} from '../util'
+import {useCurrentFile} from '../util'
 import {TooltipHelp} from '@/components/TooltipHelp'
 
-interface Props {
-  onAttachment: (message: Message) => void
-}
-
-export const AutoContextButton = (props: Props) => {
+export const AutoContextButton = () => {
   const currentFile = useCurrentFile()
-  const {aiService} = useState()
+  const {store, aiService} = useState()
 
   const onClick = async () => {
-    await aiService.setAutoContext(true)
-
-    // const editorView = currentFile()?.codeEditorView
-    // if (!editorView) return
-    //
-    // const content = createCodeFence({
-    //   id: currentFile()?.id,
-    //   code: editorView.state.doc.toString(),
-    //   lang: currentFile()?.codeLang,
-    //   path: currentFile()?.path,
-    // })
-    //
-    // props.onAttachment({
-    //   id: uuidv4(),
-    //   role: 'user',
-    //   content,
-    //   type: MessageType.File,
-    //   fileId: currentFile()?.id,
-    // })
+    await aiService.setAutoContext(!store.ai?.autoContext)
   }
 
   return (
     <Show when={currentFile()?.code}>
       <TooltipHelp title="Adds the current file to context automatically">
         <TooltipButton onClick={onClick}>
-          <IconToggleOn />
-          Switch on auto context
+          {store.ai?.autoContext ? <IconToggleOff /> : <IconToggleOn />}
+          Switch auto context {store.ai?.autoContext ? 'off' : 'on'}
         </TooltipButton>
       </TooltipHelp>
     </Show>

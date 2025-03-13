@@ -1,5 +1,5 @@
 import {beforeEach, expect, test, vi} from 'vitest'
-import {mock, mockDeep} from 'vitest-mock-extended'
+import {mock} from 'vitest-mock-extended'
 import {createStore} from 'solid-js/store'
 import {createState, File, Message} from '@/state'
 import {ThreadService} from '@/services/ThreadService'
@@ -7,10 +7,8 @@ import {CopilotService} from '@/services/CopilotService'
 import {FileService} from '@/services/FileService'
 import {createYUpdate} from '../util/codemirror-util'
 import {EditorView} from '@codemirror/view'
-import {Portal} from 'solid-js/web'
-import {state} from 'mermaid/dist/rendering-util/rendering-elements/shapes/state'
 import {EditorState, Text} from '@codemirror/state'
-import {PI} from '@tldraw/editor'
+import {expectTree} from '../util/tree'
 
 beforeEach(() => {
   vi.restoreAllMocks()
@@ -479,18 +477,20 @@ test('insertAutoContext', async () => {
     path: '/path/to/file.ts',
   })
 
+  vi.spyOn(ThreadService, 'createId').mockReturnValue('2')
+
   Object.defineProperty(fileService, 'currentFile', {get: vi.fn().mockReturnValue(currentFile)})
 
   await service.insertAutoContext()
-
-  expect(store.threads[0].messages.length).toBe(2)
-
-  expect(store.threads[0].messages[0].content).toBe('test')
-  expect(store.threads[0].messages[1].content).toBe('```typescript id=1\n123\n```')
-
   await service.insertAutoContext()
 
-  expect(store.threads[0].messages.length).toBe(2)
+  expectTree(
+    service.messageTree,
+    `
+    └ 2 (parentId=, leftId=1)
+      └ 1 (parentId=2, leftId=)
+    `,
+  )
 })
 
 test('insertAutoContext - update', async () => {
@@ -512,9 +512,15 @@ test('insertAutoContext - update', async () => {
         lastModified,
         messages: [
           {id: '1', role: 'user', content: 'message1'},
-          {id: '2', role: 'user', content: '```typescript id=1\n123\n```', fileId: '1'},
-          {id: '3', role: 'assistant', content: 'response'},
-          {id: '4', role: 'user', content: 'message2'},
+          {
+            id: '2',
+            role: 'user',
+            content: '```typescript id=1\n123\n```',
+            fileId: '1',
+            parentId: '1',
+          },
+          {id: '3', role: 'assistant', content: 'response', parentId: '2'},
+          {id: '4', role: 'user', content: 'message2', parentId: '3'},
         ],
       },
     ],
@@ -541,13 +547,18 @@ test('insertAutoContext - update', async () => {
 
   Object.defineProperty(fileService, 'currentFile', {get: vi.fn().mockReturnValue(currentFile)})
 
+  vi.spyOn(ThreadService, 'createId').mockReturnValue('5')
+
   await service.insertAutoContext()
 
-  expect(store.threads[0].messages.length).toBe(5)
-
-  expect(store.threads[0].messages[0].content).toBe('message1')
-  expect(store.threads[0].messages[1].content).toBe('```typescript id=1\n123\n```')
-  expect(store.threads[0].messages[2].content).toBe('response')
-  expect(store.threads[0].messages[3].content).toBe('message2')
-  expect(store.threads[0].messages[4].content).toBe('```typescript id=1\n123\n456\n```')
+  expectTree(
+    service.messageTree,
+    `
+    └ 1 (parentId=, leftId=)
+      └ 2 (parentId=1, leftId=)
+        └ 3 (parentId=2, leftId=)
+          └ 5 (parentId=3, leftId=4)
+            └ 4 (parentId=5, leftId=)
+    `,
+  )
 })

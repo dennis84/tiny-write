@@ -11,7 +11,7 @@ import {getLanguageConfig} from '@/codemirror/highlight'
 import {copy} from '@/remote/clipboard'
 import {TreeItem} from '@/tree'
 import {ButtonGroup, IconButton} from '../Button'
-import {IconAiAssistant, IconContentCopy, IconRefresh, Spinner} from '../Icon'
+import {IconContentCopy, IconRefresh, Spinner} from '../Icon'
 import {TooltipHelp} from '../TooltipHelp'
 import {chatBubble} from './Style'
 import {parseCodeBlockAttrs} from './util'
@@ -123,9 +123,6 @@ export const MessageAnswer = (props: Props) => {
 
   return (
     <AnswerBubble data-testid="answer_bubble">
-      <div>
-        <IconAiAssistant />
-      </div>
       <Html content={html() ?? props.message.value.content} />
       <ButtonGroup>
         <TooltipHelp title="Copy">

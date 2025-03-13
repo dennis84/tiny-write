@@ -3,6 +3,8 @@ import {mock} from 'vitest-mock-extended'
 import {createStore} from 'solid-js/store'
 import {TreeService} from '@/services/TreeService'
 import {Canvas, ElementType, File, createState} from '@/state'
+import {FileService} from '@/services/FileService'
+import {CanvasService} from '@/services/CanvasService'
 import {expectTree} from '../util/tree'
 
 beforeEach(() => {
@@ -37,7 +39,9 @@ test('init', () => {
 
   const initial = createState({files, canvases})
   const [store, setState] = createStore(initial)
-  const service = new TreeService(store, setState)
+  const fileService = mock<FileService>()
+  const canvasService = mock<CanvasService>()
+  const service = new TreeService(store, setState, fileService, canvasService)
 
   expectTree(
     service.tree,
@@ -63,7 +67,9 @@ test('update', () => {
 
   const initial = createState()
   const [store, setState] = createStore(initial)
-  const service = new TreeService(store, setState)
+  const fileService = mock<FileService>()
+  const canvasService = mock<CanvasService>()
+  const service = new TreeService(store, setState, fileService, canvasService)
 
   setState({files, canvases})
   service.updateAll()
@@ -88,7 +94,9 @@ test('collapse', async () => {
 
   const initial = createState({files})
   const [store, setState] = createStore(initial)
-  const service = new TreeService(store, setState)
+  const fileService = mock<FileService>()
+  const canvasService = mock<CanvasService>()
+  const service = new TreeService(store, setState, fileService, canvasService)
 
   expectTree(
     service.tree,
