@@ -27,6 +27,7 @@ import MaterialSymbolsDeleteForever from '~icons/material-symbols/delete-forever
 import MaterialSymbolsCenterFocusWeakOutline from '~icons/material-symbols/center-focus-weak-outline?width=24px&height=24px'
 import MaterialSymbolsPostAdd from '~icons/material-symbols/post-add?width=24px&height=24px'
 import MaterialSymbolsEdit from '~icons/material-symbols/edit?width=24px&height=24px'
+import MaterialSymbolsEditSquareOutline from '~icons/material-symbols/edit-square-outline'
 import MaterialSymbolsCodeBlocks from '~icons/material-symbols/code-blocks?width=24px&height=24px'
 import MaterialSymbolsContentCopy from '~icons/material-symbols/content-copy?width=24px&height=24px'
 import MaterialSymbolsUndo from '~icons/material-symbols/undo?width=24px&height=24px'
@@ -308,6 +309,12 @@ export const IconPostAdd = () => (
 export const IconEdit = () => (
   <SvgIcon>
     <MaterialSymbolsEdit />
+  </SvgIcon>
+)
+
+export const IconEditSquare = () => (
+  <SvgIcon>
+    <MaterialSymbolsEditSquareOutline />
   </SvgIcon>
 )
 

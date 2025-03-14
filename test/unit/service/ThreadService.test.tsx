@@ -8,7 +8,7 @@ import {FileService} from '@/services/FileService'
 import {createYUpdate} from '../util/codemirror-util'
 import {EditorView} from '@codemirror/view'
 import {EditorState, Text} from '@codemirror/state'
-import {expectTree} from '../util/tree'
+import {expectTree, printTree} from '../util/tree'
 
 beforeEach(() => {
   vi.restoreAllMocks()
@@ -487,8 +487,8 @@ test('insertAutoContext', async () => {
   expectTree(
     service.messageTree,
     `
-    └ 2 (parentId=, leftId=1)
-      └ 1 (parentId=2, leftId=)
+    └ 1 (parentId=, leftId=)
+      └ 2 (parentId=1, leftId=)
     `,
   )
 })
@@ -557,8 +557,74 @@ test('insertAutoContext - update', async () => {
     └ 1 (parentId=, leftId=)
       └ 2 (parentId=1, leftId=)
         └ 3 (parentId=2, leftId=)
-          └ 5 (parentId=3, leftId=4)
-            └ 4 (parentId=5, leftId=)
+          └ 4 (parentId=3, leftId=)
+            └ 5 (parentId=4, leftId=)
     `,
   )
 })
+
+test('insertAutoContext - regenerate', async () => {
+  const initial = createState({
+    files: [
+      {
+        id: '1',
+        ydoc: createYUpdate('1', 'Code'),
+        versions: [],
+        lastModified,
+        active: true,
+        code: true,
+      },
+    ],
+    threads: [
+      {
+        id: '1',
+        active: true,
+        lastModified,
+        messages: [
+          {id: '1', role: 'user', content: 'message1'},
+          {id: '2', role: 'assistant', content: 'response', parentId: '1'},
+        ],
+      },
+    ],
+  })
+
+  const [store, setState] = createStore(initial)
+  const copilotService = mock<CopilotService>()
+  const fileService = mock<FileService>()
+  const service = new ThreadService(store, setState, copilotService, fileService)
+  service.messageTree.updateAll(store.threads[0].messages)
+
+  const codeEditorView = mock<EditorView>({
+    state: mock<EditorState>({
+      doc: Text.of(['123']),
+    }),
+  })
+
+  const currentFile = mock<File>({
+    codeEditorView: codeEditorView as any,
+    id: '1',
+    codeLang: 'typescript',
+    path: '/path/to/file.ts',
+  })
+
+  Object.defineProperty(fileService, 'currentFile', {get: vi.fn().mockReturnValue(currentFile)})
+
+  let nextId = 3
+  vi.spyOn(ThreadService, 'createId').mockImplementation(() => String(nextId++))
+
+  await service.regenerate({id: '1', role: 'user', content: 'message2'})
+  await service.insertAutoContext()
+
+  expectTree(
+    service.messageTree,
+    `
+    └ 1 (parentId=, leftId=)
+      └ 2 (parentId=1, leftId=)
+    └ 3 (parentId=, leftId=1)
+      └ 4 (parentId=3, leftId=)
+    `,
+  )
+
+  expect(service.pathMap().get(undefined)).toBe('3')
+})
+

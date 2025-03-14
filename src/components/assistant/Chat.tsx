@@ -4,7 +4,6 @@ import {v4 as uuidv4} from 'uuid'
 import {ScrollGesture} from '@use-gesture/vanilla'
 import {Message, useState} from '@/state'
 import {Chunk} from '@/services/CopilotService'
-import {itemCss} from '../menu/Style'
 import {IconAdd, IconClose, IconKeyboardArrowDown} from '../Icon'
 import {Button, ButtonGroup, IconButton} from '../Button'
 import {Drawer} from '../Drawer'
@@ -18,6 +17,7 @@ import {Suggestions} from './Suggestions'
 import {CurrentFileButton} from './attachments/CurrentFile'
 import {SelectionButton} from './attachments/Selection'
 import {AutoContextButton} from './attachments/AutoContext'
+import {MessageAttachment} from './MessageAttachment'
 
 const EmptyContainer = styled('div')`
   width: 100%;
@@ -177,6 +177,9 @@ export const Chat = () => {
       {(message) => (
         <>
           <Switch>
+            <Match when={message().value.type}>
+              <MessageAttachment message={message()} />
+            </Match>
             <Match when={message().value.role === 'user'}>
               <MessageQuestion
                 message={message()}

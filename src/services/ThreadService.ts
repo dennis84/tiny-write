@@ -374,19 +374,22 @@ export class ThreadService {
       fileId: currentFile.id,
       type: MessageType.File,
       content,
-      parentId: before.parentId,
+      parentId: before.id,
     }
 
     info(`Auto add context message (message=${JSON.stringify(message)})`)
 
     const updates: string[] = []
     updates.push(...this.messageTree.add(message))
-    updates.push(...this.messageTree.move(before.id, message.id))
 
     const updatedMessages = currentThread.messages.map((message) => {
       if (updates.includes(message.id)) {
         const item = this.messageTree.getItem(message.id)
-        return {...message, parentId: item?.parentId}
+        return {
+          ...message,
+          parentId: item?.parentId,
+          leftId: item?.leftId,
+        }
       } else {
         return message
       }
