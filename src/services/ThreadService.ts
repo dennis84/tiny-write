@@ -317,7 +317,7 @@ export class ThreadService {
       'If attributes are included in fenced code blocks in the user message, keep the attributes exactly as they are. INPUT: ```rust id=1 range=1-5 file=filename.rs ... OUTPUT: ```rust id=1 range=1-5 file=filename.rs'
     const instruction2 = 'Keep the indentation in code blocks as in the user message.'
     const instruction3 =
-      'If the attributes in fenced code blocks in the user message does not contain a file or id, try to guess a filename and add to the fenced code block: INPUT: ```ts ... OUTPUT: ```ts file=components/App.tsx'
+      'If the user message contains a fenced code block and the attributes does not contain a file or id, try to guess a filename and add to the fenced code block: INPUT: ```ts ... OUTPUT: ```ts file=components/App.tsx'
     const instructions = `${instruction1} ${instruction2} ${instruction3}`
 
     return {

@@ -67,7 +67,10 @@ export const Chat = () => {
 
   const sendMessages = async () => {
     const currentThread = threadService.currentThread
-    await threadService.insertAutoContext()
+
+    if (store.ai?.autoContext) {
+      await threadService.insertAutoContext()
+    }
 
     const {messages, nextId, parentId} = threadService.getMessages()
     if (!currentThread || !messages) return

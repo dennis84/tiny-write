@@ -3,8 +3,6 @@ import {Portal} from 'solid-js/web'
 import {styled} from 'solid-styled-components'
 import {Node} from 'prosemirror-model'
 import {EditorState, NodeSelection, TextSelection} from 'prosemirror-state'
-// @ts-ignore
-import {__serializeForClipboard} from 'prosemirror-view'
 import {File, useState} from '@/state'
 import {IconDragIndicator} from '../Icon'
 import {BlockTooltip} from './BlockTooltip'
@@ -188,7 +186,7 @@ export const BlockHandle = (props: Props) => {
     editorView.dispatch(tr)
 
     const slice = editorView.state.selection.content()
-    const {text, dom} = __serializeForClipboard(editorView, slice)
+    const {text, dom} = editorView.serializeForClipboard(slice)
 
     e.dataTransfer.clearData()
     e.dataTransfer.setData('text/html', dom.innerHTML)
