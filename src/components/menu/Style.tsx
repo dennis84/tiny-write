@@ -2,7 +2,6 @@ import {css, styled} from 'solid-styled-components'
 import {FULL_WIDTH} from '../Layout'
 
 export const Container = styled('div')`
-  position: relative;
   display: flex;
   flex-shrink: 1;
   flex-grow: 1;

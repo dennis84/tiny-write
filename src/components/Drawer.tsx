@@ -21,19 +21,27 @@ const DrawerEl = styled('div')`
 `
 
 const ResizeHandle = styled('div')`
-  position: fixed;
+  position: absolute;
   top: 0;
   bottom: 0;
-  width: 15px;
   cursor: var(--cursor-grab);
   touch-action: none;
   z-index: 1;
-  margin-left: -20px;
-  &:hover {
-    border-left: 2px solid var(--primary-background-50);
+  padding: 0 20px;
+  margin-left: -40px;
+  display: flex;
+  justify-content: center;
+  > div {
+    background: var(--primary-background-50);
+    width: 2px;
+    display: none;
+  }
+  &:hover div {
+    display: block;
   }
   &:active {
     cursor: var(--cursor-grabbed);
+    opacity: 0;
   }
 `
 
@@ -54,7 +62,6 @@ export const Drawer = (props: Props) => {
   onMount(() => {
     const gestrure = new DragGesture(resizeHandleRef, ({delta: [x]}) => {
       const w = ref.offsetWidth - x
-      resizeHandleRef.style.left = `${window.innerWidth - w + 20}px`
       local.onResized?.(w)
     })
 
@@ -74,7 +81,9 @@ export const Drawer = (props: Props) => {
       }}
     >
       {local.children}
-      <ResizeHandle ref={resizeHandleRef} />
+      <ResizeHandle ref={resizeHandleRef}>
+        <div />
+      </ResizeHandle>
     </DrawerEl>
   )
 }

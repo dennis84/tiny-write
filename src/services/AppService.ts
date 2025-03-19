@@ -103,7 +103,7 @@ export class AppService {
     if (!this.store.window) return
     const updatedWindow = unwrap(this.store.window)
     await DB.setWindow(updatedWindow)
-    info('Saved window state')
+    info(`Saved window state (window=${JSON.stringify(window)})`)
   }
 
   setSelecting(selecting: boolean) {
