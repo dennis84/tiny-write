@@ -1,4 +1,4 @@
-import {batch, createSignal} from 'solid-js'
+import {createSignal} from 'solid-js'
 import {SetStoreFunction, Store, unwrap} from 'solid-js/store'
 import {v4 as uuidv4} from 'uuid'
 import {Message, MessageType, State, Thread} from '@/state'

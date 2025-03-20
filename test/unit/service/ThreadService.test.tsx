@@ -8,7 +8,7 @@ import {FileService} from '@/services/FileService'
 import {createYUpdate} from '../util/codemirror-util'
 import {EditorView} from '@codemirror/view'
 import {EditorState, Text} from '@codemirror/state'
-import {expectTree, printTree} from '../util/tree'
+import {expectTree} from '../util/tree'
 
 beforeEach(() => {
   vi.restoreAllMocks()
