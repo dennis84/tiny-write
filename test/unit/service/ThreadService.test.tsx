@@ -338,7 +338,7 @@ test('regenerate - user message', async () => {
   expect(service.messageTree.rootItemIds).toHaveLength(2)
 
   const {messages} = service.getMessages()
-  expect(messages[1].content).toBe('111')
+  expect(messages[0].content).toBe('111')
 })
 
 test('regenerate - assistant message', async () => {
@@ -366,7 +366,7 @@ test('regenerate - assistant message', async () => {
   await service.regenerate(store.threads[0].messages[1])
 
   const {messages, nextId} = service.getMessages()
-  expect(messages).toHaveLength(2)
+  expect(messages).toHaveLength(1)
   expect(nextId).toBeDefined()
 })
 
@@ -411,8 +411,9 @@ test.each<[Message[], number]>([
       {id: '1', role: 'user', content: ''},
       {id: '2', parentId: '1', role: 'user', content: '', error: 'error'},
     ],
-    2,
+    1,
   ],
+  [[{id: '1', role: 'user', content: '```'}], 2],
 ])('getMessages', async (messages, count) => {
   const initial = createState({
     threads: [

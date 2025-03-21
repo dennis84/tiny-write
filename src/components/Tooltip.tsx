@@ -27,7 +27,7 @@ export const TooltipContainer = styled('div')`
   display: flex;
   opacity: 0;
   flex-direction: ${(p: any) => `${p.direction ?? 'column'}`};
-  gap: ${(p: any) => `${p.gap}px`};
+  gap: ${(p: any) => `${p.gap ?? 0}px`};
   animation: fadeIn 0.3s forwards;
   animation-delay: ${(p: any) => `${p.delay ?? 0}ms`};
   &::-webkit-scrollbar {
@@ -102,8 +102,8 @@ interface Props {
 }
 
 export const Tooltip = (props: Props) => {
-  let tooltipRef: HTMLDivElement | undefined
-  let arrowRef: HTMLSpanElement | undefined
+  let tooltipRef!: HTMLDivElement
+  let arrowRef!: HTMLSpanElement
   const cleanup = createMutable<Cleanup>({})
 
   const onBackdropClick = (e: MouseEvent) => {
@@ -111,6 +111,16 @@ export const Tooltip = (props: Props) => {
     e.stopImmediatePropagation()
     props.onClose?.()
   }
+
+  const onKeyDown = (e: KeyboardEvent) => {
+    if (e.key === 'Escape') props.onClose?.()
+  }
+
+  onMount(() => {
+    document.addEventListener('keydown', onKeyDown)
+  })
+
+  onCleanup(() => document.removeEventListener('keydown', onKeyDown))
 
   const CloseOnBackgroundClick = () => {
     const listener = (e: MouseEvent) => {
@@ -142,8 +152,8 @@ export const Tooltip = (props: Props) => {
         middleware: [
           offset(props.offset ?? 10),
           flip({fallbackPlacements}),
-          shift({padding: 10}),
-          arrow({element: arrowRef!}),
+          shift({padding: {left: 10, right: 10}}),
+          arrow({element: arrowRef, padding: 20}),
           size({
             apply({availableWidth, availableHeight, elements}) {
               // Change styles, e.g.

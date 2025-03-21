@@ -216,6 +216,7 @@ export const Chat = () => {
       data-testid="ai_assistant_drawer"
     >
       <ButtonGroup>
+        <Threads onChange={onChangeThread} />
         <Show when={threadService.currentThread?.messages?.length}>
           <Button onClick={onClearThread}>
             <IconClose /> Clear
@@ -224,7 +225,6 @@ export const Chat = () => {
             <IconAdd /> New
           </Button>
         </Show>
-        <Threads onChange={onChangeThread} />
         <ModelSelect onChange={() => focusInput()} />
       </ButtonGroup>
       <Messages data-testid="messages">

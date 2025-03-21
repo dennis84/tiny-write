@@ -1,4 +1,4 @@
-import {JSX, Show, createEffect, onCleanup} from 'solid-js'
+import {JSX, Show} from 'solid-js'
 import {Mode, useState} from '@/state'
 import {isTauri, isMac, mod, shortHash, version, VERSION_URL, isDev} from '@/env'
 import {quit} from '@/remote/app'
@@ -101,17 +101,6 @@ export const Menu = () => {
   const maybeHide = () => {
     if (window.innerWidth <= FULL_WIDTH) menuService.hide()
   }
-
-  const onKeyDown = (e: KeyboardEvent) => {
-    if (e.key === 'Escape') menuService.hide()
-  }
-
-  createEffect(() => {
-    if (!menuService.menu()) return
-    document.addEventListener('keydown', onKeyDown)
-  })
-
-  onCleanup(() => document.removeEventListener('keydown', onKeyDown))
 
   const showCodeFormat = () => {
     const currentFile = fileService.currentFile

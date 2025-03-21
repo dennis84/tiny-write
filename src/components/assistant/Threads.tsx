@@ -57,7 +57,7 @@ export const Threads = (props: Props) => {
   }
 
   const onSelect = (id: string) => {
-    closeMenu()
+    setSubmenuTooltipAnchor(undefined)
     threadService.open(id)
     props.onChange()
   }
@@ -95,7 +95,7 @@ export const Threads = (props: Props) => {
     setSubmenuTooltipAnchor(undefined)
   }
 
-  const onEdit = () => {
+  const onRename = () => {
     const thread = selectedThread()
     if (!thread) return
     setSubmenuTooltipAnchor(undefined)
@@ -137,7 +137,7 @@ export const Threads = (props: Props) => {
         History
       </Button>
       <Show when={menuTooltipAnchor()}>
-        <Tooltip anchor={menuTooltipAnchor()!} onClose={onMenuClose} backdrop={true}>
+        <Tooltip anchor={menuTooltipAnchor()!} onClose={onMenuClose} backdrop={false} placement="left">
           <Scroller>
             <Content>
               <For each={getThreads()}>
@@ -171,18 +171,18 @@ export const Threads = (props: Props) => {
               </Button>
             </ButtonGroup>
           </TooltipFooter>
-        </Tooltip>
-      </Show>
-      <Show when={submenuTooltipAnchor()}>
-        <Tooltip anchor={submenuTooltipAnchor()!} closeable={false} placement="right" offset={20}>
-          <TooltipButton onClick={onEdit}>
-            <IconEdit />
-            Rename
-          </TooltipButton>
-          <TooltipButton onClick={onDelete}>
-            <IconDelete />
-            Delete
-          </TooltipButton>
+          <Show when={submenuTooltipAnchor()}>
+            <Tooltip anchor={submenuTooltipAnchor()!} closeable={false} placement="right" offset={20}>
+              <TooltipButton onClick={onRename}>
+                <IconEdit />
+                Rename
+              </TooltipButton>
+              <TooltipButton onClick={onDelete}>
+                <IconDelete />
+                Delete
+              </TooltipButton>
+            </Tooltip>
+          </Show>
         </Tooltip>
       </Show>
     </>
