@@ -314,18 +314,15 @@ const proseMirror = (props: Props) => `
         border-radius: var(--border-radius);
       }
     }
-    > .selected::selection,
-    > .selected *::selection {
-      background: none !important;
-    }
-    > *:not(.cm-container)::selection,
-    > *:not(.cm-container) *::selection,
-    > *:not(.cm-container).selected {
+    ::selection {
       background: var(--selection);
     }
     .ProseMirror-selectednode {
       background: var(--selection) !important;
       box-shadow: 0 0 0 5px var(--selection);
+      &::selection, ::selection {
+        background: none;
+      }
     }
     @media print {
       padding-bottom: 0;

@@ -12,7 +12,7 @@ export const selectedPlugin = new Plugin({
             const end = pos + node.nodeSize
             const surrounded = from <= pos && to >= end
             if (surrounded) {
-              decos.push(Decoration.node(pos, end, {class: 'selected'}))
+              decos.push(Decoration.node(pos, end, {class: 'ProseMirror-selectednode'}))
             }
           })
         }
