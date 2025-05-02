@@ -137,7 +137,12 @@ export const Threads = (props: Props) => {
         History
       </Button>
       <Show when={menuTooltipAnchor()}>
-        <Tooltip anchor={menuTooltipAnchor()!} onClose={onMenuClose} backdrop={false} placement="left">
+        <Tooltip
+          anchor={menuTooltipAnchor()!}
+          onClose={onMenuClose}
+          backdrop={false}
+          placement="left"
+        >
           <Scroller>
             <Content>
               <For each={getThreads()}>
@@ -172,7 +177,12 @@ export const Threads = (props: Props) => {
             </ButtonGroup>
           </TooltipFooter>
           <Show when={submenuTooltipAnchor()}>
-            <Tooltip anchor={submenuTooltipAnchor()!} closeable={false} placement="right" offset={20}>
+            <Tooltip
+              anchor={submenuTooltipAnchor()!}
+              closeable={false}
+              placement="right"
+              offset={20}
+            >
               <TooltipButton onClick={onRename}>
                 <IconEdit />
                 Rename

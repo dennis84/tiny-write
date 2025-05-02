@@ -84,6 +84,8 @@ export const Chat = () => {
       await copilotService.completions(
         messages,
         (chunk: Chunk) => {
+          const scroll = drawerRef.scrollTop + drawerRef.clientHeight + 30 > drawerRef.scrollHeight
+
           for (const choice of chunk.choices) {
             threadService.streamLastMessage(
               messageId,
@@ -92,7 +94,7 @@ export const Chat = () => {
             )
           }
 
-          scrollToInput()
+          if (scroll) scrollToInput()
         },
         async () => {
           threadService.streamLastMessageEnd(messageId)
