@@ -58,11 +58,9 @@ pub fn run<R: Runtime>(builder: Builder<R>) {
                             .as_str()
                             .map(|s| s.to_string())
                             .unwrap_or_default();
-                        debug!("AAAAAAAAAAAAAA:L GET ARGS WITH SOURCE");
                         let args = editor::command_args::create_args(source);
                         app.manage(args);
                     } else {
-                        debug!("AAAAAAAAAAAAAA:L GET ARGS");
                         let args = editor::command_args::create_args("".to_string());
                         app.manage(args);
                     }

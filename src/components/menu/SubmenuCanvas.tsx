@@ -25,7 +25,7 @@ export const SubmenuCanvas = ({maybeHide}: {maybeHide: () => void}) => {
     <>
       <Label>Canvas</Label>
       <Sub data-tauri-drag-region="true">
-        <Link onClick={onClearCanvas}>
+        <Link onClick={onClearCanvas} data-testid="clear-canvas">
           <IconClose /> Clear canvas
         </Link>
         <Link onClick={onBackToContent}>

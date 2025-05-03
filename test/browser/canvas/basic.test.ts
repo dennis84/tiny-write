@@ -37,4 +37,9 @@ test('add file', async ({page}) => {
   await page.click('[data-testid="context_menu_new_file"]')
 
   await expect(page.locator('[data-testid="canvas_editor"]')).toHaveCount(2)
+
+  // Clear canvas
+  await page.click('[data-testid="clear-canvas"]')
+
+  await expect(page.locator('[data-testid="canvas_editor"]')).toHaveCount(0)
 })

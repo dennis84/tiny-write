@@ -30,7 +30,7 @@ const HighlightContent = styled('div')`
   top: 0;
   bottom: 0;
   left: 0;
-  right: 400px;
+  right: 0;
   border: 10px solid var(--primary-background-50);
   user-select: none;
   pointer-events: none;
@@ -552,16 +552,18 @@ export const SubmenuTree = (props: Props) => {
           </Link>
         </Show>
       </Sub>
-      <Portal mount={document.getElementById('container') ?? undefined}>
-        <Show when={grabbing()}>
+      <Show when={grabbing()}>
+        <Portal mount={document.getElementById('container') ?? undefined}>
           <GhostContainer>
             <Ghost ref={ghostRef} />
           </GhostContainer>
-        </Show>
-        <Show when={dropState()?.pos === 'open'}>
+        </Portal>
+      </Show>
+      <Show when={dropState()?.pos === 'open'}>
+        <Portal mount={document.getElementById('content') ?? undefined}>
           <HighlightContent />
-        </Show>
-      </Portal>
+        </Portal>
+      </Show>
       <Show when={tooltipAnchor() !== undefined}>
         <Tooltip anchor={tooltipAnchor()!} onClose={() => closeTooltip()} backdrop={true}>
           <Show when={isOnCanvas(selected())}>

@@ -308,7 +308,7 @@ export class CanvasService {
       elements.push(el)
     }
 
-    this.updateCanvas(currentCanvas.id, {elements: [...elements]})
+    this.updateCanvas(currentCanvas.id, {elements})
     await this.saveCanvas()
     info('Canvas saved after removing element')
 

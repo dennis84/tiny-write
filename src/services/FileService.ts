@@ -318,7 +318,7 @@ export class FileService {
     if (index === -1) return
     batch(() => {
       this.setState('files', index, {editorView: undefined, codeEditorView: undefined})
-      this.setState('collab', undefined)
+      if (this.store.mode === Mode.Editor) this.setState('collab', undefined)
     })
   }
 
