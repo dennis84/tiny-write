@@ -1,7 +1,7 @@
 import {createEffect, createSignal, Show} from 'solid-js'
-import {Box, Vec} from '@tldraw/editor'
 import {arrow, computePosition, flip, offset, shift} from '@floating-ui/dom'
 import {v4 as uuidv4} from 'uuid'
+import {Box} from '@flatten-js/core'
 import {
   CanvasBoxElement,
   CanvasElement,
@@ -11,6 +11,8 @@ import {
   useState,
 } from '@/state'
 import {useOpen} from '@/open'
+import {BoxUtil} from '@/utils/BoxUtil'
+import {VecUtil} from '@/utils/VecUtil'
 import {getLanguageNames} from '@/codemirror/highlight'
 import {
   IconAdjust,
@@ -71,7 +73,7 @@ export const Toolbar = () => {
     const selected = getSelected()
     if (!selected) return
     const box = canvasService.createBox(selected.element)
-    canvasService.backToContent(box.center, currentCanvas.camera.zoom)
+    canvasService.backToContent(VecUtil.center(box), currentCanvas.camera.zoom)
   }
 
   const onCopilot = () => {
@@ -109,13 +111,13 @@ export const Toolbar = () => {
     if (!element) return
 
     const {zoom, point} = currentCanvas.camera
-    const p = Vec.FromArray(point)
-    const box = new Box(
-      (element.x + p.x) * zoom,
-      (element.y + p.y) * zoom,
-      element.width * zoom,
-      element.height * zoom,
-    )
+    const p = VecUtil.fromArray(point)
+    const box = BoxUtil.fromRect({
+      x: (element.x + p.x) * zoom,
+      y: (element.y + p.y) * zoom,
+      width: element.width * zoom,
+      height: element.height * zoom,
+    })
 
     return {element, box}
   }
@@ -127,23 +129,24 @@ export const Toolbar = () => {
     const currentCanvas = canvasService.currentCanvas
     if (!currentCanvas) return
 
-    const point = Vec.FromArray(currentCanvas.camera.point).mul(-1)
+    const zoom = currentCanvas.camera.zoom
+    const point = VecUtil.fromArray(currentCanvas.camera.point).multiply(-1)
     const vp = new Box(0, 0, window.innerWidth, window.innerHeight)
-      .scale(currentCanvas.camera.zoom)
+      .scale(1 / zoom, 1 / zoom)
       .translate(point)
 
     const box = canvasService.createBox(selected.element)
-    setCollides(vp.collides(box))
+    setCollides(vp.intersect(box))
 
     const reference = {
       getBoundingClientRect() {
         return {
-          x: selected.box.x,
-          y: selected.box.y,
-          top: selected.box.y,
-          left: selected.box.x,
-          bottom: selected.box.maxY,
-          right: selected.box.maxX,
+          x: selected.box.xmin,
+          y: selected.box.ymin,
+          top: selected.box.ymin,
+          left: selected.box.xmin,
+          bottom: selected.box.ymax,
+          right: selected.box.xmax,
           width: selected.box.width,
           height: selected.box.height,
         }
@@ -204,7 +207,7 @@ export const Toolbar = () => {
       {(selected) => (
         <TooltipContainer ref={tooltipRef} id="toolbar" direction="row" gap={5}>
           <Show when={collides()}>
-            <TooltipButton onClick={() => open(selected().element, true)}>
+            <TooltipButton onClick={() => open(selected().element, {back: true})}>
               <IconOpenInFull /> Open in full
             </TooltipButton>
             <Show when={fileService.findFileById(selected().element.id)?.deleted}>

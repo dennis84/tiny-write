@@ -1,6 +1,6 @@
 import {EditorView} from 'prosemirror-view'
 import {TextSelection} from 'prosemirror-state'
-import {Box} from '@tldraw/editor'
+import {Box} from '@flatten-js/core'
 
 interface Position {
   top: number
@@ -29,7 +29,7 @@ export class SelectService {
     }
 
     const positions = this.positions
-    const {minY, maxY} = box
+    const {ymin, ymax} = box
     let min = -1
     let max = -1
 
@@ -39,8 +39,8 @@ export class SelectService {
       // use next top pos because pos.bottom is always same as pos.top
       const end = nextPos?.top ?? pos.bottom
 
-      const surrounded = minY <= pos.top && maxY >= end
-      const touched = (minY >= pos.top && minY <= end) || (maxY >= pos.top && maxY <= end)
+      const surrounded = ymin <= pos.top && ymax >= end
+      const touched = (ymin >= pos.top && ymin <= end) || (ymax >= pos.top && ymax <= end)
 
       if (touched || surrounded) {
         if (pos.pos < min || min === -1) min = pos.pos

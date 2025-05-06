@@ -2,7 +2,6 @@ import {beforeEach, expect, test, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
 import {createStore} from 'solid-js/store'
 import {EditorView} from 'prosemirror-view'
-import {Box, Vec} from '@tldraw/editor'
 import {
   Canvas,
   CanvasEditorElement,
@@ -21,6 +20,8 @@ import {createCollabMock} from '../util/util'
 import {createYUpdate} from '../util/prosemirror-util'
 import {SelectService} from '@/services/SelectService'
 import {CollabService} from '@/services/CollabService'
+import { Box, Vector } from '@flatten-js/core'
+import { BoxUtil } from '@/utils/BoxUtil'
 
 vi.mock('mermaid', () => ({}))
 vi.mock('@/db', () => ({DB: mock()}))
@@ -498,7 +499,7 @@ test('addImage', async () => {
 
   const service = new CanvasService(fileService, selectService, store, setState)
 
-  await service.addImage('/path/1.png', new Vec(100, 100), 1000, 2000)
+  await service.addImage('/path/1.png', new Vector(100, 100), 1000, 2000)
 
   expect(service.currentCanvas?.elements.length).toBe(1)
   const imageEl = service.currentCanvas?.elements[0] as CanvasImageElement
@@ -517,7 +518,7 @@ test('addVideo', async () => {
 
   const service = new CanvasService(fileService, selectService, store, setState)
 
-  await service.addVideo('/path/1.mp4', 'video/mp4', new Vec(100, 100), 1000, 2000)
+  await service.addVideo('/path/1.mp4', 'video/mp4', new Vector(100, 100), 1000, 2000)
 
   expect(service.currentCanvas?.elements.length).toBe(1)
   const el = service.currentCanvas?.elements[0] as CanvasVideoElement
@@ -684,7 +685,9 @@ test('center', () => {
 
   const service = new CanvasService(fileService, selectService, store, setState)
 
-  expect(service.getCenterPoint()?.toArray()).toEqual([100, 100, 1])
+  const centerPoint = service.getCenterPoint()
+  expect(centerPoint?.x).toEqual(100)
+  expect(centerPoint?.y).toEqual(100)
 })
 
 test('get selection', () => {
@@ -713,11 +716,11 @@ test('get selection', () => {
 
   service.select('2', false, true)
   expect(service.selection).not.toBe(undefined)
-  expect(service.selection?.box.toJson()).toStrictEqual({x: 0, y: 0, w: 200, h: 100})
+  expect(BoxUtil.toRect(service.selection!.box)).toMatchObject({x: 0, y: 0, width: 200, height: 100})
   expect(service.selection?.elements.length).toBe(2)
 
   service.select('3', false, true)
-  expect(service.selection?.box.toJson()).toStrictEqual({x: 0, y: 0, w: 200, h: 200})
+  expect(BoxUtil.toRect(service.selection!.box)).toMatchObject({x: 0, y: 0, width: 200, height: 200})
   expect(service.selection?.elements.length).toBe(3)
 })
 
@@ -748,15 +751,15 @@ test('selectBox', () => {
 
   service.selectBox(new Box(0, 0, 110, 0), false, false)
   expect(service.selection).not.toBe(undefined)
-  expect(service.selection?.box.toJson()).toStrictEqual({x: 0, y: 0, w: 200, h: 100})
+  expect(BoxUtil.toRect(service.selection!.box)).toMatchObject({x: 0, y: 0, width: 200, height: 100})
   expect(service.selection?.elements.length).toBe(2)
 
   service.selectBox(new Box(0, 0, 110, 110), false, false)
-  expect(service.selection?.box.toJson()).toStrictEqual({x: 0, y: 0, w: 200, h: 200})
+  expect(BoxUtil.toRect(service.selection!.box)).toMatchObject({x: 0, y: 0, width: 200, height: 200})
   expect(service.selection?.elements.length).toBe(3)
 
   service.selectBox(new Box(0, 0, 110, 90), false, false)
-  expect(service.selection?.box.toJson()).toStrictEqual({x: 0, y: 0, w: 200, h: 100})
+  expect(BoxUtil.toRect(service.selection!.box)).toMatchObject({x: 0, y: 0, width: 200, height: 100})
   expect(service.selection?.elements.length).toBe(2)
 })
 

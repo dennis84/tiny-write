@@ -1,6 +1,6 @@
 import {Location} from '@solidjs/router'
+import {Box, Vector} from '@flatten-js/core'
 import {File, LocationState, State} from '@/state'
-import {Box, Vec} from '@tldraw/editor'
 
 const ydoc = 'Uint8Array'
 const editorView = undefined
@@ -25,7 +25,7 @@ export const locationToString = (location: Location<LocationState>) =>
     merge: location.state?.merge,
   })
 
-export const renderPoint = (point: Vec, id = 'point') => {
+export const renderPoint = (point: Vector, id = 'point') => {
   document.querySelector(`#${id}`)?.remove()
   const box = new Box(point.x, point.y, 10, 10)
   renderBox(box, id)
@@ -36,8 +36,8 @@ export const renderBox = (box: Box, id = 'box') => {
   const el = document.createElement('div')
   el.id = id
   el.style.position = 'absolute'
-  el.style.left = `${box.x}px`
-  el.style.top = `${box.y}px`
+  el.style.left = `${box.xmin}px`
+  el.style.top = `${box.ymax}px`
   el.style.width = `${box.width}px`
   el.style.height = `${box.height}px`
   el.style.background = 'rgba(255, 255, 0, 0.2)'

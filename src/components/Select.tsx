@@ -1,8 +1,8 @@
 import {Show, createSignal, onCleanup, onMount} from 'solid-js'
 import {styled} from 'solid-styled-components'
-import {Box} from '@tldraw/editor'
 import {DragGesture} from '@use-gesture/vanilla'
-import {CornerType, Mode, useState} from '@/state'
+import {Box} from '@flatten-js/core'
+import {Mode, useState} from '@/state'
 
 const SelectionFrame = styled('div')`
   position: absolute;
@@ -56,17 +56,21 @@ export const Select = (props: Props) => {
         event.preventDefault()
         event.stopPropagation()
 
-        const initial: Box = first ? new Box(x, y, 0, 0) : memo
-        const newBox = Box.Resize(initial, CornerType.TopLeft, mx, my).box
+        const initial = new Box(
+          Math.min(x, x + mx),
+          Math.min(y, y + my),
+          Math.max(x, x + mx),
+          Math.max(y, y + my),
+        )
 
         if (store.mode === Mode.Canvas) {
-          canvasService.selectBox(newBox, first, last)
+          canvasService.selectBox(initial, first, last)
         } else {
-          editorService.selectBox(newBox, first, last)
+          editorService.selectBox(initial, first, last)
         }
 
         appService.setSelecting(true)
-        setFrame(newBox)
+        setFrame(initial)
         if (last) {
           setFrame(undefined)
           setTimeout(() => appService.setSelecting(false), 100)
@@ -91,10 +95,10 @@ export const Select = (props: Props) => {
         {(f) => (
           <SelectionFrame
             style={{
-              'top': `${f().y.toString()}px`,
-              'left': `${f().x.toString()}px`,
-              'width': `${f().w.toString()}px`,
-              'height': `${f().h.toString()}px`,
+              'top': `${f().ymin.toString()}px`,
+              'left': `${f().xmin.toString()}px`,
+              'width': `${f().width.toString()}px`,
+              'height': `${f().height.toString()}px`,
               'border-width': '1px',
             }}
           />

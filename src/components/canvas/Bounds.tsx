@@ -1,10 +1,12 @@
 import {Show, createEffect, onCleanup, onMount, splitProps} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {DragGesture} from '@use-gesture/vanilla'
-import {Box, PI, Vec, rotateSelectionHandle} from '@tldraw/editor'
+import {Box, Vector} from '@flatten-js/core'
 import {CornerType, EdgeType, useState} from '@/state'
 import {Selection} from '@/services/CanvasService'
 import {IndexType, ZIndex} from '@/utils/ZIndex'
+import {BoxUtil} from '@/utils/BoxUtil'
+import {VecUtil} from '@/utils/VecUtil'
 
 interface BoundsProps {
   selection: Selection
@@ -40,30 +42,33 @@ const resizeElements = (
   shiftKey = false,
   snapToGrid = false,
 ): [string, Box][] => {
-  const oppositeHandle = rotateSelectionHandle(handle, PI)
-  const scalePoint = selection.box.getHandlePoint(oppositeHandle)
-  const result = Box.Resize(selection.box, handle, mx, my, shiftKey)
-  const scale = new Vec(result.scaleX, result.scaleY)
+  const oppositeHandle = BoxUtil.getOppositeHandle(handle)
+  const scalePoint = BoxUtil.getHandlePoint(selection.box, oppositeHandle)
+  const result = BoxUtil.resize(selection.box, handle, mx, my, shiftKey)
+  const scale = new Vector(result.scaleX, result.scaleY)
 
   return selection.elements.map(([id, element]) => {
-    let {minX, minY, maxX, maxY} = element
+    let {xmin, ymin, xmax, ymax} = element
     const flipX = scale.x < 0
     const flipY = scale.y < 0
     if (flipX) {
-      const t = maxX
-      maxX = minX
-      minX = t
+      const t = xmax
+      xmax = xmin
+      xmin = t
     }
     if (flipY) {
-      const t = maxY
-      maxY = minY
-      minY = t
+      const t = ymax
+      ymax = ymin
+      ymin = t
     }
 
-    const tl = new Vec(minX, minY).sub(scalePoint).mulV(scale).add(scalePoint)
-    const br = new Vec(maxX, maxY).sub(scalePoint).mulV(scale).add(scalePoint)
-    const box = new Box(tl.x, tl.y, br.x - tl.x, br.y - tl.y)
-    if (snapToGrid) box.snapToGrid(10)
+    const low = new Vector(xmin, ymin).subtract(scalePoint).scale(scale.x, scale.y).add(scalePoint)
+    const heigh = new Vector(xmax, ymax)
+      .subtract(scalePoint)
+      .scale(scale.x, scale.y)
+      .add(scalePoint)
+    const box = BoxUtil.fromLowHigh(low, heigh)
+    if (snapToGrid) BoxUtil.snapToGrid(box, 10)
     return [id, box]
   })
 }
@@ -94,7 +99,7 @@ const Edge = (props: EdgeProps) => {
           shiftKey,
           currentCanvas.snapToGrid,
         ).forEach(([id, box]) => {
-          const rect = {x: box.x, y: box.y, width: box.w, height: box.h}
+          const rect = BoxUtil.toRect(box)
           void canvasCollabService.updateElementThrottled({id, ...rect})
           canvasService.updateCanvasElement(id, rect)
         })
@@ -153,7 +158,7 @@ const Corner = (props: CornerProps) => {
         shiftKey,
         currentCanvas.snapToGrid,
       ).forEach(([id, box]) => {
-        const rect = {x: box.x, y: box.y, width: box.w, height: box.h}
+        const rect = BoxUtil.toRect(box)
         void canvasCollabService.updateElementThrottled({id, ...rect})
         canvasService.updateCanvasElement(id, rect)
       })
@@ -213,9 +218,9 @@ export const Bounds = (props: BoundsProps) => {
       const {zoom} = currentCanvas.camera
 
       selection.elements.forEach(([id, initial]) => {
-        const t = new Vec(mx, my).div(zoom).add(initial)
-        if (currentCanvas.snapToGrid) t.snapToGrid(10)
-        const [x, y] = t.toArray()
+        const t = new Vector(mx, my).multiply(1 / zoom).add(VecUtil.fromPoint(initial.low))
+        if (currentCanvas.snapToGrid) VecUtil.snapToGrid(t, 10)
+        const {x, y} = t
 
         void canvasCollabService.updateElementThrottled({id, x, y})
         canvasService.updateCanvasElement(id, {x, y})
@@ -240,8 +245,8 @@ export const Bounds = (props: BoundsProps) => {
         'z-index': ZIndex.element(props.index, IndexType.BOUNDS),
         'width': `${Number(props.selection.box.width) + BORDER_SIZE_2}px`,
         'height': `${Number(props.selection.box.height) + BORDER_SIZE_2}px`,
-        'left': `${Number(props.selection.box.x) - BORDER_SIZE}px`,
-        'top': `${Number(props.selection.box.y) - BORDER_SIZE}px`,
+        'left': `${Number(props.selection.box.xmin) - BORDER_SIZE}px`,
+        'top': `${Number(props.selection.box.ymin) - BORDER_SIZE}px`,
       }}
       onMouseDown={local.onSelect}
       onDblClick={local.onDoubleClick}

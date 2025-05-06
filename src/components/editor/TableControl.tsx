@@ -3,9 +3,10 @@ import {Portal} from 'solid-js/web'
 import {styled} from 'solid-styled-components'
 import {Node, ResolvedPos} from 'prosemirror-model'
 import {cellAround, TableMap} from 'prosemirror-tables'
-import {Box, Vec} from '@tldraw/editor'
-import {File, useState} from '@/state'
+import {Box, Vector} from '@flatten-js/core'
+import {EdgeType, File, useState} from '@/state'
 import {ZIndex} from '@/utils/ZIndex'
+import {BoxUtil} from '@/utils/BoxUtil'
 import {IconDragIndicator} from '../Icon'
 import {TableTooltip} from './TableTooltip'
 
@@ -74,8 +75,8 @@ export interface ActiveHandle {
 }
 
 interface HandlePosition {
-  vert: Vec
-  horiz: Vec
+  vert: Vector
+  horiz: Vector
 }
 
 interface HandleGridProps {
@@ -131,8 +132,8 @@ const HandleGrid = (props: HandleGridProps) => {
     const colBox = new Box(cellX, tableY, cellBox.width, tableBox.height)
     const rowBox = new Box(tableX, cellY, tableBox.width, cellBox.height)
 
-    const vert = colBox.getHandlePoint('top')
-    const horiz = rowBox.getHandlePoint('left')
+    const vert = BoxUtil.getHandlePoint(colBox, EdgeType.Top)
+    const horiz = BoxUtil.getHandlePoint(rowBox, EdgeType.Left)
 
     setHandlePosition({vert, horiz})
     setCurrentCell({element, pos})
@@ -250,8 +251,8 @@ const HandleGrid = (props: HandleGridProps) => {
             style={{
               width: `${s().width}px`,
               height: `${s().height}px`,
-              left: `${s().x}px`,
-              top: `${s().y}px`,
+              left: `${s().xmin}px`,
+              top: `${s().ymin}px`,
             }}
           />
         )}

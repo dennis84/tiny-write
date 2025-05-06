@@ -1,10 +1,11 @@
 import {createSignal, onCleanup, onMount} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {v4 as uuidv4} from 'uuid'
-import {Box, Vec} from '@tldraw/editor'
 import {DragGesture} from '@use-gesture/vanilla'
+import {Vector} from '@flatten-js/core'
 import {EdgeType, useState} from '@/state'
 import {IndexType, ZIndex} from '@/utils/ZIndex'
+import {BoxUtil} from '@/utils/BoxUtil'
 
 const BORDER_SIZE = 20
 const CIRCLE_RADIUS = 7
@@ -53,21 +54,22 @@ const LinkHandle = (props: EdgeProps) => {
   const zoom = () => canvasService.currentCanvas?.camera.zoom ?? 1
 
   const coords = () => {
-    const box = new Box(props.x, props.y, props.width, props.height)
-    const p = box.getHandlePoint(props.type)
-    p.addXY(-CIRCLE_HOVER_RADIUS / 2, -CIRCLE_HOVER_RADIUS / 2)
+    const box = canvasService.createBox(props)
+    let p = BoxUtil.getHandlePoint(box, props.type)
+    p = p.translate(-CIRCLE_HOVER_RADIUS / 2, -CIRCLE_HOVER_RADIUS / 2)
     if (props.type === EdgeType.Top) {
-      p.addXY(0, -BORDER_SIZE / zoom())
+      p = p.translate(0, -BORDER_SIZE / zoom())
     } else if (props.type === EdgeType.Bottom) {
-      p.addXY(0, BORDER_SIZE / zoom())
+      p = p.translate(0, BORDER_SIZE / zoom())
     } else if (props.type === EdgeType.Left) {
-      p.addXY(-BORDER_SIZE / zoom(), 0)
+      p = p.translate(-BORDER_SIZE / zoom(), 0)
     } else if (props.type === EdgeType.Right) {
-      p.addXY(BORDER_SIZE / zoom(), 0)
+      p = p.translate(BORDER_SIZE / zoom(), 0)
     }
 
-    const [x, y] = p.toArray()
-    return [x, y]
+    p = p.multiply(zoom())
+
+    return `${p.x}px, ${p.y}px`
   }
 
   onMount(() => {
@@ -82,9 +84,9 @@ const LinkHandle = (props: EdgeProps) => {
           setCurrentLink(uuidv4())
         }
         const {point, zoom} = currentCanvas.camera
-        const p = Vec.FromArray(point)
-        const i = Vec.FromArray(initial).div(zoom).sub(p)
-        const t = Vec.FromArray(movement).div(zoom).add(i)
+        const p = new Vector(point[0], point[1])
+        const i = new Vector(initial[0], initial[1]).multiply(1 / zoom).subtract(p)
+        const t = new Vector(movement[0], movement[1]).multiply(1 / zoom).add(i)
         const id = currentLink()!
         canvasService.drawLink(id, props.id, props.type, t.x, t.y)
         if (last) {
@@ -103,12 +105,7 @@ const LinkHandle = (props: EdgeProps) => {
   return (
     <LinkHandleDot
       style={{
-        'transform': `
-          scale(${1 / zoom()})
-          translate(${coords()
-            .map((n) => n * zoom() + 'px')
-            .join(',')})
-        `,
+        'transform': `scale(${1 / zoom()}) translate(${coords()})`,
         'z-index': `${ZIndex.element(props.index, IndexType.HANDLE)}`,
       }}
       ref={linkRef}

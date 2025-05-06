@@ -1,6 +1,6 @@
 import {vi, expect, test, beforeEach} from 'vitest'
 import {mock} from 'vitest-mock-extended'
-import {Box} from '@tldraw/editor'
+import {Box} from '@flatten-js/core'
 import {DB} from '@/db'
 import {createState} from '@/state'
 import {createCollabMock} from '../util/util'

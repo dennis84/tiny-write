@@ -138,8 +138,17 @@ export enum CornerType {
 }
 
 export interface Camera {
-  point: [number, number]
+  point: CanvasPoint
   zoom: number
+}
+
+export type CanvasPoint = [number, number]
+
+export interface CanvasRect {
+  x: number
+  y: number
+  width: number
+  height: number
 }
 
 export interface CanvasElement {
@@ -148,12 +157,7 @@ export interface CanvasElement {
   selected?: boolean
 }
 
-export interface CanvasBoxElement extends CanvasElement {
-  x: number
-  y: number
-  width: number
-  height: number
-}
+export interface CanvasBoxElement extends CanvasElement, CanvasRect {}
 
 export interface CanvasEditorElement extends CanvasBoxElement {
   active?: boolean

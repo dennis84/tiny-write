@@ -1,7 +1,7 @@
 import {For, onCleanup, onMount, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {Gesture} from '@use-gesture/vanilla'
-import {Vec} from '@tldraw/editor'
+import {Vector} from '@flatten-js/core'
 import {
   isEditorElement,
   isLinkElement,
@@ -59,17 +59,23 @@ export const Canvas = () => {
     let c
     if (center === undefined) {
       const {width, height} = ref.getBoundingClientRect()
-      c = new Vec(width / 2, height / 2).toFixed()
+      c = new Vector(width / 2, height / 2)
     } else {
-      c = Vec.FromArray(center)
+      c = new Vector(center[0], center[1])
     }
 
     const {zoom, point} = canvasService.currentCanvas.camera
-    const p = Vec.FromArray(point)
+    const p = new Vector(point[0], point[1])
 
-    const p0 = c.clone().div(zoom).sub(p)
-    const p1 = c.clone().div(next).sub(p)
-    const [x, y] = p1.sub(p0).add(p).toFixed().toArray()
+    const p0 = c
+      .clone()
+      .multiply(1 / zoom)
+      .subtract(p)
+    const p1 = c
+      .clone()
+      .multiply(1 / next)
+      .subtract(p)
+    const {x, y} = p1.subtract(p0).add(p)
     canvasService.updateCamera({zoom: next, point: [x, y]})
   }
 

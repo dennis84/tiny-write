@@ -1,5 +1,5 @@
 import {For, Match, Show, Switch, createSignal, onMount} from 'solid-js'
-import {Vec} from '@tldraw/editor'
+import {Vector} from '@flatten-js/core'
 import {CanvasLinkElement, File, isCanvas, isCodeFile, isFile, useState} from '@/state'
 import {IconCodeBlocks, IconGesture, IconPostAdd, IconTextSnippet} from '../Icon'
 import {Tooltip, TooltipButton, TooltipDivider} from '../Tooltip'
@@ -7,9 +7,9 @@ import {ReferenceElement} from '@floating-ui/dom'
 
 export const ContextMenu = () => {
   const {canvasService, canvasCollabService, fileService, treeService} = useState()
-  const [contextMenu, setContextMenu] = createSignal<Vec | undefined>()
+  const [contextMenu, setContextMenu] = createSignal<Vector | undefined>()
 
-  const onNewFile = async (code = false, link?: CanvasLinkElement, cm?: Vec) => {
+  const onNewFile = async (code = false, link?: CanvasLinkElement, cm?: Vector) => {
     const el = await canvasService.newFile(code, link, cm)
     await canvasService.removeDeadLinks()
     if (el) {
@@ -21,7 +21,7 @@ export const ContextMenu = () => {
     setContextMenu(undefined)
   }
 
-  const FileNameTooltipButton = (p: {file: File; link?: CanvasLinkElement; cm?: Vec}) => {
+  const FileNameTooltipButton = (p: {file: File; link?: CanvasLinkElement; cm?: Vector}) => {
     const [title, setTitle] = createSignal<string>()
 
     const onClick = async () => {
@@ -72,7 +72,7 @@ export const ContextMenu = () => {
   }
 
   const getContextMenu = ():
-    | [CanvasLinkElement | undefined, Vec | undefined, ReferenceElement]
+    | [CanvasLinkElement | undefined, Vector | undefined, ReferenceElement]
     | undefined => {
     const deadLink = canvasService.findDeadLinks()[0]
     const cm = contextMenu()
@@ -81,11 +81,11 @@ export const ContextMenu = () => {
     const currentCanvas = canvasService.currentCanvas
     if (!currentCanvas) return
 
-    const p = deadLink ? new Vec(deadLink.toX, deadLink.toY) : cm
+    const p = deadLink ? new Vector(deadLink.toX, deadLink.toY) : cm
     if (!p) return
 
     const {camera} = currentCanvas
-    const {x, y} = Vec.FromArray(camera.point).add(p).mul(camera.zoom)
+    const {x, y} = new Vector(camera.point[0], camera.point[1]).add(p).multiply(camera.zoom)
 
     const virtualEl = {
       getBoundingClientRect() {

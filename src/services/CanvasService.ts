@@ -1,8 +1,8 @@
 import {SetStoreFunction, Store, unwrap} from 'solid-js/store'
 import {TextSelection} from 'prosemirror-state'
 import {v4 as uuidv4} from 'uuid'
-import {Box, Vec} from '@tldraw/editor'
 import {throttle} from 'throttle-debounce'
+import {Box, Point, Segment, Vector} from '@flatten-js/core'
 import {
   Camera,
   Canvas,
@@ -21,12 +21,17 @@ import {
   isLinkElement,
   isBoxElement,
   isCodeElement,
+  CanvasRect,
+  CanvasPoint,
 } from '@/state'
 import {DB} from '@/db'
 import {info} from '@/remote/log'
 import {FileService} from './FileService'
 import {CollabService} from './CollabService'
 import {SelectService} from './SelectService'
+import {VecUtil} from '@/utils/VecUtil'
+import {BoxUtil} from '@/utils/BoxUtil'
+import {PointUtil} from '@/utils/PointUtil'
 
 type UpdateElement =
   | Partial<CanvasLinkElement>
@@ -80,8 +85,8 @@ export class CanvasService {
       if (!el.selected) continue
       if (isBoxElement(el)) {
         const elBox = this.createBox(el)
-        if (!box) box = Box.From(elBox)
-        else box.expand(elBox)
+        if (!box) box = elBox
+        else box = box.merge(elBox)
         elements.push([el.id, elBox])
       }
     }
@@ -149,24 +154,27 @@ export class CanvasService {
     if (!element) return
 
     const zoom = currentCanvas.camera.zoom
-    const elementCenter = this.createBox(element).center
+    const centerPoint = this.createBox(element).center
+    const elementCenter = new Vector(centerPoint.x, centerPoint.y)
     const canvasRef = this.canvasRef!
-    const vp = new Vec(canvasRef.clientWidth / 2, canvasRef.clientHeight / 2).div(zoom)
-    const [x, y] = elementCenter.sub(vp).toArray()
+    const vp = new Vector(canvasRef.clientWidth / 2, canvasRef.clientHeight / 2).multiply(1 / zoom)
+    const {x, y} = elementCenter.subtract(vp)
 
     this.updateCamera({zoom, point: [-x, -y]})
     await this.saveCanvas()
     info('Canvas saved after camera update')
   }
 
-  async backToContent(point: Vec | undefined = undefined, zoom = 0.5) {
+  async backToContent(point: Vector | undefined = undefined, zoom = 0.5) {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
     const center = point ?? this.getCenterPoint()
     if (center) {
       const canvasRef = this.canvasRef!
-      const vp = new Vec(canvasRef.clientWidth / 2, canvasRef.clientHeight / 2).div(zoom)
-      const [x, y] = center.sub(vp).toArray()
+      const vp = new Vector(canvasRef.clientWidth / 2, canvasRef.clientHeight / 2).multiply(
+        1 / zoom,
+      )
+      const {x, y} = center.subtract(vp)
       this.updateCanvas(currentCanvas.id, {camera: {zoom, point: [-x, -y]}})
       await this.saveCanvas()
       info('Canvas saved after camera update')
@@ -234,12 +242,17 @@ export class CanvasService {
       zoom,
       point: [x, y],
     } = currentCanvas.camera
-    const b = Box.From(box).set(box.x / zoom - x, box.y / zoom - y, box.w / zoom, box.h / zoom)
+    const b = new Box(
+      box.xmin / zoom - x,
+      box.ymin / zoom - y,
+      box.xmax / zoom - x,
+      box.ymax / zoom - y,
+    )
 
     for (const el of currentCanvas.elements) {
       if (!isBoxElement(el)) continue
       const elBox = this.createBox(el)
-      if (b.collides(elBox)) {
+      if (b.intersect(elBox)) {
         this.updateCanvasElement(el.id, {selected: true})
       } else {
         this.updateCanvasElement(el.id, {selected: false})
@@ -350,7 +363,7 @@ export class CanvasService {
   async newFile(
     code = false,
     link?: CanvasLinkElement,
-    point?: Vec,
+    point?: Vector,
   ): Promise<CanvasElement | undefined> {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
@@ -368,7 +381,7 @@ export class CanvasService {
   async addFile(
     file: File,
     link?: CanvasLinkElement,
-    point?: Vec,
+    point?: Vector,
   ): Promise<CanvasElement[] | undefined> {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
@@ -388,15 +401,20 @@ export class CanvasService {
       const from = currentCanvas.elements.find((el) => el.id === link.from) as CanvasBoxElement
       if (!from) return
       const fromBox = this.createBox(from)
-      const fromHandle = fromBox.getHandlePoint(link.fromEdge)
+      const fromHandle = BoxUtil.getHandlePoint(fromBox, link.fromEdge)
 
       x = link.toX ?? 0
       y = link.toY ?? 0
 
-      const box = new Box(fromHandle.x, fromHandle.y, x - fromHandle.x, y - fromHandle.y)
+      const box = new Box(
+        Math.min(fromHandle.x, x),
+        Math.min(fromHandle.y, y),
+        Math.max(fromHandle.x, x),
+        Math.max(fromHandle.y, y),
+      )
 
-      if (Math.abs(box.aspectRatio) > 1) {
-        if (box.width > 0) {
+      if (box.width > box.height) {
+        if (x > fromHandle.x) {
           linkToEdge = EdgeType.Left
           y -= height / 2
         } else {
@@ -405,7 +423,7 @@ export class CanvasService {
           x -= width
         }
       } else {
-        if (box.height > 0) {
+        if (y > fromHandle.y) {
           linkToEdge = EdgeType.Top
           x -= width / 2
         } else {
@@ -415,14 +433,15 @@ export class CanvasService {
         }
       }
     } else if (point) {
-      ;[x, y] = point.toArray()
+      x = point.x
+      y = point.y
     } else {
-      const center = new Vec(window.innerWidth / 2, window.innerHeight / 2).toFixed()
-      const p = Vec.FromArray(camera.point)
+      const center = new Vector(window.innerWidth / 2, window.innerHeight / 2)
+      const p = VecUtil.fromArray(camera.point)
       const target = center
-        .div(camera.zoom)
-        .sub(p)
-        .subXY(width / 2, height / 2)
+        .multiply(1 / camera.zoom)
+        .subtract(p)
+        .translate(-width / 2, -height / 2)
       x = target.x
       y = target.y
     }
@@ -465,7 +484,7 @@ export class CanvasService {
 
   async addImage(
     src: string,
-    point: Vec,
+    point: Vector,
     imageWidth: number,
     imageHeight: number,
   ): Promise<CanvasImageElement | undefined> {
@@ -474,7 +493,7 @@ export class CanvasService {
 
     const width = 300
     const height = (width * imageHeight) / imageWidth
-    const {x, y} = point.subXY(width / 2, height / 2)
+    const {x, y} = point.translate(-width / 2, -height / 2)
 
     const id = uuidv4()
     const element: CanvasImageElement = {
@@ -501,7 +520,7 @@ export class CanvasService {
   async addVideo(
     src: string,
     mime: string,
-    point: Vec,
+    point: Vector,
     imageWidth: number,
     imageHeight: number,
   ): Promise<CanvasVideoElement | undefined> {
@@ -510,7 +529,7 @@ export class CanvasService {
 
     const width = 300
     const height = (width * imageHeight) / imageWidth
-    const {x, y} = point.subXY(width / 2, height / 2)
+    const {x, y} = point.translate(-width / 2, -height / 2)
 
     const id = uuidv4()
     const element: CanvasVideoElement = {
@@ -664,36 +683,40 @@ export class CanvasService {
     this.setState('moving', moving)
   }
 
-  getElementNear(point: [number, number]): {id: string; edge: EdgeType} | undefined {
+  getElementNear(point: CanvasPoint): {id: string; edge: EdgeType} | undefined {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
 
-    const p = Vec.FromArray(point)
+    const p = PointUtil.fromVec(VecUtil.fromArray(point))
+
+    const shrink = (segment: Segment, h: number, v: number) => {
+      const seg = new Segment(
+        new Point(
+          Math.min(segment.start.x, segment.end.x),
+          Math.min(segment.start.y, segment.end.y),
+        ),
+        new Point(
+          Math.max(segment.start.x, segment.end.x),
+          Math.max(segment.start.y, segment.end.y),
+        ),
+      )
+      seg.ps.x += h
+      seg.ps.y += v
+      seg.pe.x -= h
+      seg.pe.y -= v
+      return seg
+    }
 
     for (const el of currentCanvas.elements) {
       if (!isBoxElement(el)) continue
       const box = this.createBox(el)
 
-      const distT = Vec.DistanceToLineSegment(
-        box.getHandlePoint('top_left').addXY(1, 0),
-        box.getHandlePoint('top_right').subXY(1, 0),
-        p,
-      )
-      const distB = Vec.DistanceToLineSegment(
-        box.getHandlePoint('bottom_left').addXY(1, 0),
-        box.getHandlePoint('bottom_right').subXY(1, 0),
-        p,
-      )
-      const distL = Vec.DistanceToLineSegment(
-        box.getHandlePoint('top_left').addXY(0, 1),
-        box.getHandlePoint('bottom_left').subXY(0, 1),
-        p,
-      )
-      const distR = Vec.DistanceToLineSegment(
-        box.getHandlePoint('top_right').addXY(0, 1),
-        box.getHandlePoint('bottom_right').subXY(0, 1),
-        p,
-      )
+      const [t, r, b, l] = box.toSegments()
+
+      const distT = p.distanceTo(shrink(t, 1, 0))
+      const distB = p.distanceTo(shrink(b, 1, 0))
+      const distL = p.distanceTo(shrink(l, 0, 1))
+      const distR = p.distanceTo(shrink(r, 0, 1))
 
       const corners = [
         {e: EdgeType.Top, d: distT},
@@ -704,45 +727,46 @@ export class CanvasService {
 
       let min
       for (const c of corners) {
-        if (!min || c.d < min.d) min = c
+        if (!min || c.d[0] < min.d[0]) min = c
       }
 
-      if (min !== undefined && min.d <= 30) {
+      if (min !== undefined && min.d[0] <= 30) {
         return {id: el.id, edge: min.e}
       }
     }
   }
 
-  getCenterPoint(): Vec | undefined {
+  getCenterPoint(): Vector | undefined {
     const currentCanvas = this.currentCanvas
-    if (!currentCanvas) return
+    if (!currentCanvas?.elements.length) return
 
-    let all
+    let all!: Box
     for (const el of currentCanvas.elements) {
       if (!isBoxElement(el)) continue
       const box = this.createBox(el)
       if (!all) all = box
-      else all.expand(box)
+      else all = all.merge(box)
     }
 
-    return all?.center
+    const point = all.center
+    return new Vector(point.x, point.y)
   }
 
   findCanvas(id: string): Canvas | undefined {
     return this.store.canvases?.find((it) => it.id === id)
   }
 
-  createBox(el: CanvasBoxElement) {
+  createBox(el: CanvasRect) {
     const {x, y, width, height} = el
-    return new Box(x, y, width, height)
+    return new Box(x, y, x + width, y + height)
   }
 
-  getPosition([x, y]: [number, number]): Vec | undefined {
+  getPosition([x, y]: CanvasPoint): Vector | undefined {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
     const {camera} = currentCanvas
-    const point = new Vec(x, y)
-    return point.div(camera.zoom).sub(Vec.FromArray(camera.point))
+    const point = new Vector(x, y)
+    return point.multiply(1 / camera.zoom).subtract(VecUtil.fromArray(camera.point))
   }
 
   async saveCanvas(canvas = this.currentCanvas) {

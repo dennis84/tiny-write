@@ -2,7 +2,7 @@ import {vi, test, expect} from 'vitest'
 import {schema} from 'prosemirror-markdown'
 import {EditorView} from 'prosemirror-view'
 import {EditorState} from 'prosemirror-state'
-import {Box} from '@tldraw/editor'
+import {Box} from '@flatten-js/core'
 import {SelectService} from '@/services/SelectService'
 
 test('selectBox', () => {
@@ -39,12 +39,12 @@ test('selectBox', () => {
   service.selectBox(new Box(0, 0, 1, 10), v, true, false)
   expect(v.state.selection.toJSON()).toMatchObject({anchor: 0, head: 5})
 
-  service.selectBox(new Box(0, 12, 0, 1), v, true, false)
+  service.selectBox(new Box(0, 12, 0, 13), v, true, false)
   expect(v.state.selection.toJSON()).toMatchObject({anchor: 5, head: 10})
 
-  service.selectBox(new Box(0, 22, 0, 1), v, true, false)
+  service.selectBox(new Box(0, 22, 0, 23), v, true, false)
   expect(v.state.selection.toJSON()).toMatchObject({anchor: 10, head: 15})
 
-  service.selectBox(new Box(0, 12, 0, 10), v, true, false)
+  service.selectBox(new Box(0, 12, 0, 22), v, true, false)
   expect(v.state.selection.toJSON()).toMatchObject({anchor: 5, head: 15})
 })

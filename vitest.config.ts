@@ -16,7 +16,7 @@ export default defineConfig({
     },
     server: {
       deps: {
-        inline: ['@tldraw/editor', '@solidjs/testing-library', '@solidjs/router'],
+        inline: ['@solidjs/testing-library', '@solidjs/router'],
       },
     },
     setupFiles: ['./test/unit/setup.ts'],
