@@ -12,7 +12,6 @@ import {CollabService} from '@/services/CollabService'
 import {ProseMirrorService} from '@/services/ProseMirrorService'
 import {AppService} from '@/services/AppService'
 import {SelectService} from '@/services/SelectService'
-import {TreeService} from '@/services/TreeService'
 
 vi.stubGlobal('location', {
   pathname: '',
@@ -34,7 +33,6 @@ const lastModified = new Date()
 const collabService = mock<CollabService>()
 const proseMirrorService = mock<ProseMirrorService>()
 const appService = mock<AppService>()
-const treeService = mock<TreeService>()
 const selectService = mock<SelectService>()
 
 beforeEach(() => {
@@ -58,7 +56,6 @@ test('openFile - stop collab', async () => {
     collabService,
     proseMirrorService,
     appService,
-    treeService,
     selectService,
     store,
     setState,
@@ -89,7 +86,6 @@ test('openFile - existing', async () => {
     collabService,
     proseMirrorService,
     appService,
-    treeService,
     selectService,
     store,
     setState,
@@ -123,7 +119,6 @@ test('openFile - not found', async () => {
     collabService,
     proseMirrorService,
     appService,
-    treeService,
     selectService,
     store,
     setState,
@@ -160,7 +155,6 @@ test('openFile - share', async () => {
     collabService,
     proseMirrorService,
     appService,
-    treeService,
     selectService,
     store,
     setState,
@@ -197,7 +191,6 @@ test('clear - with text', async () => {
     collabService,
     proseMirrorService,
     appService,
-    treeService,
     selectService,
     store,
     setState,
@@ -231,7 +224,6 @@ test('selectBox', async () => {
     collabService,
     proseMirrorService,
     appService,
-    treeService,
     selectService,
     store,
     setState,

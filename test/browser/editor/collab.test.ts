@@ -3,22 +3,23 @@ import {delay, lineTextEq} from '../utils'
 import {v4 as uuidv4} from 'uuid'
 
 test('create room', async ({page, browser}) => {
-  await page.goto('/')
+  await page.goto(`/`)
   const url = page.url()
   await page.waitForSelector('[data-testid="initialized"]')
   await page.click('[data-testid="menu_button"]')
   await page.click('[data-testid="collab"]')
   expect(url).not.toBe(page.url())
+  expect(page.url()).toContain('?share=true')
   await page.locator('.ProseMirror').pressSequentially('Hello', {delay})
 
   const page2 = await browser.newPage()
   await page2.goto(page.url())
+  expect(page2.url()).toContain('?share=true')
   await lineTextEq(page2, 1, 'Hello')
 
   await page.locator('.ProseMirror').pressSequentially(' World', {delay})
 
-  // FIXME:
-  // await lineTextEq(page2, 1, 'Hello World')
+  await lineTextEq(page2, 1, 'Hello World')
 })
 
 test('create room - existing content file', async ({page, browser}) => {
@@ -123,4 +124,48 @@ test('rejoin room', async ({page}) => {
 
   // "Hello" text should not be duplicated after clone, persist and reload the Y.Doc
   await expect(page.locator('.ProseMirror > *')).toHaveCount(1)
+})
+
+test('rejoin room - remote', async ({page, browser}) => {
+  await page.goto('/')
+  await page.waitForSelector('[data-testid="initialized"]')
+  await page.click('[data-testid="menu_button"]')
+  await page.click('[data-testid="collab"]')
+
+  await page.locator('.ProseMirror').pressSequentially('Hello', {delay})
+  await expect(page.locator('.ProseMirror > *')).toHaveCount(1)
+
+  // join room
+  const page2 = await browser.newPage()
+  await page2.goto(page.url())
+  await lineTextEq(page2, 1, 'Hello')
+  await expect(page2.locator('.ProseMirror > *')).toHaveCount(1)
+
+  // stop collab
+  await page2.click('[data-testid="menu_button"]')
+  await page2.click('[data-testid="collab"]')
+  await page.click('[data-testid="collab"]')
+
+  // change whole text on client 1
+  await page.click('[data-testid="clear"]')
+  await page.locator('.ProseMirror').pressSequentially('123', {delay})
+  await expect(page.locator('.ProseMirror > *')).toHaveCount(1)
+  await lineTextEq(page, 1, '123')
+
+  // change whole text on client 2
+  await page2.click('[data-testid="clear"]')
+  await page2.locator('.ProseMirror').pressSequentially('abc', {delay})
+
+  // start collab again
+  await page.click('[data-testid="collab"]')
+  await page2.click('[data-testid="collab"]')
+
+  const page3 = await browser.newPage({
+    storageState: await page2.context().storageState({indexedDB: true})
+  })
+  await page3.goto(page.url())
+  await expect(page3.locator('.ProseMirror > *')).toHaveCount(1)
+  await lineTextEq(page3, 1, '123abc')
+
+  await lineTextEq(page, 1, '123abc')
 })

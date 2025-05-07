@@ -14,7 +14,6 @@ import {FileService} from './FileService'
 import {CollabService} from './CollabService'
 import {ProseMirrorService, schema} from './ProseMirrorService'
 import {AppService} from './AppService'
-import {TreeService} from './TreeService'
 import {SelectService} from './SelectService'
 
 export interface OpenFile {
@@ -30,7 +29,6 @@ export class EditorService {
     private collabService: CollabService,
     private proseMirrorService: ProseMirrorService,
     private appService: AppService,
-    private treeService: TreeService,
     private selectService: SelectService,
     private store: Store<State>,
     private setState: SetStoreFunction<State>,
