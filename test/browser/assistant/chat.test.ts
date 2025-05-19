@@ -16,7 +16,7 @@ test('chat', async ({page}) => {
   await mockCopilotApiToken(page)
   await mockCopilotCompletion(page, ['Test', '123'], 'Test Call')
 
-  await page.click('[data-testid="ai_assistant_button"]')
+  await page.click('[data-testid="floating_navbar_assistant_open"]')
   expect(page.getByText('Ask Copilot')).toBeVisible()
 
   await page.locator('[data-testid="chat_input"] .cm-content').pressSequentially('Hello', {delay})

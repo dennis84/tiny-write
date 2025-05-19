@@ -8,7 +8,7 @@ test('share', async ({page, browser}) => {
 
   expect(page.locator('[data-testid="canvas_container"]')).toBeVisible()
 
-  await page.click('[data-testid="menu_button"]')
+  await page.click('[data-testid="floating_navbar_menu_open"]')
   await page.click('[data-testid="collab"]')
 
   await page

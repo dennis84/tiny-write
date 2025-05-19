@@ -7,7 +7,7 @@ test.beforeEach(async ({page}) => {
 
 test('load state from db', async ({page}) => {
   await page.waitForSelector('[data-testid="initialized"]')
-  await page.click('[data-testid="menu_button"]')
+  await page.click('[data-testid="floating_navbar_menu_open"]')
   await lineTextEq(page, 1, 'Start typing ...')
 
   await page.locator('.ProseMirror').pressSequentially('foo', {delay})
@@ -21,7 +21,7 @@ test('load state from db', async ({page}) => {
 
 test('open file', async ({page}) => {
   await page.waitForSelector('[data-testid="initialized"]')
-  await page.click('[data-testid="menu_button"]')
+  await page.click('[data-testid="floating_navbar_menu_open"]')
   await expect(page.locator('[data-testid="tree_link"]')).toHaveCount(1)
   await expect(page.locator('[data-testid="tree_link"]')).toContainText('Untitled')
 
@@ -52,7 +52,7 @@ test('open file', async ({page}) => {
 
   // Unmodified files are currently not saved
   await page.reload()
-  await page.click('[data-testid="menu_button"]')
+  await page.click('[data-testid="floating_navbar_menu_open"]')
   await lineTextEq(page, 1, 'test1')
   await expect(page.locator('[data-testid="tree_link"]')).toHaveCount(2)
 })

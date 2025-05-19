@@ -215,7 +215,7 @@ test('open', async () => {
   expect(fileService.currentFile?.path).toBe('code1.yaml')
   expect(fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('Code1')
 
-  fireEvent.click(getByTestId('menu_button'))
+  fireEvent.click(getByTestId('floating_navbar_menu_open'))
   fireEvent.click(getAllByTestId('tree_link_title')[1])
 
   await waitFor(() => {

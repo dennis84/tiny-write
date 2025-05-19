@@ -14,7 +14,6 @@ import {MouseCursor} from '@/components/MouseCursor'
 import {DropFile} from '@/components/DropFile'
 import {ResizeWindow} from '@/components/ResizeWindow'
 import {DarkMode} from '@/components/DarkMode'
-import {Back} from '@/components/Back'
 import {Toast} from '@/components/Toast'
 import {InputLine} from '@/components/dialog/InputLine'
 import {EditorPage} from '@/components/pages/EditorPage'
@@ -22,6 +21,7 @@ import {CanvasPage} from '@/components/pages/CanvasPage'
 import {CodePage} from '@/components/pages/CodePage'
 import {DirPage} from '@/components/pages/DirPage'
 import {Redirect} from '@/components/pages/Redirect'
+import {ChatPage} from '@/components/pages/ChatPage'
 
 export const Main = (props: {state: State}) => {
   const Root = (p: RouteSectionProps) => {
@@ -70,7 +70,6 @@ export const Main = (props: {state: State}) => {
               <Match when={ctrl.store.loading === 'initialized'}>
                 <PageContent>
                   {p.children}
-                  <Back />
                 </PageContent>
               </Match>
             </Switch>
@@ -98,6 +97,7 @@ export const Main = (props: {state: State}) => {
       <Route path="/canvas/:id" component={CanvasPage} />
       <Route path="/code/:id" component={CodePage} />
       <Route path="/dir" component={DirPage} />
+      <Route path="/assistant" component={ChatPage} />
       <Route path="*" component={Redirect} />
     </Router>
   )

@@ -81,7 +81,7 @@ export const Scroll = styled('div')`
 
 export const Content = styled('div')`
   position: relative;
-  height: 100%;
+  height: fit-content;
   width: ${(props: any) => props.config.contentWidth}px;
   padding: 50px;
   padding-bottom: 77vh;

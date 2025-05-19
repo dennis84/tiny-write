@@ -4,11 +4,9 @@ import {DragGesture} from '@use-gesture/vanilla'
 import {isTauri} from '@/env'
 import {FULL_WIDTH} from './Layout'
 
-const DrawerEl = styled('div')`
-  padding: 20px;
+const DrawerContainer = styled('div')`
+  position: relative;
   height: 100%;
-  overflow-y: auto;
-  scrollbar-width: none;
   display: flex;
   flex-direction: column;
   @media (max-width: ${FULL_WIDTH.toString()}px) {
@@ -20,6 +18,15 @@ const DrawerEl = styled('div')`
   }
 `
 
+export const DrawerContent = styled('div')`
+  padding: 0 20px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  scrollbar-width: none;
+  min-height: calc(100% - 50px);
+`
+
 const ResizeHandle = styled('div')`
   position: absolute;
   top: 0;
@@ -28,7 +35,7 @@ const ResizeHandle = styled('div')`
   touch-action: none;
   z-index: 1;
   padding: 0 20px;
-  margin-left: -40px;
+  margin-left: -20px;
   display: flex;
   justify-content: center;
   > div {
@@ -71,7 +78,7 @@ export const Drawer = (props: Props) => {
   })
 
   return (
-    <DrawerEl
+    <DrawerContainer
       {...rest}
       ref={(el) => (ref = el) && props.ref?.(el)}
       data-tauri-drag-region="true"
@@ -84,6 +91,6 @@ export const Drawer = (props: Props) => {
       <ResizeHandle ref={resizeHandleRef}>
         <div />
       </ResizeHandle>
-    </DrawerEl>
+    </DrawerContainer>
   )
 }

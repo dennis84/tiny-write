@@ -48,7 +48,7 @@ test.beforeEach(async ({page}) => {
 test('copy', async ({page, context}) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write'])
 
-  await page.click('[data-testid="ai_assistant_button"]')
+  await page.click('[data-testid="floating_navbar_assistant_open"]')
   await page.click('[data-testid="history"]')
   await page.click('[data-testid="thread_item"]')
 
@@ -59,14 +59,14 @@ test('copy', async ({page, context}) => {
 })
 
 test('create file', async ({page}) => {
-  await page.click('[data-testid="ai_assistant_button"]')
+  await page.click('[data-testid="floating_navbar_assistant_open"]')
   await page.click('[data-testid="history"]')
   await page.click('[data-testid="thread_item"]')
 
   await page.locator('[data-testid="panel_button_create"]').click()
   await lineCodeEq(page, 1, "const test1 = '111'")
 
-  await page.click('[data-testid="menu_button"]')
+  await page.click('[data-testid="floating_navbar_menu_open"]')
   await expect(page.locator('[data-testid="tree_link"]').locator('nth=1')).toContainText(
     'src/main.ts',
   )
@@ -75,7 +75,7 @@ test('create file', async ({page}) => {
 test('apply', async ({page}) => {
   await page.goto(`/code/222`)
 
-  await page.click('[data-testid="ai_assistant_button"]')
+  await page.click('[data-testid="floating_navbar_assistant_open"]')
   await page.click('[data-testid="history"]')
   await page.click('[data-testid="thread_item"]')
 
@@ -94,7 +94,7 @@ test('apply - open file', async ({page}) => {
   await page.goto(`/code/444`)
   await page.waitForSelector('[data-testid="initialized"]')
 
-  await page.click('[data-testid="ai_assistant_button"]')
+  await page.click('[data-testid="floating_navbar_assistant_open"]')
   await page.click('[data-testid="history"]')
   await page.click('[data-testid="thread_item"]')
 
@@ -112,7 +112,7 @@ test('apply - range', async ({page}) => {
 
   await page.locator('.cm-content').pressSequentially('abcdefghijklmnop', {delay})
 
-  await page.click('[data-testid="ai_assistant_button"]')
+  await page.click('[data-testid="floating_navbar_assistant_open"]')
   await page.click('[data-testid="history"]')
   await page.click('[data-testid="thread_item"]')
 

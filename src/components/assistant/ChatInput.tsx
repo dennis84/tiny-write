@@ -16,9 +16,11 @@ import {SelectionButton} from './attachments/Selection'
 import {ChatInputAction, inputEditor} from './Style'
 
 const ChatInputContainer = styled('div')`
-  margin-top: 20px;
+  margin-top: auto;
+  padding: 20px 0;
   position: relative;
   justify-self: flex-end;
+  scroll-margin-bottom: 50px;
   ${inputEditor}
 `
 
@@ -97,7 +99,7 @@ export const ChatInput = (props: Props) => {
           ref={chatInputRef}
           data-testid="chat_input"
         ></div>
-        <ChatInputAction>
+        <ChatInputAction style={{ bottom: '20px' }}>
           <TooltipHelp title="Add an attachment to context">
             <IconButton onClick={onAttachmentMenu}>
               <IconAttachment />

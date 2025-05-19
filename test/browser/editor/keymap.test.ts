@@ -31,7 +31,7 @@ test('on new/clear', async ({page}) => {
   await page.locator('.ProseMirror').pressSequentially('second', {delay})
   await expect(page.locator('.ProseMirror')).toHaveText('second')
 
-  await page.click('[data-testid="menu_button"]')
+  await page.click('[data-testid="floating_navbar_menu_open"]')
   await expect(page.locator('[data-testid="tree_link"]')).toHaveCount(2)
 
   // clear

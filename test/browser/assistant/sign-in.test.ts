@@ -11,7 +11,7 @@ test('sign in', async ({page, context}) => {
 
   await context.grantPermissions(['clipboard-read', 'clipboard-write'])
 
-  await page.click('[data-testid="ai_assistant_button"]')
+  await page.click('[data-testid="floating_navbar_assistant_open"]')
 
   expect(page.getByText('GitHub Copilot')).toBeVisible()
 

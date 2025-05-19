@@ -6,7 +6,6 @@ import {Message, useState} from '@/state'
 import {Chunk} from '@/services/CopilotService'
 import {IconAdd, IconClose, IconKeyboardArrowDown} from '../Icon'
 import {Button, ButtonGroup, IconButton} from '../Button'
-import {Drawer} from '../Drawer'
 import {TooltipDivider} from '../Tooltip'
 import {ChatInput} from './ChatInput'
 import {ModelSelect} from './ModelSelect'
@@ -18,6 +17,13 @@ import {CurrentFileButton} from './attachments/CurrentFile'
 import {SelectionButton} from './attachments/Selection'
 import {AutoContextButton} from './attachments/AutoContext'
 import {MessageAttachment} from './MessageAttachment'
+
+const Container = styled('div')`
+  display: flex;
+  flex-direction: column;
+  height: auto;
+  min-height: 100%;
+`
 
 const EmptyContainer = styled('div')`
   width: 100%;
@@ -40,18 +46,22 @@ const ScrollDown = styled('div')`
   }
 `
 
-export const Chat = () => {
-  let drawerRef!: HTMLDivElement
-  let inputRef!: HTMLDivElement
+interface Props {
+  scroll: () => Element
+}
 
-  const {store, aiService, copilotService, threadService, toastService} = useState()
+export const Chat = (props: Props) => {
+  let inputRef!: HTMLDivElement
+  let scrollContent!: HTMLDivElement
+
+  const {store, copilotService, threadService, toastService} = useState()
   const [focus, setFocus] = createSignal(true)
   const [scrollDown, setScrollDown] = createSignal(false)
 
   const scrollToInput = () => {
     inputRef.scrollIntoView({
-      behavior: 'instant',
-      block: 'start',
+      behavior: 'smooth',
+      block: 'end',
     })
   }
 
@@ -84,7 +94,7 @@ export const Chat = () => {
       await copilotService.completions(
         messages,
         (chunk: Chunk) => {
-          const scroll = drawerRef.scrollTop + drawerRef.clientHeight + 30 > drawerRef.scrollHeight
+          const scroll = props.scroll().scrollTop + props.scroll().clientHeight + 50 > scrollContent.scrollHeight
 
           for (const choice of chunk.choices) {
             threadService.streamLastMessage(
@@ -133,10 +143,6 @@ export const Chat = () => {
     focusInput()
   }
 
-  const onDrawerResized = async (width: number) => {
-    await aiService.setSidebarWidth(width)
-  }
-
   const onRegenerate = (message: Message) => {
     threadService.regenerate(message)
     void sendMessages()
@@ -149,7 +155,7 @@ export const Chat = () => {
 
   onMount(() => {
     threadService.newThread()
-    const gesture = new ScrollGesture(drawerRef, () => {
+    const gesture = new ScrollGesture(scrollContent, () => {
       const box = inputRef.getBoundingClientRect()
       setScrollDown(box.top > window.innerHeight)
     })
@@ -209,14 +215,7 @@ export const Chat = () => {
   )
 
   return (
-    <Drawer
-      ref={drawerRef as any}
-      width={aiService.sidebarWidth}
-      onResized={onDrawerResized}
-      background={10}
-      data-tauri-drag-region="true"
-      data-testid="ai_assistant_drawer"
-    >
+    <Container ref={scrollContent}>
       <ButtonGroup>
         <Threads onChange={onChangeThread} />
         <Show when={threadService.currentThread?.messages?.length}>
@@ -245,6 +244,6 @@ export const Chat = () => {
           </IconButton>
         </ScrollDown>
       </Show>
-    </Drawer>
+    </Container>
   )
 }

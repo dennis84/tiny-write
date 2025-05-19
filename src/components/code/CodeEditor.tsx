@@ -3,6 +3,7 @@ import {styled} from 'solid-styled-components'
 import {useState} from '@/state'
 import {Scroll} from '../Layout'
 import {codeMirror} from './Style'
+import { FloatingNavbar } from '../menu/Navbar'
 
 export const CodeMirrorContainer = styled('div')`
   width: 100%;
@@ -45,6 +46,7 @@ export const CodeEditor = () => {
 
   return (
     <Scroll data-testid="code_scroll">
+      <FloatingNavbar />
       <CodeMirrorContainer ref={containerRef} />
     </Scroll>
   )

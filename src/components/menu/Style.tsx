@@ -17,24 +17,6 @@ export const Container = styled('div')`
   }
 `
 
-// prettier-ignore
-export const Control = styled('div')`
-  position: absolute;
-  top: 2px;
-  right: 2px;
-  z-index: var(--z-index-max);
-  display: flex;
-  align-items: center;
-  padding: 5px;
-  > button {
-    ${(props: any) => props.active ? `
-      &:not(:hover) {
-        background: var(--background-60);
-      }
-    ` : ''}
-  }
-`
-
 export const Label = styled('h3')`
   margin: 10px 0;
   font-size: var(--menu-font-size);

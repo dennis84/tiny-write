@@ -17,7 +17,7 @@ test('threads', async ({page}) => {
   })
 
   await page.goto('/')
-  await page.click('[data-testid="ai_assistant_button"]')
+  await page.click('[data-testid="floating_navbar_assistant_open"]')
 
   expect(page.getByText('Ask Copilot')).toBeVisible()
 

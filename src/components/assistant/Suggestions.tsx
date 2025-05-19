@@ -6,7 +6,7 @@ import {Button, ButtonGroup} from '../Button'
 import {IconHelp, IconRepair} from '../Icon'
 
 const SuggestionsContainer = styled('div')`
-  margin-top: 20px;
+  padding-bottom: 20px;
 `
 
 interface Props {

@@ -3,6 +3,7 @@ import {WheelGesture} from '@use-gesture/vanilla'
 import {useState} from '@/state'
 import {Select} from '../Select'
 import {Scroll} from '../Layout'
+import {FloatingNavbar} from '../menu/Navbar'
 import {FullEditor} from './Style'
 import {BlockHandle} from './BlockHandle'
 import {TableControls} from './TableControl'
@@ -53,6 +54,7 @@ export const Editor = () => {
 
   return (
     <Scroll data-tauri-drag-region="true" ref={scrollRef} data-testid="editor_scroll">
+      <FloatingNavbar />
       <Select target={() => scrollRef} />
       <FullEditor
         ref={editorRef}
