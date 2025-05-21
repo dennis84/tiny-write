@@ -11,7 +11,6 @@ import {isTauri} from '@/env'
 import {ConfigService} from './ConfigService'
 import {CanvasService} from './CanvasService'
 import {FileService} from './FileService'
-import { CopilotMock } from '@/utils/CopilotMock'
 
 export class AppService {
   public layoutRef: HTMLElement | undefined

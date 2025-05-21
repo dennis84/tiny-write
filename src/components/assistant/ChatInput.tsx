@@ -99,7 +99,7 @@ export const ChatInput = (props: Props) => {
           ref={chatInputRef}
           data-testid="chat_input"
         ></div>
-        <ChatInputAction style={{ bottom: '20px' }}>
+        <ChatInputAction style={{bottom: '20px'}}>
           <TooltipHelp title="Add an attachment to context">
             <IconButton onClick={onAttachmentMenu}>
               <IconAttachment />

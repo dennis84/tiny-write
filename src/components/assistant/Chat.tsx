@@ -1,10 +1,10 @@
-import {createEffect, createSignal, Match, onCleanup, onMount, Show, Switch} from 'solid-js'
+import {createSignal, Match, onCleanup, onMount, Show, Switch} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {v4 as uuidv4} from 'uuid'
-import {ScrollGesture} from '@use-gesture/vanilla'
+import {WheelGesture} from '@use-gesture/vanilla'
 import {Message, useState} from '@/state'
 import {Chunk} from '@/services/CopilotService'
-import {IconAdd, IconClose, IconKeyboardArrowDown} from '../Icon'
+import {IconAdd, IconKeyboardArrowDown} from '../Icon'
 import {Button, ButtonGroup, IconButton} from '../Button'
 import {TooltipDivider} from '../Tooltip'
 import {ChatInput} from './ChatInput'
@@ -47,27 +47,33 @@ const ScrollDown = styled('div')`
 `
 
 interface Props {
-  scroll: () => Element
+  scrollContent: () => Element
 }
 
 export const Chat = (props: Props) => {
   let inputRef!: HTMLDivElement
-  let scrollContent!: HTMLDivElement
 
   const {store, copilotService, threadService, toastService} = useState()
   const [focus, setFocus] = createSignal(true)
-  const [scrollDown, setScrollDown] = createSignal(false)
+  const [autoScrolling, setAutoScrolling] = createSignal(true)
 
-  const scrollToInput = () => {
-    inputRef.scrollIntoView({
+  const scrollToBottom = () => {
+    props.scrollContent().scrollTo({
+      top: props.scrollContent().scrollHeight,
       behavior: 'smooth',
-      block: 'end',
     })
   }
+
+  const isAtBottom = () =>
+    props.scrollContent().scrollHeight -
+      props.scrollContent().scrollTop -
+      props.scrollContent().clientHeight <
+    10
 
   const focusInput = () => {
     setFocus(false)
     setFocus(true)
+    setAutoScrolling(true)
   }
 
   const addUserMessage = async (input: Message) => {
@@ -94,17 +100,17 @@ export const Chat = (props: Props) => {
       await copilotService.completions(
         messages,
         (chunk: Chunk) => {
-          const scroll = props.scroll().scrollTop + props.scroll().clientHeight + 50 > scrollContent.scrollHeight
-
           for (const choice of chunk.choices) {
             threadService.streamLastMessage(
               messageId,
               parentId,
               choice.delta?.content ?? choice.message?.content ?? '',
             )
+            if (autoScrolling()) {
+              // small delay for rendering
+              setTimeout(() => scrollToBottom(), 100)
+            }
           }
-
-          if (scroll) scrollToInput()
         },
         async () => {
           threadService.streamLastMessageEnd(messageId)
@@ -133,11 +139,6 @@ export const Chat = (props: Props) => {
     }
   }
 
-  const onClearThread = () => {
-    threadService.clear()
-    focusInput()
-  }
-
   const onNewThread = () => {
     threadService.newThread()
     focusInput()
@@ -149,27 +150,24 @@ export const Chat = (props: Props) => {
   }
 
   const onChangeThread = () => {
-    focusInput()
-    scrollToInput()
+    props.scrollContent().scrollTo({top: 0, behavior: 'smooth'})
   }
 
   onMount(() => {
     threadService.newThread()
-    const gesture = new ScrollGesture(scrollContent, () => {
-      const box = inputRef.getBoundingClientRect()
-      setScrollDown(box.top > window.innerHeight)
-    })
+
+    const gesture = new WheelGesture(
+      props.scrollContent(),
+      () => {
+        // activate auto scrolling when at bottom
+        setAutoScrolling(isAtBottom())
+      },
+      {threshold: 10},
+    )
 
     onCleanup(() => {
       gesture.destroy()
     })
-  })
-
-  createEffect(() => {
-    // hide scroll down button if switch to other branch in message tree
-    if (threadService.pathMap()) {
-      setScrollDown(false)
-    }
   })
 
   const Empty = () => (
@@ -215,13 +213,10 @@ export const Chat = (props: Props) => {
   )
 
   return (
-    <Container ref={scrollContent}>
+    <Container>
       <ButtonGroup>
         <Threads onChange={onChangeThread} />
         <Show when={threadService.currentThread?.messages?.length}>
-          <Button onClick={onClearThread}>
-            <IconClose /> Clear
-          </Button>
           <Button onClick={onNewThread}>
             <IconAdd /> New
           </Button>
@@ -237,9 +232,9 @@ export const Chat = (props: Props) => {
         <ChatInput ref={inputRef} onMessage={onInputMessage} />
       </Show>
       <Suggestions onSuggestion={onInputMessage} />
-      <Show when={scrollDown()}>
+      <Show when={!autoScrolling()}>
         <ScrollDown>
-          <IconButton onClick={() => scrollToInput()}>
+          <IconButton onClick={() => scrollToBottom()}>
             <IconKeyboardArrowDown />
           </IconButton>
         </ScrollDown>

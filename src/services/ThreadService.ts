@@ -137,22 +137,6 @@ export class ThreadService {
     await this.saveThread()
   }
 
-  async clear() {
-    const currentThread = this.currentThread
-    if (!currentThread) return
-    info(`Clear current thread (id=${currentThread.id})`)
-    this.setState('threads', this.currentThreadIndex, (prev) => ({
-      ...prev,
-      messages: [],
-      lastModified: new Date(),
-    }))
-
-    this.pathMapSignal[1](new Map())
-    this.messageTree.updateAll([])
-
-    await DB.deleteThread(currentThread.id)
-  }
-
   setError(error: string) {
     const currentThread = this.currentThread
     if (!currentThread) return

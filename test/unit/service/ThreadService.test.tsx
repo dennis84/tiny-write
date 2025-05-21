@@ -127,27 +127,6 @@ test('removeMessage', async () => {
   expect(store.threads[0].messages).toHaveLength(0)
 })
 
-test('clear', async () => {
-  const initial = createState({
-    threads: [
-      {
-        id: '1',
-        active: true,
-        messages: [{id: '1', role: 'user', content: '1'}],
-      },
-    ],
-  })
-
-  const [store, setState] = createStore(initial)
-  const copilotService = mock<CopilotService>()
-  const fileService = mock<FileService>()
-  const service = new ThreadService(store, setState, copilotService, fileService)
-
-  await service.clear()
-
-  expect(store.threads[0].messages).toHaveLength(0)
-})
-
 test('setError', async () => {
   const initial = createState({
     threads: [

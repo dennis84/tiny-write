@@ -4,7 +4,7 @@ import {styled} from 'solid-styled-components'
 import {LocationState, useState} from '@/state'
 import {useOpen} from '@/open'
 import {MenuId} from '@/services/MenuService'
-import {Button, ButtonGroup, ButtonPrimary, IconButton} from '../Button'
+import {Button, ButtonGroup, IconButton} from '../Button'
 import {
   IconAiAssistant,
   IconAiAssistantClose,
@@ -120,9 +120,9 @@ export const FloatingNavbar = () => {
       <ButtonGroup>
         <Show when={location.state?.prev}>
           <TooltipHelp title={getBackTitle()}>
-            <ButtonPrimary onClick={onBackClick} data-testid="floating_navbar_back">
+            <Button onClick={onBackClick} data-testid="floating_navbar_back">
               <IconArrowBack /> Back
-            </ButtonPrimary>
+            </Button>
           </TooltipHelp>
         </Show>
 

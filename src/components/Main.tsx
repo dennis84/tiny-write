@@ -68,9 +68,7 @@ export const Main = (props: {state: State}) => {
                 <Error />
               </Match>
               <Match when={ctrl.store.loading === 'initialized'}>
-                <PageContent>
-                  {p.children}
-                </PageContent>
+                <PageContent>{p.children}</PageContent>
               </Match>
             </Switch>
             <Show when={isTauri()}>

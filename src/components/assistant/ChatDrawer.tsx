@@ -4,7 +4,7 @@ import {ChatNavbar} from '../menu/Navbar'
 import {Chat} from './Chat'
 
 export const ChatDrawer = () => {
-  let drawerRef!: HTMLDivElement
+  let scrollContent!: HTMLDivElement
   const {aiService} = useState()
 
   const onDrawerResized = async (width: number) => {
@@ -13,7 +13,6 @@ export const ChatDrawer = () => {
 
   return (
     <Drawer
-      ref={drawerRef as any}
       width={aiService.sidebarWidth}
       onResized={onDrawerResized}
       background={10}
@@ -21,8 +20,8 @@ export const ChatDrawer = () => {
       data-testid="ai_assistant_drawer"
     >
       <ChatNavbar />
-      <DrawerContent>
-        <Chat scroll={() => drawerRef} />
+      <DrawerContent ref={scrollContent}>
+        <Chat scrollContent={() => scrollContent} />
       </DrawerContent>
     </Drawer>
   )

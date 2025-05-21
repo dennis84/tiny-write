@@ -25,6 +25,7 @@ export const DrawerContent = styled('div')`
   overflow-y: auto;
   scrollbar-width: none;
   min-height: calc(100% - 50px);
+  scroll-behavior: smooth;
 `
 
 const ResizeHandle = styled('div')`
