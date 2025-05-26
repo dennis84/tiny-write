@@ -247,7 +247,7 @@ export class ThreadService {
       const question: ChatMessage = {
         role: 'user',
         content:
-          "Generate a concise 3-7 word title for this conversation, omitting punctuation. Go straight to the title, without any preamble and prefix like `Here's a concise suggestion:...` or `Title:`",
+          'Generate a concise title of 3-7 words for this conversation and leave out the punctuation. Return the title directly, without preamble and prefix.',
       }
 
       let title = ''

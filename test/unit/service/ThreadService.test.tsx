@@ -607,4 +607,3 @@ test('insertAutoContext - regenerate', async () => {
 
   expect(service.pathMap().get(undefined)).toBe('3')
 })
-

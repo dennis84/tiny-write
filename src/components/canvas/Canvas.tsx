@@ -11,7 +11,6 @@ import {
   isCodeElement,
 } from '@/state'
 import {Select} from '../Select'
-import {FloatingNavbar} from '../menu/Navbar'
 import {Grid} from './Grid'
 import {Editor} from './Editor'
 import {Link} from './Link'
@@ -146,7 +145,6 @@ export const Canvas = () => {
 
   return (
     <Container ref={ref} id="content" data-testid="canvas_container">
-      <FloatingNavbar />
       <ContextMenu />
       <Select target={() => ref} />
       <Grid onClick={onGridClick} />

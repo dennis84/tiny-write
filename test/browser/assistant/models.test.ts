@@ -16,6 +16,7 @@ test('model select', async ({page}) => {
   await mockCopilotModels(page)
 
   await page.click('[data-testid="floating_navbar_assistant_open"]')
+  await page.mouse.move(0, 0) // move away from tooltip
 
   expect(page.getByText('Ask Copilot')).toBeVisible()
 

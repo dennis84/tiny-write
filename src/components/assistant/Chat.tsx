@@ -106,10 +106,7 @@ export const Chat = (props: Props) => {
               parentId,
               choice.delta?.content ?? choice.message?.content ?? '',
             )
-            if (autoScrolling()) {
-              // small delay for rendering
-              setTimeout(() => scrollToBottom(), 100)
-            }
+            if (autoScrolling()) scrollToBottom()
           }
         },
         async () => {

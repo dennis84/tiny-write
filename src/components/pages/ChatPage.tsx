@@ -1,7 +1,13 @@
+import {styled} from 'solid-styled-components'
 import {useState} from '@/state'
-import {Content, Scroll} from '../Layout'
 import {Chat} from '../assistant/Chat'
-import {FloatingNavbar} from '../menu/Navbar'
+import {Content, Scroll} from '../Layout'
+
+const MaxWidth = styled('div')`
+  max-width: 800px;
+  margin: 0 auto;
+  height: 100%;
+`
 
 export const ChatPage = () => {
   let scrollContent!: HTMLDivElement
@@ -9,19 +15,19 @@ export const ChatPage = () => {
 
   return (
     <Scroll data-testid="dir" data-tauri-drag-region="true">
-      <FloatingNavbar />
       <Content
         ref={scrollContent}
         style={{
           'width': '100%',
-          'max-width': '800px',
           'padding-bottom': '0',
           'height': 'auto',
         }}
         config={store.config}
         data-tauri-drag-region="true"
       >
-        <Chat scrollContent={() => scrollContent} />
+        <MaxWidth>
+          <Chat scrollContent={() => scrollContent} />
+        </MaxWidth>
       </Content>
     </Scroll>
   )

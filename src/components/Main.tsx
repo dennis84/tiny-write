@@ -7,6 +7,7 @@ import {isTauri} from '@/env'
 import {locationToString} from '@/utils/debug'
 import {DragArea, Layout, PageContent} from '@/components/Layout'
 import {Menu} from '@/components/menu/Menu'
+import {FloatingNavbar} from '@/components/menu/Navbar'
 import {Error} from '@/components/Error'
 import {Keymap} from '@/components/Keymap'
 import {Variables} from '@/components/Variables'
@@ -68,7 +69,10 @@ export const Main = (props: {state: State}) => {
                 <Error />
               </Match>
               <Match when={ctrl.store.loading === 'initialized'}>
-                <PageContent>{p.children}</PageContent>
+                <PageContent>
+                  <FloatingNavbar />
+                  {p.children}
+                </PageContent>
               </Match>
             </Switch>
             <Show when={isTauri()}>

@@ -161,7 +161,7 @@ test('rejoin room - remote', async ({page, browser}) => {
   await page2.click('[data-testid="collab"]')
 
   const page3 = await browser.newPage({
-    storageState: await page2.context().storageState({indexedDB: true})
+    storageState: await page2.context().storageState({indexedDB: true}),
   })
   await page3.goto(page.url())
   await expect(page3.locator('.ProseMirror > *')).toHaveCount(1)

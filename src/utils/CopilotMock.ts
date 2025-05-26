@@ -3,6 +3,7 @@ import {pause} from './promise'
 
 const LOREM_IPSUM =
   'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.'
+const LOREM_IPSUM_WORDS = LOREM_IPSUM.split(' ')
 
 export class CopilotMock {
   static setup() {
@@ -14,24 +15,44 @@ export class CopilotMock {
     mock.route('end:https://api.github.com/copilot_internal/v2/token', CopilotMock.apiToken())
     mock.route('end:https://example.com/github/api/models', CopilotMock.models())
 
+    const encoder = new TextEncoder()
+    const enqueueMessage = (controller: ReadableStreamDefaultController<any>, text: string) => {
+      const message = CopilotMock.completions(text)
+      const buffer = encoder.encode(CopilotMock.createChunk(message)).buffer
+      controller.enqueue(buffer)
+    }
+
     const createStream = () =>
       new ReadableStream({
         async start(controller) {
-          const encoder = new TextEncoder()
-
           while (true) {
             await pause(2000)
-            const code = Math.random() > 0.8
-            let text = LOREM_IPSUM.slice(0, Math.floor(Math.random() * (800 - 100 + 1)) + 100)
-            if (code) {
-              const lines = text.match(/.{1,20}/g)
-              text = '```typescript\n' + lines?.join('\n') + '\n```'
-            }
-            text = text + '\n\n'
 
-            const message = CopilotMock.completions(text)
-            const buffer = encoder.encode(CopilotMock.createChunk(message)).buffer
-            controller.enqueue(buffer)
+            const code = Math.random() > 0.8
+            const h1 = Math.random() > 0.8
+
+            if (code) {
+              enqueueMessage(controller, '\n\n')
+              enqueueMessage(controller, '```')
+              await pause(10)
+              enqueueMessage(controller, 'typescript\n')
+              await pause(10)
+            } else if (h1) {
+              enqueueMessage(controller, '# ')
+            }
+
+            const randomIndex = Math.floor(Math.random() * LOREM_IPSUM_WORDS.length)
+            for (let i = 0; i <= randomIndex; i++) {
+              enqueueMessage(controller, LOREM_IPSUM_WORDS[i] + ' ')
+              await pause(10)
+            }
+
+            if (code) {
+              enqueueMessage(controller, '\n')
+              enqueueMessage(controller, '```')
+            }
+
+            enqueueMessage(controller, '\n\n')
           }
         },
       })
