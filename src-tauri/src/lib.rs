@@ -128,6 +128,7 @@ pub fn run<R: Runtime>(builder: Builder<R>) {
             copilot::command::copilot_disconnect,
             copilot::command::copilot_sign_in,
             copilot::command::copilot_status,
+            copilot::command::copilot_auth_token,
             copilot::command::copilot_completion,
             copilot::command::copilot_chat_completions,
             logger::command::log_debug,

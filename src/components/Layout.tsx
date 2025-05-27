@@ -100,7 +100,7 @@ export const DragArea = styled('div')`
   top: 0;
   left: 0;
   right: 0;
-  height: 30px;
+  height: 10px;
   z-index: var(--z-index-above-content);
   cursor: var(--cursor-grab);
 `

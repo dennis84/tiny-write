@@ -39,6 +39,12 @@ pub async fn copilot_status<R: Runtime>(app_handle: AppHandle<R>) -> Result<requ
 }
 
 #[tauri::command]
+pub async fn copilot_auth_token() -> Result<String> {
+    let token = CopilotChatService::get_auth_token()?;
+    Ok(token)
+}
+
+#[tauri::command]
 pub async fn copilot_completion<R: Runtime>(
     path: SafePathBuf,
     pos: usize,

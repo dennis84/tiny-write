@@ -188,7 +188,7 @@ impl CopilotChatService {
         Ok(response)
     }
 
-    fn get_auth_token() -> Result<String> {
+    pub fn get_auth_token() -> Result<String> {
         let path = Self::get_copilot_config_path().unwrap();
         let file = File::open(path)?;
         let json: Value = serde_json::from_reader(file)?;

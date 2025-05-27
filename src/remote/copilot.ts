@@ -18,6 +18,10 @@ export const copilotStatus = async (): Promise<CopilotStatus> => {
   return await Promise.race<CopilotStatus>([invoke('copilot_status'), timeout(5000)])
 }
 
+export const copilotAuthToken = async (): Promise<string> => {
+  return await invoke('copilot_auth_token')
+}
+
 export type CopilotSignIn = {userCode: string; deviceCode?: string; verificationUri: string}
 
 export const copilotSignIn = async (): Promise<CopilotSignIn> => {

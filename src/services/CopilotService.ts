@@ -13,6 +13,7 @@ import {
   disconnectCopilot,
   startLanguageServer,
   sendChatMessage,
+  copilotAuthToken,
 } from '@/remote/copilot'
 import {open} from '@/remote/app'
 
@@ -96,7 +97,7 @@ export class CopilotService {
     const tokenResponse = await this.getApiToken(accessToken)
     const url = this.proxy(`${tokenResponse.endpoints.api}/models`)
 
-    debug(`Copilot get models - (url=${url}, token=${JSON.stringify(tokenResponse)})`)
+    debug(`Copilot get models (url=${url}, token=${JSON.stringify(tokenResponse)})`)
     const data = await fetch(url, {
       method: 'GET',
       headers: {
@@ -130,7 +131,9 @@ export class CopilotService {
 
   async getStatus(code: CopilotSignIn): Promise<CopilotStatus | undefined> {
     if (isTauri()) {
-      return copilotStatus()
+      const status = await copilotStatus()
+      const accessToken = await copilotAuthToken()
+      return {...status, accessToken}
     }
 
     if (!code.deviceCode) {

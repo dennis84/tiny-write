@@ -3,7 +3,8 @@ import {styled} from 'solid-styled-components'
 export const chatBubble = `
   position: relative;
   border-radius: var(--border-radius);
-  font-size: var(--menu-font-size);
+  font-size: var(--font-size);
+  line-height: var(--line-height);
   .cm-editor {
     font-size: var(--menu-font-size);
     font-family: var(--menu-font-family);
