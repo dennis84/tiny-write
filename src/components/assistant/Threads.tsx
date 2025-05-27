@@ -42,7 +42,7 @@ const Content = styled('div')`
 `
 
 interface Props {
-  onChange: () => void
+  onChange: (id: string) => void
 }
 
 export const Threads = (props: Props) => {
@@ -58,8 +58,7 @@ export const Threads = (props: Props) => {
 
   const onSelect = (id: string) => {
     setSubmenuTooltipAnchor(undefined)
-    threadService.open(id)
-    props.onChange()
+    props.onChange(id)
   }
 
   const onMenuClick = (e: MouseEvent) => {

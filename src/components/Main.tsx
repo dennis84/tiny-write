@@ -100,6 +100,7 @@ export const Main = (props: {state: State}) => {
       <Route path="/code/:id" component={CodePage} />
       <Route path="/dir" component={DirPage} />
       <Route path="/assistant" component={ChatPage} />
+      <Route path="/assistant/:id" component={ChatPage} />
       <Route path="*" component={Redirect} />
     </Router>
   )

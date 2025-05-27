@@ -27,6 +27,8 @@ const Container = styled('div')`
 
 const EmptyContainer = styled('div')`
   width: 100%;
+  font-family: var(--menu-font-family);
+  font-size: var(--menu-font-size);
 `
 
 const Messages = styled('div')`
@@ -48,6 +50,7 @@ const ScrollDown = styled('div')`
 
 interface Props {
   scrollContent: () => Element
+  onChangeThread: (id: string) => void
 }
 
 export const Chat = (props: Props) => {
@@ -146,13 +149,7 @@ export const Chat = (props: Props) => {
     void sendMessages()
   }
 
-  const onChangeThread = () => {
-    props.scrollContent().scrollTo({top: 0, behavior: 'smooth'})
-  }
-
   onMount(() => {
-    threadService.newThread()
-
     const gesture = new WheelGesture(
       props.scrollContent(),
       () => {
@@ -212,7 +209,7 @@ export const Chat = (props: Props) => {
   return (
     <Container>
       <ButtonGroup>
-        <Threads onChange={onChangeThread} />
+        <Threads onChange={props.onChangeThread} />
         <Show when={threadService.currentThread?.messages?.length}>
           <Button onClick={onNewThread}>
             <IconAdd /> New

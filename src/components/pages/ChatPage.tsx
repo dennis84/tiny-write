@@ -1,5 +1,8 @@
+import {onMount, Show} from 'solid-js'
+import {RouteSectionProps} from '@solidjs/router'
 import {styled} from 'solid-styled-components'
 import {useState} from '@/state'
+import {useOpen} from '@/open'
 import {Chat} from '../assistant/Chat'
 import {Content, Scroll} from '../Layout'
 
@@ -9,26 +12,55 @@ const MaxWidth = styled('div')`
   height: 100%;
 `
 
-export const ChatPage = () => {
-  let scrollContent!: HTMLDivElement
-  const {store} = useState()
+export const ChatPage = (props: RouteSectionProps) => {
+  const {store, threadService} = useState()
+  const {openUrl} = useOpen()
+
+  const NewThread = () => {
+    onMount(() => {
+      threadService.newThread()
+      openUrl(`/assistant/${threadService.currentThread?.id}`)
+    })
+
+    return <></>
+  }
+
+  const OpenChat = () => {
+    let scrollContent!: HTMLDivElement
+
+    const onChangeThread = (id: string) => {
+      openUrl(`/assistant/${id}`)
+    }
+
+    onMount(() => {
+      if (props.params.id) {
+        threadService.open(props.params.id)
+      }
+    })
+
+    return (
+      <Scroll data-testid="dir" data-tauri-drag-region="true">
+        <Content
+          ref={scrollContent}
+          style={{
+            'width': '100%',
+            'padding-bottom': '0',
+            'height': 'auto',
+          }}
+          config={store.config}
+          data-tauri-drag-region="true"
+        >
+          <MaxWidth>
+            <Chat scrollContent={() => scrollContent} onChangeThread={onChangeThread} />
+          </MaxWidth>
+        </Content>
+      </Scroll>
+    )
+  }
 
   return (
-    <Scroll data-testid="dir" data-tauri-drag-region="true">
-      <Content
-        ref={scrollContent}
-        style={{
-          'width': '100%',
-          'padding-bottom': '0',
-          'height': 'auto',
-        }}
-        config={store.config}
-        data-tauri-drag-region="true"
-      >
-        <MaxWidth>
-          <Chat scrollContent={() => scrollContent} />
-        </MaxWidth>
-      </Content>
-    </Scroll>
+    <Show when={props.params.id} fallback={<NewThread />} keyed>
+      <OpenChat />
+    </Show>
   )
 }

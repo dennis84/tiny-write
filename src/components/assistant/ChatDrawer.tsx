@@ -1,3 +1,4 @@
+import {onMount} from 'solid-js'
 import {useState} from '@/state'
 import {Drawer, DrawerContent} from '../Drawer'
 import {ChatNavbar} from '../menu/Navbar'
@@ -5,11 +6,20 @@ import {Chat} from './Chat'
 
 export const ChatDrawer = () => {
   let scrollContent!: HTMLDivElement
-  const {aiService} = useState()
+  const {aiService, threadService} = useState()
 
   const onDrawerResized = async (width: number) => {
     await aiService.setSidebarWidth(width)
   }
+
+  const onChangeThread = (id: string) => {
+    threadService.open(id)
+    scrollContent.scrollTo({top: 0, behavior: 'smooth'})
+  }
+
+  onMount(() => {
+    threadService.newThread()
+  })
 
   return (
     <Drawer
@@ -21,7 +31,7 @@ export const ChatDrawer = () => {
     >
       <ChatNavbar />
       <DrawerContent ref={scrollContent}>
-        <Chat scrollContent={() => scrollContent} />
+        <Chat scrollContent={() => scrollContent} onChangeThread={onChangeThread} />
       </DrawerContent>
     </Drawer>
   )

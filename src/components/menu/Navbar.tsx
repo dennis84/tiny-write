@@ -33,7 +33,7 @@ const StickyContainer = styled('div')`
 `
 
 export const ChatNavbar = () => {
-  const {store, menuService} = useState()
+  const {store, menuService, threadService} = useState()
   const {openUrl} = useOpen()
 
   const onAssistantClick = () => {
@@ -43,7 +43,12 @@ export const ChatNavbar = () => {
 
   const onExpandClick = () => {
     menuService.toggleAssistant()
-    openUrl('/assistant')
+    const currentThread = threadService.currentThread
+    if (currentThread) {
+      openUrl(`/assistant/${currentThread.id}`)
+    } else {
+      openUrl('/assistant')
+    }
   }
 
   return (
