@@ -8,7 +8,7 @@ import {debounce} from 'throttle-debounce'
 import {Box} from '@flatten-js/core'
 import {replaceText, writeFile} from '@/remote/editor'
 import {debug, info, error} from '@/remote/log'
-import {State, FileText, File} from '@/state'
+import {State, FileText, File, Page} from '@/state'
 import {serialize} from '@/markdown'
 import {FileService} from './FileService'
 import {CollabService} from './CollabService'
@@ -139,7 +139,7 @@ export class EditorService {
       }
 
       const update = await FileService.activateFile(state, file.id)
-      update.collab = CollabService.create(file.id, update.mode, params.share)
+      update.collab = CollabService.create(file.id, Page.Editor, params.share)
       update.args = {
         ...update.args,
         selection: undefined,

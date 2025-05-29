@@ -4,7 +4,7 @@ import {WebsocketProvider} from 'y-websocket'
 import {YMultiDocUndoManager} from 'y-utility/y-multidoc-undomanager'
 import {defaultDeleteFilter, defaultProtectedNodes, ySyncPluginKey} from 'y-prosemirror'
 import {adjectives, animals, uniqueNamesGenerator} from 'unique-names-generator'
-import {Collab, Config, File, Mode, State} from '@/state'
+import {Collab, Config, File, Page, State} from '@/state'
 import {COLLAB_URL, isTauri} from '@/env'
 import {error, info} from '@/remote/log'
 import {TauriWebSocket} from '@/utils/TauriWebSocket'
@@ -36,9 +36,9 @@ export class CollabService {
     return this.store.collab?.snapshot !== undefined
   }
 
-  static create(id: string, mode = Mode.Editor, connect = false): Collab {
-    info(`Create ydoc: (id=${id}, mode=${mode}, connect=${connect})`)
-    const room = `${mode}/${id}`
+  static create(id: string, page: Page, connect = false): Collab {
+    info(`Create ydoc: (id=${id}, page=${page}, connect=${connect})`)
+    const room = `${page}/${id}`
 
     const ydoc = new Y.Doc({gc: false, guid: room})
     const permanentUserData = new Y.PermanentUserData(ydoc)

@@ -10,7 +10,7 @@ import {
   MessageType,
   useState,
 } from '@/state'
-import {useOpen} from '@/open'
+import {useOpen} from '@/hooks/open'
 import {BoxUtil} from '@/utils/BoxUtil'
 import {VecUtil} from '@/utils/VecUtil'
 import {getLanguageNames} from '@/codemirror/highlight'

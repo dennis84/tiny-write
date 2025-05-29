@@ -1,7 +1,7 @@
 import {expect, test, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
 import {render, waitFor} from '@solidjs/testing-library'
-import {Canvas, createState, Mode} from '@/state'
+import {Canvas, createState, Page} from '@/state'
 import {DB} from '@/db'
 import {createCtrl} from '@/services'
 import {Main} from '@/components/Main'
@@ -31,7 +31,7 @@ test('share - new', async () => {
     expect(getByTestId('canvas_container')).toBeDefined()
   })
 
-  expect(store.mode).toBe(Mode.Canvas)
+  expect(store.lastLocation?.page).toBe(Page.Canvas)
   expect(store.canvases[0].active).toBe(true)
   expect(store.collab?.started).toBe(true)
 })
@@ -51,7 +51,7 @@ test('share - existing canvas', async () => {
     expect(getByTestId('canvas_container')).toBeDefined()
   })
 
-  expect(store.mode).toBe(Mode.Canvas)
+  expect(store.lastLocation?.page).toBe(Page.Canvas)
   expect(store.canvases[0].active).toBe(true)
   expect(store.collab?.started).toBe(true)
 })

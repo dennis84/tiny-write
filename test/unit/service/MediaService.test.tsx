@@ -5,7 +5,7 @@ import {fromBase64} from 'js-base64'
 import {render, waitFor} from '@solidjs/testing-library'
 import {MediaService} from '@/services/MediaService'
 import {createCtrl} from '@/services'
-import {CanvasEditorElement, CanvasImageElement, ElementType, Mode, createState} from '@/state'
+import {CanvasEditorElement, CanvasImageElement, ElementType, createState} from '@/state'
 import {Main} from '@/components/Main'
 import {createIpcMock, stubLocation} from '../util/util'
 import {createYUpdate} from '../util/prosemirror-util'
@@ -77,7 +77,6 @@ test('dropFile - image on canvas', async () => {
   }
 
   const initial = createState({
-    mode: Mode.Canvas,
     files: [{id: '1', ydoc: createYUpdate('1', []), versions: []}],
     canvases: [
       {
@@ -131,7 +130,6 @@ test('dropFile - image on canvas with active editor', async () => {
   }
 
   const initial = createState({
-    mode: Mode.Canvas,
     files: [{id: '1', ydoc: createYUpdate('1', []), versions: []}],
     canvases: [
       {
@@ -197,7 +195,6 @@ test('dropPath - image on editor with basePath', async () => {
   stubLocation('/editor/1')
 
   const initial = createState({
-    mode: Mode.Editor,
     files: [
       {
         id: '1',
@@ -259,7 +256,6 @@ test('dropPath - image on canvas', async () => {
   }
 
   const initial = createState({
-    mode: Mode.Canvas,
     files: [{id: '1', ydoc: createYUpdate('1', []), versions: []}],
     canvases: [
       {
@@ -303,7 +299,6 @@ test('dropPath - text file on canvas', async () => {
   stubLocation('/canvas/1')
 
   const initial = createState({
-    mode: Mode.Canvas,
     files: [],
     canvases: [
       {

@@ -1,6 +1,6 @@
 import {SetStoreFunction, Store, unwrap} from 'solid-js/store'
 import {debounce} from 'throttle-debounce'
-import {Config, Mode, State} from '@/state'
+import {Config, State} from '@/state'
 import {setAlwaysOnTop} from '@/remote/app'
 import {info} from '@/remote/log'
 import {DB} from '@/db'
@@ -286,7 +286,7 @@ export class ConfigService {
   }
 
   get typewriterMode() {
-    return this.store.mode === Mode.Editor && this.store.config.typewriterMode
+    return this.store.config.typewriterMode
   }
 
   get prettier() {

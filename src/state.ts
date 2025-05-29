@@ -16,6 +16,11 @@ export interface MergeState {
   range?: [number, number]
 }
 
+export interface LastLocation {
+  path: string
+  page?: Page
+}
+
 export interface LocationState {
   prev?: string // prev location pathname
   file?: string
@@ -232,10 +237,12 @@ export interface Canvas {
   snapToGrid?: boolean
 }
 
-export enum Mode {
+export enum Page {
   Editor = 'editor',
   Canvas = 'canvas',
   Code = 'code',
+  Assistant = 'assistant',
+  Dir = 'dir',
 }
 
 export interface Tree {
@@ -276,7 +283,6 @@ export interface State {
   canvases: Canvas[]
   files: File[]
   tree?: Tree
-  mode: Mode
   config: Config
   error?: ErrorObject
   loading: LoadingType
@@ -291,6 +297,7 @@ export interface State {
   lastTr?: number
   ai?: AiConfig
   threads: Thread[]
+  lastLocation?: LastLocation
 }
 
 export type FileText = Record<string, any>
@@ -328,7 +335,6 @@ export const useState = () => useContext(StateContext)
 export const createState = (props: Partial<State> = {}): State => ({
   files: [],
   canvases: [],
-  mode: Mode.Editor,
   loading: 'loading',
   fullscreen: false,
   threads: [],

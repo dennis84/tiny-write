@@ -4,7 +4,7 @@ import {getCurrentWindow} from '@tauri-apps/api/window'
 import {isTauri} from '@/env'
 import {info} from '@/remote/log'
 import {useState} from '@/state'
-import {useOpen} from '@/open'
+import {useOpen} from '@/hooks/open'
 
 export const DropFile = () => {
   const {mediaService} = useState()

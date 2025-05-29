@@ -1,15 +1,18 @@
 import {onMount} from 'solid-js'
 import {useLocation} from '@solidjs/router'
-import {LocationState, Mode, useState} from '@/state'
+import {LocationState, useState} from '@/state'
 import {info} from '@/remote/log'
-import {useOpen} from '@/open'
+import {useOpen} from '@/hooks/open'
 
 export const Redirect = () => {
-  const {store, canvasService, fileService} = useState()
-  const {open, openDir} = useOpen()
+  const {store, fileService} = useState()
+  const {open, openUrl, openDir} = useOpen()
   const location = useLocation<LocationState>()
 
   onMount(async () => {
+    const lastLocation = store.lastLocation
+    info(`Redirect to (path=${lastLocation?.path})`)
+
     const path = location.state?.file ?? store.args?.file
     const newFile = location.state?.newFile ?? store.args?.newFile
     const argPath = newFile ?? path
@@ -26,16 +29,8 @@ export const Redirect = () => {
       return open(file, {back, selection})
     }
 
-    if (store.mode === Mode.Editor && fileService.currentFile) {
-      return open(fileService.currentFile, {back, selection})
-    }
-
-    if (store.mode === Mode.Code && fileService.currentFile) {
-      return open(fileService.currentFile, {back, selection})
-    }
-
-    if (store.mode === Mode.Canvas && canvasService.currentCanvas) {
-      return open(canvasService.currentCanvas, {back, selection})
+    if (lastLocation) {
+      return openUrl(lastLocation.path)
     }
 
     const first = store.files.find((f) => !f.deleted)

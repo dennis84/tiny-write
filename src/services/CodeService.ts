@@ -5,7 +5,7 @@ import * as Y from 'yjs'
 import {yCollab, ySyncFacet} from 'y-codemirror.next'
 import {debounce} from 'throttle-debounce'
 import {indentationMarkers} from '@replit/codemirror-indentation-markers'
-import {File, MergeState, SelectionRange, State, VisualPositionRange} from '@/state'
+import {File, MergeState, Page, SelectionRange, State, VisualPositionRange} from '@/state'
 import {copilot} from '@/codemirror/copilot'
 import {deleteText, insertText, writeFile} from '@/remote/editor'
 import {debug, info} from '@/remote/log'
@@ -47,7 +47,7 @@ export class CodeService {
   }
 
   async openFile(params: OpenFile) {
-    debug(`Open file: (params=${JSON.stringify(params)}, mode=code)`)
+    debug(`Open file: (params=${JSON.stringify(params)})`)
     const state: State = unwrap(this.store)
 
     try {
@@ -73,7 +73,7 @@ export class CodeService {
         merge: params.merge,
       }
 
-      update.collab = CollabService.create(file.id, update.mode, params.share)
+      update.collab = CollabService.create(file.id, Page.Code, params.share)
       const subdoc = CollabService.getSubdoc(update.collab.ydoc, file.id)
       if (text) this.updateText(file, subdoc, text)
       this.setState(update)

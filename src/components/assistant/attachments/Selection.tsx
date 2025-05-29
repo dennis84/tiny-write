@@ -1,9 +1,10 @@
 import {createEffect, createSignal, Show} from 'solid-js'
 import {v4 as uuidv4} from 'uuid'
 import {Message, MessageType, useState} from '@/state'
+import {useCurrentFile} from '@/hooks/current-file'
 import {IconTextSelectStart} from '@/components/Icon'
 import {TooltipButton} from '@/components/Tooltip'
-import {createCodeFence, useCurrentFile} from '../util'
+import {createCodeFence} from '../util'
 
 interface Props {
   onAttachment: (message: Message) => void

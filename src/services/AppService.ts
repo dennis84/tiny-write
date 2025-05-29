@@ -5,7 +5,7 @@ import {debug, error, info} from '@/remote/log'
 import {show, updateWindow} from '@/remote/window'
 import {getArgs, setAlwaysOnTop, setFullscreen} from '@/remote/app'
 import {startLanguageServer} from '@/remote/copilot'
-import {State, ServiceError, Window, Mode, ErrorObject, createState} from '@/state'
+import {State, ServiceError, Window, ErrorObject, createState, LastLocation} from '@/state'
 import {DB} from '@/db'
 import {isTauri} from '@/env'
 import {ConfigService} from './ConfigService'
@@ -21,18 +21,20 @@ export class AppService {
     private setState: SetStoreFunction<State>,
   ) {}
 
-  get mode() {
-    return this.store.mode
-  }
-
   get fullscreen() {
     return this.store.fullscreen
+  }
+
+  get lastLocation() {
+    return this.store.lastLocation
   }
 
   async init() {
     const data = await this.fetchData()
     debug(`Fetched data: ${stateToString(data)}`)
-    info(`Init app (mode=${data.mode}, args=${JSON.stringify(data.args)})`)
+    info(
+      `Init app (lastLocationPath=${data.lastLocation?.path}, args=${JSON.stringify(data.args)})`,
+    )
 
     try {
       if (isTauri() && data.window) {
@@ -97,6 +99,12 @@ export class AppService {
     this.setState('fullscreen', fullscreen)
   }
 
+  async setLastLocation(lastLocation: LastLocation) {
+    info(`Save last location (path=${lastLocation.path}, page=${lastLocation.page})`)
+    this.setState('lastLocation', lastLocation)
+    await DB.setLastLocation(lastLocation)
+  }
+
   async updateWindow(win: Partial<Window>) {
     if (this.store.fullscreen) return
     this.setState('window', {...this.store.window, ...win})
@@ -118,10 +126,10 @@ export class AppService {
     const fetchedConfig = await DB.getConfig()
     const files = (await FileService.fetchFiles()) ?? state.files ?? []
     const canvases = (await CanvasService.fetchCanvases()) ?? state.canvases ?? []
-    const mode = (await DB.getMode()) ?? state.mode ?? Mode.Editor
     const menuWidth = (await DB.getMenuWidth()) ?? state.menuWidth
     const tree = await DB.getTree()
     const ai = await DB.getAi()
+    const lastLocation = (await DB.getLastLocation()) ?? state.lastLocation
     const threads = (await DB.getThreads())?.sort((a, b) => {
       return (b.lastModified?.getTime() ?? 0) - (a.lastModified?.getTime() ?? 0)
     })
@@ -139,11 +147,11 @@ export class AppService {
       config,
       window: fetchedWindow,
       collab: undefined,
-      mode,
       menuWidth,
       tree,
       ai,
       threads,
+      lastLocation,
     }
   }
 

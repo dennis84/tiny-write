@@ -3,8 +3,8 @@ import {Portal} from 'solid-js/web'
 import {unwrap} from 'solid-js/store'
 import {styled} from 'solid-styled-components'
 import {DragGesture} from '@use-gesture/vanilla'
-import {Mode, isCanvas, isCodeFile, isFile, isLocalFile, useState} from '@/state'
-import {useOpen} from '@/open'
+import {isCanvas, isCodeFile, isFile, isLocalFile, Page, useState} from '@/state'
+import {useOpen} from '@/hooks/open'
 import {MenuTreeItem} from '@/services/TreeService'
 import {FileService} from '@/services/FileService'
 import {CanvasService} from '@/services/CanvasService'
@@ -316,7 +316,7 @@ export const SubmenuTree = (props: Props) => {
   }
 
   const isOnCanvas = (item?: MenuTreeItem): boolean =>
-    store.mode === Mode.Canvas &&
+    store.lastLocation?.page === Page.Canvas &&
     isFile(item?.value) &&
     (canvasService.currentCanvas?.elements.some((it) => it.id === item.id) ?? false)
 
@@ -334,7 +334,9 @@ export const SubmenuTree = (props: Props) => {
     const onCornerClick = () => treeService.collapse(p.node.id)
 
     const getCurrentId = () =>
-      store.mode === Mode.Canvas ? canvasService.currentCanvas?.id : fileService.currentFile?.id
+      store.lastLocation?.page === Page.Canvas ?
+        canvasService.currentCanvas?.id
+      : fileService.currentFile?.id
 
     onMount(() => {
       const offset = 10
@@ -395,7 +397,7 @@ export const SubmenuTree = (props: Props) => {
             } else if (ds?.pos === 'delete') {
               await deleteService.delete(p.node)
             } else if (ds?.pos === 'open') {
-              if (store.mode === Mode.Canvas && isFile(p.node.value)) {
+              if (store.lastLocation?.page === Page.Canvas && isFile(p.node.value)) {
                 const point = canvasService.getPosition([x, y])
                 const added = await canvasService.addFile(p.node.value, undefined, point)
                 canvasCollabService.addElements(added ?? [])

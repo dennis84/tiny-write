@@ -7,7 +7,7 @@ import {MessageType, useState} from '@/state'
 import {saveSvg} from '@/remote/svg'
 import {Align} from '@/prosemirror/image'
 import {getLanguageNames} from '@/codemirror/highlight'
-import {useOpen} from '@/open'
+import {useOpen} from '@/hooks/open'
 import {
   IconAiAssistant,
   IconCodeBlocks,

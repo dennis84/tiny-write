@@ -1,23 +1,3 @@
-import {Accessor, createEffect, createSignal} from 'solid-js'
-import {File, Mode, useState} from '@/state'
-
-export const useCurrentFile = (): Accessor<File | undefined> => {
-  const [currentFile, setCurrentFile] = createSignal<File>()
-  const {store, canvasService, fileService} = useState()
-
-  createEffect(() => {
-    if (store.mode === Mode.Code || store.mode === Mode.Editor) {
-      setCurrentFile(fileService.currentFile)
-    } else if (store.mode === Mode.Canvas) {
-      const elementId = canvasService.currentCanvas?.elements.find((el) => el.selected)?.id
-      if (elementId) setCurrentFile(fileService.findFileById(elementId))
-      else setCurrentFile(undefined)
-    }
-  })
-
-  return currentFile
-}
-
 interface CodeDetails {
   code: string
   id?: string

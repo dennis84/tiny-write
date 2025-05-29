@@ -11,7 +11,6 @@ import {
   EdgeType,
   ElementType,
   createState,
-  Mode,
   CanvasVideoElement,
 } from '@/state'
 import {DB} from '@/db'
@@ -276,7 +275,6 @@ test('updateCameraPoint', () => {
 test('restore', async () => {
   const [store, setState] = createStore(
     createState({
-      mode: Mode.Canvas,
       canvases: [createCanvas({id: '1', active: true}), createCanvas({id: '2', deleted: true})],
     }),
   )

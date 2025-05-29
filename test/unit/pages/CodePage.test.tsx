@@ -2,7 +2,7 @@ import {beforeEach, expect, test, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
 import {fireEvent, render, waitFor} from '@solidjs/testing-library'
 import {clearMocks, mockWindows} from '@tauri-apps/api/mocks'
-import {createState, Mode} from '@/state'
+import {createState, Page} from '@/state'
 import {DB} from '@/db'
 import {createCtrl} from '@/services'
 import {Main} from '@/components/Main'
@@ -33,7 +33,7 @@ test('init - new file', async () => {
     expect(getByTestId('code_scroll')).toBeDefined()
   })
 
-  expect(store.mode).toBe(Mode.Code)
+  expect(store.lastLocation?.page).toBe(Page.Code)
   expect(store.files.length).toBe(1)
   expect(store.files[0].active).toBeTruthy()
   expect(fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('')
@@ -43,7 +43,10 @@ test('init - active', async () => {
   stubLocation('/')
 
   const initial = createState({
-    mode: Mode.Code,
+    lastLocation: {
+      path: '/code/1',
+      page: Page.Code,
+    },
     files: [
       {id: '1', ydoc: createYUpdate('1', 'Code1'), lastModified, versions: [], code: true},
       {
@@ -52,7 +55,6 @@ test('init - active', async () => {
         lastModified,
         versions: [],
         code: true,
-        active: true,
       },
     ],
   })
@@ -64,11 +66,9 @@ test('init - active', async () => {
     expect(getByTestId('code_scroll')).toBeDefined()
   })
 
-  expect(store.mode).toBe(Mode.Code)
+  expect(store.lastLocation?.page).toBe(Page.Code)
   expect(store.files.length).toBe(2)
-  expect(store.files[0].active).toBeFalsy()
-  expect(store.files[1].active).toBeTruthy()
-  expect(fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('Code2')
+  expect(fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('Code1')
 })
 
 test('init - new file with id', async () => {
@@ -88,7 +88,7 @@ test('init - new file with id', async () => {
     expect(getByTestId('code_scroll')).toBeDefined()
   })
 
-  expect(store.mode).toBe(Mode.Code)
+  expect(store.lastLocation?.page).toBe(Page.Code)
   expect(store.files.length).toBe(3)
   expect(store.files[0].active).toBeFalsy()
   expect(store.files[1].active).toBeFalsy()
@@ -113,7 +113,7 @@ test('init - existing file', async () => {
     expect(getByTestId('code_scroll')).toBeDefined()
   })
 
-  expect(store.mode).toBe(Mode.Code)
+  expect(store.lastLocation?.page).toBe(Page.Code)
   expect(store.files.length).toBe(2)
   expect(store.files[0].active).toBeTruthy()
   expect(store.files[1].active).toBeFalsy()
@@ -142,10 +142,8 @@ test('init - share', async () => {
     expect(getByTestId('code_scroll')).toBeDefined()
   })
 
-  expect(store.mode).toBe(Mode.Code)
+  expect(store.lastLocation?.page).toBe(Page.Code)
   expect(store.files.length).toBe(2)
-  expect(store.files[0].active).toBeTruthy()
-  expect(store.files[1].active).toBeFalsy()
   expect(store.collab?.started).toBe(true)
 
   await waitFor(() => {

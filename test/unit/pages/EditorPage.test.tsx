@@ -2,7 +2,7 @@ import {beforeEach, expect, test, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
 import {render, waitFor} from '@solidjs/testing-library'
 import {clearMocks, mockWindows} from '@tauri-apps/api/mocks'
-import {createState, Mode} from '@/state'
+import {createState, Page} from '@/state'
 import {DB} from '@/db'
 import {createCtrl} from '@/services'
 import {Main} from '@/components/Main'
@@ -33,9 +33,8 @@ test('open - new file', async () => {
     expect(getByTestId('editor_scroll')).toBeDefined()
   })
 
-  expect(store.mode).toBe(Mode.Editor)
+  expect(store.lastLocation?.page).toBe(Page.Editor)
   expect(store.files.length).toBe(1)
-  expect(store.files[0].active).toBeTruthy()
   expect(getByTestId('editor_scroll')).toHaveTextContent('Start typing ...')
 })
 
@@ -43,9 +42,13 @@ test('open - active', async () => {
   stubLocation('/')
 
   const initial = createState({
+    lastLocation: {
+      path: '/editor/2',
+      page: Page.Editor,
+    },
     files: [
       {id: '1', ydoc: createYUpdate('1', ['Test']), lastModified, versions: []},
-      {id: '2', ydoc: createYUpdate('2', ['Test 2']), lastModified, versions: [], active: true},
+      {id: '2', ydoc: createYUpdate('2', ['Test 2']), lastModified, versions: []},
     ],
   })
 
@@ -56,10 +59,8 @@ test('open - active', async () => {
     expect(getByTestId('editor_scroll')).toBeDefined()
   })
 
-  expect(store.mode).toBe(Mode.Editor)
+  expect(store.lastLocation?.page).toBe(Page.Editor)
   expect(store.files.length).toBe(2)
-  expect(store.files[0].active).toBeFalsy()
-  expect(store.files[1].active).toBeTruthy()
   expect(getByTestId('editor_scroll')).toHaveTextContent(/^Test 2$/)
 })
 
@@ -80,11 +81,8 @@ test('open - new file with id', async () => {
     expect(getByTestId('editor_scroll')).toBeDefined()
   })
 
-  expect(store.mode).toBe(Mode.Editor)
+  expect(store.lastLocation?.page).toBe(Page.Editor)
   expect(store.files.length).toBe(3)
-  expect(store.files[0].active).toBeFalsy()
-  expect(store.files[1].active).toBeFalsy()
-  expect(store.files[2].active).toBeTruthy()
   expect(getByTestId('editor_scroll')).toHaveTextContent('Start typing ...')
 })
 
@@ -105,10 +103,8 @@ test('open - existing file', async () => {
     expect(getByTestId('editor_scroll')).toBeDefined()
   })
 
-  expect(store.mode).toBe(Mode.Editor)
+  expect(store.lastLocation?.page).toBe(Page.Editor)
   expect(store.files.length).toBe(2)
-  expect(store.files[0].active).toBeTruthy()
-  expect(store.files[1].active).toBeFalsy()
   expect(getByTestId('editor_scroll')).toHaveTextContent(/^Text$/)
 })
 
@@ -134,10 +130,8 @@ test('open - share', async () => {
     expect(getByTestId('editor_scroll')).toBeDefined()
   })
 
-  expect(store.mode).toBe(Mode.Editor)
+  expect(store.lastLocation?.page).toBe(Page.Editor)
   expect(store.files.length).toBe(2)
-  expect(store.files[0].active).toBeTruthy()
-  expect(store.files[1].active).toBeFalsy()
   expect(store.collab?.started).toBe(true)
 
   await waitFor(() => {
@@ -173,9 +167,8 @@ test('open - file with path', async () => {
     expect(getByTestId('editor_scroll')).toBeDefined()
   })
 
-  expect(store.mode).toBe(Mode.Editor)
+  expect(store.lastLocation?.page).toBe(Page.Editor)
   expect(store.files.length).toBe(1)
-  expect(store.files[0].active).toBeTruthy()
   expect(store.files[0].path).toBe('file1')
   expect(getByTestId('editor_scroll')).toHaveTextContent(/^File1$/)
 })

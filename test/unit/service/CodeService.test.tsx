@@ -1,7 +1,7 @@
 import {beforeEach, expect, test, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
 import {render, waitFor} from '@solidjs/testing-library'
-import {Mode, createState} from '@/state'
+import {createState, Page} from '@/state'
 import {createCtrl} from '@/services'
 import {Main} from '@/components/Main'
 import {createYUpdate} from '../util/codemirror-util'
@@ -29,7 +29,6 @@ test('prettify', async () => {
           codeLang: 'typescript',
         },
       ],
-      mode: Mode.Code,
     }),
   )
 
@@ -39,7 +38,7 @@ test('prettify', async () => {
     expect(getByTestId('code_scroll')).toBeDefined()
   })
 
-  expect(store.mode).toBe(Mode.Code)
+  expect(store.lastLocation?.page).toBe(Page.Code)
   expect(fileService.currentFile?.id).toBe('1')
   expect(fileService.currentFile?.codeEditorView).toBeDefined()
 

@@ -31,7 +31,7 @@ import {findWords, tabCompletionKeymap} from '@/codemirror/completion'
 import {mermaidKeywords} from '@/codemirror/mermaid'
 import {lspCompletionSource} from '@/codemirror/lsp-completion'
 import {lspHoverSource} from '@/codemirror/lsp-hover'
-import {Mode, PrettierConfig, State} from '@/state'
+import {Page, PrettierConfig, State} from '@/state'
 import {isTauri} from '@/env'
 import {ConfigService} from './ConfigService'
 import {AppService} from './AppService'
@@ -112,7 +112,7 @@ export class CodeMirrorService {
       )
     }
 
-    if (this.store.mode === Mode.Code) {
+    if (this.store.lastLocation?.page === Page.Code) {
       extensions.push([highlightActiveLine(), highlightActiveLineGutter(), lineNumbers()])
     }
 
@@ -120,7 +120,7 @@ export class CodeMirrorService {
       extensions.push([hoverTooltip(lspHoverSource(props.path), {hoverTime: 600})])
     }
 
-    if (this.store.mode !== Mode.Canvas) {
+    if (this.store.lastLocation?.page !== Page.Canvas) {
       extensions.push(
         foldGutter({
           markerDOM: (open) => {

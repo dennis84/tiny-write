@@ -2,7 +2,7 @@ import {Store} from 'solid-js/store'
 import {convertFileSrc} from '@tauri-apps/api/core'
 import {EditorView} from 'prosemirror-view'
 import {getMimeType, resolvePath, toRelativePath} from '@/remote/editor'
-import {File, Mode, State} from '@/state'
+import {File, Page, State} from '@/state'
 import {FileService} from './FileService'
 import {CanvasService} from './CanvasService'
 import {AppService} from './AppService'
@@ -30,11 +30,11 @@ export class MediaService {
   async dropFile(blob: Blob, [x, y]: [number, number]) {
     const data = (await this.readFile(blob)) as string
 
-    if (this.store.mode === Mode.Editor) {
+    if (this.store.lastLocation?.page === Page.Editor) {
       const currentFile = this.fileService.currentFile
       if (!currentFile?.editorView) return
       this.insert(currentFile.editorView, data, x, y)
-    } else if (this.store.mode === Mode.Canvas) {
+    } else if (this.store.lastLocation?.page === Page.Canvas) {
       const file = this.fileService.currentFile
       if (file?.active && file.editorView) {
         this.insert(file.editorView, data, x, y)
@@ -57,7 +57,7 @@ export class MediaService {
     const basePath = await this.appService.getBasePath()
     const relativePath = await toRelativePath(path, basePath)
 
-    if (this.store.mode === Mode.Editor) {
+    if (this.store.lastLocation?.page === Page.Editor) {
       if (isImage || isVideo) {
         const currentFile = this.fileService.currentFile
         if (!currentFile?.editorView) return
@@ -68,7 +68,7 @@ export class MediaService {
         if (!file) file = await this.fileService.newFile({path, code: !isMarkdown})
         return {file}
       }
-    } else if (this.store.mode === Mode.Canvas) {
+    } else if (this.store.lastLocation?.page === Page.Canvas) {
       const point = this.canvasService.getPosition([x, y])
       if (!point) return
 

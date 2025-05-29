@@ -1,11 +1,11 @@
 import {onCleanup, onMount} from 'solid-js'
 import {keyName} from 'w3c-keyname'
-import {isCodeElement, isEditorElement, Mode, useState} from '@/state'
+import {isCodeElement, isEditorElement, Page, useState} from '@/state'
 import {isTauri, mod} from '@/env'
 import {saveFile} from '@/remote/editor'
 import {quit} from '@/remote/app'
 import {lspGoto} from '@/remote/lsp'
-import {useOpen} from '@/open'
+import {useOpen} from '@/hooks/open'
 
 export const Keymap = () => {
   const {
@@ -51,7 +51,7 @@ export const Keymap = () => {
   }
 
   const onNew = async () => {
-    if (store.mode === Mode.Editor) {
+    if (store.lastLocation?.page === Page.Editor) {
       const file = await fileService.newFile()
       treeService.add(file)
       open(file)
@@ -66,7 +66,7 @@ export const Keymap = () => {
   }
 
   const onClear = async () => {
-    if (store.mode === Mode.Editor) {
+    if (store.lastLocation?.page === Page.Editor) {
       await editorService.clear()
     }
   }
@@ -101,7 +101,7 @@ export const Keymap = () => {
   }
 
   const onBackspace = async () => {
-    if (store.mode !== Mode.Canvas || stopEvent()) return false
+    if (store.lastLocation?.page !== Page.Canvas || stopEvent()) return false
 
     const currentCanvas = canvasService.currentCanvas
     if (!currentCanvas) return false

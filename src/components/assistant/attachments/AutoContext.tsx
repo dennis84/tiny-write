@@ -1,8 +1,8 @@
 import {createSignal, Show} from 'solid-js'
 import {useState} from '@/state'
+import {useCurrentFile} from '@/hooks/current-file'
 import {IconToggleOff, IconToggleOn} from '@/components/Icon'
 import {TooltipButton} from '@/components/Tooltip'
-import {useCurrentFile} from '../util'
 import {TooltipHelp} from '@/components/TooltipHelp'
 
 export const AutoContextButton = () => {

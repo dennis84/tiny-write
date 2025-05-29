@@ -1,4 +1,4 @@
-import {isCanvas, isEditorElement, isFile, isLinkElement, Mode, Openable, State} from '@/state'
+import {isCanvas, isEditorElement, isFile, isLinkElement, Openable, Page, State} from '@/state'
 import {CanvasService} from './CanvasService'
 import {FileService} from './FileService'
 import {MenuTreeItem, TreeService} from './TreeService'
@@ -70,7 +70,7 @@ export class DeleteService {
     // Navigate to parent of deleted node if current file is deleted
     // or if current file is an anchestor of deleted node
     if (
-      this.store.mode !== Mode.Canvas &&
+      this.store.lastLocation?.page !== Page.Canvas &&
       currentFile &&
       (node.id === currentFile.id || this.treeService.isDescendant(currentFile.id, node.id)) &&
       node.parentId !== undefined

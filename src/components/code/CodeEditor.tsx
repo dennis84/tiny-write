@@ -41,6 +41,7 @@ export const CodeEditor = () => {
 
   onCleanup(() => {
     fileService.destroy(fileService.currentFile?.id)
+    collabService.disconnectCollab()
   })
 
   return (

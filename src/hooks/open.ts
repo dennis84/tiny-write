@@ -9,10 +9,10 @@ import {
   MergeState,
   Openable,
   VisualPositionRange,
-} from './state'
-import {info} from './remote/log'
-import {open as shellOpen} from './remote/app'
-import {isTauri} from './env'
+} from '../state'
+import {info} from '../remote/log'
+import {open as shellOpen} from '../remote/app'
+import {isTauri} from '../env'
 
 interface OpenOptions {
   back?: boolean

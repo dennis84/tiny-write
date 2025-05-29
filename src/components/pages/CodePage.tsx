@@ -1,6 +1,6 @@
 import {RouteSectionProps, useLocation} from '@solidjs/router'
 import {onMount, Show} from 'solid-js'
-import {LocationState, Mode, useState} from '@/state'
+import {LocationState, useState} from '@/state'
 import {info} from '@/remote/log'
 import {locationToString} from '@/utils/debug'
 import {Loading} from './Loading'
@@ -31,10 +31,7 @@ export const CodePage = (props: RouteSectionProps) => {
     })
 
     return (
-      <Show
-        fallback={<Loading />}
-        when={store.collab?.id === props.params.id && store.mode === Mode.Code}
-      >
+      <Show fallback={<Loading />} when={store.collab?.id === props.params.id}>
         <Title />
         <CodeEditor />
         <MergeMenu />

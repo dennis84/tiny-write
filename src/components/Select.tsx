@@ -2,7 +2,7 @@ import {Show, createSignal, onCleanup, onMount} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {DragGesture} from '@use-gesture/vanilla'
 import {Box} from '@flatten-js/core'
-import {Mode, useState} from '@/state'
+import {Page, useState} from '@/state'
 
 const SelectionFrame = styled('div')`
   position: absolute;
@@ -45,7 +45,7 @@ export const Select = (props: Props) => {
 
         // If only clicked
         if (!first && !memo) {
-          if (store.mode === Mode.Canvas) {
+          if (store.lastLocation?.page === Page.Canvas) {
             canvasService.deselect()
           } else {
             editorService.deselect()
@@ -63,7 +63,7 @@ export const Select = (props: Props) => {
           Math.max(y, y + my),
         )
 
-        if (store.mode === Mode.Canvas) {
+        if (store.lastLocation?.page === Page.Canvas) {
           canvasService.selectBox(initial, first, last)
         } else {
           editorService.selectBox(initial, first, last)

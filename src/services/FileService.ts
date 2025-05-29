@@ -1,10 +1,9 @@
-import {batch} from 'solid-js'
 import {SetStoreFunction, Store} from 'solid-js/store'
 import * as Y from 'yjs'
 import {yXmlFragmentToProseMirrorRootNode} from 'y-prosemirror'
 import {ySyncFacet} from 'y-codemirror.next'
 import {v4 as uuidv4} from 'uuid'
-import {File, FileText, Mode, ServiceError, State} from '@/state'
+import {File, FileText, ServiceError, State} from '@/state'
 import {
   getDocument,
   getMimeType,
@@ -147,7 +146,6 @@ export class FileService {
   static async activateFile(state: State, fileId: string): Promise<State> {
     const files = []
     const canvases = []
-    let activeFile
 
     for (const f of state.files) {
       f.editorView?.destroy()
@@ -156,7 +154,6 @@ export class FileService {
       const codeLang = FileService.getCodeLang(f)
       const newFile = {...f, codeLang, active, editorView: undefined, codeEditorView: undefined}
       files.push(newFile)
-      if (active) activeFile = newFile
       if (active || f.active) {
         await FileService.saveFile(newFile)
       }
@@ -166,15 +163,11 @@ export class FileService {
       canvases.push({...c, active: false})
     }
 
-    const mode = activeFile?.code ? Mode.Code : Mode.Editor
-    await DB.setMode(mode)
-
     return {
       ...state,
       error: undefined,
       files,
       canvases,
-      mode,
     }
   }
 
@@ -316,12 +309,7 @@ export class FileService {
 
     const index = this.store.files.findIndex((f) => f.id === file.id)
     if (index === -1) return
-    batch(() => {
-      this.setState('files', index, {editorView: undefined, codeEditorView: undefined})
-      if (this.store.mode === Mode.Editor || this.store.mode === Mode.Code) {
-        this.setState('collab', undefined)
-      }
-    })
+    this.setState('files', index, {editorView: undefined, codeEditorView: undefined})
   }
 
   async restore(id: string) {

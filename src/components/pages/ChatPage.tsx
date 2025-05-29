@@ -2,7 +2,7 @@ import {onMount, Show} from 'solid-js'
 import {RouteSectionProps} from '@solidjs/router'
 import {styled} from 'solid-styled-components'
 import {useState} from '@/state'
-import {useOpen} from '@/open'
+import {useOpen} from '@/hooks/open'
 import {Chat} from '../assistant/Chat'
 import {Content, Scroll} from '../Layout'
 

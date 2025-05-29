@@ -1,5 +1,5 @@
 import {Show} from 'solid-js'
-import {File, Mode, PrettierConfig, useState} from '@/state'
+import {File, Page, PrettierConfig, useState} from '@/state'
 import {ButtonGroup, ButtonPrimary} from '@/components/Button'
 import {DrawerContent} from '../Drawer'
 import {Label, Link, Sub, Text} from './Style'
@@ -15,8 +15,8 @@ export const CodeFormat = () => {
     })
 
   const getSelectedFile = (): File | undefined => {
-    if (store.mode === Mode.Code) return fileService.currentFile
-    if (store.mode === Mode.Canvas) {
+    if (store.lastLocation?.page === Page.Code) return fileService.currentFile
+    if (store.lastLocation?.page === Page.Canvas) {
       const elementId = canvasService.currentCanvas?.elements.find((el) => el.selected)?.id
       if (!elementId) return
       return fileService.findFileById(elementId)

@@ -2,7 +2,7 @@ import {Show} from 'solid-js'
 import {useLocation, useNavigate} from '@solidjs/router'
 import {styled} from 'solid-styled-components'
 import {LocationState, useState} from '@/state'
-import {useOpen} from '@/open'
+import {useOpen} from '@/hooks/open'
 import {MenuId} from '@/services/MenuService'
 import {Button, ButtonGroup, IconButton} from '../Button'
 import {

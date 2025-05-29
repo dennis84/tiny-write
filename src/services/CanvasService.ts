@@ -15,7 +15,6 @@ import {
   EdgeType,
   ElementType,
   File,
-  Mode,
   State,
   isEditorElement,
   isLinkElement,
@@ -23,6 +22,7 @@ import {
   isCodeElement,
   CanvasRect,
   CanvasPoint,
+  Page,
 } from '@/state'
 import {DB} from '@/db'
 import {info} from '@/remote/log'
@@ -129,7 +129,6 @@ export class CanvasService {
       ...state,
       canvases,
       files,
-      mode: Mode.Canvas,
     }
   }
 
@@ -347,7 +346,7 @@ export class CanvasService {
       merge: undefined,
     }
 
-    const collab = CollabService.create(id, Mode.Canvas, share)
+    const collab = CollabService.create(id, Page.Canvas, share)
 
     this.setState({...state, collab})
 
@@ -356,8 +355,6 @@ export class CanvasService {
     }
 
     await this.saveCanvas()
-    await DB.setMode(state.mode)
-    info('Saved canvas and mode after open')
   }
 
   async newFile(

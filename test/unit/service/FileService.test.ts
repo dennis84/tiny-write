@@ -2,7 +2,7 @@ import {beforeEach, expect, test, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
 import {createStore} from 'solid-js/store'
 import * as Y from 'yjs'
-import {Mode, createState} from '@/state'
+import {createState} from '@/state'
 import {FileService} from '@/services/FileService'
 import {CollabService} from '@/services/CollabService'
 import {createYUpdate, createSubdoc} from '../util/prosemirror-util'
@@ -59,7 +59,6 @@ test('restore', async () => {
 
   const service = new FileService(collabService, store, setState)
   setState('collab', {ydoc})
-  setState('mode', Mode.Editor)
 
   await service.restore('2')
   expect(store.files.length).toBe(2)

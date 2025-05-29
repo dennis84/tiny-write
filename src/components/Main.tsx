@@ -1,10 +1,11 @@
 import {onMount, Switch, Match, ErrorBoundary, createEffect, untrack, Show} from 'solid-js'
 import {Route, Router, RouteSectionProps, useLocation} from '@solidjs/router'
-import {LocationState, State, StateContext} from '@/state'
+import {LocationState, Page, State, StateContext} from '@/state'
 import {createCtrl} from '@/services'
 import {info} from '@/remote/log'
 import {isTauri} from '@/env'
 import {locationToString} from '@/utils/debug'
+import {useCurrentPage} from '@/hooks/current-page'
 import {DragArea, Layout, PageContent} from '@/components/Layout'
 import {Menu} from '@/components/menu/Menu'
 import {FloatingNavbar} from '@/components/menu/Navbar'
@@ -29,6 +30,7 @@ export const Main = (props: {state: State}) => {
     let layoutRef!: HTMLDivElement
     const location = useLocation<LocationState>()
     const ctrl = createCtrl(props.state)
+    const currentPage = useCurrentPage()
 
     info(`Open root (location=${locationToString(location)})`)
 
@@ -45,6 +47,11 @@ export const Main = (props: {state: State}) => {
       } catch (error: any) {
         ctrl.appService.setError({id: 'init_failed', error})
       }
+    })
+
+    createEffect(async () => {
+      const page = currentPage()
+      if (page) await ctrl.appService.setLastLocation({path: location.pathname, page})
     })
 
     createEffect((prev) => {
@@ -95,12 +102,12 @@ export const Main = (props: {state: State}) => {
 
   return (
     <Router root={Root}>
-      <Route path="/editor/:id" component={EditorPage} />
-      <Route path="/canvas/:id" component={CanvasPage} />
-      <Route path="/code/:id" component={CodePage} />
-      <Route path="/dir" component={DirPage} />
-      <Route path="/assistant" component={ChatPage} />
-      <Route path="/assistant/:id" component={ChatPage} />
+      <Route path="/editor/:id" component={EditorPage} info={{page: Page.Editor}} />
+      <Route path="/canvas/:id" component={CanvasPage} info={{page: Page.Canvas}} />
+      <Route path="/code/:id" component={CodePage} info={{page: Page.Code}} />
+      <Route path="/dir" component={DirPage} info={{page: Page.Dir}} />
+      <Route path="/assistant" component={ChatPage} info={{page: Page.Assistant}} />
+      <Route path="/assistant/:id" component={ChatPage} info={{page: Page.Assistant}} />
       <Route path="*" component={Redirect} />
     </Router>
   )

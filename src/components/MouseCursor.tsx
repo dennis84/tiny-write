@@ -3,7 +3,7 @@ import {createStore} from 'solid-js/store'
 import {styled} from 'solid-styled-components'
 import {Awareness} from 'y-protocols/awareness'
 import {throttle} from 'throttle-debounce'
-import {Mode, useState} from '@/state'
+import {Page, useState} from '@/state'
 
 const CursorContainer = styled('div')`
   position: fixed;
@@ -77,12 +77,12 @@ export const MouseCursor = () => {
   const [offset, setOffset] = createSignal<[number, number]>([0, 0])
 
   const zoom = () =>
-    store.mode === Mode.Canvas ? (canvasService.currentCanvas?.camera.zoom ?? 1) : 1
+    store.lastLocation?.page === Page.Canvas ? (canvasService.currentCanvas?.camera.zoom ?? 1) : 1
 
   createEffect(() => {
     if (store.config.contentWidth === undefined) return
 
-    if (store.mode === Mode.Canvas) {
+    if (store.lastLocation?.page === Page.Canvas) {
       setOffset(canvasService.currentCanvas?.camera.point ?? [0, 0])
       return
     }

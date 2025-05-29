@@ -1,6 +1,6 @@
 import {RouteSectionProps} from '@solidjs/router'
 import {onMount, Show} from 'solid-js'
-import {Mode, useState} from '@/state'
+import {useState} from '@/state'
 import {info} from '@/remote/log'
 import {locationToString} from '@/utils/debug'
 import {Loading} from './Loading'
@@ -21,10 +21,7 @@ export const CanvasPage = (props: RouteSectionProps) => {
     })
 
     return (
-      <Show
-        fallback={<Loading />}
-        when={store.collab?.id === props.params.id && store.mode === Mode.Canvas}
-      >
+      <Show fallback={<Loading />} when={store.collab?.id === props.params.id}>
         <Title />
         <Canvas />
       </Show>

@@ -1,8 +1,8 @@
 import {DOMOutputSpec, Node} from 'prosemirror-model'
 import {EditorView} from 'prosemirror-view'
 import {DragGesture} from '@use-gesture/vanilla'
+import {Page} from '@/state'
 import {isMac, isTauri} from '@/env'
-import {Mode} from '@/state'
 import {error} from '@/remote/log'
 import {ViewConfig} from '@/services/ProseMirrorService'
 import {MediaService} from '@/services/MediaService'
@@ -141,7 +141,7 @@ class ImageView {
         event.preventDefault()
         if (first) {
           let w = this.container.getBoundingClientRect().width
-          if (appService.mode === Mode.Canvas) {
+          if (appService.lastLocation?.page === Page.Canvas) {
             const zoom = canvasService.currentCanvas?.camera.zoom ?? 1
             w /= zoom
           }

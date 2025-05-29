@@ -1,8 +1,8 @@
 import {JSX, Show} from 'solid-js'
-import {Mode, useState} from '@/state'
+import {Page, useState} from '@/state'
 import {isTauri, isMac, mod, shortHash, version, VERSION_URL, isDev} from '@/env'
 import {quit} from '@/remote/app'
-import {useOpen} from '@/open'
+import {useOpen} from '@/hooks/open'
 import {MenuId} from '@/services/MenuService'
 import {
   IconAi,
@@ -127,15 +127,15 @@ export const Menu = () => {
           <DrawerContent>
             <SubmenuTree onBin={() => menuService.show(MenuId.BIN)} maybeHide={maybeHide} />
             {/* Submenu File */}
-            <Show when={store.mode === Mode.Editor}>
+            <Show when={store.lastLocation?.page === Page.Editor}>
               <SubmenuEditor />
             </Show>
             {/* Submenu Canvas */}
-            <Show when={store.mode === Mode.Canvas}>
+            <Show when={store.lastLocation?.page === Page.Canvas}>
               <SubmenuCanvas maybeHide={maybeHide} />
             </Show>
             {/* Submenu Code */}
-            <Show when={store.mode === Mode.Code}>
+            <Show when={store.lastLocation?.page === Page.Code}>
               <SubmenuCode />
             </Show>
             {/* undo, redo, copy, paste, ... */}
@@ -151,7 +151,7 @@ export const Menu = () => {
                   <IconPrettier /> Code Format
                 </Link>
               </Show>
-              <Show when={store.mode === Mode.Editor}>
+              <Show when={store.lastLocation?.page === Page.Editor}>
                 <Link onClick={() => menuService.show(MenuId.CHANGE_SET)}>
                   <IconHistory /> Change Set
                 </Link>
@@ -162,7 +162,7 @@ export const Menu = () => {
                   <Keys keys={[modKey, 'Enter']} />
                 </Link>
               </Show>
-              <Show when={store.mode === Mode.Editor}>
+              <Show when={store.lastLocation?.page === Page.Editor}>
                 <Link onClick={onToggleTypewriterMode}>
                   <IconVerticalAlignCenter /> Typewriter mode {store.config.typewriterMode && '✅'}
                 </Link>

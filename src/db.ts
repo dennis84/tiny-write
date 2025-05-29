@@ -1,6 +1,6 @@
 import {DBSchema, openDB} from 'idb'
 import {differenceInDays} from 'date-fns'
-import {AiConfig, Camera, Config, ElementType, Mode, Thread, Window} from '@/state'
+import {AiConfig, Camera, Config, ElementType, LastLocation, Thread, Window} from '@/state'
 import {info} from './remote/log'
 
 export interface PersistedVersion {
@@ -123,12 +123,12 @@ export class DB {
     return (await dbPromise).get('window', 'main')
   }
 
-  static async setMode(mode: Mode) {
-    return (await dbPromise).put('meta', mode, 'mode')
+  static async setLastLocation(lastLocation: LastLocation) {
+    return (await dbPromise).put('meta', lastLocation, 'last_location')
   }
 
-  static async getMode(): Promise<Mode> {
-    return (await dbPromise).get('meta', 'mode') as Promise<Mode>
+  static async getLastLocation(): Promise<LastLocation> {
+    return (await dbPromise).get('meta', 'last_location') as Promise<LastLocation>
   }
 
   static async setMenuWidth(width: number) {

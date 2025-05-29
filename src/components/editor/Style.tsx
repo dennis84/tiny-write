@@ -1,10 +1,10 @@
 import {styled} from 'solid-styled-components'
-import {Config, Mode} from '@/state'
+import {Config, Page} from '@/state'
 import {codeMirror} from '../code/Style'
 
 interface Props {
   config: Config
-  mode: Mode
+  page: Page
 }
 
 export const codeBlock = (props: Props) => `
@@ -22,7 +22,7 @@ export const codeBlock = (props: Props) => `
     }
     ${codeMirror}
     .cm-editor {
-      flex-direction: ${props.mode === Mode.Editor && props.config.contentWidth > 1000 ? 'row' : 'column'};
+      flex-direction: ${props.page === Page.Editor && props.config.contentWidth > 1000 ? 'row' : 'column'};
       .cm-scroller {
         padding: 20px 7px;
       }

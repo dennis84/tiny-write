@@ -5,7 +5,7 @@ import {DirEntry, readDir} from '@tauri-apps/plugin-fs'
 import {homeDir} from '@tauri-apps/api/path'
 import {useState} from '@/state'
 import {resolvePath, toRelativePath} from '@/remote/editor'
-import {useOpen} from '@/open'
+import {useOpen} from '@/hooks/open'
 import {Content, Scroll} from '../Layout'
 import {IconDescription, IconFolder, IconFolderOpen} from '../Icon'
 
