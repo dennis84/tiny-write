@@ -18,8 +18,8 @@ export const ChatPage = (props: RouteSectionProps) => {
 
   const NewThread = () => {
     onMount(() => {
-      threadService.newThread()
-      openUrl(`/assistant/${threadService.currentThread?.id}`)
+      const newThread = threadService.newThread()
+      openUrl(`/assistant/${newThread.id}`)
     })
 
     return <></>

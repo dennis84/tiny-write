@@ -72,8 +72,20 @@ export class CanvasService {
     private setState: SetStoreFunction<State>,
   ) {}
 
+  get currentCanvasId() {
+    return this.store.lastLocation?.canvasId
+  }
+
   get currentCanvas() {
-    return this.store.canvases?.find((c) => c.active)
+    const canavsId = this.currentCanvasId
+    if (!canavsId) return
+    return this.store.canvases?.find((c) => c.id === canavsId)
+  }
+
+  get currentCanvasIndex() {
+    const canavsId = this.currentCanvasId
+    if (!canavsId) return -1
+    return this.store.canvases?.findIndex((c) => c.id === canavsId)
   }
 
   get selection(): Selection | undefined {
@@ -105,32 +117,32 @@ export class CanvasService {
     }
   }
 
-  static activateCanvas(state: State, id: string) {
-    const canvases = []
-    const files = []
-
-    for (const file of state.files) {
-      file.editorView?.destroy()
-      file.codeEditorView?.destroy()
-      files.push({...file, active: false, editorView: undefined, codeEditorView: undefined})
-    }
-
-    for (const canvas of state.canvases) {
-      if (canvas.id === id) {
-        canvases.push({...canvas, active: true})
-      } else if (canvas.active) {
-        canvases.push({...canvas, active: false})
-      } else {
-        canvases.push(canvas)
-      }
-    }
-
-    return {
-      ...state,
-      canvases,
-      files,
-    }
-  }
+  // static activateCanvas(state: State, id: string) {
+  //   const canvases = []
+  //   const files = []
+  //
+  //   for (const file of state.files) {
+  //     file.editorView?.destroy()
+  //     file.codeEditorView?.destroy()
+  //     files.push({...file, active: false, editorView: undefined, codeEditorView: undefined})
+  //   }
+  //
+  //   for (const canvas of state.canvases) {
+  //     if (canvas.id === id) {
+  //       canvases.push({...canvas, active: true})
+  //     } else if (canvas.active) {
+  //       canvases.push({...canvas, active: false})
+  //     } else {
+  //       canvases.push(canvas)
+  //     }
+  //   }
+  //
+  //   return {
+  //     ...state,
+  //     canvases,
+  //     files,
+  //   }
+  // }
 
   updateCanvas(id: string, update: Partial<Canvas>) {
     const index = this.store.canvases.findIndex((canvas) => canvas.id === id)
@@ -139,7 +151,7 @@ export class CanvasService {
   }
 
   updateCanvasElement(elementId: string, update: UpdateElement) {
-    const index = this.store.canvases?.findIndex((c) => c.active)
+    const index = this.currentCanvasIndex
     if (index === -1) return
     const currentCanvas = this.store.canvases[index]
     const elementIndex = currentCanvas.elements.findIndex((el) => el.id === elementId)
@@ -217,7 +229,6 @@ export class CanvasService {
 
     if (active && (isEditorElement(newEl) || isCodeElement(newEl))) {
       const file = this.fileService.findFileById(newEl.id)
-      this.fileService.setActive(newEl.id)
       file?.editorView?.focus()
       file?.codeEditorView?.focus()
     }
@@ -272,8 +283,6 @@ export class CanvasService {
         } else if (file?.codeEditorView) {
           file.codeEditorView.dispatch({selection: {anchor: 0}})
         }
-
-        this.fileService.setActive(el.id, false)
       }
 
       this.updateCanvasElement(el.id, {selected: false, active: false})
@@ -330,31 +339,32 @@ export class CanvasService {
   async open(id: string, share = false) {
     info(`Open canvas (id=${id}, share=${share})`)
 
-    const prevCanvas = this.currentCanvas
+    const files = []
+    for (const file of this.store.files) {
+      file.editorView?.destroy()
+      file.codeEditorView?.destroy()
+      files.push({...file, editorView: undefined, codeEditorView: undefined})
+    }
 
-    let state = unwrap(this.store)
+    let newState = {...this.store, files}
 
     if (!this.findCanvas(id)) {
       const canvas = CanvasService.createCanvas({id})
-      state.canvases.push(canvas)
+      newState.canvases = [...newState.canvases, canvas]
     }
 
-    state = CanvasService.activateCanvas(state, id)
-    state.args = {
-      ...state.args,
+    newState.args = {
+      ...newState.args,
       selection: undefined,
       merge: undefined,
     }
 
     const collab = CollabService.create(id, Page.Canvas, share)
 
-    this.setState({...state, collab})
+    this.setState({...newState, collab})
+    const canvas = this.findCanvas(id)
 
-    if (prevCanvas) {
-      await this.saveCanvas({...prevCanvas, active: false})
-    }
-
-    await this.saveCanvas()
+    await this.saveCanvas(canvas)
   }
 
   async newFile(

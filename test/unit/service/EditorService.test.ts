@@ -42,7 +42,7 @@ beforeEach(() => {
 test('openFile - stop collab', async () => {
   const initial = createState({
     files: [
-      {id: '1', ydoc: createYUpdate('1', ['Text']), lastModified, versions: [], active: true},
+      {id: '1', ydoc: createYUpdate('1', ['Text']), lastModified, versions: []},
       {id: '2', ydoc: createYUpdate('2', ['Test 2']), lastModified, versions: []},
     ],
     collab: createCollabMock({started: true}),
@@ -65,14 +65,13 @@ test('openFile - stop collab', async () => {
 
   await service.openFile({id: '2'})
   expect(store.files.length).toBe(2)
-  expect(store.files[1].active).toBeTruthy()
   expect(store.collab?.started).toBe(false)
 })
 
 test('openFile - existing', async () => {
   const initial = createState({
     files: [
-      {id: '1', ydoc: createYUpdate('1', ['Text']), lastModified, versions: [], active: true},
+      {id: '1', ydoc: createYUpdate('1', ['Text']), lastModified, versions: []},
       {id: '2', ydoc: createYUpdate('2', ['Test 2']), lastModified, versions: []},
     ],
     collab: createCollabMock(),
@@ -95,17 +94,13 @@ test('openFile - existing', async () => {
 
   await service.openFile({id: '2'})
   expect(store.files.length).toBe(2)
-  expect(store.files[0].active).toBeFalsy()
-  expect(store.files[1].active).toBeTruthy()
   expect(store.collab?.started).toBe(false)
-
-  expect(DB.updateFile).toHaveReturnedTimes(2)
 })
 
 test('openFile - not found', async () => {
   const initial = createState({
     files: [
-      {id: '1', ydoc: createYUpdate('1', ['Text']), lastModified, versions: [], active: true},
+      {id: '1', ydoc: createYUpdate('1', ['Text']), lastModified, versions: []},
       {id: '2', ydoc: createYUpdate('2', ['Test 2']), lastModified, versions: []},
     ],
     collab: createCollabMock(),
@@ -128,9 +123,6 @@ test('openFile - not found', async () => {
 
   await service.openFile({id: '123'})
   expect(store.files.length).toBe(3)
-  expect(store.files[0].active).toBeFalsy()
-  expect(store.files[1].active).toBeFalsy()
-  expect(store.files[2].active).toBeTruthy()
   expect(store.files[2].id).toBe('123')
 })
 
@@ -164,7 +156,6 @@ test('openFile - share', async () => {
 
   await service.openFile({id: 'room-123', share: true})
   expect(store.files.length).toBe(1)
-  expect(store.files[0].active).toBeTruthy()
   expect(store.files[0].id).toBe('room-123')
   expect(store.collab?.provider?.roomname).toBe('editor/room-123')
   expect(store.collab?.started).toBeTruthy()

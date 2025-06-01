@@ -15,7 +15,6 @@ const createCanvas = (props: Partial<Canvas> = {}): Canvas => ({
   id: '1',
   camera: {point: [0, 0], zoom: 1},
   elements: [],
-  active: false,
   lastModified: new Date(),
   ...props,
 })
@@ -24,7 +23,7 @@ test('share - new', async () => {
   vi.stubGlobal('location', {pathname: '/canvas/1', search: '?share=true&'})
 
   const initial = createState()
-  const {store} = createCtrl(initial)
+  const {store, canvasService} = createCtrl(initial)
   const {getByTestId} = render(() => <Main state={store} />)
 
   await waitFor(() => {
@@ -32,7 +31,7 @@ test('share - new', async () => {
   })
 
   expect(store.lastLocation?.page).toBe(Page.Canvas)
-  expect(store.canvases[0].active).toBe(true)
+  expect(canvasService.currentCanvasId).toBe('1')
   expect(store.collab?.started).toBe(true)
 })
 
@@ -44,7 +43,7 @@ test('share - existing canvas', async () => {
     canvases: [canvas],
   })
 
-  const {store} = createCtrl(initial)
+  const {store, canvasService} = createCtrl(initial)
   const {getByTestId} = render(() => <Main state={store} />)
 
   await waitFor(() => {
@@ -52,6 +51,6 @@ test('share - existing canvas', async () => {
   })
 
   expect(store.lastLocation?.page).toBe(Page.Canvas)
-  expect(store.canvases[0].active).toBe(true)
+  expect(canvasService.currentCanvasId).toBe('1')
   expect(store.collab?.started).toBe(true)
 })

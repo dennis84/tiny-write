@@ -64,7 +64,6 @@ const initial = createState({
         createEditorElement({id: '2'}),
         createLinkElement({id: '3', from: '1', to: '2'}),
       ],
-      active: false,
       lastModified: new Date(),
     },
   ],

@@ -39,12 +39,20 @@ export class FileService {
     private setState: SetStoreFunction<State>,
   ) {}
 
+  get currentFileId(): string | undefined {
+    return this.store.lastLocation?.fileId
+  }
+
   get currentFile(): File | undefined {
-    return this.store.files.find((f) => f.active)
+    const fileId = this.currentFileId
+    if (!fileId) return
+    return this.store.files.find((f) => f.id === fileId)
   }
 
   get currentFileIndex(): number {
-    return this.store.files.findIndex((f) => f.active)
+    const fileId = this.currentFileId
+    if (!fileId) return -1
+    return this.store.files.findIndex((f) => f.id === fileId)
   }
 
   static async loadTextFile(path: string): Promise<LoadedTextFile> {
@@ -117,7 +125,6 @@ export class FileService {
       title: file.title,
       lastModified: file.lastModified,
       newFile: file.newFile,
-      active: file.active,
       deleted: file.deleted,
       code: file.code,
       codeLang: file.codeLang,
@@ -140,34 +147,6 @@ export class FileService {
       ydoc,
       codeLang,
       versions,
-    }
-  }
-
-  static async activateFile(state: State, fileId: string): Promise<State> {
-    const files = []
-    const canvases = []
-
-    for (const f of state.files) {
-      f.editorView?.destroy()
-      f.codeEditorView?.destroy()
-      const active = f.id === fileId
-      const codeLang = FileService.getCodeLang(f)
-      const newFile = {...f, codeLang, active, editorView: undefined, codeEditorView: undefined}
-      files.push(newFile)
-      if (active || f.active) {
-        await FileService.saveFile(newFile)
-      }
-    }
-
-    for (const c of state.canvases) {
-      canvases.push({...c, active: false})
-    }
-
-    return {
-      ...state,
-      error: undefined,
-      files,
-      canvases,
     }
   }
 
@@ -248,17 +227,6 @@ export class FileService {
   async addFile(file: File) {
     this.setState('files', (prev) => [...prev, file!])
     await FileService.saveFile(file)
-  }
-
-  setActive(id: string, active = true) {
-    for (let i = 0; i < this.store.files.length; i++) {
-      const cur = this.store.files[i]
-      if (cur.id === id) {
-        this.setState('files', i, 'active', active)
-      } else if (cur.active) {
-        this.setState('files', i, 'active', false)
-      }
-    }
   }
 
   findFileById(id: string): File | undefined {

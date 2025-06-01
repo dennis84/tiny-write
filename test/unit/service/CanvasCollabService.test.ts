@@ -19,7 +19,6 @@ const createCanvas = (props: Partial<Canvas> = {}): Canvas => ({
   id: 'c1',
   camera: {point: [0, 0], zoom: 1},
   elements: [],
-  active: false,
   lastModified: new Date(),
   ...props,
 })

@@ -19,6 +19,9 @@ export interface MergeState {
 export interface LastLocation {
   path: string
   page?: Page
+  fileId?: string
+  threadId?: string
+  canvasId?: string
 }
 
 export interface LocationState {
@@ -231,7 +234,6 @@ export interface Canvas {
   title?: string
   camera: Camera
   elements: CanvasElement[]
-  active?: boolean
   deleted?: boolean
   lastModified?: Date
   snapToGrid?: boolean
@@ -276,7 +278,6 @@ export interface Thread {
   title?: string
   lastModified?: Date
   messages: Message[]
-  active: boolean
 }
 
 export interface State {
@@ -314,7 +315,6 @@ export interface File {
   newFile?: string
   code?: boolean
   codeLang?: string
-  active?: boolean
   deleted?: boolean
   editorView?: EditorView
   codeEditorView?: CmEditorView

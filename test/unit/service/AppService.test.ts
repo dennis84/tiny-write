@@ -19,11 +19,11 @@ beforeEach(() => {
 })
 
 test.each([
-  {fileActive: true, expected: '/users/me/cwd'},
-  {fileActive: true, worktreePath: '/users/me/project', expected: '/users/me/project'},
-  {fileActive: false, expected: '/users/me/cwd'},
-  {fileActive: true, page: Page.Canvas, expected: '/users/me/cwd'},
-  {fileActive: false, page: Page.Canvas, expected: '/users/me/cwd'},
+  {page: Page.Editor, expected: '/users/me/cwd'},
+  {page: Page.Code, worktreePath: '/users/me/project', expected: '/users/me/project'},
+  {page: Page.Code, expected: '/users/me/cwd'},
+  {page: Page.Canvas, active: true, expected: '/users/me/cwd'},
+  {page: Page.Canvas, active: false, expected: '/users/me/cwd'},
 ])('getBasePath - from file', async (data) => {
   createIpcMock({
     get_document: () => ({
@@ -34,7 +34,7 @@ test.each([
   const canvasEditor = {
     id: '1',
     type: ElementType.Editor,
-    active: data.fileActive && data.page === Page.Canvas,
+    active: data.active,
     x: 0,
     y: 0,
     width: 100,
@@ -43,12 +43,16 @@ test.each([
 
   const state = createState({
     args: {cwd: '/users/me/cwd'},
+    lastLocation: {
+      path: `/${data.page}/1`,
+      page: data.page,
+      fileId: '1',
+    },
     files: [
       {
         id: '1',
         ydoc: createYUpdate('1', ['Test']),
         lastModified,
-        active: data.fileActive ?? false,
         versions: [],
         path: '/users/me/project/file1',
       },
@@ -57,7 +61,6 @@ test.each([
       {
         id: '1',
         camera: {point: [0, 0], zoom: 1},
-        active: true,
         elements: [canvasEditor],
       },
     ],
@@ -76,7 +79,6 @@ test('reset', async () => {
         id: '1',
         ydoc: createYUpdate('1', ['Test']),
         lastModified,
-        active: true,
         versions: [],
       },
     ],

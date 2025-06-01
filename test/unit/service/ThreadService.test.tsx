@@ -1,7 +1,7 @@
 import {beforeEach, expect, test, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
 import {createStore} from 'solid-js/store'
-import {createState, File, Message} from '@/state'
+import {createState, File, Message, Page} from '@/state'
 import {ThreadService} from '@/services/ThreadService'
 import {CopilotService} from '@/services/CopilotService'
 import {FileService} from '@/services/FileService'
@@ -18,17 +18,20 @@ vi.mock('@/db', () => ({DB: mock()}))
 
 const lastModified = new Date()
 
-test('newThread', () => {
+test('newThread - empty', () => {
   const initial = createState({
+    lastLocation: {
+      path: '/assistant/1',
+      page: Page.Assistant,
+      threadId: '1',
+    },
     threads: [
       {
         id: '1',
-        active: true,
         messages: [],
       },
       {
         id: '2',
-        active: false,
         title: 'Test',
         lastModified,
         messages: [
@@ -47,16 +50,18 @@ test('newThread', () => {
   service.newThread()
 
   expect(store.threads).toHaveLength(2)
-  expect(store.threads[0].active).toBe(true)
-  expect(store.threads[1].active).toBe(false)
 })
 
 test('addMessage', async () => {
   const initial = createState({
+    lastLocation: {
+      path: '/assistant/1',
+      page: Page.Assistant,
+      threadId: '1',
+    },
     threads: [
       {
         id: '1',
-        active: true,
         messages: [],
       },
     ],
@@ -75,10 +80,14 @@ test('addMessage', async () => {
 
 test('streamLastMessage', async () => {
   const initial = createState({
+    lastLocation: {
+      path: '/assistant/1',
+      page: Page.Assistant,
+      threadId: '1',
+    },
     threads: [
       {
         id: '1',
-        active: true,
         messages: [{id: '1', role: 'user', content: 'Test'}],
       },
     ],
@@ -107,10 +116,14 @@ test('streamLastMessage', async () => {
 
 test('removeMessage', async () => {
   const initial = createState({
+    lastLocation: {
+      path: '/assistant/1',
+      page: Page.Assistant,
+      threadId: '1',
+    },
     threads: [
       {
         id: '1',
-        active: true,
         messages: [{id: '1', role: 'user', content: '1'}],
       },
     ],
@@ -129,10 +142,14 @@ test('removeMessage', async () => {
 
 test('setError', async () => {
   const initial = createState({
+    lastLocation: {
+      path: '/assistant/1',
+      page: Page.Assistant,
+      threadId: '1',
+    },
     threads: [
       {
         id: '1',
-        active: true,
         messages: [{id: '1', role: 'user', content: '1'}],
       },
     ],
@@ -150,10 +167,14 @@ test('setError', async () => {
 
 test('updateTitle', async () => {
   const initial = createState({
+    lastLocation: {
+      path: '/assistant/1',
+      page: Page.Assistant,
+      threadId: '1',
+    },
     threads: [
       {
         id: '1',
-        active: true,
         messages: [{id: '1', role: 'user', content: '1'}],
       },
     ],
@@ -164,22 +185,25 @@ test('updateTitle', async () => {
   const fileService = mock<FileService>()
   const service = new ThreadService(store, setState, copilotService, fileService)
 
-  service.updateTitle('Test')
+  await service.updateTitle('Test')
 
   expect(store.threads[0].title).toBe('Test')
 })
 
 test('open', () => {
   const initial = createState({
+    lastLocation: {
+      path: '/assistant/1',
+      page: Page.Assistant,
+      threadId: '1',
+    },
     threads: [
       {
         id: '1',
-        active: true,
         messages: [],
       },
       {
         id: '2',
-        active: false,
         title: '1',
         lastModified,
         messages: [
@@ -189,7 +213,6 @@ test('open', () => {
       },
       {
         id: '3',
-        active: false,
         title: '2',
         lastModified,
         messages: [
@@ -208,22 +231,22 @@ test('open', () => {
   service.open('2')
 
   expect(store.threads).toHaveLength(2)
-  expect(store.threads[0].active).toBe(true)
-  expect(store.threads[1].active).toBe(false)
 
   service.open('3')
 
   expect(store.threads).toHaveLength(2)
-  expect(store.threads[0].active).toBe(false)
-  expect(store.threads[1].active).toBe(true)
 })
 
 test('delete', async () => {
   const initial = createState({
+    lastLocation: {
+      path: '/assistant/1',
+      page: Page.Assistant,
+      threadId: '1',
+    },
     threads: [
       {
         id: '1',
-        active: false,
         lastModified,
         messages: [
           {id: '1', role: 'user', content: '1'},
@@ -232,7 +255,6 @@ test('delete', async () => {
       },
       {
         id: '2',
-        active: false,
         lastModified,
         messages: [
           {id: '3', role: 'user', content: '3'},
@@ -258,10 +280,14 @@ test('delete', async () => {
 
 test('deleteAll', async () => {
   const initial = createState({
+    lastLocation: {
+      path: '/assistant/1',
+      page: Page.Assistant,
+      threadId: '1',
+    },
     threads: [
       {
         id: '1',
-        active: false,
         lastModified,
         messages: [
           {id: '1', role: 'user', content: '1'},
@@ -270,7 +296,6 @@ test('deleteAll', async () => {
       },
       {
         id: '2',
-        active: false,
         lastModified,
         messages: [
           {id: '3', role: 'user', content: '3'},
@@ -294,10 +319,14 @@ test('deleteAll', async () => {
 
 test('regenerate - user message', async () => {
   const initial = createState({
+    lastLocation: {
+      path: '/assistant/1',
+      page: Page.Assistant,
+      threadId: '1',
+    },
     threads: [
       {
         id: '1',
-        active: true,
         messages: [
           {id: '1', role: 'user', content: '1'},
           {id: '2', parentId: '1', role: 'assistant', content: '2'},
@@ -322,10 +351,14 @@ test('regenerate - user message', async () => {
 
 test('regenerate - assistant message', async () => {
   const initial = createState({
+    lastLocation: {
+      path: '/assistant/1',
+      page: Page.Assistant,
+      threadId: '1',
+    },
     threads: [
       {
         id: '1',
-        active: true,
         messages: [
           {id: '1', role: 'user', content: '1'},
           {id: '2', parentId: '1', role: 'assistant', content: '2'},
@@ -351,10 +384,14 @@ test('regenerate - assistant message', async () => {
 
 test('generateTitle', async () => {
   const initial = createState({
+    lastLocation: {
+      path: '/assistant/1',
+      page: Page.Assistant,
+      threadId: '1',
+    },
     threads: [
       {
         id: '1',
-        active: true,
         lastModified,
         messages: [
           {id: '1', role: 'user', content: '1'},
@@ -395,10 +432,14 @@ test.each<[Message[], number]>([
   [[{id: '1', role: 'user', content: '```'}], 2],
 ])('getMessages', async (messages, count) => {
   const initial = createState({
+    lastLocation: {
+      path: '/assistant/1',
+      page: Page.Assistant,
+      threadId: '1',
+    },
     threads: [
       {
         id: '1',
-        active: true,
         lastModified,
         messages,
       },
@@ -418,20 +459,23 @@ test.each<[Message[], number]>([
 
 test('insertAutoContext', async () => {
   const initial = createState({
+    lastLocation: {
+      path: '/assistant/1',
+      page: Page.Assistant,
+      threadId: '1',
+    },
     files: [
       {
         id: '1',
         ydoc: createYUpdate('1', 'Code'),
         versions: [],
         lastModified,
-        active: true,
         code: true,
       },
     ],
     threads: [
       {
         id: '1',
-        active: true,
         lastModified,
         messages: [{id: '1', role: 'user', content: 'test'}],
       },
@@ -475,20 +519,23 @@ test('insertAutoContext', async () => {
 
 test('insertAutoContext - update', async () => {
   const initial = createState({
+    lastLocation: {
+      path: '/assistant/1',
+      page: Page.Assistant,
+      threadId: '1',
+    },
     files: [
       {
         id: '1',
         ydoc: createYUpdate('1', 'Code'),
         versions: [],
         lastModified,
-        active: true,
         code: true,
       },
     ],
     threads: [
       {
         id: '1',
-        active: true,
         lastModified,
         messages: [
           {id: '1', role: 'user', content: 'message1'},
@@ -545,20 +592,23 @@ test('insertAutoContext - update', async () => {
 
 test('insertAutoContext - regenerate', async () => {
   const initial = createState({
+    lastLocation: {
+      path: '/assistant/1',
+      page: Page.Assistant,
+      threadId: '1',
+    },
     files: [
       {
         id: '1',
         ydoc: createYUpdate('1', 'Code'),
         versions: [],
         lastModified,
-        active: true,
         code: true,
       },
     ],
     threads: [
       {
         id: '1',
-        active: true,
         lastModified,
         messages: [
           {id: '1', role: 'user', content: 'message1'},

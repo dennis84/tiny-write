@@ -33,7 +33,7 @@ export class AppService {
     const data = await this.fetchData()
     debug(`Fetched data: ${stateToString(data)}`)
     info(
-      `Init app (lastLocationPath=${data.lastLocation?.path}, args=${JSON.stringify(data.args)})`,
+      `Init app (args=${JSON.stringify(data.args)}, lastLocationPath=${data.lastLocation?.path})`,
     )
 
     try {
@@ -99,10 +99,11 @@ export class AppService {
     this.setState('fullscreen', fullscreen)
   }
 
-  async setLastLocation(lastLocation: LastLocation) {
+  async setLastLocation(lastLocation: Partial<LastLocation>) {
     info(`Save last location (path=${lastLocation.path}, page=${lastLocation.page})`)
     this.setState('lastLocation', lastLocation)
-    await DB.setLastLocation(lastLocation)
+    const loc = this.store.lastLocation
+    if (loc) await DB.setLastLocation(unwrap(loc))
   }
 
   async updateWindow(win: Partial<Window>) {

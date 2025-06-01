@@ -1,4 +1,4 @@
-import {Store, unwrap, SetStoreFunction} from 'solid-js/store'
+import {Store, SetStoreFunction} from 'solid-js/store'
 import {EditorView} from 'prosemirror-view'
 import {EditorState, Transaction} from 'prosemirror-state'
 import {selectAll, deleteSelection} from 'prosemirror-commands'
@@ -121,7 +121,7 @@ export class EditorService {
 
   async openFile(params: OpenFile) {
     debug(`Open file: (params=${JSON.stringify(params)}, mode=editor)`)
-    const state: State = unwrap(this.store)
+    const state = {...this.store}
 
     try {
       let file = this.fileService.findFileById(params.id)
@@ -131,24 +131,26 @@ export class EditorService {
 
       if (!file) {
         file = FileService.createFile({id: params.id, path, newFile})
-        state.files.push(file)
+        state.files = [...state.files, file]
       }
 
       if (path) {
         text = (await FileService.loadMarkdownFile(path)).text
       }
 
-      const update = await FileService.activateFile(state, file.id)
-      update.collab = CollabService.create(file.id, Page.Editor, params.share)
-      update.args = {
-        ...update.args,
-        selection: undefined,
-        merge: undefined,
+      const newState = {
+        ...state,
+        collab: CollabService.create(file.id, Page.Editor, params.share),
+        args: {
+          ...state.args,
+          selection: undefined,
+          merge: undefined,
+        },
       }
 
-      const subdoc = CollabService.getSubdoc(update.collab.ydoc, file.id)
+      const subdoc = CollabService.getSubdoc(newState.collab.ydoc, file.id)
       if (text) this.updateText(file, subdoc, text)
-      this.setState(update)
+      this.setState(newState)
     } catch (e: any) {
       this.appService.setError({error: e, fileId: params.id})
     }

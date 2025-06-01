@@ -1,5 +1,5 @@
 import {onMount, Switch, Match, ErrorBoundary, createEffect, untrack, Show} from 'solid-js'
-import {Route, Router, RouteSectionProps, useLocation} from '@solidjs/router'
+import {Route, Router, RouteSectionProps, useCurrentMatches, useLocation} from '@solidjs/router'
 import {LocationState, Page, State, StateContext} from '@/state'
 import {createCtrl} from '@/services'
 import {info} from '@/remote/log'
@@ -29,6 +29,7 @@ export const Main = (props: {state: State}) => {
   const Root = (p: RouteSectionProps) => {
     let layoutRef!: HTMLDivElement
     const location = useLocation<LocationState>()
+    const mathes = useCurrentMatches()
     const ctrl = createCtrl(props.state)
     const currentPage = useCurrentPage()
 
@@ -51,7 +52,17 @@ export const Main = (props: {state: State}) => {
 
     createEffect(async () => {
       const page = currentPage()
-      if (page) await ctrl.appService.setLastLocation({path: location.pathname, page})
+      const match = mathes()[0]
+      if (page) {
+        const id = match.params.id
+        await ctrl.appService.setLastLocation({
+          path: location.pathname,
+          fileId: page === Page.Code || page === Page.Editor ? id : undefined,
+          threadId: page === Page.Assistant ? id : undefined,
+          canvasId: page === Page.Canvas ? id : undefined,
+          page,
+        })
+      }
     })
 
     createEffect((prev) => {

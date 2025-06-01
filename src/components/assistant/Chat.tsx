@@ -2,8 +2,9 @@ import {createSignal, Match, onCleanup, onMount, Show, Switch} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {v4 as uuidv4} from 'uuid'
 import {WheelGesture} from '@use-gesture/vanilla'
-import {Message, useState} from '@/state'
+import {Message, Page, useState} from '@/state'
 import {Chunk} from '@/services/CopilotService'
+import {useOpen} from '@/hooks/open'
 import {IconAdd, IconKeyboardArrowDown} from '../Icon'
 import {Button, ButtonGroup, IconButton} from '../Button'
 import {TooltipDivider} from '../Tooltip'
@@ -56,9 +57,10 @@ interface Props {
 export const Chat = (props: Props) => {
   let inputRef!: HTMLDivElement
 
-  const {store, copilotService, threadService, toastService} = useState()
+  const {store, appService, copilotService, threadService, toastService} = useState()
   const [focus, setFocus] = createSignal(true)
   const [autoScrolling, setAutoScrolling] = createSignal(true)
+  const {openUrl} = useOpen()
 
   const scrollToBottom = () => {
     props.scrollContent().scrollTo({
@@ -140,8 +142,13 @@ export const Chat = (props: Props) => {
   }
 
   const onNewThread = () => {
-    threadService.newThread()
+    const newThread = threadService.newThread()
     focusInput()
+    if (store.lastLocation?.page === Page.Assistant) {
+      openUrl(`/assistant/${newThread.id}`)
+    } else {
+      appService.setLastLocation({threadId: newThread.id})
+    }
   }
 
   const onRegenerate = (message: Message) => {

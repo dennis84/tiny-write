@@ -6,19 +6,21 @@ import {Chat} from './Chat'
 
 export const ChatDrawer = () => {
   let scrollContent!: HTMLDivElement
-  const {aiService, threadService} = useState()
+  const {aiService, appService, threadService} = useState()
 
   const onDrawerResized = async (width: number) => {
     await aiService.setSidebarWidth(width)
   }
 
-  const onChangeThread = (id: string) => {
-    threadService.open(id)
+  const onChangeThread = (threadId: string) => {
+    appService.setLastLocation({threadId})
+    threadService.open(threadId)
     scrollContent.scrollTo({top: 0, behavior: 'smooth'})
   }
 
   onMount(() => {
-    threadService.newThread()
+    const thread = threadService.newThread()
+    appService.setLastLocation({threadId: thread.id})
   })
 
   return (

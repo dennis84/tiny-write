@@ -47,8 +47,8 @@ export class CodeService {
   }
 
   async openFile(params: OpenFile) {
-    debug(`Open file: (params=${JSON.stringify(params)})`)
-    const state: State = unwrap(this.store)
+    debug(`Open code file: (params=${JSON.stringify(params)})`)
+    let newState = {...this.store}
 
     try {
       let file = unwrap(this.fileService.findFileById(params.id))
@@ -58,25 +58,28 @@ export class CodeService {
       let text: string | undefined
 
       if (!file) {
+        debug(`Create file (id=${params.id})`)
         file = FileService.createFile({id: params.id, code: true, path, newFile})
-        state.files.push(file)
+        newState.files = [...newState.files, file]
       }
 
       if (path) {
         text = (await FileService.loadTextFile(path)).text
       }
 
-      const update = await FileService.activateFile(state, file.id)
-      update.args = {
-        ...update.args,
-        selection: params.selection,
-        merge: params.merge,
+      newState = {
+        ...newState,
+        collab: CollabService.create(file.id, Page.Code, params.share),
+        args: {
+          ...newState.args,
+          selection: params.selection,
+          merge: params.merge,
+        },
       }
 
-      update.collab = CollabService.create(file.id, Page.Code, params.share)
-      const subdoc = CollabService.getSubdoc(update.collab.ydoc, file.id)
+      const subdoc = CollabService.getSubdoc(newState.collab!.ydoc, file.id)
       if (text) this.updateText(file, subdoc, text)
-      this.setState(update)
+      this.setState(newState)
     } catch (error: any) {
       this.appService.setError({error, fileId: params.id})
     }

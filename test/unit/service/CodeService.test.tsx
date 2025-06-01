@@ -23,7 +23,6 @@ test('prettify', async () => {
         {
           id: '1',
           ydoc: createYUpdate('1', 'const a=1;'),
-          active: true,
           versions: [],
           code: true,
           codeLang: 'typescript',

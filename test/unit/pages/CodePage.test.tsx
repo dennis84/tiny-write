@@ -35,7 +35,7 @@ test('init - new file', async () => {
 
   expect(store.lastLocation?.page).toBe(Page.Code)
   expect(store.files.length).toBe(1)
-  expect(store.files[0].active).toBeTruthy()
+  expect(fileService.currentFileId).toBe('1')
   expect(fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('')
 })
 
@@ -90,9 +90,7 @@ test('init - new file with id', async () => {
 
   expect(store.lastLocation?.page).toBe(Page.Code)
   expect(store.files.length).toBe(3)
-  expect(store.files[0].active).toBeFalsy()
-  expect(store.files[1].active).toBeFalsy()
-  expect(store.files[2].active).toBeTruthy()
+  expect(fileService.currentFileId).toBe('3')
   expect(fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('')
 })
 
@@ -115,8 +113,7 @@ test('init - existing file', async () => {
 
   expect(store.lastLocation?.page).toBe(Page.Code)
   expect(store.files.length).toBe(2)
-  expect(store.files[0].active).toBeTruthy()
-  expect(store.files[1].active).toBeFalsy()
+  expect(fileService.currentFileId).toBe('1')
   expect(fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('Code1')
 })
 

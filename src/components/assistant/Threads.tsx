@@ -77,13 +77,15 @@ export const Threads = (props: Props) => {
   }
 
   const onNew = () => {
-    threadService.newThread()
+    const newThread = threadService.newThread()
     setSubmenuTooltipAnchor(undefined)
+    props.onChange(newThread.id)
   }
 
   const onDeleteAll = async () => {
-    await threadService.deleteAll()
+    const newThread = await threadService.deleteAll()
     setSubmenuTooltipAnchor(undefined)
+    props.onChange(newThread.id)
   }
 
   const onDelete = () => {

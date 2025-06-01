@@ -30,39 +30,42 @@ export class ThreadService {
     return uuidv4()
   }
 
+  get currentThreadId(): string | undefined {
+    return this.store.lastLocation?.threadId
+  }
+
   get currentThread(): Thread | undefined {
-    return this.store.threads.find((t) => t.active)
+    const threadId = this.currentThreadId
+    if (!threadId) return
+    return this.store.threads.find((t) => t.id === threadId)
   }
 
   get currentThreadIndex(): number {
-    return this.store.threads.findIndex((t) => t.active)
+    const threadId = this.currentThreadId
+    if (!threadId) return -1
+    return this.store.threads.findIndex((t) => t.id === threadId)
   }
 
   get lastMessage(): Message | undefined {
     return this.currentThread?.messages[this.currentThread.messages.length]
   }
 
-  newThread() {
+  newThread(): Thread {
     const thread: Thread = {
       id: ThreadService.createId(),
       messages: [],
-      active: true,
     }
 
     info(`Create new thread (id=${thread.id})`)
 
-    const threads = []
-    for (let i = 0; i < this.store.threads.length; i++) {
-      const cur = this.store.threads[i]
-      if (cur.title) {
-        threads.push({...cur, active: false})
-      }
-    }
+    const threads = this.store.threads.filter((t) => t.title)
 
     threads.unshift(thread)
     this.setState('threads', threads)
     this.pathMapSignal[1](new Map())
     this.messageTree.updateAll([])
+
+    return thread
   }
 
   async addMessage(message: Message) {
@@ -168,16 +171,7 @@ export class ThreadService {
 
   open(threadId: string) {
     info(`Open thread (id=${threadId})`)
-    const threads = []
-    for (let i = 0; i < this.store.threads.length; i++) {
-      const cur = this.store.threads[i]
-      if (cur.id === threadId) {
-        threads.push({...cur, active: true})
-      } else if (cur.title) {
-        threads.push({...cur, active: false})
-      }
-    }
-
+    const threads = this.store.threads.filter((t) => t.title !== undefined)
     this.setState('threads', threads)
     this.pathMapSignal[1](new Map())
     this.messageTree.updateAll(this.currentThread?.messages ?? [])
@@ -191,13 +185,13 @@ export class ThreadService {
     await DB.deleteThread(thread.id)
   }
 
-  async deleteAll() {
+  async deleteAll(): Promise<Thread> {
     for (const thread of this.store.threads) {
       await DB.deleteThread(thread.id)
     }
 
     this.setState('threads', [])
-    this.newThread()
+    return this.newThread()
   }
 
   async regenerate(message: Message) {

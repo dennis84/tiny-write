@@ -51,8 +51,8 @@ test('restore', async () => {
   const [store, setState] = createStore(
     createState({
       files: [
-        {id: '1', ydoc: Y.encodeStateAsUpdate(ydoc), versions: [], active: true},
-        {id: '2', ydoc: createYUpdate('2', ['Test2']), versions: [], active: false, deleted: true},
+        {id: '1', ydoc: Y.encodeStateAsUpdate(ydoc), versions: []},
+        {id: '2', ydoc: createYUpdate('2', ['Test2']), versions: [], deleted: true},
       ],
     }),
   )
@@ -62,8 +62,6 @@ test('restore', async () => {
 
   await service.restore('2')
   expect(store.files.length).toBe(2)
-  expect(store.files[0].active).toBe(true)
-  expect(store.files[1].active).toBe(false)
   expect(store.files[1].deleted).toBe(false)
 })
 
@@ -153,5 +151,4 @@ test('newFile', async () => {
 
   expect(file).toBeDefined()
   expect(store.files.length).toBe(1)
-  expect(store.files[0].active).toBeFalsy()
 })

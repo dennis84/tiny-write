@@ -12,6 +12,7 @@ import {
   ElementType,
   createState,
   CanvasVideoElement,
+  Page,
 } from '@/state'
 import {DB} from '@/db'
 import {BoxUtil} from '@/utils/BoxUtil'
@@ -29,7 +30,6 @@ const createCanvas = (props: Partial<Canvas> = {}): Canvas => ({
   id: '1',
   camera: {point: [0, 0], zoom: 1},
   elements: [],
-  active: false,
   lastModified: new Date(),
   ...props,
 })
@@ -81,7 +81,12 @@ test('currentCanvas - empty', () => {
 test('currentCanvas', () => {
   const [store, setState] = createStore(
     createState({
-      canvases: [createCanvas({id: '1'}), createCanvas({id: '2', active: true})],
+      lastLocation: {
+        path: '/canvas/2',
+        page: Page.Canvas,
+        canvasId: '2',
+      },
+      canvases: [createCanvas({id: '1'}), createCanvas({id: '2'})],
     }),
   )
 
@@ -93,7 +98,12 @@ test('currentCanvas', () => {
 test('updateCanvas', async () => {
   const [store, setState] = createStore(
     createState({
-      canvases: [createCanvas({id: '1', active: true})],
+      lastLocation: {
+        path: '/canvas/1',
+        page: Page.Canvas,
+        canvasId: '1',
+      },
+      canvases: [createCanvas({id: '1'})],
     }),
   )
 
@@ -112,6 +122,11 @@ test('updateCanvas', async () => {
 test('updateCanvasElement', async () => {
   const [store, setState] = createStore(
     createState({
+      lastLocation: {
+        path: '/canvas/1',
+        page: Page.Canvas,
+        canvasId: '1',
+      },
       canvases: [
         createCanvas({
           id: '1',
@@ -121,7 +136,6 @@ test('updateCanvasElement', async () => {
             createLinkElement({id: '3', from: '1', to: '2'}),
             createImageElement({id: '4'}),
           ],
-          active: true,
         }),
       ],
     }),
@@ -170,6 +184,11 @@ test('updateCanvasElement', async () => {
 test('backToContent', async () => {
   const [store, setState] = createStore(
     createState({
+      lastLocation: {
+        path: '/canvas/1',
+        page: Page.Canvas,
+        canvasId: '1',
+      },
       canvases: [
         createCanvas({
           id: '1',
@@ -177,7 +196,6 @@ test('backToContent', async () => {
             createEditorElement({id: '1'}),
             createEditorElement({id: '2', x: 900, y: 900}),
           ],
-          active: true,
         }),
       ],
     }),
@@ -199,11 +217,15 @@ test('backToContent', async () => {
 test('focus', async () => {
   const [store, setState] = createStore(
     createState({
+      lastLocation: {
+        path: '/canvas/1',
+        page: Page.Canvas,
+        canvasId: '1',
+      },
       canvases: [
         createCanvas({
           id: '1',
           elements: [createEditorElement({id: '2', x: 500, y: 500, width: 200, height: 200})],
-          active: true,
         }),
       ],
     }),
@@ -224,11 +246,15 @@ test('focus', async () => {
 test('snapToGrid', () => {
   const [store, setState] = createStore(
     createState({
+      lastLocation: {
+        path: '/canvas/1',
+        page: Page.Canvas,
+        canvasId: '1',
+      },
       canvases: [
         createCanvas({
           id: '1',
           elements: [],
-          active: true,
         }),
       ],
     }),
@@ -246,7 +272,12 @@ test('snapToGrid', () => {
 test('updateCamera', () => {
   const [store, setState] = createStore(
     createState({
-      canvases: [createCanvas({id: '1', active: true})],
+      lastLocation: {
+        path: '/canvas/1',
+        page: Page.Canvas,
+        canvasId: '1',
+      },
+      canvases: [createCanvas({id: '1'})],
     }),
   )
 
@@ -261,7 +292,12 @@ test('updateCamera', () => {
 test('updateCameraPoint', () => {
   const [store, setState] = createStore(
     createState({
-      canvases: [createCanvas({id: '1', active: true})],
+      lastLocation: {
+        path: '/canvas/1',
+        page: Page.Canvas,
+        canvasId: '1',
+      },
+      canvases: [createCanvas({id: '1'})],
     }),
   )
 
@@ -275,7 +311,12 @@ test('updateCameraPoint', () => {
 test('restore', async () => {
   const [store, setState] = createStore(
     createState({
-      canvases: [createCanvas({id: '1', active: true}), createCanvas({id: '2', deleted: true})],
+      lastLocation: {
+        path: '/canvas/1',
+        page: Page.Canvas,
+        canvasId: '1',
+      },
+      canvases: [createCanvas({id: '1'}), createCanvas({id: '2', deleted: true})],
     }),
   )
 
@@ -283,18 +324,20 @@ test('restore', async () => {
 
   await service.restore('2')
   expect(store.canvases.length).toBe(2)
-  expect(store.canvases[0].active).toBe(true)
-  expect(store.canvases[1].active).toBe(false)
   expect(store.canvases[1].deleted).toBe(false)
 })
 
 test('select', () => {
   const [store, setState] = createStore(
     createState({
+      lastLocation: {
+        path: '/canvas/1',
+        page: Page.Canvas,
+        canvasId: '1',
+      },
       canvases: [
         createCanvas({
           id: '1',
-          active: true,
           elements: [createEditorElement({id: '1'}), createEditorElement({id: '2'})],
         }),
       ],
@@ -325,10 +368,14 @@ test('select', () => {
 test('deselect', () => {
   const [store, setState] = createStore(
     createState({
+      lastLocation: {
+        path: '/canvas/1',
+        page: Page.Canvas,
+        canvasId: '1',
+      },
       canvases: [
         createCanvas({
           id: '1',
-          active: true,
           elements: [createEditorElement({id: '1', selected: true, active: true})],
         }),
       ],
@@ -348,11 +395,15 @@ test('newCanvas', async () => {
   const editorView = mock<EditorView>()
   const [store, setState] = createStore(
     createState({
+      lastLocation: {
+        path: '/canvas/1',
+        page: Page.Canvas,
+        canvasId: '1',
+      },
       files: [{id: '1', ydoc: createYUpdate('1', []), versions: [], editorView}],
       canvases: [
         createCanvas({
           id: '1',
-          active: true,
           elements: [createEditorElement({id: '1', selected: true, active: true})],
         }),
       ],
@@ -364,23 +415,23 @@ test('newCanvas', async () => {
   // new canvas
   await service.newCanvas()
   expect(store.canvases.length).toBe(2)
-  expect(store.canvases[0].active).toBeTruthy()
 
   // Add another canvas
   await service.newCanvas()
   expect(store.canvases.length).toBe(3)
-  expect(store.canvases[0].active).toBeTruthy()
-  expect(store.canvases[1].active).toBeFalsy()
-  expect(store.canvases[2].active).toBeFalsy()
 })
 
 test('removeElements', async () => {
   const [store, setState] = createStore(
     createState({
+      lastLocation: {
+        path: '/canvas/1',
+        page: Page.Canvas,
+        canvasId: '1',
+      },
       canvases: [
         createCanvas({
           id: '1',
-          active: true,
           elements: [
             createEditorElement({id: '1'}),
             createEditorElement({id: '2'}),
@@ -414,13 +465,11 @@ test('open', async () => {
   const service = new CanvasService(fileService, selectService, store, setState)
 
   await service.open('1')
-  expect(service.currentCanvas?.id).toBe('1')
   expect(DB.updateCanvas).toBeCalledTimes(1)
   vi.mocked(DB.updateCanvas).mockClear()
 
   await service.open('2')
-  expect(service.currentCanvas?.id).toBe('2')
-  expect(DB.updateCanvas).toBeCalledTimes(2)
+  expect(DB.updateCanvas).toBeCalledTimes(1)
 
   expect(store.files[0].editorView).toBeUndefined()
   expect(editorView.destroy.mock.calls.length).toBe(1)
@@ -431,7 +480,12 @@ test('newFile', async () => {
 
   const [store, setState] = createStore(
     createState({
-      canvases: [createCanvas({id: '1', active: true})],
+      lastLocation: {
+        path: '/canvas/1',
+        page: Page.Canvas,
+        canvasId: '1',
+      },
+      canvases: [createCanvas({id: '1'})],
     }),
   )
 
@@ -458,10 +512,14 @@ test.each([
 
   const [store, setState] = createStore(
     createState({
+      lastLocation: {
+        path: '/canvas/1',
+        page: Page.Canvas,
+        canvasId: '1',
+      },
       canvases: [
         createCanvas({
           id: '1',
-          active: true,
           elements: [createEditorElement({id: '1'}), link],
         }),
       ],
@@ -491,7 +549,12 @@ test.each([
 test('addImage', async () => {
   const [store, setState] = createStore(
     createState({
-      canvases: [createCanvas({id: '1', active: true})],
+      lastLocation: {
+        path: '/canvas/1',
+        page: Page.Canvas,
+        canvasId: '1',
+      },
+      canvases: [createCanvas({id: '1'})],
     }),
   )
 
@@ -510,7 +573,12 @@ test('addImage', async () => {
 test('addVideo', async () => {
   const [store, setState] = createStore(
     createState({
-      canvases: [createCanvas({id: '1', active: true})],
+      lastLocation: {
+        path: '/canvas/1',
+        page: Page.Canvas,
+        canvasId: '1',
+      },
+      canvases: [createCanvas({id: '1'})],
     }),
   )
 
@@ -530,10 +598,14 @@ test('addVideo', async () => {
 test('drawLink', () => {
   const [store, setState] = createStore(
     createState({
+      lastLocation: {
+        path: '/canvas/1',
+        page: Page.Canvas,
+        canvasId: '1',
+      },
       canvases: [
         createCanvas({
           id: '1',
-          active: true,
           elements: [
             createEditorElement({id: '1'}),
             createEditorElement({id: '2', x: 300, y: 300}),
@@ -570,10 +642,14 @@ test('drawLink', () => {
 test('drawLink - abort', async () => {
   const [store, setState] = createStore(
     createState({
+      lastLocation: {
+        path: '/canvas/1',
+        page: Page.Canvas,
+        canvasId: '1',
+      },
       canvases: [
         createCanvas({
           id: '1',
-          active: true,
           elements: [
             createEditorElement({id: '1'}),
             createEditorElement({id: '2', x: 300, y: 300}),
@@ -596,10 +672,14 @@ test('drawLink - abort', async () => {
 test('removeDeadLinks', async () => {
   const [store, setState] = createStore(
     createState({
+      lastLocation: {
+        path: '/canvas/1',
+        page: Page.Canvas,
+        canvasId: '1',
+      },
       canvases: [
         createCanvas({
           id: '1',
-          active: true,
           elements: [
             createEditorElement({id: '1'}),
             createLinkElement({id: '2', from: '1', toX: 0, toY: 0, to: undefined}),
@@ -621,10 +701,14 @@ test('removeDeadLinks', async () => {
 test('clearCanvas', async () => {
   const [store, setState] = createStore(
     createState({
+      lastLocation: {
+        path: '/canvas/1',
+        page: Page.Canvas,
+        canvasId: '1',
+      },
       canvases: [
         createCanvas({
           id: '1',
-          active: true,
           elements: [createEditorElement({id: '1'})],
         }),
       ],
@@ -641,10 +725,14 @@ test('clearCanvas', async () => {
 test('getElementNear', () => {
   const [store, setState] = createStore(
     createState({
+      lastLocation: {
+        path: '/canvas/1',
+        page: Page.Canvas,
+        canvasId: '1',
+      },
       canvases: [
         createCanvas({
           id: '1',
-          active: true,
           elements: [
             createEditorElement({id: '1', x: 0, y: 0, width: 100, height: 100}),
             createEditorElement({id: '2', x: 200, y: 200, width: 100, height: 100}),
@@ -667,10 +755,14 @@ test('getElementNear', () => {
 test('center', () => {
   const [store, setState] = createStore(
     createState({
+      lastLocation: {
+        path: '/canvas/1',
+        page: Page.Canvas,
+        canvasId: '1',
+      },
       canvases: [
         createCanvas({
           id: '1',
-          active: true,
           elements: [
             createEditorElement({id: '1', x: 0, y: 0, width: 100, height: 100}),
             createEditorElement({id: '2', x: 100, y: 0, width: 100, height: 100}),
@@ -691,10 +783,14 @@ test('center', () => {
 test('get selection', () => {
   const [store, setState] = createStore(
     createState({
+      lastLocation: {
+        path: '/canvas/1',
+        page: Page.Canvas,
+        canvasId: '1',
+      },
       canvases: [
         createCanvas({
           id: '1',
-          active: true,
           elements: [
             createEditorElement({id: '1', x: 0, y: 0, width: 100, height: 100}),
             createEditorElement({id: '2', x: 100, y: 0, width: 100, height: 100}),
@@ -735,10 +831,14 @@ test('get selection', () => {
 test('selectBox', () => {
   const [store, setState] = createStore(
     createState({
+      lastLocation: {
+        path: '/canvas/1',
+        page: Page.Canvas,
+        canvasId: '1',
+      },
       canvases: [
         createCanvas({
           id: '1',
-          active: true,
           elements: [
             createEditorElement({id: '1', x: 0, y: 0, width: 100, height: 100}),
             createEditorElement({id: '2', x: 100, y: 0, width: 100, height: 100}),
@@ -790,10 +890,14 @@ test('selectBox - active editor', () => {
   const editorView = mock<EditorView>()
   const [store, setState] = createStore(
     createState({
+      lastLocation: {
+        path: '/canvas/1',
+        page: Page.Canvas,
+        canvasId: '1',
+      },
       canvases: [
         createCanvas({
           id: '1',
-          active: true,
           elements: [
             createEditorElement({
               id: '1',

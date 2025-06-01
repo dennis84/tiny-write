@@ -2,7 +2,7 @@ import {Store} from 'solid-js/store'
 import {convertFileSrc} from '@tauri-apps/api/core'
 import {EditorView} from 'prosemirror-view'
 import {getMimeType, resolvePath, toRelativePath} from '@/remote/editor'
-import {File, Page, State} from '@/state'
+import {File, isEditorElement, Page, State} from '@/state'
 import {FileService} from './FileService'
 import {CanvasService} from './CanvasService'
 import {AppService} from './AppService'
@@ -35,8 +35,12 @@ export class MediaService {
       if (!currentFile?.editorView) return
       this.insert(currentFile.editorView, data, x, y)
     } else if (this.store.lastLocation?.page === Page.Canvas) {
-      const file = this.fileService.currentFile
-      if (file?.active && file.editorView) {
+      const currentCanvas = this.canvasService.currentCanvas
+      if (!currentCanvas) return
+      const activeElement = currentCanvas.elements.find((e) => isEditorElement(e) && e.active)
+      const file = activeElement && this.fileService.findFileById(activeElement.id)
+
+      if (file?.editorView) {
         this.insert(file.editorView, data, x, y)
       } else {
         const img = await this.loadImage(data)
