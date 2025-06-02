@@ -141,7 +141,7 @@ export const Threads = (props: Props) => {
         <Tooltip
           anchor={menuTooltipAnchor()!}
           onClose={onMenuClose}
-          backdrop={false}
+          backdrop={true}
           placement="left"
         >
           <Scroller>

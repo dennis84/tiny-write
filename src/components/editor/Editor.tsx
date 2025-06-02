@@ -1,7 +1,6 @@
 import {createEffect, onCleanup, onMount} from 'solid-js'
 import {WheelGesture} from '@use-gesture/vanilla'
 import {useState} from '@/state'
-import {useCurrentPage} from '@/hooks/current-page'
 import {Select} from '../Select'
 import {Scroll} from '../Layout'
 import {FullEditor} from './Style'
@@ -14,7 +13,6 @@ export const Editor = () => {
   let editorRef!: HTMLDivElement
 
   const {store, configService, collabService, editorService, fileService} = useState()
-  const currentPage = useCurrentPage()
 
   onMount(() => {
     const wheel = new WheelGesture(
@@ -60,7 +58,7 @@ export const Editor = () => {
       <FullEditor
         ref={editorRef}
         config={store.config}
-        page={currentPage()}
+        page={store.lastLocation?.page}
         spellcheck={store.config.spellcheck}
         data-tauri-drag-region="true"
       />

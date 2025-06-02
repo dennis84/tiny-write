@@ -1,11 +1,18 @@
 import {onMount, Switch, Match, ErrorBoundary, createEffect, untrack, Show} from 'solid-js'
-import {Route, Router, RouteSectionProps, useCurrentMatches, useLocation} from '@solidjs/router'
+import {
+  Route,
+  Router,
+  RouteSectionProps,
+  useCurrentMatches,
+  useLocation,
+  useMatch,
+} from '@solidjs/router'
 import {LocationState, Page, State, StateContext} from '@/state'
 import {createCtrl} from '@/services'
 import {info} from '@/remote/log'
 import {isTauri} from '@/env'
 import {locationToString} from '@/utils/debug'
-import {useCurrentPage} from '@/hooks/current-page'
+import {enumFromValue} from '@/utils/enum'
 import {DragArea, Layout, PageContent} from '@/components/Layout'
 import {Menu} from '@/components/menu/Menu'
 import {FloatingNavbar} from '@/components/menu/Navbar'
@@ -28,10 +35,10 @@ import {ChatPage} from '@/components/pages/ChatPage'
 export const Main = (props: {state: State}) => {
   const Root = (p: RouteSectionProps) => {
     let layoutRef!: HTMLDivElement
-    const location = useLocation<LocationState>()
-    const mathes = useCurrentMatches()
     const ctrl = createCtrl(props.state)
-    const currentPage = useCurrentPage()
+    const location = useLocation<LocationState>()
+    const matchPage = useMatch(() => '/:page/*')
+    const currentMatches = useCurrentMatches()
 
     info(`Open root (location=${locationToString(location)})`)
 
@@ -51,17 +58,20 @@ export const Main = (props: {state: State}) => {
     })
 
     createEffect(async () => {
-      const page = currentPage()
-      const match = mathes()[0]
-      if (page) {
-        const id = match.params.id
-        await ctrl.appService.setLastLocation({
-          path: location.pathname,
-          fileId: page === Page.Code || page === Page.Editor ? id : undefined,
-          threadId: page === Page.Assistant ? id : undefined,
-          canvasId: page === Page.Canvas ? id : undefined,
-          page,
-        })
+      const pageMatch = matchPage()
+      if (pageMatch) {
+        const page = enumFromValue(Page, pageMatch.params.page)
+        const mainMatch = currentMatches()[0]
+        if (mainMatch) {
+          const id = mainMatch.params.id
+          await ctrl.appService.setLastLocation({
+            path: location.pathname,
+            fileId: page === Page.Code || page === Page.Editor ? id : undefined,
+            threadId: page === Page.Assistant ? id : undefined,
+            canvasId: page === Page.Canvas ? id : undefined,
+            page,
+          })
+        }
       }
     })
 
@@ -113,12 +123,12 @@ export const Main = (props: {state: State}) => {
 
   return (
     <Router root={Root}>
-      <Route path="/editor/:id" component={EditorPage} info={{page: Page.Editor}} />
-      <Route path="/canvas/:id" component={CanvasPage} info={{page: Page.Canvas}} />
-      <Route path="/code/:id" component={CodePage} info={{page: Page.Code}} />
-      <Route path="/dir" component={DirPage} info={{page: Page.Dir}} />
-      <Route path="/assistant" component={ChatPage} info={{page: Page.Assistant}} />
-      <Route path="/assistant/:id" component={ChatPage} info={{page: Page.Assistant}} />
+      <Route path="/editor/:id" component={EditorPage} />
+      <Route path="/canvas/:id" component={CanvasPage} />
+      <Route path="/code/:id" component={CodePage} />
+      <Route path="/dir" component={DirPage} />
+      <Route path="/assistant" component={ChatPage} />
+      <Route path="/assistant/:id" component={ChatPage} />
       <Route path="*" component={Redirect} />
     </Router>
   )

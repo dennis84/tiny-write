@@ -1,14 +1,12 @@
 import {Accessor, createEffect, createSignal} from 'solid-js'
 import {File, Page, useState} from '@/state'
-import {useCurrentPage} from './current-page'
 
 export const useCurrentFile = (): Accessor<File | undefined> => {
   const [currentFile, setCurrentFile] = createSignal<File>()
-  const {canvasService, fileService} = useState()
-  const currentPage = useCurrentPage()
+  const {store, canvasService, fileService} = useState()
 
   createEffect(() => {
-    const page = currentPage()
+    const page = store.lastLocation?.page
 
     if (page === Page.Code || page === Page.Editor) {
       setCurrentFile(fileService.currentFile)

@@ -15,19 +15,12 @@ export class ThreadService {
   public messageTree = createTreeStore<Message>()
   private pathMapSignal = createSignal<PathMap>(new Map())
 
-  get pathMap() {
-    return this.pathMapSignal[0]
-  }
-
-  constructor(
-    private store: Store<State>,
-    private setState: SetStoreFunction<State>,
-    private copilotService: CopilotService,
-    private fileService: FileService,
-  ) {}
-
   static createId() {
     return uuidv4()
+  }
+
+  get pathMap() {
+    return this.pathMapSignal[0]
   }
 
   get currentThreadId(): string | undefined {
@@ -49,6 +42,13 @@ export class ThreadService {
   get lastMessage(): Message | undefined {
     return this.currentThread?.messages[this.currentThread.messages.length]
   }
+
+  constructor(
+    private store: Store<State>,
+    private setState: SetStoreFunction<State>,
+    private copilotService: CopilotService,
+    private fileService: FileService,
+  ) {}
 
   newThread(): Thread {
     const thread: Thread = {
