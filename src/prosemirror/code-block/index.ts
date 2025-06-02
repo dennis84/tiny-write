@@ -64,10 +64,10 @@ const arrowHandler =
   }
 
 export const codeBlockKeymap = keymap({
-  'ArrowLeft': arrowHandler('left'),
-  'ArrowRight': arrowHandler('right'),
-  'ArrowUp': arrowHandler('up'),
-  'ArrowDown': arrowHandler('down'),
+  ArrowLeft: arrowHandler('left'),
+  ArrowRight: arrowHandler('right'),
+  ArrowUp: arrowHandler('up'),
+  ArrowDown: arrowHandler('down'),
   'Shift-ArrowLeft': arrowHandler('left'),
   'Shift-ArrowRight': arrowHandler('right'),
   'Shift-ArrowUp': arrowHandler('up'),

@@ -72,7 +72,7 @@ class TaskListItemView {
 }
 
 const todoListKeymap = (schema: Schema) => ({
-  'Enter': splitListItem(schema.nodes.task_list_item),
+  Enter: splitListItem(schema.nodes.task_list_item),
   'Mod-[': liftListItem(schema.nodes.task_list_item),
   'Mod-]': sinkListItem(schema.nodes.task_list_item),
 })

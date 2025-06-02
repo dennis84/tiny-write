@@ -12,14 +12,24 @@ import {tokyoNightStorm} from '@ddietr/codemirror-themes/tokyo-night-storm'
 import {tokyoNightDay} from '@ddietr/codemirror-themes/tokyo-night-day'
 
 export const getTheme = (theme: string): Extension =>
-  theme === 'dracula' ? dracula
-  : theme === 'solarized-light' ? solarizedLight
-  : theme === 'solarized-dark' ? solarizedDark
-  : theme === 'material-light' ? materialLight
-  : theme === 'material-dark' ? materialDark
-  : theme === 'github-light' ? githubLight
-  : theme === 'github-dark' ? githubDark
-  : theme === 'aura' ? aura
-  : theme === 'tokyo-night' ? tokyoNightStorm
-  : theme === 'tokyo-night-day' ? tokyoNightDay
-  : materialLight
+  theme === 'dracula'
+    ? dracula
+    : theme === 'solarized-light'
+      ? solarizedLight
+      : theme === 'solarized-dark'
+        ? solarizedDark
+        : theme === 'material-light'
+          ? materialLight
+          : theme === 'material-dark'
+            ? materialDark
+            : theme === 'github-light'
+              ? githubLight
+              : theme === 'github-dark'
+                ? githubDark
+                : theme === 'aura'
+                  ? aura
+                  : theme === 'tokyo-night'
+                    ? tokyoNightStorm
+                    : theme === 'tokyo-night-day'
+                      ? tokyoNightDay
+                      : materialLight

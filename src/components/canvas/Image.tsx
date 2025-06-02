@@ -64,8 +64,8 @@ export const Image = ({element, index}: {element: CanvasImageElement; index: num
         height={element.height}
         selected={element.selected}
         style={{
-          'left': `${element.x.toString()}px`,
-          'top': `${element.y.toString()}px`,
+          left: `${element.x.toString()}px`,
+          top: `${element.y.toString()}px`,
           'z-index': `${ZIndex.element(index, IndexType.CONTENT)}`,
         }}
       />

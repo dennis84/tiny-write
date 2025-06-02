@@ -164,12 +164,17 @@ export const Canvas = () => {
         </Show>
         <For each={canvasService.currentCanvas?.elements}>
           {(element, index) =>
-            isEditorElement(element) ? <Editor element={element} index={index()} />
-            : isCodeElement(element) ? <CodeEditor element={element} index={index()} />
-            : isLinkElement(element) ? <Link element={element} />
-            : isImageElement(element) ? <Image element={element} index={index()} />
-            : isVideoElement(element) ? <Video element={element} index={index()} />
-            : null
+            isEditorElement(element) ? (
+              <Editor element={element} index={index()} />
+            ) : isCodeElement(element) ? (
+              <CodeEditor element={element} index={index()} />
+            ) : isLinkElement(element) ? (
+              <Link element={element} />
+            ) : isImageElement(element) ? (
+              <Image element={element} index={index()} />
+            ) : isVideoElement(element) ? (
+              <Video element={element} index={index()} />
+            ) : null
           }
         </For>
       </Board>

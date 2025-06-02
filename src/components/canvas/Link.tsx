@@ -21,7 +21,7 @@ const LinkSvg = styled('svg')`
   pointer-events: none;
 `
 
-// prettier-ignore
+// biome-ignore format: ternary breaks ugly
 const Path = styled('path')`
   stroke: transparent;
   stroke-linecap: round;

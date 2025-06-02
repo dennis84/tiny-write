@@ -166,9 +166,9 @@ const HandleGrid = (props: HandleGridProps) => {
     const tableY = editorView.dom.offsetTop + tableNode.offsetTop
 
     const box =
-      direction === 'horiz' ?
-        new Box(tableX, cellY, tableBox.width, cellBox.height)
-      : new Box(cellX, tableY, cellBox.width, tableBox.height)
+      direction === 'horiz'
+        ? new Box(tableX, cellY, tableBox.width, cellBox.height)
+        : new Box(cellX, tableY, cellBox.width, tableBox.height)
     setSelection(box)
   }
 

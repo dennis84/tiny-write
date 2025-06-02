@@ -116,9 +116,11 @@ export const completionKeymap = (pluginKey: PluginKey) =>
       const pluginState = pluginKey.getState(state)
       if (!pluginState?.options?.length) return false
       const selected =
-        pluginState.selected === undefined ? 0
-        : pluginState.selected >= pluginState.options.length - 1 ? 0
-        : pluginState.selected + 1
+        pluginState.selected === undefined
+          ? 0
+          : pluginState.selected >= pluginState.options.length - 1
+            ? 0
+            : pluginState.selected + 1
       dispatch?.(state.tr.setMeta(pluginKey, {...pluginState, selected}))
       return true
     },
@@ -126,9 +128,11 @@ export const completionKeymap = (pluginKey: PluginKey) =>
       const pluginState = pluginKey.getState(state)
       if (!pluginState?.options?.length) return false
       const selected =
-        pluginState.selected === undefined ? pluginState.options.length - 1
-        : pluginState.selected <= 0 ? pluginState.options.length - 1
-        : pluginState.selected - 1
+        pluginState.selected === undefined
+          ? pluginState.options.length - 1
+          : pluginState.selected <= 0
+            ? pluginState.options.length - 1
+            : pluginState.selected - 1
       dispatch?.(state.tr.setMeta(pluginKey, {...pluginState, selected}))
       return true
     },

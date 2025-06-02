@@ -149,17 +149,17 @@ export class CodeBlockView {
         createMermaidPlugin(this),
         EditorView.updateListener.of((update) => this.forwardUpdate(update)),
         autocompletion(),
-        ...(isTauri() ?
-          [
-            copilot({
-              configure: () => {
-                const {tabWidth, useTabs} = this.configService.prettier
-                const path = `buffer://editor-${getPos()}-${this.lang}`
-                return {path, language: this.lang, tabWidth, useTabs}
-              },
-            }),
-          ]
-        : []),
+        ...(isTauri()
+          ? [
+              copilot({
+                configure: () => {
+                  const {tabWidth, useTabs} = this.configService.prettier
+                  const path = `buffer://editor-${getPos()}-${this.lang}`
+                  return {path, language: this.lang, tabWidth, useTabs}
+                },
+              }),
+            ]
+          : []),
         EditorView.domEventHandlers({
           mousedown: () => {
             this.clicked = true

@@ -41,7 +41,7 @@ export type FontName = keyof typeof ConfigService.fonts
 
 export class ConfigService {
   static readonly themes: Record<string, Theme> = {
-    'light': {
+    light: {
       value: 'light',
       label: 'Light',
       background: '#ffffff',
@@ -53,7 +53,7 @@ export class ConfigService {
       border: '#cccccc',
       dark: false,
     },
-    'dark': {
+    dark: {
       value: 'dark',
       label: 'Dark',
       background: '#16161a',
@@ -101,7 +101,7 @@ export class ConfigService {
       border: '#4C6A72',
       dark: true,
     },
-    'material': {
+    material: {
       value: 'material',
       label: 'Material',
       background: '#263238',
@@ -113,7 +113,7 @@ export class ConfigService {
       border: '#676F73',
       dark: true,
     },
-    'dracula': {
+    dracula: {
       value: 'dracula',
       label: 'Dracula',
       background: '#282a36',
@@ -170,7 +170,7 @@ export class ConfigService {
       label: 'System UI',
       value: 'system-ui',
     },
-    'merriweather': {
+    merriweather: {
       label: 'Merriweather',
       value: 'merriweather',
       regular: '/Merriweather-Regular.ttf',
@@ -207,7 +207,7 @@ export class ConfigService {
       italic: '/iAWriterMonoS-Italic.ttf',
       monospace: true,
     },
-    'scientifica': {
+    scientifica: {
       label: 'Scientifica',
       value: 'scientifica',
       regular: '/scientifica.ttf',
@@ -218,7 +218,7 @@ export class ConfigService {
   }
 
   static readonly codeThemes: Record<string, CodeTheme> = {
-    'dracula': {
+    dracula: {
       label: 'Dracula',
       value: 'dracula',
       dark: true,
@@ -253,7 +253,7 @@ export class ConfigService {
       value: 'github-dark',
       dark: true,
     },
-    'aura': {
+    aura: {
       label: 'Aura Dark',
       value: 'aura',
       dark: true,
@@ -295,11 +295,11 @@ export class ConfigService {
 
   get codeTheme() {
     const currentCodeTheme = this.store.config.codeTheme
-    return (
-      !currentCodeTheme ? ConfigService.getDefaltCodeTheme()
-      : ConfigService.codeThemes[currentCodeTheme] ? ConfigService.codeThemes[currentCodeTheme]
-      : ConfigService.getDefaltCodeTheme()
-    )
+    return !currentCodeTheme
+      ? ConfigService.getDefaltCodeTheme()
+      : ConfigService.codeThemes[currentCodeTheme]
+        ? ConfigService.codeThemes[currentCodeTheme]
+        : ConfigService.getDefaltCodeTheme()
   }
 
   get font() {
@@ -314,8 +314,8 @@ export class ConfigService {
   }
 
   get theme() {
-    return !this.store.config?.theme ?
-        ConfigService.getDefaltTheme()
+    return !this.store.config?.theme
+      ? ConfigService.getDefaltTheme()
       : (ConfigService.themes[this.store.config.theme] ?? ConfigService.getDefaltTheme())
   }
 
@@ -324,8 +324,8 @@ export class ConfigService {
   }
 
   static getDefaltCodeTheme(dark: boolean | undefined = undefined) {
-    return (dark ?? isDark()) ?
-        ConfigService.codeThemes.dracula
+    return (dark ?? isDark())
+      ? ConfigService.codeThemes.dracula
       : ConfigService.codeThemes['material-light']
   }
 

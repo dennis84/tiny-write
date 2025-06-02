@@ -88,10 +88,7 @@ export const DirPage = () => {
 
     return (
       <Link data-testid="link" onClick={onClick} isDirectory={p.entry.isDirectory}>
-        {p.entry.isDirectory ?
-          <IconFolder />
-        : <IconDescription />}{' '}
-        {p.entry.name}
+        {p.entry.isDirectory ? <IconFolder /> : <IconDescription />} {p.entry.name}
         {p.entry.isDirectory && '/'}
       </Link>
     )

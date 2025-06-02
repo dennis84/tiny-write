@@ -10,7 +10,7 @@ export const listSchemaSpec = {
         return [
           'ol',
           {
-            'start': node.attrs.order == 1 ? null : node.attrs.order,
+            start: node.attrs.order == 1 ? null : node.attrs.order,
             'data-tight': node.attrs.tight ? 'true' : null,
           },
           0,

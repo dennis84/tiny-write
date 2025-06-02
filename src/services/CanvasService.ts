@@ -576,9 +576,8 @@ export class CanvasService {
         toBox = undefined
       }
 
-      const element =
-        toBox ?
-          {
+      const element = toBox
+        ? {
             from,
             fromEdge,
             to: toBox.id,

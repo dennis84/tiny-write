@@ -22,15 +22,11 @@ export const AutoContextButton = () => {
       <TooltipHelp title="Adds the current file to context automatically">
         <TooltipButton onClick={onClick} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
           <Show when={store.ai?.autoContext}>
-            {hover() ?
-              <IconToggleOff />
-            : <IconToggleOn />}
+            {hover() ? <IconToggleOff /> : <IconToggleOn />}
             Auto context is active. Turn off?
           </Show>
           <Show when={!store.ai?.autoContext}>
-            {hover() ?
-              <IconToggleOn />
-            : <IconToggleOff />}
+            {hover() ? <IconToggleOn /> : <IconToggleOff />}
             Switch auto context on
           </Show>
         </TooltipButton>

@@ -135,11 +135,15 @@ const Corner = (props: CornerProps) => {
   const left = props.type === CornerType.TopLeft || props.type === CornerType.BottomLeft
   const bottom = props.type === CornerType.BottomLeft || props.type === CornerType.BottomRight
   const cursor =
-    props.type === CornerType.TopLeft ? 'nwse-resize'
-    : props.type === CornerType.TopRight ? 'nesw-resize'
-    : props.type === CornerType.BottomLeft ? 'nesw-resize'
-    : props.type === CornerType.BottomRight ? 'nwse-resize'
-    : ''
+    props.type === CornerType.TopLeft
+      ? 'nwse-resize'
+      : props.type === CornerType.TopRight
+        ? 'nesw-resize'
+        : props.type === CornerType.BottomLeft
+          ? 'nesw-resize'
+          : props.type === CornerType.BottomRight
+            ? 'nwse-resize'
+            : ''
 
   onMount(() => {
     const currentCanvas = canvasService.currentCanvas
@@ -185,7 +189,7 @@ const Corner = (props: CornerProps) => {
       ref={ref}
       width={BORDER_SIZE}
       height={BORDER_SIZE}
-      style={{cursor, 'fill': 'transparent', 'touch-action': 'none'}}
+      style={{cursor, fill: 'transparent', 'touch-action': 'none'}}
       data-testid={`corner_${props.type}`}
     />
   )
@@ -243,10 +247,10 @@ export const Bounds = (props: BoundsProps) => {
       ref={ref}
       style={{
         'z-index': ZIndex.element(props.index, IndexType.BOUNDS),
-        'width': `${Number(props.selection.box.width) + BORDER_SIZE_2}px`,
-        'height': `${Number(props.selection.box.height) + BORDER_SIZE_2}px`,
-        'left': `${Number(props.selection.box.xmin) - BORDER_SIZE}px`,
-        'top': `${Number(props.selection.box.ymin) - BORDER_SIZE}px`,
+        width: `${Number(props.selection.box.width) + BORDER_SIZE_2}px`,
+        height: `${Number(props.selection.box.height) + BORDER_SIZE_2}px`,
+        left: `${Number(props.selection.box.xmin) - BORDER_SIZE}px`,
+        top: `${Number(props.selection.box.ymin) - BORDER_SIZE}px`,
       }}
       onMouseDown={local.onSelect}
       onDblClick={local.onDoubleClick}

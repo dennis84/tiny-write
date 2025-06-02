@@ -11,7 +11,7 @@ import {LinkHandles} from './LinkHandles'
 import {IndexType, ZIndex} from '@/utils/ZIndex'
 import {CollabService} from '@/services/CollabService'
 
-// prettier-ignore
+// biome-ignore format: ternary breaks ugly
 const CodeEditorScroll = styled(Scroll)(
   (props: any) => `
     position: absolute;
@@ -29,7 +29,7 @@ const CodeEditorScroll = styled(Scroll)(
     .cm-scroller {
       padding: 20px;
     }
-  `
+  `,
 )
 
 export const CodeEditor = ({element, index}: {element: CanvasCodeElement; index: number}) => {
@@ -107,9 +107,9 @@ export const CodeEditor = ({element, index}: {element: CanvasCodeElement; index:
         active={element.active}
         deleted={isDeleted()}
         style={{
-          'left': `${element.x}px`,
-          'top': `${element.y}px`,
-          'width': `${element.width}px`,
+          left: `${element.x}px`,
+          top: `${element.y}px`,
+          width: `${element.width}px`,
           'min-height': `${element.height}px`,
           'max-height': `${element.height}px`,
           'z-index': `${ZIndex.element(index, IndexType.CONTENT)}`,

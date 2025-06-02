@@ -89,9 +89,7 @@ export const AiSubmenuGithub = () => {
           <Text>
             User Code: <UserCode>{codeResult()?.userCode}</UserCode>
             <IconButton onClick={onCopy} data-testid="copy_verification_uri">
-              {copied() ?
-                <IconCheck />
-              : <IconContentCopy />}
+              {copied() ? <IconCheck /> : <IconContentCopy />}
             </IconButton>
           </Text>
           <Link onClick={onVerify}>

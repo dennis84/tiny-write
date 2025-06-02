@@ -65,7 +65,7 @@ export const Note = styled('p')`
   margin: 10px 0;
 `
 
-// prettier-ignore
+// biome-ignore format: ternary breaks ugly
 export const Link = styled('button')`
   ${itemCss}
   background: none;

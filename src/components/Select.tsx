@@ -95,10 +95,10 @@ export const Select = (props: Props) => {
         {(f) => (
           <SelectionFrame
             style={{
-              'top': `${f().ymin.toString()}px`,
-              'left': `${f().xmin.toString()}px`,
-              'width': `${f().width.toString()}px`,
-              'height': `${f().height.toString()}px`,
+              top: `${f().ymin.toString()}px`,
+              left: `${f().xmin.toString()}px`,
+              width: `${f().width.toString()}px`,
+              height: `${f().height.toString()}px`,
               'border-width': '1px',
             }}
           />

@@ -27,8 +27,9 @@ export const MessageAttachment = (props: Props) => {
   const [fileTitle, setFileTitle] = createSignal<string>()
   const [showContent, setShowContent] = createSignal(false)
 
-  const file =
-    props.message.value.fileId ? fileService.findFileById(props.message.value.fileId) : undefined
+  const file = props.message.value.fileId
+    ? fileService.findFileById(props.message.value.fileId)
+    : undefined
   const langConfig = getLanguageConfig(props.message.value.codeLang ?? file?.codeLang)
 
   const onShowContent = () => {

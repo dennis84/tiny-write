@@ -73,7 +73,7 @@ export const tableKeymap = keymap({
     dispatch?.(tr)
     return true
   },
-  'Backspace': (state, dispatch, view) => {
+  Backspace: (state, dispatch, view) => {
     const sel = state.selection
     if (!sel.empty || !view || !dispatch) return false
 
@@ -108,7 +108,7 @@ export const tableKeymap = keymap({
       return true
     }
   },
-  'Enter': (state, dispatch, view) => {
+  Enter: (state, dispatch, view) => {
     const sel = state.selection
     if (!sel.empty || !dispatch || !view) return false
 
@@ -124,7 +124,7 @@ export const tableKeymap = keymap({
     view.dispatch(tr)
     return true
   },
-  'ArrowUp': (state, dispatch) => {
+  ArrowUp: (state, dispatch) => {
     const sel = state.selection
     if (!sel.empty || !dispatch) return false
     const cellPos = getSelectionCell(state)
@@ -145,7 +145,7 @@ export const tableKeymap = keymap({
 
     return false
   },
-  'ArrowDown': (state, dispatch) => {
+  ArrowDown: (state, dispatch) => {
     const sel = state.selection
     if (!sel.empty || !dispatch) return false
     const cellPos = getSelectionCell(state)

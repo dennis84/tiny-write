@@ -147,9 +147,9 @@ export const TableTooltip = (props: Props) => {
       onClose={props.reset}
       placement={props.activeHandle.direction === 'horiz' ? 'left' : 'top'}
       fallbackPlacements={
-        props.activeHandle.direction === 'horiz' ?
-          ['left', 'bottom', 'top']
-        : ['top', 'left', 'right']
+        props.activeHandle.direction === 'horiz'
+          ? ['left', 'bottom', 'top']
+          : ['top', 'left', 'right']
       }
     >
       <Show when={isFirstRow()}>

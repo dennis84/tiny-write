@@ -68,7 +68,7 @@ const DropLine = styled('div')`
   margin-left: ${(props: any) => 20 * props.level}px;
 `
 
-// prettier-ignore
+// biome-ignore format: ternary breaks ugly
 const TreeLinkItem = styled('div')`
   ${itemCss}
   user-select: none;
@@ -98,7 +98,7 @@ const TreeLinkItem = styled('div')`
   }
 `
 
-// prettier-ignore
+// biome-ignore format: ternary breaks ugly
 const TreeLinkCorner = styled('i')`
   margin-right: 10px;
   cursor: var(--cursor-pointer);
@@ -110,8 +110,8 @@ const TreeLinkCorner = styled('i')`
   justify-content: center;
   color: var(--foreground-50);
   height: ${ITEM_HEIGHT};
-  ${(props: any) => props.highlight ? `color: var(--primary-background);` : ''}
-  ${(props: any) => props.level ? `margin-left: ${String(20 * props.level)}px;` : ''}
+  ${(props: any) => (props.highlight ? `color: var(--primary-background);` : '')}
+  ${(props: any) => (props.level ? `margin-left: ${String(20 * props.level)}px;` : '')}
   ${(props: any) => props.expandable ? `
     &:hover {
       background: var(--foreground-10);
@@ -129,7 +129,7 @@ const TreeLinkTitle = styled('span')`
   ${(props: any) => (props.grabbing ? 'cursor: var(--cursor-grabbed);' : '')}
 `
 
-// prettier-ignore
+// biome-ignore format: ternary breaks ugly
 const LinkMenu = styled('span')`
   justify-self: flex-end;
   display: flex;
@@ -334,9 +334,9 @@ export const SubmenuTree = (props: Props) => {
     const onCornerClick = () => treeService.collapse(p.node.id)
 
     const getCurrentId = () =>
-      store.lastLocation?.page === Page.Canvas ?
-        canvasService.currentCanvas?.id
-      : fileService.currentFile?.id
+      store.lastLocation?.page === Page.Canvas
+        ? canvasService.currentCanvas?.id
+        : fileService.currentFile?.id
 
     onMount(() => {
       const offset = 10

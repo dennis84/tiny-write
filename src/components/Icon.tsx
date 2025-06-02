@@ -141,11 +141,13 @@ const langIcons: Record<string, any> = {
 export const LangIcon = (props: {name?: string}) => {
   const lang = findCodeLang(props.name ?? '')
   const Icon = langIcons[lang ?? ''] ?? (() => <MaterialSymbolsCodeBlocks />)
-  return lang ?
-      <SvgIcon>
-        <Dynamic component={Icon} />
-      </SvgIcon>
-    : <IconCodeBlocks />
+  return lang ? (
+    <SvgIcon>
+      <Dynamic component={Icon} />
+    </SvgIcon>
+  ) : (
+    <IconCodeBlocks />
+  )
 }
 
 const SvgIconEl = styled('span')`

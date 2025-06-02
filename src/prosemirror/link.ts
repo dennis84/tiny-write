@@ -15,7 +15,7 @@ export const linkSchemaSpec = {
     edit_link: {
       attrs: {href: {default: null}},
       toDOM(node: Mark): DOMOutputSpec {
-        return ['span', {'class': 'edit-link', 'data-href': node.attrs.href}]
+        return ['span', {class: 'edit-link', 'data-href': node.attrs.href}]
       },
     },
   },

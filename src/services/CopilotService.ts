@@ -101,7 +101,7 @@ export class CopilotService {
     const data = await fetch(url, {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${tokenResponse.token}`,
+        Authorization: `Bearer ${tokenResponse.token}`,
         'Editor-Version': this.appVersion(),
         'Copilot-Integration-Id': 'vscode-chat',
       },
@@ -217,8 +217,8 @@ export class CopilotService {
 
     const data = await fetch(url, {
       headers: {
-        'Authorization': `Bearer ${accessToken}`,
-        'Accept': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+        Accept: 'application/json',
         'User-Agent': this.appVersion(),
       },
     })
@@ -270,7 +270,7 @@ export class CopilotService {
       body,
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${tokenResponse.token}`,
+        Authorization: `Bearer ${tokenResponse.token}`,
         'Editor-Version': this.appVersion(),
         'Copilot-Integration-Id': 'vscode-chat',
       },

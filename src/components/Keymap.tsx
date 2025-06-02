@@ -162,7 +162,7 @@ export const Keymap = () => {
     [`${mod}-y`]: onRedo,
     [`${mod}-p`]: onPrint,
     [`${mod}-d`]: onGoto,
-    'Backspace': onBackspace,
+    Backspace: onBackspace,
   }
 
   const onKeyDown = async (e: KeyboardEvent) => {

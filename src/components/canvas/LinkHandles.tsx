@@ -105,7 +105,7 @@ const LinkHandle = (props: EdgeProps) => {
   return (
     <LinkHandleDot
       style={{
-        'transform': `scale(${1 / zoom()}) translate(${coords()})`,
+        transform: `scale(${1 / zoom()}) translate(${coords()})`,
         'z-index': `${ZIndex.element(props.index, IndexType.HANDLE)}`,
       }}
       ref={linkRef}

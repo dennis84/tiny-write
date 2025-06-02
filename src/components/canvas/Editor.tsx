@@ -13,7 +13,7 @@ import {Scroll} from '@/components/Layout'
 import {Bounds} from './Bounds'
 import {LinkHandles} from './LinkHandles'
 
-// prettier-ignore
+// biome-ignore format: ternary breaks ugly
 const EditorScroll = styled(Scroll)(
   (props: any) => `
     position: absolute;
@@ -21,17 +21,29 @@ const EditorScroll = styled(Scroll)(
     user-select: none;
     pointer-events: none;
     box-shadow: 0 0 0 2px var(--border);
-    ${props.selected ? `
+    ${
+      props.selected
+        ? `
       box-shadow: 0 0 0 5px var(--border);
-    ` : ''}
-    ${props.active ? `
+    `
+        : ''
+    }
+    ${
+      props.active
+        ? `
       box-shadow: 0 0 0 5px var(--primary-background);
       user-select: auto;
       pointer-events: auto;
-    ` : ''}
-    ${props.deleted ? `
+    `
+        : ''
+    }
+    ${
+      props.deleted
+        ? `
       opacity: 0.4;
-    ` : ''}
+    `
+        : ''
+    }
   `,
 )
 
@@ -104,9 +116,9 @@ export const Editor = ({element, index}: {element: CanvasEditorElement; index: n
         active={element.active}
         deleted={isDeleted()}
         style={{
-          'left': `${element.x}px`,
-          'top': `${element.y}px`,
-          'width': `${element.width}px`,
+          left: `${element.x}px`,
+          top: `${element.y}px`,
+          width: `${element.width}px`,
           'min-height': `${element.height}px`,
           'max-height': `${element.height}px`,
           'z-index': `${ZIndex.element(index, IndexType.CONTENT)}`,

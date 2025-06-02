@@ -43,9 +43,9 @@ export const ChatPage = (props: RouteSectionProps) => {
         <Content
           ref={scrollContent}
           style={{
-            'width': '100%',
+            width: '100%',
             'padding-bottom': '0',
-            'height': 'auto',
+            height: 'auto',
           }}
           config={store.config}
           data-tauri-drag-region="true"

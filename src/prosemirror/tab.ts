@@ -23,6 +23,6 @@ const onTab =
 
 export const createTabKeymap = (schema: Schema) =>
   keymap({
-    'Tab': onTab(schema),
+    Tab: onTab(schema),
     'Shift-Tab': liftListItem(schema.nodes.list_item),
   })

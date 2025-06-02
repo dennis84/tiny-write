@@ -17,8 +17,8 @@ export const containerSchemaSpec = {
         summary: {default: 'Details'},
       },
       toDOM(node: Node): DOMOutputSpec {
-        return node.attrs.type === 'details' ?
-            [
+        return node.attrs.type === 'details'
+          ? [
               'details',
               {class: `container-${node.attrs.type}`, ...(node.attrs.open ? {open: ''} : {})},
               ['summary', {contenteditable: 'false'}, node.attrs.summary],
@@ -33,12 +33,7 @@ export const containerSchemaSpec = {
 const containerRule = (nodeType: NodeType) =>
   wrappingInputRule(/^:::([a-z]*)?\s$/, nodeType, (match) => {
     const type = match[1]
-    return (
-      type === 'tip' ? {type}
-      : type === 'warning' ? {type}
-      : type === 'details' ? {type}
-      : {}
-    )
+    return type === 'tip' ? {type} : type === 'warning' ? {type} : type === 'details' ? {type} : {}
   })
 
 class ContainerView {
