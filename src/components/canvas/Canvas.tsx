@@ -127,7 +127,7 @@ export const Canvas = () => {
         },
         pinch: {
           scaleBounds,
-          from: () => [canvasService.currentCanvas!.camera.zoom ?? 0, 0],
+          from: () => [canvasService.currentCanvas?.camera.zoom ?? 0, 0],
         },
       },
     )

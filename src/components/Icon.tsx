@@ -1,5 +1,5 @@
 import {Dynamic} from 'solid-js/web'
-import {JSX} from 'solid-js'
+import type {JSX} from 'solid-js'
 import {styled} from 'solid-styled-components'
 
 import OcticonCopilot16 from '~icons/octicon/copilot-16'

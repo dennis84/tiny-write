@@ -1,4 +1,4 @@
-import {Point, Vector} from '@flatten-js/core'
+import {Point, type Vector} from '@flatten-js/core'
 
 export class PointUtil {
   static fromVec({x, y}: Vector): Point {

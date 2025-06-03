@@ -1,5 +1,5 @@
 import {CopilotMock} from '@/utils/CopilotMock'
-import {Page} from '@playwright/test'
+import type {Page} from '@playwright/test'
 
 type ArrayData = unknown[]
 type ObjectData = Record<string, unknown>

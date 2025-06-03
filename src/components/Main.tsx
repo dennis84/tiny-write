@@ -2,12 +2,12 @@ import {onMount, Switch, Match, ErrorBoundary, createEffect, untrack, Show} from
 import {
   Route,
   Router,
-  RouteSectionProps,
+  type RouteSectionProps,
   useCurrentMatches,
   useLocation,
   useMatch,
 } from '@solidjs/router'
-import {LocationState, Page, State, StateContext} from '@/state'
+import {type LocationState, Page, type State, StateContext} from '@/state'
 import {createCtrl} from '@/services'
 import {info} from '@/remote/log'
 import {isTauri} from '@/env'
@@ -16,7 +16,7 @@ import {enumFromValue} from '@/utils/enum'
 import {DragArea, Layout, PageContent} from '@/components/Layout'
 import {Menu} from '@/components/menu/Menu'
 import {FloatingNavbar} from '@/components/menu/Navbar'
-import {Error} from '@/components/Error'
+import {ErrorScreen} from '@/components/Error'
 import {Keymap} from '@/components/Keymap'
 import {Variables} from '@/components/Variables'
 import {MouseCursor} from '@/components/MouseCursor'
@@ -94,7 +94,7 @@ export const Main = (props: {state: State}) => {
           <Layout ref={layoutRef} data-testid={ctrl.store.loading}>
             <Switch>
               <Match when={ctrl.store.error}>
-                <Error />
+                <ErrorScreen />
               </Match>
               <Match when={ctrl.store.loading === 'initialized'}>
                 <PageContent>

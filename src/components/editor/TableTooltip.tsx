@@ -1,5 +1,5 @@
 import {createEffect, createSignal, Show} from 'solid-js'
-import {ReferenceElement} from '@floating-ui/dom'
+import type {ReferenceElement} from '@floating-ui/dom'
 import {
   addColumnAfter,
   addColumnBefore,
@@ -9,7 +9,7 @@ import {
   deleteColumn,
   deleteRow,
   deleteTable,
-  TableMap,
+  type TableMap,
   toggleHeaderRow,
 } from 'prosemirror-tables'
 import {
@@ -21,7 +21,7 @@ import {
   IconRowRemove,
   IconToggleOn,
 } from '../Icon'
-import {CurrentCell, ActiveHandle, CurrentTable} from './TableControl'
+import type {CurrentCell, ActiveHandle, CurrentTable} from './TableControl'
 import {useState} from '@/state'
 import {Tooltip, TooltipButton, TooltipDivider} from '../Tooltip'
 

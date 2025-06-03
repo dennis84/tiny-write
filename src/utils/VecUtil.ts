@@ -1,5 +1,5 @@
-import {Box, Point, Vector} from '@flatten-js/core'
-import {CanvasPoint} from '@/state'
+import {type Box, type Point, Vector} from '@flatten-js/core'
+import type {CanvasPoint} from '@/state'
 
 export class VecUtil {
   static center(box: Box): Vector {

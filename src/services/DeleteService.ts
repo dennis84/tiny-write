@@ -1,9 +1,9 @@
-import {isCanvas, isEditorElement, isFile, isLinkElement, Openable, Page, State} from '@/state'
-import {CanvasService} from './CanvasService'
+import {isCanvas, isEditorElement, isFile, isLinkElement, type Openable, Page, type State} from '@/state'
+import type {CanvasService} from './CanvasService'
 import {FileService} from './FileService'
-import {MenuTreeItem, TreeService} from './TreeService'
+import type {MenuTreeItem, TreeService} from './TreeService'
 import {info} from '@/remote/log'
-import {SetStoreFunction, unwrap} from 'solid-js/store'
+import {type SetStoreFunction, unwrap} from 'solid-js/store'
 import {DB} from '@/db'
 
 interface DeleteResult {
@@ -20,7 +20,7 @@ export class DeleteService {
   ) {}
 
   async emptyBin(): Promise<DeleteResult> {
-    let navigateTo: Openable | undefined = undefined
+    let navigateTo: Openable | undefined 
 
     const doEmptyBin = async (node: MenuTreeItem): Promise<boolean> => {
       let shouldDelete = node.value.deleted ?? false

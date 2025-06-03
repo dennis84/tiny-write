@@ -4,10 +4,10 @@ import {createStore} from 'solid-js/store'
 import * as Y from 'yjs'
 import {YMultiDocUndoManager} from 'y-utility/y-multidoc-undomanager'
 
-import {Canvas, createState, ElementType} from '@/state'
+import {type Canvas, createState, ElementType} from '@/state'
 import {CanvasCollabService} from '@/services/CanvasCollabService'
-import {CanvasService} from '@/services/CanvasService'
-import {CollabService} from '@/services/CollabService'
+import type {CanvasService} from '@/services/CanvasService'
+import type {CollabService} from '@/services/CollabService'
 
 vi.mock('@/db', () => ({DB: mock()}))
 

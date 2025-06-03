@@ -1,5 +1,5 @@
-import {EditorState, Selection} from 'prosemirror-state'
-import {DOMOutputSpec, Schema} from 'prosemirror-model'
+import {type EditorState, Selection} from 'prosemirror-state'
+import type {DOMOutputSpec, Schema} from 'prosemirror-model'
 import {InputRule, inputRules} from 'prosemirror-inputrules'
 import {keymap} from 'prosemirror-keymap'
 import {
@@ -43,7 +43,7 @@ export const tableSchemaSpec = {
 
 const tableInputRule = (schema: Schema) =>
   new InputRule(
-    new RegExp('^\\|{2,}\\s$'),
+    /^\|{2,}\s$/,
     (state: EditorState, match: string[], start: number, end: number) => {
       const tr = state.tr
       const columns = [...Array(match[0].trim().length - 1)]

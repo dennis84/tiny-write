@@ -4,7 +4,7 @@ import {createStore} from 'solid-js/store'
 import * as Y from 'yjs'
 import {createState} from '@/state'
 import {FileService} from '@/services/FileService'
-import {CollabService} from '@/services/CollabService'
+import type {CollabService} from '@/services/CollabService'
 import {createYUpdate, createSubdoc} from '../util/prosemirror-util'
 import {createIpcMock} from '../util/util'
 
@@ -94,7 +94,7 @@ test('getTitle', async () => {
 test('findFile - found', async () => {
   vi.stubGlobal('__TAURI__', {})
   createIpcMock({
-    to_absolute_path: (path) => '/path/to' + path,
+    to_absolute_path: (path) => `/path/to${path}`,
   })
 
   const [store, setState] = createStore(

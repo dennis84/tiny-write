@@ -1,13 +1,13 @@
-import {DOMOutputSpec, Node} from 'prosemirror-model'
-import {EditorView} from 'prosemirror-view'
+import type {DOMOutputSpec, Node} from 'prosemirror-model'
+import type {EditorView} from 'prosemirror-view'
 import {DragGesture} from '@use-gesture/vanilla'
 import {Page} from '@/state'
 import {isMac, isTauri} from '@/env'
 import {error} from '@/remote/log'
-import {ViewConfig} from '@/services/ProseMirrorService'
+import type {ViewConfig} from '@/services/ProseMirrorService'
 import {MediaService} from '@/services/MediaService'
-import {AppService} from '@/services/AppService'
-import {CanvasService} from '@/services/CanvasService'
+import type {AppService} from '@/services/AppService'
+import type {CanvasService} from '@/services/CanvasService'
 
 export enum Align {
   FloatLeft = 'float-left',
@@ -191,7 +191,7 @@ class ImageView {
   }
 
   private setWidth(width: number) {
-    this.container.style.width = width + 'px'
+    this.container.style.width = `${width}px`
   }
 }
 

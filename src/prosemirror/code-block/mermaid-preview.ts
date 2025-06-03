@@ -1,7 +1,7 @@
-import {EditorView, ViewPlugin, ViewUpdate} from '@codemirror/view'
+import {type EditorView, ViewPlugin, type ViewUpdate} from '@codemirror/view'
 import {language} from '@codemirror/language'
 import mermaid from 'mermaid'
-import {CodeBlockView} from './CodeBlockView'
+import type {CodeBlockView} from './CodeBlockView'
 
 export const createMermaidPlugin = (codeBlock: CodeBlockView) =>
   ViewPlugin.fromClass(
@@ -24,7 +24,7 @@ export const createMermaidPlugin = (codeBlock: CodeBlockView) =>
       update(update: ViewUpdate) {
         if (
           update.docChanged ||
-          update.startState.facet(language) != update.state.facet(language)
+          update.startState.facet(language) !== update.state.facet(language)
         ) {
           void this.updateDOM()
         }

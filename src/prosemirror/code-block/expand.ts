@@ -1,5 +1,5 @@
-import {EditorView, ViewPlugin, ViewUpdate} from '@codemirror/view'
-import {CodeBlockView} from './CodeBlockView'
+import {type EditorView, ViewPlugin, type ViewUpdate} from '@codemirror/view'
+import type {CodeBlockView} from './CodeBlockView'
 
 export const createExpandPlugin = (codeBlock: CodeBlockView) =>
   ViewPlugin.fromClass(
@@ -49,7 +49,7 @@ export const createExpandPlugin = (codeBlock: CodeBlockView) =>
             this.expand.textContent = '↑'
           } else {
             const height = 60 + 10 * codeBlock.configService.fontSize * 1.8
-            this.view.scrollDOM.style.maxHeight = height + 'px'
+            this.view.scrollDOM.style.maxHeight = `${height}px`
             this.expand.textContent = '↓'
           }
 

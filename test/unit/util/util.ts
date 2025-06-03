@@ -1,10 +1,10 @@
 import * as Y from 'yjs'
-import {WebsocketProvider} from 'y-websocket'
-import {YMultiDocUndoManager} from 'y-utility/y-multidoc-undomanager'
+import type {WebsocketProvider} from 'y-websocket'
+import type {YMultiDocUndoManager} from 'y-utility/y-multidoc-undomanager'
 import {vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
 import {mockIPC} from '@tauri-apps/api/mocks'
-import {Collab} from '@/state'
+import type {Collab} from '@/state'
 
 export const stubLocation = (path: string) => {
   vi.stubGlobal('location', new URL(`http://localhost:3000${path}`))

@@ -1,4 +1,4 @@
-import {StreamLanguage, LanguageSupport, StreamParser, StringStream} from '@codemirror/language'
+import {StreamLanguage, LanguageSupport, type StreamParser, type StringStream} from '@codemirror/language'
 import {haskell} from '@codemirror/legacy-modes/mode/haskell'
 import {clojure} from '@codemirror/legacy-modes/mode/clojure'
 import {erlang} from '@codemirror/legacy-modes/mode/erlang'

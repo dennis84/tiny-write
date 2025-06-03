@@ -32,10 +32,10 @@ export const Keymap = () => {
   }
 
   const modifiers = (name: string, event: KeyboardEvent, shift = true) => {
-    if (event.altKey) name = 'Alt-' + name
-    if (event.ctrlKey) name = 'Ctrl-' + name
-    if (event.metaKey) name = 'Meta-' + name
-    if (shift && event.shiftKey) name = 'Shift-' + name
+    if (event.altKey) name = `Alt-${name}`
+    if (event.ctrlKey) name = `Ctrl-${name}`
+    if (event.metaKey) name = `Meta-${name}`
+    if (shift && event.shiftKey) name = `Shift-${name}`
     return name
   }
 
@@ -148,7 +148,7 @@ export const Keymap = () => {
     open(file, {back: true, selection})
   }
 
-  type Fn = (e: KeyboardEvent) => boolean | void | Promise<boolean | void>
+  type Fn = (e: KeyboardEvent) => boolean | undefined | Promise<boolean | undefined>
   const keymap: Record<string, Fn> = {
     [`${mod}-r`]: onReload,
     [`${mod}-q`]: onQuit,

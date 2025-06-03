@@ -1,6 +1,6 @@
 import {onMount} from 'solid-js'
 import {useLocation} from '@solidjs/router'
-import {LocationState, useState} from '@/state'
+import {type LocationState, useState} from '@/state'
 import {info} from '@/remote/log'
 import {useOpen} from '@/hooks/open'
 
@@ -25,7 +25,7 @@ export const Redirect = () => {
     }
 
     if (argPath) {
-      let file = await fileService.newFileByPath(path, newFile)
+      const file = await fileService.newFileByPath(path, newFile)
       return open(file, {back, selection})
     }
 

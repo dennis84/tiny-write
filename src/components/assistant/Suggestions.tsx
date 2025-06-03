@@ -1,7 +1,7 @@
 import {createEffect, createSignal, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {v4 as uuidv4} from 'uuid'
-import {Message, MessageType, useState} from '@/state'
+import {type Message, MessageType, useState} from '@/state'
 import {Button, ButtonGroup} from '../Button'
 import {IconHelp, IconRepair} from '../Icon'
 

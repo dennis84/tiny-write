@@ -1,7 +1,7 @@
 import {invoke} from '@tauri-apps/api/core'
 import * as fs from '@tauri-apps/plugin-fs'
 import * as dialog from '@tauri-apps/plugin-dialog'
-import {File} from '@/state'
+import type {File} from '@/state'
 import {serialize} from '@/markdown'
 import {isTauri} from '@/env'
 import {debug} from './log'

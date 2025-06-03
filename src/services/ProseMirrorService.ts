@@ -1,12 +1,12 @@
-import {EditorState, Plugin} from 'prosemirror-state'
-import {NodeViewConstructor} from 'prosemirror-view'
-import {Node, Schema} from 'prosemirror-model'
+import type {EditorState, Plugin} from 'prosemirror-state'
+import type {NodeViewConstructor} from 'prosemirror-view'
+import {type Node, Schema} from 'prosemirror-model'
 import {dropCursor} from 'prosemirror-dropcursor'
 import {baseKeymap} from 'prosemirror-commands'
 import {keymap} from 'prosemirror-keymap'
 import {inputRules} from 'prosemirror-inputrules'
 import {buildKeymap} from 'prosemirror-example-setup'
-import * as Y from 'yjs'
+import type * as Y from 'yjs'
 import {initProseMirrorDoc} from 'y-prosemirror'
 import {paragraphSchemaSpec} from '@/prosemirror/paragraph'
 import {headingSchemaSpec} from '@/prosemirror/heading'
@@ -45,11 +45,11 @@ import {
 } from '@/prosemirror/autocomplete/word-completion'
 import {isTauri} from '@/env'
 import {createMarkdownParser} from '@/markdown'
-import {ConfigService} from './ConfigService'
-import {CollabService} from './CollabService'
-import {AppService} from './AppService'
-import {CodeMirrorService} from './CodeMirrorService'
-import {CanvasService} from './CanvasService'
+import type {ConfigService} from './ConfigService'
+import type {CollabService} from './CollabService'
+import type {AppService} from './AppService'
+import type {CodeMirrorService} from './CodeMirrorService'
+import type {CanvasService} from './CanvasService'
 
 export interface ViewConfig {
   nodeViews?: NodeViewConfig
@@ -107,10 +107,10 @@ export class ProseMirrorService {
     return (
       !state ||
       state.doc.childCount === 0 ||
-      (state.doc.childCount == 1 &&
+      (state.doc.childCount === 1 &&
         !state.doc.firstChild?.type.spec.code &&
         state.doc.firstChild?.isTextblock &&
-        state.doc.firstChild.content.size == 0)
+        state.doc.firstChild.content.size === 0)
     )
   }
 
@@ -164,7 +164,7 @@ export class ProseMirrorService {
       ...createCollabPlugins(
         props.type,
         this.collabService.permanentUserData!,
-        this.collabService.provider!.awareness,
+        this.collabService.provider?.awareness,
         result.mapping,
         this.collabService.isSnapshot,
       ),

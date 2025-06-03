@@ -1,4 +1,4 @@
-import {EditorState} from '@codemirror/state'
+import type {EditorState} from '@codemirror/state'
 import {inlineSuggestion} from 'codemirror-extension-inline-suggestion'
 import {copilotCompletion} from '@/remote/copilot'
 import {readText, replaceText} from '@/remote/editor'

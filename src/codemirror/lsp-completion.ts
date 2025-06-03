@@ -1,5 +1,5 @@
 import {lspCompletion} from '@/remote/lsp'
-import {CompletionSource} from '@codemirror/autocomplete'
+import type {CompletionSource} from '@codemirror/autocomplete'
 
 // `class`, `constant`, `enum`,
 // `function`, `interface`, `keyword`, `method`, `namespace`,
@@ -35,7 +35,7 @@ const typeMapping: Record<number, string> = {
 export const lspCompletionSource =
   (path: string): CompletionSource =>
   async (context) => {
-    let word = context.matchBefore(/\w*/)
+    const word = context.matchBefore(/\w*/)
     if (!word) return null
 
     const char = context.state.sliceDoc(word.from - 1, word.from)

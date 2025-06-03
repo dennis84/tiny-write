@@ -1,4 +1,4 @@
-import {DOMOutputSpec, Node} from 'prosemirror-model'
+import type {DOMOutputSpec, Node} from 'prosemirror-model'
 
 export const listSchemaSpec = {
   nodes: {
@@ -10,7 +10,7 @@ export const listSchemaSpec = {
         return [
           'ol',
           {
-            start: node.attrs.order == 1 ? null : node.attrs.order,
+            start: node.attrs.order === 1 ? null : node.attrs.order,
             'data-tight': node.attrs.tight ? 'true' : null,
           },
           0,

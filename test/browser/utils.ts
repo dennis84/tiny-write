@@ -1,4 +1,4 @@
-import {Page, expect} from '@playwright/test'
+import {type Page, expect} from '@playwright/test'
 
 export const delay = process.env.CI ? 30 : 80
 

@@ -1,12 +1,12 @@
 import {createSignal} from 'solid-js'
-import {SetStoreFunction, Store, unwrap} from 'solid-js/store'
+import {type SetStoreFunction, type Store, unwrap} from 'solid-js/store'
 import {v4 as uuidv4} from 'uuid'
-import {Message, MessageType, State, Thread} from '@/state'
+import {type Message, MessageType, type State, type Thread} from '@/state'
 import {DB} from '@/db'
 import {info} from '@/remote/log'
-import {createTreeStore, TreeItem} from '@/tree'
-import {ChatMessage, CopilotService} from './CopilotService'
-import {FileService} from './FileService'
+import {createTreeStore, type TreeItem} from '@/tree'
+import type {ChatMessage, CopilotService} from './CopilotService'
+import type {FileService} from './FileService'
 import {createCodeFence} from '@/components/assistant/util'
 
 type PathMap = Map<string | undefined, string>

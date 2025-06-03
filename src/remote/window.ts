@@ -4,7 +4,7 @@ import {
   PhysicalPosition,
   PhysicalSize,
 } from '@tauri-apps/api/window'
-import {Window} from '@/state'
+import type {Window} from '@/state'
 import {info} from './log'
 
 export const updateWindow = async ({width, height, x, y}: Window) => {

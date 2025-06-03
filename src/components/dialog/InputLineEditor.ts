@@ -1,5 +1,5 @@
 import {EditorView, crosshairCursor, drawSelection, keymap} from '@codemirror/view'
-import {Extension} from '@codemirror/state'
+import type {Extension} from '@codemirror/state'
 import {standardKeymap} from '@codemirror/commands'
 import {acceptCompletion, autocompletion, moveCompletionSelection} from '@codemirror/autocomplete'
 

@@ -1,34 +1,34 @@
-import {SetStoreFunction, Store, unwrap} from 'solid-js/store'
+import {type SetStoreFunction, type Store, unwrap} from 'solid-js/store'
 import {TextSelection} from 'prosemirror-state'
 import {v4 as uuidv4} from 'uuid'
 import {throttle} from 'throttle-debounce'
 import {Box, Point, Segment, Vector} from '@flatten-js/core'
 import {
-  Camera,
-  Canvas,
-  CanvasBoxElement,
-  CanvasEditorElement,
-  CanvasElement,
-  CanvasLinkElement,
-  CanvasImageElement,
-  CanvasVideoElement,
+  type Camera,
+  type Canvas,
+  type CanvasBoxElement,
+  type CanvasEditorElement,
+  type CanvasElement,
+  type CanvasLinkElement,
+  type CanvasImageElement,
+  type CanvasVideoElement,
   EdgeType,
   ElementType,
-  File,
-  State,
+  type File,
+  type State,
   isEditorElement,
   isLinkElement,
   isBoxElement,
   isCodeElement,
-  CanvasRect,
-  CanvasPoint,
+  type CanvasRect,
+  type CanvasPoint,
   Page,
 } from '@/state'
 import {DB} from '@/db'
 import {info} from '@/remote/log'
 import {FileService} from './FileService'
 import {CollabService} from './CollabService'
-import {SelectService} from './SelectService'
+import type {SelectService} from './SelectService'
 import {VecUtil} from '@/utils/VecUtil'
 import {BoxUtil} from '@/utils/BoxUtil'
 import {PointUtil} from '@/utils/PointUtil'
@@ -346,7 +346,7 @@ export class CanvasService {
       files.push({...file, editorView: undefined, codeEditorView: undefined})
     }
 
-    let newState = {...this.store, files}
+    const newState = {...this.store, files}
 
     if (!this.findCanvas(id)) {
       const canvas = CanvasService.createCanvas({id})

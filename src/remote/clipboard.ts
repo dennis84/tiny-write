@@ -1,5 +1,5 @@
 import * as clipboard from '@tauri-apps/plugin-clipboard-manager'
-import {EditorState} from 'prosemirror-state'
+import type {EditorState} from 'prosemirror-state'
 import {isTauri} from '@/env'
 import {serialize} from '@/markdown'
 

@@ -1,6 +1,6 @@
 import {Plugin} from 'prosemirror-state'
-import {EditorView} from 'prosemirror-view'
-import {ConfigService} from '@/services/ConfigService'
+import type {EditorView} from 'prosemirror-view'
+import type {ConfigService} from '@/services/ConfigService'
 
 const scroll = (view: EditorView) => {
   if (!view.state.selection.empty) return false

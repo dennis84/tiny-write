@@ -1,4 +1,4 @@
-import {JSX, onCleanup, onMount, Show} from 'solid-js'
+import {type JSX, onCleanup, onMount, Show} from 'solid-js'
 import {createMutable, unwrap} from 'solid-js/store'
 import {styled} from 'solid-styled-components'
 import {
@@ -9,8 +9,8 @@ import {
   offset,
   shift,
   size,
-  Placement,
-  ReferenceElement,
+  type Placement,
+  type ReferenceElement,
 } from '@floating-ui/dom'
 
 export const TooltipContainer = styled('div')`
@@ -146,8 +146,8 @@ export const Tooltip = (props: Props) => {
     const placement = props.placement ?? 'bottom'
     const fallbackPlacements = props.fallbackPlacements ?? undefined
 
-    cleanup.fn = autoUpdate(props.anchor, tooltipRef!, async () => {
-      void computePosition(props.anchor, tooltipRef!, {
+    cleanup.fn = autoUpdate(props.anchor, tooltipRef, async () => {
+      void computePosition(props.anchor, tooltipRef, {
         placement,
         middleware: [
           offset(props.offset ?? 10),
@@ -165,8 +165,8 @@ export const Tooltip = (props: Props) => {
           }),
         ],
       }).then(({x, y, placement, middlewareData}) => {
-        tooltipRef!.style.left = `${x}px`
-        tooltipRef!.style.top = `${y}px`
+        tooltipRef.style.left = `${x}px`
+        tooltipRef.style.top = `${y}px`
 
         const side = placement.split('-')[0]
         const staticSide =
@@ -180,10 +180,10 @@ export const Tooltip = (props: Props) => {
         if (middlewareData.arrow) {
           const {x, y} = middlewareData.arrow
           arrowRef?.classList.add(staticSide)
-          Object.assign(arrowRef!.style, {
+          Object.assign(arrowRef?.style, {
             left: x != null ? `${x}px` : '',
             top: y != null ? `${y}px` : '',
-            [staticSide]: `${-arrowRef!.offsetWidth / 2}px`,
+            [staticSide]: `${-arrowRef?.offsetWidth / 2}px`,
           })
         }
       })
@@ -198,7 +198,7 @@ export const Tooltip = (props: Props) => {
     <>
       <Show when={props.closeable !== false}>
         <Show when={props.backdrop} fallback={<CloseOnBackgroundClick />}>
-          <Backdrop onClick={onBackdropClick} />
+          <Backdrop onClick={onBackdropClick} data-testid="tooltip_backdrop" />
         </Show>
       </Show>
       <TooltipContainer ref={tooltipRef} id="tooltip" class="tooltip" delay={props.delay}>

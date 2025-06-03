@@ -2,12 +2,12 @@ import {vi, test, beforeEach, expect} from 'vitest'
 import {mock} from 'vitest-mock-extended'
 import {createStore} from 'solid-js/store'
 import {diagnosticCount} from '@codemirror/lint'
-import {State, createState} from '@/state'
+import {type State, createState} from '@/state'
 import {CodeMirrorService} from '@/services/CodeMirrorService'
 import {ConfigService} from '@/services/ConfigService'
-import {AppService} from '@/services/AppService'
+import type {AppService} from '@/services/AppService'
 import {PrettierService} from '@/services/PrettierService'
-import {ToastService} from '@/services/ToastService'
+import type {ToastService} from '@/services/ToastService'
 
 vi.mock('@/db', () => ({DB: mock()}))
 

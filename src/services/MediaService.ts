@@ -1,12 +1,12 @@
-import {Store} from 'solid-js/store'
+import type {Store} from 'solid-js/store'
 import {convertFileSrc} from '@tauri-apps/api/core'
-import {EditorView} from 'prosemirror-view'
+import type {EditorView} from 'prosemirror-view'
 import {getMimeType, resolvePath, toRelativePath} from '@/remote/editor'
-import {File, isEditorElement, Page, State} from '@/state'
-import {FileService} from './FileService'
-import {CanvasService} from './CanvasService'
-import {AppService} from './AppService'
-import {CanvasCollabService} from './CanvasCollabService'
+import {type File, isEditorElement, Page, type State} from '@/state'
+import type {FileService} from './FileService'
+import type {CanvasService} from './CanvasService'
+import type {AppService} from './AppService'
+import type {CanvasCollabService} from './CanvasCollabService'
 
 interface DropResult {
   file?: File
@@ -107,7 +107,7 @@ export class MediaService {
   }
 
   private insert(view: EditorView, data: string, left: number, top: number, mime?: string) {
-    if (mime && mime.startsWith('video/')) {
+    if (mime?.startsWith('video/')) {
       this.insertVideo(view, data, mime, left, top)
     } else {
       this.insertImage(view, data, left, top)

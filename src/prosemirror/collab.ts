@@ -1,7 +1,7 @@
-import * as Y from 'yjs'
-import {Awareness} from 'y-protocols/awareness'
-import {ProsemirrorMapping} from 'y-prosemirror/dist/src/lib'
-import {DOMOutputSpec} from 'prosemirror-model'
+import type * as Y from 'yjs'
+import type {Awareness} from 'y-protocols/awareness'
+import type {ProsemirrorMapping} from 'y-prosemirror/dist/src/lib'
+import type {DOMOutputSpec} from 'prosemirror-model'
 import {ySyncPlugin, yCursorPlugin} from 'y-prosemirror'
 
 const cursorBuilder = (user: any): HTMLElement => {

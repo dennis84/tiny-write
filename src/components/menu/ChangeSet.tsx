@@ -1,6 +1,6 @@
 import {For, Show, createSignal, onCleanup} from 'solid-js'
 import {format} from 'date-fns'
-import {Version, useState} from '@/state'
+import {type Version, useState} from '@/state'
 import {ButtonGroup, ButtonPrimary} from '@/components/Button'
 import {DrawerContent} from '../Drawer'
 import {Label, Link, Sub} from './Style'
@@ -13,7 +13,7 @@ export const ChangeSet = () => {
   const [active, setActive] = createSignal<Version>()
 
   const renderVersion = (version: Version) => {
-    if (active() != version) {
+    if (active() !== version) {
       setActive(version)
       changeSetService.renderVersion(version)
     } else {

@@ -1,4 +1,4 @@
-import {Store} from 'solid-js/store'
+import type {Store} from 'solid-js/store'
 import {
   EditorView,
   drawSelection,
@@ -9,7 +9,7 @@ import {
   lineNumbers,
   tooltips,
 } from '@codemirror/view'
-import {Compartment, EditorState, Extension} from '@codemirror/state'
+import {Compartment, EditorState, type Extension} from '@codemirror/state'
 import {defaultKeymap, indentWithTab} from '@codemirror/commands'
 import {
   autocompletion,
@@ -26,17 +26,17 @@ import {
 } from '@codemirror/language'
 import {linter, setDiagnostics} from '@codemirror/lint'
 import {getTheme} from '@/codemirror/theme'
-import {getLanguageConfig, LangConfig} from '@/codemirror/highlight'
+import {getLanguageConfig, type LangConfig} from '@/codemirror/highlight'
 import {findWords, tabCompletionKeymap} from '@/codemirror/completion'
 import {mermaidKeywords} from '@/codemirror/mermaid'
 import {lspCompletionSource} from '@/codemirror/lsp-completion'
 import {lspHoverSource} from '@/codemirror/lsp-hover'
-import {Page, PrettierConfig, State} from '@/state'
+import {Page, type PrettierConfig, type State} from '@/state'
 import {isTauri} from '@/env'
-import {ConfigService} from './ConfigService'
-import {AppService} from './AppService'
-import {PrettierService} from './PrettierService'
-import {ToastService} from './ToastService'
+import type {ConfigService} from './ConfigService'
+import type {AppService} from './AppService'
+import type {PrettierService} from './PrettierService'
+import type {ToastService} from './ToastService'
 
 interface CreateEditor {
   lang?: string

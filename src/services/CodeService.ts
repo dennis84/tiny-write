@@ -1,21 +1,21 @@
-import {SetStoreFunction, Store, unwrap} from 'solid-js/store'
-import {EditorView, ViewUpdate} from '@codemirror/view'
+import {type SetStoreFunction, type Store, unwrap} from 'solid-js/store'
+import {EditorView, type ViewUpdate} from '@codemirror/view'
 import {getChunks, unifiedMergeView} from '@codemirror/merge'
-import * as Y from 'yjs'
+import type * as Y from 'yjs'
 import {yCollab, ySyncFacet} from 'y-codemirror.next'
 import {debounce} from 'throttle-debounce'
 import {indentationMarkers} from '@replit/codemirror-indentation-markers'
-import {File, MergeState, Page, SelectionRange, State, VisualPositionRange} from '@/state'
+import {type File, type MergeState, Page, type SelectionRange, type State, type VisualPositionRange} from '@/state'
 import {copilot} from '@/codemirror/copilot'
 import {deleteText, insertText, writeFile} from '@/remote/editor'
 import {debug, info} from '@/remote/log'
 import {isTauri} from '@/env'
 import {FileService} from './FileService'
 import {CollabService} from './CollabService'
-import {AppService} from './AppService'
+import type {AppService} from './AppService'
 import {CodeMirrorService} from './CodeMirrorService'
-import {PrettierService} from './PrettierService'
-import {ConfigService} from './ConfigService'
+import type {PrettierService} from './PrettierService'
+import type {ConfigService} from './ConfigService'
 
 export interface OpenFile {
   id: string
@@ -77,7 +77,7 @@ export class CodeService {
         },
       }
 
-      const subdoc = CollabService.getSubdoc(newState.collab!.ydoc, file.id)
+      const subdoc = CollabService.getSubdoc(newState.collab?.ydoc, file.id)
       if (text) this.updateText(file, subdoc, text)
       this.setState(newState)
     } catch (error: any) {

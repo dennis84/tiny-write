@@ -1,4 +1,4 @@
-import {DOMOutputSpec} from 'prosemirror-model'
+import type {DOMOutputSpec} from 'prosemirror-model'
 
 export const hardBreakSchemaSpec = {
   nodes: {

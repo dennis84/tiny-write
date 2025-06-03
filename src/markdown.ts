@@ -1,8 +1,8 @@
 import markdownit from 'markdown-it'
 import container from 'markdown-it-container'
 import {MarkdownSerializer, MarkdownParser, defaultMarkdownSerializer} from 'prosemirror-markdown'
-import {Node, Schema} from 'prosemirror-model'
-import {EditorState} from 'prosemirror-state'
+import type {Node, Schema} from 'prosemirror-model'
+import type {EditorState} from 'prosemirror-state'
 import {taskList} from '@/prosemirror/task-list/markdown'
 
 export const serialize = (state: EditorState) => {
@@ -35,7 +35,7 @@ export const markdownSerializer = new MarkdownSerializer(
       state.write(':::\n')
     },
     code_block(state, node) {
-      state.write('```' + (node.attrs.lang || '') + '\n')
+      state.write(`\`\`\`${node.attrs.lang || ''}\n`)
       state.text(node.textContent, false)
       state.ensureNewLine()
       state.write('```')
@@ -45,7 +45,7 @@ export const markdownSerializer = new MarkdownSerializer(
       state.renderList(node, '  ', () => '- ')
     },
     task_list_item(state, node) {
-      state.write((node.attrs.checked ? '[x]' : '[ ]') + ' ')
+      state.write(`${node.attrs.checked ? '[x]' : '[ ]'} `)
       state.renderContent(node)
     },
     table(state, node) {
@@ -86,7 +86,7 @@ export const markdownSerializer = new MarkdownSerializer(
         }
 
         const match = alignment.match(/text-align:[ ]?(left|right|center)/)
-        if (match && match[1]) {
+        if (match?.[1]) {
           return match[1]
         }
 
@@ -114,7 +114,7 @@ export const markdownSerializer = new MarkdownSerializer(
 
 function listIsTight(tokens: any, i: number) {
   while (++i < tokens.length) {
-    if (tokens[i].type != 'list_item_open') return tokens[i].hidden
+    if (tokens[i].type !== 'list_item_open') return tokens[i].hidden
   }
   return false
 }

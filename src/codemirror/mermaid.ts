@@ -1,4 +1,4 @@
-import {CompletionSource} from '@codemirror/autocomplete'
+import type {CompletionSource} from '@codemirror/autocomplete'
 
 const syntax: Record<string, string[]> = {
   flowchart: ['subgraph'],
@@ -13,7 +13,7 @@ export const mermaidKeywords: CompletionSource = (context) => {
     return null
   }
 
-  if (word.from == word.to && !context.explicit) {
+  if (word.from === word.to && !context.explicit) {
     return null
   }
 

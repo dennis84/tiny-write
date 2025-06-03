@@ -1,9 +1,9 @@
-import {SetStoreFunction, Store} from 'solid-js/store'
+import type {SetStoreFunction, Store} from 'solid-js/store'
 import * as Y from 'yjs'
 import {yXmlFragmentToProseMirrorRootNode} from 'y-prosemirror'
 import {ySyncFacet} from 'y-codemirror.next'
 import {v4 as uuidv4} from 'uuid'
-import {File, FileText, ServiceError, State} from '@/state'
+import {type File, type FileText, ServiceError, type State} from '@/state'
 import {
   getDocument,
   getMimeType,
@@ -17,7 +17,7 @@ import {DB} from '@/db'
 import {isTauri} from '@/env'
 import {createMarkdownParser} from '@/markdown'
 import {findCodeLang} from '@/codemirror/highlight'
-import {CollabService} from './CollabService'
+import type {CollabService} from './CollabService'
 import {schema} from './ProseMirrorService'
 
 export interface LoadedTextFile {

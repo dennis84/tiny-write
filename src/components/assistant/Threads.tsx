@@ -1,7 +1,7 @@
 import {createSignal, For, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {formatDate, isToday} from 'date-fns'
-import {Thread, useState} from '@/state'
+import {type Thread, useState} from '@/state'
 import {Button, ButtonGroup} from '../Button'
 import {IconAdd, IconDelete, IconEdit, IconHistory, IconMoreHoriz} from '../Icon'
 import {Tooltip, TooltipButton} from '../Tooltip'

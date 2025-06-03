@@ -6,7 +6,7 @@ import {
   emDash,
   ellipsis,
 } from 'prosemirror-inputrules'
-import {DOMOutputSpec, NodeType, Schema} from 'prosemirror-model'
+import type {DOMOutputSpec, NodeType, Schema} from 'prosemirror-model'
 import {nodeInputRule} from './rulebuilders'
 
 const blockQuoteRule = (nodeType: NodeType) => wrappingInputRule(/^\s*>\s$/, nodeType)
@@ -16,13 +16,13 @@ const orderedListRule = (nodeType: NodeType) =>
     /^(\d+)\.\s$/,
     nodeType,
     (match) => ({order: +match[1]}),
-    (match, node) => node.childCount + node.attrs.order == +match[1],
+    (match, node) => node.childCount + node.attrs.order === +match[1],
   )
 
 const bulletListRule = (nodeType: NodeType) => wrappingInputRule(/^\s*([-+*])\s$/, nodeType)
 
 const headingRule = (nodeType: NodeType, maxLevel: number) =>
-  textblockTypeInputRule(new RegExp('^(#{1,' + maxLevel + '})\\s$'), nodeType, (match) => ({
+  textblockTypeInputRule(new RegExp(`^(#{1,${maxLevel}})\\s$`), nodeType, (match) => ({
     level: match[1].length,
   }))
 

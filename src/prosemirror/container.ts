@@ -1,8 +1,8 @@
-import {DOMOutputSpec, DOMSerializer, Node, NodeType, Schema} from 'prosemirror-model'
+import {type DOMOutputSpec, DOMSerializer, type Node, type NodeType, type Schema} from 'prosemirror-model'
 import {TextSelection} from 'prosemirror-state'
-import {EditorView} from 'prosemirror-view'
+import type {EditorView} from 'prosemirror-view'
 import {inputRules, wrappingInputRule} from 'prosemirror-inputrules'
-import {ViewConfig} from '@/services/ProseMirrorService'
+import type {ViewConfig} from '@/services/ProseMirrorService'
 
 export const containerSchemaSpec = {
   nodes: {
@@ -45,7 +45,7 @@ class ContainerView {
     private view: EditorView,
     private getPos: () => number | undefined,
   ) {
-    const dom = this.node.type.spec.toDOM!(this.node)
+    const dom = this.node.type.spec.toDOM?.(this.node)
     const res = DOMSerializer.renderSpec(document, dom)
     this.dom = res.dom as HTMLInputElement
     this.contentDOM = res.contentDOM

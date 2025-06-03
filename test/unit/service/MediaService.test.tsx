@@ -5,7 +5,7 @@ import {fromBase64} from 'js-base64'
 import {render, waitFor} from '@solidjs/testing-library'
 import {MediaService} from '@/services/MediaService'
 import {createCtrl} from '@/services'
-import {CanvasEditorElement, CanvasImageElement, ElementType, createState} from '@/state'
+import {type CanvasEditorElement, type CanvasImageElement, ElementType, createState} from '@/state'
 import {Main} from '@/components/Main'
 import {createIpcMock, stubLocation} from '../util/util'
 import {createYUpdate} from '../util/prosemirror-util'
@@ -36,10 +36,10 @@ test('getImagePath', async () => {
   const input = '/path/to/file.png'
 
   const path = await MediaService.getImagePath(input)
-  expect(path).toBe('asset://localhost/' + encodeURIComponent(input))
+  expect(path).toBe(`asset://localhost/${encodeURIComponent(input)}`)
 
   const p2 = await MediaService.getImagePath(input, '/base/path')
-  expect(p2).toBe('asset://localhost/' + encodeURIComponent('/base/path' + input))
+  expect(p2).toBe(`asset://localhost/${encodeURIComponent(`/base/path${input}`)}`)
 })
 
 test('dropFile - image on editor', async () => {
@@ -364,5 +364,5 @@ test('dropPath - image on code', async () => {
 
   expect(result?.file).toBeDefined()
   expect(store.files).toHaveLength(2)
-  expect(fileService.findFileById(result!.file!.id)?.path).toBe(path)
+  expect(fileService.findFileById(result?.file?.id)?.path).toBe(path)
 })

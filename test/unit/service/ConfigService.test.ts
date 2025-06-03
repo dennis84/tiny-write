@@ -6,7 +6,7 @@ vi.mock('@/db', () => ({DB: mock()}))
 import {createStore} from 'solid-js/store'
 import {createState} from '@/state'
 import {ConfigService} from '@/services/ConfigService'
-import {CollabService} from '@/services/CollabService'
+import type {CollabService} from '@/services/CollabService'
 
 beforeEach(() => {
   vi.restoreAllMocks()

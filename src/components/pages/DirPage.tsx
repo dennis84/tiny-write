@@ -1,7 +1,7 @@
 import {createEffect, createSignal, For, onMount} from 'solid-js'
 import {useLocation} from '@solidjs/router'
 import {styled} from 'solid-styled-components'
-import {DirEntry, readDir} from '@tauri-apps/plugin-fs'
+import {type DirEntry, readDir} from '@tauri-apps/plugin-fs'
 import {homeDir} from '@tauri-apps/api/path'
 import {useState} from '@/state'
 import {resolvePath, toRelativePath} from '@/remote/editor'
@@ -81,7 +81,7 @@ export const DirPage = () => {
       }
 
       const path = await getResolvedPath(p.entry.name)
-      let file = await fileService.newFileByPath(path)
+      const file = await fileService.newFileByPath(path)
 
       open(file, {back: true})
     }

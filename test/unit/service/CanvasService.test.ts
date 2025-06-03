@@ -1,24 +1,24 @@
 import {beforeEach, expect, test, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
 import {createStore} from 'solid-js/store'
-import {EditorView} from 'prosemirror-view'
+import type {EditorView} from 'prosemirror-view'
 import {Box, Vector} from '@flatten-js/core'
 import {
-  Canvas,
-  CanvasEditorElement,
-  CanvasLinkElement,
-  CanvasImageElement,
+  type Canvas,
+  type CanvasEditorElement,
+  type CanvasLinkElement,
+  type CanvasImageElement,
   EdgeType,
   ElementType,
   createState,
-  CanvasVideoElement,
+  type CanvasVideoElement,
   Page,
 } from '@/state'
 import {DB} from '@/db'
 import {BoxUtil} from '@/utils/BoxUtil'
 import {CanvasService} from '@/services/CanvasService'
 import {FileService} from '@/services/FileService'
-import {SelectService} from '@/services/SelectService'
+import type {SelectService} from '@/services/SelectService'
 import {CollabService} from '@/services/CollabService'
 import {createCollabMock} from '../util/util'
 import {createYUpdate} from '../util/prosemirror-util'
@@ -810,7 +810,7 @@ test('get selection', () => {
 
   service.select('2', false, true)
   expect(service.selection).not.toBe(undefined)
-  expect(BoxUtil.toRect(service.selection!.box)).toMatchObject({
+  expect(BoxUtil.toRect(service.selection?.box)).toMatchObject({
     x: 0,
     y: 0,
     width: 200,
@@ -819,7 +819,7 @@ test('get selection', () => {
   expect(service.selection?.elements.length).toBe(2)
 
   service.select('3', false, true)
-  expect(BoxUtil.toRect(service.selection!.box)).toMatchObject({
+  expect(BoxUtil.toRect(service.selection?.box)).toMatchObject({
     x: 0,
     y: 0,
     width: 200,
@@ -859,7 +859,7 @@ test('selectBox', () => {
 
   service.selectBox(new Box(0, 0, 110, 0), false, false)
   expect(service.selection).not.toBe(undefined)
-  expect(BoxUtil.toRect(service.selection!.box)).toMatchObject({
+  expect(BoxUtil.toRect(service.selection?.box)).toMatchObject({
     x: 0,
     y: 0,
     width: 200,
@@ -868,7 +868,7 @@ test('selectBox', () => {
   expect(service.selection?.elements.length).toBe(2)
 
   service.selectBox(new Box(0, 0, 110, 110), false, false)
-  expect(BoxUtil.toRect(service.selection!.box)).toMatchObject({
+  expect(BoxUtil.toRect(service.selection?.box)).toMatchObject({
     x: 0,
     y: 0,
     width: 200,
@@ -877,7 +877,7 @@ test('selectBox', () => {
   expect(service.selection?.elements.length).toBe(3)
 
   service.selectBox(new Box(0, 0, 110, 90), false, false)
-  expect(BoxUtil.toRect(service.selection!.box)).toMatchObject({
+  expect(BoxUtil.toRect(service.selection?.box)).toMatchObject({
     x: 0,
     y: 0,
     width: 200,

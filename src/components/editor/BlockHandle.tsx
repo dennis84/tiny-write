@@ -1,9 +1,9 @@
 import {createEffect, createSignal, onCleanup, Show} from 'solid-js'
 import {Portal} from 'solid-js/web'
 import {styled} from 'solid-styled-components'
-import {Node} from 'prosemirror-model'
-import {EditorState, NodeSelection, TextSelection} from 'prosemirror-state'
-import {File, useState} from '@/state'
+import type {Node} from 'prosemirror-model'
+import {type EditorState, NodeSelection, TextSelection} from 'prosemirror-state'
+import {type File, useState} from '@/state'
 import {IconDragIndicator} from '../Icon'
 import {BlockTooltip} from './BlockTooltip'
 

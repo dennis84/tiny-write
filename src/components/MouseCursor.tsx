@@ -1,7 +1,7 @@
 import {createEffect, createSignal, For, onCleanup} from 'solid-js'
 import {createStore} from 'solid-js/store'
 import {styled} from 'solid-styled-components'
-import {Awareness} from 'y-protocols/awareness'
+import type {Awareness} from 'y-protocols/awareness'
 import {throttle} from 'throttle-debounce'
 import {Page, useState} from '@/state'
 
@@ -162,7 +162,7 @@ export const MouseCursor = () => {
         transform: `
           scale(${zoom()})
           translate(${offset()
-            .map((n) => n + 'px')
+            .map((n) => `${n}px`)
             .join(',')})
         `,
       }}

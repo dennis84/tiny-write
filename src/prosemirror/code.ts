@@ -1,6 +1,6 @@
-import {DOMOutputSpec, Mark} from 'prosemirror-model'
-import {EditorState, Transaction} from 'prosemirror-state'
-import {EditorView} from 'prosemirror-view'
+import type {DOMOutputSpec, Mark} from 'prosemirror-model'
+import type {EditorState, Transaction} from 'prosemirror-state'
+import type {EditorView} from 'prosemirror-view'
 import {keymap} from 'prosemirror-keymap'
 import {markInputRule} from '@/prosemirror/rulebuilders'
 

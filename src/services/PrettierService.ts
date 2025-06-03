@@ -6,7 +6,7 @@ import cssPlugin from 'prettier/plugins/postcss'
 import htmlPlugin from 'prettier/plugins/html'
 import markdownPlugin from 'prettier/plugins/markdown'
 import yamlPlugin from 'prettier/plugins/yaml'
-import {PrettierConfig} from '@/state'
+import type {PrettierConfig} from '@/state'
 
 type PrettierLang = [string, prettier.Plugin[]]
 

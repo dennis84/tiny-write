@@ -75,10 +75,10 @@ test('add', async () => {
 
   return testEffect((done) => {
     return createEffect((run: number = 0) => {
-      if (run == 0) {
+      if (run === 0) {
         const ids = tree.add({id: 'file_3'})
         expect(ids).toEqual(['file_3'])
-      } else if (run == 1) {
+      } else if (run === 1) {
         expectTree(
           tree,
           `
@@ -108,10 +108,10 @@ test('remove', async () => {
 
   return testEffect((done) => {
     return createEffect((run: number = 0) => {
-      if (run == 0) {
+      if (run === 0) {
         const ids = tree.remove('file_3')
         expect(ids).toEqual(['file_3', 'file_4'])
-      } else if (run == 1) {
+      } else if (run === 1) {
         expectTree(
           tree,
           `
@@ -123,7 +123,7 @@ test('remove', async () => {
 
         const ids = tree.remove('file_2')
         expect(ids).toEqual(['file_4', 'file_2'])
-      } else if (run == 2) {
+      } else if (run === 2) {
         expectTree(
           tree,
           `
@@ -156,10 +156,10 @@ test('move', async () => {
 
   return testEffect((done) => {
     return createEffect((run: number = 0) => {
-      if (run == 0) {
+      if (run === 0) {
         const ids = tree.move('file_2', 'file_1')
         expect(ids).toEqual(['file_2'])
-      } else if (run == 1) {
+      } else if (run === 1) {
         expectTree(
           tree,
           `
@@ -172,7 +172,7 @@ test('move', async () => {
 
         const ids = tree.move('file_3', 'file_1')
         expect(ids).toEqual(['file_3'])
-      } else if (run == 2) {
+      } else if (run === 2) {
         expectTree(
           tree,
           `
@@ -203,10 +203,10 @@ test('before', async () => {
 
   return testEffect((done) => {
     return createEffect((run: number = 0) => {
-      if (run == 0) {
+      if (run === 0) {
         const ids = tree.before('file_1', 'file_4')
         expect(ids).toEqual(['file_2', 'file_4', 'file_1'])
-      } else if (run == 1) {
+      } else if (run === 1) {
         expectTree(
           tree,
           `
@@ -219,7 +219,7 @@ test('before', async () => {
 
         const ids = tree.before('file_4', 'file_3')
         expect(ids).toEqual(['file_3', 'file_4'])
-      } else if (run == 2) {
+      } else if (run === 2) {
         expectTree(
           tree,
           `
@@ -232,7 +232,7 @@ test('before', async () => {
 
         const ids = tree.before('file_1', 'file_2')
         expect(ids).toEqual(['file_2', 'file_1'])
-      } else if (run == 3) {
+      } else if (run === 3) {
         expectTree(
           tree,
           `
@@ -245,7 +245,7 @@ test('before', async () => {
 
         const ids = tree.before('file_4', 'file_2')
         expect(ids).toEqual(['file_3', 'file_2', 'file_4'])
-      } else if (run == 4) {
+      } else if (run === 4) {
         expectTree(
           tree,
           `
@@ -276,10 +276,10 @@ test('after', async () => {
 
   return testEffect((done) => {
     return createEffect((run: number = 0) => {
-      if (run == 0) {
+      if (run === 0) {
         const ids = tree.after('file_1', 'file_3')
         expect(ids).toEqual(['file_2', 'file_4', 'file_1'])
-      } else if (run == 1) {
+      } else if (run === 1) {
         expectTree(
           tree,
           `
@@ -292,7 +292,7 @@ test('after', async () => {
 
         const ids = tree.after('file_3', 'file_2')
         expect(ids).toEqual(['file_1', 'file_3'])
-      } else if (run == 2) {
+      } else if (run === 2) {
         expectTree(
           tree,
           `
@@ -305,7 +305,7 @@ test('after', async () => {
 
         const ids = tree.after('file_1', 'file_2')
         expect(ids).toEqual(['file_4', 'file_3', 'file_1'])
-      } else if (run == 3) {
+      } else if (run === 3) {
         expectTree(
           tree,
           `

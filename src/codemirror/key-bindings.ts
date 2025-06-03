@@ -1,4 +1,4 @@
-import {KeyBinding} from '@codemirror/view'
+import type {KeyBinding} from '@codemirror/view'
 
 export const onEnterDoubleNewline = (fn: () => void): KeyBinding => ({
   key: 'Enter',

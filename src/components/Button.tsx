@@ -1,4 +1,4 @@
-import {createSignal, For, JSX, onCleanup, onMount} from 'solid-js'
+import {createSignal, For, type JSX, onCleanup, onMount} from 'solid-js'
 import {styled} from 'solid-styled-components'
 
 export const Common = `
@@ -114,7 +114,7 @@ const Ripples = () => {
   }
 
   onMount(() => {
-    let parentNode = ref.parentNode as HTMLElement | null
+    const parentNode = ref.parentNode as HTMLElement | null
     parentNode?.addEventListener('click', onClick)
     onCleanup(() => {
       parentNode?.removeEventListener('click', onClick)

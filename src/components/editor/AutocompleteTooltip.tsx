@@ -1,9 +1,9 @@
 import {createEffect, createSignal, For, onCleanup, onMount, Show} from 'solid-js'
-import {File, useState} from '@/state'
+import {type File, useState} from '@/state'
 import {wordCompletionPluginKey} from '@/prosemirror/autocomplete/word-completion'
-import {ReferenceElement} from '@floating-ui/dom'
-import {CompletionState} from '@/prosemirror/autocomplete/autocomplete'
-import {EditorView} from 'prosemirror-view'
+import type {ReferenceElement} from '@floating-ui/dom'
+import type {CompletionState} from '@/prosemirror/autocomplete/autocomplete'
+import type {EditorView} from 'prosemirror-view'
 import {fileListingPluginKey} from '@/prosemirror/autocomplete/file-listing'
 import {Tooltip, TooltipButton} from '../Tooltip'
 
@@ -61,7 +61,7 @@ export const AutocompleteTooltip = (props: Props) => {
 
     const cs = getCompletionState(editorView)
 
-    if (cs && cs.from && cs.to && sel.from - 1 >= cs.from && sel.from - 1 <= cs.to) {
+    if (cs?.from && cs.to && sel.from - 1 >= cs.from && sel.from - 1 <= cs.to) {
       setCompletion(cs)
     } else {
       setCompletion(undefined)

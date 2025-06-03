@@ -1,4 +1,4 @@
-import MarkdownIt from 'markdown-it'
+import type MarkdownIt from 'markdown-it'
 
 type Token = any // not exported from markdown-it?
 
@@ -24,7 +24,9 @@ export const taskList = (md: MarkdownIt) => {
         }
 
         closers[prev2.level] = 'task_list_item_close'
-        cur.children![0].content = cur.children![0].content.slice(4)
+        if (cur.children?.length) {
+          cur.children[0].content = cur.children[0].content.slice(4)
+        }
       }
 
       if (closers[cur.level] !== undefined) {

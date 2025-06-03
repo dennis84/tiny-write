@@ -1,5 +1,5 @@
 import {keymap} from 'prosemirror-keymap'
-import {EditorState, Plugin, PluginKey, Transaction} from 'prosemirror-state'
+import {type EditorState, Plugin, type PluginKey, type Transaction} from 'prosemirror-state'
 
 const MAX_MATCH = 500
 

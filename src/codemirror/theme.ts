@@ -1,4 +1,4 @@
-import {Extension} from '@codemirror/state'
+import type {Extension} from '@codemirror/state'
 
 import {materialLight} from '@ddietr/codemirror-themes/material-light'
 import {materialDark} from '@ddietr/codemirror-themes/material-dark'

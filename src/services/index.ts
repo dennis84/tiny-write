@@ -1,5 +1,5 @@
-import {Store, createStore} from 'solid-js/store'
-import {State} from '@/state'
+import {type Store, createStore} from 'solid-js/store'
+import type {State} from '@/state'
 import {isDev} from '@/env'
 import {AppService} from './AppService'
 import {ChangeSetService} from './ChangeSetService'

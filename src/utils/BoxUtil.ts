@@ -1,5 +1,5 @@
-import {Box, Segment, Vector} from '@flatten-js/core'
-import {CanvasRect, CornerType, EdgeType} from '@/state'
+import {Box, type Segment, Vector} from '@flatten-js/core'
+import {type CanvasRect, CornerType, EdgeType} from '@/state'
 import {VecUtil} from './VecUtil'
 
 export class BoxUtil {

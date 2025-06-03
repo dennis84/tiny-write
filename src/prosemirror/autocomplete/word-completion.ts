@@ -1,4 +1,4 @@
-import {Node} from 'prosemirror-model'
+import type {Node} from 'prosemirror-model'
 import {Plugin, PluginKey} from 'prosemirror-state'
 import {throttle} from 'throttle-debounce'
 import {completionPlugin, completionKeymap} from './autocomplete'

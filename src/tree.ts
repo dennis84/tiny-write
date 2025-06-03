@@ -1,4 +1,4 @@
-import {createStore, reconcile, SetStoreFunction} from 'solid-js/store'
+import {createStore, reconcile, type SetStoreFunction} from 'solid-js/store'
 
 export type TreeMap<T> = Record<string, TreeItem<T>>
 
@@ -118,7 +118,7 @@ export class Tree<T> {
     //     < Add here
     //     ! Update B parentId to C
     //     ! Update B leftId to E
-    let changes: string[] = []
+    const changes: string[] = []
     const state = this.state
 
     const newState = {
@@ -172,7 +172,7 @@ export class Tree<T> {
     //     ! Update B parentId to C
     //   E ! Update E leftId to B
 
-    let changes: string[] = []
+    const changes: string[] = []
     const state = this.state
 
     const newState = {
@@ -247,7 +247,7 @@ export class Tree<T> {
     //     ! Update B parentId to C
     //   E ! Update E leftId to B
 
-    let changes: string[] = []
+    const changes: string[] = []
     const state = this.state
 
     const newState = {

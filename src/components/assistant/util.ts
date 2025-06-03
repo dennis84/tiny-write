@@ -36,8 +36,8 @@ export const parseCodeBlockAttrs = (input: string): CodeBlockAttrs => {
   })
 
   return {
-    id: obj['id'],
-    range: obj['range']?.split('-').map((s) => parseInt(s, 10)) as [number, number],
-    file: obj['file'],
+    id: obj.id,
+    range: obj.range?.split('-').map((s) => parseInt(s, 10)) as [number, number],
+    file: obj.file,
   }
 }

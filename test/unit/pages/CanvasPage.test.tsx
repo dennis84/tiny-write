@@ -1,8 +1,8 @@
 import {expect, test, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
 import {render, waitFor} from '@solidjs/testing-library'
-import {Canvas, createState, Page} from '@/state'
-import {DB} from '@/db'
+import {type Canvas, createState, Page} from '@/state'
+import type {DB} from '@/db'
 import {createCtrl} from '@/services'
 import {Main} from '@/components/Main'
 

@@ -1,12 +1,12 @@
-import {DOMOutputSpec, NodeType, Schema} from 'prosemirror-model'
-import {EditorView} from 'prosemirror-view'
-import {EditorState, Selection, Transaction, TextSelection} from 'prosemirror-state'
+import type {DOMOutputSpec, NodeType, Schema} from 'prosemirror-model'
+import type {EditorView} from 'prosemirror-view'
+import {type EditorState, Selection, type Transaction, TextSelection} from 'prosemirror-state'
 import {keymap} from 'prosemirror-keymap'
 import {inputRules, textblockTypeInputRule} from 'prosemirror-inputrules'
 import {CodeBlockView} from './CodeBlockView'
-import {ViewConfig} from '@/services/ProseMirrorService'
-import {ConfigService} from '@/services/ConfigService'
-import {CodeMirrorService} from '@/services/CodeMirrorService'
+import type {ViewConfig} from '@/services/ProseMirrorService'
+import type {ConfigService} from '@/services/ConfigService'
+import type {CodeMirrorService} from '@/services/CodeMirrorService'
 
 export const codeBlockSchemaSpec = {
   nodes: {
@@ -41,7 +41,7 @@ const arrowHandler =
   (dir: Direction) =>
   (state: EditorState, dispatch?: (tr: Transaction) => void, view?: EditorView) => {
     if (!view?.endOfTextblock(dir)) return false
-    const side = dir == 'left' || dir == 'up' ? -1 : 1
+    const side = dir === 'left' || dir === 'up' ? -1 : 1
     const $head = state.selection.$head
     const nextPos = Selection.near(
       state.doc.resolve(side > 0 ? $head.after() : $head.before()),

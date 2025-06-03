@@ -1,14 +1,14 @@
-import {SetStoreFunction, Store, unwrap} from 'solid-js/store'
+import {type SetStoreFunction, type Store, unwrap} from 'solid-js/store'
 import {createSignal} from 'solid-js'
 import {Channel} from '@tauri-apps/api/core'
 import {DB} from '@/db'
-import {ChatRole, State} from '@/state'
+import type {ChatRole, State} from '@/state'
 import {isTauri} from '@/env'
 import {debug, error, info} from '@/remote/log'
 import {
-  CopilotSignIn,
+  type CopilotSignIn,
   copilotSignIn,
-  CopilotStatus,
+  type CopilotStatus,
   copilotStatus,
   disconnectCopilot,
   startLanguageServer,
@@ -307,7 +307,7 @@ export class CopilotService {
     onDone: () => void,
     onChunk: (chunk: any) => void,
   ) {
-    const reader = data.body!.getReader()
+    const reader = data.body?.getReader()
     const decoder = new TextDecoder()
     let buffer = ''
 
@@ -337,7 +337,7 @@ export class CopilotService {
       }
 
       buffer += decoder.decode(value, {stream: true})
-      let lines = buffer.split('\n\n')
+      const lines = buffer.split('\n\n')
 
       for (let i = 0; i < lines.length - 1; i++) {
         const data = parseLine(lines[i])

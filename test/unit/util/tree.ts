@@ -1,5 +1,5 @@
 import {expect} from 'vitest'
-import {Tree} from '@/tree'
+import type {Tree} from '@/tree'
 
 export function expectTree<T>(tree: Tree<T>, str: string) {
   const result = printTree(tree).split('\n')

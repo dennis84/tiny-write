@@ -1,5 +1,5 @@
-import {Accessor, createEffect, createSignal} from 'solid-js'
-import {File, Page, useState} from '@/state'
+import {type Accessor, createEffect, createSignal} from 'solid-js'
+import {type File, Page, useState} from '@/state'
 
 export const useCurrentFile = (): Accessor<File | undefined> => {
   const [currentFile, setCurrentFile] = createSignal<File>()

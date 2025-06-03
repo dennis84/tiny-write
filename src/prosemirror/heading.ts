@@ -1,4 +1,4 @@
-import {DOMOutputSpec, Node} from 'prosemirror-model'
+import type {DOMOutputSpec, Node} from 'prosemirror-model'
 
 export const headingSchemaSpec = {
   nodes: {
@@ -8,7 +8,7 @@ export const headingSchemaSpec = {
       group: 'block',
       defining: true,
       toDOM(node: Node): DOMOutputSpec {
-        return ['h' + node.attrs.level, 0]
+        return [`h${node.attrs.level}`, 0]
       },
     },
   },

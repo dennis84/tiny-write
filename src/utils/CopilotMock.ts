@@ -43,7 +43,7 @@ export class CopilotMock {
 
             const randomIndex = Math.floor(Math.random() * LOREM_IPSUM_WORDS.length)
             for (let i = 0; i <= randomIndex; i++) {
-              enqueueMessage(controller, LOREM_IPSUM_WORDS[i] + ' ')
+              enqueueMessage(controller, `${LOREM_IPSUM_WORDS[i]} `)
               await pause(10)
             }
 
@@ -109,10 +109,10 @@ export class CopilotMock {
 
   static completionsStream(textChunks: string[]) {
     return (
-      textChunks
-        .map((content) => this.completions(content))
+      `${textChunks
+        .map((content) => CopilotMock.completions(content))
         .map((json) => CopilotMock.createChunk(json))
-        .join('') + 'data: [DONE]'
+        .join('')}data: [DONE]`
     )
   }
 
@@ -121,6 +121,6 @@ export class CopilotMock {
   }
 
   private static createChunk(chunk: unknown) {
-    return 'data: ' + JSON.stringify(chunk) + '\n\n'
+    return `data: ${JSON.stringify(chunk)}\n\n`
   }
 }

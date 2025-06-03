@@ -1,4 +1,4 @@
-import {JSX, Show} from 'solid-js'
+import {type JSX, Show} from 'solid-js'
 import {Page, useState} from '@/state'
 import {isTauri, isMac, mod, shortHash, version, VERSION_URL, isDev} from '@/env'
 import {quit} from '@/remote/app'

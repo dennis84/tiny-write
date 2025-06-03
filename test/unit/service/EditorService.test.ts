@@ -1,17 +1,17 @@
 import {vi, expect, test, beforeEach} from 'vitest'
 import {mock} from 'vitest-mock-extended'
 import {Box} from '@flatten-js/core'
-import {DB} from '@/db'
+import type {DB} from '@/db'
 import {createState} from '@/state'
 import {createCollabMock} from '../util/util'
 import {createEditorView, createYUpdate} from '../util/prosemirror-util'
 import {EditorService} from '@/services/EditorService'
 import {createStore} from 'solid-js/store'
-import {FileService} from '@/services/FileService'
-import {CollabService} from '@/services/CollabService'
-import {ProseMirrorService} from '@/services/ProseMirrorService'
-import {AppService} from '@/services/AppService'
-import {SelectService} from '@/services/SelectService'
+import type {FileService} from '@/services/FileService'
+import type {CollabService} from '@/services/CollabService'
+import type {ProseMirrorService} from '@/services/ProseMirrorService'
+import type {AppService} from '@/services/AppService'
+import type {SelectService} from '@/services/SelectService'
 
 vi.stubGlobal('location', {
   pathname: '',

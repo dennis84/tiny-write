@@ -1,5 +1,5 @@
 import {onMount, Show} from 'solid-js'
-import {RouteSectionProps} from '@solidjs/router'
+import type {RouteSectionProps} from '@solidjs/router'
 import {styled} from 'solid-styled-components'
 import {useState} from '@/state'
 import {useOpen} from '@/hooks/open'

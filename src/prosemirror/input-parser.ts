@@ -1,6 +1,6 @@
-import {EditorState, Plugin, TextSelection, Transaction} from 'prosemirror-state'
-import {Mark, Node, ResolvedPos} from 'prosemirror-model'
-import {MarkdownParser} from 'prosemirror-markdown'
+import {type EditorState, Plugin, TextSelection, type Transaction} from 'prosemirror-state'
+import type {Mark, Node, ResolvedPos} from 'prosemirror-model'
+import type {MarkdownParser} from 'prosemirror-markdown'
 
 export const createInputParserPlugin = (parser: MarkdownParser) =>
   new Plugin({

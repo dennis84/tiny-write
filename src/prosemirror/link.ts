@@ -1,4 +1,4 @@
-import {DOMOutputSpec, Mark} from 'prosemirror-model'
+import type {DOMOutputSpec, Mark} from 'prosemirror-model'
 
 export const linkSchemaSpec = {
   marks: {

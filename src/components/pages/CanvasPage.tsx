@@ -1,4 +1,4 @@
-import {RouteSectionProps} from '@solidjs/router'
+import type {RouteSectionProps} from '@solidjs/router'
 import {onMount, Show} from 'solid-js'
 import {useState} from '@/state'
 import {info} from '@/remote/log'

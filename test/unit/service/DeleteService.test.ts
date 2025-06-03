@@ -1,17 +1,17 @@
 import {vi, test, expect, beforeEach} from 'vitest'
 import {mock} from 'vitest-mock-extended'
 import {createStore} from 'solid-js/store'
-import {CanvasService} from '@/services/CanvasService'
+import type {CanvasService} from '@/services/CanvasService'
 import {DeleteService} from '@/services/DeleteService'
-import {FileService} from '@/services/FileService'
+import type {FileService} from '@/services/FileService'
 import {TreeService} from '@/services/TreeService'
 import {
-  CanvasEditorElement,
-  CanvasLinkElement,
+  type CanvasEditorElement,
+  type CanvasLinkElement,
   createState,
   EdgeType,
   ElementType,
-  File,
+  type File,
 } from '@/state'
 import {DB} from '@/db'
 import {createYUpdate} from '../util/prosemirror-util'

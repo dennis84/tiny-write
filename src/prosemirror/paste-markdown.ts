@@ -1,6 +1,6 @@
 import {Plugin} from 'prosemirror-state'
-import {EditorView} from 'prosemirror-view'
-import {Fragment, Node, Schema, Slice} from 'prosemirror-model'
+import type {EditorView} from 'prosemirror-view'
+import {Fragment, type Node, type Schema, Slice} from 'prosemirror-model'
 import {find as findLinks} from 'linkifyjs'
 import {createMarkdownParser} from '@/markdown'
 

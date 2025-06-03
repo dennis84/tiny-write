@@ -3,8 +3,8 @@ import {arrow, computePosition, flip, offset, shift} from '@floating-ui/dom'
 import {v4 as uuidv4} from 'uuid'
 import {Box} from '@flatten-js/core'
 import {
-  CanvasBoxElement,
-  CanvasElement,
+  type CanvasBoxElement,
+  type CanvasElement,
   isCodeElement,
   isEditorElement,
   MessageType,
@@ -27,7 +27,7 @@ import {TooltipArrow, TooltipButton, TooltipContainer} from '@/components/Toolti
 
 export const Toolbar = () => {
   let tooltipRef!: HTMLDivElement
-  let arrowRef: HTMLSpanElement | undefined
+  let arrowRef!: HTMLSpanElement
 
   const {
     store,
@@ -153,17 +153,17 @@ export const Toolbar = () => {
       },
     }
 
-    computePosition(reference, tooltipRef!, {
+    computePosition(reference, tooltipRef, {
       placement: 'bottom',
       middleware: [
         offset(100),
         flip({fallbackPlacements: ['top']}),
         shift({padding: 20, crossAxis: true}),
-        arrow({element: arrowRef!}),
+        arrow({element: arrowRef}),
       ],
     }).then(({x, y, placement, middlewareData}) => {
-      tooltipRef!.style.left = `${x}px`
-      tooltipRef!.style.top = `${y}px`
+      tooltipRef.style.left = `${x}px`
+      tooltipRef.style.top = `${y}px`
 
       const side = placement.split('-')[0]
       const staticSide =
@@ -176,11 +176,11 @@ export const Toolbar = () => {
 
       if (middlewareData.arrow) {
         const {x, y} = middlewareData.arrow
-        arrowRef?.classList.add(staticSide)
-        Object.assign(arrowRef!.style, {
+        arrowRef.classList.add(staticSide)
+        Object.assign(arrowRef.style, {
           left: x != null ? `${x}px` : '',
           top: y != null ? `${y}px` : '',
-          [staticSide]: `${-arrowRef!.offsetWidth / 2}px`,
+          [staticSide]: `${-arrowRef.offsetWidth / 2}px`,
         })
       }
     })

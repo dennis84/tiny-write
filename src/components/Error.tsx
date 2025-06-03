@@ -14,7 +14,7 @@ const Pre = styled('pre')`
   padding: 10px;
 `
 
-export const Error = () => {
+export const ErrorScreen = () => {
   const {store} = useState()
   return (
     <Switch fallback={<GeneralError />}>

@@ -1,16 +1,16 @@
-import {Node} from 'prosemirror-model'
+import type {Node} from 'prosemirror-model'
 import {
   DecorationSet,
-  DecorationSource,
-  EditorView as ProsemirrorEditorView,
+  type DecorationSource,
+  type EditorView as ProsemirrorEditorView,
 } from 'prosemirror-view'
 import {Selection, TextSelection} from 'prosemirror-state'
 import {exitCode} from 'prosemirror-commands'
-import {Compartment} from '@codemirror/state'
-import {EditorView, ViewUpdate, keymap} from '@codemirror/view'
+import type {Compartment} from '@codemirror/state'
+import {EditorView, type ViewUpdate, keymap} from '@codemirror/view'
 import {autocompletion} from '@codemirror/autocomplete'
-import {ConfigService} from '@/services/ConfigService'
-import {CodeMirrorService} from '@/services/CodeMirrorService'
+import type {ConfigService} from '@/services/ConfigService'
+import type {CodeMirrorService} from '@/services/CodeMirrorService'
 import {getLanguageConfig} from '@/codemirror/highlight'
 import {findWords} from '@/codemirror/completion'
 import {mermaidKeywords} from '@/codemirror/mermaid'
@@ -198,7 +198,7 @@ export class CodeBlockView {
     const selTo = offset + main.to
     const pmSel = this.view.state.selection
 
-    if (update.docChanged || pmSel.from != selFrom || pmSel.to != selTo) {
+    if (update.docChanged || pmSel.from !== selFrom || pmSel.to !== selTo) {
       const tr = this.view.state.tr
       update.changes.iterChanges((fromA, toA, fromB, toB, text) => {
         if (text.length) {
@@ -243,7 +243,7 @@ export class CodeBlockView {
   }
 
   update(node: Node) {
-    if (node.type != this.node.type) return false
+    if (node.type !== this.node.type) return false
     const lang = this.lang
     this.node = node
     if (this.updating) return true
@@ -261,18 +261,18 @@ export class CodeBlockView {
     const newText = node.textContent
     const curText = this.editorView.state.doc.toString()
 
-    if (newText != curText) {
+    if (newText !== curText) {
       let start = 0
       let curEnd = curText.length
       let newEnd = newText.length
-      while (start < curEnd && curText.charCodeAt(start) == newText.charCodeAt(start)) {
+      while (start < curEnd && curText.charCodeAt(start) === newText.charCodeAt(start)) {
         ++start
       }
 
       while (
         curEnd > start &&
         newEnd > start &&
-        curText.charCodeAt(curEnd - 1) == newText.charCodeAt(newEnd - 1)
+        curText.charCodeAt(curEnd - 1) === newText.charCodeAt(newEnd - 1)
       ) {
         curEnd--
         newEnd--

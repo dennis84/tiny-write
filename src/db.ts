@@ -1,6 +1,6 @@
-import {DBSchema, openDB} from 'idb'
+import {type DBSchema, openDB} from 'idb'
 import {differenceInDays} from 'date-fns'
-import {AiConfig, Camera, Config, ElementType, LastLocation, Thread, Window} from '@/state'
+import type {AiConfig, Camera, Config, ElementType, LastLocation, Thread, Window} from '@/state'
 import {info} from './remote/log'
 
 export interface PersistedVersion {

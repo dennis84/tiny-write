@@ -1,11 +1,11 @@
-import {SetStoreFunction, Store, unwrap} from 'solid-js/store'
+import {type SetStoreFunction, type Store, unwrap} from 'solid-js/store'
 import {debounce} from 'throttle-debounce'
-import {Config, State} from '@/state'
+import type {Config, State} from '@/state'
 import {setAlwaysOnTop} from '@/remote/app'
 import {info} from '@/remote/log'
 import {DB} from '@/db'
 import {isDark} from '@/env'
-import {CollabService} from './CollabService'
+import type {CollabService} from './CollabService'
 
 export interface Font {
   label: string
@@ -349,9 +349,9 @@ export class ConfigService {
     if (options.monospace && !font?.monospace) {
       return ConfigService.fonts[ConfigService.DEFAULT_FONT].value
     } else if (options.bold && font?.bold) {
-      return font.value + ' bold'
+      return `${font.value} bold`
     } else if (options.italic && font?.italic) {
-      return font.value + ' italic'
+      return `${font.value} italic`
     }
 
     return font.value

@@ -1,7 +1,7 @@
 import {Show, createEffect, createSignal} from 'solid-js'
 import {NodeSelection, TextSelection} from 'prosemirror-state'
 import {setBlockType} from 'prosemirror-commands'
-import {ReferenceElement} from '@floating-ui/dom'
+import type {ReferenceElement} from '@floating-ui/dom'
 import {v4 as uuidv4} from 'uuid'
 import {MessageType, useState} from '@/state'
 import {saveSvg} from '@/remote/svg'
@@ -25,7 +25,7 @@ import {
 } from '@/components/Icon'
 import {Tooltip, TooltipButton, TooltipDivider} from '@/components/Tooltip'
 import {createCodeFence} from '@/components/assistant/util'
-import {Block} from './BlockHandle'
+import type {Block} from './BlockHandle'
 
 interface Props {
   selectedBlock?: Block
@@ -234,7 +234,7 @@ export const BlockTooltip = (props: Props) => {
     const maxLen = 20
 
     if (!href) return
-    if (href.length > maxLen) return href.substring(0, maxLen) + '…'
+    if (href.length > maxLen) return `${href.substring(0, maxLen)}…`
     return href
   }
 

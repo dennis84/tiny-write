@@ -1,14 +1,14 @@
 import {useLocation, useNavigate} from '@solidjs/router'
 import {
-  CanvasElement,
+  type CanvasElement,
   ElementType,
   isCodeElement,
   isCodeFile,
   isEditorElement,
   isFile,
-  MergeState,
-  Openable,
-  VisualPositionRange,
+  type MergeState,
+  type Openable,
+  type VisualPositionRange,
 } from '../state'
 import {info} from '../remote/log'
 import {open as shellOpen} from '../remote/app'

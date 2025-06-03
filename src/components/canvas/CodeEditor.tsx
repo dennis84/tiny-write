@@ -1,8 +1,8 @@
 import {createEffect, onCleanup, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
-import {CanvasCodeElement, useState} from '@/state'
+import {type CanvasCodeElement, useState} from '@/state'
 import {info} from '@/remote/log'
-import {Selection} from '@/services/CanvasService'
+import type {Selection} from '@/services/CanvasService'
 import {FileService} from '@/services/FileService'
 import {Scroll} from '@/components/Layout'
 import {CodeMirrorContainer} from '@/components/code/CodeEditor'
@@ -64,7 +64,7 @@ export const CodeEditor = ({element, index}: {element: CanvasCodeElement; index:
 
     if (file?.path) {
       const text = (await FileService.loadTextFile(file.path)).text
-      const subdoc = CollabService.getSubdoc(store.collab!.ydoc, file.id)
+      const subdoc = CollabService.getSubdoc(store.collab?.ydoc, file.id)
       if (text) codeService.updateText(file, subdoc, text)
     }
 

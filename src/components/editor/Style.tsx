@@ -1,5 +1,5 @@
 import {styled} from 'solid-styled-components'
-import {Config, Page} from '@/state'
+import {type Config, Page} from '@/state'
 import {codeMirror} from '../code/Style'
 
 interface Props {

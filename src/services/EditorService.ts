@@ -1,20 +1,20 @@
-import {Store, SetStoreFunction} from 'solid-js/store'
+import type {Store, SetStoreFunction} from 'solid-js/store'
 import {EditorView} from 'prosemirror-view'
-import {EditorState, Transaction} from 'prosemirror-state'
+import {EditorState, type Transaction} from 'prosemirror-state'
 import {selectAll, deleteSelection} from 'prosemirror-commands'
 import * as Y from 'yjs'
 import {prosemirrorJSONToYDoc} from 'y-prosemirror'
 import {debounce} from 'throttle-debounce'
-import {Box} from '@flatten-js/core'
+import type {Box} from '@flatten-js/core'
 import {replaceText, writeFile} from '@/remote/editor'
 import {debug, info, error} from '@/remote/log'
-import {State, FileText, File, Page} from '@/state'
+import {type State, type FileText, type File, Page} from '@/state'
 import {serialize} from '@/markdown'
 import {FileService} from './FileService'
 import {CollabService} from './CollabService'
-import {ProseMirrorService, schema} from './ProseMirrorService'
-import {AppService} from './AppService'
-import {SelectService} from './SelectService'
+import {type ProseMirrorService, schema} from './ProseMirrorService'
+import type {AppService} from './AppService'
+import type {SelectService} from './SelectService'
 
 export interface OpenFile {
   id: string
@@ -64,9 +64,9 @@ export class EditorService {
         // selection is deleted after dragstart
         if (editorView?.dragging) return
 
-        const newState = editorView!.state.apply(tr)
+        const newState = editorView?.state.apply(tr)
         try {
-          editorView!.updateState(newState)
+          editorView?.updateState(newState)
         } catch (e: any) {
           error('Sync error occurred', e)
           this.appService.setError({id: 'editor_sync', error: e})

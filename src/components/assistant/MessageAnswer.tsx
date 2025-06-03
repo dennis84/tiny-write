@@ -3,19 +3,19 @@ import {styled} from 'solid-styled-components'
 import {v4 as uuidv4} from 'uuid'
 import markdownit from 'markdown-it'
 import iterator from 'markdown-it-for-inline'
-import {EditorView, Panel, showPanel} from '@codemirror/view'
+import {EditorView, type Panel, showPanel} from '@codemirror/view'
 import {EditorState} from '@codemirror/state'
-import {Message, useState} from '@/state'
+import {type Message, useState} from '@/state'
 import {getTheme} from '@/codemirror/theme'
 import {getLanguageConfig} from '@/codemirror/highlight'
 import {copy} from '@/remote/clipboard'
-import {TreeItem} from '@/tree'
+import type {TreeItem} from '@/tree'
 import {ButtonGroup, IconButton} from '../Button'
 import {IconContentCopy, IconRefresh, Spinner} from '../Icon'
 import {TooltipHelp} from '../TooltipHelp'
 import {chatBubble} from './Style'
 import {parseCodeBlockAttrs} from './util'
-import {ApplyPanel, ApplyPanelState} from './ApplyPanel'
+import {ApplyPanel, type ApplyPanelState} from './ApplyPanel'
 import {Pagination} from './Pagination'
 
 const AnswerBubble = styled('div')`
@@ -88,7 +88,7 @@ export const MessageAnswer = (props: Props) => {
   const applyPanel =
     (id?: string, range?: [number, number], file?: string) =>
     (editorView: EditorView): Panel => {
-      let dom = document.createElement('div')
+      const dom = document.createElement('div')
       return {
         top: true,
         dom,
