@@ -40,10 +40,10 @@ export class CodeBlockView {
     this.dom.setAttribute('contenteditable', 'false')
     this.dom.classList.add('cm-container')
 
-    this.dom.addEventListener('cm:user_event', (event: any) => {
+    this.dom.addEventListener('cm:user_event', async (event: any) => {
       const action = event.detail.userEvent
       if (action === 'prettify') {
-        codeMirrorService.format(this.editorView, this.lang, this.configService.prettier)
+        await codeMirrorService.format(this.editorView, this.lang, this.configService.prettier)
       } else if (action === 'fold_all') {
         foldAll(this.editorView)
       }

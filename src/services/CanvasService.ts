@@ -777,6 +777,6 @@ export class CanvasService {
 
   async saveCanvas(canvas = this.currentCanvas) {
     if (!canvas) return
-    CanvasService.saveCanvas(canvas)
+    await CanvasService.saveCanvas(canvas)
   }
 }

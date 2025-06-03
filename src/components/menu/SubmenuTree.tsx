@@ -207,14 +207,14 @@ export const SubmenuTree = (props: Props) => {
     closeTooltip()
     inputLineService.setInputLine({
       value: item?.title ?? '',
-      onEnter: (value: string) => {
+      onEnter: async (value: string) => {
         const title = value.trim() || undefined
         if (isFile(item)) {
           fileService.updateFile(item.id, {title})
-          FileService.saveFile(item)
+          await FileService.saveFile(item)
         } else {
           canvasService.updateCanvas(item.id, {title})
-          CanvasService.saveCanvas(item)
+          await CanvasService.saveCanvas(item)
         }
       },
     })

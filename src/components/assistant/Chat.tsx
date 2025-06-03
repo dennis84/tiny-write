@@ -131,8 +131,8 @@ export const Chat = (props: Props) => {
     }
   }
 
-  const onInputMessage = (message: Message) => {
-    addUserMessage(message)
+  const onInputMessage = async (message: Message) => {
+    await addUserMessage(message)
     focusInput()
     if (!message.type && message.role === 'user') {
       void sendMessages()

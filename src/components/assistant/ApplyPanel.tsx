@@ -49,9 +49,7 @@ export const ApplyPanel = (p: {state: ApplyPanelState}) => {
     }
   })
 
-  const onCopy = () => {
-    copy(p.state.editorView.state.doc.toString())
-  }
+  const onCopy = () => copy(p.state.editorView.state.doc.toString())
 
   const onApply = () => {
     const f = file()

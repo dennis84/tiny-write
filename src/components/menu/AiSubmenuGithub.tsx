@@ -53,7 +53,7 @@ export const AiSubmenuGithub = () => {
     const interval = setInterval(async () => {
       const status = await copilotService.getStatus(code)
       if (status?.user) {
-        copilotService.updateStatus(status)
+        await copilotService.updateStatus(status)
         setCodeResult(undefined)
         setDone(true)
       }

@@ -28,6 +28,9 @@
         "useGetterReturn": "off",
         "useAdjacentOverloadSignatures": "off"
       },
+      "nursery": {
+        "noFloatingPromises": "error"
+      },
       "complexity": {
         "noStaticOnlyClass": "off"
       },

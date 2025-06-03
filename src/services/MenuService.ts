@@ -55,8 +55,8 @@ export class MenuService {
     this.assistantSignal[1](!this.assistant())
   }
 
-  setMenuWidth(width: number) {
+  async setMenuWidth(width: number) {
     this.setState('menuWidth', width)
-    DB.setMenuWidth(width)
+    await DB.setMenuWidth(width)
   }
 }

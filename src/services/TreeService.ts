@@ -34,7 +34,7 @@ export class TreeService {
   async add(item: File | Canvas) {
     const ids = this.tree.add(item)
     for (const i of ids) {
-      this.saveItem(i)
+      await this.saveItem(i)
     }
   }
 

@@ -83,12 +83,12 @@ export class CopilotService {
     }
   }
 
-  updateStatus(status: CopilotStatus) {
+  async updateStatus(status: CopilotStatus) {
     info(`Set github status (status=${JSON.stringify(status)})`)
     const copilot = this.store.ai?.copilot
     this.setState('ai', {copilot: {...copilot, ...status}})
     const ai = unwrap(this.store.ai)
-    if (ai) DB.setAi(ai)
+    if (ai) await DB.setAi(ai)
   }
 
   async getChatModels(): Promise<Model[] | undefined> {
@@ -126,7 +126,7 @@ export class CopilotService {
     info(`Set chat model (model=${JSON.stringify(model)})`)
     this.setState('ai', 'copilot', 'model', model)
     const ai = unwrap(this.store.ai)
-    if (ai) DB.setAi(ai)
+    if (ai) await DB.setAi(ai)
   }
 
   async getStatus(code: CopilotSignIn): Promise<CopilotStatus | undefined> {
@@ -252,8 +252,8 @@ export class CopilotService {
           }
         }
 
-        sendChatMessage(model, messages, channel, streaming)
         this.streamingSignal[1](true)
+        return sendChatMessage(model, messages, channel, streaming)
       })
     }
 
@@ -282,7 +282,7 @@ export class CopilotService {
     }
 
     if (streaming ?? model.streaming) {
-      this.getStreamResponse(data, onDone, onChunk)
+      await this.getStreamResponse(data, onDone, onChunk)
     } else {
       const json = await data.json()
       onChunk(json)
@@ -310,6 +310,8 @@ export class CopilotService {
     const reader = data.body?.getReader()
     const decoder = new TextDecoder()
     let buffer = ''
+
+    if (!reader) return
 
     const parseLine = (s: string) => {
       try {
