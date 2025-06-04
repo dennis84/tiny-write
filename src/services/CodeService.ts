@@ -5,7 +5,14 @@ import type * as Y from 'yjs'
 import {yCollab, ySyncFacet} from 'y-codemirror.next'
 import {debounce} from 'throttle-debounce'
 import {indentationMarkers} from '@replit/codemirror-indentation-markers'
-import {type File, type MergeState, Page, type SelectionRange, type State, type VisualPositionRange} from '@/state'
+import {
+  type File,
+  type MergeState,
+  Page,
+  type SelectionRange,
+  type State,
+  type VisualPositionRange,
+} from '@/state'
 import {copilot} from '@/codemirror/copilot'
 import {deleteText, insertText, writeFile} from '@/remote/editor'
 import {debug, info} from '@/remote/log'

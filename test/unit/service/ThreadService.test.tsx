@@ -232,6 +232,10 @@ test('open', () => {
 
   expect(store.threads).toHaveLength(2)
 
+  service.open('4')
+
+  expect(store.threads).toHaveLength(3)
+
   service.open('3')
 
   expect(store.threads).toHaveLength(2)

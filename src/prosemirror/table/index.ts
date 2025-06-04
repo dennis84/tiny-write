@@ -42,24 +42,21 @@ export const tableSchemaSpec = {
 }
 
 const tableInputRule = (schema: Schema) =>
-  new InputRule(
-    /^\|{2,}\s$/,
-    (state: EditorState, match: string[], start: number, end: number) => {
-      const tr = state.tr
-      const columns = [...Array(match[0].trim().length - 1)]
-      const headers = columns.map(() => schema.nodes.table_header.createAndFill()!)
-      const cells = columns.map(() => schema.nodes.table_cell.createAndFill()!)
-      const table = schema.nodes.table.createChecked(null, [
-        schema.nodes.table_row.createChecked(null, headers),
-        schema.nodes.table_row.createChecked(null, cells),
-      ])
+  new InputRule(/^\|{2,}\s$/, (state: EditorState, match: string[], start: number, end: number) => {
+    const tr = state.tr
+    const columns = [...Array(match[0].trim().length - 1)]
+    const headers = columns.map(() => schema.nodes.table_header.createAndFill()!)
+    const cells = columns.map(() => schema.nodes.table_cell.createAndFill()!)
+    const table = schema.nodes.table.createChecked(null, [
+      schema.nodes.table_row.createChecked(null, headers),
+      schema.nodes.table_row.createChecked(null, cells),
+    ])
 
-      tr.delete(start - 1, end)
-      tr.insert(start - 1, table)
-      tr.setSelection(Selection.near(tr.doc.resolve(start)))
-      return tr
-    },
-  )
+    tr.delete(start - 1, end)
+    tr.insert(start - 1, table)
+    tr.setSelection(Selection.near(tr.doc.resolve(start)))
+    return tr
+  })
 
 export const tableKeymap = keymap({
   'Ctrl-Enter': (state, dispatch) => {

@@ -2,7 +2,13 @@ import {createEffect, onCleanup, onMount} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {DragGesture} from '@use-gesture/vanilla'
 import {Segment, Vector} from '@flatten-js/core'
-import {type Canvas, type CanvasBoxElement, type CanvasLinkElement, EdgeType, useState} from '@/state'
+import {
+  type Canvas,
+  type CanvasBoxElement,
+  type CanvasLinkElement,
+  EdgeType,
+  useState,
+} from '@/state'
 import {IndexType, ZIndex} from '@/utils/ZIndex'
 import {BoxUtil} from '@/utils/BoxUtil'
 import {VecUtil} from '@/utils/VecUtil'

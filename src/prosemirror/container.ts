@@ -1,4 +1,10 @@
-import {type DOMOutputSpec, DOMSerializer, type Node, type NodeType, type Schema} from 'prosemirror-model'
+import {
+  type DOMOutputSpec,
+  DOMSerializer,
+  type Node,
+  type NodeType,
+  type Schema,
+} from 'prosemirror-model'
 import {TextSelection} from 'prosemirror-state'
 import type {EditorView} from 'prosemirror-view'
 import {inputRules, wrappingInputRule} from 'prosemirror-inputrules'

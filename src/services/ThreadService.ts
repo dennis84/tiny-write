@@ -172,6 +172,16 @@ export class ThreadService {
   open(threadId: string) {
     info(`Open thread (id=${threadId})`)
     const threads = this.store.threads.filter((t) => t.title !== undefined)
+    const thread = threads.find((t) => t.id === threadId)
+    if (!thread) {
+      const newThread: Thread = {
+        id: threadId,
+        messages: [],
+      }
+
+      threads.unshift(newThread)
+    }
+
     this.setState('threads', threads)
     this.pathMapSignal[1](new Map())
     this.messageTree.updateAll(this.currentThread?.messages ?? [])

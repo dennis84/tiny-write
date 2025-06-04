@@ -1,4 +1,12 @@
-import {isCanvas, isEditorElement, isFile, isLinkElement, type Openable, Page, type State} from '@/state'
+import {
+  isCanvas,
+  isEditorElement,
+  isFile,
+  isLinkElement,
+  type Openable,
+  Page,
+  type State,
+} from '@/state'
 import type {CanvasService} from './CanvasService'
 import {FileService} from './FileService'
 import type {MenuTreeItem, TreeService} from './TreeService'
@@ -20,7 +28,7 @@ export class DeleteService {
   ) {}
 
   async emptyBin(): Promise<DeleteResult> {
-    let navigateTo: Openable | undefined 
+    let navigateTo: Openable | undefined
 
     const doEmptyBin = async (node: MenuTreeItem): Promise<boolean> => {
       let shouldDelete = node.value.deleted ?? false

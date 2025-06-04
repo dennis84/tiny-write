@@ -5,7 +5,14 @@ import {debug, error, info} from '@/remote/log'
 import {show, updateWindow} from '@/remote/window'
 import {getArgs, setAlwaysOnTop, setFullscreen} from '@/remote/app'
 import {startLanguageServer} from '@/remote/copilot'
-import {type State, ServiceError, type Window, type ErrorObject, createState, type LastLocation} from '@/state'
+import {
+  type State,
+  ServiceError,
+  type Window,
+  type ErrorObject,
+  createState,
+  type LastLocation,
+} from '@/state'
 import {DB} from '@/db'
 import {isTauri} from '@/env'
 import {ConfigService} from './ConfigService'

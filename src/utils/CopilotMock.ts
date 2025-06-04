@@ -108,12 +108,10 @@ export class CopilotMock {
   }
 
   static completionsStream(textChunks: string[]) {
-    return (
-      `${textChunks
-        .map((content) => CopilotMock.completions(content))
-        .map((json) => CopilotMock.createChunk(json))
-        .join('')}data: [DONE]`
-    )
+    return `${textChunks
+      .map((content) => CopilotMock.completions(content))
+      .map((json) => CopilotMock.createChunk(json))
+      .join('')}data: [DONE]`
   }
 
   static completions(content: string) {
