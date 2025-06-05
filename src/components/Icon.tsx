@@ -74,6 +74,7 @@ import MaterialSymbolsChevronRight from '~icons/material-symbols/chevron-right'
 import MaterialSymbolsChevronLeft from '~icons/material-symbols/chevron-left'
 import MaterialSymbolsStop from '~icons/material-symbols/stop'
 import MaterialSymbolsRefresh from '~icons/material-symbols/refresh'
+import MaterialSymbolsImage from '~icons/material-symbols/image'
 
 import PixelarticonsFloatCenter from '~icons/pixelarticons/float-center'
 import MdiTableColumnRemove from '~icons/mdi/table-column-remove'
@@ -593,6 +594,12 @@ export const IconStop = () => (
 export const IconRefresh = () => (
   <SvgIcon>
     <MaterialSymbolsRefresh />
+  </SvgIcon>
+)
+
+export const IconImage = () => (
+  <SvgIcon>
+    <MaterialSymbolsImage />
   </SvgIcon>
 )
 

@@ -251,6 +251,12 @@ export interface Tree {
   collapsed: string[]
 }
 
+export interface Attachment {
+  type: string
+  name: string
+  data: string
+}
+
 export type ChatRole = 'user' | 'assistant' | 'system'
 
 export enum MessageType {
@@ -264,6 +270,7 @@ export interface Message {
   leftId?: string
   active?: boolean
   content: string
+  attachments?: Attachment[]
   role: ChatRole
   error?: string
   streaming?: boolean

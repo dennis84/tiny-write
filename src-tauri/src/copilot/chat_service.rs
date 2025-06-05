@@ -22,9 +22,27 @@ pub enum Role {
 }
 
 #[derive(Serialize, Deserialize, Debug, Eq, PartialEq)]
+#[serde(tag = "type")]
+pub enum ContentItem {
+    #[serde(rename = "text")]
+    Text {
+        text: String,
+    },
+    #[serde(rename = "image_url")]
+    ImageUrl {
+        image_url: ImageUrl,
+    },
+}
+
+#[derive(Serialize, Deserialize, Debug, Eq, PartialEq)]
+pub struct ImageUrl {
+    url: String,
+}
+
+#[derive(Serialize, Deserialize, Debug, Eq, PartialEq)]
 pub struct ChatMessage {
     pub role: Role,
-    pub content: String,
+    pub content: Vec<ContentItem>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -114,6 +132,7 @@ impl CopilotChatService {
             .header("Authorization", format!("Bearer {}", token_response.token))
             .header("Editor-Version", Self::app_version())
             .header("Copilot-Integration-Id", "vscode-chat")
+            .header("Copilot-Vision-Request", "true")
             .body(body)
             .send()
             .await?;

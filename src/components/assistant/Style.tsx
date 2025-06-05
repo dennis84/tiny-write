@@ -53,7 +53,10 @@ export const ChatInputAction = styled('div')`
   right: 0;
   bottom: 0;
   height: 50px;
+  width: 100%;
+  justify-content: flex-end;
   align-items: center;
   display: inline-flex;
   padding: 5px;
+  display: flex;
 `

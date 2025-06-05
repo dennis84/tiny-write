@@ -5,7 +5,12 @@ import {type Message, MessageType, type State, type Thread} from '@/state'
 import {DB} from '@/db'
 import {info} from '@/remote/log'
 import {createTreeStore, type TreeItem} from '@/tree'
-import type {ChatMessage, CopilotService} from './CopilotService'
+import type {
+  ChatMessage,
+  ChatMessageImageContent,
+  ChatMessageTextContent,
+  CopilotService,
+} from './CopilotService'
 import type {FileService} from './FileService'
 import {createCodeFence} from '@/components/assistant/util'
 
@@ -250,12 +255,16 @@ export class ThreadService {
     return new Promise((resolve, reject) => {
       const question: ChatMessage = {
         role: 'user',
-        content:
-          'Generate a concise title of 3-7 words for this conversation and leave out the punctuation. Return the title directly, without preamble and prefix.',
+        content: [
+          {
+            type: 'text',
+            text: 'Generate a concise title of 3-7 words for this conversation and leave out the punctuation. Return the title directly, without preamble and prefix.',
+          },
+        ],
       }
 
       let title = ''
-      const messages = currentThread.messages.map((m) => ({role: m.role, content: m.content}))
+      const messages: ChatMessage[] = currentThread.messages.map((m) => this.toChatMessage(m))
       messages.push(question)
 
       return this.copilotService.completions(
@@ -279,7 +288,7 @@ export class ThreadService {
     const currentThread = this.currentThread
     if (!currentThread) return {messages: []}
 
-    const messages = []
+    const messages: ChatMessage[] = []
     const pathMap = this.pathMap()
     let nextId =
       pathMap.get(undefined) ??
@@ -289,7 +298,7 @@ export class ThreadService {
 
     while ((next = this.messageTree.getItem(nextId))) {
       if (!next.value.error) {
-        messages.push({role: next.value.role, content: next.value.content})
+        messages.push(this.toChatMessage(next.value))
         parentId = next.value.id
       }
 
@@ -301,14 +310,14 @@ export class ThreadService {
       return {messages: []}
     }
 
-    if (messages.find((m) => m.content.includes('```'))) {
+    if (messages.find((m) => this.hasCodeBlock(m))) {
       const instruction1 =
         'If attributes are included in fenced code blocks in the user message, keep the attributes exactly as they are. INPUT: ```rust id=1 range=1-5 file=filename.rs ... OUTPUT: ```rust id=1 range=1-5 file=filename.rs'
       const instruction2 = 'Keep the indentation in code blocks as in the user message.'
       const instruction3 =
         'If the user message contains a fenced code block and the attributes does not contain a file or id, try to guess a filename and add to the fenced code block: INPUT: ```ts ... OUTPUT: ```ts file=components/App.tsx'
       const content = `${instruction1} ${instruction2} ${instruction3}`
-      const message: ChatMessage = {role: 'system', content}
+      const message: ChatMessage = {role: 'system', content: [{type: 'text', text: content}]}
       messages.unshift(message)
     }
 
@@ -390,5 +399,33 @@ export class ThreadService {
     }))
 
     await this.saveThread()
+  }
+
+  private toChatMessage(message: Message): ChatMessage {
+    const attachments: ChatMessageImageContent[] =
+      message.attachments?.map((attachment) => ({
+        type: 'image_url',
+        image_url: {url: attachment.data},
+      })) ?? []
+
+    const text: ChatMessageTextContent | undefined = message.content
+      ? {
+          type: 'text',
+          text: message.content,
+        }
+      : undefined
+
+    return {
+      role: message.role,
+      content: [...attachments, ...(text ? [text] : [])],
+    }
+  }
+
+  private hasCodeBlock(message: ChatMessage): boolean {
+    for (const c of message.content) {
+      if (c.type === 'text' && c.text.includes('```')) return true
+    }
+
+    return false
   }
 }

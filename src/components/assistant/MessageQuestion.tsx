@@ -1,4 +1,4 @@
-import {createSignal, Show} from 'solid-js'
+import {createSignal, For, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import type {Message} from '@/state'
 import type {TreeItem} from '@/tree'
@@ -27,6 +27,19 @@ const QuestionBubble = styled('div')`
   margin-left: 0;
   .cm-editor {
     margin-top: 10px;
+  }
+`
+
+const QuestionAttachments = styled('div')`
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+  img {
+    margin-top: 10px;
+    border-radius: var(--border-radius);
+    max-width: 100px;
+    max-height: 100px;
   }
 `
 
@@ -64,6 +77,11 @@ export const MessageQuestion = (props: Props) => {
           <QuestionBubble data-testid="question_bubble">
             {props.message.value.content}
           </QuestionBubble>
+          <QuestionAttachments>
+            <For each={props.message.value.attachments}>
+              {(attachment) => <img src={attachment.data} alt="" />}
+            </For>
+          </QuestionAttachments>
           <ButtonGroup>
             <Pagination
               id={props.message.id}

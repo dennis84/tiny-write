@@ -36,9 +36,25 @@ interface CompletionsRequest {
   messages: ChatMessage[]
 }
 
+interface ChatMessageContent {
+  type: string
+}
+
+export interface ChatMessageImageContent extends ChatMessageContent {
+  type: 'image_url'
+  image_url: {
+    url: string
+  }
+}
+
+export interface ChatMessageTextContent extends ChatMessageContent {
+  type: 'text'
+  text: string
+}
+
 export interface ChatMessage {
   role: ChatRole
-  content: string
+  content: (ChatMessageTextContent | ChatMessageImageContent)[]
 }
 
 export interface Model {
@@ -273,6 +289,7 @@ export class CopilotService {
         Authorization: `Bearer ${tokenResponse.token}`,
         'Editor-Version': this.appVersion(),
         'Copilot-Integration-Id': 'vscode-chat',
+        'Copilot-Vision-Request': 'true',
       },
     })
 

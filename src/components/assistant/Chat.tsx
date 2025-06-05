@@ -80,7 +80,7 @@ export const Chat = (props: Props) => {
   }
 
   const addUserMessage = async (input: Message) => {
-    if (!input.content) return
+    if (!input.content && !input.attachments) return
     await threadService.addMessage(input)
   }
 

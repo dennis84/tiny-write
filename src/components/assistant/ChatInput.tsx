@@ -1,4 +1,4 @@
-import {createSignal, onMount, Show} from 'solid-js'
+import {createSignal, For, onMount, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {v4 as uuidv4} from 'uuid'
 import {EditorView, keymap, placeholder} from '@codemirror/view'
@@ -6,13 +6,14 @@ import {defaultKeymap} from '@codemirror/commands'
 import {markdown} from '@codemirror/lang-markdown'
 import {getTheme} from '@/codemirror/theme'
 import {onEnterDoubleNewline} from '@/codemirror/key-bindings'
-import {type Message, useState} from '@/state'
+import {Attachment, type Message, useState} from '@/state'
 import {IconAttachment, IconSend, IconStop} from '../Icon'
 import {Tooltip} from '../Tooltip'
 import {TooltipHelp} from '../TooltipHelp'
 import {IconButton} from '../Button'
 import {CurrentFileButton} from './attachments/CurrentFile'
 import {SelectionButton} from './attachments/Selection'
+import {ImageButton} from './attachments/Image'
 import {ChatInputAction, inputEditor} from './Style'
 
 const ChatInputContainer = styled('div')`
@@ -22,6 +23,28 @@ const ChatInputContainer = styled('div')`
   justify-self: flex-end;
   scroll-margin-bottom: 50px;
   ${inputEditor}
+`
+
+const Attachments = styled('span')`
+  display: flex;
+  min-width: 0;
+  justify-content: flex-end;
+`
+
+const AttachmentChip = styled('span')`
+  font-size: var(--menu-font-size);
+  font-family: var(--menu-font-family);
+  border-radius: 30px;
+  padding: 0 20px;
+  line-height: 40px;
+  display: block;
+  background: var(--background-60);
+  color: var(--foreground);
+  max-width: 200px;
+  overflow: hidden;
+  white-space: nowrap;
+  justify-content: flex-start;
+  text-overflow: ellipsis;
 `
 
 interface Props {
@@ -34,6 +57,7 @@ export const ChatInput = (props: Props) => {
   const [tooltipAnchor, setTooltipAnchor] = createSignal<HTMLElement | undefined>()
   const [editorView, setEditorView] = createSignal<EditorView>()
   const {configService, copilotService} = useState()
+  const [attachments, setAttachments] = createSignal<Attachment[]>([])
 
   const closeTooltip = () => {
     setTooltipAnchor(undefined)
@@ -46,6 +70,12 @@ export const ChatInput = (props: Props) => {
   const onAttachment = (message: Message) => {
     props.onMessage(message)
     closeTooltip()
+  }
+
+  const onImageAttachment = (images: Attachment[]) => {
+    closeTooltip()
+    setAttachments(images)
+    editorView()?.focus()
   }
 
   const onSend = () => {
@@ -63,6 +93,7 @@ export const ChatInput = (props: Props) => {
       id: uuidv4(),
       role: 'user',
       content,
+      attachments: attachments(),
     })
   }
 
@@ -100,6 +131,13 @@ export const ChatInput = (props: Props) => {
           data-testid="chat_input"
         ></div>
         <ChatInputAction style={{bottom: '20px'}}>
+          <Show when={attachments().length}>
+            <Attachments>
+              <For each={attachments()}>
+                {(attachment) => <AttachmentChip>{attachment.name}</AttachmentChip>}
+              </For>
+            </Attachments>
+          </Show>
           <TooltipHelp title="Add an attachment to context">
             <IconButton onClick={onAttachmentMenu}>
               <IconAttachment />
@@ -125,6 +163,7 @@ export const ChatInput = (props: Props) => {
         <Tooltip anchor={tooltipAnchor()!} onClose={() => closeTooltip()} backdrop={true}>
           <CurrentFileButton onAttachment={onAttachment} />
           <SelectionButton onAttachment={onAttachment} />
+          <ImageButton onAttachment={onImageAttachment} />
         </Tooltip>
       </Show>
     </>
