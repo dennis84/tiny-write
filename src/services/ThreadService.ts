@@ -1,5 +1,5 @@
 import {createSignal} from 'solid-js'
-import {type SetStoreFunction, type Store, unwrap} from 'solid-js/store'
+import type {SetStoreFunction, Store} from 'solid-js/store'
 import {v4 as uuidv4} from 'uuid'
 import {type Message, MessageType, type State, type Thread} from '@/state'
 import {DB} from '@/db'
@@ -159,18 +159,18 @@ export class ThreadService {
     this.messageTree.updateValue(message)
   }
 
-  async updateTitle(title: string) {
-    const currentThread = this.currentThread
+  async updateTitle(title: string, currentThread = this.currentThread) {
     if (!currentThread) return
+    const index = this.store.threads.indexOf(currentThread)
     info(`Set title to current thread (title=${title})`)
-    this.setState('threads', this.currentThreadIndex, 'title', title)
+    this.setState('threads', index, 'title', title)
     await this.saveThread()
   }
 
   async saveThread(thread = this.currentThread) {
     info(`Save thread (id=${thread?.id}, title=${thread?.title})`)
     if (thread?.title) {
-      await DB.updateThread(unwrap(thread))
+      await DB.updateThread(thread)
     }
   }
 

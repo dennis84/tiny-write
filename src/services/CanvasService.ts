@@ -48,17 +48,15 @@ export class CanvasService {
   public canvasRef: HTMLElement | undefined
 
   static async saveCanvas(canvas: Canvas) {
-    await DB.updateCanvas(
-      unwrap({
-        ...canvas,
-        elements: canvas.elements.map((el) => ({
-          ...el,
-          editorView: undefined,
-          selected: undefined,
-          active: undefined,
-        })),
-      }),
-    )
+    await DB.updateCanvas({
+      ...canvas,
+      elements: canvas.elements.map((el) => ({
+        ...el,
+        editorView: undefined,
+        selected: undefined,
+        active: undefined,
+      })),
+    })
   }
 
   static async fetchCanvases(): Promise<Canvas[]> {

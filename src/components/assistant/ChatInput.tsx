@@ -6,7 +6,7 @@ import {defaultKeymap} from '@codemirror/commands'
 import {markdown} from '@codemirror/lang-markdown'
 import {getTheme} from '@/codemirror/theme'
 import {onEnterDoubleNewline} from '@/codemirror/key-bindings'
-import {Attachment, type Message, useState} from '@/state'
+import {type Attachment, type Message, useState} from '@/state'
 import {IconAttachment, IconSend, IconStop} from '../Icon'
 import {Tooltip} from '../Tooltip'
 import {TooltipHelp} from '../TooltipHelp'
@@ -15,6 +15,7 @@ import {CurrentFileButton} from './attachments/CurrentFile'
 import {SelectionButton} from './attachments/Selection'
 import {ImageButton} from './attachments/Image'
 import {ChatInputAction, inputEditor} from './Style'
+import {DropAttachment} from './DropAttachement'
 
 const ChatInputContainer = styled('div')`
   margin-top: auto;
@@ -50,6 +51,7 @@ const AttachmentChip = styled('span')`
 interface Props {
   onMessage: (message: Message) => void
   ref?: HTMLDivElement
+  dropArea?: () => HTMLElement
 }
 
 export const ChatInput = (props: Props) => {
@@ -124,6 +126,7 @@ export const ChatInput = (props: Props) => {
 
   return (
     <>
+      <DropAttachment dropArea={props.dropArea} onDrop={onImageAttachment} />
       <ChatInputContainer ref={props.ref}>
         <div
           onClick={() => editorView()?.focus()}

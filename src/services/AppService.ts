@@ -110,16 +110,14 @@ export class AppService {
     info(`Save last location (path=${lastLocation.path}, page=${lastLocation.page})`)
     this.setState('lastLocation', lastLocation)
     const loc = this.store.lastLocation
-    if (loc) await DB.setLastLocation(unwrap(loc))
+    if (loc) await DB.setLastLocation(loc)
   }
 
   async updateWindow(win: Partial<Window>) {
     if (this.store.fullscreen) return
     this.setState('window', {...this.store.window, ...win})
     if (!this.store.window) return
-    const updatedWindow = unwrap(this.store.window)
-    await DB.setWindow(updatedWindow)
-    info(`Saved window state (window=${JSON.stringify(window)})`)
+    await DB.setWindow(this.store.window)
   }
 
   setSelecting(selecting: boolean) {

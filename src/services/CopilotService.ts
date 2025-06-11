@@ -1,4 +1,4 @@
-import {type SetStoreFunction, type Store, unwrap} from 'solid-js/store'
+import type {SetStoreFunction, Store} from 'solid-js/store'
 import {createSignal} from 'solid-js'
 import {Channel} from '@tauri-apps/api/core'
 import {DB} from '@/db'
@@ -103,7 +103,7 @@ export class CopilotService {
     info(`Set github status (status=${JSON.stringify(status)})`)
     const copilot = this.store.ai?.copilot
     this.setState('ai', {copilot: {...copilot, ...status}})
-    const ai = unwrap(this.store.ai)
+    const ai = this.store.ai
     if (ai) await DB.setAi(ai)
   }
 
@@ -141,7 +141,7 @@ export class CopilotService {
   async setChatModel(model: Model) {
     info(`Set chat model (model=${JSON.stringify(model)})`)
     this.setState('ai', 'copilot', 'model', model)
-    const ai = unwrap(this.store.ai)
+    const ai = this.store.ai
     if (ai) await DB.setAi(ai)
   }
 

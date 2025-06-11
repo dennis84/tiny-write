@@ -1,4 +1,4 @@
-import {Attachment} from '@/state'
+import type {Attachment} from '@/state'
 import {IconImage} from '@/components/Icon'
 import {TooltipButton} from '@/components/Tooltip'
 

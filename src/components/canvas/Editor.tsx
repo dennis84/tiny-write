@@ -21,29 +21,17 @@ const EditorScroll = styled(Scroll)(
     user-select: none;
     pointer-events: none;
     box-shadow: 0 0 0 2px var(--border);
-    ${
-      props.selected
-        ? `
+    ${props.selected ? `
       box-shadow: 0 0 0 5px var(--border);
-    `
-        : ''
-    }
-    ${
-      props.active
-        ? `
+    ` : ''}
+    ${props.active ? `
       box-shadow: 0 0 0 5px var(--primary-background);
       user-select: auto;
       pointer-events: auto;
-    `
-        : ''
-    }
-    ${
-      props.deleted
-        ? `
+    ` : ''}
+    ${props.deleted ? `
       opacity: 0.4;
-    `
-        : ''
-    }
+    ` : ''}
   `,
 )
 

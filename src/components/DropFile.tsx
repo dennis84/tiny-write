@@ -2,7 +2,6 @@ import {onCleanup, onMount} from 'solid-js'
 import {createMutable} from 'solid-js/store'
 import {getCurrentWindow} from '@tauri-apps/api/window'
 import {isTauri} from '@/env'
-import {info} from '@/remote/log'
 import {useState} from '@/state'
 import {useOpen} from '@/hooks/open'
 
@@ -21,16 +20,12 @@ export const DropFile = () => {
     if (!isTauri()) return
     const unlistenProm = getCurrentWindow().onDragDropEvent(async (event) => {
       if (event.payload.type === 'over') {
-        info('🔗 User hovering')
       } else if (event.payload.type === 'drop') {
-        info('🔗 User dropped')
         for (const path of event.payload.paths) {
           const {x, y} = event.payload.position
           const result = await mediaService.dropPath(path, [x, y])
           if (result?.file) open(result.file)
         }
-      } else {
-        info('🔗 File drop cancelled')
       }
     })
 
@@ -41,11 +36,6 @@ export const DropFile = () => {
     if (isTauri()) return
     const onDrop = async (e: DragEvent) => {
       e.preventDefault()
-
-      // don't drop files in codemirror
-      if ((e.target as Element).closest('.cm-editor')) {
-        return
-      }
 
       for (const file of e.dataTransfer?.files ?? []) {
         if (file.type.startsWith('image/')) {

@@ -36,6 +36,13 @@ pub fn dirname<P: AsRef<Path>>(p: P) -> Result<PathBuf> {
     Ok(p)
 }
 
+pub fn basename<P: AsRef<Path>>(p: P) -> Result<PathBuf> {
+    p.as_ref()
+        .file_name()
+        .map(|name| PathBuf::from(name))
+        .ok_or_else(|| anyhow!("No basename for path: {:?}", p.as_ref()))
+}
+
 pub fn expand_tilde<P: AsRef<Path>>(path_user_input: P) -> Option<PathBuf> {
     let p = path_user_input.as_ref();
     if !p.starts_with("~") {

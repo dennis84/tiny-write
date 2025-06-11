@@ -58,6 +58,10 @@ export const dirname = async (path: string): Promise<string> => {
   return invoke('dirname', {path})
 }
 
+export const basename = async (path: string): Promise<string> => {
+  return invoke('basename', {path})
+}
+
 export const toRelativePath = async (path: string, basePath?: string): Promise<string> => {
   if (!isTauri()) return path
   return invoke('to_relative_path', {path, basePath})

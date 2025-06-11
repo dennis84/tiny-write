@@ -49,12 +49,13 @@ const ScrollDown = styled('div')`
 `
 
 interface Props {
-  scrollContent: () => Element
+  scrollContent: () => HTMLElement
   onChangeThread: (id: string) => void
 }
 
 export const Chat = (props: Props) => {
   let inputRef!: HTMLDivElement
+  let containerRef!: HTMLDivElement
 
   const {store, copilotService, threadService, toastService} = useState()
   const [focus, setFocus] = createSignal(true)
@@ -208,7 +209,7 @@ export const Chat = (props: Props) => {
   )
 
   return (
-    <Container>
+    <Container ref={containerRef}>
       <ButtonGroup>
         <Threads onChange={props.onChangeThread} />
         <Show when={threadService.currentThread?.messages?.length}>
@@ -224,7 +225,7 @@ export const Chat = (props: Props) => {
         </Show>
       </Messages>
       <Show when={focus()} keyed>
-        <ChatInput ref={inputRef} onMessage={onInputMessage} />
+        <ChatInput ref={inputRef} dropArea={props.scrollContent} onMessage={onInputMessage} />
       </Show>
       <Suggestions onSuggestion={onInputMessage} />
       <Show when={!autoScrolling()}>

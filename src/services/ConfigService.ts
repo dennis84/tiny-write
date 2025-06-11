@@ -1,4 +1,4 @@
-import {type SetStoreFunction, type Store, unwrap} from 'solid-js/store'
+import type {SetStoreFunction, Store} from 'solid-js/store'
 import {debounce} from 'throttle-debounce'
 import type {Config, State} from '@/state'
 import {setAlwaysOnTop} from '@/remote/app'
@@ -366,19 +366,19 @@ export class ConfigService {
     this.collabService.setConfig(conf)
     const config = {...this.store.config, ...conf}
     this.setState('config', config)
-    await this.saveConfig(unwrap(this.store))
+    await this.saveConfig(this.store)
   }
 
   updateContentWidth(contentWidth: number) {
     this.collabService.setConfig({contentWidth})
     this.setState('config', 'contentWidth', contentWidth)
-    void this.saveConfigDebounced(unwrap(this.store))
+    void this.saveConfigDebounced(this.store)
   }
 
   async updateDarkMode() {
     const config = ConfigService.getThemeConfig(this.store)
     this.setState('config', config)
-    await this.saveConfig(unwrap(this.store))
+    await this.saveConfig(this.store)
   }
 
   private async saveConfig(state: State) {

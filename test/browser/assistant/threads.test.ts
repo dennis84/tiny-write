@@ -1,5 +1,6 @@
 import {expect, test} from '@playwright/test'
 import {setupDB} from './mock'
+import {delay} from '../utils'
 
 test('threads', async ({page}) => {
   await setupDB(page, {
@@ -9,9 +10,15 @@ test('threads', async ({page}) => {
     threads: [
       {
         id: '1',
-        title: 'Test Thread',
+        title: 'Thread 1',
         lastModified: new Date(),
         messages: [{id: '1', role: 'user', content: 'Hello'}],
+      },
+      {
+        id: '2',
+        title: 'Thread 2',
+        lastModified: new Date(),
+        messages: [{id: '1', role: 'user', content: 'World'}],
       },
     ],
   })
@@ -23,8 +30,24 @@ test('threads', async ({page}) => {
 
   await page.click('[data-testid="history"]')
 
-  expect(page.getByText('Test Thread')).toBeVisible()
-  await page.click('[data-testid="thread_item"]')
+  expect(page.getByText('Thread 1')).toBeVisible()
+  await page.locator('[data-testid="thread_item"]').nth(0).click()
 
   expect(page.getByText('Hello')).toBeVisible()
+
+  await page.locator('[data-testid="thread_item_menu"]').nth(0).click()
+  await page.locator('[data-testid="thread_item_menu_rename"]').click()
+
+  await page.locator('[data-testid="input_line"]').pressSequentially('test123', {delay})
+  await page.keyboard.press('Enter')
+
+  expect(page.locator('[data-testid="thread_item"]').nth(0).getByText('test123')).toBeVisible()
+
+  await page.locator('[data-testid="thread_item_menu"]').nth(1).click()
+  await page.locator('[data-testid="thread_item_menu_rename"]').click()
+
+  await page.locator('[data-testid="input_line"]').pressSequentially('zzz', {delay})
+  await page.keyboard.press('Enter')
+
+  expect(page.locator('[data-testid="thread_item"]').nth(1).getByText('zzz')).toBeVisible()
 })

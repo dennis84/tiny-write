@@ -113,6 +113,7 @@ pub fn run<R: Runtime>(builder: Builder<R>) {
             fs::list::list_contents,
             fs::path::resolve_path,
             fs::path::dirname,
+            fs::path::basename,
             fs::path::to_relative_path,
             fs::path::to_absolute_path,
             editor::command_editor_state::get_document,

@@ -20,7 +20,6 @@ import {ErrorScreen} from '@/components/Error'
 import {Keymap} from '@/components/Keymap'
 import {Variables} from '@/components/Variables'
 import {MouseCursor} from '@/components/MouseCursor'
-import {DropFile} from '@/components/DropFile'
 import {ResizeWindow} from '@/components/ResizeWindow'
 import {DarkMode} from '@/components/DarkMode'
 import {Toast} from '@/components/Toast'
@@ -110,7 +109,6 @@ export const Main = (props: {state: State}) => {
             <Menu />
             <Keymap />
             <Variables />
-            <DropFile />
             <ResizeWindow />
             <DarkMode />
             <InputLine />

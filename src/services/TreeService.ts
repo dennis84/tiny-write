@@ -1,4 +1,4 @@
-import {type SetStoreFunction, type Store, unwrap} from 'solid-js/store'
+import type {SetStoreFunction, Store} from 'solid-js/store'
 import {type Canvas, type File, type State, isFile} from '@/state'
 import {createTreeStore, type TreeItem, type Tree, type TreeState} from '@/tree'
 import {info} from '@/remote/log'
@@ -88,9 +88,9 @@ export class TreeService {
       }
     })
 
-    const tree = unwrap(this.store.tree)
+    const tree = this.store.tree
     if (!tree) return
-    await DB.setTree({...tree})
+    await DB.setTree(tree)
   }
 
   isCollapsed(id: string): boolean {

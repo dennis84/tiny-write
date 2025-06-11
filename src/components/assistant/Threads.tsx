@@ -104,7 +104,7 @@ export const Threads = (props: Props) => {
       value: thread.title ?? '',
       onEnter: async (value: string) => {
         const title = value.trim() || undefined
-        if (title) await threadService.updateTitle(title)
+        if (title) await threadService.updateTitle(title, thread)
       },
     })
   }
@@ -158,7 +158,10 @@ export const Threads = (props: Props) => {
                       data-testid="thread_item"
                     >
                       {thread.title ?? 'Untitled'}
-                      <TooltipButtonMenu onClick={(e) => onSubmenuClick(e, thread)}>
+                      <TooltipButtonMenu
+                        onClick={(e) => onSubmenuClick(e, thread)}
+                        data-testid="thread_item_menu"
+                      >
                         <IconMoreHoriz />
                       </TooltipButtonMenu>
                     </TooltipButton>
@@ -184,11 +187,11 @@ export const Threads = (props: Props) => {
               placement="right"
               offset={20}
             >
-              <TooltipButton onClick={onRename}>
+              <TooltipButton onClick={onRename} data-testid="thread_item_menu_rename">
                 <IconEdit />
                 Rename
               </TooltipButton>
-              <TooltipButton onClick={onDelete}>
+              <TooltipButton onClick={onDelete} data-testid="thread_item_menu_delete">
                 <IconDelete />
                 Delete
               </TooltipButton>

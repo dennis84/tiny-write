@@ -30,7 +30,7 @@ const Container = styled('div')`
     .cm-scroller {
       padding: 10px !important;
       &::before {
-        content: '❯';
+        content: "❯";
         color: var(--primary-background);
       }
     }

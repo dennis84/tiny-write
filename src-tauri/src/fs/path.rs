@@ -13,6 +13,11 @@ pub fn dirname(path: String) -> tauri::Result<String> {
 }
 
 #[tauri::command]
+pub fn basename(path: String) -> tauri::Result<String> {
+    Ok(pu::basename(path).and_then(pu::path_buf_to_string)?)
+}
+
+#[tauri::command]
 pub fn resolve_path(path: String, base_path: Option<String>) -> tauri::Result<String> {
     Ok(pu::resolve_path(path, base_path).and_then(pu::path_buf_to_string)?)
 }

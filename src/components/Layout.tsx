@@ -32,7 +32,7 @@ export const Layout = styled('div')`
     pointer-events: none;
   }
   .icon {
-    font-family: 'Material Symbols Outlined';
+    font-family: "Material Symbols Outlined";
     font-weight: normal;
     font-style: normal;
     font-size: 20px;

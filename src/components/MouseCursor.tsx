@@ -41,7 +41,7 @@ const Cursor = styled('div')`
   }
   &::before,
   &::after {
-    content: '';
+    content: "";
     transform: rotate(148deg);
     position: absolute;
     width: 10px;

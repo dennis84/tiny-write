@@ -11,7 +11,7 @@ import type {CanvasService} from './CanvasService'
 import {FileService} from './FileService'
 import type {MenuTreeItem, TreeService} from './TreeService'
 import {info} from '@/remote/log'
-import {type SetStoreFunction, unwrap} from 'solid-js/store'
+import type {SetStoreFunction} from 'solid-js/store'
 import {DB} from '@/db'
 
 interface DeleteResult {
@@ -150,7 +150,7 @@ export class DeleteService {
         if (shouldUpdate) {
           this.setState('canvases', canvasIndex, 'elements', elements)
           const updated = this.canvasService.findCanvas(canvas.id)
-          if (updated) await DB.updateCanvas(unwrap(updated))
+          if (updated) await DB.updateCanvas(updated)
         }
       }
 

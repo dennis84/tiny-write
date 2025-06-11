@@ -1,3 +1,4 @@
+import {unwrap} from 'solid-js/store'
 import {type DBSchema, openDB} from 'idb'
 import {differenceInDays} from 'date-fns'
 import type {AiConfig, Camera, Config, ElementType, LastLocation, Thread, Window} from '@/state'
@@ -107,8 +108,12 @@ const dbPromise = openDB<MyDB>(DB_NAME, 3, {
 })
 
 export class DB {
+  private static unwrap<T>(obj: T) {
+    return unwrap(obj)
+  }
+
   static async setConfig(config: Config) {
-    return (await dbPromise).put('config', config, 'main')
+    return (await dbPromise).put('config', DB.unwrap(config), 'main')
   }
 
   static async getConfig() {
@@ -116,7 +121,7 @@ export class DB {
   }
 
   static async setWindow(window: Window) {
-    return (await dbPromise).put('window', window, 'main')
+    return (await dbPromise).put('window', DB.unwrap(window), 'main')
   }
 
   static async getWindow() {
@@ -124,7 +129,7 @@ export class DB {
   }
 
   static async setLastLocation(lastLocation: LastLocation) {
-    return (await dbPromise).put('meta', lastLocation, 'last_location')
+    return (await dbPromise).put('meta', DB.unwrap(lastLocation), 'last_location')
   }
 
   static async getLastLocation(): Promise<LastLocation> {
@@ -140,7 +145,7 @@ export class DB {
   }
 
   static async setTree(tree: Tree) {
-    return (await dbPromise).put('tree', tree, 'main')
+    return (await dbPromise).put('tree', DB.unwrap(tree), 'main')
   }
 
   static async getTree() {
@@ -148,7 +153,7 @@ export class DB {
   }
 
   static async setAi(ai: AiConfig) {
-    return (await dbPromise).put('ai', ai, 'main')
+    return (await dbPromise).put('ai', DB.unwrap(ai), 'main')
   }
 
   static async getAi() {
@@ -163,11 +168,11 @@ export class DB {
     const db = await dbPromise
     const existing = await db.get('files', file.id)
     if (existing) {
-      await db.put('files', file)
+      await db.put('files', DB.unwrap(file))
       return
     }
 
-    await db.add('files', file)
+    await db.add('files', DB.unwrap(file))
   }
 
   static async deleteFile(id: string) {
@@ -183,11 +188,11 @@ export class DB {
     const db = await dbPromise
     const existing = await db.get('canvases', canvas.id)
     if (existing) {
-      await db.put('canvases', canvas)
+      await db.put('canvases', DB.unwrap(canvas))
       return
     }
 
-    await db.add('canvases', canvas)
+    await db.add('canvases', DB.unwrap(canvas))
   }
 
   static async deleteCanvas(id: string) {
@@ -203,11 +208,11 @@ export class DB {
     const db = await dbPromise
     const existing = await db.get('threads', thread.id)
     if (existing) {
-      await db.put('threads', thread)
+      await db.put('threads', DB.unwrap(thread))
       return
     }
 
-    await db.add('threads', thread)
+    await db.add('threads', DB.unwrap(thread))
   }
 
   static async deleteThread(id: string) {
