@@ -56,7 +56,7 @@ export const Canvas = () => {
   const zoomTo = (next: number, center?: number[]) => {
     if (!canvasService.currentCanvas?.camera) return
 
-    let c
+    let c: Vector
     if (center === undefined) {
       const {width, height} = ref.getBoundingClientRect()
       c = new Vector(width / 2, height / 2)

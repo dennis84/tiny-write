@@ -24,7 +24,6 @@
       "suspicious": {
         "noAssignInExpressions": "off",
         "noExplicitAny": "off",
-        "noImplicitAnyLet": "off",
         "useGetterReturn": "off",
         "useAdjacentOverloadSignatures": "off"
       },

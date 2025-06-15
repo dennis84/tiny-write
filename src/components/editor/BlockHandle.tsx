@@ -83,7 +83,7 @@ export const BlockHandle = (props: Props) => {
     const blockDom = editorView.domAtPos(blockInnerPos.pos).node as HTMLElement
     setBlockDom(blockDom)
 
-    let cursorNode
+    let cursorNode: Node | undefined
     if (cursorPos !== undefined) {
       const resolved = editorView.state.doc.resolve(cursorPos)
       cursorNode = resolved.nodeAfter ?? undefined

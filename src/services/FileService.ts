@@ -57,7 +57,7 @@ export class FileService {
 
   static async loadTextFile(path: string): Promise<LoadedTextFile> {
     debug(`Load text file (path=${path})`)
-    let resolvedPath
+    let resolvedPath: string
     try {
       resolvedPath = await resolvePath(path)
     } catch (_e: any) {
@@ -76,7 +76,7 @@ export class FileService {
 
   static async loadMarkdownFile(path: string): Promise<LoadedMarkdownFile> {
     debug(`Load file (path=${path})`)
-    let resolvedPath
+    let resolvedPath: string
     try {
       resolvedPath = await resolvePath(path)
     } catch (_e: any) {

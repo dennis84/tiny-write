@@ -154,7 +154,7 @@ export class ProseMirrorService {
       createPasteMarkdownPlugin(schema),
     ]
 
-    let doc
+    let doc: Node
     const result = initProseMirrorDoc(props.type, schema)
     if (result.doc.childCount === 0)
       doc = schema.topNodeType.create({}, schema.nodes.paragraph.create())

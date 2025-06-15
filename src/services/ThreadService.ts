@@ -293,8 +293,8 @@ export class ThreadService {
     let nextId =
       pathMap.get(undefined) ??
       this.messageTree.rootItemIds[this.messageTree.rootItemIds.length - 1]
-    let next
-    let parentId
+    let next: TreeItem<Message> | undefined
+    let parentId: string | undefined
 
     while ((next = this.messageTree.getItem(nextId))) {
       if (!next.value.error) {
@@ -341,7 +341,7 @@ export class ThreadService {
     let nextId =
       pathMap.get(undefined) ??
       this.messageTree.rootItemIds[this.messageTree.rootItemIds.length - 1]
-    let next
+    let next: TreeItem<Message> | undefined
 
     while ((next = this.messageTree.getItem(nextId))) {
       messages.push(next.value)

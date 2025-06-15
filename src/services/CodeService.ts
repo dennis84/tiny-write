@@ -250,7 +250,7 @@ export class CodeService {
 
   private createSelection(view: EditorView, range: VisualPositionRange): SelectionRange {
     const anchor = view.state.doc.line(range.start.line + 1).from + range.start.character
-    let head
+    let head: number | undefined
     if (range.end) {
       head = view.state.doc.line(range.end.line + 1).from + range.end.character
     }

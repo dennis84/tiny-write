@@ -3,7 +3,7 @@ import type {Store} from 'solid-js/store'
 import {convertFileSrc} from '@tauri-apps/api/core'
 import type {EditorView} from 'prosemirror-view'
 import {basename, getMimeType, readBinaryFile, resolvePath, toRelativePath} from '@/remote/editor'
-import {type Attachment, isEditorElement, Page, type State, type File as OpenFile} from '@/state'
+import {type Attachment, isEditorElement, Page, type State, type File as OpenFile, type CanvasElement} from '@/state'
 import type {FileService} from './FileService'
 import type {CanvasService} from './CanvasService'
 import type {AppService} from './AppService'
@@ -174,7 +174,7 @@ export class MediaService {
         const basePath = await this.appService.getBasePath()
         const relativePath = await toRelativePath(path, basePath)
 
-        let addedElement
+        let addedElement: CanvasElement | undefined
         if (isImage) {
           const src = await MediaService.getImagePath(relativePath, basePath)
           const img = await this.loadImage(src)

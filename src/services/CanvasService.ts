@@ -90,7 +90,7 @@ export class CanvasService {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
     const elements: [string, Box][] = []
-    let box
+    let box: Box | undefined
     for (const el of currentCanvas.elements) {
       if (!el.selected) continue
       if (isBoxElement(el)) {
@@ -399,9 +399,9 @@ export class CanvasService {
     const camera = currentCanvas.camera
 
     const isLink = link?.toX !== undefined && link.toY !== undefined
-    let linkToEdge
+    let linkToEdge: EdgeType | undefined
 
-    let x, y
+    let x: number, y: number
     if (isLink) {
       const from = currentCanvas.elements.find((el) => el.id === link.from) as CanvasBoxElement
       if (!from) return
@@ -729,7 +729,7 @@ export class CanvasService {
         {e: EdgeType.Right, d: distR},
       ]
 
-      let min
+      let min: (typeof corners)[number] | undefined
       for (const c of corners) {
         if (!min || c.d[0] < min.d[0]) min = c
       }
