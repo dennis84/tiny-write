@@ -24,6 +24,7 @@ import {ResizeWindow} from '@/components/ResizeWindow'
 import {DarkMode} from '@/components/DarkMode'
 import {Toast} from '@/components/Toast'
 import {InputLine} from '@/components/dialog/InputLine'
+import {DropFile} from '@/components/DropFile'
 import {EditorPage} from '@/components/pages/EditorPage'
 import {CanvasPage} from '@/components/pages/CanvasPage'
 import {CodePage} from '@/components/pages/CodePage'
@@ -107,6 +108,7 @@ export const Main = (props: {state: State}) => {
             </Show>
             <MouseCursor />
             <Menu />
+            <DropFile />
             <Keymap />
             <Variables />
             <ResizeWindow />

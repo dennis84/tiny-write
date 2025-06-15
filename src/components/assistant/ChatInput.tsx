@@ -6,8 +6,8 @@ import {defaultKeymap} from '@codemirror/commands'
 import {markdown} from '@codemirror/lang-markdown'
 import {getTheme} from '@/codemirror/theme'
 import {onEnterDoubleNewline} from '@/codemirror/key-bindings'
-import {type Attachment, type Message, useState} from '@/state'
-import {IconAttachment, IconSend, IconStop} from '../Icon'
+import {type Message, useState} from '@/state'
+import {IconAttachment, IconClose, IconSend, IconStop} from '../Icon'
 import {Tooltip} from '../Tooltip'
 import {TooltipHelp} from '../TooltipHelp'
 import {IconButton} from '../Button'
@@ -15,7 +15,6 @@ import {CurrentFileButton} from './attachments/CurrentFile'
 import {SelectionButton} from './attachments/Selection'
 import {ImageButton} from './attachments/Image'
 import {ChatInputAction, inputEditor} from './Style'
-import {DropAttachment} from './DropAttachement'
 
 const ChatInputContainer = styled('div')`
   margin-top: auto;
@@ -58,8 +57,7 @@ export const ChatInput = (props: Props) => {
   let chatInputRef!: HTMLDivElement
   const [tooltipAnchor, setTooltipAnchor] = createSignal<HTMLElement | undefined>()
   const [editorView, setEditorView] = createSignal<EditorView>()
-  const {configService, copilotService} = useState()
-  const [attachments, setAttachments] = createSignal<Attachment[]>([])
+  const {configService, copilotService, mediaService} = useState()
 
   const closeTooltip = () => {
     setTooltipAnchor(undefined)
@@ -74,9 +72,8 @@ export const ChatInput = (props: Props) => {
     closeTooltip()
   }
 
-  const onImageAttachment = (images: Attachment[]) => {
+  const onImageAttachment = () => {
     closeTooltip()
-    setAttachments(images)
     editorView()?.focus()
   }
 
@@ -95,8 +92,10 @@ export const ChatInput = (props: Props) => {
       id: uuidv4(),
       role: 'user',
       content,
-      attachments: attachments(),
+      attachments: mediaService.droppedFiles(),
     })
+
+    mediaService.resetDroppedFiles()
   }
 
   const onStop = () => {
@@ -126,7 +125,6 @@ export const ChatInput = (props: Props) => {
 
   return (
     <>
-      <DropAttachment dropArea={props.dropArea} onDrop={onImageAttachment} />
       <ChatInputContainer ref={props.ref}>
         <div
           onClick={() => editorView()?.focus()}
@@ -134,9 +132,14 @@ export const ChatInput = (props: Props) => {
           data-testid="chat_input"
         ></div>
         <ChatInputAction style={{bottom: '20px'}}>
-          <Show when={attachments().length}>
+          <Show when={mediaService.droppedFiles().length}>
             <Attachments>
-              <For each={attachments()}>
+              <TooltipHelp title="Remove attachments">
+                <IconButton onClick={() => mediaService.resetDroppedFiles()}>
+                  <IconClose />
+                </IconButton>
+              </TooltipHelp>
+              <For each={mediaService.droppedFiles()}>
                 {(attachment) => <AttachmentChip>{attachment.name}</AttachmentChip>}
               </For>
             </Attachments>

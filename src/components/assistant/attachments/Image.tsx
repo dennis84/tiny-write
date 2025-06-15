@@ -1,12 +1,15 @@
-import type {Attachment} from '@/state'
+import {useState} from '@/state'
 import {IconImage} from '@/components/Icon'
 import {TooltipButton} from '@/components/Tooltip'
+import {DropTarget} from '@/services/MediaService'
 
 interface Props {
-  onAttachment: (images: Attachment[]) => void
+  onAttachment: () => void
 }
 
 export const ImageButton = (props: Props) => {
+  const {mediaService} = useState()
+
   const onClick = () => {
     const input = document.createElement('input')
     input.type = 'file'
@@ -14,24 +17,12 @@ export const ImageButton = (props: Props) => {
     input.multiple = true
 
     // Handle file selection
-    input.onchange = (event: Event) => {
+    input.onchange = async (event: Event) => {
       const target = event.target as HTMLInputElement
       const files = target.files
       if (files) {
-        const newFilesData: Attachment[] = []
-        Array.from(files).forEach((file) => {
-          const reader = new FileReader()
-          reader.onload = (e) => {
-            const base64String = e.target?.result as string
-            newFilesData.push({type: 'image', name: file.name, data: base64String})
-
-            // Update state when all files are processed
-            if (newFilesData.length === files.length) {
-              props.onAttachment(newFilesData)
-            }
-          }
-          reader.readAsDataURL(file)
-        })
+        await mediaService.dropFiles(files, [0, 0], DropTarget.Assistant)
+        props.onAttachment()
       }
     }
 

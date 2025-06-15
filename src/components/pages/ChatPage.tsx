@@ -39,7 +39,7 @@ export const ChatPage = (props: RouteSectionProps) => {
     })
 
     return (
-      <Scroll data-testid="dir" data-tauri-drag-region="true">
+      <Scroll data-testid="assistant" data-tauri-drag-region="true">
         <Content
           ref={scrollContent}
           style={{

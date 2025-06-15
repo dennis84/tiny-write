@@ -3,7 +3,7 @@ import {mock} from 'vitest-mock-extended'
 import {createStore} from 'solid-js/store'
 import {createState, type File, type Message, Page} from '@/state'
 import {ThreadService} from '@/services/ThreadService'
-import type {CopilotService} from '@/services/CopilotService'
+import type {ChatMessageTextContent, CopilotService} from '@/services/CopilotService'
 import type {FileService} from '@/services/FileService'
 import {createYUpdate} from '../util/codemirror-util'
 import type {EditorView} from '@codemirror/view'
@@ -350,7 +350,8 @@ test('regenerate - user message', async () => {
   expect(service.messageTree.rootItemIds).toHaveLength(2)
 
   const {messages} = service.getMessages()
-  expect(messages[0].content).toBe('111')
+  const message = messages[0].content[0] as ChatMessageTextContent
+  expect(message.text).toBe('111')
 })
 
 test('regenerate - assistant message', async () => {
@@ -412,7 +413,9 @@ test('generateTitle', async () => {
 
   copilotService.completions.mockImplementation(async (messages, onChunk, onDone) => {
     expect(messages).toHaveLength(3)
-    expect(messages[2].content.startsWith('Generate a concise')).toBeTruthy()
+    const message = messages[2].content.find((c) => c.type === 'text')
+    expect(message?.text).toContain('Generate a concise')
+
     const choices = [{message: {content: 'Test'}}]
     onChunk({choices})
     onDone()

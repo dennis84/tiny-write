@@ -209,7 +209,7 @@ export const Chat = (props: Props) => {
   )
 
   return (
-    <Container ref={containerRef}>
+    <Container ref={containerRef} data-testid="chat">
       <ButtonGroup>
         <Threads onChange={props.onChangeThread} />
         <Show when={threadService.currentThread?.messages?.length}>

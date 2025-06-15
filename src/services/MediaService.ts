@@ -1,18 +1,36 @@
+import {createSignal} from 'solid-js'
 import type {Store} from 'solid-js/store'
 import {convertFileSrc} from '@tauri-apps/api/core'
 import type {EditorView} from 'prosemirror-view'
-import {getMimeType, resolvePath, toRelativePath} from '@/remote/editor'
-import {type File, isEditorElement, Page, type State} from '@/state'
+import {basename, getMimeType, readBinaryFile, resolvePath, toRelativePath} from '@/remote/editor'
+import {type Attachment, isEditorElement, Page, type State, type File as OpenFile} from '@/state'
 import type {FileService} from './FileService'
 import type {CanvasService} from './CanvasService'
 import type {AppService} from './AppService'
 import type {CanvasCollabService} from './CanvasCollabService'
 
+export enum DropTarget {
+  Assistant = 'assistant',
+}
+
+export interface DroppedFile {
+  data: string
+  name: string
+  type: string
+  path?: string
+}
+
 interface DropResult {
-  file?: File
+  file?: OpenFile
 }
 
 export class MediaService {
+  private droppedFilesSignal = createSignal<Attachment[]>([])
+
+  get droppedFiles() {
+    return this.droppedFilesSignal[0]
+  }
+
   static async getImagePath(path: string, basePath?: string) {
     const s = decodeURIComponent(path)
     const absolutePath = await resolvePath(s, basePath)
@@ -27,83 +45,166 @@ export class MediaService {
     private store: Store<State>,
   ) {}
 
-  async dropFile(blob: Blob, [x, y]: [number, number]) {
-    const data = (await this.readFile(blob)) as string
+  resetDroppedFiles() {
+    this.droppedFilesSignal[1]([])
+  }
 
-    if (this.store.lastLocation?.page === Page.Editor) {
-      const currentFile = this.fileService.currentFile
-      if (!currentFile?.editorView) return
-      this.insert(currentFile.editorView, data, x, y)
-    } else if (this.store.lastLocation?.page === Page.Canvas) {
-      const currentCanvas = this.canvasService.currentCanvas
-      if (!currentCanvas) return
-      const activeElement = currentCanvas.elements.find((e) => isEditorElement(e) && e.active)
-      const file = activeElement && this.fileService.findFileById(activeElement.id)
+  async dropFiles(
+    files: File[],
+    [x, y]: [number, number],
+    dropTarget: DropTarget | undefined = undefined,
+  ) {
+    const page = this.store.lastLocation?.page
 
-      if (file?.editorView) {
-        this.insert(file.editorView, data, x, y)
-      } else {
-        const img = await this.loadImage(data)
-        const point = this.canvasService.getPosition([x, y])
-        if (!point) return
-        const el = await this.canvasService.addImage(data, point, img.width, img.height)
-        if (el) this.canvasCollabService.addElement(el)
+    if (dropTarget === DropTarget.Assistant || page === Page.Assistant) {
+      const droppedFiles: DroppedFile[] = []
+      for (const file of files) {
+        if (file.type.startsWith('image/')) {
+          const data = (await this.readFile(file)) as string
+          droppedFiles.push({type: file.type, name: file.name, data})
+        }
       }
+      this.droppedFilesSignal[1](droppedFiles)
+      return
+    }
+
+    if (page === Page.Editor) {
+      for (const blob of files) {
+        const data = (await this.readFile(blob)) as string
+        const currentFile = this.fileService.currentFile
+        if (!currentFile?.editorView) return
+        this.insert(currentFile.editorView, data, x, y)
+      }
+
+      return
+    }
+
+    if (page === Page.Canvas) {
+      for (const blob of files) {
+        const data = (await this.readFile(blob)) as string
+        const currentCanvas = this.canvasService.currentCanvas
+        if (!currentCanvas) return
+
+        const activeElement = currentCanvas.elements.find((e) => isEditorElement(e) && e.active)
+        const file = activeElement && this.fileService.findFileById(activeElement.id)
+
+        if (file?.editorView) {
+          this.insert(file.editorView, data, x, y)
+        } else {
+          const img = await this.loadImage(data)
+          const point = this.canvasService.getPosition([x, y])
+          if (!point) return
+          const el = await this.canvasService.addImage(data, point, img.width, img.height)
+          if (el) this.canvasCollabService.addElement(el)
+        }
+      }
+
+      return
     }
   }
 
-  async dropPath(path: string, [x, y]: [number, number]): Promise<DropResult | undefined> {
-    const mime = await getMimeType(path)
-    const isImage = mime.startsWith('image/')
-    const isVideo = mime.startsWith('video/')
-    const isMarkdown = mime.startsWith('text/markdown')
+  async dropPaths(
+    paths: string[],
+    [x, y]: [number, number],
+    dropTarget: DropTarget | undefined = undefined,
+  ): Promise<DropResult | undefined> {
+    const page = this.store.lastLocation?.page
 
-    const basePath = await this.appService.getBasePath()
-    const relativePath = await toRelativePath(path, basePath)
+    // Store dropped files locally
+    if (dropTarget === DropTarget.Assistant || page === Page.Assistant) {
+      const files: DroppedFile[] = []
+      for (const path of paths) {
+        const arr = await readBinaryFile(path)
+        const type = await getMimeType(path)
+        const name = await basename(path)
+        const base64 = btoa(String.fromCharCode(...arr))
+        const data = `data:${type};base64,${base64}`
+        files.push({type, name, data, path})
+      }
 
-    if (this.store.lastLocation?.page === Page.Editor) {
-      if (isImage || isVideo) {
-        const currentFile = this.fileService.currentFile
-        if (!currentFile?.editorView) return
-        this.insert(currentFile.editorView, relativePath, x, y, mime)
-        return
-      } else {
+      this.droppedFilesSignal[1](files)
+      return
+    }
+
+    // Drop files on editor
+    if (page === Page.Editor) {
+      for (const path of paths) {
+        const mime = await getMimeType(path)
+        const isImage = mime.startsWith('image/')
+        const isVideo = mime.startsWith('video/')
+        const isMarkdown = mime.startsWith('text/markdown')
+
+        const basePath = await this.appService.getBasePath()
+        const relativePath = await toRelativePath(path, basePath)
+
+        if (isImage || isVideo) {
+          const currentFile = this.fileService.currentFile
+          if (!currentFile?.editorView) return
+          this.insert(currentFile.editorView, relativePath, x, y, mime)
+        }
+
         let file = await this.fileService.findFileByPath(path)
         if (!file) file = await this.fileService.newFile({path, code: !isMarkdown})
         return {file}
       }
-    } else if (this.store.lastLocation?.page === Page.Canvas) {
+    }
+
+    // Drop files on code
+    if (page === Page.Code) {
+      for (const path of paths) {
+        const mime = await getMimeType(path)
+        const isMarkdown = mime.startsWith('text/markdown')
+        let file = await this.fileService.findFileByPath(path)
+        if (!file) file = await this.fileService.newFile({path, code: !isMarkdown})
+        return {file}
+      }
+    }
+
+    // Drop files on canvas
+    if (page === Page.Canvas) {
       const point = this.canvasService.getPosition([x, y])
       if (!point) return
 
-      let addedElement
-      if (isImage) {
-        const src = await MediaService.getImagePath(relativePath, basePath)
-        const img = await this.loadImage(src)
-        addedElement = await this.canvasService.addImage(relativePath, point, img.width, img.height)
-      } else if (isVideo) {
-        const src = await MediaService.getImagePath(relativePath, basePath)
-        const video = await this.loadVideo(src)
-        addedElement = await this.canvasService.addVideo(
-          relativePath,
-          mime,
-          point,
-          video.videoWidth,
-          video.videoHeight,
-        )
-      } else {
-        let file = await this.fileService.findFileByPath(path)
-        if (!file) file = await this.fileService.newFile({path, code: !isMarkdown})
-        addedElement = (await this.canvasService.addFile(file))?.[0]
+      for (const path of paths) {
+        const mime = await getMimeType(path)
+        const isImage = mime.startsWith('image/')
+        const isVideo = mime.startsWith('video/')
+        const isMarkdown = mime.startsWith('text/markdown')
+
+        const basePath = await this.appService.getBasePath()
+        const relativePath = await toRelativePath(path, basePath)
+
+        let addedElement
+        if (isImage) {
+          const src = await MediaService.getImagePath(relativePath, basePath)
+          const img = await this.loadImage(src)
+          addedElement = await this.canvasService.addImage(
+            relativePath,
+            point,
+            img.width,
+            img.height,
+          )
+        } else if (isVideo) {
+          const src = await MediaService.getImagePath(relativePath, basePath)
+          const video = await this.loadVideo(src)
+          addedElement = await this.canvasService.addVideo(
+            relativePath,
+            mime,
+            point,
+            video.videoWidth,
+            video.videoHeight,
+          )
+        } else {
+          let file = await this.fileService.findFileByPath(path)
+          if (!file) file = await this.fileService.newFile({path, code: !isMarkdown})
+          addedElement = (await this.canvasService.addFile(file))?.[0]
+        }
+
+        if (addedElement) this.canvasCollabService.addElement(addedElement)
       }
 
-      if (addedElement) this.canvasCollabService.addElement(addedElement)
       return
     }
-
-    let file = await this.fileService.findFileByPath(path)
-    if (!file) file = await this.fileService.newFile({path, code: !isMarkdown})
-    return {file}
   }
 
   private insert(view: EditorView, data: string, left: number, top: number, mime?: string) {

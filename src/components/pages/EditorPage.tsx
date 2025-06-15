@@ -6,7 +6,6 @@ import {locationToString} from '@/utils/debug'
 import {Loading} from './Loading'
 import {Title} from './Title'
 import {Editor} from '../editor/Editor'
-import {DropFile} from '../DropFile'
 
 export const EditorPage = (props: RouteSectionProps) => {
   const OpenEditor = () => {
@@ -30,7 +29,6 @@ export const EditorPage = (props: RouteSectionProps) => {
     return (
       <Show fallback={<Loading />} when={store.collab?.id === props.params.id}>
         <Title />
-        <DropFile />
         <Editor />
       </Show>
     )
