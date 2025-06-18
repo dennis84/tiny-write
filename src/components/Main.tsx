@@ -10,6 +10,10 @@ import {
 import {type LocationState, Page, type State, StateContext} from '@/state'
 import {createCtrl} from '@/services'
 import {info} from '@/remote/log'
+import {show, updateWindow} from '@/remote/window'
+import {setAlwaysOnTop} from '@/remote/app'
+import {startLanguageServer} from '@/remote/copilot'
+import {DB} from '@/db'
 import {isTauri} from '@/env'
 import {locationToString} from '@/utils/debug'
 import {enumFromValue} from '@/utils/enum'
@@ -50,10 +54,25 @@ export const Main = (props: {state: State}) => {
 
     onMount(async () => {
       ctrl.appService.layoutRef = layoutRef
-      try {
-        await ctrl.appService.init()
-      } catch (error: any) {
-        ctrl.appService.setError({id: 'init_failed', error})
+
+      if (isTauri() && ctrl.store.window) {
+        await updateWindow(ctrl.store.window)
+      }
+
+      if (isTauri() && ctrl.store.config?.alwaysOnTop) {
+        await setAlwaysOnTop(true)
+      }
+
+      if (isTauri() && ctrl.store.ai?.copilot?.user) {
+        // takes about 1.5s
+        void startLanguageServer()
+      }
+
+      // cleanup deleted items
+      await DB.cleanup()
+
+      if (isTauri()) {
+        await show()
       }
     })
 

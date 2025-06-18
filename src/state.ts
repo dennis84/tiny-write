@@ -339,26 +339,29 @@ export const StateContext = createContext<Ctrl>({} as Ctrl)
 
 export const useState = () => useContext(StateContext)
 
+export const createConfig = (config: Partial<Config> = {}): Config => ({
+  fontSize: 14,
+  contentWidth: 600,
+  alwaysOnTop: false,
+  typewriterMode: false,
+  spellcheck: true,
+  prettier: {
+    printWidth: 80,
+    tabWidth: 2,
+    useTabs: false,
+    semi: false,
+    singleQuote: true,
+    bracketSpacing: false,
+  },
+  ...config,
+})
+
 export const createState = (props: Partial<State> = {}): State => ({
   files: [],
   canvases: [],
-  loading: 'loading',
+  loading: 'initialized',
   fullscreen: false,
   threads: [],
-  config: {
-    fontSize: 14,
-    contentWidth: 600,
-    alwaysOnTop: false,
-    typewriterMode: false,
-    spellcheck: true,
-    prettier: {
-      printWidth: 80,
-      tabWidth: 2,
-      useTabs: false,
-      semi: false,
-      singleQuote: true,
-      bracketSpacing: false,
-    },
-  },
+  config: createConfig(),
   ...props,
 })

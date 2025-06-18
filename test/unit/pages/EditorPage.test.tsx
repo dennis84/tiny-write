@@ -213,11 +213,12 @@ test('open - file arg', async () => {
 
   mockWindows('main')
   createIpcMock({
-    get_args: () => ({file: 'file2.md'}),
     read_text: () => 'File2',
   })
 
-  const initial = createState()
+  const initial = createState({
+    args: {file: 'file2.md'},
+  })
   const {store, fileService} = createCtrl(initial)
   const {getByTestId} = render(() => <Main state={store} />)
 
@@ -235,11 +236,11 @@ test('open - file arg exists', async () => {
 
   mockWindows('main')
   createIpcMock({
-    get_args: () => ({file: 'file2.md'}),
     read_text: () => 'File2',
   })
 
   const initial = createState({
+    args: {file: 'file2.md'},
     files: [
       {
         id: '1',
@@ -266,11 +267,12 @@ test('open - newFile arg', async () => {
   stubLocation('/')
 
   mockWindows('main')
-  createIpcMock({
-    get_args: () => ({newFile: 'file2.md'}),
+  createIpcMock()
+
+  const initial = createState({
+    args: {newFile: 'file2.md'},
   })
 
-  const initial = createState()
   const {store, fileService} = createCtrl(initial)
   const baseElement = document.createElement('div')
   const {getByTestId} = render(() => <Main state={store} />, {baseElement})
@@ -289,11 +291,11 @@ test('open - newFile arg - path exists', async () => {
 
   mockWindows('main')
   createIpcMock({
-    get_args: () => ({newFile: 'file2.md'}),
     read_text: () => 'File2',
   })
 
   const initial = createState({
+    args: {newFile: 'file2.md'},
     files: [
       {
         id: '1',
@@ -321,11 +323,10 @@ test('open - newFile arg - newFile exists', async () => {
   vi.stubGlobal('__TAURI__', {})
 
   mockWindows('main')
-  createIpcMock({
-    get_args: () => ({newFile: 'file2.md'}),
-  })
+  createIpcMock()
 
   const initial = createState({
+    args: {newFile: 'file2.md'},
     files: [
       {
         id: '1',

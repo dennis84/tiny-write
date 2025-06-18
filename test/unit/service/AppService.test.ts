@@ -3,7 +3,7 @@ import {mock} from 'vitest-mock-extended'
 import {clearMocks} from '@tauri-apps/api/mocks'
 import {DB} from '@/db'
 import {createCtrl} from '@/services'
-import {ElementType, Page, createState} from '@/state'
+import {createState, ElementType, Page} from '@/state'
 import {createIpcMock} from '../util/util'
 import {createYUpdate} from '../util/prosemirror-util'
 
@@ -83,13 +83,9 @@ test('reset', async () => {
       },
     ],
   })
-  const {store, appService} = createCtrl(initial)
+  const {appService} = createCtrl(initial)
 
   await appService.reset()
-
-  expect(store.files).toHaveLength(0)
-  expect(store.args?.cwd).toBe('/home')
-  expect(store.args?.file).toBe(undefined)
 
   expect(DB.deleteDatabase).toHaveBeenCalled()
 })

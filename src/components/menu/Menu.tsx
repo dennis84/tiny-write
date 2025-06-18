@@ -2,7 +2,6 @@ import {type JSX, Show} from 'solid-js'
 import {Page, useState} from '@/state'
 import {isTauri, isMac, mod, shortHash, version, VERSION_URL, isDev} from '@/env'
 import {quit} from '@/remote/app'
-import {useOpen} from '@/hooks/open'
 import {MenuId} from '@/services/MenuService'
 import {
   IconAi,
@@ -52,7 +51,6 @@ export const MenuDrawer = ({children}: {children: JSX.Element}) => {
 
 export const Menu = () => {
   const {store, appService, menuService, configService, fileService, prettierService} = useState()
-  const {open} = useOpen()
 
   const modKey = isMac ? '⌘' : mod
 
@@ -85,7 +83,7 @@ export const Menu = () => {
 
   const onReset = async () => {
     await appService.reset()
-    open(undefined)
+    location.reload()
   }
 
   const maybeHide = () => {
