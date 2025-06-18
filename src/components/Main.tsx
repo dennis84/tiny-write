@@ -110,12 +110,12 @@ export const Main = (props: {state: State}) => {
     return (
       <StateContext.Provider value={ctrl}>
         <ErrorBoundary fallback={onViewError}>
-          <Layout ref={layoutRef} data-testid={ctrl.store.loading}>
+          <Layout ref={layoutRef} data-testid="initialized">
             <Switch>
               <Match when={ctrl.store.error}>
                 <ErrorScreen />
               </Match>
-              <Match when={ctrl.store.loading === 'initialized'}>
+              <Match when={true}>
                 <PageContent>
                   <FloatingNavbar />
                   {p.children}

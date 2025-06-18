@@ -33,7 +33,6 @@ export class AppService {
     })
 
     return {
-      loading: 'initialized',
       fullscreen: false,
       args,
       canvases,
@@ -74,7 +73,7 @@ export class AppService {
   setError(data: Partial<ErrorObject>) {
     const err = this.createError(data)
     error(`Error thrown (error=${err}})`, err)
-    this.setState({error: err, loading: 'initialized'})
+    this.setState('error', err)
   }
 
   async reset(): Promise<void> {

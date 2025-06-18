@@ -114,8 +114,6 @@ export interface Collab {
   error?: boolean
 }
 
-export type LoadingType = 'loading' | 'initialized'
-
 export interface Window {
   width: number
   height: number
@@ -293,7 +291,6 @@ export interface State {
   tree?: Tree
   config: Config
   error?: ErrorObject
-  loading: LoadingType
   fullscreen: boolean
   menuWidth?: number
   collab?: Collab
@@ -359,7 +356,6 @@ export const createConfig = (config: Partial<Config> = {}): Config => ({
 export const createState = (props: Partial<State> = {}): State => ({
   files: [],
   canvases: [],
-  loading: 'initialized',
   fullscreen: false,
   threads: [],
   config: createConfig(),
