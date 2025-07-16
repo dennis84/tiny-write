@@ -23,8 +23,7 @@ export const lineCodeEq = async (page: Page, nth: number, text: string) => {
 
 export const move = async (page: Page, key: string, repeat = 1) => {
   for (let i = 0; i < repeat; i++) {
-    await page.keyboard.down(key)
-    await page.keyboard.up(key)
+    await page.keyboard.press(key, {delay: 20})
   }
 }
 
