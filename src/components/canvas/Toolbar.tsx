@@ -44,7 +44,7 @@ export const Toolbar = () => {
 
   const restore = async (element: CanvasElement) => {
     await fileService.restore(element.id)
-    calcPosition()
+    await calcPosition()
   }
 
   const prettify = async (element: CanvasElement) => {
@@ -153,7 +153,7 @@ export const Toolbar = () => {
       },
     }
 
-    computePosition(reference, tooltipRef, {
+    return computePosition(reference, tooltipRef, {
       placement: 'bottom',
       middleware: [
         offset(100),
@@ -186,8 +186,8 @@ export const Toolbar = () => {
     })
   }
 
-  createEffect(() => {
-    calcPosition()
+  createEffect(async () => {
+    await calcPosition()
   })
 
   createEffect(async () => {
@@ -198,7 +198,7 @@ export const Toolbar = () => {
     const result = await codeService.prettifyCheck(file)
     if (result !== ugly()) {
       setUgly(result)
-      calcPosition()
+      await calcPosition()
     }
   })
 

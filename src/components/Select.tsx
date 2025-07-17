@@ -90,20 +90,18 @@ export const Select = (props: Props) => {
   })
 
   return (
-    <>
-      <Show when={frame()}>
-        {(f) => (
-          <SelectionFrame
-            style={{
-              top: `${f().ymin.toString()}px`,
-              left: `${f().xmin.toString()}px`,
-              width: `${f().width.toString()}px`,
-              height: `${f().height.toString()}px`,
-              'border-width': '1px',
-            }}
-          />
-        )}
-      </Show>
-    </>
+    <Show when={frame()}>
+      {(f) => (
+        <SelectionFrame
+          style={{
+            top: `${f().ymin.toString()}px`,
+            left: `${f().xmin.toString()}px`,
+            width: `${f().width.toString()}px`,
+            height: `${f().height.toString()}px`,
+            'border-width': '1px',
+          }}
+        />
+      )}
+    </Show>
   )
 }

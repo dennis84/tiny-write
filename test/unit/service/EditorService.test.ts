@@ -189,7 +189,7 @@ test('clear - with text', async () => {
 
   expect(editorView.state.doc.textContent).toBe('Test')
 
-  service.clear()
+  await service.clear()
 
   expect(editorView.state.doc.textContent).toBe('')
 })

@@ -31,7 +31,8 @@
         "noFloatingPromises": "error"
       },
       "complexity": {
-        "noStaticOnlyClass": "off"
+        "noStaticOnlyClass": "off",
+        "noUselessFragments": "off"
       },
       "a11y": {
         "useKeyWithClickEvents": "off",

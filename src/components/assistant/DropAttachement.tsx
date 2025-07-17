@@ -104,12 +104,10 @@ export const DropAttachment = (props: Props) => {
   })
 
   return (
-    <>
-      <Show when={dragging()}>
-        <Portal mount={dropArea()}>
-          <HighlightContent />
-        </Portal>
-      </Show>
-    </>
+    <Show when={dragging()}>
+      <Portal mount={dropArea()}>
+        <HighlightContent />
+      </Portal>
+    </Show>
   )
 }

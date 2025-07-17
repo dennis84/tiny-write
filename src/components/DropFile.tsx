@@ -96,14 +96,12 @@ export const DropFile = () => {
   })
 
   return (
-    <>
-      <Show when={dropTarget()}>
-        {(dt) => (
-          <Portal mount={dt()}>
-            <HighlightContent />
-          </Portal>
-        )}
-      </Show>
-    </>
+    <Show when={dropTarget()}>
+      {(dt) => (
+        <Portal mount={dt()}>
+          <HighlightContent />
+        </Portal>
+      )}
+    </Show>
   )
 }
