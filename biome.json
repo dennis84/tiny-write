@@ -22,7 +22,6 @@
       "suspicious": {
         "noAssignInExpressions": "off",
         "noExplicitAny": "off",
-        "useGetterReturn": "off",
         "useAdjacentOverloadSignatures": "off"
       },
       "nursery": {

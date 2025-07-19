@@ -34,7 +34,7 @@ export class ThreadService {
 
   get currentThread(): Thread | undefined {
     const threadId = this.currentThreadId
-    if (!threadId) return
+    if (!threadId) return undefined
     return this.store.threads.find((t) => t.id === threadId)
   }
 

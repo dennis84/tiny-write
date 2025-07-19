@@ -45,7 +45,7 @@ export class FileService {
 
   get currentFile(): File | undefined {
     const fileId = this.currentFileId
-    if (!fileId) return
+    if (!fileId) return undefined
     return this.store.files.find((f) => f.id === fileId)
   }
 

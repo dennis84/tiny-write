@@ -76,7 +76,7 @@ export class CanvasService {
 
   get currentCanvas() {
     const canavsId = this.currentCanvasId
-    if (!canavsId) return
+    if (!canavsId) return undefined
     return this.store.canvases?.find((c) => c.id === canavsId)
   }
 
@@ -88,7 +88,7 @@ export class CanvasService {
 
   get selection(): Selection | undefined {
     const currentCanvas = this.currentCanvas
-    if (!currentCanvas) return
+    if (!currentCanvas) return undefined
     const elements: [string, Box][] = []
     let box: Box | undefined
     for (const el of currentCanvas.elements) {
@@ -101,7 +101,7 @@ export class CanvasService {
       }
     }
 
-    if (!box || elements.length < 2) return
+    if (!box || elements.length < 2) return undefined
     return {box, elements}
   }
 

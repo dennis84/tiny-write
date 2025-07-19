@@ -29,7 +29,7 @@ export class CanvasCollabService {
 
   get elements(): Elements | undefined {
     const currentCanvas = this.canvasService.currentCanvas
-    if (!currentCanvas) return
+    if (!currentCanvas) return undefined
     return this.ydoc?.getMap(PREFIX + currentCanvas.id)
   }
 
