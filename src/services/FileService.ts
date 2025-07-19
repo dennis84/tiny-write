@@ -225,7 +225,7 @@ export class FileService {
   }
 
   async addFile(file: File) {
-    this.setState('files', (prev) => [...prev, file!])
+    this.setState('files', (prev) => [...prev, file])
     await FileService.saveFile(file)
   }
 

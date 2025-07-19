@@ -36,19 +36,21 @@ export const ModelSelect = (props: Props) => {
         <IconAi />
         Model
       </Button>
-      <Show when={tooltipAnchor() !== undefined}>
-        <Tooltip anchor={tooltipAnchor()!} onClose={onMenuClose}>
-          <For each={models()}>
-            {(m) => (
-              <TooltipButton
-                onClick={() => onSelect(m)}
-                class={copilotService.chatModel.id === m.id ? 'selected' : undefined}
-              >
-                {m.name}
-              </TooltipButton>
-            )}
-          </For>
-        </Tooltip>
+      <Show when={tooltipAnchor()}>
+        {(a) => (
+          <Tooltip anchor={a()} onClose={onMenuClose}>
+            <For each={models()}>
+              {(m) => (
+                <TooltipButton
+                  onClick={() => onSelect(m)}
+                  class={copilotService.chatModel.id === m.id ? 'selected' : undefined}
+                >
+                  {m.name}
+                </TooltipButton>
+              )}
+            </For>
+          </Tooltip>
+        )}
       </Show>
     </>
   )

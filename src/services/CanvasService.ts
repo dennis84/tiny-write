@@ -165,7 +165,8 @@ export class CanvasService {
     const zoom = currentCanvas.camera.zoom
     const centerPoint = this.createBox(element).center
     const elementCenter = new Vector(centerPoint.x, centerPoint.y)
-    const canvasRef = this.canvasRef!
+    const canvasRef = this.canvasRef
+    if (!canvasRef) return
     const vp = new Vector(canvasRef.clientWidth / 2, canvasRef.clientHeight / 2).multiply(1 / zoom)
     const {x, y} = elementCenter.subtract(vp)
 
@@ -179,7 +180,9 @@ export class CanvasService {
     if (!currentCanvas) return
     const center = point ?? this.getCenterPoint()
     if (center) {
-      const canvasRef = this.canvasRef!
+      const canvasRef = this.canvasRef
+      if (!canvasRef) return
+
       const vp = new Vector(canvasRef.clientWidth / 2, canvasRef.clientHeight / 2).multiply(
         1 / zoom,
       )

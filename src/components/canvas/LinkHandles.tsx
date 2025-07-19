@@ -1,4 +1,4 @@
-import {createSignal, onCleanup, onMount} from 'solid-js'
+import {onCleanup, onMount} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {v4 as uuidv4} from 'uuid'
 import {DragGesture} from '@use-gesture/vanilla'
@@ -49,7 +49,6 @@ const LinkHandle = (props: EdgeProps) => {
   let linkRef!: HTMLSpanElement
 
   const {canvasService, canvasCollabService} = useState()
-  const [currentLink, setCurrentLink] = createSignal<string>()
 
   const zoom = () => canvasService.currentCanvas?.camera.zoom ?? 1
 
@@ -78,22 +77,25 @@ const LinkHandle = (props: EdgeProps) => {
 
     const linkGesture = new DragGesture(
       linkRef,
-      async ({event, initial, first, last, movement}) => {
+      async ({event, initial, first, last, movement, memo}) => {
         event.stopPropagation()
         if (first) {
-          setCurrentLink(uuidv4())
+          return uuidv4()
         }
+
+        const id = await memo
         const {point, zoom} = currentCanvas.camera
         const p = new Vector(point[0], point[1])
         const i = new Vector(initial[0], initial[1]).multiply(1 / zoom).subtract(p)
         const t = new Vector(movement[0], movement[1]).multiply(1 / zoom).add(i)
-        const id = currentLink()!
+
         canvasService.drawLink(id, props.id, props.type, t.x, t.y)
         if (last) {
           const el = await canvasService.drawLinkEnd(id)
           if (el) canvasCollabService.addElement(el)
-          setCurrentLink(undefined)
         }
+
+        return id
       },
     )
 

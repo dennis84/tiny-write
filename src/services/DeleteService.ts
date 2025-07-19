@@ -34,7 +34,8 @@ export class DeleteService {
       let shouldDelete = node.value.deleted ?? false
 
       for (const n of node.childrenIds) {
-        const item = this.treeService.getItem(n)!
+        const item = this.treeService.getItem(n)
+        if (!item) continue
         const shouldDeleteChild = await doEmptyBin(item)
         if (!shouldDeleteChild) shouldDelete = false
       }

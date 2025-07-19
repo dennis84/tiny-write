@@ -235,15 +235,21 @@ const HandleGrid = (props: HandleGridProps) => {
         )}
       </Show>
       <Show when={activeHandle()}>
-        <Portal mount={appService.layoutRef}>
-          <TableTooltip
-            activeHandle={activeHandle()!}
-            currentCell={currentCell()!}
-            currentTable={props.currentTable}
-            currentTableMap={props.currentTableMap}
-            reset={onReset}
-          />
-        </Portal>
+        {(handle) => (
+          <Show when={currentCell()}>
+            {(cell) => (
+              <Portal mount={appService.layoutRef}>
+                <TableTooltip
+                  activeHandle={handle()}
+                  currentCell={cell()}
+                  currentTable={props.currentTable}
+                  currentTableMap={props.currentTableMap}
+                  reset={onReset}
+                />
+              </Portal>
+            )}
+          </Show>
+        )}
       </Show>
       <Show when={selection()}>
         {(s) => (

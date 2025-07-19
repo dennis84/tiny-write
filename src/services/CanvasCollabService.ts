@@ -43,7 +43,9 @@ export class CanvasCollabService {
       this.elements?.set(PREFIX + element.id, el)
     })
 
-    this.collabService.undoManager?.addToScope(this.elements!)
+    if (this.elements) {
+      this.collabService.undoManager?.addToScope(this.elements)
+    }
 
     this.elements?.observeDeep(async (events, tr) => {
       if (this.ydoc?.clientID === tr.origin) return

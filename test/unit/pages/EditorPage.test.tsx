@@ -7,7 +7,7 @@ import type {DB} from '@/db'
 import {createCtrl} from '@/services'
 import {Main} from '@/components/Main'
 import {createYUpdate} from '../util/prosemirror-util'
-import {createIpcMock, stubLocation} from '../util/util'
+import {createIpcMock, expectToBeDefined, stubLocation} from '../util/util'
 
 vi.mock('@/db', () => ({DB: mock<DB>()}))
 
@@ -122,8 +122,9 @@ test('open - share', async () => {
   const {getByTestId} = render(() => <Main state={store} />)
 
   await waitFor(() => {
-    expect(store.collab?.provider).toBeDefined()
-    store.collab!.provider.synced = true
+    expectToBeDefined(store.collab)
+    expect(store.collab.provider).toBeDefined()
+    store.collab.provider.synced = true
   })
 
   await waitFor(() => {

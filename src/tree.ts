@@ -71,9 +71,13 @@ export class Tree<T> {
   }
 
   remove(id: string): string[] {
-    const item = this.getItem(id)!
+    const item = this.getItem(id)
+    if (!item) return []
+
     const parentId = item.parentId ?? ROOT_ID
-    const parent = this.getItem(parentId)!
+    const parent = this.getItem(parentId)
+    if (!parent) return []
+
     const index = parent.childrenIds.indexOf(id)
     const rightId = parent.childrenIds[index + 1]
     const changes = new Set<string>()

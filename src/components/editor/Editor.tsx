@@ -42,7 +42,7 @@ export const Editor = () => {
     }
 
     if (provider && currentFile.editorView === undefined) {
-      editorService.renderEditor(currentFile, editorRef!)
+      editorService.renderEditor(currentFile, editorRef)
       fileService.currentFile?.editorView?.focus()
     }
   })

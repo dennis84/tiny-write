@@ -77,6 +77,7 @@ export const Link = ({element}: {element: CanvasLinkElement}) => {
   }
 
   onMount(() => {
+    // When dragging the line, an existing line always has a target element and edge.
     const linkGesture = new DragGesture(
       pathRef,
       async ({event, initial, first, last, movement, memo}) => {
@@ -88,6 +89,7 @@ export const Link = ({element}: {element: CanvasLinkElement}) => {
         let [fromId, fromEdge] = (await memo) ?? []
 
         if (first) {
+          if (!element.toEdge) return
           const fromEl = currentCanvas.elements.find(
             (el) => el.id === element.from,
           ) as CanvasBoxElement
@@ -95,7 +97,7 @@ export const Link = ({element}: {element: CanvasLinkElement}) => {
           const fromBox = BoxUtil.fromRect(fromEl)
           const toBox = BoxUtil.fromRect(toEl)
           const segmentFrom = BoxUtil.getSegment(fromBox, element.fromEdge)
-          const segmentTo = BoxUtil.getSegment(toBox, element.toEdge!)
+          const segmentTo = BoxUtil.getSegment(toBox, element.toEdge)
           const distFrom = segmentFrom.distanceTo(i)
           const distTo = segmentTo.distanceTo(i)
 
@@ -156,7 +158,6 @@ export const Link = ({element}: {element: CanvasLinkElement}) => {
 
   return (
     <LinkSvg
-      version="1.1"
       xmlns="http://www.w3.org/2000/svg"
       style={{
         'z-index': ZIndex.element(index(), IndexType.LINK),

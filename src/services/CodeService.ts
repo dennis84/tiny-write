@@ -227,14 +227,15 @@ export class CodeService {
       return
     }
 
-    if (file.path) {
+    const path = file.path
+    if (path) {
       update.changes.iterChanges(async (fromA, toA, _fromB, toB, insert) => {
         const text = insert.sliceString(0, insert.length, '\n')
         if (fromA !== toA) {
-          await deleteText(file.path!, {fromA, toA})
+          await deleteText(path, {fromA, toA})
         }
         if (text.length > 0) {
-          await insertText(file.path!, {fromA, toB, text})
+          await insertText(path, {fromA, toB, text})
         }
       })
 

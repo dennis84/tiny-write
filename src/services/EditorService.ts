@@ -60,11 +60,12 @@ export class EditorService {
 
     if (!editorView) {
       const dispatchTransaction = async (tr: Transaction) => {
+        if (!editorView) return
         if (editorView?.isDestroyed) return
         // selection is deleted after dragstart
         if (editorView?.dragging) return
 
-        const newState = editorView?.state.apply(tr)
+        const newState = editorView.state.apply(tr)
         try {
           editorView?.updateState(newState)
         } catch (e: any) {
@@ -91,7 +92,9 @@ export class EditorService {
         info('Saved editor content')
       }
 
-      editorView = new EditorView(node!, {
+      if (!node) return
+
+      editorView = new EditorView(node, {
         state: editorState,
         nodeViews,
         dispatchTransaction,

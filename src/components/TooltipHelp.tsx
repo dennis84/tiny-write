@@ -23,10 +23,12 @@ export const TooltipHelp = (props: Props) => {
       <span onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} onClick={onMouseLeave}>
         {props.children}
       </span>
-      <Show when={anchor() !== undefined}>
-        <Tooltip anchor={anchor()!} backdrop={false} delay={300}>
-          {props.title}
-        </Tooltip>
+      <Show when={anchor()}>
+        {(a) => (
+          <Tooltip anchor={a()} backdrop={false} delay={300}>
+            {props.title}
+          </Tooltip>
+        )}
       </Show>
     </>
   )

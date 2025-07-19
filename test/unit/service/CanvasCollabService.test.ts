@@ -37,7 +37,7 @@ const setup = (props: {canvas: Partial<Canvas>} = {canvas: {}}) => {
   const ydoc = new Y.Doc({gc: false})
   setState('collab', {ydoc})
 
-  const undoManager = new YMultiDocUndoManager(service.elements!, {
+  const undoManager = new YMultiDocUndoManager(service.elements, {
     trackedOrigins: new Set([ydoc.clientID]),
   })
 

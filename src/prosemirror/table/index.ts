@@ -45,8 +45,9 @@ const tableInputRule = (schema: Schema) =>
   new InputRule(/^\|{2,}\s$/, (state: EditorState, match: string[], start: number, end: number) => {
     const tr = state.tr
     const columns = [...Array(match[0].trim().length - 1)]
-    const headers = columns.map(() => schema.nodes.table_header.createAndFill()!)
-    const cells = columns.map(() => schema.nodes.table_cell.createAndFill()!)
+    const headers = columns.map(() => schema.nodes.table_header.createChecked())
+    const cells = columns.map(() => schema.nodes.table_cell.createChecked())
+
     const table = schema.nodes.table.createChecked(null, [
       schema.nodes.table_row.createChecked(null, headers),
       schema.nodes.table_row.createChecked(null, cells),
@@ -65,7 +66,7 @@ export const tableKeymap = keymap({
     const before = state.doc.resolve(cellPos.before())
     const targetPos = before.after()
     const tr = state.tr
-    tr.insert(targetPos, state.schema.nodes.paragraph.createAndFill()!)
+    tr.insert(targetPos, state.schema.nodes.paragraph.createChecked())
     tr.setSelection(Selection.near(tr.doc.resolve(targetPos)))
     dispatch?.(tr)
     return true

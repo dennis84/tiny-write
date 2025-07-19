@@ -69,25 +69,34 @@ const DropLine = styled('div')`
 `
 
 // biome-ignore format: ternary breaks ugly
-const TreeLinkItem = styled('div')`
+const TreeLinkItem = styled("div")`
   ${itemCss}
   user-select: none;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   align-items: start;
-  ${(props: any) => props.deleted ? `
+  ${(props: any) =>
+    props.deleted
+      ? `
     opacity: 0.3;
     pointer-events: none;
-  ` : ''}
-  ${(props: any) => props.active ? `
+  `
+      : ""}
+  ${(props: any) =>
+    props.active
+      ? `
     font-weight: bold;
     font-family: var(--menu-font-family-bold);
     color: var(--primary-background);
-  ` : ''}
-  ${(props: any) => props.selected ? `
+  `
+      : ""}
+  ${(props: any) =>
+    props.selected
+      ? `
     background: var(--primary-background-10);
     border-radius: var(--border-radius-small);
-  ` : ''}
+  `
+      : ""}
   &:hover {
     color: var(--primary-background);
     background: var(--foreground-10);
@@ -99,7 +108,7 @@ const TreeLinkItem = styled('div')`
 `
 
 // biome-ignore format: ternary breaks ugly
-const TreeLinkCorner = styled('i')`
+const TreeLinkCorner = styled("i")`
   margin-right: 10px;
   cursor: var(--cursor-pointer);
   font-family: monospace;
@@ -110,14 +119,17 @@ const TreeLinkCorner = styled('i')`
   justify-content: center;
   color: var(--foreground-50);
   height: ${ITEM_HEIGHT};
-  ${(props: any) => (props.highlight ? `color: var(--primary-background);` : '')}
-  ${(props: any) => (props.level ? `margin-left: ${String(20 * props.level)}px;` : '')}
-  ${(props: any) => props.expandable ? `
+  ${(props: any) => (props.highlight ? `color: var(--primary-background);` : "")}
+  ${(props: any) => (props.level ? `margin-left: ${String(20 * props.level)}px;` : "")}
+  ${(props: any) =>
+    props.expandable
+      ? `
     &:hover {
       background: var(--foreground-10);
       border-radius: var(--border-radius-small);
     }
-  ` : ''}
+  `
+      : ""}
 `
 
 const TreeLinkTitle = styled('span')`
@@ -130,7 +142,7 @@ const TreeLinkTitle = styled('span')`
 `
 
 // biome-ignore format: ternary breaks ugly
-const LinkMenu = styled('span')`
+const LinkMenu = styled("span")`
   justify-self: flex-end;
   display: flex;
   align-items: center;
@@ -142,10 +154,13 @@ const LinkMenu = styled('span')`
   opacity: 0;
   border-radius: var(--border-radius);
   color: var(--foreground);
-  ${(props: any) => props.selected ? `
+  ${(props: any) =>
+    props.selected
+      ? `
     opacity: 1;
     background: var(--foreground-10);
-  ` : ''}
+  `
+      : ""}
   &:hover {
     background: var(--foreground-10);
     .icon {
@@ -566,73 +581,77 @@ export const SubmenuTree = (props: Props) => {
           <HighlightContent />
         </Portal>
       </Show>
-      <Show when={tooltipAnchor() !== undefined}>
-        <Tooltip anchor={tooltipAnchor()!} onClose={() => closeTooltip()} backdrop={true}>
-          <Show when={isOnCanvas(selected())}>
-            <TooltipButton onClick={onFocus} data-testid="focus_file">
-              <IconAdjust />
-              Focus file
-            </TooltipButton>
-            <TooltipDivider />
-          </Show>
-          <Show when={!selected()?.value.deleted && isFile(selected()?.value)}>
-            <TooltipButton onClick={onAddFile} data-testid="add_file">
-              <IconPostAdd />
-              Add file
-            </TooltipButton>
-            <TooltipButton onClick={onAddCanvas} data-testid="add_canvas">
-              <IconGesture />
-              Add canvas
-            </TooltipButton>
-            <TooltipButton onClick={onAddCode} data-testid="add_code">
-              <IconCodeBlocks />
-              Add code file
-            </TooltipButton>
-            <TooltipDivider />
-          </Show>
-          <Show when={selected() && !isLocalFile(selected())}>
-            <TooltipButton onClick={onRename} data-testid="rename">
-              <IconEdit />
-              Rename
-            </TooltipButton>
-          </Show>
-          <Show when={selected()?.value.deleted}>
-            <TooltipButton onClick={onRestore} data-testid="restore">
-              <IconHistory />
-              Restore
-            </TooltipButton>
-            <TooltipButton onClick={onDeleteForever} data-testid="delete_forever">
-              <IconDeleteForever />
-              Delete forever
-            </TooltipButton>
-          </Show>
-          <Show when={selected() && !selected()?.value.deleted && !isLocalFile(selected()?.value)}>
-            <TooltipButton onClick={onDelete} data-testid="delete">
-              <IconDelete />
-              Delete
-            </TooltipButton>
-          </Show>
-          <Show when={selected() && isLocalFile(selected()?.value)}>
-            <TooltipButton onClick={onDeleteForever} data-testid="delete">
-              <IconDelete />
-              Close
-            </TooltipButton>
-          </Show>
-          <Show when={!selected()}>
-            <TooltipButton onClick={onNewFile} data-testid="new_file">
-              <IconPostAdd />
-              New file
-            </TooltipButton>
-            <TooltipButton onClick={onNewCanvas} data-testid="new_canvas">
-              <IconGesture />
-              New canvas
-            </TooltipButton>
-            <TooltipButton onClick={onNewCode} data-testid="new_code">
-              <IconCodeBlocks />
-              New code file
-            </TooltipButton>
-          </Show>
-        </Tooltip>
+      <Show when={tooltipAnchor()}>
+        {(a) => (
+          <Tooltip anchor={a()} onClose={() => closeTooltip()} backdrop={true}>
+            <Show when={isOnCanvas(selected())}>
+              <TooltipButton onClick={onFocus} data-testid="focus_file">
+                <IconAdjust />
+                Focus file
+              </TooltipButton>
+              <TooltipDivider />
+            </Show>
+            <Show when={!selected()?.value.deleted && isFile(selected()?.value)}>
+              <TooltipButton onClick={onAddFile} data-testid="add_file">
+                <IconPostAdd />
+                Add file
+              </TooltipButton>
+              <TooltipButton onClick={onAddCanvas} data-testid="add_canvas">
+                <IconGesture />
+                Add canvas
+              </TooltipButton>
+              <TooltipButton onClick={onAddCode} data-testid="add_code">
+                <IconCodeBlocks />
+                Add code file
+              </TooltipButton>
+              <TooltipDivider />
+            </Show>
+            <Show when={selected() && !isLocalFile(selected())}>
+              <TooltipButton onClick={onRename} data-testid="rename">
+                <IconEdit />
+                Rename
+              </TooltipButton>
+            </Show>
+            <Show when={selected()?.value.deleted}>
+              <TooltipButton onClick={onRestore} data-testid="restore">
+                <IconHistory />
+                Restore
+              </TooltipButton>
+              <TooltipButton onClick={onDeleteForever} data-testid="delete_forever">
+                <IconDeleteForever />
+                Delete forever
+              </TooltipButton>
+            </Show>
+            <Show
+              when={selected() && !selected()?.value.deleted && !isLocalFile(selected()?.value)}
+            >
+              <TooltipButton onClick={onDelete} data-testid="delete">
+                <IconDelete />
+                Delete
+              </TooltipButton>
+            </Show>
+            <Show when={selected() && isLocalFile(selected()?.value)}>
+              <TooltipButton onClick={onDeleteForever} data-testid="delete">
+                <IconDelete />
+                Close
+              </TooltipButton>
+            </Show>
+            <Show when={!selected()}>
+              <TooltipButton onClick={onNewFile} data-testid="new_file">
+                <IconPostAdd />
+                New file
+              </TooltipButton>
+              <TooltipButton onClick={onNewCanvas} data-testid="new_canvas">
+                <IconGesture />
+                New canvas
+              </TooltipButton>
+              <TooltipButton onClick={onNewCode} data-testid="new_code">
+                <IconCodeBlocks />
+                New code file
+              </TooltipButton>
+            </Show>
+          </Tooltip>
+        )}
       </Show>
     </>
   )

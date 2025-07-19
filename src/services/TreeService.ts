@@ -76,7 +76,8 @@ export class TreeService {
   }
 
   async collapse(id: string) {
-    const item = this.tree.getItem(id)!
+    const item = this.tree.getItem(id)
+    if (!item) return
     if (!item.childrenIds.length) return
 
     this.setState('tree', (prev) => {

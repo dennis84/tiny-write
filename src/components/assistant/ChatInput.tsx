@@ -165,12 +165,14 @@ export const ChatInput = (props: Props) => {
           </Show>
         </ChatInputAction>
       </ChatInputContainer>
-      <Show when={tooltipAnchor() !== undefined}>
-        <Tooltip anchor={tooltipAnchor()!} onClose={() => closeTooltip()} backdrop={true}>
-          <CurrentFileButton onAttachment={onAttachment} />
-          <SelectionButton onAttachment={onAttachment} />
-          <ImageButton onAttachment={onImageAttachment} />
-        </Tooltip>
+      <Show when={tooltipAnchor()}>
+        {(a) => (
+          <Tooltip anchor={a()} onClose={() => closeTooltip()} backdrop={true}>
+            <CurrentFileButton onAttachment={onAttachment} />
+            <SelectionButton onAttachment={onAttachment} />
+            <ImageButton onAttachment={onImageAttachment} />
+          </Tooltip>
+        )}
       </Show>
     </>
   )

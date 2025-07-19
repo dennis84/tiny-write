@@ -194,7 +194,7 @@ export class CollabService {
   }
 
   getProvider(id: string): WebsocketProvider {
-    return this.providers[id]!
+    return this.providers[id]
   }
 
   private onCollabConfigUpdate = (event: Y.YMapEvent<unknown>) => {

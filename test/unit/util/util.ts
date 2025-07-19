@@ -1,10 +1,14 @@
 import * as Y from 'yjs'
 import type {WebsocketProvider} from 'y-websocket'
 import type {YMultiDocUndoManager} from 'y-utility/y-multidoc-undomanager'
-import {vi} from 'vitest'
+import {expect, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
 import {mockIPC} from '@tauri-apps/api/mocks'
 import type {Collab} from '@/state'
+
+export function expectToBeDefined<T>(value: T | undefined): asserts value is T {
+  expect(value).toBeDefined()
+}
 
 export const stubLocation = (path: string) => {
   vi.stubGlobal('location', new URL(`http://localhost:3000${path}`))

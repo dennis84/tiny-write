@@ -5,7 +5,7 @@ import {createState, Page} from '@/state'
 import {createCtrl} from '@/services'
 import {Main} from '@/components/Main'
 import {createYUpdate} from '../util/codemirror-util'
-import {stubLocation} from '../util/util'
+import {expectToBeDefined, stubLocation} from '../util/util'
 
 vi.mock('@/db', () => ({DB: mock()}))
 vi.mock('mermaid', () => ({}))
@@ -40,8 +40,9 @@ test('prettify', async () => {
   expect(store.lastLocation?.page).toBe(Page.Code)
   expect(fileService.currentFile?.id).toBe('1')
   expect(fileService.currentFile?.codeEditorView).toBeDefined()
+  expectToBeDefined(fileService.currentFile)
 
-  await codeService.prettify(fileService.currentFile!)
+  await codeService.prettify(fileService.currentFile)
 
   expect(fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('const a = 1')
 })

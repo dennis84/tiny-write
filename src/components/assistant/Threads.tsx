@@ -138,66 +138,60 @@ export const Threads = (props: Props) => {
         History
       </Button>
       <Show when={menuTooltipAnchor()}>
-        <Tooltip
-          anchor={menuTooltipAnchor()!}
-          onClose={onMenuClose}
-          backdrop={true}
-          placement="left"
-        >
-          <Scroller>
-            <Content>
-              <For each={getThreads()}>
-                {([thread, label]) => (
-                  <>
-                    <Show when={label}>
-                      <Label>{label}</Label>
-                    </Show>
-                    <TooltipButton
-                      onClick={() => onSelect(thread.id)}
-                      class={thread.id === threadService.currentThread?.id ? 'selected' : ''}
-                      data-testid="thread_item"
-                    >
-                      {thread.title ?? 'Untitled'}
-                      <TooltipButtonMenu
-                        onClick={(e) => onSubmenuClick(e, thread)}
-                        data-testid="thread_item_menu"
+        {(a) => (
+          <Tooltip anchor={a()} onClose={onMenuClose} backdrop={true} placement="left">
+            <Scroller>
+              <Content>
+                <For each={getThreads()}>
+                  {([thread, label]) => (
+                    <>
+                      <Show when={label}>
+                        <Label>{label}</Label>
+                      </Show>
+                      <TooltipButton
+                        onClick={() => onSelect(thread.id)}
+                        class={thread.id === threadService.currentThread?.id ? 'selected' : ''}
+                        data-testid="thread_item"
                       >
-                        <IconMoreHoriz />
-                      </TooltipButtonMenu>
-                    </TooltipButton>
-                  </>
-                )}
-              </For>
-            </Content>
-          </Scroller>
-          <TooltipFooter>
-            <ButtonGroup>
-              <Button onClick={onNew}>
-                <IconAdd /> New
-              </Button>
-              <Button onClick={onDeleteAll}>
-                <IconDelete /> Delete all
-              </Button>
-            </ButtonGroup>
-          </TooltipFooter>
-          <Show when={submenuTooltipAnchor()}>
-            <Tooltip
-              anchor={submenuTooltipAnchor()!}
-              closeable={false}
-              placement="right"
-              offset={20}
-            >
-              <TooltipButton onClick={onRename} data-testid="thread_item_menu_rename">
-                <IconEdit />
-                Rename
-              </TooltipButton>
-              <TooltipButton onClick={onDelete} data-testid="thread_item_menu_delete">
-                <IconDelete />
-                Delete
-              </TooltipButton>
-            </Tooltip>
-          </Show>
-        </Tooltip>
+                        {thread.title ?? 'Untitled'}
+                        <TooltipButtonMenu
+                          onClick={(e) => onSubmenuClick(e, thread)}
+                          data-testid="thread_item_menu"
+                        >
+                          <IconMoreHoriz />
+                        </TooltipButtonMenu>
+                      </TooltipButton>
+                    </>
+                  )}
+                </For>
+              </Content>
+            </Scroller>
+            <TooltipFooter>
+              <ButtonGroup>
+                <Button onClick={onNew}>
+                  <IconAdd /> New
+                </Button>
+                <Button onClick={onDeleteAll}>
+                  <IconDelete /> Delete all
+                </Button>
+              </ButtonGroup>
+            </TooltipFooter>
+            <Show when={submenuTooltipAnchor()}>
+              {(subA) => (
+                <Tooltip anchor={subA()} closeable={false} placement="right" offset={20}>
+                  <TooltipButton onClick={onRename} data-testid="thread_item_menu_rename">
+                    <IconEdit />
+                    Rename
+                  </TooltipButton>
+                  <TooltipButton onClick={onDelete} data-testid="thread_item_menu_delete">
+                    <IconDelete />
+                    Delete
+                  </TooltipButton>
+                </Tooltip>
+              )}
+            </Show>
+          </Tooltip>
+        )}
       </Show>
     </>
   )

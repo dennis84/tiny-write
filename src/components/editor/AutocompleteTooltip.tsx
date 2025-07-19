@@ -83,16 +83,20 @@ export const AutocompleteTooltip = (props: Props) => {
   })
 
   return (
-    <Show when={tooltipAnchor() !== undefined && completion()?.options.length}>
-      <Tooltip anchor={tooltipAnchor()!} placement="bottom-start">
-        <For each={completion()?.options}>
-          {(option, i) => (
-            <TooltipButton class={i() === completion()?.selected ? 'selected' : ''}>
-              {option}
-            </TooltipButton>
-          )}
-        </For>
-      </Tooltip>
+    <Show when={completion()?.options.length}>
+      <Show when={tooltipAnchor()}>
+        {(a) => (
+          <Tooltip anchor={a()} placement="bottom-start">
+            <For each={completion()?.options}>
+              {(option, i) => (
+                <TooltipButton class={i() === completion()?.selected ? 'selected' : ''}>
+                  {option}
+                </TooltipButton>
+              )}
+            </For>
+          </Tooltip>
+        )}
+      </Show>
     </Show>
   )
 }

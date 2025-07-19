@@ -194,7 +194,7 @@ export const BlockHandle = (props: Props) => {
     e.dataTransfer.effectAllowed = 'copyMove'
 
     const el = document.querySelector('.ProseMirror-selectednode')
-    e.dataTransfer?.setDragImage(el!, 0, 0)
+    if (el) e.dataTransfer?.setDragImage(el, 0, 0)
 
     editorView.dragging = {slice, move: true}
   }

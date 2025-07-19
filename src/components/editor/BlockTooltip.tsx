@@ -247,78 +247,83 @@ export const BlockTooltip = (props: Props) => {
   return (
     <Show when={props.selectedBlock}>
       {(block) => (
-        <Tooltip
-          anchor={tooltipAnchor()!}
-          onClose={closeTooltip}
-          placement="left"
-          fallbackPlacements={['left-start', 'left', 'bottom', 'top']}
-        >
-          <Show when={block().blockNode?.type.name === 'code_block'}>
-            <Show when={block().blockNode.attrs.lang === 'mermaid'}>
-              <TooltipButton onClick={onMermaidSave}>
-                <IconFileSave /> save as png
-              </TooltipButton>
-              <TooltipButton onClick={onMermaidHideCode}>
-                <Show
-                  when={block().blockNode.attrs.hidden}
-                  fallback={
-                    <>
-                      <IconVisibilityOff /> Hide code
-                    </>
-                  }
-                >
-                  <IconVisibility /> Show code
+        <Show when={tooltipAnchor()}>
+          {(a) => (
+            <Tooltip
+              anchor={a()}
+              onClose={closeTooltip}
+              placement="left"
+              fallbackPlacements={['left-start', 'left', 'bottom', 'top']}
+            >
+              <Show when={block().blockNode?.type.name === 'code_block'}>
+                <Show when={block().blockNode.attrs.lang === 'mermaid'}>
+                  <TooltipButton onClick={onMermaidSave}>
+                    <IconFileSave /> save as png
+                  </TooltipButton>
+                  <TooltipButton onClick={onMermaidHideCode}>
+                    <Show
+                      when={block().blockNode.attrs.hidden}
+                      fallback={
+                        <>
+                          <IconVisibilityOff /> Hide code
+                        </>
+                      }
+                    >
+                      <IconVisibility /> Show code
+                    </Show>
+                  </TooltipButton>
+                  <TooltipDivider />
                 </Show>
-              </TooltipButton>
-              <TooltipDivider />
-            </Show>
-            <TooltipButton onClick={onChangeLang} data-testid="change_lang">
-              <IconLanguage /> change language
-            </TooltipButton>
-            <TooltipButton onClick={onPrettify} data-testid="prettify">
-              <IconCodeBlocks /> prettify
-            </TooltipButton>
-            <TooltipButton onClick={onFoldAll}>
-              <IconUnfoldLess /> fold all
-            </TooltipButton>
-            <TooltipButton onClick={onCopilot}>
-              <IconAiAssistant /> Ask copilot
-            </TooltipButton>
-            <TooltipDivider />
-          </Show>
-          <Show
-            when={
-              block().cursorNode?.type.name === 'image' || block().cursorNode?.type.name === 'video'
-            }
-          >
-            <TooltipButton onClick={onAlign(Align.FloatLeft)} data-testid="align_float_left">
-              <IconFormatImageLeft /> float left
-            </TooltipButton>
-            <TooltipButton onClick={onAlign(Align.FloatRight)} data-testid="align_float_right">
-              <IconFormatImageRight /> float right
-            </TooltipButton>
-            <TooltipButton onClick={onAlign(Align.Center)} data-testid="align_center">
-              <IconFloatCenter /> center
-            </TooltipButton>
-            <TooltipDivider />
-          </Show>
-          <Show when={getLinkHref()}>
-            {(href) => (
-              <>
-                <TooltipButton onClick={onOpenLink} data-testid="open_link">
-                  <IconOpenInNew /> open: {href()}
+                <TooltipButton onClick={onChangeLang} data-testid="change_lang">
+                  <IconLanguage /> change language
+                </TooltipButton>
+                <TooltipButton onClick={onPrettify} data-testid="prettify">
+                  <IconCodeBlocks /> prettify
+                </TooltipButton>
+                <TooltipButton onClick={onFoldAll}>
+                  <IconUnfoldLess /> fold all
+                </TooltipButton>
+                <TooltipButton onClick={onCopilot}>
+                  <IconAiAssistant /> Ask copilot
                 </TooltipButton>
                 <TooltipDivider />
-              </>
-            )}
-          </Show>
-          <TooltipButton onClick={onToPlain}>
-            <IconFormatClear /> remove text formats
-          </TooltipButton>
-          <TooltipButton onClick={onRemoveBlock} data-testid="remove_block">
-            <IconVariableRemove /> remove block
-          </TooltipButton>
-        </Tooltip>
+              </Show>
+              <Show
+                when={
+                  block().cursorNode?.type.name === 'image' ||
+                  block().cursorNode?.type.name === 'video'
+                }
+              >
+                <TooltipButton onClick={onAlign(Align.FloatLeft)} data-testid="align_float_left">
+                  <IconFormatImageLeft /> float left
+                </TooltipButton>
+                <TooltipButton onClick={onAlign(Align.FloatRight)} data-testid="align_float_right">
+                  <IconFormatImageRight /> float right
+                </TooltipButton>
+                <TooltipButton onClick={onAlign(Align.Center)} data-testid="align_center">
+                  <IconFloatCenter /> center
+                </TooltipButton>
+                <TooltipDivider />
+              </Show>
+              <Show when={getLinkHref()}>
+                {(href) => (
+                  <>
+                    <TooltipButton onClick={onOpenLink} data-testid="open_link">
+                      <IconOpenInNew /> open: {href()}
+                    </TooltipButton>
+                    <TooltipDivider />
+                  </>
+                )}
+              </Show>
+              <TooltipButton onClick={onToPlain}>
+                <IconFormatClear /> remove text formats
+              </TooltipButton>
+              <TooltipButton onClick={onRemoveBlock} data-testid="remove_block">
+                <IconVariableRemove /> remove block
+              </TooltipButton>
+            </Tooltip>
+          )}
+        </Show>
       )}
     </Show>
   )

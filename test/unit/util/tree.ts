@@ -19,7 +19,8 @@ export function printTree<T>(tree: Tree<T>) {
 
   function printIds(ids: string[], level = 0) {
     for (const id of ids) {
-      const item = tree.getItem(id)!
+      const item = tree.getItem(id)
+      if (!item) continue
       const indent = '  '.repeat(level)
       const parentId = item.parentId ?? ''
       const leftId = item.leftId ?? ''

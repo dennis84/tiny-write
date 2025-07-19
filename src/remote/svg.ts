@@ -5,7 +5,8 @@ import {isTauri} from '@/env'
 
 export const saveSvg = async (svg: HTMLElement) => {
   const canvas = document.createElement('canvas')
-  const ctx = canvas.getContext('2d')!
+  const ctx = canvas.getContext('2d')
+  if (!ctx) return
   const rect = svg.getBoundingClientRect()
   const ratio = rect.height / rect.width
   canvas.width = 1080

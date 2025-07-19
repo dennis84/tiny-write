@@ -71,7 +71,7 @@ export const Editor = ({element, index}: {element: CanvasEditorElement; index: n
     }
 
     if (provider && file.editorView === undefined) {
-      editorService.renderEditor(file, editorRef!)
+      editorService.renderEditor(file, editorRef)
     }
   })
 

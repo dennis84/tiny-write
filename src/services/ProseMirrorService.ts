@@ -160,15 +160,20 @@ export class ProseMirrorService {
       doc = schema.topNodeType.create({}, schema.nodes.paragraph.create())
     else doc = result.doc
 
-    plugins.push(
-      ...createCollabPlugins(
-        props.type,
-        this.collabService.permanentUserData!,
-        this.collabService.provider?.awareness,
-        result.mapping,
-        this.collabService.isSnapshot,
-      ),
-    )
+    const permanentUserData = this.collabService.permanentUserData
+    const awareness = this.collabService.provider?.awareness
+
+    if (permanentUserData && awareness) {
+      plugins.push(
+        ...createCollabPlugins(
+          props.type,
+          permanentUserData,
+          awareness,
+          result.mapping,
+          this.collabService.isSnapshot,
+        ),
+      )
+    }
 
     if (props.dropCursor) {
       plugins.push(dropCursor({class: 'drop-cursor'}))

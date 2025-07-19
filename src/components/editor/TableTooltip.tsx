@@ -142,44 +142,48 @@ export const TableTooltip = (props: Props) => {
   })
 
   return (
-    <Tooltip
-      anchor={tooltipAnchor()!}
-      onClose={props.reset}
-      placement={props.activeHandle.direction === 'horiz' ? 'left' : 'top'}
-      fallbackPlacements={
-        props.activeHandle.direction === 'horiz'
-          ? ['left', 'bottom', 'top']
-          : ['top', 'left', 'right']
-      }
-    >
-      <Show when={isFirstRow()}>
-        <TooltipButton onClick={onToggleHeaderRow}>
-          <IconToggleOn /> Toggle table header row
-        </TooltipButton>
-        <TooltipDivider />
-      </Show>
-      <Show when={props.activeHandle.direction === 'horiz'}>
-        <TooltipButton onClick={onAddRowAbove}>
-          <IconAddRowAbove /> Add row above
-        </TooltipButton>
-        <TooltipButton onClick={onAddRowBelow}>
-          <IconAddRowBelow /> Add row below
-        </TooltipButton>
-        <TooltipButton onClick={onRemoveRow}>
-          <IconRowRemove /> Remove row
-        </TooltipButton>
-      </Show>
-      <Show when={props.activeHandle.direction === 'vert'}>
-        <TooltipButton onClick={onAddColumnBefore}>
-          <IconAddColumnLeft /> Add column before
-        </TooltipButton>
-        <TooltipButton onClick={onAddColumnAfter}>
-          <IconAddColumnRight /> Add column after
-        </TooltipButton>
-        <TooltipButton onClick={onRemoveColumn}>
-          <IconColumnRemove /> Remove column
-        </TooltipButton>
-      </Show>
-    </Tooltip>
+    <Show when={tooltipAnchor()}>
+      {(a) => (
+        <Tooltip
+          anchor={a()}
+          onClose={props.reset}
+          placement={props.activeHandle.direction === 'horiz' ? 'left' : 'top'}
+          fallbackPlacements={
+            props.activeHandle.direction === 'horiz'
+              ? ['left', 'bottom', 'top']
+              : ['top', 'left', 'right']
+          }
+        >
+          <Show when={isFirstRow()}>
+            <TooltipButton onClick={onToggleHeaderRow}>
+              <IconToggleOn /> Toggle table header row
+            </TooltipButton>
+            <TooltipDivider />
+          </Show>
+          <Show when={props.activeHandle.direction === 'horiz'}>
+            <TooltipButton onClick={onAddRowAbove}>
+              <IconAddRowAbove /> Add row above
+            </TooltipButton>
+            <TooltipButton onClick={onAddRowBelow}>
+              <IconAddRowBelow /> Add row below
+            </TooltipButton>
+            <TooltipButton onClick={onRemoveRow}>
+              <IconRowRemove /> Remove row
+            </TooltipButton>
+          </Show>
+          <Show when={props.activeHandle.direction === 'vert'}>
+            <TooltipButton onClick={onAddColumnBefore}>
+              <IconAddColumnLeft /> Add column before
+            </TooltipButton>
+            <TooltipButton onClick={onAddColumnAfter}>
+              <IconAddColumnRight /> Add column after
+            </TooltipButton>
+            <TooltipButton onClick={onRemoveColumn}>
+              <IconColumnRemove /> Remove column
+            </TooltipButton>
+          </Show>
+        </Tooltip>
+      )}
+    </Show>
   )
 }

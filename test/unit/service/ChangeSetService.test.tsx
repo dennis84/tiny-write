@@ -5,7 +5,7 @@ import userEvent from '@testing-library/user-event'
 import {createState} from '@/state'
 import {createCtrl} from '@/services'
 import {Main} from '@/components/Main'
-import {stubLocation} from '../util/util'
+import {expectToBeDefined, stubLocation} from '../util/util'
 
 vi.mock('@/db', () => ({DB: mock()}))
 vi.mock('mermaid', () => ({}))
@@ -39,12 +39,14 @@ test('addVersion', async () => {
   await userEvent.keyboard('123')
   expect(getByTestId('editor_scroll')).toHaveTextContent('Test123')
 
-  changeSetService.renderVersion(fileService.currentFile?.versions[0]!)
+  expectToBeDefined(fileService.currentFile?.versions[0])
+
+  changeSetService.renderVersion(fileService.currentFile?.versions[0])
   await vi.waitFor(() => {
     expect(getByTestId('editor_scroll')).toHaveTextContent('Test')
   })
 
-  changeSetService.applyVersion(fileService.currentFile?.versions[0]!)
+  changeSetService.applyVersion(fileService.currentFile?.versions[0])
   await vi.waitFor(() => {
     expect(getByTestId('editor_scroll')).toHaveTextContent('Test')
   })
