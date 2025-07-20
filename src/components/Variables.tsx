@@ -65,7 +65,7 @@ export const Variables = () => {
     root.style.setProperty('--z-index-above-content', ZIndex.ABOVE_CONTENT)
   })
 
-  return <></>
+  return null
 }
 
 const setupFonts = () => {

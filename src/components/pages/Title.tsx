@@ -13,5 +13,5 @@ export const Title = () => {
     }
   })
 
-  return <></>
+  return null
 }

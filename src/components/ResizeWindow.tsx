@@ -24,5 +24,5 @@ export const ResizeWindow = () => {
     })
   })
 
-  return <></>
+  return null
 }

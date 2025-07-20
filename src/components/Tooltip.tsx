@@ -139,7 +139,7 @@ export const Tooltip = (props: Props) => {
       document.removeEventListener('pointerdown', listener)
     })
 
-    return <></>
+    return null
   }
 
   onMount(() => {

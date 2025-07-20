@@ -10,5 +10,5 @@ export const DarkMode = () => {
     onCleanup(() => matchDark.removeEventListener('change', onUpdateDarkMode))
   })
 
-  return <></>
+  return null
 }

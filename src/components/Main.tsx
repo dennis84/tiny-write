@@ -49,7 +49,7 @@ export const Main = (props: {state: State}) => {
     const onViewError = (error: any, reset: any) => {
       ctrl.appService.setError({error})
       reset()
-      return <></>
+      return null
     }
 
     onMount(async () => {

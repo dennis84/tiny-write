@@ -43,5 +43,5 @@ export const Redirect = () => {
     open(file, {back, selection})
   })
 
-  return <></>
+  return null
 }

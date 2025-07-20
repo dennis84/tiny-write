@@ -173,5 +173,5 @@ export const Keymap = () => {
     if (r) e.preventDefault()
   }
 
-  return <></>
+  return null
 }

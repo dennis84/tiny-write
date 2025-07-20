@@ -28,13 +28,10 @@
         "noFloatingPromises": "error"
       },
       "complexity": {
-        "noStaticOnlyClass": "off",
-        "noUselessFragments": "off"
+        "noStaticOnlyClass": "off"
       },
       "a11y": {
-        "useKeyWithClickEvents": "off",
-        "noStaticElementInteractions": "off",
-        "noSvgWithoutTitle": "off"
+        "useKeyWithClickEvents": "off"
       }
     }
   },

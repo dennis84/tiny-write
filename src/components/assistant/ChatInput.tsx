@@ -127,6 +127,7 @@ export const ChatInput = (props: Props) => {
     <>
       <ChatInputContainer ref={props.ref}>
         <div
+          role="none"
           onClick={() => editorView()?.focus()}
           ref={chatInputRef}
           data-testid="chat_input"

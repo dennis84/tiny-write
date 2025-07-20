@@ -627,6 +627,7 @@ const spinnerStyle = `.spinner_P7sC{transform-origin:center;animation:spinner_sv
 export const Spinner = () => (
   <SvgIcon>
     <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <title>...</title>
       <style>{spinnerStyle}</style>
       <path
         fill="currentColor"

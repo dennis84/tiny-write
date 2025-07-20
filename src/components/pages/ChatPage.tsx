@@ -22,7 +22,7 @@ export const ChatPage = (props: RouteSectionProps) => {
       openUrl(`/assistant/${newThread.id}`)
     })
 
-    return <></>
+    return null
   }
 
   const OpenChat = () => {
