@@ -28,14 +28,14 @@ export class CopilotMock {
           while (true) {
             await pause(2000)
 
-            const code = Math.random() > 0.8
+            const code = true //Math.random() > 0.8
             const h1 = Math.random() > 0.8
 
             if (code) {
               enqueueMessage(controller, '\n\n')
               enqueueMessage(controller, '```')
               await pause(10)
-              enqueueMessage(controller, 'typescript\n')
+              enqueueMessage(controller, 'typescript id=123 file=test.ts\n')
               await pause(10)
             } else if (h1) {
               enqueueMessage(controller, '# ')

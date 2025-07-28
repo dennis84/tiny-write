@@ -35,6 +35,7 @@ import {CodePage} from '@/components/pages/CodePage'
 import {DirPage} from '@/components/pages/DirPage'
 import {Redirect} from '@/components/pages/Redirect'
 import {ChatPage} from '@/components/pages/ChatPage'
+import { CopilotMock } from '@/utils/CopilotMock'
 
 export const Main = (props: {state: State}) => {
   const Root = (p: RouteSectionProps) => {

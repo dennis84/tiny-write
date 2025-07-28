@@ -105,11 +105,8 @@ export const Chat = (props: Props) => {
         messages,
         (chunk: Chunk) => {
           for (const choice of chunk.choices) {
-            threadService.streamLastMessage(
-              messageId,
-              parentId,
-              choice.delta?.content ?? choice.message?.content ?? '',
-            )
+            const chunk = choice.delta?.content ?? choice.message?.content ?? ''
+            threadService.streamLastMessage(messageId, parentId, chunk)
             if (autoScrolling()) scrollToBottom()
           }
         },

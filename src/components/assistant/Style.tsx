@@ -19,6 +19,9 @@ export const chatBubble = `
       border: 0;
     }
   }
+  .fence-container {
+    margin-bottom: 10px;
+  }
   .cm-gap {
     display: none;
   }
