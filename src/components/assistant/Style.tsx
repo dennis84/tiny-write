@@ -22,9 +22,6 @@ export const chatBubble = `
   .fence-container {
     margin-bottom: 10px;
   }
-  .cm-gap {
-    display: none;
-  }
   pre:not(.cm-rendered) {
     background: var(--foreground-10);
     border-radius: var(--border-radius);

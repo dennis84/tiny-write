@@ -1,9 +1,9 @@
-import {createEffect, createSignal, For, Index, type JSXElement, onMount, Show} from 'solid-js'
+import {createEffect, createSignal, For, Match, onMount, Show, Switch, untrack} from 'solid-js'
 import {styled} from 'solid-styled-components'
-import markdownit from 'markdown-it'
+import markdownit, {type Token} from 'markdown-it'
 import iterator from 'markdown-it-for-inline'
 import {EditorView, type Panel, showPanel} from '@codemirror/view'
-import {EditorState} from '@codemirror/state'
+import {EditorState, Transaction} from '@codemirror/state'
 import {type Message, useState} from '@/state'
 import {getTheme} from '@/codemirror/theme'
 import {getLanguageConfig} from '@/codemirror/highlight'
@@ -16,20 +16,20 @@ import {chatBubble} from './Style'
 import {parseCodeBlockAttrs} from './util'
 import {ApplyPanel, type ApplyPanelState} from './ApplyPanel'
 import {Pagination} from './Pagination'
-import {createStore, reconcile} from 'solid-js/store'
-import {toNamespacedPath} from 'path'
+import {createStore} from 'solid-js/store'
+import {createSequentialEffect} from '@/hooks/sequential-effect'
 
 const AnswerBubble = styled('div')`
   ${chatBubble}
 `
 
-interface ResponseElement {
-  element: JSXElement
+interface TokenResult {
+  token: Token
   editorView?: EditorView
 }
 
-interface ResponseStore {
-  elements: ResponseElement[]
+interface TokenStore {
+  tokens: TokenResult[]
 }
 
 interface Props {
@@ -41,7 +41,7 @@ interface Props {
 export const MessageAnswer = (props: Props) => {
   const {configService} = useState()
   const [applyPanels, setApplyPanels] = createSignal<ApplyPanelState[]>([])
-  const [responseStore, setResponseStore] = createStore<ResponseStore>({elements: []})
+  const [tokenStore, setTokenStore] = createStore<TokenStore>({tokens: []})
 
   const md = markdownit({
     html: true,
@@ -71,48 +71,54 @@ export const MessageAnswer = (props: Props) => {
     props.onRegenerate?.(props.message.value)
   }
 
-  const renderMessage = () => {
-  }
+  const renderMessage = async (content: string) => {
+    const tokens = md.parse(content, undefined)
 
-  createEffect(() => {
-    const tokens = md.parse(props.message.value.content, undefined)
     for (let i = 0; i < tokens.length; i++) {
       const token = tokens[i]
-      let lang: string | undefined
+
       if (token.type === 'fence') {
-        let attrs: string | undefined
-
-        if (token.info) {
-          const arr = token.info.split(/(\s+)/g)
-          lang = arr[0]
-          attrs = arr.slice(2).join('')
-        }
-
-        const editorView = responseStore.elements[i]?.editorView
+        const editorView = tokenStore.tokens[i]?.editorView
         if (editorView) {
           const from = editorView.state.doc.length
           const insert = token.content.slice(from)
-          console.log('Insert: from: ' + from + ', slice: ' + insert)
-          editorView.dispatch({changes: {from, insert}})
+
+          editorView.dispatch({
+            changes: {from, insert},
+            annotations: Transaction.addToHistory.of(false),
+          })
         } else {
-          const element = <CodeFence index={i} content={token.content} lang={lang} attrs={attrs} />
-          setResponseStore('elements', i, {element})
+          setTokenStore('tokens', i, {token})
         }
       } else {
-        const html = md.renderer.render([token], md.options, {})
-        const element = <Html content={html} />
-        setResponseStore('elements', i, {element})
+        setTokenStore('tokens', i, {token})
       }
     }
-  })
+  }
 
-  const CodeFence = (p: {index: number; content: string; lang?: string; attrs?: string}) => {
+  createSequentialEffect(
+    () => props.message.value.content,
+    async (content) => {
+      await renderMessage(content)
+    },
+  )
+
+  const CodeFence = (p: {index: number; token: Token}) => {
     let ref!: HTMLDivElement
+
     onMount(() => {
+      let langStr: string | undefined
+      let attrsStr: string | undefined
+      if (p.token.info) {
+        const arr = p.token.info.split(/(\s+)/g)
+        langStr = arr[0]
+        attrsStr = arr.slice(2).join('')
+      }
+
       const theme = getTheme(configService.codeTheme.value)
-      const lang = getLanguageConfig(p.lang)
-      const doc = p.content.replace(/\n$/, '')
-      const attrs = parseCodeBlockAttrs(p.attrs ?? '')
+      const lang = getLanguageConfig(langStr)
+      const doc = p.token.content.replace(/\n$/, '')
+      const attrs = parseCodeBlockAttrs(attrsStr ?? '')
 
       const editorView = new EditorView({
         parent: ref,
@@ -127,16 +133,17 @@ export const MessageAnswer = (props: Props) => {
         ],
       })
 
-      setResponseStore('elements', p.index, {editorView})
+      untrack(() => setTokenStore('tokens', p.index, {editorView}))
     })
 
     return <div class="fence-container" ref={ref} />
   }
 
-  const Html = (p: {content: string}) => {
+  const Html = (p: {token: Token}) => {
     let ref!: HTMLDivElement
-    onMount(() => {
-      ref.innerHTML = p.content
+    createEffect(() => {
+      const html = md.renderer.render([p.token], md.options, {})
+      ref.innerHTML = html
     })
 
     return <div class="html-container" ref={ref} />
@@ -144,7 +151,18 @@ export const MessageAnswer = (props: Props) => {
 
   return (
     <AnswerBubble data-testid="answer_bubble">
-      {responseStore.elements.map((e) => e.element)}
+      <For each={tokenStore.tokens}>
+        {(element, index) => (
+          <Switch>
+            <Match when={element.token.type === 'fence'}>
+              <CodeFence index={index()} token={element.token} />
+            </Match>
+            <Match when={true}>
+              <Html token={element.token} />
+            </Match>
+          </Switch>
+        )}
+      </For>
       <ButtonGroup>
         <TooltipHelp title="Copy">
           <IconButton onClick={onCopy}>

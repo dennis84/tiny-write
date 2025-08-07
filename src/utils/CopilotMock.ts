@@ -5,8 +5,12 @@ const LOREM_IPSUM =
   'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.'
 const LOREM_IPSUM_WORDS = LOREM_IPSUM.split(' ')
 
+interface Options {
+  endlessCode?: boolean
+}
+
 export class CopilotMock {
-  static setup() {
+  static setup(options: Options = {}) {
     fetchMock.hardReset()
     const mock = fetchMock.mockGlobal()
     mock.route('end:https://github.com/login/device/code', CopilotMock.login())
@@ -28,8 +32,8 @@ export class CopilotMock {
           while (true) {
             await pause(2000)
 
-            const code = true //Math.random() > 0.8
-            const h1 = Math.random() > 0.8
+            const code = Math.random() > 0.7
+            const h1 = Math.random() > 0.9
 
             if (code) {
               enqueueMessage(controller, '\n\n')
@@ -39,6 +43,18 @@ export class CopilotMock {
               await pause(10)
             } else if (h1) {
               enqueueMessage(controller, '# ')
+            }
+
+            if (code && options.endlessCode) {
+              while (true) {
+                const newline = Math.random() > 0.8
+                const randomIndex = Math.floor(Math.random() * LOREM_IPSUM_WORDS.length)
+                enqueueMessage(
+                  controller,
+                  `${LOREM_IPSUM_WORDS[randomIndex]}${newline ? '\n' : ' '}`,
+                )
+                await pause(10)
+              }
             }
 
             const randomIndex = Math.floor(Math.random() * LOREM_IPSUM_WORDS.length)
