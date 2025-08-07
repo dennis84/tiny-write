@@ -54,31 +54,6 @@ export const codeBlock = (props: Props) => `
           border: 0;
         }
       }
-      .expand {
-        position: absolute;
-        height: 8px;
-        width: 100%;
-        bottom: -9px;
-        left: 0;
-        z-index: 1;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        cursor: var(--cursor-pointer);
-        font-size: 10px;
-        user-select: none;
-        background: var(--foreground-10);
-        border-radius: var(--border-radius);
-        color: var(--foreground-60);
-        &:hover {
-          background: var(--foreground-20);
-        }
-      }
-      @media print {
-        .expand {
-          display: none !important;
-        }
-      }
     }
     &.hidden > .cm-editor > .cm-scroller {
       display: none !important;

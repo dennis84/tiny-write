@@ -13,6 +13,7 @@ export const Variables = () => {
     const root = document.documentElement
 
     root.style.setProperty('--background', configService.theme.background)
+    root.style.setProperty('--background-80', `${configService.theme.background}cc`)
     root.style.setProperty('--background-60', `${configService.theme.background}99`)
     root.style.setProperty('--background-20', `${configService.theme.background}33`)
     root.style.setProperty('--foreground', configService.theme.foreground)

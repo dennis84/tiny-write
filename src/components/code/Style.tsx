@@ -1,5 +1,33 @@
+export const isClipped = `
+  &.is-clipped {
+    max-height: 200px;
+    @media print {
+      max-height: inherit;
+    }
+  }
+  &.is-clipped::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      to top,
+      var(--background-80) 0%,
+      #00000000 200px
+    );
+    pointer-events: none;
+    border-radius: var(--border-radius);
+    @media print {
+      display: none;
+    }
+  }
+`
+
 export const codeMirror = `
   .cm-editor {
+    ${isClipped}
     outline: none;
     font-size: var(--font-size);
     cursor: var(--cursor-text);

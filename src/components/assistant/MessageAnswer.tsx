@@ -7,6 +7,7 @@ import {EditorState, Transaction} from '@codemirror/state'
 import {type Message, useState} from '@/state'
 import {getTheme} from '@/codemirror/theme'
 import {getLanguageConfig} from '@/codemirror/highlight'
+import {clipPlugin} from '@/codemirror/clip'
 import {copy} from '@/remote/clipboard'
 import type {TreeItem} from '@/tree'
 import {ButtonGroup, IconButton} from '../Button'
@@ -124,12 +125,12 @@ export const MessageAnswer = (props: Props) => {
         parent: ref,
         doc,
         extensions: [
-          EditorView.editable.of(false),
           EditorState.readOnly.of(true),
           EditorView.lineWrapping,
           theme,
           lang.highlight(),
           copilotApply(attrs.id, attrs.range, attrs.file),
+          clipPlugin,
         ],
       })
 

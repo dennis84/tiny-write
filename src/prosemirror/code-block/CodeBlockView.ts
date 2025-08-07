@@ -17,8 +17,8 @@ import {mermaidKeywords} from '@/codemirror/mermaid'
 import {foldAll} from '@/codemirror/fold-all'
 import {copilot} from '@/codemirror/copilot'
 import {onEnterDoubleNewline} from '@/codemirror/key-bindings'
+import {clipPlugin} from '@/codemirror/clip'
 import {isTauri} from '@/env'
-import {createExpandPlugin} from './expand'
 import {createMermaidPlugin} from './mermaid-preview'
 
 export class CodeBlockView {
@@ -145,7 +145,7 @@ export class CodeBlockView {
       doc: this.node.textContent,
       extensions: [
         embeddedCodeMirrorKeymap,
-        createExpandPlugin(this),
+        clipPlugin,
         createMermaidPlugin(this),
         EditorView.updateListener.of((update) => this.forwardUpdate(update)),
         autocompletion(),

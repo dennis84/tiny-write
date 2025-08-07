@@ -1,4 +1,5 @@
 import {styled} from 'solid-styled-components'
+import {isClipped} from '../code/Style'
 
 export const chatBubble = `
   position: relative;
@@ -6,10 +7,16 @@ export const chatBubble = `
   font-size: var(--font-size);
   line-height: var(--line-height);
   .cm-editor {
+    ${isClipped}
     font-size: var(--menu-font-size);
     font-family: var(--menu-font-family);
     border-radius: var(--border-radius);
     position: relative;
+    .cm-scroller {
+      &::-webkit-scrollbar {
+        display: none;
+      }
+    }
     .cm-content {
       padding: 12px;
     }

@@ -1,0 +1,46 @@
+import {EditorView, ViewPlugin, type ViewUpdate} from '@codemirror/view'
+import {Compartment, type EditorState} from '@codemirror/state'
+
+const classCompartment = new Compartment()
+
+const getEditorClass = (state: EditorState, hasFocus: boolean) => {
+  const hasMany = state.doc.lines > 10
+  const shouldShow = hasMany && !hasFocus
+  return shouldShow ? 'is-clipped' : ''
+}
+
+const updateClass = (view: EditorView, hasFocus: boolean) => {
+  const newClass = getEditorClass(view.state, hasFocus)
+  view.dispatch({
+    effects: classCompartment.reconfigure(EditorView.editorAttributes.of({class: newClass})),
+  })
+}
+
+const lineCountViewPlugin = ViewPlugin.fromClass(
+  class {
+    constructor(view: EditorView) {
+      queueMicrotask(() => updateClass(view, view.hasFocus))
+    }
+
+    update(update: ViewUpdate) {
+      if (update.docChanged) {
+        queueMicrotask(() => updateClass(update.view, update.view.hasFocus))
+      }
+    }
+  },
+  {
+    eventHandlers: {
+      focus(_event, view) {
+        updateClass(view, true)
+      },
+      blur(_event, view) {
+        updateClass(view, false)
+      },
+    },
+  },
+)
+
+export const clipPlugin = [
+  classCompartment.of(EditorView.editorAttributes.of({class: ''})),
+  lineCountViewPlugin,
+]
