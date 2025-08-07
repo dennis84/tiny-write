@@ -25,6 +25,7 @@ export const codeMirror = `
       line-height: 1.5;
       -ms-overflow-style: none;
       scrollbar-width: none;
+      border-radius: var(--border-radius);
       &::-webkit-scrollbar {
         display: none;
       }
