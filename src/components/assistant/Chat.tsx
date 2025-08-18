@@ -174,7 +174,7 @@ export const Chat = (props: Props) => {
     </EmptyContainer>
   )
 
-  const MessageTree = (p: {id: string | undefined; childrenIds: string[]}) => (
+  const MessageTree = (p: {id?: string; childrenIds: string[]}) => (
     <Show when={threadService.getItem(p.id, p.childrenIds)}>
       {(message) => (
         <>

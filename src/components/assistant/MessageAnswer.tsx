@@ -1,4 +1,4 @@
-import {createEffect, createSignal, For, Match, onMount, Show, Switch, untrack} from 'solid-js'
+import {batch, createEffect, createSignal, For, Match, onMount, Show, Switch} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import markdownit, {type Token} from 'markdown-it'
 import iterator from 'markdown-it-for-inline'
@@ -9,7 +9,7 @@ import {getTheme} from '@/codemirror/theme'
 import {getLanguageConfig} from '@/codemirror/highlight'
 import {clipPlugin} from '@/codemirror/clip'
 import {copy} from '@/remote/clipboard'
-import type {TreeItem} from '@/tree'
+import {createTreeStore, type TreeItem} from '@/tree'
 import {ButtonGroup, IconButton} from '../Button'
 import {IconContentCopy, IconRefresh, Spinner} from '../Icon'
 import {TooltipHelp} from '../TooltipHelp'
@@ -17,20 +17,19 @@ import {chatBubble} from './Style'
 import {parseCodeBlockAttrs} from './util'
 import {ApplyPanel, type ApplyPanelState} from './ApplyPanel'
 import {Pagination} from './Pagination'
-import {createStore} from 'solid-js/store'
 import {createSequentialEffect} from '@/hooks/sequential-effect'
+import {Dynamic} from 'solid-js/web'
 
 const AnswerBubble = styled('div')`
   ${chatBubble}
 `
 
-interface TokenResult {
-  token: Token
-  editorView?: EditorView
-}
-
-interface TokenStore {
-  tokens: TokenResult[]
+export interface TokenItem {
+  id: string
+  parentId?: string
+  nodeType: string
+  openNode: Token
+  tokenIndex: number
 }
 
 interface Props {
@@ -42,7 +41,8 @@ interface Props {
 export const MessageAnswer = (props: Props) => {
   const {configService} = useState()
   const [applyPanels, setApplyPanels] = createSignal<ApplyPanelState[]>([])
-  const [tokenStore, setTokenStore] = createStore<TokenStore>({tokens: []})
+
+  const tree = createTreeStore<TokenItem>()
 
   const md = markdownit({
     html: true,
@@ -72,56 +72,67 @@ export const MessageAnswer = (props: Props) => {
     props.onRegenerate?.(props.message.value)
   }
 
-  const renderMessage = async (content: string) => {
+  const createTokenItem = (node: Token, parentId: string, tokenIndex = -1): TokenItem => ({
+    id: tokenIndex.toString(),
+    parentId,
+    nodeType: node.type.replace('_open', ''),
+    openNode: node,
+    tokenIndex,
+  })
+
+  const renderMessage = (content: string) => {
     const tokens = md.parse(content, undefined)
 
-    for (let i = 0; i < tokens.length; i++) {
-      const token = tokens[i]
+    batch(() => {
+      tree.updateAll([])
 
-      if (token.type === 'fence') {
-        const editorView = tokenStore.tokens[i]?.editorView
-        if (editorView) {
-          const from = editorView.state.doc.length
-          const insert = token.content.slice(from)
+      let parent = tree.getItem('root')
 
-          editorView.dispatch({
-            changes: {from, insert},
-            annotations: Transaction.addToHistory.of(false),
-          })
-        } else {
-          setTokenStore('tokens', i, {token})
+      tokens.forEach((token, idx) => {
+        // should not happen
+        if (!parent) return
+
+        let tmp: TokenItem
+        if (token.nesting === 1) {
+          tmp = createTokenItem(token, parent.id, idx)
+          tree.add(tmp)
+          tree.move(tmp.id, parent.id)
+          parent = tree.getItem(tmp.id)
+        } else if (token.nesting === -1) {
+          parent = tree.getItem(parent.parentId ?? 'root')
+        } else if (token.nesting === 0) {
+          tree.add(createTokenItem(token, parent.id, idx))
         }
-      } else {
-        setTokenStore('tokens', i, {token})
-      }
-    }
+      })
+    })
   }
 
   createSequentialEffect(
     () => props.message.value.content,
-    async (content) => {
-      await renderMessage(content)
+    (content) => {
+      renderMessage(content)
     },
   )
 
-  const CodeFence = (p: {index: number; token: Token}) => {
+  const CodeFence = (p: {item: TokenItem}) => {
     let ref!: HTMLDivElement
+    const [editorView, setEditorView] = createSignal<EditorView>()
 
     onMount(() => {
       let langStr: string | undefined
       let attrsStr: string | undefined
-      if (p.token.info) {
-        const arr = p.token.info.split(/(\s+)/g)
+      if (p.item.openNode.info) {
+        const arr = p.item.openNode.info.split(/(\s+)/g)
         langStr = arr[0]
         attrsStr = arr.slice(2).join('')
       }
 
       const theme = getTheme(configService.codeTheme.value)
       const lang = getLanguageConfig(langStr)
-      const doc = p.token.content.replace(/\n$/, '')
+      const doc = p.item.openNode.content.replace(/\n$/, '')
       const attrs = parseCodeBlockAttrs(attrsStr ?? '')
 
-      const editorView = new EditorView({
+      const view = new EditorView({
         parent: ref,
         doc,
         extensions: [
@@ -134,36 +145,78 @@ export const MessageAnswer = (props: Props) => {
         ],
       })
 
-      untrack(() => setTokenStore('tokens', p.index, {editorView}))
+      setEditorView(view)
+    })
+
+    createEffect(() => {
+      const view = editorView()
+      if (!view) return
+
+      const from = view.state.doc.length
+      const insert = p.item.openNode.content.replace(/\n$/, '').slice(from)
+
+      view.dispatch({
+        changes: {from, insert},
+        annotations: Transaction.addToHistory.of(false),
+      })
     })
 
     return <div class="fence-container" ref={ref} />
   }
 
-  const Html = (p: {token: Token}) => {
-    let ref!: HTMLDivElement
+  const Inline = (p: {item: TokenItem}) => {
+    let ref!: HTMLElement
+
     createEffect(() => {
-      const html = md.renderer.render([p.token], md.options, {})
+      const html = md.renderer.render([p.item.openNode], md.options, {})
       ref.innerHTML = html
     })
 
-    return <div class="html-container" ref={ref} />
+    return <span ref={ref} />
+  }
+
+  const MarkdownTree = (p: {childrenIds: string[]}) => {
+    return (
+      <For each={p.childrenIds}>
+        {(id) => (
+          <Show when={tree.getItem(id)}>
+            {(item) => (
+              <Switch>
+                <Match when={item().value.nodeType === 'fence'}>
+                  <CodeFence item={item().value} />
+                </Match>
+                <Match when={item().value.nodeType === 'inline'}>
+                  <Inline item={item().value} />
+                </Match>
+                <Match when={true}>
+                  <Node node={item()} />
+                </Match>
+              </Switch>
+            )}
+          </Show>
+        )}
+      </For>
+    )
+  }
+
+  const Node = (p: {node: TreeItem<TokenItem>}) => {
+    return (
+      <Show
+        when={p.node.value.openNode}
+        fallback={<MarkdownTree childrenIds={p.node.childrenIds} />}
+      >
+        {(n) => (
+          <Dynamic component={n().tag}>
+            <MarkdownTree childrenIds={p.node.childrenIds} />
+          </Dynamic>
+        )}
+      </Show>
+    )
   }
 
   return (
     <AnswerBubble data-testid="answer_bubble">
-      <For each={tokenStore.tokens}>
-        {(element, index) => (
-          <Switch>
-            <Match when={element.token.type === 'fence'}>
-              <CodeFence index={index()} token={element.token} />
-            </Match>
-            <Match when={true}>
-              <Html token={element.token} />
-            </Match>
-          </Switch>
-        )}
-      </For>
+      <MarkdownTree childrenIds={tree.rootItemIds} />
       <ButtonGroup>
         <TooltipHelp title="Copy">
           <IconButton onClick={onCopy}>
