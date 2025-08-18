@@ -1,11 +1,11 @@
+import {formatDate, isToday} from 'date-fns'
 import {createSignal, For, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
-import {formatDate, isToday} from 'date-fns'
 import {type Thread, useState} from '@/state'
 import {Button, ButtonGroup} from '../Button'
 import {IconAdd, IconDelete, IconEdit, IconHistory, IconMoreHoriz} from '../Icon'
-import {Tooltip, TooltipButton} from '../Tooltip'
 import {Label} from '../menu/Style'
+import {Tooltip, TooltipButton} from '../Tooltip'
 
 const TooltipFooter = styled('div')`
   margin-top: 10px;

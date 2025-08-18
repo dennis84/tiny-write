@@ -110,7 +110,7 @@
     "build": "vite build",
     "tauri": "tauri",
     "test": "cross-env CI=true vitest && cross-env CI=true npx playwright test",
-    "lint": "biome lint"
+    "lint": "biome ci"
   },
   "engines": {
     "node": ">=20.0.0"

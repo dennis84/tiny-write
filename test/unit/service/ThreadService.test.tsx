@@ -1,13 +1,13 @@
+import {type EditorState, Text} from '@codemirror/state'
+import type {EditorView} from '@codemirror/view'
+import {createStore} from 'solid-js/store'
 import {beforeEach, expect, test, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
-import {createStore} from 'solid-js/store'
-import {createState, type File, type Message, Page} from '@/state'
-import {ThreadService} from '@/services/ThreadService'
 import type {ChatMessageTextContent, CopilotService} from '@/services/CopilotService'
 import type {FileService} from '@/services/FileService'
+import {ThreadService} from '@/services/ThreadService'
+import {createState, type File, type Message, Page} from '@/state'
 import {createYUpdate} from '../util/codemirror-util'
-import type {EditorView} from '@codemirror/view'
-import {type EditorState, Text} from '@codemirror/state'
 import {expectTree} from '../util/tree'
 
 beforeEach(() => {

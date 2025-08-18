@@ -1,6 +1,6 @@
 import {expect, test} from '@playwright/test'
-import {setupDB} from './mock'
 import {delay} from '../utils'
+import {setupDB} from './mock'
 
 test('threads', async ({page}) => {
   await setupDB(page, {

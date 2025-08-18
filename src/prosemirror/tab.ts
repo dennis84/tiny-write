@@ -1,8 +1,8 @@
+import {keymap} from 'prosemirror-keymap'
+import type {Schema} from 'prosemirror-model'
+import {liftListItem, sinkListItem} from 'prosemirror-schema-list'
 import type {EditorState, Transaction} from 'prosemirror-state'
 import type {EditorView} from 'prosemirror-view'
-import type {Schema} from 'prosemirror-model'
-import {sinkListItem, liftListItem} from 'prosemirror-schema-list'
-import {keymap} from 'prosemirror-keymap'
 
 const onTab =
   (schema: Schema) =>

@@ -1,5 +1,5 @@
-import {useState} from '@/state'
 import {styled} from 'solid-styled-components'
+import {useState} from '@/state'
 
 const STEPS = [
   [1.5, 5],

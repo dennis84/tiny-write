@@ -1,15 +1,15 @@
-import {createEffect, createSignal, onMount, Show} from 'solid-js'
-import {styled} from 'solid-styled-components'
 import type {EditorView} from '@codemirror/view'
-import * as Y from 'yjs'
+import {createEffect, createSignal, onMount, Show} from 'solid-js'
+import {Portal} from 'solid-js/web'
+import {styled} from 'solid-styled-components'
 import {v4 as uuidv4} from 'uuid'
-import {type File, useState} from '@/state'
+import * as Y from 'yjs'
 import {useOpen} from '@/hooks/open'
 import {copy} from '@/remote/clipboard'
-import {Portal} from 'solid-js/web'
-import {TooltipHelp} from '../TooltipHelp'
+import {type File, useState} from '@/state'
 import {IconButton} from '../Button'
 import {IconAdd, IconContentCopy, IconMerge} from '../Icon'
+import {TooltipHelp} from '../TooltipHelp'
 
 const ApplyPanelEl = styled('div')`
   position: ${(props: any) => (props.hasTitle ? 'static' : 'absolute')};

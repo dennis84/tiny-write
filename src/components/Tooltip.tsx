@@ -1,17 +1,17 @@
-import {type JSX, onCleanup, onMount, Show} from 'solid-js'
-import {createMutable, unwrap} from 'solid-js/store'
-import {styled} from 'solid-styled-components'
 import {
   arrow,
   autoUpdate,
   computePosition,
   flip,
   offset,
-  shift,
-  size,
   type Placement,
   type ReferenceElement,
+  shift,
+  size,
 } from '@floating-ui/dom'
+import {type JSX, onCleanup, onMount, Show} from 'solid-js'
+import {createMutable, unwrap} from 'solid-js/store'
+import {styled} from 'solid-styled-components'
 
 export const TooltipContainer = styled('div')`
   position: absolute;

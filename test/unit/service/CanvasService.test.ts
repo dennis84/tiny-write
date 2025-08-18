@@ -1,27 +1,27 @@
+import {Box, Vector} from '@flatten-js/core'
+import type {EditorView} from 'prosemirror-view'
+import {createStore} from 'solid-js/store'
 import {beforeEach, expect, test, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
-import {createStore} from 'solid-js/store'
-import type {EditorView} from 'prosemirror-view'
-import {Box, Vector} from '@flatten-js/core'
+import {DB} from '@/db'
+import {CanvasService} from '@/services/CanvasService'
+import {CollabService} from '@/services/CollabService'
+import {FileService} from '@/services/FileService'
+import type {SelectService} from '@/services/SelectService'
 import {
   type Canvas,
   type CanvasEditorElement,
-  type CanvasLinkElement,
   type CanvasImageElement,
+  type CanvasLinkElement,
+  type CanvasVideoElement,
+  createState,
   EdgeType,
   ElementType,
-  createState,
-  type CanvasVideoElement,
   Page,
 } from '@/state'
-import {DB} from '@/db'
 import {BoxUtil} from '@/utils/BoxUtil'
-import {CanvasService} from '@/services/CanvasService'
-import {FileService} from '@/services/FileService'
-import type {SelectService} from '@/services/SelectService'
-import {CollabService} from '@/services/CollabService'
-import {createCollabMock} from '../util/util'
 import {createYUpdate} from '../util/prosemirror-util'
+import {createCollabMock} from '../util/util'
 
 vi.mock('mermaid', () => ({}))
 vi.mock('@/db', () => ({DB: mock()}))

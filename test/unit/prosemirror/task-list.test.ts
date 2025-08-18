@@ -1,5 +1,5 @@
-import {expect, test} from 'vitest'
 import markdownit from 'markdown-it'
+import {expect, test} from 'vitest'
 import {taskList} from '@/prosemirror/task-list/markdown'
 
 const md = markdownit({html: false}).use(taskList)

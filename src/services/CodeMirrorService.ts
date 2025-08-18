@@ -1,22 +1,10 @@
-import type {Store} from 'solid-js/store'
-import {
-  EditorView,
-  drawSelection,
-  highlightActiveLine,
-  highlightActiveLineGutter,
-  hoverTooltip,
-  keymap,
-  lineNumbers,
-  tooltips,
-} from '@codemirror/view'
-import {Compartment, EditorState, type Extension} from '@codemirror/state'
-import {defaultKeymap, indentWithTab} from '@codemirror/commands'
 import {
   autocompletion,
   closeBrackets,
   closeBracketsKeymap,
   completionKeymap,
 } from '@codemirror/autocomplete'
+import {defaultKeymap, indentWithTab} from '@codemirror/commands'
 import {
   bracketMatching,
   foldGutter,
@@ -25,16 +13,28 @@ import {
   indentUnit,
 } from '@codemirror/language'
 import {linter, setDiagnostics} from '@codemirror/lint'
-import {getTheme} from '@/codemirror/theme'
-import {getLanguageConfig, type LangConfig} from '@/codemirror/highlight'
+import {Compartment, EditorState, type Extension} from '@codemirror/state'
+import {
+  drawSelection,
+  EditorView,
+  highlightActiveLine,
+  highlightActiveLineGutter,
+  hoverTooltip,
+  keymap,
+  lineNumbers,
+  tooltips,
+} from '@codemirror/view'
+import type {Store} from 'solid-js/store'
 import {findWords, tabCompletionKeymap} from '@/codemirror/completion'
-import {mermaidKeywords} from '@/codemirror/mermaid'
+import {getLanguageConfig, type LangConfig} from '@/codemirror/highlight'
 import {lspCompletionSource} from '@/codemirror/lsp-completion'
 import {lspHoverSource} from '@/codemirror/lsp-hover'
-import {Page, type PrettierConfig, type State} from '@/state'
+import {mermaidKeywords} from '@/codemirror/mermaid'
+import {getTheme} from '@/codemirror/theme'
 import {isTauri} from '@/env'
-import type {ConfigService} from './ConfigService'
+import {Page, type PrettierConfig, type State} from '@/state'
 import type {AppService} from './AppService'
+import type {ConfigService} from './ConfigService'
 import type {PrettierService} from './PrettierService'
 import type {ToastService} from './ToastService'
 

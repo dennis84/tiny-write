@@ -1,6 +1,6 @@
 import {expect, test} from '@playwright/test'
-import {delay, lineTextEq} from '../utils'
 import {v4 as uuidv4} from 'uuid'
+import {delay, lineTextEq} from '../utils'
 
 test('create room', async ({page, browser}) => {
   await page.goto(`/`)

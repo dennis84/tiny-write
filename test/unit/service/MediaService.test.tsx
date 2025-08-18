@@ -1,14 +1,14 @@
-import {beforeEach, expect, test, vi} from 'vitest'
-import {mock} from 'vitest-mock-extended'
+import {render, waitFor} from '@solidjs/testing-library'
 import {clearMocks, mockConvertFileSrc, mockWindows} from '@tauri-apps/api/mocks'
 import {fromBase64} from 'js-base64'
-import {render, waitFor} from '@solidjs/testing-library'
-import {DropTarget, MediaService} from '@/services/MediaService'
-import {createCtrl} from '@/services'
-import {type CanvasEditorElement, type CanvasImageElement, ElementType, createState} from '@/state'
+import {beforeEach, expect, test, vi} from 'vitest'
+import {mock} from 'vitest-mock-extended'
 import {Main} from '@/components/Main'
-import {createIpcMock, stubLocation} from '../util/util'
+import {createCtrl} from '@/services'
+import {DropTarget, MediaService} from '@/services/MediaService'
+import {type CanvasEditorElement, type CanvasImageElement, createState, ElementType} from '@/state'
 import {createYUpdate} from '../util/prosemirror-util'
+import {createIpcMock, stubLocation} from '../util/util'
 
 document.elementFromPoint = () => null
 

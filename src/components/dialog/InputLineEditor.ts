@@ -1,7 +1,7 @@
-import {EditorView, crosshairCursor, drawSelection, keymap} from '@codemirror/view'
-import type {Extension} from '@codemirror/state'
-import {standardKeymap} from '@codemirror/commands'
 import {acceptCompletion, autocompletion, moveCompletionSelection} from '@codemirror/autocomplete'
+import {standardKeymap} from '@codemirror/commands'
+import type {Extension} from '@codemirror/state'
+import {crosshairCursor, drawSelection, EditorView, keymap} from '@codemirror/view'
 
 interface Props {
   doc: string

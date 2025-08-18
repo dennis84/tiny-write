@@ -1,8 +1,8 @@
-import {onMount} from 'solid-js'
 import {useLocation} from '@solidjs/router'
-import {type LocationState, useState} from '@/state'
-import {info} from '@/remote/log'
+import {onMount} from 'solid-js'
 import {useOpen} from '@/hooks/open'
+import {info} from '@/remote/log'
+import {type LocationState, useState} from '@/state'
 
 export const Redirect = () => {
   const {store, fileService} = useState()

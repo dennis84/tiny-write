@@ -1,9 +1,9 @@
 import {Show} from 'solid-js'
 import {v4 as uuidv4} from 'uuid'
-import {type Message, MessageType} from '@/state'
-import {useCurrentFile} from '@/hooks/current-file'
 import {IconCodeBlocks} from '@/components/Icon'
 import {TooltipButton} from '@/components/Tooltip'
+import {useCurrentFile} from '@/hooks/current-file'
+import {type Message, MessageType} from '@/state'
 import {createCodeFence} from '../util'
 
 interface Props {

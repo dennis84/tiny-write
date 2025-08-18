@@ -1,12 +1,12 @@
+import {render, waitFor} from '@solidjs/testing-library'
+import {mockWindows} from '@tauri-apps/api/mocks'
 import {beforeEach, expect, test, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
-import {render, waitFor} from '@solidjs/testing-library'
-import {createState} from '@/state'
+import {Main} from '@/components/Main'
 import type {DB} from '@/db'
 import {createCtrl} from '@/services'
-import {Main} from '@/components/Main'
+import {createState} from '@/state'
 import {createIpcMock, stubLocation} from '../util/util'
-import {mockWindows} from '@tauri-apps/api/mocks'
 
 vi.mock('@/db', () => ({DB: mock<DB>()}))
 

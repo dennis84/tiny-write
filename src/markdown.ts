@@ -1,6 +1,6 @@
 import markdownit from 'markdown-it'
 import container from 'markdown-it-container'
-import {MarkdownSerializer, MarkdownParser, defaultMarkdownSerializer} from 'prosemirror-markdown'
+import {defaultMarkdownSerializer, MarkdownParser, MarkdownSerializer} from 'prosemirror-markdown'
 import type {Node, Schema} from 'prosemirror-model'
 import type {EditorState} from 'prosemirror-state'
 import {taskList} from '@/prosemirror/task-list/markdown'

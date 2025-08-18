@@ -1,7 +1,7 @@
 import {createEffect, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
-import {useState} from '@/state'
 import {ToastService} from '@/services/ToastService'
+import {useState} from '@/state'
 import {Button} from './Button'
 
 const ToastContainer = styled('div')`

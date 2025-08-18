@@ -1,11 +1,11 @@
 import {onCleanup, onMount} from 'solid-js'
 import {keyName} from 'w3c-keyname'
-import {isCodeElement, isEditorElement, Page, useState} from '@/state'
 import {isTauri, mod} from '@/env'
-import {saveFile} from '@/remote/editor'
-import {quit} from '@/remote/app'
-import {lspGoto} from '@/remote/lsp'
 import {useOpen} from '@/hooks/open'
+import {quit} from '@/remote/app'
+import {saveFile} from '@/remote/editor'
+import {lspGoto} from '@/remote/lsp'
+import {isCodeElement, isEditorElement, Page, useState} from '@/state'
 
 export const Keymap = () => {
   const {

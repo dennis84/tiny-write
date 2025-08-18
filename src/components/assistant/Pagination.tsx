@@ -1,8 +1,8 @@
 import {Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {useState} from '@/state'
-import {IconChevronLeft, IconChevronRight} from '../Icon'
 import {IconButton} from '../Button'
+import {IconChevronLeft, IconChevronRight} from '../Icon'
 import {itemCss} from '../menu/Style'
 
 const PaginationContainer = styled('div')`

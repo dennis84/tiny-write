@@ -1,11 +1,11 @@
 import type {RouteSectionProps} from '@solidjs/router'
 import {onMount, Show} from 'solid-js'
-import {useState} from '@/state'
 import {info} from '@/remote/log'
+import {useState} from '@/state'
 import {locationToString} from '@/utils/debug'
+import {Canvas} from '../canvas/Canvas'
 import {Loading} from './Loading'
 import {Title} from './Title'
-import {Canvas} from '../canvas/Canvas'
 
 export const CanvasPage = (props: RouteSectionProps) => {
   const OpenCanvas = () => {

@@ -1,9 +1,9 @@
-import * as Y from 'yjs'
-import type {WebsocketProvider} from 'y-websocket'
-import type {YMultiDocUndoManager} from 'y-utility/y-multidoc-undomanager'
+import {mockIPC} from '@tauri-apps/api/mocks'
 import {expect, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
-import {mockIPC} from '@tauri-apps/api/mocks'
+import type {YMultiDocUndoManager} from 'y-utility/y-multidoc-undomanager'
+import type {WebsocketProvider} from 'y-websocket'
+import * as Y from 'yjs'
 import type {Collab} from '@/state'
 
 export function expectToBeDefined<T>(value: T | undefined): asserts value is T {

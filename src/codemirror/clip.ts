@@ -1,5 +1,5 @@
-import {EditorView, ViewPlugin, type ViewUpdate} from '@codemirror/view'
 import {Compartment, type EditorState} from '@codemirror/state'
+import {EditorView, ViewPlugin, type ViewUpdate} from '@codemirror/view'
 
 const classCompartment = new Compartment()
 

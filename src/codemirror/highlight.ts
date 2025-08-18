@@ -1,31 +1,31 @@
+import {cpp} from '@codemirror/lang-cpp'
+import {css} from '@codemirror/lang-css'
+import {html} from '@codemirror/lang-html'
+import {java} from '@codemirror/lang-java'
+import {javascript} from '@codemirror/lang-javascript'
+import {json} from '@codemirror/lang-json'
+import {markdown} from '@codemirror/lang-markdown'
+import {php} from '@codemirror/lang-php'
+import {python} from '@codemirror/lang-python'
+import {rust} from '@codemirror/lang-rust'
+import {sql} from '@codemirror/lang-sql'
+import {xml} from '@codemirror/lang-xml'
 import {
-  StreamLanguage,
   LanguageSupport,
+  StreamLanguage,
   type StreamParser,
   type StringStream,
 } from '@codemirror/language'
-import {haskell} from '@codemirror/legacy-modes/mode/haskell'
 import {clojure} from '@codemirror/legacy-modes/mode/clojure'
 import {erlang} from '@codemirror/legacy-modes/mode/erlang'
+import {go} from '@codemirror/legacy-modes/mode/go'
 import {groovy} from '@codemirror/legacy-modes/mode/groovy'
+import {haskell} from '@codemirror/legacy-modes/mode/haskell'
+import {lua} from '@codemirror/legacy-modes/mode/lua'
 import {ruby} from '@codemirror/legacy-modes/mode/ruby'
 import {shell} from '@codemirror/legacy-modes/mode/shell'
-import {yaml} from '@codemirror/legacy-modes/mode/yaml'
-import {go} from '@codemirror/legacy-modes/mode/go'
 import {toml} from '@codemirror/legacy-modes/mode/toml'
-import {lua} from '@codemirror/legacy-modes/mode/lua'
-import {javascript} from '@codemirror/lang-javascript'
-import {java} from '@codemirror/lang-java'
-import {rust} from '@codemirror/lang-rust'
-import {sql} from '@codemirror/lang-sql'
-import {json} from '@codemirror/lang-json'
-import {python} from '@codemirror/lang-python'
-import {html} from '@codemirror/lang-html'
-import {css} from '@codemirror/lang-css'
-import {cpp} from '@codemirror/lang-cpp'
-import {markdown} from '@codemirror/lang-markdown'
-import {xml} from '@codemirror/lang-xml'
-import {php} from '@codemirror/lang-php'
+import {yaml} from '@codemirror/legacy-modes/mode/yaml'
 
 const langSupport = (l: StreamParser<unknown>) => new LanguageSupport(StreamLanguage.define(l))
 

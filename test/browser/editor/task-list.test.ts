@@ -1,4 +1,4 @@
-import {test, expect} from '@playwright/test'
+import {expect, test} from '@playwright/test'
 import {delay} from '../utils'
 
 const getItem = (listN: number, taskN: number) =>

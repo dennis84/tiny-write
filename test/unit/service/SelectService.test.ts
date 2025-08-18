@@ -1,8 +1,8 @@
-import {vi, test, expect} from 'vitest'
-import {schema} from 'prosemirror-markdown'
-import {EditorView} from 'prosemirror-view'
-import {EditorState} from 'prosemirror-state'
 import {Box} from '@flatten-js/core'
+import {schema} from 'prosemirror-markdown'
+import {EditorState} from 'prosemirror-state'
+import {EditorView} from 'prosemirror-view'
+import {expect, test, vi} from 'vitest'
 import {SelectService} from '@/services/SelectService'
 
 test('selectBox', () => {

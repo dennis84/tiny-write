@@ -1,5 +1,5 @@
-import type {InputLineConfig} from '@/components/dialog/InputLine'
 import {createSignal} from 'solid-js'
+import type {InputLineConfig} from '@/components/dialog/InputLine'
 
 export class InputLineService {
   private inputLineSignal = createSignal<InputLineConfig>()

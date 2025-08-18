@@ -1,5 +1,5 @@
-import {onCleanup, onMount} from 'solid-js'
 import {getCurrentWindow} from '@tauri-apps/api/window'
+import {onCleanup, onMount} from 'solid-js'
 import {isTauri} from '@/env'
 import {useState} from '@/state'
 

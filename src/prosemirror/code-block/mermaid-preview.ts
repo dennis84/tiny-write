@@ -1,5 +1,5 @@
-import {type EditorView, ViewPlugin, type ViewUpdate} from '@codemirror/view'
 import {language} from '@codemirror/language'
+import {type EditorView, ViewPlugin, type ViewUpdate} from '@codemirror/view'
 import mermaid from 'mermaid'
 import type {CodeBlockView} from './CodeBlockView'
 

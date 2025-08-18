@@ -1,13 +1,13 @@
-import {createEffect, createSignal, For, onMount} from 'solid-js'
 import {useLocation} from '@solidjs/router'
-import {styled} from 'solid-styled-components'
-import {type DirEntry, readDir} from '@tauri-apps/plugin-fs'
 import {homeDir} from '@tauri-apps/api/path'
-import {useState} from '@/state'
-import {resolvePath, toRelativePath} from '@/remote/editor'
+import {type DirEntry, readDir} from '@tauri-apps/plugin-fs'
+import {createEffect, createSignal, For, onMount} from 'solid-js'
+import {styled} from 'solid-styled-components'
 import {useOpen} from '@/hooks/open'
-import {Content, Scroll} from '../Layout'
+import {resolvePath, toRelativePath} from '@/remote/editor'
+import {useState} from '@/state'
 import {IconDescription, IconFolder, IconFolderOpen} from '../Icon'
+import {Content, Scroll} from '../Layout'
 
 const CurrentPath = styled('div')`
   display: flex;

@@ -1,6 +1,6 @@
-import {expect, test} from 'vitest'
-import {createEffect} from 'solid-js'
 import {testEffect} from '@solidjs/testing-library'
+import {createEffect} from 'solid-js'
+import {expect, test} from 'vitest'
 import {createTreeStore} from '@/tree'
 import {expectTree} from './util/tree'
 

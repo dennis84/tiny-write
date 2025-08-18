@@ -1,10 +1,14 @@
-import {type SetStoreFunction, type Store, unwrap} from 'solid-js/store'
-import {EditorView, type ViewUpdate} from '@codemirror/view'
 import {getChunks, unifiedMergeView} from '@codemirror/merge'
-import type * as Y from 'yjs'
-import {yCollab, ySyncFacet} from 'y-codemirror.next'
-import {debounce} from 'throttle-debounce'
+import {EditorView, type ViewUpdate} from '@codemirror/view'
 import {indentationMarkers} from '@replit/codemirror-indentation-markers'
+import {type SetStoreFunction, type Store, unwrap} from 'solid-js/store'
+import {debounce} from 'throttle-debounce'
+import {yCollab, ySyncFacet} from 'y-codemirror.next'
+import type * as Y from 'yjs'
+import {copilot} from '@/codemirror/copilot'
+import {isTauri} from '@/env'
+import {deleteText, insertText, writeFile} from '@/remote/editor'
+import {debug, info} from '@/remote/log'
 import {
   type File,
   type MergeState,
@@ -13,16 +17,12 @@ import {
   type State,
   type VisualPositionRange,
 } from '@/state'
-import {copilot} from '@/codemirror/copilot'
-import {deleteText, insertText, writeFile} from '@/remote/editor'
-import {debug, info} from '@/remote/log'
-import {isTauri} from '@/env'
-import {FileService} from './FileService'
-import {CollabService} from './CollabService'
 import type {AppService} from './AppService'
 import {CodeMirrorService} from './CodeMirrorService'
-import type {PrettierService} from './PrettierService'
+import {CollabService} from './CollabService'
 import type {ConfigService} from './ConfigService'
+import {FileService} from './FileService'
+import type {PrettierService} from './PrettierService'
 
 export interface OpenFile {
   id: string

@@ -1,12 +1,12 @@
 import {createEffect, createSignal, onCleanup, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {isTest} from '@/env'
-import {useState} from '@/state'
 import {copy} from '@/remote/clipboard'
 import type {CopilotSignIn} from '@/remote/copilot'
-import {Label, Link, Note, Sub, Text} from './Style'
-import {IconCheck, IconContentCopy, IconOpenInNew, IconToggleOff, IconToggleOn} from '../Icon'
+import {useState} from '@/state'
 import {IconButton} from '../Button'
+import {IconCheck, IconContentCopy, IconOpenInNew, IconToggleOff, IconToggleOn} from '../Icon'
+import {Label, Link, Note, Sub, Text} from './Style'
 
 const UserCode = styled('code')`
   margin-left: 10px;

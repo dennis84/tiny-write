@@ -1,10 +1,10 @@
 import {Show} from 'solid-js'
-import {type File, Page, type PrettierConfig, useState} from '@/state'
 import {ButtonGroup, ButtonPrimary} from '@/components/Button'
+import {type File, Page, type PrettierConfig, useState} from '@/state'
 import {DrawerContent} from '../Drawer'
-import {Label, Link, Sub, Text} from './Style'
 import {MenuDrawer} from './Menu'
 import {MenuNavbar} from './Navbar'
+import {Label, Link, Sub, Text} from './Style'
 
 export const CodeFormat = () => {
   const {store, configService, codeService, canvasService, fileService} = useState()

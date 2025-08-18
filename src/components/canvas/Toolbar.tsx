@@ -1,19 +1,9 @@
-import {createEffect, createSignal, Show} from 'solid-js'
-import {arrow, computePosition, flip, offset, shift} from '@floating-ui/dom'
-import {v4 as uuidv4} from 'uuid'
 import {Box} from '@flatten-js/core'
-import {
-  type CanvasBoxElement,
-  type CanvasElement,
-  isCodeElement,
-  isEditorElement,
-  MessageType,
-  useState,
-} from '@/state'
-import {useOpen} from '@/hooks/open'
-import {BoxUtil} from '@/utils/BoxUtil'
-import {VecUtil} from '@/utils/VecUtil'
+import {arrow, computePosition, flip, offset, shift} from '@floating-ui/dom'
+import {createEffect, createSignal, Show} from 'solid-js'
+import {v4 as uuidv4} from 'uuid'
 import {getLanguageNames} from '@/codemirror/highlight'
+import {createCodeFence} from '@/components/assistant/util'
 import {
   IconAdjust,
   IconAiAssistant,
@@ -22,8 +12,18 @@ import {
   IconOpenInFull,
   IconPrettier,
 } from '@/components/Icon'
-import {createCodeFence} from '@/components/assistant/util'
 import {TooltipArrow, TooltipButton, TooltipContainer} from '@/components/Tooltip'
+import {useOpen} from '@/hooks/open'
+import {
+  type CanvasBoxElement,
+  type CanvasElement,
+  isCodeElement,
+  isEditorElement,
+  MessageType,
+  useState,
+} from '@/state'
+import {BoxUtil} from '@/utils/BoxUtil'
+import {VecUtil} from '@/utils/VecUtil'
 
 export const Toolbar = () => {
   let tooltipRef!: HTMLDivElement

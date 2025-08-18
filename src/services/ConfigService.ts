@@ -1,10 +1,10 @@
 import type {SetStoreFunction, Store} from 'solid-js/store'
 import {debounce} from 'throttle-debounce'
-import type {Config, State} from '@/state'
-import {setAlwaysOnTop} from '@/remote/app'
-import {info} from '@/remote/log'
 import {DB} from '@/db'
 import {isDark} from '@/env'
+import {setAlwaysOnTop} from '@/remote/app'
+import {info} from '@/remote/log'
+import type {Config, State} from '@/state'
 import type {CollabService} from './CollabService'
 
 export interface Font {

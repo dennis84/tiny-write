@@ -1,8 +1,4 @@
 import {type JSX, Show} from 'solid-js'
-import {Page, useState} from '@/state'
-import {isTauri, isMac, mod, shortHash, version, VERSION_URL, isDev} from '@/env'
-import {quit} from '@/remote/app'
-import {MenuId} from '@/services/MenuService'
 import {
   IconAi,
   IconAiAssistant,
@@ -14,23 +10,27 @@ import {
   IconSpellcheck,
   IconVerticalAlignCenter,
 } from '@/components/Icon'
+import {isDev, isMac, isTauri, mod, shortHash, VERSION_URL, version} from '@/env'
+import {quit} from '@/remote/app'
+import {MenuId} from '@/services/MenuService'
+import {Page, useState} from '@/state'
+import {ChatDrawer} from '../assistant/ChatDrawer'
 import {Drawer, DrawerContent} from '../Drawer'
 import {FULL_WIDTH} from '../Layout'
-import {Bin} from './Bin'
-import {CodeFormat} from './CodeFormat'
-import {Appearance} from './Appearance'
-import {ChangeSet} from './ChangeSet'
-import {Help} from './Help'
 import {AiConfig} from './AiConfig'
-import {SubmenuEditor} from './SubmenuEditor'
-import {SubmenuCanvas} from './SubmenuCanvas'
-import {SubmenuEdit} from './SubmenuEdit'
-import {SubmenuCollab} from './SubmenuCollab'
-import {SubmenuTree} from './SubmenuTree'
-import {SubmenuCode} from './SubmenuCode'
-import {Container, Keys, Label, Link, Sub} from './Style'
+import {Appearance} from './Appearance'
+import {Bin} from './Bin'
+import {ChangeSet} from './ChangeSet'
+import {CodeFormat} from './CodeFormat'
+import {Help} from './Help'
 import {MenuNavbar} from './Navbar'
-import {ChatDrawer} from '../assistant/ChatDrawer'
+import {Container, Keys, Label, Link, Sub} from './Style'
+import {SubmenuCanvas} from './SubmenuCanvas'
+import {SubmenuCode} from './SubmenuCode'
+import {SubmenuCollab} from './SubmenuCollab'
+import {SubmenuEdit} from './SubmenuEdit'
+import {SubmenuEditor} from './SubmenuEditor'
+import {SubmenuTree} from './SubmenuTree'
 
 export const MenuDrawer = ({children}: {children: JSX.Element}) => {
   const {menuService, fileService} = useState()

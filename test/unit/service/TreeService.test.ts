@@ -1,10 +1,10 @@
+import {createStore} from 'solid-js/store'
 import {beforeEach, expect, test, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
-import {createStore} from 'solid-js/store'
-import {TreeService} from '@/services/TreeService'
-import {type Canvas, ElementType, type File, createState} from '@/state'
-import type {FileService} from '@/services/FileService'
 import type {CanvasService} from '@/services/CanvasService'
+import type {FileService} from '@/services/FileService'
+import {TreeService} from '@/services/TreeService'
+import {type Canvas, createState, ElementType, type File} from '@/state'
 import {expectTree} from '../util/tree'
 
 beforeEach(() => {

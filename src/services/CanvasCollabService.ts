@@ -1,6 +1,6 @@
 import {type Store, unwrap} from 'solid-js/store'
-import * as Y from 'yjs'
 import {throttle} from 'throttle-debounce'
+import * as Y from 'yjs'
 import type {State} from '@/state'
 import type {CanvasService} from './CanvasService'
 import type {CollabService} from './CollabService'

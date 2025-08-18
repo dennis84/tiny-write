@@ -1,7 +1,7 @@
-import {type EditorState, Selection} from 'prosemirror-state'
-import type {DOMOutputSpec, Schema} from 'prosemirror-model'
 import {InputRule, inputRules} from 'prosemirror-inputrules'
 import {keymap} from 'prosemirror-keymap'
+import type {DOMOutputSpec, Schema} from 'prosemirror-model'
+import {type EditorState, Selection} from 'prosemirror-state'
 import {
   addRowAfter,
   deleteRow,

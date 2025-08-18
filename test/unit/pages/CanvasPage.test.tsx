@@ -1,10 +1,10 @@
+import {render, waitFor} from '@solidjs/testing-library'
 import {expect, test, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
-import {render, waitFor} from '@solidjs/testing-library'
-import {type Canvas, createState, Page} from '@/state'
+import {Main} from '@/components/Main'
 import type {DB} from '@/db'
 import {createCtrl} from '@/services'
-import {Main} from '@/components/Main'
+import {type Canvas, createState, Page} from '@/state'
 
 vi.mock('@/db', () => ({DB: mock<DB>()}))
 

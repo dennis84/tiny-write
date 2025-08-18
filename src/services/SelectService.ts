@@ -1,6 +1,6 @@
-import type {EditorView} from 'prosemirror-view'
-import {TextSelection} from 'prosemirror-state'
 import type {Box} from '@flatten-js/core'
+import {TextSelection} from 'prosemirror-state'
+import type {EditorView} from 'prosemirror-view'
 
 interface Position {
   top: number

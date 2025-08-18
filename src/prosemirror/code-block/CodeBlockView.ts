@@ -1,24 +1,24 @@
+import {autocompletion} from '@codemirror/autocomplete'
+import type {Compartment} from '@codemirror/state'
+import {EditorView, keymap, type ViewUpdate} from '@codemirror/view'
+import {exitCode} from 'prosemirror-commands'
 import type {Node} from 'prosemirror-model'
+import {Selection, TextSelection} from 'prosemirror-state'
 import {
   DecorationSet,
   type DecorationSource,
   type EditorView as ProsemirrorEditorView,
 } from 'prosemirror-view'
-import {Selection, TextSelection} from 'prosemirror-state'
-import {exitCode} from 'prosemirror-commands'
-import type {Compartment} from '@codemirror/state'
-import {EditorView, type ViewUpdate, keymap} from '@codemirror/view'
-import {autocompletion} from '@codemirror/autocomplete'
-import type {ConfigService} from '@/services/ConfigService'
-import type {CodeMirrorService} from '@/services/CodeMirrorService'
-import {getLanguageConfig} from '@/codemirror/highlight'
-import {findWords} from '@/codemirror/completion'
-import {mermaidKeywords} from '@/codemirror/mermaid'
-import {foldAll} from '@/codemirror/fold-all'
-import {copilot} from '@/codemirror/copilot'
-import {onEnterDoubleNewline} from '@/codemirror/key-bindings'
 import {clipPlugin} from '@/codemirror/clip'
+import {findWords} from '@/codemirror/completion'
+import {copilot} from '@/codemirror/copilot'
+import {foldAll} from '@/codemirror/fold-all'
+import {getLanguageConfig} from '@/codemirror/highlight'
+import {onEnterDoubleNewline} from '@/codemirror/key-bindings'
+import {mermaidKeywords} from '@/codemirror/mermaid'
 import {isTauri} from '@/env'
+import type {CodeMirrorService} from '@/services/CodeMirrorService'
+import type {ConfigService} from '@/services/ConfigService'
 import {createMermaidPlugin} from './mermaid-preview'
 
 export class CodeBlockView {

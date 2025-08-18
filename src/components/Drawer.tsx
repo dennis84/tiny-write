@@ -1,6 +1,6 @@
+import {DragGesture} from '@use-gesture/vanilla'
 import {type JSX, onCleanup, onMount, splitProps} from 'solid-js'
 import {styled} from 'solid-styled-components'
-import {DragGesture} from '@use-gesture/vanilla'
 import {isTauri} from '@/env'
 import {FULL_WIDTH} from './Layout'
 

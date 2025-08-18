@@ -1,9 +1,9 @@
+import {render, waitFor} from '@solidjs/testing-library'
 import {beforeEach, expect, test, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
-import {render, waitFor} from '@solidjs/testing-library'
-import {createState, Page} from '@/state'
-import {createCtrl} from '@/services'
 import {Main} from '@/components/Main'
+import {createCtrl} from '@/services'
+import {createState, Page} from '@/state'
 import {createYUpdate} from '../util/codemirror-util'
 import {expectToBeDefined, stubLocation} from '../util/util'
 

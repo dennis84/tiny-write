@@ -1,11 +1,11 @@
-import {Show, createEffect, onCleanup} from 'solid-js'
+import {createEffect, onCleanup, Show} from 'solid-js'
 import {Portal} from 'solid-js/web'
 import {styled} from 'solid-styled-components'
 import {getTheme} from '@/codemirror/theme'
-import {LangInputEditor} from './InputLineEditor'
-import {useState} from '@/state'
-import {ConfigService} from '@/services/ConfigService'
 import {codeMirror} from '@/components/code/Style'
+import {ConfigService} from '@/services/ConfigService'
+import {useState} from '@/state'
+import {LangInputEditor} from './InputLineEditor'
 
 const Layer = styled('div')`
   position: absolute;

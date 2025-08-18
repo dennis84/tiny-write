@@ -1,10 +1,10 @@
-import {createEffect, createSignal, onCleanup, Show} from 'solid-js'
 import {useSearchParams} from '@solidjs/router'
-import {useState} from '@/state'
-import {copy} from '@/remote/clipboard'
-import {Label, Link, Sub, Text} from './Style'
+import {createEffect, createSignal, onCleanup, Show} from 'solid-js'
 import {WEB_URL} from '@/env'
+import {copy} from '@/remote/clipboard'
+import {useState} from '@/state'
 import {IconCloud, IconCloudOff, IconGroup, IconLink} from '../Icon'
+import {Label, Link, Sub, Text} from './Style'
 
 export const SubmenuCollab = () => {
   const {store, collabService} = useState()

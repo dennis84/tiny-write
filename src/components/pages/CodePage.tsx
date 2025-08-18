@@ -1,12 +1,12 @@
 import {type RouteSectionProps, useLocation} from '@solidjs/router'
 import {onMount, Show} from 'solid-js'
-import {type LocationState, useState} from '@/state'
 import {info} from '@/remote/log'
+import {type LocationState, useState} from '@/state'
 import {locationToString} from '@/utils/debug'
-import {Loading} from './Loading'
-import {Title} from './Title'
 import {CodeEditor} from '../code/CodeEditor'
 import {MergeMenu} from '../code/MergeMenu'
+import {Loading} from './Loading'
+import {Title} from './Title'
 
 export const CodePage = (props: RouteSectionProps) => {
   const location = useLocation<LocationState | undefined>()

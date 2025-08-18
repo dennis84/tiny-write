@@ -1,37 +1,37 @@
-import {type SetStoreFunction, type Store, unwrap} from 'solid-js/store'
-import {TextSelection} from 'prosemirror-state'
-import {v4 as uuidv4} from 'uuid'
-import {throttle} from 'throttle-debounce'
 import {Box, Point, Segment, Vector} from '@flatten-js/core'
+import {TextSelection} from 'prosemirror-state'
+import {type SetStoreFunction, type Store, unwrap} from 'solid-js/store'
+import {throttle} from 'throttle-debounce'
+import {v4 as uuidv4} from 'uuid'
+import {DB} from '@/db'
+import {info} from '@/remote/log'
 import {
   type Camera,
   type Canvas,
   type CanvasBoxElement,
   type CanvasEditorElement,
   type CanvasElement,
-  type CanvasLinkElement,
   type CanvasImageElement,
+  type CanvasLinkElement,
+  type CanvasPoint,
+  type CanvasRect,
   type CanvasVideoElement,
   EdgeType,
   ElementType,
   type File,
-  type State,
-  isEditorElement,
-  isLinkElement,
   isBoxElement,
   isCodeElement,
-  type CanvasRect,
-  type CanvasPoint,
+  isEditorElement,
+  isLinkElement,
   Page,
+  type State,
 } from '@/state'
-import {DB} from '@/db'
-import {info} from '@/remote/log'
-import {FileService} from './FileService'
-import {CollabService} from './CollabService'
-import type {SelectService} from './SelectService'
-import {VecUtil} from '@/utils/VecUtil'
 import {BoxUtil} from '@/utils/BoxUtil'
 import {PointUtil} from '@/utils/PointUtil'
+import {VecUtil} from '@/utils/VecUtil'
+import {CollabService} from './CollabService'
+import {FileService} from './FileService'
+import type {SelectService} from './SelectService'
 
 type UpdateElement =
   | Partial<CanvasLinkElement>

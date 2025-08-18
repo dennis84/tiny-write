@@ -1,6 +1,6 @@
-import {expect, it, vi} from 'vitest'
-import {EditorState} from '@codemirror/state'
 import {CompletionContext} from '@codemirror/autocomplete'
+import {EditorState} from '@codemirror/state'
+import {expect, it, vi} from 'vitest'
 import {mermaidKeywords} from '@/codemirror/mermaid'
 
 vi.mock('mermaid', () => ({}))

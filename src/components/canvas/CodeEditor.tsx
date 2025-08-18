@@ -1,15 +1,15 @@
 import {createEffect, onCleanup, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
-import {type CanvasCodeElement, useState} from '@/state'
+import {CodeMirrorContainer} from '@/components/code/CodeEditor'
+import {Scroll} from '@/components/Layout'
 import {info} from '@/remote/log'
 import type {Selection} from '@/services/CanvasService'
+import {CollabService} from '@/services/CollabService'
 import {FileService} from '@/services/FileService'
-import {Scroll} from '@/components/Layout'
-import {CodeMirrorContainer} from '@/components/code/CodeEditor'
+import {type CanvasCodeElement, useState} from '@/state'
+import {IndexType, ZIndex} from '@/utils/ZIndex'
 import {Bounds} from './Bounds'
 import {LinkHandles} from './LinkHandles'
-import {IndexType, ZIndex} from '@/utils/ZIndex'
-import {CollabService} from '@/services/CollabService'
 
 // biome-ignore format: ternary breaks ugly
 const CodeEditorScroll = styled(Scroll)(

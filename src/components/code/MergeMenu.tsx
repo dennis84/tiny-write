@@ -1,6 +1,6 @@
+import {acceptChunk, getChunks, rejectChunk} from '@codemirror/merge'
 import {Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
-import {acceptChunk, getChunks, rejectChunk} from '@codemirror/merge'
 import {useOpen} from '@/hooks/open'
 import {useState} from '@/state'
 import {IconCheck, IconClose} from '../Icon'

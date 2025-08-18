@@ -1,12 +1,12 @@
-import {createEffect, onCleanup, onMount} from 'solid-js'
 import {WheelGesture} from '@use-gesture/vanilla'
+import {createEffect, onCleanup, onMount} from 'solid-js'
 import {useState} from '@/state'
-import {Select} from '../Select'
 import {Scroll} from '../Layout'
-import {FullEditor} from './Style'
-import {BlockHandle} from './BlockHandle'
-import {TableControls} from './TableControl'
+import {Select} from '../Select'
 import {AutocompleteTooltip} from './AutocompleteTooltip'
+import {BlockHandle} from './BlockHandle'
+import {FullEditor} from './Style'
+import {TableControls} from './TableControl'
 
 export const Editor = () => {
   let scrollRef!: HTMLDivElement

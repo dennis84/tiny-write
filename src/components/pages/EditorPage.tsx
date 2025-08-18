@@ -1,11 +1,11 @@
 import {type RouteSectionProps, useLocation} from '@solidjs/router'
 import {onMount, Show} from 'solid-js'
-import {type LocationState, useState} from '@/state'
 import {info} from '@/remote/log'
+import {type LocationState, useState} from '@/state'
 import {locationToString} from '@/utils/debug'
+import {Editor} from '../editor/Editor'
 import {Loading} from './Loading'
 import {Title} from './Title'
-import {Editor} from '../editor/Editor'
 
 export const EditorPage = (props: RouteSectionProps) => {
   const OpenEditor = () => {

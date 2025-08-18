@@ -1,20 +1,20 @@
-import {createSignal} from 'solid-js'
-import type {Store} from 'solid-js/store'
 import {convertFileSrc} from '@tauri-apps/api/core'
 import type {EditorView} from 'prosemirror-view'
+import {createSignal} from 'solid-js'
+import type {Store} from 'solid-js/store'
 import {basename, getMimeType, readBinaryFile, resolvePath, toRelativePath} from '@/remote/editor'
 import {
   type Attachment,
+  type CanvasElement,
   isEditorElement,
+  type File as OpenFile,
   Page,
   type State,
-  type File as OpenFile,
-  type CanvasElement,
 } from '@/state'
-import type {FileService} from './FileService'
-import type {CanvasService} from './CanvasService'
 import type {AppService} from './AppService'
 import type {CanvasCollabService} from './CanvasCollabService'
+import type {CanvasService} from './CanvasService'
+import type {FileService} from './FileService'
 
 export enum DropTarget {
   Assistant = 'assistant',

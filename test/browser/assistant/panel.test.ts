@@ -1,5 +1,5 @@
 import {expect, test} from '@playwright/test'
-import {lineCodeEq, delay} from '../utils'
+import {delay, lineCodeEq} from '../utils'
 import {setupDB} from './mock'
 
 const content = `

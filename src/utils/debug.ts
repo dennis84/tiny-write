@@ -1,5 +1,5 @@
-import type {Location} from '@solidjs/router'
 import {Box, type Vector} from '@flatten-js/core'
+import type {Location} from '@solidjs/router'
 import type {File, LocationState, State} from '@/state'
 
 const ydoc = 'Uint8Array'

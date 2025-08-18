@@ -1,21 +1,21 @@
-import type {SetStoreFunction, Store} from 'solid-js/store'
-import {createSignal} from 'solid-js'
 import {Channel} from '@tauri-apps/api/core'
+import {createSignal} from 'solid-js'
+import type {SetStoreFunction, Store} from 'solid-js/store'
 import {DB} from '@/db'
-import type {ChatRole, State} from '@/state'
 import {isTauri} from '@/env'
-import {debug, error, info} from '@/remote/log'
+import {open} from '@/remote/app'
 import {
   type CopilotSignIn,
-  copilotSignIn,
   type CopilotStatus,
+  copilotAuthToken,
+  copilotSignIn,
   copilotStatus,
   disconnectCopilot,
-  startLanguageServer,
   sendChatMessage,
-  copilotAuthToken,
+  startLanguageServer,
 } from '@/remote/copilot'
-import {open} from '@/remote/app'
+import {debug, error, info} from '@/remote/log'
+import type {ChatRole, State} from '@/state'
 
 interface ApiTokenEndpoints {
   api: string

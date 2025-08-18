@@ -1,25 +1,25 @@
+import {Vector} from '@flatten-js/core'
+import {Gesture} from '@use-gesture/vanilla'
 import {For, onCleanup, onMount, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
-import {Gesture} from '@use-gesture/vanilla'
-import {Vector} from '@flatten-js/core'
 import {
-  isEditorElement,
-  isLinkElement,
-  isImageElement,
-  useState,
-  isVideoElement,
   isCodeElement,
+  isEditorElement,
+  isImageElement,
+  isLinkElement,
+  isVideoElement,
+  useState,
 } from '@/state'
 import {Select} from '../Select'
-import {Grid} from './Grid'
-import {Editor} from './Editor'
-import {Link} from './Link'
-import {Image} from './Image'
-import {Video} from './Video'
-import {ContextMenu} from './ContextMenu'
 import {Bounds} from './Bounds'
 import {CodeEditor} from './CodeEditor'
+import {ContextMenu} from './ContextMenu'
+import {Editor} from './Editor'
+import {Grid} from './Grid'
+import {Image} from './Image'
+import {Link} from './Link'
 import {Toolbar} from './Toolbar'
+import {Video} from './Video'
 
 const Container = styled('div')`
   width: 100%;

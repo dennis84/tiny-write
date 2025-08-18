@@ -1,13 +1,10 @@
-import {Show, createEffect, createSignal} from 'solid-js'
-import {NodeSelection, TextSelection} from 'prosemirror-state'
-import {setBlockType} from 'prosemirror-commands'
 import type {ReferenceElement} from '@floating-ui/dom'
+import {setBlockType} from 'prosemirror-commands'
+import {NodeSelection, TextSelection} from 'prosemirror-state'
+import {createEffect, createSignal, Show} from 'solid-js'
 import {v4 as uuidv4} from 'uuid'
-import {MessageType, useState} from '@/state'
-import {saveSvg} from '@/remote/svg'
-import {Align} from '@/prosemirror/image'
 import {getLanguageNames} from '@/codemirror/highlight'
-import {useOpen} from '@/hooks/open'
+import {createCodeFence} from '@/components/assistant/util'
 import {
   IconAiAssistant,
   IconCodeBlocks,
@@ -24,7 +21,10 @@ import {
   IconVisibilityOff,
 } from '@/components/Icon'
 import {Tooltip, TooltipButton, TooltipDivider} from '@/components/Tooltip'
-import {createCodeFence} from '@/components/assistant/util'
+import {useOpen} from '@/hooks/open'
+import {Align} from '@/prosemirror/image'
+import {saveSvg} from '@/remote/svg'
+import {MessageType, useState} from '@/state'
 import type {Block} from './BlockHandle'
 
 interface Props {

@@ -1,10 +1,10 @@
 import {For} from 'solid-js'
-import {useState} from '@/state'
 import {ConfigService} from '@/services/ConfigService'
+import {useState} from '@/state'
 import {DrawerContent} from '../Drawer'
-import {Label, Link, Sub, Text} from './Style'
 import {MenuDrawer} from './Menu'
 import {MenuNavbar} from './Navbar'
+import {Label, Link, Sub, Text} from './Style'
 
 export const Appearance = () => {
   const {store, configService} = useState()

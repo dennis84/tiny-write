@@ -1,10 +1,10 @@
-import {beforeEach, expect, test, vi} from 'vitest'
-import {mock} from 'vitest-mock-extended'
 import {render, waitFor} from '@solidjs/testing-library'
 import userEvent from '@testing-library/user-event'
-import {createState} from '@/state'
-import {createCtrl} from '@/services'
+import {beforeEach, expect, test, vi} from 'vitest'
+import {mock} from 'vitest-mock-extended'
 import {Main} from '@/components/Main'
+import {createCtrl} from '@/services'
+import {createState} from '@/state'
 import {expectToBeDefined, stubLocation} from '../util/util'
 
 vi.mock('@/db', () => ({DB: mock()}))

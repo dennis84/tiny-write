@@ -5,9 +5,9 @@ import type {TreeItem} from '@/tree'
 import {ButtonGroup, IconButton} from '../Button'
 import {IconEditSquare} from '../Icon'
 import {TooltipHelp} from '../TooltipHelp'
-import {chatBubble} from './Style'
 import {MessageInput} from './MessageInput'
 import {Pagination} from './Pagination'
+import {chatBubble} from './Style'
 
 const EditBubble = styled('div')`
   flex-basis: 100%;

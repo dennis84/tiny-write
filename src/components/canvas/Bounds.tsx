@@ -1,12 +1,12 @@
-import {Show, createEffect, onCleanup, onMount, splitProps} from 'solid-js'
-import {styled} from 'solid-styled-components'
-import {DragGesture} from '@use-gesture/vanilla'
 import {type Box, Vector} from '@flatten-js/core'
-import {CornerType, EdgeType, useState} from '@/state'
+import {DragGesture} from '@use-gesture/vanilla'
+import {createEffect, onCleanup, onMount, Show, splitProps} from 'solid-js'
+import {styled} from 'solid-styled-components'
 import type {Selection} from '@/services/CanvasService'
-import {IndexType, ZIndex} from '@/utils/ZIndex'
+import {CornerType, EdgeType, useState} from '@/state'
 import {BoxUtil} from '@/utils/BoxUtil'
 import {VecUtil} from '@/utils/VecUtil'
+import {IndexType, ZIndex} from '@/utils/ZIndex'
 
 interface BoundsProps {
   selection: Selection

@@ -1,10 +1,10 @@
 import {
+  ellipsis,
+  emDash,
   inputRules,
+  smartQuotes,
   textblockTypeInputRule,
   wrappingInputRule,
-  smartQuotes,
-  emDash,
-  ellipsis,
 } from 'prosemirror-inputrules'
 import type {DOMOutputSpec, NodeType, Schema} from 'prosemirror-model'
 import {nodeInputRule} from './rulebuilders'

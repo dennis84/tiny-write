@@ -1,10 +1,10 @@
 import type {SetStoreFunction, Store} from 'solid-js/store'
-import {type Canvas, type File, type State, isFile} from '@/state'
-import {createTreeStore, type TreeItem, type Tree, type TreeState} from '@/tree'
-import {info} from '@/remote/log'
 import {DB} from '@/db'
-import {FileService} from './FileService'
+import {info} from '@/remote/log'
+import {type Canvas, type File, isFile, type State} from '@/state'
+import {createTreeStore, type Tree, type TreeItem, type TreeState} from '@/tree'
 import {CanvasService} from './CanvasService'
+import {FileService} from './FileService'
 
 export type MenuTree = TreeState<File | Canvas>
 export type MenuTreeItem = TreeItem<File | Canvas>

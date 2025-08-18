@@ -1,11 +1,11 @@
-import {useState} from '@/state'
 import {useOpen} from '@/hooks/open'
+import {useState} from '@/state'
 import {Button, ButtonGroup} from '../Button'
 import {DrawerContent} from '../Drawer'
-import {Label, Note} from './Style'
-import {SubmenuTree} from './SubmenuTree'
 import {MenuDrawer} from './Menu'
 import {MenuNavbar} from './Navbar'
+import {Label, Note} from './Style'
+import {SubmenuTree} from './SubmenuTree'
 
 export const Bin = () => {
   const {store, deleteService, treeService} = useState()

@@ -1,11 +1,11 @@
 import {onMount} from 'solid-js'
 import {styled} from 'solid-styled-components'
-import {type CanvasVideoElement, useState} from '@/state'
 import type {Selection} from '@/services/CanvasService'
+import {MediaService} from '@/services/MediaService'
+import {type CanvasVideoElement, useState} from '@/state'
+import {IndexType, ZIndex} from '@/utils/ZIndex'
 import {Bounds} from './Bounds'
 import {LinkHandles} from './LinkHandles'
-import {IndexType, ZIndex} from '@/utils/ZIndex'
-import {MediaService} from '@/services/MediaService'
 
 const CanvasVideo = styled('video')(
   (props: any) => `

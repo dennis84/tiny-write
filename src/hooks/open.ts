@@ -1,4 +1,7 @@
 import {useLocation, useNavigate} from '@solidjs/router'
+import {isTauri} from '../env'
+import {open as shellOpen} from '../remote/app'
+import {info} from '../remote/log'
 import {
   type CanvasElement,
   ElementType,
@@ -10,9 +13,6 @@ import {
   type Openable,
   type VisualPositionRange,
 } from '../state'
-import {info} from '../remote/log'
-import {open as shellOpen} from '../remote/app'
-import {isTauri} from '../env'
 
 interface OpenOptions {
   back?: boolean

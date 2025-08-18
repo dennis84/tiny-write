@@ -1,29 +1,29 @@
-import {For, Match, Show, Switch, createEffect, createSignal, onCleanup, onMount} from 'solid-js'
-import {Portal} from 'solid-js/web'
-import {unwrap} from 'solid-js/store'
-import {styled} from 'solid-styled-components'
 import {DragGesture} from '@use-gesture/vanilla'
-import {isCanvas, isCodeFile, isFile, isLocalFile, Page, useState} from '@/state'
+import {createEffect, createSignal, For, Match, onCleanup, onMount, Show, Switch} from 'solid-js'
+import {unwrap} from 'solid-js/store'
+import {Portal} from 'solid-js/web'
+import {styled} from 'solid-styled-components'
 import {useOpen} from '@/hooks/open'
-import type {MenuTreeItem} from '@/services/TreeService'
-import {FileService} from '@/services/FileService'
 import {CanvasService} from '@/services/CanvasService'
-import {ITEM_HEIGHT, itemCss, Label, Link, Sub} from './Style'
-import {Tooltip, TooltipButton, TooltipDivider} from '../Tooltip'
+import {FileService} from '@/services/FileService'
+import type {MenuTreeItem} from '@/services/TreeService'
+import {isCanvas, isCodeFile, isFile, isLocalFile, Page, useState} from '@/state'
 import {
   IconAdd,
   IconAdjust,
   IconCodeBlocks,
   IconDelete,
+  IconDeleteForever,
+  IconEdit,
   IconGesture,
+  IconHistory,
   IconMoreHoriz,
   IconPostAdd,
-  IconEdit,
   IconTextSnippet,
-  IconHistory,
-  IconDeleteForever,
   LangIcon,
 } from '../Icon'
+import {Tooltip, TooltipButton, TooltipDivider} from '../Tooltip'
+import {ITEM_HEIGHT, itemCss, Label, Link, Sub} from './Style'
 
 const HighlightContent = styled('div')`
   position: absolute;

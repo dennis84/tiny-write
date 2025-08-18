@@ -1,6 +1,6 @@
 import type {EditorView, HoverTooltipSource} from '@codemirror/view'
-import {lspHover} from '@/remote/lsp'
 import markdownit from 'markdown-it'
+import {lspHover} from '@/remote/lsp'
 
 const md = markdownit({html: true})
 

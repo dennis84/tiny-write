@@ -1,11 +1,11 @@
+import {Vector} from '@flatten-js/core'
+import {DragGesture} from '@use-gesture/vanilla'
 import {onCleanup, onMount} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {v4 as uuidv4} from 'uuid'
-import {DragGesture} from '@use-gesture/vanilla'
-import {Vector} from '@flatten-js/core'
 import {EdgeType, useState} from '@/state'
-import {IndexType, ZIndex} from '@/utils/ZIndex'
 import {BoxUtil} from '@/utils/BoxUtil'
+import {IndexType, ZIndex} from '@/utils/ZIndex'
 
 const BORDER_SIZE = 20
 const CIRCLE_RADIUS = 7

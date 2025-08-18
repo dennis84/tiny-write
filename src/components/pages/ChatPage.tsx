@@ -1,8 +1,8 @@
-import {onMount, Show} from 'solid-js'
 import type {RouteSectionProps} from '@solidjs/router'
+import {onMount, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
-import {useState} from '@/state'
 import {useOpen} from '@/hooks/open'
+import {useState} from '@/state'
 import {Chat} from '../assistant/Chat'
 import {Content, Scroll} from '../Layout'
 

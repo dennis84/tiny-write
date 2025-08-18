@@ -1,6 +1,7 @@
-import {vi, test, expect, beforeEach} from 'vitest'
-import {mock} from 'vitest-mock-extended'
 import {createStore} from 'solid-js/store'
+import {beforeEach, expect, test, vi} from 'vitest'
+import {mock} from 'vitest-mock-extended'
+import {DB} from '@/db'
 import type {CanvasService} from '@/services/CanvasService'
 import {DeleteService} from '@/services/DeleteService'
 import type {FileService} from '@/services/FileService'
@@ -13,7 +14,6 @@ import {
   ElementType,
   type File,
 } from '@/state'
-import {DB} from '@/db'
 import {createYUpdate} from '../util/prosemirror-util'
 
 vi.mock('@/db', () => ({DB: mock()}))

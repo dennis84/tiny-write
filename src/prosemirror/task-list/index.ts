@@ -1,3 +1,5 @@
+import {inputRules, wrappingInputRule} from 'prosemirror-inputrules'
+import {keymap} from 'prosemirror-keymap'
 import {
   type DOMOutputSpec,
   DOMSerializer,
@@ -5,10 +7,8 @@ import {
   type NodeType,
   type Schema,
 } from 'prosemirror-model'
-import type {EditorView} from 'prosemirror-view'
-import {inputRules, wrappingInputRule} from 'prosemirror-inputrules'
 import {liftListItem, sinkListItem, splitListItem} from 'prosemirror-schema-list'
-import {keymap} from 'prosemirror-keymap'
+import type {EditorView} from 'prosemirror-view'
 import type {ViewConfig} from '@/services/ProseMirrorService'
 
 export const taskListSchemaSpec = {

@@ -1,5 +1,5 @@
 import {Plugin} from 'prosemirror-state'
-import {DecorationSet, Decoration} from 'prosemirror-view'
+import {Decoration, DecorationSet} from 'prosemirror-view'
 import {ProseMirrorService} from '@/services/ProseMirrorService'
 
 export const placeholder = (text: string) =>

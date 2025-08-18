@@ -1,6 +1,6 @@
 import {test} from '@playwright/test'
-import {delay, lineCodeEq} from '../utils'
 import {v4 as uuidv4} from 'uuid'
+import {delay, lineCodeEq} from '../utils'
 
 test('existing room', async ({page, browser}) => {
   const room = uuidv4()

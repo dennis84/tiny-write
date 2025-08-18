@@ -1,11 +1,11 @@
-import {createSignal, onCleanup, onMount, Show} from 'solid-js'
-import {Portal} from 'solid-js/web'
-import {createMutable} from 'solid-js/store'
-import {styled} from 'solid-styled-components'
 import {getCurrentWindow} from '@tauri-apps/api/window'
+import {createSignal, onCleanup, onMount, Show} from 'solid-js'
+import {createMutable} from 'solid-js/store'
+import {Portal} from 'solid-js/web'
+import {styled} from 'solid-styled-components'
 import {isTauri} from '@/env'
-import type {Attachment} from '@/state'
 import {basename, getMimeType, readBinaryFile} from '@/remote/editor'
+import type {Attachment} from '@/state'
 
 const HighlightContent = styled('div')`
   position: absolute;

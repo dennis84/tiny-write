@@ -1,5 +1,5 @@
-import {lspCompletion} from '@/remote/lsp'
 import type {CompletionSource} from '@codemirror/autocomplete'
+import {lspCompletion} from '@/remote/lsp'
 
 // `class`, `constant`, `enum`,
 // `function`, `interface`, `keyword`, `method`, `namespace`,

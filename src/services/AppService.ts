@@ -1,16 +1,16 @@
-import type {Store, SetStoreFunction} from 'solid-js/store'
+import type {SetStoreFunction, Store} from 'solid-js/store'
+import {DB} from '@/db'
+import {getArgs, setFullscreen} from '@/remote/app'
 import {getDocument} from '@/remote/editor'
 import {error, info} from '@/remote/log'
-import {getArgs, setFullscreen} from '@/remote/app'
 import {
-  type State,
-  ServiceError,
-  type Window,
+  createConfig,
   type ErrorObject,
   type LastLocation,
-  createConfig,
+  ServiceError,
+  type State,
+  type Window,
 } from '@/state'
-import {DB} from '@/db'
 import {CanvasService} from './CanvasService'
 import {FileService} from './FileService'
 

@@ -1,6 +1,6 @@
 import {useState} from '@/state'
-import {Label, Link, Sub} from './Style'
 import {IconAdjust, IconClose, IconGrid3x3} from '../Icon'
+import {Label, Link, Sub} from './Style'
 
 export const SubmenuCanvas = ({maybeHide}: {maybeHide: () => void}) => {
   const {canvasService, canvasCollabService} = useState()

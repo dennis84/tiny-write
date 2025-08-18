@@ -1,6 +1,6 @@
 import {type Channel, invoke} from '@tauri-apps/api/core'
-import {timeout} from '@/utils/promise'
 import type {ChatMessage, Model} from '@/services/CopilotService'
+import {timeout} from '@/utils/promise'
 import {span} from './log'
 
 export const startLanguageServer = () =>

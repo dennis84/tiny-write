@@ -1,8 +1,8 @@
 import {createEffect, createSignal, For, onCleanup} from 'solid-js'
 import {createStore} from 'solid-js/store'
 import {styled} from 'solid-styled-components'
-import type {Awareness} from 'y-protocols/awareness'
 import {throttle} from 'throttle-debounce'
+import type {Awareness} from 'y-protocols/awareness'
 import {Page, useState} from '@/state'
 
 const CursorContainer = styled('div')`

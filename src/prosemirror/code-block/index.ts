@@ -1,12 +1,12 @@
-import type {DOMOutputSpec, NodeType, Schema} from 'prosemirror-model'
-import type {EditorView} from 'prosemirror-view'
-import {type EditorState, Selection, type Transaction, TextSelection} from 'prosemirror-state'
-import {keymap} from 'prosemirror-keymap'
 import {inputRules, textblockTypeInputRule} from 'prosemirror-inputrules'
-import {CodeBlockView} from './CodeBlockView'
-import type {ViewConfig} from '@/services/ProseMirrorService'
-import type {ConfigService} from '@/services/ConfigService'
+import {keymap} from 'prosemirror-keymap'
+import type {DOMOutputSpec, NodeType, Schema} from 'prosemirror-model'
+import {type EditorState, Selection, TextSelection, type Transaction} from 'prosemirror-state'
+import type {EditorView} from 'prosemirror-view'
 import type {CodeMirrorService} from '@/services/CodeMirrorService'
+import type {ConfigService} from '@/services/ConfigService'
+import type {ViewConfig} from '@/services/ProseMirrorService'
+import {CodeBlockView} from './CodeBlockView'
 
 export const codeBlockSchemaSpec = {
   nodes: {

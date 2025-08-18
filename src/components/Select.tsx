@@ -1,7 +1,7 @@
-import {Show, createSignal, onCleanup, onMount} from 'solid-js'
-import {styled} from 'solid-styled-components'
-import {DragGesture} from '@use-gesture/vanilla'
 import {Box} from '@flatten-js/core'
+import {DragGesture} from '@use-gesture/vanilla'
+import {createSignal, onCleanup, onMount, Show} from 'solid-js'
+import {styled} from 'solid-styled-components'
 import {Page, useState} from '@/state'
 
 const SelectionFrame = styled('div')`

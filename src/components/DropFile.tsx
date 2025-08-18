@@ -1,14 +1,14 @@
+import {useBeforeLeave} from '@solidjs/router'
+import {getCurrentWindow} from '@tauri-apps/api/window'
 import {createSignal, onCleanup, onMount, Show} from 'solid-js'
 import {createMutable} from 'solid-js/store'
 import {Portal} from 'solid-js/web'
-import {useBeforeLeave} from '@solidjs/router'
 import {styled} from 'solid-styled-components'
-import {getCurrentWindow} from '@tauri-apps/api/window'
 import {isTauri} from '@/env'
-import {useState} from '@/state'
 import {useOpen} from '@/hooks/open'
-import {enumFromValue} from '@/utils/enum'
 import {DropTarget} from '@/services/MediaService'
+import {useState} from '@/state'
+import {enumFromValue} from '@/utils/enum'
 
 const HighlightContent = styled('div')`
   position: absolute;

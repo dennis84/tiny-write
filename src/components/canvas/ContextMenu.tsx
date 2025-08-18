@@ -1,9 +1,9 @@
-import {For, Match, Show, Switch, createSignal, onMount} from 'solid-js'
 import {Vector} from '@flatten-js/core'
+import type {ReferenceElement} from '@floating-ui/dom'
+import {createSignal, For, Match, onMount, Show, Switch} from 'solid-js'
 import {type CanvasLinkElement, type File, isCanvas, isCodeFile, isFile, useState} from '@/state'
 import {IconCodeBlocks, IconGesture, IconPostAdd, IconTextSnippet} from '../Icon'
 import {Tooltip, TooltipButton, TooltipDivider} from '../Tooltip'
-import type {ReferenceElement} from '@floating-ui/dom'
 
 export const ContextMenu = () => {
   const {canvasService, canvasCollabService, fileService, treeService} = useState()

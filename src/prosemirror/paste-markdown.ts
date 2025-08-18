@@ -1,7 +1,7 @@
+import {find as findLinks} from 'linkifyjs'
+import {Fragment, type Node, type Schema, Slice} from 'prosemirror-model'
 import {Plugin} from 'prosemirror-state'
 import type {EditorView} from 'prosemirror-view'
-import {Fragment, type Node, type Schema, Slice} from 'prosemirror-model'
-import {find as findLinks} from 'linkifyjs'
 import {createMarkdownParser} from '@/markdown'
 
 const isInlineContent = (f: Fragment) =>

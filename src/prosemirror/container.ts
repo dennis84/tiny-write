@@ -1,3 +1,4 @@
+import {inputRules, wrappingInputRule} from 'prosemirror-inputrules'
 import {
   type DOMOutputSpec,
   DOMSerializer,
@@ -7,7 +8,6 @@ import {
 } from 'prosemirror-model'
 import {TextSelection} from 'prosemirror-state'
 import type {EditorView} from 'prosemirror-view'
-import {inputRules, wrappingInputRule} from 'prosemirror-inputrules'
 import type {ViewConfig} from '@/services/ProseMirrorService'
 
 export const containerSchemaSpec = {

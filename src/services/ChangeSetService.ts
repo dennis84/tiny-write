@@ -1,11 +1,11 @@
-import type {SetStoreFunction} from 'solid-js/store'
 import {TextSelection} from 'prosemirror-state'
+import type {SetStoreFunction} from 'solid-js/store'
 import * as Y from 'yjs'
-import type {State, Version} from '@/state'
 import {info} from '@/remote/log'
-import {FileService} from './FileService'
+import type {State, Version} from '@/state'
 import type {CollabService} from './CollabService'
 import type {EditorService} from './EditorService'
+import {FileService} from './FileService'
 
 export class ChangeSetService {
   constructor(

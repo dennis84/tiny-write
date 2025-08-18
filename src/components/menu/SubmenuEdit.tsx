@@ -1,8 +1,7 @@
 import {createEffect, createSignal, onCleanup, Show} from 'solid-js'
-import {useState} from '@/state'
-import {copyAllAsMarkdown} from '@/remote/clipboard'
 import {isMac, isTauri, mod} from '@/env'
-import {Keys, Label, Link, Sub} from './Style'
+import {copyAllAsMarkdown} from '@/remote/clipboard'
+import {useState} from '@/state'
 import {
   IconContentCopy,
   IconContentCut,
@@ -11,6 +10,7 @@ import {
   IconRedo,
   IconUndo,
 } from '../Icon'
+import {Keys, Label, Link, Sub} from './Style'
 
 export const SubmenuEdit = () => {
   const {collabService, fileService} = useState()

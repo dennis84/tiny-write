@@ -1,55 +1,55 @@
+import {baseKeymap} from 'prosemirror-commands'
+import {dropCursor} from 'prosemirror-dropcursor'
+import {buildKeymap} from 'prosemirror-example-setup'
+import {inputRules} from 'prosemirror-inputrules'
+import {keymap} from 'prosemirror-keymap'
+import {type Node, Schema} from 'prosemirror-model'
 import type {EditorState, Plugin} from 'prosemirror-state'
 import type {NodeViewConstructor} from 'prosemirror-view'
-import {type Node, Schema} from 'prosemirror-model'
-import {dropCursor} from 'prosemirror-dropcursor'
-import {baseKeymap} from 'prosemirror-commands'
-import {keymap} from 'prosemirror-keymap'
-import {inputRules} from 'prosemirror-inputrules'
-import {buildKeymap} from 'prosemirror-example-setup'
-import type * as Y from 'yjs'
 import {initProseMirrorDoc} from 'y-prosemirror'
-import {paragraphSchemaSpec} from '@/prosemirror/paragraph'
-import {headingSchemaSpec} from '@/prosemirror/heading'
-import {listSchemaSpec} from '@/prosemirror/list'
-import {hardBreakSchemaSpec} from '@/prosemirror/hard-break'
-import {emphasisInputRules, emphasisSchemaSpec} from '@/prosemirror/emphasis'
-import {linkSchemaSpec} from '@/prosemirror/link'
-import {codeInputRule, codeKeymap, codeSchemaSpec} from '@/prosemirror/code'
-import {createImageViews, imageSchemaSpec} from '@/prosemirror/image'
-import {createMarkdownPlugins, markdownSchemaSpec} from '@/prosemirror/markdown'
-import {createCollabPlugins, collabSchemaSpec} from '@/prosemirror/collab'
-import {containerViews, createContainerPlugin, containerSchemaSpec} from '@/prosemirror/container'
-import {
-  codeBlockKeymap,
-  createCodeBlockPlugin,
-  createCodeBlockViews,
-  codeBlockSchemaSpec,
-} from '@/prosemirror/code-block'
-import {createTablePlugins, tableKeymap, tableSchemaSpec} from '@/prosemirror/table'
-import {
-  createTaskListPlugin,
-  createTaskListKeymap,
-  taskListViews,
-  taskListSchemaSpec,
-} from '@/prosemirror/task-list'
-import {createTabKeymap} from '@/prosemirror/tab'
-import {createInputParserPlugin} from '@/prosemirror/input-parser'
-import {scrollIntoView} from '@/prosemirror/scroll'
-import {placeholder} from '@/prosemirror/placeholder'
-import {createPasteMarkdownPlugin} from '@/prosemirror/paste-markdown'
-import {selectedPlugin} from '@/prosemirror/selected'
+import type * as Y from 'yjs'
+import {isTauri} from '@/env'
+import {createMarkdownParser} from '@/markdown'
 import {createFileListingPlugin, fileListingKeymap} from '@/prosemirror/autocomplete/file-listing'
 import {
   createWordCompletionPlugins,
   wordCompletionKeymap,
 } from '@/prosemirror/autocomplete/word-completion'
-import {isTauri} from '@/env'
-import {createMarkdownParser} from '@/markdown'
-import type {ConfigService} from './ConfigService'
-import type {CollabService} from './CollabService'
+import {codeInputRule, codeKeymap, codeSchemaSpec} from '@/prosemirror/code'
+import {
+  codeBlockKeymap,
+  codeBlockSchemaSpec,
+  createCodeBlockPlugin,
+  createCodeBlockViews,
+} from '@/prosemirror/code-block'
+import {collabSchemaSpec, createCollabPlugins} from '@/prosemirror/collab'
+import {containerSchemaSpec, containerViews, createContainerPlugin} from '@/prosemirror/container'
+import {emphasisInputRules, emphasisSchemaSpec} from '@/prosemirror/emphasis'
+import {hardBreakSchemaSpec} from '@/prosemirror/hard-break'
+import {headingSchemaSpec} from '@/prosemirror/heading'
+import {createImageViews, imageSchemaSpec} from '@/prosemirror/image'
+import {createInputParserPlugin} from '@/prosemirror/input-parser'
+import {linkSchemaSpec} from '@/prosemirror/link'
+import {listSchemaSpec} from '@/prosemirror/list'
+import {createMarkdownPlugins, markdownSchemaSpec} from '@/prosemirror/markdown'
+import {paragraphSchemaSpec} from '@/prosemirror/paragraph'
+import {createPasteMarkdownPlugin} from '@/prosemirror/paste-markdown'
+import {placeholder} from '@/prosemirror/placeholder'
+import {scrollIntoView} from '@/prosemirror/scroll'
+import {selectedPlugin} from '@/prosemirror/selected'
+import {createTabKeymap} from '@/prosemirror/tab'
+import {createTablePlugins, tableKeymap, tableSchemaSpec} from '@/prosemirror/table'
+import {
+  createTaskListKeymap,
+  createTaskListPlugin,
+  taskListSchemaSpec,
+  taskListViews,
+} from '@/prosemirror/task-list'
 import type {AppService} from './AppService'
-import type {CodeMirrorService} from './CodeMirrorService'
 import type {CanvasService} from './CanvasService'
+import type {CodeMirrorService} from './CodeMirrorService'
+import type {CollabService} from './CollabService'
+import type {ConfigService} from './ConfigService'
 
 export interface ViewConfig {
   nodeViews?: NodeViewConfig

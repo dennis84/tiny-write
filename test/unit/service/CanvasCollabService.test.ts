@@ -1,13 +1,12 @@
+import {createStore} from 'solid-js/store'
 import {beforeEach, expect, test, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
-import {createStore} from 'solid-js/store'
-import * as Y from 'yjs'
 import {YMultiDocUndoManager} from 'y-utility/y-multidoc-undomanager'
-
-import {type Canvas, createState, ElementType} from '@/state'
+import * as Y from 'yjs'
 import {CanvasCollabService} from '@/services/CanvasCollabService'
 import type {CanvasService} from '@/services/CanvasService'
 import type {CollabService} from '@/services/CollabService'
+import {type Canvas, createState, ElementType} from '@/state'
 
 vi.mock('@/db', () => ({DB: mock()}))
 

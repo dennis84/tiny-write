@@ -1,10 +1,10 @@
-import {createEffect, createSignal, For, onCleanup, onMount, Show} from 'solid-js'
-import {type File, useState} from '@/state'
-import {wordCompletionPluginKey} from '@/prosemirror/autocomplete/word-completion'
 import type {ReferenceElement} from '@floating-ui/dom'
-import type {CompletionState} from '@/prosemirror/autocomplete/autocomplete'
 import type {EditorView} from 'prosemirror-view'
+import {createEffect, createSignal, For, onCleanup, onMount, Show} from 'solid-js'
+import type {CompletionState} from '@/prosemirror/autocomplete/autocomplete'
 import {fileListingPluginKey} from '@/prosemirror/autocomplete/file-listing'
+import {wordCompletionPluginKey} from '@/prosemirror/autocomplete/word-completion'
+import {type File, useState} from '@/state'
 import {Tooltip, TooltipButton} from '../Tooltip'
 
 interface Props {

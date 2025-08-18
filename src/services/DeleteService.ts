@@ -1,3 +1,6 @@
+import type {SetStoreFunction} from 'solid-js/store'
+import {DB} from '@/db'
+import {info} from '@/remote/log'
 import {
   isCanvas,
   isEditorElement,
@@ -10,9 +13,6 @@ import {
 import type {CanvasService} from './CanvasService'
 import {FileService} from './FileService'
 import type {MenuTreeItem, TreeService} from './TreeService'
-import {info} from '@/remote/log'
-import type {SetStoreFunction} from 'solid-js/store'
-import {DB} from '@/db'
 
 interface DeleteResult {
   navigateTo?: Openable

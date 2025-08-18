@@ -1,11 +1,11 @@
 import {Show} from 'solid-js'
+import {getLanguageNames} from '@/codemirror/highlight'
 import {isMac, isTauri, mod} from '@/env'
-import {useState} from '@/state'
 import {saveFile} from '@/remote/editor'
 import {info} from '@/remote/log'
-import {getLanguageNames} from '@/codemirror/highlight'
-import {Keys, Label, Link, Sub} from './Style'
+import {useState} from '@/state'
 import {IconLanguage, IconSaveAs} from '../Icon'
+import {Keys, Label, Link, Sub} from './Style'
 
 export const SubmenuCode = () => {
   const {codeService, fileService, inputLineService} = useState()

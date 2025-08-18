@@ -1,9 +1,9 @@
 import {createResource, Show, Suspense} from 'solid-js'
+import {AppService} from '@/services/AppService'
 import {createConfig} from '@/state'
 import {pause} from '@/utils/promise'
-import {AppService} from '@/services/AppService'
-import {Main} from './Main'
 import {Content, Layout, Scroll} from './Layout'
+import {Main} from './Main'
 
 const Loading = () => {
   const [delay] = createResource(async () => {

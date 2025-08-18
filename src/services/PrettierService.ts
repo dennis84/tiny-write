@@ -1,10 +1,10 @@
 import * as prettier from 'prettier'
-import * as estreePlugin from 'prettier/plugins/estree'
 import babelPlugin from 'prettier/plugins/babel'
-import typescriptPlugin from 'prettier/plugins/typescript'
-import cssPlugin from 'prettier/plugins/postcss'
+import * as estreePlugin from 'prettier/plugins/estree'
 import htmlPlugin from 'prettier/plugins/html'
 import markdownPlugin from 'prettier/plugins/markdown'
+import cssPlugin from 'prettier/plugins/postcss'
+import typescriptPlugin from 'prettier/plugins/typescript'
 import yamlPlugin from 'prettier/plugins/yaml'
 import type {PrettierConfig} from '@/state'
 

@@ -1,5 +1,5 @@
-import type {EditorView} from '@codemirror/view'
 import {foldable, foldEffect} from '@codemirror/language'
+import type {EditorView} from '@codemirror/view'
 
 export const foldAll = (view: EditorView) => {
   const effects = []

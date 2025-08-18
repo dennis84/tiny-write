@@ -1,11 +1,11 @@
-import {For, Show, createSignal, onCleanup} from 'solid-js'
 import {format} from 'date-fns'
-import {type Version, useState} from '@/state'
+import {createSignal, For, onCleanup, Show} from 'solid-js'
 import {ButtonGroup, ButtonPrimary} from '@/components/Button'
+import {useState, type Version} from '@/state'
 import {DrawerContent} from '../Drawer'
-import {Label, Link, Sub} from './Style'
 import {MenuDrawer} from './Menu'
 import {MenuNavbar} from './Navbar'
+import {Label, Link, Sub} from './Style'
 
 export const ChangeSet = () => {
   const {changeSetService, fileService} = useState()

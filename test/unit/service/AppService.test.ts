@@ -1,11 +1,11 @@
-import {vi, expect, test, beforeEach} from 'vitest'
-import {mock} from 'vitest-mock-extended'
 import {clearMocks} from '@tauri-apps/api/mocks'
+import {beforeEach, expect, test, vi} from 'vitest'
+import {mock} from 'vitest-mock-extended'
 import {DB} from '@/db'
 import {createCtrl} from '@/services'
 import {createState, ElementType, Page} from '@/state'
-import {createIpcMock} from '../util/util'
 import {createYUpdate} from '../util/prosemirror-util'
+import {createIpcMock} from '../util/util'
 
 vi.stubGlobal('__TAURI__', {})
 

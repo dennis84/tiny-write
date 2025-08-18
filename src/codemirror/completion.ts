@@ -1,11 +1,11 @@
-import type {EditorView} from '@codemirror/view'
-import {syntaxTree} from '@codemirror/language'
 import {
+  acceptCompletion,
   type CompletionSource,
   currentCompletions,
-  acceptCompletion,
   moveCompletionSelection,
 } from '@codemirror/autocomplete'
+import {syntaxTree} from '@codemirror/language'
+import type {EditorView} from '@codemirror/view'
 
 export const findWords: CompletionSource = (context) => {
   const tree = syntaxTree(context.state)

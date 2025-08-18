@@ -1,15 +1,14 @@
 import type {Extension} from '@codemirror/state'
-
-import {materialLight} from '@ddietr/codemirror-themes/material-light'
-import {materialDark} from '@ddietr/codemirror-themes/material-dark'
-import {solarizedLight} from '@ddietr/codemirror-themes/solarized-light'
-import {solarizedDark} from '@ddietr/codemirror-themes/solarized-dark'
-import {dracula} from '@ddietr/codemirror-themes/dracula'
-import {githubLight} from '@ddietr/codemirror-themes/github-light'
-import {githubDark} from '@ddietr/codemirror-themes/github-dark'
 import {aura} from '@ddietr/codemirror-themes/aura'
-import {tokyoNightStorm} from '@ddietr/codemirror-themes/tokyo-night-storm'
+import {dracula} from '@ddietr/codemirror-themes/dracula'
+import {githubDark} from '@ddietr/codemirror-themes/github-dark'
+import {githubLight} from '@ddietr/codemirror-themes/github-light'
+import {materialDark} from '@ddietr/codemirror-themes/material-dark'
+import {materialLight} from '@ddietr/codemirror-themes/material-light'
+import {solarizedDark} from '@ddietr/codemirror-themes/solarized-dark'
+import {solarizedLight} from '@ddietr/codemirror-themes/solarized-light'
 import {tokyoNightDay} from '@ddietr/codemirror-themes/tokyo-night-day'
+import {tokyoNightStorm} from '@ddietr/codemirror-themes/tokyo-night-storm'
 
 export const getTheme = (theme: string): Extension =>
   theme === 'dracula'

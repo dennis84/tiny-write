@@ -1,11 +1,11 @@
+import {createStore} from 'solid-js/store'
 import {beforeEach, expect, test, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
-import {createStore} from 'solid-js/store'
 import * as Y from 'yjs'
-import {createState} from '@/state'
-import {FileService} from '@/services/FileService'
 import type {CollabService} from '@/services/CollabService'
-import {createYUpdate, createSubdoc} from '../util/prosemirror-util'
+import {FileService} from '@/services/FileService'
+import {createState} from '@/state'
+import {createSubdoc, createYUpdate} from '../util/prosemirror-util'
 import {createIpcMock} from '../util/util'
 
 vi.mock('@/db', () => ({DB: mock()}))

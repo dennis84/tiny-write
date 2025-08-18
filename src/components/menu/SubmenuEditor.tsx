@@ -1,10 +1,10 @@
 import {Show} from 'solid-js'
 import {isMac, isTauri, mod} from '@/env'
-import {useState} from '@/state'
 import {saveFile} from '@/remote/editor'
 import {info} from '@/remote/log'
-import {Keys, Label, Link, Sub} from './Style'
+import {useState} from '@/state'
 import {IconClose, IconSaveAs} from '../Icon'
+import {Keys, Label, Link, Sub} from './Style'
 
 export const SubmenuEditor = () => {
   const {editorService, fileService} = useState()

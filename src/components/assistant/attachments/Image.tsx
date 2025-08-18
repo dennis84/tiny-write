@@ -1,7 +1,7 @@
-import {useState} from '@/state'
 import {IconImage} from '@/components/Icon'
 import {TooltipButton} from '@/components/Tooltip'
 import {DropTarget} from '@/services/MediaService'
+import {useState} from '@/state'
 
 interface Props {
   onAttachment: () => void
