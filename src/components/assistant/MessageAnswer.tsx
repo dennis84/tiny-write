@@ -189,7 +189,7 @@ export const MessageAnswer = (props: Props) => {
                   <Inline item={item().value} />
                 </Match>
                 <Match when={true}>
-                  <Node node={item()} />
+                  <MarkdownNode node={item()} />
                 </Match>
               </Switch>
             )}
@@ -199,7 +199,7 @@ export const MessageAnswer = (props: Props) => {
     )
   }
 
-  const Node = (p: {node: TreeItem<TokenItem>}) => {
+  const MarkdownNode = (p: {node: TreeItem<TokenItem>}) => {
     return (
       <Show
         when={p.node.value.openNode}
