@@ -5,7 +5,7 @@ import type {CanvasService} from '@/services/CanvasService'
 import type {FileService} from '@/services/FileService'
 import {TreeService} from '@/services/TreeService'
 import {type Canvas, createState, ElementType, type File} from '@/state'
-import {expectTree} from '../util/tree'
+import {expectTree} from '../testutil/tree'
 
 beforeEach(() => {
   vi.restoreAllMocks()

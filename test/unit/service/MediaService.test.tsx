@@ -7,8 +7,8 @@ import {Main} from '@/components/Main'
 import {createCtrl} from '@/services'
 import {DropTarget, MediaService} from '@/services/MediaService'
 import {type CanvasEditorElement, type CanvasImageElement, createState, ElementType} from '@/state'
-import {createYUpdate} from '../util/prosemirror-util'
-import {createIpcMock, stubLocation} from '../util/util'
+import {createYUpdate} from '../testutil/prosemirror-util'
+import {createIpcMock, stubLocation} from '../testutil/util'
 
 document.elementFromPoint = () => null
 

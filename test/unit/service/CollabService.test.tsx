@@ -5,7 +5,7 @@ import {mock} from 'vitest-mock-extended'
 import {Main} from '@/components/Main'
 import {createCtrl} from '@/services'
 import {createState} from '@/state'
-import {stubLocation} from '../util/util'
+import {stubLocation} from '../testutil/util'
 
 vi.mock('@/db', () => ({DB: mock()}))
 

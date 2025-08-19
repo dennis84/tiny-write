@@ -2,7 +2,7 @@ import {testEffect} from '@solidjs/testing-library'
 import {createEffect} from 'solid-js'
 import {expect, test} from 'vitest'
 import {createTreeStore} from '@/tree'
-import {expectTree} from './util/tree'
+import {expectTree} from './testutil/tree'
 
 test('createTreeStore - flat', () => {
   const tree = createTreeStore({

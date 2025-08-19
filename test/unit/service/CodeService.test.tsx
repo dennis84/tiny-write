@@ -4,8 +4,8 @@ import {mock} from 'vitest-mock-extended'
 import {Main} from '@/components/Main'
 import {createCtrl} from '@/services'
 import {createState, Page} from '@/state'
-import {createYUpdate} from '../util/codemirror-util'
-import {expectToBeDefined, stubLocation} from '../util/util'
+import {createYUpdate} from '../testutil/codemirror-util'
+import {expectToBeDefined, stubLocation} from '../testutil/util'
 
 vi.mock('@/db', () => ({DB: mock()}))
 vi.mock('mermaid', () => ({}))

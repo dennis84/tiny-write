@@ -4,8 +4,8 @@ import {mock} from 'vitest-mock-extended'
 import {DB} from '@/db'
 import {createCtrl} from '@/services'
 import {createState, ElementType, Page} from '@/state'
-import {createYUpdate} from '../util/prosemirror-util'
-import {createIpcMock} from '../util/util'
+import {createYUpdate} from '../testutil/prosemirror-util'
+import {createIpcMock} from '../testutil/util'
 
 vi.stubGlobal('__TAURI__', {})
 

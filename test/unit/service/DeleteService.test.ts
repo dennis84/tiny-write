@@ -14,7 +14,7 @@ import {
   ElementType,
   type File,
 } from '@/state'
-import {createYUpdate} from '../util/prosemirror-util'
+import {createYUpdate} from '../testutil/prosemirror-util'
 
 vi.mock('@/db', () => ({DB: mock()}))
 

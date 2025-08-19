@@ -5,8 +5,8 @@ import * as Y from 'yjs'
 import type {CollabService} from '@/services/CollabService'
 import {FileService} from '@/services/FileService'
 import {createState} from '@/state'
-import {createSubdoc, createYUpdate} from '../util/prosemirror-util'
-import {createIpcMock} from '../util/util'
+import {createSubdoc, createYUpdate} from '../testutil/prosemirror-util'
+import {createIpcMock} from '../testutil/util'
 
 vi.mock('@/db', () => ({DB: mock()}))
 vi.mock('mermaid', () => ({}))

@@ -20,8 +20,8 @@ import {
   Page,
 } from '@/state'
 import {BoxUtil} from '@/utils/BoxUtil'
-import {createYUpdate} from '../util/prosemirror-util'
-import {createCollabMock} from '../util/util'
+import {createYUpdate} from '../testutil/prosemirror-util'
+import {createCollabMock} from '../testutil/util'
 
 vi.mock('mermaid', () => ({}))
 vi.mock('@/db', () => ({DB: mock()}))

@@ -10,8 +10,8 @@ import type {FileService} from '@/services/FileService'
 import type {ProseMirrorService} from '@/services/ProseMirrorService'
 import type {SelectService} from '@/services/SelectService'
 import {createState} from '@/state'
-import {createEditorView, createYUpdate} from '../util/prosemirror-util'
-import {createCollabMock} from '../util/util'
+import {createEditorView, createYUpdate} from '../testutil/prosemirror-util'
+import {createCollabMock} from '../testutil/util'
 
 vi.stubGlobal('location', {
   pathname: '',

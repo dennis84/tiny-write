@@ -6,8 +6,8 @@ import {Main} from '@/components/Main'
 import type {DB} from '@/db'
 import {createCtrl} from '@/services'
 import {createState, Page} from '@/state'
-import {createYUpdate} from '../util/codemirror-util'
-import {createIpcMock, expectToBeDefined, stubLocation} from '../util/util'
+import {createYUpdate} from '../testutil/codemirror-util'
+import {createIpcMock, expectToBeDefined, stubLocation} from '../testutil/util'
 
 vi.mock('@/db', () => ({DB: mock<DB>()}))
 

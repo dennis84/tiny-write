@@ -2,7 +2,7 @@ import {EditorState, Transaction} from '@codemirror/state'
 import {EditorView, type Panel, showPanel} from '@codemirror/view'
 import markdownit, {type Token} from 'markdown-it'
 import iterator from 'markdown-it-for-inline'
-import {batch, createEffect, createSignal, For, Match, onMount, Show, Switch} from 'solid-js'
+import {batch, createEffect, createSignal, For, Match, Show, Switch} from 'solid-js'
 import {Dynamic} from 'solid-js/web'
 import {styled} from 'solid-styled-components'
 import {clipPlugin} from '@/codemirror/clip'
@@ -29,7 +29,6 @@ export interface TokenItem {
   parentId?: string
   nodeType: string
   openNode: Token
-  tokenIndex: number
 }
 
 interface Props {
@@ -72,12 +71,11 @@ export const MessageAnswer = (props: Props) => {
     props.onRegenerate?.(props.message.value)
   }
 
-  const createTokenItem = (node: Token, parentId: string, tokenIndex = -1): TokenItem => ({
+  const createTokenItem = (node: Token, parentId: string, tokenIndex: number): TokenItem => ({
     id: tokenIndex.toString(),
     parentId,
     nodeType: node.type.replace('_open', ''),
     openNode: node,
-    tokenIndex,
   })
 
   const renderMessage = (content: string) => {
@@ -118,47 +116,46 @@ export const MessageAnswer = (props: Props) => {
     let ref!: HTMLDivElement
     const [editorView, setEditorView] = createSignal<EditorView>()
 
-    onMount(() => {
-      let langStr: string | undefined
-      let attrsStr: string | undefined
-      if (p.item.openNode.info) {
-        const arr = p.item.openNode.info.split(/(\s+)/g)
-        langStr = arr[0]
-        attrsStr = arr.slice(2).join('')
-      }
-
-      const theme = getTheme(configService.codeTheme.value)
-      const lang = getLanguageConfig(langStr)
-      const doc = p.item.openNode.content.replace(/\n$/, '')
-      const attrs = parseCodeBlockAttrs(attrsStr ?? '')
-
-      const view = new EditorView({
-        parent: ref,
-        doc,
-        extensions: [
-          EditorState.readOnly.of(true),
-          EditorView.lineWrapping,
-          theme,
-          lang.highlight(),
-          copilotApply(attrs.id, attrs.range, attrs.file),
-          clipPlugin,
-        ],
-      })
-
-      setEditorView(view)
-    })
-
     createEffect(() => {
-      const view = editorView()
-      if (!view) return
+      let view = editorView()
+      if (!view) {
 
-      const from = view.state.doc.length
-      const insert = p.item.openNode.content.replace(/\n$/, '').slice(from)
+        let langStr: string | undefined
+        let attrsStr: string | undefined
+        if (p.item.openNode.info) {
+          const arr = p.item.openNode.info.split(/(\s+)/g)
+          langStr = arr[0]
+          attrsStr = arr.slice(2).join('')
+        }
 
-      view.dispatch({
-        changes: {from, insert},
-        annotations: Transaction.addToHistory.of(false),
-      })
+        const theme = getTheme(configService.codeTheme.value)
+        const lang = getLanguageConfig(langStr)
+        const doc = p.item.openNode.content.replace(/\n$/, '')
+        const attrs = parseCodeBlockAttrs(attrsStr ?? '')
+
+        view = new EditorView({
+          parent: ref,
+          doc,
+          extensions: [
+            EditorState.readOnly.of(true),
+            EditorView.lineWrapping,
+            theme,
+            lang.highlight(),
+            copilotApply(attrs.id, attrs.range, attrs.file),
+            clipPlugin,
+          ],
+        })
+
+        setEditorView(view)
+      } else {
+        const from = view.state.doc.length
+        const insert = p.item.openNode.content.replace(/\n$/, '').slice(from)
+
+        view.dispatch({
+          changes: {from, insert},
+          annotations: Transaction.addToHistory.of(false),
+        })
+      }
     })
 
     return <div class="fence-container" ref={ref} />

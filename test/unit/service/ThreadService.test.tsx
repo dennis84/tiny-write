@@ -7,8 +7,8 @@ import type {ChatMessageTextContent, CopilotService} from '@/services/CopilotSer
 import type {FileService} from '@/services/FileService'
 import {ThreadService} from '@/services/ThreadService'
 import {createState, type File, type Message, Page} from '@/state'
-import {createYUpdate} from '../util/codemirror-util'
-import {expectTree} from '../util/tree'
+import {createYUpdate} from '../testutil/codemirror-util'
+import {expectTree} from '../testutil/tree'
 
 beforeEach(() => {
   vi.restoreAllMocks()
