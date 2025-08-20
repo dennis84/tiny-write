@@ -84,8 +84,12 @@ export class CodeService {
         },
       }
 
-      const subdoc = CollabService.getSubdoc(newState.collab?.ydoc, file.id)
-      if (text) this.updateText(file, subdoc, text)
+      const ydoc = newState.collab?.ydoc
+      if (text && ydoc) {
+        const subdoc = CollabService.getSubdoc(ydoc, file.id)
+        this.updateText(file, subdoc, text)
+      }
+
       this.setState(newState)
     } catch (error: any) {
       this.appService.setError({error, fileId: params.id})

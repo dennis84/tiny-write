@@ -83,7 +83,9 @@ export class Tree<T> {
     const changes = new Set<string>()
 
     if (rightId) {
-      this.before(rightId, id).forEach((i) => changes.add(i))
+      this.before(rightId, id).forEach((i) => {
+        changes.add(i)
+      })
     }
 
     const newState = {

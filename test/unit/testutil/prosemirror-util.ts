@@ -31,6 +31,8 @@ export const createSubdoc = (id: string, str: string[]) => {
 
 export const createYdoc = (subdocs: Y.Doc[]) => {
   const ydoc = new Y.Doc({gc: false})
-  subdocs.forEach((subdoc) => ydoc.getMap().set(subdoc.guid, subdoc))
+  subdocs.forEach((subdoc) => {
+    ydoc.getMap().set(subdoc.guid, subdoc)
+  })
   return ydoc
 }

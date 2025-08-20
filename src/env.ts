@@ -1,4 +1,4 @@
-import {version as v} from '../package.json'
+import {version as v} from '../package.json' with { type: 'json' }
 
 export const shortHash = __COMMIT_HASH__
 

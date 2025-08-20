@@ -26,7 +26,7 @@ export const Grid = ({onClick}: {onClick: () => void}) => {
         {STEPS.map(([r, size], i) => {
           const grid = 10
           const camera = canvasService.currentCanvas?.camera
-          if (!camera) return
+          if (!camera) return null
 
           const s = size * grid * camera.zoom
           const xo = camera.point[0] * camera.zoom

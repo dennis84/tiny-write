@@ -121,7 +121,9 @@ export class CollabService {
     configType?.observe(this.onCollabConfigUpdate)
 
     this.store.collab?.ydoc.on('subdocs', ({loaded}) => {
-      loaded.forEach((subdoc) => this.getSubdoc(subdoc.guid))
+      loaded.forEach((subdoc) => {
+        this.getSubdoc(subdoc.guid)
+      })
     })
 
     this.provider.on('sync', () => {

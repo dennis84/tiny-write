@@ -32,14 +32,18 @@ export const MergeMenu = () => {
   const onAccept = () => {
     const view = fileService.currentFile?.codeEditorView
     if (!view) return
-    getChunks(view.state)?.chunks.forEach((chunk) => acceptChunk(view, chunk.fromA))
+    getChunks(view.state)?.chunks.forEach((chunk) => {
+      acceptChunk(view, chunk.fromA)
+    })
   }
 
   const onReject = () => {
     const currentFile = fileService.currentFile
     const view = currentFile?.codeEditorView
     if (!view) return
-    getChunks(view.state)?.chunks.forEach((chunk) => rejectChunk(view, chunk.fromA))
+    getChunks(view.state)?.chunks.forEach((chunk) => {
+      rejectChunk(view, chunk.fromA)
+    })
     open(currentFile)
   }
 

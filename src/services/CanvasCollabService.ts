@@ -130,7 +130,9 @@ export class CanvasCollabService {
 
   removeMany(ids: string[]) {
     this.ydoc?.transact(() => {
-      ids.forEach((id) => this.elements?.delete(PREFIX + id))
+      ids.forEach((id) => {
+        this.elements?.delete(PREFIX + id)
+      })
     }, this.ydoc.clientID)
   }
 

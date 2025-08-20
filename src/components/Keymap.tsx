@@ -110,7 +110,9 @@ export const Keymap = () => {
     const selection = canvasService.selection
 
     if (selection) {
-      selection.elements.forEach(([id]) => elementIds.push(id))
+      selection.elements.forEach(([id]) => {
+        elementIds.push(id)
+      })
     } else {
       const selected = currentCanvas.elements.find((el) => {
         if (isEditorElement(el)) return el.selected && !el.active
@@ -148,7 +150,7 @@ export const Keymap = () => {
     open(file, {back: true, selection})
   }
 
-  type Fn = (e: KeyboardEvent) => boolean | undefined | Promise<boolean | undefined>
+  type Fn = (e: KeyboardEvent) => boolean | undefined | Promise<boolean | void>
   const keymap: Record<string, Fn> = {
     [`${mod}-r`]: onReload,
     [`${mod}-q`]: onQuit,

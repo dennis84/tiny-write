@@ -26,7 +26,9 @@ const collectWords = new Plugin({
       // Generate words initially
       if (prev.size === 0) {
         state.doc.forEach((node) => {
-          getWords(node).forEach((w) => prev.add(w))
+          getWords(node).forEach((w) => {
+            prev.add(w)
+          })
         })
       }
 
@@ -44,7 +46,9 @@ const collectWords = new Plugin({
 const update = throttle(500, (view) => {
   const words = new Set()
   view.state.doc.forEach((node: Node) => {
-    getWords(node).forEach((w) => words.add(w))
+    getWords(node).forEach((w) => {
+      words.add(w)
+    })
   })
 
   const tr = view.state.tr

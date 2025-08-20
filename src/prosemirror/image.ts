@@ -85,8 +85,8 @@ class ImageView {
     node: Node,
     private view: EditorView,
     private getPos: () => number | undefined,
-    private appService: AppService,
-    private canvasService: CanvasService,
+    appService: AppService,
+    canvasService: CanvasService,
   ) {
     this.container = document.createElement('span')
     this.width = node.attrs.width ?? 0

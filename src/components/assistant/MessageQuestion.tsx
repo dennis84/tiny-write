@@ -6,6 +6,7 @@ import {ButtonGroup, IconButton} from '../Button'
 import {IconEditSquare} from '../Icon'
 import {TooltipHelp} from '../TooltipHelp'
 import {MessageInput} from './MessageInput'
+import {MessageMarkdown} from './MessageMarkdown'
 import {Pagination} from './Pagination'
 import {chatBubble} from './Style'
 
@@ -75,7 +76,7 @@ export const MessageQuestion = (props: Props) => {
       <Show when={!editing()}>
         <QuestionContainer>
           <QuestionBubble data-testid="question_bubble">
-            {props.message.value.content}
+            <MessageMarkdown content={props.message.value.content} />
           </QuestionBubble>
           <QuestionAttachments>
             <For each={props.message.value.attachments}>

@@ -80,7 +80,6 @@ export const DropAttachment = (props: Props) => {
           reader.onload = (e) => {
             const base64String = e.target?.result as string
             newFilesData.push({type: 'image', name: file.name, data: base64String})
-            console.log(base64String)
 
             // Update state when all files are processed
             if (newFilesData.length === files.length) {

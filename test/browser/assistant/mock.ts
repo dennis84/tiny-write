@@ -18,9 +18,13 @@ export const setupDB = async (page: Page, data: Data) => {
       Object.entries(d).forEach(([name, storeData]) => {
         const objectStore = transaction.objectStore(name)
         if (Array.isArray(storeData)) {
-          storeData.forEach((value) => objectStore.add(value))
+          storeData.forEach((value) => {
+            objectStore.add(value)
+          })
         } else {
-          Object.entries(storeData).forEach(([key, value]) => objectStore.put(value, key))
+          Object.entries(storeData).forEach(([key, value]) => {
+            objectStore.put(value, key)
+          })
         }
       })
     }
