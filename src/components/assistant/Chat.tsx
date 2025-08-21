@@ -111,7 +111,6 @@ export const Chat = (props: Props) => {
           }
         },
         async () => {
-          threadService.streamLastMessageEnd(messageId)
           await threadService.saveThread()
 
           if (!currentThread.title) {

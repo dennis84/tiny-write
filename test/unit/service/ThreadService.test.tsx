@@ -107,11 +107,7 @@ test('streamLastMessage', async () => {
   expect(store.threads[0].messages[1].content).toBe('Abc')
 
   expect(store.threads[0].messages).toHaveLength(2)
-  expect(store.threads[0].messages[1].streaming).toBeTruthy()
   expect(store.threads[0].messages[1].parentId).toBe('1')
-
-  service.streamLastMessageEnd('2')
-  expect(store.threads[0].messages[1].streaming).toBeFalsy()
 })
 
 test('removeMessage', async () => {

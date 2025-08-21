@@ -271,7 +271,6 @@ export interface Message {
   attachments?: Attachment[]
   role: ChatRole
   error?: string
-  streaming?: boolean
   type?: MessageType
   fileId?: string
   selection?: [number, number]

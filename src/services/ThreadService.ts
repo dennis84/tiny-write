@@ -108,21 +108,7 @@ export class ThreadService {
 
     this.setState('threads', currentThreadIndex, 'messages', messageIndex, (prev) => ({
       content: prev.content + chunk,
-      streaming: true,
     }))
-
-    const message = this.store.threads[currentThreadIndex].messages[messageIndex]
-    this.messageTree.updateValue(message)
-  }
-
-  streamLastMessageEnd(id: string) {
-    const currentThread = this.currentThread
-    if (!currentThread) return
-
-    const currentThreadIndex = this.currentThreadIndex
-    const messageIndex = currentThread.messages.findIndex((m) => m.id === id)
-
-    this.setState('threads', currentThreadIndex, 'messages', messageIndex, 'streaming', false)
 
     const message = this.store.threads[currentThreadIndex].messages[messageIndex]
     this.messageTree.updateValue(message)

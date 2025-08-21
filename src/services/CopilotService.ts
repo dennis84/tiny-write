@@ -16,6 +16,7 @@ import {
 } from '@/remote/copilot'
 import {debug, error, info} from '@/remote/log'
 import type {ChatRole, State} from '@/state'
+import { CopilotMock } from '@/utils/CopilotMock'
 
 interface ApiTokenEndpoints {
   api: string
@@ -88,7 +89,9 @@ export class CopilotService {
   constructor(
     private store: Store<State>,
     private setState: SetStoreFunction<State>,
-  ) {}
+  ) {
+    CopilotMock.setup()
+  }
 
   async disconnect() {
     const ai = {...this.store.ai, copilot: undefined}
