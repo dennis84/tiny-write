@@ -282,6 +282,7 @@ export interface Thread {
   title?: string
   lastModified?: Date
   messages: Message[]
+  path?: Map<string | undefined, string>
 }
 
 export interface State {

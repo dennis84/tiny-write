@@ -1,4 +1,3 @@
-import {createSignal} from 'solid-js'
 import type {SetStoreFunction, Store} from 'solid-js/store'
 import {v4 as uuidv4} from 'uuid'
 import {createCodeFence} from '@/components/assistant/util'
@@ -14,18 +13,11 @@ import type {
 } from './CopilotService'
 import type {FileService} from './FileService'
 
-type PathMap = Map<string | undefined, string>
-
 export class ThreadService {
   public messageTree = createTreeStore<Message>()
-  private pathMapSignal = createSignal<PathMap>(new Map())
 
   static createId() {
     return uuidv4()
-  }
-
-  get pathMap() {
-    return this.pathMapSignal[0]
   }
 
   get currentThreadId(): string | undefined {
@@ -67,7 +59,6 @@ export class ThreadService {
 
     threads.unshift(thread)
     this.setState('threads', threads)
-    this.pathMapSignal[1](new Map())
     this.messageTree.updateAll([])
 
     return thread
@@ -77,8 +68,7 @@ export class ThreadService {
     const currentThread = this.currentThread
     if (!currentThread) return
 
-    const parentId =
-      message.parentId ?? currentThread.messages[currentThread.messages.length - 1]?.id
+    const parentId = message.parentId ?? this.getParentId()
     const newMessage = {...message, parentId}
 
     info(`Add new message (message=${JSON.stringify(newMessage)})`)
@@ -174,7 +164,6 @@ export class ThreadService {
     }
 
     this.setState('threads', threads)
-    this.pathMapSignal[1](new Map())
     this.messageTree.updateAll(this.currentThread?.messages ?? [])
   }
 
@@ -224,12 +213,18 @@ export class ThreadService {
   }
 
   updatePath(parentId: string | undefined, childId: string) {
-    this.pathMapSignal[1]((prev) => new Map(prev).set(parentId, childId))
+    this.setState('threads', this.currentThreadIndex, 'path', (prev) =>
+      new Map(prev).set(parentId, childId),
+    )
   }
 
   getItem(parentId: string | undefined, childrenIds: string[]): TreeItem<Message> | undefined {
-    const overridePath = this.pathMap().get(parentId)
+    const currentThread = this.currentThread
+    if (!currentThread) return
+
+    const overridePath = currentThread.path?.get(parentId)
     const nextId = overridePath ?? childrenIds[childrenIds.length - 1]
+
     if (nextId) return this.messageTree.getItem(nextId)
   }
 
@@ -270,26 +265,49 @@ export class ThreadService {
     })
   }
 
+  traverseTree(fn: (it: TreeItem<Message>) => void) {
+    const currentThread = this.currentThread
+    if (!currentThread) return undefined
+
+    const path = currentThread.path
+    let nextId =
+      path?.get(undefined) ?? this.messageTree.rootItemIds[this.messageTree.rootItemIds.length - 1]
+    let next: TreeItem<Message> | undefined
+    let parentId: string | undefined
+
+    while ((next = this.messageTree.getItem(nextId))) {
+      fn(next)
+      nextId = path?.get(next.id) ?? next.childrenIds[next.childrenIds.length - 1]
+    }
+
+    return parentId
+  }
+
+  getParentId(): string | undefined {
+    let parentId: string | undefined
+    this.traverseTree((it) => {
+      if (!it.value.error) parentId = it.value.id
+    })
+
+    return parentId
+  }
+
   getMessages(): {messages: ChatMessage[]; nextId?: string; parentId?: string} {
     const currentThread = this.currentThread
     if (!currentThread) return {messages: []}
 
     const messages: ChatMessage[] = []
-    const pathMap = this.pathMap()
-    let nextId =
-      pathMap.get(undefined) ??
-      this.messageTree.rootItemIds[this.messageTree.rootItemIds.length - 1]
-    let next: TreeItem<Message> | undefined
     let parentId: string | undefined
+    let nextId: string | undefined
 
-    while ((next = this.messageTree.getItem(nextId))) {
-      if (!next.value.error) {
-        messages.push(this.toChatMessage(next.value))
-        parentId = next.value.id
+    this.traverseTree((it) => {
+      nextId = currentThread.path?.get(it.id)
+
+      if (!it.value.error) {
+        messages.push(this.toChatMessage(it.value))
+        parentId = it.value.id
       }
-
-      nextId = pathMap.get(next.id) ?? next.childrenIds[next.childrenIds.length - 1]
-    }
+    })
 
     // final must be role user
     if (messages[messages.length - 1]?.role !== 'user') {
@@ -323,16 +341,10 @@ export class ThreadService {
     if (!editorView || !currentThread) return
 
     const messages: Message[] = []
-    const pathMap = this.pathMap()
-    let nextId =
-      pathMap.get(undefined) ??
-      this.messageTree.rootItemIds[this.messageTree.rootItemIds.length - 1]
-    let next: TreeItem<Message> | undefined
 
-    while ((next = this.messageTree.getItem(nextId))) {
-      messages.push(next.value)
-      nextId = pathMap.get(next.id) ?? next.childrenIds[next.childrenIds.length - 1]
-    }
+    this.traverseTree((it) => {
+      messages.push(it.value)
+    })
 
     const existing = messages.find((m) => m.fileId === currentFile.id)
     const content = createCodeFence({

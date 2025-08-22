@@ -47,12 +47,12 @@ export const Pagination = (props: Props) => {
 
   return (
     <Show when={props.childrenIds.length > 1}>
-      <PaginationContainer>
-        <IconButton onClick={onPrev}>
+      <PaginationContainer data-testid="pagination">
+        <IconButton onClick={onPrev} data-testid="prev">
           <IconChevronLeft />
         </IconButton>
         <CurrentPage>{currentPage()}</CurrentPage>
-        <IconButton onClick={onNext}>
+        <IconButton onClick={onNext} data-testid="next">
           <IconChevronRight />
         </IconButton>
       </PaginationContainer>

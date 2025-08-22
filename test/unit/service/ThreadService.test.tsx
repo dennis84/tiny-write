@@ -75,7 +75,66 @@ test('addMessage', async () => {
   await service.addMessage({id: '1', role: 'user', content: '1'})
   await service.addMessage({id: '2', role: 'user', content: '2'})
 
-  expect(store.threads[0].messages).toHaveLength(2)
+  expectTree(
+    service.messageTree,
+    `
+    └ 1 (parentId=, leftId=)
+      └ 2 (parentId=1, leftId=)
+    `,
+  )
+})
+
+test('addMessage - path', async () => {
+  const initial = createState({
+    lastLocation: {
+      path: '/assistant/1',
+      page: Page.Assistant,
+      threadId: '1',
+    },
+    threads: [
+      {
+        id: '1',
+        messages: [
+          {id: '1', role: 'user', content: '1'},
+          {id: '2', role: 'user', content: '2'},
+        ],
+        path: new Map([[undefined, '1']]),
+      },
+    ],
+  })
+
+  const [store, setState] = createStore(initial)
+  const copilotService = mock<CopilotService>()
+  const fileService = mock<FileService>()
+  const service = new ThreadService(store, setState, copilotService, fileService)
+  service.messageTree.updateAll(store.threads[0].messages)
+
+  expectTree(
+    service.messageTree,
+    `
+    └ 1 (parentId=, leftId=)
+    └ 2 (parentId=, leftId=)
+    `,
+  )
+
+  const messages1 = service.getMessages()
+  expect(messages1.messages).toHaveLength(1)
+  expect(messages1.parentId).toBe('1')
+
+  await service.addMessage({id: '3', role: 'user', content: '3'})
+
+  expectTree(
+    service.messageTree,
+    `
+    └ 1 (parentId=, leftId=)
+      └ 3 (parentId=1, leftId=)
+    └ 2 (parentId=, leftId=)
+    `,
+  )
+
+  const messages2 = service.getMessages()
+  expect(messages2.parentId).toBe('3')
+  expect(messages2.nextId).toBe(undefined)
 })
 
 test('streamLastMessage', async () => {
@@ -341,9 +400,32 @@ test('regenerate - user message', async () => {
   const service = new ThreadService(store, setState, copilotService, fileService)
   service.messageTree.updateAll(store.threads[0].messages)
 
+  let nextId = 3
+  vi.spyOn(ThreadService, 'createId').mockImplementation(() => String(nextId++))
+
+  expectTree(
+    service.messageTree,
+    `
+    └ 1 (parentId=, leftId=)
+      └ 2 (parentId=1, leftId=)
+    `,
+  )
+
   await service.regenerate({id: '1', role: 'user', content: '111'})
 
   expect(service.messageTree.rootItemIds).toHaveLength(2)
+
+  expectTree(
+    service.messageTree,
+    `
+    └ 1 (parentId=, leftId=)
+      └ 2 (parentId=1, leftId=)
+    └ 3 (parentId=, leftId=1)
+    `,
+  )
+
+  expect(service.currentThread?.path?.size).toBe(1)
+  expect(service.currentThread?.path?.get(undefined)).toBe('3')
 
   const {messages} = service.getMessages()
   const message = messages[0].content[0] as ChatMessageTextContent
@@ -374,13 +456,34 @@ test('regenerate - assistant message', async () => {
   const service = new ThreadService(store, setState, copilotService, fileService)
   service.messageTree.updateAll(store.threads[0].messages)
 
+  let nextId = 3
+  vi.spyOn(ThreadService, 'createId').mockImplementation(() => String(nextId++))
+
+  expectTree(
+    service.messageTree,
+    `
+    └ 1 (parentId=, leftId=)
+      └ 2 (parentId=1, leftId=)
+    `,
+  )
+
   expect(service.getMessages().messages).toHaveLength(0)
 
   await service.regenerate(store.threads[0].messages[1])
 
-  const {messages, nextId} = service.getMessages()
-  expect(messages).toHaveLength(1)
-  expect(nextId).toBeDefined()
+  expectTree(
+    service.messageTree,
+    `
+    └ 1 (parentId=, leftId=)
+      └ 2 (parentId=1, leftId=)
+    `,
+  )
+
+  expect(service.currentThread?.path?.get('1')).toBe('3')
+
+  const result = service.getMessages()
+  expect(result.messages).toHaveLength(1)
+  expect(result.nextId).toBeDefined()
 })
 
 test('generateTitle', async () => {
@@ -658,5 +761,5 @@ test('insertAutoContext - regenerate', async () => {
     `,
   )
 
-  expect(service.pathMap().get(undefined)).toBe('3')
+  expect(service.currentThread?.path?.get(undefined)).toBe('3')
 })

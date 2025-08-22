@@ -73,7 +73,7 @@ export const MessageInput = (props: Props) => {
   })
 
   return (
-    <MessageInputContainer>
+    <MessageInputContainer data-testid="message_input">
       <div ref={chatInputRef}></div>
       <ChatInputAction>
         <TooltipHelp title="Cancel">
@@ -82,7 +82,7 @@ export const MessageInput = (props: Props) => {
           </IconButton>
         </TooltipHelp>
         <TooltipHelp title="Update message">
-          <IconButton onClick={onUpdate}>
+          <IconButton onClick={onUpdate} data-testid="update_message">
             <IconCheck />
           </IconButton>
         </TooltipHelp>

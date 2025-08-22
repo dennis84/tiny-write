@@ -90,7 +90,7 @@ export const MessageQuestion = (props: Props) => {
               childrenIds={props.childrenIds}
             />
             <TooltipHelp title="Edit message">
-              <IconButton onClick={onEditMessage}>
+              <IconButton onClick={onEditMessage} data-testid="edit_message">
                 <IconEditSquare />
               </IconButton>
             </TooltipHelp>

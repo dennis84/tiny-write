@@ -2,7 +2,7 @@ import type {Token} from 'markdown-it'
 import {Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {copy} from '@/remote/clipboard'
-import {useState, type Message} from '@/state'
+import {type Message, useState} from '@/state'
 import type {TreeItem} from '@/tree'
 import {ButtonGroup, IconButton} from '../Button'
 import {IconContentCopy, IconRefresh, Spinner} from '../Icon'
@@ -47,11 +47,11 @@ export const MessageAnswer = (props: Props) => {
           </IconButton>
         </TooltipHelp>
         <TooltipHelp title="Regenerate">
-          <IconButton onClick={onRegenerate}>
+          <IconButton onClick={onRegenerate} data-testid="regenerate">
             <IconRefresh />
           </IconButton>
         </TooltipHelp>
-        <Show when={copilotService.streaming()}>
+        <Show when={copilotService.streaming() && props.message.childrenIds.length === 0}>
           <IconButton>
             <Spinner />
           </IconButton>

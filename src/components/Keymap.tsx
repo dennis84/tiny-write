@@ -150,7 +150,7 @@ export const Keymap = () => {
     open(file, {back: true, selection})
   }
 
-  type Fn = (e: KeyboardEvent) => boolean | undefined | Promise<boolean | void>
+  type Fn = (e: KeyboardEvent) => boolean | undefined | Promise<boolean | undefined>
   const keymap: Record<string, Fn> = {
     [`${mod}-r`]: onReload,
     [`${mod}-q`]: onQuit,
