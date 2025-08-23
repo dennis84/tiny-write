@@ -1,4 +1,5 @@
-import fetchMock from 'fetch-mock'
+import fetchMock, {type CallLog} from 'fetch-mock'
+import {adjectives, animals, uniqueNamesGenerator} from 'unique-names-generator'
 import {pause} from './promise'
 
 const LOREM_IPSUM =
@@ -73,9 +74,27 @@ export class CopilotMock {
         },
       })
 
-    fetchMock
-      .mockGlobal()
-      .route('end:https://example.com/github/api/chat/completions', createStream)
+    const isStreamingCompletions = (m: CallLog): boolean => {
+      if (!m.url.endsWith('https://example.com/github/api/chat/completions')) return false
+      if (typeof m.options.body !== 'string') return false
+      const json = JSON.parse(m.options.body)
+      return json.stream
+    }
+
+    fetchMock.post((m) => isStreamingCompletions(m), createStream)
+    fetchMock.post(
+      (m) => !isStreamingCompletions(m),
+      () => {
+        const title = uniqueNamesGenerator({
+          dictionaries: [adjectives, animals],
+          style: 'capital',
+          separator: ' ',
+          length: 2,
+        })
+
+        return CopilotMock.completions(title)
+      },
+    )
   }
 
   static login() {
