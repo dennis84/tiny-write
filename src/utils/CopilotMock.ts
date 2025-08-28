@@ -41,6 +41,7 @@ export class CopilotMock {
               enqueueMessage(controller, '```')
               await pause(10)
               enqueueMessage(controller, 'typescript id=123 file=test.ts\n')
+              enqueueMessage(controller, 'let x = ') // to test highlighting
               await pause(10)
             } else if (h1) {
               enqueueMessage(controller, '# ')
@@ -66,7 +67,9 @@ export class CopilotMock {
 
             if (code) {
               enqueueMessage(controller, '\n')
-              enqueueMessage(controller, '```')
+              enqueueMessage(controller, '``') // close code fence in 2 chunks
+              enqueueMessage(controller, '`\n\n')
+              continue
             }
 
             enqueueMessage(controller, '\n\n')

@@ -11,7 +11,7 @@ export const CodeMirrorContainer = styled('div')`
   .cm-editor {
     border-radius: 0;
     .cm-scroller {
-      padding-top: 30px;
+      padding-top: 50px; // leave space for the navbar
       padding-left: 20px;
       .cm-content {
         padding-bottom: 90vh;

@@ -31,7 +31,7 @@ export interface ApplyPanelState {
 }
 
 export const ApplyPanel = (p: {state: ApplyPanelState}) => {
-  const {store, fileService, toastService, treeService} = useState()
+  const {store, fileService, threadService, toastService, treeService} = useState()
   const [title, setTitle] = createSignal('')
   const [file, setFile] = createSignal<File>()
   const {open} = useOpen()
@@ -55,10 +55,13 @@ export const ApplyPanel = (p: {state: ApplyPanelState}) => {
     const f = file()
     if (!f) return
 
+    const currentThread = threadService.currentThread
+    if (!currentThread) return
+
     const doc = p.state.editorView.state.doc.toString()
     const range = p.state.range
 
-    open(f, {merge: {doc, range}})
+    open(f, {merge: {doc, range}, back: true})
   }
 
   const onCreateFile = async () => {

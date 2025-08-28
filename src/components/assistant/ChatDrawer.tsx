@@ -1,5 +1,6 @@
+import {useLocation} from '@solidjs/router'
 import {onMount} from 'solid-js'
-import {useState} from '@/state'
+import {type LocationState, useState} from '@/state'
 import {Drawer, DrawerContent} from '../Drawer'
 import {ChatNavbar} from '../menu/Navbar'
 import {Chat} from './Chat'
@@ -7,6 +8,7 @@ import {Chat} from './Chat'
 export const ChatDrawer = () => {
   let scrollContent!: HTMLDivElement
   const {aiService, appService, threadService} = useState()
+  const location = useLocation<LocationState>()
 
   const onDrawerResized = async (width: number) => {
     await aiService.setSidebarWidth(width)
@@ -19,8 +21,13 @@ export const ChatDrawer = () => {
   }
 
   onMount(() => {
-    const thread = threadService.newThread()
-    appService.setLastLocation({threadId: thread.id})
+    const threadId = location.state?.threadId
+    if (threadId) {
+      onChangeThread(threadId)
+    } else {
+      const thread = threadService.newThread()
+      appService.setLastLocation({threadId: thread.id})
+    }
   })
 
   return (

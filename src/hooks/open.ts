@@ -11,6 +11,7 @@ import {
   isFile,
   type MergeState,
   type Openable,
+  useState,
   type VisualPositionRange,
 } from '../state'
 
@@ -18,11 +19,13 @@ interface OpenOptions {
   back?: boolean
   selection?: VisualPositionRange
   merge?: MergeState
+  threadId?: string
 }
 
 export const useOpen = () => {
   const navigate = useNavigate()
   const location = useLocation()
+  const {store} = useState()
 
   const isCanvasElement = (el: any): el is CanvasElement =>
     el.type === ElementType.Code ||
@@ -37,7 +40,17 @@ export const useOpen = () => {
     const prev = options?.back ? location.pathname : undefined
     const file = isFile(item) ? item.path : undefined
     const newFile = isFile(item) ? item.newFile : undefined
-    const state = {prev, file, newFile, selection: options?.selection, merge: options?.merge}
+    // store threadId in location state to keep assistant open
+    const threadId = options?.threadId ?? store?.lastLocation?.threadId
+
+    const state = {
+      prev,
+      file,
+      newFile,
+      selection: options?.selection,
+      merge: options?.merge,
+      threadId,
+    }
 
     if (item === '/') {
       info(`Redirect to (to=/)`)

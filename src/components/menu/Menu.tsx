@@ -1,4 +1,5 @@
-import {type JSX, Show} from 'solid-js'
+import {useLocation} from '@solidjs/router'
+import {createEffect, type JSX, Show} from 'solid-js'
 import {
   IconAi,
   IconAiAssistant,
@@ -13,7 +14,7 @@ import {
 import {isDev, isMac, isTauri, mod, shortHash, VERSION_URL, version} from '@/env'
 import {quit} from '@/remote/app'
 import {MenuId} from '@/services/MenuService'
-import {Page, useState} from '@/state'
+import {type LocationState, Page, useState} from '@/state'
 import {ChatDrawer} from '../assistant/ChatDrawer'
 import {Drawer, DrawerContent} from '../Drawer'
 import {FULL_WIDTH} from '../Layout'
@@ -51,6 +52,7 @@ export const MenuDrawer = ({children}: {children: JSX.Element}) => {
 
 export const Menu = () => {
   const {store, appService, menuService, configService, fileService, prettierService} = useState()
+  const location = useLocation<LocationState>()
 
   const modKey = isMac ? '⌘' : mod
 
@@ -83,7 +85,7 @@ export const Menu = () => {
 
   const onReset = async () => {
     await appService.reset()
-    location.reload()
+    window.location.reload()
   }
 
   const maybeHide = () => {
@@ -95,6 +97,13 @@ export const Menu = () => {
     if (!currentFile?.codeEditorView) return true
     return prettierService.supports(currentFile.codeLang ?? '')
   }
+
+  createEffect(() => {
+    // Open assistant menu if merge was applied in assistant mode
+    if (store.lastLocation?.path !== Page.Assistant && location.state?.merge?.threadId) {
+      menuService.showAssistant()
+    }
+  })
 
   return (
     <Container>

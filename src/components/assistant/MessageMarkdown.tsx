@@ -1,4 +1,4 @@
-import {EditorState, Transaction} from '@codemirror/state'
+import {Compartment, EditorState, Transaction} from '@codemirror/state'
 import {EditorView, type Panel, showPanel} from '@codemirror/view'
 import markdownit, {type Token} from 'markdown-it'
 import iterator from 'markdown-it-for-inline'
@@ -55,21 +55,29 @@ export const MessageMarkdown = (props: Props) => {
     let ref!: HTMLDivElement
     const [editorView, setEditorView] = createSignal<EditorView>()
 
+    const langCompartment = new Compartment()
+    const copilotApplyCompartment = new Compartment()
+
+    const parseInfo = () => {
+      let lang: string | undefined
+      let attrs: string | undefined
+      if (p.item.openNode.info) {
+        const arr = p.item.openNode.info.split(/(\s+)/g)
+        lang = arr[0]
+        attrs = arr.slice(2).join('')
+      }
+
+      return {lang, attrs}
+    }
+
     createEffect(() => {
       let view = editorView()
       if (!view) {
-        let langStr: string | undefined
-        let attrsStr: string | undefined
-        if (p.item.openNode.info) {
-          const arr = p.item.openNode.info.split(/(\s+)/g)
-          langStr = arr[0]
-          attrsStr = arr.slice(2).join('')
-        }
-
+        const info = parseInfo()
         const theme = getTheme(configService.codeTheme.value)
-        const lang = getLanguageConfig(langStr)
+        const lang = getLanguageConfig(info.lang)
         const doc = p.item.openNode.content.replace(/\n$/, '')
-        const attrs = parseCodeBlockAttrs(attrsStr ?? '')
+        const attrs = parseCodeBlockAttrs(info.attrs ?? '')
 
         view = new EditorView({
           parent: ref,
@@ -78,20 +86,35 @@ export const MessageMarkdown = (props: Props) => {
             EditorState.readOnly.of(true),
             EditorView.lineWrapping,
             theme,
-            lang.highlight(),
-            copilotApply(attrs.id, attrs.range, attrs.file),
+            langCompartment.of(lang.highlight()),
             clipPlugin,
+            copilotApplyCompartment.of(copilotApply(attrs.id, attrs.range, attrs.file)),
           ],
         })
 
         setEditorView(view)
       } else {
-        const from = view.state.doc.length
-        const insert = p.item.openNode.content.replace(/\n$/, '').slice(from)
+        // Remove if content is shorter than doc. Happens when AI closes a code fence:
+        // chunk: ``
+        // chunk: `\n\n
+        const content = p.item.openNode.content.replace(/\n$/, '')
+        const docLen = view.state.doc.length
+        const from = Math.min(content.length, docLen)
+
+        // Reconfigure plugins because highlight infos comes after open fence:
+        // chunk: ```
+        // chunk: typescript\n
+        const info = parseInfo()
+        const lang = getLanguageConfig(info.lang)
+        const attrs = parseCodeBlockAttrs(info.attrs ?? '')
 
         view.dispatch({
-          changes: {from, insert},
+          changes: {from, to: docLen, insert: content.slice(from)},
           annotations: Transaction.addToHistory.of(false),
+          effects: [
+            langCompartment.reconfigure(lang.highlight()),
+            copilotApplyCompartment.reconfigure(copilotApply(attrs.id, attrs.range, attrs.file)),
+          ],
         })
       }
     })
@@ -137,14 +160,12 @@ export const MessageMarkdown = (props: Props) => {
   const MarkdownNode = (p: {node: TreeItem<TokenItem>}) => {
     return (
       <Show
-        when={p.node.value.openNode}
+        when={p.node.value.openNode.tag}
         fallback={<MarkdownTree childrenIds={p.node.childrenIds} />}
       >
-        {(n) => (
-          <Dynamic component={n().tag}>
-            <MarkdownTree childrenIds={p.node.childrenIds} />
-          </Dynamic>
-        )}
+        <Dynamic component={p.node.value.openNode.tag}>
+          <MarkdownTree childrenIds={p.node.childrenIds} />
+        </Dynamic>
       </Show>
     )
   }

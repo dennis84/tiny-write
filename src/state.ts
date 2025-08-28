@@ -30,6 +30,7 @@ export interface LocationState {
   newFile?: string
   selection?: VisualPositionRange
   merge?: MergeState
+  threadId?: string // active thread in sidebar
 }
 
 export interface VisualPosition {
