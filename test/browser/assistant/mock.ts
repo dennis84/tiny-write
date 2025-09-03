@@ -9,7 +9,7 @@ export const setupDB = async (page: Page, data: Data) => {
   await page.goto('/')
   await page.evaluate((d) => {
     const indexedDB = window.indexedDB
-    const request = indexedDB.open('tiny_write', 3)
+    const request = indexedDB.open('tiny_write', 4)
 
     request.onsuccess = (event: any) => {
       const db = event.target.result

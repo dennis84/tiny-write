@@ -85,12 +85,16 @@ interface MyDB extends DBSchema {
     key: string
     value: Thread
   }
+  lastLocation: {
+    key: string
+    value: LocationState
+  }
 }
 
 const DB_NAME = 'tiny_write'
 
 // Increment version and add new scheme:
-const dbPromise = openDB<MyDB>(DB_NAME, 3, {
+const dbPromise = openDB<MyDB>(DB_NAME, 4, {
   upgrade(db: any, oldVersion, newVersion) {
     if (!newVersion) return
 
@@ -111,6 +115,10 @@ const dbPromise = openDB<MyDB>(DB_NAME, 3, {
 
     if (!db.objectStoreNames.contains('threads')) {
       db.createObjectStore('threads', {keyPath: 'id'})
+    }
+
+    if (!db.objectStoreNames.contains('lastLocation')) {
+      db.createObjectStore('lastLocation')
     }
   },
 })
@@ -137,11 +145,11 @@ export class DB {
   }
 
   static async setLastLocation(location: LocationState) {
-    return (await dbPromise).put('meta', DB.unwrap(location), 'last_location')
+    return (await dbPromise).put('lastLocation', DB.unwrap(location), 'main')
   }
 
-  static async getLastLocation(): Promise<LocationState> {
-    return (await dbPromise).get('meta', 'last_location') as Promise<LocationState>
+  static async getLastLocation(): Promise<LocationState | undefined> {
+    return (await dbPromise).get('lastLocation', 'main')
   }
 
   static async setMenuWidth(width: number) {

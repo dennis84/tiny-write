@@ -27,14 +27,10 @@ export class AppService {
     const menuWidth = await DB.getMenuWidth()
     const tree = await DB.getTree()
     const ai = await DB.getAi()
-    let location: LocationState | undefined = await DB.getLastLocation()
+    const location: LocationState | undefined = await DB.getLastLocation()
     const threads = (await DB.getThreads())?.sort((a, b) => {
       return (b.lastModified?.getTime() ?? 0) - (a.lastModified?.getTime() ?? 0)
     })
-
-    if ((location as any).fileId) {
-      location = undefined
-    }
 
     return {
       fullscreen: false,
