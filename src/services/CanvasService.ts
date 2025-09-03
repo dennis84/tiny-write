@@ -71,7 +71,7 @@ export class CanvasService {
   ) {}
 
   get currentCanvasId() {
-    return this.store.lastLocation?.canvasId
+    return this.store.location?.canvasId
   }
 
   get currentCanvas() {

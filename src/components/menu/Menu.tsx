@@ -1,4 +1,3 @@
-import {useLocation} from '@solidjs/router'
 import {createEffect, type JSX, Show} from 'solid-js'
 import {
   IconAi,
@@ -14,7 +13,7 @@ import {
 import {isDev, isMac, isTauri, mod, shortHash, VERSION_URL, version} from '@/env'
 import {quit} from '@/remote/app'
 import {MenuId} from '@/services/MenuService'
-import {type LocationState, Page, useState} from '@/state'
+import {Page, useState} from '@/state'
 import {ChatDrawer} from '../assistant/ChatDrawer'
 import {Drawer, DrawerContent} from '../Drawer'
 import {FULL_WIDTH} from '../Layout'
@@ -52,7 +51,6 @@ export const MenuDrawer = ({children}: {children: JSX.Element}) => {
 
 export const Menu = () => {
   const {store, appService, menuService, configService, fileService, prettierService} = useState()
-  const location = useLocation<LocationState>()
 
   const modKey = isMac ? '⌘' : mod
 
@@ -100,7 +98,11 @@ export const Menu = () => {
 
   createEffect(() => {
     // Open assistant menu if merge was applied in assistant mode
-    if (store.lastLocation?.path !== Page.Assistant && location.state?.merge?.threadId) {
+    if (
+      store.location?.page !== Page.Assistant &&
+      store.location?.threadId &&
+      !menuService.assistant()
+    ) {
       menuService.showAssistant()
     }
   })
@@ -134,15 +136,15 @@ export const Menu = () => {
           <DrawerContent>
             <SubmenuTree onBin={() => menuService.show(MenuId.BIN)} maybeHide={maybeHide} />
             {/* Submenu File */}
-            <Show when={store.lastLocation?.page === Page.Editor}>
+            <Show when={store.location?.page === Page.Editor}>
               <SubmenuEditor />
             </Show>
             {/* Submenu Canvas */}
-            <Show when={store.lastLocation?.page === Page.Canvas}>
+            <Show when={store.location?.page === Page.Canvas}>
               <SubmenuCanvas maybeHide={maybeHide} />
             </Show>
             {/* Submenu Code */}
-            <Show when={store.lastLocation?.page === Page.Code}>
+            <Show when={store.location?.page === Page.Code}>
               <SubmenuCode />
             </Show>
             {/* undo, redo, copy, paste, ... */}
@@ -158,7 +160,7 @@ export const Menu = () => {
                   <IconPrettier /> Code Format
                 </Link>
               </Show>
-              <Show when={store.lastLocation?.page === Page.Editor}>
+              <Show when={store.location?.page === Page.Editor}>
                 <Link onClick={() => menuService.show(MenuId.CHANGE_SET)}>
                   <IconHistory /> Change Set
                 </Link>
@@ -169,7 +171,7 @@ export const Menu = () => {
                   <Keys keys={[modKey, 'Enter']} />
                 </Link>
               </Show>
-              <Show when={store.lastLocation?.page === Page.Editor}>
+              <Show when={store.location?.page === Page.Editor}>
                 <Link onClick={onToggleTypewriterMode}>
                   <IconVerticalAlignCenter /> Typewriter mode {store.config.typewriterMode && '✅'}
                 </Link>

@@ -45,7 +45,7 @@ export const Select = (props: Props) => {
 
         // If only clicked
         if (!first && !memo) {
-          if (store.lastLocation?.page === Page.Canvas) {
+          if (store.location?.page === Page.Canvas) {
             canvasService.deselect()
           } else {
             editorService.deselect()
@@ -63,7 +63,7 @@ export const Select = (props: Props) => {
           Math.max(y, y + my),
         )
 
-        if (store.lastLocation?.page === Page.Canvas) {
+        if (store.location?.page === Page.Canvas) {
           canvasService.selectBox(initial, first, last)
         } else {
           editorService.selectBox(initial, first, last)

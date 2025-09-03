@@ -61,7 +61,7 @@ export class MediaService {
     [x, y]: [number, number],
     dropTarget: DropTarget | undefined = undefined,
   ) {
-    const page = this.store.lastLocation?.page
+    const page = this.store.location?.page
 
     if (dropTarget === DropTarget.Assistant || page === Page.Assistant) {
       const droppedFiles: DroppedFile[] = []
@@ -115,7 +115,7 @@ export class MediaService {
     [x, y]: [number, number],
     dropTarget: DropTarget | undefined = undefined,
   ): Promise<DropResult | undefined> {
-    const page = this.store.lastLocation?.page
+    const page = this.store.location?.page
 
     // Store dropped files locally
     if (dropTarget === DropTarget.Assistant || page === Page.Assistant) {

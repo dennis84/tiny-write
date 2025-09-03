@@ -40,7 +40,7 @@ export class FileService {
   ) {}
 
   get currentFileId(): string | undefined {
-    return this.store.lastLocation?.fileId
+    return this.store.location?.editorId ?? this.store.location?.codeId
   }
 
   get currentFile(): File | undefined {

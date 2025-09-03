@@ -5,7 +5,7 @@ export const Title = () => {
   const {store, canvasService, fileService} = useState()
 
   createEffect(async () => {
-    if (store.lastLocation?.page === Page.Canvas) {
+    if (store.location?.page === Page.Canvas) {
       const currentCanvas = canvasService.currentCanvas
       document.title = currentCanvas?.title ?? 'Canvas'
     } else {

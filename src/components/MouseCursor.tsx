@@ -77,12 +77,12 @@ export const MouseCursor = () => {
   const [offset, setOffset] = createSignal<[number, number]>([0, 0])
 
   const zoom = () =>
-    store.lastLocation?.page === Page.Canvas ? (canvasService.currentCanvas?.camera.zoom ?? 1) : 1
+    store.location?.page === Page.Canvas ? (canvasService.currentCanvas?.camera.zoom ?? 1) : 1
 
   createEffect(() => {
     if (store.config.contentWidth === undefined) return
 
-    if (store.lastLocation?.page === Page.Canvas) {
+    if (store.location?.page === Page.Canvas) {
       setOffset(canvasService.currentCanvas?.camera.point ?? [0, 0])
       return
     }

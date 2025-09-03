@@ -30,7 +30,7 @@ test('share - new', async () => {
     expect(getByTestId('canvas_container')).toBeDefined()
   })
 
-  expect(store.lastLocation?.page).toBe(Page.Canvas)
+  expect(store.location?.page).toBe(Page.Canvas)
   expect(canvasService.currentCanvasId).toBe('1')
   expect(store.collab?.started).toBe(true)
 })
@@ -50,7 +50,7 @@ test('share - existing canvas', async () => {
     expect(getByTestId('canvas_container')).toBeDefined()
   })
 
-  expect(store.lastLocation?.page).toBe(Page.Canvas)
+  expect(store.location?.page).toBe(Page.Canvas)
   expect(canvasService.currentCanvasId).toBe('1')
   expect(store.collab?.started).toBe(true)
 })

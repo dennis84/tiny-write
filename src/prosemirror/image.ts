@@ -141,7 +141,7 @@ class ImageView {
         event.preventDefault()
         if (first) {
           let w = this.container.getBoundingClientRect().width
-          if (appService.lastLocation?.page === Page.Canvas) {
+          if (appService.location?.page === Page.Canvas) {
             const zoom = canvasService.currentCanvas?.camera.zoom ?? 1
             w /= zoom
           }

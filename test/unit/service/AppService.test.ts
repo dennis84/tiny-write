@@ -43,10 +43,10 @@ test.each([
 
   const state = createState({
     args: {cwd: '/users/me/cwd'},
-    lastLocation: {
-      path: `/${data.page}/1`,
+    location: {
       page: data.page,
-      fileId: '1',
+      codeId: data.page === Page.Code ? '1' : undefined,
+      editorId: data.page === Page.Editor ? '1' : undefined,
     },
     files: [
       {

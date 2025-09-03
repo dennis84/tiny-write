@@ -18,7 +18,7 @@ export const Keymap = () => {
     canvasCollabService,
     treeService,
   } = useState()
-  const {open} = useOpen()
+  const {openFile} = useOpen()
 
   onMount(() => {
     document.addEventListener('keydown', onKeyDown)
@@ -51,10 +51,10 @@ export const Keymap = () => {
   }
 
   const onNew = async () => {
-    if (store.lastLocation?.page === Page.Editor) {
+    if (store.location?.page === Page.Editor) {
       const file = await fileService.newFile()
       treeService.add(file)
-      open(file)
+      openFile(file)
     } else {
       const el = await canvasService.newFile()
       if (el) {
@@ -66,7 +66,7 @@ export const Keymap = () => {
   }
 
   const onClear = async () => {
-    if (store.lastLocation?.page === Page.Editor) {
+    if (store.location?.page === Page.Editor) {
       await editorService.clear()
     }
   }
@@ -101,7 +101,7 @@ export const Keymap = () => {
   }
 
   const onBackspace = async () => {
-    if (store.lastLocation?.page !== Page.Canvas || stopEvent()) return false
+    if (store.location?.page !== Page.Canvas || stopEvent()) return false
 
     const currentCanvas = canvasService.currentCanvas
     if (!currentCanvas) return false
@@ -147,7 +147,7 @@ export const Keymap = () => {
 
     const file = await fileService.newFileByPath(url.pathname)
 
-    open(file, {back: true, selection})
+    openFile(file, {selection})
   }
 
   type Fn = (e: KeyboardEvent) => boolean | undefined | Promise<boolean | undefined>

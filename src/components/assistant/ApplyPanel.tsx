@@ -34,7 +34,7 @@ export const ApplyPanel = (p: {state: ApplyPanelState}) => {
   const {store, fileService, threadService, toastService, treeService} = useState()
   const [title, setTitle] = createSignal('')
   const [file, setFile] = createSignal<File>()
-  const {open} = useOpen()
+  const {openFile} = useOpen()
 
   onMount(() => {
     const file = p.state.id ? fileService.findFileById(p.state.id) : undefined
@@ -61,7 +61,7 @@ export const ApplyPanel = (p: {state: ApplyPanelState}) => {
     const doc = p.state.editorView.state.doc.toString()
     const range = p.state.range
 
-    open(f, {merge: {doc, range}, back: true})
+    openFile(f, {merge: {doc, range}})
   }
 
   const onCreateFile = async () => {
@@ -78,7 +78,7 @@ export const ApplyPanel = (p: {state: ApplyPanelState}) => {
     })
 
     await treeService.add(file)
-    open(file)
+    openFile(file)
   }
 
   createEffect<{id?: string; isMergeView: boolean}>((prev) => {
@@ -88,7 +88,7 @@ export const ApplyPanel = (p: {state: ApplyPanelState}) => {
     // Don't show if merge is canceled by changing file
     if (prev && currentFile?.id === prev.id && prev.isMergeView === true && isMergeView === false) {
       toastService.open({message: 'All chunks applied ✅', duration: 2000})
-      open(fileService.currentFile)
+      openFile(fileService.currentFile)
     }
 
     return {id: currentFile?.id, isMergeView}

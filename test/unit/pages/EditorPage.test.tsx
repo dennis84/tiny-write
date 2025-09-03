@@ -33,7 +33,7 @@ test('open - new file', async () => {
     expect(getByTestId('editor_scroll')).toBeDefined()
   })
 
-  expect(store.lastLocation?.page).toBe(Page.Editor)
+  expect(store.location?.page).toBe(Page.Editor)
   expect(store.files.length).toBe(1)
   expect(getByTestId('editor_scroll')).toHaveTextContent('Start typing ...')
 })
@@ -42,9 +42,9 @@ test('open - active', async () => {
   stubLocation('/')
 
   const initial = createState({
-    lastLocation: {
-      path: '/editor/2',
+    location: {
       page: Page.Editor,
+      editorId: '2',
     },
     files: [
       {id: '1', ydoc: createYUpdate('1', ['Test']), lastModified, versions: []},
@@ -59,7 +59,7 @@ test('open - active', async () => {
     expect(getByTestId('editor_scroll')).toBeDefined()
   })
 
-  expect(store.lastLocation?.page).toBe(Page.Editor)
+  expect(store.location?.page).toBe(Page.Editor)
   expect(store.files.length).toBe(2)
   expect(getByTestId('editor_scroll')).toHaveTextContent(/^Test 2$/)
 })
@@ -81,7 +81,7 @@ test('open - new file with id', async () => {
     expect(getByTestId('editor_scroll')).toBeDefined()
   })
 
-  expect(store.lastLocation?.page).toBe(Page.Editor)
+  expect(store.location?.page).toBe(Page.Editor)
   expect(store.files.length).toBe(3)
   expect(getByTestId('editor_scroll')).toHaveTextContent('Start typing ...')
 })
@@ -103,7 +103,7 @@ test('open - existing file', async () => {
     expect(getByTestId('editor_scroll')).toBeDefined()
   })
 
-  expect(store.lastLocation?.page).toBe(Page.Editor)
+  expect(store.location?.page).toBe(Page.Editor)
   expect(store.files.length).toBe(2)
   expect(getByTestId('editor_scroll')).toHaveTextContent(/^Text$/)
 })
@@ -131,7 +131,7 @@ test('open - share', async () => {
     expect(getByTestId('editor_scroll')).toBeDefined()
   })
 
-  expect(store.lastLocation?.page).toBe(Page.Editor)
+  expect(store.location?.page).toBe(Page.Editor)
   expect(store.files.length).toBe(2)
   expect(store.collab?.started).toBe(true)
 
@@ -168,7 +168,7 @@ test('open - file with path', async () => {
     expect(getByTestId('editor_scroll')).toBeDefined()
   })
 
-  expect(store.lastLocation?.page).toBe(Page.Editor)
+  expect(store.location?.page).toBe(Page.Editor)
   expect(store.files.length).toBe(1)
   expect(store.files[0].path).toBe('file1')
   expect(getByTestId('editor_scroll')).toHaveTextContent(/^File1$/)

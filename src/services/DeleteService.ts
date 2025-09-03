@@ -2,11 +2,11 @@ import type {SetStoreFunction} from 'solid-js/store'
 import {DB} from '@/db'
 import {info} from '@/remote/log'
 import {
+  type File,
   isCanvas,
   isEditorElement,
   isFile,
   isLinkElement,
-  type Openable,
   Page,
   type State,
 } from '@/state'
@@ -15,7 +15,7 @@ import {FileService} from './FileService'
 import type {MenuTreeItem, TreeService} from './TreeService'
 
 interface DeleteResult {
-  navigateTo?: Openable
+  navigateTo?: File
 }
 
 export class DeleteService {
@@ -28,7 +28,7 @@ export class DeleteService {
   ) {}
 
   async emptyBin(): Promise<DeleteResult> {
-    let navigateTo: Openable | undefined
+    let navigateTo: File | undefined
 
     const doEmptyBin = async (node: MenuTreeItem): Promise<boolean> => {
       let shouldDelete = node.value.deleted ?? false
@@ -68,10 +68,10 @@ export class DeleteService {
     return {navigateTo}
   }
 
-  private getNavigateTo(node: MenuTreeItem): Openable | undefined {
+  private getNavigateTo(node: MenuTreeItem): File | undefined {
     // Navigate to root if no parent
     if (node.parentId === undefined) {
-      return '/'
+      return undefined
     }
 
     const currentFile = this.fileService.currentFile
@@ -79,7 +79,7 @@ export class DeleteService {
     // Navigate to parent of deleted node if current file is deleted
     // or if current file is an anchestor of deleted node
     if (
-      this.store.lastLocation?.page !== Page.Canvas &&
+      this.store.location?.page !== Page.Canvas &&
       currentFile &&
       (node.id === currentFile.id || this.treeService.isDescendant(currentFile.id, node.id)) &&
       node.parentId !== undefined
@@ -99,7 +99,6 @@ export class DeleteService {
     if (isFile(node.value)) {
       this.fileService.updateFile(node.id, {
         deleted: true,
-        active: false,
         lastModified: new Date(),
       })
 

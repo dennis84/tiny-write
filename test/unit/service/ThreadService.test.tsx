@@ -20,8 +20,7 @@ const lastModified = new Date()
 
 test('newThread - empty', () => {
   const initial = createState({
-    lastLocation: {
-      path: '/assistant/1',
+    location: {
       page: Page.Assistant,
       threadId: '1',
     },
@@ -54,8 +53,7 @@ test('newThread - empty', () => {
 
 test('addMessage', async () => {
   const initial = createState({
-    lastLocation: {
-      path: '/assistant/1',
+    location: {
       page: Page.Assistant,
       threadId: '1',
     },
@@ -86,8 +84,7 @@ test('addMessage', async () => {
 
 test('addMessage - path', async () => {
   const initial = createState({
-    lastLocation: {
-      path: '/assistant/1',
+    location: {
       page: Page.Assistant,
       threadId: '1',
     },
@@ -139,8 +136,7 @@ test('addMessage - path', async () => {
 
 test('streamLastMessage', async () => {
   const initial = createState({
-    lastLocation: {
-      path: '/assistant/1',
+    location: {
       page: Page.Assistant,
       threadId: '1',
     },
@@ -171,8 +167,7 @@ test('streamLastMessage', async () => {
 
 test('removeMessage', async () => {
   const initial = createState({
-    lastLocation: {
-      path: '/assistant/1',
+    location: {
       page: Page.Assistant,
       threadId: '1',
     },
@@ -197,8 +192,7 @@ test('removeMessage', async () => {
 
 test('setError', async () => {
   const initial = createState({
-    lastLocation: {
-      path: '/assistant/1',
+    location: {
       page: Page.Assistant,
       threadId: '1',
     },
@@ -222,8 +216,7 @@ test('setError', async () => {
 
 test('updateTitle', async () => {
   const initial = createState({
-    lastLocation: {
-      path: '/assistant/1',
+    location: {
       page: Page.Assistant,
       threadId: '1',
     },
@@ -247,8 +240,7 @@ test('updateTitle', async () => {
 
 test('open', () => {
   const initial = createState({
-    lastLocation: {
-      path: '/assistant/1',
+    location: {
       page: Page.Assistant,
       threadId: '1',
     },
@@ -298,8 +290,7 @@ test('open', () => {
 
 test('delete', async () => {
   const initial = createState({
-    lastLocation: {
-      path: '/assistant/1',
+    location: {
       page: Page.Assistant,
       threadId: '1',
     },
@@ -339,8 +330,7 @@ test('delete', async () => {
 
 test('deleteAll', async () => {
   const initial = createState({
-    lastLocation: {
-      path: '/assistant/1',
+    location: {
       page: Page.Assistant,
       threadId: '1',
     },
@@ -378,8 +368,7 @@ test('deleteAll', async () => {
 
 test('regenerate - user message', async () => {
   const initial = createState({
-    lastLocation: {
-      path: '/assistant/1',
+    location: {
       page: Page.Assistant,
       threadId: '1',
     },
@@ -434,8 +423,7 @@ test('regenerate - user message', async () => {
 
 test('regenerate - assistant message', async () => {
   const initial = createState({
-    lastLocation: {
-      path: '/assistant/1',
+    location: {
       page: Page.Assistant,
       threadId: '1',
     },
@@ -488,8 +476,7 @@ test('regenerate - assistant message', async () => {
 
 test('generateTitle', async () => {
   const initial = createState({
-    lastLocation: {
-      path: '/assistant/1',
+    location: {
       page: Page.Assistant,
       threadId: '1',
     },
@@ -538,8 +525,7 @@ test.each<[Message[], number]>([
   [[{id: '1', role: 'user', content: '```'}], 2],
 ])('getMessages', async (messages, count) => {
   const initial = createState({
-    lastLocation: {
-      path: '/assistant/1',
+    location: {
       page: Page.Assistant,
       threadId: '1',
     },
@@ -565,8 +551,7 @@ test.each<[Message[], number]>([
 
 test('insertAutoContext', async () => {
   const initial = createState({
-    lastLocation: {
-      path: '/assistant/1',
+    location: {
       page: Page.Assistant,
       threadId: '1',
     },
@@ -625,8 +610,7 @@ test('insertAutoContext', async () => {
 
 test('insertAutoContext - update', async () => {
   const initial = createState({
-    lastLocation: {
-      path: '/assistant/1',
+    location: {
       page: Page.Assistant,
       threadId: '1',
     },
@@ -698,8 +682,7 @@ test('insertAutoContext - update', async () => {
 
 test('insertAutoContext - regenerate', async () => {
   const initial = createState({
-    lastLocation: {
-      path: '/assistant/1',
+    location: {
       page: Page.Assistant,
       threadId: '1',
     },

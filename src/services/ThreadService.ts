@@ -21,7 +21,7 @@ export class ThreadService {
   }
 
   get currentThreadId(): string | undefined {
-    return this.store.lastLocation?.threadId
+    return this.store.location?.threadId
   }
 
   get currentThread(): Thread | undefined {

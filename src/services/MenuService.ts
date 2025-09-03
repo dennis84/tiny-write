@@ -2,6 +2,7 @@ import {createSignal} from 'solid-js'
 import type {SetStoreFunction, Store} from 'solid-js/store'
 import {DB} from '@/db'
 import type {State} from '@/state'
+import type {AppService} from './AppService'
 
 export enum MenuId {
   MAIN = 'main',
@@ -33,6 +34,7 @@ export class MenuService {
   constructor(
     private store: Store<State>,
     private setState: SetStoreFunction<State>,
+    private appService: AppService,
   ) {}
 
   show(menu: MenuId) {
@@ -52,7 +54,9 @@ export class MenuService {
   }
 
   toggleAssistant() {
-    this.assistantSignal[1](!this.assistant())
+    const oldStatus = this.assistant()
+    if (oldStatus) this.appService.setLocation({threadId: undefined})
+    this.assistantSignal[1](!oldStatus)
   }
 
   async setMenuWidth(width: number) {

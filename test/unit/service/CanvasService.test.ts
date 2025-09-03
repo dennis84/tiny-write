@@ -81,8 +81,7 @@ test('currentCanvas - empty', () => {
 test('currentCanvas', () => {
   const [store, setState] = createStore(
     createState({
-      lastLocation: {
-        path: '/canvas/2',
+      location: {
         page: Page.Canvas,
         canvasId: '2',
       },
@@ -98,8 +97,7 @@ test('currentCanvas', () => {
 test('updateCanvas', async () => {
   const [store, setState] = createStore(
     createState({
-      lastLocation: {
-        path: '/canvas/1',
+      location: {
         page: Page.Canvas,
         canvasId: '1',
       },
@@ -122,8 +120,7 @@ test('updateCanvas', async () => {
 test('updateCanvasElement', async () => {
   const [store, setState] = createStore(
     createState({
-      lastLocation: {
-        path: '/canvas/1',
+      location: {
         page: Page.Canvas,
         canvasId: '1',
       },
@@ -184,8 +181,7 @@ test('updateCanvasElement', async () => {
 test('backToContent', async () => {
   const [store, setState] = createStore(
     createState({
-      lastLocation: {
-        path: '/canvas/1',
+      location: {
         page: Page.Canvas,
         canvasId: '1',
       },
@@ -217,8 +213,7 @@ test('backToContent', async () => {
 test('focus', async () => {
   const [store, setState] = createStore(
     createState({
-      lastLocation: {
-        path: '/canvas/1',
+      location: {
         page: Page.Canvas,
         canvasId: '1',
       },
@@ -246,8 +241,7 @@ test('focus', async () => {
 test('snapToGrid', () => {
   const [store, setState] = createStore(
     createState({
-      lastLocation: {
-        path: '/canvas/1',
+      location: {
         page: Page.Canvas,
         canvasId: '1',
       },
@@ -272,8 +266,7 @@ test('snapToGrid', () => {
 test('updateCamera', () => {
   const [store, setState] = createStore(
     createState({
-      lastLocation: {
-        path: '/canvas/1',
+      location: {
         page: Page.Canvas,
         canvasId: '1',
       },
@@ -292,8 +285,7 @@ test('updateCamera', () => {
 test('updateCameraPoint', () => {
   const [store, setState] = createStore(
     createState({
-      lastLocation: {
-        path: '/canvas/1',
+      location: {
         page: Page.Canvas,
         canvasId: '1',
       },
@@ -311,8 +303,7 @@ test('updateCameraPoint', () => {
 test('restore', async () => {
   const [store, setState] = createStore(
     createState({
-      lastLocation: {
-        path: '/canvas/1',
+      location: {
         page: Page.Canvas,
         canvasId: '1',
       },
@@ -330,8 +321,7 @@ test('restore', async () => {
 test('select', () => {
   const [store, setState] = createStore(
     createState({
-      lastLocation: {
-        path: '/canvas/1',
+      location: {
         page: Page.Canvas,
         canvasId: '1',
       },
@@ -368,8 +358,7 @@ test('select', () => {
 test('deselect', () => {
   const [store, setState] = createStore(
     createState({
-      lastLocation: {
-        path: '/canvas/1',
+      location: {
         page: Page.Canvas,
         canvasId: '1',
       },
@@ -395,8 +384,7 @@ test('newCanvas', async () => {
   const editorView = mock<EditorView>()
   const [store, setState] = createStore(
     createState({
-      lastLocation: {
-        path: '/canvas/1',
+      location: {
         page: Page.Canvas,
         canvasId: '1',
       },
@@ -424,8 +412,7 @@ test('newCanvas', async () => {
 test('removeElements', async () => {
   const [store, setState] = createStore(
     createState({
-      lastLocation: {
-        path: '/canvas/1',
+      location: {
         page: Page.Canvas,
         canvasId: '1',
       },
@@ -480,8 +467,7 @@ test('newFile', async () => {
 
   const [store, setState] = createStore(
     createState({
-      lastLocation: {
-        path: '/canvas/1',
+      location: {
         page: Page.Canvas,
         canvasId: '1',
       },
@@ -512,8 +498,7 @@ test.each([
 
   const [store, setState] = createStore(
     createState({
-      lastLocation: {
-        path: '/canvas/1',
+      location: {
         page: Page.Canvas,
         canvasId: '1',
       },
@@ -549,8 +534,7 @@ test.each([
 test('addImage', async () => {
   const [store, setState] = createStore(
     createState({
-      lastLocation: {
-        path: '/canvas/1',
+      location: {
         page: Page.Canvas,
         canvasId: '1',
       },
@@ -573,8 +557,7 @@ test('addImage', async () => {
 test('addVideo', async () => {
   const [store, setState] = createStore(
     createState({
-      lastLocation: {
-        path: '/canvas/1',
+      location: {
         page: Page.Canvas,
         canvasId: '1',
       },
@@ -598,8 +581,7 @@ test('addVideo', async () => {
 test('drawLink', () => {
   const [store, setState] = createStore(
     createState({
-      lastLocation: {
-        path: '/canvas/1',
+      location: {
         page: Page.Canvas,
         canvasId: '1',
       },
@@ -642,8 +624,7 @@ test('drawLink', () => {
 test('drawLink - abort', async () => {
   const [store, setState] = createStore(
     createState({
-      lastLocation: {
-        path: '/canvas/1',
+      location: {
         page: Page.Canvas,
         canvasId: '1',
       },
@@ -672,8 +653,7 @@ test('drawLink - abort', async () => {
 test('removeDeadLinks', async () => {
   const [store, setState] = createStore(
     createState({
-      lastLocation: {
-        path: '/canvas/1',
+      location: {
         page: Page.Canvas,
         canvasId: '1',
       },
@@ -701,8 +681,7 @@ test('removeDeadLinks', async () => {
 test('clearCanvas', async () => {
   const [store, setState] = createStore(
     createState({
-      lastLocation: {
-        path: '/canvas/1',
+      location: {
         page: Page.Canvas,
         canvasId: '1',
       },
@@ -725,8 +704,7 @@ test('clearCanvas', async () => {
 test('getElementNear', () => {
   const [store, setState] = createStore(
     createState({
-      lastLocation: {
-        path: '/canvas/1',
+      location: {
         page: Page.Canvas,
         canvasId: '1',
       },
@@ -755,8 +733,7 @@ test('getElementNear', () => {
 test('center', () => {
   const [store, setState] = createStore(
     createState({
-      lastLocation: {
-        path: '/canvas/1',
+      location: {
         page: Page.Canvas,
         canvasId: '1',
       },
@@ -783,8 +760,7 @@ test('center', () => {
 test('get selection', () => {
   const [store, setState] = createStore(
     createState({
-      lastLocation: {
-        path: '/canvas/1',
+      location: {
         page: Page.Canvas,
         canvasId: '1',
       },
@@ -810,7 +786,8 @@ test('get selection', () => {
 
   service.select('2', false, true)
   expect(service.selection).not.toBe(undefined)
-  expect(BoxUtil.toRect(service.selection?.box)).toMatchObject({
+  // biome-ignore lint/style/noNonNullAssertion: ok
+  expect(BoxUtil.toRect(service.selection!.box)).toMatchObject({
     x: 0,
     y: 0,
     width: 200,
@@ -819,7 +796,8 @@ test('get selection', () => {
   expect(service.selection?.elements.length).toBe(2)
 
   service.select('3', false, true)
-  expect(BoxUtil.toRect(service.selection?.box)).toMatchObject({
+  // biome-ignore lint/style/noNonNullAssertion: ok
+  expect(BoxUtil.toRect(service.selection!.box)).toMatchObject({
     x: 0,
     y: 0,
     width: 200,
@@ -831,8 +809,7 @@ test('get selection', () => {
 test('selectBox', () => {
   const [store, setState] = createStore(
     createState({
-      lastLocation: {
-        path: '/canvas/1',
+      location: {
         page: Page.Canvas,
         canvasId: '1',
       },
@@ -859,7 +836,8 @@ test('selectBox', () => {
 
   service.selectBox(new Box(0, 0, 110, 0), false, false)
   expect(service.selection).not.toBe(undefined)
-  expect(BoxUtil.toRect(service.selection?.box)).toMatchObject({
+  // biome-ignore lint/style/noNonNullAssertion: ok
+  expect(BoxUtil.toRect(service.selection!.box)).toMatchObject({
     x: 0,
     y: 0,
     width: 200,
@@ -868,7 +846,8 @@ test('selectBox', () => {
   expect(service.selection?.elements.length).toBe(2)
 
   service.selectBox(new Box(0, 0, 110, 110), false, false)
-  expect(BoxUtil.toRect(service.selection?.box)).toMatchObject({
+  // biome-ignore lint/style/noNonNullAssertion: ok
+  expect(BoxUtil.toRect(service.selection!.box)).toMatchObject({
     x: 0,
     y: 0,
     width: 200,
@@ -877,7 +856,8 @@ test('selectBox', () => {
   expect(service.selection?.elements.length).toBe(3)
 
   service.selectBox(new Box(0, 0, 110, 90), false, false)
-  expect(BoxUtil.toRect(service.selection?.box)).toMatchObject({
+  // biome-ignore lint/style/noNonNullAssertion: ok
+  expect(BoxUtil.toRect(service.selection!.box)).toMatchObject({
     x: 0,
     y: 0,
     width: 200,
@@ -890,8 +870,7 @@ test('selectBox - active editor', () => {
   const editorView = mock<EditorView>()
   const [store, setState] = createStore(
     createState({
-      lastLocation: {
-        path: '/canvas/1',
+      location: {
         page: Page.Canvas,
         canvasId: '1',
       },

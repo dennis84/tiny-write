@@ -9,14 +9,14 @@ import {SubmenuTree} from './SubmenuTree'
 
 export const Bin = () => {
   const {store, deleteService, treeService} = useState()
-  const {open} = useOpen()
+  const {openFile} = useOpen()
 
   const hasDeletedFiles = () =>
     store.files.some((f) => f.deleted) || store.canvases.some((f) => f.deleted)
 
   const onEmptyBin = async () => {
     const result = await deleteService.emptyBin()
-    if (result.navigateTo) open(result.navigateTo)
+    if (result.navigateTo) openFile(result.navigateTo)
     treeService.updateAll()
   }
 

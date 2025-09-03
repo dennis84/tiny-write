@@ -14,12 +14,12 @@ const MaxWidth = styled('div')`
 
 export const ChatPage = (props: RouteSectionProps) => {
   const {store, threadService} = useState()
-  const {openUrl} = useOpen()
+  const {open} = useOpen()
 
   const NewThread = () => {
     onMount(() => {
       const newThread = threadService.newThread()
-      openUrl(`/assistant/${newThread.id}`)
+      open({threadId: newThread.id})
     })
 
     return null
@@ -28,8 +28,8 @@ export const ChatPage = (props: RouteSectionProps) => {
   const OpenChat = () => {
     let scrollContent!: HTMLDivElement
 
-    const onChangeThread = (id: string) => {
-      openUrl(`/assistant/${id}`)
+    const onChangeThread = (threadId: string) => {
+      open({threadId})
     }
 
     onMount(() => {

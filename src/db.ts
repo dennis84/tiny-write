@@ -1,7 +1,15 @@
 import {differenceInDays} from 'date-fns'
 import {type DBSchema, openDB} from 'idb'
 import {unwrap} from 'solid-js/store'
-import type {AiConfig, Camera, Config, ElementType, LastLocation, Thread, Window} from '@/state'
+import type {
+  AiConfig,
+  Camera,
+  Config,
+  ElementType,
+  LocationState,
+  Thread,
+  Window,
+} from '@/state'
 import {info} from './remote/log'
 
 export interface PersistedVersion {
@@ -128,12 +136,12 @@ export class DB {
     return (await dbPromise).get('window', 'main')
   }
 
-  static async setLastLocation(lastLocation: LastLocation) {
-    return (await dbPromise).put('meta', DB.unwrap(lastLocation), 'last_location')
+  static async setLastLocation(location: LocationState) {
+    return (await dbPromise).put('meta', DB.unwrap(location), 'last_location')
   }
 
-  static async getLastLocation(): Promise<LastLocation> {
-    return (await dbPromise).get('meta', 'last_location') as Promise<LastLocation>
+  static async getLastLocation(): Promise<LocationState> {
+    return (await dbPromise).get('meta', 'last_location') as Promise<LocationState>
   }
 
   static async setMenuWidth(width: number) {

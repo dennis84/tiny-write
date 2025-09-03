@@ -77,20 +77,20 @@ export const Main = (props: {state: State}) => {
     })
 
     createEffect(async () => {
-      // Configure lastLocation on page load
+      // Set URL params to state location on initail page load.
       const pageMatch = matchPage() // To parse the page type from /:page/*
       if (pageMatch) {
         const page = enumFromValue(Page, pageMatch.params.page)
         const mainMatch = currentMatches()[0] // Matches on /editor/:id, /code/:id, ...
         if (mainMatch) {
           const id = mainMatch.params.id
-          const threadId = page === Page.Assistant ? id : location.state?.threadId
-          await ctrl.appService.setLastLocation({
-            path: location.pathname,
-            fileId: page === Page.Code || page === Page.Editor ? id : undefined,
-            threadId,
-            canvasId: page === Page.Canvas ? id : undefined,
+          await ctrl.appService.setLocation({
+            ...location.state,
             page,
+            codeId: page === Page.Code ? id : undefined,
+            editorId: page === Page.Editor ? id : undefined,
+            canvasId: page === Page.Canvas ? id : undefined,
+            threadId: page === Page.Assistant ? id : location.state?.threadId,
           })
         }
       }

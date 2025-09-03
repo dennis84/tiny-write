@@ -24,7 +24,7 @@ const HighlightContent = styled('div')`
 
 export const DropFile = () => {
   const {mediaService} = useState()
-  const {open} = useOpen()
+  const {openFile} = useOpen()
   const mouseEnterCoords = createMutable({x: 0, y: 0})
   const [dropTarget, setDropTarget] = createSignal<HTMLElement>()
 
@@ -55,7 +55,7 @@ export const DropFile = () => {
         const dt = enumFromValue(DropTarget, dropTarget()?.dataset.dropTarget)
         const result = await mediaService.dropPaths(event.payload.paths, [x, y], dt)
         setDropTarget(undefined)
-        if (result?.file) open(result.file)
+        if (result?.file) openFile(result.file)
       } else {
         setDropTarget(undefined)
       }

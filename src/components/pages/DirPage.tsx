@@ -56,7 +56,7 @@ export const DirPage = () => {
   const {store, fileService} = useState()
   const [dirEntries, setDirEntries] = createSignal<DirEntry[]>()
   const [currentPath, setCurrentPath] = createSignal<string>()
-  const {open, openDir} = useOpen()
+  const {openFile, openDir} = useOpen()
   const location = useLocation<DirState>()
 
   const getResolvedPath = async (name?: string) => {
@@ -83,7 +83,7 @@ export const DirPage = () => {
       const path = await getResolvedPath(p.entry.name)
       const file = await fileService.newFileByPath(path)
 
-      open(file, {back: true})
+      openFile(file)
     }
 
     return (

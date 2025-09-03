@@ -33,7 +33,7 @@ test('init - new file', async () => {
     expect(getByTestId('code_scroll')).toBeDefined()
   })
 
-  expect(store.lastLocation?.page).toBe(Page.Code)
+  expect(store.location?.page).toBe(Page.Code)
   expect(store.files.length).toBe(1)
   expect(fileService.currentFileId).toBe('1')
   expect(fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('')
@@ -43,8 +43,8 @@ test('init - active', async () => {
   stubLocation('/')
 
   const initial = createState({
-    lastLocation: {
-      path: '/code/1',
+    location: {
+      codeId: '1',
       page: Page.Code,
     },
     files: [
@@ -66,7 +66,7 @@ test('init - active', async () => {
     expect(getByTestId('code_scroll')).toBeDefined()
   })
 
-  expect(store.lastLocation?.page).toBe(Page.Code)
+  expect(store.location?.page).toBe(Page.Code)
   expect(store.files.length).toBe(2)
   expect(fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('Code1')
 })
@@ -88,7 +88,7 @@ test('init - new file with id', async () => {
     expect(getByTestId('code_scroll')).toBeDefined()
   })
 
-  expect(store.lastLocation?.page).toBe(Page.Code)
+  expect(store.location?.page).toBe(Page.Code)
   expect(store.files.length).toBe(3)
   expect(fileService.currentFileId).toBe('3')
   expect(fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('')
@@ -111,7 +111,7 @@ test('init - existing file', async () => {
     expect(getByTestId('code_scroll')).toBeDefined()
   })
 
-  expect(store.lastLocation?.page).toBe(Page.Code)
+  expect(store.location?.page).toBe(Page.Code)
   expect(store.files.length).toBe(2)
   expect(fileService.currentFileId).toBe('1')
   expect(fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('Code1')
@@ -140,7 +140,7 @@ test('init - share', async () => {
     expect(getByTestId('code_scroll')).toBeDefined()
   })
 
-  expect(store.lastLocation?.page).toBe(Page.Code)
+  expect(store.location?.page).toBe(Page.Code)
   expect(store.files.length).toBe(2)
   expect(store.collab?.started).toBe(true)
 

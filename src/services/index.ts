@@ -84,7 +84,7 @@ export const createCtrl = (initial: State) => {
   )
 
   const threadService = new ThreadService(store, setState, copilotService, fileService)
-  const menuService = new MenuService(store, setState)
+  const menuService = new MenuService(store, setState, appService)
   const inputLineService = new InputLineService()
 
   return {

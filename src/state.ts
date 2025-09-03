@@ -9,28 +9,26 @@ import type {CodeThemeName} from './services/ConfigService'
 import type {Model} from './services/CopilotService'
 import {FileService} from './services/FileService'
 
-export type Openable = File | Canvas | CanvasElement | '/'
+type OpenThread = {threadId: string}
+
+export type Openable = File | Canvas | CanvasElement | OpenThread | '/'
 
 export interface MergeState {
   doc: string
   range?: [number, number]
 }
 
-export interface LastLocation {
-  path: string
-  page?: Page
-  fileId?: string
-  threadId?: string
-  canvasId?: string
-}
-
 export interface LocationState {
+  page?: Page // /:page/*
+  editorId?: string // /editor/:id
+  canvasId?: string // /canvas/:id
+  codeId?: string // /code/:id
+  threadId?: string // /assistant/:id or active thread in sidebar
   prev?: string // prev location pathname
-  file?: string
-  newFile?: string
-  selection?: VisualPositionRange
-  merge?: MergeState
-  threadId?: string // active thread in sidebar
+  file?: string // is this required???
+  newFile?: string // save as to this path
+  selection?: VisualPositionRange // forgotten
+  merge?: MergeState // e.g. open file with merge params from assistant
 }
 
 export interface VisualPosition {
@@ -303,7 +301,7 @@ export interface State {
   lastTr?: number
   ai?: AiConfig
   threads: Thread[]
-  lastLocation?: LastLocation
+  location?: LocationState
 }
 
 export type FileText = Record<string, any>

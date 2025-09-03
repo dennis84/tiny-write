@@ -58,7 +58,7 @@ export const Editor = () => {
       <FullEditor
         ref={editorRef}
         config={store.config}
-        page={store.lastLocation?.page}
+        page={store.location?.page}
         spellcheck={store.config.spellcheck}
         data-tauri-drag-region="true"
       />

@@ -1,9 +1,9 @@
-import {useLocation, useNavigate} from '@solidjs/router'
+import {useNavigate} from '@solidjs/router'
 import {Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {useOpen} from '@/hooks/open'
 import {MenuId} from '@/services/MenuService'
-import {type LocationState, useState} from '@/state'
+import {Page, useState} from '@/state'
 import {Button, ButtonGroup, IconButton} from '../Button'
 import {
   IconAiAssistant,
@@ -34,7 +34,7 @@ const StickyContainer = styled('div')`
 
 export const ChatNavbar = () => {
   const {store, menuService, threadService} = useState()
-  const {openUrl} = useOpen()
+  const {open} = useOpen()
 
   const onAssistantClick = () => {
     if (!store.ai?.copilot?.user) menuService.show(MenuId.AI_CONFIG)
@@ -45,9 +45,9 @@ export const ChatNavbar = () => {
     menuService.toggleAssistant()
     const currentThread = threadService.currentThread
     if (currentThread) {
-      openUrl(`/assistant/${currentThread.id}`)
+      open({threadId: currentThread.id})
     } else {
-      openUrl('/assistant')
+      open({page: Page.Assistant})
     }
   }
 
@@ -95,7 +95,6 @@ export const MenuNavbar = () => {
 
 export const FloatingNavbar = () => {
   const {store, fileService, menuService} = useState()
-  const location = useLocation<LocationState>()
   const navigate = useNavigate()
 
   const onAssistantClick = () => {
@@ -113,25 +112,27 @@ export const FloatingNavbar = () => {
   }
 
   const getBackTitle = () => {
-    const prev = location.state?.prev
+    const prev = store.location?.prev
     if (prev?.includes('/editor/')) return 'Back to editor'
     if (prev?.includes('/code/')) return 'Back to code editor'
     if (prev?.includes('/canvas/')) return 'Back to canvas'
-    return 'Back'
+    if (prev?.includes('/assistant/')) return 'Back to assistant'
   }
 
   return (
     <FloatingContainer>
       <ButtonGroup>
-        <Show when={location.state?.prev}>
-          <TooltipHelp title={getBackTitle()}>
-            <Button onClick={onBackClick} data-testid="floating_navbar_back">
-              <IconArrowBack /> Back
-            </Button>
-          </TooltipHelp>
+        <Show when={getBackTitle()}>
+          {(title) => (
+            <TooltipHelp title={title()}>
+              <Button onClick={onBackClick} data-testid="floating_navbar_back">
+                <IconArrowBack /> Back
+              </Button>
+            </TooltipHelp>
+          )}
         </Show>
 
-        <Show when={!menuService.assistant() && !location.pathname.startsWith('/assistant')}>
+        <Show when={!menuService.assistant() && store.location?.page !== Page.Assistant}>
           <TooltipHelp title="Open Chat">
             <IconButton onClick={onAssistantClick} data-testid="floating_navbar_assistant_open">
               <IconAiAssistant />

@@ -15,8 +15,8 @@ export const CodeFormat = () => {
     })
 
   const getSelectedFile = (): File | undefined => {
-    if (store.lastLocation?.page === Page.Code) return fileService.currentFile
-    if (store.lastLocation?.page === Page.Canvas) {
+    if (store.location?.page === Page.Code) return fileService.currentFile
+    if (store.location?.page === Page.Canvas) {
       const elementId = canvasService.currentCanvas?.elements.find((el) => el.selected)?.id
       if (!elementId) return
       return fileService.findFileById(elementId)

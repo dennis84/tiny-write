@@ -94,7 +94,7 @@ test.each([
   {
     node: initial.files[0],
     current: initial.files[0],
-    navigateTo: '/',
+    navigateTo: undefined,
   },
   {
     node: initial.files[1],
@@ -187,7 +187,7 @@ test.each([
   const result = await service.delete(node, true)
 
   if (!data.navigateTo) {
-    expect(result.navigateTo).toBe('/')
+    expect(result.navigateTo).toBe(undefined)
   } else {
     expect(result.navigateTo).toMatchObject(data.navigateTo)
   }

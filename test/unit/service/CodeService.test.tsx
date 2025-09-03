@@ -37,7 +37,7 @@ test('prettify', async () => {
     expect(getByTestId('code_scroll')).toBeDefined()
   })
 
-  expect(store.lastLocation?.page).toBe(Page.Code)
+  expect(store.location?.page).toBe(Page.Code)
   expect(fileService.currentFile?.id).toBe('1')
   expect(fileService.currentFile?.codeEditorView).toBeDefined()
   expectToBeDefined(fileService.currentFile)

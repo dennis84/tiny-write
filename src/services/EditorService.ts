@@ -8,7 +8,7 @@ import {prosemirrorJSONToYDoc} from 'y-prosemirror'
 import * as Y from 'yjs'
 import {serialize} from '@/markdown'
 import {replaceText, writeFile} from '@/remote/editor'
-import {debug, error, info} from '@/remote/log'
+import {error, info} from '@/remote/log'
 import {type File, type FileText, Page, type State} from '@/state'
 import type {AppService} from './AppService'
 import {CollabService} from './CollabService'
@@ -123,7 +123,7 @@ export class EditorService {
   }
 
   async openFile(params: OpenFile) {
-    debug(`Open file: (params=${JSON.stringify(params)}, mode=editor)`)
+    info(`Open file: (params=${JSON.stringify(params)}, mode=editor)`)
     const state = {...this.store}
 
     try {

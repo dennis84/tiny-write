@@ -3,72 +3,74 @@ import {isTauri} from '../env'
 import {open as shellOpen} from '../remote/app'
 import {info} from '../remote/log'
 import {
-  type CanvasElement,
-  ElementType,
-  isCodeElement,
+  type Canvas,
+  type File,
   isCodeFile,
-  isEditorElement,
   isFile,
-  type MergeState,
-  type Openable,
+  type LocationState,
+  Page,
   useState,
-  type VisualPositionRange,
 } from '../state'
-
-interface OpenOptions {
-  back?: boolean
-  selection?: VisualPositionRange
-  merge?: MergeState
-  threadId?: string
-}
 
 export const useOpen = () => {
   const navigate = useNavigate()
-  const location = useLocation()
+  const location = useLocation<LocationState>()
   const {store} = useState()
 
-  const isCanvasElement = (el: any): el is CanvasElement =>
-    el.type === ElementType.Code ||
-    el.type === ElementType.Link ||
-    el.type === ElementType.Image ||
-    el.type === ElementType.Video ||
-    el.type === ElementType.Editor
+  const openFile = (file?: File | Canvas, locState?: Partial<LocationState>) => {
+    if (!file) return open(undefined)
 
-  const open = (item: Openable | undefined, options?: OpenOptions) => {
-    if (!item) return
+    if (isCodeFile(file)) {
+      const newFile = file.newFile
+      return open({...locState, codeId: file.id, newFile})
+    } else if (isFile(file)) {
+      const newFile = file.newFile
+      return open({...locState, editorId: file.id, newFile})
+    } else {
+      return open({...locState, canvasId: file.id})
+    }
+  }
 
-    const prev = options?.back ? location.pathname : undefined
-    const file = isFile(item) ? item.path : undefined
-    const newFile = isFile(item) ? item.newFile : undefined
-    // store threadId in location state to keep assistant open
-    const threadId = options?.threadId ?? store?.lastLocation?.threadId
+  const open = (locState?: Partial<LocationState>) => {
+    if (!locState) {
+      info(`Redirect to (to=/)`)
+      return navigate('/')
+    }
+
+    const prev = location.pathname
+
+    const threadId = store.location?.threadId // keep threadId to keep assistant open
+    let page = locState.page
+    let id: string | undefined
+
+    if (locState.editorId) {
+      page = Page.Editor
+      id = locState.editorId
+    } else if (locState.codeId) {
+      page = Page.Code
+      id = locState.codeId
+    } else if (locState.canvasId) {
+      page = Page.Canvas
+      id = locState.canvasId
+    } else if (locState.threadId) {
+      page = Page.Assistant
+      id = locState.threadId
+    }
 
     const state = {
       prev,
-      file,
-      newFile,
-      selection: options?.selection,
-      merge: options?.merge,
+      page,
       threadId,
+      ...locState,
     }
 
-    if (item === '/') {
-      info(`Redirect to (to=/)`)
-      return navigate('/', {state})
-    } else if (isCodeFile(item)) {
-      info(`Redirect to (to=/code/${item.id})`)
-      navigate(`/code/${item.id}`, {state})
-    } else if (isFile(item)) {
-      info(`Redirect to (to=/editor/${item.id})`)
-      navigate(`/editor/${item.id}`, {state})
-    } else if (isCanvasElement(item) && isEditorElement(item)) {
-      navigate(`/editor/${item.id}`, {state})
-    } else if (isCanvasElement(item) && isCodeElement(item)) {
-      navigate(`/code/${item.id}`, {state})
-    } else {
-      info(`Redirect to (to=/canvas/${item.id})`)
-      navigate(`/canvas/${item.id}`, {state})
+    if (!id) {
+      info(`Redirect to (to=/${page})`)
+      return navigate(`/${page}`, {state})
     }
+
+    info(`Redirect to (to=/${page}/${id})`)
+    return navigate(`/${page}/${id}`, {state})
   }
 
   const openDir = (path?: string[]) => {
@@ -80,12 +82,6 @@ export const useOpen = () => {
   const openUrl = async (url: string) => {
     info(`Open url (url=${url})`)
 
-    if (url.startsWith('/')) {
-      const prev = location.pathname
-      const state = {prev}
-      return navigate(url, {state})
-    }
-
     if (isTauri()) {
       await shellOpen(url)
       return
@@ -94,5 +90,5 @@ export const useOpen = () => {
     window.open(url, '_blank')
   }
 
-  return {open, openDir, openUrl}
+  return {open, openFile, openDir, openUrl}
 }

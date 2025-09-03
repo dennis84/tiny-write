@@ -112,7 +112,7 @@ export class CodeMirrorService {
       )
     }
 
-    if (this.store.lastLocation?.page === Page.Code) {
+    if (this.store.location?.page === Page.Code) {
       extensions.push([highlightActiveLine(), highlightActiveLineGutter(), lineNumbers()])
     }
 
@@ -120,7 +120,7 @@ export class CodeMirrorService {
       extensions.push([hoverTooltip(lspHoverSource(props.path), {hoverTime: 600})])
     }
 
-    if (this.store.lastLocation?.page !== Page.Canvas) {
+    if (this.store.location?.page !== Page.Canvas) {
       extensions.push(
         foldGutter({
           markerDOM: (open) => {

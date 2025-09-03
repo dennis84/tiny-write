@@ -17,12 +17,8 @@ export const fileToString = (file: Partial<File>) =>
 
 export const locationToString = (location: Location<LocationState>) =>
   JSON.stringify({
-    path: location.pathname,
-    share: location.query.share ?? false,
-    prev: location.state?.prev,
-    file: location.state?.file,
-    newFile: location.state?.newFile,
-    merge: location.state?.merge,
+    pathname: location.pathname,
+    state: location.state,
   })
 
 export const renderPoint = (point: Vector, id = 'point') => {

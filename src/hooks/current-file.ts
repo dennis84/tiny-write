@@ -6,7 +6,7 @@ export const useCurrentFile = (): Accessor<File | undefined> => {
   const {store, canvasService, fileService} = useState()
 
   createEffect(() => {
-    const page = store.lastLocation?.page
+    const page = store.location?.page
 
     if (page === Page.Code || page === Page.Editor) {
       setCurrentFile(fileService.currentFile)

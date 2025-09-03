@@ -6,41 +6,42 @@ import {type LocationState, useState} from '@/state'
 
 export const Redirect = () => {
   const {store, fileService} = useState()
-  const {open, openUrl, openDir} = useOpen()
+  const {open, openFile, openDir} = useOpen()
   const location = useLocation<LocationState>()
 
   onMount(async () => {
-    const lastLocation = store.lastLocation
-    info(`Redirect to (path=${lastLocation?.path})`)
-
+    const lastLocation = store.location
     const path = location.state?.file ?? store.args?.file
     const newFile = location.state?.newFile ?? store.args?.newFile
     const argPath = newFile ?? path
-    const back = !!location.state?.prev
     const selection = location.state?.selection
 
     if (store.args?.source && !argPath) {
+      info(`Redirect dir`)
       openDir()
       return
     }
 
     if (argPath) {
+      info(`Redirect to new file by path (path=${path})`)
       const file = await fileService.newFileByPath(path, newFile)
-      return open(file, {back, selection})
+      return openFile(file, {selection})
     }
 
     if (lastLocation) {
-      return openUrl(lastLocation.path)
+      info(`Redirect to last location (lastLocation=${JSON.stringify(lastLocation)})`)
+      return open(lastLocation)
     }
 
     const first = store.files.find((f) => !f.deleted)
     if (first) {
-      return open(first, {back, selection})
+      info(`Redirect first file (id=${first?.id})`)
+      return openFile(first, {selection})
     }
 
     const file = await fileService.newFile()
-    info(`Created new file (id=${file.id})`)
-    open(file, {back, selection})
+    info(`Redirect to new empty file (id=${file.id})`)
+    openFile(file, {selection})
   })
 
   return null

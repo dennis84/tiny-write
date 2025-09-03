@@ -15,7 +15,7 @@ export const ChatDrawer = () => {
   }
 
   const onChangeThread = (threadId: string) => {
-    appService.setLastLocation({threadId})
+    appService.setLocation({threadId})
     threadService.open(threadId)
     scrollContent.scrollTo({top: 0, behavior: 'smooth'})
   }
@@ -26,7 +26,7 @@ export const ChatDrawer = () => {
       onChangeThread(threadId)
     } else {
       const thread = threadService.newThread()
-      appService.setLastLocation({threadId: thread.id})
+      appService.setLocation({threadId: thread.id})
     }
   })
 

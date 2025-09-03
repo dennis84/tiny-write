@@ -6,7 +6,7 @@ import {error, info} from '@/remote/log'
 import {
   createConfig,
   type ErrorObject,
-  type LastLocation,
+  type LocationState,
   ServiceError,
   type State,
   type Window,
@@ -27,10 +27,14 @@ export class AppService {
     const menuWidth = await DB.getMenuWidth()
     const tree = await DB.getTree()
     const ai = await DB.getAi()
-    const lastLocation = await DB.getLastLocation()
+    let location: LocationState | undefined = await DB.getLastLocation()
     const threads = (await DB.getThreads())?.sort((a, b) => {
       return (b.lastModified?.getTime() ?? 0) - (a.lastModified?.getTime() ?? 0)
     })
+
+    if ((location as any).fileId) {
+      location = undefined
+    }
 
     return {
       fullscreen: false,
@@ -44,7 +48,7 @@ export class AppService {
       tree,
       ai,
       threads,
-      lastLocation,
+      location,
     }
   }
 
@@ -58,8 +62,8 @@ export class AppService {
     return this.store.fullscreen
   }
 
-  get lastLocation() {
-    return this.store.lastLocation
+  get location() {
+    return this.store.location
   }
 
   async getBasePath() {
@@ -86,10 +90,10 @@ export class AppService {
     this.setState('fullscreen', fullscreen)
   }
 
-  async setLastLocation(lastLocation: Partial<LastLocation>) {
-    info(`Save last location (path=${lastLocation.path}, page=${lastLocation.page})`)
-    this.setState('lastLocation', lastLocation)
-    const loc = this.store.lastLocation
+  async setLocation(location: Partial<LocationState>) {
+    info(`Set location (location=${JSON.stringify(location)})`)
+    this.setState('location', location)
+    const loc = this.store.location
     if (loc) await DB.setLastLocation(loc)
   }
 

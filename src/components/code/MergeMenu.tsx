@@ -27,7 +27,7 @@ const MergeMenuContainer = styled('div')`
 export const MergeMenu = () => {
   let tooltipRef!: HTMLDivElement
   const {store, fileService} = useState()
-  const {open} = useOpen()
+  const {openFile} = useOpen()
 
   const onAccept = () => {
     const view = fileService.currentFile?.codeEditorView
@@ -44,7 +44,7 @@ export const MergeMenu = () => {
     getChunks(view.state)?.chunks.forEach((chunk) => {
       rejectChunk(view, chunk.fromA)
     })
-    open(currentFile)
+    openFile(currentFile)
   }
 
   return (
