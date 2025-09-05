@@ -21,8 +21,6 @@ export const CodePage = (props: RouteSectionProps) => {
       await codeService.openFile({
         id: props.params.id,
         share,
-        file: location.state?.file,
-        newFile: location.state?.newFile,
         selection: location.state?.selection,
         merge: location.state?.merge,
       })

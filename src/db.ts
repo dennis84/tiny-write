@@ -1,15 +1,7 @@
 import {differenceInDays} from 'date-fns'
 import {type DBSchema, openDB} from 'idb'
 import {unwrap} from 'solid-js/store'
-import type {
-  AiConfig,
-  Camera,
-  Config,
-  ElementType,
-  LocationState,
-  Thread,
-  Window,
-} from '@/state'
+import type {AiConfig, Camera, Config, ElementType, LocationState, Thread, Window} from '@/state'
 import {info} from './remote/log'
 
 export interface PersistedVersion {

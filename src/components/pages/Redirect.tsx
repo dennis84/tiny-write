@@ -11,8 +11,8 @@ export const Redirect = () => {
 
   onMount(async () => {
     const lastLocation = store.location
-    const path = location.state?.file ?? store.args?.file
-    const newFile = location.state?.newFile ?? store.args?.newFile
+    const path = store.args?.file
+    const newFile = store.args?.newFile
     const argPath = newFile ?? path
     const selection = location.state?.selection
 

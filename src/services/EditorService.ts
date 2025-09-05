@@ -19,8 +19,6 @@ import type {SelectService} from './SelectService'
 export interface OpenFile {
   id: string
   share?: boolean
-  file?: string
-  newFile?: string
 }
 
 export class EditorService {
@@ -128,8 +126,8 @@ export class EditorService {
 
     try {
       let file = this.fileService.findFileById(params.id)
-      const path = file?.path ?? params.file
-      const newFile = file?.newFile ?? params.newFile
+      const path = file?.path
+      const newFile = file?.newFile
       let text: FileText | undefined
 
       if (!file) {

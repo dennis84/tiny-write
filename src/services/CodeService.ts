@@ -27,8 +27,6 @@ import type {PrettierService} from './PrettierService'
 export interface OpenFile {
   id: string
   share?: boolean
-  file?: string
-  newFile?: string
   selection?: VisualPositionRange
   merge?: MergeState
 }
@@ -59,8 +57,8 @@ export class CodeService {
 
     try {
       let file = unwrap(this.fileService.findFileById(params.id))
-      const path = file?.path ?? params.file
-      const newFile = file?.newFile ?? params.file
+      const path = file?.path
+      const newFile = file?.newFile
 
       let text: string | undefined
 

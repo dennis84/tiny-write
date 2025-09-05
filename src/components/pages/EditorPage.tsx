@@ -1,7 +1,7 @@
-import {type RouteSectionProps, useLocation} from '@solidjs/router'
+import type {RouteSectionProps} from '@solidjs/router'
 import {onMount, Show} from 'solid-js'
 import {info} from '@/remote/log'
-import {type LocationState, useState} from '@/state'
+import {useState} from '@/state'
 import {locationToString} from '@/utils/debug'
 import {Editor} from '../editor/Editor'
 import {Loading} from './Loading'
@@ -10,7 +10,6 @@ import {Title} from './Title'
 export const EditorPage = (props: RouteSectionProps) => {
   const OpenEditor = () => {
     const {store, editorService, fileService} = useState()
-    const location = useLocation<LocationState>()
 
     info(`Open editor page (location=${locationToString(props.location)})`)
 
@@ -19,8 +18,6 @@ export const EditorPage = (props: RouteSectionProps) => {
       await editorService.openFile({
         id: props.params.id,
         share,
-        file: location.state?.file,
-        newFile: location.state?.newFile,
       })
 
       fileService.currentFile?.editorView?.focus()
