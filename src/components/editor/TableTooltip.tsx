@@ -147,38 +147,38 @@ export const TableTooltip = (props: Props) => {
         <Tooltip
           anchor={a()}
           onClose={props.reset}
-          placement={props.activeHandle.direction === 'horiz' ? 'left' : 'top'}
+          placement={props.activeHandle.direction === 'row' ? 'left' : 'top'}
           fallbackPlacements={
-            props.activeHandle.direction === 'horiz'
+            props.activeHandle.direction === 'row'
               ? ['left', 'bottom', 'top']
               : ['top', 'left', 'right']
           }
         >
           <Show when={isFirstRow()}>
-            <TooltipButton onClick={onToggleHeaderRow}>
+            <TooltipButton onMouseDown={onToggleHeaderRow}>
               <IconToggleOn /> Toggle table header row
             </TooltipButton>
             <TooltipDivider />
           </Show>
-          <Show when={props.activeHandle.direction === 'horiz'}>
-            <TooltipButton onClick={onAddRowAbove}>
+          <Show when={props.activeHandle.direction === 'row'}>
+            <TooltipButton onMouseDown={onAddRowAbove}>
               <IconAddRowAbove /> Add row above
             </TooltipButton>
-            <TooltipButton onClick={onAddRowBelow}>
+            <TooltipButton onMouseDown={onAddRowBelow}>
               <IconAddRowBelow /> Add row below
             </TooltipButton>
-            <TooltipButton onClick={onRemoveRow}>
+            <TooltipButton onMouseDown={onRemoveRow}>
               <IconRowRemove /> Remove row
             </TooltipButton>
           </Show>
-          <Show when={props.activeHandle.direction === 'vert'}>
-            <TooltipButton onClick={onAddColumnBefore}>
+          <Show when={props.activeHandle.direction === 'col'}>
+            <TooltipButton onMouseDown={onAddColumnBefore}>
               <IconAddColumnLeft /> Add column before
             </TooltipButton>
-            <TooltipButton onClick={onAddColumnAfter}>
+            <TooltipButton onMouseDown={onAddColumnAfter}>
               <IconAddColumnRight /> Add column after
             </TooltipButton>
-            <TooltipButton onClick={onRemoveColumn}>
+            <TooltipButton onMouseDown={onRemoveColumn}>
               <IconColumnRemove /> Remove column
             </TooltipButton>
           </Show>

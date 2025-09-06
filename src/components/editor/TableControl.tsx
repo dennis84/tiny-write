@@ -67,7 +67,7 @@ export interface CurrentCell {
   pos: number
 }
 
-type Direction = 'vert' | 'horiz'
+type Direction = 'col' | 'row'
 
 export interface ActiveHandle {
   element: Element
@@ -75,8 +75,8 @@ export interface ActiveHandle {
 }
 
 interface HandlePosition {
-  vert: Vector
-  horiz: Vector
+  col: Vector // position for column handle
+  row: Vector // position for row handle
 }
 
 interface HandleGridProps {
@@ -129,13 +129,24 @@ const HandleGrid = (props: HandleGridProps) => {
     const tableX = editorView.dom.offsetLeft + tableNode.offsetLeft
     const tableY = editorView.dom.offsetTop + tableNode.offsetTop
 
-    const colBox = new Box(cellX, tableY, cellBox.width, tableBox.height)
-    const rowBox = new Box(tableX, cellY, tableBox.width, cellBox.height)
+    const colBox = BoxUtil.fromRect({
+      x: cellX,
+      y: tableY,
+      width: cellBox.width,
+      height: tableBox.height,
+    })
 
-    const vert = BoxUtil.getHandlePoint(colBox, EdgeType.Top)
-    const horiz = BoxUtil.getHandlePoint(rowBox, EdgeType.Left)
+    const rowBox = BoxUtil.fromRect({
+      x: tableX,
+      y: cellY,
+      width: tableBox.width,
+      height: cellBox.height,
+    })
 
-    setHandlePosition({vert, horiz})
+    const col = BoxUtil.getHandlePoint(colBox, EdgeType.Top)
+    const row = BoxUtil.getHandlePoint(rowBox, EdgeType.Left)
+
+    setHandlePosition({col, row})
     setCurrentCell({element, pos})
   }
 
@@ -166,9 +177,9 @@ const HandleGrid = (props: HandleGridProps) => {
     const tableY = editorView.dom.offsetTop + tableNode.offsetTop
 
     const box =
-      direction === 'horiz'
-        ? new Box(tableX, cellY, tableBox.width, cellBox.height)
-        : new Box(cellX, tableY, cellBox.width, tableBox.height)
+      direction === 'row'
+        ? BoxUtil.fromRect({x: tableX, y: cellY, width: tableBox.width, height: cellBox.height})
+        : BoxUtil.fromRect({x: cellX, y: tableY, width: cellBox.width, height: tableBox.height})
     setSelection(box)
   }
 
@@ -216,18 +227,18 @@ const HandleGrid = (props: HandleGridProps) => {
         {(h) => (
           <>
             <Handle
-              id="table-handle-horiz"
-              style={{transform: `translate3d(${h().horiz.x}px, ${h().horiz.y}px, 0)`}}
-              onMouseDown={onHandleClick('horiz')}
-              class={activeHandle()?.direction === 'horiz' ? 'active' : ''}
+              id="table-handle-row"
+              style={{transform: `translate3d(${h().row.x}px, ${h().row.y}px, 0)`}}
+              onMouseDown={onHandleClick('row')}
+              class={activeHandle()?.direction === 'row' ? 'active' : ''}
             >
               <IconDragIndicator />
             </Handle>
             <Handle
-              id="table-handle-vert"
-              style={{transform: `translate3d(${h().vert.x}px, ${h().vert.y}px, 0) rotate(90deg)`}}
-              onMouseDown={onHandleClick('vert')}
-              class={activeHandle()?.direction === 'vert' ? 'active' : ''}
+              id="table-handle-col"
+              style={{transform: `translate3d(${h().col.x}px, ${h().col.y}px, 0) rotate(90deg)`}}
+              onMouseDown={onHandleClick('col')}
+              class={activeHandle()?.direction === 'col' ? 'active' : ''}
             >
               <IconDragIndicator />
             </Handle>

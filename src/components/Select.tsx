@@ -37,8 +37,8 @@ export const Select = (props: Props) => {
           // Allow click on block-handle
           (event.target as HTMLElement).closest('#block-handle') ||
           // Allow click on table-handle
-          (event.target as HTMLElement).closest('#table-handle-vert') ||
-          (event.target as HTMLElement).closest('#table-handle-horiz')
+          (event.target as HTMLElement).closest('#table-handle-col') ||
+          (event.target as HTMLElement).closest('#table-handle-row')
         ) {
           return
         }
