@@ -38,14 +38,13 @@
     "@use-gesture/vanilla": "10.3.1",
     "codemirror-extension-inline-suggestion": "0.0.3",
     "date-fns": "4.1.0",
-    "file-type": "21.0.0",
     "idb": "8.0.3",
     "js-base64": "3.7.8",
     "linkifyjs": "4.3.2",
     "markdown-it": "14.1.0",
     "markdown-it-container": "4.0.0",
     "markdown-it-for-inline": "2.0.1",
-    "mermaid": "11.9.0",
+    "mermaid": "11.11.0",
     "prettier": "3.6.2",
     "prosemirror-commands": "1.7.1",
     "prosemirror-dropcursor": "1.8.2",
@@ -91,7 +90,7 @@
     "@y/websocket-server": "^0.1.1",
     "cross-env": "10.0.0",
     "fetch-mock": "^12.5.3",
-    "jsdom": "26.1.0",
+    "happy-dom": "^18.0.1",
     "rollup-plugin-visualizer": "6.0.3",
     "tslib": "2.8.1",
     "typescript": "5.9.2",
@@ -101,10 +100,6 @@
     "vitest": "3.2.4",
     "vitest-mock-extended": "3.1.0"
   },
-  "overrides": {
-    "d3-color": "3.1.0"
-  },
-  "hasInstallScript": true,
   "scripts": {
     "dev": "vite & y-websocket",
     "build": "vite build",
@@ -114,8 +109,5 @@
   },
   "engines": {
     "node": ">=20.0.0"
-  },
-  "browserslist": [
-    "last 1 Chrome versions"
-  ]
+  }
 }

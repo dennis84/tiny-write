@@ -32,11 +32,11 @@ test('undoManager - text', async () => {
   expect(store.files.length).toBe(1)
   expect(getByTestId('editor_scroll')).toHaveTextContent('Start typing ...')
 
-  await userEvent.keyboard('Test')
+  await userEvent.keyboard('Test', {delay: 10})
 
   collabService.undoManager?.stopCapturing()
 
-  await userEvent.keyboard('123')
+  await userEvent.keyboard('123', {delay: 10})
 
   expect(getByTestId('editor_scroll')).toHaveTextContent(/^Test123$/)
 
@@ -58,11 +58,11 @@ test('undoManager - code', async () => {
   expect(store.files.length).toBe(1)
   expect(fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('')
 
-  await userEvent.keyboard('Test')
+  await userEvent.keyboard('Test', {delay: 10})
 
   collabService.undoManager?.stopCapturing()
 
-  await userEvent.keyboard('123')
+  await userEvent.keyboard('123', {delay: 10})
 
   expect(fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('Test123')
 
@@ -81,7 +81,7 @@ test('startCollab', async () => {
     expect(getByTestId('editor_scroll')).toBeDefined()
   })
 
-  await userEvent.keyboard('Test')
+  await userEvent.keyboard('Test', {delay: 10})
   expect(getByTestId('editor_scroll')).toHaveTextContent(/^Test$/)
 
   collabService.startCollab()

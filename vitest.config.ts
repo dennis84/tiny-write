@@ -6,7 +6,7 @@ import Icons from 'unplugin-icons/vite'
 export default defineConfig({
   plugins: [solid(), Icons({compiler: 'solid', jsx: 'preact'})],
   test: {
-    environment: 'jsdom',
+    environment: 'happy-dom',
     include: ['test/unit/**/*.test.ts', 'test/unit/**/*.test.tsx'],
     coverage: {
       provider: 'v8',

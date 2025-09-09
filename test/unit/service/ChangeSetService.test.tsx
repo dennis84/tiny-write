@@ -28,7 +28,7 @@ test('addVersion', async () => {
     expect(getByTestId('editor_scroll')).toBeDefined()
   })
 
-  await userEvent.keyboard('Test')
+  await userEvent.keyboard('Test', {delay: 10})
 
   expect(getByTestId('editor_scroll')).toHaveTextContent('Test')
   expect(fileService.currentFile?.versions.length).toBe(0)
@@ -36,7 +36,7 @@ test('addVersion', async () => {
   await changeSetService.addVersion()
   expect(fileService.currentFile?.versions.length).toBe(1)
 
-  await userEvent.keyboard('123')
+  await userEvent.keyboard('123', {delay: 10})
   expect(getByTestId('editor_scroll')).toHaveTextContent('Test123')
 
   expectToBeDefined(fileService.currentFile?.versions[0])

@@ -319,6 +319,7 @@ export const FullEditor = styled('div')`
   height: fit-content;
   width: ${(props: any) => props.config.contentWidth}px;
   max-width: 100%;
+  padding: 0 50px; /* leave space for handles if width is 100% */
   ${(props: any) => proseMirror(props)}
   .ProseMirror {
     margin-top: 50px;
