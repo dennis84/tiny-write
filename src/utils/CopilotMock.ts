@@ -13,7 +13,8 @@ interface Options {
 export class CopilotMock {
   static setup(options: Options = {}) {
     fetchMock.hardReset()
-    const mock = fetchMock.mockGlobal()
+    const mock = fetchMock.spyGlobal()
+
     mock.route('end:https://github.com/login/device/code', CopilotMock.login())
     mock.route('end:https://github.com/login/oauth/access_token', CopilotMock.accessToken())
     mock.route('end:https://api.github.com/user', CopilotMock.user())
@@ -77,16 +78,16 @@ export class CopilotMock {
         },
       })
 
-    const isStreamingCompletions = (m: CallLog): boolean => {
+    const isCompletions = (m: CallLog, streaming: boolean): boolean => {
       if (!m.url.endsWith('https://example.com/github/api/chat/completions')) return false
       if (typeof m.options.body !== 'string') return false
       const json = JSON.parse(m.options.body)
-      return json.stream
+      return json.stream === streaming
     }
 
-    fetchMock.post((m) => isStreamingCompletions(m), createStream)
-    fetchMock.post(
-      (m) => !isStreamingCompletions(m),
+    mock.post((m) => isCompletions(m, true), createStream)
+    mock.post(
+      (m) => isCompletions(m, false),
       () => {
         const title = uniqueNamesGenerator({
           dictionaries: [adjectives, animals],
