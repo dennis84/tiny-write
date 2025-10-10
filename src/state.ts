@@ -29,6 +29,7 @@ export interface LocationState {
   newFile?: string // save as to this path
   selection?: VisualPositionRange // forgotten
   merge?: MergeState // e.g. open file with merge params from assistant
+  share?: boolean // turn collab mode on
 }
 
 export interface VisualPosition {

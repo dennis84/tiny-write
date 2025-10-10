@@ -1,8 +1,7 @@
-import {useSearchParams} from '@solidjs/router'
 import {createEffect, createSignal, onCleanup, Show} from 'solid-js'
 import {WEB_URL} from '@/env'
 import {copy} from '@/remote/clipboard'
-import {useState} from '@/state'
+import {Page, useState} from '@/state'
 import {IconCloud, IconCloudOff, IconGroup, IconLink} from '../Icon'
 import {Label, Link, Sub, Text} from './Style'
 
@@ -10,21 +9,29 @@ export const SubmenuCollab = () => {
   const {store, collabService} = useState()
   const [collabUsers, setCollabUsers] = createSignal(0)
   const [lastAction, setLastAction] = createSignal<string | undefined>()
-  const [, setSearchParams] = useSearchParams()
 
   const onCollabStart = () => {
     collabService.startCollab()
-    setSearchParams({share: 'true'})
   }
 
   const onCollabStop = () => {
     collabService.stopCollab()
-    setSearchParams({share: undefined})
   }
 
   const onCopyCollabLink = async () => {
-    await copy(`${WEB_URL}/${collabService.provider?.roomname}?share=true`)
-    setLastAction('copy-collab-link')
+    let joinUrl: string | undefined
+    if (store.location?.page === Page.Editor) {
+      joinUrl = `${WEB_URL}/editor?join=${store.location.editorId}`
+    } else if (store.location?.page === Page.Code) {
+      joinUrl = `${WEB_URL}/code?join=${store.location.codeId}`
+    } else if (store.location?.page === Page.Canvas) {
+      joinUrl = `${WEB_URL}/canvas?join=${store.location.canvasId}`
+    }
+
+    if (joinUrl) {
+      await copy(joinUrl)
+      setLastAction('copy-collab-link')
+    }
   }
 
   createEffect(() => {

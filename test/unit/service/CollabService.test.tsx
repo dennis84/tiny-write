@@ -5,6 +5,8 @@ import {mock} from 'vitest-mock-extended'
 import {Main} from '@/components/Main'
 import {createCtrl} from '@/services'
 import {createState} from '@/state'
+import * as cmUtil from '../testutil/codemirror-util'
+import * as pmUtil from '../testutil/prosemirror-util'
 import {stubLocation} from '../testutil/util'
 
 vi.mock('@/db', () => ({DB: mock()}))
@@ -22,7 +24,11 @@ beforeEach(() => {
 test('undoManager - text', async () => {
   stubLocation('/editor/1')
 
-  const {store, collabService} = createCtrl(createState())
+  const {store, collabService} = createCtrl(
+    createState({
+      files: [{id: '1', ydoc: pmUtil.createYUpdate('1', []), versions: []}],
+    }),
+  )
   const {getByTestId} = render(() => <Main state={store} />)
 
   await waitFor(() => {
@@ -48,7 +54,11 @@ test('undoManager - text', async () => {
 test('undoManager - code', async () => {
   stubLocation('/code/1')
 
-  const {store, collabService, fileService} = createCtrl(createState())
+  const {store, collabService, fileService} = createCtrl(
+    createState({
+      files: [{id: '1', ydoc: cmUtil.createYUpdate('1', ''), versions: [], code: true}],
+    }),
+  )
   const {getByTestId} = render(() => <Main state={store} />)
 
   await waitFor(() => {
@@ -74,7 +84,11 @@ test('undoManager - code', async () => {
 test('startCollab', async () => {
   stubLocation('/editor/1')
 
-  const {store, collabService} = createCtrl(createState())
+  const {store, collabService} = createCtrl(
+    createState({
+      files: [{id: '1', ydoc: pmUtil.createYUpdate('1', []), versions: []}],
+    }),
+  )
   const {getByTestId} = render(() => <Main state={store} />)
 
   await waitFor(() => {

@@ -1,4 +1,5 @@
 import {expect, test} from '@playwright/test'
+import {createYUpdate} from '../../unit/testutil/codemirror-util'
 import {delay, lineCodeEq} from '../utils'
 import {setupDB} from './mock'
 
@@ -27,6 +28,10 @@ test.beforeEach(async ({page}) => {
     ai: {
       main: {copilot: {user: 'johndoe', accessToken: 'AT-123'}},
     },
+    files: [
+      {id: '222', code: true, ydoc: createYUpdate('222', '')},
+      {id: '333', code: true, ydoc: createYUpdate('333', '')},
+    ],
     threads: [
       {
         id: '1',
@@ -69,20 +74,16 @@ test('create file', async ({page}) => {
   await lineCodeEq(page, 1, "const test1 = '111'")
 
   await page.click('[data-testid="floating_navbar_menu_open"]')
-  await expect(page.locator('[data-testid="tree_link"]').locator('nth=1')).toContainText(
-    'src/main.ts',
-  )
+  await expect(page.locator('[data-testid="tree_link"]').nth(2)).toContainText('src/main.ts')
 })
 
 test('apply', async ({page}) => {
-  await page.goto(`/code/222`)
-
   await page.click('[data-testid="floating_navbar_assistant_open"]')
   await page.click('[data-testid="history"]')
   await page.click('[data-testid="thread_item"]')
   await page.click('[data-testid="tooltip_backdrop"]')
 
-  await page.locator('[data-testid="panel_button_apply"]').click()
+  await page.locator('[data-testid="panel_button_apply"]').nth(0).click()
   await page.locator('button[name="accept"]').click()
 
   expect(page.getByText('All chunks applied')).toBeVisible()
@@ -91,18 +92,12 @@ test('apply', async ({page}) => {
 })
 
 test('apply - open file', async ({page}) => {
-  await page.goto(`/code/222`)
-  await page.waitForSelector('[data-testid="initialized"]')
-
-  await page.goto(`/code/444`)
-  await page.waitForSelector('[data-testid="initialized"]')
-
   await page.click('[data-testid="floating_navbar_assistant_open"]')
   await page.click('[data-testid="history"]')
   await page.click('[data-testid="thread_item"]')
   await page.click('[data-testid="tooltip_backdrop"]')
 
-  await page.locator('[data-testid="panel_button_apply"]').click()
+  await page.locator('[data-testid="panel_button_apply"]').nth(0).click()
   await page.locator('button[name="accept"]').click()
 
   expect(page.getByText('All chunks applied')).toBeVisible()
@@ -112,8 +107,7 @@ test('apply - open file', async ({page}) => {
 })
 
 test('apply - range', async ({page}) => {
-  await page.goto(`/code/333`)
-
+  await page.goto('/code/333')
   await page.locator('.cm-content').pressSequentially('abcdefghijklmnop', {delay})
 
   await page.click('[data-testid="floating_navbar_assistant_open"]')
@@ -121,7 +115,7 @@ test('apply - range', async ({page}) => {
   await page.click('[data-testid="thread_item"]')
   await page.click('[data-testid="tooltip_backdrop"]')
 
-  await page.locator('[data-testid="panel_button_apply"]').click()
+  await page.locator('[data-testid="panel_button_apply"]').nth(1).click()
 
   await page.locator('button[name="accept"]').click()
 

@@ -1,48 +1,44 @@
 import {expect, test} from '@playwright/test'
-import {v4 as uuidv4} from 'uuid'
 import {delay, lineTextEq} from '../utils'
 
 test('create room', async ({page, browser}) => {
   await page.goto(`/`)
-  const url = page.url()
   await page.waitForSelector('[data-testid="initialized"]')
+
   await page.click('[data-testid="floating_navbar_menu_open"]')
   await page.click('[data-testid="collab"]')
-  expect(url).not.toBe(page.url())
-  expect(page.url()).toContain('?share=true')
+
+  const id = page.url().split('/editor/')[1]
+
   await page.locator('.ProseMirror').pressSequentially('Hello', {delay})
 
   const page2 = await browser.newPage()
-  await page2.goto(page.url())
-  expect(page2.url()).toContain('?share=true')
+  await page2.goto(`/editor?join=${id}`)
+  await page2.click('[data-testid="join_editor"]')
+
   await lineTextEq(page2, 1, 'Hello')
 
   await page.locator('.ProseMirror').pressSequentially(' World', {delay})
 
+  await lineTextEq(page, 1, 'Hello World')
   await lineTextEq(page2, 1, 'Hello World')
 })
 
 test('create room - existing content file', async ({page, browser}) => {
   await page.goto('/')
   await page.waitForSelector('[data-testid="initialized"]')
+
+  const id = page.url().split('/editor/')[1]
+
   await page.locator('.ProseMirror').pressSequentially('Hello', {delay})
   await page.click('[data-testid="floating_navbar_menu_open"]')
   await page.click('[data-testid="collab"]')
   await lineTextEq(page, 1, 'Hello')
 
   const page2 = await browser.newPage()
-  await page2.goto(page.url())
-  await lineTextEq(page2, 1, 'Hello')
-})
+  await page2.goto(`/editor?join=${id}`)
+  await page2.click('[data-testid="join_editor"]')
 
-test('existing room', async ({page, browser}) => {
-  const room = uuidv4()
-  await page.goto(`/editor/${room}?share=true`)
-  await page.waitForSelector('[data-testid="initialized"]')
-  await page.locator('.ProseMirror').pressSequentially('Hello', {delay})
-
-  const page2 = await browser.newPage()
-  await page2.goto(`/editor/${room}?share=true`)
   await lineTextEq(page2, 1, 'Hello')
 
   // make sure that cursor is at the start position
@@ -55,30 +51,8 @@ test('existing room', async ({page, browser}) => {
   await lineTextEq(page, 1, 'WorldHello')
 })
 
-test('existing room - backup', async ({page}) => {
-  const room = uuidv4()
-  await page.goto('/')
-  await page.locator('.ProseMirror').pressSequentially('123', {delay})
-
-  await page.goto(`/editor/${room}?share=true`)
-  await page.waitForSelector('[data-testid="initialized"]')
-  await page.locator('.ProseMirror').pressSequentially('Hello', {delay})
-  await lineTextEq(page, 1, 'Hello')
-
-  await page.click('[data-testid="floating_navbar_menu_open"]')
-  await expect(page.locator('[data-testid="tree_link"]')).toHaveCount(2)
-  await expect(page.locator('[data-testid="tree_link"]').nth(0)).toContainText('123')
-  await expect(page.locator('[data-testid="tree_link"]').nth(1)).toContainText('Hello')
-
-  await page.locator('[data-testid="tree_link"]').nth(0).click()
-  await lineTextEq(page, 1, '123')
-
-  await expect(page.locator('[data-testid="tree_link"]')).toHaveCount(2)
-})
-
 test('sync config', async ({page, browser}) => {
   await page.goto('/')
-  const url = page.url()
   await page.waitForSelector('[data-testid="initialized"]')
   await page.click('[data-testid="floating_navbar_menu_open"]')
 
@@ -90,12 +64,14 @@ test('sync config', async ({page, browser}) => {
 
   // start collab
   await page.click('[data-testid="collab"]')
-  expect(url).not.toBe(page.url())
   await page.locator('.ProseMirror').pressSequentially('Hello', {delay})
 
   // join room
+  const id = page.url().split('/editor/')[1]
   const page2 = await browser.newPage()
-  await page2.goto(page.url())
+  await page2.goto(`/editor?join=${id}`)
+  await page2.click('[data-testid="join_editor"]')
+
   await lineTextEq(page2, 1, 'Hello')
   await page2.click('[data-testid="floating_navbar_menu_open"]')
   await page2.click('[data-testid="appearance"]')
@@ -136,8 +112,11 @@ test('rejoin room - remote', async ({page, browser}) => {
   await expect(page.locator('.ProseMirror > *')).toHaveCount(1)
 
   // join room
+  const id = page.url().split('/editor/')[1]
   const page2 = await browser.newPage()
-  await page2.goto(page.url())
+  await page2.goto(`/editor?join=${id}`)
+  await page2.click('[data-testid="join_editor"]')
+
   await lineTextEq(page2, 1, 'Hello')
   await expect(page2.locator('.ProseMirror > *')).toHaveCount(1)
 
@@ -163,7 +142,8 @@ test('rejoin room - remote', async ({page, browser}) => {
   const page3 = await browser.newPage({
     storageState: await page2.context().storageState({indexedDB: true}),
   })
-  await page3.goto(page.url())
+  await page3.goto(`/editor?join=${id}`)
+  await page3.click('[data-testid="join_editor"]')
   await expect(page3.locator('.ProseMirror > *')).toHaveCount(1)
   await lineTextEq(page3, 1, '123abc')
 

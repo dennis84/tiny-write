@@ -22,7 +22,7 @@ import {
 } from '@/components/Icon'
 import {Tooltip, TooltipButton, TooltipDivider} from '@/components/Tooltip'
 import {useOpen} from '@/hooks/open'
-import {Align} from '@/prosemirror/image'
+import {Align} from '@/prosemirror/image/interfaces'
 import {saveSvg} from '@/remote/svg'
 import {MessageType, useState} from '@/state'
 import type {Block} from './BlockHandle'

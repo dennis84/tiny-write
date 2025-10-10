@@ -33,7 +33,7 @@ export const useOpen = () => {
 
   const open = (locState?: Partial<LocationState>) => {
     if (!locState) {
-      info(`Redirect to (to=/)`)
+      info(`Navigate to /`)
       return navigate('/')
     }
 
@@ -64,17 +64,20 @@ export const useOpen = () => {
       ...locState,
     }
 
-    if (!id) {
-      info(`Redirect to (to=/${page})`)
+    if (page && id) {
+      info(`Navigate to /${page}/${id}`)
+      return navigate(`/${page}/${id}`, {state})
+    } else if (page) {
+      info(`Navigate to /${page}`)
       return navigate(`/${page}`, {state})
+    } else {
+      info(`Navigate to /`)
+      return navigate(`/`)
     }
-
-    info(`Redirect to (to=/${page}/${id})`)
-    return navigate(`/${page}/${id}`, {state})
   }
 
   const openDir = (path?: string[]) => {
-    info(`Redirect to (to=/dir)`)
+    info(`Open dir (path=${path})`)
     const state = {path}
     navigate('/dir', {state})
   }

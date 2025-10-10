@@ -3,7 +3,7 @@ import {dropCursor} from 'prosemirror-dropcursor'
 import {buildKeymap} from 'prosemirror-example-setup'
 import {inputRules} from 'prosemirror-inputrules'
 import {keymap} from 'prosemirror-keymap'
-import {type Node, Schema} from 'prosemirror-model'
+import type {Node} from 'prosemirror-model'
 import type {EditorState, Plugin} from 'prosemirror-state'
 import type {NodeViewConstructor} from 'prosemirror-view'
 import {initProseMirrorDoc} from 'y-prosemirror'
@@ -15,36 +15,26 @@ import {
   createWordCompletionPlugins,
   wordCompletionKeymap,
 } from '@/prosemirror/autocomplete/word-completion'
-import {codeInputRule, codeKeymap, codeSchemaSpec} from '@/prosemirror/code'
+import {codeInputRule, codeKeymap} from '@/prosemirror/code'
 import {
   codeBlockKeymap,
-  codeBlockSchemaSpec,
   createCodeBlockPlugin,
   createCodeBlockViews,
 } from '@/prosemirror/code-block'
-import {collabSchemaSpec, createCollabPlugins} from '@/prosemirror/collab'
-import {containerSchemaSpec, containerViews, createContainerPlugin} from '@/prosemirror/container'
-import {emphasisInputRules, emphasisSchemaSpec} from '@/prosemirror/emphasis'
-import {hardBreakSchemaSpec} from '@/prosemirror/hard-break'
-import {headingSchemaSpec} from '@/prosemirror/heading'
-import {createImageViews, imageSchemaSpec} from '@/prosemirror/image'
+import {createCollabPlugins} from '@/prosemirror/collab'
+import {containerViews, createContainerPlugin} from '@/prosemirror/container'
+import {emphasisInputRules} from '@/prosemirror/emphasis'
+import {createImageViews} from '@/prosemirror/image'
 import {createInputParserPlugin} from '@/prosemirror/input-parser'
-import {linkSchemaSpec} from '@/prosemirror/link'
-import {listSchemaSpec} from '@/prosemirror/list'
-import {createMarkdownPlugins, markdownSchemaSpec} from '@/prosemirror/markdown'
-import {paragraphSchemaSpec} from '@/prosemirror/paragraph'
+import {createMarkdownPlugins} from '@/prosemirror/markdown'
 import {createPasteMarkdownPlugin} from '@/prosemirror/paste-markdown'
 import {placeholder} from '@/prosemirror/placeholder'
+import {schema} from '@/prosemirror/schema'
 import {scrollIntoView} from '@/prosemirror/scroll'
 import {selectedPlugin} from '@/prosemirror/selected'
 import {createTabKeymap} from '@/prosemirror/tab'
-import {createTablePlugins, tableKeymap, tableSchemaSpec} from '@/prosemirror/table'
-import {
-  createTaskListKeymap,
-  createTaskListPlugin,
-  taskListSchemaSpec,
-  taskListViews,
-} from '@/prosemirror/task-list'
+import {createTablePlugins, tableKeymap} from '@/prosemirror/table'
+import {createTaskListKeymap, createTaskListPlugin, taskListViews} from '@/prosemirror/task-list'
 import type {AppService} from './AppService'
 import type {CanvasService} from './CanvasService'
 import type {CodeMirrorService} from './CodeMirrorService'
@@ -61,38 +51,6 @@ interface CreatePlugins {
   type: Y.XmlFragment
   dropCursor?: boolean
 }
-
-export const schema = new Schema({
-  nodes: {
-    doc: {
-      content: 'block+',
-    },
-    ...paragraphSchemaSpec.nodes,
-    ...headingSchemaSpec.nodes,
-    ...listSchemaSpec.nodes,
-    text: {
-      group: 'inline',
-    },
-    ...markdownSchemaSpec.nodes,
-    ...hardBreakSchemaSpec.nodes,
-    blockquote: {
-      content: 'block+',
-      group: 'block',
-      toDOM: () => ['div', ['blockquote', 0]],
-    },
-    ...containerSchemaSpec.nodes,
-    ...codeBlockSchemaSpec.nodes,
-    ...tableSchemaSpec.nodes,
-    ...taskListSchemaSpec.nodes,
-    ...imageSchemaSpec.nodes,
-  },
-  marks: {
-    ...linkSchemaSpec.marks,
-    ...codeSchemaSpec.marks,
-    ...collabSchemaSpec.marks,
-    ...emphasisSchemaSpec.marks,
-  },
-})
 
 export class ProseMirrorService {
   constructor(

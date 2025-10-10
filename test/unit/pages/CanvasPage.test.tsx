@@ -5,6 +5,7 @@ import {Main} from '@/components/Main'
 import type {DB} from '@/db'
 import {createCtrl} from '@/services'
 import {type Canvas, createState, Page} from '@/state'
+import {stubLocation} from '../testutil/util'
 
 vi.mock('@/db', () => ({DB: mock<DB>()}))
 
@@ -19,10 +20,44 @@ const createCanvas = (props: Partial<Canvas> = {}): Canvas => ({
   ...props,
 })
 
-test('share - new', async () => {
-  vi.stubGlobal('location', {pathname: '/canvas/1', search: '?share=true&'})
+test('share - new canvas page', async () => {
+  stubLocation('/canvas')
 
   const initial = createState()
+  const {store, canvasService} = createCtrl(initial)
+  const {getByTestId} = render(() => <Main state={store} />)
+
+  await waitFor(() => {
+    expect(getByTestId('new_canvas_page')).toBeDefined()
+  })
+
+  expect(store.location?.page).toBe(Page.Canvas)
+  expect(canvasService.currentCanvasId).toBe(undefined)
+})
+
+test('share - not found', async () => {
+  stubLocation('/canvas/1')
+
+  const initial = createState()
+  const {store, canvasService} = createCtrl(initial)
+  const {getByTestId} = render(() => <Main state={store} />)
+
+  await waitFor(() => {
+    expect(getByTestId('new_canvas_page')).toBeDefined()
+  })
+
+  expect(store.location?.page).toBe(Page.Canvas)
+  expect(canvasService.currentCanvasId).toBe(undefined)
+})
+
+test('share - existing canvas', async () => {
+  stubLocation('/canvas/1')
+
+  const canvas = createCanvas({id: '1'})
+  const initial = createState({
+    canvases: [canvas],
+  })
+
   const {store, canvasService} = createCtrl(initial)
   const {getByTestId} = render(() => <Main state={store} />)
 
@@ -32,19 +67,20 @@ test('share - new', async () => {
 
   expect(store.location?.page).toBe(Page.Canvas)
   expect(canvasService.currentCanvasId).toBe('1')
-  expect(store.collab?.started).toBe(true)
 })
 
-test('share - existing canvas', async () => {
-  vi.stubGlobal('location', {pathname: '/canvas/1', search: '?share=true&'})
+test('share - join', async () => {
+  stubLocation('/canvas?join=1')
 
-  const canvas = createCanvas({id: '1'})
-  const initial = createState({
-    canvases: [canvas],
-  })
-
+  const initial = createState()
   const {store, canvasService} = createCtrl(initial)
   const {getByTestId} = render(() => <Main state={store} />)
+
+  await waitFor(() => {
+    expect(getByTestId('new_canvas_page')).toBeDefined()
+  })
+
+  getByTestId('join_canvas').click()
 
   await waitFor(() => {
     expect(getByTestId('canvas_container')).toBeDefined()

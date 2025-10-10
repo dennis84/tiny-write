@@ -16,11 +16,11 @@ import {DragArea, Layout, PageContent} from '@/components/Layout'
 import {MouseCursor} from '@/components/MouseCursor'
 import {Menu} from '@/components/menu/Menu'
 import {FloatingNavbar} from '@/components/menu/Navbar'
-import {CanvasPage} from '@/components/pages/CanvasPage'
+import {CanvasPage, NewCanvasPage} from '@/components/pages/CanvasPage'
 import {ChatPage} from '@/components/pages/ChatPage'
-import {CodePage} from '@/components/pages/CodePage'
+import {CodePage, NewCodePage} from '@/components/pages/CodePage'
 import {DirPage} from '@/components/pages/DirPage'
-import {EditorPage} from '@/components/pages/EditorPage'
+import {EditorPage, NewEditorPage} from '@/components/pages/EditorPage'
 import {Redirect} from '@/components/pages/Redirect'
 import {ResizeWindow} from '@/components/ResizeWindow'
 import {Toast} from '@/components/Toast'
@@ -33,7 +33,6 @@ import {info} from '@/remote/log'
 import {show, updateWindow} from '@/remote/window'
 import {createCtrl} from '@/services'
 import {type LocationState, Page, type State, StateContext} from '@/state'
-import {locationToString} from '@/utils/debug'
 import {enumFromValue} from '@/utils/enum'
 
 export const Main = (props: {state: State}) => {
@@ -44,7 +43,7 @@ export const Main = (props: {state: State}) => {
     const matchPage = useMatch(() => '/:page/*')
     const currentMatches = useCurrentMatches()
 
-    info(`Open root (location=${locationToString(location)})`)
+    info(`Render root (location=${JSON.stringify(location.state)})`)
 
     const onViewError = (error: any, reset: any) => {
       ctrl.appService.setError({error})
@@ -77,6 +76,11 @@ export const Main = (props: {state: State}) => {
     })
 
     createEffect(async () => {
+      // Listen on changes of location state.
+      location.state?.merge
+      location.state?.selection
+      location.state?.share
+
       // Set URL params to state location on initail page load.
       const pageMatch = matchPage() // To parse the page type from /:page/*
       if (pageMatch) {
@@ -84,13 +88,15 @@ export const Main = (props: {state: State}) => {
         const mainMatch = currentMatches()[0] // Matches on /editor/:id, /code/:id, ...
         if (mainMatch) {
           const id = mainMatch.params.id
-          await ctrl.appService.setLocation({
-            ...location.state,
-            page,
-            codeId: page === Page.Code ? id : undefined,
-            editorId: page === Page.Editor ? id : undefined,
-            canvasId: page === Page.Canvas ? id : undefined,
-            threadId: page === Page.Assistant ? id : location.state?.threadId,
+          await untrack(async () => {
+            await ctrl.appService.setLocation({
+              ...location.state,
+              page,
+              codeId: page === Page.Code ? id : undefined,
+              editorId: page === Page.Editor ? id : undefined,
+              canvasId: page === Page.Canvas ? id : undefined,
+              threadId: page === Page.Assistant ? id : location.state?.threadId,
+            })
           })
         }
       }
@@ -144,12 +150,20 @@ export const Main = (props: {state: State}) => {
 
   return (
     <Router root={Root}>
+      <Route path="/editor" component={NewEditorPage} />
       <Route path="/editor/:id" component={EditorPage} />
+
+      <Route path="/canvas" component={NewCanvasPage} />
       <Route path="/canvas/:id" component={CanvasPage} />
+
+      <Route path="/code" component={NewCodePage} />
       <Route path="/code/:id" component={CodePage} />
+
       <Route path="/dir" component={DirPage} />
+
       <Route path="/assistant" component={ChatPage} />
       <Route path="/assistant/:id" component={ChatPage} />
+
       <Route path="*" component={Redirect} />
     </Router>
   )

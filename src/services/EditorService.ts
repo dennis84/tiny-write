@@ -7,19 +7,15 @@ import {debounce} from 'throttle-debounce'
 import {prosemirrorJSONToYDoc} from 'y-prosemirror'
 import * as Y from 'yjs'
 import {serialize} from '@/markdown'
+import {schema} from '@/prosemirror/schema'
 import {replaceText, writeFile} from '@/remote/editor'
 import {error, info} from '@/remote/log'
 import {type File, type FileText, Page, type State} from '@/state'
 import type {AppService} from './AppService'
 import {CollabService} from './CollabService'
 import {FileService} from './FileService'
-import {type ProseMirrorService, schema} from './ProseMirrorService'
+import type {ProseMirrorService} from './ProseMirrorService'
 import type {SelectService} from './SelectService'
-
-export interface OpenFile {
-  id: string
-  share?: boolean
-}
 
 export class EditorService {
   constructor(
@@ -120,41 +116,42 @@ export class EditorService {
     editorView?.focus()
   }
 
-  async openFile(params: OpenFile) {
-    info(`Open file: (params=${JSON.stringify(params)}, mode=editor)`)
+  async init() {
+    info(`Initialize editor file`)
     const state = {...this.store}
 
-    try {
-      let file = this.fileService.findFileById(params.id)
-      const path = file?.path
-      const newFile = file?.newFile
-      let text: FileText | undefined
+    const currentFileId = this.fileService.currentFileId
+    const currentFile = this.fileService.currentFile
+    const share = this.store.location?.share
 
-      if (!file) {
-        file = FileService.createFile({id: params.id, path, newFile})
-        state.files = [...state.files, file]
-      }
+    const path = currentFile?.path
+    let text: FileText | undefined
 
-      if (path) {
-        text = (await FileService.loadMarkdownFile(path)).text
-      }
-
-      const newState = {
-        ...state,
-        collab: CollabService.create(file.id, Page.Editor, params.share),
-        args: {
-          ...state.args,
-          selection: undefined,
-          merge: undefined,
-        },
-      }
-
-      const subdoc = CollabService.getSubdoc(newState.collab.ydoc, file.id)
-      if (text) this.updateText(file, subdoc, text)
-      this.setState(newState)
-    } catch (e: any) {
-      this.appService.setError({error: e, fileId: params.id})
+    if (!currentFile) {
+      throw new Error(`File not found (id=${currentFileId})`)
     }
+
+    if (currentFile.code) {
+      throw new Error(`File aready exists of type code (id=${currentFileId})`)
+    }
+
+    if (path) {
+      text = (await FileService.loadMarkdownFile(path)).text
+    }
+
+    const newState = {
+      ...state,
+      collab: CollabService.create(currentFile.id, Page.Editor, share),
+      args: {
+        ...state.args,
+        selection: undefined,
+        merge: undefined,
+      },
+    }
+
+    const subdoc = CollabService.getSubdoc(newState.collab.ydoc, currentFile.id)
+    if (text) this.updateText(currentFile, subdoc, text)
+    this.setState(newState)
   }
 
   async updatePath(path: string) {

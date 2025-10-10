@@ -1,8 +1,8 @@
 import type {RouteSectionProps} from '@solidjs/router'
-import {onMount, Show} from 'solid-js'
+import {createEffect, onMount} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {useOpen} from '@/hooks/open'
-import {useState} from '@/state'
+import {Page, useState} from '@/state'
 import {Chat} from '../assistant/Chat'
 import {Content, Scroll} from '../Layout'
 
@@ -13,17 +13,8 @@ const MaxWidth = styled('div')`
 `
 
 export const ChatPage = (props: RouteSectionProps) => {
-  const {store, threadService} = useState()
+  const {store, appService, threadService, toastService} = useState()
   const {open} = useOpen()
-
-  const NewThread = () => {
-    onMount(() => {
-      const newThread = threadService.newThread()
-      open({threadId: newThread.id})
-    })
-
-    return null
-  }
 
   const OpenChat = () => {
     let scrollContent!: HTMLDivElement
@@ -32,9 +23,27 @@ export const ChatPage = (props: RouteSectionProps) => {
       open({threadId})
     }
 
-    onMount(() => {
-      if (props.params.id) {
-        threadService.open(props.params.id)
+    onMount(async () => {
+      try {
+        // Create a new thrad on /assistant page and activate in location
+        if (!props.params.id) {
+          const newThread = threadService.newThread()
+          appService.setLocation({threadId: newThread.id})
+        }
+
+        threadService.init()
+      } catch (_e) {
+        await appService.setLocation(undefined)
+        toastService.open({message: `Thread not found: ${props.params.id}`, duration: 10_000})
+        open({page: Page.Assistant})
+      }
+    })
+
+    createEffect(() => {
+      const currentThread = threadService.currentThread
+      // Update URL if thread was persisted
+      if (!props.params.id && currentThread?.lastModified) {
+        open({threadId: currentThread.id})
       }
     })
 
@@ -58,9 +67,5 @@ export const ChatPage = (props: RouteSectionProps) => {
     )
   }
 
-  return (
-    <Show when={props.params.id} fallback={<NewThread />} keyed>
-      <OpenChat />
-    </Show>
-  )
+  return <OpenChat />
 }

@@ -28,7 +28,7 @@ export const Redirect = () => {
       return openFile(file, {selection})
     }
 
-    if (lastLocation) {
+    if (lastLocation?.page) {
       info(`Redirect to last location (lastLocation=${JSON.stringify(lastLocation)})`)
       return open(lastLocation)
     }

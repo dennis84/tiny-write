@@ -42,9 +42,12 @@ export const ChatNavbar = () => {
   }
 
   const onExpandClick = () => {
-    menuService.toggleAssistant()
+    // Get current thread before resetting in state
     const currentThread = threadService.currentThread
-    if (currentThread) {
+    // Resets the threadId in state
+    menuService.toggleAssistant()
+
+    if (currentThread?.lastModified) {
       open({threadId: currentThread.id})
     } else {
       open({page: Page.Assistant})

@@ -8,33 +8,17 @@ import type * as Y from 'yjs'
 import {copilot} from '@/codemirror/copilot'
 import {isTauri} from '@/env'
 import {deleteText, insertText, writeFile} from '@/remote/editor'
-import {debug, info} from '@/remote/log'
-import {
-  type File,
-  type MergeState,
-  Page,
-  type SelectionRange,
-  type State,
-  type VisualPositionRange,
-} from '@/state'
-import type {AppService} from './AppService'
+import {info} from '@/remote/log'
+import {type File, Page, type SelectionRange, type State, type VisualPositionRange} from '@/state'
 import {CodeMirrorService} from './CodeMirrorService'
 import {CollabService} from './CollabService'
 import type {ConfigService} from './ConfigService'
 import {FileService} from './FileService'
 import type {PrettierService} from './PrettierService'
 
-export interface OpenFile {
-  id: string
-  share?: boolean
-  selection?: VisualPositionRange
-  merge?: MergeState
-}
-
 export class CodeService {
   constructor(
     private fileService: FileService,
-    private appService: AppService,
     private configService: ConfigService,
     private collabService: CollabService,
     private codeMirrorService: CodeMirrorService,
@@ -51,47 +35,50 @@ export class CodeService {
     return file
   }
 
-  async openFile(params: OpenFile) {
-    debug(`Open code file: (params=${JSON.stringify(params)})`)
+  async init() {
     let newState = {...this.store}
 
-    try {
-      let file = unwrap(this.fileService.findFileById(params.id))
-      const path = file?.path
-      const newFile = file?.newFile
+    const currentFileId = this.fileService.currentFileId
+    const currentFile = this.fileService.currentFile
+    const share = this.store.location?.share
+    const selection = this.store.location?.selection
+    const merge = this.store.location?.merge
+    const path = currentFile?.path
+    let text: string | undefined
 
-      let text: string | undefined
+    info(
+      `Initialize code file (id=${currentFileId}, share=${share}, selection=${JSON.stringify(selection)}, merge=${JSON.stringify(merge)}})`,
+    )
 
-      if (!file) {
-        debug(`Create file (id=${params.id})`)
-        file = FileService.createFile({id: params.id, code: true, path, newFile})
-        newState.files = [...newState.files, file]
-      }
-
-      if (path) {
-        text = (await FileService.loadTextFile(path)).text
-      }
-
-      newState = {
-        ...newState,
-        collab: CollabService.create(file.id, Page.Code, params.share),
-        args: {
-          ...newState.args,
-          selection: params.selection,
-          merge: params.merge,
-        },
-      }
-
-      const ydoc = newState.collab?.ydoc
-      if (text && ydoc) {
-        const subdoc = CollabService.getSubdoc(ydoc, file.id)
-        this.updateText(file, subdoc, text)
-      }
-
-      this.setState(newState)
-    } catch (error: any) {
-      this.appService.setError({error, fileId: params.id})
+    if (!currentFile) {
+      throw new Error(`File not found (id=${currentFileId})`)
     }
+
+    if (!currentFile.code) {
+      throw new Error(`File aready exists of type editor (id=${currentFileId})`)
+    }
+
+    if (path) {
+      text = (await FileService.loadTextFile(path)).text
+    }
+
+    newState = {
+      ...newState,
+      collab: CollabService.create(currentFile.id, Page.Code, share),
+      args: {
+        ...newState.args,
+        selection,
+        merge,
+      },
+    }
+
+    const ydoc = newState.collab?.ydoc
+    if (text && ydoc) {
+      const subdoc = CollabService.getSubdoc(ydoc, currentFile.id)
+      this.updateText(currentFile, subdoc, text)
+    }
+
+    this.setState(newState)
   }
 
   renderEditor(file: File, el: Element) {

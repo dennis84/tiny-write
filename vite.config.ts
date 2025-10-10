@@ -4,6 +4,7 @@ import solidPlugin from 'vite-plugin-solid'
 import {visualizer} from 'rollup-plugin-visualizer'
 import Icons from 'unplugin-icons/vite'
 import {execSync} from 'node:child_process'
+import { readFileSync } from 'node:fs'
 
 const commitHash = execSync('git rev-parse --short ${GITHUB_SHA:-HEAD}')
   .toString()
@@ -20,6 +21,7 @@ export default defineConfig({
   },
   define: {
     __COMMIT_HASH__: JSON.stringify(commitHash),
+    __VERSION__: JSON.stringify(JSON.parse(readFileSync('./package.json', 'utf-8')).version),
   },
   resolve: {
     alias: [{find: '@', replacement: fileURLToPath(new URL('./src', import.meta.url))}],

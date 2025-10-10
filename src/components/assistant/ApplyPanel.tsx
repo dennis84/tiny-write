@@ -6,6 +6,7 @@ import {v4 as uuidv4} from 'uuid'
 import * as Y from 'yjs'
 import {useOpen} from '@/hooks/open'
 import {copy} from '@/remote/clipboard'
+import {info} from '@/remote/log'
 import {type File, useState} from '@/state'
 import {IconButton} from '../Button'
 import {IconAdd, IconContentCopy, IconMerge} from '../Icon'
@@ -53,6 +54,8 @@ export const ApplyPanel = (p: {state: ApplyPanelState}) => {
 
   const onApply = () => {
     const f = file()
+    info(`Apply to file (id=${f?.id})`)
+
     if (!f) return
 
     const currentThread = threadService.currentThread
@@ -88,7 +91,7 @@ export const ApplyPanel = (p: {state: ApplyPanelState}) => {
     // Don't show if merge is canceled by changing file
     if (prev && currentFile?.id === prev.id && prev.isMergeView === true && isMergeView === false) {
       toastService.open({message: 'All chunks applied ✅', duration: 2000})
-      openFile(fileService.currentFile)
+      openFile(fileService.currentFile, {merge: undefined})
     }
 
     return {id: currentFile?.id, isMergeView}

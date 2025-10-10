@@ -141,7 +141,7 @@ export class CollabService {
   initFile(file: File) {
     const subdoc = this.getSubdoc(file.id)
     if (!file.path) {
-      info('Apply collab update after synced')
+      info(`Apply collab update after synced (ydocLenght=${file.ydoc.length})`)
       Y.applyUpdate(subdoc, file.ydoc)
     }
 

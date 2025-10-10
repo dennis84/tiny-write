@@ -2,6 +2,7 @@ import {vi} from 'vitest'
 
 // render version in menu
 vi.stubGlobal('__COMMIT_HASH__', '123')
+vi.stubGlobal('__VERSION__', '1.1.1')
 
 // handle dark mode
 vi.stubGlobal(

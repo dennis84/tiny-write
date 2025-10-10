@@ -1,6 +1,5 @@
 import {Box, type Vector} from '@flatten-js/core'
-import type {Location} from '@solidjs/router'
-import type {File, LocationState, State} from '@/state'
+import type {File, State} from '@/state'
 
 const ydoc = 'Uint8Array'
 const editorView = undefined
@@ -14,12 +13,6 @@ export const stateToString = (state: State) =>
 
 export const fileToString = (file: Partial<File>) =>
   JSON.stringify({...file, ydoc, editorView, codeEditorView})
-
-export const locationToString = (location: Location<LocationState>) =>
-  JSON.stringify({
-    pathname: location.pathname,
-    state: location.state,
-  })
 
 export const renderPoint = (point: Vector, id = 'point') => {
   document.querySelector(`#${id}`)?.remove()

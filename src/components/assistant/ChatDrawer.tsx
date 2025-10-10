@@ -14,19 +14,19 @@ export const ChatDrawer = () => {
     await aiService.setSidebarWidth(width)
   }
 
-  const onChangeThread = (threadId: string) => {
-    appService.setLocation({threadId})
-    threadService.open(threadId)
+  const onChangeThread = async (threadId: string) => {
+    await appService.setLocation({threadId})
+    threadService.init()
     scrollContent.scrollTo({top: 0, behavior: 'smooth'})
   }
 
-  onMount(() => {
+  onMount(async () => {
     const threadId = location.state?.threadId
     if (threadId) {
-      onChangeThread(threadId)
+      await onChangeThread(threadId)
     } else {
       const thread = threadService.newThread()
-      appService.setLocation({threadId: thread.id})
+      await appService.setLocation({threadId: thread.id})
     }
   })
 

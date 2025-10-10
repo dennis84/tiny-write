@@ -2,7 +2,7 @@ import {EditorState} from 'prosemirror-state'
 import {EditorView} from 'prosemirror-view'
 import {prosemirrorJSONToYDoc} from 'y-prosemirror'
 import * as Y from 'yjs'
-import {schema} from '@/services/ProseMirrorService'
+import {schema} from '@/prosemirror/schema'
 
 export const createEditorView = (texts: string[]) => {
   const node = document.createElement('div')

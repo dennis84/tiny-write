@@ -21,7 +21,7 @@ beforeEach(() => {
   clearMocks()
 })
 
-test('open - new file', async () => {
+test('open - new file on root page', async () => {
   stubLocation('/')
 
   const initial = createState()
@@ -35,10 +35,25 @@ test('open - new file', async () => {
 
   expect(store.location?.page).toBe(Page.Editor)
   expect(store.files.length).toBe(1)
-  expect(getByTestId('editor_scroll')).toHaveTextContent('Start typing ...')
 })
 
-test('open - active', async () => {
+test('open - new file page', async () => {
+  stubLocation('/editor')
+
+  const initial = createState()
+
+  const {store} = createCtrl(initial)
+  const {getByTestId} = render(() => <Main state={store} />)
+
+  await waitFor(() => {
+    expect(getByTestId('new_editor_page')).toBeDefined()
+  })
+
+  expect(store.location?.page).toBe(Page.Editor)
+  expect(store.files.length).toBe(0)
+})
+
+test('open - open last location', async () => {
   stubLocation('/')
 
   const initial = createState({
@@ -64,26 +79,20 @@ test('open - active', async () => {
   expect(getByTestId('editor_scroll')).toHaveTextContent(/^Test 2$/)
 })
 
-test('open - new file with id', async () => {
+test('open - file not found', async () => {
   stubLocation('/editor/3')
 
-  const initial = createState({
-    files: [
-      {id: '1', ydoc: createYUpdate('1', ['Text']), lastModified, versions: []},
-      {id: '2', ydoc: createYUpdate('2', ['Test 2']), lastModified, versions: []},
-    ],
-  })
+  const initial = createState()
 
   const {store} = createCtrl(initial)
   const {getByTestId} = render(() => <Main state={store} />)
 
   await waitFor(() => {
-    expect(getByTestId('editor_scroll')).toBeDefined()
+    expect(getByTestId('new_editor_page')).toBeDefined()
   })
 
   expect(store.location?.page).toBe(Page.Editor)
-  expect(store.files.length).toBe(3)
-  expect(getByTestId('editor_scroll')).toHaveTextContent('Start typing ...')
+  expect(store.files.length).toBe(0)
 })
 
 test('open - existing file', async () => {
@@ -108,8 +117,8 @@ test('open - existing file', async () => {
   expect(getByTestId('editor_scroll')).toHaveTextContent(/^Text$/)
 })
 
-test('open - share', async () => {
-  stubLocation('/editor/1?share=true')
+test('open - join', async () => {
+  stubLocation('/editor?join=1')
 
   const initial = createState({
     files: [
@@ -120,6 +129,12 @@ test('open - share', async () => {
 
   const {store} = createCtrl(initial)
   const {getByTestId} = render(() => <Main state={store} />)
+
+  await waitFor(() => {
+    expect(getByTestId('new_editor_page')).toBeDefined()
+  })
+
+  getByTestId('join_editor').click()
 
   await waitFor(() => {
     expectToBeDefined(store.collab)
@@ -174,7 +189,7 @@ test('open - file with path', async () => {
   expect(getByTestId('editor_scroll')).toHaveTextContent(/^File1$/)
 })
 
-test('open - file not found', async () => {
+test('open - read file - file not found', async () => {
   stubLocation('/editor/1')
 
   vi.stubGlobal('__TAURI__', {})
@@ -202,10 +217,8 @@ test('open - file not found', async () => {
   const {getByTestId} = render(() => <Main state={store} />)
 
   await waitFor(() => {
-    expect(getByTestId('error')).toBeDefined()
+    expect(getByTestId('new_editor_page')).toBeDefined()
   })
-
-  expect(store.error).toBeDefined()
 })
 
 test('open - file arg', async () => {

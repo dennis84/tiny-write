@@ -238,7 +238,7 @@ test('updateTitle', async () => {
   expect(store.threads[0].title).toBe('Test')
 })
 
-test('open', () => {
+test('init', () => {
   const initial = createState({
     location: {
       page: Page.Assistant,
@@ -247,24 +247,11 @@ test('open', () => {
     threads: [
       {
         id: '1',
-        messages: [],
-      },
-      {
-        id: '2',
         title: '1',
         lastModified,
         messages: [
           {id: '1', role: 'user', content: '1'},
-          {id: '2', role: 'assistant', content: '2'},
-        ],
-      },
-      {
-        id: '3',
-        title: '2',
-        lastModified,
-        messages: [
-          {id: '3', role: 'user', content: '3'},
-          {id: '4', role: 'assistant', content: '4'},
+          {id: '2', parentId: '1', role: 'assistant', content: '2'},
         ],
       },
     ],
@@ -275,17 +262,9 @@ test('open', () => {
   const fileService = mock<FileService>()
   const service = new ThreadService(store, setState, copilotService, fileService)
 
-  service.open('2')
-
-  expect(store.threads).toHaveLength(2)
-
-  service.open('4')
-
-  expect(store.threads).toHaveLength(3)
-
-  service.open('3')
-
-  expect(store.threads).toHaveLength(2)
+  service.init()
+  expect(store.threads).toHaveLength(1)
+  expect(service.messageTree.rootItemIds).toEqual(['1'])
 })
 
 test('delete', async () => {

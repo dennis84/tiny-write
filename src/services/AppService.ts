@@ -86,7 +86,7 @@ export class AppService {
     this.setState('fullscreen', fullscreen)
   }
 
-  async setLocation(location: Partial<LocationState>) {
+  async setLocation(location: Partial<LocationState> | undefined) {
     info(`Set location (location=${JSON.stringify(location)})`)
     this.setState('location', location)
     const loc = this.store.location

@@ -1,32 +1,12 @@
 import {inputRules, textblockTypeInputRule} from 'prosemirror-inputrules'
 import {keymap} from 'prosemirror-keymap'
-import type {DOMOutputSpec, NodeType, Schema} from 'prosemirror-model'
+import type {NodeType, Schema} from 'prosemirror-model'
 import {type EditorState, Selection, TextSelection, type Transaction} from 'prosemirror-state'
 import type {EditorView} from 'prosemirror-view'
 import type {CodeMirrorService} from '@/services/CodeMirrorService'
 import type {ConfigService} from '@/services/ConfigService'
 import type {ViewConfig} from '@/services/ProseMirrorService'
 import {CodeBlockView} from './CodeBlockView'
-
-export const codeBlockSchemaSpec = {
-  nodes: {
-    code_block: {
-      content: 'text*',
-      group: 'block',
-      code: true,
-      defining: true,
-      selectable: true,
-      // marks: 'ychange',
-      attrs: {
-        lang: {default: null},
-        hidden: {default: false},
-      },
-      toDOM(): DOMOutputSpec {
-        return ['pre', {}, ['code', 0]]
-      },
-    },
-  },
-}
 
 type Direction = 'left' | 'right' | 'up' | 'down' | 'forward' | 'backward'
 

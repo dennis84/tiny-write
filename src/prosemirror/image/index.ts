@@ -1,5 +1,5 @@
 import {DragGesture} from '@use-gesture/vanilla'
-import type {DOMOutputSpec, Node} from 'prosemirror-model'
+import type {Node} from 'prosemirror-model'
 import type {EditorView} from 'prosemirror-view'
 import {isMac, isTauri} from '@/env'
 import {error} from '@/remote/log'
@@ -8,60 +8,7 @@ import type {CanvasService} from '@/services/CanvasService'
 import {MediaService} from '@/services/MediaService'
 import type {ViewConfig} from '@/services/ProseMirrorService'
 import {Page} from '@/state'
-
-export enum Align {
-  FloatLeft = 'float-left',
-  FloatRight = 'float-right',
-  Center = 'center',
-}
-
-export const imageSchemaSpec = {
-  nodes: {
-    image: {
-      inline: true,
-      attrs: {
-        src: {},
-        alt: {default: null},
-        title: {default: null},
-        width: {default: null},
-        align: {default: Align.FloatLeft},
-      },
-      group: 'inline',
-      selectable: true,
-      draggable: true,
-      toDOM(node: Node): DOMOutputSpec {
-        return [
-          'img',
-          {
-            src: node.attrs.src,
-            title: node.attrs.title,
-            alt: node.attrs.alt,
-          },
-        ]
-      },
-    },
-    video: {
-      inline: true,
-      attrs: {
-        src: {},
-        type: {},
-        title: {default: null},
-        width: {default: null},
-        align: {default: Align.FloatLeft},
-      },
-      group: 'inline',
-      draggable: true,
-      selectable: true,
-      toDOM(node: Node): DOMOutputSpec {
-        return [
-          'video',
-          {title: node.attrs.title},
-          ['source', {src: node.attrs.src, type: node.attrs.type}],
-        ]
-      },
-    },
-  },
-}
+import {Align} from './interfaces'
 
 const isUrl = (str: string) => {
   try {

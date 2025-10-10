@@ -1,8 +1,6 @@
-import {version as v} from '../package.json' with {type: 'json'}
-
 export const shortHash = __COMMIT_HASH__
 
-export const version = v
+export const version = __VERSION__
 
 export const isTauri = () => (window as any).__TAURI_INTERNALS__ !== undefined
 

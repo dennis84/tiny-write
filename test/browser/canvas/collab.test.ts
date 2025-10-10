@@ -1,9 +1,21 @@
 import {expect, test} from '@playwright/test'
 import {v4 as uuidv4} from 'uuid'
+import {setupDB} from '../assistant/mock'
 import {delay} from '../utils'
 
 test('share', async ({page, browser}) => {
   const id = uuidv4()
+  await setupDB(page, {
+    canvases: [
+      {
+        id,
+        camera: {point: [0, 0], zoom: 1},
+        elements: [],
+        lastModified: new Date(),
+      },
+    ],
+  })
+
   await page.goto(`/canvas/${id}`)
 
   expect(page.locator('[data-testid="canvas_container"]')).toBeVisible()
@@ -19,7 +31,8 @@ test('share', async ({page, browser}) => {
   await expect(page.locator('[data-testid="canvas_editor"]')).toHaveCount(1)
 
   const page2 = await browser.newPage()
-  await page2.goto(page.url())
+  await page2.goto(`/canvas?join=${id}`)
+  await page2.click('[data-testid="join_canvas"]')
 
   await expect(page2.locator('[data-testid="canvas_editor"]')).toHaveCount(1)
   await page2

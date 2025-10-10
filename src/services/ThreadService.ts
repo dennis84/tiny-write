@@ -150,21 +150,15 @@ export class ThreadService {
     }
   }
 
-  open(threadId: string) {
-    info(`Open thread (id=${threadId})`)
-    const threads = this.store.threads.filter((t) => t.title !== undefined)
-    const thread = threads.find((t) => t.id === threadId)
-    if (!thread) {
-      const newThread: Thread = {
-        id: threadId,
-        messages: [],
-      }
+  init() {
+    info(`Initialize thread`)
 
-      threads.unshift(newThread)
+    const currentThread = this.currentThread
+    if (!currentThread) {
+      throw new Error(`Thread not found (id=${this.currentThreadId})`)
     }
 
-    this.setState('threads', threads)
-    this.messageTree.updateAll(this.currentThread?.messages ?? [])
+    this.messageTree.updateAll(currentThread?.messages ?? [])
   }
 
   async delete(thread: Thread) {

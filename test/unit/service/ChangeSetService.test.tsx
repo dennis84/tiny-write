@@ -5,6 +5,7 @@ import {mock} from 'vitest-mock-extended'
 import {Main} from '@/components/Main'
 import {createCtrl} from '@/services'
 import {createState} from '@/state'
+import {createYUpdate} from '../testutil/prosemirror-util'
 import {expectToBeDefined, stubLocation} from '../testutil/util'
 
 vi.mock('@/db', () => ({DB: mock()}))
@@ -20,7 +21,9 @@ beforeEach(() => {
 test('addVersion', async () => {
   stubLocation('/editor/1')
 
-  const initial = createState()
+  const initial = createState({
+    files: [{id: '1', ydoc: createYUpdate('1', []), versions: []}],
+  })
   const {store, changeSetService, fileService} = createCtrl(initial)
   const {getByTestId} = render(() => <Main state={store} />)
 

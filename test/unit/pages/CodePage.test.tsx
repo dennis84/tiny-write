@@ -21,7 +21,32 @@ beforeEach(() => {
   clearMocks()
 })
 
-test('init - new file', async () => {
+test('init - new code page', async () => {
+  stubLocation('/code')
+
+  const initial = createState()
+
+  const {store, fileService} = createCtrl(initial)
+  const {getByTestId} = render(() => <Main state={store} />)
+
+  await waitFor(() => {
+    expect(getByTestId('new_code_page')).toBeDefined()
+  })
+
+  expect(store.location?.page).toBe(Page.Code)
+  expect(store.files.length).toBe(0)
+  expect(fileService.currentFileId).toBe(undefined)
+
+  getByTestId('new_file').click()
+
+  await waitFor(() => {
+    expect(getByTestId('code_scroll')).toBeDefined()
+  })
+
+  expect(store.files.length).toBe(1)
+})
+
+test('init - file not found', async () => {
   stubLocation('/code/1')
 
   const initial = createState()
@@ -30,16 +55,15 @@ test('init - new file', async () => {
   const {getByTestId} = render(() => <Main state={store} />)
 
   await waitFor(() => {
-    expect(getByTestId('code_scroll')).toBeDefined()
+    expect(getByTestId('new_code_page')).toBeDefined()
   })
 
   expect(store.location?.page).toBe(Page.Code)
-  expect(store.files.length).toBe(1)
-  expect(fileService.currentFileId).toBe('1')
-  expect(fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('')
+  expect(store.files.length).toBe(0)
+  expect(fileService.currentFileId).toBe(undefined)
 })
 
-test('init - active', async () => {
+test('init - open last location', async () => {
   stubLocation('/')
 
   const initial = createState({
@@ -71,29 +95,6 @@ test('init - active', async () => {
   expect(fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('Code1')
 })
 
-test('init - new file with id', async () => {
-  stubLocation('/code/3')
-
-  const initial = createState({
-    files: [
-      {id: '1', ydoc: createYUpdate('1', 'Code1'), lastModified, versions: [], code: true},
-      {id: '2', ydoc: createYUpdate('2', 'Code2'), lastModified, versions: [], code: true},
-    ],
-  })
-
-  const {store, fileService} = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={store} />)
-
-  await waitFor(() => {
-    expect(getByTestId('code_scroll')).toBeDefined()
-  })
-
-  expect(store.location?.page).toBe(Page.Code)
-  expect(store.files.length).toBe(3)
-  expect(fileService.currentFileId).toBe('3')
-  expect(fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('')
-})
-
 test('init - existing file', async () => {
   stubLocation('/code/1')
 
@@ -117,8 +118,8 @@ test('init - existing file', async () => {
   expect(fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('Code1')
 })
 
-test('init - share', async () => {
-  stubLocation('/code/1?share=true')
+test('init - join url', async () => {
+  stubLocation('/code?join=1')
 
   const initial = createState({
     files: [
@@ -129,6 +130,12 @@ test('init - share', async () => {
 
   const {store, fileService} = createCtrl(initial)
   const {getByTestId} = render(() => <Main state={store} />)
+
+  await waitFor(() => {
+    expect(getByTestId('new_code_page')).toBeDefined()
+  })
+
+  getByTestId('join_file').click()
 
   await waitFor(() => {
     expectToBeDefined(store.collab)

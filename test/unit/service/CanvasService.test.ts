@@ -437,10 +437,11 @@ test('removeElements', async () => {
   expect(service.currentCanvas?.elements[0].id).toBe('2')
 })
 
-test('open', async () => {
+test('init', async () => {
   const editorView = vi.mocked<EditorView>({destroy: vi.fn()} as any)
   const [store, setState] = createStore(
     createState({
+      location: {page: Page.Canvas, canvasId: '1'},
       files: [{id: '1', ydoc: createYUpdate('1', []), versions: [], editorView}],
       canvases: [
         createCanvas({id: '1', elements: [createEditorElement({id: '1'})]}),
@@ -451,11 +452,7 @@ test('open', async () => {
 
   const service = new CanvasService(fileService, selectService, store, setState)
 
-  await service.open('1')
-  expect(DB.updateCanvas).toBeCalledTimes(1)
-  vi.mocked(DB.updateCanvas).mockClear()
-
-  await service.open('2')
+  await service.init()
   expect(DB.updateCanvas).toBeCalledTimes(1)
 
   expect(store.files[0].editorView).toBeUndefined()

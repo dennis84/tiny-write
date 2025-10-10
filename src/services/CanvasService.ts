@@ -115,33 +115,6 @@ export class CanvasService {
     }
   }
 
-  // static activateCanvas(state: State, id: string) {
-  //   const canvases = []
-  //   const files = []
-  //
-  //   for (const file of state.files) {
-  //     file.editorView?.destroy()
-  //     file.codeEditorView?.destroy()
-  //     files.push({...file, active: false, editorView: undefined, codeEditorView: undefined})
-  //   }
-  //
-  //   for (const canvas of state.canvases) {
-  //     if (canvas.id === id) {
-  //       canvases.push({...canvas, active: true})
-  //     } else if (canvas.active) {
-  //       canvases.push({...canvas, active: false})
-  //     } else {
-  //       canvases.push(canvas)
-  //     }
-  //   }
-  //
-  //   return {
-  //     ...state,
-  //     canvases,
-  //     files,
-  //   }
-  // }
-
   updateCanvas(id: string, update: Partial<Canvas>) {
     const index = this.store.canvases.findIndex((canvas) => canvas.id === id)
     if (index === -1) return
@@ -293,10 +266,18 @@ export class CanvasService {
   async newCanvas(params: Partial<Canvas> = {}): Promise<Canvas> {
     await this.removeDeadLinks()
 
-    const id = uuidv4()
+    const id = params.id ?? uuidv4()
+    const existing = this.findCanvas(id)
+
+    if (existing) {
+      return existing
+    }
+
     const canvas = CanvasService.createCanvas({...params, id})
 
     this.setState('canvases', (prev) => [...prev, canvas])
+
+    await this.saveCanvas(canvas)
     info('New canvas created')
 
     return canvas
@@ -337,8 +318,16 @@ export class CanvasService {
     return [...removedIds]
   }
 
-  async open(id: string, share = false) {
-    info(`Open canvas (id=${id}, share=${share})`)
+  async init() {
+    info(`Initialize canvas`)
+
+    const currentCanvasId = this.currentCanvasId
+    const currentCanvas = this.currentCanvas
+    const share = this.store.location?.share
+
+    if (!currentCanvas) {
+      throw new Error(`Canvas not found (id=${currentCanvasId})`)
+    }
 
     const files = []
     for (const file of this.store.files) {
@@ -349,21 +338,16 @@ export class CanvasService {
 
     const newState = {...this.store, files}
 
-    if (!this.findCanvas(id)) {
-      const canvas = CanvasService.createCanvas({id})
-      newState.canvases = [...newState.canvases, canvas]
-    }
-
     newState.args = {
       ...newState.args,
       selection: undefined,
       merge: undefined,
     }
 
-    const collab = CollabService.create(id, Page.Canvas, share)
+    const collab = CollabService.create(currentCanvas.id, Page.Canvas, share)
 
     this.setState({...newState, collab})
-    const canvas = this.findCanvas(id)
+    const canvas = this.currentCanvas
 
     await this.saveCanvas(canvas)
   }

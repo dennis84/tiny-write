@@ -9,7 +9,7 @@ import {EditorService} from '@/services/EditorService'
 import type {FileService} from '@/services/FileService'
 import type {ProseMirrorService} from '@/services/ProseMirrorService'
 import type {SelectService} from '@/services/SelectService'
-import {createState} from '@/state'
+import {createState, Page} from '@/state'
 import {createEditorView, createYUpdate} from '../testutil/prosemirror-util'
 import {createCollabMock} from '../testutil/util'
 
@@ -39,13 +39,14 @@ beforeEach(() => {
   vi.restoreAllMocks()
 })
 
-test('openFile - stop collab', async () => {
+test('init - existing', async () => {
   const initial = createState({
+    location: {page: Page.Editor, editorId: '2'},
     files: [
       {id: '1', ydoc: createYUpdate('1', ['Text']), lastModified, versions: []},
       {id: '2', ydoc: createYUpdate('2', ['Test 2']), lastModified, versions: []},
     ],
-    collab: createCollabMock({started: true}),
+    collab: createCollabMock({started: true}), // stop collab if active
   })
 
   const [store, setState] = createStore(initial)
@@ -61,20 +62,22 @@ test('openFile - stop collab', async () => {
     setState,
   )
 
-  fileService.findFileById.mockImplementation(() => initial.files[1])
+  const file = initial.files[1]
+  Object.defineProperty(fileService, 'currentFile', {get: vi.fn().mockReturnValue(file)})
 
-  await service.openFile({id: '2'})
+  await service.init()
   expect(store.files.length).toBe(2)
   expect(store.collab?.started).toBe(false)
 })
 
-test('openFile - existing', async () => {
+test('init - no currentFile', async () => {
   const initial = createState({
+    location: {page: Page.Canvas, canvasId: '3'},
     files: [
       {id: '1', ydoc: createYUpdate('1', ['Text']), lastModified, versions: []},
       {id: '2', ydoc: createYUpdate('2', ['Test 2']), lastModified, versions: []},
     ],
-    collab: createCollabMock(),
+    collab: createCollabMock({id: '3'}),
   })
 
   const [store, setState] = createStore(initial)
@@ -90,43 +93,12 @@ test('openFile - existing', async () => {
     setState,
   )
 
-  fileService.findFileById.mockImplementation(() => initial.files[1])
+  Object.defineProperty(fileService, 'currentFile', {get: vi.fn().mockReturnValue(undefined)})
 
-  await service.openFile({id: '2'})
-  expect(store.files.length).toBe(2)
-  expect(store.collab?.started).toBe(false)
+  expect(service.init()).rejects.toThrowError(/^File not found.*/)
 })
 
-test('openFile - not found', async () => {
-  const initial = createState({
-    files: [
-      {id: '1', ydoc: createYUpdate('1', ['Text']), lastModified, versions: []},
-      {id: '2', ydoc: createYUpdate('2', ['Test 2']), lastModified, versions: []},
-    ],
-    collab: createCollabMock(),
-  })
-
-  const [store, setState] = createStore(initial)
-  const fileService = mock<FileService>()
-
-  const service = new EditorService(
-    fileService,
-    collabService,
-    proseMirrorService,
-    appService,
-    selectService,
-    store,
-    setState,
-  )
-
-  fileService.findFileById.mockImplementation(() => undefined)
-
-  await service.openFile({id: '123'})
-  expect(store.files.length).toBe(3)
-  expect(store.files[2].id).toBe('123')
-})
-
-test('openFile - share', async () => {
+test('init - share', async () => {
   const file = {
     id: 'room-123',
     ydoc: createYUpdate('room-123', ['Test']),
@@ -135,6 +107,7 @@ test('openFile - share', async () => {
   }
 
   const initial = createState({
+    location: {page: Page.Editor, editorId: 'room-123', share: true},
     files: [file],
     collab: createCollabMock(),
   })
@@ -152,9 +125,9 @@ test('openFile - share', async () => {
     setState,
   )
 
-  fileService.findFileById.mockImplementation(() => file)
+  Object.defineProperty(fileService, 'currentFile', {get: vi.fn().mockReturnValue(file)})
 
-  await service.openFile({id: 'room-123', share: true})
+  await service.init()
   expect(store.files.length).toBe(1)
   expect(store.files[0].id).toBe('room-123')
   expect(store.collab?.provider?.roomname).toBe('editor/room-123')

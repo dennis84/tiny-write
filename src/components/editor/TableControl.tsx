@@ -1,4 +1,4 @@
-import {Box, type Vector} from '@flatten-js/core'
+import type {Box, Vector} from '@flatten-js/core'
 import type {Node, ResolvedPos} from 'prosemirror-model'
 import {cellAround, TableMap} from 'prosemirror-tables'
 import {createEffect, createSignal, onCleanup, onMount, Show} from 'solid-js'

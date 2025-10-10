@@ -7,7 +7,8 @@ import {Main} from '@/components/Main'
 import {createCtrl} from '@/services'
 import {DropTarget, MediaService} from '@/services/MediaService'
 import {type CanvasEditorElement, type CanvasImageElement, createState, ElementType} from '@/state'
-import {createYUpdate} from '../testutil/prosemirror-util'
+import * as cmUtil from '../testutil/codemirror-util'
+import * as pmUtil from '../testutil/prosemirror-util'
 import {createIpcMock, stubLocation} from '../testutil/util'
 
 document.elementFromPoint = () => null
@@ -45,7 +46,9 @@ test('getImagePath', async () => {
 test('dropFiles - image on editor', async () => {
   stubLocation('/editor/1')
 
-  const initial = createState()
+  const initial = createState({
+    files: [{id: '1', ydoc: pmUtil.createYUpdate('1', []), versions: []}],
+  })
   const {store, fileService, mediaService} = createCtrl(initial)
   const {getByTestId} = render(() => <Main state={store} />)
 
@@ -77,7 +80,7 @@ test('dropFiles - image on canvas', async () => {
   }
 
   const initial = createState({
-    files: [{id: '1', ydoc: createYUpdate('1', []), versions: []}],
+    files: [{id: '1', ydoc: pmUtil.createYUpdate('1', []), versions: []}],
     canvases: [
       {
         id: '1',
@@ -129,7 +132,7 @@ test('dropFiles - image on canvas with active editor', async () => {
   }
 
   const initial = createState({
-    files: [{id: '1', ydoc: createYUpdate('1', []), versions: []}],
+    files: [{id: '1', ydoc: pmUtil.createYUpdate('1', []), versions: []}],
     canvases: [
       {
         id: '1',
@@ -172,7 +175,9 @@ test('dropFiles - image on canvas with active editor', async () => {
 test('dropFiles - image on assistant', async () => {
   stubLocation('/assistant/1')
 
-  const initial = createState()
+  const initial = createState({
+    threads: [{id: '1', messages: []}],
+  })
   const {store, mediaService} = createCtrl(initial)
   const {getByTestId} = render(() => <Main state={store} />)
 
@@ -193,7 +198,9 @@ test('dropFiles - image on assistant', async () => {
 test('dropFiles - image on assistant drawer', async () => {
   stubLocation('/code/1')
 
-  const initial = createState()
+  const initial = createState({
+    files: [{id: '1', ydoc: cmUtil.createYUpdate('1', ''), versions: [], code: true}],
+  })
   const {store, mediaService} = createCtrl(initial)
   const {getByTestId} = render(() => <Main state={store} />)
 
@@ -214,7 +221,9 @@ test('dropFiles - image on assistant drawer', async () => {
 test('dropPaths - image on editor', async () => {
   stubLocation('/editor/1')
 
-  const initial = createState()
+  const initial = createState({
+    files: [{id: '1', ydoc: pmUtil.createYUpdate('1', []), versions: []}],
+  })
   const {store, fileService, mediaService} = createCtrl(initial)
   const {getByTestId} = render(() => <Main state={store} />)
 
@@ -238,7 +247,7 @@ test('dropPaths - image on editor with basePath', async () => {
     files: [
       {
         id: '1',
-        ydoc: createYUpdate('1', []),
+        ydoc: pmUtil.createYUpdate('1', []),
         path: '/users/me/project/README.md',
         lastModified,
         versions: [],
@@ -265,7 +274,9 @@ test('dropPaths - image on editor with basePath', async () => {
 test('dropPaths - text file on editor', async () => {
   stubLocation('/editor/1')
 
-  const initial = createState()
+  const initial = createState({
+    files: [{id: '1', ydoc: pmUtil.createYUpdate('1', []), versions: []}],
+  })
   const {store, mediaService} = createCtrl(initial)
   const {getByTestId} = render(() => <Main state={store} />)
 
@@ -295,7 +306,7 @@ test('dropPaths - image on canvas', async () => {
   }
 
   const initial = createState({
-    files: [{id: '1', ydoc: createYUpdate('1', []), versions: []}],
+    files: [{id: '1', ydoc: pmUtil.createYUpdate('1', []), versions: []}],
     canvases: [
       {
         id: '1',
@@ -371,7 +382,9 @@ test('dropPaths - text file on canvas', async () => {
 test('dropPaths - text file on code', async () => {
   stubLocation('/code/1')
 
-  const initial = createState()
+  const initial = createState({
+    files: [{id: '1', ydoc: cmUtil.createYUpdate('1', ''), versions: [], code: true}],
+  })
   const {store, mediaService} = createCtrl(initial)
   const {getByTestId} = render(() => <Main state={store} />)
 
@@ -391,7 +404,9 @@ test('dropPaths - text file on code', async () => {
 test('dropPaths - image on code', async () => {
   stubLocation('/code/1')
 
-  const initial = createState()
+  const initial = createState({
+    files: [{id: '1', ydoc: cmUtil.createYUpdate('1', ''), versions: [], code: true}],
+  })
   const {store, fileService, mediaService} = createCtrl(initial)
   const {getByTestId} = render(() => <Main state={store} />)
 

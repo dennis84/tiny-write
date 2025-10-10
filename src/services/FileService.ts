@@ -7,6 +7,7 @@ import {findCodeLang} from '@/codemirror/highlight'
 import {DB} from '@/db'
 import {isTauri} from '@/env'
 import {createMarkdownParser} from '@/markdown'
+import {schema} from '@/prosemirror/schema'
 import {
   getDocument,
   getMimeType,
@@ -18,7 +19,6 @@ import {
 import {debug, error, info} from '@/remote/log'
 import {type File, type FileText, ServiceError, type State} from '@/state'
 import type {CollabService} from './CollabService'
-import {schema} from './ProseMirrorService'
 
 export interface LoadedTextFile {
   text: string
@@ -193,8 +193,17 @@ export class FileService {
   }
 
   async newFile(params: Partial<File> = {}): Promise<File> {
+    if (params.id) {
+      const file = this.findFileById(params.id)
+      if (file) return file
+    }
+
     const file = FileService.createFile(params)
+    info(
+      `Created new file (id=${file.id}, code=${file.code}, path=${file.path}, newFile=${file.newFile})`,
+    )
     this.setState('files', (prev) => [...prev, file])
+    await FileService.saveFile(file)
     return file
   }
 
@@ -210,9 +219,6 @@ export class FileService {
       const mime = await getMimeType(p)
       const code = !mime.startsWith('text/markdown')
       file = await this.newFile({newFile, path, code})
-      info(
-        `Created new file with path (id=${file.id}, code=${code}, path=${path}, newFile=${newFile}, mime=${mime})`,
-      )
     }
 
     return file
