@@ -294,8 +294,8 @@ export const SubmenuTree = (props: Props) => {
     const node = unwrap(selected())
     if (!node) return
     const result = await deleteService.delete(node)
-    treeService.remove(node.id)
-    openFile(result.navigateTo)
+    await treeService.remove(node.id)
+    if (result.navigateTo !== false) openFile(result.navigateTo)
     closeTooltip()
   }
 
@@ -303,8 +303,8 @@ export const SubmenuTree = (props: Props) => {
     const node = unwrap(selected())
     if (!node) return
     const result = await deleteService.delete(node, true)
-    treeService.remove(node.id)
-    openFile(result.navigateTo)
+    await treeService.remove(node.id)
+    if (result.navigateTo !== false) openFile(result.navigateTo)
     closeTooltip()
   }
 

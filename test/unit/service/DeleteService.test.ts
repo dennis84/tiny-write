@@ -13,6 +13,7 @@ import {
   EdgeType,
   ElementType,
   type File,
+  isFile,
 } from '@/state'
 import {createYUpdate} from '../testutil/prosemirror-util'
 
@@ -48,26 +49,29 @@ const createLinkElement = (props: Partial<CanvasLinkElement> = {}) => ({
   ...props,
 })
 
-const initial = createState({
-  args: {file: './file.txt', cwd: '/home'},
-  files: [
-    createFile({id: '1'}),
-    createFile({id: '2', parentId: '1', code: true}),
-    createFile({id: '3', parentId: '2'}),
-  ],
-  canvases: [
-    {
-      id: '1',
-      camera: {point: [0, 0], zoom: 1},
-      elements: [
-        createEditorElement({id: '1'}),
-        createEditorElement({id: '2'}),
-        createLinkElement({id: '3', from: '1', to: '2'}),
-      ],
-      lastModified: new Date(),
-    },
-  ],
-})
+const createInitialState = () =>
+  createState({
+    args: {file: './file.txt', cwd: '/home'},
+    files: [
+      createFile({id: '1'}),
+      createFile({id: '2', parentId: '1', code: true}),
+      createFile({id: '3', parentId: '2'}),
+      createFile({id: '4', deleted: true}),
+      createFile({id: '5'}),
+    ],
+    canvases: [
+      {
+        id: '6',
+        camera: {point: [0, 0], zoom: 1},
+        elements: [
+          createEditorElement({id: '1'}),
+          createEditorElement({id: '2'}),
+          createLinkElement({id: '3', from: '1', to: '2'}),
+        ],
+        lastModified: new Date(),
+      },
+    ],
+  })
 
 beforeEach(() => {
   vi.restoreAllMocks()
@@ -75,60 +79,65 @@ beforeEach(() => {
 
 test.each([
   {
-    node: initial.files[2],
-    current: initial.files[2],
+    deleteId: '3',
+    currentId: '3',
     navigateTo: {code: true, id: '2'},
     fileUpdated: true,
   },
   {
-    node: initial.files[1],
-    current: initial.files[1],
+    deleteId: '2',
+    currentId: '2',
     navigateTo: {id: '1'},
   },
   {
-    node: initial.files[1],
-    current: initial.files[2],
-    descendant: true,
+    deleteId: '2',
+    currentId: '3',
     navigateTo: {id: '1'},
   },
   {
-    node: initial.files[0],
-    current: initial.files[0],
-    navigateTo: undefined,
+    deleteId: '1',
+    currentId: '1',
+    navigateTo: {id: '5'},
   },
   {
-    node: initial.files[1],
-    current: initial.canvases[0],
-    navigateTo: undefined,
+    deleteId: '2',
+    currentId: '6',
+    navigateTo: false,
+  },
+  {
+    deleteId: '5',
+    currentId: '5',
+    navigateTo: {id: '1'},
   },
 ])('delete - soft %#', async (data) => {
+  const initial = createInitialState()
+  const [store, setState] = createStore(initial)
   const fileService = mock<FileService>()
   const canvasService = mock<CanvasService>()
-  const treeService = mock<TreeService>()
+  const treeService = new TreeService(store, setState, fileService, canvasService)
 
-  const [store, setState] = createStore(initial)
   const service = new DeleteService(fileService, canvasService, treeService, store, setState)
 
-  Object.defineProperty(fileService, 'currentFile', {get: vi.fn().mockReturnValue(data.current)})
-  fileService.findFileById.mockReturnValue(initial.files.find((f) => f.id === data.node.parentId))
-  treeService.isDescendant.mockReturnValue(data.descendant ?? false)
+  const currentNode = treeService.getItem(data.currentId)
+  Object.defineProperty(fileService, 'currentFile', {
+    get: vi.fn().mockReturnValue(currentNode?.value),
+  })
 
-  const node = {
-    id: data.node.id,
-    parentId: data.node.parentId,
-    leftId: data.node.leftId,
-    value: data.node,
-    childrenIds: [],
-  }
+  fileService.findFileById.mockImplementation((id: string) => {
+    const item = treeService.getItem(id)?.value
+    if (isFile(item)) return item
+    return undefined
+  })
+
+  const node = treeService.getItem(data.deleteId)
+  if (!node) throw Error('Node not found')
 
   const result = await service.delete(node)
 
-  if (!data.navigateTo) {
-    expect(result.navigateTo).toBeUndefined()
-  } else if (typeof result.navigateTo === 'string') {
-    expect(result.navigateTo).toEqual(data.navigateTo)
-  } else {
+  if (result.navigateTo) {
     expect(result.navigateTo).toMatchObject(data.navigateTo as any)
+  } else {
+    expect(result.navigateTo).toEqual(data.navigateTo)
   }
 
   expect(fileService.updateFile).toBeCalled()
@@ -136,53 +145,55 @@ test.each([
 
 test.each([
   {
-    node: initial.files[2],
-    current: initial.files[2],
+    deleteId: '3',
+    currentId: '3',
     navigateTo: {code: true, id: '2'},
-    expectedFiles: 2,
+    expectedFiles: 4,
     expectedElements: 3,
   },
   {
-    node: initial.files[1],
-    current: initial.files[1],
+    deleteId: '2',
+    currentId: '2',
     navigateTo: {id: '1'},
-    expectedFiles: 1,
+    expectedFiles: 3,
     expectedElements: 1,
   },
   {
-    node: initial.files[1],
-    current: initial.files[2],
-    descendant: true,
+    deleteId: '2',
+    currentId: '3',
     navigateTo: {id: '1'},
-    expectedFiles: 1,
+    expectedFiles: 3,
     expectedElements: 1,
   },
   {
-    node: initial.files[0],
-    current: initial.files[0],
-    navigateTo: undefined,
-    expectedFiles: 0,
+    deleteId: '1',
+    currentId: '1',
+    navigateTo: {id: '5'},
+    expectedFiles: 2,
     expectedElements: 0,
   },
 ])('delete - forever %#', async (data) => {
+  const initial = createInitialState()
+  const [store, setState] = createStore(initial)
   const fileService = mock<FileService>()
   const canvasService = mock<CanvasService>()
-  const treeService = mock<TreeService>()
+  const treeService = new TreeService(store, setState, fileService, canvasService)
 
-  const [store, setState] = createStore(initial)
   const service = new DeleteService(fileService, canvasService, treeService, store, setState)
 
-  Object.defineProperty(fileService, 'currentFile', {get: vi.fn().mockReturnValue(data.current)})
-  fileService.findFileById.mockReturnValue(initial.files.find((f) => f.id === data.node.parentId))
-  treeService.isDescendant.mockReturnValue(data.descendant ?? false)
+  const currentNode = treeService.getItem(data.currentId)
+  Object.defineProperty(fileService, 'currentFile', {
+    get: vi.fn().mockReturnValue(currentNode?.value),
+  })
 
-  const node = {
-    id: data.node.id,
-    parentId: data.node.parentId,
-    leftId: data.node.leftId,
-    value: data.node,
-    childrenIds: [],
-  }
+  fileService.findFileById.mockImplementation((id: string) => {
+    const item = treeService.getItem(id)?.value
+    if (isFile(item)) return item
+    return undefined
+  })
+
+  const node = treeService.getItem(data.deleteId)
+  if (!node) throw Error('Node not found')
 
   const result = await service.delete(node, true)
 

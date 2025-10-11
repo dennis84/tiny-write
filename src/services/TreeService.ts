@@ -38,8 +38,11 @@ export class TreeService {
     }
   }
 
-  remove(id: string) {
-    this.tree.remove(id)
+  async remove(id: string) {
+    const ids = this.tree.remove(id)
+    for (const i of ids) {
+      await this.saveItem(i)
+    }
   }
 
   async move(id: string, toId: string | undefined) {

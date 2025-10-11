@@ -2,20 +2,26 @@ import type {SetStoreFunction} from 'solid-js/store'
 import {DB} from '@/db'
 import {info} from '@/remote/log'
 import {
+  type Canvas,
   type File,
   isCanvas,
   isEditorElement,
   isFile,
   isLinkElement,
-  Page,
   type State,
 } from '@/state'
 import type {CanvasService} from './CanvasService'
 import {FileService} from './FileService'
 import type {MenuTreeItem, TreeService} from './TreeService'
 
+// File: /editor/:id or /code/:id
+// Canvas: /canvas/:id
+// false: stay on current page
+// undefined: go to /
+type NavigateTo = File | Canvas | false | undefined
+
 interface DeleteResult {
-  navigateTo?: File
+  navigateTo: NavigateTo
 }
 
 export class DeleteService {
@@ -28,7 +34,7 @@ export class DeleteService {
   ) {}
 
   async emptyBin(): Promise<DeleteResult> {
-    let navigateTo: File | undefined
+    let navigateTo: NavigateTo
 
     const doEmptyBin = async (node: MenuTreeItem): Promise<boolean> => {
       let shouldDelete = node.value.deleted ?? false
@@ -68,24 +74,56 @@ export class DeleteService {
     return {navigateTo}
   }
 
-  private getNavigateTo(node: MenuTreeItem): File | undefined {
-    // Navigate to root if no parent
-    if (node.parentId === undefined) {
-      return undefined
-    }
-
+  private getNavigateTo(node: MenuTreeItem): NavigateTo {
     const currentFile = this.fileService.currentFile
+    const currentCanvas = this.canvasService.currentCanvas
 
-    // Navigate to parent of deleted node if current file is deleted
-    // or if current file is an anchestor of deleted node
-    if (
-      this.store.location?.page !== Page.Canvas &&
-      currentFile &&
-      (node.id === currentFile.id || this.treeService.isDescendant(currentFile.id, node.id)) &&
-      node.parentId !== undefined
-    ) {
-      return this.fileService.findFileById(node.parentId)
+    const findFileOrCanvas = (id: string) =>
+      this.fileService.findFileById(id) || this.canvasService.findCanvas(id)
+
+    const handle = (id?: string) => {
+      // If current of acestor node is deleted
+      if (id && (id === node.id || this.treeService.isDescendant(id, node.id))) {
+        // Navigate to parent if exists
+        if (node.parentId) return findFileOrCanvas(node.parentId)
+
+        // Find previous or next node in root items:
+        // 1 - skip deleted
+        // 2 - cur
+        // 3 - use as targetId
+        let targetId: string | undefined
+        let passedNode = false
+        for (const rootId of this.treeService.tree.rootItemIds) {
+          const rootNode = this.treeService.getItem(rootId)
+          // Skip deleted nodes
+          if (rootNode?.value.deleted) continue
+          // Maybe exist loop if a targetId was found
+          if (rootId === node.id) {
+            passedNode = true
+            if (targetId) break
+          } else {
+            targetId = rootId
+          }
+
+          // Exit on first found targetId after passedNode
+          if (passedNode && targetId) {
+            break
+          }
+        }
+
+        if (targetId) return findFileOrCanvas(targetId)
+
+        // Navigate to /
+        return undefined
+      }
+
+      return false
     }
+
+    const fileResult = handle(currentFile?.id)
+    if (fileResult !== false) return fileResult
+
+    return handle(currentCanvas?.id)
   }
 
   private async deleteNode(node: MenuTreeItem, forever = false) {
