@@ -33,7 +33,14 @@ const lineCountViewPlugin = ViewPlugin.fromClass(
       focus(_event, view) {
         updateClass(view, true)
       },
-      blur(_event, view) {
+      blur(event, view) {
+        // The target receiving focus when the editor is blurred.
+        const target = event.relatedTarget as Element
+        // If is a child of the editor, do nothing.
+        if (view.dom.contains(target)) {
+          return
+        }
+
         updateClass(view, false)
       },
     },
