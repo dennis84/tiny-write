@@ -19,8 +19,13 @@ export const isFullscreen = (): Promise<boolean> => {
   return getCurrentWindow().isFullscreen()
 }
 
-export const setFullscreen = (status: boolean): Promise<void> => {
-  return getCurrentWindow().setFullscreen(status)
+export const setFullscreen = async (status: boolean): Promise<void> => {
+  await getCurrentWindow().setSimpleFullscreen(status)
+  // Workaround for keep the window focused. This was the only way I found,
+  // setFocus() didn't work and isFucused() returned true, but Mac always beeps
+  // when typing after changing fullscreen state.
+  await getCurrentWindow().hide()
+  await getCurrentWindow().show()
 }
 
 export const open = async (href: string) => {

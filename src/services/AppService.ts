@@ -82,8 +82,9 @@ export class AppService {
   }
 
   async setFullscreen(fullscreen: boolean) {
-    await setFullscreen(fullscreen)
+    // Set state before changing fullscreen, otherwise resize window cannot skip
     this.setState('fullscreen', fullscreen)
+    await setFullscreen(fullscreen)
   }
 
   async setLocation(location: Partial<LocationState> | undefined) {

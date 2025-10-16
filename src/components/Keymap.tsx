@@ -20,10 +20,11 @@ export const Keymap = () => {
   } = useState()
   const {openFile} = useOpen()
 
-  onMount(() => {
-    document.addEventListener('keydown', onKeyDown)
+  onMount(async () => {
+    // Pass useCapture=true to receive the event first before CM or PM
+    document.addEventListener('keydown', onKeyDown, true)
     onCleanup(() => {
-      document.removeEventListener('keydown', onKeyDown)
+      document.removeEventListener('keydown', onKeyDown, true)
     })
   })
 
@@ -78,10 +79,13 @@ export const Keymap = () => {
     if (path) await fileService.updatePath(currentFile.id, path)
   }
 
-  const onFullscreen = async () => {
+  const onFullscreen = async (event: KeyboardEvent) => {
     if (!isTauri()) return false
+    event.preventDefault()
     await appService.setFullscreen(!store.fullscreen)
-    return true
+    const currentFile = fileService.currentFile
+    currentFile?.editorView?.focus()
+    currentFile?.codeEditorView?.focus()
   }
 
   const onUndo = () => {
