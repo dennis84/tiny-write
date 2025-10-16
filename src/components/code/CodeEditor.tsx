@@ -9,6 +9,7 @@ export const CodeMirrorContainer = styled('div')`
   height: 100%;
   ${codeMirror}
   .cm-editor {
+    padding: 0 10px; // little space for the line numbers
     border-radius: 0;
     .cm-scroller {
       padding-top: 50px; // leave space for the navbar

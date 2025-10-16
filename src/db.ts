@@ -137,7 +137,9 @@ export class DB {
   }
 
   static async setLastLocation(location: LocationState) {
-    return (await dbPromise).put('lastLocation', DB.unwrap(location), 'main')
+    // Don't save prev location
+    const loc = DB.unwrap({location, prev: undefined})
+    return (await dbPromise).put('lastLocation', loc, 'main')
   }
 
   static async getLastLocation(): Promise<LocationState | undefined> {
