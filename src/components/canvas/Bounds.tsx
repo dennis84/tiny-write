@@ -254,8 +254,8 @@ export const Bounds = (props: BoundsProps) => {
       }}
       onMouseDown={local.onSelect}
       onDblClick={local.onDoubleClick}
-      version="1.1"
       xmlns="http://www.w3.org/2000/svg"
+      data-testid="bounds"
     >
       <Edge {...others} type={EdgeType.Top} />
       <Edge {...others} type={EdgeType.Right} />

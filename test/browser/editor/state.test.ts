@@ -1,5 +1,5 @@
 import {expect, test} from '@playwright/test'
-import {delay, lineTextEq} from '../utils'
+import {assertEditorLineToEqual, delay} from '../utils'
 
 test.beforeEach(async ({page}) => {
   await page.goto('/')
@@ -8,7 +8,7 @@ test.beforeEach(async ({page}) => {
 test('load state from db', async ({page}) => {
   await page.waitForSelector('[data-testid="initialized"]')
   await page.click('[data-testid="floating_navbar_menu_open"]')
-  await lineTextEq(page, 1, 'Start typing ...')
+  await assertEditorLineToEqual(page, 1, 'Start typing ...')
 
   await page.locator('.ProseMirror').pressSequentially('foo', {delay})
 
@@ -32,7 +32,7 @@ test('open file', async ({page}) => {
   await page.click('[data-testid="new"]')
   await page.click('[data-testid="new_file"]')
   await expect(page.locator('[data-testid="tree_link"]')).toHaveCount(2)
-  await lineTextEq(page, 1, 'Start typing ...')
+  await assertEditorLineToEqual(page, 1, 'Start typing ...')
   await page.locator('.ProseMirror').pressSequentially('test2', {delay})
   await expect(page.locator('[data-testid="tree_link"]')).toHaveCount(2)
   await expect(page.locator('[data-testid="tree_link"]').nth(1)).toContainText('test2')
@@ -40,19 +40,19 @@ test('open file', async ({page}) => {
   await page.click('[data-testid="new"]')
   await page.click('[data-testid="new_file"]')
   await expect(page.locator('[data-testid="tree_link"]')).toHaveCount(3)
-  await lineTextEq(page, 1, 'Start typing ...')
+  await assertEditorLineToEqual(page, 1, 'Start typing ...')
 
   await expect(page.locator('[data-testid="tree_link"]').nth(0)).toContainText('test1')
   await expect(page.locator('[data-testid="tree_link"]').nth(1)).toContainText('test2')
   await expect(page.locator('[data-testid="tree_link"]').nth(2)).toContainText('Untitled')
   await page.locator('[data-testid="tree_link_title"]').nth(0).click()
   await page.waitForTimeout(100)
-  await lineTextEq(page, 1, 'test1')
+  await assertEditorLineToEqual(page, 1, 'test1')
   await expect(page.locator('[data-testid="tree_link"]')).toHaveCount(3)
 
   // Unmodified files are currently not saved
   await page.reload()
   await page.click('[data-testid="floating_navbar_menu_open"]')
-  await lineTextEq(page, 1, 'test1')
+  await assertEditorLineToEqual(page, 1, 'test1')
   await expect(page.locator('[data-testid="tree_link"]')).toHaveCount(2)
 })

@@ -217,11 +217,17 @@ export const Toolbar = () => {
               </TooltipButton>
             </Show>
             <Show when={isCodeElement(selected().element)}>
-              <TooltipButton onClick={() => changeLang(selected().element)}>
+              <TooltipButton
+                onClick={() => changeLang(selected().element)}
+                data-testid="toolbar_change_language"
+              >
                 <IconLanguage /> Change language
               </TooltipButton>
               <Show when={ugly()}>
-                <TooltipButton onClick={() => prettify(selected().element)}>
+                <TooltipButton
+                  onClick={() => prettify(selected().element)}
+                  data-testid="toolbar_prettify"
+                >
                   <IconPrettier /> Prettify
                 </TooltipButton>
               </Show>

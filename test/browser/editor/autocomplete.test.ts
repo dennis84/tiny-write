@@ -1,5 +1,5 @@
 import {expect, test} from '@playwright/test'
-import {delay, lineTextEq} from '../utils'
+import {assertEditorLineToEqual, delay} from '../utils'
 
 test.beforeEach(async ({page}) => {
   await page.goto('/')
@@ -15,7 +15,7 @@ test('autocomplete', async ({page}) => {
   await expect(page.locator('#tooltip div:nth-child(1)')).toContainText('foobar')
   await expect(page.locator('#tooltip div:nth-child(2)')).toContainText('foobaz')
   await page.keyboard.press('Enter')
-  await lineTextEq(page, 2, 'foobar')
+  await assertEditorLineToEqual(page, 2, 'foobar')
 
   await page.keyboard.press('Enter')
   await page.locator('.ProseMirror').pressSequentially('f', {delay})
@@ -23,5 +23,5 @@ test('autocomplete', async ({page}) => {
   await page.keyboard.press('ArrowDown')
   await page.keyboard.press('ArrowUp')
   await page.keyboard.press('Enter')
-  await lineTextEq(page, 3, 'foobaz')
+  await assertEditorLineToEqual(page, 3, 'foobaz')
 })

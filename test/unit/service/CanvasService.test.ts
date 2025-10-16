@@ -4,6 +4,7 @@ import {createStore} from 'solid-js/store'
 import {beforeEach, expect, test, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
 import {DB} from '@/db'
+import type {AppService} from '@/services/AppService'
 import {CanvasService} from '@/services/CanvasService'
 import {CollabService} from '@/services/CollabService'
 import {FileService} from '@/services/FileService'
@@ -69,12 +70,13 @@ beforeEach(() => {
   vi.restoreAllMocks()
 })
 
+const appService = mock<AppService>()
 const fileService = mock<FileService>()
 const selectService = mock<SelectService>()
 
 test('currentCanvas - empty', () => {
   const [store, setState] = createStore(createState({canvases: []}))
-  const service = new CanvasService(fileService, selectService, store, setState)
+  const service = new CanvasService(appService, fileService, selectService, store, setState)
   expect(service.currentCanvas).toBeUndefined()
 })
 
@@ -89,7 +91,7 @@ test('currentCanvas', () => {
     }),
   )
 
-  const service = new CanvasService(fileService, selectService, store, setState)
+  const service = new CanvasService(appService, fileService, selectService, store, setState)
 
   expect(service.currentCanvas?.id).toBe('2')
 })
@@ -105,7 +107,7 @@ test('updateCanvas', async () => {
     }),
   )
 
-  const service = new CanvasService(fileService, selectService, store, setState)
+  const service = new CanvasService(appService, fileService, selectService, store, setState)
 
   service.updateCanvas('1', {camera: {point: [10, 10], zoom: 2}})
 
@@ -138,7 +140,7 @@ test('updateCanvasElement', async () => {
     }),
   )
 
-  const service = new CanvasService(fileService, selectService, store, setState)
+  const service = new CanvasService(appService, fileService, selectService, store, setState)
 
   // update editor element
   service.updateCanvasElement('1', {x: 100, y: 100})
@@ -197,7 +199,7 @@ test('backToContent', async () => {
     }),
   )
 
-  const service = new CanvasService(fileService, selectService, store, setState)
+  const service = new CanvasService(appService, fileService, selectService, store, setState)
 
   service.canvasRef = mock<HTMLElement>({
     clientWidth: 1000,
@@ -226,7 +228,7 @@ test('focus', async () => {
     }),
   )
 
-  const service = new CanvasService(fileService, selectService, store, setState)
+  const service = new CanvasService(appService, fileService, selectService, store, setState)
 
   service.canvasRef = mock<HTMLElement>({
     clientWidth: 1000,
@@ -254,7 +256,7 @@ test('snapToGrid', () => {
     }),
   )
 
-  const service = new CanvasService(fileService, selectService, store, setState)
+  const service = new CanvasService(appService, fileService, selectService, store, setState)
 
   service.snapToGrid()
   expect(service.currentCanvas?.snapToGrid).toBe(true)
@@ -274,7 +276,7 @@ test('updateCamera', () => {
     }),
   )
 
-  const service = new CanvasService(fileService, selectService, store, setState)
+  const service = new CanvasService(appService, fileService, selectService, store, setState)
 
   service.updateCamera({point: [100, 100], zoom: 2})
 
@@ -293,7 +295,7 @@ test('updateCameraPoint', () => {
     }),
   )
 
-  const service = new CanvasService(fileService, selectService, store, setState)
+  const service = new CanvasService(appService, fileService, selectService, store, setState)
 
   service.updateCameraPoint([100, 100])
 
@@ -311,7 +313,7 @@ test('restore', async () => {
     }),
   )
 
-  const service = new CanvasService(fileService, selectService, store, setState)
+  const service = new CanvasService(appService, fileService, selectService, store, setState)
 
   await service.restore('2')
   expect(store.canvases.length).toBe(2)
@@ -334,17 +336,21 @@ test('select', () => {
     }),
   )
 
-  const service = new CanvasService(fileService, selectService, store, setState)
+  appService.setLocation.mockImplementation(async (loc) => setState('location', loc))
+
+  const service = new CanvasService(appService, fileService, selectService, store, setState)
 
   service.select('1')
   const editor = service.currentCanvas?.elements[0] as CanvasEditorElement
   expect(editor.selected).toBe(true)
   expect(editor.active).toBe(false)
+  expect(store.location?.activeFileId).toBe(undefined)
 
   service.select('1', true)
   const editor2 = service.currentCanvas?.elements[0] as CanvasEditorElement
   expect(editor2.selected).toBe(true)
   expect(editor2.active).toBe(true)
+  expect(store.location?.activeFileId).toBe('1')
 
   service.select('2', true)
   const editor3 = service.currentCanvas?.elements[0] as CanvasEditorElement
@@ -353,6 +359,7 @@ test('select', () => {
   expect(editor3.active).toBe(false)
   expect(editor4.selected).toBe(true)
   expect(editor4.active).toBe(true)
+  expect(store.location?.activeFileId).toBe('2')
 })
 
 test('deselect', () => {
@@ -361,6 +368,7 @@ test('deselect', () => {
       location: {
         page: Page.Canvas,
         canvasId: '1',
+        activeFileId: '1',
       },
       canvases: [
         createCanvas({
@@ -371,13 +379,16 @@ test('deselect', () => {
     }),
   )
 
-  const service = new CanvasService(fileService, selectService, store, setState)
+  appService.setLocation.mockImplementation(async (loc) => setState('location', loc))
+
+  const service = new CanvasService(appService, fileService, selectService, store, setState)
 
   service.deselect()
 
   const editor = service.currentCanvas?.elements[0] as CanvasEditorElement
   expect(editor.selected).toBe(false)
   expect(editor.active).toBe(false)
+  expect(store.location?.activeFileId).toBe(undefined)
 })
 
 test('newCanvas', async () => {
@@ -398,7 +409,7 @@ test('newCanvas', async () => {
     }),
   )
 
-  const service = new CanvasService(fileService, selectService, store, setState)
+  const service = new CanvasService(appService, fileService, selectService, store, setState)
 
   // new canvas
   await service.newCanvas()
@@ -429,7 +440,7 @@ test('removeElements', async () => {
     }),
   )
 
-  const service = new CanvasService(fileService, selectService, store, setState)
+  const service = new CanvasService(appService, fileService, selectService, store, setState)
 
   await service.removeElements(['1'])
 
@@ -450,7 +461,7 @@ test('init', async () => {
     }),
   )
 
-  const service = new CanvasService(fileService, selectService, store, setState)
+  const service = new CanvasService(appService, fileService, selectService, store, setState)
 
   await service.init()
   expect(DB.updateCanvas).toBeCalledTimes(1)
@@ -475,7 +486,7 @@ test('newFile', async () => {
   vi.spyOn(FileService, 'createFile').mockReturnValue({id: '1', ydoc, versions: []})
   vi.spyOn(CollabService, 'create').mockReturnValue(createCollabMock())
 
-  const service = new CanvasService(fileService, selectService, store, setState)
+  const service = new CanvasService(appService, fileService, selectService, store, setState)
 
   await service.newFile()
 
@@ -511,7 +522,7 @@ test.each([
   vi.spyOn(FileService, 'createFile').mockReturnValue({id: '3', ydoc, versions: []})
   vi.spyOn(CollabService, 'create').mockReturnValue(createCollabMock())
 
-  const service = new CanvasService(fileService, selectService, store, setState)
+  const service = new CanvasService(appService, fileService, selectService, store, setState)
 
   await service.newFile(false, link)
 
@@ -539,7 +550,7 @@ test('addImage', async () => {
     }),
   )
 
-  const service = new CanvasService(fileService, selectService, store, setState)
+  const service = new CanvasService(appService, fileService, selectService, store, setState)
 
   await service.addImage('/path/1.png', new Vector(100, 100), 1000, 2000)
 
@@ -562,7 +573,7 @@ test('addVideo', async () => {
     }),
   )
 
-  const service = new CanvasService(fileService, selectService, store, setState)
+  const service = new CanvasService(appService, fileService, selectService, store, setState)
 
   await service.addVideo('/path/1.mp4', 'video/mp4', new Vector(100, 100), 1000, 2000)
 
@@ -594,7 +605,7 @@ test('drawLink', () => {
     }),
   )
 
-  const service = new CanvasService(fileService, selectService, store, setState)
+  const service = new CanvasService(appService, fileService, selectService, store, setState)
 
   service.drawLink('3', '1', EdgeType.Right, 0, 0)
   expect(service.currentCanvas?.elements.length).toBe(3)
@@ -637,7 +648,7 @@ test('drawLink - abort', async () => {
     }),
   )
 
-  const service = new CanvasService(fileService, selectService, store, setState)
+  const service = new CanvasService(appService, fileService, selectService, store, setState)
 
   service.drawLink('3', '1', EdgeType.Right, 100, 100)
   expect(service.currentCanvas?.elements.length).toBe(3)
@@ -666,7 +677,7 @@ test('removeDeadLinks', async () => {
     }),
   )
 
-  const service = new CanvasService(fileService, selectService, store, setState)
+  const service = new CanvasService(appService, fileService, selectService, store, setState)
 
   expect(service.currentCanvas?.elements.length).toBe(2)
 
@@ -691,7 +702,7 @@ test('clearCanvas', async () => {
     }),
   )
 
-  const service = new CanvasService(fileService, selectService, store, setState)
+  const service = new CanvasService(appService, fileService, selectService, store, setState)
 
   await service.clearCanvas()
 
@@ -717,7 +728,7 @@ test('getElementNear', () => {
     }),
   )
 
-  const service = new CanvasService(fileService, selectService, store, setState)
+  const service = new CanvasService(appService, fileService, selectService, store, setState)
 
   expect(service.getElementNear([-10, -20])).toEqual({id: '1', edge: EdgeType.Top})
   expect(service.getElementNear([-20, -10])).toEqual({id: '1', edge: EdgeType.Left})
@@ -747,7 +758,7 @@ test('center', () => {
     }),
   )
 
-  const service = new CanvasService(fileService, selectService, store, setState)
+  const service = new CanvasService(appService, fileService, selectService, store, setState)
 
   const centerPoint = service.getCenterPoint()
   expect(centerPoint?.x).toEqual(100)
@@ -774,7 +785,7 @@ test('get selection', () => {
     }),
   )
 
-  const service = new CanvasService(fileService, selectService, store, setState)
+  const service = new CanvasService(appService, fileService, selectService, store, setState)
 
   expect(service.selection).toBe(undefined)
 
@@ -823,7 +834,7 @@ test('selectBox', () => {
     }),
   )
 
-  const service = new CanvasService(fileService, selectService, store, setState)
+  const service = new CanvasService(appService, fileService, selectService, store, setState)
 
   expect(service.selection).toBe(undefined)
 
@@ -898,7 +909,7 @@ test('selectBox - active editor', () => {
     editorView,
   })
 
-  const service = new CanvasService(fileService, selectService, store, setState)
+  const service = new CanvasService(appService, fileService, selectService, store, setState)
 
   expect(service.selection).toBe(undefined)
 

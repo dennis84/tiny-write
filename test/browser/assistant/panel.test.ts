@@ -1,6 +1,6 @@
 import {expect, test} from '@playwright/test'
 import {createYUpdate} from '../../unit/testutil/codemirror-util'
-import {delay, lineCodeEq} from '../utils'
+import {assertCodeLineToEqual, delay} from '../utils'
 import {setupDB} from './mock'
 
 const content = `
@@ -71,7 +71,7 @@ test('create file', async ({page}) => {
   await page.click('[data-testid="tooltip_backdrop"]')
 
   await page.locator('[data-testid="panel_button_create"]').click()
-  await lineCodeEq(page, 1, "const test1 = '111'")
+  await assertCodeLineToEqual(page, 1, "const test1 = '111'")
 
   await page.click('[data-testid="floating_navbar_menu_open"]')
   await expect(page.locator('[data-testid="tree_link"]').nth(2)).toContainText('src/main.ts')
@@ -88,7 +88,7 @@ test('apply', async ({page}) => {
 
   expect(page.getByText('All chunks applied')).toBeVisible()
 
-  await lineCodeEq(page, 1, "const test2 = '222'")
+  await assertCodeLineToEqual(page, 1, "const test2 = '222'")
 })
 
 test('apply - open file', async ({page}) => {
@@ -103,7 +103,7 @@ test('apply - open file', async ({page}) => {
   expect(page.getByText('All chunks applied')).toBeVisible()
   expect(page.url()).toContain('/code/222')
 
-  await lineCodeEq(page, 1, "const test2 = '222'")
+  await assertCodeLineToEqual(page, 1, "const test2 = '222'")
 })
 
 test('apply - range', async ({page}) => {
@@ -121,5 +121,5 @@ test('apply - range', async ({page}) => {
 
   expect(page.getByText('All chunks applied')).toBeVisible()
 
-  await lineCodeEq(page, 1, "abcdeconst test3 = '333'klmnop")
+  await assertCodeLineToEqual(page, 1, "abcdeconst test3 = '333'klmnop")
 })

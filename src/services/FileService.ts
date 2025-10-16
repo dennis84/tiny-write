@@ -40,7 +40,11 @@ export class FileService {
   ) {}
 
   get currentFileId(): string | undefined {
-    return this.store.location?.editorId ?? this.store.location?.codeId
+    return (
+      this.store.location?.editorId ??
+      this.store.location?.codeId ??
+      this.store.location?.activeFileId
+    )
   }
 
   get currentFile(): File | undefined {

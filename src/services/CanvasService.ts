@@ -29,6 +29,7 @@ import {
 import {BoxUtil} from '@/utils/BoxUtil'
 import {PointUtil} from '@/utils/PointUtil'
 import {VecUtil} from '@/utils/VecUtil'
+import type {AppService} from './AppService'
 import {CollabService} from './CollabService'
 import {FileService} from './FileService'
 import type {SelectService} from './SelectService'
@@ -64,6 +65,7 @@ export class CanvasService {
   }
 
   constructor(
+    private appService: AppService,
     private fileService: FileService,
     private selectService: SelectService,
     private store: Store<State>,
@@ -203,6 +205,7 @@ export class CanvasService {
 
     if (active && (isEditorElement(newEl) || isCodeElement(newEl))) {
       const file = this.fileService.findFileById(newEl.id)
+      this.appService.setLocation({activeFileId: newEl.id})
       file?.editorView?.focus()
       file?.codeEditorView?.focus()
     }
@@ -257,6 +260,8 @@ export class CanvasService {
         } else if (file?.codeEditorView) {
           file.codeEditorView.dispatch({selection: {anchor: 0}})
         }
+
+        this.appService.setLocation({activeFileId: undefined})
       }
 
       this.updateCanvasElement(el.id, {selected: false, active: false})

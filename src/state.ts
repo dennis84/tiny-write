@@ -30,6 +30,7 @@ export interface LocationState {
   selection?: VisualPositionRange // forgotten
   merge?: MergeState // e.g. open file with merge params from assistant
   share?: boolean // turn collab mode on
+  activeFileId?: string // An active file on canvas page
 }
 
 export interface VisualPosition {

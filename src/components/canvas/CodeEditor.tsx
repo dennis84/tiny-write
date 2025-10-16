@@ -64,8 +64,10 @@ export const CodeEditor = ({element, index}: {element: CanvasCodeElement; index:
 
     if (file?.path) {
       const text = (await FileService.loadTextFile(file.path)).text
-      const subdoc = CollabService.getSubdoc(store.collab?.ydoc, file.id)
-      if (text) codeService.updateText(file, subdoc, text)
+      if (text && store.collab?.ydoc) {
+        const subdoc = CollabService.getSubdoc(store.collab.ydoc, file.id)
+        codeService.updateText(file, subdoc, text)
+      }
     }
 
     const provider = collabService.getProvider(file.id)

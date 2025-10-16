@@ -1,5 +1,5 @@
 import {expect, type Page, test} from '@playwright/test'
-import {delay, lineTextEq, move} from '../utils'
+import {assertEditorLineToEqual, delay, move} from '../utils'
 
 test.beforeEach(async ({page}) => {
   await page.goto('/')
@@ -36,7 +36,7 @@ test('table keymap', async ({page}) => {
   await expect(getNthCell(page, 3, 2)).toHaveText('')
   await page.keyboard.press('Control+Enter')
   await page.locator('.ProseMirror').pressSequentially('outside', {delay})
-  await lineTextEq(page, 2, 'outside')
+  await assertEditorLineToEqual(page, 2, 'outside')
 })
 
 test('remove table if empty', async ({page}) => {
@@ -69,5 +69,5 @@ test('arrow up and down', async ({page}) => {
   await expect(getNthCell(page, 1, 2)).toHaveText('2')
   await expect(getNthCell(page, 2, 1)).toHaveText('3')
   await expect(getNthCell(page, 2, 2)).toHaveText('4')
-  await lineTextEq(page, 1, 'test')
+  await assertEditorLineToEqual(page, 1, 'test')
 })

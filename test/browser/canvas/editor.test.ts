@@ -12,7 +12,7 @@ const clickTreeMenu = async (page: Page, nth: number, buttonId: string) => {
   await page.click(`[data-testid="${buttonId}"]`)
 }
 
-test('add file', async ({page}) => {
+test('add editor file', async ({page}) => {
   await page.click('[data-testid="floating_navbar_menu_open"]')
   await clickTreeMenu(page, 1, 'add_canvas')
 

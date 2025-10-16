@@ -1,5 +1,5 @@
 import {expect, test} from '@playwright/test'
-import {delay, lineTextEq} from '../utils'
+import {assertEditorLineToEqual, delay} from '../utils'
 
 test('create room', async ({page, browser}) => {
   await page.goto(`/`)
@@ -16,12 +16,12 @@ test('create room', async ({page, browser}) => {
   await page2.goto(`/editor?join=${id}`)
   await page2.click('[data-testid="join_editor"]')
 
-  await lineTextEq(page2, 1, 'Hello')
+  await assertEditorLineToEqual(page2, 1, 'Hello')
 
   await page.locator('.ProseMirror').pressSequentially(' World', {delay})
 
-  await lineTextEq(page, 1, 'Hello World')
-  await lineTextEq(page2, 1, 'Hello World')
+  await assertEditorLineToEqual(page, 1, 'Hello World')
+  await assertEditorLineToEqual(page2, 1, 'Hello World')
 })
 
 test('create room - existing content file', async ({page, browser}) => {
@@ -33,13 +33,13 @@ test('create room - existing content file', async ({page, browser}) => {
   await page.locator('.ProseMirror').pressSequentially('Hello', {delay})
   await page.click('[data-testid="floating_navbar_menu_open"]')
   await page.click('[data-testid="collab"]')
-  await lineTextEq(page, 1, 'Hello')
+  await assertEditorLineToEqual(page, 1, 'Hello')
 
   const page2 = await browser.newPage()
   await page2.goto(`/editor?join=${id}`)
   await page2.click('[data-testid="join_editor"]')
 
-  await lineTextEq(page2, 1, 'Hello')
+  await assertEditorLineToEqual(page2, 1, 'Hello')
 
   // make sure that cursor is at the start position
   await page2.locator('.ProseMirror').focus()
@@ -47,8 +47,8 @@ test('create room - existing content file', async ({page, browser}) => {
 
   await page2.locator('.ProseMirror').pressSequentially('World', {delay})
 
-  await lineTextEq(page2, 1, 'WorldHello')
-  await lineTextEq(page, 1, 'WorldHello')
+  await assertEditorLineToEqual(page2, 1, 'WorldHello')
+  await assertEditorLineToEqual(page, 1, 'WorldHello')
 })
 
 test('sync config', async ({page, browser}) => {
@@ -72,7 +72,7 @@ test('sync config', async ({page, browser}) => {
   await page2.goto(`/editor?join=${id}`)
   await page2.click('[data-testid="join_editor"]')
 
-  await lineTextEq(page2, 1, 'Hello')
+  await assertEditorLineToEqual(page2, 1, 'Hello')
   await page2.click('[data-testid="floating_navbar_menu_open"]')
   await page2.click('[data-testid="appearance"]')
 
@@ -117,7 +117,7 @@ test('rejoin room - remote', async ({page, browser}) => {
   await page2.goto(`/editor?join=${id}`)
   await page2.click('[data-testid="join_editor"]')
 
-  await lineTextEq(page2, 1, 'Hello')
+  await assertEditorLineToEqual(page2, 1, 'Hello')
   await expect(page2.locator('.ProseMirror > *')).toHaveCount(1)
 
   // stop collab
@@ -129,7 +129,7 @@ test('rejoin room - remote', async ({page, browser}) => {
   await page.click('[data-testid="clear"]')
   await page.locator('.ProseMirror').pressSequentially('123', {delay})
   await expect(page.locator('.ProseMirror > *')).toHaveCount(1)
-  await lineTextEq(page, 1, '123')
+  await assertEditorLineToEqual(page, 1, '123')
 
   // change whole text on client 2
   await page2.click('[data-testid="clear"]')
@@ -145,7 +145,7 @@ test('rejoin room - remote', async ({page, browser}) => {
   await page3.goto(`/editor?join=${id}`)
   await page3.click('[data-testid="join_editor"]')
   await expect(page3.locator('.ProseMirror > *')).toHaveCount(1)
-  await lineTextEq(page3, 1, '123abc')
+  await assertEditorLineToEqual(page3, 1, '123abc')
 
-  await lineTextEq(page, 1, '123abc')
+  await assertEditorLineToEqual(page, 1, '123abc')
 })

@@ -1,5 +1,5 @@
 import {test} from '@playwright/test'
-import {delay, lineTextEq, openBlockMenu} from '../utils'
+import {assertEditorLineToEqual, delay, openBlockMenu} from '../utils'
 
 test.beforeEach(async ({page}) => {
   await page.goto('/')
@@ -12,9 +12,9 @@ test('drag drop', async ({page}) => {
   await page.locator('.ProseMirror').pressSequentially('Line 2', {delay})
   await page.keyboard.press('Enter')
   await page.locator('.ProseMirror').pressSequentially('Line 3', {delay})
-  await lineTextEq(page, 1, 'Line 1')
-  await lineTextEq(page, 2, 'Line 2')
-  await lineTextEq(page, 3, 'Line 3')
+  await assertEditorLineToEqual(page, 1, 'Line 1')
+  await assertEditorLineToEqual(page, 2, 'Line 2')
+  await assertEditorLineToEqual(page, 3, 'Line 3')
 
   await page.locator('.ProseMirror > p:nth-of-type(1)').hover()
 
@@ -24,9 +24,9 @@ test('drag drop', async ({page}) => {
     targetPosition: {x: 100, y: 500},
   })
 
-  await lineTextEq(page, 1, 'Line 2')
-  await lineTextEq(page, 2, 'Line 3')
-  await lineTextEq(page, 3, 'Line 1')
+  await assertEditorLineToEqual(page, 1, 'Line 2')
+  await assertEditorLineToEqual(page, 2, 'Line 3')
+  await assertEditorLineToEqual(page, 3, 'Line 1')
 })
 
 test('no sync error', async ({page}) => {
@@ -36,5 +36,5 @@ test('no sync error', async ({page}) => {
     await openBlockMenu(page, 1)
   }
 
-  await lineTextEq(page, 1, 'Line 1')
+  await assertEditorLineToEqual(page, 1, 'Line 1')
 })
