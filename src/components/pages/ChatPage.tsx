@@ -1,5 +1,5 @@
 import type {RouteSectionProps} from '@solidjs/router'
-import {createEffect, onMount} from 'solid-js'
+import {createEffect, onMount, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {useOpen} from '@/hooks/open'
 import {Page, useState} from '@/state'
@@ -67,5 +67,13 @@ export const ChatPage = (props: RouteSectionProps) => {
     )
   }
 
-  return <OpenChat />
+  return (
+    <>
+      {/* Rerender if location changes */}
+      {/* eslint-disable-next-line */}
+      <Show when={props.params.id} keyed>
+        <OpenChat />
+      </Show>
+    </>
+  )
 }
