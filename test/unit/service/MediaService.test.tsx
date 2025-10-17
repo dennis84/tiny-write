@@ -56,7 +56,7 @@ test('dropFiles - image on editor', async () => {
     expect(getByTestId('editor_scroll')).toBeDefined()
   })
 
-  const blob = new Blob(['123']) as File
+  const blob = new Blob(['123'], {type: 'image/jpeg'}) as File
   await mediaService.dropFiles([blob], [0, 0])
 
   const doc = fileService.currentFile?.editorView?.state.doc

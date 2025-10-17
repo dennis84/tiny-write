@@ -71,7 +71,7 @@ export const ChatPage = (props: RouteSectionProps) => {
     <>
       {/* Rerender if location changes */}
       {/* eslint-disable-next-line */}
-      <Show when={props.params.id} keyed>
+      <Show when={props.params.id || !props.params.id} keyed>
         <OpenChat />
       </Show>
     </>

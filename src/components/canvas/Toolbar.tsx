@@ -40,7 +40,7 @@ export const Toolbar = () => {
   } = useState()
   const [ugly, setUgly] = createSignal(false)
   const [collides, setCollides] = createSignal(false)
-  const {open} = useOpen()
+  const {openFile} = useOpen()
 
   const restore = async (element: CanvasElement) => {
     await fileService.restore(element.id)
@@ -207,7 +207,7 @@ export const Toolbar = () => {
       {(selected) => (
         <TooltipContainer ref={tooltipRef} id="toolbar" direction="row" gap={5}>
           <Show when={collides()}>
-            <TooltipButton onClick={() => open(selected().element, {back: true})}>
+            <TooltipButton onClick={() => openFile(selected().element)}>
               <IconOpenInFull /> Open in full
             </TooltipButton>
             <Show when={fileService.findFileById(selected().element.id)?.deleted}>

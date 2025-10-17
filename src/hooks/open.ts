@@ -4,8 +4,12 @@ import {open as shellOpen} from '../remote/app'
 import {info} from '../remote/log'
 import {
   type Canvas,
+  type CanvasElement,
   type File,
+  isCanvas,
+  isCodeElement,
   isCodeFile,
+  isEditorElement,
   isFile,
   type LocationState,
   Page,
@@ -17,7 +21,7 @@ export const useOpen = () => {
   const location = useLocation<LocationState>()
   const {store} = useState()
 
-  const openFile = (file?: File | Canvas, locState?: Partial<LocationState>) => {
+  const openFile = (file?: File | Canvas | CanvasElement, locState?: Partial<LocationState>) => {
     if (!file) return open(undefined)
 
     if (isCodeFile(file)) {
@@ -26,8 +30,12 @@ export const useOpen = () => {
     } else if (isFile(file)) {
       const newFile = file.newFile
       return open({...locState, editorId: file.id, newFile})
-    } else {
+    } else if (isCanvas(file)) {
       return open({...locState, canvasId: file.id})
+    } else if (isEditorElement(file)) {
+      return open({...locState, editorId: file.id})
+    } else if (isCodeElement(file)) {
+      return open({...locState, codeId: file.id})
     }
   }
 

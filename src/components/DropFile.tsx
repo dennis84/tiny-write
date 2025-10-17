@@ -1,11 +1,8 @@
 import {useBeforeLeave} from '@solidjs/router'
-import {getCurrentWindow} from '@tauri-apps/api/window'
 import {createSignal, onCleanup, onMount, Show} from 'solid-js'
 import {createMutable} from 'solid-js/store'
 import {Portal} from 'solid-js/web'
 import {styled} from 'solid-styled-components'
-import {isTauri} from '@/env'
-import {useOpen} from '@/hooks/open'
 import {DropTarget} from '@/services/MediaService'
 import {useState} from '@/state'
 import {enumFromValue} from '@/utils/enum'
@@ -24,7 +21,6 @@ const HighlightContent = styled('div')`
 
 export const DropFile = () => {
   const {mediaService} = useState()
-  const {openFile} = useOpen()
   const mouseOverCoords = createMutable({x: 0, y: 0})
   const [dropTarget, setDropTarget] = createSignal<HTMLElement>()
   const [dragStarted, setDragStarted] = createSignal(false)
@@ -59,26 +55,26 @@ export const DropFile = () => {
     setDropTarget(undefined)
   }
 
-  onMount(() => {
-    // disable while tauri cannot handle both html5 and app dragdrop
-    if (isTauri()) return
-    const unlistenProm = getCurrentWindow().onDragDropEvent(async (event) => {
-      if (event.payload.type === 'over') {
-        const {x, y} = event.payload.position
-        setClosestDropTarget(document.elementFromPoint(x, y))
-      } else if (event.payload.type === 'drop') {
-        const {x, y} = event.payload.position
-        const dt = enumFromValue(DropTarget, dropTarget()?.dataset.dropTarget)
-        const result = await mediaService.dropPaths(event.payload.paths, [x, y], dt)
-        setDropTarget(undefined)
-        if (result?.file) openFile(result.file)
-      } else {
-        setDropTarget(undefined)
-      }
-    })
-
-    onCleanup(async () => (await unlistenProm)())
-  })
+  // disable while tauri cannot handle both html5 and app dragdrop
+  // onMount(() => {
+  //   if (!isTauri()) return
+  //   const unlistenProm = getCurrentWindow().onDragDropEvent(async (event) => {
+  //     if (event.payload.type === 'over') {
+  //       const {x, y} = event.payload.position
+  //       setClosestDropTarget(document.elementFromPoint(x, y))
+  //     } else if (event.payload.type === 'drop') {
+  //       const {x, y} = event.payload.position
+  //       const dt = enumFromValue(DropTarget, dropTarget()?.dataset.dropTarget)
+  //       const result = await mediaService.dropPaths(event.payload.paths, [x, y], dt)
+  //       setDropTarget(undefined)
+  //       if (result?.file) openFile(result.file)
+  //     } else {
+  //       setDropTarget(undefined)
+  //     }
+  //   })
+  //
+  //   onCleanup(async () => (await unlistenProm)())
+  // })
 
   onMount(() => {
     // enable html5 dragdrop for app and browser
