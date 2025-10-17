@@ -104,8 +104,10 @@ export const Keymap = () => {
     return true
   }
 
-  const onBackspace = async () => {
+  const onBackspace = async (e: KeyboardEvent) => {
     if (store.location?.page !== Page.Canvas || stopEvent()) return false
+
+    e.preventDefault()
 
     const currentCanvas = canvasService.currentCanvas
     if (!currentCanvas) return false
