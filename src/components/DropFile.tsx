@@ -25,18 +25,33 @@ const HighlightContent = styled('div')`
 export const DropFile = () => {
   const {mediaService} = useState()
   const {openFile} = useOpen()
-  const mouseEnterCoords = createMutable({x: 0, y: 0})
+  const mouseOverCoords = createMutable({x: 0, y: 0})
   const [dropTarget, setDropTarget] = createSignal<HTMLElement>()
+  const [dragStarted, setDragStarted] = createSignal(false)
 
   const setClosestDropTarget = (el: Element | null) => {
     const dt = el?.closest('[data-drop-target]') as HTMLElement | null
     setDropTarget(dt ?? document.body)
   }
 
+  const onDragStart = () => {
+    // No dragstart is fired when dragging from outside the app
+    setDragStarted(true)
+  }
+
+  const onDragEnd = () => {
+    setDropTarget(undefined)
+    setDragStarted(false)
+  }
+
   const onDragOver = (e: DragEvent) => {
+    if (dragStarted()) {
+      return
+    }
+
     e.preventDefault()
-    mouseEnterCoords.x = e.pageX
-    mouseEnterCoords.y = e.pageY
+    mouseOverCoords.x = e.pageX
+    mouseOverCoords.y = e.pageY
     setClosestDropTarget(e.target as Element)
   }
 
@@ -45,7 +60,8 @@ export const DropFile = () => {
   }
 
   onMount(() => {
-    if (!isTauri()) return
+    // disable while tauri cannot handle both html5 and app dragdrop
+    if (isTauri()) return
     const unlistenProm = getCurrentWindow().onDragDropEvent(async (event) => {
       if (event.payload.type === 'over') {
         const {x, y} = event.payload.position
@@ -65,27 +81,39 @@ export const DropFile = () => {
   })
 
   onMount(() => {
-    if (isTauri()) return
+    // enable html5 dragdrop for app and browser
+    // if (isTauri()) return
     const onDrop = async (e: DragEvent) => {
-      e.preventDefault()
-
       if (!e.dataTransfer) return
 
+      if (dragStarted()) {
+        return
+      }
+
+      e.preventDefault()
+
       const dt = enumFromValue(DropTarget, dropTarget()?.dataset.dropTarget)
-      const x = mouseEnterCoords.x
-      const y = mouseEnterCoords.y
+      const x = mouseOverCoords.x
+      const y = mouseOverCoords.y
       const files = Array.from(e.dataTransfer.files)
-      await mediaService.dropFiles(files, [x, y], dt)
+      if (files.length) {
+        await mediaService.dropFiles(files, [x, y], dt)
+      }
 
       setDropTarget(undefined)
+      setDragStarted(false)
     }
 
     window.addEventListener('drop', onDrop, false)
+    window.addEventListener('dragstart', onDragStart, false)
+    window.addEventListener('dragend', onDragEnd, false)
     window.addEventListener('dragover', onDragOver, false)
     window.addEventListener('dragleave', onDragLeave, false)
 
     onCleanup(() => {
       window.removeEventListener('drop', onDrop, false)
+      window.removeEventListener('dragstart', onDragStart)
+      window.removeEventListener('dragend', onDragEnd)
       window.removeEventListener('dragover', onDragOver, false)
       window.removeEventListener('dragleave', onDragLeave, false)
     })

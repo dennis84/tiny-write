@@ -19,7 +19,8 @@
         "hiddenTitle": true,
         "titleBarStyle": "Overlay",
         "center": true,
-        "focus": true
+        "focus": true,
+        "dragDropEnabled": false
       }
     ],
     "security": {

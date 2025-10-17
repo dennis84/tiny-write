@@ -78,9 +78,11 @@ export class MediaService {
     if (page === Page.Editor) {
       for (const blob of files) {
         const data = (await this.readFile(blob)) as string
-        const currentFile = this.fileService.currentFile
-        if (!currentFile?.editorView) return
-        this.insert(currentFile.editorView, data, x, y)
+        if (blob.type.startsWith('image/') || blob.type.startsWith('video/')) {
+          const currentFile = this.fileService.currentFile
+          if (!currentFile?.editorView) return
+          this.insert(currentFile.editorView, data, x, y)
+        }
       }
 
       return
