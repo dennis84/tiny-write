@@ -1,6 +1,7 @@
 export const isClipped = `
   &.is-clipped {
     max-height: 200px;
+    overflow: hidden;
     @media print {
       max-height: inherit;
     }

@@ -2,7 +2,7 @@ import {find as findLinks} from 'linkifyjs'
 import {Fragment, type Node, type Schema, Slice} from 'prosemirror-model'
 import {Plugin} from 'prosemirror-state'
 import type {EditorView} from 'prosemirror-view'
-import {createMarkdownParser} from '@/markdown'
+import {createMarkdownParser} from '@/prosemirror/markdown-serialize'
 
 const isInlineContent = (f: Fragment) =>
   f.childCount === 1 &&

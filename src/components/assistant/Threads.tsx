@@ -12,6 +12,7 @@ const TooltipFooter = styled('div')`
 `
 
 const Scroller = styled('div')`
+  max-width: 500px; // Max width for the tooplip
   height: 100%;
   overflow-y: auto;
   &::-webkit-scrollbar {
@@ -110,18 +111,20 @@ export const Threads = (props: Props) => {
   }
 
   const getThreads = (): [Thread, string | undefined][] => {
+    // List of tuples with date label on beginning of a new group
     const result: [Thread, string | undefined][] = []
-    let currentMonth = -1
+    let currentYearMonth: string | undefined
+
     for (const thread of store.threads) {
       if (!thread.lastModified) continue
       if (isToday(thread.lastModified)) {
         if (!result.length) result.push([thread, 'Today'])
         else result.push([thread, undefined])
       } else {
-        const month = thread.lastModified.getMonth()
-        if (currentMonth !== month) {
+        const yearMonth = formatDate(thread.lastModified, 'yyyy-MM')
+        if (currentYearMonth !== yearMonth) {
           result.push([thread, formatDate(thread.lastModified, 'MMMM')])
-          currentMonth = month
+          currentYearMonth = yearMonth
         } else {
           result.push([thread, undefined])
         }

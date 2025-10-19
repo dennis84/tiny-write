@@ -1,7 +1,7 @@
 import * as clipboard from '@tauri-apps/plugin-clipboard-manager'
 import type {EditorState} from 'prosemirror-state'
 import {isTauri} from '@/env'
-import {serialize} from '@/markdown'
+import {serialize} from '@/prosemirror/markdown-serialize'
 
 export const copy = async (text: string): Promise<void> => {
   if (isTauri()) {

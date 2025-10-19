@@ -1,18 +1,4 @@
 import {Box, type Vector} from '@flatten-js/core'
-import type {File, State} from '@/state'
-
-const ydoc = 'Uint8Array'
-const editorView = undefined
-const codeEditorView = undefined
-
-export const stateToString = (state: State) =>
-  JSON.stringify({
-    ...state,
-    files: state.files.map((f) => ({...f, ydoc, editorView, codeEditorView})),
-  } as any)
-
-export const fileToString = (file: Partial<File>) =>
-  JSON.stringify({...file, ydoc, editorView, codeEditorView})
 
 export const renderPoint = (point: Vector, id = 'point') => {
   document.querySelector(`#${id}`)?.remove()

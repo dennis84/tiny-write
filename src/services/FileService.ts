@@ -6,7 +6,7 @@ import * as Y from 'yjs'
 import {findCodeLang} from '@/codemirror/highlight'
 import {DB} from '@/db'
 import {isTauri} from '@/env'
-import {createMarkdownParser} from '@/markdown'
+import {createMarkdownParser} from '@/prosemirror/markdown-serialize'
 import {schema} from '@/prosemirror/schema'
 import {
   getDocument,

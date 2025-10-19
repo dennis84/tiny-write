@@ -6,10 +6,10 @@ import {containerSchemaSpec} from './container'
 import {emphasisSchemaSpec} from './emphasis'
 import {hardBreakSchemaSpec} from './hard-break'
 import {headingSchemaSpec} from './heading'
+import {horizontalRuleSchemaSpec} from './horizontal-rule'
 import {imageSchemaSpec} from './image/schema'
 import {linkSchemaSpec} from './link'
 import {listSchemaSpec} from './list'
-import {markdownSchemaSpec} from './markdown'
 import {paragraphSchemaSpec} from './paragraph'
 import {tableSchemaSpec} from './table'
 import {taskListSchemaSpec} from './task-list'
@@ -25,7 +25,7 @@ export const schema = new Schema({
     text: {
       group: 'inline',
     },
-    ...markdownSchemaSpec.nodes,
+    ...horizontalRuleSchemaSpec.nodes,
     ...hardBreakSchemaSpec.nodes,
     blockquote: {
       content: 'block+',

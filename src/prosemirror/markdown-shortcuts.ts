@@ -6,7 +6,7 @@ import {
   textblockTypeInputRule,
   wrappingInputRule,
 } from 'prosemirror-inputrules'
-import type {DOMOutputSpec, NodeType, Schema} from 'prosemirror-model'
+import type {NodeType, Schema} from 'prosemirror-model'
 import {nodeInputRule} from './rulebuilders'
 
 const blockQuoteRule = (nodeType: NodeType) => wrappingInputRule(/^\s*>\s$/, nodeType)
@@ -36,21 +36,6 @@ export const markdownInputRules = (schema: Schema) => {
   if (schema.nodes.heading) rules.push(headingRule(schema.nodes.heading, 6))
   if (schema.nodes.horizontal_rule) rules.push(hrRule)
   return rules
-}
-
-export const markdownSchemaSpec = {
-  nodes: {
-    horizontal_rule: {
-      content: 'inline*',
-      group: 'block',
-      atom: true,
-      draggable: true,
-      selectable: true,
-      toDOM(): DOMOutputSpec {
-        return ['div', {class: 'horizontal-rule'}, 0]
-      },
-    },
-  },
 }
 
 export const createMarkdownPlugins = (schema: Schema) =>
