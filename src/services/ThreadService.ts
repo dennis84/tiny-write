@@ -1,3 +1,4 @@
+import {formatDate, isToday} from 'date-fns'
 import type {SetStoreFunction, Store} from 'solid-js/store'
 import {v4 as uuidv4} from 'uuid'
 import {createCodeFence} from '@/components/assistant/util'
@@ -46,6 +47,37 @@ export class ThreadService {
     private copilotService: CopilotService,
     private fileService: FileService,
   ) {}
+
+  getThreads(term?: string): [Thread, string | undefined][] {
+    // List of tuples with date label on beginning of a new group
+    const result: [Thread, string | undefined][] = []
+    let currentYearMonth: string | undefined
+
+    for (const thread of this.store.threads) {
+      if (!thread.lastModified) continue
+
+      if (term && thread.title) {
+        const searchTerm = term.toLowerCase()
+        const title = thread.title.toLowerCase()
+        if (!title.includes(searchTerm)) continue
+      }
+
+      if (isToday(thread.lastModified)) {
+        if (!result.length) result.push([thread, 'Today'])
+        else result.push([thread, undefined])
+      } else {
+        const yearMonth = formatDate(thread.lastModified, 'yyyy-MM')
+        if (currentYearMonth !== yearMonth) {
+          result.push([thread, formatDate(thread.lastModified, 'MMMM')])
+          currentYearMonth = yearMonth
+        } else {
+          result.push([thread, undefined])
+        }
+      }
+    }
+
+    return result
+  }
 
   newThread(): Thread {
     const thread: Thread = {

@@ -58,6 +58,7 @@ import MaterialSymbolsPostAdd from '~icons/material-symbols/post-add'
 import MaterialSymbolsRedo from '~icons/material-symbols/redo'
 import MaterialSymbolsRefresh from '~icons/material-symbols/refresh'
 import MaterialSymbolsSaveAs from '~icons/material-symbols/save-as'
+import MaterialSymbolsSearch from '~icons/material-symbols/search'
 import MaterialSymbolsSpellcheck from '~icons/material-symbols/spellcheck'
 import MaterialSymbolsStop from '~icons/material-symbols/stop'
 import MaterialSymbolsTextSelectStart from '~icons/material-symbols/text-select-start'
@@ -595,6 +596,12 @@ export const IconRefresh = () => (
 export const IconImage = () => (
   <SvgIcon>
     <MaterialSymbolsImage />
+  </SvgIcon>
+)
+
+export const IconSearch = () => (
+  <SvgIcon>
+    <MaterialSymbolsSearch />
   </SvgIcon>
 )
 

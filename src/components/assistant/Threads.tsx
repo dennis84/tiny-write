@@ -1,9 +1,8 @@
-import {formatDate, isToday} from 'date-fns'
-import {createSignal, For, Show} from 'solid-js'
+import {createEffect, createSignal, For, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {type Thread, useState} from '@/state'
 import {Button, ButtonGroup} from '../Button'
-import {IconAdd, IconDelete, IconEdit, IconHistory, IconMoreHoriz} from '../Icon'
+import {IconAdd, IconDelete, IconEdit, IconHistory, IconMoreHoriz, IconSearch} from '../Icon'
 import {Label} from '../menu/Style'
 import {Tooltip, TooltipButton} from '../Tooltip'
 
@@ -42,15 +41,31 @@ const Content = styled('div')`
   heigth: 100%;
 `
 
+const SearchInput = styled('input')`
+  height: 40px;
+  padding: 0 20px;
+  border-radius: 30px;
+  font-size: var(--menu-font-size);
+  outline: none;
+  text-decoration: none;
+  font-family: var(--menu-font-family);
+  border: 0;
+  background: var(--background-60);
+  color: var(--foreground);
+`
+
 interface Props {
   onChange: (id: string) => void
 }
 
 export const Threads = (props: Props) => {
-  const {store, inputLineService, threadService} = useState()
+  let searchInputRef: HTMLInputElement | undefined
+  const {inputLineService, threadService} = useState()
   const [menuTooltipAnchor, setMenuTooltipAnchor] = createSignal<HTMLElement>()
   const [submenuTooltipAnchor, setSubmenuTooltipAnchor] = createSignal<HTMLElement>()
   const [selectedThread, setSelectedThread] = createSignal<Thread>()
+  const [searchMode, setSearchMode] = createSignal<boolean>(false)
+  const [searchTerm, setSearchTerm] = createSignal<string | undefined>(undefined)
 
   const closeMenu = () => {
     setMenuTooltipAnchor(undefined)
@@ -89,6 +104,24 @@ export const Threads = (props: Props) => {
     props.onChange(newThread.id)
   }
 
+  const onSearchMode = async () => {
+    setSearchMode(!searchMode())
+  }
+
+  const onSearchInput = (e: Event) => {
+    setSearchTerm((e.target as HTMLInputElement).value)
+  }
+
+  const onSearchKeyDown = (e: KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      setSearchMode(false)
+    }
+  }
+
+  const onSearchBlur = () => {
+    setSearchMode(false)
+  }
+
   const onDelete = () => {
     const thread = selectedThread()
     if (!thread) return
@@ -110,29 +143,11 @@ export const Threads = (props: Props) => {
     })
   }
 
-  const getThreads = (): [Thread, string | undefined][] => {
-    // List of tuples with date label on beginning of a new group
-    const result: [Thread, string | undefined][] = []
-    let currentYearMonth: string | undefined
-
-    for (const thread of store.threads) {
-      if (!thread.lastModified) continue
-      if (isToday(thread.lastModified)) {
-        if (!result.length) result.push([thread, 'Today'])
-        else result.push([thread, undefined])
-      } else {
-        const yearMonth = formatDate(thread.lastModified, 'yyyy-MM')
-        if (currentYearMonth !== yearMonth) {
-          result.push([thread, formatDate(thread.lastModified, 'MMMM')])
-          currentYearMonth = yearMonth
-        } else {
-          result.push([thread, undefined])
-        }
-      }
+  createEffect(() => {
+    if (searchMode()) {
+      searchInputRef?.focus()
     }
-
-    return result
-  }
+  })
 
   return (
     <>
@@ -145,7 +160,7 @@ export const Threads = (props: Props) => {
           <Tooltip anchor={a()} onClose={onMenuClose} backdrop={true} placement="left">
             <Scroller>
               <Content>
-                <For each={getThreads()}>
+                <For each={threadService.getThreads(searchTerm())}>
                   {([thread, label]) => (
                     <>
                       <Show when={label}>
@@ -170,14 +185,29 @@ export const Threads = (props: Props) => {
               </Content>
             </Scroller>
             <TooltipFooter>
-              <ButtonGroup>
-                <Button onClick={onNew}>
-                  <IconAdd /> New
-                </Button>
-                <Button onClick={onDeleteAll}>
-                  <IconDelete /> Delete all
-                </Button>
-              </ButtonGroup>
+              <Show when={searchMode()}>
+                <SearchInput
+                  ref={searchInputRef}
+                  placeholder="Search"
+                  onInput={onSearchInput}
+                  onKeyDown={onSearchKeyDown}
+                  onBlur={onSearchBlur}
+                  value={searchTerm() || ''}
+                />
+              </Show>
+              <Show when={!searchMode()}>
+                <ButtonGroup>
+                  <Button onClick={onNew}>
+                    <IconAdd /> New
+                  </Button>
+                  <Button onClick={onDeleteAll}>
+                    <IconDelete /> Delete all
+                  </Button>
+                  <Button onClick={onSearchMode}>
+                    <IconSearch /> Search
+                  </Button>
+                </ButtonGroup>
+              </Show>
             </TooltipFooter>
             <Show when={submenuTooltipAnchor()}>
               {(subA) => (

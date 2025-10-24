@@ -65,6 +65,17 @@ const ButtonPrimaryEl = styled('button')`
   }
 `
 
+const ButtonLinkEl = styled('button')`
+  ${Common}
+  ${RippleEffect}
+  color: var(--primary-foreground);
+  border: 0;
+  background: none;
+  &:hover {
+    background: var(--foreground-10);
+  }
+`
+
 export const ButtonGroup = styled('div')`
   display: flex;
   flex-wrap: wrap;
@@ -154,6 +165,13 @@ export const ButtonPrimary = (props: ButtonAttrs) => (
     {props.children}
     <Ripples />
   </ButtonPrimaryEl>
+)
+
+export const ButtonLink = (props: ButtonAttrs) => (
+  <ButtonLinkEl {...props}>
+    {props.children}
+    <Ripples />
+  </ButtonLinkEl>
 )
 
 export const IconButton = (props: ButtonAttrs) => (
