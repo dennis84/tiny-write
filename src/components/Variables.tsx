@@ -1,4 +1,5 @@
 import {createEffect, onMount} from 'solid-js'
+import {getThemeConfig} from '@/codemirror/theme'
 import {ConfigService} from '@/services/ConfigService'
 import {useState} from '@/state'
 import {ZIndex} from '@/utils/ZIndex'
@@ -64,6 +65,9 @@ export const Variables = () => {
     root.style.setProperty('--z-index-handle', ZIndex.HANDLE)
     root.style.setProperty('--z-index-tooltip', ZIndex.TOOLTIP)
     root.style.setProperty('--z-index-above-content', ZIndex.ABOVE_CONTENT)
+
+    const theme = getThemeConfig(configService.codeTheme.value)
+    root.style.setProperty('--code-background', theme.background)
   })
 
   return null

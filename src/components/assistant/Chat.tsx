@@ -6,16 +6,10 @@ import type {Chunk} from '@/services/CopilotService'
 import {type Message, useState} from '@/state'
 import {Button, ButtonGroup, IconButton} from '../Button'
 import {IconAdd, IconKeyboardArrowDown} from '../Icon'
-import {TooltipDivider} from '../Tooltip'
-import {AutoContextButton} from './attachments/AutoContext'
-import {CurrentFileButton} from './attachments/CurrentFile'
-import {SelectionButton} from './attachments/Selection'
 import {ChatInput} from './ChatInput'
 import {MessageAnswer} from './MessageAnswer'
-import {MessageAttachment} from './MessageAttachment'
 import {MessageQuestion} from './MessageQuestion'
 import {ModelSelect} from './ModelSelect'
-import {Suggestions} from './Suggestions'
 import {Threads} from './Threads'
 
 const Container = styled('div')`
@@ -23,12 +17,6 @@ const Container = styled('div')`
   flex-direction: column;
   height: auto;
   min-height: 100%;
-`
-
-const EmptyContainer = styled('div')`
-  width: 100%;
-  font-family: var(--menu-font-family);
-  font-size: var(--menu-font-size);
 `
 
 const Messages = styled('div')`
@@ -57,7 +45,7 @@ export const Chat = (props: Props) => {
   let inputRef!: HTMLDivElement
   let containerRef!: HTMLDivElement
 
-  const {store, copilotService, threadService, toastService} = useState()
+  const {copilotService, threadService, toastService} = useState()
   const [focus, setFocus] = createSignal(true)
   const [autoScrolling, setAutoScrolling] = createSignal(true)
 
@@ -87,10 +75,6 @@ export const Chat = (props: Props) => {
 
   const sendMessages = async () => {
     const currentThread = threadService.currentThread
-
-    if (store.ai?.autoContext) {
-      await threadService.insertAutoContext()
-    }
 
     const {messages, nextId, parentId} = threadService.getMessages()
     if (!currentThread || !messages) return
@@ -162,25 +146,11 @@ export const Chat = (props: Props) => {
     })
   })
 
-  const Empty = () => (
-    <EmptyContainer>
-      <Show when={!store.ai?.autoContext}>
-        <CurrentFileButton onAttachment={onInputMessage} />
-        <SelectionButton onAttachment={onInputMessage} />
-        <TooltipDivider />
-      </Show>
-      <AutoContextButton />
-    </EmptyContainer>
-  )
-
   const MessageTree = (p: {id?: string; childrenIds: string[]}) => (
-    <Show when={threadService.getItem(p.id, p.childrenIds)}>
+    <Show when={threadService.getNextItem(p.id, p.childrenIds)}>
       {(message) => (
         <>
           <Switch>
-            <Match when={message().value.type}>
-              <MessageAttachment message={message()} />
-            </Match>
             <Match when={message().value.role === 'user'}>
               <MessageQuestion
                 message={message()}
@@ -216,14 +186,13 @@ export const Chat = (props: Props) => {
         <ModelSelect onChange={() => focusInput()} />
       </ButtonGroup>
       <Messages data-testid="messages">
-        <Show when={threadService.messageTree.rootItemIds.length} fallback={<Empty />}>
+        <Show when={threadService.messageTree.rootItemIds.length}>
           <MessageTree id={undefined} childrenIds={threadService.messageTree.rootItemIds} />
         </Show>
       </Messages>
       <Show when={focus()} keyed>
         <ChatInput ref={inputRef} dropArea={props.scrollContent} onMessage={onInputMessage} />
       </Show>
-      <Suggestions onSuggestion={onInputMessage} />
       <Show when={!autoScrolling()}>
         <ScrollDown>
           <IconButton onClick={() => scrollToBottom()}>

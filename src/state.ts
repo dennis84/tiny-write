@@ -251,9 +251,12 @@ export interface Tree {
 }
 
 export interface Attachment {
-  type: string
-  name: string
-  data: string
+  type: MessageType
+  name?: string
+  content: string
+  fileId?: string
+  selection?: [number, number]
+  codeLang?: string
 }
 
 export type ChatRole = 'user' | 'assistant' | 'system'
@@ -261,6 +264,7 @@ export type ChatRole = 'user' | 'assistant' | 'system'
 export enum MessageType {
   File = 'file',
   Selection = 'selection',
+  Image = 'image',
 }
 
 export interface Message {

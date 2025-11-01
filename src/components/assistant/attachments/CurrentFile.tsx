@@ -1,13 +1,12 @@
 import {Show} from 'solid-js'
-import {v4 as uuidv4} from 'uuid'
 import {IconCodeBlocks} from '@/components/Icon'
 import {TooltipButton} from '@/components/Tooltip'
 import {useCurrentFile} from '@/hooks/current-file'
-import {type Message, MessageType} from '@/state'
+import {type Attachment, MessageType} from '@/state'
 import {createCodeFence} from '../util'
 
 interface Props {
-  onAttachment: (message: Message) => void
+  onAttachment: (attachment: Attachment) => void
 }
 
 export const CurrentFileButton = (props: Props) => {
@@ -25,8 +24,6 @@ export const CurrentFileButton = (props: Props) => {
     })
 
     props.onAttachment({
-      id: uuidv4(),
-      role: 'user',
       content,
       type: MessageType.File,
       fileId: currentFile()?.id,

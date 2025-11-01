@@ -19,7 +19,7 @@ export const ImageButton = (props: Props) => {
     // Handle file selection
     input.onchange = async (event: Event) => {
       const target = event.target as HTMLInputElement
-      const files = target.files
+      const files = [...(target.files ?? [])]
       if (files) {
         await mediaService.dropFiles(files, [0, 0], DropTarget.Assistant)
         props.onAttachment()

@@ -1,13 +1,12 @@
 import {createEffect, createSignal, Show} from 'solid-js'
-import {v4 as uuidv4} from 'uuid'
 import {IconTextSelectStart} from '@/components/Icon'
 import {TooltipButton} from '@/components/Tooltip'
 import {useCurrentFile} from '@/hooks/current-file'
-import {type Message, MessageType, useState} from '@/state'
+import {type Attachment, MessageType, useState} from '@/state'
 import {createCodeFence} from '../util'
 
 interface Props {
-  onAttachment: (message: Message) => void
+  onAttachment: (attachment: Attachment) => void
 }
 
 export const SelectionButton = (props: Props) => {
@@ -32,8 +31,6 @@ export const SelectionButton = (props: Props) => {
     })
 
     props.onAttachment({
-      id: uuidv4(),
-      role: 'user',
       content,
       type: MessageType.Selection,
       fileId: currentFile()?.id,

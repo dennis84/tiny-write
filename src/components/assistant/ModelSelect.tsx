@@ -34,7 +34,7 @@ export const ModelSelect = (props: Props) => {
     <>
       <Button onClick={onMenuClick} data-testid="model_select">
         <IconAi />
-        Model
+        {copilotService.chatModel.name}
       </Button>
       <Show when={tooltipAnchor()}>
         {(a) => (

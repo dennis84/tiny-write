@@ -1,5 +1,5 @@
 import type {RouteSectionProps} from '@solidjs/router'
-import {createEffect, onMount, Show} from 'solid-js'
+import {createEffect, createSignal, onMount, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {useOpen} from '@/hooks/open'
 import {Page, useState} from '@/state'
@@ -19,6 +19,10 @@ export const ChatPage = (props: RouteSectionProps) => {
   const OpenChat = () => {
     let scrollContent!: HTMLDivElement
 
+    // Render chat only after current thread is initialized,
+    // otherwise auto context add attachments to early
+    const [initialized, setInitialized] = createSignal(false)
+
     const onChangeThread = (threadId: string) => {
       open({threadId})
     }
@@ -32,6 +36,7 @@ export const ChatPage = (props: RouteSectionProps) => {
         }
 
         threadService.init()
+        setInitialized(true)
       } catch (_e) {
         await appService.setLocation(undefined)
         toastService.open({message: `Thread not found: ${props.params.id}`, duration: 10_000})
@@ -60,7 +65,9 @@ export const ChatPage = (props: RouteSectionProps) => {
           data-tauri-drag-region="true"
         >
           <MaxWidth>
-            <Chat scrollContent={() => scrollContent} onChangeThread={onChangeThread} />
+            <Show when={initialized()}>
+              <Chat scrollContent={() => scrollContent} onChangeThread={onChangeThread} />
+            </Show>
           </MaxWidth>
         </Content>
       </Scroll>

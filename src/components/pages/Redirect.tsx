@@ -3,6 +3,7 @@ import {onMount} from 'solid-js'
 import {useOpen} from '@/hooks/open'
 import {info} from '@/remote/log'
 import {type LocationState, useState} from '@/state'
+import {locationStateToString} from '@/utils/debug'
 
 export const Redirect = () => {
   const {store, fileService} = useState()
@@ -29,7 +30,7 @@ export const Redirect = () => {
     }
 
     if (lastLocation?.page) {
-      info(`Redirect to last location (lastLocation=${JSON.stringify(lastLocation)})`)
+      info(`Redirect to last location (lastLocation=${locationStateToString(lastLocation)})`)
       return open(lastLocation)
     }
 

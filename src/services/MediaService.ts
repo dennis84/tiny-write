@@ -3,14 +3,7 @@ import type {EditorView} from 'prosemirror-view'
 import {createSignal} from 'solid-js'
 import type {Store} from 'solid-js/store'
 import {basename, getMimeType, readBinaryFile, resolvePath, toRelativePath} from '@/remote/editor'
-import {
-  type Attachment,
-  type CanvasElement,
-  isEditorElement,
-  type File as OpenFile,
-  Page,
-  type State,
-} from '@/state'
+import {type CanvasElement, isEditorElement, type File as OpenFile, Page, type State} from '@/state'
 import type {AppService} from './AppService'
 import type {CanvasCollabService} from './CanvasCollabService'
 import type {CanvasService} from './CanvasService'
@@ -32,7 +25,7 @@ interface DropResult {
 }
 
 export class MediaService {
-  private droppedFilesSignal = createSignal<Attachment[]>([])
+  private droppedFilesSignal = createSignal<DroppedFile[]>([])
 
   get droppedFiles() {
     return this.droppedFilesSignal[0]

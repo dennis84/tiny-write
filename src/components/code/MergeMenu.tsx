@@ -44,7 +44,7 @@ export const MergeMenu = () => {
     getChunks(view.state)?.chunks.forEach((chunk) => {
       rejectChunk(view, chunk.fromA)
     })
-    openFile(currentFile)
+    openFile(currentFile, {merge: undefined})
   }
 
   return (

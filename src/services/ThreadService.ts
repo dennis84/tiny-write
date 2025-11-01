@@ -3,8 +3,9 @@ import type {SetStoreFunction, Store} from 'solid-js/store'
 import {v4 as uuidv4} from 'uuid'
 import {createCodeFence} from '@/components/assistant/util'
 import {DB} from '@/db'
+import codeBlockHandlingPrompt from '@/prompts/code-block-handling.md?raw'
 import {info} from '@/remote/log'
-import {type Message, MessageType, type State, type Thread} from '@/state'
+import {Attachment, type Message, MessageType, type State, type Thread} from '@/state'
 import {createTreeStore, type TreeItem} from '@/tree'
 import type {
   ChatMessage,
@@ -13,12 +14,22 @@ import type {
   CopilotService,
 } from './CopilotService'
 import type {FileService} from './FileService'
+import {createSignal} from 'solid-js'
 
 export class ThreadService {
   public messageTree = createTreeStore<Message>()
+  private attachmentsSignal = createSignal<Attachment[]>([])
 
   static createId() {
     return uuidv4()
+  }
+
+  get attachments() {
+    return this.attachmentsSignal[0]
+  }
+
+  findThreadById(threadId: string): Thread | undefined {
+    return this.store.threads.find((t) => t.id === threadId)
   }
 
   get currentThreadId(): string | undefined {
@@ -28,7 +39,7 @@ export class ThreadService {
   get currentThread(): Thread | undefined {
     const threadId = this.currentThreadId
     if (!threadId) return undefined
-    return this.store.threads.find((t) => t.id === threadId)
+    return this.findThreadById(threadId)
   }
 
   get currentThreadIndex(): number {
@@ -47,6 +58,30 @@ export class ThreadService {
     private copilotService: CopilotService,
     private fileService: FileService,
   ) {}
+
+  setAttachments(attachments: Attachment[]) {
+    this.attachmentsSignal[1](attachments)
+  }
+
+  addAttachment(attachment: Attachment) {
+    this.attachmentsSignal[1]((prev) => [
+      ...prev.filter(
+        (a) =>
+          a.fileId !== attachment.fileId &&
+          a.name !== attachment.name &&
+          a.type !== attachment.type,
+      ),
+      attachment,
+    ])
+  }
+
+  removeAttachment(attachment: Attachment) {
+    this.attachmentsSignal[1]((prev) => prev.filter((a) => a !== attachment))
+  }
+
+  removeAttachmentsByType(type: MessageType) {
+    this.attachmentsSignal[1]((prev) => prev.filter((a) => a.type !== type))
+  }
 
   getThreads(term?: string): [Thread, string | undefined][] {
     // List of tuples with date label on beginning of a new group
@@ -244,7 +279,7 @@ export class ThreadService {
     )
   }
 
-  getItem(parentId: string | undefined, childrenIds: string[]): TreeItem<Message> | undefined {
+  getNextItem(parentId: string | undefined, childrenIds: string[]): TreeItem<Message> | undefined {
     const currentThread = this.currentThread
     if (!currentThread) return
 
@@ -341,13 +376,10 @@ export class ThreadService {
     }
 
     if (messages.find((m) => this.hasCodeBlock(m))) {
-      const instruction1 =
-        'If attributes are included in fenced code blocks in the user message, keep the attributes exactly as they are. INPUT: ```rust id=1 range=1-5 file=filename.rs ... OUTPUT: ```rust id=1 range=1-5 file=filename.rs'
-      const instruction2 = 'Keep the indentation in code blocks as in the user message.'
-      const instruction3 =
-        'If the user message contains a fenced code block and the attributes does not contain a file or id, try to guess a filename and add to the fenced code block: INPUT: ```ts ... OUTPUT: ```ts file=components/App.tsx'
-      const content = `${instruction1} ${instruction2} ${instruction3}`
-      const message: ChatMessage = {role: 'system', content: [{type: 'text', text: content}]}
+      const message: ChatMessage = {
+        role: 'system',
+        content: [{type: 'text', text: codeBlockHandlingPrompt}],
+      }
       messages.unshift(message)
     }
 
@@ -356,6 +388,10 @@ export class ThreadService {
       parentId,
       messages,
     }
+  }
+
+  hasItem(id: string): boolean {
+    return this.messageTree.getItem(id) !== undefined
   }
 
   async insertAutoContext() {
@@ -426,22 +462,32 @@ export class ThreadService {
   }
 
   private toChatMessage(message: Message): ChatMessage {
-    const attachments: ChatMessageImageContent[] =
-      message.attachments?.map((attachment) => ({
-        type: 'image_url',
-        image_url: {url: attachment.data},
-      })) ?? []
+    const content: (ChatMessageTextContent | ChatMessageImageContent)[] = []
 
-    const text: ChatMessageTextContent | undefined = message.content
-      ? {
+    for (const attachment of message.attachments ?? []) {
+      if (attachment.type === MessageType.Image) {
+        content.push({
+          type: 'image_url',
+          image_url: {url: attachment.content},
+        })
+      } else {
+        content.push({
           type: 'text',
-          text: message.content,
-        }
-      : undefined
+          text: attachment.content,
+        })
+      }
+    }
+
+    if (message.content) {
+      content.push({
+        type: 'text',
+        text: message.content,
+      })
+    }
 
     return {
       role: message.role,
-      content: [...attachments, ...(text ? [text] : [])],
+      content,
     }
   }
 

@@ -5,7 +5,7 @@ import {TooltipHelp} from '@/components/TooltipHelp'
 import {useCurrentFile} from '@/hooks/current-file'
 import {useState} from '@/state'
 
-export const AutoContextButton = () => {
+export const AutoContextToggle = () => {
   const currentFile = useCurrentFile()
   const {store, aiService} = useState()
   const [hover, setHover] = createSignal(false)

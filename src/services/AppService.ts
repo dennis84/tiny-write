@@ -11,6 +11,7 @@ import {
   type State,
   type Window,
 } from '@/state'
+import {locationStateToString} from '@/utils/debug'
 import {CanvasService} from './CanvasService'
 import {FileService} from './FileService'
 
@@ -88,7 +89,7 @@ export class AppService {
   }
 
   async setLocation(location: Partial<LocationState> | undefined) {
-    info(`Set location (location=${JSON.stringify(location)})`)
+    info(`Set location (location=${locationStateToString(location)})`)
     this.setState('location', location)
     const loc = this.store.location
     if (loc) await DB.setLastLocation(loc)

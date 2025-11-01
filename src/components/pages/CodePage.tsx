@@ -4,6 +4,7 @@ import {styled} from 'solid-styled-components'
 import {useOpen} from '@/hooks/open'
 import {info} from '@/remote/log'
 import {type LocationState, Page, useState} from '@/state'
+import {locationStateToString} from '@/utils/debug'
 import {ButtonPrimary} from '../Button'
 import {CodeEditor} from '../code/CodeEditor'
 import {MergeMenu} from '../code/MergeMenu'
@@ -54,7 +55,7 @@ export const CodePage = (props: RouteSectionProps) => {
   const {open} = useOpen()
 
   const OpenCodeEditor = () => {
-    info(`Render code page (location=${JSON.stringify(props.location.state)})`)
+    info(`Render code page (location=${locationStateToString(location.state)})`)
 
     onMount(async () => {
       try {

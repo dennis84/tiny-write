@@ -134,9 +134,7 @@ export const BlockTooltip = (props: Props) => {
     if (!block) return
 
     menuService.showAssistant()
-    threadService.addMessage({
-      id: uuidv4(),
-      role: 'user',
+    threadService.addAttachment({
       type: MessageType.File,
       codeLang: block.blockNode.attrs.lang,
       content: createCodeFence({

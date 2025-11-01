@@ -1,50 +1,40 @@
 import {defaultKeymap} from '@codemirror/commands'
 import {markdown} from '@codemirror/lang-markdown'
 import {EditorView, keymap, placeholder} from '@codemirror/view'
-import {createSignal, For, onMount, Show} from 'solid-js'
+import {createSignal, onMount, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {v4 as uuidv4} from 'uuid'
 import {onEnterDoubleNewline} from '@/codemirror/key-bindings'
 import {getTheme} from '@/codemirror/theme'
-import {type Message, useState} from '@/state'
+import {type Attachment, type Message, MessageType, useState} from '@/state'
 import {IconButton} from '../Button'
-import {IconAttachment, IconClose, IconSend, IconStop} from '../Icon'
-import {Tooltip} from '../Tooltip'
+import {IconAttachment, IconSend, IconStop} from '../Icon'
+import {Tooltip, TooltipDivider} from '../Tooltip'
 import {TooltipHelp} from '../TooltipHelp'
+import {AutoContext} from './AutoContext'
+import {AutoContextToggle} from './attachments/AutoContextToggle'
 import {CurrentFileButton} from './attachments/CurrentFile'
 import {ImageButton} from './attachments/Image'
 import {SelectionButton} from './attachments/Selection'
-import {ChatInputAction, inputEditor} from './Style'
+import {
+  ChatInputAction,
+  ChatInputContainer,
+  ChatInputEditor,
+  ChatInputFieldContainer,
+} from './Style'
+import {Suggestions} from './Suggestions'
 
-const ChatInputContainer = styled('div')`
-  margin-top: auto;
-  padding: 20px 0;
-  position: relative;
-  justify-self: flex-end;
-  scroll-margin-bottom: 50px;
-  ${inputEditor}
-`
-
-const Attachments = styled('span')`
+const Attachments = styled('div')`
   display: flex;
   min-width: 0;
+  gap: 5px;
   justify-content: flex-end;
 `
 
-const AttachmentChip = styled('span')`
-  font-size: var(--menu-font-size);
+const EmptyContainer = styled('div')`
+  width: 100%;
   font-family: var(--menu-font-family);
-  border-radius: 30px;
-  padding: 0 20px;
-  line-height: 40px;
-  display: block;
-  background: var(--background-60);
-  color: var(--foreground);
-  max-width: 200px;
-  overflow: hidden;
-  white-space: nowrap;
-  justify-content: flex-start;
-  text-overflow: ellipsis;
+  font-size: var(--menu-font-size);
 `
 
 interface Props {
@@ -57,7 +47,9 @@ export const ChatInput = (props: Props) => {
   let chatInputRef!: HTMLDivElement
   const [tooltipAnchor, setTooltipAnchor] = createSignal<HTMLElement | undefined>()
   const [editorView, setEditorView] = createSignal<EditorView>()
-  const {configService, copilotService, mediaService} = useState()
+  const [focused, setFocused] = createSignal(false)
+
+  const {store, configService, copilotService, threadService, mediaService} = useState()
 
   const closeTooltip = () => {
     setTooltipAnchor(undefined)
@@ -67,8 +59,8 @@ export const ChatInput = (props: Props) => {
     setTooltipAnchor(e.currentTarget as HTMLElement)
   }
 
-  const onAttachment = (message: Message) => {
-    props.onMessage(message)
+  const onAttachment = (attachment: Attachment) => {
+    threadService.addAttachment(attachment)
     closeTooltip()
   }
 
@@ -92,10 +84,23 @@ export const ChatInput = (props: Props) => {
       id: uuidv4(),
       role: 'user',
       content,
-      attachments: mediaService.droppedFiles(),
+      attachments: threadService.attachments(),
     })
 
     mediaService.resetDroppedFiles()
+    threadService.setAttachments([])
+  }
+
+  const onSendSuggestion = (content: string) => {
+    props.onMessage({
+      id: uuidv4(),
+      role: 'user',
+      content,
+      attachments: threadService.attachments(),
+    })
+
+    mediaService.resetDroppedFiles()
+    threadService.setAttachments([])
   }
 
   const onStop = () => {
@@ -114,6 +119,11 @@ export const ChatInput = (props: Props) => {
         placeholder('Ask Copilot'),
         keymap.of(defaultKeymap),
         EditorView.lineWrapping,
+        // n focus hook
+        EditorView.focusChangeEffect.of((_, focusing) => {
+          setFocused(focusing)
+          return null
+        }),
       ],
     })
 
@@ -125,47 +135,57 @@ export const ChatInput = (props: Props) => {
 
   return (
     <>
-      <ChatInputContainer ref={props.ref}>
-        <div
-          role="none"
-          onClick={() => editorView()?.focus()}
-          ref={chatInputRef}
-          data-testid="chat_input"
-        ></div>
-        <ChatInputAction style={{bottom: '20px'}}>
-          <Show when={mediaService.droppedFiles().length}>
-            <Attachments>
-              <TooltipHelp title="Remove attachments">
-                <IconButton onClick={() => mediaService.resetDroppedFiles()}>
-                  <IconClose />
+      <Show when={!threadService.messageTree.rootItemIds.length}>
+        <EmptyContainer>
+          <Show when={!store.ai?.autoContext}>
+            <CurrentFileButton onAttachment={onAttachment} />
+            <SelectionButton onAttachment={onAttachment} />
+            <TooltipDivider />
+          </Show>
+          <AutoContextToggle />
+        </EmptyContainer>
+      </Show>
+      <ChatInputContainer ref={props.ref} focused={focused()}>
+        <ChatInputFieldContainer>
+          <ChatInputEditor
+            role="none"
+            onClick={() => editorView()?.focus()}
+            ref={chatInputRef}
+            data-testid="chat_input"
+          ></ChatInputEditor>
+          <ChatInputAction>
+            <TooltipHelp title="Add an attachment to context">
+              <IconButton onClick={onAttachmentMenu}>
+                <IconAttachment />
+              </IconButton>
+            </TooltipHelp>
+            <Show when={copilotService.streaming()}>
+              <TooltipHelp title="Stop">
+                <IconButton onClick={onStop}>
+                  <IconStop />
                 </IconButton>
               </TooltipHelp>
-              <For each={mediaService.droppedFiles()}>
-                {(attachment) => <AttachmentChip>{attachment.name}</AttachmentChip>}
-              </For>
-            </Attachments>
-          </Show>
-          <TooltipHelp title="Add an attachment to context">
-            <IconButton onClick={onAttachmentMenu}>
-              <IconAttachment />
-            </IconButton>
-          </TooltipHelp>
-          <Show when={copilotService.streaming()}>
-            <TooltipHelp title="Stop">
-              <IconButton onClick={onStop}>
-                <IconStop />
-              </IconButton>
-            </TooltipHelp>
-          </Show>
-          <Show when={!copilotService.streaming()}>
-            <TooltipHelp title="Send message">
-              <IconButton onClick={onSend} data-testid="send">
-                <IconSend />
-              </IconButton>
-            </TooltipHelp>
-          </Show>
-        </ChatInputAction>
+            </Show>
+            <Show when={!copilotService.streaming()}>
+              <TooltipHelp title="Send message">
+                <IconButton onClick={onSend} data-testid="send">
+                  <IconSend />
+                </IconButton>
+              </TooltipHelp>
+            </Show>
+          </ChatInputAction>
+        </ChatInputFieldContainer>
+        <Attachments>
+          <AutoContext />
+        </Attachments>
       </ChatInputContainer>
+      <Show
+        when={threadService.attachments().some(
+          (a) => a.type === MessageType.File || a.type === MessageType.Selection,
+        )}
+      >
+        <Suggestions onSuggestion={onSendSuggestion} />
+      </Show>
       <Show when={tooltipAnchor()}>
         {(a) => (
           <Tooltip anchor={a()} onClose={() => closeTooltip()} backdrop={true}>

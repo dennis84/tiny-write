@@ -5,6 +5,7 @@ import type {TreeItem} from '@/tree'
 import {ButtonGroup, IconButton} from '../Button'
 import {IconEditSquare} from '../Icon'
 import {TooltipHelp} from '../TooltipHelp'
+import {MessageAttachment} from './MessageAttachment'
 import {MessageInput} from './MessageInput'
 import {MessageMarkdown} from './MessageMarkdown'
 import {Pagination} from './Pagination'
@@ -21,7 +22,7 @@ const QuestionContainer = styled('div')`
 
 const QuestionBubble = styled('div')`
   ${chatBubble}
-  padding: 20px;
+  padding: 10px 20px;
   background: var(--foreground-10);
   white-space: pre-wrap;
   width: fit-content;
@@ -32,16 +33,11 @@ const QuestionBubble = styled('div')`
 `
 
 const QuestionAttachments = styled('div')`
+  margin: 10px 0;
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 10px;
-  img {
-    margin-top: 10px;
-    border-radius: var(--border-radius);
-    max-width: 100px;
-    max-height: 100px;
-  }
 `
 
 interface Props {
@@ -62,6 +58,14 @@ export const MessageQuestion = (props: Props) => {
     props.onUpdate?.(message)
   }
 
+  const Attachments = () => (
+    <QuestionAttachments>
+      <For each={props.message.value.attachments}>
+        {(attachment) => <MessageAttachment attachment={attachment} />}
+      </For>
+    </QuestionAttachments>
+  )
+
   return (
     <>
       <Show when={editing()}>
@@ -71,6 +75,7 @@ export const MessageQuestion = (props: Props) => {
             onCancel={() => setEditing(false)}
             message={props.message.value}
           />
+          <Attachments />
         </EditBubble>
       </Show>
       <Show when={!editing()}>
@@ -78,11 +83,7 @@ export const MessageQuestion = (props: Props) => {
           <QuestionBubble data-testid="question_bubble">
             <MessageMarkdown content={props.message.value.content} />
           </QuestionBubble>
-          <QuestionAttachments>
-            <For each={props.message.value.attachments}>
-              {(attachment) => <img src={attachment.data} alt="" />}
-            </For>
-          </QuestionAttachments>
+          <Attachments />
           <ButtonGroup>
             <Pagination
               id={props.message.id}

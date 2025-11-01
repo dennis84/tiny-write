@@ -83,9 +83,7 @@ export const Toolbar = () => {
     if (!file?.codeEditorView) return
 
     menuService.showAssistant()
-    threadService.addMessage({
-      id: uuidv4(),
-      role: 'user',
+    threadService.addAttachment({
       type: MessageType.File,
       fileId: file.id,
       content: createCodeFence({

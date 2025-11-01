@@ -39,31 +39,48 @@ export const chatBubble = `
   }
 `
 
-export const inputEditor = `
+// biome-ignore format: ternary breaks ugly
+export const ChatInputContainer = styled('div')`
+  margin-top: 20px;
+  scroll-margin-bottom: 50px;
+  border: 1px solid var(--primary-background);
+  border-radius: var(--border-radius);
+  padding: 10px;
+  background: var(--code-background);
+  font-size: var(--menu-font-size);
+  font-family: var(--menu-font-family);
+  ${(props: any) => props.focused ? `
+    box-shadow: 0 0 0 2px var(--primary-background);
+  ` : ''}
+`
+
+export const ChatInputFieldContainer = styled('div')`
+  display: flex;
+`
+
+export const ChatInputEditor = styled('div')`
+  width: 100%;
+  display: flex;
+  align-items: center;
   .cm-editor {
-    border: 1px solid var(--primary-background);
-    border-radius: var(--border-radius);
-    padding: 10px;
-    padding-bottom: 50px;
+    width: 100%;
+    line-height: 40px;
     cursor: var(--cursor-text);
-    font-size: var(--menu-font-size);
-    font-family: var(--menu-font-family);
     outline: none;
-    &.cm-focused {
-      box-shadow: 0 0 0 2px var(--primary-background);
+    border-radius: var(--border-radius);
+    .cm-scroller {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+      &::-webkit-scrollbar {
+        display: none;
+      }
     }
   }
 `
 
 export const ChatInputAction = styled('div')`
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  height: 50px;
-  width: 100%;
-  justify-content: flex-end;
-  align-items: center;
-  display: inline-flex;
-  padding: 5px;
+  height: 40px;
   display: flex;
+  margin-top: auto;
+  align-items: flex-end;
 `

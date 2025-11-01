@@ -180,7 +180,7 @@ const proseMirror = (props: Props) => `
       position: absolute;
       pointer-events: none;
       user-select: none;
-      -webkit-user-select: none; // otherwise cannot type in empty editor
+      -webkit-user-select: none; /* otherwise cannot type in empty editor */
     }
     .draggable {
       position: relative;

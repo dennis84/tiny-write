@@ -41,9 +41,7 @@ import MaterialSymbolsFullscreen from '~icons/material-symbols/fullscreen'
 import MaterialSymbolsGesture from '~icons/material-symbols/gesture'
 import MaterialSymbolsGrid3x3 from '~icons/material-symbols/grid-3x3'
 import MaterialSymbolsGroup from '~icons/material-symbols/group'
-import MaterialSymbolsHelpCenterOutline from '~icons/material-symbols/help-center-outline'
 import MaterialSymbolsHistory from '~icons/material-symbols/history'
-import MaterialSymbolsHomeRepairServiceOutlineRounded from '~icons/material-symbols/home-repair-service-outline-rounded'
 import MaterialSymbolsImage from '~icons/material-symbols/image'
 import MaterialSymbolsKeyboardArrowDown from '~icons/material-symbols/keyboard-arrow-down'
 import MaterialSymbolsLanguage from '~icons/material-symbols/language'
@@ -554,18 +552,6 @@ export const IconFolderOpen = () => (
 export const IconDescription = () => (
   <SvgIcon>
     <MaterialSymbolsDescription />
-  </SvgIcon>
-)
-
-export const IconRepair = () => (
-  <SvgIcon>
-    <MaterialSymbolsHomeRepairServiceOutlineRounded />
-  </SvgIcon>
-)
-
-export const IconHelp = () => (
-  <SvgIcon>
-    <MaterialSymbolsHelpCenterOutline />
   </SvgIcon>
 )
 

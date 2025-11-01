@@ -1,4 +1,5 @@
 import {Box, type Vector} from '@flatten-js/core'
+import type {LocationState} from '@/state'
 
 export const renderPoint = (point: Vector, id = 'point') => {
   document.querySelector(`#${id}`)?.remove()
@@ -21,3 +22,11 @@ export const renderBox = (box: Box, id = 'box') => {
   const b = document.querySelector('#board')
   b?.append(el)
 }
+
+export const locationStateToString = (loc?: Partial<LocationState> | null) =>
+  loc
+    ? JSON.stringify({
+        ...loc,
+        ...(loc.merge ? {merge: '<<large data>>'} : {}),
+      })
+    : String(loc)

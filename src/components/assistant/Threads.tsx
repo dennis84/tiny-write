@@ -11,7 +11,7 @@ const TooltipFooter = styled('div')`
 `
 
 const Scroller = styled('div')`
-  max-width: 500px; // Max width for the tooplip
+  max-width: 500px; /* Max width for the tooplip */
   height: 100%;
   overflow-y: auto;
   &::-webkit-scrollbar {

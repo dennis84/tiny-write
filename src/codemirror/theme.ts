@@ -1,14 +1,52 @@
 import type {Extension} from '@codemirror/state'
-import {aura} from '@ddietr/codemirror-themes/aura'
-import {dracula} from '@ddietr/codemirror-themes/dracula'
-import {githubDark} from '@ddietr/codemirror-themes/github-dark'
-import {githubLight} from '@ddietr/codemirror-themes/github-light'
-import {materialDark} from '@ddietr/codemirror-themes/material-dark'
-import {materialLight} from '@ddietr/codemirror-themes/material-light'
-import {solarizedDark} from '@ddietr/codemirror-themes/solarized-dark'
-import {solarizedLight} from '@ddietr/codemirror-themes/solarized-light'
-import {tokyoNightDay} from '@ddietr/codemirror-themes/tokyo-night-day'
-import {tokyoNightStorm} from '@ddietr/codemirror-themes/tokyo-night-storm'
+import {aura, config as auraConfig} from '@ddietr/codemirror-themes/aura'
+import {dracula, config as draculaConfig} from '@ddietr/codemirror-themes/dracula'
+import {githubDark, config as githubDarkConfig} from '@ddietr/codemirror-themes/github-dark'
+import {githubLight, config as githubLightConfig} from '@ddietr/codemirror-themes/github-light'
+import {materialDark, config as materialDarkConfig} from '@ddietr/codemirror-themes/material-dark'
+import {
+  materialLight,
+  config as materialLightConfig,
+} from '@ddietr/codemirror-themes/material-light'
+import {
+  solarizedDark,
+  config as solarizedDarkConfig,
+} from '@ddietr/codemirror-themes/solarized-dark'
+import {
+  solarizedLight,
+  config as solarizedLightConfig,
+} from '@ddietr/codemirror-themes/solarized-light'
+import {
+  tokyoNightDay,
+  config as tokyoNightDayConfig,
+} from '@ddietr/codemirror-themes/tokyo-night-day'
+import {
+  tokyoNightStorm,
+  config as tokyoNightStormConfig,
+} from '@ddietr/codemirror-themes/tokyo-night-storm'
+
+export const getThemeConfig = (theme: string) =>
+  theme === 'dracula'
+    ? draculaConfig
+    : theme === 'solarized-light'
+      ? solarizedLightConfig
+      : theme === 'solarized-dark'
+        ? solarizedDarkConfig
+        : theme === 'material-light'
+          ? materialLightConfig
+          : theme === 'material-dark'
+            ? materialDarkConfig
+            : theme === 'github-light'
+              ? githubLightConfig
+              : theme === 'github-dark'
+                ? githubDarkConfig
+                : theme === 'aura'
+                  ? auraConfig
+                  : theme === 'tokyo-night'
+                    ? tokyoNightStormConfig
+                    : theme === 'tokyo-night-day'
+                      ? tokyoNightDayConfig
+                      : materialLightConfig
 
 export const getTheme = (theme: string): Extension =>
   theme === 'dracula'
