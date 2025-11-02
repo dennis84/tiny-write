@@ -101,7 +101,7 @@ export const Chat = (props: Props) => {
             try {
               const title = await threadService.generateTitle()
               if (title) await threadService.updateTitle(title)
-            } catch (_e) {
+            } catch {
               // ignore
             }
           }

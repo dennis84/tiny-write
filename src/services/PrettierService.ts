@@ -40,7 +40,7 @@ export class PrettierService {
       let formatted = await this.format(code, lang, options)
       formatted = formatted.trim()
       return formatted !== code
-    } catch (_e) {
+    } catch {
       return false
     }
   }

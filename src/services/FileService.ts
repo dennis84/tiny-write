@@ -64,7 +64,7 @@ export class FileService {
     let resolvedPath: string
     try {
       resolvedPath = await resolvePath(path)
-    } catch (_e: any) {
+    } catch {
       throw new ServiceError('file_not_found', `File not found: ${path}`)
     }
 
@@ -83,7 +83,7 @@ export class FileService {
     let resolvedPath: string
     try {
       resolvedPath = await resolvePath(path)
-    } catch (_e: any) {
+    } catch {
       throw new ServiceError('file_not_found', `File not found: ${path}`)
     }
 
@@ -177,7 +177,7 @@ export class FileService {
             ydoc: v.ydoc,
           })),
         })
-      } catch (_err) {
+      } catch {
         error('Ignore file due to invalid ydoc.')
       }
     }

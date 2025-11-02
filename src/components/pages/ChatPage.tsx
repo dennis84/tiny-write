@@ -37,7 +37,7 @@ export const ChatPage = (props: RouteSectionProps) => {
 
         threadService.init()
         setInitialized(true)
-      } catch (_e) {
+      } catch {
         await appService.setLocation(undefined)
         toastService.open({message: `Thread not found: ${props.params.id}`, duration: 10_000})
         open({page: Page.Assistant})
