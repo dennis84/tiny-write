@@ -24,7 +24,7 @@ import {Tooltip, TooltipButton, TooltipDivider} from '@/components/Tooltip'
 import {useOpen} from '@/hooks/open'
 import {Align} from '@/prosemirror/image/interfaces'
 import {saveSvg} from '@/remote/svg'
-import {MessageType, useState} from '@/state'
+import {AttachmentType, useState} from '@/state'
 import type {Block} from './BlockHandle'
 
 interface Props {
@@ -135,7 +135,7 @@ export const BlockTooltip = (props: Props) => {
 
     menuService.showAssistant()
     threadService.addAttachment({
-      type: MessageType.File,
+      type: AttachmentType.File,
       codeLang: block.blockNode.attrs.lang,
       content: createCodeFence({
         code: block.blockNode.textContent,

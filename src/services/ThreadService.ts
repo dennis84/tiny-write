@@ -5,7 +5,7 @@ import {createCodeFence} from '@/components/assistant/util'
 import {DB} from '@/db'
 import codeBlockHandlingPrompt from '@/prompts/code-block-handling.md?raw'
 import {info} from '@/remote/log'
-import {Attachment, type Message, MessageType, type State, type Thread} from '@/state'
+import {Attachment, type Message, AttachmentType, type State, type Thread} from '@/state'
 import {createTreeStore, type TreeItem} from '@/tree'
 import type {
   ChatMessage,
@@ -79,7 +79,7 @@ export class ThreadService {
     this.attachmentsSignal[1]((prev) => prev.filter((a) => a !== attachment))
   }
 
-  removeAttachmentsByType(type: MessageType) {
+  removeAttachmentsByType(type: AttachmentType) {
     this.attachmentsSignal[1]((prev) => prev.filter((a) => a.type !== type))
   }
 
@@ -394,78 +394,11 @@ export class ThreadService {
     return this.messageTree.getItem(id) !== undefined
   }
 
-  async insertAutoContext() {
-    const currentFile = this.fileService.currentFile
-    const editorView = currentFile?.codeEditorView
-
-    const currentThread = this.currentThread
-
-    if (!editorView || !currentThread) return
-
-    const messages: Message[] = []
-
-    this.traverseTree((it) => {
-      messages.push(it.value)
-    })
-
-    const existing = messages.find((m) => m.fileId === currentFile.id)
-    const content = createCodeFence({
-      code: editorView.state.doc.toString(),
-      id: currentFile.id,
-      lang: currentFile.codeLang,
-      path: currentFile.path,
-    })
-
-    if (existing?.content === content) {
-      // Skip is same content already in thread
-      return
-    }
-
-    const before = messages[messages.length - 1]
-
-    const message: Message = {
-      id: ThreadService.createId(),
-      role: 'user',
-      fileId: currentFile.id,
-      type: MessageType.File,
-      content,
-      parentId: before.id,
-    }
-
-    info(`Auto add context message (message=${JSON.stringify(message)})`)
-
-    const updates: string[] = []
-    updates.push(...this.messageTree.add(message))
-
-    const updatedMessages = currentThread.messages.map((message) => {
-      if (updates.includes(message.id)) {
-        const item = this.messageTree.getItem(message.id)
-        return {
-          ...message,
-          parentId: item?.parentId,
-          leftId: item?.leftId,
-        }
-      } else {
-        return message
-      }
-    })
-
-    updatedMessages.push(message)
-
-    this.setState('threads', this.currentThreadIndex, (prev) => ({
-      ...prev,
-      messages: updatedMessages,
-      lastModified: new Date(),
-    }))
-
-    await this.saveThread()
-  }
-
   private toChatMessage(message: Message): ChatMessage {
     const content: (ChatMessageTextContent | ChatMessageImageContent)[] = []
 
     for (const attachment of message.attachments ?? []) {
-      if (attachment.type === MessageType.Image) {
+      if (attachment.type === AttachmentType.Image) {
         content.push({
           type: 'image_url',
           image_url: {url: attachment.content},

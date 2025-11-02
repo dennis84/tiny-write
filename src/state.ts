@@ -250,8 +250,14 @@ export interface Tree {
   collapsed: string[]
 }
 
+export enum AttachmentType {
+  File = 'file',
+  Selection = 'selection',
+  Image = 'image',
+}
+
 export interface Attachment {
-  type: MessageType
+  type: AttachmentType
   name?: string
   content: string
   fileId?: string
@@ -260,12 +266,6 @@ export interface Attachment {
 }
 
 export type ChatRole = 'user' | 'assistant' | 'system'
-
-export enum MessageType {
-  File = 'file',
-  Selection = 'selection',
-  Image = 'image',
-}
 
 export interface Message {
   id: string
@@ -276,7 +276,6 @@ export interface Message {
   attachments?: Attachment[]
   role: ChatRole
   error?: string
-  type?: MessageType
   fileId?: string
   selection?: [number, number]
   codeLang?: string

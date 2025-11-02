@@ -4,7 +4,7 @@ import {createEffect, createSignal, Match, onMount, Show, Switch} from 'solid-js
 import {styled} from 'solid-styled-components'
 import {getLanguageConfig} from '@/codemirror/highlight'
 import {getTheme} from '@/codemirror/theme'
-import {type Attachment, MessageType, useState} from '@/state'
+import {type Attachment, AttachmentType, useState} from '@/state'
 import {Button} from '../Button'
 import {IconTextSelectStart, LangIcon} from '../Icon'
 import {Tooltip} from '../Tooltip'
@@ -112,15 +112,15 @@ export const MessageAttachment = (props: Props) => {
     <>
       <Container>
         <Switch>
-          <Match when={props.attachment.type === MessageType.Image}>
+          <Match when={props.attachment.type === AttachmentType.Image}>
             <AttachmentImage src={props.attachment.content} alt="" onClick={onOpenTooltip} />
           </Match>
-          <Match when={props.attachment.type === MessageType.File}>
+          <Match when={props.attachment.type === AttachmentType.File}>
             <Button onClick={onOpenTooltip}>
               <LangIcon name={langConfig.id} /> {fileTitle() ?? `${langConfig?.name ?? ''} File`}
             </Button>
           </Match>
-          <Match when={props.attachment.type === MessageType.Selection}>
+          <Match when={props.attachment.type === AttachmentType.Selection}>
             <Button onClick={onOpenTooltip}>
               <IconTextSelectStart />
               {fileTitle() ?? `${langConfig?.name} File`}:{props.attachment.selection?.[0]}-
@@ -133,7 +133,7 @@ export const MessageAttachment = (props: Props) => {
         {(a) => (
           <Tooltip anchor={a()} onClose={() => closeTooltip()}>
             <Switch>
-              <Match when={props.attachment.type === MessageType.Image}>
+              <Match when={props.attachment.type === AttachmentType.Image}>
                 <TooltipImage src={props.attachment.content} alt="" />
               </Match>
               <Match when={true}>

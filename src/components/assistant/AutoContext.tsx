@@ -1,5 +1,5 @@
 import {createEffect, For} from 'solid-js'
-import {type Attachment, MessageType, useState} from '@/state'
+import {type Attachment, AttachmentType, useState} from '@/state'
 import {MessageAttachment} from './MessageAttachment'
 import {createCodeFence} from './util'
 
@@ -14,7 +14,7 @@ export const AutoContext = () => {
   createEffect(() => {
     const droppedFiles = mediaService.droppedFiles()
     const attachments = droppedFiles.map((df) => ({
-      type: MessageType.Image,
+      type: AttachmentType.Image,
       name: df.name,
       content: df.data,
     }))
@@ -63,7 +63,7 @@ export const AutoContext = () => {
       })
 
       const attachment: Attachment = {
-        type: MessageType.Selection,
+        type: AttachmentType.Selection,
         fileId: currentFile.id,
         content,
         selection: [sel.from, sel.to],
@@ -86,7 +86,7 @@ export const AutoContext = () => {
     })
 
     const attachment: Attachment = {
-      type: MessageType.File,
+      type: AttachmentType.File,
       fileId: currentFile.id,
       codeLang: currentFile.codeLang,
       content,

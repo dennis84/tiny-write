@@ -19,7 +19,7 @@ import {
   type CanvasElement,
   isCodeElement,
   isEditorElement,
-  MessageType,
+  AttachmentType,
   useState,
 } from '@/state'
 import {BoxUtil} from '@/utils/BoxUtil'
@@ -84,7 +84,7 @@ export const Toolbar = () => {
 
     menuService.showAssistant()
     threadService.addAttachment({
-      type: MessageType.File,
+      type: AttachmentType.File,
       fileId: file.id,
       content: createCodeFence({
         id: file.id,

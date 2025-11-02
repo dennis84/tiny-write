@@ -6,7 +6,7 @@ import {styled} from 'solid-styled-components'
 import {v4 as uuidv4} from 'uuid'
 import {onEnterDoubleNewline} from '@/codemirror/key-bindings'
 import {getTheme} from '@/codemirror/theme'
-import {type Attachment, type Message, MessageType, useState} from '@/state'
+import {type Attachment, type Message, AttachmentType, useState} from '@/state'
 import {IconButton} from '../Button'
 import {IconAttachment, IconSend, IconStop} from '../Icon'
 import {Tooltip, TooltipDivider} from '../Tooltip'
@@ -181,7 +181,7 @@ export const ChatInput = (props: Props) => {
       </ChatInputContainer>
       <Show
         when={threadService.attachments().some(
-          (a) => a.type === MessageType.File || a.type === MessageType.Selection,
+          (a) => a.type === AttachmentType.File || a.type === AttachmentType.Selection,
         )}
       >
         <Suggestions onSuggestion={onSendSuggestion} />

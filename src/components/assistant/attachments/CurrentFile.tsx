@@ -2,7 +2,7 @@ import {Show} from 'solid-js'
 import {IconCodeBlocks} from '@/components/Icon'
 import {TooltipButton} from '@/components/Tooltip'
 import {useCurrentFile} from '@/hooks/current-file'
-import {type Attachment, MessageType} from '@/state'
+import {type Attachment, AttachmentType} from '@/state'
 import {createCodeFence} from '../util'
 
 interface Props {
@@ -25,7 +25,7 @@ export const CurrentFileButton = (props: Props) => {
 
     props.onAttachment({
       content,
-      type: MessageType.File,
+      type: AttachmentType.File,
       fileId: currentFile()?.id,
     })
   }

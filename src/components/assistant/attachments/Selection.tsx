@@ -2,7 +2,7 @@ import {createEffect, createSignal, Show} from 'solid-js'
 import {IconTextSelectStart} from '@/components/Icon'
 import {TooltipButton} from '@/components/Tooltip'
 import {useCurrentFile} from '@/hooks/current-file'
-import {type Attachment, MessageType, useState} from '@/state'
+import {type Attachment, AttachmentType, useState} from '@/state'
 import {createCodeFence} from '../util'
 
 interface Props {
@@ -32,7 +32,7 @@ export const SelectionButton = (props: Props) => {
 
     props.onAttachment({
       content,
-      type: MessageType.Selection,
+      type: AttachmentType.Selection,
       fileId: currentFile()?.id,
       selection: [from, to],
     })
