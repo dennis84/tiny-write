@@ -12,7 +12,7 @@ const enableMocking = async () => {
 }
 
 const run = async () => {
-  await enableMocking()
+  //await enableMocking()
   const container = document.getElementById('container')
   if (container) {
     render(() => <Init />, container)

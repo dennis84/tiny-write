@@ -1,13 +1,9 @@
-import {type EditorState, Text} from '@codemirror/state'
-import type {EditorView} from '@codemirror/view'
 import {createStore} from 'solid-js/store'
 import {beforeEach, expect, test, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
 import type {ChatMessageTextContent, CopilotService} from '@/services/CopilotService'
-import type {FileService} from '@/services/FileService'
 import {ThreadService} from '@/services/ThreadService'
-import {createState, type File, type Message, Page} from '@/state'
-import {createYUpdate} from '../testutil/codemirror-util'
+import {AttachmentType, createState, type Message, Page} from '@/state'
 import {expectTree} from '../testutil/tree'
 
 beforeEach(() => {
@@ -43,8 +39,7 @@ test('newThread - empty', () => {
 
   const [store, setState] = createStore(initial)
   const copilotService = mock<CopilotService>()
-  const fileService = mock<FileService>()
-  const service = new ThreadService(store, setState, copilotService, fileService)
+  const service = new ThreadService(store, setState, copilotService)
 
   service.newThread()
 
@@ -67,8 +62,7 @@ test('addMessage', async () => {
 
   const [store, setState] = createStore(initial)
   const copilotService = mock<CopilotService>()
-  const fileService = mock<FileService>()
-  const service = new ThreadService(store, setState, copilotService, fileService)
+  const service = new ThreadService(store, setState, copilotService)
 
   await service.addMessage({id: '1', role: 'user', content: '1'})
   await service.addMessage({id: '2', role: 'user', content: '2'})
@@ -102,8 +96,7 @@ test('addMessage - path', async () => {
 
   const [store, setState] = createStore(initial)
   const copilotService = mock<CopilotService>()
-  const fileService = mock<FileService>()
-  const service = new ThreadService(store, setState, copilotService, fileService)
+  const service = new ThreadService(store, setState, copilotService)
   service.messageTree.updateAll(store.threads[0].messages)
 
   expectTree(
@@ -150,8 +143,7 @@ test('streamLastMessage', async () => {
 
   const [store, setState] = createStore(initial)
   const copilotService = mock<CopilotService>()
-  const fileService = mock<FileService>()
-  const service = new ThreadService(store, setState, copilotService, fileService)
+  const service = new ThreadService(store, setState, copilotService)
   service.messageTree.updateAll(store.threads[0].messages)
 
   service.streamLastMessage('2', '1', 'A')
@@ -181,8 +173,7 @@ test('removeMessage', async () => {
 
   const [store, setState] = createStore(initial)
   const copilotService = mock<CopilotService>()
-  const fileService = mock<FileService>()
-  const service = new ThreadService(store, setState, copilotService, fileService)
+  const service = new ThreadService(store, setState, copilotService)
   service.messageTree.updateAll(store.threads[0].messages)
 
   await service.removeMessage(store.threads[0].messages[0])
@@ -206,8 +197,7 @@ test('setError', async () => {
 
   const [store, setState] = createStore(initial)
   const copilotService = mock<CopilotService>()
-  const fileService = mock<FileService>()
-  const service = new ThreadService(store, setState, copilotService, fileService)
+  const service = new ThreadService(store, setState, copilotService)
 
   service.setError('fail')
 
@@ -230,8 +220,7 @@ test('updateTitle', async () => {
 
   const [store, setState] = createStore(initial)
   const copilotService = mock<CopilotService>()
-  const fileService = mock<FileService>()
-  const service = new ThreadService(store, setState, copilotService, fileService)
+  const service = new ThreadService(store, setState, copilotService)
 
   await service.updateTitle('Test')
 
@@ -259,8 +248,7 @@ test('init', () => {
 
   const [store, setState] = createStore(initial)
   const copilotService = mock<CopilotService>()
-  const fileService = mock<FileService>()
-  const service = new ThreadService(store, setState, copilotService, fileService)
+  const service = new ThreadService(store, setState, copilotService)
 
   service.init()
   expect(store.threads).toHaveLength(1)
@@ -295,8 +283,7 @@ test('delete', async () => {
 
   const [store, setState] = createStore(initial)
   const copilotService = mock<CopilotService>()
-  const fileService = mock<FileService>()
-  const service = new ThreadService(store, setState, copilotService, fileService)
+  const service = new ThreadService(store, setState, copilotService)
 
   await service.delete(store.threads[0])
 
@@ -335,8 +322,7 @@ test('deleteAll', async () => {
 
   const [store, setState] = createStore(initial)
   const copilotService = mock<CopilotService>()
-  const fileService = mock<FileService>()
-  const service = new ThreadService(store, setState, copilotService, fileService)
+  const service = new ThreadService(store, setState, copilotService)
 
   await service.deleteAll()
 
@@ -364,8 +350,7 @@ test('regenerate - user message', async () => {
 
   const [store, setState] = createStore(initial)
   const copilotService = mock<CopilotService>()
-  const fileService = mock<FileService>()
-  const service = new ThreadService(store, setState, copilotService, fileService)
+  const service = new ThreadService(store, setState, copilotService)
   service.messageTree.updateAll(store.threads[0].messages)
 
   let nextId = 3
@@ -419,8 +404,7 @@ test('regenerate - assistant message', async () => {
 
   const [store, setState] = createStore(initial)
   const copilotService = mock<CopilotService>()
-  const fileService = mock<FileService>()
-  const service = new ThreadService(store, setState, copilotService, fileService)
+  const service = new ThreadService(store, setState, copilotService)
   service.messageTree.updateAll(store.threads[0].messages)
 
   let nextId = 3
@@ -473,8 +457,7 @@ test('generateTitle', async () => {
 
   const [store, setState] = createStore(initial)
   const copilotService = mock<CopilotService>()
-  const fileService = mock<FileService>()
-  const service = new ThreadService(store, setState, copilotService, fileService)
+  const service = new ThreadService(store, setState, copilotService)
 
   copilotService.completions.mockImplementation(async (messages, onChunk, onDone) => {
     expect(messages).toHaveLength(3)
@@ -519,11 +502,87 @@ test.each<[Message[], number]>([
 
   const [store, setState] = createStore(initial)
   const copilotService = mock<CopilotService>()
-  const fileService = mock<FileService>()
-  const service = new ThreadService(store, setState, copilotService, fileService)
+  const service = new ThreadService(store, setState, copilotService)
   service.messageTree.updateAll(store.threads[0].messages)
 
   const result = service.getMessages()
 
   expect(result.messages).toHaveLength(count)
+})
+
+test('getThreads', () => {
+  const createThread = (id: string, lastModified: Date) => ({
+    id,
+    title: id,
+    lastModified,
+    messages: [],
+  })
+
+  const thread1 = createThread('1', new Date('2024-01-01'))
+  const thread2 = createThread('2', new Date('2025-09-01'))
+  const thread3 = createThread('3', new Date('2025-11-01'))
+  const thread4 = createThread('4', new Date('2025-11-02'))
+  const thread5 = createThread('5', new Date())
+  const thread6 = createThread('6', new Date())
+
+  const initial = createState({
+    location: {
+      page: Page.Assistant,
+      threadId: '1',
+    },
+    threads: [thread6, thread5, thread4, thread3, thread2, thread1],
+  })
+
+  const [store, setState] = createStore(initial)
+  const copilotService = mock<CopilotService>()
+  const service = new ThreadService(store, setState, copilotService)
+
+  const threads = service.getThreads()
+
+  expect(threads).toEqual([
+    [thread6, 'Today'],
+    [thread5, undefined],
+    [thread4, 'November'],
+    [thread3, undefined],
+    [thread2, 'September'],
+    [thread1, 'January'],
+  ])
+})
+
+test('hande attachments', () => {
+  const initial = createState()
+  const [store, setState] = createStore(initial)
+  const copilotService = mock<CopilotService>()
+  const service = new ThreadService(store, setState, copilotService)
+
+  expect(service.attachments()).toEqual([])
+
+  const createAttachment = (type: AttachmentType, fileId?: string, name?: string) => ({
+    type,
+    fileId,
+    name,
+    content: '',
+  })
+
+  service.addAttachment(createAttachment(AttachmentType.File, '1'))
+  expect(service.attachments()).toHaveLength(1)
+
+  service.addAttachment(createAttachment(AttachmentType.File, '1'))
+  expect(service.attachments()).toHaveLength(1)
+
+  service.addAttachment(createAttachment(AttachmentType.File, '2'))
+  expect(service.attachments()).toHaveLength(2)
+
+  service.addAttachment(createAttachment(AttachmentType.File, '2', 'name'))
+  expect(service.attachments()).toHaveLength(2)
+
+  service.addAttachment(createAttachment(AttachmentType.File, '3', 'name'))
+  expect(service.attachments()).toHaveLength(2)
+  expect(service.attachments()[1].fileId).toBe('3')
+
+  service.addAttachment(createAttachment(AttachmentType.Selection, '3'))
+  expect(service.attachments()).toHaveLength(3)
+
+  service.setAttachments([])
+  expect(service.attachments()).toHaveLength(0)
 })

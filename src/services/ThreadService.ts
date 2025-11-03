@@ -1,11 +1,11 @@
 import {formatDate, isToday} from 'date-fns'
+import {createSignal} from 'solid-js'
 import type {SetStoreFunction, Store} from 'solid-js/store'
 import {v4 as uuidv4} from 'uuid'
-import {createCodeFence} from '@/components/assistant/util'
 import {DB} from '@/db'
 import codeBlockHandlingPrompt from '@/prompts/code-block-handling.md?raw'
 import {info} from '@/remote/log'
-import {Attachment, type Message, AttachmentType, type State, type Thread} from '@/state'
+import {type Attachment, AttachmentType, type Message, type State, type Thread} from '@/state'
 import {createTreeStore, type TreeItem} from '@/tree'
 import type {
   ChatMessage,
@@ -13,8 +13,6 @@ import type {
   ChatMessageTextContent,
   CopilotService,
 } from './CopilotService'
-import type {FileService} from './FileService'
-import {createSignal} from 'solid-js'
 
 export class ThreadService {
   public messageTree = createTreeStore<Message>()
@@ -56,7 +54,6 @@ export class ThreadService {
     private store: Store<State>,
     private setState: SetStoreFunction<State>,
     private copilotService: CopilotService,
-    private fileService: FileService,
   ) {}
 
   setAttachments(attachments: Attachment[]) {
@@ -64,23 +61,22 @@ export class ThreadService {
   }
 
   addAttachment(attachment: Attachment) {
-    this.attachmentsSignal[1]((prev) => [
-      ...prev.filter(
-        (a) =>
-          a.fileId !== attachment.fileId &&
-          a.name !== attachment.name &&
-          a.type !== attachment.type,
-      ),
-      attachment,
-    ])
+    this.attachmentsSignal[1]((prev) => {
+      // Remove any existing attachment with the same fileId or name and type
+      const filtered = prev.filter((existing) => {
+        const isSameFile = attachment.fileId && existing.fileId === attachment.fileId
+        const isSameName = attachment.name && existing.name === attachment.name
+        const isSameType = existing.type === attachment.type
+
+        return !(isSameType && (isSameFile || isSameName))
+      })
+
+      return [...filtered, attachment]
+    })
   }
 
   removeAttachment(attachment: Attachment) {
     this.attachmentsSignal[1]((prev) => prev.filter((a) => a !== attachment))
-  }
-
-  removeAttachmentsByType(type: AttachmentType) {
-    this.attachmentsSignal[1]((prev) => prev.filter((a) => a.type !== type))
   }
 
   getThreads(term?: string): [Thread, string | undefined][] {

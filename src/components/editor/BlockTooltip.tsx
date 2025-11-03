@@ -2,7 +2,6 @@ import type {ReferenceElement} from '@floating-ui/dom'
 import {setBlockType} from 'prosemirror-commands'
 import {NodeSelection, TextSelection} from 'prosemirror-state'
 import {createEffect, createSignal, Show} from 'solid-js'
-import {v4 as uuidv4} from 'uuid'
 import {getLanguageNames} from '@/codemirror/highlight'
 import {createCodeFence} from '@/components/assistant/util'
 import {

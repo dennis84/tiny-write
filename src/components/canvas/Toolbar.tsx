@@ -1,7 +1,6 @@
 import {Box} from '@flatten-js/core'
 import {arrow, computePosition, flip, offset, shift} from '@floating-ui/dom'
 import {createEffect, createSignal, Show} from 'solid-js'
-import {v4 as uuidv4} from 'uuid'
 import {getLanguageNames} from '@/codemirror/highlight'
 import {createCodeFence} from '@/components/assistant/util'
 import {
@@ -15,11 +14,11 @@ import {
 import {TooltipArrow, TooltipButton, TooltipContainer} from '@/components/Tooltip'
 import {useOpen} from '@/hooks/open'
 import {
+  AttachmentType,
   type CanvasBoxElement,
   type CanvasElement,
   isCodeElement,
   isEditorElement,
-  AttachmentType,
   useState,
 } from '@/state'
 import {BoxUtil} from '@/utils/BoxUtil'

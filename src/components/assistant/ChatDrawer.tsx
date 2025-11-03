@@ -19,19 +19,20 @@ export const ChatDrawer = () => {
     await appService.setLocation({threadId})
     threadService.init()
     scrollContent.scrollTo({top: 0, behavior: 'smooth'})
-    setInitialized(true)
   }
 
   onMount(async () => {
     const threadId = location.state?.threadId
     // Empty threads are not saved, so we need to create a new one if the thread is not found
     const thread = threadId ? threadService.findThreadById(threadId) : undefined
-    if (thread) {
-      await onChangeThread(thread.id)
-    } else {
+
+    if (!thread) {
       const thread = threadService.newThread()
       await appService.setLocation({threadId: thread.id})
     }
+
+    threadService.init()
+    setInitialized(true)
   })
 
   return (
