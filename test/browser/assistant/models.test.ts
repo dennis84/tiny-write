@@ -22,6 +22,8 @@ test('model select', async ({page}) => {
 
   await page.click('[data-testid="model_select"]')
 
-  expect(page.getByText('GPT-4o')).toBeVisible()
-  expect(page.getByText('Claude 3.5 Sonnet')).toBeVisible()
+  const tooltip = page.locator('[data-testid="tooltip"]')
+
+  await expect(tooltip.getByText('GPT-4o')).toBeVisible()
+  await expect(tooltip.getByText('Claude 3.5 Sonnet')).toBeVisible()
 })

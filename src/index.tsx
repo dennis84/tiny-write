@@ -1,10 +1,12 @@
 import {render} from 'solid-js/web'
 import {Init} from './components/Init'
-import {isDev, isTest} from './env'
 import {info} from './remote/log'
 
+// Enable ai mock with: `MOCK_AI=true npm run dev`
+const mockAi = import.meta.env.VITE_MOCK_AI === 'true'
+
 const enableMocking = async () => {
-  if (isDev && !isTest) {
+  if (mockAi) {
     const {CopilotMock} = await import('@/utils/CopilotMock')
     info('Setup copilot mock')
     CopilotMock.setup()
@@ -12,7 +14,7 @@ const enableMocking = async () => {
 }
 
 const run = async () => {
-  //await enableMocking()
+  await enableMocking()
   const container = document.getElementById('container')
   if (container) {
     render(() => <Init />, container)

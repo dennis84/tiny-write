@@ -201,7 +201,13 @@ export const Tooltip = (props: Props) => {
           <Backdrop onClick={onBackdropClick} data-testid="tooltip_backdrop" />
         </Show>
       </Show>
-      <TooltipContainer ref={tooltipRef} id="tooltip" class="tooltip" delay={props.delay}>
+      <TooltipContainer
+        ref={tooltipRef}
+        id="tooltip"
+        data-testid="tooltip"
+        class="tooltip"
+        delay={props.delay}
+      >
         {props.children}
         <TooltipArrow ref={arrowRef} />
       </TooltipContainer>

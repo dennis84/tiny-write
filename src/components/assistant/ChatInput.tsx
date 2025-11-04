@@ -11,11 +11,11 @@ import {IconButton} from '../Button'
 import {IconAttachment, IconSend, IconStop} from '../Icon'
 import {Tooltip, TooltipDivider} from '../Tooltip'
 import {TooltipHelp} from '../TooltipHelp'
-import {AutoContext} from './AutoContext'
 import {AutoContextToggle} from './attachments/AutoContextToggle'
 import {CurrentFileButton} from './attachments/CurrentFile'
 import {ImageButton} from './attachments/Image'
 import {SelectionButton} from './attachments/Selection'
+import {ChatInputContext} from './ChatInputContext'
 import {
   ChatInputAction,
   ChatInputContainer,
@@ -119,7 +119,6 @@ export const ChatInput = (props: Props) => {
         placeholder('Ask Copilot'),
         keymap.of(defaultKeymap),
         EditorView.lineWrapping,
-        // n focus hook
         EditorView.focusChangeEffect.of((_, focusing) => {
           setFocused(focusing)
           return null
@@ -176,7 +175,7 @@ export const ChatInput = (props: Props) => {
           </ChatInputAction>
         </ChatInputFieldContainer>
         <Attachments>
-          <AutoContext />
+          <ChatInputContext />
         </Attachments>
       </ChatInputContainer>
       <Show
