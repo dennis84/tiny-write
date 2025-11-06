@@ -14,7 +14,7 @@ const clickTreeMenu = async (page: Page, nth: number, buttonId: string) => {
 }
 
 test('add code file', async ({page}) => {
-  await page.click('[data-testid="floating_navbar_menu_open"]')
+  await page.click('[data-testid="navbar_menu_open"]')
   await clickTreeMenu(page, 1, 'add_canvas')
 
   expect(page.locator('[data-testid="canvas_container"]')).toBeVisible()

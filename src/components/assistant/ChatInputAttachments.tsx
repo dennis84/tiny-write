@@ -1,9 +1,17 @@
 import {createEffect, For} from 'solid-js'
+import {styled} from 'solid-styled-components'
 import {type Attachment, AttachmentType, useState} from '@/state'
 import {MessageAttachment} from './MessageAttachment'
 import {createCodeFence} from './util'
 
-export const ChatInputContext = () => {
+const Attachments = styled('div')`
+  display: flex;
+  min-width: 0;
+  gap: 5px;
+  justify-content: flex-end;
+`
+
+export const ChatInputAttachments = () => {
   const {store, fileService, mediaService, threadService} = useState()
 
   const onDelete = (attachment: Attachment) => {
@@ -101,8 +109,10 @@ export const ChatInputContext = () => {
   })
 
   return (
-    <For each={threadService.attachments()}>
-      {(attachment) => <MessageAttachment attachment={attachment} onDelete={onDelete} />}
-    </For>
+    <Attachments>
+      <For each={threadService.attachments()}>
+        {(attachment) => <MessageAttachment attachment={attachment} onDelete={onDelete} />}
+      </For>
+    </Attachments>
   )
 }

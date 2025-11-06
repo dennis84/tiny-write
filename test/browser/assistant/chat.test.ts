@@ -16,7 +16,7 @@ test('chat', async ({page}) => {
   await mockCopilotApiToken(page)
   await mockCopilotCompletion(page, ['Test', '123'], 'Test Call')
 
-  await page.click('[data-testid="floating_navbar_assistant_open"]')
+  await page.click('[data-testid="navbar_assistant_open"]')
   expect(page.getByText('Ask Copilot')).toBeVisible()
 
   await page.locator('[data-testid="chat_input"] .cm-content').pressSequentially('Hello', {delay})
@@ -45,7 +45,7 @@ test('edit question', async ({page}) => {
   await mockCopilotApiToken(page)
   await mockCopilotCompletion(page, ['SetupAnswer'], 'Test Call')
 
-  await page.click('[data-testid="floating_navbar_assistant_open"]')
+  await page.click('[data-testid="navbar_assistant_open"]')
   expect(page.getByText('Ask Copilot')).toBeVisible()
 
   await page

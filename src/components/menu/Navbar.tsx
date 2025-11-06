@@ -32,14 +32,94 @@ const StickyContainer = styled('div')`
   padding: 5px;
 `
 
-export const ChatNavbar = () => {
-  const {store, menuService, threadService} = useState()
-  const {open} = useOpen()
+const AssistantButton = () => {
+  const {store, menuService} = useState()
 
   const onAssistantClick = () => {
     if (!store.ai?.copilot?.user) menuService.show(MenuId.AI_CONFIG)
     else menuService.toggleAssistant()
   }
+
+  return (
+    <>
+      <Show when={!menuService.assistant()}>
+        <TooltipHelp title="Open Chat">
+          <IconButton onClick={onAssistantClick} data-testid="navbar_assistant_open">
+            <IconAiAssistant />
+          </IconButton>
+        </TooltipHelp>
+      </Show>
+      <Show when={menuService.assistant()}>
+        <TooltipHelp title="Close assistant">
+          <IconButton onClick={onAssistantClick} data-testid="navbar_assistant_close">
+            <IconAiAssistantClose />
+          </IconButton>
+        </TooltipHelp>
+      </Show>
+    </>
+  )
+}
+
+const MenuButton = () => {
+  const {fileService, menuService} = useState()
+
+  const onMenuButtonClick = () => {
+    fileService.currentFile?.editorView?.focus()
+    menuService.toggleMenu()
+  }
+
+  return (
+    <>
+      <Show when={!menuService.menu()}>
+        <TooltipHelp title="Open Menu">
+          <IconButton onClick={onMenuButtonClick} data-testid="navbar_menu_open">
+            <IconMoreVert />
+          </IconButton>
+        </TooltipHelp>
+      </Show>
+      <Show when={menuService.menu()}>
+        <TooltipHelp title="Close menu">
+          <IconButton onClick={onMenuButtonClick} data-testid="menu_navbar_close">
+            <IconClose />
+          </IconButton>
+        </TooltipHelp>
+      </Show>
+    </>
+  )
+}
+
+const BackButton = () => {
+  const {store} = useState()
+  const navigate = useNavigate()
+
+  const onBackClick = () => {
+    navigate(-1)
+  }
+
+  const getBackTitle = () => {
+    const prev = store.location?.prev
+    if (prev?.includes('/editor/')) return 'Back to editor'
+    if (prev?.includes('/code/')) return 'Back to code editor'
+    if (prev?.includes('/canvas/')) return 'Back to canvas'
+    if (prev?.includes('/assistant/')) return 'Back to assistant'
+  }
+
+  return (
+    <Show when={getBackTitle()}>
+      {(title) => (
+        <TooltipHelp title={title()}>
+          <Button onClick={onBackClick} data-testid="navbar_back">
+            <IconArrowBack /> Back
+          </Button>
+        </TooltipHelp>
+      )}
+    </Show>
+  )
+}
+
+export const ChatNavbar = () => {
+  const {menuService, threadService} = useState()
+  const {open} = useOpen()
 
   const onExpandClick = () => {
     // Get current thread before resetting in state
@@ -56,99 +136,52 @@ export const ChatNavbar = () => {
 
   return (
     <StickyContainer>
-      <TooltipHelp title="Expand assistant">
-        <IconButton onClick={onExpandClick} data-testid="navbar_assistant_expand">
-          <IconFullscreen />
-        </IconButton>
-      </TooltipHelp>
-      <TooltipHelp title="Close assistant">
-        <IconButton onClick={onAssistantClick} data-testid="navbar_assistant_close">
-          <IconAiAssistantClose />
-        </IconButton>
-      </TooltipHelp>
+      <ButtonGroup>
+        <TooltipHelp title="Expand assistant">
+          <IconButton onClick={onExpandClick} data-testid="navbar_assistant_expand">
+            <IconFullscreen />
+          </IconButton>
+        </TooltipHelp>
+        <AssistantButton />
+        <Show when={!menuService.menu()}>
+          <MenuButton />
+        </Show>
+      </ButtonGroup>
     </StickyContainer>
   )
 }
 
 export const MenuNavbar = () => {
-  const {fileService, menuService} = useState()
-
-  const onMenuButtonClick = () => {
-    fileService.currentFile?.editorView?.focus()
-    menuService.toggleMenu()
-  }
+  const {menuService} = useState()
 
   return (
     <StickyContainer>
-      <Show when={menuService.menu() === MenuId.MAIN}>
-        <TooltipHelp title="Close menu">
-          <IconButton onClick={onMenuButtonClick} data-testid="menu_navbar_close">
-            <IconClose />
-          </IconButton>
-        </TooltipHelp>
-      </Show>
-      <Show when={menuService.menu() !== MenuId.MAIN}>
-        <Button onClick={() => menuService.show(MenuId.MAIN)} data-testid="menu_navbar_back">
-          <IconArrowBack /> Back to menu
-        </Button>
-      </Show>
+      <ButtonGroup>
+        <Show when={menuService.menu() === MenuId.MAIN}>
+          <MenuButton />
+        </Show>
+        <Show when={menuService.menu() !== MenuId.MAIN}>
+          <Button onClick={() => menuService.show(MenuId.MAIN)} data-testid="menu_navbar_back">
+            <IconArrowBack /> Back to menu
+          </Button>
+        </Show>
+      </ButtonGroup>
     </StickyContainer>
   )
 }
 
 export const FloatingNavbar = () => {
-  const {store, fileService, menuService} = useState()
-  const navigate = useNavigate()
-
-  const onAssistantClick = () => {
-    if (!store.ai?.copilot?.user) menuService.show(MenuId.AI_CONFIG)
-    else menuService.toggleAssistant()
-  }
-
-  const onMenuButtonClick = () => {
-    fileService.currentFile?.editorView?.focus()
-    menuService.toggleMenu()
-  }
-
-  const onBackClick = () => {
-    navigate(-1)
-  }
-
-  const getBackTitle = () => {
-    const prev = store.location?.prev
-    if (prev?.includes('/editor/')) return 'Back to editor'
-    if (prev?.includes('/code/')) return 'Back to code editor'
-    if (prev?.includes('/canvas/')) return 'Back to canvas'
-    if (prev?.includes('/assistant/')) return 'Back to assistant'
-  }
+  const {store, menuService} = useState()
 
   return (
     <FloatingContainer>
       <ButtonGroup>
-        <Show when={getBackTitle()}>
-          {(title) => (
-            <TooltipHelp title={title()}>
-              <Button onClick={onBackClick} data-testid="floating_navbar_back">
-                <IconArrowBack /> Back
-              </Button>
-            </TooltipHelp>
-          )}
-        </Show>
-
+        <BackButton />
         <Show when={!menuService.assistant() && store.location?.page !== Page.Assistant}>
-          <TooltipHelp title="Open Chat">
-            <IconButton onClick={onAssistantClick} data-testid="floating_navbar_assistant_open">
-              <IconAiAssistant />
-            </IconButton>
-          </TooltipHelp>
+          <AssistantButton />
         </Show>
-
-        <Show when={!menuService.menu()}>
-          <TooltipHelp title="Open Menu">
-            <IconButton onClick={onMenuButtonClick} data-testid="floating_navbar_menu_open">
-              <IconMoreVert />
-            </IconButton>
-          </TooltipHelp>
+        <Show when={!menuService.menu() && !menuService.assistant()}>
+          <MenuButton />
         </Show>
       </ButtonGroup>
     </FloatingContainer>

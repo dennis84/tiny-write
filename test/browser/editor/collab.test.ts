@@ -5,7 +5,7 @@ test('create room', async ({page, browser}) => {
   await page.goto(`/`)
   await page.waitForSelector('[data-testid="initialized"]')
 
-  await page.click('[data-testid="floating_navbar_menu_open"]')
+  await page.click('[data-testid="navbar_menu_open"]')
   await page.click('[data-testid="collab"]')
 
   const id = page.url().split('/editor/')[1]
@@ -31,7 +31,7 @@ test('create room - existing content file', async ({page, browser}) => {
   const id = page.url().split('/editor/')[1]
 
   await page.locator('.ProseMirror').pressSequentially('Hello', {delay})
-  await page.click('[data-testid="floating_navbar_menu_open"]')
+  await page.click('[data-testid="navbar_menu_open"]')
   await page.click('[data-testid="collab"]')
   await assertEditorLineToEqual(page, 1, 'Hello')
 
@@ -54,7 +54,7 @@ test('create room - existing content file', async ({page, browser}) => {
 test('sync config', async ({page, browser}) => {
   await page.goto('/')
   await page.waitForSelector('[data-testid="initialized"]')
-  await page.click('[data-testid="floating_navbar_menu_open"]')
+  await page.click('[data-testid="navbar_menu_open"]')
 
   // change font
   await page.click('[data-testid="appearance"]')
@@ -73,7 +73,7 @@ test('sync config', async ({page, browser}) => {
   await page2.click('[data-testid="join_editor"]')
 
   await assertEditorLineToEqual(page2, 1, 'Hello')
-  await page2.click('[data-testid="floating_navbar_menu_open"]')
+  await page2.click('[data-testid="navbar_menu_open"]')
   await page2.click('[data-testid="appearance"]')
 
   // config applied
@@ -84,7 +84,7 @@ test('sync config', async ({page, browser}) => {
 test('rejoin room', async ({page}) => {
   await page.goto('/')
   await page.waitForSelector('[data-testid="initialized"]')
-  await page.click('[data-testid="floating_navbar_menu_open"]')
+  await page.click('[data-testid="navbar_menu_open"]')
   await page.click('[data-testid="collab"]')
 
   await page.locator('.ProseMirror').pressSequentially('Hello', {delay})
@@ -105,7 +105,7 @@ test('rejoin room', async ({page}) => {
 test('rejoin room - remote', async ({page, browser}) => {
   await page.goto('/')
   await page.waitForSelector('[data-testid="initialized"]')
-  await page.click('[data-testid="floating_navbar_menu_open"]')
+  await page.click('[data-testid="navbar_menu_open"]')
   await page.click('[data-testid="collab"]')
 
   await page.locator('.ProseMirror').pressSequentially('Hello', {delay})
@@ -121,7 +121,7 @@ test('rejoin room - remote', async ({page, browser}) => {
   await expect(page2.locator('.ProseMirror > *')).toHaveCount(1)
 
   // stop collab
-  await page2.click('[data-testid="floating_navbar_menu_open"]')
+  await page2.click('[data-testid="navbar_menu_open"]')
   await page2.click('[data-testid="collab"]')
   await page.click('[data-testid="collab"]')
 

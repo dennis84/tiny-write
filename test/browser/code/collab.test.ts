@@ -12,7 +12,7 @@ test('existing room', async ({page, browser}) => {
 
   await page.goto(`/code/${id}`)
   await page.waitForSelector('[data-testid="initialized"]')
-  await page.click('[data-testid="floating_navbar_menu_open"]')
+  await page.click('[data-testid="navbar_menu_open"]')
   await page.click('[data-testid="collab"]')
 
   await page.locator('.cm-content').pressSequentially('Hello', {delay})

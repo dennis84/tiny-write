@@ -53,7 +53,7 @@ test.beforeEach(async ({page}) => {
 test('copy', async ({page, context}) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write'])
 
-  await page.click('[data-testid="floating_navbar_assistant_open"]')
+  await page.click('[data-testid="navbar_assistant_open"]')
   await page.click('[data-testid="history"]')
   await page.click('[data-testid="thread_item"]')
   await page.click('[data-testid="tooltip_backdrop"]')
@@ -65,7 +65,7 @@ test('copy', async ({page, context}) => {
 })
 
 test('create file', async ({page}) => {
-  await page.click('[data-testid="floating_navbar_assistant_open"]')
+  await page.click('[data-testid="navbar_assistant_open"]')
   await page.click('[data-testid="history"]')
   await page.click('[data-testid="thread_item"]')
   await page.click('[data-testid="tooltip_backdrop"]')
@@ -73,12 +73,12 @@ test('create file', async ({page}) => {
   await page.locator('[data-testid="panel_button_create"]').click()
   await assertCodeLineToEqual(page, 1, "const test1 = '111'")
 
-  await page.click('[data-testid="floating_navbar_menu_open"]')
+  await page.click('[data-testid="navbar_menu_open"]')
   await expect(page.locator('[data-testid="tree_link"]').nth(2)).toContainText('src/main.ts')
 })
 
 test('apply', async ({page}) => {
-  await page.click('[data-testid="floating_navbar_assistant_open"]')
+  await page.click('[data-testid="navbar_assistant_open"]')
   await page.click('[data-testid="history"]')
   await page.click('[data-testid="thread_item"]')
   await page.click('[data-testid="tooltip_backdrop"]')
@@ -92,7 +92,7 @@ test('apply', async ({page}) => {
 })
 
 test('apply - open file', async ({page}) => {
-  await page.click('[data-testid="floating_navbar_assistant_open"]')
+  await page.click('[data-testid="navbar_assistant_open"]')
   await page.click('[data-testid="history"]')
   await page.click('[data-testid="thread_item"]')
   await page.click('[data-testid="tooltip_backdrop"]')
@@ -110,7 +110,7 @@ test('apply - range', async ({page}) => {
   await page.goto('/code/333')
   await page.locator('.cm-content').pressSequentially('abcdefghijklmnop', {delay})
 
-  await page.click('[data-testid="floating_navbar_assistant_open"]')
+  await page.click('[data-testid="navbar_assistant_open"]')
   await page.click('[data-testid="history"]')
   await page.click('[data-testid="thread_item"]')
   await page.click('[data-testid="tooltip_backdrop"]')

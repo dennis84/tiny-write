@@ -6,7 +6,7 @@ import {styled} from 'solid-styled-components'
 import {v4 as uuidv4} from 'uuid'
 import {onEnterDoubleNewline} from '@/codemirror/key-bindings'
 import {getTheme} from '@/codemirror/theme'
-import {type Attachment, AttachmentType, type Message, useState} from '@/state'
+import {type Attachment, type Message, useState} from '@/state'
 import {IconButton} from '../Button'
 import {IconAttachment, IconSend, IconStop} from '../Icon'
 import {Tooltip, TooltipDivider} from '../Tooltip'
@@ -15,7 +15,7 @@ import {AutoContextToggle} from './attachments/AutoContextToggle'
 import {CurrentFileButton} from './attachments/CurrentFile'
 import {ImageButton} from './attachments/Image'
 import {SelectionButton} from './attachments/Selection'
-import {ChatInputContext} from './ChatInputContext'
+import {ChatInputAttachments} from './ChatInputAttachments'
 import {
   ChatInputAction,
   ChatInputContainer,
@@ -23,13 +23,6 @@ import {
   ChatInputFieldContainer,
 } from './Style'
 import {Suggestions} from './Suggestions'
-
-const Attachments = styled('div')`
-  display: flex;
-  min-width: 0;
-  gap: 5px;
-  justify-content: flex-end;
-`
 
 const EmptyContainer = styled('div')`
   width: 100%;
@@ -174,17 +167,9 @@ export const ChatInput = (props: Props) => {
             </Show>
           </ChatInputAction>
         </ChatInputFieldContainer>
-        <Attachments>
-          <ChatInputContext />
-        </Attachments>
+        <ChatInputAttachments />
       </ChatInputContainer>
-      <Show
-        when={threadService
-          .attachments()
-          .some((a) => a.type === AttachmentType.File || a.type === AttachmentType.Selection)}
-      >
-        <Suggestions onSuggestion={onSendSuggestion} />
-      </Show>
+      <Suggestions onSuggestion={onSendSuggestion} />
       <Show when={tooltipAnchor()}>
         {(a) => (
           <Tooltip anchor={a()} onClose={() => closeTooltip()} backdrop={true}>
