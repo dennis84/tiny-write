@@ -1,10 +1,11 @@
+import {batch} from 'solid-js'
 import type {SetStoreFunction, Store} from 'solid-js/store'
 import {debounce} from 'throttle-debounce'
 import {DB} from '@/db'
 import {isDark} from '@/env'
 import {setAlwaysOnTop} from '@/remote/app'
 import {info} from '@/remote/log'
-import type {Config, State} from '@/state'
+import type {Config, State, ThemeConfig} from '@/state'
 import type {CollabService} from './CollabService'
 
 export interface Font {
@@ -294,7 +295,7 @@ export class ConfigService {
   }
 
   get codeTheme() {
-    const currentCodeTheme = this.store.config.codeTheme
+    const currentCodeTheme = this.store.config.theme?.code
     return !currentCodeTheme
       ? ConfigService.getDefaltCodeTheme()
       : ConfigService.codeThemes[currentCodeTheme]
@@ -314,32 +315,27 @@ export class ConfigService {
   }
 
   get theme() {
-    return !this.store.config?.theme
+    return !this.store.config.theme?.main
       ? ConfigService.getDefaltTheme()
-      : (ConfigService.themes[this.store.config.theme] ?? ConfigService.getDefaltTheme())
+      : (ConfigService.themes[this.store.config.theme.main] ?? ConfigService.getDefaltTheme())
   }
 
-  static getDefaltTheme() {
-    return isDark() ? ConfigService.themes.dark : ConfigService.themes.light
+  static getDefaltTheme(dark: boolean = isDark()) {
+    return dark ? ConfigService.themes.dark : ConfigService.themes.light
+  }
+
+  static getThemeByName(name: ThemeName): Theme {
+    return ConfigService.themes[name]
+  }
+
+  static getCodeThemeByName(name: CodeThemeName): CodeTheme {
+    return ConfigService.codeThemes[name]
   }
 
   static getDefaltCodeTheme(dark: boolean | undefined = undefined) {
     return (dark ?? isDark())
-      ? ConfigService.codeThemes.dracula
-      : ConfigService.codeThemes['material-light']
-  }
-
-  static getThemeConfig(state: State): Partial<Config> {
-    const curTheme = ConfigService.themes[state.config.theme ?? -1]
-    const dark = isDark()
-
-    if (dark && (!curTheme || !curTheme.dark)) {
-      return {theme: 'dark', codeTheme: 'tokyo-night'}
-    } else if (!dark && (!curTheme || curTheme.dark)) {
-      return {theme: 'light', codeTheme: 'material-light'}
-    }
-
-    return {}
+      ? ConfigService.codeThemes['tokyo-night']
+      : ConfigService.codeThemes['tokyo-night-day']
   }
 
   getFontFamily = (
@@ -369,16 +365,51 @@ export class ConfigService {
     await this.saveConfig(this.store)
   }
 
+  async updateTheme(conf: Partial<ThemeConfig>) {
+    const mainTheme = conf.main ? ConfigService.getThemeByName(conf.main) : undefined
+    const codeTheme = conf.code ? ConfigService.getCodeThemeByName(conf.code) : undefined
+
+    info(`Update theme to (main=${conf.main}, code=${conf.code})`)
+
+    batch(() => {
+      if (mainTheme?.dark) {
+        this.setState('config', 'theme', 'mainDark', conf.main)
+      } else if (mainTheme?.dark === false) {
+        this.setState('config', 'theme', 'mainLight', conf.main)
+      }
+
+      if (codeTheme?.dark) {
+        this.setState('config', 'theme', 'codeDark', conf.code)
+      } else if (codeTheme?.dark === false) {
+        this.setState('config', 'theme', 'codeLight', conf.code)
+      }
+
+      this.setState('config', 'theme', conf)
+    })
+
+    await this.saveConfig(this.store)
+  }
+
+  async toggleDarkMode() {
+    const theme = this.store.config.theme
+    let main: string
+    let code: string
+
+    if (this.theme.dark) {
+      main = theme.mainLight ?? ConfigService.getDefaltTheme(false).value
+      code = theme.codeLight ?? ConfigService.getDefaltCodeTheme(false).value
+    } else {
+      main = theme.mainDark ?? ConfigService.getDefaltTheme(true).value
+      code = theme.codeDark ?? ConfigService.getDefaltCodeTheme(true).value
+    }
+
+    await this.updateTheme({main, code})
+  }
+
   updateContentWidth(contentWidth: number) {
     this.collabService.setConfig({contentWidth})
     this.setState('config', 'contentWidth', contentWidth)
     void this.saveConfigDebounced(this.store)
-  }
-
-  async updateDarkMode() {
-    const config = ConfigService.getThemeConfig(this.store)
-    this.setState('config', config)
-    await this.saveConfig(this.store)
   }
 
   private async saveConfig(state: State) {

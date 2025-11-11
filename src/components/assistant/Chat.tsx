@@ -45,7 +45,7 @@ export const Chat = (props: Props) => {
   let inputRef!: HTMLDivElement
   let containerRef!: HTMLDivElement
 
-  const {copilotService, threadService, toastService} = useState()
+  const {configService, copilotService, threadService, toastService} = useState()
   const [focus, setFocus] = createSignal(true)
   const [autoScrolling, setAutoScrolling] = createSignal(true)
 
@@ -190,7 +190,8 @@ export const Chat = (props: Props) => {
           <MessageTree id={undefined} childrenIds={threadService.messageTree.rootItemIds} />
         </Show>
       </Messages>
-      <Show when={focus()} keyed>
+      {/* Rerender if focus is manually set and if code theme has been changed */}
+      <Show when={focus() && configService.codeTheme} keyed>
         <ChatInput ref={inputRef} dropArea={props.scrollContent} onMessage={onInputMessage} />
       </Show>
       <Show when={!autoScrolling()}>

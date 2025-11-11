@@ -28,7 +28,7 @@ test('getters', () => {
     createState({
       config: {
         font: 'ia-writer-mono',
-        codeTheme: 'dracula',
+        theme: {code: 'dracula'},
         fontSize: 12,
         contentWidth: 200,
         alwaysOnTop: true,
@@ -68,4 +68,39 @@ test('updateConfig', async () => {
     font: 'merriweather',
     contentWidth: 100,
   })
+})
+
+test('toggleDarkMode', async () => {
+  const [store, setState] = createStore(createState())
+  const service = new ConfigService(collabService, store, setState)
+
+  expect(service.theme.value).toEqual('light')
+  expect(service.codeTheme.value).toEqual('material-light')
+
+  await service.toggleDarkMode()
+
+  expect(store.config.theme.main).toEqual('dark')
+  expect(store.config.theme.code).toEqual('dracula')
+  expect(store.config.theme.mainDark).toEqual('dark')
+  expect(store.config.theme.mainLight).toEqual(undefined)
+  expect(store.config.theme.codeDark).toEqual('dracula')
+  expect(store.config.theme.codeLight).toEqual(undefined)
+
+  await service.updateTheme({main: 'solarized-light', code: 'solarized-light'})
+
+  expect(store.config.theme.main).toEqual('solarized-light')
+  expect(store.config.theme.code).toEqual('solarized-light')
+  expect(store.config.theme.mainDark).toEqual('dark')
+  expect(store.config.theme.mainLight).toEqual('solarized-light')
+  expect(store.config.theme.codeDark).toEqual('dracula')
+  expect(store.config.theme.codeLight).toEqual('solarized-light')
+
+  await service.toggleDarkMode()
+
+  expect(store.config.theme.main).toEqual('dark')
+  expect(store.config.theme.code).toEqual('dracula')
+  expect(store.config.theme.mainDark).toEqual('dark')
+  expect(store.config.theme.mainLight).toEqual('solarized-light')
+  expect(store.config.theme.codeDark).toEqual('dracula')
+  expect(store.config.theme.codeLight).toEqual('solarized-light')
 })

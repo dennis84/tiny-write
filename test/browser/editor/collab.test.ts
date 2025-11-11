@@ -59,7 +59,7 @@ test('sync config', async ({page, browser}) => {
   // change font
   await page.click('[data-testid="appearance"]')
   await page.getByText('Scientifica').click()
-  await expect(page.getByText('Scientifica')).toContainText('✅')
+  await expect(page.getByText('Scientifica').locator('.icon')).toHaveCount(1) // checkbox icon
   await page.click('[data-testid="menu_navbar_back"]')
 
   // start collab
@@ -78,7 +78,7 @@ test('sync config', async ({page, browser}) => {
 
   // config applied
   await page.click('[data-testid="appearance"]')
-  await expect(page.getByText('Scientifica')).toContainText('✅')
+  await expect(page.getByText('Scientifica').locator('.icon')).toHaveCount(1) // checkbox icon
 })
 
 test('rejoin room', async ({page}) => {

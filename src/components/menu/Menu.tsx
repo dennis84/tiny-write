@@ -2,6 +2,7 @@ import {createEffect, type JSX, Show} from 'solid-js'
 import {
   IconAi,
   IconAiAssistant,
+  IconCheckBox,
   IconContrast,
   IconDesktopLandscape,
   IconFullscreen,
@@ -83,7 +84,7 @@ export const Menu = () => {
 
   const onReset = async () => {
     await appService.reset()
-    window.location.reload()
+    window.location.href = '/'
   }
 
   const maybeHide = () => {
@@ -167,21 +168,33 @@ export const Menu = () => {
               </Show>
               <Show when={isTauri()}>
                 <Link onClick={onToggleFullscreen}>
-                  <IconFullscreen /> Fullscreen {store.fullscreen && '✅'}{' '}
+                  <IconFullscreen /> Fullscreen
+                  <Show when={store.fullscreen}>
+                    <IconCheckBox />
+                  </Show>
                   <Keys keys={[modKey, 'Enter']} />
                 </Link>
               </Show>
               <Show when={store.location?.page === Page.Editor}>
                 <Link onClick={onToggleTypewriterMode}>
-                  <IconVerticalAlignCenter /> Typewriter mode {store.config.typewriterMode && '✅'}
+                  <IconVerticalAlignCenter /> Typewriter mode
+                  <Show when={store.config.typewriterMode}>
+                    <IconCheckBox />
+                  </Show>
                 </Link>
                 <Link onClick={onToggleSpellcheck}>
-                  <IconSpellcheck /> Spellcheck {store.config.spellcheck && '✅'}
+                  <IconSpellcheck /> Spellcheck
+                  <Show when={store.config.spellcheck}>
+                    <IconCheckBox />
+                  </Show>
                 </Link>
               </Show>
               <Show when={isTauri()}>
                 <Link onClick={onToggleAlwaysOnTop}>
-                  <IconDesktopLandscape /> Always on Top {store.config.alwaysOnTop && '✅'}
+                  <IconDesktopLandscape /> Always on Top
+                  <Show when={store.config.alwaysOnTop}>
+                    <IconCheckBox />
+                  </Show>
                 </Link>
               </Show>
             </Sub>

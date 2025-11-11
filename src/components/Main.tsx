@@ -103,7 +103,7 @@ export const Main = (props: {state: State}) => {
     })
 
     createEffect((prev) => {
-      if (!prev) return ctrl.store.config.codeTheme
+      if (!prev) return ctrl.store.config.theme?.code
       untrack(() => {
         for (const f of ctrl.store.files) {
           if (!f.editorView && !f.codeEditorView) continue
@@ -112,7 +112,7 @@ export const Main = (props: {state: State}) => {
         }
       })
 
-      return ctrl.store.config.codeTheme
+      return ctrl.store.config.theme?.code
     })
 
     return (

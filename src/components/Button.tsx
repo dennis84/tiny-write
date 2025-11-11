@@ -89,6 +89,7 @@ export const IconButtonEl = styled('button')`
   padding: 0;
   background: none;
   color: var(--foreground);
+  ${(props: any) => (props.active ? `background: var(--background);` : '')}
   &:hover {
     background: var(--foreground-10);
     color: var(--primary-background);
@@ -151,7 +152,7 @@ const Ripples = () => {
   )
 }
 
-type ButtonAttrs = JSX.ButtonHTMLAttributes<HTMLButtonElement>
+type ButtonAttrs = JSX.ButtonHTMLAttributes<HTMLButtonElement> & {active?: boolean}
 
 export const Button = (props: ButtonAttrs) => (
   <ButtonEl {...props}>

@@ -1,11 +1,11 @@
 import {createSignal, For, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
-import type {Message} from '@/state'
+import {type Message, useState} from '@/state'
 import type {TreeItem} from '@/tree'
 import {ButtonGroup, IconButton} from '../Button'
 import {IconEditSquare} from '../Icon'
 import {TooltipHelp} from '../TooltipHelp'
-import {MessageAttachment} from './MessageAttachment'
+import {AttachmentChip} from './AttachmentChip'
 import {MessageInput} from './MessageInput'
 import {MessageMarkdown} from './MessageMarkdown'
 import {Pagination} from './Pagination'
@@ -49,6 +49,8 @@ interface Props {
 export const MessageQuestion = (props: Props) => {
   const [editing, setEditing] = createSignal(false)
 
+  const {configService} = useState()
+
   const onEditMessage = async () => {
     setEditing(true)
   }
@@ -61,7 +63,7 @@ export const MessageQuestion = (props: Props) => {
   const Attachments = () => (
     <QuestionAttachments>
       <For each={props.message.value.attachments}>
-        {(attachment) => <MessageAttachment attachment={attachment} />}
+        {(attachment) => <AttachmentChip attachment={attachment} />}
       </For>
     </QuestionAttachments>
   )
@@ -81,7 +83,9 @@ export const MessageQuestion = (props: Props) => {
       <Show when={!editing()}>
         <QuestionContainer>
           <QuestionBubble data-testid="question_bubble">
-            <MessageMarkdown content={props.message.value.content} />
+            <Show when={configService.codeTheme} keyed>
+              <MessageMarkdown content={props.message.value.content} />
+            </Show>
           </QuestionBubble>
           <Attachments />
           <ButtonGroup>

@@ -3,6 +3,7 @@ import {createSignal, For, onCleanup, Show} from 'solid-js'
 import {ButtonGroup, ButtonPrimary} from '@/components/Button'
 import {useState, type Version} from '@/state'
 import {DrawerContent} from '../Drawer'
+import {IconCheckBox} from '../Icon'
 import {MenuDrawer} from './Menu'
 import {MenuNavbar} from './Navbar'
 import {Label, Link, Sub} from './Style'
@@ -44,8 +45,10 @@ export const ChangeSet = () => {
           <For each={versions()} fallback={<p>No snapshots yet</p>}>
             {(version) => (
               <Link onClick={() => renderVersion(version)}>
-                {format(version.date, 'dd MMMM HH:mm:ss')}
-                {version.date === active()?.date && ' ✅'}
+                <span>{format(version.date, 'dd MMMM HH:mm:ss')}</span>
+                <Show when={version.date === active()?.date}>
+                  <IconCheckBox />
+                </Show>
               </Link>
             )}
           </For>

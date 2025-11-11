@@ -29,7 +29,7 @@ interface Props {
 }
 
 export const MessageAnswer = (props: Props) => {
-  const {copilotService} = useState()
+  const {copilotService, configService} = useState()
 
   const onCopy = () => copy(props.message.value.content)
 
@@ -39,7 +39,10 @@ export const MessageAnswer = (props: Props) => {
 
   return (
     <AnswerBubble data-testid="answer_bubble">
-      <MessageMarkdown content={props.message.value.content} />
+      {/* Rerender code blocks if code theme has been changed */}
+      <Show when={configService.codeTheme} keyed>
+        <MessageMarkdown content={props.message.value.content} />
+      </Show>
       <ButtonGroup>
         <TooltipHelp title="Copy">
           <IconButton onClick={onCopy}>

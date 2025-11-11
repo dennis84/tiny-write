@@ -47,8 +47,11 @@ export const itemCss = `
   line-height: ${ITEM_HEIGHT};
   font-family: var(--menu-font-family);
   text-align: left;
-  > .icon {
-    margin-right: 10px;
+  .icon {
+    margin: 0 10px;
+  }
+  .icon:first-child {
+    margin-left: 0;
   }
 `
 

@@ -1,5 +1,6 @@
+import {Show} from 'solid-js'
 import {useState} from '@/state'
-import {IconAdjust, IconClose, IconGrid3x3} from '../Icon'
+import {IconAdjust, IconCheckBox, IconClose, IconGrid3x3} from '../Icon'
 import {Label, Link, Sub} from './Style'
 
 export const SubmenuCanvas = ({maybeHide}: {maybeHide: () => void}) => {
@@ -32,7 +33,10 @@ export const SubmenuCanvas = ({maybeHide}: {maybeHide: () => void}) => {
           <IconAdjust /> Back to content
         </Link>
         <Link onClick={onSnapToGrid}>
-          <IconGrid3x3 /> Snap to grid {canvasService.currentCanvas?.snapToGrid && '✅'}
+          <IconGrid3x3 /> Snap to grid
+          <Show when={canvasService.currentCanvas?.snapToGrid}>
+            <IconCheckBox />
+          </Show>
         </Link>
       </Sub>
     </>

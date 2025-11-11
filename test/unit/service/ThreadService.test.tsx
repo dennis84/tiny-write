@@ -581,7 +581,7 @@ test('hande attachments', () => {
   expect(service.attachments()[1].fileId).toBe('3')
 
   service.addAttachment(createAttachment(AttachmentType.Selection, '3'))
-  expect(service.attachments()).toHaveLength(3)
+  expect(service.attachments()).toHaveLength(2)
 
   service.setAttachments([])
   expect(service.attachments()).toHaveLength(0)

@@ -24,6 +24,7 @@ import MaterialSymbolsContentCopy from '~icons/material-symbols/content-copy'
 import MaterialSymbolsContentCut from '~icons/material-symbols/content-cut'
 import MaterialSymbolsContentPaste from '~icons/material-symbols/content-paste'
 import MaterialSymbolsContrast from '~icons/material-symbols/contrast'
+import MaterialSymbolsDarkMode from '~icons/material-symbols/dark-mode'
 import MaterialSymbolsDelete from '~icons/material-symbols/delete'
 import MaterialSymbolsDeleteForever from '~icons/material-symbols/delete-forever'
 import MaterialSymbolsDescription from '~icons/material-symbols/description'
@@ -45,6 +46,7 @@ import MaterialSymbolsHistory from '~icons/material-symbols/history'
 import MaterialSymbolsImage from '~icons/material-symbols/image'
 import MaterialSymbolsKeyboardArrowDown from '~icons/material-symbols/keyboard-arrow-down'
 import MaterialSymbolsLanguage from '~icons/material-symbols/language'
+import MaterialSymbolsLightMode from '~icons/material-symbols/light-mode'
 import MaterialSymbolsLink from '~icons/material-symbols/link'
 import MaterialSymbolsMarkdownCopy from '~icons/material-symbols/markdown-copy'
 import MaterialSymbolsMerge from '~icons/material-symbols/merge'
@@ -588,6 +590,18 @@ export const IconImage = () => (
 export const IconSearch = () => (
   <SvgIcon>
     <MaterialSymbolsSearch />
+  </SvgIcon>
+)
+
+export const IconDarkMode = () => (
+  <SvgIcon>
+    <MaterialSymbolsDarkMode />
+  </SvgIcon>
+)
+
+export const IconLightMode = () => (
+  <SvgIcon>
+    <MaterialSymbolsLightMode />
   </SvgIcon>
 )
 

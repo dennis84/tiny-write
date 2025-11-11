@@ -62,13 +62,11 @@ export class ThreadService {
 
   addAttachment(attachment: Attachment) {
     this.attachmentsSignal[1]((prev) => {
-      // Remove any existing attachment with the same fileId or name and type
+      // Remove any existing attachment with the same fileId or name
       const filtered = prev.filter((existing) => {
         const isSameFile = attachment.fileId && existing.fileId === attachment.fileId
         const isSameName = attachment.name && existing.name === attachment.name
-        const isSameType = existing.type === attachment.type
-
-        return !(isSameType && (isSameFile || isSameName))
+        return !(isSameFile || isSameName)
       })
 
       return [...filtered, attachment]

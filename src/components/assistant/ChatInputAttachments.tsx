@@ -1,7 +1,7 @@
 import {createEffect, For} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {type Attachment, AttachmentType, useState} from '@/state'
-import {MessageAttachment} from './MessageAttachment'
+import {AttachmentChip} from './AttachmentChip'
 import {createCodeFence} from './util'
 
 const Attachments = styled('div')`
@@ -84,6 +84,7 @@ export const ChatInputAttachments = () => {
       }
 
       threadService.addAttachment(attachment)
+      return
     }
 
     const content = createCodeFence({
@@ -111,7 +112,7 @@ export const ChatInputAttachments = () => {
   return (
     <Attachments>
       <For each={threadService.attachments()}>
-        {(attachment) => <MessageAttachment attachment={attachment} onDelete={onDelete} />}
+        {(attachment) => <AttachmentChip attachment={attachment} onDelete={onDelete} />}
       </For>
     </Attachments>
   )

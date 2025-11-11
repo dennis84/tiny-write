@@ -5,7 +5,7 @@ import type {YMultiDocUndoManager} from 'y-utility/y-multidoc-undomanager'
 import type {WebsocketProvider} from 'y-websocket'
 import type * as Y from 'yjs'
 import type {Ctrl} from './services'
-import type {CodeThemeName} from './services/ConfigService'
+import type {CodeThemeName, ThemeName} from './services/ConfigService'
 import type {Model} from './services/CopilotService'
 import {FileService} from './services/FileService'
 
@@ -68,9 +68,19 @@ export interface PrettierConfig {
   bracketSpacing: boolean
 }
 
+export interface ThemeConfig {
+  // current theme
+  main?: ThemeName
+  code?: CodeThemeName
+  // last configured themes by dark mode
+  mainDark?: ThemeName
+  mainLight?: ThemeName
+  codeDark?: CodeThemeName
+  codeLight?: CodeThemeName
+}
+
 export interface Config {
-  theme?: string
-  codeTheme?: CodeThemeName
+  theme: ThemeConfig
   font?: string
   fontSize: number
   contentWidth: number
@@ -346,6 +356,7 @@ export const createConfig = (config: Partial<Config> = {}): Config => ({
   alwaysOnTop: false,
   typewriterMode: false,
   spellcheck: true,
+  theme: {},
   prettier: {
     printWidth: 80,
     tabWidth: 2,

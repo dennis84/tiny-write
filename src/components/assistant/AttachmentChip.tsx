@@ -8,13 +8,12 @@ import {type Attachment, AttachmentType, useState} from '@/state'
 import {Button} from '../Button'
 import {IconTextSelectStart, LangIcon} from '../Icon'
 import {Tooltip} from '../Tooltip'
-import {ChatInputEditor, chatBubble} from './Style'
+import {ChatInputEditor} from './Style'
 
 const Container = styled('div')`
   display: grid;
   justify-items: flex-end;
   gap: 10px;
-  ${chatBubble}
 `
 
 const TooltipAction = styled('div')`
@@ -40,7 +39,7 @@ interface Props {
   onDelete?: (attachment: Attachment) => void
 }
 
-export const MessageAttachment = (props: Props) => {
+export const AttachmentChip = (props: Props) => {
   const {configService, fileService} = useState()
   const [fileTitle, setFileTitle] = createSignal<string>()
   const [tooltipAnchor, setTooltipAnchor] = createSignal<HTMLElement | undefined>()

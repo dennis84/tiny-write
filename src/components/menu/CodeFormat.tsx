@@ -2,6 +2,7 @@ import {Show} from 'solid-js'
 import {ButtonGroup, ButtonPrimary} from '@/components/Button'
 import {type File, Page, type PrettierConfig, useState} from '@/state'
 import {DrawerContent} from '../Drawer'
+import {IconCheckBox} from '../Icon'
 import {MenuDrawer} from './Menu'
 import {MenuNavbar} from './Navbar'
 import {Label, Link, Sub, Text} from './Style'
@@ -50,7 +51,10 @@ export const CodeFormat = () => {
             {store.config.prettier.tabWidth}
           </Text>
           <Link onClick={() => updatePrettier({useTabs: !store.config.prettier.useTabs})}>
-            Use Tabs {store.config.prettier.useTabs && '✅'}
+            <span>Use Tabs</span>
+            <Show when={store.config.prettier.useTabs}>
+              <IconCheckBox />
+            </Show>
           </Link>
         </Sub>
         <Label>Prettier</Label>
@@ -68,15 +72,24 @@ export const CodeFormat = () => {
             {store.config.prettier.printWidth}
           </Text>
           <Link onClick={() => updatePrettier({semi: !store.config.prettier.semi})}>
-            Semicolons {store.config.prettier.semi && '✅'}
+            <span>Semicolons</span>
+            <Show when={store.config.prettier.semi}>
+              <IconCheckBox />
+            </Show>
           </Link>
           <Link onClick={() => updatePrettier({singleQuote: !store.config.prettier.singleQuote})}>
-            Single Quote {store.config.prettier.singleQuote && '✅'}
+            <span>Single Quote</span>
+            <Show when={store.config.prettier.singleQuote}>
+              <IconCheckBox />
+            </Show>
           </Link>
           <Link
             onClick={() => updatePrettier({bracketSpacing: !store.config.prettier.bracketSpacing})}
           >
-            Bracket Spacing {store.config.prettier.bracketSpacing && '✅'}
+            <span>Bracket Spacing</span>
+            <Show when={store.config.prettier.bracketSpacing}>
+              <IconCheckBox />
+            </Show>
           </Link>
         </Sub>
         <ButtonGroup>

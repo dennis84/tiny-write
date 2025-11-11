@@ -10,7 +10,9 @@ import {
   IconAiAssistantClose,
   IconArrowBack,
   IconClose,
+  IconDarkMode,
   IconFullscreen,
+  IconLightMode,
   IconMoreVert,
 } from '../Icon'
 import {TooltipHelp} from '../TooltipHelp'
@@ -32,6 +34,29 @@ const StickyContainer = styled('div')`
   padding: 5px;
 `
 
+const DarkModeToggle = () => {
+  const {configService} = useState()
+
+  return (
+    <>
+      <Show when={configService.theme.dark}>
+        <TooltipHelp title="Turn on light mode">
+          <IconButton onClick={() => configService.toggleDarkMode()}>
+            <IconLightMode />
+          </IconButton>
+        </TooltipHelp>
+      </Show>
+      <Show when={!configService.theme.dark}>
+        <TooltipHelp title="Turn on dark mode">
+          <IconButton onClick={() => configService.toggleDarkMode()}>
+            <IconDarkMode />
+          </IconButton>
+        </TooltipHelp>
+      </Show>
+    </>
+  )
+}
+
 const AssistantButton = () => {
   const {store, menuService} = useState()
 
@@ -51,7 +76,7 @@ const AssistantButton = () => {
       </Show>
       <Show when={menuService.assistant()}>
         <TooltipHelp title="Close assistant">
-          <IconButton onClick={onAssistantClick} data-testid="navbar_assistant_close">
+          <IconButton active={true} onClick={onAssistantClick} data-testid="navbar_assistant_close">
             <IconAiAssistantClose />
           </IconButton>
         </TooltipHelp>
@@ -79,7 +104,7 @@ const MenuButton = () => {
       </Show>
       <Show when={menuService.menu()}>
         <TooltipHelp title="Close menu">
-          <IconButton onClick={onMenuButtonClick} data-testid="menu_navbar_close">
+          <IconButton active={true} onClick={onMenuButtonClick} data-testid="menu_navbar_close">
             <IconClose />
           </IconButton>
         </TooltipHelp>
@@ -144,6 +169,7 @@ export const ChatNavbar = () => {
         </TooltipHelp>
         <AssistantButton />
         <Show when={!menuService.menu()}>
+          <DarkModeToggle />
           <MenuButton />
         </Show>
       </ButtonGroup>
@@ -157,6 +183,7 @@ export const MenuNavbar = () => {
   return (
     <StickyContainer>
       <ButtonGroup>
+        <DarkModeToggle />
         <Show when={menuService.menu() === MenuId.MAIN}>
           <MenuButton />
         </Show>
@@ -181,6 +208,7 @@ export const FloatingNavbar = () => {
           <AssistantButton />
         </Show>
         <Show when={!menuService.menu() && !menuService.assistant()}>
+          <DarkModeToggle />
           <MenuButton />
         </Show>
       </ButtonGroup>

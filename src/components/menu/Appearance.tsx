@@ -1,7 +1,13 @@
-import {For} from 'solid-js'
-import {ConfigService} from '@/services/ConfigService'
+import {For, Match, Show, Switch} from 'solid-js'
+import {
+  type CodeThemeName,
+  ConfigService,
+  type FontName,
+  type ThemeName,
+} from '@/services/ConfigService'
 import {useState} from '@/state'
 import {DrawerContent} from '../Drawer'
+import {IconCheckBox, IconDarkMode, IconLightMode} from '../Icon'
 import {MenuDrawer} from './Menu'
 import {MenuNavbar} from './Navbar'
 import {Label, Link, Sub, Text} from './Style'
@@ -9,11 +15,11 @@ import {Label, Link, Sub, Text} from './Style'
 export const Appearance = () => {
   const {store, configService} = useState()
 
-  const onChangeTheme = (theme: string) => () => configService.updateConfig({theme})
+  const onChangeTheme = (main: ThemeName) => () => configService.updateTheme({main})
 
-  const onChangeCodeTheme = (codeTheme: string) => () => configService.updateConfig({codeTheme})
+  const onChangeCodeTheme = (code: CodeThemeName) => () => configService.updateTheme({code})
 
-  const onChangeFont = (font: string) => () => configService.updateConfig({font})
+  const onChangeFont = (font: FontName) => () => configService.updateConfig({font})
 
   const onChangeFontSize = (e: any) =>
     configService.updateConfig({fontSize: Number(e.target.value)})
@@ -30,7 +36,18 @@ export const Appearance = () => {
           <For each={Object.entries(ConfigService.themes)}>
             {([key, value]) => (
               <Link onClick={onChangeTheme(key)}>
-                {value.label} {key === configService.theme.value && '✅'}
+                <span>{value.label}</span>
+                <Switch>
+                  <Match when={key === configService.theme.value}>
+                    <IconCheckBox />
+                  </Match>
+                  <Match when={key === store.config.theme.mainDark}>
+                    <IconDarkMode />
+                  </Match>
+                  <Match when={key === store.config.theme.mainLight}>
+                    <IconLightMode />
+                  </Match>
+                </Switch>
               </Link>
             )}
           </For>
@@ -40,7 +57,18 @@ export const Appearance = () => {
           <For each={Object.entries(ConfigService.codeThemes)}>
             {([key, value]) => (
               <Link onClick={onChangeCodeTheme(key)}>
-                {value.label} {key === configService.codeTheme.value && '✅'}
+                <span>{value.label}</span>
+                <Switch>
+                  <Match when={key === configService.codeTheme.value}>
+                    <IconCheckBox />
+                  </Match>
+                  <Match when={key === store.config.theme.codeDark}>
+                    <IconDarkMode />
+                  </Match>
+                  <Match when={key === store.config.theme.codeLight}>
+                    <IconLightMode />
+                  </Match>
+                </Switch>
               </Link>
             )}
           </For>
@@ -50,7 +78,10 @@ export const Appearance = () => {
           <For each={Object.entries(ConfigService.fonts)}>
             {([key, value]) => (
               <Link onClick={onChangeFont(key)}>
-                {value.label} {key === configService.font.value && '✅'}
+                <span>{value.label}</span>
+                <Show when={key === configService.font.value}>
+                  <IconCheckBox />
+                </Show>
               </Link>
             )}
           </For>
