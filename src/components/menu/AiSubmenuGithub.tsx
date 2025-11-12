@@ -5,8 +5,9 @@ import {copy} from '@/remote/clipboard'
 import type {CopilotSignIn} from '@/remote/copilot'
 import {useState} from '@/state'
 import {IconButton} from '../Button'
-import {IconCheck, IconContentCopy, IconOpenInNew, IconToggleOff, IconToggleOn} from '../Icon'
-import {Label, Link, Note, Sub, Text} from './Style'
+import {IconContentCopy, IconOpenInNew, IconToggleOff, IconToggleOn} from '../Icon'
+import {Link} from './Link'
+import {Label, Note, Sub, Text} from './Style'
 
 const UserCode = styled('code')`
   margin-left: 10px;
@@ -18,9 +19,8 @@ const UserCode = styled('code')`
 const POLL_INTERVAL = isTest ? 10 : 6_000
 
 export const AiSubmenuGithub = () => {
-  const {store, copilotService} = useState()
+  const {store, copilotService, toastService} = useState()
   const [codeResult, setCodeResult] = createSignal<CopilotSignIn>()
-  const [copied, setCopied] = createSignal(false)
   const [done, setDone] = createSignal(false)
 
   const onDisconnect = async () => {
@@ -37,7 +37,7 @@ export const AiSubmenuGithub = () => {
     const value = codeResult()?.userCode
     if (!value) return
     await copy(value)
-    setCopied(true)
+    toastService.open({message: 'User code copied to clipboard', duration: 2000})
   }
 
   const onVerify = async () => {
@@ -64,14 +64,6 @@ export const AiSubmenuGithub = () => {
     })
   })
 
-  createEffect(() => {
-    if (!copied()) return
-    const id = setTimeout(() => {
-      setCopied(false)
-    }, 1000)
-    onCleanup(() => clearTimeout(id))
-  })
-
   return (
     <>
       <Label>GitHub Copilot</Label>
@@ -89,7 +81,7 @@ export const AiSubmenuGithub = () => {
           <Text>
             User Code: <UserCode>{codeResult()?.userCode}</UserCode>
             <IconButton onClick={onCopy} data-testid="copy_verification_uri">
-              {copied() ? <IconCheck /> : <IconContentCopy />}
+              <IconContentCopy />
             </IconButton>
           </Text>
           <Link onClick={onVerify}>

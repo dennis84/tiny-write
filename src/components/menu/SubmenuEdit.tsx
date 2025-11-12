@@ -1,4 +1,4 @@
-import {createEffect, createSignal, onCleanup, Show} from 'solid-js'
+import {Show} from 'solid-js'
 import {isMac, isTauri, mod} from '@/env'
 import {copyAllAsMarkdown} from '@/remote/clipboard'
 import {useState} from '@/state'
@@ -10,11 +10,11 @@ import {
   IconRedo,
   IconUndo,
 } from '../Icon'
-import {Keys, Label, Link, Sub} from './Style'
+import {Link} from './Link'
+import {Label, Sub} from './Style'
 
 export const SubmenuEdit = () => {
-  const {collabService, fileService} = useState()
-  const [lastAction, setLastAction] = createSignal<string | undefined>()
+  const {collabService, fileService, toastService} = useState()
 
   const modKey = isMac ? '⌘' : mod
 
@@ -28,7 +28,6 @@ export const SubmenuEdit = () => {
 
   const cmd = (cmd: string) => {
     ;(document as any).execCommand(cmd)
-    setLastAction(cmd)
   }
 
   const onCopyAllAsMd = async () => {
@@ -36,39 +35,31 @@ export const SubmenuEdit = () => {
     const state = currentFile?.editorView?.state
     if (!state) return
     await copyAllAsMarkdown(state)
-    setLastAction('copy-md')
+    toastService.open({message: 'Copied all content as markdown', duration: 2000})
   }
-
-  createEffect(() => {
-    if (!lastAction()) return
-    const id = setTimeout(() => {
-      setLastAction(undefined)
-    }, 1000)
-    onCleanup(() => clearTimeout(id))
-  })
 
   return (
     <>
       <Label>Edit</Label>
       <Sub data-tauri-drag-region="true">
-        <Link onClick={onUndo}>
-          <IconUndo /> Undo <Keys keys={[modKey, 'z']} />
+        <Link onClick={onUndo} keys={[modKey, 'z']}>
+          <IconUndo /> Undo
         </Link>
-        <Link onClick={onRedo}>
-          <IconRedo /> Redo <Keys keys={[modKey, ...(isMac ? ['Shift', 'z'] : ['y'])]} />
+        <Link onClick={onRedo} keys={[modKey, ...(isMac ? ['Shift', 'z'] : ['y'])]}>
+          <IconRedo /> Redo
         </Link>
-        <Link onClick={() => cmd('cut')}>
-          <IconContentCut /> Cut <Keys keys={[modKey, 'x']} />
+        <Link onClick={() => cmd('cut')} keys={[modKey, 'x']}>
+          <IconContentCut /> Cut
         </Link>
-        <Link onClick={() => cmd('paste')} disabled={!isTauri()}>
-          <IconContentPaste /> Paste <Keys keys={[modKey, 'p']} />
+        <Link onClick={() => cmd('paste')} disabled={!isTauri()} keys={[modKey, 'p']}>
+          <IconContentPaste /> Paste
         </Link>
-        <Link onClick={() => cmd('copy')}>
-          <IconContentCopy /> Copy {lastAction() === 'copy' && '📋'} <Keys keys={[modKey, 'c']} />
+        <Link onClick={() => cmd('copy')} keys={[modKey, 'c']}>
+          <IconContentCopy /> Copy
         </Link>
         <Show when={fileService.currentFile?.editorView}>
           <Link onClick={onCopyAllAsMd}>
-            <IconMarkdownCopy /> Copy all as markdown {lastAction() === 'copy-md' && '📋'}
+            <IconMarkdownCopy /> Copy all as markdown
           </Link>
         </Show>
       </Sub>

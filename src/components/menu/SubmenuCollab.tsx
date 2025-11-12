@@ -3,12 +3,12 @@ import {WEB_URL} from '@/env'
 import {copy} from '@/remote/clipboard'
 import {Page, useState} from '@/state'
 import {IconCloud, IconCloudOff, IconGroup, IconLink} from '../Icon'
-import {Label, Link, Sub, Text} from './Style'
+import {Link} from './Link'
+import {Label, Sub, Text} from './Style'
 
 export const SubmenuCollab = () => {
-  const {store, collabService} = useState()
+  const {store, collabService, toastService} = useState()
   const [collabUsers, setCollabUsers] = createSignal(0)
-  const [lastAction, setLastAction] = createSignal<string | undefined>()
 
   const onCollabStart = () => {
     collabService.startCollab()
@@ -30,7 +30,7 @@ export const SubmenuCollab = () => {
 
     if (joinUrl) {
       await copy(joinUrl)
-      setLastAction('copy-collab-link')
+      toastService.open({message: 'Collab link copied to clipboard', duration: 2000})
     }
   }
 
@@ -43,14 +43,6 @@ export const SubmenuCollab = () => {
       setCollabUsers(0)
       provider?.awareness.off('update', fn)
     })
-  })
-
-  createEffect(() => {
-    if (!lastAction()) return
-    const id = setTimeout(() => {
-      setLastAction(undefined)
-    }, 1000)
-    onCleanup(() => clearTimeout(id))
   })
 
   return (
@@ -68,7 +60,7 @@ export const SubmenuCollab = () => {
             <IconCloudOff /> Disconnect
           </Link>
           <Link onClick={onCopyCollabLink}>
-            <IconLink /> Copy Link {lastAction() === 'copy-collab-link' && '📋'}
+            <IconLink /> Copy Link
           </Link>
           <Text>
             <IconGroup /> {collabUsers()} {collabUsers() === 1 ? 'user' : 'users'} connected

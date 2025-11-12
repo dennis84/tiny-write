@@ -23,7 +23,8 @@ import {
   LangIcon,
 } from '../Icon'
 import {Tooltip, TooltipButton, TooltipDivider} from '../Tooltip'
-import {ITEM_HEIGHT, itemCss, Label, Link, Sub} from './Style'
+import {Link} from './Link'
+import {ITEM_HEIGHT, itemCss, Label, Sub} from './Style'
 
 const HighlightContent = styled('div')`
   position: absolute;

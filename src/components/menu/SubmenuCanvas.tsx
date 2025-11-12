@@ -1,7 +1,8 @@
 import {Show} from 'solid-js'
 import {useState} from '@/state'
 import {IconAdjust, IconCheckBox, IconClose, IconGrid3x3} from '../Icon'
-import {Label, Link, Sub} from './Style'
+import {Link} from './Link'
+import {Label, Sub} from './Style'
 
 export const SubmenuCanvas = ({maybeHide}: {maybeHide: () => void}) => {
   const {canvasService, canvasCollabService} = useState()

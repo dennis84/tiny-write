@@ -47,10 +47,10 @@ export const itemCss = `
   line-height: ${ITEM_HEIGHT};
   font-family: var(--menu-font-family);
   text-align: left;
-  .icon {
+  > .icon {
     margin: 0 10px;
   }
-  .icon:first-child {
+  > .icon:first-child {
     margin-left: 0;
   }
 `
@@ -66,46 +66,6 @@ export const Note = styled('p')`
   border-radius: var(--border-radius);
   padding: 10px;
   margin: 10px 0;
-`
-
-// biome-ignore format: ternary breaks ugly
-export const Link = styled('button')`
-  ${itemCss}
-  background: none;
-  border: 0;
-  cursor: var(--cursor-pointer);
-  i {
-    font-style: normal;
-  }
-  > .keys {
-    justify-self: flex-end;
-    margin-left: auto;
-  }
-  &:hover {
-    color: var(--primary-background);
-    background: var(--foreground-10);
-    border-radius: var(--border-radius-small);
-    > span i {
-      position: relative;
-      box-shadow: 0 3px 0 0 var(--foreground-60);
-      top: -1px;
-    }
-  }
-  &:active {
-    > span i {
-      position: relative;
-      box-shadow: none;
-      top: 1px;
-    }
-  }
-  &[disabled] {
-    color: var(--foreground-60);
-    cursor: not-allowed;
-  }
-  ${(props: any) => props.active ? `
-    background: var(--primary-background-20);
-    border-radius: var(--border-radius);
-  ` : ''}
 `
 
 export const Keys = (props: {keys: string[]}) => (

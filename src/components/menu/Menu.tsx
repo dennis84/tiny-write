@@ -2,7 +2,6 @@ import {createEffect, type JSX, Show} from 'solid-js'
 import {
   IconAi,
   IconAiAssistant,
-  IconCheckBox,
   IconContrast,
   IconDesktopLandscape,
   IconFullscreen,
@@ -24,8 +23,9 @@ import {Bin} from './Bin'
 import {ChangeSet} from './ChangeSet'
 import {CodeFormat} from './CodeFormat'
 import {Help} from './Help'
+import {Link} from './Link'
 import {MenuNavbar} from './Navbar'
-import {Container, Keys, Label, Link, Sub} from './Style'
+import {Container, Label, Sub} from './Style'
 import {SubmenuCanvas} from './SubmenuCanvas'
 import {SubmenuCode} from './SubmenuCode'
 import {SubmenuCollab} from './SubmenuCollab'
@@ -161,40 +161,31 @@ export const Menu = () => {
                   <IconPrettier /> Code Format
                 </Link>
               </Show>
-              <Show when={store.location?.page === Page.Editor}>
+              <Show when={store.location?.page === Page.Editor && store.location.editorId}>
                 <Link onClick={() => menuService.show(MenuId.CHANGE_SET)}>
                   <IconHistory /> Change Set
                 </Link>
               </Show>
               <Show when={isTauri()}>
-                <Link onClick={onToggleFullscreen}>
+                <Link
+                  onClick={onToggleFullscreen}
+                  checked={store.fullscreen}
+                  keys={[modKey, 'Enter']}
+                >
                   <IconFullscreen /> Fullscreen
-                  <Show when={store.fullscreen}>
-                    <IconCheckBox />
-                  </Show>
-                  <Keys keys={[modKey, 'Enter']} />
                 </Link>
               </Show>
               <Show when={store.location?.page === Page.Editor}>
-                <Link onClick={onToggleTypewriterMode}>
+                <Link onClick={onToggleTypewriterMode} checked={store.config.typewriterMode}>
                   <IconVerticalAlignCenter /> Typewriter mode
-                  <Show when={store.config.typewriterMode}>
-                    <IconCheckBox />
-                  </Show>
                 </Link>
-                <Link onClick={onToggleSpellcheck}>
+                <Link onClick={onToggleSpellcheck} checked={store.config.spellcheck}>
                   <IconSpellcheck /> Spellcheck
-                  <Show when={store.config.spellcheck}>
-                    <IconCheckBox />
-                  </Show>
                 </Link>
               </Show>
               <Show when={isTauri()}>
-                <Link onClick={onToggleAlwaysOnTop}>
+                <Link onClick={onToggleAlwaysOnTop} checked={store.config.alwaysOnTop}>
                   <IconDesktopLandscape /> Always on Top
-                  <Show when={store.config.alwaysOnTop}>
-                    <IconCheckBox />
-                  </Show>
                 </Link>
               </Show>
             </Sub>
@@ -224,8 +215,8 @@ export const Menu = () => {
               </Link>
               <Link onClick={() => menuService.show(MenuId.HELP)}>Help</Link>
               <Show when={isTauri()}>
-                <Link onClick={() => quit()}>
-                  Quit <Keys keys={[modKey, 'q']} />
+                <Link onClick={() => quit()} keys={[modKey, 'q']}>
+                  Quit
                 </Link>
               </Show>
               <Show when={isDev}>

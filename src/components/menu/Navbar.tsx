@@ -104,7 +104,11 @@ const MenuButton = () => {
       </Show>
       <Show when={menuService.menu()}>
         <TooltipHelp title="Close menu">
-          <IconButton active={true} onClick={onMenuButtonClick} data-testid="menu_navbar_close">
+          <IconButton
+            active={menuService.menu() === MenuId.MAIN}
+            onClick={onMenuButtonClick}
+            data-testid="menu_navbar_close"
+          >
             <IconClose />
           </IconButton>
         </TooltipHelp>
@@ -184,13 +188,19 @@ export const MenuNavbar = () => {
     <StickyContainer>
       <ButtonGroup>
         <DarkModeToggle />
-        <Show when={menuService.menu() === MenuId.MAIN}>
-          <MenuButton />
-        </Show>
         <Show when={menuService.menu() !== MenuId.MAIN}>
-          <Button onClick={() => menuService.show(MenuId.MAIN)} data-testid="menu_navbar_back">
-            <IconArrowBack /> Back to menu
-          </Button>
+          <TooltipHelp title="Back to main menu">
+            <IconButton
+              onClick={() => menuService.show(MenuId.MAIN)}
+              active={true}
+              data-testid="menu_navbar_back"
+            >
+              <IconArrowBack />
+            </IconButton>
+          </TooltipHelp>
+        </Show>
+        <Show when={menuService.menu()}>
+          <MenuButton />
         </Show>
       </ButtonGroup>
     </StickyContainer>

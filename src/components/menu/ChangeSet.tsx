@@ -3,10 +3,10 @@ import {createSignal, For, onCleanup, Show} from 'solid-js'
 import {ButtonGroup, ButtonPrimary} from '@/components/Button'
 import {useState, type Version} from '@/state'
 import {DrawerContent} from '../Drawer'
-import {IconCheckBox} from '../Icon'
+import {Link} from './Link'
 import {MenuDrawer} from './Menu'
 import {MenuNavbar} from './Navbar'
-import {Label, Link, Sub} from './Style'
+import {Label, Sub} from './Style'
 
 export const ChangeSet = () => {
   const {changeSetService, fileService} = useState()
@@ -44,11 +44,11 @@ export const ChangeSet = () => {
         <Sub data-tauri-drag-region="true">
           <For each={versions()} fallback={<p>No snapshots yet</p>}>
             {(version) => (
-              <Link onClick={() => renderVersion(version)}>
-                <span>{format(version.date, 'dd MMMM HH:mm:ss')}</span>
-                <Show when={version.date === active()?.date}>
-                  <IconCheckBox />
-                </Show>
+              <Link
+                onClick={() => renderVersion(version)}
+                checked={version.date === active()?.date}
+              >
+                {format(version.date, 'dd MMMM HH:mm:ss')}
               </Link>
             )}
           </For>

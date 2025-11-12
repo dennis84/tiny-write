@@ -1,4 +1,4 @@
-import {For, Match, Show, Switch} from 'solid-js'
+import {For, Match, Switch} from 'solid-js'
 import {
   type CodeThemeName,
   ConfigService,
@@ -8,9 +8,10 @@ import {
 import {useState} from '@/state'
 import {DrawerContent} from '../Drawer'
 import {IconCheckBox, IconDarkMode, IconLightMode} from '../Icon'
+import {Link} from './Link'
 import {MenuDrawer} from './Menu'
 import {MenuNavbar} from './Navbar'
-import {Label, Link, Sub, Text} from './Style'
+import {Label, Sub, Text} from './Style'
 
 export const Appearance = () => {
   const {store, configService} = useState()
@@ -77,11 +78,8 @@ export const Appearance = () => {
         <Sub data-tauri-drag-region="true">
           <For each={Object.entries(ConfigService.fonts)}>
             {([key, value]) => (
-              <Link onClick={onChangeFont(key)}>
-                <span>{value.label}</span>
-                <Show when={key === configService.font.value}>
-                  <IconCheckBox />
-                </Show>
+              <Link onClick={onChangeFont(key)} checked={key === configService.font.value}>
+                {value.label}
               </Link>
             )}
           </For>
