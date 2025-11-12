@@ -217,20 +217,20 @@ export const SubmenuTree = (props: Props) => {
   const onRename = async (e: MouseEvent) => {
     e.stopPropagation() // prevent bubble to drawer onClick
 
-    const item = selected()?.value
-    if (!item) return
+    const file = selected()?.value
+    if (!file) return
 
     closeTooltip()
     inputLineService.setInputLine({
-      value: item?.title ?? '',
+      value: file?.title ?? '',
       onEnter: async (value: string) => {
         const title = value.trim() || undefined
-        if (isFile(item)) {
-          fileService.updateFile(item.id, {title})
-          await FileService.saveFile(item)
+        if (isFile(file)) {
+          fileService.updateFile(file.id, {title})
+          await FileService.saveFile(file)
         } else {
-          canvasService.updateCanvas(item.id, {title})
-          await CanvasService.saveCanvas(item)
+          canvasService.updateCanvas(file.id, {title})
+          await CanvasService.saveCanvas(file)
         }
       },
     })

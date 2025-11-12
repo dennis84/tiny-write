@@ -78,7 +78,6 @@ const ButtonLinkEl = styled('button')`
 
 export const ButtonGroup = styled('div')`
   display: flex;
-  flex-wrap: wrap;
   gap: 5px;
 `
 

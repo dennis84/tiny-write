@@ -16,7 +16,6 @@ export const SubmenuCode = () => {
   const onChangeLang = () => {
     const currentFile = fileService.currentFile
     if (!currentFile) return
-
     inputLineService.setInputLine({
       value: currentFile.codeLang ?? '',
       words: getLanguageNames(),

@@ -1,9 +1,12 @@
 import {useNavigate} from '@solidjs/router'
-import {Show} from 'solid-js'
+import {createEffect, createSignal, Match, Show, Switch} from 'solid-js'
 import {styled} from 'solid-styled-components'
+import {getLanguageNames} from '@/codemirror/highlight'
 import {useOpen} from '@/hooks/open'
+import {CanvasService} from '@/services/CanvasService'
+import {FileService} from '@/services/FileService'
 import {MenuId} from '@/services/MenuService'
-import {Page, useState} from '@/state'
+import {isCodeFile, Page, useState} from '@/state'
 import {Button, ButtonGroup, IconButton} from '../Button'
 import {
   IconAiAssistant,
@@ -12,9 +15,13 @@ import {
   IconClose,
   IconDarkMode,
   IconFullscreen,
+  IconGesture,
   IconLightMode,
   IconMoreVert,
+  IconTextSnippet,
+  LangIcon,
 } from '../Icon'
+import {Tooltip, TooltipButton} from '../Tooltip'
 import {TooltipHelp} from '../TooltipHelp'
 
 const FloatingContainer = styled('div')`
@@ -33,6 +40,119 @@ const StickyContainer = styled('div')`
   justify-content: flex-end;
   padding: 5px;
 `
+
+const CurrentFileButton = () => {
+  const {codeService, canvasService, fileService, inputLineService} = useState()
+  const [title, setTitle] = createSignal<string | undefined>(undefined)
+  const [anchor, setAnchor] = createSignal<HTMLElement>()
+
+  const closeTooltip = () => {
+    setAnchor(undefined)
+  }
+
+  const focus = () => {
+    fileService.currentFile?.editorView?.focus()
+    fileService.currentFile?.codeEditorView?.focus()
+  }
+
+  const onOpen = (e: MouseEvent) => {
+    setAnchor(e.currentTarget as HTMLElement)
+  }
+
+  const onRename = () => {
+    closeTooltip()
+
+    const file = fileService.currentFile
+    const canvas = canvasService.currentCanvas
+
+    if (file) {
+      inputLineService.setInputLine({
+        value: file?.title ?? '',
+        onEnter: async (value: string) => {
+          const title = value.trim() || undefined
+          fileService.updateFile(file.id, {title})
+          await FileService.saveFile(file)
+        },
+      })
+    } else if (canvas) {
+      inputLineService.setInputLine({
+        value: canvas?.title ?? '',
+        onEnter: async (value: string) => {
+          const title = value.trim() || undefined
+          canvasService.updateCanvas(canvas.id, {title})
+          await CanvasService.saveCanvas(canvas)
+        },
+      })
+    }
+  }
+
+  const onChangeLanguage = () => {
+    const file = fileService.currentFile
+    if (!file) return
+    closeTooltip()
+    inputLineService.setInputLine({
+      value: file.codeLang ?? '',
+      words: getLanguageNames(),
+      onEnter: (lang) => {
+        codeService.updateLang(file, lang)
+        focus()
+      },
+    })
+  }
+
+  const onFormat = async () => {
+    const file = fileService.currentFile
+    if (!file) return
+    closeTooltip()
+    await codeService.prettify(file)
+    focus()
+  }
+
+  createEffect(async () => {
+    if (fileService.currentFile) {
+      setTitle(await fileService.getTitle(fileService.currentFile))
+    } else if (canvasService.currentCanvas) {
+      setTitle(canvasService.currentCanvas.title ?? 'Canvas')
+    }
+  })
+
+  return (
+    <>
+      <Button onClick={onOpen}>
+        <Switch>
+          {/* 2nd condition for rerendering */}
+          <Match
+            when={
+              isCodeFile(fileService.currentFile) &&
+              (fileService.currentFile?.codeLang || !fileService.currentFile?.codeLang)
+            }
+            keyed
+          >
+            <LangIcon name={fileService.currentFile?.codeLang} />
+          </Match>
+          <Match when={fileService.currentFile}>
+            <IconTextSnippet />
+          </Match>
+          <Match when={canvasService.currentCanvas}>
+            <IconGesture />
+          </Match>
+        </Switch>
+        {title()}
+      </Button>
+      <Show when={anchor()}>
+        {(a) => (
+          <Tooltip anchor={a()} backdrop={false} onClose={closeTooltip}>
+            <TooltipButton onClick={onRename}>Rename</TooltipButton>
+            <Show when={isCodeFile(fileService.currentFile)}>
+              <TooltipButton onClick={onChangeLanguage}>Change Language</TooltipButton>
+              <TooltipButton onClick={onFormat}>Prettify</TooltipButton>
+            </Show>
+          </Tooltip>
+        )}
+      </Show>
+    </>
+  )
+}
 
 const DarkModeToggle = () => {
   const {configService} = useState()
@@ -208,12 +328,15 @@ export const MenuNavbar = () => {
 }
 
 export const FloatingNavbar = () => {
-  const {store, menuService} = useState()
+  const {store, canvasService, fileService, menuService} = useState()
 
   return (
     <FloatingContainer>
       <ButtonGroup>
         <BackButton />
+        <Show when={fileService.currentFile || canvasService.currentCanvas}>
+          <CurrentFileButton />
+        </Show>
         <Show when={!menuService.assistant() && store.location?.page !== Page.Assistant}>
           <AssistantButton />
         </Show>
