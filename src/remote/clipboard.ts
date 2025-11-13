@@ -3,6 +3,14 @@ import type {EditorState} from 'prosemirror-state'
 import {isTauri} from '@/env'
 import {serialize} from '@/prosemirror/markdown-serialize'
 
+export const readText = async (): Promise<string> => {
+  if (isTauri()) {
+    return clipboard.readText()
+  } else {
+    return await navigator.clipboard.readText()
+  }
+}
+
 export const copy = async (text: string): Promise<void> => {
   if (isTauri()) {
     return clipboard.writeText(text)

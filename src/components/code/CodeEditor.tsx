@@ -2,6 +2,7 @@ import {createEffect, onCleanup} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {useState} from '@/state'
 import {Scroll} from '../Layout'
+import {ContextMenu} from './ContextMenu'
 import {codeMirror} from './Style'
 
 export const CodeMirrorContainer = styled('div')`
@@ -48,6 +49,7 @@ export const CodeEditor = () => {
   return (
     <Scroll data-testid="code_scroll">
       <CodeMirrorContainer ref={containerRef} />
+      <ContextMenu />
     </Scroll>
   )
 }
