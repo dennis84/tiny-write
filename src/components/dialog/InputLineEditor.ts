@@ -1,13 +1,14 @@
 import {acceptCompletion, autocompletion, moveCompletionSelection} from '@codemirror/autocomplete'
 import {standardKeymap} from '@codemirror/commands'
 import type {Extension} from '@codemirror/state'
-import {crosshairCursor, drawSelection, EditorView, keymap} from '@codemirror/view'
+import {crosshairCursor, drawSelection, EditorView, keymap, placeholder} from '@codemirror/view'
 
 interface Props {
   doc: string
   parent: Element
   theme: Extension
   words?: string[]
+  placeholder?: string
   onClose: () => void
   onEnter: (lang: string) => void
 }
@@ -23,6 +24,7 @@ export class LangInputEditor {
       parent: this.props.parent,
       extensions: [
         props.theme,
+        placeholder(props.placeholder ?? ''),
         drawSelection(),
         crosshairCursor(),
         autocompletion({

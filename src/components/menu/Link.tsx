@@ -53,7 +53,7 @@ type ButtonAttrs = JSX.ButtonHTMLAttributes<HTMLButtonElement> & {
 }
 
 export const Link = (props: ButtonAttrs) => {
-  const [local, others] = splitProps(props, ['checked', 'children'])
+  const [local, others] = splitProps(props, ['checked', 'children', 'keys'])
   return (
     <LinkEl {...others}>
       {/* Wrap text in span so that margin-left:0  is not applied on icon */}

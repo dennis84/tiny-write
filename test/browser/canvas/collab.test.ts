@@ -37,13 +37,13 @@ test('share', async ({page, browser}) => {
   await expect(page2.locator('[data-testid="canvas_editor"]')).toHaveCount(1)
   await page2
     .locator('[data-testid="canvas_container"]')
-    .click({button: 'right', position: {x: 400, y: 1}})
+    .click({button: 'right', position: {x: 400, y: 100}})
   await page2.click('[data-testid="context_menu_new_file"]')
 
   await expect(page2.locator('[data-testid="canvas_editor"]')).toHaveCount(2)
   await expect(page.locator('[data-testid="canvas_editor"]')).toHaveCount(2)
 
-  await page2.locator('[data-testid="canvas_container"]').dblclick({position: {x: 410, y: 10}})
+  await page2.locator('[data-testid="canvas_container"]').dblclick({position: {x: 410, y: 100}})
 
   await page.locator('.ProseMirror').nth(1).pressSequentially('Hello', {delay})
 

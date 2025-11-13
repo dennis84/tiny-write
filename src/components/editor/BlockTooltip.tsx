@@ -5,7 +5,7 @@ import {createEffect, createSignal, Show} from 'solid-js'
 import {getLanguageNames} from '@/codemirror/highlight'
 import {createCodeFence} from '@/components/assistant/util'
 import {
-  IconAiAssistant,
+  IconAdd,
   IconCodeBlocks,
   IconFileSave,
   IconFloatCenter,
@@ -14,6 +14,7 @@ import {
   IconFormatImageRight,
   IconLanguage,
   IconOpenInNew,
+  IconQuestion,
   IconUnfoldLess,
   IconVariableRemove,
   IconVisibility,
@@ -21,8 +22,11 @@ import {
 } from '@/components/Icon'
 import {Tooltip, TooltipButton, TooltipDivider} from '@/components/Tooltip'
 import {useOpen} from '@/hooks/open'
+import editorTextHandling from '@/prompts/editor-text-handling.md?raw'
+import editorCodeBlockHandling from '@/prompts/editor-text-handling.md?raw'
 import {Align} from '@/prosemirror/image/interfaces'
 import {saveSvg} from '@/remote/svg'
+import type {ChatMessage} from '@/services/CopilotService'
 import {AttachmentType, useState} from '@/state'
 import type {Block} from './BlockHandle'
 
@@ -32,7 +36,7 @@ interface Props {
 }
 
 export const BlockTooltip = (props: Props) => {
-  const {fileService, menuService, threadService, inputLineService} = useState()
+  const {fileService, menuService, threadService, inputLineService, copilotService} = useState()
   const [tooltipAnchor, setTooltipAnchor] = createSignal<ReferenceElement | undefined>()
   const {openUrl} = useOpen()
 
@@ -128,7 +132,7 @@ export const BlockTooltip = (props: Props) => {
     closeTooltip()
   }
 
-  const onCopilot = () => {
+  const onCopilotAddToChat = () => {
     const block = props.selectedBlock
     if (!block) return
 
@@ -140,6 +144,65 @@ export const BlockTooltip = (props: Props) => {
         code: block.blockNode.textContent,
         lang: block.blockNode.attrs.lang,
       }),
+    })
+
+    closeTooltip()
+  }
+
+  const onCopilotInline = () => {
+    const block = props.selectedBlock
+    if (!block) return
+
+    inputLineService.setInputLine({
+      value: '',
+      placeholder: 'Ask copilot about the selected block...',
+      onEnter: (text) => {
+        const messages: ChatMessage[] = [
+          {
+            role: 'user',
+            content: [
+              {type: 'text', text},
+              {type: 'text', text: block.blockNode.textContent},
+            ],
+          },
+        ]
+
+        if (block.blockNode.type.name === 'code_block') {
+          messages.unshift({
+            role: 'system',
+            content: [{type: 'text', text: editorCodeBlockHandling}],
+          })
+        } else {
+          messages.unshift({role: 'system', content: [{type: 'text', text: editorTextHandling}]})
+        }
+
+        let answer = ''
+        copilotService.completions(
+          messages,
+          (chunk) => {
+            for (const choice of chunk.choices) {
+              const content = choice.delta?.content ?? choice.message?.content ?? ''
+              answer += content
+            }
+          },
+          () => {
+            if (answer) {
+              const view = fileService.currentFile?.editorView
+              if (!view) return
+              const tr = view.state.tr
+              // replace the contents inside the block not replacing the block itself.
+              tr.replaceWith(
+                block.blockPos + 1,
+                block.blockPos + block.blockNode.nodeSize - 1,
+                view.state.schema.text(answer),
+              )
+
+              view.dispatch(tr)
+            }
+          },
+          false,
+        )
+      },
     })
 
     closeTooltip()
@@ -252,6 +315,7 @@ export const BlockTooltip = (props: Props) => {
               placement="left"
               fallbackPlacements={['left-start', 'left', 'bottom', 'top']}
             >
+              {/* Code block actions */}
               <Show when={block().blockNode?.type.name === 'code_block'}>
                 <Show when={block().blockNode.attrs.lang === 'mermaid'}>
                   <TooltipButton onClick={onMermaidSave}>
@@ -280,11 +344,17 @@ export const BlockTooltip = (props: Props) => {
                 <TooltipButton onClick={onFoldAll}>
                   <IconUnfoldLess /> fold all
                 </TooltipButton>
-                <TooltipButton onClick={onCopilot}>
-                  <IconAiAssistant /> Ask copilot
-                </TooltipButton>
                 <TooltipDivider />
               </Show>
+              {/* Copilot actions */}
+              <TooltipButton onClick={onCopilotAddToChat} data-testid="copilot_add_to_chat">
+                <IconAdd /> Add to copilot chat
+              </TooltipButton>
+              <TooltipButton onClick={onCopilotInline} data-testid="copilot_ask_inline">
+                <IconQuestion /> Ask copilot
+              </TooltipButton>
+              <TooltipDivider />
+              {/* Image actions */}
               <Show
                 when={
                   block().cursorNode?.type.name === 'image' ||
@@ -302,6 +372,7 @@ export const BlockTooltip = (props: Props) => {
                 </TooltipButton>
                 <TooltipDivider />
               </Show>
+              {/* Link actions */}
               <Show when={getLinkHref()}>
                 {(href) => (
                   <>

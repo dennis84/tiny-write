@@ -55,6 +55,7 @@ import MaterialSymbolsMoreVert from '~icons/material-symbols/more-vert'
 import MaterialSymbolsOpenInFull from '~icons/material-symbols/open-in-full'
 import MaterialSymbolsOpenInNew from '~icons/material-symbols/open-in-new'
 import MaterialSymbolsPostAdd from '~icons/material-symbols/post-add'
+import MaterialSymbolsQuestionMark from '~icons/material-symbols/question-mark'
 import MaterialSymbolsRedo from '~icons/material-symbols/redo'
 import MaterialSymbolsRefresh from '~icons/material-symbols/refresh'
 import MaterialSymbolsSaveAs from '~icons/material-symbols/save-as'
@@ -602,6 +603,12 @@ export const IconDarkMode = () => (
 export const IconLightMode = () => (
   <SvgIcon>
     <MaterialSymbolsLightMode />
+  </SvgIcon>
+)
+
+export const IconQuestion = () => (
+  <SvgIcon>
+    <MaterialSymbolsQuestionMark />
   </SvgIcon>
 )
 

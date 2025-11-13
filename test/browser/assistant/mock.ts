@@ -63,12 +63,22 @@ export const mockCopilotModels = async (page: Page) => {
   })
 }
 
-export const mockCopilotCompletion = async (page: Page, textChunks: string[], title?: string) => {
+interface CompletionResponse {
+  chunks?: string[]
+  text?: string
+}
+
+export const mockCopilotCompletion = async (page: Page, resp: CompletionResponse) => {
   await page.route('*/**/?url=https://example.com/github/api/chat/completions', async (route) => {
-    if (title && !route.request().postDataJSON().stream) {
-      await route.fulfill({json: CopilotMock.completions(title)})
+    const stream = route.request().postDataJSON().stream
+    if (stream && resp.chunks) {
+      await route.fulfill({body: CopilotMock.completionsStream(resp.chunks)})
+    } else if (!stream && resp.text) {
+      await route.fulfill({json: CopilotMock.completions(resp.text)})
     } else {
-      await route.fulfill({body: CopilotMock.completionsStream(textChunks)})
+      throw new Error(
+        `Invalid completion response mock data (stream=${stream}, resp=${JSON.stringify(resp)})`,
+      )
     }
   })
 }

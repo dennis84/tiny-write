@@ -89,6 +89,8 @@ export const Main = (props: {state: State}) => {
         if (mainMatch) {
           const id = mainMatch.params.id
           await untrack(async () => {
+            // Reset attachments when navigating to a new page.
+            ctrl.threadService.setAttachments([])
             await ctrl.appService.setLocation({
               ...location.state,
               page,

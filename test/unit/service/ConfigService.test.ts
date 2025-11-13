@@ -75,15 +75,15 @@ test('toggleDarkMode', async () => {
   const service = new ConfigService(collabService, store, setState)
 
   expect(service.theme.value).toEqual('light')
-  expect(service.codeTheme.value).toEqual('material-light')
+  expect(service.codeTheme.value).toEqual('tokyo-night-day')
 
   await service.toggleDarkMode()
 
   expect(store.config.theme.main).toEqual('dark')
-  expect(store.config.theme.code).toEqual('dracula')
+  expect(store.config.theme.code).toEqual('tokyo-night')
   expect(store.config.theme.mainDark).toEqual('dark')
   expect(store.config.theme.mainLight).toEqual(undefined)
-  expect(store.config.theme.codeDark).toEqual('dracula')
+  expect(store.config.theme.codeDark).toEqual('tokyo-night')
   expect(store.config.theme.codeLight).toEqual(undefined)
 
   await service.updateTheme({main: 'solarized-light', code: 'solarized-light'})
@@ -92,15 +92,15 @@ test('toggleDarkMode', async () => {
   expect(store.config.theme.code).toEqual('solarized-light')
   expect(store.config.theme.mainDark).toEqual('dark')
   expect(store.config.theme.mainLight).toEqual('solarized-light')
-  expect(store.config.theme.codeDark).toEqual('dracula')
+  expect(store.config.theme.codeDark).toEqual('tokyo-night')
   expect(store.config.theme.codeLight).toEqual('solarized-light')
 
   await service.toggleDarkMode()
 
   expect(store.config.theme.main).toEqual('dark')
-  expect(store.config.theme.code).toEqual('dracula')
+  expect(store.config.theme.code).toEqual('tokyo-night')
   expect(store.config.theme.mainDark).toEqual('dark')
   expect(store.config.theme.mainLight).toEqual('solarized-light')
-  expect(store.config.theme.codeDark).toEqual('dracula')
+  expect(store.config.theme.codeDark).toEqual('tokyo-night')
   expect(store.config.theme.codeLight).toEqual('solarized-light')
 })

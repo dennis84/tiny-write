@@ -14,7 +14,7 @@ test.beforeEach(async ({page}) => {
 
 test('chat', async ({page}) => {
   await mockCopilotApiToken(page)
-  await mockCopilotCompletion(page, ['Test', '123'], 'Test Call')
+  await mockCopilotCompletion(page, {chunks: ['Test', '123'], text: 'Test Call'})
 
   await page.click('[data-testid="navbar_assistant_open"]')
   expect(page.getByText('Ask Copilot')).toBeVisible()
@@ -25,7 +25,12 @@ test('chat', async ({page}) => {
   await expect(page.locator('[data-testid="question_bubble"]')).toHaveText('Hello')
   await expect(page.locator('[data-testid="answer_bubble"]')).toContainText('Test123')
 
-  await mockCopilotCompletion(page, ['Aaa', 'bbb'])
+  // Check and wait for title update
+  await page.click('[data-testid="history"]')
+  expect(page.getByText('Test Call')).toBeVisible()
+  await page.click('[data-testid="tooltip_backdrop"]') // back to chat
+
+  await mockCopilotCompletion(page, {chunks: ['Aaa', 'bbb']})
 
   await page.locator('[data-testid="chat_input"] .cm-content').pressSequentially('Zzz', {delay})
   await page.click('[data-testid="send"]')
@@ -43,7 +48,7 @@ test('chat', async ({page}) => {
 test('edit question', async ({page}) => {
   // Setup
   await mockCopilotApiToken(page)
-  await mockCopilotCompletion(page, ['SetupAnswer'], 'Test Call')
+  await mockCopilotCompletion(page, {chunks: ['SetupAnswer'], text: 'Test Call'})
 
   await page.click('[data-testid="navbar_assistant_open"]')
   expect(page.getByText('Ask Copilot')).toBeVisible()
@@ -57,8 +62,13 @@ test('edit question', async ({page}) => {
   await expect(page.getByTestId('question_bubble')).toHaveText('SetupQuestion')
   await expect(page.getByTestId('answer_bubble')).toContainText('SetupAnswer')
 
+  // Check and wait for title update
+  await page.click('[data-testid="history"]')
+  expect(page.getByText('Test Call')).toBeVisible()
+  await page.click('[data-testid="tooltip_backdrop"]') // back to chat
+
   // Test case 1: Edit question
-  await mockCopilotCompletion(page, ['Answer1'], 'Test Call')
+  await mockCopilotCompletion(page, {chunks: ['Answer1']})
   await page.getByTestId('edit_message').click()
   await page.getByTestId('message_input').locator('.cm-content').clear()
   await page
@@ -72,7 +82,7 @@ test('edit question', async ({page}) => {
   await expect(page.getByTestId('pagination').nth(0)).toHaveText('2/2')
 
   // Test case 2: Regenerate answer
-  await mockCopilotCompletion(page, ['Answer2'], 'Test Call')
+  await mockCopilotCompletion(page, {chunks: ['Answer2']})
   await page.getByTestId('regenerate').click()
 
   await expect(page.getByTestId('pagination').nth(1)).toHaveText('2/2')
@@ -82,7 +92,7 @@ test('edit question', async ({page}) => {
   await page.getByTestId('pagination').getByTestId('prev').nth(1).click()
   await expect(page.getByTestId('pagination').nth(1)).toHaveText('1/2')
 
-  await mockCopilotCompletion(page, ['Answer3'], 'Test Call')
+  await mockCopilotCompletion(page, {chunks: ['Answer3']})
   await page
     .getByTestId('chat_input')
     .locator('.cm-content')

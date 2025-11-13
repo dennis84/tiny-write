@@ -41,6 +41,7 @@ export interface InputLineConfig {
   value: string
   onEnter: (lang: string) => void
   words?: string[]
+  placeholder?: string
 }
 
 export const InputLine = () => {
@@ -62,6 +63,7 @@ export const InputLine = () => {
       parent: ref,
       theme: getTheme(codeTheme.value),
       words: config.words,
+      placeholder: config.placeholder,
       onEnter: (lang) => {
         config.onEnter(lang)
         inputLineService.setInputLine(undefined)
