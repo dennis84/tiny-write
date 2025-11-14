@@ -9,6 +9,7 @@ import type {NodeViewConstructor} from 'prosemirror-view'
 import {initProseMirrorDoc} from 'y-prosemirror'
 import type * as Y from 'yjs'
 import {isTauri} from '@/env'
+import {addDecorationPlugin} from '@/prosemirror/add-decoration'
 import {createFileListingPlugin, fileListingKeymap} from '@/prosemirror/autocomplete/file-listing'
 import {
   createWordCompletionPlugins,
@@ -110,13 +111,16 @@ export class ProseMirrorService {
       createContainerPlugin(schema),
       selectedPlugin,
       createPasteMarkdownPlugin(schema),
+      addDecorationPlugin,
     ]
 
     let doc: Node
     const result = initProseMirrorDoc(props.type, schema)
-    if (result.doc.childCount === 0)
+    if (result.doc.childCount === 0) {
       doc = schema.topNodeType.create({}, schema.nodes.paragraph.create())
-    else doc = result.doc
+    } else {
+      doc = result.doc
+    }
 
     const permanentUserData = this.collabService.permanentUserData
     const awareness = this.collabService.provider?.awareness

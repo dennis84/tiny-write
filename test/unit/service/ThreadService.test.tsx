@@ -459,14 +459,12 @@ test('generateTitle', async () => {
   const copilotService = mock<CopilotService>()
   const service = new ThreadService(store, setState, copilotService)
 
-  copilotService.completions.mockImplementation(async (messages, onChunk, onDone) => {
+  copilotService.completionsSync.mockImplementation(async (messages) => {
     expect(messages).toHaveLength(3)
     const message = messages[2].content.find((c) => c.type === 'text')
     expect(message?.text).toContain('Generate a concise')
 
-    const choices = [{message: {content: 'Test'}}]
-    onChunk({choices})
-    onDone()
+    return 'Test'
   })
 
   const title = await service.generateTitle()

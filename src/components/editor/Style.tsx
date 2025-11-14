@@ -302,6 +302,16 @@ const proseMirror = (props: Props) => `
     @media print {
       padding-bottom: 0;
     }
+
+    /* Blinking node during AI processing */
+    @keyframes blink {
+      0% { opacity: 1; }
+      50% { opacity: 0.5; }
+      100% { opacity: 1; }
+    }
+    .blink {
+      animation: blink 1s infinite ease-in-out;
+    }
   }
 `
 

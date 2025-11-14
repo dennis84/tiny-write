@@ -307,6 +307,23 @@ export class CopilotService {
     }
   }
 
+  async completionsSync(messages: ChatMessage[]): Promise<string | undefined> {
+    return new Promise((resolve) => {
+      let answer = ''
+      return this.completions(
+        messages,
+        (chunk) => {
+          for (const choice of chunk.choices) {
+            const content = choice.delta?.content ?? choice.message?.content ?? ''
+            answer += content
+          }
+        },
+        () => resolve(answer),
+        false,
+      )
+    })
+  }
+
   stop() {
     this.streamingSignal[1](false)
   }

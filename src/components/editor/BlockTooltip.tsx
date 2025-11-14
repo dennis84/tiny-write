@@ -1,6 +1,7 @@
 import type {ReferenceElement} from '@floating-ui/dom'
 import {setBlockType} from 'prosemirror-commands'
 import {NodeSelection, TextSelection} from 'prosemirror-state'
+import {Decoration} from 'prosemirror-view'
 import {createEffect, createSignal, Show} from 'solid-js'
 import {getLanguageNames} from '@/codemirror/highlight'
 import {createCodeFence} from '@/components/assistant/util'
@@ -24,10 +25,12 @@ import {Tooltip, TooltipButton, TooltipDivider} from '@/components/Tooltip'
 import {useOpen} from '@/hooks/open'
 import editorTextHandling from '@/prompts/editor-text-handling.md?raw'
 import editorCodeBlockHandling from '@/prompts/editor-text-handling.md?raw'
+import {addDecorationKey} from '@/prosemirror/add-decoration'
 import {Align} from '@/prosemirror/image/interfaces'
 import {saveSvg} from '@/remote/svg'
 import type {ChatMessage} from '@/services/CopilotService'
 import {AttachmentType, useState} from '@/state'
+import {timeout} from '@/utils/promise'
 import type {Block} from './BlockHandle'
 
 interface Props {
@@ -36,7 +39,8 @@ interface Props {
 }
 
 export const BlockTooltip = (props: Props) => {
-  const {fileService, menuService, threadService, inputLineService, copilotService} = useState()
+  const {fileService, menuService, threadService, inputLineService, copilotService, toastService} =
+    useState()
   const [tooltipAnchor, setTooltipAnchor] = createSignal<ReferenceElement | undefined>()
   const {openUrl} = useOpen()
 
@@ -153,10 +157,23 @@ export const BlockTooltip = (props: Props) => {
     const block = props.selectedBlock
     if (!block) return
 
+    const view = fileService.currentFile?.editorView
+    if (!view) return
+
+    const toggleBlink = (remove: boolean = false) => {
+      const deco = Decoration.node(block.blockPos, block.blockPos + block.blockNode.nodeSize, {
+        class: 'blink',
+      })
+
+      const meta = remove ? {remove: [deco]} : {add: [deco]}
+      const tr = view.state.tr.setMeta(addDecorationKey, meta)
+      view.dispatch(tr)
+    }
+
     inputLineService.setInputLine({
       value: '',
       placeholder: 'Ask copilot about the selected block...',
-      onEnter: (text) => {
+      onEnter: async (text) => {
         const messages: ChatMessage[] = [
           {
             role: 'user',
@@ -176,32 +193,32 @@ export const BlockTooltip = (props: Props) => {
           messages.unshift({role: 'system', content: [{type: 'text', text: editorTextHandling}]})
         }
 
-        let answer = ''
-        copilotService.completions(
-          messages,
-          (chunk) => {
-            for (const choice of chunk.choices) {
-              const content = choice.delta?.content ?? choice.message?.content ?? ''
-              answer += content
-            }
-          },
-          () => {
-            if (answer) {
-              const view = fileService.currentFile?.editorView
-              if (!view) return
-              const tr = view.state.tr
-              // replace the contents inside the block not replacing the block itself.
-              tr.replaceWith(
-                block.blockPos + 1,
-                block.blockPos + block.blockNode.nodeSize - 1,
-                view.state.schema.text(answer),
-              )
+        toggleBlink()
+        try {
+          const answer = await Promise.race([
+            copilotService.completionsSync(messages),
+            timeout(20_000),
+          ])
 
-              view.dispatch(tr)
-            }
-          },
-          false,
-        )
+          toggleBlink(true) // remove blink brefore updating content
+
+          if (answer) {
+            const view = fileService.currentFile?.editorView
+            if (!view) return
+            const tr = view.state.tr
+            // replace the contents inside the block not replacing the block itself.
+            tr.replaceWith(
+              block.blockPos + 1,
+              block.blockPos + block.blockNode.nodeSize - 1,
+              view.state.schema.text(answer),
+            )
+
+            view.dispatch(tr)
+          }
+        } catch {
+          toastService.open({message: 'Failed to get copilot response', duration: 2000})
+          toggleBlink(true)
+        }
       },
     })
 

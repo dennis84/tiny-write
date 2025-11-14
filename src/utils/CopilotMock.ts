@@ -88,7 +88,8 @@ export class CopilotMock {
     mock.post((m) => isCompletions(m, true), createStream)
     mock.post(
       (m) => isCompletions(m, false),
-      () => {
+      () => async () => {
+        await pause(2000)
         const title = uniqueNamesGenerator({
           dictionaries: [adjectives, animals],
           style: 'capital',

@@ -288,36 +288,23 @@ export class ThreadService {
     const currentThread = this.currentThread
     if (!currentThread) return
 
-    return new Promise((resolve, reject) => {
-      const question: ChatMessage = {
-        role: 'user',
-        content: [
-          {
-            type: 'text',
-            text: 'Generate a concise title of 3-7 words for this conversation and leave out the punctuation. Return the title directly, without preamble and prefix.',
-          },
-        ],
-      }
-
-      let title = ''
-      const messages: ChatMessage[] = currentThread.messages.map((m) => this.toChatMessage(m))
-      messages.push(question)
-
-      return this.copilotService.completions(
-        messages,
-        (chunk) => {
-          for (const choice of chunk.choices) {
-            const content = choice.delta?.content ?? choice.message?.content ?? ''
-            title += content
-          }
+    const question: ChatMessage = {
+      role: 'user',
+      content: [
+        {
+          type: 'text',
+          text: 'Generate a concise title of 3-7 words for this conversation and leave out the punctuation. Return the title directly, without preamble and prefix.',
         },
-        () => {
-          if (title) resolve(title)
-          else reject('Cannot guess a title for current thread.')
-        },
-        false,
-      )
-    })
+      ],
+    }
+
+    const messages: ChatMessage[] = currentThread.messages.map((m) => this.toChatMessage(m))
+    messages.push(question)
+
+    const title = this.copilotService.completionsSync(messages)
+    if (!title) throw new Error('Cannot guess a title for current thread.')
+
+    return title
   }
 
   traverseTree(fn: (it: TreeItem<Message>) => void) {
