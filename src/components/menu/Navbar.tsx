@@ -4,7 +4,6 @@ import {styled} from 'solid-styled-components'
 import {getLanguageNames} from '@/codemirror/highlight'
 import {useOpen} from '@/hooks/open'
 import {CanvasService} from '@/services/CanvasService'
-import {FileService} from '@/services/FileService'
 import {MenuId} from '@/services/MenuService'
 import {isCodeFile, Page, useState} from '@/state'
 import {Button, ButtonGroup, IconButton} from '../Button'
@@ -59,19 +58,18 @@ const CurrentFileButton = () => {
     setAnchor(e.currentTarget as HTMLElement)
   }
 
-  const onRename = () => {
+  const onRename = async () => {
     closeTooltip()
 
     const file = fileService.currentFile
     const canvas = canvasService.currentCanvas
 
     if (file) {
+      const title = await fileService.getFileName(file)
       inputLineService.setInputLine({
-        value: file?.title ?? '',
+        value: title ?? '',
         onEnter: async (value: string) => {
-          const title = value.trim() || undefined
-          fileService.updateFile(file.id, {title})
-          await FileService.saveFile(file)
+          await fileService.renameFile(file.id, value)
         },
       })
     } else if (canvas) {

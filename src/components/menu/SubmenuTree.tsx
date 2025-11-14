@@ -5,7 +5,6 @@ import {Portal} from 'solid-js/web'
 import {styled} from 'solid-styled-components'
 import {useOpen} from '@/hooks/open'
 import {CanvasService} from '@/services/CanvasService'
-import {FileService} from '@/services/FileService'
 import type {MenuTreeItem} from '@/services/TreeService'
 import {isCanvas, isCodeFile, isFile, isLocalFile, Page, useState} from '@/state'
 import {
@@ -217,23 +216,29 @@ export const SubmenuTree = (props: Props) => {
   const onRename = async (e: MouseEvent) => {
     e.stopPropagation() // prevent bubble to drawer onClick
 
-    const file = selected()?.value
-    if (!file) return
+    const item = selected()?.value
+    if (!item) return
 
     closeTooltip()
-    inputLineService.setInputLine({
-      value: file?.title ?? '',
-      onEnter: async (value: string) => {
-        const title = value.trim() || undefined
-        if (isFile(file)) {
-          fileService.updateFile(file.id, {title})
-          await FileService.saveFile(file)
-        } else {
-          canvasService.updateCanvas(file.id, {title})
-          await CanvasService.saveCanvas(file)
-        }
-      },
-    })
+
+    if (isFile(item)) {
+      const title = await fileService.getFileName(item)
+      inputLineService.setInputLine({
+        value: title ?? '',
+        onEnter: async (value: string) => {
+          await fileService.renameFile(item.id, value)
+        },
+      })
+    } else {
+      inputLineService.setInputLine({
+        value: item?.title ?? '',
+        onEnter: async (value: string) => {
+          const title = value.trim() || undefined
+          canvasService.updateCanvas(item.id, {title})
+          await CanvasService.saveCanvas(item)
+        },
+      })
+    }
   }
 
   const onNewFile = async () => {

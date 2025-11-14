@@ -152,3 +152,78 @@ test('newFile', async () => {
   expect(file).toBeDefined()
   expect(store.files.length).toBe(1)
 })
+
+test('renameFile - title', async () => {
+  const [store, setState] = createStore(
+    createState({
+      files: [{id: '1', ydoc: createYUpdate('1', ['a']), versions: []}],
+    }),
+  )
+
+  const service = new FileService(collabService, store, setState)
+
+  await service.renameFile('1', 'Title')
+
+  expect(store.files[0].title).toBe('Title')
+})
+
+test('renameFile - update path', async () => {
+  vi.stubGlobal('__TAURI__', {})
+  createIpcMock({
+    dirname: () => '/path',
+    rename: () => undefined,
+  })
+
+  const [store, setState] = createStore(
+    createState({
+      files: [
+        {
+          id: '1',
+          ydoc: createYUpdate('1', ['a']),
+          versions: [],
+          path: '/path/old.js',
+          codeLang: 'javascript',
+        },
+      ],
+    }),
+  )
+
+  const service = new FileService(collabService, store, setState)
+
+  await service.renameFile('1', 'new.ts')
+
+  expect(store.files[0].title).toBe(undefined)
+  expect(store.files[0].newFile).toBe(undefined)
+  expect(store.files[0].path).toBe('/path/new.ts')
+  expect(store.files[0].codeLang).toBe('typescript')
+})
+
+test('renameFile - update newFile', async () => {
+  vi.stubGlobal('__TAURI__', {})
+  createIpcMock({
+    dirname: () => '/path',
+  })
+
+  const [store, setState] = createStore(
+    createState({
+      files: [
+        {
+          id: '1',
+          ydoc: createYUpdate('1', ['a']),
+          versions: [],
+          newFile: '/path/old.js',
+          codeLang: 'javascript',
+        },
+      ],
+    }),
+  )
+
+  const service = new FileService(collabService, store, setState)
+
+  await service.renameFile('1', 'new.ts')
+
+  expect(store.files[0].title).toBe(undefined)
+  expect(store.files[0].path).toBe(undefined)
+  expect(store.files[0].newFile).toBe('/path/new.ts')
+  expect(store.files[0].codeLang).toBe('typescript')
+})

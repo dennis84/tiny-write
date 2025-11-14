@@ -1,3 +1,4 @@
+import {rename} from '@tauri-apps/plugin-fs'
 import type {SetStoreFunction, Store} from 'solid-js/store'
 import {v4 as uuidv4} from 'uuid'
 import {ySyncFacet} from 'y-codemirror.next'
@@ -9,6 +10,8 @@ import {isTauri} from '@/env'
 import {createMarkdownParser} from '@/prosemirror/markdown-serialize'
 import {schema} from '@/prosemirror/schema'
 import {
+  basename,
+  dirname,
   getDocument,
   getMimeType,
   readText,
@@ -273,6 +276,33 @@ export class FileService {
     await FileService.saveFile(updatedFile)
   }
 
+  async renameFile(fileId: string, input: string) {
+    const file = this.findFileById(fileId)
+    if (!file) return
+
+    const lastModified = new Date()
+    const title = input.trim()
+
+    if (file.newFile) {
+      const dir = await dirname(file.newFile)
+      const newFile = `${dir}/${title}`
+      const codeLang = FileService.getCodeLang({newFile}) ?? file.codeLang
+      this.updateFile(fileId, {lastModified, newFile, codeLang})
+    } else if (file.path) {
+      const dir = await dirname(file.path)
+      const path = `${dir}/${title}`
+      await rename(file.path, path)
+      const codeLang = FileService.getCodeLang({path}) ?? file.codeLang
+      this.updateFile(fileId, {lastModified, path, codeLang})
+    } else {
+      this.updateFile(fileId, {lastModified, title})
+    }
+
+    const updatedFile = this.findFileById(fileId)
+    if (!updatedFile) return
+    await FileService.saveFile(updatedFile)
+  }
+
   destroy(id?: string) {
     const file = id ? this.findFileById(id) : this.currentFile
     if (!file) return
@@ -319,5 +349,13 @@ export class FileService {
     const type = ydoc.getXmlFragment(file.id)
     const doc = yXmlFragmentToProseMirrorRootNode(type, schema)
     return doc?.firstChild?.textContent.substring(0, len) || (fallback ? 'Untitled' : undefined)
+  }
+
+  async getFileName(file?: File): Promise<string | undefined> {
+    if (file?.path || file?.newFile) {
+      return basename(file.path ?? file.newFile ?? '')
+    }
+
+    return file?.title ?? ''
   }
 }
