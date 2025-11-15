@@ -1,5 +1,5 @@
 import type {EditorView} from '@codemirror/view'
-import {createEffect, createSignal, onMount, Show} from 'solid-js'
+import {createSignal, onMount, Show} from 'solid-js'
 import {Portal} from 'solid-js/web'
 import {styled} from 'solid-styled-components'
 import {v4 as uuidv4} from 'uuid'
@@ -32,7 +32,7 @@ export interface ApplyPanelState {
 }
 
 export const ApplyPanel = (p: {state: ApplyPanelState}) => {
-  const {store, fileService, threadService, toastService, treeService} = useState()
+  const {fileService, threadService, treeService} = useState()
   const [title, setTitle] = createSignal('')
   const [file, setFile] = createSignal<File>()
   const {openFile} = useOpen()
@@ -83,19 +83,6 @@ export const ApplyPanel = (p: {state: ApplyPanelState}) => {
     await treeService.add(file)
     openFile(file)
   }
-
-  createEffect<{id?: string; isMergeView: boolean}>((prev) => {
-    const currentFile = fileService.currentFile
-    const isMergeView = store.args?.merge !== undefined
-
-    // Don't show if merge is canceled by changing file
-    if (prev && currentFile?.id === prev.id && prev.isMergeView === true && isMergeView === false) {
-      toastService.open({message: 'All chunks applied ✅', duration: 2000})
-      openFile(fileService.currentFile, {merge: undefined})
-    }
-
-    return {id: currentFile?.id, isMergeView}
-  })
 
   return (
     <Portal mount={p.state.dom}>

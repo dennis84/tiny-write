@@ -8,7 +8,7 @@ import {type Canvas, createState, ElementType, type File} from '@/state'
 import {expectTree} from '../testutil/tree'
 
 beforeEach(() => {
-  vi.restoreAllMocks()
+  vi.resetAllMocks()
 })
 
 vi.mock('@/db', () => ({DB: mock()}))

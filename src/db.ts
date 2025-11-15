@@ -137,8 +137,15 @@ export class DB {
   }
 
   static async setLastLocation(location: LocationState) {
-    // Don't save prev location
-    const loc = DB.unwrap({...location, prev: undefined})
+    const loc = DB.unwrap({
+      ...location,
+      // Don't persist the following fields
+      prev: undefined,
+      merge: undefined,
+      selection: undefined,
+      activeFileId: undefined,
+    })
+
     return (await dbPromise).put('lastLocation', loc, 'main')
   }
 

@@ -11,7 +11,7 @@ vi.mock('@/db', () => ({DB: mock()}))
 vi.mock('mermaid', () => ({}))
 
 beforeEach(() => {
-  vi.restoreAllMocks()
+  vi.resetAllMocks()
 })
 
 test('prettify', async () => {

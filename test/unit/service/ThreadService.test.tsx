@@ -7,7 +7,7 @@ import {AttachmentType, createState, type Message, Page} from '@/state'
 import {expectTree} from '../testutil/tree'
 
 beforeEach(() => {
-  vi.restoreAllMocks()
+  vi.resetAllMocks()
 })
 
 vi.mock('@/db', () => ({DB: mock()}))

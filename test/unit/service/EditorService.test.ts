@@ -36,7 +36,7 @@ const appService = mock<AppService>()
 const selectService = mock<SelectService>()
 
 beforeEach(() => {
-  vi.restoreAllMocks()
+  vi.resetAllMocks()
 })
 
 test('init - existing', async () => {

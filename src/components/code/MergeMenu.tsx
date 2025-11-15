@@ -1,5 +1,5 @@
 import {acceptChunk, getChunks, rejectChunk} from '@codemirror/merge'
-import {Show} from 'solid-js'
+import {createMemo, createSignal, onCleanup, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {useOpen} from '@/hooks/open'
 import {useState} from '@/state'
@@ -24,41 +24,76 @@ const MergeMenuContainer = styled('div')`
   }
 `
 
-export const MergeMenu = () => {
+type ChunksType = ReturnType<typeof getChunks>
+
+const MergeMenuWithChunks = (props: {chunks: ChunksType}) => {
   let tooltipRef!: HTMLDivElement
-  const {store, fileService} = useState()
+  const {fileService, toastService} = useState()
   const {openFile} = useOpen()
+  const [autoClose, setAutoClose] = createSignal(true)
 
   const onAccept = () => {
     const view = fileService.currentFile?.codeEditorView
     if (!view) return
-    getChunks(view.state)?.chunks.forEach((chunk) => {
+    setAutoClose(false)
+
+    props.chunks?.chunks.forEach((chunk) => {
       acceptChunk(view, chunk.fromA)
     })
+
+    toastService.open({message: 'Full diff applied ✅', duration: 2000})
+    openFile(fileService.currentFile, {merge: undefined})
   }
 
   const onReject = () => {
     const currentFile = fileService.currentFile
     const view = currentFile?.codeEditorView
     if (!view) return
-    getChunks(view.state)?.chunks.forEach((chunk) => {
+    setAutoClose(false)
+
+    props.chunks?.chunks.forEach((chunk) => {
       rejectChunk(view, chunk.fromA)
     })
+
+    toastService.open({message: 'Full diff rejected ✅', duration: 2000})
     openFile(currentFile, {merge: undefined})
   }
 
+  // Handle when all chunks are resolved in codemirror UI
+  onCleanup(() => {
+    if (autoClose()) {
+      toastService.open({message: 'All chunks applied ✅', duration: 2000})
+      openFile(fileService.currentFile, {merge: undefined})
+    }
+  })
+
   return (
-    <Show when={store.args?.merge}>
-      <MergeMenuContainer>
-        <TooltipContainer ref={tooltipRef} direction="row" gap={5}>
-          <TooltipButton onClick={onAccept}>
-            <IconCheck /> Accept file
-          </TooltipButton>
-          <TooltipButton onClick={onReject}>
-            <IconClose /> Reject file
-          </TooltipButton>
-        </TooltipContainer>
-      </MergeMenuContainer>
-    </Show>
+    <MergeMenuContainer>
+      <TooltipContainer ref={tooltipRef} direction="row" gap={5}>
+        <TooltipButton onClick={onAccept} data-testid="accept_all">
+          <IconCheck /> Accept file
+        </TooltipButton>
+        <TooltipButton onClick={onReject} data-testid="reject_all">
+          <IconClose /> Reject file
+        </TooltipButton>
+      </TooltipContainer>
+    </MergeMenuContainer>
   )
+}
+
+export const MergeMenu = () => {
+  const {store, fileService} = useState()
+
+  const chunks = createMemo(() => {
+    const view = fileService.currentFile?.codeEditorView
+    if (view && store.location?.merge && store.lastTr) {
+      const result = getChunks(view.state)
+      if (!result?.chunks.length) return null
+      return result
+    }
+
+    return null
+  })
+
+  return <Show when={chunks()}>{(result) => <MergeMenuWithChunks chunks={result()} />}</Show>
 }

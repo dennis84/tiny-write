@@ -67,7 +67,7 @@ const createImageElement = (props: Partial<CanvasImageElement> = {}): CanvasImag
 })
 
 beforeEach(() => {
-  vi.restoreAllMocks()
+  vi.resetAllMocks()
 })
 
 const appService = mock<AppService>()

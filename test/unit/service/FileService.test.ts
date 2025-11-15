@@ -12,7 +12,7 @@ vi.mock('@/db', () => ({DB: mock()}))
 vi.mock('mermaid', () => ({}))
 
 beforeEach(() => {
-  vi.restoreAllMocks()
+  vi.resetAllMocks()
 })
 
 const collabService = mock<CollabService>()

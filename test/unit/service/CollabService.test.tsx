@@ -11,14 +11,14 @@ import {stubLocation} from '../testutil/util'
 
 vi.mock('@/db', () => ({DB: mock()}))
 
-const WsMock = vi.fn(() => ({
-  close: vi.fn(),
-}))
+class WebSocketMock {
+  close() {}
+}
 
-vi.stubGlobal('WebSocket', WsMock)
+vi.stubGlobal('WebSocket', WebSocketMock)
 
 beforeEach(() => {
-  vi.restoreAllMocks()
+  vi.resetAllMocks()
 })
 
 test('undoManager - text', async () => {

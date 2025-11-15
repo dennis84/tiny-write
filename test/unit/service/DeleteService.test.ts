@@ -74,7 +74,7 @@ const createInitialState = () =>
   })
 
 beforeEach(() => {
-  vi.restoreAllMocks()
+  vi.resetAllMocks()
 })
 
 test.each([

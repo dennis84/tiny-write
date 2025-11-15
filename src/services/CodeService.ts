@@ -41,14 +41,10 @@ export class CodeService {
     const currentFileId = this.fileService.currentFileId
     const currentFile = this.fileService.currentFile
     const share = this.store.location?.share
-    const selection = this.store.location?.selection
-    const merge = this.store.location?.merge
     const path = currentFile?.path
     let text: string | undefined
 
-    info(
-      `Initialize code file (id=${currentFileId}, share=${share}, selection=${JSON.stringify(selection)}, merge=${JSON.stringify(merge)}})`,
-    )
+    info(`Initialize code file (id=${currentFileId}, share=${share})`)
 
     if (!currentFile) {
       throw new Error(`File not found (id=${currentFileId})`)
@@ -65,11 +61,6 @@ export class CodeService {
     newState = {
       ...newState,
       collab: CollabService.create(currentFile.id, Page.Code, share),
-      args: {
-        ...newState.args,
-        selection,
-        merge,
-      },
     }
 
     const ydoc = newState.collab?.ydoc
@@ -134,7 +125,7 @@ export class CodeService {
     const parent = file.codeEditorView?.dom.parentElement ?? el
     file.codeEditorView?.destroy()
 
-    const merge = this.store.args?.merge
+    const merge = this.store.location?.merge
 
     let doc = type.toString()
     if (merge?.doc) {
@@ -155,8 +146,9 @@ export class CodeService {
             type.delete(0, type.length)
             type.insert(0, update.state.doc.toString())
             this.fileService.updateFile(file.id, {lastModified: new Date()})
-            this.setState('args', 'merge', undefined)
           }
+
+          this.setState('lastTr', Date.now())
         }),
       )
     } else {
@@ -187,9 +179,9 @@ export class CodeService {
       extensions,
     })
 
-    if (this.store.args?.selection) {
+    if (this.store.location?.selection) {
       editor.editorView.dispatch({
-        selection: this.createSelection(editor.editorView, this.store.args.selection),
+        selection: this.createSelection(editor.editorView, this.store.location.selection),
         scrollIntoView: true,
       })
     }

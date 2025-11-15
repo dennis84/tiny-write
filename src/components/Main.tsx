@@ -6,7 +6,16 @@ import {
   useLocation,
   useMatch,
 } from '@solidjs/router'
-import {createEffect, ErrorBoundary, Match, onMount, Show, Switch, untrack} from 'solid-js'
+import {
+  createEffect,
+  createMemo,
+  ErrorBoundary,
+  Match,
+  onMount,
+  Show,
+  Switch,
+  untrack,
+} from 'solid-js'
 import {DarkMode} from '@/components/DarkMode'
 import {DropFile} from '@/components/DropFile'
 import {InputLine} from '@/components/dialog/InputLine'
@@ -29,7 +38,6 @@ import {DB} from '@/db'
 import {isTauri} from '@/env'
 import {setAlwaysOnTop} from '@/remote/app'
 import {startLanguageServer} from '@/remote/copilot'
-import {info} from '@/remote/log'
 import {show, updateWindow} from '@/remote/window'
 import {createCtrl} from '@/services'
 import {type LocationState, Page, type State, StateContext} from '@/state'
@@ -39,11 +47,6 @@ export const Main = (props: {state: State}) => {
   const Root = (p: RouteSectionProps) => {
     let layoutRef!: HTMLDivElement
     const ctrl = createCtrl(props.state)
-    const location = useLocation<LocationState>()
-    const matchPage = useMatch(() => '/:page/*')
-    const currentMatches = useCurrentMatches()
-
-    info(`Render root (location=${JSON.stringify(location.state)})`)
 
     const onViewError = (error: any, reset: any) => {
       ctrl.appService.setError({error})
@@ -75,7 +78,12 @@ export const Main = (props: {state: State}) => {
       }
     })
 
-    createEffect(async () => {
+    // Make sure location state is synced to store on initial load and on changes.
+    const locationGate = createMemo(async () => {
+      const location = useLocation<LocationState>()
+      const matchPage = useMatch(() => '/:page/*')
+      const currentMatches = useCurrentMatches()
+
       // Listen on changes of location state.
       location.state?.merge
       location.state?.selection
@@ -102,6 +110,8 @@ export const Main = (props: {state: State}) => {
           })
         }
       }
+
+      return true
     })
 
     createEffect((prev) => {
@@ -128,7 +138,7 @@ export const Main = (props: {state: State}) => {
               <Match when={true}>
                 <PageContent>
                   <FloatingNavbar />
-                  {p.children}
+                  <Show when={locationGate()}>{p.children}</Show>
                 </PageContent>
               </Match>
             </Switch>

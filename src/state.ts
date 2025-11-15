@@ -52,11 +52,9 @@ export interface Args {
   cwd?: string
   source?: string
   file?: string
-  selection?: VisualPositionRange
   newFile?: string
   room?: string
   text?: string
-  merge?: MergeState
 }
 
 export interface PrettierConfig {

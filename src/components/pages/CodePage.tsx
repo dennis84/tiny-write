@@ -85,7 +85,7 @@ export const CodePage = (props: RouteSectionProps) => {
     <>
       {/* Rerender if location changes */}
       {/* eslint-disable-next-line */}
-      <Show when={props.params.id && (location.state || !location.state)} keyed>
+      <Show when={props.params.id && (location.state || store.location)} keyed>
         <OpenCodeEditor />
       </Show>
     </>

@@ -17,7 +17,7 @@ vi.stubGlobal('WebSocket', WsMock)
 const lastModified = new Date()
 
 beforeEach(() => {
-  vi.restoreAllMocks()
+  vi.resetAllMocks()
   clearMocks()
 })
 

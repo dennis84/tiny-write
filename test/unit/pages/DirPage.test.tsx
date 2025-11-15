@@ -14,7 +14,7 @@ const WsMock = vi.fn()
 vi.stubGlobal('WebSocket', WsMock)
 
 beforeEach(() => {
-  vi.restoreAllMocks()
+  vi.resetAllMocks()
 })
 
 test('dir', async () => {

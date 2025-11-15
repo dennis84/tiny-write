@@ -23,7 +23,7 @@ vi.mock('@/db', () => ({DB: mock()}))
 
 beforeEach(() => {
   clearMocks()
-  vi.clearAllMocks()
+  vi.resetAllMocks()
   mockWindows('main')
   mockConvertFileSrc('macos')
   createIpcMock()

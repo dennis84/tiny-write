@@ -91,6 +91,34 @@ test('apply', async ({page}) => {
   await assertCodeLineToEqual(page, 1, "const test2 = '222'")
 })
 
+test('apply - all', async ({page}) => {
+  await page.click('[data-testid="navbar_assistant_open"]')
+  await page.click('[data-testid="history"]')
+  await page.click('[data-testid="thread_item"]')
+  await page.click('[data-testid="tooltip_backdrop"]')
+
+  await page.locator('[data-testid="panel_button_apply"]').nth(0).click()
+  await page.locator('[data-testid="accept_all"]').click()
+
+  expect(page.getByText('Full diff applied')).toBeVisible()
+
+  await assertCodeLineToEqual(page, 1, "const test2 = '222'")
+})
+
+test('apply - reject all', async ({page}) => {
+  await page.click('[data-testid="navbar_assistant_open"]')
+  await page.click('[data-testid="history"]')
+  await page.click('[data-testid="thread_item"]')
+  await page.click('[data-testid="tooltip_backdrop"]')
+
+  await page.locator('[data-testid="panel_button_apply"]').nth(0).click()
+  await page.locator('[data-testid="reject_all"]').click()
+
+  expect(page.getByText('Full diff rejected')).toBeVisible()
+
+  await assertCodeLineToEqual(page, 1, '')
+})
+
 test('apply - open file', async ({page}) => {
   await page.click('[data-testid="navbar_assistant_open"]')
   await page.click('[data-testid="history"]')

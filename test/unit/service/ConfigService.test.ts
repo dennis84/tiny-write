@@ -9,7 +9,7 @@ import {ConfigService} from '@/services/ConfigService'
 import {createState} from '@/state'
 
 beforeEach(() => {
-  vi.restoreAllMocks()
+  vi.resetAllMocks()
 })
 
 const collabService = mock<CollabService>()

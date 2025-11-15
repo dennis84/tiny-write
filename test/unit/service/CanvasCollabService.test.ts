@@ -11,7 +11,7 @@ import {type Canvas, createState, ElementType} from '@/state'
 vi.mock('@/db', () => ({DB: mock()}))
 
 beforeEach(() => {
-  vi.restoreAllMocks()
+  vi.resetAllMocks()
 })
 
 const createCanvas = (props: Partial<Canvas> = {}): Canvas => ({
