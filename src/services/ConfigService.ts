@@ -165,6 +165,7 @@ export class ConfigService {
   }
 
   static readonly DEFAULT_FONT: FontName = 'ia-writer-mono'
+  static readonly DEFAULT_MENU_FONT: FontName = 'system-ui'
 
   static readonly fonts: Record<string, Font> = {
     'system-ui': {

@@ -65,7 +65,20 @@ export const useOpen = () => {
       id = locState.threadId
     }
 
-    const state = {
+    // Default: use passed share otherwise keep existing share in location state
+    let share = locState.share ?? location.state?.share
+    // Unless another item was opened then stop sharing
+    if (
+      (locState.editorId && locState.editorId !== location.state?.editorId) ||
+      (locState.codeId && locState.codeId !== location.state?.codeId) ||
+      (locState.canvasId && locState.canvasId !== location.state?.canvasId) ||
+      locState.threadId
+    ) {
+      share = false
+    }
+
+    const state: LocationState = {
+      share,
       prev,
       page,
       threadId,

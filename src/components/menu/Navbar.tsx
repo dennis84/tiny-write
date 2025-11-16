@@ -13,10 +13,13 @@ import {
   IconArrowBack,
   IconClose,
   IconDarkMode,
+  IconEdit,
   IconFullscreen,
   IconGesture,
+  IconLanguage,
   IconLightMode,
   IconMoreVert,
+  IconPrettier,
   IconTextSnippet,
   LangIcon,
 } from '../Icon'
@@ -140,10 +143,19 @@ const CurrentFileButton = () => {
       <Show when={anchor()}>
         {(a) => (
           <Tooltip anchor={a()} backdrop={false} onClose={closeTooltip}>
-            <TooltipButton onClick={onRename}>Rename</TooltipButton>
+            <TooltipButton onClick={onRename}>
+              <IconEdit />
+              Rename
+            </TooltipButton>
             <Show when={isCodeFile(fileService.currentFile)}>
-              <TooltipButton onClick={onChangeLanguage}>Change Language</TooltipButton>
-              <TooltipButton onClick={onFormat}>Prettify</TooltipButton>
+              <TooltipButton onClick={onChangeLanguage}>
+                <IconLanguage />
+                Change Language
+              </TooltipButton>
+              <TooltipButton onClick={onFormat}>
+                <IconPrettier />
+                Prettify
+              </TooltipButton>
             </Show>
           </Tooltip>
         )}
