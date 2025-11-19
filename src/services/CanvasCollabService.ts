@@ -1,5 +1,5 @@
+import {throttle} from '@solid-primitives/scheduled'
 import {type Store, unwrap} from 'solid-js/store'
-import {throttle} from 'throttle-debounce'
 import * as Y from 'yjs'
 import type {State} from '@/state'
 import type {CanvasService} from './CanvasService'
@@ -15,7 +15,7 @@ interface CollabElement {
 const PREFIX = 'el-'
 
 export class CanvasCollabService {
-  updateElementThrottled = throttle(20, (el) => this.updateElement(el))
+  updateElementThrottled = throttle((el: CollabElement) => this.updateElement(el), 20)
 
   constructor(
     private collabService: CollabService,

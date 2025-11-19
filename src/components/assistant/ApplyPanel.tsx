@@ -1,13 +1,14 @@
 import type {EditorView} from '@codemirror/view'
-import {createSignal, onMount, Show} from 'solid-js'
+import {Show, Suspense} from 'solid-js'
 import {Portal} from 'solid-js/web'
 import {styled} from 'solid-styled-components'
 import {v4 as uuidv4} from 'uuid'
 import * as Y from 'yjs'
 import {useOpen} from '@/hooks/open'
+import {useTitle} from '@/hooks/use-title'
 import {copy} from '@/remote/clipboard'
 import {info} from '@/remote/log'
-import {type File, useState} from '@/state'
+import {useState} from '@/state'
 import {IconButton} from '../Button'
 import {IconAdd, IconContentCopy, IconMerge} from '../Icon'
 import {TooltipHelp} from '../TooltipHelp'
@@ -21,6 +22,7 @@ const ApplyPanelEl = styled('div')`
   grid-template-columns: minmax(0, 1fr) min-content min-content;
   align-items: center;
   font-size: 12px;
+  font-family: var(--font-family-monospace);
 `
 
 export interface ApplyPanelState {
@@ -33,30 +35,21 @@ export interface ApplyPanelState {
 
 export const ApplyPanel = (p: {state: ApplyPanelState}) => {
   const {fileService, threadService, treeService} = useState()
-  const [title, setTitle] = createSignal('')
-  const [file, setFile] = createSignal<File>()
   const {openFile} = useOpen()
 
-  onMount(() => {
-    const file = p.state.id ? fileService.findFileById(p.state.id) : undefined
-    if (file) {
-      setFile(file)
-      fileService.getTitle(file, 25, false).then((value) => {
-        const t = p.state.range ? `${value}:${p.state.range[0]}-${p.state.range[1]}` : value
-        setTitle(t ?? '')
-      })
-    } else if (p.state.file) {
-      setTitle(p.state.file)
-    }
+  const file = p.state.id ? fileService.findFileById(p.state.id) : undefined
+  const title = useTitle({
+    item: file,
+    fallback: false,
+    useCurrent: false,
   })
 
   const onCopy = () => copy(p.state.editorView.state.doc.toString())
 
   const onApply = () => {
-    const f = file()
-    info(`Apply to file (id=${f?.id})`)
+    info(`Apply to file (id=${file?.id})`)
 
-    if (!f) return
+    if (!file) return
 
     const currentThread = threadService.currentThread
     if (!currentThread) return
@@ -64,7 +57,7 @@ export const ApplyPanel = (p: {state: ApplyPanelState}) => {
     const doc = p.state.editorView.state.doc.toString()
     const range = p.state.range
 
-    openFile(f, {merge: {doc, range}})
+    openFile(file, {merge: {doc, range}})
   }
 
   const onCreateFile = async () => {
@@ -86,28 +79,30 @@ export const ApplyPanel = (p: {state: ApplyPanelState}) => {
 
   return (
     <Portal mount={p.state.dom}>
-      <ApplyPanelEl hasTitle={title() !== ''} data-testid="apply_panel">
-        <span>{title()}</span>
-        <TooltipHelp title="Copy">
-          <IconButton onClick={onCopy} data-testid="panel_button_copy">
-            <IconContentCopy />
-          </IconButton>
-        </TooltipHelp>
-        <Show when={!file() && p.state.file}>
-          <TooltipHelp title="Create file">
-            <IconButton onClick={onCreateFile} data-testid="panel_button_create">
-              <IconAdd />
+      <Suspense>
+        <ApplyPanelEl hasTitle={title() !== undefined} data-testid="apply_panel">
+          <span>{title()}</span>
+          <TooltipHelp title="Copy">
+            <IconButton onClick={onCopy} data-testid="panel_button_copy">
+              <IconContentCopy />
             </IconButton>
           </TooltipHelp>
-        </Show>
-        <Show when={file()}>
-          <TooltipHelp title="Apply in editor">
-            <IconButton onClick={onApply} data-testid="panel_button_apply">
-              <IconMerge />
-            </IconButton>
-          </TooltipHelp>
-        </Show>
-      </ApplyPanelEl>
+          <Show when={!file && p.state.file}>
+            <TooltipHelp title="Create file">
+              <IconButton onClick={onCreateFile} data-testid="panel_button_create">
+                <IconAdd />
+              </IconButton>
+            </TooltipHelp>
+          </Show>
+          <Show when={file}>
+            <TooltipHelp title="Apply in editor">
+              <IconButton onClick={onApply} data-testid="panel_button_apply">
+                <IconMerge />
+              </IconButton>
+            </TooltipHelp>
+          </Show>
+        </ApplyPanelEl>
+      </Suspense>
     </Portal>
   )
 }

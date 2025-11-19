@@ -1,9 +1,10 @@
 import {EditorState} from '@codemirror/state'
 import {EditorView} from '@codemirror/view'
-import {createEffect, createSignal, Match, onMount, Show, Switch} from 'solid-js'
+import {createEffect, createSignal, Match, onMount, Show, Suspense, Switch} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {getLanguageConfig} from '@/codemirror/highlight'
 import {getTheme} from '@/codemirror/theme'
+import {useTitle} from '@/hooks/use-title'
 import {type Attachment, AttachmentType, useState} from '@/state'
 import {Button} from '../Button'
 import {IconTextSelectStart, LangIcon} from '../Icon'
@@ -41,13 +42,17 @@ interface Props {
 
 export const AttachmentChip = (props: Props) => {
   const {configService, fileService} = useState()
-  const [fileTitle, setFileTitle] = createSignal<string>()
   const [tooltipAnchor, setTooltipAnchor] = createSignal<HTMLElement | undefined>()
 
   const file = props.attachment.fileId
     ? fileService.findFileById(props.attachment.fileId)
     : undefined
   const langConfig = getLanguageConfig(props.attachment.codeLang ?? file?.codeLang)
+  const title = useTitle({
+    item: file,
+    useCurrent: false,
+    fallback: false,
+  })
 
   const closeTooltip = () => {
     setTooltipAnchor(undefined)
@@ -56,10 +61,6 @@ export const AttachmentChip = (props: Props) => {
   const onOpenTooltip = (e: MouseEvent) => {
     setTooltipAnchor(e.currentTarget as HTMLElement)
   }
-
-  onMount(async () => {
-    setFileTitle(await fileService.getTitle(file, 25, false))
-  })
 
   const CodeBlock = () => {
     let ref!: HTMLDivElement
@@ -116,14 +117,17 @@ export const AttachmentChip = (props: Props) => {
           </Match>
           <Match when={props.attachment.type === AttachmentType.File}>
             <Button onClick={onOpenTooltip}>
-              <LangIcon name={langConfig.id} /> {fileTitle() ?? `${langConfig?.name ?? ''} File`}
+              <LangIcon name={langConfig.id} />
+              <Suspense>{title() ?? `${langConfig?.name ?? ''} File`}</Suspense>
             </Button>
           </Match>
           <Match when={props.attachment.type === AttachmentType.Selection}>
             <Button onClick={onOpenTooltip}>
               <IconTextSelectStart />
-              {fileTitle() ?? `${langConfig?.name} File`}:{props.attachment.selection?.[0]}-
-              {props.attachment.selection?.[1]}
+              <Suspense>
+                {title() ?? `${langConfig?.name} File`}:{props.attachment.selection?.[0]}-
+                {props.attachment.selection?.[1]}
+              </Suspense>
             </Button>
           </Match>
         </Switch>

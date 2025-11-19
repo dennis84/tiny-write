@@ -1,6 +1,6 @@
+import {debounce} from '@solid-primitives/scheduled'
 import {batch} from 'solid-js'
 import type {SetStoreFunction, Store} from 'solid-js/store'
-import {debounce} from 'throttle-debounce'
 import {DB} from '@/db'
 import {isDark} from '@/env'
 import {setAlwaysOnTop} from '@/remote/app'
@@ -275,7 +275,7 @@ export class ConfigService {
   static readonly BORDER_RADIUS_SMALL = '10px'
   static readonly BORDER_RADIUS = '20px'
 
-  private saveConfigDebounced = debounce(100, (state) => this.saveConfig(state))
+  private saveConfigDebounced = debounce((state: State) => this.saveConfig(state), 100)
 
   constructor(
     private collabService: CollabService,

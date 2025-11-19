@@ -1,9 +1,10 @@
 import {DragGesture} from '@use-gesture/vanilla'
-import {createEffect, createSignal, For, Match, onCleanup, onMount, Show, Switch} from 'solid-js'
+import {createSignal, For, Match, onCleanup, onMount, Show, Suspense, Switch} from 'solid-js'
 import {unwrap} from 'solid-js/store'
 import {Portal} from 'solid-js/web'
 import {styled} from 'solid-styled-components'
 import {useOpen} from '@/hooks/open'
+import {useTitle} from '@/hooks/use-title'
 import {CanvasService} from '@/services/CanvasService'
 import type {MenuTreeItem} from '@/services/TreeService'
 import {isCanvas, isCodeFile, isFile, isLocalFile, Page, useState} from '@/state'
@@ -345,7 +346,7 @@ export const SubmenuTree = (props: Props) => {
     let ref!: HTMLSpanElement
     let anchor!: HTMLElement
 
-    const [title, setTitle] = createSignal<string>()
+    const title = useTitle({item: p.node.value})
 
     const onClick = async () => {
       openFile(p.node.value)
@@ -441,15 +442,6 @@ export const SubmenuTree = (props: Props) => {
       })
     })
 
-    createEffect(async () => {
-      if (isFile(p.node.value)) {
-        const file = fileService.findFileById(p.node.id)
-        setTitle(await fileService.getTitle(file))
-      } else {
-        setTitle(p.node.value.title ?? 'Canvas')
-      }
-    })
-
     return (
       <TreeLinkItem
         deleted={props.showDeleted && !p.node.value.deleted}
@@ -491,7 +483,7 @@ export const SubmenuTree = (props: Props) => {
           highlight={isOnCanvas(p.node)}
           data-testid="tree_link_title"
         >
-          {title()}
+          <Suspense>{title()}</Suspense>
         </TreeLinkTitle>
         <LinkMenu
           ref={anchor}

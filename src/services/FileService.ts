@@ -333,7 +333,7 @@ export class FileService {
     info('File restored')
   }
 
-  async getTitle(file?: File, len = 25, fallback = true): Promise<string | undefined> {
+  async getTitle(file?: File, maxLength = 25, fallback = true): Promise<string | undefined> {
     if (!file) return fallback ? 'Undefined' : undefined
 
     if (file.path || file.newFile) {
@@ -348,7 +348,9 @@ export class FileService {
 
     const type = ydoc.getXmlFragment(file.id)
     const doc = yXmlFragmentToProseMirrorRootNode(type, schema)
-    return doc?.firstChild?.textContent.substring(0, len) || (fallback ? 'Untitled' : undefined)
+    return (
+      doc?.firstChild?.textContent.substring(0, maxLength) || (fallback ? 'Untitled' : undefined)
+    )
   }
 
   async getFileName(file?: File): Promise<string | undefined> {

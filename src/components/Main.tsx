@@ -42,6 +42,7 @@ import {show, updateWindow} from '@/remote/window'
 import {createCtrl} from '@/services'
 import {type LocationState, Page, type State, StateContext} from '@/state'
 import {enumFromValue} from '@/utils/enum'
+import {Title} from './pages/Title'
 
 export const Main = (props: {state: State}) => {
   const Root = (p: RouteSectionProps) => {
@@ -154,6 +155,7 @@ export const Main = (props: {state: State}) => {
             <DarkMode />
             <InputLine />
             <Toast />
+            <Title />
           </Layout>
         </ErrorBoundary>
       </StateContext.Provider>

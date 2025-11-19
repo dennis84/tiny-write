@@ -1,8 +1,9 @@
 import {useNavigate} from '@solidjs/router'
-import {createEffect, createSignal, Match, Show, Switch} from 'solid-js'
+import {createSignal, Match, Show, Suspense, Switch} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {getLanguageNames} from '@/codemirror/highlight'
 import {useOpen} from '@/hooks/open'
+import {useTitle} from '@/hooks/use-title'
 import {CanvasService} from '@/services/CanvasService'
 import {MenuId} from '@/services/MenuService'
 import {isCodeFile, Page, useState} from '@/state'
@@ -45,8 +46,9 @@ const StickyContainer = styled('div')`
 
 const CurrentFileButton = () => {
   const {codeService, canvasService, fileService, inputLineService} = useState()
-  const [title, setTitle] = createSignal<string | undefined>(undefined)
   const [anchor, setAnchor] = createSignal<HTMLElement>()
+
+  const title = useTitle()
 
   const closeTooltip = () => {
     setAnchor(undefined)
@@ -68,9 +70,9 @@ const CurrentFileButton = () => {
     const canvas = canvasService.currentCanvas
 
     if (file) {
-      const title = await fileService.getFileName(file)
+      const filename = await fileService.getFileName(file)
       inputLineService.setInputLine({
-        value: title ?? '',
+        value: filename ?? '',
         onEnter: async (value: string) => {
           await fileService.renameFile(file.id, value)
         },
@@ -79,8 +81,7 @@ const CurrentFileButton = () => {
       inputLineService.setInputLine({
         value: canvas?.title ?? '',
         onEnter: async (value: string) => {
-          const title = value.trim() || undefined
-          canvasService.updateCanvas(canvas.id, {title})
+          canvasService.updateCanvas(canvas.id, {title: value.trim() || undefined})
           await CanvasService.saveCanvas(canvas)
         },
       })
@@ -109,14 +110,6 @@ const CurrentFileButton = () => {
     focus()
   }
 
-  createEffect(async () => {
-    if (fileService.currentFile) {
-      setTitle(await fileService.getTitle(fileService.currentFile))
-    } else if (canvasService.currentCanvas) {
-      setTitle(canvasService.currentCanvas.title ?? 'Canvas')
-    }
-  })
-
   return (
     <>
       <Button onClick={onOpen}>
@@ -138,7 +131,7 @@ const CurrentFileButton = () => {
             <IconGesture />
           </Match>
         </Switch>
-        {title()}
+        <Suspense>{title()}</Suspense>
       </Button>
       <Show when={anchor()}>
         {(a) => (
@@ -265,8 +258,8 @@ const BackButton = () => {
 
   return (
     <Show when={getBackTitle()}>
-      {(title) => (
-        <TooltipHelp title={title()}>
+      {(backTitle) => (
+        <TooltipHelp title={backTitle()}>
           <Button onClick={onBackClick} data-testid="navbar_back">
             <IconArrowBack /> Back
           </Button>

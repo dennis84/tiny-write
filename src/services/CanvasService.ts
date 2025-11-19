@@ -1,7 +1,7 @@
 import {Box, Point, Segment, Vector} from '@flatten-js/core'
+import {throttle} from '@solid-primitives/scheduled'
 import {TextSelection} from 'prosemirror-state'
 import {type SetStoreFunction, type Store, unwrap} from 'solid-js/store'
-import {throttle} from 'throttle-debounce'
 import {v4 as uuidv4} from 'uuid'
 import {DB} from '@/db'
 import {info} from '@/remote/log'
@@ -45,7 +45,7 @@ export interface Selection {
 }
 
 export class CanvasService {
-  public saveCanvasThrottled = throttle(100, () => this.saveCanvas())
+  public saveCanvasThrottled = throttle(() => this.saveCanvas(), 100)
   public canvasRef: HTMLElement | undefined
 
   static async saveCanvas(canvas: Canvas) {

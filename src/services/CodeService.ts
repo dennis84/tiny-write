@@ -1,8 +1,8 @@
 import {getChunks, unifiedMergeView} from '@codemirror/merge'
 import {EditorView, type ViewUpdate} from '@codemirror/view'
 import {indentationMarkers} from '@replit/codemirror-indentation-markers'
+import {debounce} from '@solid-primitives/scheduled'
 import {type SetStoreFunction, type Store, unwrap} from 'solid-js/store'
-import {debounce} from 'throttle-debounce'
 import {yCollab, ySyncFacet} from 'y-codemirror.next'
 import type * as Y from 'yjs'
 import {copilot} from '@/codemirror/copilot'
@@ -27,7 +27,7 @@ export class CodeService {
     private setState: SetStoreFunction<State>,
   ) {}
 
-  private writeFileThrottled = debounce(1000, this.writeFile.bind(this))
+  private writeFileThrottled = debounce(this.writeFile.bind(this), 1000)
 
   async newFile(params: Partial<File> = {}): Promise<File> {
     const file = FileService.createFile({...params, code: true})

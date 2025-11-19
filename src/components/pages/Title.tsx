@@ -1,16 +1,11 @@
 import {createEffect} from 'solid-js'
-import {Page, useState} from '@/state'
+import {useTitle} from '@/hooks/use-title'
 
 export const Title = () => {
-  const {store, canvasService, fileService} = useState()
+  const title = useTitle()
 
-  createEffect(async () => {
-    if (store.location?.page === Page.Canvas) {
-      const currentCanvas = canvasService.currentCanvas
-      document.title = currentCanvas?.title ?? 'Canvas'
-    } else {
-      document.title = (await fileService.getTitle(fileService.currentFile)) ?? ''
-    }
+  createEffect(() => {
+    document.title = title() ?? ''
   })
 
   return null

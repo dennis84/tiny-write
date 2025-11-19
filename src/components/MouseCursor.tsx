@@ -1,7 +1,7 @@
+import {throttle} from '@solid-primitives/scheduled'
 import {createEffect, createSignal, For, onCleanup} from 'solid-js'
 import {createStore} from 'solid-js/store'
 import {styled} from 'solid-styled-components'
-import {throttle} from 'throttle-debounce'
 import type {Awareness} from 'y-protocols/awareness'
 import {Page, useState} from '@/state'
 
@@ -131,13 +131,13 @@ export const MouseCursor = () => {
     })
   }
 
-  const onMouseMove = throttle(20, (e: MouseEvent) => {
+  const onMouseMove = throttle((e: MouseEvent) => {
     if ((awareness()?.states.size ?? 0) <= 1) return
     const [offsetX, offsetY] = offset()
     const x = e.x / zoom() - offsetX
     const y = e.y / zoom() - offsetY
     awareness()?.setLocalStateField('mouse', {x, y})
-  })
+  }, 20)
 
   createEffect(() => {
     if (store.collab?.started !== true) return

@@ -1,9 +1,9 @@
 import type {Box} from '@flatten-js/core'
+import {debounce} from '@solid-primitives/scheduled'
 import {deleteSelection, selectAll} from 'prosemirror-commands'
 import {EditorState, type Transaction} from 'prosemirror-state'
 import {EditorView} from 'prosemirror-view'
 import type {SetStoreFunction, Store} from 'solid-js/store'
-import {debounce} from 'throttle-debounce'
 import {prosemirrorJSONToYDoc} from 'y-prosemirror'
 import * as Y from 'yjs'
 import {serialize} from '@/prosemirror/markdown-serialize'
@@ -28,7 +28,7 @@ export class EditorService {
     private setState: SetStoreFunction<State>,
   ) {}
 
-  private writeFileThrottled = debounce(1000, this.writeFile.bind(this))
+  private writeFileThrottled = debounce(this.writeFile.bind(this), 1000)
 
   updateConfig(file: File) {
     this.updateEditorState(file)

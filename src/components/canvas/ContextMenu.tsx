@@ -1,6 +1,7 @@
 import {Vector} from '@flatten-js/core'
 import type {ReferenceElement} from '@floating-ui/dom'
-import {createSignal, For, Match, onMount, Show, Switch} from 'solid-js'
+import {createSignal, For, Match, onMount, Show, Suspense, Switch} from 'solid-js'
+import {useTitle} from '@/hooks/use-title'
 import {type CanvasLinkElement, type File, isCanvas, isCodeFile, isFile, useState} from '@/state'
 import {IconCodeBlocks, IconGesture, IconPostAdd, IconTextSnippet} from '../Icon'
 import {Tooltip, TooltipButton, TooltipDivider} from '../Tooltip'
@@ -22,8 +23,6 @@ export const ContextMenu = () => {
   }
 
   const FileNameTooltipButton = (p: {file: File; link?: CanvasLinkElement; cm?: Vector}) => {
-    const [title, setTitle] = createSignal<string>()
-
     const onClick = async () => {
       const added = await canvasService.addFile(p.file, p.link, p.cm)
       await canvasService.removeDeadLinks()
@@ -31,9 +30,7 @@ export const ContextMenu = () => {
       setContextMenu(undefined)
     }
 
-    onMount(async () => {
-      setTitle(await fileService.getTitle(p.file))
-    })
+    const title = useTitle({item: p.file})
 
     return (
       <TooltipButton onClick={onClick}>
@@ -48,7 +45,7 @@ export const ContextMenu = () => {
             <IconTextSnippet />
           </Match>
         </Switch>
-        {title()}
+        <Suspense>{title()}</Suspense>
       </TooltipButton>
     )
   }

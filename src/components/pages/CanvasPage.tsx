@@ -7,7 +7,6 @@ import {type LocationState, Page, useState} from '@/state'
 import {ButtonPrimary} from '../Button'
 import {Canvas} from '../canvas/Canvas'
 import {Loading} from './Loading'
-import {Title} from './Title'
 
 export const NewCanvasPage = () => {
   const location = useLocation<LocationState | undefined>()
@@ -73,7 +72,6 @@ export const CanvasPage = (props: RouteSectionProps) => {
       <>
         {/* Wait until collab is initialized */}
         <Show fallback={<Loading />} when={store.collab?.id === props.params.id}>
-          <Title />
           <Canvas />
         </Show>
       </>

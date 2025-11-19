@@ -1,6 +1,7 @@
+import {throttle} from '@solid-primitives/scheduled'
 import type {Node} from 'prosemirror-model'
 import {Plugin, PluginKey} from 'prosemirror-state'
-import {throttle} from 'throttle-debounce'
+import type {EditorView} from 'prosemirror-view'
 import {completionKeymap, completionPlugin} from './autocomplete'
 
 const pattern =
@@ -43,7 +44,7 @@ const collectWords = new Plugin({
   },
 })
 
-const update = throttle(500, (view) => {
+const update = throttle((view: EditorView) => {
   const words = new Set()
   view.state.doc.forEach((node: Node) => {
     getWords(node).forEach((w) => {
@@ -54,7 +55,7 @@ const update = throttle(500, (view) => {
   const tr = view.state.tr
   tr.setMeta(collectWordsKey, {words})
   view.dispatch(tr)
-})
+}, 500)
 
 export const wordCompletionPluginKey = new PluginKey('word-completion')
 

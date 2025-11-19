@@ -9,7 +9,6 @@ import {ButtonPrimary} from '../Button'
 import {CodeEditor} from '../code/CodeEditor'
 import {MergeMenu} from '../code/MergeMenu'
 import {Loading} from './Loading'
-import {Title} from './Title'
 
 export const NewCodePage = () => {
   const location = useLocation<LocationState | undefined>()
@@ -73,7 +72,6 @@ export const CodePage = (props: RouteSectionProps) => {
       <>
         {/* Wait until collab is initialized */}
         <Show fallback={<Loading />} when={store.collab?.id === props.params.id}>
-          <Title />
           <CodeEditor />
           <MergeMenu />
         </Show>

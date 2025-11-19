@@ -7,7 +7,6 @@ import {type LocationState, Page, useState} from '@/state'
 import {ButtonPrimary} from '../Button'
 import {Editor} from '../editor/Editor'
 import {Loading} from './Loading'
-import {Title} from './Title'
 
 export const NewEditorPage = () => {
   const {fileService} = useState()
@@ -71,7 +70,6 @@ export const EditorPage = (props: RouteSectionProps) => {
       <>
         {/* Wait until collab is initialized */}
         <Show fallback={<Loading />} when={store.collab?.id === props.params.id}>
-          <Title />
           <Editor />
         </Show>
       </>
