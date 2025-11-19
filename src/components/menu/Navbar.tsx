@@ -3,7 +3,9 @@ import {createSignal, Match, Show, Suspense, Switch} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {getLanguageNames} from '@/codemirror/highlight'
 import {useOpen} from '@/hooks/open'
+import {useCollabCount} from '@/hooks/use-collab-count'
 import {useTitle} from '@/hooks/use-title'
+import {copy} from '@/remote/clipboard'
 import {CanvasService} from '@/services/CanvasService'
 import {MenuId} from '@/services/MenuService'
 import {isCodeFile, Page, useState} from '@/state'
@@ -13,12 +15,15 @@ import {
   IconAiAssistantClose,
   IconArrowBack,
   IconClose,
+  IconCloud,
+  IconCloudOff,
   IconDarkMode,
   IconEdit,
   IconFullscreen,
   IconGesture,
   IconLanguage,
   IconLightMode,
+  IconLink,
   IconMoreVert,
   IconPrettier,
   IconTextSnippet,
@@ -43,6 +48,55 @@ const StickyContainer = styled('div')`
   justify-content: flex-end;
   padding: 5px;
 `
+
+const CollabButton = () => {
+  const {collabService, toastService} = useState()
+  const [anchor, setAnchor] = createSignal<HTMLElement>()
+  const collabCount = useCollabCount()
+
+  const closeTooltip = () => {
+    setAnchor(undefined)
+  }
+
+  const onOpen = (e: MouseEvent) => {
+    setAnchor(e.currentTarget as HTMLElement)
+  }
+
+  const onStop = () => {
+    collabService.stopCollab()
+    closeTooltip()
+  }
+
+  const onCopyCollabLink = async () => {
+    const joinUrl = collabService.getJoinUrl()
+    if (joinUrl) {
+      await copy(joinUrl)
+      toastService.open({message: 'Collab link copied to clipboard', duration: 2000})
+    }
+    closeTooltip()
+  }
+
+  return (
+    <>
+      <Button onClick={onOpen}>
+        <IconCloud /> {collabCount()}
+      </Button>
+      <Show when={anchor()}>
+        {(a) => (
+          <Tooltip anchor={a()} backdrop={false} onClose={closeTooltip}>
+            <TooltipButton onClick={onStop}>
+              <IconCloudOff />
+              Disconnect
+            </TooltipButton>
+            <TooltipButton onClick={onCopyCollabLink}>
+              <IconLink /> Copy Link
+            </TooltipButton>
+          </Tooltip>
+        )}
+      </Show>
+    </>
+  )
+}
 
 const CurrentFileButton = () => {
   const {codeService, canvasService, fileService, inputLineService} = useState()
@@ -339,6 +393,9 @@ export const FloatingNavbar = () => {
         <BackButton />
         <Show when={fileService.currentFile || canvasService.currentCanvas}>
           <CurrentFileButton />
+        </Show>
+        <Show when={store.collab?.started}>
+          <CollabButton />
         </Show>
         <Show when={!menuService.assistant() && store.location?.page !== Page.Assistant}>
           <AssistantButton />

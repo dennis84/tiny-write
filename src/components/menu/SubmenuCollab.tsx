@@ -1,14 +1,14 @@
-import {createEffect, createSignal, onCleanup, Show} from 'solid-js'
-import {WEB_URL} from '@/env'
+import {Show} from 'solid-js'
+import {useCollabCount} from '@/hooks/use-collab-count'
 import {copy} from '@/remote/clipboard'
-import {Page, useState} from '@/state'
+import {useState} from '@/state'
 import {IconCloud, IconCloudOff, IconGroup, IconLink} from '../Icon'
 import {Link} from './Link'
 import {Label, Sub, Text} from './Style'
 
 export const SubmenuCollab = () => {
   const {store, collabService, toastService} = useState()
-  const [collabUsers, setCollabUsers] = createSignal(0)
+  const collabUsers = useCollabCount()
 
   const onCollabStart = () => {
     collabService.startCollab()
@@ -19,37 +19,18 @@ export const SubmenuCollab = () => {
   }
 
   const onCopyCollabLink = async () => {
-    let joinUrl: string | undefined
-    if (store.location?.page === Page.Editor) {
-      joinUrl = `${WEB_URL}/editor?join=${store.location.editorId}`
-    } else if (store.location?.page === Page.Code) {
-      joinUrl = `${WEB_URL}/code?join=${store.location.codeId}`
-    } else if (store.location?.page === Page.Canvas) {
-      joinUrl = `${WEB_URL}/canvas?join=${store.location.canvasId}`
-    }
-
+    const joinUrl = collabService.getJoinUrl()
     if (joinUrl) {
       await copy(joinUrl)
       toastService.open({message: 'Collab link copied to clipboard', duration: 2000})
     }
   }
 
-  createEffect(() => {
-    const provider = store.collab?.provider
-    if (!provider) return
-    const fn = () => setCollabUsers(provider.awareness.states.size)
-    provider.awareness.on('update', fn)
-    onCleanup(() => {
-      setCollabUsers(0)
-      provider?.awareness.off('update', fn)
-    })
-  })
-
   return (
     <>
       <Label>Collab</Label>
       <Sub data-tauri-drag-region="true">
-        <Show when={store.collab?.error}>⚠️ Connection error, reconnecting ...</Show>
+        <Show when={store.collab?.error}>! Connection error, reconnecting ...</Show>
         <Show when={!store.collab?.started}>
           <Link onClick={onCollabStart} data-testid="collab">
             <IconCloud /> Share

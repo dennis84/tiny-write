@@ -4,9 +4,9 @@ import {defaultDeleteFilter, defaultProtectedNodes, ySyncPluginKey} from 'y-pros
 import {YMultiDocUndoManager} from 'y-utility/y-multidoc-undomanager'
 import {WebsocketProvider} from 'y-websocket'
 import * as Y from 'yjs'
-import {COLLAB_URL, isTauri} from '@/env'
+import {COLLAB_URL, isTauri, WEB_URL} from '@/env'
 import {error, info} from '@/remote/log'
-import type {Collab, Config, File, Page, State} from '@/state'
+import {type Collab, type Config, type File, Page, type State} from '@/state'
 import {TauriWebSocket} from '@/utils/TauriWebSocket'
 import {ConfigService} from './ConfigService'
 
@@ -197,6 +197,16 @@ export class CollabService {
 
   getProvider(id: string): WebsocketProvider {
     return this.providers[id]
+  }
+
+  getJoinUrl(): string | undefined {
+    if (this.store.location?.page === Page.Editor) {
+      return `${WEB_URL}/editor?join=${this.store.location.editorId}`
+    } else if (this.store.location?.page === Page.Code) {
+      return `${WEB_URL}/code?join=${this.store.location.codeId}`
+    } else if (this.store.location?.page === Page.Canvas) {
+      return `${WEB_URL}/canvas?join=${this.store.location.canvasId}`
+    }
   }
 
   private onCollabConfigUpdate = (event: Y.YMapEvent<unknown>) => {
