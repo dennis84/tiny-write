@@ -260,6 +260,7 @@ export interface Tree {
 }
 
 export enum AttachmentType {
+  Text = 'text',
   File = 'file',
   Selection = 'selection',
   Image = 'image',

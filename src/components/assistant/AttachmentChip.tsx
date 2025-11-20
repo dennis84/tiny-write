@@ -61,7 +61,7 @@ const AttachmentTitle = (props: AttachmentTitleProps) => {
         <Match when={props.file}>
           {props.langConfig?.name ?? ''} File{selection()}
         </Match>
-        <Match when={true}>Text</Match>
+        <Match when={true}>Code Block</Match>
       </Switch>
     </Suspense>
   )
@@ -109,6 +109,7 @@ export const AttachmentChip = (props: Props) => {
         extensions: [
           EditorView.editable.of(false),
           EditorState.readOnly.of(true),
+          EditorView.lineWrapping,
           theme,
           langConfig.highlight(),
         ],
@@ -141,6 +142,9 @@ export const AttachmentChip = (props: Props) => {
         <Switch>
           <Match when={props.attachment.type === AttachmentType.Image}>
             <AttachmentImage src={props.attachment.content} alt="" onClick={onOpenTooltip} />
+          </Match>
+          <Match when={props.attachment.type === AttachmentType.Text}>
+            <Button onClick={onOpenTooltip}>Text</Button>
           </Match>
           <Match when={props.attachment.type === AttachmentType.File}>
             <Button onClick={onOpenTooltip}>

@@ -4,7 +4,7 @@ import {NodeSelection, TextSelection} from 'prosemirror-state'
 import {Decoration} from 'prosemirror-view'
 import {createEffect, createSignal, Show} from 'solid-js'
 import {getLanguageNames} from '@/codemirror/highlight'
-import {createCodeFence} from '@/components/assistant/util'
+import {createBlockquote, createCodeFence} from '@/components/assistant/util'
 import {
   IconAdd,
   IconCodeBlocks,
@@ -140,14 +140,20 @@ export const BlockTooltip = (props: Props) => {
     const block = props.selectedBlock
     if (!block) return
 
+    const isCodeBlock = block.blockNode.type.name === 'code_block'
+    const type = isCodeBlock ? AttachmentType.File : AttachmentType.Text
+    const content = isCodeBlock
+      ? createCodeFence({
+          code: block.blockNode.textContent,
+          lang: block.blockNode.attrs.lang,
+        })
+      : createBlockquote(block.blockNode.textContent)
+
     menuService.showAssistant()
     threadService.addAttachment({
-      type: AttachmentType.File,
+      type,
       codeLang: block.blockNode.attrs.lang,
-      content: createCodeFence({
-        code: block.blockNode.textContent,
-        lang: block.blockNode.attrs.lang,
-      }),
+      content,
     })
 
     closeTooltip()

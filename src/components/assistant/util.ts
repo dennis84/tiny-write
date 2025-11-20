@@ -20,6 +20,12 @@ export const createCodeFence = (props: CodeDetails) => {
   return content
 }
 
+export const createBlockquote = (content: string) =>
+  content
+    .split('\n')
+    .map((line) => `> ${line}`)
+    .join('\n')
+
 interface CodeBlockAttrs {
   id?: string
   range?: [number, number]
