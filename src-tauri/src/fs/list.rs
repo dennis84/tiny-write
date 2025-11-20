@@ -2,7 +2,7 @@ use crate::editor::pathutil::{self as pu};
 use anyhow::anyhow;
 use globset::Glob;
 use ignore::WalkBuilder;
-use log::info;
+use tracing::info;
 use std::path::PathBuf;
 
 #[tauri::command]

@@ -13,7 +13,7 @@ use async_lsp::{
     LanguageServer, Result, ServerSocket,
 };
 use futures_channel::oneshot;
-use log::{debug, info};
+use tracing::{debug, info};
 use tokio::{sync::RwLock, task::JoinHandle};
 use tower::ServiceBuilder;
 

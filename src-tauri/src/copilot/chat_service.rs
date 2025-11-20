@@ -6,7 +6,7 @@ use anyhow::{anyhow, Result};
 use dirs::home_dir;
 use futures::stream::StreamExt;
 use futures::{AsyncBufReadExt, TryStreamExt};
-use log::debug;
+use tracing::debug;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;

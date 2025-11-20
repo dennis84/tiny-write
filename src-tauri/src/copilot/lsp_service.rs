@@ -1,7 +1,7 @@
 use std::path::{Path, PathBuf};
 
 use anyhow::anyhow;
-use log::{debug, info};
+use tracing::{debug, info};
 use tauri::{AppHandle, Manager, Runtime};
 use tokio::sync::Mutex;
 

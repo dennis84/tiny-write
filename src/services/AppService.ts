@@ -73,7 +73,7 @@ export class AppService {
 
   setError(data: Partial<ErrorObject>) {
     const err = this.createError(data)
-    error(`Error thrown (error=${err}})`, err)
+    error(`Error thrown (error=${JSON.stringify(err)}})`, err)
     this.setState('error', err)
   }
 

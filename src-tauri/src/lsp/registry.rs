@@ -1,6 +1,6 @@
 use anyhow::anyhow;
 use async_lsp::lsp_types::InitializeResult;
-use log::{debug, info};
+use tracing::{debug, info};
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::{collections::hash_map::Entry, path::Path};

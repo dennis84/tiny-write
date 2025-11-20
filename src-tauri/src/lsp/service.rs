@@ -14,7 +14,7 @@ use async_lsp::lsp_types::{
     TextDocumentContentChangeEvent, TextDocumentItem, TextDocumentSyncCapability,
     TextDocumentSyncKind, TraceValue, VersionedTextDocumentIdentifier, WorkspaceFolder,
 };
-use log::debug;
+use tracing::debug;
 use tauri::{AppHandle, Manager, Runtime};
 use tauri_plugin_cli::CliExt;
 

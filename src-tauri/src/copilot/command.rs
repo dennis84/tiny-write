@@ -1,4 +1,4 @@
-use log::error;
+use tracing::error;
 use tauri::ipc::Channel;
 use tauri::path::SafePathBuf;
 use tauri::{AppHandle, Manager, Result, Runtime};

@@ -45,7 +45,7 @@ pub fn get_offset_encoding(config: &InitializeResult) -> OffsetEncoding {
             "utf-16" => Some(OffsetEncoding::Utf16),
             "utf-32" => Some(OffsetEncoding::Utf32),
             encoding => {
-                log::error!(
+                tracing::error!(
                     "Server provided invalid position encoding {encoding}, defaulting to utf-16"
                 );
                 None

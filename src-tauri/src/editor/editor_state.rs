@@ -1,6 +1,6 @@
 use anyhow::anyhow;
 use async_channel::{unbounded, Receiver, Sender};
-use log::{debug, info};
+use tracing::{debug, info};
 use ropey::Rope;
 use serde::{Deserialize, Serialize};
 use std::collections::hash_map::Entry;
