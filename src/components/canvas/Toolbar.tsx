@@ -1,6 +1,15 @@
 import {Box} from '@flatten-js/core'
-import {arrow, computePosition, flip, offset, shift} from '@floating-ui/dom'
-import {createEffect, createSignal, Show} from 'solid-js'
+import {arrow, computePosition, flip, offset, type ReferenceElement, shift} from '@floating-ui/dom'
+import {createScheduled, debounce, leadingAndTrailing} from '@solid-primitives/scheduled'
+import {
+  createEffect,
+  createMemo,
+  createResource,
+  createSignal,
+  Show,
+  Suspense,
+  untrack,
+} from 'solid-js'
 import {getLanguageNames} from '@/codemirror/highlight'
 import {createCodeFence} from '@/components/assistant/util'
 import {
@@ -37,13 +46,11 @@ export const Toolbar = () => {
     menuService,
     threadService,
   } = useState()
-  const [ugly, setUgly] = createSignal(false)
   const [collides, setCollides] = createSignal(false)
   const {openFile} = useOpen()
 
   const restore = async (element: CanvasElement) => {
     await fileService.restore(element.id)
-    await calcPosition()
   }
 
   const prettify = async (element: CanvasElement) => {
@@ -119,7 +126,7 @@ export const Toolbar = () => {
     return {element, box}
   }
 
-  const calcPosition = () => {
+  const calcToolbarReference = (): ReferenceElement | undefined => {
     const selected = getSelected()
     if (!selected) return
 
@@ -135,7 +142,7 @@ export const Toolbar = () => {
     const box = canvasService.createBox(selected.element)
     setCollides(vp.intersect(box))
 
-    const reference = {
+    return {
       getBoundingClientRect() {
         return {
           x: selected.box.xmin,
@@ -149,8 +156,10 @@ export const Toolbar = () => {
         }
       },
     }
+  }
 
-    return computePosition(reference, tooltipRef, {
+  const positionToolbar = (reference: ReferenceElement) =>
+    computePosition(reference, tooltipRef, {
       placement: 'bottom',
       middleware: [
         offset(100),
@@ -181,22 +190,32 @@ export const Toolbar = () => {
         })
       }
     })
-  }
 
-  createEffect(async () => {
-    await calcPosition()
+  // Show toolbar if reference changes
+  createEffect(() => {
+    const reference = calcToolbarReference()
+    if (!reference) return
+    untrack(() => positionToolbar(reference))
   })
 
-  createEffect(async () => {
-    const selected = getSelected()
-    if (!selected) return
-    const file = fileService.findFileById(selected.element.id)
-    if (!file?.lastModified) return
-    const result = await codeService.prettifyCheck(file)
-    if (result !== ugly()) {
-      setUgly(result)
-      await calcPosition()
+  const scheduled = createScheduled((fn) => leadingAndTrailing(debounce, fn, 2000))
+
+  const deferredItemKey = createMemo(() => {
+    if (scheduled()) {
+      const selected = getSelected()
+      if (!selected) return undefined
+      const file = fileService.findFileById(selected.element.id)
+      return file?.lastModified
     }
+  })
+
+  // Check if the file needs prettifying
+  const [isFileUgly] = createResource(deferredItemKey, () => {
+    const selected = getSelected()
+    if (!selected) return false
+    const file = fileService.findFileById(selected.element.id)
+    if (!file?.lastModified) return false
+    return codeService.prettifyCheck(file)
   })
 
   return (
@@ -220,14 +239,18 @@ export const Toolbar = () => {
               >
                 <IconLanguage /> Change language
               </TooltipButton>
-              <Show when={ugly()}>
-                <TooltipButton
-                  onClick={() => prettify(selected().element)}
-                  data-testid="toolbar_prettify"
-                >
-                  <IconPrettier /> Prettify
-                </TooltipButton>
-              </Show>
+
+              <Suspense>
+                <Show when={isFileUgly()}>
+                  <TooltipButton
+                    onClick={() => prettify(selected().element)}
+                    data-testid="toolbar_prettify"
+                  >
+                    <IconPrettier /> Prettify
+                  </TooltipButton>
+                </Show>
+              </Suspense>
+
               <Show when={store.ai?.copilot?.user}>
                 <TooltipButton onClick={onCopilot}>
                   <IconAiAssistant /> Ask Copilot

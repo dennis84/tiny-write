@@ -1,4 +1,4 @@
-import {createEffect, onCleanup, Show} from 'solid-js'
+import {createEffect, createResource, onCleanup, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {CodeMirrorContainer} from '@/components/code/CodeEditor'
 import {Scroll} from '@/components/Layout'
@@ -52,22 +52,35 @@ export const CodeEditor = ({element, index}: {element: CanvasCodeElement; index:
     return {box, elements: [[element.id, box]]}
   }
 
-  createEffect(async () => {
-    const currentCanvas = canvasService.currentCanvas
-    let file = fileService.findFileById(element.id)
+  const [fileData] = createResource(
+    () => ({id: element.id, canvasId: canvasService.currentCanvas?.id}),
+    async ({id, canvasId}) => {
+      let f = fileService.findFileById(id)
+      let t: string | undefined
 
-    if (!file) {
-      info('No file for code element', element.id)
-      file = FileService.createFile({id: element.id, parentId: currentCanvas?.id, code: true})
-      await fileService.addFile(file)
-    }
-
-    if (file?.path) {
-      const text = (await FileService.loadTextFile(file.path)).text
-      if (text && store.collab?.ydoc) {
-        const subdoc = CollabService.getSubdoc(store.collab.ydoc, file.id)
-        codeService.updateText(file, subdoc, text)
+      if (!f) {
+        info('No file for editor element', id)
+        f = FileService.createFile({id, parentId: canvasId})
+        await fileService.addFile(f)
       }
+
+      if (f?.path) {
+        t = (await FileService.loadTextFile(f.path)).text
+      }
+
+      return [f, t] as const
+    },
+  )
+
+  createEffect(() => {
+    const f = fileData()
+    if (!f) return
+
+    const [file, text] = f
+
+    if (text && store.collab?.ydoc) {
+      const subdoc = CollabService.getSubdoc(store.collab.ydoc, file.id)
+      codeService.updateText(file, subdoc, text)
     }
 
     const provider = collabService.getProvider(file.id)

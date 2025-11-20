@@ -32,7 +32,7 @@ export const Editor = () => {
     })
   })
 
-  createEffect(async () => {
+  createEffect(() => {
     const currentFile = fileService.currentFile
     if (!currentFile || !store.collab) return
 

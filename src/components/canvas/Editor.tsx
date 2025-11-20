@@ -1,4 +1,4 @@
-import {createEffect, onCleanup, Show} from 'solid-js'
+import {createEffect, createResource, onCleanup, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {AutocompleteTooltip} from '@/components/editor/AutocompleteTooltip'
 import {BlockHandle} from '@/components/editor/BlockHandle'
@@ -55,23 +55,30 @@ export const Editor = ({element, index}: {element: CanvasEditorElement; index: n
     return {box, elements: [[element.id, box]]}
   }
 
-  createEffect(async () => {
-    const currentCanvas = canvasService.currentCanvas
-    let file = fileService.findFileById(element.id)
+  const [file] = createResource(
+    () => ({id: element.id, canvasId: canvasService.currentCanvas?.id}),
+    async ({id, canvasId}) => {
+      const f = fileService.findFileById(id)
+      if (f) return f
 
-    if (!file) {
-      info('No file for editor element', element.id)
-      file = FileService.createFile({id: element.id, parentId: currentCanvas?.id})
-      await fileService.addFile(file)
-    }
+      info('No file for editor element', id)
+      const newFile = FileService.createFile({id, parentId: canvasId})
+      await fileService.addFile(newFile)
+      return newFile
+    },
+  )
 
-    const provider = collabService.getProvider(file.id)
+  createEffect(() => {
+    const f = file()
+    if (!f) return
+
+    const provider = collabService.getProvider(f.id)
     if (!provider) {
-      collabService.initFile(file)
+      collabService.initFile(f)
     }
 
-    if (provider && file.editorView === undefined) {
-      editorService.renderEditor(file, editorRef)
+    if (provider && f.editorView === undefined) {
+      editorService.renderEditor(f, editorRef)
     }
   })
 

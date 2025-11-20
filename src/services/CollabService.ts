@@ -143,6 +143,7 @@ export class CollabService {
     if (!file.path) {
       info(`Apply collab update after synced (ydocLenght=${file.ydoc.length})`)
       Y.applyUpdate(subdoc, file.ydoc)
+      // throw new Error('...')
     }
 
     const type = file.code ? subdoc.getText(file.id) : subdoc.getXmlFragment(file.id)
