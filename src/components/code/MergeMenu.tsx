@@ -1,7 +1,7 @@
 import {acceptChunk, getChunks, rejectChunk} from '@codemirror/merge'
 import {createMemo, createSignal, onCleanup, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
-import {useOpen} from '@/hooks/open'
+import {useOpen} from '@/hooks/use-open'
 import {useState} from '@/state'
 import {IconCheck, IconClose} from '../Icon'
 import {TooltipButton, TooltipContainer} from '../Tooltip'

@@ -12,7 +12,7 @@ import {
   IconPrettier,
 } from '@/components/Icon'
 import {TooltipArrow, TooltipButton, TooltipContainer} from '@/components/Tooltip'
-import {useOpen} from '@/hooks/open'
+import {useOpen} from '@/hooks/use-open'
 import {
   AttachmentType,
   type CanvasBoxElement,

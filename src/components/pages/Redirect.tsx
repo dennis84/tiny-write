@@ -1,6 +1,6 @@
 import {useLocation} from '@solidjs/router'
 import {onMount} from 'solid-js'
-import {useOpen} from '@/hooks/open'
+import {useOpen} from '@/hooks/use-open'
 import {info} from '@/remote/log'
 import {type LocationState, useState} from '@/state'
 import {locationStateToString} from '@/utils/debug'

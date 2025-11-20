@@ -22,7 +22,7 @@ import {
   IconVisibilityOff,
 } from '@/components/Icon'
 import {Tooltip, TooltipButton, TooltipDivider} from '@/components/Tooltip'
-import {useOpen} from '@/hooks/open'
+import {useOpen} from '@/hooks/use-open'
 import editorTextHandling from '@/prompts/editor-text-handling.md?raw'
 import editorCodeBlockHandling from '@/prompts/editor-text-handling.md?raw'
 import {addDecorationKey} from '@/prosemirror/add-decoration'

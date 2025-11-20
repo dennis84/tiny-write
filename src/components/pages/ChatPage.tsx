@@ -1,7 +1,7 @@
 import type {RouteSectionProps} from '@solidjs/router'
 import {createEffect, createSignal, onMount, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
-import {useOpen} from '@/hooks/open'
+import {useOpen} from '@/hooks/use-open'
 import {Page, useState} from '@/state'
 import {Chat} from '../assistant/Chat'
 import {Content, Scroll} from '../Layout'

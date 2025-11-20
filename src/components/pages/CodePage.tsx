@@ -1,7 +1,7 @@
 import {type RouteSectionProps, useLocation} from '@solidjs/router'
 import {Match, onMount, Show, Switch} from 'solid-js'
 import {styled} from 'solid-styled-components'
-import {useOpen} from '@/hooks/open'
+import {useOpen} from '@/hooks/use-open'
 import {info} from '@/remote/log'
 import {type LocationState, Page, useState} from '@/state'
 import {locationStateToString} from '@/utils/debug'

@@ -1,7 +1,7 @@
 import {onCleanup, onMount} from 'solid-js'
 import {keyName} from 'w3c-keyname'
 import {isTauri, mod} from '@/env'
-import {useOpen} from '@/hooks/open'
+import {useOpen} from '@/hooks/use-open'
 import {quit} from '@/remote/app'
 import {saveFile} from '@/remote/editor'
 import {lspGoto} from '@/remote/lsp'

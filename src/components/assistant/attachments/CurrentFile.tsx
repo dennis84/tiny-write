@@ -1,7 +1,7 @@
 import {Show} from 'solid-js'
 import {IconCodeBlocks} from '@/components/Icon'
 import {TooltipButton} from '@/components/Tooltip'
-import {useCurrentFile} from '@/hooks/current-file'
+import {useCurrentFile} from '@/hooks/use-current-file'
 import {type Attachment, AttachmentType} from '@/state'
 import {createCodeFence} from '../util'
 

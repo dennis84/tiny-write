@@ -2,8 +2,8 @@ import {useNavigate} from '@solidjs/router'
 import {createSignal, Match, Show, Suspense, Switch} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {getLanguageNames} from '@/codemirror/highlight'
-import {useOpen} from '@/hooks/open'
 import {useCollabCount} from '@/hooks/use-collab-count'
+import {useOpen} from '@/hooks/use-open'
 import {useTitle} from '@/hooks/use-title'
 import {copy} from '@/remote/clipboard'
 import {CanvasService} from '@/services/CanvasService'
@@ -124,7 +124,7 @@ const CurrentFileButton = () => {
     const canvas = canvasService.currentCanvas
 
     if (file) {
-      const filename = await fileService.getFileName(file)
+      const filename = await fileService.getFilename(file)
       inputLineService.setInputLine({
         value: filename ?? '',
         onEnter: async (value: string) => {

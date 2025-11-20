@@ -1,7 +1,7 @@
 import {createEffect, createSignal, Show} from 'solid-js'
 import {IconTextSelectStart} from '@/components/Icon'
 import {TooltipButton} from '@/components/Tooltip'
-import {useCurrentFile} from '@/hooks/current-file'
+import {useCurrentFile} from '@/hooks/use-current-file'
 import {type Attachment, AttachmentType, useState} from '@/state'
 import {createCodeFence} from '../util'
 

@@ -3,7 +3,7 @@ import {createSignal, For, Match, onCleanup, onMount, Show, Suspense, Switch} fr
 import {unwrap} from 'solid-js/store'
 import {Portal} from 'solid-js/web'
 import {styled} from 'solid-styled-components'
-import {useOpen} from '@/hooks/open'
+import {useOpen} from '@/hooks/use-open'
 import {useTitle} from '@/hooks/use-title'
 import {CanvasService} from '@/services/CanvasService'
 import type {MenuTreeItem} from '@/services/TreeService'
@@ -223,7 +223,7 @@ export const SubmenuTree = (props: Props) => {
     closeTooltip()
 
     if (isFile(item)) {
-      const title = await fileService.getFileName(item)
+      const title = await fileService.getFilename(item)
       inputLineService.setInputLine({
         value: title ?? '',
         onEnter: async (value: string) => {

@@ -353,7 +353,7 @@ export class FileService {
     )
   }
 
-  async getFileName(file?: File): Promise<string | undefined> {
+  async getFilename(file?: File): Promise<string | undefined> {
     if (file?.path || file?.newFile) {
       return basename(file.path ?? file.newFile ?? '')
     }
