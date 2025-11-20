@@ -13,7 +13,7 @@ interface Props {
   onEnter: (lang: string) => void
 }
 
-export class LangInputEditor {
+export class InputLineEditor {
   private view: EditorView
   private doc: string
 

@@ -15,7 +15,7 @@ import {
   IconFormatImageRight,
   IconLanguage,
   IconOpenInNew,
-  IconQuestion,
+  IconRefresh,
   IconUnfoldLess,
   IconVariableRemove,
   IconVisibility,
@@ -178,7 +178,7 @@ export const BlockTooltip = (props: Props) => {
 
     inputLineService.setInputLine({
       value: '',
-      placeholder: 'Ask copilot about the selected block...',
+      placeholder: 'Rephrasing by copilot...',
       onEnter: async (text) => {
         const messages: ChatMessage[] = [
           {
@@ -374,7 +374,7 @@ export const BlockTooltip = (props: Props) => {
                 <IconAdd /> Add to copilot chat
               </TooltipButton>
               <TooltipButton onClick={onCopilotInline} data-testid="copilot_ask_inline">
-                <IconQuestion /> Ask copilot
+                <IconRefresh /> Rephrasing by copilot
               </TooltipButton>
               <TooltipDivider />
               {/* Image actions */}

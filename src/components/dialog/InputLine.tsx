@@ -5,7 +5,7 @@ import {getTheme} from '@/codemirror/theme'
 import {codeMirror} from '@/components/code/Style'
 import {ConfigService} from '@/services/ConfigService'
 import {useState} from '@/state'
-import {LangInputEditor} from './InputLineEditor'
+import {InputLineEditor} from './InputLineEditor'
 
 const Layer = styled('div')`
   position: absolute;
@@ -58,7 +58,7 @@ export const InputLine = () => {
       codeTheme = ConfigService.getDefaltCodeTheme(configService.theme.dark)
     }
 
-    const editor = new LangInputEditor({
+    const editor = new InputLineEditor({
       doc: config.value,
       parent: ref,
       theme: getTheme(codeTheme.value),
