@@ -24,7 +24,7 @@ export const Redirect = () => {
     }
 
     if (argPath) {
-      info(`Redirect to new file by path (path=${path})`)
+      info(`Redirect to new file by path (path=${path}, newFile=${newFile})`)
       const file = await fileService.newFileByPath(path, newFile)
       return openFile(file, {selection})
     }

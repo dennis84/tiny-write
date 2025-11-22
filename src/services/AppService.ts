@@ -20,6 +20,7 @@ export class AppService {
 
   static async fetchData(): Promise<State> {
     const args = (await getArgs().catch(() => undefined)) ?? {}
+    info(`Fetched args (args=${JSON.stringify(args)})`)
 
     const fetchedWindow = await DB.getWindow()
     const fetchedConfig = (await DB.getConfig()) ?? createConfig()

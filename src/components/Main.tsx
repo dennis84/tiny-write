@@ -49,9 +49,9 @@ export const Main = (props: {state: State}) => {
     let layoutRef!: HTMLDivElement
     const ctrl = createCtrl(props.state)
 
-    const onViewError = (error: any, reset: any) => {
+    const onViewError = (error: any, _reset: any) => {
       ctrl.appService.setError({error})
-      reset()
+      // reset()
       return null
     }
 

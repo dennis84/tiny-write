@@ -1,6 +1,7 @@
 use std::path::PathBuf;
 
 use tauri::{Manager, Runtime};
+use tracing::debug;
 
 use crate::editor::{
     editor_state::EditorState,
@@ -33,9 +34,10 @@ pub async fn to_relative_path<R: Runtime>(
     base_path: Option<PathBuf>,
     app_handle: tauri::AppHandle<R>,
 ) -> tauri::Result<String> {
+    debug!("to_relative_path (path={:?}, base_path={:?})", path, base_path);
     let state = app_handle.state::<EditorState>();
-    let doc = state.get_document(path.as_ref()).await?;
-    let bp = doc.worktree_path.or(base_path);
+    let maybe_doc = state.get_document(path.as_ref()).await;
+    let bp = maybe_doc.ok().and_then(|doc| doc.worktree_path).or(base_path);
     let relative_path = pu::to_relative_path(path, bp).and_then(pu::path_buf_to_string)?;
     Ok(relative_path)
 }

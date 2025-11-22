@@ -1,10 +1,11 @@
 import {useLocation} from '@solidjs/router'
 import {homeDir} from '@tauri-apps/api/path'
 import {type DirEntry, readDir} from '@tauri-apps/plugin-fs'
-import {createEffect, createSignal, For, onMount} from 'solid-js'
+import {createResource, For, Index, Suspense} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {useOpen} from '@/hooks/use-open'
 import {resolvePath, toRelativePath} from '@/remote/editor'
+import {info} from '@/remote/log'
 import {useState} from '@/state'
 import {IconDescription, IconFolder, IconFolderOpen} from '../Icon'
 import {Content, Scroll} from '../Layout'
@@ -54,16 +55,40 @@ interface DirState {
 
 export const DirPage = () => {
   const {store, fileService} = useState()
-  const [dirEntries, setDirEntries] = createSignal<DirEntry[]>()
-  const [currentPath, setCurrentPath] = createSignal<string>()
   const {openFile, openDir} = useOpen()
   const location = useLocation<DirState>()
+
+  info('Render DirPage')
 
   const getResolvedPath = async (name?: string) => {
     const path = [...(location.state?.path ?? [])]
     if (name) path.push(name)
     return await resolvePath(path.join('/'), store.args?.cwd)
   }
+
+  const [currentPath] = createResource(async () => {
+    const home = await homeDir()
+    return await toRelativePath(store.args?.cwd ?? '', home)
+  })
+
+  const [dirEntries] = createResource<DirEntry[]>(
+    async () => {
+      const path = await getResolvedPath()
+      if (!path) return []
+      const entries = await readDir(path)
+      const sorted = entries.sort((a, b) => a.name.localeCompare(b.name))
+      const dirs = []
+      const files = []
+
+      for (const entry of sorted) {
+        if (entry.isDirectory) dirs.push(entry)
+        else files.push(entry)
+      }
+
+      return [...dirs, ...files]
+    },
+    {initialValue: []},
+  )
 
   const clickPathSegment = (index: number) => {
     const path = [...(location.state?.path ?? [])]
@@ -94,28 +119,6 @@ export const DirPage = () => {
     )
   }
 
-  onMount(async () => {
-    const home = await homeDir()
-    const relative = await toRelativePath(store.args?.cwd ?? '', home)
-    setCurrentPath(relative)
-  })
-
-  createEffect(async () => {
-    const path = await getResolvedPath()
-    if (!path) return
-    const entries = await readDir(path)
-    const sorted = entries.sort((a, b) => a.name.localeCompare(b.name))
-    const dirs = []
-    const files = []
-
-    for (const entry of sorted) {
-      if (entry.isDirectory) dirs.push(entry)
-      else files.push(entry)
-    }
-
-    setDirEntries([...dirs, ...files])
-  })
-
   return (
     <Scroll data-testid="dir" data-tauri-drag-region="true">
       <Content style={{width: '100%'}} config={store.config} data-tauri-drag-region="true">
@@ -126,7 +129,9 @@ export const DirPage = () => {
             {(p, i) => <PathSegment onClick={() => clickPathSegment(i() + 1)}>{p}/</PathSegment>}
           </For>
         </CurrentPath>
-        <For each={dirEntries()}>{(entry) => <DirEntryLink entry={entry} />}</For>
+        <Suspense>
+          <Index each={dirEntries()}>{(entry) => <DirEntryLink entry={entry()} />}</Index>
+        </Suspense>
       </Content>
     </Scroll>
   )

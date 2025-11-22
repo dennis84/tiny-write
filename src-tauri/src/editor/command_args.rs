@@ -44,6 +44,7 @@ pub fn create_args(source: String) -> Args {
                 .and_then(|x| String::from_utf8(x).ok());
         }
     } else if !source.is_empty() {
+        // If source path exists
         if let Ok(p) = resolve_path(&source, None) {
             if p.is_dir() {
                 cwd = path_buf_to_string(p).ok();
@@ -52,10 +53,19 @@ pub fn create_args(source: String) -> Args {
                 cwd = dirname(p).and_then(path_buf_to_string).ok();
             }
         } else if let Some(p) = expand_tilde(&source) {
-            if let Ok(d) = dirname(&p) {
-                if d.exists() {
+            let resoved_dir = dirname(&p).and_then(|d| resolve_path(d, None));
+            // If parent dir exists
+            if let Ok(d) = resoved_dir {
+                let has_trailing_slash = p
+                    .as_os_str()
+                    .to_str()
+                    .map(|s| s.ends_with(std::path::MAIN_SEPARATOR))
+                    .unwrap_or(false);
+                if !has_trailing_slash {
                     new_file = path_buf_to_string(p).ok();
                 }
+
+                cwd = path_buf_to_string(d).ok();
             }
         }
     }
@@ -132,6 +142,28 @@ mod tests {
         assert_eq!(&args.new_file.unwrap(), "../README.m");
         assert!(args.room.is_none());
         assert!(args.text.is_none());
+
+        // Source is a directory
+        let args = create_args("../src-tauri/".to_string());
+        assert!(args.file.is_none());
+        assert!(args.new_file.is_none());
+        assert_eq!(
+            Path::new(&args.cwd.as_ref().unwrap()),
+            env::current_dir().unwrap()
+        );
+        assert!(args.room.is_none());
+        assert!(args.text.is_none());
+
+        // Source is a directory that does not exist
+        let args = create_args("../srcc/".to_string());
+        assert!(args.file.is_none());
+        assert!(args.new_file.is_none());
+        assert!(args.room.is_none());
+        assert!(args.text.is_none());
+        assert_eq!(
+            Path::new(&args.cwd.as_ref().unwrap()),
+            env::current_dir().unwrap().parent().unwrap()
+        );
 
         // Deeplink collab room
         let args = create_args("tinywrite://test?room=123".to_string());
