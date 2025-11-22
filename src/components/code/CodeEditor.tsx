@@ -38,6 +38,7 @@ export const CodeEditor = () => {
 
     if (provider && currentFile?.codeEditorView === undefined) {
       codeService.renderEditor(currentFile, containerRef)
+      fileService.currentFile?.codeEditorView?.focus()
     }
   })
 

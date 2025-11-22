@@ -1,12 +1,11 @@
 import {type RouteSectionProps, useLocation} from '@solidjs/router'
-import {Match, onMount, Show, Switch} from 'solid-js'
+import {createResource, ErrorBoundary, Match, onMount, Show, Suspense, Switch} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {useOpen} from '@/hooks/use-open'
 import {info} from '@/remote/log'
 import {type LocationState, Page, useState} from '@/state'
 import {ButtonPrimary} from '../Button'
 import {Canvas} from '../canvas/Canvas'
-import {Loading} from './Loading'
 
 export const NewCanvasPage = () => {
   const location = useLocation<LocationState | undefined>()
@@ -48,43 +47,38 @@ export const NewCanvasPage = () => {
 
 export const CanvasPage = (props: RouteSectionProps) => {
   const location = useLocation<LocationState | undefined>()
-  const {store, appService, canvasService, canvasCollabService, collabService, toastService} =
-    useState()
+  const {appService, canvasService, canvasCollabService, collabService, toastService} = useState()
   const {open} = useOpen()
 
-  const OpenCanvas = () => {
-    info(`Render canvas page (location=${JSON.stringify(location.state)})`)
+  info(`Render canvas page (location=${JSON.stringify(location.state)})`)
 
+  const [initialized] = createResource(
+    () => ({id: props.params.id}),
+    async ({id}) => {
+      await canvasService.init()
+      canvasCollabService.init()
+      collabService.init()
+      return id
+    },
+  )
+
+  const OnError = (p: {error: any}) => {
     onMount(async () => {
-      try {
-        await canvasService.init()
-        canvasCollabService.init()
-        collabService.init()
-      } catch (e) {
-        await appService.setLocation(undefined)
-        const message = e instanceof Error ? e.message : String(e)
-        toastService.open({message, duration: 10_000})
-        open({page: Page.Canvas})
-      }
+      await appService.setLocation(undefined)
+      const message = p.error instanceof Error ? p.error.message : String(p.error)
+      toastService.open({message, duration: 10_000})
+      open({page: Page.Canvas})
     })
-
-    return (
-      <>
-        {/* Wait until collab is initialized */}
-        <Show fallback={<Loading />} when={store.collab?.id === props.params.id}>
-          <Canvas />
-        </Show>
-      </>
-    )
+    return null
   }
 
   return (
-    <>
-      {/* Rerender if location changes */}
-      {/* eslint-disable-next-line */}
-      <Show when={props.params.id && (location.state || !location.state)} keyed>
-        <OpenCanvas />
-      </Show>
-    </>
+    <Suspense>
+      <ErrorBoundary fallback={(error) => <OnError error={error} />}>
+        <Show when={initialized()} keyed>
+          <Canvas />
+        </Show>
+      </ErrorBoundary>
+    </Suspense>
   )
 }

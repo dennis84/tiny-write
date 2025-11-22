@@ -1,5 +1,5 @@
 import type {RouteSectionProps} from '@solidjs/router'
-import {createEffect, createSignal, onMount, Show} from 'solid-js'
+import {createEffect, createResource, ErrorBoundary, onMount, Show, Suspense} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {useOpen} from '@/hooks/use-open'
 import {Page, useState} from '@/state'
@@ -13,74 +13,70 @@ const MaxWidth = styled('div')`
 `
 
 export const ChatPage = (props: RouteSectionProps) => {
+  let scrollContent!: HTMLDivElement
+
   const {store, appService, threadService, toastService} = useState()
   const {open} = useOpen()
 
-  const OpenChat = () => {
-    let scrollContent!: HTMLDivElement
+  const onChangeThread = (threadId: string) => {
+    open({threadId})
+  }
 
-    // Render chat only after current thread is initialized,
-    // otherwise auto context add attachments to early
-    const [initialized, setInitialized] = createSignal(false)
+  const [initialized] = createResource(
+    () => ({id: props.params.id}),
+    async ({id}) => {
+      let currentId = id
+      // Create a new thrad on /assistant page and activate in location
+      if (!id) {
+        const newThread = threadService.newThread()
+        await appService.setLocation({threadId: newThread.id})
+        currentId = newThread.id
+      }
 
-    const onChangeThread = (threadId: string) => {
-      open({threadId})
+      threadService.init()
+      return currentId
+    },
+  )
+
+  createEffect(() => {
+    const currentThread = threadService.currentThread
+    // Update URL if thread was persisted
+    if (!props.params.id && currentThread?.lastModified) {
+      open({threadId: currentThread.id})
     }
+  })
 
+  const OnError = () => {
     onMount(async () => {
-      try {
-        // Create a new thrad on /assistant page and activate in location
-        if (!props.params.id) {
-          const newThread = threadService.newThread()
-          appService.setLocation({threadId: newThread.id})
-        }
-
-        threadService.init()
-        setInitialized(true)
-      } catch {
-        await appService.setLocation(undefined)
-        toastService.open({message: `Thread not found: ${props.params.id}`, duration: 10_000})
-        open({page: Page.Assistant})
-      }
+      await appService.setLocation(undefined)
+      toastService.open({message: `Thread not found: ${props.params.id}`, duration: 10_000})
+      open({page: Page.Assistant})
     })
-
-    createEffect(() => {
-      const currentThread = threadService.currentThread
-      // Update URL if thread was persisted
-      if (!props.params.id && currentThread?.lastModified) {
-        open({threadId: currentThread.id})
-      }
-    })
-
-    return (
-      <Scroll data-testid="assistant" data-tauri-drag-region="true">
-        <Content
-          ref={scrollContent}
-          style={{
-            width: '100%',
-            'padding-bottom': '0',
-            height: 'auto',
-          }}
-          config={store.config}
-          data-tauri-drag-region="true"
-        >
-          <MaxWidth>
-            <Show when={initialized()}>
-              <Chat scrollContent={() => scrollContent} onChangeThread={onChangeThread} />
-            </Show>
-          </MaxWidth>
-        </Content>
-      </Scroll>
-    )
+    return null
   }
 
   return (
-    <>
-      {/* Rerender if location changes */}
-      {/* eslint-disable-next-line */}
-      <Show when={props.params.id || !props.params.id} keyed>
-        <OpenChat />
-      </Show>
-    </>
+    <Suspense>
+      <ErrorBoundary fallback={() => <OnError />}>
+        <Show when={initialized()} keyed>
+          <Scroll data-testid="assistant" data-tauri-drag-region="true">
+            <Content
+              ref={scrollContent}
+              style={{
+                width: '100%',
+                'padding-bottom': '0',
+                height: 'auto',
+              }}
+              config={store.config}
+              data-tauri-drag-region="true"
+            >
+              <MaxWidth>
+                <Chat scrollContent={() => scrollContent} onChangeThread={onChangeThread} />
+              </MaxWidth>
+            </Content>
+          </Scroll>
+        </Show>
+      </ErrorBoundary>
+    </Suspense>
   )
 }

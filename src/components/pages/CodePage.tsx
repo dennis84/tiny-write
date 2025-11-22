@@ -1,5 +1,5 @@
 import {type RouteSectionProps, useLocation} from '@solidjs/router'
-import {Match, onMount, Show, Switch} from 'solid-js'
+import {createResource, ErrorBoundary, Match, onMount, Show, Suspense, Switch} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {useOpen} from '@/hooks/use-open'
 import {info} from '@/remote/log'
@@ -8,7 +8,6 @@ import {locationStateToString} from '@/utils/debug'
 import {ButtonPrimary} from '../Button'
 import {CodeEditor} from '../code/CodeEditor'
 import {MergeMenu} from '../code/MergeMenu'
-import {Loading} from './Loading'
 
 export const NewCodePage = () => {
   const location = useLocation<LocationState | undefined>()
@@ -50,46 +49,42 @@ export const NewCodePage = () => {
 
 export const CodePage = (props: RouteSectionProps) => {
   const location = useLocation<LocationState | undefined>()
-  const {store, appService, codeService, fileService, toastService} = useState()
+  const {store, appService, codeService, toastService} = useState()
   const {open, openDir} = useOpen()
 
-  const OpenCodeEditor = () => {
-    info(`Render code page (location=${locationStateToString(location.state)})`)
+  info(`Render code page (location=${locationStateToString(location.state)})`)
 
+  const [initialized] = createResource(
+    // Reload when params.id or location.state changes
+    () => ({id: props.params.id, state: props.location.state}),
+    async (props) => {
+      await codeService.init()
+      return props
+    },
+  )
+
+  const OnError = (p: {error: any}) => {
     onMount(async () => {
-      try {
-        await codeService.init()
-        fileService.currentFile?.codeEditorView?.focus()
-      } catch (e) {
-        await appService.setLocation(undefined)
-        const message = e instanceof Error ? e.message : String(e)
-        toastService.open({message, duration: 10_000})
-        if (store.args?.cwd) {
-          openDir()
-        } else {
-          open({page: Page.Code})
-        }
+      await appService.setLocation(undefined)
+      const message = p.error instanceof Error ? p.error.message : String(p.error)
+      toastService.open({message, duration: 10_000})
+      if (store.args?.cwd) {
+        openDir()
+      } else {
+        open({page: Page.Code})
       }
     })
-
-    return (
-      <>
-        {/* Wait until collab is initialized */}
-        <Show fallback={<Loading />} when={store.collab?.id === props.params.id}>
-          <CodeEditor />
-          <MergeMenu />
-        </Show>
-      </>
-    )
+    return null
   }
 
   return (
-    <>
-      {/* Rerender if location changes */}
-      {/* eslint-disable-next-line */}
-      <Show when={props.params.id && (location.state || store.location)} keyed>
-        <OpenCodeEditor />
-      </Show>
-    </>
+    <Suspense>
+      <ErrorBoundary fallback={(error) => <OnError error={error} />}>
+        <Show when={initialized()} keyed>
+          <CodeEditor />
+          <MergeMenu />
+        </Show>
+      </ErrorBoundary>
+    </Suspense>
   )
 }
