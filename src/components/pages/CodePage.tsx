@@ -51,7 +51,7 @@ export const NewCodePage = () => {
 export const CodePage = (props: RouteSectionProps) => {
   const location = useLocation<LocationState | undefined>()
   const {store, appService, codeService, fileService, toastService} = useState()
-  const {open} = useOpen()
+  const {open, openDir} = useOpen()
 
   const OpenCodeEditor = () => {
     info(`Render code page (location=${locationStateToString(location.state)})`)
@@ -64,7 +64,11 @@ export const CodePage = (props: RouteSectionProps) => {
         await appService.setLocation(undefined)
         const message = e instanceof Error ? e.message : String(e)
         toastService.open({message, duration: 10_000})
-        open({page: Page.Code})
+        if (store.args?.cwd) {
+          openDir()
+        } else {
+          open({page: Page.Code})
+        }
       }
     })
 
