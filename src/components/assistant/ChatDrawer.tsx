@@ -1,4 +1,4 @@
-import {createSignal, onMount, Show} from 'solid-js'
+import {createResource, Show, Suspense} from 'solid-js'
 import {useState} from '@/state'
 import {Drawer, DrawerContent} from '../Drawer'
 import {ChatNavbar} from '../menu/Navbar'
@@ -7,7 +7,6 @@ import {Chat} from './Chat'
 export const ChatDrawer = () => {
   let scrollContent!: HTMLDivElement
   const {aiService, appService, threadService} = useState()
-  const [initialized, setInitialized] = createSignal(false)
 
   const onDrawerResized = async (width: number) => {
     await aiService.setSidebarWidth(width)
@@ -19,17 +18,16 @@ export const ChatDrawer = () => {
     scrollContent.scrollTo({top: 0, behavior: 'smooth'})
   }
 
-  onMount(async () => {
+  const [initialized] = createResource(async () => {
+    let thread = threadService.currentThread
     // Empty threads are not saved, so we need to create a new one if the thread is not found
-    const thread = threadService.currentThread
-
     if (!thread) {
-      const thread = threadService.newThread()
+      thread = threadService.newThread()
       await appService.setLocation({threadId: thread.id})
     }
 
     threadService.init()
-    setInitialized(true)
+    return thread.id
   })
 
   return (
@@ -43,9 +41,11 @@ export const ChatDrawer = () => {
     >
       <ChatNavbar />
       <DrawerContent ref={scrollContent}>
-        <Show when={initialized()}>
-          <Chat scrollContent={() => scrollContent} onChangeThread={onChangeThread} />
-        </Show>
+        <Suspense>
+          <Show when={initialized()}>
+            <Chat scrollContent={() => scrollContent} onChangeThread={onChangeThread} />
+          </Show>
+        </Suspense>
       </DrawerContent>
     </Drawer>
   )

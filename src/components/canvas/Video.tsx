@@ -1,4 +1,4 @@
-import {onMount} from 'solid-js'
+import {createResource, Show, Suspense} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import type {Selection} from '@/services/CanvasService'
 import {MediaService} from '@/services/MediaService'
@@ -19,7 +19,6 @@ const CanvasVideo = styled('video')(
 )
 
 export const Video = ({element, index}: {element: CanvasVideoElement; index: number}) => {
-  let videoRef!: HTMLVideoElement
   const {appService, canvasService} = useState()
 
   const onSelect = (e: MouseEvent) => {
@@ -31,10 +30,9 @@ export const Video = ({element, index}: {element: CanvasVideoElement; index: num
     return {box, elements: [[element.id, box]]}
   }
 
-  onMount(async () => {
+  const [source] = createResource(async () => {
     const basePath = await appService.getBasePath()
-    const p = await MediaService.getImagePath(element.src, basePath)
-    videoRef.setAttribute('src', p)
+    return MediaService.getImagePath(element.src, basePath)
   })
 
   return (
@@ -53,19 +51,25 @@ export const Video = ({element, index}: {element: CanvasVideoElement; index: num
         height={element.height}
         index={index}
       />
-      <CanvasVideo
-        autoplay
-        loop={true}
-        ref={videoRef}
-        selected={element.selected}
-        width={element.width}
-        height={element.height}
-        style={{
-          left: `${element.x.toString()}px`,
-          top: `${element.y.toString()}px`,
-          'z-index': `${ZIndex.element(index, IndexType.CONTENT)}`,
-        }}
-      />
+      <Suspense>
+        <Show when={source()}>
+          {(src) => (
+            <CanvasVideo
+              autoplay
+              loop={true}
+              src={src()}
+              selected={element.selected}
+              width={element.width}
+              height={element.height}
+              style={{
+                left: `${element.x.toString()}px`,
+                top: `${element.y.toString()}px`,
+                'z-index': `${ZIndex.element(index, IndexType.CONTENT)}`,
+              }}
+            />
+          )}
+        </Show>
+      </Suspense>
     </>
   )
 }

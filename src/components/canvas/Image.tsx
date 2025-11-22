@@ -1,4 +1,4 @@
-import {onMount} from 'solid-js'
+import {createResource, Show, Suspense} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {isTauri} from '@/env'
 import type {Selection} from '@/services/CanvasService'
@@ -20,7 +20,6 @@ const CanvasImage = styled('img')(
 )
 
 export const Image = ({element, index}: {element: CanvasImageElement; index: number}) => {
-  let imageRef!: HTMLImageElement
   const {appService, canvasService} = useState()
 
   const onSelect = (e: MouseEvent) => {
@@ -32,13 +31,12 @@ export const Image = ({element, index}: {element: CanvasImageElement; index: num
     return {box, elements: [[element.id, box]]}
   }
 
-  onMount(async () => {
-    if (isTauri()) {
+  const [source] = createResource(async () => {
+    if (isTauri() && !element.src.startsWith('data:')) {
       const basePath = await appService.getBasePath()
-      const p = await MediaService.getImagePath(element.src, basePath)
-      imageRef.setAttribute('src', p)
+      return await MediaService.getImagePath(element.src, basePath)
     } else {
-      imageRef.setAttribute('src', element.src)
+      return element.src
     }
   })
 
@@ -58,17 +56,23 @@ export const Image = ({element, index}: {element: CanvasImageElement; index: num
         height={element.height}
         index={index}
       />
-      <CanvasImage
-        ref={imageRef}
-        width={element.width}
-        height={element.height}
-        selected={element.selected}
-        style={{
-          left: `${element.x.toString()}px`,
-          top: `${element.y.toString()}px`,
-          'z-index': `${ZIndex.element(index, IndexType.CONTENT)}`,
-        }}
-      />
+      <Suspense>
+        <Show when={source()}>
+          {(src) => (
+            <CanvasImage
+              src={src()}
+              width={element.width}
+              height={element.height}
+              selected={element.selected}
+              style={{
+                left: `${element.x.toString()}px`,
+                top: `${element.y.toString()}px`,
+                'z-index': `${ZIndex.element(index, IndexType.CONTENT)}`,
+              }}
+            />
+          )}
+        </Show>
+      </Suspense>
     </>
   )
 }
