@@ -1,6 +1,6 @@
 import type {ReferenceElement} from '@floating-ui/dom'
 import type {EditorView} from 'prosemirror-view'
-import {createEffect, createSignal, For, onCleanup, onMount, Show} from 'solid-js'
+import {createEffect, createMemo, createSignal, For, onCleanup, onMount, Show} from 'solid-js'
 import type {CompletionState} from '@/prosemirror/autocomplete/autocomplete'
 import {fileListingPluginKey} from '@/prosemirror/autocomplete/file-listing'
 import {wordCompletionPluginKey} from '@/prosemirror/autocomplete/word-completion'
@@ -13,7 +13,6 @@ interface Props {
 
 export const AutocompleteTooltip = (props: Props) => {
   const {store} = useState()
-  const [completion, setCompletion] = createSignal<CompletionState>()
   const [tooltipAnchor, setTooltipAnchor] = createSignal<ReferenceElement | undefined>()
 
   const getCompletionState = (editorView: EditorView): CompletionState | undefined => {
@@ -52,7 +51,7 @@ export const AutocompleteTooltip = (props: Props) => {
     calcPosition(c)
   }
 
-  createEffect(() => {
+  const completion = createMemo(() => {
     if (!store.lastTr) return
     const editorView = props.file?.editorView
     if (!editorView) return
@@ -62,9 +61,7 @@ export const AutocompleteTooltip = (props: Props) => {
     const cs = getCompletionState(editorView)
 
     if (cs?.from && cs.to && sel.from - 1 >= cs.from && sel.from - 1 <= cs.to) {
-      setCompletion(cs)
-    } else {
-      setCompletion(undefined)
+      return cs
     }
   })
 

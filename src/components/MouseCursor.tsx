@@ -1,5 +1,5 @@
 import {throttle} from '@solid-primitives/scheduled'
-import {createEffect, createSignal, For, onCleanup} from 'solid-js'
+import {createMemo, For, onCleanup, onMount, Show} from 'solid-js'
 import {createStore} from 'solid-js/store'
 import {styled} from 'solid-styled-components'
 import type {Awareness} from 'y-protocols/awareness'
@@ -70,25 +70,22 @@ interface Cursor {
   foreground: string
 }
 
-export const MouseCursor = () => {
+const MouseCursorActive = (props: {awareness: Awareness}) => {
   const {store, canvasService, fileService} = useState()
-  const [awareness, setAwareness] = createSignal<Awareness>()
   const [cursors, setCursors] = createStore<Cursor[]>([])
-  const [offset, setOffset] = createSignal<[number, number]>([0, 0])
 
   const zoom = () =>
     store.location?.page === Page.Canvas ? (canvasService.currentCanvas?.camera.zoom ?? 1) : 1
 
-  createEffect(() => {
-    if (store.config.contentWidth === undefined) return
+  const offset = createMemo(() => {
+    if (store.config.contentWidth === undefined) return [0, 0]
 
     if (store.location?.page === Page.Canvas) {
-      setOffset(canvasService.currentCanvas?.camera.point ?? [0, 0])
-      return
+      return canvasService.currentCanvas?.camera.point ?? [0, 0]
     }
 
     const rect = fileService.currentFile?.editorView?.dom.getBoundingClientRect()
-    setOffset([rect?.left ?? 0, rect?.top ?? 0])
+    return [rect?.left ?? 0, rect?.top ?? 0]
   })
 
   const onAwarenessChange = ({added, updated, removed}: any) => {
@@ -101,7 +98,7 @@ export const MouseCursor = () => {
     })
 
     added.concat(updated).forEach((id: number) => {
-      const aw = awareness()?.states.get(id)
+      const aw = props.awareness?.states.get(id)
       if (id === y.clientID || !aw?.mouse) return
       const mouse = cursors.find((c) => c.id === id)
 
@@ -132,27 +129,21 @@ export const MouseCursor = () => {
   }
 
   const onMouseMove = throttle((e: MouseEvent) => {
-    if ((awareness()?.states.size ?? 0) <= 1) return
+    if ((props.awareness.states.size ?? 0) <= 1) return
     const [offsetX, offsetY] = offset()
     const x = e.x / zoom() - offsetX
     const y = e.y / zoom() - offsetY
-    awareness()?.setLocalStateField('mouse', {x, y})
+    props.awareness.setLocalStateField('mouse', {x, y})
   }, 20)
 
-  createEffect(() => {
-    if (store.collab?.started !== true) return
-    const aw = store.collab?.provider?.awareness
-    if (!aw) return
-    setAwareness(aw)
-    aw.on('change', onAwarenessChange)
+  onMount(() => {
+    props.awareness.on('change', onAwarenessChange)
     document.addEventListener('mousemove', onMouseMove)
 
     onCleanup(() => {
       document.removeEventListener('mousemove', onMouseMove)
-      aw.off('change', onAwarenessChange)
-      aw.setLocalStateField('mouse', null)
-      setAwareness(undefined)
-      setCursors([])
+      props.awareness.off('change', onAwarenessChange)
+      props.awareness.setLocalStateField('mouse', null)
     })
   })
 
@@ -180,5 +171,16 @@ export const MouseCursor = () => {
         )}
       </For>
     </CursorContainer>
+  )
+}
+
+export const MouseCursor = () => {
+  const {store} = useState()
+  return (
+    <Show when={store.collab?.started}>
+      <Show when={store.collab?.provider.awareness}>
+        {(awareness) => <MouseCursorActive awareness={awareness()} />}
+      </Show>
+    </Show>
   )
 }

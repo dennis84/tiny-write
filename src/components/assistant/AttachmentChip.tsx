@@ -102,10 +102,10 @@ export const AttachmentChip = (props: Props) => {
 
     onMount(() => {
       const theme = getTheme(configService.codeTheme.value)
-      const lines = props.attachment.content.trim()
+      const doc = props.attachment.content.trim()
       const view = new EditorView({
         parent: ref,
-        doc: lines,
+        doc,
         extensions: [
           EditorView.editable.of(false),
           EditorState.readOnly.of(true),

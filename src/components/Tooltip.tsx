@@ -10,7 +10,6 @@ import {
   size,
 } from '@floating-ui/dom'
 import {type JSX, onCleanup, onMount, Show} from 'solid-js'
-import {createMutable, unwrap} from 'solid-js/store'
 import {styled} from 'solid-styled-components'
 
 export const TooltipContainer = styled('div')`
@@ -85,10 +84,6 @@ const Backdrop = styled('div')`
   z-index: var(--z-index-tooltip);
 `
 
-interface Cleanup {
-  fn?: () => void
-}
-
 interface Props {
   anchor: ReferenceElement
   placement?: Placement
@@ -104,7 +99,6 @@ interface Props {
 export const Tooltip = (props: Props) => {
   let tooltipRef!: HTMLDivElement
   let arrowRef!: HTMLSpanElement
-  const cleanup = createMutable<Cleanup>({})
 
   const onBackdropClick = (e: MouseEvent) => {
     e.stopPropagation()
@@ -146,7 +140,7 @@ export const Tooltip = (props: Props) => {
     const placement = props.placement ?? 'bottom'
     const fallbackPlacements = props.fallbackPlacements ?? undefined
 
-    cleanup.fn = autoUpdate(props.anchor, tooltipRef, async () => {
+    const cleanup = autoUpdate(props.anchor, tooltipRef, async () => {
       void computePosition(props.anchor, tooltipRef, {
         placement,
         middleware: [
@@ -189,9 +183,7 @@ export const Tooltip = (props: Props) => {
       })
     })
 
-    onCleanup(() => {
-      unwrap(cleanup).fn?.()
-    })
+    onCleanup(() => cleanup())
   })
 
   return (
