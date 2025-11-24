@@ -2,6 +2,7 @@ import {useOpen} from '@/hooks/use-open'
 import {useState} from '@/state'
 import {Button, ButtonGroup} from '../Button'
 import {DrawerContent} from '../Drawer'
+import {IconDelete} from '../Icon'
 import {MenuDrawer} from './Menu'
 import {MenuNavbar} from './Navbar'
 import {Label, Note} from './Style'
@@ -29,7 +30,7 @@ export const Bin = () => {
         <SubmenuTree showDeleted={true} />
         <ButtonGroup>
           <Button onClick={onEmptyBin} disabled={!hasDeletedFiles()}>
-            ⚠️ Empty bin
+            <IconDelete /> Empty bin
           </Button>
         </ButtonGroup>
       </DrawerContent>

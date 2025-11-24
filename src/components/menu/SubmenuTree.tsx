@@ -11,6 +11,7 @@ import {isCanvas, isCodeFile, isFile, isLocalFile, Page, useState} from '@/state
 import {
   IconAdd,
   IconAdjust,
+  IconClose,
   IconCodeBlocks,
   IconDelete,
   IconDeleteForever,
@@ -297,20 +298,10 @@ export const SubmenuTree = (props: Props) => {
     closeTooltip()
   }
 
-  const onDelete = async () => {
+  const deleteNode = async (forever = false) => {
     const node = unwrap(selected())
     if (!node) return
-    const result = await deleteService.delete(node)
-    await treeService.remove(node.id)
-    if (result.navigateTo !== false) openFile(result.navigateTo)
-    closeTooltip()
-  }
-
-  const onDeleteForever = async () => {
-    const node = unwrap(selected())
-    if (!node) return
-    const result = await deleteService.delete(node, true)
-    await treeService.remove(node.id)
+    const result = await deleteService.delete(node, forever)
     if (result.navigateTo !== false) openFile(result.navigateTo)
     closeTooltip()
   }
@@ -615,7 +606,7 @@ export const SubmenuTree = (props: Props) => {
                 <IconHistory />
                 Restore
               </TooltipButton>
-              <TooltipButton onClick={onDeleteForever} data-testid="delete_forever">
+              <TooltipButton onClick={() => deleteNode(true)} data-testid="delete_forever">
                 <IconDeleteForever />
                 Delete forever
               </TooltipButton>
@@ -623,14 +614,14 @@ export const SubmenuTree = (props: Props) => {
             <Show
               when={selected() && !selected()?.value.deleted && !isLocalFile(selected()?.value)}
             >
-              <TooltipButton onClick={onDelete} data-testid="delete">
+              <TooltipButton onClick={() => deleteNode()} data-testid="delete">
                 <IconDelete />
                 Delete
               </TooltipButton>
             </Show>
             <Show when={selected() && isLocalFile(selected()?.value)}>
-              <TooltipButton onClick={onDeleteForever} data-testid="delete">
-                <IconDelete />
+              <TooltipButton onClick={() => deleteNode(true)} data-testid="delete">
+                <IconClose />
                 Close
               </TooltipButton>
             </Show>

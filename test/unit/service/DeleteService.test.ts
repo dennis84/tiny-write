@@ -16,6 +16,7 @@ import {
   isFile,
 } from '@/state'
 import {createYUpdate} from '../testutil/prosemirror-util'
+import {expectTree} from '../testutil/tree'
 
 vi.mock('@/db', () => ({DB: mock()}))
 
@@ -141,6 +142,53 @@ test.each([
   }
 
   expect(fileService.updateFile).toBeCalled()
+})
+
+test('delete - update tree', async () => {
+  const initial = createInitialState()
+  const [store, setState] = createStore(initial)
+  const fileService = mock<FileService>()
+  const canvasService = mock<CanvasService>()
+  const treeService = new TreeService(store, setState, fileService, canvasService)
+
+  const service = new DeleteService(fileService, canvasService, treeService, store, setState)
+
+  treeService.updateAll()
+  expectTree(
+    treeService.tree,
+    `
+    └ 1 (parentId=, leftId=)
+      └ 2 (parentId=1, leftId=)
+        └ 3 (parentId=2, leftId=)
+    └ 4 (parentId=, leftId=)
+    └ 5 (parentId=, leftId=)
+    └ 6 (parentId=, leftId=)
+    `,
+  )
+
+  const currentNode = treeService.getItem('1')
+  Object.defineProperty(fileService, 'currentFile', {
+    get: vi.fn().mockReturnValue(currentNode?.value),
+  })
+
+  fileService.findFileById.mockImplementation((id: string) => {
+    const item = treeService.getItem(id)?.value
+    if (isFile(item)) return item
+    return undefined
+  })
+
+  // biome-ignore lint/style/noNonNullAssertion: test code
+  await service.delete(treeService.getItem('2')!)
+
+  expectTree(
+    treeService.tree,
+    `
+    └ 1 (parentId=, leftId=)
+    └ 4 (parentId=, leftId=)
+    └ 5 (parentId=, leftId=)
+    └ 6 (parentId=, leftId=)
+    `,
+  )
 })
 
 test('delete - local file', async () => {

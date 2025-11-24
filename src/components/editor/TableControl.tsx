@@ -193,7 +193,7 @@ const HandleGrid = (props: HandleGridProps) => {
     calcSelection(cell.element, handle.direction)
   }
 
-  const onHandleClick = (direction: Direction) => (e: MouseEvent) => {
+  const handleClick = (e: MouseEvent, direction: Direction) => {
     e.preventDefault()
     const cell = currentCell()
     if (!cell) return
@@ -229,7 +229,7 @@ const HandleGrid = (props: HandleGridProps) => {
             <Handle
               id="table-handle-row"
               style={{transform: `translate3d(${h().row.x}px, ${h().row.y}px, 0)`}}
-              onMouseDown={onHandleClick('row')}
+              onMouseDown={(e) => handleClick(e, 'row')}
               class={activeHandle()?.direction === 'row' ? 'active' : ''}
             >
               <IconDragIndicator />
@@ -237,7 +237,7 @@ const HandleGrid = (props: HandleGridProps) => {
             <Handle
               id="table-handle-col"
               style={{transform: `translate3d(${h().col.x}px, ${h().col.y}px, 0) rotate(90deg)`}}
-              onMouseDown={onHandleClick('col')}
+              onMouseDown={(e) => handleClick(e, 'col')}
               class={activeHandle()?.direction === 'col' ? 'active' : ''}
             >
               <IconDragIndicator />

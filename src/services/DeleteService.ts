@@ -64,12 +64,21 @@ export class DeleteService {
     return {navigateTo}
   }
 
+  async deleteItem(item: File | Canvas, forever = false): Promise<DeleteResult> {
+    this.treeService.updateAll()
+    const node = this.treeService.tree.getItem(item.id)
+    if (!node) return {navigateTo: false}
+    return this.delete(node, forever)
+  }
+
   async delete(node: MenuTreeItem, forever = false): Promise<DeleteResult> {
     const navigateTo = this.getNavigateTo(node)
 
     const proms = [this.deleteNode(node, forever)]
     this.treeService.descendants((n) => proms.push(this.deleteNode(n, forever)), node.id)
     await Promise.all(proms)
+
+    this.treeService.remove(node.id)
 
     return {navigateTo}
   }

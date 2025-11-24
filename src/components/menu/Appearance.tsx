@@ -16,11 +16,11 @@ import {Label, Sub, Text} from './Style'
 export const Appearance = () => {
   const {store, configService} = useState()
 
-  const onChangeTheme = (main: ThemeName) => () => configService.updateTheme({main})
+  const changeTheme = (main: ThemeName) => configService.updateTheme({main})
 
-  const onChangeCodeTheme = (code: CodeThemeName) => () => configService.updateTheme({code})
+  const changeCodeTheme = (code: CodeThemeName) => configService.updateTheme({code})
 
-  const onChangeFont = (font: FontName) => () => configService.updateConfig({font})
+  const changeFont = (font: FontName) => configService.updateConfig({font})
 
   const onChangeFontSize = (e: any) =>
     configService.updateConfig({fontSize: Number(e.target.value)})
@@ -36,7 +36,7 @@ export const Appearance = () => {
         <Sub data-tauri-drag-region="true">
           <For each={Object.entries(ConfigService.themes)}>
             {([key, value]) => (
-              <Link onClick={onChangeTheme(key)}>
+              <Link onClick={() => changeTheme(key)}>
                 <span>{value.label}</span>
                 <Switch>
                   <Match when={key === configService.theme.value}>
@@ -57,7 +57,7 @@ export const Appearance = () => {
         <Sub data-tauri-drag-region="true">
           <For each={Object.entries(ConfigService.codeThemes)}>
             {([key, value]) => (
-              <Link onClick={onChangeCodeTheme(key)}>
+              <Link onClick={() => changeCodeTheme(key)}>
                 <span>{value.label}</span>
                 <Switch>
                   <Match when={key === configService.codeTheme.value}>
@@ -78,7 +78,7 @@ export const Appearance = () => {
         <Sub data-tauri-drag-region="true">
           <For each={Object.entries(ConfigService.fonts)}>
             {([key, value]) => (
-              <Link onClick={onChangeFont(key)} checked={key === configService.font.value}>
+              <Link onClick={() => changeFont(key)} checked={key === configService.font.value}>
                 {value.label}
               </Link>
             )}

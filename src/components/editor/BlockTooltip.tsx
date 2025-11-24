@@ -275,7 +275,7 @@ export const BlockTooltip = (props: Props) => {
     closeTooltip()
   }
 
-  const onAlign = (align: Align) => () => {
+  const alignNode = (align: Align) => {
     const block = props.selectedBlock
     if (block?.cursorPos === undefined) return
 
@@ -384,13 +384,19 @@ export const BlockTooltip = (props: Props) => {
                   block().cursorNode?.type.name === 'video'
                 }
               >
-                <TooltipButton onClick={onAlign(Align.FloatLeft)} data-testid="align_float_left">
+                <TooltipButton
+                  onClick={() => alignNode(Align.FloatLeft)}
+                  data-testid="align_float_left"
+                >
                   <IconFormatImageLeft /> float left
                 </TooltipButton>
-                <TooltipButton onClick={onAlign(Align.FloatRight)} data-testid="align_float_right">
+                <TooltipButton
+                  onClick={() => alignNode(Align.FloatRight)}
+                  data-testid="align_float_right"
+                >
                   <IconFormatImageRight /> float right
                 </TooltipButton>
-                <TooltipButton onClick={onAlign(Align.Center)} data-testid="align_center">
+                <TooltipButton onClick={() => alignNode(Align.Center)} data-testid="align_center">
                   <IconFloatCenter /> center
                 </TooltipButton>
                 <TooltipDivider />

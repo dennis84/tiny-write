@@ -8,7 +8,7 @@ import {useTitle} from '@/hooks/use-title'
 import {copy} from '@/remote/clipboard'
 import {CanvasService} from '@/services/CanvasService'
 import {MenuId} from '@/services/MenuService'
-import {isCodeFile, Page, useState} from '@/state'
+import {isCodeFile, isLocalFile, Page, useState} from '@/state'
 import {Button, ButtonGroup, IconButton} from '../Button'
 import {
   IconAiAssistant,
@@ -18,6 +18,7 @@ import {
   IconCloud,
   IconCloudOff,
   IconDarkMode,
+  IconDelete,
   IconEdit,
   IconFullscreen,
   IconGesture,
@@ -29,7 +30,7 @@ import {
   IconTextSnippet,
   LangIcon,
 } from '../Icon'
-import {Tooltip, TooltipButton} from '../Tooltip'
+import {Tooltip, TooltipButton, TooltipDivider} from '../Tooltip'
 import {TooltipHelp} from '../TooltipHelp'
 
 const FloatingContainer = styled('div')`
@@ -99,8 +100,9 @@ const CollabButton = () => {
 }
 
 const CurrentFileButton = () => {
-  const {codeService, canvasService, fileService, inputLineService} = useState()
+  const {codeService, canvasService, deleteService, fileService, inputLineService} = useState()
   const [anchor, setAnchor] = createSignal<HTMLElement>()
+  const {openFile} = useOpen()
 
   const title = useTitle()
 
@@ -140,6 +142,14 @@ const CurrentFileButton = () => {
         },
       })
     }
+  }
+
+  const deleteItem = async (forever = false) => {
+    const currentFile = fileService.currentFile
+    if (!currentFile) return
+    const result = await deleteService.deleteItem(currentFile, forever)
+    if (result.navigateTo !== false) openFile(result.navigateTo)
+    closeTooltip()
   }
 
   const onChangeLanguage = () => {
@@ -190,10 +200,6 @@ const CurrentFileButton = () => {
       <Show when={anchor()}>
         {(a) => (
           <Tooltip anchor={a()} backdrop={false} onClose={closeTooltip}>
-            <TooltipButton onClick={onRename}>
-              <IconEdit />
-              Rename
-            </TooltipButton>
             <Show when={isCodeFile(fileService.currentFile)}>
               <TooltipButton onClick={onChangeLanguage}>
                 <IconLanguage />
@@ -202,6 +208,23 @@ const CurrentFileButton = () => {
               <TooltipButton onClick={onFormat}>
                 <IconPrettier />
                 Prettify
+              </TooltipButton>
+              <TooltipDivider />
+            </Show>
+            <TooltipButton onClick={onRename}>
+              <IconEdit />
+              Rename
+            </TooltipButton>
+            <Show when={!isLocalFile(fileService.currentFile)}>
+              <TooltipButton onClick={() => deleteItem()} data-testid="delete">
+                <IconDelete />
+                Delete
+              </TooltipButton>
+            </Show>
+            <Show when={isLocalFile(fileService.currentFile)}>
+              <TooltipButton onClick={() => deleteItem(true)} data-testid="delete">
+                <IconClose />
+                Close
               </TooltipButton>
             </Show>
           </Tooltip>

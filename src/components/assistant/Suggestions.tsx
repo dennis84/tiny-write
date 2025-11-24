@@ -19,7 +19,7 @@ interface Props {
 export const Suggestions = (props: Props) => {
   const {threadService} = useState()
 
-  const addMessage = (content: string) => () => {
+  const addMessage = (content: string) => {
     props.onSuggestion(content)
   }
 
@@ -32,10 +32,10 @@ export const Suggestions = (props: Props) => {
     <Show when={hasCodeAttachment()}>
       <SuggestionsContainer>
         <ButtonGroup>
-          <Button onClick={addMessage(fixCodePrompt)}>Fix</Button>
-          <Button onClick={addMessage(explainCodePrompt)}>Explain</Button>
-          <Button onClick={addMessage(refactorCodePrompt)}>Refactor</Button>
-          <Button onClick={addMessage(testCodePrompt)}>Test</Button>
+          <Button onClick={() => addMessage(fixCodePrompt)}>Fix</Button>
+          <Button onClick={() => addMessage(explainCodePrompt)}>Explain</Button>
+          <Button onClick={() => addMessage(refactorCodePrompt)}>Refactor</Button>
+          <Button onClick={() => addMessage(testCodePrompt)}>Test</Button>
         </ButtonGroup>
       </SuggestionsContainer>
     </Show>
