@@ -2,6 +2,7 @@ import {createStore} from 'solid-js/store'
 import {beforeEach, expect, test, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
 import * as Y from 'yjs'
+import {DB} from '@/db'
 import type {CollabService} from '@/services/CollabService'
 import {FileService} from '@/services/FileService'
 import {createState} from '@/state'
@@ -226,4 +227,39 @@ test('renameFile - update newFile', async () => {
   expect(store.files[0].path).toBe(undefined)
   expect(store.files[0].newFile).toBe('/path/new.ts')
   expect(store.files[0].codeLang).toBe('typescript')
+})
+
+test.each([
+  [undefined, 0],
+  [new Date(), 1],
+])('saveFile - unsaved', async (lastModified, calls) => {
+  const file = {
+    id: '1',
+    ydoc: createYUpdate('1', ['a']),
+    versions: [],
+    lastModified,
+  }
+
+  await FileService.saveFile(file)
+
+  expect(DB.updateFile).toBeCalledTimes(calls)
+})
+
+test.each([
+  ['/path/to/file', undefined],
+  [undefined, '/path/to/file'],
+])('saveFile - local files', async (path, newFile) => {
+  const file = {
+    id: '1',
+    ydoc: createYUpdate('1', ['a']),
+    versions: [],
+    lastModified: new Date(),
+    path,
+    newFile,
+  }
+
+  await FileService.saveFile(file)
+
+  expect(DB.deleteFile).toBeCalled()
+  expect(DB.updateFile).not.toBeCalled()
 })

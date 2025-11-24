@@ -135,6 +135,11 @@ export class DeleteService {
 
     // soft delete file
     if (isFile(node.value)) {
+      // No soft deletes for local files and files that wanted to be saved locally
+      if (node.value.path || node.value.newFile) {
+        return await this.foreverDeleteNode(node)
+      }
+
       this.fileService.updateFile(node.id, {
         deleted: true,
         lastModified: new Date(),

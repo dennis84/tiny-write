@@ -143,6 +143,29 @@ test.each([
   expect(fileService.updateFile).toBeCalled()
 })
 
+test('delete - local file', async () => {
+  const initial = createState({
+    files: [
+      createFile({id: '1', path: '/path/to/file1.ts'}),
+      createFile({id: '2', newFile: '/path/to/file2.ts'}),
+    ],
+  })
+  const [store, setState] = createStore(initial)
+  const fileService = mock<FileService>()
+  const canvasService = mock<CanvasService>()
+  const treeService = new TreeService(store, setState, fileService, canvasService)
+
+  const service = new DeleteService(fileService, canvasService, treeService, store, setState)
+
+  // biome-ignore lint/style/noNonNullAssertion: test code
+  await service.delete(treeService.getItem('1')!)
+  expect(store.files.length).toEqual(1)
+
+  // biome-ignore lint/style/noNonNullAssertion: test code
+  await service.delete(treeService.getItem('2')!)
+  expect(store.files.length).toEqual(0)
+})
+
 test.each([
   {
     deleteId: '3',

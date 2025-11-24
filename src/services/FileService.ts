@@ -119,7 +119,8 @@ export class FileService {
       return
     }
 
-    if (file.path) {
+    // Don't save files that are linked to real file system paths or new unsaved files.
+    if (file.path || file.newFile) {
       await DB.deleteFile(file.id)
       return
     }
