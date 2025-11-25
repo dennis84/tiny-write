@@ -45,12 +45,14 @@ export const Toolbar = () => {
     fileService,
     menuService,
     threadService,
+    treeService,
   } = useState()
   const [collides, setCollides] = createSignal(false)
   const {openFile} = useOpen()
 
   const restore = async (element: CanvasElement) => {
     await fileService.restore(element.id)
+    treeService.updateAll()
   }
 
   const prettify = async (element: CanvasElement) => {

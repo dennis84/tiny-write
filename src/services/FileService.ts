@@ -20,7 +20,7 @@ import {
   toRelativePath,
 } from '@/remote/editor'
 import {debug, error, info} from '@/remote/log'
-import {type File, type FileText, ServiceError, type State} from '@/state'
+import {type File, type FileText, isLocalFile, ServiceError, type State} from '@/state'
 import type {CollabService} from './CollabService'
 
 export interface LoadedTextFile {
@@ -120,7 +120,7 @@ export class FileService {
     }
 
     // Don't save files that are linked to real file system paths or new unsaved files.
-    if (file.path || file.newFile) {
+    if (isLocalFile(file)) {
       await DB.deleteFile(file.id)
       return
     }
@@ -337,7 +337,7 @@ export class FileService {
   async getTitle(file?: File, maxLength = 25, fallback = true): Promise<string | undefined> {
     if (!file) return fallback ? 'Undefined' : undefined
 
-    if (file.path || file.newFile) {
+    if (isLocalFile(file)) {
       return toRelativePath(file.path ?? file.newFile ?? '')
     }
 

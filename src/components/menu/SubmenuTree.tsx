@@ -601,30 +601,30 @@ export const SubmenuTree = (props: Props) => {
                 Rename
               </TooltipButton>
             </Show>
-            <Show when={selected()?.value.deleted}>
-              <TooltipButton onClick={onRestore} data-testid="restore">
-                <IconHistory />
-                Restore
-              </TooltipButton>
-              <TooltipButton onClick={() => deleteNode(true)} data-testid="delete_forever">
-                <IconDeleteForever />
-                Delete forever
-              </TooltipButton>
-            </Show>
-            <Show
-              when={selected() && !selected()?.value.deleted && !isLocalFile(selected()?.value)}
-            >
-              <TooltipButton onClick={() => deleteNode()} data-testid="delete">
-                <IconDelete />
-                Delete
-              </TooltipButton>
-            </Show>
-            <Show when={selected() && isLocalFile(selected()?.value)}>
-              <TooltipButton onClick={() => deleteNode(true)} data-testid="delete">
-                <IconClose />
-                Close
-              </TooltipButton>
-            </Show>
+            <Switch>
+              <Match when={selected()?.value.deleted}>
+                <TooltipButton onClick={onRestore} data-testid="restore">
+                  <IconHistory />
+                  Restore
+                </TooltipButton>
+                <TooltipButton onClick={() => deleteNode(true)} data-testid="delete_forever">
+                  <IconDeleteForever />
+                  Delete forever
+                </TooltipButton>
+              </Match>
+              <Match when={isLocalFile(selected()?.value)}>
+                <TooltipButton onClick={() => deleteNode(true)} data-testid="close">
+                  <IconClose />
+                  Close
+                </TooltipButton>
+              </Match>
+              <Match when={true}>
+                <TooltipButton onClick={() => deleteNode()} data-testid="delete">
+                  <IconDelete />
+                  Delete
+                </TooltipButton>
+              </Match>
+            </Switch>
             <Show when={!selected()}>
               <TooltipButton onClick={onNewFile} data-testid="new_file">
                 <IconPostAdd />

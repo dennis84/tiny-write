@@ -22,6 +22,7 @@ import {
   IconEdit,
   IconFullscreen,
   IconGesture,
+  IconHistory,
   IconLanguage,
   IconLightMode,
   IconLink,
@@ -100,7 +101,8 @@ const CollabButton = () => {
 }
 
 const CurrentFileButton = () => {
-  const {codeService, canvasService, deleteService, fileService, inputLineService} = useState()
+  const {codeService, canvasService, deleteService, fileService, inputLineService, treeService} =
+    useState()
   const [anchor, setAnchor] = createSignal<HTMLElement>()
   const {openFile} = useOpen()
 
@@ -149,6 +151,14 @@ const CurrentFileButton = () => {
     if (!currentFile) return
     const result = await deleteService.deleteItem(currentFile, forever)
     if (result.navigateTo !== false) openFile(result.navigateTo)
+    closeTooltip()
+  }
+
+  const onRestore = async () => {
+    const currentFile = fileService.currentFile
+    if (!currentFile) return
+    fileService.restore(currentFile.id)
+    treeService.updateAll()
     closeTooltip()
   }
 
@@ -215,18 +225,26 @@ const CurrentFileButton = () => {
               <IconEdit />
               Rename
             </TooltipButton>
-            <Show when={!isLocalFile(fileService.currentFile)}>
-              <TooltipButton onClick={() => deleteItem()} data-testid="delete">
-                <IconDelete />
-                Delete
-              </TooltipButton>
-            </Show>
-            <Show when={isLocalFile(fileService.currentFile)}>
-              <TooltipButton onClick={() => deleteItem(true)} data-testid="delete">
-                <IconClose />
-                Close
-              </TooltipButton>
-            </Show>
+            <Switch>
+              <Match when={fileService.currentFile?.deleted}>
+                <TooltipButton onClick={onRestore}>
+                  <IconHistory />
+                  Restore
+                </TooltipButton>
+              </Match>
+              <Match when={isLocalFile(fileService.currentFile)}>
+                <TooltipButton onClick={() => deleteItem(true)}>
+                  <IconClose />
+                  Close
+                </TooltipButton>
+              </Match>
+              <Match when={true}>
+                <TooltipButton onClick={() => deleteItem()}>
+                  <IconDelete />
+                  Delete
+                </TooltipButton>
+              </Match>
+            </Switch>
           </Tooltip>
         )}
       </Show>

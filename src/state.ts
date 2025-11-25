@@ -224,7 +224,7 @@ export const isVideoElement = (el?: CanvasElement): el is CanvasVideoElement =>
 
 export const isFile = (it: any): it is File => it?.ydoc !== undefined
 
-export const isLocalFile = (it: any): it is File =>
+export const isLocalFile = (it: any): boolean =>
   isFile(it) && (it.path !== undefined || it.newFile !== undefined)
 
 export const isCodeFile = (it: any): it is File => {
