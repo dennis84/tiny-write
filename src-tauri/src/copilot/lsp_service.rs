@@ -78,7 +78,7 @@ impl<R: Runtime> CopilotLspService<R> {
         let response = language_server
             .request::<request::SignInInitiate>(request::SignInInitiateParams {})
             .await?;
-        debug!("SignInInitiate response {:?}", response);
+        debug!("Copilot - SignInInitiate response {:?}", response);
 
         Ok(response)
     }
@@ -88,7 +88,7 @@ impl<R: Runtime> CopilotLspService<R> {
             return Ok(());
         }
 
-        debug!("register copilot language server (path={:?})", path);
+        debug!("Copilot - register copilot language server (path={:?})", path);
 
         let editor_state = self.app_handle.state::<EditorState>();
         let lsp_registry = self.app_handle.state::<LspRegistry>();

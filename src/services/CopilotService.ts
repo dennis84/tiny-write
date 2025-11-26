@@ -15,7 +15,9 @@ import {
   startLanguageServer,
 } from '@/remote/copilot'
 import {debug, error, info} from '@/remote/log'
+import {lspRegisterDocument} from '@/remote/lsp'
 import type {ChatRole, State} from '@/state'
+import type {FileService} from './FileService'
 
 interface ApiTokenEndpoints {
   api: string
@@ -88,6 +90,7 @@ export class CopilotService {
   constructor(
     private store: Store<State>,
     private setState: SetStoreFunction<State>,
+    private fileService: FileService,
   ) {}
 
   async disconnect() {
@@ -105,6 +108,15 @@ export class CopilotService {
     this.setState('ai', {copilot: {...copilot, ...status}})
     const ai = this.store.ai
     if (ai) await DB.setAi(ai)
+
+    if (isTauri()) {
+      await startLanguageServer()
+      const currentFile = this.fileService.currentFile
+      // Register file to LSP server
+      if (currentFile?.path) {
+        await lspRegisterDocument(currentFile.path)
+      }
+    }
   }
 
   async getChatModels(): Promise<Model[] | undefined> {

@@ -2,7 +2,7 @@ use async_lsp::lsp_types::{CompletionResponse, GotoDefinitionResponse, Hover};
 use tracing::error;
 use tauri::{path::SafePathBuf, AppHandle, Manager, Runtime};
 
-use crate::lsp::service::LspService;
+use crate::{editor::editor_state::EditorState, lsp::service::LspService};
 
 #[tauri::command]
 pub async fn lsp_hover<R: Runtime>(
@@ -38,4 +38,14 @@ pub async fn lsp_goto<R: Runtime>(
     let lsp_service = app_handle.state::<LspService<R>>();
     let result = lsp_service.goto(path.as_ref(), pos).await?;
     Ok(result)
+}
+
+#[tauri::command]
+pub async fn lsp_register_document<R: Runtime>(
+    path: SafePathBuf,
+    app_handle: AppHandle<R>,
+) -> tauri::Result<()> {
+    let state = app_handle.state::<EditorState>();
+    let _ = state.open_doc_tx.send(path.as_ref().to_path_buf()).await;
+    Ok(())
 }

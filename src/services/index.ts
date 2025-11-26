@@ -30,10 +30,10 @@ export const createCtrl = (initial: State) => {
 
   const toastService = new ToastService()
   const aiService = new AiService(store, setState)
-  const copilotService = new CopilotService(store, setState)
   const collabService = new CollabService(store, setState)
   const configService = new ConfigService(collabService, store, setState)
   const fileService = new FileService(collabService, store, setState)
+  const copilotService = new CopilotService(store, setState, fileService)
   const selectService = new SelectService()
   const prettierService = new PrettierService()
   const appService = new AppService(fileService, store, setState)

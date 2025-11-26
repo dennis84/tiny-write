@@ -125,6 +125,7 @@ pub fn run<R: Runtime>(builder: Builder<R>) {
             lsp::command::lsp_hover,
             lsp::command::lsp_completion,
             lsp::command::lsp_goto,
+            lsp::command::lsp_register_document,
             copilot::command::copilot_start_language_server,
             copilot::command::copilot_disconnect,
             copilot::command::copilot_sign_in,
