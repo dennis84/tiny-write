@@ -1,35 +1,26 @@
 import type {CompletionSource} from '@codemirror/autocomplete'
 import {lspCompletion} from '@/remote/lsp'
 
-// `class`, `constant`, `enum`,
-// `function`, `interface`, `keyword`, `method`, `namespace`,
-// `property`, `text`, `type`, `variable`
-const typeMapping: Record<number, string> = {
-  1: 'text',
-  2: 'method',
-  3: 'function',
-  4: 'function', // constructor
-  5: 'property', // field
-  6: 'variable',
-  7: 'class',
-  8: 'interface',
-  9: 'namespace', // module
-  10: 'property',
-  11: 'text', // unit
-  12: 'text', // value
-  13: 'enum',
-  14: 'keyword',
-  15: 'text', // snippet
-  16: 'text', // color
-  17: 'text', // file
-  18: 'text', // reference
-  19: 'text', // folder
-  20: 'property', // enum_member
-  21: 'constant',
-  22: 'class', // struct
-  23: 'property', // event
-  24: 'keyword', // operator
-  25: 'type', // type_parameter
+const kindToType: {[kind: number]: string} = {
+  1: 'text', // Text
+  2: 'method', // Method
+  3: 'function', // Function
+  4: 'class', // Constructor
+  5: 'property', // Field
+  6: 'variable', // Variable
+  7: 'class', // Class
+  8: 'interface', // Interface
+  9: 'namespace', // Module
+  10: 'property', // Property
+  11: 'keyword', // Unit
+  12: 'constant', // Value
+  13: 'constant', // Enum
+  14: 'keyword', // Keyword
+  16: 'constant', // Color
+  20: 'constant', // EnumMember
+  21: 'constant', // Constant
+  22: 'class', // Struct
+  25: 'type', // TypeParameter
 }
 
 export const lspCompletionSource =
@@ -49,7 +40,7 @@ export const lspCompletionSource =
         options.push({
           label: item.label,
           boost: parseInt(item.sortText, 10) * -1 + 1000,
-          type: typeMapping[item.kind ?? -1] ?? 'word',
+          type: kindToType[item.kind ?? -1] ?? 'word',
           detail: item.detail,
         })
       }

@@ -28,7 +28,7 @@ export const copilotSignIn = async (): Promise<CopilotSignIn> => {
   return await invoke('copilot_sign_in')
 }
 
-type CopilotCompletion = {completions: {displayText: string}[]}
+type CopilotCompletion = {completions: {text: string; displayText: string}[]}
 
 export const copilotCompletion = async (
   path: string | undefined,

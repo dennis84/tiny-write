@@ -37,7 +37,6 @@
     "@tauri-apps/plugin-shell": "2.3.3",
     "@tauri-apps/plugin-websocket": "2.4.1",
     "@use-gesture/vanilla": "10.3.1",
-    "codemirror-extension-inline-suggestion": "0.0.3",
     "date-fns": "4.1.0",
     "idb": "8.0.3",
     "js-base64": "3.7.8",

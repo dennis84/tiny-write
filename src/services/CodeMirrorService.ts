@@ -86,6 +86,7 @@ export class CodeMirrorService {
       bracketMatching(),
       closeBrackets(),
       linter(() => []),
+      autocompletion(),
       EditorState.tabSize.of(tabWidth),
       indentUnit.of(indentString),
       EditorView.lineWrapping,
@@ -102,13 +103,12 @@ export class CodeMirrorService {
       )
     }
 
-    const completion = autocompletion({
-      override: props.path && isTauri() ? [lspCompletionSource(props.path)] : undefined,
-    })
-
-    extensions.push(completion)
-
     if (isTauri()) {
+      if (props.path) {
+        const data = [{autocomplete: lspCompletionSource(props.path)}]
+        extensions.push(EditorState.languageData.of(() => data))
+      }
+
       extensions.push(
         copilot({
           configure: () => {
