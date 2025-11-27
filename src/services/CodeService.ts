@@ -1,12 +1,16 @@
 import {getChunks, unifiedMergeView} from '@codemirror/merge'
-import {EditorView, type ViewUpdate} from '@codemirror/view'
+import {
+  EditorView,
+  highlightActiveLine,
+  highlightActiveLineGutter,
+  lineNumbers,
+  type ViewUpdate,
+} from '@codemirror/view'
 import {indentationMarkers} from '@replit/codemirror-indentation-markers'
 import {debounce} from '@solid-primitives/scheduled'
 import {type SetStoreFunction, type Store, unwrap} from 'solid-js/store'
 import {yCollab, ySyncFacet} from 'y-codemirror.next'
 import type * as Y from 'yjs'
-import {copilot} from '@/codemirror/copilot'
-import {isTauri} from '@/env'
 import {deleteText, insertText, writeFile} from '@/remote/editor'
 import {info} from '@/remote/log'
 import {type File, Page, type SelectionRange, type State, type VisualPositionRange} from '@/state'
@@ -19,7 +23,7 @@ import type {PrettierService} from './PrettierService'
 export class CodeService {
   constructor(
     private fileService: FileService,
-    private configService: ConfigService,
+    _configService: ConfigService,
     private collabService: CollabService,
     private codeMirrorService: CodeMirrorService,
     private prettierService: PrettierService,
@@ -132,7 +136,12 @@ export class CodeService {
       doc = merge.range ? CodeMirrorService.replaceSlice(doc, merge.doc, merge.range) : merge.doc
     }
 
-    const extensions = [...indentationMarkers({markerType: 'fullScope'})]
+    const extensions = [
+      ...indentationMarkers({markerType: 'fullScope'}),
+      highlightActiveLine(),
+      highlightActiveLineGutter(),
+      lineNumbers(),
+    ]
 
     if (merge) {
       extensions.push(
@@ -156,22 +165,10 @@ export class CodeService {
         EditorView.updateListener.of((update) => this.onUpdate(file, update)),
         yCollab(type, this.store.collab?.provider.awareness, {undoManager: false}),
       )
-
-      if (isTauri()) {
-        extensions.push(
-          copilot({
-            configure: () => {
-              const {tabWidth, useTabs} = this.configService.prettier
-              const path = file.path ?? `buffer://${file.id}`
-              const language = file.codeEditorView?.contentDOM.dataset.language ?? ''
-              return {path, language, tabWidth, useTabs}
-            },
-          }),
-        )
-      }
     }
 
     const editor = this.codeMirrorService.createEditor({
+      id: file.id,
       parent,
       doc,
       lang: file.codeLang,

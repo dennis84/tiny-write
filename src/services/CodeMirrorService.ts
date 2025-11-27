@@ -14,18 +14,10 @@ import {
 } from '@codemirror/language'
 import {linter, setDiagnostics} from '@codemirror/lint'
 import {Compartment, EditorState, type Extension} from '@codemirror/state'
-import {
-  drawSelection,
-  EditorView,
-  highlightActiveLine,
-  highlightActiveLineGutter,
-  hoverTooltip,
-  keymap,
-  lineNumbers,
-  tooltips,
-} from '@codemirror/view'
+import {drawSelection, EditorView, hoverTooltip, keymap, tooltips} from '@codemirror/view'
 import type {Store} from 'solid-js/store'
 import {findWords, tabCompletionKeymap} from '@/codemirror/completion'
+import {copilot} from '@/codemirror/copilot'
 import {getLanguageConfig, type LangConfig} from '@/codemirror/highlight'
 import {lspCompletionSource} from '@/codemirror/lsp-completion'
 import {lspHoverSource} from '@/codemirror/lsp-hover'
@@ -39,6 +31,7 @@ import type {PrettierService} from './PrettierService'
 import type {ToastService} from './ToastService'
 
 interface CreateEditor {
+  id: string
   lang?: string
   parent?: Element
   doc?: string
@@ -95,9 +88,6 @@ export class CodeMirrorService {
       linter(() => []),
       EditorState.tabSize.of(tabWidth),
       indentUnit.of(indentString),
-      autocompletion({
-        override: props.path && isTauri() ? [lspCompletionSource(props.path)] : undefined,
-      }),
       EditorView.lineWrapping,
     ]
 
@@ -112,8 +102,23 @@ export class CodeMirrorService {
       )
     }
 
-    if (this.store.location?.page === Page.Code) {
-      extensions.push([highlightActiveLine(), highlightActiveLineGutter(), lineNumbers()])
+    const completion = autocompletion({
+      override: props.path && isTauri() ? [lspCompletionSource(props.path)] : undefined,
+    })
+
+    extensions.push(completion)
+
+    if (isTauri()) {
+      extensions.push(
+        copilot({
+          configure: () => {
+            const {tabWidth, useTabs} = this.configService.prettier
+            const path = props.path ?? `buffer://${props.id}`
+            const language = props.lang ?? ''
+            return {path, language, tabWidth, useTabs}
+          },
+        }),
+      )
     }
 
     if (props.path && isTauri()) {

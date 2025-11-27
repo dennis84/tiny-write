@@ -11,12 +11,10 @@ import {
 } from 'prosemirror-view'
 import {clipPlugin} from '@/codemirror/clip'
 import {findWords} from '@/codemirror/completion'
-import {copilot} from '@/codemirror/copilot'
 import {foldAll} from '@/codemirror/fold-all'
 import {getLanguageConfig} from '@/codemirror/highlight'
 import {onEnterDoubleNewline} from '@/codemirror/key-bindings'
 import {mermaidKeywords} from '@/codemirror/mermaid'
-import {isTauri} from '@/env'
 import type {CodeMirrorService} from '@/services/CodeMirrorService'
 import type {ConfigService} from '@/services/ConfigService'
 import {createMermaidPlugin} from './mermaid-preview'
@@ -141,6 +139,7 @@ export class CodeBlockView {
     ])
 
     const editor = this.codeMirrorService.createEditor({
+      id: `editor-${getPos()}-${this.lang}`,
       lang: this.lang,
       doc: this.node.textContent,
       extensions: [
@@ -149,17 +148,6 @@ export class CodeBlockView {
         createMermaidPlugin(this),
         EditorView.updateListener.of((update) => this.forwardUpdate(update)),
         autocompletion(),
-        ...(isTauri()
-          ? [
-              copilot({
-                configure: () => {
-                  const {tabWidth, useTabs} = this.configService.prettier
-                  const path = `buffer://editor-${getPos()}-${this.lang}`
-                  return {path, language: this.lang, tabWidth, useTabs}
-                },
-              }),
-            ]
-          : []),
         EditorView.domEventHandlers({
           mousedown: () => {
             this.clicked = true

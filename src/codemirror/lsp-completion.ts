@@ -43,14 +43,18 @@ export const lspCompletionSource =
 
     const options = []
 
-    const completions = await lspCompletion(path, pos, char)
-    for (const item of completions?.items ?? []) {
-      options.push({
-        label: item.label,
-        boost: parseInt(item.sortText, 10) * -1 + 1000,
-        type: typeMapping[item.kind ?? -1] ?? 'word',
-        detail: item.detail,
-      })
+    try {
+      const completions = await lspCompletion(path, pos, char)
+      for (const item of completions?.items ?? []) {
+        options.push({
+          label: item.label,
+          boost: parseInt(item.sortText, 10) * -1 + 1000,
+          type: typeMapping[item.kind ?? -1] ?? 'word',
+          detail: item.detail,
+        })
+      }
+    } catch {
+      // Ignore all completion errors including syntax errors during editing.
     }
 
     if (!options.length) {

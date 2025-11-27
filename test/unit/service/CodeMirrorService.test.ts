@@ -33,7 +33,7 @@ test('createEditor', () => {
     toastService,
     store,
   )
-  const {editorView, compartments} = service.createEditor({lang: 'mermaid', parent})
+  const {editorView, compartments} = service.createEditor({id: '1', lang: 'mermaid', parent})
 
   expect(editorView).toBeDefined()
   expect(compartments).toBeDefined()
@@ -59,7 +59,7 @@ test('format', async () => {
     toastService,
     store,
   )
-  const {editorView} = service.createEditor({lang: 'typescript', parent, doc})
+  const {editorView} = service.createEditor({id: '1', lang: 'typescript', parent, doc})
 
   await service.format(editorView, 'typescript', store.config.prettier)
 
@@ -86,7 +86,7 @@ test('format - error', async () => {
     toastService,
     store,
   )
-  const {editorView} = service.createEditor({lang: 'typescript', parent, doc})
+  const {editorView} = service.createEditor({id: '1', lang: 'typescript', parent, doc})
 
   expect(diagnosticCount(editorView.state)).toBe(0)
 
