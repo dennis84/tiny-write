@@ -10,7 +10,6 @@ import {
   type EditorView as ProsemirrorEditorView,
 } from 'prosemirror-view'
 import {clipPlugin} from '@/codemirror/clip'
-import {findWords} from '@/codemirror/completion'
 import {foldAll} from '@/codemirror/fold-all'
 import {getLanguageConfig} from '@/codemirror/highlight'
 import {onEnterDoubleNewline} from '@/codemirror/key-bindings'
@@ -284,12 +283,7 @@ export class CodeBlockView {
   reconfigure() {
     const lang = getLanguageConfig(this.lang)
     const langSupport = lang.highlight()
-    const effects = [
-      this.compartments.lang.reconfigure(langSupport),
-      this.compartments.findWords.reconfigure(
-        langSupport.language.data.of({autocomplete: findWords}),
-      ),
-    ]
+    const effects = [this.compartments.lang.reconfigure(langSupport)]
 
     if (this.lang === 'mermaid') {
       effects.push(

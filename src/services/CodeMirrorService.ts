@@ -2,6 +2,7 @@ import {
   autocompletion,
   closeBrackets,
   closeBracketsKeymap,
+  completeAnyWord,
   completionKeymap,
 } from '@codemirror/autocomplete'
 import {defaultKeymap, indentWithTab} from '@codemirror/commands'
@@ -16,7 +17,7 @@ import {linter, setDiagnostics} from '@codemirror/lint'
 import {Compartment, EditorState, type Extension} from '@codemirror/state'
 import {drawSelection, EditorView, hoverTooltip, keymap, tooltips} from '@codemirror/view'
 import type {Store} from 'solid-js/store'
-import {findWords, tabCompletionKeymap} from '@/codemirror/completion'
+import {tabCompletionKeymap} from '@/codemirror/completion'
 import {copilot} from '@/codemirror/copilot'
 import {getLanguageConfig, type LangConfig} from '@/codemirror/highlight'
 import {lspCompletionSource} from '@/codemirror/lsp-completion'
@@ -63,7 +64,6 @@ export class CodeMirrorService {
   createEditor(props: CreateEditor) {
     const compartments = {
       lang: new Compartment(),
-      findWords: new Compartment(),
       keywords: new Compartment(),
       lsp: new Compartment(),
     }
@@ -87,15 +87,12 @@ export class CodeMirrorService {
       closeBrackets(),
       linter(() => []),
       autocompletion(),
+      compartments.lang.of(langSupport),
+      langSupport.language.data.of({autocomplete: completeAnyWord}),
       EditorState.tabSize.of(tabWidth),
       indentUnit.of(indentString),
       EditorView.lineWrapping,
     ]
-
-    extensions.push([
-      compartments.lang.of(langSupport),
-      compartments.findWords.of(langSupport.language.data.of({autocomplete: findWords})),
-    ])
 
     if (props.lang === 'mermaid') {
       extensions.push(
@@ -107,6 +104,7 @@ export class CodeMirrorService {
       if (props.path) {
         const data = [{autocomplete: lspCompletionSource(props.path)}]
         extensions.push(EditorState.languageData.of(() => data))
+        extensions.push(hoverTooltip(lspHoverSource(props.path), {hoverTime: 600}))
       }
 
       extensions.push(
@@ -119,10 +117,6 @@ export class CodeMirrorService {
           },
         }),
       )
-    }
-
-    if (props.path && isTauri()) {
-      extensions.push([hoverTooltip(lspHoverSource(props.path), {hoverTime: 600})])
     }
 
     if (this.store.location?.page !== Page.Canvas) {

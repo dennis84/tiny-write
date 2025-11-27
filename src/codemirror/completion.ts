@@ -1,42 +1,9 @@
 import {
   acceptCompletion,
-  type CompletionSource,
   currentCompletions,
   moveCompletionSelection,
 } from '@codemirror/autocomplete'
-import {syntaxTree} from '@codemirror/language'
 import type {EditorView} from '@codemirror/view'
-
-export const findWords: CompletionSource = (context) => {
-  const tree = syntaxTree(context.state)
-  const cur = tree.resolve(context.pos, -1)
-
-  const words = []
-  const c = tree.cursor()
-
-  do {
-    if (!c.node.firstChild && (context.pos < c.from || context.pos > c.to)) {
-      let text = context.state.sliceDoc(c.node.from, c.node.to)
-      if (c.node.type.name === 'String') {
-        text = text.substring(1, text.length - 1)
-      }
-
-      const xs = text.split(/[^\w]/).filter((x) => x.length > 2)
-
-      words.push(...xs)
-    }
-  } while (c.next())
-
-  const options = words.map((label) => ({
-    label: label,
-    type: 'text',
-  }))
-
-  return {
-    options,
-    from: cur.from,
-  }
-}
 
 export const tabCompletionKeymap = [
   {
