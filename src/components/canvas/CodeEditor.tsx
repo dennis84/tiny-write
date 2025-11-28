@@ -27,7 +27,7 @@ const CodeEditorScroll = styled(Scroll)(
     ` : ''}
     ${props.deleted ? `opacity: 0.4;` : ''}
     .cm-scroller {
-      padding: 20px;
+      padding: 20px 0 !important;
     }
   `,
 )

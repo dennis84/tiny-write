@@ -40,8 +40,6 @@ export class CodeService {
   }
 
   async init() {
-    let newState = {...this.store}
-
     const currentFileId = this.fileService.currentFileId
     const currentFile = this.fileService.currentFile
     const share = this.store.location?.share
@@ -62,18 +60,13 @@ export class CodeService {
       text = (await FileService.loadTextFile(path)).text
     }
 
-    newState = {
-      ...newState,
-      collab: CollabService.create(currentFile.id, Page.Code, share),
-    }
-
-    const ydoc = newState.collab?.ydoc
-    if (text && ydoc) {
-      const subdoc = CollabService.getSubdoc(ydoc, currentFile.id)
+    const collab = CollabService.create(currentFile.id, Page.Code, share)
+    if (text && collab.ydoc) {
+      const subdoc = CollabService.getSubdoc(collab.ydoc, currentFile.id)
       this.updateText(currentFile, subdoc, text)
     }
 
-    this.setState(newState)
+    this.setState('collab', collab)
   }
 
   renderEditor(file: File, el: Element) {

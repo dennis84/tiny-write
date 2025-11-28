@@ -37,7 +37,7 @@ export const useTitle = (props?: Props): Resource<string | undefined> => {
     if (isFile(item)) {
       return await fileService.getTitle(item, props?.maxLength, props?.fallback)
     } else {
-      return item.title ?? (props?.fallback ? 'Canvas' : undefined)
+      return item.title ?? (props?.fallback !== false ? 'Canvas' : undefined)
     }
   })
 
