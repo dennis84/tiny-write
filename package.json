@@ -107,5 +107,8 @@
   },
   "engines": {
     "node": ">=20.0.0"
+  },
+  "overrides": {
+    "y-leveldb": "file:./stubs/y-leveldb"
   }
 }
