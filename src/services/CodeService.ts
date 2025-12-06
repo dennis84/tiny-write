@@ -10,7 +10,7 @@ import {indentationMarkers} from '@replit/codemirror-indentation-markers'
 import {debounce} from '@solid-primitives/scheduled'
 import {type SetStoreFunction, type Store, unwrap} from 'solid-js/store'
 import {yCollab, ySyncFacet} from 'y-codemirror.next'
-import type * as Y from 'yjs'
+import * as Y from 'yjs'
 import {deleteText, insertText, writeFile} from '@/remote/editor'
 import {info} from '@/remote/log'
 import {type File, Page, type SelectionRange, type State, type VisualPositionRange} from '@/state'
@@ -39,34 +39,59 @@ export class CodeService {
     return file
   }
 
-  async init() {
-    const currentFileId = this.fileService.currentFileId
-    const currentFile = this.fileService.currentFile
+  async init(id: string, existingYdoc?: Y.Doc) {
+    const file = this.fileService.findFileById(id)
     const share = this.store.location?.share
-    const path = currentFile?.path
+    const path = file?.path
     let text: string | undefined
 
-    info(`Initialize code file (id=${currentFileId}, share=${share})`)
+    info(`Initialize code file (id=${id}, share=${share})`)
 
-    if (!currentFile) {
-      throw new Error(`File not found (id=${currentFileId})`)
+    if (!file) {
+      throw new Error(`File not found (id=${id})`)
     }
 
-    if (!currentFile.code) {
-      throw new Error(`File aready exists of type editor (id=${currentFileId})`)
+    if (!file.code) {
+      throw new Error(`File aready exists of type editor (id=${id})`)
     }
 
     if (path) {
       text = (await FileService.loadTextFile(path)).text
     }
 
-    const collab = CollabService.create(currentFile.id, Page.Code, share)
-    if (text && collab.ydoc) {
-      const subdoc = CollabService.getSubdoc(collab.ydoc, currentFile.id)
-      this.updateText(currentFile, subdoc, text)
+    let ydoc = existingYdoc
+    if (!ydoc) {
+      const collab = CollabService.create(file.id, Page.Code, share)
+      ydoc = collab.ydoc
+      this.setState('collab', collab)
     }
 
-    this.setState('collab', collab)
+    // Get subdoc without provider initialization to apply docstate first
+    const subdoc = CollabService.getSubdoc(ydoc, file.id)
+
+    // Apply existing ydoc update
+    if (file.ydoc) {
+      info('Apply existing ydoc state to subdoc')
+      Y.applyUpdate(subdoc, file.ydoc)
+    }
+
+    // Replace ydoc state with file content
+    if (text) {
+      info('Update editor text from file')
+      this.updateText(file, subdoc, text)
+    }
+
+    if (!existingYdoc) {
+      this.collabService.registerListeners()
+    }
+
+    // Initialize subdoc provider
+    this.collabService.getSubdoc(file.id)
+    this.collabService.addToScope(file)
+
+    if (this.store.collab?.started) {
+      this.collabService.startCollab()
+    }
   }
 
   renderEditor(file: File, el: Element) {
@@ -155,7 +180,14 @@ export class CodeService {
       )
     } else {
       extensions.push(
-        EditorView.updateListener.of((update) => this.onUpdate(file, update)),
+        EditorView.updateListener.of(async (update) => {
+          this.fileService.updateFile(file.id, {
+            lastModified: new Date(),
+            ydoc: Y.encodeStateAsUpdate(subdoc),
+          })
+          this.setState('lastTr', Date.now())
+          await this.saveEditor(file, update)
+        }),
         yCollab(type, this.store.collab?.provider.awareness, {undoManager: false}),
       )
     }
@@ -180,15 +212,6 @@ export class CodeService {
 
     const fileIndex = this.store.files.findIndex((f) => f.id === file.id)
     this.setState('files', fileIndex, 'codeEditorView', editor.editorView)
-  }
-
-  private async onUpdate(file: File, update: ViewUpdate) {
-    this.fileService.updateFile(file.id, {
-      lastModified: new Date(),
-    })
-    this.setState('lastTr', Date.now())
-
-    await this.saveEditor(file, update)
   }
 
   private async saveEditor(file: File, update: ViewUpdate) {

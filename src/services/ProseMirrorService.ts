@@ -132,7 +132,7 @@ export class ProseMirrorService {
           permanentUserData,
           awareness,
           result.mapping,
-          this.collabService.isSnapshot,
+          this.appService.location?.snapshot !== undefined,
         ),
       )
     }

@@ -43,14 +43,34 @@ test('addVersion', async () => {
   expect(getByTestId('editor_scroll')).toHaveTextContent('Test123')
 
   expectToBeDefined(fileService.currentFile?.versions[0])
-
-  changeSetService.renderVersion(fileService.currentFile?.versions[0])
-  await vi.waitFor(() => {
-    expect(getByTestId('editor_scroll')).toHaveTextContent('Test')
-  })
-
   changeSetService.applyVersion(fileService.currentFile?.versions[0])
   await vi.waitFor(() => {
     expect(getByTestId('editor_scroll')).toHaveTextContent('Test')
+  })
+})
+
+test('render snapshot', async () => {
+  stubLocation('/editor/1')
+
+  const initial = createState({
+    files: [
+      {
+        id: '1',
+        ydoc: createYUpdate('1', ['Test']),
+        versions: [
+          {
+            date: new Date(),
+            ydoc: createYUpdate('1', ['Old']),
+          },
+        ],
+      },
+    ],
+    location: {snapshot: 0},
+  })
+  const {store} = createCtrl(initial)
+  const {getByTestId} = render(() => <Main state={store} />)
+
+  await waitFor(() => {
+    expect(getByTestId('editor_scroll')).toHaveTextContent('Old')
   })
 })

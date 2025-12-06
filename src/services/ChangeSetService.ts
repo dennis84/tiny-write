@@ -1,18 +1,13 @@
-import {TextSelection} from 'prosemirror-state'
-import type {SetStoreFunction} from 'solid-js/store'
 import * as Y from 'yjs'
 import {info} from '@/remote/log'
-import type {State, Version} from '@/state'
+import type {Version} from '@/state'
 import type {CollabService} from './CollabService'
-import type {EditorService} from './EditorService'
 import {FileService} from './FileService'
 
 export class ChangeSetService {
   constructor(
     private fileService: FileService,
     private collabService: CollabService,
-    private editorService: EditorService,
-    private setState: SetStoreFunction<State>,
   ) {}
 
   async addVersion() {
@@ -31,34 +26,10 @@ export class ChangeSetService {
     info('Saved new snapshot version')
   }
 
-  renderVersion(version: Version) {
-    const currentFile = this.fileService.currentFile
-    if (!currentFile) return
-    const ydoc = new Y.Doc({gc: false})
-    Y.applyUpdate(ydoc, version.ydoc)
-    this.setState('collab', 'snapshot', ydoc)
-    this.editorService.updateEditorState(currentFile)
-  }
-
-  unrenderVersion() {
-    const currentFile = this.fileService.currentFile
-    if (!currentFile) return
-    this.setState('collab', 'snapshot', undefined)
-    this.editorService.updateEditorState(currentFile)
-  }
-
   applyVersion(version: Version) {
     const currentFile = this.fileService.currentFile
-    if (!currentFile?.editorView) return
-    const subdoc = this.collabService.getSubdoc(currentFile.id)
-    const type = subdoc.getXmlFragment(currentFile.id)
-    type.delete(0, type.length)
-    Y.applyUpdate(subdoc, version.ydoc)
-    this.editorService.updateEditorState(currentFile)
-    this.setState('collab', 'snapshot', undefined)
-    // trigger EditorProps.editable function
-    const tr = currentFile.editorView.state.tr
-    tr.setSelection(TextSelection.atStart(currentFile.editorView.state.doc))
-    currentFile.editorView.dispatch(tr)
+    if (!currentFile) return
+    this.fileService.updateFile(currentFile.id, {ydoc: version.ydoc})
+    info('Change set version applied')
   }
 }

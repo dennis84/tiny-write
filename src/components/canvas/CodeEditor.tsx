@@ -1,4 +1,4 @@
-import {createEffect, createResource, onCleanup, Show} from 'solid-js'
+import {onMount, createResource, onCleanup, Show, createEffect, on} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {CodeMirrorContainer} from '@/components/code/CodeEditor'
 import {Scroll} from '@/components/Layout'
@@ -19,13 +19,13 @@ const CodeEditorScroll = styled(Scroll)(
     user-select: none;
     pointer-events: none;
     box-shadow: 0 0 0 2px var(--border);
-    ${props.selected ? `box-shadow: 0 0 0 5px var(--border);` : ''}
+    ${props.selected ? `box-shadow: 0 0 0 5px var(--border);` : ""}
     ${props.active ? `
       box-shadow: 0 0 0 5px var(--primary-background);
       user-select: auto;
       pointer-events: auto;
     ` : ''}
-    ${props.deleted ? `opacity: 0.4;` : ''}
+    ${props.deleted ? `opacity: 0.4;` : ""}
     .cm-scroller {
       padding: 20px 0 !important;
     }
@@ -52,46 +52,34 @@ export const CodeEditor = ({element, index}: {element: CanvasCodeElement; index:
     return {box, elements: [[element.id, box]]}
   }
 
-  const [fileData] = createResource(
+  const [file] = createResource(
     () => ({id: element.id, canvasId: canvasService.currentCanvas?.id}),
     async ({id, canvasId}) => {
       let f = fileService.findFileById(id)
-      let t: string | undefined
 
       if (!f) {
-        info('No file for editor element', id)
-        f = FileService.createFile({id, parentId: canvasId})
+        info(`Create file for code editor element (id=${id})`)
+        f = FileService.createFile({id, parentId: canvasId, code: true})
         await fileService.addFile(f)
       }
 
-      if (f?.path) {
-        t = (await FileService.loadTextFile(f.path)).text
-      }
-
-      return [f, t] as const
+      return f
     },
   )
 
-  createEffect(() => {
-    const f = fileData()
-    if (!f) return
-
-    const [file, text] = f
-
-    if (text && store.collab?.ydoc) {
-      const subdoc = CollabService.getSubdoc(store.collab.ydoc, file.id)
-      codeService.updateText(file, subdoc, text)
-    }
-
-    const provider = collabService.getProvider(file.id)
-    if (!provider) {
-      collabService.initFile(file)
-    }
-
-    if (provider && file.codeEditorView === undefined) {
-      codeService.renderEditor(file, editorRef)
-    }
-  })
+  createEffect(
+    on(
+      file,
+      async () => {
+        const f = file()
+        if (!f) return
+        if (!store.collab?.ydoc) return
+        await codeService.init(f.id, store.collab.ydoc)
+        codeService.renderEditor(f, editorRef)
+      },
+      {defer: true},
+    ),
+  )
 
   onCleanup(() => {
     fileService.destroy(element.id)

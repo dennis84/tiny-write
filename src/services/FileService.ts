@@ -125,6 +125,8 @@ export class FileService {
       return
     }
 
+    info(`Saving file (id=${file.id})`)
+
     await DB.updateFile({
       id: file.id,
       parentId: file.parentId,
@@ -258,14 +260,7 @@ export class FileService {
   updateFile(id: string, u: Partial<File>) {
     const index = this.store.files.findIndex((file) => file.id === id)
     if (index === -1) return
-    const update = {...u}
-
-    if (u.lastModified && this.collabService.hasSubdoc(id)) {
-      const subdoc = this.collabService.getSubdoc(id)
-      update.ydoc = Y.encodeStateAsUpdate(subdoc)
-    }
-
-    this.setState('files', index, update)
+    this.setState('files', index, u)
   }
 
   async updatePath(fileId: string, path: string) {

@@ -1,4 +1,4 @@
-import {createEffect, onCleanup} from 'solid-js'
+import {onCleanup, onMount} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {useState} from '@/state'
 import {Scroll} from '../Layout'
@@ -27,19 +27,12 @@ export const CodeEditor = () => {
 
   const {store, codeService, collabService, fileService} = useState()
 
-  createEffect(() => {
+  onMount(async () => {
     const currentFile = fileService.currentFile
     if (!currentFile || !store.collab) return
 
-    const provider = collabService.getProvider(currentFile.id)
-    if (!provider) {
-      collabService.init(currentFile)
-    }
-
-    if (provider && currentFile?.codeEditorView === undefined) {
-      codeService.renderEditor(currentFile, containerRef)
-      fileService.currentFile?.codeEditorView?.focus()
-    }
+    codeService.renderEditor(currentFile, containerRef)
+    fileService.currentFile?.codeEditorView?.focus()
   })
 
   onCleanup(() => {

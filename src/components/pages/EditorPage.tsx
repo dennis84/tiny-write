@@ -52,11 +52,12 @@ export const EditorPage = (props: RouteSectionProps) => {
   info(`Render editor page (location=${JSON.stringify(props.location.state)})`)
 
   const [initialized] = createResource(
-    () => ({id: props.params.id}),
-    async ({id}) => {
-      await editorService.init()
+    () => ({id: props.params.id, state: props.location.state}),
+    async (props) => {
+      if (!props.id) return
+      await editorService.init(props.id)
       fileService.currentFile?.editorView?.focus()
-      return id
+      return props
     },
   )
 

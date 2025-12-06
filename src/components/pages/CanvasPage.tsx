@@ -57,7 +57,6 @@ export const CanvasPage = (props: RouteSectionProps) => {
     async ({id}) => {
       await canvasService.init()
       canvasCollabService.init()
-      collabService.init()
       return id
     },
   )

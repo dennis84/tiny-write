@@ -1,4 +1,4 @@
-import {createEffect, createResource, onCleanup, Show} from 'solid-js'
+import {createEffect, createResource, on, onCleanup, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {AutocompleteTooltip} from '@/components/editor/AutocompleteTooltip'
 import {BlockHandle} from '@/components/editor/BlockHandle'
@@ -58,29 +58,31 @@ export const Editor = ({element, index}: {element: CanvasEditorElement; index: n
   const [file] = createResource(
     () => ({id: element.id, canvasId: canvasService.currentCanvas?.id}),
     async ({id, canvasId}) => {
-      const f = fileService.findFileById(id)
-      if (f) return f
+      let f = fileService.findFileById(id)
 
-      info('No file for editor element', id)
-      const newFile = FileService.createFile({id, parentId: canvasId})
-      await fileService.addFile(newFile)
-      return newFile
+      if (!f) {
+        info(`Create file for editor element (id=${id})`)
+        f = FileService.createFile({id, parentId: canvasId})
+        await fileService.addFile(f)
+      }
+
+      return f
     },
   )
 
-  createEffect(() => {
-    const f = file()
-    if (!f) return
-
-    const provider = collabService.getProvider(f.id)
-    if (!provider) {
-      collabService.initFile(f)
-    }
-
-    if (provider && f.editorView === undefined) {
-      editorService.renderEditor(f, editorRef)
-    }
-  })
+  createEffect(
+    on(
+      file,
+      async () => {
+        const f = file()
+        if (!f) return
+        if (!store.collab?.ydoc) return
+        await editorService.init(f.id, store.collab?.ydoc)
+        editorService.renderEditor(f, editorRef)
+      },
+      {defer: true},
+    )
+  )
 
   onCleanup(() => {
     fileService.destroy(element.id)

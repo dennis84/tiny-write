@@ -144,6 +144,7 @@ export class DB {
       merge: undefined,
       selection: undefined,
       activeFileId: undefined,
+      snapshot: undefined,
     })
 
     return (await dbPromise).put('lastLocation', loc, 'main')

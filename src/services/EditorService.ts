@@ -41,7 +41,16 @@ export class EditorService {
       return
     }
 
-    const subdoc = this.store.collab?.snapshot ?? this.collabService.getSubdoc(file.id)
+    const snapshot = this.store.location?.snapshot
+    let subdoc: Y.Doc
+    if (snapshot !== undefined) {
+      subdoc = new Y.Doc({gc: false})
+      const version = file.versions[snapshot]
+      Y.applyUpdate(subdoc, version.ydoc)
+    } else {
+      subdoc = this.collabService.getSubdoc(file.id)
+    }
+
     const type = subdoc.getXmlFragment(file.id)
 
     const {plugins, doc} = this.proseMirrorService.createPlugins({
@@ -75,6 +84,7 @@ export class EditorService {
 
         this.fileService.updateFile(file.id, {
           lastModified: new Date(),
+          ydoc: Y.encodeStateAsUpdate(subdoc),
         })
 
         const updatedFile = this.fileService.findFileById(file.id)
@@ -92,7 +102,7 @@ export class EditorService {
         state: editorState,
         nodeViews,
         dispatchTransaction,
-        editable: () => !this.collabService.isSnapshot,
+        editable: () => this.store.location?.snapshot === undefined,
       })
 
       const fileIndex = this.store.files.findIndex((f) => f.id === file.id)
@@ -116,42 +126,60 @@ export class EditorService {
     editorView?.focus()
   }
 
-  async init() {
+  async init(id: string, existingYdoc?: Y.Doc) {
     info(`Initialize editor file`)
-    const state = {...this.store}
 
-    const currentFileId = this.fileService.currentFileId
-    const currentFile = this.fileService.currentFile
+    const file = this.fileService.findFileById(id)
     const share = this.store.location?.share
 
-    const path = currentFile?.path
+    const path = file?.path
     let text: FileText | undefined
 
-    if (!currentFile) {
-      throw new Error(`File not found (id=${currentFileId})`)
+    if (!file) {
+      throw new Error(`File not found (id=${id})`)
     }
 
-    if (currentFile.code) {
-      throw new Error(`File aready exists of type code (id=${currentFileId})`)
+    if (file.code) {
+      throw new Error(`File aready exists of type code (id=${id})`)
     }
 
     if (path) {
       text = (await FileService.loadMarkdownFile(path)).text
     }
 
-    const newState = {
-      ...state,
-      collab: CollabService.create(currentFile.id, Page.Editor, share),
-      args: {
-        ...state.args,
-        selection: undefined,
-        merge: undefined,
-      },
+    let ydoc = existingYdoc
+    if (!ydoc) {
+      const collab = CollabService.create(file.id, Page.Editor, share)
+      ydoc = collab.ydoc
+      this.setState('collab', collab)
     }
 
-    const subdoc = CollabService.getSubdoc(newState.collab.ydoc, currentFile.id)
-    if (text) this.updateText(currentFile, subdoc, text)
-    this.setState(newState)
+    // Get subdoc without provider initialization to apply docstate first
+    const subdoc = CollabService.getSubdoc(ydoc, file.id)
+
+    // Apply existing ydoc update
+    if (file.ydoc) {
+      info('Apply existing ydoc state to subdoc')
+      Y.applyUpdate(subdoc, file.ydoc)
+    }
+
+    // Replace ydoc state with file content
+    if (text) {
+      info('Update editor text from file')
+      this.updateText(file, subdoc, text)
+    }
+
+    if (!existingYdoc) {
+      this.collabService.registerListeners()
+    }
+
+    // Initialize subdoc provider
+    this.collabService.getSubdoc(file.id)
+    this.collabService.addToScope(file)
+
+    if (this.store.collab?.started) {
+      this.collabService.startCollab()
+    }
   }
 
   async updatePath(path: string) {

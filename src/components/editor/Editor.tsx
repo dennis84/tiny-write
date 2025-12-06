@@ -32,19 +32,11 @@ export const Editor = () => {
     })
   })
 
-  createEffect(() => {
+  onMount(() => {
     const currentFile = fileService.currentFile
-    if (!currentFile || !store.collab) return
-
-    const provider = collabService.getProvider(currentFile.id)
-    if (!provider) {
-      collabService.init(currentFile)
-    }
-
-    if (provider && currentFile.editorView === undefined) {
-      editorService.renderEditor(currentFile, editorRef)
-      fileService.currentFile?.editorView?.focus()
-    }
+    if (!currentFile) return
+    editorService.renderEditor(currentFile, editorRef)
+    fileService.currentFile?.editorView?.focus()
   })
 
   onCleanup(() => {

@@ -1,38 +1,39 @@
 import {format} from 'date-fns'
-import {createSignal, For, onCleanup, Show} from 'solid-js'
+import {For, onCleanup, Show} from 'solid-js'
 import {ButtonGroup, ButtonPrimary} from '@/components/Button'
-import {useState, type Version} from '@/state'
+import {useState} from '@/state'
 import {DrawerContent} from '../Drawer'
 import {Link} from './Link'
 import {MenuDrawer} from './Menu'
 import {MenuNavbar} from './Navbar'
 import {Label, Sub} from './Style'
+import { useOpen } from '@/hooks/use-open'
 
 export const ChangeSet = () => {
-  const {changeSetService, fileService} = useState()
+  const {store, changeSetService, fileService} = useState()
   const versions = () => fileService.currentFile?.versions ?? []
-  const [active, setActive] = createSignal<Version>()
+  const {openFile} = useOpen()
 
-  const renderVersion = (version: Version) => {
-    if (active() !== version) {
-      setActive(version)
-      changeSetService.renderVersion(version)
+  const renderVersion = (snapshot: number) => {
+    const currentFile = fileService.currentFile
+    if (store.location?.snapshot === snapshot) {
+      openFile(currentFile, {snapshot: undefined})
     } else {
-      setActive(undefined)
-      changeSetService.unrenderVersion()
+      openFile(currentFile, {snapshot})
     }
   }
 
   const applyVersion = () => {
-    const version = active()
+    const currentFile = fileService.currentFile
+    const version = currentFile?.versions[store.location?.snapshot ?? -1]
     if (!version) return
     changeSetService.applyVersion(version)
-    setActive(undefined)
+    openFile(currentFile, {snapshot: undefined})
   }
 
   onCleanup(() => {
     const currentFile = fileService.currentFile
-    changeSetService.unrenderVersion()
+    openFile(currentFile, {snapshot: undefined})
     currentFile?.editorView?.focus()
   })
 
@@ -43,10 +44,10 @@ export const ChangeSet = () => {
         <Label>Change Set</Label>
         <Sub data-tauri-drag-region="true">
           <For each={versions()} fallback={<p>No snapshots yet</p>}>
-            {(version) => (
+            {(version, i) => (
               <Link
-                onClick={() => renderVersion(version)}
-                checked={version.date === active()?.date}
+                onClick={() => renderVersion(i())}
+                checked={i() === store.location?.snapshot}
               >
                 {format(version.date, 'dd MMMM HH:mm:ss')}
               </Link>
@@ -54,12 +55,12 @@ export const ChangeSet = () => {
           </For>
         </Sub>
         <ButtonGroup>
-          <Show when={active() === undefined}>
+          <Show when={store.location?.snapshot === undefined}>
             <ButtonPrimary onClick={() => changeSetService.addVersion()}>
               Create Snapshot
             </ButtonPrimary>
           </Show>
-          <Show when={active() !== undefined}>
+          <Show when={store.location?.snapshot !== undefined}>
             <ButtonPrimary onClick={() => applyVersion()}>Apply Snapshot</ButtonPrimary>
           </Show>
         </ButtonGroup>

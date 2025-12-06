@@ -32,15 +32,11 @@ export class CollabService {
     return this.store.collab?.undoManager
   }
 
-  get isSnapshot(): boolean {
-    return this.store.collab?.snapshot !== undefined
-  }
-
   static create(id: string, page: Page, connect = false): Collab {
-    info(`Create ydoc: (id=${id}, page=${page}, connect=${connect})`)
     const room = `${page}/${id}`
+    info(`Create ydoc: (room=${room}, connect=${connect})`)
 
-    const ydoc = new Y.Doc({gc: false, guid: room})
+    const ydoc = CollabService.createYdoc()
     const permanentUserData = new Y.PermanentUserData(ydoc)
     const WebSocketPolyfill = CollabService.createWS()
     const provider = new WebsocketProvider(COLLAB_URL, room, ydoc, {
@@ -81,10 +77,15 @@ export class CollabService {
     }
   }
 
+  static createYdoc(): Y.Doc {
+    return new Y.Doc({gc: true})
+  }
+
   static getSubdoc(ydoc: Y.Doc, id: string): Y.Doc {
     let subdoc = ydoc.getMap<Y.Doc>().get(id)
     if (!subdoc) {
-      subdoc = new Y.Doc({gc: false, guid: id})
+      info(`Create subdoc (id=${id})`)
+      subdoc = CollabService.createYdoc()
       ydoc.getMap().set(id, subdoc)
     }
 
@@ -95,8 +96,8 @@ export class CollabService {
     return !isTauri() ? window.WebSocket : (TauriWebSocket as any)
   }
 
-  init(file?: File) {
-    info(`Init collab (fileId=${file?.id}, connect=${this.store.collab?.started})`)
+  registerListeners() {
+    info(`Register collab listeners (connect=${this.store.collab?.started})`)
 
     if (!this.provider) {
       throw new Error('Collab not created in state')
@@ -125,34 +126,23 @@ export class CollabService {
         this.getSubdoc(subdoc.guid)
       })
     })
-
-    this.provider.on('sync', () => {
-      if (!file) return
-      this.initFile(file)
-    })
-
-    if (!this.store.collab?.started) {
-      this.provider.emit('sync', [true])
-    } else {
-      this.provider.connect()
-    }
   }
 
-  initFile(file: File) {
+  addToScope(file: File) {
     const subdoc = this.getSubdoc(file.id)
-    if (!file.path) {
-      info(`Apply collab update after synced (ydocLenght=${file.ydoc.length})`)
-      Y.applyUpdate(subdoc, file.ydoc)
-      // throw new Error('...')
-    }
-
     const type = file.code ? subdoc.getText(file.id) : subdoc.getXmlFragment(file.id)
     this.undoManager?.addToScope([type])
   }
 
   startCollab() {
+    info(`Conntect collab provider (room=${this.store.collab?.provider.roomname})`)
     this.store.collab?.provider?.connect()
-    for (const p of Object.values(this.providers)) p.connect()
+
+    for (const p of Object.values(this.providers)) {
+      info(`Conntect collab provider (room=${p.roomname})`)
+      p.connect()
+    }
+
     this.setState('collab', {started: true})
   }
 
@@ -184,9 +174,9 @@ export class CollabService {
     if (!ydoc) throw new Error('Collab state was not created')
 
     const subdoc = CollabService.getSubdoc(ydoc, id)
-    const connect = this.store.collab?.started ?? false
 
     if (!this.providers[id]) {
+      const connect = false // this.store.collab?.started ?? false
       info(`Create provider for subdoc (id=${id}, connect=${connect})`)
       const WebSocketPolyfill = CollabService.createWS()
       const provider = new WebsocketProvider(COLLAB_URL, id, subdoc, {connect, WebSocketPolyfill})

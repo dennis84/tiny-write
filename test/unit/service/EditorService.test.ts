@@ -52,6 +52,8 @@ test('init - existing', async () => {
   const [store, setState] = createStore(initial)
   const fileService = mock<FileService>()
 
+  fileService.findFileById.mockReturnValue(initial.files[1])
+
   const service = new EditorService(
     fileService,
     collabService,
@@ -62,15 +64,12 @@ test('init - existing', async () => {
     setState,
   )
 
-  const file = initial.files[1]
-  Object.defineProperty(fileService, 'currentFile', {get: vi.fn().mockReturnValue(file)})
-
-  await service.init()
+  await service.init('2')
   expect(store.files.length).toBe(2)
   expect(store.collab?.started).toBe(false)
 })
 
-test('init - no currentFile', async () => {
+test('init - not found', async () => {
   const initial = createState({
     location: {page: Page.Canvas, canvasId: '3'},
     files: [
@@ -83,6 +82,8 @@ test('init - no currentFile', async () => {
   const [store, setState] = createStore(initial)
   const fileService = mock<FileService>()
 
+  fileService.findFileById.mockReturnValue(undefined)
+
   const service = new EditorService(
     fileService,
     collabService,
@@ -93,9 +94,7 @@ test('init - no currentFile', async () => {
     setState,
   )
 
-  Object.defineProperty(fileService, 'currentFile', {get: vi.fn().mockReturnValue(undefined)})
-
-  expect(service.init()).rejects.toThrowError(/^File not found.*/)
+  expect(service.init('3')).rejects.toThrowError(/^File not found.*/)
 })
 
 test('init - share', async () => {
@@ -115,6 +114,8 @@ test('init - share', async () => {
   const [store, setState] = createStore(initial)
   const fileService = mock<FileService>()
 
+  fileService.findFileById.mockReturnValue(file)
+
   const service = new EditorService(
     fileService,
     collabService,
@@ -125,9 +126,7 @@ test('init - share', async () => {
     setState,
   )
 
-  Object.defineProperty(fileService, 'currentFile', {get: vi.fn().mockReturnValue(file)})
-
-  await service.init()
+  await service.init('room-123')
   expect(store.files.length).toBe(1)
   expect(store.files[0].id).toBe('room-123')
   expect(store.collab?.provider?.roomname).toBe('editor/room-123')

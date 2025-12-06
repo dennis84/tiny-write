@@ -58,7 +58,8 @@ export const CodePage = (props: RouteSectionProps) => {
     // Reload when params.id or location.state changes
     () => ({id: props.params.id, state: props.location.state}),
     async (props) => {
-      await codeService.init()
+      if (!props.id) return
+      await codeService.init(props.id)
       return props
     },
   )
