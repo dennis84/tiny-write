@@ -66,17 +66,12 @@ export class CodeService {
       this.setState('collab', collab)
     }
 
-    // Get subdoc without provider initialization to apply docstate first
-    const subdoc = CollabService.getSubdoc(ydoc, file.id)
-
-    // Apply existing ydoc update
-    if (file.ydoc) {
-      info('Apply existing ydoc state to subdoc')
-      Y.applyUpdate(subdoc, file.ydoc)
-    }
+    await this.collabService.createSubdocProvider(id)
+    info(`Provider created sucessfully`)
 
     // Replace ydoc state with file content
     if (text) {
+      const subdoc = this.collabService.getSubdoc(file.id)
       info('Update editor text from file')
       this.updateText(file, subdoc, text)
     }
@@ -85,16 +80,15 @@ export class CodeService {
       this.collabService.registerListeners()
     }
 
-    // Initialize subdoc provider
-    this.collabService.getSubdoc(file.id)
     this.collabService.addToScope(file)
 
-    if (this.store.collab?.started) {
+    if (share) {
       this.collabService.startCollab()
     }
   }
 
   renderEditor(file: File, el: Element) {
+    info(`Render code editor for file (id=${file.id})`)
     this.updateEditorState(file, el)
   }
 

@@ -9,8 +9,13 @@ import {error, info} from '@/remote/log'
 import {type Collab, type Config, type File, Page, type State} from '@/state'
 import {TauriWebSocket} from '@/utils/TauriWebSocket'
 import {ConfigService} from './ConfigService'
+import {IndexeddbPersistence} from 'y-indexeddb'
+import { pause } from '@/utils/promise'
 
 export class CollabService {
+  private idbs: Map<string, IndexeddbPersistence> = new Map()
+  private providers: Map<string, WebsocketProvider> = new Map()
+
   constructor(
     private store: Store<State>,
     private setState: SetStoreFunction<State>,
@@ -20,10 +25,10 @@ export class CollabService {
     return this.store.collab?.provider
   }
 
-  get providers() {
-    return this.store.collab?.providers ?? {}
-  }
-
+  // get providers() {
+  //   return this.store.collab?.providers ?? {}
+  // }
+  //
   get permanentUserData() {
     return this.store.collab?.permanentUserData
   }
@@ -36,7 +41,7 @@ export class CollabService {
     const room = `${page}/${id}`
     info(`Create ydoc: (room=${room}, connect=${connect})`)
 
-    const ydoc = CollabService.createYdoc()
+    const ydoc = new Y.Doc({guid: room})
     const permanentUserData = new Y.PermanentUserData(ydoc)
     const WebSocketPolyfill = CollabService.createWS()
     const provider = new WebsocketProvider(COLLAB_URL, room, ydoc, {
@@ -77,17 +82,16 @@ export class CollabService {
     }
   }
 
-  static createYdoc(): Y.Doc {
-    return new Y.Doc({gc: true})
-  }
-
   static getSubdoc(ydoc: Y.Doc, id: string): Y.Doc {
-    let subdoc = ydoc.getMap<Y.Doc>().get(id)
+    const container = ydoc.getMap<Y.Doc>('subdocs')
+    let subdoc = container.get(id)
     if (!subdoc) {
       info(`Create subdoc (id=${id})`)
-      subdoc = CollabService.createYdoc()
-      ydoc.getMap().set(id, subdoc)
+      subdoc = new Y.Doc({guid: id})
+      container.set(id, subdoc)
     }
+
+    if (!subdoc.isLoaded) subdoc.load()
 
     return subdoc
   }
@@ -121,10 +125,19 @@ export class CollabService {
     const configType = this.store.collab?.ydoc?.getMap('config')
     configType?.observe(this.onCollabConfigUpdate)
 
-    this.store.collab?.ydoc.on('subdocs', ({loaded}) => {
-      loaded.forEach((subdoc) => {
-        this.getSubdoc(subdoc.guid)
+    // Immediately auto-load any already-known subdocs
+    this.store.collab?.ydoc.getSubdocs().forEach((subdoc) => {
+      if (!subdoc.isLoaded) subdoc.load()
+    })
+
+    this.store.collab?.ydoc.on('subdocs', ({loaded, added}) => {
+      added.forEach((subdoc) => {
+        if (!subdoc.isLoaded) subdoc.load()
       })
+
+      // loaded.forEach(async (subdoc) => {
+      //   await this.createSubdocProvider(subdoc.guid)
+      // })
     })
   }
 
@@ -138,7 +151,7 @@ export class CollabService {
     info(`Conntect collab provider (room=${this.store.collab?.provider.roomname})`)
     this.store.collab?.provider?.connect()
 
-    for (const p of Object.values(this.providers)) {
+    for (const p of this.providers.values()) {
       info(`Conntect collab provider (room=${p.roomname})`)
       p.connect()
     }
@@ -153,7 +166,7 @@ export class CollabService {
   disconnectCollab() {
     this.store.collab?.ydoc?.getMap('config').unobserve(this.onCollabConfigUpdate)
     this.store.collab?.provider?.disconnect()
-    for (const p of Object.values(this.providers)) p.disconnect()
+    for (const p of this.providers.values()) p.disconnect()
     this.setState('collab', {started: false, error: undefined})
   }
 
@@ -164,30 +177,39 @@ export class CollabService {
       this.store.collab?.ydoc?.getMap('config').set('contentWidth', conf.contentWidth)
   }
 
-  hasSubdoc(id: string): boolean {
-    const ydoc = this.store.collab?.ydoc
-    return ydoc?.getMap().has(id) ?? false
+  async createSubdocProvider(id: string): Promise<WebsocketProvider> {
+    const subdoc = this.getSubdoc(id)
+    subdoc.load()
+
+    const idb = new IndexeddbPersistence(id, subdoc)
+    await idb.whenSynced
+
+    const connect = false
+    info(`Create provider for subdoc (id=${id}, connect=${connect})`)
+    const WebSocketPolyfill = CollabService.createWS()
+    const provider = new WebsocketProvider(COLLAB_URL, id, subdoc, {
+      connect,
+      WebSocketPolyfill,
+    })
+
+    this.providers.set(id, provider)
+    this.idbs.set(id, idb)
+
+    return provider
   }
 
   getSubdoc(id: string): Y.Doc {
     const ydoc = this.store.collab?.ydoc
     if (!ydoc) throw new Error('Collab state was not created')
-
-    const subdoc = CollabService.getSubdoc(ydoc, id)
-
-    if (!this.providers[id]) {
-      const connect = false // this.store.collab?.started ?? false
-      info(`Create provider for subdoc (id=${id}, connect=${connect})`)
-      const WebSocketPolyfill = CollabService.createWS()
-      const provider = new WebsocketProvider(COLLAB_URL, id, subdoc, {connect, WebSocketPolyfill})
-      this.setState('collab', 'providers', id, provider)
-    }
-
-    return subdoc
+    return CollabService.getSubdoc(ydoc, id)
   }
 
-  getProvider(id: string): WebsocketProvider {
-    return this.providers[id]
+  destroySubdoc(id: string) {
+    this.disconnectCollab()
+    this.providers.get(id)?.destroy()
+    this.providers.delete(id)
+    this.idbs.get(id)?.destroy()
+    this.idbs.delete(id)
   }
 
   getJoinUrl(): string | undefined {

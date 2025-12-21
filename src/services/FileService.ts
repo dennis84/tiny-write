@@ -299,8 +299,8 @@ export class FileService {
     await FileService.saveFile(updatedFile)
   }
 
-  destroy(id?: string) {
-    const file = id ? this.findFileById(id) : this.currentFile
+  destroy(id: string) {
+    const file = this.findFileById(id)
     if (!file) return
     file.editorView?.destroy()
 

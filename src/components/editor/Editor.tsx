@@ -40,8 +40,12 @@ export const Editor = () => {
   })
 
   onCleanup(() => {
-    fileService.destroy(fileService.currentFile?.id)
+    const id = fileService.currentFile?.id
+    if (!id) return
+
+    fileService.destroy(id)
     collabService.disconnectCollab()
+    collabService.destroySubdoc(id)
   })
 
   return (
