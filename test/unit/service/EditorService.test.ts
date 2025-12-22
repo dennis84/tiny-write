@@ -10,7 +10,7 @@ import type {FileService} from '@/services/FileService'
 import type {ProseMirrorService} from '@/services/ProseMirrorService'
 import type {SelectService} from '@/services/SelectService'
 import {createState, Page} from '@/state'
-import {createEditorView, createYUpdate} from '../testutil/prosemirror-util'
+import {createEditorView, createSubdoc, createYUpdate} from '../testutil/prosemirror-util'
 import {createCollabMock} from '../testutil/util'
 
 vi.stubGlobal('location', {
@@ -53,6 +53,7 @@ test('init - existing', async () => {
   const fileService = mock<FileService>()
 
   fileService.findFileById.mockReturnValue(initial.files[1])
+  collabService.getSubdoc.mockReturnValue(createSubdoc('2', []))
 
   const service = new EditorService(
     fileService,
@@ -115,6 +116,7 @@ test('init - share', async () => {
   const fileService = mock<FileService>()
 
   fileService.findFileById.mockReturnValue(file)
+  collabService.getSubdoc.mockReturnValue(createSubdoc('room-123', []))
 
   const service = new EditorService(
     fileService,

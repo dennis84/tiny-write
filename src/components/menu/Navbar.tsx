@@ -65,7 +65,7 @@ const CollabButton = () => {
   }
 
   const onStop = () => {
-    collabService.stopCollab()
+    collabService.disconnect()
     closeTooltip()
   }
 
@@ -80,7 +80,7 @@ const CollabButton = () => {
 
   return (
     <>
-      <Button onClick={onOpen}>
+      <Button onClick={onOpen} data-testid="navbar_collab">
         <IconCloud /> {collabCount()}
       </Button>
       <Show when={anchor()}>

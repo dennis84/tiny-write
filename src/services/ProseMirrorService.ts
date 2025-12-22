@@ -41,6 +41,7 @@ import type {CanvasService} from './CanvasService'
 import type {CodeMirrorService} from './CodeMirrorService'
 import type {CollabService} from './CollabService'
 import type {ConfigService} from './ConfigService'
+import { Awareness } from 'y-protocols/awareness'
 
 export interface ViewConfig {
   nodeViews?: NodeViewConfig
@@ -49,6 +50,7 @@ export interface ViewConfig {
 export type NodeViewConfig = Record<string, NodeViewConstructor>
 
 interface CreatePlugins {
+  awareness: Awareness
   type: Y.XmlFragment
   dropCursor?: boolean
 }
@@ -123,14 +125,13 @@ export class ProseMirrorService {
     }
 
     const permanentUserData = this.collabService.permanentUserData
-    const awareness = this.collabService.provider?.awareness
 
-    if (permanentUserData && awareness) {
+    if (permanentUserData) {
       plugins.push(
         ...createCollabPlugins(
           props.type,
           permanentUserData,
-          awareness,
+          props.awareness,
           result.mapping,
           this.appService.location?.snapshot !== undefined,
         ),

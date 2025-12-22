@@ -86,7 +86,7 @@ export const Editor = ({element, index}: {element: CanvasEditorElement; index: n
 
   onCleanup(() => {
     fileService.destroy(element.id)
-    collabService.destroySubdoc(element.id)
+    collabService.destroy(element.id)
   })
 
   return (

@@ -33,7 +33,6 @@ import type {AppService} from './AppService'
 import {CollabService} from './CollabService'
 import {FileService} from './FileService'
 import type {SelectService} from './SelectService'
-import { batch } from 'solid-js'
 
 type UpdateElement =
   | Partial<CanvasLinkElement>
@@ -69,6 +68,7 @@ export class CanvasService {
     private appService: AppService,
     private fileService: FileService,
     private selectService: SelectService,
+    private collabService: CollabService,
     private store: Store<State>,
     private setState: SetStoreFunction<State>,
   ) {}
@@ -335,19 +335,15 @@ export class CanvasService {
       throw new Error(`Canvas not found (id=${currentCanvasId})`)
     }
 
-    // const files = []
-    // for (const file of this.store.files) {
-    //   file.editorView?.destroy()
-    //   file.codeEditorView?.destroy()
-    //   files.push({...file, editorView: undefined, codeEditorView: undefined})
-    // }
-
     const collab = CollabService.create(currentCanvas.id, Page.Canvas, share)
     this.setState('collab', collab)
 
-    const canvas = this.currentCanvas
+    this.collabService.createSubdocProvider(currentCanvas.id)
+    this.collabService.registerListeners()
 
-    await this.saveCanvas(canvas)
+    if (this.store.collab?.started) {
+      this.collabService.connect(currentCanvas.id)
+    }
   }
 
   async newFile(

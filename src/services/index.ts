@@ -37,7 +37,7 @@ export const createCtrl = (initial: State) => {
   const selectService = new SelectService()
   const prettierService = new PrettierService()
   const appService = new AppService(fileService, store, setState)
-  const canvasService = new CanvasService(appService, fileService, selectService, store, setState)
+  const canvasService = new CanvasService(appService, fileService, selectService, collabService, store, setState)
   const treeService = new TreeService(store, setState, fileService, canvasService)
   const deleteService = new DeleteService(fileService, canvasService, treeService, store, setState)
   const codeMirrorService = new CodeMirrorService(

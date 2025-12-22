@@ -47,7 +47,7 @@ export const NewCanvasPage = () => {
 
 export const CanvasPage = (props: RouteSectionProps) => {
   const location = useLocation<LocationState | undefined>()
-  const {appService, canvasService, canvasCollabService, collabService, toastService} = useState()
+  const {appService, canvasService, canvasCollabService, toastService} = useState()
   const {open} = useOpen()
 
   info(`Render canvas page (location=${JSON.stringify(location.state)})`)

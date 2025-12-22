@@ -1,4 +1,4 @@
-import {onCleanup, onMount} from 'solid-js'
+import {onMount} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {useState} from '@/state'
 import {Scroll} from '../Layout'
@@ -25,7 +25,7 @@ export const CodeMirrorContainer = styled('div')`
 export const CodeEditor = () => {
   let containerRef!: HTMLDivElement
 
-  const {store, codeService, collabService, fileService} = useState()
+  const {store, codeService, fileService} = useState()
 
   onMount(async () => {
     const currentFile = fileService.currentFile
@@ -33,14 +33,6 @@ export const CodeEditor = () => {
 
     codeService.renderEditor(currentFile, containerRef)
     fileService.currentFile?.codeEditorView?.focus()
-  })
-
-  onCleanup(() => {
-    const id = fileService.currentFile?.id
-    if (!id) return
-
-    fileService.destroy(id)
-    collabService.destroySubdoc(id)
   })
 
   return (

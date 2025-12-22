@@ -1,5 +1,5 @@
 import {WheelGesture} from '@use-gesture/vanilla'
-import {createEffect, onCleanup, onMount} from 'solid-js'
+import {onCleanup, onMount} from 'solid-js'
 import {useState} from '@/state'
 import {Scroll} from '../Layout'
 import {Select} from '../Select'
@@ -12,7 +12,7 @@ export const Editor = () => {
   let scrollRef!: HTMLDivElement
   let editorRef!: HTMLDivElement
 
-  const {store, configService, collabService, editorService, fileService} = useState()
+  const {store, configService, editorService, fileService} = useState()
 
   onMount(() => {
     const wheel = new WheelGesture(
@@ -37,15 +37,6 @@ export const Editor = () => {
     if (!currentFile) return
     editorService.renderEditor(currentFile, editorRef)
     fileService.currentFile?.editorView?.focus()
-  })
-
-  onCleanup(() => {
-    const id = fileService.currentFile?.id
-    if (!id) return
-
-    fileService.destroy(id)
-    collabService.disconnectCollab()
-    collabService.destroySubdoc(id)
   })
 
   return (

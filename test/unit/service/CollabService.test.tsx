@@ -98,17 +98,17 @@ test('startCollab', async () => {
   await userEvent.keyboard('Test', {delay: 10})
   expect(getByTestId('editor_scroll')).toHaveTextContent(/^Test$/)
 
-  collabService.startCollab()
+  collabService.connect()
 
   expect(store.collab?.started).toBe(true)
   expect(getByTestId('editor_scroll')).toHaveTextContent(/^Test$/)
 
-  collabService.stopCollab()
+  collabService.disconnect()
 
   expect(store.collab?.started).toBe(false)
   expect(getByTestId('editor_scroll')).toHaveTextContent(/^Test$/)
 
-  collabService.startCollab()
+  collabService.connect()
 
   expect(store.collab?.started).toBe(true)
   expect(getByTestId('editor_scroll')).toHaveTextContent(/^Test$/)

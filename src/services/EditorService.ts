@@ -54,8 +54,14 @@ export class EditorService {
     }
 
     const type = subdoc.getXmlFragment(file.id)
+    const awareness = this.collabService.getProvider(file.id)?.awareness
+
+    if (!awareness) {
+      return
+    }
 
     const {plugins, doc} = this.proseMirrorService.createPlugins({
+      awareness,
       type,
       dropCursor: true,
     })
@@ -156,8 +162,14 @@ export class EditorService {
       this.setState('collab', collab)
     }
 
-    await this.collabService.createSubdocProvider(id)
+    this.collabService.createSubdocProvider(id)
     info(`Provider created sucessfully`)
+
+    if (file.ydoc) {
+      const subdoc = this.collabService.getSubdoc(file.id)
+      info('Update editor state from existing file ydoc')
+      Y.applyUpdate(subdoc, file.ydoc)
+    }
 
     // Replace ydoc state with file content
     if (text) {
@@ -172,10 +184,8 @@ export class EditorService {
 
     this.collabService.addToScope(file)
 
-    if (share) {
-      this.collabService.startCollab()
-    } else {
-      this.collabService.provider?.emit('sync', [true])
+    if (this.store.collab?.started) {
+      this.collabService.connect(id)
     }
   }
 

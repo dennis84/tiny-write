@@ -11,11 +11,11 @@ export const SubmenuCollab = () => {
   const collabUsers = useCollabCount()
 
   const onCollabStart = () => {
-    collabService.startCollab()
+    collabService.connect()
   }
 
   const onCollabStop = () => {
-    collabService.stopCollab()
+    collabService.disconnect()
   }
 
   const onCopyCollabLink = async () => {

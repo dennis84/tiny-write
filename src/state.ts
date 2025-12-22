@@ -116,7 +116,6 @@ export interface Collab {
   id: string
   started: boolean
   provider: WebsocketProvider
-  providers: Record<string, WebsocketProvider>
   undoManager: YMultiDocUndoManager
   permanentUserData: Y.PermanentUserData
   ydoc: Y.Doc

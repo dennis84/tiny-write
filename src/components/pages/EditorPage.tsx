@@ -1,4 +1,4 @@
-import {type RouteSectionProps, useLocation} from '@solidjs/router'
+import {type RouteSectionProps, useBeforeLeave, useLocation} from '@solidjs/router'
 import {createResource, ErrorBoundary, Match, onMount, Show, Suspense, Switch} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {useOpen} from '@/hooks/use-open'
@@ -46,7 +46,7 @@ export const NewEditorPage = () => {
 }
 
 export const EditorPage = (props: RouteSectionProps) => {
-  const {appService, editorService, fileService, toastService} = useState()
+  const {appService, collabService, editorService, fileService, toastService} = useState()
   const {open} = useOpen()
 
   info(`Render editor page (location=${JSON.stringify(props.location.state)})`)
@@ -70,6 +70,13 @@ export const EditorPage = (props: RouteSectionProps) => {
     })
     return null
   }
+
+  useBeforeLeave(() => {
+    const id = props.params.id
+    if (!id) return
+    fileService.destroy(id)
+    collabService.destroy(id)
+  })
 
   return (
     <Suspense>

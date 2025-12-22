@@ -2,16 +2,18 @@ import {expect, type Locator, type Page} from '@playwright/test'
 
 export const delay = process.env.CI ? 30 : 80
 
-export const assertEditorLineToEqual = (page: Page, nth: number, text: string) =>
+type LineText = string | RegExp
+
+export const assertEditorLineToEqual = (page: Page, nth: number, text: LineText) =>
   expect(page.locator(`.ProseMirror > *:nth-child(${nth})`)).toHaveText(text)
 
-export const assertCodeLineToEqual = async (page: Page, nth: number, text: string) =>
+export const assertCodeLineToEqual = async (page: Page, nth: number, text: LineText) =>
   assertCodeLineToEqualByLocator(page.locator('[data-testid="code_scroll"]'), nth, text)
 
 export const assertCodeLineToEqualByLocator = async (
   parentLocator: Locator,
   nth: number,
-  text: string,
+  text: unknown,
 ) => {
   await expect
     .poll(async () => {

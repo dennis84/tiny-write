@@ -66,8 +66,14 @@ export class CodeService {
       this.setState('collab', collab)
     }
 
-    await this.collabService.createSubdocProvider(id)
+    this.collabService.createSubdocProvider(id)
     info(`Provider created sucessfully`)
+
+    if (file.ydoc) {
+      const subdoc = this.collabService.getSubdoc(file.id)
+      info(`Update editor state from existing file ydoc (bytes=${file.ydoc.byteLength})`)
+      Y.applyUpdate(subdoc, file.ydoc)
+    }
 
     // Replace ydoc state with file content
     if (text) {
@@ -82,8 +88,8 @@ export class CodeService {
 
     this.collabService.addToScope(file)
 
-    if (share) {
-      this.collabService.startCollab()
+    if (this.store.collab?.started) {
+      this.collabService.connect(id)
     }
   }
 
@@ -162,11 +168,14 @@ export class CodeService {
           const chunks = getChunks(update.view.state)
           // check if all diffs resolved
           if (!chunks?.chunks.length) {
-            const subdoc = this.collabService.getSubdoc(file.id)
             const type = subdoc.getText(file.id)
+            console.log('AAAAAAA', update.state.doc.toString())
             type.delete(0, type.length)
             type.insert(0, update.state.doc.toString())
-            this.fileService.updateFile(file.id, {lastModified: new Date()})
+            this.fileService.updateFile(file.id, {
+              lastModified: new Date(),
+              ydoc: Y.encodeStateAsUpdate(subdoc),
+            })
           }
 
           this.setState('lastTr', Date.now())
@@ -175,6 +184,7 @@ export class CodeService {
     } else {
       extensions.push(
         EditorView.updateListener.of(async (update) => {
+          if (!update.docChanged) return
           this.fileService.updateFile(file.id, {
             lastModified: new Date(),
             ydoc: Y.encodeStateAsUpdate(subdoc),

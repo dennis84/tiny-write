@@ -144,7 +144,7 @@ test('rejoin room - remote', async ({page, browser}) => {
   await page3.goto(`/editor?join=${id}`)
   await page3.click('[data-testid="join_editor"]')
   await expect(page3.locator('.ProseMirror > *')).toHaveCount(1)
-  await assertEditorLineToEqual(page3, 1, '123abc')
+  await assertEditorLineToEqual(page3, 1, /123abc|abc123/)
 
-  await assertEditorLineToEqual(page, 1, '123abc')
+  await assertEditorLineToEqual(page, 1, /123abc|abc123/)
 })

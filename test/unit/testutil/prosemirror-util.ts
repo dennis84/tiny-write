@@ -28,11 +28,3 @@ export const createSubdoc = (id: string, str: string[]) => {
   const doc = str ? createText(str).doc : {type: 'doc', content: []}
   return prosemirrorJSONToYDoc(schema, doc, id)
 }
-
-export const createYdoc = (subdocs: Y.Doc[]) => {
-  const ydoc = new Y.Doc({gc: false})
-  subdocs.forEach((subdoc) => {
-    ydoc.getMap().set(subdoc.guid, subdoc)
-  })
-  return ydoc
-}
