@@ -15,7 +15,7 @@ import {deleteText, insertText, writeFile} from '@/remote/editor'
 import {info} from '@/remote/log'
 import {type File, Page, type SelectionRange, type State, type VisualPositionRange} from '@/state'
 import {CodeMirrorService} from './CodeMirrorService'
-import {CollabService} from './CollabService'
+import type {CollabService} from './CollabService'
 import type {ConfigService} from './ConfigService'
 import {FileService} from './FileService'
 import type {PrettierService} from './PrettierService'
@@ -59,11 +59,8 @@ export class CodeService {
       text = (await FileService.loadTextFile(path)).text
     }
 
-    let ydoc = existingYdoc
-    if (!ydoc) {
-      const collab = CollabService.create(file.id, Page.Code, share)
-      ydoc = collab.ydoc
-      this.setState('collab', collab)
+    if (!existingYdoc) {
+      this.collabService.init(file.id, Page.Code, share)
     }
 
     this.collabService.createSubdocProvider(id)
@@ -88,7 +85,7 @@ export class CodeService {
 
     this.collabService.addToScope(file)
 
-    if (this.store.collab?.started) {
+    if (share) {
       this.collabService.connect(id)
     }
   }
@@ -192,7 +189,7 @@ export class CodeService {
           this.setState('lastTr', Date.now())
           await this.saveEditor(file, update)
         }),
-        yCollab(type, this.store.collab?.provider.awareness, {undoManager: false}),
+        yCollab(type, this.collabService.provider?.awareness, {undoManager: false}),
       )
     }
 

@@ -25,12 +25,11 @@ export const CodeMirrorContainer = styled('div')`
 export const CodeEditor = () => {
   let containerRef!: HTMLDivElement
 
-  const {store, codeService, fileService} = useState()
+  const {codeService, fileService} = useState()
 
   onMount(async () => {
     const currentFile = fileService.currentFile
-    if (!currentFile || !store.collab) return
-
+    if (!currentFile) return
     codeService.renderEditor(currentFile, containerRef)
     fileService.currentFile?.codeEditorView?.focus()
   })

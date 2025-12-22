@@ -24,8 +24,8 @@ test('addVersion', async () => {
   const initial = createState({
     files: [{id: '1', ydoc: createYUpdate('1', []), versions: []}],
   })
-  const {store, changeSetService, fileService} = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={store} />)
+  const ctrl = createCtrl(initial)
+  const {getByTestId} = render(() => <Main state={ctrl} />)
 
   await waitFor(() => {
     expect(getByTestId('editor_scroll')).toBeDefined()
@@ -34,16 +34,16 @@ test('addVersion', async () => {
   await userEvent.keyboard('Test', {delay: 10})
 
   expect(getByTestId('editor_scroll')).toHaveTextContent('Test')
-  expect(fileService.currentFile?.versions.length).toBe(0)
+  expect(ctrl.fileService.currentFile?.versions.length).toBe(0)
 
-  await changeSetService.addVersion()
-  expect(fileService.currentFile?.versions.length).toBe(1)
+  await ctrl.changeSetService.addVersion()
+  expect(ctrl.fileService.currentFile?.versions.length).toBe(1)
 
   await userEvent.keyboard('123', {delay: 10})
   expect(getByTestId('editor_scroll')).toHaveTextContent('Test123')
 
-  expectToBeDefined(fileService.currentFile?.versions[0])
-  changeSetService.applyVersion(fileService.currentFile?.versions[0])
+  expectToBeDefined(ctrl.fileService.currentFile?.versions[0])
+  ctrl.changeSetService.applyVersion(ctrl.fileService.currentFile?.versions[0])
   await vi.waitFor(() => {
     expect(getByTestId('editor_scroll')).toHaveTextContent('Test')
   })
@@ -67,8 +67,8 @@ test('render snapshot', async () => {
     ],
     location: {snapshot: 0},
   })
-  const {store} = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={store} />)
+  const ctrl = createCtrl(initial)
+  const {getByTestId} = render(() => <Main state={ctrl} />)
 
   await waitFor(() => {
     expect(getByTestId('editor_scroll')).toHaveTextContent('Old')

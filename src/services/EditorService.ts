@@ -12,7 +12,7 @@ import {replaceText, writeFile} from '@/remote/editor'
 import {error, info} from '@/remote/log'
 import {type File, type FileText, Page, type State} from '@/state'
 import type {AppService} from './AppService'
-import {CollabService} from './CollabService'
+import type {CollabService} from './CollabService'
 import {FileService} from './FileService'
 import type {ProseMirrorService} from './ProseMirrorService'
 import type {SelectService} from './SelectService'
@@ -155,11 +155,8 @@ export class EditorService {
       text = (await FileService.loadMarkdownFile(path)).text
     }
 
-    let ydoc = existingYdoc
-    if (!ydoc) {
-      const collab = CollabService.create(file.id, Page.Editor, share)
-      ydoc = collab.ydoc
-      this.setState('collab', collab)
+    if (!existingYdoc) {
+      this.collabService.init(file.id, Page.Editor, share)
     }
 
     this.collabService.createSubdocProvider(id)
@@ -184,7 +181,7 @@ export class EditorService {
 
     this.collabService.addToScope(file)
 
-    if (this.store.collab?.started) {
+    if (share) {
       this.collabService.connect(id)
     }
   }

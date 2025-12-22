@@ -17,7 +17,7 @@ beforeEach(() => {
 test('prettify', async () => {
   stubLocation('/code/1')
 
-  const {store, codeService, fileService} = createCtrl(
+  const ctrl = createCtrl(
     createState({
       files: [
         {
@@ -31,18 +31,18 @@ test('prettify', async () => {
     }),
   )
 
-  const {getByTestId} = render(() => <Main state={store} />)
+  const {getByTestId} = render(() => <Main state={ctrl} />)
 
   await waitFor(() => {
     expect(getByTestId('code_scroll')).toBeDefined()
   })
 
-  expect(store.location?.page).toBe(Page.Code)
-  expect(fileService.currentFile?.id).toBe('1')
-  expect(fileService.currentFile?.codeEditorView).toBeDefined()
-  expectToBeDefined(fileService.currentFile)
+  expect(ctrl.store.location?.page).toBe(Page.Code)
+  expect(ctrl.fileService.currentFile?.id).toBe('1')
+  expect(ctrl.fileService.currentFile?.codeEditorView).toBeDefined()
+  expectToBeDefined(ctrl.fileService.currentFile)
 
-  await codeService.prettify(fileService.currentFile)
+  await ctrl.codeService.prettify(ctrl.fileService.currentFile)
 
-  expect(fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('const a = 1')
+  expect(ctrl.fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('const a = 1')
 })

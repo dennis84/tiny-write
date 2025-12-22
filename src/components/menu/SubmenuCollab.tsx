@@ -7,7 +7,7 @@ import {Link} from './Link'
 import {Label, Sub, Text} from './Style'
 
 export const SubmenuCollab = () => {
-  const {store, collabService, toastService} = useState()
+  const {collabService, toastService} = useState()
   const collabUsers = useCollabCount()
 
   const onCollabStart = () => {
@@ -30,13 +30,12 @@ export const SubmenuCollab = () => {
     <>
       <Label>Collab</Label>
       <Sub data-tauri-drag-region="true">
-        <Show when={store.collab?.error}>! Connection error, reconnecting ...</Show>
-        <Show when={!store.collab?.started}>
+        <Show when={!collabService.started()}>
           <Link onClick={onCollabStart} data-testid="collab">
             <IconCloud /> Share
           </Link>
         </Show>
-        <Show when={store.collab?.started}>
+        <Show when={collabService.started()}>
           <Link onClick={onCollabStop} data-testid="collab">
             <IconCloudOff /> Disconnect
           </Link>

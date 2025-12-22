@@ -1,3 +1,4 @@
+import {createSignal} from 'solid-js'
 import type {SetStoreFunction, Store} from 'solid-js/store'
 import {adjectives, animals, uniqueNamesGenerator} from 'unique-names-generator'
 import {defaultDeleteFilter, defaultProtectedNodes, ySyncPluginKey} from 'y-prosemirror'
@@ -5,41 +6,60 @@ import {YMultiDocUndoManager} from 'y-utility/y-multidoc-undomanager'
 import {WebsocketProvider} from 'y-websocket'
 import * as Y from 'yjs'
 import {COLLAB_URL, isTauri, WEB_URL} from '@/env'
-import {error, info} from '@/remote/log'
-import {type Collab, type Config, type File, Page, type State} from '@/state'
+import {info} from '@/remote/log'
+import {type Config, type File, Page, type State} from '@/state'
 import {TauriWebSocket} from '@/utils/TauriWebSocket'
 import {ConfigService} from './ConfigService'
+import type {ToastService} from './ToastService'
 
 export class CollabService {
   private providers: Map<string, WebsocketProvider> = new Map()
   private subdocs: Map<string, Y.Doc> = new Map()
+  private _provider: WebsocketProvider | undefined
+  private _ydoc: Y.Doc | undefined
+  private _permanentUserData: Y.PermanentUserData | undefined
+  private _undoManager: YMultiDocUndoManager | undefined
+
+  private startedSignal = createSignal(false)
 
   constructor(
+    private toastService: ToastService,
     private store: Store<State>,
     private setState: SetStoreFunction<State>,
-  ) {}
-
-  get provider() {
-    return this.store.collab?.provider
+  ) {
+    console.log('NEW')
   }
 
-  get permanentUserData() {
-    return this.store.collab?.permanentUserData
+  get started() {
+    console.log(this.startedSignal[0]())
+    return this.startedSignal[0]
   }
 
-  get undoManager() {
-    return this.store.collab?.undoManager
+  get provider(): WebsocketProvider | undefined {
+    return this._provider
   }
 
-  static create(id: string, page: Page, connect = false): Collab {
+  get ydoc(): Y.Doc | undefined {
+    return this._ydoc
+  }
+
+  get permanentUserData(): Y.PermanentUserData | undefined {
+    return this._permanentUserData
+  }
+
+  get undoManager(): YMultiDocUndoManager | undefined {
+    return this._undoManager
+  }
+
+  init(id: string, page: Page, connect = false) {
     const room = `${page}/${id}`
     info(`Create ydoc: (room=${room}, connect=${connect})`)
 
-    const ydoc = new Y.Doc({guid: room})
+    this._ydoc = new Y.Doc({guid: room})
 
-    const permanentUserData = new Y.PermanentUserData(ydoc)
+    this._permanentUserData = new Y.PermanentUserData(this._ydoc)
     const WebSocketPolyfill = CollabService.createWS()
-    const provider = new WebsocketProvider(COLLAB_URL, room, ydoc, {
+    this._provider = new WebsocketProvider(COLLAB_URL, room, this._ydoc, {
       connect: false,
       WebSocketPolyfill,
     })
@@ -53,27 +73,18 @@ export class CollabService {
       length: 2,
     })
 
-    provider.awareness.setLocalStateField('user', {
+    this._provider.awareness.setLocalStateField('user', {
       name: username,
       color: xs[index].primaryBackground,
       background: xs[index].primaryBackground,
       foreground: xs[index].primaryForeground,
     })
 
-    const undoManager = new YMultiDocUndoManager([], {
-      trackedOrigins: new Set([ySyncPluginKey, ydoc.clientID]),
+    this._undoManager = new YMultiDocUndoManager([], {
+      trackedOrigins: new Set([ySyncPluginKey, this._ydoc.clientID]),
       deleteFilter: (item: any) => defaultDeleteFilter(item, defaultProtectedNodes),
       captureTransaction: (tr: any) => tr.meta.get('addToHistory') !== false,
     })
-
-    return {
-      id,
-      started: connect,
-      ydoc,
-      provider,
-      undoManager,
-      permanentUserData,
-    }
   }
 
   private static createWS() {
@@ -81,28 +92,18 @@ export class CollabService {
   }
 
   registerListeners() {
-    info(`Register collab listeners (connect=${this.store.collab?.started})`)
+    info(`Register collab listeners`)
 
     if (!this.provider) {
       throw new Error('Collab not created in state')
     }
 
     this.provider.on('connection-error', () => {
-      error('🌐 Connection error')
-      this.setState('collab', 'error', true)
-      if (this.provider) {
-        this.provider.wsconnected = false
-        this.provider.ws = null
-      }
+      this.toastService.open({message: 'Collaboration connection error'})
+      this.disconnect()
     })
 
-    this.provider.on('status', (e: any) => {
-      if (e.status === 'connected') {
-        this.setState('collab', 'error', undefined)
-      }
-    })
-
-    const configType = this.store.collab?.ydoc?.getMap('config')
+    const configType = this.ydoc?.getMap('config')
     configType?.observe(this.onCollabConfigUpdate)
   }
 
@@ -114,9 +115,8 @@ export class CollabService {
 
   connect(id: string | undefined = undefined) {
     if (!this.provider?.wsconnected) {
-      info(`Conntect to root collab provider (room=${this.store.collab?.provider.roomname})`)
+      info(`Conntect to root collab provider (room=${this.provider?.roomname})`)
       this.provider?.connect()
-      this.setState('collab', 'started', true)
     }
 
     const ids = id ? [id] : Array.from(this.providers.keys())
@@ -127,6 +127,9 @@ export class CollabService {
         this.providers.get(id)?.connect()
       }
     }
+
+    info('Set collab started to true')
+    this.startedSignal[1](true)
   }
 
   disconnect(id: string | undefined = undefined) {
@@ -137,10 +140,10 @@ export class CollabService {
     }
 
     if (ids.length === this.providers.size) {
-      info(`Disconnect from root collab provider (room=${this.store.collab?.provider.roomname})`)
-      this.store.collab?.ydoc?.getMap('config').unobserve(this.onCollabConfigUpdate)
-      this.store.collab?.provider?.disconnect()
-      this.setState('collab', 'started', false)
+      info(`Disconnect from root collab provider (room=${this.provider?.roomname})`)
+      this.ydoc?.getMap('config').unobserve(this.onCollabConfigUpdate)
+      this.provider?.disconnect()
+      this.startedSignal[1](false)
     }
   }
 
@@ -155,12 +158,10 @@ export class CollabService {
     }
   }
 
-
   setConfig(conf: Partial<Config>) {
-    if (conf.font) this.store.collab?.ydoc?.getMap('config').set('font', conf.font)
-    if (conf.fontSize) this.store.collab?.ydoc?.getMap('config').set('fontSize', conf.fontSize)
-    if (conf.contentWidth)
-      this.store.collab?.ydoc?.getMap('config').set('contentWidth', conf.contentWidth)
+    if (conf.font) this.ydoc?.getMap('config').set('font', conf.font)
+    if (conf.fontSize) this.ydoc?.getMap('config').set('fontSize', conf.fontSize)
+    if (conf.contentWidth) this.ydoc?.getMap('config').set('contentWidth', conf.contentWidth)
   }
 
   createSubdocProvider(id: string): WebsocketProvider {

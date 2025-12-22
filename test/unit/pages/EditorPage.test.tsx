@@ -7,7 +7,7 @@ import type {DB} from '@/db'
 import {createCtrl} from '@/services'
 import {createState, Page} from '@/state'
 import {createYUpdate} from '../testutil/prosemirror-util'
-import {createIpcMock, expectToBeDefined, stubLocation} from '../testutil/util'
+import {createIpcMock, stubLocation} from '../testutil/util'
 
 vi.mock('@/db', () => ({DB: mock<DB>()}))
 
@@ -26,15 +26,15 @@ test('open - new file on root page', async () => {
 
   const initial = createState()
 
-  const {store} = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={store} />)
+  const ctrl = createCtrl(initial)
+  const {getByTestId} = render(() => <Main state={ctrl} />)
 
   await waitFor(() => {
     expect(getByTestId('editor_scroll')).toBeDefined()
   })
 
-  expect(store.location?.page).toBe(Page.Editor)
-  expect(store.files.length).toBe(1)
+  expect(ctrl.store.location?.page).toBe(Page.Editor)
+  expect(ctrl.store.files.length).toBe(1)
 })
 
 test('open - new file page', async () => {
@@ -42,15 +42,15 @@ test('open - new file page', async () => {
 
   const initial = createState()
 
-  const {store} = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={store} />)
+  const ctrl = createCtrl(initial)
+  const {getByTestId} = render(() => <Main state={ctrl} />)
 
   await waitFor(() => {
     expect(getByTestId('new_editor_page')).toBeDefined()
   })
 
-  expect(store.location?.page).toBe(Page.Editor)
-  expect(store.files.length).toBe(0)
+  expect(ctrl.store.location?.page).toBe(Page.Editor)
+  expect(ctrl.store.files.length).toBe(0)
 })
 
 test('open - open last location', async () => {
@@ -67,15 +67,15 @@ test('open - open last location', async () => {
     ],
   })
 
-  const {store} = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={store} />)
+  const ctrl = createCtrl(initial)
+  const {getByTestId} = render(() => <Main state={ctrl} />)
 
   await waitFor(() => {
     expect(getByTestId('editor_scroll')).toBeDefined()
   })
 
-  expect(store.location?.page).toBe(Page.Editor)
-  expect(store.files.length).toBe(2)
+  expect(ctrl.store.location?.page).toBe(Page.Editor)
+  expect(ctrl.store.files.length).toBe(2)
   expect(getByTestId('editor_scroll')).toHaveTextContent(/^Test 2$/)
 })
 
@@ -84,15 +84,15 @@ test('open - file not found', async () => {
 
   const initial = createState()
 
-  const {store} = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={store} />)
+  const ctrl = createCtrl(initial)
+  const {getByTestId} = render(() => <Main state={ctrl} />)
 
   await waitFor(() => {
     expect(getByTestId('new_editor_page')).toBeDefined()
   })
 
-  expect(store.location?.page).toBe(Page.Editor)
-  expect(store.files.length).toBe(0)
+  expect(ctrl.store.location?.page).toBe(Page.Editor)
+  expect(ctrl.store.files.length).toBe(0)
 })
 
 test('open - existing file', async () => {
@@ -105,15 +105,15 @@ test('open - existing file', async () => {
     ],
   })
 
-  const {store} = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={store} />)
+  const ctrl = createCtrl(initial)
+  const {getByTestId} = render(() => <Main state={ctrl} />)
 
   await waitFor(() => {
     expect(getByTestId('editor_scroll')).toBeDefined()
   })
 
-  expect(store.location?.page).toBe(Page.Editor)
-  expect(store.files.length).toBe(2)
+  expect(ctrl.store.location?.page).toBe(Page.Editor)
+  expect(ctrl.store.files.length).toBe(2)
   expect(getByTestId('editor_scroll')).toHaveTextContent(/^Text$/)
 })
 
@@ -127,8 +127,8 @@ test('open - join', async () => {
     ],
   })
 
-  const {store} = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={store} />)
+  const ctrl = createCtrl(initial)
+  const {getByTestId} = render(() => <Main state={ctrl} />)
 
   await waitFor(() => {
     expect(getByTestId('new_editor_page')).toBeDefined()
@@ -137,18 +137,16 @@ test('open - join', async () => {
   getByTestId('join_editor').click()
 
   await waitFor(() => {
-    expectToBeDefined(store.collab)
-    expect(store.collab.provider).toBeDefined()
-    store.collab.provider.synced = true
+    expect(ctrl.collabService.provider).toBeDefined()
   })
 
   await waitFor(() => {
     expect(getByTestId('editor_scroll')).toBeDefined()
   })
 
-  expect(store.location?.page).toBe(Page.Editor)
-  expect(store.files.length).toBe(2)
-  expect(store.collab?.started).toBe(true)
+  expect(ctrl.store.location?.page).toBe(Page.Editor)
+  expect(ctrl.store.files.length).toBe(2)
+  expect(ctrl.collabService.started()).toBe(true)
 
   await waitFor(() => {
     expect(getByTestId('editor_scroll')).toHaveTextContent(/^Text$/)
@@ -176,16 +174,16 @@ test('open - file with path', async () => {
     ],
   })
 
-  const {store} = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={store} />)
+  const ctrl = createCtrl(initial)
+  const {getByTestId} = render(() => <Main state={ctrl} />)
 
   await waitFor(() => {
     expect(getByTestId('editor_scroll')).toBeDefined()
   })
 
-  expect(store.location?.page).toBe(Page.Editor)
-  expect(store.files.length).toBe(1)
-  expect(store.files[0].path).toBe('file1')
+  expect(ctrl.store.location?.page).toBe(Page.Editor)
+  expect(ctrl.store.files.length).toBe(1)
+  expect(ctrl.store.files[0].path).toBe('file1')
   expect(getByTestId('editor_scroll')).toHaveTextContent(/^File1$/)
 })
 
@@ -213,8 +211,8 @@ test('open - read file - file not found', async () => {
     ],
   })
 
-  const {store} = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={store} />)
+  const ctrl = createCtrl(initial)
+  const {getByTestId} = render(() => <Main state={ctrl} />)
 
   await waitFor(() => {
     expect(getByTestId('new_editor_page')).toBeDefined()
@@ -233,14 +231,14 @@ test('open - file arg', async () => {
   const initial = createState({
     args: {file: 'file2.md'},
   })
-  const {store, fileService} = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={store} />)
+  const ctrl = createCtrl(initial)
+  const {getByTestId} = render(() => <Main state={ctrl} />)
 
   await waitFor(() => {
     expect(getByTestId('editor_scroll')).toBeDefined()
   })
 
-  expect(fileService.currentFile?.path).toBe('file2.md')
+  expect(ctrl.fileService.currentFile?.path).toBe('file2.md')
   expect(getByTestId('editor_scroll')).toHaveTextContent(/^File2$/)
 })
 
@@ -266,14 +264,14 @@ test('open - file arg exists', async () => {
     ],
   })
 
-  const {store, fileService} = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={store} />)
+  const ctrl = createCtrl(initial)
+  const {getByTestId} = render(() => <Main state={ctrl} />)
 
   await waitFor(() => {
     expect(getByTestId('editor_scroll')).toBeDefined()
   })
 
-  expect(fileService.currentFile?.path).toBe('file2.md')
+  expect(ctrl.fileService.currentFile?.path).toBe('file2.md')
   expect(getByTestId('editor_scroll')).toHaveTextContent(/^File2$/)
 })
 
@@ -287,15 +285,14 @@ test('open - newFile arg', async () => {
     args: {newFile: 'file2.md'},
   })
 
-  const {store, fileService} = createCtrl(initial)
-  const baseElement = document.createElement('div')
-  const {getByTestId} = render(() => <Main state={store} />, {baseElement})
+  const ctrl = createCtrl(initial)
+  const {getByTestId} = render(() => <Main state={ctrl} />)
 
   await waitFor(() => {
     expect(getByTestId('editor_scroll')).toBeDefined()
   })
 
-  expect(fileService.currentFile?.newFile).toBe('file2.md')
+  expect(ctrl.fileService.currentFile?.newFile).toBe('file2.md')
   expect(getByTestId('editor_scroll')).toHaveTextContent(/^Start typing ...$/)
 })
 
@@ -321,14 +318,14 @@ test('open - newFile arg - path exists', async () => {
     ],
   })
 
-  const {store, fileService} = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={store} />)
+  const ctrl = createCtrl(initial)
+  const {getByTestId} = render(() => <Main state={ctrl} />)
 
   await waitFor(() => {
     expect(getByTestId('editor_scroll')).toBeDefined()
   })
 
-  expect(fileService.currentFile?.path).toBe('file2.md')
+  expect(ctrl.fileService.currentFile?.path).toBe('file2.md')
   expect(getByTestId('editor_scroll')).toHaveTextContent(/^File2$/)
 })
 
@@ -352,14 +349,14 @@ test('open - newFile arg - newFile exists', async () => {
     ],
   })
 
-  const {store, fileService} = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={store} />)
+  const ctrl = createCtrl(initial)
+  const {getByTestId} = render(() => <Main state={ctrl} />)
 
   await waitFor(() => {
     expect(getByTestId('editor_scroll')).toBeDefined()
   })
 
-  expect(store.files.length).toBe(1)
-  expect(fileService.currentFile?.newFile).toBe('file2.md')
+  expect(ctrl.store.files.length).toBe(1)
+  expect(ctrl.fileService.currentFile?.newFile).toBe('file2.md')
   expect(getByTestId('editor_scroll')).toHaveTextContent('Text')
 })

@@ -1,4 +1,3 @@
-import {createStore} from 'solid-js/store'
 import {beforeEach, expect, test, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
 import {YMultiDocUndoManager} from 'y-utility/y-multidoc-undomanager'
@@ -6,7 +5,7 @@ import * as Y from 'yjs'
 import {CanvasCollabService} from '@/services/CanvasCollabService'
 import type {CanvasService} from '@/services/CanvasService'
 import type {CollabService} from '@/services/CollabService'
-import {type Canvas, createState, ElementType} from '@/state'
+import {type Canvas, ElementType} from '@/state'
 
 vi.mock('@/db', () => ({DB: mock()}))
 
@@ -26,18 +25,20 @@ const setup = (props: {canvas: Partial<Canvas>} = {canvas: {}}) => {
   const canvas = createCanvas(props.canvas)
   const canvasService = mock<CanvasService>()
   Object.defineProperty(canvasService, 'currentCanvas', {get: vi.fn().mockReturnValue(canvas)})
-  const collabService = mock<CollabService>({
-    undoManager: mock<YMultiDocUndoManager>(),
+  const collabService = mock<CollabService>()
+
+  Object.defineProperty(collabService, 'ydoc', {
+    get: vi.fn().mockReturnValue(new Y.Doc({gc: false})),
   })
 
-  const [store, setState] = createStore(createState({canvases: []}))
-  const service = new CanvasCollabService(collabService, canvasService, store)
+  Object.defineProperty(collabService, 'undoManager', {
+    get: vi.fn().mockReturnValue(mock<YMultiDocUndoManager>()),
+  })
 
-  const ydoc = new Y.Doc({gc: false})
-  setState('collab', {ydoc})
+  const service = new CanvasCollabService(collabService, canvasService)
 
   const undoManager = new YMultiDocUndoManager(service.elements, {
-    trackedOrigins: new Set([ydoc.clientID]),
+    trackedOrigins: new Set([collabService.ydoc?.clientID]),
   })
 
   return {service, canvasService, undoManager}

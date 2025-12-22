@@ -44,14 +44,17 @@ import {type LocationState, Page, type State, StateContext} from '@/state'
 import {enumFromValue} from '@/utils/enum'
 import {Title} from './pages/Title'
 
-export const Main = (props: {state: State}) => {
+type Ctrl = ReturnType<typeof createCtrl>
+
+const isCtrl = (s: any): s is Ctrl => s.store !== undefined
+
+export const Main = (props: {state: State | Ctrl}) => {
   const Root = (p: RouteSectionProps) => {
     let layoutRef!: HTMLDivElement
-    const ctrl = createCtrl(props.state)
+    const ctrl = isCtrl(props.state) ? props.state : createCtrl(props.state)
 
     const onViewError = (error: any, _reset: any) => {
       ctrl.appService.setError({error})
-      // reset()
       return null
     }
 

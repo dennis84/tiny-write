@@ -24,29 +24,29 @@ beforeEach(() => {
 test('undoManager - text', async () => {
   stubLocation('/editor/1')
 
-  const {store, collabService} = createCtrl(
+  const ctrl = createCtrl(
     createState({
       files: [{id: '1', ydoc: pmUtil.createYUpdate('1', []), versions: []}],
     }),
   )
-  const {getByTestId} = render(() => <Main state={store} />)
+  const {getByTestId} = render(() => <Main state={ctrl} />)
 
   await waitFor(() => {
     expect(getByTestId('editor_scroll')).toBeDefined()
   })
 
-  expect(store.files.length).toBe(1)
+  expect(ctrl.store.files.length).toBe(1)
   expect(getByTestId('editor_scroll')).toHaveTextContent('Start typing ...')
 
   await userEvent.keyboard('Test', {delay: 10})
 
-  collabService.undoManager?.stopCapturing()
+  ctrl.collabService.undoManager?.stopCapturing()
 
   await userEvent.keyboard('123', {delay: 10})
 
   expect(getByTestId('editor_scroll')).toHaveTextContent(/^Test123$/)
 
-  collabService.undoManager?.undo()
+  ctrl.collabService.undoManager?.undo()
 
   expect(getByTestId('editor_scroll')).toHaveTextContent(/^Test$/)
 })
@@ -54,42 +54,42 @@ test('undoManager - text', async () => {
 test('undoManager - code', async () => {
   stubLocation('/code/1')
 
-  const {store, collabService, fileService} = createCtrl(
+  const ctrl = createCtrl(
     createState({
       files: [{id: '1', ydoc: cmUtil.createYUpdate('1', ''), versions: [], code: true}],
     }),
   )
-  const {getByTestId} = render(() => <Main state={store} />)
+  const {getByTestId} = render(() => <Main state={ctrl} />)
 
   await waitFor(() => {
     expect(getByTestId('code_scroll')).toBeDefined()
   })
 
-  expect(store.files.length).toBe(1)
-  expect(fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('')
+  expect(ctrl.store.files.length).toBe(1)
+  expect(ctrl.fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('')
 
   await userEvent.keyboard('Test', {delay: 10})
 
-  collabService.undoManager?.stopCapturing()
+  ctrl.collabService.undoManager?.stopCapturing()
 
   await userEvent.keyboard('123', {delay: 10})
 
-  expect(fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('Test123')
+  expect(ctrl.fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('Test123')
 
-  collabService.undoManager?.undo()
+  ctrl.collabService.undoManager?.undo()
 
-  expect(fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('Test')
+  expect(ctrl.fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('Test')
 })
 
 test('startCollab', async () => {
   stubLocation('/editor/1')
 
-  const {store, collabService} = createCtrl(
+  const ctrl = createCtrl(
     createState({
       files: [{id: '1', ydoc: pmUtil.createYUpdate('1', []), versions: []}],
     }),
   )
-  const {getByTestId} = render(() => <Main state={store} />)
+  const {getByTestId} = render(() => <Main state={ctrl} />)
 
   await waitFor(() => {
     expect(getByTestId('editor_scroll')).toBeDefined()
@@ -98,18 +98,18 @@ test('startCollab', async () => {
   await userEvent.keyboard('Test', {delay: 10})
   expect(getByTestId('editor_scroll')).toHaveTextContent(/^Test$/)
 
-  collabService.connect()
+  ctrl.collabService.connect()
 
-  expect(store.collab?.started).toBe(true)
+  expect(ctrl.collabService.started()).toBe(true)
   expect(getByTestId('editor_scroll')).toHaveTextContent(/^Test$/)
 
-  collabService.disconnect()
+  ctrl.collabService.disconnect()
 
-  expect(store.collab?.started).toBe(false)
+  expect(ctrl.collabService.started()).toBe(false)
   expect(getByTestId('editor_scroll')).toHaveTextContent(/^Test$/)
 
-  collabService.connect()
+  ctrl.collabService.connect()
 
-  expect(store.collab?.started).toBe(true)
+  expect(ctrl.collabService.started()).toBe(true)
   expect(getByTestId('editor_scroll')).toHaveTextContent(/^Test$/)
 })

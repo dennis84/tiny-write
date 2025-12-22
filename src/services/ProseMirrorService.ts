@@ -7,6 +7,7 @@ import type {Node} from 'prosemirror-model'
 import type {EditorState, Plugin} from 'prosemirror-state'
 import type {NodeViewConstructor} from 'prosemirror-view'
 import {initProseMirrorDoc} from 'y-prosemirror'
+import type {Awareness} from 'y-protocols/awareness'
 import type * as Y from 'yjs'
 import {isTauri} from '@/env'
 import {addDecorationPlugin} from '@/prosemirror/add-decoration'
@@ -41,7 +42,6 @@ import type {CanvasService} from './CanvasService'
 import type {CodeMirrorService} from './CodeMirrorService'
 import type {CollabService} from './CollabService'
 import type {ConfigService} from './ConfigService'
-import { Awareness } from 'y-protocols/awareness'
 
 export interface ViewConfig {
   nodeViews?: NodeViewConfig

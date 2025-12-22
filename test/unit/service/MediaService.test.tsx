@@ -49,17 +49,17 @@ test('dropFiles - image on editor', async () => {
   const initial = createState({
     files: [{id: '1', ydoc: pmUtil.createYUpdate('1', []), versions: []}],
   })
-  const {store, fileService, mediaService} = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={store} />)
+  const ctrl = createCtrl(initial)
+  const {getByTestId} = render(() => <Main state={ctrl} />)
 
   await waitFor(() => {
     expect(getByTestId('editor_scroll')).toBeDefined()
   })
 
   const blob = new Blob(['123'], {type: 'image/jpeg'}) as File
-  await mediaService.dropFiles([blob], [0, 0])
+  await ctrl.mediaService.dropFiles([blob], [0, 0])
 
-  const doc = fileService.currentFile?.editorView?.state.doc
+  const doc = ctrl.fileService.currentFile?.editorView?.state.doc
   const paragraph = doc?.firstChild
   const image = paragraph?.firstChild
   expect(image?.type.name).toBe('image')
@@ -91,8 +91,8 @@ test('dropFiles - image on canvas', async () => {
     ],
   })
 
-  const {store, canvasService, mediaService} = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={store} />)
+  const ctrl = createCtrl(initial)
+  const {getByTestId} = render(() => <Main state={ctrl} />)
 
   await waitFor(() => {
     expect(getByTestId('canvas_container')).toBeDefined()
@@ -103,10 +103,10 @@ test('dropFiles - image on canvas', async () => {
     height: 200,
   } as HTMLImageElement)
 
-  const currentCanvas = canvasService.currentCanvas
+  const currentCanvas = ctrl.canvasService.currentCanvas
 
   const blob = new Blob([], {type: 'image/png'}) as File
-  await mediaService.dropFiles([blob], [100, 100])
+  await ctrl.mediaService.dropFiles([blob], [100, 100])
 
   expect(currentCanvas?.elements).toHaveLength(2)
 
@@ -143,8 +143,8 @@ test('dropFiles - image on canvas with active editor', async () => {
     ],
   })
 
-  const {store, canvasService, fileService, mediaService} = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={store} />)
+  const ctrl = createCtrl(initial)
+  const {getByTestId} = render(() => <Main state={ctrl} />)
 
   await waitFor(() => {
     expect(getByTestId('canvas_container')).toBeDefined()
@@ -155,16 +155,16 @@ test('dropFiles - image on canvas with active editor', async () => {
     height: 200,
   } as HTMLImageElement)
 
-  const currentCanvas = canvasService.currentCanvas
+  const currentCanvas = ctrl.canvasService.currentCanvas
   const editorEl = currentCanvas?.elements[0] as CanvasEditorElement
-  canvasService.select('1', true)
+  ctrl.canvasService.select('1', true)
 
   const blob = new Blob(['123'], {type: 'image/png'}) as File
-  await mediaService.dropFiles([blob], [0, 0])
+  await ctrl.mediaService.dropFiles([blob], [0, 0])
 
   expect(currentCanvas?.elements).toHaveLength(1)
 
-  const doc = fileService.findFileById(editorEl.id)?.editorView?.state.doc
+  const doc = ctrl.fileService.findFileById(editorEl.id)?.editorView?.state.doc
   const paragraph = doc?.firstChild
   const image = paragraph?.firstChild
   expect(image?.type.name).toBe('image')
@@ -178,8 +178,8 @@ test('dropFiles - image on assistant', async () => {
   const initial = createState({
     threads: [{id: '1', messages: []}],
   })
-  const {store, mediaService} = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={store} />)
+  const ctrl = createCtrl(initial)
+  const {getByTestId} = render(() => <Main state={ctrl} />)
 
   await waitFor(() => {
     expect(getByTestId('assistant')).toBeDefined()
@@ -189,10 +189,10 @@ test('dropFiles - image on assistant', async () => {
     new Blob(['123'], {type: 'image/png'}) as File,
     new Blob(['456']) as File, // only images allowed
   ]
-  await mediaService.dropFiles(files, [0, 0])
+  await ctrl.mediaService.dropFiles(files, [0, 0])
 
-  expect(mediaService.droppedFiles()).toHaveLength(1)
-  expect(mediaService.droppedFiles()[0].type).toBe('image/png')
+  expect(ctrl.mediaService.droppedFiles()).toHaveLength(1)
+  expect(ctrl.mediaService.droppedFiles()[0].type).toBe('image/png')
 })
 
 test('dropFiles - image on assistant drawer', async () => {
@@ -201,8 +201,8 @@ test('dropFiles - image on assistant drawer', async () => {
   const initial = createState({
     files: [{id: '1', ydoc: cmUtil.createYUpdate('1', ''), versions: [], code: true}],
   })
-  const {store, mediaService} = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={store} />)
+  const ctrl = createCtrl(initial)
+  const {getByTestId} = render(() => <Main state={ctrl} />)
 
   await waitFor(() => {
     expect(getByTestId('code_scroll')).toBeDefined()
@@ -212,10 +212,10 @@ test('dropFiles - image on assistant drawer', async () => {
     new Blob(['123'], {type: 'image/png'}) as File,
     new Blob(['456']) as File, // only images allowed
   ]
-  await mediaService.dropFiles(files, [0, 0], DropTarget.Assistant)
+  await ctrl.mediaService.dropFiles(files, [0, 0], DropTarget.Assistant)
 
-  expect(mediaService.droppedFiles()).toHaveLength(1)
-  expect(mediaService.droppedFiles()[0].type).toBe('image/png')
+  expect(ctrl.mediaService.droppedFiles()).toHaveLength(1)
+  expect(ctrl.mediaService.droppedFiles()[0].type).toBe('image/png')
 })
 
 test('dropPaths - image on editor', async () => {
@@ -224,16 +224,16 @@ test('dropPaths - image on editor', async () => {
   const initial = createState({
     files: [{id: '1', ydoc: pmUtil.createYUpdate('1', []), versions: []}],
   })
-  const {store, fileService, mediaService} = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={store} />)
+  const ctrl = createCtrl(initial)
+  const {getByTestId} = render(() => <Main state={ctrl} />)
 
   await waitFor(() => {
     expect(getByTestId('editor_scroll')).toBeDefined()
   })
 
-  await mediaService.dropPaths(['/users/me/file.png'], [0, 0])
+  await ctrl.mediaService.dropPaths(['/users/me/file.png'], [0, 0])
 
-  const doc = fileService.currentFile?.editorView?.state.doc
+  const doc = ctrl.fileService.currentFile?.editorView?.state.doc
   const paragraph = doc?.firstChild
   const image = paragraph?.firstChild
   expect(image?.type.name).toBe('image')
@@ -255,16 +255,16 @@ test('dropPaths - image on editor with basePath', async () => {
     ],
   })
 
-  const {store, mediaService, fileService} = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={store} />)
+  const ctrl = createCtrl(initial)
+  const {getByTestId} = render(() => <Main state={ctrl} />)
 
   await waitFor(() => {
     expect(getByTestId('editor_scroll')).toBeDefined()
   })
 
-  await mediaService.dropPaths(['/users/me/project/file.png'], [0, 0])
+  await ctrl.mediaService.dropPaths(['/users/me/project/file.png'], [0, 0])
 
-  const doc = fileService.currentFile?.editorView?.state.doc
+  const doc = ctrl.fileService.currentFile?.editorView?.state.doc
   const paragraph = doc?.firstChild
   const image = paragraph?.firstChild
   expect(image?.type.name).toBe('image')
@@ -277,19 +277,19 @@ test('dropPaths - text file on editor', async () => {
   const initial = createState({
     files: [{id: '1', ydoc: pmUtil.createYUpdate('1', []), versions: []}],
   })
-  const {store, mediaService} = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={store} />)
+  const ctrl = createCtrl(initial)
+  const {getByTestId} = render(() => <Main state={ctrl} />)
 
   await waitFor(() => {
     expect(getByTestId('editor_scroll')).toBeDefined()
   })
 
-  expect(store.files).toHaveLength(1)
+  expect(ctrl.store.files).toHaveLength(1)
 
   const path = '/users/me/project/README.md'
-  const result = await mediaService.dropPaths([path], [0, 0])
+  const result = await ctrl.mediaService.dropPaths([path], [0, 0])
 
-  expect(store.files).toHaveLength(2)
+  expect(ctrl.store.files).toHaveLength(2)
   expect(result?.file?.path).toBe(path)
 })
 
@@ -317,8 +317,8 @@ test('dropPaths - image on canvas', async () => {
     ],
   })
 
-  const {store, canvasService, mediaService} = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={store} />)
+  const ctrl = createCtrl(initial)
+  const {getByTestId} = render(() => <Main state={ctrl} />)
 
   await waitFor(() => {
     expect(getByTestId('canvas_container')).toBeDefined()
@@ -329,9 +329,9 @@ test('dropPaths - image on canvas', async () => {
     height: 200,
   } as HTMLImageElement)
 
-  const currentCanvas = canvasService.currentCanvas
+  const currentCanvas = ctrl.canvasService.currentCanvas
 
-  await mediaService.dropPaths(['/users/me/file.png'], [100, 100])
+  await ctrl.mediaService.dropPaths(['/users/me/file.png'], [100, 100])
 
   expect(currentCanvas?.elements).toHaveLength(2)
 
@@ -359,24 +359,24 @@ test('dropPaths - text file on canvas', async () => {
     ],
   })
 
-  const {store, canvasService, mediaService} = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={store} />)
+  const ctrl = createCtrl(initial)
+  const {getByTestId} = render(() => <Main state={ctrl} />)
 
   await waitFor(() => {
     expect(getByTestId('canvas_container')).toBeDefined()
   })
 
-  const currentCanvas = canvasService.currentCanvas
+  const currentCanvas = ctrl.canvasService.currentCanvas
 
   const path = '/users/me/project/README.md'
-  const result = await mediaService.dropPaths([path], [0, 0])
+  const result = await ctrl.mediaService.dropPaths([path], [0, 0])
 
   expect(result?.file).toBe(undefined)
-  expect(store.files).toHaveLength(1)
+  expect(ctrl.store.files).toHaveLength(1)
 
   expect(currentCanvas?.elements).toHaveLength(1)
-  expect(store.files[0].id).toBe(currentCanvas?.elements[0].id)
-  expect(store.files[0].path).toBe(path)
+  expect(ctrl.store.files[0].id).toBe(currentCanvas?.elements[0].id)
+  expect(ctrl.store.files[0].path).toBe(path)
 })
 
 test('dropPaths - text file on code', async () => {
@@ -385,20 +385,20 @@ test('dropPaths - text file on code', async () => {
   const initial = createState({
     files: [{id: '1', ydoc: cmUtil.createYUpdate('1', ''), versions: [], code: true}],
   })
-  const {store, mediaService} = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={store} />)
+  const ctrl = createCtrl(initial)
+  const {getByTestId} = render(() => <Main state={ctrl} />)
 
   await waitFor(() => {
     expect(getByTestId('code_scroll')).toBeDefined()
   })
 
-  expect(store.files).toHaveLength(1)
+  expect(ctrl.store.files).toHaveLength(1)
 
   const path = '/users/me/project/README.md'
-  const result = await mediaService.dropPaths([path], [0, 0])
+  const result = await ctrl.mediaService.dropPaths([path], [0, 0])
 
   expect(result?.file).toBeDefined()
-  expect(store.files).toHaveLength(2)
+  expect(ctrl.store.files).toHaveLength(2)
 })
 
 test('dropPaths - image on code', async () => {
@@ -407,19 +407,19 @@ test('dropPaths - image on code', async () => {
   const initial = createState({
     files: [{id: '1', ydoc: cmUtil.createYUpdate('1', ''), versions: [], code: true}],
   })
-  const {store, fileService, mediaService} = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={store} />)
+  const ctrl = createCtrl(initial)
+  const {getByTestId} = render(() => <Main state={ctrl} />)
 
   await waitFor(() => {
     expect(getByTestId('code_scroll')).toBeDefined()
   })
 
-  expect(store.files).toHaveLength(1)
+  expect(ctrl.store.files).toHaveLength(1)
 
   const path = '/users/me/file.png'
-  const result = await mediaService.dropPaths([path], [0, 0])
+  const result = await ctrl.mediaService.dropPaths([path], [0, 0])
 
   expect(result?.file).toBeDefined()
-  expect(store.files).toHaveLength(2)
-  expect(fileService.findFileById(result?.file?.id ?? '')?.path).toBe(path)
+  expect(ctrl.store.files).toHaveLength(2)
+  expect(ctrl.fileService.findFileById(result?.file?.id ?? '')?.path).toBe(path)
 })

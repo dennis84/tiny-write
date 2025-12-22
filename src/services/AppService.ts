@@ -41,7 +41,6 @@ export class AppService {
       files,
       config: fetchedConfig,
       window: fetchedWindow,
-      collab: undefined,
       menuWidth,
       tree,
       ai,

@@ -3,10 +3,9 @@ import type {EditorView} from 'prosemirror-view'
 import {createStore} from 'solid-js/store'
 import {beforeEach, expect, test, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
-import {DB} from '@/db'
 import type {AppService} from '@/services/AppService'
 import {CanvasService} from '@/services/CanvasService'
-import {CollabService} from '@/services/CollabService'
+import type {CollabService} from '@/services/CollabService'
 import {FileService} from '@/services/FileService'
 import type {SelectService} from '@/services/SelectService'
 import {
@@ -22,7 +21,6 @@ import {
 } from '@/state'
 import {BoxUtil} from '@/utils/BoxUtil'
 import {createYUpdate} from '../testutil/prosemirror-util'
-import {createCollabMock} from '../testutil/util'
 
 vi.mock('mermaid', () => ({}))
 vi.mock('@/db', () => ({DB: mock()}))
@@ -570,8 +568,6 @@ test('init', async () => {
   )
 
   await service.init()
-
-  expect(store.collab).toBeDefined()
 })
 
 test('newFile', async () => {
@@ -588,7 +584,6 @@ test('newFile', async () => {
   )
 
   vi.spyOn(FileService, 'createFile').mockReturnValue({id: '1', ydoc, versions: []})
-  vi.spyOn(CollabService, 'create').mockReturnValue(createCollabMock())
 
   const service = new CanvasService(
     appService,
@@ -631,7 +626,6 @@ test.each([
   )
 
   vi.spyOn(FileService, 'createFile').mockReturnValue({id: '3', ydoc, versions: []})
-  vi.spyOn(CollabService, 'create').mockReturnValue(createCollabMock())
 
   const service = new CanvasService(
     appService,

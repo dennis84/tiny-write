@@ -1,10 +1,9 @@
-import {onMount, createResource, onCleanup, Show, createEffect, on} from 'solid-js'
+import {createEffect, createResource, on, onCleanup, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {CodeMirrorContainer} from '@/components/code/CodeEditor'
 import {Scroll} from '@/components/Layout'
 import {info} from '@/remote/log'
 import type {Selection} from '@/services/CanvasService'
-import {CollabService} from '@/services/CollabService'
 import {FileService} from '@/services/FileService'
 import {type CanvasCodeElement, useState} from '@/state'
 import {IndexType, ZIndex} from '@/utils/ZIndex'
@@ -33,7 +32,7 @@ const CodeEditorScroll = styled(Scroll)(
 )
 
 export const CodeEditor = ({element, index}: {element: CanvasCodeElement; index: number}) => {
-  const {store, canvasService, codeService, collabService, fileService} = useState()
+  const {canvasService, codeService, collabService, fileService} = useState()
   let containerRef!: HTMLDivElement
   let editorRef!: HTMLDivElement
 
@@ -73,8 +72,7 @@ export const CodeEditor = ({element, index}: {element: CanvasCodeElement; index:
       async () => {
         const f = file()
         if (!f) return
-        if (!store.collab?.ydoc) return
-        await codeService.init(f.id, store.collab.ydoc)
+        await codeService.init(f.id, collabService.ydoc)
         codeService.renderEditor(f, editorRef)
       },
       {defer: true},

@@ -426,7 +426,7 @@ export const MenuNavbar = () => {
 }
 
 export const FloatingNavbar = () => {
-  const {store, canvasService, fileService, menuService} = useState()
+  const {store, canvasService, collabService, fileService, menuService} = useState()
 
   return (
     <FloatingContainer>
@@ -435,7 +435,7 @@ export const FloatingNavbar = () => {
         <Show when={fileService.currentFile || canvasService.currentCanvas}>
           <CurrentFileButton />
         </Show>
-        <Show when={store.collab?.started}>
+        <Show when={collabService?.started()}>
           <CollabButton />
         </Show>
         <Show when={!menuService.assistant() && store.location?.page !== Page.Assistant}>

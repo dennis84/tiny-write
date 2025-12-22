@@ -11,7 +11,6 @@ import type {ProseMirrorService} from '@/services/ProseMirrorService'
 import type {SelectService} from '@/services/SelectService'
 import {createState, Page} from '@/state'
 import {createEditorView, createSubdoc, createYUpdate} from '../testutil/prosemirror-util'
-import {createCollabMock} from '../testutil/util'
 
 vi.stubGlobal('location', {
   pathname: '',
@@ -46,7 +45,6 @@ test('init - existing', async () => {
       {id: '1', ydoc: createYUpdate('1', ['Text']), lastModified, versions: []},
       {id: '2', ydoc: createYUpdate('2', ['Test 2']), lastModified, versions: []},
     ],
-    collab: createCollabMock({started: true}), // stop collab if active
   })
 
   const [store, setState] = createStore(initial)
@@ -67,7 +65,6 @@ test('init - existing', async () => {
 
   await service.init('2')
   expect(store.files.length).toBe(2)
-  expect(store.collab?.started).toBe(false)
 })
 
 test('init - not found', async () => {
@@ -77,7 +74,6 @@ test('init - not found', async () => {
       {id: '1', ydoc: createYUpdate('1', ['Text']), lastModified, versions: []},
       {id: '2', ydoc: createYUpdate('2', ['Test 2']), lastModified, versions: []},
     ],
-    collab: createCollabMock({id: '3'}),
   })
 
   const [store, setState] = createStore(initial)
@@ -109,7 +105,6 @@ test('init - share', async () => {
   const initial = createState({
     location: {page: Page.Editor, editorId: 'room-123', share: true},
     files: [file],
-    collab: createCollabMock(),
   })
 
   const [store, setState] = createStore(initial)
@@ -131,8 +126,6 @@ test('init - share', async () => {
   await service.init('room-123')
   expect(store.files.length).toBe(1)
   expect(store.files[0].id).toBe('room-123')
-  expect(store.collab?.provider?.roomname).toBe('editor/room-123')
-  expect(store.collab?.started).toBeTruthy()
 })
 
 test('clear - with text', async () => {

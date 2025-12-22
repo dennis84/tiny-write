@@ -76,12 +76,11 @@ export const Editor = ({element, index}: {element: CanvasEditorElement; index: n
       async () => {
         const f = file()
         if (!f) return
-        if (!store.collab?.ydoc) return
-        await editorService.init(f.id, store.collab?.ydoc)
+        await editorService.init(f.id, collabService.ydoc)
         editorService.renderEditor(f, editorRef)
       },
       {defer: true},
-    )
+    ),
   )
 
   onCleanup(() => {

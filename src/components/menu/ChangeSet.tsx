@@ -1,13 +1,13 @@
 import {format} from 'date-fns'
 import {For, onCleanup, Show} from 'solid-js'
 import {ButtonGroup, ButtonPrimary} from '@/components/Button'
+import {useOpen} from '@/hooks/use-open'
 import {useState} from '@/state'
 import {DrawerContent} from '../Drawer'
 import {Link} from './Link'
 import {MenuDrawer} from './Menu'
 import {MenuNavbar} from './Navbar'
 import {Label, Sub} from './Style'
-import { useOpen } from '@/hooks/use-open'
 
 export const ChangeSet = () => {
   const {store, changeSetService, fileService} = useState()
@@ -45,10 +45,7 @@ export const ChangeSet = () => {
         <Sub data-tauri-drag-region="true">
           <For each={versions()} fallback={<p>No snapshots yet</p>}>
             {(version, i) => (
-              <Link
-                onClick={() => renderVersion(i())}
-                checked={i() === store.location?.snapshot}
-              >
+              <Link onClick={() => renderVersion(i())} checked={i() === store.location?.snapshot}>
                 {format(version.date, 'dd MMMM HH:mm:ss')}
               </Link>
             )}

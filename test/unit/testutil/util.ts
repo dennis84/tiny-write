@@ -1,10 +1,5 @@
 import {mockIPC} from '@tauri-apps/api/mocks'
 import {expect, vi} from 'vitest'
-import {mock} from 'vitest-mock-extended'
-import type {YMultiDocUndoManager} from 'y-utility/y-multidoc-undomanager'
-import type {WebsocketProvider} from 'y-websocket'
-import * as Y from 'yjs'
-import type {Collab} from '@/state'
 
 export function expectToBeDefined<T>(value: T | undefined): asserts value is T {
   expect(value).toBeDefined()
@@ -14,17 +9,6 @@ export const stubLocation = (path: string) => {
   vi.stubGlobal('location', new URL(`http://localhost:3000${path}`))
   vi.spyOn(window.history, 'state', 'get').mockReturnValue({})
 }
-
-export const createCollabMock = (props: Partial<Collab> = {}): Collab => ({
-  id: '1',
-  started: false,
-  ydoc: new Y.Doc(),
-  provider: mock<WebsocketProvider>(),
-  providers: {},
-  undoManager: mock<YMultiDocUndoManager>(),
-  permanentUserData: mock<Y.PermanentUserData>(),
-  ...props,
-})
 
 type IpcMockFn = (...args: any[]) => any
 

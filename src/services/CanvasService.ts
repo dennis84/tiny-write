@@ -30,7 +30,7 @@ import {BoxUtil} from '@/utils/BoxUtil'
 import {PointUtil} from '@/utils/PointUtil'
 import {VecUtil} from '@/utils/VecUtil'
 import type {AppService} from './AppService'
-import {CollabService} from './CollabService'
+import type {CollabService} from './CollabService'
 import {FileService} from './FileService'
 import type {SelectService} from './SelectService'
 
@@ -335,13 +335,11 @@ export class CanvasService {
       throw new Error(`Canvas not found (id=${currentCanvasId})`)
     }
 
-    const collab = CollabService.create(currentCanvas.id, Page.Canvas, share)
-    this.setState('collab', collab)
-
+    this.collabService.init(currentCanvas.id, Page.Canvas, share)
     this.collabService.createSubdocProvider(currentCanvas.id)
     this.collabService.registerListeners()
 
-    if (this.store.collab?.started) {
+    if (share) {
       this.collabService.connect(currentCanvas.id)
     }
   }

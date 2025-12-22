@@ -28,8 +28,8 @@ test('dir', async () => {
   const initial = createState({
     args: {cwd: '/users/me/project', source: './'},
   })
-  const {store} = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={store} />)
+  const ctrl = createCtrl(initial)
+  const {getByTestId} = render(() => <Main state={ctrl} />)
 
   await waitFor(() => {
     expect(getByTestId('dir')).toBeDefined()
@@ -48,8 +48,8 @@ test('dir - empty', async () => {
   const initial = createState({
     args: {cwd: '/users/me/project', source: './'},
   })
-  const {store} = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={store} />)
+  const ctrl = createCtrl(initial)
+  const {getByTestId} = render(() => <Main state={ctrl} />)
 
   await waitFor(() => {
     expect(getByTestId('dir')).toBeDefined()
@@ -65,8 +65,8 @@ test('dir - file args', async () => {
   const initial = createState({
     args: {cwd: '/users/me/project', source: 'file1.md', file: 'file1.md'},
   })
-  const {store} = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={store} />)
+  const ctrl = createCtrl(initial)
+  const {getByTestId} = render(() => <Main state={ctrl} />)
 
   await waitFor(() => {
     expect(getByTestId('editor_scroll')).toBeDefined()
@@ -88,8 +88,8 @@ test.each([
     args: {cwd: '/users/me/project/', source: './'},
   })
 
-  const {store} = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={store} />)
+  const ctrl = createCtrl(initial)
+  const {getByTestId} = render(() => <Main state={ctrl} />)
 
   await waitFor(() => {
     expect(getByTestId('dir')).toBeDefined()
@@ -102,6 +102,6 @@ test.each([
     expect(getByTestId(expectContainer)).toBeDefined()
   })
 
-  expect(store.files[0].path).toBe(`/users/me/project/${name}`)
-  expect(store.files[0].code).toBe(code)
+  expect(ctrl.store.files[0].path).toBe(`/users/me/project/${name}`)
+  expect(ctrl.store.files[0].code).toBe(code)
 })

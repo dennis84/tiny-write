@@ -1,9 +1,6 @@
 import type {EditorView as CmEditorView} from '@codemirror/view'
 import type {EditorView} from 'prosemirror-view'
 import {createContext, useContext} from 'solid-js'
-import type {YMultiDocUndoManager} from 'y-utility/y-multidoc-undomanager'
-import type {WebsocketProvider} from 'y-websocket'
-import type * as Y from 'yjs'
 import type {Ctrl} from './services'
 import type {CodeThemeName, ThemeName} from './services/ConfigService'
 import type {Model} from './services/CopilotService'
@@ -110,17 +107,6 @@ export interface ErrorObject {
 export interface Version {
   ydoc: Uint8Array
   date: Date
-}
-
-export interface Collab {
-  id: string
-  started: boolean
-  provider: WebsocketProvider
-  undoManager: YMultiDocUndoManager
-  permanentUserData: Y.PermanentUserData
-  ydoc: Y.Doc
-  snapshot?: Y.Doc
-  error?: boolean
 }
 
 export interface Window {
@@ -308,7 +294,6 @@ export interface State {
   error?: ErrorObject
   fullscreen: boolean
   menuWidth?: number
-  collab?: Collab
   args?: Args
   window?: Window
   isSnapshot?: boolean

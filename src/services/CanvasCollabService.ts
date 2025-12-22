@@ -1,7 +1,6 @@
 import {throttle} from '@solid-primitives/scheduled'
-import {type Store, unwrap} from 'solid-js/store'
+import {unwrap} from 'solid-js/store'
 import * as Y from 'yjs'
-import type {State} from '@/state'
 import type {CanvasService} from './CanvasService'
 import type {CollabService} from './CollabService'
 
@@ -20,11 +19,10 @@ export class CanvasCollabService {
   constructor(
     private collabService: CollabService,
     private canvasService: CanvasService,
-    private store: Store<State>,
   ) {}
 
   private get ydoc(): Y.Doc | undefined {
-    return this.store.collab?.ydoc
+    return this.collabService?.ydoc
   }
 
   get elements(): Elements | undefined {

@@ -7,7 +7,7 @@ import type {DB} from '@/db'
 import {createCtrl} from '@/services'
 import {createState, Page} from '@/state'
 import {createYUpdate} from '../testutil/codemirror-util'
-import {createIpcMock, expectToBeDefined, stubLocation} from '../testutil/util'
+import {createIpcMock, stubLocation} from '../testutil/util'
 
 vi.mock('@/db', () => ({DB: mock<DB>()}))
 
@@ -26,16 +26,16 @@ test('init - new code page', async () => {
 
   const initial = createState()
 
-  const {store, fileService} = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={store} />)
+  const ctrl = createCtrl(initial)
+  const {getByTestId} = render(() => <Main state={ctrl} />)
 
   await waitFor(() => {
     expect(getByTestId('new_code_page')).toBeDefined()
   })
 
-  expect(store.location?.page).toBe(Page.Code)
-  expect(store.files.length).toBe(0)
-  expect(fileService.currentFileId).toBe(undefined)
+  expect(ctrl.store.location?.page).toBe(Page.Code)
+  expect(ctrl.store.files.length).toBe(0)
+  expect(ctrl.fileService.currentFileId).toBe(undefined)
 
   getByTestId('new_file').click()
 
@@ -43,7 +43,7 @@ test('init - new code page', async () => {
     expect(getByTestId('code_scroll')).toBeDefined()
   })
 
-  expect(store.files.length).toBe(1)
+  expect(ctrl.store.files.length).toBe(1)
 })
 
 test('init - file not found', async () => {
@@ -51,16 +51,16 @@ test('init - file not found', async () => {
 
   const initial = createState()
 
-  const {store, fileService} = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={store} />)
+  const ctrl = createCtrl(initial)
+  const {getByTestId} = render(() => <Main state={ctrl} />)
 
   await waitFor(() => {
     expect(getByTestId('new_code_page')).toBeDefined()
   })
 
-  expect(store.location?.page).toBe(Page.Code)
-  expect(store.files.length).toBe(0)
-  expect(fileService.currentFileId).toBe(undefined)
+  expect(ctrl.store.location?.page).toBe(Page.Code)
+  expect(ctrl.store.files.length).toBe(0)
+  expect(ctrl.fileService.currentFileId).toBe(undefined)
 })
 
 test('init - open last location', async () => {
@@ -83,16 +83,16 @@ test('init - open last location', async () => {
     ],
   })
 
-  const {store, fileService} = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={store} />)
+  const ctrl = createCtrl(initial)
+  const {getByTestId} = render(() => <Main state={ctrl} />)
 
   await waitFor(() => {
     expect(getByTestId('code_scroll')).toBeDefined()
   })
 
-  expect(store.location?.page).toBe(Page.Code)
-  expect(store.files.length).toBe(2)
-  expect(fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('Code1')
+  expect(ctrl.store.location?.page).toBe(Page.Code)
+  expect(ctrl.store.files.length).toBe(2)
+  expect(ctrl.fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('Code1')
 })
 
 test('init - existing file', async () => {
@@ -105,17 +105,17 @@ test('init - existing file', async () => {
     ],
   })
 
-  const {store, fileService} = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={store} />)
+  const ctrl = createCtrl(initial)
+  const {getByTestId} = render(() => <Main state={ctrl} />)
 
   await waitFor(() => {
     expect(getByTestId('code_scroll')).toBeDefined()
   })
 
-  expect(store.location?.page).toBe(Page.Code)
-  expect(store.files.length).toBe(2)
-  expect(fileService.currentFileId).toBe('1')
-  expect(fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('Code1')
+  expect(ctrl.store.location?.page).toBe(Page.Code)
+  expect(ctrl.store.files.length).toBe(2)
+  expect(ctrl.fileService.currentFileId).toBe('1')
+  expect(ctrl.fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('Code1')
 })
 
 test('init - join url', async () => {
@@ -128,8 +128,8 @@ test('init - join url', async () => {
     ],
   })
 
-  const {store, fileService} = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={store} />)
+  const ctrl = createCtrl(initial)
+  const {getByTestId} = render(() => <Main state={ctrl} />)
 
   await waitFor(() => {
     expect(getByTestId('new_code_page')).toBeDefined()
@@ -138,21 +138,20 @@ test('init - join url', async () => {
   getByTestId('join_file').click()
 
   await waitFor(() => {
-    expectToBeDefined(store.collab)
-    expect(store.collab.provider).toBeDefined()
-    store.collab.provider.synced = true
+    expect(ctrl.collabService.started()).toBe(true)
+    expect(ctrl.collabService.provider).toBeDefined()
   })
 
   await waitFor(() => {
     expect(getByTestId('code_scroll')).toBeDefined()
   })
 
-  expect(store.location?.page).toBe(Page.Code)
-  expect(store.files.length).toBe(2)
-  expect(store.collab?.started).toBe(true)
+  expect(ctrl.store.location?.page).toBe(Page.Code)
+  expect(ctrl.store.files.length).toBe(2)
+  expect(ctrl.collabService.started()).toBe(true)
 
   await waitFor(() => {
-    expect(fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('Code1')
+    expect(ctrl.fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('Code1')
   })
 })
 
@@ -167,15 +166,15 @@ test('init - file arg', async () => {
   })
 
   const initial = createState({args: {file: 'code1.yaml'}})
-  const {store, fileService} = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={store} />)
+  const ctrl = createCtrl(initial)
+  const {getByTestId} = render(() => <Main state={ctrl} />)
 
   await waitFor(() => {
     expect(getByTestId('code_scroll')).toBeDefined()
   })
 
-  expect(fileService.currentFile?.path).toBe('code1.yaml')
-  expect(fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('Code1')
+  expect(ctrl.fileService.currentFile?.path).toBe('code1.yaml')
+  expect(ctrl.fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('Code1')
 })
 
 test('open', async () => {
@@ -208,22 +207,22 @@ test('open', async () => {
     ],
   })
 
-  const {store, fileService} = createCtrl(initial)
-  const {getByTestId, getAllByTestId} = render(() => <Main state={store} />)
+  const ctrl = createCtrl(initial)
+  const {getByTestId, getAllByTestId} = render(() => <Main state={ctrl} />)
 
   await waitFor(() => {
     expect(getByTestId('code_scroll')).toBeDefined()
   })
 
-  expect(fileService.currentFile?.path).toBe('code1.yaml')
-  expect(fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('Code1')
+  expect(ctrl.fileService.currentFile?.path).toBe('code1.yaml')
+  expect(ctrl.fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('Code1')
 
   fireEvent.click(getByTestId('navbar_menu_open'))
   fireEvent.click(getAllByTestId('tree_link_title')[1])
 
   await waitFor(() => {
-    expect(fileService.currentFile?.id).toBe('2')
+    expect(ctrl.fileService.currentFile?.id).toBe('2')
   })
 
-  expect(fileService.currentFile?.path).toBe('code2.yaml')
+  expect(ctrl.fileService.currentFile?.path).toBe('code2.yaml')
 })
