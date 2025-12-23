@@ -2,15 +2,8 @@ import type {SetStoreFunction, Store} from 'solid-js/store'
 import {DB} from '@/db'
 import {getArgs, setFullscreen} from '@/remote/app'
 import {getDocument} from '@/remote/editor'
-import {error, info} from '@/remote/log'
-import {
-  createConfig,
-  type ErrorObject,
-  type LocationState,
-  ServiceError,
-  type State,
-  type Window,
-} from '@/state'
+import {info} from '@/remote/log'
+import {createConfig, type LocationState, type State, type Window} from '@/state'
 import {locationStateToString} from '@/utils/debug'
 import {CanvasService} from './CanvasService'
 import {FileService} from './FileService'
@@ -71,12 +64,6 @@ export class AppService {
     return doc?.worktreePath ?? this.store.args?.cwd
   }
 
-  setError(data: Partial<ErrorObject>) {
-    const err = this.createError(data)
-    error(`Error thrown (error=${JSON.stringify(err)}})`, err)
-    this.setState('error', err)
-  }
-
   async reset(): Promise<void> {
     info('Delete database')
     await DB.deleteDatabase()
@@ -104,13 +91,5 @@ export class AppService {
 
   setSelecting(selecting: boolean) {
     this.setState('selecting', selecting)
-  }
-
-  private createError(data: Partial<ErrorObject>): ErrorObject {
-    if (data.error instanceof ServiceError) {
-      return {...data.error.errorObject, ...data}
-    } else {
-      return {id: 'exception', ...data}
-    }
   }
 }

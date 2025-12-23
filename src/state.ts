@@ -98,12 +98,6 @@ export interface AiConfig {
   autoContext?: boolean
 }
 
-export interface ErrorObject {
-  id: string
-  fileId?: string
-  error?: Error | string
-}
-
 export interface Version {
   ydoc: Uint8Array
   date: Date
@@ -291,7 +285,6 @@ export interface State {
   files: File[]
   tree?: Tree
   config: Config
-  error?: ErrorObject
   fullscreen: boolean
   menuWidth?: number
   args?: Args
@@ -322,14 +315,6 @@ export interface File {
   deleted?: boolean
   editorView?: EditorView
   codeEditorView?: CmEditorView
-}
-
-export class ServiceError extends Error {
-  public errorObject: ErrorObject
-  constructor(id: string, error: Error | string, fileId?: undefined) {
-    super(typeof error === 'string' ? error : error.message)
-    this.errorObject = {id, error, fileId}
-  }
 }
 
 export const StateContext = createContext<Ctrl>({} as Ctrl)

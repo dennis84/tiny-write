@@ -1,9 +1,7 @@
-import {Match, Show, Switch} from 'solid-js'
 import {styled} from 'solid-styled-components'
-import {DB} from '@/db'
 import {useState} from '@/state'
-import {Button, ButtonGroup, ButtonPrimary} from './Button'
-import {Content, Scroll} from './Layout'
+import {ButtonGroup, ButtonPrimary} from './Button'
+import {Content, Layout, Scroll} from './Layout'
 
 const Pre = styled('pre')`
   white-space: pre-wrap;
@@ -14,64 +12,26 @@ const Pre = styled('pre')`
   padding: 10px;
 `
 
-export const ErrorScreen = () => {
+export const GeneralError = (props: {error: Error}) => {
   const {store} = useState()
-  return (
-    <Switch fallback={<GeneralError />}>
-      <Match when={store.error?.id === 'editor_sync'}>
-        <EditorSyncError />
-      </Match>
-    </Switch>
-  )
-}
 
-const GeneralError = () => {
-  const {store} = useState()
-  const onReload = () => {
-    window.location.reload()
-  }
-
-  const onDeleteFile = async () => {
-    if (!store.error?.fileId) return
-    await DB.deleteFile(store.error.fileId)
-    window.location.href = '/'
-  }
-
-  const getMessage = () =>
-    typeof store.error?.error === 'string' ? store.error?.error : store.error?.error?.message
-
-  return (
-    <Scroll data-tauri-drag-region="true" data-testid="error">
-      <Content config={store.config} data-tauri-drag-region="true">
-        <h1>An error occurred.</h1>
-        <Pre>
-          <code>{getMessage()}</code>
-        </Pre>
-        <ButtonGroup>
-          <ButtonPrimary onClick={onReload}>Reload</ButtonPrimary>
-          <Show when={store.error?.fileId}>
-            <Button onClick={onDeleteFile}>Delete corrupt file</Button>
-          </Show>
-        </ButtonGroup>
-      </Content>
-    </Scroll>
-  )
-}
-
-const EditorSyncError = () => {
-  const {store} = useState()
   const onReload = () => {
     window.location.reload()
   }
 
   return (
-    <Scroll data-tauri-drag-region="true" data-testid="sync_error">
-      <Content config={store.config} data-tauri-drag-region="true">
-        <h1>Sync error occurred. Please reload, sorry 😢</h1>
-        <ButtonGroup>
-          <ButtonPrimary onClick={onReload}>Reload</ButtonPrimary>
-        </ButtonGroup>
-      </Content>
-    </Scroll>
+    <Layout>
+      <Scroll data-tauri-drag-region="true" data-testid="error">
+        <Content config={store.config} data-tauri-drag-region="true">
+          <h1>An error occurred.</h1>
+          <Pre>
+            <code>{props.error.message}</code>
+          </Pre>
+          <ButtonGroup>
+            <ButtonPrimary onClick={onReload}>Reload</ButtonPrimary>
+          </ButtonGroup>
+        </Content>
+      </Scroll>
+    </Layout>
   )
 }

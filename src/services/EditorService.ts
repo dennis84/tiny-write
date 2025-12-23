@@ -11,18 +11,18 @@ import {schema} from '@/prosemirror/schema'
 import {replaceText, writeFile} from '@/remote/editor'
 import {error, info} from '@/remote/log'
 import {type File, type FileText, Page, type State} from '@/state'
-import type {AppService} from './AppService'
 import type {CollabService} from './CollabService'
 import {FileService} from './FileService'
 import type {ProseMirrorService} from './ProseMirrorService'
 import type {SelectService} from './SelectService'
+import type {ToastService} from './ToastService'
 
 export class EditorService {
   constructor(
     private fileService: FileService,
     private collabService: CollabService,
     private proseMirrorService: ProseMirrorService,
-    private appService: AppService,
+    private toastService: ToastService,
     private selectService: SelectService,
     private store: Store<State>,
     private setState: SetStoreFunction<State>,
@@ -81,7 +81,7 @@ export class EditorService {
           editorView?.updateState(newState)
         } catch (e: any) {
           error('Sync error occurred', e)
-          this.appService.setError({id: 'editor_sync', error: e})
+          this.toastService.open({message: 'Sync error occurred, please reload'})
           return
         }
 

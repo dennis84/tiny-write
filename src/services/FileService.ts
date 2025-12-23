@@ -20,7 +20,7 @@ import {
   toRelativePath,
 } from '@/remote/editor'
 import {debug, error, info} from '@/remote/log'
-import {type File, type FileText, isLocalFile, ServiceError, type State} from '@/state'
+import {type File, type FileText, isLocalFile, type State} from '@/state'
 import type {CollabService} from './CollabService'
 
 export interface LoadedTextFile {
@@ -68,7 +68,7 @@ export class FileService {
     try {
       resolvedPath = await resolvePath(path)
     } catch {
-      throw new ServiceError('file_not_found', `File not found: ${path}`)
+      throw new Error(`File not found: ${path}`)
     }
 
     try {
@@ -77,7 +77,7 @@ export class FileService {
       const lastModified = doc.lastModified
       return {text, lastModified, path: resolvedPath}
     } catch (e: any) {
-      throw new ServiceError('file_permission_denied', e)
+      throw new Error('Permission denied', e)
     }
   }
 
@@ -87,7 +87,7 @@ export class FileService {
     try {
       resolvedPath = await resolvePath(path)
     } catch {
-      throw new ServiceError('file_not_found', `File not found: ${path}`)
+      throw new Error(`File not found: ${path}`)
     }
 
     try {
@@ -110,7 +110,7 @@ export class FileService {
         path: resolvedPath,
       }
     } catch (e: any) {
-      throw new ServiceError('file_permission_denied', e)
+      throw new Error('Permission denied', e)
     }
   }
 

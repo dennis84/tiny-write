@@ -19,7 +19,6 @@ import {
 import {DarkMode} from '@/components/DarkMode'
 import {DropFile} from '@/components/DropFile'
 import {InputLine} from '@/components/dialog/InputLine'
-import {ErrorScreen} from '@/components/Error'
 import {Keymap} from '@/components/Keymap'
 import {DragArea, Layout, PageContent} from '@/components/Layout'
 import {MouseCursor} from '@/components/MouseCursor'
@@ -42,6 +41,7 @@ import {show, updateWindow} from '@/remote/window'
 import {createCtrl} from '@/services'
 import {type LocationState, Page, type State, StateContext} from '@/state'
 import {enumFromValue} from '@/utils/enum'
+import {GeneralError} from './Error'
 import {Title} from './pages/Title'
 
 type Ctrl = ReturnType<typeof createCtrl>
@@ -52,11 +52,6 @@ export const Main = (props: {state: State | Ctrl}) => {
   const Root = (p: RouteSectionProps) => {
     let layoutRef!: HTMLDivElement
     const ctrl = isCtrl(props.state) ? props.state : createCtrl(props.state)
-
-    const onViewError = (error: any, _reset: any) => {
-      ctrl.appService.setError({error})
-      return null
-    }
 
     onMount(async () => {
       ctrl.appService.layoutRef = layoutRef
@@ -133,12 +128,9 @@ export const Main = (props: {state: State | Ctrl}) => {
 
     return (
       <StateContext.Provider value={ctrl}>
-        <ErrorBoundary fallback={onViewError}>
+        <ErrorBoundary fallback={(error) => <GeneralError error={error} />}>
           <Layout ref={layoutRef} data-testid="initialized">
             <Switch>
-              <Match when={ctrl.store.error}>
-                <ErrorScreen />
-              </Match>
               <Match when={true}>
                 <PageContent>
                   <FloatingNavbar />

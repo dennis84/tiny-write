@@ -27,7 +27,7 @@ export const CodeEditor = () => {
 
   const {codeService, fileService} = useState()
 
-  onMount(async () => {
+  onMount(() => {
     const currentFile = fileService.currentFile
     if (!currentFile) return
     codeService.renderEditor(currentFile, containerRef)

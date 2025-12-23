@@ -3,12 +3,12 @@ import {createStore} from 'solid-js/store'
 import {beforeEach, expect, test, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
 import type {DB} from '@/db'
-import type {AppService} from '@/services/AppService'
 import type {CollabService} from '@/services/CollabService'
 import {EditorService} from '@/services/EditorService'
 import type {FileService} from '@/services/FileService'
 import type {ProseMirrorService} from '@/services/ProseMirrorService'
 import type {SelectService} from '@/services/SelectService'
+import type {ToastService} from '@/services/ToastService'
 import {createState, Page} from '@/state'
 import {createEditorView, createSubdoc, createYUpdate} from '../testutil/prosemirror-util'
 
@@ -31,7 +31,7 @@ const lastModified = new Date()
 
 const collabService = mock<CollabService>()
 const proseMirrorService = mock<ProseMirrorService>()
-const appService = mock<AppService>()
+const toastService = mock<ToastService>()
 const selectService = mock<SelectService>()
 
 beforeEach(() => {
@@ -57,7 +57,7 @@ test('init - existing', async () => {
     fileService,
     collabService,
     proseMirrorService,
-    appService,
+    toastService,
     selectService,
     store,
     setState,
@@ -85,7 +85,7 @@ test('init - not found', async () => {
     fileService,
     collabService,
     proseMirrorService,
-    appService,
+    toastService,
     selectService,
     store,
     setState,
@@ -117,7 +117,7 @@ test('init - share', async () => {
     fileService,
     collabService,
     proseMirrorService,
-    appService,
+    toastService,
     selectService,
     store,
     setState,
@@ -148,7 +148,7 @@ test('clear - with text', async () => {
     fileService,
     collabService,
     proseMirrorService,
-    appService,
+    toastService,
     selectService,
     store,
     setState,
@@ -181,7 +181,7 @@ test('selectBox', async () => {
     fileService,
     collabService,
     proseMirrorService,
-    appService,
+    toastService,
     selectService,
     store,
     setState,

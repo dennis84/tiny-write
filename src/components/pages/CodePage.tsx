@@ -1,4 +1,4 @@
-import {type RouteSectionProps, useIsRouting, useLocation} from '@solidjs/router'
+import {type RouteSectionProps, useLocation} from '@solidjs/router'
 import {createResource, ErrorBoundary, Match, onMount, Show, Suspense, Switch} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {useBeforeLeave} from '@/hooks/use-before-leave'
@@ -52,7 +52,6 @@ export const CodePage = (props: RouteSectionProps) => {
   const location = useLocation<LocationState | undefined>()
   const {store, appService, collabService, codeService, fileService, toastService} = useState()
   const {open, openDir} = useOpen()
-  const _isRouting = useIsRouting()
 
   info(`Render code page (location=${locationStateToString(location.state)})`)
 
