@@ -1,6 +1,7 @@
-import {type RouteSectionProps, useBeforeLeave, useLocation} from '@solidjs/router'
+import {type RouteSectionProps, useLocation} from '@solidjs/router'
 import {createResource, ErrorBoundary, Match, onMount, Show, Suspense, Switch} from 'solid-js'
 import {styled} from 'solid-styled-components'
+import {useBeforeLeave} from '@/hooks/use-before-leave'
 import {useOpen} from '@/hooks/use-open'
 import {info} from '@/remote/log'
 import {type LocationState, Page, useState} from '@/state'

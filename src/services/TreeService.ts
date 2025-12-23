@@ -1,6 +1,5 @@
 import type {SetStoreFunction, Store} from 'solid-js/store'
 import {DB} from '@/db'
-import {info} from '@/remote/log'
 import {type Canvas, type File, isFile, type State} from '@/state'
 import {createTreeStore, type Tree, type TreeItem, type TreeState} from '@/tree'
 import {CanvasService} from './CanvasService'
@@ -105,7 +104,6 @@ export class TreeService {
     const item = this.tree.getItem(id)
     if (!item) return
     const {parentId, leftId} = item
-    info(`Save tree item (id=${id}, parentId=${parentId}, leftId=${leftId})`)
     if (isFile(item.value)) {
       this.fileService.updateFile(id, {leftId, parentId})
       await FileService.saveFile({...item.value, leftId, parentId})

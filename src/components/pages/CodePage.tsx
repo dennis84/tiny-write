@@ -1,6 +1,7 @@
-import {type RouteSectionProps, useBeforeLeave, useLocation} from '@solidjs/router'
+import {type RouteSectionProps, useIsRouting, useLocation} from '@solidjs/router'
 import {createResource, ErrorBoundary, Match, onMount, Show, Suspense, Switch} from 'solid-js'
 import {styled} from 'solid-styled-components'
+import {useBeforeLeave} from '@/hooks/use-before-leave'
 import {useOpen} from '@/hooks/use-open'
 import {info} from '@/remote/log'
 import {type LocationState, Page, useState} from '@/state'
@@ -51,6 +52,7 @@ export const CodePage = (props: RouteSectionProps) => {
   const location = useLocation<LocationState | undefined>()
   const {store, appService, collabService, codeService, fileService, toastService} = useState()
   const {open, openDir} = useOpen()
+  const _isRouting = useIsRouting()
 
   info(`Render code page (location=${locationStateToString(location.state)})`)
 
@@ -78,6 +80,8 @@ export const CodePage = (props: RouteSectionProps) => {
     return null
   }
 
+  // Is called then leaving the page, also for navigating back
+  // which is not triggered by useBeforeLeave
   useBeforeLeave(() => {
     const id = props.params.id
     if (!id) return

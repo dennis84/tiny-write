@@ -125,7 +125,7 @@ export class FileService {
       return
     }
 
-    info(`Saving file (id=${file.id})`)
+    info(`Saving file (id=${file.id}, leftId=${file.leftId}, parentId=${file.parentId})`)
 
     await DB.updateFile({
       id: file.id,
@@ -300,6 +300,7 @@ export class FileService {
   }
 
   destroy(id: string) {
+    info(`Destroy file (id=${id})`)
     const file = this.findFileById(id)
     if (!file) return
     file.editorView?.destroy()

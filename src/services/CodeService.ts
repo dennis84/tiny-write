@@ -68,7 +68,7 @@ export class CodeService {
 
     if (file.ydoc) {
       const subdoc = this.collabService.getSubdoc(file.id)
-      info(`Update editor state from existing file ydoc (bytes=${file.ydoc.byteLength})`)
+      info(`Update code editor state from existing file ydoc (bytes=${file.ydoc.byteLength})`)
       Y.applyUpdate(subdoc, file.ydoc)
     }
 
@@ -86,19 +86,21 @@ export class CodeService {
     this.collabService.addToScope(file)
 
     const subdoc = this.collabService.getSubdoc(file.id)
-    const meta = subdoc.getMap('meta')
+    subdoc.on('sync', () => {
+      const meta = subdoc.getMap('meta')
 
-    subdoc.transact(() => {
-      meta.set('codeLang', file.codeLang ?? 'plaintext')
-    }, subdoc.clientID)
+      subdoc.transact(() => {
+        meta.set('codeLang', file.codeLang ?? 'plaintext')
+      }, subdoc.clientID)
 
-    meta.observe((_events, transaction) => {
-      if (subdoc.clientID === transaction.origin) {
-        return
-      }
+      meta.observe((_events, transaction) => {
+        if (subdoc.clientID === transaction.origin) {
+          return
+        }
 
-      const lang = meta.get('codeLang') as string
-      this.updateLang(file, lang, false)
+        const lang = meta.get('codeLang') as string
+        this.updateLang(file, lang, false)
+      })
     })
 
     if (share) {

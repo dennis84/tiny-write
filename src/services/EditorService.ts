@@ -164,7 +164,7 @@ export class EditorService {
 
     if (file.ydoc) {
       const subdoc = this.collabService.getSubdoc(file.id)
-      info('Update editor state from existing file ydoc')
+      info(`Update editor state from existing file ydoc (bytes=${file.ydoc.byteLength})`)
       Y.applyUpdate(subdoc, file.ydoc)
     }
 

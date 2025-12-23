@@ -146,6 +146,7 @@ export class CollabService {
 
   destroy(id: string | undefined = undefined) {
     const ids = id ? [id] : Array.from(this.providers.keys())
+    info(`Destroy collab (ids=${ids.join(', ')})`)
     for (const id of ids) {
       this.disconnect(id)
       this.providers.get(id)?.destroy()
