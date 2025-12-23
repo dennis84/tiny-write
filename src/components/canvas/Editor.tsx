@@ -1,4 +1,4 @@
-import {createEffect, createResource, on, onCleanup, Show} from 'solid-js'
+import {createEffect, createResource, on, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {AutocompleteTooltip} from '@/components/editor/AutocompleteTooltip'
 import {BlockHandle} from '@/components/editor/BlockHandle'
@@ -82,11 +82,6 @@ export const Editor = ({element, index}: {element: CanvasEditorElement; index: n
       {defer: true},
     ),
   )
-
-  onCleanup(() => {
-    fileService.destroy(element.id)
-    collabService.destroy(element.id)
-  })
 
   return (
     <>

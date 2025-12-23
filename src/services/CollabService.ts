@@ -26,12 +26,9 @@ export class CollabService {
     private toastService: ToastService,
     private store: Store<State>,
     private setState: SetStoreFunction<State>,
-  ) {
-    console.log('NEW')
-  }
+  ) {}
 
   get started() {
-    console.log(this.startedSignal[0]())
     return this.startedSignal[0]
   }
 

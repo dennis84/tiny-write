@@ -1,4 +1,4 @@
-import {type RouteSectionProps, useLocation} from '@solidjs/router'
+import {type RouteSectionProps, useBeforeLeave, useLocation} from '@solidjs/router'
 import {createResource, ErrorBoundary, Match, onMount, Show, Suspense, Switch} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {useOpen} from '@/hooks/use-open'
@@ -70,6 +70,10 @@ export const CanvasPage = (props: RouteSectionProps) => {
     })
     return null
   }
+
+  useBeforeLeave(() => {
+    canvasService.destroy()
+  })
 
   return (
     <Suspense>

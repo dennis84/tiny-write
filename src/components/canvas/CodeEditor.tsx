@@ -1,4 +1,4 @@
-import {createEffect, createResource, on, onCleanup, Show} from 'solid-js'
+import {createEffect, createResource, on, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {CodeMirrorContainer} from '@/components/code/CodeEditor'
 import {Scroll} from '@/components/Layout'
@@ -78,11 +78,6 @@ export const CodeEditor = ({element, index}: {element: CanvasCodeElement; index:
       {defer: true},
     ),
   )
-
-  onCleanup(() => {
-    fileService.destroy(element.id)
-    collabService.destroy(element.id)
-  })
 
   return (
     <>

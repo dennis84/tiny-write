@@ -298,9 +298,7 @@ export class CanvasService {
     outer: for (const el of currentCanvas.elements) {
       for (const elementId of elementIds) {
         if (isEditorElement(el) && el.id === elementId) {
-          const file = this.fileService.findFileById(el.id)
-          file?.editorView?.destroy()
-          file?.codeEditorView?.destroy()
+          this.destroyItem(el.id)
           continue outer
         }
 
@@ -325,11 +323,11 @@ export class CanvasService {
   }
 
   async init() {
-    info(`Initialize canvas`)
-
     const currentCanvasId = this.currentCanvasId
     const currentCanvas = this.currentCanvas
     const share = this.store.location?.share
+
+    info(`Initialize canvas (canvasId=${currentCanvasId}, share=${share})`)
 
     if (!currentCanvas) {
       throw new Error(`Canvas not found (id=${currentCanvasId})`)
@@ -344,11 +342,27 @@ export class CanvasService {
     }
   }
 
+  destroy() {
+    info('Destroy current canvas')
+    const currentCanvas = this.currentCanvas
+    currentCanvas?.elements.forEach((el) => {
+      this.fileService.destroy(el.id)
+    })
+
+    this.collabService.destroy()
+  }
+
+  destroyItem(id: string) {
+    info(`Destroy canvas item (id=${id})`)
+    this.fileService.destroy(id)
+    this.collabService.destroy(id)
+  }
+
   async newFile(
     code = false,
     link?: CanvasLinkElement,
     point?: Vector,
-  ): Promise<CanvasElement | undefined> {
+  ): Promise<CanvasElement[] | undefined> {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
 
@@ -359,7 +373,7 @@ export class CanvasService {
     const added = await this.addFile(file, link, point)
     info('New file added')
 
-    return added?.[0]
+    return added
   }
 
   async addFile(
@@ -367,6 +381,7 @@ export class CanvasService {
     link?: CanvasLinkElement,
     point?: Vector,
   ): Promise<CanvasElement[] | undefined> {
+    info(`Add file to canvas (fileId=${file.id})`)
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
 
@@ -461,7 +476,7 @@ export class CanvasService {
     }
 
     await this.saveCanvas()
-    info('File added to canvas')
+    info(`File added to canvas (addedElements=${addedElements.length})`)
 
     return addedElements
   }

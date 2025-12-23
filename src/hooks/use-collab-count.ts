@@ -2,11 +2,11 @@ import {createEffect, createSignal, onCleanup} from 'solid-js'
 import {useState} from '@/state'
 
 export const useCollabCount = () => {
-  const {store} = useState()
+  const {collabService} = useState()
   const [count, setCount] = createSignal(0)
 
   createEffect(() => {
-    const provider = store.collab?.provider
+    const provider = collabService.provider
     if (!provider?.awareness) {
       setCount(0)
       return

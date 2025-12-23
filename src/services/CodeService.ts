@@ -85,6 +85,22 @@ export class CodeService {
 
     this.collabService.addToScope(file)
 
+    const subdoc = this.collabService.getSubdoc(file.id)
+    const meta = subdoc.getMap('meta')
+
+    subdoc.transact(() => {
+      meta.set('codeLang', file.codeLang ?? 'plaintext')
+    }, subdoc.clientID)
+
+    meta.observe((_events, transaction) => {
+      if (subdoc.clientID === transaction.origin) {
+        return
+      }
+
+      const lang = meta.get('codeLang') as string
+      this.updateLang(file, lang, false)
+    })
+
     if (share) {
       this.collabService.connect(id)
     }
@@ -107,9 +123,16 @@ export class CodeService {
     this.updateEditorState(file)
   }
 
-  updateLang(file: File, lang: string) {
+  updateLang(file: File, lang: string, broadcast = true) {
     this.fileService.updateFile(file.id, {codeLang: lang})
     this.updateEditorState(file)
+
+    if (broadcast) {
+      const subdoc = this.collabService.getSubdoc(file.id)
+      subdoc.transact(() => {
+        subdoc.getMap('meta').set('codeLang', file.codeLang)
+      }, subdoc.clientID)
+    }
   }
 
   async prettify(file: File): Promise<void> {
@@ -166,7 +189,6 @@ export class CodeService {
           // check if all diffs resolved
           if (!chunks?.chunks.length) {
             const type = subdoc.getText(file.id)
-            console.log('AAAAAAA', update.state.doc.toString())
             type.delete(0, type.length)
             type.insert(0, update.state.doc.toString())
             this.fileService.updateFile(file.id, {

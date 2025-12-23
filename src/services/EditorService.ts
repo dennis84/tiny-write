@@ -135,10 +135,10 @@ export class EditorService {
   }
 
   async init(id: string, existingYdoc?: Y.Doc) {
-    info(`Initialize editor file`)
-
     const file = this.fileService.findFileById(id)
     const share = this.store.location?.share
+
+    info(`Initialize editor file (id=${id}, share=${share})`)
 
     const path = file?.path
     let text: FileText | undefined

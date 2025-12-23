@@ -1,6 +1,7 @@
 import {throttle} from '@solid-primitives/scheduled'
 import {unwrap} from 'solid-js/store'
 import * as Y from 'yjs'
+import {info} from '@/remote/log'
 import type {CanvasService} from './CanvasService'
 import type {CollabService} from './CollabService'
 
@@ -53,22 +54,28 @@ export class CanvasCollabService {
           if (action.action === 'delete') {
             if (event.path.length === 0) {
               const elementId = key.substring(PREFIX.length)
+              info(`Removing element (elementId=${elementId})`)
               await this.canvasService.removeElements([elementId])
             } else {
               const elementId = event.path[0].toString().substring(PREFIX.length)
+              info(`Removing element property (elementId=${elementId}, key=${key})`)
               this.canvasService.updateCanvasElement(elementId, {[key]: undefined})
             }
           } else if (action.action === 'update') {
             if (event.path.length > 0) {
               const elementId = event.path[0].toString().substring(PREFIX.length)
+              const value = event.target.get(key)
+              info(`Updating element (elementId=${elementId}, key=${key}, to=${value})`)
               this.canvasService.updateCanvasElement(elementId, {[key]: event.target.get(key)})
             } else {
               const elementId = key.substring(PREFIX.length)
               const data = event.target.get(key).toJSON()
+              info(`Updating element (elementId=${elementId}, key=${key}, data=${data})`)
               this.canvasService.updateCanvasElement(elementId, data)
             }
           } else if (action.action === 'add') {
             const element = event.target.get(key).toJSON()
+            info(`Adding element (elementId=${element.id}, element=${JSON.stringify(element)})`)
             this.canvasService.updateCanvas(currentCanvas.id, {
               elements: [...currentCanvas.elements, element],
             })

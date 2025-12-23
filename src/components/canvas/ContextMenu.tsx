@@ -11,11 +11,12 @@ export const ContextMenu = () => {
   const [contextMenu, setContextMenu] = createSignal<Vector | undefined>()
 
   const onNewFile = async (code = false, link?: CanvasLinkElement, cm?: Vector) => {
-    const el = await canvasService.newFile(code, link, cm)
+    const added = await canvasService.newFile(code, link, cm)
     await canvasService.removeDeadLinks()
-    if (el) {
-      canvasCollabService.addElement(el)
-      const file = fileService.findFileById(el.id)
+    if (added) {
+      canvasCollabService.addElements(added)
+      const fileElement = added[0]
+      const file = fileService.findFileById(fileElement.id)
       if (file) treeService.add(file)
     }
 
