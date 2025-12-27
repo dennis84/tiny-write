@@ -45,8 +45,8 @@ export const ChatInputContainer = styled('div')`
   scroll-margin-bottom: 50px;
   border: 1px solid var(--primary-background);
   border-radius: var(--border-radius);
-  padding: 10px;
-  background: var(--code-background);
+  padding: 10px 20px;
+  background: var(--foreground-5);
   font-size: var(--menu-font-size);
   font-family: var(--menu-font-family);
   ${(props: any) => props.focused ? `
@@ -58,25 +58,26 @@ export const ChatInputFieldContainer = styled('div')`
   display: flex;
 `
 
-export const ChatInputEditor = styled('div')`
-  width: 100%;
-  display: flex;
-  align-items: center;
-  .cm-editor {
-    width: 100%;
-    line-height: 40px;
-    cursor: var(--cursor-text);
-    outline: none;
-    border-radius: var(--border-radius);
-    .cm-scroller {
-      -ms-overflow-style: none;
-      scrollbar-width: none;
-      &::-webkit-scrollbar {
-        display: none;
-      }
-    }
-  }
-`
+// export const ChatInputEditor = styled('div')`
+//   width: 100%;
+//   display: flex;
+//   align-items: center;
+//
+//   .cm-editor {
+//     width: 100%;
+//     line-height: 40px;
+//     cursor: var(--cursor-text);
+//     outline: none;
+//     border-radius: var(--border-radius);
+//     .cm-scroller {
+//       -ms-overflow-style: none;
+//       scrollbar-width: none;
+//       &::-webkit-scrollbar {
+//         display: none;
+//       }
+//     }
+//   }
+// `
 
 export const ChatInputAction = styled('div')`
   height: 40px;

@@ -1,11 +1,9 @@
-import {defaultKeymap} from '@codemirror/commands'
-import {markdown} from '@codemirror/lang-markdown'
-import {EditorView, keymap, placeholder} from '@codemirror/view'
-import {createSignal, onMount, Show} from 'solid-js'
+import type {EditorView} from 'prosemirror-view'
+// import {EditorView, keymap, placeholder} from '@codemirror/view'
+import {createSignal, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {v4 as uuidv4} from 'uuid'
-import {onEnterDoubleNewline} from '@/codemirror/key-bindings'
-import {getTheme} from '@/codemirror/theme'
+import {serialize} from '@/prosemirror/markdown-serialize'
 import {type Attachment, type Message, useState} from '@/state'
 import {IconButton} from '../Button'
 import {IconAttachment, IconSend, IconStop} from '../Icon'
@@ -15,13 +13,9 @@ import {AutoContextToggle} from './attachments/AutoContextToggle'
 import {CurrentFileButton} from './attachments/CurrentFile'
 import {ImageButton} from './attachments/Image'
 import {SelectionButton} from './attachments/Selection'
+import {ChatEditor} from './ChatEditor'
 import {ChatInputAttachments} from './ChatInputAttachments'
-import {
-  ChatInputAction,
-  ChatInputContainer,
-  ChatInputEditor,
-  ChatInputFieldContainer,
-} from './Style'
+import {ChatInputAction, ChatInputContainer, ChatInputFieldContainer} from './Style'
 import {Suggestions} from './Suggestions'
 
 const EmptyContainer = styled('div')`
@@ -37,12 +31,11 @@ interface Props {
 }
 
 export const ChatInput = (props: Props) => {
-  let chatInputRef!: HTMLDivElement
   const [tooltipAnchor, setTooltipAnchor] = createSignal<HTMLElement | undefined>()
-  const [editorView, setEditorView] = createSignal<EditorView>()
   const [focused, setFocused] = createSignal(false)
+  const [editorView, setEditorView] = createSignal<EditorView>()
 
-  const {store, configService, copilotService, threadService, mediaService} = useState()
+  const {store, copilotService, threadService, mediaService} = useState()
 
   const closeTooltip = () => {
     setTooltipAnchor(undefined)
@@ -59,19 +52,18 @@ export const ChatInput = (props: Props) => {
 
   const onImageAttachment = () => {
     closeTooltip()
-    editorView()?.focus()
   }
 
   const onSend = () => {
     const view = editorView()
     if (!view) return
 
-    const content = view.state.doc.toString().trim()
+    const content = serialize(view.state)
     if (!content) return
 
-    view.dispatch({
-      changes: {from: 0, to: content.length, insert: ''},
-    })
+    const tr = view.state.tr
+    tr.delete(0, view.state.doc.content.size)
+    view.dispatch(tr)
 
     props.onMessage({
       id: uuidv4(),
@@ -100,31 +92,6 @@ export const ChatInput = (props: Props) => {
     copilotService.stop()
   }
 
-  onMount(() => {
-    const theme = getTheme(configService.codeTheme.value)
-    const view = new EditorView({
-      parent: chatInputRef,
-      doc: '',
-      extensions: [
-        theme,
-        markdown(),
-        keymap.of([onEnterDoubleNewline(() => onSend())]),
-        placeholder('Ask Copilot'),
-        keymap.of(defaultKeymap),
-        EditorView.lineWrapping,
-        EditorView.focusChangeEffect.of((_, focusing) => {
-          setFocused(focusing)
-          return null
-        }),
-      ],
-    })
-
-    setEditorView(view)
-
-    // Hight is not set correctly without timeout
-    setTimeout(() => view.focus(), 50)
-  })
-
   return (
     <>
       <Show when={!threadService.messageTree.rootItemIds.length}>
@@ -139,12 +106,11 @@ export const ChatInput = (props: Props) => {
       </Show>
       <ChatInputContainer ref={props.ref} focused={focused()}>
         <ChatInputFieldContainer>
-          <ChatInputEditor
-            role="none"
-            onClick={() => editorView()?.focus()}
-            ref={chatInputRef}
-            data-testid="chat_input"
-          ></ChatInputEditor>
+          <ChatEditor
+            setEditorView={(view) => setEditorView(view)}
+            onSubmit={onSend}
+            onFocus={(focus) => setFocused(focus)}
+          />
           <ChatInputAction>
             <TooltipHelp title="Add an attachment to context">
               <IconButton onClick={onAttachmentMenu}>

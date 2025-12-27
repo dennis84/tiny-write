@@ -9,7 +9,6 @@ import {type Attachment, AttachmentType, type File, useState} from '@/state'
 import {Button} from '../Button'
 import {IconTextSelectStart, LangIcon} from '../Icon'
 import {Tooltip} from '../Tooltip'
-import {ChatInputEditor} from './Style'
 
 const Container = styled('div')`
   display: grid;
@@ -174,9 +173,7 @@ export const AttachmentChip = (props: Props) => {
                 <TooltipImage src={props.attachment.content} alt="" />
               </Match>
               <Match when={true}>
-                <ChatInputEditor>
-                  <CodeBlock />
-                </ChatInputEditor>
+                <CodeBlock />
               </Match>
             </Switch>
             <Show when={props.onDelete}>

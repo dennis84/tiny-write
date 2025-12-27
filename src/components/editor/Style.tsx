@@ -336,3 +336,14 @@ export const FullEditor = styled('div')`
     padding-bottom: 77vh;
   }
 `
+
+export const ChatInputEditor = styled('div')`
+  width: 100%;
+  height: fit-content;
+  ${(props: any) => proseMirror(props)}
+  .ProseMirror {
+    .cm-container {
+       background: var(--background-20);
+    }
+  }
+`

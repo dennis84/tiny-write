@@ -19,7 +19,7 @@ test('chat', async ({page}) => {
   await page.click('[data-testid="navbar_assistant_open"]')
   expect(page.getByText('Ask Copilot')).toBeVisible()
 
-  await page.locator('[data-testid="chat_input"] .cm-content').pressSequentially('Hello', {delay})
+  await page.locator('[data-testid="chat_input"] .ProseMirror').pressSequentially('Hello', {delay})
   await page.click('[data-testid="send"]')
 
   await expect(page.locator('[data-testid="question_bubble"]')).toHaveText('Hello')
@@ -32,7 +32,7 @@ test('chat', async ({page}) => {
 
   await mockCopilotCompletion(page, {chunks: ['Aaa', 'bbb']})
 
-  await page.locator('[data-testid="chat_input"] .cm-content').pressSequentially('Zzz', {delay})
+  await page.locator('[data-testid="chat_input"] .ProseMirror').pressSequentially('Zzz', {delay})
   await page.click('[data-testid="send"]')
 
   await expect(page.locator('[data-testid="question_bubble"]').locator('nth=0')).toHaveText('Hello')
@@ -55,7 +55,7 @@ test('edit question', async ({page}) => {
 
   await page
     .getByTestId('chat_input')
-    .locator('.cm-content')
+    .locator('.ProseMirror')
     .pressSequentially('SetupQuestion', {delay})
   await page.click('[data-testid="send"]')
 
@@ -70,10 +70,10 @@ test('edit question', async ({page}) => {
   // Test case 1: Edit question
   await mockCopilotCompletion(page, {chunks: ['Answer1']})
   await page.getByTestId('edit_message').click()
-  await page.getByTestId('message_input').locator('.cm-content').clear()
+  await page.getByTestId('message_input').locator('.ProseMirror').clear()
   await page
     .getByTestId('message_input')
-    .locator('.cm-content')
+    .locator('.ProseMirror')
     .pressSequentially('Question1', {delay})
   await page.getByTestId('update_message').click()
 
@@ -95,7 +95,7 @@ test('edit question', async ({page}) => {
   await mockCopilotCompletion(page, {chunks: ['Answer3']})
   await page
     .getByTestId('chat_input')
-    .locator('.cm-content')
+    .locator('.ProseMirror')
     .pressSequentially('Question3', {delay})
   await page.click('[data-testid="send"]')
 
