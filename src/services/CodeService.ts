@@ -16,14 +16,12 @@ import {info} from '@/remote/log'
 import {type File, Page, type SelectionRange, type State, type VisualPositionRange} from '@/state'
 import {CodeMirrorService} from './CodeMirrorService'
 import type {CollabService} from './CollabService'
-import type {ConfigService} from './ConfigService'
 import {FileService} from './FileService'
 import type {PrettierService} from './PrettierService'
 
 export class CodeService {
   constructor(
     private fileService: FileService,
-    _configService: ConfigService,
     private collabService: CollabService,
     private codeMirrorService: CodeMirrorService,
     private prettierService: PrettierService,

@@ -15,6 +15,8 @@ const Pre = styled('pre')`
 export const GeneralError = (props: {error: Error}) => {
   const {store} = useState()
 
+  console.error(props.error)
+
   const onReload = () => {
     window.location.reload()
   }

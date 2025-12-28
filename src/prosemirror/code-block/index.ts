@@ -62,7 +62,7 @@ export const createCodeBlockViews = (
   codeMirrorService: CodeMirrorService,
 ): ViewConfig => ({
   nodeViews: {
-    code_block: (node, view, getPos, _decos, innerDecos) =>
-      new CodeBlockView(node, view, getPos, innerDecos, configService, codeMirrorService),
+    code_block: (node, view, getPos) =>
+      new CodeBlockView(node, view, getPos, configService, codeMirrorService),
   },
 })

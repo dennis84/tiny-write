@@ -61,11 +61,13 @@ export const MessageQuestion = (props: Props) => {
   }
 
   const Attachments = () => (
-    <QuestionAttachments>
-      <For each={props.message.value.attachments}>
-        {(attachment) => <AttachmentChip attachment={attachment} />}
-      </For>
-    </QuestionAttachments>
+    <Show when={props.message.value.attachments?.length}>
+      <QuestionAttachments>
+        <For each={props.message.value.attachments}>
+          {(attachment) => <AttachmentChip attachment={attachment} />}
+        </For>
+      </QuestionAttachments>
+    </Show>
   )
 
   return (

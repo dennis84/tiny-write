@@ -15,7 +15,7 @@ import {ImageButton} from './attachments/Image'
 import {SelectionButton} from './attachments/Selection'
 import {ChatEditor} from './ChatEditor'
 import {ChatInputAttachments} from './ChatInputAttachments'
-import {ChatInputAction, ChatInputContainer, ChatInputFieldContainer} from './Style'
+import {ChatInputAction, ChatInputBorder, ChatInputContainer, ChatInputEditorRow} from './Style'
 import {Suggestions} from './Suggestions'
 
 const EmptyContainer = styled('div')`
@@ -104,36 +104,38 @@ export const ChatInput = (props: Props) => {
           <AutoContextToggle />
         </EmptyContainer>
       </Show>
-      <ChatInputContainer ref={props.ref} focused={focused()}>
-        <ChatInputFieldContainer>
-          <ChatEditor
-            setEditorView={(view) => setEditorView(view)}
-            onSubmit={onSend}
-            onFocus={(focus) => setFocused(focus)}
-          />
-          <ChatInputAction>
-            <TooltipHelp title="Add an attachment to context">
-              <IconButton onClick={onAttachmentMenu}>
-                <IconAttachment />
-              </IconButton>
-            </TooltipHelp>
-            <Show when={copilotService.streaming()}>
-              <TooltipHelp title="Stop">
-                <IconButton onClick={onStop}>
-                  <IconStop />
+      <ChatInputContainer>
+        <ChatInputBorder ref={props.ref} focused={focused()}>
+          <ChatInputEditorRow>
+            <ChatEditor
+              setEditorView={(view) => setEditorView(view)}
+              onSubmit={onSend}
+              onFocus={(focus) => setFocused(focus)}
+            />
+            <ChatInputAction>
+              <TooltipHelp title="Add an attachment to context">
+                <IconButton onClick={onAttachmentMenu}>
+                  <IconAttachment />
                 </IconButton>
               </TooltipHelp>
-            </Show>
-            <Show when={!copilotService.streaming()}>
-              <TooltipHelp title="Send message">
-                <IconButton onClick={onSend} data-testid="send">
-                  <IconSend />
-                </IconButton>
-              </TooltipHelp>
-            </Show>
-          </ChatInputAction>
-        </ChatInputFieldContainer>
-        <ChatInputAttachments />
+              <Show when={copilotService.streaming()}>
+                <TooltipHelp title="Stop">
+                  <IconButton onClick={onStop}>
+                    <IconStop />
+                  </IconButton>
+                </TooltipHelp>
+              </Show>
+              <Show when={!copilotService.streaming()}>
+                <TooltipHelp title="Send message">
+                  <IconButton onClick={onSend} data-testid="send">
+                    <IconSend />
+                  </IconButton>
+                </TooltipHelp>
+              </Show>
+            </ChatInputAction>
+          </ChatInputEditorRow>
+          <ChatInputAttachments />
+        </ChatInputBorder>
       </ChatInputContainer>
       <Suggestions onSuggestion={onSendSuggestion} />
       <Show when={tooltipAnchor()}>

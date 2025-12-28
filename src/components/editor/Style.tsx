@@ -126,6 +126,7 @@ const proseMirror = (props: Props) => `
       background: var(--foreground-10);
       border-radius: var(--border-radius);
       font-family: var(--font-family-monospace) !important;
+      padding: 2px 5px;
     }
     a, .edit-link {
       color: var(--primary-background);

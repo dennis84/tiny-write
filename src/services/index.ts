@@ -72,7 +72,6 @@ export const createCtrl = (initial: State) => {
   )
   const codeService = new CodeService(
     fileService,
-    configService,
     collabService,
     codeMirrorService,
     prettierService,

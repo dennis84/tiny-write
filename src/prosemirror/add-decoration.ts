@@ -9,7 +9,7 @@ export const addDecorationPlugin = new Plugin({
     init(_config, instance) {
       return DecorationSet.create(instance.doc, [])
     },
-    apply(tr, set, _oldState, _newState) {
+    apply(tr, set) {
       // Map existing decorations forward through the transaction
       set = set.map(tr.mapping, tr.doc)
 

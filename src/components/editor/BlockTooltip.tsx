@@ -1,8 +1,10 @@
+import type {EditorView} from '@codemirror/view'
 import type {ReferenceElement} from '@floating-ui/dom'
 import {setBlockType} from 'prosemirror-commands'
 import {NodeSelection, TextSelection} from 'prosemirror-state'
 import {Decoration} from 'prosemirror-view'
 import {createEffect, createSignal, Show} from 'solid-js'
+import {foldAll} from '@/codemirror/fold-all'
 import {getLanguageNames} from '@/codemirror/highlight'
 import {createBlockquote, createCodeFence} from '@/components/assistant/util'
 import {
@@ -39,8 +41,16 @@ interface Props {
 }
 
 export const BlockTooltip = (props: Props) => {
-  const {fileService, menuService, threadService, inputLineService, copilotService, toastService} =
-    useState()
+  const {
+    fileService,
+    codeMirrorService,
+    configService,
+    menuService,
+    threadService,
+    inputLineService,
+    copilotService,
+    toastService,
+  } = useState()
   const [tooltipAnchor, setTooltipAnchor] = createSignal<ReferenceElement | undefined>()
   const {openUrl} = useOpen()
 
@@ -49,18 +59,18 @@ export const BlockTooltip = (props: Props) => {
     setTooltipAnchor(undefined)
   }
 
-  const onPrettify = () => {
+  const onPrettify = async () => {
     const block = props.selectedBlock
     if (!block) return
     const view = fileService.currentFile?.editorView
     if (!view) return
 
     const dom = view.domAtPos(block.blockPos + 1)
-    dom.node.dispatchEvent(
-      new CustomEvent('cm:user_event', {
-        detail: {userEvent: 'prettify'},
-      }),
-    )
+    const cmView = (dom as any).node.cmView as EditorView | undefined
+    const cmLang = (dom as any).node.cmLanguage as string | undefined
+    if (!cmView) return
+
+    await codeMirrorService.format(cmView, cmLang ?? '', configService.prettier)
 
     view.focus()
     closeTooltip()
@@ -71,12 +81,11 @@ export const BlockTooltip = (props: Props) => {
     if (!block) return
     const view = fileService.currentFile?.editorView
     if (!view) return
+
     const dom = view.domAtPos(block.blockPos + 1)
-    dom.node.dispatchEvent(
-      new CustomEvent('cm:user_event', {
-        detail: {userEvent: 'fold_all'},
-      }),
-    )
+    const cmView = (dom as any).node.cmView as EditorView | undefined
+    if (!cmView) return
+    foldAll(cmView)
 
     view.focus()
     closeTooltip()

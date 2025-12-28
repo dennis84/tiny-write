@@ -8,7 +8,6 @@ import {AttachmentType, useState} from '@/state'
 import {Button, ButtonGroup} from '../Button'
 
 const SuggestionsContainer = styled('div')`
-  margin-top: 10px;
   padding-bottom: 20px;
 `
 

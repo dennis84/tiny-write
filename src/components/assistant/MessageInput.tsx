@@ -6,7 +6,7 @@ import {IconButton} from '../Button'
 import {IconCheck, IconClose} from '../Icon'
 import {TooltipHelp} from '../TooltipHelp'
 import {ChatEditor} from './ChatEditor'
-import {ChatInputAction, ChatInputContainer, ChatInputFieldContainer} from './Style'
+import {ChatInputAction, ChatInputBorder, ChatInputEditorRow} from './Style'
 
 interface Props {
   onUpdate: (message: Message) => void
@@ -43,8 +43,8 @@ export const MessageInput = (props: Props) => {
   }
 
   return (
-    <ChatInputContainer data-testid="message_input" focused={focused()}>
-      <ChatInputFieldContainer>
+    <ChatInputBorder data-testid="message_input" focused={focused()}>
+      <ChatInputEditorRow>
         <ChatEditor
           setEditorView={(view) => setEditorView(view)}
           onSubmit={() => onUpdate()}
@@ -62,7 +62,7 @@ export const MessageInput = (props: Props) => {
             </IconButton>
           </TooltipHelp>
         </ChatInputAction>
-      </ChatInputFieldContainer>
-    </ChatInputContainer>
+      </ChatInputEditorRow>
+    </ChatInputBorder>
   )
 }

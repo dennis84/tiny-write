@@ -2,15 +2,11 @@ import {autocompletion} from '@codemirror/autocomplete'
 import type {Compartment} from '@codemirror/state'
 import {EditorView, keymap, type ViewUpdate} from '@codemirror/view'
 import {exitCode} from 'prosemirror-commands'
-import type {Node} from 'prosemirror-model'
+import type {Node as PmNode} from 'prosemirror-model'
 import {Selection, TextSelection} from 'prosemirror-state'
-import {
-  DecorationSet,
-  type DecorationSource,
-  type EditorView as ProsemirrorEditorView,
-} from 'prosemirror-view'
+import type {EditorView as ProsemirrorEditorView} from 'prosemirror-view'
+import {v4 as uuid} from 'uuid'
 import {clipPlugin} from '@/codemirror/clip'
-import {foldAll} from '@/codemirror/fold-all'
 import {getLanguageConfig} from '@/codemirror/highlight'
 import {onEnterDoubleNewline} from '@/codemirror/key-bindings'
 import {mermaidKeywords} from '@/codemirror/mermaid'
@@ -26,25 +22,15 @@ export class CodeBlockView {
   private clicked = false
 
   constructor(
-    private node: Node,
+    private node: PmNode,
     private view: ProsemirrorEditorView,
     readonly getPos: () => number | undefined,
-    private innerDecos: DecorationSource,
     readonly configService: ConfigService,
     private codeMirrorService: CodeMirrorService,
   ) {
     this.dom = document.createElement('div')
     this.dom.setAttribute('contenteditable', 'false')
     this.dom.classList.add('cm-container')
-
-    this.dom.addEventListener('cm:user_event', async (event: any) => {
-      const action = event.detail.userEvent
-      if (action === 'prettify') {
-        await codeMirrorService.format(this.editorView, this.lang, this.configService.prettier)
-      } else if (action === 'fold_all') {
-        foldAll(this.editorView)
-      }
-    })
 
     const embeddedCodeMirrorKeymap = keymap.of([
       {
@@ -138,7 +124,7 @@ export class CodeBlockView {
     ])
 
     const editor = this.codeMirrorService.createEditor({
-      id: `editor-${getPos()}-${this.lang}`,
+      id: `code-block-${uuid()}`,
       lang: this.lang,
       doc: this.node.textContent,
       extensions: [
@@ -158,13 +144,8 @@ export class CodeBlockView {
     this.editorView = editor.editorView
     this.compartments = editor.compartments
     this.dom.appendChild(editor.editorView.dom)
-
-    if (this.innerDecos instanceof DecorationSet) {
-      this.innerDecos.find().forEach((d: any) => {
-        const elem = typeof d.type.toDOM === 'function' ? d.type.toDOM(view, getPos) : d.type.toDOM
-        this.dom.appendChild(elem)
-      })
-    }
+    ;(this.dom as any).cmView = this.editorView
+    ;(this.dom as any).cmLanguage = this.lang
 
     this.update(node)
   }
@@ -229,7 +210,7 @@ export class CodeBlockView {
     this.updating = false
   }
 
-  update(node: Node) {
+  update(node: PmNode) {
     if (node.type !== this.node.type) return false
     const lang = this.lang
     this.node = node
