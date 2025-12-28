@@ -7,7 +7,7 @@ import type {AppService} from '@/services/AppService'
 import type {CanvasService} from '@/services/CanvasService'
 import {MediaService} from '@/services/MediaService'
 import type {ViewConfig} from '@/services/ProseMirrorService'
-import {Page} from '@/state'
+import {Page} from '@/types'
 import {Align} from './interfaces'
 
 const isUrl = (str: string) => {

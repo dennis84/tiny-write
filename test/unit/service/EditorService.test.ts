@@ -9,7 +9,8 @@ import type {FileService} from '@/services/FileService'
 import type {ProseMirrorService} from '@/services/ProseMirrorService'
 import type {SelectService} from '@/services/SelectService'
 import type {ToastService} from '@/services/ToastService'
-import {createState, Page} from '@/state'
+import {createState} from '@/state'
+import {Page} from '@/types'
 import {createEditorView, createSubdoc, createYUpdate} from '../testutil/prosemirror-util'
 
 vi.stubGlobal('location', {

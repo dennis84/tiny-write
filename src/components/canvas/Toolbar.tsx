@@ -22,14 +22,8 @@ import {
 } from '@/components/Icon'
 import {TooltipArrow, TooltipButton, TooltipContainer} from '@/components/Tooltip'
 import {useOpen} from '@/hooks/use-open'
-import {
-  AttachmentType,
-  type CanvasBoxElement,
-  type CanvasElement,
-  isCodeElement,
-  isEditorElement,
-  useState,
-} from '@/state'
+import {isCodeElement, isEditorElement, useState} from '@/state'
+import {AttachmentType, type CanvasBoxElement, type CanvasElement} from '@/types'
 import {BoxUtil} from '@/utils/BoxUtil'
 import {VecUtil} from '@/utils/VecUtil'
 

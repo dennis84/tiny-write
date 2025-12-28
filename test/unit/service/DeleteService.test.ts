@@ -6,15 +6,14 @@ import type {CanvasService} from '@/services/CanvasService'
 import {DeleteService} from '@/services/DeleteService'
 import type {FileService} from '@/services/FileService'
 import {TreeService} from '@/services/TreeService'
+import {createState, isFile} from '@/state'
 import {
   type CanvasEditorElement,
   type CanvasLinkElement,
-  createState,
   EdgeType,
   ElementType,
   type File,
-  isFile,
-} from '@/state'
+} from '@/types'
 import {createYUpdate} from '../testutil/prosemirror-util'
 import {expectTree} from '../testutil/tree'
 

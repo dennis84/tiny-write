@@ -18,14 +18,17 @@ vi.stubGlobal(
 window.scrollTo = vi.fn()
 
 // stubs for PM
-Range.prototype.getBoundingClientRect = vi.fn<any>(() => ({
+Range.prototype.getBoundingClientRect = () => ({
+  x: 0,
+  y: 0,
+  toJSON: vi.fn(),
   bottom: 0,
   height: 0,
   left: 0,
   right: 0,
   top: 0,
   width: 0,
-}))
+})
 
 Range.prototype.getClientRects = () => ({
   item: vi.fn(),

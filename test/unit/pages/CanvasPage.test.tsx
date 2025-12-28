@@ -4,7 +4,8 @@ import {mock} from 'vitest-mock-extended'
 import {Main} from '@/components/Main'
 import type {DB} from '@/db'
 import {createCtrl} from '@/services'
-import {type Canvas, createState, Page} from '@/state'
+import {createState} from '@/state'
+import {type Canvas, Page} from '@/types'
 import {stubLocation} from '../testutil/util'
 
 vi.mock('@/db', () => ({DB: mock<DB>()}))

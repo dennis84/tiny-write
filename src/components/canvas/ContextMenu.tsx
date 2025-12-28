@@ -2,7 +2,8 @@ import {Vector} from '@flatten-js/core'
 import type {ReferenceElement} from '@floating-ui/dom'
 import {createSignal, For, Match, onMount, Show, Suspense, Switch} from 'solid-js'
 import {useTitle} from '@/hooks/use-title'
-import {type CanvasLinkElement, type File, isCanvas, isCodeFile, isFile, useState} from '@/state'
+import {isCanvas, isCodeFile, isFile, useState} from '@/state'
+import type {CanvasLinkElement, File} from '@/types'
 import {IconCodeBlocks, IconGesture, IconPostAdd, IconTextSnippet} from '../Icon'
 import {Tooltip, TooltipButton, TooltipDivider} from '../Tooltip'
 
@@ -27,7 +28,7 @@ export const ContextMenu = () => {
     const onClick = async () => {
       const added = await canvasService.addFile(p.file, p.link, p.cm)
       await canvasService.removeDeadLinks()
-      canvasCollabService.addElements(added ?? [])
+      if (added) canvasCollabService.addElements(added)
       setContextMenu(undefined)
     }
 

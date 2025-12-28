@@ -1,6 +1,6 @@
 import {createStore, type Store} from 'solid-js/store'
 import {isDev} from '@/env'
-import type {State} from '@/state'
+import type {State} from '@/types'
 import {AiService} from './AiService'
 import {AppService} from './AppService'
 import {CanvasCollabService} from './CanvasCollabService'

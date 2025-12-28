@@ -28,7 +28,6 @@ test('only save file type', async () => {
   )
 
   const service = new FileService(collabService, store, setState)
-  setState('collab', {ydoc})
 
   ydoc.getText('2').insert(0, '1')
   expect(ydoc.getText('2').length).toBe(1)
@@ -59,7 +58,6 @@ test('restore', async () => {
   )
 
   const service = new FileService(collabService, store, setState)
-  setState('collab', {ydoc})
 
   await service.restore('2')
   expect(store.files.length).toBe(2)

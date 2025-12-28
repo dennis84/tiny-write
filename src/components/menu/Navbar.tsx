@@ -8,7 +8,8 @@ import {useTitle} from '@/hooks/use-title'
 import {copy} from '@/remote/clipboard'
 import {CanvasService} from '@/services/CanvasService'
 import {MenuId} from '@/services/MenuService'
-import {isCodeFile, isLocalFile, Page, useState} from '@/state'
+import {isCodeFile, isLocalFile, useState} from '@/state'
+import {Page} from '@/types'
 import {Button, ButtonGroup, IconButton} from '../Button'
 import {
   IconAiAssistant,

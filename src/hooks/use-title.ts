@@ -1,6 +1,7 @@
 import {createScheduled, debounce, leadingAndTrailing} from '@solid-primitives/scheduled'
 import {createMemo, createResource, type Resource} from 'solid-js'
-import {type Canvas, type File, isCodeFile, isFile, useState} from '@/state'
+import {isCodeFile, isFile, useState} from '@/state'
+import type {Canvas, File} from '@/types'
 
 interface Props {
   item?: File | Canvas

@@ -1,7 +1,8 @@
 import type {SetStoreFunction, Store} from 'solid-js/store'
 import {DB} from '@/db'
-import {type Canvas, type File, isFile, type State} from '@/state'
+import {isFile} from '@/state'
 import {createTreeStore, type Tree, type TreeItem, type TreeState} from '@/tree'
+import type {Canvas, File, State} from '@/types'
 import {CanvasService} from './CanvasService'
 import {FileService} from './FileService'
 

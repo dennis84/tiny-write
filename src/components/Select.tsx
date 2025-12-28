@@ -2,7 +2,8 @@ import {Box} from '@flatten-js/core'
 import {DragGesture} from '@use-gesture/vanilla'
 import {createSignal, onCleanup, onMount, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
-import {Page, useState} from '@/state'
+import {useState} from '@/state'
+import {Page} from '@/types'
 
 const SelectionFrame = styled('div')`
   position: absolute;

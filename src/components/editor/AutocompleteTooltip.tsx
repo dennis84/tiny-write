@@ -4,7 +4,8 @@ import {createEffect, createMemo, createSignal, For, onCleanup, onMount, Show} f
 import type {CompletionState} from '@/prosemirror/autocomplete/autocomplete'
 import {fileListingPluginKey} from '@/prosemirror/autocomplete/file-listing'
 import {wordCompletionPluginKey} from '@/prosemirror/autocomplete/word-completion'
-import {type File, useState} from '@/state'
+import {useState} from '@/state'
+import type {File} from '@/types'
 import {Tooltip, TooltipButton} from '../Tooltip'
 
 interface Props {

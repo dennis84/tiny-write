@@ -1,7 +1,7 @@
 import type {EditorView} from 'prosemirror-view'
 import {createSignal} from 'solid-js'
 import {serialize} from '@/prosemirror/markdown-serialize'
-import type {Message} from '@/state'
+import type {Message} from '@/types'
 import {IconButton} from '../Button'
 import {IconCheck, IconClose} from '../Icon'
 import {TooltipHelp} from '../TooltipHelp'

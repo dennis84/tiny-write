@@ -5,9 +5,7 @@ import * as Y from 'yjs'
 import {CanvasCollabService} from '@/services/CanvasCollabService'
 import type {CanvasService} from '@/services/CanvasService'
 import type {CollabService} from '@/services/CollabService'
-import {type Canvas, ElementType} from '@/state'
-
-vi.mock('@/db', () => ({DB: mock()}))
+import {type Canvas, ElementType} from '@/types'
 
 beforeEach(() => {
   vi.resetAllMocks()

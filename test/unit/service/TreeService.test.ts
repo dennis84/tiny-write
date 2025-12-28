@@ -4,7 +4,8 @@ import {mock} from 'vitest-mock-extended'
 import type {CanvasService} from '@/services/CanvasService'
 import type {FileService} from '@/services/FileService'
 import {TreeService} from '@/services/TreeService'
-import {type Canvas, createState, ElementType, type File} from '@/state'
+import {createState} from '@/state'
+import {type Canvas, ElementType, type File} from '@/types'
 import {expectTree} from '../testutil/tree'
 
 beforeEach(() => {

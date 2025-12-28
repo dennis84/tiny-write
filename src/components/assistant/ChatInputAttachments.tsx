@@ -1,6 +1,7 @@
 import {createEffect, For} from 'solid-js'
 import {styled} from 'solid-styled-components'
-import {type Attachment, AttachmentType, useState} from '@/state'
+import {useState} from '@/state'
+import {type Attachment, AttachmentType} from '@/types'
 import {AttachmentChip} from './AttachmentChip'
 import {createCodeFence} from './util'
 

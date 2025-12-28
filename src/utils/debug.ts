@@ -1,5 +1,5 @@
 import {Box, type Vector} from '@flatten-js/core'
-import type {LocationState} from '@/state'
+import type {LocationState} from '@/types'
 
 export const renderPoint = (point: Vector, id = 'point') => {
   document.querySelector(`#${id}`)?.remove()

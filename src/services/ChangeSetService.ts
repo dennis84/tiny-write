@@ -1,6 +1,6 @@
 import * as Y from 'yjs'
 import {info} from '@/remote/log'
-import type {Version} from '@/state'
+import type {Version} from '@/types'
 import type {CollabService} from './CollabService'
 import {FileService} from './FileService'
 

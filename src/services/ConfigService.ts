@@ -5,7 +5,7 @@ import {DB} from '@/db'
 import {isDark} from '@/env'
 import {setAlwaysOnTop} from '@/remote/app'
 import {info} from '@/remote/log'
-import type {Config, State, ThemeConfig} from '@/state'
+import type {Config, State, ThemeConfig} from '@/types'
 import type {CollabService} from './CollabService'
 
 export interface Font {

@@ -5,8 +5,8 @@ import {v4 as uuidv4} from 'uuid'
 import {DB} from '@/db'
 import codeBlockHandlingPrompt from '@/prompts/assistant-code-block-handling.md?raw'
 import {info} from '@/remote/log'
-import {type Attachment, AttachmentType, type Message, type State, type Thread} from '@/state'
 import {createTreeStore, type TreeItem} from '@/tree'
+import {type Attachment, AttachmentType, type Message, type State, type Thread} from '@/types'
 import type {
   ChatMessage,
   ChatMessageImageContent,

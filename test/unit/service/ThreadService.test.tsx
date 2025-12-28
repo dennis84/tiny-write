@@ -3,7 +3,8 @@ import {beforeEach, expect, test, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
 import type {ChatMessageTextContent, CopilotService} from '@/services/CopilotService'
 import {ThreadService} from '@/services/ThreadService'
-import {AttachmentType, createState, type Message, Page} from '@/state'
+import {createState} from '@/state'
+import {AttachmentType, type Message, Page} from '@/types'
 import {expectTree} from '../testutil/tree'
 
 beforeEach(() => {

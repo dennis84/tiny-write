@@ -1,6 +1,6 @@
 import type {SetStoreFunction, Store} from 'solid-js/store'
 import {DB} from '@/db'
-import type {State} from '@/state'
+import type {State} from '@/types'
 
 export class AiService {
   get sidebarWidth() {

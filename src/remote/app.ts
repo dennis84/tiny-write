@@ -1,7 +1,7 @@
 import {invoke} from '@tauri-apps/api/core'
 import {getCurrentWindow} from '@tauri-apps/api/window'
 import {open as shellOpen} from '@tauri-apps/plugin-shell'
-import type {Args} from '@/state'
+import type {Args} from '@/types'
 
 export const getArgs = async (): Promise<Args> => {
   return invoke('get_args')

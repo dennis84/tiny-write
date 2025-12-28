@@ -16,7 +16,7 @@ import {
 } from '@/remote/copilot'
 import {debug, error, info} from '@/remote/log'
 import {lspRegisterDocument} from '@/remote/lsp'
-import type {ChatRole, State} from '@/state'
+import type {ChatRole, State} from '@/types'
 import type {FileService} from './FileService'
 
 interface ApiTokenEndpoints {

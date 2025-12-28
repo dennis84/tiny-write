@@ -2,13 +2,8 @@ import {Segment, Vector} from '@flatten-js/core'
 import {DragGesture} from '@use-gesture/vanilla'
 import {createEffect, onCleanup, onMount} from 'solid-js'
 import {styled} from 'solid-styled-components'
-import {
-  type Canvas,
-  type CanvasBoxElement,
-  type CanvasLinkElement,
-  EdgeType,
-  useState,
-} from '@/state'
+import {useState} from '@/state'
+import {type Canvas, type CanvasBoxElement, type CanvasLinkElement, EdgeType} from '@/types'
 import {BoxUtil} from '@/utils/BoxUtil'
 import {PointUtil} from '@/utils/PointUtil'
 import {VecUtil} from '@/utils/VecUtil'
@@ -28,16 +23,19 @@ const LinkSvg = styled('svg')`
 `
 
 // biome-ignore format: ternary breaks ugly
-const Path = styled('path')`
+const Path = styled("path")`
   stroke: transparent;
   stroke-linecap: round;
   cursor: var(--cursor-grab);
   pointer-events: auto;
   touch-action: none;
   fill: none;
-  ${(props: any) => props.selected ? `
+  ${(props: any) =>
+    props.selected
+      ? `
     stroke: var(--border-30);
-  ` : `
+  `
+      : `
     &:hover {
       stroke: var(--border-20);
     }

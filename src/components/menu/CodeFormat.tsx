@@ -1,6 +1,7 @@
 import {Show} from 'solid-js'
 import {ButtonGroup, ButtonPrimary} from '@/components/Button'
-import {type File, Page, type PrettierConfig, useState} from '@/state'
+import {useState} from '@/state'
+import {type File, Page, type PrettierConfig} from '@/types'
 import {DrawerContent} from '../Drawer'
 import {Link} from './Link'
 import {MenuDrawer} from './Menu'

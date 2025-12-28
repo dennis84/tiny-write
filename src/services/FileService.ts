@@ -20,7 +20,8 @@ import {
   toRelativePath,
 } from '@/remote/editor'
 import {debug, error, info} from '@/remote/log'
-import {type File, type FileText, isLocalFile, type State} from '@/state'
+import {isLocalFile} from '@/state'
+import type {File, FileText, State} from '@/types'
 import type {CollabService} from './CollabService'
 
 export interface LoadedTextFile {

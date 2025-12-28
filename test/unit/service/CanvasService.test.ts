@@ -8,17 +8,17 @@ import {CanvasService} from '@/services/CanvasService'
 import type {CollabService} from '@/services/CollabService'
 import {FileService} from '@/services/FileService'
 import type {SelectService} from '@/services/SelectService'
+import {createState} from '@/state'
 import {
   type Canvas,
   type CanvasEditorElement,
   type CanvasImageElement,
   type CanvasLinkElement,
   type CanvasVideoElement,
-  createState,
   EdgeType,
   ElementType,
   Page,
-} from '@/state'
+} from '@/types'
 import {BoxUtil} from '@/utils/BoxUtil'
 import {createYUpdate} from '../testutil/prosemirror-util'
 

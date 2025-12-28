@@ -7,7 +7,8 @@ import {useOpen} from '@/hooks/use-open'
 import {useTitle} from '@/hooks/use-title'
 import {CanvasService} from '@/services/CanvasService'
 import type {MenuTreeItem} from '@/services/TreeService'
-import {isCanvas, isCodeFile, isFile, isLocalFile, Page, useState} from '@/state'
+import {isCanvas, isCodeFile, isFile, isLocalFile, useState} from '@/state'
+import {Page} from '@/types'
 import {
   IconAdd,
   IconAdjust,
@@ -413,7 +414,7 @@ export const SubmenuTree = (props: Props) => {
               if (store.location?.page === Page.Canvas && isFile(p.node.value)) {
                 const point = canvasService.getPosition([x, y])
                 const added = await canvasService.addFile(p.node.value, undefined, point)
-                canvasCollabService.addElements(added ?? [])
+                if (added) canvasCollabService.addElements(added)
               }
             }
 

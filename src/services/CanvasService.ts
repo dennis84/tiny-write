@@ -5,6 +5,7 @@ import {type SetStoreFunction, type Store, unwrap} from 'solid-js/store'
 import {v4 as uuidv4} from 'uuid'
 import {DB} from '@/db'
 import {info} from '@/remote/log'
+import {isBoxElement, isCodeElement, isEditorElement, isLinkElement} from '@/state'
 import {
   type Camera,
   type Canvas,
@@ -19,13 +20,9 @@ import {
   EdgeType,
   ElementType,
   type File,
-  isBoxElement,
-  isCodeElement,
-  isEditorElement,
-  isLinkElement,
   Page,
   type State,
-} from '@/state'
+} from '@/types'
 import {BoxUtil} from '@/utils/BoxUtil'
 import {PointUtil} from '@/utils/PointUtil'
 import {VecUtil} from '@/utils/VecUtil'
@@ -362,7 +359,7 @@ export class CanvasService {
     code = false,
     link?: CanvasLinkElement,
     point?: Vector,
-  ): Promise<CanvasElement[] | undefined> {
+  ): Promise<[CanvasElement] | [CanvasElement, CanvasElement] | undefined> {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
 
@@ -380,7 +377,7 @@ export class CanvasService {
     file: File,
     link?: CanvasLinkElement,
     point?: Vector,
-  ): Promise<CanvasElement[] | undefined> {
+  ): Promise<[CanvasElement] | [CanvasElement, CanvasElement] | undefined> {
     info(`Add file to canvas (fileId=${file.id})`)
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
@@ -454,13 +451,12 @@ export class CanvasService {
       height,
     }
 
-    const addedElements: CanvasElement[] = [element]
-
     this.updateCanvas(currentCanvas.id, {
       elements: [...currentCanvas.elements, element],
       lastModified: new Date(),
     })
 
+    let linkElement: CanvasElement | undefined
     if (isLink) {
       const l = currentCanvas.elements.find((el) => el.id === link.id)
       if (!l) return
@@ -472,13 +468,13 @@ export class CanvasService {
       })
 
       const updatedLink = currentCanvas.elements.find((el) => el.id === link.id)
-      if (updatedLink) addedElements.push(unwrap(updatedLink))
+      if (updatedLink) linkElement = unwrap(updatedLink)
     }
 
     await this.saveCanvas()
-    info(`File added to canvas (addedElements=${addedElements.length})`)
+    info(`File added to canvas (hasLink=${linkElement !== undefined})`)
 
-    return addedElements
+    return linkElement ? [element, linkElement] : [element]
   }
 
   async addImage(

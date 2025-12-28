@@ -1,5 +1,5 @@
 import {invoke} from '@tauri-apps/api/core'
-import type {VisualPositionRange} from '@/state'
+import type {VisualPositionRange} from '@/types'
 
 type LspHover = {contents: {value: string}}
 

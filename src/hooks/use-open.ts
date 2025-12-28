@@ -2,19 +2,8 @@ import {useLocation, useNavigate} from '@solidjs/router'
 import {isTauri} from '../env'
 import {open as shellOpen} from '../remote/app'
 import {info} from '../remote/log'
-import {
-  type Canvas,
-  type CanvasElement,
-  type File,
-  isCanvas,
-  isCodeElement,
-  isCodeFile,
-  isEditorElement,
-  isFile,
-  type LocationState,
-  Page,
-  useState,
-} from '../state'
+import {isCanvas, isCodeElement, isCodeFile, isEditorElement, isFile, useState} from '../state'
+import {type Canvas, type CanvasElement, type File, type LocationState, Page} from '../types'
 
 export const useOpen = () => {
   const navigate = useNavigate()

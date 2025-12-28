@@ -13,7 +13,8 @@ import {
 import {isDev, isMac, isTauri, mod, shortHash, VERSION_URL, version} from '@/env'
 import {quit} from '@/remote/app'
 import {MenuId} from '@/services/MenuService'
-import {Page, useState} from '@/state'
+import {useState} from '@/state'
+import {Page} from '@/types'
 import {ChatDrawer} from '../assistant/ChatDrawer'
 import {Drawer, DrawerContent} from '../Drawer'
 import {FULL_WIDTH} from '../Layout'
@@ -51,7 +52,15 @@ export const MenuDrawer = ({children}: {children: JSX.Element}) => {
 }
 
 export const Menu = () => {
-  const {store, appService, menuService, configService, fileService, prettierService} = useState()
+  const {
+    store,
+    appService,
+    collabService,
+    menuService,
+    configService,
+    fileService,
+    prettierService,
+  } = useState()
 
   const modKey = isMac ? '⌘' : mod
 
@@ -72,7 +81,7 @@ export const Menu = () => {
   const onOpenInApp = () => {
     if (isTauri()) return
     const currentFile = fileService.currentFile
-    if (store.collab?.started) {
+    if (collabService.started()) {
       window.open(`tinywrite://main?room=${currentFile?.id}`, '_self')
     } else {
       const state = currentFile?.editorView?.state

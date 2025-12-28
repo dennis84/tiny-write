@@ -52,6 +52,7 @@ class ContainerView {
     private getPos: () => number | undefined,
   ) {
     const dom = this.node.type.spec.toDOM?.(this.node)
+    if (!dom) throw new Error('Failed to create DOM for container node')
     const res = DOMSerializer.renderSpec(document, dom)
     this.dom = res.dom as HTMLInputElement
     this.contentDOM = res.contentDOM

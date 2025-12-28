@@ -58,6 +58,7 @@ class TaskListItemView {
     private getPos: () => number | undefined,
   ) {
     const dom = this.node.type.spec.toDOM?.(this.node)
+    if (!dom) throw new Error('Failed to create DOM for task_list_item')
     const res = DOMSerializer.renderSpec(document, dom)
     this.dom = res.dom as HTMLInputElement
     this.contentDOM = res.contentDOM

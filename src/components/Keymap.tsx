@@ -5,7 +5,8 @@ import {useOpen} from '@/hooks/use-open'
 import {quit} from '@/remote/app'
 import {saveFile} from '@/remote/editor'
 import {lspGoto} from '@/remote/lsp'
-import {isCodeElement, isEditorElement, Page, useState} from '@/state'
+import {isCodeElement, isEditorElement, useState} from '@/state'
+import {Page} from '@/types'
 
 export const Keymap = () => {
   const {
@@ -57,10 +58,10 @@ export const Keymap = () => {
       treeService.add(file)
       openFile(file)
     } else {
-      const el = await canvasService.newFile()
-      if (el) {
-        canvasCollabService.addElement(el)
-        const file = fileService.findFileById(el.id)
+      const els = await canvasService.newFile()
+      if (els) {
+        canvasCollabService.addElements(els)
+        const file = fileService.findFileById(els[0].id)
         if (file) treeService.add(file)
       }
     }
@@ -156,7 +157,8 @@ export const Keymap = () => {
     openFile(file, {selection})
   }
 
-  type Fn = (e: KeyboardEvent) => boolean | undefined | Promise<boolean | undefined>
+  // biome-ignore lint/suspicious/noConfusingVoidType: void is needed here
+  type Fn = (e: KeyboardEvent) => boolean | undefined | Promise<boolean | undefined | void>
   const keymap: Record<string, Fn> = {
     [`${mod}-r`]: onReload,
     [`${mod}-q`]: onQuit,

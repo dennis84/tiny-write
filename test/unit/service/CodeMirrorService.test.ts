@@ -7,7 +7,8 @@ import {CodeMirrorService} from '@/services/CodeMirrorService'
 import {ConfigService} from '@/services/ConfigService'
 import {PrettierService} from '@/services/PrettierService'
 import type {ToastService} from '@/services/ToastService'
-import {createState, type State} from '@/state'
+import {createState} from '@/state'
+import type {State} from '@/types'
 
 vi.mock('@/db', () => ({DB: mock()}))
 

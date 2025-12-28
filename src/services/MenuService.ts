@@ -1,7 +1,7 @@
 import {createSignal} from 'solid-js'
 import type {SetStoreFunction, Store} from 'solid-js/store'
 import {DB} from '@/db'
-import type {State} from '@/state'
+import type {State} from '@/types'
 import type {AppService} from './AppService'
 
 export enum MenuId {

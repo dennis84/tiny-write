@@ -1,12 +1,8 @@
 import {Vector} from '@flatten-js/core'
-import {expect, test, vi} from 'vitest'
-import {mock} from 'vitest-mock-extended'
-import type {DB} from '@/db'
-import {CornerType, EdgeType} from '@/state'
+import {expect, test} from 'vitest'
+import {CornerType, EdgeType} from '@/types'
 import {BoxUtil} from '@/utils/BoxUtil'
 import {VecUtil} from '@/utils/VecUtil'
-
-vi.mock('@/db', () => ({DB: mock<DB>()}))
 
 test.each([
   [EdgeType.Left, VecUtil.fromArray([0, 100])],

@@ -1,6 +1,7 @@
 import {createEffect, createSignal, For, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
-import {type Thread, useState} from '@/state'
+import {useState} from '@/state'
+import type {Thread} from '@/types'
 import {Button, ButtonGroup} from '../Button'
 import {IconAdd, IconDelete, IconEdit, IconHistory, IconMoreHoriz, IconSearch} from '../Icon'
 import {Label} from '../menu/Style'

@@ -25,5 +25,5 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["./src", "./test", "./playwright.config.ts"]
+  "include": ["./src", "./test", "./playwright.config.ts", "types", "./types"]
 }

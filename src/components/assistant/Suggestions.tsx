@@ -4,7 +4,8 @@ import explainCodePrompt from '@/prompts/explain-code.md?raw'
 import fixCodePrompt from '@/prompts/fix-code.md?raw'
 import refactorCodePrompt from '@/prompts/refactor-code.md?raw'
 import testCodePrompt from '@/prompts/test-code.md?raw'
-import {AttachmentType, useState} from '@/state'
+import {useState} from '@/state'
+import {AttachmentType} from '@/types'
 import {Button, ButtonGroup} from '../Button'
 
 const SuggestionsContainer = styled('div')`

@@ -1,5 +1,6 @@
 import {type Accessor, createMemo} from 'solid-js'
-import {type File, Page, useState} from '@/state'
+import {useState} from '@/state'
+import {type File, Page} from '@/types'
 
 export const useCurrentFile = (): Accessor<File | undefined> => {
   const {store, canvasService, fileService} = useState()

@@ -1,15 +1,8 @@
 import type {SetStoreFunction} from 'solid-js/store'
 import {DB} from '@/db'
 import {info} from '@/remote/log'
-import {
-  type Canvas,
-  type File,
-  isCanvas,
-  isEditorElement,
-  isFile,
-  isLinkElement,
-  type State,
-} from '@/state'
+import {isCanvas, isEditorElement, isFile, isLinkElement} from '@/state'
+import type {Canvas, File, State} from '@/types'
 import type {CanvasService} from './CanvasService'
 import {FileService} from './FileService'
 import type {MenuTreeItem, TreeService} from './TreeService'

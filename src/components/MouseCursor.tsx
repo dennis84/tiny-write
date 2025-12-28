@@ -3,7 +3,8 @@ import {createMemo, For, onCleanup, onMount, Show} from 'solid-js'
 import {createStore} from 'solid-js/store'
 import {styled} from 'solid-styled-components'
 import type {Awareness} from 'y-protocols/awareness'
-import {Page, useState} from '@/state'
+import {useState} from '@/state'
+import {Page} from '@/types'
 
 const CursorContainer = styled('div')`
   position: fixed;
@@ -71,7 +72,7 @@ interface Cursor {
 }
 
 const MouseCursorActive = (props: {awareness: Awareness}) => {
-  const {store, canvasService, fileService} = useState()
+  const {store, canvasService, collabService, fileService} = useState()
   const [cursors, setCursors] = createStore<Cursor[]>([])
 
   const zoom = () =>
@@ -89,7 +90,7 @@ const MouseCursorActive = (props: {awareness: Awareness}) => {
   })
 
   const onAwarenessChange = ({added, updated, removed}: any) => {
-    const y = store.collab?.ydoc
+    const y = collabService?.ydoc
 
     if (!y) return
 
@@ -175,10 +176,10 @@ const MouseCursorActive = (props: {awareness: Awareness}) => {
 }
 
 export const MouseCursor = () => {
-  const {store} = useState()
+  const {collabService} = useState()
   return (
-    <Show when={store.collab?.started}>
-      <Show when={store.collab?.provider.awareness}>
+    <Show when={collabService.started()}>
+      <Show when={collabService.provider?.awareness}>
         {(awareness) => <MouseCursorActive awareness={awareness()} />}
       </Show>
     </Show>
