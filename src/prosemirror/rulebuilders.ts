@@ -1,6 +1,11 @@
 import {InputRule} from 'prosemirror-inputrules'
+import type {Attrs} from 'prosemirror-model'
 
-export const markInputRule = (regexp: RegExp, name: string, getAttrs: any = undefined) =>
+export const markInputRule = (
+  regexp: RegExp,
+  name: string,
+  getAttrs?: (match: RegExpMatchArray) => Attrs | null,
+) =>
   new InputRule(regexp, (state, match, start, end) => {
     const attrs = getAttrs ? getAttrs(match) : getAttrs
     const tr = state.tr
@@ -31,7 +36,11 @@ export const markInputRule = (regexp: RegExp, name: string, getAttrs: any = unde
     return tr
   })
 
-export const nodeInputRule = (regexp: RegExp, name: string, getAttrs: any = undefined) =>
+export const nodeInputRule = (
+  regexp: RegExp,
+  name: string,
+  getAttrs?: (match: RegExpMatchArray) => Attrs | null,
+) =>
   new InputRule(regexp, (state, match, start, end) => {
     const attrs = getAttrs ? getAttrs(match) : getAttrs
     const tr = state.tr

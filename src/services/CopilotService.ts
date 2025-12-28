@@ -351,7 +351,7 @@ export class CopilotService {
   private async getStreamResponse(
     data: Response,
     onDone: () => void,
-    onChunk: (chunk: any) => void,
+    onChunk: (chunk: Chunk) => void,
   ) {
     const reader = data.body?.getReader()
     const decoder = new TextDecoder()
@@ -359,7 +359,7 @@ export class CopilotService {
 
     if (!reader) return
 
-    const parseLine = (s: string) => {
+    const parseLine = (s: string): Chunk | undefined => {
       try {
         const data = s.substring('data: '.length)
         if (data === '[DONE]') return undefined

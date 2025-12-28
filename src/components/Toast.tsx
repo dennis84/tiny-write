@@ -68,9 +68,9 @@ export const Toast = () => {
     toastService.close()
   }
 
-  createEffect((prevId: any) => {
+  createEffect((prevId: NodeJS.Timeout | undefined) => {
     const toast = toastService.current()
-    let timeoutId: any
+    let timeoutId: NodeJS.Timeout | undefined
 
     if (prevId) clearTimeout(prevId)
     if (toast) {

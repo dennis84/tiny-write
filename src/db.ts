@@ -1,5 +1,5 @@
 import {differenceInDays} from 'date-fns'
-import {type DBSchema, openDB} from 'idb'
+import {type DBSchema, type IDBPDatabase, openDB} from 'idb'
 import {unwrap} from 'solid-js/store'
 import type {AiConfig, Camera, Config, ElementType, LocationState, Thread, Window} from '@/types'
 import {info} from './remote/log'
@@ -87,7 +87,7 @@ const DB_NAME = 'tiny_write'
 
 // Increment version and add new scheme:
 const dbPromise = openDB<MyDB>(DB_NAME, 4, {
-  upgrade(db: any, oldVersion, newVersion) {
+  upgrade(db: IDBPDatabase<MyDB>, oldVersion, newVersion) {
     if (!newVersion) return
 
     info(`Upgrade DB from version ${oldVersion} to ${newVersion}`)

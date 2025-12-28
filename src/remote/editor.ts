@@ -26,7 +26,10 @@ export const readText = async (path: string): Promise<string> => {
   return invoke('read_text', {path})
 }
 
-export const replaceText = async (path: string, data: any): Promise<void> => {
+export const replaceText = async (
+  path: string,
+  data: {text: string; language?: string},
+): Promise<void> => {
   return await invoke('replace_text', {path, data})
 }
 
@@ -34,11 +37,14 @@ export const writeFile = async (path: string): Promise<void> => {
   return await invoke('write_file', {path})
 }
 
-export const insertText = async (path: string, data: any) => {
+export const insertText = async (
+  path: string,
+  data: {fromA: number; toB: number; text: string},
+) => {
   return await invoke('insert_text', {path, data})
 }
 
-export const deleteText = async (path: string, data: any) => {
+export const deleteText = async (path: string, data: {fromA: number; toA: number}) => {
   return await invoke('delete_text', {path, data})
 }
 

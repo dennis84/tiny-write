@@ -22,11 +22,11 @@ export const Appearance = () => {
 
   const changeFont = (font: FontName) => configService.updateConfig({font})
 
-  const onChangeFontSize = (e: any) =>
-    configService.updateConfig({fontSize: Number(e.target.value)})
+  const onChangeFontSize = (e: InputEvent) =>
+    configService.updateConfig({fontSize: Number((e.target as HTMLInputElement).value)})
 
-  const onChangeContentWidth = (e: any) =>
-    configService.updateConfig({contentWidth: Number(e.target.value)})
+  const onChangeContentWidth = (e: InputEvent) =>
+    configService.updateConfig({contentWidth: Number((e.target as HTMLInputElement).value)})
 
   return (
     <MenuDrawer>
