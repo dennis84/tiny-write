@@ -49,8 +49,7 @@ export const ChatInputAttachments = () => {
   createEffect(() => {
     if (!store.ai?.autoContext) return
 
-    // Listen on editor changes
-    if (!store.lastTr) return
+    store.lastTr // Listen on editor changes
 
     const currentFile = fileService.currentFile
     const editorView = currentFile?.codeEditorView
@@ -79,11 +78,6 @@ export const ChatInputAttachments = () => {
         codeLang: currentFile.codeLang,
       }
 
-      // Don't add selection if same content already in thread
-      if (hasMessageWithAttachment(attachment)) {
-        return
-      }
-
       threadService.addAttachment(attachment)
       return
     }
@@ -100,11 +94,6 @@ export const ChatInputAttachments = () => {
       fileId: currentFile.id,
       codeLang: currentFile.codeLang,
       content,
-    }
-
-    // Don't add current file if same content already in thread
-    if (hasMessageWithAttachment(attachment)) {
-      return
     }
 
     threadService.addAttachment(attachment)
