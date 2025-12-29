@@ -1,11 +1,13 @@
 import {styled} from 'solid-styled-components'
 import {isClipped} from '../code/Style'
+import {standardMarkdown} from '../editor/Style'
 
 export const chatBubble = `
   position: relative;
   border-radius: var(--border-radius);
   font-size: var(--font-size);
   line-height: var(--line-height);
+  ${standardMarkdown}
   .cm-editor {
     ${isClipped}
     font-size: var(--menu-font-size);
@@ -45,7 +47,7 @@ export const ChatInputContainer = styled('div')`
 `
 
 // biome-ignore format: ternary breaks ugly
-export const ChatInputBorder = styled('div')`
+export const ChatInputBorder = styled("div")`
   scroll-margin-bottom: 50px;
   border: 1px solid var(--primary-background);
   border-radius: var(--border-radius);

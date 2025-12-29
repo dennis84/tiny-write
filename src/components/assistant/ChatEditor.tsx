@@ -16,10 +16,12 @@ import {onEnterDoubleNewline} from '@/prosemirror/on-enter-double-newline'
 import {createPasteMarkdownPlugin} from '@/prosemirror/paste-markdown'
 import {placeholder} from '@/prosemirror/placeholder'
 import {schema} from '@/prosemirror/schema'
+import {createTablePlugins, tableKeymap} from '@/prosemirror/table'
 import {useState} from '@/state'
 import {ChatInputEditor} from '../editor/Style'
 
 interface Props {
+  content?: string
   setEditorView?: (view: EditorView) => void
   onSubmit?: (state: EditorState) => void
   onFocus?: (focus: boolean) => void
@@ -46,6 +48,7 @@ export const ChatEditor = (props: Props) => {
       keymap(baseKeymap),
       codeBlockKeymap,
       codeKeymap,
+      tableKeymap,
       // plugins
       placeholder('Ask Copilot ...'),
       createMarkdownPlugins(schema),
@@ -53,10 +56,13 @@ export const ChatEditor = (props: Props) => {
       inputRules({rules: [codeInputRule, ...emphasisInputRules]}),
       createInputParserPlugin(createMarkdownParser(schema)),
       createPasteMarkdownPlugin(schema),
+      ...createTablePlugins(schema),
     ]
 
     const {nodeViews} = proseMirrorService.createNodeViews()
-    const state = EditorState.create({schema, plugins})
+    const parser = createMarkdownParser(schema)
+    const doc = props.content ? parser.parse(props.content) : undefined
+    const state = EditorState.create({doc, schema, plugins})
     const view = new EditorView(chatInputRef, {
       state,
       nodeViews,

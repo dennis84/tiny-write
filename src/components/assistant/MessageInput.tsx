@@ -46,6 +46,7 @@ export const MessageInput = (props: Props) => {
     <ChatInputBorder data-testid="message_input" focused={focused()}>
       <ChatInputEditorRow>
         <ChatEditor
+          content={props.message.content}
           setEditorView={(view) => setEditorView(view)}
           onSubmit={() => onUpdate()}
           onFocus={setFocused}

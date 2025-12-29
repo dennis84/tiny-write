@@ -45,6 +45,7 @@ const Content = styled('div')`
 const SearchInput = styled('input')`
   height: 40px;
   padding: 0 20px;
+  width: 100%;
   border-radius: 30px;
   font-size: var(--menu-font-size);
   outline: none;

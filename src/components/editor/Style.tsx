@@ -61,6 +61,126 @@ export const codeBlock = (props: Props) => `
   }
 `
 
+export const standardMarkdown = `
+  strong {
+    font-family: var(--font-family-bold);
+    font-weight: normal;
+  }
+  em {
+    font-family: var(--font-family-italic);
+    font-style: normal;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    margin: 0;
+  }
+  h1 {
+    font-size: var(--font-size-h1);
+    font-weight: 800;
+    line-height: var(--line-height-h1);
+  }
+  h2 {
+    font-size: var(--font-size-h2);
+  }
+  h3 {
+    font-size: var(--font-size-h3);
+  }
+  h4, h5, h6 {
+    font-size: var(--font-size);
+  }
+  p {
+    margin: 10px 0;
+    display: flow-root;
+  }
+  > ul, ol {
+    padding: 0;
+  }
+  > ul > li, > ol > li {
+    margin-left: 30px;
+  }
+  blockquote {
+    border-left: 10px solid var(--foreground-20);
+    padding-left: 10px;
+    margin: 0;
+  }
+  code {
+    border: 1px solid var(--foreground-50);
+    background: var(--foreground-10);
+    border-radius: var(--border-radius);
+    font-family: var(--font-family-monospace) !important;
+    padding: 2px 5px;
+  }
+  a, .edit-link {
+    color: var(--primary-background);
+  }
+  .horizontal-rule {
+    margin: 40px 0;
+    height: 5px;
+    line-height: 5px;
+    background: var(--foreground-20);
+    border-radius: var(--border-radius);
+    page-break-before: always;
+    @media print {
+      opacity: 0;
+      margin: 0;
+      height: 0;
+    }
+  }
+  table {
+    width: 100%;
+    margin: 5px 0;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--foreground-20);
+    text-align: left;
+    th, td {
+      padding: 10px 15px;
+      vertical-align: top;
+      border: 1px solid var(--foreground-20);
+      border-top: 0;
+      border-right: 0;
+      position: relative;
+    }
+    th:first-child, td:first-child {
+      border-left: 0;
+    }
+    th {
+      background: var(--foreground-5);
+      color: var(--foreground-80);
+      font-family: var(--font-family-bold);
+    }
+    tr:last-child td {
+      border-bottom: 0;
+    }
+    &.selected {
+      box-shadow: 0 0 0 5px var(--selection-border);
+    }
+  }
+  .task-list {
+    margin: 10px 0;
+    padding: 0;
+    .task-list {
+      margin: 0;
+    }
+  }
+  .task-list-item {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: baseline;
+    p {
+      margin: 0;
+    }
+    input {
+      margin-right: 8px;
+    }
+    &.checked > div > p {
+      text-decoration: line-through;
+      opacity: 0.6;
+    }
+  }
+`
+
 const proseMirror = (props: Props) => `
   .ProseMirror {
     ${codeBlock(props)}
@@ -75,106 +195,16 @@ const proseMirror = (props: Props) => `
     line-height: var(--line-height);
     outline: none !important;
     background: transparent;
-    strong {
-      font-family: var(--font-family-bold);
-      font-weight: normal;
-    }
-    em {
-      font-family: var(--font-family-italic);
-      font-style: normal;
-    }
-    h1, h2, h3, h4, h5, h6 {
-      margin: 0;
-    }
-    h1 {
-      font-size: var(--font-size-h1);
-      font-weight: 800;
-      line-height: var(--line-height-h1);
-    }
-    h2 {
-      font-size: var(--font-size-h2);
-    }
-    h3 {
-      font-size: var(--font-size-h3);
-    }
-    h4, h5, h6 {
-      font-size: var(--font-size);
+    ${standardMarkdown}
+    a, .edit-link {
+      color: var(--primary-background);
+      pointer-events: none;
     }
     p.truncate {
       overflow: hidden;
       max-width: 75ch;
       text-overflow: ellipsis;
       white-space: nowrap;
-    }
-    p {
-      margin: 10px 0;
-      display: flow-root;
-    }
-    > ul, ol {
-      padding: 0;
-    }
-    > ul > li, > ol > li {
-      margin-left: 30px;
-    }
-    blockquote {
-      border-left: 10px solid var(--foreground-20);
-      padding-left: 10px;
-      margin: 0;
-    }
-    code {
-      border: 1px solid var(--foreground-50);
-      background: var(--foreground-10);
-      border-radius: var(--border-radius);
-      font-family: var(--font-family-monospace) !important;
-      padding: 2px 5px;
-    }
-    a, .edit-link {
-      color: var(--primary-background);
-      pointer-events: none;
-    }
-    .horizontal-rule {
-      margin: 40px 0;
-      height: 5px;
-      line-height: 5px;
-      background: var(--foreground-20);
-      border-radius: var(--border-radius);
-      page-break-before: always;
-      @media print {
-        opacity: 0;
-        margin: 0;
-        height: 0;
-      }
-    }
-    table {
-      width: 100%;
-      margin: 5px 0;
-      border-collapse: separate;
-      border-spacing: 0;
-      border-radius: var(--border-radius);
-      border: 1px solid var(--foreground-20);
-      text-align: left;
-      th, td {
-        padding: 10px 15px;
-        vertical-align: top;
-        border: 1px solid var(--foreground-20);
-        border-top: 0;
-        border-right: 0;
-        position: relative;
-      }
-      th:first-child, td:first-child {
-        border-left: 0;
-      }
-      th {
-        background: var(--foreground-5);
-        color: var(--foreground-80);
-        font-family: var(--font-family-bold);
-      }
-      tr:last-child td {
-        border-bottom: 0;
-      }
-      &.selected {
-        box-shadow: 0 0 0 5px var(--selection-border);
-      }
     }
     .placeholder {
       color: var(--foreground-50);
@@ -185,29 +215,6 @@ const proseMirror = (props: Props) => `
     }
     .draggable {
       position: relative;
-    }
-    .task-list {
-      margin: 10px 0;
-      padding: 0;
-      .task-list {
-        margin: 0;
-      }
-    }
-    .task-list-item {
-      margin: 0;
-      padding: 0;
-      display: flex;
-      align-items: baseline;
-      p {
-        margin: 0;
-      }
-      input {
-        margin-right: 8px;
-      }
-      &.checked > div > p {
-        text-decoration: line-through;
-        opacity: 0.6;
-      }
     }
     .container-tip, .container-warning, .container-details {
       padding: 20px;
@@ -344,7 +351,7 @@ export const ChatInputEditor = styled('div')`
   ${(props: any) => proseMirror(props)}
   .ProseMirror {
     .cm-container {
-       background: var(--background-20);
+      background: var(--background-20);
     }
   }
 `
