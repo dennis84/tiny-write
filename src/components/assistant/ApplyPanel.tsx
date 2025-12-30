@@ -12,10 +12,9 @@ import {useState} from '@/state'
 import {IconButton} from '../Button'
 import {IconAdd, IconContentCopy, IconMerge} from '../Icon'
 import {TooltipHelp} from '../TooltipHelp'
+import type {CodeFenceInfo} from './MessageMarkdown'
 
 const ApplyPanelEl = styled('div')`
-  position: ${(props: any) => (props.hasTitle ? 'static' : 'absolute')};
-  padding: 2px;
   padding-left: 20px;
   width: 100%;
   display: grid;
@@ -28,19 +27,17 @@ const ApplyPanelEl = styled('div')`
 export interface ApplyPanelState {
   editorView: EditorView
   dom: Element
-  id?: string
-  range?: [number, number]
-  file?: string
+  info: CodeFenceInfo
 }
 
 export const ApplyPanel = (p: {state: ApplyPanelState}) => {
   const {fileService, threadService, treeService} = useState()
   const {openFile} = useOpen()
 
-  const file = p.state.id ? fileService.findFileById(p.state.id) : undefined
+  const file = p.state.info.attrs?.id ? fileService.findFileById(p.state.info.attrs.id) : undefined
   const title = useTitle({
     item: file,
-    fallback: false,
+    fallback: true,
     useCurrent: false,
   })
 
@@ -55,7 +52,7 @@ export const ApplyPanel = (p: {state: ApplyPanelState}) => {
     if (!currentThread) return
 
     const doc = p.state.editorView.state.doc.toString()
-    const range = p.state.range
+    const range = p.state.info.attrs?.range
 
     openFile(file, {merge: {doc, range}})
   }
@@ -68,7 +65,7 @@ export const ApplyPanel = (p: {state: ApplyPanelState}) => {
 
     const file = await fileService.newFile({
       id,
-      newFile: p.state.file,
+      newFile: p.state.info.attrs?.file,
       ydoc: Y.encodeStateAsUpdate(ydoc),
       code: true,
     })
@@ -80,14 +77,14 @@ export const ApplyPanel = (p: {state: ApplyPanelState}) => {
   return (
     <Portal mount={p.state.dom}>
       <Suspense>
-        <ApplyPanelEl hasTitle={title() !== undefined} data-testid="apply_panel">
-          <span>{title()}</span>
+        <ApplyPanelEl data-testid="apply_panel">
+          <span>{title() ?? p.state.info.lang ?? 'text'}</span>
           <TooltipHelp title="Copy">
             <IconButton onClick={onCopy} data-testid="panel_button_copy">
               <IconContentCopy />
             </IconButton>
           </TooltipHelp>
-          <Show when={!file && p.state.file}>
+          <Show when={!file && p.state.info.attrs?.file}>
             <TooltipHelp title="Create file">
               <IconButton onClick={onCreateFile} data-testid="panel_button_create">
                 <IconAdd />

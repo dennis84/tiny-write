@@ -22,7 +22,13 @@
       "suspicious": {
         "noAssignInExpressions": "off",
         "noExplicitAny": "off",
-        "useAdjacentOverloadSignatures": "off"
+        "useAdjacentOverloadSignatures": "off",
+        "noConsole": {
+          "level": "on",
+          "options": {
+            "allow": ["debug", "info", "warn", "error"]
+          }
+        }
       },
       "nursery": {
         "noFloatingPromises": "error"

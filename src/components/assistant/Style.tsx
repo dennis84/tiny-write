@@ -20,7 +20,8 @@ export const chatBubble = `
       }
     }
     .cm-content {
-      padding: 12px;
+      padding: 10px;
+      padding-top: 0; /* no magin to apply panel */
     }
     .cm-panels {
       position: static;

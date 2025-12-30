@@ -20,6 +20,11 @@ export interface TokenItem {
   openNode: Token
 }
 
+export interface CodeFenceInfo {
+  lang?: string
+  attrs?: {id?: string; range?: [number, number]; file?: string}
+}
+
 interface Props {
   content: string
 }
@@ -36,20 +41,19 @@ export const MessageMarkdown = (props: Props) => {
   })
 
   const applyPanel =
-    (id?: string, range?: [number, number], file?: string) =>
+    (info: CodeFenceInfo) =>
     (editorView: EditorView): Panel => {
       const dom = document.createElement('div')
       return {
         top: true,
         dom,
         mount: () => {
-          setApplyPanels((prev) => [...prev, {dom, editorView, id, range, file}])
+          setApplyPanels((prev) => [...prev, {dom, editorView, info}])
         },
       }
     }
 
-  const copilotApply = (id?: string, range?: [number, number], file?: string) =>
-    showPanel.of(applyPanel(id, range, file))
+  const copilotApply = (info: CodeFenceInfo) => showPanel.of(applyPanel(info))
 
   const CodeFence = (p: {item: TokenItem}) => {
     let ref!: HTMLDivElement
@@ -58,14 +62,16 @@ export const MessageMarkdown = (props: Props) => {
     const langCompartment = new Compartment()
     const copilotApplyCompartment = new Compartment()
 
-    const parseInfo = () => {
+    const parseInfo = (): CodeFenceInfo => {
       let lang: string | undefined
-      let attrs: string | undefined
+      let rest = ''
       if (p.item.openNode.info) {
         const arr = p.item.openNode.info.split(/(\s+)/g)
         lang = arr[0]
-        attrs = arr.slice(2).join('')
+        rest = arr.slice(2).join('')
       }
+
+      const attrs = parseCodeBlockAttrs(rest)
 
       return {lang, attrs}
     }
@@ -77,7 +83,6 @@ export const MessageMarkdown = (props: Props) => {
         const theme = getTheme(configService.codeTheme.value)
         const lang = getLanguageConfig(info.lang)
         const doc = p.item.openNode.content.replace(/\n$/, '')
-        const attrs = parseCodeBlockAttrs(info.attrs ?? '')
 
         view = new EditorView({
           parent: ref,
@@ -88,7 +93,7 @@ export const MessageMarkdown = (props: Props) => {
             theme,
             langCompartment.of(lang.highlight()),
             clipPlugin,
-            copilotApplyCompartment.of(copilotApply(attrs.id, attrs.range, attrs.file)),
+            copilotApplyCompartment.of(copilotApply(info)),
           ],
         })
 
@@ -106,14 +111,13 @@ export const MessageMarkdown = (props: Props) => {
         // chunk: typescript\n
         const info = parseInfo()
         const lang = getLanguageConfig(info.lang)
-        const attrs = parseCodeBlockAttrs(info.attrs ?? '')
 
         view.dispatch({
           changes: {from, to: docLen, insert: content.slice(from)},
           annotations: Transaction.addToHistory.of(false),
           effects: [
             langCompartment.reconfigure(lang.highlight()),
-            copilotApplyCompartment.reconfigure(copilotApply(attrs.id, attrs.range, attrs.file)),
+            copilotApplyCompartment.reconfigure(copilotApply(info)),
           ],
         })
       }

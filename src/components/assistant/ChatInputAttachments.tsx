@@ -33,18 +33,6 @@ export const ChatInputAttachments = () => {
     })
   })
 
-  const hasMessageWithAttachment = (attachment: Attachment) => {
-    let result = false
-
-    threadService.traverseTree((it) => {
-      if (it.value.attachments?.some((a) => a.content === attachment.content)) {
-        result = true
-      }
-    })
-
-    return result
-  }
-
   // Adds current code file to context if autoContext is enabled
   createEffect(() => {
     if (!store.ai?.autoContext) return

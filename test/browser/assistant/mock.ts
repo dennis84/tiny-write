@@ -6,7 +6,7 @@ type ObjectData = Record<string, unknown>
 type Data = Record<string, ArrayData | ObjectData>
 
 export const setupDB = async (page: Page, data: Data) => {
-  console.info(`Setup IndexedDB with data: ${JSON.stringify(data)}`)
+  console.debug(`Setup IndexedDB with data: ${JSON.stringify(data)}`)
 
   await page.goto('/editor')
   await page.evaluate((d) => {
@@ -32,7 +32,7 @@ export const setupDB = async (page: Page, data: Data) => {
     }
   }, data)
 
-  console.info('Setup IndexedDB done')
+  console.debug('Setup IndexedDB done')
 }
 
 export const mockCopilotLogin = async (page: Page) => {
