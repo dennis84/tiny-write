@@ -32,11 +32,6 @@ export const chatBubble = `
   .fence-container {
     margin-bottom: 10px;
   }
-  pre:not(.cm-rendered) {
-    background: var(--foreground-10);
-    border-radius: var(--border-radius);
-    padding: 5px;
-  }
   a {
     color: var(--primary-background);
   }
@@ -53,7 +48,6 @@ export const ChatInputBorder = styled("div")`
   border: 1px solid var(--primary-background);
   border-radius: var(--border-radius);
   padding: 10px 20px;
-  background: var(--foreground-5);
   font-size: var(--menu-font-size);
   font-family: var(--menu-font-family);
   ${(props: any) => props.focused ? `

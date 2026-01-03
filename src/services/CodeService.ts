@@ -240,10 +240,6 @@ export class CodeService {
   private async saveEditor(file: File, update: ViewUpdate) {
     await FileService.saveFile(file)
 
-    if (!update.docChanged) {
-      return
-    }
-
     const path = file.path
     if (path) {
       update.changes.iterChanges(async (fromA, toA, _fromB, toB, insert) => {

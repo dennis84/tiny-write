@@ -4,9 +4,9 @@ import {styled} from 'solid-styled-components'
 import {v4 as uuidv4} from 'uuid'
 import type {Chunk} from '@/services/CopilotService'
 import {useState} from '@/state'
-import type {Message} from '@/types'
+import {type Message, Page} from '@/types'
 import {Button, ButtonGroup, IconButton} from '../Button'
-import {IconAdd, IconKeyboardArrowDown} from '../Icon'
+import {IconAdd, IconKeyboardArrowDown, IconKeyboardArrowUp} from '../Icon'
 import {ChatInput} from './ChatInput'
 import {MessageAnswer} from './MessageAnswer'
 import {MessageQuestion} from './MessageQuestion'
@@ -47,27 +47,25 @@ export const Chat = (props: Props) => {
   let inputRef!: HTMLDivElement
   let containerRef!: HTMLDivElement
 
-  const {configService, copilotService, threadService, toastService} = useState()
+  const {store, configService, copilotService, threadService, toastService} = useState()
   const [focus, setFocus] = createSignal(true)
-  const [autoScrolling, setAutoScrolling] = createSignal(true)
+  const [isAtBottom, setIsAtBottom] = createSignal(false)
 
   const scrollToBottom = () => {
-    props.scrollContent().scrollTo({
-      top: props.scrollContent().scrollHeight,
-      behavior: 'smooth',
-    })
+    const top = props.scrollContent().scrollHeight + 100
+    props.scrollContent().scrollTo({top, behavior: 'smooth'})
+    setIsAtBottom(true)
   }
 
-  const isAtBottom = () =>
-    props.scrollContent().scrollHeight -
-      props.scrollContent().scrollTop -
-      props.scrollContent().clientHeight <
-    10
+  const scrollToTop = () => {
+    props.scrollContent().scrollTo({top: 0, behavior: 'smooth'})
+    setIsAtBottom(false)
+  }
 
   const focusInput = () => {
     setFocus(false)
     setFocus(true)
-    setAutoScrolling(true)
+    setIsAtBottom(true)
   }
 
   const addUserMessage = async (input: Message) => {
@@ -85,6 +83,7 @@ export const Chat = (props: Props) => {
 
     // Create answer message directly to visualize loading
     threadService.streamLastMessage(messageId, parentId, '')
+    scrollToBottom()
 
     try {
       await copilotService.completions(
@@ -93,7 +92,6 @@ export const Chat = (props: Props) => {
           for (const choice of chunk.choices) {
             const chunk = choice.delta?.content ?? choice.message?.content ?? ''
             threadService.streamLastMessage(messageId, parentId, chunk)
-            if (autoScrolling()) scrollToBottom()
           }
         },
         async () => {
@@ -136,11 +134,20 @@ export const Chat = (props: Props) => {
   onMount(() => {
     const gesture = new WheelGesture(
       props.scrollContent(),
-      () => {
-        // activate auto scrolling when at bottom
-        setAutoScrolling(isAtBottom())
+      ({event, velocity: [_, y]}) => {
+        // Only on user input not programmatic scroll
+        if (!event.deltaY) return
+        if (Math.abs(y) < 0.5) return
+
+        const newValue =
+          props.scrollContent().scrollHeight -
+            props.scrollContent().scrollTop -
+            props.scrollContent().clientHeight <
+          90 // ~ the height of the input area
+
+        setIsAtBottom(newValue)
       },
-      {threshold: 10},
+      {threshold: 10}, // Ignore scrolls smaller than 10px
     )
 
     onCleanup(() => {
@@ -196,10 +203,17 @@ export const Chat = (props: Props) => {
       <Show when={focus() && configService.codeTheme} keyed>
         <ChatInput ref={inputRef} dropArea={props.scrollContent} onMessage={onInputMessage} />
       </Show>
-      <Show when={!autoScrolling()}>
+      <Show when={!isAtBottom()}>
         <ScrollDown>
           <IconButton onClick={() => scrollToBottom()}>
             <IconKeyboardArrowDown />
+          </IconButton>
+        </ScrollDown>
+      </Show>
+      <Show when={store.location?.page === Page.Assistant && isAtBottom()}>
+        <ScrollDown>
+          <IconButton onClick={() => scrollToTop()}>
+            <IconKeyboardArrowUp />
           </IconButton>
         </ScrollDown>
       </Show>

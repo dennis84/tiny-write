@@ -45,6 +45,7 @@ import MaterialSymbolsGroup from '~icons/material-symbols/group'
 import MaterialSymbolsHistory from '~icons/material-symbols/history'
 import MaterialSymbolsImage from '~icons/material-symbols/image'
 import MaterialSymbolsKeyboardArrowDown from '~icons/material-symbols/keyboard-arrow-down'
+import MaterialSymbolsKeyboardArrowUp from '~icons/material-symbols/keyboard-arrow-up'
 import MaterialSymbolsLanguage from '~icons/material-symbols/language'
 import MaterialSymbolsLightMode from '~icons/material-symbols/light-mode'
 import MaterialSymbolsLink from '~icons/material-symbols/link'
@@ -399,6 +400,12 @@ export const IconSend = () => (
 export const IconKeyboardArrowDown = () => (
   <SvgIcon>
     <MaterialSymbolsKeyboardArrowDown />
+  </SvgIcon>
+)
+
+export const IconKeyboardArrowUp = () => (
+  <SvgIcon>
+    <MaterialSymbolsKeyboardArrowUp />
   </SvgIcon>
 )
 
