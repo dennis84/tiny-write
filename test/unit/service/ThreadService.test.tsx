@@ -128,7 +128,7 @@ test('addMessage - path', async () => {
   expect(messages2.nextId).toBe(undefined)
 })
 
-test('streamLastMessage', async () => {
+test('addChunk', async () => {
   const initial = createState({
     location: {
       page: Page.Assistant,
@@ -147,11 +147,11 @@ test('streamLastMessage', async () => {
   const service = new ThreadService(store, setState, copilotService)
   service.messageTree.updateAll(store.threads[0].messages)
 
-  service.streamLastMessage('2', '1', 'A')
+  service.addChunk('2', '1', 'A')
   expect(store.threads[0].messages[1].content).toBe('A')
-  service.streamLastMessage('2', '1', 'b')
+  service.addChunk('2', '1', 'b')
   expect(store.threads[0].messages[1].content).toBe('Ab')
-  service.streamLastMessage('2', '1', 'c')
+  service.addChunk('2', '1', 'c')
   expect(store.threads[0].messages[1].content).toBe('Abc')
 
   expect(store.threads[0].messages).toHaveLength(2)
@@ -182,7 +182,7 @@ test('removeMessage', async () => {
   expect(store.threads[0].messages).toHaveLength(0)
 })
 
-test('setError', async () => {
+test('interrupt', async () => {
   const initial = createState({
     location: {
       page: Page.Assistant,
@@ -191,7 +191,10 @@ test('setError', async () => {
     threads: [
       {
         id: '1',
-        messages: [{id: '1', role: 'user', content: '1'}],
+        messages: [
+          {id: '1', role: 'user', content: '1'},
+          {id: '2', role: 'user', content: '2'},
+        ],
       },
     ],
   })
@@ -200,9 +203,9 @@ test('setError', async () => {
   const copilotService = mock<CopilotService>()
   const service = new ThreadService(store, setState, copilotService)
 
-  service.setError('fail')
+  service.interrupt('2')
 
-  expect(store.threads[0].messages[0].error).toBe('fail')
+  expect(store.threads[0].messages[1].interrupted).toEqual(true)
 })
 
 test('updateTitle', async () => {
@@ -476,13 +479,6 @@ test('generateTitle', async () => {
 test.each<[Message[], number]>([
   [[], 0],
   [[{id: '1', role: 'assistant', content: ''}], 0],
-  [
-    [
-      {id: '1', role: 'user', content: ''},
-      {id: '2', parentId: '1', role: 'user', content: '', error: 'error'},
-    ],
-    1,
-  ],
   [[{id: '1', role: 'user', content: '```'}], 2],
 ])('getMessages', async (messages, count) => {
   const initial = createState({

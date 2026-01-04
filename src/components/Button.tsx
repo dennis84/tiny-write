@@ -180,3 +180,9 @@ export const IconButton = (props: ButtonAttrs) => (
     <Ripples />
   </IconButtonEl>
 )
+
+export const ButtonSpan = styled('span')`
+  ${Common}
+  color: var(--foreground);
+  cursor: var(--cursor-default);
+`

@@ -143,7 +143,9 @@ export class ThreadService {
     await this.saveThread()
   }
 
-  streamLastMessage(id: string, parentId: string | undefined, chunk: string) {
+  addChunk(id: string, parentId: string | undefined, chunk: string) {
+    info(`Stream message chunk (id=${id}, parentId=${parentId}, chunk=${chunk})`)
+
     const currentThread = this.currentThread
     if (!currentThread) return
 
@@ -165,6 +167,22 @@ export class ThreadService {
     this.messageTree.updateValue(message)
   }
 
+  interrupt(id: string) {
+    info(`Interrupt message streaming (id=${id})`)
+
+    const currentThread = this.currentThread
+    if (!currentThread) return
+
+    const currentThreadIndex = this.currentThreadIndex
+
+    const messageIndex = currentThread.messages.findIndex((m) => m.id === id)
+
+    this.setState('threads', currentThreadIndex, 'messages', messageIndex, 'interrupted', true)
+
+    const message = this.store.threads[currentThreadIndex].messages[messageIndex]
+    this.messageTree.updateValue(message)
+  }
+
   async removeMessage(message: Message) {
     const currentThread = this.currentThread
     if (!currentThread) return
@@ -180,20 +198,6 @@ export class ThreadService {
     this.messageTree.remove(message.id)
 
     await this.saveThread()
-  }
-
-  setError(error: string) {
-    const currentThread = this.currentThread
-    if (!currentThread) return
-
-    const currentThreadIndex = this.currentThreadIndex
-    const messageIndex = currentThread.messages.length - 1
-
-    info(`Set error to last message (error=${error})`)
-    this.setState('threads', currentThreadIndex, 'messages', messageIndex, 'error', error)
-
-    const message = this.store.threads[currentThreadIndex].messages[messageIndex]
-    this.messageTree.updateValue(message)
   }
 
   async updateTitle(title: string, currentThread = this.currentThread) {
@@ -328,7 +332,7 @@ export class ThreadService {
   getParentId(): string | undefined {
     let parentId: string | undefined
     this.traverseTree((it) => {
-      if (!it.value.error) parentId = it.value.id
+      parentId = it.value.id
     })
 
     return parentId
@@ -344,11 +348,8 @@ export class ThreadService {
 
     this.traverseTree((it) => {
       nextId = currentThread.path?.get(it.id)
-
-      if (!it.value.error) {
-        messages.push(this.toChatMessage(it.value))
-        parentId = it.value.id
-      }
+      messages.push(this.toChatMessage(it.value))
+      parentId = it.value.id
     })
 
     // final must be role user

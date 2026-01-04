@@ -120,6 +120,10 @@ export const MessageMarkdown = (props: Props) => {
             copilotApplyCompartment.reconfigure(copilotApply(info)),
           ],
         })
+
+        setTimeout(() => {
+          view?.scrollDOM.scrollTo({top: view.contentDOM.clientHeight})
+        }, 10)
       }
     })
 

@@ -5,8 +5,8 @@ import {copy} from '@/remote/clipboard'
 import {useState} from '@/state'
 import type {TreeItem} from '@/tree'
 import type {Message} from '@/types'
-import {ButtonGroup, IconButton} from '../Button'
-import {IconContentCopy, IconRefresh, Spinner} from '../Icon'
+import {ButtonGroup, ButtonSpan, IconButton} from '../Button'
+import {IconContentCopy, IconHand, IconRefresh, Spinner} from '../Icon'
 import {TooltipHelp} from '../TooltipHelp'
 import {MessageMarkdown} from './MessageMarkdown'
 import {Pagination} from './Pagination'
@@ -65,6 +65,12 @@ export const MessageAnswer = (props: Props) => {
           parentId={props.message.parentId}
           childrenIds={props.childrenIds}
         />
+        <Show when={props.message.value.interrupted}>
+          <ButtonSpan>
+            <IconHand />
+            interrupted
+          </ButtonSpan>
+        </Show>
       </ButtonGroup>
     </AnswerBubble>
   )

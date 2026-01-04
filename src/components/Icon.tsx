@@ -10,6 +10,7 @@ import MaterialSymbolsAddRowBelow from '~icons/material-symbols/add-row-below'
 import MaterialSymbolsArrowBack from '~icons/material-symbols/arrow-back'
 import MaterialSymbolsArrowUpwardRounded from '~icons/material-symbols/arrow-upward-rounded'
 import MaterialSymbolsAttachment from '~icons/material-symbols/attachment'
+import MaterialSymbolsBackHandOutline from '~icons/material-symbols/back-hand-outline'
 import MaterialSymbolsCenterFocusWeakOutline from '~icons/material-symbols/center-focus-weak-outline'
 import MaterialSymbolsCheck from '~icons/material-symbols/check'
 import MaterialSymbolsCheckBoxOutline from '~icons/material-symbols/check-box-outline'
@@ -20,7 +21,7 @@ import MaterialSymbolsClose from '~icons/material-symbols/close'
 import MaterialSymbolsCloud from '~icons/material-symbols/cloud'
 import MaterialSymbolsCloudOff from '~icons/material-symbols/cloud-off'
 import MaterialSymbolsCodeBlocks from '~icons/material-symbols/code-blocks'
-import MaterialSymbolsContentCopy from '~icons/material-symbols/content-copy'
+import MaterialSymbolsContentCopyOutline from '~icons/material-symbols/content-copy-outline'
 import MaterialSymbolsContentCut from '~icons/material-symbols/content-cut'
 import MaterialSymbolsContentPaste from '~icons/material-symbols/content-paste'
 import MaterialSymbolsContrast from '~icons/material-symbols/contrast'
@@ -327,7 +328,7 @@ export const IconCodeBlocks = () => (
 
 export const IconContentCopy = () => (
   <SvgIcon>
-    <MaterialSymbolsContentCopy />
+    <MaterialSymbolsContentCopyOutline />
   </SvgIcon>
 )
 
@@ -406,6 +407,12 @@ export const IconKeyboardArrowDown = () => (
 export const IconKeyboardArrowUp = () => (
   <SvgIcon>
     <MaterialSymbolsKeyboardArrowUp />
+  </SvgIcon>
+)
+
+export const IconHand = () => (
+  <SvgIcon>
+    <MaterialSymbolsBackHandOutline />
   </SvgIcon>
 )
 

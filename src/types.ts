@@ -224,14 +224,10 @@ export interface Message {
   id: string
   parentId?: string
   leftId?: string
-  active?: boolean
   content: string
   attachments?: Attachment[]
   role: ChatRole
-  error?: string
-  fileId?: string
-  selection?: [number, number]
-  codeLang?: string
+  interrupted?: boolean
 }
 
 export interface Thread {

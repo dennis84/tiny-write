@@ -9,7 +9,7 @@ const enableMocking = async () => {
   if (mockAi) {
     const {CopilotMock} = await import('@/utils/CopilotMock')
     info('Setup copilot mock')
-    CopilotMock.setup()
+    CopilotMock.setup({endlessCode: true})
   }
 }
 

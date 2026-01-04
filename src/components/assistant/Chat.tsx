@@ -82,7 +82,7 @@ export const Chat = (props: Props) => {
     const messageId = nextId ?? uuidv4()
 
     // Create answer message directly to visualize loading
-    threadService.streamLastMessage(messageId, parentId, '')
+    threadService.addChunk(messageId, parentId, '')
     scrollToBottom()
 
     try {
@@ -91,7 +91,7 @@ export const Chat = (props: Props) => {
         (chunk: Chunk) => {
           for (const choice of chunk.choices) {
             const chunk = choice.delta?.content ?? choice.message?.content ?? ''
-            threadService.streamLastMessage(messageId, parentId, chunk)
+            threadService.addChunk(messageId, parentId, chunk)
           }
         },
         async () => {
@@ -105,6 +105,9 @@ export const Chat = (props: Props) => {
               // ignore
             }
           }
+        },
+        () => {
+          threadService.interrupt(messageId)
         },
       )
     } catch (error: any) {

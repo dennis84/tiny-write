@@ -264,6 +264,7 @@ export class CopilotService {
     messages: ChatMessage[],
     onChunk: (chunk: Chunk) => void,
     onDone: () => void,
+    onStop: () => void,
     streaming: boolean | undefined = undefined,
   ): Promise<void> {
     if (isTauri()) {
@@ -277,6 +278,9 @@ export class CopilotService {
             resolve(undefined)
           } else if (this.streaming()) {
             onChunk(JSON.parse(message))
+          } else {
+            onStop()
+            resolve(undefined)
           }
         }
 
@@ -311,7 +315,7 @@ export class CopilotService {
     }
 
     if (streaming ?? model.streaming) {
-      await this.getStreamResponse(data, onDone, onChunk)
+      await this.getStreamResponse(data, onDone, onChunk, onStop)
     } else {
       const json = await data.json()
       onChunk(json)
@@ -331,6 +335,7 @@ export class CopilotService {
           }
         },
         () => resolve(answer),
+        () => resolve(undefined),
         false,
       )
     })
@@ -352,6 +357,7 @@ export class CopilotService {
     data: Response,
     onDone: () => void,
     onChunk: (chunk: Chunk) => void,
+    onStop: () => void,
   ) {
     const reader = data.body?.getReader()
     const decoder = new TextDecoder()
@@ -373,8 +379,12 @@ export class CopilotService {
     this.streamingSignal[1](true)
 
     const finish = () => {
-      this.streamingSignal[1](false)
-      onDone()
+      if (this.streaming()) {
+        this.streamingSignal[1](false)
+        onDone()
+      } else {
+        onStop()
+      }
     }
 
     while (true) {
