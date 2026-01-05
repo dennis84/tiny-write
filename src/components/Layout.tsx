@@ -83,7 +83,7 @@ export const Content = styled('div')`
   position: relative;
   height: fit-content;
   width: ${(props: any) => props.config.contentWidth}px;
-  padding: 50px;
+  padding: 20px;
   padding-bottom: 77vh;
   overflow-y: auto;
   scrollbar-width: none;

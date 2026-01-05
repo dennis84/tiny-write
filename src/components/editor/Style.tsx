@@ -71,7 +71,7 @@ export const standardMarkdown = `
     font-style: normal;
   }
   h1, h2, h3, h4, h5, h6 {
-    margin: 0;
+    margin: 20px 0;
   }
   h1 {
     font-size: var(--font-size-h1);
@@ -112,7 +112,8 @@ export const standardMarkdown = `
   a, .edit-link {
     color: var(--primary-background);
   }
-  .horizontal-rule {
+  hr, .horizontal-rule {
+    border: 0;
     margin: 40px 0;
     height: 5px;
     line-height: 5px;

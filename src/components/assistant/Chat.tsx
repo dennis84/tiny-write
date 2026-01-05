@@ -1,4 +1,5 @@
 import {WheelGesture} from '@use-gesture/vanilla'
+import type {EditorView} from 'prosemirror-view'
 import {createSignal, Match, onCleanup, onMount, Show, Switch} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {v4 as uuidv4} from 'uuid'
@@ -28,10 +29,11 @@ const Messages = styled('div')`
   margin-bottom: 20px;
 `
 
-const ScrollDown = styled('div')`
+const ScrollDown = styled('span')`
   position: fixed;
   bottom: 20px;
   right: 20px;
+  margin-left: auto;
   z-index: var(--z-index-above-content);
   button {
     background: var(--foreground-10);
@@ -48,7 +50,7 @@ export const Chat = (props: Props) => {
   let containerRef!: HTMLDivElement
 
   const {store, configService, copilotService, threadService, toastService} = useState()
-  const [focus, setFocus] = createSignal(true)
+  const [editorView, setEditorView] = createSignal<EditorView>()
   const [isAtBottom, setIsAtBottom] = createSignal(false)
 
   const scrollToBottom = () => {
@@ -63,8 +65,7 @@ export const Chat = (props: Props) => {
   }
 
   const focusInput = () => {
-    setFocus(false)
-    setFocus(true)
+    editorView()?.focus()
     setIsAtBottom(true)
   }
 
@@ -202,9 +203,14 @@ export const Chat = (props: Props) => {
           <MessageTree id={undefined} childrenIds={threadService.messageTree.rootItemIds} />
         </Show>
       </Messages>
-      {/* Rerender if focus is manually set and if code theme has been changed */}
-      <Show when={focus() && configService.codeTheme} keyed>
-        <ChatInput ref={inputRef} dropArea={props.scrollContent} onMessage={onInputMessage} />
+      {/* Rerender if code theme has been changed */}
+      <Show when={configService.codeTheme} keyed>
+        <ChatInput
+          ref={inputRef}
+          setEditorView={(view) => setEditorView(view)}
+          dropArea={props.scrollContent}
+          onMessage={onInputMessage}
+        />
       </Show>
       <Show when={!isAtBottom()}>
         <ScrollDown>

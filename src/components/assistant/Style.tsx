@@ -10,6 +10,7 @@ export const chatBubble = `
   ${standardMarkdown}
   .cm-editor {
     ${isClipped}
+    margin: 10px 0;
     font-size: var(--menu-font-size);
     font-family: var(--menu-font-family);
     border-radius: var(--border-radius);

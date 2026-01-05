@@ -29,6 +29,7 @@ interface Props {
   onMessage: (message: Message) => void
   ref?: HTMLDivElement
   dropArea?: () => HTMLElement
+  setEditorView?: (view: EditorView) => void
 }
 
 export const ChatInput = (props: Props) => {
@@ -93,6 +94,11 @@ export const ChatInput = (props: Props) => {
     copilotService.stop()
   }
 
+  const onSetEditorView = (view: EditorView) => {
+    setEditorView(view)
+    props.setEditorView?.(view)
+  }
+
   return (
     <>
       <Show when={!threadService.messageTree.rootItemIds.length}>
@@ -109,7 +115,7 @@ export const ChatInput = (props: Props) => {
         <ChatInputBorder ref={props.ref} focused={focused()}>
           <ChatInputEditorRow>
             <ChatEditor
-              setEditorView={(view) => setEditorView(view)}
+              setEditorView={onSetEditorView}
               onSubmit={onSend}
               onFocus={(focus) => setFocused(focus)}
             />
