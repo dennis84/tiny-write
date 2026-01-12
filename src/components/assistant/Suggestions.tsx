@@ -9,7 +9,7 @@ import {AttachmentType} from '@/types'
 import {Button, ButtonGroup} from '../Button'
 
 const SuggestionsContainer = styled('div')`
-  padding-bottom: 20px;
+  margin-top: 10px;
 `
 
 interface Props {

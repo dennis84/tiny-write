@@ -5,7 +5,7 @@ import {styled} from 'solid-styled-components'
 import {v4 as uuidv4} from 'uuid'
 import type {Chunk} from '@/services/CopilotService'
 import {useState} from '@/state'
-import {type Message, Page} from '@/types'
+import {Attachment, type Message, Page} from '@/types'
 import {Button, ButtonGroup, IconButton} from '../Button'
 import {IconAdd, IconKeyboardArrowDown, IconKeyboardArrowUp} from '../Icon'
 import {ChatInput} from './ChatInput'
@@ -14,6 +14,10 @@ import {MessageQuestion} from './MessageQuestion'
 import {ModelSelect} from './ModelSelect'
 import {Threads} from './Threads'
 import {Content, Scroll} from '../Layout'
+import { CurrentFileButton } from './attachments/CurrentFile'
+import { SelectionButton } from './attachments/Selection'
+import { TooltipDivider } from '../Tooltip'
+import { AutoContextToggle } from './attachments/AutoContextToggle'
 
 const Container = styled('div')`
   display: flex;
@@ -28,6 +32,12 @@ const Messages = styled('div')`
   flex-direction: column;
   gap: 20px;
   margin-bottom: 20px;
+`
+
+const EmptyContainer = styled('div')`
+  width: 100%;
+  font-family: var(--menu-font-family);
+  font-size: var(--menu-font-size);
 `
 
 interface Props {
@@ -111,31 +121,52 @@ export const Chat = (props: Props) => {
     void sendMessages()
   }
 
+  const onAttachment = (attachment: Attachment) => {
+    threadService.addAttachment(attachment)
+  }
+
+  const MessagePair = styled('div')`
+    &:last-child {
+      height: calc(100vh - 70px); /* 50px topnav + 20px margin */
+    }
+  `
+
   const MessageTree = (p: {id?: string; childrenIds: string[]}) => (
     <Show when={threadService.getNextItem(p.id, p.childrenIds)}>
-      {(message) => (
-        <>
-          <Switch>
-            <Match when={message().value.role === 'user'}>
-              <MessageQuestion
-                message={message()}
-                onUpdate={onRegenerate}
-                childrenIds={p.childrenIds}
-              />
-            </Match>
-            <Match when={message().value.role === 'assistant'}>
-              <MessageAnswer
-                message={message()}
-                onRegenerate={onRegenerate}
-                childrenIds={p.childrenIds}
-              />
-            </Match>
-          </Switch>
-          <Show when={message().childrenIds.length}>
-            <MessageTree id={message().id} childrenIds={message().childrenIds} />
-          </Show>
-        </>
-      )}
+      {(message) => {
+        const next = threadService.getNextItem(message().id, message().childrenIds)
+        return (
+          <>
+            {/* First is always user question */}
+            <Show when={message().value.role === 'user'}>
+              <MessagePair>
+                <MessageQuestion
+                  message={message()}
+                  onUpdate={onRegenerate}
+                  childrenIds={p.childrenIds}
+                />
+
+                <Show when={next}>
+                  {(answer) => (
+                    <MessageAnswer
+                      message={answer()}
+                      onRegenerate={onRegenerate}
+                      childrenIds={message().childrenIds}
+                    />
+                  )}
+                </Show>
+              </MessagePair>
+            </Show>
+            <Show when={next}>
+              {(answer) => (
+                <Show when={answer().childrenIds.length}>
+                  <MessageTree id={answer().id} childrenIds={answer().childrenIds} />
+                </Show>
+              )}
+            </Show>
+          </>
+        )}
+      }
     </Show>
   )
 
@@ -144,8 +175,9 @@ export const Chat = (props: Props) => {
       <Scroll ref={scrollContentRef} data-testid="chat_scroll">
         <Content
           style={store.location?.page !== Page.Assistant ? {
+            'width': '100%',
             'max-width': '100%',
-            'padding-bottom': 'calc(100vh - 100px)',
+            'padding-bottom': '0',
           } : {}}
           data-testid="chat_content"
         >
@@ -164,17 +196,16 @@ export const Chat = (props: Props) => {
                 <MessageTree id={undefined} childrenIds={threadService.messageTree.rootItemIds} />
               </Show>
             </Messages>
-
-            {/* <Show when={!threadService.messageTree.rootItemIds.length}> */}
-            {/*   <EmptyContainer> */}
-            {/*     <Show when={!store.ai?.autoContext}> */}
-            {/*       <CurrentFileButton onAttachment={onAttachment} /> */}
-            {/*       <SelectionButton onAttachment={onAttachment} /> */}
-            {/*       <TooltipDivider /> */}
-            {/*     </Show> */}
-            {/*     <AutoContextToggle /> */}
-            {/*   </EmptyContainer> */}
-            {/* </Show> */}
+            <Show when={!threadService.messageTree.rootItemIds.length}>
+              <EmptyContainer>
+                <Show when={!store.ai?.autoContext}>
+                  <CurrentFileButton onAttachment={onAttachment} />
+                  <SelectionButton onAttachment={onAttachment} />
+                  <TooltipDivider />
+                </Show>
+                <AutoContextToggle />
+              </EmptyContainer>
+            </Show>
           </Container>
         </Content>
       </Scroll>

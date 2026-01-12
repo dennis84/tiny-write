@@ -20,12 +20,6 @@ import {ChatInputAction, ChatInputActionRow, ChatInputBorder, ChatInputContainer
 import {Suggestions} from './Suggestions'
 import { WheelGesture } from '@use-gesture/vanilla'
 
-const EmptyContainer = styled('div')`
-  width: 100%;
-  font-family: var(--menu-font-family);
-  font-size: var(--menu-font-size);
-`
-
 const ChatInputTopRow = styled('div')`
   position: relative;
   width: 100%;
@@ -108,6 +102,7 @@ export const ChatInput = (props: Props) => {
 
     mediaService.resetDroppedFiles()
     threadService.setAttachments([])
+    scrollToBottom()
   }
 
   const onSendSuggestion = (content: string) => {
@@ -217,7 +212,6 @@ export const ChatInput = (props: Props) => {
           </ChatInputActionRow>
         </ChatInputBorder>
       </ChatInputContainer>
-      <Suggestions onSuggestion={onSendSuggestion} />
       <Show when={tooltipAnchor()}>
         {(a) => (
           <Tooltip anchor={a()} onClose={() => closeTooltip()} backdrop={true}>

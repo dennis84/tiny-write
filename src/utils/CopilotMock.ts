@@ -32,7 +32,7 @@ export class CopilotMock {
       new ReadableStream({
         async start(controller) {
           while (true) {
-            await pause(200000000)
+            await pause(2000)
 
             const code = Math.random() > 0.7
             const h1 = Math.random() > 0.9

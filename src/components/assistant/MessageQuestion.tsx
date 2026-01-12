@@ -74,26 +74,26 @@ export const MessageQuestion = (props: Props) => {
     </Show>
   )
 
-  createEffect(
-    on(
-      // 1. question added, 2. empty answer added, 3. start streaming
-      () => copilotService.streaming(),
-      (streaming) => {
-        if (!streaming || !questionContainerRef) return
-        const next = threadService.getNextItem(props.message.id, props.message.childrenIds)
-        const isLast = !next || (next.value.content === '' && next.childrenIds.length === 0)
-
-        if (isLast && copilotService.streaming()) {
-          // Otherwise scrollIntoView may not work correctly
-          setTimeout(() => {
-            questionContainerRef.scrollIntoView({
-              behavior: 'smooth',
-              block: 'start',
-            })
-          }, 0)
-        }
-      })
-    )
+  // createEffect(
+  //   on(
+  //     // 1. question added, 2. empty answer added, 3. start streaming
+  //     () => copilotService.streaming(),
+  //     (streaming) => {
+  //       if (!streaming || !questionContainerRef) return
+  //       const next = threadService.getNextItem(props.message.id, props.message.childrenIds)
+  //       const isLast = !next || (next.value.content === '' && next.childrenIds.length === 0)
+  //
+  //       if (isLast && copilotService.streaming()) {
+  //         // Otherwise scrollIntoView may not work correctly
+  //         setTimeout(() => {
+  //           questionContainerRef.scrollIntoView({
+  //             behavior: 'smooth',
+  //             block: 'start',
+  //           })
+  //         }, 0)
+  //       }
+  //     })
+  //   )
 
   return (
     <>
