@@ -5,7 +5,6 @@ import {ChatNavbar} from '../menu/Navbar'
 import {Chat} from './Chat'
 
 export const ChatDrawer = () => {
-  let scrollContent!: HTMLDivElement
   const {aiService, appService, threadService} = useState()
 
   const onDrawerResized = async (width: number) => {
@@ -15,7 +14,7 @@ export const ChatDrawer = () => {
   const onChangeThread = async (threadId: string) => {
     await appService.setLocation({threadId})
     threadService.init()
-    scrollContent.scrollTo({top: 0, behavior: 'smooth'})
+    // scrollContent.scrollTo({top: 0, behavior: 'smooth'})
   }
 
   const [initialized] = createResource(async () => {
@@ -40,13 +39,11 @@ export const ChatDrawer = () => {
       data-testid="ai_assistant_drawer"
     >
       <ChatNavbar />
-      <DrawerContent ref={scrollContent}>
-        <Suspense>
-          <Show when={initialized()}>
-            <Chat scrollContent={() => scrollContent} onChangeThread={onChangeThread} />
-          </Show>
-        </Suspense>
-      </DrawerContent>
+      <Suspense>
+        <Show when={initialized()}>
+          <Chat onChangeThread={onChangeThread} />
+        </Show>
+      </Suspense>
     </Drawer>
   )
 }

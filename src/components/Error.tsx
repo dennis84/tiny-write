@@ -1,5 +1,4 @@
 import {styled} from 'solid-styled-components'
-import {useState} from '@/state'
 import {ButtonGroup, ButtonPrimary} from './Button'
 import {Content, Layout, Scroll} from './Layout'
 
@@ -13,8 +12,6 @@ const Pre = styled('pre')`
 `
 
 export const GeneralError = (props: {error: Error}) => {
-  const {store} = useState()
-
   console.error(props.error)
 
   const onReload = () => {
@@ -24,7 +21,7 @@ export const GeneralError = (props: {error: Error}) => {
   return (
     <Layout>
       <Scroll data-tauri-drag-region="true" data-testid="error">
-        <Content config={store.config} data-tauri-drag-region="true">
+        <Content data-tauri-drag-region="true">
           <h1>An error occurred.</h1>
           <Pre>
             <code>{props.error.message}</code>

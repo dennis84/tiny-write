@@ -1,6 +1,5 @@
 import {createResource, Show, Suspense} from 'solid-js'
 import {AppService} from '@/services/AppService'
-import {createConfig} from '@/state'
 import {pause} from '@/utils/promise'
 import {Content, Layout, Scroll} from './Layout'
 import {Main} from './Main'
@@ -14,7 +13,7 @@ const Loading = () => {
   return (
     <Layout data-testid="loading">
       <Scroll data-tauri-drag-region="true">
-        <Content config={createConfig()} data-tauri-drag-region="true">
+        <Content data-tauri-drag-region="true">
           <Show when={delay()}>Loading ...</Show>
         </Content>
       </Scroll>

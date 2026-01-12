@@ -39,12 +39,18 @@ export const chatBubble = `
 `
 
 export const ChatInputContainer = styled('div')`
-  padding-bottom: 20px;
-  margin-top: auto; /* align to bottom */
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  right: 20px;
+  margin: 0 auto;
+  max-width: var(--content-width);
+  z-index: var(--z-index-above-content);
 `
 
 // biome-ignore format: ternary breaks ugly
 export const ChatInputBorder = styled("div")`
+  background: var(--background);
   scroll-margin-bottom: 50px;
   border: 1px solid var(--primary-background);
   border-radius: var(--border-radius);
@@ -58,6 +64,11 @@ export const ChatInputBorder = styled("div")`
 
 export const ChatInputEditorRow = styled('div')`
   display: flex;
+`
+
+export const ChatInputActionRow = styled('div')`
+  display: flex;
+  justify-content: space-between;
 `
 
 export const ChatInputAction = styled('div')`

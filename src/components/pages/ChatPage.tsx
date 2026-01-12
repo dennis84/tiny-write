@@ -60,22 +60,22 @@ export const ChatPage = (props: RouteSectionProps) => {
     <Suspense>
       <ErrorBoundary fallback={() => <OnError />}>
         <Show when={initialized()} keyed>
-          <Scroll data-testid="assistant" data-tauri-drag-region="true">
-            <Content
-              ref={scrollContent}
-              style={{
-                width: '100%',
-                'padding-bottom': '0',
-                height: 'auto',
-              }}
-              config={store.config}
-              data-tauri-drag-region="true"
-            >
-              <MaxWidth>
-                <Chat scrollContent={() => scrollContent} onChangeThread={onChangeThread} />
-              </MaxWidth>
-            </Content>
-          </Scroll>
+          <Chat onChangeThread={onChangeThread} />
+          {/* <Scroll data-testid="assistant" data-tauri-drag-region="true"> */}
+          {/*   <Content */}
+          {/*     ref={scrollContent} */}
+          {/*     style={{ */}
+          {/*       width: '100%', */}
+          {/*       'padding-bottom': '0', */}
+          {/*       height: 'auto', */}
+          {/*     }} */}
+          {/*     config={store.config} */}
+          {/*     data-tauri-drag-region="true" */}
+          {/*   > */}
+          {/*     <MaxWidth> */}
+          {/*     </MaxWidth> */}
+          {/*   </Content> */}
+          {/* </Scroll> */}
         </Show>
       </ErrorBoundary>
     </Suspense>

@@ -121,7 +121,7 @@ export const DirPage = () => {
 
   return (
     <Scroll data-testid="dir" data-tauri-drag-region="true">
-      <Content style={{width: '100%'}} config={store.config} data-tauri-drag-region="true">
+      <Content style={{width: '100%'}} data-tauri-drag-region="true">
         <CurrentPath>
           <IconFolderOpen />
           <PathSegment onClick={() => clickPathSegment(0)}>{currentPath()}/</PathSegment>

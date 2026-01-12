@@ -13,6 +13,7 @@ import {MessageAnswer} from './MessageAnswer'
 import {MessageQuestion} from './MessageQuestion'
 import {ModelSelect} from './ModelSelect'
 import {Threads} from './Threads'
+import {Content, Scroll} from '../Layout'
 
 const Container = styled('div')`
   display: flex;
@@ -29,44 +30,20 @@ const Messages = styled('div')`
   margin-bottom: 20px;
 `
 
-const ScrollDown = styled('span')`
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  margin-left: auto;
-  z-index: var(--z-index-above-content);
-  button {
-    background: var(--foreground-10);
-  }
-`
-
 interface Props {
-  scrollContent: () => HTMLElement
   onChangeThread: (id: string) => void
 }
 
 export const Chat = (props: Props) => {
   let inputRef!: HTMLDivElement
   let containerRef!: HTMLDivElement
+  let scrollContentRef!: HTMLDivElement
 
   const {store, configService, copilotService, threadService, toastService} = useState()
   const [editorView, setEditorView] = createSignal<EditorView>()
-  const [isAtBottom, setIsAtBottom] = createSignal(false)
-
-  const scrollToBottom = () => {
-    const top = props.scrollContent().scrollHeight + 100
-    props.scrollContent().scrollTo({top, behavior: 'smooth'})
-    setIsAtBottom(true)
-  }
-
-  const scrollToTop = () => {
-    props.scrollContent().scrollTo({top: 0, behavior: 'smooth'})
-    setIsAtBottom(false)
-  }
 
   const focusInput = () => {
     editorView()?.focus()
-    setIsAtBottom(true)
   }
 
   const addUserMessage = async (input: Message) => {
@@ -84,7 +61,6 @@ export const Chat = (props: Props) => {
 
     // Create answer message directly to visualize loading
     threadService.addChunk(messageId, parentId, '')
-    scrollToBottom()
 
     try {
       await copilotService.completions(
@@ -135,30 +111,6 @@ export const Chat = (props: Props) => {
     void sendMessages()
   }
 
-  onMount(() => {
-    const gesture = new WheelGesture(
-      props.scrollContent(),
-      ({event, velocity: [_, y]}) => {
-        // Only on user input not programmatic scroll
-        if (!event.deltaY) return
-        if (Math.abs(y) < 0.5) return
-
-        const newValue =
-          props.scrollContent().scrollHeight -
-            props.scrollContent().scrollTop -
-            props.scrollContent().clientHeight <
-          90 // ~ the height of the input area
-
-        setIsAtBottom(newValue)
-      },
-      {threshold: 10}, // Ignore scrolls smaller than 10px
-    )
-
-    onCleanup(() => {
-      gesture.destroy()
-    })
-  })
-
   const MessageTree = (p: {id?: string; childrenIds: string[]}) => (
     <Show when={threadService.getNextItem(p.id, p.childrenIds)}>
       {(message) => (
@@ -188,44 +140,53 @@ export const Chat = (props: Props) => {
   )
 
   return (
-    <Container ref={containerRef} data-testid="chat">
-      <ButtonGroup>
-        <Threads onChange={props.onChangeThread} />
-        <Show when={threadService.currentThread?.messages?.length}>
-          <Button onClick={onNewThread}>
-            <IconAdd /> New
-          </Button>
-        </Show>
-        <ModelSelect onChange={() => focusInput()} />
-      </ButtonGroup>
-      <Messages data-testid="messages">
-        <Show when={threadService.messageTree.rootItemIds.length}>
-          <MessageTree id={undefined} childrenIds={threadService.messageTree.rootItemIds} />
-        </Show>
-      </Messages>
+    <>
+      <Scroll ref={scrollContentRef} data-testid="chat_scroll">
+        <Content
+          style={store.location?.page !== Page.Assistant ? {
+            'max-width': '100%',
+            'padding-bottom': 'calc(100vh - 100px)',
+          } : {}}
+          data-testid="chat_content"
+        >
+          <Container ref={containerRef} data-testid="chat">
+            <ButtonGroup>
+              <Threads onChange={props.onChangeThread} />
+              <Show when={threadService.currentThread?.messages?.length}>
+                <Button onClick={onNewThread}>
+                  <IconAdd /> New
+                </Button>
+              </Show>
+              <ModelSelect onChange={() => focusInput()} />
+            </ButtonGroup>
+            <Messages data-testid="messages">
+              <Show when={threadService.messageTree.rootItemIds.length}>
+                <MessageTree id={undefined} childrenIds={threadService.messageTree.rootItemIds} />
+              </Show>
+            </Messages>
+
+            {/* <Show when={!threadService.messageTree.rootItemIds.length}> */}
+            {/*   <EmptyContainer> */}
+            {/*     <Show when={!store.ai?.autoContext}> */}
+            {/*       <CurrentFileButton onAttachment={onAttachment} /> */}
+            {/*       <SelectionButton onAttachment={onAttachment} /> */}
+            {/*       <TooltipDivider /> */}
+            {/*     </Show> */}
+            {/*     <AutoContextToggle /> */}
+            {/*   </EmptyContainer> */}
+            {/* </Show> */}
+          </Container>
+        </Content>
+      </Scroll>
       {/* Rerender if code theme has been changed */}
       <Show when={configService.codeTheme} keyed>
         <ChatInput
           ref={inputRef}
           setEditorView={(view) => setEditorView(view)}
-          dropArea={props.scrollContent}
+          dropArea={() => scrollContentRef}
           onMessage={onInputMessage}
         />
       </Show>
-      <Show when={!isAtBottom()}>
-        <ScrollDown>
-          <IconButton onClick={() => scrollToBottom()}>
-            <IconKeyboardArrowDown />
-          </IconButton>
-        </ScrollDown>
-      </Show>
-      <Show when={store.location?.page === Page.Assistant && isAtBottom()}>
-        <ScrollDown>
-          <IconButton onClick={() => scrollToTop()}>
-            <IconKeyboardArrowUp />
-          </IconButton>
-        </ScrollDown>
-      </Show>
-    </Container>
+    </>
   )
 }

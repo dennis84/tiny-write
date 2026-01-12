@@ -6,7 +6,7 @@ import {ZIndex} from '@/utils/ZIndex'
 import {CURSOR_DEFAULT, CURSOR_GRAB, CURSOR_GRABBED, CURSOR_POINTER, CURSOR_TEXT} from './Cursors'
 
 export const Variables = () => {
-  const {configService} = useState()
+  const {store, configService} = useState()
 
   onMount(() => setupFonts())
 
@@ -65,6 +65,8 @@ export const Variables = () => {
     root.style.setProperty('--z-index-handle', ZIndex.HANDLE)
     root.style.setProperty('--z-index-tooltip', ZIndex.TOOLTIP)
     root.style.setProperty('--z-index-above-content', ZIndex.ABOVE_CONTENT)
+
+    root.style.setProperty('--content-width', `${store.config.contentWidth}px`)
 
     const theme = getThemeConfig(configService.codeTheme.value)
     root.style.setProperty('--code-background', theme.background)

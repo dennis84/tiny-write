@@ -65,8 +65,6 @@ export const Scroll = styled('div')`
   display: flex;
   height: 100%;
   width: 100%;
-  min-height: 100vh;
-  max-height: 100vh;
   overflow-y: auto;
   justify-content: center;
   scrollbar-width: none;
@@ -82,10 +80,9 @@ export const Scroll = styled('div')`
 export const Content = styled('div')`
   position: relative;
   height: fit-content;
-  width: ${(props: any) => props.config.contentWidth}px;
+  max-width: var(--content-width);
   padding: 20px;
   padding-bottom: 77vh;
-  overflow-y: auto;
   scrollbar-width: none;
   &::-webkit-scrollbar {
     display: none;

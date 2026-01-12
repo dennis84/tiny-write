@@ -1,4 +1,4 @@
-import {createSignal, For, Show} from 'solid-js'
+import {createEffect, createSignal, For, on, onMount, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {useState} from '@/state'
 import type {TreeItem} from '@/tree'
@@ -19,6 +19,7 @@ const EditBubble = styled('div')`
 const QuestionContainer = styled('div')`
   justify-items: flex-end;
   margin-left: auto;
+  scroll-margin: 20px; /* margin when scrollIntoView */
 `
 
 const QuestionBubble = styled('div')`
@@ -48,9 +49,11 @@ interface Props {
 }
 
 export const MessageQuestion = (props: Props) => {
+  let questionContainerRef: HTMLDivElement | undefined
+
   const [editing, setEditing] = createSignal(false)
 
-  const {configService} = useState()
+  const {configService, copilotService, threadService} = useState()
 
   const onEditMessage = async () => {
     setEditing(true)
@@ -71,6 +74,27 @@ export const MessageQuestion = (props: Props) => {
     </Show>
   )
 
+  createEffect(
+    on(
+      // 1. question added, 2. empty answer added, 3. start streaming
+      () => copilotService.streaming(),
+      (streaming) => {
+        if (!streaming || !questionContainerRef) return
+        const next = threadService.getNextItem(props.message.id, props.message.childrenIds)
+        const isLast = !next || (next.value.content === '' && next.childrenIds.length === 0)
+
+        if (isLast && copilotService.streaming()) {
+          // Otherwise scrollIntoView may not work correctly
+          setTimeout(() => {
+            questionContainerRef.scrollIntoView({
+              behavior: 'smooth',
+              block: 'start',
+            })
+          }, 0)
+        }
+      })
+    )
+
   return (
     <>
       <Show when={editing()}>
@@ -84,7 +108,7 @@ export const MessageQuestion = (props: Props) => {
         </EditBubble>
       </Show>
       <Show when={!editing()}>
-        <QuestionContainer>
+        <QuestionContainer ref={questionContainerRef}>
           <QuestionBubble data-testid="question_bubble">
             <Show when={configService.codeTheme} keyed>
               <MessageMarkdown content={props.message.value.content} />

@@ -1,13 +1,13 @@
 import type {EditorView} from 'prosemirror-view'
 // import {EditorView, keymap, placeholder} from '@codemirror/view'
-import {createSignal, Show} from 'solid-js'
+import {createSignal, onCleanup, onMount, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {v4 as uuidv4} from 'uuid'
 import {serialize} from '@/prosemirror/markdown-serialize'
 import {useState} from '@/state'
-import type {Attachment, Message} from '@/types'
+import {Page, type Attachment, type Message} from '@/types'
 import {IconButton} from '../Button'
-import {IconAttachment, IconSend, IconStop} from '../Icon'
+import {IconAttachment, IconKeyboardArrowDown, IconKeyboardArrowUp, IconSend, IconStop} from '../Icon'
 import {Tooltip, TooltipDivider} from '../Tooltip'
 import {TooltipHelp} from '../TooltipHelp'
 import {AutoContextToggle} from './attachments/AutoContextToggle'
@@ -16,13 +16,31 @@ import {ImageButton} from './attachments/Image'
 import {SelectionButton} from './attachments/Selection'
 import {ChatEditor} from './ChatEditor'
 import {ChatInputAttachments} from './ChatInputAttachments'
-import {ChatInputAction, ChatInputBorder, ChatInputContainer, ChatInputEditorRow} from './Style'
+import {ChatInputAction, ChatInputActionRow, ChatInputBorder, ChatInputContainer, ChatInputEditorRow} from './Style'
 import {Suggestions} from './Suggestions'
+import { WheelGesture } from '@use-gesture/vanilla'
 
 const EmptyContainer = styled('div')`
   width: 100%;
   font-family: var(--menu-font-family);
   font-size: var(--menu-font-size);
+`
+
+const ChatInputTopRow = styled('div')`
+  position: relative;
+  width: 100%;
+  height: 0;
+  display: flex;
+  justify-content: center;
+`
+
+const ScrollDown = styled('span')`
+  position: absolute;
+  top: -60px;
+  z-index: var(--z-index-above-content);
+  button {
+    background: var(--foreground-10);
+  }
 `
 
 interface Props {
@@ -36,8 +54,22 @@ export const ChatInput = (props: Props) => {
   const [tooltipAnchor, setTooltipAnchor] = createSignal<HTMLElement | undefined>()
   const [focused, setFocused] = createSignal(false)
   const [editorView, setEditorView] = createSignal<EditorView>()
+  const [isAtBottom, setIsAtBottom] = createSignal(false)
 
   const {store, copilotService, threadService, mediaService} = useState()
+
+  const scrollToTop = () => {
+    props.dropArea?.().scrollTo({top: 0, behavior: 'smooth'})
+    setIsAtBottom(false)
+  }
+
+  const scrollToBottom = () => {
+    const scrollContent = props.dropArea?.()
+    if (!scrollContent) return
+    const top = scrollContent.scrollHeight + 100
+    scrollContent.scrollTo({top, behavior: 'smooth'})
+    setIsAtBottom(true)
+  }
 
   const closeTooltip = () => {
     setTooltipAnchor(undefined)
@@ -99,26 +131,68 @@ export const ChatInput = (props: Props) => {
     props.setEditorView?.(view)
   }
 
+  const onFocus = (focus: boolean) => {
+    setFocused(focus)
+  }
+
+  onMount(() => {
+    const scrollContentRef = props.dropArea?.()
+    if (!scrollContentRef) return
+    const gesture = new WheelGesture(
+      scrollContentRef,
+      ({event, velocity: [_, y]}) => {
+        // Only on user input not programmatic scroll
+        if (!event.deltaY) return
+        if (Math.abs(y) < 0.5) return
+
+        const newValue =
+          scrollContentRef.scrollHeight -
+            scrollContentRef.scrollTop -
+            scrollContentRef.clientHeight <
+          90 // ~ the height of the input area
+
+        setIsAtBottom(newValue)
+      },
+      {threshold: 10}, // Ignore scrolls smaller than 10px
+    )
+
+    onCleanup(() => {
+      gesture.destroy()
+    })
+  })
+
   return (
     <>
-      <Show when={!threadService.messageTree.rootItemIds.length}>
-        <EmptyContainer>
-          <Show when={!store.ai?.autoContext}>
-            <CurrentFileButton onAttachment={onAttachment} />
-            <SelectionButton onAttachment={onAttachment} />
-            <TooltipDivider />
-          </Show>
-          <AutoContextToggle />
-        </EmptyContainer>
-      </Show>
-      <ChatInputContainer>
+      <ChatInputContainer
+        style={store.location?.page !== Page.Assistant ? {'max-width': '100%'} : {}}
+        onClick={() => editorView()?.focus()}
+      >
         <ChatInputBorder ref={props.ref} focused={focused()}>
+          <ChatInputTopRow>
+            <Show when={isAtBottom()}>
+              <ScrollDown>
+                <IconButton onClick={() => scrollToTop()}>
+                  <IconKeyboardArrowUp />
+                </IconButton>
+              </ScrollDown>
+            </Show>
+            <Show when={!isAtBottom()}>
+              <ScrollDown>
+                <IconButton onClick={() => scrollToBottom()}>
+                  <IconKeyboardArrowDown />
+                </IconButton>
+              </ScrollDown>
+            </Show>
+          </ChatInputTopRow>
           <ChatInputEditorRow>
             <ChatEditor
               setEditorView={onSetEditorView}
               onSubmit={onSend}
-              onFocus={(focus) => setFocused(focus)}
+              onFocus={onFocus}
             />
+          </ChatInputEditorRow>
+          <ChatInputActionRow>
+            <ChatInputAttachments />
             <ChatInputAction>
               <TooltipHelp title="Add an attachment to context">
                 <IconButton onClick={onAttachmentMenu}>
@@ -140,8 +214,7 @@ export const ChatInput = (props: Props) => {
                 </TooltipHelp>
               </Show>
             </ChatInputAction>
-          </ChatInputEditorRow>
-          <ChatInputAttachments />
+          </ChatInputActionRow>
         </ChatInputBorder>
       </ChatInputContainer>
       <Suggestions onSuggestion={onSendSuggestion} />
