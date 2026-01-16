@@ -16,7 +16,6 @@ import {SelectionButton} from './attachments/Selection'
 import {ChatInput} from './ChatInput'
 import {MessageAnswer} from './MessageAnswer'
 import {MessageQuestion} from './MessageQuestion'
-import {ModelSelect} from './ModelSelect'
 import {Threads} from './Threads'
 
 const Container = styled('div')`

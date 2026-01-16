@@ -6,7 +6,7 @@ import {IconButton} from '../Button'
 import {IconCheck, IconClose} from '../Icon'
 import {TooltipHelp} from '../TooltipHelp'
 import {ChatEditor} from './ChatEditor'
-import {ChatInputAction, ChatInputBorder, ChatInputEditorRow} from './Style'
+import {ChatInputActionRow, ChatInputBorder, ChatInputEditorRow} from './Style'
 
 interface Props {
   onUpdate: (message: Message) => void
@@ -51,19 +51,19 @@ export const MessageInput = (props: Props) => {
           onSubmit={() => onUpdate()}
           onFocus={setFocused}
         />
-        <ChatInputAction>
-          <TooltipHelp title="Cancel">
-            <IconButton onClick={onCancel}>
-              <IconClose />
-            </IconButton>
-          </TooltipHelp>
-          <TooltipHelp title="Update message">
-            <IconButton onClick={onUpdate} data-testid="update_message">
-              <IconCheck />
-            </IconButton>
-          </TooltipHelp>
-        </ChatInputAction>
       </ChatInputEditorRow>
+      <ChatInputActionRow>
+        <TooltipHelp title="Cancel">
+          <IconButton onClick={onCancel}>
+            <IconClose />
+          </IconButton>
+        </TooltipHelp>
+        <TooltipHelp title="Update message">
+          <IconButton onClick={onUpdate} data-testid="update_message">
+            <IconCheck />
+          </IconButton>
+        </TooltipHelp>
+      </ChatInputActionRow>
     </ChatInputBorder>
   )
 }

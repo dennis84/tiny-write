@@ -70,10 +70,3 @@ export const ChatInputActionRow = styled('div')`
   display: flex;
   justify-content: flex-end;
 `
-
-export const ChatInputAction = styled('div')`
-  height: 40px;
-  display: flex;
-  margin-top: auto;
-  align-items: flex-end;
-`

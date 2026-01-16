@@ -6,31 +6,15 @@ import {v4 as uuidv4} from 'uuid'
 import {serialize} from '@/prosemirror/markdown-serialize'
 import {ProseMirrorService} from '@/services/ProseMirrorService'
 import {useState} from '@/state'
-import {type Attachment, type Message, Page} from '@/types'
+import {type Message, Page} from '@/types'
 import {IconButton} from '../Button'
-import {
-  IconAttachment,
-  IconKeyboardArrowDown,
-  IconKeyboardArrowUp,
-  IconSend,
-  IconStop,
-} from '../Icon'
-import {Tooltip} from '../Tooltip'
+import {IconKeyboardArrowDown, IconKeyboardArrowUp, IconSend, IconStop} from '../Icon'
 import {TooltipHelp} from '../TooltipHelp'
-import {CurrentFileButton} from './attachments/CurrentFile'
-import {ImageButton} from './attachments/Image'
-import {SelectionButton} from './attachments/Selection'
 import {ChatEditor} from './ChatEditor'
 import {ChatInputAttachments} from './ChatInputAttachments'
-import {
-  ChatInputAction,
-  ChatInputActionRow,
-  ChatInputBorder,
-  ChatInputContainer,
-  ChatInputEditorRow,
-} from './Style'
+import {ModelSelect} from './ModelSelect'
+import {ChatInputActionRow, ChatInputBorder, ChatInputContainer, ChatInputEditorRow} from './Style'
 import {Suggestions} from './Suggestions'
-import { ModelSelect } from './ModelSelect'
 
 const ChatInputTopRow = styled('div')`
   position: relative;
@@ -57,7 +41,6 @@ interface Props {
 }
 
 export const ChatInput = (props: Props) => {
-  const [tooltipAnchor, setTooltipAnchor] = createSignal<HTMLElement | undefined>()
   const [focused, setFocused] = createSignal(false)
   const [editorView, setEditorView] = createSignal<EditorView>()
   const [isAtBottom, setIsAtBottom] = createSignal<boolean | undefined>(undefined)
@@ -76,23 +59,6 @@ export const ChatInput = (props: Props) => {
     const top = scrollContent.scrollHeight + 100
     scrollContent.scrollTo({top, behavior: 'smooth'})
     setIsAtBottom(true)
-  }
-
-  const closeTooltip = () => {
-    setTooltipAnchor(undefined)
-  }
-
-  const onAttachmentMenu = (e: MouseEvent) => {
-    setTooltipAnchor(e.currentTarget as HTMLElement)
-  }
-
-  const onAttachment = (attachment: Attachment) => {
-    threadService.addAttachment(attachment)
-    closeTooltip()
-  }
-
-  const onImageAttachment = () => {
-    closeTooltip()
   }
 
   const onSend = () => {
@@ -180,75 +146,57 @@ export const ChatInput = (props: Props) => {
   })
 
   return (
-    <>
-      <ChatInputContainer
-        style={store.location?.page !== Page.Assistant ? {'max-width': '100%'} : {}}
-        onClick={() => editorView()?.focus()}
-      >
-        <ChatInputBorder ref={props.ref} focused={focused()}>
-          <ChatInputTopRow>
-            <Show when={isAtBottom()}>
-              <ScrollDown>
-                <IconButton onClick={() => scrollToTop()}>
-                  <IconKeyboardArrowUp />
-                </IconButton>
-              </ScrollDown>
-            </Show>
-            <Show when={isAtBottom() === false}>
-              <ScrollDown>
-                <IconButton onClick={() => scrollToBottom()}>
-                  <IconKeyboardArrowDown />
-                </IconButton>
-              </ScrollDown>
-            </Show>
-          </ChatInputTopRow>
-          <ChatInputEditorRow>
-            <ChatEditor
-              setEditorView={onSetEditorView}
-              onSubmit={onSend}
-              onFocus={onFocus}
-              onChange={onChange}
-            />
-          </ChatInputEditorRow>
-          <Show when={empty()}>
-            <Suggestions onSuggestion={onSendSuggestion} />
+    <ChatInputContainer
+      style={store.location?.page !== Page.Assistant ? {'max-width': '100%'} : {}}
+      onClick={() => editorView()?.focus()}
+    >
+      <ChatInputBorder ref={props.ref} focused={focused()}>
+        <ChatInputTopRow>
+          <Show when={isAtBottom()}>
+            <ScrollDown>
+              <IconButton onClick={() => scrollToTop()}>
+                <IconKeyboardArrowUp />
+              </IconButton>
+            </ScrollDown>
           </Show>
-          <ChatInputActionRow>
-            <ChatInputAttachments />
-            <ModelSelect onChange={() => editorView()?.focus()} />
-            <ChatInputAction>
-              <TooltipHelp title="Add an attachment to context">
-                <IconButton onClick={onAttachmentMenu}>
-                  <IconAttachment />
-                </IconButton>
-              </TooltipHelp>
-              <Show when={copilotService.streaming()}>
-                <TooltipHelp title="Stop">
-                  <IconButton onClick={onStop}>
-                    <IconStop />
-                  </IconButton>
-                </TooltipHelp>
-              </Show>
-              <Show when={!copilotService.streaming()}>
-                <TooltipHelp title="Send message">
-                  <IconButton onClick={onSend} data-testid="send">
-                    <IconSend />
-                  </IconButton>
-                </TooltipHelp>
-              </Show>
-            </ChatInputAction>
-          </ChatInputActionRow>
-        </ChatInputBorder>
-      </ChatInputContainer>
-      <Show when={tooltipAnchor()}>
-        {(a) => (
-          <Tooltip anchor={a()} onClose={() => closeTooltip()} backdrop={true}>
-            <CurrentFileButton onAttachment={onAttachment} />
-            <SelectionButton onAttachment={onAttachment} />
-            <ImageButton onAttachment={onImageAttachment} />
-          </Tooltip>
-        )}
-      </Show>
-    </>
+          <Show when={isAtBottom() === false}>
+            <ScrollDown>
+              <IconButton onClick={() => scrollToBottom()}>
+                <IconKeyboardArrowDown />
+              </IconButton>
+            </ScrollDown>
+          </Show>
+        </ChatInputTopRow>
+        <ChatInputEditorRow>
+          <ChatEditor
+            setEditorView={onSetEditorView}
+            onSubmit={onSend}
+            onFocus={onFocus}
+            onChange={onChange}
+          />
+        </ChatInputEditorRow>
+        <Show when={empty()}>
+          <Suggestions onSuggestion={onSendSuggestion} />
+        </Show>
+        <ChatInputActionRow>
+          <ChatInputAttachments />
+          <ModelSelect onChange={() => editorView()?.focus()} />
+          <Show when={copilotService.streaming()}>
+            <TooltipHelp title="Stop">
+              <IconButton onClick={onStop}>
+                <IconStop />
+              </IconButton>
+            </TooltipHelp>
+          </Show>
+          <Show when={!copilotService.streaming()}>
+            <TooltipHelp title="Send message">
+              <IconButton onClick={onSend} data-testid="send">
+                <IconSend />
+              </IconButton>
+            </TooltipHelp>
+          </Show>
+        </ChatInputActionRow>
+      </ChatInputBorder>
+    </ChatInputContainer>
   )
 }

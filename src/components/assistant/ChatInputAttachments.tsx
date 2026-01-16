@@ -1,8 +1,15 @@
-import {createEffect, For} from 'solid-js'
+import {createEffect, createSignal, For, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {useState} from '@/state'
 import {type Attachment, AttachmentType} from '@/types'
+import {IconButton} from '../Button'
+import {IconAttachment} from '../Icon'
+import {Tooltip} from '../Tooltip'
+import {TooltipHelp} from '../TooltipHelp'
 import {AttachmentChip} from './AttachmentChip'
+import {CurrentFileButton} from './attachments/CurrentFile'
+import {ImageButton} from './attachments/Image'
+import {SelectionButton} from './attachments/Selection'
 import {createCodeFence} from './util'
 
 const Attachments = styled('div')`
@@ -12,10 +19,29 @@ const Attachments = styled('div')`
   justify-content: flex-end;
   justify-self: flex-start;
   margin-right: auto;
+  gap: 5px;
 `
 
 export const ChatInputAttachments = () => {
   const {store, fileService, mediaService, threadService} = useState()
+  const [tooltipAnchor, setTooltipAnchor] = createSignal<HTMLElement | undefined>()
+
+  const onAttachmentMenu = (e: MouseEvent) => {
+    setTooltipAnchor(e.currentTarget as HTMLElement)
+  }
+
+  const closeTooltip = () => {
+    setTooltipAnchor(undefined)
+  }
+
+  const onAttachment = (attachment: Attachment) => {
+    threadService.addAttachment(attachment)
+    closeTooltip()
+  }
+
+  const onImageAttachment = () => {
+    closeTooltip()
+  }
 
   const onDelete = (attachment: Attachment) => {
     threadService.removeAttachment(attachment)
@@ -90,10 +116,26 @@ export const ChatInputAttachments = () => {
   })
 
   return (
-    <Attachments>
-      <For each={threadService.attachments()}>
-        {(attachment) => <AttachmentChip attachment={attachment} onDelete={onDelete} />}
-      </For>
-    </Attachments>
+    <>
+      <Attachments>
+        <TooltipHelp title="Add an attachment to context">
+          <IconButton onClick={onAttachmentMenu}>
+            <IconAttachment />
+          </IconButton>
+        </TooltipHelp>
+        <For each={threadService.attachments()}>
+          {(attachment) => <AttachmentChip attachment={attachment} onDelete={onDelete} />}
+        </For>
+      </Attachments>
+      <Show when={tooltipAnchor()}>
+        {(a) => (
+          <Tooltip anchor={a()} onClose={() => closeTooltip()} backdrop={true}>
+            <CurrentFileButton onAttachment={onAttachment} />
+            <SelectionButton onAttachment={onAttachment} />
+            <ImageButton onAttachment={onImageAttachment} />
+          </Tooltip>
+        )}
+      </Show>
+    </>
   )
 }
