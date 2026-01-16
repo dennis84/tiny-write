@@ -378,19 +378,20 @@ export class CopilotService {
 
     this.streamingSignal[1](true)
 
-    const finish = () => {
-      if (this.streaming()) {
+    const finish = (inLoop = false) => {
+      info(`Finishing stream response (inLoop=${inLoop}, streaming=${this.streaming()})`)
+      if (inLoop && !this.streaming()) {
+        onStop()
+      } else {
         this.streamingSignal[1](false)
         onDone()
-      } else {
-        onStop()
       }
     }
 
     while (true) {
       const {value, done} = await reader.read()
       if (done || !this.streaming()) {
-        finish()
+        finish(true)
         break
       }
 
@@ -399,8 +400,12 @@ export class CopilotService {
 
       for (let i = 0; i < lines.length - 1; i++) {
         const data = parseLine(lines[i])
-        if (!data) finish()
-        else onChunk(data)
+        if (!data) {
+          finish(true)
+          break
+        } else {
+          onChunk(data)
+        }
       }
 
       buffer = lines[lines.length - 1]

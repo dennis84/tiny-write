@@ -1,5 +1,5 @@
 import type {Token} from 'markdown-it'
-import {onMount, Show} from 'solid-js'
+import {Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {copy} from '@/remote/clipboard'
 import {useState} from '@/state'

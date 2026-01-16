@@ -25,6 +25,7 @@ interface Props {
   setEditorView?: (view: EditorView) => void
   onSubmit?: (state: EditorState) => void
   onFocus?: (focus: boolean) => void
+  onChange?: () => void
 }
 
 export const ChatEditor = (props: Props) => {
@@ -66,6 +67,11 @@ export const ChatEditor = (props: Props) => {
     const view = new EditorView(chatInputRef, {
       state,
       nodeViews,
+      dispatchTransaction: (tr) => {
+        const newState = view.state.apply(tr)
+        view.updateState(newState)
+        if (tr.docChanged) props.onChange?.()
+      },
       handleDOMEvents: {
         focus: (_view, event) => {
           const target = event.target as Element | null

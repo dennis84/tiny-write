@@ -6,16 +6,7 @@ import {
   useLocation,
   useMatch,
 } from '@solidjs/router'
-import {
-  createEffect,
-  createMemo,
-  ErrorBoundary,
-  Match,
-  onMount,
-  Show,
-  Switch,
-  untrack,
-} from 'solid-js'
+import {createEffect, createMemo, ErrorBoundary, onMount, Show, untrack} from 'solid-js'
 import {DarkMode} from '@/components/DarkMode'
 import {DropFile} from '@/components/DropFile'
 import {InputLine} from '@/components/dialog/InputLine'
@@ -131,14 +122,10 @@ export const Main = (props: {state: State | Ctrl}) => {
       <StateContext.Provider value={ctrl}>
         <ErrorBoundary fallback={(error) => <GeneralError error={error} />}>
           <Layout ref={layoutRef} data-testid="initialized">
-            <Switch>
-              <Match when={true}>
-                <PageContent>
-                  <FloatingNavbar />
-                  <Show when={locationGate()}>{p.children}</Show>
-                </PageContent>
-              </Match>
-            </Switch>
+            <PageContent>
+              <FloatingNavbar />
+              <Show when={locationGate()}>{p.children}</Show>
+            </PageContent>
             <Show when={isTauri()}>
               <DragArea data-tauri-drag-region="true" />
             </Show>

@@ -1,23 +1,23 @@
-import {WheelGesture} from '@use-gesture/vanilla'
 import type {EditorView} from 'prosemirror-view'
-import {createSignal, Match, onCleanup, onMount, Show, Switch} from 'solid-js'
+import {createMemo, createSignal, For, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {v4 as uuidv4} from 'uuid'
 import type {Chunk} from '@/services/CopilotService'
 import {useState} from '@/state'
-import {Attachment, type Message, Page} from '@/types'
-import {Button, ButtonGroup, IconButton} from '../Button'
-import {IconAdd, IconKeyboardArrowDown, IconKeyboardArrowUp} from '../Icon'
+import type {TreeItem} from '@/tree'
+import {type Attachment, type Message, Page} from '@/types'
+import {Button, ButtonGroup} from '../Button'
+import {IconAdd} from '../Icon'
+import {Content, Scroll} from '../Layout'
+import {TooltipDivider} from '../Tooltip'
+import {AutoContextToggle} from './attachments/AutoContextToggle'
+import {CurrentFileButton} from './attachments/CurrentFile'
+import {SelectionButton} from './attachments/Selection'
 import {ChatInput} from './ChatInput'
 import {MessageAnswer} from './MessageAnswer'
 import {MessageQuestion} from './MessageQuestion'
 import {ModelSelect} from './ModelSelect'
 import {Threads} from './Threads'
-import {Content, Scroll} from '../Layout'
-import { CurrentFileButton } from './attachments/CurrentFile'
-import { SelectionButton } from './attachments/Selection'
-import { TooltipDivider } from '../Tooltip'
-import { AutoContextToggle } from './attachments/AutoContextToggle'
 
 const Container = styled('div')`
   display: flex;
@@ -127,58 +127,52 @@ export const Chat = (props: Props) => {
 
   const MessagePair = styled('div')`
     &:last-child {
-      height: calc(100vh - 70px); /* 50px topnav + 20px margin */
+      min-height: calc(100vh - 220px); /* 50px topnav + 20px margin + 150 bottom padding */
+      margin-bottom: 150px;
     }
   `
 
-  const MessageTree = (p: {id?: string; childrenIds: string[]}) => (
-    <Show when={threadService.getNextItem(p.id, p.childrenIds)}>
-      {(message) => {
-        const next = threadService.getNextItem(message().id, message().childrenIds)
-        return (
-          <>
-            {/* First is always user question */}
-            <Show when={message().value.role === 'user'}>
-              <MessagePair>
-                <MessageQuestion
-                  message={message()}
-                  onUpdate={onRegenerate}
-                  childrenIds={p.childrenIds}
-                />
+  const messages = createMemo(() => {
+    type MessagePair = {
+      question: TreeItem<Message>
+      answer: TreeItem<Message>
+      questionSiblings: string[]
+    }
 
-                <Show when={next}>
-                  {(answer) => (
-                    <MessageAnswer
-                      message={answer()}
-                      onRegenerate={onRegenerate}
-                      childrenIds={message().childrenIds}
-                    />
-                  )}
-                </Show>
-              </MessagePair>
-            </Show>
-            <Show when={next}>
-              {(answer) => (
-                <Show when={answer().childrenIds.length}>
-                  <MessageTree id={answer().id} childrenIds={answer().childrenIds} />
-                </Show>
-              )}
-            </Show>
-          </>
-        )}
+    const result: MessagePair[] = []
+    let question: TreeItem<Message> | undefined
+    let parent: TreeItem<Message> | undefined
+    let questionSiblings: string[] = []
+
+    threadService.traverseTree((item) => {
+      if (item.value.role === 'user') {
+        questionSiblings = parent?.childrenIds ?? threadService.messageTree.rootItemIds
+        question = item
+      } else if (item.value.role === 'assistant' && question) {
+        result.push({question, answer: item, questionSiblings})
+        question = undefined
       }
-    </Show>
-  )
+
+      parent = item
+    })
+
+    return result
+  })
 
   return (
     <>
       <Scroll ref={scrollContentRef} data-testid="chat_scroll">
         <Content
-          style={store.location?.page !== Page.Assistant ? {
-            'width': '100%',
-            'max-width': '100%',
-            'padding-bottom': '0',
-          } : {}}
+          style={
+            store.location?.page !== Page.Assistant
+              ? {
+                  'max-width': '100%',
+                  'padding-bottom': '0',
+                }
+              : {
+                  'padding-bottom': '0',
+                }
+          }
           data-testid="chat_content"
         >
           <Container ref={containerRef} data-testid="chat">
@@ -192,9 +186,22 @@ export const Chat = (props: Props) => {
               <ModelSelect onChange={() => focusInput()} />
             </ButtonGroup>
             <Messages data-testid="messages">
-              <Show when={threadService.messageTree.rootItemIds.length}>
-                <MessageTree id={undefined} childrenIds={threadService.messageTree.rootItemIds} />
-              </Show>
+              <For each={messages()}>
+                {({question, answer, questionSiblings}) => (
+                  <MessagePair>
+                    <MessageQuestion
+                      message={question}
+                      onUpdate={onRegenerate}
+                      childrenIds={questionSiblings}
+                    />
+                    <MessageAnswer
+                      message={answer}
+                      onRegenerate={onRegenerate}
+                      childrenIds={question.childrenIds}
+                    />
+                  </MessagePair>
+                )}
+              </For>
             </Messages>
             <Show when={!threadService.messageTree.rootItemIds.length}>
               <EmptyContainer>

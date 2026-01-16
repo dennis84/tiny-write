@@ -1,24 +1,35 @@
+import {WheelGesture} from '@use-gesture/vanilla'
 import type {EditorView} from 'prosemirror-view'
-// import {EditorView, keymap, placeholder} from '@codemirror/view'
 import {createSignal, onCleanup, onMount, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {v4 as uuidv4} from 'uuid'
 import {serialize} from '@/prosemirror/markdown-serialize'
+import {ProseMirrorService} from '@/services/ProseMirrorService'
 import {useState} from '@/state'
-import {Page, type Attachment, type Message} from '@/types'
+import {type Attachment, type Message, Page} from '@/types'
 import {IconButton} from '../Button'
-import {IconAttachment, IconKeyboardArrowDown, IconKeyboardArrowUp, IconSend, IconStop} from '../Icon'
-import {Tooltip, TooltipDivider} from '../Tooltip'
+import {
+  IconAttachment,
+  IconKeyboardArrowDown,
+  IconKeyboardArrowUp,
+  IconSend,
+  IconStop,
+} from '../Icon'
+import {Tooltip} from '../Tooltip'
 import {TooltipHelp} from '../TooltipHelp'
-import {AutoContextToggle} from './attachments/AutoContextToggle'
 import {CurrentFileButton} from './attachments/CurrentFile'
 import {ImageButton} from './attachments/Image'
 import {SelectionButton} from './attachments/Selection'
 import {ChatEditor} from './ChatEditor'
 import {ChatInputAttachments} from './ChatInputAttachments'
-import {ChatInputAction, ChatInputActionRow, ChatInputBorder, ChatInputContainer, ChatInputEditorRow} from './Style'
+import {
+  ChatInputAction,
+  ChatInputActionRow,
+  ChatInputBorder,
+  ChatInputContainer,
+  ChatInputEditorRow,
+} from './Style'
 import {Suggestions} from './Suggestions'
-import { WheelGesture } from '@use-gesture/vanilla'
 
 const ChatInputTopRow = styled('div')`
   position: relative;
@@ -48,7 +59,8 @@ export const ChatInput = (props: Props) => {
   const [tooltipAnchor, setTooltipAnchor] = createSignal<HTMLElement | undefined>()
   const [focused, setFocused] = createSignal(false)
   const [editorView, setEditorView] = createSignal<EditorView>()
-  const [isAtBottom, setIsAtBottom] = createSignal(false)
+  const [isAtBottom, setIsAtBottom] = createSignal<boolean | undefined>(undefined)
+  const [empty, setEmpty] = createSignal(true)
 
   const {store, copilotService, threadService, mediaService} = useState()
 
@@ -102,19 +114,18 @@ export const ChatInput = (props: Props) => {
 
     mediaService.resetDroppedFiles()
     threadService.setAttachments([])
-    scrollToBottom()
+
+    setTimeout(() => {
+      scrollToBottom()
+    }, 100)
   }
 
   const onSendSuggestion = (content: string) => {
-    props.onMessage({
-      id: uuidv4(),
-      role: 'user',
-      content,
-      attachments: threadService.attachments(),
-    })
-
-    mediaService.resetDroppedFiles()
-    threadService.setAttachments([])
+    const view = editorView()
+    if (!view) return
+    const tr = view.state.tr
+    tr.insert(0, view.state.schema.text(content))
+    view.dispatch(tr)
   }
 
   const onStop = () => {
@@ -130,6 +141,16 @@ export const ChatInput = (props: Props) => {
     setFocused(focus)
   }
 
+  const onChange = () => {
+    setEmpty(ProseMirrorService.isEmpty(editorView()?.state) ?? true)
+  }
+
+  const canScroll = () => {
+    const scrollContentRef = props.dropArea?.()
+    const contentHeight = (scrollContentRef?.firstChild as Element | null)?.clientHeight ?? 0
+    return contentHeight > (scrollContentRef?.clientHeight ?? 0)
+  }
+
   onMount(() => {
     const scrollContentRef = props.dropArea?.()
     if (!scrollContentRef) return
@@ -139,6 +160,7 @@ export const ChatInput = (props: Props) => {
         // Only on user input not programmatic scroll
         if (!event.deltaY) return
         if (Math.abs(y) < 0.5) return
+        if (!canScroll()) return
 
         const newValue =
           scrollContentRef.scrollHeight -
@@ -171,7 +193,7 @@ export const ChatInput = (props: Props) => {
                 </IconButton>
               </ScrollDown>
             </Show>
-            <Show when={!isAtBottom()}>
+            <Show when={isAtBottom() === false}>
               <ScrollDown>
                 <IconButton onClick={() => scrollToBottom()}>
                   <IconKeyboardArrowDown />
@@ -184,8 +206,12 @@ export const ChatInput = (props: Props) => {
               setEditorView={onSetEditorView}
               onSubmit={onSend}
               onFocus={onFocus}
+              onChange={onChange}
             />
           </ChatInputEditorRow>
+          <Show when={empty()}>
+            <Suggestions onSuggestion={onSendSuggestion} />
+          </Show>
           <ChatInputActionRow>
             <ChatInputAttachments />
             <ChatInputAction>

@@ -183,7 +183,7 @@ test('dropFiles - image on assistant', async () => {
   const {getByTestId} = render(() => <Main state={ctrl} />)
 
   await waitFor(() => {
-    expect(getByTestId('assistant')).toBeDefined()
+    expect(getByTestId('chat_scroll')).toBeDefined()
   })
 
   const files = [

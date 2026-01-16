@@ -1,6 +1,6 @@
 import {createResource, Show, Suspense} from 'solid-js'
 import {useState} from '@/state'
-import {Drawer, DrawerContent} from '../Drawer'
+import {Drawer} from '../Drawer'
 import {ChatNavbar} from '../menu/Navbar'
 import {Chat} from './Chat'
 
@@ -14,7 +14,6 @@ export const ChatDrawer = () => {
   const onChangeThread = async (threadId: string) => {
     await appService.setLocation({threadId})
     threadService.init()
-    // scrollContent.scrollTo({top: 0, behavior: 'smooth'})
   }
 
   const [initialized] = createResource(async () => {

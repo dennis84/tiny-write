@@ -203,12 +203,13 @@ export class CodeService {
     } else {
       extensions.push(
         EditorView.updateListener.of(async (update) => {
+          // Detect doc changes and selection changes for assistant context
+          this.setState('lastTr', Date.now())
           if (!update.docChanged) return
           this.fileService.updateFile(file.id, {
             lastModified: new Date(),
             ydoc: Y.encodeStateAsUpdate(subdoc),
           })
-          this.setState('lastTr', Date.now())
           await this.saveEditor(file, update)
         }),
         yCollab(type, this.collabService.provider?.awareness, {undoManager: false}),

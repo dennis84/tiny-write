@@ -40,7 +40,7 @@ test.beforeEach(async ({page}) => {
         active: true,
         messages: [
           {id: '1', role: 'user', content: 'Blah'},
-          {id: '2', role: 'assistant', content},
+          {id: '2', parentId: '1', role: 'assistant', content},
         ],
       },
     ],

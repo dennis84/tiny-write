@@ -4,6 +4,7 @@ import type {SetStoreFunction, Store} from 'solid-js/store'
 import {v4 as uuidv4} from 'uuid'
 import {DB} from '@/db'
 import codeBlockHandlingPrompt from '@/prompts/assistant-code-block-handling.md?raw'
+import generateTitlePrompt from '@/prompts/generate-title.md?raw'
 import {info} from '@/remote/log'
 import {createTreeStore, type TreeItem} from '@/tree'
 import {type Attachment, AttachmentType, type Message, type State, type Thread} from '@/types'
@@ -294,12 +295,7 @@ export class ThreadService {
 
     const question: ChatMessage = {
       role: 'user',
-      content: [
-        {
-          type: 'text',
-          text: 'Generate a concise title of 3-7 words for this conversation and leave out the punctuation. Return the title directly, without preamble and prefix.',
-        },
-      ],
+      content: [{type: 'text', text: generateTitlePrompt}],
     }
 
     const messages: ChatMessage[] = currentThread.messages.map((m) => this.toChatMessage(m))

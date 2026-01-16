@@ -186,30 +186,34 @@ export const MessageMarkdown = (props: Props) => {
   })
 
   const renderMessage = (content: string) => {
-    const tokens = md.parse(content, undefined)
+    try {
+      const tokens = md.parse(content, undefined)
 
-    batch(() => {
-      tree.updateAll([])
+      batch(() => {
+        tree.updateAll([])
 
-      let parent = tree.getItem('root')
+        let parent = tree.getItem('root')
 
-      tokens.forEach((token, idx) => {
-        // should not happen
-        if (!parent) return
+        tokens.forEach((token, idx) => {
+          // should not happen
+          if (!parent) return
 
-        let tmp: TokenItem
-        if (token.nesting === 1) {
-          tmp = createTokenItem(token, parent.id, idx)
-          tree.add(tmp)
-          tree.move(tmp.id, parent.id)
-          parent = tree.getItem(tmp.id)
-        } else if (token.nesting === -1) {
-          parent = tree.getItem(parent.parentId ?? 'root')
-        } else if (token.nesting === 0) {
-          tree.add(createTokenItem(token, parent.id, idx))
-        }
+          let tmp: TokenItem
+          if (token.nesting === 1) {
+            tmp = createTokenItem(token, parent.id, idx)
+            tree.add(tmp)
+            tree.move(tmp.id, parent.id)
+            parent = tree.getItem(tmp.id)
+          } else if (token.nesting === -1) {
+            parent = tree.getItem(parent.parentId ?? 'root')
+          } else if (token.nesting === 0) {
+            tree.add(createTokenItem(token, parent.id, idx))
+          }
+        })
       })
-    })
+    } catch {
+      // ignore errors
+    }
   }
 
   createSequentialEffect(

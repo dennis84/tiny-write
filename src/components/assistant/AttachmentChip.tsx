@@ -15,6 +15,9 @@ const Container = styled('div')`
   display: grid;
   justify-items: flex-end;
   gap: 10px;
+  button {
+    background: var(--foreground-5);
+  }
 `
 
 const TooltipAction = styled('div')`

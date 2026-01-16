@@ -54,7 +54,7 @@ export const ChatInputBorder = styled("div")`
   scroll-margin-bottom: 50px;
   border: 1px solid var(--primary-background);
   border-radius: var(--border-radius);
-  padding: 10px 20px;
+  padding: 10px;
   font-size: var(--menu-font-size);
   font-family: var(--menu-font-family);
   ${(props: any) => props.focused ? `

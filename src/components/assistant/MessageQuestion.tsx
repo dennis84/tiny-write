@@ -1,4 +1,4 @@
-import {createEffect, createSignal, For, on, onMount, Show} from 'solid-js'
+import {createSignal, For, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {useState} from '@/state'
 import type {TreeItem} from '@/tree'
@@ -53,7 +53,7 @@ export const MessageQuestion = (props: Props) => {
 
   const [editing, setEditing] = createSignal(false)
 
-  const {configService, copilotService, threadService} = useState()
+  const {configService} = useState()
 
   const onEditMessage = async () => {
     setEditing(true)
@@ -73,27 +73,6 @@ export const MessageQuestion = (props: Props) => {
       </QuestionAttachments>
     </Show>
   )
-
-  // createEffect(
-  //   on(
-  //     // 1. question added, 2. empty answer added, 3. start streaming
-  //     () => copilotService.streaming(),
-  //     (streaming) => {
-  //       if (!streaming || !questionContainerRef) return
-  //       const next = threadService.getNextItem(props.message.id, props.message.childrenIds)
-  //       const isLast = !next || (next.value.content === '' && next.childrenIds.length === 0)
-  //
-  //       if (isLast && copilotService.streaming()) {
-  //         // Otherwise scrollIntoView may not work correctly
-  //         setTimeout(() => {
-  //           questionContainerRef.scrollIntoView({
-  //             behavior: 'smooth',
-  //             block: 'start',
-  //           })
-  //         }, 0)
-  //       }
-  //     })
-  //   )
 
   return (
     <>

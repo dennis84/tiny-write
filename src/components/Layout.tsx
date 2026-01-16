@@ -81,14 +81,12 @@ export const Content = styled('div')`
   position: relative;
   height: fit-content;
   max-width: var(--content-width);
+  width: 100%;
   padding: 20px;
   padding-bottom: 77vh;
   scrollbar-width: none;
   &::-webkit-scrollbar {
     display: none;
-  }
-  code {
-    font-family: var(--font-family-monospace);
   }
 `
 

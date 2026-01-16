@@ -12,13 +12,19 @@ test('threads', async ({page}) => {
         id: '1',
         title: 'Thread 1',
         lastModified: new Date(),
-        messages: [{id: '1', role: 'user', content: 'Hello'}],
+        messages: [
+          {id: '1', role: 'user', content: 'Hello'},
+          {id: '2', parentId: '1', role: 'assistant', content: '1'},
+        ],
       },
       {
         id: '2',
         title: 'Thread 2',
         lastModified: new Date(),
-        messages: [{id: '1', role: 'user', content: 'World'}],
+        messages: [
+          {id: '1', role: 'user', content: 'World'},
+          {id: '2', parentId: '1', role: 'assistant', content: '2'},
+        ],
       },
     ],
   })
