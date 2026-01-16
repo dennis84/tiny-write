@@ -10,6 +10,8 @@ const Attachments = styled('div')`
   min-width: 0;
   gap: 5px;
   justify-content: flex-end;
+  justify-self: flex-start;
+  margin-right: auto;
 `
 
 export const ChatInputAttachments = () => {

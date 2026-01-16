@@ -183,7 +183,6 @@ export const Chat = (props: Props) => {
                   <IconAdd /> New
                 </Button>
               </Show>
-              <ModelSelect onChange={() => focusInput()} />
             </ButtonGroup>
             <Messages data-testid="messages">
               <For each={messages()}>

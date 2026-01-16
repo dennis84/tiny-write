@@ -3,7 +3,6 @@ import {createSignal, For, Show} from 'solid-js'
 import type {Model} from '@/services/CopilotService'
 import {useState} from '@/state'
 import {Button} from '../Button'
-import {IconAi} from '../Icon'
 import {Tooltip, TooltipButton} from '../Tooltip'
 
 interface Props {
@@ -33,7 +32,6 @@ export const ModelSelect = (props: Props) => {
   return (
     <>
       <Button onClick={onMenuClick} data-testid="model_select">
-        <IconAi />
         {copilotService.chatModel.name}
       </Button>
       <Show when={tooltipAnchor()}>

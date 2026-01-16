@@ -68,7 +68,7 @@ export const ChatInputEditorRow = styled('div')`
 
 export const ChatInputActionRow = styled('div')`
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
 `
 
 export const ChatInputAction = styled('div')`

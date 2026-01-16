@@ -30,6 +30,7 @@ import {
   ChatInputEditorRow,
 } from './Style'
 import {Suggestions} from './Suggestions'
+import { ModelSelect } from './ModelSelect'
 
 const ChatInputTopRow = styled('div')`
   position: relative;
@@ -214,6 +215,7 @@ export const ChatInput = (props: Props) => {
           </Show>
           <ChatInputActionRow>
             <ChatInputAttachments />
+            <ModelSelect onChange={() => editorView()?.focus()} />
             <ChatInputAction>
               <TooltipHelp title="Add an attachment to context">
                 <IconButton onClick={onAttachmentMenu}>
