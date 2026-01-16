@@ -12,6 +12,7 @@ import {CollabService} from './CollabService'
 import {ConfigService} from './ConfigService'
 import {CopilotService} from './CopilotService'
 import {DeleteService} from './DeleteService'
+import {DialogService} from './DialogService'
 import {EditorService} from './EditorService'
 import {FileService} from './FileService'
 import {InputLineService} from './InputLineService'
@@ -91,6 +92,7 @@ export const createCtrl = (initial: State) => {
   const threadService = new ThreadService(store, setState, copilotService)
   const menuService = new MenuService(store, setState, appService)
   const inputLineService = new InputLineService()
+  const dialogService = new DialogService()
 
   return {
     store,
@@ -116,6 +118,7 @@ export const createCtrl = (initial: State) => {
     menuService,
     toastService,
     inputLineService,
+    dialogService,
   }
 }
 

@@ -100,6 +100,8 @@ export const AttachmentChip = (props: Props) => {
       .cm-editor {
         max-width: 400px;
         max-height: 400px;
+        border-radius: var(--border-radius);
+        padding: 10px;
       }
     `
 

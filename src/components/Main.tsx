@@ -33,6 +33,7 @@ import {createCtrl} from '@/services'
 import {StateContext} from '@/state'
 import {type LocationState, Page, type State} from '@/types'
 import {enumFromValue} from '@/utils/enum'
+import {Dialog} from './dialog/Dialog'
 import {GeneralError} from './Error'
 import {Title} from './pages/Title'
 
@@ -137,6 +138,7 @@ export const Main = (props: {state: State | Ctrl}) => {
             <ResizeWindow />
             <DarkMode />
             <InputLine />
+            <Dialog />
             <Toast />
             <Title />
           </Layout>

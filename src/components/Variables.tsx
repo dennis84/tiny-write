@@ -62,8 +62,9 @@ export const Variables = () => {
     root.style.setProperty('--cursor-grabbed', CURSOR_GRABBED)
     root.style.setProperty('--cursor-text', CURSOR_TEXT)
     root.style.setProperty('--z-index-max', ZIndex.MAX)
-    root.style.setProperty('--z-index-handle', ZIndex.HANDLE)
+    root.style.setProperty('--z-index-dialog', ZIndex.DIALOG)
     root.style.setProperty('--z-index-tooltip', ZIndex.TOOLTIP)
+    root.style.setProperty('--z-index-handle', ZIndex.HANDLE)
     root.style.setProperty('--z-index-above-content', ZIndex.ABOVE_CONTENT)
 
     root.style.setProperty('--content-width', `${store.config.contentWidth}px`)

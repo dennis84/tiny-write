@@ -62,7 +62,7 @@ interface Props {
 
 export const Threads = (props: Props) => {
   let searchInputRef: HTMLInputElement | undefined
-  const {inputLineService, threadService} = useState()
+  const {inputLineService, dialogService, threadService} = useState()
   const [menuTooltipAnchor, setMenuTooltipAnchor] = createSignal<HTMLElement>()
   const [submenuTooltipAnchor, setSubmenuTooltipAnchor] = createSignal<HTMLElement>()
   const [selectedThread, setSelectedThread] = createSignal<Thread>()
@@ -127,9 +127,19 @@ export const Threads = (props: Props) => {
   const onDelete = () => {
     const thread = selectedThread()
     if (!thread) return
-    threadService.delete(thread)
+
     setSelectedThread(undefined)
     setSubmenuTooltipAnchor(undefined)
+
+    dialogService.setDialog({
+      title: 'Delete thread',
+      text: 'Are you sure you want to delete this thread?',
+      onConfirm: async () => {
+        await threadService.delete(thread)
+        setSelectedThread(undefined)
+        setSubmenuTooltipAnchor(undefined)
+      },
+    })
   }
 
   const onRename = () => {

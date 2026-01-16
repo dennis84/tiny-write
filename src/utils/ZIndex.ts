@@ -9,9 +9,10 @@ const MAX = 2147483647
 
 export class ZIndex {
   static MAX = MAX.toString()
-  static TOOLTIP = MAX.toString()
-  static HANDLE = (MAX - 1).toString()
-  static TABLE_SELECTION = (MAX - 2).toString()
+  static DIALOG = (MAX - 1).toString()
+  static TOOLTIP = (MAX - 2).toString()
+  static HANDLE = (MAX - 3).toString()
+  static TABLE_SELECTION = (MAX - 4).toString()
 
   static ABOVE_CONTENT = String(1000)
 
