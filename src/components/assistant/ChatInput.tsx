@@ -43,14 +43,14 @@ interface Props {
 export const ChatInput = (props: Props) => {
   const [focused, setFocused] = createSignal(false)
   const [editorView, setEditorView] = createSignal<EditorView>()
-  const [isAtBottom, setIsAtBottom] = createSignal<boolean | undefined>(undefined)
+  const [scrollDirection, setScrollDirection] = createSignal<'up' | 'down' | undefined>(undefined)
   const [empty, setEmpty] = createSignal(true)
 
   const {store, copilotService, threadService, mediaService} = useState()
 
   const scrollToTop = () => {
     props.dropArea?.().scrollTo({top: 0, behavior: 'smooth'})
-    setIsAtBottom(false)
+    setScrollDirection('down')
   }
 
   const scrollToBottom = () => {
@@ -58,7 +58,7 @@ export const ChatInput = (props: Props) => {
     if (!scrollContent) return
     const top = scrollContent.scrollHeight + 100
     scrollContent.scrollTo({top, behavior: 'smooth'})
-    setIsAtBottom(true)
+    setScrollDirection('up')
   }
 
   const onSend = () => {
@@ -112,33 +112,25 @@ export const ChatInput = (props: Props) => {
     setEmpty(ProseMirrorService.isEmpty(editorView()?.state) ?? true)
   }
 
-  const canScroll = () => {
-    const scrollContentRef = props.dropArea?.()
-    const contentHeight = (scrollContentRef?.firstChild as Element | null)?.clientHeight ?? 0
-    return contentHeight > (scrollContentRef?.clientHeight ?? 0)
-  }
-
   onMount(() => {
     const scrollContentRef = props.dropArea?.()
     if (!scrollContentRef) return
-    const gesture = new WheelGesture(
-      scrollContentRef,
-      ({event, velocity: [_, y]}) => {
-        // Only on user input not programmatic scroll
-        if (!event.deltaY) return
-        if (Math.abs(y) < 0.5) return
-        if (!canScroll()) return
+    const gesture = new WheelGesture(scrollContentRef, ({delta: [, deltaY]}) => {
+      if (scrollContentRef.scrollHeight <= scrollContentRef.clientHeight) return
 
-        const newValue =
-          scrollContentRef.scrollHeight -
-            scrollContentRef.scrollTop -
-            scrollContentRef.clientHeight <
-          90 // ~ the height of the input area
+      const isAtBottom =
+        scrollContentRef.scrollHeight - scrollContentRef.scrollTop - scrollContentRef.clientHeight <
+        20 // some pixel before bottom
 
-        setIsAtBottom(newValue)
-      },
-      {threshold: 10}, // Ignore scrolls smaller than 10px
-    )
+      if (isAtBottom) {
+        setScrollDirection('up')
+        return
+      }
+
+      if (deltaY === 0) return
+
+      setScrollDirection(deltaY > 0 ? 'down' : 'up')
+    })
 
     onCleanup(() => {
       gesture.destroy()
@@ -152,14 +144,14 @@ export const ChatInput = (props: Props) => {
     >
       <ChatInputBorder ref={props.ref} focused={focused()}>
         <ChatInputTopRow>
-          <Show when={isAtBottom()}>
+          <Show when={scrollDirection() === 'up'}>
             <ScrollDown>
               <IconButton onClick={() => scrollToTop()}>
                 <IconKeyboardArrowUp />
               </IconButton>
             </ScrollDown>
           </Show>
-          <Show when={isAtBottom() === false}>
+          <Show when={scrollDirection() === 'down'}>
             <ScrollDown>
               <IconButton onClick={() => scrollToBottom()}>
                 <IconKeyboardArrowDown />

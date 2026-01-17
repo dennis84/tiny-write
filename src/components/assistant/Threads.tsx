@@ -1,23 +1,15 @@
-import {createEffect, createSignal, For, Show} from 'solid-js'
+import {createSignal, For, onMount, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {useState} from '@/state'
 import type {Thread} from '@/types'
 import {Button, ButtonGroup} from '../Button'
-import {IconAdd, IconDelete, IconEdit, IconHistory, IconMoreHoriz, IconSearch} from '../Icon'
-import {Label} from '../menu/Style'
-import {Tooltip, TooltipButton} from '../Tooltip'
+import {IconAdd, IconDelete, IconEdit, IconHistory, IconSearch} from '../Icon'
+import {DialogConfig} from '@/services/DialogService'
+
+const SearchRow = styled('div')``
 
 const TooltipFooter = styled('div')`
   margin-top: 10px;
-`
-
-const Scroller = styled('div')`
-  max-width: 500px; /* Max width for the tooplip */
-  height: 100%;
-  overflow-y: auto;
-  &::-webkit-scrollbar {
-    display: none;
-  }
 `
 
 const TooltipButtonMenu = styled('span')`
@@ -38,13 +30,74 @@ const TooltipButtonMenu = styled('span')`
   }
 `
 
+const Scroller = styled('div')`
+  width: 80vw;
+  max-height: 80vh;
+  overflow-y: auto;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+`
+
 const Content = styled('div')`
   heigth: 100%;
+`
+
+export const Label = styled('div')`
+  padding: 2px 6px;
+  font-size: var(--menu-font-size);
+  text-transform: uppercase;
+  color: var(--foreground-50);
+  font-weight: bold;
+`
+
+const ThreadItem = styled('div')`
+  display: flex;
+  align-items: center;
+  padding: 2px 6px;
+  margin: 2px 0;
+  height: 40px;
+  cursor: var(--cursor-pointer);
+  border-radius: var(--border-radius-small);
+  .action {
+    display: none;
+    justify-self: flex-end;
+    margin-left: auto;
+  }
+  &:hover,
+  &.selected {
+    background: var(--primary-background);
+    color: var(--primary-foreground);
+    .action {
+      display: block;
+    }
+  }
+`
+
+const SearchBorder = styled('div')`
+  border: 2px solid var(--primary-background);
+  color: var(--primary-background);
+  height: 40px;
+  width: 100%;
+  border-radius: 30px;
+  background: var(--background-60);
+  position: relative;
+  margin-bottom: 10px;
+  .icon {
+    position: absolute;
+    right: 0;
+    top: -2px;
+    height: 40px;
+    width: 40px;
+    color: var(--foreground-50);
+  }
 `
 
 const SearchInput = styled('input')`
   height: 40px;
   padding: 0 20px;
+  line-height: 40px;
+  padding-bottom: 2px;
   width: 100%;
   border-radius: 30px;
   font-size: var(--menu-font-size);
@@ -52,7 +105,7 @@ const SearchInput = styled('input')`
   text-decoration: none;
   font-family: var(--menu-font-family);
   border: 0;
-  background: var(--background-60);
+  background: none;
   color: var(--foreground);
 `
 
@@ -61,183 +114,127 @@ interface Props {
 }
 
 export const Threads = (props: Props) => {
-  let searchInputRef: HTMLInputElement | undefined
   const {inputLineService, dialogService, threadService} = useState()
-  const [menuTooltipAnchor, setMenuTooltipAnchor] = createSignal<HTMLElement>()
-  const [submenuTooltipAnchor, setSubmenuTooltipAnchor] = createSignal<HTMLElement>()
-  const [selectedThread, setSelectedThread] = createSignal<Thread>()
-  const [searchMode, setSearchMode] = createSignal<boolean>(false)
   const [searchTerm, setSearchTerm] = createSignal<string | undefined>(undefined)
 
-  const closeMenu = () => {
-    setMenuTooltipAnchor(undefined)
-    setSubmenuTooltipAnchor(undefined)
-  }
-
-  const onSelect = (id: string) => {
-    setSubmenuTooltipAnchor(undefined)
-    props.onChange(id)
-  }
-
-  const onMenuClick = (e: MouseEvent) => {
-    setMenuTooltipAnchor(e.currentTarget as HTMLElement)
-  }
-
-  const onMenuClose = () => closeMenu()
-
-  const onSubmenuClick = (e: MouseEvent, thread: Thread) => {
-    e.stopPropagation()
-    const target = e.currentTarget as HTMLElement
-    const close = submenuTooltipAnchor() === target
-    setSubmenuTooltipAnchor(undefined)
-    setSubmenuTooltipAnchor(close ? undefined : target)
-    setSelectedThread(thread)
-  }
-
-  const onNew = () => {
-    const newThread = threadService.newThread()
-    setSubmenuTooltipAnchor(undefined)
-    props.onChange(newThread.id)
+  const onMenuClick = () => {
+    dialogService.open({component: DialogContent})
   }
 
   const onDeleteAll = async () => {
-    const newThread = await threadService.deleteAll()
-    setSubmenuTooltipAnchor(undefined)
-    props.onChange(newThread.id)
-  }
-
-  const onSearchMode = async () => {
-    setSearchMode(!searchMode())
+    dialogService.open({
+      title: 'Delete all threads',
+      text: 'Are you sure you want to delete all threads?',
+      onConfirm: async () => {
+        const newThread = await threadService.deleteAll()
+        props.onChange(newThread.id)
+      },
+    })
   }
 
   const onSearchInput = (e: Event) => {
     setSearchTerm((e.target as HTMLInputElement).value)
   }
 
-  const onSearchKeyDown = (e: KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      setSearchMode(false)
+  const DialogContent = (p: {dialog: DialogConfig}) => {
+    let searchInputRef!: HTMLInputElement
+
+    const onNew = () => {
+      const newThread = threadService.newThread()
+      props.onChange(newThread.id)
+      dialogService.close(p.dialog)
     }
-  }
 
-  const onSearchBlur = () => {
-    setSearchMode(false)
-  }
-
-  const onDelete = () => {
-    const thread = selectedThread()
-    if (!thread) return
-
-    setSelectedThread(undefined)
-    setSubmenuTooltipAnchor(undefined)
-
-    dialogService.setDialog({
-      title: 'Delete thread',
-      text: 'Are you sure you want to delete this thread?',
-      onConfirm: async () => {
-        await threadService.delete(thread)
-        setSelectedThread(undefined)
-        setSubmenuTooltipAnchor(undefined)
-      },
-    })
-  }
-
-  const onRename = () => {
-    const thread = selectedThread()
-    if (!thread) return
-    setSubmenuTooltipAnchor(undefined)
-    inputLineService.setInputLine({
-      value: thread.title ?? '',
-      onEnter: async (value: string) => {
-        const title = value.trim() || undefined
-        if (title) await threadService.updateTitle(title, thread)
-      },
-    })
-  }
-
-  createEffect(() => {
-    if (searchMode()) {
-      searchInputRef?.focus()
+    const onSelect = (thread: Thread) => {
+      props.onChange(thread.id)
+      dialogService.close(p.dialog)
     }
-  })
+
+    const onDelete = (thread: Thread) => {
+      dialogService.open({
+        title: 'Delete thread',
+        text: 'Are you sure you want to delete this thread?',
+        onConfirm: async () => {
+          await threadService.delete(thread)
+        },
+      })
+    }
+
+    const onRename = (thread: Thread) => {
+      inputLineService.setInputLine({
+        value: thread.title ?? '',
+        onEnter: async (value: string) => {
+          const title = value.trim() || undefined
+          if (title) await threadService.updateTitle(title, thread)
+        },
+      })
+    }
+
+    onMount(() => {
+      searchInputRef.focus()
+    })
+
+    return (
+      <>
+        <SearchRow>
+          <SearchBorder>
+            <SearchInput
+              ref={searchInputRef}
+              placeholder="Search"
+              onInput={onSearchInput}
+              value={searchTerm() || ''}
+            />
+            <IconSearch />
+          </SearchBorder>
+        </SearchRow>
+        <Scroller>
+          <Content>
+            <For each={threadService.getThreads(searchTerm())}>
+              {([thread, label]) => (
+                <>
+                  <Show when={label}>
+                    <Label>{label}</Label>
+                  </Show>
+                  <ThreadItem onClick={() => onSelect(thread)}>
+                    {thread.title ?? 'Untitled'}
+                    <ButtonGroup class="action">
+                      <TooltipButtonMenu
+                        onClick={() => onDelete(thread)}
+                        data-testid="thread_item_menu"
+                      >
+                        <IconDelete />
+                      </TooltipButtonMenu>
+                      <TooltipButtonMenu
+                        onClick={() => onRename(thread)}
+                        data-testid="thread_item_menu"
+                      >
+                        <IconEdit />
+                      </TooltipButtonMenu>
+                    </ButtonGroup>
+                  </ThreadItem>
+                </>
+              )}
+            </For>
+          </Content>
+        </Scroller>
+        <TooltipFooter>
+          <ButtonGroup>
+            <Button onClick={onNew}>
+              <IconAdd /> New
+            </Button>
+            <Button onClick={onDeleteAll}>
+              <IconDelete /> Delete all
+            </Button>
+          </ButtonGroup>
+        </TooltipFooter>
+      </>
+    )
+  }
 
   return (
-    <>
-      <Button onClick={onMenuClick} data-testid="history">
-        <IconHistory />
-        History
-      </Button>
-      <Show when={menuTooltipAnchor()}>
-        {(a) => (
-          <Tooltip anchor={a()} onClose={onMenuClose} backdrop={true} placement="left">
-            <Scroller>
-              <Content>
-                <For each={threadService.getThreads(searchTerm())}>
-                  {([thread, label]) => (
-                    <>
-                      <Show when={label}>
-                        <Label>{label}</Label>
-                      </Show>
-                      <TooltipButton
-                        onClick={() => onSelect(thread.id)}
-                        class={thread.id === threadService.currentThread?.id ? 'selected' : ''}
-                        data-testid="thread_item"
-                      >
-                        {thread.title ?? 'Untitled'}
-                        <TooltipButtonMenu
-                          onClick={(e) => onSubmenuClick(e, thread)}
-                          data-testid="thread_item_menu"
-                        >
-                          <IconMoreHoriz />
-                        </TooltipButtonMenu>
-                      </TooltipButton>
-                    </>
-                  )}
-                </For>
-              </Content>
-            </Scroller>
-            <TooltipFooter>
-              <Show when={searchMode()}>
-                <SearchInput
-                  ref={searchInputRef}
-                  placeholder="Search"
-                  onInput={onSearchInput}
-                  onKeyDown={onSearchKeyDown}
-                  onBlur={onSearchBlur}
-                  value={searchTerm() || ''}
-                />
-              </Show>
-              <Show when={!searchMode()}>
-                <ButtonGroup>
-                  <Button onClick={onNew}>
-                    <IconAdd /> New
-                  </Button>
-                  <Button onClick={onDeleteAll}>
-                    <IconDelete /> Delete all
-                  </Button>
-                  <Button onClick={onSearchMode}>
-                    <IconSearch /> Search
-                  </Button>
-                </ButtonGroup>
-              </Show>
-            </TooltipFooter>
-            <Show when={submenuTooltipAnchor()}>
-              {(subA) => (
-                <Tooltip anchor={subA()} closeable={false} placement="right" offset={20}>
-                  <TooltipButton onClick={onRename} data-testid="thread_item_menu_rename">
-                    <IconEdit />
-                    Rename
-                  </TooltipButton>
-                  <TooltipButton onClick={onDelete} data-testid="thread_item_menu_delete">
-                    <IconDelete />
-                    Delete
-                  </TooltipButton>
-                </Tooltip>
-              )}
-            </Show>
-          </Tooltip>
-        )}
-      </Show>
-    </>
+    <Button onClick={onMenuClick} data-testid="history">
+      <IconHistory />
+      History
+    </Button>
   )
 }
