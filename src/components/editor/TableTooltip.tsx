@@ -13,6 +13,7 @@ import {
 } from 'prosemirror-tables'
 import {createEffect, createSignal, Show} from 'solid-js'
 import {useState} from '@/state'
+import {Tooltip, TooltipButton, TooltipDivider} from '../dialog/Tooltip'
 import {
   IconAddColumnLeft,
   IconAddColumnRight,
@@ -22,7 +23,6 @@ import {
   IconRowRemove,
   IconToggleOn,
 } from '../Icon'
-import {Tooltip, TooltipButton, TooltipDivider} from '../Tooltip'
 import type {ActiveHandle, CurrentCell, CurrentTable} from './TableControl'
 
 interface Props {

@@ -10,8 +10,8 @@ import {copy} from '@/remote/clipboard'
 import {info} from '@/remote/log'
 import {useState} from '@/state'
 import {IconButton} from '../Button'
+import {TooltipHelp} from '../dialog/TooltipHelp'
 import {IconAdd, IconContentCopy, IconMerge} from '../Icon'
-import {TooltipHelp} from '../TooltipHelp'
 import type {CodeFenceInfo} from './MessageMarkdown'
 
 const ApplyPanelEl = styled('div')`

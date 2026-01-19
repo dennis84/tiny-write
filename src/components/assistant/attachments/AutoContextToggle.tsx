@@ -1,7 +1,7 @@
 import {createSignal, Show} from 'solid-js'
+import {TooltipButton} from '@/components/dialog/Tooltip'
+import {TooltipHelp} from '@/components/dialog/TooltipHelp'
 import {IconToggleOff, IconToggleOn} from '@/components/Icon'
-import {TooltipButton} from '@/components/Tooltip'
-import {TooltipHelp} from '@/components/TooltipHelp'
 import {useCurrentFile} from '@/hooks/use-current-file'
 import {useState} from '@/state'
 

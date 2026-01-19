@@ -7,6 +7,7 @@ import {createEffect, createSignal, Show} from 'solid-js'
 import {foldAll} from '@/codemirror/fold-all'
 import {getLanguageNames} from '@/codemirror/highlight'
 import {createBlockquote, createCodeFence} from '@/components/assistant/util'
+import {Tooltip, TooltipButton, TooltipDivider} from '@/components/dialog/Tooltip'
 import {
   IconAdd,
   IconCodeBlocks,
@@ -23,7 +24,6 @@ import {
   IconVisibility,
   IconVisibilityOff,
 } from '@/components/Icon'
-import {Tooltip, TooltipButton, TooltipDivider} from '@/components/Tooltip'
 import {useOpen} from '@/hooks/use-open'
 import editorTextHandling from '@/prompts/editor-text-handling.md?raw'
 import editorCodeBlockHandling from '@/prompts/editor-text-handling.md?raw'

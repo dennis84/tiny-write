@@ -9,6 +9,7 @@ import {CanvasService} from '@/services/CanvasService'
 import type {MenuTreeItem} from '@/services/TreeService'
 import {isCanvas, isCodeFile, isFile, isLocalFile, useState} from '@/state'
 import {Page} from '@/types'
+import {Tooltip, TooltipButton, TooltipDivider} from '../dialog/Tooltip'
 import {
   IconAdd,
   IconAdjust,
@@ -24,7 +25,6 @@ import {
   IconTextSnippet,
   LangIcon,
 } from '../Icon'
-import {Tooltip, TooltipButton, TooltipDivider} from '../Tooltip'
 import {Link} from './Link'
 import {ITEM_HEIGHT, itemCss, Label, Sub} from './Style'
 

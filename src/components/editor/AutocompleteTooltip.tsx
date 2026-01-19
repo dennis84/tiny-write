@@ -6,7 +6,7 @@ import {fileListingPluginKey} from '@/prosemirror/autocomplete/file-listing'
 import {wordCompletionPluginKey} from '@/prosemirror/autocomplete/word-completion'
 import {useState} from '@/state'
 import type {File} from '@/types'
-import {Tooltip, TooltipButton} from '../Tooltip'
+import {Tooltip, TooltipButton} from '../dialog/Tooltip'
 
 interface Props {
   file?: File

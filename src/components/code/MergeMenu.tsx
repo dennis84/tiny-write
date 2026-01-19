@@ -1,10 +1,10 @@
 import {acceptChunk, getChunks, rejectChunk} from '@codemirror/merge'
 import {createMemo, createSignal, onCleanup, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
+import {TooltipButton, TooltipContainer} from '@/components/dialog/Tooltip'
 import {useOpen} from '@/hooks/use-open'
 import {useState} from '@/state'
 import {IconCheck, IconClose} from '../Icon'
-import {TooltipButton, TooltipContainer} from '../Tooltip'
 
 const MergeMenuContainer = styled('div')`
   position: fixed;

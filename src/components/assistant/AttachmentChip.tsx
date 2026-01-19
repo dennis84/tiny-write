@@ -8,8 +8,8 @@ import {useTitle} from '@/hooks/use-title'
 import {useState} from '@/state'
 import {type Attachment, AttachmentType, type File} from '@/types'
 import {Button} from '../Button'
+import {Tooltip} from '../dialog/Tooltip'
 import {IconTextSelectStart, LangIcon} from '../Icon'
-import {Tooltip} from '../Tooltip'
 
 const Container = styled('div')`
   display: grid;

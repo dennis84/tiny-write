@@ -11,6 +11,8 @@ import {MenuId} from '@/services/MenuService'
 import {isCodeFile, isLocalFile, useState} from '@/state'
 import {Page} from '@/types'
 import {Button, ButtonGroup, IconButton} from '../Button'
+import {Tooltip, TooltipButton, TooltipDivider} from '../dialog/Tooltip'
+import {TooltipHelp} from '../dialog/TooltipHelp'
 import {
   IconAiAssistant,
   IconAiAssistantClose,
@@ -32,8 +34,6 @@ import {
   IconTextSnippet,
   LangIcon,
 } from '../Icon'
-import {Tooltip, TooltipButton, TooltipDivider} from '../Tooltip'
-import {TooltipHelp} from '../TooltipHelp'
 
 const FloatingContainer = styled('div')`
   position: absolute;

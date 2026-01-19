@@ -1,4 +1,4 @@
-import {createSignal, JSX} from 'solid-js'
+import {createSignal, type JSX} from 'solid-js'
 
 export interface DialogConfig {
   title?: string
@@ -10,11 +10,6 @@ export interface DialogConfig {
 
 export class DialogService {
   private dialogsSignal = createSignal<DialogConfig[]>([])
-
-  get dialog(): DialogConfig | undefined {
-    const value = this.dialogsSignal[0]()
-    return value[value.length - 1]
-  }
 
   get dialogs() {
     return this.dialogsSignal[0]

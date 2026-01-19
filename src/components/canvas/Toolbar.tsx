@@ -12,6 +12,7 @@ import {
 } from 'solid-js'
 import {getLanguageNames} from '@/codemirror/highlight'
 import {createCodeFence} from '@/components/assistant/util'
+import {TooltipArrow, TooltipButton, TooltipContainer} from '@/components/dialog/Tooltip'
 import {
   IconAdjust,
   IconAiAssistant,
@@ -20,7 +21,6 @@ import {
   IconOpenInFull,
   IconPrettier,
 } from '@/components/Icon'
-import {TooltipArrow, TooltipButton, TooltipContainer} from '@/components/Tooltip'
 import {useOpen} from '@/hooks/use-open'
 import {isCodeElement, isEditorElement, useState} from '@/state'
 import {AttachmentType, type CanvasBoxElement, type CanvasElement} from '@/types'

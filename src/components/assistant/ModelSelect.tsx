@@ -3,7 +3,7 @@ import {createSignal, For, Show} from 'solid-js'
 import type {Model} from '@/services/CopilotService'
 import {useState} from '@/state'
 import {Button} from '../Button'
-import {Tooltip, TooltipButton} from '../Tooltip'
+import {Tooltip, TooltipButton} from '../dialog/Tooltip'
 
 interface Props {
   onChange: () => void

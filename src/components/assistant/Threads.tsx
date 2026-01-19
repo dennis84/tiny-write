@@ -1,10 +1,10 @@
 import {createSignal, For, onMount, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
+import type {DialogConfig} from '@/services/DialogService'
 import {useState} from '@/state'
 import type {Thread} from '@/types'
 import {Button, ButtonGroup} from '../Button'
 import {IconAdd, IconDelete, IconEdit, IconHistory, IconSearch} from '../Icon'
-import {DialogConfig} from '@/services/DialogService'
 
 const SearchRow = styled('div')``
 

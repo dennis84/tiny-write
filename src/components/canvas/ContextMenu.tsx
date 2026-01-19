@@ -4,8 +4,8 @@ import {createSignal, For, Match, onMount, Show, Suspense, Switch} from 'solid-j
 import {useTitle} from '@/hooks/use-title'
 import {isCanvas, isCodeFile, isFile, useState} from '@/state'
 import type {CanvasLinkElement, File} from '@/types'
+import {Tooltip, TooltipButton, TooltipDivider} from '../dialog/Tooltip'
 import {IconCodeBlocks, IconGesture, IconPostAdd, IconTextSnippet} from '../Icon'
-import {Tooltip, TooltipButton, TooltipDivider} from '../Tooltip'
 
 export const ContextMenu = () => {
   const {canvasService, canvasCollabService, fileService, treeService} = useState()

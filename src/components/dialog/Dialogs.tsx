@@ -1,10 +1,10 @@
 import {For, Match, onCleanup, onMount, Switch} from 'solid-js'
 import {Dynamic, Portal} from 'solid-js/web'
 import {styled} from 'solid-styled-components'
+import type {DialogConfig} from '@/services/DialogService'
 import {useState} from '@/state'
 import {Button, ButtonGroup, ButtonPrimary} from '../Button'
-import {TooltipContainer} from '../Tooltip'
-import {DialogConfig} from '@/services/DialogService'
+import {TooltipContainer} from './Tooltip'
 
 const Layer = styled('div')`
   position: absolute;
@@ -17,15 +17,6 @@ const Layer = styled('div')`
   align-items: center;
   background: #00000080;
   z-index: var(--z-index-dialog);
-`
-
-const Backdrop = styled('div')`
-  position: fixed;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: var(--z-index-tooltip);
 `
 
 export const DialogTitle = styled('h3')`

@@ -3,7 +3,7 @@ import type {ReferenceElement} from '@floating-ui/dom'
 import {createSignal, onMount, Show} from 'solid-js'
 import {copy, readText} from '@/remote/clipboard'
 import {useState} from '@/state'
-import {Tooltip, TooltipButton, TooltipDivider} from '../Tooltip'
+import {Tooltip, TooltipButton, TooltipDivider} from '../dialog/Tooltip'
 
 export const ContextMenu = () => {
   const [contextMenu, setContextMenu] = createSignal<ReferenceElement | undefined>()
