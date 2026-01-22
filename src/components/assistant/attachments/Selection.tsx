@@ -1,5 +1,5 @@
 import {createEffect, createSignal, Show} from 'solid-js'
-import {TooltipButton} from '@/components/dialog/Tooltip'
+import {TooltipButton} from '@/components/dialog/Style'
 import {IconTextSelectStart} from '@/components/Icon'
 import {useCurrentFile} from '@/hooks/use-current-file'
 import {useState} from '@/state'

@@ -1,5 +1,5 @@
-import {createSignal, type JSX, Show} from 'solid-js'
-import {Tooltip} from './Tooltip'
+import type {JSX} from 'solid-js'
+import {useDialog} from '@/hooks/use-dialog'
 
 interface Props {
   title: string
@@ -7,14 +7,18 @@ interface Props {
 }
 
 export const TooltipHelp = (props: Props) => {
-  const [anchor, setAnchor] = createSignal<HTMLElement>()
+  const [showTooltip, closeTooltip] = useDialog({
+    component: () => <>{props.title}</>,
+    backdrop: false,
+    delay: 300,
+  })
 
   const onMouseEnter = (e: MouseEvent) => {
-    setAnchor(e.currentTarget as HTMLElement)
+    showTooltip({anchor: e.currentTarget as HTMLElement})
   }
 
   const onMouseLeave = () => {
-    setAnchor(undefined)
+    closeTooltip()
   }
 
   return (
@@ -28,13 +32,6 @@ export const TooltipHelp = (props: Props) => {
       >
         {props.children}
       </span>
-      <Show when={anchor()}>
-        {(a) => (
-          <Tooltip anchor={a()} backdrop={false} delay={300}>
-            {props.title}
-          </Tooltip>
-        )}
-      </Show>
     </>
   )
 }

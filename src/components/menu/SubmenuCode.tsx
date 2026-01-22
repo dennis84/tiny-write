@@ -1,6 +1,7 @@
 import {Show} from 'solid-js'
 import {getLanguageNames} from '@/codemirror/highlight'
 import {isMac, isTauri, mod} from '@/env'
+import {useInputLine} from '@/hooks/use-input-line'
 import {saveFile} from '@/remote/editor'
 import {info} from '@/remote/log'
 import {useState} from '@/state'
@@ -9,14 +10,15 @@ import {Link} from './Link'
 import {Label, Sub} from './Style'
 
 export const SubmenuCode = () => {
-  const {codeService, fileService, inputLineService} = useState()
+  const {codeService, fileService} = useState()
+  const showInputLine = useInputLine()
 
   const modKey = isMac ? '⌘' : mod
 
   const onChangeLang = () => {
     const currentFile = fileService.currentFile
     if (!currentFile) return
-    inputLineService.setInputLine({
+    showInputLine({
       value: currentFile.codeLang ?? '',
       words: getLanguageNames(),
       onEnter: (lang) => {

@@ -1,13 +1,12 @@
 import type {EditorView} from '@codemirror/view'
-import type {ReferenceElement} from '@floating-ui/dom'
 import {setBlockType} from 'prosemirror-commands'
 import {NodeSelection, TextSelection} from 'prosemirror-state'
 import {Decoration} from 'prosemirror-view'
-import {createEffect, createSignal, Show} from 'solid-js'
+import {createEffect, Show} from 'solid-js'
 import {foldAll} from '@/codemirror/fold-all'
 import {getLanguageNames} from '@/codemirror/highlight'
 import {createBlockquote, createCodeFence} from '@/components/assistant/util'
-import {Tooltip, TooltipButton, TooltipDivider} from '@/components/dialog/Tooltip'
+import {TooltipButton, TooltipDivider} from '@/components/dialog/Style'
 import {
   IconAdd,
   IconCodeBlocks,
@@ -24,6 +23,8 @@ import {
   IconVisibility,
   IconVisibilityOff,
 } from '@/components/Icon'
+import {useDialog} from '@/hooks/use-dialog'
+import {useInputLine} from '@/hooks/use-input-line'
 import {useOpen} from '@/hooks/use-open'
 import editorTextHandling from '@/prompts/editor-text-handling.md?raw'
 import editorCodeBlockHandling from '@/prompts/editor-text-handling.md?raw'
@@ -48,17 +49,11 @@ export const BlockTooltip = (props: Props) => {
     configService,
     menuService,
     threadService,
-    inputLineService,
     copilotService,
     toastService,
   } = useState()
-  const [tooltipAnchor, setTooltipAnchor] = createSignal<ReferenceElement | undefined>()
   const {openUrl} = useOpen()
-
-  const closeTooltip = () => {
-    props.resetBlock()
-    setTooltipAnchor(undefined)
-  }
+  const showInputLine = useInputLine()
 
   const onPrettify = async () => {
     const block = props.selectedBlock
@@ -106,7 +101,7 @@ export const BlockTooltip = (props: Props) => {
     }
 
     const lang = block.blockNode.attrs.lang
-    inputLineService.setInputLine({
+    showInputLine({
       value: lang,
       words: getLanguageNames(),
       onEnter: (lang: string) => {
@@ -186,7 +181,7 @@ export const BlockTooltip = (props: Props) => {
       view.dispatch(tr)
     }
 
-    inputLineService.setInputLine({
+    showInputLine({
       value: '',
       placeholder: 'Rephrasing by copilot...',
       onEnter: async (text) => {
@@ -334,104 +329,94 @@ export const BlockTooltip = (props: Props) => {
   createEffect(() => {
     const result = props.selectedBlock
     if (!result) return
-    setTooltipAnchor(result.dragHandle)
+    showTooltip({anchor: result.dragHandle})
   })
 
-  return (
-    <Show when={props.selectedBlock}>
-      {(block) => (
-        <Show when={tooltipAnchor()}>
-          {(a) => (
-            <Tooltip
-              anchor={a()}
-              onClose={closeTooltip}
-              placement="left"
-              fallbackPlacements={['left-start', 'left', 'bottom', 'top']}
+  const Tooltip = () => (
+    <>
+      {/* Code block actions */}
+      <Show when={props.selectedBlock?.blockNode?.type.name === 'code_block'}>
+        <Show when={props.selectedBlock?.blockNode.attrs.lang === 'mermaid'}>
+          <TooltipButton onClick={onMermaidSave}>
+            <IconFileSave /> save as png
+          </TooltipButton>
+          <TooltipButton onClick={onMermaidHideCode}>
+            <Show
+              when={props.selectedBlock?.blockNode.attrs.hidden}
+              fallback={
+                <>
+                  <IconVisibilityOff /> Hide code
+                </>
+              }
             >
-              {/* Code block actions */}
-              <Show when={block().blockNode?.type.name === 'code_block'}>
-                <Show when={block().blockNode.attrs.lang === 'mermaid'}>
-                  <TooltipButton onClick={onMermaidSave}>
-                    <IconFileSave /> save as png
-                  </TooltipButton>
-                  <TooltipButton onClick={onMermaidHideCode}>
-                    <Show
-                      when={block().blockNode.attrs.hidden}
-                      fallback={
-                        <>
-                          <IconVisibilityOff /> Hide code
-                        </>
-                      }
-                    >
-                      <IconVisibility /> Show code
-                    </Show>
-                  </TooltipButton>
-                  <TooltipDivider />
-                </Show>
-                <TooltipButton onClick={onChangeLang} data-testid="change_lang">
-                  <IconLanguage /> change language
-                </TooltipButton>
-                <TooltipButton onClick={onPrettify} data-testid="prettify">
-                  <IconCodeBlocks /> prettify
-                </TooltipButton>
-                <TooltipButton onClick={onFoldAll}>
-                  <IconUnfoldLess /> fold all
-                </TooltipButton>
-                <TooltipDivider />
-              </Show>
-              {/* Copilot actions */}
-              <TooltipButton onClick={onCopilotAddToChat} data-testid="copilot_add_to_chat">
-                <IconAdd /> Add to copilot chat
-              </TooltipButton>
-              <TooltipButton onClick={onCopilotInline} data-testid="copilot_ask_inline">
-                <IconRefresh /> Rephrasing by copilot
-              </TooltipButton>
-              <TooltipDivider />
-              {/* Image actions */}
-              <Show
-                when={
-                  block().cursorNode?.type.name === 'image' ||
-                  block().cursorNode?.type.name === 'video'
-                }
-              >
-                <TooltipButton
-                  onClick={() => alignNode(Align.FloatLeft)}
-                  data-testid="align_float_left"
-                >
-                  <IconFormatImageLeft /> float left
-                </TooltipButton>
-                <TooltipButton
-                  onClick={() => alignNode(Align.FloatRight)}
-                  data-testid="align_float_right"
-                >
-                  <IconFormatImageRight /> float right
-                </TooltipButton>
-                <TooltipButton onClick={() => alignNode(Align.Center)} data-testid="align_center">
-                  <IconFloatCenter /> center
-                </TooltipButton>
-                <TooltipDivider />
-              </Show>
-              {/* Link actions */}
-              <Show when={getLinkHref()}>
-                {(href) => (
-                  <>
-                    <TooltipButton onClick={onOpenLink} data-testid="open_link">
-                      <IconOpenInNew /> open: {href()}
-                    </TooltipButton>
-                    <TooltipDivider />
-                  </>
-                )}
-              </Show>
-              <TooltipButton onClick={onToPlain}>
-                <IconFormatClear /> remove text formats
-              </TooltipButton>
-              <TooltipButton onClick={onRemoveBlock} data-testid="remove_block">
-                <IconVariableRemove /> remove block
-              </TooltipButton>
-            </Tooltip>
-          )}
+              <IconVisibility /> Show code
+            </Show>
+          </TooltipButton>
+          <TooltipDivider />
         </Show>
-      )}
-    </Show>
+        <TooltipButton onClick={onChangeLang} data-testid="change_lang">
+          <IconLanguage /> change language
+        </TooltipButton>
+        <TooltipButton onClick={onPrettify} data-testid="prettify">
+          <IconCodeBlocks /> prettify
+        </TooltipButton>
+        <TooltipButton onClick={onFoldAll}>
+          <IconUnfoldLess /> fold all
+        </TooltipButton>
+        <TooltipDivider />
+      </Show>
+      {/* Copilot actions */}
+      <TooltipButton onClick={onCopilotAddToChat} data-testid="copilot_add_to_chat">
+        <IconAdd /> Add to copilot chat
+      </TooltipButton>
+      <TooltipButton onClick={onCopilotInline} data-testid="copilot_ask_inline">
+        <IconRefresh /> Rephrasing by copilot
+      </TooltipButton>
+      <TooltipDivider />
+      {/* Image actions */}
+      <Show
+        when={
+          props.selectedBlock?.cursorNode?.type.name === 'image' ||
+          props.selectedBlock?.cursorNode?.type.name === 'video'
+        }
+      >
+        <TooltipButton onClick={() => alignNode(Align.FloatLeft)} data-testid="align_float_left">
+          <IconFormatImageLeft /> float left
+        </TooltipButton>
+        <TooltipButton onClick={() => alignNode(Align.FloatRight)} data-testid="align_float_right">
+          <IconFormatImageRight /> float right
+        </TooltipButton>
+        <TooltipButton onClick={() => alignNode(Align.Center)} data-testid="align_center">
+          <IconFloatCenter /> center
+        </TooltipButton>
+        <TooltipDivider />
+      </Show>
+      {/* Link actions */}
+      <Show when={getLinkHref()}>
+        {(href) => (
+          <>
+            <TooltipButton onClick={onOpenLink} data-testid="open_link">
+              <IconOpenInNew /> open: {href()}
+            </TooltipButton>
+            <TooltipDivider />
+          </>
+        )}
+      </Show>
+      <TooltipButton onClick={onToPlain}>
+        <IconFormatClear /> remove text formats
+      </TooltipButton>
+      <TooltipButton onClick={onRemoveBlock} data-testid="remove_block">
+        <IconVariableRemove /> remove block
+      </TooltipButton>
+    </>
   )
+
+  const [showTooltip, closeTooltip] = useDialog({
+    component: Tooltip,
+    onClose: () => props.resetBlock(),
+    placement: 'left',
+    fallbackPlacements: ['left-start', 'left', 'bottom', 'top'],
+  })
+
+  return null
 }

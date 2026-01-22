@@ -1,15 +1,15 @@
 import {Vector} from '@flatten-js/core'
-import type {ReferenceElement} from '@floating-ui/dom'
-import {createSignal, For, Match, onMount, Show, Suspense, Switch} from 'solid-js'
+import {createEffect, For, Match, onMount, Show, Suspense, Switch} from 'solid-js'
+import {useDialog} from '@/hooks/use-dialog'
 import {useTitle} from '@/hooks/use-title'
+import type {Dialog} from '@/services/DialogService'
 import {isCanvas, isCodeFile, isFile, useState} from '@/state'
 import type {CanvasLinkElement, File} from '@/types'
-import {Tooltip, TooltipButton, TooltipDivider} from '../dialog/Tooltip'
+import {TooltipButton, TooltipDivider} from '../dialog/Style'
 import {IconCodeBlocks, IconGesture, IconPostAdd, IconTextSnippet} from '../Icon'
 
 export const ContextMenu = () => {
   const {canvasService, canvasCollabService, fileService, treeService} = useState()
-  const [contextMenu, setContextMenu] = createSignal<Vector | undefined>()
 
   const onNewFile = async (code = false, link?: CanvasLinkElement, cm?: Vector) => {
     const added = await canvasService.newFile(code, link, cm)
@@ -21,7 +21,7 @@ export const ContextMenu = () => {
       if (file) treeService.add(file)
     }
 
-    setContextMenu(undefined)
+    closeTooltip()
   }
 
   const FileNameTooltipButton = (p: {file: File; link?: CanvasLinkElement; cm?: Vector}) => {
@@ -29,7 +29,7 @@ export const ContextMenu = () => {
       const added = await canvasService.addFile(p.file, p.link, p.cm)
       await canvasService.removeDeadLinks()
       if (added) canvasCollabService.addElements(added)
-      setContextMenu(undefined)
+      closeTooltip()
     }
 
     const title = useTitle({item: p.file})
@@ -70,17 +70,15 @@ export const ContextMenu = () => {
     return files.length > 0 ? files : undefined
   }
 
-  const getContextMenu = ():
-    | [CanvasLinkElement | undefined, Vector | undefined, ReferenceElement]
-    | undefined => {
+  const openContextMenu = (mousePos?: [number, number]) => {
     const deadLink = canvasService.findDeadLinks()[0]
-    const cm = contextMenu()
-    if (!deadLink && !cm) return
+    const clickPos = mousePos ? canvasService.getPosition(mousePos) : undefined
+    if (!deadLink && !clickPos) return
 
     const currentCanvas = canvasService.currentCanvas
     if (!currentCanvas) return
 
-    const p = deadLink ? new Vector(deadLink.toX, deadLink.toY) : cm
+    const p = deadLink ? new Vector(deadLink.toX, deadLink.toY) : clickPos
     if (!p) return
 
     const {camera} = currentCanvas
@@ -101,12 +99,7 @@ export const ContextMenu = () => {
       },
     }
 
-    return [deadLink, cm, virtualEl]
-  }
-
-  const onTooltipClose = async () => {
-    await canvasService.removeDeadLinks()
-    setContextMenu(undefined)
+    showTooltip({anchor: virtualEl, state: {deadLink, clickPos}})
   }
 
   onMount(() => {
@@ -117,40 +110,63 @@ export const ContextMenu = () => {
       }
 
       e.preventDefault()
-      setContextMenu(canvasService.getPosition([e.clientX, e.clientY]))
+      openContextMenu([e.clientX, e.clientY])
     }
 
     document.oncontextmenu = onContextMenu
   })
 
-  return (
-    <Show when={getContextMenu()} keyed>
-      {([link, cm, tooltipAnchor]) => (
-        <Tooltip anchor={tooltipAnchor} onClose={onTooltipClose} backdrop={true}>
-          <TooltipButton
-            onClick={() => onNewFile(false, link, cm)}
-            data-testid="context_menu_new_file"
-          >
-            <IconPostAdd /> New file
-          </TooltipButton>
-          <TooltipButton
-            onClick={() => onNewFile(true, link, cm)}
-            data-testid="context_menu_new_code_file"
-          >
-            <IconCodeBlocks /> New code file
-          </TooltipButton>
-          <Show when={getFiles()}>
-            {(files) => (
-              <>
-                <TooltipDivider />
-                <For each={files()}>
-                  {(file: File) => <FileNameTooltipButton file={file} link={link} cm={cm} />}
-                </For>
-              </>
-            )}
-          </Show>
-        </Tooltip>
-      )}
-    </Show>
+  type ContextMenuTooltip = {
+    deadLink?: CanvasLinkElement
+    clickPos?: Vector
+  }
+
+  const Tooltip = (props: {dialog: Dialog<ContextMenuTooltip>}) => (
+    <>
+      <TooltipButton
+        onClick={() => onNewFile(false, props.dialog.state?.deadLink, props.dialog.state?.clickPos)}
+        data-testid="context_menu_new_file"
+      >
+        <IconPostAdd /> New file
+      </TooltipButton>
+      <TooltipButton
+        onClick={() => onNewFile(true, props.dialog.state?.deadLink, props.dialog.state?.clickPos)}
+        data-testid="context_menu_new_code_file"
+      >
+        <IconCodeBlocks /> New code file
+      </TooltipButton>
+      <Show when={getFiles()}>
+        {(files) => (
+          <>
+            <TooltipDivider />
+            <For each={files()}>
+              {(file: File) => (
+                <FileNameTooltipButton
+                  file={file}
+                  link={props.dialog.state?.deadLink}
+                  cm={props.dialog.state?.clickPos}
+                />
+              )}
+            </For>
+          </>
+        )}
+      </Show>
+    </>
   )
+
+  const [showTooltip, closeTooltip] = useDialog({
+    component: Tooltip,
+    backdrop: true,
+    onClose: async () => {
+      await canvasService.removeDeadLinks()
+    },
+  })
+
+  createEffect(() => {
+    const deadLink = canvasService.findDeadLinks()[0]
+    if (!deadLink) return
+    openContextMenu()
+  })
+
+  return null
 }

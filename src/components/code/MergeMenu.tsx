@@ -1,7 +1,7 @@
 import {acceptChunk, getChunks, rejectChunk} from '@codemirror/merge'
 import {createMemo, createSignal, onCleanup, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
-import {TooltipButton, TooltipContainer} from '@/components/dialog/Tooltip'
+import {DialogContainer, TooltipButton} from '@/components/dialog/Style'
 import {useOpen} from '@/hooks/use-open'
 import {useState} from '@/state'
 import {IconCheck, IconClose} from '../Icon'
@@ -69,14 +69,14 @@ const MergeMenuWithChunks = (props: {chunks: ChunksType}) => {
 
   return (
     <MergeMenuContainer>
-      <TooltipContainer ref={tooltipRef} direction="row" gap={5}>
+      <DialogContainer ref={tooltipRef} direction="row" gap={5}>
         <TooltipButton onClick={onAccept} data-testid="accept_all">
           <IconCheck /> Accept file
         </TooltipButton>
         <TooltipButton onClick={onReject} data-testid="reject_all">
           <IconClose /> Reject file
         </TooltipButton>
-      </TooltipContainer>
+      </DialogContainer>
     </MergeMenuContainer>
   )
 }

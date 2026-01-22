@@ -1,4 +1,3 @@
-import type {ReferenceElement} from '@floating-ui/dom'
 import {
   addColumnAfter,
   addColumnBefore,
@@ -11,9 +10,10 @@ import {
   type TableMap,
   toggleHeaderRow,
 } from 'prosemirror-tables'
-import {createEffect, createSignal, Show} from 'solid-js'
+import {createEffect, Show} from 'solid-js'
+import {useDialog} from '@/hooks/use-dialog'
 import {useState} from '@/state'
-import {Tooltip, TooltipButton, TooltipDivider} from '../dialog/Tooltip'
+import {TooltipButton, TooltipDivider} from '../dialog/Style'
 import {
   IconAddColumnLeft,
   IconAddColumnRight,
@@ -35,7 +35,6 @@ interface Props {
 
 export const TableTooltip = (props: Props) => {
   const {fileService} = useState()
-  const [tooltipAnchor, setTooltipAnchor] = createSignal<ReferenceElement | undefined>()
 
   const setCellSelection = () => {
     const editorView = fileService.currentFile?.editorView
@@ -138,52 +137,49 @@ export const TableTooltip = (props: Props) => {
 
   createEffect(() => {
     const result = props.activeHandle
-    setTooltipAnchor(result.element)
+    showTooltip({anchor: result.element})
   })
 
-  return (
-    <Show when={tooltipAnchor()}>
-      {(a) => (
-        <Tooltip
-          anchor={a()}
-          onClose={props.reset}
-          placement={props.activeHandle.direction === 'row' ? 'left' : 'top'}
-          fallbackPlacements={
-            props.activeHandle.direction === 'row'
-              ? ['left', 'bottom', 'top']
-              : ['top', 'left', 'right']
-          }
-        >
-          <Show when={isFirstRow()}>
-            <TooltipButton onMouseDown={onToggleHeaderRow}>
-              <IconToggleOn /> Toggle table header row
-            </TooltipButton>
-            <TooltipDivider />
-          </Show>
-          <Show when={props.activeHandle.direction === 'row'}>
-            <TooltipButton onMouseDown={onAddRowAbove}>
-              <IconAddRowAbove /> Add row above
-            </TooltipButton>
-            <TooltipButton onMouseDown={onAddRowBelow}>
-              <IconAddRowBelow /> Add row below
-            </TooltipButton>
-            <TooltipButton onMouseDown={onRemoveRow}>
-              <IconRowRemove /> Remove row
-            </TooltipButton>
-          </Show>
-          <Show when={props.activeHandle.direction === 'col'}>
-            <TooltipButton onMouseDown={onAddColumnBefore}>
-              <IconAddColumnLeft /> Add column before
-            </TooltipButton>
-            <TooltipButton onMouseDown={onAddColumnAfter}>
-              <IconAddColumnRight /> Add column after
-            </TooltipButton>
-            <TooltipButton onMouseDown={onRemoveColumn}>
-              <IconColumnRemove /> Remove column
-            </TooltipButton>
-          </Show>
-        </Tooltip>
-      )}
-    </Show>
+  const Tooltip = () => (
+    <>
+      <Show when={isFirstRow()}>
+        <TooltipButton onMouseDown={onToggleHeaderRow}>
+          <IconToggleOn /> Toggle table header row
+        </TooltipButton>
+        <TooltipDivider />
+      </Show>
+      <Show when={props.activeHandle.direction === 'row'}>
+        <TooltipButton onMouseDown={onAddRowAbove}>
+          <IconAddRowAbove /> Add row above
+        </TooltipButton>
+        <TooltipButton onMouseDown={onAddRowBelow}>
+          <IconAddRowBelow /> Add row below
+        </TooltipButton>
+        <TooltipButton onMouseDown={onRemoveRow}>
+          <IconRowRemove /> Remove row
+        </TooltipButton>
+      </Show>
+      <Show when={props.activeHandle.direction === 'col'}>
+        <TooltipButton onMouseDown={onAddColumnBefore}>
+          <IconAddColumnLeft /> Add column before
+        </TooltipButton>
+        <TooltipButton onMouseDown={onAddColumnAfter}>
+          <IconAddColumnRight /> Add column after
+        </TooltipButton>
+        <TooltipButton onMouseDown={onRemoveColumn}>
+          <IconColumnRemove /> Remove column
+        </TooltipButton>
+      </Show>
+    </>
   )
+
+  const [showTooltip] = useDialog({
+    component: Tooltip,
+    onClose: props.reset,
+    placement: props.activeHandle.direction === 'row' ? 'left' : 'top',
+    fallbackPlacements:
+      props.activeHandle.direction === 'row' ? ['left', 'bottom', 'top'] : ['top', 'left', 'right'],
+  })
+
+  return null
 }

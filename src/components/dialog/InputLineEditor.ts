@@ -9,16 +9,13 @@ interface Props {
   theme: Extension
   words?: string[]
   placeholder?: string
-  onClose: () => void
-  onEnter: (lang: string) => void
+  onEnter: (value: string) => void
 }
 
 export class InputLineEditor {
   private view: EditorView
-  private doc: string
 
   constructor(private props: Props) {
-    this.doc = this.props.doc
     this.view = new EditorView({
       doc: this.props.doc,
       parent: this.props.parent,
@@ -36,13 +33,6 @@ export class InputLineEditor {
             }),
           ],
         }),
-        EditorView.domEventHandlers({
-          blur: () => {
-            this.reset()
-            this.props.onClose()
-            return true
-          },
-        }),
         keymap.of([
           {
             key: 'ArrowDown',
@@ -56,17 +46,8 @@ export class InputLineEditor {
             key: 'Enter',
             run: (editorView) => {
               acceptCompletion(editorView)
-              const lang = editorView.state.doc.lineAt(0).text.trim()
-              this.doc = lang
-              this.props.onEnter(lang)
-              return true
-            },
-          },
-          {
-            key: 'Escape',
-            run: () => {
-              this.reset()
-              this.props.onClose()
+              const value = editorView.state.doc.toString().trim()
+              this.props.onEnter(value)
               return true
             },
           },
@@ -89,15 +70,5 @@ export class InputLineEditor {
 
   containsElem(elem: Element) {
     return this.view.dom.contains(elem)
-  }
-
-  private reset() {
-    this.view.dispatch({
-      changes: {
-        from: 0,
-        to: this.view.state.doc.length,
-        insert: this.doc,
-      },
-    })
   }
 }

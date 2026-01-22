@@ -15,7 +15,6 @@ import {DeleteService} from './DeleteService'
 import {DialogService} from './DialogService'
 import {EditorService} from './EditorService'
 import {FileService} from './FileService'
-import {InputLineService} from './InputLineService'
 import {MediaService} from './MediaService'
 import {MenuService} from './MenuService'
 import {PrettierService} from './PrettierService'
@@ -91,7 +90,6 @@ export const createCtrl = (initial: State) => {
 
   const threadService = new ThreadService(store, setState, copilotService)
   const menuService = new MenuService(store, setState, appService)
-  const inputLineService = new InputLineService()
   const dialogService = new DialogService()
 
   return {
@@ -117,7 +115,6 @@ export const createCtrl = (initial: State) => {
     threadService,
     menuService,
     toastService,
-    inputLineService,
     dialogService,
   }
 }

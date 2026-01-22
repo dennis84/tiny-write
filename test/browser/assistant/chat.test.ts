@@ -28,7 +28,7 @@ test('chat', async ({page}) => {
   // Check and wait for title update
   await page.click('[data-testid="history"]')
   expect(page.getByText('Test Call')).toBeVisible()
-  await page.click('[data-testid="tooltip_backdrop"]') // back to chat
+  await page.click('[data-testid="dialog_layer"]') // back to chat
 
   await mockCopilotCompletion(page, {chunks: ['Aaa', 'bbb']})
 
@@ -65,7 +65,7 @@ test('edit question', async ({page}) => {
   // Check and wait for title update
   await page.click('[data-testid="history"]')
   expect(page.getByText('Test Call')).toBeVisible()
-  await page.click('[data-testid="tooltip_backdrop"]') // back to chat
+  await page.click('[data-testid="dialog_layer"]') // back to chat
 
   // Test case 1: Edit question
   await mockCopilotCompletion(page, {chunks: ['Answer1']})

@@ -1,12 +1,12 @@
-import type {ReferenceElement} from '@floating-ui/dom'
 import type {EditorView} from 'prosemirror-view'
-import {createEffect, createMemo, createSignal, For, onCleanup, onMount, Show} from 'solid-js'
+import {createEffect, createMemo, For, onCleanup, onMount} from 'solid-js'
+import {useDialog} from '@/hooks/use-dialog'
 import type {CompletionState} from '@/prosemirror/autocomplete/autocomplete'
 import {fileListingPluginKey} from '@/prosemirror/autocomplete/file-listing'
 import {wordCompletionPluginKey} from '@/prosemirror/autocomplete/word-completion'
 import {useState} from '@/state'
 import type {File} from '@/types'
-import {Tooltip, TooltipButton} from '../dialog/Tooltip'
+import {TooltipButton} from '../dialog/Style'
 
 interface Props {
   file?: File
@@ -14,7 +14,6 @@ interface Props {
 
 export const AutocompleteTooltip = (props: Props) => {
   const {store} = useState()
-  const [tooltipAnchor, setTooltipAnchor] = createSignal<ReferenceElement | undefined>()
 
   const getCompletionState = (editorView: EditorView): CompletionState | undefined => {
     const fl = fileListingPluginKey.getState(editorView.state)
@@ -23,12 +22,16 @@ export const AutocompleteTooltip = (props: Props) => {
     if (wc?.options?.length) return wc
   }
 
-  const calcPosition = (c: CompletionState) => {
+  const calcPosition = (c: CompletionState, prev?: CompletionState) => {
+    if (c.from === prev?.from && c.to === prev?.to) {
+      return
+    }
+
     const editorView = props.file?.editorView
     if (!editorView) return
 
     const coords = editorView.coordsAtPos(c.from + 1)
-    const virtualEl = {
+    const anchor = {
       getBoundingClientRect() {
         return {
           x: coords.left,
@@ -43,7 +46,7 @@ export const AutocompleteTooltip = (props: Props) => {
       },
     }
 
-    setTooltipAnchor(virtualEl)
+    showTooltip({anchor})
   }
 
   const onWheel = () => {
@@ -66,10 +69,15 @@ export const AutocompleteTooltip = (props: Props) => {
     }
   })
 
-  createEffect(() => {
+  createEffect<CompletionState | undefined>((prev) => {
     const c = completion()
-    if (!c) return
-    calcPosition(c)
+    if (!c) {
+      closeTooltip()
+      return
+    }
+
+    calcPosition(c, prev)
+    return c
   })
 
   onMount(() => {
@@ -80,21 +88,20 @@ export const AutocompleteTooltip = (props: Props) => {
     })
   })
 
-  return (
-    <Show when={completion()?.options.length}>
-      <Show when={tooltipAnchor()}>
-        {(a) => (
-          <Tooltip anchor={a()} placement="bottom-start">
-            <For each={completion()?.options}>
-              {(option, i) => (
-                <TooltipButton class={i() === completion()?.selected ? 'selected' : ''}>
-                  {option}
-                </TooltipButton>
-              )}
-            </For>
-          </Tooltip>
-        )}
-      </Show>
-    </Show>
+  const Tooltip = () => (
+    <For each={completion()?.options}>
+      {(option, i) => (
+        <TooltipButton class={i() === completion()?.selected ? 'selected' : ''}>
+          {option}
+        </TooltipButton>
+      )}
+    </For>
   )
+
+  const [showTooltip, closeTooltip] = useDialog({
+    component: Tooltip,
+    placement: 'bottom-start',
+  })
+
+  return null
 }

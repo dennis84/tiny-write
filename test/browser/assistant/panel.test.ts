@@ -56,7 +56,6 @@ test('copy', async ({page, context}) => {
   await page.click('[data-testid="navbar_assistant_open"]')
   await page.click('[data-testid="history"]')
   await page.click('[data-testid="thread_item"]')
-  await page.click('[data-testid="tooltip_backdrop"]')
 
   await page.locator('[data-testid="panel_button_copy"]').locator('nth=0').click()
 
@@ -68,7 +67,6 @@ test('create file', async ({page}) => {
   await page.click('[data-testid="navbar_assistant_open"]')
   await page.click('[data-testid="history"]')
   await page.click('[data-testid="thread_item"]')
-  await page.click('[data-testid="tooltip_backdrop"]')
 
   await page.locator('[data-testid="panel_button_create"]').click()
   await assertCodeLineToEqual(page, 1, "const test1 = '111'")
@@ -81,7 +79,6 @@ test('apply', async ({page}) => {
   await page.click('[data-testid="navbar_assistant_open"]')
   await page.click('[data-testid="history"]')
   await page.click('[data-testid="thread_item"]')
-  await page.click('[data-testid="tooltip_backdrop"]')
 
   await page.locator('[data-testid="panel_button_apply"]').nth(0).click()
   await page.locator('button[name="accept"]').click()
@@ -95,7 +92,6 @@ test('apply - all', async ({page}) => {
   await page.click('[data-testid="navbar_assistant_open"]')
   await page.click('[data-testid="history"]')
   await page.click('[data-testid="thread_item"]')
-  await page.click('[data-testid="tooltip_backdrop"]')
 
   await page.locator('[data-testid="panel_button_apply"]').nth(0).click()
   await page.locator('[data-testid="accept_all"]').click()
@@ -109,7 +105,6 @@ test('apply - reject all', async ({page}) => {
   await page.click('[data-testid="navbar_assistant_open"]')
   await page.click('[data-testid="history"]')
   await page.click('[data-testid="thread_item"]')
-  await page.click('[data-testid="tooltip_backdrop"]')
 
   await page.locator('[data-testid="panel_button_apply"]').nth(0).click()
   await page.locator('[data-testid="reject_all"]').click()
@@ -123,7 +118,6 @@ test('apply - open file', async ({page}) => {
   await page.click('[data-testid="navbar_assistant_open"]')
   await page.click('[data-testid="history"]')
   await page.click('[data-testid="thread_item"]')
-  await page.click('[data-testid="tooltip_backdrop"]')
 
   await page.locator('[data-testid="panel_button_apply"]').nth(0).click()
   await page.locator('button[name="accept"]').click()
@@ -141,7 +135,6 @@ test('apply - range', async ({page}) => {
   await page.click('[data-testid="navbar_assistant_open"]')
   await page.click('[data-testid="history"]')
   await page.click('[data-testid="thread_item"]')
-  await page.click('[data-testid="tooltip_backdrop"]')
 
   await page.locator('[data-testid="panel_button_apply"]').nth(1).click()
 

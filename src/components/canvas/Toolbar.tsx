@@ -12,7 +12,7 @@ import {
 } from 'solid-js'
 import {getLanguageNames} from '@/codemirror/highlight'
 import {createCodeFence} from '@/components/assistant/util'
-import {TooltipArrow, TooltipButton, TooltipContainer} from '@/components/dialog/Tooltip'
+import {DialogContainer, TooltipArrow, TooltipButton} from '@/components/dialog/Style'
 import {
   IconAdjust,
   IconAiAssistant,
@@ -21,6 +21,7 @@ import {
   IconOpenInFull,
   IconPrettier,
 } from '@/components/Icon'
+import {useInputLine} from '@/hooks/use-input-line'
 import {useOpen} from '@/hooks/use-open'
 import {isCodeElement, isEditorElement, useState} from '@/state'
 import {AttachmentType, type CanvasBoxElement, type CanvasElement} from '@/types'
@@ -31,18 +32,11 @@ export const Toolbar = () => {
   let tooltipRef!: HTMLDivElement
   let arrowRef!: HTMLSpanElement
 
-  const {
-    store,
-    inputLineService,
-    canvasService,
-    codeService,
-    fileService,
-    menuService,
-    threadService,
-    treeService,
-  } = useState()
+  const {store, canvasService, codeService, fileService, menuService, threadService, treeService} =
+    useState()
   const [collides, setCollides] = createSignal(false)
   const {openFile} = useOpen()
+  const showInputLine = useInputLine()
 
   const restore = async (element: CanvasElement) => {
     await fileService.restore(element.id)
@@ -60,7 +54,7 @@ export const Toolbar = () => {
     if (!file) return
     const language = file.codeLang ?? ''
 
-    inputLineService.setInputLine({
+    showInputLine({
       value: language,
       words: getLanguageNames(),
       onEnter: (lang) => {
@@ -217,7 +211,7 @@ export const Toolbar = () => {
   return (
     <Show when={getSelected()}>
       {(selected) => (
-        <TooltipContainer ref={tooltipRef} id="toolbar" direction="row" gap={5}>
+        <DialogContainer ref={tooltipRef} id="toolbar" direction="row" gap={5}>
           <Show when={collides()}>
             <TooltipButton onClick={() => openFile(selected().element)}>
               <IconOpenInFull /> Open in full
@@ -260,7 +254,7 @@ export const Toolbar = () => {
             </TooltipButton>
           </Show>
           <TooltipArrow ref={arrowRef} />
-        </TooltipContainer>
+        </DialogContainer>
       )}
     </Show>
   )

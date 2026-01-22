@@ -3,13 +3,16 @@ import {createSignal, For, Match, onCleanup, onMount, Show, Suspense, Switch} fr
 import {unwrap} from 'solid-js/store'
 import {Portal} from 'solid-js/web'
 import {styled} from 'solid-styled-components'
+import {useConfirmDialog} from '@/hooks/use-confirm-dialog'
+import {useDialog} from '@/hooks/use-dialog'
+import {useInputLine} from '@/hooks/use-input-line'
 import {useOpen} from '@/hooks/use-open'
 import {useTitle} from '@/hooks/use-title'
 import {CanvasService} from '@/services/CanvasService'
 import type {MenuTreeItem} from '@/services/TreeService'
 import {isCanvas, isCodeFile, isFile, isLocalFile, useState} from '@/state'
 import {Page} from '@/types'
-import {Tooltip, TooltipButton, TooltipDivider} from '../dialog/Tooltip'
+import {TooltipButton, TooltipDivider} from '../dialog/Style'
 import {
   IconAdd,
   IconAdjust,
@@ -189,7 +192,6 @@ export const SubmenuTree = (props: Props) => {
 
   const {
     store,
-    inputLineService,
     canvasService,
     canvasCollabService,
     codeService,
@@ -198,21 +200,17 @@ export const SubmenuTree = (props: Props) => {
     treeService,
   } = useState()
   const [dropState, setDropState] = createSignal<DropState>()
-  const [tooltipAnchor, setTooltipAnchor] = createSignal<HTMLElement | undefined>()
   const [selected, setSelected] = createSignal<MenuTreeItem>()
   const [grabbing, setGrabbing] = createSignal(false)
   const {openFile} = useOpen()
+  const showInputLine = useInputLine()
+  const showConfirmDialog = useConfirmDialog()
 
   const isNode = (node: MenuTreeItem) => dropState()?.targetId === node.id
 
-  const closeTooltip = () => {
-    setTooltipAnchor(undefined)
-    setSelected(undefined)
-  }
-
-  const showTooltip = (e: MouseEvent, anchor: HTMLElement, node: MenuTreeItem) => {
+  const showLinkMenu = (e: MouseEvent, anchor: HTMLElement, node: MenuTreeItem) => {
     e.stopPropagation()
-    setTooltipAnchor(anchor)
+    showTooltip({anchor})
     setSelected(node)
   }
 
@@ -226,14 +224,14 @@ export const SubmenuTree = (props: Props) => {
 
     if (isFile(item)) {
       const title = await fileService.getFilename(item)
-      inputLineService.setInputLine({
+      showInputLine({
         value: title ?? '',
         onEnter: async (value: string) => {
           await fileService.renameFile(item.id, value)
         },
       })
     } else {
-      inputLineService.setInputLine({
+      showInputLine({
         value: item?.title ?? '',
         onEnter: async (value: string) => {
           const title = value.trim() || undefined
@@ -302,9 +300,15 @@ export const SubmenuTree = (props: Props) => {
   const deleteNode = async (forever = false) => {
     const node = unwrap(selected())
     if (!node) return
-    const result = await deleteService.delete(node, forever)
-    if (result.navigateTo !== false) openFile(result.navigateTo)
-    closeTooltip()
+    showConfirmDialog({
+      title: forever ? 'Delete forever' : 'Delete',
+      content: 'Do you want to proceed?',
+      onConfirm: async () => {
+        const result = await deleteService.delete(node, forever)
+        if (result.navigateTo !== false) openFile(result.navigateTo)
+        closeTooltip()
+      },
+    })
   }
 
   const onRestore = async () => {
@@ -365,7 +369,7 @@ export const SubmenuTree = (props: Props) => {
 
           if (first) {
             setGrabbing(true)
-            setTooltipAnchor(undefined)
+            closeTooltip()
             ghostRef.textContent = title() ?? ''
             ghostRef.style.display = 'block'
           }
@@ -438,7 +442,7 @@ export const SubmenuTree = (props: Props) => {
       <TreeLinkItem
         deleted={props.showDeleted && !p.node.value.deleted}
         active={p.node.value.id === getCurrentId()}
-        selected={p.selected || anchor === tooltipAnchor()}
+        selected={p.selected || anchor === currentTooltip()?.anchor}
         data-id={p.node.value.id}
         data-testid="tree_link"
       >
@@ -480,7 +484,7 @@ export const SubmenuTree = (props: Props) => {
         <LinkMenu
           ref={anchor}
           selected={selected() === p.node}
-          onClick={(e: MouseEvent) => showTooltip(e, anchor, p.node)}
+          onClick={(e: MouseEvent) => showLinkMenu(e, anchor, p.node)}
           data-testid="tree_link_menu"
         >
           <IconMoreHoriz />
@@ -493,11 +497,16 @@ export const SubmenuTree = (props: Props) => {
     let anchor!: HTMLButtonElement
     const onNew = (e: MouseEvent) => {
       e.stopPropagation()
-      setTooltipAnchor(anchor)
+      showTooltip({anchor})
     }
 
     return (
-      <Link ref={anchor} active={anchor === tooltipAnchor()} onClick={onNew} data-testid="new">
+      <Link
+        ref={anchor}
+        active={anchor && anchor === currentTooltip()?.anchor}
+        onClick={onNew}
+        data-testid="new"
+      >
         <IconAdd /> New
       </Link>
     )
@@ -542,6 +551,83 @@ export const SubmenuTree = (props: Props) => {
     treeService.updateAll()
   })
 
+  const Tooltip = () => (
+    <>
+      <Show when={isOnCanvas(selected())}>
+        <TooltipButton onClick={onFocus} data-testid="focus_file">
+          <IconAdjust />
+          Focus file
+        </TooltipButton>
+        <TooltipDivider />
+      </Show>
+      <Show when={!selected()?.value.deleted && isFile(selected()?.value)}>
+        <TooltipButton onClick={onAddFile} data-testid="add_file">
+          <IconPostAdd />
+          Add file
+        </TooltipButton>
+        <TooltipButton onClick={onAddCanvas} data-testid="add_canvas">
+          <IconGesture />
+          Add canvas
+        </TooltipButton>
+        <TooltipButton onClick={onAddCode} data-testid="add_code">
+          <IconCodeBlocks />
+          Add code file
+        </TooltipButton>
+        <TooltipDivider />
+      </Show>
+      <Show when={selected() && !isLocalFile(selected())}>
+        <TooltipButton onClick={onRename} data-testid="rename">
+          <IconEdit />
+          Rename
+        </TooltipButton>
+      </Show>
+      <Switch>
+        <Match when={selected()?.value.deleted}>
+          <TooltipButton onClick={onRestore} data-testid="restore">
+            <IconHistory />
+            Restore
+          </TooltipButton>
+          <TooltipButton onClick={() => deleteNode(true)} data-testid="delete_forever">
+            <IconDeleteForever />
+            Delete forever
+          </TooltipButton>
+        </Match>
+        <Match when={isLocalFile(selected()?.value)}>
+          <TooltipButton onClick={() => deleteNode(true)} data-testid="close">
+            <IconClose />
+            Close
+          </TooltipButton>
+        </Match>
+        <Match when={true}>
+          <TooltipButton onClick={() => deleteNode()} data-testid="delete">
+            <IconDelete />
+            Delete
+          </TooltipButton>
+        </Match>
+      </Switch>
+      <Show when={!selected()}>
+        <TooltipButton onClick={onNewFile} data-testid="new_file">
+          <IconPostAdd />
+          New file
+        </TooltipButton>
+        <TooltipButton onClick={onNewCanvas} data-testid="new_canvas">
+          <IconGesture />
+          New canvas
+        </TooltipButton>
+        <TooltipButton onClick={onNewCode} data-testid="new_code">
+          <IconCodeBlocks />
+          New code file
+        </TooltipButton>
+      </Show>
+    </>
+  )
+
+  const [showTooltip, closeTooltip, currentTooltip] = useDialog({
+    component: Tooltip,
+    backdrop: true,
+    onClose: () => setSelected(undefined),
+  })
+
   return (
     <>
       <Label>Storage</Label>
@@ -570,78 +656,6 @@ export const SubmenuTree = (props: Props) => {
         <Portal mount={document.getElementById('content') ?? undefined}>
           <HighlightContent />
         </Portal>
-      </Show>
-      <Show when={tooltipAnchor()}>
-        {(a) => (
-          <Tooltip anchor={a()} onClose={() => closeTooltip()} backdrop={true}>
-            <Show when={isOnCanvas(selected())}>
-              <TooltipButton onClick={onFocus} data-testid="focus_file">
-                <IconAdjust />
-                Focus file
-              </TooltipButton>
-              <TooltipDivider />
-            </Show>
-            <Show when={!selected()?.value.deleted && isFile(selected()?.value)}>
-              <TooltipButton onClick={onAddFile} data-testid="add_file">
-                <IconPostAdd />
-                Add file
-              </TooltipButton>
-              <TooltipButton onClick={onAddCanvas} data-testid="add_canvas">
-                <IconGesture />
-                Add canvas
-              </TooltipButton>
-              <TooltipButton onClick={onAddCode} data-testid="add_code">
-                <IconCodeBlocks />
-                Add code file
-              </TooltipButton>
-              <TooltipDivider />
-            </Show>
-            <Show when={selected() && !isLocalFile(selected())}>
-              <TooltipButton onClick={onRename} data-testid="rename">
-                <IconEdit />
-                Rename
-              </TooltipButton>
-            </Show>
-            <Switch>
-              <Match when={selected()?.value.deleted}>
-                <TooltipButton onClick={onRestore} data-testid="restore">
-                  <IconHistory />
-                  Restore
-                </TooltipButton>
-                <TooltipButton onClick={() => deleteNode(true)} data-testid="delete_forever">
-                  <IconDeleteForever />
-                  Delete forever
-                </TooltipButton>
-              </Match>
-              <Match when={isLocalFile(selected()?.value)}>
-                <TooltipButton onClick={() => deleteNode(true)} data-testid="close">
-                  <IconClose />
-                  Close
-                </TooltipButton>
-              </Match>
-              <Match when={true}>
-                <TooltipButton onClick={() => deleteNode()} data-testid="delete">
-                  <IconDelete />
-                  Delete
-                </TooltipButton>
-              </Match>
-            </Switch>
-            <Show when={!selected()}>
-              <TooltipButton onClick={onNewFile} data-testid="new_file">
-                <IconPostAdd />
-                New file
-              </TooltipButton>
-              <TooltipButton onClick={onNewCanvas} data-testid="new_canvas">
-                <IconGesture />
-                New canvas
-              </TooltipButton>
-              <TooltipButton onClick={onNewCode} data-testid="new_code">
-                <IconCodeBlocks />
-                New code file
-              </TooltipButton>
-            </Show>
-          </Tooltip>
-        )}
       </Show>
     </>
   )

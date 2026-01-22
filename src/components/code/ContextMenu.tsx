@@ -1,17 +1,27 @@
 import {toggleComment} from '@codemirror/commands'
-import type {ReferenceElement} from '@floating-ui/dom'
-import {createSignal, onMount, Show} from 'solid-js'
+import {onMount} from 'solid-js'
+import {useDialog} from '@/hooks/use-dialog'
 import {copy, readText} from '@/remote/clipboard'
 import {useState} from '@/state'
-import {Tooltip, TooltipButton, TooltipDivider} from '../dialog/Tooltip'
+import {TooltipButton, TooltipDivider} from '../dialog/Style'
 
 export const ContextMenu = () => {
-  const [contextMenu, setContextMenu] = createSignal<ReferenceElement | undefined>()
   const {fileService} = useState()
 
-  const onTooltipClose = () => {
-    setContextMenu(undefined)
-  }
+  const Tooltip = () => (
+    <>
+      <TooltipButton onClick={onCut}>Cut</TooltipButton>
+      <TooltipButton onClick={onCopy}>Copy</TooltipButton>
+      <TooltipButton onClick={onPaste}>Paste</TooltipButton>
+      <TooltipDivider />
+      <TooltipButton onClick={onToggleComment}>Toggle comment</TooltipButton>
+    </>
+  )
+
+  const [showTooltip, closeTooltip] = useDialog({
+    component: Tooltip,
+    backdrop: true,
+  })
 
   const getSelectedText = () => {
     const currentFile = fileService.currentFile
@@ -24,7 +34,7 @@ export const ContextMenu = () => {
   const onCopy = async () => {
     const text = getSelectedText()
     if (text) await copy(text)
-    setContextMenu(undefined)
+    closeTooltip()
   }
 
   const onCut = async () => {
@@ -33,7 +43,7 @@ export const ContextMenu = () => {
     const view = fileService.currentFile?.codeEditorView
     if (!view) return
     view.dispatch(view.state.replaceSelection(''))
-    setContextMenu(undefined)
+    closeTooltip()
   }
 
   const onPaste = async () => {
@@ -41,14 +51,14 @@ export const ContextMenu = () => {
     if (!view) return
     const text = await readText()
     view.dispatch(view.state.replaceSelection(text))
-    setContextMenu(undefined)
+    closeTooltip()
   }
 
   const onToggleComment = () => {
     const currentFile = fileService.currentFile
     if (!currentFile?.codeEditorView) return
     toggleComment(currentFile.codeEditorView)
-    setContextMenu(undefined)
+    closeTooltip()
   }
 
   onMount(() => {
@@ -56,18 +66,20 @@ export const ContextMenu = () => {
       e.preventDefault()
       const x = e.clientX
       const y = e.clientY
-      setContextMenu({
-        getBoundingClientRect() {
-          return {
-            x,
-            y,
-            top: y,
-            left: x,
-            bottom: y,
-            right: x,
-            width: 1,
-            height: 1,
-          }
+      showTooltip({
+        anchor: {
+          getBoundingClientRect() {
+            return {
+              x,
+              y,
+              top: y,
+              left: x,
+              bottom: y,
+              right: x,
+              width: 1,
+              height: 1,
+            }
+          },
         },
       })
     }
@@ -75,17 +87,5 @@ export const ContextMenu = () => {
     document.oncontextmenu = onContextMenu
   })
 
-  return (
-    <Show when={contextMenu()} keyed>
-      {(tooltipAnchor) => (
-        <Tooltip anchor={tooltipAnchor} onClose={onTooltipClose} backdrop={true}>
-          <TooltipButton onClick={onCut}>Cut</TooltipButton>
-          <TooltipButton onClick={onCopy}>Copy</TooltipButton>
-          <TooltipButton onClick={onPaste}>Paste</TooltipButton>
-          <TooltipDivider />
-          <TooltipButton onClick={onToggleComment}>Toggle comment</TooltipButton>
-        </Tooltip>
-      )}
-    </Show>
-  )
+  return null
 }

@@ -1,18 +1,15 @@
 import {createSignal, For, onMount, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
-import type {DialogConfig} from '@/services/DialogService'
+import {useConfirmDialog} from '@/hooks/use-confirm-dialog'
+import {useDialog} from '@/hooks/use-dialog'
+import {useInputLine} from '@/hooks/use-input-line'
 import {useState} from '@/state'
 import type {Thread} from '@/types'
 import {Button, ButtonGroup} from '../Button'
+import {DialogFooter} from '../dialog/Style'
 import {IconAdd, IconDelete, IconEdit, IconHistory, IconSearch} from '../Icon'
 
-const SearchRow = styled('div')``
-
-const TooltipFooter = styled('div')`
-  margin-top: 10px;
-`
-
-const TooltipButtonMenu = styled('span')`
+const ThreadItemButton = styled('span')`
   justify-self: flex-end;
   margin-left: auto;
   margin-right: -4px;
@@ -74,13 +71,15 @@ const ThreadItem = styled('div')`
   }
 `
 
+const SearchRow = styled('div')``
+
 const SearchBorder = styled('div')`
   border: 2px solid var(--primary-background);
   color: var(--primary-background);
+  background: var(--code-background);
   height: 40px;
   width: 100%;
   border-radius: 30px;
-  background: var(--background-60);
   position: relative;
   margin-bottom: 10px;
   .icon {
@@ -89,7 +88,7 @@ const SearchBorder = styled('div')`
     top: -2px;
     height: 40px;
     width: 40px;
-    color: var(--foreground-50);
+    color: var(--primary-background);
   }
 `
 
@@ -114,17 +113,19 @@ interface Props {
 }
 
 export const Threads = (props: Props) => {
-  const {inputLineService, dialogService, threadService} = useState()
+  const {threadService} = useState()
   const [searchTerm, setSearchTerm] = createSignal<string | undefined>(undefined)
+  const showConfirmDialog = useConfirmDialog()
+  const showInputLine = useInputLine()
 
   const onMenuClick = () => {
-    dialogService.open({component: DialogContent})
+    showTooltip()
   }
 
   const onDeleteAll = async () => {
-    dialogService.open({
+    showConfirmDialog({
       title: 'Delete all threads',
-      text: 'Are you sure you want to delete all threads?',
+      content: 'Are you sure you want to delete all threads?',
       onConfirm: async () => {
         const newThread = await threadService.deleteAll()
         props.onChange(newThread.id)
@@ -136,39 +137,41 @@ export const Threads = (props: Props) => {
     setSearchTerm((e.target as HTMLInputElement).value)
   }
 
-  const DialogContent = (p: {dialog: DialogConfig}) => {
+  const onNew = () => {
+    const newThread = threadService.newThread()
+    props.onChange(newThread.id)
+    closeTooltip()
+  }
+
+  const onSelect = (thread: Thread) => {
+    props.onChange(thread.id)
+    closeTooltip()
+  }
+
+  const onDelete = (e: MouseEvent, thread: Thread) => {
+    e.stopPropagation()
+    showConfirmDialog({
+      title: 'Delete thread',
+      content: 'Are you sure you want to delete this thread?',
+      onConfirm: async () => {
+        await threadService.delete(thread)
+      },
+    })
+  }
+
+  const onRename = (e: MouseEvent, thread: Thread) => {
+    e.stopPropagation()
+    showInputLine({
+      value: thread.title ?? '',
+      onEnter: async (value: string) => {
+        const title = value.trim() || undefined
+        if (title) await threadService.updateTitle(title, thread)
+      },
+    })
+  }
+
+  const ThreadsDialog = () => {
     let searchInputRef!: HTMLInputElement
-
-    const onNew = () => {
-      const newThread = threadService.newThread()
-      props.onChange(newThread.id)
-      dialogService.close(p.dialog)
-    }
-
-    const onSelect = (thread: Thread) => {
-      props.onChange(thread.id)
-      dialogService.close(p.dialog)
-    }
-
-    const onDelete = (thread: Thread) => {
-      dialogService.open({
-        title: 'Delete thread',
-        text: 'Are you sure you want to delete this thread?',
-        onConfirm: async () => {
-          await threadService.delete(thread)
-        },
-      })
-    }
-
-    const onRename = (thread: Thread) => {
-      inputLineService.setInputLine({
-        value: thread.title ?? '',
-        onEnter: async (value: string) => {
-          const title = value.trim() || undefined
-          if (title) await threadService.updateTitle(title, thread)
-        },
-      })
-    }
 
     onMount(() => {
       searchInputRef.focus()
@@ -195,21 +198,21 @@ export const Threads = (props: Props) => {
                   <Show when={label}>
                     <Label>{label}</Label>
                   </Show>
-                  <ThreadItem onClick={() => onSelect(thread)}>
+                  <ThreadItem onClick={() => onSelect(thread)} data-testid="thread_item">
                     {thread.title ?? 'Untitled'}
                     <ButtonGroup class="action">
-                      <TooltipButtonMenu
-                        onClick={() => onDelete(thread)}
-                        data-testid="thread_item_menu"
+                      <ThreadItemButton
+                        onClick={(e) => onDelete(e, thread)}
+                        data-testid="thread_item_delete"
                       >
                         <IconDelete />
-                      </TooltipButtonMenu>
-                      <TooltipButtonMenu
-                        onClick={() => onRename(thread)}
-                        data-testid="thread_item_menu"
+                      </ThreadItemButton>
+                      <ThreadItemButton
+                        onClick={(e) => onRename(e, thread)}
+                        data-testid="thread_item_rename"
                       >
                         <IconEdit />
-                      </TooltipButtonMenu>
+                      </ThreadItemButton>
                     </ButtonGroup>
                   </ThreadItem>
                 </>
@@ -217,7 +220,7 @@ export const Threads = (props: Props) => {
             </For>
           </Content>
         </Scroller>
-        <TooltipFooter>
+        <DialogFooter>
           <ButtonGroup>
             <Button onClick={onNew}>
               <IconAdd /> New
@@ -226,10 +229,14 @@ export const Threads = (props: Props) => {
               <IconDelete /> Delete all
             </Button>
           </ButtonGroup>
-        </TooltipFooter>
+        </DialogFooter>
       </>
     )
   }
+
+  const [showTooltip, closeTooltip] = useDialog({
+    component: ThreadsDialog,
+  })
 
   return (
     <Button onClick={onMenuClick} data-testid="history">

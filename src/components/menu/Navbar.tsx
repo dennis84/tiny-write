@@ -1,8 +1,11 @@
 import {useNavigate} from '@solidjs/router'
-import {createSignal, Match, Show, Suspense, Switch} from 'solid-js'
+import {Match, Show, Suspense, Switch} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {getLanguageNames} from '@/codemirror/highlight'
 import {useCollabCount} from '@/hooks/use-collab-count'
+import {useConfirmDialog} from '@/hooks/use-confirm-dialog'
+import {useDialog} from '@/hooks/use-dialog'
+import {useInputLine} from '@/hooks/use-input-line'
 import {useOpen} from '@/hooks/use-open'
 import {useTitle} from '@/hooks/use-title'
 import {copy} from '@/remote/clipboard'
@@ -11,7 +14,7 @@ import {MenuId} from '@/services/MenuService'
 import {isCodeFile, isLocalFile, useState} from '@/state'
 import {Page} from '@/types'
 import {Button, ButtonGroup, IconButton} from '../Button'
-import {Tooltip, TooltipButton, TooltipDivider} from '../dialog/Tooltip'
+import {TooltipButton, TooltipDivider} from '../dialog/Style'
 import {TooltipHelp} from '../dialog/TooltipHelp'
 import {
   IconAiAssistant,
@@ -54,15 +57,27 @@ const StickyContainer = styled('div')`
 
 const CollabButton = () => {
   const {collabService, toastService} = useState()
-  const [anchor, setAnchor] = createSignal<HTMLElement>()
   const collabCount = useCollabCount()
 
-  const closeTooltip = () => {
-    setAnchor(undefined)
-  }
+  const Tooltip = () => (
+    <>
+      <TooltipButton onClick={onStop}>
+        <IconCloudOff />
+        Disconnect
+      </TooltipButton>
+      <TooltipButton onClick={onCopyCollabLink}>
+        <IconLink /> Copy Link
+      </TooltipButton>
+    </>
+  )
+
+  const [showTooltip, closeTooltip] = useDialog({
+    component: Tooltip,
+    backdrop: false,
+  })
 
   const onOpen = (e: MouseEvent) => {
-    setAnchor(e.currentTarget as HTMLElement)
+    showTooltip({anchor: e.currentTarget as HTMLElement})
   }
 
   const onStop = () => {
@@ -80,38 +95,64 @@ const CollabButton = () => {
   }
 
   return (
-    <>
-      <Button onClick={onOpen} data-testid="navbar_collab">
-        <IconCloud /> {collabCount()}
-      </Button>
-      <Show when={anchor()}>
-        {(a) => (
-          <Tooltip anchor={a()} backdrop={false} onClose={closeTooltip}>
-            <TooltipButton onClick={onStop}>
-              <IconCloudOff />
-              Disconnect
-            </TooltipButton>
-            <TooltipButton onClick={onCopyCollabLink}>
-              <IconLink /> Copy Link
-            </TooltipButton>
-          </Tooltip>
-        )}
-      </Show>
-    </>
+    <Button onClick={onOpen} data-testid="navbar_collab">
+      <IconCloud /> {collabCount()}
+    </Button>
   )
 }
 
 const CurrentFileButton = () => {
-  const {codeService, canvasService, deleteService, fileService, inputLineService, treeService} =
-    useState()
-  const [anchor, setAnchor] = createSignal<HTMLElement>()
+  const {codeService, canvasService, deleteService, fileService, treeService} = useState()
   const {openFile} = useOpen()
+  const showInputLine = useInputLine()
+  const showConfirmDialog = useConfirmDialog()
 
   const title = useTitle()
 
-  const closeTooltip = () => {
-    setAnchor(undefined)
-  }
+  const Tooltip = () => (
+    <>
+      <Show when={isCodeFile(fileService.currentFile)}>
+        <TooltipButton onClick={onChangeLanguage}>
+          <IconLanguage />
+          Change Language
+        </TooltipButton>
+        <TooltipButton onClick={onFormat}>
+          <IconPrettier />
+          Prettify
+        </TooltipButton>
+        <TooltipDivider />
+      </Show>
+      <TooltipButton onClick={onRename}>
+        <IconEdit />
+        Rename
+      </TooltipButton>
+      <Switch>
+        <Match when={fileService.currentFile?.deleted}>
+          <TooltipButton onClick={onRestore}>
+            <IconHistory />
+            Restore
+          </TooltipButton>
+        </Match>
+        <Match when={isLocalFile(fileService.currentFile)}>
+          <TooltipButton onClick={() => deleteItem(true)}>
+            <IconClose />
+            Close
+          </TooltipButton>
+        </Match>
+        <Match when={true}>
+          <TooltipButton onClick={() => deleteItem()}>
+            <IconDelete />
+            Delete
+          </TooltipButton>
+        </Match>
+      </Switch>
+    </>
+  )
+
+  const [showTooltip, closeTooltip] = useDialog({
+    component: Tooltip,
+    backdrop: false,
+  })
 
   const focus = () => {
     fileService.currentFile?.editorView?.focus()
@@ -119,7 +160,7 @@ const CurrentFileButton = () => {
   }
 
   const onOpen = (e: MouseEvent) => {
-    setAnchor(e.currentTarget as HTMLElement)
+    showTooltip({anchor: e.currentTarget as HTMLElement})
   }
 
   const onRename = async () => {
@@ -130,14 +171,14 @@ const CurrentFileButton = () => {
 
     if (file) {
       const filename = await fileService.getFilename(file)
-      inputLineService.setInputLine({
+      showInputLine({
         value: filename ?? '',
         onEnter: async (value: string) => {
           await fileService.renameFile(file.id, value)
         },
       })
     } else if (canvas) {
-      inputLineService.setInputLine({
+      showInputLine({
         value: canvas?.title ?? '',
         onEnter: async (value: string) => {
           canvasService.updateCanvas(canvas.id, {title: value.trim() || undefined})
@@ -150,9 +191,15 @@ const CurrentFileButton = () => {
   const deleteItem = async (forever = false) => {
     const currentFile = fileService.currentFile
     if (!currentFile) return
-    const result = await deleteService.deleteItem(currentFile, forever)
-    if (result.navigateTo !== false) openFile(result.navigateTo)
-    closeTooltip()
+    showConfirmDialog({
+      title: forever ? 'Delete file permanently' : 'Delete file',
+      content: 'Do you want to proceed?',
+      onConfirm: async () => {
+        const result = await deleteService.deleteItem(currentFile, forever)
+        if (result.navigateTo !== false) openFile(result.navigateTo)
+        closeTooltip()
+      },
+    })
   }
 
   const onRestore = async () => {
@@ -167,7 +214,7 @@ const CurrentFileButton = () => {
     const file = fileService.currentFile
     if (!file) return
     closeTooltip()
-    inputLineService.setInputLine({
+    showInputLine({
       value: file.codeLang ?? '',
       words: getLanguageNames(),
       onEnter: (lang) => {
@@ -186,70 +233,27 @@ const CurrentFileButton = () => {
   }
 
   return (
-    <>
-      <Button onClick={onOpen}>
-        <Switch>
-          {/* 2nd condition for rerendering */}
-          <Match
-            when={
-              isCodeFile(fileService.currentFile) &&
-              (fileService.currentFile?.codeLang || !fileService.currentFile?.codeLang)
-            }
-            keyed
-          >
-            <LangIcon name={fileService.currentFile?.codeLang} />
-          </Match>
-          <Match when={fileService.currentFile}>
-            <IconTextSnippet />
-          </Match>
-          <Match when={canvasService.currentCanvas}>
-            <IconGesture />
-          </Match>
-        </Switch>
-        <Suspense>{title()}</Suspense>
-      </Button>
-      <Show when={anchor()}>
-        {(a) => (
-          <Tooltip anchor={a()} backdrop={false} onClose={closeTooltip}>
-            <Show when={isCodeFile(fileService.currentFile)}>
-              <TooltipButton onClick={onChangeLanguage}>
-                <IconLanguage />
-                Change Language
-              </TooltipButton>
-              <TooltipButton onClick={onFormat}>
-                <IconPrettier />
-                Prettify
-              </TooltipButton>
-              <TooltipDivider />
-            </Show>
-            <TooltipButton onClick={onRename}>
-              <IconEdit />
-              Rename
-            </TooltipButton>
-            <Switch>
-              <Match when={fileService.currentFile?.deleted}>
-                <TooltipButton onClick={onRestore}>
-                  <IconHistory />
-                  Restore
-                </TooltipButton>
-              </Match>
-              <Match when={isLocalFile(fileService.currentFile)}>
-                <TooltipButton onClick={() => deleteItem(true)}>
-                  <IconClose />
-                  Close
-                </TooltipButton>
-              </Match>
-              <Match when={true}>
-                <TooltipButton onClick={() => deleteItem()}>
-                  <IconDelete />
-                  Delete
-                </TooltipButton>
-              </Match>
-            </Switch>
-          </Tooltip>
-        )}
-      </Show>
-    </>
+    <Button onClick={onOpen}>
+      <Switch>
+        {/* 2nd condition for rerendering */}
+        <Match
+          when={
+            isCodeFile(fileService.currentFile) &&
+            (fileService.currentFile?.codeLang || !fileService.currentFile?.codeLang)
+          }
+          keyed
+        >
+          <LangIcon name={fileService.currentFile?.codeLang} />
+        </Match>
+        <Match when={fileService.currentFile}>
+          <IconTextSnippet />
+        </Match>
+        <Match when={canvasService.currentCanvas}>
+          <IconGesture />
+        </Match>
+      </Switch>
+      <Suspense>{title()}</Suspense>
+    </Button>
   )
 }
 

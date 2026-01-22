@@ -1,9 +1,10 @@
 import {createAsync} from '@solidjs/router'
-import {createSignal, For, Show} from 'solid-js'
+import {For} from 'solid-js'
+import {useDialog} from '@/hooks/use-dialog'
 import type {Model} from '@/services/CopilotService'
 import {useState} from '@/state'
 import {Button} from '../Button'
-import {Tooltip, TooltipButton} from '../dialog/Tooltip'
+import {TooltipButton} from '../dialog/Style'
 
 interface Props {
   onChange: () => void
@@ -11,45 +12,41 @@ interface Props {
 
 export const ModelSelect = (props: Props) => {
   const {copilotService} = useState()
-  const [tooltipAnchor, setTooltipAnchor] = createSignal<HTMLElement>()
 
   const models = createAsync(() => copilotService.getChatModels())
+
+  const Tooltip = () => (
+    <>
+      <For each={models()}>
+        {(m) => (
+          <TooltipButton
+            onClick={() => onSelect(m)}
+            class={copilotService.chatModel.id === m.id ? 'selected' : undefined}
+          >
+            {m.name}
+          </TooltipButton>
+        )}
+      </For>
+    </>
+  )
+
+  const [showTooltip, closeTooltip] = useDialog({
+    component: Tooltip,
+  })
 
   const onSelect = (model: Model) => {
     copilotService.setChatModel(model)
     props.onChange()
-    setTooltipAnchor(undefined)
+    closeTooltip()
   }
 
   const onMenuClick = (e: MouseEvent) => {
-    setTooltipAnchor(e.target as HTMLElement)
-  }
-
-  const onMenuClose = () => {
-    setTooltipAnchor(undefined)
+    showTooltip({anchor: e.target as HTMLElement})
   }
 
   return (
-    <>
-      <Button onClick={onMenuClick} data-testid="model_select">
-        {copilotService.chatModel.name}
-      </Button>
-      <Show when={tooltipAnchor()}>
-        {(a) => (
-          <Tooltip anchor={a()} onClose={onMenuClose}>
-            <For each={models()}>
-              {(m) => (
-                <TooltipButton
-                  onClick={() => onSelect(m)}
-                  class={copilotService.chatModel.id === m.id ? 'selected' : undefined}
-                >
-                  {m.name}
-                </TooltipButton>
-              )}
-            </For>
-          </Tooltip>
-        )}
-      </Show>
-    </>
+    <Button onClick={onMenuClick} data-testid="model_select">
+      {copilotService.chatModel.name}
+    </Button>
   )
 }

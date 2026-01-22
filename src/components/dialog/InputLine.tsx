@@ -1,5 +1,4 @@
-import {createEffect, onCleanup, Show} from 'solid-js'
-import {Portal} from 'solid-js/web'
+import {onCleanup, onMount} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {getTheme} from '@/codemirror/theme'
 import {codeMirror} from '@/components/code/Style'
@@ -7,21 +6,8 @@ import {ConfigService} from '@/services/ConfigService'
 import {useState} from '@/state'
 import {InputLineEditor} from './InputLineEditor'
 
-const Layer = styled('div')`
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-`
-
 const Container = styled('div')`
-  position: absolute;
-  width: 50vw;
-  z-index: var(--z-index-max);
+  width: 60vw;
   ${codeMirror}
   .cm-editor {
     border-radius: var(--border-radius);
@@ -44,32 +30,25 @@ export interface InputLineConfig {
   placeholder?: string
 }
 
-export const InputLine = () => {
+export const InputLine = (props: InputLineConfig) => {
   let ref!: HTMLDivElement
 
-  const {appService, configService, inputLineService} = useState()
+  const {configService} = useState()
 
-  createEffect(() => {
-    const config = inputLineService.inputLine()
-    if (config === undefined) return
-
+  onMount(() => {
     let codeTheme = configService.codeTheme
     if (configService.theme.dark !== codeTheme.dark) {
       codeTheme = ConfigService.getDefaltCodeTheme(configService.theme.dark)
     }
 
     const editor = new InputLineEditor({
-      doc: config.value,
+      doc: props.value,
       parent: ref,
       theme: getTheme(codeTheme.value),
-      words: config.words,
-      placeholder: config.placeholder,
+      words: props.words,
+      placeholder: props.placeholder,
       onEnter: (lang) => {
-        config.onEnter(lang)
-        inputLineService.setInputLine(undefined)
-      },
-      onClose: () => {
-        inputLineService.setInputLine(undefined)
+        props.onEnter(lang)
       },
     })
 
@@ -80,13 +59,5 @@ export const InputLine = () => {
     })
   })
 
-  return (
-    <Show when={inputLineService.inputLine() !== undefined}>
-      <Portal mount={appService.layoutRef}>
-        <Layer>
-          <Container ref={ref} data-testid="input_line" />
-        </Layer>
-      </Portal>
-    </Show>
-  )
+  return <Container ref={ref} data-testid="input_line" />
 }

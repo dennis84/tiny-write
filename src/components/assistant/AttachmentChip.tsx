@@ -4,11 +4,11 @@ import {createEffect, createSignal, Match, onMount, Show, Suspense, Switch} from
 import {styled} from 'solid-styled-components'
 import {getLanguageConfig, type LangConfig} from '@/codemirror/highlight'
 import {getTheme} from '@/codemirror/theme'
+import {useDialog} from '@/hooks/use-dialog'
 import {useTitle} from '@/hooks/use-title'
 import {useState} from '@/state'
 import {type Attachment, AttachmentType, type File} from '@/types'
 import {Button} from '../Button'
-import {Tooltip} from '../dialog/Tooltip'
 import {IconTextSelectStart, LangIcon} from '../Icon'
 
 const Container = styled('div')`
@@ -77,20 +77,11 @@ interface Props {
 
 export const AttachmentChip = (props: Props) => {
   const {configService, fileService} = useState()
-  const [tooltipAnchor, setTooltipAnchor] = createSignal<HTMLElement | undefined>()
 
   const file = props.attachment.fileId
     ? fileService.findFileById(props.attachment.fileId)
     : undefined
   const langConfig = getLanguageConfig(props.attachment.codeLang ?? file?.codeLang)
-
-  const closeTooltip = () => {
-    setTooltipAnchor(undefined)
-  }
-
-  const onOpenTooltip = (e: MouseEvent) => {
-    setTooltipAnchor(e.currentTarget as HTMLElement)
-  }
 
   const CodeBlock = () => {
     let ref!: HTMLDivElement
@@ -141,55 +132,60 @@ export const AttachmentChip = (props: Props) => {
     return <CodeBlockStyle ref={ref} />
   }
 
-  return (
+  const Tooltip = () => (
     <>
-      <Container>
-        <Switch>
-          <Match when={props.attachment.type === AttachmentType.Image}>
-            <AttachmentImage src={props.attachment.content} alt="" onClick={onOpenTooltip} />
-          </Match>
-          <Match when={props.attachment.type === AttachmentType.Text}>
-            <Button onClick={onOpenTooltip}>Text</Button>
-          </Match>
-          <Match when={props.attachment.type === AttachmentType.File}>
-            <Button onClick={onOpenTooltip}>
-              <LangIcon name={langConfig.id} />
-              <AttachmentTitle file={file} langConfig={langConfig} />
-            </Button>
-          </Match>
-          <Match when={props.attachment.type === AttachmentType.Selection}>
-            <Button onClick={onOpenTooltip}>
-              <IconTextSelectStart />
-              <Suspense>
-                <AttachmentTitle
-                  file={file}
-                  langConfig={langConfig}
-                  selection={props.attachment.selection}
-                />
-              </Suspense>
-            </Button>
-          </Match>
-        </Switch>
-      </Container>
-      <Show when={tooltipAnchor()}>
-        {(a) => (
-          <Tooltip anchor={a()} onClose={() => closeTooltip()}>
-            <Switch>
-              <Match when={props.attachment.type === AttachmentType.Image}>
-                <TooltipImage src={props.attachment.content} alt="" />
-              </Match>
-              <Match when={true}>
-                <CodeBlock />
-              </Match>
-            </Switch>
-            <Show when={props.onDelete}>
-              <TooltipAction>
-                <Button onClick={() => props.onDelete?.(props.attachment)}>Remove</Button>
-              </TooltipAction>
-            </Show>
-          </Tooltip>
-        )}
+      <Switch>
+        <Match when={props.attachment.type === AttachmentType.Image}>
+          <TooltipImage src={props.attachment.content} alt="" />
+        </Match>
+        <Match when={true}>
+          <CodeBlock />
+        </Match>
+      </Switch>
+      <Show when={props.onDelete}>
+        <TooltipAction>
+          <Button onClick={() => props.onDelete?.(props.attachment)}>Remove</Button>
+        </TooltipAction>
       </Show>
     </>
+  )
+
+  const [showTooltip] = useDialog({
+    component: Tooltip,
+  })
+
+  const onOpenTooltip = (e: MouseEvent) => {
+    showTooltip({anchor: e.currentTarget as HTMLElement})
+  }
+
+  return (
+    <Container>
+      <Switch>
+        <Match when={props.attachment.type === AttachmentType.Image}>
+          <AttachmentImage src={props.attachment.content} alt="" onClick={onOpenTooltip} />
+        </Match>
+        <Match when={props.attachment.type === AttachmentType.Text}>
+          <Button onClick={onOpenTooltip}>Text</Button>
+        </Match>
+        <Match when={props.attachment.type === AttachmentType.File}>
+          <Button onClick={onOpenTooltip}>
+            <LangIcon name={langConfig.id} />
+            <AttachmentTitle file={file} langConfig={langConfig} />
+          </Button>
+        </Match>
+        <Match when={props.attachment.type === AttachmentType.Selection}>
+          <Button onClick={onOpenTooltip}>
+            <IconTextSelectStart />
+            <Suspense>
+              <AttachmentTitle
+                file={file}
+                langConfig={langConfig}
+                selection={props.attachment.selection}
+              />
+            </Suspense>
+          </Button>
+        </Match>
+      </Switch>
+    </Container>
   )
 }

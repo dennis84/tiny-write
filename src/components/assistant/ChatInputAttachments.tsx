@@ -1,9 +1,9 @@
-import {createEffect, createSignal, For, Show} from 'solid-js'
+import {createEffect, For} from 'solid-js'
 import {styled} from 'solid-styled-components'
+import {useDialog} from '@/hooks/use-dialog'
 import {useState} from '@/state'
 import {type Attachment, AttachmentType} from '@/types'
 import {IconButton} from '../Button'
-import {Tooltip} from '../dialog/Tooltip'
 import {TooltipHelp} from '../dialog/TooltipHelp'
 import {IconAttachment} from '../Icon'
 import {AttachmentChip} from './AttachmentChip'
@@ -24,14 +24,22 @@ const Attachments = styled('div')`
 
 export const ChatInputAttachments = () => {
   const {store, fileService, mediaService, threadService} = useState()
-  const [tooltipAnchor, setTooltipAnchor] = createSignal<HTMLElement | undefined>()
+
+  const Tooltip = () => (
+    <>
+      <CurrentFileButton onAttachment={onAttachment} />
+      <SelectionButton onAttachment={onAttachment} />
+      <ImageButton onAttachment={onImageAttachment} />
+    </>
+  )
+
+  const [showTooltip, closeTooltip] = useDialog({
+    component: Tooltip,
+    backdrop: true,
+  })
 
   const onAttachmentMenu = (e: MouseEvent) => {
-    setTooltipAnchor(e.currentTarget as HTMLElement)
-  }
-
-  const closeTooltip = () => {
-    setTooltipAnchor(undefined)
+    showTooltip({anchor: e.currentTarget as HTMLElement})
   }
 
   const onAttachment = (attachment: Attachment) => {
@@ -116,26 +124,15 @@ export const ChatInputAttachments = () => {
   })
 
   return (
-    <>
-      <Attachments>
-        <TooltipHelp title="Add an attachment to context">
-          <IconButton onClick={onAttachmentMenu}>
-            <IconAttachment />
-          </IconButton>
-        </TooltipHelp>
-        <For each={threadService.attachments()}>
-          {(attachment) => <AttachmentChip attachment={attachment} onDelete={onDelete} />}
-        </For>
-      </Attachments>
-      <Show when={tooltipAnchor()}>
-        {(a) => (
-          <Tooltip anchor={a()} onClose={() => closeTooltip()} backdrop={true}>
-            <CurrentFileButton onAttachment={onAttachment} />
-            <SelectionButton onAttachment={onAttachment} />
-            <ImageButton onAttachment={onImageAttachment} />
-          </Tooltip>
-        )}
-      </Show>
-    </>
+    <Attachments>
+      <TooltipHelp title="Add an attachment to context">
+        <IconButton onClick={onAttachmentMenu}>
+          <IconAttachment />
+        </IconButton>
+      </TooltipHelp>
+      <For each={threadService.attachments()}>
+        {(attachment) => <AttachmentChip attachment={attachment} onDelete={onDelete} />}
+      </For>
+    </Attachments>
   )
 }

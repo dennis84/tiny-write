@@ -9,7 +9,6 @@ import {
 import {createEffect, createMemo, ErrorBoundary, onMount, Show, untrack} from 'solid-js'
 import {DarkMode} from '@/components/DarkMode'
 import {DropFile} from '@/components/DropFile'
-import {InputLine} from '@/components/dialog/InputLine'
 import {Keymap} from '@/components/Keymap'
 import {DragArea, Layout, PageContent} from '@/components/Layout'
 import {MouseCursor} from '@/components/MouseCursor'
@@ -137,7 +136,6 @@ export const Main = (props: {state: State | Ctrl}) => {
             <Variables />
             <ResizeWindow />
             <DarkMode />
-            <InputLine />
             <Dialogs />
             <Toast />
             <Title />
