@@ -1,4 +1,5 @@
 import {styled} from 'solid-styled-components'
+import {useState} from '@/state'
 import {ButtonGroup, ButtonPrimary} from './Button'
 import {Content, Layout, Scroll} from './Layout'
 
@@ -13,8 +14,14 @@ const Pre = styled('pre')`
 
 export const GeneralError = (props: {error: Error}) => {
   console.error(props.error)
+  const {appService} = useState()
 
-  const onReload = () => {
+  const onReload = async () => {
+    await appService.setLocation({
+      page: undefined,
+      threadId: undefined,
+    })
+
     window.location.reload()
   }
 

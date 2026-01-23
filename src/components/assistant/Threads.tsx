@@ -71,6 +71,13 @@ const ThreadItem = styled('div')`
   }
 `
 
+const ThreadTitle = styled('div')`
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  width: calc(100% - 80px);
+`
+
 const SearchRow = styled('div')``
 
 const SearchBorder = styled('div')`
@@ -199,7 +206,7 @@ export const Threads = (props: Props) => {
                     <Label>{label}</Label>
                   </Show>
                   <ThreadItem onClick={() => onSelect(thread)} data-testid="thread_item">
-                    {thread.title ?? 'Untitled'}
+                    <ThreadTitle>{thread.title ?? 'Untitled'}</ThreadTitle>
                     <ButtonGroup class="action">
                       <ThreadItemButton
                         onClick={(e) => onDelete(e, thread)}
