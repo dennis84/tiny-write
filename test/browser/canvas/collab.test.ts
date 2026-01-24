@@ -47,7 +47,7 @@ test('share', async ({page, browser}) => {
 
   await page.locator('.ProseMirror').nth(1).pressSequentially('Hello', {delay})
 
-  expect(page.locator('.ProseMirror').nth(1)).toHaveText('Hello')
+  await expect(page.locator('.ProseMirror').nth(1)).toHaveText('Hello')
 
-  expect(page2.locator('.ProseMirror').nth(1)).toHaveText('Hello')
+  await expect(page2.locator('.ProseMirror').nth(1)).toHaveText('Hello')
 })

@@ -154,7 +154,7 @@ export const ContextMenu = () => {
     </>
   )
 
-  const [showTooltip, closeTooltip] = useDialog({
+  const [showTooltip, closeTooltip, currentTooltip] = useDialog({
     component: Tooltip,
     backdrop: true,
     onClose: async () => {
@@ -164,7 +164,8 @@ export const ContextMenu = () => {
 
   createEffect(() => {
     const deadLink = canvasService.findDeadLinks()[0]
-    if (!deadLink) return
+    // Reopen tooltip removes dead links, so don't reopen if tooltip is already open
+    if (!deadLink || currentTooltip() !== undefined) return
     openContextMenu()
   })
 

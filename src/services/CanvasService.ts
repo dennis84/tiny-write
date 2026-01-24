@@ -378,7 +378,7 @@ export class CanvasService {
     link?: CanvasLinkElement,
     point?: Vector,
   ): Promise<[CanvasElement] | [CanvasElement, CanvasElement] | undefined> {
-    info(`Add file to canvas (fileId=${file.id})`)
+    info(`Add file to canvas (fileId=${file.id}, link=${link?.id})`)
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
 
@@ -451,14 +451,15 @@ export class CanvasService {
       height,
     }
 
+    const elements = [...currentCanvas.elements, element]
     this.updateCanvas(currentCanvas.id, {
-      elements: [...currentCanvas.elements, element],
+      elements,
       lastModified: new Date(),
     })
 
     let linkElement: CanvasElement | undefined
     if (isLink) {
-      const l = currentCanvas.elements.find((el) => el.id === link.id)
+      const l = elements.find((el) => el.id === link.id)
       if (!l) return
       this.updateCanvasElement(l.id, {
         to: file.id,
@@ -467,7 +468,7 @@ export class CanvasService {
         toY: undefined,
       })
 
-      const updatedLink = currentCanvas.elements.find((el) => el.id === link.id)
+      const updatedLink = elements.find((el) => el.id === link.id)
       if (updatedLink) linkElement = unwrap(updatedLink)
     }
 
@@ -627,6 +628,8 @@ export class CanvasService {
   }
 
   async removeDeadLinks(): Promise<string[]> {
+    info('Removing dead links')
+
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return []
 
@@ -645,7 +648,7 @@ export class CanvasService {
     if (elements.length !== currentCanvas.elements.length) {
       this.updateCanvas(currentCanvas.id, {elements})
       await this.saveCanvas()
-      info('Removed dead links')
+      info(`Removed dead links (removedIds=${removedIds})`)
     }
 
     return removedIds

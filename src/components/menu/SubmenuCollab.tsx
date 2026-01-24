@@ -7,10 +7,11 @@ import {Link} from './Link'
 import {Label, Sub, Text} from './Style'
 
 export const SubmenuCollab = () => {
-  const {collabService, toastService} = useState()
+  const {appService, collabService, toastService} = useState()
   const collabUsers = useCollabCount()
 
-  const onCollabStart = () => {
+  const onCollabStart = async () => {
+    await appService.setLocation({share: true})
     collabService.connect()
   }
 
