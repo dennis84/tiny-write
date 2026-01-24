@@ -1,5 +1,6 @@
 import {Vector} from '@flatten-js/core'
-import {createEffect, For, Match, onMount, Show, Suspense, Switch} from 'solid-js'
+import {createEffect, For, Match, on, onMount, Show, Suspense, Switch} from 'solid-js'
+import {styled} from 'solid-styled-components'
 import {useDialog} from '@/hooks/use-dialog'
 import {useTitle} from '@/hooks/use-title'
 import type {Dialog} from '@/services/DialogService'
@@ -8,12 +9,19 @@ import type {CanvasLinkElement, File} from '@/types'
 import {TooltipButton, TooltipDivider} from '../dialog/Style'
 import {IconCodeBlocks, IconGesture, IconPostAdd, IconTextSnippet} from '../Icon'
 
+const Scroller = styled('div')`
+  max-height: 80vh;
+  overflow-y: auto;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+`
+
 export const ContextMenu = () => {
   const {canvasService, canvasCollabService, fileService, treeService} = useState()
 
   const onNewFile = async (code = false, link?: CanvasLinkElement, cm?: Vector) => {
     const added = await canvasService.newFile(code, link, cm)
-    await canvasService.removeDeadLinks()
     if (added) {
       canvasCollabService.addElements(added)
       const fileElement = added[0]
@@ -27,7 +35,6 @@ export const ContextMenu = () => {
   const FileNameTooltipButton = (p: {file: File; link?: CanvasLinkElement; cm?: Vector}) => {
     const onClick = async () => {
       const added = await canvasService.addFile(p.file, p.link, p.cm)
-      await canvasService.removeDeadLinks()
       if (added) canvasCollabService.addElements(added)
       closeTooltip()
     }
@@ -139,15 +146,17 @@ export const ContextMenu = () => {
         {(files) => (
           <>
             <TooltipDivider />
-            <For each={files()}>
-              {(file: File) => (
-                <FileNameTooltipButton
-                  file={file}
-                  link={props.dialog.state?.deadLink}
-                  cm={props.dialog.state?.clickPos}
-                />
-              )}
-            </For>
+            <Scroller>
+              <For each={files()}>
+                {(file: File) => (
+                  <FileNameTooltipButton
+                    file={file}
+                    link={props.dialog.state?.deadLink}
+                    cm={props.dialog.state?.clickPos}
+                  />
+                )}
+              </For>
+            </Scroller>
           </>
         )}
       </Show>
@@ -162,12 +171,16 @@ export const ContextMenu = () => {
     },
   })
 
-  createEffect(() => {
-    const deadLink = canvasService.findDeadLinks()[0]
-    // Reopen tooltip removes dead links, so don't reopen if tooltip is already open
-    if (!deadLink || currentTooltip() !== undefined) return
-    openContextMenu()
-  })
+  createEffect(
+    on(
+      () => canvasService.findDeadLinks()[0],
+      (deadLink) => {
+        // Reopen tooltip removes dead links, so don't reopen if tooltip is already open
+        if (!deadLink || currentTooltip() !== undefined) return
+        openContextMenu()
+      },
+    ),
+  )
 
   return null
 }
