@@ -1,7 +1,17 @@
 import {differenceInDays} from 'date-fns'
 import {type DBSchema, type IDBPDatabase, openDB} from 'idb'
 import {unwrap} from 'solid-js/store'
-import type {AiConfig, Camera, Config, ElementType, LocationState, Thread, Window} from '@/types'
+import * as v from 'valibot'
+import {
+  type AiConfig,
+  type Camera,
+  type Config,
+  ConfigSchema,
+  type ElementType,
+  type LocationState,
+  type Thread,
+  type Window,
+} from '@/types'
 import {info} from './remote/log'
 
 export interface PersistedVersion {
@@ -125,7 +135,8 @@ export class DB {
   }
 
   static async getConfig() {
-    return (await dbPromise).get('config', 'main')
+    const config = (await (await dbPromise).get('config', 'main')) as any
+    return v.parse(ConfigSchema, config)
   }
 
   static async setWindow(window: Window) {

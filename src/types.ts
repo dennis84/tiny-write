@@ -1,6 +1,6 @@
 import type {EditorView as CmEditorView} from '@codemirror/view'
 import type {EditorView} from 'prosemirror-view'
-import type {CodeThemeName, ThemeName} from './services/ConfigService'
+import * as v from 'valibot'
 import type {Model} from './services/CopilotService'
 
 type OpenThread = {threadId: string}
@@ -52,36 +52,42 @@ export interface Args {
   text?: string
 }
 
-export interface PrettierConfig {
-  printWidth: number
-  tabWidth: number
-  useTabs: boolean
-  semi: boolean
-  singleQuote: boolean
-  bracketSpacing: boolean
-}
+const PrettierSchema = v.object({
+  printWidth: v.number(),
+  tabWidth: v.number(),
+  useTabs: v.boolean(),
+  semi: v.boolean(),
+  singleQuote: v.boolean(),
+  bracketSpacing: v.boolean(),
+})
 
-export interface ThemeConfig {
+export type PrettierConfig = v.InferInput<typeof PrettierSchema>
+
+const ThemeSchema = v.object({
   // current theme
-  main?: ThemeName
-  code?: CodeThemeName
+  main: v.optional(v.string()),
+  code: v.optional(v.string()),
   // last configured themes by dark mode
-  mainDark?: ThemeName
-  mainLight?: ThemeName
-  codeDark?: CodeThemeName
-  codeLight?: CodeThemeName
-}
+  mainDark: v.optional(v.string()),
+  mainLight: v.optional(v.string()),
+  codeDark: v.optional(v.string()),
+  codeLight: v.optional(v.string()),
+})
 
-export interface Config {
-  theme: ThemeConfig
-  font?: string
-  fontSize: number
-  contentWidth: number
-  alwaysOnTop: boolean
-  typewriterMode: boolean
-  spellcheck: boolean
-  prettier: PrettierConfig
-}
+export type ThemeConfig = v.InferInput<typeof ThemeSchema>
+
+export const ConfigSchema = v.object({
+  theme: v.fallback(ThemeSchema, {}),
+  font: v.optional(v.string()),
+  fontSize: v.number(),
+  contentWidth: v.number(),
+  alwaysOnTop: v.boolean(),
+  typewriterMode: v.boolean(),
+  spellcheck: v.boolean(),
+  prettier: PrettierSchema,
+})
+
+export type Config = v.InferInput<typeof ConfigSchema>
 
 export interface Copilot {
   user?: string
