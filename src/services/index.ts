@@ -38,7 +38,6 @@ export const createCtrl = (initial: State) => {
   const prettierService = new PrettierService()
   const appService = new AppService(fileService, store, setState)
   const canvasService = new CanvasService(
-    appService,
     fileService,
     selectService,
     collabService,

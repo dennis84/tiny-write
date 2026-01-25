@@ -53,12 +53,12 @@ export interface Args {
 }
 
 const PrettierSchema = v.object({
-  printWidth: v.number(),
-  tabWidth: v.number(),
-  useTabs: v.boolean(),
-  semi: v.boolean(),
-  singleQuote: v.boolean(),
-  bracketSpacing: v.boolean(),
+  printWidth: v.fallback(v.number(), 80),
+  tabWidth: v.fallback(v.number(), 2),
+  useTabs: v.fallback(v.boolean(), false),
+  semi: v.fallback(v.boolean(), false),
+  singleQuote: v.fallback(v.boolean(), true),
+  bracketSpacing: v.fallback(v.boolean(), false),
 })
 
 export type PrettierConfig = v.InferInput<typeof PrettierSchema>
@@ -79,11 +79,11 @@ export type ThemeConfig = v.InferInput<typeof ThemeSchema>
 export const ConfigSchema = v.object({
   theme: v.fallback(ThemeSchema, {}),
   font: v.optional(v.string()),
-  fontSize: v.number(),
-  contentWidth: v.number(),
-  alwaysOnTop: v.boolean(),
-  typewriterMode: v.boolean(),
-  spellcheck: v.boolean(),
+  fontSize: v.fallback(v.number(), 14),
+  contentWidth: v.fallback(v.number(), 600),
+  alwaysOnTop: v.fallback(v.boolean(), false),
+  typewriterMode: v.fallback(v.boolean(), false),
+  spellcheck: v.fallback(v.boolean(), true),
   prettier: PrettierSchema,
 })
 

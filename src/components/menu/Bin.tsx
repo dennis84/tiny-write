@@ -1,3 +1,4 @@
+import {useConfirmDialog} from '@/hooks/use-confirm-dialog'
 import {useOpen} from '@/hooks/use-open'
 import {useState} from '@/state'
 import {Button, ButtonGroup} from '../Button'
@@ -11,14 +12,21 @@ import {SubmenuTree} from './SubmenuTree'
 export const Bin = () => {
   const {store, deleteService, treeService} = useState()
   const {openFile} = useOpen()
+  const showConfirmDialog = useConfirmDialog()
 
   const hasDeletedFiles = () =>
     store.files.some((f) => f.deleted) || store.canvases.some((f) => f.deleted)
 
   const onEmptyBin = async () => {
-    const result = await deleteService.emptyBin()
-    if (result.navigateTo) openFile(result.navigateTo)
-    treeService.updateAll()
+    showConfirmDialog({
+      title: 'Empty bin',
+      content: 'Are you sure you want to permanently delete all items in the bin?',
+      onConfirm: async () => {
+        const result = await deleteService.emptyBin()
+        if (result.navigateTo) openFile(result.navigateTo)
+        treeService.updateAll()
+      },
+    })
   }
 
   return (

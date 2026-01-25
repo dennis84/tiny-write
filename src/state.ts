@@ -1,4 +1,5 @@
 import {createContext, useContext} from 'solid-js'
+import * as v from 'valibot'
 import type {Ctrl} from './services'
 import {FileService} from './services/FileService'
 import {
@@ -11,6 +12,7 @@ import {
   type CanvasLinkElement,
   type CanvasVideoElement,
   type Config,
+  ConfigSchema,
   ElementType,
   type File,
   type State,
@@ -56,20 +58,7 @@ export const StateContext = createContext<Ctrl>({} as Ctrl)
 export const useState = () => useContext(StateContext)
 
 export const createConfig = (config: Partial<Config> = {}): Config => ({
-  fontSize: 14,
-  contentWidth: 600,
-  alwaysOnTop: false,
-  typewriterMode: false,
-  spellcheck: true,
-  theme: {},
-  prettier: {
-    printWidth: 80,
-    tabWidth: 2,
-    useTabs: false,
-    semi: false,
-    singleQuote: true,
-    bracketSpacing: false,
-  },
+  ...v.getFallbacks(ConfigSchema),
   ...config,
 })
 
