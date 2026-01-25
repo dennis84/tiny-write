@@ -73,8 +73,6 @@ export class EditorService {
       const dispatchTransaction = async (tr: Transaction) => {
         if (!editorView) return
         if (editorView?.isDestroyed) return
-        // selection is deleted after dragstart
-        if (editorView?.dragging) return
 
         const newState = editorView.state.apply(tr)
         try {

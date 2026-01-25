@@ -328,7 +328,10 @@ export const BlockTooltip = (props: Props) => {
 
   createEffect(() => {
     const result = props.selectedBlock
-    if (!result) return
+    if (!result) {
+      closeTooltip()
+      return
+    }
     showTooltip({anchor: result.dragHandle})
   })
 

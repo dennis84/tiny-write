@@ -134,8 +134,9 @@ export class DB {
     return (await dbPromise).put('config', DB.unwrap(config), 'main')
   }
 
-  static async getConfig() {
+  static async getConfig(): Promise<Config | undefined> {
     const config = (await (await dbPromise).get('config', 'main')) as any
+    if (!config) return
     return v.parse(ConfigSchema, config)
   }
 
