@@ -283,9 +283,9 @@ const DarkModeToggle = () => {
 const AssistantButton = () => {
   const {store, menuService} = useState()
 
-  const onAssistantClick = () => {
+  const onAssistantClick = async () => {
     if (!store.ai?.copilot?.user) menuService.show(MenuId.AI_CONFIG)
-    else menuService.toggleAssistant()
+    else await menuService.toggleAssistant()
   }
 
   return (
@@ -373,11 +373,11 @@ export const ChatNavbar = () => {
   const {menuService, threadService} = useState()
   const {open} = useOpen()
 
-  const onExpandClick = () => {
+  const onExpandClick = async () => {
     // Get current thread before resetting in state
     const currentThread = threadService.currentThread
     // Resets the threadId in state
-    menuService.toggleAssistant()
+    await menuService.toggleAssistant()
 
     if (currentThread?.lastModified) {
       open({threadId: currentThread.id})

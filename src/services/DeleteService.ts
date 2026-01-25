@@ -71,7 +71,7 @@ export class DeleteService {
     this.treeService.descendants((n) => proms.push(this.deleteNode(n, forever)), node.id)
     await Promise.all(proms)
 
-    this.treeService.remove(node.id)
+    await this.treeService.remove(node.id)
 
     return {navigateTo}
   }

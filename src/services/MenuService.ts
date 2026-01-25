@@ -53,9 +53,9 @@ export class MenuService {
     this.assistantSignal[1](true)
   }
 
-  toggleAssistant() {
+  async toggleAssistant() {
     const oldStatus = this.assistant()
-    if (oldStatus) this.appService.setLocation({threadId: undefined})
+    if (oldStatus) await this.appService.setLocation({threadId: undefined})
     this.assistantSignal[1](!oldStatus)
   }
 
