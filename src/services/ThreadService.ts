@@ -80,6 +80,7 @@ export class ThreadService {
 
   getThreads(term?: string): [Thread, string | undefined][] {
     // List of tuples with date label on beginning of a new group
+    const pinned: [Thread, string | undefined][] = []
     const result: [Thread, string | undefined][] = []
     let currentYearMonth: string | undefined
 
@@ -92,7 +93,10 @@ export class ThreadService {
         if (!title.includes(searchTerm)) continue
       }
 
-      if (isToday(thread.lastModified)) {
+      if (thread.pinned) {
+        if (pinned.length === 0) pinned.push([thread, 'Pinned'])
+        else pinned.push([thread, undefined])
+      } else if (isToday(thread.lastModified)) {
         if (!result.length) result.push([thread, 'Today'])
         else result.push([thread, undefined])
       } else {
@@ -106,7 +110,7 @@ export class ThreadService {
       }
     }
 
-    return result
+    return [...pinned, ...result]
   }
 
   newThread(): Thread {
@@ -201,12 +205,23 @@ export class ThreadService {
     await this.saveThread()
   }
 
-  async updateTitle(title: string, currentThread = this.currentThread) {
-    if (!currentThread) return
-    const index = this.store.threads.indexOf(currentThread)
-    info(`Set title to current thread (title=${title})`)
+  async updateTitle(threadId: string, title: string) {
+    const index = this.store.threads.findIndex((t) => t.id === threadId)
+    if (index === -1) return
+
+    info(`Set title to thread (title=${title})`)
     this.setState('threads', index, 'title', title)
-    await this.saveThread()
+    await this.saveThread(this.store.threads[index])
+  }
+
+  async togglePin(threadId: string) {
+    const index = this.store.threads.findIndex((t) => t.id === threadId)
+    if (index === -1) return
+
+    const old = this.store.threads[index].pinned ?? false
+    info(`Set pin to thread (id=${threadId}, pinned=${!old})`)
+    this.setState('threads', index, 'pinned', !old)
+    await this.saveThread(this.store.threads[index])
   }
 
   async saveThread(thread = this.currentThread) {

@@ -81,6 +81,8 @@ import MdiTableRowRemove from '~icons/mdi/table-row-remove'
 import MingcuteAiLine from '~icons/mingcute/ai-line'
 import OcticonCopilot16 from '~icons/octicon/copilot-16'
 import OcticonCopilotError16 from '~icons/octicon/copilot-error-16'
+import PhPushPinBold from '~icons/ph/push-pin-bold'
+import PhPushPinSlashBold from '~icons/ph/push-pin-slash-bold'
 import PixelarticonsFloatCenter from '~icons/pixelarticons/float-center'
 import groovy from '~icons/simple-icons/apachegroovy'
 import clojure from '~icons/simple-icons/clojure'
@@ -623,6 +625,18 @@ export const IconLightMode = () => (
 export const IconQuestion = () => (
   <SvgIcon>
     <MaterialSymbolsQuestionMark />
+  </SvgIcon>
+)
+
+export const IconPin = () => (
+  <SvgIcon>
+    <PhPushPinBold />
+  </SvgIcon>
+)
+
+export const IconUnpin = () => (
+  <SvgIcon>
+    <PhPushPinSlashBold />
   </SvgIcon>
 )
 

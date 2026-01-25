@@ -226,7 +226,7 @@ test('updateTitle', async () => {
   const copilotService = mock<CopilotService>()
   const service = new ThreadService(store, setState, copilotService)
 
-  await service.updateTitle('Test')
+  await service.updateTitle('1', 'Test')
 
   expect(store.threads[0].title).toBe('Test')
 })

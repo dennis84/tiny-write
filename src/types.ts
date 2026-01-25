@@ -242,6 +242,7 @@ export interface Thread {
   lastModified?: Date
   messages: Message[]
   path?: Map<string | undefined, string>
+  pinned?: boolean
 }
 
 export interface State {

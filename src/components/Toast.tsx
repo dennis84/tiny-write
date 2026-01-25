@@ -26,7 +26,7 @@ const ToastBubble = styled('div')`
   font-family: var(--menu-font-family);
   font-size: var(--menu-font-size);
   line-height: 1.4;
-  z-index: var(--z-index-tooltip);
+  z-index: var(--z-index-dialog);
   box-shadow: 0 12px 24px 0 rgba(0, 0, 0, 0.24);
   padding: 6px 8px;
   display: flex;

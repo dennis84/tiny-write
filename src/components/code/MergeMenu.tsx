@@ -8,7 +8,7 @@ import {IconCheck, IconClose} from '../Icon'
 
 const MergeMenuContainer = styled('div')`
   position: fixed;
-  z-index: var(--z-index-tooltip);
+  z-index: var(--z-index-dialog);
   pointer-events: none;
   top: 0;
   left: 0;

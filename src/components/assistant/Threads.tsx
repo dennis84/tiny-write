@@ -1,3 +1,4 @@
+import {formatDistance} from 'date-fns'
 import {createSignal, For, onMount, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {useConfirmDialog} from '@/hooks/use-confirm-dialog'
@@ -7,7 +8,8 @@ import {useState} from '@/state'
 import type {Thread} from '@/types'
 import {Button, ButtonGroup} from '../Button'
 import {DialogFooter} from '../dialog/Style'
-import {IconAdd, IconDelete, IconEdit, IconHistory, IconSearch} from '../Icon'
+import {TooltipHelp} from '../dialog/TooltipHelp'
+import {IconAdd, IconDelete, IconEdit, IconHistory, IconPin, IconSearch, IconUnpin} from '../Icon'
 
 const ThreadItemButton = styled('span')`
   justify-self: flex-end;
@@ -41,6 +43,7 @@ const Content = styled('div')`
 `
 
 export const Label = styled('div')`
+  margin-top: 10px;
   padding: 2px 6px;
   font-size: var(--menu-font-size);
   text-transform: uppercase;
@@ -53,7 +56,7 @@ const ThreadItem = styled('div')`
   align-items: center;
   padding: 2px 6px;
   margin: 2px 0;
-  height: 40px;
+  height: 32px;
   cursor: var(--cursor-pointer);
   border-radius: var(--border-radius-small);
   .action {
@@ -68,6 +71,9 @@ const ThreadItem = styled('div')`
     .action {
       display: block;
     }
+    .last-modified {
+      display: none;
+    }
   }
 `
 
@@ -76,6 +82,12 @@ const ThreadTitle = styled('div')`
   text-overflow: ellipsis;
   overflow: hidden;
   width: calc(100% - 80px);
+`
+
+const LastModified = styled('div')`
+  justify-self: flex-end;
+  margin-left: auto;
+  color: var(--foreground-50);
 `
 
 const SearchRow = styled('div')``
@@ -172,9 +184,14 @@ export const Threads = (props: Props) => {
       value: thread.title ?? '',
       onEnter: async (value: string) => {
         const title = value.trim() || undefined
-        if (title) await threadService.updateTitle(title, thread)
+        if (title) await threadService.updateTitle(thread.id, title)
       },
     })
+  }
+
+  const onPin = async (e: MouseEvent, thread: Thread) => {
+    e.stopPropagation()
+    await threadService.togglePin(thread.id)
   }
 
   const ThreadsDialog = () => {
@@ -207,19 +224,38 @@ export const Threads = (props: Props) => {
                   </Show>
                   <ThreadItem onClick={() => onSelect(thread)} data-testid="thread_item">
                     <ThreadTitle>{thread.title ?? 'Untitled'}</ThreadTitle>
+                    <LastModified class="last-modified">
+                      <Show when={thread.lastModified}>
+                        {(lastMod) => <span>{formatDistance(lastMod(), new Date())}</span>}
+                      </Show>
+                    </LastModified>
                     <ButtonGroup class="action">
-                      <ThreadItemButton
-                        onClick={(e) => onDelete(e, thread)}
-                        data-testid="thread_item_delete"
-                      >
-                        <IconDelete />
-                      </ThreadItemButton>
-                      <ThreadItemButton
-                        onClick={(e) => onRename(e, thread)}
-                        data-testid="thread_item_rename"
-                      >
-                        <IconEdit />
-                      </ThreadItemButton>
+                      <TooltipHelp title="Delete thread">
+                        <ThreadItemButton
+                          onClick={(e) => onDelete(e, thread)}
+                          data-testid="thread_item_delete"
+                        >
+                          <IconDelete />
+                        </ThreadItemButton>
+                      </TooltipHelp>
+                      <TooltipHelp title="Rename thread">
+                        <ThreadItemButton
+                          onClick={(e) => onRename(e, thread)}
+                          data-testid="thread_item_rename"
+                        >
+                          <IconEdit />
+                        </ThreadItemButton>
+                      </TooltipHelp>
+                      <TooltipHelp title="Pin/Unpin thread">
+                        <ThreadItemButton
+                          onClick={(e) => onPin(e, thread)}
+                          data-testid="thread_item_pin"
+                        >
+                          <Show when={thread.pinned} fallback={<IconPin />}>
+                            <IconUnpin />
+                          </Show>
+                        </ThreadItemButton>
+                      </TooltipHelp>
                     </ButtonGroup>
                   </ThreadItem>
                 </>
