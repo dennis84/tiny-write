@@ -62,6 +62,7 @@ export interface ChatMessage {
 export interface Model {
   id: string
   name: string
+  vendor: string
   streaming: boolean
 }
 
@@ -143,6 +144,7 @@ export class CopilotService {
       models.push({
         id: item.id,
         name: item.name,
+        vendor: item.vendor,
         streaming: item.capabilities.supports.streaming ?? false,
       })
     }

@@ -1,10 +1,27 @@
-import {createAsync} from '@solidjs/router'
-import {For} from 'solid-js'
+import {createResource, For} from 'solid-js'
+import {styled} from 'solid-styled-components'
 import {useDialog} from '@/hooks/use-dialog'
 import type {Model} from '@/services/CopilotService'
 import {useState} from '@/state'
 import {Button} from '../Button'
 import {TooltipButton} from '../dialog/Style'
+
+const Scroller = styled('div')`
+  max-height: 60vh;
+  overflow-y: auto;
+  position: relative;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+`
+
+const Label = styled('div')`
+  margin-top: 10px;
+  padding: 2px 6px;
+  font-size: var(--menu-font-size);
+  color: var(--foreground-50);
+  font-weight: bold;
+`
 
 interface Props {
   onChange: () => void
@@ -13,21 +30,43 @@ interface Props {
 export const ModelSelect = (props: Props) => {
   const {copilotService} = useState()
 
-  const models = createAsync(() => copilotService.getChatModels())
+  const [models] = createResource(async () => {
+    const groups: Record<string, Model[]> = {}
+
+    const models = await copilotService.getChatModels()
+    if (!models) return groups
+
+    for (const model of models) {
+      if (groups[model.vendor] === undefined) {
+        groups[model.vendor] = [model]
+      } else {
+        groups[model.vendor].push(model)
+      }
+    }
+
+    return groups
+  })
 
   const Tooltip = () => (
-    <>
-      <For each={models()}>
-        {(m) => (
-          <TooltipButton
-            onClick={() => onSelect(m)}
-            class={copilotService.chatModel.id === m.id ? 'selected' : undefined}
-          >
-            {m.name}
-          </TooltipButton>
+    <Scroller>
+      <For each={Object.entries(models() ?? [])}>
+        {([key, models]) => (
+          <>
+            <Label>{key}</Label>
+            <For each={models}>
+              {(model) => (
+                <TooltipButton
+                  onClick={() => onSelect(model)}
+                  class={copilotService.chatModel.id === model.id ? 'selected' : undefined}
+                >
+                  {model.name}
+                </TooltipButton>
+              )}
+            </For>
+          </>
         )}
       </For>
-    </>
+    </Scroller>
   )
 
   const [showTooltip, closeTooltip] = useDialog({

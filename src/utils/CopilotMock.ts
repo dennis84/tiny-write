@@ -134,12 +134,14 @@ export class CopilotMock {
         {
           id: 'gpt-4o',
           name: 'GPT-4o',
+          vendor: 'OpenAI',
           model_picker_enabled: true,
           capabilities: {supports: {streaming: true}},
         },
         {
           id: 'claude-3.5-sonnet',
           name: 'Claude 3.5 Sonnet',
+          vendor: 'Anthropic',
           model_picker_enabled: true,
           capabilities: {supports: {streaming: true}},
         },
