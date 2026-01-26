@@ -88,6 +88,7 @@ const LastModified = styled('div')`
   justify-self: flex-end;
   margin-left: auto;
   color: var(--foreground-50);
+  white-space: nowrap;
 `
 
 const SearchRow = styled('div')``

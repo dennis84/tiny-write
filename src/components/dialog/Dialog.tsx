@@ -1,17 +1,19 @@
 import {arrow, autoUpdate, computePosition, flip, offset, shift, size} from '@floating-ui/dom'
 import {type JSX, onCleanup, onMount, Show} from 'solid-js'
+import {ZIndex} from '@/utils/ZIndex'
 import type {Dialog as DialogType} from '../../services/DialogService'
-import {Backdrop, DialogContainer, DialogLayer, TooltipArrow} from './Style'
+import {DialogContainer, DialogLayer, TooltipArrow} from './Style'
 
 type Props = Omit<DialogType, 'component' | 'state'> & {
   children: JSX.Element
+  index: number
 }
 
 export const Dialog = (props: Props) => {
   let tooltipRef!: HTMLDivElement
   let arrowRef!: HTMLSpanElement
 
-  const onBackdropClick = (e: MouseEvent) => {
+  const onClose = (e: MouseEvent) => {
     e.stopPropagation()
     e.stopImmediatePropagation()
     props.onClose?.()
@@ -19,9 +21,8 @@ export const Dialog = (props: Props) => {
 
   const CloseOnBackgroundClick = () => {
     const listener = (e: MouseEvent) => {
-      e.stopPropagation()
       if (!tooltipRef?.contains(e.target as Node)) {
-        props.onClose?.()
+        onClose(e)
       }
     }
 
@@ -92,24 +93,32 @@ export const Dialog = (props: Props) => {
 
   return (
     <>
-      <Show when={props.backdrop} fallback={<CloseOnBackgroundClick />}>
-        <Backdrop onClick={onBackdropClick} data-testid="tooltip_backdrop" />
-      </Show>
       <Show when={props.anchor}>
+        <CloseOnBackgroundClick />
         <DialogContainer
           ref={tooltipRef}
           id="tooltip"
           data-testid="tooltip"
           class="tooltip"
           delay={props.delay}
+          style={{'z-index': ZIndex.dialog(props.index)}}
         >
           {props.children}
           <TooltipArrow ref={arrowRef} />
         </DialogContainer>
       </Show>
       <Show when={!props.anchor}>
-        <DialogLayer data-testid="dialog_layer">
-          <DialogContainer ref={tooltipRef} data-testid="dialog" delay={props.delay}>
+        <DialogLayer
+          onClick={onClose}
+          style={{'z-index': ZIndex.dialog(props.index)}}
+          data-testid="dialog_layer"
+        >
+          <DialogContainer
+            ref={tooltipRef}
+            delay={props.delay}
+            style={{'z-index': ZIndex.dialog(props.index)}}
+            data-testid="dialog"
+          >
             {props.children}
           </DialogContainer>
         </DialogLayer>

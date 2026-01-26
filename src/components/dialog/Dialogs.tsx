@@ -24,12 +24,13 @@ export const Dialogs = () => {
 
   return (
     <For each={dialogService.dialogs()}>
-      {(dialog) => (
+      {(dialog, i) => (
         <Dialog
           anchor={dialog.anchor}
           onClose={() => dialogService.close(dialog)}
           backdrop={dialog.backdrop}
           delay={dialog.delay}
+          index={i()}
         >
           <Dynamic component={dialog.component} dialog={dialog} />
         </Dialog>

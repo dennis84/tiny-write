@@ -165,7 +165,6 @@ export const ContextMenu = () => {
 
   const [showTooltip, closeTooltip, currentTooltip] = useDialog({
     component: Tooltip,
-    backdrop: true,
     onClose: async () => {
       await canvasService.removeDeadLinks()
     },

@@ -10,7 +10,6 @@ export const DialogLayer = styled('div')`
   justify-content: center;
   align-items: center;
   background: #00000080;
-  z-index: var(--z-index-dialog);
 `
 
 export const DialogContainer = styled('div')`
@@ -21,7 +20,6 @@ export const DialogContainer = styled('div')`
   font-family: var(--menu-font-family);
   font-size: var(--menu-font-size);
   line-height: 1.4;
-  z-index: var(--z-index-dialog);
   box-shadow: 0 12px 24px 0 rgba(0, 0, 0, 0.24);
   padding: 6px 8px;
   display: flex;
@@ -78,13 +76,4 @@ export const TooltipArrow = styled('span')`
   background: var(--tooltip-background);
   position: absolute;
   transform: rotate(45deg);
-`
-
-export const Backdrop = styled('div')`
-  position: fixed;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: var(--z-index-dialog);
 `

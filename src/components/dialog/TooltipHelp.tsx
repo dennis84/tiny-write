@@ -9,7 +9,6 @@ interface Props {
 export const TooltipHelp = (props: Props) => {
   const [showTooltip, closeTooltip] = useDialog({
     component: () => <>{props.title}</>,
-    backdrop: false,
     delay: 300,
   })
 

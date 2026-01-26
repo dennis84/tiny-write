@@ -73,7 +73,6 @@ const CollabButton = () => {
 
   const [showTooltip, closeTooltip] = useDialog({
     component: Tooltip,
-    backdrop: false,
   })
 
   const onOpen = (e: MouseEvent) => {
@@ -151,7 +150,6 @@ const CurrentFileButton = () => {
 
   const [showTooltip, closeTooltip] = useDialog({
     component: Tooltip,
-    backdrop: false,
   })
 
   const focus = () => {

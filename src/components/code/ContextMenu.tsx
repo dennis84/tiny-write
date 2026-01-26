@@ -20,7 +20,6 @@ export const ContextMenu = () => {
 
   const [showTooltip, closeTooltip] = useDialog({
     component: Tooltip,
-    backdrop: true,
   })
 
   const getSelectedText = () => {

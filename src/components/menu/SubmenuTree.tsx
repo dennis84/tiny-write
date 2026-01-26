@@ -624,7 +624,6 @@ export const SubmenuTree = (props: Props) => {
 
   const [showTooltip, closeTooltip, currentTooltip] = useDialog({
     component: Tooltip,
-    backdrop: true,
     onClose: () => setSelected(undefined),
   })
 

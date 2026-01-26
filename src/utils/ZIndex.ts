@@ -5,7 +5,7 @@ export enum IndexType {
   HANDLE = 4,
 }
 
-const MAX = 2147483647
+const MAX = 2147483647 - 100_000
 
 export class ZIndex {
   static MAX = MAX.toString()
@@ -18,5 +18,9 @@ export class ZIndex {
   // Get z-index for an canvas element
   static element(index: number, type: IndexType) {
     return String(index * 10 + type)
+  }
+
+  static dialog(index: number) {
+    return String(MAX - 1 + index)
   }
 }

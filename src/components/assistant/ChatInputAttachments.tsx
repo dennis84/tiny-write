@@ -35,7 +35,6 @@ export const ChatInputAttachments = () => {
 
   const [showTooltip, closeTooltip] = useDialog({
     component: Tooltip,
-    backdrop: true,
   })
 
   const onAttachmentMenu = (e: MouseEvent) => {
