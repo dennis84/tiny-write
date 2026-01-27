@@ -144,18 +144,23 @@ export const AttachmentChip = (props: Props) => {
       </Switch>
       <Show when={props.onDelete}>
         <TooltipAction>
-          <Button onClick={() => props.onDelete?.(props.attachment)}>Remove</Button>
+          <Button onClick={() => onDelete(props.attachment)}>Remove</Button>
         </TooltipAction>
       </Show>
     </>
   )
 
-  const [showTooltip] = useDialog({
+  const [showTooltip, closeTooltip] = useDialog({
     component: Tooltip,
   })
 
   const onOpenTooltip = (e: MouseEvent) => {
     showTooltip({anchor: e.currentTarget as HTMLElement})
+  }
+
+  const onDelete = (attachment: Attachment) => {
+    closeTooltip()
+    props.onDelete?.(attachment)
   }
 
   return (

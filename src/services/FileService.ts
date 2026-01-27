@@ -150,7 +150,7 @@ export class FileService {
     const id = params.id ?? uuidv4()
     const ydoc = params.ydoc ?? Y.encodeStateAsUpdate(FileService.createYdoc(id))
     const versions = params.versions ?? []
-    const codeLang = FileService.getCodeLang(params)
+    const codeLang = FileService.guessCodeLang(params)
 
     return {
       ...params,
@@ -192,15 +192,11 @@ export class FileService {
     return files
   }
 
-  static getCodeLang(file: Partial<File>): string | undefined {
-    let codeLang = file.codeLang
-    const filePath = file.path ?? file.newFile
-    if (!codeLang && filePath) {
-      const ext = filePath.substring(filePath.lastIndexOf('.') + 1)
-      codeLang = findCodeLang(ext)
-    }
-
-    return codeLang
+  static guessCodeLang(file: Partial<File>): string | undefined {
+    const path = file.path ?? file.newFile ?? file.title
+    if (!path) return file.codeLang
+    const ext = path.substring(path.lastIndexOf('.') + 1)
+    return findCodeLang(ext) ?? file.codeLang
   }
 
   async newFile(params: Partial<File> = {}): Promise<File> {
@@ -273,31 +269,31 @@ export class FileService {
     await FileService.saveFile(updatedFile)
   }
 
-  async renameFile(fileId: string, input: string) {
+  async renameFile(fileId: string, input: string): Promise<File | undefined> {
     const file = this.findFileById(fileId)
     if (!file) return
 
     const lastModified = new Date()
     const title = input.trim()
+    const codeLang = FileService.guessCodeLang({...file, title})
 
     if (file.newFile) {
       const dir = await dirname(file.newFile)
       const newFile = `${dir}/${title}`
-      const codeLang = FileService.getCodeLang({newFile}) ?? file.codeLang
       this.updateFile(fileId, {lastModified, newFile, codeLang})
     } else if (file.path) {
       const dir = await dirname(file.path)
       const path = `${dir}/${title}`
       await rename(file.path, path)
-      const codeLang = FileService.getCodeLang({path}) ?? file.codeLang
       this.updateFile(fileId, {lastModified, path, codeLang})
     } else {
-      this.updateFile(fileId, {lastModified, title})
+      this.updateFile(fileId, {lastModified, title, codeLang})
     }
 
     const updatedFile = this.findFileById(fileId)
     if (!updatedFile) return
     await FileService.saveFile(updatedFile)
+    return updatedFile
   }
 
   destroy(id: string) {

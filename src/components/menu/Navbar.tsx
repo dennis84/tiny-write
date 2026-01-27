@@ -172,7 +172,8 @@ const CurrentFileButton = () => {
       showInputLine({
         value: filename ?? '',
         onEnter: async (value: string) => {
-          await fileService.renameFile(file.id, value)
+          const updatedFile = await fileService.renameFile(file.id, value)
+          if (updatedFile?.codeLang) codeService.updateLang(updatedFile, updatedFile.codeLang)
         },
       })
     } else if (canvas) {

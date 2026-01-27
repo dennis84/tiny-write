@@ -47,7 +47,7 @@ export const isLocalFile = (it: any): boolean =>
 export const isCodeFile = (it: any): it is File => {
   if (!it) return false
   if (it.code) return true
-  const codeLang = FileService.getCodeLang(it)
+  const codeLang = FileService.guessCodeLang(it)
   return codeLang !== undefined && codeLang !== 'markdown'
 }
 

@@ -75,7 +75,7 @@ export interface Chunk {
   choices: Choice[]
 }
 
-const fallbackModel: Model = {id: 'gpt-4o', name: 'gpt-4o', streaming: true}
+const fallbackModel: Model = {id: 'gpt-4o', name: 'gpt-4o', vendor: 'OpenAI', streaming: true}
 
 export class CopilotService {
   private streamingSignal = createSignal(false)

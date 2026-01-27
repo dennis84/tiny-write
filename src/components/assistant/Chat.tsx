@@ -127,7 +127,7 @@ export const Chat = (props: Props) => {
   const MessagePair = styled('div')`
     &:last-child {
       min-height: calc(100vh - 220px); /* 50px topnav + 20px margin + 150 bottom padding */
-      margin-bottom: 150px;
+      margin-bottom: 200px;
     }
   `
 
