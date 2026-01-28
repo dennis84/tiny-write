@@ -150,7 +150,7 @@ export class FileService {
     const id = params.id ?? uuidv4()
     const ydoc = params.ydoc ?? Y.encodeStateAsUpdate(FileService.createYdoc(id))
     const versions = params.versions ?? []
-    const codeLang = FileService.guessCodeLang(params)
+    const codeLang = params.codeLang ?? FileService.guessCodeLang(params)
 
     return {
       ...params,
@@ -275,7 +275,7 @@ export class FileService {
 
     const lastModified = new Date()
     const title = input.trim()
-    const codeLang = FileService.guessCodeLang({...file, title})
+    const codeLang = FileService.guessCodeLang({title}) ?? file.codeLang
 
     if (file.newFile) {
       const dir = await dirname(file.newFile)

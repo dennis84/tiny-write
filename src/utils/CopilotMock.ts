@@ -7,6 +7,7 @@ const LOREM_IPSUM =
 const LOREM_IPSUM_WORDS = LOREM_IPSUM.split(' ')
 
 interface Options {
+  endlessText?: boolean
   endlessCode?: boolean
 }
 
@@ -31,7 +32,16 @@ export class CopilotMock {
     const createStream = () =>
       new ReadableStream({
         async start(controller) {
+          let parts = 0
           while (true) {
+            if (!options.endlessText && parts >= 5) {
+              const buffer = encoder.encode('data: [DONE]').buffer
+              controller.enqueue(buffer)
+              controller.close()
+              break
+            }
+
+            parts++
             await pause(2000)
 
             const code = Math.random() > 0.7

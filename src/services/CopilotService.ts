@@ -75,6 +75,12 @@ export interface Chunk {
   choices: Choice[]
 }
 
+interface CompletionsResult {
+  success: boolean
+  interrupted?: boolean
+  error?: string
+}
+
 const fallbackModel: Model = {id: 'gpt-4o', name: 'gpt-4o', vendor: 'OpenAI', streaming: true}
 
 export class CopilotService {
@@ -265,10 +271,8 @@ export class CopilotService {
   async completions(
     messages: ChatMessage[],
     onChunk: (chunk: Chunk) => void,
-    onDone: () => void,
-    onStop: () => void,
     streaming: boolean | undefined = undefined,
-  ): Promise<void> {
+  ): Promise<CompletionsResult> {
     if (isTauri()) {
       return new Promise((resolve) => {
         const model = this.chatModel
@@ -276,13 +280,11 @@ export class CopilotService {
         channel.onmessage = (message: string) => {
           if (message.startsWith('[DONE]')) {
             this.streamingSignal[1](false)
-            onDone()
-            resolve(undefined)
+            resolve({success: true})
           } else if (this.streaming()) {
             onChunk(JSON.parse(message))
           } else {
-            onStop()
-            resolve(undefined)
+            resolve({success: false, interrupted: true})
           }
         }
 
@@ -293,7 +295,8 @@ export class CopilotService {
 
     const model = this.chatModel
     const accessToken = this.store.ai?.copilot?.accessToken
-    if (!accessToken) return
+    if (!accessToken) return {success: false, error: 'No access token'}
+
     const tokenResponse = await this.getApiToken(accessToken)
     const url = this.proxy(`${tokenResponse.endpoints.api}/chat/completions`)
     const body = JSON.stringify(this.createRequest(model, messages, streaming))
@@ -312,35 +315,37 @@ export class CopilotService {
     })
 
     if (data.status >= 300 || !data.body) {
-      const text = await data.text()
-      throw new Error(`Failed to connect to API: ${data.status} ${text}`)
+      const error = await data.text()
+      return {
+        success: false,
+        interrupted: false,
+        error,
+      }
     }
 
     if (streaming ?? model.streaming) {
-      await this.getStreamResponse(data, onDone, onChunk, onStop)
+      return await this.getStreamResponse(data, onChunk)
     } else {
       const json = await data.json()
       onChunk(json)
-      onDone()
+      return {success: true}
     }
   }
 
   async completionsSync(messages: ChatMessage[]): Promise<string | undefined> {
-    return new Promise((resolve) => {
-      let answer = ''
-      return this.completions(
-        messages,
-        (chunk) => {
-          for (const choice of chunk.choices) {
-            const content = choice.delta?.content ?? choice.message?.content ?? ''
-            answer += content
-          }
-        },
-        () => resolve(answer),
-        () => resolve(undefined),
-        false,
-      )
-    })
+    let answer = ''
+    const result = await this.completions(
+      messages,
+      (chunk) => {
+        for (const choice of chunk.choices) {
+          const content = choice.delta?.content ?? choice.message?.content ?? ''
+          answer += content
+        }
+      },
+      false,
+    )
+
+    if (result.success) return answer
   }
 
   stop() {
@@ -357,40 +362,44 @@ export class CopilotService {
 
   private async getStreamResponse(
     data: Response,
-    onDone: () => void,
     onChunk: (chunk: Chunk) => void,
-    onStop: () => void,
-  ) {
+  ): Promise<CompletionsResult> {
+    const result: CompletionsResult = {success: false}
     const reader = data.body?.getReader()
     const decoder = new TextDecoder()
     let buffer = ''
 
-    if (!reader) return
+    if (!reader) return result
 
     const parseLine = (s: string): Chunk | undefined => {
       try {
         const data = s.substring('data: '.length)
-        if (data === '[DONE]') return undefined
+        if (data.startsWith('[DONE]'))
+          return undefined // can end with \n
         else return JSON.parse(data)
       } catch (e) {
         error(`Failed to parse line (s=${s})`, e)
-        throw e
+        return undefined
       }
     }
 
     this.streamingSignal[1](true)
+    let finished = false
 
     const finish = (inLoop = false) => {
+      if (finished) return
+      finished = true
+
       info(`Finishing stream response (inLoop=${inLoop}, streaming=${this.streaming()})`)
       if (inLoop && !this.streaming()) {
-        onStop()
+        result.interrupted = true
       } else {
         this.streamingSignal[1](false)
-        onDone()
+        result.success = true
       }
     }
 
-    while (true) {
+    while (!finished) {
       const {value, done} = await reader.read()
       if (done || !this.streaming()) {
         finish(true)
@@ -404,7 +413,6 @@ export class CopilotService {
         const data = parseLine(lines[i])
         if (!data) {
           finish(true)
-          break
         } else {
           onChunk(data)
         }
@@ -418,6 +426,8 @@ export class CopilotService {
       if (!data) finish()
       else onChunk(data)
     }
+
+    return result
   }
 
   private appVersion(): string {

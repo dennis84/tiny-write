@@ -72,30 +72,26 @@ export const Chat = (props: Props) => {
     threadService.addChunk(messageId, parentId, '')
 
     try {
-      await copilotService.completions(
-        messages,
-        (chunk: Chunk) => {
-          for (const choice of chunk.choices) {
-            const chunk = choice.delta?.content ?? choice.message?.content ?? ''
-            threadService.addChunk(messageId, parentId, chunk)
-          }
-        },
-        async () => {
-          await threadService.saveThread()
+      const result = await copilotService.completions(messages, (chunk: Chunk) => {
+        for (const choice of chunk.choices) {
+          const chunk = choice.delta?.content ?? choice.message?.content ?? ''
+          threadService.addChunk(messageId, parentId, chunk)
+        }
+      })
 
-          if (!currentThread.title) {
-            try {
-              const title = await threadService.generateTitle()
-              if (title) await threadService.updateTitle(currentThread.id, title)
-            } catch {
-              // ignore
-            }
+      if (result.success) {
+        await threadService.saveThread()
+        if (!currentThread.title) {
+          try {
+            const title = await threadService.generateTitle()
+            if (title) await threadService.updateTitle(currentThread.id, title)
+          } catch {
+            // ignore
           }
-        },
-        () => {
-          threadService.interrupt(messageId)
-        },
-      )
+        }
+      } else if (result.interrupted) {
+        threadService.interrupt(messageId)
+      }
     } catch (error: any) {
       toastService.open({message: error?.message ?? error, action: 'Close'})
     }

@@ -65,7 +65,7 @@ export const ChatInput = (props: Props) => {
     const view = editorView()
     if (!view) return
 
-    const content = serialize(view.state)
+    const content = serialize(view.state).trim()
     if (!content) return
 
     const tr = view.state.tr
