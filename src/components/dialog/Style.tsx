@@ -12,7 +12,13 @@ export const DialogLayer = styled('div')`
   background: #00000080;
 `
 
-export const DialogContainer = styled('div')`
+interface DialogContainerProps {
+  direction?: 'row' | 'column'
+  gap?: number
+  delay?: number
+}
+
+export const DialogContainer = styled('div')<DialogContainerProps>`
   position: absolute;
   width: max-content;
   background: var(--tooltip-background);
@@ -22,13 +28,13 @@ export const DialogContainer = styled('div')`
   line-height: 1.4;
   box-shadow: 0 12px 24px 0 rgba(0, 0, 0, 0.24);
   max-height: 100vh;
-  padding: 6px 8px;
+  padding: 10px;
   display: flex;
   opacity: 0;
-  flex-direction: ${(p: any) => `${p.direction ?? 'column'}`};
-  gap: ${(p: any) => `${p.gap ?? 0}px`};
+  flex-direction: ${(p) => `${p.direction ?? 'column'}`};
+  gap: ${(p) => `${p.gap ?? 0}px`};
   animation: fadeIn 0.3s forwards;
-  animation-delay: ${(p: any) => `${p.delay ?? 0}ms`};
+  animation-delay: ${(p) => `${p.delay ?? 0}ms`};
   &::-webkit-scrollbar {
     display: none;
   }

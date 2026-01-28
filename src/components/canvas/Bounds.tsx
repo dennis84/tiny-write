@@ -29,9 +29,9 @@ interface CornerProps extends BoundsProps {
 const BORDER_SIZE = 30
 const BORDER_SIZE_2 = BORDER_SIZE * 2
 
-const Border = styled('rect')`
+const Border = styled('rect')<{vert: boolean}>`
   fill: transparent;
-  cursor: ${(props: any) => (props.vert ? 'ns-resize' : 'ew-resize')};
+  cursor: ${(p) => (p.vert ? 'ns-resize' : 'ew-resize')};
   touch-action: none;
 `
 

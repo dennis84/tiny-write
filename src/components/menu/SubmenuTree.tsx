@@ -63,7 +63,7 @@ const Ghost = styled('div')`
   overflow: hidden;
 `
 
-const DropLine = styled('div')`
+const DropLine = styled('div')<{level: number}>`
   position: absolute;
   height: 4px;
   border-radius: 4px;
@@ -71,38 +71,35 @@ const DropLine = styled('div')`
   background: var(--primary-background-50);
   pointer-events: none;
   z-index: 1;
-  margin-left: ${(props: any) => 20 * props.level}px;
+  margin-left: ${(p) => 20 * p.level}px;
 `
 
+interface ItemProps {
+  deleted?: boolean
+  selected?: boolean
+  active?: boolean
+}
+
 // biome-ignore format: ternary breaks ugly
-const TreeLinkItem = styled("div")`
+const TreeLinkItem = styled('div')<ItemProps>`
   ${itemCss}
   user-select: none;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   align-items: start;
-  ${(props: any) =>
-    props.deleted
-      ? `
+  ${(p) => p.deleted ? `
     opacity: 0.3;
     pointer-events: none;
-  `
-      : ""}
-  ${(props: any) =>
-    props.active
-      ? `
+  ` : ''}
+  ${(p) => p.active ? `
     font-weight: bold;
     font-family: var(--menu-font-family-bold);
     color: var(--primary-background);
-  `
-      : ""}
-  ${(props: any) =>
-    props.selected
-      ? `
+  ` : ''}
+  ${(p) => p.selected ? `
     background: var(--primary-background-10);
     border-radius: var(--border-radius-small);
-  `
-      : ""}
+  ` : ''}
   &:hover {
     color: var(--primary-background);
     background: var(--foreground-10);
@@ -113,8 +110,14 @@ const TreeLinkItem = styled("div")`
   }
 `
 
+interface CornerProps {
+  highlight?: boolean
+  level?: number
+  expandable?: boolean
+}
+
 // biome-ignore format: ternary breaks ugly
-const TreeLinkCorner = styled("i")`
+const TreeLinkCorner = styled('i')<CornerProps>`
   margin-right: 10px;
   cursor: var(--cursor-pointer);
   font-family: monospace;
@@ -125,30 +128,32 @@ const TreeLinkCorner = styled("i")`
   justify-content: center;
   color: var(--foreground-50);
   height: ${ITEM_HEIGHT};
-  ${(props: any) => (props.highlight ? `color: var(--primary-background);` : "")}
-  ${(props: any) => (props.level ? `margin-left: ${String(20 * props.level)}px;` : "")}
-  ${(props: any) =>
-    props.expandable
-      ? `
+  ${(p) => (p.highlight ? `color: var(--primary-background);` : '')}
+  ${(p) => (p.level ? `margin-left: ${String(20 * p.level)}px;` : '')}
+  ${(p) => p.expandable ? `
     &:hover {
       background: var(--foreground-10);
       border-radius: var(--border-radius-small);
     }
-  `
-      : ""}
+  ` : ''}
 `
 
-const TreeLinkTitle = styled('span')`
+interface TitleProps {
+  highlight?: boolean
+  grabbing?: boolean
+}
+
+const TreeLinkTitle = styled('span')<TitleProps>`
   cursor: var(--cursor-pointer);
   width: 100%;
   touch-action: none;
   word-break: break-all;
-  ${(props: any) => (props.highlight ? `color: var(--primary-background-80);` : '')}
-  ${(props: any) => (props.grabbing ? 'cursor: var(--cursor-grabbed);' : '')}
+  ${(p) => (p.highlight ? `color: var(--primary-background-80);` : '')}
+  ${(p) => (p.grabbing ? 'cursor: var(--cursor-grabbed);' : '')}
 `
 
 // biome-ignore format: ternary breaks ugly
-const LinkMenu = styled("span")`
+const LinkMenu = styled("span")<{selected?: boolean}>`
   justify-self: flex-end;
   display: flex;
   align-items: center;
@@ -160,13 +165,10 @@ const LinkMenu = styled("span")`
   opacity: 0;
   border-radius: var(--border-radius);
   color: var(--foreground);
-  ${(props: any) =>
-    props.selected
-      ? `
+  ${(p) => p.selected ? `
     opacity: 1;
     background: var(--foreground-10);
-  `
-      : ""}
+  ` : ''}
   &:hover {
     background: var(--foreground-10);
     .icon {

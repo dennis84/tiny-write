@@ -76,19 +76,28 @@ const ButtonLinkEl = styled('button')`
   }
 `
 
-export const ButtonGroup = styled('div')`
+interface ButtonGroupProps {
+  justify?: 'end' | 'start'
+}
+
+// biome-ignore format: ternary breaks ugly
+export const ButtonGroup = styled('div')<ButtonGroupProps>`
   display: flex;
   gap: 5px;
+  justify-content: ${(p) => p.justify ? {
+    start: 'flex-start',
+    end: 'flex-end',
+  }[p.justify] : 'flex-start'};
 `
 
-export const IconButtonEl = styled('button')`
+export const IconButtonEl = styled('button')<ButtonAttrs>`
   ${Common}
   ${RippleEffect}
   width: 40px;
   padding: 0;
   background: none;
   color: var(--foreground);
-  ${(props: any) => (props.active ? `background: var(--background);` : '')}
+  ${(p) => (p.active ? `background: var(--background);` : '')}
   &:hover {
     background: var(--foreground-10);
     color: var(--primary-background);

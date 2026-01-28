@@ -8,16 +8,14 @@ import {IndexType, ZIndex} from '@/utils/ZIndex'
 import {Bounds} from './Bounds'
 import {LinkHandles} from './LinkHandles'
 
-const CanvasVideo = styled('video')(
-  (props: any) => `
-    position: absolute;
-    border-radius: var(--border-radius);
-    user-select: none;
-    pointer-events: none;
-    -webkit-user-select: none;
-    ${props.selected ? `box-shadow: 0 0 0 5px var(--border);` : ''}
-  `,
-)
+const CanvasVideo = styled('video')<{selected?: boolean}>`
+  position: absolute;
+  border-radius: var(--border-radius);
+  user-select: none;
+  pointer-events: none;
+  -webkit-user-select: none;
+  ${(p) => (p.selected ? `box-shadow: 0 0 0 5px var(--border);` : '')}
+`
 
 export const Video = ({element, index}: {element: CanvasVideoElement; index: number}) => {
   const {appService, canvasService} = useState()

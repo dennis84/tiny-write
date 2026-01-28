@@ -121,6 +121,8 @@ export const Chat = (props: Props) => {
   }
 
   const MessagePair = styled('div')`
+    display: flex;
+    flex-direction: column;
     &:last-child {
       min-height: calc(100vh - 220px); /* 50px topnav + 20px margin + 150 bottom padding */
       margin-bottom: 200px;

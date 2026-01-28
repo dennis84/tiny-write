@@ -4,7 +4,7 @@ import {IconCheckBox} from '../Icon'
 import {itemCss, Keys} from './Style'
 
 // biome-ignore format: ternary breaks ugly
-const LinkEl = styled("button")`
+const LinkEl = styled("button")<{active?: boolean}>`
   ${itemCss}
   background: none;
   border: 0;
@@ -37,13 +37,10 @@ const LinkEl = styled("button")`
     color: var(--foreground-60);
     cursor: not-allowed;
   }
-  ${(props: any) =>
-    props.active
-      ? `
+  ${(p) => p.active ? `
     background: var(--primary-background-20);
     border-radius: var(--border-radius);
-  `
-      : ""}
+  ` : ''}
 `
 
 type ButtonAttrs = JSX.ButtonHTMLAttributes<HTMLButtonElement> & {

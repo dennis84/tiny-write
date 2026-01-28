@@ -23,19 +23,16 @@ const LinkSvg = styled('svg')`
 `
 
 // biome-ignore format: ternary breaks ugly
-const Path = styled("path")`
+const Path = styled('path')<{selected?: boolean}>`
   stroke: transparent;
   stroke-linecap: round;
   cursor: var(--cursor-grab);
   pointer-events: auto;
   touch-action: none;
   fill: none;
-  ${(props: any) =>
-    props.selected
-      ? `
+  ${(p) => p.selected ? `
     stroke: var(--border-30);
-  `
-      : `
+  ` : `
     &:hover {
       stroke: var(--border-20);
     }

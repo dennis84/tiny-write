@@ -324,32 +324,32 @@ const proseMirror = (props: Props) => `
   }
 `
 
-export const CanvasEditor = styled('div')`
+export const CanvasEditor = styled('div')<Props>`
   width: 100%;
   min-height: 100%;
   height: fit-content;
   background: var(--background);
   padding: 30px 40px;
-  ${(props: any) => proseMirror(props)}
+  ${(p) => proseMirror(p)}
 `
 
-export const FullEditor = styled('div')`
+export const FullEditor = styled('div')<Props>`
   min-height: calc(100% - 100px);
   height: fit-content;
-  width: ${(props: any) => props.config.contentWidth}px;
+  width: ${(p) => p.config.contentWidth}px;
   max-width: 100%;
   padding: 0 50px; /* leave space for handles if width is 100% */
-  ${(props: any) => proseMirror(props)}
+  ${(p) => proseMirror(p)}
   .ProseMirror {
     margin-top: 50px;
     padding-bottom: 77vh;
   }
 `
 
-export const ChatInputEditor = styled('div')`
+export const ChatInputEditor = styled('div')<Props>`
   width: 100%;
   height: fit-content;
-  ${(props: any) => proseMirror(props)}
+  ${(p) => proseMirror(p)}
   .ProseMirror {
     .cm-container {
       background: var(--background-20);

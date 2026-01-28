@@ -22,7 +22,7 @@ const CurrentPath = styled('div')`
   }
 `
 
-const Link = styled('a')`
+const Link = styled('a')<{isDirectory: boolean}>`
   display: flex;
   align-items: center;
   padding: 3px;
@@ -31,7 +31,7 @@ const Link = styled('a')`
   cursor: var(--cursor-pointer);
   color: var(--foreground-60);
   line-height: 1.5;
-  ${(props: any) => (props.isDirectory ? `font-weight: bold;` : '')}
+  ${(p) => (p.isDirectory ? `font-weight: bold;` : '')}
   .icon {
     margin-right: 5px;
   }

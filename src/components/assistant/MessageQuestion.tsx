@@ -94,7 +94,7 @@ export const MessageQuestion = (props: Props) => {
             </Show>
           </QuestionBubble>
           <Attachments />
-          <ButtonGroup>
+          <ButtonGroup justify="end">
             <Pagination
               id={props.message.id}
               parentId={props.message.parentId}

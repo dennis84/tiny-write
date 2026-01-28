@@ -14,27 +14,27 @@ import {IndexType, ZIndex} from '@/utils/ZIndex'
 import {Bounds} from './Bounds'
 import {LinkHandles} from './LinkHandles'
 
+interface EditorScrollProps {
+  deleted?: boolean
+  selected?: boolean
+  active?: boolean
+}
+
 // biome-ignore format: ternary breaks ugly
-const EditorScroll = styled(Scroll)(
-  (props: any) => `
-    position: absolute;
-    border-radius: var(--border-radius);
-    user-select: none;
-    pointer-events: none;
-    box-shadow: 0 0 0 2px var(--border);
-    ${props.selected ? `
-      box-shadow: 0 0 0 5px var(--border);
-    ` : ''}
-    ${props.active ? `
-      box-shadow: 0 0 0 5px var(--primary-background);
-      user-select: auto;
-      pointer-events: auto;
-    ` : ''}
-    ${props.deleted ? `
-      opacity: 0.4;
-    ` : ''}
-  `,
-)
+const EditorScroll = styled(Scroll)<EditorScrollProps>`
+  position: absolute;
+  border-radius: var(--border-radius);
+  user-select: none;
+  pointer-events: none;
+  box-shadow: 0 0 0 2px var(--border);
+  ${(p) => p.selected ? `box-shadow: 0 0 0 5px var(--border);` : ''}
+  ${(p) => p.active ? `
+    box-shadow: 0 0 0 5px var(--primary-background);
+    user-select: auto;
+    pointer-events: auto;
+  ` : ''}
+  ${(p) => p.deleted ? `opacity: 0.4;` : ''}
+`
 
 export const Editor = ({element, index}: {element: CanvasEditorElement; index: number}) => {
   const {store, canvasService, collabService, fileService, editorService} = useState()

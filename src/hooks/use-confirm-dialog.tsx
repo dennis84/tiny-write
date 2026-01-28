@@ -33,7 +33,7 @@ export const useConfirmDialog = () => {
         <DialogTitle>{p.dialog.state?.title}</DialogTitle>
         <p>{p.dialog.state?.content}</p>
         <DialogFooter>
-          <ButtonGroup>
+          <ButtonGroup justify="end">
             <ButtonPrimary onClick={onConfirm} data-testid="confirm">
               Confirm
             </ButtonPrimary>

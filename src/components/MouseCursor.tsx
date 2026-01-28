@@ -15,10 +15,17 @@ const CursorContainer = styled('div')`
   height: 1px;
 `
 
-const Cursor = styled('div')`
+interface CursorProps {
+  x: number
+  y: number
+  background: string
+  foreground: string
+}
+
+const Cursor = styled('div')<CursorProps>`
   position: absolute;
-  top: ${(props: any) => props.y}px;
-  left: ${(props: any) => props.x}px;
+  top: ${(p) => p.y}px;
+  left: ${(p) => p.x}px;
   height: 10px;
   margin-left: -15px;
   z-index: 20;
@@ -34,8 +41,8 @@ const Cursor = styled('div')`
     line-height: 0;
     white-space: nowrap;
     padding: 4px;
-    color: ${(props: any) => props.foreground};
-    background: ${(props: any) => props.background};
+    color: ${(p) => p.foreground};
+    background: ${(p) => p.background};
     font-family: var(--menu-font-family);
     font-size: var(--menu-font-size);
     border-radius: var(--border-radius);
@@ -49,7 +56,7 @@ const Cursor = styled('div')`
     height: 0;
     border-left: 10px solid transparent;
     border-right: 10px solid transparent;
-    border-bottom: 10px solid ${(props: any) => props.background};
+    border-bottom: 10px solid ${(p) => p.background};
   }
   &::before {
     transform: rotate(148deg);
