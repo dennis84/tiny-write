@@ -89,14 +89,27 @@ export const Keymap = () => {
     currentFile?.codeEditorView?.focus()
   }
 
+  const hasEditorFocus = () => {
+    const currentFile = fileService.currentFile
+    return currentFile?.editorView?.hasFocus() || currentFile?.codeEditorView?.hasFocus
+  }
+
   const onUndo = () => {
-    collabService.undoManager?.undo()
-    return true
+    if (hasEditorFocus()) {
+      collabService.undoManager?.undo()
+      return true
+    }
+
+    return false
   }
 
   const onRedo = () => {
-    collabService.undoManager?.redo()
-    return true
+    if (hasEditorFocus()) {
+      collabService.undoManager?.redo()
+      return true
+    }
+
+    return false
   }
 
   const onPrint = () => {

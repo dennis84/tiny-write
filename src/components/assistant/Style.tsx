@@ -2,7 +2,7 @@ import {styled} from 'solid-styled-components'
 import {isClipped} from '../code/Style'
 import {standardMarkdown} from '../editor/Style'
 
-export const chatBubble = `
+export const ChatBubble = styled('div')`
   position: relative;
   border-radius: var(--border-radius);
   font-size: var(--font-size);

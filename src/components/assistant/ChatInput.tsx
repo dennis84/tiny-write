@@ -112,6 +112,12 @@ export const ChatInput = (props: Props) => {
     setEmpty(ProseMirrorService.isEmpty(editorView()?.state) ?? true)
   }
 
+  const onContainerClick = (e: MouseEvent) => {
+    // Prevent cursor jump when clicking in CM (PM has not the focus)
+    if (editorView()?.dom.contains(e.target as Element)) return
+    editorView()?.focus()
+  }
+
   onMount(() => {
     const scrollContentRef = props.dropArea?.()
     if (!scrollContentRef) return
@@ -140,7 +146,7 @@ export const ChatInput = (props: Props) => {
   return (
     <ChatInputContainer
       style={store.location?.page !== Page.Assistant ? {'max-width': '100%'} : {}}
-      onClick={() => editorView()?.focus()}
+      onClick={onContainerClick}
     >
       <ChatInputBorder ref={props.ref} focused={focused()}>
         <ChatInputTopRow>

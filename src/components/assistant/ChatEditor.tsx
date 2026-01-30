@@ -1,5 +1,6 @@
 import {baseKeymap} from 'prosemirror-commands'
 import {buildKeymap} from 'prosemirror-example-setup'
+import {history} from 'prosemirror-history'
 import {inputRules} from 'prosemirror-inputrules'
 import {keymap} from 'prosemirror-keymap'
 import {EditorState} from 'prosemirror-state'
@@ -18,6 +19,7 @@ import {placeholder} from '@/prosemirror/placeholder'
 import {schema} from '@/prosemirror/schema'
 import {createTablePlugins, tableKeymap} from '@/prosemirror/table'
 import {useState} from '@/state'
+import {Page} from '@/types'
 import {ChatInputEditor} from '../editor/Style'
 
 interface Props {
@@ -31,7 +33,7 @@ interface Props {
 export const ChatEditor = (props: Props) => {
   let chatInputRef!: HTMLDivElement
 
-  const {proseMirrorService} = useState()
+  const {store, proseMirrorService} = useState()
   const [editorView, setEditorView] = createSignal<EditorView>()
 
   const onSubmit = () => {
@@ -45,12 +47,13 @@ export const ChatEditor = (props: Props) => {
       // keymap
       onEnterDoubleNewline(() => onSubmit()),
       wordCompletionKeymap,
-      keymap(buildKeymap(schema)),
       keymap(baseKeymap),
+      keymap(buildKeymap(schema)),
       codeBlockKeymap,
       codeKeymap,
       tableKeymap,
       // plugins
+      history(),
       placeholder('Ask Copilot ...'),
       createMarkdownPlugins(schema),
       createCodeBlockPlugin(schema),
@@ -104,5 +107,13 @@ export const ChatEditor = (props: Props) => {
     setTimeout(() => view.focus(), 50)
   })
 
-  return <ChatInputEditor role="none" ref={chatInputRef} data-testid="chat_input"></ChatInputEditor>
+  return (
+    <ChatInputEditor
+      config={store.config}
+      page={Page.Assistant}
+      role="none"
+      ref={chatInputRef}
+      data-testid="chat_input"
+    ></ChatInputEditor>
+  )
 }

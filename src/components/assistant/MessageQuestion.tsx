@@ -10,7 +10,7 @@ import {AttachmentChip} from './AttachmentChip'
 import {MessageInput} from './MessageInput'
 import {MessageMarkdown} from './MessageMarkdown'
 import {Pagination} from './Pagination'
-import {chatBubble} from './Style'
+import {ChatBubble} from './Style'
 
 const EditBubble = styled('div')`
   flex-basis: 100%;
@@ -22,8 +22,7 @@ const QuestionContainer = styled('div')`
   scroll-margin: 20px; /* margin when scrollIntoView */
 `
 
-const QuestionBubble = styled('div')`
-  ${chatBubble}
+const QuestionBubble = styled(ChatBubble)`
   padding: 10px 20px;
   background: var(--foreground-10);
   white-space: pre-wrap;

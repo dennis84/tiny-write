@@ -1,6 +1,5 @@
 import type {Token} from 'markdown-it'
 import {Show} from 'solid-js'
-import {styled} from 'solid-styled-components'
 import {copy} from '@/remote/clipboard'
 import {useState} from '@/state'
 import type {TreeItem} from '@/tree'
@@ -10,11 +9,7 @@ import {TooltipHelp} from '../dialog/TooltipHelp'
 import {IconContentCopy, IconHand, IconRefresh, Spinner} from '../Icon'
 import {MessageMarkdown} from './MessageMarkdown'
 import {Pagination} from './Pagination'
-import {chatBubble} from './Style'
-
-const AnswerBubble = styled('div')`
-  ${chatBubble}
-`
+import {ChatBubble} from './Style'
 
 export interface TokenItem {
   id: string
@@ -39,7 +34,7 @@ export const MessageAnswer = (props: Props) => {
   }
 
   return (
-    <AnswerBubble data-testid="answer_bubble">
+    <ChatBubble data-testid="answer_bubble">
       {/* Rerender code blocks if code theme has been changed */}
       <Show when={configService.codeTheme} keyed>
         <MessageMarkdown content={props.message.value.content} />
@@ -72,6 +67,6 @@ export const MessageAnswer = (props: Props) => {
           </ButtonSpan>
         </Show>
       </ButtonGroup>
-    </AnswerBubble>
+    </ChatBubble>
   )
 }
