@@ -44,8 +44,6 @@ export const Editor = () => {
       <Select target={() => scrollRef} />
       <FullEditor
         ref={editorRef}
-        config={store.config}
-        page={store.location?.page}
         spellcheck={store.config.spellcheck}
         data-tauri-drag-region="true"
       />

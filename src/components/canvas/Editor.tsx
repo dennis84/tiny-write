@@ -117,7 +117,7 @@ export const Editor = ({element, index}: {element: CanvasEditorElement; index: n
           'z-index': `${ZIndex.element(index, IndexType.CONTENT)}`,
         }}
       >
-        <CanvasEditor config={store.config} ref={editorRef} data-testid="canvas_editor" />
+        <CanvasEditor ref={editorRef} data-testid="canvas_editor" />
         <BlockHandle
           file={fileService.findFileById(element.id)}
           mouseMoveArea={() => containerRef}

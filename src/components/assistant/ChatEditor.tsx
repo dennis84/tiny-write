@@ -19,7 +19,6 @@ import {placeholder} from '@/prosemirror/placeholder'
 import {schema} from '@/prosemirror/schema'
 import {createTablePlugins, tableKeymap} from '@/prosemirror/table'
 import {useState} from '@/state'
-import {Page} from '@/types'
 import {ChatInputEditor} from '../editor/Style'
 
 interface Props {
@@ -33,7 +32,7 @@ interface Props {
 export const ChatEditor = (props: Props) => {
   let chatInputRef!: HTMLDivElement
 
-  const {store, proseMirrorService} = useState()
+  const {proseMirrorService} = useState()
   const [editorView, setEditorView] = createSignal<EditorView>()
 
   const onSubmit = () => {
@@ -107,13 +106,5 @@ export const ChatEditor = (props: Props) => {
     setTimeout(() => view.focus(), 50)
   })
 
-  return (
-    <ChatInputEditor
-      config={store.config}
-      page={Page.Assistant}
-      role="none"
-      ref={chatInputRef}
-      data-testid="chat_input"
-    ></ChatInputEditor>
-  )
+  return <ChatInputEditor role="none" ref={chatInputRef} data-testid="chat_input"></ChatInputEditor>
 }

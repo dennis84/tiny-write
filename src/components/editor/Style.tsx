@@ -1,13 +1,7 @@
 import {styled} from 'solid-styled-components'
-import {type Config, Page} from '@/types'
 import {codeMirror} from '../code/Style'
 
-interface Props {
-  config: Config
-  page: Page
-}
-
-export const codeBlock = (props: Props) => `
+export const codeBlock = `
   .cm-container {
     position: relative;
     margin: 10px 0;
@@ -21,8 +15,13 @@ export const codeBlock = (props: Props) => `
       box-shadow: 0 0 0 5px var(--selection-border);
     }
     ${codeMirror}
+    container-type: inline-size;
     .cm-editor {
-      flex-direction: ${props.page === Page.Editor && props.config.contentWidth > 1000 ? 'row' : 'column'};
+      flex-direction: column;
+      /* place code editor and mermaid diagram side by side on wide screens */
+      @container (width > 1000px) {
+        flex-direction: row;
+      }
       .cm-scroller {
         padding: 20px 7px;
       }
@@ -182,9 +181,9 @@ export const standardMarkdown = `
   }
 `
 
-const proseMirror = (props: Props) => `
+const proseMirror = `
   .ProseMirror {
-    ${codeBlock(props)}
+    ${codeBlock}
     cursor: var(--cursor-text);
     tab-size: 4;
     word-wrap: break-word;
@@ -324,32 +323,32 @@ const proseMirror = (props: Props) => `
   }
 `
 
-export const CanvasEditor = styled('div')<Props>`
+export const CanvasEditor = styled('div')`
   width: 100%;
   min-height: 100%;
   height: fit-content;
   background: var(--background);
   padding: 30px 40px;
-  ${(p) => proseMirror(p)}
+  ${proseMirror}
 `
 
-export const FullEditor = styled('div')<Props>`
+export const FullEditor = styled('div')`
   min-height: calc(100% - 100px);
   height: fit-content;
-  width: ${(p) => p.config.contentWidth}px;
+  width: var(--content-width);
   max-width: 100%;
   padding: 0 50px; /* leave space for handles if width is 100% */
-  ${(p) => proseMirror(p)}
+  ${proseMirror}
   .ProseMirror {
     margin-top: 50px;
     padding-bottom: 77vh;
   }
 `
 
-export const ChatInputEditor = styled('div')<Props>`
+export const ChatInputEditor = styled('div')`
   width: 100%;
   height: fit-content;
-  ${(p) => proseMirror(p)}
+  ${proseMirror}
   .ProseMirror {
     .cm-container {
       background: var(--background-20);
