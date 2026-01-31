@@ -1,10 +1,10 @@
 import type {Box, Vector} from '@flatten-js/core'
+import {throttle} from '@solid-primitives/scheduled'
 import type {Node, ResolvedPos} from 'prosemirror-model'
 import {cellAround, TableMap} from 'prosemirror-tables'
 import {createEffect, createSignal, onCleanup, onMount, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {useDialog} from '@/hooks/use-dialog'
-import {useState} from '@/state'
 import {EdgeType, type File} from '@/types'
 import {BoxUtil} from '@/utils/BoxUtil'
 import {IconDragIndicator} from '../Icon'
@@ -83,6 +83,7 @@ interface HandleGridProps {
   file?: File
   currentTable: CurrentTable
   currentTableMap: TableMap
+  onActive?: (status: boolean) => void
 }
 
 const HandleGrid = (props: HandleGridProps) => {
@@ -96,6 +97,7 @@ const HandleGrid = (props: HandleGridProps) => {
     setCurrentCell(undefined)
     setHandlePosition(undefined)
     setSelection(undefined)
+    props.onActive?.(false)
   }
 
   const onReset = () => {
@@ -201,6 +203,7 @@ const HandleGrid = (props: HandleGridProps) => {
       element: e.currentTarget as Element,
       direction,
     })
+    props.onActive?.(true)
   }
 
   onMount(() => {
@@ -291,30 +294,45 @@ interface Props {
 }
 
 export const TableControls = (props: Props) => {
-  const {store} = useState()
   const [table, setTable] = createSignal<CurrentTable | undefined>()
+  const [menuActive, setMenuActive] = createSignal(false)
 
-  createEffect(() => {
+  const onMouseMove = throttle((e: MouseEvent) => {
+    if (menuActive()) return
+
     const editorView = props.file?.editorView
     if (!editorView) return
 
-    if (!store.lastTr) return
-    if (!editorView.state.selection.empty) return
+    const mousePos = editorView.posAtCoords({left: e.clientX, top: e.clientY})
+    if (!mousePos) return
+    const resolved = editorView.state.doc.resolve(mousePos.pos)
+    const node = resolved.node(1)
+    const pos = resolved.before(1)
 
-    const pos = editorView.state.selection.$from.before(1)
-    const resolved = editorView.state.doc.resolve(pos + 1)
-    const node = resolved.node()
-    if (node.type.name === 'table') {
+    if (node?.type.name === 'table') {
       setTable({pos, node})
     } else {
       setTable(undefined)
     }
+  }, 500)
+
+  onMount(() => {
+    document.addEventListener('mousemove', onMouseMove, {passive: true})
+
+    onCleanup(() => {
+      document.removeEventListener('mousemove', onMouseMove)
+    })
   })
 
   return (
-    <Show when={table()} keyed>
+    <Show when={table()}>
       {(t) => (
-        <HandleGrid file={props.file} currentTable={t} currentTableMap={TableMap.get(t.node)} />
+        <HandleGrid
+          file={props.file}
+          currentTable={t()}
+          currentTableMap={TableMap.get(t().node)}
+          onActive={(status) => setMenuActive(status)}
+        />
       )}
     </Show>
   )
