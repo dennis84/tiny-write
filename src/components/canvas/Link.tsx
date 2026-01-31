@@ -105,7 +105,7 @@ export const Link = ({element}: {element: CanvasLinkElement}) => {
           }
         }
 
-        const t = VecUtil.fromArray(movement)
+        let t = VecUtil.fromArray(movement)
           .multiply(1 / zoom)
           .add(i)
 
@@ -114,7 +114,7 @@ export const Link = ({element}: {element: CanvasLinkElement}) => {
           return [fromId, fromEdge]
         }
 
-        if (currentCanvas.snapToGrid) VecUtil.snapToGrid(t, 10)
+        if (currentCanvas.snapToGrid) t = VecUtil.snapToGrid(t, 10)
 
         canvasService.drawLink(element.id, fromId, fromEdge, t.x, t.y)
         if (last) {

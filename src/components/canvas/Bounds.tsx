@@ -68,8 +68,8 @@ const resizeElements = (
       .subtract(scalePoint)
       .scale(scale.x, scale.y)
       .add(scalePoint)
-    const box = BoxUtil.fromLowHigh(low, heigh)
-    if (snapToGrid) BoxUtil.snapToGrid(box, 10)
+    let box = BoxUtil.fromLowHigh(low, heigh)
+    if (snapToGrid) box = BoxUtil.snapToGrid(box, 10)
     return [id, box]
   })
 }
@@ -223,8 +223,8 @@ export const Bounds = (props: BoundsProps) => {
       const {zoom} = currentCanvas.camera
 
       selection.elements.forEach(([id, initial]) => {
-        const t = new Vector(mx, my).multiply(1 / zoom).add(VecUtil.fromPoint(initial.low))
-        if (currentCanvas.snapToGrid) VecUtil.snapToGrid(t, 10)
+        let t = new Vector(mx, my).multiply(1 / zoom).add(VecUtil.fromPoint(initial.low))
+        if (currentCanvas.snapToGrid) t = VecUtil.snapToGrid(t, 10)
         const {x, y} = t
 
         void canvasCollabService.updateElementThrottled({id, x, y})
