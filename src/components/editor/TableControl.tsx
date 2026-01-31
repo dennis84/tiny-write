@@ -2,14 +2,13 @@ import type {Box, Vector} from '@flatten-js/core'
 import type {Node, ResolvedPos} from 'prosemirror-model'
 import {cellAround, TableMap} from 'prosemirror-tables'
 import {createEffect, createSignal, onCleanup, onMount, Show} from 'solid-js'
-import {Portal} from 'solid-js/web'
 import {styled} from 'solid-styled-components'
+import {useDialog} from '@/hooks/use-dialog'
 import {useState} from '@/state'
 import {EdgeType, type File} from '@/types'
 import {BoxUtil} from '@/utils/BoxUtil'
-import {ZIndex} from '@/utils/ZIndex'
 import {IconDragIndicator} from '../Icon'
-import {TableTooltip} from './TableTooltip'
+import {TableTooltip, type TableTooltipState} from './TableTooltip'
 
 const Handle = styled('div')`
   position: absolute;
@@ -55,7 +54,7 @@ const Selection = styled('div')`
   box-shadow: 0 0 0 1px var(--primary-background);
   user-select: none;
   pointer-events: none;
-  z-index: ${ZIndex.TABLE_SELECTION};
+  z-index: var(--z-index-above-content);
 `
 
 export interface CurrentTable {
@@ -91,7 +90,6 @@ const HandleGrid = (props: HandleGridProps) => {
   const [activeHandle, setActiveHandle] = createSignal<ActiveHandle>()
   const [handlePosition, setHandlePosition] = createSignal<HandlePosition>()
   const [selection, setSelection] = createSignal<Box>()
-  const {appService} = useState()
 
   const hideHandles = () => {
     if (activeHandle()) return
@@ -222,6 +220,32 @@ const HandleGrid = (props: HandleGridProps) => {
     })
   })
 
+  createEffect(() => {
+    const handle = activeHandle()
+    const cell = currentCell()
+    if (handle && cell) {
+      showTooltip({
+        anchor: handle.element,
+        placement: handle.direction === 'row' ? 'left' : 'top',
+        fallbackPlacements:
+          handle.direction === 'row' ? ['left', 'bottom', 'top'] : ['top', 'left', 'right'],
+        state: {
+          activeHandle: handle,
+          currentCell: cell,
+          currentTableMap: props.currentTableMap,
+          currentTable: props.currentTable,
+        },
+      })
+    } else {
+      closeTooltip()
+    }
+  })
+
+  const [showTooltip, closeTooltip] = useDialog<TableTooltipState>({
+    component: TableTooltip,
+    onClose: () => onReset(),
+  })
+
   return (
     <>
       <Show when={handlePosition()}>
@@ -244,23 +268,6 @@ const HandleGrid = (props: HandleGridProps) => {
               <IconDragIndicator />
             </Handle>
           </>
-        )}
-      </Show>
-      <Show when={activeHandle()}>
-        {(handle) => (
-          <Show when={currentCell()}>
-            {(cell) => (
-              <Portal mount={appService.layoutRef}>
-                <TableTooltip
-                  activeHandle={handle()}
-                  currentCell={cell()}
-                  currentTable={props.currentTable}
-                  currentTableMap={props.currentTableMap}
-                  reset={onReset}
-                />
-              </Portal>
-            )}
-          </Show>
         )}
       </Show>
       <Show when={selection()}>

@@ -2,7 +2,7 @@ import {createSignal, untrack} from 'solid-js'
 import type {Dialog} from '@/services/DialogService'
 import {useState} from '@/state'
 
-export const useDialog = <S = unknown>(options: Dialog<S> = {}) => {
+export const useDialog = <S = unknown>(options: Partial<Dialog<S>>) => {
   const {dialogService} = useState()
   const [cur, setCur] = createSignal<Dialog<S>>()
 
@@ -13,7 +13,12 @@ export const useDialog = <S = unknown>(options: Dialog<S> = {}) => {
       userOnClose?.()
     }
 
-    const config = {...opts, ...options, onClose}
+    const config = {
+      state: undefined as S,
+      ...opts,
+      ...options,
+      onClose,
+    }
 
     untrack(() => {
       if (cur()) close()

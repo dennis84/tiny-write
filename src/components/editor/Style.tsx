@@ -133,6 +133,7 @@ export const standardMarkdown = `
     border-radius: var(--border-radius);
     border: 1px solid var(--foreground-20);
     text-align: left;
+    overflow: hidden; /* clip the th background */
     th, td {
       padding: 10px 15px;
       vertical-align: top;

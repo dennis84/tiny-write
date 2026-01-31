@@ -11,7 +11,6 @@ export class ZIndex {
   static MAX = MAX.toString()
   static DIALOG = (MAX - 1).toString()
   static HANDLE = (MAX - 2).toString()
-  static TABLE_SELECTION = (MAX - 3).toString()
 
   static ABOVE_CONTENT = String(1000)
 

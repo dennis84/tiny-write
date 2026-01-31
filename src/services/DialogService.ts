@@ -9,7 +9,7 @@ export interface Dialog<S = unknown> {
   placement?: Placement
   fallbackPlacements?: Placement[]
   onClose?: () => void
-  state?: S
+  state: S
 }
 
 export class DialogService {

@@ -10,8 +10,8 @@ import {
   type TableMap,
   toggleHeaderRow,
 } from 'prosemirror-tables'
-import {createEffect, Show} from 'solid-js'
-import {useDialog} from '@/hooks/use-dialog'
+import {Show} from 'solid-js'
+import type {Dialog} from '@/services/DialogService'
 import {useState} from '@/state'
 import {TooltipButton, TooltipDivider} from '../dialog/Style'
 import {
@@ -25,30 +25,29 @@ import {
 } from '../Icon'
 import type {ActiveHandle, CurrentCell, CurrentTable} from './TableControl'
 
-interface Props {
+export interface TableTooltipState {
   activeHandle: ActiveHandle
   currentCell: CurrentCell
   currentTable: CurrentTable
   currentTableMap: TableMap
-  reset: () => void
 }
 
-export const TableTooltip = (props: Props) => {
-  const {fileService} = useState()
+export const TableTooltip = (props: {dialog: Dialog<TableTooltipState>}) => {
+  const {fileService, dialogService} = useState()
 
   const setCellSelection = () => {
     const editorView = fileService.currentFile?.editorView
     if (!editorView) return
     const tr = editorView.state.tr
-    const p = editorView.state.doc.resolve(props.currentCell.pos)
+    const p = editorView.state.doc.resolve(props.dialog.state.currentCell.pos)
     tr.setSelection(new CellSelection(p))
     editorView.dispatch(tr)
   }
 
   const isFirstRow = () => {
-    const pos = props.currentCell.pos
-    const offset = props.currentTable.pos
-    const tableMap = props.currentTableMap
+    const pos = props.dialog.state.currentCell.pos
+    const offset = props.dialog.state.currentTable.pos
+    const tableMap = props.dialog.state.currentTableMap
     const isFirst = pos >= tableMap.map[0] + offset && pos <= tableMap.map[tableMap.width] + offset
     return isFirst
   }
@@ -59,7 +58,7 @@ export const TableTooltip = (props: Props) => {
     setCellSelection()
     toggleHeaderRow(editorView.state, editorView.dispatch)
     setTimeout(() => editorView.focus())
-    props.reset()
+    dialogService.close(props.dialog)
     return true
   }
 
@@ -69,7 +68,7 @@ export const TableTooltip = (props: Props) => {
     setCellSelection()
     addRowBefore(editorView.state, editorView.dispatch)
     setTimeout(() => editorView.focus())
-    props.reset()
+    dialogService.close(props.dialog)
     return true
   }
 
@@ -79,7 +78,7 @@ export const TableTooltip = (props: Props) => {
     setCellSelection()
     addRowAfter(editorView.state, editorView.dispatch)
     setTimeout(() => editorView.focus())
-    props.reset()
+    dialogService.close(props.dialog)
     return true
   }
 
@@ -89,7 +88,7 @@ export const TableTooltip = (props: Props) => {
     setCellSelection()
     addColumnBefore(editorView.state, editorView.dispatch)
     setTimeout(() => editorView.focus())
-    props.reset()
+    dialogService.close(props.dialog)
     return true
   }
 
@@ -99,7 +98,7 @@ export const TableTooltip = (props: Props) => {
     setCellSelection()
     addColumnAfter(editorView.state, editorView.dispatch)
     setTimeout(() => editorView.focus())
-    props.reset()
+    dialogService.close(props.dialog)
     return true
   }
 
@@ -108,14 +107,14 @@ export const TableTooltip = (props: Props) => {
     if (!editorView) return
 
     setCellSelection()
-    if (props.currentTableMap.width <= 1) {
+    if (props.dialog.state.currentTableMap.width <= 1) {
       deleteTable(editorView.state, editorView.dispatch)
     } else {
       deleteColumn(editorView.state, editorView.dispatch)
     }
 
     setTimeout(() => editorView.focus())
-    props.reset()
+    dialogService.close(props.dialog)
     return true
   }
 
@@ -124,23 +123,18 @@ export const TableTooltip = (props: Props) => {
     if (!editorView) return
 
     setCellSelection()
-    if (props.currentTableMap.height <= 1) {
+    if (props.dialog.state.currentTableMap.height <= 1) {
       deleteTable(editorView.state, editorView.dispatch)
     } else {
       deleteRow(editorView.state, editorView.dispatch)
     }
 
     setTimeout(() => editorView.focus())
-    props.reset()
+    dialogService.close(props.dialog)
     return true
   }
 
-  createEffect(() => {
-    const result = props.activeHandle
-    showTooltip({anchor: result.element})
-  })
-
-  const Tooltip = () => (
+  return (
     <>
       <Show when={isFirstRow()}>
         <TooltipButton onMouseDown={onToggleHeaderRow}>
@@ -148,7 +142,7 @@ export const TableTooltip = (props: Props) => {
         </TooltipButton>
         <TooltipDivider />
       </Show>
-      <Show when={props.activeHandle.direction === 'row'}>
+      <Show when={props.dialog.state.activeHandle.direction === 'row'}>
         <TooltipButton onMouseDown={onAddRowAbove}>
           <IconAddRowAbove /> Add row above
         </TooltipButton>
@@ -159,7 +153,7 @@ export const TableTooltip = (props: Props) => {
           <IconRowRemove /> Remove row
         </TooltipButton>
       </Show>
-      <Show when={props.activeHandle.direction === 'col'}>
+      <Show when={props.dialog.state.activeHandle.direction === 'col'}>
         <TooltipButton onMouseDown={onAddColumnBefore}>
           <IconAddColumnLeft /> Add column before
         </TooltipButton>
@@ -172,14 +166,4 @@ export const TableTooltip = (props: Props) => {
       </Show>
     </>
   )
-
-  const [showTooltip] = useDialog({
-    component: Tooltip,
-    onClose: props.reset,
-    placement: props.activeHandle.direction === 'row' ? 'left' : 'top',
-    fallbackPlacements:
-      props.activeHandle.direction === 'row' ? ['left', 'bottom', 'top'] : ['top', 'left', 'right'],
-  })
-
-  return null
 }
