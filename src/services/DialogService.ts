@@ -6,8 +6,10 @@ export interface Dialog<S = unknown> {
   anchor?: ReferenceElement
   backdrop?: boolean
   delay?: number
+  offset?: number
   placement?: Placement
   fallbackPlacements?: Placement[]
+  direction?: 'row' | 'column'
   onClose?: () => void
   state: S
 }

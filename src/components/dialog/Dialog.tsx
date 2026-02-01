@@ -49,7 +49,7 @@ export const Dialog = (props: Props) => {
       void computePosition(anchor, tooltipRef, {
         placement,
         middleware: [
-          offset(10),
+          offset(props.offset ?? 10),
           flip({fallbackPlacements}),
           shift({padding: {left: 10, right: 10}}),
           arrow({element: arrowRef, padding: 20}),
@@ -101,6 +101,8 @@ export const Dialog = (props: Props) => {
           data-testid="tooltip"
           class="tooltip"
           delay={props.delay}
+          direction={props.direction}
+          gap={props.direction === 'row' ? 5 : 0}
           style={{'z-index': ZIndex.dialog(props.index)}}
         >
           {props.children}

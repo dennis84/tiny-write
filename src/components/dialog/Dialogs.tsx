@@ -30,6 +30,8 @@ export const Dialogs = () => {
           onClose={() => dialogService.close(dialog)}
           backdrop={dialog.backdrop}
           delay={dialog.delay}
+          offset={dialog.offset}
+          direction={dialog.direction}
           index={i()}
         >
           <Dynamic component={dialog.component} dialog={dialog} />

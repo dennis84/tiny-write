@@ -1,18 +1,10 @@
 import {Box} from '@flatten-js/core'
-import {arrow, computePosition, flip, offset, type ReferenceElement, shift} from '@floating-ui/dom'
+import type {ReferenceElement} from '@floating-ui/dom'
 import {createScheduled, debounce, leadingAndTrailing} from '@solid-primitives/scheduled'
-import {
-  createEffect,
-  createMemo,
-  createResource,
-  createSignal,
-  Show,
-  Suspense,
-  untrack,
-} from 'solid-js'
+import {createEffect, createMemo, createResource, createSignal, Show, Suspense} from 'solid-js'
 import {getLanguageNames} from '@/codemirror/highlight'
 import {createCodeFence} from '@/components/assistant/util'
-import {DialogContainer, TooltipArrow, TooltipButton} from '@/components/dialog/Style'
+import {TooltipArrow, TooltipButton} from '@/components/dialog/Style'
 import {
   IconAdjust,
   IconAiAssistant,
@@ -21,20 +13,19 @@ import {
   IconOpenInFull,
   IconPrettier,
 } from '@/components/Icon'
+import {useDialog} from '@/hooks/use-dialog'
 import {useInputLine} from '@/hooks/use-input-line'
 import {useOpen} from '@/hooks/use-open'
+import type {Dialog} from '@/services/DialogService'
 import {isCodeElement, isEditorElement, useState} from '@/state'
 import {AttachmentType, type CanvasBoxElement, type CanvasElement} from '@/types'
 import {BoxUtil} from '@/utils/BoxUtil'
 import {VecUtil} from '@/utils/VecUtil'
 
 export const Toolbar = () => {
-  let tooltipRef!: HTMLDivElement
-  let arrowRef!: HTMLSpanElement
-
   const {store, canvasService, codeService, fileService, menuService, threadService, treeService} =
     useState()
-  const [collides, setCollides] = createSignal(false)
+  const [inViewport, setInViewport] = createSignal(false)
   const {openFile} = useOpen()
   const showInputLine = useInputLine()
 
@@ -130,7 +121,7 @@ export const Toolbar = () => {
       .translate(point)
 
     const box = canvasService.createBox(selected.element)
-    setCollides(vp.intersect(box))
+    setInViewport(vp.intersect(box))
 
     return {
       getBoundingClientRect() {
@@ -148,44 +139,16 @@ export const Toolbar = () => {
     }
   }
 
-  const positionToolbar = (reference: ReferenceElement) =>
-    computePosition(reference, tooltipRef, {
-      placement: 'bottom',
-      middleware: [
-        offset(100),
-        flip({fallbackPlacements: ['top']}),
-        shift({padding: 20, crossAxis: true}),
-        arrow({element: arrowRef}),
-      ],
-    }).then(({x, y, placement, middlewareData}) => {
-      tooltipRef.style.left = `${x}px`
-      tooltipRef.style.top = `${y}px`
-
-      const side = placement.split('-')[0]
-      const staticSide =
-        {
-          top: 'bottom',
-          right: 'left',
-          bottom: 'top',
-          left: 'right',
-        }[side] ?? 'top'
-
-      if (middlewareData.arrow) {
-        const {x, y} = middlewareData.arrow
-        arrowRef.classList.add(staticSide)
-        Object.assign(arrowRef.style, {
-          left: x != null ? `${x}px` : '',
-          top: y != null ? `${y}px` : '',
-          [staticSide]: `${-arrowRef.offsetWidth / 2}px`,
-        })
-      }
-    })
-
   // Show toolbar if reference changes
   createEffect(() => {
     const reference = calcToolbarReference()
-    if (!reference) return
-    untrack(() => positionToolbar(reference))
+    const selected = getSelected()
+    if (!reference || !selected) {
+      closeDialog()
+      return
+    }
+
+    showDialog({anchor: reference, state: {element: selected.element}})
   })
 
   const scheduled = createScheduled((fn) => leadingAndTrailing(debounce, fn, 2000))
@@ -208,54 +171,61 @@ export const Toolbar = () => {
     return codeService.prettifyCheck(file)
   })
 
-  return (
-    <Show when={getSelected()}>
-      {(selected) => (
-        <DialogContainer ref={tooltipRef} id="toolbar" direction="row" gap={5}>
-          <Show when={collides()}>
-            <TooltipButton onClick={() => openFile(selected().element)}>
-              <IconOpenInFull /> Open in full
-            </TooltipButton>
-            <Show when={fileService.findFileById(selected().element.id)?.deleted}>
-              <TooltipButton onClick={() => restore(selected().element)}>
-                <IconHistory />
-                Restore
-              </TooltipButton>
-            </Show>
-            <Show when={isCodeElement(selected().element)}>
+  type ToolbarState = {element: CanvasElement}
+
+  const ToolbarDialog = (p: {dialog: Dialog<ToolbarState>}) => (
+    <>
+      <Show when={inViewport()}>
+        <TooltipButton onClick={() => openFile(p.dialog.state.element)}>
+          <IconOpenInFull /> Open in full
+        </TooltipButton>
+        <Show when={fileService.findFileById(p.dialog.state.element.id)?.deleted}>
+          <TooltipButton onClick={() => restore(p.dialog.state.element)}>
+            <IconHistory />
+            Restore
+          </TooltipButton>
+        </Show>
+        <Show when={isCodeElement(p.dialog.state.element)}>
+          <TooltipButton
+            onClick={() => changeLang(p.dialog.state.element)}
+            data-testid="toolbar_change_language"
+          >
+            <IconLanguage /> Change language
+          </TooltipButton>
+
+          <Suspense>
+            <Show when={isFileUgly()}>
               <TooltipButton
-                onClick={() => changeLang(selected().element)}
-                data-testid="toolbar_change_language"
+                onClick={() => prettify(p.dialog.state.element)}
+                data-testid="toolbar_prettify"
               >
-                <IconLanguage /> Change language
+                <IconPrettier /> Prettify
               </TooltipButton>
-
-              <Suspense>
-                <Show when={isFileUgly()}>
-                  <TooltipButton
-                    onClick={() => prettify(selected().element)}
-                    data-testid="toolbar_prettify"
-                  >
-                    <IconPrettier /> Prettify
-                  </TooltipButton>
-                </Show>
-              </Suspense>
-
-              <Show when={store.ai?.copilot?.user}>
-                <TooltipButton onClick={onCopilot}>
-                  <IconAiAssistant /> Ask Copilot
-                </TooltipButton>
-              </Show>
             </Show>
-          </Show>
-          <Show when={!collides()}>
-            <TooltipButton onClick={onBackToContent}>
-              <IconAdjust /> Back to content
+          </Suspense>
+
+          <Show when={store.ai?.copilot?.user}>
+            <TooltipButton onClick={onCopilot}>
+              <IconAiAssistant /> Ask Copilot
             </TooltipButton>
           </Show>
-          <TooltipArrow ref={arrowRef} />
-        </DialogContainer>
-      )}
-    </Show>
+        </Show>
+      </Show>
+      <Show when={!inViewport()}>
+        <TooltipButton onClick={onBackToContent}>
+          <IconAdjust /> Back to content
+        </TooltipButton>
+      </Show>
+    </>
   )
+
+  const [showDialog, closeDialog] = useDialog<ToolbarState>({
+    component: ToolbarDialog,
+    offset: 50,
+    direction: 'row',
+    placement: 'bottom',
+    fallbackPlacements: ['top'],
+  })
+
+  return null
 }
