@@ -1,10 +1,18 @@
 import {Box} from '@flatten-js/core'
 import type {ReferenceElement} from '@floating-ui/dom'
 import {createScheduled, debounce, leadingAndTrailing} from '@solid-primitives/scheduled'
-import {createEffect, createMemo, createResource, createSignal, Show, Suspense} from 'solid-js'
+import {
+  createEffect,
+  createMemo,
+  createResource,
+  createSignal,
+  onCleanup,
+  Show,
+  Suspense,
+} from 'solid-js'
 import {getLanguageNames} from '@/codemirror/highlight'
 import {createCodeFence} from '@/components/assistant/util'
-import {TooltipArrow, TooltipButton} from '@/components/dialog/Style'
+import {TooltipButton} from '@/components/dialog/Style'
 import {
   IconAdjust,
   IconAiAssistant,
@@ -150,6 +158,9 @@ export const Toolbar = () => {
 
     showDialog({anchor: reference, state: {element: selected.element}})
   })
+
+  // Close dialog after navigation
+  onCleanup(() => closeDialog())
 
   const scheduled = createScheduled((fn) => leadingAndTrailing(debounce, fn, 2000))
 

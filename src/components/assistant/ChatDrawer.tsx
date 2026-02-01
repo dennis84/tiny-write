@@ -32,7 +32,6 @@ export const ChatDrawer = () => {
     <Drawer
       width={aiService.sidebarWidth}
       onResized={onDrawerResized}
-      background={10}
       data-tauri-drag-region="true"
       data-drop-target="assistant"
       data-testid="ai_assistant_drawer"
