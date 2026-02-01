@@ -292,7 +292,7 @@ export class CanvasService {
 
     outer: for (const el of currentCanvas.elements) {
       for (const elementId of elementIds) {
-        if (isEditorElement(el) && el.id === elementId) {
+        if ((isEditorElement(el) || isCodeElement(el)) && el.id === elementId) {
           this.destroyItem(el.id)
           continue outer
         }
