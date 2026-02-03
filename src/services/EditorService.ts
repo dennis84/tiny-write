@@ -98,8 +98,6 @@ export class EditorService {
 
         await FileService.saveFile(file)
         this.writeFileThrottled(file)
-
-        info('Saved editor content')
       }
 
       if (!node) return

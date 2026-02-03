@@ -361,8 +361,7 @@ export class CanvasService {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
 
-    const file = FileService.createFile({code})
-    file.parentId = currentCanvas.id
+    const file = FileService.createFile({code, parentId: currentCanvas.id})
 
     this.setState('files', [...this.store.files, file])
     const added = await this.addFile(file, link, point)

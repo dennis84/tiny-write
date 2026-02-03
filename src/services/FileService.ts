@@ -126,7 +126,7 @@ export class FileService {
       return
     }
 
-    info(`Saving file (id=${file.id}, leftId=${file.leftId}, parentId=${file.parentId})`)
+    debug(`Saving file (id=${file.id}, leftId=${file.leftId}, parentId=${file.parentId})`)
 
     await DB.updateFile({
       id: file.id,
