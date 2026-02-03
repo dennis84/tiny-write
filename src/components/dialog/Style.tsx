@@ -27,7 +27,7 @@ export const DialogContainer = styled('div')<DialogContainerProps>`
   font-size: var(--menu-font-size);
   line-height: 1.4;
   box-shadow: 0 12px 24px 0 rgba(0, 0, 0, 0.24);
-  max-height: 100vh;
+  max-height: 90vh;
   padding: 10px;
   display: flex;
   opacity: 0;

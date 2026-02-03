@@ -3,11 +3,14 @@ import {createEffect, For, Match, on, onMount, Show, Suspense, Switch} from 'sol
 import {styled} from 'solid-styled-components'
 import {useDialog} from '@/hooks/use-dialog'
 import {useTitle} from '@/hooks/use-title'
+import {createMarkdownParser} from '@/prosemirror/markdown-serialize'
+import {schema} from '@/prosemirror/schema'
 import type {Dialog} from '@/services/DialogService'
 import {isCanvas, isCodeFile, isFile, useState} from '@/state'
 import type {CanvasLinkElement, File} from '@/types'
+import {pause} from '@/utils/promise'
 import {TooltipButton, TooltipDivider} from '../dialog/Style'
-import {IconCodeBlocks, IconGesture, IconPostAdd, IconTextSnippet} from '../Icon'
+import {IconAi, IconCodeBlocks, IconGesture, IconPostAdd, IconTextSnippet} from '../Icon'
 
 const Scroller = styled('div')`
   max-height: 80vh;
@@ -18,18 +21,64 @@ const Scroller = styled('div')`
 `
 
 export const ContextMenu = () => {
-  const {canvasService, canvasCollabService, fileService, treeService} = useState()
+  const {
+    store,
+    canvasService,
+    copilotService,
+    canvasCollabService,
+    canvasThreadService,
+    fileService,
+    treeService,
+    toastService,
+  } = useState()
 
-  const onNewFile = async (code = false, link?: CanvasLinkElement, cm?: Vector) => {
+  const newFile = async (code = false, link?: CanvasLinkElement, cm?: Vector) => {
     const added = await canvasService.newFile(code, link, cm)
+    let file: File | undefined
     if (added) {
-      canvasCollabService.addElements(added)
       const fileElement = added[0]
-      const file = fileService.findFileById(fileElement.id)
-      if (file) treeService.add(file)
+      canvasCollabService.addElements(added)
+      file = fileService.findFileById(fileElement.id)
+      if (file) await treeService.add(file)
     }
 
     closeTooltip()
+    return file
+  }
+
+  const generateAiFile = async (link: CanvasLinkElement, cm?: Vector) => {
+    const messages = canvasThreadService.getMessages(link.from)
+    if (!messages.length) return
+
+    const file = await newFile(false, link, cm)
+    await pause(100)
+
+    const editorView = file?.editorView
+    if (!editorView) return
+    const parser = createMarkdownParser(schema)
+    let buffer = ''
+
+    const result = await copilotService.completions(
+      messages,
+      (chunk) => {
+        for (const choice of chunk.choices) {
+          buffer += choice.delta?.content ?? choice.message?.content ?? ''
+        }
+
+        const node = parser.parse(buffer)
+        const tr = editorView.state.tr
+        tr.delete(0, editorView.state.doc.content.size)
+        tr.insert(0, node)
+        editorView.dispatch(tr)
+      },
+      true,
+    )
+
+    if (result.success) {
+      toastService.open({message: 'AI file generated', duration: 2_000})
+    } else if (result.error) {
+      toastService.open({message: 'AI file generation failed'})
+    }
   }
 
   const FileNameTooltipButton = (p: {file: File; link?: CanvasLinkElement; cm?: Vector}) => {
@@ -131,17 +180,26 @@ export const ContextMenu = () => {
   const Tooltip = (props: {dialog: Dialog<ContextMenuTooltip>}) => (
     <>
       <TooltipButton
-        onClick={() => onNewFile(false, props.dialog.state?.deadLink, props.dialog.state?.clickPos)}
+        onClick={() => newFile(false, props.dialog.state?.deadLink, props.dialog.state?.clickPos)}
         data-testid="context_menu_new_file"
       >
         <IconPostAdd /> New file
       </TooltipButton>
       <TooltipButton
-        onClick={() => onNewFile(true, props.dialog.state?.deadLink, props.dialog.state?.clickPos)}
+        onClick={() => newFile(true, props.dialog.state?.deadLink, props.dialog.state?.clickPos)}
         data-testid="context_menu_new_code_file"
       >
         <IconCodeBlocks /> New code file
       </TooltipButton>
+      <Show when={store.ai?.copilot?.user}>
+        <Show when={props.dialog.state?.deadLink}>
+          {(link) => (
+            <TooltipButton onClick={() => generateAiFile(link(), props.dialog.state.clickPos)}>
+              <IconAi /> New file by AI
+            </TooltipButton>
+          )}
+        </Show>
+      </Show>
       <Show when={getFiles()}>
         {(files) => (
           <>

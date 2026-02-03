@@ -444,12 +444,12 @@ export class CopilotService {
     streaming: boolean | undefined = undefined,
   ): CompletionsRequest {
     return {
-      intent: true,
-      n: 1,
-      stream: streaming ?? model.streaming,
-      temperature: 0.1,
-      model: model.id,
-      messages,
+      intent: true, // Enables intent detection/classification for the request
+      n: 1, // Number of response completions to generate
+      stream: streaming ?? model.streaming, // Whether to stream the response; uses provided value or falls back to model's default
+      temperature: 0.1, // Controls randomness (0-2); low value = more focused/deterministic responses
+      model: model.id, // Identifier of the AI model to use
+      messages, // Array of conversation messages (user/assistant history)
     }
   }
 }

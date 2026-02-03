@@ -5,6 +5,7 @@ import {AiService} from './AiService'
 import {AppService} from './AppService'
 import {CanvasCollabService} from './CanvasCollabService'
 import {CanvasService} from './CanvasService'
+import {CanvasThreadService} from './CanvasThreadService'
 import {ChangeSetService} from './ChangeSetService'
 import {CodeMirrorService} from './CodeMirrorService'
 import {CodeService} from './CodeService'
@@ -79,6 +80,7 @@ export const createCtrl = (initial: State) => {
   )
   const changeSetService = new ChangeSetService(fileService, collabService)
   const canvasCollabService = new CanvasCollabService(collabService, canvasService)
+  const canvasThreadService = new CanvasThreadService(canvasService, fileService)
   const mediaService = new MediaService(
     fileService,
     canvasService,
@@ -99,7 +101,6 @@ export const createCtrl = (initial: State) => {
     fileService,
     selectService,
     prettierService,
-    canvasService,
     deleteService,
     appService,
     codeMirrorService,
@@ -107,7 +108,9 @@ export const createCtrl = (initial: State) => {
     editorService,
     codeService,
     changeSetService,
+    canvasService,
     canvasCollabService,
+    canvasThreadService,
     mediaService,
     aiService,
     copilotService,
