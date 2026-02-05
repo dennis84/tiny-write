@@ -44,6 +44,7 @@ interface Props {
 
 export const BlockTooltip = (props: Props) => {
   const {
+    store,
     fileService,
     codeMirrorService,
     configService,
@@ -369,13 +370,15 @@ export const BlockTooltip = (props: Props) => {
         <TooltipDivider />
       </Show>
       {/* Copilot actions */}
-      <TooltipButton onClick={onCopilotAddToChat} data-testid="copilot_add_to_chat">
-        <IconAdd /> Add to copilot chat
-      </TooltipButton>
-      <TooltipButton onClick={onCopilotInline} data-testid="copilot_ask_inline">
-        <IconRefresh /> Rephrasing by copilot
-      </TooltipButton>
-      <TooltipDivider />
+      <Show when={store.ai?.copilot?.user}>
+        <TooltipButton onClick={onCopilotAddToChat} data-testid="copilot_add_to_chat">
+          <IconAdd /> Add to copilot chat
+        </TooltipButton>
+        <TooltipButton onClick={onCopilotInline} data-testid="copilot_ask_inline">
+          <IconRefresh /> Rephrasing by copilot
+        </TooltipButton>
+        <TooltipDivider />
+      </Show>
       {/* Image actions */}
       <Show
         when={

@@ -3,10 +3,11 @@ import {Show} from 'solid-js'
 import {copy} from '@/remote/clipboard'
 import {useState} from '@/state'
 import type {TreeItem} from '@/tree'
-import type {Message} from '@/types'
+import {AttachmentType, type Message} from '@/types'
 import {ButtonGroup, ButtonSpan, IconButton} from '../Button'
 import {TooltipHelp} from '../dialog/TooltipHelp'
 import {IconContentCopy, IconHand, IconRefresh, Spinner} from '../Icon'
+import {AttachmentChip} from './AttachmentChip'
 import {MessageMarkdown} from './MessageMarkdown'
 import {Pagination} from './Pagination'
 import {ChatBubble} from './Style'
@@ -65,6 +66,15 @@ export const MessageAnswer = (props: Props) => {
             <IconHand />
             interrupted
           </ButtonSpan>
+        </Show>
+        <Show when={props.message.value.summary}>
+          <AttachmentChip
+            title="Summary"
+            attachment={{
+              type: AttachmentType.Text,
+              content: props.message.value.summary ?? '',
+            }}
+          />
         </Show>
       </ButtonGroup>
     </ChatBubble>

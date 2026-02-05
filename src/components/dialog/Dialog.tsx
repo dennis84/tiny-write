@@ -21,7 +21,12 @@ export const Dialog = (props: Props) => {
 
   const CloseOnBackgroundClick = () => {
     const listener = (e: MouseEvent) => {
-      if (!tooltipRef?.contains(e.target as Node)) {
+      const target = e.target as Node
+      if ((props.anchor instanceof Element) && props.anchor.contains(target)) {
+        return
+      }
+
+      if (!tooltipRef?.contains(target)) {
         onClose(e)
       }
     }

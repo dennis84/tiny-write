@@ -89,6 +89,8 @@ export const Chat = (props: Props) => {
             // ignore
           }
         }
+
+        await threadService.summarize()
       } else if (result.interrupted) {
         threadService.interrupt(messageId)
       }
@@ -124,7 +126,7 @@ export const Chat = (props: Props) => {
     display: flex;
     flex-direction: column;
     &:last-child {
-      min-height: calc(100vh - 220px); /* 50px topnav + 20px margin + 150 bottom padding */
+      min-height: calc(100vh - 270px); /* 50px topnav + 20px margin + 200 bottom padding */
       margin-bottom: 200px;
     }
   `

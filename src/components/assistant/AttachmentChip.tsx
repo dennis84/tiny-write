@@ -71,6 +71,7 @@ const AttachmentTitle = (props: AttachmentTitleProps) => {
 }
 
 interface Props {
+  title?: string
   attachment: Attachment
   onDelete?: (attachment: Attachment) => void
 }
@@ -150,12 +151,16 @@ export const AttachmentChip = (props: Props) => {
     </>
   )
 
-  const [showTooltip, closeTooltip] = useDialog({
+  const [showTooltip, closeTooltip, currentTooltip] = useDialog({
     component: Tooltip,
   })
 
   const onOpenTooltip = (e: MouseEvent) => {
-    showTooltip({anchor: e.currentTarget as HTMLElement})
+    if (currentTooltip()) {
+      closeTooltip()
+    } else {
+      showTooltip({anchor: e.currentTarget as HTMLElement})
+    }
   }
 
   const onDelete = (attachment: Attachment) => {
@@ -170,7 +175,7 @@ export const AttachmentChip = (props: Props) => {
           <AttachmentImage src={props.attachment.content} alt="" onClick={onOpenTooltip} />
         </Match>
         <Match when={props.attachment.type === AttachmentType.Text}>
-          <Button onClick={onOpenTooltip}>Text</Button>
+          <Button onClick={onOpenTooltip}>{props.title ?? 'Text'}</Button>
         </Match>
         <Match when={props.attachment.type === AttachmentType.File}>
           <Button onClick={onOpenTooltip}>

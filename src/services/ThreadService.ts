@@ -5,7 +5,8 @@ import {v4 as uuidv4} from 'uuid'
 import {DB} from '@/db'
 import codeBlockHandlingPrompt from '@/prompts/assistant-code-block-handling.md?raw'
 import generateTitlePrompt from '@/prompts/generate-title.md?raw'
-import {info} from '@/remote/log'
+import summaryPrompt from '@/prompts/summary.md?raw'
+import {debug, error, info} from '@/remote/log'
 import {createTreeStore, type TreeItem} from '@/tree'
 import {type Attachment, AttachmentType, type Message, type State, type Thread} from '@/types'
 import type {
@@ -55,6 +56,8 @@ export class ThreadService {
     private store: Store<State>,
     private setState: SetStoreFunction<State>,
     private copilotService: CopilotService,
+    private readonly createSummaryAt = 40_000,
+    private readonly summarizeAt = 50_000,
   ) {}
 
   setAttachments(attachments: Attachment[]) {
@@ -149,7 +152,7 @@ export class ThreadService {
   }
 
   addChunk(id: string, parentId: string | undefined, chunk: string) {
-    info(`Stream message chunk (id=${id}, parentId=${parentId}, chunk=${chunk})`)
+    debug(`Stream message chunk (id=${id}, parentId=${parentId}, chunk=${chunk})`)
 
     const currentThread = this.currentThread
     if (!currentThread) return
@@ -164,9 +167,14 @@ export class ThreadService {
       messageIndex = currentThread.messages.length - 1
     }
 
-    this.setState('threads', currentThreadIndex, 'messages', messageIndex, (prev) => ({
-      content: prev.content + chunk,
-    }))
+    this.setState(
+      'threads',
+      currentThreadIndex,
+      'messages',
+      messageIndex,
+      'content',
+      (prev) => prev + chunk,
+    )
 
     const message = this.store.threads[currentThreadIndex].messages[messageIndex]
     this.messageTree.updateValue(message)
@@ -303,6 +311,47 @@ export class ThreadService {
     if (nextId) return this.messageTree.getItem(nextId)
   }
 
+  async summarize() {
+    const currentThread = this.currentThread
+    if (!currentThread) return
+
+    let messages: ChatMessage[] = []
+    let targetId: string | undefined
+
+    this.traverseTree((it) => {
+      if (it.value.summary) messages = []
+      messages.push(this.toChatMessage(it.value))
+      targetId = it.value.id
+    })
+
+    const count = this.tokenCount(messages)
+    info(`Maybe create summary (tokenCount=${count})`)
+
+    if (count < this.createSummaryAt) {
+      return
+    }
+
+    messages.push({role: 'system', content: [{type: 'text', text: summaryPrompt}]})
+
+    try {
+      const summary = await this.copilotService.completionsSync(messages)
+      if (summary) {
+        info(`Add summary to message (messageId=${targetId})`)
+        const currentThreadIndex = this.currentThreadIndex
+        const messageIndex = currentThread.messages.findIndex((m) => m.id === targetId)
+
+        this.setState('threads', currentThreadIndex, 'messages', messageIndex, 'summary', summary)
+
+        const message = this.store.threads[currentThreadIndex].messages[messageIndex]
+        this.messageTree.updateValue(message)
+
+        await this.saveThread()
+      }
+    } catch {
+      error('Summarization failed')
+    }
+  }
+
   async generateTitle(): Promise<string | undefined> {
     info(`Generate title for current thread`)
     const currentThread = this.currentThread
@@ -353,22 +402,42 @@ export class ThreadService {
     const currentThread = this.currentThread
     if (!currentThread) return {messages: []}
 
-    const messages: ChatMessage[] = []
+    let messages: ChatMessage[] = []
     let parentId: string | undefined
     let nextId: string | undefined
+    let hasCodeBlock = false
+    let lastSummaryIndex = -1
+    let lastSummary: string | undefined
 
     this.traverseTree((it) => {
       nextId = currentThread.path?.get(it.id)
-      messages.push(this.toChatMessage(it.value))
+      const message = this.toChatMessage(it.value)
+
+      // remember if any code block exists
+      if (!hasCodeBlock && this.hasCodeBlock(message)) {
+        hasCodeBlock = true
+      }
+
+      // remember last summary
+      if (it.value.summary) {
+        lastSummaryIndex = messages.length
+        lastSummary = it.value.summary
+      }
+
+      messages.push(message)
+
+      // Reduce messages starting from last summary
+      if (lastSummaryIndex !== -1 && this.tokenCount(messages) > this.summarizeAt) {
+        messages = [
+          {role: 'system', content: [{type: 'text', text: lastSummary ?? ''}]},
+          ...messages.slice(lastSummaryIndex + 1),
+        ]
+      }
+
       parentId = it.value.id
     })
 
-    // final must be role user
-    if (messages[messages.length - 1]?.role !== 'user') {
-      return {messages: []}
-    }
-
-    if (messages.find((m) => this.hasCodeBlock(m))) {
+    if (hasCodeBlock) {
       const message: ChatMessage = {
         role: 'system',
         content: [{type: 'text', text: codeBlockHandlingPrompt}],
@@ -423,5 +492,21 @@ export class ThreadService {
     }
 
     return false
+  }
+
+  private tokenCount(messages: ChatMessage[]): number {
+    let count = 0
+    for (const message of messages) {
+      for (const content of message.content) {
+        if (content.type === 'text') {
+          const words = content.text.split(/\s+/).length
+          const chars = content.text.length
+          const punctuation = (content.text.match(/[^a-zA-Z0-9\s]/g) || []).length
+          count += Math.ceil(words * 1.3 + punctuation * 0.5 + chars / 15)
+        }
+      }
+    }
+
+    return count
   }
 }

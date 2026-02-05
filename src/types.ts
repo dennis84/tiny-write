@@ -234,6 +234,7 @@ export interface Message {
   attachments?: Attachment[]
   role: ChatRole
   interrupted?: boolean
+  summary?: string
 }
 
 export interface Thread {

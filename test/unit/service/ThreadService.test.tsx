@@ -208,6 +208,35 @@ test('interrupt', async () => {
   expect(store.threads[0].messages[1].interrupted).toEqual(true)
 })
 
+test('summarize', async () => {
+  const initial = createState({
+    location: {
+      page: Page.Assistant,
+      threadId: '1',
+    },
+    threads: [
+      {
+        id: '1',
+        messages: [
+          {id: '1', role: 'user', content: '1'},
+          {id: '2', parentId: '1', role: 'assistant', content: '2'},
+        ],
+      },
+    ],
+  })
+
+  const [store, setState] = createStore(initial)
+  const copilotService = mock<CopilotService>()
+  const service = new ThreadService(store, setState, copilotService, 2)
+  service.messageTree.updateAll(store.threads[0].messages)
+
+  copilotService.completionsSync.mockResolvedValue('12')
+
+  await service.summarize()
+
+  expect(store.threads[0].messages[1].summary).toEqual('12')
+})
+
 test('updateTitle', async () => {
   const initial = createState({
     location: {
@@ -422,8 +451,6 @@ test('regenerate - assistant message', async () => {
     `,
   )
 
-  expect(service.getMessages().messages).toHaveLength(0)
-
   await service.regenerate(store.threads[0].messages[1])
 
   expectTree(
@@ -477,9 +504,41 @@ test('generateTitle', async () => {
 })
 
 test.each<[Message[], number]>([
-  [[], 0],
-  [[{id: '1', role: 'assistant', content: ''}], 0],
-  [[{id: '1', role: 'user', content: '```'}], 2],
+  [[], 0], // empty
+  [[{id: '1', role: 'assistant', content: ''}], 1], // last message assistant
+  [[{id: '1', role: 'user', content: '```'}], 2], // code block prompt added
+  [
+    [
+      {id: '1', role: 'user', content: 'A'},
+      {id: '2', parentId: '1', role: 'assistant', content: 'B'},
+      {id: '3', parentId: '2', role: 'user', content: 'C'},
+      {id: '4', parentId: '3', role: 'assistant', content: 'D'},
+      {id: '5', parentId: '4', role: 'user', content: 'E'},
+    ],
+    5, // full conversation
+  ],
+  [
+    [
+      {id: '1', role: 'user', content: 'A A A A'},
+      {id: '2', parentId: '1', role: 'assistant', content: 'B B B B'},
+      {id: '3', parentId: '2', role: 'user', content: 'C C C C'},
+      {id: '4', parentId: '3', role: 'assistant', content: 'D', summary: 'ABCD'},
+      {id: '5', parentId: '4', role: 'user', content: 'E'},
+    ],
+    2, // token limit not reached
+  ],
+  [
+    [
+      {id: '1', role: 'user', content: 'A A A A'},
+      {id: '2', parentId: '1', role: 'assistant', content: 'B B B B'},
+      {id: '3', parentId: '2', role: 'user', content: 'C C C C'},
+      {id: '4', parentId: '3', role: 'assistant', content: 'D D D D', summary: 'ABCD'},
+      {id: '5', parentId: '4', role: 'user', content: 'E'},
+      {id: '6', parentId: '5', role: 'assistant', content: 'F'},
+      {id: '7', parentId: '6', role: 'user', content: 'G'},
+    ],
+    4, // token limit reached, filter to last summary
+  ],
 ])('getMessages', async (messages, count) => {
   const initial = createState({
     location: {
@@ -497,7 +556,8 @@ test.each<[Message[], number]>([
 
   const [store, setState] = createStore(initial)
   const copilotService = mock<CopilotService>()
-  const service = new ThreadService(store, setState, copilotService)
+
+  const service = new ThreadService(store, setState, copilotService, 5, 16)
   service.messageTree.updateAll(store.threads[0].messages)
 
   const result = service.getMessages()
