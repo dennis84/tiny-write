@@ -61,6 +61,7 @@ export const PageContent = styled('div')`
 `
 
 export const Scroll = styled('div')`
+  container-type: scroll-state;
   position: relative;
   display: flex;
   height: 100%;
@@ -74,6 +75,42 @@ export const Scroll = styled('div')`
   }
   @media print {
     overflow-y: visible;
+  }
+  &::before, &::after {
+    content: '';
+    position: fixed;
+    width: stretch; /* 100% overlaps menu */
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 500ms ease-out 0.1s;
+    z-index: var(--z-index-above-content);
+  }
+  &::before {
+    height: 60px;
+    background-image: linear-gradient(
+      to bottom,
+      var(--background),
+      var(--background-0)
+    );
+  }
+  &::after {
+    bottom: 0;
+    height: 100px;
+    background-image: linear-gradient(
+      to top,
+      var(--background),
+      var(--background-0)
+    );
+  }
+  @container scroll-state(scrollable: top) {
+    &::before {
+      opacity: 1;
+    }
+  }
+  @container scroll-state(scrollable: bottom) {
+    &::after {
+      opacity: 1;
+    }
   }
 `
 

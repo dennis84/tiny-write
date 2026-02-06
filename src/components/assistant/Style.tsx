@@ -52,6 +52,7 @@ export const ChatInputContainer = styled('div')`
 // biome-ignore format: ternary breaks ugly
 export const ChatInputBorder = styled('div')<{focused: boolean}>`
   background: var(--background);
+  box-shadow: 0 12px 32px 0 rgba(0, 0, 0, 0.24);
   scroll-margin-bottom: 50px;
   border: 1px solid var(--primary-background);
   border-radius: var(--border-radius);
@@ -59,7 +60,7 @@ export const ChatInputBorder = styled('div')<{focused: boolean}>`
   font-size: var(--menu-font-size);
   font-family: var(--menu-font-family);
   ${(p) => p.focused ? `
-    box-shadow: 0 0 0 2px var(--primary-background);
+    box-shadow: 0 12px 32px 0 rgba(0, 0, 0, 0.24), 0 0 0 2px var(--primary-background);
   ` : ''}
 `
 
