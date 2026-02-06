@@ -164,7 +164,8 @@ export class ConfigService {
     },
   }
 
-  static readonly DEFAULT_FONT: FontName = 'ia-writer-mono'
+  static readonly DEFAULT_FONT: FontName = 'system-ui'
+  static readonly DEFAULT_MONOSPACE_FONT: FontName = 'ia-writer-mono'
   static readonly DEFAULT_MENU_FONT: FontName = 'system-ui'
 
   static readonly fonts: Record<string, Font> = {
@@ -344,7 +345,7 @@ export class ConfigService {
   ): string => {
     const font = this.font
     if (options.monospace && !font?.monospace) {
-      return ConfigService.fonts[ConfigService.DEFAULT_FONT].value
+      return ConfigService.fonts[ConfigService.DEFAULT_MONOSPACE_FONT].value
     } else if (options.bold && font?.bold) {
       return `${font.value} bold`
     } else if (options.italic && font?.italic) {

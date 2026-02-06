@@ -147,12 +147,19 @@ export class CopilotService {
     const models = []
     for (const item of json.data) {
       if (!item.model_picker_enabled) continue
-      models.push({
-        id: item.id,
-        name: item.name,
-        vendor: item.vendor,
-        streaming: item.capabilities.supports.streaming ?? false,
-      })
+
+      if (
+        // models like gpt-4o don't have supported_endpoints field but they do support /chat/completions endpoint
+        item.supported_endpoints === undefined ||
+        item.supported_endpoints.includes('/chat/completions')
+      ) {
+        models.push({
+          id: item.id,
+          name: item.name,
+          vendor: item.vendor,
+          streaming: item.capabilities.supports.streaming ?? false,
+        })
+      }
     }
 
     return models

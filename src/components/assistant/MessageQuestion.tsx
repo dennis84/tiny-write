@@ -20,6 +20,16 @@ const QuestionContainer = styled('div')`
   justify-items: flex-end;
   margin-left: auto;
   scroll-margin: 20px; /* margin when scrollIntoView */
+  width: 100%;
+  .button-group {
+    opacity: 0;
+    transition: opacity 100ms ease-out 0.1s;
+  }
+  &:hover {
+    .button-group {
+      opacity: 1;
+    }
+  }
 `
 
 const QuestionBubble = styled(ChatBubble)`
@@ -93,7 +103,7 @@ export const MessageQuestion = (props: Props) => {
             </Show>
           </QuestionBubble>
           <Attachments />
-          <ButtonGroup justify="end">
+          <ButtonGroup justify="end" class="button-group">
             <Pagination
               id={props.message.id}
               parentId={props.message.parentId}
