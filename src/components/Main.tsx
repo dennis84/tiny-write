@@ -6,7 +6,7 @@ import {
   useLocation,
   useMatch,
 } from '@solidjs/router'
-import {createEffect, createMemo, ErrorBoundary, onMount, Show, untrack} from 'solid-js'
+import {createEffect, createMemo, ErrorBoundary, on, onMount, Show, untrack} from 'solid-js'
 import {DarkMode} from '@/components/DarkMode'
 import {DropFile} from '@/components/DropFile'
 import {Keymap} from '@/components/Keymap'
@@ -68,6 +68,21 @@ export const Main = (props: {state: State | Ctrl}) => {
         await show()
       }
     })
+
+    // Sync store location to browser history state.
+    createEffect(
+      on(
+        () => JSON.stringify(ctrl.store.location),
+        (locString) => {
+          history.replaceState(
+            JSON.parse(locString),
+            window.document.title,
+            window.location.pathname + window.location.search,
+          )
+        },
+        {defer: true},
+      ),
+    )
 
     // Make sure location state is synced to store on initial load and on changes.
     const locationGate = createMemo(async () => {

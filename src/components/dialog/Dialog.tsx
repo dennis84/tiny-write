@@ -22,7 +22,7 @@ export const Dialog = (props: Props) => {
   const CloseOnBackgroundClick = () => {
     const listener = (e: MouseEvent) => {
       const target = e.target as Node
-      if ((props.anchor instanceof Element) && props.anchor.contains(target)) {
+      if (props.anchor instanceof Element && props.anchor.contains(target)) {
         return
       }
 
