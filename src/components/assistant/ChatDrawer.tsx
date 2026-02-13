@@ -1,11 +1,16 @@
-import {createResource, Show, Suspense} from 'solid-js'
+import {useLocation} from '@solidjs/router'
+import {createResource, onMount, Show, Suspense} from 'solid-js'
+import {useOpen} from '@/hooks/use-open'
 import {useState} from '@/state'
+import type {LocationState} from '@/types'
 import {Drawer} from '../Drawer'
 import {ChatNavbar} from '../menu/Navbar'
 import {Chat} from './Chat'
 
 export const ChatDrawer = () => {
   const {aiService, appService, threadService} = useState()
+  const location = useLocation<LocationState>()
+  const {updateState} = useOpen()
 
   const onDrawerResized = async (width: number) => {
     await aiService.setSidebarWidth(width)
@@ -16,17 +21,21 @@ export const ChatDrawer = () => {
     threadService.init()
   }
 
-  const [initialized] = createResource(async () => {
-    let thread = threadService.currentThread
-    // Empty threads are not saved, so we need to create a new one if the thread is not found
-    if (!thread) {
-      thread = threadService.newThread()
-      await appService.setLocation({threadId: thread.id})
-    }
-
-    threadService.init()
-    return thread.id
+  // Create a new thread if not in location state
+  onMount(() => {
+    if (threadService.currentThread) return
+    const thread = threadService.newThread()
+    updateState({threadId: thread.id})
   })
+
+  const [initialized] = createResource(
+    () => threadService.currentThread?.id,
+    (threadId) => {
+      if (!threadId) return
+      threadService.init()
+      return threadId
+    },
+  )
 
   return (
     <Drawer

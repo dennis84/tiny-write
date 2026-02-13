@@ -50,16 +50,21 @@ export const NewEditorPage = () => {
 export const EditorPage = (props: RouteSectionProps) => {
   const {appService, collabService, editorService, fileService, toastService} = useState()
   const {open} = useOpen()
+  const location = useLocation<LocationState>()
 
   info(`Render editor page (location=${JSON.stringify(props.location.state)})`)
 
   const [initialized] = createResource(
-    () => ({id: props.params.id, state: props.location.state}),
-    async (props) => {
-      if (!props.id) return
-      await editorService.init(props.id)
+    () =>
+      JSON.stringify({
+        id: props.params.id,
+        snapshot: location.state?.snapshot,
+      }),
+    async (key) => {
+      if (!props.params.id) return
+      await editorService.init(props.params.id)
       fileService.currentFile?.editorView?.focus()
-      return props
+      return key
     },
   )
 

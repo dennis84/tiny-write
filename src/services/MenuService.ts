@@ -34,7 +34,7 @@ export class MenuService {
   constructor(
     private store: Store<State>,
     private setState: SetStoreFunction<State>,
-    private appService: AppService,
+    _appService: AppService,
   ) {}
 
   show(menu: MenuId) {
@@ -53,10 +53,10 @@ export class MenuService {
     this.assistantSignal[1](true)
   }
 
-  async toggleAssistant() {
-    const oldStatus = this.assistant()
-    if (oldStatus) await this.appService.setLocation({threadId: undefined})
-    this.assistantSignal[1](!oldStatus)
+  toggleAssistant(): boolean {
+    const newStatus = !this.assistant()
+    this.assistantSignal[1](newStatus)
+    return newStatus
   }
 
   async setMenuWidth(width: number) {

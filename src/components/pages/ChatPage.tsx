@@ -1,31 +1,32 @@
-import type {RouteSectionProps} from '@solidjs/router'
+import {useLocation, type RouteSectionProps} from '@solidjs/router'
 import {createEffect, createResource, ErrorBoundary, onMount, Show, Suspense} from 'solid-js'
 import {useOpen} from '@/hooks/use-open'
 import {useState} from '@/state'
-import {Page} from '@/types'
+import {LocationState, Page} from '@/types'
 import {Chat} from '../assistant/Chat'
 
 export const ChatPage = (props: RouteSectionProps) => {
   const {appService, threadService, toastService} = useState()
-  const {open} = useOpen()
+  const {open, updateState} = useOpen()
+  const location = useLocation<LocationState>()
 
   const onChangeThread = (threadId: string) => {
     open({threadId})
   }
 
-  const [initialized] = createResource(
-    () => ({id: props.params.id}),
-    async ({id}) => {
-      let currentId = id
-      // Create a new thrad on /assistant page and activate in location
-      if (!id) {
-        const newThread = threadService.newThread()
-        await appService.setLocation({threadId: newThread.id})
-        currentId = newThread.id
-      }
+  // Create a new thread if not in location state
+  onMount(() => {
+    if (threadService.currentThread) return
+    const thread = threadService.newThread()
+    updateState({threadId: thread.id})
+  })
 
+  const [initialized] = createResource(
+    () => threadService.currentThread?.id, //location.state?.threadId,
+    (threadId) => {
+      if (!threadId) return
       threadService.init()
-      return currentId
+      return threadId
     },
   )
 

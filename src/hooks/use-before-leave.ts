@@ -1,3 +1,4 @@
+import { LocationState } from '@/types'
 import {useBeforeLeave as useBeforeLeaveOrg, useIsRouting} from '@solidjs/router'
 import {createEffect, on} from 'solid-js'
 
@@ -8,9 +9,13 @@ export const useBeforeLeave = (callback: () => void) => {
   // This hooks is called before isRouting, it should stop the custom hook
   // if navigating to same url for state state changes
   useBeforeLeaveOrg((args) => {
-    if (typeof args.to !== 'number' && args.to === args.from.pathname) {
-      stopEvent = true
-    }
+    const fromState = args.from.state as LocationState | null
+    const toState = args.options?.state as LocationState | null
+
+    if (args.to !== args.from.pathname) return
+    if (fromState?.merge !== toState?.merge) return
+
+    stopEvent = true
   })
 
   // Is called then leaving the page, also for navigating back
@@ -25,7 +30,9 @@ export const useBeforeLeave = (callback: () => void) => {
         }
 
         stopEvent = false
-        if (status) callback()
+        if (status) {
+          callback()
+        }
       },
       {defer: true},
     ),

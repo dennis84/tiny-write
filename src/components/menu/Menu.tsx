@@ -1,4 +1,4 @@
-import {createEffect, type JSX, Show} from 'solid-js'
+import {createEffect, type JSX, Show, untrack} from 'solid-js'
 import {
   IconAi,
   IconAiAssistant,
@@ -33,6 +33,8 @@ import {SubmenuCollab} from './SubmenuCollab'
 import {SubmenuEdit} from './SubmenuEdit'
 import {SubmenuEditor} from './SubmenuEditor'
 import {SubmenuTree} from './SubmenuTree'
+import { threadId } from 'node:worker_threads'
+import { useOpen } from '@/hooks/use-open'
 
 export const MenuDrawer = ({children}: {children: JSX.Element}) => {
   const {menuService, fileService} = useState()
@@ -61,6 +63,7 @@ export const Menu = () => {
     fileService,
     prettierService,
   } = useState()
+  const {updateState} = useOpen()
 
   const modKey = isMac ? '⌘' : mod
 
@@ -96,6 +99,11 @@ export const Menu = () => {
     window.location.href = '/'
   }
 
+  const onToggleAssistant = () => {
+    const status = menuService.toggleAssistant()
+    if (!status) updateState({threadId: undefined})
+  }
+
   const maybeHide = () => {
     if (window.innerWidth <= FULL_WIDTH) menuService.hide()
   }
@@ -107,12 +115,9 @@ export const Menu = () => {
   }
 
   createEffect(() => {
+    const isMenuOpen = untrack(() => menuService.assistant())
     // Open assistant menu if merge was applied in assistant mode
-    if (
-      store.location?.page !== Page.Assistant &&
-      store.location?.threadId &&
-      !menuService.assistant()
-    ) {
+    if (store.location?.page !== Page.Assistant && store.location?.threadId && !isMenuOpen) {
       menuService.showAssistant()
     }
   })
@@ -207,7 +212,7 @@ export const Menu = () => {
                 <IconAi /> Configure
               </Link>
               <Show when={store.ai?.copilot?.user}>
-                <Link onClick={() => menuService.toggleAssistant()}>
+                <Link onClick={onToggleAssistant}>
                   <IconAiAssistant /> Assistant
                 </Link>
               </Show>

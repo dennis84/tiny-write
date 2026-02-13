@@ -14,6 +14,7 @@ export const Dialog = (props: Props) => {
   let arrowRef!: HTMLSpanElement
 
   const onClose = (e: MouseEvent) => {
+    e.preventDefault()
     e.stopPropagation()
     e.stopImmediatePropagation()
     props.onClose?.()
@@ -23,6 +24,7 @@ export const Dialog = (props: Props) => {
     const listener = (e: MouseEvent) => {
       const target = e.target as Node
       if (props.anchor instanceof Element && props.anchor.contains(target)) {
+        onClose(e)
         return
       }
 

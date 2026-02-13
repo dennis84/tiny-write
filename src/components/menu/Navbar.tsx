@@ -281,10 +281,16 @@ const DarkModeToggle = () => {
 
 const AssistantButton = () => {
   const {store, menuService} = useState()
+  const {updateState} = useOpen()
 
   const onAssistantClick = async () => {
-    if (!store.ai?.copilot?.user) menuService.show(MenuId.AI_CONFIG)
-    else await menuService.toggleAssistant()
+    if (!store.ai?.copilot?.user) {
+      menuService.show(MenuId.AI_CONFIG)
+      return
+    }
+
+    const status = menuService.toggleAssistant()
+    if (!status) updateState({threadId: undefined})
   }
 
   return (

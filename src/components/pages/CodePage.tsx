@@ -57,12 +57,16 @@ export const CodePage = (props: RouteSectionProps) => {
   info(`Render code page (location=${locationStateToString(location.state)})`)
 
   const [initialized] = createResource(
-    // Reload when params.id or location.state changes
-    () => ({id: props.params.id, state: props.location.state}),
-    async (props) => {
-      if (!props.id) return
-      await codeService.init(props.id)
-      return props
+    // Reload when params.id or merge changes
+    () =>
+      JSON.stringify({
+        id: props.params.id,
+        merge: location.state?.merge,
+      }),
+    async (key) => {
+      if (!props.params.id) return key
+      await codeService.init(props.params.id)
+      return key
     },
   )
 

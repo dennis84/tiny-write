@@ -10,6 +10,11 @@ export const useOpen = () => {
   const location = useLocation<LocationState>()
   const {store} = useState()
 
+  const updateState = (locState: Partial<LocationState> | undefined) => {
+    const state = {...location.state, ...locState}
+    navigate(location.pathname, {state, replace: true})
+  }
+
   const openFile = (file?: File | Canvas | CanvasElement, locState?: Partial<LocationState>) => {
     if (!file) return open(undefined)
 
@@ -103,5 +108,5 @@ export const useOpen = () => {
     window.open(url, '_blank')
   }
 
-  return {open, openFile, openDir, openUrl}
+  return {open, openFile, openDir, openUrl, updateState}
 }
