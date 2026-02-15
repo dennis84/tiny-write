@@ -75,24 +75,24 @@ export class LocationService {
     this.navigator(location.pathname, {state, replace: true})
   }
 
-  openFile(file?: File | Canvas | CanvasElement | Thread, locState?: Partial<LocationState>) {
-    if (!file) return this.navigator('/')
+  openItem(item?: File | Canvas | CanvasElement | Thread, locState?: Partial<LocationState>) {
+    if (!item) return this.navigator('/')
     const state = {...this.state, ...locState}
 
-    if (isCodeFile(file)) {
-      const newFile = file.newFile
-      return this.navigator(`/code/${file.id}`, {state: {...state, newFile}})
-    } else if (isFile(file)) {
-      const newFile = file.newFile
-      return this.navigator(`/editor/${file.id}`, {state: {...state, newFile}})
-    } else if (isCanvas(file)) {
-      return this.navigator(`/canvas/${file.id}`, {state})
-    } else if (isThread(file)) {
-      return this.navigator(`/assistant/${file.id}`, {state: {...state, threadId: undefined}})
-    } else if (isEditorElement(file)) {
-      return this.navigator(`/editor/${file.id}`, {state})
-    } else if (isCodeElement(file)) {
-      return this.navigator(`/code/${file.id}`, {state})
+    if (isCodeFile(item)) {
+      const newFile = item.newFile
+      return this.navigator(`/code/${item.id}`, {state: {...state, newFile}})
+    } else if (isFile(item)) {
+      const newFile = item.newFile
+      return this.navigator(`/editor/${item.id}`, {state: {...state, newFile}})
+    } else if (isCanvas(item)) {
+      return this.navigator(`/canvas/${item.id}`, {state})
+    } else if (isThread(item)) {
+      return this.navigator(`/assistant/${item.id}`, {state: {...state, threadId: undefined}})
+    } else if (isEditorElement(item)) {
+      return this.navigator(`/editor/${item.id}`, {state})
+    } else if (isCodeElement(item)) {
+      return this.navigator(`/code/${item.id}`, {state})
     }
   }
 
@@ -108,7 +108,7 @@ export class LocationService {
     this.navigator('/dir', {state})
   }
 
-  async openUrl(url: string) {
+  async openExternalUrl(url: string) {
     info(`Open url (url=${url})`)
 
     if (isTauri()) {

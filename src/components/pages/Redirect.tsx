@@ -25,7 +25,7 @@ export const Redirect = () => {
     if (argPath) {
       info(`Redirect to new file by path (path=${path}, newFile=${newFile})`)
       const file = await fileService.newFileByPath(path, newFile)
-      return locationService.openFile(file, {selection})
+      return locationService.openItem(file, {selection})
     }
 
     if (lastLocation?.pathname) {
@@ -36,12 +36,12 @@ export const Redirect = () => {
     const first = store.files.find((f) => !f.deleted)
     if (first) {
       info(`Redirect first file (id=${first?.id})`)
-      return locationService.openFile(first, {selection})
+      return locationService.openItem(first, {selection})
     }
 
     const file = await fileService.newFile()
     info(`Redirect to new empty file (id=${file.id})`)
-    locationService.openFile(file, {selection})
+    locationService.openItem(file, {selection})
   })
 
   return null

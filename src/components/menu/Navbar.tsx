@@ -194,7 +194,7 @@ const CurrentFileButton = () => {
       content: 'Do you want to proceed?',
       onConfirm: async () => {
         const result = await deleteService.deleteItem(currentFile, forever)
-        if (result.navigateTo !== false) locationService.openFile(result.navigateTo)
+        if (result.navigateTo !== false) locationService.openItem(result.navigateTo)
         closeTooltip()
       },
     })

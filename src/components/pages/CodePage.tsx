@@ -24,7 +24,7 @@ export const NewCodePage = () => {
   const onClick = async () => {
     const join = location.query?.join as string | undefined
     const newFile = await fileService.newFile({id: join, code: true})
-    locationService.openFile(newFile, {share: join !== undefined})
+    locationService.openItem(newFile, {share: join !== undefined})
   }
 
   return (

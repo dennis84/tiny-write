@@ -15,9 +15,9 @@ export const ChangeSet = () => {
   const renderVersion = (snapshot: number) => {
     const currentFile = fileService.currentFile
     if (locationService.state?.snapshot === snapshot) {
-      locationService.openFile(currentFile, {snapshot: undefined})
+      locationService.openItem(currentFile, {snapshot: undefined})
     } else {
-      locationService.openFile(currentFile, {snapshot})
+      locationService.openItem(currentFile, {snapshot})
     }
   }
 
@@ -26,12 +26,12 @@ export const ChangeSet = () => {
     const version = currentFile?.versions[locationService.state?.snapshot ?? -1]
     if (!version) return
     changeSetService.applyVersion(version)
-    locationService.openFile(currentFile, {snapshot: undefined})
+    locationService.openItem(currentFile, {snapshot: undefined})
   }
 
   onCleanup(() => {
     const currentFile = fileService.currentFile
-    locationService.openFile(currentFile, {snapshot: undefined})
+    locationService.openItem(currentFile, {snapshot: undefined})
     currentFile?.editorView?.focus()
   })
 

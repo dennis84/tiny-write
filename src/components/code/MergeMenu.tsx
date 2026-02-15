@@ -40,7 +40,7 @@ const MergeMenuWithChunks = (props: {chunks: ChunksType}) => {
     })
 
     toastService.open({message: 'Full diff applied ✅', duration: 2000})
-    locationService.openFile(fileService.currentFile, {merge: undefined})
+    locationService.openItem(fileService.currentFile, {merge: undefined})
   }
 
   const onReject = () => {
@@ -54,14 +54,14 @@ const MergeMenuWithChunks = (props: {chunks: ChunksType}) => {
     })
 
     toastService.open({message: 'Full diff rejected ✅', duration: 2000})
-    locationService.openFile(currentFile, {merge: undefined})
+    locationService.openItem(currentFile, {merge: undefined})
   }
 
   // Handle when all chunks are resolved in codemirror UI
   onCleanup(() => {
     if (autoClose()) {
       toastService.open({message: 'All chunks applied ✅', duration: 2000})
-      locationService.openFile(fileService.currentFile, {merge: undefined})
+      locationService.openItem(fileService.currentFile, {merge: undefined})
     }
   })
 

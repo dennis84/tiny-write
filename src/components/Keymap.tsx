@@ -55,7 +55,7 @@ export const Keymap = () => {
     if (locationService.page === Page.Editor) {
       const file = await fileService.newFile()
       treeService.add(file)
-      locationService.openFile(file)
+      locationService.openItem(file)
     } else {
       const els = await canvasService.newFile()
       if (els) {
@@ -166,7 +166,7 @@ export const Keymap = () => {
 
     const file = await fileService.newFileByPath(url.pathname)
 
-    locationService.openFile(file, {selection})
+    locationService.openItem(file, {selection})
   }
 
   // biome-ignore lint/suspicious/noConfusingVoidType: void is needed here

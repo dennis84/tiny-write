@@ -193,7 +193,7 @@ export const Toolbar = () => {
   const ToolbarDialog = (p: {dialog: Dialog<ToolbarState>}) => (
     <>
       <Show when={inViewport()}>
-        <TooltipButton onClick={() => locationService.openFile(p.dialog.state.element)}>
+        <TooltipButton onClick={() => locationService.openItem(p.dialog.state.element)}>
           <IconOpenInFull /> Open in full
         </TooltipButton>
         <Show when={fileService.findFileById(p.dialog.state.element.id)?.deleted}>

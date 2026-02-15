@@ -21,7 +21,7 @@ export const Bin = () => {
       content: 'Are you sure you want to permanently delete all items in the bin?',
       onConfirm: async () => {
         const result = await deleteService.emptyBin()
-        if (result.navigateTo) locationService.openFile(result.navigateTo)
+        if (result.navigateTo) locationService.openItem(result.navigateTo)
         treeService.updateAll()
       },
     })

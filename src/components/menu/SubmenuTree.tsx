@@ -245,7 +245,7 @@ export const SubmenuTree = (props: Props) => {
   const onNewFile = async () => {
     const file = await fileService.newFile()
     await treeService.add(file)
-    locationService.openFile(file)
+    locationService.openItem(file)
     closeTooltip()
     props.maybeHide?.()
   }
@@ -253,7 +253,7 @@ export const SubmenuTree = (props: Props) => {
   const onNewCanvas = async () => {
     const canvas = await canvasService.newCanvas()
     await treeService.add(canvas)
-    locationService.openFile(canvas)
+    locationService.openItem(canvas)
     closeTooltip()
     props.maybeHide?.()
   }
@@ -261,7 +261,7 @@ export const SubmenuTree = (props: Props) => {
   const onNewCode = async () => {
     const file = await codeService.newFile()
     await treeService.add(file)
-    locationService.openFile(file)
+    locationService.openItem(file)
     closeTooltip()
     props.maybeHide?.()
   }
@@ -275,7 +275,7 @@ export const SubmenuTree = (props: Props) => {
       await treeService.collapse(target.id)
     }
 
-    locationService.openFile(file)
+    locationService.openItem(file)
     closeTooltip()
   }
 
@@ -284,7 +284,7 @@ export const SubmenuTree = (props: Props) => {
     if (!target) return
     const canvas = await canvasService.newCanvas({parentId: target.id})
     await treeService.add(canvas)
-    locationService.openFile(canvas)
+    locationService.openItem(canvas)
     closeTooltip()
   }
 
@@ -293,7 +293,7 @@ export const SubmenuTree = (props: Props) => {
     if (!target) return
     const file = await codeService.newFile({parentId: target.id})
     await treeService.add(file)
-    locationService.openFile(file)
+    locationService.openItem(file)
     closeTooltip()
   }
 
@@ -305,7 +305,7 @@ export const SubmenuTree = (props: Props) => {
       content: 'Do you want to proceed?',
       onConfirm: async () => {
         const result = await deleteService.delete(node, forever)
-        if (result.navigateTo !== false) locationService.openFile(result.navigateTo)
+        if (result.navigateTo !== false) locationService.openItem(result.navigateTo)
         closeTooltip()
       },
     })
@@ -345,7 +345,7 @@ export const SubmenuTree = (props: Props) => {
     const title = useTitle({item: p.node.value})
 
     const onClick = async () => {
-      locationService.openFile(p.node.value)
+      locationService.openItem(p.node.value)
       props.maybeHide?.()
     }
 

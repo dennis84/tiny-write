@@ -22,7 +22,7 @@ export const NewEditorPage = () => {
   const onClick = async () => {
     const join = location.query?.join as string | undefined
     const newFile = await fileService.newFile({id: join})
-    locationService.openFile(newFile, {share: join !== undefined})
+    locationService.openItem(newFile, {share: join !== undefined})
   }
 
   return (

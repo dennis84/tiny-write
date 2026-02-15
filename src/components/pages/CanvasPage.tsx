@@ -22,7 +22,7 @@ export const NewCanvasPage = () => {
   const onClick = async () => {
     const join = location.query?.join as string | undefined
     const newCanvas = await canvasService.newCanvas({id: join})
-    locationService.openFile(newCanvas, {share: join !== undefined})
+    locationService.openItem(newCanvas, {share: join !== undefined})
   }
 
   return (

@@ -106,7 +106,7 @@ export const DirPage = () => {
       const path = await getResolvedPath(p.entry.name)
       const file = await fileService.newFileByPath(path)
 
-      locationService.openFile(file)
+      locationService.openItem(file)
     }
 
     return (

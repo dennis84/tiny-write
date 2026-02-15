@@ -52,7 +52,7 @@ export const ApplyPanel = (p: {state: ApplyPanelState}) => {
     const doc = p.state.editorView.state.doc.toString()
     const range = p.state.info.attrs?.range
 
-    locationService.openFile(file, {merge: {doc, range}})
+    locationService.openItem(file, {merge: {doc, range}})
   }
 
   const onCreateFile = async () => {
@@ -69,7 +69,7 @@ export const ApplyPanel = (p: {state: ApplyPanelState}) => {
     })
 
     await treeService.add(file)
-    locationService.openFile(file)
+    locationService.openItem(file)
   }
 
   return (

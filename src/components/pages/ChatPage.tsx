@@ -31,7 +31,7 @@ export const ChatPage = (props: RouteSectionProps) => {
     const currentThread = threadService.currentThread
     // Update URL if thread was persisted
     if (!props.params.id && currentThread?.lastModified) {
-      locationService.openFile(currentThread)
+      locationService.openItem(currentThread)
     }
   })
 
