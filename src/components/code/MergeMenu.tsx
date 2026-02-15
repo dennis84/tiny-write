@@ -82,11 +82,11 @@ const MergeMenuWithChunks = (props: {chunks: ChunksType}) => {
 }
 
 export const MergeMenu = () => {
-  const {store, fileService} = useState()
+  const {store, locationService, fileService} = useState()
 
   const chunks = createMemo(() => {
     const view = fileService.currentFile?.codeEditorView
-    if (view && store.location?.merge && store.lastTr) {
+    if (view && locationService.state?.merge && store.lastTr) {
       const result = getChunks(view.state)
       if (!result?.chunks.length) return null
       return result

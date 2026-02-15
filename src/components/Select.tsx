@@ -16,7 +16,7 @@ interface Props {
 }
 
 export const Select = (props: Props) => {
-  const {store, appService, canvasService, editorService} = useState()
+  const {locationService, appService, canvasService, editorService} = useState()
   const [frame, setFrame] = createSignal<Box>()
 
   onMount(() => {
@@ -46,7 +46,7 @@ export const Select = (props: Props) => {
 
         // If only clicked
         if (!first && !memo) {
-          if (store.location?.page === Page.Canvas) {
+          if (locationService.page === Page.Canvas) {
             canvasService.deselect()
           } else {
             editorService.deselect()
@@ -64,7 +64,7 @@ export const Select = (props: Props) => {
           Math.max(y, y + my),
         )
 
-        if (store.location?.page === Page.Canvas) {
+        if (locationService.page === Page.Canvas) {
           canvasService.selectBox(initial, first, last)
         } else {
           editorService.selectBox(initial, first, last)

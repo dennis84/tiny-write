@@ -4,8 +4,7 @@ import {getArgs, setFullscreen} from '@/remote/app'
 import {getDocument} from '@/remote/editor'
 import {info} from '@/remote/log'
 import {createConfig} from '@/state'
-import type {LocationState, State, Window} from '@/types'
-import {locationStateToString} from '@/utils/debug'
+import type {State, Window} from '@/types'
 import {CanvasService} from './CanvasService'
 import {FileService} from './FileService'
 
@@ -14,7 +13,6 @@ export class AppService {
 
   static async fetchData(): Promise<State> {
     const args = (await getArgs().catch(() => undefined)) ?? {}
-    info(`Fetched args (args=${JSON.stringify(args)})`)
 
     const fetchedWindow = await DB.getWindow()
     const fetchedConfig = (await DB.getConfig()) ?? createConfig()
@@ -23,10 +21,14 @@ export class AppService {
     const menuWidth = await DB.getMenuWidth()
     const tree = await DB.getTree()
     const ai = await DB.getAi()
-    const location: LocationState | undefined = await DB.getLastLocation()
+    const lastLocation = await DB.getLastLocation()
     const threads = (await DB.getThreads())?.sort((a, b) => {
       return (b.lastModified?.getTime() ?? 0) - (a.lastModified?.getTime() ?? 0)
     })
+
+    info(
+      `Fetched data (args=${JSON.stringify(args)}, lastLocation=${JSON.stringify(lastLocation)})`,
+    )
 
     return {
       fullscreen: false,
@@ -39,7 +41,7 @@ export class AppService {
       tree,
       ai,
       threads,
-      location,
+      lastLocation,
     }
   }
 
@@ -51,10 +53,6 @@ export class AppService {
 
   get fullscreen() {
     return this.store.fullscreen
-  }
-
-  get location() {
-    return this.store.location
   }
 
   async getBasePath() {
@@ -74,13 +72,6 @@ export class AppService {
     // Set state before changing fullscreen, otherwise resize window cannot skip
     this.setState('fullscreen', fullscreen)
     await setFullscreen(fullscreen)
-  }
-
-  async setLocation(location: Partial<LocationState> | undefined) {
-    info(`Set location (location=${locationStateToString(location)})`)
-    this.setState('location', location)
-    const loc = this.store.location
-    if (loc) await DB.setLastLocation(loc)
   }
 
   async updateWindow(win: Partial<Window>) {

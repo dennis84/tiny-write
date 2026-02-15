@@ -1,15 +1,12 @@
-import {useLocation} from '@solidjs/router'
 import {createResource, onMount, Show, Suspense} from 'solid-js'
 import {useOpen} from '@/hooks/use-open'
 import {useState} from '@/state'
-import type {LocationState} from '@/types'
 import {Drawer} from '../Drawer'
 import {ChatNavbar} from '../menu/Navbar'
 import {Chat} from './Chat'
 
 export const ChatDrawer = () => {
-  const {aiService, appService, threadService} = useState()
-  const location = useLocation<LocationState>()
+  const {aiService, threadService} = useState()
   const {updateState} = useOpen()
 
   const onDrawerResized = async (width: number) => {
@@ -17,8 +14,7 @@ export const ChatDrawer = () => {
   }
 
   const onChangeThread = async (threadId: string) => {
-    await appService.setLocation({threadId})
-    threadService.init()
+    updateState({threadId})
   }
 
   // Create a new thread if not in location state

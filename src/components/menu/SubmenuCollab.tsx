@@ -1,5 +1,6 @@
 import {Show} from 'solid-js'
 import {useCollabCount} from '@/hooks/use-collab-count'
+import {useOpen} from '@/hooks/use-open'
 import {copy} from '@/remote/clipboard'
 import {useState} from '@/state'
 import {IconCloud, IconCloudOff, IconGroup, IconLink} from '../Icon'
@@ -7,11 +8,12 @@ import {Link} from './Link'
 import {Label, Sub, Text} from './Style'
 
 export const SubmenuCollab = () => {
-  const {appService, collabService, toastService} = useState()
+  const {collabService, toastService} = useState()
   const collabUsers = useCollabCount()
+  const {updateState} = useOpen()
 
   const onCollabStart = async () => {
-    await appService.setLocation({share: true})
+    updateState({share: true})
     collabService.connect()
   }
 

@@ -1,12 +1,10 @@
-import {render, waitFor} from '@solidjs/testing-library'
+import {waitFor} from '@solidjs/testing-library'
 import {mockWindows} from '@tauri-apps/api/mocks'
 import {beforeEach, expect, test, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
-import {Main} from '@/components/Main'
 import type {DB} from '@/db'
-import {createCtrl} from '@/services'
 import {createState} from '@/state'
-import {createIpcMock, stubLocation} from '../testutil/util'
+import {createIpcMock, renderMain, stubLocation} from '../testutil/util'
 
 vi.mock('@/db', () => ({DB: mock<DB>()}))
 
@@ -28,8 +26,7 @@ test('dir', async () => {
   const initial = createState({
     args: {cwd: '/users/me/project', source: './'},
   })
-  const ctrl = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={ctrl} />)
+  const {getByTestId} = renderMain(initial)
 
   await waitFor(() => {
     expect(getByTestId('dir')).toBeDefined()
@@ -48,8 +45,7 @@ test('dir - empty', async () => {
   const initial = createState({
     args: {cwd: '/users/me/project', source: './'},
   })
-  const ctrl = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={ctrl} />)
+  const {getByTestId} = renderMain(initial)
 
   await waitFor(() => {
     expect(getByTestId('dir')).toBeDefined()
@@ -65,8 +61,7 @@ test('dir - file args', async () => {
   const initial = createState({
     args: {cwd: '/users/me/project', source: 'file1.md', file: 'file1.md'},
   })
-  const ctrl = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={ctrl} />)
+  const {getByTestId} = renderMain(initial)
 
   await waitFor(() => {
     expect(getByTestId('editor_scroll')).toBeDefined()
@@ -88,8 +83,7 @@ test.each([
     args: {cwd: '/users/me/project/', source: './'},
   })
 
-  const ctrl = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={ctrl} />)
+  const {getByTestId, ctrl} = renderMain(initial)
 
   await waitFor(() => {
     expect(getByTestId('dir')).toBeDefined()

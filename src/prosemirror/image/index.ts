@@ -7,7 +7,6 @@ import type {AppService} from '@/services/AppService'
 import type {CanvasService} from '@/services/CanvasService'
 import {MediaService} from '@/services/MediaService'
 import type {ViewConfig} from '@/services/ProseMirrorService'
-import {Page} from '@/types'
 import {Align} from './interfaces'
 
 const isUrl = (str: string) => {
@@ -88,7 +87,7 @@ class ImageView {
         event.preventDefault()
         if (first) {
           let w = this.container.getBoundingClientRect().width
-          if (appService.location?.page === Page.Canvas) {
+          if (canvasService.currentCanvas) {
             const zoom = canvasService.currentCanvas?.camera.zoom ?? 1
             w /= zoom
           }

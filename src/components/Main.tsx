@@ -1,12 +1,5 @@
-import {
-  Route,
-  Router,
-  type RouteSectionProps,
-  useCurrentMatches,
-  useLocation,
-  useMatch,
-} from '@solidjs/router'
-import {createEffect, createMemo, ErrorBoundary, on, onMount, Show, untrack} from 'solid-js'
+import {Route, Router, type RouteSectionProps} from '@solidjs/router'
+import {createEffect, ErrorBoundary, onMount, Show, untrack} from 'solid-js'
 import {DarkMode} from '@/components/DarkMode'
 import {DropFile} from '@/components/DropFile'
 import {Keymap} from '@/components/Keymap'
@@ -25,25 +18,32 @@ import {Toast} from '@/components/Toast'
 import {Variables} from '@/components/Variables'
 import {DB} from '@/db'
 import {isTauri} from '@/env'
+import {useBeforeLeave} from '@/hooks/use-before-leave'
 import {setAlwaysOnTop} from '@/remote/app'
 import {startLanguageServer} from '@/remote/copilot'
+import {info} from '@/remote/log'
 import {show, updateWindow} from '@/remote/window'
 import {createCtrl} from '@/services'
 import {StateContext} from '@/state'
-import {type LocationState, Page, type State} from '@/types'
-import {enumFromValue} from '@/utils/enum'
+import type {State} from '@/types'
 import {Dialogs} from './dialog/Dialogs'
 import {GeneralError} from './Error'
 import {Title} from './pages/Title'
 
 type Ctrl = ReturnType<typeof createCtrl>
 
-const isCtrl = (s: any): s is Ctrl => s.store !== undefined
+interface Props {
+  state: State
+  onCtrlReady?: (ctrl: Ctrl) => void
+}
 
-export const Main = (props: {state: State | Ctrl}) => {
+export const Main = (props: Props) => {
   const Root = (p: RouteSectionProps) => {
     let layoutRef!: HTMLDivElement
-    const ctrl = isCtrl(props.state) ? props.state : createCtrl(props.state)
+    const ctrl = createCtrl(props.state)
+    props.onCtrlReady?.(ctrl)
+
+    info(`Render root (pathname=${ctrl.locationService.pathname})`)
 
     onMount(async () => {
       ctrl.appService.layoutRef = layoutRef
@@ -69,40 +69,10 @@ export const Main = (props: {state: State | Ctrl}) => {
       }
     })
 
-    // Make sure location state is synced to store on initial load and on changes.
-    const locationGate = createMemo(async () => {
-      const location = useLocation<LocationState>()
-      const matchPage = useMatch(() => '/:page/*')
-      const currentMatches = useCurrentMatches()
-
-      // Listen on changes of location state.
-      location.state?.merge
-      location.state?.selection
-      location.state?.share
-
-      // Set URL params to state location on initail page load.
-      const pageMatch = matchPage() // To parse the page type from /:page/*
-      if (pageMatch) {
-        const page = enumFromValue(Page, pageMatch.params.page)
-        const mainMatch = currentMatches()[0] // Matches on /editor/:id, /code/:id, ...
-        if (mainMatch) {
-          const id = mainMatch.params.id
-          await untrack(async () => {
-            // Reset attachments when navigating to a new page.
-            ctrl.threadService.setAttachments([])
-            await ctrl.appService.setLocation({
-              ...location.state,
-              page,
-              codeId: page === Page.Code ? id : undefined,
-              editorId: page === Page.Editor ? id : undefined,
-              canvasId: page === Page.Canvas ? id : undefined,
-              threadId: page === Page.Assistant ? id : location.state?.threadId,
-            })
-          })
-        }
-      }
-
-      return true
+    useBeforeLeave(async () => {
+      await ctrl.locationService.setLastLocation({
+        pathname: ctrl.locationService.pathname,
+      })
     })
 
     createEffect((prev) => {
@@ -124,7 +94,7 @@ export const Main = (props: {state: State | Ctrl}) => {
           <Layout ref={layoutRef} data-testid="initialized">
             <PageContent>
               <FloatingNavbar />
-              <Show when={locationGate()}>{p.children}</Show>
+              {p.children}
             </PageContent>
             <Show when={isTauri()}>
               <DragArea data-tauri-drag-region="true" />

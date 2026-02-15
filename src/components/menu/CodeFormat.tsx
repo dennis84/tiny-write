@@ -9,7 +9,8 @@ import {MenuNavbar} from './Navbar'
 import {Label, Sub, Text} from './Style'
 
 export const CodeFormat = () => {
-  const {store, configService, codeService, canvasService, fileService} = useState()
+  const {store, locationService, configService, codeService, canvasService, fileService} =
+    useState()
 
   const updatePrettier = (opt: Partial<PrettierConfig>) =>
     configService.updateConfig({
@@ -17,8 +18,8 @@ export const CodeFormat = () => {
     })
 
   const getSelectedFile = (): File | undefined => {
-    if (store.location?.page === Page.Code) return fileService.currentFile
-    if (store.location?.page === Page.Canvas) {
+    if (locationService.page === Page.Code) return fileService.currentFile
+    if (locationService.page === Page.Canvas) {
       const elementId = canvasService.currentCanvas?.elements.find((el) => el.selected)?.id
       if (!elementId) return
       return fileService.findFileById(elementId)

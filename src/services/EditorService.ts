@@ -13,6 +13,7 @@ import {error, info} from '@/remote/log'
 import {type File, type FileText, Page, type State} from '@/types'
 import type {CollabService} from './CollabService'
 import {FileService} from './FileService'
+import type {LocationService} from './LocationService'
 import type {ProseMirrorService} from './ProseMirrorService'
 import type {SelectService} from './SelectService'
 import type {ToastService} from './ToastService'
@@ -24,6 +25,7 @@ export class EditorService {
     private proseMirrorService: ProseMirrorService,
     private toastService: ToastService,
     private selectService: SelectService,
+    private locationService: LocationService,
     private store: Store<State>,
     private setState: SetStoreFunction<State>,
   ) {}
@@ -43,7 +45,7 @@ export class EditorService {
       return
     }
 
-    const snapshot = this.store.location?.snapshot
+    const snapshot = this.locationService.state?.snapshot
     let subdoc: Y.Doc
     if (snapshot !== undefined) {
       subdoc = new Y.Doc({gc: false})
@@ -106,7 +108,7 @@ export class EditorService {
         state: editorState,
         nodeViews,
         dispatchTransaction,
-        editable: () => this.store.location?.snapshot === undefined,
+        editable: () => this.locationService.state?.snapshot === undefined,
       })
 
       const fileIndex = this.store.files.findIndex((f) => f.id === file.id)
@@ -132,7 +134,7 @@ export class EditorService {
 
   async init(id: string, existingYdoc?: Y.Doc) {
     const file = this.fileService.findFileById(id)
-    const share = this.store.location?.share
+    const share = this.locationService.state?.share
 
     info(`Initialize editor file (id=${id}, share=${share})`)
 

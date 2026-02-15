@@ -1,12 +1,10 @@
-import {render, waitFor} from '@solidjs/testing-library'
+import {waitFor} from '@solidjs/testing-library'
 import userEvent from '@testing-library/user-event'
 import {beforeEach, expect, test, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
-import {Main} from '@/components/Main'
-import {createCtrl} from '@/services'
 import {createState} from '@/state'
 import {createYUpdate} from '../testutil/prosemirror-util'
-import {expectToBeDefined, stubLocation} from '../testutil/util'
+import {expectToBeDefined, renderMain, stubLocation} from '../testutil/util'
 
 vi.mock('@/db', () => ({DB: mock()}))
 vi.mock('mermaid', () => ({}))
@@ -24,8 +22,7 @@ test('addVersion', async () => {
   const initial = createState({
     files: [{id: '1', ydoc: createYUpdate('1', []), versions: []}],
   })
-  const ctrl = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={ctrl} />)
+  const {getByTestId, ctrl} = renderMain(initial)
 
   await waitFor(() => {
     expect(getByTestId('editor_scroll')).toBeDefined()
@@ -50,7 +47,7 @@ test('addVersion', async () => {
 })
 
 test('render snapshot', async () => {
-  stubLocation('/editor/1')
+  stubLocation('/editor/1', {snapshot: 1})
 
   const initial = createState({
     files: [
@@ -58,19 +55,15 @@ test('render snapshot', async () => {
         id: '1',
         ydoc: createYUpdate('1', ['Test']),
         versions: [
-          {
-            date: new Date(),
-            ydoc: createYUpdate('1', ['Old']),
-          },
+          {date: new Date(), ydoc: createYUpdate('1', ['A'])},
+          {date: new Date(), ydoc: createYUpdate('1', ['B'])},
         ],
       },
     ],
-    location: {snapshot: 0},
   })
-  const ctrl = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={ctrl} />)
+  const {getByTestId} = renderMain(initial)
 
   await waitFor(() => {
-    expect(getByTestId('editor_scroll')).toHaveTextContent('Old')
+    expect(getByTestId('editor_scroll')).toHaveTextContent('B')
   })
 })

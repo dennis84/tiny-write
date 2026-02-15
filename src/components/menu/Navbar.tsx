@@ -354,7 +354,7 @@ const BackButton = () => {
   }
 
   const getBackTitle = () => {
-    const prev = store.location?.prev
+    const prev = store.lastLocation?.pathname
     if (prev?.includes('/editor/')) return 'Back to editor'
     if (prev?.includes('/code/')) return 'Back to code editor'
     if (prev?.includes('/canvas/')) return 'Back to canvas'
@@ -376,18 +376,17 @@ const BackButton = () => {
 
 export const ChatNavbar = () => {
   const {menuService, threadService} = useState()
-  const {open} = useOpen()
+  const {openPage, updateState} = useOpen()
 
   const onExpandClick = async () => {
     // Get current thread before resetting in state
     const currentThread = threadService.currentThread
-    // Resets the threadId in state
-    await menuService.toggleAssistant()
+    menuService.toggleAssistant()
 
     if (currentThread?.lastModified) {
-      open({threadId: currentThread.id})
+      updateState({threadId: currentThread.id})
     } else {
-      open({page: Page.Assistant})
+      openPage(Page.Assistant)
     }
   }
 
@@ -436,7 +435,7 @@ export const MenuNavbar = () => {
 }
 
 export const FloatingNavbar = () => {
-  const {store, canvasService, collabService, fileService, menuService} = useState()
+  const {canvasService, collabService, fileService, locationService, menuService} = useState()
 
   return (
     <FloatingContainer>
@@ -448,7 +447,7 @@ export const FloatingNavbar = () => {
         <Show when={collabService?.started()}>
           <CollabButton />
         </Show>
-        <Show when={!menuService.assistant() && store.location?.page !== Page.Assistant}>
+        <Show when={!menuService.assistant() && locationService.page !== Page.Assistant}>
           <AssistantButton />
         </Show>
         <Show when={!menuService.menu() && !menuService.assistant()}>

@@ -17,11 +17,11 @@ const GridSvg = styled('svg')`
   overscroll-behavior: none;
 `
 
-export const Grid = ({onClick}: {onClick: () => void}) => {
+export const Grid = () => {
   const {canvasService} = useState()
 
   return (
-    <GridSvg id="grid" onClick={onClick} version="1.1" xmlns="http://www.w3.org/2000/svg">
+    <GridSvg id="grid" xmlns="http://www.w3.org/2000/svg">
       <defs>
         {STEPS.map(([r, size], i) => {
           const grid = 10

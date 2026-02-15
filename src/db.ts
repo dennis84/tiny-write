@@ -8,7 +8,7 @@ import {
   type Config,
   ConfigSchema,
   type ElementType,
-  type LocationState,
+  type LastLocation,
   type Thread,
   type Window,
 } from '@/types'
@@ -89,7 +89,7 @@ interface MyDB extends DBSchema {
   }
   lastLocation: {
     key: string
-    value: LocationState
+    value: LastLocation
   }
 }
 
@@ -148,21 +148,12 @@ export class DB {
     return (await dbPromise).get('window', 'main')
   }
 
-  static async setLastLocation(location: LocationState) {
-    const loc = DB.unwrap({
-      ...location,
-      // Don't persist the following fields
-      prev: undefined,
-      merge: undefined,
-      selection: undefined,
-      activeFileId: undefined,
-      snapshot: undefined,
-    })
-
+  static async setLastLocation(location?: LastLocation) {
+    const loc = DB.unwrap(location) ?? {}
     return (await dbPromise).put('lastLocation', loc, 'main')
   }
 
-  static async getLastLocation(): Promise<LocationState | undefined> {
+  static async getLastLocation(): Promise<LastLocation | undefined> {
     return (await dbPromise).get('lastLocation', 'main')
   }
 

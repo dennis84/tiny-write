@@ -1,4 +1,5 @@
 import {rename} from '@tauri-apps/plugin-fs'
+import {createSignal} from 'solid-js'
 import type {SetStoreFunction, Store} from 'solid-js/store'
 import {v4 as uuidv4} from 'uuid'
 import {ySyncFacet} from 'y-codemirror.next'
@@ -23,6 +24,7 @@ import {debug, error, info} from '@/remote/log'
 import {isLocalFile} from '@/state'
 import type {File, FileText, State} from '@/types'
 import type {CollabService} from './CollabService'
+import type {LocationService} from './LocationService'
 
 export interface LoadedTextFile {
   text: string
@@ -37,18 +39,21 @@ export interface LoadedMarkdownFile {
 }
 
 export class FileService {
+  private activeFileSignal = createSignal<string>()
+
   constructor(
     private collabService: CollabService,
+    private locationService: LocationService,
     private store: Store<State>,
     private setState: SetStoreFunction<State>,
   ) {}
 
+  get activeFile() {
+    return this.activeFileSignal[0]
+  }
+
   get currentFileId(): string | undefined {
-    return (
-      this.store.location?.editorId ??
-      this.store.location?.codeId ??
-      this.store.location?.activeFileId
-    )
+    return this.locationService.editorId ?? this.locationService.codeId ?? this.activeFile()
   }
 
   get currentFile(): File | undefined {
@@ -199,6 +204,10 @@ export class FileService {
     return findCodeLang(ext) ?? file.codeLang
   }
 
+  setActiveFile(id?: string) {
+    this.activeFileSignal[1](id)
+  }
+
   async newFile(params: Partial<File> = {}): Promise<File> {
     if (params.id) {
       const file = this.findFileById(params.id)
@@ -298,9 +307,14 @@ export class FileService {
 
   destroy(id: string) {
     info(`Destroy file (id=${id})`)
+
     const file = this.findFileById(id)
     if (!file) return
     file.editorView?.destroy()
+
+    if (this.activeFile() === id) {
+      this.setActiveFile(undefined)
+    }
 
     if (file.codeEditorView) {
       this.collabService.undoManager?.removeTrackedOrigin(

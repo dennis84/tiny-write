@@ -12,19 +12,17 @@ export interface MergeState {
   range?: [number, number]
 }
 
+export interface LastLocation {
+  pathname?: string // prev location pathname
+}
+
 export interface LocationState {
-  page?: Page // /:page/*
-  editorId?: string // /editor/:id
-  canvasId?: string // /canvas/:id
-  codeId?: string // /code/:id
-  threadId?: string // /assistant/:id or active thread in sidebar
-  prev?: string // prev location pathname
+  threadId?: string // if active thread in sidebar
   file?: string // is this required???
   newFile?: string // save as to this path
   selection?: VisualPositionRange // forgotten
   merge?: MergeState // e.g. open file with merge params from assistant
   share?: boolean // turn collab mode on
-  activeFileId?: string // An active file on canvas page
   snapshot?: number // Snapshot version number (index in of file version)
 }
 
@@ -261,7 +259,7 @@ export interface State {
   lastTr?: number
   ai?: AiConfig
   threads: Thread[]
-  location?: LocationState
+  lastLocation?: LastLocation
 }
 
 export type FileText = Record<string, any>

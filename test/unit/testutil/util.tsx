@@ -1,13 +1,27 @@
+import {render} from '@solidjs/testing-library'
 import {mockIPC} from '@tauri-apps/api/mocks'
 import {expect, vi} from 'vitest'
+import {Main} from '@/components/Main'
+import type {Ctrl} from '@/services'
+import type {State} from '@/types'
 
 export function expectToBeDefined<T>(value: T | undefined): asserts value is T {
   expect(value).toBeDefined()
 }
 
-export const stubLocation = (path: string) => {
+export const stubLocation = (path: string, state: Record<string, any> = {}) => {
   vi.stubGlobal('location', new URL(`http://localhost:3000${path}`))
-  vi.spyOn(window.history, 'state', 'get').mockReturnValue({})
+  vi.spyOn(window.history, 'state', 'get').mockReturnValue(state)
+}
+
+export const renderMain = (state: State) => {
+  let ctrl!: Ctrl
+  return {
+    ...render(() => {
+      return <Main state={state} onCtrlReady={(c) => (ctrl = c)} />
+    }),
+    ctrl,
+  }
 }
 
 type IpcMockFn = (...args: any[]) => any

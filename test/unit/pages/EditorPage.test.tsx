@@ -1,14 +1,12 @@
-import {render, waitFor} from '@solidjs/testing-library'
+import {waitFor} from '@solidjs/testing-library'
 import {clearMocks, mockWindows} from '@tauri-apps/api/mocks'
 import {beforeEach, expect, test, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
-import {Main} from '@/components/Main'
 import type {DB} from '@/db'
-import {createCtrl} from '@/services'
 import {createState} from '@/state'
 import {Page} from '@/types'
 import {createYUpdate} from '../testutil/prosemirror-util'
-import {createIpcMock, stubLocation} from '../testutil/util'
+import {createIpcMock, renderMain, stubLocation} from '../testutil/util'
 
 vi.mock('@/db', () => ({DB: mock<DB>()}))
 
@@ -27,14 +25,13 @@ test('open - new file on root page', async () => {
 
   const initial = createState()
 
-  const ctrl = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={ctrl} />)
+  const {getByTestId, ctrl} = renderMain(initial)
 
   await waitFor(() => {
     expect(getByTestId('editor_scroll')).toBeDefined()
   })
 
-  expect(ctrl.store.location?.page).toBe(Page.Editor)
+  expect(ctrl.locationService.page).toBe(Page.Editor)
   expect(ctrl.store.files.length).toBe(1)
 })
 
@@ -43,14 +40,13 @@ test('open - new file page', async () => {
 
   const initial = createState()
 
-  const ctrl = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={ctrl} />)
+  const {getByTestId, ctrl} = renderMain(initial)
 
   await waitFor(() => {
     expect(getByTestId('new_editor_page')).toBeDefined()
   })
 
-  expect(ctrl.store.location?.page).toBe(Page.Editor)
+  expect(ctrl.locationService.page).toBe(Page.Editor)
   expect(ctrl.store.files.length).toBe(0)
 })
 
@@ -58,9 +54,9 @@ test('open - open last location', async () => {
   stubLocation('/')
 
   const initial = createState({
-    location: {
+    lastLocation: {
       page: Page.Editor,
-      editorId: '2',
+      pathname: '/editor/2',
     },
     files: [
       {id: '1', ydoc: createYUpdate('1', ['Test']), lastModified, versions: []},
@@ -68,14 +64,13 @@ test('open - open last location', async () => {
     ],
   })
 
-  const ctrl = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={ctrl} />)
+  const {getByTestId, ctrl} = renderMain(initial)
 
   await waitFor(() => {
     expect(getByTestId('editor_scroll')).toBeDefined()
   })
 
-  expect(ctrl.store.location?.page).toBe(Page.Editor)
+  expect(ctrl.locationService.page).toBe(Page.Editor)
   expect(ctrl.store.files.length).toBe(2)
   expect(getByTestId('editor_scroll')).toHaveTextContent(/^Test 2$/)
 })
@@ -85,14 +80,13 @@ test('open - file not found', async () => {
 
   const initial = createState()
 
-  const ctrl = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={ctrl} />)
+  const {getByTestId, ctrl} = renderMain(initial)
 
   await waitFor(() => {
     expect(getByTestId('new_editor_page')).toBeDefined()
   })
 
-  expect(ctrl.store.location?.page).toBe(Page.Editor)
+  expect(ctrl.locationService.page).toBe(Page.Editor)
   expect(ctrl.store.files.length).toBe(0)
 })
 
@@ -106,14 +100,13 @@ test('open - existing file', async () => {
     ],
   })
 
-  const ctrl = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={ctrl} />)
+  const {getByTestId, ctrl} = renderMain(initial)
 
   await waitFor(() => {
     expect(getByTestId('editor_scroll')).toBeDefined()
   })
 
-  expect(ctrl.store.location?.page).toBe(Page.Editor)
+  expect(ctrl.locationService.page).toBe(Page.Editor)
   expect(ctrl.store.files.length).toBe(2)
   expect(getByTestId('editor_scroll')).toHaveTextContent(/^Text$/)
 })
@@ -128,8 +121,7 @@ test('open - join', async () => {
     ],
   })
 
-  const ctrl = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={ctrl} />)
+  const {getByTestId, ctrl} = renderMain(initial)
 
   await waitFor(() => {
     expect(getByTestId('new_editor_page')).toBeDefined()
@@ -145,7 +137,7 @@ test('open - join', async () => {
     expect(getByTestId('editor_scroll')).toBeDefined()
   })
 
-  expect(ctrl.store.location?.page).toBe(Page.Editor)
+  expect(ctrl.locationService.page).toBe(Page.Editor)
   expect(ctrl.store.files.length).toBe(2)
   expect(ctrl.collabService.started()).toBe(true)
 
@@ -175,14 +167,13 @@ test('open - file with path', async () => {
     ],
   })
 
-  const ctrl = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={ctrl} />)
+  const {getByTestId, ctrl} = renderMain(initial)
 
   await waitFor(() => {
     expect(getByTestId('editor_scroll')).toBeDefined()
   })
 
-  expect(ctrl.store.location?.page).toBe(Page.Editor)
+  expect(ctrl.locationService.page).toBe(Page.Editor)
   expect(ctrl.store.files.length).toBe(1)
   expect(ctrl.store.files[0].path).toBe('file1')
   expect(getByTestId('editor_scroll')).toHaveTextContent(/^File1$/)
@@ -212,8 +203,7 @@ test('open - read file - file not found', async () => {
     ],
   })
 
-  const ctrl = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={ctrl} />)
+  const {getByTestId} = renderMain(initial)
 
   await waitFor(() => {
     expect(getByTestId('new_editor_page')).toBeDefined()
@@ -232,8 +222,7 @@ test('open - file arg', async () => {
   const initial = createState({
     args: {file: 'file2.md'},
   })
-  const ctrl = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={ctrl} />)
+  const {getByTestId, ctrl} = renderMain(initial)
 
   await waitFor(() => {
     expect(getByTestId('editor_scroll')).toBeDefined()
@@ -265,8 +254,7 @@ test('open - file arg exists', async () => {
     ],
   })
 
-  const ctrl = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={ctrl} />)
+  const {getByTestId, ctrl} = renderMain(initial)
 
   await waitFor(() => {
     expect(getByTestId('editor_scroll')).toBeDefined()
@@ -286,8 +274,7 @@ test('open - newFile arg', async () => {
     args: {newFile: 'file2.md'},
   })
 
-  const ctrl = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={ctrl} />)
+  const {getByTestId, ctrl} = renderMain(initial)
 
   await waitFor(() => {
     expect(getByTestId('editor_scroll')).toBeDefined()
@@ -319,8 +306,7 @@ test('open - newFile arg - path exists', async () => {
     ],
   })
 
-  const ctrl = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={ctrl} />)
+  const {getByTestId, ctrl} = renderMain(initial)
 
   await waitFor(() => {
     expect(getByTestId('editor_scroll')).toBeDefined()
@@ -350,8 +336,7 @@ test('open - newFile arg - newFile exists', async () => {
     ],
   })
 
-  const ctrl = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={ctrl} />)
+  const {getByTestId, ctrl} = renderMain(initial)
 
   await waitFor(() => {
     expect(getByTestId('editor_scroll')).toBeDefined()

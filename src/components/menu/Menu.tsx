@@ -11,6 +11,7 @@ import {
   IconVerticalAlignCenter,
 } from '@/components/Icon'
 import {isDev, isMac, isTauri, mod, shortHash, VERSION_URL, version} from '@/env'
+import {useOpen} from '@/hooks/use-open'
 import {quit} from '@/remote/app'
 import {MenuId} from '@/services/MenuService'
 import {useState} from '@/state'
@@ -33,8 +34,6 @@ import {SubmenuCollab} from './SubmenuCollab'
 import {SubmenuEdit} from './SubmenuEdit'
 import {SubmenuEditor} from './SubmenuEditor'
 import {SubmenuTree} from './SubmenuTree'
-import { threadId } from 'node:worker_threads'
-import { useOpen } from '@/hooks/use-open'
 
 export const MenuDrawer = ({children}: {children: JSX.Element}) => {
   const {menuService, fileService} = useState()
@@ -56,6 +55,7 @@ export const MenuDrawer = ({children}: {children: JSX.Element}) => {
 export const Menu = () => {
   const {
     store,
+    locationService,
     appService,
     collabService,
     menuService,
@@ -117,7 +117,7 @@ export const Menu = () => {
   createEffect(() => {
     const isMenuOpen = untrack(() => menuService.assistant())
     // Open assistant menu if merge was applied in assistant mode
-    if (store.location?.page !== Page.Assistant && store.location?.threadId && !isMenuOpen) {
+    if (locationService.page !== Page.Assistant && locationService.state?.threadId && !isMenuOpen) {
       menuService.showAssistant()
     }
   })
@@ -151,15 +151,15 @@ export const Menu = () => {
           <DrawerContent>
             <SubmenuTree onBin={() => menuService.show(MenuId.BIN)} maybeHide={maybeHide} />
             {/* Submenu File */}
-            <Show when={store.location?.page === Page.Editor}>
+            <Show when={locationService.page === Page.Editor}>
               <SubmenuEditor />
             </Show>
             {/* Submenu Canvas */}
-            <Show when={store.location?.page === Page.Canvas}>
+            <Show when={locationService.page === Page.Canvas}>
               <SubmenuCanvas maybeHide={maybeHide} />
             </Show>
             {/* Submenu Code */}
-            <Show when={store.location?.page === Page.Code}>
+            <Show when={locationService.page === Page.Code}>
               <SubmenuCode />
             </Show>
             {/* undo, redo, copy, paste, ... */}
@@ -175,7 +175,7 @@ export const Menu = () => {
                   <IconPrettier /> Code Format
                 </Link>
               </Show>
-              <Show when={store.location?.page === Page.Editor && store.location.editorId}>
+              <Show when={locationService.page === Page.Editor && locationService.editorId}>
                 <Link onClick={() => menuService.show(MenuId.CHANGE_SET)}>
                   <IconHistory /> Change Set
                 </Link>
@@ -189,7 +189,7 @@ export const Menu = () => {
                   <IconFullscreen /> Fullscreen
                 </Link>
               </Show>
-              <Show when={store.location?.page === Page.Editor}>
+              <Show when={locationService.page === Page.Editor}>
                 <Link onClick={onToggleTypewriterMode} checked={store.config.typewriterMode}>
                   <IconVerticalAlignCenter /> Typewriter mode
                 </Link>

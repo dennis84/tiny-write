@@ -41,17 +41,10 @@ const Board = styled('div')`
 `
 
 export const Canvas = () => {
-  const {store, canvasService} = useState()
+  const {canvasService} = useState()
 
   const scaleBounds = {min: 0.3, max: 10}
   let ref!: HTMLDivElement
-
-  const onGridClick = () => {
-    const currentCanvas = canvasService.currentCanvas
-    if (!currentCanvas) return
-    if (store.selecting) return
-    canvasService.deselect()
-  }
 
   const zoomTo = (next: number, center?: number[]) => {
     if (!canvasService.currentCanvas?.camera) return
@@ -147,7 +140,7 @@ export const Canvas = () => {
     <Container ref={ref} id="content" data-testid="canvas_container">
       <ContextMenu />
       <Select target={() => ref} />
-      <Grid onClick={onGridClick} />
+      <Grid />
       <Toolbar />
       <Board
         id="board"

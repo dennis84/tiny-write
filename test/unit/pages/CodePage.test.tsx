@@ -1,14 +1,12 @@
-import {fireEvent, render, waitFor} from '@solidjs/testing-library'
+import {fireEvent, waitFor} from '@solidjs/testing-library'
 import {clearMocks, mockWindows} from '@tauri-apps/api/mocks'
 import {beforeEach, expect, test, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
-import {Main} from '@/components/Main'
 import type {DB} from '@/db'
-import {createCtrl} from '@/services'
 import {createState} from '@/state'
 import {Page} from '@/types'
 import {createYUpdate} from '../testutil/codemirror-util'
-import {createIpcMock, stubLocation} from '../testutil/util'
+import {createIpcMock, renderMain, stubLocation} from '../testutil/util'
 
 vi.mock('@/db', () => ({DB: mock<DB>()}))
 
@@ -27,14 +25,13 @@ test('init - new code page', async () => {
 
   const initial = createState()
 
-  const ctrl = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={ctrl} />)
+  const {getByTestId, ctrl} = renderMain(initial)
 
   await waitFor(() => {
     expect(getByTestId('new_code_page')).toBeDefined()
   })
 
-  expect(ctrl.store.location?.page).toBe(Page.Code)
+  expect(ctrl.locationService.page).toBe(Page.Code)
   expect(ctrl.store.files.length).toBe(0)
   expect(ctrl.fileService.currentFileId).toBe(undefined)
 
@@ -52,14 +49,13 @@ test('init - file not found', async () => {
 
   const initial = createState()
 
-  const ctrl = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={ctrl} />)
+  const {getByTestId, ctrl} = renderMain(initial)
 
   await waitFor(() => {
     expect(getByTestId('new_code_page')).toBeDefined()
   })
 
-  expect(ctrl.store.location?.page).toBe(Page.Code)
+  expect(ctrl.locationService.page).toBe(Page.Code)
   expect(ctrl.store.files.length).toBe(0)
   expect(ctrl.fileService.currentFileId).toBe(undefined)
 })
@@ -68,12 +64,11 @@ test('init - open last location', async () => {
   stubLocation('/')
 
   const initial = createState({
-    location: {
-      codeId: '1',
+    lastLocation: {
       page: Page.Code,
+      pathname: '/code/1',
     },
     files: [
-      {id: '1', ydoc: createYUpdate('1', 'Code1'), lastModified, versions: [], code: true},
       {
         id: '2',
         ydoc: createYUpdate('2', 'Code2'),
@@ -81,17 +76,17 @@ test('init - open last location', async () => {
         versions: [],
         code: true,
       },
+      {id: '1', ydoc: createYUpdate('1', 'Code1'), lastModified, versions: [], code: true},
     ],
   })
 
-  const ctrl = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={ctrl} />)
+  const {getByTestId, ctrl} = renderMain(initial)
 
   await waitFor(() => {
     expect(getByTestId('code_scroll')).toBeDefined()
   })
 
-  expect(ctrl.store.location?.page).toBe(Page.Code)
+  expect(ctrl.locationService.page).toBe(Page.Code)
   expect(ctrl.store.files.length).toBe(2)
   expect(ctrl.fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('Code1')
 })
@@ -106,14 +101,13 @@ test('init - existing file', async () => {
     ],
   })
 
-  const ctrl = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={ctrl} />)
+  const {getByTestId, ctrl} = renderMain(initial)
 
   await waitFor(() => {
     expect(getByTestId('code_scroll')).toBeDefined()
   })
 
-  expect(ctrl.store.location?.page).toBe(Page.Code)
+  expect(ctrl.locationService.page).toBe(Page.Code)
   expect(ctrl.store.files.length).toBe(2)
   expect(ctrl.fileService.currentFileId).toBe('1')
   expect(ctrl.fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('Code1')
@@ -129,8 +123,7 @@ test('init - join url', async () => {
     ],
   })
 
-  const ctrl = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={ctrl} />)
+  const {getByTestId, ctrl} = renderMain(initial)
 
   await waitFor(() => {
     expect(getByTestId('new_code_page')).toBeDefined()
@@ -147,7 +140,7 @@ test('init - join url', async () => {
     expect(getByTestId('code_scroll')).toBeDefined()
   })
 
-  expect(ctrl.store.location?.page).toBe(Page.Code)
+  expect(ctrl.locationService.page).toBe(Page.Code)
   expect(ctrl.store.files.length).toBe(2)
   expect(ctrl.collabService.started()).toBe(true)
 
@@ -167,8 +160,7 @@ test('init - file arg', async () => {
   })
 
   const initial = createState({args: {file: 'code1.yaml'}})
-  const ctrl = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={ctrl} />)
+  const {getByTestId, ctrl} = renderMain(initial)
 
   await waitFor(() => {
     expect(getByTestId('code_scroll')).toBeDefined()
@@ -208,8 +200,7 @@ test('open', async () => {
     ],
   })
 
-  const ctrl = createCtrl(initial)
-  const {getByTestId, getAllByTestId} = render(() => <Main state={ctrl} />)
+  const {getByTestId, getAllByTestId, ctrl} = renderMain(initial)
 
   await waitFor(() => {
     expect(getByTestId('code_scroll')).toBeDefined()

@@ -15,6 +15,7 @@ import type {
   ChatMessageTextContent,
   CopilotService,
 } from './CopilotService'
+import type {LocationService} from './LocationService'
 
 export class ThreadService {
   public messageTree = createTreeStore<Message>()
@@ -33,7 +34,7 @@ export class ThreadService {
   }
 
   get currentThreadId(): string | undefined {
-    return this.store.location?.threadId
+    return this.locationService.threadId
   }
 
   get currentThread(): Thread | undefined {
@@ -56,6 +57,7 @@ export class ThreadService {
     private store: Store<State>,
     private setState: SetStoreFunction<State>,
     private copilotService: CopilotService,
+    private locationService: LocationService,
     private readonly createSummaryAt = 40_000,
     private readonly summarizeAt = 50_000,
   ) {}

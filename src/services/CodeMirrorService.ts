@@ -28,6 +28,7 @@ import {isTauri} from '@/env'
 import {Page, type PrettierConfig, type State} from '@/types'
 import type {AppService} from './AppService'
 import type {ConfigService} from './ConfigService'
+import type {LocationService} from './LocationService'
 import type {PrettierService} from './PrettierService'
 import type {ToastService} from './ToastService'
 
@@ -47,7 +48,8 @@ export class CodeMirrorService {
     private appService: AppService,
     private prettierService: PrettierService,
     private toastService: ToastService,
-    private store: Store<State>,
+    private locationService: LocationService,
+    _store: Store<State>,
   ) {}
 
   static replaceSlice(doc: string, slice: string, range: [number, number]): string {
@@ -119,7 +121,7 @@ export class CodeMirrorService {
       )
     }
 
-    if (this.store.location?.page !== Page.Canvas) {
+    if (this.locationService.page !== Page.Canvas) {
       extensions.push(
         foldGutter({
           markerDOM: (open) => {

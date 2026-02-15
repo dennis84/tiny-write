@@ -3,10 +3,10 @@ import {useState} from '@/state'
 import {type File, Page} from '@/types'
 
 export const useCurrentFile = (): Accessor<File | undefined> => {
-  const {store, canvasService, fileService} = useState()
+  const {locationService, canvasService, fileService} = useState()
 
   return createMemo(() => {
-    const page = store.location?.page
+    const page = locationService.page
 
     if (page === Page.Code || page === Page.Editor) {
       return fileService.currentFile

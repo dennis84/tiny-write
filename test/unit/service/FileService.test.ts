@@ -5,6 +5,7 @@ import * as Y from 'yjs'
 import {DB} from '@/db'
 import type {CollabService} from '@/services/CollabService'
 import {FileService} from '@/services/FileService'
+import type {LocationService} from '@/services/LocationService'
 import {createState} from '@/state'
 import {createSubdoc, createYUpdate} from '../testutil/prosemirror-util'
 import {createIpcMock} from '../testutil/util'
@@ -17,6 +18,7 @@ beforeEach(() => {
 })
 
 const collabService = mock<CollabService>()
+const locationService = mock<LocationService>()
 
 test('only save file type', async () => {
   const ydoc = createSubdoc('1', ['Test'])
@@ -27,7 +29,7 @@ test('only save file type', async () => {
     }),
   )
 
-  const service = new FileService(collabService, store, setState)
+  const service = new FileService(collabService, locationService, store, setState)
 
   ydoc.getText('2').insert(0, '1')
   expect(ydoc.getText('2').length).toBe(1)
@@ -57,7 +59,7 @@ test('restore', async () => {
     }),
   )
 
-  const service = new FileService(collabService, store, setState)
+  const service = new FileService(collabService, locationService, store, setState)
 
   await service.restore('2')
   expect(store.files.length).toBe(2)
@@ -83,7 +85,7 @@ test('getTitle', async () => {
     }),
   )
 
-  const service = new FileService(collabService, store, setState)
+  const service = new FileService(collabService, locationService, store, setState)
   expect(await service.getTitle(store.files[0])).toBe('Test1')
   expect(await service.getTitle(store.files[1])).toBe('Test2')
   expect(await service.getTitle(store.files[2])).toBe('a'.repeat(25))
@@ -105,7 +107,7 @@ test('findFile - found', async () => {
     }),
   )
 
-  const service = new FileService(collabService, store, setState)
+  const service = new FileService(collabService, locationService, store, setState)
   expect(service.findFileById('1')?.id).toBe('1')
   expect((await service.findFileByPath('/file2'))?.id).toBe('2')
 })
@@ -124,7 +126,7 @@ test('findFile - not found', async () => {
     }),
   )
 
-  const service = new FileService(collabService, store, setState)
+  const service = new FileService(collabService, locationService, store, setState)
   expect(service.findFileById('1')).toBe(undefined)
   await expect(service.findFileByPath('/path/to/file2')).rejects.toThrowError()
 })
@@ -144,7 +146,7 @@ test.each([
 
 test('newFile', async () => {
   const [store, setState] = createStore(createState({}))
-  const service = new FileService(collabService, store, setState)
+  const service = new FileService(collabService, locationService, store, setState)
 
   const file = await service.newFile()
 
@@ -159,7 +161,7 @@ test('renameFile - title', async () => {
     }),
   )
 
-  const service = new FileService(collabService, store, setState)
+  const service = new FileService(collabService, locationService, store, setState)
 
   await service.renameFile('1', 'Title')
 
@@ -187,7 +189,7 @@ test('renameFile - update path', async () => {
     }),
   )
 
-  const service = new FileService(collabService, store, setState)
+  const service = new FileService(collabService, locationService, store, setState)
 
   await service.renameFile('1', 'new.ts')
 
@@ -217,7 +219,7 @@ test('renameFile - update newFile', async () => {
     }),
   )
 
-  const service = new FileService(collabService, store, setState)
+  const service = new FileService(collabService, locationService, store, setState)
 
   await service.renameFile('1', 'new.ts')
 

@@ -2,13 +2,12 @@ import {useLocation, useNavigate} from '@solidjs/router'
 import {isTauri} from '../env'
 import {open as shellOpen} from '../remote/app'
 import {info} from '../remote/log'
-import {isCanvas, isCodeElement, isCodeFile, isEditorElement, isFile, useState} from '../state'
-import {type Canvas, type CanvasElement, type File, type LocationState, Page} from '../types'
+import {isCanvas, isCodeElement, isCodeFile, isEditorElement, isFile} from '../state'
+import type {Canvas, CanvasElement, File, LocationState, Page} from '../types'
 
 export const useOpen = () => {
   const navigate = useNavigate()
   const location = useLocation<LocationState>()
-  const {store} = useState()
 
   const updateState = (locState: Partial<LocationState> | undefined) => {
     const state = {...location.state, ...locState}
@@ -16,79 +15,28 @@ export const useOpen = () => {
   }
 
   const openFile = (file?: File | Canvas | CanvasElement, locState?: Partial<LocationState>) => {
-    if (!file) return open(undefined)
+    if (!file) return navigate('/')
+    const state = {...location.state, ...locState}
 
     if (isCodeFile(file)) {
       const newFile = file.newFile
-      return open({...locState, codeId: file.id, newFile})
+      return navigate(`/code/${file.id}`, {state: {...state, newFile}})
     } else if (isFile(file)) {
       const newFile = file.newFile
-      return open({...locState, editorId: file.id, newFile})
+      return navigate(`/editor/${file.id}`, {state: {...state, newFile}})
     } else if (isCanvas(file)) {
-      return open({...locState, canvasId: file.id})
+      return navigate(`/canvas/${file.id}`, {state})
     } else if (isEditorElement(file)) {
-      return open({...locState, editorId: file.id})
+      return navigate(`/editor/${file.id}`, {state})
     } else if (isCodeElement(file)) {
-      return open({...locState, codeId: file.id})
+      return navigate(`/code/${file.id}`, {state})
     }
   }
 
-  const open = (locState?: Partial<LocationState>) => {
-    if (!locState) {
-      info(`Navigate to /`)
-      return navigate('/')
-    }
-
-    const prev = location.pathname
-
-    const threadId = store.location?.threadId // keep threadId to keep assistant open
-    let page = locState.page
-    let id: string | undefined
-
-    if (locState.editorId) {
-      page = Page.Editor
-      id = locState.editorId
-    } else if (locState.codeId) {
-      page = Page.Code
-      id = locState.codeId
-    } else if (locState.canvasId) {
-      page = Page.Canvas
-      id = locState.canvasId
-    } else if (locState.threadId) {
-      page = Page.Assistant
-      id = locState.threadId
-    }
-
-    // Default: use passed share otherwise keep existing share in location state
-    let share = locState.share ?? location.state?.share
-    // Unless another item was opened then stop sharing
-    if (
-      (locState.editorId && locState.editorId !== location.state?.editorId) ||
-      (locState.codeId && locState.codeId !== location.state?.codeId) ||
-      (locState.canvasId && locState.canvasId !== location.state?.canvasId) ||
-      locState.threadId
-    ) {
-      share = false
-    }
-
-    const state: LocationState = {
-      share,
-      prev,
-      page,
-      threadId,
-      ...locState,
-    }
-
-    if (page && id) {
-      info(`Navigate to /${page}/${id}`)
-      return navigate(`/${page}/${id}`, {state})
-    } else if (page) {
-      info(`Navigate to /${page}`)
-      return navigate(`/${page}`, {state})
-    } else {
-      info(`Navigate to /`)
-      return navigate(`/`)
-    }
+  const openPage = (page: Page, locState?: Partial<LocationState>) => {
+    info(`Open page (page=${page})`)
+    const state = {...location.state, ...locState}
+    navigate(`/${page}`, {state})
   }
 
   const openDir = (path?: string[]) => {
@@ -108,5 +56,5 @@ export const useOpen = () => {
     window.open(url, '_blank')
   }
 
-  return {open, openFile, openDir, openUrl, updateState}
+  return {openPage, openFile, openDir, openUrl, updateState}
 }

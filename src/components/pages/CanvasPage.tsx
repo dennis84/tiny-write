@@ -49,8 +49,8 @@ export const NewCanvasPage = () => {
 
 export const CanvasPage = (props: RouteSectionProps) => {
   const location = useLocation<LocationState | undefined>()
-  const {appService, canvasService, canvasCollabService, toastService} = useState()
-  const {open} = useOpen()
+  const {locationService, canvasService, canvasCollabService, toastService} = useState()
+  const {openPage} = useOpen()
 
   info(`Render canvas page (location=${JSON.stringify(location.state)})`)
 
@@ -65,10 +65,10 @@ export const CanvasPage = (props: RouteSectionProps) => {
 
   const OnError = (p: {error: any}) => {
     onMount(async () => {
-      await appService.setLocation(undefined)
+      await locationService.setLastLocation(undefined)
       const message = p.error instanceof Error ? p.error.message : String(p.error)
       toastService.open({message, duration: 10_000})
-      open({page: Page.Canvas})
+      openPage(Page.Canvas)
     })
     return null
   }

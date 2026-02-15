@@ -14,10 +14,10 @@ const Pre = styled('pre')`
 
 export const GeneralError = (props: {error: Error}) => {
   console.error(props.error)
-  const {appService} = useState()
+  const {locationService} = useState()
 
   const onReload = async () => {
-    await appService.setLocation({
+    await locationService.setLastLocation({
       page: undefined,
       threadId: undefined,
     })

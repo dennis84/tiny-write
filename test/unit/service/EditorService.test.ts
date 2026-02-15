@@ -6,11 +6,11 @@ import type {DB} from '@/db'
 import type {CollabService} from '@/services/CollabService'
 import {EditorService} from '@/services/EditorService'
 import type {FileService} from '@/services/FileService'
+import type {LocationService} from '@/services/LocationService'
 import type {ProseMirrorService} from '@/services/ProseMirrorService'
 import type {SelectService} from '@/services/SelectService'
 import type {ToastService} from '@/services/ToastService'
 import {createState} from '@/state'
-import {Page} from '@/types'
 import {createEditorView, createSubdoc, createYUpdate} from '../testutil/prosemirror-util'
 
 vi.stubGlobal('location', {
@@ -41,7 +41,6 @@ beforeEach(() => {
 
 test('init - existing', async () => {
   const initial = createState({
-    location: {page: Page.Editor, editorId: '2'},
     files: [
       {id: '1', ydoc: createYUpdate('1', ['Text']), lastModified, versions: []},
       {id: '2', ydoc: createYUpdate('2', ['Test 2']), lastModified, versions: []},
@@ -50,6 +49,9 @@ test('init - existing', async () => {
 
   const [store, setState] = createStore(initial)
   const fileService = mock<FileService>()
+  const locationService = mock<LocationService>()
+
+  Object.defineProperty(locationService, 'editorId', {get: vi.fn().mockReturnValue('2')})
 
   fileService.findFileById.mockReturnValue(initial.files[1])
   collabService.getSubdoc.mockReturnValue(createSubdoc('2', []))
@@ -60,6 +62,7 @@ test('init - existing', async () => {
     proseMirrorService,
     toastService,
     selectService,
+    locationService,
     store,
     setState,
   )
@@ -70,7 +73,6 @@ test('init - existing', async () => {
 
 test('init - not found', async () => {
   const initial = createState({
-    location: {page: Page.Canvas, canvasId: '3'},
     files: [
       {id: '1', ydoc: createYUpdate('1', ['Text']), lastModified, versions: []},
       {id: '2', ydoc: createYUpdate('2', ['Test 2']), lastModified, versions: []},
@@ -79,6 +81,9 @@ test('init - not found', async () => {
 
   const [store, setState] = createStore(initial)
   const fileService = mock<FileService>()
+  const locationService = mock<LocationService>()
+
+  Object.defineProperty(locationService, 'canvasId', {get: vi.fn().mockReturnValue('3')})
 
   fileService.findFileById.mockReturnValue(undefined)
 
@@ -88,6 +93,7 @@ test('init - not found', async () => {
     proseMirrorService,
     toastService,
     selectService,
+    locationService,
     store,
     setState,
   )
@@ -104,12 +110,15 @@ test('init - share', async () => {
   }
 
   const initial = createState({
-    location: {page: Page.Editor, editorId: 'room-123', share: true},
     files: [file],
   })
 
   const [store, setState] = createStore(initial)
   const fileService = mock<FileService>()
+  const locationService = mock<LocationService>()
+
+  Object.defineProperty(locationService, 'editorId', {get: vi.fn().mockReturnValue('room-123')})
+  Object.defineProperty(locationService, 'state', {get: vi.fn().mockReturnValue({share: true})})
 
   fileService.findFileById.mockReturnValue(file)
   collabService.getSubdoc.mockReturnValue(createSubdoc('room-123', []))
@@ -120,6 +129,7 @@ test('init - share', async () => {
     proseMirrorService,
     toastService,
     selectService,
+    locationService,
     store,
     setState,
   )
@@ -132,6 +142,7 @@ test('init - share', async () => {
 test('clear - with text', async () => {
   const editorView = createEditorView(['Test'])
   const fileService = mock<FileService>()
+  const locationService = mock<LocationService>()
 
   const file = {
     id: '1',
@@ -151,6 +162,7 @@ test('clear - with text', async () => {
     proseMirrorService,
     toastService,
     selectService,
+    locationService,
     store,
     setState,
   )
@@ -165,6 +177,7 @@ test('clear - with text', async () => {
 test('selectBox', async () => {
   const editorView = createEditorView(['Test'])
   const fileService = mock<FileService>()
+  const locationService = mock<LocationService>()
 
   const file = {
     id: '1',
@@ -184,6 +197,7 @@ test('selectBox', async () => {
     proseMirrorService,
     toastService,
     selectService,
+    locationService,
     store,
     setState,
   )

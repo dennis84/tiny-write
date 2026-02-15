@@ -48,7 +48,8 @@ export const Chat = (props: Props) => {
   let containerRef!: HTMLDivElement
   let scrollContentRef!: HTMLDivElement
 
-  const {store, configService, copilotService, threadService, toastService} = useState()
+  const {store, locationService, configService, copilotService, threadService, toastService} =
+    useState()
   const [editorView, setEditorView] = createSignal<EditorView>()
 
   const focusInput = () => {
@@ -163,7 +164,7 @@ export const Chat = (props: Props) => {
       <Scroll ref={scrollContentRef} data-testid="chat_scroll">
         <Content
           style={
-            store.location?.page !== Page.Assistant
+            locationService.page !== Page.Assistant
               ? {
                   'max-width': '100%',
                   'padding-bottom': '0',

@@ -9,6 +9,7 @@ import type {AppService} from './AppService'
 import type {CanvasCollabService} from './CanvasCollabService'
 import type {CanvasService} from './CanvasService'
 import type {FileService} from './FileService'
+import type {LocationService} from './LocationService'
 
 export enum DropTarget {
   Assistant = 'assistant',
@@ -43,7 +44,8 @@ export class MediaService {
     private canvasService: CanvasService,
     private canvasCollabService: CanvasCollabService,
     private appService: AppService,
-    private store: Store<State>,
+    private locationService: LocationService,
+    _store: Store<State>,
   ) {}
 
   resetDroppedFiles() {
@@ -55,7 +57,7 @@ export class MediaService {
     [x, y]: [number, number],
     dropTarget: DropTarget | undefined = undefined,
   ) {
-    const page = this.store.location?.page
+    const page = this.locationService.page
 
     if (dropTarget === DropTarget.Assistant || page === Page.Assistant) {
       const droppedFiles: DroppedFile[] = []
@@ -111,7 +113,7 @@ export class MediaService {
     [x, y]: [number, number],
     dropTarget: DropTarget | undefined = undefined,
   ): Promise<DropResult | undefined> {
-    const page = this.store.location?.page
+    const page = this.locationService.page
 
     // Store dropped files locally
     if (dropTarget === DropTarget.Assistant || page === Page.Assistant) {

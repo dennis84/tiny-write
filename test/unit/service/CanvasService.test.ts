@@ -7,6 +7,7 @@ import type {AppService} from '@/services/AppService'
 import {CanvasService} from '@/services/CanvasService'
 import type {CollabService} from '@/services/CollabService'
 import {FileService} from '@/services/FileService'
+import type {LocationService} from '@/services/LocationService'
 import type {SelectService} from '@/services/SelectService'
 import {createState} from '@/state'
 import {
@@ -17,7 +18,6 @@ import {
   type CanvasVideoElement,
   EdgeType,
   ElementType,
-  Page,
 } from '@/types'
 import {BoxUtil} from '@/utils/BoxUtil'
 import {createYUpdate} from '../testutil/prosemirror-util'
@@ -68,29 +68,42 @@ beforeEach(() => {
   vi.resetAllMocks()
 })
 
-const appService = mock<AppService>()
+const _appService = mock<AppService>()
 const fileService = mock<FileService>()
 const selectService = mock<SelectService>()
 const collabService = mock<CollabService>()
+const locationService = mock<LocationService>()
 
 test('currentCanvas - empty', () => {
   const [store, setState] = createStore(createState({canvases: []}))
-  const service = new CanvasService(fileService, selectService, collabService, store, setState)
+  const service = new CanvasService(
+    fileService,
+    selectService,
+    collabService,
+    locationService,
+    store,
+    setState,
+  )
   expect(service.currentCanvas).toBeUndefined()
 })
 
 test('currentCanvas', () => {
   const [store, setState] = createStore(
     createState({
-      location: {
-        page: Page.Canvas,
-        canvasId: '2',
-      },
       canvases: [createCanvas({id: '1'}), createCanvas({id: '2'})],
     }),
   )
 
-  const service = new CanvasService(fileService, selectService, collabService, store, setState)
+  Object.defineProperty(locationService, 'canvasId', {get: vi.fn().mockReturnValue('2')})
+
+  const service = new CanvasService(
+    fileService,
+    selectService,
+    collabService,
+    locationService,
+    store,
+    setState,
+  )
 
   expect(service.currentCanvas?.id).toBe('2')
 })
@@ -98,15 +111,20 @@ test('currentCanvas', () => {
 test('updateCanvas', async () => {
   const [store, setState] = createStore(
     createState({
-      location: {
-        page: Page.Canvas,
-        canvasId: '1',
-      },
       canvases: [createCanvas({id: '1'})],
     }),
   )
 
-  const service = new CanvasService(fileService, selectService, collabService, store, setState)
+  Object.defineProperty(locationService, 'canvasId', {get: vi.fn().mockReturnValue('1')})
+
+  const service = new CanvasService(
+    fileService,
+    selectService,
+    collabService,
+    locationService,
+    store,
+    setState,
+  )
 
   service.updateCanvas('1', {camera: {point: [10, 10], zoom: 2}})
 
@@ -121,10 +139,6 @@ test('updateCanvas', async () => {
 test('updateCanvasElement', async () => {
   const [store, setState] = createStore(
     createState({
-      location: {
-        page: Page.Canvas,
-        canvasId: '1',
-      },
       canvases: [
         createCanvas({
           id: '1',
@@ -139,7 +153,16 @@ test('updateCanvasElement', async () => {
     }),
   )
 
-  const service = new CanvasService(fileService, selectService, collabService, store, setState)
+  Object.defineProperty(locationService, 'canvasId', {get: vi.fn().mockReturnValue('1')})
+
+  const service = new CanvasService(
+    fileService,
+    selectService,
+    collabService,
+    locationService,
+    store,
+    setState,
+  )
 
   // update editor element
   service.updateCanvasElement('1', {x: 100, y: 100})
@@ -182,10 +205,6 @@ test('updateCanvasElement', async () => {
 test('backToContent', async () => {
   const [store, setState] = createStore(
     createState({
-      location: {
-        page: Page.Canvas,
-        canvasId: '1',
-      },
       canvases: [
         createCanvas({
           id: '1',
@@ -198,7 +217,16 @@ test('backToContent', async () => {
     }),
   )
 
-  const service = new CanvasService(fileService, selectService, collabService, store, setState)
+  Object.defineProperty(locationService, 'canvasId', {get: vi.fn().mockReturnValue('1')})
+
+  const service = new CanvasService(
+    fileService,
+    selectService,
+    collabService,
+    locationService,
+    store,
+    setState,
+  )
 
   service.canvasRef = mock<HTMLElement>({
     clientWidth: 1000,
@@ -214,10 +242,6 @@ test('backToContent', async () => {
 test('focus', async () => {
   const [store, setState] = createStore(
     createState({
-      location: {
-        page: Page.Canvas,
-        canvasId: '1',
-      },
       canvases: [
         createCanvas({
           id: '1',
@@ -227,7 +251,16 @@ test('focus', async () => {
     }),
   )
 
-  const service = new CanvasService(fileService, selectService, collabService, store, setState)
+  Object.defineProperty(locationService, 'canvasId', {get: vi.fn().mockReturnValue('1')})
+
+  const service = new CanvasService(
+    fileService,
+    selectService,
+    collabService,
+    locationService,
+    store,
+    setState,
+  )
 
   service.canvasRef = mock<HTMLElement>({
     clientWidth: 1000,
@@ -242,10 +275,6 @@ test('focus', async () => {
 test('snapToGrid', () => {
   const [store, setState] = createStore(
     createState({
-      location: {
-        page: Page.Canvas,
-        canvasId: '1',
-      },
       canvases: [
         createCanvas({
           id: '1',
@@ -255,7 +284,16 @@ test('snapToGrid', () => {
     }),
   )
 
-  const service = new CanvasService(fileService, selectService, collabService, store, setState)
+  Object.defineProperty(locationService, 'canvasId', {get: vi.fn().mockReturnValue('1')})
+
+  const service = new CanvasService(
+    fileService,
+    selectService,
+    collabService,
+    locationService,
+    store,
+    setState,
+  )
 
   service.snapToGrid()
   expect(service.currentCanvas?.snapToGrid).toBe(true)
@@ -267,15 +305,20 @@ test('snapToGrid', () => {
 test('updateCamera', () => {
   const [store, setState] = createStore(
     createState({
-      location: {
-        page: Page.Canvas,
-        canvasId: '1',
-      },
       canvases: [createCanvas({id: '1'})],
     }),
   )
 
-  const service = new CanvasService(fileService, selectService, collabService, store, setState)
+  Object.defineProperty(locationService, 'canvasId', {get: vi.fn().mockReturnValue('1')})
+
+  const service = new CanvasService(
+    fileService,
+    selectService,
+    collabService,
+    locationService,
+    store,
+    setState,
+  )
 
   service.updateCamera({point: [100, 100], zoom: 2})
 
@@ -286,15 +329,20 @@ test('updateCamera', () => {
 test('updateCameraPoint', () => {
   const [store, setState] = createStore(
     createState({
-      location: {
-        page: Page.Canvas,
-        canvasId: '1',
-      },
       canvases: [createCanvas({id: '1'})],
     }),
   )
 
-  const service = new CanvasService(fileService, selectService, collabService, store, setState)
+  Object.defineProperty(locationService, 'canvasId', {get: vi.fn().mockReturnValue('1')})
+
+  const service = new CanvasService(
+    fileService,
+    selectService,
+    collabService,
+    locationService,
+    store,
+    setState,
+  )
 
   service.updateCameraPoint([100, 100])
 
@@ -304,15 +352,20 @@ test('updateCameraPoint', () => {
 test('restore', async () => {
   const [store, setState] = createStore(
     createState({
-      location: {
-        page: Page.Canvas,
-        canvasId: '1',
-      },
       canvases: [createCanvas({id: '1'}), createCanvas({id: '2', deleted: true})],
     }),
   )
 
-  const service = new CanvasService(fileService, selectService, collabService, store, setState)
+  Object.defineProperty(locationService, 'canvasId', {get: vi.fn().mockReturnValue('1')})
+
+  const service = new CanvasService(
+    fileService,
+    selectService,
+    collabService,
+    locationService,
+    store,
+    setState,
+  )
 
   await service.restore('2')
   expect(store.canvases.length).toBe(2)
@@ -322,10 +375,6 @@ test('restore', async () => {
 test('select', () => {
   const [store, setState] = createStore(
     createState({
-      location: {
-        page: Page.Canvas,
-        canvasId: '1',
-      },
       canvases: [
         createCanvas({
           id: '1',
@@ -335,21 +384,30 @@ test('select', () => {
     }),
   )
 
-  appService.setLocation.mockImplementation(async (loc) => setState('location', loc))
+  Object.defineProperty(locationService, 'canvasId', {get: vi.fn().mockReturnValue('1')})
 
-  const service = new CanvasService(fileService, selectService, collabService, store, setState)
+  const service = new CanvasService(
+    fileService,
+    selectService,
+    collabService,
+    locationService,
+    store,
+    setState,
+  )
 
   service.select('1')
   const editor = service.currentCanvas?.elements[0] as CanvasEditorElement
   expect(editor.selected).toBe(true)
   expect(editor.active).toBe(false)
-  expect(store.location?.activeFileId).toBe(undefined)
+  expect(fileService.setActiveFile).not.toBeCalled()
 
   service.select('1', true)
   const editor2 = service.currentCanvas?.elements[0] as CanvasEditorElement
   expect(editor2.selected).toBe(true)
   expect(editor2.active).toBe(true)
-  expect(store.location?.activeFileId).toBe('1')
+  expect(fileService.setActiveFile).toBeCalledWith('1')
+
+  fileService.setActiveFile.mockReset()
 
   service.select('2', true)
   const editor3 = service.currentCanvas?.elements[0] as CanvasEditorElement
@@ -358,17 +416,12 @@ test('select', () => {
   expect(editor3.active).toBe(false)
   expect(editor4.selected).toBe(true)
   expect(editor4.active).toBe(true)
-  expect(store.location?.activeFileId).toBe('2')
+  expect(fileService.setActiveFile).toBeCalledWith('2')
 })
 
 test('deselect', () => {
   const [store, setState] = createStore(
     createState({
-      location: {
-        page: Page.Canvas,
-        canvasId: '1',
-        activeFileId: '1',
-      },
       canvases: [
         createCanvas({
           id: '1',
@@ -378,26 +431,29 @@ test('deselect', () => {
     }),
   )
 
-  appService.setLocation.mockImplementation(async (loc) => setState('location', loc))
+  Object.defineProperty(locationService, 'canvasId', {get: vi.fn().mockReturnValue('1')})
 
-  const service = new CanvasService(fileService, selectService, collabService, store, setState)
+  const service = new CanvasService(
+    fileService,
+    selectService,
+    collabService,
+    locationService,
+    store,
+    setState,
+  )
 
   service.deselect()
 
   const editor = service.currentCanvas?.elements[0] as CanvasEditorElement
   expect(editor.selected).toBe(false)
   expect(editor.active).toBe(false)
-  expect(store.location?.activeFileId).toBe(undefined)
+  expect(fileService.setActiveFile).toBeCalledWith(undefined)
 })
 
 test('newCanvas', async () => {
   const editorView = mock<EditorView>()
   const [store, setState] = createStore(
     createState({
-      location: {
-        page: Page.Canvas,
-        canvasId: '1',
-      },
       files: [{id: '1', ydoc: createYUpdate('1', []), versions: [], editorView}],
       canvases: [
         createCanvas({
@@ -408,7 +464,16 @@ test('newCanvas', async () => {
     }),
   )
 
-  const service = new CanvasService(fileService, selectService, collabService, store, setState)
+  Object.defineProperty(locationService, 'canvasId', {get: vi.fn().mockReturnValue('1')})
+
+  const service = new CanvasService(
+    fileService,
+    selectService,
+    collabService,
+    locationService,
+    store,
+    setState,
+  )
 
   // new canvas
   await service.newCanvas()
@@ -422,10 +487,6 @@ test('newCanvas', async () => {
 test('removeElements', async () => {
   const [store, setState] = createStore(
     createState({
-      location: {
-        page: Page.Canvas,
-        canvasId: '1',
-      },
       canvases: [
         createCanvas({
           id: '1',
@@ -439,7 +500,16 @@ test('removeElements', async () => {
     }),
   )
 
-  const service = new CanvasService(fileService, selectService, collabService, store, setState)
+  Object.defineProperty(locationService, 'canvasId', {get: vi.fn().mockReturnValue('1')})
+
+  const service = new CanvasService(
+    fileService,
+    selectService,
+    collabService,
+    locationService,
+    store,
+    setState,
+  )
 
   await service.removeElements(['1'])
 
@@ -451,7 +521,6 @@ test('init', async () => {
   const editorView = vi.mocked<EditorView>({destroy: vi.fn()} as any)
   const [store, setState] = createStore(
     createState({
-      location: {page: Page.Canvas, canvasId: '1'},
       files: [{id: '1', ydoc: createYUpdate('1', []), versions: [], editorView}],
       canvases: [
         createCanvas({id: '1', elements: [createEditorElement({id: '1'})]}),
@@ -460,7 +529,16 @@ test('init', async () => {
     }),
   )
 
-  const service = new CanvasService(fileService, selectService, collabService, store, setState)
+  Object.defineProperty(locationService, 'canvasId', {get: vi.fn().mockReturnValue('1')})
+
+  const service = new CanvasService(
+    fileService,
+    selectService,
+    collabService,
+    locationService,
+    store,
+    setState,
+  )
 
   await service.init()
 })
@@ -470,17 +548,21 @@ test('newFile', async () => {
 
   const [store, setState] = createStore(
     createState({
-      location: {
-        page: Page.Canvas,
-        canvasId: '1',
-      },
       canvases: [createCanvas({id: '1'})],
     }),
   )
 
+  Object.defineProperty(locationService, 'canvasId', {get: vi.fn().mockReturnValue('1')})
   vi.spyOn(FileService, 'createFile').mockReturnValue({id: '1', ydoc, versions: []})
 
-  const service = new CanvasService(fileService, selectService, collabService, store, setState)
+  const service = new CanvasService(
+    fileService,
+    selectService,
+    collabService,
+    locationService,
+    store,
+    setState,
+  )
 
   await service.newFile()
 
@@ -500,10 +582,6 @@ test.each([
 
   const [store, setState] = createStore(
     createState({
-      location: {
-        page: Page.Canvas,
-        canvasId: '1',
-      },
       canvases: [
         createCanvas({
           id: '1',
@@ -513,9 +591,17 @@ test.each([
     }),
   )
 
+  Object.defineProperty(locationService, 'canvasId', {get: vi.fn().mockReturnValue('1')})
   vi.spyOn(FileService, 'createFile').mockReturnValue({id: '3', ydoc, versions: []})
 
-  const service = new CanvasService(fileService, selectService, collabService, store, setState)
+  const service = new CanvasService(
+    fileService,
+    selectService,
+    collabService,
+    locationService,
+    store,
+    setState,
+  )
 
   await service.newFile(false, link)
 
@@ -535,15 +621,20 @@ test.each([
 test('addImage', async () => {
   const [store, setState] = createStore(
     createState({
-      location: {
-        page: Page.Canvas,
-        canvasId: '1',
-      },
       canvases: [createCanvas({id: '1'})],
     }),
   )
 
-  const service = new CanvasService(fileService, selectService, collabService, store, setState)
+  Object.defineProperty(locationService, 'canvasId', {get: vi.fn().mockReturnValue('1')})
+
+  const service = new CanvasService(
+    fileService,
+    selectService,
+    collabService,
+    locationService,
+    store,
+    setState,
+  )
 
   await service.addImage('/path/1.png', new Vector(100, 100), 1000, 2000)
 
@@ -558,15 +649,20 @@ test('addImage', async () => {
 test('addVideo', async () => {
   const [store, setState] = createStore(
     createState({
-      location: {
-        page: Page.Canvas,
-        canvasId: '1',
-      },
       canvases: [createCanvas({id: '1'})],
     }),
   )
 
-  const service = new CanvasService(fileService, selectService, collabService, store, setState)
+  Object.defineProperty(locationService, 'canvasId', {get: vi.fn().mockReturnValue('1')})
+
+  const service = new CanvasService(
+    fileService,
+    selectService,
+    collabService,
+    locationService,
+    store,
+    setState,
+  )
 
   await service.addVideo('/path/1.mp4', 'video/mp4', new Vector(100, 100), 1000, 2000)
 
@@ -582,10 +678,6 @@ test('addVideo', async () => {
 test('drawLink', () => {
   const [store, setState] = createStore(
     createState({
-      location: {
-        page: Page.Canvas,
-        canvasId: '1',
-      },
       canvases: [
         createCanvas({
           id: '1',
@@ -598,7 +690,16 @@ test('drawLink', () => {
     }),
   )
 
-  const service = new CanvasService(fileService, selectService, collabService, store, setState)
+  Object.defineProperty(locationService, 'canvasId', {get: vi.fn().mockReturnValue('1')})
+
+  const service = new CanvasService(
+    fileService,
+    selectService,
+    collabService,
+    locationService,
+    store,
+    setState,
+  )
 
   service.drawLink('3', '1', EdgeType.Right, 0, 0)
   expect(service.currentCanvas?.elements.length).toBe(3)
@@ -625,10 +726,6 @@ test('drawLink', () => {
 test('drawLink - abort', async () => {
   const [store, setState] = createStore(
     createState({
-      location: {
-        page: Page.Canvas,
-        canvasId: '1',
-      },
       canvases: [
         createCanvas({
           id: '1',
@@ -641,7 +738,16 @@ test('drawLink - abort', async () => {
     }),
   )
 
-  const service = new CanvasService(fileService, selectService, collabService, store, setState)
+  Object.defineProperty(locationService, 'canvasId', {get: vi.fn().mockReturnValue('1')})
+
+  const service = new CanvasService(
+    fileService,
+    selectService,
+    collabService,
+    locationService,
+    store,
+    setState,
+  )
 
   service.drawLink('3', '1', EdgeType.Right, 100, 100)
   expect(service.currentCanvas?.elements.length).toBe(3)
@@ -654,10 +760,6 @@ test('drawLink - abort', async () => {
 test('removeDeadLinks', async () => {
   const [store, setState] = createStore(
     createState({
-      location: {
-        page: Page.Canvas,
-        canvasId: '1',
-      },
       canvases: [
         createCanvas({
           id: '1',
@@ -670,7 +772,16 @@ test('removeDeadLinks', async () => {
     }),
   )
 
-  const service = new CanvasService(fileService, selectService, collabService, store, setState)
+  Object.defineProperty(locationService, 'canvasId', {get: vi.fn().mockReturnValue('1')})
+
+  const service = new CanvasService(
+    fileService,
+    selectService,
+    collabService,
+    locationService,
+    store,
+    setState,
+  )
 
   expect(service.currentCanvas?.elements.length).toBe(2)
 
@@ -682,10 +793,6 @@ test('removeDeadLinks', async () => {
 test('clearCanvas', async () => {
   const [store, setState] = createStore(
     createState({
-      location: {
-        page: Page.Canvas,
-        canvasId: '1',
-      },
       canvases: [
         createCanvas({
           id: '1',
@@ -695,7 +802,16 @@ test('clearCanvas', async () => {
     }),
   )
 
-  const service = new CanvasService(fileService, selectService, collabService, store, setState)
+  Object.defineProperty(locationService, 'canvasId', {get: vi.fn().mockReturnValue('1')})
+
+  const service = new CanvasService(
+    fileService,
+    selectService,
+    collabService,
+    locationService,
+    store,
+    setState,
+  )
 
   await service.clearCanvas()
 
@@ -705,10 +821,6 @@ test('clearCanvas', async () => {
 test('getElementNear', () => {
   const [store, setState] = createStore(
     createState({
-      location: {
-        page: Page.Canvas,
-        canvasId: '1',
-      },
       canvases: [
         createCanvas({
           id: '1',
@@ -721,7 +833,16 @@ test('getElementNear', () => {
     }),
   )
 
-  const service = new CanvasService(fileService, selectService, collabService, store, setState)
+  Object.defineProperty(locationService, 'canvasId', {get: vi.fn().mockReturnValue('1')})
+
+  const service = new CanvasService(
+    fileService,
+    selectService,
+    collabService,
+    locationService,
+    store,
+    setState,
+  )
 
   expect(service.getElementNear([-10, -20])).toEqual({id: '1', edge: EdgeType.Top})
   expect(service.getElementNear([-20, -10])).toEqual({id: '1', edge: EdgeType.Left})
@@ -734,10 +855,6 @@ test('getElementNear', () => {
 test('center', () => {
   const [store, setState] = createStore(
     createState({
-      location: {
-        page: Page.Canvas,
-        canvasId: '1',
-      },
       canvases: [
         createCanvas({
           id: '1',
@@ -751,7 +868,16 @@ test('center', () => {
     }),
   )
 
-  const service = new CanvasService(fileService, selectService, collabService, store, setState)
+  Object.defineProperty(locationService, 'canvasId', {get: vi.fn().mockReturnValue('1')})
+
+  const service = new CanvasService(
+    fileService,
+    selectService,
+    collabService,
+    locationService,
+    store,
+    setState,
+  )
 
   const centerPoint = service.getCenterPoint()
   expect(centerPoint?.x).toEqual(100)
@@ -761,10 +887,6 @@ test('center', () => {
 test('get selection', () => {
   const [store, setState] = createStore(
     createState({
-      location: {
-        page: Page.Canvas,
-        canvasId: '1',
-      },
       canvases: [
         createCanvas({
           id: '1',
@@ -778,7 +900,16 @@ test('get selection', () => {
     }),
   )
 
-  const service = new CanvasService(fileService, selectService, collabService, store, setState)
+  Object.defineProperty(locationService, 'canvasId', {get: vi.fn().mockReturnValue('1')})
+
+  const service = new CanvasService(
+    fileService,
+    selectService,
+    collabService,
+    locationService,
+    store,
+    setState,
+  )
 
   expect(service.selection).toBe(undefined)
 
@@ -810,10 +941,6 @@ test('get selection', () => {
 test('selectBox', () => {
   const [store, setState] = createStore(
     createState({
-      location: {
-        page: Page.Canvas,
-        canvasId: '1',
-      },
       canvases: [
         createCanvas({
           id: '1',
@@ -827,7 +954,16 @@ test('selectBox', () => {
     }),
   )
 
-  const service = new CanvasService(fileService, selectService, collabService, store, setState)
+  Object.defineProperty(locationService, 'canvasId', {get: vi.fn().mockReturnValue('1')})
+
+  const service = new CanvasService(
+    fileService,
+    selectService,
+    collabService,
+    locationService,
+    store,
+    setState,
+  )
 
   expect(service.selection).toBe(undefined)
 
@@ -871,10 +1007,6 @@ test('selectBox - active editor', () => {
   const editorView = mock<EditorView>()
   const [store, setState] = createStore(
     createState({
-      location: {
-        page: Page.Canvas,
-        canvasId: '1',
-      },
       canvases: [
         createCanvas({
           id: '1',
@@ -895,6 +1027,8 @@ test('selectBox - active editor', () => {
     }),
   )
 
+  Object.defineProperty(locationService, 'canvasId', {get: vi.fn().mockReturnValue('1')})
+
   fileService.findFileById.mockReturnValue({
     id: '1',
     ydoc: createYUpdate('1', []),
@@ -902,7 +1036,14 @@ test('selectBox - active editor', () => {
     editorView,
   })
 
-  const service = new CanvasService(fileService, selectService, collabService, store, setState)
+  const service = new CanvasService(
+    fileService,
+    selectService,
+    collabService,
+    locationService,
+    store,
+    setState,
+  )
 
   expect(service.selection).toBe(undefined)
 

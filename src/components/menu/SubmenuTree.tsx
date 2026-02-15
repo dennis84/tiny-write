@@ -193,7 +193,7 @@ export const SubmenuTree = (props: Props) => {
   let binRef!: HTMLButtonElement
 
   const {
-    store,
+    locationService,
     canvasService,
     canvasCollabService,
     codeService,
@@ -336,7 +336,7 @@ export const SubmenuTree = (props: Props) => {
   }
 
   const isOnCanvas = (item?: MenuTreeItem): boolean =>
-    store.location?.page === Page.Canvas &&
+    locationService.page === Page.Canvas &&
     isFile(item?.value) &&
     (canvasService.currentCanvas?.elements.some((it) => it.id === item.id) ?? false)
 
@@ -354,7 +354,7 @@ export const SubmenuTree = (props: Props) => {
     const onCornerClick = () => treeService.collapse(p.node.id)
 
     const getCurrentId = () =>
-      store.location?.page === Page.Canvas
+      locationService.page === Page.Canvas
         ? canvasService.currentCanvas?.id
         : fileService.currentFile?.id
 
@@ -417,7 +417,7 @@ export const SubmenuTree = (props: Props) => {
             } else if (ds?.pos === 'delete') {
               await deleteService.delete(p.node)
             } else if (ds?.pos === 'open') {
-              if (store.location?.page === Page.Canvas && isFile(p.node.value)) {
+              if (locationService.page === Page.Canvas && isFile(p.node.value)) {
                 const point = canvasService.getPosition([x, y])
                 const added = await canvasService.addFile(p.node.value, undefined, point)
                 if (added) canvasCollabService.addElements(added)

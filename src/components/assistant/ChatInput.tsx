@@ -46,7 +46,7 @@ export const ChatInput = (props: Props) => {
   const [scrollDirection, setScrollDirection] = createSignal<'up' | 'down' | undefined>(undefined)
   const [empty, setEmpty] = createSignal(true)
 
-  const {store, copilotService, threadService, mediaService} = useState()
+  const {locationService, copilotService, threadService, mediaService} = useState()
 
   const scrollToTop = () => {
     props.dropArea?.().scrollTo({top: 0, behavior: 'smooth'})
@@ -145,7 +145,7 @@ export const ChatInput = (props: Props) => {
 
   return (
     <ChatInputContainer
-      style={store.location?.page !== Page.Assistant ? {'max-width': '100%'} : {}}
+      style={locationService.page !== Page.Assistant ? {'max-width': '100%'} : {}}
       onClick={onContainerClick}
     >
       <ChatInputBorder ref={props.ref} focused={focused()}>

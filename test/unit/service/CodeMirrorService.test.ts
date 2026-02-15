@@ -5,6 +5,7 @@ import {mock} from 'vitest-mock-extended'
 import type {AppService} from '@/services/AppService'
 import {CodeMirrorService} from '@/services/CodeMirrorService'
 import {ConfigService} from '@/services/ConfigService'
+import type {LocationService} from '@/services/LocationService'
 import {PrettierService} from '@/services/PrettierService'
 import type {ToastService} from '@/services/ToastService'
 import {createState} from '@/state'
@@ -24,6 +25,7 @@ test('createEditor', () => {
     prettier: {tabWidth: 2, useTabs: false},
   })
   const toastService = mock<ToastService>()
+  const locationService = mock<LocationService>()
 
   const parent = document.createElement('div')
   const [store] = createStore<State>(createState())
@@ -32,6 +34,7 @@ test('createEditor', () => {
     appService,
     prettierService,
     toastService,
+    locationService,
     store,
   )
   const {editorView, compartments} = service.createEditor({id: '1', lang: 'mermaid', parent})
@@ -49,6 +52,7 @@ test('format', async () => {
     prettier: store.config.prettier,
   })
   const toastService = mock<ToastService>()
+  const locationService = mock<LocationService>()
 
   const doc = 'const test=123'
 
@@ -58,6 +62,7 @@ test('format', async () => {
     appService,
     prettierService,
     toastService,
+    locationService,
     store,
   )
   const {editorView} = service.createEditor({id: '1', lang: 'typescript', parent, doc})
@@ -76,6 +81,7 @@ test('format - error', async () => {
     prettier: store.config.prettier,
   })
   const toastService = mock<ToastService>()
+  const locationService = mock<LocationService>()
 
   const doc = 'const test - 1'
 
@@ -85,6 +91,7 @@ test('format - error', async () => {
     appService,
     prettierService,
     toastService,
+    locationService,
     store,
   )
   const {editorView} = service.createEditor({id: '1', lang: 'typescript', parent, doc})

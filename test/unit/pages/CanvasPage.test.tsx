@@ -1,12 +1,10 @@
-import {render, waitFor} from '@solidjs/testing-library'
+import {waitFor} from '@solidjs/testing-library'
 import {expect, test, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
-import {Main} from '@/components/Main'
 import type {DB} from '@/db'
-import {createCtrl} from '@/services'
 import {createState} from '@/state'
 import {type Canvas, Page} from '@/types'
-import {stubLocation} from '../testutil/util'
+import {renderMain, stubLocation} from '../testutil/util'
 
 vi.mock('@/db', () => ({DB: mock<DB>()}))
 
@@ -25,14 +23,13 @@ test('share - new canvas page', async () => {
   stubLocation('/canvas')
 
   const initial = createState()
-  const ctrl = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={ctrl} />)
+  const {getByTestId, ctrl} = renderMain(initial)
 
   await waitFor(() => {
     expect(getByTestId('new_canvas_page')).toBeDefined()
   })
 
-  expect(ctrl.store.location?.page).toBe(Page.Canvas)
+  expect(ctrl.locationService.page).toBe(Page.Canvas)
   expect(ctrl.canvasService.currentCanvasId).toBe(undefined)
 })
 
@@ -40,14 +37,13 @@ test('share - not found', async () => {
   stubLocation('/canvas/1')
 
   const initial = createState()
-  const ctrl = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={ctrl} />)
+  const {getByTestId, ctrl} = renderMain(initial)
 
   await waitFor(() => {
     expect(getByTestId('new_canvas_page')).toBeDefined()
   })
 
-  expect(ctrl.store.location?.page).toBe(Page.Canvas)
+  expect(ctrl.locationService.page).toBe(Page.Canvas)
   expect(ctrl.canvasService.currentCanvasId).toBe(undefined)
 })
 
@@ -59,14 +55,13 @@ test('share - existing canvas', async () => {
     canvases: [canvas],
   })
 
-  const ctrl = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={ctrl} />)
+  const {getByTestId, ctrl} = renderMain(initial)
 
   await waitFor(() => {
     expect(getByTestId('canvas_container')).toBeDefined()
   })
 
-  expect(ctrl.store.location?.page).toBe(Page.Canvas)
+  expect(ctrl.locationService.page).toBe(Page.Canvas)
   expect(ctrl.canvasService.currentCanvasId).toBe('1')
 })
 
@@ -74,8 +69,7 @@ test('share - join', async () => {
   stubLocation('/canvas?join=1')
 
   const initial = createState()
-  const ctrl = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={ctrl} />)
+  const {getByTestId, ctrl} = renderMain(initial)
 
   await waitFor(() => {
     expect(getByTestId('new_canvas_page')).toBeDefined()
@@ -87,7 +81,7 @@ test('share - join', async () => {
     expect(getByTestId('canvas_container')).toBeDefined()
   })
 
-  expect(ctrl.store.location?.page).toBe(Page.Canvas)
+  expect(ctrl.locationService.page).toBe(Page.Canvas)
   expect(ctrl.canvasService.currentCanvasId).toBe('1')
   expect(ctrl.collabService.started()).toBe(true)
 })

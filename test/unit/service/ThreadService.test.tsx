@@ -2,9 +2,10 @@ import {createStore} from 'solid-js/store'
 import {beforeEach, expect, test, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
 import type {ChatMessageTextContent, CopilotService} from '@/services/CopilotService'
+import type {LocationService} from '@/services/LocationService'
 import {ThreadService} from '@/services/ThreadService'
 import {createState} from '@/state'
-import {AttachmentType, type Message, Page} from '@/types'
+import {AttachmentType, type Message} from '@/types'
 import {expectTree} from '../testutil/tree'
 
 beforeEach(() => {
@@ -17,10 +18,6 @@ const lastModified = new Date()
 
 test('newThread - empty', () => {
   const initial = createState({
-    location: {
-      page: Page.Assistant,
-      threadId: '1',
-    },
     threads: [
       {
         id: '1',
@@ -40,7 +37,8 @@ test('newThread - empty', () => {
 
   const [store, setState] = createStore(initial)
   const copilotService = mock<CopilotService>()
-  const service = new ThreadService(store, setState, copilotService)
+  const locationService = mock<LocationService>()
+  const service = new ThreadService(store, setState, copilotService, locationService)
 
   service.newThread()
 
@@ -49,10 +47,6 @@ test('newThread - empty', () => {
 
 test('addMessage', async () => {
   const initial = createState({
-    location: {
-      page: Page.Assistant,
-      threadId: '1',
-    },
     threads: [
       {
         id: '1',
@@ -63,7 +57,10 @@ test('addMessage', async () => {
 
   const [store, setState] = createStore(initial)
   const copilotService = mock<CopilotService>()
-  const service = new ThreadService(store, setState, copilotService)
+  const locationService = mock<LocationService>()
+  Object.defineProperty(locationService, 'threadId', {get: vi.fn().mockReturnValue('1')})
+
+  const service = new ThreadService(store, setState, copilotService, locationService)
 
   await service.addMessage({id: '1', role: 'user', content: '1'})
   await service.addMessage({id: '2', role: 'user', content: '2'})
@@ -79,10 +76,6 @@ test('addMessage', async () => {
 
 test('addMessage - path', async () => {
   const initial = createState({
-    location: {
-      page: Page.Assistant,
-      threadId: '1',
-    },
     threads: [
       {
         id: '1',
@@ -97,7 +90,10 @@ test('addMessage - path', async () => {
 
   const [store, setState] = createStore(initial)
   const copilotService = mock<CopilotService>()
-  const service = new ThreadService(store, setState, copilotService)
+  const locationService = mock<LocationService>()
+  Object.defineProperty(locationService, 'threadId', {get: vi.fn().mockReturnValue('1')})
+
+  const service = new ThreadService(store, setState, copilotService, locationService)
   service.messageTree.updateAll(store.threads[0].messages)
 
   expectTree(
@@ -130,10 +126,6 @@ test('addMessage - path', async () => {
 
 test('addChunk', async () => {
   const initial = createState({
-    location: {
-      page: Page.Assistant,
-      threadId: '1',
-    },
     threads: [
       {
         id: '1',
@@ -144,7 +136,10 @@ test('addChunk', async () => {
 
   const [store, setState] = createStore(initial)
   const copilotService = mock<CopilotService>()
-  const service = new ThreadService(store, setState, copilotService)
+  const locationService = mock<LocationService>()
+  Object.defineProperty(locationService, 'threadId', {get: vi.fn().mockReturnValue('1')})
+
+  const service = new ThreadService(store, setState, copilotService, locationService)
   service.messageTree.updateAll(store.threads[0].messages)
 
   service.addChunk('2', '1', 'A')
@@ -160,10 +155,6 @@ test('addChunk', async () => {
 
 test('removeMessage', async () => {
   const initial = createState({
-    location: {
-      page: Page.Assistant,
-      threadId: '1',
-    },
     threads: [
       {
         id: '1',
@@ -174,7 +165,10 @@ test('removeMessage', async () => {
 
   const [store, setState] = createStore(initial)
   const copilotService = mock<CopilotService>()
-  const service = new ThreadService(store, setState, copilotService)
+  const locationService = mock<LocationService>()
+  Object.defineProperty(locationService, 'threadId', {get: vi.fn().mockReturnValue('1')})
+
+  const service = new ThreadService(store, setState, copilotService, locationService)
   service.messageTree.updateAll(store.threads[0].messages)
 
   await service.removeMessage(store.threads[0].messages[0])
@@ -184,10 +178,6 @@ test('removeMessage', async () => {
 
 test('interrupt', async () => {
   const initial = createState({
-    location: {
-      page: Page.Assistant,
-      threadId: '1',
-    },
     threads: [
       {
         id: '1',
@@ -201,7 +191,10 @@ test('interrupt', async () => {
 
   const [store, setState] = createStore(initial)
   const copilotService = mock<CopilotService>()
-  const service = new ThreadService(store, setState, copilotService)
+  const locationService = mock<LocationService>()
+  Object.defineProperty(locationService, 'threadId', {get: vi.fn().mockReturnValue('1')})
+
+  const service = new ThreadService(store, setState, copilotService, locationService)
 
   service.interrupt('2')
 
@@ -210,10 +203,6 @@ test('interrupt', async () => {
 
 test('summarize', async () => {
   const initial = createState({
-    location: {
-      page: Page.Assistant,
-      threadId: '1',
-    },
     threads: [
       {
         id: '1',
@@ -227,7 +216,10 @@ test('summarize', async () => {
 
   const [store, setState] = createStore(initial)
   const copilotService = mock<CopilotService>()
-  const service = new ThreadService(store, setState, copilotService, 2)
+  const locationService = mock<LocationService>()
+  Object.defineProperty(locationService, 'threadId', {get: vi.fn().mockReturnValue('1')})
+
+  const service = new ThreadService(store, setState, copilotService, locationService, 2)
   service.messageTree.updateAll(store.threads[0].messages)
 
   copilotService.completionsSync.mockResolvedValue('12')
@@ -239,10 +231,6 @@ test('summarize', async () => {
 
 test('updateTitle', async () => {
   const initial = createState({
-    location: {
-      page: Page.Assistant,
-      threadId: '1',
-    },
     threads: [
       {
         id: '1',
@@ -253,7 +241,10 @@ test('updateTitle', async () => {
 
   const [store, setState] = createStore(initial)
   const copilotService = mock<CopilotService>()
-  const service = new ThreadService(store, setState, copilotService)
+  const locationService = mock<LocationService>()
+  Object.defineProperty(locationService, 'threadId', {get: vi.fn().mockReturnValue('1')})
+
+  const service = new ThreadService(store, setState, copilotService, locationService)
 
   await service.updateTitle('1', 'Test')
 
@@ -262,10 +253,6 @@ test('updateTitle', async () => {
 
 test('init', () => {
   const initial = createState({
-    location: {
-      page: Page.Assistant,
-      threadId: '1',
-    },
     threads: [
       {
         id: '1',
@@ -281,7 +268,10 @@ test('init', () => {
 
   const [store, setState] = createStore(initial)
   const copilotService = mock<CopilotService>()
-  const service = new ThreadService(store, setState, copilotService)
+  const locationService = mock<LocationService>()
+  Object.defineProperty(locationService, 'threadId', {get: vi.fn().mockReturnValue('1')})
+
+  const service = new ThreadService(store, setState, copilotService, locationService)
 
   service.init()
   expect(store.threads).toHaveLength(1)
@@ -290,10 +280,6 @@ test('init', () => {
 
 test('delete', async () => {
   const initial = createState({
-    location: {
-      page: Page.Assistant,
-      threadId: '1',
-    },
     threads: [
       {
         id: '1',
@@ -316,7 +302,10 @@ test('delete', async () => {
 
   const [store, setState] = createStore(initial)
   const copilotService = mock<CopilotService>()
-  const service = new ThreadService(store, setState, copilotService)
+  const locationService = mock<LocationService>()
+  Object.defineProperty(locationService, 'threadId', {get: vi.fn().mockReturnValue('1')})
+
+  const service = new ThreadService(store, setState, copilotService, locationService)
 
   await service.delete(store.threads[0])
 
@@ -329,10 +318,6 @@ test('delete', async () => {
 
 test('deleteAll', async () => {
   const initial = createState({
-    location: {
-      page: Page.Assistant,
-      threadId: '1',
-    },
     threads: [
       {
         id: '1',
@@ -355,7 +340,10 @@ test('deleteAll', async () => {
 
   const [store, setState] = createStore(initial)
   const copilotService = mock<CopilotService>()
-  const service = new ThreadService(store, setState, copilotService)
+  const locationService = mock<LocationService>()
+  Object.defineProperty(locationService, 'threadId', {get: vi.fn().mockReturnValue('1')})
+
+  const service = new ThreadService(store, setState, copilotService, locationService)
 
   await service.deleteAll()
 
@@ -366,10 +354,6 @@ test('deleteAll', async () => {
 
 test('regenerate - user message', async () => {
   const initial = createState({
-    location: {
-      page: Page.Assistant,
-      threadId: '1',
-    },
     threads: [
       {
         id: '1',
@@ -383,7 +367,10 @@ test('regenerate - user message', async () => {
 
   const [store, setState] = createStore(initial)
   const copilotService = mock<CopilotService>()
-  const service = new ThreadService(store, setState, copilotService)
+  const locationService = mock<LocationService>()
+  Object.defineProperty(locationService, 'threadId', {get: vi.fn().mockReturnValue('1')})
+
+  const service = new ThreadService(store, setState, copilotService, locationService)
   service.messageTree.updateAll(store.threads[0].messages)
 
   let nextId = 3
@@ -420,10 +407,6 @@ test('regenerate - user message', async () => {
 
 test('regenerate - assistant message', async () => {
   const initial = createState({
-    location: {
-      page: Page.Assistant,
-      threadId: '1',
-    },
     threads: [
       {
         id: '1',
@@ -437,7 +420,10 @@ test('regenerate - assistant message', async () => {
 
   const [store, setState] = createStore(initial)
   const copilotService = mock<CopilotService>()
-  const service = new ThreadService(store, setState, copilotService)
+  const locationService = mock<LocationService>()
+  Object.defineProperty(locationService, 'threadId', {get: vi.fn().mockReturnValue('1')})
+
+  const service = new ThreadService(store, setState, copilotService, locationService)
   service.messageTree.updateAll(store.threads[0].messages)
 
   let nextId = 3
@@ -470,10 +456,6 @@ test('regenerate - assistant message', async () => {
 
 test('generateTitle', async () => {
   const initial = createState({
-    location: {
-      page: Page.Assistant,
-      threadId: '1',
-    },
     threads: [
       {
         id: '1',
@@ -488,7 +470,10 @@ test('generateTitle', async () => {
 
   const [store, setState] = createStore(initial)
   const copilotService = mock<CopilotService>()
-  const service = new ThreadService(store, setState, copilotService)
+  const locationService = mock<LocationService>()
+  Object.defineProperty(locationService, 'threadId', {get: vi.fn().mockReturnValue('1')})
+
+  const service = new ThreadService(store, setState, copilotService, locationService)
 
   copilotService.completionsSync.mockImplementation(async (messages) => {
     expect(messages).toHaveLength(3)
@@ -541,10 +526,6 @@ test.each<[Message[], number]>([
   ],
 ])('getMessages', async (messages, count) => {
   const initial = createState({
-    location: {
-      page: Page.Assistant,
-      threadId: '1',
-    },
     threads: [
       {
         id: '1',
@@ -556,8 +537,10 @@ test.each<[Message[], number]>([
 
   const [store, setState] = createStore(initial)
   const copilotService = mock<CopilotService>()
+  const locationService = mock<LocationService>()
+  Object.defineProperty(locationService, 'threadId', {get: vi.fn().mockReturnValue('1')})
 
-  const service = new ThreadService(store, setState, copilotService, 5, 16)
+  const service = new ThreadService(store, setState, copilotService, locationService, 5, 16)
   service.messageTree.updateAll(store.threads[0].messages)
 
   const result = service.getMessages()
@@ -581,16 +564,15 @@ test('getThreads', () => {
   const thread6 = createThread('6', new Date())
 
   const initial = createState({
-    location: {
-      page: Page.Assistant,
-      threadId: '1',
-    },
     threads: [thread6, thread5, thread4, thread3, thread2, thread1],
   })
 
   const [store, setState] = createStore(initial)
   const copilotService = mock<CopilotService>()
-  const service = new ThreadService(store, setState, copilotService)
+  const locationService = mock<LocationService>()
+  Object.defineProperty(locationService, 'threadId', {get: vi.fn().mockReturnValue('1')})
+
+  const service = new ThreadService(store, setState, copilotService, locationService)
 
   const threads = service.getThreads()
 
@@ -608,7 +590,10 @@ test('hande attachments', () => {
   const initial = createState()
   const [store, setState] = createStore(initial)
   const copilotService = mock<CopilotService>()
-  const service = new ThreadService(store, setState, copilotService)
+  const locationService = mock<LocationService>()
+  Object.defineProperty(locationService, 'threadId', {get: vi.fn().mockReturnValue('1')})
+
+  const service = new ThreadService(store, setState, copilotService, locationService)
 
   expect(service.attachments()).toEqual([])
 

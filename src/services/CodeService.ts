@@ -17,6 +17,7 @@ import {type File, Page, type SelectionRange, type State, type VisualPositionRan
 import {CodeMirrorService} from './CodeMirrorService'
 import type {CollabService} from './CollabService'
 import {FileService} from './FileService'
+import type {LocationService} from './LocationService'
 import type {PrettierService} from './PrettierService'
 
 export class CodeService {
@@ -25,6 +26,7 @@ export class CodeService {
     private collabService: CollabService,
     private codeMirrorService: CodeMirrorService,
     private prettierService: PrettierService,
+    private locationService: LocationService,
     private store: Store<State>,
     private setState: SetStoreFunction<State>,
   ) {}
@@ -39,7 +41,7 @@ export class CodeService {
 
   async init(id: string, existingYdoc?: Y.Doc) {
     const file = this.fileService.findFileById(id)
-    const share = this.store.location?.share
+    const share = this.locationService.state?.share
     const path = file?.path
     let text: string | undefined
 
@@ -167,7 +169,7 @@ export class CodeService {
     const parent = file.codeEditorView?.dom.parentElement ?? el
     file.codeEditorView?.destroy()
 
-    const merge = this.store.location?.merge
+    const merge = this.locationService.state?.merge
 
     let doc = type.toString()
     if (merge?.doc) {
@@ -225,9 +227,9 @@ export class CodeService {
       extensions,
     })
 
-    if (this.store.location?.selection) {
+    if (this.locationService.state?.selection) {
       editor.editorView.dispatch({
-        selection: this.createSelection(editor.editorView, this.store.location.selection),
+        selection: this.createSelection(editor.editorView, this.locationService.state.selection),
         scrollIntoView: true,
       })
     }

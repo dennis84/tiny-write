@@ -1,12 +1,10 @@
-import {render, waitFor} from '@solidjs/testing-library'
+import {waitFor} from '@solidjs/testing-library'
 import {beforeEach, expect, test, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
-import {Main} from '@/components/Main'
-import {createCtrl} from '@/services'
 import {createState} from '@/state'
 import {Page} from '@/types'
 import {createYUpdate} from '../testutil/codemirror-util'
-import {expectToBeDefined, stubLocation} from '../testutil/util'
+import {expectToBeDefined, renderMain, stubLocation} from '../testutil/util'
 
 vi.mock('@/db', () => ({DB: mock()}))
 vi.mock('mermaid', () => ({}))
@@ -18,27 +16,25 @@ beforeEach(() => {
 test('prettify', async () => {
   stubLocation('/code/1')
 
-  const ctrl = createCtrl(
-    createState({
-      files: [
-        {
-          id: '1',
-          ydoc: createYUpdate('1', 'const a=1;'),
-          versions: [],
-          code: true,
-          codeLang: 'typescript',
-        },
-      ],
-    }),
-  )
+  const state = createState({
+    files: [
+      {
+        id: '1',
+        ydoc: createYUpdate('1', 'const a=1;'),
+        versions: [],
+        code: true,
+        codeLang: 'typescript',
+      },
+    ],
+  })
 
-  const {getByTestId} = render(() => <Main state={ctrl} />)
+  const {getByTestId, ctrl} = renderMain(state)
 
   await waitFor(() => {
     expect(getByTestId('code_scroll')).toBeDefined()
   })
 
-  expect(ctrl.store.location?.page).toBe(Page.Code)
+  expect(ctrl.locationService?.page).toBe(Page.Code)
   expect(ctrl.fileService.currentFile?.id).toBe('1')
   expect(ctrl.fileService.currentFile?.codeEditorView).toBeDefined()
   expectToBeDefined(ctrl.fileService.currentFile)

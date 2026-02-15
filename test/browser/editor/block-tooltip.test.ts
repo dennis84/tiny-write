@@ -12,6 +12,7 @@ test.beforeEach(async ({page}) => {
   })
 
   await page.goto('/')
+  await page.waitForTimeout(1000)
   await page.click('[data-testid="new_editor"]')
   await page.getByTestId('initialized').waitFor()
 

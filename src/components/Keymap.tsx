@@ -18,6 +18,7 @@ export const Keymap = () => {
     canvasService,
     canvasCollabService,
     treeService,
+    locationService,
   } = useState()
   const {openFile} = useOpen()
 
@@ -53,7 +54,7 @@ export const Keymap = () => {
   }
 
   const onNew = async () => {
-    if (store.location?.page === Page.Editor) {
+    if (locationService.page === Page.Editor) {
       const file = await fileService.newFile()
       treeService.add(file)
       openFile(file)
@@ -68,7 +69,7 @@ export const Keymap = () => {
   }
 
   const onClear = async () => {
-    if (store.location?.page === Page.Editor) {
+    if (locationService.page === Page.Editor) {
       await editorService.clear()
     }
   }
@@ -119,7 +120,7 @@ export const Keymap = () => {
   }
 
   const onBackspace = async (e: KeyboardEvent) => {
-    if (store.location?.page !== Page.Canvas || stopEvent()) return false
+    if (locationService.page !== Page.Canvas || stopEvent()) return false
 
     e.preventDefault()
 

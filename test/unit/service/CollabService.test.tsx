@@ -1,13 +1,11 @@
-import {render, waitFor} from '@solidjs/testing-library'
+import {waitFor} from '@solidjs/testing-library'
 import userEvent from '@testing-library/user-event'
 import {beforeEach, expect, test, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
-import {Main} from '@/components/Main'
-import {createCtrl} from '@/services'
 import {createState} from '@/state'
 import * as cmUtil from '../testutil/codemirror-util'
 import * as pmUtil from '../testutil/prosemirror-util'
-import {stubLocation} from '../testutil/util'
+import {renderMain, stubLocation} from '../testutil/util'
 
 vi.mock('@/db', () => ({DB: mock()}))
 
@@ -24,12 +22,10 @@ beforeEach(() => {
 test('undoManager - text', async () => {
   stubLocation('/editor/1')
 
-  const ctrl = createCtrl(
-    createState({
-      files: [{id: '1', ydoc: pmUtil.createYUpdate('1', []), versions: []}],
-    }),
-  )
-  const {getByTestId} = render(() => <Main state={ctrl} />)
+  const initial = createState({
+    files: [{id: '1', ydoc: pmUtil.createYUpdate('1', []), versions: []}],
+  })
+  const {getByTestId, ctrl} = renderMain(initial)
 
   await waitFor(() => {
     expect(getByTestId('editor_scroll')).toBeDefined()
@@ -54,12 +50,10 @@ test('undoManager - text', async () => {
 test('undoManager - code', async () => {
   stubLocation('/code/1')
 
-  const ctrl = createCtrl(
-    createState({
-      files: [{id: '1', ydoc: cmUtil.createYUpdate('1', ''), versions: [], code: true}],
-    }),
-  )
-  const {getByTestId} = render(() => <Main state={ctrl} />)
+  const initial = createState({
+    files: [{id: '1', ydoc: cmUtil.createYUpdate('1', ''), versions: [], code: true}],
+  })
+  const {getByTestId, ctrl} = renderMain(initial)
 
   await waitFor(() => {
     expect(getByTestId('code_scroll')).toBeDefined()
@@ -84,12 +78,11 @@ test('undoManager - code', async () => {
 test('startCollab', async () => {
   stubLocation('/editor/1')
 
-  const ctrl = createCtrl(
-    createState({
-      files: [{id: '1', ydoc: pmUtil.createYUpdate('1', []), versions: []}],
-    }),
-  )
-  const {getByTestId} = render(() => <Main state={ctrl} />)
+  const initial = createState({
+    files: [{id: '1', ydoc: pmUtil.createYUpdate('1', []), versions: []}],
+  })
+
+  const {getByTestId, ctrl} = renderMain(initial)
 
   await waitFor(() => {
     expect(getByTestId('editor_scroll')).toBeDefined()

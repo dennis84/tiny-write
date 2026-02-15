@@ -79,16 +79,16 @@ interface Cursor {
 }
 
 const MouseCursorActive = (props: {awareness: Awareness}) => {
-  const {store, canvasService, collabService, fileService} = useState()
+  const {store, locationService, canvasService, collabService, fileService} = useState()
   const [cursors, setCursors] = createStore<Cursor[]>([])
 
   const zoom = () =>
-    store.location?.page === Page.Canvas ? (canvasService.currentCanvas?.camera.zoom ?? 1) : 1
+    locationService.page === Page.Canvas ? (canvasService.currentCanvas?.camera.zoom ?? 1) : 1
 
   const offset = createMemo(() => {
     if (store.config.contentWidth === undefined) return [0, 0]
 
-    if (store.location?.page === Page.Canvas) {
+    if (locationService.page === Page.Canvas) {
       return canvasService.currentCanvas?.camera.point ?? [0, 0]
     }
 

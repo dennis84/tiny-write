@@ -1,16 +1,14 @@
-import {render, waitFor} from '@solidjs/testing-library'
+import {waitFor} from '@solidjs/testing-library'
 import {clearMocks, mockConvertFileSrc, mockWindows} from '@tauri-apps/api/mocks'
 import {fromBase64} from 'js-base64'
 import {beforeEach, expect, test, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
-import {Main} from '@/components/Main'
-import {createCtrl} from '@/services'
 import {DropTarget, MediaService} from '@/services/MediaService'
 import {createState} from '@/state'
 import {type CanvasEditorElement, type CanvasImageElement, ElementType} from '@/types'
 import * as cmUtil from '../testutil/codemirror-util'
 import * as pmUtil from '../testutil/prosemirror-util'
-import {createIpcMock, stubLocation} from '../testutil/util'
+import {createIpcMock, renderMain, stubLocation} from '../testutil/util'
 
 document.elementFromPoint = () => null
 
@@ -50,8 +48,7 @@ test('dropFiles - image on editor', async () => {
   const initial = createState({
     files: [{id: '1', ydoc: pmUtil.createYUpdate('1', []), versions: []}],
   })
-  const ctrl = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={ctrl} />)
+  const {getByTestId, ctrl} = renderMain(initial)
 
   await waitFor(() => {
     expect(getByTestId('editor_scroll')).toBeDefined()
@@ -92,8 +89,7 @@ test('dropFiles - image on canvas', async () => {
     ],
   })
 
-  const ctrl = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={ctrl} />)
+  const {getByTestId, ctrl} = renderMain(initial)
 
   await waitFor(() => {
     expect(getByTestId('canvas_container')).toBeDefined()
@@ -144,8 +140,7 @@ test('dropFiles - image on canvas with active editor', async () => {
     ],
   })
 
-  const ctrl = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={ctrl} />)
+  const {getByTestId, ctrl} = renderMain(initial)
 
   await waitFor(() => {
     expect(getByTestId('canvas_container')).toBeDefined()
@@ -179,8 +174,7 @@ test('dropFiles - image on assistant', async () => {
   const initial = createState({
     threads: [{id: '1', messages: []}],
   })
-  const ctrl = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={ctrl} />)
+  const {getByTestId, ctrl} = renderMain(initial)
 
   await waitFor(() => {
     expect(getByTestId('chat_scroll')).toBeDefined()
@@ -202,8 +196,7 @@ test('dropFiles - image on assistant drawer', async () => {
   const initial = createState({
     files: [{id: '1', ydoc: cmUtil.createYUpdate('1', ''), versions: [], code: true}],
   })
-  const ctrl = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={ctrl} />)
+  const {getByTestId, ctrl} = renderMain(initial)
 
   await waitFor(() => {
     expect(getByTestId('code_scroll')).toBeDefined()
@@ -225,8 +218,7 @@ test('dropPaths - image on editor', async () => {
   const initial = createState({
     files: [{id: '1', ydoc: pmUtil.createYUpdate('1', []), versions: []}],
   })
-  const ctrl = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={ctrl} />)
+  const {getByTestId, ctrl} = renderMain(initial)
 
   await waitFor(() => {
     expect(getByTestId('editor_scroll')).toBeDefined()
@@ -256,8 +248,7 @@ test('dropPaths - image on editor with basePath', async () => {
     ],
   })
 
-  const ctrl = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={ctrl} />)
+  const {getByTestId, ctrl} = renderMain(initial)
 
   await waitFor(() => {
     expect(getByTestId('editor_scroll')).toBeDefined()
@@ -278,8 +269,7 @@ test('dropPaths - text file on editor', async () => {
   const initial = createState({
     files: [{id: '1', ydoc: pmUtil.createYUpdate('1', []), versions: []}],
   })
-  const ctrl = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={ctrl} />)
+  const {getByTestId, ctrl} = renderMain(initial)
 
   await waitFor(() => {
     expect(getByTestId('editor_scroll')).toBeDefined()
@@ -318,8 +308,7 @@ test('dropPaths - image on canvas', async () => {
     ],
   })
 
-  const ctrl = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={ctrl} />)
+  const {getByTestId, ctrl} = renderMain(initial)
 
   await waitFor(() => {
     expect(getByTestId('canvas_container')).toBeDefined()
@@ -360,8 +349,7 @@ test('dropPaths - text file on canvas', async () => {
     ],
   })
 
-  const ctrl = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={ctrl} />)
+  const {getByTestId, ctrl} = renderMain(initial)
 
   await waitFor(() => {
     expect(getByTestId('canvas_container')).toBeDefined()
@@ -386,8 +374,7 @@ test('dropPaths - text file on code', async () => {
   const initial = createState({
     files: [{id: '1', ydoc: cmUtil.createYUpdate('1', ''), versions: [], code: true}],
   })
-  const ctrl = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={ctrl} />)
+  const {getByTestId, ctrl} = renderMain(initial)
 
   await waitFor(() => {
     expect(getByTestId('code_scroll')).toBeDefined()
@@ -408,8 +395,7 @@ test('dropPaths - image on code', async () => {
   const initial = createState({
     files: [{id: '1', ydoc: cmUtil.createYUpdate('1', ''), versions: [], code: true}],
   })
-  const ctrl = createCtrl(initial)
-  const {getByTestId} = render(() => <Main state={ctrl} />)
+  const {getByTestId, ctrl} = renderMain(initial)
 
   await waitFor(() => {
     expect(getByTestId('code_scroll')).toBeDefined()

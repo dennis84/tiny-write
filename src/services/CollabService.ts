@@ -10,6 +10,7 @@ import {info} from '@/remote/log'
 import {type Config, type File, Page, type State} from '@/types'
 import {TauriWebSocket} from '@/utils/TauriWebSocket'
 import {ConfigService} from './ConfigService'
+import type {LocationService} from './LocationService'
 import type {ToastService} from './ToastService'
 
 export class CollabService {
@@ -24,7 +25,8 @@ export class CollabService {
 
   constructor(
     private toastService: ToastService,
-    private store: Store<State>,
+    private locationService: LocationService,
+    _store: Store<State>,
     private setState: SetStoreFunction<State>,
   ) {}
 
@@ -195,12 +197,12 @@ export class CollabService {
   }
 
   getJoinUrl(): string | undefined {
-    if (this.store.location?.page === Page.Editor) {
-      return `${WEB_URL}/editor?join=${this.store.location.editorId}`
-    } else if (this.store.location?.page === Page.Code) {
-      return `${WEB_URL}/code?join=${this.store.location.codeId}`
-    } else if (this.store.location?.page === Page.Canvas) {
-      return `${WEB_URL}/canvas?join=${this.store.location.canvasId}`
+    if (this.locationService.page === Page.Editor) {
+      return `${WEB_URL}/editor?join=${this.locationService.editorId}`
+    } else if (this.locationService.page === Page.Code) {
+      return `${WEB_URL}/code?join=${this.locationService.codeId}`
+    } else if (this.locationService.page === Page.Canvas) {
+      return `${WEB_URL}/canvas?join=${this.locationService.canvasId}`
     }
   }
 

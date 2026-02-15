@@ -1,12 +1,11 @@
-import {clearMocks} from '@tauri-apps/api/mocks'
+import {clearMocks, mockWindows} from '@tauri-apps/api/mocks'
 import {beforeEach, expect, test, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
 import {DB} from '@/db'
-import {createCtrl} from '@/services'
 import {createState} from '@/state'
 import {ElementType, Page} from '@/types'
 import {createYUpdate} from '../testutil/prosemirror-util'
-import {createIpcMock} from '../testutil/util'
+import {createIpcMock, renderMain} from '../testutil/util'
 
 vi.stubGlobal('__TAURI__', {})
 
@@ -17,6 +16,7 @@ const lastModified = new Date()
 beforeEach(() => {
   clearMocks()
   createIpcMock()
+  mockWindows('main')
 })
 
 test.each([
@@ -44,10 +44,9 @@ test.each([
 
   const state = createState({
     args: {cwd: '/users/me/cwd'},
-    location: {
+    lastLocation: {
       page: data.page,
-      codeId: data.page === Page.Code ? '1' : undefined,
-      editorId: data.page === Page.Editor ? '1' : undefined,
+      pathname: `${data.page}/1`,
     },
     files: [
       {
@@ -67,8 +66,8 @@ test.each([
     ],
   })
 
-  const {appService} = createCtrl(state)
-  const basePath = await appService.getBasePath()
+  const {ctrl} = renderMain(state)
+  const basePath = await ctrl.appService.getBasePath()
   expect(basePath).toBe(data.expected)
 })
 
@@ -84,9 +83,9 @@ test('reset', async () => {
       },
     ],
   })
-  const {appService} = createCtrl(initial)
+  const {ctrl} = renderMain(initial)
 
-  await appService.reset()
+  await ctrl.appService.reset()
 
   expect(DB.deleteDatabase).toHaveBeenCalled()
 })

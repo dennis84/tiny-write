@@ -1,6 +1,7 @@
+import {useLocation, useNavigate, useParams} from '@solidjs/router'
 import {createStore, type Store} from 'solid-js/store'
 import {isDev} from '@/env'
-import type {State} from '@/types'
+import type {LocationState, State} from '@/types'
 import {AiService} from './AiService'
 import {AppService} from './AppService'
 import {CanvasCollabService} from './CanvasCollabService'
@@ -16,6 +17,7 @@ import {DeleteService} from './DeleteService'
 import {DialogService} from './DialogService'
 import {EditorService} from './EditorService'
 import {FileService} from './FileService'
+import {LocationService} from './LocationService'
 import {MediaService} from './MediaService'
 import {MenuService} from './MenuService'
 import {PrettierService} from './PrettierService'
@@ -27,13 +29,19 @@ import {TreeService} from './TreeService'
 
 export const createCtrl = (initial: State) => {
   const [store, setState] = createStore<Store<State>>(initial)
+  const location = useLocation<LocationState>()
+  const navigate = useNavigate()
+  const params = useParams()
+
   if (isDev) (window as any).__STORE__ = store
+
+  const locationService = new LocationService(location, navigate, () => params, store, setState)
 
   const toastService = new ToastService()
   const aiService = new AiService(store, setState)
-  const collabService = new CollabService(toastService, store, setState)
+  const collabService = new CollabService(toastService, locationService, store, setState)
   const configService = new ConfigService(collabService, store, setState)
-  const fileService = new FileService(collabService, store, setState)
+  const fileService = new FileService(collabService, locationService, store, setState)
   const copilotService = new CopilotService(store, setState, fileService)
   const selectService = new SelectService()
   const prettierService = new PrettierService()
@@ -42,6 +50,7 @@ export const createCtrl = (initial: State) => {
     fileService,
     selectService,
     collabService,
+    locationService,
     store,
     setState,
   )
@@ -52,6 +61,7 @@ export const createCtrl = (initial: State) => {
     appService,
     prettierService,
     toastService,
+    locationService,
     store,
   )
   const proseMirrorService = new ProseMirrorService(
@@ -60,6 +70,7 @@ export const createCtrl = (initial: State) => {
     appService,
     codeMirrorService,
     canvasService,
+    locationService,
   )
   const editorService = new EditorService(
     fileService,
@@ -67,6 +78,7 @@ export const createCtrl = (initial: State) => {
     proseMirrorService,
     toastService,
     selectService,
+    locationService,
     store,
     setState,
   )
@@ -75,6 +87,7 @@ export const createCtrl = (initial: State) => {
     collabService,
     codeMirrorService,
     prettierService,
+    locationService,
     store,
     setState,
   )
@@ -86,10 +99,11 @@ export const createCtrl = (initial: State) => {
     canvasService,
     canvasCollabService,
     appService,
+    locationService,
     store,
   )
 
-  const threadService = new ThreadService(store, setState, copilotService)
+  const threadService = new ThreadService(store, setState, copilotService, locationService)
   const menuService = new MenuService(store, setState, appService)
   const dialogService = new DialogService()
 
@@ -118,6 +132,7 @@ export const createCtrl = (initial: State) => {
     menuService,
     toastService,
     dialogService,
+    locationService,
   }
 }
 

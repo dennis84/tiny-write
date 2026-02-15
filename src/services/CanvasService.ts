@@ -28,6 +28,7 @@ import {PointUtil} from '@/utils/PointUtil'
 import {VecUtil} from '@/utils/VecUtil'
 import type {CollabService} from './CollabService'
 import {FileService} from './FileService'
+import type {LocationService} from './LocationService'
 import type {SelectService} from './SelectService'
 
 type UpdateElement =
@@ -64,12 +65,13 @@ export class CanvasService {
     private fileService: FileService,
     private selectService: SelectService,
     private collabService: CollabService,
+    private locationService: LocationService,
     private store: Store<State>,
     private setState: SetStoreFunction<State>,
   ) {}
 
   get currentCanvasId() {
-    return this.store.location?.canvasId
+    return this.locationService.canvasId
   }
 
   get currentCanvas() {
@@ -201,7 +203,7 @@ export class CanvasService {
 
     if (active && (isEditorElement(newEl) || isCodeElement(newEl))) {
       const file = this.fileService.findFileById(newEl.id)
-      this.setState('location', 'activeFileId', newEl.id)
+      this.fileService.setActiveFile(newEl.id)
       file?.editorView?.focus()
       file?.codeEditorView?.focus()
     }
@@ -257,7 +259,7 @@ export class CanvasService {
           file.codeEditorView.dispatch({selection: {anchor: 0}})
         }
 
-        this.setState('location', 'activeFileId', undefined)
+        this.fileService.setActiveFile(undefined)
       }
 
       this.updateCanvasElement(el.id, {selected: false, active: false})
@@ -320,7 +322,7 @@ export class CanvasService {
   async init() {
     const currentCanvasId = this.currentCanvasId
     const currentCanvas = this.currentCanvas
-    const share = this.store.location?.share
+    const share = this.locationService.state?.share
 
     info(`Initialize canvas (canvasId=${currentCanvasId}, share=${share})`)
 
@@ -345,6 +347,7 @@ export class CanvasService {
     })
 
     this.collabService.destroy()
+    this.fileService.setActiveFile(undefined)
   }
 
   destroyItem(id: string) {

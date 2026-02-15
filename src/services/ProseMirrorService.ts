@@ -42,6 +42,7 @@ import type {CanvasService} from './CanvasService'
 import type {CodeMirrorService} from './CodeMirrorService'
 import type {CollabService} from './CollabService'
 import type {ConfigService} from './ConfigService'
+import type {LocationService} from './LocationService'
 
 export interface ViewConfig {
   nodeViews?: NodeViewConfig
@@ -62,6 +63,7 @@ export class ProseMirrorService {
     private appService: AppService,
     private codeMirrorService: CodeMirrorService,
     private canvasService: CanvasService,
+    private locationService: LocationService,
   ) {}
 
   static isEmpty(state?: EditorState) {
@@ -133,7 +135,7 @@ export class ProseMirrorService {
           permanentUserData,
           props.awareness,
           result.mapping,
-          this.appService.location?.snapshot !== undefined,
+          this.locationService.state?.snapshot !== undefined,
         ),
       )
     }
