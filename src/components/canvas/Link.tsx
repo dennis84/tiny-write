@@ -78,8 +78,9 @@ export const Link = ({element}: {element: CanvasLinkElement}) => {
       async ({event, initial, first, last, movement, memo}) => {
         event.stopPropagation()
         const {zoom} = currentCanvas.camera
-        const i = canvasService.getPosition(initial)
-        if (!i) return
+        const initialVec = canvasService.getPosition(initial)
+        if (!initialVec) return
+        const initialPoint = PointUtil.fromVec(initialVec)
 
         let [fromId, fromEdge] = (await memo) ?? []
 
@@ -91,10 +92,10 @@ export const Link = ({element}: {element: CanvasLinkElement}) => {
           const toEl = currentCanvas.elements.find((el) => el.id === element.to) as CanvasBoxElement
           const fromBox = BoxUtil.fromRect(fromEl)
           const toBox = BoxUtil.fromRect(toEl)
-          const segmentFrom = BoxUtil.getSegment(fromBox, element.fromEdge)
-          const segmentTo = BoxUtil.getSegment(toBox, element.toEdge)
-          const distFrom = segmentFrom.distanceTo(i)
-          const distTo = segmentTo.distanceTo(i)
+          const segmentFrom = BoxUtil.getHandlePoint(fromBox, element.fromEdge)
+          const segmentTo = BoxUtil.getHandlePoint(toBox, element.toEdge)
+          const distFrom = PointUtil.fromVec(segmentFrom).distanceTo(initialPoint)[0]
+          const distTo = PointUtil.fromVec(segmentTo).distanceTo(initialPoint)[0]
 
           if (distTo > distFrom) {
             fromId = element.to
@@ -107,10 +108,10 @@ export const Link = ({element}: {element: CanvasLinkElement}) => {
 
         let t = VecUtil.fromArray(movement)
           .multiply(1 / zoom)
-          .add(i)
+          .add(initialVec)
 
         // If clicked and not dragged
-        if (PointUtil.fromVec(i).distanceTo(PointUtil.fromVec(t))?.[0] <= 1) {
+        if (initialPoint.distanceTo(PointUtil.fromVec(t))?.[0] <= 1) {
           return [fromId, fromEdge]
         }
 

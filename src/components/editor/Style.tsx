@@ -349,7 +349,12 @@ export const FullEditor = styled('div')`
 export const ChatInputEditor = styled('div')`
   width: 100%;
   height: fit-content;
+  max-height: 50vh;
+  overflow-y: auto;
   ${proseMirror}
+  &::-webkit-scrollbar {
+    display: none;
+  }
   .ProseMirror {
     .cm-container {
       background: var(--background-20);
