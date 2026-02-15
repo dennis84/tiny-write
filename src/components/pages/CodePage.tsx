@@ -2,7 +2,6 @@ import {type RouteSectionProps, useLocation} from '@solidjs/router'
 import {createResource, ErrorBoundary, Match, onMount, Show, Suspense, Switch} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {useBeforeLeave} from '@/hooks/use-before-leave'
-import {useOpen} from '@/hooks/use-open'
 import {info} from '@/remote/log'
 import {useState} from '@/state'
 import {type LocationState, Page} from '@/types'
@@ -12,9 +11,8 @@ import {CodeEditor} from '../code/CodeEditor'
 import {MergeMenu} from '../code/MergeMenu'
 
 export const NewCodePage = () => {
-  const location = useLocation<LocationState | undefined>()
-  const {fileService} = useState()
-  const {openFile} = useOpen()
+  const location = useLocation()
+  const {fileService, locationService} = useState()
 
   const Center = styled('div')`
     display: flex;
@@ -26,7 +24,7 @@ export const NewCodePage = () => {
   const onClick = async () => {
     const join = location.query?.join as string | undefined
     const newFile = await fileService.newFile({id: join, code: true})
-    openFile(newFile, {share: join !== undefined})
+    locationService.openFile(newFile, {share: join !== undefined})
   }
 
   return (
@@ -52,7 +50,6 @@ export const NewCodePage = () => {
 export const CodePage = (props: RouteSectionProps) => {
   const location = useLocation<LocationState | undefined>()
   const {store, locationService, collabService, codeService, fileService, toastService} = useState()
-  const {openPage, openDir} = useOpen()
 
   info(`Render code page (location=${locationStateToString(location.state)})`)
 
@@ -76,9 +73,9 @@ export const CodePage = (props: RouteSectionProps) => {
       const message = p.error instanceof Error ? p.error.message : String(p.error)
       toastService.open({message, duration: 10_000})
       if (store.args?.cwd) {
-        openDir()
+        locationService.openDir()
       } else {
-        openPage(Page.Code)
+        locationService.openPage(Page.Code)
       }
     })
     return null

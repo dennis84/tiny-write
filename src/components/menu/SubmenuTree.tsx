@@ -6,7 +6,6 @@ import {styled} from 'solid-styled-components'
 import {useConfirmDialog} from '@/hooks/use-confirm-dialog'
 import {useDialog} from '@/hooks/use-dialog'
 import {useInputLine} from '@/hooks/use-input-line'
-import {useOpen} from '@/hooks/use-open'
 import {useTitle} from '@/hooks/use-title'
 import {CanvasService} from '@/services/CanvasService'
 import type {MenuTreeItem} from '@/services/TreeService'
@@ -204,7 +203,6 @@ export const SubmenuTree = (props: Props) => {
   const [dropState, setDropState] = createSignal<DropState>()
   const [selected, setSelected] = createSignal<MenuTreeItem>()
   const [grabbing, setGrabbing] = createSignal(false)
-  const {openFile} = useOpen()
   const showInputLine = useInputLine()
   const showConfirmDialog = useConfirmDialog()
 
@@ -247,7 +245,7 @@ export const SubmenuTree = (props: Props) => {
   const onNewFile = async () => {
     const file = await fileService.newFile()
     await treeService.add(file)
-    openFile(file)
+    locationService.openFile(file)
     closeTooltip()
     props.maybeHide?.()
   }
@@ -255,7 +253,7 @@ export const SubmenuTree = (props: Props) => {
   const onNewCanvas = async () => {
     const canvas = await canvasService.newCanvas()
     await treeService.add(canvas)
-    openFile(canvas)
+    locationService.openFile(canvas)
     closeTooltip()
     props.maybeHide?.()
   }
@@ -263,7 +261,7 @@ export const SubmenuTree = (props: Props) => {
   const onNewCode = async () => {
     const file = await codeService.newFile()
     await treeService.add(file)
-    openFile(file)
+    locationService.openFile(file)
     closeTooltip()
     props.maybeHide?.()
   }
@@ -277,7 +275,7 @@ export const SubmenuTree = (props: Props) => {
       await treeService.collapse(target.id)
     }
 
-    openFile(file)
+    locationService.openFile(file)
     closeTooltip()
   }
 
@@ -286,7 +284,7 @@ export const SubmenuTree = (props: Props) => {
     if (!target) return
     const canvas = await canvasService.newCanvas({parentId: target.id})
     await treeService.add(canvas)
-    openFile(canvas)
+    locationService.openFile(canvas)
     closeTooltip()
   }
 
@@ -295,7 +293,7 @@ export const SubmenuTree = (props: Props) => {
     if (!target) return
     const file = await codeService.newFile({parentId: target.id})
     await treeService.add(file)
-    openFile(file)
+    locationService.openFile(file)
     closeTooltip()
   }
 
@@ -307,7 +305,7 @@ export const SubmenuTree = (props: Props) => {
       content: 'Do you want to proceed?',
       onConfirm: async () => {
         const result = await deleteService.delete(node, forever)
-        if (result.navigateTo !== false) openFile(result.navigateTo)
+        if (result.navigateTo !== false) locationService.openFile(result.navigateTo)
         closeTooltip()
       },
     })
@@ -347,7 +345,7 @@ export const SubmenuTree = (props: Props) => {
     const title = useTitle({item: p.node.value})
 
     const onClick = async () => {
-      openFile(p.node.value)
+      locationService.openFile(p.node.value)
       props.maybeHide?.()
     }
 

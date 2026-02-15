@@ -2,7 +2,6 @@ import {type RouteSectionProps, useLocation} from '@solidjs/router'
 import {createResource, ErrorBoundary, Match, onMount, Show, Suspense, Switch} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {useBeforeLeave} from '@/hooks/use-before-leave'
-import {useOpen} from '@/hooks/use-open'
 import {info} from '@/remote/log'
 import {useState} from '@/state'
 import {type LocationState, Page} from '@/types'
@@ -10,9 +9,8 @@ import {ButtonPrimary} from '../Button'
 import {Canvas} from '../canvas/Canvas'
 
 export const NewCanvasPage = () => {
-  const location = useLocation<LocationState | undefined>()
-  const {canvasService} = useState()
-  const {openFile} = useOpen()
+  const location = useLocation()
+  const {canvasService, locationService} = useState()
 
   const Center = styled('div')`
     display: flex;
@@ -24,7 +22,7 @@ export const NewCanvasPage = () => {
   const onClick = async () => {
     const join = location.query?.join as string | undefined
     const newCanvas = await canvasService.newCanvas({id: join})
-    openFile(newCanvas, {share: join !== undefined})
+    locationService.openFile(newCanvas, {share: join !== undefined})
   }
 
   return (
@@ -50,7 +48,6 @@ export const NewCanvasPage = () => {
 export const CanvasPage = (props: RouteSectionProps) => {
   const location = useLocation<LocationState | undefined>()
   const {locationService, canvasService, canvasCollabService, toastService} = useState()
-  const {openPage} = useOpen()
 
   info(`Render canvas page (location=${JSON.stringify(location.state)})`)
 
@@ -68,7 +65,7 @@ export const CanvasPage = (props: RouteSectionProps) => {
       await locationService.setLastLocation(undefined)
       const message = p.error instanceof Error ? p.error.message : String(p.error)
       toastService.open({message, duration: 10_000})
-      openPage(Page.Canvas)
+      locationService.openPage(Page.Canvas)
     })
     return null
   }

@@ -23,7 +23,6 @@ import {
 } from '@/components/Icon'
 import {useDialog} from '@/hooks/use-dialog'
 import {useInputLine} from '@/hooks/use-input-line'
-import {useOpen} from '@/hooks/use-open'
 import type {Dialog} from '@/services/DialogService'
 import {isCodeElement, isEditorElement, useState} from '@/state'
 import {AttachmentType, type CanvasBoxElement, type CanvasElement} from '@/types'
@@ -31,10 +30,17 @@ import {BoxUtil} from '@/utils/BoxUtil'
 import {VecUtil} from '@/utils/VecUtil'
 
 export const Toolbar = () => {
-  const {store, canvasService, codeService, fileService, menuService, threadService, treeService} =
-    useState()
+  const {
+    store,
+    canvasService,
+    codeService,
+    fileService,
+    menuService,
+    threadService,
+    treeService,
+    locationService,
+  } = useState()
   const [inViewport, setInViewport] = createSignal(false)
-  const {openFile} = useOpen()
   const showInputLine = useInputLine()
 
   const restore = async (element: CanvasElement) => {
@@ -187,7 +193,7 @@ export const Toolbar = () => {
   const ToolbarDialog = (p: {dialog: Dialog<ToolbarState>}) => (
     <>
       <Show when={inViewport()}>
-        <TooltipButton onClick={() => openFile(p.dialog.state.element)}>
+        <TooltipButton onClick={() => locationService.openFile(p.dialog.state.element)}>
           <IconOpenInFull /> Open in full
         </TooltipButton>
         <Show when={fileService.findFileById(p.dialog.state.element.id)?.deleted}>

@@ -4,7 +4,6 @@ import {Portal} from 'solid-js/web'
 import {styled} from 'solid-styled-components'
 import {v4 as uuidv4} from 'uuid'
 import * as Y from 'yjs'
-import {useOpen} from '@/hooks/use-open'
 import {useTitle} from '@/hooks/use-title'
 import {copy} from '@/remote/clipboard'
 import {info} from '@/remote/log'
@@ -31,8 +30,7 @@ export interface ApplyPanelState {
 }
 
 export const ApplyPanel = (p: {state: ApplyPanelState}) => {
-  const {fileService, threadService, treeService} = useState()
-  const {openFile} = useOpen()
+  const {fileService, threadService, treeService, locationService} = useState()
 
   const file = p.state.info.attrs?.id ? fileService.findFileById(p.state.info.attrs.id) : undefined
   const title = useTitle({
@@ -54,7 +52,7 @@ export const ApplyPanel = (p: {state: ApplyPanelState}) => {
     const doc = p.state.editorView.state.doc.toString()
     const range = p.state.info.attrs?.range
 
-    openFile(file, {merge: {doc, range}})
+    locationService.openFile(file, {merge: {doc, range}})
   }
 
   const onCreateFile = async () => {
@@ -71,7 +69,7 @@ export const ApplyPanel = (p: {state: ApplyPanelState}) => {
     })
 
     await treeService.add(file)
-    openFile(file)
+    locationService.openFile(file)
   }
 
   return (

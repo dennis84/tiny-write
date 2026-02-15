@@ -2,7 +2,6 @@ import {type RouteSectionProps, useLocation} from '@solidjs/router'
 import {createResource, ErrorBoundary, Match, onMount, Show, Suspense, Switch} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {useBeforeLeave} from '@/hooks/use-before-leave'
-import {useOpen} from '@/hooks/use-open'
 import {info} from '@/remote/log'
 import {useState} from '@/state'
 import {type LocationState, Page} from '@/types'
@@ -10,9 +9,8 @@ import {ButtonPrimary} from '../Button'
 import {Editor} from '../editor/Editor'
 
 export const NewEditorPage = () => {
-  const {fileService} = useState()
-  const {openFile} = useOpen()
-  const location = useLocation<LocationState>()
+  const {fileService, locationService} = useState()
+  const location = useLocation()
 
   const Center = styled('div')`
     display: flex;
@@ -24,7 +22,7 @@ export const NewEditorPage = () => {
   const onClick = async () => {
     const join = location.query?.join as string | undefined
     const newFile = await fileService.newFile({id: join})
-    openFile(newFile, {share: join !== undefined})
+    locationService.openFile(newFile, {share: join !== undefined})
   }
 
   return (
@@ -49,7 +47,6 @@ export const NewEditorPage = () => {
 
 export const EditorPage = (props: RouteSectionProps) => {
   const {locationService, collabService, editorService, fileService, toastService} = useState()
-  const {openPage} = useOpen()
   const location = useLocation<LocationState>()
 
   info(`Render editor page (location=${JSON.stringify(props.location.state)})`)
@@ -73,7 +70,7 @@ export const EditorPage = (props: RouteSectionProps) => {
       await locationService.setLastLocation(undefined)
       const message = p.error instanceof Error ? p.error.message : String(p.error)
       toastService.open({message, duration: 10_000})
-      openPage(Page.Editor)
+      locationService.openPage(Page.Editor)
     })
     return null
   }

@@ -25,7 +25,6 @@ import {
 } from '@/components/Icon'
 import {useDialog} from '@/hooks/use-dialog'
 import {useInputLine} from '@/hooks/use-input-line'
-import {useOpen} from '@/hooks/use-open'
 import editorTextHandling from '@/prompts/editor-text-handling.md?raw'
 import editorCodeBlockHandling from '@/prompts/editor-text-handling.md?raw'
 import {addDecorationKey} from '@/prosemirror/add-decoration'
@@ -52,8 +51,8 @@ export const BlockTooltip = (props: Props) => {
     threadService,
     copilotService,
     toastService,
+    locationService,
   } = useState()
-  const {openUrl} = useOpen()
   const showInputLine = useInputLine()
 
   const onPrettify = async () => {
@@ -305,7 +304,7 @@ export const BlockTooltip = (props: Props) => {
     const href = resolved.marks()[0]?.attrs?.href
     if (!href) return
 
-    await openUrl(href)
+    await locationService.openUrl(href)
     closeTooltip()
   }
 

@@ -6,7 +6,6 @@ import {useCollabCount} from '@/hooks/use-collab-count'
 import {useConfirmDialog} from '@/hooks/use-confirm-dialog'
 import {useDialog} from '@/hooks/use-dialog'
 import {useInputLine} from '@/hooks/use-input-line'
-import {useOpen} from '@/hooks/use-open'
 import {useTitle} from '@/hooks/use-title'
 import {copy} from '@/remote/clipboard'
 import {CanvasService} from '@/services/CanvasService'
@@ -101,8 +100,8 @@ const CollabButton = () => {
 }
 
 const CurrentFileButton = () => {
-  const {codeService, canvasService, deleteService, fileService, treeService} = useState()
-  const {openFile} = useOpen()
+  const {codeService, canvasService, deleteService, fileService, treeService, locationService} =
+    useState()
   const showInputLine = useInputLine()
   const showConfirmDialog = useConfirmDialog()
 
@@ -195,7 +194,7 @@ const CurrentFileButton = () => {
       content: 'Do you want to proceed?',
       onConfirm: async () => {
         const result = await deleteService.deleteItem(currentFile, forever)
-        if (result.navigateTo !== false) openFile(result.navigateTo)
+        if (result.navigateTo !== false) locationService.openFile(result.navigateTo)
         closeTooltip()
       },
     })
@@ -280,8 +279,7 @@ const DarkModeToggle = () => {
 }
 
 const AssistantButton = () => {
-  const {store, menuService} = useState()
-  const {updateState} = useOpen()
+  const {store, menuService, locationService} = useState()
 
   const onAssistantClick = async () => {
     if (!store.ai?.copilot?.user) {
@@ -290,7 +288,7 @@ const AssistantButton = () => {
     }
 
     const status = menuService.toggleAssistant()
-    if (!status) updateState({threadId: undefined})
+    if (!status) locationService.updateState({threadId: undefined})
   }
 
   return (
@@ -375,8 +373,7 @@ const BackButton = () => {
 }
 
 export const ChatNavbar = () => {
-  const {menuService, threadService} = useState()
-  const {openPage, updateState} = useOpen()
+  const {menuService, threadService, locationService} = useState()
 
   const onExpandClick = async () => {
     // Get current thread before resetting in state
@@ -384,9 +381,9 @@ export const ChatNavbar = () => {
     menuService.toggleAssistant()
 
     if (currentThread?.lastModified) {
-      updateState({threadId: currentThread.id})
+      locationService.updateState({threadId: currentThread.id})
     } else {
-      openPage(Page.Assistant)
+      locationService.openPage(Page.Assistant)
     }
   }
 

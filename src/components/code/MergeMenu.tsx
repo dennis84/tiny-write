@@ -2,7 +2,6 @@ import {acceptChunk, getChunks, rejectChunk} from '@codemirror/merge'
 import {createMemo, createSignal, onCleanup, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {DialogContainer, TooltipButton} from '@/components/dialog/Style'
-import {useOpen} from '@/hooks/use-open'
 import {useState} from '@/state'
 import {IconCheck, IconClose} from '../Icon'
 
@@ -28,8 +27,7 @@ type ChunksType = ReturnType<typeof getChunks>
 
 const MergeMenuWithChunks = (props: {chunks: ChunksType}) => {
   let tooltipRef!: HTMLDivElement
-  const {fileService, toastService} = useState()
-  const {openFile} = useOpen()
+  const {fileService, toastService, locationService} = useState()
   const [autoClose, setAutoClose] = createSignal(true)
 
   const onAccept = () => {
@@ -42,7 +40,7 @@ const MergeMenuWithChunks = (props: {chunks: ChunksType}) => {
     })
 
     toastService.open({message: 'Full diff applied ✅', duration: 2000})
-    openFile(fileService.currentFile, {merge: undefined})
+    locationService.openFile(fileService.currentFile, {merge: undefined})
   }
 
   const onReject = () => {
@@ -56,14 +54,14 @@ const MergeMenuWithChunks = (props: {chunks: ChunksType}) => {
     })
 
     toastService.open({message: 'Full diff rejected ✅', duration: 2000})
-    openFile(currentFile, {merge: undefined})
+    locationService.openFile(currentFile, {merge: undefined})
   }
 
   // Handle when all chunks are resolved in codemirror UI
   onCleanup(() => {
     if (autoClose()) {
       toastService.open({message: 'All chunks applied ✅', duration: 2000})
-      openFile(fileService.currentFile, {merge: undefined})
+      locationService.openFile(fileService.currentFile, {merge: undefined})
     }
   })
 

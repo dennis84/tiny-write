@@ -1,27 +1,25 @@
 import {createResource, onMount, Show, Suspense} from 'solid-js'
-import {useOpen} from '@/hooks/use-open'
 import {useState} from '@/state'
 import {Drawer} from '../Drawer'
 import {ChatNavbar} from '../menu/Navbar'
 import {Chat} from './Chat'
 
 export const ChatDrawer = () => {
-  const {aiService, threadService} = useState()
-  const {updateState} = useOpen()
+  const {aiService, threadService, locationService} = useState()
 
   const onDrawerResized = async (width: number) => {
     await aiService.setSidebarWidth(width)
   }
 
   const onChangeThread = async (threadId: string) => {
-    updateState({threadId})
+    locationService.updateState({threadId})
   }
 
   // Create a new thread if not in location state
   onMount(() => {
     if (threadService.currentThread) return
     const thread = threadService.newThread()
-    updateState({threadId: thread.id})
+    locationService.updateState({threadId: thread.id})
   })
 
   const [initialized] = createResource(

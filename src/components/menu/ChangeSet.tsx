@@ -1,7 +1,6 @@
 import {format} from 'date-fns'
 import {For, onCleanup, Show} from 'solid-js'
 import {ButtonGroup, ButtonPrimary} from '@/components/Button'
-import {useOpen} from '@/hooks/use-open'
 import {useState} from '@/state'
 import {DrawerContent} from '../Drawer'
 import {Link} from './Link'
@@ -12,14 +11,13 @@ import {Label, Sub} from './Style'
 export const ChangeSet = () => {
   const {locationService, changeSetService, fileService} = useState()
   const versions = () => fileService.currentFile?.versions ?? []
-  const {openFile} = useOpen()
 
   const renderVersion = (snapshot: number) => {
     const currentFile = fileService.currentFile
     if (locationService.state?.snapshot === snapshot) {
-      openFile(currentFile, {snapshot: undefined})
+      locationService.openFile(currentFile, {snapshot: undefined})
     } else {
-      openFile(currentFile, {snapshot})
+      locationService.openFile(currentFile, {snapshot})
     }
   }
 
@@ -28,12 +26,12 @@ export const ChangeSet = () => {
     const version = currentFile?.versions[locationService.state?.snapshot ?? -1]
     if (!version) return
     changeSetService.applyVersion(version)
-    openFile(currentFile, {snapshot: undefined})
+    locationService.openFile(currentFile, {snapshot: undefined})
   }
 
   onCleanup(() => {
     const currentFile = fileService.currentFile
-    openFile(currentFile, {snapshot: undefined})
+    locationService.openFile(currentFile, {snapshot: undefined})
     currentFile?.editorView?.focus()
   })
 

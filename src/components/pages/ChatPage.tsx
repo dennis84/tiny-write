@@ -1,23 +1,21 @@
 import type {RouteSectionProps} from '@solidjs/router'
 import {createEffect, createResource, ErrorBoundary, onMount, Show, Suspense} from 'solid-js'
-import {useOpen} from '@/hooks/use-open'
 import {useState} from '@/state'
 import {Page} from '@/types'
 import {Chat} from '../assistant/Chat'
 
 export const ChatPage = (props: RouteSectionProps) => {
-  const {threadService, toastService} = useState()
-  const {openPage, openFile, updateState} = useOpen()
+  const {threadService, toastService, locationService} = useState()
 
   const onChangeThread = (threadId: string) => {
-    updateState({threadId})
+    locationService.updateState({threadId})
   }
 
   // Create a new thread if not in location state
   onMount(() => {
     if (threadService.currentThread) return
     const thread = threadService.newThread()
-    updateState({threadId: thread.id})
+    locationService.updateState({threadId: thread.id})
   })
 
   const [initialized] = createResource(
@@ -33,14 +31,14 @@ export const ChatPage = (props: RouteSectionProps) => {
     const currentThread = threadService.currentThread
     // Update URL if thread was persisted
     if (!props.params.id && currentThread?.lastModified) {
-      openFile(currentThread)
+      locationService.openFile(currentThread)
     }
   })
 
   const OnError = () => {
     onMount(async () => {
       toastService.open({message: `Thread not found: ${props.params.id}`, duration: 10_000})
-      openPage(Page.Assistant)
+      locationService.openPage(Page.Assistant)
     })
     return null
   }

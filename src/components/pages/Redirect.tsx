@@ -1,13 +1,11 @@
 import {useLocation, useNavigate} from '@solidjs/router'
 import {onMount} from 'solid-js'
-import {useOpen} from '@/hooks/use-open'
 import {info} from '@/remote/log'
 import {useState} from '@/state'
 import type {LocationState} from '@/types'
 
 export const Redirect = () => {
-  const {store, fileService} = useState()
-  const {openFile, openDir} = useOpen()
+  const {store, fileService, locationService} = useState()
   const location = useLocation<LocationState>()
   const navigate = useNavigate()
 
@@ -20,14 +18,14 @@ export const Redirect = () => {
 
     if (store.args?.source && !argPath) {
       info(`Redirect dir`)
-      openDir()
+      locationService.openDir()
       return
     }
 
     if (argPath) {
       info(`Redirect to new file by path (path=${path}, newFile=${newFile})`)
       const file = await fileService.newFileByPath(path, newFile)
-      return openFile(file, {selection})
+      return locationService.openFile(file, {selection})
     }
 
     if (lastLocation?.pathname) {
@@ -38,12 +36,12 @@ export const Redirect = () => {
     const first = store.files.find((f) => !f.deleted)
     if (first) {
       info(`Redirect first file (id=${first?.id})`)
-      return openFile(first, {selection})
+      return locationService.openFile(first, {selection})
     }
 
     const file = await fileService.newFile()
     info(`Redirect to new empty file (id=${file.id})`)
-    openFile(file, {selection})
+    locationService.openFile(file, {selection})
   })
 
   return null

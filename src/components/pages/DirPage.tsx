@@ -3,7 +3,6 @@ import {homeDir} from '@tauri-apps/api/path'
 import {type DirEntry, readDir} from '@tauri-apps/plugin-fs'
 import {createResource, For, Index, Suspense} from 'solid-js'
 import {styled} from 'solid-styled-components'
-import {useOpen} from '@/hooks/use-open'
 import {resolvePath, toRelativePath} from '@/remote/editor'
 import {info} from '@/remote/log'
 import {useState} from '@/state'
@@ -54,8 +53,7 @@ interface DirState {
 }
 
 export const DirPage = () => {
-  const {store, fileService} = useState()
-  const {openFile, openDir} = useOpen()
+  const {store, fileService, locationService} = useState()
   const location = useLocation<DirState>()
 
   info('Render DirPage')
@@ -93,7 +91,7 @@ export const DirPage = () => {
   const clickPathSegment = (index: number) => {
     const path = [...(location.state?.path ?? [])]
     path.splice(index)
-    openDir(path)
+    locationService.openDir(path)
   }
 
   const DirEntryLink = (p: {entry: DirEntry}) => {
@@ -101,14 +99,14 @@ export const DirPage = () => {
       if (p.entry.isDirectory) {
         const path = location.state?.path ?? []
         path.push(p.entry.name)
-        openDir(path)
+        locationService.openDir(path)
         return
       }
 
       const path = await getResolvedPath(p.entry.name)
       const file = await fileService.newFileByPath(path)
 
-      openFile(file)
+      locationService.openFile(file)
     }
 
     return (

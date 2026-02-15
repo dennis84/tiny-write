@@ -1,7 +1,6 @@
 import {onCleanup, onMount} from 'solid-js'
 import {keyName} from 'w3c-keyname'
 import {isTauri, mod} from '@/env'
-import {useOpen} from '@/hooks/use-open'
 import {quit} from '@/remote/app'
 import {saveFile} from '@/remote/editor'
 import {lspGoto} from '@/remote/lsp'
@@ -20,7 +19,6 @@ export const Keymap = () => {
     treeService,
     locationService,
   } = useState()
-  const {openFile} = useOpen()
 
   onMount(async () => {
     // Pass useCapture=true to receive the event first before CM or PM
@@ -57,7 +55,7 @@ export const Keymap = () => {
     if (locationService.page === Page.Editor) {
       const file = await fileService.newFile()
       treeService.add(file)
-      openFile(file)
+      locationService.openFile(file)
     } else {
       const els = await canvasService.newFile()
       if (els) {
@@ -168,7 +166,7 @@ export const Keymap = () => {
 
     const file = await fileService.newFileByPath(url.pathname)
 
-    openFile(file, {selection})
+    locationService.openFile(file, {selection})
   }
 
   // biome-ignore lint/suspicious/noConfusingVoidType: void is needed here

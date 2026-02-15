@@ -11,7 +11,6 @@ import {
   IconVerticalAlignCenter,
 } from '@/components/Icon'
 import {isDev, isMac, isTauri, mod, shortHash, VERSION_URL, version} from '@/env'
-import {useOpen} from '@/hooks/use-open'
 import {quit} from '@/remote/app'
 import {MenuId} from '@/services/MenuService'
 import {useState} from '@/state'
@@ -63,7 +62,6 @@ export const Menu = () => {
     fileService,
     prettierService,
   } = useState()
-  const {updateState} = useOpen()
 
   const modKey = isMac ? '⌘' : mod
 
@@ -101,7 +99,7 @@ export const Menu = () => {
 
   const onToggleAssistant = () => {
     const status = menuService.toggleAssistant()
-    if (!status) updateState({threadId: undefined})
+    if (!status) locationService.updateState({threadId: undefined})
   }
 
   const maybeHide = () => {
