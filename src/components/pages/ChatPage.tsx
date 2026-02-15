@@ -7,7 +7,7 @@ import {Chat} from '../assistant/Chat'
 
 export const ChatPage = (props: RouteSectionProps) => {
   const {threadService, toastService} = useState()
-  const {openPage, updateState} = useOpen()
+  const {openPage, openFile, updateState} = useOpen()
 
   const onChangeThread = (threadId: string) => {
     updateState({threadId})
@@ -33,7 +33,7 @@ export const ChatPage = (props: RouteSectionProps) => {
     const currentThread = threadService.currentThread
     // Update URL if thread was persisted
     if (!props.params.id && currentThread?.lastModified) {
-      updateState({threadId: currentThread.id})
+      openFile(currentThread)
     }
   })
 

@@ -64,6 +64,8 @@ export interface Model {
   name: string
   vendor: string
   streaming: boolean
+  maxOutputTokens: number
+  maxPromptTokens: number
 }
 
 export interface Choice {
@@ -81,7 +83,14 @@ interface CompletionsResult {
   error?: string
 }
 
-const fallbackModel: Model = {id: 'gpt-4o', name: 'gpt-4o', vendor: 'OpenAI', streaming: true}
+const fallbackModel: Model = {
+  id: 'gpt-4o',
+  name: 'gpt-4o',
+  vendor: 'OpenAI',
+  streaming: true,
+  maxOutputTokens: 40_000,
+  maxPromptTokens: 40_000,
+}
 
 export class CopilotService {
   private streamingSignal = createSignal(false)
@@ -158,6 +167,8 @@ export class CopilotService {
           name: item.name,
           vendor: item.vendor,
           streaming: item.capabilities.supports.streaming ?? false,
+          maxOutputTokens: item.capabilities.limits.max_output_tokens ?? 40_000,
+          maxPromptTokens: item.capabilities.limits.max_prompt_tokens ?? 40_000,
         })
       }
     }

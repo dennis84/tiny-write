@@ -219,10 +219,16 @@ test('summarize', async () => {
   const locationService = mock<LocationService>()
   Object.defineProperty(locationService, 'threadId', {get: vi.fn().mockReturnValue('1')})
 
-  const service = new ThreadService(store, setState, copilotService, locationService, 2)
+  const service = new ThreadService(store, setState, copilotService, locationService)
   service.messageTree.updateAll(store.threads[0].messages)
 
   copilotService.completionsSync.mockResolvedValue('12')
+  Object.defineProperty(copilotService, 'chatModel', {
+    get: vi.fn().mockReturnValue({
+      maxPromptTokens: 2,
+      maxOutputTokens: 2,
+    }),
+  })
 
   await service.summarize()
 
@@ -515,14 +521,26 @@ test.each<[Message[], number]>([
   [
     [
       {id: '1', role: 'user', content: 'A A A A'},
-      {id: '2', parentId: '1', role: 'assistant', content: 'B B B B'},
+      {id: '2', parentId: '1', role: 'assistant', content: 'B'},
       {id: '3', parentId: '2', role: 'user', content: 'C C C C'},
-      {id: '4', parentId: '3', role: 'assistant', content: 'D D D D', summary: 'ABCD'},
+      {id: '4', parentId: '3', role: 'assistant', content: 'D', summary: 'ABCD'},
       {id: '5', parentId: '4', role: 'user', content: 'E'},
       {id: '6', parentId: '5', role: 'assistant', content: 'F'},
       {id: '7', parentId: '6', role: 'user', content: 'G'},
     ],
-    4, // token limit reached, filter to last summary
+    4, // prompt token limit reached, filter to last summary
+  ],
+  [
+    [
+      {id: '1', role: 'user', content: 'A'},
+      {id: '2', parentId: '1', role: 'assistant', content: 'B B B B B B'},
+      {id: '3', parentId: '2', role: 'user', content: 'C'},
+      {id: '4', parentId: '3', role: 'assistant', content: 'D D D D D D', summary: 'ABCD'},
+      {id: '5', parentId: '4', role: 'user', content: 'E'},
+      {id: '6', parentId: '5', role: 'assistant', content: 'F'},
+      {id: '7', parentId: '6', role: 'user', content: 'G'},
+    ],
+    4, // output token limit reached, filter to last summary
   ],
 ])('getMessages', async (messages, count) => {
   const initial = createState({
@@ -538,9 +556,16 @@ test.each<[Message[], number]>([
   const [store, setState] = createStore(initial)
   const copilotService = mock<CopilotService>()
   const locationService = mock<LocationService>()
-  Object.defineProperty(locationService, 'threadId', {get: vi.fn().mockReturnValue('1')})
 
-  const service = new ThreadService(store, setState, copilotService, locationService, 5, 16)
+  Object.defineProperty(locationService, 'threadId', {get: vi.fn().mockReturnValue('1')})
+  Object.defineProperty(copilotService, 'chatModel', {
+    get: vi.fn().mockReturnValue({
+      maxPromptTokens: 10,
+      maxOutputTokens: 12,
+    }),
+  })
+
+  const service = new ThreadService(store, setState, copilotService, locationService)
   service.messageTree.updateAll(store.threads[0].messages)
 
   const result = service.getMessages()

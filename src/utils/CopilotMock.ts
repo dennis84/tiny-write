@@ -146,14 +146,38 @@ export class CopilotMock {
           name: 'GPT-4o',
           vendor: 'OpenAI',
           model_picker_enabled: true,
-          capabilities: {supports: {streaming: true}},
+          capabilities: {
+            supports: {streaming: true},
+            limits: {
+              max_context_window_tokens: 400000,
+              max_output_tokens: 128000,
+              max_prompt_tokens: 272000,
+              vision: {
+                max_prompt_image_size: 3145728,
+                max_prompt_images: 1,
+                supported_media_types: ['image/jpeg', 'image/png', 'image/webp', 'image/gif'],
+              },
+            },
+          },
         },
         {
           id: 'claude-3.5-sonnet',
           name: 'Claude 3.5 Sonnet',
           vendor: 'Anthropic',
           model_picker_enabled: true,
-          capabilities: {supports: {streaming: true}},
+          capabilities: {
+            supports: {streaming: true},
+            limits: {
+              max_context_window_tokens: 400000,
+              max_output_tokens: 128000,
+              max_prompt_tokens: 272000,
+              vision: {
+                max_prompt_image_size: 3145728,
+                max_prompt_images: 1,
+                supported_media_types: ['image/jpeg', 'image/png', 'image/webp', 'image/gif'],
+              },
+            },
+          },
         },
       ],
     }

@@ -2,8 +2,8 @@ import {useLocation, useNavigate} from '@solidjs/router'
 import {isTauri} from '../env'
 import {open as shellOpen} from '../remote/app'
 import {info} from '../remote/log'
-import {isCanvas, isCodeElement, isCodeFile, isEditorElement, isFile} from '../state'
-import type {Canvas, CanvasElement, File, LocationState, Page} from '../types'
+import {isCanvas, isCodeElement, isCodeFile, isEditorElement, isFile, isThread} from '../state'
+import type {Canvas, CanvasElement, File, LocationState, Page, Thread} from '../types'
 
 export const useOpen = () => {
   const navigate = useNavigate()
@@ -14,7 +14,10 @@ export const useOpen = () => {
     navigate(location.pathname, {state, replace: true})
   }
 
-  const openFile = (file?: File | Canvas | CanvasElement, locState?: Partial<LocationState>) => {
+  const openFile = (
+    file?: File | Canvas | CanvasElement | Thread,
+    locState?: Partial<LocationState>,
+  ) => {
     if (!file) return navigate('/')
     const state = {...location.state, ...locState}
 
@@ -26,6 +29,8 @@ export const useOpen = () => {
       return navigate(`/editor/${file.id}`, {state: {...state, newFile}})
     } else if (isCanvas(file)) {
       return navigate(`/canvas/${file.id}`, {state})
+    } else if (isThread(file)) {
+      return navigate(`/assistant/${file.id}`, {state: {...state, threadId: undefined}})
     } else if (isEditorElement(file)) {
       return navigate(`/editor/${file.id}`, {state})
     } else if (isCodeElement(file)) {

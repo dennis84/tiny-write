@@ -16,6 +16,7 @@ import {
   ElementType,
   type File,
   type State,
+  type Thread,
 } from './types'
 
 export const isBoxElement = (el?: CanvasElement): el is CanvasBoxElement =>
@@ -52,6 +53,8 @@ export const isCodeFile = (it: any): it is File => {
 }
 
 export const isCanvas = (it: any): it is Canvas => it?.camera
+
+export const isThread = (it: any): it is Thread => Array.isArray(it?.messages)
 
 export const StateContext = createContext<Ctrl>({} as Ctrl)
 

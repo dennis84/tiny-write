@@ -58,8 +58,6 @@ export class ThreadService {
     private setState: SetStoreFunction<State>,
     private copilotService: CopilotService,
     private locationService: LocationService,
-    private readonly createSummaryAt = 40_000,
-    private readonly summarizeAt = 50_000,
   ) {}
 
   setAttachments(attachments: Attachment[]) {
@@ -326,10 +324,13 @@ export class ThreadService {
       targetId = it.value.id
     })
 
-    const count = this.tokenCount(messages)
-    info(`Maybe create summary (tokenCount=${count})`)
+    const {promptCount, outputCount} = this.tokenCount(messages)
+    info(`Maybe create summary (promptCount=${promptCount}, outputCount=${outputCount})`)
 
-    if (count < this.createSummaryAt) {
+    const currentModel = this.copilotService.chatModel
+    const promptLimit = currentModel.maxPromptTokens * 0.7
+    const outputLimit = currentModel.maxOutputTokens * 0.7
+    if (promptCount < promptLimit && outputCount < outputLimit) {
       return
     }
 
@@ -338,7 +339,9 @@ export class ThreadService {
     try {
       const summary = await this.copilotService.completionsSync(messages)
       if (summary) {
-        info(`Add summary to message (messageId=${targetId})`)
+        info(
+          `Add summary to message (messageId=${targetId}, promptLimit=${promptLimit}, outputLimit=${outputLimit})`,
+        )
         const currentThreadIndex = this.currentThreadIndex
         const messageIndex = currentThread.messages.findIndex((m) => m.id === targetId)
 
@@ -428,8 +431,13 @@ export class ThreadService {
 
       messages.push(message)
 
+      const {promptCount, outputCount} = this.tokenCount(messages)
+      const currentModel = this.copilotService.chatModel
+      const promptLimit = currentModel.maxPromptTokens * 0.9
+      const outputLimit = currentModel.maxOutputTokens * 0.9
+
       // Reduce messages starting from last summary
-      if (lastSummaryIndex !== -1 && this.tokenCount(messages) > this.summarizeAt) {
+      if (lastSummaryIndex !== -1 && (promptCount > promptLimit || outputCount > outputLimit)) {
         messages = [
           {role: 'system', content: [{type: 'text', text: lastSummary ?? ''}]},
           ...messages.slice(lastSummaryIndex + 1),
@@ -496,19 +504,26 @@ export class ThreadService {
     return false
   }
 
-  private tokenCount(messages: ChatMessage[]): number {
-    let count = 0
+  private tokenCount(messages: ChatMessage[]): {promptCount: number; outputCount: number} {
+    let outputCount = 0
+    let promptCount = 0
+
     for (const message of messages) {
       for (const content of message.content) {
         if (content.type === 'text') {
           const words = content.text.split(/\s+/).length
           const chars = content.text.length
           const punctuation = (content.text.match(/[^a-zA-Z0-9\s]/g) || []).length
-          count += Math.ceil(words * 1.3 + punctuation * 0.5 + chars / 15)
+          const count = Math.ceil(words * 1.3 + punctuation * 0.5 + chars / 15)
+          if (message.role === 'assistant') {
+            outputCount += count
+          } else {
+            promptCount += count
+          }
         }
       }
     }
 
-    return count
+    return {promptCount, outputCount}
   }
 }
