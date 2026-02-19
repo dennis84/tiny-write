@@ -47,13 +47,6 @@ const FloatingContainer = styled('div')`
   padding: 5px;
 `
 
-const StickyContainer = styled('div')`
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  padding: 5px;
-`
-
 const CollabButton = () => {
   const {collabService, toastService} = useState()
   const collabCount = useCollabCount()
@@ -381,14 +374,14 @@ export const ChatNavbar = () => {
     menuService.toggleAssistant()
 
     if (currentThread?.lastModified) {
-      locationService.updateState({threadId: currentThread.id})
+      locationService.openItem(currentThread)
     } else {
       locationService.openPage(Page.Assistant)
     }
   }
 
   return (
-    <StickyContainer>
+    <FloatingContainer>
       <ButtonGroup>
         <TooltipHelp title="Expand assistant">
           <IconButton onClick={onExpandClick} data-testid="navbar_assistant_expand">
@@ -401,7 +394,7 @@ export const ChatNavbar = () => {
           <MenuButton />
         </Show>
       </ButtonGroup>
-    </StickyContainer>
+    </FloatingContainer>
   )
 }
 
@@ -409,7 +402,7 @@ export const MenuNavbar = () => {
   const {menuService} = useState()
 
   return (
-    <StickyContainer>
+    <FloatingContainer>
       <ButtonGroup>
         <DarkModeToggle />
         <Show when={menuService.menu() !== MenuId.MAIN}>
@@ -427,7 +420,7 @@ export const MenuNavbar = () => {
           <MenuButton />
         </Show>
       </ButtonGroup>
-    </StickyContainer>
+    </FloatingContainer>
   )
 }
 

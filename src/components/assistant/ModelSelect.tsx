@@ -5,15 +5,28 @@ import type {Model} from '@/services/CopilotService'
 import {useState} from '@/state'
 import {Button} from '../Button'
 import {TooltipButton} from '../dialog/Style'
+import {Scroll} from '../Layout'
 
-const Scroller = styled('div')`
-  max-height: 60vh;
-  overflow-y: auto;
-  position: relative;
-  &::-webkit-scrollbar {
-    display: none;
+const DialogScroll = styled(Scroll)`
+  &::before {
+    height: 60px;
+    background-image: linear-gradient(
+      to bottom,
+      var(--tooltip-background),
+      var(--background-0)
+    );
+  }
+  &::after {
+    height: 60px;
+    background-image: linear-gradient(
+      to top,
+      var(--tooltip-background),
+      var(--background-0)
+    );
   }
 `
+
+const Scroller = styled('div')``
 
 const Label = styled('div')`
   margin-top: 10px;
@@ -48,25 +61,27 @@ export const ModelSelect = (props: Props) => {
   })
 
   const Tooltip = () => (
-    <Scroller>
-      <For each={Object.entries(models() ?? [])}>
-        {([key, models]) => (
-          <>
-            <Label>{key}</Label>
-            <For each={models}>
-              {(model) => (
-                <TooltipButton
-                  onClick={() => onSelect(model)}
-                  class={copilotService.chatModel.id === model.id ? 'selected' : undefined}
-                >
-                  {model.name}
-                </TooltipButton>
-              )}
-            </For>
-          </>
-        )}
-      </For>
-    </Scroller>
+    <DialogScroll>
+      <Scroller>
+        <For each={Object.entries(models() ?? [])}>
+          {([key, models]) => (
+            <>
+              <Label>{key}</Label>
+              <For each={models}>
+                {(model) => (
+                  <TooltipButton
+                    onClick={() => onSelect(model)}
+                    class={copilotService.chatModel.id === model.id ? 'selected' : undefined}
+                  >
+                    {model.name}
+                  </TooltipButton>
+                )}
+              </For>
+            </>
+          )}
+        </For>
+      </Scroller>
+    </DialogScroll>
   )
 
   const [showTooltip, closeTooltip] = useDialog({

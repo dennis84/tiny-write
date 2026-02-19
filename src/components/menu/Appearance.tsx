@@ -8,6 +8,7 @@ import {
 import {useState} from '@/state'
 import {DrawerContent} from '../Drawer'
 import {IconCheckBox, IconDarkMode, IconLightMode} from '../Icon'
+import {Scroll} from '../Layout'
 import {Link} from './Link'
 import {MenuDrawer} from './Menu'
 import {MenuNavbar} from './Navbar'
@@ -31,86 +32,88 @@ export const Appearance = () => {
   return (
     <MenuDrawer>
       <MenuNavbar />
-      <DrawerContent>
-        <Label>Theme</Label>
-        <Sub data-tauri-drag-region="true">
-          <For each={Object.entries(ConfigService.themes)}>
-            {([key, value]) => (
-              <Link onClick={() => changeTheme(key)}>
-                <span>{value.label}</span>
-                <Switch>
-                  <Match when={key === configService.theme.value}>
-                    <IconCheckBox />
-                  </Match>
-                  <Match when={key === store.config.theme.mainDark}>
-                    <IconDarkMode />
-                  </Match>
-                  <Match when={key === store.config.theme.mainLight}>
-                    <IconLightMode />
-                  </Match>
-                </Switch>
-              </Link>
-            )}
-          </For>
-        </Sub>
-        <Label>Code</Label>
-        <Sub data-tauri-drag-region="true">
-          <For each={Object.entries(ConfigService.codeThemes)}>
-            {([key, value]) => (
-              <Link onClick={() => changeCodeTheme(key)}>
-                <span>{value.label}</span>
-                <Switch>
-                  <Match when={key === configService.codeTheme.value}>
-                    <IconCheckBox />
-                  </Match>
-                  <Match when={key === store.config.theme.codeDark}>
-                    <IconDarkMode />
-                  </Match>
-                  <Match when={key === store.config.theme.codeLight}>
-                    <IconLightMode />
-                  </Match>
-                </Switch>
-              </Link>
-            )}
-          </For>
-        </Sub>
-        <Label>Font</Label>
-        <Sub data-tauri-drag-region="true">
-          <For each={Object.entries(ConfigService.fonts)}>
-            {([key, value]) => (
-              <Link onClick={() => changeFont(key)} checked={key === configService.font.value}>
-                {value.label}
-              </Link>
-            )}
-          </For>
-        </Sub>
-        <Label>Layout</Label>
-        <Sub data-tauri-drag-region="true">
-          <Text>
-            Font size:
-            <input
-              type="range"
-              min="8"
-              max="48"
-              value={store.config.fontSize}
-              onInput={onChangeFontSize}
-            />
-            {store.config.fontSize}
-          </Text>
-          <Text>
-            Content width:
-            <input
-              type="range"
-              min="400"
-              max="1800"
-              step="100"
-              value={store.config.contentWidth}
-              onInput={onChangeContentWidth}
-            />
-            {store.config.contentWidth}
-          </Text>
-        </Sub>
-      </DrawerContent>
+      <Scroll>
+        <DrawerContent>
+          <Label>Theme</Label>
+          <Sub data-tauri-drag-region="true">
+            <For each={Object.entries(ConfigService.themes)}>
+              {([key, value]) => (
+                <Link onClick={() => changeTheme(key)}>
+                  <span>{value.label}</span>
+                  <Switch>
+                    <Match when={key === configService.theme.value}>
+                      <IconCheckBox />
+                    </Match>
+                    <Match when={key === store.config.theme.mainDark}>
+                      <IconDarkMode />
+                    </Match>
+                    <Match when={key === store.config.theme.mainLight}>
+                      <IconLightMode />
+                    </Match>
+                  </Switch>
+                </Link>
+              )}
+            </For>
+          </Sub>
+          <Label>Code</Label>
+          <Sub data-tauri-drag-region="true">
+            <For each={Object.entries(ConfigService.codeThemes)}>
+              {([key, value]) => (
+                <Link onClick={() => changeCodeTheme(key)}>
+                  <span>{value.label}</span>
+                  <Switch>
+                    <Match when={key === configService.codeTheme.value}>
+                      <IconCheckBox />
+                    </Match>
+                    <Match when={key === store.config.theme.codeDark}>
+                      <IconDarkMode />
+                    </Match>
+                    <Match when={key === store.config.theme.codeLight}>
+                      <IconLightMode />
+                    </Match>
+                  </Switch>
+                </Link>
+              )}
+            </For>
+          </Sub>
+          <Label>Font</Label>
+          <Sub data-tauri-drag-region="true">
+            <For each={Object.entries(ConfigService.fonts)}>
+              {([key, value]) => (
+                <Link onClick={() => changeFont(key)} checked={key === configService.font.value}>
+                  {value.label}
+                </Link>
+              )}
+            </For>
+          </Sub>
+          <Label>Layout</Label>
+          <Sub data-tauri-drag-region="true">
+            <Text>
+              Font size:
+              <input
+                type="range"
+                min="8"
+                max="48"
+                value={store.config.fontSize}
+                onInput={onChangeFontSize}
+              />
+              {store.config.fontSize}
+            </Text>
+            <Text>
+              Content width:
+              <input
+                type="range"
+                min="400"
+                max="1800"
+                step="100"
+                value={store.config.contentWidth}
+                onInput={onChangeContentWidth}
+              />
+              {store.config.contentWidth}
+            </Text>
+          </Sub>
+        </DrawerContent>
+      </Scroll>
     </MenuDrawer>
   )
 }

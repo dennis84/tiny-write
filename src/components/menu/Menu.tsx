@@ -17,7 +17,7 @@ import {useState} from '@/state'
 import {Page} from '@/types'
 import {ChatDrawer} from '../assistant/ChatDrawer'
 import {Drawer, DrawerContent} from '../Drawer'
-import {FULL_WIDTH} from '../Layout'
+import {FULL_WIDTH, Scroll} from '../Layout'
 import {AiConfig} from './AiConfig'
 import {Appearance} from './Appearance'
 import {Bin} from './Bin'
@@ -146,96 +146,98 @@ export const Menu = () => {
       <Show when={menuService.menu() === MenuId.MAIN}>
         <MenuDrawer>
           <MenuNavbar />
-          <DrawerContent>
-            <SubmenuTree onBin={() => menuService.show(MenuId.BIN)} maybeHide={maybeHide} />
-            {/* Submenu File */}
-            <Show when={locationService.page === Page.Editor}>
-              <SubmenuEditor />
-            </Show>
-            {/* Submenu Canvas */}
-            <Show when={locationService.page === Page.Canvas}>
-              <SubmenuCanvas maybeHide={maybeHide} />
-            </Show>
-            {/* Submenu Code */}
-            <Show when={locationService.page === Page.Code}>
-              <SubmenuCode />
-            </Show>
-            {/* undo, redo, copy, paste, ... */}
-            <SubmenuEdit />
-            {/* Submenu View */}
-            <Label>View</Label>
-            <Sub data-tauri-drag-region="true">
-              <Link data-testid="appearance" onClick={() => menuService.show(MenuId.APPEARANCE)}>
-                <IconContrast /> Appearance
-              </Link>
-              <Show when={showCodeFormat()}>
-                <Link onClick={() => menuService.show(MenuId.CODE_FORMAT)}>
-                  <IconPrettier /> Code Format
-                </Link>
-              </Show>
-              <Show when={locationService.page === Page.Editor && locationService.editorId}>
-                <Link onClick={() => menuService.show(MenuId.CHANGE_SET)}>
-                  <IconHistory /> Change Set
-                </Link>
-              </Show>
-              <Show when={isTauri()}>
-                <Link
-                  onClick={onToggleFullscreen}
-                  checked={store.fullscreen}
-                  keys={[modKey, 'Enter']}
-                >
-                  <IconFullscreen /> Fullscreen
-                </Link>
-              </Show>
+          <Scroll>
+            <DrawerContent>
+              <SubmenuTree onBin={() => menuService.show(MenuId.BIN)} maybeHide={maybeHide} />
+              {/* Submenu File */}
               <Show when={locationService.page === Page.Editor}>
-                <Link onClick={onToggleTypewriterMode} checked={store.config.typewriterMode}>
-                  <IconVerticalAlignCenter /> Typewriter mode
+                <SubmenuEditor />
+              </Show>
+              {/* Submenu Canvas */}
+              <Show when={locationService.page === Page.Canvas}>
+                <SubmenuCanvas maybeHide={maybeHide} />
+              </Show>
+              {/* Submenu Code */}
+              <Show when={locationService.page === Page.Code}>
+                <SubmenuCode />
+              </Show>
+              {/* undo, redo, copy, paste, ... */}
+              <SubmenuEdit />
+              {/* Submenu View */}
+              <Label>View</Label>
+              <Sub data-tauri-drag-region="true">
+                <Link data-testid="appearance" onClick={() => menuService.show(MenuId.APPEARANCE)}>
+                  <IconContrast /> Appearance
                 </Link>
-                <Link onClick={onToggleSpellcheck} checked={store.config.spellcheck}>
-                  <IconSpellcheck /> Spellcheck
+                <Show when={showCodeFormat()}>
+                  <Link onClick={() => menuService.show(MenuId.CODE_FORMAT)}>
+                    <IconPrettier /> Code Format
+                  </Link>
+                </Show>
+                <Show when={locationService.page === Page.Editor && locationService.editorId}>
+                  <Link onClick={() => menuService.show(MenuId.CHANGE_SET)}>
+                    <IconHistory /> Change Set
+                  </Link>
+                </Show>
+                <Show when={isTauri()}>
+                  <Link
+                    onClick={onToggleFullscreen}
+                    checked={store.fullscreen}
+                    keys={[modKey, 'Enter']}
+                  >
+                    <IconFullscreen /> Fullscreen
+                  </Link>
+                </Show>
+                <Show when={locationService.page === Page.Editor}>
+                  <Link onClick={onToggleTypewriterMode} checked={store.config.typewriterMode}>
+                    <IconVerticalAlignCenter /> Typewriter mode
+                  </Link>
+                  <Link onClick={onToggleSpellcheck} checked={store.config.spellcheck}>
+                    <IconSpellcheck /> Spellcheck
+                  </Link>
+                </Show>
+                <Show when={isTauri()}>
+                  <Link onClick={onToggleAlwaysOnTop} checked={store.config.alwaysOnTop}>
+                    <IconDesktopLandscape /> Always on Top
+                  </Link>
+                </Show>
+              </Sub>
+              {/* Submenu Collab */}
+              <SubmenuCollab />
+              {/* Submenu Ai */}
+              <Label>AI</Label>
+              <Sub data-tauri-drag-region="true">
+                <Link onClick={() => menuService.show(MenuId.AI_CONFIG)}>
+                  <IconAi /> Configure
                 </Link>
-              </Show>
-              <Show when={isTauri()}>
-                <Link onClick={onToggleAlwaysOnTop} checked={store.config.alwaysOnTop}>
-                  <IconDesktopLandscape /> Always on Top
+                <Show when={store.ai?.copilot?.user}>
+                  <Link onClick={onToggleAssistant}>
+                    <IconAiAssistant /> Assistant
+                  </Link>
+                </Show>
+              </Sub>
+              {/* Submenu Application */}
+              <Label>Application</Label>
+              <Sub data-tauri-drag-region="true">
+                {/* doesn't work with tauri */}
+                <Show when={!isTauri() && false}>
+                  <Link onClick={onOpenInApp}>Open in App ⚡</Link>
+                </Show>
+                <Link onClick={onVersion}>
+                  About Version {version} ({shortHash})
                 </Link>
-              </Show>
-            </Sub>
-            {/* Submenu Collab */}
-            <SubmenuCollab />
-            {/* Submenu Ai */}
-            <Label>AI</Label>
-            <Sub data-tauri-drag-region="true">
-              <Link onClick={() => menuService.show(MenuId.AI_CONFIG)}>
-                <IconAi /> Configure
-              </Link>
-              <Show when={store.ai?.copilot?.user}>
-                <Link onClick={onToggleAssistant}>
-                  <IconAiAssistant /> Assistant
-                </Link>
-              </Show>
-            </Sub>
-            {/* Submenu Application */}
-            <Label>Application</Label>
-            <Sub data-tauri-drag-region="true">
-              {/* doesn't work with tauri */}
-              <Show when={!isTauri() && false}>
-                <Link onClick={onOpenInApp}>Open in App ⚡</Link>
-              </Show>
-              <Link onClick={onVersion}>
-                About Version {version} ({shortHash})
-              </Link>
-              <Link onClick={() => menuService.show(MenuId.HELP)}>Help</Link>
-              <Show when={isTauri()}>
-                <Link onClick={() => quit()} keys={[modKey, 'q']}>
-                  Quit
-                </Link>
-              </Show>
-              <Show when={isDev}>
-                <Link onClick={onReset}>Reset DB</Link>
-              </Show>
-            </Sub>
-          </DrawerContent>
+                <Link onClick={() => menuService.show(MenuId.HELP)}>Help</Link>
+                <Show when={isTauri()}>
+                  <Link onClick={() => quit()} keys={[modKey, 'q']}>
+                    Quit
+                  </Link>
+                </Show>
+                <Show when={isDev}>
+                  <Link onClick={onReset}>Reset DB</Link>
+                </Show>
+              </Sub>
+            </DrawerContent>
+          </Scroll>
         </MenuDrawer>
       </Show>
     </Container>

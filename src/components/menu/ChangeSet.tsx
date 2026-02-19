@@ -3,6 +3,7 @@ import {For, onCleanup, Show} from 'solid-js'
 import {ButtonGroup, ButtonPrimary} from '@/components/Button'
 import {useState} from '@/state'
 import {DrawerContent} from '../Drawer'
+import {Scroll} from '../Layout'
 import {Link} from './Link'
 import {MenuDrawer} from './Menu'
 import {MenuNavbar} from './Navbar'
@@ -38,31 +39,33 @@ export const ChangeSet = () => {
   return (
     <MenuDrawer>
       <MenuNavbar />
-      <DrawerContent>
-        <Label>Change Set</Label>
-        <Sub data-tauri-drag-region="true">
-          <For each={versions()} fallback={<p>No snapshots yet</p>}>
-            {(version, i) => (
-              <Link
-                onClick={() => renderVersion(i())}
-                checked={i() === locationService.state?.snapshot}
-              >
-                {format(version.date, 'dd MMMM HH:mm:ss')}
-              </Link>
-            )}
-          </For>
-        </Sub>
-        <ButtonGroup>
-          <Show when={locationService.state?.snapshot === undefined}>
-            <ButtonPrimary onClick={() => changeSetService.addVersion()}>
-              Create Snapshot
-            </ButtonPrimary>
-          </Show>
-          <Show when={locationService.state?.snapshot !== undefined}>
-            <ButtonPrimary onClick={() => applyVersion()}>Apply Snapshot</ButtonPrimary>
-          </Show>
-        </ButtonGroup>
-      </DrawerContent>
+      <Scroll>
+        <DrawerContent>
+          <Label>Change Set</Label>
+          <Sub data-tauri-drag-region="true">
+            <For each={versions()} fallback={<p>No snapshots yet</p>}>
+              {(version, i) => (
+                <Link
+                  onClick={() => renderVersion(i())}
+                  checked={i() === locationService.state?.snapshot}
+                >
+                  {format(version.date, 'dd MMMM HH:mm:ss')}
+                </Link>
+              )}
+            </For>
+          </Sub>
+          <ButtonGroup>
+            <Show when={locationService.state?.snapshot === undefined}>
+              <ButtonPrimary onClick={() => changeSetService.addVersion()}>
+                Create Snapshot
+              </ButtonPrimary>
+            </Show>
+            <Show when={locationService.state?.snapshot !== undefined}>
+              <ButtonPrimary onClick={() => applyVersion()}>Apply Snapshot</ButtonPrimary>
+            </Show>
+          </ButtonGroup>
+        </DrawerContent>
+      </Scroll>
     </MenuDrawer>
   )
 }

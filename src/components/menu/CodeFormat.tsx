@@ -3,6 +3,7 @@ import {ButtonGroup, ButtonPrimary} from '@/components/Button'
 import {useState} from '@/state'
 import {type File, Page, type PrettierConfig} from '@/types'
 import {DrawerContent} from '../Drawer'
+import {Scroll} from '../Layout'
 import {Link} from './Link'
 import {MenuDrawer} from './Menu'
 import {MenuNavbar} from './Navbar'
@@ -37,67 +38,71 @@ export const CodeFormat = () => {
   return (
     <MenuDrawer>
       <MenuNavbar />
-      <DrawerContent>
-        <Label>Indentation</Label>
-        <Sub data-tauri-drag-region="true">
-          <Text>
-            Tab Width:
-            <input
-              type="range"
-              min="2"
-              max="8"
-              step="2"
-              value={store.config.prettier.tabWidth}
-              onInput={(e: any) => updatePrettier({tabWidth: Number(e.target.value)})}
-            />
-            {store.config.prettier.tabWidth}
-          </Text>
-          <Link
-            onClick={() => updatePrettier({useTabs: !store.config.prettier.useTabs})}
-            checked={store.config.prettier.useTabs}
-          >
-            Use Tabs
-          </Link>
-        </Sub>
-        <Label>Prettier</Label>
-        <Sub data-tauri-drag-region="true">
-          <Text>
-            Print Width:
-            <input
-              type="range"
-              min="20"
-              max="160"
-              step="10"
-              value={store.config.prettier.printWidth}
-              onInput={(e: any) => updatePrettier({printWidth: Number(e.target.value)})}
-            />
-            {store.config.prettier.printWidth}
-          </Text>
-          <Link
-            onClick={() => updatePrettier({semi: !store.config.prettier.semi})}
-            checked={store.config.prettier.semi}
-          >
-            Semicolons
-          </Link>
-          <Link
-            onClick={() => updatePrettier({singleQuote: !store.config.prettier.singleQuote})}
-            checked={store.config.prettier.singleQuote}
-          >
-            Single Quote
-          </Link>
-          <Link
-            onClick={() => updatePrettier({bracketSpacing: !store.config.prettier.bracketSpacing})}
-            checked={store.config.prettier.bracketSpacing}
-          >
-            Bracket Spacing
-          </Link>
-        </Sub>
-        <ButtonGroup>
-          <Show when={isCodeFile()}>
-            <ButtonPrimary onClick={onPrettify}>Prettify</ButtonPrimary>
-          </Show>
-        </ButtonGroup>
-      </DrawerContent>
+      <Scroll>
+        <DrawerContent>
+          <Label>Indentation</Label>
+          <Sub data-tauri-drag-region="true">
+            <Text>
+              Tab Width:
+              <input
+                type="range"
+                min="2"
+                max="8"
+                step="2"
+                value={store.config.prettier.tabWidth}
+                onInput={(e: any) => updatePrettier({tabWidth: Number(e.target.value)})}
+              />
+              {store.config.prettier.tabWidth}
+            </Text>
+            <Link
+              onClick={() => updatePrettier({useTabs: !store.config.prettier.useTabs})}
+              checked={store.config.prettier.useTabs}
+            >
+              Use Tabs
+            </Link>
+          </Sub>
+          <Label>Prettier</Label>
+          <Sub data-tauri-drag-region="true">
+            <Text>
+              Print Width:
+              <input
+                type="range"
+                min="20"
+                max="160"
+                step="10"
+                value={store.config.prettier.printWidth}
+                onInput={(e: any) => updatePrettier({printWidth: Number(e.target.value)})}
+              />
+              {store.config.prettier.printWidth}
+            </Text>
+            <Link
+              onClick={() => updatePrettier({semi: !store.config.prettier.semi})}
+              checked={store.config.prettier.semi}
+            >
+              Semicolons
+            </Link>
+            <Link
+              onClick={() => updatePrettier({singleQuote: !store.config.prettier.singleQuote})}
+              checked={store.config.prettier.singleQuote}
+            >
+              Single Quote
+            </Link>
+            <Link
+              onClick={() =>
+                updatePrettier({bracketSpacing: !store.config.prettier.bracketSpacing})
+              }
+              checked={store.config.prettier.bracketSpacing}
+            >
+              Bracket Spacing
+            </Link>
+          </Sub>
+          <ButtonGroup>
+            <Show when={isCodeFile()}>
+              <ButtonPrimary onClick={onPrettify}>Prettify</ButtonPrimary>
+            </Show>
+          </ButtonGroup>
+        </DrawerContent>
+      </Scroll>
     </MenuDrawer>
   )
 }

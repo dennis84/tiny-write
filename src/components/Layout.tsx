@@ -63,11 +63,11 @@ export const PageContent = styled('div')`
 export const Scroll = styled('div')`
   container-type: scroll-state;
   position: relative;
-  display: flex;
   height: 100%;
   width: 100%;
   overflow-y: auto;
-  justify-content: center;
+  display: grid;
+  justify-items: center;
   scrollbar-width: none;
   touch-action: none;
   &::-webkit-scrollbar {
@@ -78,24 +78,30 @@ export const Scroll = styled('div')`
   }
   &::before, &::after {
     content: '';
-    position: fixed;
-    width: stretch; /* 100% overlaps menu */
+    position: sticky;
+    display: block;
+    height: 100px;
+    width: 100%;
+    align-self: flex-start;
     pointer-events: none;
     opacity: 0;
     transition: opacity 500ms ease-out 0.1s;
     z-index: var(--z-index-above-content);
   }
   &::before {
-    height: 60px;
+    top: 0;
+    margin-bottom: -100px;
     background-image: linear-gradient(
       to bottom,
-      var(--background),
-      var(--background-0)
+      var(--background) 0%,
+      var(--background) 30%, /* extra space for navbar */
+      var(--background) 30%,
+      var(--background-0) 100%
     );
   }
   &::after {
     bottom: 0;
-    height: 100px;
+    margin-top: -100px;
     background-image: linear-gradient(
       to top,
       var(--background),

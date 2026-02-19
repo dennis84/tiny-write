@@ -61,6 +61,7 @@ export const Dialog = (props: Props) => {
           shift({padding: {left: 10, right: 10}}),
           arrow({element: arrowRef, padding: 20}),
           size({
+            padding: 20,
             apply({availableWidth, availableHeight, elements}) {
               // Change styles, e.g.
               Object.assign(elements.floating.style, {

@@ -21,13 +21,10 @@ const DrawerContainer = styled('div')`
 `
 
 export const DrawerContent = styled('div')`
-  padding: 0 20px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
-  scrollbar-width: none;
-  min-height: calc(100% - 50px);
-  scroll-behavior: smooth;
+  width: 100%;
 `
 
 const ResizeHandle = styled('div')`

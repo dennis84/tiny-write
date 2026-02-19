@@ -46,6 +46,7 @@ export const isLocalFile = (it: any): boolean =>
   isFile(it) && (it.path !== undefined || it.newFile !== undefined)
 
 export const isCodeFile = (it: any): it is File => {
+  if (!isFile(it)) return false
   if (!it) return false
   if (it.code) return true
   const codeLang = FileService.guessCodeLang(it)
