@@ -66,8 +66,6 @@ export const Scroll = styled('div')`
   height: 100%;
   width: 100%;
   overflow-y: auto;
-  display: grid;
-  justify-items: center;
   scrollbar-width: none;
   touch-action: none;
   &::-webkit-scrollbar {
@@ -117,6 +115,23 @@ export const Scroll = styled('div')`
     &::after {
       opacity: 1;
     }
+  }
+`
+
+export const CodeScroll = styled(Scroll)`
+  &::before {
+    background-image: linear-gradient(
+      to bottom,
+      var(--code-background),
+      var(--background-0)
+    );
+  }
+  &::after {
+    background-image: linear-gradient(
+      to top,
+      var(--code-background),
+      var(--background-0)
+    );
   }
 `
 

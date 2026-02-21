@@ -2,8 +2,7 @@ import {Show} from 'solid-js'
 import {ButtonGroup, ButtonPrimary} from '@/components/Button'
 import {useState} from '@/state'
 import {type File, Page, type PrettierConfig} from '@/types'
-import {DrawerContent} from '../Drawer'
-import {Scroll} from '../Layout'
+import {DrawerContent, DrawerScroll} from '../Drawer'
 import {Link} from './Link'
 import {MenuDrawer} from './Menu'
 import {MenuNavbar} from './Navbar'
@@ -38,7 +37,7 @@ export const CodeFormat = () => {
   return (
     <MenuDrawer>
       <MenuNavbar />
-      <Scroll>
+      <DrawerScroll>
         <DrawerContent>
           <Label>Indentation</Label>
           <Sub data-tauri-drag-region="true">
@@ -102,7 +101,7 @@ export const CodeFormat = () => {
             </Show>
           </ButtonGroup>
         </DrawerContent>
-      </Scroll>
+      </DrawerScroll>
     </MenuDrawer>
   )
 }

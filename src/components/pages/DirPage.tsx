@@ -13,7 +13,7 @@ const CurrentPath = styled('div')`
   display: flex;
   align-items: center;
   padding: 5px;
-  color: var(--foreground-60);
+  color: var(--background-40);
   flex-wrap: wrap;
   line-height: 1.5;
   .icon {
@@ -28,20 +28,20 @@ const Link = styled('a')<{isDirectory: boolean}>`
   margin: 0;
   border-radius: var(--border-radius);
   cursor: var(--cursor-pointer);
-  color: var(--foreground-60);
+  color: var(--background-40);
   line-height: 1.5;
   ${(p) => (p.isDirectory ? `font-weight: bold;` : '')}
   .icon {
     margin-right: 5px;
   }
   &:hover {
-    background: var(--foreground-10);
+    background: var(--background-90);
     color: var(--foreground);
   }
 `
 
 const PathSegment = styled('span')`
-  color: var(--foreground-60);
+  color: var(--background-40);
   cursor: var(--cursor-pointer);
   &:hover {
     color: var(--foreground);

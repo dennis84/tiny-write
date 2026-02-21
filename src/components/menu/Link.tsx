@@ -18,11 +18,11 @@ const LinkEl = styled("button")<{active?: boolean}>`
   }
   &:hover {
     color: var(--primary-background);
-    background: var(--foreground-10);
+    background: var(--background-90);
     border-radius: var(--border-radius-small);
     > span i {
       position: relative;
-      box-shadow: 0 3px 0 0 var(--foreground-60);
+      box-shadow: 0 3px 0 0 var(--background-40);
       top: -1px;
     }
   }
@@ -34,7 +34,7 @@ const LinkEl = styled("button")<{active?: boolean}>`
     }
   }
   &[disabled] {
-    color: var(--foreground-60);
+    color: var(--background-40);
     cursor: not-allowed;
   }
   ${(p) => p.active ? `

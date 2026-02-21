@@ -1,7 +1,7 @@
 import {onMount} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {useState} from '@/state'
-import {Scroll} from '../Layout'
+import {CodeScroll} from '../Layout'
 import {ContextMenu} from './ContextMenu'
 import {codeMirror} from './Style'
 
@@ -35,9 +35,9 @@ export const CodeEditor = () => {
   })
 
   return (
-    <Scroll data-testid="code_scroll">
+    <CodeScroll data-testid="code_scroll">
       <CodeMirrorContainer ref={containerRef} />
       <ContextMenu />
-    </Scroll>
+    </CodeScroll>
   )
 }

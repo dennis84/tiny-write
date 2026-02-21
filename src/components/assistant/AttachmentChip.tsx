@@ -16,7 +16,7 @@ const Container = styled('div')`
   justify-items: flex-end;
   gap: 10px;
   button {
-    background: var(--foreground-5);
+    background: var(--background-95);
   }
 `
 

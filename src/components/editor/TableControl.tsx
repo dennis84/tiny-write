@@ -20,7 +20,7 @@ const Handle = styled('div')`
   background: var(--background);
   box-shadow:
     0 0 0 2px var(--background),
-    inset 0 0 0 20px var(--foreground-40);
+    inset 0 0 0 20px var(--background-60);
   color: var(--background);
   margin-left: -2px;
   margin-top: -13px;

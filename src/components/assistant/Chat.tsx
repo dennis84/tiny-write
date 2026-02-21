@@ -7,9 +7,10 @@ import {useState} from '@/state'
 import type {TreeItem} from '@/tree'
 import {type Attachment, type Message, Page} from '@/types'
 import {Button, ButtonGroup} from '../Button'
+import {DrawerScroll} from '../Drawer'
 import {TooltipDivider} from '../dialog/Style'
 import {IconAdd} from '../Icon'
-import {Content, Scroll} from '../Layout'
+import {Content} from '../Layout'
 import {AutoContextToggle} from './attachments/AutoContextToggle'
 import {CurrentFileButton} from './attachments/CurrentFile'
 import {SelectionButton} from './attachments/Selection'
@@ -161,7 +162,7 @@ export const Chat = (props: Props) => {
 
   return (
     <>
-      <Scroll ref={scrollContentRef} data-testid="chat_scroll">
+      <DrawerScroll ref={scrollContentRef} data-testid="chat_scroll">
         <Content
           style={
             locationService.page !== Page.Assistant
@@ -214,7 +215,7 @@ export const Chat = (props: Props) => {
             </Show>
           </Container>
         </Content>
-      </Scroll>
+      </DrawerScroll>
       {/* Rerender if code theme has been changed */}
       <Show when={configService.codeTheme} keyed>
         <ChatInput

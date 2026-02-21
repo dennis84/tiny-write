@@ -15,8 +15,8 @@ export const isClipped = `
     height: 100%;
     background: linear-gradient(
       to top,
-      var(--background-80) 0%,
-      #00000000 200px
+      rgb(from var(--background) r g b / 0.8) 0%,
+      var(--background-0) 200px
     );
     pointer-events: none;
     border-radius: var(--border-radius);
@@ -163,7 +163,7 @@ export const codeMirrorTooltip = `
       margin: 0;
       padding: 6px 8px !important;
       border-radius: var(--border-radius);
-      background: var(--foreground-10);
+      background: var(--background-90);
     }
     a {
       color: var(--primary-background);

@@ -6,9 +6,8 @@ import {
   type ThemeName,
 } from '@/services/ConfigService'
 import {useState} from '@/state'
-import {DrawerContent} from '../Drawer'
+import {DrawerContent, DrawerScroll} from '../Drawer'
 import {IconCheckBox, IconDarkMode, IconLightMode} from '../Icon'
-import {Scroll} from '../Layout'
 import {Link} from './Link'
 import {MenuDrawer} from './Menu'
 import {MenuNavbar} from './Navbar'
@@ -32,7 +31,7 @@ export const Appearance = () => {
   return (
     <MenuDrawer>
       <MenuNavbar />
-      <Scroll>
+      <DrawerScroll>
         <DrawerContent>
           <Label>Theme</Label>
           <Sub data-tauri-drag-region="true">
@@ -113,7 +112,7 @@ export const Appearance = () => {
             </Text>
           </Sub>
         </DrawerContent>
-      </Scroll>
+      </DrawerScroll>
     </MenuDrawer>
   )
 }

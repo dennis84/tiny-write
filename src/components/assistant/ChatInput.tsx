@@ -29,7 +29,7 @@ const ScrollDown = styled('span')`
   top: -60px;
   z-index: var(--z-index-above-content);
   button {
-    background: var(--foreground-10);
+    background: rgb(from var(--background-10) r g b / 0.2);
   }
 `
 

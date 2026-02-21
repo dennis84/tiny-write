@@ -6,7 +6,7 @@ import {Content, Layout, Scroll} from './Layout'
 const Pre = styled('pre')`
   white-space: pre-wrap;
   word-wrap: break-word;
-  background: var(--foreground-10);
+  background: var(--background-90);
   border: 1px solid var(--foreground);
   border-radius: 2px;
   padding: 10px;
@@ -17,11 +17,7 @@ export const GeneralError = (props: {error: Error}) => {
   const {locationService} = useState()
 
   const onReload = async () => {
-    await locationService.setLastLocation({
-      page: undefined,
-      threadId: undefined,
-    })
-
+    await locationService.setLastLocation({pathname: undefined})
     window.location.reload()
   }
 

@@ -46,11 +46,11 @@ const RippleEffect = `
 export const ButtonEl = styled('button')`
   ${Common}
   ${RippleEffect}
-  background: var(--background-60);
+  background: var(--background-90);
   color: var(--foreground);
   &:hover {
     color: var(--primary-background);
-    background: var(--foreground-10);
+    background: var(--background-80);
   }
 `
 
@@ -72,7 +72,7 @@ const ButtonLinkEl = styled('button')`
   border: 0;
   background: none;
   &:hover {
-    background: var(--foreground-10);
+    background: var(--background-90);
   }
 `
 
@@ -99,7 +99,7 @@ export const IconButtonEl = styled('button')<ButtonAttrs>`
   color: var(--foreground);
   ${(p) => (p.active ? `background: var(--background);` : '')}
   &:hover {
-    background: var(--foreground-10);
+    background: var(--background-90);
     color: var(--primary-background);
   }
   .icon {

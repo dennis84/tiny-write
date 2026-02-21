@@ -21,7 +21,7 @@ export const Label = styled('h3')`
   margin: 10px 0;
   font-size: var(--menu-font-size);
   text-transform: uppercase;
-  color: var(--foreground-50);
+  color: var(--background-50);
   > i {
     text-transform: none;
   }
@@ -61,8 +61,8 @@ export const Text = styled('p')`
 
 export const Note = styled('p')`
   ${itemCss}
-  color: var(--foreground-80);
-  background: var(--foreground-5);
+  color: var(--background-20);
+  background: var(--background-90);
   border-radius: var(--border-radius);
   padding: 10px;
   margin: 10px 0;
@@ -76,9 +76,9 @@ export const Keys = (props: {keys: string[]}) => (
         margin-top: -4px;
         > i {
           color: var(--foreground);
-          background: var(--foreground-10);
-          border: 1px solid var(--foreground-60);
-          box-shadow: 0 2px 0 0 var(--foreground-60);
+          background: var(--background-90);
+          border: 1px solid var(--background-40);
+          box-shadow: 0 2px 0 0 var(--background-40);
           border-radius: 2px;
           font-style: normal;
           font-size: 13px;

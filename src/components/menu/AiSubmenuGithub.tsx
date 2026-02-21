@@ -11,7 +11,7 @@ import {Label, Note, Sub, Text} from './Style'
 
 const UserCode = styled('code')`
   margin-left: 10px;
-  background: var(--foreground-10);
+  background: var(--background-90);
   padding: 0 5px;
   border-radius: var(--border-radius);
 `

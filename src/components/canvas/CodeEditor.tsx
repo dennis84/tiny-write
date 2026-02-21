@@ -1,7 +1,7 @@
 import {createEffect, createResource, on, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {CodeMirrorContainer} from '@/components/code/CodeEditor'
-import {Scroll} from '@/components/Layout'
+import {CodeScroll} from '@/components/Layout'
 import {info} from '@/remote/log'
 import type {Selection} from '@/services/CanvasService'
 import {FileService} from '@/services/FileService'
@@ -18,7 +18,7 @@ interface CodeEditorScrollProps {
 }
 
 // biome-ignore format: ternary breaks ugly
-const CodeEditorScroll = styled(Scroll)<CodeEditorScrollProps>`
+const CodeEditorScroll = styled(CodeScroll)<CodeEditorScrollProps>`
   position: absolute;
   border-radius: var(--border-radius);
   user-select: none;

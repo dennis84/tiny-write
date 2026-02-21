@@ -32,7 +32,7 @@ const Label = styled('div')`
   margin-top: 10px;
   padding: 2px 6px;
   font-size: var(--menu-font-size);
-  color: var(--foreground-50);
+  color: var(--background-50);
   font-weight: bold;
 `
 

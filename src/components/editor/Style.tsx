@@ -97,13 +97,13 @@ export const standardMarkdown = `
     margin-left: 30px;
   }
   blockquote {
-    border-left: 10px solid var(--foreground-20);
+    border-left: 10px solid var(--background-80);
     padding-left: 10px;
     margin: 0;
   }
   code {
-    border: 1px solid var(--foreground-50);
-    background: var(--foreground-10);
+    border: 1px solid var(--background-50);
+    background: var(--background-90);
     border-radius: var(--border-radius);
     font-family: var(--font-family-monospace) !important;
     padding: 2px 5px;
@@ -116,7 +116,7 @@ export const standardMarkdown = `
     margin: 40px 0;
     height: 5px;
     line-height: 5px;
-    background: var(--foreground-20);
+    background: var(--background-80);
     border-radius: var(--border-radius);
     page-break-before: always;
     @media print {
@@ -131,13 +131,13 @@ export const standardMarkdown = `
     border-collapse: separate;
     border-spacing: 0;
     border-radius: var(--border-radius);
-    border: 1px solid var(--foreground-20);
+    border: 1px solid var(--background-80);
     text-align: left;
     overflow: hidden; /* clip the th background */
     th, td {
       padding: 10px 15px;
       vertical-align: top;
-      border: 1px solid var(--foreground-20);
+      border: 1px solid var(--background-80);
       border-top: 0;
       border-right: 0;
       position: relative;
@@ -146,8 +146,7 @@ export const standardMarkdown = `
       border-left: 0;
     }
     th {
-      background: var(--foreground-5);
-      color: var(--foreground-80);
+      background: var(--background-95);
       font-family: var(--font-family-bold);
     }
     tr:last-child td {
@@ -208,7 +207,7 @@ const proseMirror = `
       white-space: nowrap;
     }
     .placeholder {
-      color: var(--foreground-50);
+      color: var(--background-50);
       position: absolute;
       pointer-events: none;
       user-select: none;
@@ -232,7 +231,7 @@ const proseMirror = `
     }
     .container-tip,
     .container-details {
-      background: var(--foreground-10);
+      background: var(--background-90);
       > summary {
         cursor: var(--cursor-pointer);
       }
@@ -241,7 +240,7 @@ const proseMirror = `
       }
     }
     .container-warning {
-      background: var(--primary-background-20);
+      background: var(--primary-background-10);
     }
     .image-container {
       position: relative;
@@ -252,7 +251,7 @@ const proseMirror = `
       cursor: var(--cursor-default);
       line-height: 0;
       &.error {
-        background: var(--foreground-10);
+        background: var(--background-90);
         border-radius: var(--border-radius);
         min-width: 40px;
         aspect-ratio: 1/1;
@@ -339,6 +338,7 @@ export const FullEditor = styled('div')`
   width: var(--content-width);
   max-width: 100%;
   padding: 0 50px; /* leave space for handles if width is 100% */
+  margin: 0 auto;
   ${proseMirror}
   .ProseMirror {
     margin-top: 50px;

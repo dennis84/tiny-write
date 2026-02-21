@@ -18,14 +18,14 @@ const DragHandle = styled('div')`
   cursor: var(--cursor-pointer);
   z-index: var(--z-index-handle);
   > span {
-    color: var(--foreground-60);
+    color: var(--background-40);
     border-radius: 20px;
     padding: 10px;
     margin-top: -6px;
   }
   &:hover > span {
-    color: var(--foreground-80);
-    background: var(--foreground-10);
+    color: var(--background-20);
+    background: var(--background-90);
   }
   @media print {
     display: none;

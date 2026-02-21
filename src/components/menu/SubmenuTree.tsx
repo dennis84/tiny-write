@@ -101,7 +101,7 @@ const TreeLinkItem = styled('div')<ItemProps>`
   ` : ''}
   &:hover {
     color: var(--primary-background);
-    background: var(--foreground-10);
+    background: var(--background-90);
     border-radius: var(--border-radius-small);
     > span {
       opacity: 1;
@@ -125,13 +125,13 @@ const TreeLinkCorner = styled('i')<CornerProps>`
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--foreground-50);
+  color: var(--background-50);
   height: ${ITEM_HEIGHT};
   ${(p) => (p.highlight ? `color: var(--primary-background);` : '')}
   ${(p) => (p.level ? `margin-left: ${String(20 * p.level)}px;` : '')}
   ${(p) => p.expandable ? `
     &:hover {
-      background: var(--foreground-10);
+      background: var(--background-90);
       border-radius: var(--border-radius-small);
     }
   ` : ''}
@@ -166,10 +166,10 @@ const LinkMenu = styled("span")<{selected?: boolean}>`
   color: var(--foreground);
   ${(p) => p.selected ? `
     opacity: 1;
-    background: var(--foreground-10);
+    background: var(--background-90);
   ` : ''}
   &:hover {
-    background: var(--foreground-10);
+    background: var(--background-90);
     .icon {
       font-weight: bold;
     }

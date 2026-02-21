@@ -1,5 +1,4 @@
-import {DrawerContent} from '../Drawer'
-import {Scroll} from '../Layout'
+import {DrawerContent, DrawerScroll} from '../Drawer'
 import {MenuDrawer} from './Menu'
 import {MenuNavbar} from './Navbar'
 import {Keys, Label, Sub, Text} from './Style'
@@ -8,7 +7,7 @@ export const Help = () => {
   return (
     <MenuDrawer>
       <MenuNavbar />
-      <Scroll>
+      <DrawerScroll>
         <DrawerContent>
           <Label>Markdown shortcuts</Label>
           <Sub data-tauri-drag-region="true">
@@ -149,7 +148,7 @@ export const Help = () => {
             </Text>
           </Sub>
         </DrawerContent>
-      </Scroll>
+      </DrawerScroll>
     </MenuDrawer>
   )
 }

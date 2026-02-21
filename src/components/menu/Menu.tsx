@@ -16,8 +16,8 @@ import {MenuId} from '@/services/MenuService'
 import {useState} from '@/state'
 import {Page} from '@/types'
 import {ChatDrawer} from '../assistant/ChatDrawer'
-import {Drawer, DrawerContent} from '../Drawer'
-import {FULL_WIDTH, Scroll} from '../Layout'
+import {Drawer, DrawerContent, DrawerScroll} from '../Drawer'
+import {FULL_WIDTH} from '../Layout'
 import {AiConfig} from './AiConfig'
 import {Appearance} from './Appearance'
 import {Bin} from './Bin'
@@ -146,7 +146,7 @@ export const Menu = () => {
       <Show when={menuService.menu() === MenuId.MAIN}>
         <MenuDrawer>
           <MenuNavbar />
-          <Scroll>
+          <DrawerScroll>
             <DrawerContent>
               <SubmenuTree onBin={() => menuService.show(MenuId.BIN)} maybeHide={maybeHide} />
               {/* Submenu File */}
@@ -237,7 +237,7 @@ export const Menu = () => {
                 </Show>
               </Sub>
             </DrawerContent>
-          </Scroll>
+          </DrawerScroll>
         </MenuDrawer>
       </Show>
     </Container>

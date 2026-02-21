@@ -1,9 +1,8 @@
 import {useConfirmDialog} from '@/hooks/use-confirm-dialog'
 import {useState} from '@/state'
 import {Button, ButtonGroup} from '../Button'
-import {DrawerContent} from '../Drawer'
+import {DrawerContent, DrawerScroll} from '../Drawer'
 import {IconDelete} from '../Icon'
-import {Scroll} from '../Layout'
 import {MenuDrawer} from './Menu'
 import {MenuNavbar} from './Navbar'
 import {Label, Note} from './Style'
@@ -31,7 +30,7 @@ export const Bin = () => {
   return (
     <MenuDrawer>
       <MenuNavbar />
-      <Scroll>
+      <DrawerScroll>
         <DrawerContent>
           <Label>Bin</Label>
           <Note>💁 Items in bin will be automatically deleted after 14 days.</Note>
@@ -42,7 +41,7 @@ export const Bin = () => {
             </Button>
           </ButtonGroup>
         </DrawerContent>
-      </Scroll>
+      </DrawerScroll>
     </MenuDrawer>
   )
 }

@@ -2,21 +2,38 @@ import {DragGesture} from '@use-gesture/vanilla'
 import {type JSX, onCleanup, onMount, splitProps} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {isTauri} from '@/env'
-import {FULL_WIDTH} from './Layout'
+import {FULL_WIDTH, Scroll} from './Layout'
 
 const DrawerContainer = styled('div')`
   position: relative;
   height: 100%;
   display: flex;
   flex-direction: column;
-  border-left: 1px solid var(--foreground-20);
-  background: var(--foreground-5);
+  border-left: 1px solid var(--background-80);
+  background: var(--background-95);
   @media (max-width: ${FULL_WIDTH.toString()}px) {
     width: 100vw;
     ${isTauri() ? 'padding-top: 40px' : ''}
   }
   &::-webkit-scrollbar {
     display: none;
+  }
+`
+
+export const DrawerScroll = styled(Scroll)`
+  &::before {
+    background-image: linear-gradient(
+      to bottom,
+      var(--background-95),
+      var(--background-0)
+    );
+  }
+  &::after {
+    background-image: linear-gradient(
+      to top,
+      var(--background-95),
+      var(--background-0)
+    );
   }
 `
 
@@ -39,7 +56,7 @@ const ResizeHandle = styled('div')`
   display: flex;
   justify-content: center;
   > div {
-    background: var(--primary-background-50);
+    background: var(--primary-background);
     width: 2px;
     display: none;
   }

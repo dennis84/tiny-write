@@ -90,6 +90,7 @@ export const Main = (props: Props) => {
 
     return (
       <StateContext.Provider value={ctrl}>
+        <Variables />
         <ErrorBoundary fallback={(error) => <GeneralError error={error} />}>
           <Layout ref={layoutRef} data-testid="initialized">
             <PageContent>
@@ -103,7 +104,6 @@ export const Main = (props: Props) => {
             <Menu />
             <DropFile />
             <Keymap />
-            <Variables />
             <ResizeWindow />
             <DarkMode />
             <Dialogs />

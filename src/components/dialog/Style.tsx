@@ -73,7 +73,7 @@ export const TooltipDivider = styled('hr')`
   height: 3px;
   border: 0;
   border-radius: 5px;
-  background: var(--foreground-10);
+  background: var(--background-80);
   margin: 5px 0;
 `
 
