@@ -103,7 +103,13 @@ export const createCtrl = (initial: State) => {
     store,
   )
 
-  const threadService = new ThreadService(store, setState, copilotService, locationService)
+  const threadService = new ThreadService(
+    store,
+    setState,
+    copilotService,
+    locationService,
+    toastService,
+  )
   const menuService = new MenuService(store, setState, appService)
   const dialogService = new DialogService()
 

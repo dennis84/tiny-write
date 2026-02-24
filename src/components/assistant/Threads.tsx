@@ -265,7 +265,7 @@ export const Threads = (props: Props) => {
           </Content>
         </Scroller>
         <DialogFooter>
-          <ButtonGroup justify="end">
+          <ButtonGroup justify="flex-end">
             <Button onClick={onNew}>
               <IconAdd /> New
             </Button>

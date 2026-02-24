@@ -15,7 +15,7 @@ test('sign in', async ({page, context}) => {
 
   expect(page.getByText('GitHub Copilot')).toBeVisible()
 
-  await page.click('[data-testid="connect"]')
+  await page.click('[data-testid="connect"]', {position: {x: 10, y: 10}}) // Move away from tooltip
 
   await expect(page.getByText('USER-CODE-123')).toBeVisible()
 

@@ -139,8 +139,10 @@ export const Content = styled('div')`
   position: relative;
   height: fit-content;
   max-width: var(--content-width);
+  margin: 0 auto;
   width: 100%;
   padding: 20px;
+  padding-top: 40px;
   padding-bottom: 77vh;
   scrollbar-width: none;
   &::-webkit-scrollbar {

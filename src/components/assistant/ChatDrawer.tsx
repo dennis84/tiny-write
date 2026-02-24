@@ -1,18 +1,18 @@
 import {createResource, onMount, Show, Suspense} from 'solid-js'
 import {useState} from '@/state'
-import {Drawer} from '../Drawer'
+import type {Message} from '@/types'
+import {Drawer, DrawerScroll} from '../Drawer'
+import {Content} from '../Layout'
 import {ChatNavbar} from '../menu/Navbar'
 import {Chat} from './Chat'
+import {ChatInput} from './ChatInput'
 
 export const ChatDrawer = () => {
-  const {aiService, threadService, locationService} = useState()
+  let scrollRef!: HTMLDivElement
+  const {aiService, configService, threadService, locationService} = useState()
 
   const onDrawerResized = async (width: number) => {
     await aiService.setSidebarWidth(width)
-  }
-
-  const onChangeThread = async (threadId: string) => {
-    locationService.updateState({threadId})
   }
 
   // Create a new thread if not in location state
@@ -31,6 +31,11 @@ export const ChatDrawer = () => {
     },
   )
 
+  const onInputMessage = async (message: Message) => {
+    await threadService.addMessage(message)
+    await threadService.sendMessages()
+  }
+
   return (
     <Drawer
       width={aiService.sidebarWidth}
@@ -42,7 +47,15 @@ export const ChatDrawer = () => {
       <ChatNavbar />
       <Suspense>
         <Show when={initialized()}>
-          <Chat onChangeThread={onChangeThread} />
+          <DrawerScroll ref={scrollRef} data-testid="chat_scroll">
+            <Content style={{'padding-bottom': '0'}}>
+              <Chat />
+            </Content>
+          </DrawerScroll>
+          {/* Rerender if code theme has been changed */}
+          <Show when={configService.codeTheme} keyed>
+            <ChatInput dropArea={() => scrollRef} onMessage={onInputMessage} />
+          </Show>
         </Show>
       </Suspense>
     </Drawer>

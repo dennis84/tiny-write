@@ -103,7 +103,7 @@ export const MessageQuestion = (props: Props) => {
             </Show>
           </QuestionBubble>
           <Attachments />
-          <ButtonGroup justify="end" class="button-group">
+          <ButtonGroup justify="flex-end" class="button-group">
             <Pagination
               id={props.message.id}
               parentId={props.message.parentId}

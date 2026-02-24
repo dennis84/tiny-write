@@ -1,15 +1,15 @@
 import type {RouteSectionProps} from '@solidjs/router'
 import {createEffect, createResource, ErrorBoundary, onMount, Show, Suspense} from 'solid-js'
+import {styled} from 'solid-styled-components'
 import {useState} from '@/state'
-import {Page} from '@/types'
+import {type Message, Page} from '@/types'
 import {Chat} from '../assistant/Chat'
+import {ChatInput} from '../assistant/ChatInput'
+import {Content, Scroll} from '../Layout'
 
 export const ChatPage = (props: RouteSectionProps) => {
-  const {threadService, toastService, locationService} = useState()
-
-  const onChangeThread = (threadId: string) => {
-    locationService.updateState({threadId})
-  }
+  let scrollRef!: HTMLDivElement
+  const {configService, threadService, toastService, locationService} = useState()
 
   // Create a new thread if not in location state
   onMount(() => {
@@ -43,11 +43,30 @@ export const ChatPage = (props: RouteSectionProps) => {
     return null
   }
 
+  const onInputMessage = async (message: Message) => {
+    await threadService.addMessage(message)
+    await threadService.sendMessages()
+  }
+
+  const ChatContent = styled(Content)`
+    max-width: 100%;
+    padding-bottom: 0;
+    width: var(--content-width);
+  `
+
   return (
     <Suspense>
       <ErrorBoundary fallback={() => <OnError />}>
         <Show when={initialized()} keyed>
-          <Chat onChangeThread={onChangeThread} />
+          <Scroll ref={scrollRef} data-testid="chat_scroll">
+            <ChatContent>
+              <Chat />
+            </ChatContent>
+          </Scroll>
+          {/* Rerender if code theme has been changed */}
+          <Show when={configService.codeTheme} keyed>
+            <ChatInput dropArea={() => scrollRef} onMessage={onInputMessage} />
+          </Show>
         </Show>
       </ErrorBoundary>
     </Suspense>

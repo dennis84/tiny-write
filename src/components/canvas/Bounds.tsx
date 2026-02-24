@@ -130,21 +130,18 @@ const Edge = (props: EdgeProps) => {
   return <Border ref={ref} vert={vert} data-testid={`edge_${props.type}`} />
 }
 
+const cursorStyle = {
+  [CornerType.TopLeft]: 'nwse-resize',
+  [CornerType.TopRight]: 'nesw-resize',
+  [CornerType.BottomLeft]: 'nesw-resize',
+  [CornerType.BottomRight]: 'nwse-resize',
+}
+
 const Corner = (props: CornerProps) => {
   let ref!: SVGRectElement
   const {canvasService, canvasCollabService} = useState()
   const left = props.type === CornerType.TopLeft || props.type === CornerType.BottomLeft
   const bottom = props.type === CornerType.BottomLeft || props.type === CornerType.BottomRight
-  const cursor =
-    props.type === CornerType.TopLeft
-      ? 'nwse-resize'
-      : props.type === CornerType.TopRight
-        ? 'nesw-resize'
-        : props.type === CornerType.BottomLeft
-          ? 'nesw-resize'
-          : props.type === CornerType.BottomRight
-            ? 'nwse-resize'
-            : ''
 
   onMount(() => {
     const currentCanvas = canvasService.currentCanvas
@@ -190,7 +187,7 @@ const Corner = (props: CornerProps) => {
       ref={ref}
       width={BORDER_SIZE}
       height={BORDER_SIZE}
-      style={{cursor, fill: 'transparent', 'touch-action': 'none'}}
+      style={{cursor: cursorStyle[props.type], fill: 'transparent', 'touch-action': 'none'}}
       data-testid={`corner_${props.type}`}
     />
   )

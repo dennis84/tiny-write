@@ -77,17 +77,19 @@ const ButtonLinkEl = styled('button')`
 `
 
 interface ButtonGroupProps {
-  justify?: 'end' | 'start'
+  justify?: 'flex-end' | 'flex-start'
+  justifySelf?: 'flex-end' | 'flex-start'
 }
 
 // biome-ignore format: ternary breaks ugly
 export const ButtonGroup = styled('div')<ButtonGroupProps>`
   display: flex;
   gap: 5px;
-  justify-content: ${(p) => p.justify ? {
-    start: 'flex-start',
-    end: 'flex-end',
-  }[p.justify] : 'flex-start'};
+  ${(p) => p.justify ? `justify-content: ${p.justify};` : ''}
+  ${(p) => p.justifySelf ? `
+    justify-self: ${p.justifySelf};
+    margin-right: auto;
+  ` : ''}
 `
 
 export const IconButtonEl = styled('button')<ButtonAttrs>`

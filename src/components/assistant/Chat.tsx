@@ -1,23 +1,14 @@
-import type {EditorView} from 'prosemirror-view'
-import {createMemo, createSignal, For, Show} from 'solid-js'
+import {createMemo, For, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
-import {v4 as uuidv4} from 'uuid'
-import type {Chunk} from '@/services/CopilotService'
 import {useState} from '@/state'
 import type {TreeItem} from '@/tree'
-import {type Attachment, type Message, Page} from '@/types'
-import {Button, ButtonGroup} from '../Button'
-import {DrawerScroll} from '../Drawer'
+import type {Attachment, Message} from '@/types'
 import {TooltipDivider} from '../dialog/Style'
-import {IconAdd} from '../Icon'
-import {Content} from '../Layout'
 import {AutoContextToggle} from './attachments/AutoContextToggle'
 import {CurrentFileButton} from './attachments/CurrentFile'
 import {SelectionButton} from './attachments/Selection'
-import {ChatInput} from './ChatInput'
 import {MessageAnswer} from './MessageAnswer'
 import {MessageQuestion} from './MessageQuestion'
-import {Threads} from './Threads'
 
 const Container = styled('div')`
   display: flex;
@@ -40,84 +31,14 @@ const EmptyContainer = styled('div')`
   font-size: var(--menu-font-size);
 `
 
-interface Props {
-  onChangeThread: (id: string) => void
-}
-
-export const Chat = (props: Props) => {
-  let inputRef!: HTMLDivElement
+export const Chat = () => {
   let containerRef!: HTMLDivElement
-  let scrollContentRef!: HTMLDivElement
 
-  const {store, locationService, configService, copilotService, threadService, toastService} =
-    useState()
-  const [editorView, setEditorView] = createSignal<EditorView>()
-
-  const focusInput = () => {
-    editorView()?.focus()
-  }
-
-  const addUserMessage = async (input: Message) => {
-    if (!input.content && !input.attachments) return
-    await threadService.addMessage(input)
-  }
-
-  const sendMessages = async () => {
-    const currentThread = threadService.currentThread
-
-    const {messages, nextId, parentId} = threadService.getMessages()
-    if (!currentThread || !messages) return
-
-    const messageId = nextId ?? uuidv4()
-
-    // Create answer message directly to visualize loading
-    threadService.addChunk(messageId, parentId, '')
-
-    try {
-      const result = await copilotService.completions(messages, (chunk: Chunk) => {
-        for (const choice of chunk.choices) {
-          const chunk = choice.delta?.content ?? choice.message?.content ?? ''
-          threadService.addChunk(messageId, parentId, chunk)
-        }
-      })
-
-      if (result.success) {
-        await threadService.saveThread()
-        if (!currentThread.title) {
-          try {
-            const title = await threadService.generateTitle()
-            if (title) await threadService.updateTitle(currentThread.id, title)
-          } catch {
-            // ignore
-          }
-        }
-
-        await threadService.summarize()
-      } else if (result.interrupted) {
-        threadService.interrupt(messageId)
-      }
-    } catch (error: any) {
-      toastService.open({message: error?.message ?? error, action: 'Close'})
-    }
-  }
-
-  const onInputMessage = async (message: Message) => {
-    await addUserMessage(message)
-    focusInput()
-    if (message.role === 'user') {
-      void sendMessages()
-    }
-  }
-
-  const onNewThread = () => {
-    const newThread = threadService.newThread()
-    focusInput()
-    props.onChangeThread(newThread.id)
-  }
+  const {store, threadService} = useState()
 
   const onRegenerate = (message: Message) => {
     threadService.regenerate(message)
-    void sendMessages()
+    void threadService.sendMessages()
   }
 
   const onAttachment = (attachment: Attachment) => {
@@ -161,70 +82,35 @@ export const Chat = (props: Props) => {
   })
 
   return (
-    <>
-      <DrawerScroll ref={scrollContentRef} data-testid="chat_scroll">
-        <Content
-          style={
-            locationService.page !== Page.Assistant
-              ? {
-                  'max-width': '100%',
-                  'padding-bottom': '0',
-                }
-              : {
-                  'padding-bottom': '0',
-                }
-          }
-          data-testid="chat_content"
-        >
-          <Container ref={containerRef} data-testid="chat">
-            <ButtonGroup>
-              <Threads onChange={props.onChangeThread} />
-              <Show when={threadService.currentThread?.messages?.length}>
-                <Button onClick={onNewThread}>
-                  <IconAdd /> New
-                </Button>
-              </Show>
-            </ButtonGroup>
-            <Messages data-testid="messages">
-              <For each={messages()}>
-                {({question, answer, questionSiblings}) => (
-                  <MessagePair>
-                    <MessageQuestion
-                      message={question}
-                      onUpdate={onRegenerate}
-                      childrenIds={questionSiblings}
-                    />
-                    <MessageAnswer
-                      message={answer}
-                      onRegenerate={onRegenerate}
-                      childrenIds={question.childrenIds}
-                    />
-                  </MessagePair>
-                )}
-              </For>
-            </Messages>
-            <Show when={!threadService.messageTree.rootItemIds.length}>
-              <EmptyContainer>
-                <Show when={!store.ai?.autoContext}>
-                  <CurrentFileButton onAttachment={onAttachment} />
-                  <SelectionButton onAttachment={onAttachment} />
-                  <TooltipDivider />
-                </Show>
-                <AutoContextToggle />
-              </EmptyContainer>
-            </Show>
-          </Container>
-        </Content>
-      </DrawerScroll>
-      {/* Rerender if code theme has been changed */}
-      <Show when={configService.codeTheme} keyed>
-        <ChatInput
-          ref={inputRef}
-          setEditorView={(view) => setEditorView(view)}
-          dropArea={() => scrollContentRef}
-          onMessage={onInputMessage}
-        />
+    <Container ref={containerRef} data-testid="chat">
+      <Messages data-testid="messages">
+        <For each={messages()}>
+          {({question, answer, questionSiblings}) => (
+            <MessagePair>
+              <MessageQuestion
+                message={question}
+                onUpdate={onRegenerate}
+                childrenIds={questionSiblings}
+              />
+              <MessageAnswer
+                message={answer}
+                onRegenerate={onRegenerate}
+                childrenIds={question.childrenIds}
+              />
+            </MessagePair>
+          )}
+        </For>
+      </Messages>
+      <Show when={!threadService.messageTree.rootItemIds.length}>
+        <EmptyContainer>
+          <Show when={!store.ai?.autoContext}>
+            <CurrentFileButton onAttachment={onAttachment} />
+            <SelectionButton onAttachment={onAttachment} />
+            <TooltipDivider />
+          </Show>
+          <AutoContextToggle />
+        </EmptyContainer>
       </Show>
-    </>
+    </Container>
   )
 }

@@ -13,9 +13,11 @@ import type {
   ChatMessage,
   ChatMessageImageContent,
   ChatMessageTextContent,
+  Chunk,
   CopilotService,
 } from './CopilotService'
 import type {LocationService} from './LocationService'
+import type {ToastService} from './ToastService'
 
 export class ThreadService {
   public messageTree = createTreeStore<Message>()
@@ -58,6 +60,7 @@ export class ThreadService {
     private setState: SetStoreFunction<State>,
     private copilotService: CopilotService,
     private locationService: LocationService,
+    private toastService: ToastService,
   ) {}
 
   setAttachments(attachments: Attachment[]) {
@@ -131,6 +134,45 @@ export class ThreadService {
     this.messageTree.updateAll([])
 
     return thread
+  }
+
+  async sendMessages() {
+    const currentThread = this.currentThread
+
+    const {messages, nextId, parentId} = this.getMessages()
+    if (!currentThread || !messages) return
+
+    const messageId = nextId ?? uuidv4()
+
+    // Create answer message directly to visualize loading
+    this.addChunk(messageId, parentId, '')
+
+    try {
+      const result = await this.copilotService.completions(messages, (chunk: Chunk) => {
+        for (const choice of chunk.choices) {
+          const chunk = choice.delta?.content ?? choice.message?.content ?? ''
+          this.addChunk(messageId, parentId, chunk)
+        }
+      })
+
+      if (result.success) {
+        await this.saveThread()
+        if (!currentThread.title) {
+          try {
+            const title = await this.generateTitle()
+            if (title) await this.updateTitle(currentThread.id, title)
+          } catch {
+            // ignore
+          }
+        }
+
+        await this.summarize()
+      } else if (result.interrupted) {
+        this.interrupt(messageId)
+      }
+    } catch (error: any) {
+      this.toastService.open({message: error?.message ?? error, action: 'Close'})
+    }
   }
 
   async addMessage(message: Message) {

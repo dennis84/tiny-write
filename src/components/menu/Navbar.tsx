@@ -12,10 +12,12 @@ import {CanvasService} from '@/services/CanvasService'
 import {MenuId} from '@/services/MenuService'
 import {isCodeFile, isLocalFile, useState} from '@/state'
 import {Page} from '@/types'
+import {Threads} from '../assistant/Threads'
 import {Button, ButtonGroup, IconButton} from '../Button'
 import {TooltipButton, TooltipDivider} from '../dialog/Style'
 import {TooltipHelp} from '../dialog/TooltipHelp'
 import {
+  IconAdd,
   IconAiAssistant,
   IconAiAssistantClose,
   IconArrowBack,
@@ -38,13 +40,19 @@ import {
 } from '../Icon'
 
 const FloatingContainer = styled('div')`
+  width: 100%;
   position: absolute;
   top: 0;
   right: 0;
   z-index: var(--z-index-max);
   display: flex;
+  justify-content: flex-end;
   align-items: center;
   padding: 5px;
+  pointer-events: none;
+  > * {
+    pointer-events: auto;
+  }
 `
 
 const CollabButton = () => {
@@ -380,8 +388,25 @@ export const ChatNavbar = () => {
     }
   }
 
+  const onChangeThread = (threadId: string) => {
+    locationService.updateState({threadId})
+  }
+
+  const onNewThread = () => {
+    const newThread = threadService.newThread()
+    locationService.updateState({threadId: newThread.id})
+  }
+
   return (
     <FloatingContainer>
+      <ButtonGroup justifySelf="flex-start">
+        <Threads onChange={onChangeThread} />
+        <Show when={threadService.currentThread?.messages?.length}>
+          <Button onClick={onNewThread}>
+            <IconAdd /> New
+          </Button>
+        </Show>
+      </ButtonGroup>
       <ButtonGroup>
         <TooltipHelp title="Expand assistant">
           <IconButton onClick={onExpandClick} data-testid="navbar_assistant_expand">
@@ -425,11 +450,29 @@ export const MenuNavbar = () => {
 }
 
 export const FloatingNavbar = () => {
-  const {canvasService, collabService, fileService, locationService, menuService} = useState()
+  const {canvasService, collabService, fileService, locationService, threadService, menuService} =
+    useState()
+
+  const onChangeThread = (threadId: string) => {
+    locationService.updateState({threadId})
+  }
+
+  const onNewThread = () => {
+    const newThread = threadService.newThread()
+    locationService.updateState({threadId: newThread.id})
+  }
 
   return (
     <FloatingContainer>
       <ButtonGroup>
+        <Show when={locationService.page === Page.Assistant}>
+          <Threads onChange={onChangeThread} />
+          <Show when={threadService.currentThread?.messages?.length}>
+            <Button onClick={onNewThread}>
+              <IconAdd /> New
+            </Button>
+          </Show>
+        </Show>
         <BackButton />
         <Show when={fileService.currentFile || canvasService.currentCanvas}>
           <CurrentFileButton />
