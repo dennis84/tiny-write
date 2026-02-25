@@ -38,11 +38,6 @@ export const DialogContainer = styled('div')<DialogContainerProps>`
   &::-webkit-scrollbar {
     display: none;
   }
-  @keyframes fadeIn {
-    to {
-      opacity: 1;
-    }
-  }
 `
 
 export const DialogFooter = styled('div')`

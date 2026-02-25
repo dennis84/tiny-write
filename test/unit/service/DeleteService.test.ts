@@ -112,16 +112,14 @@ test.each([
 ])('delete - soft %#', async (data) => {
   const initial = createInitialState()
   const [store, setState] = createStore(initial)
-  const fileService = mock<FileService>()
+  const fileService = mock<FileService>({currentFile: undefined})
   const canvasService = mock<CanvasService>()
   const treeService = new TreeService(store, setState, fileService, canvasService)
 
   const service = new DeleteService(fileService, canvasService, treeService, store, setState)
 
   const currentNode = treeService.getItem(data.currentId)
-  Object.defineProperty(fileService, 'currentFile', {
-    get: vi.fn().mockReturnValue(currentNode?.value),
-  })
+  vi.spyOn(fileService, 'currentFile', 'get').mockReturnValue(currentNode?.value as File)
 
   fileService.findFileById.mockImplementation((id: string) => {
     const item = treeService.getItem(id)?.value
@@ -146,7 +144,7 @@ test.each([
 test('delete - update tree', async () => {
   const initial = createInitialState()
   const [store, setState] = createStore(initial)
-  const fileService = mock<FileService>()
+  const fileService = mock<FileService>({currentFile: undefined})
   const canvasService = mock<CanvasService>()
   const treeService = new TreeService(store, setState, fileService, canvasService)
 
@@ -166,9 +164,7 @@ test('delete - update tree', async () => {
   )
 
   const currentNode = treeService.getItem('1')
-  Object.defineProperty(fileService, 'currentFile', {
-    get: vi.fn().mockReturnValue(currentNode?.value),
-  })
+  vi.spyOn(fileService, 'currentFile', 'get').mockReturnValue(currentNode?.value as File)
 
   fileService.findFileById.mockImplementation((id: string) => {
     const item = treeService.getItem(id)?.value
@@ -245,16 +241,14 @@ test.each([
 ])('delete - forever %#', async (data) => {
   const initial = createInitialState()
   const [store, setState] = createStore(initial)
-  const fileService = mock<FileService>()
+  const fileService = mock<FileService>({currentFile: undefined})
   const canvasService = mock<CanvasService>()
   const treeService = new TreeService(store, setState, fileService, canvasService)
 
   const service = new DeleteService(fileService, canvasService, treeService, store, setState)
 
   const currentNode = treeService.getItem(data.currentId)
-  Object.defineProperty(fileService, 'currentFile', {
-    get: vi.fn().mockReturnValue(currentNode?.value),
-  })
+  vi.spyOn(fileService, 'currentFile', 'get').mockReturnValue(currentNode?.value as File)
 
   fileService.findFileById.mockImplementation((id: string) => {
     const item = treeService.getItem(id)?.value
@@ -279,7 +273,7 @@ test.each([
 })
 
 test('emptyBin', async () => {
-  const fileService = mock<FileService>()
+  const fileService = mock<FileService>({currentFile: undefined})
   const canvasService = mock<CanvasService>()
 
   const initial = createState({
@@ -292,9 +286,7 @@ test('emptyBin', async () => {
     ],
   })
 
-  Object.defineProperty(fileService, 'currentFile', {
-    get: vi.fn().mockReturnValue(initial.files[2]),
-  })
+  vi.spyOn(fileService, 'currentFile', 'get').mockReturnValue(initial.files[2])
   fileService.findFileById.mockReturnValue(initial.files[1])
 
   const [store, setState] = createStore(initial)

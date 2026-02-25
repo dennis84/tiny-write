@@ -94,7 +94,7 @@ test('currentCanvas', () => {
     }),
   )
 
-  Object.defineProperty(locationService, 'canvasId', {get: vi.fn().mockReturnValue('2')})
+  vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('2')
 
   const service = new CanvasService(
     fileService,
@@ -115,7 +115,7 @@ test('updateCanvas', async () => {
     }),
   )
 
-  Object.defineProperty(locationService, 'canvasId', {get: vi.fn().mockReturnValue('1')})
+  vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
 
   const service = new CanvasService(
     fileService,
@@ -153,7 +153,7 @@ test('updateCanvasElement', async () => {
     }),
   )
 
-  Object.defineProperty(locationService, 'canvasId', {get: vi.fn().mockReturnValue('1')})
+  vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
 
   const service = new CanvasService(
     fileService,
@@ -217,7 +217,7 @@ test('backToContent', async () => {
     }),
   )
 
-  Object.defineProperty(locationService, 'canvasId', {get: vi.fn().mockReturnValue('1')})
+  vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
 
   const service = new CanvasService(
     fileService,
@@ -251,7 +251,7 @@ test('focus', async () => {
     }),
   )
 
-  Object.defineProperty(locationService, 'canvasId', {get: vi.fn().mockReturnValue('1')})
+  vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
 
   const service = new CanvasService(
     fileService,
@@ -284,7 +284,7 @@ test('snapToGrid', () => {
     }),
   )
 
-  Object.defineProperty(locationService, 'canvasId', {get: vi.fn().mockReturnValue('1')})
+  vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
 
   const service = new CanvasService(
     fileService,
@@ -309,7 +309,7 @@ test('updateCamera', () => {
     }),
   )
 
-  Object.defineProperty(locationService, 'canvasId', {get: vi.fn().mockReturnValue('1')})
+  vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
 
   const service = new CanvasService(
     fileService,
@@ -333,7 +333,7 @@ test('updateCameraPoint', () => {
     }),
   )
 
-  Object.defineProperty(locationService, 'canvasId', {get: vi.fn().mockReturnValue('1')})
+  vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
 
   const service = new CanvasService(
     fileService,
@@ -356,7 +356,7 @@ test('restore', async () => {
     }),
   )
 
-  Object.defineProperty(locationService, 'canvasId', {get: vi.fn().mockReturnValue('1')})
+  vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
 
   const service = new CanvasService(
     fileService,
@@ -384,7 +384,7 @@ test('select', () => {
     }),
   )
 
-  Object.defineProperty(locationService, 'canvasId', {get: vi.fn().mockReturnValue('1')})
+  vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
 
   const service = new CanvasService(
     fileService,
@@ -431,7 +431,7 @@ test('deselect', () => {
     }),
   )
 
-  Object.defineProperty(locationService, 'canvasId', {get: vi.fn().mockReturnValue('1')})
+  vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
 
   const service = new CanvasService(
     fileService,
@@ -464,7 +464,7 @@ test('newCanvas', async () => {
     }),
   )
 
-  Object.defineProperty(locationService, 'canvasId', {get: vi.fn().mockReturnValue('1')})
+  vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
 
   const service = new CanvasService(
     fileService,
@@ -500,7 +500,7 @@ test('removeElements', async () => {
     }),
   )
 
-  Object.defineProperty(locationService, 'canvasId', {get: vi.fn().mockReturnValue('1')})
+  vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
 
   const service = new CanvasService(
     fileService,
@@ -529,7 +529,7 @@ test('init', async () => {
     }),
   )
 
-  Object.defineProperty(locationService, 'canvasId', {get: vi.fn().mockReturnValue('1')})
+  vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
 
   const service = new CanvasService(
     fileService,
@@ -552,7 +552,7 @@ test('newFile', async () => {
     }),
   )
 
-  Object.defineProperty(locationService, 'canvasId', {get: vi.fn().mockReturnValue('1')})
+  vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
   vi.spyOn(FileService, 'createFile').mockReturnValue({id: '1', ydoc, versions: []})
 
   const service = new CanvasService(
@@ -591,7 +591,7 @@ test.each([
     }),
   )
 
-  Object.defineProperty(locationService, 'canvasId', {get: vi.fn().mockReturnValue('1')})
+  vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
   vi.spyOn(FileService, 'createFile').mockReturnValue({id: '3', ydoc, versions: []})
 
   const service = new CanvasService(
@@ -625,7 +625,7 @@ test('addImage', async () => {
     }),
   )
 
-  Object.defineProperty(locationService, 'canvasId', {get: vi.fn().mockReturnValue('1')})
+  vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
 
   const service = new CanvasService(
     fileService,
@@ -653,7 +653,7 @@ test('addVideo', async () => {
     }),
   )
 
-  Object.defineProperty(locationService, 'canvasId', {get: vi.fn().mockReturnValue('1')})
+  vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
 
   const service = new CanvasService(
     fileService,
@@ -690,7 +690,7 @@ test('drawLink', () => {
     }),
   )
 
-  Object.defineProperty(locationService, 'canvasId', {get: vi.fn().mockReturnValue('1')})
+  vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
 
   const service = new CanvasService(
     fileService,
@@ -738,7 +738,7 @@ test('drawLink - abort', async () => {
     }),
   )
 
-  Object.defineProperty(locationService, 'canvasId', {get: vi.fn().mockReturnValue('1')})
+  vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
 
   const service = new CanvasService(
     fileService,
@@ -772,7 +772,7 @@ test('removeDeadLinks', async () => {
     }),
   )
 
-  Object.defineProperty(locationService, 'canvasId', {get: vi.fn().mockReturnValue('1')})
+  vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
 
   const service = new CanvasService(
     fileService,
@@ -802,7 +802,7 @@ test('clearCanvas', async () => {
     }),
   )
 
-  Object.defineProperty(locationService, 'canvasId', {get: vi.fn().mockReturnValue('1')})
+  vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
 
   const service = new CanvasService(
     fileService,
@@ -833,7 +833,7 @@ test('getElementNear', () => {
     }),
   )
 
-  Object.defineProperty(locationService, 'canvasId', {get: vi.fn().mockReturnValue('1')})
+  vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
 
   const service = new CanvasService(
     fileService,
@@ -868,7 +868,7 @@ test('center', () => {
     }),
   )
 
-  Object.defineProperty(locationService, 'canvasId', {get: vi.fn().mockReturnValue('1')})
+  vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
 
   const service = new CanvasService(
     fileService,
@@ -900,7 +900,7 @@ test('get selection', () => {
     }),
   )
 
-  Object.defineProperty(locationService, 'canvasId', {get: vi.fn().mockReturnValue('1')})
+  vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
 
   const service = new CanvasService(
     fileService,
@@ -954,7 +954,7 @@ test('selectBox', () => {
     }),
   )
 
-  Object.defineProperty(locationService, 'canvasId', {get: vi.fn().mockReturnValue('1')})
+  vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
 
   const service = new CanvasService(
     fileService,
@@ -1027,7 +1027,7 @@ test('selectBox - active editor', () => {
     }),
   )
 
-  Object.defineProperty(locationService, 'canvasId', {get: vi.fn().mockReturnValue('1')})
+  vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
 
   fileService.findFileById.mockReturnValue({
     id: '1',

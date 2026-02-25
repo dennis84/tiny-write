@@ -113,6 +113,23 @@ export const Variables = () => {
       --content-width: ${() => String(store.config.contentWidth)}px;
       --code-background: ${() => theme().background};
     }
+
+    @keyframes fadeIn {
+      to {
+        opacity: 1;
+      }
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(100%);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
   `
 
   return <GlobalVariables />

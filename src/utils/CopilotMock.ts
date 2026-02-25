@@ -34,7 +34,7 @@ export class CopilotMock {
         async start(controller) {
           let parts = 0
           while (true) {
-            if (!options.endlessText && parts >= 1) {
+            if (!options.endlessText && parts >= 4) {
               const buffer = encoder.encode('data: [DONE]').buffer
               controller.enqueue(buffer)
               controller.close()

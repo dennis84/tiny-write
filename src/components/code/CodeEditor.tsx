@@ -37,7 +37,7 @@ export const CodeEditor = () => {
   return (
     <CodeScroll data-testid="code_scroll">
       <CodeMirrorContainer ref={containerRef} />
-      <ContextMenu />
+      <ContextMenu area={() => containerRef} />
     </CodeScroll>
   )
 }

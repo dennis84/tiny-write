@@ -31,7 +31,7 @@ const createElement = (props: Partial<CanvasElement | CanvasLinkElement>) => ({
 })
 
 test('getMessages', () => {
-  const canvasService = mock<CanvasService>()
+  const canvasService = mock<CanvasService>({currentCanvas: undefined})
   const fileService = mock<FileService>()
 
   // F2 -> F1 -> *AI*
@@ -43,7 +43,7 @@ test('getMessages', () => {
     ],
   })
 
-  Object.defineProperty(canvasService, 'currentCanvas', {get: vi.fn().mockReturnValue(canvas)})
+  vi.spyOn(canvasService, 'currentCanvas', 'get').mockReturnValue(canvas)
 
   fileService.findFileById.calledWith('1').mockReturnValue({
     id: '1',

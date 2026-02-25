@@ -204,7 +204,8 @@ export class ThreadService {
     let messageIndex = currentThread.messages.findIndex((m) => m.id === id)
     if (messageIndex === -1) {
       info(`Create new message to stream to (id=${id}, parentId=${parentId})`)
-      const newMessage: Message = {id, content: '', role: 'assistant', parentId} as Message
+      const modelId = this.copilotService.chatModel.id
+      const newMessage: Message = {id, content: '', role: 'assistant', parentId, modelId} as Message
       this.setState('threads', currentThreadIndex, 'messages', (prev) => [...prev, newMessage])
       messageIndex = currentThread.messages.length - 1
     }
@@ -236,23 +237,6 @@ export class ThreadService {
 
     const message = this.store.threads[currentThreadIndex].messages[messageIndex]
     this.messageTree.updateValue(message)
-  }
-
-  async removeMessage(message: Message) {
-    const currentThread = this.currentThread
-    if (!currentThread) return
-    info(`Remove message from thread (message=${JSON.stringify(message)})`)
-    const index = currentThread.messages.indexOf(message)
-    const messages = currentThread.messages.filter((_, i) => i !== index)
-    this.setState('threads', this.currentThreadIndex, (prev) => ({
-      ...prev,
-      messages,
-      lastModified: new Date(),
-    }))
-
-    this.messageTree.remove(message.id)
-
-    await this.saveThread()
   }
 
   async updateTitle(threadId: string, title: string) {
@@ -318,6 +302,7 @@ export class ThreadService {
         ...message,
         id: ThreadService.createId(),
         leftId: message.id,
+        modelId: this.copilotService.chatModel.id,
       }
 
       info(`Regenerate user message (message=${JSON.stringify(newMessage)})`)

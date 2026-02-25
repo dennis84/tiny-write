@@ -1,5 +1,6 @@
 import type {Token} from 'markdown-it'
 import {Show} from 'solid-js'
+import {styled} from 'solid-styled-components'
 import {copy} from '@/remote/clipboard'
 import {useState} from '@/state'
 import type {TreeItem} from '@/tree'
@@ -11,6 +12,13 @@ import {AttachmentChip} from './AttachmentChip'
 import {MessageMarkdown} from './MessageMarkdown'
 import {Pagination} from './Pagination'
 import {ChatBubble} from './Style'
+
+const MarkdownFadeIn = styled.div<{streaming: boolean}>`
+  > * {
+    opacity: ${(p) => (p.streaming ? '0' : '1')};
+    animation: fadeIn 1.2s 0.1s ease-out forwards;
+  }
+`
 
 export interface TokenItem {
   id: string
@@ -36,10 +44,12 @@ export const MessageAnswer = (props: Props) => {
 
   return (
     <ChatBubble data-testid="answer_bubble">
-      {/* Rerender code blocks if code theme has been changed */}
-      <Show when={configService.codeTheme} keyed>
-        <MessageMarkdown content={props.message.value.content} />
-      </Show>
+      <MarkdownFadeIn streaming={copilotService.streaming()}>
+        {/* Rerender code blocks if code theme has been changed */}
+        <Show when={configService.codeTheme} keyed>
+          <MessageMarkdown content={props.message.value.content} />
+        </Show>
+      </MarkdownFadeIn>
       <ButtonGroup>
         <TooltipHelp title="Copy">
           <IconButton onClick={onCopy}>

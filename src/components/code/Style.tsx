@@ -156,6 +156,7 @@ export const codeMirrorTooltip = `
     padding: 6px 8px;
     max-width: 600px;
     max-height: 100%;
+    z-index: var(--z-index-above-content);
     p {
       margin: 10px 0;
     }

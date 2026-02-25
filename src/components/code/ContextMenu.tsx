@@ -5,7 +5,11 @@ import {copy, readText} from '@/remote/clipboard'
 import {useState} from '@/state'
 import {TooltipButton, TooltipDivider} from '../dialog/Style'
 
-export const ContextMenu = () => {
+interface Props {
+  area: () => HTMLElement
+}
+
+export const ContextMenu = (props: Props) => {
   const {fileService} = useState()
 
   const Tooltip = () => (
@@ -62,6 +66,9 @@ export const ContextMenu = () => {
 
   onMount(() => {
     const onContextMenu = (e: MouseEvent) => {
+      const target = e.target as Element
+      if (!props.area().contains(target)) return
+
       e.preventDefault()
       const x = e.clientX
       const y = e.clientY

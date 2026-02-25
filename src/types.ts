@@ -233,6 +233,7 @@ export interface Message {
   role: ChatRole
   interrupted?: boolean
   summary?: string
+  modelId?: string
 }
 
 export interface Thread {

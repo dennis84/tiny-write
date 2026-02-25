@@ -49,9 +49,7 @@ test('init - existing', async () => {
 
   const [store, setState] = createStore(initial)
   const fileService = mock<FileService>()
-  const locationService = mock<LocationService>()
-
-  Object.defineProperty(locationService, 'editorId', {get: vi.fn().mockReturnValue('2')})
+  const locationService = mock<LocationService>({editorId: '2'})
 
   fileService.findFileById.mockReturnValue(initial.files[1])
   collabService.getSubdoc.mockReturnValue(createSubdoc('2', []))
@@ -81,9 +79,7 @@ test('init - not found', async () => {
 
   const [store, setState] = createStore(initial)
   const fileService = mock<FileService>()
-  const locationService = mock<LocationService>()
-
-  Object.defineProperty(locationService, 'canvasId', {get: vi.fn().mockReturnValue('3')})
+  const locationService = mock<LocationService>({canvasId: '3'})
 
   fileService.findFileById.mockReturnValue(undefined)
 
@@ -115,10 +111,10 @@ test('init - share', async () => {
 
   const [store, setState] = createStore(initial)
   const fileService = mock<FileService>()
-  const locationService = mock<LocationService>()
-
-  Object.defineProperty(locationService, 'editorId', {get: vi.fn().mockReturnValue('room-123')})
-  Object.defineProperty(locationService, 'state', {get: vi.fn().mockReturnValue({share: true})})
+  const locationService = mock<LocationService>({
+    editorId: 'room-123',
+    state: {share: true},
+  })
 
   fileService.findFileById.mockReturnValue(file)
   collabService.getSubdoc.mockReturnValue(createSubdoc('room-123', []))
@@ -141,7 +137,7 @@ test('init - share', async () => {
 
 test('clear - with text', async () => {
   const editorView = createEditorView(['Test'])
-  const fileService = mock<FileService>()
+  const fileService = mock<FileService>({currentFile: undefined})
   const locationService = mock<LocationService>()
 
   const file = {
@@ -152,7 +148,7 @@ test('clear - with text', async () => {
     editorView,
   }
 
-  Object.defineProperty(fileService, 'currentFile', {get: vi.fn().mockReturnValue(file)})
+  vi.spyOn(fileService, 'currentFile', 'get').mockReturnValue(file)
 
   const initial = createState()
   const [store, setState] = createStore(initial)
@@ -176,7 +172,7 @@ test('clear - with text', async () => {
 
 test('selectBox', async () => {
   const editorView = createEditorView(['Test'])
-  const fileService = mock<FileService>()
+  const fileService = mock<FileService>({currentFile: undefined})
   const locationService = mock<LocationService>()
 
   const file = {
@@ -187,7 +183,7 @@ test('selectBox', async () => {
     editorView,
   }
 
-  Object.defineProperty(fileService, 'currentFile', {get: vi.fn().mockReturnValue(file)})
+  vi.spyOn(fileService, 'currentFile', 'get').mockReturnValue(file)
 
   const initial = createState()
   const [store, setState] = createStore(initial)

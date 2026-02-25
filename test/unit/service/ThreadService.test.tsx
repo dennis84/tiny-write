@@ -4,17 +4,26 @@ import {mock} from 'vitest-mock-extended'
 import type {ChatMessageTextContent, CopilotService} from '@/services/CopilotService'
 import type {LocationService} from '@/services/LocationService'
 import {ThreadService} from '@/services/ThreadService'
+import type {ToastService} from '@/services/ToastService'
 import {createState} from '@/state'
 import {AttachmentType, type Message} from '@/types'
 import {expectTree} from '../testutil/tree'
+
+const copilotService = mock<CopilotService>({
+  chatModel: {
+    maxPromptTokens: 2,
+    maxOutputTokens: 2,
+  },
+})
+const locationService = mock<LocationService>({threadId: '1'})
+const toastService = mock<ToastService>()
+const lastModified = new Date()
 
 beforeEach(() => {
   vi.resetAllMocks()
 })
 
 vi.mock('@/db', () => ({DB: mock()}))
-
-const lastModified = new Date()
 
 test('newThread - empty', () => {
   const initial = createState({
@@ -36,9 +45,7 @@ test('newThread - empty', () => {
   })
 
   const [store, setState] = createStore(initial)
-  const copilotService = mock<CopilotService>()
-  const locationService = mock<LocationService>()
-  const service = new ThreadService(store, setState, copilotService, locationService)
+  const service = new ThreadService(store, setState, copilotService, locationService, toastService)
 
   service.newThread()
 
@@ -56,11 +63,8 @@ test('addMessage', async () => {
   })
 
   const [store, setState] = createStore(initial)
-  const copilotService = mock<CopilotService>()
-  const locationService = mock<LocationService>()
-  Object.defineProperty(locationService, 'threadId', {get: vi.fn().mockReturnValue('1')})
 
-  const service = new ThreadService(store, setState, copilotService, locationService)
+  const service = new ThreadService(store, setState, copilotService, locationService, toastService)
 
   await service.addMessage({id: '1', role: 'user', content: '1'})
   await service.addMessage({id: '2', role: 'user', content: '2'})
@@ -89,11 +93,8 @@ test('addMessage - path', async () => {
   })
 
   const [store, setState] = createStore(initial)
-  const copilotService = mock<CopilotService>()
-  const locationService = mock<LocationService>()
-  Object.defineProperty(locationService, 'threadId', {get: vi.fn().mockReturnValue('1')})
 
-  const service = new ThreadService(store, setState, copilotService, locationService)
+  const service = new ThreadService(store, setState, copilotService, locationService, toastService)
   service.messageTree.updateAll(store.threads[0].messages)
 
   expectTree(
@@ -135,11 +136,8 @@ test('addChunk', async () => {
   })
 
   const [store, setState] = createStore(initial)
-  const copilotService = mock<CopilotService>()
-  const locationService = mock<LocationService>()
-  Object.defineProperty(locationService, 'threadId', {get: vi.fn().mockReturnValue('1')})
 
-  const service = new ThreadService(store, setState, copilotService, locationService)
+  const service = new ThreadService(store, setState, copilotService, locationService, toastService)
   service.messageTree.updateAll(store.threads[0].messages)
 
   service.addChunk('2', '1', 'A')
@@ -151,29 +149,6 @@ test('addChunk', async () => {
 
   expect(store.threads[0].messages).toHaveLength(2)
   expect(store.threads[0].messages[1].parentId).toBe('1')
-})
-
-test('removeMessage', async () => {
-  const initial = createState({
-    threads: [
-      {
-        id: '1',
-        messages: [{id: '1', role: 'user', content: '1'}],
-      },
-    ],
-  })
-
-  const [store, setState] = createStore(initial)
-  const copilotService = mock<CopilotService>()
-  const locationService = mock<LocationService>()
-  Object.defineProperty(locationService, 'threadId', {get: vi.fn().mockReturnValue('1')})
-
-  const service = new ThreadService(store, setState, copilotService, locationService)
-  service.messageTree.updateAll(store.threads[0].messages)
-
-  await service.removeMessage(store.threads[0].messages[0])
-
-  expect(store.threads[0].messages).toHaveLength(0)
 })
 
 test('interrupt', async () => {
@@ -190,11 +165,8 @@ test('interrupt', async () => {
   })
 
   const [store, setState] = createStore(initial)
-  const copilotService = mock<CopilotService>()
-  const locationService = mock<LocationService>()
-  Object.defineProperty(locationService, 'threadId', {get: vi.fn().mockReturnValue('1')})
 
-  const service = new ThreadService(store, setState, copilotService, locationService)
+  const service = new ThreadService(store, setState, copilotService, locationService, toastService)
 
   service.interrupt('2')
 
@@ -215,20 +187,11 @@ test('summarize', async () => {
   })
 
   const [store, setState] = createStore(initial)
-  const copilotService = mock<CopilotService>()
-  const locationService = mock<LocationService>()
-  Object.defineProperty(locationService, 'threadId', {get: vi.fn().mockReturnValue('1')})
 
-  const service = new ThreadService(store, setState, copilotService, locationService)
+  const service = new ThreadService(store, setState, copilotService, locationService, toastService)
   service.messageTree.updateAll(store.threads[0].messages)
 
   copilotService.completionsSync.mockResolvedValue('12')
-  Object.defineProperty(copilotService, 'chatModel', {
-    get: vi.fn().mockReturnValue({
-      maxPromptTokens: 2,
-      maxOutputTokens: 2,
-    }),
-  })
 
   await service.summarize()
 
@@ -246,11 +209,8 @@ test('updateTitle', async () => {
   })
 
   const [store, setState] = createStore(initial)
-  const copilotService = mock<CopilotService>()
-  const locationService = mock<LocationService>()
-  Object.defineProperty(locationService, 'threadId', {get: vi.fn().mockReturnValue('1')})
 
-  const service = new ThreadService(store, setState, copilotService, locationService)
+  const service = new ThreadService(store, setState, copilotService, locationService, toastService)
 
   await service.updateTitle('1', 'Test')
 
@@ -273,11 +233,8 @@ test('init', () => {
   })
 
   const [store, setState] = createStore(initial)
-  const copilotService = mock<CopilotService>()
-  const locationService = mock<LocationService>()
-  Object.defineProperty(locationService, 'threadId', {get: vi.fn().mockReturnValue('1')})
 
-  const service = new ThreadService(store, setState, copilotService, locationService)
+  const service = new ThreadService(store, setState, copilotService, locationService, toastService)
 
   service.init()
   expect(store.threads).toHaveLength(1)
@@ -307,11 +264,8 @@ test('delete', async () => {
   })
 
   const [store, setState] = createStore(initial)
-  const copilotService = mock<CopilotService>()
-  const locationService = mock<LocationService>()
-  Object.defineProperty(locationService, 'threadId', {get: vi.fn().mockReturnValue('1')})
 
-  const service = new ThreadService(store, setState, copilotService, locationService)
+  const service = new ThreadService(store, setState, copilotService, locationService, toastService)
 
   await service.delete(store.threads[0])
 
@@ -345,11 +299,8 @@ test('deleteAll', async () => {
   })
 
   const [store, setState] = createStore(initial)
-  const copilotService = mock<CopilotService>()
-  const locationService = mock<LocationService>()
-  Object.defineProperty(locationService, 'threadId', {get: vi.fn().mockReturnValue('1')})
 
-  const service = new ThreadService(store, setState, copilotService, locationService)
+  const service = new ThreadService(store, setState, copilotService, locationService, toastService)
 
   await service.deleteAll()
 
@@ -372,11 +323,8 @@ test('regenerate - user message', async () => {
   })
 
   const [store, setState] = createStore(initial)
-  const copilotService = mock<CopilotService>()
-  const locationService = mock<LocationService>()
-  Object.defineProperty(locationService, 'threadId', {get: vi.fn().mockReturnValue('1')})
 
-  const service = new ThreadService(store, setState, copilotService, locationService)
+  const service = new ThreadService(store, setState, copilotService, locationService, toastService)
   service.messageTree.updateAll(store.threads[0].messages)
 
   let nextId = 3
@@ -425,11 +373,8 @@ test('regenerate - assistant message', async () => {
   })
 
   const [store, setState] = createStore(initial)
-  const copilotService = mock<CopilotService>()
-  const locationService = mock<LocationService>()
-  Object.defineProperty(locationService, 'threadId', {get: vi.fn().mockReturnValue('1')})
 
-  const service = new ThreadService(store, setState, copilotService, locationService)
+  const service = new ThreadService(store, setState, copilotService, locationService, toastService)
   service.messageTree.updateAll(store.threads[0].messages)
 
   let nextId = 3
@@ -475,11 +420,8 @@ test('generateTitle', async () => {
   })
 
   const [store, setState] = createStore(initial)
-  const copilotService = mock<CopilotService>()
-  const locationService = mock<LocationService>()
-  Object.defineProperty(locationService, 'threadId', {get: vi.fn().mockReturnValue('1')})
 
-  const service = new ThreadService(store, setState, copilotService, locationService)
+  const service = new ThreadService(store, setState, copilotService, locationService, toastService)
 
   copilotService.completionsSync.mockImplementation(async (messages) => {
     expect(messages).toHaveLength(3)
@@ -554,18 +496,14 @@ test.each<[Message[], number]>([
   })
 
   const [store, setState] = createStore(initial)
-  const copilotService = mock<CopilotService>()
-  const locationService = mock<LocationService>()
 
-  Object.defineProperty(locationService, 'threadId', {get: vi.fn().mockReturnValue('1')})
-  Object.defineProperty(copilotService, 'chatModel', {
-    get: vi.fn().mockReturnValue({
-      maxPromptTokens: 10,
-      maxOutputTokens: 12,
-    }),
+  vi.spyOn(copilotService, 'chatModel', 'get').mockReturnValue({
+    ...copilotService.chatModel,
+    maxPromptTokens: 10,
+    maxOutputTokens: 12,
   })
 
-  const service = new ThreadService(store, setState, copilotService, locationService)
+  const service = new ThreadService(store, setState, copilotService, locationService, toastService)
   service.messageTree.updateAll(store.threads[0].messages)
 
   const result = service.getMessages()
@@ -593,11 +531,8 @@ test('getThreads', () => {
   })
 
   const [store, setState] = createStore(initial)
-  const copilotService = mock<CopilotService>()
-  const locationService = mock<LocationService>()
-  Object.defineProperty(locationService, 'threadId', {get: vi.fn().mockReturnValue('1')})
 
-  const service = new ThreadService(store, setState, copilotService, locationService)
+  const service = new ThreadService(store, setState, copilotService, locationService, toastService)
 
   const threads = service.getThreads()
 
@@ -614,11 +549,8 @@ test('getThreads', () => {
 test('hande attachments', () => {
   const initial = createState()
   const [store, setState] = createStore(initial)
-  const copilotService = mock<CopilotService>()
-  const locationService = mock<LocationService>()
-  Object.defineProperty(locationService, 'threadId', {get: vi.fn().mockReturnValue('1')})
 
-  const service = new ThreadService(store, setState, copilotService, locationService)
+  const service = new ThreadService(store, setState, copilotService, locationService, toastService)
 
   expect(service.attachments()).toEqual([])
 

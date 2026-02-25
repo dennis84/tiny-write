@@ -21,17 +21,12 @@ const createCanvas = (props: Partial<Canvas> = {}): Canvas => ({
 
 const setup = (props: {canvas: Partial<Canvas>} = {canvas: {}}) => {
   const canvas = createCanvas(props.canvas)
-  const canvasService = mock<CanvasService>()
-  Object.defineProperty(canvasService, 'currentCanvas', {get: vi.fn().mockReturnValue(canvas)})
-  const collabService = mock<CollabService>()
+  const canvasService = mock<CanvasService>({currentCanvas: undefined})
+  vi.spyOn(canvasService, 'currentCanvas', 'get').mockReturnValue(canvas)
+  const collabService = mock<CollabService>({ydoc: undefined, undoManager: undefined})
 
-  Object.defineProperty(collabService, 'ydoc', {
-    get: vi.fn().mockReturnValue(new Y.Doc({gc: false})),
-  })
-
-  Object.defineProperty(collabService, 'undoManager', {
-    get: vi.fn().mockReturnValue(mock<YMultiDocUndoManager>()),
-  })
+  vi.spyOn(collabService, 'ydoc', 'get').mockReturnValue(new Y.Doc({gc: false}))
+  vi.spyOn(collabService, 'undoManager', 'get').mockReturnValue(mock<YMultiDocUndoManager>())
 
   const service = new CanvasCollabService(collabService, canvasService)
 

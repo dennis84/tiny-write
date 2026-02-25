@@ -33,17 +33,6 @@ const ToastBubble = styled('div')`
   align-items: center;
   animation: fadeInUp 0.2s ease-out;
 
-  @keyframes fadeInUp {
-    from {
-      opacity: 0;
-      transform: translateY(100%);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
   div {
     position: relative;
     z-index: 1;
