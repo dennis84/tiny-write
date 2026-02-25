@@ -77,7 +77,7 @@ export class LocationService {
 
   openItem(item?: File | Canvas | CanvasElement | Thread, locState?: Partial<LocationState>) {
     if (!item) return this.navigator('/')
-    const state = {...this.state, ...locState}
+    const state = {...this.state, share: false, ...locState}
 
     if (isCodeFile(item)) {
       const newFile = item.newFile
@@ -98,7 +98,7 @@ export class LocationService {
 
   openPage(page: Page, locState?: Partial<LocationState>) {
     info(`Open page (page=${page})`)
-    const state = {...this.state, ...locState}
+    const state = {...this.state, share: false, ...locState}
     this.navigator(`/${page}`, {state})
   }
 

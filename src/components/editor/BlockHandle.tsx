@@ -158,7 +158,12 @@ export const BlockHandle = (props: Props) => {
     }
 
     const dom = editorView.domAtPos(blockPos + 1)
-    const node = dom?.node as HTMLElement
+    let node = dom?.node as HTMLElement
+
+    if (node.parentElement?.tagName === 'DETAILS') {
+      node = node.parentElement
+    }
+
     if (!node || node === editorView.dom) {
       return hideDragHandle()
     }

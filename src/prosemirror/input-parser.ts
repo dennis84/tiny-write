@@ -30,7 +30,7 @@ export const createInputParserPlugin = (parser: MarkdownParser) =>
         const range = findMarkPosition(linkMark, newState.doc, textFrom, textTo)
         const text = newState.doc.textBetween(range.from, range.to, '\0', '\0')
         const node = newState.schema
-          .text(`[${text}](${href})`)
+          .text(text === href ? `<${text}>` : `[${text}](${href})`)
           .mark([newState.schema.marks.edit_link.create({href})])
 
         const tr = newState.tr

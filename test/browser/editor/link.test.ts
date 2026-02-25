@@ -8,7 +8,7 @@ test.beforeEach(async ({page}) => {
   await page.waitForSelector('[data-testid="initialized"]')
 })
 
-test('create link', async ({page}) => {
+test('create link - title', async ({page}) => {
   await page.locator('.ProseMirror').pressSequentially('foo [title](url) bar', {delay})
   await assertEditorLineToEqual(page, 1, 'foo title bar')
   await move(page, 'ArrowLeft', 4)
@@ -48,4 +48,11 @@ test('create link', async ({page}) => {
   await move(page, 'ArrowRight', 5)
   await page.locator('.ProseMirror').pressSequentially('123', {delay})
   await assertEditorLineToEqual(page, 3, 'test inline [foo](bar) code 123')
+})
+
+test('create link - url', async ({page}) => {
+  await page.locator('.ProseMirror').pressSequentially('foo <http://example.com> bar', {delay})
+  await assertEditorLineToEqual(page, 1, 'foo http://example.com bar')
+  await move(page, 'ArrowLeft', 5)
+  await assertEditorLineToEqual(page, 1, 'foo <http://example.com> bar')
 })
