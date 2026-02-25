@@ -11,7 +11,7 @@ import {copy} from '@/remote/clipboard'
 import {CanvasService} from '@/services/CanvasService'
 import {MenuId} from '@/services/MenuService'
 import {isCodeFile, isLocalFile, useState} from '@/state'
-import {Page} from '@/types'
+import {Page, type Thread} from '@/types'
 import {Threads} from '../assistant/Threads'
 import {Button, ButtonGroup, IconButton} from '../Button'
 import {TooltipButton, TooltipDivider} from '../dialog/Style'
@@ -388,8 +388,8 @@ export const ChatNavbar = () => {
     }
   }
 
-  const onChangeThread = (threadId: string) => {
-    locationService.updateState({threadId})
+  const onChangeThread = (thread: Thread) => {
+    locationService.updateState({threadId: thread.id})
   }
 
   const onNewThread = () => {
@@ -453,8 +453,8 @@ export const FloatingNavbar = () => {
   const {canvasService, collabService, fileService, locationService, threadService, menuService} =
     useState()
 
-  const onChangeThread = (threadId: string) => {
-    locationService.updateState({threadId})
+  const onChangeThread = (thread: Thread) => {
+    locationService.openItem(thread)
   }
 
   const onNewThread = () => {

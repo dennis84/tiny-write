@@ -129,7 +129,7 @@ const SearchInput = styled('input')`
 `
 
 interface Props {
-  onChange: (id: string) => void
+  onChange: (thread: Thread) => void
 }
 
 export const Threads = (props: Props) => {
@@ -148,7 +148,7 @@ export const Threads = (props: Props) => {
       content: 'Are you sure you want to delete all threads?',
       onConfirm: async () => {
         const newThread = await threadService.deleteAll()
-        props.onChange(newThread.id)
+        props.onChange(newThread)
       },
     })
   }
@@ -159,12 +159,12 @@ export const Threads = (props: Props) => {
 
   const onNew = () => {
     const newThread = threadService.newThread()
-    props.onChange(newThread.id)
+    props.onChange(newThread)
     closeTooltip()
   }
 
   const onSelect = (thread: Thread) => {
-    props.onChange(thread.id)
+    props.onChange(thread)
     closeTooltip()
   }
 
