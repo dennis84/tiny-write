@@ -4,8 +4,8 @@ import type {Message} from '@/types'
 import {Drawer, DrawerScroll} from '../Drawer'
 import {Content} from '../Layout'
 import {ChatNavbar} from '../menu/Navbar'
-import {Chat} from './Chat'
 import {ChatInput} from './ChatInput'
+import {Conversation} from './Conversation'
 
 export const ChatDrawer = () => {
   let scrollRef!: HTMLDivElement
@@ -49,7 +49,7 @@ export const ChatDrawer = () => {
         <Show when={initialized()}>
           <DrawerScroll ref={scrollRef} data-testid="chat_scroll">
             <Content style={{'padding-bottom': '0'}}>
-              <Chat />
+              <Conversation />
             </Content>
           </DrawerScroll>
           {/* Rerender if code theme has been changed */}

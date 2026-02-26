@@ -3,8 +3,8 @@ import {createEffect, createResource, ErrorBoundary, onMount, Show, Suspense} fr
 import {styled} from 'solid-styled-components'
 import {useState} from '@/state'
 import {type Message, Page} from '@/types'
-import {Chat} from '../assistant/Chat'
 import {ChatInput} from '../assistant/ChatInput'
+import {Conversation} from '../assistant/Conversation'
 import {Content, Scroll} from '../Layout'
 
 export const ChatPage = (props: RouteSectionProps) => {
@@ -60,7 +60,7 @@ export const ChatPage = (props: RouteSectionProps) => {
         <Show when={initialized()} keyed>
           <Scroll ref={scrollRef} data-testid="chat_scroll">
             <ChatContent>
-              <Chat />
+              <Conversation />
             </ChatContent>
           </Scroll>
           {/* Rerender if code theme has been changed */}

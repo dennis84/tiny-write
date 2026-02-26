@@ -31,7 +31,7 @@ const EmptyContainer = styled.div`
   font-size: var(--menu-font-size);
 `
 
-export const Chat = () => {
+export const Conversation = () => {
   let containerRef!: HTMLDivElement
 
   const {store, threadService} = useState()
