@@ -7,9 +7,14 @@ import {useInputLine} from '@/hooks/use-input-line'
 import {useState} from '@/state'
 import type {Thread} from '@/types'
 import {Button, ButtonGroup} from '../Button'
-import {DialogFooter} from '../dialog/Style'
+import {DialogFooter, DialogLabel, DialogScroll} from '../dialog/Style'
 import {TooltipHelp} from '../dialog/TooltipHelp'
 import {IconAdd, IconDelete, IconEdit, IconHistory, IconPin, IconSearch, IconUnpin} from '../Icon'
+
+const Scroll = styled(DialogScroll)`
+  width: 600px;
+  max-height: 80vh;
+`
 
 const ThreadItemButton = styled('span')`
   justify-self: flex-end;
@@ -27,28 +32,6 @@ const ThreadItemButton = styled('span')`
   .icon {
     margin: 0 !important;
   }
-`
-
-const Scroller = styled('div')`
-  width: 80vw;
-  max-height: 80vh;
-  overflow-y: auto;
-  &::-webkit-scrollbar {
-    display: none;
-  }
-`
-
-const Content = styled('div')`
-  heigth: 100%;
-`
-
-export const Label = styled('div')`
-  margin-top: 10px;
-  padding: 2px 6px;
-  font-size: var(--menu-font-size);
-  text-transform: uppercase;
-  color: var(--foreground-50);
-  font-weight: bold;
 `
 
 const ThreadItem = styled('div')`
@@ -215,55 +198,53 @@ export const Threads = (props: Props) => {
             <IconSearch />
           </SearchBorder>
         </SearchRow>
-        <Scroller>
-          <Content>
-            <For each={threadService.getThreads(searchTerm())}>
-              {([thread, label]) => (
-                <>
-                  <Show when={label}>
-                    <Label>{label}</Label>
-                  </Show>
-                  <ThreadItem onClick={() => onSelect(thread)} data-testid="thread_item">
-                    <ThreadTitle>{thread.title ?? 'Untitled'}</ThreadTitle>
-                    <LastModified class="last-modified">
-                      <Show when={thread.lastModified}>
-                        {(lastMod) => <span>{formatDistance(lastMod(), new Date())}</span>}
-                      </Show>
-                    </LastModified>
-                    <ButtonGroup class="action">
-                      <TooltipHelp title="Delete thread">
-                        <ThreadItemButton
-                          onClick={(e) => onDelete(e, thread)}
-                          data-testid="thread_item_delete"
-                        >
-                          <IconDelete />
-                        </ThreadItemButton>
-                      </TooltipHelp>
-                      <TooltipHelp title="Rename thread">
-                        <ThreadItemButton
-                          onClick={(e) => onRename(e, thread)}
-                          data-testid="thread_item_rename"
-                        >
-                          <IconEdit />
-                        </ThreadItemButton>
-                      </TooltipHelp>
-                      <TooltipHelp title="Pin/Unpin thread">
-                        <ThreadItemButton
-                          onClick={(e) => onPin(e, thread)}
-                          data-testid="thread_item_pin"
-                        >
-                          <Show when={thread.pinned} fallback={<IconPin />}>
-                            <IconUnpin />
-                          </Show>
-                        </ThreadItemButton>
-                      </TooltipHelp>
-                    </ButtonGroup>
-                  </ThreadItem>
-                </>
-              )}
-            </For>
-          </Content>
-        </Scroller>
+        <Scroll>
+          <For each={threadService.getThreads(searchTerm())}>
+            {([thread, label]) => (
+              <>
+                <Show when={label}>
+                  <DialogLabel>{label}</DialogLabel>
+                </Show>
+                <ThreadItem onClick={() => onSelect(thread)} data-testid="thread_item">
+                  <ThreadTitle>{thread.title ?? 'Untitled'}</ThreadTitle>
+                  <LastModified class="last-modified">
+                    <Show when={thread.lastModified}>
+                      {(lastMod) => <span>{formatDistance(lastMod(), new Date())}</span>}
+                    </Show>
+                  </LastModified>
+                  <ButtonGroup class="action">
+                    <TooltipHelp title="Delete thread">
+                      <ThreadItemButton
+                        onClick={(e) => onDelete(e, thread)}
+                        data-testid="thread_item_delete"
+                      >
+                        <IconDelete />
+                      </ThreadItemButton>
+                    </TooltipHelp>
+                    <TooltipHelp title="Rename thread">
+                      <ThreadItemButton
+                        onClick={(e) => onRename(e, thread)}
+                        data-testid="thread_item_rename"
+                      >
+                        <IconEdit />
+                      </ThreadItemButton>
+                    </TooltipHelp>
+                    <TooltipHelp title="Pin/Unpin thread">
+                      <ThreadItemButton
+                        onClick={(e) => onPin(e, thread)}
+                        data-testid="thread_item_pin"
+                      >
+                        <Show when={thread.pinned} fallback={<IconPin />}>
+                          <IconUnpin />
+                        </Show>
+                      </ThreadItemButton>
+                    </TooltipHelp>
+                  </ButtonGroup>
+                </ThreadItem>
+              </>
+            )}
+          </For>
+        </Scroll>
         <DialogFooter>
           <ButtonGroup justify="flex-end">
             <Button onClick={onNew}>

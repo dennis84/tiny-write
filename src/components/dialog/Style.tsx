@@ -1,4 +1,5 @@
 import {styled} from 'solid-styled-components'
+import {Scroll} from '../Layout'
 
 export const DialogLayer = styled('div')`
   position: absolute;
@@ -42,6 +43,33 @@ export const DialogContainer = styled('div')<DialogContainerProps>`
 
 export const DialogFooter = styled('div')`
   margin-top: 10px;
+`
+
+export const DialogLabel = styled('div')`
+  margin-top: 10px;
+  padding: 2px 6px;
+  font-size: var(--menu-font-size);
+  color: var(--background-50);
+  font-weight: bold;
+`
+
+export const DialogScroll = styled(Scroll)`
+  &::before {
+    height: 60px;
+    background-image: linear-gradient(
+      to bottom,
+      var(--tooltip-background),
+      var(--background-0)
+    ) !important;
+  }
+  &::after {
+    height: 60px;
+    background-image: linear-gradient(
+      to top,
+      var(--tooltip-background),
+      var(--background-0)
+    ) !important;
+  }
 `
 
 export const TooltipButton = styled('div')`
