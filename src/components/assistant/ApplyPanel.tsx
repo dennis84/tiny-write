@@ -13,7 +13,7 @@ import {TooltipHelp} from '../dialog/TooltipHelp'
 import {IconAdd, IconContentCopy, IconMerge} from '../Icon'
 import type {CodeFenceInfo} from './MessageMarkdown'
 
-const ApplyPanelEl = styled('div')`
+const ApplyPanelEl = styled.div`
   padding-left: 20px;
   width: 100%;
   display: grid;

@@ -30,7 +30,7 @@ import {
 import {Link} from './Link'
 import {ITEM_HEIGHT, itemCss, Label, Sub} from './Style'
 
-const HighlightContent = styled('div')`
+const HighlightContent = styled.div`
   position: absolute;
   top: 0;
   bottom: 0;
@@ -41,7 +41,7 @@ const HighlightContent = styled('div')`
   pointer-events: none;
 `
 
-const GhostContainer = styled('div')`
+const GhostContainer = styled.div`
   position: absolute;
   top: 0;
   bottom: 0;
@@ -52,7 +52,7 @@ const GhostContainer = styled('div')`
   pointer-events: none;
 `
 
-const Ghost = styled('div')`
+const Ghost = styled.div`
   position: absolute;
   display: none;
   color: var(--foreground);
@@ -62,7 +62,7 @@ const Ghost = styled('div')`
   overflow: hidden;
 `
 
-const DropLine = styled('div')<{level: number}>`
+const DropLine = styled.div<{level: number}>`
   position: absolute;
   height: 4px;
   border-radius: 4px;
@@ -80,7 +80,7 @@ interface ItemProps {
 }
 
 // biome-ignore format: ternary breaks ugly
-const TreeLinkItem = styled('div')<ItemProps>`
+const TreeLinkItem = styled.div<ItemProps>`
   ${itemCss}
   user-select: none;
   -webkit-touch-callout: none;
@@ -116,7 +116,7 @@ interface CornerProps {
 }
 
 // biome-ignore format: ternary breaks ugly
-const TreeLinkCorner = styled('i')<CornerProps>`
+const TreeLinkCorner = styled.i<CornerProps>`
   margin-right: 10px;
   cursor: var(--cursor-pointer);
   font-family: monospace;
@@ -142,7 +142,7 @@ interface TitleProps {
   grabbing?: boolean
 }
 
-const TreeLinkTitle = styled('span')<TitleProps>`
+const TreeLinkTitle = styled.span<TitleProps>`
   cursor: var(--cursor-pointer);
   width: 100%;
   touch-action: none;
@@ -152,7 +152,7 @@ const TreeLinkTitle = styled('span')<TitleProps>`
 `
 
 // biome-ignore format: ternary breaks ugly
-const LinkMenu = styled("span")<{selected?: boolean}>`
+const LinkMenu = styled.span<{selected?: boolean}>`
   justify-self: flex-end;
   display: flex;
   align-items: center;

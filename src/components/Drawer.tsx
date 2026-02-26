@@ -4,7 +4,7 @@ import {styled} from 'solid-styled-components'
 import {isTauri} from '@/env'
 import {FULL_WIDTH, Scroll} from './Layout'
 
-const DrawerContainer = styled('div')`
+const DrawerContainer = styled.div`
   position: relative;
   height: 100%;
   display: flex;
@@ -38,14 +38,14 @@ export const DrawerScroll = styled(Scroll)`
   }
 `
 
-export const DrawerContent = styled('div')`
+export const DrawerContent = styled.div`
   padding: 20px;
   display: flex;
   flex-direction: column;
   width: 100%;
 `
 
-const ResizeHandle = styled('div')`
+const ResizeHandle = styled.div`
   position: absolute;
   top: 0;
   bottom: 0;

@@ -8,7 +8,7 @@ import type {File} from '@/types'
 import {IconDragIndicator} from '../Icon'
 import {BlockTooltip} from './BlockTooltip'
 
-const DragHandle = styled('div')`
+const DragHandle = styled.div`
   position: absolute;
   opacity: 0;
   transition: opacity 0.2s;

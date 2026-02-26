@@ -9,7 +9,7 @@ import {useState} from '@/state'
 import {IconDescription, IconFolder, IconFolderOpen} from '../Icon'
 import {Content, Scroll} from '../Layout'
 
-const CurrentPath = styled('div')`
+const CurrentPath = styled.div`
   display: flex;
   align-items: center;
   padding: 5px;
@@ -21,7 +21,7 @@ const CurrentPath = styled('div')`
   }
 `
 
-const Link = styled('a')<{isDirectory: boolean}>`
+const Link = styled.a<{isDirectory: boolean}>`
   display: flex;
   align-items: center;
   padding: 3px;
@@ -40,7 +40,7 @@ const Link = styled('a')<{isDirectory: boolean}>`
   }
 `
 
-const PathSegment = styled('span')`
+const PathSegment = styled.span`
   color: var(--background-40);
   cursor: var(--cursor-pointer);
   &:hover {

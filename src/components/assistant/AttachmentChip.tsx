@@ -11,7 +11,7 @@ import {type Attachment, AttachmentType, type File} from '@/types'
 import {Button} from '../Button'
 import {IconTextSelectStart, LangIcon} from '../Icon'
 
-const Container = styled('div')`
+const Container = styled.div`
   display: grid;
   justify-items: flex-end;
   gap: 10px;
@@ -20,19 +20,19 @@ const Container = styled('div')`
   }
 `
 
-const TooltipAction = styled('div')`
+const TooltipAction = styled.div`
   display: flex;
   justify-content: flex-end;
   margin-top: 5px;
 `
 
-const TooltipImage = styled('img')`
+const TooltipImage = styled.img`
   max-width: 200px;
   max-height: 200px;
   border-radius: 10px;
 `
 
-const AttachmentImage = styled('img')`
+const AttachmentImage = styled.img`
   width: 40px;
   height: 40px;
   border-radius: 10px;
@@ -88,7 +88,7 @@ export const AttachmentChip = (props: Props) => {
     let ref!: HTMLDivElement
     const [editorView, setEditorView] = createSignal<EditorView>()
 
-    const CodeBlockStyle = styled('div')`
+    const CodeBlockStyle = styled.div`
       .cm-editor {
         max-width: 400px;
         max-height: 400px;

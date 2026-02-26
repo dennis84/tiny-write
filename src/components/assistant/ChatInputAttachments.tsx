@@ -12,7 +12,7 @@ import {ImageButton} from './attachments/Image'
 import {SelectionButton} from './attachments/Selection'
 import {createCodeFence} from './util'
 
-const Attachments = styled('div')`
+const Attachments = styled.div`
   display: flex;
   min-width: 0;
   gap: 5px;

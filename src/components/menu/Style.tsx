@@ -1,7 +1,7 @@
 import {css, styled} from 'solid-styled-components'
 import {FULL_WIDTH} from '../Layout'
 
-export const Container = styled('div')`
+export const Container = styled.div`
   display: flex;
   flex-shrink: 1;
   flex-grow: 1;
@@ -17,7 +17,7 @@ export const Container = styled('div')`
   }
 `
 
-export const Label = styled('h3')`
+export const Label = styled.h3`
   margin: 10px 0;
   font-size: var(--menu-font-size);
   text-transform: uppercase;
@@ -27,7 +27,7 @@ export const Label = styled('h3')`
   }
 `
 
-export const Sub = styled('nav')`
+export const Sub = styled.nav`
   margin: 10px 0;
   margin-bottom: 30px;
   position: relative;
@@ -55,11 +55,11 @@ export const itemCss = `
   }
 `
 
-export const Text = styled('p')`
+export const Text = styled.p`
   ${itemCss}
 `
 
-export const Note = styled('p')`
+export const Note = styled.p`
   ${itemCss}
   color: var(--background-20);
   background: var(--background-90);

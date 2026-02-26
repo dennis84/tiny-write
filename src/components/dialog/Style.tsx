@@ -1,7 +1,7 @@
 import {styled} from 'solid-styled-components'
 import {Scroll} from '../Layout'
 
-export const DialogLayer = styled('div')`
+export const DialogLayer = styled.div`
   position: absolute;
   top: 0;
   bottom: 0;
@@ -19,7 +19,7 @@ interface DialogContainerProps {
   delay?: number
 }
 
-export const DialogContainer = styled('div')<DialogContainerProps>`
+export const DialogContainer = styled.div<DialogContainerProps>`
   position: absolute;
   width: max-content;
   background: var(--tooltip-background);
@@ -41,11 +41,11 @@ export const DialogContainer = styled('div')<DialogContainerProps>`
   }
 `
 
-export const DialogFooter = styled('div')`
+export const DialogFooter = styled.div`
   margin-top: 10px;
 `
 
-export const DialogLabel = styled('div')`
+export const DialogLabel = styled.div`
   margin-top: 10px;
   padding: 2px 6px;
   font-size: var(--menu-font-size);
@@ -72,7 +72,7 @@ export const DialogScroll = styled(Scroll)`
   }
 `
 
-export const TooltipButton = styled('div')`
+export const TooltipButton = styled.div`
   position: relative;
   z-index: 1;
   display: flex;
@@ -92,7 +92,7 @@ export const TooltipButton = styled('div')`
   }
 `
 
-export const TooltipDivider = styled('hr')`
+export const TooltipDivider = styled.hr`
   height: 3px;
   border: 0;
   border-radius: 5px;
@@ -100,7 +100,7 @@ export const TooltipDivider = styled('hr')`
   margin: 5px 0;
 `
 
-export const TooltipArrow = styled('span')`
+export const TooltipArrow = styled.span`
   width: 10px;
   height: 10px;
   background: var(--tooltip-background);

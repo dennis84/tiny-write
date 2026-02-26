@@ -323,7 +323,7 @@ const proseMirror = `
   }
 `
 
-export const CanvasEditor = styled('div')`
+export const CanvasEditor = styled.div`
   width: 100%;
   min-height: 100%;
   height: fit-content;
@@ -332,7 +332,7 @@ export const CanvasEditor = styled('div')`
   ${proseMirror}
 `
 
-export const FullEditor = styled('div')`
+export const FullEditor = styled.div`
   min-height: calc(100% - 100px);
   height: fit-content;
   width: var(--content-width);
@@ -346,7 +346,7 @@ export const FullEditor = styled('div')`
   }
 `
 
-export const ChatInputEditor = styled('div')`
+export const ChatInputEditor = styled.div`
   width: 100%;
   height: fit-content;
   max-height: 50vh;

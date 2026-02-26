@@ -29,7 +29,7 @@ interface CornerProps extends BoundsProps {
 const BORDER_SIZE = 30
 const BORDER_SIZE_2 = BORDER_SIZE * 2
 
-const Border = styled('rect')<{vert: boolean}>`
+const Border = styled.rect<{vert: boolean}>`
   fill: transparent;
   cursor: ${(p) => (p.vert ? 'ns-resize' : 'ew-resize')};
   touch-action: none;
@@ -193,7 +193,7 @@ const Corner = (props: CornerProps) => {
   )
 }
 
-const BoundsSvg = styled('svg')`
+const BoundsSvg = styled.svg`
   position: absolute;
   cursor: var(--cursor-grab);
   touch-action: none;
@@ -277,14 +277,14 @@ const Visible = (props: BoundsProps) => {
 
   const zoom = () => canvasService.currentCanvas?.camera.zoom ?? 1
 
-  const VisibleCorner = styled('rect')`
+  const VisibleCorner = styled.rect`
     fill: var(--background);
     stroke: var(--primary-background);
     pointer-events: none;
     user-select: none;
   `
 
-  const VisibleBorder = styled('rect')`
+  const VisibleBorder = styled.rect`
     fill: none;
     stroke: var(--primary-background);
     pointer-events: none;

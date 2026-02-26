@@ -9,7 +9,7 @@ import {PointUtil} from '@/utils/PointUtil'
 import {VecUtil} from '@/utils/VecUtil'
 import {IndexType, ZIndex} from '@/utils/ZIndex'
 
-const LinkSvg = styled('svg')`
+const LinkSvg = styled.svg`
   position: absolute;
   top: 0;
   left: 0;
@@ -23,7 +23,7 @@ const LinkSvg = styled('svg')`
 `
 
 // biome-ignore format: ternary breaks ugly
-const Path = styled('path')<{selected?: boolean}>`
+const Path = styled.path<{selected?: boolean}>`
   stroke: transparent;
   stroke-linecap: round;
   cursor: var(--cursor-grab);
@@ -39,7 +39,7 @@ const Path = styled('path')<{selected?: boolean}>`
   `}
 `
 
-const InnerPath = styled('path')`
+const InnerPath = styled.path`
   stroke: var(--border);
   stroke-linecap: round;
   pointer-events: none;
@@ -47,7 +47,7 @@ const InnerPath = styled('path')`
   fill: none;
 `
 
-const ArrowHead = styled('path')`
+const ArrowHead = styled.path`
   pointer-events: none;
   touch-action: none;
   fill: var(--border);

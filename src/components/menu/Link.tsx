@@ -4,7 +4,7 @@ import {IconCheckBox} from '../Icon'
 import {itemCss, Keys} from './Style'
 
 // biome-ignore format: ternary breaks ugly
-const LinkEl = styled("button")<{active?: boolean}>`
+const LinkEl = styled.button<{active?: boolean}>`
   ${itemCss}
   background: none;
   border: 0;

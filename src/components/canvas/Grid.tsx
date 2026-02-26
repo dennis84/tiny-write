@@ -6,7 +6,7 @@ const STEPS = [
   [1, 1],
 ]
 
-const GridSvg = styled('svg')`
+const GridSvg = styled.svg`
   position: absolute;
   top: 0;
   left: 0;

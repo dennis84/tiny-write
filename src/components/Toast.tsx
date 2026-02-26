@@ -4,7 +4,7 @@ import {ToastService} from '@/services/ToastService'
 import {useState} from '@/state'
 import {Button} from './Button'
 
-const ToastContainer = styled('div')`
+const ToastContainer = styled.div`
   position: fixed;
   pointer-events: none;
   top: 0;
@@ -15,7 +15,7 @@ const ToastContainer = styled('div')`
   display: flex;
 `
 
-const ToastBubble = styled('div')`
+const ToastBubble = styled.div`
   position: static;
   margin-bottom: 20px;
   align-self: flex-end;

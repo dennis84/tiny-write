@@ -5,7 +5,7 @@ import {DialogContainer, TooltipButton} from '@/components/dialog/Style'
 import {useState} from '@/state'
 import {IconCheck, IconClose} from '../Icon'
 
-const MergeMenuContainer = styled('div')`
+const MergeMenuContainer = styled.div`
   position: fixed;
   z-index: var(--z-index-dialog);
   pointer-events: none;

@@ -3,7 +3,7 @@ import {codeMirrorTooltip} from './code/Style'
 
 export const FULL_WIDTH = 500
 
-export const Layout = styled('div')`
+export const Layout = styled.div`
   cursor: var(--cursor-default);
   touch-action: none;
   background: var(--background);
@@ -49,7 +49,7 @@ export const Layout = styled('div')`
   }
 `
 
-export const PageContent = styled('div')`
+export const PageContent = styled.div`
   position: relative;
   display: flex;
   height: 100%;
@@ -60,7 +60,7 @@ export const PageContent = styled('div')`
   overflow: hidden;
 `
 
-export const Scroll = styled('div')`
+export const Scroll = styled.div`
   container-type: scroll-state;
   position: relative;
   height: 100%;
@@ -135,7 +135,7 @@ export const CodeScroll = styled(Scroll)`
   }
 `
 
-export const Content = styled('div')`
+export const Content = styled.div`
   position: relative;
   height: fit-content;
   max-width: var(--content-width);
@@ -150,7 +150,7 @@ export const Content = styled('div')`
   }
 `
 
-export const DragArea = styled('div')`
+export const DragArea = styled.div`
   position: absolute;
   top: 0;
   left: 0;

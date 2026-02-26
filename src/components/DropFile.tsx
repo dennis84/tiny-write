@@ -7,7 +7,7 @@ import {DropTarget} from '@/services/MediaService'
 import {useState} from '@/state'
 import {enumFromValue} from '@/utils/enum'
 
-const HighlightContent = styled('div')`
+const HighlightContent = styled.div`
   position: absolute;
   top: 0;
   bottom: 0;

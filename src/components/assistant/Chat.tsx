@@ -10,14 +10,14 @@ import {SelectionButton} from './attachments/Selection'
 import {MessageAnswer} from './MessageAnswer'
 import {MessageQuestion} from './MessageQuestion'
 
-const Container = styled('div')`
+const Container = styled.div`
   display: flex;
   flex-direction: column;
   height: auto;
   min-height: 100%;
 `
 
-const Messages = styled('div')`
+const Messages = styled.div`
   margin-top: 20px;
   display: flex;
   flex-direction: column;
@@ -25,7 +25,7 @@ const Messages = styled('div')`
   margin-bottom: 20px;
 `
 
-const EmptyContainer = styled('div')`
+const EmptyContainer = styled.div`
   width: 100%;
   font-family: var(--menu-font-family);
   font-size: var(--menu-font-size);
@@ -45,7 +45,7 @@ export const Chat = () => {
     threadService.addAttachment(attachment)
   }
 
-  const MessagePair = styled('div')`
+  const MessagePair = styled.div`
     display: flex;
     flex-direction: column;
     &:last-child {

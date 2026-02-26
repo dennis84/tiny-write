@@ -12,11 +12,11 @@ import {MessageMarkdown} from './MessageMarkdown'
 import {Pagination} from './Pagination'
 import {ChatBubble} from './Style'
 
-const EditBubble = styled('div')`
+const EditBubble = styled.div`
   flex-basis: 100%;
 `
 
-const QuestionContainer = styled('div')`
+const QuestionContainer = styled.div`
   justify-items: flex-end;
   margin-left: auto;
   scroll-margin: 20px; /* margin when scrollIntoView */
@@ -43,7 +43,7 @@ const QuestionBubble = styled(ChatBubble)`
   }
 `
 
-const QuestionAttachments = styled('div')`
+const QuestionAttachments = styled.div`
   margin: 10px 0;
   display: flex;
   flex-wrap: wrap;

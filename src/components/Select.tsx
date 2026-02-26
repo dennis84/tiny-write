@@ -5,7 +5,7 @@ import {styled} from 'solid-styled-components'
 import {useState} from '@/state'
 import {Page} from '@/types'
 
-const SelectionFrame = styled('div')`
+const SelectionFrame = styled.div`
   position: absolute;
   background: var(--selection);
   z-index: var(--z-index-max);

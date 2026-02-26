@@ -10,7 +10,7 @@ import {BoxUtil} from '@/utils/BoxUtil'
 import {IconDragIndicator} from '../Icon'
 import {TableTooltip, type TableTooltipState} from './TableTooltip'
 
-const Handle = styled('div')`
+const Handle = styled.div`
   position: absolute;
   top: 0;
   left: 0;
@@ -48,7 +48,7 @@ const Handle = styled('div')`
   }
 `
 
-const Selection = styled('div')`
+const Selection = styled.div`
   position: absolute;
   border: 1px solid var(--primary-background);
   box-shadow: 0 0 0 1px var(--primary-background);

@@ -3,7 +3,7 @@ import {useState} from '@/state'
 import {ButtonGroup, ButtonPrimary} from './Button'
 import {Content, Layout, Scroll} from './Layout'
 
-const Pre = styled('pre')`
+const Pre = styled.pre`
   white-space: pre-wrap;
   word-wrap: break-word;
   background: var(--background-90);

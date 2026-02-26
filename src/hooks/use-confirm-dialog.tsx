@@ -4,7 +4,7 @@ import {DialogFooter} from '@/components/dialog/Style'
 import type {Dialog} from '@/services/DialogService'
 import {useDialog} from './use-dialog'
 
-const DialogTitle = styled('h3')`
+const DialogTitle = styled.h3`
   margin: 10px 0;
   margin-bottom: 0;
 `

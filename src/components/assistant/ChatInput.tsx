@@ -16,7 +16,7 @@ import {ModelSelect} from './ModelSelect'
 import {ChatInputActionRow, ChatInputBorder, ChatInputContainer, ChatInputEditorRow} from './Style'
 import {Suggestions} from './Suggestions'
 
-const ChatInputTopRow = styled('div')`
+const ChatInputTopRow = styled.div`
   position: relative;
   width: 100%;
   height: 0;
@@ -24,7 +24,7 @@ const ChatInputTopRow = styled('div')`
   justify-content: center;
 `
 
-const ScrollDown = styled('span')`
+const ScrollDown = styled.span`
   position: absolute;
   top: -60px;
   z-index: var(--z-index-above-content);

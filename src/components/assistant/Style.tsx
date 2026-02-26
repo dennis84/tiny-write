@@ -2,7 +2,7 @@ import {styled} from 'solid-styled-components'
 import {isClipped} from '../code/Style'
 import {standardMarkdown} from '../editor/Style'
 
-export const ChatBubble = styled('div')`
+export const ChatBubble = styled.div`
   position: relative;
   border-radius: var(--border-radius);
   font-size: var(--font-size);
@@ -39,7 +39,7 @@ export const ChatBubble = styled('div')`
   }
 `
 
-export const ChatInputContainer = styled('div')`
+export const ChatInputContainer = styled.div`
   position: absolute;
   bottom: 20px;
   left: 20px;
@@ -50,7 +50,7 @@ export const ChatInputContainer = styled('div')`
 `
 
 // biome-ignore format: ternary breaks ugly
-export const ChatInputBorder = styled('div')<{focused: boolean}>`
+export const ChatInputBorder = styled.div<{focused: boolean}>`
   background: var(--background);
   box-shadow: 0 12px 32px 0 rgba(0, 0, 0, 0.24);
   scroll-margin-bottom: 50px;
@@ -64,11 +64,11 @@ export const ChatInputBorder = styled('div')<{focused: boolean}>`
   ` : ''}
 `
 
-export const ChatInputEditorRow = styled('div')`
+export const ChatInputEditorRow = styled.div`
   display: flex;
 `
 
-export const ChatInputActionRow = styled('div')`
+export const ChatInputActionRow = styled.div`
   display: flex;
   justify-content: flex-end;
 `

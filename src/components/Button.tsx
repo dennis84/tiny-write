@@ -43,7 +43,7 @@ const RippleEffect = `
   }
 `
 
-export const ButtonEl = styled('button')`
+export const ButtonEl = styled.button`
   ${Common}
   ${RippleEffect}
   background: var(--background-90);
@@ -54,7 +54,7 @@ export const ButtonEl = styled('button')`
   }
 `
 
-const ButtonPrimaryEl = styled('button')`
+const ButtonPrimaryEl = styled.button`
   ${Common}
   ${RippleEffect}
   color: var(--primary-foreground);
@@ -65,7 +65,7 @@ const ButtonPrimaryEl = styled('button')`
   }
 `
 
-const ButtonLinkEl = styled('button')`
+const ButtonLinkEl = styled.button`
   ${Common}
   ${RippleEffect}
   color: var(--primary-foreground);
@@ -82,7 +82,7 @@ interface ButtonGroupProps {
 }
 
 // biome-ignore format: ternary breaks ugly
-export const ButtonGroup = styled('div')<ButtonGroupProps>`
+export const ButtonGroup = styled.div<ButtonGroupProps>`
   display: flex;
   gap: 5px;
   ${(p) => p.justify ? `justify-content: ${p.justify};` : ''}
@@ -92,7 +92,7 @@ export const ButtonGroup = styled('div')<ButtonGroupProps>`
   ` : ''}
 `
 
-export const IconButtonEl = styled('button')<ButtonAttrs>`
+export const IconButtonEl = styled.button<ButtonAttrs>`
   ${Common}
   ${RippleEffect}
   width: 40px;
@@ -192,7 +192,7 @@ export const IconButton = (props: ButtonAttrs) => (
   </IconButtonEl>
 )
 
-export const ButtonSpan = styled('span')`
+export const ButtonSpan = styled.span`
   ${Common}
   color: var(--foreground);
   cursor: var(--cursor-default);

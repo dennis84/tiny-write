@@ -21,7 +21,7 @@ import {Link} from './Link'
 import {Toolbar} from './Toolbar'
 import {Video} from './Video'
 
-const Container = styled('div')`
+const Container = styled.div`
   width: 100%;
   height: 100%;
   touch-action: none;
@@ -29,7 +29,7 @@ const Container = styled('div')`
   position: relative;
 `
 
-const Board = styled('div')`
+const Board = styled.div`
   position: absolute;
   top: 0;
   left: 0;

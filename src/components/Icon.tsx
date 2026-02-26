@@ -152,7 +152,7 @@ export const LangIcon = (props: {name?: string}) => {
   )
 }
 
-const SvgIconEl = styled('span')`
+const SvgIconEl = styled.span`
   display: flex;
   align-items: center;
   justify-content: center;

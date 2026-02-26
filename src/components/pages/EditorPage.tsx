@@ -12,7 +12,7 @@ export const NewEditorPage = () => {
   const {fileService, locationService} = useState()
   const location = useLocation()
 
-  const Center = styled('div')`
+  const Center = styled.div`
     display: flex;
     width: 100%;
     align-items: center;

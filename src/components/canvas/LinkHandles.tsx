@@ -12,7 +12,7 @@ const BORDER_SIZE = 20
 const CIRCLE_RADIUS = 7
 const CIRCLE_HOVER_RADIUS = 40
 
-const LinkHandleDot = styled('span')`
+const LinkHandleDot = styled.span`
   position: absolute;
   width: ${CIRCLE_HOVER_RADIUS.toString()}px;
   height: ${CIRCLE_HOVER_RADIUS.toString()}px;

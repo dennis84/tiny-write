@@ -9,7 +9,7 @@ import {IconContentCopy, IconOpenInNew, IconToggleOff, IconToggleOn} from '../Ic
 import {Link} from './Link'
 import {Label, Note, Sub, Text} from './Style'
 
-const UserCode = styled('code')`
+const UserCode = styled.code`
   margin-left: 10px;
   background: var(--background-90);
   padding: 0 5px;

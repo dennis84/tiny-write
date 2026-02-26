@@ -12,7 +12,7 @@ import {pause} from '@/utils/promise'
 import {TooltipButton, TooltipDivider} from '../dialog/Style'
 import {IconAi, IconCodeBlocks, IconGesture, IconPostAdd, IconTextSnippet} from '../Icon'
 
-const Scroller = styled('div')`
+const Scroller = styled.div`
   max-height: 80vh;
   overflow-y: auto;
   &::-webkit-scrollbar {

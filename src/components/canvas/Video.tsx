@@ -8,7 +8,7 @@ import {IndexType, ZIndex} from '@/utils/ZIndex'
 import {Bounds} from './Bounds'
 import {LinkHandles} from './LinkHandles'
 
-const CanvasVideo = styled('video')<{selected?: boolean}>`
+const CanvasVideo = styled.video<{selected?: boolean}>`
   position: absolute;
   border-radius: var(--border-radius);
   user-select: none;

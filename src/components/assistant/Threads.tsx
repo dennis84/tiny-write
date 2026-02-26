@@ -16,7 +16,7 @@ const Scroll = styled(DialogScroll)`
   max-height: 80vh;
 `
 
-const ThreadItemButton = styled('span')`
+const ThreadItemButton = styled.span`
   justify-self: flex-end;
   margin-left: auto;
   margin-right: -4px;
@@ -34,7 +34,7 @@ const ThreadItemButton = styled('span')`
   }
 `
 
-const ThreadItem = styled('div')`
+const ThreadItem = styled.div`
   display: flex;
   align-items: center;
   padding: 2px 6px;
@@ -60,23 +60,23 @@ const ThreadItem = styled('div')`
   }
 `
 
-const ThreadTitle = styled('div')`
+const ThreadTitle = styled.div`
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
   width: calc(100% - 80px);
 `
 
-const LastModified = styled('div')`
+const LastModified = styled.div`
   justify-self: flex-end;
   margin-left: auto;
   color: var(--foreground-50);
   white-space: nowrap;
 `
 
-const SearchRow = styled('div')``
+const SearchRow = styled.div``
 
-const SearchBorder = styled('div')`
+const SearchBorder = styled.div`
   border: 2px solid var(--primary-background);
   color: var(--primary-background);
   background: var(--code-background);
@@ -95,7 +95,7 @@ const SearchBorder = styled('div')`
   }
 `
 
-const SearchInput = styled('input')`
+const SearchInput = styled.input`
   height: 40px;
   padding: 0 20px;
   line-height: 40px;

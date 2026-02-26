@@ -304,7 +304,7 @@ export const BlockTooltip = (props: Props) => {
     const href = resolved.marks()[0]?.attrs?.href
     if (!href) return
 
-    await locationService.openUrl(href)
+    await locationService.openExternalUrl(href)
     closeTooltip()
   }
 

@@ -5,7 +5,7 @@ import {CodeScroll} from '../Layout'
 import {ContextMenu} from './ContextMenu'
 import {codeMirror} from './Style'
 
-export const CodeMirrorContainer = styled('div')`
+export const CodeMirrorContainer = styled.div`
   width: 100%;
   height: 100%;
   ${codeMirror}

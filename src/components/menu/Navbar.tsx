@@ -39,7 +39,7 @@ import {
   LangIcon,
 } from '../Icon'
 
-const FloatingContainer = styled('div')`
+const FloatingContainer = styled.div`
   width: 100%;
   position: absolute;
   top: 0;

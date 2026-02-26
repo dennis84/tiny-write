@@ -9,7 +9,7 @@ import {IndexType, ZIndex} from '@/utils/ZIndex'
 import {Bounds} from './Bounds'
 import {LinkHandles} from './LinkHandles'
 
-const CanvasImage = styled('img')<{selected?: boolean}>`
+const CanvasImage = styled.img<{selected?: boolean}>`
   position: absolute;
   border-radius: var(--border-radius);
   user-select: none;

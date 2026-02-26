@@ -5,12 +5,12 @@ import {IconButton} from '../Button'
 import {IconChevronLeft, IconChevronRight} from '../Icon'
 import {itemCss} from '../menu/Style'
 
-const PaginationContainer = styled('div')`
+const PaginationContainer = styled.div`
   display: inline-flex;
   align-items: center;
 `
 
-const CurrentPage = styled('div')`
+const CurrentPage = styled.div`
   ${itemCss}
   width: auto;
 `

@@ -6,7 +6,7 @@ import type {Awareness} from 'y-protocols/awareness'
 import {useState} from '@/state'
 import {Page} from '@/types'
 
-const CursorContainer = styled('div')`
+const CursorContainer = styled.div`
   position: fixed;
   top: 0;
   left: 0;
@@ -22,7 +22,7 @@ interface CursorProps {
   foreground: string
 }
 
-const Cursor = styled('div')<CursorProps>`
+const Cursor = styled.div<CursorProps>`
   position: absolute;
   top: ${(p) => p.y}px;
   left: ${(p) => p.x}px;

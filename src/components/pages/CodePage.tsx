@@ -14,7 +14,7 @@ export const NewCodePage = () => {
   const location = useLocation()
   const {fileService, locationService} = useState()
 
-  const Center = styled('div')`
+  const Center = styled.div`
     display: flex;
     width: 100%;
     align-items: center;

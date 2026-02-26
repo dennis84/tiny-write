@@ -12,7 +12,7 @@ export const NewCanvasPage = () => {
   const location = useLocation()
   const {canvasService, locationService} = useState()
 
-  const Center = styled('div')`
+  const Center = styled.div`
     display: flex;
     width: 100%;
     align-items: center;

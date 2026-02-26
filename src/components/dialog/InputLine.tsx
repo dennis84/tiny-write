@@ -6,7 +6,7 @@ import {ConfigService} from '@/services/ConfigService'
 import {useState} from '@/state'
 import {InputLineEditor} from './InputLineEditor'
 
-const Container = styled('div')`
+const Container = styled.div`
   width: 60vw;
   ${codeMirror}
   .cm-editor {
