@@ -14,7 +14,7 @@ const HighlightContent = styled.div`
   left: 0;
   right: 0;
   border: 10px solid var(--primary-background-50);
-  background: var(--primary-background-20);
+  background: rgb(from var(--primary-background) r g b / 0.2);
   user-select: none;
   pointer-events: none;
 `

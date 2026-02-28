@@ -9,10 +9,10 @@ const MAX = 2147483647 - 100_000
 
 export class ZIndex {
   static MAX = MAX.toString()
-  static DIALOG = (MAX - 1).toString()
-  static HANDLE = (MAX - 2).toString()
+  static DIALOG = (MAX - 1000).toString()
+  static HANDLE = (MAX - 2000).toString()
 
-  static ABOVE_CONTENT = String(1000)
+  static ABOVE_CONTENT = String(3000)
 
   // Get z-index for an canvas element
   static element(index: number, type: IndexType) {

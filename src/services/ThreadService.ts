@@ -63,6 +63,13 @@ export class ThreadService {
     private toastService: ToastService,
   ) {}
 
+  async updateCurrentInput(text?: string) {
+    const currentThread = this.currentThread
+    if (!currentThread) return
+    this.setState('threads', this.currentThreadIndex, 'currentInput', text)
+    await this.saveThread()
+  }
+
   setAttachments(attachments: Attachment[]) {
     this.attachmentsSignal[1](attachments)
   }

@@ -85,9 +85,9 @@ interface ButtonGroupProps {
 // biome-ignore format: ternary breaks ugly
 export const ButtonGroup = styled.div<ButtonGroupProps>`
   display: inline-flex;
+  padding: 5px;
   ${(p) => p.background ? `
     background: var(--background-90);
-    padding: 5px;
   ` : ''}
   border-radius: var(--border-radius);
   gap: 5px;

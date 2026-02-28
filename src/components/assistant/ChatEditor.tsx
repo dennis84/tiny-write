@@ -11,7 +11,7 @@ import {codeInputRule, codeKeymap} from '@/prosemirror/code'
 import {codeBlockKeymap, createCodeBlockPlugin} from '@/prosemirror/code-block'
 import {emphasisInputRules} from '@/prosemirror/emphasis'
 import {createInputParserPlugin} from '@/prosemirror/input-parser'
-import {createMarkdownParser} from '@/prosemirror/markdown-serialize'
+import {createMarkdownParser, serialize} from '@/prosemirror/markdown-serialize'
 import {createMarkdownPlugins} from '@/prosemirror/markdown-shortcuts'
 import {onEnterDoubleNewline} from '@/prosemirror/on-enter-double-newline'
 import {createPasteMarkdownPlugin} from '@/prosemirror/paste-markdown'
@@ -26,7 +26,7 @@ interface Props {
   setEditorView?: (view: EditorView) => void
   onSubmit?: (state: EditorState) => void
   onFocus?: (focus: boolean) => void
-  onChange?: () => void
+  onChange?: (text: string) => void
 }
 
 export const ChatEditor = (props: Props) => {
@@ -72,7 +72,8 @@ export const ChatEditor = (props: Props) => {
       dispatchTransaction: (tr) => {
         const newState = view.state.apply(tr)
         view.updateState(newState)
-        if (tr.docChanged) props.onChange?.()
+        const text = serialize(newState)
+        if (tr.docChanged) props.onChange?.(text)
       },
       handleDOMEvents: {
         focus: (_view, event) => {

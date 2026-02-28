@@ -61,7 +61,7 @@ export const ChatInput = (props: Props) => {
     setScrollDirection('up')
   }
 
-  const onSend = () => {
+  const onSend = async () => {
     const view = editorView()
     if (!view) return
 
@@ -81,6 +81,7 @@ export const ChatInput = (props: Props) => {
 
     mediaService.resetDroppedFiles()
     threadService.setAttachments([])
+    await threadService.updateCurrentInput(undefined)
 
     setTimeout(() => {
       scrollToBottom()
@@ -108,8 +109,9 @@ export const ChatInput = (props: Props) => {
     setFocused(focus)
   }
 
-  const onChange = () => {
+  const onChange = async (text: string) => {
     setEmpty(ProseMirrorService.isEmpty(editorView()?.state) ?? true)
+    await threadService.updateCurrentInput(text)
   }
 
   const onContainerClick = (e: MouseEvent) => {
@@ -167,6 +169,7 @@ export const ChatInput = (props: Props) => {
         </ChatInputTopRow>
         <ChatInputEditorRow>
           <ChatEditor
+            content={threadService.currentThread?.currentInput}
             setEditorView={onSetEditorView}
             onSubmit={onSend}
             onFocus={onFocus}

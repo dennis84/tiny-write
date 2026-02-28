@@ -56,7 +56,7 @@ const ThreadItem = styled.div`
     background: var(--primary-background);
     color: var(--primary-foreground);
     .action {
-      display: block;
+      display: inline-flex;
     }
     .last-modified {
       display: none;

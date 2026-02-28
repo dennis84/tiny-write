@@ -239,6 +239,7 @@ export interface Thread {
   messages: Message[]
   path?: Map<string | undefined, string>
   pinned?: boolean
+  currentInput?: string
 }
 
 export interface State {
