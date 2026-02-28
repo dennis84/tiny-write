@@ -1,5 +1,5 @@
 import {createSignal, Show} from 'solid-js'
-import {TooltipButton} from '@/components/dialog/Style'
+import {TooltipButton, TooltipDivider} from '@/components/dialog/Style'
 import {TooltipHelp} from '@/components/dialog/TooltipHelp'
 import {IconToggleOff, IconToggleOn} from '@/components/Icon'
 import {useCurrentFile} from '@/hooks/use-current-file'
@@ -19,6 +19,7 @@ export const AutoContextToggle = () => {
 
   return (
     <Show when={currentFile()?.code}>
+      <TooltipDivider />
       <TooltipHelp title="Adds the current file to context automatically">
         <TooltipButton onClick={onClick} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
           <Show when={store.ai?.autoContext}>

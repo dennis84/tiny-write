@@ -3,7 +3,6 @@ import {styled} from 'solid-styled-components'
 import {useState} from '@/state'
 import type {TreeItem} from '@/tree'
 import type {Attachment, Message} from '@/types'
-import {TooltipDivider} from '../dialog/Style'
 import {AutoContextToggle} from './attachments/AutoContextToggle'
 import {CurrentFileButton} from './attachments/CurrentFile'
 import {SelectionButton} from './attachments/Selection'
@@ -106,7 +105,6 @@ export const Conversation = () => {
           <Show when={!store.ai?.autoContext}>
             <CurrentFileButton onAttachment={onAttachment} />
             <SelectionButton onAttachment={onAttachment} />
-            <TooltipDivider />
           </Show>
           <AutoContextToggle />
         </EmptyContainer>

@@ -1,6 +1,6 @@
 import {createSignal} from 'solid-js'
 
-interface Toast {
+export interface ToastProps {
   message: string
   action?: string
   duration?: number
@@ -9,13 +9,13 @@ interface Toast {
 export class ToastService {
   static readonly DEFAULT_DURATION = 10_000
 
-  private toastSignal = createSignal<Toast>()
+  private toastSignal = createSignal<ToastProps>()
 
   get current() {
     return this.toastSignal[0]
   }
 
-  open(toast: Toast) {
+  open(toast: ToastProps) {
     this.toastSignal[1](toast)
   }
 

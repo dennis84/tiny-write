@@ -1,6 +1,23 @@
 import {styled} from 'solid-styled-components'
 import {Scroll} from '../Layout'
 
+export const ToastLayer = styled.div`
+  position: fixed;
+  pointer-events: none;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  justify-content: center;
+  display: flex;
+  .toast {
+    bottom: 20px;
+    pointer-events: auto;
+    animation: fadeInUp 0.2s ease-out;
+    opacity: 1;
+  }
+`
+
 export const DialogLayer = styled.div`
   position: absolute;
   top: 0;
@@ -29,7 +46,7 @@ export const DialogContainer = styled.div<DialogContainerProps>`
   line-height: 1.4;
   box-shadow: 0 12px 24px 0 rgba(0, 0, 0, 0.24);
   max-height: 90vh;
-  padding: 10px;
+  padding: 5px;
   display: flex;
   opacity: 0;
   flex-direction: ${(p) => `${p.direction ?? 'column'}`};
@@ -45,9 +62,14 @@ export const DialogFooter = styled.div`
   margin-top: 10px;
 `
 
+export const DialogList = styled.div`
+  display: grid;
+  gap: 4px;
+`
+
 export const DialogLabel = styled.div`
   margin-top: 10px;
-  padding: 2px 6px;
+  padding: 5px;
   font-size: var(--menu-font-size);
   color: var(--background-50);
   font-weight: bold;
@@ -56,6 +78,7 @@ export const DialogLabel = styled.div`
 export const DialogScroll = styled(Scroll)`
   &::before {
     height: 60px;
+    margin-bottom: -60px;
     background-image: linear-gradient(
       to bottom,
       var(--tooltip-background),
@@ -64,6 +87,7 @@ export const DialogScroll = styled(Scroll)`
   }
   &::after {
     height: 60px;
+    margin-top: -60px;
     background-image: linear-gradient(
       to top,
       var(--tooltip-background),
@@ -77,8 +101,7 @@ export const TooltipButton = styled.div`
   z-index: 1;
   display: flex;
   align-items: center;
-  padding: 2px 6px;
-  margin: 2px 0;
+  padding: 5px;
   min-height: 32px;
   cursor: var(--cursor-pointer);
   border-radius: var(--border-radius-small);

@@ -10,6 +10,7 @@ export interface Dialog<S = unknown> {
   placement?: Placement
   fallbackPlacements?: Placement[]
   direction?: 'row' | 'column'
+  toast?: boolean
   onClose?: () => void
   state: S
 }

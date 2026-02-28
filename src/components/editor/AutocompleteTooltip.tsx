@@ -6,7 +6,7 @@ import {fileListingPluginKey} from '@/prosemirror/autocomplete/file-listing'
 import {wordCompletionPluginKey} from '@/prosemirror/autocomplete/word-completion'
 import {useState} from '@/state'
 import type {File} from '@/types'
-import {TooltipButton} from '../dialog/Style'
+import {DialogList, TooltipButton} from '../dialog/Style'
 
 interface Props {
   file?: File
@@ -89,13 +89,15 @@ export const AutocompleteTooltip = (props: Props) => {
   })
 
   const Tooltip = () => (
-    <For each={completion()?.options}>
-      {(option, i) => (
-        <TooltipButton class={i() === completion()?.selected ? 'selected' : ''}>
-          {option}
-        </TooltipButton>
-      )}
-    </For>
+    <DialogList>
+      <For each={completion()?.options}>
+        {(option, i) => (
+          <TooltipButton class={i() === completion()?.selected ? 'selected' : ''}>
+            {option}
+          </TooltipButton>
+        )}
+      </For>
+    </DialogList>
   )
 
   const [showTooltip, closeTooltip] = useDialog({

@@ -31,10 +31,10 @@ const Path = styled.path<{selected?: boolean}>`
   touch-action: none;
   fill: none;
   ${(p) => p.selected ? `
-    stroke: var(--border-30);
+    stroke: rgb(from var(--background-10) r g b / 0.1);
   ` : `
     &:hover {
-      stroke: var(--border-20);
+      stroke: rgb(from var(--background-10) r g b / 0.05);
     }
   `}
 `

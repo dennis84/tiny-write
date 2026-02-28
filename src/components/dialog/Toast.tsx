@@ -1,10 +1,12 @@
 import {createEffect, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
-import {ToastService} from '@/services/ToastService'
+import {Button} from '@/components/Button'
+import {useDialog} from '@/hooks/use-dialog'
+import type {Dialog} from '@/services/DialogService'
+import {type ToastProps, ToastService} from '@/services/ToastService'
 import {useState} from '@/state'
-import {Button} from './Button'
 
-const ToastContainer = styled.div`
+const _ToastContainer = styled.div`
   position: fixed;
   pointer-events: none;
   top: 0;
@@ -15,7 +17,7 @@ const ToastContainer = styled.div`
   display: flex;
 `
 
-const ToastBubble = styled.div`
+const _ToastBubble = styled.div`
   position: static;
   margin-bottom: 20px;
   align-self: flex-end;
@@ -63,26 +65,29 @@ export const Toast = () => {
 
     if (prevId) clearTimeout(prevId)
     if (toast) {
+      showToast({state: toast})
       timeoutId = setTimeout(() => {
         toastService.close()
+        hideToast()
       }, toast.duration ?? ToastService.DEFAULT_DURATION)
     }
 
     return timeoutId
   })
 
-  return (
-    <Show when={toastService.current()}>
-      {(toast) => (
-        <ToastContainer>
-          <ToastBubble>
-            <div>{toast().message}</div>
-            <Show when={toast().action}>
-              <Button onClick={onClose}>{toast().action}</Button>
-            </Show>
-          </ToastBubble>
-        </ToastContainer>
-      )}
-    </Show>
+  const ToastDialog = (p: {dialog: Dialog<ToastProps>}) => (
+    <>
+      <div>{p.dialog.state.message}</div>
+      <Show when={p.dialog.state.action}>
+        <Button onClick={onClose}>{p.dialog.state.action}</Button>
+      </Show>
+    </>
   )
+
+  const [showToast, hideToast] = useDialog({
+    component: ToastDialog,
+    toast: true,
+  })
+
+  return null
 }

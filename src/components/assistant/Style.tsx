@@ -41,7 +41,7 @@ export const ChatBubble = styled.div`
 
 export const ChatInputContainer = styled.div`
   position: absolute;
-  bottom: 20px;
+  bottom: 10px;
   left: 20px;
   right: 20px;
   margin: 0 auto;
@@ -51,6 +51,7 @@ export const ChatInputContainer = styled.div`
 
 // biome-ignore format: ternary breaks ugly
 export const ChatInputBorder = styled.div<{focused: boolean}>`
+  width: 100%;
   background: var(--background);
   box-shadow: 0 12px 32px 0 rgba(0, 0, 0, 0.24);
   scroll-margin-bottom: 50px;
@@ -71,4 +72,5 @@ export const ChatInputEditorRow = styled.div`
 export const ChatInputActionRow = styled.div`
   display: flex;
   justify-content: flex-end;
+  gap: 5px;
 `

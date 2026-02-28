@@ -11,7 +11,7 @@ import {CanvasService} from '@/services/CanvasService'
 import type {MenuTreeItem} from '@/services/TreeService'
 import {isCanvas, isCodeFile, isFile, isLocalFile, useState} from '@/state'
 import {Page} from '@/types'
-import {TooltipButton, TooltipDivider} from '../dialog/Style'
+import {DialogList, TooltipButton, TooltipDivider} from '../dialog/Style'
 import {
   IconAdd,
   IconAdjust,
@@ -552,7 +552,7 @@ export const SubmenuTree = (props: Props) => {
   })
 
   const Tooltip = () => (
-    <>
+    <DialogList>
       <Show when={isOnCanvas(selected())}>
         <TooltipButton onClick={onFocus} data-testid="focus_file">
           <IconAdjust />
@@ -619,7 +619,7 @@ export const SubmenuTree = (props: Props) => {
           New code file
         </TooltipButton>
       </Show>
-    </>
+    </DialogList>
   )
 
   const [showTooltip, closeTooltip, currentTooltip] = useDialog({

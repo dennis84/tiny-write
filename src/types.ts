@@ -3,10 +3,6 @@ import type {EditorView} from 'prosemirror-view'
 import * as v from 'valibot'
 import type {Model} from './services/CopilotService'
 
-type OpenThread = {threadId: string}
-
-export type Openable = File | Canvas | CanvasElement | OpenThread | '/'
-
 export interface MergeState {
   doc: string
   range?: [number, number]

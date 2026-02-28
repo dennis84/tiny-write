@@ -3,7 +3,7 @@ import {onMount} from 'solid-js'
 import {useDialog} from '@/hooks/use-dialog'
 import {copy, readText} from '@/remote/clipboard'
 import {useState} from '@/state'
-import {TooltipButton, TooltipDivider} from '../dialog/Style'
+import {DialogList, TooltipButton, TooltipDivider} from '../dialog/Style'
 
 interface Props {
   area: () => HTMLElement
@@ -13,13 +13,13 @@ export const ContextMenu = (props: Props) => {
   const {fileService} = useState()
 
   const Tooltip = () => (
-    <>
+    <DialogList>
       <TooltipButton onClick={onCut}>Cut</TooltipButton>
       <TooltipButton onClick={onCopy}>Copy</TooltipButton>
       <TooltipButton onClick={onPaste}>Paste</TooltipButton>
       <TooltipDivider />
       <TooltipButton onClick={onToggleComment}>Toggle comment</TooltipButton>
-    </>
+    </DialogList>
   )
 
   const [showTooltip, closeTooltip] = useDialog({

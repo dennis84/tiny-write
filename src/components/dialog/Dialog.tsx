@@ -1,8 +1,8 @@
 import {arrow, autoUpdate, computePosition, flip, offset, shift, size} from '@floating-ui/dom'
-import {type JSX, onCleanup, onMount, Show} from 'solid-js'
+import {type JSX, Match, onCleanup, onMount, Switch} from 'solid-js'
 import {ZIndex} from '@/utils/ZIndex'
 import type {Dialog as DialogType} from '../../services/DialogService'
-import {DialogContainer, DialogLayer, TooltipArrow} from './Style'
+import {DialogContainer, DialogLayer, ToastLayer, TooltipArrow} from './Style'
 
 type Props = Omit<DialogType, 'component' | 'state'> & {
   children: JSX.Element
@@ -100,8 +100,8 @@ export const Dialog = (props: Props) => {
   })
 
   return (
-    <>
-      <Show when={props.anchor}>
+    <Switch>
+      <Match when={props.anchor}>
         <CloseOnBackgroundClick />
         <DialogContainer
           ref={tooltipRef}
@@ -116,8 +116,19 @@ export const Dialog = (props: Props) => {
           {props.children}
           <TooltipArrow ref={arrowRef} />
         </DialogContainer>
-      </Show>
-      <Show when={!props.anchor}>
+      </Match>
+      <Match when={props.toast}>
+        <ToastLayer>
+          <DialogContainer
+            ref={tooltipRef}
+            class="toast"
+            style={{'z-index': ZIndex.dialog(props.index)}}
+          >
+            {props.children}
+          </DialogContainer>
+        </ToastLayer>
+      </Match>
+      <Match when={true}>
         <DialogLayer
           onClick={onClose}
           style={{'z-index': ZIndex.dialog(props.index)}}
@@ -132,7 +143,7 @@ export const Dialog = (props: Props) => {
             {props.children}
           </DialogContainer>
         </DialogLayer>
-      </Show>
-    </>
+      </Match>
+    </Switch>
   )
 }

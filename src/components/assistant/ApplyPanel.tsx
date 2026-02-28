@@ -1,5 +1,5 @@
 import type {EditorView} from '@codemirror/view'
-import {Show, Suspense} from 'solid-js'
+import {Show} from 'solid-js'
 import {Portal} from 'solid-js/web'
 import {styled} from 'solid-styled-components'
 import {v4 as uuidv4} from 'uuid'
@@ -74,30 +74,28 @@ export const ApplyPanel = (p: {state: ApplyPanelState}) => {
 
   return (
     <Portal mount={p.state.dom}>
-      <Suspense>
-        <ApplyPanelEl data-testid="apply_panel">
-          <span>{title() ?? p.state.info.lang ?? 'text'}</span>
-          <TooltipHelp title="Copy">
-            <IconButton onClick={onCopy} data-testid="panel_button_copy">
-              <IconContentCopy />
+      <ApplyPanelEl data-testid="apply_panel">
+        <span>{title() ?? p.state.info.lang ?? 'text'}</span>
+        <TooltipHelp title="Copy">
+          <IconButton onClick={onCopy} data-testid="panel_button_copy">
+            <IconContentCopy />
+          </IconButton>
+        </TooltipHelp>
+        <Show when={!file && p.state.info.attrs?.file}>
+          <TooltipHelp title="Create file">
+            <IconButton onClick={onCreateFile} data-testid="panel_button_create">
+              <IconAdd />
             </IconButton>
           </TooltipHelp>
-          <Show when={!file && p.state.info.attrs?.file}>
-            <TooltipHelp title="Create file">
-              <IconButton onClick={onCreateFile} data-testid="panel_button_create">
-                <IconAdd />
-              </IconButton>
-            </TooltipHelp>
-          </Show>
-          <Show when={file}>
-            <TooltipHelp title="Apply in editor">
-              <IconButton onClick={onApply} data-testid="panel_button_apply">
-                <IconMerge />
-              </IconButton>
-            </TooltipHelp>
-          </Show>
-        </ApplyPanelEl>
-      </Suspense>
+        </Show>
+        <Show when={file}>
+          <TooltipHelp title="Apply in editor">
+            <IconButton onClick={onApply} data-testid="panel_button_apply">
+              <IconMerge />
+            </IconButton>
+          </TooltipHelp>
+        </Show>
+      </ApplyPanelEl>
     </Portal>
   )
 }

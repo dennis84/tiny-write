@@ -14,7 +14,7 @@ import {isCodeFile, isLocalFile, useState} from '@/state'
 import {Page, type Thread} from '@/types'
 import {Threads} from '../assistant/Threads'
 import {Button, ButtonGroup, IconButton} from '../Button'
-import {TooltipButton, TooltipDivider} from '../dialog/Style'
+import {DialogList, TooltipButton, TooltipDivider} from '../dialog/Style'
 import {TooltipHelp} from '../dialog/TooltipHelp'
 import {
   IconAdd,
@@ -60,7 +60,7 @@ const CollabButton = () => {
   const collabCount = useCollabCount()
 
   const Tooltip = () => (
-    <>
+    <DialogList>
       <TooltipButton onClick={onStop}>
         <IconCloudOff />
         Disconnect
@@ -68,7 +68,7 @@ const CollabButton = () => {
       <TooltipButton onClick={onCopyCollabLink}>
         <IconLink /> Copy Link
       </TooltipButton>
-    </>
+    </DialogList>
   )
 
   const [showTooltip, closeTooltip] = useDialog({
@@ -109,7 +109,7 @@ const CurrentFileButton = () => {
   const title = useTitle()
 
   const Tooltip = () => (
-    <>
+    <DialogList>
       <Show when={isCodeFile(fileService.currentFile)}>
         <TooltipButton onClick={onChangeLanguage}>
           <IconLanguage />
@@ -145,7 +145,7 @@ const CurrentFileButton = () => {
           </TooltipButton>
         </Match>
       </Switch>
-    </>
+    </DialogList>
   )
 
   const [showTooltip, closeTooltip] = useDialog({
@@ -399,7 +399,7 @@ export const ChatNavbar = () => {
 
   return (
     <FloatingContainer>
-      <ButtonGroup justifySelf="flex-start">
+      <ButtonGroup justifySelf="flex-start" background={true}>
         <Threads onChange={onChangeThread} />
         <Show when={threadService.currentThread?.messages?.length}>
           <Button onClick={onNewThread}>
@@ -407,7 +407,7 @@ export const ChatNavbar = () => {
           </Button>
         </Show>
       </ButtonGroup>
-      <ButtonGroup>
+      <ButtonGroup background={true}>
         <TooltipHelp title="Expand assistant">
           <IconButton onClick={onExpandClick} data-testid="navbar_assistant_expand">
             <IconFullscreen />
@@ -415,7 +415,6 @@ export const ChatNavbar = () => {
         </TooltipHelp>
         <AssistantButton />
         <Show when={!menuService.menu()}>
-          <DarkModeToggle />
           <MenuButton />
         </Show>
       </ButtonGroup>
@@ -428,8 +427,7 @@ export const MenuNavbar = () => {
 
   return (
     <FloatingContainer>
-      <ButtonGroup>
-        <DarkModeToggle />
+      <ButtonGroup background={menuService.menu() !== MenuId.MAIN}>
         <Show when={menuService.menu() !== MenuId.MAIN}>
           <TooltipHelp title="Back to main menu">
             <IconButton
@@ -464,7 +462,7 @@ export const FloatingNavbar = () => {
 
   return (
     <FloatingContainer>
-      <ButtonGroup>
+      <ButtonGroup background={true}>
         <Show when={locationService.page === Page.Assistant}>
           <Threads onChange={onChangeThread} />
           <Show when={threadService.currentThread?.messages?.length}>
@@ -483,8 +481,8 @@ export const FloatingNavbar = () => {
         <Show when={!menuService.assistant() && locationService.page !== Page.Assistant}>
           <AssistantButton />
         </Show>
+        <DarkModeToggle />
         <Show when={!menuService.menu() && !menuService.assistant()}>
-          <DarkModeToggle />
           <MenuButton />
         </Show>
       </ButtonGroup>

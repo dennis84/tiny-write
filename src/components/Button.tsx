@@ -2,9 +2,9 @@ import {createSignal, For, type JSX, onCleanup, onMount} from 'solid-js'
 import {styled} from 'solid-styled-components'
 
 export const Common = `
-  height: 40px;
-  padding: 0 20px;
-  border-radius: 30px;
+  height: 32px;
+  padding: 0 10px;
+  border-radius: var(--border-radius);
   font-size: var(--menu-font-size);
   cursor: var(--cursor-pointer);
   display: inline-flex;
@@ -79,11 +79,17 @@ const ButtonLinkEl = styled.button`
 interface ButtonGroupProps {
   justify?: 'flex-end' | 'flex-start'
   justifySelf?: 'flex-end' | 'flex-start'
+  background?: boolean
 }
 
 // biome-ignore format: ternary breaks ugly
 export const ButtonGroup = styled.div<ButtonGroupProps>`
-  display: flex;
+  display: inline-flex;
+  ${(p) => p.background ? `
+    background: var(--background-90);
+    padding: 5px;
+  ` : ''}
+  border-radius: var(--border-radius);
   gap: 5px;
   ${(p) => p.justify ? `justify-content: ${p.justify};` : ''}
   ${(p) => p.justifySelf ? `
@@ -95,14 +101,14 @@ export const ButtonGroup = styled.div<ButtonGroupProps>`
 export const IconButtonEl = styled.button<ButtonAttrs>`
   ${Common}
   ${RippleEffect}
-  width: 40px;
+  width: 30px;
   padding: 0;
   background: none;
   color: var(--foreground);
   ${(p) => (p.active ? `background: var(--background);` : '')}
   &:hover {
-    background: var(--background-90);
     color: var(--primary-background);
+    background: var(--background-80);
   }
   .icon {
     margin: 0;

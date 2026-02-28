@@ -81,6 +81,7 @@ export const codeMirror = `
         cursor: var(--cursor-pointer);
         font-family: var(--font-family-monospace);
         padding: 2px 4px;
+        height: 32px;
         border-radius: var(--border-radius);
       }
     }

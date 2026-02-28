@@ -12,15 +12,11 @@ import {MessageMarkdown} from './MessageMarkdown'
 import {Pagination} from './Pagination'
 import {ChatBubble} from './Style'
 
-const EditBubble = styled.div`
-  flex-basis: 100%;
-`
-
 const QuestionContainer = styled.div`
+  display: grid;
   justify-items: flex-end;
-  margin-left: auto;
   scroll-margin: 20px; /* margin when scrollIntoView */
-  width: 100%;
+  gap: 5px;
   .button-group {
     opacity: 0;
     transition: opacity 100ms ease-out 0.1s;
@@ -44,7 +40,6 @@ const QuestionBubble = styled(ChatBubble)`
 `
 
 const QuestionAttachments = styled.div`
-  margin: 10px 0;
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
@@ -86,14 +81,14 @@ export const MessageQuestion = (props: Props) => {
   return (
     <>
       <Show when={editing()}>
-        <EditBubble>
+        <QuestionContainer>
           <MessageInput
             onUpdate={onUpdate}
             onCancel={() => setEditing(false)}
             message={props.message.value}
           />
           <Attachments />
-        </EditBubble>
+        </QuestionContainer>
       </Show>
       <Show when={!editing()}>
         <QuestionContainer ref={questionContainerRef}>
@@ -103,7 +98,7 @@ export const MessageQuestion = (props: Props) => {
             </Show>
           </QuestionBubble>
           <Attachments />
-          <ButtonGroup justify="flex-end" class="button-group">
+          <ButtonGroup class="button-group">
             <Pagination
               id={props.message.id}
               parentId={props.message.parentId}

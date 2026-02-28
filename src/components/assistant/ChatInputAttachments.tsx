@@ -4,6 +4,7 @@ import {useDialog} from '@/hooks/use-dialog'
 import {useState} from '@/state'
 import {type Attachment, AttachmentType} from '@/types'
 import {IconButton} from '../Button'
+import {DialogList} from '../dialog/Style'
 import {TooltipHelp} from '../dialog/TooltipHelp'
 import {IconAttachment} from '../Icon'
 import {AttachmentChip} from './AttachmentChip'
@@ -26,11 +27,11 @@ export const ChatInputAttachments = () => {
   const {store, fileService, mediaService, threadService} = useState()
 
   const Tooltip = () => (
-    <>
+    <DialogList>
       <CurrentFileButton onAttachment={onAttachment} />
       <SelectionButton onAttachment={onAttachment} />
       <ImageButton onAttachment={onImageAttachment} />
-    </>
+    </DialogList>
   )
 
   const [showTooltip, closeTooltip] = useDialog({

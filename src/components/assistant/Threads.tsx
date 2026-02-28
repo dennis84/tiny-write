@@ -7,13 +7,14 @@ import {useInputLine} from '@/hooks/use-input-line'
 import {useState} from '@/state'
 import type {Thread} from '@/types'
 import {Button, ButtonGroup} from '../Button'
-import {DialogFooter, DialogLabel, DialogScroll} from '../dialog/Style'
+import {DialogFooter, DialogLabel, DialogList, DialogScroll} from '../dialog/Style'
 import {TooltipHelp} from '../dialog/TooltipHelp'
 import {IconAdd, IconDelete, IconEdit, IconHistory, IconPin, IconSearch, IconUnpin} from '../Icon'
 
 const Scroll = styled(DialogScroll)`
   width: 600px;
   max-height: 80vh;
+  min-height: 100px;
 `
 
 const ThreadItemButton = styled.span`
@@ -46,6 +47,9 @@ const ThreadItem = styled.div`
     display: none;
     justify-self: flex-end;
     margin-left: auto;
+    span:hover {
+      background: var(--primary-background-80);
+    }
   }
   &:hover,
   &.selected {
@@ -82,7 +86,7 @@ const SearchBorder = styled.div`
   background: var(--code-background);
   height: 40px;
   width: 100%;
-  border-radius: 30px;
+  border-radius: var(--border-radius);
   position: relative;
   margin-bottom: 10px;
   .icon {
@@ -97,7 +101,7 @@ const SearchBorder = styled.div`
 
 const SearchInput = styled.input`
   height: 40px;
-  padding: 0 20px;
+  padding: 0 10px;
   line-height: 40px;
   padding-bottom: 2px;
   width: 100%;
@@ -201,7 +205,7 @@ export const Threads = (props: Props) => {
         <Scroll>
           <For each={threadService.getThreads(searchTerm())}>
             {([thread, label]) => (
-              <>
+              <DialogList>
                 <Show when={label}>
                   <DialogLabel>{label}</DialogLabel>
                 </Show>
@@ -241,7 +245,7 @@ export const Threads = (props: Props) => {
                     </TooltipHelp>
                   </ButtonGroup>
                 </ThreadItem>
-              </>
+              </DialogList>
             )}
           </For>
         </Scroll>

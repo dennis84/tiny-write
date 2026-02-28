@@ -1,9 +1,14 @@
-import {createResource, For} from 'solid-js'
+import {createResource, For, onMount} from 'solid-js'
+import {styled} from 'solid-styled-components'
 import {useDialog} from '@/hooks/use-dialog'
 import type {Model} from '@/services/CopilotService'
 import {useState} from '@/state'
 import {Button} from '../Button'
-import {DialogLabel, DialogScroll, TooltipButton} from '../dialog/Style'
+import {DialogLabel, DialogList, DialogScroll, TooltipButton} from '../dialog/Style'
+
+const Scroll = styled(DialogScroll)`
+  max-height: 60vh;
+`
 
 interface Props {
   onChange: () => void
@@ -29,26 +34,37 @@ export const ModelSelect = (props: Props) => {
     return groups
   })
 
+  const ModelButton = (props: {model: Model}) => {
+    let ref!: HTMLDivElement
+
+    onMount(() => {
+      if (copilotService.chatModel.id === props.model.id) {
+        ref.scrollIntoView({block: 'center'})
+      }
+    })
+
+    return (
+      <TooltipButton
+        ref={ref}
+        onClick={() => onSelect(props.model)}
+        class={copilotService.chatModel.id === props.model.id ? 'selected' : undefined}
+      >
+        {props.model.name}
+      </TooltipButton>
+    )
+  }
+
   const Tooltip = () => (
-    <DialogScroll>
+    <Scroll>
       <For each={Object.entries(models() ?? [])}>
         {([key, models]) => (
-          <>
+          <DialogList>
             <DialogLabel>{key}</DialogLabel>
-            <For each={models}>
-              {(model) => (
-                <TooltipButton
-                  onClick={() => onSelect(model)}
-                  class={copilotService.chatModel.id === model.id ? 'selected' : undefined}
-                >
-                  {model.name}
-                </TooltipButton>
-              )}
-            </For>
-          </>
+            <For each={models}>{(model) => <ModelButton model={model} />}</For>
+          </DialogList>
         )}
       </For>
-    </DialogScroll>
+    </Scroll>
   )
 
   const [showTooltip, closeTooltip] = useDialog({

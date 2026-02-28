@@ -6,7 +6,7 @@ import {createEffect, Show} from 'solid-js'
 import {foldAll} from '@/codemirror/fold-all'
 import {getLanguageNames} from '@/codemirror/highlight'
 import {createBlockquote, createCodeFence} from '@/components/assistant/util'
-import {TooltipButton, TooltipDivider} from '@/components/dialog/Style'
+import {DialogList, TooltipButton, TooltipDivider} from '@/components/dialog/Style'
 import {
   IconAdd,
   IconCodeBlocks,
@@ -336,7 +336,7 @@ export const BlockTooltip = (props: Props) => {
   })
 
   const Tooltip = () => (
-    <>
+    <DialogList>
       {/* Code block actions */}
       <Show when={props.selectedBlock?.blockNode?.type.name === 'code_block'}>
         <Show when={props.selectedBlock?.blockNode.attrs.lang === 'mermaid'}>
@@ -413,7 +413,7 @@ export const BlockTooltip = (props: Props) => {
       <TooltipButton onClick={onRemoveBlock} data-testid="remove_block">
         <IconVariableRemove /> remove block
       </TooltipButton>
-    </>
+    </DialogList>
   )
 
   const [showTooltip, closeTooltip] = useDialog({

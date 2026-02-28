@@ -32,6 +32,7 @@ export const Dialogs = () => {
           delay={dialog.delay}
           offset={dialog.offset}
           direction={dialog.direction}
+          toast={dialog.toast}
           index={i()}
         >
           <Dynamic component={dialog.component} dialog={dialog} />

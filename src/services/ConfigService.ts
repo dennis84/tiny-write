@@ -273,8 +273,8 @@ export class ConfigService {
     },
   }
 
-  static readonly BORDER_RADIUS_SMALL = '10px'
-  static readonly BORDER_RADIUS = '20px'
+  static readonly BORDER_RADIUS_SMALL = '5px'
+  static readonly BORDER_RADIUS = '10px'
 
   private saveConfigDebounced = debounce((state: State) => this.saveConfig(state), 100)
 
