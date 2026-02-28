@@ -13,6 +13,8 @@ export const Dialog = (props: Props) => {
   let tooltipRef!: HTMLDivElement
   let arrowRef!: HTMLSpanElement
 
+  const zIndex = ZIndex.dialog(props.index)
+
   const onClose = (e: MouseEvent) => {
     e.preventDefault()
     e.stopPropagation()
@@ -111,7 +113,7 @@ export const Dialog = (props: Props) => {
           delay={props.delay}
           direction={props.direction}
           gap={props.direction === 'row' ? 5 : 0}
-          style={{'z-index': ZIndex.dialog(props.index)}}
+          style={{'z-index': zIndex}}
         >
           {props.children}
           <TooltipArrow ref={arrowRef} />
@@ -119,21 +121,13 @@ export const Dialog = (props: Props) => {
       </Match>
       <Match when={props.toast}>
         <ToastLayer>
-          <DialogContainer
-            ref={tooltipRef}
-            class="toast"
-            style={{'z-index': ZIndex.dialog(props.index)}}
-          >
+          <DialogContainer ref={tooltipRef} class="toast" style={{'z-index': zIndex}}>
             {props.children}
           </DialogContainer>
         </ToastLayer>
       </Match>
       <Match when={true}>
-        <DialogLayer
-          onClick={onClose}
-          style={{'z-index': ZIndex.dialog(props.index)}}
-          data-testid="dialog_layer"
-        >
+        <DialogLayer onClick={onClose} style={{'z-index': zIndex}} data-testid="dialog_layer">
           <DialogContainer
             ref={tooltipRef}
             delay={props.delay}

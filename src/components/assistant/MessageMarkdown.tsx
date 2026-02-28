@@ -10,7 +10,7 @@ import {getTheme} from '@/codemirror/theme'
 import {createSequentialEffect} from '@/hooks/create-sequential-effect'
 import {useState} from '@/state'
 import {createTreeStore, type TreeItem} from '@/tree'
-import {ApplyPanel, type ApplyPanelState} from './ApplyPanel'
+import {CodeBlockHeader, type CodeBlockHeaderState} from './CodeBlockHeader'
 import {parseCodeBlockAttrs} from './util'
 
 export interface TokenItem {
@@ -32,7 +32,7 @@ interface Props {
 export const MessageMarkdown = (props: Props) => {
   const tree = createTreeStore<TokenItem>()
   const {configService} = useState()
-  const [applyPanels, setApplyPanels] = createSignal<ApplyPanelState[]>([])
+  const [codeBlocks, setCodeBlocks] = createSignal<CodeBlockHeaderState[]>([])
 
   const md = markdownit({
     html: true,
@@ -40,7 +40,7 @@ export const MessageMarkdown = (props: Props) => {
     tokens[idx].attrPush(['target', '_blank'])
   })
 
-  const applyPanel =
+  const codeBlockHeader =
     (info: CodeFenceInfo) =>
     (editorView: EditorView): Panel => {
       const dom = document.createElement('div')
@@ -48,19 +48,19 @@ export const MessageMarkdown = (props: Props) => {
         top: true,
         dom,
         mount: () => {
-          setApplyPanels((prev) => [...prev, {dom, editorView, info}])
+          setCodeBlocks((prev) => [...prev, {dom, editorView, info}])
         },
       }
     }
 
-  const copilotApply = (info: CodeFenceInfo) => showPanel.of(applyPanel(info))
+  const codeBlockHeaderPanel = (info: CodeFenceInfo) => showPanel.of(codeBlockHeader(info))
 
   const CodeFence = (p: {item: TokenItem}) => {
     let ref!: HTMLDivElement
     const [editorView, setEditorView] = createSignal<EditorView>()
 
     const langCompartment = new Compartment()
-    const copilotApplyCompartment = new Compartment()
+    const codeBlockHeaderCompartment = new Compartment()
 
     const parseInfo = (): CodeFenceInfo => {
       let lang: string | undefined
@@ -93,7 +93,7 @@ export const MessageMarkdown = (props: Props) => {
             theme,
             langCompartment.of(lang.highlight()),
             clipPlugin,
-            copilotApplyCompartment.of(copilotApply(info)),
+            codeBlockHeaderCompartment.of(codeBlockHeaderPanel(info)),
           ],
         })
 
@@ -117,7 +117,7 @@ export const MessageMarkdown = (props: Props) => {
           annotations: Transaction.addToHistory.of(false),
           effects: [
             langCompartment.reconfigure(lang.highlight()),
-            copilotApplyCompartment.reconfigure(copilotApply(info)),
+            codeBlockHeaderCompartment.reconfigure(codeBlockHeaderPanel(info)),
           ],
         })
 
@@ -226,7 +226,7 @@ export const MessageMarkdown = (props: Props) => {
   return (
     <>
       <MarkdownTree childrenIds={tree.rootItemIds} />
-      <For each={applyPanels()}>{(s) => <ApplyPanel state={s} />}</For>
+      <For each={codeBlocks()}>{(s) => <CodeBlockHeader state={s} />}</For>
     </>
   )
 }

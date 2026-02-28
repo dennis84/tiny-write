@@ -2,7 +2,7 @@ import {styled} from 'solid-styled-components'
 import {Scroll} from '../Layout'
 
 export const ToastLayer = styled.div`
-  position: fixed;
+  position: absolute;
   pointer-events: none;
   top: 0;
   left: 0;
@@ -102,7 +102,7 @@ export const TooltipButton = styled.div`
   display: flex;
   align-items: center;
   padding: 5px;
-  min-height: 32px;
+  height: 32px;
   cursor: var(--cursor-pointer);
   border-radius: var(--border-radius-small);
   &:hover,
@@ -120,7 +120,7 @@ export const TooltipDivider = styled.hr`
   border: 0;
   border-radius: 5px;
   background: var(--background-80);
-  margin: 5px 0;
+  margin: 0;
 `
 
 export const TooltipArrow = styled.span`

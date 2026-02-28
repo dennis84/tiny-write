@@ -4,8 +4,6 @@ import {codeMirror} from '../code/Style'
 export const codeBlock = `
   .cm-container {
     position: relative;
-    margin: 10px 0;
-    margin-bottom: 15px;
     border-radius: var(--border-radius);
     display: flex;
     font-family: var(--font-family-monospace);

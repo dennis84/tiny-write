@@ -1,5 +1,5 @@
 import type {EditorView} from '@codemirror/view'
-import {Show} from 'solid-js'
+import {Show, Suspense} from 'solid-js'
 import {Portal} from 'solid-js/web'
 import {styled} from 'solid-styled-components'
 import {v4 as uuidv4} from 'uuid'
@@ -13,7 +13,8 @@ import {TooltipHelp} from '../dialog/TooltipHelp'
 import {IconAdd, IconContentCopy, IconMerge} from '../Icon'
 import type {CodeFenceInfo} from './MessageMarkdown'
 
-const ApplyPanelEl = styled.div`
+const CodeBlockHeaderEl = styled.div`
+  padding: 5px;
   padding-left: 20px;
   width: 100%;
   display: grid;
@@ -23,13 +24,13 @@ const ApplyPanelEl = styled.div`
   font-family: var(--font-family-monospace);
 `
 
-export interface ApplyPanelState {
+export interface CodeBlockHeaderState {
   editorView: EditorView
   dom: Element
   info: CodeFenceInfo
 }
 
-export const ApplyPanel = (p: {state: ApplyPanelState}) => {
+export const CodeBlockHeader = (p: {state: CodeBlockHeaderState}) => {
   const {fileService, threadService, treeService, locationService} = useState()
 
   const file = p.state.info.attrs?.id ? fileService.findFileById(p.state.info.attrs.id) : undefined
@@ -52,7 +53,7 @@ export const ApplyPanel = (p: {state: ApplyPanelState}) => {
     const doc = p.state.editorView.state.doc.toString()
     const range = p.state.info.attrs?.range
 
-    locationService.openItem(file, {merge: {doc, range}})
+    locationService.openItem(file, {merge: {doc, range}, threadId: currentThread.id})
   }
 
   const onCreateFile = async () => {
@@ -74,28 +75,30 @@ export const ApplyPanel = (p: {state: ApplyPanelState}) => {
 
   return (
     <Portal mount={p.state.dom}>
-      <ApplyPanelEl data-testid="apply_panel">
-        <span>{title() ?? p.state.info.lang ?? 'text'}</span>
-        <TooltipHelp title="Copy">
-          <IconButton onClick={onCopy} data-testid="panel_button_copy">
-            <IconContentCopy />
-          </IconButton>
-        </TooltipHelp>
-        <Show when={!file && p.state.info.attrs?.file}>
-          <TooltipHelp title="Create file">
-            <IconButton onClick={onCreateFile} data-testid="panel_button_create">
-              <IconAdd />
+      <Suspense>
+        <CodeBlockHeaderEl data-testid="code_block_header">
+          <span>{title() ?? p.state.info.lang ?? 'text'}</span>
+          <TooltipHelp title="Copy">
+            <IconButton onClick={onCopy} data-testid="panel_button_copy">
+              <IconContentCopy />
             </IconButton>
           </TooltipHelp>
-        </Show>
-        <Show when={file}>
-          <TooltipHelp title="Apply in editor">
-            <IconButton onClick={onApply} data-testid="panel_button_apply">
-              <IconMerge />
-            </IconButton>
-          </TooltipHelp>
-        </Show>
-      </ApplyPanelEl>
+          <Show when={!file && p.state.info.attrs?.file}>
+            <TooltipHelp title="Create file">
+              <IconButton onClick={onCreateFile} data-testid="panel_button_create">
+                <IconAdd />
+              </IconButton>
+            </TooltipHelp>
+          </Show>
+          <Show when={file}>
+            <TooltipHelp title="Apply in editor">
+              <IconButton onClick={onApply} data-testid="panel_button_apply">
+                <IconMerge />
+              </IconButton>
+            </TooltipHelp>
+          </Show>
+        </CodeBlockHeaderEl>
+      </Suspense>
     </Portal>
   )
 }

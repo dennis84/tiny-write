@@ -13,7 +13,7 @@ import {
 import {Show} from 'solid-js'
 import type {Dialog} from '@/services/DialogService'
 import {useState} from '@/state'
-import {TooltipButton, TooltipDivider} from '../dialog/Style'
+import {DialogList, TooltipButton, TooltipDivider} from '../dialog/Style'
 import {
   IconAddColumnLeft,
   IconAddColumnRight,
@@ -135,7 +135,7 @@ export const TableTooltip = (props: {dialog: Dialog<TableTooltipState>}) => {
   }
 
   return (
-    <>
+    <DialogList>
       <Show when={isFirstRow()}>
         <TooltipButton onMouseDown={onToggleHeaderRow}>
           <IconToggleOn /> Toggle table header row
@@ -164,6 +164,6 @@ export const TableTooltip = (props: {dialog: Dialog<TableTooltipState>}) => {
           <IconColumnRemove /> Remove column
         </TooltipButton>
       </Show>
-    </>
+    </DialogList>
   )
 }

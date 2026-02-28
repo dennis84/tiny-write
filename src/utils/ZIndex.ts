@@ -20,6 +20,6 @@ export class ZIndex {
   }
 
   static dialog(index: number) {
-    return String(MAX - 1 + index)
+    return String(MAX - 1000 + index)
   }
 }

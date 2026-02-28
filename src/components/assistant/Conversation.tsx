@@ -28,6 +28,9 @@ const EmptyContainer = styled.div`
   width: 100%;
   font-family: var(--menu-font-family);
   font-size: var(--menu-font-size);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 `
 
 export const Conversation = () => {
