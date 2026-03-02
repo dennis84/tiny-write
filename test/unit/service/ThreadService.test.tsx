@@ -2,9 +2,9 @@ import {createStore} from 'solid-js/store'
 import {beforeEach, expect, test, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
 import type {ChatMessageTextContent, CopilotService} from '@/services/CopilotService'
+import type {DialogService} from '@/services/DialogService'
 import type {LocationService} from '@/services/LocationService'
 import {ThreadService} from '@/services/ThreadService'
-import type {ToastService} from '@/services/ToastService'
 import {createState} from '@/state'
 import {AttachmentType, type Message} from '@/types'
 import {expectTree} from '../testutil/tree'
@@ -16,7 +16,7 @@ const copilotService = mock<CopilotService>({
   },
 })
 const locationService = mock<LocationService>({threadId: '1'})
-const toastService = mock<ToastService>()
+const dialogService = mock<DialogService>()
 const lastModified = new Date()
 
 beforeEach(() => {
@@ -45,7 +45,7 @@ test('newThread - empty', () => {
   })
 
   const [store, setState] = createStore(initial)
-  const service = new ThreadService(store, setState, copilotService, locationService, toastService)
+  const service = new ThreadService(store, setState, copilotService, locationService, dialogService)
 
   service.newThread()
 
@@ -64,7 +64,7 @@ test('addMessage', async () => {
 
   const [store, setState] = createStore(initial)
 
-  const service = new ThreadService(store, setState, copilotService, locationService, toastService)
+  const service = new ThreadService(store, setState, copilotService, locationService, dialogService)
 
   await service.addMessage({id: '1', role: 'user', content: '1'})
   await service.addMessage({id: '2', role: 'user', content: '2'})
@@ -94,7 +94,7 @@ test('addMessage - path', async () => {
 
   const [store, setState] = createStore(initial)
 
-  const service = new ThreadService(store, setState, copilotService, locationService, toastService)
+  const service = new ThreadService(store, setState, copilotService, locationService, dialogService)
   service.messageTree.updateAll(store.threads[0].messages)
 
   expectTree(
@@ -137,7 +137,7 @@ test('addChunk', async () => {
 
   const [store, setState] = createStore(initial)
 
-  const service = new ThreadService(store, setState, copilotService, locationService, toastService)
+  const service = new ThreadService(store, setState, copilotService, locationService, dialogService)
   service.messageTree.updateAll(store.threads[0].messages)
 
   service.addChunk('2', '1', 'A')
@@ -166,7 +166,7 @@ test('interrupt', async () => {
 
   const [store, setState] = createStore(initial)
 
-  const service = new ThreadService(store, setState, copilotService, locationService, toastService)
+  const service = new ThreadService(store, setState, copilotService, locationService, dialogService)
 
   service.interrupt('2')
 
@@ -188,7 +188,7 @@ test('summarize', async () => {
 
   const [store, setState] = createStore(initial)
 
-  const service = new ThreadService(store, setState, copilotService, locationService, toastService)
+  const service = new ThreadService(store, setState, copilotService, locationService, dialogService)
   service.messageTree.updateAll(store.threads[0].messages)
 
   copilotService.completionsSync.mockResolvedValue('12')
@@ -210,7 +210,7 @@ test('updateTitle', async () => {
 
   const [store, setState] = createStore(initial)
 
-  const service = new ThreadService(store, setState, copilotService, locationService, toastService)
+  const service = new ThreadService(store, setState, copilotService, locationService, dialogService)
 
   await service.updateTitle('1', 'Test')
 
@@ -234,7 +234,7 @@ test('init', () => {
 
   const [store, setState] = createStore(initial)
 
-  const service = new ThreadService(store, setState, copilotService, locationService, toastService)
+  const service = new ThreadService(store, setState, copilotService, locationService, dialogService)
 
   service.init()
   expect(store.threads).toHaveLength(1)
@@ -265,7 +265,7 @@ test('delete', async () => {
 
   const [store, setState] = createStore(initial)
 
-  const service = new ThreadService(store, setState, copilotService, locationService, toastService)
+  const service = new ThreadService(store, setState, copilotService, locationService, dialogService)
 
   await service.delete(store.threads[0])
 
@@ -300,7 +300,7 @@ test('deleteAll', async () => {
 
   const [store, setState] = createStore(initial)
 
-  const service = new ThreadService(store, setState, copilotService, locationService, toastService)
+  const service = new ThreadService(store, setState, copilotService, locationService, dialogService)
 
   await service.deleteAll()
 
@@ -324,7 +324,7 @@ test('regenerate - user message', async () => {
 
   const [store, setState] = createStore(initial)
 
-  const service = new ThreadService(store, setState, copilotService, locationService, toastService)
+  const service = new ThreadService(store, setState, copilotService, locationService, dialogService)
   service.messageTree.updateAll(store.threads[0].messages)
 
   let nextId = 3
@@ -374,7 +374,7 @@ test('regenerate - assistant message', async () => {
 
   const [store, setState] = createStore(initial)
 
-  const service = new ThreadService(store, setState, copilotService, locationService, toastService)
+  const service = new ThreadService(store, setState, copilotService, locationService, dialogService)
   service.messageTree.updateAll(store.threads[0].messages)
 
   let nextId = 3
@@ -421,7 +421,7 @@ test('generateTitle', async () => {
 
   const [store, setState] = createStore(initial)
 
-  const service = new ThreadService(store, setState, copilotService, locationService, toastService)
+  const service = new ThreadService(store, setState, copilotService, locationService, dialogService)
 
   copilotService.completionsSync.mockImplementation(async (messages) => {
     expect(messages).toHaveLength(3)
@@ -503,7 +503,7 @@ test.each<[Message[], number]>([
     maxOutputTokens: 12,
   })
 
-  const service = new ThreadService(store, setState, copilotService, locationService, toastService)
+  const service = new ThreadService(store, setState, copilotService, locationService, dialogService)
   service.messageTree.updateAll(store.threads[0].messages)
 
   const result = service.getMessages()
@@ -532,7 +532,7 @@ test('getThreads', () => {
 
   const [store, setState] = createStore(initial)
 
-  const service = new ThreadService(store, setState, copilotService, locationService, toastService)
+  const service = new ThreadService(store, setState, copilotService, locationService, dialogService)
 
   const threads = service.getThreads()
 
@@ -550,7 +550,7 @@ test('hande attachments', () => {
   const initial = createState()
   const [store, setState] = createStore(initial)
 
-  const service = new ThreadService(store, setState, copilotService, locationService, toastService)
+  const service = new ThreadService(store, setState, copilotService, locationService, dialogService)
 
   expect(service.attachments()).toEqual([])
 

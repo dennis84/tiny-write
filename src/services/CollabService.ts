@@ -10,8 +10,8 @@ import {info} from '@/remote/log'
 import {type Config, type File, Page, type State} from '@/types'
 import {TauriWebSocket} from '@/utils/TauriWebSocket'
 import {ConfigService} from './ConfigService'
+import type {DialogService} from './DialogService'
 import type {LocationService} from './LocationService'
-import type {ToastService} from './ToastService'
 
 export class CollabService {
   private providers: Map<string, WebsocketProvider> = new Map()
@@ -24,7 +24,7 @@ export class CollabService {
   private startedSignal = createSignal(false)
 
   constructor(
-    private toastService: ToastService,
+    private dialogService: DialogService,
     private locationService: LocationService,
     _store: Store<State>,
     private setState: SetStoreFunction<State>,
@@ -98,7 +98,7 @@ export class CollabService {
     }
 
     this.provider.on('connection-error', () => {
-      this.toastService.open({message: 'Collaboration connection error'})
+      this.dialogService.toast({message: 'Collaboration connection error'})
       this.disconnect()
     })
 

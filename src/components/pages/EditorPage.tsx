@@ -46,7 +46,7 @@ export const NewEditorPage = () => {
 }
 
 export const EditorPage = (props: RouteSectionProps) => {
-  const {locationService, collabService, editorService, fileService, toastService} = useState()
+  const {locationService, collabService, editorService, fileService, dialogService} = useState()
   const location = useLocation<LocationState>()
 
   info(`Render editor page (location=${JSON.stringify(props.location.state)})`)
@@ -69,7 +69,7 @@ export const EditorPage = (props: RouteSectionProps) => {
     onMount(async () => {
       await locationService.setLastLocation(undefined)
       const message = p.error instanceof Error ? p.error.message : String(p.error)
-      toastService.open({message, duration: 10_000})
+      dialogService.toast({message, duration: 10_000})
       locationService.openPage(Page.Editor)
     })
     return null

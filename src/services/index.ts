@@ -24,7 +24,6 @@ import {PrettierService} from './PrettierService'
 import {ProseMirrorService} from './ProseMirrorService'
 import {SelectService} from './SelectService'
 import {ThreadService} from './ThreadService'
-import {ToastService} from './ToastService'
 import {TreeService} from './TreeService'
 
 export const createCtrl = (initial: State) => {
@@ -37,9 +36,9 @@ export const createCtrl = (initial: State) => {
 
   const locationService = new LocationService(location, navigate, () => params, store, setState)
 
-  const toastService = new ToastService()
+  const dialogService = new DialogService()
   const aiService = new AiService(store, setState)
-  const collabService = new CollabService(toastService, locationService, store, setState)
+  const collabService = new CollabService(dialogService, locationService, store, setState)
   const configService = new ConfigService(collabService, store, setState)
   const fileService = new FileService(collabService, locationService, store, setState)
   const copilotService = new CopilotService(store, setState, fileService)
@@ -60,7 +59,7 @@ export const createCtrl = (initial: State) => {
     configService,
     appService,
     prettierService,
-    toastService,
+    dialogService,
     locationService,
     store,
   )
@@ -76,7 +75,7 @@ export const createCtrl = (initial: State) => {
     fileService,
     collabService,
     proseMirrorService,
-    toastService,
+    dialogService,
     selectService,
     locationService,
     store,
@@ -108,10 +107,9 @@ export const createCtrl = (initial: State) => {
     setState,
     copilotService,
     locationService,
-    toastService,
+    dialogService,
   )
   const menuService = new MenuService(store, setState, appService)
-  const dialogService = new DialogService()
 
   return {
     store,
@@ -136,7 +134,6 @@ export const createCtrl = (initial: State) => {
     copilotService,
     threadService,
     menuService,
-    toastService,
     dialogService,
     locationService,
   }

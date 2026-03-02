@@ -27,7 +27,7 @@ type ChunksType = ReturnType<typeof getChunks>
 
 const MergeMenuWithChunks = (props: {chunks: ChunksType}) => {
   let tooltipRef!: HTMLDivElement
-  const {fileService, toastService, locationService} = useState()
+  const {fileService, dialogService, locationService} = useState()
   const [autoClose, setAutoClose] = createSignal(true)
 
   const onAccept = () => {
@@ -39,7 +39,7 @@ const MergeMenuWithChunks = (props: {chunks: ChunksType}) => {
       acceptChunk(view, chunk.fromA)
     })
 
-    toastService.open({message: 'Full diff applied ✅', duration: 2000})
+    dialogService.toast({message: 'Full diff applied ✅', duration: 2000})
     locationService.openItem(fileService.currentFile, {merge: undefined})
   }
 
@@ -53,14 +53,14 @@ const MergeMenuWithChunks = (props: {chunks: ChunksType}) => {
       rejectChunk(view, chunk.fromA)
     })
 
-    toastService.open({message: 'Full diff rejected ✅', duration: 2000})
+    dialogService.toast({message: 'Full diff rejected ✅', duration: 2000})
     locationService.openItem(currentFile, {merge: undefined})
   }
 
   // Handle when all chunks are resolved in codemirror UI
   onCleanup(() => {
     if (autoClose()) {
-      toastService.open({message: 'All chunks applied ✅', duration: 2000})
+      dialogService.toast({message: 'All chunks applied ✅', duration: 2000})
       locationService.openItem(fileService.currentFile, {merge: undefined})
     }
   })

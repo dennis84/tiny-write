@@ -16,8 +16,8 @@ import type {
   Chunk,
   CopilotService,
 } from './CopilotService'
+import type {DialogService} from './DialogService'
 import type {LocationService} from './LocationService'
-import type {ToastService} from './ToastService'
 
 export class ThreadService {
   public messageTree = createTreeStore<Message>()
@@ -60,7 +60,7 @@ export class ThreadService {
     private setState: SetStoreFunction<State>,
     private copilotService: CopilotService,
     private locationService: LocationService,
-    private toastService: ToastService,
+    private dialogService: DialogService,
   ) {}
 
   async updateCurrentInput(text?: string) {
@@ -127,6 +127,11 @@ export class ThreadService {
   }
 
   newThread(): Thread {
+    const existing = this.store.threads.find((it) => !it.lastModified)
+    if (existing) {
+      return existing
+    }
+
     const thread: Thread = {
       id: ThreadService.createId(),
       messages: [],
@@ -134,10 +139,7 @@ export class ThreadService {
 
     info(`Create new thread (id=${thread.id})`)
 
-    const threads = this.store.threads.filter((t) => t.title)
-
-    threads.unshift(thread)
-    this.setState('threads', threads)
+    this.setState('threads', [...this.store.threads, thread])
     this.messageTree.updateAll([])
 
     return thread
@@ -178,7 +180,7 @@ export class ThreadService {
         this.interrupt(messageId)
       }
     } catch (error: any) {
-      this.toastService.open({message: error?.message ?? error, action: 'Close'})
+      this.dialogService.toast({message: error?.message ?? error, action: 'Close'})
     }
   }
 
@@ -267,7 +269,7 @@ export class ThreadService {
 
   async saveThread(thread = this.currentThread) {
     info(`Save thread (id=${thread?.id}, title=${thread?.title})`)
-    if (thread?.title) {
+    if (thread) {
       await DB.updateThread(thread)
     }
   }

@@ -14,7 +14,7 @@ import {Link} from './Link'
 import {Label, Sub} from './Style'
 
 export const SubmenuEdit = () => {
-  const {collabService, fileService, toastService} = useState()
+  const {collabService, fileService, dialogService} = useState()
 
   const modKey = isMac ? '⌘' : mod
 
@@ -35,7 +35,7 @@ export const SubmenuEdit = () => {
     const state = currentFile?.editorView?.state
     if (!state) return
     await copyAllAsMarkdown(state)
-    toastService.open({message: 'Copied all content as markdown', duration: 2000})
+    dialogService.toast({message: 'Copied all content as markdown', duration: 2000})
   }
 
   return (

@@ -29,7 +29,7 @@ export const ContextMenu = () => {
     canvasThreadService,
     fileService,
     treeService,
-    toastService,
+    dialogService,
   } = useState()
 
   const newFile = async (code = false, link?: CanvasLinkElement, cm?: Vector) => {
@@ -75,9 +75,9 @@ export const ContextMenu = () => {
     )
 
     if (result.success) {
-      toastService.open({message: 'AI file generated', duration: 2_000})
+      dialogService.toast({message: 'AI file generated', duration: 2_000})
     } else if (result.error) {
-      toastService.open({message: 'AI file generation failed'})
+      dialogService.toast({message: 'AI file generation failed'})
     }
   }
 

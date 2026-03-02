@@ -4,9 +4,13 @@ import {DialogFooter} from '@/components/dialog/Style'
 import type {Dialog} from '@/services/DialogService'
 import {useDialog} from './use-dialog'
 
+const DialogContent = styled.div`
+  padding: 5px;
+`
+
 const DialogTitle = styled.h3`
-  margin: 10px 0;
-  margin-bottom: 0;
+  margin: 0;
+  margin-bottom: 10px;
 `
 
 interface ConfirmDialogState {
@@ -30,8 +34,10 @@ export const useConfirmDialog = () => {
 
     return (
       <>
-        <DialogTitle>{p.dialog.state?.title}</DialogTitle>
-        <p>{p.dialog.state?.content}</p>
+        <DialogContent>
+          <DialogTitle>{p.dialog.state?.title}</DialogTitle>
+          <div>{p.dialog.state?.content}</div>
+        </DialogContent>
         <DialogFooter>
           <ButtonGroup justify="flex-end">
             <ButtonPrimary onClick={onConfirm} data-testid="confirm">

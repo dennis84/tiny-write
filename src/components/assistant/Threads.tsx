@@ -78,7 +78,9 @@ const LastModified = styled.div`
   white-space: nowrap;
 `
 
-const SearchRow = styled.div``
+const SearchRow = styled.div`
+  width: 100%;
+`
 
 const SearchBorder = styled.div`
   border: 2px solid var(--primary-background);

@@ -50,7 +50,7 @@ export const BlockTooltip = (props: Props) => {
     menuService,
     threadService,
     copilotService,
-    toastService,
+    dialogService,
     locationService,
   } = useState()
   const showInputLine = useInputLine()
@@ -227,7 +227,7 @@ export const BlockTooltip = (props: Props) => {
             view.dispatch(tr)
           }
         } catch {
-          toastService.open({message: 'Failed to get copilot response', duration: 2000})
+          dialogService.toast({message: 'Failed to get copilot response', duration: 2000})
           toggleBlink(true)
         }
       },

@@ -15,6 +15,7 @@ export const ToastLayer = styled.div`
     pointer-events: auto;
     animation: fadeInUp 0.2s ease-out;
     opacity: 1;
+    gap: 10px;
   }
 `
 
@@ -48,6 +49,8 @@ export const DialogContainer = styled.div<DialogContainerProps>`
   max-height: 90vh;
   padding: 5px;
   display: flex;
+  justify-content: center;
+  align-items: center;
   opacity: 0;
   flex-direction: ${(p) => `${p.direction ?? 'column'}`};
   gap: ${(p) => `${p.gap ?? 0}px`};
@@ -59,6 +62,7 @@ export const DialogContainer = styled.div<DialogContainerProps>`
 `
 
 export const DialogFooter = styled.div`
+  width: 100%;
   margin-top: 10px;
 `
 

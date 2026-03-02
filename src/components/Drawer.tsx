@@ -51,7 +51,7 @@ const ResizeHandle = styled.div`
   bottom: 0;
   cursor: var(--cursor-grab);
   touch-action: none;
-  z-index: var(--z-index-max);
+  z-index: var(--z-index-dialog);
   padding: 0 20px;
   margin-left: -20px;
   display: flex;

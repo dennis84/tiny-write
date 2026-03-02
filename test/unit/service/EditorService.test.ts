@@ -4,12 +4,12 @@ import {beforeEach, expect, test, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
 import type {DB} from '@/db'
 import type {CollabService} from '@/services/CollabService'
+import type {DialogService} from '@/services/DialogService'
 import {EditorService} from '@/services/EditorService'
 import type {FileService} from '@/services/FileService'
 import type {LocationService} from '@/services/LocationService'
 import type {ProseMirrorService} from '@/services/ProseMirrorService'
 import type {SelectService} from '@/services/SelectService'
-import type {ToastService} from '@/services/ToastService'
 import {createState} from '@/state'
 import {createEditorView, createSubdoc, createYUpdate} from '../testutil/prosemirror-util'
 
@@ -32,7 +32,7 @@ const lastModified = new Date()
 
 const collabService = mock<CollabService>()
 const proseMirrorService = mock<ProseMirrorService>()
-const toastService = mock<ToastService>()
+const dialogService = mock<DialogService>()
 const selectService = mock<SelectService>()
 
 beforeEach(() => {
@@ -58,7 +58,7 @@ test('init - existing', async () => {
     fileService,
     collabService,
     proseMirrorService,
-    toastService,
+    dialogService,
     selectService,
     locationService,
     store,
@@ -87,7 +87,7 @@ test('init - not found', async () => {
     fileService,
     collabService,
     proseMirrorService,
-    toastService,
+    dialogService,
     selectService,
     locationService,
     store,
@@ -123,7 +123,7 @@ test('init - share', async () => {
     fileService,
     collabService,
     proseMirrorService,
-    toastService,
+    dialogService,
     selectService,
     locationService,
     store,
@@ -156,7 +156,7 @@ test('clear - with text', async () => {
     fileService,
     collabService,
     proseMirrorService,
-    toastService,
+    dialogService,
     selectService,
     locationService,
     store,
@@ -191,7 +191,7 @@ test('selectBox', async () => {
     fileService,
     collabService,
     proseMirrorService,
-    toastService,
+    dialogService,
     selectService,
     locationService,
     store,

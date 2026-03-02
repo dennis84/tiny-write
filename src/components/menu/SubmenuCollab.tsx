@@ -7,7 +7,7 @@ import {Link} from './Link'
 import {Label, Sub, Text} from './Style'
 
 export const SubmenuCollab = () => {
-  const {collabService, toastService, locationService} = useState()
+  const {collabService, dialogService, locationService} = useState()
   const collabUsers = useCollabCount()
 
   const onCollabStart = async () => {
@@ -23,7 +23,7 @@ export const SubmenuCollab = () => {
     const joinUrl = collabService.getJoinUrl()
     if (joinUrl) {
       await copy(joinUrl)
-      toastService.open({message: 'Collab link copied to clipboard', duration: 2000})
+      dialogService.toast({message: 'Collab link copied to clipboard', duration: 2000})
     }
   }
 

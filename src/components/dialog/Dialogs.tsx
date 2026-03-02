@@ -1,4 +1,4 @@
-import {For, onCleanup, onMount} from 'solid-js'
+import {For, Match, onCleanup, onMount, Switch} from 'solid-js'
 import {Dynamic} from 'solid-js/web'
 import {useState} from '@/state'
 import {Dialog} from './Dialog'
@@ -30,12 +30,19 @@ export const Dialogs = () => {
           onClose={() => dialogService.close(dialog)}
           backdrop={dialog.backdrop}
           delay={dialog.delay}
+          duration={dialog.duration}
           offset={dialog.offset}
           direction={dialog.direction}
           toast={dialog.toast}
+          toastAction={dialog.toastAction}
           index={i()}
         >
-          <Dynamic component={dialog.component} dialog={dialog} />
+          <Switch>
+            <Match when={dialog.content}>{dialog.content}</Match>
+            <Match when={true}>
+              <Dynamic component={dialog.component} dialog={dialog} />
+            </Match>
+          </Switch>
         </Dialog>
       )}
     </For>

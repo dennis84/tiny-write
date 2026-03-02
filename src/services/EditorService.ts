@@ -12,18 +12,18 @@ import {replaceText, writeFile} from '@/remote/editor'
 import {error, info} from '@/remote/log'
 import {type File, type FileText, Page, type State} from '@/types'
 import type {CollabService} from './CollabService'
+import type {DialogService} from './DialogService'
 import {FileService} from './FileService'
 import type {LocationService} from './LocationService'
 import type {ProseMirrorService} from './ProseMirrorService'
 import type {SelectService} from './SelectService'
-import type {ToastService} from './ToastService'
 
 export class EditorService {
   constructor(
     private fileService: FileService,
     private collabService: CollabService,
     private proseMirrorService: ProseMirrorService,
-    private toastService: ToastService,
+    private dialogService: DialogService,
     private selectService: SelectService,
     private locationService: LocationService,
     private store: Store<State>,
@@ -81,7 +81,7 @@ export class EditorService {
           editorView?.updateState(newState)
         } catch (e: any) {
           error('Sync error occurred', e)
-          this.toastService.open({message: 'Sync error occurred, please reload'})
+          this.dialogService.toast({message: 'Sync error occurred, please reload'})
           return
         }
 

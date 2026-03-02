@@ -2,7 +2,6 @@ import {Route, Router, type RouteSectionProps} from '@solidjs/router'
 import {createEffect, ErrorBoundary, onMount, Show, untrack} from 'solid-js'
 import {DarkMode} from '@/components/DarkMode'
 import {DropFile} from '@/components/DropFile'
-import {Toast} from '@/components/dialog/Toast'
 import {Keymap} from '@/components/Keymap'
 import {DragArea, Layout, PageContent} from '@/components/Layout'
 import {MouseCursor} from '@/components/MouseCursor'
@@ -107,7 +106,6 @@ export const Main = (props: Props) => {
             <ResizeWindow />
             <DarkMode />
             <Dialogs />
-            <Toast />
             <Title />
           </Layout>
         </ErrorBoundary>

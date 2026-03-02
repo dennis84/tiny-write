@@ -9,6 +9,7 @@ import {useTitle} from '@/hooks/use-title'
 import {useState} from '@/state'
 import {type Attachment, AttachmentType, type File} from '@/types'
 import {Button} from '../Button'
+import {DialogFooter} from '../dialog/Style'
 import {IconTextSelectStart, LangIcon} from '../Icon'
 
 const Container = styled.div`
@@ -20,7 +21,7 @@ const Container = styled.div`
   }
 `
 
-const TooltipAction = styled.div`
+const _TooltipAction = styled.div`
   display: flex;
   justify-content: flex-end;
   margin-top: 5px;
@@ -144,9 +145,9 @@ export const AttachmentChip = (props: Props) => {
         </Match>
       </Switch>
       <Show when={props.onDelete}>
-        <TooltipAction>
+        <DialogFooter>
           <Button onClick={() => onDelete(props.attachment)}>Remove</Button>
-        </TooltipAction>
+        </DialogFooter>
       </Show>
     </>
   )

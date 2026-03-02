@@ -12,8 +12,8 @@ test('autocomplete', async ({page}) => {
 
   await page.keyboard.press('Enter')
   await page.locator('.ProseMirror').pressSequentially('f', {delay})
-  await expect(page.locator('#tooltip div:nth-child(1)')).toContainText('foobar')
-  await expect(page.locator('#tooltip div:nth-child(2)')).toContainText('foobaz')
+  await expect(page.locator('#tooltip > div > div:nth-child(1)')).toContainText('foobar')
+  await expect(page.locator('#tooltip > div > div:nth-child(2)')).toContainText('foobaz')
   await page.keyboard.press('Enter')
   await assertEditorLineToEqual(page, 2, 'foobar')
 

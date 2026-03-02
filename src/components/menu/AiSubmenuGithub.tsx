@@ -19,7 +19,7 @@ const UserCode = styled.code`
 const POLL_INTERVAL = isTest ? 10 : 6_000
 
 export const AiSubmenuGithub = () => {
-  const {store, copilotService, toastService} = useState()
+  const {store, copilotService, dialogService} = useState()
   const [codeResult, setCodeResult] = createSignal<CopilotSignIn>()
   const [done, setDone] = createSignal(false)
 
@@ -37,7 +37,7 @@ export const AiSubmenuGithub = () => {
     const value = codeResult()?.userCode
     if (!value) return
     await copy(value)
-    toastService.open({message: 'User code copied to clipboard', duration: 2000})
+    dialogService.toast({message: 'User code copied to clipboard', duration: 2000})
   }
 
   const onVerify = async () => {

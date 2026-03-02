@@ -47,7 +47,7 @@ export const NewCanvasPage = () => {
 
 export const CanvasPage = (props: RouteSectionProps) => {
   const location = useLocation<LocationState | undefined>()
-  const {locationService, canvasService, canvasCollabService, toastService} = useState()
+  const {locationService, canvasService, canvasCollabService, dialogService} = useState()
 
   info(`Render canvas page (location=${JSON.stringify(location.state)})`)
 
@@ -64,7 +64,7 @@ export const CanvasPage = (props: RouteSectionProps) => {
     onMount(async () => {
       await locationService.setLastLocation(undefined)
       const message = p.error instanceof Error ? p.error.message : String(p.error)
-      toastService.open({message, duration: 10_000})
+      dialogService.toast({message, duration: 10_000})
       locationService.openPage(Page.Canvas)
     })
     return null

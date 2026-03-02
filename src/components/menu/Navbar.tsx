@@ -44,7 +44,7 @@ const FloatingContainer = styled.div`
   position: absolute;
   top: 0;
   right: 0;
-  z-index: var(--z-index-max);
+  z-index: var(--z-index-dialog);
   display: flex;
   justify-content: flex-end;
   align-items: center;
@@ -56,7 +56,7 @@ const FloatingContainer = styled.div`
 `
 
 const CollabButton = () => {
-  const {collabService, toastService} = useState()
+  const {collabService, dialogService} = useState()
   const collabCount = useCollabCount()
 
   const Tooltip = () => (
@@ -88,7 +88,7 @@ const CollabButton = () => {
     const joinUrl = collabService.getJoinUrl()
     if (joinUrl) {
       await copy(joinUrl)
-      toastService.open({message: 'Collab link copied to clipboard', duration: 2000})
+      dialogService.toast({message: 'Collab link copied to clipboard', duration: 2000})
     }
     closeTooltip()
   }

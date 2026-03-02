@@ -49,7 +49,8 @@ export const NewCodePage = () => {
 
 export const CodePage = (props: RouteSectionProps) => {
   const location = useLocation<LocationState | undefined>()
-  const {store, locationService, collabService, codeService, fileService, toastService} = useState()
+  const {store, locationService, collabService, codeService, fileService, dialogService} =
+    useState()
 
   info(`Render code page (location=${locationStateToString(location.state)})`)
 
@@ -71,7 +72,7 @@ export const CodePage = (props: RouteSectionProps) => {
     onMount(async () => {
       await locationService.setLastLocation(undefined)
       const message = p.error instanceof Error ? p.error.message : String(p.error)
-      toastService.open({message, duration: 10_000})
+      dialogService.toast({message, duration: 10_000})
       if (store.args?.cwd) {
         locationService.openDir()
       } else {

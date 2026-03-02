@@ -1,7 +1,8 @@
 import {arrow, autoUpdate, computePosition, flip, offset, shift, size} from '@floating-ui/dom'
-import {type JSX, Match, onCleanup, onMount, Switch} from 'solid-js'
+import {type JSX, Match, onCleanup, onMount, Show, Switch} from 'solid-js'
 import {ZIndex} from '@/utils/ZIndex'
 import type {Dialog as DialogType} from '../../services/DialogService'
+import {ButtonPrimary} from '../Button'
 import {DialogContainer, DialogLayer, ToastLayer, TooltipArrow} from './Style'
 
 type Props = Omit<DialogType, 'component' | 'state'> & {
@@ -60,7 +61,7 @@ export const Dialog = (props: Props) => {
         middleware: [
           offset(props.offset ?? 10),
           flip({fallbackPlacements}),
-          shift({padding: {left: 10, right: 10}}),
+          shift({padding: 10, crossAxis: true}),
           arrow({element: arrowRef, padding: 20}),
           size({
             padding: 20,
@@ -101,6 +102,12 @@ export const Dialog = (props: Props) => {
     onCleanup(() => cleanup())
   })
 
+  onMount(() => {
+    if (props.duration) {
+      setTimeout(() => props.onClose?.(), props.duration)
+    }
+  })
+
   return (
     <Switch>
       <Match when={props.anchor}>
@@ -121,8 +128,16 @@ export const Dialog = (props: Props) => {
       </Match>
       <Match when={props.toast}>
         <ToastLayer>
-          <DialogContainer ref={tooltipRef} class="toast" style={{'z-index': zIndex}}>
+          <DialogContainer
+            ref={tooltipRef}
+            direction={'row'}
+            class="toast"
+            style={{'z-index': zIndex}}
+          >
             {props.children}
+            <Show when={props.toastAction}>
+              <ButtonPrimary onClick={onClose}>{props.toastAction}</ButtonPrimary>
+            </Show>
           </DialogContainer>
         </ToastLayer>
       </Match>

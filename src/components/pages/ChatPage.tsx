@@ -9,7 +9,7 @@ import {Content, Scroll} from '../Layout'
 
 export const ChatPage = (props: RouteSectionProps) => {
   let scrollRef!: HTMLDivElement
-  const {configService, threadService, toastService, locationService} = useState()
+  const {configService, threadService, dialogService, locationService} = useState()
 
   // Create a new thread if not in location state
   onMount(() => {
@@ -37,7 +37,7 @@ export const ChatPage = (props: RouteSectionProps) => {
 
   const OnError = () => {
     onMount(async () => {
-      toastService.open({message: `Thread not found: ${props.params.id}`, duration: 10_000})
+      dialogService.toast({message: `Thread not found: ${props.params.id}`, duration: 10_000})
       locationService.openPage(Page.Assistant)
     })
     return null
