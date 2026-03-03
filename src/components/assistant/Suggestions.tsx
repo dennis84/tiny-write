@@ -6,10 +6,12 @@ import refactorCodePrompt from '@/prompts/refactor-code.md?raw'
 import testCodePrompt from '@/prompts/test-code.md?raw'
 import {useState} from '@/state'
 import {AttachmentType} from '@/types'
-import {Button, ButtonGroup} from '../Button'
+import {Button} from '../Button'
 
 const SuggestionsContainer = styled.div`
   margin-bottom: 10px;
+  display: flex;
+  gap: 5px;
 `
 
 interface Props {
@@ -31,12 +33,10 @@ export const Suggestions = (props: Props) => {
   return (
     <Show when={hasCodeAttachment()}>
       <SuggestionsContainer>
-        <ButtonGroup>
-          <Button onClick={() => addMessage(fixCodePrompt)}>Fix</Button>
-          <Button onClick={() => addMessage(explainCodePrompt)}>Explain</Button>
-          <Button onClick={() => addMessage(refactorCodePrompt)}>Refactor</Button>
-          <Button onClick={() => addMessage(testCodePrompt)}>Test</Button>
-        </ButtonGroup>
+        <Button onClick={() => addMessage(fixCodePrompt)}>Fix</Button>
+        <Button onClick={() => addMessage(explainCodePrompt)}>Explain</Button>
+        <Button onClick={() => addMessage(refactorCodePrompt)}>Refactor</Button>
+        <Button onClick={() => addMessage(testCodePrompt)}>Test</Button>
       </SuggestionsContainer>
     </Show>
   )

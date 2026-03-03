@@ -4,7 +4,6 @@ import {createSignal, onCleanup, onMount, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {v4 as uuidv4} from 'uuid'
 import {serialize} from '@/prosemirror/markdown-serialize'
-import {ProseMirrorService} from '@/services/ProseMirrorService'
 import {useState} from '@/state'
 import {type Message, Page} from '@/types'
 import {IconButton} from '../Button'
@@ -44,7 +43,6 @@ export const ChatInput = (props: Props) => {
   const [focused, setFocused] = createSignal(false)
   const [editorView, setEditorView] = createSignal<EditorView>()
   const [scrollDirection, setScrollDirection] = createSignal<'up' | 'down' | undefined>(undefined)
-  const [empty, setEmpty] = createSignal(true)
 
   const {locationService, copilotService, threadService, mediaService} = useState()
 
@@ -110,7 +108,6 @@ export const ChatInput = (props: Props) => {
   }
 
   const onChange = async (text: string) => {
-    setEmpty(ProseMirrorService.isEmpty(editorView()?.state) ?? true)
     await threadService.updateCurrentInput(text)
   }
 
@@ -176,7 +173,7 @@ export const ChatInput = (props: Props) => {
             onChange={onChange}
           />
         </ChatInputEditorRow>
-        <Show when={empty()}>
+        <Show when={!threadService.currentThread?.currentInput?.trim()}>
           <Suggestions onSuggestion={onSendSuggestion} />
         </Show>
         <ChatInputActionRow>
