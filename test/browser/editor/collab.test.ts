@@ -60,7 +60,7 @@ test('sync config', async ({page, browser}) => {
   await page.click('[data-testid="appearance"]')
   await page.getByText('Scientifica').click()
   await expect(page.getByText('Scientifica').locator('..').locator('.icon')).toHaveCount(1) // checkbox icon
-  await page.click('[data-testid="menu_navbar_back"]')
+  await page.click('[data-testid="navbar_menu_back"]')
 
   // start collab
   await page.click('[data-testid="collab"]')

@@ -22,6 +22,7 @@ test('share', async ({page, browser}) => {
 
   await page.click('[data-testid="navbar_menu_open"]')
   await page.click('[data-testid="collab"]')
+  await page.click('[data-testid="navbar_menu_open"]')
 
   await page
     .locator('[data-testid="canvas_container"]')

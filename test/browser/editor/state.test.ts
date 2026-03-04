@@ -52,7 +52,6 @@ test('open file', async ({page}) => {
 
   // Unmodified files are currently not saved
   await page.reload()
-  await page.click('[data-testid="navbar_menu_open"]')
   await assertEditorLineToEqual(page, 1, 'test1')
   await expect(page.locator('[data-testid="tree_link"]')).toHaveCount(2)
 })

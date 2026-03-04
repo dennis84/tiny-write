@@ -183,7 +183,6 @@ interface DropState {
 
 interface Props {
   onBin?: () => void
-  maybeHide?: () => void
   showDeleted?: boolean
 }
 
@@ -247,7 +246,6 @@ export const SubmenuTree = (props: Props) => {
     await treeService.add(file)
     locationService.openItem(file)
     closeTooltip()
-    props.maybeHide?.()
   }
 
   const onNewCanvas = async () => {
@@ -255,7 +253,6 @@ export const SubmenuTree = (props: Props) => {
     await treeService.add(canvas)
     locationService.openItem(canvas)
     closeTooltip()
-    props.maybeHide?.()
   }
 
   const onNewCode = async () => {
@@ -263,7 +260,6 @@ export const SubmenuTree = (props: Props) => {
     await treeService.add(file)
     locationService.openItem(file)
     closeTooltip()
-    props.maybeHide?.()
   }
 
   const onAddFile = async () => {
@@ -328,7 +324,6 @@ export const SubmenuTree = (props: Props) => {
   const onFocus = async () => {
     const id = selected()?.id
     if (!id) return
-    props.maybeHide?.()
     await canvasService.focus(id)
     closeTooltip()
   }
@@ -346,7 +341,6 @@ export const SubmenuTree = (props: Props) => {
 
     const onClick = async () => {
       locationService.openItem(p.node.value)
-      props.maybeHide?.()
     }
 
     const onCornerClick = () => treeService.collapse(p.node.id)

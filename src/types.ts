@@ -242,13 +242,18 @@ export interface Thread {
   currentInput?: string
 }
 
+export interface Sidebar {
+  width?: number
+  open?: boolean
+}
+
 export interface State {
   canvases: Canvas[]
   files: File[]
   tree?: Tree
   config: Config
   fullscreen: boolean
-  menuWidth?: number
+  sidebar?: Sidebar
   args?: Args
   window?: Window
   isSnapshot?: boolean

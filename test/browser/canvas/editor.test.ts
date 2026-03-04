@@ -22,6 +22,7 @@ test('add editor file', async ({page}) => {
   await page.locator('[data-testid="canvas_container"]').click({button: 'right'})
   await page.click('[data-testid="context_menu_new_file"]')
   await expect(page.locator('[data-testid="canvas_editor"]')).toHaveCount(1)
+  await page.click('[data-testid="navbar_menu_open"]') // make element visible
 
   // Move mouse to left link handle
   const box = await page.locator('[data-testid="edge_left_link_handle"]').boundingBox()
@@ -39,6 +40,7 @@ test('add editor file', async ({page}) => {
   await expect(page.locator('[data-testid="canvas_editor"]')).toHaveCount(2)
 
   // Clear canvas
+  await page.click('[data-testid="navbar_menu_open"]')
   await page.click('[data-testid="clear_canvas"]')
   await page.click('[data-testid="confirm"]')
 

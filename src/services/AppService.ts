@@ -18,7 +18,7 @@ export class AppService {
     const fetchedConfig = (await DB.getConfig()) ?? createConfig()
     const files = (await FileService.fetchFiles()) ?? []
     const canvases = (await CanvasService.fetchCanvases()) ?? []
-    const menuWidth = await DB.getMenuWidth()
+    const sidebar = await DB.getSidebar()
     const tree = await DB.getTree()
     const ai = await DB.getAi()
     const lastLocation = await DB.getLastLocation()
@@ -37,7 +37,7 @@ export class AppService {
       files,
       config: fetchedConfig,
       window: fetchedWindow,
-      menuWidth,
+      sidebar,
       tree,
       ai,
       threads,

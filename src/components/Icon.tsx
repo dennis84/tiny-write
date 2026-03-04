@@ -2,6 +2,7 @@ import type {JSX} from 'solid-js'
 import {Dynamic} from 'solid-js/web'
 import {styled} from 'solid-styled-components'
 import {findCodeLang} from '@/codemirror/highlight'
+import LucideSidebar from '~icons/lucide/sidebar'
 import MaterialSymbolsAdd from '~icons/material-symbols/add'
 import MaterialSymbolsAddColumnLeftOutline from '~icons/material-symbols/add-column-left-outline'
 import MaterialSymbolsAddColumnRightOutline from '~icons/material-symbols/add-column-right-outline'
@@ -641,6 +642,12 @@ export const IconUnpin = () => (
 )
 
 // other
+
+export const IconSidebar = () => (
+  <SvgIcon>
+    <LucideSidebar />
+  </SvgIcon>
+)
 
 export const IconFloatCenter = () => (
   <SvgIcon>

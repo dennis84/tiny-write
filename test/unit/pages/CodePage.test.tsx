@@ -65,7 +65,6 @@ test('init - open last location', async () => {
 
   const initial = createState({
     lastLocation: {
-      page: Page.Code,
       pathname: '/code/1',
     },
     files: [

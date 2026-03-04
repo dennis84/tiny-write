@@ -55,7 +55,6 @@ test('open - open last location', async () => {
 
   const initial = createState({
     lastLocation: {
-      page: Page.Editor,
       pathname: '/editor/2',
     },
     files: [

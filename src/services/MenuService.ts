@@ -2,10 +2,8 @@ import {createSignal} from 'solid-js'
 import type {SetStoreFunction, Store} from 'solid-js/store'
 import {DB} from '@/db'
 import type {State} from '@/types'
-import type {AppService} from './AppService'
 
-export enum MenuId {
-  MAIN = 'main',
+export enum SubmenuId {
   BIN = 'bin',
   CODE_FORMAT = 'code_format',
   APPEARANCE = 'appearance',
@@ -15,38 +13,39 @@ export enum MenuId {
 }
 
 export class MenuService {
-  private menuSignal = createSignal<MenuId>()
-  private assistantSignal = createSignal<boolean>()
+  private submenuSignal = createSignal<SubmenuId>()
+  private assistantSignal = createSignal<boolean>(false)
 
-  get menu() {
-    return this.menuSignal[0]
+  get submenu() {
+    return this.submenuSignal[0]
   }
 
   get assistant() {
     return this.assistantSignal[0]
   }
 
+  get menuOpen() {
+    return this.store.sidebar?.open ?? false
+  }
+
   get menuWidth() {
-    const w = this.store.menuWidth
+    const w = this.store.sidebar?.width
     return w ? `${w}px` : '280px'
   }
 
   constructor(
     private store: Store<State>,
     private setState: SetStoreFunction<State>,
-    _appService: AppService,
   ) {}
 
-  show(menu: MenuId) {
-    this.menuSignal[1](menu)
+  setSubmenu(menu?: SubmenuId) {
+    this.submenuSignal[1](menu)
   }
 
-  toggleMenu() {
-    this.menuSignal[1](this.menu() ? undefined : MenuId.MAIN)
-  }
-
-  hide() {
-    this.menuSignal[1](undefined)
+  async toggleMenu() {
+    const open = !(this.store.sidebar?.open ?? false)
+    this.setState('sidebar', (sb) => (sb ? {...sb, open} : {open}))
+    await DB.setSidebar(this.store.sidebar)
   }
 
   showAssistant() {
@@ -60,7 +59,7 @@ export class MenuService {
   }
 
   async setMenuWidth(width: number) {
-    this.setState('menuWidth', width)
-    await DB.setMenuWidth(width)
+    this.setState('sidebar', (sb) => (sb ? {...sb, width} : {width}))
+    await DB.setSidebar(this.store.sidebar)
   }
 }

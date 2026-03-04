@@ -4,12 +4,19 @@ import {styled} from 'solid-styled-components'
 import {isTauri} from '@/env'
 import {FULL_WIDTH, Scroll} from './Layout'
 
-const DrawerContainer = styled.div`
+// biome-ignore format: ternary breaks ugly
+const DrawerContainer = styled.div<{left?: boolean}>`
+  flex-grow: 0; /* fixed width that the user has dragged in flex layout */
+  flex-shrink: 0;
   position: relative;
   height: 100%;
   display: flex;
   flex-direction: column;
-  border-left: 1px solid var(--background-80);
+  ${(p) => p.left ? `
+    border-right: 1px solid var(--background-80);
+  ` : `
+    border-left: 1px solid var(--background-80);
+  `}
   background: var(--background-95);
   @media (max-width: ${FULL_WIDTH.toString()}px) {
     width: 100vw;
@@ -45,10 +52,16 @@ export const DrawerContent = styled.div`
   width: 100%;
 `
 
-const ResizeHandle = styled.div`
+// biome-ignore format: ternary breaks ugly
+const ResizeHandle = styled.div<{left?: boolean}>`
   position: absolute;
   top: 0;
   bottom: 0;
+  ${(p) => p.left ? `
+    right: 0;
+    margin-left: 0;
+    margin-right: -20px;
+  ` : ``}
   cursor: var(--cursor-grab);
   touch-action: none;
   z-index: var(--z-index-dialog);
@@ -74,6 +87,7 @@ type Props = JSX.HTMLAttributes<HTMLDivElement> & {
   children: JSX.Element
   ref?: () => HTMLDivElement
   width?: string
+  left?: boolean
   onResized?: (width: number) => void
 }
 
@@ -81,11 +95,11 @@ export const Drawer = (props: Props) => {
   let resizeHandleRef!: HTMLDivElement
   let ref!: HTMLDivElement
 
-  const [local, rest] = splitProps(props, ['width', 'onResized', 'children'])
+  const [local, rest] = splitProps(props, ['width', 'onResized', 'children', 'left'])
 
   onMount(() => {
     const gestrure = new DragGesture(resizeHandleRef, ({delta: [x]}) => {
-      const w = ref.offsetWidth - x
+      const w = ref.offsetWidth + x * (props.left ? 1 : -1)
       local.onResized?.(w)
     })
 
@@ -98,11 +112,12 @@ export const Drawer = (props: Props) => {
     <DrawerContainer
       {...rest}
       ref={(el) => (ref = el) && props.ref?.(el)}
+      left={props.left}
       data-tauri-drag-region="true"
       style={{width: local.width ?? '400px'}}
     >
       {local.children}
-      <ResizeHandle ref={resizeHandleRef}>
+      <ResizeHandle ref={resizeHandleRef} left={props.left}>
         <div />
       </ResizeHandle>
     </DrawerContainer>

@@ -9,6 +9,7 @@ import {
   ConfigSchema,
   type ElementType,
   type LastLocation,
+  type Sidebar,
   type Thread,
   type Window,
 } from '@/types'
@@ -157,12 +158,13 @@ export class DB {
     return (await dbPromise).get('lastLocation', 'main')
   }
 
-  static async setMenuWidth(width: number) {
-    return (await dbPromise).put('meta', width, 'menuWidth')
+  static async setSidebar(sidebar?: Sidebar) {
+    const sb = DB.unwrap(sidebar) ?? {}
+    return (await dbPromise).put('meta', sb, 'sidebar')
   }
 
-  static async getMenuWidth(): Promise<number | undefined> {
-    return (await dbPromise).get('meta', 'menuWidth') as Promise<number | undefined>
+  static async getSidebar(): Promise<Sidebar | undefined> {
+    return (await dbPromise).get('meta', 'sidebar') as Promise<Sidebar | undefined>
   }
 
   static async setTree(tree: Tree) {

@@ -9,7 +9,7 @@ import {useInputLine} from '@/hooks/use-input-line'
 import {useTitle} from '@/hooks/use-title'
 import {copy} from '@/remote/clipboard'
 import {CanvasService} from '@/services/CanvasService'
-import {MenuId} from '@/services/MenuService'
+import {SubmenuId} from '@/services/MenuService'
 import {isCodeFile, isLocalFile, useState} from '@/state'
 import {Page, type Thread} from '@/types'
 import {Threads} from '../assistant/Threads'
@@ -33,20 +33,24 @@ import {
   IconLanguage,
   IconLightMode,
   IconLink,
-  IconMoreVert,
   IconPrettier,
+  IconSidebar,
   IconTextSnippet,
   LangIcon,
 } from '../Icon'
 
-const FloatingContainer = styled.div`
+interface ContainerProps {
+  justify?: 'flex-end' | 'flex-start'
+}
+
+const FloatingContainer = styled.div<ContainerProps>`
   width: 100%;
   position: absolute;
   top: 0;
   right: 0;
   z-index: var(--z-index-dialog);
   display: flex;
-  justify-content: flex-end;
+  justify-content: ${(p) => p.justify};
   align-items: center;
   padding: 5px;
   pointer-events: none;
@@ -284,7 +288,7 @@ const AssistantButton = () => {
 
   const onAssistantClick = async () => {
     if (!store.ai?.copilot?.user) {
-      menuService.show(MenuId.AI_CONFIG)
+      menuService.setSubmenu(SubmenuId.AI_CONFIG)
       return
     }
 
@@ -321,26 +325,11 @@ const MenuButton = () => {
   }
 
   return (
-    <>
-      <Show when={!menuService.menu()}>
-        <TooltipHelp title="Open Menu">
-          <IconButton onClick={onMenuButtonClick} data-testid="navbar_menu_open">
-            <IconMoreVert />
-          </IconButton>
-        </TooltipHelp>
-      </Show>
-      <Show when={menuService.menu()}>
-        <TooltipHelp title="Close menu">
-          <IconButton
-            active={menuService.menu() === MenuId.MAIN}
-            onClick={onMenuButtonClick}
-            data-testid="menu_navbar_close"
-          >
-            <IconClose />
-          </IconButton>
-        </TooltipHelp>
-      </Show>
-    </>
+    <TooltipHelp title={menuService.menuOpen ? 'Hide sidebar' : 'Show sidebar'}>
+      <IconButton onClick={onMenuButtonClick} data-testid="navbar_menu_open">
+        <IconSidebar />
+      </IconButton>
+    </TooltipHelp>
   )
 }
 
@@ -398,7 +387,7 @@ export const ChatNavbar = () => {
   }
 
   return (
-    <FloatingContainer>
+    <FloatingContainer justify="flex-start">
       <ButtonGroup justifySelf="flex-start" background={true}>
         <Threads onChange={onChangeThread} />
         <Show when={threadService.currentThread?.messages?.length}>
@@ -414,9 +403,6 @@ export const ChatNavbar = () => {
           </IconButton>
         </TooltipHelp>
         <AssistantButton />
-        <Show when={!menuService.menu()}>
-          <MenuButton />
-        </Show>
       </ButtonGroup>
     </FloatingContainer>
   )
@@ -426,51 +412,37 @@ export const MenuNavbar = () => {
   const {menuService} = useState()
 
   return (
-    <FloatingContainer>
-      <ButtonGroup background={menuService.menu() !== MenuId.MAIN}>
-        <Show when={menuService.menu() !== MenuId.MAIN}>
-          <TooltipHelp title="Back to main menu">
-            <IconButton
-              onClick={() => menuService.show(MenuId.MAIN)}
-              active={true}
-              data-testid="menu_navbar_back"
-            >
-              <IconArrowBack />
-            </IconButton>
-          </TooltipHelp>
-        </Show>
-        <Show when={menuService.menu()}>
+    <>
+      <FloatingContainer>
+        <ButtonGroup background={false}>
           <MenuButton />
-        </Show>
-      </ButtonGroup>
-    </FloatingContainer>
+        </ButtonGroup>
+      </FloatingContainer>
+      <FloatingContainer justify="flex-end">
+        <ButtonGroup background={false}>
+          <Show when={menuService.submenu() !== undefined}>
+            <TooltipHelp title="Back to main menu">
+              <IconButton
+                onClick={() => menuService.setSubmenu(undefined)}
+                active={true}
+                data-testid="navbar_menu_back"
+              >
+                <IconArrowBack />
+              </IconButton>
+            </TooltipHelp>
+          </Show>
+        </ButtonGroup>
+      </FloatingContainer>
+    </>
   )
 }
 
-export const FloatingNavbar = () => {
-  const {canvasService, collabService, fileService, locationService, threadService, menuService} =
-    useState()
-
-  const onChangeThread = (thread: Thread) => {
-    locationService.openItem(thread)
-  }
-
-  const onNewThread = () => {
-    const newThread = threadService.newThread()
-    locationService.updateState({threadId: newThread.id})
-  }
+export const InfoNavbar = () => {
+  const {canvasService, collabService, fileService, locationService, menuService} = useState()
 
   return (
-    <FloatingContainer>
+    <FloatingContainer justify="flex-end">
       <ButtonGroup background={true}>
-        <Show when={locationService.page === Page.Assistant}>
-          <Threads onChange={onChangeThread} />
-          <Show when={threadService.currentThread?.messages?.length}>
-            <Button onClick={onNewThread}>
-              <IconAdd /> New
-            </Button>
-          </Show>
-        </Show>
         <BackButton />
         <Show when={fileService.currentFile || canvasService.currentCanvas}>
           <CurrentFileButton />
@@ -482,9 +454,6 @@ export const FloatingNavbar = () => {
           <AssistantButton />
         </Show>
         <DarkModeToggle />
-        <Show when={!menuService.menu() && !menuService.assistant()}>
-          <MenuButton />
-        </Show>
       </ButtonGroup>
     </FloatingContainer>
   )

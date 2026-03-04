@@ -18,12 +18,12 @@ test('add code file', async ({page}) => {
   await clickTreeMenu(page, 1, 'add_canvas')
 
   expect(page.locator('[data-testid="canvas_container"]')).toBeVisible()
-  await page.click('[data-testid="menu_navbar_close"]')
 
   // Create file
   await page.locator('[data-testid="canvas_container"]').click({button: 'right'})
   await page.click('[data-testid="context_menu_new_code_file"]')
   await expect(page.locator('[data-testid="canvas_code_editor"]')).toHaveCount(1)
+  await page.click('[data-testid="navbar_menu_open"]') // make element visible
 
   // Activate file and type
   await page.dblclick('[data-testid="bounds"]')

@@ -5,7 +5,7 @@ import {IconAdjust, IconCheckBox, IconClose, IconGrid3x3} from '../Icon'
 import {Link} from './Link'
 import {Label, Sub} from './Style'
 
-export const SubmenuCanvas = ({maybeHide}: {maybeHide: () => void}) => {
+export const SubmenuCanvas = () => {
   const {canvasService, canvasCollabService} = useState()
   const showConfirmDialog = useConfirmDialog()
 
@@ -16,19 +16,16 @@ export const SubmenuCanvas = ({maybeHide}: {maybeHide: () => void}) => {
       onConfirm: async () => {
         await canvasService.clearCanvas()
         canvasCollabService.removeAll()
-        maybeHide()
       },
     })
   }
 
   const onBackToContent = async () => {
     await canvasService.backToContent()
-    maybeHide()
   }
 
   const onSnapToGrid = () => {
     canvasService.snapToGrid()
-    maybeHide()
   }
 
   return (

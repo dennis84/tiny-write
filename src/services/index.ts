@@ -109,7 +109,7 @@ export const createCtrl = (initial: State) => {
     locationService,
     dialogService,
   )
-  const menuService = new MenuService(store, setState, appService)
+  const menuService = new MenuService(store, setState)
 
   return {
     store,

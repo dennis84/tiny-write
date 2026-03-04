@@ -1,5 +1,5 @@
 import type {Location, Navigator, Params} from '@solidjs/router'
-import type {SetStoreFunction, Store} from 'solid-js/store'
+import {type SetStoreFunction, type Store, unwrap} from 'solid-js/store'
 import {DB} from '@/db'
 import {isTauri} from '@/env'
 import {info} from '@/remote/log'
@@ -14,6 +14,7 @@ import {
   type State,
   type Thread,
 } from '@/types'
+import {locationStateToString} from '@/utils/debug'
 import {open as shellOpen} from '../remote/app'
 
 export class LocationService {
@@ -71,7 +72,8 @@ export class LocationService {
   }
 
   updateState(locState: Partial<LocationState> | undefined) {
-    const state = {...this.state, ...locState}
+    const state = unwrap({...this.state, ...locState})
+    info(`Update location state (state=${locationStateToString(state)})`)
     this.navigator(location.pathname, {state, replace: true})
   }
 

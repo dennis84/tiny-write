@@ -6,7 +6,7 @@ import {Keymap} from '@/components/Keymap'
 import {DragArea, Layout, PageContent} from '@/components/Layout'
 import {MouseCursor} from '@/components/MouseCursor'
 import {Menu} from '@/components/menu/Menu'
-import {FloatingNavbar} from '@/components/menu/Navbar'
+import {InfoNavbar} from '@/components/menu/Navbar'
 import {CanvasPage, NewCanvasPage} from '@/components/pages/CanvasPage'
 import {ChatPage} from '@/components/pages/ChatPage'
 import {CodePage, NewCodePage} from '@/components/pages/CodePage'
@@ -25,6 +25,7 @@ import {show, updateWindow} from '@/remote/window'
 import {createCtrl} from '@/services'
 import {StateContext} from '@/state'
 import type {State} from '@/types'
+import {ChatSidebar} from './assistant/ChatSidebar'
 import {Dialogs} from './dialog/Dialogs'
 import {GeneralError} from './Error'
 import {Title} from './pages/Title'
@@ -92,15 +93,16 @@ export const Main = (props: Props) => {
         <Variables />
         <ErrorBoundary fallback={(error) => <GeneralError error={error} />}>
           <Layout ref={layoutRef} data-testid="initialized">
+            <Menu />
             <PageContent>
-              <FloatingNavbar />
+              <InfoNavbar />
               {p.children}
             </PageContent>
             <Show when={isTauri()}>
               <DragArea data-tauri-drag-region="true" />
             </Show>
             <MouseCursor />
-            <Menu />
+            <ChatSidebar />
             <DropFile />
             <Keymap />
             <ResizeWindow />
