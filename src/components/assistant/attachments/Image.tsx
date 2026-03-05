@@ -1,5 +1,5 @@
 import {TooltipButton} from '@/components/dialog/Style'
-import {IconImage} from '@/components/Icon'
+import {IconImage} from '@/components/icons/Ui'
 import {DropTarget} from '@/services/MediaService'
 import {useState} from '@/state'
 

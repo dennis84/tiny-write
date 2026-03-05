@@ -5,7 +5,7 @@ import {copy} from '@/remote/clipboard'
 import type {CopilotSignIn} from '@/remote/copilot'
 import {useState} from '@/state'
 import {IconButton} from '../Button'
-import {IconContentCopy, IconOpenInNew, IconToggleOff, IconToggleOn} from '../Icon'
+import {IconCopy, IconOpenInNew, IconToggleOff, IconToggleOn} from '../icons/Ui'
 import {Link} from './Link'
 import {Label, Note, Sub, Text} from './Style'
 
@@ -81,7 +81,7 @@ export const AiSubmenuGithub = () => {
           <Text>
             User Code: <UserCode>{codeResult()?.userCode}</UserCode>
             <IconButton onClick={onCopy} data-testid="copy_verification_uri">
-              <IconContentCopy />
+              <IconCopy />
             </IconButton>
           </Text>
           <Link onClick={onVerify}>

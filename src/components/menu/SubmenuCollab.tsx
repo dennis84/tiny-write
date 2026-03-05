@@ -2,7 +2,7 @@ import {Show} from 'solid-js'
 import {useCollabCount} from '@/hooks/use-collab-count'
 import {copy} from '@/remote/clipboard'
 import {useState} from '@/state'
-import {IconCloud, IconCloudOff, IconGroup, IconLink} from '../Icon'
+import {IconCloud, IconCloudOff, IconCopy, IconGroup} from '../icons/Ui'
 import {Link} from './Link'
 import {Label, Sub, Text} from './Style'
 
@@ -41,7 +41,7 @@ export const SubmenuCollab = () => {
             <IconCloudOff /> Disconnect
           </Link>
           <Link onClick={onCopyCollabLink}>
-            <IconLink /> Copy Link
+            <IconCopy /> Copy Link
           </Link>
           <Text>
             <IconGroup /> {collabUsers()} {collabUsers() === 1 ? 'user' : 'users'} connected

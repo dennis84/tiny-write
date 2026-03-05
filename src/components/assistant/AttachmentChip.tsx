@@ -10,7 +10,8 @@ import {useState} from '@/state'
 import {type Attachment, AttachmentType, type File} from '@/types'
 import {Button} from '../Button'
 import {DialogFooter} from '../dialog/Style'
-import {IconTextSelectStart, LangIcon} from '../Icon'
+import {LangIcon} from '../icons/LangIcon'
+import {IconTextCursor} from '../icons/Ui'
 
 const Container = styled.div`
   display: grid;
@@ -19,12 +20,6 @@ const Container = styled.div`
   button {
     background: var(--background-95);
   }
-`
-
-const _TooltipAction = styled.div`
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 5px;
 `
 
 const TooltipImage = styled.img`
@@ -186,7 +181,7 @@ export const AttachmentChip = (props: Props) => {
         </Match>
         <Match when={props.attachment.type === AttachmentType.Selection}>
           <Button onClick={onOpenTooltip}>
-            <IconTextSelectStart />
+            <IconTextCursor />
             <Suspense>
               <AttachmentTitle
                 file={file}

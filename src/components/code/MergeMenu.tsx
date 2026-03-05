@@ -3,7 +3,7 @@ import {createMemo, createSignal, onCleanup, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {DialogContainer, TooltipButton} from '@/components/dialog/Style'
 import {useState} from '@/state'
-import {IconCheck, IconClose} from '../Icon'
+import {IconCheck, IconClose} from '../icons/Ui'
 
 const MergeMenuContainer = styled.div`
   position: fixed;

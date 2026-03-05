@@ -7,22 +7,6 @@ import {foldAll} from '@/codemirror/fold-all'
 import {getLanguageNames} from '@/codemirror/highlight'
 import {createBlockquote, createCodeFence} from '@/components/assistant/util'
 import {DialogList, TooltipButton, TooltipDivider} from '@/components/dialog/Style'
-import {
-  IconAdd,
-  IconCodeBlocks,
-  IconFileSave,
-  IconFloatCenter,
-  IconFormatClear,
-  IconFormatImageLeft,
-  IconFormatImageRight,
-  IconLanguage,
-  IconOpenInNew,
-  IconRefresh,
-  IconUnfoldLess,
-  IconVariableRemove,
-  IconVisibility,
-  IconVisibilityOff,
-} from '@/components/Icon'
 import {useDialog} from '@/hooks/use-dialog'
 import {useInputLine} from '@/hooks/use-input-line'
 import editorTextHandling from '@/prompts/editor-text-handling.md?raw'
@@ -34,6 +18,22 @@ import type {ChatMessage} from '@/services/CopilotService'
 import {useState} from '@/state'
 import {AttachmentType} from '@/types'
 import {timeout} from '@/utils/promise'
+import {
+  IconAdd,
+  IconCodeBlocks,
+  IconFileSave,
+  IconFloatCenter,
+  IconFloatLeft,
+  IconFloatRight,
+  IconFormatClear,
+  IconLanguage,
+  IconOpenInNew,
+  IconRefresh,
+  IconUnfoldLess,
+  IconVariableRemove,
+  IconVisibility,
+  IconVisibilityOff,
+} from '../icons/Ui'
 import type {Block} from './BlockHandle'
 
 interface Props {
@@ -386,10 +386,10 @@ export const BlockTooltip = (props: Props) => {
         }
       >
         <TooltipButton onClick={() => alignNode(Align.FloatLeft)} data-testid="align_float_left">
-          <IconFormatImageLeft /> float left
+          <IconFloatLeft /> float left
         </TooltipButton>
         <TooltipButton onClick={() => alignNode(Align.FloatRight)} data-testid="align_float_right">
-          <IconFormatImageRight /> float right
+          <IconFloatRight /> float right
         </TooltipButton>
         <TooltipButton onClick={() => alignNode(Align.Center)} data-testid="align_center">
           <IconFloatCenter /> center

@@ -13,14 +13,6 @@ import {
 import {getLanguageNames} from '@/codemirror/highlight'
 import {createCodeFence} from '@/components/assistant/util'
 import {TooltipButton} from '@/components/dialog/Style'
-import {
-  IconAdjust,
-  IconAiAssistant,
-  IconHistory,
-  IconLanguage,
-  IconOpenInFull,
-  IconPrettier,
-} from '@/components/Icon'
 import {useDialog} from '@/hooks/use-dialog'
 import {useInputLine} from '@/hooks/use-input-line'
 import type {Dialog} from '@/services/DialogService'
@@ -28,6 +20,9 @@ import {isCodeElement, isEditorElement, useState} from '@/state'
 import {AttachmentType, type CanvasBoxElement, type CanvasElement} from '@/types'
 import {BoxUtil} from '@/utils/BoxUtil'
 import {VecUtil} from '@/utils/VecUtil'
+import {IconAiAssistant} from '../icons/Ai'
+import {IconPrettier} from '../icons/Logo'
+import {IconFocus, IconHistory, IconLanguage, IconOpenInFull} from '../icons/Ui'
 
 export const Toolbar = () => {
   const {
@@ -230,7 +225,7 @@ export const Toolbar = () => {
       </Show>
       <Show when={!inViewport()}>
         <TooltipButton onClick={onBackToContent}>
-          <IconAdjust /> Back to content
+          <IconFocus /> Back to content
         </TooltipButton>
       </Show>
     </>

@@ -6,7 +6,7 @@ import {styled} from 'solid-styled-components'
 import {resolvePath, toRelativePath} from '@/remote/editor'
 import {info} from '@/remote/log'
 import {useState} from '@/state'
-import {IconDescription, IconFolder, IconFolderOpen} from '../Icon'
+import {IconFileCode, IconFolder, IconFolderOpen} from '../icons/Ui'
 import {Content, Scroll} from '../Layout'
 
 const CurrentPath = styled.div`
@@ -111,7 +111,7 @@ export const DirPage = () => {
 
     return (
       <Link data-testid="link" onClick={onClick} isDirectory={p.entry.isDirectory}>
-        {p.entry.isDirectory ? <IconFolder /> : <IconDescription />} {p.entry.name}
+        {p.entry.isDirectory ? <IconFolder /> : <IconFileCode />} {p.entry.name}
         {p.entry.isDirectory && '/'}
       </Link>
     )

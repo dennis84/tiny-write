@@ -7,7 +7,8 @@ import type {TreeItem} from '@/tree'
 import {AttachmentType, type Message} from '@/types'
 import {ButtonGroup, ButtonSpan, IconButton} from '../Button'
 import {TooltipHelp} from '../dialog/TooltipHelp'
-import {IconContentCopy, IconHand, IconRefresh, Spinner} from '../Icon'
+import {Spinner} from '../icons/Spinner'
+import {IconCopy, IconHand, IconRefresh} from '../icons/Ui'
 import {AttachmentChip} from './AttachmentChip'
 import {MessageMarkdown} from './MessageMarkdown'
 import {Pagination} from './Pagination'
@@ -53,7 +54,7 @@ export const MessageAnswer = (props: Props) => {
       <ButtonGroup>
         <TooltipHelp title="Copy">
           <IconButton onClick={onCopy}>
-            <IconContentCopy />
+            <IconCopy />
           </IconButton>
         </TooltipHelp>
         <TooltipHelp title="Regenerate">

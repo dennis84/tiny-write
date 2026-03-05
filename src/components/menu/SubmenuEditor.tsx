@@ -3,7 +3,7 @@ import {isMac, isTauri, mod} from '@/env'
 import {saveFile} from '@/remote/editor'
 import {info} from '@/remote/log'
 import {useState} from '@/state'
-import {IconClose, IconSaveAs} from '../Icon'
+import {IconClose, IconSaveAs} from '../icons/Ui'
 import {Link} from './Link'
 import {Label, Sub} from './Style'
 

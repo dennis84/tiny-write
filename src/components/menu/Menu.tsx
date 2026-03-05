@@ -1,22 +1,21 @@
 import {type JSX, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
-import {
-  IconAi,
-  IconAiAssistant,
-  IconContrast,
-  IconDesktopLandscape,
-  IconFullscreen,
-  IconHistory,
-  IconPrettier,
-  IconSpellcheck,
-  IconVerticalAlignCenter,
-} from '@/components/Icon'
 import {isDev, isMac, isTauri, mod, shortHash, VERSION_URL, version} from '@/env'
 import {quit} from '@/remote/app'
 import {SubmenuId} from '@/services/MenuService'
 import {useState} from '@/state'
 import {Page} from '@/types'
 import {Drawer, DrawerContent, DrawerScroll} from '../Drawer'
+import {IconAi, IconAiAssistant} from '../icons/Ai'
+import {IconPrettier} from '../icons/Logo'
+import {
+  IconDesktopLandscape,
+  IconFocus,
+  IconFullscreen,
+  IconHistory,
+  IconPalette,
+  IconSpellcheck,
+} from '../icons/Ui'
 import {AiConfig} from './AiConfig'
 import {Appearance} from './Appearance'
 import {Bin} from './Bin'
@@ -165,7 +164,7 @@ export const Menu = () => {
                     data-testid="appearance"
                     onClick={() => menuService.setSubmenu(SubmenuId.APPEARANCE)}
                   >
-                    <IconContrast /> Appearance
+                    <IconPalette /> Appearance
                   </Link>
                   <Show when={showCodeFormat()}>
                     <Link onClick={() => menuService.setSubmenu(SubmenuId.CODE_FORMAT)}>
@@ -188,7 +187,7 @@ export const Menu = () => {
                   </Show>
                   <Show when={locationService.page === Page.Editor}>
                     <Link onClick={onToggleTypewriterMode} checked={store.config.typewriterMode}>
-                      <IconVerticalAlignCenter /> Typewriter mode
+                      <IconFocus /> Typewriter mode
                     </Link>
                     <Link onClick={onToggleSpellcheck} checked={store.config.spellcheck}>
                       <IconSpellcheck /> Spellcheck

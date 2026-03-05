@@ -10,7 +10,7 @@ import {info} from '@/remote/log'
 import {useState} from '@/state'
 import {IconButton} from '../Button'
 import {TooltipHelp} from '../dialog/TooltipHelp'
-import {IconAdd, IconContentCopy, IconMerge} from '../Icon'
+import {IconAdd, IconCopy, IconMerge} from '../icons/Ui'
 import type {CodeFenceInfo} from './MessageMarkdown'
 
 const CodeBlockHeaderEl = styled.div`
@@ -80,7 +80,7 @@ export const CodeBlockHeader = (p: {state: CodeBlockHeaderState}) => {
           <span>{title() ?? p.state.info.lang ?? 'text'}</span>
           <TooltipHelp title="Copy">
             <IconButton onClick={onCopy} data-testid="panel_button_copy">
-              <IconContentCopy />
+              <IconCopy />
             </IconButton>
           </TooltipHelp>
           <Show when={!file && p.state.info.attrs?.file}>

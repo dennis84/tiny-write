@@ -9,7 +9,15 @@ import type {Thread} from '@/types'
 import {Button, ButtonGroup} from '../Button'
 import {DialogFooter, DialogLabel, DialogList, DialogScroll} from '../dialog/Style'
 import {TooltipHelp} from '../dialog/TooltipHelp'
-import {IconAdd, IconDelete, IconEdit, IconHistory, IconPin, IconSearch, IconUnpin} from '../Icon'
+import {
+  IconAdd,
+  IconDelete,
+  IconEdit,
+  IconHistory,
+  IconPin,
+  IconSearch,
+  IconUnpin,
+} from '../icons/Ui'
 
 const Scroll = styled(DialogScroll)`
   width: 600px;

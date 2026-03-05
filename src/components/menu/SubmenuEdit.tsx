@@ -2,14 +2,7 @@ import {Show} from 'solid-js'
 import {isMac, isTauri, mod} from '@/env'
 import {copyAllAsMarkdown} from '@/remote/clipboard'
 import {useState} from '@/state'
-import {
-  IconContentCopy,
-  IconContentCut,
-  IconContentPaste,
-  IconMarkdownCopy,
-  IconRedo,
-  IconUndo,
-} from '../Icon'
+import {IconCopy, IconCut, IconMarkdownCopy, IconPaste, IconRedo, IconUndo} from '../icons/Ui'
 import {Link} from './Link'
 import {Label, Sub} from './Style'
 
@@ -49,13 +42,13 @@ export const SubmenuEdit = () => {
           <IconRedo /> Redo
         </Link>
         <Link onClick={() => cmd('cut')} keys={[modKey, 'x']}>
-          <IconContentCut /> Cut
+          <IconCut /> Cut
         </Link>
         <Link onClick={() => cmd('paste')} disabled={!isTauri()} keys={[modKey, 'p']}>
-          <IconContentPaste /> Paste
+          <IconPaste /> Paste
         </Link>
         <Link onClick={() => cmd('copy')} keys={[modKey, 'c']}>
-          <IconContentCopy /> Copy
+          <IconCopy /> Copy
         </Link>
         <Show when={fileService.currentFile?.editorView}>
           <Link onClick={onCopyAllAsMd}>

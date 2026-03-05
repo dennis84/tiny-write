@@ -5,7 +5,7 @@ import type {TreeItem} from '@/tree'
 import type {Message} from '@/types'
 import {ButtonGroup, IconButton} from '../Button'
 import {TooltipHelp} from '../dialog/TooltipHelp'
-import {IconEditSquare} from '../Icon'
+import {IconEdit} from '../icons/Ui'
 import {AttachmentChip} from './AttachmentChip'
 import {MessageInput} from './MessageInput'
 import {MessageMarkdown} from './MessageMarkdown'
@@ -106,7 +106,7 @@ export const MessageQuestion = (props: Props) => {
             />
             <TooltipHelp title="Edit message">
               <IconButton onClick={onEditMessage} data-testid="edit_message">
-                <IconEditSquare />
+                <IconEdit />
               </IconButton>
             </TooltipHelp>
           </ButtonGroup>

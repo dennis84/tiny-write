@@ -1,6 +1,6 @@
 import {createEffect, createSignal, Show} from 'solid-js'
 import {TooltipButton} from '@/components/dialog/Style'
-import {IconTextSelectStart} from '@/components/Icon'
+import {IconTextCursor} from '@/components/icons/Ui'
 import {useCurrentFile} from '@/hooks/use-current-file'
 import {useState} from '@/state'
 import {type Attachment, AttachmentType} from '@/types'
@@ -49,7 +49,7 @@ export const SelectionButton = (props: Props) => {
   return (
     <Show when={show()}>
       <TooltipButton onClick={onClick}>
-        <IconTextSelectStart />
+        <IconTextCursor />
         Add selection
       </TooltipButton>
     </Show>

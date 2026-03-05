@@ -1,6 +1,6 @@
 import {type JSX, Show, splitProps} from 'solid-js'
 import {styled} from 'solid-styled-components'
-import {IconCheckBox} from '../Icon'
+import {IconCheckBox} from '../icons/Ui'
 import {itemCss, Keys} from './Style'
 
 // biome-ignore format: ternary breaks ugly

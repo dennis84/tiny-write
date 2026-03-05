@@ -5,7 +5,7 @@ import {Portal} from 'solid-js/web'
 import {styled} from 'solid-styled-components'
 import {useState} from '@/state'
 import type {File} from '@/types'
-import {IconDragIndicator} from '../Icon'
+import {IconDragIndicator} from '../icons/Ui'
 import {BlockTooltip} from './BlockTooltip'
 
 const DragHandle = styled.div`

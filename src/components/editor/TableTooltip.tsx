@@ -21,8 +21,8 @@ import {
   IconAddRowBelow,
   IconColumnRemove,
   IconRowRemove,
-  IconToggleOn,
-} from '../Icon'
+} from '../icons/Table'
+import {IconToggleOn} from '../icons/Ui'
 import type {ActiveHandle, CurrentCell, CurrentTable} from './TableControl'
 
 export interface TableTooltipState {

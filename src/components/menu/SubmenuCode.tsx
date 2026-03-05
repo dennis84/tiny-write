@@ -5,7 +5,7 @@ import {useInputLine} from '@/hooks/use-input-line'
 import {saveFile} from '@/remote/editor'
 import {info} from '@/remote/log'
 import {useState} from '@/state'
-import {IconLanguage, IconSaveAs} from '../Icon'
+import {IconLanguage, IconSaveAs} from '../icons/Ui'
 import {Link} from './Link'
 import {Label, Sub} from './Style'
 

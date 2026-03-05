@@ -16,28 +16,26 @@ import {Threads} from '../assistant/Threads'
 import {Button, ButtonGroup, IconButton} from '../Button'
 import {DialogList, TooltipButton, TooltipDivider} from '../dialog/Style'
 import {TooltipHelp} from '../dialog/TooltipHelp'
+import {IconAiAssistant, IconAiAssistantClose} from '../icons/Ai'
+import {IconDarkMode, IconLightMode} from '../icons/DarkMode'
+import {LangIcon} from '../icons/LangIcon'
+import {IconPrettier} from '../icons/Logo'
 import {
   IconAdd,
-  IconAiAssistant,
-  IconAiAssistantClose,
   IconArrowBack,
   IconClose,
   IconCloud,
   IconCloudOff,
-  IconDarkMode,
+  IconCopy,
   IconDelete,
   IconEdit,
+  IconFileCode,
   IconFullscreen,
   IconGesture,
   IconHistory,
   IconLanguage,
-  IconLightMode,
-  IconLink,
-  IconPrettier,
   IconSidebar,
-  IconTextSnippet,
-  LangIcon,
-} from '../Icon'
+} from '../icons/Ui'
 
 interface ContainerProps {
   justify?: 'flex-end' | 'flex-start'
@@ -70,7 +68,7 @@ const CollabButton = () => {
         Disconnect
       </TooltipButton>
       <TooltipButton onClick={onCopyCollabLink}>
-        <IconLink /> Copy Link
+        <IconCopy /> Copy Link
       </TooltipButton>
     </DialogList>
   )
@@ -249,7 +247,7 @@ const CurrentFileButton = () => {
           <LangIcon name={fileService.currentFile?.codeLang} />
         </Match>
         <Match when={fileService.currentFile}>
-          <IconTextSnippet />
+          <IconFileCode />
         </Match>
         <Match when={canvasService.currentCanvas}>
           <IconGesture />

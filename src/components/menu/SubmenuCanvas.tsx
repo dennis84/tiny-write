@@ -1,7 +1,7 @@
 import {Show} from 'solid-js'
 import {useConfirmDialog} from '@/hooks/use-confirm-dialog'
 import {useState} from '@/state'
-import {IconAdjust, IconCheckBox, IconClose, IconGrid3x3} from '../Icon'
+import {IconCheckBox, IconClose, IconFocus, IconGrid} from '../icons/Ui'
 import {Link} from './Link'
 import {Label, Sub} from './Style'
 
@@ -36,10 +36,10 @@ export const SubmenuCanvas = () => {
           <IconClose /> Clear canvas
         </Link>
         <Link onClick={onBackToContent}>
-          <IconAdjust /> Back to content
+          <IconFocus /> Back to content
         </Link>
         <Link onClick={onSnapToGrid}>
-          <IconGrid3x3 /> Snap to grid
+          <IconGrid /> Snap to grid
           <Show when={canvasService.currentCanvas?.snapToGrid}>
             <IconCheckBox />
           </Show>

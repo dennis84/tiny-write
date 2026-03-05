@@ -4,7 +4,7 @@ import {serialize} from '@/prosemirror/markdown-serialize'
 import type {Message} from '@/types'
 import {IconButton} from '../Button'
 import {TooltipHelp} from '../dialog/TooltipHelp'
-import {IconCheck, IconClose} from '../Icon'
+import {IconCheck, IconClose} from '../icons/Ui'
 import {ChatEditor} from './ChatEditor'
 import {ChatInputActionRow, ChatInputBorder, ChatInputEditorRow} from './Style'
 

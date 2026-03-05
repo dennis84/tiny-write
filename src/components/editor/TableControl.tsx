@@ -7,7 +7,7 @@ import {styled} from 'solid-styled-components'
 import {useDialog} from '@/hooks/use-dialog'
 import {EdgeType, type File} from '@/types'
 import {BoxUtil} from '@/utils/BoxUtil'
-import {IconDragIndicator} from '../Icon'
+import {IconDragIndicator} from '../icons/Ui'
 import {TableTooltip, type TableTooltipState} from './TableTooltip'
 
 const Handle = styled.div`

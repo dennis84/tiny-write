@@ -6,7 +6,7 @@ import {type Attachment, AttachmentType} from '@/types'
 import {IconButton} from '../Button'
 import {DialogList} from '../dialog/Style'
 import {TooltipHelp} from '../dialog/TooltipHelp'
-import {IconAttachment} from '../Icon'
+import {IconPaperclip} from '../icons/Ui'
 import {AttachmentChip} from './AttachmentChip'
 import {CurrentFileButton} from './attachments/CurrentFile'
 import {ImageButton} from './attachments/Image'
@@ -127,7 +127,7 @@ export const ChatInputAttachments = () => {
     <Attachments>
       <TooltipHelp title="Add an attachment to context">
         <IconButton onClick={onAttachmentMenu}>
-          <IconAttachment />
+          <IconPaperclip />
         </IconButton>
       </TooltipHelp>
       <For each={threadService.attachments()}>

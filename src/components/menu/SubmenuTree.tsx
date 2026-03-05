@@ -12,21 +12,20 @@ import type {MenuTreeItem} from '@/services/TreeService'
 import {isCanvas, isCodeFile, isFile, isLocalFile, useState} from '@/state'
 import {Page} from '@/types'
 import {DialogList, TooltipButton, TooltipDivider} from '../dialog/Style'
+import {LangIcon} from '../icons/LangIcon'
 import {
   IconAdd,
-  IconAdjust,
   IconClose,
   IconCodeBlocks,
   IconDelete,
-  IconDeleteForever,
   IconEdit,
+  IconFileCode,
+  IconFilePlus,
+  IconFocus,
   IconGesture,
   IconHistory,
   IconMoreHoriz,
-  IconPostAdd,
-  IconTextSnippet,
-  LangIcon,
-} from '../Icon'
+} from '../icons/Ui'
 import {Link} from './Link'
 import {ITEM_HEIGHT, itemCss, Label, Sub} from './Style'
 
@@ -462,7 +461,7 @@ export const SubmenuTree = (props: Props) => {
               </Show>
             </Match>
             <Match when={!isCodeFile(p.node.value)}>
-              <IconTextSnippet />
+              <IconFileCode />
             </Match>
           </Switch>
         </TreeLinkCorner>
@@ -549,14 +548,14 @@ export const SubmenuTree = (props: Props) => {
     <DialogList>
       <Show when={isOnCanvas(selected())}>
         <TooltipButton onClick={onFocus} data-testid="focus_file">
-          <IconAdjust />
+          <IconFocus />
           Focus file
         </TooltipButton>
         <TooltipDivider />
       </Show>
       <Show when={!selected()?.value.deleted && isFile(selected()?.value)}>
         <TooltipButton onClick={onAddFile} data-testid="add_file">
-          <IconPostAdd />
+          <IconFilePlus />
           Add file
         </TooltipButton>
         <TooltipButton onClick={onAddCanvas} data-testid="add_canvas">
@@ -582,7 +581,7 @@ export const SubmenuTree = (props: Props) => {
             Restore
           </TooltipButton>
           <TooltipButton onClick={() => deleteNode(true)} data-testid="delete_forever">
-            <IconDeleteForever />
+            <IconDelete />
             Delete forever
           </TooltipButton>
         </Match>
@@ -592,7 +591,7 @@ export const SubmenuTree = (props: Props) => {
             Close
           </TooltipButton>
         </Match>
-        <Match when={true}>
+        <Match when={selected()}>
           <TooltipButton onClick={() => deleteNode()} data-testid="delete">
             <IconDelete />
             Delete
@@ -601,7 +600,7 @@ export const SubmenuTree = (props: Props) => {
       </Switch>
       <Show when={!selected()}>
         <TooltipButton onClick={onNewFile} data-testid="new_file">
-          <IconPostAdd />
+          <IconFilePlus />
           New file
         </TooltipButton>
         <TooltipButton onClick={onNewCanvas} data-testid="new_canvas">
