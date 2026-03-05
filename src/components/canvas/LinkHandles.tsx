@@ -85,9 +85,10 @@ const LinkHandle = (props: EdgeProps) => {
         }
 
         const id = await memo
-        const {point, zoom} = currentCanvas.camera
-        const p = new Vector(point[0], point[1])
-        const i = new Vector(initial[0], initial[1]).multiply(1 / zoom).subtract(p)
+        const {zoom} = currentCanvas.camera
+        const i = canvasService.getPosition(initial)
+        if (!i) return
+
         const t = new Vector(movement[0], movement[1]).multiply(1 / zoom).add(i)
 
         canvasService.drawLink(id, props.id, props.type, t.x, t.y)

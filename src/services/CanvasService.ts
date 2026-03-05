@@ -70,6 +70,10 @@ export class CanvasService {
     private setState: SetStoreFunction<State>,
   ) {}
 
+  get canvasBox(): Box {
+    return new Box(0, 0, this.canvasRef?.clientWidth ?? 0, this.canvasRef?.clientHeight ?? 0)
+  }
+
   get currentCanvasId() {
     return this.locationService.canvasId
   }
@@ -760,9 +764,12 @@ export class CanvasService {
 
   getPosition([x, y]: CanvasPoint): Vector | undefined {
     const currentCanvas = this.currentCanvas
-    if (!currentCanvas) return
+    if (!currentCanvas || !this.canvasRef) return
+
+    const boardLeft = this.canvasRef.getBoundingClientRect().left
+
     const {camera} = currentCanvas
-    const point = new Vector(x, y)
+    const point = new Vector(x - boardLeft, y)
     return point.multiply(1 / camera.zoom).subtract(VecUtil.fromArray(camera.point))
   }
 

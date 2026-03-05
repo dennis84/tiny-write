@@ -46,16 +46,11 @@ export const Canvas = () => {
   const scaleBounds = {min: 0.3, max: 10}
   let ref!: HTMLDivElement
 
-  const zoomTo = (next: number, center?: number[]) => {
+  const zoomTo = (next: number, center: number[]) => {
     if (!canvasService.currentCanvas?.camera) return
 
-    let c: Vector
-    if (center === undefined) {
-      const {width, height} = ref.getBoundingClientRect()
-      c = new Vector(width / 2, height / 2)
-    } else {
-      c = new Vector(center[0], center[1])
-    }
+    const boardLeft = ref.getBoundingClientRect().left
+    const c = new Vector(center[0] - boardLeft, center[1])
 
     const {zoom, point} = canvasService.currentCanvas.camera
     const p = new Vector(point[0], point[1])

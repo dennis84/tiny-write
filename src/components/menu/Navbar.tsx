@@ -442,6 +442,7 @@ export const InfoNavbar = () => {
     <FloatingContainer justify="flex-end">
       <ButtonGroup background={true}>
         <BackButton />
+        <DarkModeToggle />
         <Show when={fileService.currentFile || canvasService.currentCanvas}>
           <CurrentFileButton />
         </Show>
@@ -451,7 +452,6 @@ export const InfoNavbar = () => {
         <Show when={!menuService.assistant() && locationService.page !== Page.Assistant}>
           <AssistantButton />
         </Show>
-        <DarkModeToggle />
       </ButtonGroup>
     </FloatingContainer>
   )

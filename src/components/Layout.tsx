@@ -91,10 +91,8 @@ export const Scroll = styled.div`
     margin-bottom: -100px;
     background-image: linear-gradient(
       to bottom,
-      var(--background) 0%,
-      var(--background) 30%, /* extra space for navbar */
-      var(--background) 30%,
-      var(--background-0) 100%
+      var(--background),
+      var(--background-0)
     );
   }
   &::after {

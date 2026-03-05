@@ -107,6 +107,8 @@ export const TooltipButton = styled.div`
   align-items: center;
   padding: 5px;
   height: 32px;
+  width: 100%;
+  white-space: nowrap;
   cursor: var(--cursor-pointer);
   border-radius: var(--border-radius-small);
   &:hover,

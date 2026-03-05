@@ -141,15 +141,17 @@ export const ContextMenu = () => {
     const {camera} = currentCanvas
     const {x, y} = new Vector(camera.point[0], camera.point[1]).add(p).multiply(camera.zoom)
 
+    const boardLeft = canvasService.canvasRef?.getBoundingClientRect().left ?? 0
+
     const virtualEl = {
       getBoundingClientRect() {
         return {
-          x,
+          x: x + boardLeft,
           y,
           top: y,
-          left: x,
+          left: x + boardLeft,
           bottom: y,
-          right: x,
+          right: x + boardLeft,
           width: 1,
           height: 1,
         }

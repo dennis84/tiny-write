@@ -1,4 +1,3 @@
-import {Box} from '@flatten-js/core'
 import type {ReferenceElement} from '@floating-ui/dom'
 import {createScheduled, debounce, leadingAndTrailing} from '@solid-primitives/scheduled'
 import {
@@ -125,9 +124,9 @@ export const Toolbar = () => {
 
     const zoom = currentCanvas.camera.zoom
     const point = VecUtil.fromArray(currentCanvas.camera.point).multiply(-1)
-    const vp = new Box(0, 0, window.innerWidth, window.innerHeight)
-      .scale(1 / zoom, 1 / zoom)
-      .translate(point)
+    const vp = canvasService.canvasBox.scale(1 / zoom, 1 / zoom).translate(point)
+
+    const boardLeft = canvasService.canvasRef?.getBoundingClientRect().left ?? 0
 
     const box = canvasService.createBox(selected.element)
     setInViewport(vp.intersect(box))
@@ -135,12 +134,12 @@ export const Toolbar = () => {
     return {
       getBoundingClientRect() {
         return {
-          x: selected.box.xmin,
+          x: selected.box.xmin + boardLeft,
           y: selected.box.ymin,
           top: selected.box.ymin,
-          left: selected.box.xmin,
+          left: selected.box.xmin + boardLeft,
           bottom: selected.box.ymax,
-          right: selected.box.xmax,
+          right: selected.box.xmax + boardLeft,
           width: selected.box.width,
           height: selected.box.height,
         }

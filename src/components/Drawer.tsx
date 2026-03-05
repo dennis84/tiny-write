@@ -31,8 +31,7 @@ export const DrawerScroll = styled(Scroll)`
   &::before {
     background-image: linear-gradient(
       to bottom,
-      var(--background-95) 0%,
-      var(--background-95) 50%, /* extra space for navbar */
+      var(--background-95),
       var(--background-0)
     );
   }
