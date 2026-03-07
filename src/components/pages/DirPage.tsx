@@ -6,7 +6,7 @@ import {styled} from 'solid-styled-components'
 import {resolvePath, toRelativePath} from '@/remote/editor'
 import {info} from '@/remote/log'
 import {useState} from '@/state'
-import {IconFileCode, IconFolder, IconFolderOpen} from '../icons/Ui'
+import {IconFileCode, IconFolder, IconFolderOpen} from '../icons/File'
 import {Content, Scroll} from '../Layout'
 
 const CurrentPath = styled.div`

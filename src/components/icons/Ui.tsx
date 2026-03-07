@@ -57,7 +57,7 @@ export const IconSpellcheck = () => (
 )
 
 import LucideMonitorStop from '~icons/lucide/monitor-stop'
-export const IconDesktopLandscape = () => (
+export const IconAlwaysOnTop = () => (
   <SvgIcon>
     <LucideMonitorStop />
   </SvgIcon>
@@ -67,27 +67,6 @@ import LucideLanguages from '~icons/lucide/languages'
 export const IconLanguage = () => (
   <SvgIcon>
     <LucideLanguages />
-  </SvgIcon>
-)
-
-import LucideSave from '~icons/lucide/save'
-export const IconSaveAs = () => (
-  <SvgIcon>
-    <LucideSave />
-  </SvgIcon>
-)
-
-import LucideLineSquiggle from '~icons/lucide/line-squiggle'
-export const IconGesture = () => (
-  <SvgIcon>
-    <LucideLineSquiggle />
-  </SvgIcon>
-)
-
-import LucideFileCode from '~icons/lucide/file-code'
-export const IconFileCode = () => (
-  <SvgIcon>
-    <LucideFileCode />
   </SvgIcon>
 )
 
@@ -126,24 +105,10 @@ export const IconGrid = () => (
   </SvgIcon>
 )
 
-import LucideFilePlus from '~icons/lucide/file-plus'
-export const IconFilePlus = () => (
-  <SvgIcon>
-    <LucideFilePlus />
-  </SvgIcon>
-)
-
 import LucideEdit from '~icons/lucide/edit'
 export const IconEdit = () => (
   <SvgIcon>
     <LucideEdit />
-  </SvgIcon>
-)
-
-import LucideSquareCode from '~icons/lucide/square-code'
-export const IconCodeBlocks = () => (
-  <SvgIcon>
-    <LucideSquareCode />
   </SvgIcon>
 )
 
@@ -280,13 +245,6 @@ export const IconDragIndicator = () => (
   </SvgIcon>
 )
 
-import LucideHardDriveDownload from '~icons/lucide/hard-drive-download'
-export const IconFileSave = () => (
-  <SvgIcon>
-    <LucideHardDriveDownload />
-  </SvgIcon>
-)
-
 import LucideEye from '~icons/lucide/eye'
 export const IconVisibility = () => (
   <SvgIcon>
@@ -375,20 +333,6 @@ import LucideUsersRound from '~icons/lucide/users-round'
 export const IconGroup = () => (
   <SvgIcon>
     <LucideUsersRound />
-  </SvgIcon>
-)
-
-import LucideFolder from '~icons/lucide/folder'
-export const IconFolder = () => (
-  <SvgIcon>
-    <LucideFolder />
-  </SvgIcon>
-)
-
-import LucideFolderOpen from '~icons/lucide/folder-open'
-export const IconFolderOpen = () => (
-  <SvgIcon>
-    <LucideFolderOpen />
   </SvgIcon>
 )
 

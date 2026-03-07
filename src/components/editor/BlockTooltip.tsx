@@ -18,10 +18,10 @@ import type {ChatMessage} from '@/services/CopilotService'
 import {useState} from '@/state'
 import {AttachmentType} from '@/types'
 import {timeout} from '@/utils/promise'
+import {IconFileSave} from '../icons/File'
+import {IconPrettier} from '../icons/Logo'
 import {
   IconAdd,
-  IconCodeBlocks,
-  IconFileSave,
   IconFloatCenter,
   IconFloatLeft,
   IconFloatRight,
@@ -361,7 +361,7 @@ export const BlockTooltip = (props: Props) => {
           <IconLanguage /> change language
         </TooltipButton>
         <TooltipButton onClick={onPrettify} data-testid="prettify">
-          <IconCodeBlocks /> prettify
+          <IconPrettier /> prettify
         </TooltipButton>
         <TooltipButton onClick={onFoldAll}>
           <IconUnfoldLess /> fold all

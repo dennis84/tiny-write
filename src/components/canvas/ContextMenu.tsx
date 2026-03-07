@@ -11,7 +11,7 @@ import type {CanvasLinkElement, File} from '@/types'
 import {pause} from '@/utils/promise'
 import {TooltipButton, TooltipDivider} from '../dialog/Style'
 import {IconAi} from '../icons/Ai'
-import {IconCodeBlocks, IconFileCode, IconFilePlus, IconGesture} from '../icons/Ui'
+import {IconCanvas, IconCodeBlocks, IconFileCode, IconFilePlus} from '../icons/File'
 
 const Scroller = styled.div`
   max-height: 80vh;
@@ -95,7 +95,7 @@ export const ContextMenu = () => {
       <TooltipButton onClick={onClick}>
         <Switch>
           <Match when={isCanvas(p.file)}>
-            <IconGesture />
+            <IconCanvas />
           </Match>
           <Match when={isCodeFile(p.file)}>
             <IconCodeBlocks />

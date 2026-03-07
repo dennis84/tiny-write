@@ -12,17 +12,14 @@ import type {MenuTreeItem} from '@/services/TreeService'
 import {isCanvas, isCodeFile, isFile, isLocalFile, useState} from '@/state'
 import {Page} from '@/types'
 import {DialogList, TooltipButton, TooltipDivider} from '../dialog/Style'
+import {IconCanvas, IconCodeBlocks, IconFilePlus, IconFileText} from '../icons/File'
 import {LangIcon} from '../icons/LangIcon'
 import {
   IconAdd,
   IconClose,
-  IconCodeBlocks,
   IconDelete,
   IconEdit,
-  IconFileCode,
-  IconFilePlus,
   IconFocus,
-  IconGesture,
   IconHistory,
   IconMoreHoriz,
 } from '../icons/Ui'
@@ -447,7 +444,7 @@ export const SubmenuTree = (props: Props) => {
         >
           <Switch>
             <Match when={isCanvas(p.node.value)}>
-              <IconGesture />
+              <IconCanvas />
             </Match>
             <Match when={isCodeFile(p.node.value)}>
               <Show
@@ -461,7 +458,7 @@ export const SubmenuTree = (props: Props) => {
               </Show>
             </Match>
             <Match when={!isCodeFile(p.node.value)}>
-              <IconFileCode />
+              <IconFileText />
             </Match>
           </Switch>
         </TreeLinkCorner>
@@ -559,7 +556,7 @@ export const SubmenuTree = (props: Props) => {
           Add file
         </TooltipButton>
         <TooltipButton onClick={onAddCanvas} data-testid="add_canvas">
-          <IconGesture />
+          <IconCanvas />
           Add canvas
         </TooltipButton>
         <TooltipButton onClick={onAddCode} data-testid="add_code">
@@ -604,7 +601,7 @@ export const SubmenuTree = (props: Props) => {
           New file
         </TooltipButton>
         <TooltipButton onClick={onNewCanvas} data-testid="new_canvas">
-          <IconGesture />
+          <IconCanvas />
           New canvas
         </TooltipButton>
         <TooltipButton onClick={onNewCode} data-testid="new_code">

@@ -9,7 +9,7 @@ import {Drawer, DrawerContent, DrawerScroll} from '../Drawer'
 import {IconAi, IconAiAssistant} from '../icons/Ai'
 import {IconPrettier} from '../icons/Logo'
 import {
-  IconDesktopLandscape,
+  IconAlwaysOnTop,
   IconFocus,
   IconFullscreen,
   IconHistory,
@@ -195,7 +195,7 @@ export const Menu = () => {
                   </Show>
                   <Show when={isTauri()}>
                     <Link onClick={onToggleAlwaysOnTop} checked={store.config.alwaysOnTop}>
-                      <IconDesktopLandscape /> Always on Top
+                      <IconAlwaysOnTop /> Always on Top
                     </Link>
                   </Show>
                 </Sub>

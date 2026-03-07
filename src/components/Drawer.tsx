@@ -45,7 +45,7 @@ export const DrawerScroll = styled(Scroll)`
 `
 
 export const DrawerContent = styled.div`
-  padding: 20px;
+  padding: 10px;
   display: flex;
   flex-direction: column;
   width: 100%;

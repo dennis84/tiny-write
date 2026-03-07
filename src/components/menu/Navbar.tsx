@@ -18,6 +18,7 @@ import {DialogList, TooltipButton, TooltipDivider} from '../dialog/Style'
 import {TooltipHelp} from '../dialog/TooltipHelp'
 import {IconAiAssistant, IconAiAssistantClose} from '../icons/Ai'
 import {IconDarkMode, IconLightMode} from '../icons/DarkMode'
+import {IconCanvas, IconFileText} from '../icons/File'
 import {LangIcon} from '../icons/LangIcon'
 import {IconPrettier} from '../icons/Logo'
 import {
@@ -29,9 +30,7 @@ import {
   IconCopy,
   IconDelete,
   IconEdit,
-  IconFileCode,
   IconFullscreen,
-  IconGesture,
   IconHistory,
   IconLanguage,
   IconSidebar,
@@ -247,10 +246,10 @@ const CurrentFileButton = () => {
           <LangIcon name={fileService.currentFile?.codeLang} />
         </Match>
         <Match when={fileService.currentFile}>
-          <IconFileCode />
+          <IconFileText />
         </Match>
         <Match when={canvasService.currentCanvas}>
-          <IconGesture />
+          <IconCanvas />
         </Match>
       </Switch>
       <Suspense>{title()}</Suspense>
@@ -320,6 +319,7 @@ const MenuButton = () => {
   const onMenuButtonClick = () => {
     fileService.currentFile?.editorView?.focus()
     menuService.toggleMenu()
+    menuService.setSubmenu(undefined)
   }
 
   return (
