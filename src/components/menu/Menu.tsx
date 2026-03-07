@@ -16,6 +16,7 @@ import {
   IconPalette,
   IconSpellcheck,
 } from '../icons/Ui'
+import {MenuNavbar} from '../navbar/MenuNavbar'
 import {AiConfig} from './AiConfig'
 import {Appearance} from './Appearance'
 import {Bin} from './Bin'
@@ -23,7 +24,6 @@ import {ChangeSet} from './ChangeSet'
 import {CodeFormat} from './CodeFormat'
 import {Help} from './Help'
 import {Link} from './Link'
-import {MenuNavbar} from './Navbar'
 import {Container, Label, Sub} from './Style'
 import {SubmenuCanvas} from './SubmenuCanvas'
 import {SubmenuCode} from './SubmenuCode'

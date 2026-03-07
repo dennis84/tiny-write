@@ -3,9 +3,9 @@ import {For, onCleanup, Show} from 'solid-js'
 import {ButtonGroup, ButtonPrimary} from '@/components/Button'
 import {useState} from '@/state'
 import {DrawerContent, DrawerScroll} from '../Drawer'
+import {MenuNavbar} from '../navbar/MenuNavbar'
 import {Link} from './Link'
 import {MenuDrawer} from './Menu'
-import {MenuNavbar} from './Navbar'
 import {Label, Sub} from './Style'
 
 export const ChangeSet = () => {

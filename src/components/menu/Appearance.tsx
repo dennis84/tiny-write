@@ -9,9 +9,9 @@ import {useState} from '@/state'
 import {DrawerContent, DrawerScroll} from '../Drawer'
 import {IconDarkMode, IconLightMode} from '../icons/DarkMode'
 import {IconCheckBox} from '../icons/Ui'
+import {MenuNavbar} from '../navbar/MenuNavbar'
 import {Link} from './Link'
 import {MenuDrawer} from './Menu'
-import {MenuNavbar} from './Navbar'
 import {Label, Sub, Text} from './Style'
 
 export const Appearance = () => {

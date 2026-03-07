@@ -1,6 +1,6 @@
 import {DrawerContent, DrawerScroll} from '../Drawer'
+import {MenuNavbar} from '../navbar/MenuNavbar'
 import {MenuDrawer} from './Menu'
-import {MenuNavbar} from './Navbar'
 import {Keys, Label, Sub, Text} from './Style'
 
 export const Help = () => {

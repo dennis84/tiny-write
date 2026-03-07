@@ -3,7 +3,7 @@ import {useState} from '@/state'
 import type {Message} from '@/types'
 import {Drawer, DrawerScroll} from '../Drawer'
 import {Content} from '../Layout'
-import {ChatNavbar} from '../menu/Navbar'
+import {ChatNavbar} from '../navbar/AssistantNavbar'
 import {ChatInput} from './ChatInput'
 import {Conversation} from './Conversation'
 

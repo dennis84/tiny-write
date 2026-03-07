@@ -3,9 +3,9 @@ import {ButtonGroup, ButtonPrimary} from '@/components/Button'
 import {useState} from '@/state'
 import {type File, Page, type PrettierConfig} from '@/types'
 import {DrawerContent, DrawerScroll} from '../Drawer'
+import {MenuNavbar} from '../navbar/MenuNavbar'
 import {Link} from './Link'
 import {MenuDrawer} from './Menu'
-import {MenuNavbar} from './Navbar'
 import {Label, Sub, Text} from './Style'
 
 export const CodeFormat = () => {

@@ -1,7 +1,7 @@
 import {DrawerContent, DrawerScroll} from '../Drawer'
+import {MenuNavbar} from '../navbar/MenuNavbar'
 import {AiSubmenuGithub} from './AiSubmenuGithub'
 import {MenuDrawer} from './Menu'
-import {MenuNavbar} from './Navbar'
 
 export const AiConfig = () => {
   return (
