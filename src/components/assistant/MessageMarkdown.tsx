@@ -92,7 +92,7 @@ export const MessageMarkdown = (props: Props) => {
             EditorView.lineWrapping,
             theme,
             langCompartment.of(lang.highlight()),
-            clipPlugin,
+            clipPlugin(50),
             codeBlockHeaderCompartment.of(codeBlockHeaderPanel(info)),
           ],
         })

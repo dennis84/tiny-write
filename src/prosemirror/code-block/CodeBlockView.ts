@@ -129,7 +129,7 @@ export class CodeBlockView {
       doc: this.node.textContent,
       extensions: [
         embeddedCodeMirrorKeymap,
-        clipPlugin,
+        clipPlugin(),
         createMermaidPlugin(this),
         EditorView.updateListener.of((update) => this.forwardUpdate(update)),
         autocompletion(),

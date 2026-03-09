@@ -10,6 +10,9 @@ export const ChatBubble = styled.div`
   ${standardMarkdown}
   .cm-editor {
     ${isClipped}
+    &.is-clipped {
+      max-height: 400px;
+    }
     outline: none;
     margin: 10px 0;
     font-size: var(--menu-font-size);
