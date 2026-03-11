@@ -3,7 +3,7 @@ import {useState} from '@/state'
 import type {Message} from '@/types'
 import {Drawer, DrawerScroll} from '../Drawer'
 import {Content} from '../Layout'
-import {ChatNavbar} from '../navbar/AssistantNavbar'
+import {AssistantNavbar} from '../navbar/AssistantNavbar'
 import {ChatInput} from './ChatInput'
 import {Conversation} from './Conversation'
 
@@ -44,7 +44,7 @@ export const ChatDrawer = () => {
       data-drop-target="assistant"
       data-testid="ai_assistant_drawer"
     >
-      <ChatNavbar />
+      <AssistantNavbar />
       <Suspense>
         <Show when={initialized()}>
           <DrawerScroll ref={scrollRef} data-testid="chat_scroll">

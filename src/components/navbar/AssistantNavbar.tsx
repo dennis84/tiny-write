@@ -8,7 +8,7 @@ import {IconAdd, IconFullscreen} from '../icons/Ui'
 import {AssistantButton} from './AssistantButton'
 import {FloatingContainer} from './Style'
 
-export const ChatNavbar = () => {
+export const AssistantNavbar = () => {
   const {menuService, threadService, locationService} = useState()
 
   const onExpandClick = async () => {
@@ -24,12 +24,20 @@ export const ChatNavbar = () => {
   }
 
   const onChangeThread = (thread: Thread) => {
-    locationService.updateState({threadId: thread.id})
+    if (locationService.page === Page.Assistant) {
+      locationService.openItem(thread)
+    } else {
+      locationService.updateState({threadId: thread.id})
+    }
   }
 
   const onNewThread = () => {
-    const newThread = threadService.newThread()
-    locationService.updateState({threadId: newThread.id})
+    if (locationService.page === Page.Assistant) {
+      locationService.openPage(Page.Assistant)
+    } else {
+      const newThread = threadService.newThread()
+      locationService.updateState({threadId: newThread.id})
+    }
   }
 
   return (
@@ -42,14 +50,16 @@ export const ChatNavbar = () => {
           </Button>
         </Show>
       </ButtonGroup>
-      <ButtonGroup background={true}>
-        <TooltipHelp title="Expand assistant">
-          <IconButton onClick={onExpandClick} data-testid="navbar_assistant_expand">
-            <IconFullscreen />
-          </IconButton>
-        </TooltipHelp>
-        <AssistantButton />
-      </ButtonGroup>
+      <Show when={locationService.page !== Page.Assistant}>
+        <ButtonGroup background={true}>
+          <TooltipHelp title="Expand assistant">
+            <IconButton onClick={onExpandClick} data-testid="navbar_assistant_expand">
+              <IconFullscreen />
+            </IconButton>
+          </TooltipHelp>
+          <AssistantButton />
+        </ButtonGroup>
+      </Show>
     </FloatingContainer>
   )
 }
