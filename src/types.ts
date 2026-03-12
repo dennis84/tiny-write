@@ -240,6 +240,7 @@ export interface Thread {
   path?: Map<string | undefined, string>
   pinned?: boolean
   currentInput?: string
+  private?: boolean
 }
 
 export interface Sidebar {

@@ -1,7 +1,7 @@
 import {createSignal, For, type JSX, onCleanup, onMount} from 'solid-js'
 import {styled} from 'solid-styled-components'
 
-export const Common = `
+const Common = `
   height: 32px;
   padding: 0 10px;
   border-radius: var(--border-radius);
@@ -43,11 +43,12 @@ const RippleEffect = `
   }
 `
 
-export const ButtonEl = styled.button`
+export const ButtonEl = styled.button<ButtonAttrs>`
   ${Common}
   ${RippleEffect}
   background: var(--background-90);
   color: var(--foreground);
+  ${(p) => (p.active ? `color: var(--primary-background);` : '')}
   &:hover {
     color: var(--primary-background);
     background: var(--background-80);

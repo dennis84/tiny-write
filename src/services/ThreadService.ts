@@ -70,6 +70,13 @@ export class ThreadService {
     await this.saveThread()
   }
 
+  async togglePrivate() {
+    const currentThread = this.currentThread
+    if (!currentThread || currentThread?.lastModified) return
+    this.setState('threads', this.currentThreadIndex, 'private', (prev) => !prev)
+    await this.saveThread()
+  }
+
   setAttachments(attachments: Attachment[]) {
     this.attachmentsSignal[1](attachments)
   }
@@ -127,19 +134,18 @@ export class ThreadService {
   }
 
   newThread(): Thread {
-    const existing = this.store.threads.find((it) => !it.lastModified)
-    if (existing) {
-      return existing
+    info(`New thread`)
+    let thread = this.store.threads.find((it) => !it.lastModified)
+    if (!thread) {
+      thread = {
+        id: ThreadService.createId(),
+        messages: [],
+      }
+
+      info(`Create new thread (id=${thread.id})`)
+      this.setState('threads', [...this.store.threads, thread])
     }
 
-    const thread: Thread = {
-      id: ThreadService.createId(),
-      messages: [],
-    }
-
-    info(`Create new thread (id=${thread.id})`)
-
-    this.setState('threads', [...this.store.threads, thread])
     this.messageTree.updateAll([])
 
     return thread
@@ -268,8 +274,8 @@ export class ThreadService {
   }
 
   async saveThread(thread = this.currentThread) {
-    info(`Save thread (id=${thread?.id}, title=${thread?.title})`)
-    if (thread) {
+    if (thread && !thread.private) {
+      info(`Save thread (id=${thread?.id}, title=${thread?.title})`)
       await DB.updateThread(thread)
     }
   }

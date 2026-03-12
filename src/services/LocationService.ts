@@ -99,8 +99,8 @@ export class LocationService {
   }
 
   openPage(page: Page, locState?: Partial<LocationState>) {
-    info(`Open page (page=${page})`)
     const state = {...this.state, share: false, ...locState}
+    info(`Open page (page=${page}, state=${locationStateToString(state)})`)
     this.navigator(`/${page}`, {state})
   }
 

@@ -4,6 +4,7 @@ import {Page, type Thread} from '@/types'
 import {Threads} from '../assistant/Threads'
 import {Button, ButtonGroup, IconButton} from '../Button'
 import {TooltipHelp} from '../dialog/TooltipHelp'
+import {IconPrivate} from '../icons/Ai'
 import {IconAdd, IconFullscreen} from '../icons/Ui'
 import {AssistantButton} from './AssistantButton'
 import {FloatingContainer} from './Style'
@@ -40,6 +41,10 @@ export const AssistantNavbar = () => {
     }
   }
 
+  const onPrivate = async () => {
+    await threadService.togglePrivate()
+  }
+
   return (
     <FloatingContainer justify="flex-start">
       <ButtonGroup justifySelf="flex-start" background={true}>
@@ -48,6 +53,19 @@ export const AssistantNavbar = () => {
           <Button onClick={onNewThread}>
             <IconAdd /> New
           </Button>
+        </Show>
+        <Show when={!threadService.currentThread?.lastModified}>
+          <TooltipHelp
+            title={
+              threadService.currentThread?.private
+                ? 'Switch to default chat'
+                : 'Switch to private chat'
+            }
+          >
+            <Button active={threadService.currentThread?.private} onClick={onPrivate}>
+              <IconPrivate /> Private
+            </Button>
+          </TooltipHelp>
         </Show>
       </ButtonGroup>
       <Show when={locationService.page !== Page.Assistant}>
