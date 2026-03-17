@@ -1,11 +1,11 @@
-import {createStore} from 'solid-js/store'
+import {waitFor} from '@solidjs/testing-library'
 import {beforeEach, expect, test, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
+import {DB} from '@/db'
 import type {ChatMessageTextContent, CopilotService} from '@/services/CopilotService'
 import type {DialogService} from '@/services/DialogService'
 import type {LocationService} from '@/services/LocationService'
 import {ThreadService} from '@/services/ThreadService'
-import {createState} from '@/state'
 import {AttachmentType, type Message} from '@/types'
 import {expectTree} from '../testutil/tree'
 
@@ -23,48 +23,54 @@ beforeEach(() => {
   vi.resetAllMocks()
 })
 
-vi.mock('@/db', () => ({DB: mock()}))
+vi.mock('@/db', () => ({
+  DB: mock({
+    getThreads: vi.fn(),
+  }),
+}))
 
-test('newThread - empty', () => {
-  const initial = createState({
-    threads: [
-      {
-        id: '1',
-        messages: [],
-      },
-      {
-        id: '2',
-        title: 'Test',
-        lastModified,
-        messages: [
-          {id: '1', role: 'user', content: 'test'},
-          {id: '2', role: 'assistant', content: 'test'},
-        ],
-      },
-    ],
+test('newThread - empty', async () => {
+  vi.spyOn(DB, 'getThreads').mockResolvedValue([
+    {
+      id: '1',
+      title: 'Test',
+      lastModified,
+      messages: [
+        {id: '1', role: 'user', content: 'test'},
+        {id: '2', role: 'assistant', content: 'test'},
+      ],
+    },
+  ])
+
+  const service = new ThreadService(copilotService, locationService, dialogService)
+
+  await waitFor(() => {
+    expect(service.currentThread?.id).toEqual('1')
   })
 
-  const [store, setState] = createStore(initial)
-  const service = new ThreadService(store, setState, copilotService, locationService, dialogService)
+  const newThread = service.newThread()
 
-  service.newThread()
+  expect(newThread.id).not.toEqual('1')
 
-  expect(store.threads).toHaveLength(2)
+  const anotherNewThread = service.newThread()
+
+  expect(anotherNewThread.id).toEqual(newThread.id)
 })
 
 test('addMessage', async () => {
-  const initial = createState({
-    threads: [
-      {
-        id: '1',
-        messages: [],
-      },
-    ],
+  vi.spyOn(DB, 'getThreads').mockResolvedValue([
+    {
+      id: '1',
+      lastModified,
+      messages: [],
+    },
+  ])
+
+  const service = new ThreadService(copilotService, locationService, dialogService)
+
+  await waitFor(() => {
+    expect(service.currentThread?.id).toEqual('1')
   })
-
-  const [store, setState] = createStore(initial)
-
-  const service = new ThreadService(store, setState, copilotService, locationService, dialogService)
 
   await service.addMessage({id: '1', role: 'user', content: '1'})
   await service.addMessage({id: '2', role: 'user', content: '2'})
@@ -79,23 +85,24 @@ test('addMessage', async () => {
 })
 
 test('addMessage - path', async () => {
-  const initial = createState({
-    threads: [
-      {
-        id: '1',
-        messages: [
-          {id: '1', role: 'user', content: '1'},
-          {id: '2', role: 'user', content: '2'},
-        ],
-        path: new Map([[undefined, '1']]),
-      },
-    ],
+  vi.spyOn(DB, 'getThreads').mockResolvedValue([
+    {
+      id: '1',
+      messages: [
+        {id: '1', role: 'user', content: '1'},
+        {id: '2', role: 'user', content: '2'},
+      ],
+      path: new Map([[undefined, '1']]),
+    },
+  ])
+
+  const service = new ThreadService(copilotService, locationService, dialogService)
+
+  await waitFor(() => {
+    expect(service.currentThread?.id).toEqual('1')
   })
 
-  const [store, setState] = createStore(initial)
-
-  const service = new ThreadService(store, setState, copilotService, locationService, dialogService)
-  service.messageTree.updateAll(store.threads[0].messages)
+  service.init()
 
   expectTree(
     service.messageTree,
@@ -126,206 +133,211 @@ test('addMessage - path', async () => {
 })
 
 test('addChunk', async () => {
-  const initial = createState({
-    threads: [
-      {
-        id: '1',
-        messages: [{id: '1', role: 'user', content: 'Test'}],
-      },
-    ],
+  vi.spyOn(DB, 'getThreads').mockResolvedValue([
+    {
+      id: '1',
+      messages: [{id: '1', role: 'user', content: 'Test'}],
+    },
+  ])
+
+  const service = new ThreadService(copilotService, locationService, dialogService)
+
+  await waitFor(() => {
+    expect(service.currentThread?.id).toEqual('1')
   })
 
-  const [store, setState] = createStore(initial)
-
-  const service = new ThreadService(store, setState, copilotService, locationService, dialogService)
-  service.messageTree.updateAll(store.threads[0].messages)
+  service.init()
 
   service.addChunk('2', '1', 'A')
-  expect(store.threads[0].messages[1].content).toBe('A')
+  expect(service.currentThread?.messages[1].content).toBe('A')
   service.addChunk('2', '1', 'b')
-  expect(store.threads[0].messages[1].content).toBe('Ab')
+  expect(service.currentThread?.messages[1].content).toBe('Ab')
   service.addChunk('2', '1', 'c')
-  expect(store.threads[0].messages[1].content).toBe('Abc')
+  expect(service.currentThread?.messages[1].content).toBe('Abc')
 
-  expect(store.threads[0].messages).toHaveLength(2)
-  expect(store.threads[0].messages[1].parentId).toBe('1')
+  expect(service.currentThread?.messages).toHaveLength(2)
+  expect(service.currentThread?.messages[1].parentId).toBe('1')
 })
 
 test('interrupt', async () => {
-  const initial = createState({
-    threads: [
-      {
-        id: '1',
-        messages: [
-          {id: '1', role: 'user', content: '1'},
-          {id: '2', role: 'user', content: '2'},
-        ],
-      },
-    ],
+  vi.spyOn(DB, 'getThreads').mockResolvedValue([
+    {
+      id: '1',
+      messages: [
+        {id: '1', role: 'user', content: '1'},
+        {id: '2', role: 'user', content: '2'},
+      ],
+    },
+  ])
+
+  const service = new ThreadService(copilotService, locationService, dialogService)
+
+  await waitFor(() => {
+    expect(service.currentThread?.id).toEqual('1')
   })
-
-  const [store, setState] = createStore(initial)
-
-  const service = new ThreadService(store, setState, copilotService, locationService, dialogService)
 
   service.interrupt('2')
 
-  expect(store.threads[0].messages[1].interrupted).toEqual(true)
+  expect(service.currentThread?.messages[1].interrupted).toEqual(true)
 })
 
 test('summarize', async () => {
-  const initial = createState({
-    threads: [
-      {
-        id: '1',
-        messages: [
-          {id: '1', role: 'user', content: '1'},
-          {id: '2', parentId: '1', role: 'assistant', content: '2'},
-        ],
-      },
-    ],
+  vi.spyOn(DB, 'getThreads').mockResolvedValue([
+    {
+      id: '1',
+      messages: [
+        {id: '1', role: 'user', content: '1'},
+        {id: '2', parentId: '1', role: 'assistant', content: '2'},
+      ],
+    },
+  ])
+
+  const service = new ThreadService(copilotService, locationService, dialogService)
+
+  await waitFor(() => {
+    expect(service.currentThread?.id).toEqual('1')
   })
 
-  const [store, setState] = createStore(initial)
-
-  const service = new ThreadService(store, setState, copilotService, locationService, dialogService)
-  service.messageTree.updateAll(store.threads[0].messages)
+  service.init()
 
   copilotService.completionsSync.mockResolvedValue('12')
 
   await service.summarize()
 
-  expect(store.threads[0].messages[1].summary).toEqual('12')
+  expect(service.currentThread?.messages[1].summary).toEqual('12')
 })
 
 test('updateTitle', async () => {
-  const initial = createState({
-    threads: [
-      {
-        id: '1',
-        messages: [{id: '1', role: 'user', content: '1'}],
-      },
-    ],
+  vi.spyOn(DB, 'getThreads').mockResolvedValue([
+    {
+      id: '1',
+      messages: [{id: '1', role: 'user', content: '1'}],
+    },
+  ])
+
+  const service = new ThreadService(copilotService, locationService, dialogService)
+
+  await waitFor(() => {
+    expect(service.currentThread?.id).toEqual('1')
   })
-
-  const [store, setState] = createStore(initial)
-
-  const service = new ThreadService(store, setState, copilotService, locationService, dialogService)
 
   await service.updateTitle('1', 'Test')
 
-  expect(store.threads[0].title).toBe('Test')
+  expect(service.currentThread?.title).toBe('Test')
 })
 
-test('init', () => {
-  const initial = createState({
-    threads: [
-      {
-        id: '1',
-        title: '1',
-        lastModified,
-        messages: [
-          {id: '1', role: 'user', content: '1'},
-          {id: '2', parentId: '1', role: 'assistant', content: '2'},
-        ],
-      },
-    ],
+test('init', async () => {
+  vi.spyOn(DB, 'getThreads').mockResolvedValue([
+    {
+      id: '1',
+      title: '1',
+      lastModified,
+      messages: [
+        {id: '1', role: 'user', content: '1'},
+        {id: '2', parentId: '1', role: 'assistant', content: '2'},
+      ],
+    },
+  ])
+
+  const service = new ThreadService(copilotService, locationService, dialogService)
+
+  await waitFor(() => {
+    expect(service.currentThread?.id).toEqual('1')
   })
 
-  const [store, setState] = createStore(initial)
-
-  const service = new ThreadService(store, setState, copilotService, locationService, dialogService)
-
   service.init()
-  expect(store.threads).toHaveLength(1)
+
   expect(service.messageTree.rootItemIds).toEqual(['1'])
 })
 
 test('delete', async () => {
-  const initial = createState({
-    threads: [
-      {
-        id: '1',
-        lastModified,
-        messages: [
-          {id: '1', role: 'user', content: '1'},
-          {id: '2', role: 'assistant', content: '2'},
-        ],
-      },
-      {
-        id: '2',
-        lastModified,
-        messages: [
-          {id: '3', role: 'user', content: '3'},
-          {id: '4', role: 'assistant', content: '4'},
-        ],
-      },
-    ],
+  vi.spyOn(DB, 'getThreads').mockResolvedValue([
+    {
+      id: '1',
+      lastModified,
+      messages: [
+        {id: '1', role: 'user', content: '1'},
+        {id: '2', role: 'assistant', content: '2'},
+      ],
+    },
+    {
+      id: '2',
+      lastModified,
+      messages: [
+        {id: '3', role: 'user', content: '3'},
+        {id: '4', role: 'assistant', content: '4'},
+      ],
+    },
+  ])
+
+  const service = new ThreadService(copilotService, locationService, dialogService)
+
+  await waitFor(() => {
+    expect(service.currentThread?.id).toEqual('1')
   })
 
-  const [store, setState] = createStore(initial)
+  expect(service.threads).toHaveLength(2)
 
-  const service = new ThreadService(store, setState, copilotService, locationService, dialogService)
+  // biome-ignore lint/style/noNonNullAssertion: test code
+  await service.delete(service.findThreadById('1')!)
 
-  await service.delete(store.threads[0])
+  expect(service.threads).toHaveLength(1)
+  expect(service.threads?.[0].id).toBe('2')
 
-  expect(store.threads).toHaveLength(1)
-  expect(store.threads[0].id).toBe('2')
-
-  await service.delete(store.threads[0])
-  expect(store.threads).toHaveLength(0)
+  // biome-ignore lint/style/noNonNullAssertion: test code
+  await service.delete(service.findThreadById('2')!)
+  expect(service.threads).toHaveLength(0)
 })
 
 test('deleteAll', async () => {
-  const initial = createState({
-    threads: [
-      {
-        id: '1',
-        lastModified,
-        messages: [
-          {id: '1', role: 'user', content: '1'},
-          {id: '2', role: 'assistant', content: '2'},
-        ],
-      },
-      {
-        id: '2',
-        lastModified,
-        messages: [
-          {id: '3', role: 'user', content: '3'},
-          {id: '4', role: 'assistant', content: '4'},
-        ],
-      },
-    ],
+  vi.spyOn(DB, 'getThreads').mockResolvedValue([
+    {
+      id: '1',
+      lastModified,
+      messages: [
+        {id: '1', role: 'user', content: '1'},
+        {id: '2', role: 'assistant', content: '2'},
+      ],
+    },
+    {
+      id: '2',
+      lastModified,
+      messages: [
+        {id: '3', role: 'user', content: '3'},
+        {id: '4', role: 'assistant', content: '4'},
+      ],
+    },
+  ])
+
+  const service = new ThreadService(copilotService, locationService, dialogService)
+
+  await waitFor(() => {
+    expect(service.currentThread?.id).toEqual('1')
   })
-
-  const [store, setState] = createStore(initial)
-
-  const service = new ThreadService(store, setState, copilotService, locationService, dialogService)
 
   await service.deleteAll()
 
-  expect(store.threads).toHaveLength(1)
-  expect(store.threads[0].id).not.toBe('1')
-  expect(store.threads[0].id).not.toBe('2')
+  expect(service.threads).toHaveLength(1)
 })
 
 test('regenerate - user message', async () => {
-  const initial = createState({
-    threads: [
-      {
-        id: '1',
-        messages: [
-          {id: '1', role: 'user', content: '1'},
-          {id: '2', parentId: '1', role: 'assistant', content: '2'},
-        ],
-      },
-    ],
+  vi.spyOn(DB, 'getThreads').mockResolvedValue([
+    {
+      id: '1',
+      messages: [
+        {id: '1', role: 'user', content: '1'},
+        {id: '2', parentId: '1', role: 'assistant', content: '2'},
+      ],
+    },
+  ])
+
+  const service = new ThreadService(copilotService, locationService, dialogService)
+
+  await waitFor(() => {
+    expect(service.currentThread?.id).toEqual('1')
   })
 
-  const [store, setState] = createStore(initial)
-
-  const service = new ThreadService(store, setState, copilotService, locationService, dialogService)
-  service.messageTree.updateAll(store.threads[0].messages)
+  service.init()
 
   let nextId = 3
   vi.spyOn(ThreadService, 'createId').mockImplementation(() => String(nextId++))
@@ -360,22 +372,23 @@ test('regenerate - user message', async () => {
 })
 
 test('regenerate - assistant message', async () => {
-  const initial = createState({
-    threads: [
-      {
-        id: '1',
-        messages: [
-          {id: '1', role: 'user', content: '1'},
-          {id: '2', parentId: '1', role: 'assistant', content: '2'},
-        ],
-      },
-    ],
+  vi.spyOn(DB, 'getThreads').mockResolvedValue([
+    {
+      id: '1',
+      messages: [
+        {id: '1', role: 'user', content: '1'},
+        {id: '2', parentId: '1', role: 'assistant', content: '2'},
+      ],
+    },
+  ])
+
+  const service = new ThreadService(copilotService, locationService, dialogService)
+
+  await waitFor(() => {
+    expect(service.currentThread?.id).toEqual('1')
   })
 
-  const [store, setState] = createStore(initial)
-
-  const service = new ThreadService(store, setState, copilotService, locationService, dialogService)
-  service.messageTree.updateAll(store.threads[0].messages)
+  service.init()
 
   let nextId = 3
   vi.spyOn(ThreadService, 'createId').mockImplementation(() => String(nextId++))
@@ -388,7 +401,8 @@ test('regenerate - assistant message', async () => {
     `,
   )
 
-  await service.regenerate(store.threads[0].messages[1])
+  // biome-ignore lint/style/noNonNullAssertion: test code
+  await service.regenerate(service.threads![0].messages[1])
 
   expectTree(
     service.messageTree,
@@ -406,22 +420,22 @@ test('regenerate - assistant message', async () => {
 })
 
 test('generateTitle', async () => {
-  const initial = createState({
-    threads: [
-      {
-        id: '1',
-        lastModified,
-        messages: [
-          {id: '1', role: 'user', content: '1'},
-          {id: '2', role: 'assistant', content: '2'},
-        ],
-      },
-    ],
+  vi.spyOn(DB, 'getThreads').mockResolvedValue([
+    {
+      id: '1',
+      lastModified,
+      messages: [
+        {id: '1', role: 'user', content: '1'},
+        {id: '2', role: 'assistant', content: '2'},
+      ],
+    },
+  ])
+
+  const service = new ThreadService(copilotService, locationService, dialogService)
+
+  await waitFor(() => {
+    expect(service.currentThread?.id).toEqual('1')
   })
-
-  const [store, setState] = createStore(initial)
-
-  const service = new ThreadService(store, setState, copilotService, locationService, dialogService)
 
   copilotService.completionsSync.mockImplementation(async (messages) => {
     expect(messages).toHaveLength(3)
@@ -485,17 +499,13 @@ test.each<[Message[], number]>([
     4, // output token limit reached, filter to last summary
   ],
 ])('getMessages', async (messages, count) => {
-  const initial = createState({
-    threads: [
-      {
-        id: '1',
-        lastModified,
-        messages,
-      },
-    ],
-  })
-
-  const [store, setState] = createStore(initial)
+  vi.spyOn(DB, 'getThreads').mockResolvedValue([
+    {
+      id: '1',
+      lastModified,
+      messages,
+    },
+  ])
 
   vi.spyOn(copilotService, 'chatModel', 'get').mockReturnValue({
     ...copilotService.chatModel,
@@ -503,15 +513,20 @@ test.each<[Message[], number]>([
     maxOutputTokens: 12,
   })
 
-  const service = new ThreadService(store, setState, copilotService, locationService, dialogService)
-  service.messageTree.updateAll(store.threads[0].messages)
+  const service = new ThreadService(copilotService, locationService, dialogService)
+
+  await waitFor(() => {
+    expect(service.currentThread?.id).toEqual('1')
+  })
+
+  service.init()
 
   const result = service.getMessages()
 
   expect(result.messages).toHaveLength(count)
 })
 
-test('getThreads', () => {
+test('searchThreads', async () => {
   const createThread = (id: string, lastModified: Date) => ({
     id,
     title: id,
@@ -526,15 +541,22 @@ test('getThreads', () => {
   const thread5 = createThread('5', new Date())
   const thread6 = createThread('6', new Date())
 
-  const initial = createState({
-    threads: [thread6, thread5, thread4, thread3, thread2, thread1],
+  vi.spyOn(DB, 'getThreads').mockResolvedValue([
+    thread6,
+    thread5,
+    thread4,
+    thread3,
+    thread2,
+    thread1,
+  ])
+
+  const service = new ThreadService(copilotService, locationService, dialogService)
+
+  await waitFor(() => {
+    expect(service.threads).toHaveLength(6)
   })
 
-  const [store, setState] = createStore(initial)
-
-  const service = new ThreadService(store, setState, copilotService, locationService, dialogService)
-
-  const threads = service.getThreads()
+  const threads = service.searchThreads()
 
   expect(threads).toEqual([
     [thread6, 'Today'],
@@ -547,10 +569,7 @@ test('getThreads', () => {
 })
 
 test('hande attachments', () => {
-  const initial = createState()
-  const [store, setState] = createStore(initial)
-
-  const service = new ThreadService(store, setState, copilotService, locationService, dialogService)
+  const service = new ThreadService(copilotService, locationService, dialogService)
 
   expect(service.attachments()).toEqual([])
 

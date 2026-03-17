@@ -22,9 +22,6 @@ export class AppService {
     const tree = await DB.getTree()
     const ai = await DB.getAi()
     const lastLocation = await DB.getLastLocation()
-    const threads = (await DB.getThreads())?.sort((a, b) => {
-      return (b.lastModified?.getTime() ?? 0) - (a.lastModified?.getTime() ?? 0)
-    })
 
     info(
       `Fetched data (args=${JSON.stringify(args)}, lastLocation=${JSON.stringify(lastLocation)})`,
@@ -40,7 +37,6 @@ export class AppService {
       sidebar,
       tree,
       ai,
-      threads,
       lastLocation,
     }
   }

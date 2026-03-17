@@ -70,7 +70,6 @@ export const createState = (props: Partial<State> = {}): State => ({
   files: [],
   canvases: [],
   fullscreen: false,
-  threads: [],
   config: createConfig(),
   ...props,
 })

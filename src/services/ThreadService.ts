@@ -1,6 +1,7 @@
+import {createDeepSignal} from '@solid-primitives/resource'
 import {formatDate, isToday} from 'date-fns'
-import {createSignal} from 'solid-js'
-import type {SetStoreFunction, Store} from 'solid-js/store'
+import {createResource, createSignal} from 'solid-js'
+import {produce} from 'solid-js/store'
 import {v4 as uuidv4} from 'uuid'
 import {DB} from '@/db'
 import codeBlockHandlingPrompt from '@/prompts/assistant-code-block-handling.md?raw'
@@ -8,7 +9,7 @@ import generateTitlePrompt from '@/prompts/generate-title.md?raw'
 import summaryPrompt from '@/prompts/summary.md?raw'
 import {debug, error, info} from '@/remote/log'
 import {createTreeStore, type TreeItem} from '@/tree'
-import {type Attachment, AttachmentType, type Message, type State, type Thread} from '@/types'
+import {type Attachment, AttachmentType, type Message, type Thread} from '@/types'
 import type {
   ChatMessage,
   ChatMessageImageContent,
@@ -22,6 +23,9 @@ import type {LocationService} from './LocationService'
 export class ThreadService {
   public messageTree = createTreeStore<Message>()
   private attachmentsSignal = createSignal<Attachment[]>([])
+  private threadsResource = createResource<Thread[]>(() => this.fetchThreads(), {
+    storage: createDeepSignal, // store threads as proxy objects
+  })
 
   static createId() {
     return uuidv4()
@@ -31,8 +35,13 @@ export class ThreadService {
     return this.attachmentsSignal[0]
   }
 
+  get threads() {
+    return this.threadsResource[0].latest
+  }
+
   findThreadById(threadId: string): Thread | undefined {
-    return this.store.threads.find((t) => t.id === threadId)
+    const [threads] = this.threadsResource
+    return threads.latest?.find((t) => t.id === threadId)
   }
 
   get currentThreadId(): string | undefined {
@@ -46,9 +55,10 @@ export class ThreadService {
   }
 
   get currentThreadIndex(): number {
+    const [threads] = this.threadsResource
     const threadId = this.currentThreadId
     if (!threadId) return -1
-    return this.store.threads.findIndex((t) => t.id === threadId)
+    return threads.latest?.findIndex((t) => t.id === threadId) ?? -1
   }
 
   get lastMessage(): Message | undefined {
@@ -56,8 +66,6 @@ export class ThreadService {
   }
 
   constructor(
-    private store: Store<State>,
-    private setState: SetStoreFunction<State>,
     private copilotService: CopilotService,
     private locationService: LocationService,
     private dialogService: DialogService,
@@ -66,14 +74,22 @@ export class ThreadService {
   async updateCurrentInput(text?: string) {
     const currentThread = this.currentThread
     if (!currentThread) return
-    this.setState('threads', this.currentThreadIndex, 'currentInput', text)
+
+    this.updateThread((thread) => {
+      thread.currentInput = text
+    })
+
     await this.saveThread()
   }
 
   async togglePrivate() {
     const currentThread = this.currentThread
     if (!currentThread || currentThread?.lastModified) return
-    this.setState('threads', this.currentThreadIndex, 'private', (prev) => !prev)
+
+    this.updateThread((thread) => {
+      thread.private = !thread.private
+    })
+
     await this.saveThread()
   }
 
@@ -98,13 +114,14 @@ export class ThreadService {
     this.attachmentsSignal[1]((prev) => prev.filter((a) => a !== attachment))
   }
 
-  getThreads(term?: string): [Thread, string | undefined][] {
+  searchThreads(term?: string): [Thread, string | undefined][] {
+    const [threads] = this.threadsResource
     // List of tuples with date label on beginning of a new group
     const pinned: [Thread, string | undefined][] = []
     const result: [Thread, string | undefined][] = []
     let currentYearMonth: string | undefined
 
-    for (const thread of this.store.threads) {
+    for (const thread of threads() ?? []) {
       if (!thread.lastModified) continue
 
       if (term && thread.title) {
@@ -135,20 +152,25 @@ export class ThreadService {
 
   newThread(): Thread {
     info(`New thread`)
-    let thread = this.store.threads.find((it) => !it.lastModified)
-    if (!thread) {
-      thread = {
-        id: ThreadService.createId(),
-        messages: [],
-      }
-
-      info(`Create new thread (id=${thread.id})`)
-      this.setState('threads', [...this.store.threads, thread])
+    const [threads] = this.threadsResource
+    const thread = threads()?.find((it) => !it.lastModified)
+    if (thread) {
+      this.messageTree.updateAll([])
+      return thread
     }
+
+    const newThread = {
+      id: ThreadService.createId(),
+      messages: [],
+    }
+
+    info(`Create new thread (id=${newThread.id})`)
+    const [, {mutate}] = this.threadsResource
+    mutate((prev = []) => [...prev, newThread])
 
     this.messageTree.updateAll([])
 
-    return thread
+    return newThread
   }
 
   async sendMessages() {
@@ -198,12 +220,11 @@ export class ThreadService {
     const newMessage = {...message, parentId}
 
     info(`Add new message (message=${JSON.stringify(newMessage)})`)
-    this.setState('threads', this.currentThreadIndex, {
-      messages: [...currentThread.messages, newMessage],
-      lastModified: new Date(),
+    this.updateThread((thread) => {
+      thread.messages.push(newMessage)
+      thread.lastModified = new Date()
+      this.messageTree.add(thread.messages[thread.messages.length - 1])
     })
-
-    this.messageTree.add(newMessage)
 
     await this.saveThread()
   }
@@ -214,28 +235,29 @@ export class ThreadService {
     const currentThread = this.currentThread
     if (!currentThread) return
 
-    const currentThreadIndex = this.currentThreadIndex
+    this.updateThread((thread) => {
+      let messageIndex = thread.messages.findIndex((m) => m.id === id)
 
-    let messageIndex = currentThread.messages.findIndex((m) => m.id === id)
-    if (messageIndex === -1) {
-      info(`Create new message to stream to (id=${id}, parentId=${parentId})`)
-      const modelId = this.copilotService.chatModel.id
-      const newMessage: Message = {id, content: '', role: 'assistant', parentId, modelId} as Message
-      this.setState('threads', currentThreadIndex, 'messages', (prev) => [...prev, newMessage])
-      messageIndex = currentThread.messages.length - 1
-    }
+      if (messageIndex !== -1) {
+        // Mutate proxy object in place
+        thread.messages[messageIndex].content += chunk
+      } else {
+        info(`Create new message to stream to (id=${id}, parentId=${parentId})`)
+        const modelId = this.copilotService.chatModel.id
+        const newMessage = {
+          id,
+          content: chunk,
+          role: 'assistant',
+          parentId,
+          modelId,
+        } satisfies Message
+        thread.messages.push(newMessage)
+        messageIndex = thread.messages.length - 1
 
-    this.setState(
-      'threads',
-      currentThreadIndex,
-      'messages',
-      messageIndex,
-      'content',
-      (prev) => prev + chunk,
-    )
-
-    const message = this.store.threads[currentThreadIndex].messages[messageIndex]
-    this.messageTree.updateValue(message)
+        // Add new message as proxy object to tree
+        this.messageTree.add(thread.messages[messageIndex])
+      }
+    })
   }
 
   interrupt(id: string) {
@@ -244,40 +266,30 @@ export class ThreadService {
     const currentThread = this.currentThread
     if (!currentThread) return
 
-    const currentThreadIndex = this.currentThreadIndex
-
-    const messageIndex = currentThread.messages.findIndex((m) => m.id === id)
-
-    this.setState('threads', currentThreadIndex, 'messages', messageIndex, 'interrupted', true)
-
-    const message = this.store.threads[currentThreadIndex].messages[messageIndex]
-    this.messageTree.updateValue(message)
+    this.updateThread((thread) => {
+      const existing = thread.messages.find((m) => m.id === id)
+      if (existing) existing.interrupted = true
+    })
   }
 
   async updateTitle(threadId: string, title: string) {
-    const index = this.store.threads.findIndex((t) => t.id === threadId)
-    if (index === -1) return
-
     info(`Set title to thread (title=${title})`)
-    this.setState('threads', index, 'title', title)
-    await this.saveThread(this.store.threads[index])
+
+    const updatedThread = this.updateThread((thread) => {
+      thread.title = title
+    }, threadId)
+
+    if (updatedThread) await this.saveThread(updatedThread)
   }
 
   async togglePin(threadId: string) {
-    const index = this.store.threads.findIndex((t) => t.id === threadId)
-    if (index === -1) return
+    info(`Set pin to thread (id=${threadId})`)
 
-    const old = this.store.threads[index].pinned ?? false
-    info(`Set pin to thread (id=${threadId}, pinned=${!old})`)
-    this.setState('threads', index, 'pinned', !old)
-    await this.saveThread(this.store.threads[index])
-  }
+    const updatedThread = this.updateThread((thread) => {
+      thread.pinned = !thread.pinned
+    }, threadId)
 
-  async saveThread(thread = this.currentThread) {
-    if (thread && !thread.private) {
-      info(`Save thread (id=${thread?.id}, title=${thread?.title})`)
-      await DB.updateThread(thread)
-    }
+    if (updatedThread) await this.saveThread(updatedThread)
   }
 
   init() {
@@ -292,19 +304,18 @@ export class ThreadService {
   }
 
   async delete(thread: Thread) {
-    this.setState(
-      'threads',
-      this.store.threads.filter((t) => t.id !== thread.id),
-    )
+    const [, {mutate}] = this.threadsResource
+    mutate((prev = []) => prev.filter((it) => it.id !== thread.id))
     await DB.deleteThread(thread.id)
   }
 
   async deleteAll(): Promise<Thread> {
-    for (const thread of this.store.threads) {
+    const [threads, {mutate}] = this.threadsResource
+    for (const thread of threads.latest ?? []) {
       await DB.deleteThread(thread.id)
     }
 
-    this.setState('threads', [])
+    mutate([])
     return this.newThread()
   }
 
@@ -321,15 +332,14 @@ export class ThreadService {
       }
 
       info(`Regenerate user message (message=${JSON.stringify(newMessage)})`)
-      const messages = [...currentThread.messages, newMessage]
 
-      this.setState('threads', this.currentThreadIndex, {
-        messages,
-        lastModified: new Date(),
+      this.updateThread((thread) => {
+        thread.messages.push(newMessage)
+        thread.lastModified = new Date()
       })
 
       this.updatePath(message.parentId, newMessage.id)
-      this.messageTree.add(newMessage)
+      this.messageTree.add(currentThread.messages[currentThread.messages.length - 1])
 
       await this.saveThread()
     } else if (message.role === 'assistant') {
@@ -338,9 +348,9 @@ export class ThreadService {
   }
 
   updatePath(parentId: string | undefined, childId: string) {
-    this.setState('threads', this.currentThreadIndex, 'path', (prev) =>
-      new Map(prev).set(parentId, childId),
-    )
+    this.updateThread((thread) => {
+      thread.path = new Map(thread.path).set(parentId, childId)
+    })
   }
 
   getNextItem(parentId: string | undefined, childrenIds: string[]): TreeItem<Message> | undefined {
@@ -384,13 +394,11 @@ export class ThreadService {
         info(
           `Add summary to message (messageId=${targetId}, promptLimit=${promptLimit}, outputLimit=${outputLimit})`,
         )
-        const currentThreadIndex = this.currentThreadIndex
-        const messageIndex = currentThread.messages.findIndex((m) => m.id === targetId)
 
-        this.setState('threads', currentThreadIndex, 'messages', messageIndex, 'summary', summary)
-
-        const message = this.store.threads[currentThreadIndex].messages[messageIndex]
-        this.messageTree.updateValue(message)
+        this.updateThread((thread) => {
+          const target = thread.messages.find((m) => m.id === targetId)
+          if (target) target.summary = summary
+        })
 
         await this.saveThread()
       }
@@ -508,6 +516,12 @@ export class ThreadService {
     return this.messageTree.getItem(id) !== undefined
   }
 
+  async fetchThreads() {
+    return (await DB.getThreads())?.sort((a, b) => {
+      return (b.lastModified?.getTime() ?? 0) - (a.lastModified?.getTime() ?? 0)
+    })
+  }
+
   private toChatMessage(message: Message): ChatMessage {
     const content: (ChatMessageTextContent | ChatMessageImageContent)[] = []
 
@@ -567,5 +581,29 @@ export class ThreadService {
     }
 
     return {promptCount, outputCount}
+  }
+
+  private updateThread(
+    fn: (thread: Thread) => void,
+    threadId = this.currentThreadId,
+  ): Thread | undefined {
+    if (!threadId) return
+    const [, {mutate}] = this.threadsResource
+    let updatedThread: Thread | undefined
+    mutate(
+      produce((prev = []) => {
+        updatedThread = prev.find((thread) => thread.id === threadId)
+        if (updatedThread) fn(updatedThread)
+      }),
+    )
+
+    return updatedThread
+  }
+
+  private async saveThread(thread = this.currentThread) {
+    if (thread && !thread.private) {
+      info(`Save thread (id=${thread?.id}, title=${thread?.title})`)
+      await DB.updateThread(thread)
+    }
   }
 }

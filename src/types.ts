@@ -262,7 +262,6 @@ export interface State {
   moving?: boolean
   lastTr?: number
   ai?: AiConfig
-  threads: Thread[]
   lastLocation?: LastLocation
 }
 

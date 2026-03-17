@@ -213,7 +213,7 @@ export const Threads = (props: Props) => {
           </SearchBorder>
         </SearchRow>
         <Scroll>
-          <For each={threadService.getThreads(searchTerm())}>
+          <For each={threadService.searchThreads(searchTerm())}>
             {([thread, label]) => (
               <DialogList>
                 <Show when={label}>

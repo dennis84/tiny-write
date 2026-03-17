@@ -22,7 +22,7 @@ export const ChatPage = (props: RouteSectionProps) => {
   })
 
   const [initialized] = createResource(
-    () => threadService.currentThreadId,
+    () => threadService.currentThread?.id,
     (threadId) => {
       if (!threadId) return
       threadService.init()

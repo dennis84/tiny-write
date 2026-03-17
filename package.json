@@ -27,6 +27,7 @@
     "@flatten-js/core": "1.6.10",
     "@floating-ui/dom": "1.7.4",
     "@replit/codemirror-indentation-markers": "6.5.3",
+    "@solid-primitives/resource": "^0.4.3",
     "@solid-primitives/scheduled": "^1.5.2",
     "@solidjs/router": "0.15.4",
     "@tauri-apps/api": "2.9.1",

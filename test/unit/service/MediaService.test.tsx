@@ -3,6 +3,7 @@ import {clearMocks, mockConvertFileSrc, mockWindows} from '@tauri-apps/api/mocks
 import {fromBase64} from 'js-base64'
 import {beforeEach, expect, test, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
+import {DB} from '@/db'
 import {DropTarget, MediaService} from '@/services/MediaService'
 import {createState} from '@/state'
 import {type CanvasEditorElement, type CanvasImageElement, ElementType} from '@/types'
@@ -18,7 +19,11 @@ vi.stubGlobal('location', {
 })
 
 vi.mock('mermaid', () => ({}))
-vi.mock('@/db', () => ({DB: mock()}))
+vi.mock('@/db', () => ({
+  DB: mock({
+    getThreads: vi.fn(),
+  }),
+}))
 
 beforeEach(() => {
   clearMocks()
@@ -171,9 +176,9 @@ test('dropFiles - image on canvas with active editor', async () => {
 test('dropFiles - image on assistant', async () => {
   stubLocation('/assistant/1')
 
-  const initial = createState({
-    threads: [{id: '1', messages: []}],
-  })
+  vi.spyOn(DB, 'getThreads').mockResolvedValue([{id: '1', lastModified, messages: []}])
+
+  const initial = createState()
   const {getByTestId, ctrl} = renderMain(initial)
 
   await waitFor(() => {
