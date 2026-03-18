@@ -22,6 +22,7 @@ vi.mock('mermaid', () => ({}))
 vi.mock('@/db', () => ({
   DB: mock({
     getThreads: vi.fn(),
+    getCanvases: vi.fn(),
   }),
 }))
 
@@ -84,15 +85,16 @@ test('dropFiles - image on canvas', async () => {
 
   const initial = createState({
     files: [{id: '1', ydoc: pmUtil.createYUpdate('1', []), versions: []}],
-    canvases: [
-      {
-        id: '1',
-        camera: {point: [0, 0], zoom: 1},
-        lastModified,
-        elements: [editorElement],
-      },
-    ],
   })
+
+  vi.spyOn(DB, 'getCanvases').mockResolvedValue([
+    {
+      id: '1',
+      camera: {point: [0, 0], zoom: 1},
+      lastModified,
+      elements: [editorElement],
+    },
+  ])
 
   const {getByTestId, ctrl} = renderMain(initial)
 
@@ -135,15 +137,16 @@ test('dropFiles - image on canvas with active editor', async () => {
 
   const initial = createState({
     files: [{id: '1', ydoc: pmUtil.createYUpdate('1', []), versions: []}],
-    canvases: [
-      {
-        id: '1',
-        camera: {point: [0, 0], zoom: 1},
-        lastModified,
-        elements: [editorElement],
-      },
-    ],
   })
+
+  vi.spyOn(DB, 'getCanvases').mockResolvedValue([
+    {
+      id: '1',
+      camera: {point: [0, 0], zoom: 1},
+      lastModified,
+      elements: [editorElement],
+    },
+  ])
 
   const {getByTestId, ctrl} = renderMain(initial)
 
@@ -303,15 +306,16 @@ test('dropPaths - image on canvas', async () => {
 
   const initial = createState({
     files: [{id: '1', ydoc: pmUtil.createYUpdate('1', []), versions: []}],
-    canvases: [
-      {
-        id: '1',
-        camera: {point: [0, 0], zoom: 1},
-        lastModified,
-        elements: [editorElement],
-      },
-    ],
   })
+
+  vi.spyOn(DB, 'getCanvases').mockResolvedValue([
+    {
+      id: '1',
+      camera: {point: [0, 0], zoom: 1},
+      lastModified,
+      elements: [editorElement],
+    },
+  ])
 
   const {getByTestId, ctrl} = renderMain(initial)
 
@@ -344,15 +348,16 @@ test('dropPaths - text file on canvas', async () => {
 
   const initial = createState({
     files: [],
-    canvases: [
-      {
-        id: '1',
-        camera: {point: [0, 0], zoom: 1},
-        lastModified,
-        elements: [],
-      },
-    ],
   })
+
+  vi.spyOn(DB, 'getCanvases').mockResolvedValue([
+    {
+      id: '1',
+      camera: {point: [0, 0], zoom: 1},
+      lastModified,
+      elements: [],
+    },
+  ])
 
   const {getByTestId, ctrl} = renderMain(initial)
 

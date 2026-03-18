@@ -99,7 +99,6 @@ export const createCtrl = (initial: State) => {
     canvasCollabService,
     appService,
     locationService,
-    store,
   )
 
   const threadService = new ThreadService(copilotService, locationService, dialogService)

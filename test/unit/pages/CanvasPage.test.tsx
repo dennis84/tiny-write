@@ -1,12 +1,16 @@
 import {waitFor} from '@solidjs/testing-library'
 import {expect, test, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
-import type {DB} from '@/db'
+import {DB} from '@/db'
 import {createState} from '@/state'
 import {type Canvas, Page} from '@/types'
 import {renderMain, stubLocation} from '../testutil/util'
 
-vi.mock('@/db', () => ({DB: mock<DB>()}))
+vi.mock('@/db', () => ({
+  DB: mock({
+    getCanvases: vi.fn(),
+  }),
+}))
 
 const WsMock = vi.fn()
 vi.stubGlobal('WebSocket', WsMock)
@@ -51,9 +55,9 @@ test('share - existing canvas', async () => {
   stubLocation('/canvas/1')
 
   const canvas = createCanvas({id: '1'})
-  const initial = createState({
-    canvases: [canvas],
-  })
+  vi.spyOn(DB, 'getCanvases').mockResolvedValue([canvas])
+
+  const initial = createState()
 
   const {getByTestId, ctrl} = renderMain(initial)
 

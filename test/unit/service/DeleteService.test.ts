@@ -59,18 +59,6 @@ const createInitialState = () =>
       createFile({id: '4', deleted: true}),
       createFile({id: '5'}),
     ],
-    canvases: [
-      {
-        id: '6',
-        camera: {point: [0, 0], zoom: 1},
-        elements: [
-          createEditorElement({id: '1'}),
-          createEditorElement({id: '2'}),
-          createLinkElement({id: '3', from: '1', to: '2'}),
-        ],
-        lastModified: new Date(),
-      },
-    ],
   })
 
 beforeEach(() => {
@@ -113,8 +101,10 @@ test.each([
   const initial = createInitialState()
   const [store, setState] = createStore(initial)
   const fileService = mock<FileService>({currentFile: undefined})
-  const canvasService = mock<CanvasService>()
+  const canvasService = mock<CanvasService>({canvases: []})
   const treeService = new TreeService(store, setState, fileService, canvasService)
+
+  treeService.updateAll()
 
   const service = new DeleteService(fileService, canvasService, treeService, store, setState)
 
@@ -145,10 +135,23 @@ test('delete - update tree', async () => {
   const initial = createInitialState()
   const [store, setState] = createStore(initial)
   const fileService = mock<FileService>({currentFile: undefined})
-  const canvasService = mock<CanvasService>()
+  const canvasService = mock<CanvasService>({canvases: []})
   const treeService = new TreeService(store, setState, fileService, canvasService)
 
   const service = new DeleteService(fileService, canvasService, treeService, store, setState)
+
+  vi.spyOn(canvasService, 'canvases', 'get').mockReturnValue([
+    {
+      id: '6',
+      camera: {point: [0, 0], zoom: 1},
+      elements: [
+        createEditorElement({id: '1'}),
+        createEditorElement({id: '2'}),
+        createLinkElement({id: '3', from: '1', to: '2'}),
+      ],
+      lastModified: new Date(),
+    },
+  ])
 
   treeService.updateAll()
   expectTree(
@@ -195,10 +198,12 @@ test('delete - local file', async () => {
   })
   const [store, setState] = createStore(initial)
   const fileService = mock<FileService>()
-  const canvasService = mock<CanvasService>()
+  const canvasService = mock<CanvasService>({canvases: []})
   const treeService = new TreeService(store, setState, fileService, canvasService)
 
   const service = new DeleteService(fileService, canvasService, treeService, store, setState)
+
+  treeService.updateAll()
 
   // biome-ignore lint/style/noNonNullAssertion: test code
   await service.delete(treeService.getItem('1')!)
@@ -215,37 +220,35 @@ test.each([
     currentId: '3',
     navigateTo: {code: true, id: '2'},
     expectedFiles: 4,
-    expectedElements: 3,
   },
   {
     deleteId: '2',
     currentId: '2',
     navigateTo: {id: '1'},
     expectedFiles: 3,
-    expectedElements: 1,
   },
   {
     deleteId: '2',
     currentId: '3',
     navigateTo: {id: '1'},
     expectedFiles: 3,
-    expectedElements: 1,
   },
   {
     deleteId: '1',
     currentId: '1',
     navigateTo: {id: '5'},
     expectedFiles: 2,
-    expectedElements: 0,
   },
 ])('delete - forever %#', async (data) => {
   const initial = createInitialState()
   const [store, setState] = createStore(initial)
   const fileService = mock<FileService>({currentFile: undefined})
-  const canvasService = mock<CanvasService>()
+  const canvasService = mock<CanvasService>({canvases: []})
   const treeService = new TreeService(store, setState, fileService, canvasService)
 
   const service = new DeleteService(fileService, canvasService, treeService, store, setState)
+
+  treeService.updateAll()
 
   const currentNode = treeService.getItem(data.currentId)
   vi.spyOn(fileService, 'currentFile', 'get').mockReturnValue(currentNode?.value as File)
@@ -268,13 +271,13 @@ test.each([
   }
 
   expect(store.files.length).toBe(data.expectedFiles)
-  expect(store.canvases[0].elements.length).toBe(data.expectedElements)
+  expect(canvasService.removeElementFromAll).toBeCalledWith(data.deleteId)
   expect(DB.deleteFile).toBeCalled()
 })
 
 test('emptyBin', async () => {
   const fileService = mock<FileService>({currentFile: undefined})
-  const canvasService = mock<CanvasService>()
+  const canvasService = mock<CanvasService>({canvases: []})
 
   const initial = createState({
     files: [

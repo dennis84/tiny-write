@@ -1,10 +1,9 @@
 import {convertFileSrc} from '@tauri-apps/api/core'
 import type {EditorView} from 'prosemirror-view'
 import {createSignal} from 'solid-js'
-import type {Store} from 'solid-js/store'
 import {basename, getMimeType, readBinaryFile, resolvePath, toRelativePath} from '@/remote/editor'
 import {isEditorElement} from '@/state'
-import {type CanvasElement, type File as OpenFile, Page, type State} from '@/types'
+import {type CanvasElement, type File as OpenFile, Page} from '@/types'
 import type {AppService} from './AppService'
 import type {CanvasCollabService} from './CanvasCollabService'
 import type {CanvasService} from './CanvasService'
@@ -45,7 +44,6 @@ export class MediaService {
     private canvasCollabService: CanvasCollabService,
     private appService: AppService,
     private locationService: LocationService,
-    _store: Store<State>,
   ) {}
 
   resetDroppedFiles() {

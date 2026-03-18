@@ -1,7 +1,9 @@
 import {Box, Point, Segment, Vector} from '@flatten-js/core'
+import {createDeepSignal} from '@solid-primitives/resource'
 import {throttle} from '@solid-primitives/scheduled'
 import {TextSelection} from 'prosemirror-state'
-import {type SetStoreFunction, type Store, unwrap} from 'solid-js/store'
+import {createResource} from 'solid-js'
+import {produce, type SetStoreFunction, type Store, unwrap} from 'solid-js/store'
 import {v4 as uuidv4} from 'uuid'
 import {DB} from '@/db'
 import {info} from '@/remote/log'
@@ -45,6 +47,10 @@ export class CanvasService {
   public saveCanvasThrottled = throttle(() => this.saveCanvas(), 100)
   public canvasRef: HTMLElement | undefined
 
+  private canvasResource = createResource<Canvas[]>(() => CanvasService.fetchCanvases(), {
+    storage: createDeepSignal, // store as proxy objects
+  })
+
   static async saveCanvas(canvas: Canvas) {
     await DB.updateCanvas({
       ...canvas,
@@ -70,6 +76,14 @@ export class CanvasService {
     private setState: SetStoreFunction<State>,
   ) {}
 
+  get canvases() {
+    return this.canvasResource[0].latest
+  }
+
+  get resourceState() {
+    return this.canvasResource[0].state
+  }
+
   get canvasBox(): Box {
     return new Box(0, 0, this.canvasRef?.clientWidth ?? 0, this.canvasRef?.clientHeight ?? 0)
   }
@@ -81,13 +95,13 @@ export class CanvasService {
   get currentCanvas() {
     const canavsId = this.currentCanvasId
     if (!canavsId) return undefined
-    return this.store.canvases?.find((c) => c.id === canavsId)
+    return this.canvases?.find((c) => c.id === canavsId)
   }
 
   get currentCanvasIndex() {
     const canavsId = this.currentCanvasId
     if (!canavsId) return -1
-    return this.store.canvases?.findIndex((c) => c.id === canavsId)
+    return this.canvases?.findIndex((c) => c.id === canavsId)
   }
 
   get selection(): Selection | undefined {
@@ -120,17 +134,18 @@ export class CanvasService {
   }
 
   updateCanvas(id: string, update: Partial<Canvas>) {
-    const index = this.store.canvases.findIndex((canvas) => canvas.id === id)
-    if (index === -1) return
-    this.setState('canvases', index, update)
+    this.mutateCanvas((canvas) => {
+      Object.assign(canvas, update)
+    }, id)
   }
 
   updateCanvasElement(elementId: string, update: UpdateElement) {
-    const index = this.currentCanvasIndex
-    if (index === -1) return
-    const currentCanvas = this.store.canvases[index]
-    const elementIndex = currentCanvas.elements.findIndex((el) => el.id === elementId)
-    this.setState('canvases', index, 'elements', elementIndex, update)
+    this.mutateCanvas((canvas) => {
+      const element = canvas.elements.find((it) => it.id === elementId)
+      if (element) {
+        Object.assign(element, update)
+      }
+    })
   }
 
   async focus(id: string) {
@@ -281,8 +296,9 @@ export class CanvasService {
     }
 
     const canvas = CanvasService.createCanvas({...params, id})
+    const [, {mutate}] = this.canvasResource
 
-    this.setState('canvases', (prev) => [...prev, canvas])
+    mutate((prev = []) => [...prev, canvas])
 
     await this.saveCanvas(canvas)
     info('New canvas created')
@@ -319,6 +335,38 @@ export class CanvasService {
     this.updateCanvas(currentCanvas.id, {elements})
     await this.saveCanvas()
     info('Canvas saved after removing element')
+
+    return [...removedIds]
+  }
+
+  async removeElementFromAll(elementId: string): Promise<string[]> {
+    info(`Removing element from all canvases (elementId=${elementId})`)
+    const removedIds = new Set<string>()
+
+    const [, {mutate}] = this.canvasResource
+    mutate(
+      produce((prev = []) => {
+        for (const canvas of prev) {
+          let i = 0
+          while (i < canvas.elements.length) {
+            const el = canvas.elements[i]
+            if (
+              el.id === elementId ||
+              (isLinkElement(el) && (el.to === elementId || el.from === elementId))
+            ) {
+              canvas.elements.splice(i, 1)
+              // only return for current canvas for collab
+              if (canvas.id === this.currentCanvasId) removedIds.add(el.id)
+              // do NOT increment i - next item is now at current i
+            } else {
+              i++
+            }
+          }
+        }
+      }),
+    )
+
+    await this.saveCanvas()
 
     return [...removedIds]
   }
@@ -754,7 +802,7 @@ export class CanvasService {
   }
 
   findCanvas(id: string): Canvas | undefined {
-    return this.store.canvases?.find((it) => it.id === id)
+    return this.canvases?.find((it) => it.id === id)
   }
 
   createBox(el: CanvasRect) {
@@ -776,5 +824,18 @@ export class CanvasService {
   async saveCanvas(canvas = this.currentCanvas) {
     if (!canvas) return
     await CanvasService.saveCanvas(canvas)
+  }
+
+  private mutateCanvas(fn: (canvas: Canvas) => void, canvasId = this.currentCanvasId) {
+    const [, {mutate}] = this.canvasResource
+    let updated: Canvas | undefined
+    mutate(
+      produce((prev = []) => {
+        updated = prev.find((it) => it.id === canvasId)
+        if (updated) fn(updated)
+      }),
+    )
+
+    return updated
   }
 }

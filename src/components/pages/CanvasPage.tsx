@@ -52,7 +52,10 @@ export const CanvasPage = (props: RouteSectionProps) => {
   info(`Render canvas page (location=${JSON.stringify(location.state)})`)
 
   const [initialized] = createResource(
-    () => props.params.id,
+    () => {
+      if (canvasService.resourceState !== 'ready') return false
+      return props.params.id
+    },
     async (id) => {
       await canvasService.init()
       canvasCollabService.init()

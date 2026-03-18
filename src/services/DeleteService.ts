@@ -1,7 +1,7 @@
 import type {SetStoreFunction} from 'solid-js/store'
 import {DB} from '@/db'
 import {info} from '@/remote/log'
-import {isCanvas, isEditorElement, isFile, isLinkElement} from '@/state'
+import {isCanvas, isFile} from '@/state'
 import type {Canvas, File, State} from '@/types'
 import type {CanvasService} from './CanvasService'
 import {FileService} from './FileService'
@@ -177,27 +177,8 @@ export class DeleteService {
       const files = this.store.files.filter((it) => it.id !== id)
       this.setState({files})
 
-      for (const [canvasIndex, canvas] of this.store.canvases.entries()) {
-        const elements = []
-        let shouldUpdate = false
-        for (const el of canvas.elements) {
-          if (
-            (isEditorElement(el) && el.id === id) ||
-            (isLinkElement(el) && (el.to === id || el.from === id))
-          ) {
-            shouldUpdate = true
-            continue
-          }
-
-          elements.push(el)
-        }
-
-        if (shouldUpdate) {
-          this.setState('canvases', canvasIndex, 'elements', elements)
-          const updated = this.canvasService.findCanvas(canvas.id)
-          if (updated) await DB.updateCanvas(updated)
-        }
-      }
+      // Remove file elements on canvases
+      await this.canvasService.removeElementFromAll(id)
 
       await DB.deleteFile(id)
       info('File forever deleted')

@@ -18,12 +18,11 @@ export class TreeService {
     private fileService: FileService,
     private canvasService: CanvasService,
   ) {
-    const items = [...this.store.files, ...this.store.canvases]
-    this.tree = createTreeStore({items})
+    this.tree = createTreeStore()
   }
 
   updateAll() {
-    const items = [...this.store.files, ...this.store.canvases]
+    const items = [...this.store.files, ...(this.canvasService.canvases ?? [])]
     this.tree.updateAll(items)
   }
 

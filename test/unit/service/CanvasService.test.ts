@@ -1,9 +1,10 @@
 import {Box, Vector} from '@flatten-js/core'
+import {waitFor} from '@solidjs/testing-library'
 import type {EditorView} from 'prosemirror-view'
 import {createStore} from 'solid-js/store'
 import {beforeEach, expect, test, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
-import type {AppService} from '@/services/AppService'
+import {DB} from '@/db'
 import {CanvasService} from '@/services/CanvasService'
 import type {CollabService} from '@/services/CollabService'
 import {FileService} from '@/services/FileService'
@@ -23,7 +24,11 @@ import {BoxUtil} from '@/utils/BoxUtil'
 import {createYUpdate} from '../testutil/prosemirror-util'
 
 vi.mock('mermaid', () => ({}))
-vi.mock('@/db', () => ({DB: mock()}))
+vi.mock('@/db', () => ({
+  DB: mock({
+    getCanvases: vi.fn(),
+  }),
+}))
 
 const createCanvas = (props: Partial<Canvas> = {}): Canvas => ({
   id: '1',
@@ -68,14 +73,15 @@ beforeEach(() => {
   vi.resetAllMocks()
 })
 
-const _appService = mock<AppService>()
 const fileService = mock<FileService>()
 const selectService = mock<SelectService>()
 const collabService = mock<CollabService>()
 const locationService = mock<LocationService>()
 
-test('currentCanvas - empty', () => {
-  const [store, setState] = createStore(createState({canvases: []}))
+test('currentCanvas - empty', async () => {
+  vi.spyOn(DB, 'getCanvases').mockResolvedValue([])
+
+  const [store, setState] = createStore(createState())
   const service = new CanvasService(
     fileService,
     selectService,
@@ -84,15 +90,18 @@ test('currentCanvas - empty', () => {
     store,
     setState,
   )
+
+  await waitFor(() => {
+    expect(service.resourceState).toEqual('ready')
+  })
+
   expect(service.currentCanvas).toBeUndefined()
 })
 
-test('currentCanvas', () => {
-  const [store, setState] = createStore(
-    createState({
-      canvases: [createCanvas({id: '1'}), createCanvas({id: '2'})],
-    }),
-  )
+test('currentCanvas', async () => {
+  vi.spyOn(DB, 'getCanvases').mockResolvedValue([createCanvas({id: '1'}), createCanvas({id: '2'})])
+
+  const [store, setState] = createStore(createState())
 
   vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('2')
 
@@ -105,15 +114,17 @@ test('currentCanvas', () => {
     setState,
   )
 
+  await waitFor(() => {
+    expect(service.resourceState).toEqual('ready')
+  })
+
   expect(service.currentCanvas?.id).toBe('2')
 })
 
 test('updateCanvas', async () => {
-  const [store, setState] = createStore(
-    createState({
-      canvases: [createCanvas({id: '1'})],
-    }),
-  )
+  vi.spyOn(DB, 'getCanvases').mockResolvedValue([createCanvas({id: '1'})])
+
+  const [store, setState] = createStore(createState())
 
   vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
 
@@ -125,6 +136,10 @@ test('updateCanvas', async () => {
     store,
     setState,
   )
+
+  await waitFor(() => {
+    expect(service.resourceState).toEqual('ready')
+  })
 
   service.updateCanvas('1', {camera: {point: [10, 10], zoom: 2}})
 
@@ -137,21 +152,19 @@ test('updateCanvas', async () => {
 })
 
 test('updateCanvasElement', async () => {
-  const [store, setState] = createStore(
-    createState({
-      canvases: [
-        createCanvas({
-          id: '1',
-          elements: [
-            createEditorElement({id: '1'}),
-            createEditorElement({id: '2'}),
-            createLinkElement({id: '3', from: '1', to: '2'}),
-            createImageElement({id: '4'}),
-          ],
-        }),
+  vi.spyOn(DB, 'getCanvases').mockResolvedValue([
+    createCanvas({
+      id: '1',
+      elements: [
+        createEditorElement({id: '1'}),
+        createEditorElement({id: '2'}),
+        createLinkElement({id: '3', from: '1', to: '2'}),
+        createImageElement({id: '4'}),
       ],
     }),
-  )
+  ])
+
+  const [store, setState] = createStore(createState())
 
   vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
 
@@ -163,6 +176,10 @@ test('updateCanvasElement', async () => {
     store,
     setState,
   )
+
+  await waitFor(() => {
+    expect(service.resourceState).toEqual('ready')
+  })
 
   // update editor element
   service.updateCanvasElement('1', {x: 100, y: 100})
@@ -203,19 +220,14 @@ test('updateCanvasElement', async () => {
 })
 
 test('backToContent', async () => {
-  const [store, setState] = createStore(
-    createState({
-      canvases: [
-        createCanvas({
-          id: '1',
-          elements: [
-            createEditorElement({id: '1'}),
-            createEditorElement({id: '2', x: 900, y: 900}),
-          ],
-        }),
-      ],
+  vi.spyOn(DB, 'getCanvases').mockResolvedValue([
+    createCanvas({
+      id: '1',
+      elements: [createEditorElement({id: '1'}), createEditorElement({id: '2', x: 900, y: 900})],
     }),
-  )
+  ])
+
+  const [store, setState] = createStore(createState())
 
   vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
 
@@ -227,6 +239,10 @@ test('backToContent', async () => {
     store,
     setState,
   )
+
+  await waitFor(() => {
+    expect(service.resourceState).toEqual('ready')
+  })
 
   service.canvasRef = mock<HTMLElement>({
     clientWidth: 1000,
@@ -240,16 +256,14 @@ test('backToContent', async () => {
 })
 
 test('focus', async () => {
-  const [store, setState] = createStore(
-    createState({
-      canvases: [
-        createCanvas({
-          id: '1',
-          elements: [createEditorElement({id: '2', x: 500, y: 500, width: 200, height: 200})],
-        }),
-      ],
+  vi.spyOn(DB, 'getCanvases').mockResolvedValue([
+    createCanvas({
+      id: '1',
+      elements: [createEditorElement({id: '2', x: 500, y: 500, width: 200, height: 200})],
     }),
-  )
+  ])
+
+  const [store, setState] = createStore(createState())
 
   vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
 
@@ -261,6 +275,10 @@ test('focus', async () => {
     store,
     setState,
   )
+
+  await waitFor(() => {
+    expect(service.resourceState).toEqual('ready')
+  })
 
   service.canvasRef = mock<HTMLElement>({
     clientWidth: 1000,
@@ -272,17 +290,15 @@ test('focus', async () => {
   expect(service.currentCanvas?.camera.point).toEqual([-100, -100])
 })
 
-test('snapToGrid', () => {
-  const [store, setState] = createStore(
-    createState({
-      canvases: [
-        createCanvas({
-          id: '1',
-          elements: [],
-        }),
-      ],
+test('snapToGrid', async () => {
+  vi.spyOn(DB, 'getCanvases').mockResolvedValue([
+    createCanvas({
+      id: '1',
+      elements: [],
     }),
-  )
+  ])
+
+  const [store, setState] = createStore(createState())
 
   vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
 
@@ -294,6 +310,10 @@ test('snapToGrid', () => {
     store,
     setState,
   )
+
+  await waitFor(() => {
+    expect(service.resourceState).toEqual('ready')
+  })
 
   service.snapToGrid()
   expect(service.currentCanvas?.snapToGrid).toBe(true)
@@ -302,12 +322,10 @@ test('snapToGrid', () => {
   expect(service.currentCanvas?.snapToGrid).toBe(false)
 })
 
-test('updateCamera', () => {
-  const [store, setState] = createStore(
-    createState({
-      canvases: [createCanvas({id: '1'})],
-    }),
-  )
+test('updateCamera', async () => {
+  vi.spyOn(DB, 'getCanvases').mockResolvedValue([createCanvas({id: '1'})])
+
+  const [store, setState] = createStore(createState())
 
   vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
 
@@ -319,6 +337,10 @@ test('updateCamera', () => {
     store,
     setState,
   )
+
+  await waitFor(() => {
+    expect(service.resourceState).toEqual('ready')
+  })
 
   service.updateCamera({point: [100, 100], zoom: 2})
 
@@ -326,12 +348,10 @@ test('updateCamera', () => {
   expect(service.currentCanvas?.camera.zoom).toEqual(2)
 })
 
-test('updateCameraPoint', () => {
-  const [store, setState] = createStore(
-    createState({
-      canvases: [createCanvas({id: '1'})],
-    }),
-  )
+test('updateCameraPoint', async () => {
+  vi.spyOn(DB, 'getCanvases').mockResolvedValue([createCanvas({id: '1'})])
+
+  const [store, setState] = createStore(createState())
 
   vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
 
@@ -343,6 +363,10 @@ test('updateCameraPoint', () => {
     store,
     setState,
   )
+
+  await waitFor(() => {
+    expect(service.resourceState).toEqual('ready')
+  })
 
   service.updateCameraPoint([100, 100])
 
@@ -350,11 +374,12 @@ test('updateCameraPoint', () => {
 })
 
 test('restore', async () => {
-  const [store, setState] = createStore(
-    createState({
-      canvases: [createCanvas({id: '1'}), createCanvas({id: '2', deleted: true})],
-    }),
-  )
+  vi.spyOn(DB, 'getCanvases').mockResolvedValue([
+    createCanvas({id: '1'}),
+    createCanvas({id: '2', deleted: true}),
+  ])
+
+  const [store, setState] = createStore(createState())
 
   vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
 
@@ -366,23 +391,25 @@ test('restore', async () => {
     store,
     setState,
   )
+
+  await waitFor(() => {
+    expect(service.resourceState).toEqual('ready')
+  })
 
   await service.restore('2')
-  expect(store.canvases.length).toBe(2)
-  expect(store.canvases[1].deleted).toBe(false)
+  expect(service.canvases?.length).toBe(2)
+  expect(service.canvases?.[1].deleted).toBe(false)
 })
 
-test('select', () => {
-  const [store, setState] = createStore(
-    createState({
-      canvases: [
-        createCanvas({
-          id: '1',
-          elements: [createEditorElement({id: '1'}), createEditorElement({id: '2'})],
-        }),
-      ],
+test('select', async () => {
+  vi.spyOn(DB, 'getCanvases').mockResolvedValue([
+    createCanvas({
+      id: '1',
+      elements: [createEditorElement({id: '1'}), createEditorElement({id: '2'})],
     }),
-  )
+  ])
+
+  const [store, setState] = createStore(createState())
 
   vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
 
@@ -394,6 +421,10 @@ test('select', () => {
     store,
     setState,
   )
+
+  await waitFor(() => {
+    expect(service.resourceState).toEqual('ready')
+  })
 
   service.select('1')
   const editor = service.currentCanvas?.elements[0] as CanvasEditorElement
@@ -419,17 +450,15 @@ test('select', () => {
   expect(fileService.setActiveFile).toBeCalledWith('2')
 })
 
-test('deselect', () => {
-  const [store, setState] = createStore(
-    createState({
-      canvases: [
-        createCanvas({
-          id: '1',
-          elements: [createEditorElement({id: '1', selected: true, active: true})],
-        }),
-      ],
+test('deselect', async () => {
+  vi.spyOn(DB, 'getCanvases').mockResolvedValue([
+    createCanvas({
+      id: '1',
+      elements: [createEditorElement({id: '1', selected: true, active: true})],
     }),
-  )
+  ])
+
+  const [store, setState] = createStore(createState())
 
   vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
 
@@ -441,6 +470,10 @@ test('deselect', () => {
     store,
     setState,
   )
+
+  await waitFor(() => {
+    expect(service.resourceState).toEqual('ready')
+  })
 
   service.deselect()
 
@@ -452,15 +485,17 @@ test('deselect', () => {
 
 test('newCanvas', async () => {
   const editorView = mock<EditorView>()
+
+  vi.spyOn(DB, 'getCanvases').mockResolvedValue([
+    createCanvas({
+      id: '1',
+      elements: [createEditorElement({id: '1', selected: true, active: true})],
+    }),
+  ])
+
   const [store, setState] = createStore(
     createState({
       files: [{id: '1', ydoc: createYUpdate('1', []), versions: [], editorView}],
-      canvases: [
-        createCanvas({
-          id: '1',
-          elements: [createEditorElement({id: '1', selected: true, active: true})],
-        }),
-      ],
     }),
   )
 
@@ -474,31 +509,33 @@ test('newCanvas', async () => {
     store,
     setState,
   )
+
+  await waitFor(() => {
+    expect(service.resourceState).toEqual('ready')
+  })
 
   // new canvas
   await service.newCanvas()
-  expect(store.canvases.length).toBe(2)
+  expect(service.canvases?.length).toBe(2)
 
   // Add another canvas
   await service.newCanvas()
-  expect(store.canvases.length).toBe(3)
+  expect(service.canvases?.length).toBe(3)
 })
 
 test('removeElements', async () => {
-  const [store, setState] = createStore(
-    createState({
-      canvases: [
-        createCanvas({
-          id: '1',
-          elements: [
-            createEditorElement({id: '1'}),
-            createEditorElement({id: '2'}),
-            createLinkElement({id: '3', from: '1', to: '2'}),
-          ],
-        }),
+  vi.spyOn(DB, 'getCanvases').mockResolvedValue([
+    createCanvas({
+      id: '1',
+      elements: [
+        createEditorElement({id: '1'}),
+        createEditorElement({id: '2'}),
+        createLinkElement({id: '3', from: '1', to: '2'}),
       ],
     }),
-  )
+  ])
+
+  const [store, setState] = createStore(createState())
 
   vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
 
@@ -510,6 +547,10 @@ test('removeElements', async () => {
     store,
     setState,
   )
+
+  await waitFor(() => {
+    expect(service.resourceState).toEqual('ready')
+  })
 
   await service.removeElements(['1'])
 
@@ -517,17 +558,23 @@ test('removeElements', async () => {
   expect(service.currentCanvas?.elements[0].id).toBe('2')
 })
 
-test('init', async () => {
-  const editorView = vi.mocked<EditorView>({destroy: vi.fn()} as any)
-  const [store, setState] = createStore(
-    createState({
-      files: [{id: '1', ydoc: createYUpdate('1', []), versions: [], editorView}],
-      canvases: [
-        createCanvas({id: '1', elements: [createEditorElement({id: '1'})]}),
-        createCanvas({id: '2'}),
+test('removeElementsFromAll', async () => {
+  vi.spyOn(DB, 'getCanvases').mockResolvedValue([
+    createCanvas({
+      id: '1',
+      elements: [
+        createEditorElement({id: '1'}),
+        createEditorElement({id: '2'}),
+        createLinkElement({id: '3', from: '1', to: '2'}),
       ],
     }),
-  )
+    createCanvas({
+      id: '2',
+      elements: [createEditorElement({id: '1'}), createLinkElement({id: '4', from: '1', to: '2'})],
+    }),
+  ])
+
+  const [store, setState] = createStore(createState())
 
   vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
 
@@ -539,6 +586,48 @@ test('init', async () => {
     store,
     setState,
   )
+
+  await waitFor(() => {
+    expect(service.resourceState).toEqual('ready')
+  })
+
+  const ids = await service.removeElementFromAll('1')
+
+  expect(ids).toEqual(['1', '3'])
+
+  expect(service.canvases?.[0].elements.length).toBe(1)
+  expect(service.canvases?.[0].elements[0].id).toBe('2')
+
+  expect(service.canvases?.[1].elements.length).toBe(0)
+})
+
+test('init', async () => {
+  const editorView = vi.mocked<EditorView>({destroy: vi.fn()} as any)
+  const [store, setState] = createStore(
+    createState({
+      files: [{id: '1', ydoc: createYUpdate('1', []), versions: [], editorView}],
+    }),
+  )
+
+  vi.spyOn(DB, 'getCanvases').mockResolvedValue([
+    createCanvas({id: '1', elements: [createEditorElement({id: '1'})]}),
+    createCanvas({id: '2'}),
+  ])
+
+  vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
+
+  const service = new CanvasService(
+    fileService,
+    selectService,
+    collabService,
+    locationService,
+    store,
+    setState,
+  )
+
+  await waitFor(() => {
+    expect(service.resourceState).toEqual('ready')
+  })
 
   await service.init()
 })
@@ -546,14 +635,11 @@ test('init', async () => {
 test('newFile', async () => {
   const ydoc = new Uint8Array()
 
-  const [store, setState] = createStore(
-    createState({
-      canvases: [createCanvas({id: '1'})],
-    }),
-  )
-
+  vi.spyOn(DB, 'getCanvases').mockResolvedValue([createCanvas({id: '1'})])
   vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
   vi.spyOn(FileService, 'createFile').mockReturnValue({id: '1', ydoc, versions: []})
+
+  const [store, setState] = createStore(createState())
 
   const service = new CanvasService(
     fileService,
@@ -563,6 +649,10 @@ test('newFile', async () => {
     store,
     setState,
   )
+
+  await waitFor(() => {
+    expect(service.resourceState).toEqual('ready')
+  })
 
   await service.newFile()
 
@@ -580,19 +670,17 @@ test.each([
   const ydoc = new Uint8Array()
   const link = createLinkElement({id: '2', from: '1', toX, toY, to: undefined})
 
-  const [store, setState] = createStore(
-    createState({
-      canvases: [
-        createCanvas({
-          id: '1',
-          elements: [createEditorElement({id: '1'}), link],
-        }),
-      ],
+  vi.spyOn(DB, 'getCanvases').mockResolvedValue([
+    createCanvas({
+      id: '1',
+      elements: [createEditorElement({id: '1'}), link],
     }),
-  )
+  ])
 
   vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
   vi.spyOn(FileService, 'createFile').mockReturnValue({id: '3', ydoc, versions: []})
+
+  const [store, setState] = createStore(createState())
 
   const service = new CanvasService(
     fileService,
@@ -602,6 +690,10 @@ test.each([
     store,
     setState,
   )
+
+  await waitFor(() => {
+    expect(service.resourceState).toEqual('ready')
+  })
 
   await service.newFile(false, link)
 
@@ -619,13 +711,11 @@ test.each([
 })
 
 test('addImage', async () => {
-  const [store, setState] = createStore(
-    createState({
-      canvases: [createCanvas({id: '1'})],
-    }),
-  )
+  vi.spyOn(DB, 'getCanvases').mockResolvedValue([createCanvas({id: '1'})])
 
   vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
+
+  const [store, setState] = createStore(createState())
 
   const service = new CanvasService(
     fileService,
@@ -635,6 +725,10 @@ test('addImage', async () => {
     store,
     setState,
   )
+
+  await waitFor(() => {
+    expect(service.resourceState).toEqual('ready')
+  })
 
   await service.addImage('/path/1.png', new Vector(100, 100), 1000, 2000)
 
@@ -647,13 +741,11 @@ test('addImage', async () => {
 })
 
 test('addVideo', async () => {
-  const [store, setState] = createStore(
-    createState({
-      canvases: [createCanvas({id: '1'})],
-    }),
-  )
+  vi.spyOn(DB, 'getCanvases').mockResolvedValue([createCanvas({id: '1'})])
 
   vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
+
+  const [store, setState] = createStore(createState())
 
   const service = new CanvasService(
     fileService,
@@ -663,6 +755,10 @@ test('addVideo', async () => {
     store,
     setState,
   )
+
+  await waitFor(() => {
+    expect(service.resourceState).toEqual('ready')
+  })
 
   await service.addVideo('/path/1.mp4', 'video/mp4', new Vector(100, 100), 1000, 2000)
 
@@ -675,22 +771,17 @@ test('addVideo', async () => {
   expect(el.height).toBe(600)
 })
 
-test('drawLink', () => {
-  const [store, setState] = createStore(
-    createState({
-      canvases: [
-        createCanvas({
-          id: '1',
-          elements: [
-            createEditorElement({id: '1'}),
-            createEditorElement({id: '2', x: 300, y: 300}),
-          ],
-        }),
-      ],
+test('drawLink', async () => {
+  vi.spyOn(DB, 'getCanvases').mockResolvedValue([
+    createCanvas({
+      id: '1',
+      elements: [createEditorElement({id: '1'}), createEditorElement({id: '2', x: 300, y: 300})],
     }),
-  )
+  ])
 
   vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
+
+  const [store, setState] = createStore(createState())
 
   const service = new CanvasService(
     fileService,
@@ -700,6 +791,10 @@ test('drawLink', () => {
     store,
     setState,
   )
+
+  await waitFor(() => {
+    expect(service.resourceState).toEqual('ready')
+  })
 
   service.drawLink('3', '1', EdgeType.Right, 0, 0)
   expect(service.currentCanvas?.elements.length).toBe(3)
@@ -724,21 +819,16 @@ test('drawLink', () => {
 })
 
 test('drawLink - abort', async () => {
-  const [store, setState] = createStore(
-    createState({
-      canvases: [
-        createCanvas({
-          id: '1',
-          elements: [
-            createEditorElement({id: '1'}),
-            createEditorElement({id: '2', x: 300, y: 300}),
-          ],
-        }),
-      ],
+  vi.spyOn(DB, 'getCanvases').mockResolvedValue([
+    createCanvas({
+      id: '1',
+      elements: [createEditorElement({id: '1'}), createEditorElement({id: '2', x: 300, y: 300})],
     }),
-  )
+  ])
 
   vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
+
+  const [store, setState] = createStore(createState())
 
   const service = new CanvasService(
     fileService,
@@ -748,6 +838,10 @@ test('drawLink - abort', async () => {
     store,
     setState,
   )
+
+  await waitFor(() => {
+    expect(service.resourceState).toEqual('ready')
+  })
 
   service.drawLink('3', '1', EdgeType.Right, 100, 100)
   expect(service.currentCanvas?.elements.length).toBe(3)
@@ -758,21 +852,19 @@ test('drawLink - abort', async () => {
 })
 
 test('removeDeadLinks', async () => {
-  const [store, setState] = createStore(
-    createState({
-      canvases: [
-        createCanvas({
-          id: '1',
-          elements: [
-            createEditorElement({id: '1'}),
-            createLinkElement({id: '2', from: '1', toX: 0, toY: 0, to: undefined}),
-          ],
-        }),
+  vi.spyOn(DB, 'getCanvases').mockResolvedValue([
+    createCanvas({
+      id: '1',
+      elements: [
+        createEditorElement({id: '1'}),
+        createLinkElement({id: '2', from: '1', toX: 0, toY: 0, to: undefined}),
       ],
     }),
-  )
+  ])
 
   vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
+
+  const [store, setState] = createStore(createState())
 
   const service = new CanvasService(
     fileService,
@@ -782,6 +874,10 @@ test('removeDeadLinks', async () => {
     store,
     setState,
   )
+
+  await waitFor(() => {
+    expect(service.resourceState).toEqual('ready')
+  })
 
   expect(service.currentCanvas?.elements.length).toBe(2)
 
@@ -791,18 +887,16 @@ test('removeDeadLinks', async () => {
 })
 
 test('clearCanvas', async () => {
-  const [store, setState] = createStore(
-    createState({
-      canvases: [
-        createCanvas({
-          id: '1',
-          elements: [createEditorElement({id: '1'})],
-        }),
-      ],
+  vi.spyOn(DB, 'getCanvases').mockResolvedValue([
+    createCanvas({
+      id: '1',
+      elements: [createEditorElement({id: '1'})],
     }),
-  )
+  ])
 
   vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
+
+  const [store, setState] = createStore(createState())
 
   const service = new CanvasService(
     fileService,
@@ -812,28 +906,30 @@ test('clearCanvas', async () => {
     store,
     setState,
   )
+
+  await waitFor(() => {
+    expect(service.resourceState).toEqual('ready')
+  })
 
   await service.clearCanvas()
 
   expect(service.currentCanvas?.elements.length).toBe(0)
 })
 
-test('getElementNear', () => {
-  const [store, setState] = createStore(
-    createState({
-      canvases: [
-        createCanvas({
-          id: '1',
-          elements: [
-            createEditorElement({id: '1', x: 0, y: 0, width: 100, height: 100}),
-            createEditorElement({id: '2', x: 200, y: 200, width: 100, height: 100}),
-          ],
-        }),
+test('getElementNear', async () => {
+  vi.spyOn(DB, 'getCanvases').mockResolvedValue([
+    createCanvas({
+      id: '1',
+      elements: [
+        createEditorElement({id: '1', x: 0, y: 0, width: 100, height: 100}),
+        createEditorElement({id: '2', x: 200, y: 200, width: 100, height: 100}),
       ],
     }),
-  )
+  ])
 
   vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
+
+  const [store, setState] = createStore(createState())
 
   const service = new CanvasService(
     fileService,
@@ -843,6 +939,10 @@ test('getElementNear', () => {
     store,
     setState,
   )
+
+  await waitFor(() => {
+    expect(service.resourceState).toEqual('ready')
+  })
 
   expect(service.getElementNear([-10, -20])).toEqual({id: '1', edge: EdgeType.Top})
   expect(service.getElementNear([-20, -10])).toEqual({id: '1', edge: EdgeType.Left})
@@ -852,23 +952,21 @@ test('getElementNear', () => {
   expect(service.getElementNear([300, 180])).toEqual({id: '2', edge: EdgeType.Top})
 })
 
-test('center', () => {
-  const [store, setState] = createStore(
-    createState({
-      canvases: [
-        createCanvas({
-          id: '1',
-          elements: [
-            createEditorElement({id: '1', x: 0, y: 0, width: 100, height: 100}),
-            createEditorElement({id: '2', x: 100, y: 0, width: 100, height: 100}),
-            createEditorElement({id: '3', x: 0, y: 100, width: 100, height: 100}),
-          ],
-        }),
+test('center', async () => {
+  vi.spyOn(DB, 'getCanvases').mockResolvedValue([
+    createCanvas({
+      id: '1',
+      elements: [
+        createEditorElement({id: '1', x: 0, y: 0, width: 100, height: 100}),
+        createEditorElement({id: '2', x: 100, y: 0, width: 100, height: 100}),
+        createEditorElement({id: '3', x: 0, y: 100, width: 100, height: 100}),
       ],
     }),
-  )
+  ])
 
   vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
+
+  const [store, setState] = createStore(createState())
 
   const service = new CanvasService(
     fileService,
@@ -878,29 +976,31 @@ test('center', () => {
     store,
     setState,
   )
+
+  await waitFor(() => {
+    expect(service.resourceState).toEqual('ready')
+  })
 
   const centerPoint = service.getCenterPoint()
   expect(centerPoint?.x).toEqual(100)
   expect(centerPoint?.y).toEqual(100)
 })
 
-test('get selection', () => {
-  const [store, setState] = createStore(
-    createState({
-      canvases: [
-        createCanvas({
-          id: '1',
-          elements: [
-            createEditorElement({id: '1', x: 0, y: 0, width: 100, height: 100}),
-            createEditorElement({id: '2', x: 100, y: 0, width: 100, height: 100}),
-            createEditorElement({id: '3', x: 0, y: 100, width: 100, height: 100}),
-          ],
-        }),
+test('get selection', async () => {
+  vi.spyOn(DB, 'getCanvases').mockResolvedValue([
+    createCanvas({
+      id: '1',
+      elements: [
+        createEditorElement({id: '1', x: 0, y: 0, width: 100, height: 100}),
+        createEditorElement({id: '2', x: 100, y: 0, width: 100, height: 100}),
+        createEditorElement({id: '3', x: 0, y: 100, width: 100, height: 100}),
       ],
     }),
-  )
+  ])
 
   vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
+
+  const [store, setState] = createStore(createState())
 
   const service = new CanvasService(
     fileService,
@@ -910,6 +1010,10 @@ test('get selection', () => {
     store,
     setState,
   )
+
+  await waitFor(() => {
+    expect(service.resourceState).toEqual('ready')
+  })
 
   expect(service.selection).toBe(undefined)
 
@@ -938,23 +1042,21 @@ test('get selection', () => {
   expect(service.selection?.elements.length).toBe(3)
 })
 
-test('selectBox', () => {
-  const [store, setState] = createStore(
-    createState({
-      canvases: [
-        createCanvas({
-          id: '1',
-          elements: [
-            createEditorElement({id: '1', x: 0, y: 0, width: 100, height: 100}),
-            createEditorElement({id: '2', x: 100, y: 0, width: 100, height: 100}),
-            createEditorElement({id: '3', x: 0, y: 100, width: 100, height: 100}),
-          ],
-        }),
+test('selectBox', async () => {
+  vi.spyOn(DB, 'getCanvases').mockResolvedValue([
+    createCanvas({
+      id: '1',
+      elements: [
+        createEditorElement({id: '1', x: 0, y: 0, width: 100, height: 100}),
+        createEditorElement({id: '2', x: 100, y: 0, width: 100, height: 100}),
+        createEditorElement({id: '3', x: 0, y: 100, width: 100, height: 100}),
       ],
     }),
-  )
+  ])
 
   vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
+
+  const [store, setState] = createStore(createState())
 
   const service = new CanvasService(
     fileService,
@@ -965,11 +1067,15 @@ test('selectBox', () => {
     setState,
   )
 
+  await waitFor(() => {
+    expect(service.resourceState).toEqual('ready')
+  })
+
   expect(service.selection).toBe(undefined)
 
   service.selectBox(new Box(0, 0, 10, 10), true, false)
   expect(service.selection).toBe(undefined) // No selection if only one selected
-  expect(store.canvases[0].elements[0].selected).toBe(true)
+  expect(service.canvases?.[0].elements[0].selected).toBe(true)
 
   service.selectBox(new Box(0, 0, 110, 0), false, false)
   expect(service.selection).not.toBe(undefined)
@@ -1003,31 +1109,29 @@ test('selectBox', () => {
   expect(service.selection?.elements.length).toBe(2)
 })
 
-test('selectBox - active editor', () => {
+test('selectBox - active editor', async () => {
   const editorView = mock<EditorView>()
-  const [store, setState] = createStore(
-    createState({
-      canvases: [
-        createCanvas({
+  vi.spyOn(DB, 'getCanvases').mockResolvedValue([
+    createCanvas({
+      id: '1',
+      elements: [
+        createEditorElement({
           id: '1',
-          elements: [
-            createEditorElement({
-              id: '1',
-              x: 0,
-              y: 0,
-              width: 100,
-              height: 100,
-              active: true,
-              selected: true,
-            }),
-            createEditorElement({id: '2', x: 100, y: 0, width: 100, height: 100}),
-          ],
+          x: 0,
+          y: 0,
+          width: 100,
+          height: 100,
+          active: true,
+          selected: true,
         }),
+        createEditorElement({id: '2', x: 100, y: 0, width: 100, height: 100}),
       ],
     }),
-  )
+  ])
 
   vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
+
+  const [store, setState] = createStore(createState())
 
   fileService.findFileById.mockReturnValue({
     id: '1',
@@ -1044,6 +1148,10 @@ test('selectBox - active editor', () => {
     store,
     setState,
   )
+
+  await waitFor(() => {
+    expect(service.resourceState).toEqual('ready')
+  })
 
   expect(service.selection).toBe(undefined)
 

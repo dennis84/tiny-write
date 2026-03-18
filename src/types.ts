@@ -249,7 +249,6 @@ export interface Sidebar {
 }
 
 export interface State {
-  canvases: Canvas[]
   files: File[]
   tree?: Tree
   config: Config

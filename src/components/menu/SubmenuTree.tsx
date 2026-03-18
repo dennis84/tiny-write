@@ -1,5 +1,15 @@
 import {DragGesture} from '@use-gesture/vanilla'
-import {createSignal, For, Match, onCleanup, onMount, Show, Suspense, Switch} from 'solid-js'
+import {
+  createEffect,
+  createSignal,
+  For,
+  Match,
+  onCleanup,
+  onMount,
+  Show,
+  Suspense,
+  Switch,
+} from 'solid-js'
 import {unwrap} from 'solid-js/store'
 import {Portal} from 'solid-js/web'
 import {styled} from 'solid-styled-components'
@@ -537,8 +547,10 @@ export const SubmenuTree = (props: Props) => {
     </For>
   )
 
-  onMount(() => {
-    treeService.updateAll()
+  createEffect(() => {
+    if (canvasService.resourceState === 'ready') {
+      treeService.updateAll()
+    }
   })
 
   const Tooltip = () => (
