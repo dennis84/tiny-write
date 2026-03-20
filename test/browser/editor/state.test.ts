@@ -6,7 +6,7 @@ test.beforeEach(async ({page}) => {
 })
 
 test('load state from db', async ({page}) => {
-  await page.waitForSelector('[data-testid="initialized"]')
+  await page.waitForSelector('[data-testid="editor_scroll"]')
   await page.click('[data-testid="navbar_menu_open"]')
   await assertEditorLineToEqual(page, 1, 'Start typing ...')
 
@@ -15,12 +15,12 @@ test('load state from db', async ({page}) => {
   await page.waitForTimeout(200)
   await page.reload()
 
-  await page.waitForSelector('[data-testid="initialized"]')
+  await page.waitForSelector('[data-testid="editor_scroll"]')
   await expect(page.locator('.ProseMirror p')).toHaveText('foo')
 })
 
 test('open file', async ({page}) => {
-  await page.waitForSelector('[data-testid="initialized"]')
+  await page.waitForSelector('[data-testid="editor_scroll"]')
   await page.click('[data-testid="navbar_menu_open"]')
   await expect(page.locator('[data-testid="tree_link"]')).toHaveCount(1)
   await expect(page.locator('[data-testid="tree_link"]')).toContainText('Untitled')

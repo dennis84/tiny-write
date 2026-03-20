@@ -2,7 +2,7 @@ import {type RouteSectionProps, useLocation} from '@solidjs/router'
 import {createResource, ErrorBoundary, Match, onMount, Show, Suspense, Switch} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {useBeforeLeave} from '@/hooks/use-before-leave'
-import {info} from '@/remote/log'
+import {error, info} from '@/remote/log'
 import {useState} from '@/state'
 import {type LocationState, Page} from '@/types'
 import {ButtonPrimary} from '../Button'
@@ -63,8 +63,9 @@ export const CanvasPage = (props: RouteSectionProps) => {
     },
   )
 
-  const OnError = (p: {error: any}) => {
+  const OnError = (p: {error: Error}) => {
     onMount(async () => {
+      error(p.error.message, p.error)
       await locationService.setLastLocation(undefined)
       const message = p.error instanceof Error ? p.error.message : String(p.error)
       dialogService.toast({message, duration: 10_000})

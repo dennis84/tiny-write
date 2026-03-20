@@ -3,7 +3,7 @@ import {delay, openBlockMenu} from '../utils'
 
 test.beforeEach(async ({page}) => {
   await page.goto('/')
-  await page.waitForSelector('[data-testid="initialized"]')
+  await page.waitForSelector('[data-testid="editor_scroll"]')
 })
 
 const getHandlePoint = async (page: Page) => {

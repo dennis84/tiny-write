@@ -249,7 +249,6 @@ export interface Sidebar {
 }
 
 export interface State {
-  files: File[]
   tree?: Tree
   config: Config
   fullscreen: boolean

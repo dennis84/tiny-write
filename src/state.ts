@@ -67,7 +67,6 @@ export const createConfig = (config: Partial<Config> = {}): Config => ({
 })
 
 export const createState = (props: Partial<State> = {}): State => ({
-  files: [],
   fullscreen: false,
   config: createConfig(),
   ...props,

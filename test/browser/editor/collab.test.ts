@@ -3,7 +3,7 @@ import {assertEditorLineToEqual, delay} from '../utils'
 
 test('create room', async ({page, browser}) => {
   await page.goto(`/`)
-  await page.waitForSelector('[data-testid="initialized"]')
+  await page.waitForSelector('[data-testid="editor_scroll"]')
 
   await page.click('[data-testid="navbar_menu_open"]')
   await page.click('[data-testid="collab"]')
@@ -26,7 +26,7 @@ test('create room', async ({page, browser}) => {
 
 test('create room - existing content file', async ({page, browser}) => {
   await page.goto('/')
-  await page.waitForSelector('[data-testid="initialized"]')
+  await page.waitForSelector('[data-testid="editor_scroll"]')
 
   const id = page.url().split('/editor/')[1]
 
@@ -53,7 +53,7 @@ test('create room - existing content file', async ({page, browser}) => {
 
 test('sync config', async ({page, browser}) => {
   await page.goto('/')
-  await page.waitForSelector('[data-testid="initialized"]')
+  await page.waitForSelector('[data-testid="editor_scroll"]')
   await page.click('[data-testid="navbar_menu_open"]')
 
   // change font
@@ -82,7 +82,7 @@ test('sync config', async ({page, browser}) => {
 
 test('rejoin room', async ({page}) => {
   await page.goto('/')
-  await page.waitForSelector('[data-testid="initialized"]')
+  await page.waitForSelector('[data-testid="editor_scroll"]')
   await page.click('[data-testid="navbar_menu_open"]')
   await page.click('[data-testid="collab"]')
 
@@ -103,7 +103,7 @@ test('rejoin room', async ({page}) => {
 
 test('rejoin room - remote', async ({page, browser}) => {
   await page.goto('/')
-  await page.waitForSelector('[data-testid="initialized"]')
+  await page.waitForSelector('[data-testid="editor_scroll"]')
   await page.click('[data-testid="navbar_menu_open"]')
   await page.click('[data-testid="collab"]')
 

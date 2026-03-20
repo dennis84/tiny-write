@@ -27,6 +27,7 @@ vi.mock('mermaid', () => ({}))
 vi.mock('@/db', () => ({
   DB: mock({
     getCanvases: vi.fn(),
+    getFiles: vi.fn(),
   }),
 }))
 
@@ -69,6 +70,8 @@ const createImageElement = (props: Partial<CanvasImageElement> = {}): CanvasImag
   ...props,
 })
 
+const lastModified = new Date()
+
 beforeEach(() => {
   vi.resetAllMocks()
 })
@@ -81,13 +84,12 @@ const locationService = mock<LocationService>()
 test('currentCanvas - empty', async () => {
   vi.spyOn(DB, 'getCanvases').mockResolvedValue([])
 
-  const [store, setState] = createStore(createState())
+  const [, setState] = createStore(createState())
   const service = new CanvasService(
     fileService,
     selectService,
     collabService,
     locationService,
-    store,
     setState,
   )
 
@@ -101,7 +103,7 @@ test('currentCanvas - empty', async () => {
 test('currentCanvas', async () => {
   vi.spyOn(DB, 'getCanvases').mockResolvedValue([createCanvas({id: '1'}), createCanvas({id: '2'})])
 
-  const [store, setState] = createStore(createState())
+  const [, setState] = createStore(createState())
 
   vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('2')
 
@@ -110,7 +112,6 @@ test('currentCanvas', async () => {
     selectService,
     collabService,
     locationService,
-    store,
     setState,
   )
 
@@ -124,7 +125,7 @@ test('currentCanvas', async () => {
 test('updateCanvas', async () => {
   vi.spyOn(DB, 'getCanvases').mockResolvedValue([createCanvas({id: '1'})])
 
-  const [store, setState] = createStore(createState())
+  const [, setState] = createStore(createState())
 
   vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
 
@@ -133,7 +134,6 @@ test('updateCanvas', async () => {
     selectService,
     collabService,
     locationService,
-    store,
     setState,
   )
 
@@ -164,7 +164,7 @@ test('updateCanvasElement', async () => {
     }),
   ])
 
-  const [store, setState] = createStore(createState())
+  const [, setState] = createStore(createState())
 
   vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
 
@@ -173,7 +173,6 @@ test('updateCanvasElement', async () => {
     selectService,
     collabService,
     locationService,
-    store,
     setState,
   )
 
@@ -227,7 +226,7 @@ test('backToContent', async () => {
     }),
   ])
 
-  const [store, setState] = createStore(createState())
+  const [, setState] = createStore(createState())
 
   vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
 
@@ -236,7 +235,6 @@ test('backToContent', async () => {
     selectService,
     collabService,
     locationService,
-    store,
     setState,
   )
 
@@ -263,7 +261,7 @@ test('focus', async () => {
     }),
   ])
 
-  const [store, setState] = createStore(createState())
+  const [, setState] = createStore(createState())
 
   vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
 
@@ -272,7 +270,6 @@ test('focus', async () => {
     selectService,
     collabService,
     locationService,
-    store,
     setState,
   )
 
@@ -298,7 +295,7 @@ test('snapToGrid', async () => {
     }),
   ])
 
-  const [store, setState] = createStore(createState())
+  const [, setState] = createStore(createState())
 
   vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
 
@@ -307,7 +304,6 @@ test('snapToGrid', async () => {
     selectService,
     collabService,
     locationService,
-    store,
     setState,
   )
 
@@ -325,7 +321,7 @@ test('snapToGrid', async () => {
 test('updateCamera', async () => {
   vi.spyOn(DB, 'getCanvases').mockResolvedValue([createCanvas({id: '1'})])
 
-  const [store, setState] = createStore(createState())
+  const [, setState] = createStore(createState())
 
   vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
 
@@ -334,7 +330,6 @@ test('updateCamera', async () => {
     selectService,
     collabService,
     locationService,
-    store,
     setState,
   )
 
@@ -351,7 +346,7 @@ test('updateCamera', async () => {
 test('updateCameraPoint', async () => {
   vi.spyOn(DB, 'getCanvases').mockResolvedValue([createCanvas({id: '1'})])
 
-  const [store, setState] = createStore(createState())
+  const [, setState] = createStore(createState())
 
   vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
 
@@ -360,7 +355,6 @@ test('updateCameraPoint', async () => {
     selectService,
     collabService,
     locationService,
-    store,
     setState,
   )
 
@@ -379,7 +373,7 @@ test('restore', async () => {
     createCanvas({id: '2', deleted: true}),
   ])
 
-  const [store, setState] = createStore(createState())
+  const [, setState] = createStore(createState())
 
   vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
 
@@ -388,7 +382,6 @@ test('restore', async () => {
     selectService,
     collabService,
     locationService,
-    store,
     setState,
   )
 
@@ -409,7 +402,7 @@ test('select', async () => {
     }),
   ])
 
-  const [store, setState] = createStore(createState())
+  const [, setState] = createStore(createState())
 
   vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
 
@@ -418,7 +411,6 @@ test('select', async () => {
     selectService,
     collabService,
     locationService,
-    store,
     setState,
   )
 
@@ -458,7 +450,7 @@ test('deselect', async () => {
     }),
   ])
 
-  const [store, setState] = createStore(createState())
+  const [, setState] = createStore(createState())
 
   vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
 
@@ -467,7 +459,6 @@ test('deselect', async () => {
     selectService,
     collabService,
     locationService,
-    store,
     setState,
   )
 
@@ -484,8 +475,6 @@ test('deselect', async () => {
 })
 
 test('newCanvas', async () => {
-  const editorView = mock<EditorView>()
-
   vi.spyOn(DB, 'getCanvases').mockResolvedValue([
     createCanvas({
       id: '1',
@@ -493,20 +482,19 @@ test('newCanvas', async () => {
     }),
   ])
 
-  const [store, setState] = createStore(
-    createState({
-      files: [{id: '1', ydoc: createYUpdate('1', []), versions: [], editorView}],
-    }),
-  )
+  vi.spyOn(DB, 'getFiles').mockResolvedValue([
+    {id: '1', ydoc: createYUpdate('1', []), versions: [], lastModified},
+  ])
 
   vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
+
+  const [, setState] = createStore(createState())
 
   const service = new CanvasService(
     fileService,
     selectService,
     collabService,
     locationService,
-    store,
     setState,
   )
 
@@ -535,7 +523,7 @@ test('removeElements', async () => {
     }),
   ])
 
-  const [store, setState] = createStore(createState())
+  const [, setState] = createStore(createState())
 
   vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
 
@@ -544,7 +532,6 @@ test('removeElements', async () => {
     selectService,
     collabService,
     locationService,
-    store,
     setState,
   )
 
@@ -574,7 +561,7 @@ test('removeElementsFromAll', async () => {
     }),
   ])
 
-  const [store, setState] = createStore(createState())
+  const [, setState] = createStore(createState())
 
   vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
 
@@ -583,7 +570,6 @@ test('removeElementsFromAll', async () => {
     selectService,
     collabService,
     locationService,
-    store,
     setState,
   )
 
@@ -602,12 +588,11 @@ test('removeElementsFromAll', async () => {
 })
 
 test('init', async () => {
-  const editorView = vi.mocked<EditorView>({destroy: vi.fn()} as any)
-  const [store, setState] = createStore(
-    createState({
-      files: [{id: '1', ydoc: createYUpdate('1', []), versions: [], editorView}],
-    }),
-  )
+  const [, setState] = createStore(createState({}))
+
+  vi.spyOn(DB, 'getFiles').mockResolvedValue([
+    {id: '1', ydoc: createYUpdate('1', []), versions: [], lastModified},
+  ])
 
   vi.spyOn(DB, 'getCanvases').mockResolvedValue([
     createCanvas({id: '1', elements: [createEditorElement({id: '1'})]}),
@@ -621,7 +606,6 @@ test('init', async () => {
     selectService,
     collabService,
     locationService,
-    store,
     setState,
   )
 
@@ -639,14 +623,13 @@ test('newFile', async () => {
   vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
   vi.spyOn(FileService, 'createFile').mockReturnValue({id: '1', ydoc, versions: []})
 
-  const [store, setState] = createStore(createState())
+  const [, setState] = createStore(createState())
 
   const service = new CanvasService(
     fileService,
     selectService,
     collabService,
     locationService,
-    store,
     setState,
   )
 
@@ -680,14 +663,13 @@ test.each([
   vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
   vi.spyOn(FileService, 'createFile').mockReturnValue({id: '3', ydoc, versions: []})
 
-  const [store, setState] = createStore(createState())
+  const [, setState] = createStore(createState())
 
   const service = new CanvasService(
     fileService,
     selectService,
     collabService,
     locationService,
-    store,
     setState,
   )
 
@@ -715,14 +697,13 @@ test('addImage', async () => {
 
   vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
 
-  const [store, setState] = createStore(createState())
+  const [, setState] = createStore(createState())
 
   const service = new CanvasService(
     fileService,
     selectService,
     collabService,
     locationService,
-    store,
     setState,
   )
 
@@ -745,14 +726,13 @@ test('addVideo', async () => {
 
   vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
 
-  const [store, setState] = createStore(createState())
+  const [, setState] = createStore(createState())
 
   const service = new CanvasService(
     fileService,
     selectService,
     collabService,
     locationService,
-    store,
     setState,
   )
 
@@ -781,14 +761,13 @@ test('drawLink', async () => {
 
   vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
 
-  const [store, setState] = createStore(createState())
+  const [, setState] = createStore(createState())
 
   const service = new CanvasService(
     fileService,
     selectService,
     collabService,
     locationService,
-    store,
     setState,
   )
 
@@ -828,14 +807,13 @@ test('drawLink - abort', async () => {
 
   vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
 
-  const [store, setState] = createStore(createState())
+  const [, setState] = createStore(createState())
 
   const service = new CanvasService(
     fileService,
     selectService,
     collabService,
     locationService,
-    store,
     setState,
   )
 
@@ -864,14 +842,13 @@ test('removeDeadLinks', async () => {
 
   vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
 
-  const [store, setState] = createStore(createState())
+  const [, setState] = createStore(createState())
 
   const service = new CanvasService(
     fileService,
     selectService,
     collabService,
     locationService,
-    store,
     setState,
   )
 
@@ -896,14 +873,13 @@ test('clearCanvas', async () => {
 
   vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
 
-  const [store, setState] = createStore(createState())
+  const [, setState] = createStore(createState())
 
   const service = new CanvasService(
     fileService,
     selectService,
     collabService,
     locationService,
-    store,
     setState,
   )
 
@@ -929,14 +905,13 @@ test('getElementNear', async () => {
 
   vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
 
-  const [store, setState] = createStore(createState())
+  const [, setState] = createStore(createState())
 
   const service = new CanvasService(
     fileService,
     selectService,
     collabService,
     locationService,
-    store,
     setState,
   )
 
@@ -966,14 +941,13 @@ test('center', async () => {
 
   vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
 
-  const [store, setState] = createStore(createState())
+  const [, setState] = createStore(createState())
 
   const service = new CanvasService(
     fileService,
     selectService,
     collabService,
     locationService,
-    store,
     setState,
   )
 
@@ -1000,14 +974,13 @@ test('get selection', async () => {
 
   vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
 
-  const [store, setState] = createStore(createState())
+  const [, setState] = createStore(createState())
 
   const service = new CanvasService(
     fileService,
     selectService,
     collabService,
     locationService,
-    store,
     setState,
   )
 
@@ -1056,14 +1029,13 @@ test('selectBox', async () => {
 
   vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
 
-  const [store, setState] = createStore(createState())
+  const [, setState] = createStore(createState())
 
   const service = new CanvasService(
     fileService,
     selectService,
     collabService,
     locationService,
-    store,
     setState,
   )
 
@@ -1131,7 +1103,7 @@ test('selectBox - active editor', async () => {
 
   vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
 
-  const [store, setState] = createStore(createState())
+  const [, setState] = createStore(createState())
 
   fileService.findFileById.mockReturnValue({
     id: '1',
@@ -1145,7 +1117,6 @@ test('selectBox - active editor', async () => {
     selectService,
     collabService,
     locationService,
-    store,
     setState,
   )
 

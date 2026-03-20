@@ -1,8 +1,6 @@
-import type {SetStoreFunction} from 'solid-js/store'
-import {DB} from '@/db'
 import {info} from '@/remote/log'
 import {isCanvas, isFile} from '@/state'
-import type {Canvas, File, State} from '@/types'
+import type {Canvas, File} from '@/types'
 import type {CanvasService} from './CanvasService'
 import {FileService} from './FileService'
 import type {MenuTreeItem, TreeService} from './TreeService'
@@ -22,8 +20,6 @@ export class DeleteService {
     private fileService: FileService,
     private canvasService: CanvasService,
     private treeService: TreeService,
-    private store: State,
-    private setState: SetStoreFunction<State>,
   ) {}
 
   async emptyBin(): Promise<DeleteResult> {
@@ -174,13 +170,9 @@ export class DeleteService {
     const id = node.id
 
     if (isFile(node.value)) {
-      const files = this.store.files.filter((it) => it.id !== id)
-      this.setState({files})
-
+      await this.fileService.deleteFile(id)
       // Remove file elements on canvases
       await this.canvasService.removeElementFromAll(id)
-
-      await DB.deleteFile(id)
       info('File forever deleted')
     }
   }

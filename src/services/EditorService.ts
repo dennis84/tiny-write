@@ -111,8 +111,7 @@ export class EditorService {
         editable: () => this.locationService.state?.snapshot === undefined,
       })
 
-      const fileIndex = this.store.files.findIndex((f) => f.id === file.id)
-      this.setState('files', fileIndex, 'editorView', editorView)
+      this.fileService.updateFile(file.id, {editorView})
     }
 
     editorView.setProps({state: editorState, nodeViews})

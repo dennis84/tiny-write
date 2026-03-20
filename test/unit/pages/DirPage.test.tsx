@@ -96,6 +96,6 @@ test.each([
     expect(getByTestId(expectContainer)).toBeDefined()
   })
 
-  expect(ctrl.store.files[0].path).toBe(`/users/me/project/${name}`)
-  expect(ctrl.store.files[0].code).toBe(code)
+  expect(ctrl.fileService.files[0].path).toBe(`/users/me/project/${name}`)
+  expect(ctrl.fileService.files[0].code).toBe(code)
 })

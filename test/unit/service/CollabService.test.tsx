@@ -2,12 +2,17 @@ import {waitFor} from '@solidjs/testing-library'
 import userEvent from '@testing-library/user-event'
 import {beforeEach, expect, test, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
+import {DB} from '@/db'
 import {createState} from '@/state'
 import * as cmUtil from '../testutil/codemirror-util'
 import * as pmUtil from '../testutil/prosemirror-util'
 import {renderMain, stubLocation} from '../testutil/util'
 
-vi.mock('@/db', () => ({DB: mock()}))
+vi.mock('@/db', () => ({
+  DB: mock({
+    getFiles: vi.fn(),
+  }),
+}))
 
 class WebSocketMock {
   close() {}
@@ -19,19 +24,23 @@ beforeEach(() => {
   vi.resetAllMocks()
 })
 
+const lastModified = new Date()
+
 test('undoManager - text', async () => {
   stubLocation('/editor/1')
 
-  const initial = createState({
-    files: [{id: '1', ydoc: pmUtil.createYUpdate('1', []), versions: []}],
-  })
+  vi.spyOn(DB, 'getFiles').mockResolvedValue([
+    {id: '1', ydoc: pmUtil.createYUpdate('1', []), versions: [], lastModified},
+  ])
+
+  const initial = createState()
   const {getByTestId, ctrl} = renderMain(initial)
 
   await waitFor(() => {
     expect(getByTestId('editor_scroll')).toBeDefined()
   })
 
-  expect(ctrl.store.files.length).toBe(1)
+  expect(ctrl.fileService.files.length).toBe(1)
   expect(getByTestId('editor_scroll')).toHaveTextContent('Start typing ...')
 
   await userEvent.keyboard('Test', {delay: 10})
@@ -50,16 +59,18 @@ test('undoManager - text', async () => {
 test('undoManager - code', async () => {
   stubLocation('/code/1')
 
-  const initial = createState({
-    files: [{id: '1', ydoc: cmUtil.createYUpdate('1', ''), versions: [], code: true}],
-  })
+  vi.spyOn(DB, 'getFiles').mockResolvedValue([
+    {id: '1', ydoc: cmUtil.createYUpdate('1', ''), versions: [], code: true, lastModified},
+  ])
+
+  const initial = createState()
   const {getByTestId, ctrl} = renderMain(initial)
 
   await waitFor(() => {
     expect(getByTestId('code_scroll')).toBeDefined()
   })
 
-  expect(ctrl.store.files.length).toBe(1)
+  expect(ctrl.fileService.files.length).toBe(1)
   expect(ctrl.fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('')
 
   await userEvent.keyboard('Test', {delay: 10})
@@ -78,9 +89,11 @@ test('undoManager - code', async () => {
 test('startCollab', async () => {
   stubLocation('/editor/1')
 
-  const initial = createState({
-    files: [{id: '1', ydoc: pmUtil.createYUpdate('1', []), versions: []}],
-  })
+  vi.spyOn(DB, 'getFiles').mockResolvedValue([
+    {id: '1', ydoc: pmUtil.createYUpdate('1', []), versions: [], lastModified},
+  ])
+
+  const initial = createState()
 
   const {getByTestId, ctrl} = renderMain(initial)
 

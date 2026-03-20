@@ -5,7 +5,7 @@ import {getDocument} from '@/remote/editor'
 import {info} from '@/remote/log'
 import {createConfig} from '@/state'
 import type {State, Window} from '@/types'
-import {FileService} from './FileService'
+import type {FileService} from './FileService'
 
 export class AppService {
   public layoutRef: HTMLElement | undefined
@@ -15,7 +15,6 @@ export class AppService {
 
     const fetchedWindow = await DB.getWindow()
     const fetchedConfig = (await DB.getConfig()) ?? createConfig()
-    const files = (await FileService.fetchFiles()) ?? []
     const sidebar = await DB.getSidebar()
     const tree = await DB.getTree()
     const ai = await DB.getAi()
@@ -28,7 +27,6 @@ export class AppService {
     return {
       fullscreen: false,
       args,
-      files,
       config: fetchedConfig,
       window: fetchedWindow,
       sidebar,

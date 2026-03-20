@@ -1,4 +1,4 @@
-import {createStore} from 'solid-js/store'
+import {waitFor} from '@solidjs/testing-library'
 import {beforeEach, expect, test, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
 import * as Y from 'yjs'
@@ -6,11 +6,15 @@ import {DB} from '@/db'
 import type {CollabService} from '@/services/CollabService'
 import {FileService} from '@/services/FileService'
 import type {LocationService} from '@/services/LocationService'
-import {createState} from '@/state'
 import {createSubdoc, createYUpdate} from '../testutil/prosemirror-util'
 import {createIpcMock} from '../testutil/util'
 
-vi.mock('@/db', () => ({DB: mock()}))
+vi.mock('@/db', () => ({
+  DB: mock({
+    getFiles: vi.fn(),
+  }),
+}))
+
 vi.mock('mermaid', () => ({}))
 
 beforeEach(() => {
@@ -19,17 +23,20 @@ beforeEach(() => {
 
 const collabService = mock<CollabService>()
 const locationService = mock<LocationService>()
+const lastModified = new Date()
 
 test('only save file type', async () => {
   const ydoc = createSubdoc('1', ['Test'])
 
-  const [store, setState] = createStore(
-    createState({
-      files: [{id: '1', ydoc: Y.encodeStateAsUpdate(ydoc), versions: []}],
-    }),
-  )
+  vi.spyOn(DB, 'getFiles').mockResolvedValue([
+    {id: '1', ydoc: Y.encodeStateAsUpdate(ydoc), versions: [], lastModified},
+  ])
 
-  const service = new FileService(collabService, locationService, store, setState)
+  const service = new FileService(collabService, locationService)
+
+  await waitFor(() => {
+    expect(service.resourceState).toEqual('ready')
+  })
 
   ydoc.getText('2').insert(0, '1')
   expect(ydoc.getText('2').length).toBe(1)
@@ -41,7 +48,7 @@ test('only save file type', async () => {
   service.updateFile('1', {})
 
   const fileYdoc = new Y.Doc()
-  Y.applyUpdate(fileYdoc, store.files[0].ydoc)
+  Y.applyUpdate(fileYdoc, service.files[0].ydoc)
 
   expect(fileYdoc?.getXmlFragment('1').length).toBe(1)
   expect(fileYdoc?.getText('2').length).toBe(0)
@@ -50,46 +57,49 @@ test('only save file type', async () => {
 test('restore', async () => {
   const ydoc = createSubdoc('1', ['Test'])
 
-  const [store, setState] = createStore(
-    createState({
-      files: [
-        {id: '1', ydoc: Y.encodeStateAsUpdate(ydoc), versions: []},
-        {id: '2', ydoc: createYUpdate('2', ['Test2']), versions: [], deleted: true},
-      ],
-    }),
-  )
+  vi.spyOn(DB, 'getFiles').mockResolvedValue([
+    {id: '1', ydoc: Y.encodeStateAsUpdate(ydoc), versions: [], lastModified},
+    {id: '2', ydoc: createYUpdate('2', ['Test2']), versions: [], lastModified, deleted: true},
+  ])
 
-  const service = new FileService(collabService, locationService, store, setState)
+  const service = new FileService(collabService, locationService)
+
+  await waitFor(() => {
+    expect(service.resourceState).toEqual('ready')
+  })
 
   await service.restore('2')
-  expect(store.files.length).toBe(2)
-  expect(store.files[1].deleted).toBe(false)
+  expect(service.files.length).toBe(2)
+  expect(service.files[1].deleted).toBe(false)
 })
 
 test('getTitle', async () => {
   createIpcMock()
 
-  const [store, setState] = createStore(
-    createState({
-      files: [
-        {id: '1', ydoc: createYUpdate('1', ['Test1', 'foo']), versions: []},
-        {id: '2', ydoc: createYUpdate('2', ['Test2', 'bar']), versions: []},
-        {id: '3', ydoc: createYUpdate('3', ['a'.repeat(30), 'bar']), versions: []},
-        {
-          id: '4',
-          ydoc: createYUpdate('4', ['Test4']),
-          versions: [],
-          path: '/users/me/project/README.md',
-        },
-      ],
-    }),
-  )
+  vi.spyOn(DB, 'getFiles').mockResolvedValue([
+    {id: '1', ydoc: createYUpdate('1', ['Test1', 'foo']), versions: [], lastModified},
+    {id: '2', ydoc: createYUpdate('2', ['Test2', 'bar']), versions: [], lastModified},
+    {id: '3', ydoc: createYUpdate('3', ['a'.repeat(30), 'bar']), versions: [], lastModified},
+  ])
 
-  const service = new FileService(collabService, locationService, store, setState)
-  expect(await service.getTitle(store.files[0])).toBe('Test1')
-  expect(await service.getTitle(store.files[1])).toBe('Test2')
-  expect(await service.getTitle(store.files[2])).toBe('a'.repeat(25))
-  expect(await service.getTitle(store.files[3])).toBe('~/project/README.md')
+  const service = new FileService(collabService, locationService)
+
+  await waitFor(() => {
+    expect(service.resourceState).toEqual('ready')
+  })
+
+  await service.addFile({
+    id: '4',
+    ydoc: createYUpdate('4', ['Test4']),
+    versions: [],
+    path: '/users/me/project/README.md',
+    lastModified,
+  })
+
+  expect(await service.getTitle(service.files[0])).toBe('Test1')
+  expect(await service.getTitle(service.files[1])).toBe('Test2')
+  expect(await service.getTitle(service.files[2])).toBe('a'.repeat(25))
+  expect(await service.getTitle(service.files[3])).toBe('~/project/README.md')
 })
 
 test('findFile - found', async () => {
@@ -98,16 +108,23 @@ test('findFile - found', async () => {
     to_absolute_path: (path) => `/path/to${path}`,
   })
 
-  const [store, setState] = createStore(
-    createState({
-      files: [
-        {id: '1', ydoc: createYUpdate('1', ['Test1']), versions: []},
-        {id: '2', ydoc: createYUpdate('2', ['Test2']), versions: [], path: '/path/to/file2'},
-      ],
-    }),
-  )
+  vi.spyOn(DB, 'getFiles').mockResolvedValue([
+    {id: '1', ydoc: createYUpdate('1', ['Test1']), versions: [], lastModified},
+  ])
 
-  const service = new FileService(collabService, locationService, store, setState)
+  const service = new FileService(collabService, locationService)
+
+  await waitFor(() => {
+    expect(service.resourceState).toEqual('ready')
+  })
+
+  await service.addFile({
+    id: '2',
+    ydoc: createYUpdate('2', ['Test2']),
+    versions: [],
+    path: '/path/to/file2',
+  })
+
   expect(service.findFileById('1')?.id).toBe('1')
   expect((await service.findFileByPath('/file2'))?.id).toBe('2')
 })
@@ -120,13 +137,21 @@ test('findFile - not found', async () => {
     },
   })
 
-  const [store, setState] = createStore(
-    createState({
-      files: [{id: '2', ydoc: createYUpdate('2', ['Test2']), versions: [], path: '/path/to/file2'}],
-    }),
-  )
+  vi.spyOn(DB, 'getFiles').mockResolvedValue([])
 
-  const service = new FileService(collabService, locationService, store, setState)
+  const service = new FileService(collabService, locationService)
+
+  await waitFor(() => {
+    expect(service.resourceState).toEqual('ready')
+  })
+
+  await service.addFile({
+    id: '2',
+    ydoc: createYUpdate('2', ['Test2']),
+    versions: [],
+    path: '/path/to/file2',
+  })
+
   expect(service.findFileById('1')).toBe(undefined)
   await expect(service.findFileByPath('/path/to/file2')).rejects.toThrowError()
 })
@@ -145,27 +170,32 @@ test.each([
 })
 
 test('newFile', async () => {
-  const [store, setState] = createStore(createState({}))
-  const service = new FileService(collabService, locationService, store, setState)
+  const service = new FileService(collabService, locationService)
+
+  await waitFor(() => {
+    expect(service.resourceState).toEqual('ready')
+  })
 
   const file = await service.newFile()
 
   expect(file).toBeDefined()
-  expect(store.files.length).toBe(1)
+  expect(service.files.length).toBe(1)
 })
 
 test('renameFile - title', async () => {
-  const [store, setState] = createStore(
-    createState({
-      files: [{id: '1', ydoc: createYUpdate('1', ['a']), versions: []}],
-    }),
-  )
+  vi.spyOn(DB, 'getFiles').mockResolvedValue([
+    {id: '1', ydoc: createYUpdate('1', ['a']), versions: [], lastModified},
+  ])
 
-  const service = new FileService(collabService, locationService, store, setState)
+  const service = new FileService(collabService, locationService)
+
+  await waitFor(() => {
+    expect(service.resourceState).toEqual('ready')
+  })
 
   await service.renameFile('1', 'Title')
 
-  expect(store.files[0].title).toBe('Title')
+  expect(service.files[0].title).toBe('Title')
 })
 
 test('renameFile - update path', async () => {
@@ -175,28 +205,26 @@ test('renameFile - update path', async () => {
     rename: () => undefined,
   })
 
-  const [store, setState] = createStore(
-    createState({
-      files: [
-        {
-          id: '1',
-          ydoc: createYUpdate('1', ['a']),
-          versions: [],
-          path: '/path/old.js',
-          codeLang: 'javascript',
-        },
-      ],
-    }),
-  )
+  const service = new FileService(collabService, locationService)
 
-  const service = new FileService(collabService, locationService, store, setState)
+  await waitFor(() => {
+    expect(service.resourceState).toEqual('ready')
+  })
+
+  await service.addFile({
+    id: '1',
+    ydoc: createYUpdate('1', ['a']),
+    versions: [],
+    path: '/path/old.js',
+    codeLang: 'javascript',
+  })
 
   await service.renameFile('1', 'new.ts')
 
-  expect(store.files[0].title).toBe(undefined)
-  expect(store.files[0].newFile).toBe(undefined)
-  expect(store.files[0].path).toBe('/path/new.ts')
-  expect(store.files[0].codeLang).toBe('typescript')
+  expect(service.files[0].title).toBe(undefined)
+  expect(service.files[0].newFile).toBe(undefined)
+  expect(service.files[0].path).toBe('/path/new.ts')
+  expect(service.files[0].codeLang).toBe('typescript')
 })
 
 test('renameFile - update newFile', async () => {
@@ -205,28 +233,26 @@ test('renameFile - update newFile', async () => {
     dirname: () => '/path',
   })
 
-  const [store, setState] = createStore(
-    createState({
-      files: [
-        {
-          id: '1',
-          ydoc: createYUpdate('1', ['a']),
-          versions: [],
-          newFile: '/path/old.js',
-          codeLang: 'javascript',
-        },
-      ],
-    }),
-  )
+  const service = new FileService(collabService, locationService)
 
-  const service = new FileService(collabService, locationService, store, setState)
+  await waitFor(() => {
+    expect(service.resourceState).toEqual('ready')
+  })
+
+  await service.addFile({
+    id: '1',
+    ydoc: createYUpdate('1', ['a']),
+    versions: [],
+    newFile: '/path/old.js',
+    codeLang: 'javascript',
+  })
 
   await service.renameFile('1', 'new.ts')
 
-  expect(store.files[0].title).toBe(undefined)
-  expect(store.files[0].path).toBe(undefined)
-  expect(store.files[0].newFile).toBe('/path/new.ts')
-  expect(store.files[0].codeLang).toBe('typescript')
+  expect(service.files[0].title).toBe(undefined)
+  expect(service.files[0].path).toBe(undefined)
+  expect(service.files[0].newFile).toBe('/path/new.ts')
+  expect(service.files[0].codeLang).toBe('typescript')
 })
 
 test.each([

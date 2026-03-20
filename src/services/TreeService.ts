@@ -22,7 +22,7 @@ export class TreeService {
   }
 
   updateAll() {
-    const items = [...this.store.files, ...(this.canvasService.canvases ?? [])]
+    const items = [...this.fileService.files, ...this.canvasService.canvases]
     this.tree.updateAll(items)
   }
 

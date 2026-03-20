@@ -36,14 +36,15 @@ test('init', () => {
     createFile({id: 'file_4'}),
   ]
 
-  const initial = createState({files})
+  const initial = createState()
   const [store, setState] = createStore(initial)
-  const fileService = mock<FileService>()
+  const fileService = mock<FileService>({files: []})
   const canvasService = mock<CanvasService>({canvases: []})
 
   const service = new TreeService(store, setState, fileService, canvasService)
 
   vi.spyOn(canvasService, 'canvases', 'get').mockReturnValue([createCanvas({id: 'canvas_5'})])
+  vi.spyOn(fileService, 'files', 'get').mockReturnValue(files)
 
   service.updateAll()
 
@@ -69,13 +70,13 @@ test('update', () => {
 
   const initial = createState()
   const [store, setState] = createStore(initial)
-  const fileService = mock<FileService>()
+  const fileService = mock<FileService>({files: []})
   const canvasService = mock<CanvasService>({canvases: []})
   const service = new TreeService(store, setState, fileService, canvasService)
 
   vi.spyOn(canvasService, 'canvases', 'get').mockReturnValue([createCanvas({id: 'canvas_5'})])
+  vi.spyOn(fileService, 'files', 'get').mockReturnValue(files)
 
-  setState({files})
   service.updateAll()
 
   expectTree(
@@ -96,11 +97,13 @@ test('collapse', async () => {
     createFile({id: 'file_2', parentId: 'file_1'}),
   ]
 
-  const initial = createState({files})
+  const initial = createState()
   const [store, setState] = createStore(initial)
-  const fileService = mock<FileService>()
+  const fileService = mock<FileService>({files: []})
   const canvasService = mock<CanvasService>({canvases: []})
   const service = new TreeService(store, setState, fileService, canvasService)
+
+  vi.spyOn(fileService, 'files', 'get').mockReturnValue(files)
 
   service.updateAll()
 

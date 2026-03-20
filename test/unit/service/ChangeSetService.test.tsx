@@ -2,11 +2,16 @@ import {waitFor} from '@solidjs/testing-library'
 import userEvent from '@testing-library/user-event'
 import {beforeEach, expect, test, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
+import {DB} from '@/db'
 import {createState} from '@/state'
 import {createYUpdate} from '../testutil/prosemirror-util'
 import {expectToBeDefined, renderMain, stubLocation} from '../testutil/util'
 
-vi.mock('@/db', () => ({DB: mock()}))
+vi.mock('@/db', () => ({
+  DB: mock({
+    getFiles: vi.fn(),
+  }),
+}))
 vi.mock('mermaid', () => ({}))
 
 const WsMock = vi.fn()
@@ -16,12 +21,16 @@ beforeEach(() => {
   vi.resetAllMocks()
 })
 
+const lastModified = new Date()
+
 test('addVersion', async () => {
   stubLocation('/editor/1')
 
-  const initial = createState({
-    files: [{id: '1', ydoc: createYUpdate('1', []), versions: []}],
-  })
+  vi.spyOn(DB, 'getFiles').mockResolvedValue([
+    {id: '1', ydoc: createYUpdate('1', []), versions: [], lastModified},
+  ])
+
+  const initial = createState()
   const {getByTestId, ctrl} = renderMain(initial)
 
   await waitFor(() => {
@@ -49,18 +58,19 @@ test('addVersion', async () => {
 test('render snapshot', async () => {
   stubLocation('/editor/1', {snapshot: 1})
 
-  const initial = createState({
-    files: [
-      {
-        id: '1',
-        ydoc: createYUpdate('1', ['Test']),
-        versions: [
-          {date: new Date(), ydoc: createYUpdate('1', ['A'])},
-          {date: new Date(), ydoc: createYUpdate('1', ['B'])},
-        ],
-      },
-    ],
-  })
+  vi.spyOn(DB, 'getFiles').mockResolvedValue([
+    {
+      id: '1',
+      ydoc: createYUpdate('1', ['Test']),
+      versions: [
+        {date: new Date(), ydoc: createYUpdate('1', ['A'])},
+        {date: new Date(), ydoc: createYUpdate('1', ['B'])},
+      ],
+      lastModified,
+    },
+  ])
+
+  const initial = createState()
   const {getByTestId} = renderMain(initial)
 
   await waitFor(() => {

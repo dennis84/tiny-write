@@ -1,33 +1,41 @@
 import {waitFor} from '@solidjs/testing-library'
 import {beforeEach, expect, test, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
+import {DB} from '@/db'
 import {createState} from '@/state'
 import {Page} from '@/types'
 import {createYUpdate} from '../testutil/codemirror-util'
 import {expectToBeDefined, renderMain, stubLocation} from '../testutil/util'
 
-vi.mock('@/db', () => ({DB: mock()}))
+vi.mock('@/db', () => ({
+  DB: mock({
+    getFiles: vi.fn(),
+  }),
+}))
+
 vi.mock('mermaid', () => ({}))
 
 beforeEach(() => {
   vi.resetAllMocks()
 })
 
+const lastModified = new Date()
+
 test('prettify', async () => {
   stubLocation('/code/1')
 
-  const state = createState({
-    files: [
-      {
-        id: '1',
-        ydoc: createYUpdate('1', 'const a=1;'),
-        versions: [],
-        code: true,
-        codeLang: 'typescript',
-      },
-    ],
-  })
+  vi.spyOn(DB, 'getFiles').mockResolvedValue([
+    {
+      id: '1',
+      ydoc: createYUpdate('1', 'const a=1;'),
+      versions: [],
+      code: true,
+      codeLang: 'typescript',
+      lastModified,
+    },
+  ])
 
+  const state = createState()
   const {getByTestId, ctrl} = renderMain(state)
 
   await waitFor(() => {

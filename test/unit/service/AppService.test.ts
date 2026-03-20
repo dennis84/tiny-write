@@ -1,90 +1,65 @@
-import {clearMocks, mockWindows} from '@tauri-apps/api/mocks'
+import {clearMocks} from '@tauri-apps/api/mocks'
+import {createStore} from 'solid-js/store'
 import {beforeEach, expect, test, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
 import {DB} from '@/db'
+import * as remoteEditor from '@/remote/editor'
+import {AppService} from '@/services/AppService'
+import type {FileService} from '@/services/FileService'
 import {createState} from '@/state'
-import {ElementType, Page} from '@/types'
-import {createYUpdate} from '../testutil/prosemirror-util'
-import {createIpcMock, renderMain} from '../testutil/util'
 
-vi.stubGlobal('__TAURI__', {})
+vi.mock('@/db', () => ({
+  DB: mock({
+    getFiles: vi.fn(),
+    getCanvases: vi.fn(),
+  }),
+}))
 
-vi.mock('@/db', () => ({DB: mock<DB>()}))
+vi.mock('@/remote/editor', () => ({
+  getDocument: vi.fn(),
+}))
 
 const lastModified = new Date()
 
 beforeEach(() => {
   clearMocks()
-  createIpcMock()
-  mockWindows('main')
 })
 
 test.each([
-  {page: Page.Editor, expected: '/users/me/cwd'},
-  {page: Page.Code, worktreePath: '/users/me/project', expected: '/users/me/project'},
-  {page: Page.Code, expected: '/users/me/cwd'},
-  {page: Page.Canvas, active: true, expected: '/users/me/cwd'},
-  {page: Page.Canvas, active: false, expected: '/users/me/cwd'},
+  {expected: '/users/me/cwd'},
+  {code: true, worktreePath: '/users/me/project', expected: '/users/me/project'},
+  {code: true, expected: '/users/me/cwd'},
 ])('getBasePath - from file', async (data) => {
-  createIpcMock({
-    get_document: () => ({
-      worktreePath: data.worktreePath,
-    }),
-  })
-
-  const canvasEditor = {
+  const file = {
     id: '1',
-    type: ElementType.Editor,
-    active: data.active,
-    x: 0,
-    y: 0,
-    width: 100,
-    height: 100,
+    ydoc: new Uint8Array(),
+    lastModified,
+    versions: [],
+    path: '/users/me/project/file1',
+    code: data.code,
   }
 
-  const state = createState({
-    args: {cwd: '/users/me/cwd'},
-    lastLocation: {
-      pathname: `${data.page}/1`,
-    },
-    files: [
-      {
-        id: '1',
-        ydoc: createYUpdate('1', ['Test']),
-        lastModified,
-        versions: [],
-        path: '/users/me/project/file1',
-      },
-    ],
-    canvases: [
-      {
-        id: '1',
-        camera: {point: [0, 0], zoom: 1},
-        elements: [canvasEditor],
-      },
-    ],
+  const fileService = mock<FileService>({currentFile: undefined})
+  const [store, setStore] = createStore(createState({args: {cwd: '/users/me/cwd'}}))
+  const service = new AppService(fileService, store, setStore)
+
+  vi.spyOn(fileService, 'currentFile', 'get').mockReturnValue(file)
+  vi.spyOn(remoteEditor, 'getDocument').mockResolvedValue({
+    worktreePath: data.worktreePath,
+    path: `${data.worktreePath}/file.md`,
+    lastModified: new Date(),
+    version: 1,
   })
 
-  const {ctrl} = renderMain(state)
-  const basePath = await ctrl.appService.getBasePath()
-  expect(basePath).toBe(data.expected)
+  const result = await service.getBasePath()
+  expect(result).toEqual(data.expected)
 })
 
 test('reset', async () => {
-  const initial = createState({
-    args: {cwd: '/home', file: 'test.md'},
-    files: [
-      {
-        id: '1',
-        ydoc: createYUpdate('1', ['Test']),
-        lastModified,
-        versions: [],
-      },
-    ],
-  })
-  const {ctrl} = renderMain(initial)
-
-  await ctrl.appService.reset()
+  const fileService = mock<FileService>({currentFile: undefined})
+  const [store, setStore] = createStore(createState({args: {cwd: '/users/me/cwd'}}))
+  const service = new AppService(fileService, store, setStore)
+  await service.reset()
 
   expect(DB.deleteDatabase).toHaveBeenCalled()
 })

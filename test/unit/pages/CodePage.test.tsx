@@ -2,7 +2,7 @@ import {fireEvent, waitFor} from '@solidjs/testing-library'
 import {clearMocks, mockWindows} from '@tauri-apps/api/mocks'
 import {beforeEach, expect, test, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
-import type {DB} from '@/db'
+import {DB} from '@/db'
 import {createState} from '@/state'
 import {Page} from '@/types'
 import {createYUpdate} from '../testutil/codemirror-util'
@@ -28,11 +28,15 @@ test('init - new code page', async () => {
   const {getByTestId, ctrl} = renderMain(initial)
 
   await waitFor(() => {
+    expect(ctrl.fileService.resourceState).toEqual('ready')
+  })
+
+  await waitFor(() => {
     expect(getByTestId('new_code_page')).toBeDefined()
   })
 
   expect(ctrl.locationService.page).toBe(Page.Code)
-  expect(ctrl.store.files.length).toBe(0)
+  expect(ctrl.fileService.files.length).toBe(0)
   expect(ctrl.fileService.currentFileId).toBe(undefined)
 
   getByTestId('new_file').click()
@@ -41,7 +45,7 @@ test('init - new code page', async () => {
     expect(getByTestId('code_scroll')).toBeDefined()
   })
 
-  expect(ctrl.store.files.length).toBe(1)
+  expect(ctrl.fileService.files.length).toBe(1)
 })
 
 test('init - file not found', async () => {
@@ -52,31 +56,36 @@ test('init - file not found', async () => {
   const {getByTestId, ctrl} = renderMain(initial)
 
   await waitFor(() => {
+    expect(ctrl.fileService.resourceState).toEqual('ready')
+  })
+
+  await waitFor(() => {
     expect(getByTestId('new_code_page')).toBeDefined()
   })
 
   expect(ctrl.locationService.page).toBe(Page.Code)
-  expect(ctrl.store.files.length).toBe(0)
+  expect(ctrl.fileService.files.length).toBe(0)
   expect(ctrl.fileService.currentFileId).toBe(undefined)
 })
 
 test('init - open last location', async () => {
   stubLocation('/')
 
+  vi.spyOn(DB, 'getFiles').mockResolvedValue([
+    {
+      id: '2',
+      ydoc: createYUpdate('2', 'Code2'),
+      lastModified,
+      versions: [],
+      code: true,
+    },
+    {id: '1', ydoc: createYUpdate('1', 'Code1'), lastModified, versions: [], code: true},
+  ])
+
   const initial = createState({
     lastLocation: {
       pathname: '/code/1',
     },
-    files: [
-      {
-        id: '2',
-        ydoc: createYUpdate('2', 'Code2'),
-        lastModified,
-        versions: [],
-        code: true,
-      },
-      {id: '1', ydoc: createYUpdate('1', 'Code1'), lastModified, versions: [], code: true},
-    ],
   })
 
   const {getByTestId, ctrl} = renderMain(initial)
@@ -86,19 +95,19 @@ test('init - open last location', async () => {
   })
 
   expect(ctrl.locationService.page).toBe(Page.Code)
-  expect(ctrl.store.files.length).toBe(2)
+  expect(ctrl.fileService.files.length).toBe(2)
   expect(ctrl.fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('Code1')
 })
 
 test('init - existing file', async () => {
   stubLocation('/code/1')
 
-  const initial = createState({
-    files: [
-      {id: '1', ydoc: createYUpdate('1', 'Code1'), lastModified, versions: [], code: true},
-      {id: '2', ydoc: createYUpdate('2', 'Code2'), lastModified, versions: [], code: true},
-    ],
-  })
+  vi.spyOn(DB, 'getFiles').mockResolvedValue([
+    {id: '1', ydoc: createYUpdate('1', 'Code1'), lastModified, versions: [], code: true},
+    {id: '2', ydoc: createYUpdate('2', 'Code2'), lastModified, versions: [], code: true},
+  ])
+
+  const initial = createState()
 
   const {getByTestId, ctrl} = renderMain(initial)
 
@@ -107,7 +116,7 @@ test('init - existing file', async () => {
   })
 
   expect(ctrl.locationService.page).toBe(Page.Code)
-  expect(ctrl.store.files.length).toBe(2)
+  expect(ctrl.fileService.files.length).toBe(2)
   expect(ctrl.fileService.currentFileId).toBe('1')
   expect(ctrl.fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('Code1')
 })
@@ -115,12 +124,12 @@ test('init - existing file', async () => {
 test('init - join url', async () => {
   stubLocation('/code?join=1')
 
-  const initial = createState({
-    files: [
-      {id: '1', ydoc: createYUpdate('1', 'Code1'), lastModified, versions: [], code: true},
-      {id: '2', ydoc: createYUpdate('2', 'Code2'), lastModified, versions: [], code: true},
-    ],
-  })
+  vi.spyOn(DB, 'getFiles').mockResolvedValue([
+    {id: '1', ydoc: createYUpdate('1', 'Code1'), lastModified, versions: [], code: true},
+    {id: '2', ydoc: createYUpdate('2', 'Code2'), lastModified, versions: [], code: true},
+  ])
+
+  const initial = createState()
 
   const {getByTestId, ctrl} = renderMain(initial)
 
@@ -140,7 +149,7 @@ test('init - join url', async () => {
   })
 
   expect(ctrl.locationService.page).toBe(Page.Code)
-  expect(ctrl.store.files.length).toBe(2)
+  expect(ctrl.fileService.files.length).toBe(2)
   expect(ctrl.collabService.started()).toBe(true)
 
   await waitFor(() => {
@@ -178,26 +187,24 @@ test('open', async () => {
     read_text: () => 'Code1',
   })
 
-  const initial = createState({
-    files: [
-      {
-        id: '1',
-        path: 'code1.yaml',
-        ydoc: createYUpdate('1', 'Code1'),
-        lastModified,
-        versions: [],
-        code: true,
-      },
-      {
-        id: '2',
-        path: 'code2.yaml',
-        ydoc: createYUpdate('2', 'Code2'),
-        lastModified,
-        versions: [],
-        code: true,
-      },
-    ],
-  })
+  vi.spyOn(DB, 'getFiles').mockResolvedValue([
+    {
+      id: '1',
+      ydoc: createYUpdate('1', 'Code1'),
+      lastModified,
+      versions: [],
+      code: true,
+    },
+    {
+      id: '2',
+      ydoc: createYUpdate('2', 'Code2'),
+      lastModified,
+      versions: [],
+      code: true,
+    },
+  ])
+
+  const initial = createState()
 
   const {getByTestId, getAllByTestId, ctrl} = renderMain(initial)
 
@@ -205,7 +212,7 @@ test('open', async () => {
     expect(getByTestId('code_scroll')).toBeDefined()
   })
 
-  expect(ctrl.fileService.currentFile?.path).toBe('code1.yaml')
+  expect(ctrl.fileService.currentFile?.id).toBe('1')
   expect(ctrl.fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('Code1')
 
   fireEvent.click(getByTestId('navbar_menu_open'))
@@ -215,5 +222,5 @@ test('open', async () => {
     expect(ctrl.fileService.currentFile?.id).toBe('2')
   })
 
-  expect(ctrl.fileService.currentFile?.path).toBe('code2.yaml')
+  expect(ctrl.fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('Code2')
 })

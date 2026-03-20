@@ -78,7 +78,7 @@ export const Main = (props: Props) => {
     createEffect((prev) => {
       if (!prev) return ctrl.store.config.theme?.code
       untrack(() => {
-        for (const f of ctrl.store.files) {
+        for (const f of ctrl.fileService.files) {
           if (!f.editorView && !f.codeEditorView) continue
           if (f.code) ctrl.codeService.updateConfig(f)
           else ctrl.editorService.updateEditorState(f)

@@ -2,7 +2,7 @@ import {waitFor} from '@solidjs/testing-library'
 import {clearMocks, mockWindows} from '@tauri-apps/api/mocks'
 import {beforeEach, expect, test, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
-import type {DB} from '@/db'
+import {DB} from '@/db'
 import {createState} from '@/state'
 import {Page} from '@/types'
 import {createYUpdate} from '../testutil/prosemirror-util'
@@ -20,7 +20,7 @@ beforeEach(() => {
   clearMocks()
 })
 
-test('open - new file on root page', async () => {
+test('init - new file on root page', async () => {
   stubLocation('/')
 
   const initial = createState()
@@ -32,10 +32,10 @@ test('open - new file on root page', async () => {
   })
 
   expect(ctrl.locationService.page).toBe(Page.Editor)
-  expect(ctrl.store.files.length).toBe(1)
+  expect(ctrl.fileService.files.length).toBe(1)
 })
 
-test('open - new file page', async () => {
+test('init - new file page', async () => {
   stubLocation('/editor')
 
   const initial = createState()
@@ -47,20 +47,21 @@ test('open - new file page', async () => {
   })
 
   expect(ctrl.locationService.page).toBe(Page.Editor)
-  expect(ctrl.store.files.length).toBe(0)
+  expect(ctrl.fileService.files.length).toBe(0)
 })
 
-test('open - open last location', async () => {
+test('init - open last location', async () => {
   stubLocation('/')
+
+  vi.spyOn(DB, 'getFiles').mockResolvedValue([
+    {id: '1', ydoc: createYUpdate('1', ['Test']), lastModified, versions: []},
+    {id: '2', ydoc: createYUpdate('2', ['Test 2']), lastModified, versions: []},
+  ])
 
   const initial = createState({
     lastLocation: {
       pathname: '/editor/2',
     },
-    files: [
-      {id: '1', ydoc: createYUpdate('1', ['Test']), lastModified, versions: []},
-      {id: '2', ydoc: createYUpdate('2', ['Test 2']), lastModified, versions: []},
-    ],
   })
 
   const {getByTestId, ctrl} = renderMain(initial)
@@ -70,11 +71,11 @@ test('open - open last location', async () => {
   })
 
   expect(ctrl.locationService.page).toBe(Page.Editor)
-  expect(ctrl.store.files.length).toBe(2)
+  expect(ctrl.fileService.files.length).toBe(2)
   expect(getByTestId('editor_scroll')).toHaveTextContent(/^Test 2$/)
 })
 
-test('open - file not found', async () => {
+test('init - file not found', async () => {
   stubLocation('/editor/3')
 
   const initial = createState()
@@ -86,18 +87,18 @@ test('open - file not found', async () => {
   })
 
   expect(ctrl.locationService.page).toBe(Page.Editor)
-  expect(ctrl.store.files.length).toBe(0)
+  expect(ctrl.fileService.files.length).toBe(0)
 })
 
-test('open - existing file', async () => {
+test('init - existing file', async () => {
   stubLocation('/editor/1')
 
-  const initial = createState({
-    files: [
-      {id: '1', ydoc: createYUpdate('1', ['Text']), lastModified, versions: []},
-      {id: '2', ydoc: createYUpdate('2', ['Test 2']), lastModified, versions: []},
-    ],
-  })
+  vi.spyOn(DB, 'getFiles').mockResolvedValue([
+    {id: '1', ydoc: createYUpdate('1', ['Text']), lastModified, versions: []},
+    {id: '2', ydoc: createYUpdate('2', ['Test 2']), lastModified, versions: []},
+  ])
+
+  const initial = createState()
 
   const {getByTestId, ctrl} = renderMain(initial)
 
@@ -106,19 +107,19 @@ test('open - existing file', async () => {
   })
 
   expect(ctrl.locationService.page).toBe(Page.Editor)
-  expect(ctrl.store.files.length).toBe(2)
+  expect(ctrl.fileService.files.length).toBe(2)
   expect(getByTestId('editor_scroll')).toHaveTextContent(/^Text$/)
 })
 
-test('open - join', async () => {
+test('init - join', async () => {
   stubLocation('/editor?join=1')
 
-  const initial = createState({
-    files: [
-      {id: '1', ydoc: createYUpdate('1', ['Text']), lastModified, versions: []},
-      {id: '2', ydoc: createYUpdate('2', ['Test 2']), lastModified, versions: []},
-    ],
-  })
+  vi.spyOn(DB, 'getFiles').mockResolvedValue([
+    {id: '1', ydoc: createYUpdate('1', ['Text']), lastModified, versions: []},
+    {id: '2', ydoc: createYUpdate('2', ['Test 2']), lastModified, versions: []},
+  ])
+
+  const initial = createState()
 
   const {getByTestId, ctrl} = renderMain(initial)
 
@@ -137,7 +138,7 @@ test('open - join', async () => {
   })
 
   expect(ctrl.locationService.page).toBe(Page.Editor)
-  expect(ctrl.store.files.length).toBe(2)
+  expect(ctrl.fileService.files.length).toBe(2)
   expect(ctrl.collabService.started()).toBe(true)
 
   await waitFor(() => {
@@ -145,71 +146,7 @@ test('open - join', async () => {
   })
 })
 
-test('open - file with path', async () => {
-  stubLocation('/editor/1')
-  vi.stubGlobal('__TAURI__', {})
-
-  mockWindows('main')
-  createIpcMock({
-    read_text: (path) => (path === 'file1' ? '# File1' : '# File2'),
-  })
-
-  const initial = createState({
-    files: [
-      {
-        id: '1',
-        ydoc: createYUpdate('1', ['Text']),
-        lastModified,
-        versions: [],
-        path: 'file1',
-      },
-    ],
-  })
-
-  const {getByTestId, ctrl} = renderMain(initial)
-
-  await waitFor(() => {
-    expect(getByTestId('editor_scroll')).toBeDefined()
-  })
-
-  expect(ctrl.locationService.page).toBe(Page.Editor)
-  expect(ctrl.store.files.length).toBe(1)
-  expect(ctrl.store.files[0].path).toBe('file1')
-  expect(getByTestId('editor_scroll')).toHaveTextContent(/^File1$/)
-})
-
-test('open - read file - file not found', async () => {
-  stubLocation('/editor/1')
-
-  vi.stubGlobal('__TAURI__', {})
-
-  mockWindows('main')
-  createIpcMock({
-    resolve_path: () => {
-      throw new Error('Fail')
-    },
-  })
-
-  const initial = createState({
-    files: [
-      {
-        id: '1',
-        ydoc: createYUpdate('1', ['Text']),
-        lastModified,
-        versions: [],
-        path: 'file1',
-      },
-    ],
-  })
-
-  const {getByTestId} = renderMain(initial)
-
-  await waitFor(() => {
-    expect(getByTestId('new_editor_page')).toBeDefined()
-  })
-})
-
-test('open - file arg', async () => {
+test('init - file arg', async () => {
   stubLocation('/')
   vi.stubGlobal('__TAURI__', {})
 
@@ -231,39 +168,7 @@ test('open - file arg', async () => {
   expect(getByTestId('editor_scroll')).toHaveTextContent(/^File2$/)
 })
 
-test('open - file arg exists', async () => {
-  stubLocation('/')
-  vi.stubGlobal('__TAURI__', {})
-
-  mockWindows('main')
-  createIpcMock({
-    read_text: () => 'File2',
-  })
-
-  const initial = createState({
-    args: {file: 'file2.md'},
-    files: [
-      {
-        id: '1',
-        ydoc: createYUpdate('1', ['Text']),
-        lastModified,
-        versions: [],
-        path: 'file2.md',
-      },
-    ],
-  })
-
-  const {getByTestId, ctrl} = renderMain(initial)
-
-  await waitFor(() => {
-    expect(getByTestId('editor_scroll')).toBeDefined()
-  })
-
-  expect(ctrl.fileService.currentFile?.path).toBe('file2.md')
-  expect(getByTestId('editor_scroll')).toHaveTextContent(/^File2$/)
-})
-
-test('open - newFile arg', async () => {
+test('init - newFile arg', async () => {
   stubLocation('/')
 
   mockWindows('main')
@@ -283,65 +188,75 @@ test('open - newFile arg', async () => {
   expect(getByTestId('editor_scroll')).toHaveTextContent(/^Start typing ...$/)
 })
 
-test('open - newFile arg - path exists', async () => {
-  stubLocation('/')
+test('open - file with path', async () => {
+  stubLocation('/editor')
+
   vi.stubGlobal('__TAURI__', {})
 
   mockWindows('main')
   createIpcMock({
-    read_text: () => 'File2',
+    read_text: (path) => (path === 'file1' ? '# File1' : '# File2'),
   })
 
-  const initial = createState({
-    args: {newFile: 'file2.md'},
-    files: [
-      {
-        id: '1',
-        ydoc: createYUpdate('1', ['Text']),
-        lastModified,
-        versions: [],
-        path: 'file2.md',
-      },
-    ],
-  })
+  const initial = createState()
 
   const {getByTestId, ctrl} = renderMain(initial)
+
+  await waitFor(() => {
+    expect(ctrl.fileService.resourceState).toEqual('ready')
+  })
+
+  const file = {
+    id: '1',
+    ydoc: createYUpdate('1', ['Text']),
+    lastModified,
+    versions: [],
+    path: 'file1',
+  }
+
+  await ctrl.fileService.addFile(file)
+
+  ctrl.locationService.openItem(file)
 
   await waitFor(() => {
     expect(getByTestId('editor_scroll')).toBeDefined()
   })
 
-  expect(ctrl.fileService.currentFile?.path).toBe('file2.md')
-  expect(getByTestId('editor_scroll')).toHaveTextContent(/^File2$/)
+  expect(ctrl.locationService.page).toBe(Page.Editor)
+  expect(ctrl.fileService.files.length).toBe(1)
+  expect(ctrl.fileService.files[0].path).toBe('file1')
+  expect(getByTestId('editor_scroll')).toHaveTextContent(/^File1$/)
 })
 
-test('open - newFile arg - newFile exists', async () => {
-  stubLocation('/')
+test('open - read file - file not found', async () => {
+  stubLocation('/editor')
+
   vi.stubGlobal('__TAURI__', {})
 
   mockWindows('main')
-  createIpcMock()
-
-  const initial = createState({
-    args: {newFile: 'file2.md'},
-    files: [
-      {
-        id: '1',
-        ydoc: createYUpdate('1', ['Text']),
-        lastModified,
-        versions: [],
-        newFile: 'file2.md',
-      },
-    ],
+  createIpcMock({
+    resolve_path: () => {
+      throw new Error('Fail')
+    },
   })
+
+  const initial = createState()
 
   const {getByTestId, ctrl} = renderMain(initial)
 
-  await waitFor(() => {
-    expect(getByTestId('editor_scroll')).toBeDefined()
-  })
+  const file = {
+    id: '1',
+    ydoc: createYUpdate('1', ['Text']),
+    lastModified,
+    versions: [],
+    path: 'file1',
+  }
 
-  expect(ctrl.store.files.length).toBe(1)
-  expect(ctrl.fileService.currentFile?.newFile).toBe('file2.md')
-  expect(getByTestId('editor_scroll')).toHaveTextContent('Text')
+  await ctrl.fileService.addFile(file)
+
+  ctrl.locationService.openItem(file)
+
+  await waitFor(() => {
+    expect(getByTestId('new_editor_page')).toBeDefined()
+  })
 })

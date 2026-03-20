@@ -11,7 +11,7 @@ test('existing room', async ({page, browser}) => {
   })
 
   await page.goto(`/code/${id}`)
-  await page.waitForSelector('[data-testid="initialized"]')
+  await page.waitForSelector('[data-testid="code_scroll"]')
   await page.click('[data-testid="navbar_menu_open"]')
   await page.click('[data-testid="collab"]')
 

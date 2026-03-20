@@ -7,7 +7,7 @@ const cmContent = '.cm-editor > .cm-scroller > .cm-content'
 
 test.beforeEach(async ({page}) => {
   await page.goto('/')
-  await page.getByTestId('initialized').waitFor()
+  await page.getByTestId('editor_scroll').waitFor()
 })
 
 test('code block', async ({page}) => {

@@ -37,7 +37,7 @@ const EditorScroll = styled(Scroll)<EditorScrollProps>`
 `
 
 export const Editor = ({element, index}: {element: CanvasEditorElement; index: number}) => {
-  const {store, canvasService, collabService, fileService, editorService} = useState()
+  const {canvasService, collabService, fileService, editorService} = useState()
   let containerRef!: HTMLDivElement
   let editorRef!: HTMLDivElement
 
@@ -49,7 +49,7 @@ export const Editor = ({element, index}: {element: CanvasEditorElement; index: n
     canvasService.select(element.id, true)
   }
 
-  const isDeleted = () => store.files.find((f) => f.id === element.id)?.deleted
+  const isDeleted = () => fileService.findFileById(element.id)?.deleted
 
   const createSelection = (): Selection => {
     const box = canvasService.createBox(element)

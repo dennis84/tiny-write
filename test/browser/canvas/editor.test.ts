@@ -1,20 +1,12 @@
-import {expect, type Page, test} from '@playwright/test'
+import {expect, test} from '@playwright/test'
 
 test.beforeEach(async ({page}) => {
-  await page.goto('/')
-  await page.waitForSelector('[data-testid="initialized"]')
+  await page.goto('/canvas')
+  await page.waitForSelector('[data-testid="new_canvas_page"]')
 })
 
-const clickTreeMenu = async (page: Page, nth: number, buttonId: string) => {
-  const box = await page.locator(`[data-testid="tree_link"]:nth-child(${nth})`).boundingBox()
-  await page.mouse.move(box?.x ?? 0, box?.y ?? 0)
-  await page.click('[data-testid="tree_link_menu"]')
-  await page.click(`[data-testid="${buttonId}"]`)
-}
-
 test('add editor file', async ({page}) => {
-  await page.click('[data-testid="navbar_menu_open"]')
-  await clickTreeMenu(page, 1, 'add_canvas')
+  await page.click('[data-testid="new_canvas"]')
 
   expect(page.locator('[data-testid="canvas_container"]')).toBeVisible()
 
@@ -22,7 +14,6 @@ test('add editor file', async ({page}) => {
   await page.locator('[data-testid="canvas_container"]').click({button: 'right'})
   await page.click('[data-testid="context_menu_new_file"]')
   await expect(page.locator('[data-testid="canvas_editor"]')).toHaveCount(1)
-  await page.click('[data-testid="navbar_menu_open"]') // make element visible
 
   // Move mouse to left link handle
   const box = await page.locator('[data-testid="edge_left_link_handle"]').boundingBox()

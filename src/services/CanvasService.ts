@@ -3,7 +3,7 @@ import {createDeepSignal} from '@solid-primitives/resource'
 import {throttle} from '@solid-primitives/scheduled'
 import {TextSelection} from 'prosemirror-state'
 import {createResource} from 'solid-js'
-import {produce, type SetStoreFunction, type Store, unwrap} from 'solid-js/store'
+import {produce, type SetStoreFunction, unwrap} from 'solid-js/store'
 import {v4 as uuidv4} from 'uuid'
 import {DB} from '@/db'
 import {info} from '@/remote/log'
@@ -47,7 +47,7 @@ export class CanvasService {
   public saveCanvasThrottled = throttle(() => this.saveCanvas(), 100)
   public canvasRef: HTMLElement | undefined
 
-  private canvasResource = createResource<Canvas[]>(() => CanvasService.fetchCanvases(), {
+  private canvasesResource = createResource<Canvas[]>(() => CanvasService.fetchCanvases(), {
     storage: createDeepSignal, // store as proxy objects
   })
 
@@ -72,16 +72,15 @@ export class CanvasService {
     private selectService: SelectService,
     private collabService: CollabService,
     private locationService: LocationService,
-    private store: Store<State>,
     private setState: SetStoreFunction<State>,
   ) {}
 
   get canvases() {
-    return this.canvasResource[0].latest
+    return this.canvasesResource[0].latest ?? []
   }
 
   get resourceState() {
-    return this.canvasResource[0].state
+    return this.canvasesResource[0].state
   }
 
   get canvasBox(): Box {
@@ -296,9 +295,13 @@ export class CanvasService {
     }
 
     const canvas = CanvasService.createCanvas({...params, id})
-    const [, {mutate}] = this.canvasResource
+    const [, {mutate}] = this.canvasesResource
 
-    mutate((prev = []) => [...prev, canvas])
+    mutate(
+      produce((prev = []) => {
+        prev.push(canvas)
+      }),
+    )
 
     await this.saveCanvas(canvas)
     info('New canvas created')
@@ -343,7 +346,7 @@ export class CanvasService {
     info(`Removing element from all canvases (elementId=${elementId})`)
     const removedIds = new Set<string>()
 
-    const [, {mutate}] = this.canvasResource
+    const [, {mutate}] = this.canvasesResource
     mutate(
       produce((prev = []) => {
         for (const canvas of prev) {
@@ -418,7 +421,7 @@ export class CanvasService {
 
     const file = FileService.createFile({code, parentId: currentCanvas.id})
 
-    this.setState('files', [...this.store.files, file])
+    await this.fileService.addFile(file)
     const added = await this.addFile(file, link, point)
     info('New file added')
 
@@ -827,7 +830,7 @@ export class CanvasService {
   }
 
   private mutateCanvas(fn: (canvas: Canvas) => void, canvasId = this.currentCanvasId) {
-    const [, {mutate}] = this.canvasResource
+    const [, {mutate}] = this.canvasesResource
     let updated: Canvas | undefined
     mutate(
       produce((prev = []) => {

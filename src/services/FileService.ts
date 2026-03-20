@@ -1,6 +1,7 @@
+import {createDeepSignal} from '@solid-primitives/resource'
 import {rename} from '@tauri-apps/plugin-fs'
-import {createSignal} from 'solid-js'
-import type {SetStoreFunction, Store} from 'solid-js/store'
+import {createResource, createSignal} from 'solid-js'
+import {produce} from 'solid-js/store'
 import {v4 as uuidv4} from 'uuid'
 import {ySyncFacet} from 'y-codemirror.next'
 import {yXmlFragmentToProseMirrorRootNode} from 'y-prosemirror'
@@ -22,7 +23,7 @@ import {
 } from '@/remote/editor'
 import {debug, error, info} from '@/remote/log'
 import {isLocalFile} from '@/state'
-import type {File, FileText, State} from '@/types'
+import type {File, FileText} from '@/types'
 import type {CollabService} from './CollabService'
 import type {LocationService} from './LocationService'
 
@@ -41,12 +42,22 @@ export interface LoadedMarkdownFile {
 export class FileService {
   private activeFileSignal = createSignal<string>()
 
+  private filesResource = createResource<File[]>(() => FileService.fetchFiles(), {
+    storage: createDeepSignal, // store as proxy objects
+  })
+
   constructor(
     private collabService: CollabService,
     private locationService: LocationService,
-    private store: Store<State>,
-    private setState: SetStoreFunction<State>,
   ) {}
+
+  get files() {
+    return this.filesResource[0].latest ?? []
+  }
+
+  get resourceState() {
+    return this.filesResource[0].state
+  }
 
   get activeFile() {
     return this.activeFileSignal[0]
@@ -59,13 +70,13 @@ export class FileService {
   get currentFile(): File | undefined {
     const fileId = this.currentFileId
     if (!fileId) return undefined
-    return this.store.files.find((f) => f.id === fileId)
+    return this.files?.find((f) => f.id === fileId)
   }
 
   get currentFileIndex(): number {
     const fileId = this.currentFileId
     if (!fileId) return -1
-    return this.store.files.findIndex((f) => f.id === fileId)
+    return this.files?.findIndex((f) => f.id === fileId) ?? -1
   }
 
   static async loadTextFile(path: string): Promise<LoadedTextFile> {
@@ -166,9 +177,9 @@ export class FileService {
     }
   }
 
-  static async fetchFiles(): Promise<File[] | undefined> {
+  static async fetchFiles(): Promise<File[]> {
     const fetched = await DB.getFiles()
-    if (!fetched) return
+    if (!fetched) return []
     const files = []
     for (const file of fetched ?? []) {
       try {
@@ -218,7 +229,12 @@ export class FileService {
     info(
       `Created new file (id=${file.id}, code=${file.code}, path=${file.path}, newFile=${file.newFile})`,
     )
-    this.setState('files', (prev) => [...prev, file])
+    const [_xs, {mutate}] = this.filesResource
+    mutate(
+      produce((prev = []) => {
+        prev.push(file)
+      }),
+    )
     await FileService.saveFile(file)
     return file
   }
@@ -247,12 +263,13 @@ export class FileService {
   }
 
   async addFile(file: File) {
-    this.setState('files', (prev) => [...prev, file])
+    const [, {mutate}] = this.filesResource
+    mutate((prev = []) => [...prev, file])
     await FileService.saveFile(file)
   }
 
   findFileById(id: string): File | undefined {
-    return this.store.files.find((file) => file.id === id)
+    return this.files?.find((file) => file.id === id)
   }
 
   async findFileByPath(path: string): Promise<File | undefined> {
@@ -260,13 +277,15 @@ export class FileService {
       path = await toAbsolutePath(path)
     }
 
-    return this.store.files.find((file) => file.path === path || file.newFile === path)
+    return this.files?.find((file) => file.path === path || file.newFile === path)
   }
 
   updateFile(id: string, u: Partial<File>) {
-    const index = this.store.files.findIndex((file) => file.id === id)
+    const index = this.files?.findIndex((file) => file.id === id) ?? -1
     if (index === -1) return
-    this.setState('files', index, u)
+    this.mutateFile((file) => {
+      Object.assign(file, u)
+    }, id)
   }
 
   async updatePath(fileId: string, path: string) {
@@ -323,9 +342,12 @@ export class FileService {
       file.codeEditorView?.destroy()
     }
 
-    const index = this.store.files.findIndex((f) => f.id === file.id)
+    const index = this.files?.findIndex((f) => f.id === file.id) ?? -1
     if (index === -1) return
-    this.setState('files', index, {editorView: undefined, codeEditorView: undefined})
+    this.mutateFile((file) => {
+      file.editorView = undefined
+      file.codeEditorView = undefined
+    }, id)
   }
 
   async restore(id: string) {
@@ -339,6 +361,12 @@ export class FileService {
 
     await FileService.saveFile(updateFile)
     info('File restored')
+  }
+
+  async deleteFile(id: string) {
+    const [, {mutate}] = this.filesResource
+    mutate((prev = []) => prev.filter((it) => it.id !== id))
+    await DB.deleteFile(id)
   }
 
   async getTitle(file?: File, maxLength = 25, fallback = true): Promise<string | undefined> {
@@ -367,5 +395,18 @@ export class FileService {
     }
 
     return file?.title ?? ''
+  }
+
+  private mutateFile(fn: (file: File) => void, fileId = this.currentFileId) {
+    const [, {mutate}] = this.filesResource
+    let updated: File | undefined
+    mutate(
+      produce((prev = []) => {
+        updated = prev.find((it) => it.id === fileId)
+        if (updated) fn(updated)
+      }),
+    )
+
+    return updated
   }
 }

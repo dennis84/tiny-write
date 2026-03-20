@@ -16,7 +16,7 @@ test('paste markdown', async ({page}) => {
     await navigator.clipboard.writeText(text)
   }, markdownContent)
 
-  await page.waitForSelector('[data-testid="initialized"]')
+  await page.waitForSelector('[data-testid="editor_scroll"]')
   await page.click('[data-testid="navbar_menu_open"]')
   await assertEditorLineToEqual(page, 1, 'Start typing ...')
 

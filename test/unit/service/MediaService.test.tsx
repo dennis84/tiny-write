@@ -23,6 +23,7 @@ vi.mock('@/db', () => ({
   DB: mock({
     getThreads: vi.fn(),
     getCanvases: vi.fn(),
+    getFiles: vi.fn(),
   }),
 }))
 
@@ -51,9 +52,12 @@ test('getImagePath', async () => {
 test('dropFiles - image on editor', async () => {
   stubLocation('/editor/1')
 
-  const initial = createState({
-    files: [{id: '1', ydoc: pmUtil.createYUpdate('1', []), versions: []}],
-  })
+  vi.spyOn(DB, 'getFiles').mockResolvedValue([
+    {id: '1', ydoc: pmUtil.createYUpdate('1', []), versions: [], lastModified},
+  ])
+
+  const initial = createState()
+
   const {getByTestId, ctrl} = renderMain(initial)
 
   await waitFor(() => {
@@ -83,9 +87,9 @@ test('dropFiles - image on canvas', async () => {
     height: 100,
   }
 
-  const initial = createState({
-    files: [{id: '1', ydoc: pmUtil.createYUpdate('1', []), versions: []}],
-  })
+  vi.spyOn(DB, 'getFiles').mockResolvedValue([
+    {id: '1', ydoc: pmUtil.createYUpdate('1', []), versions: [], lastModified},
+  ])
 
   vi.spyOn(DB, 'getCanvases').mockResolvedValue([
     {
@@ -96,7 +100,13 @@ test('dropFiles - image on canvas', async () => {
     },
   ])
 
+  const initial = createState()
+
   const {getByTestId, ctrl} = renderMain(initial)
+
+  await waitFor(() => {
+    expect(ctrl.fileService.resourceState).toEqual('ready')
+  })
 
   await waitFor(() => {
     expect(getByTestId('canvas_container')).toBeDefined()
@@ -135,9 +145,9 @@ test('dropFiles - image on canvas with active editor', async () => {
     height: 100,
   }
 
-  const initial = createState({
-    files: [{id: '1', ydoc: pmUtil.createYUpdate('1', []), versions: []}],
-  })
+  vi.spyOn(DB, 'getFiles').mockResolvedValue([
+    {id: '1', ydoc: pmUtil.createYUpdate('1', []), versions: [], lastModified},
+  ])
 
   vi.spyOn(DB, 'getCanvases').mockResolvedValue([
     {
@@ -147,6 +157,8 @@ test('dropFiles - image on canvas with active editor', async () => {
       elements: [editorElement],
     },
   ])
+
+  const initial = createState()
 
   const {getByTestId, ctrl} = renderMain(initial)
 
@@ -201,9 +213,12 @@ test('dropFiles - image on assistant', async () => {
 test('dropFiles - image on assistant drawer', async () => {
   stubLocation('/code/1')
 
-  const initial = createState({
-    files: [{id: '1', ydoc: cmUtil.createYUpdate('1', ''), versions: [], code: true}],
-  })
+  vi.spyOn(DB, 'getFiles').mockResolvedValue([
+    {id: '1', ydoc: cmUtil.createYUpdate('1', ''), versions: [], code: true, lastModified},
+  ])
+
+  const initial = createState()
+
   const {getByTestId, ctrl} = renderMain(initial)
 
   await waitFor(() => {
@@ -223,9 +238,12 @@ test('dropFiles - image on assistant drawer', async () => {
 test('dropPaths - image on editor', async () => {
   stubLocation('/editor/1')
 
-  const initial = createState({
-    files: [{id: '1', ydoc: pmUtil.createYUpdate('1', []), versions: []}],
-  })
+  vi.spyOn(DB, 'getFiles').mockResolvedValue([
+    {id: '1', ydoc: pmUtil.createYUpdate('1', []), versions: [], lastModified},
+  ])
+
+  const initial = createState()
+
   const {getByTestId, ctrl} = renderMain(initial)
 
   await waitFor(() => {
@@ -242,21 +260,26 @@ test('dropPaths - image on editor', async () => {
 })
 
 test('dropPaths - image on editor with basePath', async () => {
-  stubLocation('/editor/1')
+  stubLocation('/editor')
 
-  const initial = createState({
-    files: [
-      {
-        id: '1',
-        ydoc: pmUtil.createYUpdate('1', []),
-        path: '/users/me/project/README.md',
-        lastModified,
-        versions: [],
-      },
-    ],
-  })
+  const initial = createState()
 
   const {getByTestId, ctrl} = renderMain(initial)
+
+  await waitFor(() => {
+    expect(ctrl.fileService.resourceState).toEqual('ready')
+  })
+
+  const file = {
+    id: '1',
+    ydoc: pmUtil.createYUpdate('1', []),
+    path: '/users/me/project/README.md',
+    lastModified,
+    versions: [],
+  }
+
+  await ctrl.fileService.addFile(file)
+  ctrl.locationService.openItem(file)
 
   await waitFor(() => {
     expect(getByTestId('editor_scroll')).toBeDefined()
@@ -272,23 +295,29 @@ test('dropPaths - image on editor with basePath', async () => {
 })
 
 test('dropPaths - text file on editor', async () => {
-  stubLocation('/editor/1')
+  stubLocation('/editor')
 
-  const initial = createState({
-    files: [{id: '1', ydoc: pmUtil.createYUpdate('1', []), versions: []}],
-  })
+  const initial = createState()
   const {getByTestId, ctrl} = renderMain(initial)
+
+  await waitFor(() => {
+    expect(ctrl.fileService.resourceState).toEqual('ready')
+  })
+
+  const file = {id: '1', ydoc: pmUtil.createYUpdate('1', []), versions: []}
+  await ctrl.fileService.addFile(file)
+  ctrl.locationService.openItem(file)
 
   await waitFor(() => {
     expect(getByTestId('editor_scroll')).toBeDefined()
   })
 
-  expect(ctrl.store.files).toHaveLength(1)
+  expect(ctrl.fileService.files).toHaveLength(1)
 
   const path = '/users/me/project/README.md'
   const result = await ctrl.mediaService.dropPaths([path], [0, 0])
 
-  expect(ctrl.store.files).toHaveLength(2)
+  expect(ctrl.fileService.files).toHaveLength(2)
   expect(result?.file?.path).toBe(path)
 })
 
@@ -304,9 +333,9 @@ test('dropPaths - image on canvas', async () => {
     height: 100,
   }
 
-  const initial = createState({
-    files: [{id: '1', ydoc: pmUtil.createYUpdate('1', []), versions: []}],
-  })
+  vi.spyOn(DB, 'getFiles').mockResolvedValue([
+    {id: '1', ydoc: pmUtil.createYUpdate('1', []), versions: [], lastModified},
+  ])
 
   vi.spyOn(DB, 'getCanvases').mockResolvedValue([
     {
@@ -316,6 +345,8 @@ test('dropPaths - image on canvas', async () => {
       elements: [editorElement],
     },
   ])
+
+  const initial = createState()
 
   const {getByTestId, ctrl} = renderMain(initial)
 
@@ -346,9 +377,7 @@ test('dropPaths - image on canvas', async () => {
 test('dropPaths - text file on canvas', async () => {
   stubLocation('/canvas/1')
 
-  const initial = createState({
-    files: [],
-  })
+  const initial = createState()
 
   vi.spyOn(DB, 'getCanvases').mockResolvedValue([
     {
@@ -371,52 +400,57 @@ test('dropPaths - text file on canvas', async () => {
   const result = await ctrl.mediaService.dropPaths([path], [0, 0])
 
   expect(result?.file).toBe(undefined)
-  expect(ctrl.store.files).toHaveLength(1)
+  expect(ctrl.fileService.files).toHaveLength(1)
 
   expect(currentCanvas?.elements).toHaveLength(1)
-  expect(ctrl.store.files[0].id).toBe(currentCanvas?.elements[0].id)
-  expect(ctrl.store.files[0].path).toBe(path)
+  expect(ctrl.fileService.files[0].id).toBe(currentCanvas?.elements[0].id)
+  expect(ctrl.fileService.files[0].path).toBe(path)
 })
 
 test('dropPaths - text file on code', async () => {
   stubLocation('/code/1')
 
-  const initial = createState({
-    files: [{id: '1', ydoc: cmUtil.createYUpdate('1', ''), versions: [], code: true}],
-  })
+  vi.spyOn(DB, 'getFiles').mockResolvedValue([
+    {id: '1', ydoc: cmUtil.createYUpdate('1', ''), versions: [], code: true, lastModified},
+  ])
+
+  const initial = createState()
+
   const {getByTestId, ctrl} = renderMain(initial)
 
   await waitFor(() => {
     expect(getByTestId('code_scroll')).toBeDefined()
   })
 
-  expect(ctrl.store.files).toHaveLength(1)
+  expect(ctrl.fileService.files).toHaveLength(1)
 
   const path = '/users/me/project/README.md'
   const result = await ctrl.mediaService.dropPaths([path], [0, 0])
 
   expect(result?.file).toBeDefined()
-  expect(ctrl.store.files).toHaveLength(2)
+  expect(ctrl.fileService.files).toHaveLength(2)
 })
 
 test('dropPaths - image on code', async () => {
   stubLocation('/code/1')
 
-  const initial = createState({
-    files: [{id: '1', ydoc: cmUtil.createYUpdate('1', ''), versions: [], code: true}],
-  })
+  vi.spyOn(DB, 'getFiles').mockResolvedValue([
+    {id: '1', ydoc: cmUtil.createYUpdate('1', ''), versions: [], code: true, lastModified},
+  ])
+
+  const initial = createState({})
   const {getByTestId, ctrl} = renderMain(initial)
 
   await waitFor(() => {
     expect(getByTestId('code_scroll')).toBeDefined()
   })
 
-  expect(ctrl.store.files).toHaveLength(1)
+  expect(ctrl.fileService.files).toHaveLength(1)
 
   const path = '/users/me/file.png'
   const result = await ctrl.mediaService.dropPaths([path], [0, 0])
 
   expect(result?.file).toBeDefined()
-  expect(ctrl.store.files).toHaveLength(2)
+  expect(ctrl.fileService.files).toHaveLength(2)
   expect(ctrl.fileService.findFileById(result?.file?.id ?? '')?.path).toBe(path)
 })

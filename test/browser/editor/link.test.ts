@@ -5,7 +5,7 @@ const delay = 50
 
 test.beforeEach(async ({page}) => {
   await page.goto('/')
-  await page.waitForSelector('[data-testid="initialized"]')
+  await page.waitForSelector('[data-testid="editor_scroll"]')
 })
 
 test('create link - title', async ({page}) => {

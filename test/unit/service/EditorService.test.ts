@@ -2,7 +2,6 @@ import {Box} from '@flatten-js/core'
 import {createStore} from 'solid-js/store'
 import {beforeEach, expect, test, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
-import type {DB} from '@/db'
 import type {CollabService} from '@/services/CollabService'
 import type {DialogService} from '@/services/DialogService'
 import {EditorService} from '@/services/EditorService'
@@ -26,7 +25,7 @@ vi.stubGlobal('WebSocket', WsMock)
 
 vi.mock('mermaid', () => ({}))
 
-vi.mock('@/db', () => ({DB: mock<DB>()}))
+vi.mock('@/db', () => ({DB: mock()}))
 
 const lastModified = new Date()
 
@@ -40,18 +39,15 @@ beforeEach(() => {
 })
 
 test('init - existing', async () => {
-  const initial = createState({
-    files: [
-      {id: '1', ydoc: createYUpdate('1', ['Text']), lastModified, versions: []},
-      {id: '2', ydoc: createYUpdate('2', ['Test 2']), lastModified, versions: []},
-    ],
-  })
+  const initial = createState()
+
+  const file = {id: '2', ydoc: createYUpdate('2', ['Test 2']), lastModified, versions: []}
 
   const [store, setState] = createStore(initial)
   const fileService = mock<FileService>()
   const locationService = mock<LocationService>({editorId: '2'})
 
-  fileService.findFileById.mockReturnValue(initial.files[1])
+  fileService.findFileById.mockReturnValue(file)
   collabService.getSubdoc.mockReturnValue(createSubdoc('2', []))
 
   const service = new EditorService(
@@ -66,16 +62,10 @@ test('init - existing', async () => {
   )
 
   await service.init('2')
-  expect(store.files.length).toBe(2)
 })
 
 test('init - not found', async () => {
-  const initial = createState({
-    files: [
-      {id: '1', ydoc: createYUpdate('1', ['Text']), lastModified, versions: []},
-      {id: '2', ydoc: createYUpdate('2', ['Test 2']), lastModified, versions: []},
-    ],
-  })
+  const initial = createState()
 
   const [store, setState] = createStore(initial)
   const fileService = mock<FileService>()
@@ -105,9 +95,7 @@ test('init - share', async () => {
     versions: [],
   }
 
-  const initial = createState({
-    files: [file],
-  })
+  const initial = createState()
 
   const [store, setState] = createStore(initial)
   const fileService = mock<FileService>()
@@ -131,8 +119,6 @@ test('init - share', async () => {
   )
 
   await service.init('room-123')
-  expect(store.files.length).toBe(1)
-  expect(store.files[0].id).toBe('room-123')
 })
 
 test('clear - with text', async () => {

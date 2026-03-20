@@ -56,11 +56,13 @@ export const CodePage = (props: RouteSectionProps) => {
 
   const [initialized] = createResource(
     // Reload when params.id or merge changes
-    () =>
-      JSON.stringify({
+    () => {
+      if (fileService.resourceState !== 'ready') return false
+      return JSON.stringify({
         id: props.params.id,
         merge: location.state?.merge,
-      }),
+      })
+    },
     async (key) => {
       if (!props.params.id) return key
       await codeService.init(props.params.id)

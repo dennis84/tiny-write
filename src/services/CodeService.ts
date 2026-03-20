@@ -34,9 +34,7 @@ export class CodeService {
   private writeFileThrottled = debounce(this.writeFile.bind(this), 1000)
 
   async newFile(params: Partial<File> = {}): Promise<File> {
-    const file = FileService.createFile({...params, code: true})
-    this.setState('files', (prev) => [...prev, file])
-    return file
+    return await this.fileService.newFile({...params, code: true})
   }
 
   async init(id: string, existingYdoc?: Y.Doc) {
@@ -236,8 +234,7 @@ export class CodeService {
 
     this.collabService.undoManager?.addTrackedOrigin(editor.editorView.state.facet(ySyncFacet))
 
-    const fileIndex = this.store.files.findIndex((f) => f.id === file.id)
-    this.setState('files', fileIndex, 'codeEditorView', editor.editorView)
+    this.fileService.updateFile(file.id, {codeEditorView: editor.editorView})
   }
 
   private async saveEditor(file: File, update: ViewUpdate) {
