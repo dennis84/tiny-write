@@ -16,7 +16,7 @@ interface Props {
 }
 
 export const Select = (props: Props) => {
-  const {locationService, appService, canvasService, editorService} = useState()
+  const {locationService, selectService, canvasService, editorService} = useState()
   const [frame, setFrame] = createSignal<Box>()
 
   onMount(() => {
@@ -70,11 +70,11 @@ export const Select = (props: Props) => {
           editorService.selectBox(initial, first, last)
         }
 
-        appService.setSelecting(true)
+        selectService.selecting = true
         setFrame(initial)
         if (last) {
           setFrame(undefined)
-          setTimeout(() => appService.setSelecting(false), 100)
+          setTimeout(() => (selectService.selecting = false), 100)
         }
         return initial
       },

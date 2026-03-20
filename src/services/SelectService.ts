@@ -1,6 +1,7 @@
 import type {Box} from '@flatten-js/core'
 import {TextSelection} from 'prosemirror-state'
 import type {EditorView} from 'prosemirror-view'
+import {type Accessor, createSignal} from 'solid-js'
 
 interface Position {
   top: number
@@ -13,6 +14,16 @@ interface Position {
 
 export class SelectService {
   private positions: Position[] = []
+
+  private selectingSignal = createSignal(false)
+
+  get selecting(): Accessor<boolean> {
+    return this.selectingSignal[0]
+  }
+
+  set selecting(selecting: boolean) {
+    this.selectingSignal[1](selecting)
+  }
 
   deselect(editorView: EditorView) {
     if (editorView.state.selection.empty) return

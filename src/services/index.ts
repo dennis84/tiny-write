@@ -50,7 +50,6 @@ export const createCtrl = (initial: State) => {
     selectService,
     collabService,
     locationService,
-    setState,
   )
   const treeService = new TreeService(store, setState, fileService, canvasService)
   const deleteService = new DeleteService(fileService, canvasService, treeService)

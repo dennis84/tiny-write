@@ -71,8 +71,4 @@ export class AppService {
     if (!this.store.window) return
     await DB.setWindow(this.store.window)
   }
-
-  setSelecting(selecting: boolean) {
-    this.setState('selecting', selecting)
-  }
 }

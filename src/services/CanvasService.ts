@@ -2,8 +2,8 @@ import {Box, Point, Segment, Vector} from '@flatten-js/core'
 import {createDeepSignal} from '@solid-primitives/resource'
 import {throttle} from '@solid-primitives/scheduled'
 import {TextSelection} from 'prosemirror-state'
-import {createResource} from 'solid-js'
-import {produce, type SetStoreFunction, unwrap} from 'solid-js/store'
+import {createResource, createSignal} from 'solid-js'
+import {produce, unwrap} from 'solid-js/store'
 import {v4 as uuidv4} from 'uuid'
 import {DB} from '@/db'
 import {info} from '@/remote/log'
@@ -23,7 +23,6 @@ import {
   ElementType,
   type File,
   Page,
-  type State,
 } from '@/types'
 import {BoxUtil} from '@/utils/BoxUtil'
 import {PointUtil} from '@/utils/PointUtil'
@@ -46,6 +45,8 @@ export interface Selection {
 export class CanvasService {
   public saveCanvasThrottled = throttle(() => this.saveCanvas(), 100)
   public canvasRef: HTMLElement | undefined
+
+  private movingSignal = createSignal(false)
 
   private canvasesResource = createResource<Canvas[]>(() => CanvasService.fetchCanvases(), {
     storage: createDeepSignal, // store as proxy objects
@@ -72,8 +73,11 @@ export class CanvasService {
     private selectService: SelectService,
     private collabService: CollabService,
     private locationService: LocationService,
-    private setState: SetStoreFunction<State>,
   ) {}
+
+  get moving() {
+    return this.movingSignal[0]
+  }
 
   get canvases() {
     return this.canvasesResource[0].latest ?? []
@@ -732,7 +736,7 @@ export class CanvasService {
   }
 
   setMoving(moving: boolean) {
-    this.setState('moving', moving)
+    this.movingSignal[1](moving)
   }
 
   getElementNear(point: CanvasPoint): {id: string; edge: EdgeType} | undefined {

@@ -255,9 +255,6 @@ export interface State {
   sidebar?: Sidebar
   args?: Args
   window?: Window
-  isSnapshot?: boolean
-  selecting?: boolean
-  moving?: boolean
   lastTr?: number
   ai?: AiConfig
   lastLocation?: LastLocation

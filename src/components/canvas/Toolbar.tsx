@@ -30,6 +30,7 @@ export const Toolbar = () => {
     codeService,
     fileService,
     menuService,
+    selectService,
     threadService,
     treeService,
     locationService,
@@ -91,7 +92,7 @@ export const Toolbar = () => {
   }
 
   const getSelected = () => {
-    if (store.selecting || store.moving) return
+    if (selectService.selecting() || canvasService.moving()) return
     const currentCanvas = canvasService.currentCanvas
     if (!currentCanvas) return
     const selected = currentCanvas.elements.filter(
