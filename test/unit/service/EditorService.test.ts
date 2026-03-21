@@ -43,7 +43,7 @@ test('init - existing', async () => {
 
   const file = {id: '2', ydoc: createYUpdate('2', ['Test 2']), lastModified, versions: []}
 
-  const [store, setState] = createStore(initial)
+  const [, setState] = createStore(initial)
   const fileService = mock<FileService>()
   const locationService = mock<LocationService>({editorId: '2'})
 
@@ -57,7 +57,6 @@ test('init - existing', async () => {
     dialogService,
     selectService,
     locationService,
-    store,
     setState,
   )
 
@@ -67,7 +66,7 @@ test('init - existing', async () => {
 test('init - not found', async () => {
   const initial = createState()
 
-  const [store, setState] = createStore(initial)
+  const [, setState] = createStore(initial)
   const fileService = mock<FileService>()
   const locationService = mock<LocationService>({canvasId: '3'})
 
@@ -80,7 +79,6 @@ test('init - not found', async () => {
     dialogService,
     selectService,
     locationService,
-    store,
     setState,
   )
 
@@ -97,7 +95,7 @@ test('init - share', async () => {
 
   const initial = createState()
 
-  const [store, setState] = createStore(initial)
+  const [, setState] = createStore(initial)
   const fileService = mock<FileService>()
   const locationService = mock<LocationService>({
     editorId: 'room-123',
@@ -114,7 +112,6 @@ test('init - share', async () => {
     dialogService,
     selectService,
     locationService,
-    store,
     setState,
   )
 
@@ -137,7 +134,7 @@ test('clear - with text', async () => {
   vi.spyOn(fileService, 'currentFile', 'get').mockReturnValue(file)
 
   const initial = createState()
-  const [store, setState] = createStore(initial)
+  const [, setState] = createStore(initial)
   const service = new EditorService(
     fileService,
     collabService,
@@ -145,7 +142,6 @@ test('clear - with text', async () => {
     dialogService,
     selectService,
     locationService,
-    store,
     setState,
   )
 
@@ -172,7 +168,7 @@ test('selectBox', async () => {
   vi.spyOn(fileService, 'currentFile', 'get').mockReturnValue(file)
 
   const initial = createState()
-  const [store, setState] = createStore(initial)
+  const [, setState] = createStore(initial)
   const service = new EditorService(
     fileService,
     collabService,
@@ -180,7 +176,6 @@ test('selectBox', async () => {
     dialogService,
     selectService,
     locationService,
-    store,
     setState,
   )
 

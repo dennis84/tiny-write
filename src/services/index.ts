@@ -76,7 +76,6 @@ export const createCtrl = (initial: State) => {
     dialogService,
     selectService,
     locationService,
-    store,
     setState,
   )
   const codeService = new CodeService(

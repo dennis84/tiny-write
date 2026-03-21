@@ -9,11 +9,11 @@ import {Label, Note} from './Style'
 import {SubmenuTree} from './SubmenuTree'
 
 export const Bin = () => {
-  const {store, deleteService, treeService, locationService} = useState()
+  const {fileService, canvasService, deleteService, treeService, locationService} = useState()
   const showConfirmDialog = useConfirmDialog()
 
   const hasDeletedFiles = () =>
-    store.files.some((f) => f.deleted) || store.canvases.some((f) => f.deleted)
+    fileService.files.some((f) => f.deleted) || canvasService.canvases.some((f) => f.deleted)
 
   const onEmptyBin = async () => {
     showConfirmDialog({

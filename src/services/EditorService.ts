@@ -3,7 +3,7 @@ import {debounce} from '@solid-primitives/scheduled'
 import {deleteSelection, selectAll} from 'prosemirror-commands'
 import {EditorState, type Transaction} from 'prosemirror-state'
 import {EditorView} from 'prosemirror-view'
-import type {SetStoreFunction, Store} from 'solid-js/store'
+import type {SetStoreFunction} from 'solid-js/store'
 import {prosemirrorJSONToYDoc} from 'y-prosemirror'
 import * as Y from 'yjs'
 import {serialize} from '@/prosemirror/markdown-serialize'
@@ -26,7 +26,6 @@ export class EditorService {
     private dialogService: DialogService,
     private selectService: SelectService,
     private locationService: LocationService,
-    private store: Store<State>,
     private setState: SetStoreFunction<State>,
   ) {}
 
@@ -87,8 +86,6 @@ export class EditorService {
 
         this.setState('lastTr', tr.time)
         if (!tr.docChanged) return
-
-        if (this.store.isSnapshot) return
 
         this.fileService.updateFile(file.id, {
           lastModified: new Date(),

@@ -556,7 +556,7 @@ test('searchThreads', async () => {
     expect(service.threads).toHaveLength(6)
   })
 
-  const threads = service.searchThreads()
+  const threads = await service.searchThreads('')
 
   expect(threads).toEqual([
     [thread6, 'Today'],
