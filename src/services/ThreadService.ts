@@ -36,7 +36,7 @@ export class ThreadService {
   }
 
   get threads() {
-    return this.threadsResource[0].latest
+    return this.threadsResource[0].latest ?? []
   }
 
   findThreadById(threadId: string): Thread | undefined {
@@ -114,21 +114,15 @@ export class ThreadService {
     this.attachmentsSignal[1]((prev) => prev.filter((a) => a !== attachment))
   }
 
-  searchThreads(term?: string): [Thread, string | undefined][] {
-    const [threads] = this.threadsResource
+  async searchThreads(term: string): Promise<[Thread, string | undefined][]> {
+    const threads = term !== '' ? await DB.searchThreads(term) : this.threads
     // List of tuples with date label on beginning of a new group
     const pinned: [Thread, string | undefined][] = []
     const result: [Thread, string | undefined][] = []
     let currentYearMonth: string | undefined
 
-    for (const thread of threads() ?? []) {
+    for (const thread of threads) {
       if (!thread.lastModified) continue
-
-      if (term && thread.title) {
-        const searchTerm = term.toLowerCase()
-        const title = thread.title.toLowerCase()
-        if (!title.includes(searchTerm)) continue
-      }
 
       if (thread.pinned) {
         if (pinned.length === 0) pinned.push([thread, 'Pinned'])

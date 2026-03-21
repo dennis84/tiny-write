@@ -1,5 +1,6 @@
+import {createScheduled, debounce} from '@solid-primitives/scheduled'
 import {formatDistance} from 'date-fns'
-import {createSignal, For, onMount, Show} from 'solid-js'
+import {createMemo, createResource, createSignal, For, onMount, Show, Suspense} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {useConfirmDialog} from '@/hooks/use-confirm-dialog'
 import {useDialog} from '@/hooks/use-dialog'
@@ -131,7 +132,7 @@ interface Props {
 
 export const Threads = (props: Props) => {
   const {threadService} = useState()
-  const [searchTerm, setSearchTerm] = createSignal<string | undefined>(undefined)
+  const [searchTerm, setSearchTerm] = createSignal<string>('')
   const showConfirmDialog = useConfirmDialog()
   const showInputLine = useInputLine()
 
@@ -199,6 +200,16 @@ export const Threads = (props: Props) => {
       searchInputRef.focus()
     })
 
+    const scheduled = createScheduled((fn) => debounce(fn, 1000))
+    const debouncedSearchTerm = createMemo<string>(
+      (prev) => (scheduled() ? searchTerm() : prev),
+      '',
+    )
+
+    const [threads] = createResource(debouncedSearchTerm, (term) =>
+      threadService.searchThreads(term),
+    )
+
     return (
       <>
         <SearchRow>
@@ -213,51 +224,53 @@ export const Threads = (props: Props) => {
           </SearchBorder>
         </SearchRow>
         <Scroll>
-          <For each={threadService.searchThreads(searchTerm())}>
-            {([thread, label]) => (
-              <DialogList>
-                <Show when={label}>
-                  <DialogLabel>{label}</DialogLabel>
-                </Show>
-                <ThreadItem onClick={() => onSelect(thread)} data-testid="thread_item">
-                  <ThreadTitle>{thread.title ?? 'Untitled'}</ThreadTitle>
-                  <LastModified class="last-modified">
-                    <Show when={thread.lastModified}>
-                      {(lastMod) => <span>{formatDistance(lastMod(), new Date())}</span>}
-                    </Show>
-                  </LastModified>
-                  <ButtonGroup class="action">
-                    <TooltipHelp title="Delete thread">
-                      <ThreadItemButton
-                        onClick={(e) => onDelete(e, thread)}
-                        data-testid="thread_item_delete"
-                      >
-                        <IconDelete />
-                      </ThreadItemButton>
-                    </TooltipHelp>
-                    <TooltipHelp title="Rename thread">
-                      <ThreadItemButton
-                        onClick={(e) => onRename(e, thread)}
-                        data-testid="thread_item_rename"
-                      >
-                        <IconEdit />
-                      </ThreadItemButton>
-                    </TooltipHelp>
-                    <TooltipHelp title="Pin/Unpin thread">
-                      <ThreadItemButton
-                        onClick={(e) => onPin(e, thread)}
-                        data-testid="thread_item_pin"
-                      >
-                        <Show when={thread.pinned} fallback={<IconPin />}>
-                          <IconUnpin />
-                        </Show>
-                      </ThreadItemButton>
-                    </TooltipHelp>
-                  </ButtonGroup>
-                </ThreadItem>
-              </DialogList>
-            )}
-          </For>
+          <Suspense>
+            <For each={threads()}>
+              {([thread, label]) => (
+                <DialogList>
+                  <Show when={label}>
+                    <DialogLabel>{label}</DialogLabel>
+                  </Show>
+                  <ThreadItem onClick={() => onSelect(thread)} data-testid="thread_item">
+                    <ThreadTitle>{thread.title ?? 'Untitled'}</ThreadTitle>
+                    <LastModified class="last-modified">
+                      <Show when={thread.lastModified}>
+                        {(lastMod) => <span>{formatDistance(lastMod(), new Date())}</span>}
+                      </Show>
+                    </LastModified>
+                    <ButtonGroup class="action">
+                      <TooltipHelp title="Delete thread">
+                        <ThreadItemButton
+                          onClick={(e) => onDelete(e, thread)}
+                          data-testid="thread_item_delete"
+                        >
+                          <IconDelete />
+                        </ThreadItemButton>
+                      </TooltipHelp>
+                      <TooltipHelp title="Rename thread">
+                        <ThreadItemButton
+                          onClick={(e) => onRename(e, thread)}
+                          data-testid="thread_item_rename"
+                        >
+                          <IconEdit />
+                        </ThreadItemButton>
+                      </TooltipHelp>
+                      <TooltipHelp title="Pin/Unpin thread">
+                        <ThreadItemButton
+                          onClick={(e) => onPin(e, thread)}
+                          data-testid="thread_item_pin"
+                        >
+                          <Show when={thread.pinned} fallback={<IconPin />}>
+                            <IconUnpin />
+                          </Show>
+                        </ThreadItemButton>
+                      </TooltipHelp>
+                    </ButtonGroup>
+                  </ThreadItem>
+                </DialogList>
+              )}
+            </For>
+          </Suspense>
         </Scroll>
         <DialogFooter>
           <ButtonGroup justify="flex-end">

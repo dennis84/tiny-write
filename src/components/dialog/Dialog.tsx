@@ -11,12 +11,15 @@ type Props = Omit<DialogType, 'component' | 'state'> & {
 }
 
 export const Dialog = (props: Props) => {
-  let tooltipRef!: HTMLDivElement
+  let dialogRef!: HTMLDivElement
   let arrowRef!: HTMLSpanElement
 
   const zIndex = ZIndex.dialog(props.index)
 
   const onClose = (e: MouseEvent) => {
+    const target = e.target as Node
+    if (dialogRef?.contains(target)) return
+
     e.preventDefault()
     e.stopPropagation()
     e.stopImmediatePropagation()
@@ -31,7 +34,7 @@ export const Dialog = (props: Props) => {
         return
       }
 
-      if (!tooltipRef?.contains(target)) {
+      if (!dialogRef?.contains(target)) {
         onClose(e)
       }
     }
@@ -55,8 +58,8 @@ export const Dialog = (props: Props) => {
     const placement = props.placement ?? 'bottom'
     const fallbackPlacements = props.fallbackPlacements ?? undefined
 
-    const cleanup = autoUpdate(anchor, tooltipRef, async () => {
-      void computePosition(anchor, tooltipRef, {
+    const cleanup = autoUpdate(anchor, dialogRef, async () => {
+      void computePosition(anchor, dialogRef, {
         placement,
         middleware: [
           offset(props.offset ?? 10),
@@ -75,8 +78,8 @@ export const Dialog = (props: Props) => {
           }),
         ],
       }).then(({x, y, placement, middlewareData}) => {
-        tooltipRef.style.left = `${x}px`
-        tooltipRef.style.top = `${y}px`
+        dialogRef.style.left = `${x}px`
+        dialogRef.style.top = `${y}px`
 
         const side = placement.split('-')[0]
         const staticSide =
@@ -113,7 +116,7 @@ export const Dialog = (props: Props) => {
       <Match when={props.anchor}>
         <CloseOnBackgroundClick />
         <DialogContainer
-          ref={tooltipRef}
+          ref={dialogRef}
           id="tooltip"
           data-testid="tooltip"
           class="tooltip"
@@ -129,7 +132,7 @@ export const Dialog = (props: Props) => {
       <Match when={props.toast}>
         <ToastLayer>
           <DialogContainer
-            ref={tooltipRef}
+            ref={dialogRef}
             direction={'row'}
             class="toast"
             style={{'z-index': zIndex}}
@@ -144,7 +147,7 @@ export const Dialog = (props: Props) => {
       <Match when={true}>
         <DialogLayer onClick={onClose} style={{'z-index': zIndex}} data-testid="dialog_layer">
           <DialogContainer
-            ref={tooltipRef}
+            ref={dialogRef}
             delay={props.delay}
             style={{'z-index': ZIndex.dialog(props.index)}}
             data-testid="dialog"

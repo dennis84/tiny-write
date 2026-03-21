@@ -227,6 +227,39 @@ export class DB {
     return (await dbPromise).getAll('threads')
   }
 
+  static async searchThreads(searchTerm: string, limit = 50): Promise<Thread[]> {
+    const db = await dbPromise
+    const tx = db.transaction('threads', 'readonly')
+    let cursor = await tx.store.openCursor()
+
+    const results = []
+    const term = searchTerm.toLowerCase()
+
+    loop: while (cursor && results.length < limit) {
+      const thread = cursor.value
+
+      if (thread.title?.toLowerCase().includes(term)) {
+        results.push(thread)
+        cursor = await cursor.continue()
+        continue
+      }
+
+      for (const message of thread.messages) {
+        if (message.content.toLowerCase().includes(term)) {
+          results.push(thread)
+          cursor = await cursor.continue()
+          continue loop
+        }
+      }
+
+      cursor = await cursor.continue()
+    }
+
+    return results.sort(
+      (a, b) => (b.lastModified?.getTime() ?? 0) - (a.lastModified?.getTime() ?? 0),
+    )
+  }
+
   static async updateThread(thread: Thread) {
     const db = await dbPromise
     const existing = await db.get('threads', thread.id)
