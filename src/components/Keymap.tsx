@@ -47,6 +47,7 @@ export const Keymap = () => {
   }
 
   const onQuit = async () => {
+    await locationService.setLastLocation({pathname: locationService.pathname})
     if (!isTauri()) return
     await quit()
   }
