@@ -96,6 +96,50 @@ test('add', async () => {
   })
 })
 
+test('add - nested', async () => {
+  const tree = createTreeStore({
+    items: [
+      {id: 'file_1'}, // 1
+      {id: 'file_2'},
+    ],
+  })
+
+  return testEffect((done) => {
+    return createEffect((run: number = 0) => {
+      if (run === 0) {
+        const ids = tree.add({id: 'file_3', parentId: 'file_1'})
+        expect(ids).toEqual(['file_3'])
+      } else if (run === 1) {
+        expectTree(
+          tree,
+          `
+          └ file_1 (parentId=, leftId=)
+            └ file_3 (parentId=file_1, leftId=)
+          └ file_2 (parentId=, leftId=)
+          `,
+        )
+
+        const ids = tree.add({id: 'file_4', parentId: 'file_1'})
+        expect(ids).toEqual(['file_4'])
+      } else if (run === 2) {
+        expectTree(
+          tree,
+          `
+          └ file_1 (parentId=, leftId=)
+            └ file_3 (parentId=file_1, leftId=)
+            └ file_4 (parentId=file_1, leftId=file_3)
+          └ file_2 (parentId=, leftId=)
+          `,
+        )
+
+        done()
+      }
+
+      return run + 1
+    })
+  })
+})
+
 test('remove', async () => {
   const tree = createTreeStore({
     items: [

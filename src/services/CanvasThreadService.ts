@@ -1,4 +1,5 @@
-import canvasFile from '@/prompts/canvas-file.md?raw'
+import commonCanvasRulesPrompt from '@/prompts/canvas/common.md?raw'
+import commonRulesPrompt from '@/prompts/common/rules.md?raw'
 import {
   isCodeElement,
   isEditorElement,
@@ -55,7 +56,8 @@ export class CanvasThreadService {
       }
     }
 
-    addMessage('system', canvasFile)
+    addMessage('system', commonCanvasRulesPrompt)
+    addMessage('system', commonRulesPrompt)
 
     return messages.reverse()
   }

@@ -4,9 +4,10 @@ import {createResource, createSignal} from 'solid-js'
 import {produce} from 'solid-js/store'
 import {v4 as uuidv4} from 'uuid'
 import {DB} from '@/db'
-import codeBlockHandlingPrompt from '@/prompts/assistant-code-block-handling.md?raw'
-import generateTitlePrompt from '@/prompts/generate-title.md?raw'
-import summaryPrompt from '@/prompts/summary.md?raw'
+import codeBlockHandlingPrompt from '@/prompts/assistant/code-block-handling.md?raw'
+import generateTitlePrompt from '@/prompts/assistant/generate-title.md?raw'
+import summaryPrompt from '@/prompts/assistant/summary.md?raw'
+import commonRulesPrompt from '@/prompts/common/rules.md?raw'
 import {debug, error, info} from '@/remote/log'
 import {createTreeStore, type TreeItem} from '@/tree'
 import {type Attachment, AttachmentType, type Message, type Thread} from '@/types'
@@ -492,12 +493,16 @@ export class ThreadService {
     })
 
     if (hasCodeBlock) {
-      const message: ChatMessage = {
+      messages.unshift({
         role: 'system',
         content: [{type: 'text', text: codeBlockHandlingPrompt}],
-      }
-      messages.unshift(message)
+      })
     }
+
+    messages.unshift({
+      role: 'system',
+      content: [{type: 'text', text: commonRulesPrompt}],
+    })
 
     return {
       nextId,

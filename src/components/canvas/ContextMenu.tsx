@@ -9,7 +9,7 @@ import type {Dialog} from '@/services/DialogService'
 import {isCanvas, isCodeFile, isFile, useState} from '@/state'
 import type {CanvasLinkElement, File} from '@/types'
 import {pause} from '@/utils/promise'
-import {TooltipButton, TooltipDivider} from '../dialog/Style'
+import {DialogList, TooltipButton, TooltipDivider} from '../dialog/Style'
 import {IconAi} from '../icons/Ai'
 import {IconCanvas, IconCodeBlocks, IconFileCode, IconFilePlus} from '../icons/File'
 
@@ -40,6 +40,7 @@ export const ContextMenu = () => {
       const fileElement = added[0]
       canvasCollabService.addElements(added)
       file = fileService.findFileById(fileElement.id)
+
       if (file) await treeService.add(file)
     }
 
@@ -181,7 +182,7 @@ export const ContextMenu = () => {
   }
 
   const Tooltip = (props: {dialog: Dialog<ContextMenuTooltip>}) => (
-    <>
+    <DialogList>
       <TooltipButton
         onClick={() => newFile(false, props.dialog.state?.deadLink, props.dialog.state?.clickPos)}
         data-testid="context_menu_new_file"
@@ -221,7 +222,7 @@ export const ContextMenu = () => {
           </>
         )}
       </Show>
-    </>
+    </DialogList>
   )
 
   const [showTooltip, closeTooltip, currentTooltip] = useDialog({

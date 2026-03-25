@@ -9,8 +9,8 @@ import {createBlockquote, createCodeFence} from '@/components/assistant/util'
 import {DialogList, TooltipButton, TooltipDivider} from '@/components/dialog/Style'
 import {useDialog} from '@/hooks/use-dialog'
 import {useInputLine} from '@/hooks/use-input-line'
-import editorTextHandling from '@/prompts/editor-text-handling.md?raw'
-import editorCodeBlockHandling from '@/prompts/editor-text-handling.md?raw'
+import codeBlockHandlingPrompt from '@/prompts/editor/code-block-handling.md?raw'
+import textHandlingPrompt from '@/prompts/editor/text-handling.md?raw'
 import {addDecorationKey} from '@/prosemirror/add-decoration'
 import {Align} from '@/prosemirror/image/interfaces'
 import {saveSvg} from '@/remote/svg'
@@ -198,10 +198,10 @@ export const BlockTooltip = (props: Props) => {
         if (block.blockNode.type.name === 'code_block') {
           messages.unshift({
             role: 'system',
-            content: [{type: 'text', text: editorCodeBlockHandling}],
+            content: [{type: 'text', text: codeBlockHandlingPrompt}],
           })
         } else {
-          messages.unshift({role: 'system', content: [{type: 'text', text: editorTextHandling}]})
+          messages.unshift({role: 'system', content: [{type: 'text', text: textHandlingPrompt}]})
         }
 
         toggleBlink()
