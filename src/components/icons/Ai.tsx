@@ -1,3 +1,4 @@
+import LucideCircleStop from '~icons/lucide/circle-stop'
 import LucideGhost from '~icons/lucide/ghost'
 import MingcuteAiLine from '~icons/mingcute/ai-line'
 import OcticonCopilot16 from '~icons/octicon/copilot-16'
@@ -25,5 +26,11 @@ export const IconAiAssistantClose = () => (
 export const IconPrivate = () => (
   <SvgIcon>
     <LucideGhost />
+  </SvgIcon>
+)
+
+export const IconStop = () => (
+  <SvgIcon>
+    <LucideCircleStop />
   </SvgIcon>
 )

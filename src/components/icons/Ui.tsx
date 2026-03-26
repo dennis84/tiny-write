@@ -350,13 +350,6 @@ export const IconChevronLeft = () => (
   </SvgIcon>
 )
 
-import LucideCircleStop from '~icons/lucide/circle-stop'
-export const IconStop = () => (
-  <SvgIcon>
-    <LucideCircleStop />
-  </SvgIcon>
-)
-
 import LucideRefreshCcw from '~icons/lucide/refresh-ccw'
 export const IconRefresh = () => (
   <SvgIcon>

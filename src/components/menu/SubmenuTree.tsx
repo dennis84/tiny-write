@@ -399,7 +399,7 @@ export const SubmenuTree = (props: Props) => {
             if (ds?.targetId) {
               const targetNode = treeService.getItem(ds.targetId)
               if (targetNode) {
-                if (ds.pos === 'add' && isFile(targetNode.value)) {
+                if (ds.pos === 'add') {
                   const affected = treeService.move(p.node.id, targetNode.id)
                   await updateItems(affected)
                 } else if (ds.pos === 'before') {
@@ -519,9 +519,7 @@ export const SubmenuTree = (props: Props) => {
           </Show>
           <TreeLink
             node={item()}
-            selected={
-              p.selected || (isNode(item()) && dropState()?.pos === 'add' && isFile(item().value))
-            }
+            selected={p.selected || (isNode(item()) && dropState()?.pos === 'add')}
             level={p.level}
           />
           <Show when={item().childrenIds.length > 0 && !treeService.isCollapsed(item().id)}>
