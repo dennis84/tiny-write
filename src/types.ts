@@ -198,10 +198,6 @@ export enum Page {
   Dir = 'dir',
 }
 
-export interface Tree {
-  collapsed: string[]
-}
-
 export enum AttachmentType {
   Text = 'text',
   File = 'file',
@@ -249,7 +245,6 @@ export interface Sidebar {
 }
 
 export interface State {
-  tree?: Tree
   config: Config
   fullscreen: boolean
   sidebar?: Sidebar

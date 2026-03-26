@@ -1,8 +1,7 @@
-import {createStore} from 'solid-js/store'
 import {beforeEach, expect, test, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
+import {DB} from '@/db'
 import {TreeService} from '@/services/TreeService'
-import {createState} from '@/state'
 import {type Canvas, ElementType, type File} from '@/types'
 import {expectTree} from '../testutil/tree'
 
@@ -10,7 +9,11 @@ beforeEach(() => {
   vi.resetAllMocks()
 })
 
-vi.mock('@/db', () => ({DB: mock()}))
+vi.mock('@/db', () => ({
+  DB: mock({
+    setTree: vi.fn(),
+  }),
+}))
 
 const createFile = (props: Partial<File> = {}): File => ({
   id: 'file_1',
@@ -27,10 +30,7 @@ const createCanvas = (props: Partial<Canvas> = {}): Canvas => ({
 })
 
 test('init', () => {
-  const initial = createState()
-  const [store, setState] = createStore(initial)
-
-  const service = new TreeService(store, setState)
+  const service = new TreeService()
 
   service.reset([
     createFile({id: 'file_1'}),
@@ -53,9 +53,7 @@ test('init', () => {
 })
 
 test('update', () => {
-  const initial = createState()
-  const [store, setState] = createStore(initial)
-  const service = new TreeService(store, setState)
+  const service = new TreeService()
 
   service.reset([
     createFile({id: 'file_1'}),
@@ -78,9 +76,7 @@ test('update', () => {
 })
 
 test('collapse', async () => {
-  const initial = createState()
-  const [store, setState] = createStore(initial)
-  const service = new TreeService(store, setState)
+  const service = new TreeService()
 
   service.reset([
     createFile({id: 'file_1'}), // 1
@@ -97,11 +93,11 @@ test('collapse', async () => {
 
   await service.collapse('file_1')
 
-  expect(store.tree?.collapsed).toEqual(['file_1'])
+  expect(DB.setTree).toHaveBeenCalledWith({collapsed: ['file_1']})
   expect(service.isCollapsed('file_1')).toBe(true)
 
   await service.collapse('file_1')
 
-  expect(store.tree?.collapsed).toEqual([])
+  expect(DB.setTree).toHaveBeenCalledWith({collapsed: []})
   expect(service.isCollapsed('file_1')).toBe(false)
 })

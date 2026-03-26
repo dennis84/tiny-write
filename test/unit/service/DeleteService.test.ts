@@ -1,11 +1,10 @@
-import {createStore} from 'solid-js/store'
 import {beforeEach, expect, test, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
 import type {CanvasService} from '@/services/CanvasService'
 import {DeleteService} from '@/services/DeleteService'
 import type {FileService} from '@/services/FileService'
 import {TreeService} from '@/services/TreeService'
-import {createState, isFile} from '@/state'
+import {isFile} from '@/state'
 import {
   type CanvasEditorElement,
   type CanvasLinkElement,
@@ -48,11 +47,6 @@ const createLinkElement = (props: Partial<CanvasLinkElement> = {}) => ({
   ...props,
 })
 
-const createInitialState = () =>
-  createState({
-    args: {file: './file.txt', cwd: '/home'},
-  })
-
 beforeEach(() => {
   vi.resetAllMocks()
 })
@@ -90,11 +84,9 @@ test.each([
     navigateTo: {id: '1'},
   },
 ])('delete - soft %#', async (data) => {
-  const initial = createInitialState()
-  const [store, setState] = createStore(initial)
   const fileService = mock<FileService>({currentFile: undefined, files: []})
   const canvasService = mock<CanvasService>({canvases: []})
-  const treeService = new TreeService(store, setState)
+  const treeService = new TreeService()
 
   treeService.reset([
     createFile({id: '1'}),
@@ -130,11 +122,9 @@ test.each([
 })
 
 test('delete - update tree', async () => {
-  const initial = createInitialState()
-  const [store, setState] = createStore(initial)
   const fileService = mock<FileService>({currentFile: undefined, files: []})
   const canvasService = mock<CanvasService>({canvases: []})
-  const treeService = new TreeService(store, setState)
+  const treeService = new TreeService()
 
   const service = new DeleteService(fileService, canvasService, treeService)
 
@@ -192,11 +182,9 @@ test('delete - update tree', async () => {
 })
 
 test('delete - local file', async () => {
-  const initial = createState()
-  const [store, setState] = createStore(initial)
   const fileService = mock<FileService>({files: []})
   const canvasService = mock<CanvasService>({canvases: []})
-  const treeService = new TreeService(store, setState)
+  const treeService = new TreeService()
 
   const service = new DeleteService(fileService, canvasService, treeService)
 
@@ -240,11 +228,9 @@ test.each([
     expectedFiles: 3,
   },
 ])('delete - forever %#', async (data) => {
-  const initial = createInitialState()
-  const [store, setState] = createStore(initial)
   const fileService = mock<FileService>({currentFile: undefined, files: []})
   const canvasService = mock<CanvasService>({canvases: []})
-  const treeService = new TreeService(store, setState)
+  const treeService = new TreeService()
 
   const service = new DeleteService(fileService, canvasService, treeService)
 
@@ -284,8 +270,6 @@ test('emptyBin', async () => {
   const fileService = mock<FileService>({currentFile: undefined, files: []})
   const canvasService = mock<CanvasService>({canvases: []})
 
-  const initial = createState()
-
   const files = [
     createFile({id: '1', deleted: true}),
     createFile({id: '2', parentId: '1'}),
@@ -297,9 +281,7 @@ test('emptyBin', async () => {
   vi.spyOn(fileService, 'currentFile', 'get').mockReturnValue(files[2])
   fileService.findFileById.mockReturnValue(files[1])
 
-  const [store, setState] = createStore(initial)
-
-  const treeService = new TreeService(store, setState)
+  const treeService = new TreeService()
   treeService.reset(files)
 
   const service = new DeleteService(fileService, canvasService, treeService)

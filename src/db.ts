@@ -51,7 +51,7 @@ export interface PersistedCanvas {
   deleted?: boolean
 }
 
-interface Tree {
+interface PersistedTree {
   collapsed: string[]
 }
 
@@ -78,7 +78,7 @@ interface MyDB extends DBSchema {
   }
   tree: {
     key: string
-    value: Tree
+    value: PersistedTree
   }
   ai: {
     key: string
@@ -167,7 +167,7 @@ export class DB {
     return (await dbPromise).get('meta', 'sidebar') as Promise<Sidebar | undefined>
   }
 
-  static async setTree(tree: Tree) {
+  static async setTree(tree: PersistedTree) {
     return (await dbPromise).put('tree', DB.unwrap(tree), 'main')
   }
 

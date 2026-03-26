@@ -16,7 +16,6 @@ export class AppService {
     const fetchedWindow = await DB.getWindow()
     const fetchedConfig = (await DB.getConfig()) ?? createConfig()
     const sidebar = await DB.getSidebar()
-    const tree = await DB.getTree()
     const ai = await DB.getAi()
     const lastLocation = await DB.getLastLocation()
 
@@ -30,7 +29,6 @@ export class AppService {
       config: fetchedConfig,
       window: fetchedWindow,
       sidebar,
-      tree,
       ai,
       lastLocation,
     }

@@ -1,18 +1,16 @@
-import type {SetStoreFunction, Store} from 'solid-js/store'
+import {createResource} from 'solid-js'
 import {DB} from '@/db'
 import {createTreeStore, type Tree, type TreeItem, type TreeState} from '@/tree'
-import type {Canvas, File, State} from '@/types'
+import type {Canvas, File} from '@/types'
 
 export type MenuTree = TreeState<File | Canvas>
 export type MenuTreeItem = TreeItem<File | Canvas>
 
 export class TreeService {
   public tree: Tree<File | Canvas>
+  private treeResource = createResource(() => DB.getTree())
 
-  constructor(
-    private store: Store<State>,
-    private setState: SetStoreFunction<State>,
-  ) {
+  constructor() {
     this.tree = createTreeStore()
   }
 
@@ -57,7 +55,8 @@ export class TreeService {
     if (!item) return
     if (!item.childrenIds.length) return
 
-    this.setState('tree', (prev) => {
+    const [tree, {mutate}] = this.treeResource
+    mutate((prev) => {
       const collapsed = prev?.collapsed ?? []
       if (collapsed.includes(item.id)) {
         return {...prev, collapsed: collapsed.filter((id) => id !== item.id)}
@@ -66,12 +65,10 @@ export class TreeService {
       }
     })
 
-    const tree = this.store.tree
-    if (!tree) return
-    await DB.setTree(tree)
+    if (tree.latest) await DB.setTree(tree.latest)
   }
 
   isCollapsed(id: string): boolean {
-    return this.store.tree?.collapsed.includes(id) ?? false
+    return this.treeResource[0]()?.collapsed.includes(id) ?? false
   }
 }

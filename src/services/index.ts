@@ -40,7 +40,7 @@ export const createCtrl = (initial: State) => {
   const aiService = new AiService(store, setState)
   const collabService = new CollabService(dialogService, locationService, store, setState)
   const configService = new ConfigService(collabService, store, setState)
-  const treeService = new TreeService(store, setState)
+  const treeService = new TreeService()
   const fileService = new FileService(collabService, locationService, treeService)
   const copilotService = new CopilotService(store, setState, fileService)
   const selectService = new SelectService()
