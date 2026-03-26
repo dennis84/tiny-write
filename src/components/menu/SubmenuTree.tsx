@@ -83,28 +83,19 @@ const TreeLinkItem = styled.div<ItemProps>`
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   align-items: start;
-  ${(p) =>
-    p.deleted
-      ? `
+  ${(p) => p.deleted ? `
     opacity: 0.3;
     pointer-events: none;
-  `
-      : ""}
-  ${(p) =>
-    p.active
-      ? `
+  ` : ''}
+  ${(p) => p.active ? `
     font-weight: bold;
     font-family: var(--menu-font-family-bold);
     color: var(--primary-background);
-  `
-      : ""}
-  ${(p) =>
-    p.selected
-      ? `
+  ` : ''}
+  ${(p) => p.selected ? `
     background: var(--primary-background-10);
     border-radius: var(--border-radius-small);
-  `
-      : ""}
+  ` : ''}
   &:hover {
     color: var(--primary-background);
     background: var(--background-90);
@@ -135,15 +126,12 @@ const TreeLinkCorner = styled.i<CornerProps>`
   height: ${ITEM_HEIGHT};
   ${(p) => (p.highlight ? `color: var(--primary-background);` : "")}
   ${(p) => (p.level ? `margin-left: ${String(20 * p.level)}px;` : "")}
-  ${(p) =>
-    p.expandable
-      ? `
+  ${(p) => p.expandable ? `
     &:hover {
       background: var(--background-90);
       border-radius: var(--border-radius-small);
     }
-  `
-      : ""}
+  ` : ''}
 `
 
 interface TitleProps {
@@ -173,13 +161,10 @@ const LinkMenu = styled.span<{selected?: boolean}>`
   opacity: 0;
   border-radius: var(--border-radius);
   color: var(--foreground);
-  ${(p) =>
-    p.selected
-      ? `
+  ${(p) => p.selected ? `
     opacity: 1;
     background: var(--background-90);
-  `
-      : ""}
+  ` : ''}
   &:hover {
     background: var(--background-90);
     .icon {

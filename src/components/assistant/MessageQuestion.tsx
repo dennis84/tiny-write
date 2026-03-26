@@ -31,7 +31,6 @@ const QuestionContainer = styled.div`
 const QuestionBubble = styled(ChatBubble)`
   padding: 10px 20px;
   background: var(--background-90);
-  white-space: pre-wrap;
   width: fit-content;
   margin-left: 0;
   .cm-editor {

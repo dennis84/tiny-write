@@ -32,7 +32,7 @@ export const Bin = () => {
       <DrawerScroll>
         <DrawerContent>
           <Label>Bin</Label>
-          <Note>💁 Items in bin will be automatically deleted after 14 days.</Note>
+          <Note>Items in bin will be automatically deleted after 14 days.</Note>
           <SubmenuTree showDeleted={true} />
           <ButtonGroup>
             <Button onClick={onEmptyBin} disabled={!hasDeletedFiles()}>

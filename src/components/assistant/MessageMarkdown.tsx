@@ -82,7 +82,7 @@ export const MessageMarkdown = (props: Props) => {
         const info = parseInfo()
         const theme = getTheme(configService.codeTheme.value)
         const lang = getLanguageConfig(info.lang)
-        const doc = p.item.openNode.content.replace(/\n$/, '')
+        const doc = p.item.openNode.content.trim()
 
         view = new EditorView({
           parent: ref,
@@ -102,7 +102,7 @@ export const MessageMarkdown = (props: Props) => {
         // Remove if content is shorter than doc. Happens when AI closes a code fence:
         // chunk: ``
         // chunk: `\n\n
-        const content = p.item.openNode.content.replace(/\n$/, '')
+        const content = p.item.openNode.content.trim()
         const docLen = view.state.doc.length
         const from = Math.min(content.length, docLen)
 
