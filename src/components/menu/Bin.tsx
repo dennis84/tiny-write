@@ -9,7 +9,7 @@ import {Label, Note} from './Style'
 import {SubmenuTree} from './SubmenuTree'
 
 export const Bin = () => {
-  const {fileService, canvasService, deleteService, treeService, locationService} = useState()
+  const {fileService, canvasService, deleteService, locationService} = useState()
   const showConfirmDialog = useConfirmDialog()
 
   const hasDeletedFiles = () =>
@@ -22,7 +22,6 @@ export const Bin = () => {
       onConfirm: async () => {
         const result = await deleteService.emptyBin()
         if (result.navigateTo) locationService.openItem(result.navigateTo)
-        treeService.updateAll()
       },
     })
   }

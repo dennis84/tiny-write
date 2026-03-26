@@ -14,8 +14,7 @@ import {IconPrettier} from '../icons/Logo'
 import {IconClose, IconDelete, IconEdit, IconHistory, IconLanguage} from '../icons/Ui'
 
 export const CurrentFileButton = () => {
-  const {codeService, canvasService, deleteService, fileService, treeService, locationService} =
-    useState()
+  const {codeService, canvasService, deleteService, fileService, locationService} = useState()
   const showInputLine = useInputLine()
   const showConfirmDialog = useConfirmDialog()
 
@@ -118,7 +117,6 @@ export const CurrentFileButton = () => {
     const currentFile = fileService.currentFile
     if (!currentFile) return
     fileService.restore(currentFile.id)
-    treeService.updateAll()
     closeTooltip()
   }
 

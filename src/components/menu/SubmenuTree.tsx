@@ -1,15 +1,5 @@
 import {DragGesture} from '@use-gesture/vanilla'
-import {
-  createEffect,
-  createSignal,
-  For,
-  Match,
-  onCleanup,
-  onMount,
-  Show,
-  Suspense,
-  Switch,
-} from 'solid-js'
+import {createSignal, For, Match, onCleanup, onMount, Show, Suspense, Switch} from 'solid-js'
 import {unwrap} from 'solid-js/store'
 import {Portal} from 'solid-js/web'
 import {styled} from 'solid-styled-components'
@@ -18,6 +8,7 @@ import {useDialog} from '@/hooks/use-dialog'
 import {useInputLine} from '@/hooks/use-input-line'
 import {useTitle} from '@/hooks/use-title'
 import {CanvasService} from '@/services/CanvasService'
+import {FileService} from '@/services/FileService'
 import type {MenuTreeItem} from '@/services/TreeService'
 import {isCanvas, isCodeFile, isFile, isLocalFile, useState} from '@/state'
 import {Page} from '@/types'
@@ -92,19 +83,28 @@ const TreeLinkItem = styled.div<ItemProps>`
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   align-items: start;
-  ${(p) => p.deleted ? `
+  ${(p) =>
+    p.deleted
+      ? `
     opacity: 0.3;
     pointer-events: none;
-  ` : ''}
-  ${(p) => p.active ? `
+  `
+      : ""}
+  ${(p) =>
+    p.active
+      ? `
     font-weight: bold;
     font-family: var(--menu-font-family-bold);
     color: var(--primary-background);
-  ` : ''}
-  ${(p) => p.selected ? `
+  `
+      : ""}
+  ${(p) =>
+    p.selected
+      ? `
     background: var(--primary-background-10);
     border-radius: var(--border-radius-small);
-  ` : ''}
+  `
+      : ""}
   &:hover {
     color: var(--primary-background);
     background: var(--background-90);
@@ -133,14 +133,17 @@ const TreeLinkCorner = styled.i<CornerProps>`
   justify-content: center;
   color: var(--background-50);
   height: ${ITEM_HEIGHT};
-  ${(p) => (p.highlight ? `color: var(--primary-background);` : '')}
-  ${(p) => (p.level ? `margin-left: ${String(20 * p.level)}px;` : '')}
-  ${(p) => p.expandable ? `
+  ${(p) => (p.highlight ? `color: var(--primary-background);` : "")}
+  ${(p) => (p.level ? `margin-left: ${String(20 * p.level)}px;` : "")}
+  ${(p) =>
+    p.expandable
+      ? `
     &:hover {
       background: var(--background-90);
       border-radius: var(--border-radius-small);
     }
-  ` : ''}
+  `
+      : ""}
 `
 
 interface TitleProps {
@@ -170,10 +173,13 @@ const LinkMenu = styled.span<{selected?: boolean}>`
   opacity: 0;
   border-radius: var(--border-radius);
   color: var(--foreground);
-  ${(p) => p.selected ? `
+  ${(p) =>
+    p.selected
+      ? `
     opacity: 1;
     background: var(--background-90);
-  ` : ''}
+  `
+      : ""}
   &:hover {
     background: var(--background-90);
     .icon {
@@ -200,7 +206,6 @@ export const SubmenuTree = (props: Props) => {
     locationService,
     canvasService,
     canvasCollabService,
-    codeService,
     deleteService,
     fileService,
     treeService,
@@ -217,6 +222,19 @@ export const SubmenuTree = (props: Props) => {
     e.stopPropagation()
     showTooltip({anchor})
     setSelected(node)
+  }
+
+  const updateItems = async (items: MenuTreeItem[]) => {
+    for (const item of items) {
+      const {parentId, leftId} = item
+      if (isFile(item.value)) {
+        fileService.updateFile(item.id, {leftId, parentId})
+        await FileService.saveFile({...item.value, leftId, parentId})
+      } else {
+        canvasService.updateCanvas(item.id, {leftId, parentId})
+        await CanvasService.saveCanvas({...item.value, leftId, parentId})
+      }
+    }
   }
 
   const onRename = async (e: MouseEvent) => {
@@ -249,21 +267,18 @@ export const SubmenuTree = (props: Props) => {
 
   const onNewFile = async () => {
     const file = await fileService.newFile()
-    await treeService.add(file)
     locationService.openItem(file)
     closeTooltip()
   }
 
   const onNewCanvas = async () => {
     const canvas = await canvasService.newCanvas()
-    await treeService.add(canvas)
     locationService.openItem(canvas)
     closeTooltip()
   }
 
   const onNewCode = async () => {
-    const file = await codeService.newFile()
-    await treeService.add(file)
+    const file = await fileService.newFile({code: true})
     locationService.openItem(file)
     closeTooltip()
   }
@@ -272,7 +287,6 @@ export const SubmenuTree = (props: Props) => {
     const target = unwrap(selected())
     if (!target) return
     const file = await fileService.newFile({parentId: target.id})
-    await treeService.add(file)
     if (treeService.isCollapsed(target.id)) {
       await treeService.collapse(target.id)
     }
@@ -285,7 +299,6 @@ export const SubmenuTree = (props: Props) => {
     const target = unwrap(selected())
     if (!target) return
     const canvas = await canvasService.newCanvas({parentId: target.id})
-    await treeService.add(canvas)
     locationService.openItem(canvas)
     closeTooltip()
   }
@@ -293,8 +306,7 @@ export const SubmenuTree = (props: Props) => {
   const onAddCode = async () => {
     const target = unwrap(selected())
     if (!target) return
-    const file = await codeService.newFile({parentId: target.id})
-    await treeService.add(file)
+    const file = await fileService.newFile({code: true, parentId: target.id})
     locationService.openItem(file)
     closeTooltip()
   }
@@ -321,8 +333,6 @@ export const SubmenuTree = (props: Props) => {
     } else {
       await canvasService.restore(node.id)
     }
-
-    treeService.updateValue(node.value)
 
     closeTooltip()
   }
@@ -405,11 +415,14 @@ export const SubmenuTree = (props: Props) => {
               const targetNode = treeService.getItem(ds.targetId)
               if (targetNode) {
                 if (ds.pos === 'add' && isFile(targetNode.value)) {
-                  await treeService.move(p.node.id, targetNode.id)
+                  const affected = treeService.move(p.node.id, targetNode.id)
+                  await updateItems(affected)
                 } else if (ds.pos === 'before') {
-                  await treeService.before(p.node.id, targetNode.id)
+                  const affected = treeService.before(p.node.id, targetNode.id)
+                  await updateItems(affected)
                 } else if (ds.pos === 'after') {
-                  await treeService.after(p.node.id, targetNode.id)
+                  const affected = treeService.after(p.node.id, targetNode.id)
+                  await updateItems(affected)
                 }
               }
             } else if (ds?.pos === 'delete') {
@@ -546,12 +559,6 @@ export const SubmenuTree = (props: Props) => {
       {(id) => <TreeItem id={id} level={p.level} selected={p.selected} />}
     </For>
   )
-
-  createEffect(() => {
-    if (canvasService.resourceState === 'ready') {
-      treeService.updateAll()
-    }
-  })
 
   const Tooltip = () => (
     <DialogList>

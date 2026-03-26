@@ -45,20 +45,12 @@ export class Tree<T> {
     this.setState = setter
   }
 
-  updateAll(input: TreeItemInput<T>[]) {
+  reset(input: TreeItemInput<T>[]) {
     const items = this.generateMap(input)
     this.setState('items', reconcile(items))
   }
 
-  updateValue(input: TreeItemInput<T>) {
-    if (!this.state.items[input.id]) {
-      this.add(input)
-    } else {
-      this.setState('items', input.id, 'value', input)
-    }
-  }
-
-  add(item: TreeItemInput<T>): string[] {
+  add(item: TreeItemInput<T>): TreeItem<T>[] {
     this.setState('items', item.id, {
       id: item.id,
       parentId: item.parentId,
@@ -70,7 +62,7 @@ export class Tree<T> {
     return this.move(item.id, item.parentId)
   }
 
-  remove(id: string): string[] {
+  remove(id: string): TreeItem<T>[] {
     const item = this.getItem(id)
     if (!item) return []
 
@@ -80,11 +72,11 @@ export class Tree<T> {
 
     const index = parent.childrenIds.indexOf(id)
     const rightId = parent.childrenIds[index + 1]
-    const changes = new Set<string>()
+    const changes = new Map<string, TreeItem<T>>()
 
     if (rightId) {
       this.before(rightId, id).forEach((i) => {
-        changes.add(i)
+        changes.set(i.id, i)
       })
     }
 
@@ -93,8 +85,9 @@ export class Tree<T> {
     }
 
     item.childrenIds.forEach((i) => {
+      const item = newState.items[i]
       delete newState.items[i]
-      changes.add(i)
+      changes.set(item.id, item)
     })
 
     const newIndex = newState.items[parentId].childrenIds.indexOf(item.id)
@@ -108,12 +101,12 @@ export class Tree<T> {
     }
 
     this.setState(newState)
-    changes.add(item.id)
+    changes.set(item.id, item)
 
-    return [...changes]
+    return [...changes.values()]
   }
 
-  move(id: string, toId: string = ROOT_ID): string[] {
+  move(id: string, toId: string = ROOT_ID): TreeItem<T>[] {
     //   ! Remove B from root childrenIds
     // A
     // B < Add B to C
@@ -124,7 +117,7 @@ export class Tree<T> {
     //     < Add here
     //     ! Update B parentId to C
     //     ! Update B leftId to E
-    const changes: string[] = []
+    const changes: TreeItem<T>[] = []
     const state = this.state
 
     const newState = {
@@ -147,11 +140,12 @@ export class Tree<T> {
     // Set new parentId and leftId for the item being moved
     const newParentId = to.id ?? ROOT_ID
 
-    newState.items[id] = {
+    const target = {
       ...newState.items[id],
       parentId: newParentId === ROOT_ID ? undefined : newParentId,
       leftId: to.childrenIds[to.childrenIds.length - 1],
     }
+    newState.items[id] = target
 
     // Insert the item at the end in the new parent's childrenIds
     const newParentChildrenIds = [...newState.items[newParentId].childrenIds]
@@ -161,12 +155,12 @@ export class Tree<T> {
       childrenIds: newParentChildrenIds,
     }
 
-    changes.push(id)
+    changes.push(target)
     this.setState(newState)
     return changes
   }
 
-  before(id: string, toId: string): string[] {
+  before(id: string, toId: string): TreeItem<T>[] {
     //   ! Remove B from root childrenIds
     // A
     // B < Move B before E
@@ -178,7 +172,7 @@ export class Tree<T> {
     //     ! Update B parentId to C
     //   E ! Update E leftId to B
 
-    const changes: string[] = []
+    const changes: TreeItem<T>[] = []
     const state = this.state
 
     const newState = {
@@ -199,13 +193,13 @@ export class Tree<T> {
     }
 
     // Update leftId of the item that was to the right of the removed item
-    const rightItem = state.items[parentId].childrenIds[oldIndex + 1]
-    if (rightItem) {
-      newState.items[rightItem] = {
-        ...newState.items[rightItem],
+    const rightItemId = state.items[parentId].childrenIds[oldIndex + 1]
+    if (rightItemId) {
+      const rightItem = {
+        ...newState.items[rightItemId],
         leftId: item.leftId,
       }
-
+      newState.items[rightItemId] = rightItem
       changes.push(rightItem)
     }
 
@@ -214,11 +208,12 @@ export class Tree<T> {
     const toIndex = newState.items[newParentId].childrenIds.indexOf(toId)
     const newLeftId = newState.items[newParentId].childrenIds[toIndex - 1]
 
-    newState.items[id] = {
+    const target = {
       ...newState.items[id],
       parentId: newParentId === ROOT_ID ? undefined : newParentId,
       leftId: newLeftId,
     }
+    newState.items[id] = target
 
     // Insert the item before the target item in the new parent's childrenIds
     const newParentChildrenIds = [...newState.items[newParentId].childrenIds]
@@ -229,19 +224,17 @@ export class Tree<T> {
     }
 
     // Update leftId of the target item
-    newState.items[toId] = {
-      ...newState.items[toId],
-      leftId: id,
-    }
+    const toItem = {...newState.items[toId], leftId: id}
+    newState.items[toId] = toItem
 
-    changes.push(toId)
-    changes.push(id)
+    changes.push(toItem)
+    changes.push(target)
 
     this.setState(newState)
     return changes
   }
 
-  after(id: string, toId: string): string[] {
+  after(id: string, toId: string): TreeItem<T>[] {
     //   ! Remove B from root childrenIds
     // A
     // B < Move B after D
@@ -253,7 +246,7 @@ export class Tree<T> {
     //     ! Update B parentId to C
     //   E ! Update E leftId to B
 
-    const changes: string[] = []
+    const changes: TreeItem<T>[] = []
     const state = this.state
 
     const newState = {
@@ -274,13 +267,13 @@ export class Tree<T> {
     }
 
     // Update leftId of the item that was to the right of the removed item
-    const rightItem = state.items[parentId].childrenIds[oldIndex + 1]
-    if (rightItem) {
-      newState.items[rightItem] = {
-        ...newState.items[rightItem],
+    const rightItemId = state.items[parentId].childrenIds[oldIndex + 1]
+    if (rightItemId) {
+      const rightItem = {
+        ...newState.items[rightItemId],
         leftId: item.leftId,
       }
-
+      newState.items[rightItemId] = rightItem
       changes.push(rightItem)
     }
 
@@ -288,11 +281,12 @@ export class Tree<T> {
     const newParentId = to.parentId ?? ROOT_ID
     const toIndex = newState.items[newParentId].childrenIds.indexOf(toId)
 
-    newState.items[id] = {
+    const target = {
       ...newState.items[id],
       parentId: newParentId === ROOT_ID ? undefined : newParentId,
       leftId: toId,
     }
+    newState.items[id] = target
 
     // Insert the item after the target item in the new parent's childrenIds
     const newParentChildrenIds = [...newState.items[newParentId].childrenIds]
@@ -303,17 +297,17 @@ export class Tree<T> {
     }
 
     // Update leftId of the item that was originally to the right of the target item
-    const newRightItem = newState.items[newParentId].childrenIds[toIndex + 2]
-    if (newRightItem) {
-      newState.items[newRightItem] = {
-        ...newState.items[newRightItem],
+    const newRightItemId = newState.items[newParentId].childrenIds[toIndex + 2]
+    if (newRightItemId) {
+      const newRightItem = {
+        ...newState.items[newRightItemId],
         leftId: id,
       }
-
+      newState.items[newRightItemId] = newRightItem
       changes.push(newRightItem)
     }
 
-    changes.push(id)
+    changes.push(target)
 
     this.setState(newState)
     return changes

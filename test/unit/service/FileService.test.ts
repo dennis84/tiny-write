@@ -6,6 +6,7 @@ import {DB} from '@/db'
 import type {CollabService} from '@/services/CollabService'
 import {FileService} from '@/services/FileService'
 import type {LocationService} from '@/services/LocationService'
+import type {TreeService} from '@/services/TreeService'
 import {createSubdoc, createYUpdate} from '../testutil/prosemirror-util'
 import {createIpcMock} from '../testutil/util'
 
@@ -23,6 +24,7 @@ beforeEach(() => {
 
 const collabService = mock<CollabService>()
 const locationService = mock<LocationService>()
+const treeService = mock<TreeService>()
 const lastModified = new Date()
 
 test('only save file type', async () => {
@@ -32,7 +34,7 @@ test('only save file type', async () => {
     {id: '1', ydoc: Y.encodeStateAsUpdate(ydoc), versions: [], lastModified},
   ])
 
-  const service = new FileService(collabService, locationService)
+  const service = new FileService(collabService, locationService, treeService)
 
   await waitFor(() => {
     expect(service.resourceState).toEqual('ready')
@@ -62,7 +64,7 @@ test('restore', async () => {
     {id: '2', ydoc: createYUpdate('2', ['Test2']), versions: [], lastModified, deleted: true},
   ])
 
-  const service = new FileService(collabService, locationService)
+  const service = new FileService(collabService, locationService, treeService)
 
   await waitFor(() => {
     expect(service.resourceState).toEqual('ready')
@@ -82,7 +84,7 @@ test('getTitle', async () => {
     {id: '3', ydoc: createYUpdate('3', ['a'.repeat(30), 'bar']), versions: [], lastModified},
   ])
 
-  const service = new FileService(collabService, locationService)
+  const service = new FileService(collabService, locationService, treeService)
 
   await waitFor(() => {
     expect(service.resourceState).toEqual('ready')
@@ -112,7 +114,7 @@ test('findFile - found', async () => {
     {id: '1', ydoc: createYUpdate('1', ['Test1']), versions: [], lastModified},
   ])
 
-  const service = new FileService(collabService, locationService)
+  const service = new FileService(collabService, locationService, treeService)
 
   await waitFor(() => {
     expect(service.resourceState).toEqual('ready')
@@ -139,7 +141,7 @@ test('findFile - not found', async () => {
 
   vi.spyOn(DB, 'getFiles').mockResolvedValue([])
 
-  const service = new FileService(collabService, locationService)
+  const service = new FileService(collabService, locationService, treeService)
 
   await waitFor(() => {
     expect(service.resourceState).toEqual('ready')
@@ -153,7 +155,7 @@ test('findFile - not found', async () => {
   })
 
   expect(service.findFileById('1')).toBe(undefined)
-  await expect(service.findFileByPath('/path/to/file2')).rejects.toThrowError()
+  await expect(service.findFileByPath('/path/to/file2')).rejects.toThrow()
 })
 
 test.each([
@@ -170,7 +172,7 @@ test.each([
 })
 
 test('newFile', async () => {
-  const service = new FileService(collabService, locationService)
+  const service = new FileService(collabService, locationService, treeService)
 
   await waitFor(() => {
     expect(service.resourceState).toEqual('ready')
@@ -187,7 +189,7 @@ test('renameFile - title', async () => {
     {id: '1', ydoc: createYUpdate('1', ['a']), versions: [], lastModified},
   ])
 
-  const service = new FileService(collabService, locationService)
+  const service = new FileService(collabService, locationService, treeService)
 
   await waitFor(() => {
     expect(service.resourceState).toEqual('ready')
@@ -205,7 +207,7 @@ test('renameFile - update path', async () => {
     rename: () => undefined,
   })
 
-  const service = new FileService(collabService, locationService)
+  const service = new FileService(collabService, locationService, treeService)
 
   await waitFor(() => {
     expect(service.resourceState).toEqual('ready')
@@ -233,7 +235,7 @@ test('renameFile - update newFile', async () => {
     dirname: () => '/path',
   })
 
-  const service = new FileService(collabService, locationService)
+  const service = new FileService(collabService, locationService, treeService)
 
   await waitFor(() => {
     expect(service.resourceState).toEqual('ready')
@@ -268,7 +270,7 @@ test.each([
 
   await FileService.saveFile(file)
 
-  expect(DB.updateFile).toBeCalledTimes(calls)
+  expect(DB.updateFile).toHaveBeenCalledTimes(calls)
 })
 
 test.each([
@@ -286,6 +288,6 @@ test.each([
 
   await FileService.saveFile(file)
 
-  expect(DB.deleteFile).toBeCalled()
-  expect(DB.updateFile).not.toBeCalled()
+  expect(DB.deleteFile).toHaveBeenCalled()
+  expect(DB.updateFile).not.toHaveBeenCalled()
 })

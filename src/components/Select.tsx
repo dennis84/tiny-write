@@ -57,10 +57,11 @@ export const Select = (props: Props) => {
         event.preventDefault()
         event.stopPropagation()
 
+        const boardLeft = target.getBoundingClientRect().left
         const initial = new Box(
-          Math.min(x, x + mx),
+          Math.min(x - boardLeft, x - boardLeft + mx),
           Math.min(y, y + my),
-          Math.max(x, x + mx),
+          Math.max(x - boardLeft, x - boardLeft + mx),
           Math.max(y, y + my),
         )
 

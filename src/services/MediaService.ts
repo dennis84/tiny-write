@@ -147,7 +147,10 @@ export class MediaService {
         }
 
         let file = await this.fileService.findFileByPath(path)
-        if (!file) file = await this.fileService.newFile({path, code: !isMarkdown})
+        if (!file) {
+          file = await this.fileService.newFile({path, code: !isMarkdown})
+        }
+
         return {file}
       }
     }

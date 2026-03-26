@@ -2,7 +2,7 @@ import {info} from '@/remote/log'
 import {isCanvas, isFile} from '@/state'
 import type {Canvas, File} from '@/types'
 import type {CanvasService} from './CanvasService'
-import {FileService} from './FileService'
+import type {FileService} from './FileService'
 import type {MenuTreeItem, TreeService} from './TreeService'
 
 // File: /editor/:id or /code/:id
@@ -54,8 +54,7 @@ export class DeleteService {
   }
 
   async deleteItem(item: File | Canvas, forever = false): Promise<DeleteResult> {
-    this.treeService.updateAll()
-    const node = this.treeService.tree.getItem(item.id)
+    const node = this.treeService.getItem(item.id)
     if (!node) return {navigateTo: false}
     return this.delete(node, forever)
   }
@@ -66,8 +65,6 @@ export class DeleteService {
     const proms = [this.deleteNode(node, forever)]
     this.treeService.descendants((n) => proms.push(this.deleteNode(n, forever)), node.id)
     await Promise.all(proms)
-
-    await this.treeService.remove(node.id)
 
     return {navigateTo}
   }
@@ -128,6 +125,7 @@ export class DeleteService {
     // delete forever if no subtree and not modified or forever=true
     if ((node.childrenIds.length === 0 && !node.value.lastModified) || forever) {
       await this.foreverDeleteNode(node)
+      this.treeService.remove(node.id)
       return
     }
 
@@ -138,42 +136,31 @@ export class DeleteService {
         return await this.foreverDeleteNode(node)
       }
 
-      this.fileService.updateFile(node.id, {
-        deleted: true,
-        lastModified: new Date(),
-      })
-
-      const updatedFile = this.fileService.findFileById(node.id)
-      if (!updatedFile) return
-
-      await FileService.saveFile(updatedFile)
+      await this.fileService.deleteFile(node.id)
       info('File deleted')
-    }
-
-    // soft delete canvas
-    if (isCanvas(node.value)) {
+    } else if (isCanvas(node.value)) {
+      // soft delete canvas
       const canvas = this.canvasService.findCanvas(node.id)
       if (!canvas) return
 
-      this.canvasService.updateCanvas(canvas.id, {
-        deleted: true,
-        lastModified: new Date(),
-      })
-
-      const updated = this.canvasService.findCanvas(canvas.id)
-      await this.canvasService.saveCanvas(updated)
+      await this.canvasService.delete(canvas.id)
       info('Set canvas as deleted')
     }
+
+    this.treeService.remove(node.id)
   }
 
   private async foreverDeleteNode(node: MenuTreeItem) {
     const id = node.id
 
     if (isFile(node.value)) {
-      await this.fileService.deleteFile(id)
+      await this.fileService.deleteFile(id, true)
       // Remove file elements on canvases
       await this.canvasService.removeElementFromAll(id)
       info('File forever deleted')
+    } else if (isCanvas(node.value)) {
+      await this.canvasService.delete(id, true)
+      info('Canvas forever deleted')
     }
   }
 }

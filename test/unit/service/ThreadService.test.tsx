@@ -23,6 +23,10 @@ beforeEach(() => {
   vi.resetAllMocks()
 })
 
+vi.mock('@/prompts/common/rules.md?raw', () => {
+  return {default: ''}
+})
+
 vi.mock('@/db', () => ({
   DB: mock({
     getThreads: vi.fn(),
@@ -113,7 +117,7 @@ test('addMessage - path', async () => {
   )
 
   const messages1 = service.getMessages()
-  expect(messages1.messages).toHaveLength(1)
+  expect(messages1.messages).toHaveLength(2)
   expect(messages1.parentId).toBe('1')
 
   await service.addMessage({id: '3', role: 'user', content: '3'})
@@ -367,7 +371,7 @@ test('regenerate - user message', async () => {
   expect(service.currentThread?.path?.get(undefined)).toBe('3')
 
   const {messages} = service.getMessages()
-  const message = messages[0].content[0] as ChatMessageTextContent
+  const message = messages[1].content[0] as ChatMessageTextContent
   expect(message.text).toBe('111')
 })
 
@@ -415,7 +419,7 @@ test('regenerate - assistant message', async () => {
   expect(service.currentThread?.path?.get('1')).toBe('3')
 
   const result = service.getMessages()
-  expect(result.messages).toHaveLength(1)
+  expect(result.messages).toHaveLength(2)
   expect(result.nextId).toBeDefined()
 })
 
@@ -452,8 +456,8 @@ test('generateTitle', async () => {
 
 test.each<[Message[], number]>([
   [[], 0], // empty
-  [[{id: '1', role: 'assistant', content: ''}], 1], // last message assistant
-  [[{id: '1', role: 'user', content: '```'}], 2], // code block prompt added
+  [[{id: '1', role: 'assistant', content: ''}], 2], // last message assistant + common prompt
+  [[{id: '1', role: 'user', content: '```'}], 3], // common + code block prompt added
   [
     [
       {id: '1', role: 'user', content: 'A'},
@@ -462,7 +466,7 @@ test.each<[Message[], number]>([
       {id: '4', parentId: '3', role: 'assistant', content: 'D'},
       {id: '5', parentId: '4', role: 'user', content: 'E'},
     ],
-    5, // full conversation
+    6, // full conversation + common prompt
   ],
   [
     [
@@ -472,7 +476,7 @@ test.each<[Message[], number]>([
       {id: '4', parentId: '3', role: 'assistant', content: 'D', summary: 'ABCD'},
       {id: '5', parentId: '4', role: 'user', content: 'E'},
     ],
-    2, // token limit not reached
+    3, // token limit not reached + common prompt
   ],
   [
     [
@@ -484,7 +488,7 @@ test.each<[Message[], number]>([
       {id: '6', parentId: '5', role: 'assistant', content: 'F'},
       {id: '7', parentId: '6', role: 'user', content: 'G'},
     ],
-    4, // prompt token limit reached, filter to last summary
+    5, // prompt token limit reached, filter to last summary + common prompt
   ],
   [
     [
@@ -496,7 +500,7 @@ test.each<[Message[], number]>([
       {id: '6', parentId: '5', role: 'assistant', content: 'F'},
       {id: '7', parentId: '6', role: 'user', content: 'G'},
     ],
-    4, // output token limit reached, filter to last summary
+    5, // output token limit reached, filter to last summary + common prompt
   ],
 ])('getMessages', async (messages, count) => {
   vi.spyOn(DB, 'getThreads').mockResolvedValue([

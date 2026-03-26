@@ -1,5 +1,5 @@
 import {Route, Router, type RouteSectionProps} from '@solidjs/router'
-import {createEffect, ErrorBoundary, onMount, Show, untrack} from 'solid-js'
+import {createEffect, ErrorBoundary, on, onMount, Show, untrack} from 'solid-js'
 import {DarkMode} from '@/components/DarkMode'
 import {DropFile} from '@/components/DropFile'
 import {Keymap} from '@/components/Keymap'
@@ -87,6 +87,20 @@ export const Main = (props: Props) => {
 
       return ctrl.store.config.theme?.code
     })
+
+    createEffect(
+      on(
+        () => ({
+          filesState: ctrl.fileService.resourceState,
+          canvasesState: ctrl.canvasService.resourceState,
+        }),
+        ({filesState, canvasesState}) => {
+          if (filesState === 'ready' && canvasesState === 'ready') {
+            ctrl.treeService.reset([...ctrl.fileService.files, ...ctrl.canvasService.canvases])
+          }
+        },
+      ),
+    )
 
     return (
       <StateContext.Provider value={ctrl}>

@@ -190,7 +190,7 @@ export const MessageMarkdown = (props: Props) => {
       const tokens = md.parse(content, undefined)
 
       batch(() => {
-        tree.updateAll([])
+        tree.reset([])
 
         let parent = tree.getItem('root')
 

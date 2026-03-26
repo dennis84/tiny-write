@@ -150,7 +150,7 @@ export class ThreadService {
     const [threads] = this.threadsResource
     const thread = threads()?.find((it) => !it.lastModified)
     if (thread) {
-      this.messageTree.updateAll([])
+      this.messageTree.reset([])
       return thread
     }
 
@@ -163,7 +163,7 @@ export class ThreadService {
     const [, {mutate}] = this.threadsResource
     mutate((prev = []) => [...prev, newThread])
 
-    this.messageTree.updateAll([])
+    this.messageTree.reset([])
 
     return newThread
   }
@@ -295,7 +295,7 @@ export class ThreadService {
       throw new Error(`Thread not found (id=${this.currentThreadId})`)
     }
 
-    this.messageTree.updateAll(currentThread?.messages ?? [])
+    this.messageTree.reset(currentThread?.messages ?? [])
   }
 
   async delete(thread: Thread) {
@@ -499,10 +499,12 @@ export class ThreadService {
       })
     }
 
-    messages.unshift({
-      role: 'system',
-      content: [{type: 'text', text: commonRulesPrompt}],
-    })
+    if (messages.length > 0) {
+      messages.unshift({
+        role: 'system',
+        content: [{type: 'text', text: commonRulesPrompt}],
+      })
+    }
 
     return {
       nextId,

@@ -8,7 +8,11 @@ import {Page} from '@/types'
 import {createYUpdate} from '../testutil/codemirror-util'
 import {createIpcMock, renderMain, stubLocation} from '../testutil/util'
 
-vi.mock('@/db', () => ({DB: mock<DB>()}))
+vi.mock('@/db', () => ({
+  DB: mock({
+    getFiles: vi.fn(),
+  }),
+}))
 
 const WsMock = vi.fn()
 vi.stubGlobal('WebSocket', WsMock)
@@ -57,9 +61,6 @@ test('init - file not found', async () => {
 
   await waitFor(() => {
     expect(ctrl.fileService.resourceState).toEqual('ready')
-  })
-
-  await waitFor(() => {
     expect(getByTestId('new_code_page')).toBeDefined()
   })
 
@@ -134,6 +135,7 @@ test('init - join url', async () => {
   const {getByTestId, ctrl} = renderMain(initial)
 
   await waitFor(() => {
+    expect(ctrl.fileService.resourceState).toEqual('ready')
     expect(getByTestId('new_code_page')).toBeDefined()
   })
 
@@ -142,9 +144,6 @@ test('init - join url', async () => {
   await waitFor(() => {
     expect(ctrl.collabService.started()).toBe(true)
     expect(ctrl.collabService.provider).toBeDefined()
-  })
-
-  await waitFor(() => {
     expect(getByTestId('code_scroll')).toBeDefined()
   })
 
@@ -152,9 +151,7 @@ test('init - join url', async () => {
   expect(ctrl.fileService.files.length).toBe(2)
   expect(ctrl.collabService.started()).toBe(true)
 
-  await waitFor(() => {
-    expect(ctrl.fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('Code1')
-  })
+  expect(ctrl.fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('Code1')
 })
 
 test('init - file arg', async () => {

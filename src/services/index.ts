@@ -40,7 +40,8 @@ export const createCtrl = (initial: State) => {
   const aiService = new AiService(store, setState)
   const collabService = new CollabService(dialogService, locationService, store, setState)
   const configService = new ConfigService(collabService, store, setState)
-  const fileService = new FileService(collabService, locationService)
+  const treeService = new TreeService(store, setState)
+  const fileService = new FileService(collabService, locationService, treeService)
   const copilotService = new CopilotService(store, setState, fileService)
   const selectService = new SelectService()
   const prettierService = new PrettierService()
@@ -50,8 +51,8 @@ export const createCtrl = (initial: State) => {
     selectService,
     collabService,
     locationService,
+    treeService,
   )
-  const treeService = new TreeService(store, setState, fileService, canvasService)
   const deleteService = new DeleteService(fileService, canvasService, treeService)
   const codeMirrorService = new CodeMirrorService(
     configService,

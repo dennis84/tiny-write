@@ -63,7 +63,8 @@ test('getMessages', () => {
 
   const messages = service.getMessages('1')
 
-  expect(messages[0].role).toEqual('system') // prompt
-  expect(messages[1].content[0]).toEqual({type: 'text', text: 'F2'})
-  expect(messages[2].content[0]).toEqual({type: 'text', text: 'F1'})
+  expect(messages[0].role).toEqual('system') // common prompt
+  expect(messages[1].role).toEqual('system') // canvas rules prompt
+  expect(messages[2].content[0]).toEqual({type: 'text', text: 'F2'})
+  expect(messages[3].content[0]).toEqual({type: 'text', text: 'F1'})
 })

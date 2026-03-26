@@ -26,6 +26,7 @@ import {isLocalFile} from '@/state'
 import type {File, FileText} from '@/types'
 import type {CollabService} from './CollabService'
 import type {LocationService} from './LocationService'
+import type {TreeService} from './TreeService'
 
 export interface LoadedTextFile {
   text: string
@@ -49,6 +50,7 @@ export class FileService {
   constructor(
     private collabService: CollabService,
     private locationService: LocationService,
+    private treeService: TreeService,
   ) {}
 
   get files() {
@@ -229,14 +231,8 @@ export class FileService {
     info(
       `Created new file (id=${file.id}, code=${file.code}, path=${file.path}, newFile=${file.newFile})`,
     )
-    const [_xs, {mutate}] = this.filesResource
-    mutate(
-      produce((prev = []) => {
-        prev.push(file)
-      }),
-    )
-    await FileService.saveFile(file)
-    return file
+
+    return await this.addFile(file)
   }
 
   async newFileByPath(
@@ -262,10 +258,19 @@ export class FileService {
     return ydoc
   }
 
-  async addFile(file: File) {
+  async addFile(file: File): Promise<File> {
     const [, {mutate}] = this.filesResource
-    mutate((prev = []) => [...prev, file])
+    mutate(
+      produce((prev = []) => {
+        prev.push(file)
+      }),
+    )
     await FileService.saveFile(file)
+
+    // return proxy object
+    const newFile = this.files[this.files.length - 1]
+    this.treeService.add(newFile)
+    return newFile
   }
 
   findFileById(id: string): File | undefined {
@@ -363,10 +368,19 @@ export class FileService {
     info('File restored')
   }
 
-  async deleteFile(id: string) {
-    const [, {mutate}] = this.filesResource
-    mutate((prev = []) => prev.filter((it) => it.id !== id))
-    await DB.deleteFile(id)
+  async deleteFile(id: string, forever = false) {
+    if (forever) {
+      const [, {mutate}] = this.filesResource
+      mutate((prev = []) => prev.filter((it) => it.id !== id))
+      await DB.deleteFile(id)
+    } else {
+      this.updateFile(id, {deleted: true, lastModified: new Date()})
+      const updatedFile = this.findFileById(id)
+      if (!updatedFile) return
+      await FileService.saveFile(updatedFile)
+    }
+
+    this.treeService.remove(id)
   }
 
   async getTitle(file?: File, maxLength = 25, fallback = true): Promise<string | undefined> {

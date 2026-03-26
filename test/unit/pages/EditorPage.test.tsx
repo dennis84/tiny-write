@@ -124,6 +124,7 @@ test('init - join', async () => {
   const {getByTestId, ctrl} = renderMain(initial)
 
   await waitFor(() => {
+    expect(ctrl.fileService.resourceState).toEqual('ready')
     expect(getByTestId('new_editor_page')).toBeDefined()
   })
 
@@ -131,19 +132,13 @@ test('init - join', async () => {
 
   await waitFor(() => {
     expect(ctrl.collabService.provider).toBeDefined()
-  })
-
-  await waitFor(() => {
     expect(getByTestId('editor_scroll')).toBeDefined()
   })
 
   expect(ctrl.locationService.page).toBe(Page.Editor)
   expect(ctrl.fileService.files.length).toBe(2)
   expect(ctrl.collabService.started()).toBe(true)
-
-  await waitFor(() => {
-    expect(getByTestId('editor_scroll')).toHaveTextContent(/^Text$/)
-  })
+  expect(getByTestId('editor_scroll')).toHaveTextContent(/^Text$/)
 })
 
 test('init - file arg', async () => {
@@ -243,6 +238,10 @@ test('open - read file - file not found', async () => {
   const initial = createState()
 
   const {getByTestId, ctrl} = renderMain(initial)
+
+  await waitFor(() => {
+    expect(ctrl.fileService.resourceState).toEqual('ready')
+  })
 
   const file = {
     id: '1',

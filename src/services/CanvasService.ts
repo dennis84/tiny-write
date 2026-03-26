@@ -28,9 +28,10 @@ import {BoxUtil} from '@/utils/BoxUtil'
 import {PointUtil} from '@/utils/PointUtil'
 import {VecUtil} from '@/utils/VecUtil'
 import type {CollabService} from './CollabService'
-import {FileService} from './FileService'
+import type {FileService} from './FileService'
 import type {LocationService} from './LocationService'
 import type {SelectService} from './SelectService'
+import type {TreeService} from './TreeService'
 
 type UpdateElement =
   | Partial<CanvasLinkElement>
@@ -73,6 +74,7 @@ export class CanvasService {
     private selectService: SelectService,
     private collabService: CollabService,
     private locationService: LocationService,
+    private treeService: TreeService,
   ) {}
 
   get moving() {
@@ -310,7 +312,24 @@ export class CanvasService {
     await this.saveCanvas(canvas)
     info('New canvas created')
 
-    return canvas
+    // return proxy object
+    const newCanvas = this.canvases[this.canvases.length - 1]
+    this.treeService.add(newCanvas)
+    return newCanvas
+  }
+
+  async delete(id: string, forever = false) {
+    if (forever) {
+      const [, {mutate}] = this.canvasesResource
+      mutate((prev = []) => prev.filter((it) => it.id !== id))
+      await DB.deleteCanvas(id)
+    } else {
+      this.updateCanvas(id, {deleted: true, lastModified: new Date()})
+      const updated = this.findCanvas(id)
+      await this.saveCanvas(updated)
+    }
+
+    this.treeService.remove(id)
   }
 
   async removeElements(elementIds: string[]): Promise<string[]> {
@@ -423,9 +442,7 @@ export class CanvasService {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
 
-    const file = FileService.createFile({code, parentId: currentCanvas.id})
-
-    await this.fileService.addFile(file)
+    const file = await this.fileService.newFile({code, parentId: currentCanvas.id})
     const added = await this.addFile(file, link, point)
     info('New file added')
 

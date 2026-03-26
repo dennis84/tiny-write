@@ -1,10 +1,7 @@
 import type {SetStoreFunction, Store} from 'solid-js/store'
 import {DB} from '@/db'
-import {isFile} from '@/state'
 import {createTreeStore, type Tree, type TreeItem, type TreeState} from '@/tree'
 import type {Canvas, File, State} from '@/types'
-import {CanvasService} from './CanvasService'
-import {FileService} from './FileService'
 
 export type MenuTree = TreeState<File | Canvas>
 export type MenuTreeItem = TreeItem<File | Canvas>
@@ -15,54 +12,32 @@ export class TreeService {
   constructor(
     private store: Store<State>,
     private setState: SetStoreFunction<State>,
-    private fileService: FileService,
-    private canvasService: CanvasService,
   ) {
     this.tree = createTreeStore()
   }
 
-  updateAll() {
-    const items = [...this.fileService.files, ...this.canvasService.canvases]
-    this.tree.updateAll(items)
+  reset(items: (File | Canvas)[]) {
+    this.tree.reset(items)
   }
 
-  updateValue(item: File | Canvas) {
-    this.tree.updateValue(item)
+  add(item: File | Canvas): MenuTreeItem[] {
+    return this.tree.add(item)
   }
 
-  async add(item: File | Canvas) {
-    const ids = this.tree.add(item)
-    for (const i of ids) {
-      await this.saveItem(i)
-    }
+  remove(id: string): MenuTreeItem[] {
+    return this.tree.remove(id)
   }
 
-  async remove(id: string) {
-    const ids = this.tree.remove(id)
-    for (const i of ids) {
-      await this.saveItem(i)
-    }
+  move(id: string, toId: string | undefined): MenuTreeItem[] {
+    return this.tree.move(id, toId)
   }
 
-  async move(id: string, toId: string | undefined) {
-    const ids = this.tree.move(id, toId)
-    for (const i of ids) {
-      await this.saveItem(i)
-    }
+  after(id: string, toId: string): MenuTreeItem[] {
+    return this.tree.after(id, toId)
   }
 
-  async after(id: string, toId: string) {
-    const ids = this.tree.after(id, toId)
-    for (const i of ids) {
-      await this.saveItem(i)
-    }
-  }
-
-  async before(id: string, toId: string) {
-    const ids = this.tree.before(id, toId)
-    for (const i of ids) {
-      await this.saveItem(i)
-    }
+  before(id: string, toId: string): MenuTreeItem[] {
+    return this.tree.before(id, toId)
   }
 
   isDescendant(id: string, parentId: string): boolean {
@@ -98,18 +73,5 @@ export class TreeService {
 
   isCollapsed(id: string): boolean {
     return this.store.tree?.collapsed.includes(id) ?? false
-  }
-
-  private async saveItem(id: string) {
-    const item = this.tree.getItem(id)
-    if (!item) return
-    const {parentId, leftId} = item
-    if (isFile(item.value)) {
-      this.fileService.updateFile(id, {leftId, parentId})
-      await FileService.saveFile({...item.value, leftId, parentId})
-    } else {
-      this.canvasService.updateCanvas(id, {leftId, parentId})
-      await CanvasService.saveCanvas({...item.value, leftId, parentId})
-    }
   }
 }

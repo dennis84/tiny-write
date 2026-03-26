@@ -33,10 +33,6 @@ export class CodeService {
 
   private writeFileThrottled = debounce(this.writeFile.bind(this), 1000)
 
-  async newFile(params: Partial<File> = {}): Promise<File> {
-    return await this.fileService.newFile({...params, code: true})
-  }
-
   async init(id: string, existingYdoc?: Y.Doc) {
     const file = this.fileService.findFileById(id)
     const share = this.locationService.state?.share

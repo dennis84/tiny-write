@@ -32,7 +32,6 @@ export const Toolbar = () => {
     menuService,
     selectService,
     threadService,
-    treeService,
     locationService,
   } = useState()
   const [inViewport, setInViewport] = createSignal(false)
@@ -40,7 +39,6 @@ export const Toolbar = () => {
 
   const restore = async (element: CanvasElement) => {
     await fileService.restore(element.id)
-    treeService.updateAll()
   }
 
   const prettify = async (element: CanvasElement) => {

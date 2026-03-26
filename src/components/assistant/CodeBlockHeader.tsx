@@ -31,7 +31,7 @@ export interface CodeBlockHeaderState {
 }
 
 export const CodeBlockHeader = (p: {state: CodeBlockHeaderState}) => {
-  const {fileService, threadService, treeService, locationService} = useState()
+  const {fileService, threadService, locationService} = useState()
 
   const file = p.state.info.attrs?.id ? fileService.findFileById(p.state.info.attrs.id) : undefined
   const title = useTitle({
@@ -69,7 +69,6 @@ export const CodeBlockHeader = (p: {state: CodeBlockHeaderState}) => {
       code: true,
     })
 
-    await treeService.add(file)
     locationService.openItem(file)
   }
 

@@ -40,8 +40,6 @@ export const ContextMenu = () => {
       const fileElement = added[0]
       canvasCollabService.addElements(added)
       file = fileService.findFileById(fileElement.id)
-
-      if (file) await treeService.add(file)
     }
 
     closeTooltip()
