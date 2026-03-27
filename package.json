@@ -89,7 +89,7 @@
     "fetch-mock": "12.6.0",
     "happy-dom": "20.8.8",
     "rollup-plugin-visualizer": "7.0.1",
-    "typescript": "6.0.2",
+    "typescript": "5.9.3",
     "unplugin-icons": "23.0.1",
     "vite": "8.0.3",
     "vite-plugin-solid": "2.11.11",
