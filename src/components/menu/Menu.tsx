@@ -30,7 +30,7 @@ import {SubmenuCode} from './SubmenuCode'
 import {SubmenuCollab} from './SubmenuCollab'
 import {SubmenuEdit} from './SubmenuEdit'
 import {SubmenuEditor} from './SubmenuEditor'
-import {SubmenuTree} from './SubmenuTree'
+import {Submenu} from './tree/Submenu'
 
 const DrawerEl = styled(Drawer)`
   padding-top: 32px;
@@ -140,7 +140,7 @@ export const Menu = () => {
             <MenuNavbar />
             <DrawerScroll>
               <DrawerContent>
-                <SubmenuTree onBin={() => menuService.setSubmenu(SubmenuId.BIN)} />
+                <Submenu onBin={() => menuService.setSubmenu(SubmenuId.BIN)} />
                 {/* Submenu File */}
                 <Show when={locationService.page === Page.Editor}>
                   <SubmenuEditor />

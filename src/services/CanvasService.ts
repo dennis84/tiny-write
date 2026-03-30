@@ -845,6 +845,12 @@ export class CanvasService {
     return point.multiply(1 / camera.zoom).subtract(VecUtil.fromArray(camera.point))
   }
 
+  isOnCanvas(elementId: string): boolean {
+    const currentCanvas = this.currentCanvas
+    if (!currentCanvas) return false
+    return currentCanvas.elements.some((el) => el.id === elementId)
+  }
+
   async saveCanvas(canvas = this.currentCanvas) {
     if (!canvas) return
     await CanvasService.saveCanvas(canvas)

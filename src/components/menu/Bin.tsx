@@ -6,7 +6,7 @@ import {IconDelete} from '../icons/Ui'
 import {MenuNavbar} from '../navbar/MenuNavbar'
 import {MenuDrawer} from './Menu'
 import {Label, Note} from './Style'
-import {SubmenuTree} from './SubmenuTree'
+import {Submenu} from './tree/Submenu'
 
 export const Bin = () => {
   const {fileService, canvasService, deleteService, locationService} = useState()
@@ -33,7 +33,7 @@ export const Bin = () => {
         <DrawerContent>
           <Label>Bin</Label>
           <Note>Items in bin will be automatically deleted after 14 days.</Note>
-          <SubmenuTree showDeleted={true} />
+          <Submenu showDeleted={true} />
           <ButtonGroup>
             <Button onClick={onEmptyBin} disabled={!hasDeletedFiles()}>
               <IconDelete /> Empty bin
