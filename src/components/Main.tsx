@@ -10,7 +10,6 @@ import {InfoNavbar} from '@/components/navbar/InfoNavbar'
 import {CanvasPage, NewCanvasPage} from '@/components/pages/CanvasPage'
 import {ChatPage} from '@/components/pages/ChatPage'
 import {CodePage, NewCodePage} from '@/components/pages/CodePage'
-import {DirPage} from '@/components/pages/DirPage'
 import {EditorPage, NewEditorPage} from '@/components/pages/EditorPage'
 import {Redirect} from '@/components/pages/Redirect'
 import {ResizeWindow} from '@/components/ResizeWindow'
@@ -144,8 +143,6 @@ export const Main = (props: Props) => {
 
       <Route path="/code" component={NewCodePage} />
       <Route path="/code/:id" component={CodePage} />
-
-      <Route path="/dir" component={DirPage} />
 
       <Route path="/assistant" component={ChatPage} />
       <Route path="/assistant/:id" component={ChatPage} />

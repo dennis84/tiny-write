@@ -5,15 +5,18 @@ import {useState} from '@/state'
 import type {LocationState} from '@/types'
 
 export const Redirect = () => {
-  const {store, fileService, locationService} = useState()
+  const {store, fileService, projectService, locationService} = useState()
   const location = useLocation<LocationState>()
   const navigate = useNavigate()
 
   createRenderEffect(
     on(
-      () => fileService.resourceState,
-      async (resourceState) => {
-        if (resourceState !== 'ready') return
+      () => ({
+        filesState: fileService.resourceState,
+        projectsState: projectService.resourceState,
+      }),
+      async ({filesState, projectsState}) => {
+        if (filesState !== 'ready' || projectsState !== 'ready') return
         const lastLocation = store.lastLocation
         const path = store.args?.file
         const newFile = store.args?.newFile
@@ -21,8 +24,9 @@ export const Redirect = () => {
         const selection = location.state?.selection
 
         if (store.args?.source && !argPath) {
-          info(`Redirect dir`)
-          locationService.openDir()
+          info(`Create project for dir`)
+          const project = await projectService.newProject({worktreePath: store.args.source})
+          locationService.openItem(project)
           return
         }
 

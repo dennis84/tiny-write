@@ -3,7 +3,15 @@ import {type SetStoreFunction, type Store, unwrap} from 'solid-js/store'
 import {DB} from '@/db'
 import {isTauri} from '@/env'
 import {info} from '@/remote/log'
-import {isCanvas, isCodeElement, isCodeFile, isEditorElement, isFile, isThread} from '@/state'
+import {
+  isCanvas,
+  isCodeElement,
+  isCodeFile,
+  isEditorElement,
+  isFile,
+  isProject,
+  isThread,
+} from '@/state'
 import {
   type Canvas,
   type CanvasElement,
@@ -11,11 +19,14 @@ import {
   type LastLocation,
   type LocationState,
   Page,
+  type Project,
   type State,
   type Thread,
 } from '@/types'
 import {locationStateToString} from '@/utils/debug'
 import {open as shellOpen} from '../remote/app'
+
+type OpenItem = File | Canvas | CanvasElement | Thread | Project
 
 export class LocationService {
   constructor(
@@ -52,7 +63,6 @@ export class LocationService {
     if (pathname.startsWith('/code')) return Page.Code
     if (pathname.startsWith('/canvas')) return Page.Canvas
     if (pathname.startsWith('/assistant')) return Page.Assistant
-    if (pathname.startsWith('/dir')) return Page.Dir
     return undefined
   }
 
@@ -77,7 +87,7 @@ export class LocationService {
     this.navigator(location.pathname, {state, replace: true})
   }
 
-  openItem(item?: File | Canvas | CanvasElement | Thread, locState?: Partial<LocationState>) {
+  openItem(item?: OpenItem, locState?: Partial<LocationState>) {
     if (!item) return this.navigator('/')
     const state = {...this.state, share: false, ...locState}
 
@@ -91,6 +101,8 @@ export class LocationService {
       return this.navigator(`/canvas/${item.id}`, {state})
     } else if (isThread(item)) {
       return this.navigator(`/assistant/${item.id}`, {state: {...state, threadId: undefined}})
+    } else if (isProject(item)) {
+      return this.navigator(`/code`, {state})
     } else if (isEditorElement(item)) {
       return this.navigator(`/editor/${item.id}`, {state})
     } else if (isCodeElement(item)) {
@@ -102,12 +114,6 @@ export class LocationService {
     const state = {...this.state, share: false, ...locState}
     info(`Open page (page=${page}, state=${locationStateToString(state)})`)
     this.navigator(`/${page}`, {state})
-  }
-
-  openDir(path?: string[]) {
-    info(`Open dir (path=${path})`)
-    const state = {path}
-    this.navigator('/dir', {state})
   }
 
   async openExternalUrl(url: string) {

@@ -23,6 +23,14 @@ export class ProjectService {
   }
 
   async newProject(props: Partial<Project> = {}) {
+    const existing = props.worktreePath
+      ? this.projects.find((p) => p.worktreePath === props.worktreePath)
+      : undefined
+    if (existing) {
+      info(`Project with given worktreePath already exists (worktreePath=${props.worktreePath})`)
+      return existing
+    }
+
     const project = {
       id: props.id ?? uuid(),
       name: props.name ?? 'New Project',
@@ -40,6 +48,8 @@ export class ProjectService {
 
     await DB.updateProject(project)
     info(`New project created (project=${JSON.stringify(project)})`)
+
+    return this.projects[this.projects.length - 1]
   }
 
   async updateProject(id: string, update: Partial<Omit<Project, 'id'>>) {

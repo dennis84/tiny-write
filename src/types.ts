@@ -195,7 +195,6 @@ export enum Page {
   Canvas = 'canvas',
   Code = 'code',
   Assistant = 'assistant',
-  Dir = 'dir',
 }
 
 export enum AttachmentType {
@@ -278,6 +277,7 @@ export interface Project {
   id: string
   name: string
   worktreePath?: string
+  lastModified?: string
   deleted?: boolean
   leftId?: string
 }

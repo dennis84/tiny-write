@@ -4,7 +4,7 @@ import solidPlugin from 'vite-plugin-solid'
 import {visualizer} from 'rollup-plugin-visualizer'
 import Icons from 'unplugin-icons/vite'
 import {execSync} from 'node:child_process'
-import { readFileSync } from 'node:fs'
+import {readFileSync} from 'node:fs'
 
 const commitHash = execSync('git rev-parse --short ${GITHUB_SHA:-HEAD}')
   .toString()
