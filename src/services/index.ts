@@ -21,6 +21,7 @@ import {LocationService} from './LocationService'
 import {MediaService} from './MediaService'
 import {MenuService} from './MenuService'
 import {PrettierService} from './PrettierService'
+import {ProjectService} from './ProjectService'
 import {ProseMirrorService} from './ProseMirrorService'
 import {SelectService} from './SelectService'
 import {ThreadService} from './ThreadService'
@@ -101,6 +102,7 @@ export const createCtrl = (initial: State) => {
 
   const threadService = new ThreadService(copilotService, locationService, dialogService)
   const menuService = new MenuService(store, setState)
+  const projectService = new ProjectService(treeService)
 
   return {
     store,
@@ -127,6 +129,7 @@ export const createCtrl = (initial: State) => {
     menuService,
     dialogService,
     locationService,
+    projectService,
   }
 }
 

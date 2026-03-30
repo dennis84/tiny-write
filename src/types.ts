@@ -273,3 +273,11 @@ export interface File {
   editorView?: EditorView
   codeEditorView?: CmEditorView
 }
+
+export interface Project {
+  id: string
+  name: string
+  worktreePath?: string
+  deleted?: boolean
+  leftId?: string
+}

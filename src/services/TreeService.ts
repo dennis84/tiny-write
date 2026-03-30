@@ -1,24 +1,26 @@
 import {createResource} from 'solid-js'
 import {DB} from '@/db'
+import {isProject} from '@/state'
 import {createTreeStore, type Tree, type TreeItem, type TreeState} from '@/tree'
-import type {Canvas, File} from '@/types'
+import type {Canvas, File, Project} from '@/types'
 
-export type MenuTree = TreeState<File | Canvas>
-export type MenuTreeItem = TreeItem<File | Canvas>
+export type MenuItem = File | Canvas | Project
+export type MenuTree = TreeState<MenuItem>
+export type MenuTreeItem = TreeItem<MenuItem>
 
 export class TreeService {
-  public tree: Tree<File | Canvas>
+  public tree: Tree<MenuItem>
   private treeResource = createResource(() => DB.getTree())
 
   constructor() {
     this.tree = createTreeStore()
   }
 
-  reset(items: (File | Canvas)[]) {
+  reset(items: MenuItem[]) {
     this.tree.reset(items)
   }
 
-  add(item: File | Canvas): MenuTreeItem[] {
+  add(item: MenuItem): MenuTreeItem[] {
     return this.tree.add(item)
   }
 
@@ -36,6 +38,21 @@ export class TreeService {
 
   before(id: string, toId: string): MenuTreeItem[] {
     return this.tree.before(id, toId)
+  }
+
+  isMoveAllowed(id: string, toId?: string): boolean {
+    if (!toId || id === toId) return false
+
+    // if target is descendant of dragged node
+    const isDescendant = this.isDescendant(toId, id)
+    if (isDescendant) return false
+
+    const item = this.getItem(id)
+    if (isProject(item?.value)) {
+      return this.tree.rootItemIds.includes(toId)
+    }
+
+    return true
   }
 
   isDescendant(id: string, parentId: string): boolean {

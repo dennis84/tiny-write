@@ -10,10 +10,10 @@ import {useTitle} from '@/hooks/use-title'
 import {CanvasService} from '@/services/CanvasService'
 import {FileService} from '@/services/FileService'
 import type {MenuTreeItem} from '@/services/TreeService'
-import {isCanvas, isCodeFile, isFile, isLocalFile, useState} from '@/state'
+import {isCanvas, isCodeFile, isFile, isLocalFile, isProject, useState} from '@/state'
 import {Page} from '@/types'
 import {DialogList, TooltipButton, TooltipDivider} from '../dialog/Style'
-import {IconCanvas, IconCodeBlocks, IconFilePlus, IconFileText} from '../icons/File'
+import {IconCanvas, IconCodeBlocks, IconFileText, IconFolderRoot} from '../icons/File'
 import {LangIcon} from '../icons/LangIcon'
 import {
   IconAdd,
@@ -193,6 +193,7 @@ export const SubmenuTree = (props: Props) => {
     canvasCollabService,
     deleteService,
     fileService,
+    projectService,
     treeService,
   } = useState()
   const [dropState, setDropState] = createSignal<DropState>()
@@ -215,9 +216,11 @@ export const SubmenuTree = (props: Props) => {
       if (isFile(item.value)) {
         fileService.updateFile(item.id, {leftId, parentId})
         await FileService.saveFile({...item.value, leftId, parentId})
-      } else {
+      } else if (isCanvas(item.value)) {
         canvasService.updateCanvas(item.id, {leftId, parentId})
         await CanvasService.saveCanvas({...item.value, leftId, parentId})
+      } else if (isProject(item.value)) {
+        await projectService.updateProject(item.id, {leftId})
       }
     }
   }
@@ -238,13 +241,21 @@ export const SubmenuTree = (props: Props) => {
           await fileService.renameFile(item.id, value)
         },
       })
-    } else {
+    } else if (isCanvas(item)) {
       showInputLine({
         value: item?.title ?? '',
         onEnter: async (value: string) => {
           const title = value.trim() || undefined
           canvasService.updateCanvas(item.id, {title})
           await CanvasService.saveCanvas(item)
+        },
+      })
+    } else if (isProject(item)) {
+      showInputLine({
+        value: item?.name ?? '',
+        onEnter: async (value: string) => {
+          const name = value.trim() || undefined
+          projectService.updateProject(item.id, {name})
         },
       })
     }
@@ -265,6 +276,11 @@ export const SubmenuTree = (props: Props) => {
   const onNewCode = async () => {
     const file = await fileService.newFile({code: true})
     locationService.openItem(file)
+    closeTooltip()
+  }
+
+  const onNewProject = async () => {
+    await projectService.newProject()
     closeTooltip()
   }
 
@@ -341,7 +357,7 @@ export const SubmenuTree = (props: Props) => {
     const title = useTitle({item: p.node.value})
 
     const onClick = async () => {
-      locationService.openItem(p.node.value)
+      if (!isProject(p.node.value)) locationService.openItem(p.node.value)
     }
 
     const onCornerClick = () => treeService.collapse(p.node.id)
@@ -374,16 +390,12 @@ export const SubmenuTree = (props: Props) => {
             ghostRef.style.left = `${x}px`
           }
 
-          if (
-            targetId &&
-            targetId !== p.node.id &&
-            !treeService.isDescendant(targetId, p.node.id)
-          ) {
+          if (treeService.isMoveAllowed(p.node.id, targetId)) {
             if (y < box.top + offset) {
               setDropState({pos: 'before', targetId})
             } else if (y > box.bottom - offset) {
               setDropState({pos: 'after', targetId})
-            } else {
+            } else if (!isProject(p.node.value)) {
               setDropState({pos: 'add', targetId})
             }
           } else if (el?.closest('#grid')) {
@@ -465,8 +477,11 @@ export const SubmenuTree = (props: Props) => {
                 <LangIcon name={isFile(p.node.value) ? p.node.value.codeLang : undefined} />
               </Show>
             </Match>
-            <Match when={!isCodeFile(p.node.value)}>
+            <Match when={isFile(p.node.value)}>
               <IconFileText />
+            </Match>
+            <Match when={isProject(p.node.value)}>
+              <IconFolderRoot />
             </Match>
           </Switch>
         </TreeLinkCorner>
@@ -554,7 +569,7 @@ export const SubmenuTree = (props: Props) => {
       </Show>
       <Show when={!selected()?.value.deleted && isFile(selected()?.value)}>
         <TooltipButton onClick={onAddFile} data-testid="add_file">
-          <IconFilePlus />
+          <IconFileText />
           Add file
         </TooltipButton>
         <TooltipButton onClick={onAddCanvas} data-testid="add_canvas">
@@ -599,7 +614,7 @@ export const SubmenuTree = (props: Props) => {
       </Switch>
       <Show when={!selected()}>
         <TooltipButton onClick={onNewFile} data-testid="new_file">
-          <IconFilePlus />
+          <IconFileText />
           New file
         </TooltipButton>
         <TooltipButton onClick={onNewCanvas} data-testid="new_canvas">
@@ -609,6 +624,10 @@ export const SubmenuTree = (props: Props) => {
         <TooltipButton onClick={onNewCode} data-testid="new_code">
           <IconCodeBlocks />
           New code file
+        </TooltipButton>
+        <TooltipButton onClick={onNewProject} data-testid="new_project">
+          <IconFolderRoot />
+          New project
         </TooltipButton>
       </Show>
     </DialogList>

@@ -44,6 +44,25 @@ test('createTreeStore - nested', () => {
   )
 })
 
+test('createTreeStore - reverse', () => {
+  const tree = createTreeStore({
+    items: [
+      {id: 'file_3', parentId: 'file_1', leftId: 'file_2'},
+      {id: 'file_2', parentId: 'file_1'},
+      {id: 'file_1'}, // root at the end
+    ],
+  })
+
+  expectTree(
+    tree,
+    `
+    └ file_1 (parentId=, leftId=)
+      └ file_2 (parentId=file_1, leftId=)
+      └ file_3 (parentId=file_1, leftId=file_2)
+    `,
+  )
+})
+
 test('createTreeStore - broken', () => {
   const tree = createTreeStore({
     items: [
@@ -241,6 +260,46 @@ test('move', async () => {
   })
 })
 
+test('move - 2', async () => {
+  const tree = createTreeStore({
+    items: [{id: 'file_1'}, {id: 'file_2', leftId: 'file_1'}, {id: 'file_3', leftId: 'file_2'}],
+  })
+
+  expectTree(
+    tree,
+    `
+    └ file_1 (parentId=, leftId=)
+    └ file_2 (parentId=, leftId=file_1)
+    └ file_3 (parentId=, leftId=file_2)
+    `,
+  )
+
+  return testEffect((done) => {
+    return createEffect((run: number = 0) => {
+      if (run === 0) {
+        const items = tree.move('file_2', 'file_3')
+        expect(items).toEqual([
+          expect.objectContaining({id: 'file_3'}),
+          expect.objectContaining({id: 'file_2'}),
+        ])
+      } else if (run === 1) {
+        expectTree(
+          tree,
+          `
+          └ file_1 (parentId=, leftId=)
+          └ file_3 (parentId=, leftId=file_1)
+            └ file_2 (parentId=file_3, leftId=)
+          `,
+        )
+
+        done()
+      }
+
+      return run + 1
+    })
+  })
+})
+
 test('before', async () => {
   const tree = createTreeStore({
     items: [
@@ -256,7 +315,6 @@ test('before', async () => {
       if (run === 0) {
         const items = tree.before('file_1', 'file_4')
         expect(items).toEqual([
-          expect.objectContaining({id: 'file_2'}),
           expect.objectContaining({id: 'file_4'}),
           expect.objectContaining({id: 'file_1'}),
         ])
@@ -343,7 +401,6 @@ test('after', async () => {
       if (run === 0) {
         const items = tree.after('file_1', 'file_3')
         expect(items).toEqual([
-          expect.objectContaining({id: 'file_2'}),
           expect.objectContaining({id: 'file_4'}),
           expect.objectContaining({id: 'file_1'}),
         ])

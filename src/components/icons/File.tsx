@@ -34,13 +34,6 @@ export const IconFileText = () => (
   </SvgIcon>
 )
 
-import LucideFilePlus from '~icons/lucide/file-plus'
-export const IconFilePlus = () => (
-  <SvgIcon>
-    <LucideFilePlus />
-  </SvgIcon>
-)
-
 import LucideSquareCode from '~icons/lucide/square-code'
 export const IconCodeBlocks = () => (
   <SvgIcon>
@@ -59,5 +52,12 @@ import LucideFolderOpen from '~icons/lucide/folder-open'
 export const IconFolderOpen = () => (
   <SvgIcon>
     <LucideFolderOpen />
+  </SvgIcon>
+)
+
+import LucideFolderRoot from '~icons/lucide/folder-root'
+export const IconFolderRoot = () => (
+  <SvgIcon>
+    <LucideFolderRoot />
   </SvgIcon>
 )

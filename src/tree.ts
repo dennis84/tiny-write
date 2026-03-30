@@ -117,7 +117,7 @@ export class Tree<T> {
     //     < Add here
     //     ! Update B parentId to C
     //     ! Update B leftId to E
-    const changes: TreeItem<T>[] = []
+    const changes = new Map<string, TreeItem<T>>()
     const state = this.state
 
     const newState = {
@@ -139,7 +139,6 @@ export class Tree<T> {
 
     // Set new parentId and leftId for the item being moved
     const newParentId = to.id ?? ROOT_ID
-
     const target = {
       ...newState.items[id],
       parentId: newParentId === ROOT_ID ? undefined : newParentId,
@@ -155,9 +154,20 @@ export class Tree<T> {
       childrenIds: newParentChildrenIds,
     }
 
-    changes.push(target)
+    // Update leftId of the item that was to the right of the removed item
+    const rightItemId = state.items[parentId].childrenIds[oldIndex + 1]
+    if (rightItemId && state.items[rightItemId].leftId) {
+      const rightItem = {
+        ...newState.items[rightItemId],
+        leftId: item.leftId,
+      }
+      newState.items[rightItemId] = rightItem
+      changes.set(rightItem.id, rightItem)
+    }
+
+    changes.set(target.id, target)
     this.setState(newState)
-    return changes
+    return [...changes.values()]
   }
 
   before(id: string, toId: string): TreeItem<T>[] {
@@ -172,7 +182,7 @@ export class Tree<T> {
     //     ! Update B parentId to C
     //   E ! Update E leftId to B
 
-    const changes: TreeItem<T>[] = []
+    const changes = new Map<string, TreeItem<T>>()
     const state = this.state
 
     const newState = {
@@ -194,13 +204,13 @@ export class Tree<T> {
 
     // Update leftId of the item that was to the right of the removed item
     const rightItemId = state.items[parentId].childrenIds[oldIndex + 1]
-    if (rightItemId) {
+    if (rightItemId && state.items[rightItemId].leftId) {
       const rightItem = {
         ...newState.items[rightItemId],
         leftId: item.leftId,
       }
       newState.items[rightItemId] = rightItem
-      changes.push(rightItem)
+      changes.set(rightItem.id, rightItem)
     }
 
     // Set new parentId and leftId for the item being moved
@@ -227,11 +237,11 @@ export class Tree<T> {
     const toItem = {...newState.items[toId], leftId: id}
     newState.items[toId] = toItem
 
-    changes.push(toItem)
-    changes.push(target)
+    changes.set(toItem.id, toItem)
+    changes.set(target.id, target)
 
     this.setState(newState)
-    return changes
+    return [...changes.values()]
   }
 
   after(id: string, toId: string): TreeItem<T>[] {
@@ -246,7 +256,7 @@ export class Tree<T> {
     //     ! Update B parentId to C
     //   E ! Update E leftId to B
 
-    const changes: TreeItem<T>[] = []
+    const changes = new Map<string, TreeItem<T>>()
     const state = this.state
 
     const newState = {
@@ -268,13 +278,13 @@ export class Tree<T> {
 
     // Update leftId of the item that was to the right of the removed item
     const rightItemId = state.items[parentId].childrenIds[oldIndex + 1]
-    if (rightItemId) {
+    if (rightItemId && state.items[rightItemId].leftId) {
       const rightItem = {
         ...newState.items[rightItemId],
         leftId: item.leftId,
       }
       newState.items[rightItemId] = rightItem
-      changes.push(rightItem)
+      changes.set(rightItem.id, rightItem)
     }
 
     // Set new parentId and leftId for the item being moved
@@ -304,13 +314,13 @@ export class Tree<T> {
         leftId: id,
       }
       newState.items[newRightItemId] = newRightItem
-      changes.push(newRightItem)
+      changes.set(newRightItem.id, newRightItem)
     }
 
-    changes.push(target)
+    changes.set(target.id, target)
 
     this.setState(newState)
-    return changes
+    return [...changes.values()]
   }
 
   isDescendant(id: string, parentId = ROOT_ID): boolean {
@@ -343,69 +353,66 @@ export class Tree<T> {
       },
     }
 
-    const waitingForLeftId: Record<string, string[]> = {}
-    const upcomingItems: TreeMap<T> = {}
-
+    // 1. Create ALL nodes first — nothing gets left out
     for (const item of input) {
-      let childrenIds: string[] = []
-      if (upcomingItems[item.id]) {
-        childrenIds = upcomingItems[item.id].childrenIds
-        delete upcomingItems[item.id]
-      }
-
       items[item.id] = {
         id: item.id,
         parentId: item.parentId,
         leftId: item.leftId,
         value: item,
-        childrenIds,
-      }
-
-      let parent = items[item.parentId ?? ROOT_ID]
-      if (parent) {
-        if (item.leftId) {
-          const index = parent.childrenIds.indexOf(item.leftId)
-          if (index !== -1) {
-            parent.childrenIds.splice(index + 1, 0, item.id)
-          } else {
-            waitingForLeftId[item.leftId] = [...(waitingForLeftId[item.leftId] ?? []), item.id]
-          }
-        } else {
-          parent.childrenIds.push(item.id)
-        }
-      } else if (item.parentId) {
-        upcomingItems[item.parentId] = {
-          id: item.id,
-          childrenIds: [item.id],
-          value: null,
-        } as TreeItem<T>
-        parent = items[item.parentId]
-      }
-
-      if (waitingForLeftId[item.id]) {
-        const index = parent.childrenIds.indexOf(item.id)
-        if (index !== -1) {
-          waitingForLeftId[item.id].forEach((id, i) => {
-            parent.childrenIds.splice(index + i + 1, 0, id)
-          })
-
-          delete waitingForLeftId[item.id]
-        }
+        childrenIds: [],
       }
     }
 
-    for (const ids of Object.values(waitingForLeftId)) {
-      for (const id of ids) {
-        const item = items[id]
-        items[item.parentId ?? ROOT_ID].childrenIds.push(id)
+    // 2. Group children by their ACTUAL parent (use ROOT_ID for missing parents)
+    const parentToChildren: Record<string, TreeItem<T>[]> = {}
+
+    for (const item of input) {
+      const node = items[item.id]
+      let pId = node.parentId ?? ROOT_ID
+
+      // If the declared parent doesn't exist in the map, treat as top-level
+      if (!items[pId]) {
+        pId = ROOT_ID
+        node.parentId = undefined // normalize
       }
+
+      if (!parentToChildren[pId]) {
+        parentToChildren[pId] = []
+      }
+      parentToChildren[pId].push(node)
     }
 
-    for (const item of Object.values(upcomingItems)) {
-      item.childrenIds.forEach((id) => {
-        items[ROOT_ID].childrenIds.push(id)
-        items[id].parentId = undefined
-      })
+    // 3. For each parent group, order its direct children using leftId
+    for (const [pId, siblings] of Object.entries(parentToChildren)) {
+      const parentNode = items[pId]
+
+      // Build "next" map only for valid siblings in this group
+      const siblingIds = new Set(siblings.map((s) => s.id))
+      const nextSibling: Record<string, string> = {}
+
+      for (const sib of siblings) {
+        if (sib.leftId && siblingIds.has(sib.leftId)) {
+          nextSibling[sib.leftId] = sib.id
+        }
+      }
+
+      // Heads = nodes with no valid leftId inside this sibling group
+      const heads = siblings
+        .filter((sib) => !(sib.leftId && siblingIds.has(sib.leftId)))
+        .map((sib) => sib.id)
+
+      // Follow each chain to build ordered list
+      const ordered: string[] = []
+      for (const head of heads) {
+        let current: string | undefined = head
+        while (current) {
+          ordered.push(current)
+          current = nextSibling[current]
+        }
+      }
+
+      parentNode.childrenIds = ordered
     }
 
     return items

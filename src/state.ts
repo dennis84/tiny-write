@@ -15,6 +15,7 @@ import {
   ConfigSchema,
   ElementType,
   type File,
+  type Project,
   type State,
   type Thread,
 } from './types'
@@ -41,6 +42,8 @@ export const isVideoElement = (el?: CanvasElement): el is CanvasVideoElement =>
   el?.type === ElementType.Video
 
 export const isFile = (it: any): it is File => it?.ydoc !== undefined
+
+export const isProject = (it: any): it is Project => it.name !== undefined
 
 export const isLocalFile = (it: any): boolean =>
   isFile(it) && (it.path !== undefined || it.newFile !== undefined)

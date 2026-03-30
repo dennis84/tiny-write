@@ -29,7 +29,7 @@ const createCanvas = (props: Partial<Canvas> = {}): Canvas => ({
   ...props,
 })
 
-test('init', () => {
+test('reset', () => {
   const service = new TreeService()
 
   service.reset([
@@ -38,6 +38,7 @@ test('init', () => {
     createFile({id: 'file_3'}),
     createFile({id: 'file_4'}),
     createCanvas({id: 'canvas_5'}),
+    {id: 'project_1', name: 'Project 1'},
   ])
 
   expectTree(
@@ -48,29 +49,7 @@ test('init', () => {
     └ file_3 (parentId=, leftId=)
     └ file_4 (parentId=, leftId=)
     └ canvas_5 (parentId=, leftId=)
-    `,
-  )
-})
-
-test('update', () => {
-  const service = new TreeService()
-
-  service.reset([
-    createFile({id: 'file_1'}),
-    createFile({id: 'file_2'}),
-    createFile({id: 'file_3'}),
-    createFile({id: 'file_4'}),
-    createCanvas({id: 'canvas_5'}),
-  ])
-
-  expectTree(
-    service.tree,
-    `
-    └ file_1 (parentId=, leftId=)
-    └ file_2 (parentId=, leftId=)
-    └ file_3 (parentId=, leftId=)
-    └ file_4 (parentId=, leftId=)
-    └ canvas_5 (parentId=, leftId=)
+    └ project_1 (parentId=, leftId=)
     `,
   )
 })
@@ -100,4 +79,22 @@ test('collapse', async () => {
 
   expect(DB.setTree).toHaveBeenCalledWith({collapsed: []})
   expect(service.isCollapsed('file_1')).toBe(false)
+})
+
+test('isMoveAllowed', async () => {
+  const service = new TreeService()
+
+  service.reset([
+    createFile({id: 'file_1'}),
+    createFile({id: 'file_2', parentId: 'file_1'}),
+    createFile({id: 'file_3'}),
+    {id: 'project_1', name: 'Project 1'},
+  ])
+
+  expect(service.isMoveAllowed('file_3', 'file_2')).toBeTruthy()
+  expect(service.isMoveAllowed('file_1', 'project_1')).toBeTruthy()
+  expect(service.isMoveAllowed('file_1', 'file_2')).toBeFalsy()
+  expect(service.isMoveAllowed('file_1', undefined)).toBeFalsy()
+  expect(service.isMoveAllowed('file_1', 'file_1')).toBeFalsy()
+  expect(service.isMoveAllowed('project_1', 'file_2')).toBeFalsy()
 })

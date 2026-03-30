@@ -9,6 +9,7 @@ import {
   ConfigSchema,
   type ElementType,
   type LastLocation,
+  type Project,
   type Sidebar,
   type Thread,
   type Window,
@@ -92,12 +93,16 @@ interface MyDB extends DBSchema {
     key: string
     value: LastLocation
   }
+  projects: {
+    key: string
+    value: Project
+  }
 }
 
 const DB_NAME = 'tiny_write'
 
 // Increment version and add new scheme:
-const dbPromise = openDB<MyDB>(DB_NAME, 4, {
+const dbPromise = openDB<MyDB>(DB_NAME, 5, {
   upgrade(db: IDBPDatabase<MyDB>, oldVersion, newVersion) {
     if (!newVersion) return
 
@@ -122,6 +127,10 @@ const dbPromise = openDB<MyDB>(DB_NAME, 4, {
 
     if (!db.objectStoreNames.contains('lastLocation')) {
       db.createObjectStore('lastLocation')
+    }
+
+    if (!db.objectStoreNames.contains('projects')) {
+      db.createObjectStore('projects', {keyPath: 'id'})
     }
   },
 })
@@ -274,6 +283,26 @@ export class DB {
   static async deleteThread(id: string) {
     const db = await dbPromise
     return db.delete('threads', id)
+  }
+
+  static async getProjects(): Promise<Project[]> {
+    return (await dbPromise).getAll('projects')
+  }
+
+  static async updateProject(project: Project) {
+    const db = await dbPromise
+    const existing = await db.get('projects', project.id)
+    if (existing) {
+      await db.put('projects', DB.unwrap(project))
+      return
+    }
+
+    await db.add('projects', DB.unwrap(project))
+  }
+
+  static async deleteProject(id: string) {
+    const db = await dbPromise
+    return db.delete('projects', id)
   }
 
   static async cleanup() {

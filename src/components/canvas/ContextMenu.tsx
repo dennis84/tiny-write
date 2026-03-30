@@ -11,7 +11,7 @@ import type {CanvasLinkElement, File} from '@/types'
 import {pause} from '@/utils/promise'
 import {DialogList, TooltipButton, TooltipDivider} from '../dialog/Style'
 import {IconAi} from '../icons/Ai'
-import {IconCanvas, IconCodeBlocks, IconFileCode, IconFilePlus} from '../icons/File'
+import {IconCanvas, IconCodeBlocks, IconFileCode, IconFileText} from '../icons/File'
 
 const Scroller = styled.div`
   max-height: 80vh;
@@ -185,7 +185,7 @@ export const ContextMenu = () => {
         onClick={() => newFile(false, props.dialog.state?.deadLink, props.dialog.state?.clickPos)}
         data-testid="context_menu_new_file"
       >
-        <IconFilePlus /> New file
+        <IconFileText /> New file
       </TooltipButton>
       <TooltipButton
         onClick={() => newFile(true, props.dialog.state?.deadLink, props.dialog.state?.clickPos)}
