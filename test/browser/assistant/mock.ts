@@ -11,7 +11,7 @@ export const setupDB = async (page: Page, data: Data) => {
   await page.goto('/editor')
   await page.evaluate((d) => {
     const indexedDB = window.indexedDB
-    const request = indexedDB.open('tiny_write', 4)
+    const request = indexedDB.open('tiny_write', 5)
 
     request.onsuccess = (event: any) => {
       const db = event.target.result

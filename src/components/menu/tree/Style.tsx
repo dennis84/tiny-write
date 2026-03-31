@@ -1,5 +1,5 @@
-import { styled } from "solid-styled-components"
-import { ITEM_HEIGHT, itemCss } from "../Style"
+import {styled} from 'solid-styled-components'
+import {ITEM_HEIGHT, itemCss} from '../Style'
 
 export const HighlightContent = styled.div`
   position: absolute;
@@ -49,6 +49,14 @@ interface ItemProps {
   selected?: boolean
   active?: boolean
 }
+
+// biome-ignore format: ternary breaks ugly
+export const TreeGroup = styled.div<ItemProps>`
+  ${(p) => p.selected ? `
+    background: var(--primary-background-10);
+    border-radius: var(--border-radius-small);
+  ` : ''}
+`
 
 // biome-ignore format: ternary breaks ugly
 export const TreeLinkItem = styled.div<ItemProps>`
@@ -146,4 +154,3 @@ export const LinkMenu = styled.span<{selected?: boolean}>`
     }
   }
 `
-

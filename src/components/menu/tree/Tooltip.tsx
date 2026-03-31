@@ -1,20 +1,28 @@
+import {Match, Show, Switch} from 'solid-js'
 import {DialogList, TooltipButton, TooltipDivider} from '@/components/dialog/Style'
 import {IconCanvas, IconCodeBlocks, IconFileText, IconFolderRoot} from '@/components/icons/File'
 import {IconClose, IconDelete, IconEdit, IconFocus, IconHistory} from '@/components/icons/Ui'
-import { useConfirmDialog } from '@/hooks/use-confirm-dialog'
-import { useInputLine } from '@/hooks/use-input-line'
-import { CanvasService } from '@/services/CanvasService'
-import {Dialog} from '@/services/DialogService'
-import {MenuTreeItem} from '@/services/TreeService'
+import {useConfirmDialog} from '@/hooks/use-confirm-dialog'
+import {useInputLine} from '@/hooks/use-input-line'
+import {CanvasService} from '@/services/CanvasService'
+import type {Dialog} from '@/services/DialogService'
+import type {MenuTreeItem} from '@/services/TreeService'
 import {isCanvas, isFile, isLocalFile, isProject, useState} from '@/state'
-import {Match, Show, Switch} from 'solid-js'
 
-interface TooltipState {
+export interface TooltipState {
   selected?: MenuTreeItem
 }
 
 export const Tooltip = (props: {dialog: Dialog<TooltipState>}) => {
-  const {canvasService, deleteService, dialogService, fileService, locationService, projectService, treeService} = useState()
+  const {
+    canvasService,
+    deleteService,
+    dialogService,
+    fileService,
+    locationService,
+    projectService,
+    treeService,
+  } = useState()
   const showInputLine = useInputLine()
   const showConfirmDialog = useConfirmDialog()
 
