@@ -3,8 +3,10 @@ import {createResource} from 'solid-js'
 import {produce} from 'solid-js/store'
 import {v4 as uuid} from 'uuid'
 import {DB} from '@/db'
+import {listContents} from '@/remote/editor'
 import {info} from '@/remote/log'
-import type {Project} from '@/types'
+import {isDirectory} from '@/state'
+import type {Directory, Filename, Project} from '@/types'
 import type {TreeService} from './TreeService'
 
 export class ProjectService {
@@ -32,6 +34,7 @@ export class ProjectService {
     }
 
     const project = {
+      type: 'project' as const,
       id: props.id ?? uuid(),
       name: props.name ?? 'New Project',
       ...props,
@@ -61,6 +64,37 @@ export class ProjectService {
       info(`Saving project (id=${id}, leftId=${updated.leftId}`)
       await DB.updateProject(updated)
     }
+  }
+
+  async toggleDirectory(item: Project | Directory) {
+    const treeItem = this.treeService.getItem(item.id)
+    if (!treeItem) return
+
+    if (this.treeService.isCollapsed(item.id)) {
+      await this.treeService.collapse(item.id)
+    } else if (treeItem.childrenIds.length > 0) {
+      await this.treeService.collapse(item.id)
+      return
+    }
+
+    const projectId = isDirectory(item) ? item.projectId : item.id
+    const path = isDirectory(item) ? item.path : item.worktreePath
+    if (!path) return
+
+    const dirEntries = await listContents(path)
+    const treeItems = dirEntries.map(
+      (dirEntry) =>
+        ({
+          type: dirEntry.isDirectory ? 'directory' : 'filename',
+          path: dirEntry.path,
+          id: dirEntry.name,
+          projectId,
+          name: dirEntry.name,
+          parentId: item.id,
+        }) satisfies Filename | Directory,
+    )
+
+    this.treeService.addAll(treeItems)
   }
 
   private mutateProject(fn: (project: Project) => void, projectId: string): Project | undefined {

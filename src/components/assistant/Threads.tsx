@@ -49,7 +49,7 @@ const ThreadItem = styled.div`
   align-items: center;
   padding: 2px 6px;
   margin: 2px 0;
-  height: 32px;
+  height: var(--button-height);
   cursor: var(--cursor-pointer);
   border-radius: var(--border-radius-small);
   .action {

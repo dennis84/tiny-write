@@ -1,4 +1,4 @@
-import {createStore, reconcile, type SetStoreFunction} from 'solid-js/store'
+import {createStore, produce, reconcile, type SetStoreFunction} from 'solid-js/store'
 
 export type TreeMap<T> = Record<string, TreeItem<T>>
 
@@ -50,16 +50,52 @@ export class Tree<T> {
     this.setState('items', reconcile(items))
   }
 
-  add(item: TreeItemInput<T>): TreeItem<T>[] {
-    this.setState('items', item.id, {
-      id: item.id,
-      parentId: item.parentId,
-      leftId: item.leftId,
-      value: item,
-      childrenIds: [],
-    })
+  setValue(id: string, value: T) {
+    this.setState('items', id, 'value', value)
+  }
 
-    return this.move(item.id, item.parentId)
+  add(item: TreeItemInput<T>): TreeItem<T>[] {
+    if (this.state.items[item.id]) return []
+
+    this.setState(
+      'items',
+      produce((prev) => {
+        prev[item.id] = {
+          id: item.id,
+          parentId: item.parentId,
+          leftId: item.leftId,
+          value: item,
+          childrenIds: [],
+        }
+
+        prev[item.parentId ?? ROOT_ID].childrenIds.push(item.id)
+      }),
+    )
+
+    return [this.state.items[item.id]]
+  }
+
+  addAll(items: TreeItemInput<T>[]): TreeItem<T>[] {
+    const unique = items.filter((it) => !this.state.items[it.id])
+    if (!unique.length) return []
+
+    this.setState(
+      'items',
+      produce((prev) => {
+        unique.forEach((it) => {
+          prev[it.id] = {
+            id: it.id,
+            parentId: it.parentId,
+            leftId: it.leftId,
+            value: it,
+            childrenIds: [],
+          }
+          prev[it.parentId ?? ROOT_ID].childrenIds.push(it.id)
+        })
+      }),
+    )
+
+    return unique.map((it) => this.state.items[it.id])
   }
 
   remove(id: string): TreeItem<T>[] {

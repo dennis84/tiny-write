@@ -81,7 +81,7 @@ export const codeMirror = `
         cursor: var(--cursor-pointer);
         font-family: var(--font-family-monospace);
         padding: 2px 4px;
-        height: 32px;
+        height: var(--button-height);
         border-radius: var(--border-radius);
       }
     }
@@ -178,7 +178,7 @@ export const codeMirrorTooltip = `
       li {
         padding: 6px 8px !important;
         margin: 0;
-        min-height: 32px;
+        min-height: var(--button-height);
         cursor: var(--cursor-pointer);
         border-radius: var(--border-radius);
         &:hover, &.selected {

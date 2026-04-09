@@ -6,12 +6,12 @@ use anyhow::{anyhow, Result};
 use dirs::home_dir;
 use futures::stream::StreamExt;
 use futures::{AsyncBufReadExt, TryStreamExt};
-use tracing::debug;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use tauri::ipc::Channel;
 use tokio::sync::RwLock;
+use tracing::debug;
 
 #[derive(Clone, Copy, Serialize, Deserialize, Debug, Eq, PartialEq)]
 #[serde(rename_all = "lowercase")]
@@ -25,13 +25,9 @@ pub enum Role {
 #[serde(tag = "type")]
 pub enum ContentItem {
     #[serde(rename = "text")]
-    Text {
-        text: String,
-    },
+    Text { text: String },
     #[serde(rename = "image_url")]
-    ImageUrl {
-        image_url: ImageUrl,
-    },
+    ImageUrl { image_url: ImageUrl },
 }
 
 #[derive(Serialize, Deserialize, Debug, Eq, PartialEq)]
@@ -72,12 +68,6 @@ impl Request {
             messages,
         }
     }
-}
-
-#[derive(Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct CreateThreadResponse {
-    thread_id: String,
 }
 
 #[derive(Deserialize, Clone)]
@@ -148,7 +138,7 @@ impl CopilotChatService {
         if streaming && request.stream {
             let mut stream = response
                 .bytes_stream()
-                .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))
+                .map_err(std::io::Error::other)
                 .into_async_read()
                 .lines();
 

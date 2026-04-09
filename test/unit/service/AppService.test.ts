@@ -31,6 +31,7 @@ test.each([
   {code: true, expected: '/users/me/cwd'},
 ])('getBasePath - from file', async (data) => {
   const file = {
+    type: 'file' as const,
     id: '1',
     ydoc: new Uint8Array(),
     lastModified,

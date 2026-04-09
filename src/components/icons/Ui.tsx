@@ -197,16 +197,37 @@ export const IconSend = () => (
 )
 
 import LucideChevronDown from '~icons/lucide/chevron-down'
-export const IconKeyboardArrowDown = () => (
+export const IconChevronDown = () => (
   <SvgIcon>
     <LucideChevronDown />
   </SvgIcon>
 )
 
 import LucideChevronUp from '~icons/lucide/chevron-up'
-export const IconKeyboardArrowUp = () => (
+export const IconChevronUp = () => (
   <SvgIcon>
     <LucideChevronUp />
+  </SvgIcon>
+)
+
+import LucideChevronRight from '~icons/lucide/chevron-right'
+export const IconChevronRight = () => (
+  <SvgIcon>
+    <LucideChevronRight />
+  </SvgIcon>
+)
+
+import LucideChevronLeft from '~icons/lucide/chevron-left'
+export const IconChevronLeft = () => (
+  <SvgIcon>
+    <LucideChevronLeft />
+  </SvgIcon>
+)
+
+import LucideDot from '~icons/lucide/dot'
+export const IconDot = () => (
+  <SvgIcon>
+    <LucideDot />
   </SvgIcon>
 )
 
@@ -333,20 +354,6 @@ import LucideUsersRound from '~icons/lucide/users-round'
 export const IconGroup = () => (
   <SvgIcon>
     <LucideUsersRound />
-  </SvgIcon>
-)
-
-import LucideChevronRight from '~icons/lucide/chevron-right'
-export const IconChevronRight = () => (
-  <SvgIcon>
-    <LucideChevronRight />
-  </SvgIcon>
-)
-
-import LucideChevronLeft from '~icons/lucide/chevron-left'
-export const IconChevronLeft = () => (
-  <SvgIcon>
-    <LucideChevronLeft />
   </SvgIcon>
 )
 

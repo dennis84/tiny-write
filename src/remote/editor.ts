@@ -77,8 +77,21 @@ export const toAbsolutePath = async (path: string, basePath?: string): Promise<s
   return invoke('to_absolute_path', {path, basePath})
 }
 
-export const listContents = async (path: string, basePath: string | undefined = undefined) => {
-  return (await invoke('list_contents', {path, basePath})) as string[]
+export interface DirEntry {
+  name: string
+  path: string
+  relativePath: string
+  isDirectory: boolean
+  isFile: boolean
+  isSymlink: boolean
+}
+
+export const listContents = async (
+  path: string,
+  basePath?: string,
+  maxItems?: number,
+): Promise<DirEntry[]> => {
+  return await invoke('list_contents', {path, basePath, maxItems})
 }
 
 export const saveFile = async (file: File): Promise<string> => {

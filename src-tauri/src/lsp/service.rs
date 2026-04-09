@@ -14,9 +14,9 @@ use async_lsp::lsp_types::{
     TextDocumentContentChangeEvent, TextDocumentItem, TextDocumentSyncCapability,
     TextDocumentSyncKind, TraceValue, VersionedTextDocumentIdentifier, WorkspaceFolder,
 };
-use tracing::debug;
 use tauri::{AppHandle, Manager, Runtime};
 use tauri_plugin_cli::CliExt;
+use tracing::debug;
 
 use crate::editor::editor_state::{Delete, Document, EditorState, Insert};
 use crate::lsp::registry::LspRegistry;

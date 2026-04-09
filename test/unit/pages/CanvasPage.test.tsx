@@ -3,7 +3,8 @@ import {expect, test, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
 import {DB} from '@/db'
 import {createState} from '@/state'
-import {type Canvas, Page} from '@/types'
+import {Page} from '@/types'
+import {createCanvas} from '../testutil/data'
 import {renderMain, stubLocation} from '../testutil/util'
 
 vi.mock('@/db', () => ({
@@ -14,14 +15,6 @@ vi.mock('@/db', () => ({
 
 const WsMock = vi.fn()
 vi.stubGlobal('WebSocket', WsMock)
-
-const createCanvas = (props: Partial<Canvas> = {}): Canvas => ({
-  id: '1',
-  camera: {point: [0, 0], zoom: 1},
-  elements: [],
-  lastModified: new Date(),
-  ...props,
-})
 
 test('share - new canvas page', async () => {
   stubLocation('/canvas')

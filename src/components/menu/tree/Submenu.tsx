@@ -15,7 +15,7 @@ import {IconDelete} from '../../icons/Ui'
 import {Link} from '../Link'
 import {Label, Sub} from '../Style'
 import {NewLink} from './NewLink'
-import {HighlightContent, TreeGroup} from './Style'
+import {HighlightContent, TreeNode} from './Style'
 import {Tooltip, type TooltipState} from './Tooltip'
 import {TreeItem} from './TreeItem'
 
@@ -40,9 +40,9 @@ const TreeUiContext = createContext<TreeUiContextValue>()
 export const useTreeUi = () => useContext(TreeUiContext)!
 
 const Tree = (p: {childrenIds: string[]; level: number; selected?: boolean}) => (
-  <TreeGroup selected={p.selected}>
+  <TreeNode selected={p.selected}>
     <For each={p.childrenIds}>{(id) => <TreeItem id={id} level={p.level} />}</For>
-  </TreeGroup>
+  </TreeNode>
 )
 
 interface Props {

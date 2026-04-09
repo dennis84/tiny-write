@@ -1,22 +1,22 @@
 import {DragGesture} from '@use-gesture/vanilla'
-import {createSignal, Match, onCleanup, onMount, Show, Suspense, Switch} from 'solid-js'
+import {createSignal, onCleanup, onMount, Show, Suspense} from 'solid-js'
 import {Portal} from 'solid-js/web'
+import {isTauri} from '@/env'
 import {useTitle} from '@/hooks/use-title'
 import {CanvasService} from '@/services/CanvasService'
 import {FileService} from '@/services/FileService'
-import type {MenuTreeItem} from '@/services/TreeService'
-import {isCanvas, isCodeFile, isFile, isProject, useState} from '@/state'
-import {Page} from '@/types'
-import {IconCanvas, IconFileText, IconFolderRoot} from '../../icons/File'
-import {LangIcon} from '../../icons/LangIcon'
+import {isCanvas, isDeletable, isDirectory, isFile, isFilename, isProject, useState} from '@/state'
+import {type MenuTreeItem, Page} from '@/types'
 import {IconMoreHoriz} from '../../icons/Ui'
-import {Ghost, GhostContainer, LinkMenu, TreeLinkCorner, TreeLinkItem, TreeLinkTitle} from './Style'
+import {Ghost, GhostContainer, TreeLinkItem, TreeLinkMenu, TreeLinkTitle} from './Style'
 import {useTreeUi} from './Submenu'
+import {TreeLinkIcon} from './TreeLinkIcon'
+import {TreeLinkToggle} from './TreeLinkToggle'
 
 export const TreeLink = (p: {node: MenuTreeItem; level: number; selected?: boolean}) => {
   let ghostRef!: HTMLDivElement
   let ref!: HTMLSpanElement
-  let anchor!: HTMLElement
+  let anchor!: HTMLButtonElement
 
   const [grabbing, setGrabbing] = createSignal(false)
   const {
@@ -32,14 +32,47 @@ export const TreeLink = (p: {node: MenuTreeItem; level: number; selected?: boole
   const title = useTitle({item: p.node.value})
   const tree = useTreeUi()
 
-  const onClick = async () => {
-    if (!isProject(p.node.value)) locationService.openItem(p.node.value)
+  const onToggleClick = async () => {
+    if (isFile(p.node.value) || isCanvas(p.node.value)) {
+      await treeService.collapse(p.node.id)
+      return
+    }
+
+    return onClick()
   }
 
-  const onCornerClick = () => treeService.collapse(p.node.id)
+  const onClick = async () => {
+    const item = p.node.value
+    if (isFilename(item)) {
+      const file = await fileService.newFileByPath({
+        id: item.id,
+        path: item.path,
+        projectId: item.projectId,
+      })
 
-  const getCurrentId = () =>
-    locationService.canvasId ?? locationService.editorId ?? locationService.codeId
+      if (file) {
+        treeService.setValue(file)
+        locationService.openItem(file)
+      }
+      return
+    }
+
+    if (isProject(item) || isDirectory(item)) {
+      if (isTauri()) {
+        await projectService.toggleDirectory(item)
+      }
+
+      return
+    }
+
+    locationService.openItem(item)
+  }
+
+  const isActive = (id: string) =>
+    id === locationService.canvasId ||
+    id === locationService.editorId ||
+    id === locationService.codeId ||
+    id === fileService.activeFile()
 
   const updateItems = async (items: MenuTreeItem[]) => {
     for (const item of items) {
@@ -92,7 +125,7 @@ export const TreeLink = (p: {node: MenuTreeItem; level: number; selected?: boole
           } else if (!isProject(p.node.value)) {
             tree.setDropState({pos: 'add', targetId})
           }
-        } else if (el?.closest('#grid')) {
+        } else if (canvasService.canvasRef?.contains(el)) {
           tree.setDropState({pos: 'open'})
         } else if (el === tree.binRef()) {
           tree.setDropState({pos: 'delete'})
@@ -145,58 +178,30 @@ export const TreeLink = (p: {node: MenuTreeItem; level: number; selected?: boole
   return (
     <>
       <TreeLinkItem
-        deleted={tree.showDeleted && !p.node.value.deleted}
-        active={p.node.value.id === getCurrentId()}
+        deleted={tree.showDeleted && isDeletable(p.node.value) && !p.node.value.deleted}
+        active={isActive(p.node.value.id)}
+        isOnCanvas={canvasService.isOnCanvas(p.node.id)}
         selected={p.selected || p.node === tree.currentTooltip()?.state.selected}
         data-id={p.node.value.id}
         data-testid="tree_link"
       >
-        <TreeLinkCorner
-          onClick={onCornerClick}
-          expandable={p.node.childrenIds.length > 0}
-          level={p.level}
-          highlight={treeService.isCollapsed(p.node.id)}
-        >
-          <Switch>
-            <Match when={isCanvas(p.node.value)}>
-              <IconCanvas />
-            </Match>
-            <Match when={isCodeFile(p.node.value)}>
-              <Show
-                when={
-                  isFile(p.node.value) &&
-                  (p.node.value.codeLang || !p.node.value.codeLang) /* eslint-disable-line */
-                }
-                keyed
-              >
-                <LangIcon name={isFile(p.node.value) ? p.node.value.codeLang : undefined} />
-              </Show>
-            </Match>
-            <Match when={isFile(p.node.value)}>
-              <IconFileText />
-            </Match>
-            <Match when={isProject(p.node.value)}>
-              <IconFolderRoot />
-            </Match>
-          </Switch>
-        </TreeLinkCorner>
+        <TreeLinkToggle node={p.node} level={p.level} onClick={onToggleClick} />
         <TreeLinkTitle
           ref={ref}
           onClick={onClick}
           grabbing={grabbing()}
-          highlight={canvasService.isOnCanvas(p.node.id)}
           data-testid="tree_link_title"
         >
+          <TreeLinkIcon node={p.node} />
           <Suspense>{title()}</Suspense>
         </TreeLinkTitle>
-        <LinkMenu
+        <TreeLinkMenu
           ref={anchor}
-          selected={tree.currentTooltip()?.state.selected === p.node}
           onClick={(e: MouseEvent) => showLinkMenu(e, anchor, p.node)}
           data-testid="tree_link_menu"
         >
           <IconMoreHoriz />
-        </LinkMenu>
+        </TreeLinkMenu>
       </TreeLinkItem>
       <Show when={grabbing()}>
         <Portal mount={appService.layoutRef}>

@@ -39,7 +39,7 @@ pub fn dirname<P: AsRef<Path>>(p: P) -> Result<PathBuf> {
 pub fn basename<P: AsRef<Path>>(p: P) -> Result<PathBuf> {
     p.as_ref()
         .file_name()
-        .map(|name| PathBuf::from(name))
+        .map(PathBuf::from)
         .ok_or_else(|| anyhow!("No basename for path: {:?}", p.as_ref()))
 }
 

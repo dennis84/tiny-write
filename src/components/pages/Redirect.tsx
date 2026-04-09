@@ -1,5 +1,6 @@
 import {useLocation, useNavigate} from '@solidjs/router'
 import {createRenderEffect, on} from 'solid-js'
+import {basename} from '@/remote/editor'
 import {info} from '@/remote/log'
 import {useState} from '@/state'
 import type {LocationState} from '@/types'
@@ -25,14 +26,19 @@ export const Redirect = () => {
 
         if (store.args?.source && !argPath) {
           info(`Create project for dir`)
-          const project = await projectService.newProject({worktreePath: store.args.source})
+          const name = await basename(store.args.source)
+          const project = await projectService.newProject({
+            name,
+            worktreePath: store.args.source,
+          })
+
           locationService.openItem(project)
           return
         }
 
         if (argPath) {
           info(`Redirect to new file by path (path=${path}, newFile=${newFile})`)
-          const file = await fileService.newFileByPath(path, newFile)
+          const file = await fileService.newFileByPath({path, newFile})
           return locationService.openItem(file, {selection})
         }
 

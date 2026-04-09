@@ -202,6 +202,7 @@ test('open - file with path', async () => {
   })
 
   const file = {
+    type: 'file' as const,
     id: '1',
     ydoc: createYUpdate('1', ['Text']),
     lastModified,
@@ -244,6 +245,7 @@ test('open - read file - file not found', async () => {
   })
 
   const file = {
+    type: 'file' as const,
     id: '1',
     ydoc: createYUpdate('1', ['Text']),
     lastModified,

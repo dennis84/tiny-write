@@ -1,7 +1,6 @@
 import {createContext, useContext} from 'solid-js'
 import * as v from 'valibot'
 import type {Ctrl} from './services'
-import {FileService} from './services/FileService'
 import {
   type Canvas,
   type CanvasBoxElement,
@@ -13,8 +12,11 @@ import {
   type CanvasVideoElement,
   type Config,
   ConfigSchema,
+  type Directory,
   ElementType,
   type File,
+  type Filename,
+  type MenuItem,
   type Project,
   type State,
   type Thread,
@@ -41,24 +43,26 @@ export const isImageElement = (el?: CanvasElement): el is CanvasImageElement =>
 export const isVideoElement = (el?: CanvasElement): el is CanvasVideoElement =>
   el?.type === ElementType.Video
 
-export const isFile = (it: any): it is File => it?.ydoc !== undefined
+export const isFile = (it: any): it is File => it?.type === 'file'
 
-export const isProject = (it: any): it is Project => it.name !== undefined
+export const isProject = (it: any): it is Project => it?.type === 'project'
 
-export const isLocalFile = (it: any): boolean =>
+export const isFilename = (it: any): it is Filename => it?.type === 'filename'
+
+export const isDirectory = (it: any): it is Directory => it?.type === 'directory'
+
+export const isLocalFile = (it: any): it is File =>
   isFile(it) && (it.path !== undefined || it.newFile !== undefined)
 
-export const isCodeFile = (it: any): it is File => {
-  if (!isFile(it)) return false
-  if (!it) return false
-  if (it.code) return true
-  const codeLang = FileService.guessCodeLang(it)
-  return codeLang !== undefined && codeLang !== 'markdown'
-}
-
-export const isCanvas = (it: any): it is Canvas => it?.camera
+export const isCanvas = (it: any): it is Canvas => it?.type === 'canvas'
 
 export const isThread = (it: any): it is Thread => Array.isArray(it?.messages)
+
+export const isProjectItem = (it: any): boolean =>
+  it?.type === 'filename' || it?.type === 'directory' || (it?.type === 'file' && it.projectId)
+
+export const isDeletable = (it?: MenuItem): it is File | Canvas | Project =>
+  (isFile(it) && !isProjectItem(it)) || isCanvas(it) || isProject(it)
 
 export const StateContext = createContext<Ctrl>({} as Ctrl)
 

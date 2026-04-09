@@ -2,7 +2,7 @@ import {beforeEach, expect, test, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
 import {DB} from '@/db'
 import {TreeService} from '@/services/TreeService'
-import {type Canvas, ElementType, type File} from '@/types'
+import {createCanvas, createFile} from '../testutil/data'
 import {expectTree} from '../testutil/tree'
 
 beforeEach(() => {
@@ -15,20 +15,6 @@ vi.mock('@/db', () => ({
   }),
 }))
 
-const createFile = (props: Partial<File> = {}): File => ({
-  id: 'file_1',
-  ydoc: new Uint8Array(),
-  versions: [],
-  ...props,
-})
-
-const createCanvas = (props: Partial<Canvas> = {}): Canvas => ({
-  id: 'canvas_1',
-  elements: [{id: 'file_1', type: ElementType.Editor}],
-  camera: {point: [0, 0], zoom: 1},
-  ...props,
-})
-
 test('reset', () => {
   const service = new TreeService()
 
@@ -38,7 +24,7 @@ test('reset', () => {
     createFile({id: 'file_3'}),
     createFile({id: 'file_4'}),
     createCanvas({id: 'canvas_5'}),
-    {id: 'project_1', name: 'Project 1'},
+    {type: 'project', id: 'project_1', name: 'Project 1'},
   ])
 
   expectTree(
@@ -88,7 +74,7 @@ test('isMoveAllowed', async () => {
     createFile({id: 'file_1'}),
     createFile({id: 'file_2', parentId: 'file_1'}),
     createFile({id: 'file_3'}),
-    {id: 'project_1', name: 'Project 1'},
+    {type: 'project', id: 'project_1', name: 'Project 1'},
   ])
 
   expect(service.isMoveAllowed('file_3', 'file_2')).toBeTruthy()

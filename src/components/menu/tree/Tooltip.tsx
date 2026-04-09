@@ -1,13 +1,22 @@
 import {Match, Show, Switch} from 'solid-js'
 import {DialogList, TooltipButton, TooltipDivider} from '@/components/dialog/Style'
-import {IconCanvas, IconCodeBlocks, IconFileText, IconFolderRoot} from '@/components/icons/File'
+import {IconCanvas, IconCodeBlocks, IconFolderRoot} from '@/components/icons/File'
+import {LangIcon} from '@/components/icons/LangIcon'
 import {IconClose, IconDelete, IconEdit, IconFocus, IconHistory} from '@/components/icons/Ui'
 import {useConfirmDialog} from '@/hooks/use-confirm-dialog'
 import {useInputLine} from '@/hooks/use-input-line'
 import {CanvasService} from '@/services/CanvasService'
 import type {Dialog} from '@/services/DialogService'
-import type {MenuTreeItem} from '@/services/TreeService'
-import {isCanvas, isFile, isLocalFile, isProject, useState} from '@/state'
+import {
+  isCanvas,
+  isDeletable,
+  isFile,
+  isLocalFile,
+  isProject,
+  isProjectItem,
+  useState,
+} from '@/state'
+import type {MenuTreeItem} from '@/types'
 
 export interface TooltipState {
   selected?: MenuTreeItem
@@ -150,9 +159,9 @@ export const Tooltip = (props: {dialog: Dialog<TooltipState>}) => {
         </TooltipButton>
         <TooltipDivider />
       </Show>
-      <Show when={selected && !selected.value.deleted && isFile(selected.value)}>
+      <Show when={isDeletable(selected?.value) && !selected.value.deleted}>
         <TooltipButton onClick={onAddFile} data-testid="add_file">
-          <IconFileText />
+          <LangIcon name="markdown" />
           Add file
         </TooltipButton>
         <TooltipButton onClick={onAddCanvas} data-testid="add_canvas">
@@ -165,14 +174,14 @@ export const Tooltip = (props: {dialog: Dialog<TooltipState>}) => {
         </TooltipButton>
         <TooltipDivider />
       </Show>
-      <Show when={selected && !isLocalFile(selected)}>
+      <Show when={!isLocalFile(selected?.value) && !isProjectItem(selected?.value)}>
         <TooltipButton onClick={onRename} data-testid="rename">
           <IconEdit />
           Rename
         </TooltipButton>
       </Show>
       <Switch>
-        <Match when={selected?.value.deleted}>
+        <Match when={isDeletable(selected?.value) && selected.value.deleted}>
           <TooltipButton onClick={onRestore} data-testid="restore">
             <IconHistory />
             Restore
@@ -182,13 +191,13 @@ export const Tooltip = (props: {dialog: Dialog<TooltipState>}) => {
             Delete forever
           </TooltipButton>
         </Match>
-        <Match when={selected && isLocalFile(selected.value)}>
+        <Match when={isLocalFile(selected?.value) && !isProjectItem(selected.value)}>
           <TooltipButton onClick={() => deleteNode(true)} data-testid="close">
             <IconClose />
             Close
           </TooltipButton>
         </Match>
-        <Match when={selected}>
+        <Match when={isDeletable(selected?.value)}>
           <TooltipButton onClick={() => deleteNode()} data-testid="delete">
             <IconDelete />
             Delete
@@ -197,7 +206,7 @@ export const Tooltip = (props: {dialog: Dialog<TooltipState>}) => {
       </Switch>
       <Show when={!selected}>
         <TooltipButton onClick={onNewFile} data-testid="new_file">
-          <IconFileText />
+          <LangIcon name="markdown" />
           New file
         </TooltipButton>
         <TooltipButton onClick={onNewCanvas} data-testid="new_canvas">

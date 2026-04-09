@@ -3,15 +3,7 @@ import {type SetStoreFunction, type Store, unwrap} from 'solid-js/store'
 import {DB} from '@/db'
 import {isTauri} from '@/env'
 import {info} from '@/remote/log'
-import {
-  isCanvas,
-  isCodeElement,
-  isCodeFile,
-  isEditorElement,
-  isFile,
-  isProject,
-  isThread,
-} from '@/state'
+import {isCanvas, isCodeElement, isEditorElement, isFile, isProject, isThread} from '@/state'
 import {
   type Canvas,
   type CanvasElement,
@@ -91,7 +83,7 @@ export class LocationService {
     if (!item) return this.navigator('/')
     const state = {...this.state, share: false, ...locState}
 
-    if (isCodeFile(item)) {
+    if (isFile(item) && item.code) {
       const newFile = item.newFile
       return this.navigator(`/code/${item.id}`, {state: {...state, newFile}})
     } else if (isFile(item)) {

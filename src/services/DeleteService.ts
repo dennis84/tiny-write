@@ -1,9 +1,9 @@
 import {info} from '@/remote/log'
-import {isCanvas, isFile} from '@/state'
-import type {Canvas, File} from '@/types'
+import {isCanvas, isDeletable, isFile} from '@/state'
+import type {Canvas, File, MenuTreeItem} from '@/types'
 import type {CanvasService} from './CanvasService'
 import type {FileService} from './FileService'
-import type {MenuTreeItem, TreeService} from './TreeService'
+import type {TreeService} from './TreeService'
 
 // File: /editor/:id or /code/:id
 // Canvas: /canvas/:id
@@ -26,7 +26,7 @@ export class DeleteService {
     let navigateTo: NavigateTo
 
     const doEmptyBin = async (node: MenuTreeItem): Promise<boolean> => {
-      let shouldDelete = node.value.deleted ?? false
+      let shouldDelete = (isDeletable(node.value) && node.value.deleted) ?? false
 
       for (const n of node.childrenIds) {
         const item = this.treeService.getItem(n)
@@ -91,7 +91,7 @@ export class DeleteService {
         for (const rootId of this.treeService.tree.rootItemIds) {
           const rootNode = this.treeService.getItem(rootId)
           // Skip deleted nodes
-          if (rootNode?.value.deleted) continue
+          if (isDeletable(rootNode?.value) && rootNode.value.deleted) continue
           // Maybe exist loop if a targetId was found
           if (rootId === node.id) {
             passedNode = true

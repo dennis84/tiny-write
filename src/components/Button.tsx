@@ -2,7 +2,7 @@ import {createSignal, For, type JSX, onCleanup, onMount} from 'solid-js'
 import {styled} from 'solid-styled-components'
 
 const Common = `
-  height: 32px;
+  height: var(--button-height);
   padding: 0 10px;
   border-radius: var(--border-radius);
   font-size: var(--menu-font-size);
@@ -169,7 +169,7 @@ const Ripples = () => {
   )
 }
 
-type ButtonAttrs = JSX.ButtonHTMLAttributes<HTMLButtonElement> & {active?: boolean}
+export type ButtonAttrs = JSX.ButtonHTMLAttributes<HTMLButtonElement> & {active?: boolean}
 
 export const Button = (props: ButtonAttrs) => (
   <ButtonEl {...props}>

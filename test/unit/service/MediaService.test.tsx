@@ -271,6 +271,7 @@ test('dropPaths - image on editor with basePath', async () => {
   })
 
   const file = {
+    type: 'file' as const,
     id: '1',
     ydoc: pmUtil.createYUpdate('1', []),
     path: '/users/me/project/README.md',
@@ -304,7 +305,12 @@ test('dropPaths - text file on editor', async () => {
     expect(ctrl.fileService.resourceState).toEqual('ready')
   })
 
-  const file = {id: '1', ydoc: pmUtil.createYUpdate('1', []), versions: []}
+  const file = {
+    type: 'file' as const,
+    id: '1',
+    ydoc: pmUtil.createYUpdate('1', []),
+    versions: [],
+  }
   await ctrl.fileService.addFile(file)
   ctrl.locationService.openItem(file)
 

@@ -1,11 +1,11 @@
 use anyhow::anyhow;
 use async_lsp::lsp_types::InitializeResult;
-use tracing::{debug, info};
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::{collections::hash_map::Entry, path::Path};
 use tokio::sync::RwLock;
 use tokio::task::JoinHandle;
+use tracing::{debug, info};
 
 use crate::editor::editor_state::{Document, Language};
 

@@ -33,8 +33,6 @@ export const Sub = styled.nav`
   position: relative;
 `
 
-export const ITEM_HEIGHT = 'calc(var(--menu-font-size) * 2)'
-
 export const itemCss = `
   width: 100%;
   padding: 3px;
@@ -44,7 +42,7 @@ export const itemCss = `
   align-items: center;
   color: var(--foreground);
   font-size: var(--menu-font-size);
-  line-height: ${ITEM_HEIGHT};
+  line-height: var(--button-height);
   font-family: var(--menu-font-family);
   text-align: left;
   > .icon {

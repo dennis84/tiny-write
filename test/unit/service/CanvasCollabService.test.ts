@@ -6,17 +6,10 @@ import {CanvasCollabService} from '@/services/CanvasCollabService'
 import type {CanvasService} from '@/services/CanvasService'
 import type {CollabService} from '@/services/CollabService'
 import {type Canvas, ElementType} from '@/types'
+import {createCanvas} from '../testutil/data'
 
 beforeEach(() => {
   vi.resetAllMocks()
-})
-
-const createCanvas = (props: Partial<Canvas> = {}): Canvas => ({
-  id: 'c1',
-  camera: {point: [0, 0], zoom: 1},
-  elements: [],
-  lastModified: new Date(),
-  ...props,
 })
 
 const setup = (props: {canvas: Partial<Canvas>} = {canvas: {}}) => {

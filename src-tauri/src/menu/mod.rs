@@ -4,9 +4,9 @@ use tauri::{AppHandle, Runtime};
 #[cfg(target_os = "macos")]
 use crate::install_cli::install_cli;
 #[cfg(target_os = "macos")]
-use tracing::{error, info};
-#[cfg(target_os = "macos")]
 use tauri::menu::*;
+#[cfg(target_os = "macos")]
+use tracing::{error, info};
 
 pub fn setup_menu<R: Runtime>(_app_handle: &AppHandle<R>) -> Result<()> {
     #[cfg(target_os = "macos")]

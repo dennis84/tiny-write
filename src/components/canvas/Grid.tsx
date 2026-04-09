@@ -21,7 +21,7 @@ export const Grid = () => {
   const {canvasService} = useState()
 
   return (
-    <GridSvg id="grid" xmlns="http://www.w3.org/2000/svg">
+    <GridSvg xmlns="http://www.w3.org/2000/svg">
       <defs>
         {STEPS.map(([r, size], i) => {
           const grid = 10

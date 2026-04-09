@@ -41,7 +41,13 @@ beforeEach(() => {
 test('init - existing', async () => {
   const initial = createState()
 
-  const file = {id: '2', ydoc: createYUpdate('2', ['Test 2']), lastModified, versions: []}
+  const file = {
+    type: 'file' as const,
+    id: '2',
+    ydoc: createYUpdate('2', ['Test 2']),
+    lastModified,
+    versions: [],
+  }
 
   const [, setState] = createStore(initial)
   const fileService = mock<FileService>()
@@ -82,11 +88,12 @@ test('init - not found', async () => {
     setState,
   )
 
-  expect(service.init('3')).rejects.toThrowError(/^File not found.*/)
+  expect(service.init('3')).rejects.toThrow(/^File not found.*/)
 })
 
 test('init - share', async () => {
   const file = {
+    type: 'file' as const,
     id: 'room-123',
     ydoc: createYUpdate('room-123', ['Test']),
     lastModified,
@@ -124,6 +131,7 @@ test('clear - with text', async () => {
   const locationService = mock<LocationService>()
 
   const file = {
+    type: 'file' as const,
     id: '1',
     ydoc: createYUpdate('1', ['Test']),
     lastModified,
@@ -158,6 +166,7 @@ test('selectBox', async () => {
   const locationService = mock<LocationService>()
 
   const file = {
+    type: 'file' as const,
     id: '1',
     ydoc: createYUpdate('1', ['Test']),
     lastModified,
@@ -182,5 +191,5 @@ test('selectBox', async () => {
   const box = new Box(0, 0, 100, 100)
   service.selectBox(box, true, false)
 
-  expect(selectService.selectBox).toBeCalledWith(box, editorView, true, false)
+  expect(selectService.selectBox).toHaveBeenCalledWith(box, editorView, true, false)
 })

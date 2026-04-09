@@ -1,7 +1,7 @@
-use tracing::error;
 use tauri::ipc::Channel;
 use tauri::path::SafePathBuf;
 use tauri::{AppHandle, Manager, Result, Runtime};
+use tracing::error;
 
 use crate::copilot::lsp_service::CopilotLspService;
 

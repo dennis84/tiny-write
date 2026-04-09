@@ -11,7 +11,6 @@ export const Keymap = () => {
   const {
     store,
     appService,
-    editorService,
     fileService,
     collabService,
     canvasService,
@@ -60,12 +59,6 @@ export const Keymap = () => {
       if (els) {
         canvasCollabService.addElements(els)
       }
-    }
-  }
-
-  const onClear = async () => {
-    if (locationService.page === Page.Editor) {
-      await editorService.clear()
     }
   }
 
@@ -161,7 +154,7 @@ export const Keymap = () => {
     const url = new URL(first.uri)
     const selection = first.range
 
-    const file = await fileService.newFileByPath(url.pathname)
+    const file = await fileService.newFileByPath({path: url.pathname})
 
     locationService.openItem(file, {selection})
   }
@@ -172,7 +165,6 @@ export const Keymap = () => {
     [`${mod}-r`]: onReload,
     [`${mod}-q`]: onQuit,
     [`${mod}-n`]: onNew,
-    [`${mod}-w`]: onClear,
     [`${mod}-s`]: onSave,
     [`${mod}-Enter`]: onFullscreen,
     'Alt-Enter': onFullscreen,

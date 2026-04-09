@@ -1,5 +1,6 @@
 import {styled} from 'solid-styled-components'
-import {ITEM_HEIGHT, itemCss} from '../Style'
+import {type ButtonAttrs, IconButton} from '@/components/Button'
+import {itemCss} from '../Style'
 
 export const HighlightContent = styled.div`
   position: absolute;
@@ -44,19 +45,30 @@ export const DropLine = styled.div<{level: number}>`
   margin-left: ${(p) => 20 * p.level}px;
 `
 
-interface ItemProps {
-  deleted?: boolean
-  selected?: boolean
-  active?: boolean
-}
-
 // biome-ignore format: ternary breaks ugly
-export const TreeGroup = styled.div<ItemProps>`
+export const TreeNode = styled.div<{selected?: boolean}>`
+  display: grid;
+  gap: 2px;
   ${(p) => p.selected ? `
     background: var(--primary-background-10);
     border-radius: var(--border-radius-small);
   ` : ''}
 `
+
+// biome-ignore format: ternary breaks ugly
+export const TreeLinkMenu = styled<ButtonAttrs & {selected?: boolean}>(IconButton)`
+  flex-shrink: 0;
+  justify-self: flex-end;
+  margin-left: auto;
+  opacity: 0;
+`
+
+interface ItemProps {
+  deleted?: boolean
+  selected?: boolean
+  active?: boolean
+  isOnCanvas?: boolean
+}
 
 // biome-ignore format: ternary breaks ugly
 export const TreeLinkItem = styled.div<ItemProps>`
@@ -64,93 +76,58 @@ export const TreeLinkItem = styled.div<ItemProps>`
   user-select: none;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
-  align-items: start;
+  align-items: center;
+  border-radius: var(--border-radius-small);
+  .icon {
+    color: var(--background-20);
+  }
+  &:hover {
+    &, .icon {
+      color: var(--primary-background);
+    }
+    background: var(--background-90);
+    button {
+      opacity: 1;
+      color: var(--primary-background);
+    }
+  }
   ${(p) => p.deleted ? `
     opacity: 0.3;
     pointer-events: none;
   ` : ''}
+  ${(p) => p.selected ? `
+    background: var(--background-90);
+    button {
+      opacity: 1;
+    }
+  ` : ''}
+  ${(p) => p.isOnCanvas ? `
+    font-weight: bold;
+    font-family: var(--menu-font-family-bold);
+    &, .icon, button {
+      color: var(--primary-background);
+    }
+  ` : ''}
   ${(p) => p.active ? `
     font-weight: bold;
     font-family: var(--menu-font-family-bold);
-    color: var(--primary-background);
-  ` : ''}
-  ${(p) => p.selected ? `
     background: var(--primary-background-10);
-    border-radius: var(--border-radius-small);
-  ` : ''}
-  &:hover {
-    color: var(--primary-background);
-    background: var(--background-90);
-    border-radius: var(--border-radius-small);
-    > span {
-      opacity: 1;
+    &, .icon, button {
+      color: var(--primary-background);
     }
-  }
+    &:hover {
+      background: var(--primary-background-10);
+    }
+  ` : ''}
 `
 
-interface CornerProps {
-  highlight?: boolean
-  level?: number
-  expandable?: boolean
-}
-
-// biome-ignore format: ternary breaks ugly
-export const TreeLinkCorner = styled.i<CornerProps>`
-  margin-right: 10px;
+export const TreeLinkTitle = styled.span<{grabbing?: boolean}>`
   cursor: var(--cursor-pointer);
-  font-family: monospace;
-  font-weight: normal;
-  font-style: normal;
   display: flex;
   align-items: center;
-  justify-content: center;
-  color: var(--background-50);
-  height: ${ITEM_HEIGHT};
-  ${(p) => (p.highlight ? `color: var(--primary-background);` : "")}
-  ${(p) => (p.level ? `margin-left: ${String(20 * p.level)}px;` : "")}
-  ${(p) => p.expandable ? `
-    &:hover {
-      background: var(--background-90);
-      border-radius: var(--border-radius-small);
-    }
-  ` : ''}
-`
-
-interface TitleProps {
-  highlight?: boolean
-  grabbing?: boolean
-}
-
-export const TreeLinkTitle = styled.span<TitleProps>`
-  cursor: var(--cursor-pointer);
   width: 100%;
   touch-action: none;
-  word-break: break-all;
-  ${(p) => (p.highlight ? `color: var(--primary-background-80);` : '')}
+  white-space: nowrap;
+  gap: 5px;
   ${(p) => (p.grabbing ? 'cursor: var(--cursor-grabbed);' : '')}
-`
-
-// biome-ignore format: ternary breaks ugly
-export const LinkMenu = styled.span<{selected?: boolean}>`
-  justify-self: flex-end;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: ${ITEM_HEIGHT};
-  width: ${ITEM_HEIGHT};
-  margin-left: auto;
-  cursor: var(--cursor-pointer);
-  opacity: 0;
-  border-radius: var(--border-radius);
-  color: var(--foreground);
-  ${(p) => p.selected ? `
-    opacity: 1;
-    background: var(--background-90);
-  ` : ''}
-  &:hover {
-    background: var(--background-90);
-    .icon {
-      font-weight: bold;
-    }
-  }
 `

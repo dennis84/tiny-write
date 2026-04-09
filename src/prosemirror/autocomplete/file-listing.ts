@@ -10,5 +10,5 @@ export const fileListingKeymap = completionKeymap(fileListingPluginKey)
 export const createFileListingPlugin = (appService: AppService) =>
   completionPlugin(fileListingPluginKey, /(\.\.?|~)\/[^\s\])]*/g, async (text) => {
     const basePath = await appService.getBasePath()
-    return listContents(text, basePath)
+    return (await listContents(text, basePath, 10)).map((entry) => entry.relativePath)
   })

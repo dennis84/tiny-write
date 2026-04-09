@@ -11,16 +11,21 @@ import type {LocationService} from '@/services/LocationService'
 import type {SelectService} from '@/services/SelectService'
 import type {TreeService} from '@/services/TreeService'
 import {
-  type Canvas,
   type CanvasEditorElement,
   type CanvasImageElement,
   type CanvasLinkElement,
   type CanvasVideoElement,
   EdgeType,
-  ElementType,
-  type File,
 } from '@/types'
 import {BoxUtil} from '@/utils/BoxUtil'
+import {
+  createCanvas,
+  createEditorElement,
+  createFile,
+  createImageElement,
+  createLinkElement,
+  lastModified,
+} from '../testutil/data'
 import {createYUpdate} from '../testutil/prosemirror-util'
 
 vi.mock('mermaid', () => ({}))
@@ -31,55 +36,6 @@ vi.mock('@/db', () => ({
   }),
 }))
 
-const createFile = (props: Partial<File> = {}): File => ({
-  id: '1',
-  ydoc: createYUpdate('1', []),
-  versions: [],
-  editorView: mock<EditorView>(),
-  ...props,
-})
-
-const createCanvas = (props: Partial<Canvas> = {}): Canvas => ({
-  id: '1',
-  camera: {point: [0, 0], zoom: 1},
-  elements: [],
-  lastModified: new Date(),
-  ...props,
-})
-
-const createEditorElement = (props: Partial<CanvasEditorElement> = {}): CanvasEditorElement => ({
-  id: '1',
-  type: ElementType.Editor,
-  x: 0,
-  y: 0,
-  width: 100,
-  height: 100,
-  ...props,
-})
-
-const createLinkElement = (props: Partial<CanvasLinkElement> = {}): CanvasLinkElement => ({
-  id: '1',
-  type: ElementType.Link,
-  from: '1',
-  fromEdge: EdgeType.Left,
-  to: '2',
-  toEdge: EdgeType.Right,
-  ...props,
-})
-
-const createImageElement = (props: Partial<CanvasImageElement> = {}): CanvasImageElement => ({
-  id: '1',
-  type: ElementType.Image,
-  src: '/path/1.png',
-  x: 0,
-  y: 0,
-  width: 100,
-  height: 100,
-  ...props,
-})
-
-const lastModified = new Date()
-
 beforeEach(() => {
   vi.resetAllMocks()
 })
@@ -87,7 +43,7 @@ beforeEach(() => {
 const fileService = mock<FileService>({newFile: vi.fn()})
 const selectService = mock<SelectService>()
 const collabService = mock<CollabService>()
-const locationService = mock<LocationService>()
+const locationService = mock<LocationService>({canvasId: undefined})
 const treeService = mock<TreeService>()
 
 test('currentCanvas - empty', async () => {
@@ -624,7 +580,6 @@ test.each([
   {toX: 150, toY: 400, x: 0, y: 400, edge: EdgeType.Top},
   {toX: 150, toY: -400, x: 0, y: -750, edge: EdgeType.Bottom},
 ])('newFile - with link', async ({toX, toY, x, y, edge}) => {
-  const _ydoc = new Uint8Array()
   const link = createLinkElement({id: '2', from: '1', toX, toY, to: undefined})
 
   vi.spyOn(DB, 'getCanvases').mockResolvedValue([
@@ -1056,6 +1011,7 @@ test('selectBox - active editor', async () => {
   vi.spyOn(locationService, 'canvasId', 'get').mockReturnValue('1')
 
   fileService.findFileById.mockReturnValue({
+    type: 'file',
     id: '1',
     ydoc: createYUpdate('1', []),
     versions: [],

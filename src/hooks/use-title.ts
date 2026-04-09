@@ -1,7 +1,7 @@
 import {createScheduled, debounce, leadingAndTrailing} from '@solid-primitives/scheduled'
 import {createMemo, createResource, type Resource} from 'solid-js'
-import type {MenuItem} from '@/services/TreeService'
-import {isCanvas, isCodeFile, isFile, isProject, useState} from '@/state'
+import {isCanvas, isDirectory, isFile, isFilename, isProject, useState} from '@/state'
+import type {MenuItem} from '@/types'
 
 interface Props {
   item?: MenuItem
@@ -21,10 +21,12 @@ export const useTitle = (props?: Props): Resource<string | undefined> => {
   const currentItemKey = () => {
     const item = currentItem()
     if (!item) return undefined
-    if (isCodeFile(item)) return `file:${item.id}:${item.title}:${item.path}`
+    if (isFile(item) && item.code) return `file:${item.id}:${item.title}:${item.path}`
     else if (isFile(item)) return `file:${item.id}:${item.title ?? item.lastModified}`
     else if (isCanvas(item)) return `canvas:${item.id}:${item.title ?? ''}`
     else if (isProject(item)) return `project:${item.id}:${item.name}`
+    else if (isFilename(item)) return `filename:${item.id}`
+    else if (isDirectory(item)) return `directory:${item.id}`
   }
 
   const scheduled = createScheduled((fn) => leadingAndTrailing(debounce, fn, 200))
@@ -41,6 +43,10 @@ export const useTitle = (props?: Props): Resource<string | undefined> => {
     } else if (isCanvas(item)) {
       return item.title ?? (props?.fallback !== false ? 'Canvas' : undefined)
     } else if (isProject(item)) {
+      return item.name
+    } else if (isFilename(item)) {
+      return item.name
+    } else if (isDirectory(item)) {
       return item.name
     }
   })

@@ -1,6 +1,5 @@
 use anyhow::anyhow;
 use async_channel::{unbounded, Receiver, Sender};
-use tracing::{debug, info};
 use ropey::Rope;
 use serde::{Deserialize, Serialize};
 use std::collections::hash_map::Entry;
@@ -11,6 +10,7 @@ use std::io::BufWriter;
 use std::path::{Path, PathBuf};
 use std::sync::RwLock;
 use std::time::SystemTime;
+use tracing::{debug, info};
 
 use super::pathutil::to_relative_path;
 

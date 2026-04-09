@@ -9,7 +9,7 @@ import {type Message, Page} from '@/types'
 import {ButtonPrimary, IconButton} from '../Button'
 import {TooltipHelp} from '../dialog/TooltipHelp'
 import {IconStop} from '../icons/Ai'
-import {IconKeyboardArrowDown, IconKeyboardArrowUp, IconSend} from '../icons/Ui'
+import {IconChevronDown, IconChevronUp, IconSend} from '../icons/Ui'
 import {ChatEditor} from './ChatEditor'
 import {ChatInputAttachments} from './ChatInputAttachments'
 import {ModelSelect} from './ModelSelect'
@@ -153,14 +153,14 @@ export const ChatInput = (props: Props) => {
           <Show when={scrollDirection() === 'up'}>
             <ScrollDown>
               <IconButton onClick={() => scrollToTop()}>
-                <IconKeyboardArrowUp />
+                <IconChevronUp />
               </IconButton>
             </ScrollDown>
           </Show>
           <Show when={scrollDirection() === 'down'}>
             <ScrollDown>
               <IconButton onClick={() => scrollToBottom()}>
-                <IconKeyboardArrowDown />
+                <IconChevronDown />
               </IconButton>
             </ScrollDown>
           </Show>

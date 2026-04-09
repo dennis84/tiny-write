@@ -106,7 +106,7 @@ export const TooltipButton = styled.div`
   display: flex;
   align-items: center;
   padding: 5px;
-  height: 32px;
+  height: var(--button-height);
   width: 100%;
   white-space: nowrap;
   cursor: var(--cursor-pointer);

@@ -2,6 +2,7 @@ import type {EditorView as CmEditorView} from '@codemirror/view'
 import type {EditorView} from 'prosemirror-view'
 import * as v from 'valibot'
 import type {Model} from './services/CopilotService'
+import type {TreeItem, TreeState} from './tree'
 
 export interface MergeState {
   doc: string
@@ -178,18 +179,6 @@ export interface CanvasVideoElement extends CanvasBoxElement {
   mime: string
 }
 
-export interface Canvas {
-  id: string
-  parentId?: string
-  leftId?: string
-  title?: string
-  camera: Camera
-  elements: CanvasElement[]
-  deleted?: boolean
-  lastModified?: Date
-  snapToGrid?: boolean
-}
-
 export enum Page {
   Editor = 'editor',
   Canvas = 'canvas',
@@ -256,7 +245,21 @@ export interface State {
 
 export type FileText = Record<string, any>
 
+export interface Canvas {
+  type: 'canvas'
+  id: string
+  parentId?: string
+  leftId?: string
+  title?: string
+  camera: Camera
+  elements: CanvasElement[]
+  deleted?: boolean
+  lastModified?: Date
+  snapToGrid?: boolean
+}
+
 export interface File {
+  type: 'file'
   id: string
   parentId?: string
   leftId?: string
@@ -271,9 +274,11 @@ export interface File {
   deleted?: boolean
   editorView?: EditorView
   codeEditorView?: CmEditorView
+  projectId?: string
 }
 
 export interface Project {
+  type: 'project'
   id: string
   name: string
   worktreePath?: string
@@ -281,3 +286,27 @@ export interface Project {
   deleted?: boolean
   leftId?: string
 }
+
+export interface Filename {
+  type: 'filename'
+  id: string
+  projectId: string
+  name: string
+  path: string
+  lastModified?: string
+  parentId?: string
+}
+
+export interface Directory {
+  type: 'directory'
+  id: string
+  projectId: string
+  name: string
+  path: string
+  lastModified?: string
+  parentId?: string
+}
+
+export type MenuItem = File | Canvas | Project | Filename | Directory
+export type MenuTree = TreeState<MenuItem>
+export type MenuTreeItem = TreeItem<MenuItem>

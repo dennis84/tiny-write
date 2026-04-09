@@ -6,12 +6,13 @@ import {useTitle} from '@/hooks/use-title'
 import {createMarkdownParser} from '@/prosemirror/markdown-serialize'
 import {schema} from '@/prosemirror/schema'
 import type {Dialog} from '@/services/DialogService'
-import {isCanvas, isCodeFile, isFile, useState} from '@/state'
+import {isCanvas, isFile, useState} from '@/state'
 import type {CanvasLinkElement, File} from '@/types'
 import {pause} from '@/utils/promise'
 import {DialogList, TooltipButton, TooltipDivider} from '../dialog/Style'
 import {IconAi} from '../icons/Ai'
-import {IconCanvas, IconCodeBlocks, IconFileCode, IconFileText} from '../icons/File'
+import {IconCanvas, IconCodeBlocks, IconFileCode} from '../icons/File'
+import {LangIcon} from '../icons/LangIcon'
 
 const Scroller = styled.div`
   max-height: 80vh;
@@ -96,10 +97,10 @@ export const ContextMenu = () => {
           <Match when={isCanvas(p.file)}>
             <IconCanvas />
           </Match>
-          <Match when={isCodeFile(p.file)}>
+          <Match when={isFile(p.file) && p.file.code}>
             <IconCodeBlocks />
           </Match>
-          <Match when={!isCodeFile(p.file)}>
+          <Match when={isFile(p.file)}>
             <IconFileCode />
           </Match>
         </Switch>
@@ -163,7 +164,7 @@ export const ContextMenu = () => {
   onMount(() => {
     const onContextMenu = (e: MouseEvent) => {
       const target = e.target as HTMLElement
-      if (!target.closest('#grid')) {
+      if (!canvasService.canvasRef?.contains(target)) {
         return
       }
 
@@ -185,7 +186,7 @@ export const ContextMenu = () => {
         onClick={() => newFile(false, props.dialog.state?.deadLink, props.dialog.state?.clickPos)}
         data-testid="context_menu_new_file"
       >
-        <IconFileText /> New file
+        <LangIcon name="markdown" /> New file
       </TooltipButton>
       <TooltipButton
         onClick={() => newFile(true, props.dialog.state?.deadLink, props.dialog.state?.clickPos)}

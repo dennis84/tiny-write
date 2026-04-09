@@ -5,10 +5,10 @@ import {useDialog} from '@/hooks/use-dialog'
 import {useInputLine} from '@/hooks/use-input-line'
 import {useTitle} from '@/hooks/use-title'
 import {CanvasService} from '@/services/CanvasService'
-import {isCodeFile, isLocalFile, useState} from '@/state'
+import {isFile, isLocalFile, useState} from '@/state'
 import {Button} from '../Button'
 import {DialogList, TooltipButton, TooltipDivider} from '../dialog/Style'
-import {IconCanvas, IconFileText} from '../icons/File'
+import {IconCanvas} from '../icons/File'
 import {LangIcon} from '../icons/LangIcon'
 import {IconPrettier} from '../icons/Logo'
 import {IconClose, IconDelete, IconEdit, IconHistory, IconLanguage} from '../icons/Ui'
@@ -22,7 +22,7 @@ export const CurrentFileButton = () => {
 
   const Tooltip = () => (
     <DialogList>
-      <Show when={isCodeFile(fileService.currentFile)}>
+      <Show when={isFile(fileService.currentFile) && fileService.currentFile?.code}>
         <TooltipButton onClick={onChangeLanguage}>
           <IconLanguage />
           Change Language
@@ -145,10 +145,11 @@ export const CurrentFileButton = () => {
   return (
     <Button onClick={onOpen}>
       <Switch>
-        {/* 2nd condition for rerendering */}
+        {/* 3rd condition for rerendering */}
         <Match
           when={
-            isCodeFile(fileService.currentFile) &&
+            isFile(fileService.currentFile) &&
+            fileService.currentFile.code &&
             (fileService.currentFile?.codeLang || !fileService.currentFile?.codeLang)
           }
           keyed
@@ -156,7 +157,7 @@ export const CurrentFileButton = () => {
           <LangIcon name={fileService.currentFile?.codeLang} />
         </Match>
         <Match when={fileService.currentFile}>
-          <IconFileText />
+          <LangIcon name="markdown" />
         </Match>
         <Match when={canvasService.currentCanvas}>
           <IconCanvas />

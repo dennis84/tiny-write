@@ -1,6 +1,6 @@
 use async_lsp::lsp_types::{CompletionResponse, GotoDefinitionResponse, Hover};
-use tracing::error;
 use tauri::{path::SafePathBuf, AppHandle, Manager, Runtime};
+use tracing::error;
 
 use crate::{editor::editor_state::EditorState, lsp::service::LspService};
 

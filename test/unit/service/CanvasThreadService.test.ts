@@ -3,31 +3,14 @@ import {mock} from 'vitest-mock-extended'
 import type {CanvasService} from '@/services/CanvasService'
 import {CanvasThreadService} from '@/services/CanvasThreadService'
 import type {FileService} from '@/services/FileService'
-import {type Canvas, type CanvasElement, type CanvasLinkElement, ElementType} from '@/types'
+import {ElementType} from '@/types'
+import {createCanvas, createEditorElement, createLinkElement} from '../testutil/data'
 import {createYUpdate} from '../testutil/prosemirror-util'
 
 vi.mock('@/db', () => ({DB: mock()}))
 
 beforeEach(() => {
   vi.resetAllMocks()
-})
-
-const createCanvas = (props: Partial<Canvas> = {}): Canvas => ({
-  id: 'c1',
-  camera: {point: [0, 0], zoom: 1},
-  elements: [],
-  lastModified: new Date(),
-  ...props,
-})
-
-const createElement = (props: Partial<CanvasElement | CanvasLinkElement>) => ({
-  id: '1',
-  type: ElementType.Editor,
-  x: 0,
-  y: 0,
-  width: 100,
-  height: 100,
-  ...props,
 })
 
 test('getMessages', () => {
@@ -37,15 +20,16 @@ test('getMessages', () => {
   // F2 -> F1 -> *AI*
   const canvas = createCanvas({
     elements: [
-      createElement({id: '1'}),
-      createElement({id: 'l1', to: '1', from: '2', type: ElementType.Link}),
-      createElement({id: '2', type: ElementType.Code}),
+      createEditorElement({id: '1'}),
+      createLinkElement({id: 'l1', to: '1', from: '2', type: ElementType.Link}),
+      createEditorElement({id: '2', type: ElementType.Code}),
     ],
   })
 
   vi.spyOn(canvasService, 'currentCanvas', 'get').mockReturnValue(canvas)
 
   fileService.findFileById.calledWith('1').mockReturnValue({
+    type: 'file',
     id: '1',
     ydoc: createYUpdate('1', []),
     versions: [],
@@ -53,6 +37,7 @@ test('getMessages', () => {
   })
 
   fileService.findFileById.calledWith('2').mockReturnValue({
+    type: 'file',
     id: '1',
     ydoc: createYUpdate('1', []),
     versions: [],

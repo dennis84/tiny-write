@@ -91,6 +91,7 @@ test('getTitle', async () => {
   })
 
   await service.addFile({
+    type: 'file',
     id: '4',
     ydoc: createYUpdate('4', ['Test4']),
     versions: [],
@@ -121,6 +122,7 @@ test('findFile - found', async () => {
   })
 
   await service.addFile({
+    type: 'file',
     id: '2',
     ydoc: createYUpdate('2', ['Test2']),
     versions: [],
@@ -148,6 +150,7 @@ test('findFile - not found', async () => {
   })
 
   await service.addFile({
+    type: 'file',
     id: '2',
     ydoc: createYUpdate('2', ['Test2']),
     versions: [],
@@ -214,6 +217,7 @@ test('renameFile - update path', async () => {
   })
 
   await service.addFile({
+    type: 'file',
     id: '1',
     ydoc: createYUpdate('1', ['a']),
     versions: [],
@@ -242,6 +246,7 @@ test('renameFile - update newFile', async () => {
   })
 
   await service.addFile({
+    type: 'file',
     id: '1',
     ydoc: createYUpdate('1', ['a']),
     versions: [],
@@ -262,6 +267,7 @@ test.each([
   [new Date(), 1],
 ])('saveFile - unsaved', async (lastModified, calls) => {
   const file = {
+    type: 'file' as const,
     id: '1',
     ydoc: createYUpdate('1', ['a']),
     versions: [],
@@ -278,6 +284,7 @@ test.each([
   [undefined, '/path/to/file'],
 ])('saveFile - local files', async (path, newFile) => {
   const file = {
+    type: 'file' as const,
     id: '1',
     ydoc: createYUpdate('1', ['a']),
     versions: [],

@@ -1,12 +1,8 @@
 import {createResource} from 'solid-js'
 import {DB} from '@/db'
 import {isProject} from '@/state'
-import {createTreeStore, type Tree, type TreeItem, type TreeState} from '@/tree'
-import type {Canvas, File, Project} from '@/types'
-
-export type MenuItem = File | Canvas | Project
-export type MenuTree = TreeState<MenuItem>
-export type MenuTreeItem = TreeItem<MenuItem>
+import {createTreeStore, type Tree} from '@/tree'
+import type {MenuItem, MenuTreeItem} from '@/types'
 
 export class TreeService {
   public tree: Tree<MenuItem>
@@ -20,8 +16,16 @@ export class TreeService {
     this.tree.reset(items)
   }
 
+  setValue(value: MenuItem) {
+    this.tree.setValue(value.id, value)
+  }
+
   add(item: MenuItem): MenuTreeItem[] {
     return this.tree.add(item)
+  }
+
+  addAll(items: MenuItem[]): MenuTreeItem[] {
+    return this.tree.addAll(items)
   }
 
   remove(id: string): MenuTreeItem[] {
@@ -70,7 +74,6 @@ export class TreeService {
   async collapse(id: string) {
     const item = this.tree.getItem(id)
     if (!item) return
-    if (!item.childrenIds.length) return
 
     const [tree, {mutate}] = this.treeResource
     mutate((prev) => {

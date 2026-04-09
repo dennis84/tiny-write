@@ -27,13 +27,6 @@ export const IconFileCode = () => (
   </SvgIcon>
 )
 
-import LucideFileText from '~icons/lucide/file-text'
-export const IconFileText = () => (
-  <SvgIcon>
-    <LucideFileText />
-  </SvgIcon>
-)
-
 import LucideSquareCode from '~icons/lucide/square-code'
 export const IconCodeBlocks = () => (
   <SvgIcon>

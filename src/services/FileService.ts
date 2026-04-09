@@ -171,6 +171,7 @@ export class FileService {
     const codeLang = params.codeLang ?? FileService.guessCodeLang(params)
 
     return {
+      type: 'file',
       ...params,
       id,
       ydoc,
@@ -186,6 +187,7 @@ export class FileService {
     for (const file of fetched ?? []) {
       try {
         files.push({
+          type: 'file' as const,
           id: file.id,
           parentId: file.parentId,
           leftId: file.leftId,
@@ -235,10 +237,13 @@ export class FileService {
     return await this.addFile(file)
   }
 
-  async newFileByPath(
-    path: string | undefined,
-    newFile: string | undefined = undefined,
-  ): Promise<File | undefined> {
+  async newFileByPath(params: {
+    id?: string
+    path?: string
+    newFile?: string
+    projectId?: string
+  }): Promise<File | undefined> {
+    const {id, path, newFile, projectId} = params
     const p = path ?? newFile
     if (!p) return
 
@@ -246,7 +251,7 @@ export class FileService {
     if (!file) {
       const mime = await getMimeType(p)
       const code = !mime.startsWith('text/markdown')
-      file = await this.newFile({newFile, path, code})
+      file = await this.newFile({id, newFile, path, code, projectId})
     }
 
     return file
@@ -387,6 +392,7 @@ export class FileService {
     if (!file) return fallback ? 'Undefined' : undefined
 
     if (isLocalFile(file)) {
+      if (file.projectId) return this.getFilename(file)
       return toRelativePath(file.path ?? file.newFile ?? '')
     }
 

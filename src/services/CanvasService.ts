@@ -130,6 +130,7 @@ export class CanvasService {
 
   static createCanvas(params: Partial<Canvas>): Canvas {
     return {
+      type: 'canvas',
       camera: {point: [0, 0], zoom: 1},
       elements: [],
       lastModified: new Date(),
@@ -213,6 +214,8 @@ export class CanvasService {
   select(id: string, active = false, extend = false) {
     const currentCanvas = this.currentCanvas
     if (!currentCanvas) return
+    if (!extend) this.deselect()
+
     const newEl = currentCanvas.elements.find((el) => el.id === id)
 
     if (!extend) {

@@ -101,6 +101,7 @@ export const Variables = () => {
       --menu-font-family-bold: ${ConfigService.DEFAULT_MENU_FONT} bold;
       --menu-font-size: 14px;
       --menu-line-height: ${String(15 * 1.6)}px;
+      --button-height: 32px;
       --cursor-default: ${CURSOR_DEFAULT};
       --cursor-pointer: ${CURSOR_POINTER};
       --cursor-grab: ${CURSOR_GRAB};

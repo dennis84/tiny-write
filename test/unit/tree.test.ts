@@ -103,7 +103,7 @@ test('add', async () => {
           `
           └ file_1 (parentId=, leftId=)
           └ file_2 (parentId=, leftId=)
-          └ file_3 (parentId=, leftId=file_2)
+          └ file_3 (parentId=, leftId=)
           `,
         )
 
@@ -146,7 +146,96 @@ test('add - nested', async () => {
           `
           └ file_1 (parentId=, leftId=)
             └ file_3 (parentId=file_1, leftId=)
-            └ file_4 (parentId=file_1, leftId=file_3)
+            └ file_4 (parentId=file_1, leftId=)
+          └ file_2 (parentId=, leftId=)
+          `,
+        )
+
+        done()
+      }
+
+      return run + 1
+    })
+  })
+})
+
+test('addAll', async () => {
+  const tree = createTreeStore({
+    items: [{id: 'file_1'}, {id: 'file_2'}],
+  })
+
+  return testEffect((done) => {
+    return createEffect((run: number = 0) => {
+      if (run === 0) {
+        const items = tree.addAll([{id: 'file_3'}, {id: 'file_4'}])
+        expect(items).toEqual([
+          expect.objectContaining({id: 'file_3'}),
+          expect.objectContaining({id: 'file_4'}),
+        ])
+      } else if (run === 1) {
+        expectTree(
+          tree,
+          `
+          └ file_1 (parentId=, leftId=)
+          └ file_2 (parentId=, leftId=)
+          └ file_3 (parentId=, leftId=)
+          └ file_4 (parentId=, leftId=)
+          `,
+        )
+
+        done()
+      }
+
+      return run + 1
+    })
+  })
+})
+
+test('addAll - nested', async () => {
+  const tree = createTreeStore({
+    items: [{id: 'file_1'}, {id: 'file_2'}],
+  })
+
+  return testEffect((done) => {
+    return createEffect((run: number = 0) => {
+      if (run === 0) {
+        const items = tree.addAll([
+          {id: 'file_2', parentId: 'file_1'}, // skipped
+          {id: 'file_3', parentId: 'file_1'},
+          {id: 'file_4', parentId: 'file_1'},
+        ])
+        expect(items).toEqual([
+          expect.objectContaining({id: 'file_3'}),
+          expect.objectContaining({id: 'file_4'}),
+        ])
+      } else if (run === 1) {
+        expectTree(
+          tree,
+          `
+          └ file_1 (parentId=, leftId=)
+            └ file_3 (parentId=file_1, leftId=)
+            └ file_4 (parentId=file_1, leftId=)
+          └ file_2 (parentId=, leftId=)
+          `,
+        )
+
+        const items = tree.addAll([
+          {id: 'file_5', parentId: 'file_1'},
+          {id: 'file_6', parentId: 'file_1'},
+        ])
+        expect(items).toEqual([
+          expect.objectContaining({id: 'file_5'}),
+          expect.objectContaining({id: 'file_6'}),
+        ])
+      } else if (run === 2) {
+        expectTree(
+          tree,
+          `
+          └ file_1 (parentId=, leftId=)
+            └ file_3 (parentId=file_1, leftId=)
+            └ file_4 (parentId=file_1, leftId=)
+            └ file_5 (parentId=file_1, leftId=)
+            └ file_6 (parentId=file_1, leftId=)
           └ file_2 (parentId=, leftId=)
           `,
         )

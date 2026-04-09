@@ -5,47 +5,11 @@ import {DeleteService} from '@/services/DeleteService'
 import type {FileService} from '@/services/FileService'
 import {TreeService} from '@/services/TreeService'
 import {isFile} from '@/state'
-import {
-  type CanvasEditorElement,
-  type CanvasLinkElement,
-  EdgeType,
-  ElementType,
-  type File,
-} from '@/types'
-import {createYUpdate} from '../testutil/prosemirror-util'
+import type {File} from '@/types'
+import {createEditorElement, createFile, createLinkElement} from '../testutil/data'
 import {expectTree} from '../testutil/tree'
 
 vi.mock('@/db', () => ({DB: mock()}))
-
-const lastModified = new Date()
-
-const createFile = (props: Partial<File>): File => ({
-  id: props.id ?? '',
-  ydoc: createYUpdate(props.id ?? '', []),
-  versions: [],
-  lastModified,
-  ...props,
-})
-
-const createEditorElement = (props: Partial<CanvasEditorElement>) => ({
-  id: '1',
-  type: ElementType.Editor,
-  x: 0,
-  y: 0,
-  width: 100,
-  height: 100,
-  ...props,
-})
-
-const createLinkElement = (props: Partial<CanvasLinkElement> = {}) => ({
-  id: '1',
-  type: ElementType.Link,
-  from: '1',
-  fromEdge: EdgeType.Left,
-  to: '2',
-  toEdge: EdgeType.Right,
-  ...props,
-})
 
 beforeEach(() => {
   vi.resetAllMocks()
@@ -135,6 +99,7 @@ test('delete - update tree', async () => {
     createFile({id: '4', deleted: true}),
     createFile({id: '5'}),
     {
+      type: 'canvas',
       id: '6',
       camera: {point: [0, 0], zoom: 1},
       elements: [

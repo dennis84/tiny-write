@@ -1,9 +1,9 @@
 use std::path::{Path, PathBuf};
 
 use anyhow::anyhow;
-use tracing::{debug, info};
 use tauri::{AppHandle, Manager, Runtime};
 use tokio::sync::Mutex;
+use tracing::{debug, info};
 
 use crate::{
     editor::editor_state::{is_buffer, Delete, Document, EditorState, Insert, Language},
@@ -88,7 +88,10 @@ impl<R: Runtime> CopilotLspService<R> {
             return Ok(());
         }
 
-        debug!("Copilot - register copilot language server (path={:?})", path);
+        debug!(
+            "Copilot - register copilot language server (path={:?})",
+            path
+        );
 
         let editor_state = self.app_handle.state::<EditorState>();
         let lsp_registry = self.app_handle.state::<LspRegistry>();
