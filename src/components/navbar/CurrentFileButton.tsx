@@ -5,7 +5,7 @@ import {useDialog} from '@/hooks/use-dialog'
 import {useInputLine} from '@/hooks/use-input-line'
 import {useTitle} from '@/hooks/use-title'
 import {CanvasService} from '@/services/CanvasService'
-import {isFile, isLocalFile, useState} from '@/state'
+import {isDeletable, isFile, isLocalFile, isProjectItem, useState} from '@/state'
 import {Button} from '../Button'
 import {DialogList, TooltipButton, TooltipDivider} from '../dialog/Style'
 import {IconCanvas} from '../icons/File'
@@ -33,10 +33,12 @@ export const CurrentFileButton = () => {
         </TooltipButton>
         <TooltipDivider />
       </Show>
-      <TooltipButton onClick={onRename}>
-        <IconEdit />
-        Rename
-      </TooltipButton>
+      <Show when={!isLocalFile(fileService.currentFile) && !isProjectItem(fileService.currentFile)}>
+        <TooltipButton onClick={onRename}>
+          <IconEdit />
+          Rename
+        </TooltipButton>
+      </Show>
       <Switch>
         <Match when={fileService.currentFile?.deleted}>
           <TooltipButton onClick={onRestore}>
@@ -44,13 +46,15 @@ export const CurrentFileButton = () => {
             Restore
           </TooltipButton>
         </Match>
-        <Match when={isLocalFile(fileService.currentFile)}>
+        <Match
+          when={isLocalFile(fileService.currentFile) && !isProjectItem(fileService.currentFile)}
+        >
           <TooltipButton onClick={() => deleteItem(true)}>
             <IconClose />
             Close
           </TooltipButton>
         </Match>
-        <Match when={true}>
+        <Match when={isDeletable(fileService.currentFile)}>
           <TooltipButton onClick={() => deleteItem()}>
             <IconDelete />
             Delete

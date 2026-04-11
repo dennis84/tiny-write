@@ -29,7 +29,9 @@ export const TreeLinkToggle = (p: Props) => {
       <Match
         when={
           (isDirectory(p.node.value) && p.node.childrenIds.length === 0) ||
-          (isProject(p.node.value) && p.node.childrenIds.length === 0) ||
+          (isProject(p.node.value) &&
+            p.node.value.worktreePath &&
+            p.node.childrenIds.length === 0) ||
           treeService.isCollapsed(p.node.id)
         }
       >

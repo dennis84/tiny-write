@@ -2,26 +2,9 @@ import {Show} from 'solid-js'
 import {useState} from '@/state'
 import {ButtonGroup, IconButton} from '../Button'
 import {TooltipHelp} from '../dialog/TooltipHelp'
-import {IconArrowBack, IconSidebar} from '../icons/Ui'
+import {IconArrowBack} from '../icons/Ui'
+import {MenuButton} from './MenuButton'
 import {FloatingContainer} from './Style'
-
-const MenuButton = () => {
-  const {fileService, menuService} = useState()
-
-  const onMenuButtonClick = () => {
-    fileService.currentFile?.editorView?.focus()
-    menuService.toggleMenu()
-    menuService.setSubmenu(undefined)
-  }
-
-  return (
-    <TooltipHelp title={menuService.menuOpen ? 'Hide sidebar' : 'Show sidebar'}>
-      <IconButton onClick={onMenuButtonClick} data-testid="navbar_menu_open">
-        <IconSidebar />
-      </IconButton>
-    </TooltipHelp>
-  )
-}
 
 export const MenuNavbar = () => {
   const {menuService} = useState()

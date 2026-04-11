@@ -6,7 +6,6 @@ import {type Message, Page} from '@/types'
 import {ChatInput} from '../assistant/ChatInput'
 import {Conversation} from '../assistant/Conversation'
 import {Content, Scroll} from '../Layout'
-import {AssistantNavbar} from '../navbar/AssistantNavbar'
 
 export const ChatPage = (props: RouteSectionProps) => {
   let scrollRef!: HTMLDivElement
@@ -61,7 +60,6 @@ export const ChatPage = (props: RouteSectionProps) => {
     <Suspense>
       <ErrorBoundary fallback={() => <OnError />}>
         <Show when={initialized()} keyed>
-          <AssistantNavbar />
           <Scroll ref={scrollRef} data-testid="chat_scroll">
             <ChatContent>
               <Conversation />

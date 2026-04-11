@@ -9,7 +9,7 @@ import {CurrentFileButton} from './CurrentFileButton'
 import {DarkModeToggle} from './DarkModeToggle'
 import {FloatingContainer} from './Style'
 
-export const InfoNavbar = () => {
+export const TopRightNavbar = () => {
   const {canvasService, collabService, fileService, locationService, menuService} = useState()
 
   return (

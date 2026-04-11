@@ -1,15 +1,17 @@
 import {createDeepSignal} from '@solid-primitives/resource'
 import {createResource} from 'solid-js'
 import {produce} from 'solid-js/store'
-import {v4 as uuid} from 'uuid'
+import {v4 as uuid, v5 as uuidv5} from 'uuid'
 import {DB} from '@/db'
 import {listContents} from '@/remote/editor'
 import {info} from '@/remote/log'
-import {isDirectory} from '@/state'
+import {isDirectory, isProjectItem} from '@/state'
 import type {Directory, Filename, Project} from '@/types'
 import type {TreeService} from './TreeService'
 
 export class ProjectService {
+  private readonly FILE_NAMESPACE = 'a9ca8696-ec43-4460-9c1b-159ef6f2d574'
+
   private projectsResource = createResource(() => DB.getProjects(), {
     storage: createDeepSignal,
   })
@@ -70,6 +72,11 @@ export class ProjectService {
     const treeItem = this.treeService.getItem(item.id)
     if (!treeItem) return
 
+    if (!isProjectItem(item)) {
+      await this.treeService.collapse(item.id)
+      return
+    }
+
     if (this.treeService.isCollapsed(item.id)) {
       await this.treeService.collapse(item.id)
     } else if (treeItem.childrenIds.length > 0) {
@@ -87,7 +94,7 @@ export class ProjectService {
         ({
           type: dirEntry.isDirectory ? 'directory' : 'filename',
           path: dirEntry.path,
-          id: dirEntry.name,
+          id: uuidv5(dirEntry.path, this.FILE_NAMESPACE),
           projectId,
           name: dirEntry.name,
           parentId: item.id,

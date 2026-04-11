@@ -59,7 +59,10 @@ export const isCanvas = (it: any): it is Canvas => it?.type === 'canvas'
 export const isThread = (it: any): it is Thread => Array.isArray(it?.messages)
 
 export const isProjectItem = (it: any): boolean =>
-  it?.type === 'filename' || it?.type === 'directory' || (it?.type === 'file' && it.projectId)
+  it?.type === 'filename' ||
+  it?.type === 'directory' ||
+  (it?.type === 'file' && it.projectId) ||
+  (it?.type === 'project' && it.worktreePath !== undefined)
 
 export const isDeletable = (it?: MenuItem): it is File | Canvas | Project =>
   (isFile(it) && !isProjectItem(it)) || isCanvas(it) || isProject(it)

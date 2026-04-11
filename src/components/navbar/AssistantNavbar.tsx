@@ -1,12 +1,12 @@
-import {Show} from 'solid-js'
 import {useState} from '@/state'
-import {Page, type Thread} from '@/types'
-import {Threads} from '../assistant/Threads'
-import {Button, ButtonGroup, IconButton} from '../Button'
+import {Page} from '@/types'
+import {ButtonGroup, IconButton} from '../Button'
 import {TooltipHelp} from '../dialog/TooltipHelp'
-import {IconPrivate} from '../icons/Ai'
-import {IconAdd, IconFullscreen} from '../icons/Ui'
+import {IconFullscreen} from '../icons/Ui'
 import {AssistantButton} from './AssistantButton'
+import {AssistantHistoryButton} from './AssistantHistoryButton'
+import {AssistantNewButton} from './AssistantNewButton'
+import {AssistantPrivateButton} from './AssistantPrivateButton'
 import {FloatingContainer} from './Style'
 
 export const AssistantNavbar = () => {
@@ -24,51 +24,17 @@ export const AssistantNavbar = () => {
     }
   }
 
-  const onChangeThread = (thread: Thread) => {
-    if (locationService.page === Page.Assistant) {
-      locationService.openItem(thread)
-    } else {
-      locationService.updateState({threadId: thread.id})
-    }
-  }
-
-  const onNewThread = () => {
-    if (locationService.page === Page.Assistant) {
-      locationService.openPage(Page.Assistant)
-    } else {
-      const newThread = threadService.newThread()
-      locationService.updateState({threadId: newThread.id})
-    }
-  }
-
-  const onPrivate = async () => {
-    await threadService.togglePrivate()
-  }
-
   return (
-    <FloatingContainer justify="flex-start">
-      <ButtonGroup justifySelf="flex-start" background={true}>
-        <Threads onChange={onChangeThread} />
-        <Show when={threadService.currentThread?.messages?.length}>
-          <Button onClick={onNewThread}>
-            <IconAdd /> New
-          </Button>
-        </Show>
-        <Show when={!threadService.currentThread?.lastModified}>
-          <TooltipHelp
-            title={
-              threadService.currentThread?.private
-                ? 'Switch to default chat'
-                : 'Switch to private chat'
-            }
-          >
-            <Button active={threadService.currentThread?.private} onClick={onPrivate}>
-              <IconPrivate /> Private
-            </Button>
-          </TooltipHelp>
-        </Show>
-      </ButtonGroup>
-      <Show when={locationService.page !== Page.Assistant}>
+    <>
+      <FloatingContainer justify="flex-start">
+        <ButtonGroup background={true}>
+          <AssistantHistoryButton />
+          <AssistantNewButton />
+          <AssistantPrivateButton />
+        </ButtonGroup>
+      </FloatingContainer>
+
+      <FloatingContainer justify="flex-end">
         <ButtonGroup background={true}>
           <TooltipHelp title="Expand assistant">
             <IconButton onClick={onExpandClick} data-testid="navbar_assistant_expand">
@@ -77,7 +43,7 @@ export const AssistantNavbar = () => {
           </TooltipHelp>
           <AssistantButton />
         </ButtonGroup>
-      </Show>
-    </FloatingContainer>
+      </FloatingContainer>
+    </>
   )
 }

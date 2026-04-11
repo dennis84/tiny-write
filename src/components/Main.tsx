@@ -6,7 +6,7 @@ import {Keymap} from '@/components/Keymap'
 import {DragArea, Layout, PageContent} from '@/components/Layout'
 import {MouseCursor} from '@/components/MouseCursor'
 import {Menu} from '@/components/menu/Menu'
-import {InfoNavbar} from '@/components/navbar/InfoNavbar'
+import {TopRightNavbar} from '@/components/navbar/TopRightNavbar'
 import {CanvasPage, NewCanvasPage} from '@/components/pages/CanvasPage'
 import {ChatPage} from '@/components/pages/ChatPage'
 import {CodePage, NewCodePage} from '@/components/pages/CodePage'
@@ -27,6 +27,7 @@ import type {State} from '@/types'
 import {ChatSidebar} from './assistant/ChatSidebar'
 import {Dialogs} from './dialog/Dialogs'
 import {GeneralError} from './Error'
+import {TopLeftNavbar} from './navbar/TopLeftNavbar'
 import {Title} from './pages/Title'
 
 type Ctrl = ReturnType<typeof createCtrl>
@@ -113,7 +114,8 @@ export const Main = (props: Props) => {
           <Layout ref={layoutRef} data-testid="initialized">
             <Menu />
             <PageContent>
-              <InfoNavbar />
+              <TopLeftNavbar />
+              <TopRightNavbar />
               {p.children}
             </PageContent>
             <Show when={isTauri()}>

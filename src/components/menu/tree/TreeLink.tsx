@@ -1,7 +1,6 @@
 import {DragGesture} from '@use-gesture/vanilla'
 import {createSignal, onCleanup, onMount, Show, Suspense} from 'solid-js'
 import {Portal} from 'solid-js/web'
-import {isTauri} from '@/env'
 import {useTitle} from '@/hooks/use-title'
 import {CanvasService} from '@/services/CanvasService'
 import {FileService} from '@/services/FileService'
@@ -58,10 +57,7 @@ export const TreeLink = (p: {node: MenuTreeItem; level: number; selected?: boole
     }
 
     if (isProject(item) || isDirectory(item)) {
-      if (isTauri()) {
-        await projectService.toggleDirectory(item)
-      }
-
+      await projectService.toggleDirectory(item)
       return
     }
 
