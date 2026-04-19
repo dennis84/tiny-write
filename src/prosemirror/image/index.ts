@@ -19,7 +19,7 @@ const isUrl = (str: string) => {
 }
 
 class ImageView {
-  dom: Element
+  dom: HTMLElement
   contentDOM?: HTMLElement
   container: HTMLElement
   handle: HTMLElement
