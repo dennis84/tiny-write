@@ -25,11 +25,8 @@ import {CodeFormat} from './CodeFormat'
 import {Help} from './Help'
 import {Link} from './Link'
 import {Container, Label, Sub} from './Style'
-import {SubmenuCanvas} from './SubmenuCanvas'
-import {SubmenuCode} from './SubmenuCode'
 import {SubmenuCollab} from './SubmenuCollab'
 import {SubmenuEdit} from './SubmenuEdit'
-import {SubmenuEditor} from './SubmenuEditor'
 import {Submenu} from './tree/Submenu'
 
 const DrawerEl = styled(Drawer)`
@@ -137,18 +134,6 @@ export const Menu = () => {
           <DrawerScroll>
             <DrawerContent>
               <Submenu onBin={() => menuService.setSubmenu(SubmenuId.BIN)} />
-              {/* Submenu File */}
-              <Show when={locationService.page === Page.Editor}>
-                <SubmenuEditor />
-              </Show>
-              {/* Submenu Canvas */}
-              <Show when={locationService.page === Page.Canvas}>
-                <SubmenuCanvas />
-              </Show>
-              {/* Submenu Code */}
-              <Show when={locationService.page === Page.Code}>
-                <SubmenuCode />
-              </Show>
               {/* undo, redo, copy, paste, ... */}
               <Show when={locationService.page !== Page.Assistant}>
                 <SubmenuEdit />

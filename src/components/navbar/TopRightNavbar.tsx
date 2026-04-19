@@ -5,7 +5,7 @@ import {ButtonGroup} from '../Button'
 import {AssistantButton} from './AssistantButton'
 import {BackButton} from './BackButton'
 import {CollabButton} from './CollabButton'
-import {CurrentFileButton} from './CurrentFileButton'
+import {CurrentItemButton} from './CurrentFileButton'
 import {DarkModeToggle} from './DarkModeToggle'
 import {FloatingContainer} from './Style'
 
@@ -18,7 +18,7 @@ export const TopRightNavbar = () => {
         <BackButton />
         <DarkModeToggle />
         <Show when={fileService.currentFile || canvasService.currentCanvas}>
-          <CurrentFileButton />
+          <CurrentItemButton />
         </Show>
         <Show when={collabService?.started()}>
           <CollabButton />

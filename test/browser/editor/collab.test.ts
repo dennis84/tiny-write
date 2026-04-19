@@ -125,13 +125,15 @@ test('rejoin room - remote', async ({page, browser}) => {
   await page.click('[data-testid="collab"]')
 
   // change whole text on client 1
-  await page.click('[data-testid="clear"]')
+  await page.keyboard.press('ControlOrMeta+a')
+  await page.keyboard.press('Backspace')
   await page.locator('.ProseMirror').pressSequentially('123', {delay})
   await expect(page.locator('.ProseMirror > *')).toHaveCount(1)
   await assertEditorLineToEqual(page, 1, '123')
 
   // change whole text on client 2
-  await page2.click('[data-testid="clear"]')
+  await page2.keyboard.press('ControlOrMeta+a')
+  await page2.keyboard.press('Backspace')
   await page2.locator('.ProseMirror').pressSequentially('abc', {delay})
 
   // start collab again

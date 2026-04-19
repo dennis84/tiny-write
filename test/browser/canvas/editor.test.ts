@@ -31,7 +31,7 @@ test('add editor file', async ({page}) => {
   await expect(page.locator('[data-testid="canvas_editor"]')).toHaveCount(2)
 
   // Clear canvas
-  await page.click('[data-testid="navbar_menu_open"]')
+  await page.click('[data-testid="current_item_button"]')
   await page.click('[data-testid="clear_canvas"]')
   await page.click('[data-testid="confirm"]')
 

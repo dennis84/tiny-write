@@ -4,24 +4,73 @@ import {useConfirmDialog} from '@/hooks/use-confirm-dialog'
 import {useDialog} from '@/hooks/use-dialog'
 import {useInputLine} from '@/hooks/use-input-line'
 import {useTitle} from '@/hooks/use-title'
+import {saveFile} from '@/remote/editor'
+import {info} from '@/remote/log'
 import {CanvasService} from '@/services/CanvasService'
-import {isDeletable, isFile, isLocalFile, isProjectItem, useState} from '@/state'
+import {isCanvas, isDeletable, isFile, isLocalFile, isProjectItem, useState} from '@/state'
 import {Button} from '../Button'
 import {DialogList, TooltipButton, TooltipDivider} from '../dialog/Style'
-import {IconCanvas} from '../icons/File'
+import {IconCanvas, IconSaveAs} from '../icons/File'
 import {LangIcon} from '../icons/LangIcon'
 import {IconPrettier} from '../icons/Logo'
-import {IconClose, IconDelete, IconEdit, IconHistory, IconLanguage} from '../icons/Ui'
+import {
+  IconCheckBox,
+  IconClose,
+  IconDelete,
+  IconEdit,
+  IconFocus,
+  IconGrid,
+  IconHistory,
+  IconLanguage,
+} from '../icons/Ui'
 
-export const CurrentFileButton = () => {
-  const {codeService, canvasService, deleteService, fileService, locationService} = useState()
+export const CurrentItemButton = () => {
+  const {
+    codeService,
+    canvasService,
+    canvasCollabService,
+    deleteService,
+    fileService,
+    locationService,
+  } = useState()
   const showInputLine = useInputLine()
   const showConfirmDialog = useConfirmDialog()
 
   const title = useTitle()
 
+  const onSaveAs = async () => {
+    const currentFile = fileService.currentFile
+    if (!currentFile) return
+    try {
+      const path = await saveFile(currentFile)
+      if (path) await fileService.updatePath(currentFile.id, path)
+    } catch (e) {
+      info(`Save as cancelled`, e)
+    }
+  }
+
+  const onClearCanvas = async () => {
+    showConfirmDialog({
+      title: 'Clear Canvas',
+      content: 'Are you sure you want to clear the canvas?',
+      onConfirm: async () => {
+        await canvasService.clearCanvas()
+        canvasCollabService.removeAll()
+      },
+    })
+  }
+
+  const onBackToContent = async () => {
+    await canvasService.backToContent()
+  }
+
+  const onSnapToGrid = () => {
+    canvasService.snapToGrid()
+  }
+
   const Tooltip = () => (
     <DialogList>
+      {/* Only code */}
       <Show when={isFile(fileService.currentFile) && fileService.currentFile?.code}>
         <TooltipButton onClick={onChangeLanguage}>
           <IconLanguage />
@@ -33,11 +82,36 @@ export const CurrentFileButton = () => {
         </TooltipButton>
         <TooltipDivider />
       </Show>
+      {/* Only canvas */}
+      <Show when={isCanvas(canvasService.currentCanvas)}>
+        <TooltipButton onClick={onClearCanvas} data-testid="clear_canvas">
+          <IconClose />
+          Clear canvas
+        </TooltipButton>
+        <TooltipButton onClick={onBackToContent}>
+          <IconFocus />
+          Back to content
+        </TooltipButton>
+        <TooltipButton onClick={onSnapToGrid}>
+          <IconGrid />
+          Snap to grid
+          <Show when={canvasService.currentCanvas?.snapToGrid}>
+            <IconCheckBox />
+          </Show>
+        </TooltipButton>
+        <TooltipDivider />
+      </Show>
       <Show when={!isLocalFile(fileService.currentFile) && !isProjectItem(fileService.currentFile)}>
         <TooltipButton onClick={onRename}>
           <IconEdit />
           Rename
         </TooltipButton>
+        <Show when={fileService.currentFile}>
+          <TooltipButton onClick={onSaveAs}>
+            <IconSaveAs />
+            Save as
+          </TooltipButton>
+        </Show>
       </Show>
       <Switch>
         <Match when={fileService.currentFile?.deleted}>
@@ -147,7 +221,7 @@ export const CurrentFileButton = () => {
   }
 
   return (
-    <Button onClick={onOpen}>
+    <Button onClick={onOpen} data-testid="current_item_button">
       <Switch>
         {/* 3rd condition for rerendering */}
         <Match
