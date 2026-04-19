@@ -16,7 +16,7 @@ import {Align} from '@/prosemirror/image/interfaces'
 import {saveSvg} from '@/remote/svg'
 import type {ChatMessage} from '@/services/CopilotService'
 import {useState} from '@/state'
-import {AttachmentType} from '@/types'
+import {AttachmentType, type FileAttachment, type TextAttachment} from '@/types'
 import {timeout} from '@/utils/promise'
 import {IconFileSave} from '../icons/File'
 import {IconPrettier} from '../icons/Logo'
@@ -146,20 +146,23 @@ export const BlockTooltip = (props: Props) => {
     if (!block) return
 
     const isCodeBlock = block.blockNode.type.name === 'code_block'
-    const type = isCodeBlock ? AttachmentType.File : AttachmentType.Text
-    const content = isCodeBlock
-      ? createCodeFence({
-          code: block.blockNode.textContent,
-          lang: block.blockNode.attrs.lang,
-        })
-      : createBlockquote(block.blockNode.textContent)
+
+    const attachment = isCodeBlock
+      ? ({
+          type: AttachmentType.File,
+          codeLang: block.blockNode.attrs.lang,
+          content: createCodeFence({
+            code: block.blockNode.textContent,
+            lang: block.blockNode.attrs.lang,
+          }),
+        } satisfies FileAttachment)
+      : ({
+          type: AttachmentType.Text,
+          content: createBlockquote(block.blockNode.textContent),
+        } satisfies TextAttachment)
 
     menuService.showAssistant()
-    threadService.addAttachment({
-      type,
-      codeLang: block.blockNode.attrs.lang,
-      content,
-    })
+    threadService.addAttachment(attachment)
 
     closeTooltip()
   }

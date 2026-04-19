@@ -2,7 +2,13 @@ import {createEffect, For} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {useDialog} from '@/hooks/use-dialog'
 import {useState} from '@/state'
-import {type Attachment, AttachmentType} from '@/types'
+import {
+  type Attachment,
+  AttachmentType,
+  type FileAttachment,
+  type ImageAttachment,
+  type SelectionAttachment,
+} from '@/types'
 import {IconButton} from '../Button'
 import {DialogList} from '../dialog/Style'
 import {TooltipHelp} from '../dialog/TooltipHelp'
@@ -58,11 +64,14 @@ export const ChatInputAttachments = () => {
   // Adds dropped files as attachments
   createEffect(() => {
     const droppedFiles = mediaService.droppedFiles()
-    const attachments = droppedFiles.map((df) => ({
-      type: AttachmentType.Image,
-      name: df.name,
-      content: df.data,
-    }))
+    const attachments = droppedFiles.map(
+      (df) =>
+        ({
+          type: AttachmentType.Image,
+          name: df.name,
+          content: df.data,
+        }) satisfies ImageAttachment,
+    )
 
     attachments.forEach((it) => {
       threadService.addAttachment(it)
@@ -94,7 +103,7 @@ export const ChatInputAttachments = () => {
         range: [sel.from, sel.to],
       })
 
-      const attachment: Attachment = {
+      const attachment: SelectionAttachment = {
         type: AttachmentType.Selection,
         fileId: currentFile.id,
         content,
@@ -113,7 +122,7 @@ export const ChatInputAttachments = () => {
       path: currentFile.path,
     })
 
-    const attachment: Attachment = {
+    const attachment: FileAttachment = {
       type: AttachmentType.File,
       fileId: currentFile.id,
       codeLang: currentFile.codeLang,

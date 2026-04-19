@@ -376,6 +376,19 @@ export class Tree<T> {
     }
   }
 
+  ancestors(fn: (n: TreeItem<any>) => void, id: string) {
+    const cur = this.state.items[id]
+    if (!cur) return
+
+    let parentId = cur.parentId ?? ROOT_ID
+
+    while (parentId !== ROOT_ID) {
+      const parent = this.state.items[parentId]
+      fn(parent)
+      parentId = parent.parentId ?? ROOT_ID
+    }
+  }
+
   getItem(id: string): TreeItem<T> | undefined {
     return this.state.items[id]
   }

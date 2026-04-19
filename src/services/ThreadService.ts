@@ -5,19 +5,15 @@ import {produce} from 'solid-js/store'
 import {v4 as uuidv4} from 'uuid'
 import {DB} from '@/db'
 import codeBlockHandlingPrompt from '@/prompts/assistant/code-block-handling.md?raw'
+import commonAssistantRulesPrompt from '@/prompts/assistant/common.md?raw'
 import generateTitlePrompt from '@/prompts/assistant/generate-title.md?raw'
 import summaryPrompt from '@/prompts/assistant/summary.md?raw'
 import commonRulesPrompt from '@/prompts/common/rules.md?raw'
 import {debug, error, info} from '@/remote/log'
 import {createTreeStore, type TreeItem} from '@/tree'
 import {type Attachment, AttachmentType, type Message, type Thread} from '@/types'
-import type {
-  ChatMessage,
-  ChatMessageImageContent,
-  ChatMessageTextContent,
-  Chunk,
-  CopilotService,
-} from './CopilotService'
+import {MessageUtil} from '@/utils/MessageUtil'
+import type {ChatMessage, Chunk, CopilotService} from './CopilotService'
 import type {DialogService} from './DialogService'
 import type {LocationService} from './LocationService'
 
@@ -102,9 +98,24 @@ export class ThreadService {
     this.attachmentsSignal[1]((prev) => {
       // Remove any existing attachment with the same fileId or name
       const filtered = prev.filter((existing) => {
-        const isSameFile = attachment.fileId && existing.fileId === attachment.fileId
-        const isSameName = attachment.name && existing.name === attachment.name
-        return !(isSameFile || isSameName)
+        if (
+          (attachment.type === AttachmentType.File ||
+            attachment.type === AttachmentType.Selection ||
+            attachment.type === AttachmentType.Text) &&
+          (existing.type === AttachmentType.File ||
+            existing.type === AttachmentType.Selection ||
+            existing.type === AttachmentType.Text)
+        ) {
+          const isSameFile = attachment.fileId && existing.fileId === attachment.fileId
+          return !isSameFile
+        }
+
+        if (attachment.type === AttachmentType.Image && existing.type === AttachmentType.Image) {
+          const isSameName = attachment.name && existing.name === attachment.name
+          return !isSameName
+        }
+
+        return true
       })
 
       return [...filtered, attachment]
@@ -367,7 +378,7 @@ export class ThreadService {
 
     this.traverseTree((it) => {
       if (it.value.summary) messages = []
-      messages.push(this.toChatMessage(it.value))
+      messages.push(MessageUtil.toChatMessage(it.value))
       targetId = it.value.id
     })
 
@@ -412,7 +423,7 @@ export class ThreadService {
       content: [{type: 'text', text: generateTitlePrompt}],
     }
 
-    const messages: ChatMessage[] = currentThread.messages.map((m) => this.toChatMessage(m))
+    const messages: ChatMessage[] = currentThread.messages.map((m) => MessageUtil.toChatMessage(m))
     messages.push(question)
 
     const title = this.copilotService.completionsSync(messages)
@@ -461,7 +472,7 @@ export class ThreadService {
 
     this.traverseTree((it) => {
       nextId = currentThread.path?.get(it.id)
-      const message = this.toChatMessage(it.value)
+      const message = MessageUtil.toChatMessage(it.value)
 
       // remember if any code block exists
       if (!hasCodeBlock && this.hasCodeBlock(message)) {
@@ -502,7 +513,10 @@ export class ThreadService {
     if (messages.length > 0) {
       messages.unshift({
         role: 'system',
-        content: [{type: 'text', text: commonRulesPrompt}],
+        content: [
+          {type: 'text', text: commonRulesPrompt},
+          {type: 'text', text: commonAssistantRulesPrompt},
+        ],
       })
     }
 
@@ -521,36 +535,6 @@ export class ThreadService {
     return (await DB.getThreads())?.sort((a, b) => {
       return (b.lastModified?.getTime() ?? 0) - (a.lastModified?.getTime() ?? 0)
     })
-  }
-
-  private toChatMessage(message: Message): ChatMessage {
-    const content: (ChatMessageTextContent | ChatMessageImageContent)[] = []
-
-    for (const attachment of message.attachments ?? []) {
-      if (attachment.type === AttachmentType.Image) {
-        content.push({
-          type: 'image_url',
-          image_url: {url: attachment.content},
-        })
-      } else {
-        content.push({
-          type: 'text',
-          text: attachment.content,
-        })
-      }
-    }
-
-    if (message.content) {
-      content.push({
-        type: 'text',
-        text: message.content,
-      })
-    }
-
-    return {
-      role: message.role,
-      content,
-    }
   }
 
   private hasCodeBlock(message: ChatMessage): boolean {

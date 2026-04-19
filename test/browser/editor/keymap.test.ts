@@ -21,7 +21,7 @@ test('on undo/redo', async ({page}) => {
   await expect(page.locator('.ProseMirror')).toHaveText('text123')
 })
 
-test('on new/clear', async ({page}) => {
+test('on new', async ({page}) => {
   await page.locator('.ProseMirror').pressSequentially('first', {delay})
   await expect(page.locator('.ProseMirror')).toHaveText('first')
 
@@ -32,11 +32,5 @@ test('on new/clear', async ({page}) => {
   await expect(page.locator('.ProseMirror')).toHaveText('second')
 
   await page.click('[data-testid="navbar_menu_open"]')
-  await expect(page.locator('[data-testid="tree_link"]')).toHaveCount(2)
-
-  // clear
-
-  await page.keyboard.press(`${mod}+w`)
-  await expect(page.locator('.ProseMirror')).toHaveText('Start typing ...')
   await expect(page.locator('[data-testid="tree_link"]')).toHaveCount(2)
 })

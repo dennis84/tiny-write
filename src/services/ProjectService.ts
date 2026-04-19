@@ -7,6 +7,8 @@ import {listContents} from '@/remote/editor'
 import {info} from '@/remote/log'
 import {isDirectory, isProjectItem} from '@/state'
 import type {Directory, Filename, Project} from '@/types'
+import type {CanvasService} from './CanvasService'
+import type {FileService} from './FileService'
 import type {TreeService} from './TreeService'
 
 export class ProjectService {
@@ -16,7 +18,28 @@ export class ProjectService {
     storage: createDeepSignal,
   })
 
-  constructor(private treeService: TreeService) {}
+  constructor(
+    private treeService: TreeService,
+    private fileService: FileService,
+    private canvasService: CanvasService,
+  ) {}
+
+  get currentProject(): Project | undefined {
+    const currentFile = this.fileService.currentFile
+    if (currentFile?.projectId) {
+      return this.projects.find((p) => p.id === currentFile.projectId)
+    }
+
+    const currentId = currentFile?.id ?? this.canvasService.currentCanvas?.id
+    if (!currentId) return undefined
+
+    let project: Project | undefined
+    this.treeService.ancestors((it) => {
+      if (it.value.type === 'project') project = it.value
+    }, currentId)
+
+    return project
+  }
 
   get projects() {
     return this.projectsResource[0].latest ?? []
@@ -63,7 +86,7 @@ export class ProjectService {
     }, id)
 
     if (updated) {
-      info(`Saving project (id=${id}, leftId=${updated.leftId}`)
+      info(`Saving project (id=${id}, leftId=${updated.leftId})`)
       await DB.updateProject(updated)
     }
   }

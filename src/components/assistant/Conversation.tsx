@@ -5,6 +5,7 @@ import type {TreeItem} from '@/tree'
 import type {Attachment, Message} from '@/types'
 import {AutoContextToggle} from './attachments/AutoContextToggle'
 import {CurrentFileButton} from './attachments/CurrentFile'
+import {CurrentProjectButton} from './attachments/CurrentProject'
 import {SelectionButton} from './attachments/Selection'
 import {MessageAnswer} from './MessageAnswer'
 import {MessageQuestion} from './MessageQuestion'
@@ -105,6 +106,7 @@ export const Conversation = () => {
       </Messages>
       <Show when={!threadService.messageTree.rootItemIds.length}>
         <EmptyContainer>
+          <CurrentProjectButton onAttachment={onAttachment} />
           <Show when={!store.ai?.autoContext}>
             <CurrentFileButton onAttachment={onAttachment} />
             <SelectionButton onAttachment={onAttachment} />

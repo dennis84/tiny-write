@@ -112,132 +112,127 @@ export const Menu = () => {
   }
 
   return (
-    <>
-      <Show when={!menuService.menuOpen}>
-        <MenuNavbar />
+    <Container>
+      <Show when={menuService.submenu() === SubmenuId.BIN}>
+        <Bin />
       </Show>
-      <Container>
-        <Show when={menuService.submenu() === SubmenuId.BIN}>
-          <Bin />
-        </Show>
-        <Show when={menuService.submenu() === SubmenuId.CODE_FORMAT}>
-          <CodeFormat />
-        </Show>
-        <Show when={menuService.submenu() === SubmenuId.APPEARANCE}>
-          <Appearance />
-        </Show>
-        <Show when={menuService.submenu() === SubmenuId.HELP}>
-          <Help />
-        </Show>
-        <Show when={menuService.submenu() === SubmenuId.CHANGE_SET}>
-          <ChangeSet />
-        </Show>
-        <Show when={menuService.submenu() === SubmenuId.AI_CONFIG}>
-          <AiConfig />
-        </Show>
-        <Show when={menuService.menuOpen && !menuService.submenu()}>
-          <MenuDrawer>
-            <MenuNavbar />
-            <DrawerScroll>
-              <DrawerContent>
-                <Submenu onBin={() => menuService.setSubmenu(SubmenuId.BIN)} />
-                {/* Submenu File */}
-                <Show when={locationService.page === Page.Editor}>
-                  <SubmenuEditor />
+      <Show when={menuService.submenu() === SubmenuId.CODE_FORMAT}>
+        <CodeFormat />
+      </Show>
+      <Show when={menuService.submenu() === SubmenuId.APPEARANCE}>
+        <Appearance />
+      </Show>
+      <Show when={menuService.submenu() === SubmenuId.HELP}>
+        <Help />
+      </Show>
+      <Show when={menuService.submenu() === SubmenuId.CHANGE_SET}>
+        <ChangeSet />
+      </Show>
+      <Show when={menuService.submenu() === SubmenuId.AI_CONFIG}>
+        <AiConfig />
+      </Show>
+      <Show when={menuService.menuOpen && !menuService.submenu()}>
+        <MenuDrawer>
+          <MenuNavbar />
+          <DrawerScroll>
+            <DrawerContent>
+              <Submenu onBin={() => menuService.setSubmenu(SubmenuId.BIN)} />
+              {/* Submenu File */}
+              <Show when={locationService.page === Page.Editor}>
+                <SubmenuEditor />
+              </Show>
+              {/* Submenu Canvas */}
+              <Show when={locationService.page === Page.Canvas}>
+                <SubmenuCanvas />
+              </Show>
+              {/* Submenu Code */}
+              <Show when={locationService.page === Page.Code}>
+                <SubmenuCode />
+              </Show>
+              {/* undo, redo, copy, paste, ... */}
+              <Show when={locationService.page !== Page.Assistant}>
+                <SubmenuEdit />
+              </Show>
+              {/* Submenu View */}
+              <Label>View</Label>
+              <Sub data-tauri-drag-region="true">
+                <Link
+                  data-testid="appearance"
+                  onClick={() => menuService.setSubmenu(SubmenuId.APPEARANCE)}
+                >
+                  <IconPalette /> Appearance
+                </Link>
+                <Show when={showCodeFormat()}>
+                  <Link onClick={() => menuService.setSubmenu(SubmenuId.CODE_FORMAT)}>
+                    <IconPrettier /> Code Format
+                  </Link>
                 </Show>
-                {/* Submenu Canvas */}
-                <Show when={locationService.page === Page.Canvas}>
-                  <SubmenuCanvas />
+                <Show when={locationService.page === Page.Editor && locationService.editorId}>
+                  <Link onClick={() => menuService.setSubmenu(SubmenuId.CHANGE_SET)}>
+                    <IconHistory /> Change Set
+                  </Link>
                 </Show>
-                {/* Submenu Code */}
-                <Show when={locationService.page === Page.Code}>
-                  <SubmenuCode />
-                </Show>
-                {/* undo, redo, copy, paste, ... */}
-                <Show when={locationService.page !== Page.Assistant}>
-                  <SubmenuEdit />
-                </Show>
-                {/* Submenu View */}
-                <Label>View</Label>
-                <Sub data-tauri-drag-region="true">
+                <Show when={isTauri()}>
                   <Link
-                    data-testid="appearance"
-                    onClick={() => menuService.setSubmenu(SubmenuId.APPEARANCE)}
+                    onClick={onToggleFullscreen}
+                    checked={store.fullscreen}
+                    keys={[modKey, 'Enter']}
                   >
-                    <IconPalette /> Appearance
+                    <IconFullscreen /> Fullscreen
                   </Link>
-                  <Show when={showCodeFormat()}>
-                    <Link onClick={() => menuService.setSubmenu(SubmenuId.CODE_FORMAT)}>
-                      <IconPrettier /> Code Format
-                    </Link>
-                  </Show>
-                  <Show when={locationService.page === Page.Editor && locationService.editorId}>
-                    <Link onClick={() => menuService.setSubmenu(SubmenuId.CHANGE_SET)}>
-                      <IconHistory /> Change Set
-                    </Link>
-                  </Show>
-                  <Show when={isTauri()}>
-                    <Link
-                      onClick={onToggleFullscreen}
-                      checked={store.fullscreen}
-                      keys={[modKey, 'Enter']}
-                    >
-                      <IconFullscreen /> Fullscreen
-                    </Link>
-                  </Show>
-                  <Show when={locationService.page === Page.Editor}>
-                    <Link onClick={onToggleTypewriterMode} checked={store.config.typewriterMode}>
-                      <IconFocus /> Typewriter mode
-                    </Link>
-                    <Link onClick={onToggleSpellcheck} checked={store.config.spellcheck}>
-                      <IconSpellcheck /> Spellcheck
-                    </Link>
-                  </Show>
-                  <Show when={isTauri()}>
-                    <Link onClick={onToggleAlwaysOnTop} checked={store.config.alwaysOnTop}>
-                      <IconAlwaysOnTop /> Always on Top
-                    </Link>
-                  </Show>
-                </Sub>
-                {/* Submenu Collab */}
-                <SubmenuCollab />
-                {/* Submenu Ai */}
-                <Label>AI</Label>
-                <Sub data-tauri-drag-region="true">
-                  <Link onClick={() => menuService.setSubmenu(SubmenuId.AI_CONFIG)}>
-                    <IconAi /> Configure
+                </Show>
+                <Show when={locationService.page === Page.Editor}>
+                  <Link onClick={onToggleTypewriterMode} checked={store.config.typewriterMode}>
+                    <IconFocus /> Typewriter mode
                   </Link>
-                  <Show when={store.ai?.copilot?.user}>
-                    <Link onClick={onToggleAssistant}>
-                      <IconAiAssistant /> Assistant
-                    </Link>
-                  </Show>
-                </Sub>
-                {/* Submenu Application */}
-                <Label>Application</Label>
-                <Sub data-tauri-drag-region="true">
-                  {/* doesn't work with tauri */}
-                  <Show when={!isTauri() && false}>
-                    <Link onClick={onOpenInApp}>Open in App ⚡</Link>
-                  </Show>
-                  <Link onClick={onVersion}>
-                    About Version {version} ({shortHash})
+                  <Link onClick={onToggleSpellcheck} checked={store.config.spellcheck}>
+                    <IconSpellcheck /> Spellcheck
                   </Link>
-                  <Link onClick={() => menuService.setSubmenu(SubmenuId.HELP)}>Help</Link>
-                  <Show when={isTauri()}>
-                    <Link onClick={() => quit()} keys={[modKey, 'q']}>
-                      Quit
-                    </Link>
-                  </Show>
-                  <Show when={isDev}>
-                    <Link onClick={onReset}>Reset DB</Link>
-                  </Show>
-                </Sub>
-              </DrawerContent>
-            </DrawerScroll>
-          </MenuDrawer>
-        </Show>
-      </Container>
-    </>
+                </Show>
+                <Show when={isTauri()}>
+                  <Link onClick={onToggleAlwaysOnTop} checked={store.config.alwaysOnTop}>
+                    <IconAlwaysOnTop /> Always on Top
+                  </Link>
+                </Show>
+              </Sub>
+              {/* Submenu Collab */}
+              <SubmenuCollab />
+              {/* Submenu Ai */}
+              <Label>AI</Label>
+              <Sub data-tauri-drag-region="true">
+                <Link onClick={() => menuService.setSubmenu(SubmenuId.AI_CONFIG)}>
+                  <IconAi /> Configure
+                </Link>
+                <Show when={store.ai?.copilot?.user}>
+                  <Link onClick={onToggleAssistant}>
+                    <IconAiAssistant /> Assistant
+                  </Link>
+                </Show>
+              </Sub>
+              {/* Submenu Application */}
+              <Label>Application</Label>
+              <Sub data-tauri-drag-region="true">
+                {/* doesn't work with tauri */}
+                <Show when={!isTauri() && false}>
+                  <Link onClick={onOpenInApp}>Open in App ⚡</Link>
+                </Show>
+                <Link onClick={onVersion}>
+                  About Version {version} ({shortHash})
+                </Link>
+                <Link onClick={() => menuService.setSubmenu(SubmenuId.HELP)}>Help</Link>
+                <Show when={isTauri()}>
+                  <Link onClick={() => quit()} keys={[modKey, 'q']}>
+                    Quit
+                  </Link>
+                </Show>
+                <Show when={isDev}>
+                  <Link onClick={onReset}>Reset DB</Link>
+                </Show>
+              </Sub>
+            </DrawerContent>
+          </DrawerScroll>
+        </MenuDrawer>
+      </Show>
+    </Container>
   )
 }

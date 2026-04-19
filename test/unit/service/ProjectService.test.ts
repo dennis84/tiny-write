@@ -1,7 +1,10 @@
 import {waitFor} from '@solidjs/testing-library'
+import {v5} from 'uuid'
 import {beforeEach, expect, test, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
 import {DB} from '@/db'
+import type {CanvasService} from '@/services/CanvasService'
+import type {FileService} from '@/services/FileService'
 import {ProjectService} from '@/services/ProjectService'
 import {TreeService} from '@/services/TreeService'
 import type {Directory} from '@/types'
@@ -13,7 +16,15 @@ vi.stubGlobal('__TAURI__', {})
 
 beforeEach(() => {
   vi.resetAllMocks()
+
+  // Mock ID generation of DirEntry to Filename|Directory
+  vi.mocked(v5).mockImplementation((filePath) => {
+    const parts = String(filePath).split('/')
+    return parts[parts.length - 1] as any
+  })
 })
+
+vi.mock('uuid', {spy: true})
 
 vi.mock('@/db', () => ({
   DB: mock({
@@ -27,7 +38,9 @@ test('newProject', async () => {
   ])
 
   const treeService = new TreeService()
-  const service = new ProjectService(treeService)
+  const fileService = mock<FileService>()
+  const canvasService = mock<CanvasService>()
+  const service = new ProjectService(treeService, fileService, canvasService)
 
   await waitFor(() => {
     expect(service.resourceState).toEqual('ready')
@@ -46,7 +59,9 @@ test('updateProject', async () => {
   ])
 
   const treeService = new TreeService()
-  const service = new ProjectService(treeService)
+  const fileService = mock<FileService>()
+  const canvasService = mock<CanvasService>()
+  const service = new ProjectService(treeService, fileService, canvasService)
 
   await waitFor(() => {
     expect(service.resourceState).toEqual('ready')
@@ -73,7 +88,9 @@ test('toggleDirectory - project', async () => {
   vi.spyOn(DB, 'getProjects').mockResolvedValue([project])
 
   const treeService = new TreeService()
-  const service = new ProjectService(treeService)
+  const fileService = mock<FileService>()
+  const canvasService = mock<CanvasService>()
+  const service = new ProjectService(treeService, fileService, canvasService)
   treeService.reset([project])
 
   await waitFor(() => {
@@ -106,7 +123,9 @@ test('toggleDirectory - directory', async () => {
   vi.spyOn(DB, 'getProjects').mockResolvedValue([project])
 
   const treeService = new TreeService()
-  const service = new ProjectService(treeService)
+  const fileService = mock<FileService>()
+  const canvasService = mock<CanvasService>()
+  const service = new ProjectService(treeService, fileService, canvasService)
 
   const items = [
     project,

@@ -191,7 +191,7 @@ export const Tooltip = (props: {dialog: Dialog<TooltipState>}) => {
             Delete forever
           </TooltipButton>
         </Match>
-        <Match when={isLocalFile(selected?.value) && !isProjectItem(selected.value)}>
+        <Match when={selected && isLocalFile(selected?.value) && !isProjectItem(selected.value)}>
           <TooltipButton onClick={() => deleteNode(true)} data-testid="close">
             <IconClose />
             Close

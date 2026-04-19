@@ -191,16 +191,48 @@ export enum AttachmentType {
   File = 'file',
   Selection = 'selection',
   Image = 'image',
+  Project = 'project',
 }
 
-export interface Attachment {
-  type: AttachmentType
-  name?: string
+export interface TextAttachment {
+  type: AttachmentType.Text
   content: string
   fileId?: string
-  selection?: [number, number]
+}
+
+export interface FileAttachment {
+  type: AttachmentType.File
+  content: string
+  fileId?: string
   codeLang?: string
 }
+
+export interface SelectionAttachment {
+  type: AttachmentType.Selection
+  content: string // selected text
+  fileId?: string
+  codeLang?: string
+  selection: [number, number] // [start, end]
+}
+
+export interface ImageAttachment {
+  type: AttachmentType.Image
+  content: string
+  name: string
+}
+
+export interface ProjectAttachment {
+  type: AttachmentType.Project
+  content: Attachment[]
+  projectName?: string
+}
+
+export type Attachment =
+  | TextAttachment
+  | FileAttachment
+  | SelectionAttachment
+  | ImageAttachment
+  | ProjectAttachment
 
 export type ChatRole = 'user' | 'assistant' | 'system'
 

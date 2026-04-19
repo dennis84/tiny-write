@@ -6,7 +6,13 @@ import type {ChatMessageTextContent, CopilotService} from '@/services/CopilotSer
 import type {DialogService} from '@/services/DialogService'
 import type {LocationService} from '@/services/LocationService'
 import {ThreadService} from '@/services/ThreadService'
-import {AttachmentType, type Message} from '@/types'
+import {
+  AttachmentType,
+  type FileAttachment,
+  type ImageAttachment,
+  type Message,
+  type SelectionAttachment,
+} from '@/types'
 import {expectTree} from '../testutil/tree'
 
 const copilotService = mock<CopilotService>({
@@ -577,31 +583,42 @@ test('hande attachments', () => {
 
   expect(service.attachments()).toEqual([])
 
-  const createAttachment = (type: AttachmentType, fileId?: string, name?: string) => ({
-    type,
+  const createFileAttachment = (fileId?: string): FileAttachment => ({
+    type: AttachmentType.File,
     fileId,
+    content: '',
+  })
+
+  const createSelectionAttachment = (fileId?: string): SelectionAttachment => ({
+    type: AttachmentType.Selection,
+    fileId,
+    content: '',
+    selection: [0, 0],
+  })
+
+  const createImageAttachment = (name: string): ImageAttachment => ({
+    type: AttachmentType.Image,
     name,
     content: '',
   })
 
-  service.addAttachment(createAttachment(AttachmentType.File, '1'))
+  service.addAttachment(createFileAttachment('1'))
   expect(service.attachments()).toHaveLength(1)
 
-  service.addAttachment(createAttachment(AttachmentType.File, '1'))
+  service.addAttachment(createFileAttachment('1'))
   expect(service.attachments()).toHaveLength(1)
 
-  service.addAttachment(createAttachment(AttachmentType.File, '2'))
+  service.addAttachment(createFileAttachment('2'))
   expect(service.attachments()).toHaveLength(2)
 
-  service.addAttachment(createAttachment(AttachmentType.File, '2', 'name'))
-  expect(service.attachments()).toHaveLength(2)
+  service.addAttachment(createImageAttachment('name'))
+  expect(service.attachments()).toHaveLength(3)
 
-  service.addAttachment(createAttachment(AttachmentType.File, '3', 'name'))
-  expect(service.attachments()).toHaveLength(2)
-  expect(service.attachments()[1].fileId).toBe('3')
+  service.addAttachment(createImageAttachment('name'))
+  expect(service.attachments()).toHaveLength(3)
 
-  service.addAttachment(createAttachment(AttachmentType.Selection, '3'))
-  expect(service.attachments()).toHaveLength(2)
+  service.addAttachment(createSelectionAttachment('2'))
+  expect(service.attachments()).toHaveLength(3)
 
   service.setAttachments([])
   expect(service.attachments()).toHaveLength(0)

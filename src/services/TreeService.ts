@@ -67,6 +67,10 @@ export class TreeService {
     return this.tree.descendants(fn, parentId)
   }
 
+  ancestors(fn: (n: MenuTreeItem) => void, id: string) {
+    return this.tree.ancestors(fn, id)
+  }
+
   getItem(id: string): MenuTreeItem | undefined {
     return this.tree.getItem(id)
   }

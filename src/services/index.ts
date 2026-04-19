@@ -102,7 +102,7 @@ export const createCtrl = (initial: State) => {
 
   const threadService = new ThreadService(copilotService, locationService, dialogService)
   const menuService = new MenuService(store, setState)
-  const projectService = new ProjectService(treeService)
+  const projectService = new ProjectService(treeService, fileService, canvasService)
 
   return {
     store,
