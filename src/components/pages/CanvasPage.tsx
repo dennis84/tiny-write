@@ -5,7 +5,7 @@ import {useBeforeLeave} from '@/hooks/use-before-leave'
 import {error, info} from '@/remote/log'
 import {useState} from '@/state'
 import {type LocationState, Page} from '@/types'
-import {ButtonPrimary} from '../Button'
+import {Button} from '../Button'
 import {Canvas} from '../canvas/Canvas'
 
 export const NewCanvasPage = () => {
@@ -30,15 +30,15 @@ export const NewCanvasPage = () => {
       <Switch>
         <Match when={location.query.join}>
           {(id) => (
-            <ButtonPrimary onClick={onClick} data-testid="join_canvas">
+            <Button primary={true} onClick={onClick} data-testid="join_canvas">
               Join canvas {id()}
-            </ButtonPrimary>
+            </Button>
           )}
         </Match>
         <Match when={true}>
-          <ButtonPrimary onClick={onClick} data-testid="new_canvas">
+          <Button primary={true} onClick={onClick} data-testid="new_canvas">
             New canvas
-          </ButtonPrimary>
+          </Button>
         </Match>
       </Switch>
     </Center>

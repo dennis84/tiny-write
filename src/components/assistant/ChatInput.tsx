@@ -6,7 +6,7 @@ import {v4 as uuidv4} from 'uuid'
 import {serialize} from '@/prosemirror/markdown-serialize'
 import {useState} from '@/state'
 import {type Message, Page} from '@/types'
-import {ButtonPrimary, IconButton} from '../Button'
+import {Button, IconButton} from '../Button'
 import {TooltipHelp} from '../dialog/TooltipHelp'
 import {IconStop} from '../icons/Ai'
 import {IconChevronDown, IconChevronUp, IconSend} from '../icons/Ui'
@@ -181,9 +181,9 @@ export const ChatInput = (props: Props) => {
           <ChatInputAttachments />
           <ModelSelect onChange={() => editorView()?.focus()} />
           <Show when={copilotService.streaming()}>
-            <ButtonPrimary onClick={onStop}>
+            <Button primary={true} onClick={onStop}>
               <IconStop /> Stop
-            </ButtonPrimary>
+            </Button>
           </Show>
           <Show when={!copilotService.streaming()}>
             <TooltipHelp title="Send message">

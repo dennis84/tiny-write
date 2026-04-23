@@ -4,18 +4,21 @@ import {isTauri, mod} from '@/env'
 import {quit} from '@/remote/app'
 import {saveFile} from '@/remote/editor'
 import {lspGoto} from '@/remote/lsp'
-import {isCodeElement, isEditorElement, useState} from '@/state'
+import {isCodeElement, isEditorElement, isLocalFile, useState} from '@/state'
 import {Page} from '@/types'
 
 export const Keymap = () => {
   const {
     store,
     appService,
+    codeService,
+    editorService,
     fileService,
     collabService,
     canvasService,
     canvasCollabService,
     locationService,
+    dialogService,
   } = useState()
 
   onMount(async () => {
@@ -64,9 +67,22 @@ export const Keymap = () => {
 
   const onSave = async () => {
     const currentFile = fileService.currentFile
-    if (!isTauri() || !currentFile || currentFile?.path) return false
-    const path = await saveFile(currentFile)
-    if (path) await fileService.updatePath(currentFile.id, path)
+    if (!currentFile || !isLocalFile(currentFile)) return
+
+    if (currentFile?.newFile) {
+      const path = await saveFile(currentFile)
+      if (path) await fileService.updatePath(currentFile.id, path)
+      dialogService.toast({message: `File saved to ${path}`, duration: 2000})
+      return
+    }
+
+    if (currentFile.code) {
+      await codeService.writeFile(currentFile)
+    } else {
+      await editorService.writeFile(currentFile)
+    }
+
+    dialogService.toast({message: `File saved`, duration: 2000})
   }
 
   const onFullscreen = async (event: KeyboardEvent) => {

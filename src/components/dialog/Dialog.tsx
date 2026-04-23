@@ -2,7 +2,7 @@ import {arrow, autoUpdate, computePosition, flip, offset, shift, size} from '@fl
 import {type JSX, Match, onCleanup, onMount, Show, Switch} from 'solid-js'
 import {ZIndex} from '@/utils/ZIndex'
 import type {Dialog as DialogType} from '../../services/DialogService'
-import {ButtonPrimary} from '../Button'
+import {Button} from '../Button'
 import {DialogContainer, DialogLayer, ToastLayer, TooltipArrow} from './Style'
 
 type Props = Omit<DialogType, 'component' | 'state'> & {
@@ -139,7 +139,9 @@ export const Dialog = (props: Props) => {
           >
             {props.children}
             <Show when={props.toastAction}>
-              <ButtonPrimary onClick={onClose}>{props.toastAction}</ButtonPrimary>
+              <Button primary={true} onClick={onClose}>
+                {props.toastAction}
+              </Button>
             </Show>
           </DialogContainer>
         </ToastLayer>

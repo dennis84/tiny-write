@@ -7,7 +7,6 @@ import {
   type ViewUpdate,
 } from '@codemirror/view'
 import {indentationMarkers} from '@replit/codemirror-indentation-markers'
-import {debounce} from '@solid-primitives/scheduled'
 import {type SetStoreFunction, type Store, unwrap} from 'solid-js/store'
 import {yCollab, ySyncFacet} from 'y-codemirror.next'
 import * as Y from 'yjs'
@@ -30,8 +29,6 @@ export class CodeService {
     private store: Store<State>,
     private setState: SetStoreFunction<State>,
   ) {}
-
-  private writeFileThrottled = debounce(this.writeFile.bind(this), 1000)
 
   async init(id: string, existingYdoc?: Y.Doc) {
     const file = this.fileService.findFileById(id)
@@ -151,6 +148,13 @@ export class CodeService {
     return this.prettierService.check(codeEditorView.state.doc.toString(), lang, config)
   }
 
+  async writeFile(file: File) {
+    if (file.path) {
+      await writeFile(file.path)
+      this.fileService.updateFile(file.id, {lastSaved: new Date()})
+    }
+  }
+
   private updateEditorState(file: File, el?: Element) {
     if (!file.codeEditorView && !el) {
       return
@@ -247,14 +251,6 @@ export class CodeService {
           await insertText(path, {fromA, toB, text})
         }
       })
-
-      this.writeFileThrottled(file)
-    }
-  }
-
-  private async writeFile(file: File) {
-    if (file.path) {
-      await writeFile(file.path)
     }
   }
 

@@ -299,8 +299,8 @@ export class FileService {
   }
 
   async updatePath(fileId: string, path: string) {
-    const lastModified = new Date()
-    this.updateFile(fileId, {lastModified, path})
+    const now = new Date()
+    this.updateFile(fileId, {path, lastModified: now, lastSaved: now})
 
     const updatedFile = this.findFileById(fileId)
     if (!updatedFile) return

@@ -299,6 +299,8 @@ export interface File {
   ydoc: Uint8Array
   versions: Version[]
   lastModified?: Date
+  lastSaved?: Date
+  saved?: boolean
   path?: string
   newFile?: string
   code?: boolean

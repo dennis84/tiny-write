@@ -6,7 +6,7 @@ import {info} from '@/remote/log'
 import {useState} from '@/state'
 import {type LocationState, Page} from '@/types'
 import {locationStateToString} from '@/utils/debug'
-import {ButtonPrimary} from '../Button'
+import {Button} from '../Button'
 import {CodeEditor} from '../code/CodeEditor'
 import {MergeMenu} from '../code/MergeMenu'
 
@@ -32,15 +32,15 @@ export const NewCodePage = () => {
       <Switch>
         <Match when={location.query.join}>
           {(id) => (
-            <ButtonPrimary onClick={onClick} data-testid="join_file">
+            <Button primary={true} onClick={onClick} data-testid="join_file">
               Join code file {id()}
-            </ButtonPrimary>
+            </Button>
           )}
         </Match>
         <Match when={true}>
-          <ButtonPrimary onClick={onClick} data-testid="new_file">
+          <Button primary={true} onClick={onClick} data-testid="new_file">
             New code file
-          </ButtonPrimary>
+          </Button>
         </Match>
       </Switch>
     </Center>

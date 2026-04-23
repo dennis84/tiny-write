@@ -5,7 +5,7 @@ import {useBeforeLeave} from '@/hooks/use-before-leave'
 import {error, info} from '@/remote/log'
 import {useState} from '@/state'
 import {type LocationState, Page} from '@/types'
-import {ButtonPrimary} from '../Button'
+import {Button} from '../Button'
 import {Editor} from '../editor/Editor'
 
 export const NewEditorPage = () => {
@@ -30,15 +30,15 @@ export const NewEditorPage = () => {
       <Switch>
         <Match when={location.query.join}>
           {(id) => (
-            <ButtonPrimary onClick={onClick} data-testid="join_editor">
+            <Button primary={true} onClick={onClick} data-testid="join_editor">
               Join editor {id()}
-            </ButtonPrimary>
+            </Button>
           )}
         </Match>
         <Match when={true}>
-          <ButtonPrimary onClick={onClick} data-testid="new_editor">
+          <Button primary={true} onClick={onClick} data-testid="new_editor">
             New editor
-          </ButtonPrimary>
+          </Button>
         </Match>
       </Switch>
     </Center>

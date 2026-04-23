@@ -1,6 +1,6 @@
 import {styled} from 'solid-styled-components'
 import {useState} from '@/state'
-import {ButtonGroup, ButtonPrimary} from './Button'
+import {Button, ButtonGroup} from './Button'
 import {Content, Layout, Scroll} from './Layout'
 
 const Pre = styled.pre`
@@ -30,7 +30,9 @@ export const GeneralError = (props: {error: Error}) => {
             <code>{props.error.message}</code>
           </Pre>
           <ButtonGroup>
-            <ButtonPrimary onClick={onReload}>Reload</ButtonPrimary>
+            <Button primary={true} onClick={onReload}>
+              Reload
+            </Button>
           </ButtonGroup>
         </Content>
       </Scroll>

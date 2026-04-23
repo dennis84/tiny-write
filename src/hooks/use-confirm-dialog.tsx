@@ -1,5 +1,5 @@
 import {styled} from 'solid-styled-components'
-import {Button, ButtonGroup, ButtonPrimary} from '@/components/Button'
+import {Button, ButtonGroup} from '@/components/Button'
 import {DialogFooter} from '@/components/dialog/Style'
 import type {Dialog} from '@/services/DialogService'
 import {useDialog} from './use-dialog'
@@ -40,9 +40,9 @@ export const useConfirmDialog = () => {
         </DialogContent>
         <DialogFooter>
           <ButtonGroup justify="flex-end">
-            <ButtonPrimary onClick={onConfirm} data-testid="confirm">
+            <Button primary={true} onClick={onConfirm} data-testid="confirm">
               Confirm
-            </ButtonPrimary>
+            </Button>
             <Button onClick={onCancel} data-testid="cancel">
               Cancel
             </Button>

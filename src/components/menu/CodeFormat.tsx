@@ -1,5 +1,5 @@
 import {Show} from 'solid-js'
-import {ButtonGroup, ButtonPrimary} from '@/components/Button'
+import {Button, ButtonGroup} from '@/components/Button'
 import {useState} from '@/state'
 import {type File, Page, type PrettierConfig} from '@/types'
 import {DrawerContent, DrawerScroll} from '../Drawer'
@@ -97,7 +97,9 @@ export const CodeFormat = () => {
           </Sub>
           <ButtonGroup>
             <Show when={isCodeFile()}>
-              <ButtonPrimary onClick={onPrettify}>Prettify</ButtonPrimary>
+              <Button primary={true} onClick={onPrettify}>
+                Prettify
+              </Button>
             </Show>
           </ButtonGroup>
         </DrawerContent>

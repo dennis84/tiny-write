@@ -43,27 +43,25 @@ const RippleEffect = `
   }
 `
 
+// biome-ignore format: ternary breaks ugly
 export const ButtonEl = styled.button<ButtonAttrs>`
   ${Common}
   ${RippleEffect}
   background: var(--background-90);
   color: var(--foreground);
-  ${(p) => (p.active ? `color: var(--primary-background);` : '')}
   &:hover {
     color: var(--primary-background);
     background: var(--background-80);
   }
-`
-
-const ButtonPrimaryEl = styled.button`
-  ${Common}
-  ${RippleEffect}
-  color: var(--primary-foreground);
-  border: 0;
-  background: var(--primary-background);
-  &:hover {
-    background: var(--primary-background-80);
-  }
+  ${(p) => (p.active ? `color: var(--primary-background);` : '')}
+  ${(p) => p.primary ? `
+    color: var(--primary-foreground);
+    border: 0;
+    background: var(--primary-background);
+    &:hover {
+      background: var(--primary-background-80);
+    }
+  ` : ``}
 `
 
 const ButtonLinkEl = styled.button`
@@ -99,6 +97,7 @@ export const ButtonGroup = styled.div<ButtonGroupProps>`
   ` : ''}
 `
 
+// biome-ignore format: ternary breaks ugly
 export const IconButtonEl = styled.button<ButtonAttrs>`
   ${Common}
   ${RippleEffect}
@@ -106,7 +105,6 @@ export const IconButtonEl = styled.button<ButtonAttrs>`
   padding: 0;
   background: none;
   color: var(--foreground);
-  ${(p) => (p.active ? `background: var(--background);` : '')}
   &:hover {
     color: var(--primary-background);
     background: var(--background-80);
@@ -114,6 +112,15 @@ export const IconButtonEl = styled.button<ButtonAttrs>`
   .icon {
     margin: 0;
   }
+  ${(p) => (p.active ? `background: var(--background);` : '')}
+  ${(p) => p.primary ? `
+    color: var(--primary-foreground);
+    border: 0;
+    background: var(--primary-background);
+    &:hover {
+      background: var(--primary-background-80);
+    }
+  ` : ``}
 `
 
 interface Ripple {
@@ -169,20 +176,16 @@ const Ripples = () => {
   )
 }
 
-export type ButtonAttrs = JSX.ButtonHTMLAttributes<HTMLButtonElement> & {active?: boolean}
+export type ButtonAttrs = JSX.ButtonHTMLAttributes<HTMLButtonElement> & {
+  active?: boolean
+  primary?: boolean
+}
 
 export const Button = (props: ButtonAttrs) => (
   <ButtonEl {...props}>
     {props.children}
     <Ripples />
   </ButtonEl>
-)
-
-export const ButtonPrimary = (props: ButtonAttrs) => (
-  <ButtonPrimaryEl {...props}>
-    {props.children}
-    <Ripples />
-  </ButtonPrimaryEl>
 )
 
 export const ButtonLink = (props: ButtonAttrs) => (

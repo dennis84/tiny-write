@@ -1,6 +1,6 @@
 import {format} from 'date-fns'
 import {For, onCleanup, Show} from 'solid-js'
-import {ButtonGroup, ButtonPrimary} from '@/components/Button'
+import {Button, ButtonGroup} from '@/components/Button'
 import {useState} from '@/state'
 import {DrawerContent, DrawerScroll} from '../Drawer'
 import {MenuNavbar} from '../navbar/MenuNavbar'
@@ -55,12 +55,14 @@ export const ChangeSet = () => {
           </Sub>
           <ButtonGroup>
             <Show when={locationService.state?.snapshot === undefined}>
-              <ButtonPrimary onClick={() => changeSetService.addVersion()}>
+              <Button primary={true} onClick={() => changeSetService.addVersion()}>
                 Create Snapshot
-              </ButtonPrimary>
+              </Button>
             </Show>
             <Show when={locationService.state?.snapshot !== undefined}>
-              <ButtonPrimary onClick={() => applyVersion()}>Apply Snapshot</ButtonPrimary>
+              <Button primary={true} onClick={() => applyVersion()}>
+                Apply Snapshot
+              </Button>
             </Show>
           </ButtonGroup>
         </DrawerContent>

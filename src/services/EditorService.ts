@@ -1,5 +1,4 @@
 import type {Box} from '@flatten-js/core'
-import {debounce} from '@solid-primitives/scheduled'
 import {deleteSelection, selectAll} from 'prosemirror-commands'
 import {EditorState, type Transaction} from 'prosemirror-state'
 import {EditorView} from 'prosemirror-view'
@@ -28,8 +27,6 @@ export class EditorService {
     private locationService: LocationService,
     private setState: SetStoreFunction<State>,
   ) {}
-
-  private writeFileThrottled = debounce(this.writeFile.bind(this), 1000)
 
   updateConfig(file: File) {
     this.updateEditorState(file)
@@ -96,7 +93,6 @@ export class EditorService {
         if (!updatedFile) return
 
         await FileService.saveFile(file)
-        this.writeFileThrottled(file)
       }
 
       if (!node) return
@@ -220,6 +216,7 @@ export class EditorService {
       const text = serialize(file.editorView.state)
       await replaceText(file.path, {text})
       await writeFile(file.path)
+      this.fileService.updateFile(file.id, {lastSaved: new Date()})
     }
   }
 }
