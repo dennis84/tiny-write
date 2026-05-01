@@ -1,6 +1,7 @@
 import {styled} from 'solid-styled-components'
 import {type ButtonAttrs, IconButton} from '@/components/Button'
 import {itemCss} from '../Style'
+import type {DropPos} from './Submenu'
 
 export const HighlightContent = styled.div`
   position: absolute;
@@ -34,7 +35,8 @@ export const Ghost = styled.div`
   overflow: hidden;
 `
 
-export const DropLine = styled.div<{level: number}>`
+// biome-ignore format: ternary breaks ugly
+export const DropLine = styled.div<{dropPos?: DropPos; level: number}>`
   position: absolute;
   height: 4px;
   border-radius: 4px;
@@ -43,6 +45,13 @@ export const DropLine = styled.div<{level: number}>`
   pointer-events: none;
   z-index: 1;
   margin-left: ${(p) => 20 * p.level}px;
+  ${(p) => p.dropPos === 'before' ? `
+    top: 0;
+    margin-top: -3px;
+  ` : p.dropPos === 'after' ? `
+    bottom: 0;
+    margin-bottom: -3px;
+  ` : ''}
 `
 
 // biome-ignore format: ternary breaks ugly
@@ -55,7 +64,6 @@ export const TreeNode = styled.div<{selected?: boolean}>`
   ` : ''}
 `
 
-// biome-ignore format: ternary breaks ugly
 export const TreeLinkMenu = styled<ButtonAttrs & {selected?: boolean}>(IconButton)`
   flex-shrink: 0;
   justify-self: flex-end;
@@ -68,11 +76,13 @@ interface ItemProps {
   selected?: boolean
   active?: boolean
   isOnCanvas?: boolean
+  dirty?: boolean
 }
 
 // biome-ignore format: ternary breaks ugly
 export const TreeLinkItem = styled.div<ItemProps>`
   ${itemCss}
+  position: relative; /* for DropLine */
   user-select: none;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
@@ -117,6 +127,11 @@ export const TreeLinkItem = styled.div<ItemProps>`
     }
     &:hover {
       background: var(--primary-background-10);
+    }
+  ` : ''}
+  ${(p) => p.dirty ? `
+    &, .icon, button {
+      color: var(--primary-background) !important;
     }
   ` : ''}
 `

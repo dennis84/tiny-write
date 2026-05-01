@@ -19,9 +19,11 @@ import {HighlightContent, TreeNode} from './Style'
 import {Tooltip, type TooltipState} from './Tooltip'
 import {TreeItem} from './TreeItem'
 
+export type DropPos = 'before' | 'after' | 'add' | 'open' | 'delete'
+
 interface DropState {
   targetId?: string
-  pos: 'before' | 'after' | 'add' | 'open' | 'delete'
+  pos: DropPos
 }
 
 interface TreeUiContextValue {

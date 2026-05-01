@@ -1,8 +1,8 @@
 import {Match, Switch} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {type ButtonAttrs, IconButton} from '@/components/Button'
-import {IconChevronDown, IconChevronRight, IconDot} from '@/components/icons/Ui'
-import {isDirectory, isProject, useState} from '@/state'
+import {IconChevronDown, IconChevronRight, IconDot, IconDotLarge} from '@/components/icons/Ui'
+import {isDirectory, isDirty, isFile, isProject, useState} from '@/state'
 import type {MenuTreeItem} from '@/types'
 
 interface Props {
@@ -43,6 +43,11 @@ export const TreeLinkToggle = (p: Props) => {
         <TreeToggle class="toggle" level={p.level} onClick={p.onClick}>
           <IconChevronDown />
         </TreeToggle>
+      </Match>
+      <Match when={isFile(p.node.value) && isDirty(p.node.value)}>
+        <TreeToggleDisabled class="toggle" level={p.level}>
+          <IconDotLarge />
+        </TreeToggleDisabled>
       </Match>
       <Match when={true}>
         <TreeToggleDisabled class="toggle" level={p.level}>

@@ -7,12 +7,18 @@ import {FileService} from '@/services/FileService'
 import {isCanvas, isDeletable, isDirectory, isFile, isFilename, isProject, useState} from '@/state'
 import {type MenuTreeItem, Page} from '@/types'
 import {IconMoreHoriz} from '../../icons/Ui'
-import {Ghost, GhostContainer, TreeLinkItem, TreeLinkMenu, TreeLinkTitle} from './Style'
-import {useTreeUi} from './Submenu'
+import {DropLine, Ghost, GhostContainer, TreeLinkItem, TreeLinkMenu, TreeLinkTitle} from './Style'
+import {type DropPos, useTreeUi} from './Submenu'
 import {TreeLinkIcon} from './TreeLinkIcon'
 import {TreeLinkToggle} from './TreeLinkToggle'
 
-export const TreeLink = (p: {node: MenuTreeItem; level: number; selected?: boolean}) => {
+interface Props {
+  node: MenuTreeItem
+  level: number
+  dropPos?: DropPos
+}
+
+export const TreeLink = (p: Props) => {
   let ghostRef!: HTMLDivElement
   let ref!: HTMLSpanElement
   let anchor!: HTMLButtonElement
@@ -177,7 +183,7 @@ export const TreeLink = (p: {node: MenuTreeItem; level: number; selected?: boole
         deleted={tree.showDeleted && isDeletable(p.node.value) && !p.node.value.deleted}
         active={isActive(p.node.value.id)}
         isOnCanvas={canvasService.isOnCanvas(p.node.id)}
-        selected={p.selected || p.node === tree.currentTooltip()?.state.selected}
+        selected={p.node === tree.currentTooltip()?.state.selected}
         data-id={p.node.value.id}
         data-testid="tree_link"
       >
@@ -198,6 +204,9 @@ export const TreeLink = (p: {node: MenuTreeItem; level: number; selected?: boole
         >
           <IconMoreHoriz />
         </TreeLinkMenu>
+        <Show when={p.dropPos === 'before' || p.dropPos === 'after'}>
+          <DropLine dropPos={p.dropPos} level={p.level} />
+        </Show>
       </TreeLinkItem>
       <Show when={grabbing()}>
         <Portal mount={appService.layoutRef}>

@@ -51,7 +51,12 @@ export class Tree<T> {
   }
 
   setValue(id: string, value: T) {
-    this.setState('items', id, 'value', value)
+    this.setState(
+      'items',
+      produce((items) => {
+        items[id].value = value
+      }),
+    )
   }
 
   add(item: TreeItemInput<T>): TreeItem<T>[] {

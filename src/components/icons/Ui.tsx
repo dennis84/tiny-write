@@ -231,6 +231,13 @@ export const IconDot = () => (
   </SvgIcon>
 )
 
+import QlementineIconsModified16 from '~icons/qlementine-icons/modified-16'
+export const IconDotLarge = () => (
+  <SvgIcon>
+    <QlementineIconsModified16 />
+  </SvgIcon>
+)
+
 import LucideHand from '~icons/lucide/hand'
 export const IconHand = () => (
   <SvgIcon>

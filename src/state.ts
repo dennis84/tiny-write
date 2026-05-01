@@ -67,6 +67,12 @@ export const isProjectItem = (it: any): boolean =>
 export const isDeletable = (it?: MenuItem): it is File | Canvas | Project =>
   (isFile(it) && !isProjectItem(it)) || isCanvas(it) || isProject(it)
 
+export const isDirty = (file?: File) => {
+  if (!file?.lastModified) return false
+  const isDirty = isLocalFile(file) && (!file.lastSaved || file.lastModified > file.lastSaved)
+  return isDirty
+}
+
 export const StateContext = createContext<Ctrl>({} as Ctrl)
 
 export const useState = () => useContext(StateContext)

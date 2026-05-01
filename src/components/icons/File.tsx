@@ -6,6 +6,13 @@ export const IconSaveAs = () => (
   </SvgIcon>
 )
 
+import LucideFileStack from '~icons/lucide/file-stack'
+export const IconFileStack = () => (
+  <SvgIcon>
+    <LucideFileStack />
+  </SvgIcon>
+)
+
 import LucideHardDriveDownload from '~icons/lucide/hard-drive-download'
 export const IconFileSave = () => (
   <SvgIcon>
