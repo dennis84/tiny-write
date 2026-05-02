@@ -146,12 +146,16 @@ export class FileService {
 
     debug(`Saving file (id=${file.id}, leftId=${file.leftId}, parentId=${file.parentId})`)
 
+    const lastCursorPos =
+      file.editorView?.state.selection.from ?? file.codeEditorView?.state.selection.main.from
+
     await DB.updateFile({
       id: file.id,
       parentId: file.parentId,
       leftId: file.leftId,
       ydoc: file.ydoc,
       title: file.title,
+      lastCursorPos,
       lastModified: file.lastModified,
       newFile: file.newFile,
       deleted: file.deleted,
@@ -193,6 +197,7 @@ export class FileService {
           leftId: file.leftId,
           title: file.title,
           ydoc: file.ydoc ?? new Uint8Array(),
+          lastCursorPos: file.lastCursorPos,
           lastModified: new Date(file.lastModified),
           newFile: file.newFile,
           active: file.active,

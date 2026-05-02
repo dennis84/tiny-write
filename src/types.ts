@@ -298,6 +298,7 @@ export interface File {
   title?: string
   ydoc: Uint8Array
   versions: Version[]
+  lastCursorPos?: number
   lastModified?: Date
   lastSaved?: Date
   saved?: boolean

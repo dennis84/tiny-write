@@ -1,6 +1,6 @@
 import type {Box} from '@flatten-js/core'
 import {deleteSelection, selectAll} from 'prosemirror-commands'
-import {EditorState, type Transaction} from 'prosemirror-state'
+import {EditorState, TextSelection, type Transaction} from 'prosemirror-state'
 import {EditorView} from 'prosemirror-view'
 import type {SetStoreFunction} from 'solid-js/store'
 import {prosemirrorJSONToYDoc} from 'y-prosemirror'
@@ -65,7 +65,10 @@ export class EditorService {
     })
 
     const {nodeViews} = this.proseMirrorService.createNodeViews()
-    const editorState = EditorState.create({doc, schema, plugins})
+    const selection =
+      doc && file.lastCursorPos ? TextSelection.create(doc, file.lastCursorPos) : undefined
+
+    const editorState = EditorState.create({doc, schema, plugins, selection})
 
     if (!editorView) {
       const dispatchTransaction = async (tr: Transaction) => {
@@ -85,8 +88,9 @@ export class EditorService {
         if (!tr.docChanged) return
 
         this.fileService.updateFile(file.id, {
-          lastModified: new Date(),
           ydoc: Y.encodeStateAsUpdate(subdoc),
+          lastCursorPos: tr.selection.from,
+          lastModified: new Date(),
         })
 
         const updatedFile = this.fileService.findFileById(file.id)

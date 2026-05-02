@@ -93,8 +93,10 @@ test('init - file not found', async () => {
 test('init - existing file', async () => {
   stubLocation('/editor/1')
 
+  const lastCursorPos = 4
+
   vi.spyOn(DB, 'getFiles').mockResolvedValue([
-    {id: '1', ydoc: createYUpdate('1', ['Text']), lastModified, versions: []},
+    {id: '1', ydoc: createYUpdate('1', ['Text']), lastCursorPos, lastModified, versions: []},
     {id: '2', ydoc: createYUpdate('2', ['Test 2']), lastModified, versions: []},
   ])
 
@@ -109,6 +111,8 @@ test('init - existing file', async () => {
   expect(ctrl.locationService.page).toBe(Page.Editor)
   expect(ctrl.fileService.files.length).toBe(2)
   expect(getByTestId('editor_scroll')).toHaveTextContent(/^Text$/)
+
+  expect(ctrl.fileService.currentFile?.editorView?.state.selection.from).toBe(lastCursorPos)
 })
 
 test('init - join', async () => {

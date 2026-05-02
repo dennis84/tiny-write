@@ -207,14 +207,17 @@ export class CodeService {
           this.setState('lastTr', Date.now())
           if (!update.docChanged) return
           this.fileService.updateFile(file.id, {
-            lastModified: new Date(),
             ydoc: Y.encodeStateAsUpdate(subdoc),
+            lastCursorPos: update.state.selection.main.from,
+            lastModified: new Date(),
           })
           await this.saveEditor(file, update)
         }),
         yCollab(type, this.collabService.provider?.awareness, {undoManager: false}),
       )
     }
+
+    const selection = file.lastCursorPos ? {anchor: file.lastCursorPos} : undefined
 
     const editor = this.codeMirrorService.createEditor({
       id: file.id,
@@ -223,6 +226,7 @@ export class CodeService {
       lang: file.codeLang,
       path: file.path,
       extensions,
+      selection,
     })
 
     if (this.locationService.state?.selection) {
