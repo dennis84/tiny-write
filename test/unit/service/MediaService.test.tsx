@@ -191,7 +191,14 @@ test('dropFiles - image on canvas with active editor', async () => {
 test('dropFiles - image on assistant', async () => {
   stubLocation('/assistant/1')
 
-  vi.spyOn(DB, 'getThreads').mockResolvedValue([{id: '1', lastModified, messages: []}])
+  vi.spyOn(DB, 'getThreads').mockResolvedValue([
+    {
+      type: 'thread',
+      id: '1',
+      lastModified,
+      messages: [],
+    },
+  ])
 
   const initial = createState()
   const {getByTestId, ctrl} = renderMain(initial)

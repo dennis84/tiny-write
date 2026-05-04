@@ -249,6 +249,7 @@ export interface Message {
 }
 
 export interface Thread {
+  type: 'thread'
   id: string
   title?: string
   lastModified?: Date

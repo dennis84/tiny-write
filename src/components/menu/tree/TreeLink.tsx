@@ -29,6 +29,7 @@ export const TreeLink = (p: Props) => {
     deleteService,
     canvasCollabService,
     fileService,
+    projectFileService,
     canvasService,
     projectService,
     locationService,
@@ -49,16 +50,12 @@ export const TreeLink = (p: Props) => {
   const onClick = async () => {
     const item = p.node.value
     if (isFilename(item)) {
-      const file = await fileService.newFileByPath({
-        id: item.id,
+      const file = await projectFileService.newFileByPath({
         path: item.path,
         projectId: item.projectId,
       })
 
-      if (file) {
-        treeService.setValue(file)
-        locationService.openItem(file)
-      }
+      locationService.openItem(file)
       return
     }
 

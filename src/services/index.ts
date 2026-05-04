@@ -21,6 +21,7 @@ import {LocationService} from './LocationService'
 import {MediaService} from './MediaService'
 import {MenuService} from './MenuService'
 import {PrettierService} from './PrettierService'
+import {ProjectFileService} from './ProjectFileService'
 import {ProjectService} from './ProjectService'
 import {ProseMirrorService} from './ProseMirrorService'
 import {SelectService} from './SelectService'
@@ -92,8 +93,11 @@ export const createCtrl = (initial: State) => {
   const changeSetService = new ChangeSetService(fileService, collabService)
   const canvasCollabService = new CanvasCollabService(collabService, canvasService)
   const canvasThreadService = new CanvasThreadService(canvasService, fileService)
+  const projectService = new ProjectService(treeService, fileService, canvasService)
+  const projectFileService = new ProjectFileService(fileService, projectService, treeService)
   const mediaService = new MediaService(
     fileService,
+    projectFileService,
     canvasService,
     canvasCollabService,
     appService,
@@ -102,7 +106,6 @@ export const createCtrl = (initial: State) => {
 
   const threadService = new ThreadService(copilotService, locationService, dialogService)
   const menuService = new MenuService(store, setState)
-  const projectService = new ProjectService(treeService, fileService, canvasService)
 
   return {
     store,
@@ -130,6 +133,7 @@ export const createCtrl = (initial: State) => {
     dialogService,
     locationService,
     projectService,
+    projectFileService,
   }
 }
 

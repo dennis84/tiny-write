@@ -42,6 +42,7 @@ vi.mock('@/db', () => ({
 test('newThread - empty', async () => {
   vi.spyOn(DB, 'getThreads').mockResolvedValue([
     {
+      type: 'thread',
       id: '1',
       title: 'Test',
       lastModified,
@@ -70,6 +71,7 @@ test('newThread - empty', async () => {
 test('addMessage', async () => {
   vi.spyOn(DB, 'getThreads').mockResolvedValue([
     {
+      type: 'thread',
       id: '1',
       lastModified,
       messages: [],
@@ -97,6 +99,7 @@ test('addMessage', async () => {
 test('addMessage - path', async () => {
   vi.spyOn(DB, 'getThreads').mockResolvedValue([
     {
+      type: 'thread',
       id: '1',
       messages: [
         {id: '1', role: 'user', content: '1'},
@@ -145,6 +148,7 @@ test('addMessage - path', async () => {
 test('addChunk', async () => {
   vi.spyOn(DB, 'getThreads').mockResolvedValue([
     {
+      type: 'thread',
       id: '1',
       messages: [{id: '1', role: 'user', content: 'Test'}],
     },
@@ -172,6 +176,7 @@ test('addChunk', async () => {
 test('interrupt', async () => {
   vi.spyOn(DB, 'getThreads').mockResolvedValue([
     {
+      type: 'thread',
       id: '1',
       messages: [
         {id: '1', role: 'user', content: '1'},
@@ -194,6 +199,7 @@ test('interrupt', async () => {
 test('summarize', async () => {
   vi.spyOn(DB, 'getThreads').mockResolvedValue([
     {
+      type: 'thread',
       id: '1',
       messages: [
         {id: '1', role: 'user', content: '1'},
@@ -220,6 +226,7 @@ test('summarize', async () => {
 test('updateTitle', async () => {
   vi.spyOn(DB, 'getThreads').mockResolvedValue([
     {
+      type: 'thread',
       id: '1',
       messages: [{id: '1', role: 'user', content: '1'}],
     },
@@ -239,6 +246,7 @@ test('updateTitle', async () => {
 test('init', async () => {
   vi.spyOn(DB, 'getThreads').mockResolvedValue([
     {
+      type: 'thread',
       id: '1',
       title: '1',
       lastModified,
@@ -263,6 +271,7 @@ test('init', async () => {
 test('delete', async () => {
   vi.spyOn(DB, 'getThreads').mockResolvedValue([
     {
+      type: 'thread',
       id: '1',
       lastModified,
       messages: [
@@ -271,6 +280,7 @@ test('delete', async () => {
       ],
     },
     {
+      type: 'thread',
       id: '2',
       lastModified,
       messages: [
@@ -302,6 +312,7 @@ test('delete', async () => {
 test('deleteAll', async () => {
   vi.spyOn(DB, 'getThreads').mockResolvedValue([
     {
+      type: 'thread',
       id: '1',
       lastModified,
       messages: [
@@ -310,6 +321,7 @@ test('deleteAll', async () => {
       ],
     },
     {
+      type: 'thread',
       id: '2',
       lastModified,
       messages: [
@@ -333,6 +345,7 @@ test('deleteAll', async () => {
 test('regenerate - user message', async () => {
   vi.spyOn(DB, 'getThreads').mockResolvedValue([
     {
+      type: 'thread',
       id: '1',
       messages: [
         {id: '1', role: 'user', content: '1'},
@@ -384,6 +397,7 @@ test('regenerate - user message', async () => {
 test('regenerate - assistant message', async () => {
   vi.spyOn(DB, 'getThreads').mockResolvedValue([
     {
+      type: 'thread',
       id: '1',
       messages: [
         {id: '1', role: 'user', content: '1'},
@@ -432,6 +446,7 @@ test('regenerate - assistant message', async () => {
 test('generateTitle', async () => {
   vi.spyOn(DB, 'getThreads').mockResolvedValue([
     {
+      type: 'thread',
       id: '1',
       lastModified,
       messages: [
@@ -511,6 +526,7 @@ test.each<[Message[], number]>([
 ])('getMessages', async (messages, count) => {
   vi.spyOn(DB, 'getThreads').mockResolvedValue([
     {
+      type: 'thread',
       id: '1',
       lastModified,
       messages,
@@ -538,6 +554,7 @@ test.each<[Message[], number]>([
 
 test('searchThreads', async () => {
   const createThread = (id: string, lastModified: Date) => ({
+    type: 'thread' as const,
     id,
     title: id,
     lastModified,

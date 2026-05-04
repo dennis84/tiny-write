@@ -9,6 +9,7 @@ import type {CanvasCollabService} from './CanvasCollabService'
 import type {CanvasService} from './CanvasService'
 import type {FileService} from './FileService'
 import type {LocationService} from './LocationService'
+import type {ProjectFileService} from './ProjectFileService'
 
 export enum DropTarget {
   Assistant = 'assistant',
@@ -40,6 +41,7 @@ export class MediaService {
 
   constructor(
     private fileService: FileService,
+    private projectFileService: ProjectFileService,
     private canvasService: CanvasService,
     private canvasCollabService: CanvasCollabService,
     private appService: AppService,
@@ -135,7 +137,6 @@ export class MediaService {
         const mime = await getMimeType(path)
         const isImage = mime.startsWith('image/')
         const isVideo = mime.startsWith('video/')
-        const isMarkdown = mime.startsWith('text/markdown')
 
         const basePath = await this.appService.getBasePath()
         const relativePath = await toRelativePath(path, basePath)
@@ -146,11 +147,7 @@ export class MediaService {
           this.insert(currentFile.editorView, relativePath, x, y, mime)
         }
 
-        let file = await this.fileService.findFileByPath(path)
-        if (!file) {
-          file = await this.fileService.newFile({path, code: !isMarkdown})
-        }
-
+        const file = await this.projectFileService.newFileByPath({path})
         return {file}
       }
     }
@@ -158,10 +155,7 @@ export class MediaService {
     // Drop files on code
     if (page === Page.Code) {
       for (const path of paths) {
-        const mime = await getMimeType(path)
-        const isMarkdown = mime.startsWith('text/markdown')
-        let file = await this.fileService.findFileByPath(path)
-        if (!file) file = await this.fileService.newFile({path, code: !isMarkdown})
+        const file = await this.projectFileService.newFileByPath({path})
         return {file}
       }
     }
@@ -175,7 +169,6 @@ export class MediaService {
         const mime = await getMimeType(path)
         const isImage = mime.startsWith('image/')
         const isVideo = mime.startsWith('video/')
-        const isMarkdown = mime.startsWith('text/markdown')
 
         const basePath = await this.appService.getBasePath()
         const relativePath = await toRelativePath(path, basePath)
@@ -201,8 +194,7 @@ export class MediaService {
             video.videoHeight,
           )
         } else {
-          let file = await this.fileService.findFileByPath(path)
-          if (!file) file = await this.fileService.newFile({path, code: !isMarkdown})
+          const file = await this.projectFileService.newFileByPath({path})
           addedElement = (await this.canvasService.addFile(file))?.[0]
         }
 

@@ -1,19 +1,17 @@
 import {createDeepSignal} from '@solid-primitives/resource'
 import {createResource} from 'solid-js'
 import {produce} from 'solid-js/store'
-import {v4 as uuid, v5 as uuidv5} from 'uuid'
+import {v4 as uuid} from 'uuid'
 import {DB} from '@/db'
 import {listContents} from '@/remote/editor'
 import {info} from '@/remote/log'
 import {isDirectory, isProjectItem} from '@/state'
 import type {Directory, Filename, Project} from '@/types'
 import type {CanvasService} from './CanvasService'
-import type {FileService} from './FileService'
+import {FileService} from './FileService'
 import type {TreeService} from './TreeService'
 
 export class ProjectService {
-  private readonly FILE_NAMESPACE = 'a9ca8696-ec43-4460-9c1b-159ef6f2d574'
-
   private projectsResource = createResource(() => DB.getProjects(), {
     storage: createDeepSignal,
   })
@@ -117,7 +115,7 @@ export class ProjectService {
         ({
           type: dirEntry.isDirectory ? 'directory' : 'filename',
           path: dirEntry.path,
-          id: uuidv5(dirEntry.path, this.FILE_NAMESPACE),
+          id: FileService.createId(dirEntry.path),
           projectId,
           name: dirEntry.name,
           parentId: item.id,

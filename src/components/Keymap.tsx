@@ -14,6 +14,7 @@ export const Keymap = () => {
     codeService,
     editorService,
     fileService,
+    projectFileService,
     collabService,
     canvasService,
     canvasCollabService,
@@ -170,7 +171,7 @@ export const Keymap = () => {
     const url = new URL(first.uri)
     const selection = first.range
 
-    const file = await fileService.newFileByPath({path: url.pathname})
+    const file = await projectFileService.newFileByPath({path: url.pathname})
 
     locationService.openItem(file, {selection})
   }

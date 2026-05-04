@@ -6,7 +6,7 @@ import {useState} from '@/state'
 import type {LocationState} from '@/types'
 
 export const Redirect = () => {
-  const {store, fileService, projectService, locationService} = useState()
+  const {store, fileService, projectFileService, projectService, locationService} = useState()
   const location = useLocation<LocationState>()
   const navigate = useNavigate()
 
@@ -39,7 +39,7 @@ export const Redirect = () => {
 
         if (argPath) {
           info(`Redirect to new file by path (path=${path}, newFile=${newFile})`)
-          const file = await fileService.newFileByPath({path, newFile})
+          const file = await projectFileService.newFileByPath({path, newFile})
           return locationService.openItem(file, {selection})
         }
 

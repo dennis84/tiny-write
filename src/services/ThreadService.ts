@@ -166,6 +166,7 @@ export class ThreadService {
     }
 
     const newThread = {
+      type: 'thread' as const,
       id: ThreadService.createId(),
       messages: [],
     }

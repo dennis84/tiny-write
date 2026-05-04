@@ -106,7 +106,14 @@ test('init - existing file', async () => {
   const lastCursorPos = 4
 
   vi.spyOn(DB, 'getFiles').mockResolvedValue([
-    {id: '1', ydoc: createYUpdate('1', 'Code1'), lastCursorPos, lastModified, versions: [], code: true},
+    {
+      id: '1',
+      ydoc: createYUpdate('1', 'Code1'),
+      lastCursorPos,
+      lastModified,
+      versions: [],
+      code: true,
+    },
     {id: '2', ydoc: createYUpdate('2', 'Code2'), lastModified, versions: [], code: true},
   ])
 
@@ -122,7 +129,9 @@ test('init - existing file', async () => {
   expect(ctrl.fileService.files.length).toBe(2)
   expect(ctrl.fileService.currentFileId).toBe('1')
   expect(ctrl.fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('Code1')
-  expect(ctrl.fileService.currentFile?.codeEditorView?.state.selection.main.from).toBe(lastCursorPos)
+  expect(ctrl.fileService.currentFile?.codeEditorView?.state.selection.main.from).toBe(
+    lastCursorPos,
+  )
 })
 
 test('init - join url', async () => {

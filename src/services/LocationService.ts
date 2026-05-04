@@ -83,6 +83,8 @@ export class LocationService {
     if (!item) return this.navigator('/')
     const state = {...this.state, share: false, ...locState}
 
+    info(`Open item (type=${item.type}, state=${locationStateToString(state)})`)
+
     if (isFile(item) && item.code) {
       const newFile = item.newFile
       return this.navigator(`/code/${item.id}`, {state: {...state, newFile}})

@@ -2,7 +2,7 @@ import {createDeepSignal} from '@solid-primitives/resource'
 import {rename} from '@tauri-apps/plugin-fs'
 import {createResource, createSignal} from 'solid-js'
 import {produce} from 'solid-js/store'
-import {v4 as uuidv4} from 'uuid'
+import {v4 as uuidv4, v5 as uuidv5} from 'uuid'
 import {ySyncFacet} from 'y-codemirror.next'
 import {yXmlFragmentToProseMirrorRootNode} from 'y-prosemirror'
 import * as Y from 'yjs'
@@ -41,6 +41,8 @@ export interface LoadedMarkdownFile {
 }
 
 export class FileService {
+  private static readonly FILE_NAMESPACE = 'a9ca8696-ec43-4460-9c1b-159ef6f2d574'
+
   private activeFileSignal = createSignal<string>()
 
   private filesResource = createResource<File[]>(() => FileService.fetchFiles(), {
@@ -168,8 +170,12 @@ export class FileService {
     })
   }
 
+  static createId(path?: string): string {
+    return path ? uuidv5(path, FileService.FILE_NAMESPACE) : uuidv4()
+  }
+
   static createFile(params: Partial<File> = {}): File {
-    const id = params.id ?? uuidv4()
+    const id = params.id ?? FileService.createId()
     const ydoc = params.ydoc ?? Y.encodeStateAsUpdate(FileService.createYdoc(id))
     const versions = params.versions ?? []
     const codeLang = params.codeLang ?? FileService.guessCodeLang(params)
@@ -200,7 +206,6 @@ export class FileService {
           lastCursorPos: file.lastCursorPos,
           lastModified: new Date(file.lastModified),
           newFile: file.newFile,
-          active: file.active,
           deleted: file.deleted,
           code: file.code,
           codeLang: file.codeLang,
@@ -247,10 +252,10 @@ export class FileService {
     path?: string
     newFile?: string
     projectId?: string
-  }): Promise<File | undefined> {
+  }): Promise<File> {
     const {id, path, newFile, projectId} = params
     const p = path ?? newFile
-    if (!p) return
+    if (!p) throw new Error('Argument path or newFile missing')
 
     let file = await this.findFileByPath(p)
     if (!file) {

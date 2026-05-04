@@ -7,7 +7,7 @@ import type {CollabService} from '@/services/CollabService'
 import {FileService} from '@/services/FileService'
 import type {LocationService} from '@/services/LocationService'
 import type {TreeService} from '@/services/TreeService'
-import {createSubdoc, createYUpdate} from '../testutil/prosemirror-util'
+import * as pmUtils from '../testutil/prosemirror-util'
 import {createIpcMock} from '../testutil/util'
 
 vi.mock('@/db', () => ({
@@ -28,7 +28,7 @@ const treeService = mock<TreeService>()
 const lastModified = new Date()
 
 test('only save file type', async () => {
-  const ydoc = createSubdoc('1', ['Test'])
+  const ydoc = pmUtils.createSubdoc('1', ['Test'])
 
   vi.spyOn(DB, 'getFiles').mockResolvedValue([
     {id: '1', ydoc: Y.encodeStateAsUpdate(ydoc), versions: [], lastModified},
@@ -57,11 +57,17 @@ test('only save file type', async () => {
 })
 
 test('restore', async () => {
-  const ydoc = createSubdoc('1', ['Test'])
+  const ydoc = pmUtils.createSubdoc('1', ['Test'])
 
   vi.spyOn(DB, 'getFiles').mockResolvedValue([
     {id: '1', ydoc: Y.encodeStateAsUpdate(ydoc), versions: [], lastModified},
-    {id: '2', ydoc: createYUpdate('2', ['Test2']), versions: [], lastModified, deleted: true},
+    {
+      id: '2',
+      ydoc: pmUtils.createYUpdate('2', ['Test2']),
+      versions: [],
+      lastModified,
+      deleted: true,
+    },
   ])
 
   const service = new FileService(collabService, locationService, treeService)
@@ -79,9 +85,14 @@ test('getTitle', async () => {
   createIpcMock()
 
   vi.spyOn(DB, 'getFiles').mockResolvedValue([
-    {id: '1', ydoc: createYUpdate('1', ['Test1', 'foo']), versions: [], lastModified},
-    {id: '2', ydoc: createYUpdate('2', ['Test2', 'bar']), versions: [], lastModified},
-    {id: '3', ydoc: createYUpdate('3', ['a'.repeat(30), 'bar']), versions: [], lastModified},
+    {id: '1', ydoc: pmUtils.createYUpdate('1', ['Test1', 'foo']), versions: [], lastModified},
+    {id: '2', ydoc: pmUtils.createYUpdate('2', ['Test2', 'bar']), versions: [], lastModified},
+    {
+      id: '3',
+      ydoc: pmUtils.createYUpdate('3', ['a'.repeat(30), 'bar']),
+      versions: [],
+      lastModified,
+    },
   ])
 
   const service = new FileService(collabService, locationService, treeService)
@@ -93,7 +104,7 @@ test('getTitle', async () => {
   await service.addFile({
     type: 'file',
     id: '4',
-    ydoc: createYUpdate('4', ['Test4']),
+    ydoc: pmUtils.createYUpdate('4', ['Test4']),
     versions: [],
     path: '/users/me/project/README.md',
     lastModified,
@@ -112,7 +123,7 @@ test('findFile - found', async () => {
   })
 
   vi.spyOn(DB, 'getFiles').mockResolvedValue([
-    {id: '1', ydoc: createYUpdate('1', ['Test1']), versions: [], lastModified},
+    {id: '1', ydoc: pmUtils.createYUpdate('1', ['Test1']), versions: [], lastModified},
   ])
 
   const service = new FileService(collabService, locationService, treeService)
@@ -124,7 +135,7 @@ test('findFile - found', async () => {
   await service.addFile({
     type: 'file',
     id: '2',
-    ydoc: createYUpdate('2', ['Test2']),
+    ydoc: pmUtils.createYUpdate('2', ['Test2']),
     versions: [],
     path: '/path/to/file2',
   })
@@ -152,7 +163,7 @@ test('findFile - not found', async () => {
   await service.addFile({
     type: 'file',
     id: '2',
-    ydoc: createYUpdate('2', ['Test2']),
+    ydoc: pmUtils.createYUpdate('2', ['Test2']),
     versions: [],
     path: '/path/to/file2',
   })
@@ -189,7 +200,7 @@ test('newFile', async () => {
 
 test('renameFile - title', async () => {
   vi.spyOn(DB, 'getFiles').mockResolvedValue([
-    {id: '1', ydoc: createYUpdate('1', ['a']), versions: [], lastModified},
+    {id: '1', ydoc: pmUtils.createYUpdate('1', ['a']), versions: [], lastModified},
   ])
 
   const service = new FileService(collabService, locationService, treeService)
@@ -219,7 +230,7 @@ test('renameFile - update path', async () => {
   await service.addFile({
     type: 'file',
     id: '1',
-    ydoc: createYUpdate('1', ['a']),
+    ydoc: pmUtils.createYUpdate('1', ['a']),
     versions: [],
     path: '/path/old.js',
     codeLang: 'javascript',
@@ -248,7 +259,7 @@ test('renameFile - update newFile', async () => {
   await service.addFile({
     type: 'file',
     id: '1',
-    ydoc: createYUpdate('1', ['a']),
+    ydoc: pmUtils.createYUpdate('1', ['a']),
     versions: [],
     newFile: '/path/old.js',
     codeLang: 'javascript',
@@ -269,7 +280,7 @@ test.each([
   const file = {
     type: 'file' as const,
     id: '1',
-    ydoc: createYUpdate('1', ['a']),
+    ydoc: pmUtils.createYUpdate('1', ['a']),
     versions: [],
     lastModified,
   }
@@ -286,7 +297,7 @@ test.each([
   const file = {
     type: 'file' as const,
     id: '1',
-    ydoc: createYUpdate('1', ['a']),
+    ydoc: pmUtils.createYUpdate('1', ['a']),
     versions: [],
     lastModified: new Date(),
     path,
