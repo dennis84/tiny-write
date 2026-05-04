@@ -13,6 +13,7 @@ import {
   type Message,
   type SelectionAttachment,
 } from '@/types'
+import {createThread} from '../testutil/data'
 import {expectTree} from '../testutil/tree'
 
 const copilotService = mock<CopilotService>({
@@ -23,7 +24,6 @@ const copilotService = mock<CopilotService>({
 })
 const locationService = mock<LocationService>({threadId: '1'})
 const dialogService = mock<DialogService>()
-const lastModified = new Date()
 
 beforeEach(() => {
   vi.resetAllMocks()
@@ -41,16 +41,13 @@ vi.mock('@/db', () => ({
 
 test('newThread - empty', async () => {
   vi.spyOn(DB, 'getThreads').mockResolvedValue([
-    {
-      type: 'thread',
+    createThread({
       id: '1',
-      title: 'Test',
-      lastModified,
       messages: [
         {id: '1', role: 'user', content: 'test'},
         {id: '2', role: 'assistant', content: 'test'},
       ],
-    },
+    }),
   ])
 
   const service = new ThreadService(copilotService, locationService, dialogService)
@@ -69,14 +66,7 @@ test('newThread - empty', async () => {
 })
 
 test('addMessage', async () => {
-  vi.spyOn(DB, 'getThreads').mockResolvedValue([
-    {
-      type: 'thread',
-      id: '1',
-      lastModified,
-      messages: [],
-    },
-  ])
+  vi.spyOn(DB, 'getThreads').mockResolvedValue([createThread({id: '1'})])
 
   const service = new ThreadService(copilotService, locationService, dialogService)
 
@@ -98,15 +88,14 @@ test('addMessage', async () => {
 
 test('addMessage - path', async () => {
   vi.spyOn(DB, 'getThreads').mockResolvedValue([
-    {
-      type: 'thread',
+    createThread({
       id: '1',
       messages: [
         {id: '1', role: 'user', content: '1'},
         {id: '2', role: 'user', content: '2'},
       ],
       path: new Map([[undefined, '1']]),
-    },
+    }),
   ])
 
   const service = new ThreadService(copilotService, locationService, dialogService)
@@ -147,11 +136,10 @@ test('addMessage - path', async () => {
 
 test('addChunk', async () => {
   vi.spyOn(DB, 'getThreads').mockResolvedValue([
-    {
-      type: 'thread',
+    createThread({
       id: '1',
       messages: [{id: '1', role: 'user', content: 'Test'}],
-    },
+    }),
   ])
 
   const service = new ThreadService(copilotService, locationService, dialogService)
@@ -175,14 +163,13 @@ test('addChunk', async () => {
 
 test('interrupt', async () => {
   vi.spyOn(DB, 'getThreads').mockResolvedValue([
-    {
-      type: 'thread',
+    createThread({
       id: '1',
       messages: [
         {id: '1', role: 'user', content: '1'},
         {id: '2', role: 'user', content: '2'},
       ],
-    },
+    }),
   ])
 
   const service = new ThreadService(copilotService, locationService, dialogService)
@@ -198,14 +185,13 @@ test('interrupt', async () => {
 
 test('summarize', async () => {
   vi.spyOn(DB, 'getThreads').mockResolvedValue([
-    {
-      type: 'thread',
+    createThread({
       id: '1',
       messages: [
         {id: '1', role: 'user', content: '1'},
         {id: '2', parentId: '1', role: 'assistant', content: '2'},
       ],
-    },
+    }),
   ])
 
   const service = new ThreadService(copilotService, locationService, dialogService)
@@ -225,11 +211,10 @@ test('summarize', async () => {
 
 test('updateTitle', async () => {
   vi.spyOn(DB, 'getThreads').mockResolvedValue([
-    {
-      type: 'thread',
+    createThread({
       id: '1',
       messages: [{id: '1', role: 'user', content: '1'}],
-    },
+    }),
   ])
 
   const service = new ThreadService(copilotService, locationService, dialogService)
@@ -245,16 +230,13 @@ test('updateTitle', async () => {
 
 test('init', async () => {
   vi.spyOn(DB, 'getThreads').mockResolvedValue([
-    {
-      type: 'thread',
+    createThread({
       id: '1',
-      title: '1',
-      lastModified,
       messages: [
         {id: '1', role: 'user', content: '1'},
         {id: '2', parentId: '1', role: 'assistant', content: '2'},
       ],
-    },
+    }),
   ])
 
   const service = new ThreadService(copilotService, locationService, dialogService)
@@ -270,24 +252,20 @@ test('init', async () => {
 
 test('delete', async () => {
   vi.spyOn(DB, 'getThreads').mockResolvedValue([
-    {
-      type: 'thread',
+    createThread({
       id: '1',
-      lastModified,
       messages: [
         {id: '1', role: 'user', content: '1'},
         {id: '2', role: 'assistant', content: '2'},
       ],
-    },
-    {
-      type: 'thread',
+    }),
+    createThread({
       id: '2',
-      lastModified,
       messages: [
         {id: '3', role: 'user', content: '3'},
         {id: '4', role: 'assistant', content: '4'},
       ],
-    },
+    }),
   ])
 
   const service = new ThreadService(copilotService, locationService, dialogService)
@@ -311,24 +289,20 @@ test('delete', async () => {
 
 test('deleteAll', async () => {
   vi.spyOn(DB, 'getThreads').mockResolvedValue([
-    {
-      type: 'thread',
+    createThread({
       id: '1',
-      lastModified,
       messages: [
         {id: '1', role: 'user', content: '1'},
         {id: '2', role: 'assistant', content: '2'},
       ],
-    },
-    {
-      type: 'thread',
+    }),
+    createThread({
       id: '2',
-      lastModified,
       messages: [
         {id: '3', role: 'user', content: '3'},
         {id: '4', role: 'assistant', content: '4'},
       ],
-    },
+    }),
   ])
 
   const service = new ThreadService(copilotService, locationService, dialogService)
@@ -344,14 +318,13 @@ test('deleteAll', async () => {
 
 test('regenerate - user message', async () => {
   vi.spyOn(DB, 'getThreads').mockResolvedValue([
-    {
-      type: 'thread',
+    createThread({
       id: '1',
       messages: [
         {id: '1', role: 'user', content: '1'},
         {id: '2', parentId: '1', role: 'assistant', content: '2'},
       ],
-    },
+    }),
   ])
 
   const service = new ThreadService(copilotService, locationService, dialogService)
@@ -396,14 +369,13 @@ test('regenerate - user message', async () => {
 
 test('regenerate - assistant message', async () => {
   vi.spyOn(DB, 'getThreads').mockResolvedValue([
-    {
-      type: 'thread',
+    createThread({
       id: '1',
       messages: [
         {id: '1', role: 'user', content: '1'},
         {id: '2', parentId: '1', role: 'assistant', content: '2'},
       ],
-    },
+    }),
   ])
 
   const service = new ThreadService(copilotService, locationService, dialogService)
@@ -445,15 +417,13 @@ test('regenerate - assistant message', async () => {
 
 test('generateTitle', async () => {
   vi.spyOn(DB, 'getThreads').mockResolvedValue([
-    {
-      type: 'thread',
+    createThread({
       id: '1',
-      lastModified,
       messages: [
         {id: '1', role: 'user', content: '1'},
         {id: '2', role: 'assistant', content: '2'},
       ],
-    },
+    }),
   ])
 
   const service = new ThreadService(copilotService, locationService, dialogService)
@@ -525,12 +495,10 @@ test.each<[Message[], number]>([
   ],
 ])('getMessages', async (messages, count) => {
   vi.spyOn(DB, 'getThreads').mockResolvedValue([
-    {
-      type: 'thread',
+    createThread({
       id: '1',
-      lastModified,
       messages,
-    },
+    }),
   ])
 
   vi.spyOn(copilotService, 'chatModel', 'get').mockReturnValue({
@@ -553,20 +521,12 @@ test.each<[Message[], number]>([
 })
 
 test('searchThreads', async () => {
-  const createThread = (id: string, lastModified: Date) => ({
-    type: 'thread' as const,
-    id,
-    title: id,
-    lastModified,
-    messages: [],
-  })
-
-  const thread1 = createThread('1', new Date('2024-01-01'))
-  const thread2 = createThread('2', new Date('2025-09-01'))
-  const thread3 = createThread('3', new Date('2025-11-01'))
-  const thread4 = createThread('4', new Date('2025-11-02'))
-  const thread5 = createThread('5', new Date())
-  const thread6 = createThread('6', new Date())
+  const thread1 = createThread({id: '1', lastModified: new Date('2024-01-01')})
+  const thread2 = createThread({id: '2', lastModified: new Date('2025-09-01')})
+  const thread3 = createThread({id: '3', lastModified: new Date('2025-11-01')})
+  const thread4 = createThread({id: '4', lastModified: new Date('2025-11-02')})
+  const thread5 = createThread({id: '5', lastModified: new Date()})
+  const thread6 = createThread({id: '6', lastModified: new Date()})
 
   vi.spyOn(DB, 'getThreads').mockResolvedValue([
     thread6,

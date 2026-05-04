@@ -10,6 +10,7 @@ import {type CanvasEditorElement, type CanvasImageElement, ElementType} from '@/
 import * as cmUtil from '../testutil/codemirror-util'
 import * as pmUtil from '../testutil/prosemirror-util'
 import {createIpcMock, renderMain, stubLocation} from '../testutil/util'
+import {createCanvas, createEditorElement, createFile, createThread} from '../testutil/data'
 
 document.elementFromPoint = () => null
 
@@ -78,26 +79,17 @@ test('dropFiles - image on editor', async () => {
 test('dropFiles - image on canvas', async () => {
   stubLocation('/canvas/1')
 
-  const editorElement = {
-    id: '1',
-    type: ElementType.Editor,
-    x: 0,
-    y: 0,
-    width: 100,
-    height: 100,
-  }
+  const editorElement = createEditorElement({id: '1'})
 
   vi.spyOn(DB, 'getFiles').mockResolvedValue([
     {id: '1', ydoc: pmUtil.createYUpdate('1', []), versions: [], lastModified},
   ])
 
   vi.spyOn(DB, 'getCanvases').mockResolvedValue([
-    {
+    createCanvas({
       id: '1',
-      camera: {point: [0, 0], zoom: 1},
-      lastModified,
       elements: [editorElement],
-    },
+    }),
   ])
 
   const initial = createState()
@@ -136,26 +128,17 @@ test('dropFiles - image on canvas', async () => {
 test('dropFiles - image on canvas with active editor', async () => {
   stubLocation('/canvas/1')
 
-  const editorElement = {
-    id: '1',
-    type: ElementType.Editor,
-    x: 0,
-    y: 0,
-    width: 100,
-    height: 100,
-  }
+  const editorElement = createEditorElement({id: '1'})
 
   vi.spyOn(DB, 'getFiles').mockResolvedValue([
     {id: '1', ydoc: pmUtil.createYUpdate('1', []), versions: [], lastModified},
   ])
 
   vi.spyOn(DB, 'getCanvases').mockResolvedValue([
-    {
+    createCanvas({
       id: '1',
-      camera: {point: [0, 0], zoom: 1},
-      lastModified,
       elements: [editorElement],
-    },
+    }),
   ])
 
   const initial = createState()
@@ -191,14 +174,7 @@ test('dropFiles - image on canvas with active editor', async () => {
 test('dropFiles - image on assistant', async () => {
   stubLocation('/assistant/1')
 
-  vi.spyOn(DB, 'getThreads').mockResolvedValue([
-    {
-      type: 'thread',
-      id: '1',
-      lastModified,
-      messages: [],
-    },
-  ])
+  vi.spyOn(DB, 'getThreads').mockResolvedValue([createThread({id: '1'})])
 
   const initial = createState()
   const {getByTestId, ctrl} = renderMain(initial)
@@ -277,14 +253,10 @@ test('dropPaths - image on editor with basePath', async () => {
     expect(ctrl.fileService.resourceState).toEqual('ready')
   })
 
-  const file = {
-    type: 'file' as const,
+  const file = createFile({
     id: '1',
-    ydoc: pmUtil.createYUpdate('1', []),
     path: '/users/me/project/README.md',
-    lastModified,
-    versions: [],
-  }
+  })
 
   await ctrl.fileService.addFile(file)
   ctrl.locationService.openItem(file)
@@ -312,12 +284,7 @@ test('dropPaths - text file on editor', async () => {
     expect(ctrl.fileService.resourceState).toEqual('ready')
   })
 
-  const file = {
-    type: 'file' as const,
-    id: '1',
-    ydoc: pmUtil.createYUpdate('1', []),
-    versions: [],
-  }
+  const file = createFile({id: '1'})
   await ctrl.fileService.addFile(file)
   ctrl.locationService.openItem(file)
 
@@ -337,26 +304,17 @@ test('dropPaths - text file on editor', async () => {
 test('dropPaths - image on canvas', async () => {
   stubLocation('/canvas/1')
 
-  const editorElement = {
-    id: '1',
-    type: ElementType.Editor,
-    x: 0,
-    y: 0,
-    width: 100,
-    height: 100,
-  }
+  const editorElement = createEditorElement({id: '1'})
 
   vi.spyOn(DB, 'getFiles').mockResolvedValue([
     {id: '1', ydoc: pmUtil.createYUpdate('1', []), versions: [], lastModified},
   ])
 
   vi.spyOn(DB, 'getCanvases').mockResolvedValue([
-    {
+    createCanvas({
       id: '1',
-      camera: {point: [0, 0], zoom: 1},
-      lastModified,
       elements: [editorElement],
-    },
+    }),
   ])
 
   const initial = createState()
@@ -393,12 +351,7 @@ test('dropPaths - text file on canvas', async () => {
   const initial = createState()
 
   vi.spyOn(DB, 'getCanvases').mockResolvedValue([
-    {
-      id: '1',
-      camera: {point: [0, 0], zoom: 1},
-      lastModified,
-      elements: [],
-    },
+    createCanvas({id: '1'}),
   ])
 
   const {getByTestId, ctrl} = renderMain(initial)

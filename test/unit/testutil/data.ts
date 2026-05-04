@@ -10,6 +10,7 @@ import {
   type File,
   type Filename,
   type Project,
+  type Thread,
 } from '@/types'
 import * as pmUtil from './prosemirror-util'
 
@@ -69,7 +70,7 @@ export const createImageElement = (
 })
 
 export const createProject = (props: Partial<Project> = {}): Project => ({
-  type: 'project' as const,
+  type: 'project',
   id: 'project_1',
   name: 'Project 1',
   worktreePath: '/users/me/project_1',
@@ -90,7 +91,7 @@ export const createDirEntry = (props: Partial<DirEntry> = {}): DirEntry => ({
 const dirEntry1 = createDirEntry()
 
 export const createFilename = (props: Partial<Filename> = {}): Filename => ({
-  type: 'filename' as const,
+  type: 'filename',
   id: dirEntry1.name,
   projectId: project1.id,
   parentId: project1.id,
@@ -100,11 +101,20 @@ export const createFilename = (props: Partial<Filename> = {}): Filename => ({
 })
 
 export const createDirectory = (props: Partial<Directory> = {}): Directory => ({
-  type: 'directory' as const,
+  type: 'directory',
   id: dirEntry1.name,
   projectId: project1.id,
   parentId: project1.id,
   name: dirEntry1.name,
   path: dirEntry1.path,
+  ...props,
+})
+
+export const createThread = (props: Partial<Thread> = {}): Thread => ({
+  type: 'thread',
+  id: '1',
+  title: 'Thread 1',
+  lastModified,
+  messages: [],
   ...props,
 })
