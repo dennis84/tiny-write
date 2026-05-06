@@ -5,8 +5,9 @@ import {v4 as uuid} from 'uuid'
 import {DB} from '@/db'
 import {listContents} from '@/remote/editor'
 import {info} from '@/remote/log'
-import {isDirectory, isProjectItem} from '@/state'
+import {isDirectory, isFile, isProjectItem} from '@/state'
 import type {Directory, Filename, Project} from '@/types'
+import {YjsUtil} from '@/utils/YjsUtil'
 import type {CanvasService} from './CanvasService'
 import {FileService} from './FileService'
 import type {TreeService} from './TreeService'
@@ -110,17 +111,28 @@ export class ProjectService {
     if (!path) return
 
     const dirEntries = await listContents(path)
-    const treeItems = dirEntries.map(
-      (dirEntry) =>
-        ({
-          type: dirEntry.isDirectory ? 'directory' : 'filename',
-          path: dirEntry.path,
-          id: FileService.createId(dirEntry.path),
-          projectId,
-          name: dirEntry.name,
-          parentId: item.id,
-        }) satisfies Filename | Directory,
-    )
+    const treeItems: (Filename | Directory)[] = []
+    for (const dirEntry of dirEntries) {
+      const id = FileService.createId(dirEntry.path)
+      const cur = this.treeService.tree.getItem(id)
+      let lastCursorPos: number | undefined
+
+      if (isFile(cur?.value)) {
+        // Skip existing files if initialized
+        if (!YjsUtil.isEmpty(cur.value.ydoc)) continue
+        lastCursorPos = cur.value.lastCursorPos
+      }
+
+      treeItems.push({
+        type: dirEntry.isDirectory ? 'directory' : 'filename',
+        id,
+        path: dirEntry.path,
+        projectId,
+        name: dirEntry.name,
+        parentId: item.id,
+        lastCursorPos,
+      })
+    }
 
     this.treeService.addAll(treeItems)
   }

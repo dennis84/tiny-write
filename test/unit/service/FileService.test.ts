@@ -7,6 +7,7 @@ import type {CollabService} from '@/services/CollabService'
 import {FileService} from '@/services/FileService'
 import type {LocationService} from '@/services/LocationService'
 import type {TreeService} from '@/services/TreeService'
+import {createFile} from '../testutil/data'
 import * as pmUtils from '../testutil/prosemirror-util'
 import {createIpcMock} from '../testutil/util'
 
@@ -198,6 +199,33 @@ test('newFile', async () => {
   expect(service.files.length).toBe(1)
 })
 
+test('newFile - existing', async () => {
+  const dbFile = {
+    id: '1',
+    ydoc: pmUtils.createYUpdate('1', ['a']),
+    versions: [],
+    lastModified,
+    path: '/123',
+    codeLang: 'kotlin',
+  }
+
+  vi.spyOn(DB, 'getFiles').mockResolvedValue([dbFile])
+
+  const service = new FileService(collabService, locationService, treeService)
+
+  await waitFor(() => {
+    expect(service.resourceState).toEqual('ready')
+  })
+
+  const file = await service.newFile({id: '1'})
+
+  expect(service.files.length).toBe(1)
+  expect(file).toBeDefined()
+  expect(file.ydoc).toEqual(dbFile.ydoc)
+  expect(file.path).toEqual(dbFile.path)
+  expect(file.codeLang).toEqual(dbFile.codeLang)
+})
+
 test('renameFile - title', async () => {
   vi.spyOn(DB, 'getFiles').mockResolvedValue([
     {id: '1', ydoc: pmUtils.createYUpdate('1', ['a']), versions: [], lastModified},
@@ -306,6 +334,25 @@ test.each([
 
   await FileService.saveFile(file)
 
-  expect(DB.deleteFile).toHaveBeenCalled()
-  expect(DB.updateFile).not.toHaveBeenCalled()
+  expect(DB.updateFile).toHaveBeenCalled()
+})
+
+test('addFile - existing', async () => {
+  const service = new FileService(collabService, locationService, treeService)
+
+  await waitFor(() => {
+    expect(service.resourceState).toEqual('ready')
+  })
+
+  await service.addFile(createFile({id: '1'}))
+
+  expect(service.files).toHaveLength(1)
+  expect(service.files[0].id).toEqual('1')
+  expect(service.files[0].path).toEqual(undefined)
+
+  await service.addFile(createFile({id: '1', path: '/some/path'}))
+
+  expect(service.files).toHaveLength(1)
+  expect(service.files[0].id).toEqual('1')
+  expect(service.files[0].path).toEqual('/some/path')
 })

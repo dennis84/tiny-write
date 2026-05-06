@@ -107,6 +107,18 @@ test('add', async () => {
           `,
         )
 
+        const items = tree.add({id: 'file_3', parentId: 'file_2'})
+        expect(items).toEqual([expect.objectContaining({id: 'file_3'})])
+      } else if (run === 2) {
+        expectTree(
+          tree,
+          `
+          └ file_1 (parentId=, leftId=)
+          └ file_2 (parentId=, leftId=)
+            └ file_3 (parentId=file_2, leftId=)
+          `,
+        )
+
         done()
       }
 
@@ -200,11 +212,12 @@ test('addAll - nested', async () => {
     return createEffect((run: number = 0) => {
       if (run === 0) {
         const items = tree.addAll([
-          {id: 'file_2', parentId: 'file_1'}, // skipped
+          {id: 'file_2', parentId: 'file_1'}, // replaces old item
           {id: 'file_3', parentId: 'file_1'},
           {id: 'file_4', parentId: 'file_1'},
         ])
         expect(items).toEqual([
+          expect.objectContaining({id: 'file_2'}),
           expect.objectContaining({id: 'file_3'}),
           expect.objectContaining({id: 'file_4'}),
         ])
@@ -213,9 +226,9 @@ test('addAll - nested', async () => {
           tree,
           `
           └ file_1 (parentId=, leftId=)
+            └ file_2 (parentId=file_1, leftId=)
             └ file_3 (parentId=file_1, leftId=)
             └ file_4 (parentId=file_1, leftId=)
-          └ file_2 (parentId=, leftId=)
           `,
         )
 
@@ -232,11 +245,11 @@ test('addAll - nested', async () => {
           tree,
           `
           └ file_1 (parentId=, leftId=)
+            └ file_2 (parentId=file_1, leftId=)
             └ file_3 (parentId=file_1, leftId=)
             └ file_4 (parentId=file_1, leftId=)
             └ file_5 (parentId=file_1, leftId=)
             └ file_6 (parentId=file_1, leftId=)
-          └ file_2 (parentId=, leftId=)
           `,
         )
 

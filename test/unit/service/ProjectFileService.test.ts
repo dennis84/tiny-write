@@ -1,10 +1,9 @@
 import {beforeEach, expect, test, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
-import {FileService} from '@/services/FileService'
+import type {FileService} from '@/services/FileService'
 import {ProjectFileService} from '@/services/ProjectFileService'
 import type {ProjectService} from '@/services/ProjectService'
-import {TreeService} from '@/services/TreeService'
-import {createFilename, createProject} from '../testutil/data'
+import {createProject} from '../testutil/data'
 import {createIpcMock} from '../testutil/util'
 
 vi.mock('@/db', () => ({
@@ -29,10 +28,6 @@ test.each([
   vi.stubGlobal('__TAURI__', {})
   createIpcMock({})
 
-  const treeService = new TreeService()
-
-  treeService.reset([])
-
   fileService.findFileById.mockReturnValue(undefined)
   fileService.newFile.mockImplementation(async (params) => ({
     type: 'file' as const,
@@ -43,28 +38,19 @@ test.each([
     ...params,
   }))
 
-  const service = new ProjectFileService(fileService, projectService, treeService)
+  const service = new ProjectFileService(fileService, projectService)
 
   const file = await service.newFileByPath({path: data.path})
 
   expect(file).toBeDefined()
   expect(file.code).toEqual(data.expectedCode)
-  expect(treeService.getItem(file.id)).toBeDefined()
 })
 
 test('newFileByPath - match existing project path', async () => {
   vi.stubGlobal('__TAURI__', {})
   createIpcMock({})
 
-  const treeService = new TreeService()
   const filePath = '/users/me/project_1/file.ts'
-
-  treeService.reset([
-    createFilename({
-      id: FileService.createId(filePath),
-      path: filePath,
-    }),
-  ])
 
   vi.spyOn(projectService, 'projects', 'get').mockReturnValue([createProject()])
   fileService.findFileById.mockReturnValue(undefined)
@@ -77,12 +63,10 @@ test('newFileByPath - match existing project path', async () => {
     ...params,
   }))
 
-  const service = new ProjectFileService(fileService, projectService, treeService)
+  const service = new ProjectFileService(fileService, projectService)
 
   const file = await service.newFileByPath({path: filePath})
 
   expect(file).toBeDefined()
   expect(file.projectId).toEqual('project_1')
-  expect(treeService.getItem(file.id)).toBeDefined()
-  expect(treeService.tree.items.length).toEqual(1)
 })

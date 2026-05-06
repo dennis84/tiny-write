@@ -140,34 +140,36 @@ export class FileService {
       return
     }
 
-    // Don't save files that are linked to real file system paths or new unsaved files.
-    if (isLocalFile(file)) {
-      await DB.deleteFile(file.id)
-      return
-    }
-
     debug(`Saving file (id=${file.id}, leftId=${file.leftId}, parentId=${file.parentId})`)
 
     const lastCursorPos =
       file.editorView?.state.selection.from ?? file.codeEditorView?.state.selection.main.from
 
-    await DB.updateFile({
-      id: file.id,
-      parentId: file.parentId,
-      leftId: file.leftId,
-      ydoc: file.ydoc,
-      title: file.title,
-      lastCursorPos,
-      lastModified: file.lastModified,
-      newFile: file.newFile,
-      deleted: file.deleted,
-      code: file.code,
-      codeLang: file.codeLang,
-      versions: file.versions.map((v) => ({
-        date: v.date,
-        ydoc: v.ydoc,
-      })),
-    })
+    const dbFile = isLocalFile(file)
+      ? {
+          id: file.id,
+          lastCursorPos,
+          lastModified: file.lastModified,
+        }
+      : {
+          id: file.id,
+          parentId: file.parentId,
+          leftId: file.leftId,
+          ydoc: file.ydoc,
+          title: file.title,
+          lastCursorPos,
+          lastModified: file.lastModified,
+          newFile: file.newFile,
+          deleted: file.deleted,
+          code: file.code,
+          codeLang: file.codeLang,
+          versions: file.versions.map((v) => ({
+            date: v.date,
+            ydoc: v.ydoc,
+          })),
+        }
+
+    await DB.updateFile(dbFile)
   }
 
   static createId(path?: string): string {
@@ -202,9 +204,10 @@ export class FileService {
           parentId: file.parentId,
           leftId: file.leftId,
           title: file.title,
-          ydoc: file.ydoc ?? new Uint8Array(),
+          ydoc: file.ydoc ?? Y.encodeStateAsUpdate(FileService.createYdoc(file.id)),
           lastCursorPos: file.lastCursorPos,
           lastModified: new Date(file.lastModified),
+          path: file.path,
           newFile: file.newFile,
           deleted: file.deleted,
           code: file.code,
@@ -234,12 +237,8 @@ export class FileService {
   }
 
   async newFile(params: Partial<File> = {}): Promise<File> {
-    if (params.id) {
-      const file = this.findFileById(params.id)
-      if (file) return file
-    }
-
-    const file = FileService.createFile(params)
+    const existing = params.id ? this.findFileById(params.id) : undefined
+    const file = FileService.createFile({...existing, ...params})
     info(
       `Created new file (id=${file.id}, code=${file.code}, path=${file.path}, newFile=${file.newFile})`,
     )
@@ -277,14 +276,26 @@ export class FileService {
     const [, {mutate}] = this.filesResource
     mutate(
       produce((prev = []) => {
-        prev.push(file)
+        const existing = prev.find((it) => it.id === file.id)
+        if (existing) {
+          Object.assign(existing, file)
+        } else {
+          prev.push(file)
+        }
       }),
     )
     await FileService.saveFile(file)
 
     // return proxy object
-    const newFile = this.files[this.files.length - 1]
-    this.treeService.add(newFile)
+    const newFile = this.files.find((it) => it.id === file.id)
+    if (!newFile) throw new Error('File does not exists')
+
+    if (this.treeService.getItem(file.id)) {
+      this.treeService.setValue(file)
+    } else {
+      this.treeService.add(file)
+    }
+
     return newFile
   }
 

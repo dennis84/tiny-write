@@ -331,6 +331,7 @@ export interface Filename {
   path: string
   lastModified?: string
   parentId?: string
+  lastCursorPos?: number
 }
 
 export interface Directory {

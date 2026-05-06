@@ -8,9 +8,9 @@ import {DropTarget, MediaService} from '@/services/MediaService'
 import {createState} from '@/state'
 import {type CanvasEditorElement, type CanvasImageElement, ElementType} from '@/types'
 import * as cmUtil from '../testutil/codemirror-util'
+import {createCanvas, createEditorElement, createFile, createThread} from '../testutil/data'
 import * as pmUtil from '../testutil/prosemirror-util'
 import {createIpcMock, renderMain, stubLocation} from '../testutil/util'
-import {createCanvas, createEditorElement, createFile, createThread} from '../testutil/data'
 
 document.elementFromPoint = () => null
 
@@ -350,9 +350,7 @@ test('dropPaths - text file on canvas', async () => {
 
   const initial = createState()
 
-  vi.spyOn(DB, 'getCanvases').mockResolvedValue([
-    createCanvas({id: '1'}),
-  ])
+  vi.spyOn(DB, 'getCanvases').mockResolvedValue([createCanvas({id: '1'})])
 
   const {getByTestId, ctrl} = renderMain(initial)
 

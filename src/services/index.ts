@@ -94,7 +94,7 @@ export const createCtrl = (initial: State) => {
   const canvasCollabService = new CanvasCollabService(collabService, canvasService)
   const canvasThreadService = new CanvasThreadService(canvasService, fileService)
   const projectService = new ProjectService(treeService, fileService, canvasService)
-  const projectFileService = new ProjectFileService(fileService, projectService, treeService)
+  const projectFileService = new ProjectFileService(fileService, projectService)
   const mediaService = new MediaService(
     fileService,
     projectFileService,

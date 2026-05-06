@@ -30,6 +30,7 @@ export interface PersistedFile {
   versions?: PersistedVersion[]
   lastCursorPos?: number
   lastModified: Date
+  path?: string
   newFile?: string
   code?: boolean
   codeLang?: string

@@ -205,12 +205,14 @@ export class CodeService {
         EditorView.updateListener.of(async (update) => {
           // Detect doc changes and selection changes for assistant context
           this.setState('lastTr', Date.now())
-          if (!update.docChanged) return
+          if (!update.docChanged && !update.selectionSet) return
+
           this.fileService.updateFile(file.id, {
             ydoc: Y.encodeStateAsUpdate(subdoc),
             lastCursorPos: update.state.selection.main.from,
-            lastModified: new Date(),
+            ...(update.docChanged ? {lastModified: new Date()} : {}),
           })
+
           await this.saveEditor(file, update)
         }),
         yCollab(type, this.collabService.provider?.awareness, {undoManager: false}),

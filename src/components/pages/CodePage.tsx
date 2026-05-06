@@ -51,7 +51,9 @@ export const CodePage = (props: RouteSectionProps) => {
   const location = useLocation<LocationState | undefined>()
   const {locationService, collabService, codeService, fileService, dialogService} = useState()
 
-  info(`Render code page (location=${locationStateToString(location.state)})`)
+  info(
+    `Render code page (id=${props.params.id}, location=${locationStateToString(location.state)})`,
+  )
 
   const [initialized] = createResource(
     // Reload when params.id or merge changes

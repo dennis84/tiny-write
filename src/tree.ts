@@ -60,7 +60,13 @@ export class Tree<T> {
   }
 
   add(item: TreeItemInput<T>): TreeItem<T>[] {
-    if (this.state.items[item.id]) return []
+    const affected = []
+
+    // Remove item if it has a new parent first
+    const cur = this.state.items[item.id]
+    if (cur && item.parentId !== cur.parentId) {
+      affected.push(...this.remove(item.id).filter((it) => it.id !== item.id))
+    }
 
     this.setState(
       'items',
@@ -73,21 +79,33 @@ export class Tree<T> {
           childrenIds: [],
         }
 
-        prev[item.parentId ?? ROOT_ID].childrenIds.push(item.id)
+        const parent = prev[item.parentId ?? ROOT_ID]
+        if (!parent.childrenIds.includes(item.id)) {
+          parent.childrenIds.push(item.id)
+        }
       }),
     )
 
-    return [this.state.items[item.id]]
+    affected.push(this.state.items[item.id])
+
+    return affected
   }
 
   addAll(items: TreeItemInput<T>[]): TreeItem<T>[] {
-    const unique = items.filter((it) => !this.state.items[it.id])
-    if (!unique.length) return []
+    const moved = items.filter((it) => {
+      const cur = this.state.items[it.id]
+      return cur && it.parentId !== cur.parentId
+    })
+
+    // Remove items that has a new parent first
+    const affected = moved.flatMap((movedItem) =>
+      this.remove(movedItem.id).filter((it) => it.id !== movedItem.id),
+    )
 
     this.setState(
       'items',
       produce((prev) => {
-        unique.forEach((it) => {
+        items.forEach((it) => {
           prev[it.id] = {
             id: it.id,
             parentId: it.parentId,
@@ -95,12 +113,16 @@ export class Tree<T> {
             value: it,
             childrenIds: [],
           }
-          prev[it.parentId ?? ROOT_ID].childrenIds.push(it.id)
+
+          const parent = prev[it.parentId ?? ROOT_ID]
+          if (!parent.childrenIds.includes(it.id)) {
+            parent.childrenIds.push(it.id)
+          }
         })
       }),
     )
 
-    return unique.map((it) => this.state.items[it.id])
+    return [...affected, ...items.map((it) => this.state.items[it.id])]
   }
 
   remove(id: string): TreeItem<T>[] {
