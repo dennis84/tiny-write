@@ -23,13 +23,16 @@ import {IconFolderRoot} from '../icons/File'
 import {LangIcon} from '../icons/LangIcon'
 import {IconTextCursor} from '../icons/Ui'
 
-const Container = styled.div`
-  display: grid;
-  justify-items: flex-end;
-  gap: 10px;
-  button {
-    background: var(--background-95);
-  }
+const AttachmentButton = styled(Button)`
+  white-space: nowrap;
+  flex-shrink: 0;
+`
+
+const AttachmentImage = styled.img`
+  width: var(--button-height);
+  height: var(--button-height);
+  border-radius: 10px;
+  cursor: var(--cursor-pointer);
 `
 
 const TooltipImage = styled.img`
@@ -38,16 +41,10 @@ const TooltipImage = styled.img`
   border-radius: 10px;
 `
 
-const AttachmentImage = styled.img`
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-`
-
 interface AttachmentTitleProps {
   file?: File
   codeLang?: string
-  selection?: [number, number]
+  selection?: (readonly [number, number])[]
 }
 
 const AttachmentTitle = (props: AttachmentTitleProps) => {
@@ -57,19 +54,30 @@ const AttachmentTitle = (props: AttachmentTitleProps) => {
     fallback: false,
   })
 
-  const selection = () =>
-    props.selection ? `:${props.selection?.[0]}-${props.selection?.[1]}` : ''
+  const langConfig = getLanguageConfig(props.codeLang)
+
+  const Selection = () => (
+    <Show when={props.selection}>
+      {(sel) =>
+        sel()
+          .map(([from, to]) => `${from}-${to}`)
+          .join(' ')
+      }
+    </Show>
+  )
 
   return (
     <Suspense>
       <Switch>
         <Match when={title()}>
           {title()}
-          {selection()}
+          <Selection />
         </Match>
-        <Match when={props.file}>
-          {props.codeLang ?? ''} File{selection()}
+        <Match when={props.selection}>
+          {langConfig.name ?? ''} File:
+          <Selection />
         </Match>
+        <Match when={props.file}>{langConfig.name ?? ''} File</Match>
         <Match when={true}>Code Block</Match>
       </Switch>
     </Suspense>
@@ -156,7 +164,7 @@ const TextAttachmentChip = (props: {
     props.onDelete?.(attachment)
   }
 
-  return <Button onClick={onOpenTooltip}>{props.title ?? 'Text'}</Button>
+  return <AttachmentButton onClick={onOpenTooltip}>{props.title ?? 'Text'}</AttachmentButton>
 }
 
 const FileAttachmentChip = (props: {
@@ -196,10 +204,10 @@ const FileAttachmentChip = (props: {
   }
 
   return (
-    <Button onClick={onOpenTooltip}>
+    <AttachmentButton onClick={onOpenTooltip}>
       <LangIcon name={codeLang} />
       <AttachmentTitle file={file} codeLang={codeLang} />
-    </Button>
+    </AttachmentButton>
   )
 }
 
@@ -271,12 +279,12 @@ const SelectionAttachmentChip = (props: {
   }
 
   return (
-    <Button onClick={onOpenTooltip}>
+    <AttachmentButton onClick={onOpenTooltip}>
       <IconTextCursor />
       <Suspense>
         <AttachmentTitle file={file} codeLang={codeLang} selection={props.attachment.selection} />
       </Suspense>
-    </Button>
+    </AttachmentButton>
   )
 }
 
@@ -321,10 +329,10 @@ const ProjectAttachmentChip = (props: {
   }
 
   return (
-    <Button onClick={onOpenTooltip}>
+    <AttachmentButton onClick={onOpenTooltip}>
       <IconFolderRoot />
       {props.attachment.projectName ?? 'Project'}
-    </Button>
+    </AttachmentButton>
   )
 }
 
@@ -335,27 +343,23 @@ interface Props {
 }
 
 export const AttachmentChip = (props: Props) => (
-  <Container>
-    <Switch>
-      <Match when={props.attachment.type === AttachmentType.Image ? props.attachment : undefined}>
-        {(it) => <ImageAttachmentChip attachment={it()} onDelete={props.onDelete} />}
-      </Match>
-      <Match when={props.attachment.type === AttachmentType.Text ? props.attachment : undefined}>
-        {(it) => (
-          <TextAttachmentChip attachment={it()} title={props.title} onDelete={props.onDelete} />
-        )}
-      </Match>
-      <Match when={props.attachment.type === AttachmentType.File ? props.attachment : undefined}>
-        {(it) => <FileAttachmentChip attachment={it()} onDelete={props.onDelete} />}
-      </Match>
-      <Match
-        when={props.attachment.type === AttachmentType.Selection ? props.attachment : undefined}
-      >
-        {(it) => <SelectionAttachmentChip attachment={it()} onDelete={props.onDelete} />}
-      </Match>
-      <Match when={props.attachment.type === AttachmentType.Project ? props.attachment : undefined}>
-        {(it) => <ProjectAttachmentChip attachment={it()} onDelete={props.onDelete} />}
-      </Match>
-    </Switch>
-  </Container>
+  <Switch>
+    <Match when={props.attachment.type === AttachmentType.Image ? props.attachment : undefined}>
+      {(it) => <ImageAttachmentChip attachment={it()} onDelete={props.onDelete} />}
+    </Match>
+    <Match when={props.attachment.type === AttachmentType.Text ? props.attachment : undefined}>
+      {(it) => (
+        <TextAttachmentChip attachment={it()} title={props.title} onDelete={props.onDelete} />
+      )}
+    </Match>
+    <Match when={props.attachment.type === AttachmentType.File ? props.attachment : undefined}>
+      {(it) => <FileAttachmentChip attachment={it()} onDelete={props.onDelete} />}
+    </Match>
+    <Match when={props.attachment.type === AttachmentType.Selection ? props.attachment : undefined}>
+      {(it) => <SelectionAttachmentChip attachment={it()} onDelete={props.onDelete} />}
+    </Match>
+    <Match when={props.attachment.type === AttachmentType.Project ? props.attachment : undefined}>
+      {(it) => <ProjectAttachmentChip attachment={it()} onDelete={props.onDelete} />}
+    </Match>
+  </Switch>
 )

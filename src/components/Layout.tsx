@@ -116,6 +116,68 @@ export const Scroll = styled.div`
   }
 `
 
+export const ScrollHorizontal = styled.div`
+  container-type: scroll-state;
+  position: relative;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  min-width: 0; /* Critical for flex children to scroll properly */
+  scrollbar-width: none;
+  touch-action: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  &::before, &::after {
+    content: '';
+    position: sticky;
+    display: block;
+    top: 0;
+    bottom: 0;
+    width: 40px; /* Width of the horizontal shadow */
+    flex-shrink: 0; /* Prevents the shadow from being squished by content */
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 500ms ease-out 0.1s;
+    z-index: var(--z-index-above-content);
+  }
+
+  &::before {
+    left: 0;
+    margin-right: -40px; /* Pulls content under the shadow */
+    background-image: linear-gradient(
+      to right,
+      var(--background),
+      var(--background-0)
+    );
+  }
+
+  &::after {
+    right: 0;
+    margin-left: -40px; /* Pulls content under the shadow */
+    background-image: linear-gradient(
+      to left,
+      var(--background),
+      var(--background-0)
+    );
+  }
+
+  @container scroll-state(scrollable: left) {
+    &::before {
+      opacity: 1;
+    }
+  }
+
+  @container scroll-state(scrollable: right) {
+    &::after {
+      opacity: 1;
+    }
+  }
+`
+
 export const CodeScroll = styled(Scroll)`
   &::before {
     background-image: linear-gradient(

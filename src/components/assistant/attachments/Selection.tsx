@@ -35,7 +35,7 @@ export const SelectionButton = (props: Props) => {
       content,
       type: AttachmentType.Selection,
       fileId: currentFile()?.id,
-      selection: [from, to],
+      selection: [[from, to]],
     })
   }
 

@@ -14,7 +14,7 @@ test('toChatMessage', () => {
         type: AttachmentType.Selection,
         content: 'Selection',
         codeLang: 'typescript',
-        selection: [0, 0],
+        selection: [[0, 0]],
       },
       {type: AttachmentType.Image, content: '123', name: 'img'},
       {

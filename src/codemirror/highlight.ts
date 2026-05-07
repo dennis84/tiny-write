@@ -210,18 +210,20 @@ const languages: Record<string, LangConfig> = {
 
 export const getLanguageConfig = (lang: string = ''): LangConfig => {
   const codeLang = findCodeLang(lang)
-  return (
-    languages[codeLang ?? ''] ?? {
-      highlight: () =>
-        langSupport({
-          name: lang,
-          token: (stream: StringStream) => {
-            stream.next()
-            return null
-          },
-        }),
-    }
-  )
+  const fallback: LangConfig = {
+    id: 'plaintext',
+    name: 'Plaintext',
+    highlight: () =>
+      langSupport({
+        name: lang,
+        token: (stream: StringStream) => {
+          stream.next()
+          return null
+        },
+      }),
+  }
+
+  return languages[codeLang ?? ''] ?? fallback
 }
 
 export const findCodeLang = (lang: string): string | undefined => {

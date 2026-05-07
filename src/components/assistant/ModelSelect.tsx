@@ -10,6 +10,11 @@ const Scroll = styled(DialogScroll)`
   max-height: 60vh;
 `
 
+const ModelSelectButton = styled(Button)`
+  white-space: nowrap;
+  flex-shrink: 0;
+`
+
 interface Props {
   onChange: () => void
 }
@@ -82,8 +87,8 @@ export const ModelSelect = (props: Props) => {
   }
 
   return (
-    <Button onClick={onMenuClick} data-testid="model_select">
+    <ModelSelectButton onClick={onMenuClick} data-testid="model_select">
       {copilotService.chatModel.name}
-    </Button>
+    </ModelSelectButton>
   )
 }

@@ -212,7 +212,7 @@ export interface SelectionAttachment {
   content: string // selected text
   fileId?: string
   codeLang?: string
-  selection: [number, number] // [start, end]
+  selection: (readonly [number, number])[] // [start, end]
 }
 
 export interface ImageAttachment {

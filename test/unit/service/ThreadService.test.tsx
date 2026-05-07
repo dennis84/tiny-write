@@ -570,7 +570,7 @@ test('hande attachments', () => {
     type: AttachmentType.Selection,
     fileId,
     content: '',
-    selection: [0, 0],
+    selection: [[0, 0]],
   })
 
   const createImageAttachment = (name: string): ImageAttachment => ({
