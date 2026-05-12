@@ -291,8 +291,8 @@ test('remove', async () => {
 
         const items = tree.remove('file_2')
         expect(items).toEqual([
-          expect.objectContaining({id: 'file_4'}),
           expect.objectContaining({id: 'file_2'}),
+          expect.objectContaining({id: 'file_4'}),
         ])
       } else if (run === 2) {
         expectTree(
@@ -381,8 +381,8 @@ test('move - 2', async () => {
       if (run === 0) {
         const items = tree.move('file_2', 'file_3')
         expect(items).toEqual([
-          expect.objectContaining({id: 'file_3'}),
           expect.objectContaining({id: 'file_2'}),
+          expect.objectContaining({id: 'file_3'}),
         ])
       } else if (run === 1) {
         expectTree(
@@ -417,8 +417,8 @@ test('before', async () => {
       if (run === 0) {
         const items = tree.before('file_1', 'file_4')
         expect(items).toEqual([
-          expect.objectContaining({id: 'file_4'}),
           expect.objectContaining({id: 'file_1'}),
+          expect.objectContaining({id: 'file_4'}),
         ])
       } else if (run === 1) {
         expectTree(
@@ -433,8 +433,8 @@ test('before', async () => {
 
         const items = tree.before('file_4', 'file_3')
         expect(items).toEqual([
-          expect.objectContaining({id: 'file_3'}),
           expect.objectContaining({id: 'file_4'}),
+          expect.objectContaining({id: 'file_3'}),
         ])
       } else if (run === 2) {
         expectTree(
@@ -449,8 +449,8 @@ test('before', async () => {
 
         const items = tree.before('file_1', 'file_2')
         expect(items).toEqual([
-          expect.objectContaining({id: 'file_2'}),
           expect.objectContaining({id: 'file_1'}),
+          expect.objectContaining({id: 'file_2'}),
         ])
       } else if (run === 3) {
         expectTree(
@@ -465,9 +465,9 @@ test('before', async () => {
 
         const items = tree.before('file_4', 'file_2')
         expect(items).toEqual([
+          expect.objectContaining({id: 'file_4'}),
           expect.objectContaining({id: 'file_3'}),
           expect.objectContaining({id: 'file_2'}),
-          expect.objectContaining({id: 'file_4'}),
         ])
       } else if (run === 4) {
         expectTree(
@@ -503,8 +503,8 @@ test('after', async () => {
       if (run === 0) {
         const items = tree.after('file_1', 'file_3')
         expect(items).toEqual([
-          expect.objectContaining({id: 'file_4'}),
           expect.objectContaining({id: 'file_1'}),
+          expect.objectContaining({id: 'file_4'}),
         ])
       } else if (run === 1) {
         expectTree(
@@ -519,8 +519,8 @@ test('after', async () => {
 
         const items = tree.after('file_3', 'file_2')
         expect(items).toEqual([
-          expect.objectContaining({id: 'file_1'}),
           expect.objectContaining({id: 'file_3'}),
+          expect.objectContaining({id: 'file_1'}),
         ])
       } else if (run === 2) {
         expectTree(
@@ -535,9 +535,9 @@ test('after', async () => {
 
         const items = tree.after('file_1', 'file_2')
         expect(items).toEqual([
+          expect.objectContaining({id: 'file_1'}),
           expect.objectContaining({id: 'file_4'}),
           expect.objectContaining({id: 'file_3'}),
-          expect.objectContaining({id: 'file_1'}),
         ])
       } else if (run === 3) {
         expectTree(

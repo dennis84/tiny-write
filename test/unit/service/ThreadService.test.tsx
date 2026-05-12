@@ -11,6 +11,7 @@ import {
   type FileAttachment,
   type ImageAttachment,
   type Message,
+  type ProjectAttachment,
   type SelectionAttachment,
 } from '@/types'
 import {createThread} from '../testutil/data'
@@ -560,42 +561,69 @@ test('hande attachments', () => {
 
   expect(service.attachments()).toEqual([])
 
-  const createFileAttachment = (fileId?: string): FileAttachment => ({
+  const createFileAttachment = (props: Partial<FileAttachment>): FileAttachment => ({
     type: AttachmentType.File,
-    fileId,
-    content: '',
+    content: '1',
+    ...props,
   })
 
-  const createSelectionAttachment = (fileId?: string): SelectionAttachment => ({
+  const createSelectionAttachment = (props: Partial<SelectionAttachment>): SelectionAttachment => ({
     type: AttachmentType.Selection,
-    fileId,
     content: '',
     selection: [[0, 0]],
+    ...props,
   })
 
-  const createImageAttachment = (name: string): ImageAttachment => ({
+  const createImageAttachment = (props: Partial<ImageAttachment>): ImageAttachment => ({
     type: AttachmentType.Image,
-    name,
     content: '',
+    name: 'img',
+    ...props,
   })
 
-  service.addAttachment(createFileAttachment('1'))
-  expect(service.attachments()).toHaveLength(1)
+  const createProjectAttachment = (props: Partial<ProjectAttachment>): ProjectAttachment => ({
+    type: AttachmentType.Project,
+    content: [],
+    projectId: '1',
+    ...props,
+  })
 
-  service.addAttachment(createFileAttachment('1'))
+  service.addAttachment(createFileAttachment({fileId: '1', projectId: '1'}))
   expect(service.attachments()).toHaveLength(1)
+  expect(service.attachments()[0].content).toEqual('1')
 
-  service.addAttachment(createFileAttachment('2'))
+  service.addAttachment(createFileAttachment({fileId: '1', projectId: '1', content: '2'}))
+  expect(service.attachments()).toHaveLength(1)
+  expect(service.attachments()[0].content).toEqual('2')
+
+  service.addAttachment(createFileAttachment({fileId: '2'}))
   expect(service.attachments()).toHaveLength(2)
 
-  service.addAttachment(createImageAttachment('name'))
+  service.addAttachment(createSelectionAttachment({fileId: '2'}))
+  expect(service.attachments()).toHaveLength(2)
+
+  service.addAttachment(createImageAttachment({name: 'name'}))
   expect(service.attachments()).toHaveLength(3)
 
-  service.addAttachment(createImageAttachment('name'))
+  service.addAttachment(createImageAttachment({name: 'name'}))
   expect(service.attachments()).toHaveLength(3)
 
-  service.addAttachment(createSelectionAttachment('2'))
+  service.addAttachment(
+    createProjectAttachment({
+      projectId: '1',
+      content: [
+        createFileAttachment({fileId: '1'}), // removes direct attachment
+        createFileAttachment({fileId: '2'}), // keeps direct attachment, projectId is missing
+        createFileAttachment({fileId: '3'}),
+      ],
+    }),
+  )
   expect(service.attachments()).toHaveLength(3)
+
+  // not added but updates file attachment in project
+  service.addAttachment(createFileAttachment({fileId: '1', projectId: '1', content: '3'}))
+  expect(service.attachments()).toHaveLength(3)
+  expect((service.attachments()[2] as ProjectAttachment).content[0].content).toEqual('3')
 
   service.setAttachments([])
   expect(service.attachments()).toHaveLength(0)

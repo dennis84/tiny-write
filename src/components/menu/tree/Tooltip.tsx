@@ -68,7 +68,8 @@ export const Tooltip = (props: {dialog: Dialog<TooltipState>}) => {
 
   const onAddFile = async () => {
     if (!selected) return
-    const file = await fileService.newFile({parentId: selected.id})
+    const project = treeService.getProjectItem(selected.id)
+    const file = await fileService.newFile({parentId: selected.id, projectId: project?.id})
     if (treeService.isCollapsed(selected.id)) {
       await treeService.collapse(selected.id)
     }
@@ -86,7 +87,13 @@ export const Tooltip = (props: {dialog: Dialog<TooltipState>}) => {
 
   const onAddCode = async () => {
     if (!selected) return
-    const file = await fileService.newFile({code: true, parentId: selected.id})
+    const project = treeService.getProjectItem(selected.id)
+    const file = await fileService.newFile({
+      code: true,
+      parentId: selected.id,
+      projectId: project?.id,
+    })
+
     locationService.openItem(file)
     dialogService.close(props.dialog)
   }

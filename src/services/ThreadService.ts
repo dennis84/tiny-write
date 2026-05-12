@@ -11,7 +11,13 @@ import summaryPrompt from '@/prompts/assistant/summary.md?raw'
 import commonRulesPrompt from '@/prompts/common/rules.md?raw'
 import {debug, error, info} from '@/remote/log'
 import {createTreeStore, type TreeItem} from '@/tree'
-import {type Attachment, AttachmentType, type Message, type Thread} from '@/types'
+import {
+  type Attachment,
+  AttachmentType,
+  type Message,
+  type ProjectAttachment,
+  type Thread,
+} from '@/types'
 import {MessageUtil} from '@/utils/MessageUtil'
 import type {ChatMessage, Chunk, CopilotService} from './CopilotService'
 import type {DialogService} from './DialogService'
@@ -96,23 +102,61 @@ export class ThreadService {
 
   addAttachment(attachment: Attachment) {
     this.attachmentsSignal[1]((prev) => {
-      // Remove any existing attachment with the same fileId or name
+      // 1. Check if we are updating a file that is already inside an existing project
+      if (attachment.type === AttachmentType.File && attachment.projectId) {
+        const projectIndex = prev.findIndex(
+          (it) => it.type === AttachmentType.Project && it.projectId === attachment.projectId,
+        )
+
+        if (projectIndex !== -1) {
+          const project = prev[projectIndex] as ProjectAttachment
+          const fileExistsInProject = project.content.some(
+            (f) => f.type === AttachmentType.File && f.fileId === attachment.fileId,
+          )
+
+          if (fileExistsInProject) {
+            const nextAttachments = [...prev]
+            nextAttachments[projectIndex] = {
+              ...project,
+              content: project.content.map((f) =>
+                f.type === AttachmentType.File && f.fileId === attachment.fileId
+                  ? {...f, content: attachment.content}
+                  : f,
+              ),
+            }
+
+            return nextAttachments
+          }
+        }
+      }
+
+      // 2. Add as a new attachment and filter out existing duplicates
       const filtered = prev.filter((existing) => {
+        // Remove standalone files if we are adding the project that owns them
         if (
-          (attachment.type === AttachmentType.File ||
-            attachment.type === AttachmentType.Selection ||
-            attachment.type === AttachmentType.Text) &&
-          (existing.type === AttachmentType.File ||
-            existing.type === AttachmentType.Selection ||
-            existing.type === AttachmentType.Text)
+          attachment.type === AttachmentType.Project &&
+          existing.type === AttachmentType.File &&
+          existing.projectId === attachment.projectId
         ) {
-          const isSameFile = attachment.fileId && existing.fileId === attachment.fileId
-          return !isSameFile
+          return false
         }
 
+        // Remove any existing attachment with the same fileId
+        if ('fileId' in attachment && attachment.fileId && 'fileId' in existing) {
+          if (existing.fileId === attachment.fileId) return false
+        }
+
+        // Remove any existing attachment with the same image name
         if (attachment.type === AttachmentType.Image && existing.type === AttachmentType.Image) {
-          const isSameName = attachment.name && existing.name === attachment.name
-          return !isSameName
+          if (attachment.name && existing.name === attachment.name) return false
+        }
+
+        // Remove any existing project attachment with the same projectId
+        if (
+          attachment.type === AttachmentType.Project &&
+          existing.type === AttachmentType.Project
+        ) {
+          if (existing.projectId === attachment.projectId) return false
         }
 
         return true

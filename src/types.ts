@@ -204,6 +204,7 @@ export interface FileAttachment {
   type: AttachmentType.File
   content: string
   fileId?: string
+  projectId?: string
   codeLang?: string
 }
 
@@ -224,6 +225,7 @@ export interface ImageAttachment {
 export interface ProjectAttachment {
   type: AttachmentType.Project
   content: Attachment[]
+  projectId: string
   projectName?: string
 }
 
@@ -289,6 +291,7 @@ export interface Canvas {
   deleted?: boolean
   lastModified?: Date
   snapToGrid?: boolean
+  projectId?: string
 }
 
 export interface File {

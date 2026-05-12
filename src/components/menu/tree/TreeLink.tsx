@@ -2,8 +2,6 @@ import {DragGesture} from '@use-gesture/vanilla'
 import {createSignal, onCleanup, onMount, Show, Suspense} from 'solid-js'
 import {Portal} from 'solid-js/web'
 import {useTitle} from '@/hooks/use-title'
-import {CanvasService} from '@/services/CanvasService'
-import {FileService} from '@/services/FileService'
 import {isCanvas, isDeletable, isDirectory, isFile, isFilename, isProject, useState} from '@/state'
 import {type MenuTreeItem, Page} from '@/types'
 import {IconMoreHoriz} from '../../icons/Ui'
@@ -34,6 +32,7 @@ export const TreeLink = (p: Props) => {
     projectService,
     locationService,
     treeService,
+    treeActionService,
   } = useState()
   const title = useTitle({item: p.node.value})
   const tree = useTreeUi()
@@ -73,21 +72,6 @@ export const TreeLink = (p: Props) => {
     id === locationService.editorId ||
     id === locationService.codeId ||
     id === fileService.activeFile()
-
-  const updateItems = async (items: MenuTreeItem[]) => {
-    for (const item of items) {
-      const {parentId, leftId} = item
-      if (isFile(item.value)) {
-        fileService.updateFile(item.id, {leftId, parentId})
-        await FileService.saveFile({...item.value, leftId, parentId})
-      } else if (isCanvas(item.value)) {
-        canvasService.updateCanvas(item.id, {leftId, parentId})
-        await CanvasService.saveCanvas({...item.value, leftId, parentId})
-      } else if (isProject(item.value)) {
-        await projectService.updateProject(item.id, {leftId})
-      }
-    }
-  }
 
   const showLinkMenu = (e: MouseEvent, anchor: HTMLElement, node: MenuTreeItem) => {
     e.stopPropagation()
@@ -139,14 +123,11 @@ export const TreeLink = (p: Props) => {
             const targetNode = treeService.getItem(ds.targetId)
             if (targetNode) {
               if (ds.pos === 'add') {
-                const affected = treeService.move(p.node.id, targetNode.id)
-                await updateItems(affected)
+                await treeActionService.move(p.node.id, targetNode.id)
               } else if (ds.pos === 'before') {
-                const affected = treeService.before(p.node.id, targetNode.id)
-                await updateItems(affected)
+                await treeActionService.before(p.node.id, targetNode.id)
               } else if (ds.pos === 'after') {
-                const affected = treeService.after(p.node.id, targetNode.id)
-                await updateItems(affected)
+                await treeActionService.after(p.node.id, targetNode.id)
               }
             }
           } else if (ds?.pos === 'delete') {

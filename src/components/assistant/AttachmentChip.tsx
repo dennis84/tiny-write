@@ -18,7 +18,7 @@ import {
   type TextAttachment,
 } from '@/types'
 import {Button} from '../Button'
-import {DialogFooter, DialogList, TooltipDivider} from '../dialog/Style'
+import {DialogFooter, DialogList} from '../dialog/Style'
 import {IconFolderRoot} from '../icons/File'
 import {LangIcon} from '../icons/LangIcon'
 import {IconTextCursor} from '../icons/Ui'
@@ -26,6 +26,7 @@ import {IconTextCursor} from '../icons/Ui'
 const AttachmentButton = styled(Button)`
   white-space: nowrap;
   flex-shrink: 0;
+  justify-content: flex-start;
 `
 
 const AttachmentImage = styled.img`
@@ -164,7 +165,12 @@ const TextAttachmentChip = (props: {
     props.onDelete?.(attachment)
   }
 
-  return <AttachmentButton onClick={onOpenTooltip}>{props.title ?? 'Text'}</AttachmentButton>
+  return (
+    <AttachmentButton onClick={onOpenTooltip}>
+      <LangIcon name="markdown" />
+      {props.title ?? 'Text'}
+    </AttachmentButton>
+  )
 }
 
 const FileAttachmentChip = (props: {
@@ -306,7 +312,6 @@ const ProjectAttachmentChip = (props: {
           </Switch>
         )}
       </For>
-      <TooltipDivider />
       <Show when={props.onDelete}>
         <DialogFooter>
           <Button onClick={() => onDelete(props.attachment)}>Remove</Button>

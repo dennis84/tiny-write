@@ -81,10 +81,26 @@ export const ChatInputAttachments = () => {
 
     const currentFile = fileService.currentFile
     const editorView = currentFile?.codeEditorView
-
     const currentThread = threadService.currentThread
 
     if (!editorView || !currentThread) return
+
+    const content = createCodeFence({
+      code: editorView.state.doc.toString(),
+      id: currentFile.id,
+      lang: currentFile.codeLang,
+      path: currentFile.path,
+    })
+
+    const attachment: FileAttachment = {
+      type: AttachmentType.File,
+      fileId: currentFile.id,
+      projectId: currentFile.projectId,
+      codeLang: currentFile.codeLang,
+      content,
+    }
+
+    threadService.addAttachment(attachment)
 
     // Add current selection as context message
     if (!editorView.state.selection.main.empty) {
@@ -110,25 +126,7 @@ export const ChatInputAttachments = () => {
       }
 
       threadService.addAttachment(attachment)
-
-      return
     }
-
-    const content = createCodeFence({
-      code: editorView.state.doc.toString(),
-      id: currentFile.id,
-      lang: currentFile.codeLang,
-      path: currentFile.path,
-    })
-
-    const attachment: FileAttachment = {
-      type: AttachmentType.File,
-      fileId: currentFile.id,
-      codeLang: currentFile.codeLang,
-      content,
-    }
-
-    threadService.addAttachment(attachment)
   })
 
   return (

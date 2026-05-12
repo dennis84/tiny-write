@@ -3,7 +3,7 @@ import {Show} from 'solid-js'
 import {yXmlFragmentToProseMirrorRootNode} from 'y-prosemirror'
 import * as Y from 'yjs'
 import {TooltipButton} from '@/components/dialog/Style'
-import {IconCodeBlocks} from '@/components/icons/File'
+import {IconFolderRoot} from '@/components/icons/File'
 import {serialize} from '@/prosemirror/markdown-serialize'
 import {schema} from '@/prosemirror/schema'
 import {FileService} from '@/services/FileService'
@@ -67,6 +67,7 @@ export const CurrentProjectButton = (props: Props) => {
 
     props.onAttachment({
       type: AttachmentType.Project,
+      projectId: currentProject.id,
       projectName: currentProject.name,
       content: attachments,
     })
@@ -75,7 +76,7 @@ export const CurrentProjectButton = (props: Props) => {
   return (
     <Show when={projectService.currentProject}>
       <TooltipButton onClick={onClick}>
-        <IconCodeBlocks />
+        <IconFolderRoot />
         Add current project
       </TooltipButton>
     </Show>

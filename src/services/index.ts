@@ -26,6 +26,7 @@ import {ProjectService} from './ProjectService'
 import {ProseMirrorService} from './ProseMirrorService'
 import {SelectService} from './SelectService'
 import {ThreadService} from './ThreadService'
+import {TreeActionService} from './TreeActionService'
 import {TreeService} from './TreeService'
 
 export const createCtrl = (initial: State) => {
@@ -106,6 +107,12 @@ export const createCtrl = (initial: State) => {
 
   const threadService = new ThreadService(copilotService, locationService, dialogService)
   const menuService = new MenuService(store, setState)
+  const treeActionService = new TreeActionService(
+    treeService,
+    fileService,
+    canvasService,
+    projectService,
+  )
 
   return {
     store,
@@ -134,6 +141,7 @@ export const createCtrl = (initial: State) => {
     locationService,
     projectService,
     projectFileService,
+    treeActionService,
   }
 }
 

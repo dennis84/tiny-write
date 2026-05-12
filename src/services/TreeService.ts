@@ -67,12 +67,41 @@ export class TreeService {
     return this.tree.descendants(fn, parentId)
   }
 
+  getDescendants(parentId: string | undefined = undefined): MenuTreeItem[] {
+    const result: MenuTreeItem[] = []
+    this.tree.descendants((n) => result.push(n), parentId)
+    return result
+  }
+
   ancestors(fn: (n: MenuTreeItem) => void, id: string) {
     return this.tree.ancestors(fn, id)
   }
 
+  getAncestors(id: string): MenuTreeItem[] {
+    const result: MenuTreeItem[] = []
+    this.tree.ancestors((n) => result.push(n), id)
+    return result
+  }
+
   getItem(id: string): MenuTreeItem | undefined {
     return this.tree.getItem(id)
+  }
+
+  getProjectItem(id: string): MenuTreeItem | undefined {
+    let project: MenuTreeItem | undefined
+
+    const cur = this.getItem(id)
+    if (isProject(cur?.value)) {
+      return cur
+    }
+
+    this.ancestors((n) => {
+      if (isProject(n.value)) {
+        project = n
+      }
+    }, id)
+
+    return project
   }
 
   async collapse(id: string) {

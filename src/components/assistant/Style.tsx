@@ -76,4 +76,5 @@ export const ChatInputActionRow = styled.div`
   display: flex;
   justify-content: flex-end;
   gap: 5px;
+  margin-top: 10px;
 `
