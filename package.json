@@ -85,7 +85,6 @@
     "@types/uuid": "11.0.0",
     "@vitest/coverage-v8": "4.1.4",
     "@y/websocket-server": "0.1.5",
-    "cross-env": "10.1.0",
     "fetch-mock": "12.6.0",
     "happy-dom": "20.9.0",
     "rollup-plugin-visualizer": "7.0.1",
@@ -100,7 +99,7 @@
     "dev": "vite & y-websocket",
     "build": "vite build",
     "tauri": "tauri",
-    "test": "cross-env CI=true vitest && cross-env CI=true npx playwright test",
+    "test": "CI=true vitest && CI=true npx playwright test",
     "lint": "biome ci"
   },
   "engines": {

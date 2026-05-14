@@ -140,7 +140,9 @@ export class FileService {
       return
     }
 
-    debug(`Saving file (id=${file.id}, leftId=${file.leftId}, parentId=${file.parentId})`)
+    debug(
+      `Saving file (id=${file.id}, leftId=${file.leftId}, parentId=${file.parentId}, projectId=${file.projectId})`,
+    )
 
     const lastCursorPos =
       file.editorView?.state.selection.from ?? file.codeEditorView?.state.selection.main.from
