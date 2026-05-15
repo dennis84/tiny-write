@@ -9,16 +9,16 @@ import {
   type ImageAttachment,
   type SelectionAttachment,
 } from '@/types'
-import {IconButton} from '../Button'
-import {DialogList} from '../dialog/Style'
-import {TooltipHelp} from '../dialog/TooltipHelp'
-import {IconPaperclip} from '../icons/Ui'
-import {ScrollHorizontal} from '../Layout'
+import {IconButton} from '../../Button'
+import {DialogList} from '../../dialog/Style'
+import {TooltipHelp} from '../../dialog/TooltipHelp'
+import {IconPaperclip} from '../../icons/Ui'
+import {ScrollHorizontal} from '../../Layout'
+import {createCodeFence} from '../util'
+import {AddCurrentFile} from './AddCurrentFile'
+import {AddCurrentSelection} from './AddCurrentSelection'
+import {AddImage} from './AddImage'
 import {AttachmentChip} from './AttachmentChip'
-import {CurrentFileButton} from './attachments/CurrentFile'
-import {ImageButton} from './attachments/Image'
-import {SelectionButton} from './attachments/Selection'
-import {createCodeFence} from './util'
 
 const Attachments = styled(ScrollHorizontal)`
   gap: 5px;
@@ -29,9 +29,9 @@ export const ChatInputAttachments = () => {
 
   const Tooltip = () => (
     <DialogList>
-      <CurrentFileButton onAttachment={onAttachment} />
-      <SelectionButton onAttachment={onAttachment} />
-      <ImageButton onAttachment={onImageAttachment} />
+      <AddCurrentFile onAttachment={onAttachment} />
+      <AddCurrentSelection onAttachment={onAttachment} />
+      <AddImage onAttachment={onImageAttachment} />
     </DialogList>
   )
 

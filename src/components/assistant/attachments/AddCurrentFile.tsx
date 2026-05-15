@@ -9,7 +9,7 @@ interface Props {
   onAttachment: (attachment: Attachment) => void
 }
 
-export const CurrentFileButton = (props: Props) => {
+export const AddCurrentFile = (props: Props) => {
   const currentFile = useCurrentFile()
 
   const onClick = () => {

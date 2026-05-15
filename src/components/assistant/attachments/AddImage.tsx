@@ -7,7 +7,7 @@ interface Props {
   onAttachment: () => void
 }
 
-export const ImageButton = (props: Props) => {
+export const AddImage = (props: Props) => {
   const {mediaService} = useState()
 
   const onClick = () => {

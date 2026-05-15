@@ -10,7 +10,7 @@ interface Props {
   onAttachment: (attachment: Attachment) => void
 }
 
-export const SelectionButton = (props: Props) => {
+export const AddCurrentSelection = (props: Props) => {
   const {store} = useState()
   const [show, setShow] = createSignal(false)
   const currentFile = useCurrentFile()

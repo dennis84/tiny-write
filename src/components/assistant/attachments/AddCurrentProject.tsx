@@ -15,7 +15,7 @@ interface Props {
   onAttachment: (attachment: ProjectAttachment) => void
 }
 
-export const CurrentProjectButton = (props: Props) => {
+export const AddCurrentProject = (props: Props) => {
   const {projectService, treeService} = useState()
 
   const onClick = () => {
@@ -41,6 +41,8 @@ export const CurrentProjectButton = (props: Props) => {
           content,
           type: AttachmentType.File,
           fileId: it.value.id,
+          parentId: it.parentId,
+          leftId: it.leftId,
         })
       } else if (isFile(it.value)) {
         const ydoc = new Y.Doc()
@@ -54,6 +56,8 @@ export const CurrentProjectButton = (props: Props) => {
           content,
           type: AttachmentType.Text,
           fileId: it.value.id,
+          parentId: it.parentId,
+          leftId: it.leftId,
         })
       } else if (isFilename(it.value)) {
         const text = await FileService.loadTextFile(it.value.path)
@@ -61,6 +65,8 @@ export const CurrentProjectButton = (props: Props) => {
           content: text.text,
           type: AttachmentType.File,
           fileId: it.value.id,
+          parentId: it.parentId,
+          leftId: it.leftId,
         })
       }
     }, currentProject.id)

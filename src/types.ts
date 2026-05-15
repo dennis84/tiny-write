@@ -198,6 +198,8 @@ export interface TextAttachment {
   type: AttachmentType.Text
   content: string
   fileId?: string
+  parentId?: string
+  leftId?: string
 }
 
 export interface FileAttachment {
@@ -206,6 +208,8 @@ export interface FileAttachment {
   fileId?: string
   projectId?: string
   codeLang?: string
+  parentId?: string
+  leftId?: string
 }
 
 export interface SelectionAttachment {
