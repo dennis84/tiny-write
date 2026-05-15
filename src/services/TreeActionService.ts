@@ -38,8 +38,8 @@ export class TreeActionService {
     const project = this.treeService.getProjectItem(target.id)
     if (project && curProjectId !== project.id) {
       await this.updateItem(target, project.id)
-      const items = this.treeService.getDescendants(target.id)
-      for (const item of items) {
+      const descendants = this.treeService.getDescendants(target.id)
+      for (const item of descendants) {
         await this.updateItem(item, project.id)
       }
     } else {
@@ -47,7 +47,7 @@ export class TreeActionService {
     }
 
     for (const item of rest) {
-      await this.updateItem(item)
+      await this.updateItem(item, project?.id)
     }
   }
 

@@ -170,6 +170,7 @@ export const TreeLink = (p: Props) => {
         <TreeLinkTitle
           ref={ref}
           onClick={onClick}
+          onDblClick={() => console.info(p.node)}
           grabbing={grabbing()}
           data-testid="tree_link_title"
         >

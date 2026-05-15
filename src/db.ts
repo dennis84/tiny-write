@@ -35,6 +35,7 @@ export interface PersistedFile {
   code?: boolean
   codeLang?: string
   deleted?: boolean
+  projectId?: string
 }
 
 export interface PersistedCanvasElement {
