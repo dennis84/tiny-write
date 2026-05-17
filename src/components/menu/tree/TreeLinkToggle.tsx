@@ -1,26 +1,14 @@
 import {Match, Switch} from 'solid-js'
-import {styled} from 'solid-styled-components'
-import {type ButtonAttrs, IconButton} from '@/components/Button'
 import {IconChevronDown, IconChevronRight, IconDot, IconDotLarge} from '@/components/icons/Ui'
 import {isDirectory, isDirty, isFile, isProject, useState} from '@/state'
 import type {MenuTreeItem} from '@/types'
+import {TreeToggle, TreeToggleDisabled} from './Style'
 
 interface Props {
   node: MenuTreeItem
   level: number
   onClick: () => void
 }
-
-const TreeToggle = styled<ButtonAttrs & {level: number}>(IconButton)`
-  flex-shrink: 0;
-  ${(p) => (p.level ? `margin-left: ${String(20 * p.level)}px;` : '')}
-`
-
-const TreeToggleDisabled = styled<ButtonAttrs & {level: number}>(IconButton)`
-  flex-shrink: 0;
-  pointer-events: none;
-  ${(p) => (p.level ? `margin-left: ${String(20 * p.level)}px;` : '')}
-`
 
 export const TreeLinkToggle = (p: Props) => {
   const {treeService} = useState()

@@ -289,18 +289,14 @@ test('remove', async () => {
           `,
         )
 
-        const items = tree.remove('file_2')
+        const items = tree.remove('file_1')
         expect(items).toEqual([
+          expect.objectContaining({id: 'file_1'}),
           expect.objectContaining({id: 'file_2'}),
           expect.objectContaining({id: 'file_4'}),
         ])
       } else if (run === 2) {
-        expectTree(
-          tree,
-          `
-          └ file_1 (parentId=, leftId=)
-          `,
-        )
+        expectTree(tree, ``)
 
         done()
       }

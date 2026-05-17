@@ -1,51 +1,92 @@
-import {For, Match, Show, Switch} from 'solid-js'
-import {useDialog} from '@/hooks/use-dialog'
-import {createTreeStore} from '@/tree'
+import {For, Show} from 'solid-js'
+import {styled} from 'solid-styled-components'
+import {LangIcon} from '@/components/icons/LangIcon'
+import {IconDelete, IconDot} from '@/components/icons/Ui'
 import {
-  type Attachment,
-  AttachmentType,
-  type FileAttachment,
-  type ProjectAttachment,
-  type TextAttachment,
-} from '@/types'
+  TreeLinkItem,
+  TreeLinkMenu,
+  TreeLinkTitle,
+  TreeToggleDisabled,
+} from '@/components/menu/tree/Style'
+import {useDialog} from '@/hooks/use-dialog'
+import {useState} from '@/state'
+import {createTreeStore} from '@/tree'
+import type {Attachment, ProjectAttachment} from '@/types'
 import {Button} from '../../Button'
 import {DialogFooter, DialogList} from '../../dialog/Style'
 import {IconFolderRoot} from '../../icons/File'
-import {AttachmentButton} from './AttachmentChip'
-import {FileAttachmentChip} from './FileAttachmentChip'
-import {TextAttachmentChip} from './TextAttachmentChip'
+import {AttachmentButton, AttachmentTitle} from './AttachmentChip'
+
+const ProjectDialogList = styled(DialogList)`
+  min-width: 200px;
+`
 
 export const ProjectAttachmentChip = (props: {
   attachment: ProjectAttachment
   onDelete?: (attachment: Attachment) => void
 }) => {
-  const Tooltip = () => {
-    const items = props.attachment.content as (FileAttachment | TextAttachment)[]
+  const {fileService, locationService, threadService} = useState()
 
-    const _tree = createTreeStore({
-      items: items.map((it) => ({id: it.fileId, ...it})),
+  const Tooltip = () => {
+    const tree = createTreeStore({
+      items: props.attachment.content.map((it) => ({id: it.fileId as string, ...it})),
     })
 
+    const Tree = (p: {childrenIds: string[]; level: number}) => (
+      <For each={p.childrenIds}>{(id) => <TreeItem id={id} level={p.level} />}</For>
+    )
+
+    const TreeItem = (p: {id: string; level: number}) => {
+      return (
+        <Show when={tree.getItem(p.id)}>
+          {(item) => {
+            const fileId = item().value.fileId
+            const file = fileId ? fileService.findFileById(fileId) : undefined
+            const onClick = () => {
+              locationService.openItem(file)
+            }
+
+            const onDelete = () => {
+              const affected = new Set(tree.remove(item().id).map((it) => it.id))
+              const content = props.attachment.content.filter(
+                (it) => !affected.has(it.fileId ?? ''),
+              )
+              threadService.addAttachment({...props.attachment, content})
+            }
+
+            return (
+              <>
+                <TreeLinkItem>
+                  <TreeToggleDisabled class="toggle" level={p.level}>
+                    <IconDot />
+                  </TreeToggleDisabled>
+                  <TreeLinkTitle onClick={onClick}>
+                    <LangIcon name={file?.codeLang} />
+                    <AttachmentTitle file={file} codeLang={file?.codeLang} />
+                  </TreeLinkTitle>
+                  <TreeLinkMenu onClick={onDelete}>
+                    <IconDelete />
+                  </TreeLinkMenu>
+                </TreeLinkItem>
+                <Show when={item().childrenIds.length > 0}>
+                  <Tree childrenIds={item().childrenIds} level={p.level + 1} />
+                </Show>
+              </>
+            )
+          }}
+        </Show>
+      )
+    }
+
     return (
-      <DialogList>
-        <For each={props.attachment.content}>
-          {(item) => (
-            <Switch>
-              <Match when={item.type === AttachmentType.File ? item : undefined}>
-                {(it) => <FileAttachmentChip attachment={it()} />}
-              </Match>
-              <Match when={item.type === AttachmentType.Text ? item : undefined}>
-                {(it) => <TextAttachmentChip attachment={it()} />}
-              </Match>
-            </Switch>
-          )}
-        </For>
+      <ProjectDialogList>
+        <Tree childrenIds={tree.rootItemIds} level={0} />
         <Show when={props.onDelete}>
           <DialogFooter>
             <Button onClick={() => onDelete(props.attachment)}>Remove</Button>
           </DialogFooter>
         </Show>
-      </DialogList>
+      </ProjectDialogList>
     )
   }
 
@@ -63,7 +104,7 @@ export const ProjectAttachmentChip = (props: {
   }
 
   return (
-    <AttachmentButton onClick={onOpenTooltip}>
+    <AttachmentButton onClick={onOpenTooltip} id={Date.now().toString()}>
       <IconFolderRoot />
       {props.attachment.projectName ?? 'Project'}
     </AttachmentButton>

@@ -146,3 +146,14 @@ export const TreeLinkTitle = styled.span<{grabbing?: boolean}>`
   gap: 5px;
   ${(p) => (p.grabbing ? 'cursor: var(--cursor-grabbed);' : '')}
 `
+
+export const TreeToggle = styled<ButtonAttrs & {level: number}>(IconButton)`
+  flex-shrink: 0;
+  ${(p) => (p.level ? `margin-left: ${String(20 * p.level)}px;` : '')}
+`
+
+export const TreeToggleDisabled = styled<ButtonAttrs & {level: number}>(IconButton)`
+  flex-shrink: 0;
+  pointer-events: none;
+  ${(p) => (p.level ? `margin-left: ${String(20 * p.level)}px;` : '')}
+`

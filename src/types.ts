@@ -228,7 +228,7 @@ export interface ImageAttachment {
 
 export interface ProjectAttachment {
   type: AttachmentType.Project
-  content: Attachment[]
+  content: (FileAttachment | TextAttachment)[]
   projectId: string
   projectName?: string
 }

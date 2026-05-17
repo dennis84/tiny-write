@@ -8,7 +8,12 @@ import {serialize} from '@/prosemirror/markdown-serialize'
 import {schema} from '@/prosemirror/schema'
 import {FileService} from '@/services/FileService'
 import {isFile, isFilename, useState} from '@/state'
-import {type Attachment, AttachmentType, type ProjectAttachment} from '@/types'
+import {
+  AttachmentType,
+  type FileAttachment,
+  type ProjectAttachment,
+  type TextAttachment,
+} from '@/types'
 import {createCodeFence} from '../util'
 
 interface Props {
@@ -22,7 +27,7 @@ export const AddCurrentProject = (props: Props) => {
     const currentProject = projectService.currentProject
     if (!currentProject) return
 
-    const attachments: Attachment[] = []
+    const attachments: (FileAttachment | TextAttachment)[] = []
 
     treeService.descendants(async (it) => {
       if (isFile(it.value) && it.value.code) {

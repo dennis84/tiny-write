@@ -1,4 +1,4 @@
-import {createEffect, For} from 'solid-js'
+import {createEffect, Index} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {useDialog} from '@/hooks/use-dialog'
 import {useState} from '@/state'
@@ -137,9 +137,9 @@ export const ChatInputAttachments = () => {
         </IconButton>
       </TooltipHelp>
       <Attachments>
-        <For each={threadService.attachments()}>
-          {(attachment) => <AttachmentChip attachment={attachment} onDelete={onDelete} />}
-        </For>
+        <Index each={threadService.attachments()}>
+          {(attachment) => <AttachmentChip attachment={attachment()} onDelete={onDelete} />}
+        </Index>
       </Attachments>
     </>
   )

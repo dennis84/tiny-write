@@ -145,11 +145,16 @@ export class Tree<T> {
       items: {...this.state.items},
     }
 
-    item.childrenIds.forEach((i) => {
-      const child = newState.items[i]
-      delete newState.items[i]
-      affected.set(child.id, child)
-    })
+    const deleteChildren = (p: TreeItem<T>) => {
+      p.childrenIds.forEach((i) => {
+        const child = newState.items[i]
+        delete newState.items[i]
+        affected.set(child.id, child)
+        deleteChildren(child)
+      })
+    }
+
+    deleteChildren(item)
 
     const newIndex = newState.items[parentId].childrenIds.indexOf(item.id)
     if (newIndex !== -1) {
