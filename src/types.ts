@@ -228,7 +228,8 @@ export interface ImageAttachment {
 
 export interface ProjectAttachment {
   type: AttachmentType.Project
-  content: (FileAttachment | TextAttachment)[]
+  files: (FileAttachment | TextAttachment)[]
+  tree: string
   projectId: string
   projectName?: string
 }
@@ -325,7 +326,7 @@ export interface Project {
   id: string
   name: string
   worktreePath?: string
-  lastModified?: string
+  lastModified?: Date
   deleted?: boolean
   leftId?: string
 }
@@ -336,7 +337,7 @@ export interface Filename {
   projectId: string
   name: string
   path: string
-  lastModified?: string
+  lastModified?: Date
   parentId?: string
   lastCursorPos?: number
 }
@@ -347,7 +348,7 @@ export interface Directory {
   projectId: string
   name: string
   path: string
-  lastModified?: string
+  lastModified?: Date
   parentId?: string
 }
 

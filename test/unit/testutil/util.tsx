@@ -57,6 +57,10 @@ export const createIpcMock = (options?: Record<string, IpcMockFn>) => {
       return args.path.substring(0, args.path.lastIndexOf('/'))
     }
 
+    if (cmd === 'basename') {
+      return args.path.substring(args.path.lastIndexOf('/') + 1)
+    }
+
     if (cmd === 'resolve_path') {
       return (args.basePath ?? '') + args.path
     }

@@ -7,8 +7,15 @@ import type {CanvasService} from '@/services/CanvasService'
 import type {FileService} from '@/services/FileService'
 import {ProjectService} from '@/services/ProjectService'
 import {TreeService} from '@/services/TreeService'
-import type {Directory} from '@/types'
-import {createDirEntry, createDirectory, createFilename, createProject} from '../testutil/data'
+import {AttachmentType, type Directory} from '@/types'
+import {createYUpdate} from '../testutil/codemirror-util'
+import {
+  createDirEntry,
+  createDirectory,
+  createFile,
+  createFilename,
+  createProject,
+} from '../testutil/data'
 import {expectTree} from '../testutil/tree'
 import {createIpcMock} from '../testutil/util'
 
@@ -153,4 +160,66 @@ test('toggleDirectory - directory', async () => {
       └ code2.yaml (parentId=project_1, leftId=)
     `,
   )
+})
+
+test('createAttachment', async () => {
+  createIpcMock({})
+  const treeService = new TreeService()
+  const fileService = mock<FileService>()
+  const canvasService = mock<CanvasService>()
+  const service = new ProjectService(treeService, fileService, canvasService)
+
+  const project = createProject()
+
+  const openedFile = createFile({
+    id: 'code4.ts',
+    path: '/path/to/code4.ts',
+    parentId: 'dir1',
+    codeLang: 'typescript',
+    leftId: 'code3.yaml',
+    ydoc: createYUpdate('code4.ts', 'let x = 1'),
+    code: true,
+  })
+
+  const items = [
+    project,
+    createDirectory({id: 'dir1', name: 'dir1'}),
+    createFilename({id: 'code3.yaml', name: 'code3.yaml', parentId: 'dir1'}),
+    createFile(openedFile),
+    createFilename({id: 'code1.yaml', name: 'code1.yaml'}),
+    createFilename({id: 'code2.yaml', name: 'code2.yaml'}),
+  ]
+
+  fileService.getTitle.mockResolvedValue('code4.ts')
+
+  treeService.reset(items)
+
+  await waitFor(() => {
+    expect(service.resourceState).toEqual('ready')
+  })
+
+  const attachment = await service.createAttachment(project)
+
+  expect(attachment.type).toEqual(AttachmentType.Project)
+  expect(attachment.projectId).toEqual('project_1')
+  expect(attachment.projectName).toEqual('Project 1')
+  expect(attachment.tree).toEqual(`dir1/
+  ├── code3.yaml
+  ├── code4.ts
+code1.yaml
+code2.yaml\n`)
+
+  expect(attachment.files).toEqual([
+    {
+      type: AttachmentType.File,
+      content: `\`\`\`typescript id=code4.ts
+let x = 1
+\`\`\``,
+      fileId: openedFile.id,
+      projectId: openedFile.projectId,
+      codeLang: openedFile.codeLang,
+      parentId: openedFile.parentId,
+      leftId: openedFile.leftId,
+    },
+  ])
 })

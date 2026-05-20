@@ -1,7 +1,7 @@
-import {createEffect, Index} from 'solid-js'
+import {createEffect, Index, untrack} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {useDialog} from '@/hooks/use-dialog'
-import {useState} from '@/state'
+import {isProject, useState} from '@/state'
 import {
   type Attachment,
   AttachmentType,
@@ -25,7 +25,7 @@ const Attachments = styled(ScrollHorizontal)`
 `
 
 export const ChatInputAttachments = () => {
-  const {store, fileService, mediaService, threadService} = useState()
+  const {store, fileService, mediaService, threadService, projectService, treeService} = useState()
 
   const Tooltip = () => (
     <DialogList>
@@ -71,6 +71,20 @@ export const ChatInputAttachments = () => {
     attachments.forEach((it) => {
       threadService.addAttachment(it)
     })
+  })
+
+  // Refresh project attachment if menu tree was updated
+  createEffect(async () => {
+    treeService.tree // listen on tree changes
+    const attachments = untrack(() => threadService.attachments())
+    for (const attachment of attachments) {
+      if (attachment.type === AttachmentType.Project) {
+        const project = treeService.getItem(attachment.projectId)?.value
+        if (!isProject(project)) continue
+        const newAttachment = await projectService.createAttachment(project)
+        threadService.addAttachment(newAttachment)
+      }
+    }
   })
 
   // Adds current code file to context if autoContext is enabled

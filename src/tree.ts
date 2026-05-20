@@ -393,12 +393,12 @@ export class Tree<T> {
     return result
   }
 
-  descendants(fn: (n: TreeItem<any>) => void, parentId = ROOT_ID) {
+  descendants(fn: (n: TreeItem<any>, level: number) => void, parentId = ROOT_ID, level = 0) {
     const childrenIds = this.state.items[parentId].childrenIds
     for (const id of childrenIds) {
       const item = this.state.items[id]
-      fn(item)
-      this.descendants(fn, item.id)
+      fn(item, level)
+      this.descendants(fn, item.id, level + 1)
     }
   }
 

@@ -2,11 +2,21 @@ import {createDeepSignal} from '@solid-primitives/resource'
 import {createResource} from 'solid-js'
 import {produce} from 'solid-js/store'
 import {v4 as uuid} from 'uuid'
+import {createCodeFence} from '@/components/assistant/util'
 import {DB} from '@/db'
+import {serialize} from '@/prosemirror/markdown-serialize'
 import {listContents} from '@/remote/editor'
 import {info} from '@/remote/log'
-import {isDirectory, isFile, isProjectItem} from '@/state'
-import type {Directory, Filename, Project} from '@/types'
+import {isDirectory, isFile, isFilename, isProjectItem} from '@/state'
+import {
+  AttachmentType,
+  type Directory,
+  type FileAttachment,
+  type Filename,
+  type Project,
+  type ProjectAttachment,
+  type TextAttachment,
+} from '@/types'
 import {YjsUtil} from '@/utils/YjsUtil'
 import type {CanvasService} from './CanvasService'
 import {FileService} from './FileService'
@@ -135,6 +145,73 @@ export class ProjectService {
     }
 
     this.treeService.addAll(treeItems)
+  }
+
+  async createAttachment(project: Project): Promise<ProjectAttachment> {
+    const descendants = this.treeService.getDescendants(project.id)
+
+    const files: (FileAttachment | TextAttachment)[] = []
+    const MAX = 3
+    let opened = 0
+    let tree = ''
+
+    for (const [it, level] of descendants) {
+      const indent = '  '.repeat(level) + (level > 0 ? '├── ' : '')
+
+      if (isFile(it.value) && it.value.code) {
+        if (it.value.codeEditorView && opened < MAX) {
+          const content = createCodeFence({
+            id: it.value.id,
+            code: it.value.codeEditorView.state.doc.toString(),
+            lang: it.value.codeLang,
+            path: it.value.path,
+          })
+
+          files.push({
+            content,
+            type: AttachmentType.File,
+            codeLang: it.value.codeLang,
+            fileId: it.value.id,
+            parentId: it.parentId,
+            leftId: it.leftId,
+          })
+
+          opened++
+        }
+
+        const name = await this.fileService.getTitle(it.value)
+        tree += `${indent}${name}\n`
+      } else if (isFile(it.value)) {
+        if (it.value.editorView && opened < MAX) {
+          const content = serialize(it.value.editorView.state)
+
+          files.push({
+            content,
+            type: AttachmentType.Text,
+            fileId: it.value.id,
+            parentId: it.parentId,
+            leftId: it.leftId,
+          })
+
+          opened++
+        }
+
+        const name = await this.fileService.getTitle(it.value)
+        tree += `${indent}${name}\n`
+      } else if (isFilename(it.value)) {
+        tree += `${indent}${it.value.name}\n`
+      } else if (isDirectory(it.value)) {
+        tree += `${indent}${it.value.name}/\n`
+      }
+    }
+
+    return {
+      type: AttachmentType.Project,
+      projectId: project.id,
+      projectName: project.name,
+      tree,
+      files,
+    }
   }
 
   private mutateProject(fn: (project: Project) => void, projectId: string): Project | undefined {

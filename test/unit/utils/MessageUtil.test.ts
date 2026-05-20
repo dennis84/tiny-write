@@ -20,7 +20,9 @@ test('toChatMessage', () => {
       {
         type: AttachmentType.Project,
         projectName: 'Project',
-        content: [
+        projectId: '1',
+        tree: 'TREE',
+        files: [
           {type: AttachmentType.File, content: 'F1', codeLang: 'typescript'},
           {type: AttachmentType.File, content: 'F2', codeLang: 'typescript'},
           {type: AttachmentType.Text, content: 'README'},
@@ -33,42 +35,57 @@ test('toChatMessage', () => {
   expect.assert(result.content[0].type === 'text')
   expect(result.content[0].text).toEqual(`--- TEXT/MARKDOWN ATTACHMENT ---
 type: Text or Markdown document
-content: Text
---- END OF TEXT/MARKDOWN ATTACHMENT ---\n\n`)
+content:
+Text
+--- END OF TEXT/MARKDOWN ATTACHMENT ---\n`)
 
   expect.assert(result.content[1].type === 'text')
   expect(result.content[1].text).toEqual(`--- FILE ATTACHMENT ---
 type: typescript
-content: File
---- END OF FILE ATTACHMENT ---\n\n`)
+content:
+File
+--- END OF FILE ATTACHMENT ---\n`)
 
   expect.assert(result.content[2].type === 'text')
   expect(result.content[2].text).toEqual(`--- FILE ATTACHMENT ---
 type: typescript
-content: Selection
---- END OF FILE ATTACHMENT ---\n\n`)
+content:
+Selection
+--- END OF FILE ATTACHMENT ---\n`)
 
   expect.assert(result.content[3].type === 'text')
-  expect(result.content[3].text).toEqual(`--- IMAGE ATTACHMENT ---\n`)
+  expect(result.content[3].text).toEqual(`--- IMAGE ATTACHMENT ---`)
   expect.assert(result.content[4].type === 'image_url')
   expect(result.content[4].image_url).toEqual({url: '123'})
   expect.assert(result.content[5].type === 'text')
-  expect(result.content[5].text).toEqual(`--- END OF IMAGE ATTACHMENT ---\n\n`)
+  expect(result.content[5].text).toEqual(`--- END OF IMAGE ATTACHMENT ---`)
 
   expect.assert(result.content[6].type === 'text')
   expect(result.content[6].text).toEqual(`--- PROJECT ATTACHMENT ---
-projectName: Project
-type: Multi-file Project
-The following contains multiple files or code/markdown items from a project:\n`)
-  expect.assert(result.content[7].type === 'text')
-  expect(result.content[7].text).toEqual(`Project Item:
-F1\n\n`)
-  expect.assert(result.content[8].type === 'text')
-  expect(result.content[8].text).toEqual(`Project Item:
-F2\n\n`)
-  expect.assert(result.content[9].type === 'text')
-  expect(result.content[9].text).toEqual(`Project Item:
-README\n\n`)
-  expect.assert(result.content[10].type === 'text')
-  expect(result.content[10].text).toEqual(`--- END OF PROJECT ATTACHMENT ---\n\n`)
+
+Below is the directory structure of the user's current project. Use this to understand the project architecture, naming conventions, and available modules.
+
+<project_tree>
+TREE
+</project_tree>
+
+Below is the full content of the file(s) the user currently has open. Focus your suggestions and code generation primarily on these files, taking the project structure into account.
+
+<opened_files>
+Opened file:
+F1
+
+Opened file:
+F2
+
+Opened file:
+README
+
+</opened_files>
+
+Instructions:
+- Always consider the project structure when suggesting imports or cross-file references.
+- If you need to see the content of a file that is in the <project_tree> but not in the <opened_files>, use your file-reading tool to fetch it.
+
+--- END OF PROJECT ATTACHMENT ---\n`)
 })

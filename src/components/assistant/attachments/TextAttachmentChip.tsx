@@ -1,16 +1,23 @@
-import {Show} from 'solid-js'
+import {Show, Suspense} from 'solid-js'
 import {useDialog} from '@/hooks/use-dialog'
+import {useState} from '@/state'
 import type {Attachment, TextAttachment} from '@/types'
 import {Button} from '../../Button'
 import {DialogFooter} from '../../dialog/Style'
 import {LangIcon} from '../../icons/LangIcon'
-import {AttachmentButton, CodeBlock} from './AttachmentChip'
+import {AttachmentButton, AttachmentTitle, CodeBlock} from './AttachmentChip'
 
 export const TextAttachmentChip = (props: {
   attachment: TextAttachment
   title?: string
   onDelete?: (attachment: Attachment) => void
 }) => {
+  const {fileService} = useState()
+
+  const file = props.attachment.fileId
+    ? fileService.findFileById(props.attachment.fileId)
+    : undefined
+
   const Tooltip = () => (
     <>
       <CodeBlock content={props.attachment.content} />
@@ -38,7 +45,9 @@ export const TextAttachmentChip = (props: {
   return (
     <AttachmentButton onClick={onOpenTooltip}>
       <LangIcon name="markdown" />
-      {props.title ?? 'Text'}
+      <Suspense>
+        <AttachmentTitle file={file} />
+      </Suspense>
     </AttachmentButton>
   )
 }

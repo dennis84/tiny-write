@@ -63,13 +63,16 @@ export class TreeService {
     return this.tree.isDescendant(id, parentId)
   }
 
-  descendants(fn: (n: MenuTreeItem) => void, parentId: string | undefined = undefined) {
+  descendants(
+    fn: (n: MenuTreeItem, level: number) => void,
+    parentId: string | undefined = undefined,
+  ) {
     return this.tree.descendants(fn, parentId)
   }
 
-  getDescendants(parentId: string | undefined = undefined): MenuTreeItem[] {
-    const result: MenuTreeItem[] = []
-    this.tree.descendants((n) => result.push(n), parentId)
+  getDescendants(parentId: string | undefined = undefined): [MenuTreeItem, number][] {
+    const result: [MenuTreeItem, number][] = []
+    this.tree.descendants((n, l) => result.push([n, l]), parentId)
     return result
   }
 
