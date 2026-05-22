@@ -1,12 +1,21 @@
 import markdownit from 'markdown-it'
 import container from 'markdown-it-container'
 import {defaultMarkdownSerializer, MarkdownParser, MarkdownSerializer} from 'prosemirror-markdown'
-import type {Node, Schema} from 'prosemirror-model'
+import type {Node, Schema, Slice} from 'prosemirror-model'
 import type {EditorState} from 'prosemirror-state'
 import {taskList} from '@/prosemirror/task-list/markdown'
+import {schema} from './schema'
 
-export const serialize = (state: EditorState) => {
-  let text = markdownSerializer.serialize(state.doc)
+export const serialize = (state: EditorState) => serializeNode(state.doc)
+
+export const serializeSlice = (slice: Slice) => {
+  const tempDoc = schema.topNodeType.createAndFill(null, slice.content)
+  if (!tempDoc) return ''
+  return serializeNode(tempDoc)
+}
+
+export const serializeNode = (node: Node) => {
+  let text = markdownSerializer.serialize(node)
   if (text.charAt(text.length - 1) !== '\n') {
     text += '\n'
   }

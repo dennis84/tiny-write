@@ -110,23 +110,16 @@ export class ThreadService {
 
         if (projectIndex !== -1) {
           const project = prev[projectIndex] as ProjectAttachment
-          const fileExistsInProject = project.files.some(
-            (f) => f.type === AttachmentType.File && f.fileId === attachment.fileId,
-          )
 
-          if (fileExistsInProject) {
-            const nextAttachments = [...prev]
-            nextAttachments[projectIndex] = {
-              ...project,
-              files: project.files.map((f) =>
-                f.type === AttachmentType.File && f.fileId === attachment.fileId
-                  ? {...f, content: attachment.content}
-                  : f,
-              ),
-            }
-
-            return nextAttachments
+          const nextAttachments = [...prev]
+          nextAttachments[projectIndex] = {
+            ...project,
+            files: project.files
+              .filter((it) => it.fileId !== attachment.fileId)
+              .concat([attachment]),
           }
+
+          return nextAttachments
         }
       }
 

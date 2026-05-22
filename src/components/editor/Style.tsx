@@ -295,7 +295,8 @@ const proseMirror = `
         border-radius: var(--border-radius);
       }
     }
-    ::selection {
+    ::selection,
+    .blurred-selection {
       background: var(--selection);
     }
     .ProseMirror-selectednode {

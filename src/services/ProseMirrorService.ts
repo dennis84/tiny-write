@@ -16,6 +16,7 @@ import {
   createWordCompletionPlugins,
   wordCompletionKeymap,
 } from '@/prosemirror/autocomplete/word-completion'
+import {blurredSelectionPlugin} from '@/prosemirror/blurred-selection'
 import {codeInputRule, codeKeymap} from '@/prosemirror/code'
 import {
   codeBlockKeymap,
@@ -116,6 +117,7 @@ export class ProseMirrorService {
       selectedPlugin,
       createPasteMarkdownPlugin(schema),
       addDecorationPlugin,
+      blurredSelectionPlugin(),
     ]
 
     let doc: Node

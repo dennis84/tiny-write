@@ -1,6 +1,7 @@
 import {createEffect, Index, untrack} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {useDialog} from '@/hooks/use-dialog'
+import {serialize, serializeSlice} from '@/prosemirror/markdown-serialize'
 import {isProject, useState} from '@/state'
 import {
   type Attachment,
@@ -94,49 +95,87 @@ export const ChatInputAttachments = () => {
     store.lastTr // Listen on editor changes
 
     const currentFile = fileService.currentFile
-    const editorView = currentFile?.codeEditorView
+    const editorView = currentFile?.editorView
+    const codeEditorView = currentFile?.codeEditorView
     const currentThread = threadService.currentThread
+    if (
+      !currentThread ||
+      !currentFile ||
+      // prevent updating on blur (loose selection)
+      (editorView && !editorView?.hasFocus()) ||
+      (codeEditorView && !codeEditorView.hasFocus)
+    )
+      return
 
-    if (!editorView || !currentThread) return
+    let code: string | undefined
+    let selection: Pick<SelectionAttachment, 'content' | 'selection'> | undefined
 
-    const content = createCodeFence({
-      code: editorView.state.doc.toString(),
-      id: currentFile.id,
-      lang: currentFile.codeLang,
-      path: currentFile.path,
-    })
-
-    const attachment: FileAttachment = {
-      type: AttachmentType.File,
-      fileId: currentFile.id,
-      projectId: currentFile.projectId,
-      codeLang: currentFile.codeLang,
-      content,
+    if (editorView) {
+      code = serialize(editorView.state)
+      if (!editorView.state.selection.empty) {
+        const ranges = editorView.state.selection.ranges.map(
+          (it) => [it.$from.pos, it.$to.pos] as const,
+        )
+        const content = editorView.state.selection.ranges
+          .map((range) =>
+            createCodeFence({
+              code: serializeSlice(editorView.state.doc.slice(range.$from.pos, range.$to.pos)),
+              id: currentFile.id,
+              lang: currentFile.codeLang,
+              path: currentFile.path,
+              range: [range.$from.pos, range.$to.pos],
+            }),
+          )
+          .join('\n')
+        selection = {selection: ranges, content}
+      }
     }
 
-    threadService.addAttachment(attachment)
+    if (codeEditorView) {
+      code = codeEditorView.state.doc.toString()
 
-    // Add current selection as context message
-    if (!editorView.state.selection.main.empty) {
-      const ranges = editorView.state.selection.ranges.map((it) => [it.from, it.to] as const)
-      const content = editorView.state.selection.ranges
-        .map((range) =>
-          createCodeFence({
-            code: editorView.state.sliceDoc(range.from, range.to),
-            id: currentFile.id,
-            lang: currentFile.codeLang,
-            path: currentFile.path,
-            range: [range.from, range.to],
-          }),
-        )
-        .join('\n')
+      if (!codeEditorView.state.selection.main.empty) {
+        const ranges = codeEditorView.state.selection.ranges.map((it) => [it.from, it.to] as const)
+        const content = codeEditorView.state.selection.ranges
+          .map((range) =>
+            createCodeFence({
+              code: codeEditorView.state.sliceDoc(range.from, range.to),
+              id: currentFile.id,
+              lang: currentFile.codeLang,
+              path: currentFile.path,
+              range: [range.from, range.to],
+            }),
+          )
+          .join('\n')
+        selection = {selection: ranges, content}
+      }
+    }
 
+    if (code) {
+      const content = createCodeFence({
+        code,
+        id: currentFile.id,
+        lang: currentFile.codeLang,
+        path: currentFile.path,
+      })
+
+      const attachment: FileAttachment = {
+        type: AttachmentType.File,
+        fileId: currentFile.id,
+        projectId: currentFile.projectId,
+        codeLang: currentFile.codeLang,
+        content,
+      }
+
+      threadService.addAttachment(attachment)
+    }
+
+    if (selection) {
       const attachment: SelectionAttachment = {
         type: AttachmentType.Selection,
         fileId: currentFile.id,
-        content,
-        selection: ranges,
         codeLang: currentFile.codeLang,
+        ...selection,
       }
 
       threadService.addAttachment(attachment)
