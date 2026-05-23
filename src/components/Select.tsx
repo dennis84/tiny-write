@@ -23,26 +23,35 @@ export const Select = (props: Props) => {
     const target = props.target()
     if (!target) return
 
+    let ignoreDrag = false
+
     const gesture = new DragGesture(
       target,
       ({event, first, last, initial: [x, y], movement: [mx, my], memo}) => {
-        if (
-          // Prefer normal text selection
-          (event.target as HTMLElement).closest('.ProseMirror') ||
-          // Prefer normal text selection
-          (event.target as HTMLElement).closest('.cm-editor') ||
-          // Allow click on toolbar
-          (event.target as HTMLElement).closest('#toolbar') ||
-          // Allow click on tooltip
-          (event.target as HTMLElement).closest('#tooltip') ||
-          // Allow click on block-handle
-          (event.target as HTMLElement).closest('#block-handle') ||
-          // Allow click on table-handle
-          (event.target as HTMLElement).closest('#table-handle-col') ||
-          (event.target as HTMLElement).closest('#table-handle-row')
-        ) {
-          return
+        if (first) {
+          const pointerTarget = event.target as HTMLElement | null
+          if (
+            // Prefer normal text selection
+            pointerTarget?.closest('.ProseMirror') ||
+            // Prefer normal text selection
+            pointerTarget?.closest('.cm-editor') ||
+            // Allow click on toolbar
+            pointerTarget?.closest('#toolbar') ||
+            // Allow click on tooltip
+            pointerTarget?.closest('#tooltip') ||
+            // Allow click on block-handle
+            pointerTarget?.closest('#block-handle') ||
+            // Allow click on table-handle
+            pointerTarget?.closest('#table-handle-col') ||
+            pointerTarget?.closest('#table-handle-row')
+          ) {
+            ignoreDrag = true
+          } else {
+            ignoreDrag = false
+          }
         }
+
+        if (ignoreDrag) return
 
         // If only clicked
         if (!first && !memo) {
@@ -80,7 +89,10 @@ export const Select = (props: Props) => {
         return initial
       },
       {
-        pointer: {keys: false},
+        pointer: {
+          keys: false,
+          capture: false, // fixes PM text selection
+        },
         filterTaps: true,
         eventOptions: {passive: false},
       },

@@ -1,6 +1,6 @@
 import {EditorState} from '@codemirror/state'
 import {EditorView} from '@codemirror/view'
-import {createEffect, createSignal, Match, onMount, Show, Suspense, Switch} from 'solid-js'
+import {createEffect, createSignal, For, Index, Match, onMount, Show, Suspense, Switch} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {getLanguageConfig} from '@/codemirror/highlight'
 import {getTheme} from '@/codemirror/theme'
@@ -36,13 +36,9 @@ export const AttachmentTitle = (props: AttachmentTitleProps) => {
   const langConfig = getLanguageConfig(props.codeLang)
 
   const Selection = () => (
-    <Show when={props.selection}>
-      {(sel) =>
-        sel()
-          .map(([from, to]) => `${from}-${to}`)
-          .join(' ')
-      }
-    </Show>
+    <For each={props.selection}>
+      {([from, to]) => <>{from}-{to} </>}
+    </For>
   )
 
   return (
