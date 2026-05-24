@@ -1,17 +1,13 @@
-import {Show} from 'solid-js'
 import {useDialog} from '@/hooks/use-dialog'
 import {useState} from '@/state'
-import type {Attachment, FileAttachment} from '@/types'
+import type {FileAttachment} from '@/types'
 import {Button} from '../../Button'
 import {DialogFooter} from '../../dialog/Style'
 import {LangIcon} from '../../icons/LangIcon'
 import {AttachmentButton, AttachmentTitle, CodeBlock} from './AttachmentChip'
 
-export const FileAttachmentChip = (props: {
-  attachment: FileAttachment
-  onDelete?: (attachment: Attachment) => void
-}) => {
-  const {fileService} = useState()
+export const FileAttachmentChip = (props: {attachment: FileAttachment}) => {
+  const {fileService, threadService} = useState()
 
   const file = props.attachment.fileId
     ? fileService.findFileById(props.attachment.fileId)
@@ -22,11 +18,10 @@ export const FileAttachmentChip = (props: {
   const Tooltip = () => (
     <>
       <CodeBlock content={props.attachment.content} codeLang={codeLang} />
-      <Show when={props.onDelete}>
-        <DialogFooter>
-          <Button onClick={() => onDelete(props.attachment)}>Remove</Button>
-        </DialogFooter>
-      </Show>
+      <DialogFooter>
+        <Button onClick={onDelete}>Remove</Button>
+        <Button onClick={onDeleteOthers}>Remove others</Button>
+      </DialogFooter>
     </>
   )
 
@@ -38,9 +33,16 @@ export const FileAttachmentChip = (props: {
     showTooltip({anchor: e.currentTarget as HTMLElement})
   }
 
-  const onDelete = (attachment: Attachment) => {
+  const onDelete = () => {
     closeTooltip()
-    props.onDelete?.(attachment)
+    threadService.removeAttachment(props.attachment)
+  }
+
+  const onDeleteOthers = () => {
+    closeTooltip()
+    threadService.attachments().forEach((it) => {
+      if (it !== props.attachment) threadService.removeAttachment(it)
+    })
   }
 
   return (

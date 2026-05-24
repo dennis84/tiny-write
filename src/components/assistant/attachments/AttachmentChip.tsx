@@ -1,6 +1,6 @@
 import {EditorState} from '@codemirror/state'
 import {EditorView} from '@codemirror/view'
-import {createEffect, createSignal, For, Index, Match, onMount, Show, Suspense, Switch} from 'solid-js'
+import {createEffect, createSignal, For, Match, onMount, Suspense, Switch} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {getLanguageConfig} from '@/codemirror/highlight'
 import {getTheme} from '@/codemirror/theme'
@@ -37,7 +37,11 @@ export const AttachmentTitle = (props: AttachmentTitleProps) => {
 
   const Selection = () => (
     <For each={props.selection}>
-      {([from, to]) => <>{from}-{to} </>}
+      {([from, to]) => (
+        <>
+          {from}-{to}{' '}
+        </>
+      )}
     </For>
   )
 
@@ -113,27 +117,24 @@ export const CodeBlock = (props: {content: string; codeLang?: string}) => {
 interface Props {
   title?: string
   attachment: Attachment
-  onDelete?: (attachment: Attachment) => void
 }
 
 export const AttachmentChip = (props: Props) => (
   <Switch>
     <Match when={props.attachment.type === AttachmentType.Image ? props.attachment : undefined}>
-      {(it) => <ImageAttachmentChip attachment={it()} onDelete={props.onDelete} />}
+      {(it) => <ImageAttachmentChip attachment={it()} />}
     </Match>
     <Match when={props.attachment.type === AttachmentType.Text ? props.attachment : undefined}>
-      {(it) => (
-        <TextAttachmentChip attachment={it()} title={props.title} onDelete={props.onDelete} />
-      )}
+      {(it) => <TextAttachmentChip attachment={it()} title={props.title} />}
     </Match>
     <Match when={props.attachment.type === AttachmentType.File ? props.attachment : undefined}>
-      {(it) => <FileAttachmentChip attachment={it()} onDelete={props.onDelete} />}
+      {(it) => <FileAttachmentChip attachment={it()} />}
     </Match>
     <Match when={props.attachment.type === AttachmentType.Selection ? props.attachment : undefined}>
-      {(it) => <SelectionAttachmentChip attachment={it()} onDelete={props.onDelete} />}
+      {(it) => <SelectionAttachmentChip attachment={it()} />}
     </Match>
     <Match when={props.attachment.type === AttachmentType.Project ? props.attachment : undefined}>
-      {(it) => <ProjectAttachmentChip attachment={it()} onDelete={props.onDelete} />}
+      {(it) => <ProjectAttachmentChip attachment={it()} />}
     </Match>
   </Switch>
 )

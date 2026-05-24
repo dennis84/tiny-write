@@ -1,8 +1,8 @@
-import {Index, Match, Show, Switch} from 'solid-js'
+import {Index, Match, Switch} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {useDialog} from '@/hooks/use-dialog'
+import {useState} from '@/state'
 import {
-  type Attachment,
   AttachmentType,
   type FileAttachment,
   type ProjectAttachment,
@@ -19,10 +19,9 @@ const ProjectDialogList = styled(DialogList)`
   min-width: 200px;
 `
 
-export const ProjectAttachmentChip = (props: {
-  attachment: ProjectAttachment
-  onDelete?: (attachment: Attachment) => void
-}) => {
+export const ProjectAttachmentChip = (props: {attachment: ProjectAttachment}) => {
+  const {threadService} = useState()
+
   const Tooltip = () => {
     return (
       <ProjectDialogList>
@@ -39,11 +38,10 @@ export const ProjectAttachmentChip = (props: {
             </Switch>
           )}
         </Index>
-        <Show when={props.onDelete}>
-          <DialogFooter>
-            <Button onClick={() => onDelete(props.attachment)}>Remove</Button>
-          </DialogFooter>
-        </Show>
+        <DialogFooter>
+          <Button onClick={onDelete}>Remove</Button>
+          <Button onClick={onDeleteOthers}>Remove others</Button>
+        </DialogFooter>
       </ProjectDialogList>
     )
   }
@@ -56,9 +54,16 @@ export const ProjectAttachmentChip = (props: {
     showTooltip({anchor: e.currentTarget as HTMLElement})
   }
 
-  const onDelete = (attachment: Attachment) => {
+  const onDelete = () => {
     closeTooltip()
-    props.onDelete?.(attachment)
+    threadService.removeAttachment(props.attachment)
+  }
+
+  const onDeleteOthers = () => {
+    closeTooltip()
+    threadService.attachments().forEach((it) => {
+      if (it !== props.attachment) threadService.removeAttachment(it)
+    })
   }
 
   return (

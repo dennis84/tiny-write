@@ -1,17 +1,14 @@
-import {Show, Suspense} from 'solid-js'
+import {Suspense} from 'solid-js'
 import {useDialog} from '@/hooks/use-dialog'
 import {useState} from '@/state'
-import type {Attachment, SelectionAttachment} from '@/types'
+import type {SelectionAttachment} from '@/types'
 import {Button} from '../../Button'
 import {DialogFooter} from '../../dialog/Style'
 import {IconTextCursor} from '../../icons/Ui'
 import {AttachmentButton, AttachmentTitle, CodeBlock} from './AttachmentChip'
 
-export const SelectionAttachmentChip = (props: {
-  attachment: SelectionAttachment
-  onDelete?: (attachment: Attachment) => void
-}) => {
-  const {fileService} = useState()
+export const SelectionAttachmentChip = (props: {attachment: SelectionAttachment}) => {
+  const {fileService, threadService} = useState()
 
   const file = props.attachment.fileId
     ? fileService.findFileById(props.attachment.fileId)
@@ -22,11 +19,10 @@ export const SelectionAttachmentChip = (props: {
   const Tooltip = () => (
     <>
       <CodeBlock content={props.attachment.content} codeLang={codeLang} />
-      <Show when={props.onDelete}>
-        <DialogFooter>
-          <Button onClick={() => onDelete(props.attachment)}>Remove</Button>
-        </DialogFooter>
-      </Show>
+      <DialogFooter>
+        <Button onClick={onDelete}>Remove</Button>
+        <Button onClick={onDeleteOthers}>Remove others</Button>
+      </DialogFooter>
     </>
   )
 
@@ -38,9 +34,16 @@ export const SelectionAttachmentChip = (props: {
     showTooltip({anchor: e.currentTarget as HTMLElement})
   }
 
-  const onDelete = (attachment: Attachment) => {
+  const onDelete = () => {
     closeTooltip()
-    props.onDelete?.(attachment)
+    threadService.removeAttachment(props.attachment)
+  }
+
+  const onDeleteOthers = () => {
+    closeTooltip()
+    threadService.attachments().forEach((it) => {
+      if (it !== props.attachment) threadService.removeAttachment(it)
+    })
   }
 
   return (

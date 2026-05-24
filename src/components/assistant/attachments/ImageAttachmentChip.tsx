@@ -1,7 +1,7 @@
-import {Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {useDialog} from '@/hooks/use-dialog'
-import type {Attachment, ImageAttachment} from '@/types'
+import {useState} from '@/state'
+import type {ImageAttachment} from '@/types'
 import {Button} from '../../Button'
 import {DialogFooter} from '../../dialog/Style'
 
@@ -18,18 +18,16 @@ const TooltipImage = styled.img`
   border-radius: 10px;
 `
 
-export const ImageAttachmentChip = (props: {
-  attachment: ImageAttachment
-  onDelete?: (attachment: Attachment) => void
-}) => {
+export const ImageAttachmentChip = (props: {attachment: ImageAttachment}) => {
+  const {threadService} = useState()
+
   const Tooltip = () => (
     <>
       <TooltipImage src={props.attachment.content} alt="" />
-      <Show when={props.onDelete}>
-        <DialogFooter>
-          <Button onClick={() => onDelete(props.attachment)}>Remove</Button>
-        </DialogFooter>
-      </Show>
+      <DialogFooter>
+        <Button onClick={onDelete}>Remove</Button>
+        <Button onClick={onDeleteOthers}>Remove others</Button>
+      </DialogFooter>
     </>
   )
 
@@ -41,9 +39,16 @@ export const ImageAttachmentChip = (props: {
     showTooltip({anchor: e.currentTarget as HTMLElement})
   }
 
-  const onDelete = (attachment: Attachment) => {
+  const onDelete = () => {
     closeTooltip()
-    props.onDelete?.(attachment)
+    threadService.removeAttachment(props.attachment)
+  }
+
+  const onDeleteOthers = () => {
+    closeTooltip()
+    threadService.attachments().forEach((it) => {
+      if (it !== props.attachment) threadService.removeAttachment(it)
+    })
   }
 
   return <AttachmentImage src={props.attachment.content} alt="" onClick={onOpenTooltip} />

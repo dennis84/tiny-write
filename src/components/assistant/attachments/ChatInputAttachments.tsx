@@ -1,4 +1,4 @@
-import {createEffect, Index, untrack} from 'solid-js'
+import {createEffect, Index, Show, untrack} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {useDialog} from '@/hooks/use-dialog'
 import {serialize, serializeSlice} from '@/prosemirror/markdown-serialize'
@@ -11,9 +11,9 @@ import {
   type SelectionAttachment,
 } from '@/types'
 import {IconButton} from '../../Button'
-import {DialogList} from '../../dialog/Style'
+import {DialogList, TooltipButton, TooltipDivider} from '../../dialog/Style'
 import {TooltipHelp} from '../../dialog/TooltipHelp'
-import {IconPaperclip} from '../../icons/Ui'
+import {IconClose, IconPaperclip} from '../../icons/Ui'
 import {ScrollHorizontal} from '../../Layout'
 import {createCodeFence} from '../util'
 import {AddCurrentFile} from './AddCurrentFile'
@@ -33,6 +33,12 @@ export const ChatInputAttachments = () => {
       <AddCurrentFile onAttachment={onAttachment} />
       <AddCurrentSelection onAttachment={onAttachment} />
       <AddImage onAttachment={onImageAttachment} />
+      <Show when={threadService.attachments().length > 0}>
+        <TooltipDivider />
+        <TooltipButton onClick={onRemoveAll}>
+          <IconClose /> Remove all attachments
+        </TooltipButton>
+      </Show>
     </DialogList>
   )
 
@@ -53,8 +59,8 @@ export const ChatInputAttachments = () => {
     closeTooltip()
   }
 
-  const onDelete = (attachment: Attachment) => {
-    threadService.removeAttachment(attachment)
+  const onRemoveAll = () => {
+    threadService.setAttachments([])
   }
 
   // Adds dropped files as attachments
@@ -191,7 +197,7 @@ export const ChatInputAttachments = () => {
       </TooltipHelp>
       <Attachments>
         <Index each={threadService.attachments()}>
-          {(attachment) => <AttachmentChip attachment={attachment()} onDelete={onDelete} />}
+          {(attachment) => <AttachmentChip attachment={attachment()} />}
         </Index>
       </Attachments>
     </>
