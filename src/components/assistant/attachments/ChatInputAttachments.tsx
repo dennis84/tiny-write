@@ -63,6 +63,16 @@ export const ChatInputAttachments = () => {
     threadService.setAttachments([])
   }
 
+  const onRemove = (attachment: Attachment) => {
+    threadService.removeAttachment(attachment)
+  }
+
+  const onRemoveOthers = (attachment: Attachment) => {
+    threadService.attachments().forEach((it) => {
+      if (it !== attachment) threadService.removeAttachment(it)
+    })
+  }
+
   // Adds dropped files as attachments
   createEffect(() => {
     const droppedFiles = mediaService.droppedFiles()
@@ -89,6 +99,7 @@ export const ChatInputAttachments = () => {
         const project = treeService.getItem(attachment.projectId)?.value
         if (!isProject(project)) continue
         const newAttachment = await projectService.createAttachment(project)
+
         threadService.addAttachment(newAttachment)
       }
     }
@@ -197,7 +208,13 @@ export const ChatInputAttachments = () => {
       </TooltipHelp>
       <Attachments>
         <Index each={threadService.attachments()}>
-          {(attachment) => <AttachmentChip attachment={attachment()} />}
+          {(attachment) => (
+            <AttachmentChip
+              attachment={attachment()}
+              onRemove={onRemove}
+              onRemoveOthers={onRemoveOthers}
+            />
+          )}
         </Index>
       </Attachments>
     </>

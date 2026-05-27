@@ -8,6 +8,7 @@ import {DialogContainer, DialogLayer, ToastLayer, TooltipArrow} from './Style'
 type Props = Omit<DialogType, 'component' | 'state'> & {
   children: JSX.Element
   index: number
+  isTop: boolean
 }
 
 export const Dialog = (props: Props) => {
@@ -114,7 +115,9 @@ export const Dialog = (props: Props) => {
   return (
     <Switch>
       <Match when={props.anchor}>
-        <CloseOnBackgroundClick />
+        <Show when={props.isTop}>
+          <CloseOnBackgroundClick />
+        </Show>
         <DialogContainer
           ref={dialogRef}
           id="tooltip"

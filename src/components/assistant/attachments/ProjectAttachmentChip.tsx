@@ -1,8 +1,9 @@
-import {Index, Match, Switch} from 'solid-js'
+import {Index, Match, Show, Switch} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {useDialog} from '@/hooks/use-dialog'
 import {useState} from '@/state'
 import {
+  type Attachment,
   AttachmentType,
   type FileAttachment,
   type ProjectAttachment,
@@ -11,7 +12,7 @@ import {
 import {Button} from '../../Button'
 import {DialogFooter, DialogList} from '../../dialog/Style'
 import {IconFolderRoot} from '../../icons/File'
-import {AttachmentButton, CodeBlock} from './AttachmentChip'
+import {type AttachmentActions, AttachmentButton, CodeBlock} from './AttachmentChip'
 import {FileAttachmentChip} from './FileAttachmentChip'
 import {TextAttachmentChip} from './TextAttachmentChip'
 
@@ -19,10 +20,27 @@ const ProjectDialogList = styled(DialogList)`
   min-width: 200px;
 `
 
-export const ProjectAttachmentChip = (props: {attachment: ProjectAttachment}) => {
+interface Props extends AttachmentActions<ProjectAttachment> {
+  attachment: ProjectAttachment
+}
+
+export const ProjectAttachmentChip = (props: Props) => {
   const {threadService} = useState()
 
   const Tooltip = () => {
+    const onRemove = (attachment: Attachment) => {
+      if (!('fileId' in attachment)) return
+      const fileId = attachment.fileId
+      if (!fileId) return
+
+      const updated: ProjectAttachment = {
+        ...props.attachment,
+        files: props.attachment.files.filter((it) => it !== attachment),
+      }
+
+      threadService.addAttachment(updated)
+    }
+
     return (
       <ProjectDialogList>
         <CodeBlock content={props.attachment.tree} />
@@ -30,17 +48,21 @@ export const ProjectAttachmentChip = (props: {attachment: ProjectAttachment}) =>
           {(it) => (
             <Switch>
               <Match when={it().type === AttachmentType.Text}>
-                <TextAttachmentChip attachment={it() as TextAttachment} />
+                <TextAttachmentChip attachment={it() as TextAttachment} onRemove={onRemove} />
               </Match>
               <Match when={it().type === AttachmentType.File}>
-                <FileAttachmentChip attachment={it() as FileAttachment} />
+                <FileAttachmentChip attachment={it() as FileAttachment} onRemove={onRemove} />
               </Match>
             </Switch>
           )}
         </Index>
         <DialogFooter>
-          <Button onClick={onDelete}>Remove</Button>
-          <Button onClick={onDeleteOthers}>Remove others</Button>
+          <Show when={props.onRemove}>
+            <Button onClick={onDelete}>Remove</Button>
+          </Show>
+          <Show when={props.onRemoveOthers}>
+            <Button onClick={onDeleteOthers}>Remove others</Button>
+          </Show>
         </DialogFooter>
       </ProjectDialogList>
     )
@@ -56,14 +78,12 @@ export const ProjectAttachmentChip = (props: {attachment: ProjectAttachment}) =>
 
   const onDelete = () => {
     closeTooltip()
-    threadService.removeAttachment(props.attachment)
+    props.onRemove?.(props.attachment)
   }
 
   const onDeleteOthers = () => {
     closeTooltip()
-    threadService.attachments().forEach((it) => {
-      if (it !== props.attachment) threadService.removeAttachment(it)
-    })
+    props.onRemoveOthers?.(props.attachment)
   }
 
   return (

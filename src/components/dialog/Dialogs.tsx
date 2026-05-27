@@ -36,6 +36,7 @@ export const Dialogs = () => {
           toast={dialog.toast}
           toastAction={dialog.toastAction}
           index={i()}
+          isTop={i() === dialogService.dialogs().length - 1}
         >
           <Switch>
             <Match when={dialog.content}>{dialog.content}</Match>

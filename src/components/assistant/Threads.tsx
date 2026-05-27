@@ -188,11 +188,6 @@ export const Threads = (props: Props) => {
     })
   }
 
-  const onPin = async (e: MouseEvent, thread: Thread) => {
-    e.stopPropagation()
-    await threadService.togglePin(thread.id)
-  }
-
   const ThreadsDialog = () => {
     let searchInputRef!: HTMLInputElement
 
@@ -206,9 +201,15 @@ export const Threads = (props: Props) => {
       '',
     )
 
-    const [threads] = createResource(debouncedSearchTerm, (term) =>
+    const [threads, {refetch}] = createResource(debouncedSearchTerm, (term) =>
       threadService.searchThreads(term),
     )
+
+    const onPin = async (e: MouseEvent, thread: Thread) => {
+      e.stopPropagation()
+      await threadService.togglePin(thread.id)
+      refetch()
+    }
 
     return (
       <>

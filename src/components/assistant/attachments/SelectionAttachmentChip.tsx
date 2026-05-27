@@ -1,14 +1,23 @@
-import {Suspense} from 'solid-js'
+import {Show, Suspense} from 'solid-js'
 import {useDialog} from '@/hooks/use-dialog'
 import {useState} from '@/state'
 import type {SelectionAttachment} from '@/types'
 import {Button} from '../../Button'
 import {DialogFooter} from '../../dialog/Style'
 import {IconTextCursor} from '../../icons/Ui'
-import {AttachmentButton, AttachmentTitle, CodeBlock} from './AttachmentChip'
+import {
+  type AttachmentActions,
+  AttachmentButton,
+  AttachmentTitle,
+  CodeBlock,
+} from './AttachmentChip'
 
-export const SelectionAttachmentChip = (props: {attachment: SelectionAttachment}) => {
-  const {fileService, threadService} = useState()
+interface Props extends AttachmentActions<SelectionAttachment> {
+  attachment: SelectionAttachment
+}
+
+export const SelectionAttachmentChip = (props: Props) => {
+  const {fileService} = useState()
 
   const file = props.attachment.fileId
     ? fileService.findFileById(props.attachment.fileId)
@@ -20,8 +29,12 @@ export const SelectionAttachmentChip = (props: {attachment: SelectionAttachment}
     <>
       <CodeBlock content={props.attachment.content} codeLang={codeLang} />
       <DialogFooter>
-        <Button onClick={onDelete}>Remove</Button>
-        <Button onClick={onDeleteOthers}>Remove others</Button>
+        <Show when={props.onRemove}>
+          <Button onClick={onDelete}>Remove</Button>
+        </Show>
+        <Show when={props.onRemoveOthers}>
+          <Button onClick={onDeleteOthers}>Remove others</Button>
+        </Show>
       </DialogFooter>
     </>
   )
@@ -36,14 +49,12 @@ export const SelectionAttachmentChip = (props: {attachment: SelectionAttachment}
 
   const onDelete = () => {
     closeTooltip()
-    threadService.removeAttachment(props.attachment)
+    props.onRemove?.(props.attachment)
   }
 
   const onDeleteOthers = () => {
     closeTooltip()
-    threadService.attachments().forEach((it) => {
-      if (it !== props.attachment) threadService.removeAttachment(it)
-    })
+    props.onRemoveOthers?.(props.attachment)
   }
 
   return (

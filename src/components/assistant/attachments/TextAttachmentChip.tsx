@@ -1,14 +1,24 @@
-import {Suspense} from 'solid-js'
+import {Show, Suspense} from 'solid-js'
 import {useDialog} from '@/hooks/use-dialog'
 import {useState} from '@/state'
 import type {TextAttachment} from '@/types'
 import {Button} from '../../Button'
 import {DialogFooter} from '../../dialog/Style'
 import {LangIcon} from '../../icons/LangIcon'
-import {AttachmentButton, AttachmentTitle, CodeBlock} from './AttachmentChip'
+import {
+  type AttachmentActions,
+  AttachmentButton,
+  AttachmentTitle,
+  CodeBlock,
+} from './AttachmentChip'
 
-export const TextAttachmentChip = (props: {attachment: TextAttachment; title?: string}) => {
-  const {fileService, threadService} = useState()
+interface Props extends AttachmentActions<TextAttachment> {
+  attachment: TextAttachment
+  title?: string
+}
+
+export const TextAttachmentChip = (props: Props) => {
+  const {fileService} = useState()
 
   const file = props.attachment.fileId
     ? fileService.findFileById(props.attachment.fileId)
@@ -18,8 +28,12 @@ export const TextAttachmentChip = (props: {attachment: TextAttachment; title?: s
     <>
       <CodeBlock content={props.attachment.content} />
       <DialogFooter>
-        <Button onClick={onDelete}>Remove</Button>
-        <Button onClick={onDeleteOthers}>Remove others</Button>
+        <Show when={props.onRemove}>
+          <Button onClick={onDelete}>Remove</Button>
+        </Show>
+        <Show when={props.onRemoveOthers}>
+          <Button onClick={onDeleteOthers}>Remove others</Button>
+        </Show>
       </DialogFooter>
     </>
   )
@@ -34,14 +48,12 @@ export const TextAttachmentChip = (props: {attachment: TextAttachment; title?: s
 
   const onDelete = () => {
     closeTooltip()
-    threadService.removeAttachment(props.attachment)
+    props.onRemove?.(props.attachment)
   }
 
   const onDeleteOthers = () => {
     closeTooltip()
-    threadService.attachments().forEach((it) => {
-      if (it !== props.attachment) threadService.removeAttachment(it)
-    })
+    props.onRemoveOthers?.(props.attachment)
   }
 
   return (

@@ -14,6 +14,11 @@ import {ProjectAttachmentChip} from './ProjectAttachmentChip'
 import {SelectionAttachmentChip} from './SelectionAttachmentChip'
 import {TextAttachmentChip} from './TextAttachmentChip'
 
+export interface AttachmentActions<T> {
+  onRemove?: (attachment: T) => void
+  onRemoveOthers?: (attachment: T) => void
+}
+
 export const AttachmentButton = styled(Button)`
   white-space: nowrap;
   flex-shrink: 0;
@@ -114,7 +119,7 @@ export const CodeBlock = (props: {content: string; codeLang?: string}) => {
   return <CodeBlockStyle ref={ref} />
 }
 
-interface Props {
+interface Props extends AttachmentActions<Attachment> {
   title?: string
   attachment: Attachment
 }
@@ -122,19 +127,50 @@ interface Props {
 export const AttachmentChip = (props: Props) => (
   <Switch>
     <Match when={props.attachment.type === AttachmentType.Image ? props.attachment : undefined}>
-      {(it) => <ImageAttachmentChip attachment={it()} />}
+      {(it) => (
+        <ImageAttachmentChip
+          attachment={it()}
+          onRemove={props.onRemove}
+          onRemoveOthers={props.onRemoveOthers}
+        />
+      )}
     </Match>
     <Match when={props.attachment.type === AttachmentType.Text ? props.attachment : undefined}>
-      {(it) => <TextAttachmentChip attachment={it()} title={props.title} />}
+      {(it) => (
+        <TextAttachmentChip
+          attachment={it()}
+          title={props.title}
+          onRemove={props.onRemove}
+          onRemoveOthers={props.onRemoveOthers}
+        />
+      )}
     </Match>
     <Match when={props.attachment.type === AttachmentType.File ? props.attachment : undefined}>
-      {(it) => <FileAttachmentChip attachment={it()} />}
+      {(it) => (
+        <FileAttachmentChip
+          attachment={it()}
+          onRemove={props.onRemove}
+          onRemoveOthers={props.onRemoveOthers}
+        />
+      )}
     </Match>
     <Match when={props.attachment.type === AttachmentType.Selection ? props.attachment : undefined}>
-      {(it) => <SelectionAttachmentChip attachment={it()} />}
+      {(it) => (
+        <SelectionAttachmentChip
+          attachment={it()}
+          onRemove={props.onRemove}
+          onRemoveOthers={props.onRemoveOthers}
+        />
+      )}
     </Match>
     <Match when={props.attachment.type === AttachmentType.Project ? props.attachment : undefined}>
-      {(it) => <ProjectAttachmentChip attachment={it()} />}
+      {(it) => (
+        <ProjectAttachmentChip
+          attachment={it()}
+          onRemove={props.onRemove}
+          onRemoveOthers={props.onRemoveOthers}
+        />
+      )}
     </Match>
   </Switch>
 )

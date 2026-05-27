@@ -1,13 +1,23 @@
+import {Show} from 'solid-js'
 import {useDialog} from '@/hooks/use-dialog'
 import {useState} from '@/state'
 import type {FileAttachment} from '@/types'
 import {Button} from '../../Button'
 import {DialogFooter} from '../../dialog/Style'
 import {LangIcon} from '../../icons/LangIcon'
-import {AttachmentButton, AttachmentTitle, CodeBlock} from './AttachmentChip'
+import {
+  type AttachmentActions,
+  AttachmentButton,
+  AttachmentTitle,
+  CodeBlock,
+} from './AttachmentChip'
 
-export const FileAttachmentChip = (props: {attachment: FileAttachment}) => {
-  const {fileService, threadService} = useState()
+interface Props extends AttachmentActions<FileAttachment> {
+  attachment: FileAttachment
+}
+
+export const FileAttachmentChip = (props: Props) => {
+  const {fileService} = useState()
 
   const file = props.attachment.fileId
     ? fileService.findFileById(props.attachment.fileId)
@@ -19,8 +29,12 @@ export const FileAttachmentChip = (props: {attachment: FileAttachment}) => {
     <>
       <CodeBlock content={props.attachment.content} codeLang={codeLang} />
       <DialogFooter>
-        <Button onClick={onDelete}>Remove</Button>
-        <Button onClick={onDeleteOthers}>Remove others</Button>
+        <Show when={props.onRemove}>
+          <Button onClick={onDelete}>Remove</Button>
+        </Show>
+        <Show when={props.onRemoveOthers}>
+          <Button onClick={onDeleteOthers}>Remove others</Button>
+        </Show>
       </DialogFooter>
     </>
   )
@@ -35,14 +49,12 @@ export const FileAttachmentChip = (props: {attachment: FileAttachment}) => {
 
   const onDelete = () => {
     closeTooltip()
-    threadService.removeAttachment(props.attachment)
+    props.onRemove?.(props.attachment)
   }
 
   const onDeleteOthers = () => {
     closeTooltip()
-    threadService.attachments().forEach((it) => {
-      if (it !== props.attachment) threadService.removeAttachment(it)
-    })
+    props.onRemoveOthers?.(props.attachment)
   }
 
   return (
