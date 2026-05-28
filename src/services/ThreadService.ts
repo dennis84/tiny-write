@@ -261,7 +261,10 @@ export class ThreadService {
     if (!currentThread) return
 
     const parentId = message.parentId ?? this.getParentId()
-    const newMessage = {...message, parentId}
+    const newMessage = {
+      ...message,
+      parentId,
+    }
 
     info(`Add new message (message=${JSON.stringify(newMessage)})`)
     this.updateThread((thread) => {
@@ -510,7 +513,7 @@ export class ThreadService {
 
     this.traverseTree((it) => {
       nextId = currentThread.path?.get(it.id)
-      const message = MessageUtil.toChatMessage(it.value)
+      const message = MessageUtil.toChatMessage(it.value, it.childrenIds.length === 0)
 
       // remember if any code block exists
       if (!hasCodeBlock && this.hasCodeBlock(message)) {

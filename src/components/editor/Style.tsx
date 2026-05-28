@@ -88,7 +88,7 @@ export const standardMarkdown = `
     margin: 10px 0;
     display: flow-root;
   }
-  > ul, ol {
+  > ul, > ol {
     padding: 0;
   }
   > ul > li, > ol > li {

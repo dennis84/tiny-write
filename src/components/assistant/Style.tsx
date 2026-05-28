@@ -2,12 +2,18 @@ import {styled} from 'solid-styled-components'
 import {isClipped} from '../code/Style'
 import {standardMarkdown} from '../editor/Style'
 
-export const ChatBubble = styled.div`
+// biome-ignore format: ternary breaks ugly
+export const ChatBubble = styled.div<{fadeIn?: boolean}>`
   position: relative;
   border-radius: var(--border-radius);
   font-size: var(--font-size);
   line-height: var(--line-height);
   ${standardMarkdown}
+  ${(p) => p.fadeIn !== undefined ? `
+    > * {
+      opacity: ${p.fadeIn ? '0' : '1'};
+      animation: fadeIn 1.2s 0.1s ease-out forwards;
+    }` : ``}
   .cm-editor {
     ${isClipped}
     &.is-clipped {

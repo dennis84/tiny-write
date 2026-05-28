@@ -1,3 +1,4 @@
+import userMessagePrompt from '@/prompts/assistant/user-message.md?raw'
 import fileAttachmentPrompt from '@/prompts/attachments/file.md?raw'
 import projectAttachmentPrompt from '@/prompts/attachments/project.md?raw'
 import textAttachmentPrompt from '@/prompts/attachments/text.md?raw'
@@ -11,7 +12,7 @@ import {type Attachment, AttachmentType, type Message} from '@/types'
 type ChatMessageContent = ChatMessageTextContent | ChatMessageImageContent
 
 export class MessageUtil {
-  static toChatMessage(message: Message): ChatMessage {
+  static toChatMessage(message: Message, latest = false): ChatMessage {
     const content: ChatMessageContent[] = []
 
     for (const attachment of message.attachments ?? []) {
@@ -19,9 +20,13 @@ export class MessageUtil {
     }
 
     if (message.content) {
+      const text = latest
+        ? MessageUtil.renderTemplate(userMessagePrompt, {message: message.content})
+        : message.content
+
       content.push({
         type: 'text',
-        text: message.content,
+        text,
       })
     }
 

@@ -64,7 +64,7 @@ export const CodeBlockHeader = (p: {state: CodeBlockHeaderState}) => {
 
     const file = await fileService.newFile({
       id,
-      newFile: p.state.info.attrs?.file,
+      title: p.state.info.attrs?.file,
       ydoc: Y.encodeStateAsUpdate(ydoc),
       code: true,
     })
