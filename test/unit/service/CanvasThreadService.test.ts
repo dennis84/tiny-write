@@ -9,6 +9,10 @@ import {createYUpdate} from '../testutil/prosemirror-util'
 
 vi.mock('@/db', () => ({DB: mock()}))
 
+vi.mock('@/prompts/common/user-message.md?raw', () => {
+  return {default: 'Message: {{message}}'}
+})
+
 beforeEach(() => {
   vi.resetAllMocks()
 })
@@ -51,5 +55,5 @@ test('getMessages', () => {
   expect(messages[0].role).toEqual('system') // common prompt
   expect(messages[1].role).toEqual('system') // canvas rules prompt
   expect(messages[2].content[0]).toEqual({type: 'text', text: 'F2'})
-  expect(messages[3].content[0]).toEqual({type: 'text', text: 'F1'})
+  expect(messages[3].content[0]).toEqual({type: 'text', text: 'Message: F1'})
 })

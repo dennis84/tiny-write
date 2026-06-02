@@ -15,7 +15,6 @@ import {
   basename,
   dirname,
   getDocument,
-  getMimeType,
   readText,
   resolvePath,
   toAbsolutePath,
@@ -250,26 +249,6 @@ export class FileService {
     return await this.addFile(file)
   }
 
-  async newFileByPath(params: {
-    id?: string
-    path?: string
-    newFile?: string
-    projectId?: string
-  }): Promise<File> {
-    const {id, path, newFile, projectId} = params
-    const p = path ?? newFile
-    if (!p) throw new Error('Argument path or newFile missing')
-
-    let file = await this.findFileByPath(p)
-    if (!file) {
-      const mime = await getMimeType(p)
-      const code = !mime.startsWith('text/markdown')
-      file = await this.newFile({id, newFile, path, code, projectId})
-    }
-
-    return file
-  }
-
   private static createYdoc(id: string, bytes?: Uint8Array): Y.Doc {
     const ydoc = new Y.Doc({gc: false, guid: id})
     if (bytes) Y.applyUpdate(ydoc, bytes)
@@ -421,6 +400,11 @@ export class FileService {
       return toRelativePath(file.path ?? file.newFile ?? '')
     }
 
+    if (file.newFile) {
+      const cutAt = file.newFile.lastIndexOf('/')
+      return file.newFile.substring(cutAt + 1)
+    }
+
     if (file.code) return file.title ?? (fallback ? 'Code' : undefined)
     else if (file.title) return file.title
 
@@ -435,8 +419,8 @@ export class FileService {
   }
 
   async getFilename(file?: File): Promise<string | undefined> {
-    if (file?.path || file?.newFile) {
-      return basename(file.path ?? file.newFile ?? '')
+    if (file?.path) {
+      return basename(file.path ?? '')
     }
 
     return file?.title ?? ''

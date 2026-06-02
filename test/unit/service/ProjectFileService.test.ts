@@ -3,7 +3,7 @@ import {mock} from 'vitest-mock-extended'
 import type {FileService} from '@/services/FileService'
 import {ProjectFileService} from '@/services/ProjectFileService'
 import type {ProjectService} from '@/services/ProjectService'
-import {createProject} from '../testutil/data'
+import {createFile, createProject} from '../testutil/data'
 import {createIpcMock} from '../testutil/util'
 
 vi.mock('@/db', () => ({
@@ -29,14 +29,7 @@ test.each([
   createIpcMock({})
 
   fileService.findFileById.mockReturnValue(undefined)
-  fileService.newFile.mockImplementation(async (params) => ({
-    type: 'file' as const,
-    id: '1',
-    lastModified: new Date(),
-    ydoc: new Uint8Array(),
-    versions: [],
-    ...params,
-  }))
+  fileService.newFile.mockImplementation(async (params) => createFile({...params}))
 
   const service = new ProjectFileService(fileService, projectService)
 
@@ -54,14 +47,7 @@ test('newFileByPath - match existing project path', async () => {
 
   vi.spyOn(projectService, 'projects', 'get').mockReturnValue([createProject()])
   fileService.findFileById.mockReturnValue(undefined)
-  fileService.newFile.mockImplementation(async (params) => ({
-    type: 'file' as const,
-    id: '1',
-    lastModified: new Date(),
-    ydoc: new Uint8Array(),
-    versions: [],
-    ...params,
-  }))
+  fileService.newFile.mockImplementation(async (params) => createFile({...params}))
 
   const service = new ProjectFileService(fileService, projectService)
 
@@ -69,4 +55,23 @@ test('newFileByPath - match existing project path', async () => {
 
   expect(file).toBeDefined()
   expect(file.projectId).toEqual('project_1')
+})
+
+test('newFileByPath - does not match project with path that is only a substring prefix', async () => {
+  vi.stubGlobal('__TAURI__', {})
+  createIpcMock({})
+
+  // worktreePath is '/users/me/project_1' — must NOT match '/users/me/project_10/file.ts'
+  const filePath = '/users/me/project_10/file.ts'
+
+  vi.spyOn(projectService, 'projects', 'get').mockReturnValue([createProject()])
+  fileService.findFileById.mockReturnValue(undefined)
+  fileService.newFile.mockImplementation(async (params) => createFile({...params}))
+
+  const service = new ProjectFileService(fileService, projectService)
+
+  const file = await service.newFileByPath({path: filePath})
+
+  expect(file).toBeDefined()
+  expect(file.projectId).toBeUndefined()
 })

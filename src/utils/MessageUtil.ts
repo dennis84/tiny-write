@@ -1,7 +1,7 @@
-import userMessagePrompt from '@/prompts/assistant/user-message.md?raw'
 import fileAttachmentPrompt from '@/prompts/attachments/file.md?raw'
 import projectAttachmentPrompt from '@/prompts/attachments/project.md?raw'
 import textAttachmentPrompt from '@/prompts/attachments/text.md?raw'
+import userMessagePrompt from '@/prompts/common/user-message.md?raw'
 import type {
   ChatMessage,
   ChatMessageImageContent,

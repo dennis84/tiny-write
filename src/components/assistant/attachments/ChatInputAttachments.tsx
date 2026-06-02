@@ -121,8 +121,9 @@ export const ChatInputAttachments = () => {
       // prevent updating on blur (loose selection)
       (editorView && !editorView?.hasFocus()) ||
       (codeEditorView && !codeEditorView.hasFocus)
-    )
+    ) {
       return
+    }
 
     let code: string | undefined
     let selection: Pick<SelectionAttachment, 'content' | 'selection'> | undefined

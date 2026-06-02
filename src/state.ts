@@ -51,8 +51,7 @@ export const isFilename = (it: any): it is Filename => it?.type === 'filename'
 
 export const isDirectory = (it: any): it is Directory => it?.type === 'directory'
 
-export const isLocalFile = (it: any): boolean =>
-  isFile(it) && (it.path !== undefined || it.newFile !== undefined)
+export const isLocalFile = (it: any): boolean => isFile(it) && it.path !== undefined
 
 export const isCanvas = (it: any): it is Canvas => it?.type === 'canvas'
 

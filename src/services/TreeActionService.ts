@@ -47,7 +47,7 @@ export class TreeActionService {
     }
 
     for (const item of rest) {
-      await this.updateItem(item, project?.id)
+      await this.updateItem(item)
     }
   }
 

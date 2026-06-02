@@ -94,6 +94,12 @@ test('getTitle', async () => {
       versions: [],
       lastModified,
     },
+    {
+      id: '4',
+      code: true,
+      newFile: 'src/components/Main.tsx',
+      lastModified: new Date(),
+    },
   ])
 
   const service = new FileService(collabService, locationService, treeService)
@@ -104,7 +110,7 @@ test('getTitle', async () => {
 
   await service.addFile({
     type: 'file',
-    id: '4',
+    id: '5',
     ydoc: pmUtils.createYUpdate('4', ['Test4']),
     versions: [],
     path: '/users/me/project/README.md',
@@ -114,7 +120,8 @@ test('getTitle', async () => {
   expect(await service.getTitle(service.files[0])).toBe('Test1')
   expect(await service.getTitle(service.files[1])).toBe('Test2')
   expect(await service.getTitle(service.files[2])).toBe('a'.repeat(25))
-  expect(await service.getTitle(service.files[3])).toBe('~/project/README.md')
+  expect(await service.getTitle(service.files[3])).toBe('Main.tsx')
+  expect(await service.getTitle(service.files[4])).toBe('~/project/README.md')
 })
 
 test('findFile - found', async () => {

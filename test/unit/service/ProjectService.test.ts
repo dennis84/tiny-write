@@ -1,3 +1,4 @@
+import {EditorView} from '@codemirror/view'
 import {waitFor} from '@solidjs/testing-library'
 import {v5} from 'uuid'
 import {beforeEach, expect, test, vi} from 'vitest'
@@ -8,7 +9,6 @@ import type {FileService} from '@/services/FileService'
 import {ProjectService} from '@/services/ProjectService'
 import {TreeService} from '@/services/TreeService'
 import {AttachmentType, type Directory} from '@/types'
-import {createYUpdate} from '../testutil/codemirror-util'
 import {
   createDirEntry,
   createDirectory,
@@ -171,14 +171,16 @@ test('createAttachment', async () => {
 
   const project = createProject()
 
+  const codeEditorView = new EditorView()
+  codeEditorView.dispatch({changes: {from: 0, insert: 'let x = 1'}})
   const openedFile = createFile({
     id: 'code4.ts',
     path: '/path/to/code4.ts',
     parentId: 'dir1',
     codeLang: 'typescript',
     leftId: 'code3.yaml',
-    ydoc: createYUpdate('code4.ts', 'let x = 1'),
     code: true,
+    codeEditorView,
   })
 
   const items = [

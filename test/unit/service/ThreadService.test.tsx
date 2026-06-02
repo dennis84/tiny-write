@@ -34,6 +34,14 @@ vi.mock('@/prompts/common/rules.md?raw', () => {
   return {default: ''}
 })
 
+vi.mock('@/prompts/assistant/common.md?raw', () => {
+  return {default: ''}
+})
+
+vi.mock('@/prompts/common/user-message.md?raw', () => {
+  return {default: '{{message}}'}
+})
+
 vi.mock('@/db', () => ({
   DB: mock({
     getThreads: vi.fn(),
@@ -448,8 +456,8 @@ test('generateTitle', async () => {
 
 test.each<[Message[], number]>([
   [[], 0], // empty
-  [[{id: '1', role: 'assistant', content: ''}], 2], // last message assistant + common prompt
-  [[{id: '1', role: 'user', content: '```'}], 3], // common + code block prompt added
+  [[{id: '1', role: 'assistant', content: ''}], 2], // system:common, user:message
+  [[{id: '1', role: 'user', content: '```'}], 3], // system:common, system:code block, user:message
   [
     [
       {id: '1', role: 'user', content: 'A'},
@@ -458,17 +466,17 @@ test.each<[Message[], number]>([
       {id: '4', parentId: '3', role: 'assistant', content: 'D'},
       {id: '5', parentId: '4', role: 'user', content: 'E'},
     ],
-    6, // full conversation + common prompt
+    6, // system:common, 5 conversation
   ],
   [
     [
-      {id: '1', role: 'user', content: 'A A A A'},
-      {id: '2', parentId: '1', role: 'assistant', content: 'B B B B'},
-      {id: '3', parentId: '2', role: 'user', content: 'C C C C'},
+      {id: '1', role: 'user', content: 'A A'},
+      {id: '2', parentId: '1', role: 'assistant', content: 'B B'},
+      {id: '3', parentId: '2', role: 'user', content: 'C C'},
       {id: '4', parentId: '3', role: 'assistant', content: 'D', summary: 'ABCD'},
       {id: '5', parentId: '4', role: 'user', content: 'E'},
     ],
-    3, // token limit not reached + common prompt
+    6, // system:common, 5 conversation
   ],
   [
     [
@@ -480,7 +488,7 @@ test.each<[Message[], number]>([
       {id: '6', parentId: '5', role: 'assistant', content: 'F'},
       {id: '7', parentId: '6', role: 'user', content: 'G'},
     ],
-    5, // prompt token limit reached, filter to last summary + common prompt
+    5, // system:common, system:summary, 3 conversation
   ],
   [
     [
@@ -492,7 +500,7 @@ test.each<[Message[], number]>([
       {id: '6', parentId: '5', role: 'assistant', content: 'F'},
       {id: '7', parentId: '6', role: 'user', content: 'G'},
     ],
-    5, // output token limit reached, filter to last summary + common prompt
+    5, // system:common, system:summary, 3 conversation
   ],
 ])('getMessages', async (messages, count) => {
   vi.spyOn(DB, 'getThreads').mockResolvedValue([
@@ -583,18 +591,23 @@ test('hande attachments', () => {
 
   const createProjectAttachment = (props: Partial<ProjectAttachment>): ProjectAttachment => ({
     type: AttachmentType.Project,
-    content: [],
+    tree: 'TREE',
+    files: [],
     projectId: '1',
     ...props,
   })
 
   service.addAttachment(createFileAttachment({fileId: '1', projectId: '1'}))
   expect(service.attachments()).toHaveLength(1)
-  expect(service.attachments()[0].content).toEqual('1')
+  const attachment1 = service.attachments()[0]
+  expect.assert(attachment1.type === AttachmentType.File)
+  expect(attachment1.content).toEqual('1')
 
   service.addAttachment(createFileAttachment({fileId: '1', projectId: '1', content: '2'}))
   expect(service.attachments()).toHaveLength(1)
-  expect(service.attachments()[0].content).toEqual('2')
+  const newAttachment = service.attachments()[0]
+  expect.assert(newAttachment.type === AttachmentType.File)
+  expect(newAttachment.content).toEqual('2')
 
   service.addAttachment(createFileAttachment({fileId: '2'}))
   expect(service.attachments()).toHaveLength(2)
@@ -611,7 +624,8 @@ test('hande attachments', () => {
   service.addAttachment(
     createProjectAttachment({
       projectId: '1',
-      content: [
+      tree: 'TREE',
+      files: [
         createFileAttachment({fileId: '1'}), // removes direct attachment
         createFileAttachment({fileId: '2'}), // keeps direct attachment, projectId is missing
         createFileAttachment({fileId: '3'}),
@@ -623,7 +637,7 @@ test('hande attachments', () => {
   // not added but updates file attachment in project
   service.addAttachment(createFileAttachment({fileId: '1', projectId: '1', content: '3'}))
   expect(service.attachments()).toHaveLength(3)
-  expect((service.attachments()[2] as ProjectAttachment).content[0].content).toEqual('3')
+  expect((service.attachments()[2] as ProjectAttachment).files[2].content).toEqual('3')
 
   service.setAttachments([])
   expect(service.attachments()).toHaveLength(0)

@@ -535,6 +535,9 @@ export class ThreadService {
 
       // Reduce messages starting from last summary
       if (lastSummaryIndex !== -1 && (promptCount > promptLimit || outputCount > outputLimit)) {
+        info(
+          `Recude conversation (promptCount=${promptCount}/${promptLimit}, outputCount=${outputCount}/${outputLimit}, dropMessages=${messages.length - lastSummaryIndex + 1})`,
+        )
         messages = [
           {role: 'system', content: [{type: 'text', text: lastSummary ?? ''}]},
           ...messages.slice(lastSummaryIndex + 1),

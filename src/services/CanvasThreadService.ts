@@ -7,7 +7,8 @@ import {
   isLinkElement,
   isVideoElement,
 } from '@/state'
-import type {CanvasLinkElement, ChatRole} from '@/types'
+import type {CanvasLinkElement} from '@/types'
+import {MessageUtil} from '@/utils/MessageUtil'
 import type {CanvasService} from './CanvasService'
 import type {ChatMessage} from './CopilotService'
 import type {FileService} from './FileService'
@@ -22,13 +23,6 @@ export class CanvasThreadService {
     const currentCanvas = this.canvasService.currentCanvas
     const messages: ChatMessage[] = []
 
-    const addMessage = (role: ChatRole, content: string) => {
-      messages.push({
-        role,
-        content: [{type: 'text', text: content}],
-      })
-    }
-
     if (!currentCanvas) return messages
     let curId: string | undefined = elementId
 
@@ -38,14 +32,30 @@ export class CanvasThreadService {
         | CanvasLinkElement
         | undefined
 
-      curId = link?.from
-
       if (isEditorElement(cur)) {
         const file = this.fileService.findFileById(cur.id)
-        addMessage('user', file?.editorView?.state.doc.textContent ?? '')
+        messages.push(
+          MessageUtil.toChatMessage(
+            {
+              id: cur.id,
+              role: 'user',
+              content: file?.editorView?.state.doc.textContent ?? '',
+            },
+            curId === elementId,
+          ),
+        )
       } else if (isCodeElement(cur)) {
         const file = this.fileService.findFileById(cur.id)
-        addMessage('user', file?.codeEditorView?.state.doc.toString() ?? '')
+        messages.push(
+          MessageUtil.toChatMessage(
+            {
+              id: cur.id,
+              role: 'user',
+              content: file?.codeEditorView?.state.doc.toString() ?? '',
+            },
+            curId === elementId,
+          ),
+        )
       } else if (isImageElement(cur)) {
         messages.push({
           role: 'user',
@@ -54,10 +64,12 @@ export class CanvasThreadService {
       } else if (isVideoElement(cur)) {
         // not supported
       }
+
+      curId = link?.from
     }
 
-    addMessage('system', commonCanvasRulesPrompt)
-    addMessage('system', commonRulesPrompt)
+    messages.push({role: 'system', content: [{type: 'text', text: commonCanvasRulesPrompt}]})
+    messages.push({role: 'system', content: [{type: 'text', text: commonRulesPrompt}]})
 
     return messages.reverse()
   }
