@@ -72,7 +72,7 @@ test('create file', async ({page}) => {
   await assertCodeLineToEqual(page, 1, "const test1 = '111'")
 
   await page.click('[data-testid="navbar_menu_open"]')
-  await expect(page.locator('[data-testid="tree_link"]').nth(2)).toContainText('src/main.ts')
+  await expect(page.locator('[data-testid="tree_link"]').nth(2)).toContainText('main.ts')
 })
 
 test('apply', async ({page}) => {

@@ -62,7 +62,7 @@ export class ProjectFileService {
 
   private createEncodedYdoc(fileId: string, code: boolean, doc: string) {
     if (code) {
-      const ydoc = new Y.Doc({gc: false, guid: fileId})
+      const ydoc = new Y.Doc({guid: fileId})
       ydoc.getText(fileId).insert(0, doc)
       return Y.encodeStateAsUpdate(ydoc)
     }

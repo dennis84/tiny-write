@@ -44,7 +44,7 @@ export class EditorService {
     const snapshot = this.locationService.state?.snapshot
     let subdoc: Y.Doc
     if (snapshot !== undefined) {
-      subdoc = new Y.Doc({gc: false})
+      subdoc = new Y.Doc()
       const version = file.versions[snapshot]
       Y.applyUpdate(subdoc, version.ydoc)
     } else {

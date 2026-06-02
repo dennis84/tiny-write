@@ -18,7 +18,7 @@ const setup = (props: {canvas: Partial<Canvas>} = {canvas: {}}) => {
   vi.spyOn(canvasService, 'currentCanvas', 'get').mockReturnValue(canvas)
   const collabService = mock<CollabService>({ydoc: undefined, undoManager: undefined})
 
-  vi.spyOn(collabService, 'ydoc', 'get').mockReturnValue(new Y.Doc({gc: false}))
+  vi.spyOn(collabService, 'ydoc', 'get').mockReturnValue(new Y.Doc())
   vi.spyOn(collabService, 'undoManager', 'get').mockReturnValue(mock<YMultiDocUndoManager>())
 
   const service = new CanvasCollabService(collabService, canvasService)

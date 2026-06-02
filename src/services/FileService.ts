@@ -250,7 +250,7 @@ export class FileService {
   }
 
   private static createYdoc(id: string, bytes?: Uint8Array): Y.Doc {
-    const ydoc = new Y.Doc({gc: false, guid: id})
+    const ydoc = new Y.Doc({guid: id})
     if (bytes) Y.applyUpdate(ydoc, bytes)
     return ydoc
   }
@@ -408,7 +408,7 @@ export class FileService {
     if (file.code) return file.title ?? (fallback ? 'Code' : undefined)
     else if (file.title) return file.title
 
-    const ydoc = new Y.Doc({gc: false})
+    const ydoc = new Y.Doc()
     Y.applyUpdate(ydoc, file.ydoc)
 
     const type = ydoc.getXmlFragment(file.id)

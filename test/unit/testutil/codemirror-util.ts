@@ -6,7 +6,7 @@ export const createYUpdate = (id: string, str: string) => {
 }
 
 export const createYdoc = (id: string, doc: string) => {
-  const ydoc = new Y.Doc({gc: false})
+  const ydoc = new Y.Doc()
   ydoc.getText(id).insert(0, doc)
   return ydoc
 }
