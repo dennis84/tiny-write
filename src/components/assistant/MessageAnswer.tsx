@@ -1,4 +1,4 @@
-import type {Token} from 'markdown-it'
+import type Token from 'markdown-it/lib/token.mjs'
 import {Show} from 'solid-js'
 import {copy} from '@/remote/clipboard'
 import {useState} from '@/state'

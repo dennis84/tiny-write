@@ -1,8 +1,9 @@
-import type {DOMOutputSpec} from 'prosemirror-model'
+import type {DOMOutputSpec, Node} from 'prosemirror-model'
 import {yCursorPlugin, ySyncPlugin} from 'y-prosemirror'
-import type {ProsemirrorMapping} from 'y-prosemirror/dist/src/lib'
 import type {Awareness} from 'y-protocols/awareness'
 import type * as Y from 'yjs'
+
+type ProsemirrorMapping = Map<Y.AbstractType<any>, Node | Node[]>
 
 const cursorBuilder = (user: any): HTMLElement => {
   const cursor = document.createElement('span')

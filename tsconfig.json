@@ -5,17 +5,14 @@
     "types": [
       "vite/client",
       "@types/node",
-      "./vite-env.d.ts",
       "@testing-library/jest-dom",
       "unplugin-icons/types/solid"
     ],
     "allowJs": false,
-    "esModuleInterop": false,
-    "allowSyntheticDefaultImports": true,
     "strict": true,
     "forceConsistentCasingInFileNames": true,
     "module": "ESNext",
-    "moduleResolution": "Node",
+    "moduleResolution": "Bundler",
     "resolveJsonModule": true,
     "noEmit": true,
     "jsx": "preserve",
@@ -25,5 +22,5 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["./src", "./test", "./playwright.config.ts", "types", "./types"]
+  "include": ["./src", "./test", "./playwright.config.ts", "./types", "./vite-env.d.ts"]
 }

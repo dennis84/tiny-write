@@ -1,6 +1,7 @@
 import {Compartment, EditorState, Transaction} from '@codemirror/state'
 import {EditorView, type Panel, showPanel} from '@codemirror/view'
-import markdownit, {type Token} from 'markdown-it'
+import markdownit from 'markdown-it'
+import type Token from 'markdown-it/lib/token.mjs'
 import iterator from 'markdown-it-for-inline'
 import {batch, createEffect, createSignal, For, Match, Show, Switch} from 'solid-js'
 import {Dynamic} from 'solid-js/web'
