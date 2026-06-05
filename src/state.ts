@@ -64,7 +64,7 @@ export const isProjectItem = (it: any): boolean =>
   (it?.type === 'project' && it.worktreePath !== undefined)
 
 export const isDeletable = (it?: MenuItem): it is File | Canvas | Project =>
-  (isFile(it) && !isProjectItem(it)) || isCanvas(it) || isProject(it)
+  (isFile(it) && !isLocalFile(it)) || isCanvas(it) || isProject(it)
 
 export const isDirty = (file?: File) => {
   if (!file?.lastModified) return false

@@ -101,17 +101,16 @@ export const CurrentItemButton = () => {
         </TooltipButton>
         <TooltipDivider />
       </Show>
-      <Show when={!isLocalFile(fileService.currentFile) && !isProjectItem(fileService.currentFile)}>
+      {/* Only virtual files */}
+      <Show when={isFile(fileService.currentFile) && !isLocalFile(fileService.currentFile)}>
         <TooltipButton onClick={onRename}>
           <IconEdit />
           Rename
         </TooltipButton>
-        <Show when={fileService.currentFile}>
-          <TooltipButton onClick={onSaveAs}>
-            <IconSaveAs />
-            Save as
-          </TooltipButton>
-        </Show>
+        <TooltipButton onClick={onSaveAs}>
+          <IconSaveAs />
+          Save as
+        </TooltipButton>
       </Show>
       <Switch>
         <Match when={fileService.currentFile?.deleted}>

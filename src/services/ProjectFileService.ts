@@ -28,7 +28,7 @@ export class ProjectFileService {
 
     const id = FileService.createId(p)
     const project = this.projectService.projects.find((it) =>
-      it.worktreePath ? p.startsWith(it.worktreePath + '/') || p === it.worktreePath : false,
+      it.worktreePath ? p.startsWith(`${it.worktreePath}/`) || p === it.worktreePath : false,
     )
     // If multiple projects include the same file priorize passed project ID
     const projectId = params.projectId ?? project?.id
