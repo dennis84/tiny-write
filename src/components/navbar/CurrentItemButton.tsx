@@ -23,6 +23,7 @@ import {
   IconHistory,
   IconLanguage,
 } from '../icons/Ui'
+import { isTauri } from '@/env'
 
 export const CurrentItemButton = () => {
   const {
@@ -107,10 +108,12 @@ export const CurrentItemButton = () => {
           <IconEdit />
           Rename
         </TooltipButton>
-        <TooltipButton onClick={onSaveAs}>
-          <IconSaveAs />
-          Save as
-        </TooltipButton>
+        <Show when={isTauri()}>
+          <TooltipButton onClick={onSaveAs}>
+            <IconSaveAs />
+            Save as
+          </TooltipButton>
+        </Show>
       </Show>
       <Switch>
         <Match when={fileService.currentFile?.deleted}>

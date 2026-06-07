@@ -1,4 +1,4 @@
-# TinyWrite – Copilot Instructions
+# TinyWrite – Agents Instructions
 
 ## Commands
 
@@ -71,12 +71,22 @@ TinyWrite is a dual-target app: a **web SPA** and a **Tauri desktop app** sharin
 - `test/unit/setup.ts` stubs globals (`__COMMIT_HASH__`, `__VERSION__`, `matchMedia`) needed by the app.
 
 ### Soft deletes
-Files, canvases, and projects are never immediately deleted. Set `deleted: true` on the object; `DB.cleanup()` removes items older than 14 days.
+Only **virtual files** (files without a filesystem path), canvases, and projects are soft-deleted: set `deleted: true` on the object; `DB.cleanup()` removes items older than 14 days. **Local files** (Tauri files with a `path`) are not soft-deleted — they are simply closed (removed from the tree/state). Deleting a file from the filesystem is not supported.
 
 ### Styling
 - Uses `solid-styled-components` for component-scoped CSS.
 - All design tokens are CSS custom properties injected by `src/components/Variables.tsx`: `--foreground`, `--background`, `--background-{5..95}`, `--primary-background`, `--primary-background-{10..90}`, `--font-family`, `--font-size`, `--border-radius`, `--z-index-*`, etc.
 - Always use these CSS vars in styled components; never hardcode colors or sizes.
+
+### Item types
+All items in the sidebar / tree share a discriminated `type` field. The six item types are:
+
+- **`file`** — A markdown or code (`code: true`) document, rendered with ProseMirror or CodeMirror respectively. Stored in IndexedDB with a Yjs `ydoc`. If the `path` property is set the file is a **local file** (Tauri only): it is also persisted to DB but may not have all properties populated. The optional `newFile` property holds a filename suggestion — set when opening a new path via `tw path/to/new-file.md` and offered in the Save As dialog.
+- **`canvas`** — An infinite-canvas board containing canvas elements (editor, code, link, image, video). Canvas editor/code elements embed their own `file` items with independent Yjs docs.
+- **`thread`** — An AI chat thread. Holds a list of `Message` objects and an optional path context mapping.
+- **`project`** — Groups other item types together. In Tauri/FS mode it maps to a filesystem directory via `worktreePath`. A project cannot contain sub-projects.
+- **`filename`** — An unopened file on the filesystem (Tauri only). When the user opens it, it is converted to a `file` item; the ID is derived from the file path so it remains the same after the conversion.
+- **`directory`** — A filesystem directory (Tauri only). Like `filename` but cannot be opened — it can only be expanded or collapsed in the sidebar.
 
 ### Type guards
 `src/state.ts` exports discriminated-union helpers — use them instead of checking `.type` directly:

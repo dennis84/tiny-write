@@ -181,7 +181,7 @@ export const Tooltip = (props: {dialog: Dialog<TooltipState>}) => {
         </TooltipButton>
         <TooltipDivider />
       </Show>
-      <Show when={selected && !isLocalFile(selected?.value) && !isProjectItem(selected?.value)}>
+      <Show when={selected && !isLocalFile(selected?.value)}>
         <TooltipButton onClick={onRename} data-testid="rename">
           <IconEdit />
           Rename
