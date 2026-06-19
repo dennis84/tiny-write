@@ -2,7 +2,7 @@ import {DragGesture} from '@use-gesture/vanilla'
 import {createSignal, onCleanup, onMount, Show, Suspense} from 'solid-js'
 import {Portal} from 'solid-js/web'
 import {useTitle} from '@/hooks/use-title'
-import {isCanvas, isDeletable, isDirectory, isFile, isFilename, isProject, useState} from '@/state'
+import {isDeletable, isDirectory, isFile, isFilename, isProject, useState} from '@/state'
 import {type MenuTreeItem, Page} from '@/types'
 import {IconMoreHoriz} from '../../icons/Ui'
 import {DropLine, Ghost, GhostContainer, TreeLinkItem, TreeLinkMenu, TreeLinkTitle} from './Style'
@@ -38,12 +38,11 @@ export const TreeLink = (p: Props) => {
   const tree = useTreeUi()
 
   const onToggleClick = async () => {
-    if (isFile(p.node.value) || isCanvas(p.node.value)) {
-      await treeService.collapse(p.node.id)
-      return
+    if (isFilename(p.node.value) || isDirectory(p.node.value) || isProject(p.node.value)) {
+      return onClick()
     }
 
-    return onClick()
+    await treeService.collapse(p.node.id)
   }
 
   const onClick = async () => {

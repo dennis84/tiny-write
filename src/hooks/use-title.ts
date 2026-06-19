@@ -1,6 +1,6 @@
 import {createScheduled, debounce, leadingAndTrailing} from '@solid-primitives/scheduled'
 import {createMemo, createResource, type Resource} from 'solid-js'
-import {isCanvas, isDirectory, isFile, isFilename, isProject, useState} from '@/state'
+import {isCanvas, isDirectory, isFile, isFilename, isProject, isThread, useState} from '@/state'
 import type {MenuItem} from '@/types'
 
 interface Props {
@@ -27,6 +27,7 @@ export const useTitle = (props?: Props): Resource<string | undefined> => {
     else if (isProject(item)) return `project:${item.id}:${item.name}`
     else if (isFilename(item)) return `filename:${item.id}`
     else if (isDirectory(item)) return `directory:${item.id}`
+    else if (isThread(item)) return `thread:${item.id}:${item.title ?? ''}`
   }
 
   const scheduled = createScheduled((fn) => leadingAndTrailing(debounce, fn, 200))
@@ -48,6 +49,8 @@ export const useTitle = (props?: Props): Resource<string | undefined> => {
       return item.name
     } else if (isDirectory(item)) {
       return item.name
+    } else if (isThread(item)) {
+      return item.title ?? 'Empty thread'
     }
   })
 

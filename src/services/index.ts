@@ -112,6 +112,7 @@ export const createCtrl = (initial: State) => {
     fileService,
     canvasService,
     projectService,
+    threadService,
   )
 
   return {

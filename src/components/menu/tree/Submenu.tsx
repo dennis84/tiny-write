@@ -1,12 +1,4 @@
-import {
-  type Accessor,
-  createContext,
-  createSignal,
-  For,
-  type Setter,
-  Show,
-  useContext,
-} from 'solid-js'
+import {type Accessor, createContext, createSignal, type Setter, Show, useContext} from 'solid-js'
 import {Portal} from 'solid-js/web'
 import {useDialog} from '@/hooks/use-dialog'
 import type {Dialog} from '@/services/DialogService'
@@ -15,9 +7,9 @@ import {IconDelete} from '../../icons/Ui'
 import {Link} from '../Link'
 import {Label, Sub} from '../Style'
 import {NewLink} from './NewLink'
-import {HighlightContent, TreeNode} from './Style'
+import {HighlightContent} from './Style'
 import {Tooltip, type TooltipState} from './Tooltip'
-import {TreeItem} from './TreeItem'
+import {Tree} from './Tree'
 
 export type DropPos = 'before' | 'after' | 'add' | 'open' | 'delete'
 
@@ -40,12 +32,6 @@ const TreeUiContext = createContext<TreeUiContextValue>()
 
 // biome-ignore lint/style/noNonNullAssertion: ok here
 export const useTreeUi = () => useContext(TreeUiContext)!
-
-const Tree = (p: {childrenIds: string[]; level: number; selected?: boolean}) => (
-  <TreeNode selected={p.selected}>
-    <For each={p.childrenIds}>{(id) => <TreeItem id={id} level={p.level} />}</For>
-  </TreeNode>
-)
 
 interface Props {
   onBin?: () => void

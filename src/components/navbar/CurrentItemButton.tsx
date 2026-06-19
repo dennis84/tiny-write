@@ -1,5 +1,6 @@
 import {Match, Show, Suspense, Switch} from 'solid-js'
 import {getLanguageNames} from '@/codemirror/highlight'
+import {isTauri} from '@/env'
 import {useConfirmDialog} from '@/hooks/use-confirm-dialog'
 import {useDialog} from '@/hooks/use-dialog'
 import {useInputLine} from '@/hooks/use-input-line'
@@ -23,7 +24,6 @@ import {
   IconHistory,
   IconLanguage,
 } from '../icons/Ui'
-import { isTauri } from '@/env'
 
 export const CurrentItemButton = () => {
   const {

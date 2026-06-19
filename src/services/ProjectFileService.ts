@@ -18,6 +18,7 @@ export class ProjectFileService {
     path?: string
     newFile?: string
     projectId?: string
+    parentId?: string
     lastCursorPos?: number
     insert?: string
     codeLang?: string

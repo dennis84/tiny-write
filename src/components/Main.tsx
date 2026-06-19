@@ -94,13 +94,20 @@ export const Main = (props: Props) => {
           filesState: ctrl.fileService.resourceState,
           canvasesState: ctrl.canvasService.resourceState,
           projectsState: ctrl.projectService.resourceState,
+          threadsState: ctrl.threadService.resourceState,
         }),
-        ({filesState, canvasesState, projectsState}) => {
-          if (filesState === 'ready' && canvasesState === 'ready' && projectsState === 'ready') {
+        ({filesState, canvasesState, projectsState, threadsState}) => {
+          if (
+            filesState === 'ready' &&
+            canvasesState === 'ready' &&
+            projectsState === 'ready' &&
+            threadsState === 'ready'
+          ) {
             ctrl.treeService.reset([
               ...ctrl.fileService.files,
               ...ctrl.canvasService.canvases,
               ...ctrl.projectService.projects,
+              ...ctrl.threadService.threads,
             ])
           }
         },

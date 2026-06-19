@@ -42,6 +42,10 @@ export class ThreadService {
     return this.threadsResource[0].latest ?? []
   }
 
+  get resourceState() {
+    return this.threadsResource[0].state
+  }
+
   findThreadById(threadId: string): Thread | undefined {
     const [threads] = this.threadsResource
     return threads.latest?.find((t) => t.id === threadId)
@@ -193,7 +197,7 @@ export class ThreadService {
     return [...pinned, ...result]
   }
 
-  newThread(): Thread {
+  newThread({parentId}: {parentId?: string} = {}): Thread {
     info(`New thread`)
     const [threads] = this.threadsResource
     const thread = threads()?.find((it) => !it.lastModified)
@@ -202,10 +206,11 @@ export class ThreadService {
       return thread
     }
 
-    const newThread = {
+    const newThread: Thread = {
       type: 'thread' as const,
       id: ThreadService.createId(),
       messages: [],
+      parentId,
     }
 
     info(`Create new thread (id=${newThread.id})`)
@@ -398,6 +403,16 @@ export class ThreadService {
     this.updateThread((thread) => {
       thread.path = new Map(thread.path).set(parentId, childId)
     })
+  }
+
+  async updateTree(threadId: string, params: Pick<Thread, 'parentId' | 'leftId'>) {
+    info(`Set parentId to thread (id=${threadId}, params=${JSON.stringify(params)})`)
+
+    const updatedThread = this.updateThread((thread) => {
+      Object.assign(thread, params)
+    }, threadId)
+
+    if (updatedThread) await this.saveThread(updatedThread)
   }
 
   getNextItem(parentId: string | undefined, childrenIds: string[]): TreeItem<Message> | undefined {

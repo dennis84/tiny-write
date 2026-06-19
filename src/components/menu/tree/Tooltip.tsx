@@ -14,6 +14,7 @@ import {
   isLocalFile,
   isProject,
   isProjectItem,
+  isThread,
   useState,
 } from '@/state'
 import type {MenuTreeItem} from '@/types'
@@ -31,6 +32,7 @@ export const Tooltip = (props: {dialog: Dialog<TooltipState>}) => {
     locationService,
     projectService,
     treeService,
+    threadService,
   } = useState()
   const showInputLine = useInputLine()
   const showConfirmDialog = useConfirmDialog()
@@ -128,6 +130,14 @@ export const Tooltip = (props: {dialog: Dialog<TooltipState>}) => {
         onEnter: async (value: string) => {
           const name = value.trim() || undefined
           projectService.updateProject(item.id, {name})
+        },
+      })
+    } else if (isThread(item)) {
+      showInputLine({
+        value: item?.title ?? '',
+        onEnter: async (value: string) => {
+          const title = value.trim()
+          await threadService.updateTitle(item.id, title)
         },
       })
     }

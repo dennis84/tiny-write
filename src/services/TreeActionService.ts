@@ -1,8 +1,9 @@
-import {isCanvas, isFile, isProject} from '@/state'
+import {isCanvas, isFile, isProject, isThread} from '@/state'
 import type {MenuTreeItem} from '@/types'
 import {CanvasService} from './CanvasService'
 import {FileService} from './FileService'
 import type {ProjectService} from './ProjectService'
+import type {ThreadService} from './ThreadService'
 import type {TreeService} from './TreeService'
 
 export class TreeActionService {
@@ -11,6 +12,7 @@ export class TreeActionService {
     private fileService: FileService,
     private canvasService: CanvasService,
     private projectService: ProjectService,
+    private threadService: ThreadService,
   ) {}
 
   async move(id: string, toId: string) {
@@ -61,6 +63,8 @@ export class TreeActionService {
       await CanvasService.saveCanvas({...item.value, leftId, parentId})
     } else if (isProject(item.value)) {
       await this.projectService.updateProject(item.id, {leftId})
+    } else if (isThread(item.value)) {
+      await this.threadService.updateTree(item.id, {parentId, leftId})
     }
   }
 }

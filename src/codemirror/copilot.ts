@@ -86,7 +86,7 @@ const previewCompetion = ViewPlugin.fromClass(
 
     update(update: ViewUpdate) {
       const completion = selectedCompletion(update.state)
-      if (!completion || completion.type !== 'copilot') {
+      if (completion?.type !== 'copilot') {
         this.decorations = Decoration.none
         return
       }

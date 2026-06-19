@@ -258,6 +258,8 @@ export interface Message {
 export interface Thread {
   type: 'thread'
   id: string
+  parentId?: string
+  leftId?: string
   title?: string
   lastModified?: Date
   messages: Message[]
@@ -352,6 +354,6 @@ export interface Directory {
   parentId?: string
 }
 
-export type MenuItem = File | Canvas | Project | Filename | Directory
+export type MenuItem = File | Canvas | Project | Filename | Directory | Thread
 export type MenuTree = TreeState<MenuItem>
 export type MenuTreeItem = TreeItem<MenuItem>

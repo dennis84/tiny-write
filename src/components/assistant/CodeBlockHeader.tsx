@@ -69,9 +69,13 @@ export const CodeBlockHeader = (p: {state: CodeBlockHeaderState}) => {
       newFile = await toAbsolutePath(fileSuggestion, basePath)
     }
 
+    const currentThread = threadService.currentThread
+    const parentId = currentThread?.id
+
     const file = await projectFileService.newFileByPath({
       newFile,
       projectId: project?.id,
+      parentId,
       insert: p.state.editorView.state.doc.toString(),
       codeLang: p.state.info.lang,
     })

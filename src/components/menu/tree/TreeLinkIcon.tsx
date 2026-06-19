@@ -1,6 +1,7 @@
 import {Match, Show, Switch} from 'solid-js'
+import {IconAi} from '@/components/icons/Ai'
 import {FileService} from '@/services/FileService'
-import {isCanvas, isDirectory, isFile, isFilename, isProject, useState} from '@/state'
+import {isCanvas, isDirectory, isFile, isFilename, isProject, isThread, useState} from '@/state'
 import type {MenuTreeItem} from '@/types'
 import {IconCanvas, IconFolder, IconFolderOpen, IconFolderRoot} from '../../icons/File'
 import {LangIcon} from '../../icons/LangIcon'
@@ -53,6 +54,10 @@ export const TreeLinkIcon = (p: Props) => {
       {/* Editor */}
       <Match when={isFile(p.node.value)}>
         <LangIcon name="markdown" />
+      </Match>
+      {/* Thread */}
+      <Match when={isThread(p.node.value)}>
+        <IconAi />
       </Match>
     </Switch>
   )
