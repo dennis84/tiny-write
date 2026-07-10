@@ -15,12 +15,14 @@ import {
   type Attachment,
   AttachmentType,
   type Message,
+  type NewThread,
   type ProjectAttachment,
   type Thread,
 } from '@/types'
 import {MessageUtil} from '@/utils/MessageUtil'
 import type {ChatMessage, Chunk, CopilotService} from './CopilotService'
 import type {DialogService} from './DialogService'
+import type {FileService} from './FileService'
 import type {LocationService} from './LocationService'
 
 export class ThreadService {
@@ -68,11 +70,8 @@ export class ThreadService {
     return threads.latest?.findIndex((t) => t.id === threadId) ?? -1
   }
 
-  get lastMessage(): Message | undefined {
-    return this.currentThread?.messages[this.currentThread.messages.length]
-  }
-
   constructor(
+    private fileService: FileService,
     private copilotService: CopilotService,
     private locationService: LocationService,
     private dialogService: DialogService,
@@ -200,10 +199,13 @@ export class ThreadService {
   newThread({parentId}: {parentId?: string} = {}): Thread {
     info(`New thread`)
     const [threads] = this.threadsResource
-    const thread = threads()?.find((it) => !it.lastModified)
-    if (thread) {
-      this.messageTree.reset([])
-      return thread
+
+    if (!parentId) {
+      const thread = threads()?.find((it) => !it.lastModified)
+      if (thread) {
+        this.messageTree.reset([])
+        return thread
+      }
     }
 
     const newThread: Thread = {
@@ -222,16 +224,16 @@ export class ThreadService {
     return newThread
   }
 
-  async sendMessages() {
-    const currentThread = this.currentThread
+  async sendMessages(thread = this.currentThread) {
+    if (!thread) return
 
-    const {messages, nextId, parentId} = this.getMessages()
-    if (!currentThread || !messages) return
+    const {messages, nextId, parentId} = this.getMessages(thread)
+    if (!messages) return
 
     const messageId = nextId ?? uuidv4()
 
     // Create answer message directly to visualize loading
-    this.addChunk(messageId, parentId, '')
+    this.addChunk(messageId, parentId, '', thread)
 
     try {
       const result = await this.copilotService.completions(messages, (chunk: Chunk) => {
@@ -243,16 +245,16 @@ export class ThreadService {
 
       if (result.success) {
         await this.saveThread()
-        if (!currentThread.title) {
+        if (!thread.title) {
           try {
-            const title = await this.generateTitle()
-            if (title) await this.updateTitle(currentThread.id, title)
+            const title = await this.generateTitle(thread)
+            if (title) await this.updateTitle(thread.id, title)
           } catch {
             // ignore
           }
         }
 
-        await this.summarize()
+        await this.summarize(thread)
       } else if (result.interrupted) {
         this.interrupt(messageId)
       }
@@ -262,8 +264,8 @@ export class ThreadService {
   }
 
   async addMessage(message: Message) {
-    const currentThread = this.currentThread
-    if (!currentThread) return
+    const thread = this.currentThread
+    if (!thread) return
 
     const parentId = message.parentId ?? this.getParentId()
     const newMessage = {
@@ -276,23 +278,23 @@ export class ThreadService {
       thread.messages.push(newMessage)
       thread.lastModified = new Date()
       this.messageTree.add(thread.messages[thread.messages.length - 1])
-    })
+    }, thread.id)
 
-    await this.saveThread()
+    await this.saveThread(thread)
   }
 
   addChunk(id: string, parentId: string | undefined, chunk: string) {
     debug(`Stream message chunk (id=${id}, parentId=${parentId}, chunk=${chunk})`)
 
-    const currentThread = this.currentThread
-    if (!currentThread) return
+    const thread = this.currentThread
+    if (!thread) return
 
-    this.updateThread((thread) => {
-      let messageIndex = thread.messages.findIndex((m) => m.id === id)
+    this.updateThread((t) => {
+      let messageIndex = t.messages.findIndex((m) => m.id === id)
 
       if (messageIndex !== -1) {
         // Mutate proxy object in place
-        thread.messages[messageIndex].content += chunk
+        t.messages[messageIndex].content += chunk
       } else {
         info(`Create new message to stream to (id=${id}, parentId=${parentId})`)
         const modelId = this.copilotService.chatModel.id
@@ -303,13 +305,13 @@ export class ThreadService {
           parentId,
           modelId,
         } satisfies Message
-        thread.messages.push(newMessage)
-        messageIndex = thread.messages.length - 1
+        t.messages.push(newMessage)
+        messageIndex = t.messages.length - 1
 
         // Add new message as proxy object to tree
-        this.messageTree.add(thread.messages[messageIndex])
+        this.messageTree.add(t.messages[messageIndex])
       }
-    })
+    }, thread.id)
   }
 
   interrupt(id: string) {
@@ -344,8 +346,8 @@ export class ThreadService {
     if (updatedThread) await this.saveThread(updatedThread)
   }
 
-  init() {
-    info(`Initialize thread`)
+  async init(newThread?: NewThread): Promise<boolean> {
+    info(`Initialize thread (newThread=${JSON.stringify(newThread)})`)
 
     const currentThread = this.currentThread
     if (!currentThread) {
@@ -353,6 +355,22 @@ export class ThreadService {
     }
 
     this.messageTree.reset(currentThread?.messages ?? [])
+
+    if (currentThread.messages.length === 0 && newThread?.fileId) {
+      const file = this.fileService.findFileById(newThread.fileId)
+      if (file) {
+        const attachment = this.fileService.createAttachment(file)
+        await this.addMessage({
+          id: uuidv4(),
+          role: 'user',
+          content: attachment.content,
+        })
+
+        return true
+      }
+    }
+
+    return false
   }
 
   async delete(thread: Thread) {
@@ -425,9 +443,8 @@ export class ThreadService {
     if (nextId) return this.messageTree.getItem(nextId)
   }
 
-  async summarize() {
-    const currentThread = this.currentThread
-    if (!currentThread) return
+  async summarize(thread = this.currentThread) {
+    if (!thread) return
 
     let messages: ChatMessage[] = []
     let targetId: string | undefined
@@ -436,7 +453,7 @@ export class ThreadService {
       if (it.value.summary) messages = []
       messages.push(MessageUtil.toChatMessage(it.value))
       targetId = it.value.id
-    })
+    }, thread)
 
     const {promptCount, outputCount} = this.tokenCount(messages)
     info(`Maybe create summary (promptCount=${promptCount}, outputCount=${outputCount})`)
@@ -469,17 +486,17 @@ export class ThreadService {
     }
   }
 
-  async generateTitle(): Promise<string | undefined> {
-    info(`Generate title for current thread`)
-    const currentThread = this.currentThread
-    if (!currentThread) return
+  async generateTitle(thread = this.currentThread): Promise<string | undefined> {
+    info(`Generate title for thread (id=${thread?.id})`)
+
+    if (!thread) return
 
     const question: ChatMessage = {
       role: 'user',
       content: [{type: 'text', text: generateTitlePrompt}],
     }
 
-    const messages: ChatMessage[] = currentThread.messages.map((m) => MessageUtil.toChatMessage(m))
+    const messages: ChatMessage[] = thread.messages.map((m) => MessageUtil.toChatMessage(m))
     messages.push(question)
 
     const title = this.copilotService.completionsSync(messages)
@@ -489,10 +506,10 @@ export class ThreadService {
   }
 
   traverseTree(fn: (it: TreeItem<Message>) => void) {
-    const currentThread = this.currentThread
-    if (!currentThread) return undefined
+    const thread = this.currentThread
+    if (!thread) return undefined
 
-    const path = currentThread.path
+    const path = thread.path
     let nextId =
       path?.get(undefined) ?? this.messageTree.rootItemIds[this.messageTree.rootItemIds.length - 1]
     let next: TreeItem<Message> | undefined
@@ -515,9 +532,12 @@ export class ThreadService {
     return parentId
   }
 
-  getMessages(): {messages: ChatMessage[]; nextId?: string; parentId?: string} {
-    const currentThread = this.currentThread
-    if (!currentThread) return {messages: []}
+  getMessages(thread = this.currentThread): {
+    messages: ChatMessage[]
+    nextId?: string
+    parentId?: string
+  } {
+    if (!thread) return {messages: []}
 
     let messages: ChatMessage[] = []
     let parentId: string | undefined
@@ -527,7 +547,7 @@ export class ThreadService {
     let lastSummary: string | undefined
 
     this.traverseTree((it) => {
-      nextId = currentThread.path?.get(it.id)
+      nextId = thread.path?.get(it.id)
       const message = MessageUtil.toChatMessage(it.value, it.childrenIds.length === 0)
 
       // remember if any code block exists
@@ -560,7 +580,7 @@ export class ThreadService {
       }
 
       parentId = it.value.id
-    })
+    }, thread)
 
     if (hasCodeBlock) {
       messages.unshift({

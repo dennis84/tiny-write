@@ -13,6 +13,10 @@ export interface LastLocation {
   pathname?: string // prev location pathname
 }
 
+export interface NewThread {
+  fileId: string // init first message based on file
+}
+
 export interface LocationState {
   threadId?: string // if active thread in sidebar
   file?: string // is this required???
@@ -21,6 +25,7 @@ export interface LocationState {
   merge?: MergeState // e.g. open file with merge params from assistant
   share?: boolean // turn collab mode on
   snapshot?: number // Snapshot version number (index in of file version)
+  newThread?: NewThread
 }
 
 export interface VisualPosition {

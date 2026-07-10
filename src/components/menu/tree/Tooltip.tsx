@@ -1,5 +1,6 @@
 import {Match, Show, Switch} from 'solid-js'
 import {DialogList, TooltipButton, TooltipDivider} from '@/components/dialog/Style'
+import {IconAi} from '@/components/icons/Ai'
 import {IconCanvas, IconCodeBlocks, IconFolderRoot} from '@/components/icons/File'
 import {LangIcon} from '@/components/icons/LangIcon'
 import {IconClose, IconDelete, IconEdit, IconFocus, IconHistory} from '@/components/icons/Ui'
@@ -167,6 +168,19 @@ export const Tooltip = (props: {dialog: Dialog<TooltipState>}) => {
     dialogService.close(props.dialog)
   }
 
+  const onNewThread = async () => {
+    if (!selected) return
+    if (!isFile(selected.value)) return
+    const thread = threadService.newThread({parentId: selected.id})
+    treeService.add(thread)
+
+    locationService.openItem(thread, {
+      newThread: {fileId: selected.value.id},
+    })
+
+    dialogService.close(props.dialog)
+  }
+
   return (
     <DialogList>
       <Show when={selected && canvasService.isOnCanvas(selected.id)}>
@@ -189,6 +203,12 @@ export const Tooltip = (props: {dialog: Dialog<TooltipState>}) => {
           <IconCodeBlocks />
           Add code file
         </TooltipButton>
+        <Show when={isFile(selected?.value) && !selected.value.code}>
+          <TooltipButton onClick={onNewThread} data-testid="new_thread">
+            <IconAi />
+            New AI thread
+          </TooltipButton>
+        </Show>
         <TooltipDivider />
       </Show>
       <Show when={selected && !isLocalFile(selected?.value)}>

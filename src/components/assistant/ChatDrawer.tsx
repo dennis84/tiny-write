@@ -24,9 +24,9 @@ export const ChatDrawer = () => {
 
   const [initialized] = createResource(
     () => threadService.currentThread?.id,
-    (threadId) => {
+    async (threadId) => {
       if (!threadId) return
-      threadService.init()
+      await threadService.init()
       return threadId
     },
   )

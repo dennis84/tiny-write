@@ -31,6 +31,7 @@ export const Sub = styled.nav`
   margin: 10px 0;
   margin-bottom: 30px;
   position: relative;
+  overflow-x: hidden;
 `
 
 export const itemCss = `

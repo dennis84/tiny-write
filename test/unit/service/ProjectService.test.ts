@@ -8,7 +8,7 @@ import type {CanvasService} from '@/services/CanvasService'
 import type {FileService} from '@/services/FileService'
 import {ProjectService} from '@/services/ProjectService'
 import {TreeService} from '@/services/TreeService'
-import {AttachmentType, type Directory} from '@/types'
+import {AttachmentType, type Directory, type FileAttachment} from '@/types'
 import {
   createDirEntry,
   createDirectory,
@@ -172,7 +172,9 @@ test('createAttachment', async () => {
   const project = createProject()
 
   const codeEditorView = new EditorView()
-  codeEditorView.dispatch({changes: {from: 0, insert: 'let x = 1'}})
+  const doc = 'let x = 1'
+
+  codeEditorView.dispatch({changes: {from: 0, insert: doc}})
   const openedFile = createFile({
     id: 'code4.ts',
     path: '/path/to/code4.ts',
@@ -182,6 +184,19 @@ test('createAttachment', async () => {
     code: true,
     codeEditorView,
   })
+
+  const fileAttachment: FileAttachment = {
+    content: `\`\`\`typescript id=code4.ts
+let x = 1
+\`\`\``,
+    type: AttachmentType.File,
+    codeLang: openedFile.codeLang,
+    fileId: openedFile.id,
+    parentId: openedFile.parentId,
+    leftId: openedFile.leftId,
+  }
+
+  fileService.createAttachment.mockReturnValue(fileAttachment)
 
   const items = [
     project,
@@ -211,17 +226,5 @@ test('createAttachment', async () => {
 code1.yaml
 code2.yaml\n`)
 
-  expect(attachment.files).toEqual([
-    {
-      type: AttachmentType.File,
-      content: `\`\`\`typescript id=code4.ts
-let x = 1
-\`\`\``,
-      fileId: openedFile.id,
-      projectId: openedFile.projectId,
-      codeLang: openedFile.codeLang,
-      parentId: openedFile.parentId,
-      leftId: openedFile.leftId,
-    },
-  ])
+  expect(attachment.files).toEqual([fileAttachment])
 })

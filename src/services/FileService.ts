@@ -7,9 +7,10 @@ import {ySyncFacet} from 'y-codemirror.next'
 import {yXmlFragmentToProseMirrorRootNode} from 'y-prosemirror'
 import * as Y from 'yjs'
 import {findCodeLang} from '@/codemirror/highlight'
+import {createCodeFence} from '@/components/assistant/util'
 import {DB} from '@/db'
 import {isTauri} from '@/env'
-import {createMarkdownParser} from '@/prosemirror/markdown-serialize'
+import {createMarkdownParser, serialize, serializeNode} from '@/prosemirror/markdown-serialize'
 import {schema} from '@/prosemirror/schema'
 import {
   basename,
@@ -22,7 +23,13 @@ import {
 } from '@/remote/editor'
 import {debug, error, info} from '@/remote/log'
 import {isLocalFile} from '@/state'
-import type {File, FileText} from '@/types'
+import {
+  AttachmentType,
+  type File,
+  type FileAttachment,
+  type FileText,
+  type TextAttachment,
+} from '@/types'
 import type {CollabService} from './CollabService'
 import type {LocationService} from './LocationService'
 import type {TreeService} from './TreeService'
@@ -424,6 +431,54 @@ export class FileService {
     }
 
     return file?.title ?? ''
+  }
+
+  createAttachment(file: File): FileAttachment | TextAttachment {
+    if (file.code) {
+      let code: string
+      if (file.codeEditorView) {
+        code = file.codeEditorView?.state.doc.toString()
+      } else {
+        const ydoc = new Y.Doc({gc: false})
+        Y.applyUpdate(ydoc, file.ydoc)
+        code = ydoc.getText(file.id).toString()
+      }
+
+      const content = createCodeFence({
+        id: file.id,
+        code,
+        lang: file.codeLang,
+        path: file.path,
+      })
+
+      return {
+        content,
+        type: AttachmentType.File,
+        codeLang: file.codeLang,
+        fileId: file.id,
+        parentId: file.parentId,
+        leftId: file.leftId,
+      }
+    }
+
+    let content: string
+    if (file.editorView) {
+      content = serialize(file.editorView.state)
+    } else {
+      const ydoc = new Y.Doc({gc: false})
+      Y.applyUpdate(ydoc, file.ydoc)
+      const type = ydoc.getXmlFragment(file.id)
+      const doc = yXmlFragmentToProseMirrorRootNode(type, schema)
+      content = serializeNode(doc)
+    }
+
+    return {
+      content,
+      type: AttachmentType.Text,
+      fileId: file.id,
+      parentId: file.parentId,
+      leftId: file.leftId,
+    }
   }
 
   private mutateFile(fn: (file: File) => void, fileId = this.currentFileId) {

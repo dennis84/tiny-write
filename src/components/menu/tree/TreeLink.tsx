@@ -70,6 +70,7 @@ export const TreeLink = (p: Props) => {
     id === locationService.canvasId ||
     id === locationService.editorId ||
     id === locationService.codeId ||
+    id === locationService.threadId ||
     id === fileService.activeFile()
 
   const showLinkMenu = (e: MouseEvent, anchor: HTMLElement, node: MenuTreeItem) => {
@@ -162,10 +163,11 @@ export const TreeLink = (p: Props) => {
         active={isActive(p.node.value.id)}
         isOnCanvas={canvasService.isOnCanvas(p.node.id)}
         selected={p.node === tree.currentTooltip()?.state.selected}
+        level={p.level}
         data-id={p.node.value.id}
         data-testid="tree_link"
       >
-        <TreeLinkToggle node={p.node} level={p.level} onClick={onToggleClick} />
+        <TreeLinkToggle node={p.node} onClick={onToggleClick} />
         <TreeLinkTitle
           ref={ref}
           onClick={onClick}

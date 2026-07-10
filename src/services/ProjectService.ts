@@ -2,9 +2,7 @@ import {createDeepSignal} from '@solid-primitives/resource'
 import {createResource} from 'solid-js'
 import {produce} from 'solid-js/store'
 import {v4 as uuid} from 'uuid'
-import {createCodeFence} from '@/components/assistant/util'
 import {DB} from '@/db'
-import {serialize} from '@/prosemirror/markdown-serialize'
 import {listContents} from '@/remote/editor'
 import {info} from '@/remote/log'
 import {isDirectory, isFile, isFilename, isProjectItem} from '@/state'
@@ -160,22 +158,7 @@ export class ProjectService {
 
       if (isFile(it.value) && it.value.code) {
         if (it.value.codeEditorView && opened < MAX) {
-          const content = createCodeFence({
-            id: it.value.id,
-            code: it.value.codeEditorView.state.doc.toString(),
-            lang: it.value.codeLang,
-            path: it.value.path,
-          })
-
-          files.push({
-            content,
-            type: AttachmentType.File,
-            codeLang: it.value.codeLang,
-            fileId: it.value.id,
-            parentId: it.parentId,
-            leftId: it.leftId,
-          })
-
+          files.push(this.fileService.createAttachment(it.value))
           opened++
         }
 
@@ -183,16 +166,7 @@ export class ProjectService {
         tree += `${indent}${name}\n`
       } else if (isFile(it.value)) {
         if (it.value.editorView && opened < MAX) {
-          const content = serialize(it.value.editorView.state)
-
-          files.push({
-            content,
-            type: AttachmentType.Text,
-            fileId: it.value.id,
-            parentId: it.parentId,
-            leftId: it.leftId,
-          })
-
+          files.push(this.fileService.createAttachment(it.value))
           opened++
         }
 

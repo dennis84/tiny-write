@@ -77,11 +77,14 @@ interface ItemProps {
   active?: boolean
   isOnCanvas?: boolean
   dirty?: boolean
+  level: number
 }
 
 // biome-ignore format: ternary breaks ugly
 export const TreeLinkItem = styled.div<ItemProps>`
   ${itemCss}
+  display: grid;
+  grid-template-columns: ${(p) => `calc(32px * ${p.level + 1}) minmax(0, 1fr) 32px`};
   position: relative; /* for DropLine */
   user-select: none;
   -webkit-touch-callout: none;
@@ -144,16 +147,19 @@ export const TreeLinkTitle = styled.span<{grabbing?: boolean}>`
   touch-action: none;
   white-space: nowrap;
   gap: 5px;
+  mask-image: linear-gradient(to right, var(--background-95) 80%, transparent 100%);
   ${(p) => (p.grabbing ? 'cursor: var(--cursor-grabbed);' : '')}
 `
 
-export const TreeToggle = styled<ButtonAttrs & {level: number}>(IconButton)`
+export const TreeToggle = styled<ButtonAttrs>(IconButton)`
   flex-shrink: 0;
-  ${(p) => (p.level ? `margin-left: ${String(20 * p.level)}px;` : '')}
+  justify-items: flex-end;
+  margin-left: auto;
 `
 
-export const TreeToggleDisabled = styled<ButtonAttrs & {level: number}>(IconButton)`
+export const TreeToggleDisabled = styled<ButtonAttrs>(IconButton)`
   flex-shrink: 0;
   pointer-events: none;
-  ${(p) => (p.level ? `margin-left: ${String(20 * p.level)}px;` : '')}
+  justify-items: flex-end;
+  margin-left: auto;
 `

@@ -105,7 +105,12 @@ export const createCtrl = (initial: State) => {
     locationService,
   )
 
-  const threadService = new ThreadService(copilotService, locationService, dialogService)
+  const threadService = new ThreadService(
+    fileService,
+    copilotService,
+    locationService,
+    dialogService,
+  )
   const menuService = new MenuService(store, setState)
   const treeActionService = new TreeActionService(
     treeService,
