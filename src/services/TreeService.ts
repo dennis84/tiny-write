@@ -91,20 +91,17 @@ export class TreeService {
   }
 
   getProjectItem(id: string): MenuTreeItem | undefined {
-    let project: MenuTreeItem | undefined
-
     const cur = this.getItem(id)
     if (isProject(cur?.value)) {
       return cur
     }
 
-    this.ancestors((n) => {
-      if (isProject(n.value)) {
-        project = n
+    const ancestors = this.getAncestors(id)
+    for (const ancestor of ancestors) {
+      if (isProject(ancestor.value)) {
+        return ancestor
       }
-    }, id)
-
-    return project
+    }
   }
 
   async collapse(id: string) {

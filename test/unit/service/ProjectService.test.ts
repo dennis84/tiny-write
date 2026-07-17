@@ -4,8 +4,8 @@ import {v5} from 'uuid'
 import {beforeEach, expect, test, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
 import {DB} from '@/db'
-import type {CanvasService} from '@/services/CanvasService'
 import type {FileService} from '@/services/FileService'
+import type {LocationService} from '@/services/LocationService'
 import {ProjectService} from '@/services/ProjectService'
 import {TreeService} from '@/services/TreeService'
 import {AttachmentType, type Directory, type FileAttachment} from '@/types'
@@ -46,8 +46,8 @@ test('newProject', async () => {
 
   const treeService = new TreeService()
   const fileService = mock<FileService>()
-  const canvasService = mock<CanvasService>()
-  const service = new ProjectService(treeService, fileService, canvasService)
+  const locationService = mock<LocationService>()
+  const service = new ProjectService(treeService, fileService, locationService)
 
   await waitFor(() => {
     expect(service.resourceState).toEqual('ready')
@@ -67,8 +67,8 @@ test('updateProject', async () => {
 
   const treeService = new TreeService()
   const fileService = mock<FileService>()
-  const canvasService = mock<CanvasService>()
-  const service = new ProjectService(treeService, fileService, canvasService)
+  const locationService = mock<LocationService>()
+  const service = new ProjectService(treeService, fileService, locationService)
 
   await waitFor(() => {
     expect(service.resourceState).toEqual('ready')
@@ -96,8 +96,8 @@ test('toggleDirectory - project', async () => {
 
   const treeService = new TreeService()
   const fileService = mock<FileService>()
-  const canvasService = mock<CanvasService>()
-  const service = new ProjectService(treeService, fileService, canvasService)
+  const locationService = mock<LocationService>()
+  const service = new ProjectService(treeService, fileService, locationService)
   treeService.reset([project])
 
   await waitFor(() => {
@@ -131,8 +131,8 @@ test('toggleDirectory - directory', async () => {
 
   const treeService = new TreeService()
   const fileService = mock<FileService>()
-  const canvasService = mock<CanvasService>()
-  const service = new ProjectService(treeService, fileService, canvasService)
+  const locationService = mock<LocationService>()
+  const service = new ProjectService(treeService, fileService, locationService)
 
   const items = [
     project,
@@ -166,8 +166,8 @@ test('createAttachment', async () => {
   createIpcMock({})
   const treeService = new TreeService()
   const fileService = mock<FileService>()
-  const canvasService = mock<CanvasService>()
-  const service = new ProjectService(treeService, fileService, canvasService)
+  const locationService = mock<LocationService>()
+  const service = new ProjectService(treeService, fileService, locationService)
 
   const project = createProject()
 

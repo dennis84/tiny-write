@@ -169,14 +169,13 @@ export const Tooltip = (props: {dialog: Dialog<TooltipState>}) => {
   }
 
   const onNewThread = async () => {
-    if (!selected) return
-    if (!isFile(selected.value)) return
-    const thread = threadService.newThread({parentId: selected.id})
+    const parentId = selected?.value.id
+    const newThread = parentId ? {fileId: parentId} : undefined
+
+    const thread = threadService.newThread({parentId})
     treeService.add(thread)
 
-    locationService.openItem(thread, {
-      newThread: {fileId: selected.value.id},
-    })
+    locationService.openItem(thread, {newThread})
 
     dialogService.close(props.dialog)
   }
@@ -257,6 +256,10 @@ export const Tooltip = (props: {dialog: Dialog<TooltipState>}) => {
         <TooltipButton onClick={onNewProject} data-testid="new_project">
           <IconFolderRoot />
           New project
+        </TooltipButton>
+        <TooltipButton onClick={onNewThread} data-testid="new_thread">
+          <IconAi />
+          New AI thread
         </TooltipButton>
       </Show>
     </DialogList>

@@ -272,6 +272,7 @@ export interface Thread {
   pinned?: boolean
   currentInput?: string
   private?: boolean
+  projectId?: string
 }
 
 export interface Sidebar {

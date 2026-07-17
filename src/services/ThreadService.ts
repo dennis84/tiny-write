@@ -233,7 +233,7 @@ export class ThreadService {
     const messageId = nextId ?? uuidv4()
 
     // Create answer message directly to visualize loading
-    this.addChunk(messageId, parentId, '', thread)
+    this.addChunk(messageId, parentId, '')
 
     try {
       const result = await this.copilotService.completions(messages, (chunk: Chunk) => {
@@ -423,7 +423,7 @@ export class ThreadService {
     })
   }
 
-  async updateTree(threadId: string, params: Pick<Thread, 'parentId' | 'leftId'>) {
+  async updateTree(threadId: string, params: Pick<Thread, 'parentId' | 'leftId' | 'projectId'>) {
     info(`Set parentId to thread (id=${threadId}, params=${JSON.stringify(params)})`)
 
     const updatedThread = this.updateThread((thread) => {
@@ -453,7 +453,7 @@ export class ThreadService {
       if (it.value.summary) messages = []
       messages.push(MessageUtil.toChatMessage(it.value))
       targetId = it.value.id
-    }, thread)
+    })
 
     const {promptCount, outputCount} = this.tokenCount(messages)
     info(`Maybe create summary (promptCount=${promptCount}, outputCount=${outputCount})`)
@@ -580,7 +580,7 @@ export class ThreadService {
       }
 
       parentId = it.value.id
-    }, thread)
+    })
 
     if (hasCodeBlock) {
       messages.unshift({

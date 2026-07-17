@@ -16,8 +16,8 @@ import {
   type TextAttachment,
 } from '@/types'
 import {YjsUtil} from '@/utils/YjsUtil'
-import type {CanvasService} from './CanvasService'
 import {FileService} from './FileService'
+import type {LocationService} from './LocationService'
 import type {TreeService} from './TreeService'
 
 export class ProjectService {
@@ -28,24 +28,27 @@ export class ProjectService {
   constructor(
     private treeService: TreeService,
     private fileService: FileService,
-    private canvasService: CanvasService,
+    private locationService: LocationService,
   ) {}
 
   get currentProject(): Project | undefined {
-    const currentFile = this.fileService.currentFile
-    if (currentFile?.projectId) {
-      return this.projects.find((p) => p.id === currentFile.projectId)
+    const currentItemId =
+      this.fileService.activeFile() ||
+      this.locationService.canvasId ||
+      this.locationService.editorId ||
+      this.locationService.codeId ||
+      this.locationService.threadId
+    if (!currentItemId) return undefined
+
+    const currentItem = this.treeService.getItem(currentItemId)
+    if (!currentItem) return undefined
+
+    if ('projectId' in currentItem.value && currentItem.value.projectId) {
+      const projectId = currentItem.value.projectId
+      return this.projects.find((p) => p.id === projectId)
     }
 
-    const currentId = currentFile?.id ?? this.canvasService.currentCanvas?.id
-    if (!currentId) return undefined
-
-    let project: Project | undefined
-    this.treeService.ancestors((it) => {
-      if (it.value.type === 'project') project = it.value
-    }, currentId)
-
-    return project
+    return undefined
   }
 
   get projects() {

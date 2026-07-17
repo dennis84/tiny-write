@@ -84,6 +84,63 @@ test('createTreeStore - broken', () => {
   )
 })
 
+test('createTreeStore - missing siblings', () => {
+  const tree = createTreeStore({
+    items: [
+      {id: 'file_1'},
+      {id: 'file_2', parentId: 'file_1', leftId: 'file_2'},
+      {id: 'file_3', parentId: 'file_1', leftId: 'file_3'},
+    ],
+  })
+
+  expectTree(
+    tree,
+    `
+    └ file_1 (parentId=, leftId=)
+      └ file_2 (parentId=file_1, leftId=file_2)
+      └ file_3 (parentId=file_1, leftId=file_3)
+    `,
+  )
+})
+
+test('createTreeStore - missing siblings', () => {
+  const tree = createTreeStore({
+    items: [
+      {id: 'file_1'},
+      {id: 'file_2', parentId: 'file_1', leftId: 'file_2'},
+      {id: 'file_3', parentId: 'file_1', leftId: 'file_3'},
+    ],
+  })
+
+  expectTree(
+    tree,
+    `
+    └ file_1 (parentId=, leftId=)
+      └ file_2 (parentId=file_1, leftId=file_2)
+      └ file_3 (parentId=file_1, leftId=file_3)
+    `,
+  )
+})
+
+test('createTreeStore - sibling cycle falls back to include all nodes', () => {
+  const tree = createTreeStore({
+    items: [
+      {id: 'file_1'},
+      {id: 'file_2', parentId: 'file_1', leftId: 'file_3'},
+      {id: 'file_3', parentId: 'file_1', leftId: 'file_2'},
+    ],
+  })
+
+  expectTree(
+    tree,
+    `
+    └ file_1 (parentId=, leftId=)
+      └ file_2 (parentId=file_1, leftId=file_3)
+      └ file_3 (parentId=file_1, leftId=file_2)
+    `,
+  )
+})
+
 test('add', async () => {
   const tree = createTreeStore({
     items: [
@@ -398,6 +455,23 @@ test('move - 2', async () => {
   })
 })
 
+test('move - same parent', async () => {
+  const tree = createTreeStore({
+    items: [{id: 'file_1'}, {id: 'file_2', parentId: 'file_1'}],
+  })
+
+  expectTree(
+    tree,
+    `
+    └ file_1 (parentId=, leftId=)
+      └ file_2 (parentId=file_1, leftId=)
+    `,
+  )
+
+  const items = tree.move('file_2', 'file_1')
+  expect(items).toEqual([])
+})
+
 test('before', async () => {
   const tree = createTreeStore({
     items: [
@@ -484,6 +558,24 @@ test('before', async () => {
   })
 })
 
+test('before - same position', async () => {
+  const tree = createTreeStore({
+    items: [{id: 'file_1'}, {id: 'file_2', leftId: 'file_1'}, {id: 'file_3', leftId: 'file_2'}],
+  })
+
+  expectTree(
+    tree,
+    `
+    └ file_1 (parentId=, leftId=)
+    └ file_2 (parentId=, leftId=file_1)
+    └ file_3 (parentId=, leftId=file_2)
+    `,
+  )
+
+  const items = tree.before('file_2', 'file_3')
+  expect(items).toEqual([])
+})
+
 test('after', async () => {
   const tree = createTreeStore({
     items: [
@@ -552,4 +644,22 @@ test('after', async () => {
       return run + 1
     })
   })
+})
+
+test('after - same position', async () => {
+  const tree = createTreeStore({
+    items: [{id: 'file_1'}, {id: 'file_2', leftId: 'file_1'}, {id: 'file_3', leftId: 'file_2'}],
+  })
+
+  expectTree(
+    tree,
+    `
+    └ file_1 (parentId=, leftId=)
+    └ file_2 (parentId=, leftId=file_1)
+    └ file_3 (parentId=, leftId=file_2)
+    `,
+  )
+
+  const items = tree.after('file_2', 'file_1')
+  expect(items).toEqual([])
 })

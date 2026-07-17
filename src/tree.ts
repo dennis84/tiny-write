@@ -191,8 +191,13 @@ export class Tree<T> {
 
     const item = state.items[id]
     const to = state.items[toId]
+    const newParentId = to.id ?? ROOT_ID
     const parentId = item.parentId ?? ROOT_ID
     const oldIndex = state.items[parentId].childrenIds.indexOf(id)
+
+    if (parentId === newParentId) {
+      return []
+    }
 
     // Remove item from its current parent's childrenIds
     const parentChildrenIds = [...state.items[parentId].childrenIds]
@@ -203,7 +208,6 @@ export class Tree<T> {
     }
 
     // Set new parentId and leftId for the item being moved
-    const newParentId = to.id ?? ROOT_ID
     const target = {
       ...newState.items[id],
       parentId: newParentId === ROOT_ID ? undefined : newParentId,
@@ -258,6 +262,10 @@ export class Tree<T> {
     const to = state.items[toId]
     const parentId = item.parentId ?? ROOT_ID
     const oldIndex = state.items[parentId].childrenIds.indexOf(id)
+
+    if (item.id === to.leftId) {
+      return []
+    }
 
     // Remove item from its current parent's childrenIds
     const parentChildrenIds = [...state.items[parentId].childrenIds]
@@ -331,6 +339,10 @@ export class Tree<T> {
     const to = state.items[toId]
     const parentId = item.parentId ?? ROOT_ID
     const oldIndex = state.items[parentId].childrenIds.indexOf(id)
+
+    if (item.leftId === to.id) {
+      return []
+    }
 
     // Remove item from its current parent's childrenIds
     const parentChildrenIds = [...state.items[parentId].childrenIds]
@@ -466,24 +478,33 @@ export class Tree<T> {
       const siblingIds = new Set(siblings.map((s) => s.id))
       const nextSibling: Record<string, string> = {}
 
+      // Heads = nodes with no valid leftId inside this sibling group
+      const heads = []
+
       for (const sib of siblings) {
-        if (sib.leftId && siblingIds.has(sib.leftId)) {
+        if (sib.leftId && sib.leftId !== sib.id && siblingIds.has(sib.leftId)) {
           nextSibling[sib.leftId] = sib.id
+        } else {
+          heads.push(sib.id)
         }
       }
 
-      // Heads = nodes with no valid leftId inside this sibling group
-      const heads = siblings
-        .filter((sib) => !(sib.leftId && siblingIds.has(sib.leftId)))
-        .map((sib) => sib.id)
-
       // Follow each chain to build ordered list
       const ordered: string[] = []
+      const visited = new Set<string>()
+
       for (const head of heads) {
         let current: string | undefined = head
-        while (current) {
+        while (current && !visited.has(current)) {
+          visited.add(current)
           ordered.push(current)
           current = nextSibling[current]
+        }
+      }
+
+      for (const sib of siblings) {
+        if (!visited.has(sib.id)) {
+          ordered.push(sib.id)
         }
       }
 

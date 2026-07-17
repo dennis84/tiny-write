@@ -1,8 +1,6 @@
 import {Show} from 'solid-js'
 import {useState} from '@/state'
-import {Page} from '@/types'
 import {ButtonGroup} from '../Button'
-import {AssistantButton} from './AssistantButton'
 import {BackButton} from './BackButton'
 import {CollabButton} from './CollabButton'
 import {CurrentItemButton} from './CurrentItemButton'
@@ -11,7 +9,7 @@ import {SaveButton} from './SaveButton'
 import {FloatingContainer} from './Style'
 
 export const TopRightNavbar = () => {
-  const {canvasService, collabService, fileService, locationService, menuService} = useState()
+  const {canvasService, collabService, fileService} = useState()
 
   return (
     <FloatingContainer justify="flex-end">
@@ -24,9 +22,6 @@ export const TopRightNavbar = () => {
         </Show>
         <Show when={collabService?.started()}>
           <CollabButton />
-        </Show>
-        <Show when={!menuService.assistant() && locationService.page !== Page.Assistant}>
-          <AssistantButton />
         </Show>
       </ButtonGroup>
     </FloatingContainer>

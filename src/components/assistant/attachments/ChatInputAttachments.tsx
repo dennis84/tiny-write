@@ -9,6 +9,7 @@ import {TooltipHelp} from '../../dialog/TooltipHelp'
 import {IconClose, IconPaperclip} from '../../icons/Ui'
 import {ScrollHorizontal} from '../../Layout'
 import {AddCurrentFile} from './AddCurrentFile'
+import {AddCurrentProject} from './AddCurrentProject'
 import {AddCurrentSelection} from './AddCurrentSelection'
 import {AddImage} from './AddImage'
 import {AttachmentChip} from './AttachmentChip'
@@ -25,6 +26,7 @@ export const ChatInputAttachments = () => {
     <DialogList>
       <AddCurrentFile onAttachment={onAttachment} />
       <AddCurrentSelection onAttachment={onAttachment} />
+      <AddCurrentProject onAttachment={onAttachment} />
       <AddImage onAttachment={onImageAttachment} />
       <Show when={threadService.attachments().length > 0}>
         <TooltipDivider />

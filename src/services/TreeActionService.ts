@@ -45,7 +45,7 @@ export class TreeActionService {
         await this.updateItem(item, project.id)
       }
     } else {
-      await this.updateItem(target)
+      await this.updateItem(target, project?.id)
     }
 
     for (const item of rest) {
@@ -54,17 +54,17 @@ export class TreeActionService {
   }
 
   private async updateItem(item: MenuTreeItem, projectId?: string) {
-    const {parentId, leftId} = item
+    const {id, parentId, leftId} = item
     if (isFile(item.value)) {
-      this.fileService.updateFile(item.id, {leftId, parentId, projectId})
+      this.fileService.updateFile(id, {leftId, parentId, projectId})
       await FileService.saveFile({...item.value, leftId, parentId, projectId})
     } else if (isCanvas(item.value)) {
-      this.canvasService.updateCanvas(item.id, {leftId, parentId, projectId})
+      this.canvasService.updateCanvas(id, {leftId, parentId, projectId})
       await CanvasService.saveCanvas({...item.value, leftId, parentId})
     } else if (isProject(item.value)) {
-      await this.projectService.updateProject(item.id, {leftId})
+      await this.projectService.updateProject(id, {leftId})
     } else if (isThread(item.value)) {
-      await this.threadService.updateTree(item.id, {parentId, leftId})
+      await this.threadService.updateTree(id, {parentId, leftId, projectId})
     }
   }
 }
