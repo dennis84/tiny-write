@@ -32,12 +32,7 @@ export class ProjectService {
   ) {}
 
   get currentProject(): Project | undefined {
-    const currentItemId =
-      this.fileService.activeFile() ||
-      this.locationService.canvasId ||
-      this.locationService.editorId ||
-      this.locationService.codeId ||
-      this.locationService.threadId
+    const currentItemId = this.locationService.currenrItemId
     if (!currentItemId) return undefined
 
     const currentItem = this.treeService.getItem(currentItemId)

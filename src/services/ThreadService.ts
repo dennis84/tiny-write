@@ -200,12 +200,11 @@ export class ThreadService {
     info(`New thread`)
     const [threads] = this.threadsResource
 
-    if (!parentId) {
-      const thread = threads()?.find((it) => !it.lastModified)
-      if (thread) {
-        this.messageTree.reset([])
-        return thread
-      }
+    // recycle last empty thread
+    const thread = threads()?.find((it) => !it.lastModified && it.parentId === parentId)
+    if (thread) {
+      this.messageTree.reset([])
+      return thread
     }
 
     const newThread: Thread = {

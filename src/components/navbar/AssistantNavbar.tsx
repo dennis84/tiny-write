@@ -4,7 +4,6 @@ import {ButtonGroup, IconButton} from '../Button'
 import {TooltipHelp} from '../dialog/TooltipHelp'
 import {IconFullscreen} from '../icons/Ui'
 import {AssistantButton} from './AssistantButton'
-import {AssistantHistoryButton} from './AssistantHistoryButton'
 import {AssistantNewButton} from './AssistantNewButton'
 import {AssistantPrivateButton} from './AssistantPrivateButton'
 import {FloatingContainer} from './Style'
@@ -28,7 +27,6 @@ export const AssistantNavbar = () => {
     <>
       <FloatingContainer justify="flex-start">
         <ButtonGroup background={true}>
-          <AssistantHistoryButton />
           <AssistantNewButton />
           <AssistantPrivateButton />
         </ButtonGroup>

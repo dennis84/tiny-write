@@ -6,6 +6,7 @@ import type {ProjectService} from '@/services/ProjectService'
 import {TreeActionService} from '@/services/TreeActionService'
 import {TreeService} from '@/services/TreeService'
 import {createCanvas, createFile} from '../testutil/data'
+import {ThreadService} from '@/services/ThreadService'
 
 beforeEach(() => {
   vi.resetAllMocks()
@@ -20,10 +21,17 @@ vi.mock('@/db', () => ({
 const fileService = mock<FileService>()
 const canvasService = mock<CanvasService>()
 const projectService = mock<ProjectService>()
+const threadService = mock<ThreadService>()
 
 test('move - file', async () => {
   const treeService = new TreeService()
-  const service = new TreeActionService(treeService, fileService, canvasService, projectService)
+  const service = new TreeActionService(
+    treeService,
+    fileService,
+    canvasService,
+    projectService,
+    threadService,
+  )
 
   treeService.reset([
     createFile({id: 'file_1'}),
@@ -43,7 +51,13 @@ test('move - file', async () => {
 
 test('move - canvas', async () => {
   const treeService = new TreeService()
-  const service = new TreeActionService(treeService, fileService, canvasService, projectService)
+  const service = new TreeActionService(
+    treeService,
+    fileService,
+    canvasService,
+    projectService,
+    threadService,
+  )
 
   treeService.reset([
     createFile({id: 'file_1'}),
@@ -61,13 +75,19 @@ test('move - canvas', async () => {
 
 test('move - project', async () => {
   const treeService = new TreeService()
-  const service = new TreeActionService(treeService, fileService, canvasService, projectService)
+  const service = new TreeActionService(
+    treeService,
+    fileService,
+    canvasService,
+    projectService,
+    threadService,
+  )
 
   treeService.reset([
     createFile({id: 'file_1'}),
     createFile({id: 'file_2', leftId: 'file_1'}),
     createFile({id: 'file_3', leftId: 'file_2'}),
-    createCanvas({id: 'canvas_5', leftId: 'file_2'}),
+    createCanvas({id: 'canvas_5', leftId: 'file_3'}),
     {type: 'project', id: 'project_1', name: 'Project 1', leftId: 'canvas_5'},
   ])
 
@@ -81,7 +101,13 @@ test('move - project', async () => {
 
 test('move - into project', async () => {
   const treeService = new TreeService()
-  const service = new TreeActionService(treeService, fileService, canvasService, projectService)
+  const service = new TreeActionService(
+    treeService,
+    fileService,
+    canvasService,
+    projectService,
+    threadService,
+  )
 
   treeService.reset([
     createFile({id: 'file_1'}),
@@ -118,7 +144,13 @@ test('move - into project', async () => {
 
 test('move - project already assigned', async () => {
   const treeService = new TreeService()
-  const service = new TreeActionService(treeService, fileService, canvasService, projectService)
+  const service = new TreeActionService(
+    treeService,
+    fileService,
+    canvasService,
+    projectService,
+    threadService,
+  )
 
   treeService.reset([
     {type: 'project', id: 'project_1', name: 'Project 1'},
@@ -129,5 +161,10 @@ test('move - project already assigned', async () => {
   await service.move('file_1', 'file_2')
 
   expect(fileService.updateFile).toHaveBeenCalledTimes(1)
-  expect(fileService.updateFile).toHaveBeenCalledWith('file_1', {parentId: 'file_2'})
+  const args = vi.mocked(fileService.updateFile).mock.calls[0]
+  expect(args[0]).toEqual('file_1')
+  expect(args[1]).toStrictEqual({
+    parentId: 'file_2',
+    leftId: undefined,
+  })
 })

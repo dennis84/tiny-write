@@ -1,5 +1,6 @@
 import {expect, test} from '@playwright/test'
-import {mockCopilotApiToken, mockCopilotModels, setupDB} from './mock'
+import {mockCopilotApiToken, mockCopilotModels} from './mock'
+import { setupDB } from '../utils'
 
 test.beforeEach(async ({page}) => {
   await setupDB(page, {

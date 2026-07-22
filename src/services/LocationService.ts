@@ -49,6 +49,10 @@ export class LocationService {
     return (this.page === Page.Assistant ? params.id : undefined) ?? this.state?.threadId
   }
 
+  get currenrItemId(): string | undefined {
+    return this.canvasId || this.editorId || this.codeId || this.threadId
+  }
+
   get page(): Page | undefined {
     const pathname = this.location.pathname
     if (pathname.startsWith('/editor')) return Page.Editor

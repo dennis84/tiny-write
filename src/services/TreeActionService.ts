@@ -38,14 +38,15 @@ export class TreeActionService {
 
     // Save projectId to all descendants if target was added to a project
     const project = this.treeService.getProjectItem(target.id)
-    if (project && curProjectId !== project.id) {
-      await this.updateItem(target, project.id)
+    const projectId = project?.id
+    if (project && curProjectId !== projectId) {
+      await this.updateItem(target, {projectId})
       const descendants = this.treeService.getDescendants(target.id)
       for (const [item] of descendants) {
-        await this.updateItem(item, project.id)
+        await this.updateItem(item, {projectId})
       }
     } else {
-      await this.updateItem(target, project?.id)
+      await this.updateItem(target)
     }
 
     for (const item of rest) {
@@ -53,18 +54,19 @@ export class TreeActionService {
     }
   }
 
-  private async updateItem(item: MenuTreeItem, projectId?: string) {
+  private async updateItem(item: MenuTreeItem, props?: {projectId?: string}) {
+    // props: property must be missing to ignore update instead of key: undefined
     const {id, parentId, leftId} = item
     if (isFile(item.value)) {
-      this.fileService.updateFile(id, {leftId, parentId, projectId})
-      await FileService.saveFile({...item.value, leftId, parentId, projectId})
+      this.fileService.updateFile(id, {leftId, parentId, ...props})
+      await FileService.saveFile({...item.value, leftId, parentId, ...props})
     } else if (isCanvas(item.value)) {
-      this.canvasService.updateCanvas(id, {leftId, parentId, projectId})
+      this.canvasService.updateCanvas(id, {leftId, parentId, ...props})
       await CanvasService.saveCanvas({...item.value, leftId, parentId})
     } else if (isProject(item.value)) {
       await this.projectService.updateProject(id, {leftId})
     } else if (isThread(item.value)) {
-      await this.threadService.updateTree(id, {parentId, leftId, projectId})
+      await this.threadService.updateTree(id, {parentId, leftId, ...props})
     }
   }
 }

@@ -26,7 +26,7 @@ beforeEach(() => {
 
 const lastModified = new Date()
 
-test.only('undoManager - text', async () => {
+test('undoManager - text', async () => {
   stubLocation('/editor/1')
 
   vi.spyOn(DB, 'getFiles').mockResolvedValue([
@@ -51,9 +51,9 @@ test.only('undoManager - text', async () => {
 
   expect(getByTestId('editor_scroll')).toHaveTextContent(/^Test123$/)
 
-   ctrl.collabService.undoManager?.undo()
+  ctrl.collabService.undoManager?.undo()
 
-   expect(getByTestId('editor_scroll')).toHaveTextContent(/^Test$/)
+  expect(getByTestId('editor_scroll')).toHaveTextContent(/^Test$/)
 })
 
 test('undoManager - code', async () => {
@@ -73,11 +73,15 @@ test('undoManager - code', async () => {
   expect(ctrl.fileService.files.length).toBe(1)
   expect(ctrl.fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('')
 
-  await userEvent.keyboard('Test', {delay: 10})
+  ctrl.fileService.currentFile?.codeEditorView?.dispatch({
+    changes: {from: 0, insert: 'Test'},
+  })
 
   ctrl.collabService.undoManager?.stopCapturing()
 
-  await userEvent.keyboard('123', {delay: 10})
+  ctrl.fileService.currentFile?.codeEditorView?.dispatch({
+    changes: {from: 4, insert: '123'},
+  })
 
   expect(ctrl.fileService.currentFile?.codeEditorView?.state.doc.toString()).toBe('Test123')
 

@@ -9,7 +9,7 @@ import {Conversation} from './Conversation'
 
 export const ChatDrawer = () => {
   let scrollRef!: HTMLDivElement
-  const {aiService, configService, threadService, locationService} = useState()
+  const {aiService, configService, threadService, locationService, treeService} = useState()
 
   const onDrawerResized = async (width: number) => {
     await aiService.setSidebarWidth(width)
@@ -18,8 +18,9 @@ export const ChatDrawer = () => {
   // Create a new thread if not in location state
   onMount(() => {
     if (threadService.currentThread) return
-    const thread = threadService.newThread()
+    const thread = threadService.newThread({parentId: locationService.currenrItemId})
     locationService.updateState({threadId: thread.id})
+    treeService.add(thread)
   })
 
   const [initialized] = createResource(

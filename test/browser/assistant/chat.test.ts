@@ -1,6 +1,6 @@
 import {expect, test} from '@playwright/test'
-import {delay} from '../utils'
-import {mockCopilotApiToken, mockCopilotCompletion, setupDB} from './mock'
+import {delay, setupDB} from '../utils'
+import {mockCopilotApiToken, mockCopilotCompletion} from './mock'
 
 test.beforeEach(async ({page}) => {
   await setupDB(page, {
@@ -16,19 +16,21 @@ test('chat', async ({page}) => {
   await mockCopilotApiToken(page)
   await mockCopilotCompletion(page, {chunks: ['Test', '123'], text: 'Test Call'})
 
-  await page.click('[data-testid="navbar_assistant_open"]')
+  // New top level chat
+  await page.goto('/assistant')
   expect(page.getByText('Ask Copilot')).toBeVisible()
 
+  // Add question and get answer
   await page.locator('[data-testid="chat_input"] .ProseMirror').pressSequentially('Hello', {delay})
   await page.click('[data-testid="send"]')
-
   await expect(page.locator('[data-testid="question_bubble"]')).toHaveText('Hello')
   await expect(page.locator('[data-testid="answer_bubble"]')).toContainText('Test123')
 
   // Check and wait for title update
-  await page.click('[data-testid="history"]')
-  expect(page.getByText('Test Call')).toBeVisible()
-  await page.click('[data-testid="dialog_layer"]') // back to chat
+  await page.click('[data-testid="navbar_menu_open"]')
+  const link = page.locator('[data-testid="tree_link"]').locator('nth=0')
+  expect(link.getByText('Test Call')).toBeVisible()
+  //expect(link.getAttribute('level')).toBe('0')
 
   await mockCopilotCompletion(page, {chunks: ['Aaa', 'bbb']})
 
@@ -63,9 +65,9 @@ test('edit question', async ({page}) => {
   await expect(page.getByTestId('answer_bubble')).toContainText('SetupAnswer')
 
   // Check and wait for title update
-  await page.click('[data-testid="history"]')
-  expect(page.getByText('Test Call')).toBeVisible()
-  await page.click('[data-testid="dialog_layer"]') // back to chat
+  await page.click('[data-testid="navbar_menu_open"]')
+  const link = page.locator('[data-testid="tree_link"]').locator('nth=0')
+  expect(link.getByText('Test Call')).toBeVisible()
 
   // Test case 1: Edit question
   await mockCopilotCompletion(page, {chunks: ['Answer1']})

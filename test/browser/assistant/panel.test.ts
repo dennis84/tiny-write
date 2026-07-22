@@ -1,7 +1,6 @@
 import {expect, test} from '@playwright/test'
 import {createYUpdate} from '../../unit/testutil/codemirror-util'
-import {assertCodeLineToEqual, delay} from '../utils'
-import {setupDB} from './mock'
+import {assertCodeLineToEqual, delay, setupDB} from '../utils'
 
 const content = `
 ## Test1
@@ -52,10 +51,7 @@ test.beforeEach(async ({page}) => {
 
 test('copy', async ({page, context}) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write'])
-
-  await page.click('[data-testid="navbar_assistant_open"]')
-  await page.click('[data-testid="history"]')
-  await page.click('[data-testid="thread_item"]')
+  await page.goto('/assistant/1')
 
   await page.locator('[data-testid="panel_button_copy"]').locator('nth=0').click()
 
@@ -64,9 +60,7 @@ test('copy', async ({page, context}) => {
 })
 
 test('create file', async ({page}) => {
-  await page.click('[data-testid="navbar_assistant_open"]')
-  await page.click('[data-testid="history"]')
-  await page.click('[data-testid="thread_item"]')
+  await page.goto('/assistant/1')
 
   await page.locator('[data-testid="panel_button_create"]').click()
   await assertCodeLineToEqual(page, 1, "const test1 = '111'")
@@ -78,48 +72,7 @@ test('create file', async ({page}) => {
 })
 
 test('apply', async ({page}) => {
-  await page.click('[data-testid="navbar_assistant_open"]')
-  await page.click('[data-testid="history"]')
-  await page.click('[data-testid="thread_item"]')
-
-  await page.locator('[data-testid="panel_button_apply"]').nth(0).click()
-  await page.locator('button[name="accept"]').click()
-
-  expect(page.getByText('All chunks applied')).toBeVisible()
-
-  await assertCodeLineToEqual(page, 1, "const test2 = '222'")
-})
-
-test('apply - all', async ({page}) => {
-  await page.click('[data-testid="navbar_assistant_open"]')
-  await page.click('[data-testid="history"]')
-  await page.click('[data-testid="thread_item"]')
-
-  await page.locator('[data-testid="panel_button_apply"]').nth(0).click()
-  await page.locator('[data-testid="accept_all"]').click()
-
-  expect(page.getByText('Full diff applied')).toBeVisible()
-
-  await assertCodeLineToEqual(page, 1, "const test2 = '222'")
-})
-
-test('apply - reject all', async ({page}) => {
-  await page.click('[data-testid="navbar_assistant_open"]')
-  await page.click('[data-testid="history"]')
-  await page.click('[data-testid="thread_item"]')
-
-  await page.locator('[data-testid="panel_button_apply"]').nth(0).click()
-  await page.locator('[data-testid="reject_all"]').click()
-
-  expect(page.getByText('Full diff rejected')).toBeVisible()
-
-  await assertCodeLineToEqual(page, 1, '')
-})
-
-test('apply - open file', async ({page}) => {
-  await page.click('[data-testid="navbar_assistant_open"]')
-  await page.click('[data-testid="history"]')
-  await page.click('[data-testid="thread_item"]')
+  await page.goto('/assistant/1')
 
   await page.locator('[data-testid="panel_button_apply"]').nth(0).click()
   await page.locator('button[name="accept"]').click()
@@ -130,19 +83,42 @@ test('apply - open file', async ({page}) => {
   await assertCodeLineToEqual(page, 1, "const test2 = '222'")
 })
 
+test('apply - all', async ({page}) => {
+  await page.goto('/assistant/1')
+
+  await page.locator('[data-testid="panel_button_apply"]').nth(0).click()
+  await page.locator('[data-testid="accept_all"]').click()
+
+  expect(page.getByText('Full diff applied')).toBeVisible()
+  expect(page.url()).toContain('/code/222')
+
+  await assertCodeLineToEqual(page, 1, "const test2 = '222'")
+})
+
+test('apply - reject all', async ({page}) => {
+  await page.goto('/assistant/1')
+
+  await page.locator('[data-testid="panel_button_apply"]').nth(0).click()
+  await page.locator('[data-testid="reject_all"]').click()
+
+  expect(page.getByText('Full diff rejected')).toBeVisible()
+  expect(page.url()).toContain('/code/222')
+
+  await assertCodeLineToEqual(page, 1, '')
+})
+
 test('apply - range', async ({page}) => {
   await page.goto('/code/333')
   await page.locator('.cm-content').pressSequentially('abcdefghijklmnop', {delay})
 
-  await page.click('[data-testid="navbar_assistant_open"]')
-  await page.click('[data-testid="history"]')
-  await page.click('[data-testid="thread_item"]')
+  await page.goto('/assistant/1')
 
   await page.locator('[data-testid="panel_button_apply"]').nth(1).click()
 
   await page.locator('button[name="accept"]').click()
 
   expect(page.getByText('All chunks applied')).toBeVisible()
+  expect(page.url()).toContain('/code/333')
 
   await assertCodeLineToEqual(page, 1, "abcdeconst test3 = '333'klmnop")
 })

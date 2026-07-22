@@ -13,12 +13,14 @@ export const ChatPage = (props: RouteSectionProps) => {
   const location = useLocation<LocationState>()
 
   // Create a new thread if not in location state
-  onMount(() => {
+  createEffect(() => {
     if (props.params.id) return
-    const thread = threadService.newThread()
-    setTimeout(() => {
-      locationService.updateState({threadId: thread.id})
-    }, 0)
+    if (threadService.resourceState === 'ready') {
+      const thread = threadService.newThread()
+      setTimeout(() => {
+        locationService.updateState({threadId: thread.id})
+      }, 0)
+    }
   })
 
   const [initialized] = createResource(

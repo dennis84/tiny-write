@@ -27,7 +27,6 @@ export const TooltipHelp = (props: Props) => {
         role="none"
         onMouseEnter={onMouseEnter}
         onMouseLeave={onMouseLeave}
-        onClick={onMouseLeave}
       >
         {props.children}
       </span>
