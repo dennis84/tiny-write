@@ -1,8 +1,8 @@
-import {type RouteSectionProps, useLocation} from '@solidjs/router'
+import type {RouteSectionProps} from '@solidjs/router'
 import {createEffect, createResource, ErrorBoundary, onMount, Show, Suspense} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {useState} from '@/state'
-import {type LocationState, type Message, Page} from '@/types'
+import {type Message, Page} from '@/types'
 import {ChatInput} from '../assistant/ChatInput'
 import {Conversation} from '../assistant/Conversation'
 import {Content, Scroll} from '../Layout'
@@ -10,7 +10,6 @@ import {Content, Scroll} from '../Layout'
 export const ChatPage = (props: RouteSectionProps) => {
   let scrollRef!: HTMLDivElement
   const {configService, threadService, dialogService, locationService} = useState()
-  const location = useLocation<LocationState>()
 
   // Create a new thread if not in location state
   createEffect(() => {
@@ -27,7 +26,7 @@ export const ChatPage = (props: RouteSectionProps) => {
     () => threadService.currentThread?.id,
     async (threadId) => {
       if (!threadId) return
-      const shouldSend = await threadService.init(location.state?.newThread)
+      const shouldSend = await threadService.init()
       if (shouldSend) void threadService.sendMessages()
 
       return threadId

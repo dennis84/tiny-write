@@ -21,15 +21,13 @@ export const TooltipHelp = (props: Props) => {
   }
 
   return (
-    <>
-      {/* onClick: close tooltip on touch */}
-      <span
-        role="none"
-        onMouseEnter={onMouseEnter}
-        onMouseLeave={onMouseLeave}
-      >
-        {props.children}
-      </span>
-    </>
+    <span
+      role="none"
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      onClick={onMouseLeave}
+    >
+      {props.children}
+    </span>
   )
 }

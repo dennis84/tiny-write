@@ -76,4 +76,3 @@ export const setupDB = async (page: Page, data: Data) => {
 
   console.debug('Setup IndexedDB done')
 }
-

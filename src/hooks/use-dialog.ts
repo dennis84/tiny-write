@@ -1,4 +1,4 @@
-import {createSignal, untrack} from 'solid-js'
+import {createSignal, onCleanup, untrack} from 'solid-js'
 import type {Dialog} from '@/services/DialogService'
 import {useState} from '@/state'
 
@@ -35,6 +35,8 @@ export const useDialog = <S = unknown>(options: Partial<Dialog<S>>) => {
       dialogService.close(c)
     }
   }
+
+  onCleanup(() => close())
 
   return [show, close, cur] as const
 }

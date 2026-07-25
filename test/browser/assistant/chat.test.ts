@@ -23,6 +23,7 @@ test('chat', async ({page}) => {
   // Add question and get answer
   await page.locator('[data-testid="chat_input"] .ProseMirror').pressSequentially('Hello', {delay})
   await page.click('[data-testid="send"]')
+
   await expect(page.locator('[data-testid="question_bubble"]')).toHaveText('Hello')
   await expect(page.locator('[data-testid="answer_bubble"]')).toContainText('Test123')
 
@@ -30,8 +31,8 @@ test('chat', async ({page}) => {
   await page.click('[data-testid="navbar_menu_open"]')
   const link = page.locator('[data-testid="tree_link"]').locator('nth=0')
   expect(link.getByText('Test Call')).toBeVisible()
-  //expect(link.getAttribute('level')).toBe('0')
 
+  // Send another question
   await mockCopilotCompletion(page, {chunks: ['Aaa', 'bbb']})
 
   await page.locator('[data-testid="chat_input"] .ProseMirror').pressSequentially('Zzz', {delay})

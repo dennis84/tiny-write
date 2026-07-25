@@ -101,6 +101,9 @@ export const BlockTooltip = (props: Props) => {
     }
 
     const lang = block.blockNode.attrs.lang
+
+    closeTooltip()
+
     showInputLine({
       value: lang,
       words: getLanguageNames(),
@@ -113,8 +116,6 @@ export const BlockTooltip = (props: Props) => {
         view.dispatch(tr)
       },
     })
-
-    closeTooltip()
   }
 
   const onMermaidSave = async () => {
@@ -184,6 +185,8 @@ export const BlockTooltip = (props: Props) => {
       view.dispatch(tr)
     }
 
+    closeTooltip()
+
     showInputLine({
       value: '',
       placeholder: 'Rephrasing by copilot...',
@@ -235,8 +238,6 @@ export const BlockTooltip = (props: Props) => {
         }
       },
     })
-
-    closeTooltip()
   }
 
   const onToPlain = () => {

@@ -58,7 +58,7 @@ export const FileAttachmentChip = (props: Props) => {
   }
 
   return (
-    <AttachmentButton onClick={onOpenTooltip}>
+    <AttachmentButton onClick={onOpenTooltip} data-testid="file_attachment_chip">
       <LangIcon name={codeLang} />
       <AttachmentTitle file={file} codeLang={codeLang} />
     </AttachmentButton>

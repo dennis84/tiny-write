@@ -36,7 +36,7 @@ export const AutoContext = () => {
     }
   })
 
-  // Adds current code file to context if autoContext is enabled
+  // Adds current code file to context
   createEffect(() => {
     store.lastTr // Listen on editor changes
 

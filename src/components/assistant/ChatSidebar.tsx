@@ -5,11 +5,17 @@ import {ChatDrawer} from './ChatDrawer'
 
 export const ChatSidebar = () => {
   const {menuService, locationService} = useState()
+
   createEffect(() => {
     const isMenuOpen = untrack(() => menuService.assistant())
     // Open assistant menu if merge was applied in assistant mode
     if (locationService.page !== Page.Assistant && locationService.state?.threadId && !isMenuOpen) {
       menuService.showAssistant()
+    }
+
+    // Hide assistant sidebar if open full page thread
+    if (locationService.page === Page.Assistant && isMenuOpen) {
+      menuService.toggleAssistant()
     }
   })
 

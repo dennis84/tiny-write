@@ -1,7 +1,6 @@
 import {expect, test} from '@playwright/test'
 import {v4 as uuidv4} from 'uuid'
-import {setupDB} from '../assistant/mock'
-import {delay} from '../utils'
+import {delay, setupDB} from '../utils'
 
 test('share', async ({page, browser}) => {
   const id = uuidv4()

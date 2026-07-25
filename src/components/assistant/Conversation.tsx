@@ -1,12 +1,8 @@
-import {createMemo, For, Show} from 'solid-js'
+import {createMemo, For} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {useState} from '@/state'
 import type {TreeItem} from '@/tree'
-import type {Attachment, Message} from '@/types'
-import {AddCurrentFile} from './attachments/AddCurrentFile'
-import {AddCurrentProject} from './attachments/AddCurrentProject'
-import {AddCurrentSelection} from './attachments/AddCurrentSelection'
-import {AutoContextToggle} from './attachments/AutoContextToggle'
+import type {Message} from '@/types'
 import {MessageAnswer} from './MessageAnswer'
 import {MessageQuestion} from './MessageQuestion'
 
@@ -25,27 +21,14 @@ const Messages = styled.div`
   margin-bottom: 20px;
 `
 
-const EmptyContainer = styled.div`
-  width: 100%;
-  font-family: var(--menu-font-family);
-  font-size: var(--menu-font-size);
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-`
-
 export const Conversation = () => {
   let containerRef!: HTMLDivElement
 
-  const {store, threadService} = useState()
+  const {threadService} = useState()
 
   const onRegenerate = (message: Message) => {
     threadService.regenerate(message)
     void threadService.sendMessages()
-  }
-
-  const onAttachment = (attachment: Attachment) => {
-    threadService.addAttachment(attachment)
   }
 
   const MessagePair = styled.div`
@@ -104,16 +87,6 @@ export const Conversation = () => {
           )}
         </For>
       </Messages>
-      <Show when={!threadService.messageTree.rootItemIds.length}>
-        <EmptyContainer>
-          <AddCurrentProject onAttachment={onAttachment} />
-          <Show when={!store.ai?.autoContext}>
-            <AddCurrentFile onAttachment={onAttachment} />
-            <AddCurrentSelection onAttachment={onAttachment} />
-          </Show>
-          <AutoContextToggle />
-        </EmptyContainer>
-      </Show>
     </Container>
   )
 }

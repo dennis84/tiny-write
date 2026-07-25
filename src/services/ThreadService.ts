@@ -10,12 +10,12 @@ import generateTitlePrompt from '@/prompts/assistant/generate-title.md?raw'
 import summaryPrompt from '@/prompts/assistant/summary.md?raw'
 import commonRulesPrompt from '@/prompts/common/rules.md?raw'
 import {debug, error, info} from '@/remote/log'
+import {isFile} from '@/state'
 import {createTreeStore, type TreeItem} from '@/tree'
 import {
   type Attachment,
   AttachmentType,
   type Message,
-  type NewThread,
   type ProjectAttachment,
   type Thread,
 } from '@/types'
@@ -24,6 +24,7 @@ import type {ChatMessage, Chunk, CopilotService} from './CopilotService'
 import type {DialogService} from './DialogService'
 import type {FileService} from './FileService'
 import type {LocationService} from './LocationService'
+import type {TreeService} from './TreeService'
 
 export class ThreadService {
   public messageTree = createTreeStore<Message>()
@@ -75,6 +76,7 @@ export class ThreadService {
     private copilotService: CopilotService,
     private locationService: LocationService,
     private dialogService: DialogService,
+    private treeService: TreeService,
   ) {}
 
   async updateCurrentInput(text?: string) {
@@ -207,11 +209,20 @@ export class ThreadService {
       return thread
     }
 
+    let projectId: string | undefined
+    if (parentId) {
+      const parent = this.treeService.getItem(parentId)?.value
+      if (parent && 'projectId' in parent) {
+        projectId = parent.projectId
+      }
+    }
+
     const newThread: Thread = {
       type: 'thread' as const,
       id: ThreadService.createId(),
       messages: [],
       parentId,
+      projectId,
     }
 
     info(`Create new thread (id=${newThread.id})`)
@@ -345,8 +356,8 @@ export class ThreadService {
     if (updatedThread) await this.saveThread(updatedThread)
   }
 
-  async init(newThread?: NewThread): Promise<boolean> {
-    info(`Initialize thread (newThread=${JSON.stringify(newThread)})`)
+  async init(): Promise<boolean> {
+    info(`Initialize thread`)
 
     const currentThread = this.currentThread
     if (!currentThread) {
@@ -355,27 +366,28 @@ export class ThreadService {
 
     this.messageTree.reset(currentThread?.messages ?? [])
 
-    if (currentThread.messages.length === 0 && newThread?.fileId) {
-      const file = this.fileService.findFileById(newThread.fileId)
-      if (file) {
-        const attachment = this.fileService.createAttachment(file)
+    // Send messages directly if empty and markdown file is parent
+    if (currentThread.messages.length === 0 && currentThread.parentId) {
+      const parent = this.treeService.getItem(currentThread.parentId)
+      if (isFile(parent?.value) && !parent.value.code) {
+        const attachment = this.fileService.createAttachment(parent.value)
         await this.addMessage({
           id: uuidv4(),
           role: 'user',
           content: attachment.content,
         })
 
-        return true
+        return false
       }
     }
 
     return false
   }
 
-  async delete(thread: Thread) {
+  async delete(id: string) {
     const [, {mutate}] = this.threadsResource
-    mutate((prev = []) => prev.filter((it) => it.id !== thread.id))
-    await DB.deleteThread(thread.id)
+    mutate((prev = []) => prev.filter((it) => it.id !== id))
+    await DB.deleteThread(id)
   }
 
   async deleteAll(): Promise<Thread> {

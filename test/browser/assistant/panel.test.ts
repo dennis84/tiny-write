@@ -66,9 +66,10 @@ test('create file', async ({page}) => {
   await assertCodeLineToEqual(page, 1, "const test1 = '111'")
 
   await page.click('[data-testid="navbar_menu_open"]')
-  await expect(page.locator('[data-testid="tree_link"]').filter({hasText: 'main.ts'})).toHaveCount(
-    1,
-  )
+  const treeLink = page.locator('[data-testid="tree_link"]').filter({hasText: 'main.ts'})
+  await expect(treeLink).toHaveCount(1)
+  expect(await treeLink.getAttribute('level')).toBe('1')
+  expect(await treeLink.getAttribute('data-parent-id')).toBe('1')
 })
 
 test('apply', async ({page}) => {

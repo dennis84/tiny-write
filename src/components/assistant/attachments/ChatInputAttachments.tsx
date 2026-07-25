@@ -20,7 +20,7 @@ const Attachments = styled(ScrollHorizontal)`
 `
 
 export const ChatInputAttachments = () => {
-  const {store, mediaService, threadService} = useState()
+  const {mediaService, threadService} = useState()
 
   const Tooltip = () => (
     <DialogList>
@@ -92,9 +92,7 @@ export const ChatInputAttachments = () => {
 
   return (
     <>
-      <Show when={store.ai?.autoContext}>
-        <AutoContext />
-      </Show>
+      <AutoContext />
       <TooltipHelp title="Add an attachment to context">
         <IconButton onClick={onAttachmentMenu}>
           <IconPaperclip />

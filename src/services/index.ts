@@ -56,7 +56,6 @@ export const createCtrl = (initial: State) => {
     locationService,
     treeService,
   )
-  const deleteService = new DeleteService(fileService, canvasService, treeService)
   const codeMirrorService = new CodeMirrorService(
     configService,
     appService,
@@ -110,7 +109,9 @@ export const createCtrl = (initial: State) => {
     copilotService,
     locationService,
     dialogService,
+    treeService,
   )
+  const deleteService = new DeleteService(fileService, canvasService, threadService, treeService)
   const menuService = new MenuService(store, setState)
   const treeActionService = new TreeActionService(
     treeService,

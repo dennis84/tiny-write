@@ -220,11 +220,11 @@ let x = 1
   expect(attachment.type).toEqual(AttachmentType.Project)
   expect(attachment.projectId).toEqual('project_1')
   expect(attachment.projectName).toEqual('Project 1')
-  expect(attachment.tree).toEqual(`dir1/
+  expect(attachment.tree).toEqual(`├── dir1/
   ├── code3.yaml
   ├── code4.ts
-code1.yaml
-code2.yaml\n`)
+├── code1.yaml
+├── code2.yaml\n`)
 
   expect(attachment.files).toEqual([fileAttachment])
 })

@@ -98,7 +98,6 @@ export interface Copilot {
 export interface AiConfig {
   copilot?: Copilot
   sidebarWidth?: number
-  autoContext?: boolean
 }
 
 export interface Version {

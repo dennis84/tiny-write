@@ -18,10 +18,4 @@ export class AiService {
     const ai = this.store.ai
     if (ai) await DB.setAi(ai)
   }
-
-  async setAutoContext(autoContext: boolean) {
-    this.setState('ai', 'autoContext', autoContext)
-    const ai = this.store.ai
-    if (ai) await DB.setAi(ai)
-  }
 }

@@ -3,6 +3,7 @@ import {mock} from 'vitest-mock-extended'
 import type {CanvasService} from '@/services/CanvasService'
 import {DeleteService} from '@/services/DeleteService'
 import type {FileService} from '@/services/FileService'
+import type {ThreadService} from '@/services/ThreadService'
 import {TreeService} from '@/services/TreeService'
 import {isFile} from '@/state'
 import type {File} from '@/types'
@@ -50,6 +51,7 @@ test.each([
 ])('delete - soft %#', async (data) => {
   const fileService = mock<FileService>({currentFile: undefined, files: []})
   const canvasService = mock<CanvasService>({canvases: []})
+  const threadService = mock<ThreadService>({threads: []})
   const treeService = new TreeService()
 
   treeService.reset([
@@ -60,7 +62,7 @@ test.each([
     createFile({id: '5'}),
   ])
 
-  const service = new DeleteService(fileService, canvasService, treeService)
+  const service = new DeleteService(fileService, canvasService, threadService, treeService)
 
   const currentNode = treeService.getItem(data.currentId)
   vi.spyOn(fileService, 'currentFile', 'get').mockReturnValue(currentNode?.value as File)
@@ -88,9 +90,10 @@ test.each([
 test('delete - update tree', async () => {
   const fileService = mock<FileService>({currentFile: undefined, files: []})
   const canvasService = mock<CanvasService>({canvases: []})
+  const threadService = mock<ThreadService>({threads: []})
   const treeService = new TreeService()
 
-  const service = new DeleteService(fileService, canvasService, treeService)
+  const service = new DeleteService(fileService, canvasService, threadService, treeService)
 
   treeService.reset([
     createFile({id: '1'}),
@@ -149,9 +152,10 @@ test('delete - update tree', async () => {
 test('delete - local file', async () => {
   const fileService = mock<FileService>({files: []})
   const canvasService = mock<CanvasService>({canvases: []})
+  const threadService = mock<ThreadService>({threads: []})
   const treeService = new TreeService()
 
-  const service = new DeleteService(fileService, canvasService, treeService)
+  const service = new DeleteService(fileService, canvasService, threadService, treeService)
 
   treeService.reset([
     createFile({id: '1', path: '/path/to/file1.ts'}),
@@ -195,9 +199,10 @@ test.each([
 ])('delete - forever %#', async (data) => {
   const fileService = mock<FileService>({currentFile: undefined, files: []})
   const canvasService = mock<CanvasService>({canvases: []})
+  const threadService = mock<ThreadService>({threads: []})
   const treeService = new TreeService()
 
-  const service = new DeleteService(fileService, canvasService, treeService)
+  const service = new DeleteService(fileService, canvasService, threadService, treeService)
 
   treeService.reset([
     createFile({id: '1'}),
@@ -234,6 +239,7 @@ test.each([
 test('emptyBin', async () => {
   const fileService = mock<FileService>({currentFile: undefined, files: []})
   const canvasService = mock<CanvasService>({canvases: []})
+  const threadService = mock<ThreadService>({threads: []})
 
   const files = [
     createFile({id: '1', deleted: true}),
@@ -249,7 +255,7 @@ test('emptyBin', async () => {
   const treeService = new TreeService()
   treeService.reset(files)
 
-  const service = new DeleteService(fileService, canvasService, treeService)
+  const service = new DeleteService(fileService, canvasService, threadService, treeService)
 
   const result = await service.emptyBin()
 

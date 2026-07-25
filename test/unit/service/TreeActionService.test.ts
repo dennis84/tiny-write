@@ -3,10 +3,10 @@ import {mock} from 'vitest-mock-extended'
 import type {CanvasService} from '@/services/CanvasService'
 import type {FileService} from '@/services/FileService'
 import type {ProjectService} from '@/services/ProjectService'
+import type {ThreadService} from '@/services/ThreadService'
 import {TreeActionService} from '@/services/TreeActionService'
 import {TreeService} from '@/services/TreeService'
 import {createCanvas, createFile} from '../testutil/data'
-import {ThreadService} from '@/services/ThreadService'
 
 beforeEach(() => {
   vi.resetAllMocks()

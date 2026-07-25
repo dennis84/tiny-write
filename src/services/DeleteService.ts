@@ -1,8 +1,9 @@
 import {info} from '@/remote/log'
-import {isCanvas, isDeletable, isFile} from '@/state'
+import {isCanvas, isDeletable, isFile, isThread} from '@/state'
 import type {Canvas, File, MenuTreeItem} from '@/types'
 import type {CanvasService} from './CanvasService'
 import type {FileService} from './FileService'
+import type {ThreadService} from './ThreadService'
 import type {TreeService} from './TreeService'
 
 // File: /editor/:id or /code/:id
@@ -19,6 +20,7 @@ export class DeleteService {
   constructor(
     private fileService: FileService,
     private canvasService: CanvasService,
+    private threadService: ThreadService,
     private treeService: TreeService,
   ) {}
 
@@ -123,7 +125,11 @@ export class DeleteService {
 
   private async deleteNode(node: MenuTreeItem, forever = false) {
     // delete forever if no subtree and not modified or forever=true
-    if ((node.childrenIds.length === 0 && !node.value.lastModified) || forever) {
+    if (
+      (node.childrenIds.length === 0 && !node.value.lastModified) ||
+      forever ||
+      isThread(node.value)
+    ) {
       await this.foreverDeleteNode(node)
       this.treeService.remove(node.id)
       return
@@ -161,6 +167,9 @@ export class DeleteService {
     } else if (isCanvas(node.value)) {
       await this.canvasService.delete(id, true)
       info('Canvas forever deleted')
+    } else if (isThread(node.value)) {
+      await this.threadService.delete(id)
+      info('Thread forever deleted')
     }
   }
 }

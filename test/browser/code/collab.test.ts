@@ -1,8 +1,7 @@
 import {test} from '@playwright/test'
 import {v4 as uuidv4} from 'uuid'
 import {createYUpdate} from '../../unit/testutil/codemirror-util'
-import {setupDB} from '../assistant/mock'
-import {assertCodeLineToEqual, delay} from '../utils'
+import {assertCodeLineToEqual, delay, setupDB} from '../utils'
 
 test('existing room', async ({page, browser}) => {
   const id = uuidv4()

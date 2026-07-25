@@ -90,7 +90,7 @@ export const MessageQuestion = (props: Props) => {
         </QuestionContainer>
       </Show>
       <Show when={!editing()}>
-        <QuestionContainer ref={questionContainerRef}>
+        <QuestionContainer ref={questionContainerRef} data-testid="question">
           <QuestionBubble data-testid="question_bubble">
             <Show when={configService.codeTheme} keyed>
               <MessageMarkdown content={props.message.value.content} />

@@ -164,7 +164,8 @@ export const TreeLink = (p: Props) => {
         isOnCanvas={canvasService.isOnCanvas(p.node.id)}
         selected={p.node === tree.currentTooltip()?.state.selected}
         level={p.level}
-        data-id={p.node.value.id}
+        data-id={p.node.id}
+        data-parent-id={p.node.parentId}
         data-testid="tree_link"
       >
         <TreeLinkToggle node={p.node} onClick={onToggleClick} />

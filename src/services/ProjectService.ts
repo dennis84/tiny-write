@@ -152,7 +152,7 @@ export class ProjectService {
     let tree = ''
 
     for (const [it, level] of descendants) {
-      const indent = '  '.repeat(level) + (level > 0 ? '├── ' : '')
+      const indent = `${'  '.repeat(level)}├── `
 
       if (isFile(it.value) && it.value.code) {
         if (it.value.codeEditorView && opened < MAX) {

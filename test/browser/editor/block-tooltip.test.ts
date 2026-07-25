@@ -1,6 +1,6 @@
 import test, {expect} from '@playwright/test'
-import {mockCopilotApiToken, mockCopilotCompletion, setupDB} from '../assistant/mock'
-import {assertEditorLineToEqual, delay, openBlockMenu} from '../utils'
+import {mockCopilotApiToken, mockCopilotCompletion} from '../assistant/mock'
+import {assertEditorLineToEqual, delay, openBlockMenu, setupDB} from '../utils'
 
 const cmContent = '.cm-editor > .cm-scroller > .cm-content'
 

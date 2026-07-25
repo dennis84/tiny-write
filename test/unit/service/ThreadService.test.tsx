@@ -7,6 +7,7 @@ import type {DialogService} from '@/services/DialogService'
 import type {FileService} from '@/services/FileService'
 import type {LocationService} from '@/services/LocationService'
 import {ThreadService} from '@/services/ThreadService'
+import type {TreeService} from '@/services/TreeService'
 import {
   AttachmentType,
   type FileAttachment,
@@ -27,6 +28,7 @@ const copilotService = mock<CopilotService>({
 })
 const locationService = mock<LocationService>({threadId: '1'})
 const dialogService = mock<DialogService>()
+const treeService = mock<TreeService>()
 
 beforeEach(() => {
   vi.resetAllMocks()
@@ -61,7 +63,13 @@ test('newThread - empty', async () => {
     }),
   ])
 
-  const service = new ThreadService(fileService, copilotService, locationService, dialogService)
+  const service = new ThreadService(
+    fileService,
+    copilotService,
+    locationService,
+    dialogService,
+    treeService,
+  )
 
   await waitFor(() => {
     expect(service.currentThread?.id).toEqual('1')
@@ -79,7 +87,13 @@ test('newThread - empty', async () => {
 test('addMessage', async () => {
   vi.spyOn(DB, 'getThreads').mockResolvedValue([createThread({id: '1'})])
 
-  const service = new ThreadService(fileService, copilotService, locationService, dialogService)
+  const service = new ThreadService(
+    fileService,
+    copilotService,
+    locationService,
+    dialogService,
+    treeService,
+  )
 
   await waitFor(() => {
     expect(service.currentThread?.id).toEqual('1')
@@ -109,7 +123,13 @@ test('addMessage - path', async () => {
     }),
   ])
 
-  const service = new ThreadService(fileService, copilotService, locationService, dialogService)
+  const service = new ThreadService(
+    fileService,
+    copilotService,
+    locationService,
+    dialogService,
+    treeService,
+  )
 
   await waitFor(() => {
     expect(service.currentThread?.id).toEqual('1')
@@ -153,7 +173,13 @@ test('addChunk', async () => {
     }),
   ])
 
-  const service = new ThreadService(fileService, copilotService, locationService, dialogService)
+  const service = new ThreadService(
+    fileService,
+    copilotService,
+    locationService,
+    dialogService,
+    treeService,
+  )
 
   await waitFor(() => {
     expect(service.currentThread?.id).toEqual('1')
@@ -183,7 +209,13 @@ test('interrupt', async () => {
     }),
   ])
 
-  const service = new ThreadService(fileService, copilotService, locationService, dialogService)
+  const service = new ThreadService(
+    fileService,
+    copilotService,
+    locationService,
+    dialogService,
+    treeService,
+  )
 
   await waitFor(() => {
     expect(service.currentThread?.id).toEqual('1')
@@ -205,7 +237,13 @@ test('summarize', async () => {
     }),
   ])
 
-  const service = new ThreadService(fileService, copilotService, locationService, dialogService)
+  const service = new ThreadService(
+    fileService,
+    copilotService,
+    locationService,
+    dialogService,
+    treeService,
+  )
 
   await waitFor(() => {
     expect(service.currentThread?.id).toEqual('1')
@@ -228,7 +266,13 @@ test('updateTitle', async () => {
     }),
   ])
 
-  const service = new ThreadService(fileService, copilotService, locationService, dialogService)
+  const service = new ThreadService(
+    fileService,
+    copilotService,
+    locationService,
+    dialogService,
+    treeService,
+  )
 
   await waitFor(() => {
     expect(service.currentThread?.id).toEqual('1')
@@ -250,7 +294,13 @@ test('init', async () => {
     }),
   ])
 
-  const service = new ThreadService(fileService, copilotService, locationService, dialogService)
+  const service = new ThreadService(
+    fileService,
+    copilotService,
+    locationService,
+    dialogService,
+    treeService,
+  )
 
   await waitFor(() => {
     expect(service.currentThread?.id).toEqual('1')
@@ -263,24 +313,32 @@ test('init', async () => {
 })
 
 test('init - newThread', async () => {
-  vi.spyOn(DB, 'getThreads').mockResolvedValue([createThread({id: '1', messages: []})])
+  vi.spyOn(DB, 'getThreads').mockResolvedValue([
+    createThread({id: '1', messages: [], parentId: 'file_1'}),
+  ])
 
   const file = createFile({id: 'file_1'})
 
-  fileService.findFileById.mockReturnValue(file)
+  treeService.getItem.mockReturnValue({id: file.id, childrenIds: [], value: file})
   fileService.createAttachment.mockReturnValue({
     content: 'Test 123',
     type: AttachmentType.File,
     fileId: file.id,
   })
 
-  const service = new ThreadService(fileService, copilotService, locationService, dialogService)
+  const service = new ThreadService(
+    fileService,
+    copilotService,
+    locationService,
+    dialogService,
+    treeService,
+  )
 
   await waitFor(() => {
     expect(service.currentThread?.id).toEqual('1')
   })
 
-  const shouldSend = await service.init({fileId: 'file_1'})
+  const shouldSend = await service.init()
   expect(shouldSend).toBe(true)
 
   expect(service.messageTree.items[0].value.content).toEqual('Test 123')
@@ -304,7 +362,13 @@ test('delete', async () => {
     }),
   ])
 
-  const service = new ThreadService(fileService, copilotService, locationService, dialogService)
+  const service = new ThreadService(
+    fileService,
+    copilotService,
+    locationService,
+    dialogService,
+    treeService,
+  )
 
   await waitFor(() => {
     expect(service.currentThread?.id).toEqual('1')
@@ -312,14 +376,12 @@ test('delete', async () => {
 
   expect(service.threads).toHaveLength(2)
 
-  // biome-ignore lint/style/noNonNullAssertion: test code
-  await service.delete(service.findThreadById('1')!)
+  await service.delete('1')
 
   expect(service.threads).toHaveLength(1)
   expect(service.threads?.[0].id).toBe('2')
 
-  // biome-ignore lint/style/noNonNullAssertion: test code
-  await service.delete(service.findThreadById('2')!)
+  await service.delete('2')
   expect(service.threads).toHaveLength(0)
 })
 
@@ -341,7 +403,13 @@ test('deleteAll', async () => {
     }),
   ])
 
-  const service = new ThreadService(fileService, copilotService, locationService, dialogService)
+  const service = new ThreadService(
+    fileService,
+    copilotService,
+    locationService,
+    dialogService,
+    treeService,
+  )
 
   await waitFor(() => {
     expect(service.currentThread?.id).toEqual('1')
@@ -363,7 +431,13 @@ test('regenerate - user message', async () => {
     }),
   ])
 
-  const service = new ThreadService(fileService, copilotService, locationService, dialogService)
+  const service = new ThreadService(
+    fileService,
+    copilotService,
+    locationService,
+    dialogService,
+    treeService,
+  )
 
   await waitFor(() => {
     expect(service.currentThread?.id).toEqual('1')
@@ -414,7 +488,13 @@ test('regenerate - assistant message', async () => {
     }),
   ])
 
-  const service = new ThreadService(fileService, copilotService, locationService, dialogService)
+  const service = new ThreadService(
+    fileService,
+    copilotService,
+    locationService,
+    dialogService,
+    treeService,
+  )
 
   await waitFor(() => {
     expect(service.currentThread?.id).toEqual('1')
@@ -462,7 +542,13 @@ test('generateTitle', async () => {
     }),
   ])
 
-  const service = new ThreadService(fileService, copilotService, locationService, dialogService)
+  const service = new ThreadService(
+    fileService,
+    copilotService,
+    locationService,
+    dialogService,
+    treeService,
+  )
 
   await waitFor(() => {
     expect(service.currentThread?.id).toEqual('1')
@@ -543,7 +629,13 @@ test.each<[Message[], number]>([
     maxOutputTokens: 12,
   })
 
-  const service = new ThreadService(fileService, copilotService, locationService, dialogService)
+  const service = new ThreadService(
+    fileService,
+    copilotService,
+    locationService,
+    dialogService,
+    treeService,
+  )
 
   await waitFor(() => {
     expect(service.currentThread?.id).toEqual('1')
@@ -573,7 +665,13 @@ test('searchThreads', async () => {
     thread1,
   ])
 
-  const service = new ThreadService(fileService, copilotService, locationService, dialogService)
+  const service = new ThreadService(
+    fileService,
+    copilotService,
+    locationService,
+    dialogService,
+    treeService,
+  )
 
   await waitFor(() => {
     expect(service.threads).toHaveLength(6)
@@ -592,7 +690,13 @@ test('searchThreads', async () => {
 })
 
 test('hande attachments', () => {
-  const service = new ThreadService(fileService, copilotService, locationService, dialogService)
+  const service = new ThreadService(
+    fileService,
+    copilotService,
+    locationService,
+    dialogService,
+    treeService,
+  )
 
   expect(service.attachments()).toEqual([])
 
