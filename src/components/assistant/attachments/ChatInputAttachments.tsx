@@ -12,6 +12,7 @@ import {AddCurrentFile} from './AddCurrentFile'
 import {AddCurrentProject} from './AddCurrentProject'
 import {AddCurrentSelection} from './AddCurrentSelection'
 import {AddImage} from './AddImage'
+import {AddParentFile} from './AddParentFile'
 import {AttachmentChip} from './AttachmentChip'
 import {AutoContext} from './AutoContext'
 
@@ -24,6 +25,7 @@ export const ChatInputAttachments = () => {
 
   const Tooltip = () => (
     <DialogList>
+      <AddParentFile onAttachment={onAttachment} />
       <AddCurrentFile onAttachment={onAttachment} />
       <AddCurrentSelection onAttachment={onAttachment} />
       <AddCurrentProject onAttachment={onAttachment} />

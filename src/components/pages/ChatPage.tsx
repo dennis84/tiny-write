@@ -26,9 +26,7 @@ export const ChatPage = (props: RouteSectionProps) => {
     () => threadService.currentThread?.id,
     async (threadId) => {
       if (!threadId) return
-      const shouldSend = await threadService.init()
-      if (shouldSend) void threadService.sendMessages()
-
+      await threadService.init()
       return threadId
     },
   )

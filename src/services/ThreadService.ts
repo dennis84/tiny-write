@@ -356,7 +356,7 @@ export class ThreadService {
     if (updatedThread) await this.saveThread(updatedThread)
   }
 
-  async init(): Promise<boolean> {
+  async init(): Promise<void> {
     info(`Initialize thread`)
 
     const currentThread = this.currentThread
@@ -371,17 +371,9 @@ export class ThreadService {
       const parent = this.treeService.getItem(currentThread.parentId)
       if (isFile(parent?.value) && !parent.value.code) {
         const attachment = this.fileService.createAttachment(parent.value)
-        await this.addMessage({
-          id: uuidv4(),
-          role: 'user',
-          content: attachment.content,
-        })
-
-        return false
+        await this.updateCurrentInput(attachment.content)
       }
     }
-
-    return false
   }
 
   async delete(id: string) {

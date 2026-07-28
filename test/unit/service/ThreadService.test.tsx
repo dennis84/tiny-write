@@ -306,9 +306,9 @@ test('init', async () => {
     expect(service.currentThread?.id).toEqual('1')
   })
 
-  const shouldSend = await service.init()
-  expect(shouldSend).toBe(false)
+  await service.init()
 
+  expect(service.currentThread?.currentInput).toEqual(undefined)
   expect(service.messageTree.rootItemIds).toEqual(['1'])
 })
 
@@ -338,10 +338,9 @@ test('init - newThread', async () => {
     expect(service.currentThread?.id).toEqual('1')
   })
 
-  const shouldSend = await service.init()
-  expect(shouldSend).toBe(true)
+  await service.init()
 
-  expect(service.messageTree.items[0].value.content).toEqual('Test 123')
+  expect(service.currentThread?.currentInput).toEqual('Test 123')
 })
 
 test('delete', async () => {

@@ -10,7 +10,12 @@ import {findCodeLang} from '@/codemirror/highlight'
 import {createCodeFence} from '@/components/assistant/util'
 import {DB} from '@/db'
 import {isTauri} from '@/env'
-import {createMarkdownParser, serialize, serializeNode} from '@/prosemirror/markdown-serialize'
+import {
+  createMarkdownParser,
+  serialize,
+  serializeNode,
+  serializeSlice,
+} from '@/prosemirror/markdown-serialize'
 import {schema} from '@/prosemirror/schema'
 import {
   basename,
@@ -28,6 +33,7 @@ import {
   type File,
   type FileAttachment,
   type FileText,
+  type SelectionAttachment,
   type TextAttachment,
 } from '@/types'
 import type {CollabService} from './CollabService'
@@ -433,15 +439,37 @@ export class FileService {
     return file?.title ?? ''
   }
 
-  createAttachment(file: File): FileAttachment | TextAttachment {
+  createAttachment(file: File): FileAttachment | TextAttachment | SelectionAttachment {
     if (file.code) {
       let code: string
-      if (file.codeEditorView) {
-        code = file.codeEditorView?.state.doc.toString()
-      } else {
+
+      const codeEditorView = file.codeEditorView
+      if (!codeEditorView) {
         const ydoc = new Y.Doc({gc: false})
         Y.applyUpdate(ydoc, file.ydoc)
         code = ydoc.getText(file.id).toString()
+      } else if (!codeEditorView.state.selection.main.empty) {
+        const ranges = codeEditorView.state.selection.ranges.map((it) => [it.from, it.to] as const)
+        const content = codeEditorView.state.selection.ranges
+          .map((range) =>
+            createCodeFence({
+              code: codeEditorView.state.sliceDoc(range.from, range.to),
+              id: file.id,
+              lang: file.codeLang,
+              path: file.path,
+              range: [range.from, range.to],
+            }),
+          )
+          .join('\n')
+        return {
+          type: AttachmentType.Selection,
+          fileId: file.id,
+          codeLang: file.codeLang,
+          selection: ranges,
+          content,
+        } satisfies SelectionAttachment
+      } else {
+        code = codeEditorView?.state.doc.toString()
       }
 
       const content = createCodeFence({
@@ -462,14 +490,38 @@ export class FileService {
     }
 
     let content: string
-    if (file.editorView) {
-      content = serialize(file.editorView.state)
-    } else {
+    const editorView = file.editorView
+
+    if (!editorView) {
       const ydoc = new Y.Doc({gc: false})
       Y.applyUpdate(ydoc, file.ydoc)
       const type = ydoc.getXmlFragment(file.id)
       const doc = yXmlFragmentToProseMirrorRootNode(type, schema)
       content = serializeNode(doc)
+    } else if (!editorView.state.selection.empty) {
+      const ranges = editorView.state.selection.ranges.map(
+        (it) => [it.$from.pos, it.$to.pos] as const,
+      )
+      const content = editorView.state.selection.ranges
+        .map((range) =>
+          createCodeFence({
+            code: serializeSlice(editorView.state.doc.slice(range.$from.pos, range.$to.pos)),
+            id: file.id,
+            lang: file.codeLang,
+            path: file.path,
+            range: [range.$from.pos, range.$to.pos],
+          }),
+        )
+        .join('\n')
+      return {
+        type: AttachmentType.Selection,
+        fileId: file.id,
+        codeLang: file.codeLang,
+        selection: ranges,
+        content,
+      } satisfies SelectionAttachment
+    } else {
+      content = serialize(editorView.state)
     }
 
     return {
