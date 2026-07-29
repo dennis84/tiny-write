@@ -9,11 +9,9 @@ import {isDirectory, isFile, isFilename, isProjectItem} from '@/state'
 import {
   AttachmentType,
   type Directory,
-  type FileAttachment,
   type Filename,
   type Project,
   type ProjectAttachment,
-  type TextAttachment,
 } from '@/types'
 import {YjsUtil} from '@/utils/YjsUtil'
 import {FileService} from './FileService'
@@ -146,7 +144,7 @@ export class ProjectService {
   async createAttachment(project: Project): Promise<ProjectAttachment> {
     const descendants = this.treeService.getDescendants(project.id)
 
-    const files: (FileAttachment | TextAttachment)[] = []
+    const files: ProjectAttachment['files'] = []
     const MAX = 3
     let opened = 0
     let tree = ''

@@ -20,12 +20,12 @@ interface Props {
 }
 
 export const ModelSelect = (props: Props) => {
-  const {copilotService} = useState()
+  const {aiService} = useState()
 
   const [models] = createResource(async () => {
     const groups: Record<string, Model[]> = {}
 
-    const models = await copilotService.getChatModels()
+    const models = await aiService.getChatModels()
     if (!models) return groups
 
     for (const model of models) {
@@ -43,7 +43,7 @@ export const ModelSelect = (props: Props) => {
     let ref!: HTMLDivElement
 
     onMount(() => {
-      if (copilotService.chatModel.id === props.model.id) {
+      if (aiService.chatModel.id === props.model.id) {
         ref.scrollIntoView({block: 'center'})
       }
     })
@@ -52,7 +52,7 @@ export const ModelSelect = (props: Props) => {
       <TooltipButton
         ref={ref}
         onClick={() => onSelect(props.model)}
-        class={copilotService.chatModel.id === props.model.id ? 'selected' : undefined}
+        class={aiService.chatModel.id === props.model.id ? 'selected' : undefined}
       >
         {props.model.name}
       </TooltipButton>
@@ -77,7 +77,7 @@ export const ModelSelect = (props: Props) => {
   })
 
   const onSelect = (model: Model) => {
-    copilotService.setChatModel(model)
+    aiService.setChatModel(model)
     props.onChange()
     closeTooltip()
   }
@@ -88,7 +88,7 @@ export const ModelSelect = (props: Props) => {
 
   return (
     <ModelSelectButton onClick={onMenuClick} data-testid="model_select">
-      {copilotService.chatModel.name}
+      {aiService.chatModel.name}
     </ModelSelectButton>
   )
 }

@@ -26,7 +26,7 @@ export const ContextMenu = () => {
   const {
     store,
     canvasService,
-    copilotService,
+    aiService,
     canvasCollabService,
     canvasThreadService,
     fileService,
@@ -59,7 +59,7 @@ export const ContextMenu = () => {
     const parser = createMarkdownParser(schema)
     let buffer = ''
 
-    const result = await copilotService.completions(
+    const result = await aiService.completions(
       messages,
       (chunk) => {
         for (const choice of chunk.choices) {

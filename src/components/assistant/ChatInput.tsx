@@ -45,7 +45,7 @@ export const ChatInput = (props: Props) => {
   const [editorView, setEditorView] = createSignal<EditorView>()
   const [scrollDirection, setScrollDirection] = createSignal<'up' | 'down' | undefined>(undefined)
 
-  const {locationService, copilotService, threadService, mediaService} = useState()
+  const {locationService, aiService, threadService, mediaService} = useState()
 
   const scrollToTop = () => {
     props.dropArea?.().scrollTo({top: 0, behavior: 'smooth'})
@@ -96,7 +96,7 @@ export const ChatInput = (props: Props) => {
   }
 
   const onStop = () => {
-    copilotService.stop()
+    aiService.stop()
   }
 
   const onSetEditorView = (view: EditorView) => {
@@ -180,12 +180,12 @@ export const ChatInput = (props: Props) => {
         <ChatInputActionRow>
           <ChatInputAttachments />
           <ModelSelect onChange={() => editorView()?.focus()} />
-          <Show when={copilotService.streaming()}>
+          <Show when={aiService.streaming()}>
             <Button primary={true} onClick={onStop}>
               <IconStop /> Stop
             </Button>
           </Show>
-          <Show when={!copilotService.streaming()}>
+          <Show when={!aiService.streaming()}>
             <TooltipHelp title="Send message">
               <IconButton onClick={onSend} data-testid="send">
                 <IconSend />

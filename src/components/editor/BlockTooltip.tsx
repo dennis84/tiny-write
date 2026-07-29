@@ -49,7 +49,7 @@ export const BlockTooltip = (props: Props) => {
     configService,
     menuService,
     threadService,
-    copilotService,
+    aiService,
     dialogService,
     locationService,
   } = useState()
@@ -212,10 +212,7 @@ export const BlockTooltip = (props: Props) => {
 
         toggleBlink()
         try {
-          const answer = await Promise.race([
-            copilotService.completionsSync(messages),
-            timeout(20_000),
-          ])
+          const answer = await Promise.race([aiService.completionsSync(messages), timeout(20_000)])
 
           toggleBlink(true) // remove blink brefore updating content
 

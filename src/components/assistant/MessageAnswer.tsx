@@ -27,7 +27,7 @@ interface Props {
 }
 
 export const MessageAnswer = (props: Props) => {
-  const {copilotService, configService} = useState()
+  const {aiService, configService} = useState()
 
   const onCopy = () => copy(props.message.value.content)
 
@@ -36,7 +36,7 @@ export const MessageAnswer = (props: Props) => {
   }
 
   return (
-    <ChatBubble fadeIn={copilotService.streaming()} data-testid="answer_bubble">
+    <ChatBubble fadeIn={aiService.streaming()} data-testid="answer_bubble">
       {/* Rerender code blocks if code theme has been changed */}
       <Show when={configService.codeTheme} keyed>
         <MessageMarkdown content={props.message.value.content} />
@@ -52,7 +52,7 @@ export const MessageAnswer = (props: Props) => {
             <IconRefresh />
           </IconButton>
         </TooltipHelp>
-        <Show when={copilotService.streaming() && props.message.childrenIds.length === 0}>
+        <Show when={aiService.streaming() && props.message.childrenIds.length === 0}>
           <IconButton>
             <Spinner />
           </IconButton>

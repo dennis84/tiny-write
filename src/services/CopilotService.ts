@@ -1,6 +1,6 @@
 import {Channel} from '@tauri-apps/api/core'
 import {createSignal} from 'solid-js'
-import type {SetStoreFunction, Store} from 'solid-js/store'
+import {produce, type SetStoreFunction, type Store} from 'solid-js/store'
 import {DB} from '@/db'
 import {isTauri} from '@/env'
 import {open} from '@/remote/app'
@@ -29,7 +29,7 @@ interface ApiTokenResponse {
   endpoints: ApiTokenEndpoints
 }
 
-interface CompletionsRequest {
+export interface CompletionsRequest {
   intent: boolean
   n: number
   stream: boolean
@@ -77,26 +77,26 @@ export interface Chunk {
   choices: Choice[]
 }
 
-interface CompletionsResult {
+export interface CompletionsResult {
   success: boolean
   interrupted?: boolean
   error?: string
 }
 
-const fallbackModel: Model = {
-  id: 'gpt-4o',
-  name: 'gpt-4o',
-  vendor: 'OpenAI',
-  streaming: true,
-  maxOutputTokens: 40_000,
-  maxPromptTokens: 40_000,
-}
-
 export class CopilotService {
   private streamingSignal = createSignal(false)
 
+  public fallbackModel: Model = {
+    id: 'gpt-4o',
+    name: 'gpt-4o',
+    vendor: 'OpenAI',
+    streaming: true,
+    maxOutputTokens: 40_000,
+    maxPromptTokens: 40_000,
+  }
+
   get chatModel(): Model {
-    return this.store.ai?.copilot?.model ?? fallbackModel
+    return this.store.ai?.model ?? this.fallbackModel
   }
 
   get streaming() {
@@ -120,8 +120,15 @@ export class CopilotService {
 
   async updateStatus(status: CopilotStatus) {
     info(`Set github status (status=${JSON.stringify(status)})`)
-    const copilot = this.store.ai?.copilot
-    this.setState('ai', {copilot: {...copilot, ...status}})
+    this.setState(
+      'ai',
+      'copilot',
+      produce((copilot = {}) => {
+        copilot.accessToken = status.accessToken
+        copilot.user = status.user
+      }),
+    )
+
     const ai = this.store.ai
     if (ai) await DB.setAi(ai)
 
@@ -174,13 +181,6 @@ export class CopilotService {
     }
 
     return models
-  }
-
-  async setChatModel(model: Model) {
-    info(`Set chat model (model=${JSON.stringify(model)})`)
-    this.setState('ai', 'copilot', 'model', model)
-    const ai = this.store.ai
-    if (ai) await DB.setAi(ai)
   }
 
   async getStatus(code: CopilotSignIn): Promise<CopilotStatus | undefined> {
@@ -348,22 +348,6 @@ export class CopilotService {
       onChunk(json)
       return {success: true}
     }
-  }
-
-  async completionsSync(messages: ChatMessage[]): Promise<string | undefined> {
-    let answer = ''
-    const result = await this.completions(
-      messages,
-      (chunk) => {
-        for (const choice of chunk.choices) {
-          const content = choice.delta?.content ?? choice.message?.content ?? ''
-          answer += content
-        }
-      },
-      false,
-    )
-
-    if (result.success) return answer
   }
 
   stop() {

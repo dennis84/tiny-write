@@ -91,12 +91,13 @@ export type Config = v.InferInput<typeof ConfigSchema>
 
 export interface Copilot {
   user?: string
-  model?: Model
   accessToken?: string
 }
 
 export interface AiConfig {
   copilot?: Copilot
+  model?: Model
+  provider?: 'copilot'
   sidebarWidth?: number
 }
 
@@ -232,7 +233,7 @@ export interface ImageAttachment {
 
 export interface ProjectAttachment {
   type: AttachmentType.Project
-  files: (FileAttachment | TextAttachment)[]
+  files: (FileAttachment | TextAttachment | SelectionAttachment)[]
   tree: string
   projectId: string
   projectName?: string

@@ -2,7 +2,8 @@ import {waitFor} from '@solidjs/testing-library'
 import {beforeEach, expect, test, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
 import {DB} from '@/db'
-import type {ChatMessageTextContent, CopilotService} from '@/services/CopilotService'
+import type {AiService} from '@/services/AiService'
+import type {ChatMessageTextContent} from '@/services/CopilotService'
 import type {DialogService} from '@/services/DialogService'
 import type {FileService} from '@/services/FileService'
 import type {LocationService} from '@/services/LocationService'
@@ -20,7 +21,7 @@ import {createFile, createThread} from '../testutil/data'
 import {expectTree} from '../testutil/tree'
 
 const fileService = mock<FileService>()
-const copilotService = mock<CopilotService>({
+const aiService = mock<AiService>({
   chatModel: {
     maxPromptTokens: 2,
     maxOutputTokens: 2,
@@ -65,7 +66,7 @@ test('newThread - empty', async () => {
 
   const service = new ThreadService(
     fileService,
-    copilotService,
+    aiService,
     locationService,
     dialogService,
     treeService,
@@ -89,7 +90,7 @@ test('addMessage', async () => {
 
   const service = new ThreadService(
     fileService,
-    copilotService,
+    aiService,
     locationService,
     dialogService,
     treeService,
@@ -125,7 +126,7 @@ test('addMessage - path', async () => {
 
   const service = new ThreadService(
     fileService,
-    copilotService,
+    aiService,
     locationService,
     dialogService,
     treeService,
@@ -175,7 +176,7 @@ test('addChunk', async () => {
 
   const service = new ThreadService(
     fileService,
-    copilotService,
+    aiService,
     locationService,
     dialogService,
     treeService,
@@ -211,7 +212,7 @@ test('interrupt', async () => {
 
   const service = new ThreadService(
     fileService,
-    copilotService,
+    aiService,
     locationService,
     dialogService,
     treeService,
@@ -239,7 +240,7 @@ test('summarize', async () => {
 
   const service = new ThreadService(
     fileService,
-    copilotService,
+    aiService,
     locationService,
     dialogService,
     treeService,
@@ -251,7 +252,7 @@ test('summarize', async () => {
 
   await service.init()
 
-  copilotService.completionsSync.mockResolvedValue('12')
+  aiService.completionsSync.mockResolvedValue('12')
 
   await service.summarize()
 
@@ -268,7 +269,7 @@ test('updateTitle', async () => {
 
   const service = new ThreadService(
     fileService,
-    copilotService,
+    aiService,
     locationService,
     dialogService,
     treeService,
@@ -296,7 +297,7 @@ test('init', async () => {
 
   const service = new ThreadService(
     fileService,
-    copilotService,
+    aiService,
     locationService,
     dialogService,
     treeService,
@@ -328,7 +329,7 @@ test('init - newThread', async () => {
 
   const service = new ThreadService(
     fileService,
-    copilotService,
+    aiService,
     locationService,
     dialogService,
     treeService,
@@ -363,7 +364,7 @@ test('delete', async () => {
 
   const service = new ThreadService(
     fileService,
-    copilotService,
+    aiService,
     locationService,
     dialogService,
     treeService,
@@ -404,7 +405,7 @@ test('deleteAll', async () => {
 
   const service = new ThreadService(
     fileService,
-    copilotService,
+    aiService,
     locationService,
     dialogService,
     treeService,
@@ -432,7 +433,7 @@ test('regenerate - user message', async () => {
 
   const service = new ThreadService(
     fileService,
-    copilotService,
+    aiService,
     locationService,
     dialogService,
     treeService,
@@ -489,7 +490,7 @@ test('regenerate - assistant message', async () => {
 
   const service = new ThreadService(
     fileService,
-    copilotService,
+    aiService,
     locationService,
     dialogService,
     treeService,
@@ -543,7 +544,7 @@ test('generateTitle', async () => {
 
   const service = new ThreadService(
     fileService,
-    copilotService,
+    aiService,
     locationService,
     dialogService,
     treeService,
@@ -553,7 +554,7 @@ test('generateTitle', async () => {
     expect(service.currentThread?.id).toEqual('1')
   })
 
-  copilotService.completionsSync.mockImplementation(async (messages) => {
+  aiService.completionsSync.mockImplementation(async (messages) => {
     expect(messages).toHaveLength(3)
     const message = messages[2].content.find((c) => c.type === 'text')
     expect(message?.text).toContain('Generate a concise')
@@ -622,15 +623,15 @@ test.each<[Message[], number]>([
     }),
   ])
 
-  vi.spyOn(copilotService, 'chatModel', 'get').mockReturnValue({
-    ...copilotService.chatModel,
+  vi.spyOn(aiService, 'chatModel', 'get').mockReturnValue({
+    ...aiService.chatModel,
     maxPromptTokens: 10,
     maxOutputTokens: 12,
   })
 
   const service = new ThreadService(
     fileService,
-    copilotService,
+    aiService,
     locationService,
     dialogService,
     treeService,
@@ -666,7 +667,7 @@ test('searchThreads', async () => {
 
   const service = new ThreadService(
     fileService,
-    copilotService,
+    aiService,
     locationService,
     dialogService,
     treeService,
@@ -691,7 +692,7 @@ test('searchThreads', async () => {
 test('hande attachments', () => {
   const service = new ThreadService(
     fileService,
-    copilotService,
+    aiService,
     locationService,
     dialogService,
     treeService,

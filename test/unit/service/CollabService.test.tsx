@@ -43,11 +43,15 @@ test('undoManager - text', async () => {
   expect(ctrl.fileService.files.length).toBe(1)
   expect(getByTestId('editor_scroll')).toHaveTextContent('Start typing ...')
 
-  await userEvent.keyboard('Test', {delay: 10})
+  ctrl.fileService.currentFile?.editorView?.dispatch(
+    ctrl.fileService.currentFile.editorView.state.tr.insertText('Test'),
+  )
 
   ctrl.collabService.undoManager?.stopCapturing()
 
-  await userEvent.keyboard('123', {delay: 10})
+  ctrl.fileService.currentFile?.editorView?.dispatch(
+    ctrl.fileService.currentFile.editorView.state.tr.insertText('123'),
+  )
 
   expect(getByTestId('editor_scroll')).toHaveTextContent(/^Test123$/)
 

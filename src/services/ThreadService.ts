@@ -20,7 +20,8 @@ import {
   type Thread,
 } from '@/types'
 import {MessageUtil} from '@/utils/MessageUtil'
-import type {ChatMessage, Chunk, CopilotService} from './CopilotService'
+import type {AiService} from './AiService'
+import type {ChatMessage, Chunk} from './CopilotService'
 import type {DialogService} from './DialogService'
 import type {FileService} from './FileService'
 import type {LocationService} from './LocationService'
@@ -73,7 +74,7 @@ export class ThreadService {
 
   constructor(
     private fileService: FileService,
-    private copilotService: CopilotService,
+    private aiService: AiService,
     private locationService: LocationService,
     private dialogService: DialogService,
     private treeService: TreeService,
@@ -246,7 +247,7 @@ export class ThreadService {
     this.addChunk(messageId, parentId, '')
 
     try {
-      const result = await this.copilotService.completions(messages, (chunk: Chunk) => {
+      const result = await this.aiService.completions(messages, (chunk: Chunk) => {
         for (const choice of chunk.choices) {
           const chunk = choice.delta?.content ?? choice.message?.content ?? ''
           this.addChunk(messageId, parentId, chunk)
@@ -307,7 +308,7 @@ export class ThreadService {
         t.messages[messageIndex].content += chunk
       } else {
         info(`Create new message to stream to (id=${id}, parentId=${parentId})`)
-        const modelId = this.copilotService.chatModel.id
+        const modelId = this.aiService.chatModel.id
         const newMessage = {
           id,
           content: chunk,
@@ -401,7 +402,7 @@ export class ThreadService {
         ...message,
         id: ThreadService.createId(),
         leftId: message.id,
-        modelId: this.copilotService.chatModel.id,
+        modelId: this.aiService.chatModel.id,
       }
 
       info(`Regenerate user message (message=${JSON.stringify(newMessage)})`)
@@ -461,7 +462,7 @@ export class ThreadService {
     const {promptCount, outputCount} = this.tokenCount(messages)
     info(`Maybe create summary (promptCount=${promptCount}, outputCount=${outputCount})`)
 
-    const currentModel = this.copilotService.chatModel
+    const currentModel = this.aiService.chatModel
     const promptLimit = currentModel.maxPromptTokens * 0.7
     const outputLimit = currentModel.maxOutputTokens * 0.7
     if (promptCount < promptLimit && outputCount < outputLimit) {
@@ -471,7 +472,7 @@ export class ThreadService {
     messages.push({role: 'system', content: [{type: 'text', text: summaryPrompt}]})
 
     try {
-      const summary = await this.copilotService.completionsSync(messages)
+      const summary = await this.aiService.completionsSync(messages)
       if (summary) {
         info(
           `Add summary to message (messageId=${targetId}, promptLimit=${promptLimit}, outputLimit=${outputLimit})`,
@@ -502,7 +503,7 @@ export class ThreadService {
     const messages: ChatMessage[] = thread.messages.map((m) => MessageUtil.toChatMessage(m))
     messages.push(question)
 
-    const title = this.copilotService.completionsSync(messages)
+    const title = this.aiService.completionsSync(messages)
     if (!title) throw new Error('Cannot guess a title for current thread.')
 
     return title
@@ -567,7 +568,7 @@ export class ThreadService {
       messages.push(message)
 
       const {promptCount, outputCount} = this.tokenCount(messages)
-      const currentModel = this.copilotService.chatModel
+      const currentModel = this.aiService.chatModel
       const promptLimit = currentModel.maxPromptTokens * 0.9
       const outputLimit = currentModel.maxOutputTokens * 0.9
 

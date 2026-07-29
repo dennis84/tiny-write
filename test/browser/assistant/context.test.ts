@@ -52,11 +52,11 @@ test('new thread from markdown file', async ({page}) => {
   await page.locator('[data-testid="new_thread"]').click()
 
   // markdown file was used as prompt
-  const question = page.locator('[data-testid="question"]')
+  const question = page.locator('[data-testid="chat_input"]')
   expect(question).toContainText('222')
 
   // thread is added to markdown item in tree
-  const threadTreeLink = page.locator('[data-testid="tree_link"]').filter({hasText: 'First'})
+  const threadTreeLink = page.locator('[data-testid="tree_link"]').filter({hasText: 'Empty thread'})
   expect(await threadTreeLink.getAttribute('level')).toBe('1')
   expect(await threadTreeLink.getAttribute('data-parent-id')).toBe('2')
 })

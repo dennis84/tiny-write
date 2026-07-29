@@ -40,12 +40,12 @@ export const createCtrl = (initial: State) => {
   const locationService = new LocationService(location, navigate, () => params, store, setState)
 
   const dialogService = new DialogService()
-  const aiService = new AiService(store, setState)
   const collabService = new CollabService(dialogService, locationService, store, setState)
   const configService = new ConfigService(collabService, store, setState)
   const treeService = new TreeService()
   const fileService = new FileService(collabService, locationService, treeService)
   const copilotService = new CopilotService(store, setState, fileService)
+  const aiService = new AiService(copilotService, store, setState)
   const selectService = new SelectService()
   const prettierService = new PrettierService()
   const appService = new AppService(fileService, store, setState)
@@ -106,7 +106,7 @@ export const createCtrl = (initial: State) => {
 
   const threadService = new ThreadService(
     fileService,
-    copilotService,
+    aiService,
     locationService,
     dialogService,
     treeService,
