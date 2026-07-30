@@ -7,7 +7,10 @@ import {mockCopilotApiToken, mockCopilotCompletion} from './mock'
 test.beforeEach(async ({page}) => {
   await setupDB(page, {
     ai: {
-      main: {copilot: {user: 'johndoe', accessToken: 'AT-123'}},
+      main: {
+        provider: 'copilot',
+        copilot: {user: 'johndoe', accessToken: 'AT-123'},
+      },
     },
     files: [
       {id: '1', code: true, ydoc: cmUtil.createYUpdate('1', '111')},

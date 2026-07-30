@@ -94,10 +94,17 @@ export interface Copilot {
   accessToken?: string
 }
 
+export interface Ollama {
+  enabled?: boolean
+}
+
+export type AiProvider = 'copilot' | 'ollama'
+
 export interface AiConfig {
   copilot?: Copilot
+  ollama?: Ollama
   model?: Model
-  provider?: 'copilot'
+  provider?: AiProvider
   sidebarWidth?: number
 }
 

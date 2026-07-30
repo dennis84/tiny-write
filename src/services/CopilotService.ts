@@ -14,9 +14,10 @@ import {
   sendChatMessage,
   startLanguageServer,
 } from '@/remote/copilot'
-import {debug, error, info} from '@/remote/log'
+import {debug, info} from '@/remote/log'
 import {lspRegisterDocument} from '@/remote/lsp'
 import type {ChatRole, State} from '@/types'
+import {AiUtil} from '@/utils/AiUtil'
 import type {FileService} from './FileService'
 
 interface ApiTokenEndpoints {
@@ -84,7 +85,7 @@ export interface CompletionsResult {
 }
 
 export class CopilotService {
-  private streamingSignal = createSignal(false)
+  private streamingSignal = createSignal<AbortController | undefined>()
 
   public fallbackModel: Model = {
     id: 'gpt-4o',
@@ -110,9 +111,19 @@ export class CopilotService {
   ) {}
 
   async disconnect() {
-    const ai = {...this.store.ai, copilot: undefined}
-    this.setState('ai', ai)
-    await DB.setAi(ai)
+    this.setState(
+      'ai',
+      produce((ai = {}) => {
+        ai.copilot = undefined
+        if (ai.provider === 'copilot') {
+          ai.provider = undefined
+          ai.model = undefined
+        }
+      }),
+    )
+
+    const ai = this.store.ai
+    if (ai) await DB.setAi(ai)
     if (isTauri()) {
       await disconnectCopilot()
     }
@@ -121,11 +132,12 @@ export class CopilotService {
   async updateStatus(status: CopilotStatus) {
     info(`Set github status (status=${JSON.stringify(status)})`)
     this.setState(
-      'ai',
-      'copilot',
-      produce((copilot = {}) => {
-        copilot.accessToken = status.accessToken
-        copilot.user = status.user
+      produce((state) => {
+        state.ai ??= {}
+        state.ai.copilot ??= {}
+        state.ai.copilot.accessToken = status.accessToken
+        state.ai.copilot.user = status.user
+        if (!state.ai.provider) state.ai.provider = 'copilot'
       }),
     )
 
@@ -142,9 +154,9 @@ export class CopilotService {
     }
   }
 
-  async getChatModels(): Promise<Model[] | undefined> {
+  async getChatModels(): Promise<Model[]> {
     const accessToken = this.store.ai?.copilot?.accessToken
-    if (!accessToken) return
+    if (!accessToken) return []
     const tokenResponse = await this.getApiToken(accessToken)
     const url = this.proxy(`${tokenResponse.endpoints.api}/models`)
 
@@ -297,7 +309,7 @@ export class CopilotService {
         const channel = new Channel<string>()
         channel.onmessage = (message: string) => {
           if (message.startsWith('[DONE]')) {
-            this.streamingSignal[1](false)
+            this.streamingSignal[1](new AbortController())
             resolve({success: true})
           } else if (this.streaming()) {
             onChunk(JSON.parse(message))
@@ -306,7 +318,7 @@ export class CopilotService {
           }
         }
 
-        this.streamingSignal[1](true)
+        this.streamingSignal[1](undefined)
         return sendChatMessage(model, messages, channel, streaming)
       })
     }
@@ -317,9 +329,13 @@ export class CopilotService {
 
     const tokenResponse = await this.getApiToken(accessToken)
     const url = this.proxy(`${tokenResponse.endpoints.api}/chat/completions`)
-    const body = JSON.stringify(this.createRequest(model, messages, streaming))
+    const body = JSON.stringify(AiUtil.createRequest(model, messages, streaming))
 
     debug(`Copilot chat - (url=${url}, token=${JSON.stringify(tokenResponse)}, body=${body})`)
+
+    const controller = new AbortController()
+    this.streamingSignal[1](controller)
+
     const data = await fetch(url, {
       method: 'POST',
       body,
@@ -330,6 +346,7 @@ export class CopilotService {
         'Copilot-Integration-Id': 'vscode-chat',
         'Copilot-Vision-Request': 'true',
       },
+      signal: controller.signal,
     })
 
     if (data.status >= 300 || !data.body) {
@@ -342,7 +359,7 @@ export class CopilotService {
     }
 
     if (streaming ?? model.streaming) {
-      return await this.getStreamResponse(data, onChunk)
+      return await AiUtil.getStreamResponse(data, onChunk, controller.signal)
     } else {
       const json = await data.json()
       onChunk(json)
@@ -351,7 +368,8 @@ export class CopilotService {
   }
 
   stop() {
-    this.streamingSignal[1](false)
+    this.streamingSignal[0]()?.abort()
+    this.streamingSignal[1](undefined)
   }
 
   verify(url: string) {
@@ -362,96 +380,11 @@ export class CopilotService {
     window.open(url, '_blank')
   }
 
-  private async getStreamResponse(
-    data: Response,
-    onChunk: (chunk: Chunk) => void,
-  ): Promise<CompletionsResult> {
-    const result: CompletionsResult = {success: false}
-    const reader = data.body?.getReader()
-    const decoder = new TextDecoder()
-    let buffer = ''
-
-    if (!reader) return result
-
-    const parseLine = (s: string): Chunk | undefined => {
-      try {
-        const data = s.substring('data: '.length)
-        if (data.startsWith('[DONE]'))
-          return undefined // can end with \n
-        else return JSON.parse(data)
-      } catch (e) {
-        error(`Failed to parse line (s=${s})`, e)
-        return undefined
-      }
-    }
-
-    this.streamingSignal[1](true)
-    let finished = false
-
-    const finish = (inLoop = false) => {
-      if (finished) return
-      finished = true
-
-      info(`Finishing stream response (inLoop=${inLoop}, streaming=${this.streaming()})`)
-      if (inLoop && !this.streaming()) {
-        result.interrupted = true
-      } else {
-        this.streamingSignal[1](false)
-        result.success = true
-      }
-    }
-
-    while (!finished) {
-      const {value, done} = await reader.read()
-      if (done || !this.streaming()) {
-        finish(true)
-        break
-      }
-
-      buffer += decoder.decode(value, {stream: true})
-      const lines = buffer.split('\n\n')
-
-      for (let i = 0; i < lines.length - 1; i++) {
-        const data = parseLine(lines[i])
-        if (!data) {
-          finish(true)
-        } else {
-          onChunk(data)
-        }
-      }
-
-      buffer = lines[lines.length - 1]
-    }
-
-    if (buffer) {
-      const data = parseLine(buffer)
-      if (!data) finish()
-      else onChunk(data)
-    }
-
-    return result
-  }
-
   private appVersion(): string {
     return 'TinyWrite/0.8.0'
   }
 
   private proxy(url: string): string {
     return `https://bitter-sound-ded1.ddietr.workers.dev/?url=${url}`
-  }
-
-  private createRequest(
-    model: Model,
-    messages: ChatMessage[],
-    streaming: boolean | undefined = undefined,
-  ): CompletionsRequest {
-    return {
-      intent: true, // Enables intent detection/classification for the request
-      n: 1, // Number of response completions to generate
-      stream: streaming ?? model.streaming, // Whether to stream the response; uses provided value or falls back to model's default
-      temperature: 0.1, // Controls randomness (0-2); low value = more focused/deterministic responses
-      model: model.id, // Identifier of the AI model to use
-      messages, // Array of conversation messages (user/assistant history)
-    }
   }
 }

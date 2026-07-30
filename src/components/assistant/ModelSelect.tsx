@@ -3,6 +3,7 @@ import {styled} from 'solid-styled-components'
 import {useDialog} from '@/hooks/use-dialog'
 import type {Model} from '@/services/CopilotService'
 import {useState} from '@/state'
+import type {AiProvider} from '@/types'
 import {Button} from '../Button'
 import {DialogLabel, DialogList, DialogScroll, TooltipButton} from '../dialog/Style'
 
@@ -20,26 +21,36 @@ interface Props {
 }
 
 export const ModelSelect = (props: Props) => {
-  const {aiService} = useState()
+  const {store, aiService} = useState()
 
-  const [models] = createResource(async () => {
-    const groups: Record<string, Model[]> = {}
+  const [modelsByProvider] = createResource(
+    () => ({
+      copilot: store.ai?.copilot?.user,
+      ollama: store.ai?.ollama?.enabled,
+    }),
+    async () => {
+      const modelsByProvider = await aiService.getChatModels()
+      if (!modelsByProvider) return {}
 
-    const models = await aiService.getChatModels()
-    if (!models) return groups
+      const groups = {} as Record<AiProvider, Record<string, Model[]>>
 
-    for (const model of models) {
-      if (groups[model.vendor] === undefined) {
-        groups[model.vendor] = [model]
-      } else {
-        groups[model.vendor].push(model)
+      for (const [provider, models] of Object.entries(modelsByProvider) as [
+        AiProvider,
+        Model[],
+      ][]) {
+        if (!models) continue
+        for (const model of models) {
+          groups[provider] ??= {}
+          groups[provider][model.vendor] ??= []
+          groups[provider][model.vendor].push(model)
+        }
       }
-    }
 
-    return groups
-  })
+      return groups
+    },
+  )
 
-  const ModelButton = (props: {model: Model}) => {
+  const ModelButton = (props: {provider: AiProvider; model: Model}) => {
     let ref!: HTMLDivElement
 
     onMount(() => {
@@ -51,7 +62,7 @@ export const ModelSelect = (props: Props) => {
     return (
       <TooltipButton
         ref={ref}
-        onClick={() => onSelect(props.model)}
+        onClick={() => onSelect(props.provider, props.model)}
         class={aiService.chatModel.id === props.model.id ? 'selected' : undefined}
       >
         {props.model.name}
@@ -61,14 +72,26 @@ export const ModelSelect = (props: Props) => {
 
   const Tooltip = () => (
     <Scroll>
-      <For each={Object.entries(models() ?? [])}>
-        {([key, models]) => (
-          <DialogList>
-            <DialogLabel>{key}</DialogLabel>
-            <For each={models}>{(model) => <ModelButton model={model} />}</For>
-          </DialogList>
-        )}
-      </For>
+      <DialogList>
+        <For
+          each={Object.entries(modelsByProvider() ?? []) as [AiProvider, Record<string, Model[]>][]}
+        >
+          {([provider, models]) => (
+            <>
+              <For each={Object.entries(models ?? [])}>
+                {([key, models]) => (
+                  <>
+                    <DialogLabel>{key}</DialogLabel>
+                    <For each={models}>
+                      {(model) => <ModelButton provider={provider} model={model} />}
+                    </For>
+                  </>
+                )}
+              </For>
+            </>
+          )}
+        </For>
+      </DialogList>
     </Scroll>
   )
 
@@ -76,8 +99,8 @@ export const ModelSelect = (props: Props) => {
     component: Tooltip,
   })
 
-  const onSelect = (model: Model) => {
-    aiService.setChatModel(model)
+  const onSelect = (provider: AiProvider, model: Model) => {
+    aiService.setChatModel(provider, model)
     props.onChange()
     closeTooltip()
   }

@@ -25,7 +25,10 @@ const test3 = '333'
 test.beforeEach(async ({page}) => {
   await setupDB(page, {
     ai: {
-      main: {copilot: {user: 'johndoe', accessToken: 'AT-123'}},
+      main: {
+        provider: 'copilot',
+        copilot: {user: 'johndoe', accessToken: 'AT-123'},
+      },
     },
     files: [
       {id: '222', code: true, ydoc: createYUpdate('222', '')},

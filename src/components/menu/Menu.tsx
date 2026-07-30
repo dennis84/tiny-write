@@ -6,7 +6,7 @@ import {SubmenuId} from '@/services/MenuService'
 import {useState} from '@/state'
 import {Page} from '@/types'
 import {Drawer, DrawerContent, DrawerScroll} from '../Drawer'
-import {IconAi, IconAiAssistant} from '../icons/Ai'
+import {IconAiAssistant} from '../icons/Ai'
 import {IconPrettier} from '../icons/Logo'
 import {
   IconAlwaysOnTop,
@@ -97,11 +97,6 @@ export const Menu = () => {
     window.location.href = '/'
   }
 
-  const onToggleAssistant = () => {
-    const status = menuService.toggleAssistant()
-    if (!status) locationService.updateState({threadId: undefined})
-  }
-
   const showCodeFormat = () => {
     const currentFile = fileService.currentFile
     if (!currentFile?.codeEditorView) return true
@@ -186,13 +181,8 @@ export const Menu = () => {
               <Label>AI</Label>
               <Sub data-tauri-drag-region="true">
                 <Link onClick={() => menuService.setSubmenu(SubmenuId.AI_CONFIG)}>
-                  <IconAi /> Configure
+                  <IconAiAssistant /> Configure AI
                 </Link>
-                <Show when={store.ai?.copilot?.user}>
-                  <Link onClick={onToggleAssistant}>
-                    <IconAiAssistant /> Assistant
-                  </Link>
-                </Show>
               </Sub>
               {/* Submenu Application */}
               <Label>Application</Label>

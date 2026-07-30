@@ -70,7 +70,7 @@ export const AiSubmenuGithub = () => {
       <Sub data-tauri-drag-region="true">
         <Show when={!store.ai?.copilot?.user}>
           <Link onClick={onConnect} data-testid="connect">
-            <IconToggleOn /> Connect to GitHub
+            <IconToggleOn /> Connect
           </Link>
         </Show>
         <Show when={codeResult()?.userCode}>

@@ -20,6 +20,7 @@ import {FileService} from './FileService'
 import {LocationService} from './LocationService'
 import {MediaService} from './MediaService'
 import {MenuService} from './MenuService'
+import {OllamaService} from './OllamaService'
 import {PrettierService} from './PrettierService'
 import {ProjectFileService} from './ProjectFileService'
 import {ProjectService} from './ProjectService'
@@ -45,7 +46,8 @@ export const createCtrl = (initial: State) => {
   const treeService = new TreeService()
   const fileService = new FileService(collabService, locationService, treeService)
   const copilotService = new CopilotService(store, setState, fileService)
-  const aiService = new AiService(copilotService, store, setState)
+  const ollamaService = new OllamaService(store, setState)
+  const aiService = new AiService(copilotService, ollamaService, store, setState)
   const selectService = new SelectService()
   const prettierService = new PrettierService()
   const appService = new AppService(fileService, store, setState)
@@ -142,6 +144,7 @@ export const createCtrl = (initial: State) => {
     mediaService,
     aiService,
     copilotService,
+    ollamaService,
     threadService,
     menuService,
     dialogService,
