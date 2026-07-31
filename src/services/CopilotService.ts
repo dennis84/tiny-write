@@ -1,5 +1,5 @@
 import {Channel} from '@tauri-apps/api/core'
-import {createSignal} from 'solid-js'
+import {createResource, createSignal, type ResourceReturn} from 'solid-js'
 import {produce, type SetStoreFunction, type Store} from 'solid-js/store'
 import {DB} from '@/db'
 import {isTauri} from '@/env'
@@ -87,28 +87,40 @@ export interface CompletionsResult {
 export class CopilotService {
   private streamingSignal = createSignal<AbortController | undefined>()
 
-  public fallbackModel: Model = {
-    id: 'gpt-4o',
-    name: 'gpt-4o',
-    vendor: 'OpenAI',
-    streaming: true,
-    maxOutputTokens: 40_000,
-    maxPromptTokens: 40_000,
+  private modelsResource: ResourceReturn<Model[]>
+
+  get fallbackModel() {
+    return this.store.ai?.copilot?.user
+      ? {
+          id: 'gpt-4o',
+          name: 'gpt-4o',
+          vendor: 'OpenAI',
+          streaming: true,
+          maxOutputTokens: 40_000,
+          maxPromptTokens: 40_000,
+        }
+      : undefined
   }
 
-  get chatModel(): Model {
-    return this.store.ai?.model ?? this.fallbackModel
+  get chatModel(): Model | undefined {
+    return this.store.ai?.model ?? this.modelsResource[0].latest?.find((it) => it.id === 'gpt-4o')
   }
 
   get streaming() {
     return this.streamingSignal[0]
   }
 
+  get models() {
+    return this.modelsResource[0].latest ?? []
+  }
+
   constructor(
     private store: Store<State>,
     private setState: SetStoreFunction<State>,
     private fileService: FileService,
-  ) {}
+  ) {
+    this.modelsResource = createResource(() => this.getChatModels())
+  }
 
   async disconnect() {
     this.setState(
@@ -303,9 +315,11 @@ export class CopilotService {
     onChunk: (chunk: Chunk) => void,
     streaming: boolean | undefined = undefined,
   ): Promise<CompletionsResult> {
+    const model = this.chatModel
+    if (!model) return {success: false, error: 'No model selected'}
+
     if (isTauri()) {
       return new Promise((resolve) => {
-        const model = this.chatModel
         const channel = new Channel<string>()
         channel.onmessage = (message: string) => {
           if (message.startsWith('[DONE]')) {
@@ -323,7 +337,6 @@ export class CopilotService {
       })
     }
 
-    const model = this.chatModel
     const accessToken = this.store.ai?.copilot?.accessToken
     if (!accessToken) return {success: false, error: 'No access token'}
 

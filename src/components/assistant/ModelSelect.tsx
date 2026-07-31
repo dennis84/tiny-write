@@ -1,4 +1,4 @@
-import {createResource, For, onMount} from 'solid-js'
+import {createMemo, For, onMount} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {useDialog} from '@/hooks/use-dialog'
 import type {Model} from '@/services/CopilotService'
@@ -21,40 +21,35 @@ interface Props {
 }
 
 export const ModelSelect = (props: Props) => {
-  const {store, aiService} = useState()
+  const {aiService} = useState()
 
-  const [modelsByProvider] = createResource(
-    () => ({
-      copilot: store.ai?.copilot?.user,
-      ollama: store.ai?.ollama?.enabled,
-    }),
-    async () => {
-      const modelsByProvider = await aiService.getChatModels()
-      if (!modelsByProvider) return {}
+  const modelsByProvider = createMemo(() => {
+    const modelsByProvider = aiService.models
+    if (!modelsByProvider) return []
 
-      const groups = {} as Record<AiProvider, Record<string, Model[]>>
+    const groups = {} as Record<AiProvider, Record<string, Model[]>>
 
-      for (const [provider, models] of Object.entries(modelsByProvider) as [
-        AiProvider,
-        Model[],
-      ][]) {
-        if (!models) continue
-        for (const model of models) {
-          groups[provider] ??= {}
-          groups[provider][model.vendor] ??= []
-          groups[provider][model.vendor].push(model)
-        }
+    for (const [provider, models] of Object.entries(modelsByProvider) as [AiProvider, Model[]][]) {
+      if (!models) continue
+      for (const model of models) {
+        groups[provider] ??= {}
+        groups[provider][model.vendor] ??= []
+        groups[provider][model.vendor].push(model)
       }
+    }
 
-      return groups
-    },
-  )
+    // Convert to array for reactive-friendly <For> usage
+    return Object.entries(groups).map(([provider, vendors]) => ({
+      provider: provider as AiProvider,
+      groups: Object.entries(vendors).map(([key, models]) => ({key, models})),
+    }))
+  })
 
   const ModelButton = (props: {provider: AiProvider; model: Model}) => {
     let ref!: HTMLDivElement
 
     onMount(() => {
-      if (aiService.chatModel.id === props.model.id) {
+      if (aiService.chatModel?.id === props.model.id) {
         ref.scrollIntoView({block: 'center'})
       }
     })
@@ -63,7 +58,7 @@ export const ModelSelect = (props: Props) => {
       <TooltipButton
         ref={ref}
         onClick={() => onSelect(props.provider, props.model)}
-        class={aiService.chatModel.id === props.model.id ? 'selected' : undefined}
+        class={aiService.chatModel?.id === props.model.id ? 'selected' : undefined}
       >
         {props.model.name}
       </TooltipButton>
@@ -73,13 +68,11 @@ export const ModelSelect = (props: Props) => {
   const Tooltip = () => (
     <Scroll>
       <DialogList>
-        <For
-          each={Object.entries(modelsByProvider() ?? []) as [AiProvider, Record<string, Model[]>][]}
-        >
-          {([provider, models]) => (
+        <For each={modelsByProvider()}>
+          {({provider, groups}) => (
             <>
-              <For each={Object.entries(models ?? [])}>
-                {([key, models]) => (
+              <For each={groups}>
+                {({key, models}) => (
                   <>
                     <DialogLabel>{key}</DialogLabel>
                     <For each={models}>
@@ -111,7 +104,7 @@ export const ModelSelect = (props: Props) => {
 
   return (
     <ModelSelectButton onClick={onMenuClick} data-testid="model_select">
-      {aiService.chatModel.name}
+      {aiService.chatModel?.name ?? 'Select model'}
     </ModelSelectButton>
   )
 }

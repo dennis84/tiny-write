@@ -296,6 +296,8 @@ export class ThreadService {
 
   addChunk(id: string, parentId: string | undefined, chunk: string) {
     debug(`Stream message chunk (id=${id}, parentId=${parentId}, chunk=${chunk})`)
+    const model = this.aiService.chatModel
+    if (!model) return
 
     const thread = this.currentThread
     if (!thread) return
@@ -308,7 +310,7 @@ export class ThreadService {
         t.messages[messageIndex].content += chunk
       } else {
         info(`Create new message to stream to (id=${id}, parentId=${parentId})`)
-        const modelId = this.aiService.chatModel.id
+        const modelId = model.id
         const newMessage = {
           id,
           content: chunk,
@@ -394,6 +396,9 @@ export class ThreadService {
   }
 
   async regenerate(message: Message) {
+    const model = this.aiService.chatModel
+    if (!model) return
+
     const currentThread = this.currentThread
     if (!currentThread) return
 
@@ -402,7 +407,7 @@ export class ThreadService {
         ...message,
         id: ThreadService.createId(),
         leftId: message.id,
-        modelId: this.aiService.chatModel.id,
+        modelId: model.id,
       }
 
       info(`Regenerate user message (message=${JSON.stringify(newMessage)})`)
@@ -448,6 +453,9 @@ export class ThreadService {
   }
 
   async summarize(thread = this.currentThread) {
+    const model = this.aiService.chatModel
+    if (!model) return
+
     if (!thread) return
 
     let messages: ChatMessage[] = []
@@ -462,9 +470,8 @@ export class ThreadService {
     const {promptCount, outputCount} = this.tokenCount(messages)
     info(`Maybe create summary (promptCount=${promptCount}, outputCount=${outputCount})`)
 
-    const currentModel = this.aiService.chatModel
-    const promptLimit = currentModel.maxPromptTokens * 0.7
-    const outputLimit = currentModel.maxOutputTokens * 0.7
+    const promptLimit = model.maxPromptTokens * 0.7
+    const outputLimit = model.maxOutputTokens * 0.7
     if (promptCount < promptLimit && outputCount < outputLimit) {
       return
     }
@@ -541,7 +548,8 @@ export class ThreadService {
     nextId?: string
     parentId?: string
   } {
-    if (!thread) return {messages: []}
+    const model = this.aiService.chatModel
+    if (!thread || !model) return {messages: []}
 
     let messages: ChatMessage[] = []
     let parentId: string | undefined
@@ -568,9 +576,8 @@ export class ThreadService {
       messages.push(message)
 
       const {promptCount, outputCount} = this.tokenCount(messages)
-      const currentModel = this.aiService.chatModel
-      const promptLimit = currentModel.maxPromptTokens * 0.9
-      const outputLimit = currentModel.maxOutputTokens * 0.9
+      const promptLimit = model.maxPromptTokens * 0.9
+      const outputLimit = model.maxOutputTokens * 0.9
 
       // Reduce messages starting from last summary
       if (lastSummaryIndex !== -1 && (promptCount > promptLimit || outputCount > outputLimit)) {

@@ -1,4 +1,4 @@
-import {createSignal} from 'solid-js'
+import {createResource, createSignal} from 'solid-js'
 import {produce, type SetStoreFunction, type Store} from 'solid-js/store'
 import {DB} from '@/db'
 import {info} from '@/remote/log'
@@ -9,8 +9,14 @@ import type {ChatMessage, Chunk, CompletionsResult, Model} from './CopilotServic
 export class OllamaService {
   private streamingSignal = createSignal<AbortController | undefined>()
 
+  private modelsResource = createResource<Model[]>(() => this.getChatModels())
+
   get streaming() {
     return this.streamingSignal[0]
+  }
+
+  get models() {
+    return this.modelsResource[0].latest ?? []
   }
 
   constructor(

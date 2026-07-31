@@ -1,4 +1,4 @@
-import {createSignal} from 'solid-js'
+import {type Accessor, createMemo, createSignal} from 'solid-js'
 import type {SetStoreFunction, Store} from 'solid-js/store'
 import {DB} from '@/db'
 import {info} from '@/remote/log'
@@ -9,7 +9,13 @@ import type {OllamaService} from './OllamaService'
 export class AiService {
   private streamingSignal = createSignal(false)
 
-  get chatModel(): Model {
+  private modelsMemo: Accessor<Record<AiProvider, Model[]>>
+
+  get models() {
+    return this.modelsMemo()
+  }
+
+  get chatModel(): Model | undefined {
     return this.store.ai?.model ?? this.copilotService.fallbackModel
   }
 
@@ -27,20 +33,17 @@ export class AiService {
     private ollamaService: OllamaService,
     private store: Store<State>,
     private setState: SetStoreFunction<State>,
-  ) {}
+  ) {
+    this.modelsMemo = createMemo(() => ({
+      copilot: this.store.ai?.copilot?.user ? this.copilotService.models : [],
+      ollama: this.store.ai?.ollama?.enabled ? this.ollamaService.models : [],
+    }))
+  }
 
   async setSidebarWidth(width: number) {
     this.setState('ai', 'sidebarWidth', width)
     const ai = this.store.ai
     if (ai) await DB.setAi(ai)
-  }
-
-  async getChatModels(): Promise<Record<AiProvider, Model[]> | undefined> {
-    const [copilot, ollama] = await Promise.all([
-      this.store.ai?.copilot?.user ? this.copilotService.getChatModels() : [],
-      this.store.ai?.ollama?.enabled ? this.ollamaService.getChatModels() : [],
-    ])
-    return {copilot, ollama}
   }
 
   async setChatModel(provider: AiProvider, model: Model) {
@@ -65,7 +68,7 @@ export class AiService {
           return await this.ollamaService.completions(messages, onChunk, streaming)
         }
         default:
-          throw new Error('undefined provider')
+          throw new Error('No model selected')
       }
     } finally {
       this.streamingSignal[1](false)
