@@ -20,11 +20,13 @@ export class AiUtil {
 
     if (!reader) return result
 
-    const parseLine = (s: string): Chunk | undefined => {
+    // 'done' signals the [DONE] sentinel was reached; undefined signals a parse error
+    // that should be skipped instead of terminating the stream.
+    const parseLine = (s: string): Chunk | 'done' | undefined => {
       try {
         const data = s.substring('data: '.length)
         if (data.startsWith('[DONE]'))
-          return undefined // can end with \n
+          return 'done' // can end with \n
         else return JSON.parse(data)
       } catch (e) {
         error(`Failed to parse line (s=${s})`, e)
@@ -46,32 +48,52 @@ export class AiUtil {
       }
     }
 
-    while (!finished) {
-      const {value, done} = await reader.read()
-      if (done || signal.aborted) {
-        finish()
-        break
-      }
+    try {
+      outer: while (!finished) {
+        let value: Uint8Array | undefined
+        let done: boolean | undefined
 
-      buffer += decoder.decode(value, {stream: true})
-      const lines = buffer.split('\n\n')
-
-      for (let i = 0; i < lines.length - 1; i++) {
-        const data = parseLine(lines[i])
-        if (!data) {
+        try {
+          ;({value, done} = await reader.read())
+        } catch (e) {
+          info(`Stream read failed (aborted=${signal.aborted})`, e)
           finish()
-        } else {
-          onChunk(data)
+          break
         }
+
+        if (done || signal.aborted) {
+          finish()
+          break
+        }
+
+        buffer += decoder.decode(value, {stream: true})
+        const lines = buffer.split('\n\n')
+
+        for (let i = 0; i < lines.length - 1; i++) {
+          const data = parseLine(lines[i])
+          if (data === 'done') {
+            finish()
+            break outer
+          } else if (data !== undefined) {
+            onChunk(data)
+          }
+        }
+
+        buffer = lines[lines.length - 1]
       }
 
-      buffer = lines[lines.length - 1]
-    }
-
-    if (buffer) {
-      const data = parseLine(buffer)
-      if (!data) finish()
-      else onChunk(data)
+      if (!finished && buffer) {
+        const data = parseLine(buffer)
+        if (data === 'done') finish()
+        else if (data !== undefined) onChunk(data)
+      }
+    } finally {
+      try {
+        await reader.cancel()
+      } catch {
+        // ignore cancel errors (e.g. stream already closed)
+      }
+      reader.releaseLock()
     }
 
     return result
