@@ -624,7 +624,8 @@ test.each<[Message[], number]>([
   ])
 
   vi.spyOn(aiService, 'chatModel', 'get').mockReturnValue({
-    ...aiService.chatModel,
+    // biome-ignore lint/style/noNonNullAssertion: test code
+    ...aiService.chatModel!,
     maxPromptTokens: 10,
     maxOutputTokens: 12,
   })

@@ -31,7 +31,6 @@ export class OllamaService {
         state.ai ??= {}
         state.ai.ollama ??= {}
         state.ai.ollama.enabled = true
-        if (!state.ai.provider) state.ai.provider = 'ollama'
       }),
     )
 
@@ -46,10 +45,7 @@ export class OllamaService {
       produce((ai = {}) => {
         ai.ollama ??= {}
         ai.ollama.enabled = false
-        if (ai.provider === 'ollama') {
-          ai.provider = undefined
-          ai.model = undefined
-        }
+        if (ai.model?.provider === 'ollama') ai.model = undefined
       }),
     )
 
@@ -59,25 +55,30 @@ export class OllamaService {
 
   async getChatModels(): Promise<Model[]> {
     info('Get ollama chat models')
-    const response = await fetch('http://localhost:11434/api/tags')
-    const json = await response.json()
+    try {
+      const response = await fetch('http://localhost:11434/api/tags')
+      const json = await response.json()
 
-    const models = []
-    for (const item of json.models) {
-      if (item.capabilities.includes('completion')) {
-        const family = this.parseFamily(item.details.family)
-        models.push({
-          id: item.name,
-          name: item.name,
-          vendor: family,
-          streaming: true,
-          maxOutputTokens: 40_000,
-          maxPromptTokens: 40_000,
-        })
+      const models: Model[] = []
+      for (const item of json.models) {
+        if (item.capabilities.includes('completion')) {
+          const family = this.parseFamily(item.details.family)
+          models.push({
+            id: item.name,
+            name: item.name,
+            vendor: family,
+            streaming: true,
+            maxOutputTokens: 40_000,
+            maxPromptTokens: 40_000,
+            provider: 'ollama',
+          })
+        }
       }
-    }
 
-    return models
+      return models
+    } catch {
+      return []
+    }
   }
 
   async completions(

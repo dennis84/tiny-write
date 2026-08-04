@@ -17,6 +17,7 @@ import {DeleteService} from './DeleteService'
 import {DialogService} from './DialogService'
 import {EditorService} from './EditorService'
 import {FileService} from './FileService'
+import {LlamaCppService} from './LlamaCppService'
 import {LocationService} from './LocationService'
 import {MediaService} from './MediaService'
 import {MenuService} from './MenuService'
@@ -47,7 +48,8 @@ export const createCtrl = (initial: State) => {
   const fileService = new FileService(collabService, locationService, treeService)
   const copilotService = new CopilotService(store, setState, fileService)
   const ollamaService = new OllamaService(store, setState)
-  const aiService = new AiService(copilotService, ollamaService, store, setState)
+  const llamaCppService = new LlamaCppService(store, setState)
+  const aiService = new AiService(copilotService, ollamaService, llamaCppService, store, setState)
   const selectService = new SelectService()
   const prettierService = new PrettierService()
   const appService = new AppService(fileService, store, setState)
@@ -145,6 +147,7 @@ export const createCtrl = (initial: State) => {
     aiService,
     copilotService,
     ollamaService,
+    llamaCppService,
     threadService,
     menuService,
     dialogService,

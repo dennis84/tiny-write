@@ -16,7 +16,7 @@ import {
 } from '@/remote/copilot'
 import {debug, info} from '@/remote/log'
 import {lspRegisterDocument} from '@/remote/lsp'
-import type {ChatRole, State} from '@/types'
+import type {AiProvider, ChatRole, State} from '@/types'
 import {AiUtil} from '@/utils/AiUtil'
 import type {FileService} from './FileService'
 
@@ -67,6 +67,7 @@ export interface Model {
   streaming: boolean
   maxOutputTokens: number
   maxPromptTokens: number
+  provider: AiProvider
 }
 
 export interface Choice {
@@ -89,7 +90,7 @@ export class CopilotService {
 
   private modelsResource: ResourceReturn<Model[]>
 
-  get fallbackModel() {
+  get fallbackModel(): Model | undefined {
     return this.store.ai?.copilot?.user
       ? {
           id: 'gpt-4o',
@@ -98,6 +99,7 @@ export class CopilotService {
           streaming: true,
           maxOutputTokens: 40_000,
           maxPromptTokens: 40_000,
+          provider: 'copilot',
         }
       : undefined
   }
@@ -127,10 +129,7 @@ export class CopilotService {
       'ai',
       produce((ai = {}) => {
         ai.copilot = undefined
-        if (ai.provider === 'copilot') {
-          ai.provider = undefined
-          ai.model = undefined
-        }
+        if (ai.model?.provider === 'copilot') ai.model = undefined
       }),
     )
 
@@ -149,7 +148,6 @@ export class CopilotService {
         state.ai.copilot ??= {}
         state.ai.copilot.accessToken = status.accessToken
         state.ai.copilot.user = status.user
-        if (!state.ai.provider) state.ai.provider = 'copilot'
       }),
     )
 
@@ -184,7 +182,7 @@ export class CopilotService {
 
     const json = await data.json()
 
-    const models = []
+    const models: Model[] = []
     for (const item of json.data) {
       if (!item.model_picker_enabled) continue
 
@@ -200,6 +198,7 @@ export class CopilotService {
           streaming: item.capabilities.supports.streaming ?? false,
           maxOutputTokens: item.capabilities.limits.max_output_tokens ?? 40_000,
           maxPromptTokens: item.capabilities.limits.max_prompt_tokens ?? 40_000,
+          provider: 'copilot',
         })
       }
     }

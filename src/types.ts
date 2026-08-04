@@ -98,13 +98,18 @@ export interface Ollama {
   enabled?: boolean
 }
 
-export type AiProvider = 'copilot' | 'ollama'
+export interface LlamaCpp {
+  enabled?: boolean
+  baseUrl?: string
+}
+
+export type AiProvider = 'copilot' | 'llama.cpp' | 'ollama'
 
 export interface AiConfig {
   copilot?: Copilot
   ollama?: Ollama
+  llamaCpp?: LlamaCpp
   model?: Model
-  provider?: AiProvider
   sidebarWidth?: number
 }
 
