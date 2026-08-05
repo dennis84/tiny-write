@@ -6,8 +6,100 @@ import type {
   CompletionsResult,
   Model,
 } from '@/services/CopilotService'
+import type {AiProvider} from '@/types'
+
+// Known open-weight model family keywords used to derive a human-readable
+// vendor name from a model or family identifier (case-insensitive substring match).
+const KNOWN_MODEL_FAMILIES = ['qwen']
 
 export class AiUtil {
+  static async getModels(
+    url: string,
+    provider: AiProvider,
+    getFamily: (item: any) => string,
+  ): Promise<Model[]> {
+    info(`Get ${provider} chat models`)
+    try {
+      const response = await fetch(url)
+      const json = await response.json()
+
+      const models: Model[] = []
+      for (const item of json.models) {
+        if (item.capabilities.includes('completion')) {
+          const name = AiUtil.parseName(item.name)
+          models.push({
+            id: item.name,
+            name,
+            vendor: AiUtil.parseFamily(getFamily(item)),
+            streaming: true,
+            maxOutputTokens: 40_000,
+            maxPromptTokens: 40_000,
+            provider,
+          })
+        }
+      }
+
+      return models
+    } catch {
+      return []
+    }
+  }
+
+  static parseName(input: string): string {
+    const parts = input.split('/')
+    if (parts.length === 0) return input
+    return parts[parts.length - 1]
+  }
+
+  static parseFamily(input: string): string {
+    const lower = input.toLowerCase()
+    for (const family of KNOWN_MODEL_FAMILIES) {
+      if (lower.includes(family)) {
+        return family.charAt(0).toUpperCase() + family.slice(1)
+      }
+    }
+
+    return input
+  }
+
+  static async completions(
+    url: string,
+    model: Model,
+    messages: ChatMessage[],
+    onChunk: (chunk: Chunk) => void,
+    controller: AbortController,
+    streaming: boolean | undefined = undefined,
+    headers: Record<string, string> = {},
+  ): Promise<CompletionsResult> {
+    const body = JSON.stringify(AiUtil.createRequest(model, messages, streaming))
+    const data = await fetch(url, {
+      method: 'POST',
+      body,
+      headers: {
+        'Content-Type': 'application/json',
+        ...headers,
+      },
+      signal: controller.signal,
+    })
+
+    if (data.status >= 300 || !data.body) {
+      const errorText = await data.text()
+      return {
+        success: false,
+        interrupted: false,
+        error: errorText,
+      }
+    }
+
+    if (streaming ?? model.streaming) {
+      return await AiUtil.getStreamResponse(data, onChunk, controller.signal)
+    } else {
+      const json = await data.json()
+      onChunk(json)
+      return {success: true}
+    }
+  }
+
   static async getStreamResponse(
     data: Response,
     onChunk: (chunk: Chunk) => void,

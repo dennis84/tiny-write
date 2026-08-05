@@ -9,7 +9,7 @@ import type {ChatMessage, Chunk, CompletionsResult, Model} from './CopilotServic
 export class OllamaService {
   private streamingSignal = createSignal<AbortController | undefined>()
 
-  private modelsResource = createResource<Model[]>(() => this.getChatModels())
+  private modelsResource = createResource<Model[]>(() => this.getModels())
 
   get streaming() {
     return this.streamingSignal[0]
@@ -53,34 +53,6 @@ export class OllamaService {
     if (ai) await DB.setAi(ai)
   }
 
-  async getChatModels(): Promise<Model[]> {
-    info('Get ollama chat models')
-    try {
-      const response = await fetch('http://localhost:11434/api/tags')
-      const json = await response.json()
-
-      const models: Model[] = []
-      for (const item of json.models) {
-        if (item.capabilities.includes('completion')) {
-          const family = this.parseFamily(item.details.family)
-          models.push({
-            id: item.name,
-            name: item.name,
-            vendor: family,
-            streaming: true,
-            maxOutputTokens: 40_000,
-            maxPromptTokens: 40_000,
-            provider: 'ollama',
-          })
-        }
-      }
-
-      return models
-    } catch {
-      return []
-    }
-  }
-
   async completions(
     messages: ChatMessage[],
     onChunk: (chunk: Chunk) => void,
@@ -89,35 +61,13 @@ export class OllamaService {
     const model = this.store.ai?.model
     if (!model) return {success: false, error: 'No model selected'}
     const controller = new AbortController()
-
-    const url = 'http://localhost:11434/v1/chat/completions'
-    const body = JSON.stringify(AiUtil.createRequest(model, messages, streaming))
-    const data = await fetch(url, {
-      method: 'POST',
-      body,
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      signal: controller.signal,
-    })
-
     this.streamingSignal[1](controller)
 
-    if (data.status >= 300 || !data.body) {
-      const error = await data.text()
-      return {
-        success: false,
-        interrupted: false,
-        error,
-      }
-    }
-
-    if (streaming ?? model.streaming) {
-      return await AiUtil.getStreamResponse(data, onChunk, controller.signal)
-    } else {
-      const json = await data.json()
-      onChunk(json)
-      return {success: true}
+    const url = 'http://localhost:11434/v1/chat/completions'
+    try {
+      return await AiUtil.completions(url, model, messages, onChunk, controller, streaming)
+    } finally {
+      this.streamingSignal[1](undefined)
     }
   }
 
@@ -126,8 +76,11 @@ export class OllamaService {
     this.streamingSignal[1](undefined)
   }
 
-  private parseFamily(input: string) {
-    if (input.startsWith('qwen')) return 'Qwen'
-    return input
+  getModels(): Promise<Model[]> {
+    return AiUtil.getModels(
+      'http://localhost:11434/api/tags',
+      'ollama',
+      (item) => item.details.family,
+    )
   }
 }

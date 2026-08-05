@@ -90,20 +90,6 @@ export class CopilotService {
 
   private modelsResource: ResourceReturn<Model[]>
 
-  get fallbackModel(): Model | undefined {
-    return this.store.ai?.copilot?.user
-      ? {
-          id: 'gpt-4o',
-          name: 'gpt-4o',
-          vendor: 'OpenAI',
-          streaming: true,
-          maxOutputTokens: 40_000,
-          maxPromptTokens: 40_000,
-          provider: 'copilot',
-        }
-      : undefined
-  }
-
   get chatModel(): Model | undefined {
     return this.store.ai?.model ?? this.modelsResource[0].latest?.find((it) => it.id === 'gpt-4o')
   }
@@ -121,7 +107,7 @@ export class CopilotService {
     private setState: SetStoreFunction<State>,
     private fileService: FileService,
   ) {
-    this.modelsResource = createResource(() => this.getChatModels())
+    this.modelsResource = createResource(() => this.getModels())
   }
 
   async disconnect() {
@@ -162,48 +148,6 @@ export class CopilotService {
         await lspRegisterDocument(currentFile.path)
       }
     }
-  }
-
-  async getChatModels(): Promise<Model[]> {
-    const accessToken = this.store.ai?.copilot?.accessToken
-    if (!accessToken) return []
-    const tokenResponse = await this.getApiToken(accessToken)
-    const url = this.proxy(`${tokenResponse.endpoints.api}/models`)
-
-    debug(`Copilot get models (url=${url}, token=${JSON.stringify(tokenResponse)})`)
-    const data = await fetch(url, {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${tokenResponse.token}`,
-        'Editor-Version': this.appVersion(),
-        'Copilot-Integration-Id': 'vscode-chat',
-      },
-    })
-
-    const json = await data.json()
-
-    const models: Model[] = []
-    for (const item of json.data) {
-      if (!item.model_picker_enabled) continue
-
-      if (
-        // models like gpt-4o don't have supported_endpoints field but they do support /chat/completions endpoint
-        item.supported_endpoints === undefined ||
-        item.supported_endpoints.includes('/chat/completions')
-      ) {
-        models.push({
-          id: item.id,
-          name: item.name,
-          vendor: item.vendor,
-          streaming: item.capabilities.supports.streaming ?? false,
-          maxOutputTokens: item.capabilities.limits.max_output_tokens ?? 40_000,
-          maxPromptTokens: item.capabilities.limits.max_prompt_tokens ?? 40_000,
-          provider: 'copilot',
-        })
-      }
-    }
-
-    return models
   }
 
   async getStatus(code: CopilotSignIn): Promise<CopilotStatus | undefined> {
@@ -348,34 +292,15 @@ export class CopilotService {
     const controller = new AbortController()
     this.streamingSignal[1](controller)
 
-    const data = await fetch(url, {
-      method: 'POST',
-      body,
-      headers: {
-        'Content-Type': 'application/json',
+    try {
+      return await AiUtil.completions(url, model, messages, onChunk, controller, streaming, {
         Authorization: `Bearer ${tokenResponse.token}`,
         'Editor-Version': this.appVersion(),
         'Copilot-Integration-Id': 'vscode-chat',
         'Copilot-Vision-Request': 'true',
-      },
-      signal: controller.signal,
-    })
-
-    if (data.status >= 300 || !data.body) {
-      const error = await data.text()
-      return {
-        success: false,
-        interrupted: false,
-        error,
-      }
-    }
-
-    if (streaming ?? model.streaming) {
-      return await AiUtil.getStreamResponse(data, onChunk, controller.signal)
-    } else {
-      const json = await data.json()
-      onChunk(json)
-      return {success: true}
+      })
+    } finally {
+      this.streamingSignal[1](undefined)
     }
   }
 
@@ -390,6 +315,48 @@ export class CopilotService {
     }
 
     window.open(url, '_blank')
+  }
+
+  private async getModels(): Promise<Model[]> {
+    const accessToken = this.store.ai?.copilot?.accessToken
+    if (!accessToken) return []
+    const tokenResponse = await this.getApiToken(accessToken)
+    const url = this.proxy(`${tokenResponse.endpoints.api}/models`)
+
+    debug(`Copilot get models (url=${url}, token=${JSON.stringify(tokenResponse)})`)
+    const data = await fetch(url, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${tokenResponse.token}`,
+        'Editor-Version': this.appVersion(),
+        'Copilot-Integration-Id': 'vscode-chat',
+      },
+    })
+
+    const json = await data.json()
+
+    const models: Model[] = []
+    for (const item of json.data) {
+      if (!item.model_picker_enabled) continue
+
+      if (
+        // models like gpt-4o don't have supported_endpoints field but they do support /chat/completions endpoint
+        item.supported_endpoints === undefined ||
+        item.supported_endpoints.includes('/chat/completions')
+      ) {
+        models.push({
+          id: item.id,
+          name: item.name,
+          vendor: item.vendor,
+          streaming: item.capabilities.supports.streaming ?? false,
+          maxOutputTokens: item.capabilities.limits.max_output_tokens ?? 40_000,
+          maxPromptTokens: item.capabilities.limits.max_prompt_tokens ?? 40_000,
+          provider: 'copilot',
+        })
+      }
+    }
+
+    return models
   }
 
   private appVersion(): string {

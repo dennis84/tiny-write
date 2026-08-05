@@ -17,7 +17,7 @@ export class AiService {
   }
 
   get chatModel(): Model | undefined {
-    return this.store.ai?.model ?? this.copilotService.fallbackModel
+    return this.store.ai?.model
   }
 
   get streaming() {

@@ -1,6 +1,6 @@
 import {Show} from 'solid-js'
 import {useState} from '@/state'
-import {IconToggleOff} from '../icons/Ui'
+import {IconToggleOff, IconToggleOn} from '../icons/Ui'
 import {Link} from './Link'
 import {Label, Sub} from './Style'
 
@@ -21,7 +21,7 @@ export const AiSubmenuOllama = () => {
       <Sub data-tauri-drag-region="true">
         <Show when={!store.ai?.ollama?.enabled}>
           <Link onClick={onConnect} data-testid="ollama_connect">
-            <IconToggleOff /> Connect
+            <IconToggleOn /> Connect
           </Link>
         </Show>
         <Show when={store.ai?.ollama?.enabled}>

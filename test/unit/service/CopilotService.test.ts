@@ -3,36 +3,35 @@ import {mock} from 'vitest-mock-extended'
 
 vi.mock('@/db', () => ({DB: mock()}))
 
+import {waitFor} from '@solidjs/testing-library'
 import {createStore} from 'solid-js/store'
 import {type ChatMessage, CopilotService} from '@/services/CopilotService'
 import type {FileService} from '@/services/FileService'
 import {createState} from '@/state'
+import {CopilotMock} from '@/utils/CopilotMock'
 
 beforeEach(() => {
   vi.stubGlobal('fetch', vi.fn())
 
-  vi.mocked(fetch).mockResolvedValueOnce(
-    new Response(
-      JSON.stringify({
-        token: 'API-TOKEN-123',
-        expiresAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
-        endpoints: {
-          api: 'https://api.example.com/v1/chat/completions',
-        },
-      }),
-      {status: 200},
-    ),
-  )
+  const tokenBody = JSON.stringify(CopilotMock.apiToken())
+  const modelsBody = JSON.stringify(CopilotMock.models())
+
+  vi.mocked(fetch)
+    .mockResolvedValueOnce(new Response(tokenBody, {status: 200})) // fetch token for models
+    .mockResolvedValueOnce(new Response(modelsBody, {status: 200})) // fetch models
+    .mockResolvedValueOnce(new Response(tokenBody, {status: 200})) // fetch token for completions
 })
 
 test('completions - success', async () => {
   const fileService = mock<FileService>()
   const [store, setState] = createStore(
-    createState({
-      ai: {copilot: {accessToken: 'ACCESS-TOKEN-123'}},
-    }),
+    createState({ai: {copilot: {accessToken: 'ACCESS-TOKEN-123'}}}),
   )
   const service = new CopilotService(store, setState, fileService)
+
+  await waitFor(() => {
+    expect(service.models.length).toBe(2)
+  })
 
   const messages: ChatMessage[] = [{role: 'user', content: [{type: 'text', text: 'Hello, world!'}]}]
 
@@ -76,6 +75,10 @@ test('completions - interrupted', async () => {
     }),
   )
   const service = new CopilotService(store, setState, fileService)
+
+  await waitFor(() => {
+    expect(service.models.length).toBe(2)
+  })
 
   const messages: ChatMessage[] = [{role: 'user', content: [{type: 'text', text: 'Hello, world!'}]}]
 

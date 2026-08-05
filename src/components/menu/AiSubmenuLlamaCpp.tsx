@@ -1,11 +1,27 @@
 import {Show} from 'solid-js'
+import {styled} from 'solid-styled-components'
 import {useState} from '@/state'
 import {IconToggleOff} from '../icons/Ui'
 import {Link} from './Link'
 import {Label, Sub, Text} from './Style'
 
+const InputText = styled.input`
+  margin-left: 10px;
+  height: var(--button-height);
+  font-size: var(--menu-font-size);
+  cursor: var(--cursor-text);
+  outline: none;
+  text-decoration: none;
+  color: var(--foreground);
+  font-family: var(--menu-font-family);
+  padding: 0 10px;
+  background: none;
+  border: 1px solid var(--background-50);
+  border-radius: var(--border-radius);
+`
+
 export const AiSubmenuLlamaCpp = () => {
-  const {store, llamaCppService} = useState()
+  const {store, llamaCppService, dialogService} = useState()
 
   const onDisconnect = async () => {
     await llamaCppService.disconnect()
@@ -22,6 +38,10 @@ export const AiSubmenuLlamaCpp = () => {
 
   const onBlur = () => {
     llamaCppService.refetchModels()
+    dialogService.toast({
+      message: 'Refetching LLama.CPP models',
+      duration: 3_000,
+    })
   }
 
   return (
@@ -38,9 +58,10 @@ export const AiSubmenuLlamaCpp = () => {
             <IconToggleOff /> Disconnect
           </Link>
           <Text>
-            Host
-            <input
+            Base URL:
+            <InputText
               type="text"
+              id="llama_cpp_base_url"
               value={store.ai?.llamaCpp?.baseUrl ?? ''}
               placeholder={llamaCppService.baseUrl}
               onInput={onInputHost}
