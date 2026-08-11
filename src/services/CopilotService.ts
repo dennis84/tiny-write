@@ -261,24 +261,24 @@ export class CopilotService {
     const model = this.chatModel
     if (!model) return {success: false, error: 'No model selected'}
 
-    if (isTauri()) {
-      return new Promise((resolve) => {
-        const channel = new Channel<string>()
-        channel.onmessage = (message: string) => {
-          if (message.startsWith('[DONE]')) {
-            this.streamingSignal[1](new AbortController())
-            resolve({success: true})
-          } else if (this.streaming()) {
-            onChunk(JSON.parse(message))
-          } else {
-            resolve({success: false, interrupted: true})
-          }
-        }
-
-        this.streamingSignal[1](undefined)
-        return sendChatMessage(model, messages, channel, streaming)
-      })
-    }
+    // if (isTauri()) {
+    //   return new Promise((resolve) => {
+    //     const channel = new Channel<string>()
+    //     channel.onmessage = (message: string) => {
+    //       if (message.startsWith('[DONE]')) {
+    //         this.streamingSignal[1](new AbortController())
+    //         resolve({success: true})
+    //       } else if (this.streaming()) {
+    //         onChunk(JSON.parse(message))
+    //       } else {
+    //         resolve({success: false, interrupted: true})
+    //       }
+    //     }
+    //
+    //     this.streamingSignal[1](undefined)
+    //     return sendChatMessage(model, messages, channel, streaming)
+    //   })
+    // }
 
     const accessToken = this.store.ai?.copilot?.accessToken
     if (!accessToken) return {success: false, error: 'No access token'}

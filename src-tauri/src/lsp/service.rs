@@ -8,12 +8,9 @@ use async_lsp::lsp_types::{
     Url,
 };
 use async_lsp::lsp_types::{
-    CompletionContext, CompletionParams, CompletionResponse, CompletionTriggerKind,
-    DidChangeTextDocumentParams, DidOpenTextDocumentParams, GotoDefinitionParams,
-    GotoDefinitionResponse, Hover, InitializeParams, InitializeResult,
-    TextDocumentContentChangeEvent, TextDocumentItem, TextDocumentSyncCapability,
-    TextDocumentSyncKind, TraceValue, VersionedTextDocumentIdentifier, WorkspaceFolder,
+    CompletionContext, CompletionParams, CompletionResponse, CompletionTriggerKind, DidChangeTextDocumentParams, DidOpenTextDocumentParams, GotoDefinitionParams, GotoDefinitionResponse, Hover, InitializeParams, InitializeResult, TextDocumentContentChangeEvent, TextDocumentItem, TextDocumentSyncCapability, TextDocumentSyncKind, TraceValue, VersionedTextDocumentIdentifier, WorkspaceFolder
 };
+use serde_json::json;
 use tauri::{AppHandle, Manager, Runtime};
 use tauri_plugin_cli::CliExt;
 use tracing::debug;
@@ -102,6 +99,16 @@ impl<R: Runtime> LspService<R> {
                     uri: root_uri,
                     name: Default::default(),
                 }]),
+                initialization_options: Some(json!({
+                    "editorInfo": {
+                        "name": "TinyWrite",
+                        "version": "0.8.0",
+                    },
+                    "editorPluginInfo": {
+                        "name": "TinyWrite Copilot",
+                        "version": "0.8.0",
+                    },
+                })),
                 ..InitializeParams::default()
             })
             .await?;

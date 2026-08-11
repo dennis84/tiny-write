@@ -1,6 +1,6 @@
 import {createEffect, createSignal, onCleanup, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
-import {isTest} from '@/env'
+import {isTauri, isTest} from '@/env'
 import {copy} from '@/remote/clipboard'
 import type {CopilotSignIn} from '@/remote/copilot'
 import {useState} from '@/state'
@@ -46,7 +46,12 @@ export const AiSubmenuGithub = () => {
     copilotService.verify(url)
   }
 
+  const onLsp = () => {
+  }
+
   createEffect(() => {
+    if (isTauri()) return
+
     const code = codeResult()
     if (!code) return
 
@@ -95,6 +100,9 @@ export const AiSubmenuGithub = () => {
                 <Text>Signed in with: {name()}</Text>
                 <Link onClick={onDisconnect}>
                   <IconToggleOff /> Disconnect
+                </Link>
+                <Link onClick={onLsp}>
+                  <IconToggleOn /> Enable inline completions
                 </Link>
                 <Show when={done()}>
                   <Note>GitHub Copilot is now ready!</Note>

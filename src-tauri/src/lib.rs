@@ -25,8 +25,12 @@ pub fn run<R: Runtime>(builder: Builder<R>) {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_cli::init())
         .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_http::init())
         .setup(|app| {
             let handle = app.handle();
+
+            let window = app.get_webview_window("main").unwrap();
+            window.open_devtools();
 
             match handle.cli().matches() {
                 Ok(matches) => {

@@ -6,13 +6,12 @@ use tokio::sync::Mutex;
 use tracing::{debug, info};
 
 use crate::{
-    editor::editor_state::{is_buffer, Delete, Document, EditorState, Insert, Language},
-    lsp::{
+    editor::editor_state::{Delete, Document, EditorState, Insert, Language, is_buffer}, lsp::{
         registry::{LanguageServerId, LspRegistry},
         server::LspServer,
         service::LspService,
         util::{get_offset_encoding, pos_to_lsp_pos, url_for_path},
-    },
+    }
 };
 
 use super::request;
@@ -112,7 +111,6 @@ impl<R: Runtime> CopilotLspService<R> {
                     .await;
                 lsp_service.initialized(&server).await?;
                 self.check_status(&server).await?;
-                self.send_editor_info(&server).await?;
                 if let Some(doc) = maybe_doc {
                     lsp_service.open_document(&server, &doc).await?;
                 }
@@ -161,25 +159,6 @@ impl<R: Runtime> CopilotLspService<R> {
             .await?;
         debug!("Copilot - CheckStatus response {:?}", response);
         Ok(response)
-    }
-
-    pub async fn send_editor_info(&self, server: &LspServer) -> anyhow::Result<()> {
-        debug!("Copilot - send editor info request");
-
-        let response = server
-            .request::<request::SetEditorInfo>(request::SetEditorInfoParams {
-                editor_info: request::EditorInfo {
-                    name: "TinyWrite".to_string(),
-                    version: "0.8.0".to_string(),
-                },
-                editor_plugin_info: request::EditorPluginInfo {
-                    name: "TinyWrite Copilot".to_string(),
-                    version: "0.8.0".to_string(),
-                },
-            })
-            .await?;
-        debug!("Copilot - SetEditorInfo response {:?}", response);
-        Ok(())
     }
 
     pub async fn sign_out(&self, server: &LspServer) -> anyhow::Result<request::SignOutResult> {

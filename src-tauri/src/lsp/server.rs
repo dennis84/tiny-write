@@ -13,6 +13,8 @@ use async_lsp::{
     LanguageServer, Result, ServerSocket,
 };
 use futures_channel::oneshot;
+use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use tokio::{sync::RwLock, task::JoinHandle};
 use tower::ServiceBuilder;
 use tracing::{debug, info};
@@ -28,6 +30,14 @@ struct Stop;
 #[derive(Clone)]
 pub struct LspServer {
     server: Arc<RwLock<ServerSocket>>,
+}
+
+#[derive(Debug)]
+pub enum DidChangeStatusV2 {}
+
+impl Notification for DidChangeStatusV2 {
+    type Params = Value;
+    const METHOD: &'static str = "didChangeStatus/v2";
 }
 
 impl LspServer {
@@ -55,6 +65,10 @@ impl LspServer {
                 .notification::<PublishDiagnostics>(|_, _| ControlFlow::Continue(()))
                 .notification::<ShowMessage>(|_, params| {
                     info!("Message {:?}: {}", params.typ, params.message);
+                    ControlFlow::Continue(())
+                })
+                .notification::<DidChangeStatusV2>(|_, params| {
+                    println!("AAAAAAAA V2 {:?}", params);
                     ControlFlow::Continue(())
                 })
                 .unhandled_notification(|_, _| ControlFlow::Continue(()))

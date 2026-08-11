@@ -1,3 +1,4 @@
+import { fetch } from '@/remote/http'
 import {error, info} from '@/remote/log'
 import type {
   ChatMessage,
@@ -10,7 +11,7 @@ import type {AiProvider} from '@/types'
 
 // Known open-weight model family keywords used to derive a human-readable
 // vendor name from a model or family identifier (case-insensitive substring match).
-const KNOWN_MODEL_FAMILIES = ['qwen']
+const KNOWN_MODEL_FAMILIES = ['qwen', 'gemma']
 
 export class AiUtil {
   static async getModels(
@@ -18,7 +19,7 @@ export class AiUtil {
     provider: AiProvider,
     getFamily: (item: any) => string,
   ): Promise<Model[]> {
-    info(`Get ${provider} chat models`)
+    info(`Get chat models (provider=${provider}, url=${url})`)
     try {
       const response = await fetch(url)
       const json = await response.json()

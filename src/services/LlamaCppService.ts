@@ -92,7 +92,8 @@ export class LlamaCppService {
     this.streamingSignal[1](undefined)
   }
 
-  private getModels(): Promise<Model[]> {
+  private async getModels(): Promise<Model[]> {
+    if (!this.store.ai?.llamaCpp?.enabled) return []
     return AiUtil.getModels(`${this.baseUrl}/v1/models`, 'llama.cpp', (item) =>
       AiUtil.parseName(item.name),
     )

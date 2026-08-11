@@ -76,7 +76,8 @@ export class OllamaService {
     this.streamingSignal[1](undefined)
   }
 
-  getModels(): Promise<Model[]> {
+  private async getModels(): Promise<Model[]> {
+    if (!this.store.ai?.ollama?.enabled) return []
     return AiUtil.getModels(
       'http://localhost:11434/api/tags',
       'ollama',
