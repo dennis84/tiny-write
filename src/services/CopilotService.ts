@@ -5,6 +5,7 @@ import {DB} from '@/db'
 import {isTauri} from '@/env'
 import {open} from '@/remote/app'
 import {
+    CopilotPromptUserDeviceFlow,
   type CopilotSignIn,
   type CopilotStatus,
   copilotAuthToken,
@@ -150,7 +151,7 @@ export class CopilotService {
     }
   }
 
-  async getStatus(code: CopilotSignIn): Promise<CopilotStatus | undefined> {
+  async getStatus(code: CopilotPromptUserDeviceFlow): Promise<CopilotStatus | undefined> {
     if (isTauri()) {
       const status = await copilotStatus()
       const accessToken = await copilotAuthToken()
@@ -204,6 +205,8 @@ export class CopilotService {
     const json = await data.json()
 
     return {
+      status: json.status,
+      user: json.user,
       userCode: json.user_code,
       deviceCode: json.device_code,
       verificationUri: json.verification_uri,

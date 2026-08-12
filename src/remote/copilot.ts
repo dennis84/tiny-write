@@ -22,7 +22,15 @@ export const copilotAuthToken = async (): Promise<string> => {
   return await invoke('copilot_auth_token')
 }
 
-export type CopilotSignIn = {userCode: string; deviceCode?: string; verificationUri: string}
+export type CopilotAlreadySignedIn = {status: 'AlreadySignedIn'; user: string}
+export type CopilotPromptUserDeviceFlow = {
+  status: 'PromptUserDeviceFlow'
+  userCode: string
+  deviceCode?: string
+  verificationUri: string
+}
+
+export type CopilotSignIn = CopilotAlreadySignedIn | CopilotPromptUserDeviceFlow
 
 export const copilotSignIn = async (): Promise<CopilotSignIn> => {
   return await invoke('copilot_sign_in')

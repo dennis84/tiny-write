@@ -3,6 +3,7 @@ use async_lsp::lsp_types::InitializeResult;
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::{collections::hash_map::Entry, path::Path};
+use tauri::{AppHandle, Runtime};
 use tokio::sync::RwLock;
 use tokio::task::JoinHandle;
 use tracing::{debug, info};
@@ -65,9 +66,10 @@ impl LspRegistry {
             .cloned()
     }
 
-    pub async fn register_language_server(
+    pub async fn register_language_server<R: Runtime>(
         &self,
         language_server_id: &LanguageServerId,
+        app_handle: &AppHandle<R>,
     ) -> anyhow::Result<(LspServer, bool)> {
         let mut language_servers = self.language_servers.write().await;
 
@@ -77,7 +79,7 @@ impl LspRegistry {
                     "register new language server (id={:?})",
                     &language_server_id
                 );
-                let (server, _) = Self::create_language_server(language_server_id)?;
+                let (server, _) = Self::create_language_server(language_server_id, app_handle)?;
                 let server = entry.insert(server.clone());
                 Ok((server.clone(), true))
             }
@@ -122,17 +124,24 @@ impl LspRegistry {
         language_servers.clear();
     }
 
-    fn create_language_server(
+    fn create_language_server<R: Runtime>(
         language_server_id: &LanguageServerId,
+        app_handle: &AppHandle<R>,
     ) -> anyhow::Result<(LspServer, JoinHandle<()>)> {
         info!(
             "create language server (language_server_id={:?})",
             language_server_id
         );
         match language_server_id.1 .0.as_str() {
-            "typescript" => Ok(LspServer::new("typescript-language-server --stdio")),
-            "rust" => Ok(LspServer::new("rust-analyzer")),
-            "copilot" => Ok(LspServer::new("copilot-language-server --stdio")),
+            "typescript" => Ok(LspServer::new(
+                "typescript-language-server --stdio",
+                app_handle,
+            )),
+            "rust" => Ok(LspServer::new("rust-analyzer", app_handle)),
+            "copilot" => Ok(LspServer::new(
+                "copilot-language-server --stdio",
+                app_handle,
+            )),
             _ => Err(anyhow!("No language server found")),
         }
     }
@@ -144,6 +153,8 @@ mod tests {
 
     use ropey::Rope;
     use serial_test::serial;
+    use tauri::test::mock_app;
+    use tauri::Manager;
 
     use crate::editor::editor_state::{Document, Language};
     use crate::editor::testutil::{create_test_workspace, get_test_dir};
@@ -166,9 +177,12 @@ mod tests {
             version: 0,
         };
 
+        let app = mock_app();
+        let handle = app.app_handle();
+
         let lsp_registry = LspRegistry::new();
         lsp_registry
-            .register_language_server(&doc.get_language_server_id().unwrap())
+            .register_language_server(&doc.get_language_server_id().unwrap(), handle)
             .await
             .unwrap();
 

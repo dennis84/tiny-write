@@ -101,7 +101,7 @@ impl<R: Runtime> CopilotLspService<R> {
         let language_server_id = Self::language_server_id(worktree_path);
 
         match lsp_registry
-            .register_language_server(&language_server_id)
+            .register_language_server(&language_server_id, &self.app_handle)
             .await?
         {
             (server, true) => {

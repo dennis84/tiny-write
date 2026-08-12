@@ -13,13 +13,26 @@ use async_lsp::{
     LanguageServer, Result, ServerSocket,
 };
 use futures_channel::oneshot;
-use serde::{Deserialize, Serialize};
-use serde_json::Value;
+use serde::Serialize;
+use serde_json::{json, Value};
+use tauri::{AppHandle, Emitter, Runtime};
 use tokio::{sync::RwLock, task::JoinHandle};
 use tower::ServiceBuilder;
-use tracing::{debug, info};
+use tracing::{debug, info, warn};
 
 use crate::copilot::request::FeatureFlagsNotification;
+
+const NOTIFICATION_EVENT: &str = "lsp://notification";
+
+/// Emits a generic frontend event for every LSP notification received from a
+/// language server, so the UI can observe/log them without each notification
+/// type needing its own plumbing.
+fn emit_notification<R: Runtime>(app_handle: &AppHandle<R>, method: &str, params: impl Serialize) {
+    let params = serde_json::to_value(params).unwrap_or(Value::Null);
+    if let Err(err) = app_handle.emit(NOTIFICATION_EVENT, json!({ "method": method, "params": params })) {
+        warn!("failed to emit lsp notification (method={method}): {err:?}");
+    }
+}
 
 struct ClientState {
     indexed_tx: Option<oneshot::Sender<()>>,
@@ -41,45 +54,84 @@ impl Notification for DidChangeStatusV2 {
 }
 
 impl LspServer {
-    pub fn new(script: &str) -> (LspServer, JoinHandle<()>) {
-        let (mainloop, server) = async_lsp::MainLoop::new_client(|_server| {
-            let mut router = Router::new(ClientState { indexed_tx: None });
-            router
-                .notification::<Progress>(|this, prog| {
-                    info!("{:?} {:?}", prog.token, prog.value);
-                    if matches!(prog.token, NumberOrString::String(s) if s == "rustAnalyzer/Indexing")
-                        && matches!(
-                            prog.value,
-                            ProgressParamsValue::WorkDone(WorkDoneProgress::End(_))
-                        )
-                    {
-                        // Sometimes rust-analyzer auto-index multiple times?
-                        if let Some(tx) = this.indexed_tx.take() {
-                            let _: Result<_, _> = tx.send(());
+    pub fn new<R: Runtime>(script: &str, app_handle: &AppHandle<R>) -> (LspServer, JoinHandle<()>) {
+        let (mainloop, server) = {
+            let app_handle = app_handle.clone();
+            async_lsp::MainLoop::new_client(move |_server| {
+                let mut router = Router::new(ClientState { indexed_tx: None });
+                router
+                    .notification::<Progress>({
+                        let app_handle = app_handle.clone();
+                        move |this, prog| {
+                            info!("{:?} {:?}", prog.token, prog.value);
+                            emit_notification(&app_handle, Progress::METHOD, &prog);
+                            if matches!(prog.token, NumberOrString::String(s) if s == "rustAnalyzer/Indexing")
+                                && matches!(
+                                    prog.value,
+                                    ProgressParamsValue::WorkDone(WorkDoneProgress::End(_))
+                                )
+                            {
+                                // Sometimes rust-analyzer auto-index multiple times?
+                                if let Some(tx) = this.indexed_tx.take() {
+                                    let _: Result<_, _> = tx.send(());
+                                }
+                            }
+                            ControlFlow::Continue(())
                         }
-                    }
-                    ControlFlow::Continue(())
-                })
-                .notification::<LogMessage>(|_, _| ControlFlow::Continue(()))
-                .notification::<FeatureFlagsNotification>(|_, _| ControlFlow::Continue(()))
-                .notification::<PublishDiagnostics>(|_, _| ControlFlow::Continue(()))
-                .notification::<ShowMessage>(|_, params| {
-                    info!("Message {:?}: {}", params.typ, params.message);
-                    ControlFlow::Continue(())
-                })
-                .notification::<DidChangeStatusV2>(|_, params| {
-                    println!("AAAAAAAA V2 {:?}", params);
-                    ControlFlow::Continue(())
-                })
-                .unhandled_notification(|_, _| ControlFlow::Continue(()))
-                .event(|_, _: Stop| ControlFlow::Break(Ok(())));
+                    })
+                    .notification::<LogMessage>({
+                        let app_handle = app_handle.clone();
+                        move |_, params| {
+                            emit_notification(&app_handle, LogMessage::METHOD, &params);
+                            ControlFlow::Continue(())
+                        }
+                    })
+                    .notification::<FeatureFlagsNotification>({
+                        let app_handle = app_handle.clone();
+                        move |_, params| {
+                            emit_notification(&app_handle, FeatureFlagsNotification::METHOD, &params);
+                            ControlFlow::Continue(())
+                        }
+                    })
+                    .notification::<PublishDiagnostics>({
+                        let app_handle = app_handle.clone();
+                        move |_, params| {
+                            emit_notification(&app_handle, PublishDiagnostics::METHOD, &params);
+                            ControlFlow::Continue(())
+                        }
+                    })
+                    .notification::<ShowMessage>({
+                        let app_handle = app_handle.clone();
+                        move |_, params| {
+                            info!("Message {:?}: {}", params.typ, params.message);
+                            emit_notification(&app_handle, ShowMessage::METHOD, &params);
+                            ControlFlow::Continue(())
+                        }
+                    })
+                    .notification::<DidChangeStatusV2>({
+                        let app_handle = app_handle.clone();
+                        move |_, params| {
+                            debug!("didChangeStatus/v2 {:?}", params);
+                            emit_notification(&app_handle, DidChangeStatusV2::METHOD, &params);
+                            ControlFlow::Continue(())
+                        }
+                    })
+                    .unhandled_notification({
+                        let app_handle = app_handle.clone();
+                        move |_, notif| {
+                            emit_notification(&app_handle, &notif.method, &notif.params);
+                            ControlFlow::Continue(())
+                        }
+                    })
+                    .event(|_, _: Stop| ControlFlow::Break(Ok(())));
 
-            ServiceBuilder::new()
-                .layer(TracingLayer::default())
-                .layer(CatchUnwindLayer::default())
-                .layer(ConcurrencyLayer::default())
-                .service(router)
-        });
+                ServiceBuilder::new()
+                    .layer(TracingLayer::default())
+                    .layer(CatchUnwindLayer::default())
+                    .layer(ConcurrencyLayer::default())
+                    .service(router)
+            })
+        };
 
         let child = async_process::Command::new("sh")
             .args(["-c", script])

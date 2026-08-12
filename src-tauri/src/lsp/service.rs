@@ -50,7 +50,7 @@ impl<R: Runtime> LspService<R> {
         let language_server_id = doc.get_language_server_id().ok_or(anyhow!("No language"))?;
 
         match lsp_registry
-            .register_language_server(&language_server_id)
+            .register_language_server(&language_server_id, &self.app_handle)
             .await?
         {
             (server, true) => {

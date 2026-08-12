@@ -2,7 +2,7 @@ import {createEffect, createSignal, onCleanup, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {isTauri, isTest} from '@/env'
 import {copy} from '@/remote/clipboard'
-import type {CopilotSignIn} from '@/remote/copilot'
+import type {CopilotPromptUserDeviceFlow} from '@/remote/copilot'
 import {useState} from '@/state'
 import {IconButton} from '../Button'
 import {IconCopy, IconOpenInNew, IconToggleOff, IconToggleOn} from '../icons/Ui'
@@ -20,7 +20,7 @@ const POLL_INTERVAL = isTest ? 10 : 6_000
 
 export const AiSubmenuGithub = () => {
   const {store, copilotService, dialogService} = useState()
-  const [codeResult, setCodeResult] = createSignal<CopilotSignIn>()
+  const [codeResult, setCodeResult] = createSignal<CopilotPromptUserDeviceFlow>()
   const [done, setDone] = createSignal(false)
 
   const onDisconnect = async () => {
@@ -30,7 +30,11 @@ export const AiSubmenuGithub = () => {
 
   const onConnect = async () => {
     const result = await copilotService.signIn()
-    setCodeResult(result)
+    if (result.status === 'AlreadySignedIn') {
+      await copilotService.updateStatus({user: result.user})
+    } else {
+      setCodeResult(result)
+    }
   }
 
   const onCopy = async () => {
@@ -46,11 +50,10 @@ export const AiSubmenuGithub = () => {
     copilotService.verify(url)
   }
 
-  const onLsp = () => {
-  }
+  const onLsp = () => {}
 
   createEffect(() => {
-    if (isTauri()) return
+    // if (isTauri()) return
 
     const code = codeResult()
     if (!code) return
