@@ -1,7 +1,6 @@
 use tauri::{Builder, Manager, Runtime};
 use tauri_plugin_cli::CliExt;
 
-use copilot::chat_service::CopilotChatService;
 use copilot::lsp_service::CopilotLspService;
 use editor::editor_state::EditorState;
 use lsp::registry::LspRegistry;
@@ -88,8 +87,6 @@ pub fn run<R: Runtime>(builder: Builder<R>) {
 
             let copilot_lsp_service = CopilotLspService::new(handle.clone());
             app.manage(copilot_lsp_service);
-            let copilot_chat_service = CopilotChatService::new().unwrap();
-            app.manage(copilot_chat_service);
 
             let handle2 = handle.clone();
 
@@ -136,7 +133,6 @@ pub fn run<R: Runtime>(builder: Builder<R>) {
             copilot::command::copilot_status,
             copilot::command::copilot_auth_token,
             copilot::command::copilot_completion,
-            copilot::command::copilot_chat_completions,
             logger::command::log_debug,
             logger::command::log_info,
             logger::command::log_warn,

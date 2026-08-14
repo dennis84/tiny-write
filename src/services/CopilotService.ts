@@ -1,18 +1,16 @@
-import {Channel} from '@tauri-apps/api/core'
 import {createResource, createSignal, type ResourceReturn} from 'solid-js'
 import {produce, type SetStoreFunction, type Store} from 'solid-js/store'
 import {DB} from '@/db'
 import {isTauri} from '@/env'
 import {open} from '@/remote/app'
 import {
-    CopilotPromptUserDeviceFlow,
+  type CopilotPromptUserDeviceFlow,
   type CopilotSignIn,
   type CopilotStatus,
   copilotAuthToken,
   copilotSignIn,
   copilotStatus,
   disconnectCopilot,
-  sendChatMessage,
   startLanguageServer,
 } from '@/remote/copilot'
 import {debug, info} from '@/remote/log'
@@ -263,25 +261,6 @@ export class CopilotService {
   ): Promise<CompletionsResult> {
     const model = this.chatModel
     if (!model) return {success: false, error: 'No model selected'}
-
-    // if (isTauri()) {
-    //   return new Promise((resolve) => {
-    //     const channel = new Channel<string>()
-    //     channel.onmessage = (message: string) => {
-    //       if (message.startsWith('[DONE]')) {
-    //         this.streamingSignal[1](new AbortController())
-    //         resolve({success: true})
-    //       } else if (this.streaming()) {
-    //         onChunk(JSON.parse(message))
-    //       } else {
-    //         resolve({success: false, interrupted: true})
-    //       }
-    //     }
-    //
-    //     this.streamingSignal[1](undefined)
-    //     return sendChatMessage(model, messages, channel, streaming)
-    //   })
-    // }
 
     const accessToken = this.store.ai?.copilot?.accessToken
     if (!accessToken) return {success: false, error: 'No access token'}

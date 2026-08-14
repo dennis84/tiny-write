@@ -29,7 +29,10 @@ const NOTIFICATION_EVENT: &str = "lsp://notification";
 /// type needing its own plumbing.
 fn emit_notification<R: Runtime>(app_handle: &AppHandle<R>, method: &str, params: impl Serialize) {
     let params = serde_json::to_value(params).unwrap_or(Value::Null);
-    if let Err(err) = app_handle.emit(NOTIFICATION_EVENT, json!({ "method": method, "params": params })) {
+    if let Err(err) = app_handle.emit(
+        NOTIFICATION_EVENT,
+        json!({ "method": method, "params": params }),
+    ) {
         warn!("failed to emit lsp notification (method={method}): {err:?}");
     }
 }
@@ -42,19 +45,16 @@ struct Stop;
 
 #[derive(Clone)]
 pub struct LspServer {
+    pub plugin_name: String,
     server: Arc<RwLock<ServerSocket>>,
 }
 
-#[derive(Debug)]
-pub enum DidChangeStatusV2 {}
-
-impl Notification for DidChangeStatusV2 {
-    type Params = Value;
-    const METHOD: &'static str = "didChangeStatus/v2";
-}
-
 impl LspServer {
-    pub fn new<R: Runtime>(script: &str, app_handle: &AppHandle<R>) -> (LspServer, JoinHandle<()>) {
+    pub fn new<R: Runtime>(
+        plugin_name: String,
+        script: &str,
+        app_handle: &AppHandle<R>,
+    ) -> (LspServer, JoinHandle<()>) {
         let (mainloop, server) = {
             let app_handle = app_handle.clone();
             async_lsp::MainLoop::new_client(move |_server| {
@@ -63,7 +63,6 @@ impl LspServer {
                     .notification::<Progress>({
                         let app_handle = app_handle.clone();
                         move |this, prog| {
-                            info!("{:?} {:?}", prog.token, prog.value);
                             emit_notification(&app_handle, Progress::METHOD, &prog);
                             if matches!(prog.token, NumberOrString::String(s) if s == "rustAnalyzer/Indexing")
                                 && matches!(
@@ -108,14 +107,6 @@ impl LspServer {
                             ControlFlow::Continue(())
                         }
                     })
-                    .notification::<DidChangeStatusV2>({
-                        let app_handle = app_handle.clone();
-                        move |_, params| {
-                            debug!("didChangeStatus/v2 {:?}", params);
-                            emit_notification(&app_handle, DidChangeStatusV2::METHOD, &params);
-                            ControlFlow::Continue(())
-                        }
-                    })
                     .unhandled_notification({
                         let app_handle = app_handle.clone();
                         move |_, notif| {
@@ -149,6 +140,7 @@ impl LspServer {
 
         (
             LspServer {
+                plugin_name,
                 server: Arc::new(RwLock::new(server)),
             },
             mainloop_fut,

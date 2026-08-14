@@ -1,4 +1,4 @@
-import { fetch } from '@/remote/http'
+import {fetch} from '@/remote/http'
 import {error, info} from '@/remote/log'
 import type {
   ChatMessage,

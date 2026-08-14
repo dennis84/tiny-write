@@ -1,20 +1,33 @@
+use dirs::home_dir;
+use rusqlite::Connection;
 use std::path::{Path, PathBuf};
 
 use anyhow::anyhow;
-use tauri::{AppHandle, Manager, Runtime};
-use tokio::sync::Mutex;
+use tauri::{App, AppHandle, Manager, Runtime};
+use tokio::{sync::Mutex, task::JoinHandle};
 use tracing::{debug, info};
 
 use crate::{
-    editor::editor_state::{Delete, Document, EditorState, Insert, Language, is_buffer}, lsp::{
+    editor::editor_state::{is_buffer, Delete, Document, EditorState, Insert, Language},
+    lsp::{
         registry::{LanguageServerId, LspRegistry},
         server::LspServer,
         service::LspService,
         util::{get_offset_encoding, pos_to_lsp_pos, url_for_path},
-    }
+    },
 };
 
 use super::request;
+
+const PLUGIN_NAME: &str = "TinyWrite Copilot";
+
+pub fn create_server<R: Runtime>(app_handle: &AppHandle<R>) -> (LspServer, JoinHandle<()>) {
+    LspServer::new(
+        PLUGIN_NAME.to_string(),
+        "copilot-language-server --stdio",
+        app_handle,
+    )
+}
 
 pub struct CopilotLspService<R: Runtime> {
     pub app_handle: AppHandle<R>,
@@ -243,5 +256,31 @@ impl<R: Runtime> CopilotLspService<R> {
                 LanguageServerId(fallback_root_path, Language("copilot".to_string()))
             }
         }
+    }
+
+    pub fn get_auth_token(&self) -> anyhow::Result<String> {
+        let path = Self::get_copilot_auth_db_path().ok_or(anyhow!("No home directory"))?;
+        Self::read_auth_token_from_db(&path)
+    }
+
+    fn read_auth_token_from_db(path: &PathBuf) -> anyhow::Result<String> {
+        let conn = Connection::open(path)?;
+        let token: Vec<u8> = conn.query_row(
+            "SELECT token_ciphertext FROM oauth_tokens WHERE source_editor_id = ?1",
+            [PLUGIN_NAME],
+            |row| row.get(0),
+        )?;
+        let token = String::from_utf8(token)?;
+
+        Ok(token)
+    }
+
+    fn get_copilot_auth_db_path() -> Option<PathBuf> {
+        Some(
+            home_dir()?
+                .join(".config")
+                .join("github-copilot")
+                .join("auth.db"),
+        )
     }
 }

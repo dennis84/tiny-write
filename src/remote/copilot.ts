@@ -1,5 +1,4 @@
-import {type Channel, invoke} from '@tauri-apps/api/core'
-import type {ChatMessage, Model} from '@/services/CopilotService'
+import {invoke} from '@tauri-apps/api/core'
 import {timeout} from '@/utils/promise'
 import {span} from './log'
 
@@ -45,15 +44,4 @@ export const copilotCompletion = async (
   useTabs: boolean,
 ): Promise<CopilotCompletion> => {
   return await invoke('copilot_completion', {path, pos, tabWidth, useTabs})
-}
-
-type ChatEvent = string
-
-export const sendChatMessage = async (
-  model: Model,
-  messages: ChatMessage[],
-  onEvent: Channel<ChatEvent>,
-  streaming = true,
-) => {
-  await invoke('copilot_chat_completions', {model, messages, onEvent, streaming})
 }

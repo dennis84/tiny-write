@@ -9,6 +9,7 @@ use tokio::task::JoinHandle;
 use tracing::{debug, info};
 
 use crate::editor::editor_state::{Document, Language};
+use crate::copilot::lsp_service;
 
 use super::server::LspServer;
 
@@ -132,16 +133,19 @@ impl LspRegistry {
             "create language server (language_server_id={:?})",
             language_server_id
         );
-        match language_server_id.1 .0.as_str() {
+
+        match language_server_id.1.0.as_str() {
             "typescript" => Ok(LspServer::new(
+                "typescript-lsp".to_string(),
                 "typescript-language-server --stdio",
                 app_handle,
             )),
-            "rust" => Ok(LspServer::new("rust-analyzer", app_handle)),
-            "copilot" => Ok(LspServer::new(
-                "copilot-language-server --stdio",
+            "rust" => Ok(LspServer::new(
+                "rust-lsp".to_string(),
+                "rust-analyzer",
                 app_handle,
             )),
+            "copilot" => Ok(lsp_service::create_server(app_handle)),
             _ => Err(anyhow!("No language server found")),
         }
     }

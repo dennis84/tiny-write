@@ -1,11 +1,8 @@
-use tauri::ipc::Channel;
 use tauri::path::SafePathBuf;
 use tauri::{AppHandle, Manager, Result, Runtime};
-use tracing::error;
 
 use crate::copilot::lsp_service::CopilotLspService;
 
-use super::chat_service::{ChatMessage, CopilotChatService, Model};
 use super::request;
 
 #[tauri::command]
@@ -39,8 +36,9 @@ pub async fn copilot_status<R: Runtime>(app_handle: AppHandle<R>) -> Result<requ
 }
 
 #[tauri::command]
-pub async fn copilot_auth_token() -> Result<String> {
-    let token = CopilotChatService::get_auth_token()?;
+pub async fn copilot_auth_token<R: Runtime>(app_handle: AppHandle<R>) -> Result<String> {
+    let service = app_handle.state::<CopilotLspService<R>>();
+    let token = service.get_auth_token()?;
     Ok(token)
 }
 
@@ -57,22 +55,4 @@ pub async fn copilot_completion<R: Runtime>(
         .completion(path.as_ref(), pos, tab_width, use_tabs)
         .await?;
     Ok(result)
-}
-
-#[tauri::command]
-pub async fn copilot_chat_completions<R: Runtime>(
-    app_handle: AppHandle<R>,
-    model: Model,
-    messages: Vec<ChatMessage>,
-    streaming: bool,
-    on_event: Channel<String>,
-) -> Result<()> {
-    let service = app_handle.state::<CopilotChatService>();
-    service
-        .completions(model, messages, streaming, on_event)
-        .await
-        .map_err(|e| {
-            error!("chat_completion failed {e:?}");
-            tauri::Error::Anyhow(e)
-        })
 }

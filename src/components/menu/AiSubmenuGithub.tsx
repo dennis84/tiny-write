@@ -1,6 +1,6 @@
 import {createEffect, createSignal, onCleanup, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
-import {isTauri, isTest} from '@/env'
+import {isTest} from '@/env'
 import {copy} from '@/remote/clipboard'
 import type {CopilotPromptUserDeviceFlow} from '@/remote/copilot'
 import {useState} from '@/state'
