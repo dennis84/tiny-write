@@ -3,31 +3,20 @@ use rusqlite::Connection;
 use std::path::{Path, PathBuf};
 
 use anyhow::anyhow;
-use tauri::{App, AppHandle, Manager, Runtime};
-use tokio::{sync::Mutex, task::JoinHandle};
+use tauri::{AppHandle, Manager, Runtime};
+use tokio::sync::Mutex;
 use tracing::{debug, info};
 
-use crate::{
-    editor::editor_state::{is_buffer, Delete, Document, EditorState, Insert, Language},
-    lsp::{
-        registry::{LanguageServerId, LspRegistry},
-        server::LspServer,
-        service::LspService,
-        util::{get_offset_encoding, pos_to_lsp_pos, url_for_path},
-    },
+use crate::editor::editor_state::{is_buffer, Delete, Document, EditorState, Insert, Language};
+
+use crate::lsp::{
+    registry::{LanguageServerId, LspRegistry},
+    server::LspServer,
+    service::LspService,
+    util::{get_offset_encoding, pos_to_lsp_pos, url_for_path},
 };
 
-use super::request;
-
-const PLUGIN_NAME: &str = "TinyWrite Copilot";
-
-pub fn create_server<R: Runtime>(app_handle: &AppHandle<R>) -> (LspServer, JoinHandle<()>) {
-    LspServer::new(
-        PLUGIN_NAME.to_string(),
-        "copilot-language-server --stdio",
-        app_handle,
-    )
-}
+use super::{plugin, request};
 
 pub struct CopilotLspService<R: Runtime> {
     pub app_handle: AppHandle<R>,
@@ -267,7 +256,7 @@ impl<R: Runtime> CopilotLspService<R> {
         let conn = Connection::open(path)?;
         let token: Vec<u8> = conn.query_row(
             "SELECT token_ciphertext FROM oauth_tokens WHERE source_editor_id = ?1",
-            [PLUGIN_NAME],
+            [plugin::PLUGIN_NAME],
             |row| row.get(0),
         )?;
         let token = String::from_utf8(token)?;

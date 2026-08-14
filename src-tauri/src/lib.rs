@@ -1,13 +1,12 @@
 use tauri::{Builder, Manager, Runtime};
 use tauri_plugin_cli::CliExt;
 
-use copilot::lsp_service::CopilotLspService;
 use editor::editor_state::EditorState;
+use lsp::copilot::service::CopilotLspService;
 use lsp::registry::LspRegistry;
 use lsp::service::LspService;
 use tracing::debug;
 
-mod copilot;
 mod editor;
 mod fs;
 mod install_cli;
@@ -127,12 +126,12 @@ pub fn run<R: Runtime>(builder: Builder<R>) {
             lsp::command::lsp_completion,
             lsp::command::lsp_goto,
             lsp::command::lsp_register_document,
-            copilot::command::copilot_start_language_server,
-            copilot::command::copilot_disconnect,
-            copilot::command::copilot_sign_in,
-            copilot::command::copilot_status,
-            copilot::command::copilot_auth_token,
-            copilot::command::copilot_completion,
+            lsp::copilot::command::copilot_start_language_server,
+            lsp::copilot::command::copilot_disconnect,
+            lsp::copilot::command::copilot_sign_in,
+            lsp::copilot::command::copilot_status,
+            lsp::copilot::command::copilot_auth_token,
+            lsp::copilot::command::copilot_completion,
             logger::command::log_debug,
             logger::command::log_info,
             logger::command::log_warn,

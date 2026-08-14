@@ -20,7 +20,7 @@ use tokio::{sync::RwLock, task::JoinHandle};
 use tower::ServiceBuilder;
 use tracing::{debug, info, warn};
 
-use crate::copilot::request::FeatureFlagsNotification;
+use crate::lsp::copilot::request::FeatureFlagsNotification;
 
 const NOTIFICATION_EVENT: &str = "lsp://notification";
 

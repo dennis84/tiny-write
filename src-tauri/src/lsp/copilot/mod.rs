@@ -1,3 +1,4 @@
 pub mod command;
-pub mod lsp_service;
+pub mod plugin;
 pub mod request;
+pub mod service;
