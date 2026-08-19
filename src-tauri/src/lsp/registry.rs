@@ -137,7 +137,7 @@ impl LspRegistry {
         match language_server_id.1 .0.as_str() {
             "typescript" => Ok(LspServer::new(
                 "typescript-lsp".to_string(),
-                "typescript-language-server --stdio",
+                "npx vtsls --stdio",
                 app_handle,
             )),
             "rust" => Ok(LspServer::new(

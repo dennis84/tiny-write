@@ -1,51 +1,110 @@
-use async_lsp::lsp_types::{CompletionResponse, GotoDefinitionResponse, Hover};
-use tauri::{path::SafePathBuf, AppHandle, Manager, Runtime};
-use tracing::error;
+use async_lsp::lsp_types::{CompletionResponse, GotoDefinitionResponse, Hover, self};
+use tauri::{AppHandle, Emitter, Manager, Runtime, path::SafePathBuf, utils::config};
+use tracing::{debug, error};
+use serde_json::Value;
+use serde_json::json;
+use anyhow::anyhow;
 
-use crate::{editor::editor_state::EditorState, lsp::service::LspService};
-
-#[tauri::command]
-pub async fn lsp_hover<R: Runtime>(
-    path: SafePathBuf,
-    pos: usize,
-    app_handle: AppHandle<R>,
-) -> tauri::Result<Hover> {
-    let lsp_service = app_handle.state::<LspService<R>>();
-    lsp_service.hover(path.as_ref(), pos).await.map_err(|e| {
-        error!("lsp_hover failed {e:?}");
-        tauri::Error::Anyhow(e)
-    })
-}
+use crate::editor::editor_state::Insert;
+use crate::editor::editor_state::is_buffer;
+use crate::{editor::editor_state::EditorState, lsp::{self, registry::LspRegistry, service::LspService}};
 
 #[tauri::command]
-pub async fn lsp_completion<R: Runtime>(
+pub async fn lsp_message<R: Runtime>(
     path: SafePathBuf,
-    pos: usize,
-    trigger: String,
-    app_handle: AppHandle<R>,
-) -> tauri::Result<CompletionResponse> {
-    let lsp_service = app_handle.state::<LspService<R>>();
-    let result = lsp_service.completion(path.as_ref(), pos, trigger).await?;
-    Ok(result)
-}
-
-#[tauri::command]
-pub async fn lsp_goto<R: Runtime>(
-    path: SafePathBuf,
-    pos: usize,
-    app_handle: AppHandle<R>,
-) -> tauri::Result<GotoDefinitionResponse> {
-    let lsp_service = app_handle.state::<LspService<R>>();
-    let result = lsp_service.goto(path.as_ref(), pos).await?;
-    Ok(result)
-}
-
-#[tauri::command]
-pub async fn lsp_register_document<R: Runtime>(
-    path: SafePathBuf,
+    message: String,
     app_handle: AppHandle<R>,
 ) -> tauri::Result<()> {
-    let state = app_handle.state::<EditorState>();
-    let _ = state.open_doc_tx.send(path.as_ref().to_path_buf()).await;
+    let editor_state = app_handle.state::<EditorState>();
+    let lsp_service = app_handle.state::<LspService<R>>();
+    let lsp_registry = app_handle.state::<LspRegistry>();
+
+    let v: Value = serde_json::from_str(&message)?;
+    let id = v.get("id").and_then(Value::as_u64).unwrap_or_default();
+    let method = v.get("method").and_then(Value::as_str).unwrap_or_default();
+    let params = v.get("params").cloned().unwrap_or(Value::Null);
+
+    debug!("Received LSP message (id={id:?}, method={method:?}, params={params:?})");
+
+    match method {
+        "initialize" => {
+            let p: lsp_types::InitializeParams = serde_json::from_value(params)?;
+            println!("AAAAAAA {:?}", p);
+            let (server, should_initialize) = lsp_service.register_language_server(path.as_ref()).await?;
+            let doc = editor_state.get_document(path.as_ref()).await?;
+            let language_server_id = doc.get_language_server_id().ok_or(anyhow!("No language"))?;
+
+            if should_initialize {
+                let config = lsp_service.initialize(&server, &language_server_id, p).await?;
+                let _ = lsp_registry
+                    .insert_language_server_config(&language_server_id, config.clone())
+                    .await;
+                app_handle.emit("lsp", json!({"jsonrpc": "2.0", "id": id, "result": config}))?;
+            } else {
+                let config = lsp_registry
+                    .get_language_server_config(&language_server_id)
+                    .await;
+                app_handle.emit("lsp", json!({"jsonrpc": "2.0", "id": id, "result": config}))?;
+            }
+        }
+        "initialized" => {
+            let (server, _) = lsp_service.register_language_server(path.as_ref()).await?;
+            lsp_service.initialized(&server).await?;
+        }
+        "textDocument/didOpen" => {
+            let p: lsp_types::DidOpenTextDocumentParams = serde_json::from_value(params)?;
+            let (server, _) = lsp_service.register_language_server(path.as_ref()).await?;
+            let mut doc = editor_state.get_document(path.as_ref()).await?;
+            let is_buffer = is_buffer(path.as_ref());
+            let text: &str = &p.text_document.text;
+            let text = ropey::Rope::from_str(text);
+            if is_buffer {
+                doc.text = text;
+            }
+
+            lsp_service.open_document(&server, &doc).await?;
+        }
+        "textDocument/didClose" => {
+            let p: lsp_types::DidCloseTextDocumentParams = serde_json::from_value(params)?;
+            lsp_service.close_document(path.as_ref(), p).await?;
+        }
+        "textDocument/didChange" => {
+            let p: lsp_types::DidChangeTextDocumentParams = serde_json::from_value(params)?;
+            let doc = editor_state.get_document(path.as_ref()).await?;
+            let language_server_id = doc.get_language_server_id().ok_or(anyhow!("No language"))?;
+            lsp_service.insert_document(&language_server_id, p).await?;
+        }
+        "textDocument/completion" => {
+            let p: lsp_types::CompletionParams = serde_json::from_value(params)?;
+            let result = lsp_service.completion(path.as_ref(), p).await?;
+            app_handle.emit("lsp", json!({"jsonrpc": "2.0", "id": id, "result": result}))?;
+        }
+        _ => {}
+    }
+
     Ok(())
 }
+
+// #[tauri::command]
+// pub async fn lsp_hover<R: Runtime>(
+//     path: SafePathBuf,
+//     pos: usize,
+//     app_handle: AppHandle<R>,
+// ) -> tauri::Result<Hover> {
+//     let lsp_service = app_handle.state::<LspService<R>>();
+//     lsp_service.hover(path.as_ref(), pos).await.map_err(|e| {
+//         error!("lsp_hover failed {e:?}");
+//         tauri::Error::Anyhow(e)
+//     })
+// }
+//
+// #[tauri::command]
+// pub async fn lsp_goto<R: Runtime>(
+//     path: SafePathBuf,
+//     pos: usize,
+//     app_handle: AppHandle<R>,
+// ) -> tauri::Result<GotoDefinitionResponse> {
+//     let lsp_service = app_handle.state::<LspService<R>>();
+//     let result = lsp_service.goto(path.as_ref(), pos).await?;
+//     Ok(result)
+// }

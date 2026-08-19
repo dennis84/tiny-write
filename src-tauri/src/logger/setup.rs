@@ -15,7 +15,7 @@ pub fn register_logger<R: Runtime>(app: &AppHandle<R>, verbose: bool) -> Result<
         fs::create_dir_all(&path)?;
     }
 
-    let level = if verbose { Level::TRACE } else { Level::INFO };
+    let level = if verbose { Level::DEBUG } else { Level::INFO };
 
     let app_name = &app.package_info().name;
 

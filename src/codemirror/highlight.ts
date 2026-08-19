@@ -32,6 +32,7 @@ const langSupport = (l: StreamParser<unknown>) => new LanguageSupport(StreamLang
 export interface LangConfig {
   id: string
   name: string
+  extension: string
   highlight: () => LanguageSupport
   aliases?: string[]
   indentUnit?: string
@@ -41,34 +42,40 @@ const languages: Record<string, LangConfig> = {
   javascript: {
     id: 'javascript',
     name: 'JavaScript',
+    extension: 'js',
     highlight: () => javascript(),
     aliases: ['js'],
   },
   jsx: {
     id: 'jsx',
     name: 'JSX',
+    extension: 'jsx',
     highlight: () => javascript({jsx: true}),
   },
   typescript: {
     id: 'typescript',
     name: 'TypeScript',
+    extension: 'ts',
     highlight: () => javascript({typescript: true}),
     aliases: ['ts'],
   },
   tsx: {
     id: 'tsx',
     name: 'TSX',
+    extension: 'tsx',
     highlight: () => javascript({jsx: true, typescript: true}),
   },
   java: {
     id: 'java',
     name: 'Java',
+    extension: 'java',
     highlight: () => java(),
     indentUnit: '    ',
   },
   kotlin: {
     id: 'kotlin',
     name: 'Kotlin',
+    extension: 'kt',
     highlight: () => java(),
     aliases: ['kt'],
     indentUnit: '    ',
@@ -76,6 +83,7 @@ const languages: Record<string, LangConfig> = {
   rust: {
     id: 'rust',
     name: 'Rust',
+    extension: 'rs',
     highlight: () => rust(),
     aliases: ['rs'],
     indentUnit: '    ',
@@ -83,16 +91,19 @@ const languages: Record<string, LangConfig> = {
   sql: {
     id: 'sql',
     name: 'SQL',
+    extension: 'sql',
     highlight: () => sql(),
   },
   json: {
     id: 'json',
     name: 'JSON',
+    extension: 'json',
     highlight: () => json(),
   },
   python: {
     id: 'python',
     name: 'Python',
+    extension: 'py',
     highlight: () => python(),
     aliases: ['py'],
     indentUnit: '    ',
@@ -100,109 +111,129 @@ const languages: Record<string, LangConfig> = {
   html: {
     id: 'html',
     name: 'HTML',
+    extension: 'html',
     highlight: () => html(),
     aliases: ['htm'],
   },
   css: {
     id: 'css',
     name: 'CSS',
+    extension: 'css',
     highlight: () => css(),
   },
   scss: {
     id: 'scss',
     name: 'SCSS',
+    extension: 'scss',
     highlight: () => css(),
   },
   cpp: {
     id: 'cpp',
     name: 'C++',
+    extension: 'cpp',
     highlight: () => cpp(),
   },
   markdown: {
     id: 'markdown',
     name: 'Markdown',
+    extension: 'md',
     highlight: () => markdown(),
     aliases: ['md'],
   },
   xml: {
     id: 'xml',
     name: 'XML',
+    extension: 'xml',
     highlight: () => xml(),
   },
   php: {
     id: 'php',
     name: 'PHP',
+    extension: 'php',
     highlight: () => php(),
   },
   haskell: {
     id: 'haskell',
     name: 'Haskell',
+    extension: 'hs',
     highlight: () => langSupport(haskell),
     aliases: ['hs'],
   },
   clojure: {
     id: 'clojure',
     name: 'Clojure',
+    extension: 'clj',
     highlight: () => langSupport(clojure),
     aliases: ['clj'],
   },
   erlang: {
     id: 'erlang',
     name: 'Erlang',
+    extension: 'erl',
     highlight: () => langSupport(erlang),
   },
   groovy: {
     id: 'groovy',
     name: 'Groovy',
+    extension: 'groovy',
     highlight: () => langSupport(groovy),
   },
   ruby: {
     id: 'ruby',
     name: 'Ruby',
+    extension: 'rb',
     highlight: () => langSupport(ruby),
     aliases: ['rb'],
   },
   hcl: {
     id: 'hcl',
     name: 'HCL',
+    extension: 'hcl',
     highlight: () => langSupport(ruby),
   },
   mermaid: {
     id: 'mermaid',
     name: 'Mermaid',
+    extension: 'mermaid',
     highlight: () => langSupport(haskell),
   },
   bash: {
     id: 'bash',
     name: 'Bash',
+    extension: 'bash',
     highlight: () => langSupport(shell),
   },
   sh: {
     id: 'sh',
     name: 'Shell',
+    extension: 'sh',
     highlight: () => langSupport(shell),
   },
   yaml: {
     id: 'yaml',
     name: 'YAML',
+    extension: 'yaml',
     highlight: () => langSupport(yaml),
     aliases: ['yml'],
   },
   go: {
     id: 'go',
     name: 'GO',
+    extension: 'go',
     highlight: () => langSupport(go),
     indentUnit: '\t',
   },
   toml: {
     id: 'toml',
     name: 'TOML',
+    extension: 'toml',
     highlight: () => langSupport(toml),
     indentUnit: '    ',
   },
   lua: {
     id: 'lua',
     name: 'Lua',
+    extension: 'lua',
     highlight: () => langSupport(lua),
     indentUnit: '\t',
   },
@@ -213,6 +244,7 @@ export const getLanguageConfig = (lang: string = ''): LangConfig => {
   const fallback: LangConfig = {
     id: 'plaintext',
     name: 'Plaintext',
+    extension: 'txt',
     highlight: () =>
       langSupport({
         name: lang,

@@ -87,22 +87,22 @@ pub fn run<R: Runtime>(builder: Builder<R>) {
             let copilot_lsp_service = CopilotLspService::new(handle.clone());
             app.manage(copilot_lsp_service);
 
-            let handle2 = handle.clone();
+            // let handle2 = handle.clone();
 
-            tauri::async_runtime::spawn(async move {
-                let editor_state = handle2.state::<EditorState>();
-                let lsp_service = handle2.state::<LspService<R>>();
-                let copilot_service = handle2.state::<CopilotLspService<R>>();
-
-                loop {
-                    tokio::select! {
-                        Ok(path) = editor_state.open_doc_rx.recv() => {
-                            let _ = lsp_service.register_language_server(path.as_ref()).await;
-                            let _ = copilot_service.register_language_server(path.as_ref()).await;
-                        },
-                    }
-                }
-            });
+            // tauri::async_runtime::spawn(async move {
+            //     let editor_state = handle2.state::<EditorState>();
+            //     let lsp_service = handle2.state::<LspService<R>>();
+            //     let copilot_service = handle2.state::<CopilotLspService<R>>();
+            //
+            //     loop {
+            //         tokio::select! {
+            //             Ok(path) = editor_state.open_doc_rx.recv() => {
+            //                 let _ = lsp_service.register_language_server(path.as_ref()).await;
+            //                 let _ = copilot_service.register_language_server(path.as_ref()).await;
+            //             },
+            //         }
+            //     }
+            // });
 
             Ok(())
         })
@@ -122,16 +122,13 @@ pub fn run<R: Runtime>(builder: Builder<R>) {
             editor::command_editor_state::insert_text,
             editor::command_editor_state::delete_text,
             editor::command_editor_state::write_file,
-            lsp::command::lsp_hover,
-            lsp::command::lsp_completion,
-            lsp::command::lsp_goto,
-            lsp::command::lsp_register_document,
-            lsp::copilot::command::copilot_start_language_server,
+            lsp::command::lsp_message,
+            // lsp::copilot::command::copilot_start_language_server,
             lsp::copilot::command::copilot_disconnect,
             lsp::copilot::command::copilot_sign_in,
             lsp::copilot::command::copilot_status,
             lsp::copilot::command::copilot_auth_token,
-            lsp::copilot::command::copilot_completion,
+            // lsp::copilot::command::copilot_completion,
             logger::command::log_debug,
             logger::command::log_info,
             logger::command::log_warn,

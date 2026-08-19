@@ -1,3 +1,4 @@
+use async_lsp::lsp_types::InitializeParams;
 use dirs::home_dir;
 use rusqlite::Connection;
 use std::path::{Path, PathBuf};
@@ -107,7 +108,7 @@ impl<R: Runtime> CopilotLspService<R> {
             .await?
         {
             (server, true) => {
-                let result = lsp_service.initialize(&server, &language_server_id).await?;
+                let result = lsp_service.initialize(&server, &language_server_id, InitializeParams::default()).await?;
                 let _ = lsp_registry
                     .insert_language_server_config(&language_server_id, result)
                     .await;
@@ -128,15 +129,16 @@ impl<R: Runtime> CopilotLspService<R> {
     }
 
     pub async fn insert_document(&self, doc: &Document, data: &Insert) -> anyhow::Result<()> {
-        if !*self.enabled.lock().await {
-            return Ok(());
-        }
-
-        let lsp_service = self.app_handle.state::<LspService<R>>();
-        let language_server_id = Self::language_server_id(doc.worktree_path.clone());
-        lsp_service
-            .insert_document(&language_server_id, doc, data)
-            .await
+        Ok(())
+        // if !*self.enabled.lock().await {
+        //     return Ok(());
+        // }
+        //
+        // let lsp_service = self.app_handle.state::<LspService<R>>();
+        // let language_server_id = Self::language_server_id(doc.worktree_path.clone());
+        // lsp_service
+        //     .insert_document(&language_server_id, doc, data)
+        //     .await
     }
 
     pub async fn delete_document(&self, doc: &Document, data: &Delete) -> anyhow::Result<()> {

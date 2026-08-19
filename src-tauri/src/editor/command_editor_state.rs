@@ -51,17 +51,17 @@ pub async fn insert_text<R: Runtime>(
 
     state.insert_text(path.as_ref(), &data)?;
 
-    let doc = state.get_document(path.as_ref()).await?;
-    let lsp_service = app_handle.state::<LspService<R>>();
+    // let doc = state.get_document(path.as_ref()).await?;
+    // let lsp_service = app_handle.state::<LspService<R>>();
 
-    if let Some(language_server_id) = doc.get_language_server_id() {
-        let _ = lsp_service
-            .insert_document(&language_server_id, &doc, &data)
-            .await;
-    }
-
-    let copilot_service = app_handle.state::<CopilotLspService<R>>();
-    let _ = copilot_service.insert_document(&doc, &data).await;
+    // if let Some(language_server_id) = doc.get_language_server_id() {
+    //     let _ = lsp_service
+    //         .insert_document(&language_server_id, &doc, &data)
+    //         .await;
+    // }
+    //
+    // let copilot_service = app_handle.state::<CopilotLspService<R>>();
+    // let _ = copilot_service.insert_document(&doc, &data).await;
 
     Ok(())
 }
@@ -75,15 +75,15 @@ pub async fn delete_text<R: Runtime>(
     let state = app_handle.state::<EditorState>();
 
     let doc = state.get_document(path.as_ref()).await?;
-    let lsp_service = app_handle.state::<LspService<R>>();
-    if let Some(language_server_id) = doc.get_language_server_id() {
-        let _ = lsp_service
-            .delete_document(&language_server_id, &doc, &data)
-            .await;
-    }
-
-    let copilot_service = app_handle.state::<CopilotLspService<R>>();
-    let _ = copilot_service.delete_document(&doc, &data).await;
+    // let lsp_service = app_handle.state::<LspService<R>>();
+    // if let Some(language_server_id) = doc.get_language_server_id() {
+    //     let _ = lsp_service
+    //         .delete_document(&language_server_id, &doc, &data)
+    //         .await;
+    // }
+    //
+    // let copilot_service = app_handle.state::<CopilotLspService<R>>();
+    // let _ = copilot_service.delete_document(&doc, &data).await;
 
     state.delete_text(path.as_ref(), &data)?;
 

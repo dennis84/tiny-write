@@ -18,7 +18,7 @@ import {DB} from '@/db'
 import {isTauri} from '@/env'
 import {useBeforeLeave} from '@/hooks/use-before-leave'
 import {setAlwaysOnTop} from '@/remote/app'
-import {startLanguageServer} from '@/remote/copilot'
+// import {startLanguageServer} from '@/remote/copilot'
 import {info} from '@/remote/log'
 import {show, updateWindow} from '@/remote/window'
 import {createCtrl} from '@/services'
@@ -58,7 +58,7 @@ export const Main = (props: Props) => {
 
       if (isTauri() && ctrl.store.ai?.copilot?.user) {
         // takes about 1.5s
-        void startLanguageServer()
+        // void startLanguageServer()
       }
 
       // cleanup deleted items

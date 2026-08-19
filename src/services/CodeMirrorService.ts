@@ -13,6 +13,7 @@ import {
   indentOnInput,
   indentUnit,
 } from '@codemirror/language'
+import {Transport, LSPClient, languageServerExtensions} from '@codemirror/lsp-client'
 import {linter, setDiagnostics} from '@codemirror/lint'
 import {Compartment, EditorState, type Extension} from '@codemirror/state'
 import {drawSelection, EditorView, hoverTooltip, keymap, tooltips} from '@codemirror/view'
@@ -31,6 +32,8 @@ import type {ConfigService} from './ConfigService'
 import type {DialogService} from './DialogService'
 import type {LocationService} from './LocationService'
 import type {PrettierService} from './PrettierService'
+import {lspMessage} from '@/remote/lsp'
+import {listen} from '@tauri-apps/api/event'
 
 interface CreateEditor {
   id: string
@@ -103,22 +106,44 @@ export class CodeMirrorService {
     }
 
     if (isTauri()) {
-      if (props.path) {
-        const data = [{autocomplete: lspCompletionSource(props.path)}]
-        extensions.push(EditorState.languageData.of(() => data))
-        extensions.push(hoverTooltip(lspHoverSource(props.path), {hoverTime: 600}))
+      const path = props.path ?? `buffer://${props.id}.${lang.extension}`
+
+      function createTransport(): Transport {
+        let handlers: ((value: string) => void)[] = []
+
+        void listen('lsp', (event) => {
+          for (let h of handlers) h(JSON.stringify(event.payload))
+        })
+
+        return {
+          send(message: string) {
+            console.log({message})
+            void lspMessage(path, message)
+          },
+          subscribe(handler: (value: string) => void) {
+            handlers.push(handler)
+          },
+          unsubscribe(handler: (value: string) => void) {
+            handlers = handlers.filter((h) => h !== handler)
+          },
+        }
       }
 
-      extensions.push(
-        copilot({
-          configure: () => {
-            const {tabWidth, useTabs} = this.configService.prettier
-            const path = props.path ?? `buffer://${props.id}`
-            const language = props.lang ?? ''
-            return {path, language, tabWidth, useTabs}
-          },
-        }),
-      )
+      let transport = createTransport()
+      let client = new LSPClient({extensions: languageServerExtensions()}).connect(transport)
+      // extensions.push(client.plugin(path))
+      extensions.push(client.plugin(path, 'copilot'))
+
+      // extensions.push(
+      //   copilot({
+      //     configure: () => {
+      //       const {tabWidth, useTabs} = this.configService.prettier
+      //       const path = props.path ?? `buffer://${props.id}`
+      //       const language = props.lang ?? ''
+      //       return {path, language, tabWidth, useTabs}
+      //     },
+      //   }),
+      // )
     }
 
     if (this.locationService.page !== Page.Canvas) {
