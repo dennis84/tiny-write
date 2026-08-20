@@ -1,18 +1,24 @@
-use async_lsp::lsp_types::{CompletionResponse, GotoDefinitionResponse, Hover, self};
-use tauri::{AppHandle, Emitter, Manager, Runtime, path::SafePathBuf, utils::config};
-use tracing::{debug, error};
-use serde_json::Value;
-use serde_json::json;
 use anyhow::anyhow;
+use async_lsp::lsp_types::{self, CompletionResponse, GotoDefinitionResponse, Hover};
+use serde_json::json;
+use serde_json::Value;
+use tauri::{path::SafePathBuf, utils::config, AppHandle, Emitter, Manager, Runtime};
+use tracing::{debug, error};
 
-use crate::editor::editor_state::Insert;
 use crate::editor::editor_state::is_buffer;
-use crate::{editor::editor_state::EditorState, lsp::{self, registry::LspRegistry, service::LspService}};
+use crate::editor::editor_state::Insert;
+use crate::editor::editor_state::Language;
+use crate::lsp::registry::LanguageServerId;
+use crate::{
+    editor::editor_state::EditorState,
+    lsp::{self, registry::LspRegistry, service::LspService},
+};
 
 #[tauri::command]
 pub async fn lsp_message<R: Runtime>(
     path: SafePathBuf,
     message: String,
+    language_id: Option<String>,
     app_handle: AppHandle<R>,
 ) -> tauri::Result<()> {
     let editor_state = app_handle.state::<EditorState>();
@@ -24,18 +30,24 @@ pub async fn lsp_message<R: Runtime>(
     let method = v.get("method").and_then(Value::as_str).unwrap_or_default();
     let params = v.get("params").cloned().unwrap_or(Value::Null);
 
-    debug!("Received LSP message (id={id:?}, method={method:?}, params={params:?})");
+    debug!("Received LSP message (id={id:?}, method={method:?}, params={params:?}, language_id={language_id:?})");
+
+    let doc = editor_state.get_document(path.as_ref()).await?;
+    let mut language_server_id = doc.get_language_server_id().ok_or(anyhow!("No language"))?;
+    if let Some(lang) = language_id {
+        language_server_id = LanguageServerId(language_server_id.0, Language(lang))
+    }
 
     match method {
         "initialize" => {
             let p: lsp_types::InitializeParams = serde_json::from_value(params)?;
-            println!("AAAAAAA {:?}", p);
-            let (server, should_initialize) = lsp_service.register_language_server(path.as_ref()).await?;
-            let doc = editor_state.get_document(path.as_ref()).await?;
-            let language_server_id = doc.get_language_server_id().ok_or(anyhow!("No language"))?;
+            let (server, should_initialize) =
+                lsp_service.register_language_server(&language_server_id).await?;
 
             if should_initialize {
-                let config = lsp_service.initialize(&server, &language_server_id, p).await?;
+                let config = lsp_service
+                    .initialize(&server, &language_server_id, p)
+                    .await?;
                 let _ = lsp_registry
                     .insert_language_server_config(&language_server_id, config.clone())
                     .await;
@@ -48,12 +60,12 @@ pub async fn lsp_message<R: Runtime>(
             }
         }
         "initialized" => {
-            let (server, _) = lsp_service.register_language_server(path.as_ref()).await?;
+            let (server, _) = lsp_service.register_language_server(&language_server_id).await?;
             lsp_service.initialized(&server).await?;
         }
         "textDocument/didOpen" => {
             let p: lsp_types::DidOpenTextDocumentParams = serde_json::from_value(params)?;
-            let (server, _) = lsp_service.register_language_server(path.as_ref()).await?;
+            let (server, _) = lsp_service.register_language_server(&language_server_id).await?;
             let mut doc = editor_state.get_document(path.as_ref()).await?;
             let is_buffer = is_buffer(path.as_ref());
             let text: &str = &p.text_document.text;
@@ -70,8 +82,6 @@ pub async fn lsp_message<R: Runtime>(
         }
         "textDocument/didChange" => {
             let p: lsp_types::DidChangeTextDocumentParams = serde_json::from_value(params)?;
-            let doc = editor_state.get_document(path.as_ref()).await?;
-            let language_server_id = doc.get_language_server_id().ok_or(anyhow!("No language"))?;
             lsp_service.insert_document(&language_server_id, p).await?;
         }
         "textDocument/completion" => {

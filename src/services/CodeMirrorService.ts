@@ -32,7 +32,7 @@ import type {ConfigService} from './ConfigService'
 import type {DialogService} from './DialogService'
 import type {LocationService} from './LocationService'
 import type {PrettierService} from './PrettierService'
-import {lspMessage} from '@/remote/lsp'
+import {lspCopilotMessage, lspMessage} from '@/remote/lsp'
 import {listen} from '@tauri-apps/api/event'
 
 interface CreateEditor {
@@ -117,8 +117,28 @@ export class CodeMirrorService {
 
         return {
           send(message: string) {
-            console.log({message})
             void lspMessage(path, message)
+          },
+          subscribe(handler: (value: string) => void) {
+            handlers.push(handler)
+          },
+          unsubscribe(handler: (value: string) => void) {
+            handlers = handlers.filter((h) => h !== handler)
+          },
+        }
+      }
+
+      function createCopilotTransport(): Transport {
+        let handlers: ((value: string) => void)[] = []
+
+        void listen('lsp', (event) => {
+          for (let h of handlers) h(JSON.stringify(event.payload))
+        })
+
+        return {
+          send(message: string) {
+            console.log({message});
+            void lspMessage(path, message, 'copilot')
           },
           subscribe(handler: (value: string) => void) {
             handlers.push(handler)
@@ -131,8 +151,13 @@ export class CodeMirrorService {
 
       let transport = createTransport()
       let client = new LSPClient({extensions: languageServerExtensions()}).connect(transport)
-      // extensions.push(client.plugin(path))
-      extensions.push(client.plugin(path, 'copilot'))
+      extensions.push(client.plugin(path))
+
+      let copilotTransport = createCopilotTransport()
+      let copilotClient = new LSPClient({
+        extensions: languageServerExtensions(),
+      }).connect(copilotTransport)
+      extensions.push(copilotClient.plugin(path))
 
       // extensions.push(
       //   copilot({

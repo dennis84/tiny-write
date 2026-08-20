@@ -42,15 +42,12 @@ impl<R: Runtime> LspService<R> {
         LspService { app_handle }
     }
 
-    pub async fn register_language_server(&self, path: &Path)
+    pub async fn register_language_server(&self, language_server_id: &LanguageServerId)
             -> anyhow::Result<(LspServer, bool)> {
         let editor_state = self.app_handle.state::<EditorState>();
         let lsp_registry = self.app_handle.state::<LspRegistry>();
 
-        info!("Register language server (path={path:?})");
-
-        let doc = editor_state.get_document(path).await?;
-        let language_server_id = doc.get_language_server_id().ok_or(anyhow!("No language"))?;
+        info!("Register language server (language_server_id={language_server_id:?})");
 
         let result = lsp_registry
             .register_language_server(&language_server_id, &self.app_handle)

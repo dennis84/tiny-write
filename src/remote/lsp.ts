@@ -1,7 +1,8 @@
 import {invoke} from '@tauri-apps/api/core'
 import type {VisualPositionRange} from '@/types'
 
-export const lspMessage = async (path: string, message: string) => invoke('lsp_message', {path, message})
+export const lspMessage = async (path: string, message: string, languageId: string | undefined = undefined) =>
+  invoke('lsp_message', {path, message, languageId})
 
 type LspHover = {contents: {value: string}}
 
