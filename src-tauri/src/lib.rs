@@ -123,7 +123,7 @@ pub fn run<R: Runtime>(builder: Builder<R>) {
             editor::command_editor_state::delete_text,
             editor::command_editor_state::write_file,
             lsp::command::lsp_message,
-            // lsp::copilot::command::copilot_start_language_server,
+            lsp::command::start_language_server,
             lsp::copilot::command::copilot_disconnect,
             lsp::copilot::command::copilot_sign_in,
             lsp::copilot::command::copilot_status,

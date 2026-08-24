@@ -22,18 +22,23 @@ pub struct LspRegistry {
     pub language_server_configs: RwLock<HashMap<LanguageServerId, InitializeResult>>,
 }
 
+pub fn fallback_language_server_id(language: Language) -> LanguageServerId {
+    let path = if cfg!(target_os = "windows") {
+        Path::new("C:/").to_path_buf()
+    } else {
+        Path::new("/").to_path_buf()
+    };
+
+    LanguageServerId(path, language)
+}
+
 impl Document {
     pub fn get_language_server_id(&self) -> Option<LanguageServerId> {
         let language = self.language.clone()?;
-        let path = self.worktree_path.clone().unwrap_or_else(|| {
-            if cfg!(target_os = "windows") {
-                Path::new("C:/").to_path_buf()
-            } else {
-                Path::new("/").to_path_buf()
-            }
-        });
-
-        Some(LanguageServerId(path, language))
+        match &self.worktree_path {
+            Some(path) => Some(LanguageServerId(path.to_path_buf(), language)),
+            None => Some(fallback_language_server_id(language))
+        }
     }
 }
 

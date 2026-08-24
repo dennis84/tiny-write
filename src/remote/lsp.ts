@@ -1,25 +1,11 @@
 import {invoke} from '@tauri-apps/api/core'
 import type {VisualPositionRange} from '@/types'
 
-export const lspMessage = async (path: string, message: string, languageId: string | undefined = undefined) =>
-  invoke('lsp_message', {path, message, languageId})
-
-type LspHover = {contents: {value: string}}
-
-export const lspHover = async (path: string, pos: number): Promise<LspHover> => {
-  return await invoke('lsp_hover', {path, pos})
-}
-
-type LspCompletionItem = {label: string; sortText: string; kind?: number; detail: string}
-type LspCompletion = {items: LspCompletionItem[]}
-
-export const lspCompletion = async (
+export const lspMessage = async (
   path: string,
-  pos: number,
-  trigger: string,
-): Promise<LspCompletion> => {
-  return await invoke('lsp_completion', {path, pos, trigger})
-}
+  message: string,
+  languageId: string | undefined = undefined,
+) => invoke('lsp_message', {path, message, languageId})
 
 type LspGoto = {uri: string; range: VisualPositionRange}[]
 

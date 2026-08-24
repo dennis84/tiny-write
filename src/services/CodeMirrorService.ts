@@ -13,16 +13,13 @@ import {
   indentOnInput,
   indentUnit,
 } from '@codemirror/language'
-import {Transport, LSPClient, languageServerExtensions} from '@codemirror/lsp-client'
 import {linter, setDiagnostics} from '@codemirror/lint'
 import {Compartment, EditorState, type Extension} from '@codemirror/state'
-import {drawSelection, EditorView, hoverTooltip, keymap, tooltips} from '@codemirror/view'
+import {drawSelection, EditorView, keymap, tooltips} from '@codemirror/view'
 import type {Store} from 'solid-js/store'
 import {tabCompletionKeymap} from '@/codemirror/completion'
-import {copilot} from '@/codemirror/copilot'
+import {copilotLsp} from '@/codemirror/copilot-lsp'
 import {getLanguageConfig, type LangConfig} from '@/codemirror/highlight'
-import {lspCompletionSource} from '@/codemirror/lsp-completion'
-import {lspHoverSource} from '@/codemirror/lsp-hover'
 import {mermaidKeywords} from '@/codemirror/mermaid'
 import {getTheme} from '@/codemirror/theme'
 import {isTauri} from '@/env'
@@ -32,8 +29,6 @@ import type {ConfigService} from './ConfigService'
 import type {DialogService} from './DialogService'
 import type {LocationService} from './LocationService'
 import type {PrettierService} from './PrettierService'
-import {lspCopilotMessage, lspMessage} from '@/remote/lsp'
-import {listen} from '@tauri-apps/api/event'
 
 interface CreateEditor {
   id: string
@@ -107,68 +102,8 @@ export class CodeMirrorService {
 
     if (isTauri()) {
       const path = props.path ?? `buffer://${props.id}.${lang.extension}`
-
-      function createTransport(): Transport {
-        let handlers: ((value: string) => void)[] = []
-
-        void listen('lsp', (event) => {
-          for (let h of handlers) h(JSON.stringify(event.payload))
-        })
-
-        return {
-          send(message: string) {
-            void lspMessage(path, message)
-          },
-          subscribe(handler: (value: string) => void) {
-            handlers.push(handler)
-          },
-          unsubscribe(handler: (value: string) => void) {
-            handlers = handlers.filter((h) => h !== handler)
-          },
-        }
-      }
-
-      function createCopilotTransport(): Transport {
-        let handlers: ((value: string) => void)[] = []
-
-        void listen('lsp', (event) => {
-          for (let h of handlers) h(JSON.stringify(event.payload))
-        })
-
-        return {
-          send(message: string) {
-            console.log({message});
-            void lspMessage(path, message, 'copilot')
-          },
-          subscribe(handler: (value: string) => void) {
-            handlers.push(handler)
-          },
-          unsubscribe(handler: (value: string) => void) {
-            handlers = handlers.filter((h) => h !== handler)
-          },
-        }
-      }
-
-      let transport = createTransport()
-      let client = new LSPClient({extensions: languageServerExtensions()}).connect(transport)
-      extensions.push(client.plugin(path))
-
-      let copilotTransport = createCopilotTransport()
-      let copilotClient = new LSPClient({
-        extensions: languageServerExtensions(),
-      }).connect(copilotTransport)
-      extensions.push(copilotClient.plugin(path))
-
-      // extensions.push(
-      //   copilot({
-      //     configure: () => {
-      //       const {tabWidth, useTabs} = this.configService.prettier
-      //       const path = props.path ?? `buffer://${props.id}`
-      //       const language = props.lang ?? ''
-      //       return {path, language, tabWidth, useTabs}
-      //     },
-      //   }),
-      // )
+      // extensions.push(lsp(path))
+      extensions.push(copilotLsp(path))
     }
 
     if (this.locationService.page !== Page.Canvas) {

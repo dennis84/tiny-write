@@ -1,4 +1,5 @@
 use anyhow::anyhow;
+use async_lsp::lsp_types::InitializeParams;
 use async_lsp::lsp_types::{self, CompletionResponse, GotoDefinitionResponse, Hover};
 use serde_json::json;
 use serde_json::Value;
@@ -8,11 +9,38 @@ use tracing::{debug, error};
 use crate::editor::editor_state::is_buffer;
 use crate::editor::editor_state::Insert;
 use crate::editor::editor_state::Language;
+use crate::lsp::copilot::service::CopilotLspService;
 use crate::lsp::registry::LanguageServerId;
+use crate::lsp::registry::fallback_language_server_id;
 use crate::{
     editor::editor_state::EditorState,
     lsp::{self, registry::LspRegistry, service::LspService},
 };
+
+#[tauri::command]
+pub async fn start_language_server<R: Runtime>(
+    language_id: String,
+    app_handle: AppHandle<R>,
+) -> tauri::Result<()> {
+    let lsp_service = app_handle.state::<LspService<R>>();
+    let lsp_registry = app_handle.state::<LspRegistry>();
+
+    let language_server_id = fallback_language_server_id(Language(language_id));
+    let (server, should_initialize) =
+        lsp_service.register_language_server(&language_server_id).await?;
+
+    if should_initialize {
+        let config = lsp_service
+            .initialize(&server, &language_server_id, InitializeParams::default())
+            .await?;
+        let _ = lsp_registry
+            .insert_language_server_config(&language_server_id, config.clone())
+            .await;
+        lsp_service.initialized(&server).await?;
+    }
+
+    Ok(())
+}
 
 #[tauri::command]
 pub async fn lsp_message<R: Runtime>(
@@ -23,6 +51,7 @@ pub async fn lsp_message<R: Runtime>(
 ) -> tauri::Result<()> {
     let editor_state = app_handle.state::<EditorState>();
     let lsp_service = app_handle.state::<LspService<R>>();
+    let copilot_lsp_service = app_handle.state::<CopilotLspService<R>>();
     let lsp_registry = app_handle.state::<LspRegistry>();
 
     let v: Value = serde_json::from_str(&message)?;
@@ -87,6 +116,11 @@ pub async fn lsp_message<R: Runtime>(
         "textDocument/completion" => {
             let p: lsp_types::CompletionParams = serde_json::from_value(params)?;
             let result = lsp_service.completion(path.as_ref(), p).await?;
+            app_handle.emit("lsp", json!({"jsonrpc": "2.0", "id": id, "result": result}))?;
+        }
+        "textDocument/inlineCompletion" => {
+            let p: lsp_types::CompletionParams = serde_json::from_value(params)?;
+            let result = copilot_lsp_service.inline_completion(path.as_ref(), p).await?;
             app_handle.emit("lsp", json!({"jsonrpc": "2.0", "id": id, "result": result}))?;
         }
         _ => {}

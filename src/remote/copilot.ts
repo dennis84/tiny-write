@@ -1,11 +1,9 @@
 import {invoke} from '@tauri-apps/api/core'
 import {timeout} from '@/utils/promise'
-import {span} from './log'
 
-// export const startLanguageServer = () =>
-//   span('start_language_server', () => {
-//     return Promise.race([invoke('copilot_start_language_server'), timeout(5000)])
-//   })
+export const startLanguageServer = async () => {
+  return await invoke('start_language_server', {languageId: 'copilot'})
+}
 
 export const disconnectCopilot = async () => {
   return await invoke('copilot_disconnect')

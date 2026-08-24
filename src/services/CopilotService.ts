@@ -11,7 +11,7 @@ import {
   copilotSignIn,
   copilotStatus,
   disconnectCopilot,
-  // startLanguageServer,
+  startLanguageServer,
 } from '@/remote/copilot'
 import {debug, info} from '@/remote/log'
 import {lspRegisterDocument} from '@/remote/lsp'
@@ -140,12 +140,7 @@ export class CopilotService {
     if (ai) await DB.setAi(ai)
 
     if (isTauri()) {
-      // await startLanguageServer()
-      const currentFile = this.fileService.currentFile
-      // Register file to LSP server
-      if (currentFile?.path) {
-        await lspRegisterDocument(currentFile.path)
-      }
+      await startLanguageServer()
     }
   }
 

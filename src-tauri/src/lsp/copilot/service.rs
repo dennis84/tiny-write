@@ -1,6 +1,7 @@
-use async_lsp::lsp_types::InitializeParams;
+use async_lsp::lsp_types::{CompletionParams, InitializeParams};
 use dirs::home_dir;
 use rusqlite::Connection;
+use serde_json::Value;
 use std::path::{Path, PathBuf};
 
 use anyhow::anyhow;
@@ -141,18 +142,6 @@ impl<R: Runtime> CopilotLspService<R> {
         //     .await
     }
 
-    pub async fn delete_document(&self, doc: &Document, data: &Delete) -> anyhow::Result<()> {
-        if !*self.enabled.lock().await {
-            return Ok(());
-        }
-
-        let lsp_service = self.app_handle.state::<LspService<R>>();
-        let language_server_id = Self::language_server_id(doc.worktree_path.clone());
-        lsp_service
-            .delete_document(&language_server_id, doc, data)
-            .await
-    }
-
     pub async fn check_status(&self, server: &LspServer) -> anyhow::Result<request::SignInStatus> {
         debug!("Copilot - send check status request");
 
@@ -171,6 +160,41 @@ impl<R: Runtime> CopilotLspService<R> {
             .request::<request::SignOut>(request::SignOutParams {})
             .await?;
         debug!("Copilot - SignOut response {:?}", response);
+        Ok(response)
+    }
+
+    pub async fn inline_completion(
+        &self,
+        path: &Path,
+        p: CompletionParams,
+    ) -> anyhow::Result<Value> {
+        let editor_state = self.app_handle.state::<EditorState>();
+        let lsp_registry = self.app_handle.state::<LspRegistry>();
+
+        let doc = editor_state.get_document(path).await?;
+        let language_server_id = Self::language_server_id(doc.worktree_path.clone());
+
+
+        let server = lsp_registry
+            .get_language_server(&language_server_id)
+            .await
+            .ok_or(anyhow!("No language server"))?;
+
+        // let file_uri = url_for_path(path);
+        // let offset_encoding = get_offset_encoding(&config);
+        // let relative_path = if is_buffer(path) {
+        //     "".to_string()
+        // } else {
+        //     doc.get_relative_path().to_string_lossy().to_string()
+        // };
+        //
+        // let position = pos_to_lsp_pos(&doc.text, pos, offset_encoding);
+
+        let response = server
+            .request::<request::InlineCompletions>(p)
+            .await?;
+        debug!("Copilot - inlineCompletions response {:?}", response);
+
         Ok(response)
     }
 

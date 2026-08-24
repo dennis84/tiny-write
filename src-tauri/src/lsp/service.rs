@@ -44,7 +44,6 @@ impl<R: Runtime> LspService<R> {
 
     pub async fn register_language_server(&self, language_server_id: &LanguageServerId)
             -> anyhow::Result<(LspServer, bool)> {
-        let editor_state = self.app_handle.state::<EditorState>();
         let lsp_registry = self.app_handle.state::<LspRegistry>();
 
         info!("Register language server (language_server_id={language_server_id:?})");
@@ -192,11 +191,6 @@ impl<R: Runtime> LspService<R> {
     ) -> anyhow::Result<()> {
         let lsp_registry = self.app_handle.state::<LspRegistry>();
 
-        let config = lsp_registry
-            .get_language_server_config(language_server_id)
-            .await
-            .ok_or(anyhow!("No language server config"))?;
-
         let server = lsp_registry
             .get_language_server(language_server_id)
             .await
@@ -204,62 +198,6 @@ impl<R: Runtime> LspService<R> {
 
         server
             .notify::<DidChangeTextDocument>(params)
-            .await?;
-        Ok(())
-    }
-
-    pub async fn delete_document(
-        &self,
-        language_server_id: &LanguageServerId,
-        doc: &Document,
-        data: &Delete,
-    ) -> anyhow::Result<()> {
-        let lsp_registry = self.app_handle.state::<LspRegistry>();
-
-        let config = lsp_registry
-            .get_language_server_config(language_server_id)
-            .await
-            .ok_or(anyhow!("No language server config"))?;
-
-        let server = lsp_registry
-            .get_language_server(language_server_id)
-            .await
-            .ok_or(anyhow!("No language server"))?;
-
-        let document_sync_kind = self.document_sync_kind(&config);
-        let offset_encoding = get_offset_encoding(&config);
-        let from = pos_to_lsp_pos(&doc.text, data.from_a, offset_encoding);
-        let to = pos_to_lsp_pos(&doc.text, data.to_a, offset_encoding);
-
-        let content_changes: Vec<_> = match document_sync_kind {
-            Some(TextDocumentSyncKind::FULL) => {
-                vec![TextDocumentContentChangeEvent {
-                    range: None,
-                    range_length: None,
-                    text: doc.text.to_string(),
-                }]
-            }
-            Some(TextDocumentSyncKind::INCREMENTAL) => vec![TextDocumentContentChangeEvent {
-                range: Some(Range::new(from, to)),
-                range_length: None,
-                text: "".to_string(),
-            }],
-            _ => Vec::new(),
-        };
-
-        debug!(
-            "LSP - delete document (from=[{}, {}], to=[{}, {}], version={})",
-            from.line, from.character, to.line, to.character, doc.version
-        );
-
-        server
-            .notify::<DidChangeTextDocument>(DidChangeTextDocumentParams {
-                text_document: VersionedTextDocumentIdentifier {
-                    uri: Url::from_file_path(doc.path.clone()).unwrap(),
-                    version: doc.version,
-                },
-                content_changes,
-            })
             .await?;
         Ok(())
     }
@@ -358,16 +296,5 @@ impl<R: Runtime> LspService<R> {
             .await?;
 
         response.ok_or(anyhow!("No response"))
-    }
-
-    fn document_sync_kind(&self, config: &InitializeResult) -> Option<TextDocumentSyncKind> {
-        config
-            .capabilities
-            .text_document_sync
-            .as_ref()
-            .and_then(|sync| match sync {
-                TextDocumentSyncCapability::Kind(kind) => Some(*kind),
-                TextDocumentSyncCapability::Options(options) => options.change,
-            })
     }
 }

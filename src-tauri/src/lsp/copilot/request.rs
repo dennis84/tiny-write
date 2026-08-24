@@ -1,7 +1,8 @@
 #![allow(dead_code)]
 
-use async_lsp::lsp_types::{self as lsp, notification::Notification};
+use async_lsp::lsp_types::{self as lsp, CompletionParams, notification::Notification};
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 
 pub enum CheckStatus {}
 
@@ -89,6 +90,14 @@ impl lsp::request::Request for SignOut {
     type Params = SignOutParams;
     type Result = SignOutResult;
     const METHOD: &'static str = "signOut";
+}
+
+pub enum InlineCompletions {}
+
+impl lsp::request::Request for InlineCompletions {
+    type Params = CompletionParams;
+    type Result = Value;
+    const METHOD: &'static str = "textDocument/inlineCompletion";
 }
 
 pub enum GetCompletions {}
