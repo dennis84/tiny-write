@@ -37,7 +37,7 @@ impl Document {
         let language = self.language.clone()?;
         match &self.worktree_path {
             Some(path) => Some(LanguageServerId(path.to_path_buf(), language)),
-            None => Some(fallback_language_server_id(language))
+            None => Some(fallback_language_server_id(language)),
         }
     }
 }

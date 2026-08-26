@@ -14,10 +14,8 @@ import {
   startLanguageServer,
 } from '@/remote/copilot'
 import {debug, info} from '@/remote/log'
-import {lspRegisterDocument} from '@/remote/lsp'
 import type {AiProvider, ChatRole, State} from '@/types'
 import {AiUtil} from '@/utils/AiUtil'
-import type {FileService} from './FileService'
 
 interface ApiTokenEndpoints {
   api: string
@@ -104,7 +102,6 @@ export class CopilotService {
   constructor(
     private store: Store<State>,
     private setState: SetStoreFunction<State>,
-    private fileService: FileService,
   ) {
     this.modelsResource = createResource(() => this.getModels())
   }

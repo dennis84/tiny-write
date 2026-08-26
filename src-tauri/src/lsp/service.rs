@@ -1,23 +1,28 @@
 use std::path::Path;
 
 use anyhow::anyhow;
-use async_lsp::lsp_types::notification::{DidChangeTextDocument, DidCloseTextDocument, DidOpenTextDocument};
+use async_lsp::lsp_types::notification::{
+    DidChangeTextDocument, DidCloseTextDocument, DidOpenTextDocument,
+};
 use async_lsp::lsp_types::request::{Completion, GotoDefinition};
 use async_lsp::lsp_types::{
-    request::HoverRequest, HoverParams, Range, TextDocumentIdentifier, TextDocumentPositionParams,
+    request::HoverRequest, HoverParams, TextDocumentIdentifier, TextDocumentPositionParams,
     Url,
 };
 use async_lsp::lsp_types::{
-    ClientCapabilities, CompletionContext, CompletionParams, CompletionResponse, CompletionTriggerKind, DidChangeConfigurationParams, DidChangeTextDocumentParams, DidCloseTextDocumentParams, DidOpenTextDocumentParams, GotoDefinitionParams, GotoDefinitionResponse, Hover, InitializeParams, InitializeResult, TextDocumentClientCapabilities, TextDocumentContentChangeEvent, TextDocumentItem, TextDocumentSyncCapability, TextDocumentSyncClientCapabilities, TextDocumentSyncKind, TraceValue, VersionedTextDocumentIdentifier, WorkspaceFolder
+    ClientCapabilities, CompletionParams, CompletionResponse, DidChangeTextDocumentParams,
+    DidCloseTextDocumentParams, DidOpenTextDocumentParams, GotoDefinitionParams,
+    GotoDefinitionResponse, Hover, InitializeParams, InitializeResult,
+    TextDocumentClientCapabilities, TextDocumentContentChangeEvent, TextDocumentItem, TextDocumentSyncClientCapabilities,
+    TraceValue, VersionedTextDocumentIdentifier, WorkspaceFolder,
 };
 use serde_json::json;
 use tauri::{AppHandle, Manager, Runtime};
 use tauri_plugin_cli::CliExt;
 use tracing::{debug, info};
 
-use crate::editor::editor_state::{Delete, Document, EditorState, Insert};
+use crate::editor::editor_state::{Document, EditorState};
 use crate::lsp::registry::LspRegistry;
-use crate::lsp::util::{get_offset_encoding, pos_to_lsp_pos, url_for_path};
 
 use super::registry::LanguageServerId;
 use super::server::LspServer;
@@ -42,8 +47,10 @@ impl<R: Runtime> LspService<R> {
         LspService { app_handle }
     }
 
-    pub async fn register_language_server(&self, language_server_id: &LanguageServerId)
-            -> anyhow::Result<(LspServer, bool)> {
+    pub async fn register_language_server(
+        &self,
+        language_server_id: &LanguageServerId,
+    ) -> anyhow::Result<(LspServer, bool)> {
         let lsp_registry = self.app_handle.state::<LspRegistry>();
 
         info!("Register language server (language_server_id={language_server_id:?})");
@@ -59,7 +66,7 @@ impl<R: Runtime> LspService<R> {
         &self,
         server: &LspServer,
         language_server_id: &LanguageServerId,
-        params: InitializeParams
+        params: InitializeParams,
     ) -> anyhow::Result<InitializeResult> {
         debug!("LSP - send initialize request");
         let root_uri = async_lsp::lsp_types::Url::from_file_path(&language_server_id.0)
@@ -121,23 +128,17 @@ impl<R: Runtime> LspService<R> {
         Ok(())
     }
 
-    pub async fn open_document(&self, server: &LspServer, doc: &Document) -> anyhow::Result<()> {
-        let file_uri = url_for_path(doc.path.as_ref());
-        debug!("LSP - open document (file_uri={:?})", file_uri);
-        server
-            .notify::<DidOpenTextDocument>(DidOpenTextDocumentParams {
-                text_document: TextDocumentItem {
-                    uri: file_uri,
-                    language_id: doc.get_language_id(),
-                    version: doc.version,
-                    text: doc.text.to_string(),
-                },
-            })
-            .await?;
+    pub async fn open_document(&self, server: &LspServer, params: DidOpenTextDocumentParams) -> anyhow::Result<()> {
+        debug!("LSP - open document");
+        server.notify::<DidOpenTextDocument>(params).await?;
         Ok(())
     }
 
-    pub async fn close_document(&self, path: &Path, params: DidCloseTextDocumentParams) -> anyhow::Result<()> {
+    pub async fn close_document(
+        &self,
+        path: &Path,
+        params: DidCloseTextDocumentParams,
+    ) -> anyhow::Result<()> {
         let editor_state = self.app_handle.state::<EditorState>();
         let lsp_registry = self.app_handle.state::<LspRegistry>();
         let doc = editor_state.get_document(path).await?;
@@ -149,38 +150,6 @@ impl<R: Runtime> LspService<R> {
             .ok_or(anyhow!("No language server"))?;
         server.notify::<DidCloseTextDocument>(params).await?;
 
-        Ok(())
-    }
-
-    pub async fn update_document(
-        &self,
-        language_server_id: &LanguageServerId,
-        doc: &Document,
-    ) -> anyhow::Result<()> {
-        let lsp_registry = self.app_handle.state::<LspRegistry>();
-
-        let server = lsp_registry
-            .get_language_server(language_server_id)
-            .await
-            .ok_or(anyhow!("No language server"))?;
-
-        let content_changes = vec![TextDocumentContentChangeEvent {
-            range: None,
-            range_length: None,
-            text: doc.text.to_string(),
-        }];
-
-        debug!("LSP - update document (version={})", doc.version);
-
-        server
-            .notify::<DidChangeTextDocument>(DidChangeTextDocumentParams {
-                text_document: VersionedTextDocumentIdentifier {
-                    uri: url_for_path(doc.path.as_ref()),
-                    version: doc.version,
-                },
-                content_changes,
-            })
-            .await?;
         Ok(())
     }
 
@@ -196,13 +165,11 @@ impl<R: Runtime> LspService<R> {
             .await
             .ok_or(anyhow!("No language server"))?;
 
-        server
-            .notify::<DidChangeTextDocument>(params)
-            .await?;
+        server.notify::<DidChangeTextDocument>(params).await?;
         Ok(())
     }
 
-    pub async fn hover(&self, path: &Path, pos: usize) -> anyhow::Result<Hover> {
+    pub async fn hover(&self, path: &Path, params: HoverParams) -> anyhow::Result<Hover> {
         debug!("LSP - hover");
         let editor_state = self.app_handle.state::<EditorState>();
         let lsp_registry = self.app_handle.state::<LspRegistry>();
@@ -215,24 +182,9 @@ impl<R: Runtime> LspService<R> {
             .await
             .ok_or(anyhow!("No language server"))?;
 
-        let config = lsp_registry
-            .get_language_server_config(&language_server_id)
-            .await
-            .ok_or(anyhow!("No language server config"))?;
-
-        let offset_encoding = get_offset_encoding(&config);
-
         debug!("LSP - send hover request");
         let response = server
-            .request::<HoverRequest>(HoverParams {
-                text_document_position_params: TextDocumentPositionParams {
-                    text_document: TextDocumentIdentifier {
-                        uri: Url::from_file_path(path).unwrap(),
-                    },
-                    position: pos_to_lsp_pos(&doc.text, pos, offset_encoding),
-                },
-                work_done_progress_params: Default::default(),
-            })
+            .request::<HoverRequest>(params)
             .await?;
 
         response.ok_or(anyhow!("No response"))
@@ -256,43 +208,27 @@ impl<R: Runtime> LspService<R> {
 
         debug!("LSP - send completion request");
 
-        let response = server
-            .request::<Completion>(params)
-            .await?;
+        let response = server.request::<Completion>(params).await?;
 
         response.ok_or(anyhow!("No response"))
     }
 
-    pub async fn goto(&self, path: &Path, pos: usize) -> anyhow::Result<GotoDefinitionResponse> {
+    pub async fn goto(&self, path: &Path, params: GotoDefinitionParams) -> anyhow::Result<GotoDefinitionResponse> {
         let editor_state = self.app_handle.state::<EditorState>();
         let lsp_registry = self.app_handle.state::<LspRegistry>();
 
         let doc = editor_state.get_document(path).await?;
         let language_server_id = doc.get_language_server_id().ok_or(anyhow!("No language"))?;
 
-        let config = lsp_registry
-            .get_language_server_config(&language_server_id)
-            .await
-            .ok_or(anyhow!("No language server config"))?;
-
         let server = lsp_registry
             .get_language_server(&language_server_id)
             .await
             .ok_or(anyhow!("No language server"))?;
 
-        debug!("LSP - goto definition request (pos={})", pos);
-        let file_uri = Url::from_file_path(path).unwrap();
-        let offset_encoding = get_offset_encoding(&config);
+        debug!("LSP - goto definition request (language_server_id={:?})", language_server_id);
 
         let response = server
-            .request::<GotoDefinition>(GotoDefinitionParams {
-                text_document_position_params: TextDocumentPositionParams::new(
-                    TextDocumentIdentifier::new(file_uri),
-                    pos_to_lsp_pos(&doc.text, pos, offset_encoding),
-                ),
-                work_done_progress_params: Default::default(),
-                partial_result_params: Default::default(),
-            })
+            .request::<GotoDefinition>(params)
             .await?;
 
         response.ok_or(anyhow!("No response"))

@@ -148,7 +148,10 @@ impl LspServer {
     }
 
     pub async fn request<R: Request>(&self, params: R::Params) -> Result<R::Result> {
-        self.server.read().await.request::<R>(params).await
+        println!("GET SERVER FOR REQUEST");
+        let s = self.server.read().await;
+        println!("GOT SERVER FOR REQUEST");
+        s.request::<R>(params).await
     }
 
     pub async fn notify<N: Notification>(&self, params: N::Params) -> Result<()> {

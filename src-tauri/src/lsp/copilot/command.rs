@@ -1,4 +1,3 @@
-use tauri::path::SafePathBuf;
 use tauri::{AppHandle, Manager, Result, Runtime};
 
 use crate::lsp::copilot::service::CopilotLspService;

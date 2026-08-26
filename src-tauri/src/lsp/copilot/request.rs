@@ -1,6 +1,6 @@
 #![allow(dead_code)]
 
-use async_lsp::lsp_types::{self as lsp, CompletionParams, notification::Notification};
+use async_lsp::lsp_types::{self as lsp, notification::Notification, CompletionParams};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 

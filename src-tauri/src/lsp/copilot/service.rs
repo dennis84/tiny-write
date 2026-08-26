@@ -1,4 +1,4 @@
-use async_lsp::lsp_types::{CompletionParams, InitializeParams};
+use async_lsp::lsp_types::CompletionParams;
 use dirs::home_dir;
 use rusqlite::Connection;
 use serde_json::Value;
@@ -9,13 +9,12 @@ use tauri::{AppHandle, Manager, Runtime};
 use tokio::sync::Mutex;
 use tracing::{debug, info};
 
-use crate::editor::editor_state::{is_buffer, Delete, Document, EditorState, Insert, Language};
+use crate::editor::editor_state::{EditorState, Language};
 
+use crate::lsp::registry::fallback_language_server_id;
 use crate::lsp::{
     registry::{LanguageServerId, LspRegistry},
     server::LspServer,
-    service::LspService,
-    util::{get_offset_encoding, pos_to_lsp_pos, url_for_path},
 };
 
 use super::{plugin, request};
@@ -31,14 +30,6 @@ impl<R: Runtime> CopilotLspService<R> {
             app_handle,
             enabled: Mutex::new(false),
         }
-    }
-
-    pub async fn start(&self) -> anyhow::Result<()> {
-        info!("Copilot - start language server");
-        *self.enabled.lock().await = true;
-        let language_server_id = Self::language_server_id(None);
-        self.register_language_server(&language_server_id.0).await?;
-        Ok(())
     }
 
     pub async fn disconnect(&self) -> anyhow::Result<()> {
@@ -86,62 +77,6 @@ impl<R: Runtime> CopilotLspService<R> {
         Ok(response)
     }
 
-    pub async fn register_language_server(&self, path: &Path) -> anyhow::Result<()> {
-        if !*self.enabled.lock().await {
-            return Ok(());
-        }
-
-        debug!(
-            "Copilot - register copilot language server (path={:?})",
-            path
-        );
-
-        let editor_state = self.app_handle.state::<EditorState>();
-        let lsp_registry = self.app_handle.state::<LspRegistry>();
-        let lsp_service = self.app_handle.state::<LspService<R>>();
-
-        let maybe_doc = editor_state.get_document(path).await.ok();
-        let worktree_path = maybe_doc.clone().and_then(|d| d.worktree_path);
-        let language_server_id = Self::language_server_id(worktree_path);
-
-        match lsp_registry
-            .register_language_server(&language_server_id, &self.app_handle)
-            .await?
-        {
-            (server, true) => {
-                let result = lsp_service.initialize(&server, &language_server_id, InitializeParams::default()).await?;
-                let _ = lsp_registry
-                    .insert_language_server_config(&language_server_id, result)
-                    .await;
-                lsp_service.initialized(&server).await?;
-                self.check_status(&server).await?;
-                if let Some(doc) = maybe_doc {
-                    lsp_service.open_document(&server, &doc).await?;
-                }
-            }
-            (server, false) => {
-                if let Some(doc) = maybe_doc {
-                    lsp_service.open_document(&server, &doc).await?;
-                }
-            }
-        }
-
-        Ok(())
-    }
-
-    pub async fn insert_document(&self, doc: &Document, data: &Insert) -> anyhow::Result<()> {
-        Ok(())
-        // if !*self.enabled.lock().await {
-        //     return Ok(());
-        // }
-        //
-        // let lsp_service = self.app_handle.state::<LspService<R>>();
-        // let language_server_id = Self::language_server_id(doc.worktree_path.clone());
-        // lsp_service
-        //     .insert_document(&language_server_id, doc, data)
-        //     .await
-    }
-
     pub async fn check_status(&self, server: &LspServer) -> anyhow::Result<request::SignInStatus> {
         debug!("Copilot - send check status request");
 
@@ -174,103 +109,15 @@ impl<R: Runtime> CopilotLspService<R> {
         let doc = editor_state.get_document(path).await?;
         let language_server_id = Self::language_server_id(doc.worktree_path.clone());
 
-
         let server = lsp_registry
             .get_language_server(&language_server_id)
             .await
             .ok_or(anyhow!("No language server"))?;
 
-        // let file_uri = url_for_path(path);
-        // let offset_encoding = get_offset_encoding(&config);
-        // let relative_path = if is_buffer(path) {
-        //     "".to_string()
-        // } else {
-        //     doc.get_relative_path().to_string_lossy().to_string()
-        // };
-        //
-        // let position = pos_to_lsp_pos(&doc.text, pos, offset_encoding);
-
-        let response = server
-            .request::<request::InlineCompletions>(p)
-            .await?;
+        let response = server.request::<request::InlineCompletions>(p).await?;
         debug!("Copilot - inlineCompletions response {:?}", response);
 
         Ok(response)
-    }
-
-    pub async fn completion(
-        &self,
-        path: &Path,
-        pos: usize,
-        tab_width: u32,
-        use_tabs: bool,
-    ) -> anyhow::Result<request::GetCompletionsResult> {
-        let editor_state = self.app_handle.state::<EditorState>();
-        let lsp_registry = self.app_handle.state::<LspRegistry>();
-        let lsp_service = self.app_handle.state::<LspService<R>>();
-
-        let doc = editor_state.get_document(path).await?;
-        let language_server_id = Self::language_server_id(doc.worktree_path.clone());
-
-        lsp_service
-            .update_document(&language_server_id, &doc)
-            .await?;
-
-        let config = lsp_registry
-            .get_language_server_config(&language_server_id)
-            .await
-            .ok_or(anyhow!("No language server config"))?;
-
-        let server = lsp_registry
-            .get_language_server(&language_server_id)
-            .await
-            .ok_or(anyhow!("No language server"))?;
-
-        debug!(
-            "Copilot - send copilot completion request (pos={}, language={:?}, tab_width={}, use_tabs={})",
-            pos, doc.language, tab_width, use_tabs
-        );
-        let file_uri = url_for_path(path);
-        let offset_encoding = get_offset_encoding(&config);
-        let relative_path = if is_buffer(path) {
-            "".to_string()
-        } else {
-            doc.get_relative_path().to_string_lossy().to_string()
-        };
-
-        let position = pos_to_lsp_pos(&doc.text, pos, offset_encoding);
-
-        let response = server
-            .request::<request::GetCompletions>(request::GetCompletionsParams {
-                doc: request::GetCompletionsDocument {
-                    uri: file_uri,
-                    tab_size: tab_width,
-                    indent_size: tab_width,
-                    insert_spaces: !use_tabs,
-                    relative_path: relative_path.to_string(),
-                    position,
-                    version: doc.version as usize,
-                },
-            })
-            .await?;
-        debug!("Copilot - GetCompletions response {:?}", response);
-
-        Ok(response)
-    }
-
-    fn language_server_id(worktree_path: Option<PathBuf>) -> LanguageServerId {
-        match worktree_path {
-            Some(path) => LanguageServerId(path.clone(), Language("copilot".to_string())),
-            None => {
-                let fallback_root_path = if cfg!(target_os = "windows") {
-                    Path::new("C:/").to_path_buf()
-                } else {
-                    Path::new("/").to_path_buf()
-                };
-
-                LanguageServerId(fallback_root_path, Language("copilot".to_string()))
-            }
-        }
     }
 
     pub fn get_auth_token(&self) -> anyhow::Result<String> {
@@ -297,5 +144,13 @@ impl<R: Runtime> CopilotLspService<R> {
                 .join("github-copilot")
                 .join("auth.db"),
         )
+    }
+
+    fn language_server_id(worktree_path: Option<PathBuf>) -> LanguageServerId {
+        let language_id =  Language("copilot".to_string());
+        match worktree_path {
+            Some(path) => LanguageServerId(path.clone(), language_id),
+            None => fallback_language_server_id(language_id)
+        }
     }
 }

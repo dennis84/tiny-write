@@ -46,7 +46,7 @@ export const createCtrl = (initial: State) => {
   const configService = new ConfigService(collabService, store, setState)
   const treeService = new TreeService()
   const fileService = new FileService(collabService, locationService, treeService)
-  const copilotService = new CopilotService(store, setState, fileService)
+  const copilotService = new CopilotService(store, setState)
   const ollamaService = new OllamaService(store, setState)
   const llamaCppService = new LlamaCppService(store, setState)
   const aiService = new AiService(copilotService, ollamaService, llamaCppService, store, setState)
@@ -66,7 +66,7 @@ export const createCtrl = (initial: State) => {
     prettierService,
     dialogService,
     locationService,
-    store,
+    fileService,
   )
   const proseMirrorService = new ProseMirrorService(
     configService,

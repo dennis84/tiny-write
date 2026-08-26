@@ -9,7 +9,7 @@ export const pause = (ms: number) => {
 export const retry = async <T>(
   action: () => Promise<T>,
   retries: number,
-  interval = 1000
+  interval = 1000,
 ): Promise<T> => {
   let lastError: unknown
 

@@ -88,17 +88,12 @@ pub fn run<R: Runtime>(builder: Builder<R>) {
             app.manage(copilot_lsp_service);
 
             // let handle2 = handle.clone();
-
             // tauri::async_runtime::spawn(async move {
             //     let editor_state = handle2.state::<EditorState>();
-            //     let lsp_service = handle2.state::<LspService<R>>();
-            //     let copilot_service = handle2.state::<CopilotLspService<R>>();
-            //
             //     loop {
             //         tokio::select! {
             //             Ok(path) = editor_state.open_doc_rx.recv() => {
-            //                 let _ = lsp_service.register_language_server(path.as_ref()).await;
-            //                 let _ = copilot_service.register_language_server(path.as_ref()).await;
+            //                 // handle file open
             //             },
             //         }
             //     }
@@ -128,7 +123,6 @@ pub fn run<R: Runtime>(builder: Builder<R>) {
             lsp::copilot::command::copilot_sign_in,
             lsp::copilot::command::copilot_status,
             lsp::copilot::command::copilot_auth_token,
-            // lsp::copilot::command::copilot_completion,
             logger::command::log_debug,
             logger::command::log_info,
             logger::command::log_warn,

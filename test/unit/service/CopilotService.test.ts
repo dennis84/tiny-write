@@ -6,7 +6,6 @@ vi.mock('@/db', () => ({DB: mock()}))
 import {waitFor} from '@solidjs/testing-library'
 import {createStore} from 'solid-js/store'
 import {type ChatMessage, CopilotService} from '@/services/CopilotService'
-import type {FileService} from '@/services/FileService'
 import {createState} from '@/state'
 import {CopilotMock} from '@/utils/CopilotMock'
 
@@ -23,11 +22,10 @@ beforeEach(() => {
 })
 
 test('completions - success', async () => {
-  const fileService = mock<FileService>()
   const [store, setState] = createStore(
     createState({ai: {copilot: {accessToken: 'ACCESS-TOKEN-123'}}}),
   )
-  const service = new CopilotService(store, setState, fileService)
+  const service = new CopilotService(store, setState)
 
   await waitFor(() => {
     expect(service.models.length).toBe(2)
@@ -68,13 +66,12 @@ test('completions - success', async () => {
 })
 
 test('completions - interrupted', async () => {
-  const fileService = mock<FileService>()
   const [store, setState] = createStore(
     createState({
       ai: {copilot: {accessToken: 'ACCESS-TOKEN-123'}},
     }),
   )
-  const service = new CopilotService(store, setState, fileService)
+  const service = new CopilotService(store, setState)
 
   await waitFor(() => {
     expect(service.models.length).toBe(2)

@@ -29,6 +29,8 @@ import type {ConfigService} from './ConfigService'
 import type {DialogService} from './DialogService'
 import type {LocationService} from './LocationService'
 import type {PrettierService} from './PrettierService'
+import { lsp } from '@/codemirror/lsp'
+import { FileService } from './FileService'
 
 interface CreateEditor {
   id: string
@@ -47,7 +49,7 @@ export class CodeMirrorService {
     private prettierService: PrettierService,
     private dialogService: DialogService,
     private locationService: LocationService,
-    _store: Store<State>,
+    private fileService: FileService,
   ) {}
 
   static replaceSlice(doc: string, slice: string, range: [number, number]): string {
@@ -102,8 +104,8 @@ export class CodeMirrorService {
 
     if (isTauri()) {
       const path = props.path ?? `buffer://${props.id}.${lang.extension}`
-      // extensions.push(lsp(path))
-      extensions.push(copilotLsp(path))
+      extensions.push(lsp(path, this.locationService, this.fileService))
+      // extensions.push(copilotLsp(path))
     }
 
     if (this.locationService.page !== Page.Canvas) {
