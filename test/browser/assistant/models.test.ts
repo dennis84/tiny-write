@@ -11,14 +11,15 @@ test.beforeEach(async ({page}) => {
       },
     },
   })
+
+  await mockCopilotApiToken(page)
+  await mockCopilotModels(page)
+
   await page.goto('/')
   await page.waitForSelector('[data-testid="initialized"]')
 })
 
 test('model select', async ({page}) => {
-  await mockCopilotApiToken(page)
-  await mockCopilotModels(page)
-
   await page.click('[data-testid="navbar_assistant_open"]')
   await page.mouse.move(0, 0) // move away from tooltip
 

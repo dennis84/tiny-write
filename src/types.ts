@@ -21,21 +21,11 @@ export interface LocationState {
   threadId?: string // if active thread in sidebar
   file?: string // is this required???
   newFile?: string // save as to this path
-  selection?: VisualPositionRange // forgotten
+  selection?: SelectionRange // forgotten
   merge?: MergeState // e.g. open file with merge params from assistant
   share?: boolean // turn collab mode on
   snapshot?: number // Snapshot version number (index in of file version)
   newThread?: NewThread
-}
-
-export interface VisualPosition {
-  line: number
-  character: number
-}
-
-export interface VisualPositionRange {
-  start: VisualPosition
-  end?: VisualPosition
 }
 
 export interface SelectionRange {

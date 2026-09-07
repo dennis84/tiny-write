@@ -16,21 +16,20 @@ import {
 import {linter, setDiagnostics} from '@codemirror/lint'
 import {Compartment, EditorState, type Extension} from '@codemirror/state'
 import {drawSelection, EditorView, keymap, tooltips} from '@codemirror/view'
-import type {Store} from 'solid-js/store'
 import {tabCompletionKeymap} from '@/codemirror/completion'
-import {copilotLsp} from '@/codemirror/copilot-lsp'
 import {getLanguageConfig, type LangConfig} from '@/codemirror/highlight'
+import {lsp} from '@/codemirror/lsp'
 import {mermaidKeywords} from '@/codemirror/mermaid'
 import {getTheme} from '@/codemirror/theme'
 import {isTauri} from '@/env'
-import {Page, type PrettierConfig, type State} from '@/types'
+import {Page, type PrettierConfig} from '@/types'
 import type {AppService} from './AppService'
 import type {ConfigService} from './ConfigService'
 import type {DialogService} from './DialogService'
+import type {FileService} from './FileService'
 import type {LocationService} from './LocationService'
 import type {PrettierService} from './PrettierService'
-import { lsp } from '@/codemirror/lsp'
-import { FileService } from './FileService'
+import type {ProjectFileService} from './ProjectFileService'
 
 interface CreateEditor {
   id: string
@@ -50,6 +49,7 @@ export class CodeMirrorService {
     private dialogService: DialogService,
     private locationService: LocationService,
     private fileService: FileService,
+    private projectFileService: ProjectFileService,
   ) {}
 
   static replaceSlice(doc: string, slice: string, range: [number, number]): string {
@@ -103,8 +103,8 @@ export class CodeMirrorService {
     }
 
     if (isTauri()) {
-      const path = props.path ?? `buffer://${props.id}.${lang.extension}`
-      extensions.push(lsp(path, this.locationService, this.fileService))
+      const path = props.path ?? `file:///__virtual__/${props.id}.${lang.extension}`
+      extensions.push(lsp(path, this.locationService, this.fileService, this.projectFileService))
       // extensions.push(copilotLsp(path))
     }
 

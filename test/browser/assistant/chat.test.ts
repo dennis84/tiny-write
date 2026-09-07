@@ -1,6 +1,6 @@
 import {expect, test} from '@playwright/test'
 import {delay, setupDB} from '../utils'
-import {mockCopilotApiToken, mockCopilotCompletion} from './mock'
+import {mockCopilotApiToken, mockCopilotCompletion, mockCopilotModels} from './mock'
 
 test.beforeEach(async ({page}) => {
   await setupDB(page, {
@@ -11,17 +11,22 @@ test.beforeEach(async ({page}) => {
       },
     },
   })
+
+  await mockCopilotApiToken(page)
+  await mockCopilotModels(page)
+
   await page.goto('/')
   await page.waitForSelector('[data-testid="initialized"]')
 })
 
 test('chat', async ({page}) => {
-  await mockCopilotApiToken(page)
   await mockCopilotCompletion(page, {chunks: ['Test', '123'], text: 'Test Call'})
 
   // New top level chat
   await page.goto('/assistant')
   expect(page.getByText('Ask Copilot')).toBeVisible()
+
+  await expect(page.locator('[data-testid="model_select"]')).toHaveText('GPT-4o')
 
   // Add question and get answer
   await page.locator('[data-testid="chat_input"] .ProseMirror').pressSequentially('Hello', {delay})

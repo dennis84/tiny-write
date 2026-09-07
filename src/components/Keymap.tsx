@@ -3,7 +3,6 @@ import {keyName} from 'w3c-keyname'
 import {isTauri, mod} from '@/env'
 import {quit} from '@/remote/app'
 import {saveFile} from '@/remote/editor'
-import {lspGoto} from '@/remote/lsp'
 import {isCodeElement, isEditorElement, isLocalFile, useState} from '@/state'
 import {Page} from '@/types'
 
@@ -14,7 +13,6 @@ export const Keymap = () => {
     codeService,
     editorService,
     fileService,
-    projectFileService,
     collabService,
     canvasService,
     canvasCollabService,
@@ -189,7 +187,6 @@ export const Keymap = () => {
     [`Shift-${mod}-Z`]: onRedo,
     [`${mod}-y`]: onRedo,
     [`${mod}-p`]: onPrint,
-    // [`${mod}-d`]: onGoto,
     Backspace: onBackspace,
   }
 

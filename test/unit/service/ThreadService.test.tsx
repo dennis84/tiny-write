@@ -513,7 +513,6 @@ test('regenerate - assistant message', async () => {
     `,
   )
 
-  // biome-ignore lint/style/noNonNullAssertion: test code
   await service.regenerate(service.threads![0].messages[1])
 
   expectTree(
@@ -624,7 +623,6 @@ test.each<[Message[], number]>([
   ])
 
   vi.spyOn(aiService, 'chatModel', 'get').mockReturnValue({
-    // biome-ignore lint/style/noNonNullAssertion: test code
     ...aiService.chatModel!,
     maxPromptTokens: 10,
     maxOutputTokens: 12,

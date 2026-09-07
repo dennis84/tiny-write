@@ -17,7 +17,7 @@ export class AiService {
   }
 
   get chatModel(): Model | undefined {
-    return this.store.ai?.model
+    return this.store.ai?.model ?? this.models[0]
   }
 
   get streaming() {
@@ -62,16 +62,18 @@ export class AiService {
     streaming: boolean | undefined = undefined,
   ): Promise<CompletionsResult> {
     this.streamingSignal[1](true)
+    const model = this.chatModel
+
     try {
-      switch (this.store.ai?.model?.provider) {
+      switch (model?.provider) {
         case 'copilot': {
-          return await this.copilotService.completions(messages, onChunk, streaming)
+          return await this.copilotService.completions(model, messages, onChunk, streaming)
         }
         case 'ollama': {
-          return await this.ollamaService.completions(messages, onChunk, streaming)
+          return await this.ollamaService.completions(model, messages, onChunk, streaming)
         }
         case 'llama.cpp': {
-          return await this.llamaCppService.completions(messages, onChunk, streaming)
+          return await this.llamaCppService.completions(model, messages, onChunk, streaming)
         }
         default:
           throw new Error('No model selected')

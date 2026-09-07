@@ -70,12 +70,11 @@ export class LlamaCppService {
   }
 
   async completions(
+    model: Model,
     messages: ChatMessage[],
     onChunk: (chunk: Chunk) => void,
     streaming: boolean | undefined = undefined,
   ): Promise<CompletionsResult> {
-    const model = this.store.ai?.model
-    if (!model) return {success: false, error: 'No model selected'}
     const controller = new AbortController()
     this.streamingSignal[1](controller)
 

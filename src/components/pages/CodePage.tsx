@@ -62,6 +62,7 @@ export const CodePage = (props: RouteSectionProps) => {
       return JSON.stringify({
         id: props.params.id,
         merge: location.state?.merge,
+        // selection: location.state?.selection,
       })
     },
     async (key) => {

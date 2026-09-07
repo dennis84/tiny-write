@@ -1,6 +1,7 @@
 import {expect, test} from '@playwright/test'
 import {createYUpdate} from '../../unit/testutil/codemirror-util'
 import {assertCodeLineToEqual, delay, setupDB} from '../utils'
+import {mockCopilotApiToken, mockCopilotModels} from './mock'
 
 const content = `
 ## Test1
@@ -47,6 +48,9 @@ test.beforeEach(async ({page}) => {
       },
     ],
   })
+
+  await mockCopilotApiToken(page)
+  await mockCopilotModels(page)
 
   await page.goto('/')
   await page.waitForSelector('[data-testid="initialized"]')

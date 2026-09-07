@@ -60,6 +60,8 @@ export const createCtrl = (initial: State) => {
     locationService,
     treeService,
   )
+  const projectService = new ProjectService(treeService, fileService, locationService)
+  const projectFileService = new ProjectFileService(fileService, projectService)
   const codeMirrorService = new CodeMirrorService(
     configService,
     appService,
@@ -67,6 +69,7 @@ export const createCtrl = (initial: State) => {
     dialogService,
     locationService,
     fileService,
+    projectFileService,
   )
   const proseMirrorService = new ProseMirrorService(
     configService,
@@ -97,8 +100,6 @@ export const createCtrl = (initial: State) => {
   const changeSetService = new ChangeSetService(fileService, collabService)
   const canvasCollabService = new CanvasCollabService(collabService, canvasService)
   const canvasThreadService = new CanvasThreadService(canvasService, fileService)
-  const projectService = new ProjectService(treeService, fileService, locationService)
-  const projectFileService = new ProjectFileService(fileService, projectService)
   const mediaService = new MediaService(
     fileService,
     projectFileService,

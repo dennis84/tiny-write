@@ -1,5 +1,5 @@
 import test, {expect} from '@playwright/test'
-import {mockCopilotApiToken, mockCopilotCompletion} from '../assistant/mock'
+import {mockCopilotApiToken, mockCopilotCompletion, mockCopilotModels} from '../assistant/mock'
 import {assertEditorLineToEqual, delay, openBlockMenu, setupDB} from '../utils'
 
 const cmContent = '.cm-editor > .cm-scroller > .cm-content'
@@ -13,6 +13,9 @@ test.beforeEach(async ({page}) => {
       },
     },
   })
+
+  await mockCopilotApiToken(page)
+  await mockCopilotModels(page)
 
   await page.goto('/')
   await page.waitForTimeout(1000)
@@ -34,7 +37,6 @@ test.beforeEach(async ({page}) => {
 })
 
 test('ask copilot', async ({page}) => {
-  await mockCopilotApiToken(page)
   await mockCopilotCompletion(page, {text: 'Hello World'})
 
   // Replace h1

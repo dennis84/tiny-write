@@ -23,7 +23,10 @@ export const assertCodeLineToEqualByLocator = async (
     .poll(async () => {
       const locator = parentLocator.locator(`.cm-content > .cm-line:nth-child(${nth})`)
       const text = await locator.evaluate((node) => {
-        node.querySelector('.cm-ySelectionCaret')?.remove()
+        node.querySelectorAll('.cm-ySelectionCaret').forEach((it) => {
+          it.remove()
+        })
+
         return node.textContent
       })
 

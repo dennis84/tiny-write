@@ -135,7 +135,6 @@ test('delete - update tree', async () => {
     return undefined
   })
 
-  // biome-ignore lint/style/noNonNullAssertion: test code
   await service.delete(treeService.getItem('2')!)
 
   expectTree(
@@ -162,11 +161,9 @@ test('delete - local file', async () => {
     createFile({id: '2', newFile: '/path/to/file2.ts'}),
   ])
 
-  // biome-ignore lint/style/noNonNullAssertion: test code
   await service.delete(treeService.getItem('1')!)
   expect(fileService.deleteFile).toHaveBeenCalledWith('1', true)
 
-  // biome-ignore lint/style/noNonNullAssertion: test code
   await service.delete(treeService.getItem('2')!)
   expect(fileService.deleteFile).toHaveBeenCalledWith('2', true)
 })

@@ -223,7 +223,7 @@ impl EditorState {
 }
 
 pub fn is_buffer(path: &Path) -> bool {
-    path.starts_with("buffer://")
+    path.starts_with("file:///__virtual__/")
 }
 
 #[cfg(test)]
@@ -283,7 +283,7 @@ mod tests {
         create_test_workspace(true);
 
         let editor_state = EditorState::new();
-        let path = Path::new("buffer://123");
+        let path = Path::new("file:///__virtual__/123");
         let doc = editor_state.get_document(path.as_ref()).await.unwrap();
 
         assert_eq!(doc.path, path.to_path_buf());

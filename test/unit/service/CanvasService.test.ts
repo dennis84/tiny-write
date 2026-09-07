@@ -904,7 +904,6 @@ test('get selection', async () => {
 
   service.select('2', false, true)
   expect(service.selection).not.toBe(undefined)
-  // biome-ignore lint/style/noNonNullAssertion: ok
   expect(BoxUtil.toRect(service.selection!.box)).toMatchObject({
     x: 0,
     y: 0,
@@ -914,7 +913,6 @@ test('get selection', async () => {
   expect(service.selection?.elements.length).toBe(2)
 
   service.select('3', false, true)
-  // biome-ignore lint/style/noNonNullAssertion: ok
   expect(BoxUtil.toRect(service.selection!.box)).toMatchObject({
     x: 0,
     y: 0,
@@ -958,7 +956,6 @@ test('selectBox', async () => {
 
   service.selectBox(new Box(0, 0, 110, 0), false, false)
   expect(service.selection).not.toBe(undefined)
-  // biome-ignore lint/style/noNonNullAssertion: ok
   expect(BoxUtil.toRect(service.selection!.box)).toMatchObject({
     x: 0,
     y: 0,
@@ -968,7 +965,6 @@ test('selectBox', async () => {
   expect(service.selection?.elements.length).toBe(2)
 
   service.selectBox(new Box(0, 0, 110, 110), false, false)
-  // biome-ignore lint/style/noNonNullAssertion: ok
   expect(BoxUtil.toRect(service.selection!.box)).toMatchObject({
     x: 0,
     y: 0,
@@ -978,7 +974,6 @@ test('selectBox', async () => {
   expect(service.selection?.elements.length).toBe(3)
 
   service.selectBox(new Box(0, 0, 110, 90), false, false)
-  // biome-ignore lint/style/noNonNullAssertion: ok
   expect(BoxUtil.toRect(service.selection!.box)).toMatchObject({
     x: 0,
     y: 0,

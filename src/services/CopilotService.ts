@@ -13,6 +13,7 @@ import {
   disconnectCopilot,
   startLanguageServer,
 } from '@/remote/copilot'
+import {fetch} from '@/remote/http'
 import {debug, info} from '@/remote/log'
 import type {AiProvider, ChatRole, State} from '@/types'
 import {AiUtil} from '@/utils/AiUtil'
@@ -247,13 +248,11 @@ export class CopilotService {
   }
 
   async completions(
+    model: Model,
     messages: ChatMessage[],
     onChunk: (chunk: Chunk) => void,
     streaming: boolean | undefined = undefined,
   ): Promise<CompletionsResult> {
-    const model = this.chatModel
-    if (!model) return {success: false, error: 'No model selected'}
-
     const accessToken = this.store.ai?.copilot?.accessToken
     if (!accessToken) return {success: false, error: 'No access token'}
 

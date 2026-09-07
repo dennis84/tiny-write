@@ -30,7 +30,7 @@ export class ProjectService {
   ) {}
 
   get currentProject(): Project | undefined {
-    const currentItemId = this.locationService.currenrItemId
+    const currentItemId = this.locationService.currentItemId
     if (!currentItemId) return undefined
 
     const currentItem = this.treeService.getItem(currentItemId)

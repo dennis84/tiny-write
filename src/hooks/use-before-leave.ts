@@ -10,13 +10,14 @@ export const useBeforeLeave = (callback: () => void) => {
   window.addEventListener('beforeunload', () => callback())
 
   // This hooks is called before isRouting, it should stop the custom hook
-  // if navigating to same url for state state changes
+  // if navigating to same url or state changes. e.g. starting collab
   useBeforeLeaveOrg((args) => {
     const fromState = args.from.state as LocationState | null
     const toState = args.options?.state as LocationState | null
 
     if (args.to !== args.from.pathname) return
-    if (fromState?.merge !== toState?.merge) return
+    if (fromState?.merge !== toState?.merge) return // merge needs editor reinitialization
+    // if (fromState?.selection !== toState?.selection) return // selection needs editor reinitialization
 
     stopEvent = true
   })

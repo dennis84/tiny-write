@@ -1,72 +1,26 @@
 import {
+  hoverTooltips,
   LSPClient,
   LSPPlugin,
-  Workspace,
-  WorkspaceFile,
-  formatKeymap,
-  hoverTooltips,
-  languageServerExtensions,
   serverCompletion,
-  serverDiagnostics,
-  signatureHelp,
   type Transport,
 } from '@codemirror/lsp-client'
+import {type EditorView, type KeyBinding, keymap} from '@codemirror/view'
 import {listen} from '@tauri-apps/api/event'
-import {lspMessage} from '@/remote/lsp'
-import {EditorView, KeyBinding, keymap} from '@codemirror/view'
-import {LocationService} from '@/services/LocationService'
-import {FileService} from '@/services/FileService'
-import {info, warn} from '@/remote/log'
-import {VisualPositionRange} from '@/types'
+import type * as lspTypes from 'vscode-languageserver-protocol'
 import {mod} from '@/env'
-import type * as lspTypes from "vscode-languageserver-protocol"
+import {lspMessage} from '@/remote/lsp'
+import type {FileService} from '@/services/FileService'
+import type {LocationService} from '@/services/LocationService'
+import type {ProjectFileService} from '@/services/ProjectFileService'
+import {LspUtil} from '@/utils/LspUtil'
 
-class WorkspaceImpl extends Workspace {
-  constructor(
-    client: LSPClient,
-    private locationService: LocationService,
-    private fileService: FileService,
-  ) {
-    super(client)
-  }
-
-  files: WorkspaceFile[] = []
-
-  syncFiles() {
-    return []
-  }
-
-  openFile(uri: string, languageId: string, view: EditorView) {
-    info(`Open LSP workspace file (uri=${uri})`)
-
-    if (uri.startsWith('buffer://')) {
-      const pos = uri.lastIndexOf('.')
-      const id = uri.substring(9, pos)
-      const file = this.fileService.findFileById(id)
-      console.log(view.state.selection.main.from, view.state.selection.main.to)
-      // const selection: VisualPositionRange = {
-      //   start: view.state.selection.main.from,
-      //   end: view.state.selection.main.to,
-      // }
-      if (file) this.locationService.openItem(file)
-      return
-    }
-
-    void this.fileService.findFileByPath(uri).then((file) => {
-      if (file) this.locationService.openItem(file)
-    })
-
-    // const selection = first.range
-    // const file = await projectFileService.newFileByPath({path: url.pathname})
-    // locationService.openItem(file, {selection})
-  }
-
-  closeFile(uri: string) {
-    warn(`Close LSP workspace file not implemented (uri=${uri})`)
-  }
-}
-
-export const lsp = (path: string, locationService: LocationService, fileService: FileService) => {
+export const lsp = (
+  path: string,
+  locationService: LocationService,
+  fileService: FileService,
+  projectFileService: ProjectFileService,
+) => {
   function createTransport(): Transport {
     let handlers: ((value: string) => void)[] = []
 
@@ -95,38 +49,64 @@ export const lsp = (path: string, locationService: LocationService, fileService:
       keymap.of([
         // ...formatKeymap,
         // ...renameKeymap,
-        //
-        ...jumpToDefinitionKeymap(locationService),
+        ...jumpToDefinitionKeymap(locationService, fileService, projectFileService),
         // ...findReferencesKeymap
       ]),
       // signatureHelp(),
       // serverDiagnostics()
     ],
-    // workspace: (c) => new WorkspaceImpl(c, locationService, fileService),
   }).connect(transport)
   return client.plugin(path)
 }
 
-const jumpToDefinition = (locationService: LocationService) => (view: EditorView) => {
-  const plugin = LSPPlugin.get(view)
-  if (!plugin) return false
-  plugin.client.sync()
+const jumpToDefinition =
+  (
+    locationService: LocationService,
+    fileService: FileService,
+    _projectFileService: ProjectFileService,
+  ) =>
+  (view: EditorView) => {
+    const plugin = LSPPlugin.get(view)
+    if (!plugin) return false
+    plugin.client.sync()
 
-  plugin.client.withMapping((mapping) => {
-    return plugin.client.request<lspTypes.DefinitionParams, lspTypes.Location | lspTypes.Location[] | null>("textDocument/definition", {
-      textDocument: {uri: plugin.uri},
-      position: plugin.toPosition(view.state.selection.main.head)
-    }).then((response) => {
-      let loc = Array.isArray(response) ? response[0] : response
-      console.log({loc})
-      if (!loc) return
+    plugin.client
+      .request<lspTypes.DefinitionParams, lspTypes.Location | lspTypes.Location[] | null>(
+        'textDocument/definition',
+        {
+          textDocument: {uri: plugin.uri},
+          position: plugin.toPosition(view.state.selection.main.head),
+        },
+      )
+      .then(async (response) => {
+        const loc = Array.isArray(response) ? response[0] : response
+        if (!loc) return
 
-    })
-  })
+        const selection = LspUtil.createSelection(view, loc.range)
 
-  return true
-}
+        if (locationService.currentItemId && loc.uri.includes(locationService.currentItemId)) {
+          view.dispatch({selection})
+        } else if (LspUtil.isBufferUri(loc.uri)) {
+          const [id] = LspUtil.parseBufferUri(loc.uri)
+          const file = fileService.findFileById(id)
+          if (file) locationService.openItem(file, {selection})
+        } else {
+          // const file = await projectFileService.newFileByPath({path: url.pathname})
+          // locationService.openItem(file, {selection})
+        }
+      })
 
-export const jumpToDefinitionKeymap = (locationService: LocationService): KeyBinding[] => [
-  {key: `${mod}-d`, run: jumpToDefinition(locationService), preventDefault: true},
+    return true
+  }
+
+export const jumpToDefinitionKeymap = (
+  locationService: LocationService,
+  fileService: FileService,
+  projectFileService: ProjectFileService,
+): KeyBinding[] => [
+  {
+    key: `${mod}-d`,
+    run: jumpToDefinition(locationService, fileService, projectFileService),
+    preventDefault: true,
+  },
 ]

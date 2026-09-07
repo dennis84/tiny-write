@@ -2,16 +2,16 @@ import {beforeEach, expect, test, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
 
 vi.mock('@/db', () => ({DB: mock()}))
+vi.mock('@/remote/http', () => ({fetch: vi.fn()}))
 
 import {waitFor} from '@solidjs/testing-library'
 import {createStore} from 'solid-js/store'
+import {fetch} from '@/remote/http'
 import {type ChatMessage, CopilotService} from '@/services/CopilotService'
 import {createState} from '@/state'
 import {CopilotMock} from '@/utils/CopilotMock'
 
 beforeEach(() => {
-  vi.stubGlobal('fetch', vi.fn())
-
   const tokenBody = JSON.stringify(CopilotMock.apiToken())
   const modelsBody = JSON.stringify(CopilotMock.models())
 
@@ -53,6 +53,7 @@ test('completions - success', async () => {
 
   let content = ''
   const result = await service.completions(
+    service.chatModel!,
     messages,
     (chunk) => {
       content += chunk.choices.map((c) => c.delta?.content).join('')
@@ -99,6 +100,7 @@ test('completions - interrupted', async () => {
 
   let content = ''
   const result = await service.completions(
+    service.chatModel!,
     messages,
     (chunk) => {
       content += chunk.choices.map((c) => c.delta?.content).join('')

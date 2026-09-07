@@ -2,7 +2,7 @@ import {expect, test} from '@playwright/test'
 import * as cmUtil from '../../unit/testutil/codemirror-util'
 import * as pmUtil from '../../unit/testutil/prosemirror-util'
 import {delay, setupDB} from '../utils'
-import {mockCopilotApiToken, mockCopilotCompletion} from './mock'
+import {mockCopilotApiToken, mockCopilotCompletion, mockCopilotModels} from './mock'
 
 test.beforeEach(async ({page}) => {
   await setupDB(page, {
@@ -19,6 +19,7 @@ test.beforeEach(async ({page}) => {
   })
 
   await mockCopilotApiToken(page)
+  await mockCopilotModels(page)
   await mockCopilotCompletion(page, {chunks: ['A1'], text: 'First'})
 })
 

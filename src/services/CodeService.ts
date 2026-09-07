@@ -12,7 +12,7 @@ import {yCollab, ySyncFacet} from 'y-codemirror.next'
 import * as Y from 'yjs'
 import {deleteText, insertText, writeFile} from '@/remote/editor'
 import {info} from '@/remote/log'
-import {type File, Page, type SelectionRange, type State, type VisualPositionRange} from '@/types'
+import {type File, Page, type State} from '@/types'
 import {CodeMirrorService} from './CodeMirrorService'
 import type {CollabService} from './CollabService'
 import {FileService} from './FileService'
@@ -219,7 +219,11 @@ export class CodeService {
       )
     }
 
-    const selection = file.lastCursorPos ? {anchor: file.lastCursorPos} : undefined
+    const selection = this.locationService.state?.selection
+      ? this.locationService.state.selection
+      : file.lastCursorPos
+        ? {anchor: file.lastCursorPos}
+        : undefined
 
     const editor = this.codeMirrorService.createEditor({
       id: file.id,
@@ -230,13 +234,6 @@ export class CodeService {
       extensions,
       selection,
     })
-
-    if (this.locationService.state?.selection) {
-      editor.editorView.dispatch({
-        selection: this.createSelection(editor.editorView, this.locationService.state.selection),
-        scrollIntoView: true,
-      })
-    }
 
     this.collabService.undoManager?.addTrackedOrigin(editor.editorView.state.facet(ySyncFacet))
 
@@ -257,19 +254,6 @@ export class CodeService {
           await insertText(path, {fromA, toB, text})
         }
       })
-    }
-  }
-
-  private createSelection(view: EditorView, range: VisualPositionRange): SelectionRange {
-    const anchor = view.state.doc.line(range.start.line + 1).from + range.start.character
-    let head: number | undefined
-    if (range.end) {
-      head = view.state.doc.line(range.end.line + 1).from + range.end.character
-    }
-
-    return {
-      anchor,
-      head,
     }
   }
 }

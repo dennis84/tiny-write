@@ -231,6 +231,7 @@ export class ThreadService {
     mutate((prev = []) => [...prev, newThread])
 
     this.messageTree.reset([])
+    this.treeService.add(newThread)
 
     return newThread
   }
