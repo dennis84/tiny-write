@@ -5,13 +5,17 @@ import type {SelectionRange} from '@/types'
 export class LspUtil {
   private static readonly PREFIX = 'file:///__virtual__/'
 
-  static createBufferUri(id: string, extension: string | undefined) {
+  static createBufferUri(id: string, extension: string | undefined = undefined) {
     // LSP servers insists of "file://" scheme
     return `${LspUtil.PREFIX}${id}${extension ? `.${extension}` : ''}`
   }
 
   static isBufferUri(uri: string) {
     return uri.startsWith(LspUtil.PREFIX)
+  }
+
+  static uriToPath(uri: string): string {
+    return uri.substring(7) // rm file://
   }
 
   static parseBufferUri(uri: string): [string, string | undefined] {

@@ -116,7 +116,14 @@ export const createCtrl = (initial: State) => {
     dialogService,
     treeService,
   )
-  const deleteService = new DeleteService(fileService, canvasService, threadService, treeService)
+  const deleteService = new DeleteService(
+    fileService,
+    canvasService,
+    threadService,
+    projectService,
+    locationService,
+    treeService,
+  )
   const menuService = new MenuService(store, setState)
   const treeActionService = new TreeActionService(
     treeService,

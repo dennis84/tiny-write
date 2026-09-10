@@ -8,7 +8,7 @@ test.beforeEach(async ({page}) => {
 test('add editor file', async ({page}) => {
   await page.click('[data-testid="new_canvas"]')
 
-  expect(page.locator('[data-testid="canvas_container"]')).toBeVisible()
+  await expect(page.locator('[data-testid="canvas_container"]')).toBeVisible()
 
   // Create file
   await page.locator('[data-testid="canvas_container"]').click({button: 'right'})

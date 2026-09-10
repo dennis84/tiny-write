@@ -24,7 +24,7 @@ test('chat', async ({page}) => {
 
   // New top level chat
   await page.goto('/assistant')
-  expect(page.getByText('Ask Copilot')).toBeVisible()
+  await expect(page.getByText('Ask Copilot')).toBeVisible()
 
   await expect(page.locator('[data-testid="model_select"]')).toHaveText('GPT-4o')
 
@@ -38,7 +38,7 @@ test('chat', async ({page}) => {
   // Check and wait for title update
   await page.click('[data-testid="navbar_menu_open"]')
   const link = page.locator('[data-testid="tree_link"]').locator('nth=0')
-  expect(link.getByText('Test Call')).toBeVisible()
+  await expect(link.getByText('Test Call')).toBeVisible()
 
   // Send another question
   await mockCopilotCompletion(page, {chunks: ['Aaa', 'bbb']})
@@ -62,7 +62,7 @@ test('edit question', async ({page}) => {
   await mockCopilotCompletion(page, {chunks: ['SetupAnswer'], text: 'Test Call'})
 
   await page.click('[data-testid="navbar_assistant_open"]')
-  expect(page.getByText('Ask Copilot')).toBeVisible()
+  await expect(page.getByText('Ask Copilot')).toBeVisible()
 
   await page
     .getByTestId('chat_input')
@@ -76,7 +76,7 @@ test('edit question', async ({page}) => {
   // Check and wait for title update
   await page.click('[data-testid="navbar_menu_open"]')
   const link = page.locator('[data-testid="tree_link"]').locator('nth=0')
-  expect(link.getByText('Test Call')).toBeVisible()
+  await expect(link.getByText('Test Call')).toBeVisible()
 
   // Test case 1: Edit question
   await mockCopilotCompletion(page, {chunks: ['Answer1']})

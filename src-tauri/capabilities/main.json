@@ -54,9 +54,8 @@
         }
       ]
     },
-    "http:default",
     {
-      "identifier": "http:allow-fetch",
+      "identifier": "http:default",
       "allow": [
         { "url": "http://localhost:*/*" },
         { "url": "ws://localhost:*/*" },

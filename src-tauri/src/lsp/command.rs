@@ -3,10 +3,10 @@ use async_lsp::lsp_types::InitializeParams;
 use async_lsp::lsp_types::{self};
 use serde_json::json;
 use serde_json::Value;
-use tauri::{path::SafePathBuf, AppHandle, Emitter, Manager, Runtime};
+use tauri::{AppHandle, Emitter, Manager, Runtime};
 use tracing::debug;
+use url::Url;
 
-use crate::editor::editor_state::is_buffer;
 use crate::editor::editor_state::Language;
 use crate::lsp::copilot::service::CopilotLspService;
 use crate::lsp::registry::fallback_language_server_id;
@@ -44,11 +44,14 @@ pub async fn start_language_server<R: Runtime>(
 
 #[tauri::command]
 pub async fn lsp_message<R: Runtime>(
-    path: SafePathBuf,
+    uri: String,
     message: String,
     language_id: Option<String>,
     app_handle: AppHandle<R>,
 ) -> tauri::Result<()> {
+    let url = Url::parse(&uri).map_err(|_| anyhow!("Invalid uri"))?;
+    let path = url.to_file_path().map_err(|_| anyhow!("Invalid file path from uri"))?;
+
     let editor_state = app_handle.state::<EditorState>();
     let lsp_service = app_handle.state::<LspService<R>>();
     let copilot_lsp_service = app_handle.state::<CopilotLspService<R>>();
@@ -59,7 +62,7 @@ pub async fn lsp_message<R: Runtime>(
     let method = v.get("method").and_then(Value::as_str).unwrap_or_default();
     let params = v.get("params").cloned().unwrap_or(Value::Null);
 
-    debug!("Received LSP message (id={id:?}, method={method:?}, params={params:?}, language_id={language_id:?})");
+    debug!("Received LSP message (id={id:?}, path={path:?}, method={method:?}, params={params:?}, language_id={language_id:?})");
 
     let doc = editor_state.get_document(path.as_ref()).await?;
     let mut language_server_id = doc.get_language_server_id().ok_or(anyhow!("No language"))?;

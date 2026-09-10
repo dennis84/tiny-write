@@ -223,7 +223,7 @@ impl EditorState {
 }
 
 pub fn is_buffer(path: &Path) -> bool {
-    path.starts_with("file:///__virtual__/")
+    path.starts_with("/__virtual__/")
 }
 
 #[cfg(test)]

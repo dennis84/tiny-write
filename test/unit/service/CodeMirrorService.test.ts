@@ -6,8 +6,10 @@ import type {AppService} from '@/services/AppService'
 import {CodeMirrorService} from '@/services/CodeMirrorService'
 import {ConfigService} from '@/services/ConfigService'
 import type {DialogService} from '@/services/DialogService'
+import type {FileService} from '@/services/FileService'
 import type {LocationService} from '@/services/LocationService'
 import {PrettierService} from '@/services/PrettierService'
+import type {ProjectFileService} from '@/services/ProjectFileService'
 import {createState} from '@/state'
 import type {State} from '@/types'
 
@@ -26,16 +28,18 @@ test('createEditor', () => {
   })
   const dialogService = mock<DialogService>()
   const locationService = mock<LocationService>()
+  const fileService = mock<FileService>()
+  const projectFileService = mock<ProjectFileService>()
 
   const parent = document.createElement('div')
-  const [store] = createStore<State>(createState())
   const service = new CodeMirrorService(
     configService,
     appService,
     prettierService,
     dialogService,
     locationService,
-    store,
+    fileService,
+    projectFileService,
   )
   const {editorView, compartments} = service.createEditor({id: '1', lang: 'mermaid', parent})
 
@@ -53,6 +57,8 @@ test('format', async () => {
   })
   const dialogService = mock<DialogService>()
   const locationService = mock<LocationService>()
+  const fileService = mock<FileService>()
+  const projectFileService = mock<ProjectFileService>()
 
   const doc = 'const test=123'
 
@@ -63,7 +69,8 @@ test('format', async () => {
     prettierService,
     dialogService,
     locationService,
-    store,
+    fileService,
+    projectFileService,
   )
   const {editorView} = service.createEditor({id: '1', lang: 'typescript', parent, doc})
 
@@ -82,6 +89,8 @@ test('format - error', async () => {
   })
   const dialogService = mock<DialogService>()
   const locationService = mock<LocationService>()
+  const fileService = mock<FileService>()
+  const projectFileService = mock<ProjectFileService>()
 
   const doc = 'const test - 1'
 
@@ -92,7 +101,8 @@ test('format - error', async () => {
     prettierService,
     dialogService,
     locationService,
-    store,
+    fileService,
+    projectFileService,
   )
   const {editorView} = service.createEditor({id: '1', lang: 'typescript', parent, doc})
 

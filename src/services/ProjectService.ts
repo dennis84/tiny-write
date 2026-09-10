@@ -83,6 +83,16 @@ export class ProjectService {
     return this.projects[this.projects.length - 1]
   }
 
+  async delete(id: string, forever = false) {
+    if (forever) {
+      const [, {mutate}] = this.projectsResource
+      mutate((prev = []) => prev.filter((it) => it.id !== id))
+      await DB.deleteProject(id)
+    } else {
+      await this.updateProject(id, {deleted: true, lastModified: new Date()})
+    }
+  }
+
   async updateProject(id: string, update: Partial<Omit<Project, 'id'>>) {
     const updated = this.mutateProject((project) => {
       Object.assign(project, update)

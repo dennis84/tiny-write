@@ -16,7 +16,7 @@ import type {ProjectFileService} from '@/services/ProjectFileService'
 import {LspUtil} from '@/utils/LspUtil'
 
 export const lsp = (
-  path: string,
+  uri: string,
   locationService: LocationService,
   fileService: FileService,
   projectFileService: ProjectFileService,
@@ -30,7 +30,7 @@ export const lsp = (
 
     return {
       send(message: string) {
-        void lspMessage(path, message)
+        void lspMessage(uri, message)
       },
       subscribe(handler: (value: string) => void) {
         handlers.push(handler)
@@ -56,14 +56,14 @@ export const lsp = (
       // serverDiagnostics()
     ],
   }).connect(transport)
-  return client.plugin(path)
+  return client.plugin(uri)
 }
 
 const jumpToDefinition =
   (
     locationService: LocationService,
     fileService: FileService,
-    _projectFileService: ProjectFileService,
+    projectFileService: ProjectFileService,
   ) =>
   (view: EditorView) => {
     const plugin = LSPPlugin.get(view)
@@ -82,17 +82,22 @@ const jumpToDefinition =
         const loc = Array.isArray(response) ? response[0] : response
         if (!loc) return
 
-        const selection = LspUtil.createSelection(view, loc.range)
+        const currentFileId = fileService.currentFile?.id
 
-        if (locationService.currentItemId && loc.uri.includes(locationService.currentItemId)) {
+        if (
+          loc.uri === `file://${fileService.currentFile?.path}` ||
+          (currentFileId && loc.uri.startsWith(LspUtil.createBufferUri(currentFileId)))
+        ) {
+          const selection = LspUtil.createSelection(view, loc.range)
           view.dispatch({selection})
         } else if (LspUtil.isBufferUri(loc.uri)) {
           const [id] = LspUtil.parseBufferUri(loc.uri)
           const file = fileService.findFileById(id)
-          if (file) locationService.openItem(file, {selection})
+          if (file) locationService.openItem(file, {selection: loc.range})
         } else {
-          // const file = await projectFileService.newFileByPath({path: url.pathname})
-          // locationService.openItem(file, {selection})
+          const path = LspUtil.uriToPath(loc.uri)
+          const file = await projectFileService.newFileByPath({path})
+          locationService.openItem(file, {selection: loc.range})
         }
       })
 

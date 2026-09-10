@@ -13,6 +13,7 @@ import * as Y from 'yjs'
 import {deleteText, insertText, writeFile} from '@/remote/editor'
 import {info} from '@/remote/log'
 import {type File, Page, type State} from '@/types'
+import {LspUtil} from '@/utils/LspUtil'
 import {CodeMirrorService} from './CodeMirrorService'
 import type {CollabService} from './CollabService'
 import {FileService} from './FileService'
@@ -219,11 +220,7 @@ export class CodeService {
       )
     }
 
-    const selection = this.locationService.state?.selection
-      ? this.locationService.state.selection
-      : file.lastCursorPos
-        ? {anchor: file.lastCursorPos}
-        : undefined
+    const lastCursorSelection = file.lastCursorPos ? {anchor: file.lastCursorPos} : undefined
 
     const editor = this.codeMirrorService.createEditor({
       id: file.id,
@@ -232,8 +229,15 @@ export class CodeService {
       lang: file.codeLang,
       path: file.path,
       extensions,
-      selection,
+      selection: lastCursorSelection,
     })
+
+    // If opened with LSP range move to that position
+    const lspSelection = this.locationService.state?.selection
+    if (lspSelection) {
+      const selection = LspUtil.createSelection(editor.editorView, lspSelection)
+      editor.editorView.dispatch({selection, scrollIntoView: true})
+    }
 
     this.collabService.undoManager?.addTrackedOrigin(editor.editorView.state.facet(ySyncFacet))
 

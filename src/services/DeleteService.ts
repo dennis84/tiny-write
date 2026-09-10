@@ -1,8 +1,10 @@
 import {info} from '@/remote/log'
-import {isCanvas, isDeletable, isFile, isThread} from '@/state'
+import {isCanvas, isDeletable, isFile, isProject, isThread} from '@/state'
 import type {Canvas, File, MenuTreeItem} from '@/types'
 import type {CanvasService} from './CanvasService'
 import type {FileService} from './FileService'
+import type {LocationService, OpenItem} from './LocationService'
+import type {ProjectService} from './ProjectService'
 import type {ThreadService} from './ThreadService'
 import type {TreeService} from './TreeService'
 
@@ -10,7 +12,7 @@ import type {TreeService} from './TreeService'
 // Canvas: /canvas/:id
 // false: stay on current page
 // undefined: go to /
-type NavigateTo = File | Canvas | false | undefined
+type NavigateTo = OpenItem | false | undefined
 
 interface DeleteResult {
   navigateTo: NavigateTo
@@ -21,6 +23,8 @@ export class DeleteService {
     private fileService: FileService,
     private canvasService: CanvasService,
     private threadService: ThreadService,
+    private projectService: ProjectService,
+    private locationService: LocationService,
     private treeService: TreeService,
   ) {}
 
@@ -28,6 +32,7 @@ export class DeleteService {
     let navigateTo: NavigateTo
 
     const doEmptyBin = async (node: MenuTreeItem): Promise<boolean> => {
+      // dont delete if a child exists that don't have the deleted flag
       let shouldDelete = (isDeletable(node.value) && node.value.deleted) ?? false
 
       for (const n of node.childrenIds) {
@@ -38,7 +43,7 @@ export class DeleteService {
       }
 
       if (shouldDelete) {
-        if (this.fileService.currentFile?.id === node.id) {
+        if (this.locationService.currentItemId === node.id) {
           navigateTo = this.getNavigateTo(node)
         }
 
@@ -48,8 +53,9 @@ export class DeleteService {
       return shouldDelete
     }
 
-    for (const n of Object.values(this.treeService.tree.items)) {
-      await doEmptyBin(n)
+    for (const rootId of Object.values(this.treeService.tree.rootItemIds)) {
+      const item = this.treeService.getItem(rootId)
+      if (item) await doEmptyBin(item)
     }
 
     return {navigateTo}
@@ -72,84 +78,37 @@ export class DeleteService {
   }
 
   private getNavigateTo(node: MenuTreeItem): NavigateTo {
-    const currentFile = this.fileService.currentFile
-    const currentCanvas = this.canvasService.currentCanvas
+    const currentItemId = this.locationService.currentItemId
 
-    const findFileOrCanvas = (id: string) =>
-      this.fileService.findFileById(id) || this.canvasService.findCanvas(id)
-
-    const handle = (id?: string) => {
-      // If current of acestor node is deleted
-      if (id && (id === node.id || this.treeService.isDescendant(id, node.id))) {
-        // Navigate to parent if exists
-        if (node.parentId) return findFileOrCanvas(node.parentId)
-
-        // Find previous or next node in root items:
-        // 1 - skip deleted
-        // 2 - cur
-        // 3 - use as targetId
-        let targetId: string | undefined
-        let passedNode = false
-        for (const rootId of this.treeService.tree.rootItemIds) {
-          const rootNode = this.treeService.getItem(rootId)
-          // Skip deleted nodes
-          if (isDeletable(rootNode?.value) && rootNode.value.deleted) continue
-          // Maybe exist loop if a targetId was found
-          if (rootId === node.id) {
-            passedNode = true
-            if (targetId) break
-          } else {
-            targetId = rootId
-          }
-
-          // Exit on first found targetId after passedNode
-          if (passedNode && targetId) {
-            break
-          }
-        }
-
-        if (targetId) return findFileOrCanvas(targetId)
-
-        // Navigate to /
-        return undefined
-      }
-
+    if (
+      !currentItemId ||
+      (currentItemId !== node.id && !this.treeService.isDescendant(currentItemId, node.id))
+    ) {
       return false
     }
 
-    const fileResult = handle(currentFile?.id)
-    if (fileResult !== false) return fileResult
-
-    return handle(currentCanvas?.id)
+    if (node.parentId) {
+      const item = this.treeService.getItem(node.parentId)?.value
+      return isFile(item) || isCanvas(item) || isThread(item) || isProject(item) ? item : undefined
+    }
   }
 
   private async deleteNode(node: MenuTreeItem, forever = false) {
-    // delete forever if no subtree and not modified or forever=true
-    if (
-      (node.childrenIds.length === 0 && !node.value.lastModified) ||
+    const deleteForever =
       forever ||
-      isThread(node.value)
-    ) {
+      (node.childrenIds.length === 0 && !node.value.lastModified) ||
+      (isFile(node.value) && node.value.path) ||
+      (isFile(node.value) && node.value.newFile) ||
+      (isProject(node.value) && node.value.worktreePath)
+
+    // delete forever if no subtree and not modified or forever=true
+    if (deleteForever) {
       await this.foreverDeleteNode(node)
-      this.treeService.remove(node.id)
-      return
-    }
-
-    // soft delete file
-    if (isFile(node.value)) {
-      // No soft deletes for local files and files that wanted to be saved locally
-      if (node.value.path || node.value.newFile) {
-        return await this.foreverDeleteNode(node)
-      }
-
+    } else if (isFile(node.value)) {
       await this.fileService.deleteFile(node.id)
       info('File deleted')
     } else if (isCanvas(node.value)) {
-      // soft delete canvas
-      const canvas = this.canvasService.findCanvas(node.id)
-      if (!canvas) return
-
-      await this.canvasService.delete(canvas.id)
+      await this.canvasService.delete(node.id)
       info('Set canvas as deleted')
     }
 
@@ -168,8 +127,11 @@ export class DeleteService {
       await this.canvasService.delete(id, true)
       info('Canvas forever deleted')
     } else if (isThread(node.value)) {
-      await this.threadService.delete(id)
+      await this.threadService.delete(id, true)
       info('Thread forever deleted')
+    } else if (isProject(node.value)) {
+      await this.projectService.delete(id, true)
+      info('Project forever deleted')
     }
   }
 }

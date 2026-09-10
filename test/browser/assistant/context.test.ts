@@ -25,7 +25,7 @@ test.beforeEach(async ({page}) => {
 
 test('add code to context', async ({page}) => {
   await page.goto('/code/1')
-  expect(page.getByText('111')).toBeVisible()
+  await expect(page.getByText('111')).toBeVisible()
   await page.click('[data-testid="navbar_assistant_open"]')
 
   await page.getByTestId('chat_input').locator('.ProseMirror').pressSequentially('Q1', {delay})
@@ -48,7 +48,7 @@ test('add code to context', async ({page}) => {
 test('new thread from markdown file', async ({page}) => {
   await page.goto('/editor/2')
   const editor = page.locator('[data-testid="editor_scroll"]')
-  expect(editor.getByText('222')).toBeVisible()
+  await expect(editor.getByText('222')).toBeVisible()
 
   await page.click('[data-testid="navbar_menu_open"]')
   const treeLink = page.locator('[data-testid="tree_link"]').filter({hasText: '222'})

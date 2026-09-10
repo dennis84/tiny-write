@@ -85,7 +85,7 @@ test('apply', async ({page}) => {
   await page.locator('[data-testid="panel_button_apply"]').nth(0).click()
   await page.locator('button[name="accept"]').click()
 
-  expect(page.getByText('All chunks applied')).toBeVisible()
+  await expect(page.getByText('All chunks applied')).toBeVisible()
   expect(page.url()).toContain('/code/222')
 
   await assertCodeLineToEqual(page, 1, "const test2 = '222'")
@@ -97,7 +97,7 @@ test('apply - all', async ({page}) => {
   await page.locator('[data-testid="panel_button_apply"]').nth(0).click()
   await page.locator('[data-testid="accept_all"]').click()
 
-  expect(page.getByText('Full diff applied')).toBeVisible()
+  await expect(page.getByText('Full diff applied')).toBeVisible()
   expect(page.url()).toContain('/code/222')
 
   await assertCodeLineToEqual(page, 1, "const test2 = '222'")
@@ -109,7 +109,7 @@ test('apply - reject all', async ({page}) => {
   await page.locator('[data-testid="panel_button_apply"]').nth(0).click()
   await page.locator('[data-testid="reject_all"]').click()
 
-  expect(page.getByText('Full diff rejected')).toBeVisible()
+  await expect(page.getByText('Full diff rejected')).toBeVisible()
   expect(page.url()).toContain('/code/222')
 
   await assertCodeLineToEqual(page, 1, '')
@@ -125,7 +125,7 @@ test('apply - range', async ({page}) => {
 
   await page.locator('button[name="accept"]').click()
 
-  expect(page.getByText('All chunks applied')).toBeVisible()
+  await expect(page.getByText('All chunks applied')).toBeVisible()
   expect(page.url()).toContain('/code/333')
 
   await assertCodeLineToEqual(page, 1, "abcdeconst test3 = '333'klmnop")

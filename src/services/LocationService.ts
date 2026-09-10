@@ -18,7 +18,7 @@ import {
 import {locationStateToString} from '@/utils/debug'
 import {open as shellOpen} from '../remote/app'
 
-type OpenItem = File | Canvas | CanvasElement | Thread | Project
+export type OpenItem = File | Canvas | CanvasElement | Thread | Project
 
 export class LocationService {
   constructor(

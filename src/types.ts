@@ -1,6 +1,7 @@
 import type {EditorView as CmEditorView} from '@codemirror/view'
 import type {EditorView} from 'prosemirror-view'
 import * as v from 'valibot'
+import type * as lspTypes from 'vscode-languageserver-protocol'
 import type {Model} from './services/CopilotService'
 import type {TreeItem, TreeState} from './tree'
 
@@ -21,7 +22,7 @@ export interface LocationState {
   threadId?: string // if active thread in sidebar
   file?: string // is this required???
   newFile?: string // save as to this path
-  selection?: SelectionRange // forgotten
+  selection?: lspTypes.Range // open an editor with specific selection
   merge?: MergeState // e.g. open file with merge params from assistant
   share?: boolean // turn collab mode on
   snapshot?: number // Snapshot version number (index in of file version)
@@ -275,6 +276,7 @@ export interface Thread {
   currentInput?: string
   private?: boolean
   projectId?: string
+  deleted?: boolean
 }
 
 export interface Sidebar {

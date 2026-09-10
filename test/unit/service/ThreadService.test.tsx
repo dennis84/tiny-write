@@ -378,10 +378,14 @@ test('delete', async () => {
 
   await service.delete('1')
 
+  expect(service.threads).toHaveLength(2)
+  expect(service.threads?.[0].deleted).toBe(true)
+
+  await service.delete('1', true)
   expect(service.threads).toHaveLength(1)
   expect(service.threads?.[0].id).toBe('2')
 
-  await service.delete('2')
+  await service.delete('2', true)
   expect(service.threads).toHaveLength(0)
 })
 

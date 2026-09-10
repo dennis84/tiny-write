@@ -380,10 +380,20 @@ export class ThreadService {
     }
   }
 
-  async delete(id: string) {
-    const [, {mutate}] = this.threadsResource
-    mutate((prev = []) => prev.filter((it) => it.id !== id))
-    await DB.deleteThread(id)
+  async delete(id: string, forever = false) {
+    if (forever) {
+      const [, {mutate}] = this.threadsResource
+      mutate((prev = []) => prev.filter((it) => it.id !== id))
+      await DB.deleteThread(id)
+    } else {
+      // await this.updateThread((thread) => {deleted: true, lastModified: new Date()})
+      const updated = this.updateThread((thread) => {
+        thread.deleted = true
+        thread.lastModified = new Date()
+      }, id)
+
+      if (updated) await this.saveThread(updated)
+    }
   }
 
   async deleteAll(): Promise<Thread> {

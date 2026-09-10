@@ -1,6 +1,6 @@
 import {expect, type Locator, type Page} from '@playwright/test'
 
-export const delay = process.env.CI ? 30 : 80
+export const delay = 80
 
 type LineText = string | RegExp
 

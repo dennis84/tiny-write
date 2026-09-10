@@ -8,16 +8,7 @@ import {useConfirmDialog} from '@/hooks/use-confirm-dialog'
 import {useInputLine} from '@/hooks/use-input-line'
 import {CanvasService} from '@/services/CanvasService'
 import type {Dialog} from '@/services/DialogService'
-import {
-  isCanvas,
-  isDeletable,
-  isFile,
-  isLocalFile,
-  isProject,
-  isProjectItem,
-  isThread,
-  useState,
-} from '@/state'
+import {isCanvas, isDeletable, isFile, isLocalFile, isProject, isThread, useState} from '@/state'
 import type {MenuTreeItem} from '@/types'
 
 export interface TooltipState {
@@ -146,6 +137,7 @@ export const Tooltip = (props: {dialog: Dialog<TooltipState>}) => {
 
   const deleteNode = async (forever = false) => {
     if (!selected) return
+
     showConfirmDialog({
       title: forever ? 'Delete forever' : 'Delete',
       content: 'Do you want to proceed?',
@@ -222,7 +214,13 @@ export const Tooltip = (props: {dialog: Dialog<TooltipState>}) => {
             Delete forever
           </TooltipButton>
         </Match>
-        <Match when={selected && isLocalFile(selected?.value) && !isProjectItem(selected.value)}>
+        <Match when={selected && isLocalFile(selected?.value)}>
+          <TooltipButton onClick={() => deleteNode(true)} data-testid="close">
+            <IconClose />
+            Close
+          </TooltipButton>
+        </Match>
+        <Match when={selected && isProject(selected?.value) && selected.value.worktreePath}>
           <TooltipButton onClick={() => deleteNode(true)} data-testid="close">
             <IconClose />
             Close

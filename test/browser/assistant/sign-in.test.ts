@@ -13,7 +13,7 @@ test('sign in', async ({page, context}) => {
 
   await page.click('[data-testid="navbar_assistant_open"]')
 
-  expect(page.getByText('GitHub Copilot')).toBeVisible()
+  await expect(page.getByText('GitHub Copilot')).toBeVisible()
 
   await page.click('[data-testid="connect"]', {position: {x: 10, y: 10}}) // Move away from tooltip
 

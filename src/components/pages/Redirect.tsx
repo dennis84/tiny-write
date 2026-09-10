@@ -7,7 +7,7 @@ import type {LocationState} from '@/types'
 
 export const Redirect = () => {
   const {store, fileService, projectFileService, projectService, locationService} = useState()
-  const location = useLocation<LocationState>()
+  const _location = useLocation<LocationState>()
   const navigate = useNavigate()
 
   createRenderEffect(
@@ -22,7 +22,7 @@ export const Redirect = () => {
         const path = store.args?.file
         const newFile = store.args?.newFile
         const argPath = newFile ?? path
-        const selection = location.state?.selection
+        const selection = undefined // location.state?.selection
 
         if (store.args?.source && !argPath) {
           info(`Create project for dir (worktreePath=${store.args.source})`)

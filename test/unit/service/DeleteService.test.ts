@@ -3,11 +3,11 @@ import {mock} from 'vitest-mock-extended'
 import type {CanvasService} from '@/services/CanvasService'
 import {DeleteService} from '@/services/DeleteService'
 import type {FileService} from '@/services/FileService'
+import type {LocationService} from '@/services/LocationService'
+import type {ProjectService} from '@/services/ProjectService'
 import type {ThreadService} from '@/services/ThreadService'
 import {TreeService} from '@/services/TreeService'
-import {isFile} from '@/state'
-import type {File} from '@/types'
-import {createEditorElement, createFile, createLinkElement} from '../testutil/data'
+import {createEditorElement, createFile, createLinkElement, createProject} from '../testutil/data'
 import {expectTree} from '../testutil/tree'
 
 vi.mock('@/db', () => ({DB: mock()}))
@@ -21,7 +21,6 @@ test.each([
     deleteId: '3',
     currentId: '3',
     navigateTo: {code: true, id: '2'},
-    fileUpdated: true,
   },
   {
     deleteId: '2',
@@ -36,7 +35,7 @@ test.each([
   {
     deleteId: '1',
     currentId: '1',
-    navigateTo: {id: '5'},
+    navigateTo: undefined,
   },
   {
     deleteId: '2',
@@ -46,12 +45,14 @@ test.each([
   {
     deleteId: '5',
     currentId: '5',
-    navigateTo: {id: '1'},
+    navigateTo: undefined,
   },
 ])('delete - soft %#', async (data) => {
   const fileService = mock<FileService>({currentFile: undefined, files: []})
   const canvasService = mock<CanvasService>({canvases: []})
   const threadService = mock<ThreadService>({threads: []})
+  const projectService = mock<ProjectService>({projects: []})
+  const locationService = mock<LocationService>({currentItemId: undefined})
   const treeService = new TreeService()
 
   treeService.reset([
@@ -62,20 +63,18 @@ test.each([
     createFile({id: '5'}),
   ])
 
-  const service = new DeleteService(fileService, canvasService, threadService, treeService)
+  const service = new DeleteService(
+    fileService,
+    canvasService,
+    threadService,
+    projectService,
+    locationService,
+    treeService,
+  )
 
-  const currentNode = treeService.getItem(data.currentId)
-  vi.spyOn(fileService, 'currentFile', 'get').mockReturnValue(currentNode?.value as File)
+  vi.spyOn(locationService, 'currentItemId', 'get').mockReturnValue(data.currentId)
 
-  fileService.findFileById.mockImplementation((id: string) => {
-    const item = treeService.getItem(id)?.value
-    if (isFile(item)) return item
-    return undefined
-  })
-
-  const node = treeService.getItem(data.deleteId)
-  if (!node) throw Error('Node not found')
-
+  const node = treeService.getItem(data.deleteId)!
   const result = await service.delete(node)
 
   if (result.navigateTo) {
@@ -91,9 +90,18 @@ test('delete - update tree', async () => {
   const fileService = mock<FileService>({currentFile: undefined, files: []})
   const canvasService = mock<CanvasService>({canvases: []})
   const threadService = mock<ThreadService>({threads: []})
+  const projectService = mock<ProjectService>({projects: []})
+  const locationService = mock<LocationService>({currentItemId: undefined})
   const treeService = new TreeService()
 
-  const service = new DeleteService(fileService, canvasService, threadService, treeService)
+  const service = new DeleteService(
+    fileService,
+    canvasService,
+    threadService,
+    projectService,
+    locationService,
+    treeService,
+  )
 
   treeService.reset([
     createFile({id: '1'}),
@@ -126,15 +134,6 @@ test('delete - update tree', async () => {
     `,
   )
 
-  const currentNode = treeService.getItem('1')
-  vi.spyOn(fileService, 'currentFile', 'get').mockReturnValue(currentNode?.value as File)
-
-  fileService.findFileById.mockImplementation((id: string) => {
-    const item = treeService.getItem(id)?.value
-    if (isFile(item)) return item
-    return undefined
-  })
-
   await service.delete(treeService.getItem('2')!)
 
   expectTree(
@@ -152,9 +151,18 @@ test('delete - local file', async () => {
   const fileService = mock<FileService>({files: []})
   const canvasService = mock<CanvasService>({canvases: []})
   const threadService = mock<ThreadService>({threads: []})
+  const projectService = mock<ProjectService>({projects: []})
+  const locationService = mock<LocationService>({currentItemId: undefined})
   const treeService = new TreeService()
 
-  const service = new DeleteService(fileService, canvasService, threadService, treeService)
+  const service = new DeleteService(
+    fileService,
+    canvasService,
+    threadService,
+    projectService,
+    locationService,
+    treeService,
+  )
 
   treeService.reset([
     createFile({id: '1', path: '/path/to/file1.ts'}),
@@ -190,37 +198,43 @@ test.each([
   {
     deleteId: '1',
     currentId: '1',
-    navigateTo: {id: '5'},
+    navigateTo: {id: 'project_1'},
+    expectedFiles: 3,
+  },
+  {
+    deleteId: 'project_1',
+    currentId: '1',
+    navigateTo: undefined,
     expectedFiles: 3,
   },
 ])('delete - forever %#', async (data) => {
   const fileService = mock<FileService>({currentFile: undefined, files: []})
   const canvasService = mock<CanvasService>({canvases: []})
   const threadService = mock<ThreadService>({threads: []})
+  const projectService = mock<ProjectService>({projects: []})
+  const locationService = mock<LocationService>({currentItemId: undefined})
   const treeService = new TreeService()
 
-  const service = new DeleteService(fileService, canvasService, threadService, treeService)
+  const service = new DeleteService(
+    fileService,
+    canvasService,
+    threadService,
+    projectService,
+    locationService,
+    treeService,
+  )
 
   treeService.reset([
-    createFile({id: '1'}),
+    createProject({id: 'project_1'}),
+    createFile({id: '1', parentId: 'project_1'}),
     createFile({id: '2', parentId: '1', code: true}),
     createFile({id: '3', parentId: '2'}),
-    createFile({id: '4', deleted: true}),
     createFile({id: '5'}),
   ])
 
-  const currentNode = treeService.getItem(data.currentId)
-  vi.spyOn(fileService, 'currentFile', 'get').mockReturnValue(currentNode?.value as File)
+  vi.spyOn(locationService, 'currentItemId', 'get').mockReturnValue(data.currentId)
 
-  fileService.findFileById.mockImplementation((id: string) => {
-    const item = treeService.getItem(id)?.value
-    if (isFile(item)) return item
-    return undefined
-  })
-
-  const node = treeService.getItem(data.deleteId)
-  if (!node) throw Error('Node not found')
-
+  const node = treeService.getItem(data.deleteId)!
   const result = await service.delete(node, true)
 
   if (!data.navigateTo) {
@@ -230,13 +244,15 @@ test.each([
   }
 
   expect(fileService.deleteFile).toHaveBeenCalledTimes(data.expectedFiles)
-  expect(canvasService.removeElementFromAll).toHaveBeenCalledWith(data.deleteId)
+  expect(canvasService.removeElementFromAll).toHaveBeenCalledTimes(data.expectedFiles)
 })
 
 test('emptyBin', async () => {
   const fileService = mock<FileService>({currentFile: undefined, files: []})
   const canvasService = mock<CanvasService>({canvases: []})
   const threadService = mock<ThreadService>({threads: []})
+  const projectService = mock<ProjectService>({projects: []})
+  const locationService = mock<LocationService>({currentItemId: undefined})
 
   const files = [
     createFile({id: '1', deleted: true}),
@@ -246,17 +262,24 @@ test('emptyBin', async () => {
     createFile({id: '5', parentId: '4', deleted: true}),
   ]
 
-  vi.spyOn(fileService, 'currentFile', 'get').mockReturnValue(files[2])
-  fileService.findFileById.mockReturnValue(files[1])
+  vi.spyOn(locationService, 'currentItemId', 'get').mockReturnValue(files[2].id)
 
   const treeService = new TreeService()
   treeService.reset(files)
 
-  const service = new DeleteService(fileService, canvasService, threadService, treeService)
+  const service = new DeleteService(
+    fileService,
+    canvasService,
+    threadService,
+    projectService,
+    locationService,
+    treeService,
+  )
 
   const result = await service.emptyBin()
 
   expect(result.navigateTo).toMatchObject({id: '2'})
+  expect(fileService.deleteFile).not.toHaveBeenCalledWith('1', true)
   expect(fileService.deleteFile).toHaveBeenCalledWith('3', true)
   expect(fileService.deleteFile).toHaveBeenCalledWith('4', true)
   expect(fileService.deleteFile).toHaveBeenCalledWith('5', true)

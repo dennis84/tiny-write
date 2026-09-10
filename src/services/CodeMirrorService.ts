@@ -23,6 +23,7 @@ import {mermaidKeywords} from '@/codemirror/mermaid'
 import {getTheme} from '@/codemirror/theme'
 import {isTauri} from '@/env'
 import {Page, type PrettierConfig} from '@/types'
+import {LspUtil} from '@/utils/LspUtil'
 import type {AppService} from './AppService'
 import type {ConfigService} from './ConfigService'
 import type {DialogService} from './DialogService'
@@ -103,9 +104,11 @@ export class CodeMirrorService {
     }
 
     if (isTauri()) {
-      const path = props.path ?? `file:///__virtual__/${props.id}.${lang.extension}`
-      extensions.push(lsp(path, this.locationService, this.fileService, this.projectFileService))
-      // extensions.push(copilotLsp(path))
+      const uri = props.path
+        ? `file://${props.path}`
+        : LspUtil.createBufferUri(props.id, lang.extension)
+      extensions.push(lsp(uri, this.locationService, this.fileService, this.projectFileService))
+      // extensions.push(copilotLsp(uri))
     }
 
     if (this.locationService.page !== Page.Canvas) {
