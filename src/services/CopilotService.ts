@@ -97,7 +97,7 @@ export class CopilotService {
   }
 
   get models() {
-    return this.modelsResource[0].latest ?? []
+    return this.modelsResource[0].state === 'ready' ? this.modelsResource[0].latest : []
   }
 
   constructor(

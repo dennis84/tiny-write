@@ -63,7 +63,7 @@ export const Editor = ({element, index}: {element: CanvasEditorElement; index: n
 
       if (!f) {
         info(`Create file for editor element (id=${id})`)
-        f = FileService.createFile({id, parentId: canvasId})
+        f = await FileService.createFile({id, parentId: canvasId})
         await fileService.addFile(f)
       }
 

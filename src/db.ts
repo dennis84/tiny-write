@@ -194,8 +194,12 @@ export class DB {
     return (await dbPromise).get('ai', 'main')
   }
 
-  static async getFiles() {
+  static async getFiles(): Promise<PersistedFile[]> {
     return (await dbPromise).getAll('files')
+  }
+
+  static async getFile(id: string): Promise<PersistedFile | undefined> {
+    return (await dbPromise).get('files', id)
   }
 
   static async updateFile(file: PersistedFile) {

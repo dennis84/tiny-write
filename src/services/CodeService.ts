@@ -233,9 +233,10 @@ export class CodeService {
     })
 
     // If opened with LSP range move to that position
-    const lspSelection = this.locationService.state?.selection
-    if (lspSelection) {
-      const selection = LspUtil.createSelection(editor.editorView, lspSelection)
+    const selection = this.locationService.state?.selection
+      ? LspUtil.createSelection(editor.editorView, this.locationService.state.selection)
+      : lastCursorSelection
+    if (selection) {
       editor.editorView.dispatch({selection, scrollIntoView: true})
     }
 

@@ -188,8 +188,8 @@ test.each([
   {code: false, path: '/path/name.ts', expected: 'typescript'}, // from path
   {code: true, newFile: '/path/name.ts', expected: 'typescript'},
   {code: true, newFile: '/path/name.ts', codeLang: 'markdown', expected: 'markdown'},
-])('createFile - codeLang', ({code, codeLang, path, newFile, expected}) => {
-  const file = FileService.createFile({code, codeLang, path, newFile})
+])('createFile - codeLang', async ({code, codeLang, path, newFile, expected}) => {
+  const file = await FileService.createFile({code, codeLang, path, newFile})
   expect(file.codeLang).toBe(expected)
 })
 

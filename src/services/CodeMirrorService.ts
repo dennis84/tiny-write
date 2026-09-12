@@ -131,7 +131,6 @@ export class CodeMirrorService {
       parent: props.parent,
       doc: props.doc,
       extensions,
-      selection: props.selection,
     })
 
     return {editorView, compartments}

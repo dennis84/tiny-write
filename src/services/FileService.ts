@@ -191,15 +191,17 @@ export class FileService {
     return path ? uuidv5(path, FileService.FILE_NAMESPACE) : uuidv4()
   }
 
-  static createFile(params: Partial<File> = {}): File {
+  static async createFile(params: Partial<File> = {}): Promise<File> {
     const id = params.id ?? FileService.createId()
     const ydoc = params.ydoc ?? Y.encodeStateAsUpdate(FileService.createYdoc(id))
     const versions = params.versions ?? []
     const codeLang = params.codeLang ?? FileService.guessCodeLang(params)
+    const meta = await DB.getFile(id)
 
     return {
       type: 'file',
       ...params,
+      lastCursorPos: meta?.lastCursorPos,
       id,
       ydoc,
       codeLang,
@@ -212,6 +214,8 @@ export class FileService {
     if (!fetched) return []
     const files = []
     for (const file of fetched ?? []) {
+      if (!file.ydoc) continue
+
       try {
         files.push({
           type: 'file' as const,
@@ -254,7 +258,7 @@ export class FileService {
 
   async newFile(params: Partial<File> = {}): Promise<File> {
     const existing = params.id ? this.findFileById(params.id) : undefined
-    const file = FileService.createFile({...existing, ...params})
+    const file = await FileService.createFile({...existing, ...params})
     info(
       `Created new file (id=${file.id}, code=${file.code}, path=${file.path}, newFile=${file.newFile})`,
     )
