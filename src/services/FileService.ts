@@ -157,7 +157,9 @@ export class FileService {
     )
 
     const lastCursorPos =
-      file.editorView?.state.selection.from ?? file.codeEditorView?.state.selection.main.from
+      file.editorView?.state.selection.from ??
+      file.codeEditorView?.state.selection.main.from ??
+      file.lastCursorPos // keep old value
 
     const dbFile = isLocalFile(file)
       ? {
@@ -260,19 +262,9 @@ export class FileService {
     const existing = params.id ? this.findFileById(params.id) : undefined
     const file = await FileService.createFile({...existing, ...params})
     info(
-      `Created new file (id=${file.id}, code=${file.code}, path=${file.path}, newFile=${file.newFile})`,
+      `Create new file (id=${file.id}, code=${file.code}, path=${file.path}, newFile=${file.newFile})`,
     )
 
-    return await this.addFile(file)
-  }
-
-  private static createYdoc(id: string, bytes?: Uint8Array): Y.Doc {
-    const ydoc = new Y.Doc({guid: id})
-    if (bytes) Y.applyUpdate(ydoc, bytes)
-    return ydoc
-  }
-
-  async addFile(file: File): Promise<File> {
     const [, {mutate}] = this.filesResource
     mutate(
       produce((prev = []) => {
@@ -284,6 +276,7 @@ export class FileService {
         }
       }),
     )
+
     await FileService.saveFile(file)
 
     // return proxy object
@@ -297,6 +290,12 @@ export class FileService {
     }
 
     return newFile
+  }
+
+  private static createYdoc(id: string, bytes?: Uint8Array): Y.Doc {
+    const ydoc = new Y.Doc({guid: id})
+    if (bytes) Y.applyUpdate(ydoc, bytes)
+    return ydoc
   }
 
   findFileById(id: string): File | undefined {

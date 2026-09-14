@@ -51,7 +51,6 @@ export const TreeLink = (p: Props) => {
       const file = await projectFileService.newFileByPath({
         path: item.path,
         projectId: item.projectId,
-        lastCursorPos: item.lastCursorPos,
       })
 
       locationService.openItem(file)

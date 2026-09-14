@@ -19,7 +19,6 @@ export class ProjectFileService {
     newFile?: string
     projectId?: string
     parentId?: string
-    lastCursorPos?: number
     insert?: string
     codeLang?: string
   }): Promise<File> {

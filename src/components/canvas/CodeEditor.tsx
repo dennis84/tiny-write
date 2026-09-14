@@ -2,9 +2,7 @@ import {createEffect, createResource, on, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {CodeMirrorContainer} from '@/components/code/CodeEditor'
 import {CodeScroll} from '@/components/Layout'
-import {info} from '@/remote/log'
 import type {Selection} from '@/services/CanvasService'
-import {FileService} from '@/services/FileService'
 import {useState} from '@/state'
 import type {CanvasCodeElement} from '@/types'
 import {IndexType, ZIndex} from '@/utils/ZIndex'
@@ -59,15 +57,7 @@ export const CodeEditor = ({element, index}: {element: CanvasCodeElement; index:
   const [file] = createResource(
     () => ({id: element.id, canvasId: canvasService.currentCanvas?.id}),
     async ({id, canvasId}) => {
-      let f = fileService.findFileById(id)
-
-      if (!f) {
-        info(`Create file for code editor element (id=${id})`)
-        f = await FileService.createFile({id, parentId: canvasId, code: true})
-        await fileService.addFile(f)
-      }
-
-      return f
+      return fileService.newFile({id, parentId: canvasId, code: true})
     },
   )
 

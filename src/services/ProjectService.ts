@@ -13,7 +13,6 @@ import {
   type Project,
   type ProjectAttachment,
 } from '@/types'
-import {YjsUtil} from '@/utils/YjsUtil'
 import {FileService} from './FileService'
 import type {LocationService} from './LocationService'
 import type {TreeService} from './TreeService'
@@ -128,14 +127,6 @@ export class ProjectService {
     const treeItems: (Filename | Directory)[] = []
     for (const dirEntry of dirEntries) {
       const id = FileService.createId(dirEntry.path)
-      const cur = this.treeService.tree.getItem(id)
-      let lastCursorPos: number | undefined
-
-      if (isFile(cur?.value)) {
-        // Skip existing files if initialized
-        if (!YjsUtil.isEmpty(cur.value.ydoc)) continue
-        lastCursorPos = cur.value.lastCursorPos
-      }
 
       treeItems.push({
         type: dirEntry.isDirectory ? 'directory' : 'filename',
@@ -144,7 +135,6 @@ export class ProjectService {
         projectId,
         name: dirEntry.name,
         parentId: item.id,
-        lastCursorPos,
       })
     }
 

@@ -8,7 +8,7 @@ import {DropTarget, MediaService} from '@/services/MediaService'
 import {createState} from '@/state'
 import {type CanvasEditorElement, type CanvasImageElement, ElementType} from '@/types'
 import * as cmUtil from '../testutil/codemirror-util'
-import {createCanvas, createEditorElement, createFile, createThread} from '../testutil/data'
+import {createCanvas, createEditorElement, createThread} from '../testutil/data'
 import * as pmUtil from '../testutil/prosemirror-util'
 import {createIpcMock, renderMain, stubLocation} from '../testutil/util'
 
@@ -253,12 +253,11 @@ test('dropPaths - image on editor with basePath', async () => {
     expect(ctrl.fileService.resourceState).toEqual('ready')
   })
 
-  const file = createFile({
+  const file = await ctrl.fileService.newFile({
     id: '1',
     path: '/users/me/project/README.md',
   })
 
-  await ctrl.fileService.addFile(file)
   ctrl.locationService.openItem(file)
 
   await waitFor(() => {
@@ -284,8 +283,7 @@ test('dropPaths - text file on editor', async () => {
     expect(ctrl.fileService.resourceState).toEqual('ready')
   })
 
-  const file = createFile({id: '1'})
-  await ctrl.fileService.addFile(file)
+  const file = await ctrl.fileService.newFile({id: '1'})
   ctrl.locationService.openItem(file)
 
   await waitFor(() => {

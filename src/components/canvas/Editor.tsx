@@ -5,9 +5,7 @@ import {BlockHandle} from '@/components/editor/BlockHandle'
 import {CanvasEditor} from '@/components/editor/Style'
 import {TableControls} from '@/components/editor/TableControl'
 import {Scroll} from '@/components/Layout'
-import {info} from '@/remote/log'
 import type {Selection} from '@/services/CanvasService'
-import {FileService} from '@/services/FileService'
 import {useState} from '@/state'
 import type {CanvasEditorElement} from '@/types'
 import {IndexType, ZIndex} from '@/utils/ZIndex'
@@ -59,15 +57,7 @@ export const Editor = ({element, index}: {element: CanvasEditorElement; index: n
   const [file] = createResource(
     () => ({id: element.id, canvasId: canvasService.currentCanvas?.id}),
     async ({id, canvasId}) => {
-      let f = fileService.findFileById(id)
-
-      if (!f) {
-        info(`Create file for editor element (id=${id})`)
-        f = await FileService.createFile({id, parentId: canvasId})
-        await fileService.addFile(f)
-      }
-
-      return f
+      return fileService.newFile({id, parentId: canvasId})
     },
   )
 

@@ -7,6 +7,7 @@ import type {CollabService} from '@/services/CollabService'
 import {FileService} from '@/services/FileService'
 import type {LocationService} from '@/services/LocationService'
 import type {TreeService} from '@/services/TreeService'
+import * as cmUtils from '../testutil/codemirror-util'
 import {createFile} from '../testutil/data'
 import * as pmUtils from '../testutil/prosemirror-util'
 import {createIpcMock} from '../testutil/util'
@@ -14,6 +15,7 @@ import {createIpcMock} from '../testutil/util'
 vi.mock('@/db', () => ({
   DB: mock({
     getFiles: vi.fn(),
+    getFile: vi.fn(),
   }),
 }))
 
@@ -28,7 +30,7 @@ const locationService = mock<LocationService>()
 const treeService = mock<TreeService>()
 const lastModified = new Date()
 
-test('only save file type', async () => {
+test('updateFile - only save file type', async () => {
   const ydoc = pmUtils.createSubdoc('1', ['Test'])
 
   vi.spyOn(DB, 'getFiles').mockResolvedValue([
@@ -98,6 +100,7 @@ test('getTitle', async () => {
       id: '4',
       code: true,
       newFile: 'src/components/Main.tsx',
+      ydoc: cmUtils.createYUpdate('4', ''),
       lastModified: new Date(),
     },
   ])
@@ -108,11 +111,9 @@ test('getTitle', async () => {
     expect(service.resourceState).toEqual('ready')
   })
 
-  await service.addFile({
-    type: 'file',
+  await service.newFile({
     id: '5',
     ydoc: pmUtils.createYUpdate('4', ['Test4']),
-    versions: [],
     path: '/users/me/project/README.md',
     lastModified,
   })
@@ -140,11 +141,9 @@ test('findFile - found', async () => {
     expect(service.resourceState).toEqual('ready')
   })
 
-  await service.addFile({
-    type: 'file',
+  await service.newFile({
     id: '2',
     ydoc: pmUtils.createYUpdate('2', ['Test2']),
-    versions: [],
     path: '/path/to/file2',
   })
 
@@ -168,11 +167,9 @@ test('findFile - not found', async () => {
     expect(service.resourceState).toEqual('ready')
   })
 
-  await service.addFile({
-    type: 'file',
+  await service.newFile({
     id: '2',
     ydoc: pmUtils.createYUpdate('2', ['Test2']),
-    versions: [],
     path: '/path/to/file2',
   })
 
@@ -194,6 +191,8 @@ test.each([
 })
 
 test('newFile', async () => {
+  //const getFileSpy = vi.spyOn(DB, 'getFile')
+
   const service = new FileService(collabService, locationService, treeService)
 
   await waitFor(() => {
@@ -204,19 +203,21 @@ test('newFile', async () => {
 
   expect(file).toBeDefined()
   expect(service.files.length).toBe(1)
+
+  expect(vi.spyOn(DB, 'getFile')).toHaveBeenCalled()
 })
 
 test('newFile - existing', async () => {
   const dbFile = {
     id: '1',
     ydoc: pmUtils.createYUpdate('1', ['a']),
-    versions: [],
     lastModified,
     path: '/123',
     codeLang: 'kotlin',
   }
 
   vi.spyOn(DB, 'getFiles').mockResolvedValue([dbFile])
+  vi.spyOn(DB, 'getFile').mockResolvedValue({...dbFile, lastCursorPos: 123})
 
   const service = new FileService(collabService, locationService, treeService)
 
@@ -224,13 +225,16 @@ test('newFile - existing', async () => {
     expect(service.resourceState).toEqual('ready')
   })
 
-  const file = await service.newFile({id: '1'})
+  const file = await service.newFile({id: '1', path: '/new'})
 
   expect(service.files.length).toBe(1)
   expect(file).toBeDefined()
   expect(file.ydoc).toEqual(dbFile.ydoc)
-  expect(file.path).toEqual(dbFile.path)
+  expect(file.path).toEqual('/new')
   expect(file.codeLang).toEqual(dbFile.codeLang)
+  expect(file.lastCursorPos).toEqual(123)
+
+  expect(vi.spyOn(DB, 'getFile')).toHaveBeenCalled()
 })
 
 test('renameFile - title', async () => {
@@ -262,11 +266,9 @@ test('renameFile - update path', async () => {
     expect(service.resourceState).toEqual('ready')
   })
 
-  await service.addFile({
-    type: 'file',
+  await service.newFile({
     id: '1',
     ydoc: pmUtils.createYUpdate('1', ['a']),
-    versions: [],
     path: '/path/old.js',
     codeLang: 'javascript',
   })
@@ -291,11 +293,9 @@ test('renameFile - update newFile', async () => {
     expect(service.resourceState).toEqual('ready')
   })
 
-  await service.addFile({
-    type: 'file',
+  await service.newFile({
     id: '1',
     ydoc: pmUtils.createYUpdate('1', ['a']),
-    versions: [],
     newFile: '/path/old.js',
     codeLang: 'javascript',
   })
@@ -329,37 +329,15 @@ test.each([
   ['/path/to/file', undefined],
   [undefined, '/path/to/file'],
 ])('saveFile - local files', async (path, newFile) => {
-  const file = {
-    type: 'file' as const,
+  const file = createFile({
     id: '1',
     ydoc: pmUtils.createYUpdate('1', ['a']),
-    versions: [],
     lastModified: new Date(),
     path,
     newFile,
-  }
+  })
 
   await FileService.saveFile(file)
 
   expect(DB.updateFile).toHaveBeenCalled()
-})
-
-test('addFile - existing', async () => {
-  const service = new FileService(collabService, locationService, treeService)
-
-  await waitFor(() => {
-    expect(service.resourceState).toEqual('ready')
-  })
-
-  await service.addFile(createFile({id: '1'}))
-
-  expect(service.files).toHaveLength(1)
-  expect(service.files[0].id).toEqual('1')
-  expect(service.files[0].path).toEqual(undefined)
-
-  await service.addFile(createFile({id: '1', path: '/some/path'}))
-
-  expect(service.files).toHaveLength(1)
-  expect(service.files[0].id).toEqual('1')
-  expect(service.files[0].path).toEqual('/some/path')
 })

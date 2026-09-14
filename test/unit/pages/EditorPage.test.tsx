@@ -205,16 +205,12 @@ test('open - file with path', async () => {
     expect(ctrl.fileService.resourceState).toEqual('ready')
   })
 
-  const file = {
-    type: 'file' as const,
+  const file = await ctrl.fileService.newFile({
     id: '1',
     ydoc: createYUpdate('1', ['Text']),
     lastModified,
-    versions: [],
     path: 'file1',
-  }
-
-  await ctrl.fileService.addFile(file)
+  })
 
   ctrl.locationService.openItem(file)
 
@@ -248,16 +244,12 @@ test('open - read file - file not found', async () => {
     expect(ctrl.fileService.resourceState).toEqual('ready')
   })
 
-  const file = {
-    type: 'file' as const,
+  const file = await ctrl.fileService.newFile({
     id: '1',
     ydoc: createYUpdate('1', ['Text']),
     lastModified,
-    versions: [],
     path: 'file1',
-  }
-
-  await ctrl.fileService.addFile(file)
+  })
 
   ctrl.locationService.openItem(file)
 
