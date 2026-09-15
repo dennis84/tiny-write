@@ -14,6 +14,7 @@ import type {FileService} from '@/services/FileService'
 import type {LocationService} from '@/services/LocationService'
 import type {ProjectFileService} from '@/services/ProjectFileService'
 import {LspUtil} from '@/utils/LspUtil'
+import {copilotCompletion} from './copilot-completion'
 
 export const lsp = (
   uri: string,
@@ -54,6 +55,7 @@ export const lsp = (
       ]),
       // signatureHelp(),
       // serverDiagnostics()
+      copilotCompletion(),
     ],
   }).connect(transport)
   return client.plugin(uri)

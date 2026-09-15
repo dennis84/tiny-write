@@ -6,22 +6,22 @@ use async_lsp::lsp_types::notification::{
 };
 use async_lsp::lsp_types::request::{Completion, GotoDefinition};
 use async_lsp::lsp_types::{
-    request::HoverRequest, HoverParams, TextDocumentIdentifier, TextDocumentPositionParams,
-    Url,
+    request::HoverRequest, HoverParams,
 };
 use async_lsp::lsp_types::{
     ClientCapabilities, CompletionParams, CompletionResponse, DidChangeTextDocumentParams,
     DidCloseTextDocumentParams, DidOpenTextDocumentParams, GotoDefinitionParams,
     GotoDefinitionResponse, Hover, InitializeParams, InitializeResult,
-    TextDocumentClientCapabilities, TextDocumentContentChangeEvent, TextDocumentItem, TextDocumentSyncClientCapabilities,
-    TraceValue, VersionedTextDocumentIdentifier, WorkspaceFolder,
+    TextDocumentClientCapabilities,
+    TextDocumentSyncClientCapabilities, TraceValue,
+    WorkspaceFolder,
 };
 use serde_json::json;
 use tauri::{AppHandle, Manager, Runtime};
 use tauri_plugin_cli::CliExt;
 use tracing::{debug, info};
 
-use crate::editor::editor_state::{Document, EditorState};
+use crate::editor::editor_state::EditorState;
 use crate::lsp::registry::LspRegistry;
 
 use super::registry::LanguageServerId;
@@ -128,7 +128,11 @@ impl<R: Runtime> LspService<R> {
         Ok(())
     }
 
-    pub async fn open_document(&self, server: &LspServer, params: DidOpenTextDocumentParams) -> anyhow::Result<()> {
+    pub async fn open_document(
+        &self,
+        server: &LspServer,
+        params: DidOpenTextDocumentParams,
+    ) -> anyhow::Result<()> {
         debug!("LSP - open document");
         server.notify::<DidOpenTextDocument>(params).await?;
         Ok(())
@@ -136,35 +140,20 @@ impl<R: Runtime> LspService<R> {
 
     pub async fn close_document(
         &self,
-        path: &Path,
+        server: &LspServer,
         params: DidCloseTextDocumentParams,
     ) -> anyhow::Result<()> {
-        let editor_state = self.app_handle.state::<EditorState>();
-        let lsp_registry = self.app_handle.state::<LspRegistry>();
-        let doc = editor_state.get_document(path).await?;
-        let language_server_id = doc.get_language_server_id().ok_or(anyhow!("No language"))?;
-
-        let server = lsp_registry
-            .get_language_server(&language_server_id)
-            .await
-            .ok_or(anyhow!("No language server"))?;
+        debug!("LSP - close document");
         server.notify::<DidCloseTextDocument>(params).await?;
-
         Ok(())
     }
 
     pub async fn insert_document(
         &self,
-        language_server_id: &LanguageServerId,
+        server: &LspServer,
         params: DidChangeTextDocumentParams,
     ) -> anyhow::Result<()> {
-        let lsp_registry = self.app_handle.state::<LspRegistry>();
-
-        let server = lsp_registry
-            .get_language_server(language_server_id)
-            .await
-            .ok_or(anyhow!("No language server"))?;
-
+        debug!("LSP - update document");
         server.notify::<DidChangeTextDocument>(params).await?;
         Ok(())
     }
@@ -183,9 +172,7 @@ impl<R: Runtime> LspService<R> {
             .ok_or(anyhow!("No language server"))?;
 
         debug!("LSP - send hover request");
-        let response = server
-            .request::<HoverRequest>(params)
-            .await?;
+        let response = server.request::<HoverRequest>(params).await?;
 
         response.ok_or(anyhow!("No response"))
     }
@@ -213,7 +200,11 @@ impl<R: Runtime> LspService<R> {
         response.ok_or(anyhow!("No response"))
     }
 
-    pub async fn goto(&self, path: &Path, params: GotoDefinitionParams) -> anyhow::Result<GotoDefinitionResponse> {
+    pub async fn goto(
+        &self,
+        path: &Path,
+        params: GotoDefinitionParams,
+    ) -> anyhow::Result<GotoDefinitionResponse> {
         let editor_state = self.app_handle.state::<EditorState>();
         let lsp_registry = self.app_handle.state::<LspRegistry>();
 
@@ -225,11 +216,12 @@ impl<R: Runtime> LspService<R> {
             .await
             .ok_or(anyhow!("No language server"))?;
 
-        debug!("LSP - goto definition request (language_server_id={:?})", language_server_id);
+        debug!(
+            "LSP - goto definition request (language_server_id={:?})",
+            language_server_id
+        );
 
-        let response = server
-            .request::<GotoDefinition>(params)
-            .await?;
+        let response = server.request::<GotoDefinition>(params).await?;
 
         response.ok_or(anyhow!("No response"))
     }

@@ -108,7 +108,6 @@ export class CodeMirrorService {
         ? `file://${props.path}`
         : LspUtil.createBufferUri(props.id, lang.extension)
       extensions.push(lsp(uri, this.locationService, this.fileService, this.projectFileService))
-      // extensions.push(copilotLsp(uri))
     }
 
     if (this.locationService.page !== Page.Canvas) {

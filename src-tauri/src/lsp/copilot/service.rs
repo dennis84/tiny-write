@@ -1,4 +1,7 @@
-use async_lsp::lsp_types::CompletionParams;
+use async_lsp::lsp_types::{
+    CompletionParams, DidChangeTextDocumentParams, DidCloseTextDocumentParams,
+    DidOpenTextDocumentParams,
+};
 use dirs::home_dir;
 use rusqlite::Connection;
 use serde_json::Value;
@@ -12,6 +15,7 @@ use tracing::{debug, info};
 use crate::editor::editor_state::{EditorState, Language};
 
 use crate::lsp::registry::fallback_language_server_id;
+use crate::lsp::service::LspService;
 use crate::lsp::{
     registry::{LanguageServerId, LspRegistry},
     server::LspServer,
@@ -30,6 +34,53 @@ impl<R: Runtime> CopilotLspService<R> {
             app_handle,
             enabled: Mutex::new(false),
         }
+    }
+
+    pub async fn open_document(&self, params: DidOpenTextDocumentParams) -> anyhow::Result<()> {
+        let lsp_registry = self.app_handle.state::<LspRegistry>();
+        let lsp_service = self.app_handle.state::<LspService<R>>();
+
+        let language_server_id = Self::language_server_id(None);
+        let language_server = lsp_registry
+            .get_language_server(&language_server_id)
+            .await
+            .ok_or(anyhow!("No language server"))?;
+
+        lsp_service.open_document(&language_server, params).await?;
+
+        Ok(())
+    }
+
+    pub async fn close_document(&self, params: DidCloseTextDocumentParams) -> anyhow::Result<()> {
+        let lsp_registry = self.app_handle.state::<LspRegistry>();
+        let lsp_service = self.app_handle.state::<LspService<R>>();
+
+        let language_server_id = Self::language_server_id(None);
+        let language_server = lsp_registry
+            .get_language_server(&language_server_id)
+            .await
+            .ok_or(anyhow!("No language server"))?;
+
+        lsp_service.close_document(&language_server, params).await?;
+
+        Ok(())
+    }
+
+    pub async fn insert_document(&self, params: DidChangeTextDocumentParams) -> anyhow::Result<()> {
+        let lsp_registry = self.app_handle.state::<LspRegistry>();
+        let lsp_service = self.app_handle.state::<LspService<R>>();
+
+        let language_server_id = Self::language_server_id(None);
+        let language_server = lsp_registry
+            .get_language_server(&language_server_id)
+            .await
+            .ok_or(anyhow!("No language server"))?;
+
+        lsp_service
+            .insert_document(&language_server, params)
+            .await?;
+
+        Ok(())
     }
 
     pub async fn disconnect(&self) -> anyhow::Result<()> {
@@ -146,11 +197,11 @@ impl<R: Runtime> CopilotLspService<R> {
         )
     }
 
-    fn language_server_id(worktree_path: Option<PathBuf>) -> LanguageServerId {
-        let language_id =  Language("copilot".to_string());
+    pub fn language_server_id(worktree_path: Option<PathBuf>) -> LanguageServerId {
+        let language_id = Language("copilot".to_string());
         match worktree_path {
             Some(path) => LanguageServerId(path.clone(), language_id),
-            None => fallback_language_server_id(language_id)
+            None => fallback_language_server_id(language_id),
         }
     }
 }
