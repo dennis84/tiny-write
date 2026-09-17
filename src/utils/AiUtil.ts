@@ -1,13 +1,7 @@
 import {fetch} from '@/remote/http'
 import {error, info} from '@/remote/log'
-import type {
-  ChatMessage,
-  Chunk,
-  CompletionsRequest,
-  CompletionsResult,
-  Model,
-} from '@/services/CopilotService'
-import type {AiProvider} from '@/types'
+import type {ChatMessage, Chunk, CompletionsRequest, CompletionsResult} from '@/services/AiService'
+import type {AiProvider, Model} from '@/types'
 
 // Known open-weight model family keywords used to derive a human-readable
 // vendor name from a model or family identifier (case-insensitive substring match).

@@ -2,9 +2,9 @@ import {createResource, createSignal, type ResourceReturn} from 'solid-js'
 import {produce, type SetStoreFunction, type Store} from 'solid-js/store'
 import {DB} from '@/db'
 import {info} from '@/remote/log'
-import type {State} from '@/types'
+import type {Model, State} from '@/types'
 import {AiUtil} from '@/utils/AiUtil'
-import type {ChatMessage, Chunk, CompletionsResult, Model} from './CopilotService'
+import type {ChatMessage, Chunk, CompletionsResult} from './AiService'
 
 export class LlamaCppService {
   private streamingSignal = createSignal<AbortController | undefined>()

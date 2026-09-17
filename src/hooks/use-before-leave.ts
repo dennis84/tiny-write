@@ -17,7 +17,6 @@ export const useBeforeLeave = (callback: () => void) => {
 
     if (args.to !== args.from.pathname) return
     if (fromState?.merge !== toState?.merge) return // merge needs editor reinitialization
-    // if (fromState?.selection !== toState?.selection) return // selection needs editor reinitialization
 
     stopEvent = true
   })

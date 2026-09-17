@@ -7,7 +7,8 @@ vi.mock('@/remote/http', () => ({fetch: vi.fn()}))
 import {waitFor} from '@solidjs/testing-library'
 import {createStore} from 'solid-js/store'
 import {fetch} from '@/remote/http'
-import {type ChatMessage, CopilotService} from '@/services/CopilotService'
+import type {ChatMessage} from '@/services/AiService'
+import {CopilotService} from '@/services/CopilotService'
 import {createState} from '@/state'
 import {CopilotMock} from '@/utils/CopilotMock'
 

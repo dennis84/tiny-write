@@ -2,10 +2,55 @@ import {type Accessor, createMemo, createSignal} from 'solid-js'
 import type {SetStoreFunction, Store} from 'solid-js/store'
 import {DB} from '@/db'
 import {info} from '@/remote/log'
-import type {State} from '@/types'
-import type {ChatMessage, Chunk, CompletionsResult, CopilotService, Model} from './CopilotService'
+import type {ChatRole, Model, State} from '@/types'
+import type {CopilotService} from './CopilotService'
 import type {LlamaCppService} from './LlamaCppService'
 import type {OllamaService} from './OllamaService'
+
+export interface CompletionsRequest {
+  intent: boolean
+  n: number
+  stream: boolean
+  temperature: number
+  model: string
+  messages: ChatMessage[]
+}
+
+interface ChatMessageContent {
+  type: string
+}
+
+export interface ChatMessageImageContent extends ChatMessageContent {
+  type: 'image_url'
+  image_url: {
+    url: string
+  }
+}
+
+export interface ChatMessageTextContent extends ChatMessageContent {
+  type: 'text'
+  text: string
+}
+
+export interface ChatMessage {
+  role: ChatRole
+  content: (ChatMessageTextContent | ChatMessageImageContent)[]
+}
+
+export interface Choice {
+  message: {content: string}
+  delta?: {content: string}
+}
+
+export interface Chunk {
+  choices: Choice[]
+}
+
+export interface CompletionsResult {
+  success: boolean
+  interrupted?: boolean
+  error?: string
+}
 
 export class AiService {
   private streamingSignal = createSignal(false)

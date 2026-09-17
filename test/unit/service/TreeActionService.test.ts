@@ -64,7 +64,6 @@ test('move - canvas', async () => {
     createFile({id: 'file_2', leftId: 'file_1'}),
     createFile({id: 'file_3', leftId: 'file_2'}),
     createCanvas({id: 'canvas_5', leftId: 'file_2'}),
-    // {type: 'project', id: 'project_1', name: 'Project 1'},
   ])
 
   await service.move('canvas_5', 'file_1')

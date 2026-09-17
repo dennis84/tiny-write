@@ -15,8 +15,9 @@ import {
 } from '@/remote/copilot'
 import {fetch} from '@/remote/http'
 import {debug, info} from '@/remote/log'
-import type {AiProvider, ChatRole, State} from '@/types'
+import type {Model, State} from '@/types'
 import {AiUtil} from '@/utils/AiUtil'
+import type {ChatMessage, Chunk, CompletionsResult} from './AiService'
 
 interface ApiTokenEndpoints {
   api: string
@@ -26,61 +27,6 @@ interface ApiTokenResponse {
   token: string
   expiresAt: number
   endpoints: ApiTokenEndpoints
-}
-
-export interface CompletionsRequest {
-  intent: boolean
-  n: number
-  stream: boolean
-  temperature: number
-  model: string
-  messages: ChatMessage[]
-}
-
-interface ChatMessageContent {
-  type: string
-}
-
-export interface ChatMessageImageContent extends ChatMessageContent {
-  type: 'image_url'
-  image_url: {
-    url: string
-  }
-}
-
-export interface ChatMessageTextContent extends ChatMessageContent {
-  type: 'text'
-  text: string
-}
-
-export interface ChatMessage {
-  role: ChatRole
-  content: (ChatMessageTextContent | ChatMessageImageContent)[]
-}
-
-export interface Model {
-  id: string
-  name: string
-  vendor: string
-  streaming: boolean
-  maxOutputTokens: number
-  maxPromptTokens: number
-  provider: AiProvider
-}
-
-export interface Choice {
-  message: {content: string}
-  delta?: {content: string}
-}
-
-export interface Chunk {
-  choices: Choice[]
-}
-
-export interface CompletionsResult {
-  success: boolean
-  interrupted?: boolean
-  error?: string
 }
 
 export class CopilotService {

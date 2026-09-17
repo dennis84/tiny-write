@@ -20,8 +20,7 @@ import {
   type Thread,
 } from '@/types'
 import {MessageUtil} from '@/utils/MessageUtil'
-import type {AiService} from './AiService'
-import type {ChatMessage, Chunk} from './CopilotService'
+import type {AiService, ChatMessage, Chunk} from './AiService'
 import type {DialogService} from './DialogService'
 import type {FileService} from './FileService'
 import type {LocationService} from './LocationService'

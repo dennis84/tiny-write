@@ -1,8 +1,8 @@
 import {createMemo, For, onMount} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {useDialog} from '@/hooks/use-dialog'
-import type {Model} from '@/services/CopilotService'
 import {useState} from '@/state'
+import type {Model} from '@/types'
 import {Button} from '../Button'
 import {DialogLabel, DialogList, DialogScroll, TooltipButton} from '../dialog/Style'
 

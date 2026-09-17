@@ -5,15 +5,12 @@ use async_lsp::lsp_types::notification::{
     DidChangeTextDocument, DidCloseTextDocument, DidOpenTextDocument,
 };
 use async_lsp::lsp_types::request::{Completion, GotoDefinition};
-use async_lsp::lsp_types::{
-    request::HoverRequest, HoverParams,
-};
+use async_lsp::lsp_types::{request::HoverRequest, HoverParams};
 use async_lsp::lsp_types::{
     ClientCapabilities, CompletionParams, CompletionResponse, DidChangeTextDocumentParams,
     DidCloseTextDocumentParams, DidOpenTextDocumentParams, GotoDefinitionParams,
     GotoDefinitionResponse, Hover, InitializeParams, InitializeResult,
-    TextDocumentClientCapabilities,
-    TextDocumentSyncClientCapabilities, TraceValue,
+    TextDocumentClientCapabilities, TextDocumentSyncClientCapabilities, TraceValue,
     WorkspaceFolder,
 };
 use serde_json::json;
@@ -26,17 +23,6 @@ use crate::lsp::registry::LspRegistry;
 
 use super::registry::LanguageServerId;
 use super::server::LspServer;
-
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
-pub enum OffsetEncoding {
-    /// UTF-8 code units aka bytes
-    Utf8,
-    /// UTF-32 code units aka chars
-    Utf32,
-    /// UTF-16 code units
-    #[default]
-    Utf16,
-}
 
 pub struct LspService<R: Runtime> {
     pub app_handle: AppHandle<R>,

@@ -9,8 +9,8 @@ import {
 } from '@/state'
 import type {CanvasLinkElement} from '@/types'
 import {MessageUtil} from '@/utils/MessageUtil'
+import type {ChatMessage} from './AiService'
 import type {CanvasService} from './CanvasService'
-import type {ChatMessage} from './CopilotService'
 import type {FileService} from './FileService'
 
 export class CanvasThreadService {

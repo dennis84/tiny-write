@@ -6,7 +6,7 @@ import type {
   ChatMessage,
   ChatMessageImageContent,
   ChatMessageTextContent,
-} from '@/services/CopilotService'
+} from '@/services/AiService'
 import {type Attachment, AttachmentType, type Message} from '@/types'
 
 type ChatMessageContent = ChatMessageTextContent | ChatMessageImageContent

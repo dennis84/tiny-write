@@ -2,7 +2,6 @@ import type {EditorView as CmEditorView} from '@codemirror/view'
 import type {EditorView} from 'prosemirror-view'
 import * as v from 'valibot'
 import type * as lspTypes from 'vscode-languageserver-protocol'
-import type {Model} from './services/CopilotService'
 import type {TreeItem, TreeState} from './tree'
 
 export interface MergeState {
@@ -95,6 +94,16 @@ export interface LlamaCpp {
 }
 
 export type AiProvider = 'copilot' | 'llama.cpp' | 'ollama'
+
+export interface Model {
+  id: string
+  name: string
+  vendor: string
+  streaming: boolean
+  maxOutputTokens: number
+  maxPromptTokens: number
+  provider: AiProvider
+}
 
 export interface AiConfig {
   copilot?: Copilot

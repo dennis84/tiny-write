@@ -153,27 +153,6 @@ export const Keymap = () => {
     return true
   }
 
-  // const onGoto = async () => {
-  //   const currentFile = fileService.currentFile
-  //   const path = currentFile?.path
-  //   const codeEditorView = currentFile?.codeEditorView
-  //   if (!codeEditorView || !path) return
-  //
-  //   const sel = codeEditorView.state.selection.main
-  //
-  //   const response = await lspGoto(path, sel.from)
-  //
-  //   const first = response?.[0] // file:///Users/../file.ts
-  //   if (!first) return
-  //
-  //   const url = new URL(first.uri)
-  //   const selection = first.range
-  //
-  //   const file = await projectFileService.newFileByPath({path: url.pathname})
-  //
-  //   locationService.openItem(file, {selection})
-  // }
-
   // biome-ignore lint/suspicious/noConfusingVoidType: void is needed here
   type Fn = (e: KeyboardEvent) => boolean | undefined | Promise<boolean | undefined | void>
   const keymap: Record<string, Fn> = {
