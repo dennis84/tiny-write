@@ -36,7 +36,7 @@ export const MessageAnswer = (props: Props) => {
   }
 
   return (
-    <ChatBubble fadeIn={aiService.streaming()} data-testid="answer_bubble">
+    <ChatBubble fadeIn={aiService.streaming() !== undefined} data-testid="answer_bubble">
       {/* Rerender code blocks if code theme has been changed */}
       <Show when={configService.codeTheme} keyed>
         <MessageMarkdown content={props.message.value.content} />

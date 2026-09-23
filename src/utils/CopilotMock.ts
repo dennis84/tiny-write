@@ -1,10 +1,33 @@
 import fetchMock, {type CallLog} from 'fetch-mock'
 import {adjectives, animals, uniqueNamesGenerator} from 'unique-names-generator'
+import {v4 as uuid} from 'uuid'
 import {pause} from './promise'
 
 const LOREM_IPSUM =
   'Lorem ipsum dolor `[]sit amet`, consetetur `<sadipscing>` elitr, sed [diam](nonumy) eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. Stet clita kasd gubergren, no sea takimata sanctus est Lorem ipsum dolor sit amet.'
 const LOREM_IPSUM_WORDS = LOREM_IPSUM.split(' ')
+
+export const FINISH_REASON = JSON.stringify({
+  choices: [{finish_reason: 'stop', index: 0, delta: {content: null}}],
+  created: Date.now(),
+  id: uuid(),
+  usage: {
+    completion_tokens: 8,
+    completion_tokens_details: {
+      accepted_prediction_tokens: 0,
+      rejected_prediction_tokens: 0,
+    },
+    prompt_tokens: 153,
+    prompt_tokens_details: {cached_tokens: 0},
+    total_tokens: 161,
+  },
+  model: 'gpt-4o-2024-11-20',
+  system_fingerprint: 'fp_2b2e565915',
+  copilot_usage: {
+    token_details: [],
+    total_nano_aiu: 0,
+  },
+})
 
 interface Options {
   endlessText?: boolean
@@ -24,8 +47,8 @@ export class CopilotMock {
 
     const encoder = new TextEncoder()
     const enqueueMessage = (controller: ReadableStreamDefaultController<any>, text: string) => {
-      const message = CopilotMock.completions(text)
-      const buffer = encoder.encode(CopilotMock.createChunk(message)).buffer
+      const message = CopilotMock.toChoicesDelta(text)
+      const buffer = encoder.encode(CopilotMock.toChunk(message)).buffer
       controller.enqueue(buffer)
     }
 
@@ -35,8 +58,8 @@ export class CopilotMock {
           let parts = 0
           while (true) {
             if (!options.endlessText && parts >= 4) {
-              const buffer = encoder.encode('data: [DONE]').buffer
-              controller.enqueue(buffer)
+              controller.enqueue(encoder.encode(`data: ${FINISH_REASON}\n\n`).buffer)
+              controller.enqueue(encoder.encode('data: [DONE]').buffer)
               controller.close()
               break
             }
@@ -92,7 +115,8 @@ export class CopilotMock {
       if (!m.url.endsWith('https://example.com/github/api/chat/completions')) return false
       if (typeof m.options.body !== 'string') return false
       const json = JSON.parse(m.options.body)
-      return json.stream === streaming
+      if (streaming) return json.stream === true
+      return true
     }
 
     mock.post((m) => isCompletions(m, true), createStream)
@@ -107,7 +131,7 @@ export class CopilotMock {
           length: 2,
         })
 
-        return CopilotMock.completions(title)
+        return CopilotMock.toChoicesMessage(title)
       },
     )
   }
@@ -185,16 +209,20 @@ export class CopilotMock {
 
   static completionsStream(textChunks: string[]) {
     return `${textChunks
-      .map((content) => CopilotMock.completions(content))
-      .map((json) => CopilotMock.createChunk(json))
-      .join('')}data: [DONE]`
+      .map((content) => CopilotMock.toChoicesDelta(content))
+      .map((json) => CopilotMock.toChunk(json))
+      .join('')}data: ${FINISH_REASON}\n\ndata: [DONE]`
   }
 
-  static completions(content: string) {
+  static toChoicesDelta(content: string) {
+    return {choices: [{delta: {content}}]}
+  }
+
+  static toChoicesMessage(content: string) {
     return {choices: [{message: {content}}]}
   }
 
-  private static createChunk(chunk: unknown) {
+  private static toChunk(chunk: unknown) {
     return `data: ${JSON.stringify(chunk)}\n\n`
   }
 }

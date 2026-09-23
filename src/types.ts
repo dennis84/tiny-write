@@ -241,6 +241,7 @@ export interface ImageAttachment {
   type: AttachmentType.Image
   content: string
   name: string
+  mediaType: string
 }
 
 export interface ProjectAttachment {

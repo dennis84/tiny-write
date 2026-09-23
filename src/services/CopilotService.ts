@@ -1,4 +1,5 @@
-import {createResource, createSignal, type ResourceReturn} from 'solid-js'
+import {createOpenAICompatible, type OpenAICompatibleProvider} from '@ai-sdk/openai-compatible'
+import {createResource, type ResourceReturn} from 'solid-js'
 import {produce, type SetStoreFunction, type Store} from 'solid-js/store'
 import {DB} from '@/db'
 import {isTauri} from '@/env'
@@ -16,8 +17,6 @@ import {
 import {fetch} from '@/remote/http'
 import {debug, info} from '@/remote/log'
 import type {Model, State} from '@/types'
-import {AiUtil} from '@/utils/AiUtil'
-import type {ChatMessage, Chunk, CompletionsResult} from './AiService'
 
 interface ApiTokenEndpoints {
   api: string
@@ -30,16 +29,10 @@ interface ApiTokenResponse {
 }
 
 export class CopilotService {
-  private streamingSignal = createSignal<AbortController | undefined>()
-
   private modelsResource: ResourceReturn<Model[]>
 
   get chatModel(): Model | undefined {
     return this.store.ai?.model ?? this.modelsResource[0].latest?.find((it) => it.id === 'gpt-4o')
-  }
-
-  get streaming() {
-    return this.streamingSignal[0]
   }
 
   get models() {
@@ -193,47 +186,31 @@ export class CopilotService {
     }
   }
 
-  async completions(
-    model: Model,
-    messages: ChatMessage[],
-    onChunk: (chunk: Chunk) => void,
-    streaming: boolean | undefined = undefined,
-  ): Promise<CompletionsResult> {
-    const accessToken = this.store.ai?.copilot?.accessToken
-    if (!accessToken) return {success: false, error: 'No access token'}
-
-    const tokenResponse = await this.getApiToken(accessToken)
-    const url = this.proxy(`${tokenResponse.endpoints.api}/chat/completions`)
-    const body = JSON.stringify(AiUtil.createRequest(model, messages, streaming))
-
-    debug(`Copilot chat - (url=${url}, token=${JSON.stringify(tokenResponse)}, body=${body})`)
-
-    const controller = new AbortController()
-    this.streamingSignal[1](controller)
-
-    try {
-      return await AiUtil.completions(url, model, messages, onChunk, controller, streaming, {
-        Authorization: `Bearer ${tokenResponse.token}`,
-        'Editor-Version': this.appVersion(),
-        'Copilot-Integration-Id': 'vscode-chat',
-        'Copilot-Vision-Request': 'true',
-      })
-    } finally {
-      this.streamingSignal[1](undefined)
-    }
-  }
-
-  stop() {
-    this.streamingSignal[0]()?.abort()
-    this.streamingSignal[1](undefined)
-  }
-
   verify(url: string) {
     if (isTauri()) {
       return open(url)
     }
 
     window.open(url, '_blank')
+  }
+
+  async getProvider(): Promise<OpenAICompatibleProvider | undefined> {
+    const accessToken = this.store.ai?.copilot?.accessToken
+    if (!accessToken) return
+
+    const tokenResponse = await this.getApiToken(accessToken)
+    const baseURL = this.proxy(tokenResponse.endpoints.api)
+
+    return createOpenAICompatible({
+      name: 'internal-copilot',
+      baseURL,
+      apiKey: tokenResponse.token,
+      headers: {
+        'Editor-Version': this.appVersion(),
+        'Copilot-Integration-Id': 'vscode-chat',
+        'Copilot-Vision-Request': 'true',
+      },
+    })
   }
 
   private async getModels(): Promise<Model[]> {

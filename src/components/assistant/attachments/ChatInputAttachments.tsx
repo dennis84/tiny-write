@@ -84,6 +84,7 @@ export const ChatInputAttachments = () => {
           type: AttachmentType.Image,
           name: df.name,
           content: df.data,
+          mediaType: df.type,
         }) satisfies ImageAttachment,
     )
 

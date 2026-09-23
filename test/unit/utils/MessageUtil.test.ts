@@ -2,7 +2,7 @@ import {expect, test} from 'vitest'
 import {AttachmentType, type Message} from '@/types'
 import {MessageUtil} from '@/utils/MessageUtil'
 
-test('toChatMessage', () => {
+test('toModelMessage', () => {
   const message: Message = {
     id: '1',
     role: 'user',
@@ -16,7 +16,7 @@ test('toChatMessage', () => {
         codeLang: 'typescript',
         selection: [[0, 0]],
       },
-      {type: AttachmentType.Image, content: '123', name: 'img'},
+      {type: AttachmentType.Image, content: 'data:123', name: 'img', mediaType: 'image/png'},
       {
         type: AttachmentType.Project,
         projectName: 'Project',
@@ -31,7 +31,9 @@ test('toChatMessage', () => {
     ],
   }
 
-  const result = MessageUtil.toChatMessage(message)
+  const result = MessageUtil.toModelMessage(message)
+  expect.assert(Array.isArray(result.content))
+
   expect.assert(result.content[0].type === 'text')
   expect(result.content[0].text).toEqual(`--- TEXT/MARKDOWN ATTACHMENT ---
 type: Text or Markdown document
@@ -55,8 +57,8 @@ Selection
 
   expect.assert(result.content[3].type === 'text')
   expect(result.content[3].text).toEqual(`--- IMAGE ATTACHMENT ---`)
-  expect.assert(result.content[4].type === 'image_url')
-  expect(result.content[4].image_url).toEqual({url: '123'})
+  expect.assert(result.content[4].type === 'file')
+  expect(result.content[4].data).toEqual(new URL('data:123'))
   expect.assert(result.content[5].type === 'text')
   expect(result.content[5].text).toEqual(`--- END OF IMAGE ATTACHMENT ---`)
 

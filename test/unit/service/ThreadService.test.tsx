@@ -2,7 +2,7 @@ import {waitFor} from '@solidjs/testing-library'
 import {beforeEach, expect, test, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
 import {DB} from '@/db'
-import type {AiService, ChatMessageTextContent} from '@/services/AiService'
+import type {AiService} from '@/services/AiService'
 import type {DialogService} from '@/services/DialogService'
 import type {FileService} from '@/services/FileService'
 import type {LocationService} from '@/services/LocationService'
@@ -100,13 +100,15 @@ test('addMessage', async () => {
   })
 
   await service.addMessage({id: '1', role: 'user', content: '1'})
-  await service.addMessage({id: '2', role: 'user', content: '2'})
+  await service.addMessage({id: '2', role: 'assistant', content: '2'})
+  await service.addMessage({id: '3', role: 'user', content: '3'})
 
   expectTree(
     service.messageTree,
     `
     └ 1 (parentId=, leftId=)
       └ 2 (parentId=1, leftId=)
+        └ 3 (parentId=2, leftId=)
     `,
   )
 })
@@ -146,8 +148,9 @@ test('addMessage - path', async () => {
   )
 
   const messages1 = service.getMessages()
-  expect(messages1.messages).toHaveLength(2)
+  expect(messages1.messages).toHaveLength(3)
   expect(messages1.parentId).toBe('1')
+  expect(messages1.nextId).toBe(undefined)
 
   await service.addMessage({id: '3', role: 'user', content: '3'})
 
@@ -155,8 +158,8 @@ test('addMessage - path', async () => {
     service.messageTree,
     `
     └ 1 (parentId=, leftId=)
-      └ 3 (parentId=1, leftId=)
     └ 2 (parentId=, leftId=)
+    └ 3 (parentId=, leftId=)
     `,
   )
 
@@ -476,8 +479,10 @@ test('regenerate - user message', async () => {
   expect(service.currentThread?.path?.get(undefined)).toBe('3')
 
   const {messages} = service.getMessages()
-  const message = messages[1].content[0] as ChatMessageTextContent
-  expect(message.text).toBe('111')
+  expect(messages[2].content[0]).toMatchObject({
+    type: 'text',
+    text: '111',
+  })
 })
 
 test('regenerate - assistant message', async () => {
@@ -529,7 +534,7 @@ test('regenerate - assistant message', async () => {
   expect(service.currentThread?.path?.get('1')).toBe('3')
 
   const result = service.getMessages()
-  expect(result.messages).toHaveLength(2)
+  expect(result.messages).toHaveLength(3)
   expect(result.nextId).toBeDefined()
 })
 
@@ -558,8 +563,7 @@ test('generateTitle', async () => {
 
   aiService.completionsSync.mockImplementation(async (messages) => {
     expect(messages).toHaveLength(3)
-    const message = messages[2].content.find((c) => c.type === 'text')
-    expect(message?.text).toContain('Generate a concise')
+    expect(messages[2].content).toContain('Generate a concise')
 
     return 'Test'
   })
@@ -571,8 +575,8 @@ test('generateTitle', async () => {
 
 test.each<[Message[], number]>([
   [[], 0], // empty
-  [[{id: '1', role: 'assistant', content: ''}], 2], // system:common, user:message
-  [[{id: '1', role: 'user', content: '```'}], 3], // system:common, system:code block, user:message
+  [[{id: '1', role: 'assistant', content: ''}], 3], // 2x system:common, user:message
+  [[{id: '1', role: 'user', content: '```'}], 4], // 2x system:common, system:code block, user:message
   [
     [
       {id: '1', role: 'user', content: 'A'},
@@ -581,7 +585,7 @@ test.each<[Message[], number]>([
       {id: '4', parentId: '3', role: 'assistant', content: 'D'},
       {id: '5', parentId: '4', role: 'user', content: 'E'},
     ],
-    6, // system:common, 5 conversation
+    7, // 2x system:common, 5x conversation
   ],
   [
     [
@@ -591,7 +595,7 @@ test.each<[Message[], number]>([
       {id: '4', parentId: '3', role: 'assistant', content: 'D', summary: 'ABCD'},
       {id: '5', parentId: '4', role: 'user', content: 'E'},
     ],
-    6, // system:common, 5 conversation
+    7, // 2x system:common, 5x conversation
   ],
   [
     [
@@ -603,7 +607,7 @@ test.each<[Message[], number]>([
       {id: '6', parentId: '5', role: 'assistant', content: 'F'},
       {id: '7', parentId: '6', role: 'user', content: 'G'},
     ],
-    5, // system:common, system:summary, 3 conversation
+    6, // 2x system:common, system:summary, 3x conversation
   ],
   [
     [
@@ -615,7 +619,7 @@ test.each<[Message[], number]>([
       {id: '6', parentId: '5', role: 'assistant', content: 'F'},
       {id: '7', parentId: '6', role: 'user', content: 'G'},
     ],
-    5, // system:common, system:summary, 3 conversation
+    6, // 2x system:common, system:summary, 3x conversation
   ],
 ])('getMessages', async (messages, count) => {
   vi.spyOn(DB, 'getThreads').mockResolvedValue([
@@ -719,6 +723,7 @@ test('hande attachments', () => {
     type: AttachmentType.Image,
     content: '',
     name: 'img',
+    mediaType: 'image/png',
     ...props,
   })
 

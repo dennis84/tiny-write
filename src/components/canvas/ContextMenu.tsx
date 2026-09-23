@@ -59,21 +59,14 @@ export const ContextMenu = () => {
     const parser = createMarkdownParser(schema)
     let buffer = ''
 
-    const result = await aiService.completions(
-      messages,
-      (chunk) => {
-        for (const choice of chunk.choices) {
-          buffer += choice.delta?.content ?? choice.message?.content ?? ''
-        }
-
-        const node = parser.parse(buffer)
-        const tr = editorView.state.tr
-        tr.delete(0, editorView.state.doc.content.size)
-        tr.insert(0, node)
-        editorView.dispatch(tr)
-      },
-      true,
-    )
+    const result = await aiService.completions(messages, (chunk) => {
+      buffer += chunk
+      const node = parser.parse(buffer)
+      const tr = editorView.state.tr
+      tr.delete(0, editorView.state.doc.content.size)
+      tr.insert(0, node)
+      editorView.dispatch(tr)
+    })
 
     if (result.success) {
       dialogService.toast({message: 'AI file generated', duration: 2_000})

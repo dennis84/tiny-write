@@ -1,4 +1,5 @@
 import {createDeepSignal} from '@solid-primitives/resource'
+import type {ModelMessage, UserModelMessage} from 'ai'
 import {formatDate, isToday} from 'date-fns'
 import {createResource, createSignal} from 'solid-js'
 import {produce} from 'solid-js/store'
@@ -20,7 +21,7 @@ import {
   type Thread,
 } from '@/types'
 import {MessageUtil} from '@/utils/MessageUtil'
-import type {AiService, ChatMessage, Chunk} from './AiService'
+import type {AiService} from './AiService'
 import type {DialogService} from './DialogService'
 import type {FileService} from './FileService'
 import type {LocationService} from './LocationService'
@@ -246,31 +247,26 @@ export class ThreadService {
     // Create answer message directly to visualize loading
     this.addChunk(messageId, parentId, '')
 
-    try {
-      const result = await this.aiService.completions(messages, (chunk: Chunk) => {
-        for (const choice of chunk.choices) {
-          const chunk = choice.delta?.content ?? choice.message?.content ?? ''
-          this.addChunk(messageId, parentId, chunk)
-        }
-      })
+    const result = await this.aiService.completions(messages, (chunk) => {
+      this.addChunk(messageId, parentId, chunk)
+    })
 
-      if (result.success) {
-        await this.saveThread()
-        if (!thread.title) {
-          try {
-            const title = await this.generateTitle(thread)
-            if (title) await this.updateTitle(thread.id, title)
-          } catch {
-            // ignore
-          }
+    if (result.success) {
+      await this.saveThread()
+      if (!thread.title) {
+        try {
+          const title = await this.generateTitle(thread)
+          if (title) await this.updateTitle(thread.id, title)
+        } catch (e) {
+          error(`Generate title failed`, e)
         }
-
-        await this.summarize(thread)
-      } else if (result.interrupted) {
-        this.interrupt(messageId)
       }
-    } catch (error: any) {
-      this.dialogService.toast({message: error?.message ?? error, action: 'Close'})
+
+      await this.summarize(thread)
+    } else if (result.interrupted) {
+      this.interrupt(messageId)
+    } else if (result.error) {
+      this.dialogService.toast({message: result.error, action: 'Close'})
     }
   }
 
@@ -278,7 +274,7 @@ export class ThreadService {
     const thread = this.currentThread
     if (!thread) return
 
-    const parentId = message.parentId ?? this.getParentId()
+    const parentId = message.parentId ?? this.getNextParentId(message)
     const newMessage = {
       ...message,
       parentId,
@@ -290,6 +286,10 @@ export class ThreadService {
       thread.lastModified = new Date()
       this.messageTree.add(thread.messages[thread.messages.length - 1])
     }, thread.id)
+
+    if (thread.path?.has(parentId)) {
+      this.updatePath(parentId, newMessage.id)
+    }
 
     await this.saveThread(thread)
   }
@@ -369,7 +369,7 @@ export class ThreadService {
 
     this.messageTree.reset(currentThread?.messages ?? [])
 
-    // Send messages directly if empty and markdown file is parent
+    // Set markdown from parent tree node as input prompt
     if (currentThread.messages.length === 0 && currentThread.parentId) {
       const parent = this.treeService.getItem(currentThread.parentId)
       if (isFile(parent?.value) && !parent.value.code) {
@@ -385,7 +385,6 @@ export class ThreadService {
       mutate((prev = []) => prev.filter((it) => it.id !== id))
       await DB.deleteThread(id)
     } else {
-      // await this.updateThread((thread) => {deleted: true, lastModified: new Date()})
       const updated = this.updateThread((thread) => {
         thread.deleted = true
         thread.lastModified = new Date()
@@ -468,16 +467,16 @@ export class ThreadService {
 
     if (!thread) return
 
-    let messages: ChatMessage[] = []
+    let messages: ModelMessage[] = []
     let targetId: string | undefined
 
     this.traverseTree((it) => {
       if (it.value.summary) messages = []
-      messages.push(MessageUtil.toChatMessage(it.value))
+      messages.push(MessageUtil.toModelMessage(it.value))
       targetId = it.value.id
     })
 
-    const {promptCount, outputCount} = this.tokenCount(messages)
+    const {promptCount, outputCount} = MessageUtil.tokenCount(messages)
     info(`Maybe create summary (promptCount=${promptCount}, outputCount=${outputCount})`)
 
     const promptLimit = model.maxPromptTokens * 0.7
@@ -486,7 +485,7 @@ export class ThreadService {
       return
     }
 
-    messages.push({role: 'system', content: [{type: 'text', text: summaryPrompt}]})
+    messages.push({role: 'system', content: summaryPrompt})
 
     try {
       const summary = await this.aiService.completionsSync(messages)
@@ -512,15 +511,15 @@ export class ThreadService {
 
     if (!thread) return
 
-    const question: ChatMessage = {
+    const question: UserModelMessage = {
       role: 'user',
-      content: [{type: 'text', text: generateTitlePrompt}],
+      content: generateTitlePrompt,
     }
 
-    const messages: ChatMessage[] = thread.messages.map((m) => MessageUtil.toChatMessage(m))
+    const messages: ModelMessage[] = thread.messages.map((m) => MessageUtil.toModelMessage(m))
     messages.push(question)
 
-    const title = this.aiService.completionsSync(messages)
+    const title = await this.aiService.completionsSync(messages)
     if (!title) throw new Error('Cannot guess a title for current thread.')
 
     return title
@@ -544,24 +543,24 @@ export class ThreadService {
     return parentId
   }
 
-  getParentId(): string | undefined {
+  getNextParentId(message: Message): string | undefined {
     let parentId: string | undefined
     this.traverseTree((it) => {
-      parentId = it.value.id
+      if (message.role !== it.value.role) parentId = it.value.id
     })
 
     return parentId
   }
 
   getMessages(thread = this.currentThread): {
-    messages: ChatMessage[]
+    messages: ModelMessage[]
     nextId?: string
     parentId?: string
   } {
     const model = this.aiService.chatModel
     if (!thread || !model) return {messages: []}
 
-    let messages: ChatMessage[] = []
+    let messages: ModelMessage[] = []
     let parentId: string | undefined
     let nextId: string | undefined
     let hasCodeBlock = false
@@ -570,7 +569,7 @@ export class ThreadService {
 
     this.traverseTree((it) => {
       nextId = thread.path?.get(it.id)
-      const message = MessageUtil.toChatMessage(it.value, it.childrenIds.length === 0)
+      const message = MessageUtil.toModelMessage(it.value, it.childrenIds.length === 0)
 
       // remember if any code block exists
       if (!hasCodeBlock && this.hasCodeBlock(message)) {
@@ -585,17 +584,17 @@ export class ThreadService {
 
       messages.push(message)
 
-      const {promptCount, outputCount} = this.tokenCount(messages)
+      const {promptCount, outputCount} = MessageUtil.tokenCount(messages)
       const promptLimit = model.maxPromptTokens * 0.9
       const outputLimit = model.maxOutputTokens * 0.9
 
       // Reduce messages starting from last summary
       if (lastSummaryIndex !== -1 && (promptCount > promptLimit || outputCount > outputLimit)) {
         info(
-          `Recude conversation (promptCount=${promptCount}/${promptLimit}, outputCount=${outputCount}/${outputLimit}, dropMessages=${messages.length - lastSummaryIndex + 1})`,
+          `Reducde conversation (promptCount=${promptCount}/${promptLimit}, outputCount=${outputCount}/${outputLimit}, dropMessages=${messages.length - lastSummaryIndex + 1})`,
         )
         messages = [
-          {role: 'system', content: [{type: 'text', text: lastSummary ?? ''}]},
+          {role: 'system', content: lastSummary ?? ''},
           ...messages.slice(lastSummaryIndex + 1),
         ]
       }
@@ -606,18 +605,13 @@ export class ThreadService {
     if (hasCodeBlock) {
       messages.unshift({
         role: 'system',
-        content: [{type: 'text', text: codeBlockHandlingPrompt}],
+        content: codeBlockHandlingPrompt,
       })
     }
 
     if (messages.length > 0) {
-      messages.unshift({
-        role: 'system',
-        content: [
-          {type: 'text', text: commonRulesPrompt},
-          {type: 'text', text: commonAssistantRulesPrompt},
-        ],
-      })
+      messages.unshift({role: 'system', content: commonRulesPrompt})
+      messages.unshift({role: 'system', content: commonAssistantRulesPrompt})
     }
 
     return {
@@ -637,35 +631,19 @@ export class ThreadService {
     })
   }
 
-  private hasCodeBlock(message: ChatMessage): boolean {
-    for (const c of message.content) {
-      if (c.type === 'text' && c.text.includes('```')) return true
-    }
+  private hasCodeBlock(message: ModelMessage): boolean {
+    if (message.role !== 'user') return false
+    const checkCode = (text: string) => text.includes('```')
 
-    return false
-  }
-
-  private tokenCount(messages: ChatMessage[]): {promptCount: number; outputCount: number} {
-    let outputCount = 0
-    let promptCount = 0
-
-    for (const message of messages) {
-      for (const content of message.content) {
-        if (content.type === 'text') {
-          const words = content.text.split(/\s+/).length
-          const chars = content.text.length
-          const punctuation = (content.text.match(/[^a-zA-Z0-9\s]/g) || []).length
-          const count = Math.ceil(words * 1.3 + punctuation * 0.5 + chars / 15)
-          if (message.role === 'assistant') {
-            outputCount += count
-          } else {
-            promptCount += count
-          }
-        }
+    if (typeof message.content === 'string') {
+      return checkCode(message.content)
+    } else if (Array.isArray(message.content)) {
+      for (const c of message.content) {
+        if (c.type === 'text' && c.text.includes('```')) return true
       }
     }
 
-    return {promptCount, outputCount}
+    return false
   }
 
   private updateThread(

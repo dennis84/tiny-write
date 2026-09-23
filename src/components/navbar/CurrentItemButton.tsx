@@ -165,7 +165,7 @@ export const CurrentItemButton = () => {
         value: filename ?? '',
         onEnter: async (value: string) => {
           const updatedFile = await fileService.renameFile(file.id, value)
-          if (updatedFile?.codeLang) codeService.updateLang(updatedFile, updatedFile.codeLang)
+          if (updatedFile?.codeLang) await codeService.updateLang(updatedFile, updatedFile.codeLang)
         },
       })
     } else if (canvas) {
@@ -207,8 +207,8 @@ export const CurrentItemButton = () => {
     showInputLine({
       value: file.codeLang ?? '',
       words: getLanguageNames(),
-      onEnter: (lang) => {
-        codeService.updateLang(file, lang)
+      onEnter: async (lang) => {
+        await codeService.updateLang(file, lang)
         focus()
       },
     })

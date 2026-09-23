@@ -1,22 +1,16 @@
-import {createResource, createSignal, type ResourceReturn} from 'solid-js'
+import {createOpenAICompatible, type OpenAICompatibleProvider} from '@ai-sdk/openai-compatible'
+import {createResource, type ResourceReturn} from 'solid-js'
 import {produce, type SetStoreFunction, type Store} from 'solid-js/store'
 import {DB} from '@/db'
 import {info} from '@/remote/log'
 import type {Model, State} from '@/types'
 import {AiUtil} from '@/utils/AiUtil'
-import type {ChatMessage, Chunk, CompletionsResult} from './AiService'
 
 export class LlamaCppService {
-  private streamingSignal = createSignal<AbortController | undefined>()
-
   private modelsResource: ResourceReturn<Model[]>
 
   get baseUrl() {
     return this.store.ai?.llamaCpp?.baseUrl ?? 'http://localhost:8080'
-  }
-
-  get streaming() {
-    return this.streamingSignal[0]
   }
 
   get models() {
@@ -69,26 +63,11 @@ export class LlamaCppService {
     this.modelsResource[1].refetch()
   }
 
-  async completions(
-    model: Model,
-    messages: ChatMessage[],
-    onChunk: (chunk: Chunk) => void,
-    streaming: boolean | undefined = undefined,
-  ): Promise<CompletionsResult> {
-    const controller = new AbortController()
-    this.streamingSignal[1](controller)
-
-    const url = `${this.baseUrl}/v1/chat/completions`
-    try {
-      return await AiUtil.completions(url, model, messages, onChunk, controller, streaming)
-    } finally {
-      this.streamingSignal[1](undefined)
-    }
-  }
-
-  stop() {
-    this.streamingSignal[0]()?.abort()
-    this.streamingSignal[1](undefined)
+  getProvider(): OpenAICompatibleProvider {
+    return createOpenAICompatible({
+      name: 'llama-cpp',
+      baseURL: `${this.baseUrl}/v1`,
+    })
   }
 
   private async getModels(): Promise<Model[]> {

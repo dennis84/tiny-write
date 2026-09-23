@@ -1,19 +1,13 @@
-import {createResource, createSignal} from 'solid-js'
+import {createOpenAICompatible, type OpenAICompatibleProvider} from '@ai-sdk/openai-compatible'
+import {createResource} from 'solid-js'
 import {produce, type SetStoreFunction, type Store} from 'solid-js/store'
 import {DB} from '@/db'
 import {info} from '@/remote/log'
 import type {Model, State} from '@/types'
 import {AiUtil} from '@/utils/AiUtil'
-import type {ChatMessage, Chunk, CompletionsResult} from './AiService'
 
 export class OllamaService {
-  private streamingSignal = createSignal<AbortController | undefined>()
-
   private modelsResource = createResource<Model[]>(() => this.getModels())
-
-  get streaming() {
-    return this.streamingSignal[0]
-  }
 
   get models() {
     return this.modelsResource[0].state === 'ready' ? this.modelsResource[0].latest : []
@@ -53,26 +47,12 @@ export class OllamaService {
     if (ai) await DB.setAi(ai)
   }
 
-  async completions(
-    model: Model,
-    messages: ChatMessage[],
-    onChunk: (chunk: Chunk) => void,
-    streaming: boolean | undefined = undefined,
-  ): Promise<CompletionsResult> {
-    const controller = new AbortController()
-    this.streamingSignal[1](controller)
-
-    const url = 'http://localhost:11434/v1/chat/completions'
-    try {
-      return await AiUtil.completions(url, model, messages, onChunk, controller, streaming)
-    } finally {
-      this.streamingSignal[1](undefined)
-    }
-  }
-
-  stop() {
-    this.streamingSignal[0]()?.abort()
-    this.streamingSignal[1](undefined)
+  getProvider(): OpenAICompatibleProvider {
+    return createOpenAICompatible({
+      name: 'ollama',
+      baseURL: 'http://localhost:11434/v1',
+      apiKey: 'ollama',
+    })
   }
 
   private async getModels(): Promise<Model[]> {

@@ -1,46 +1,85 @@
+import type {FilePart, ModelMessage, TextPart, UserContent} from 'ai'
 import fileAttachmentPrompt from '@/prompts/attachments/file.md?raw'
 import projectAttachmentPrompt from '@/prompts/attachments/project.md?raw'
 import textAttachmentPrompt from '@/prompts/attachments/text.md?raw'
 import userMessagePrompt from '@/prompts/common/user-message.md?raw'
-import type {
-  ChatMessage,
-  ChatMessageImageContent,
-  ChatMessageTextContent,
-} from '@/services/AiService'
 import {type Attachment, AttachmentType, type Message} from '@/types'
 
-type ChatMessageContent = ChatMessageTextContent | ChatMessageImageContent
-
 export class MessageUtil {
-  static toChatMessage(message: Message, latest = false): ChatMessage {
-    const content: ChatMessageContent[] = []
+  static tokenCount(messages: ModelMessage[]): {promptCount: number; outputCount: number} {
+    let outputCount = 0
+    let promptCount = 0
 
-    for (const attachment of message.attachments ?? []) {
-      content.push(...MessageUtil.attachmentToContent(attachment))
+    const countText = (text: string) => {
+      const words = text.split(/\s+/).length
+      const chars = text.length
+      const punctuation = (text.match(/[^a-zA-Z0-9\s]/g) || []).length
+      return Math.ceil(words * 1.3 + punctuation * 0.5 + chars / 15)
     }
 
-    if (message.content) {
-      const text = latest
-        ? MessageUtil.renderTemplate(userMessagePrompt, {message: message.content})
-        : message.content
+    for (const message of messages) {
+      if (message.role === 'user') {
+        if (typeof message.content === 'string') {
+          outputCount += countText(message.content)
+        } else if (Array.isArray(message.content)) {
+          message.content.forEach((c) => {
+            if (c.type === 'text') outputCount += countText(c.text)
+          })
+        }
+      } else if (message.role === 'assistant') {
+        if (typeof message.content === 'string') {
+          promptCount += countText(message.content)
+        } else if (Array.isArray(message.content)) {
+          message.content.forEach((c) => {
+            if (c.type === 'text') promptCount += countText(c.text)
+          })
+        }
+      } else if (message.role === 'system') {
+        outputCount += countText(message.content)
+      } else if (message.role === 'tool') {
+        // not yet
+      }
+    }
 
-      content.push({
-        type: 'text',
-        text,
-      })
+    return {promptCount, outputCount}
+  }
+
+  static toModelMessage(message: Message, latest = false): ModelMessage {
+    if (message.role === 'user') {
+      const content: UserContent = []
+
+      for (const attachment of message.attachments ?? []) {
+        content.push(...MessageUtil.attachmentToContent(attachment))
+      }
+
+      if (message.content) {
+        const text = latest
+          ? MessageUtil.renderTemplate(userMessagePrompt, {message: message.content})
+          : message.content
+        content.push({type: 'text', text})
+      }
+
+      return {
+        role: message.role,
+        content: content ?? '',
+      }
     }
 
     return {
       role: message.role,
-      content,
+      content: message.content,
     }
   }
 
-  private static attachmentToContent(attachment: Attachment): ChatMessageContent[] {
-    const content: ChatMessageContent[] = []
+  private static attachmentToContent(attachment: Attachment): (TextPart | FilePart)[] {
+    const content: (TextPart | FilePart)[] = []
     if (attachment.type === AttachmentType.Image) {
       content.push({type: 'text', text: '--- IMAGE ATTACHMENT ---'})
-      content.push({type: 'image_url', image_url: {url: attachment.content}})
+      content.push({
+        type: 'file',
+        mediaType: attachment.mediaType,
+        data: new URL(attachment.content), //{type: 'data', data: attachment.content},
+      })
       content.push({type: 'text', text: '--- END OF IMAGE ATTACHMENT ---'})
     } else if (attachment.type === AttachmentType.Text) {
       content.push({

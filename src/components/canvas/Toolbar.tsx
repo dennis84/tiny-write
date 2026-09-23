@@ -55,8 +55,8 @@ export const Toolbar = () => {
     showInputLine({
       value: language,
       words: getLanguageNames(),
-      onEnter: (lang) => {
-        codeService.updateLang(file, lang)
+      onEnter: async (lang) => {
+        await codeService.updateLang(file, lang)
       },
     })
   }

@@ -36,11 +36,11 @@ interface CompletionResponse {
 
 export const mockCopilotCompletion = async (page: Page, resp: CompletionResponse) => {
   await page.route('*/**/?url=https://example.com/github/api/chat/completions', async (route) => {
-    const stream = route.request().postDataJSON().stream
+    const stream = route.request().postDataJSON().stream === true
     if (stream && resp.chunks) {
       await route.fulfill({body: CopilotMock.completionsStream(resp.chunks)})
     } else if (!stream && resp.text) {
-      await route.fulfill({json: CopilotMock.completions(resp.text)})
+      await route.fulfill({json: CopilotMock.toChoicesMessage(resp.text)})
     } else {
       throw new Error(
         `Invalid completion response mock data (stream=${stream}, resp=${JSON.stringify(resp)})`,

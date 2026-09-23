@@ -1,4 +1,5 @@
 import type {EditorView} from '@codemirror/view'
+import type {ModelMessage} from 'ai'
 import {setBlockType} from 'prosemirror-commands'
 import {NodeSelection, TextSelection} from 'prosemirror-state'
 import {Decoration} from 'prosemirror-view'
@@ -13,8 +14,8 @@ import codeBlockHandlingPrompt from '@/prompts/editor/code-block-handling.md?raw
 import textHandlingPrompt from '@/prompts/editor/text-handling.md?raw'
 import {addDecorationKey} from '@/prosemirror/add-decoration'
 import {Align} from '@/prosemirror/image/interfaces'
+import {error} from '@/remote/log'
 import {saveSvg} from '@/remote/svg'
-import type {ChatMessage} from '@/services/AiService'
 import {useState} from '@/state'
 import {AttachmentType, type FileAttachment, type TextAttachment} from '@/types'
 import {timeout} from '@/utils/promise'
@@ -191,7 +192,7 @@ export const BlockTooltip = (props: Props) => {
       value: '',
       placeholder: 'Rephrasing by copilot...',
       onEnter: async (text) => {
-        const messages: ChatMessage[] = [
+        const messages: ModelMessage[] = [
           {
             role: 'user',
             content: [
@@ -204,10 +205,10 @@ export const BlockTooltip = (props: Props) => {
         if (block.blockNode.type.name === 'code_block') {
           messages.unshift({
             role: 'system',
-            content: [{type: 'text', text: codeBlockHandlingPrompt}],
+            content: codeBlockHandlingPrompt,
           })
         } else {
-          messages.unshift({role: 'system', content: [{type: 'text', text: textHandlingPrompt}]})
+          messages.unshift({role: 'system', content: textHandlingPrompt})
         }
 
         toggleBlink()
@@ -229,8 +230,9 @@ export const BlockTooltip = (props: Props) => {
 
             view.dispatch(tr)
           }
-        } catch {
-          dialogService.toast({message: 'Failed to get copilot response', duration: 2000})
+        } catch (e) {
+          error(`AI completions failed`, e)
+          dialogService.toast({message: 'Failed to get AI response', duration: 2000})
           toggleBlink(true)
         }
       },

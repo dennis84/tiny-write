@@ -1,4 +1,4 @@
-import {Match, Show, Switch} from 'solid-js'
+import {createEffect, Match, Show, Switch} from 'solid-js'
 import {DialogList, TooltipButton, TooltipDivider} from '@/components/dialog/Style'
 import {IconAi} from '@/components/icons/Ai'
 import {IconCanvas, IconCodeBlocks, IconFolderRoot} from '@/components/icons/File'
@@ -171,6 +171,8 @@ export const Tooltip = (props: {dialog: Dialog<TooltipState>}) => {
     dialogService.close(props.dialog)
   }
 
+  createEffect(() => {})
+
   return (
     <DialogList>
       <Show when={selected && canvasService.isOnCanvas(selected.id)}>
@@ -180,23 +182,25 @@ export const Tooltip = (props: {dialog: Dialog<TooltipState>}) => {
         </TooltipButton>
         <TooltipDivider />
       </Show>
-      <TooltipButton onClick={onAddFile} data-testid="add_file">
-        <LangIcon name="markdown" />
-        Add file
-      </TooltipButton>
-      <TooltipButton onClick={onAddCanvas} data-testid="add_canvas">
-        <IconCanvas />
-        Add canvas
-      </TooltipButton>
-      <TooltipButton onClick={onAddCode} data-testid="add_code">
-        <IconCodeBlocks />
-        Add code file
-      </TooltipButton>
-      <TooltipButton onClick={onNewThread} data-testid="new_thread">
-        <IconAi />
-        New AI thread
-      </TooltipButton>
-      <TooltipDivider />
+      <Show when={selected}>
+        <TooltipButton onClick={onAddFile} data-testid="add_file">
+          <LangIcon name="markdown" />
+          Add file
+        </TooltipButton>
+        <TooltipButton onClick={onAddCanvas} data-testid="add_canvas">
+          <IconCanvas />
+          Add canvas
+        </TooltipButton>
+        <TooltipButton onClick={onAddCode} data-testid="add_code">
+          <IconCodeBlocks />
+          Add code file
+        </TooltipButton>
+        <TooltipButton onClick={onNewThread} data-testid="new_thread">
+          <IconAi />
+          New AI thread
+        </TooltipButton>
+        <TooltipDivider />
+      </Show>
       <Show when={selected && !isLocalFile(selected?.value)}>
         <TooltipButton onClick={onRename} data-testid="rename">
           <IconEdit />

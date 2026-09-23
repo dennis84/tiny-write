@@ -85,13 +85,13 @@ export class CodeService {
         meta.set('codeLang', file.codeLang ?? 'plaintext')
       }, subdoc.clientID)
 
-      meta.observe((_events, transaction) => {
+      meta.observe(async (_events, transaction) => {
         if (subdoc.clientID === transaction.origin) {
           return
         }
 
         const lang = meta.get('codeLang') as string
-        this.updateLang(file, lang, false)
+        await this.updateLang(file, lang, false)
       })
     })
 
@@ -117,9 +117,14 @@ export class CodeService {
     this.updateEditorState(file)
   }
 
-  updateLang(file: File, lang: string, broadcast = true) {
-    this.fileService.updateFile(file.id, {codeLang: lang})
+  async updateLang(file: File, lang: string, broadcast = true) {
+    info(`Update file lang (lang=${lang})`)
+
+    this.fileService.updateFile(file.id, {codeLang: lang, lastModified: new Date()})
     this.updateEditorState(file)
+
+    const updatedFile = this.fileService.findFileById(file.id)
+    if (updatedFile) await FileService.saveFile(updatedFile)
 
     if (broadcast) {
       const subdoc = this.collabService.getSubdoc(file.id)
@@ -142,7 +147,8 @@ export class CodeService {
   async prettifyCheck(file: File): Promise<boolean> {
     const codeEditorView = file.codeEditorView
     if (!codeEditorView) return false
-    const lang = codeEditorView.contentDOM.dataset.language
+    const lang = file.codeLang
+    info(`Prettify check (lang=${lang})`)
     if (!lang) return false
 
     const config = unwrap(this.store.config.prettier)
