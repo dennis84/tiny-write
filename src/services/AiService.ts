@@ -1,10 +1,11 @@
 import type {OpenAICompatibleProvider} from '@ai-sdk/openai-compatible'
-import {generateText, type ModelMessage, streamText} from 'ai'
+import {generateText, type ModelMessage, stepCountIs, streamText} from 'ai'
 import {type Accessor, createMemo, createSignal} from 'solid-js'
 import type {SetStoreFunction, Store} from 'solid-js/store'
 import {DB} from '@/db'
 import {debug, error, info} from '@/remote/log'
-import type {Model, State} from '@/types'
+import type {Model, State, ToolCall} from '@/types'
+import {BraveSearchService} from './BraveSearchService'
 import type {CopilotService} from './CopilotService'
 import type {LlamaCppService} from './LlamaCppService'
 import type {OllamaService} from './OllamaService'
@@ -76,6 +77,7 @@ export class AiService {
   async completions(
     messages: ModelMessage[],
     onChunk: (chunk: string) => void,
+    onToolCall?: (toolCall: ToolCall) => void,
   ): Promise<CompletionsResult> {
     const model = this.chatModel
     if (!model) throw new Error('No model selected')
@@ -97,8 +99,28 @@ export class AiService {
       allowSystemInMessages: true,
       messages,
       abortSignal: controller.signal,
+      tools: {
+        braveSearch: BraveSearchService.getTool(),
+      },
+      stopWhen: stepCountIs(5),
       onEnd: () => {
         this.streamingSignal[1](undefined)
+      },
+      onChunk: (event) => {
+        if (
+          event.chunk.type === 'tool-call' ||
+          event.chunk.type === 'tool-result' ||
+          event.chunk.type === 'tool-error'
+        ) {
+          const {chunk} = event
+          onToolCall?.({
+            id: chunk.toolCallId,
+            toolName: chunk.toolName,
+            input: chunk.input as Record<string, any>,
+            result: chunk.type === 'tool-result' ? chunk.output : undefined,
+            status: event.chunk.type,
+          })
+        }
       },
       onError: (event) => {
         error(`Error during streamText`, event.error)

@@ -1,8 +1,8 @@
+import BotIcon from '~icons/lucide/bot'
+import BotOffIcon from '~icons/lucide/bot-off'
 import LucideCircleStop from '~icons/lucide/circle-stop'
 import LucideGhost from '~icons/lucide/ghost'
 import MingcuteAiLine from '~icons/mingcute/ai-line'
-import OcticonCopilot16 from '~icons/octicon/copilot-16'
-import OcticonCopilotError16 from '~icons/octicon/copilot-error-16'
 import {SvgIcon} from './Style'
 
 export const IconAi = () => (
@@ -13,13 +13,13 @@ export const IconAi = () => (
 
 export const IconAiAssistant = () => (
   <SvgIcon>
-    <OcticonCopilot16 />
+    <BotIcon />
   </SvgIcon>
 )
 
 export const IconAiAssistantClose = () => (
   <SvgIcon>
-    <OcticonCopilotError16 />
+    <BotOffIcon />
   </SvgIcon>
 )
 

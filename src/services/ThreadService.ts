@@ -10,7 +10,7 @@ import commonAssistantRulesPrompt from '@/prompts/assistant/common.md?raw'
 import generateTitlePrompt from '@/prompts/assistant/generate-title.md?raw'
 import summaryPrompt from '@/prompts/assistant/summary.md?raw'
 import commonRulesPrompt from '@/prompts/common/rules.md?raw'
-import {debug, error, info} from '@/remote/log'
+import {error, info} from '@/remote/log'
 import {isFile} from '@/state'
 import {createTreeStore, type TreeItem} from '@/tree'
 import {
@@ -247,9 +247,26 @@ export class ThreadService {
     // Create answer message directly to visualize loading
     this.addChunk(messageId, parentId, '')
 
-    const result = await this.aiService.completions(messages, (chunk) => {
-      this.addChunk(messageId, parentId, chunk)
-    })
+    const result = await this.aiService.completions(
+      messages,
+      (chunk) => {
+        this.addChunk(messageId, parentId, chunk)
+      },
+      (toolCall) => {
+        this.updateThread((thread) => {
+          const existing = thread.messages.find((m) => m.id === messageId)
+          if (existing) {
+            existing.toolCalls ??= []
+            const existingCall = existing.toolCalls.find((it) => it.id === toolCall.id)
+            if (existingCall) {
+              Object.assign(existingCall, toolCall)
+            } else {
+              existing.toolCalls.push(toolCall)
+            }
+          }
+        })
+      },
+    )
 
     if (result.success) {
       await this.saveThread()
@@ -295,7 +312,7 @@ export class ThreadService {
   }
 
   addChunk(id: string, parentId: string | undefined, chunk: string) {
-    debug(`Stream message chunk (id=${id}, parentId=${parentId}, chunk=${chunk})`)
+    // debug(`Stream message chunk (id=${id}, parentId=${parentId}, chunk=${chunk})`)
     const model = this.aiService.chatModel
     if (!model) return
 

@@ -261,6 +261,14 @@ export type Attachment =
 
 export type ChatRole = 'user' | 'assistant' | 'system'
 
+export interface ToolCall {
+  id: string
+  toolName: string
+  input?: Record<string, any>
+  result?: any
+  status: 'tool-call' | 'tool-result' | 'tool-error'
+}
+
 export interface Message {
   id: string
   parentId?: string
@@ -271,6 +279,7 @@ export interface Message {
   interrupted?: boolean
   summary?: string
   modelId?: string
+  toolCalls?: ToolCall[]
 }
 
 export interface Thread {

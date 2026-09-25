@@ -44,16 +44,68 @@ export class CopilotMock {
     mock.route('end:https://api.github.com/user', CopilotMock.user())
     mock.route('end:https://api.github.com/copilot_internal/v2/token', CopilotMock.apiToken())
     mock.route('end:https://example.com/github/api/models', CopilotMock.models())
+    mock.route(
+      'begin:https://brave-search-proxy.ddietr.workers.dev/search',
+      CopilotMock.braveSearch(),
+    )
 
     const encoder = new TextEncoder()
-    const enqueueMessage = (controller: ReadableStreamDefaultController<any>, text: string) => {
-      const message = CopilotMock.toChoicesDelta(text)
-      const buffer = encoder.encode(CopilotMock.toChunk(message)).buffer
+    const enqueueChunk = (controller: ReadableStreamDefaultController<any>, chunk: unknown) => {
+      const buffer = encoder.encode(CopilotMock.toChunk(chunk)).buffer
       controller.enqueue(buffer)
     }
 
-    const createStream = () =>
+    const enqueueDelta = (controller: ReadableStreamDefaultController<any>, text: string) => {
+      const message = CopilotMock.toChoicesDelta(text)
+      enqueueChunk(controller, message)
+    }
+
+    const createToolCallStream = (id: string, query: string) =>
       new ReadableStream({
+        async start(controller) {
+          await pause(2_000)
+
+          enqueueChunk(
+            controller,
+            CopilotMock.toToolCallDelta(id, 'braveSearch', JSON.stringify({query, count: 5})),
+          )
+
+          await pause(1_000)
+
+          enqueueChunk(controller, CopilotMock.toFinishDelta('tool_calls'))
+          controller.enqueue(encoder.encode('data: [DONE]').buffer)
+          controller.close()
+        },
+      })
+
+    const countToolResults = (m: CallLog): number => {
+      if (typeof m.options.body !== 'string') return 0
+      try {
+        const json = JSON.parse(m.options.body)
+        const messages = Array.isArray(json.messages) ? json.messages : []
+        return messages.filter((message: any) => message.role === 'tool').length
+      } catch {
+        return 0
+      }
+    }
+
+    const createStream = (m: CallLog) => {
+      const toolResultCount = countToolResults(m)
+
+      // Each dummy `braveSearch` tool call is answered in its own
+      // chat/completions request/response round-trip (mirroring the real
+      // multi-step tool-calling loop), so the pause between the two dummy
+      // tool calls is actually visible in the UI instead of both finalizing
+      // together at stream end (see StreamingToolCallTracker.flush()).
+      if (toolResultCount === 0 && Math.random() > 0.5) {
+        return createToolCallStream('call_1', 'latest news about TypeScript')
+      }
+
+      if (toolResultCount === 1) {
+        return createToolCallStream('call_2', 'TypeScript compiler roadmap updates')
+      }
+
+      return new ReadableStream({
         async start(controller) {
           let parts = 0
           while (true) {
@@ -71,45 +123,43 @@ export class CopilotMock {
             const h1 = Math.random() > 0.9
 
             if (code) {
-              enqueueMessage(controller, '\n\n')
-              enqueueMessage(controller, '```')
+              enqueueDelta(controller, '\n\n')
+              enqueueDelta(controller, '```')
               await pause(10)
-              enqueueMessage(controller, 'typescript id=123 file=test.ts\n')
-              enqueueMessage(controller, 'let x = ') // to test highlighting
+              enqueueDelta(controller, 'typescript id=123 file=test.ts\n')
+              enqueueDelta(controller, 'let x = ') // to test highlighting
               await pause(10)
             } else if (h1) {
-              enqueueMessage(controller, '# ')
+              enqueueDelta(controller, '# ')
             }
 
             if (code && options.endlessCode) {
               while (true) {
                 const newline = Math.random() > 0.8
                 const randomIndex = Math.floor(Math.random() * LOREM_IPSUM_WORDS.length)
-                enqueueMessage(
-                  controller,
-                  `${LOREM_IPSUM_WORDS[randomIndex]}${newline ? '\n' : ' '}`,
-                )
+                enqueueDelta(controller, `${LOREM_IPSUM_WORDS[randomIndex]}${newline ? '\n' : ' '}`)
                 await pause(10)
               }
             }
 
             const randomIndex = Math.floor(Math.random() * LOREM_IPSUM_WORDS.length)
             for (let i = 0; i <= randomIndex; i++) {
-              enqueueMessage(controller, `${LOREM_IPSUM_WORDS[i]} `)
+              enqueueDelta(controller, `${LOREM_IPSUM_WORDS[i]} `)
               await pause(10)
             }
 
             if (code) {
-              enqueueMessage(controller, '\n')
-              enqueueMessage(controller, '``') // close code fence in 2 chunks
-              enqueueMessage(controller, '`\n\n')
+              enqueueDelta(controller, '\n')
+              enqueueDelta(controller, '``') // close code fence in 2 chunks
+              enqueueDelta(controller, '`\n\n')
               continue
             }
 
-            enqueueMessage(controller, '\n\n')
+            enqueueDelta(controller, '\n\n')
           }
         },
       })
+    }
 
     const isCompletions = (m: CallLog, streaming: boolean): boolean => {
       if (!m.url.endsWith('https://example.com/github/api/chat/completions')) return false
@@ -158,6 +208,25 @@ export class CopilotMock {
       expires_at: 0,
       endpoints: {
         api: 'https://example.com/github/api',
+      },
+    }
+  }
+
+  static braveSearch() {
+    return {
+      web: {
+        results: [
+          {
+            title: 'TypeScript 5.9 Release Notes',
+            url: 'https://example.com/typescript-5-9-release-notes',
+            description: 'Overview of the newest TypeScript release.',
+          },
+          {
+            title: "What's new in TypeScript",
+            url: 'https://example.com/whats-new-in-typescript',
+            description: 'A roundup of recent TypeScript announcements.',
+          },
+        ],
       },
     }
   }
@@ -220,6 +289,39 @@ export class CopilotMock {
 
   static toChoicesMessage(content: string) {
     return {choices: [{message: {content}}]}
+  }
+
+  static toToolCallDelta(id: string, name: string, argumentsJson: string) {
+    return {
+      choices: [
+        {
+          delta: {
+            tool_calls: [
+              {
+                index: 0,
+                id,
+                type: 'function',
+                function: {
+                  name,
+                  arguments: argumentsJson,
+                },
+              },
+            ],
+          },
+        },
+      ],
+    }
+  }
+
+  static toFinishDelta(finishReason: 'stop' | 'tool_calls' = 'stop') {
+    return {
+      choices: [
+        {
+          delta: {},
+          finish_reason: finishReason,
+        },
+      ],
+    }
   }
 
   private static toChunk(chunk: unknown) {

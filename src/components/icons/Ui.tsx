@@ -1,27 +1,26 @@
-import LucideArrowLeft from '~icons/lucide/arrow-left'
 import LucideMoreHorizontal from '~icons/lucide/more-horizontal'
-import LucidePalette from '~icons/lucide/palette'
-import LucideX from '~icons/lucide/x'
 import {SvgIcon} from './Style'
-
 export const IconMoreHoriz = () => (
   <SvgIcon>
     <LucideMoreHorizontal />
   </SvgIcon>
 )
 
+import LucideX from '~icons/lucide/x'
 export const IconClose = () => (
   <SvgIcon>
     <LucideX />
   </SvgIcon>
 )
 
+import LucideArrowLeft from '~icons/lucide/arrow-left'
 export const IconArrowBack = () => (
   <SvgIcon>
     <LucideArrowLeft />
   </SvgIcon>
 )
 
+import LucidePalette from '~icons/lucide/palette'
 export const IconPalette = () => (
   <SvgIcon>
     <LucidePalette />
@@ -410,5 +409,12 @@ import LucideSidebar from '~icons/lucide/sidebar'
 export const IconSidebar = () => (
   <SvgIcon>
     <LucideSidebar />
+  </SvgIcon>
+)
+
+import GlobeIcon from '~icons/lucide/globe'
+export const IconGlobe = () => (
+  <SvgIcon>
+    <GlobeIcon />
   </SvgIcon>
 )

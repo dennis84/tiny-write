@@ -4,6 +4,7 @@ import {isDev} from '@/env'
 import type {LocationState, State} from '@/types'
 import {AiService} from './AiService'
 import {AppService} from './AppService'
+import {BraveSearchService} from './BraveSearchService'
 import {CanvasCollabService} from './CanvasCollabService'
 import {CanvasService} from './CanvasService'
 import {CanvasThreadService} from './CanvasThreadService'
@@ -132,6 +133,7 @@ export const createCtrl = (initial: State) => {
     projectService,
     threadService,
   )
+  const braveSearchService = new BraveSearchService()
 
   return {
     store,
@@ -163,6 +165,7 @@ export const createCtrl = (initial: State) => {
     projectService,
     projectFileService,
     treeActionService,
+    braveSearchService,
   }
 }
 

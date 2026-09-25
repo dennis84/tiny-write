@@ -201,6 +201,59 @@ test('addChunk', async () => {
   expect(service.currentThread?.messages[1].parentId).toBe('1')
 })
 
+test('sendMessages - dedup tool calls by id', async () => {
+  vi.spyOn(DB, 'getThreads').mockResolvedValue([
+    createThread({
+      id: '1',
+      messages: [{id: 'u1', role: 'user', content: 'search for something'}],
+    }),
+  ])
+
+  const service = new ThreadService(
+    fileService,
+    aiService,
+    locationService,
+    dialogService,
+    treeService,
+  )
+
+  await waitFor(() => {
+    expect(service.currentThread?.id).toEqual('1')
+  })
+
+  await service.init()
+
+  aiService.completions.mockImplementation(async (_messages, onChunk, onToolCall) => {
+    onChunk('Here is what I found')
+    onToolCall?.({
+      id: 'call_1',
+      toolName: 'braveSearch',
+      status: 'tool-call',
+      input: {query: 'foo'},
+    })
+    onToolCall?.({
+      id: 'call_1',
+      toolName: 'braveSearch',
+      status: 'tool-result',
+      input: {query: 'foo'},
+      result: [{title: 'Foo result', url: 'https://example.com/foo', description: ''}],
+    })
+    return {success: true}
+  })
+
+  await service.sendMessages()
+
+  const assistantMessage = service.currentThread?.messages.find((m) => m.role === 'assistant')
+  expect(assistantMessage?.toolCalls).toHaveLength(1)
+  expect(assistantMessage?.toolCalls?.[0]).toMatchObject({
+    id: 'call_1',
+    toolName: 'braveSearch',
+    status: 'tool-result',
+    input: {query: 'foo'},
+    result: [{title: 'Foo result', url: 'https://example.com/foo', description: ''}],
+  })
+})
+
 test('interrupt', async () => {
   vi.spyOn(DB, 'getThreads').mockResolvedValue([
     createThread({

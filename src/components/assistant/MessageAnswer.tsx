@@ -1,5 +1,5 @@
 import type Token from 'markdown-it/lib/token.mjs'
-import {Show} from 'solid-js'
+import {Index, Show} from 'solid-js'
 import {copy} from '@/remote/clipboard'
 import {useState} from '@/state'
 import type {TreeItem} from '@/tree'
@@ -12,6 +12,7 @@ import {AttachmentChip} from './attachments/AttachmentChip'
 import {MessageMarkdown} from './MessageMarkdown'
 import {Pagination} from './Pagination'
 import {ChatBubble} from './Style'
+import {WebSearch} from './tools/WebSearch'
 
 export interface TokenItem {
   id: string
@@ -41,6 +42,13 @@ export const MessageAnswer = (props: Props) => {
       <Show when={configService.codeTheme} keyed>
         <MessageMarkdown content={props.message.value.content} />
       </Show>
+      <Index each={props.message.value.toolCalls}>
+        {(toolCall) => (
+          <Show when={toolCall().toolName === 'braveSearch'}>
+            <WebSearch toolCall={toolCall()} />
+          </Show>
+        )}
+      </Index>
       <ButtonGroup>
         <TooltipHelp title="Copy">
           <IconButton onClick={onCopy}>
