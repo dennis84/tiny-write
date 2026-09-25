@@ -1,5 +1,5 @@
 import {createOpenAICompatible, type OpenAICompatibleProvider} from '@ai-sdk/openai-compatible'
-import {createResource} from 'solid-js'
+import {createResource, type ResourceReturn} from 'solid-js'
 import {produce, type SetStoreFunction, type Store} from 'solid-js/store'
 import {DB} from '@/db'
 import {info} from '@/remote/log'
@@ -7,7 +7,7 @@ import type {Model, State} from '@/types'
 import {AiUtil} from '@/utils/AiUtil'
 
 export class OllamaService {
-  private modelsResource = createResource<Model[]>(() => this.getModels())
+  private modelsResource: ResourceReturn<Model[]>
 
   get models() {
     return this.modelsResource[0].state === 'ready' ? this.modelsResource[0].latest : []
@@ -16,7 +16,9 @@ export class OllamaService {
   constructor(
     private store: Store<State>,
     private setState: SetStoreFunction<State>,
-  ) {}
+  ) {
+    this.modelsResource = createResource<Model[]>(() => this.getModels())
+  }
 
   async connect() {
     info('Enable ollama AI')

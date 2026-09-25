@@ -7,17 +7,25 @@ import {ElementType} from '@/types'
 import {createCanvas, createEditorElement, createLinkElement} from '../testutil/data'
 import {createYUpdate} from '../testutil/prosemirror-util'
 
-vi.mock('@/db', () => ({DB: mock()}))
+vi.mock('@/prompts/common/rules.md?raw', () => {
+  return {default: 'common/rules'}
+})
+
+vi.mock('@/prompts/canvas/common.md?raw', () => {
+  return {default: 'canvas/common'}
+})
 
 vi.mock('@/prompts/common/user-message.md?raw', () => {
   return {default: 'Message: {{message}}'}
 })
 
+vi.mock('@/db', () => ({DB: mock()}))
+
 beforeEach(() => {
   vi.resetAllMocks()
 })
 
-test('getMessages', () => {
+test('getThreadContext', () => {
   const canvasService = mock<CanvasService>({currentCanvas: undefined})
   const fileService = mock<FileService>()
 
@@ -50,10 +58,9 @@ test('getMessages', () => {
 
   const service = new CanvasThreadService(canvasService, fileService)
 
-  const messages = service.getMessages('1')
+  const context = service.getThreadContext('1')
 
-  expect(messages[0].role).toEqual('system') // common prompt
-  expect(messages[1].role).toEqual('system') // canvas rules prompt
-  expect(messages[2].content[0]).toEqual({type: 'text', text: 'F2'})
-  expect(messages[3].content[0]).toEqual({type: 'text', text: 'Message: F1'})
+  expect(context.system).toBe('common/rules\n\ncanvas/common')
+  expect(context.messages[0].content[0]).toEqual({type: 'text', text: 'F2'})
+  expect(context.messages[1].content[0]).toEqual({type: 'text', text: 'Message: F1'})
 })

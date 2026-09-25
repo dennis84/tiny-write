@@ -5,6 +5,7 @@ import type {SetStoreFunction, Store} from 'solid-js/store'
 import {DB} from '@/db'
 import {debug, error, info} from '@/remote/log'
 import type {Model, State, ToolCall} from '@/types'
+import type {ThreadContext} from '@/utils/ThreadContext'
 import {BraveSearchService} from './BraveSearchService'
 import type {CopilotService} from './CopilotService'
 import type {LlamaCppService} from './LlamaCppService'
@@ -75,7 +76,7 @@ export class AiService {
   }
 
   async completions(
-    messages: ModelMessage[],
+    context: ThreadContext,
     onChunk: (chunk: string) => void,
     onToolCall?: (toolCall: ToolCall) => void,
   ): Promise<CompletionsResult> {
@@ -84,7 +85,7 @@ export class AiService {
     const provider = await this.getProvider(model?.provider)
 
     debug(
-      `Send completions request - (model=${model.id}, provider=${provider?.name}, messages=${JSON.stringify(messages)})`,
+      `Send completions request - (model=${model.id}, provider=${model.provider}, messages=${context.toString()})`,
     )
 
     if (!provider) return {success: false, error: 'No access token'}
@@ -96,8 +97,8 @@ export class AiService {
 
     const result = streamText({
       model: provider(model.id),
-      allowSystemInMessages: true,
-      messages,
+      system: context.system,
+      messages: context.messages,
       abortSignal: controller.signal,
       tools: {
         braveSearch: BraveSearchService.getTool(),

@@ -48,8 +48,8 @@ export const ContextMenu = () => {
   }
 
   const generateAiFile = async (link: CanvasLinkElement, cm?: Vector) => {
-    const messages = canvasThreadService.getMessages(link.from)
-    if (!messages.length) return
+    const context = canvasThreadService.getThreadContext(link.from)
+    if (!context.messages) return
 
     const file = await newFile(false, link, cm)
     await pause(100)
@@ -59,7 +59,7 @@ export const ContextMenu = () => {
     const parser = createMarkdownParser(schema)
     let buffer = ''
 
-    const result = await aiService.completions(messages, (chunk) => {
+    const result = await aiService.completions(context, (chunk) => {
       buffer += chunk
       const node = parser.parse(buffer)
       const tr = editorView.state.tr

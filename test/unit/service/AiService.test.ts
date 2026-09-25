@@ -6,7 +6,6 @@ vi.mock('@/remote/http', () => ({fetch: vi.fn()}))
 
 import {createOpenAICompatible} from '@ai-sdk/openai-compatible'
 import {waitFor} from '@solidjs/testing-library'
-import type {ModelMessage} from 'ai'
 import {createStore} from 'solid-js/store'
 import {fetch} from '@/remote/http'
 import {AiService} from '@/services/AiService'
@@ -17,6 +16,7 @@ import {createState} from '@/state'
 import type {ToolCall} from '@/types'
 import {FINISH_REASON} from '@/utils/CopilotMock'
 import {pause} from '@/utils/promise'
+import {ThreadContext} from '@/utils/ThreadContext'
 
 const copilotService = mock<CopilotService>({
   getProvider: vi.fn(),
@@ -57,9 +57,8 @@ test('completions - success', async () => {
     expect(service.models.length).toBe(1)
   })
 
-  const messages: ModelMessage[] = [
-    {role: 'user', content: [{type: 'text', text: 'Hello, world!'}]},
-  ]
+  const context = new ThreadContext()
+  context.addMessage({role: 'user', content: [{type: 'text', text: 'Hello, world!'}]})
 
   const chunks = [
     `data: {"choices":[{"delta":{"content":"Hello"}}]}\n\n`,
@@ -81,7 +80,7 @@ test('completions - success', async () => {
   vi.mocked(fetch).mockResolvedValueOnce(new Response(stream, {status: 200}))
 
   let content = ''
-  const result = await service.completions(messages, (chunk) => {
+  const result = await service.completions(context, (chunk) => {
     content += chunk
   })
 
@@ -102,9 +101,8 @@ test('completions - interrupted', async () => {
     expect(service.models.length).toBe(1)
   })
 
-  const messages: ModelMessage[] = [
-    {role: 'user', content: [{type: 'text', text: 'Hello, world!'}]},
-  ]
+  const context = new ThreadContext()
+  context.addMessage({role: 'user', content: [{type: 'text', text: 'Hello, world!'}]})
 
   const chunks = [
     `data: {"choices":[{"delta":{"content":"Hello"}}]}\n\n`,
@@ -131,7 +129,7 @@ test('completions - interrupted', async () => {
   vi.mocked(fetch).mockResolvedValueOnce(new Response(stream, {status: 200}))
 
   let content = ''
-  const result = await service.completions(messages, (chunk) => {
+  const result = await service.completions(context, (chunk) => {
     content += chunk
     // Stop after first chunk
     service.stop()
@@ -152,9 +150,8 @@ test('completions - onToolCall reports tool-call and tool-result events', async 
     expect(service.models.length).toBe(1)
   })
 
-  const messages: ModelMessage[] = [
-    {role: 'user', content: [{type: 'text', text: 'Search for something'}]},
-  ]
+  const context = new ThreadContext()
+  context.addMessage({role: 'user', content: [{type: 'text', text: 'Search for something'}]})
 
   const toolCallChunks = [
     `data: ${JSON.stringify({
@@ -231,7 +228,7 @@ test('completions - onToolCall reports tool-call and tool-result events', async 
   try {
     const toolCallEvents: ToolCall[] = []
     const completionsPromise = service.completions(
-      messages,
+      context,
       () => {},
       (toolCall) => {
         toolCallEvents.push(toolCall)

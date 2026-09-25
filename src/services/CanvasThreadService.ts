@@ -1,4 +1,3 @@
-import type {ModelMessage} from 'ai'
 import commonCanvasRulesPrompt from '@/prompts/canvas/common.md?raw'
 import commonRulesPrompt from '@/prompts/common/rules.md?raw'
 import {
@@ -10,6 +9,7 @@ import {
 } from '@/state'
 import type {CanvasLinkElement} from '@/types'
 import {MessageUtil} from '@/utils/MessageUtil'
+import {ThreadContext} from '@/utils/ThreadContext'
 import type {CanvasService} from './CanvasService'
 import type {FileService} from './FileService'
 
@@ -19,11 +19,11 @@ export class CanvasThreadService {
     private fileService: FileService,
   ) {}
 
-  getMessages(elementId: string): ModelMessage[] {
+  getThreadContext(elementId: string): ThreadContext {
     const currentCanvas = this.canvasService.currentCanvas
-    const messages: ModelMessage[] = []
+    const context = new ThreadContext()
 
-    if (!currentCanvas) return messages
+    if (!currentCanvas) return context
     let curId: string | undefined = elementId
 
     while (curId) {
@@ -34,7 +34,7 @@ export class CanvasThreadService {
 
       if (isEditorElement(cur)) {
         const file = this.fileService.findFileById(cur.id)
-        messages.push(
+        context.addMessage(
           MessageUtil.toModelMessage(
             {
               id: cur.id,
@@ -46,7 +46,7 @@ export class CanvasThreadService {
         )
       } else if (isCodeElement(cur)) {
         const file = this.fileService.findFileById(cur.id)
-        messages.push(
+        context.addMessage(
           MessageUtil.toModelMessage(
             {
               id: cur.id,
@@ -57,7 +57,7 @@ export class CanvasThreadService {
           ),
         )
       } else if (isImageElement(cur)) {
-        messages.push({
+        context.addMessage({
           role: 'user',
           content: [{type: 'file', mediaType: '', data: new URL(cur.src)}],
         })
@@ -68,9 +68,13 @@ export class CanvasThreadService {
       curId = link?.from
     }
 
-    messages.push({role: 'system', content: commonCanvasRulesPrompt})
-    messages.push({role: 'system', content: commonRulesPrompt})
+    context.addSystemMessage(commonRulesPrompt)
+    context.addSystemMessage(commonCanvasRulesPrompt)
 
-    return messages.reverse()
+    // before: cur -> linkTo -> prev1 -> linkTo -> prev2
+    // after: prev2, prev1, cur
+    context.messages = context.messages.reverse()
+
+    return context
   }
 }

@@ -21,6 +21,7 @@ import {
   type Thread,
 } from '@/types'
 import {MessageUtil} from '@/utils/MessageUtil'
+import {ThreadContext} from '@/utils/ThreadContext'
 import type {AiService} from './AiService'
 import type {DialogService} from './DialogService'
 import type {FileService} from './FileService'
@@ -239,18 +240,18 @@ export class ThreadService {
   async sendMessages(thread = this.currentThread) {
     if (!thread) return
 
-    const {messages, nextId, parentId} = this.getMessages(thread)
-    if (!messages) return
+    const context = this.getThreadContext(thread)
+    if (!context.messages) return
 
-    const messageId = nextId ?? uuidv4()
+    const messageId = context.nextId ?? uuidv4()
 
     // Create answer message directly to visualize loading
-    this.addChunk(messageId, parentId, '')
+    this.addChunk(messageId, context.parentId, '')
 
     const result = await this.aiService.completions(
-      messages,
+      context,
       (chunk) => {
-        this.addChunk(messageId, parentId, chunk)
+        this.addChunk(messageId, context.parentId, chunk)
       },
       (toolCall) => {
         this.updateThread((thread) => {
@@ -569,73 +570,54 @@ export class ThreadService {
     return parentId
   }
 
-  getMessages(thread = this.currentThread): {
-    messages: ModelMessage[]
-    nextId?: string
-    parentId?: string
-  } {
+  getThreadContext(thread = this.currentThread): ThreadContext {
     const model = this.aiService.chatModel
-    if (!thread || !model) return {messages: []}
+    const context = new ThreadContext()
 
-    let messages: ModelMessage[] = []
-    let parentId: string | undefined
-    let nextId: string | undefined
-    let hasCodeBlock = false
+    if (!thread || !model) return context
+
     let lastSummaryIndex = -1
     let lastSummary: string | undefined
 
     this.traverseTree((it) => {
-      nextId = thread.path?.get(it.id)
+      context.nextId = thread.path?.get(it.id)
       const message = MessageUtil.toModelMessage(it.value, it.childrenIds.length === 0)
-
-      // remember if any code block exists
-      if (!hasCodeBlock && this.hasCodeBlock(message)) {
-        hasCodeBlock = true
-      }
+      context.addMessage(message)
 
       // remember last summary
       if (it.value.summary) {
-        lastSummaryIndex = messages.length
+        lastSummaryIndex = context.messages.length
         lastSummary = it.value.summary
       }
 
-      messages.push(message)
-
-      const {promptCount, outputCount} = MessageUtil.tokenCount(messages)
+      const {promptCount, outputCount} = MessageUtil.tokenCount(context.messages)
       const promptLimit = model.maxPromptTokens * 0.9
       const outputLimit = model.maxOutputTokens * 0.9
 
       // Reduce messages starting from last summary
-      if (lastSummaryIndex !== -1 && (promptCount > promptLimit || outputCount > outputLimit)) {
+      if (
+        lastSummary &&
+        lastSummaryIndex !== -1 &&
+        (promptCount > promptLimit || outputCount > outputLimit)
+      ) {
         info(
-          `Reducde conversation (promptCount=${promptCount}/${promptLimit}, outputCount=${outputCount}/${outputLimit}, dropMessages=${messages.length - lastSummaryIndex + 1})`,
+          `Reducde conversation (promptCount=${promptCount}/${promptLimit}, outputCount=${outputCount}/${outputLimit}, dropMessages=${context.messages.length - lastSummaryIndex + 1})`,
         )
-        messages = [
-          {role: 'system', content: lastSummary ?? ''},
-          ...messages.slice(lastSummaryIndex + 1),
-        ]
+        context.addSystemMessage(lastSummary)
+        context.messages = context.messages.slice(lastSummaryIndex + 1)
       }
 
-      parentId = it.value.id
+      context.parentId = it.value.id
     })
 
-    if (hasCodeBlock) {
-      messages.unshift({
-        role: 'system',
-        content: codeBlockHandlingPrompt,
-      })
+    if (context.hasCodeBlocks) {
+      context.addSystemMessage(codeBlockHandlingPrompt)
     }
 
-    if (messages.length > 0) {
-      messages.unshift({role: 'system', content: commonRulesPrompt})
-      messages.unshift({role: 'system', content: commonAssistantRulesPrompt})
-    }
+    context.addSystemMessage(commonRulesPrompt)
+    context.addSystemMessage(commonAssistantRulesPrompt)
 
-    return {
-      nextId,
-      parentId,
-      messages,
-    }
+    return context
   }
 
   hasItem(id: string): boolean {
@@ -646,21 +628,6 @@ export class ThreadService {
     return (await DB.getThreads())?.sort((a, b) => {
       return (b.lastModified?.getTime() ?? 0) - (a.lastModified?.getTime() ?? 0)
     })
-  }
-
-  private hasCodeBlock(message: ModelMessage): boolean {
-    if (message.role !== 'user') return false
-    const checkCode = (text: string) => text.includes('```')
-
-    if (typeof message.content === 'string') {
-      return checkCode(message.content)
-    } else if (Array.isArray(message.content)) {
-      for (const c of message.content) {
-        if (c.type === 'text' && c.text.includes('```')) return true
-      }
-    }
-
-    return false
   }
 
   private updateThread(

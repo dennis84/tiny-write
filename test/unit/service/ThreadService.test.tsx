@@ -35,11 +35,15 @@ beforeEach(() => {
 })
 
 vi.mock('@/prompts/common/rules.md?raw', () => {
-  return {default: ''}
+  return {default: 'common/rules'}
 })
 
 vi.mock('@/prompts/assistant/common.md?raw', () => {
-  return {default: ''}
+  return {default: 'assistant/common'}
+})
+
+vi.mock('@/prompts/assistant/code-block-handling.md?raw', () => {
+  return {default: 'assistant/code-block-handling'}
 })
 
 vi.mock('@/prompts/common/user-message.md?raw', () => {
@@ -147,8 +151,8 @@ test('addMessage - path', async () => {
     `,
   )
 
-  const messages1 = service.getMessages()
-  expect(messages1.messages).toHaveLength(3)
+  const messages1 = service.getThreadContext()
+  expect(messages1.messages).toHaveLength(1)
   expect(messages1.parentId).toBe('1')
   expect(messages1.nextId).toBe(undefined)
 
@@ -163,7 +167,7 @@ test('addMessage - path', async () => {
     `,
   )
 
-  const messages2 = service.getMessages()
+  const messages2 = service.getThreadContext()
   expect(messages2.parentId).toBe('3')
   expect(messages2.nextId).toBe(undefined)
 })
@@ -531,8 +535,8 @@ test('regenerate - user message', async () => {
   expect(service.currentThread?.path?.size).toBe(1)
   expect(service.currentThread?.path?.get(undefined)).toBe('3')
 
-  const {messages} = service.getMessages()
-  expect(messages[2].content[0]).toMatchObject({
+  const {messages} = service.getThreadContext()
+  expect(messages[0].content[0]).toMatchObject({
     type: 'text',
     text: '111',
   })
@@ -586,8 +590,8 @@ test('regenerate - assistant message', async () => {
 
   expect(service.currentThread?.path?.get('1')).toBe('3')
 
-  const result = service.getMessages()
-  expect(result.messages).toHaveLength(3)
+  const result = service.getThreadContext()
+  expect(result.messages).toHaveLength(1)
   expect(result.nextId).toBeDefined()
 })
 
@@ -626,10 +630,10 @@ test('generateTitle', async () => {
   expect(title).toBe('Test')
 })
 
-test.each<[Message[], number]>([
-  [[], 0], // empty
-  [[{id: '1', role: 'assistant', content: ''}], 3], // 2x system:common, user:message
-  [[{id: '1', role: 'user', content: '```'}], 4], // 2x system:common, system:code block, user:message
+test.each<[Message[], number, number]>([
+  [[], 2, 0],
+  [[{id: '1', role: 'assistant', content: ''}], 2, 1],
+  [[{id: '1', role: 'user', content: '```'}], 3, 1],
   [
     [
       {id: '1', role: 'user', content: 'A'},
@@ -638,7 +642,8 @@ test.each<[Message[], number]>([
       {id: '4', parentId: '3', role: 'assistant', content: 'D'},
       {id: '5', parentId: '4', role: 'user', content: 'E'},
     ],
-    7, // 2x system:common, 5x conversation
+    2,
+    5,
   ],
   [
     [
@@ -648,7 +653,8 @@ test.each<[Message[], number]>([
       {id: '4', parentId: '3', role: 'assistant', content: 'D', summary: 'ABCD'},
       {id: '5', parentId: '4', role: 'user', content: 'E'},
     ],
-    7, // 2x system:common, 5x conversation
+    2,
+    5,
   ],
   [
     [
@@ -660,7 +666,8 @@ test.each<[Message[], number]>([
       {id: '6', parentId: '5', role: 'assistant', content: 'F'},
       {id: '7', parentId: '6', role: 'user', content: 'G'},
     ],
-    6, // 2x system:common, system:summary, 3x conversation
+    3,
+    3,
   ],
   [
     [
@@ -672,9 +679,10 @@ test.each<[Message[], number]>([
       {id: '6', parentId: '5', role: 'assistant', content: 'F'},
       {id: '7', parentId: '6', role: 'user', content: 'G'},
     ],
-    6, // 2x system:common, system:summary, 3x conversation
+    3,
+    3,
   ],
-])('getMessages', async (messages, count) => {
+])('getThreadContext', async (messages, systemCount, messagesCount) => {
   vi.spyOn(DB, 'getThreads').mockResolvedValue([
     createThread({
       id: '1',
@@ -702,9 +710,10 @@ test.each<[Message[], number]>([
 
   await service.init()
 
-  const result = service.getMessages()
+  const result = service.getThreadContext()
 
-  expect(result.messages).toHaveLength(count)
+  expect(result.messages).toHaveLength(messagesCount)
+  expect(result.system?.split('\n\n')).toHaveLength(systemCount)
 })
 
 test('searchThreads', async () => {
