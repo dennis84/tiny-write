@@ -1,19 +1,13 @@
 import {Show} from 'solid-js'
-import {SubmenuId} from '@/services/MenuService'
 import {useState} from '@/state'
 import {IconButton} from '../Button'
 import {TooltipHelp} from '../dialog/TooltipHelp'
 import {IconAiAssistant, IconAiAssistantClose} from '../icons/Ai'
 
 export const AssistantButton = () => {
-  const {store, menuService, locationService} = useState()
+  const {menuService, locationService} = useState()
 
   const onAssistantClick = async () => {
-    if (!store.ai?.copilot?.user) {
-      menuService.setSubmenu(SubmenuId.AI_CONFIG)
-      return
-    }
-
     const status = menuService.toggleAssistant()
     if (!status) locationService.updateState({threadId: undefined})
   }

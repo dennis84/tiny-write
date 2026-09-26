@@ -1,4 +1,5 @@
 import {styled} from 'solid-styled-components'
+import {isTauri} from '@/env'
 import {codeMirrorTooltip} from './code/Style'
 
 export const FULL_WIDTH = 500
@@ -15,6 +16,7 @@ export const Layout = styled.div`
   color: var(--foreground);
   position: relative;
   overflow: hidden;
+  ${isTauri() ? `border-radius: 32px;` : ''}
   ${codeMirrorTooltip}
   .drop-cursor {
     background: var(--primary-background) !important;

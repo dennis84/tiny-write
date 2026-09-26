@@ -15,7 +15,7 @@ crate-type = ["staticlib", "cdylib", "rlib"]
 tauri-build = { version = "2", features = [] }
 
 [dependencies]
-tauri = { version = "2", features = ["protocol-asset", "test", "devtools"] }
+tauri = { version = "2", features = ["protocol-asset", "test", "devtools", "macos-private-api"] }
 serde_json = "1"
 serde = { version = "1", features = [ "derive" ] }
 mime_guess = "2"

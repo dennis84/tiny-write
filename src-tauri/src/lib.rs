@@ -27,9 +27,6 @@ pub fn run<R: Runtime>(builder: Builder<R>) {
         .setup(|app| {
             let handle = app.handle();
 
-            let window = app.get_webview_window("main").unwrap();
-            window.open_devtools();
-
             match handle.cli().matches() {
                 Ok(matches) => {
                     let verbose = matches

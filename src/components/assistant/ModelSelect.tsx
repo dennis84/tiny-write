@@ -11,8 +11,12 @@ const Scroll = styled(DialogScroll)`
 `
 
 const ModelSelectButton = styled(Button)`
-  white-space: nowrap;
   flex-shrink: 0;
+  justify-content: flex-start;
+  overflow: hidden;
+  max-width: 15ch;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 `
 
 interface Props {
