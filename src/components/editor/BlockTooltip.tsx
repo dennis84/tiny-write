@@ -1,5 +1,4 @@
 import type {EditorView} from '@codemirror/view'
-import type {ModelMessage} from 'ai'
 import {setBlockType} from 'prosemirror-commands'
 import {NodeSelection, TextSelection} from 'prosemirror-state'
 import {Decoration} from 'prosemirror-view'
@@ -19,6 +18,7 @@ import {saveSvg} from '@/remote/svg'
 import {useState} from '@/state'
 import {AttachmentType, type FileAttachment, type TextAttachment} from '@/types'
 import {timeout} from '@/utils/promise'
+import {ThreadContext} from '@/utils/ThreadContext'
 import {IconFileSave} from '../icons/File'
 import {IconPrettier} from '../icons/Logo'
 import {
@@ -192,28 +192,23 @@ export const BlockTooltip = (props: Props) => {
       value: '',
       placeholder: 'Rephrasing by copilot...',
       onEnter: async (text) => {
-        const messages: ModelMessage[] = [
-          {
-            role: 'user',
-            content: [
-              {type: 'text', text},
-              {type: 'text', text: block.blockNode.textContent},
-            ],
-          },
-        ]
+        const context = new ThreadContext()
 
-        if (block.blockNode.type.name === 'code_block') {
-          messages.unshift({
-            role: 'system',
-            content: codeBlockHandlingPrompt,
-          })
-        } else {
-          messages.unshift({role: 'system', content: textHandlingPrompt})
-        }
+        context.addSystemMessage(
+          block.blockNode.type.name === 'code_block' ? codeBlockHandlingPrompt : textHandlingPrompt,
+        )
+
+        context.addMessage({
+          role: 'user',
+          content: [
+            {type: 'text', text},
+            {type: 'text', text: block.blockNode.textContent},
+          ],
+        })
 
         toggleBlink()
         try {
-          const answer = await Promise.race([aiService.completionsSync(messages), timeout(20_000)])
+          const answer = await Promise.race([aiService.completionsSync(context), timeout(20_000)])
 
           toggleBlink(true) // remove blink brefore updating content
 

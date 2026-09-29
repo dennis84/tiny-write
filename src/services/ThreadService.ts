@@ -1,5 +1,5 @@
 import {createDeepSignal} from '@solid-primitives/resource'
-import type {ModelMessage, UserModelMessage} from 'ai'
+import type {UserModelMessage} from 'ai'
 import {formatDate, isToday} from 'date-fns'
 import {createResource, createSignal} from 'solid-js'
 import {produce} from 'solid-js/store'
@@ -485,16 +485,16 @@ export class ThreadService {
 
     if (!thread) return
 
-    let messages: ModelMessage[] = []
+    const context = new ThreadContext()
     let targetId: string | undefined
 
     this.traverseTree((it) => {
-      if (it.value.summary) messages = []
-      messages.push(MessageUtil.toModelMessage(it.value))
+      if (it.value.summary) context.messages = []
+      context.addMessage(MessageUtil.toModelMessage(it.value))
       targetId = it.value.id
     })
 
-    const {promptCount, outputCount} = MessageUtil.tokenCount(messages)
+    const {promptCount, outputCount} = MessageUtil.tokenCount(context)
     info(`Maybe create summary (promptCount=${promptCount}, outputCount=${outputCount})`)
 
     const promptLimit = model.maxPromptTokens * 0.7
@@ -503,10 +503,10 @@ export class ThreadService {
       return
     }
 
-    messages.push({role: 'system', content: summaryPrompt})
+    context.addSystemMessage(summaryPrompt)
 
     try {
-      const summary = await this.aiService.completionsSync(messages)
+      const summary = await this.aiService.completionsSync(context)
       if (summary) {
         info(
           `Add summary to message (messageId=${targetId}, promptLimit=${promptLimit}, outputLimit=${outputLimit})`,
@@ -534,10 +534,14 @@ export class ThreadService {
       content: generateTitlePrompt,
     }
 
-    const messages: ModelMessage[] = thread.messages.map((m) => MessageUtil.toModelMessage(m))
-    messages.push(question)
+    const context = new ThreadContext()
+    for (const m of thread.messages) {
+      context.addMessage(MessageUtil.toModelMessage(m))
+    }
 
-    const title = await this.aiService.completionsSync(messages)
+    context.addMessage(question)
+
+    const title = await this.aiService.completionsSync(context)
     if (!title) throw new Error('Cannot guess a title for current thread.')
 
     return title
@@ -586,25 +590,8 @@ export class ThreadService {
 
       // remember last summary
       if (it.value.summary) {
-        lastSummaryIndex = context.messages.length
+        lastSummaryIndex = context.messages.length - 1
         lastSummary = it.value.summary
-      }
-
-      const {promptCount, outputCount} = MessageUtil.tokenCount(context.messages)
-      const promptLimit = model.maxPromptTokens * 0.9
-      const outputLimit = model.maxOutputTokens * 0.9
-
-      // Reduce messages starting from last summary
-      if (
-        lastSummary &&
-        lastSummaryIndex !== -1 &&
-        (promptCount > promptLimit || outputCount > outputLimit)
-      ) {
-        info(
-          `Reducde conversation (promptCount=${promptCount}/${promptLimit}, outputCount=${outputCount}/${outputLimit}, dropMessages=${context.messages.length - lastSummaryIndex + 1})`,
-        )
-        context.addSystemMessage(lastSummary)
-        context.messages = context.messages.slice(lastSummaryIndex + 1)
       }
 
       context.parentId = it.value.id
@@ -616,6 +603,23 @@ export class ThreadService {
 
     context.addSystemMessage(commonRulesPrompt)
     context.addSystemMessage(commonAssistantRulesPrompt)
+
+    // Reduce messages starting from last summary
+    if (lastSummary && lastSummaryIndex !== -1) {
+      const {promptCount, outputCount} = MessageUtil.tokenCount(context)
+      const promptLimit = model.maxPromptTokens * 0.9
+      const outputLimit = model.maxOutputTokens * 0.9
+      const reduce = promptCount > promptLimit || outputCount > outputLimit
+
+      info(
+        `Reduce conversation (reduce=${reduce}, promptCount=${promptCount}/${promptLimit}, outputCount=${outputCount}/${outputLimit}, dropMessages=${lastSummaryIndex + 1})`,
+      )
+
+      if (reduce) {
+        context.addSystemMessage(lastSummary)
+        context.messages = context.messages.slice(lastSummaryIndex + 1)
+      }
+    }
 
     return context
   }

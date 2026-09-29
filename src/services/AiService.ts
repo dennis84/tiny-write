@@ -1,5 +1,5 @@
 import type {OpenAICompatibleProvider} from '@ai-sdk/openai-compatible'
-import {generateText, type ModelMessage, stepCountIs, streamText} from 'ai'
+import {generateText, stepCountIs, streamText} from 'ai'
 import {type Accessor, createMemo, createSignal} from 'solid-js'
 import type {SetStoreFunction, Store} from 'solid-js/store'
 import {DB} from '@/db'
@@ -143,7 +143,7 @@ export class AiService {
     return ret
   }
 
-  async completionsSync(messages: ModelMessage[]): Promise<string | undefined> {
+  async completionsSync(context: ThreadContext): Promise<string | undefined> {
     const model = this.chatModel
     if (!model) throw new Error('No model selected')
     const provider = await this.getProvider(model?.provider)
@@ -151,8 +151,8 @@ export class AiService {
 
     const result = await generateText({
       model: provider(model.id),
-      messages,
-      allowSystemInMessages: true,
+      system: context.system,
+      messages: context.messages,
     })
 
     return result.text

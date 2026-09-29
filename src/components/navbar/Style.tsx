@@ -19,7 +19,7 @@ export const FloatingContainer = styled.div<ContainerProps>`
   justify-content: ${(p) => p.justify};
   align-items: center;
   padding: 5px;
-  ${(p) => (isMacTauri && p.justify !== 'flex-end' ? 'padding-left: 90px;' : '')}
+  ${(p) => (isMacTauri && p.justify !== 'flex-end' ? 'padding-left: 80px;' : '')}
   pointer-events: none;
   > * {
     pointer-events: auto;

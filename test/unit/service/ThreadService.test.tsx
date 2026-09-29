@@ -16,6 +16,7 @@ import {
   type ProjectAttachment,
   type SelectionAttachment,
 } from '@/types'
+import {MessageUtil} from '@/utils/MessageUtil'
 import {createFile, createThread} from '../testutil/data'
 import {expectTree} from '../testutil/tree'
 
@@ -618,9 +619,9 @@ test('generateTitle', async () => {
     expect(service.currentThread?.id).toEqual('1')
   })
 
-  aiService.completionsSync.mockImplementation(async (messages) => {
-    expect(messages).toHaveLength(3)
-    expect(messages[2].content).toContain('Generate a concise')
+  aiService.completionsSync.mockImplementation(async (context) => {
+    expect(context.messages).toHaveLength(3)
+    expect(context.messages[2].content).toContain('Generate a concise')
 
     return 'Test'
   })
@@ -636,6 +637,8 @@ test.each<[Message[], number, number]>([
   [[{id: '1', role: 'user', content: '```'}], 3, 1],
   [
     [
+      // maxPromptTokens: 10, maxOutputTokens: 12,
+      // systemTokens: 2, userTokens: 3, assistantTokens: 2
       {id: '1', role: 'user', content: 'A'},
       {id: '2', parentId: '1', role: 'assistant', content: 'B'},
       {id: '3', parentId: '2', role: 'user', content: 'C'},
@@ -647,17 +650,21 @@ test.each<[Message[], number, number]>([
   ],
   [
     [
+      // maxPromptTokens: 10, maxOutputTokens: 12,
+      // promptTokens: 2+5, outputTokens: 3
       {id: '1', role: 'user', content: 'A A'},
       {id: '2', parentId: '1', role: 'assistant', content: 'B B'},
       {id: '3', parentId: '2', role: 'user', content: 'C C'},
       {id: '4', parentId: '3', role: 'assistant', content: 'D', summary: 'ABCD'},
       {id: '5', parentId: '4', role: 'user', content: 'E'},
     ],
-    2,
+    2, // 2 system
     5,
   ],
   [
     [
+      // maxPromptTokens: 10, maxOutputTokens: 12,
+      // promptTokens: 2+10, outputTokens: 3
       {id: '1', role: 'user', content: 'A A A A'},
       {id: '2', parentId: '1', role: 'assistant', content: 'B'},
       {id: '3', parentId: '2', role: 'user', content: 'C C C C'},
@@ -666,11 +673,28 @@ test.each<[Message[], number, number]>([
       {id: '6', parentId: '5', role: 'assistant', content: 'F'},
       {id: '7', parentId: '6', role: 'user', content: 'G'},
     ],
-    3,
-    3,
+    3, // 2 system + summary
+    3, // start after summary
   ],
   [
     [
+      // maxPromptTokens: 10, maxOutputTokens: 12,
+      // promptTokens: 2+10, outputTokens: 3
+      {id: '1', role: 'user', content: 'A A A A'},
+      {id: '2', parentId: '1', role: 'assistant', content: 'B'},
+      {id: '3', parentId: '2', role: 'user', content: 'C C C C'},
+      {id: '4', parentId: '3', role: 'assistant', content: 'D', summary: 'ABCD'},
+      {id: '5', parentId: '4', role: 'user', content: 'E'},
+      {id: '6', parentId: '5', role: 'assistant', content: 'F', summary: 'EFGH'},
+      {id: '7', parentId: '6', role: 'user', content: 'G'},
+    ],
+    3, // 2 system + summary
+    1, // start after last summary
+  ],
+  [
+    [
+      // maxPromptTokens: 10, maxOutputTokens: 12,
+      // promptTokens: 2+4, outputTokens: 13
       {id: '1', role: 'user', content: 'A'},
       {id: '2', parentId: '1', role: 'assistant', content: 'B B B B B B'},
       {id: '3', parentId: '2', role: 'user', content: 'C'},
@@ -679,8 +703,8 @@ test.each<[Message[], number, number]>([
       {id: '6', parentId: '5', role: 'assistant', content: 'F'},
       {id: '7', parentId: '6', role: 'user', content: 'G'},
     ],
-    3,
-    3,
+    3, // 2 system + summary
+    3, // start after summary
   ],
 ])('getThreadContext', async (messages, systemCount, messagesCount) => {
   vi.spyOn(DB, 'getThreads').mockResolvedValue([
@@ -689,6 +713,8 @@ test.each<[Message[], number, number]>([
       messages,
     }),
   ])
+
+  vi.spyOn(MessageUtil, 'countText').mockImplementation((text) => text.split(/\s+/).length)
 
   vi.spyOn(aiService, 'chatModel', 'get').mockReturnValue({
     ...aiService.chatModel!,

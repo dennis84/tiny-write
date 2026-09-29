@@ -4,40 +4,30 @@ import projectAttachmentPrompt from '@/prompts/attachments/project.md?raw'
 import textAttachmentPrompt from '@/prompts/attachments/text.md?raw'
 import userMessagePrompt from '@/prompts/common/user-message.md?raw'
 import {type Attachment, AttachmentType, type Message} from '@/types'
+import type {ThreadContext} from './ThreadContext'
 
 export class MessageUtil {
-  static tokenCount(messages: ModelMessage[]): {promptCount: number; outputCount: number} {
+  static tokenCount(context: ThreadContext): {promptCount: number; outputCount: number} {
     let outputCount = 0
-    let promptCount = 0
+    let promptCount = MessageUtil.countText(context.system ?? '')
 
-    const countText = (text: string) => {
-      const words = text.split(/\s+/).length
-      const chars = text.length
-      const punctuation = (text.match(/[^a-zA-Z0-9\s]/g) || []).length
-      return Math.ceil(words * 1.3 + punctuation * 0.5 + chars / 15)
-    }
-
-    for (const message of messages) {
+    for (const message of context.messages) {
       if (message.role === 'user') {
         if (typeof message.content === 'string') {
-          outputCount += countText(message.content)
+          promptCount += MessageUtil.countText(message.content)
         } else if (Array.isArray(message.content)) {
           message.content.forEach((c) => {
-            if (c.type === 'text') outputCount += countText(c.text)
+            if (c.type === 'text') promptCount += MessageUtil.countText(c.text)
           })
         }
       } else if (message.role === 'assistant') {
         if (typeof message.content === 'string') {
-          promptCount += countText(message.content)
+          outputCount += MessageUtil.countText(message.content)
         } else if (Array.isArray(message.content)) {
           message.content.forEach((c) => {
-            if (c.type === 'text') promptCount += countText(c.text)
+            if (c.type === 'text') outputCount += MessageUtil.countText(c.text)
           })
         }
-      } else if (message.role === 'system') {
-        outputCount += countText(message.content)
-      } else if (message.role === 'tool') {
-        // not yet
       }
     }
 
@@ -129,5 +119,12 @@ export class MessageUtil {
     return template.replace(/\{\{\s*(\w+)\s*\}\}/g, (match, key) => {
       return key in data && data[key] != null ? String(data[key]) : match
     })
+  }
+
+  static countText(text: string): number {
+    const words = text.split(/\s+/).length
+    const chars = text.length
+    const punctuation = (text.match(/[^a-zA-Z0-9\s]/g) || []).length
+    return Math.ceil(words * 1.3 + punctuation * 0.5 + chars / 15)
   }
 }
