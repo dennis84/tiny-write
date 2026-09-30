@@ -67,7 +67,7 @@ export const ButtonEl = styled.button<ButtonAttrs>`
 const ButtonLinkEl = styled.button`
   ${Common}
   ${RippleEffect}
-  color: var(--primary-foreground);
+  color: var(--foreground);
   border: 0;
   background: none;
   &:hover {
@@ -101,7 +101,7 @@ export const ButtonGroup = styled.div<ButtonGroupProps>`
 export const IconButtonEl = styled.button<ButtonAttrs>`
   ${Common}
   ${RippleEffect}
-  width: 30px;
+  width: var(--button-height);
   padding: 0;
   background: none;
   color: var(--foreground);

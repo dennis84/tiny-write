@@ -4,7 +4,8 @@ import {type Accessor, createMemo, createSignal} from 'solid-js'
 import type {SetStoreFunction, Store} from 'solid-js/store'
 import {DB} from '@/db'
 import {debug, error, info} from '@/remote/log'
-import type {Model, State, ToolCall} from '@/types'
+import type {Model, State, ToolCall, Usage} from '@/types'
+import {MessageUtil} from '@/utils/MessageUtil'
 import type {ThreadContext} from '@/utils/ThreadContext'
 import {BraveSearchService} from './BraveSearchService'
 import type {CopilotService} from './CopilotService'
@@ -24,6 +25,7 @@ export interface CompletionsResult {
   success: boolean
   interrupted?: boolean
   error?: string
+  usage?: Usage
 }
 
 export class AiService {
@@ -138,6 +140,19 @@ export class AiService {
 
     for await (const part of result.textStream) {
       onChunk(part)
+    }
+
+    try {
+      const rawUsage = await result.usage
+      const usage: Usage = {
+        inputTokens: rawUsage.inputTokens ?? 0,
+        outputTokens: rawUsage.outputTokens ?? 0,
+      }
+      if (!MessageUtil.isEmptyUsage(usage)) {
+        ret.usage = usage
+      }
+    } catch (e) {
+      error('Failed to read usage', e)
     }
 
     return ret

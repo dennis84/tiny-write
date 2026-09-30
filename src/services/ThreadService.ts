@@ -19,6 +19,7 @@ import {
   type Message,
   type ProjectAttachment,
   type Thread,
+  type Usage,
 } from '@/types'
 import {MessageUtil} from '@/utils/MessageUtil'
 import {ThreadContext} from '@/utils/ThreadContext'
@@ -270,6 +271,13 @@ export class ThreadService {
     )
 
     if (result.success) {
+      if (result.usage) {
+        this.updateThread((thread) => {
+          const message = thread.messages.find((m) => m.id === messageId)
+          if (message) message.usage = result.usage
+        })
+      }
+
       await this.saveThread()
       if (!thread.title) {
         try {
@@ -328,13 +336,12 @@ export class ThreadService {
         t.messages[messageIndex].content += chunk
       } else {
         info(`Create new message to stream to (id=${id}, parentId=${parentId})`)
-        const modelId = model.id
         const newMessage = {
           id,
           content: chunk,
           role: 'assistant',
           parentId,
-          modelId,
+          model,
         } satisfies Message
         t.messages.push(newMessage)
         messageIndex = t.messages.length - 1
@@ -423,18 +430,14 @@ export class ThreadService {
   }
 
   async regenerate(message: Message) {
-    const model = this.aiService.chatModel
-    if (!model) return
-
     const currentThread = this.currentThread
     if (!currentThread) return
 
     if (message.role === 'user') {
-      const newMessage = {
+      const newMessage: Message = {
         ...message,
         id: ThreadService.createId(),
         leftId: message.id,
-        modelId: model.id,
       }
 
       info(`Regenerate user message (message=${JSON.stringify(newMessage)})`)
@@ -487,19 +490,24 @@ export class ThreadService {
 
     const context = new ThreadContext()
     let targetId: string | undefined
+    let lastUsage: Usage | undefined
 
     this.traverseTree((it) => {
-      if (it.value.summary) context.messages = []
+      if (it.value.summary) {
+        context.messages = []
+        lastUsage = undefined
+      }
       context.addMessage(MessageUtil.toModelMessage(it.value))
+      if (it.value.usage) lastUsage = it.value.usage
       targetId = it.value.id
     })
 
-    const {promptCount, outputCount} = MessageUtil.tokenCount(context)
-    info(`Maybe create summary (promptCount=${promptCount}, outputCount=${outputCount})`)
+    const {inputTokens, outputTokens} = lastUsage ?? MessageUtil.tokenCount(context)
+    info(`Maybe create summary (inputTokens=${inputTokens}, outputTokens=${outputTokens})`)
 
     const promptLimit = model.maxPromptTokens * 0.7
     const outputLimit = model.maxOutputTokens * 0.7
-    if (promptCount < promptLimit && outputCount < outputLimit) {
+    if (inputTokens < promptLimit && outputTokens < outputLimit) {
       return
     }
 
@@ -582,6 +590,7 @@ export class ThreadService {
 
     let lastSummaryIndex = -1
     let lastSummary: string | undefined
+    let lastUsage: Usage | undefined
 
     this.traverseTree((it) => {
       context.nextId = thread.path?.get(it.id)
@@ -593,6 +602,8 @@ export class ThreadService {
         lastSummaryIndex = context.messages.length - 1
         lastSummary = it.value.summary
       }
+
+      if (it.value.usage) lastUsage = it.value.usage
 
       context.parentId = it.value.id
     })
@@ -606,13 +617,13 @@ export class ThreadService {
 
     // Reduce messages starting from last summary
     if (lastSummary && lastSummaryIndex !== -1) {
-      const {promptCount, outputCount} = MessageUtil.tokenCount(context)
+      const {inputTokens, outputTokens} = lastUsage ?? MessageUtil.tokenCount(context)
       const promptLimit = model.maxPromptTokens * 0.9
       const outputLimit = model.maxOutputTokens * 0.9
-      const reduce = promptCount > promptLimit || outputCount > outputLimit
+      const reduce = inputTokens > promptLimit || outputTokens > outputLimit
 
       info(
-        `Reduce conversation (reduce=${reduce}, promptCount=${promptCount}/${promptLimit}, outputCount=${outputCount}/${outputLimit}, dropMessages=${lastSummaryIndex + 1})`,
+        `Reduce conversation (reduce=${reduce}, promptCount=${inputTokens}/${promptLimit}, outputCount=${outputTokens}/${outputLimit}, dropMessages=${lastSummaryIndex + 1})`,
       )
 
       if (reduce) {

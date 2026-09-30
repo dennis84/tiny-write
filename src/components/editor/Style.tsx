@@ -112,8 +112,8 @@ export const standardMarkdown = `
   hr, .horizontal-rule {
     border: 0;
     margin: 40px 0;
-    height: 5px;
-    line-height: 5px;
+    height: 1px;
+    line-height: 1px;
     background: var(--background-80);
     border-radius: var(--border-radius);
     page-break-before: always;

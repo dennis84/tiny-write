@@ -1,6 +1,7 @@
 import {expect, test} from 'vitest'
 import {AttachmentType, type Message} from '@/types'
 import {MessageUtil} from '@/utils/MessageUtil'
+import {ThreadContext} from '@/utils/ThreadContext'
 
 test('toModelMessage', () => {
   const message: Message = {
@@ -90,4 +91,35 @@ Instructions:
 - If you need to see the content of a file that is in the <project_tree> but not in the <opened_files>, use your file-reading tool to fetch it.
 
 --- END OF PROJECT ATTACHMENT ---\n`)
+})
+
+test('isEmptyUsage', () => {
+  expect(MessageUtil.isEmptyUsage(undefined)).toBe(true)
+  expect(MessageUtil.isEmptyUsage({inputTokens: 0, outputTokens: 0})).toBe(true)
+  expect(
+    MessageUtil.isEmptyUsage({
+      inputTokens: undefined as unknown as number,
+      outputTokens: 5,
+    }),
+  ).toBe(true)
+  expect(
+    MessageUtil.isEmptyUsage({
+      inputTokens: 5,
+      outputTokens: undefined as unknown as number,
+    }),
+  ).toBe(true)
+  expect(MessageUtil.isEmptyUsage({inputTokens: 0, outputTokens: 5})).toBe(false)
+  expect(MessageUtil.isEmptyUsage({inputTokens: 5, outputTokens: 0})).toBe(false)
+  expect(MessageUtil.isEmptyUsage({inputTokens: 5, outputTokens: 5})).toBe(false)
+})
+
+test('tokenCount - counts user messages as input and assistant messages as output', () => {
+  const context = new ThreadContext()
+  context.addMessage({role: 'user', content: 'A'})
+  context.addMessage({role: 'assistant', content: 'B'})
+
+  const result = MessageUtil.tokenCount(context)
+
+  expect(result.inputTokens).toBeGreaterThan(0)
+  expect(result.outputTokens).toBeGreaterThan(0)
 })

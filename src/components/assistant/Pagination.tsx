@@ -3,7 +3,6 @@ import {styled} from 'solid-styled-components'
 import {useState} from '@/state'
 import {IconButton} from '../Button'
 import {IconChevronLeft, IconChevronRight} from '../icons/Ui'
-import {itemCss} from '../menu/Style'
 
 const PaginationContainer = styled.div`
   display: inline-flex;
@@ -11,8 +10,8 @@ const PaginationContainer = styled.div`
 `
 
 const CurrentPage = styled.div`
-  ${itemCss}
   width: auto;
+  padding: 0 3px;
 `
 
 interface Props {

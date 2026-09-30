@@ -269,6 +269,11 @@ export interface ToolCall {
   status: 'tool-call' | 'tool-result' | 'tool-error'
 }
 
+export interface Usage {
+  inputTokens: number
+  outputTokens: number
+}
+
 export interface Message {
   id: string
   parentId?: string
@@ -278,8 +283,9 @@ export interface Message {
   role: ChatRole
   interrupted?: boolean
   summary?: string
-  modelId?: string
   toolCalls?: ToolCall[]
+  usage?: Usage
+  model?: Model
 }
 
 export interface Thread {

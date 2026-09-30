@@ -319,6 +319,45 @@ test('summarize', async () => {
   expect(service.currentThread?.messages[1].summary).toEqual('12')
 })
 
+test('summarize - real usage overrides text estimate and skips summarization', async () => {
+  vi.spyOn(DB, 'getThreads').mockResolvedValue([
+    createThread({
+      id: '1',
+      messages: [
+        {id: '1', role: 'user', content: '1'},
+        {
+          id: '2',
+          parentId: '1',
+          role: 'assistant',
+          content: '2',
+          usage: {inputTokens: 1, outputTokens: 1},
+        },
+      ],
+    }),
+  ])
+
+  const service = new ThreadService(
+    fileService,
+    aiService,
+    locationService,
+    dialogService,
+    treeService,
+  )
+
+  await waitFor(() => {
+    expect(service.currentThread?.id).toEqual('1')
+  })
+
+  await service.init()
+
+  aiService.completionsSync.mockResolvedValue('12')
+
+  await service.summarize()
+
+  expect(aiService.completionsSync).not.toHaveBeenCalled()
+  expect(service.currentThread?.messages[1].summary).toBeUndefined()
+})
+
 test('updateTitle', async () => {
   vi.spyOn(DB, 'getThreads').mockResolvedValue([
     createThread({
@@ -705,6 +744,27 @@ test.each<[Message[], number, number]>([
     ],
     3, // 2 system + summary
     3, // start after summary
+  ],
+  [
+    [
+      // Would trigger a reduce via the text estimate (promptTokens: 2+9=11 > 9), but the
+      // last message carries real, non-empty usage well under the limits, so tokenCount
+      // uses that instead and no reduce happens.
+      {id: '1', role: 'user', content: 'A A A A'},
+      {id: '2', parentId: '1', role: 'assistant', content: 'B'},
+      {id: '3', parentId: '2', role: 'user', content: 'C C C C'},
+      {id: '4', parentId: '3', role: 'assistant', content: 'D', summary: 'ABCD'},
+      {id: '5', parentId: '4', role: 'user', content: 'E'},
+      {
+        id: '6',
+        parentId: '5',
+        role: 'assistant',
+        content: 'F',
+        usage: {inputTokens: 1, outputTokens: 1},
+      },
+    ],
+    2, // no reduce, no summary system message added
+    6, // all messages kept
   ],
 ])('getThreadContext', async (messages, systemCount, messagesCount) => {
   vi.spyOn(DB, 'getThreads').mockResolvedValue([

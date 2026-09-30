@@ -10,6 +10,7 @@ import {Spinner} from '../icons/Spinner'
 import {IconCopy, IconHand, IconRefresh} from '../icons/Ui'
 import {AttachmentChip} from './attachments/AttachmentChip'
 import {MessageMarkdown} from './MessageMarkdown'
+import {ModelSelect} from './ModelSelect'
 import {Pagination} from './Pagination'
 import {ChatBubble} from './Style'
 import {WebSearch} from './tools/WebSearch'
@@ -64,6 +65,9 @@ export const MessageAnswer = (props: Props) => {
           <IconButton>
             <Spinner />
           </IconButton>
+        </Show>
+        <Show when={props.message.value.model}>
+          {(model) => <ModelSelect value={model()} onChange={onRegenerate} />}
         </Show>
         <Pagination
           id={props.message.id}

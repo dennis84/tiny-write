@@ -3,35 +3,41 @@ import fileAttachmentPrompt from '@/prompts/attachments/file.md?raw'
 import projectAttachmentPrompt from '@/prompts/attachments/project.md?raw'
 import textAttachmentPrompt from '@/prompts/attachments/text.md?raw'
 import userMessagePrompt from '@/prompts/common/user-message.md?raw'
-import {type Attachment, AttachmentType, type Message} from '@/types'
+import {type Attachment, AttachmentType, type Message, type Usage} from '@/types'
 import type {ThreadContext} from './ThreadContext'
 
 export class MessageUtil {
-  static tokenCount(context: ThreadContext): {promptCount: number; outputCount: number} {
-    let outputCount = 0
-    let promptCount = MessageUtil.countText(context.system ?? '')
+  static isEmptyUsage(usage?: Usage): boolean {
+    if (!usage) return true
+    if (usage.inputTokens == null || usage.outputTokens == null) return true
+    return usage.inputTokens === 0 && usage.outputTokens === 0
+  }
+
+  static tokenCount(context: ThreadContext): {inputTokens: number; outputTokens: number} {
+    let outputTokens = 0
+    let inputTokens = MessageUtil.countText(context.system ?? '')
 
     for (const message of context.messages) {
       if (message.role === 'user') {
         if (typeof message.content === 'string') {
-          promptCount += MessageUtil.countText(message.content)
+          inputTokens += MessageUtil.countText(message.content)
         } else if (Array.isArray(message.content)) {
           message.content.forEach((c) => {
-            if (c.type === 'text') promptCount += MessageUtil.countText(c.text)
+            if (c.type === 'text') inputTokens += MessageUtil.countText(c.text)
           })
         }
       } else if (message.role === 'assistant') {
         if (typeof message.content === 'string') {
-          outputCount += MessageUtil.countText(message.content)
+          outputTokens += MessageUtil.countText(message.content)
         } else if (Array.isArray(message.content)) {
           message.content.forEach((c) => {
-            if (c.type === 'text') outputCount += MessageUtil.countText(c.text)
+            if (c.type === 'text') outputTokens += MessageUtil.countText(c.text)
           })
         }
       }
     }
 
-    return {promptCount, outputCount}
+    return {inputTokens, outputTokens}
   }
 
   static toModelMessage(message: Message, latest = false): ModelMessage {
