@@ -261,18 +261,30 @@ export type Attachment =
 
 export type ChatRole = 'user' | 'assistant' | 'system'
 
+export interface Usage {
+  inputTokens: number
+  outputTokens: number
+}
+
 export interface ToolCall {
   id: string
   toolName: string
   input?: Record<string, any>
   result?: any
-  status: 'tool-call' | 'tool-result' | 'tool-error'
+  startDate: Date
+  endDate?: Date
 }
 
-export interface Usage {
-  inputTokens: number
-  outputTokens: number
+export interface Reasoning {
+  id: string
+  content: string
+  startDate: Date
+  endDate?: Date
 }
+
+// A single step in the assistant's "thinking" process (tool call or
+// reasoning chunk), in the order it actually happened.
+export type ThinkingItem = ({kind: 'reasoning'} & Reasoning) | ({kind: 'tool-call'} & ToolCall)
 
 export interface Message {
   id: string
@@ -283,9 +295,9 @@ export interface Message {
   role: ChatRole
   interrupted?: boolean
   summary?: string
-  toolCalls?: ToolCall[]
   usage?: Usage
   model?: Model
+  thinking?: ThinkingItem[]
 }
 
 export interface Thread {

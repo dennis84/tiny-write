@@ -8,7 +8,7 @@ import {createOpenAICompatible} from '@ai-sdk/openai-compatible'
 import {waitFor} from '@solidjs/testing-library'
 import {createStore} from 'solid-js/store'
 import {fetch} from '@/remote/http'
-import {AiService} from '@/services/AiService'
+import {AiService, type Chunk} from '@/services/AiService'
 import type {CopilotService} from '@/services/CopilotService'
 import type {LlamaCppService} from '@/services/LlamaCppService'
 import type {OllamaService} from '@/services/OllamaService'
@@ -81,7 +81,7 @@ test('completions - success', async () => {
 
   let content = ''
   const result = await service.completions(context, (chunk) => {
-    content += chunk
+    if (chunk.kind === 'text') content += chunk.delta
   })
 
   expect(result.success).toBe(true)
@@ -130,7 +130,7 @@ test('completions - interrupted', async () => {
 
   let content = ''
   const result = await service.completions(context, (chunk) => {
-    content += chunk
+    if (chunk.kind === 'text') content += chunk.delta
     // Stop after first chunk
     service.stop()
   })
@@ -226,28 +226,24 @@ test('completions - onToolCall reports tool-call and tool-result events', async 
   }) as any
 
   try {
-    const toolCallEvents: ToolCall[] = []
-    const completionsPromise = service.completions(
-      context,
-      () => {},
-      (toolCall) => {
-        toolCallEvents.push(toolCall)
-      },
-    )
+    const events: Chunk[] = []
+    const completionsPromise = service.completions(context, (chunk) => {
+      events.push(chunk)
+    })
 
     await waitFor(() => {
-      const call = toolCallEvents.find(
-        (it) => it.toolName === 'braveSearch' && it.status === 'tool-call',
-      )
+      const call = events.find(
+        (it) => it.kind === 'tool-call' && it.toolName === 'braveSearch' && it.input !== undefined,
+      ) as ToolCall | undefined
       expect(call?.input?.query).toEqual('latest TypeScript news')
     })
 
     const result = await completionsPromise
 
     await waitFor(() => {
-      const resultEvent = toolCallEvents.find(
-        (it) => it.toolName === 'braveSearch' && it.status === 'tool-result',
-      )
+      const resultEvent = events.find(
+        (it) => it.kind === 'tool-call' && it.toolName === 'braveSearch' && it.result !== undefined,
+      ) as ToolCall | undefined
       expect(resultEvent).toBeDefined()
       expect(resultEvent?.result).toEqual([
         {title: 'TypeScript 5.9 released', url: 'https://example.com/ts-5-9', description: ''},

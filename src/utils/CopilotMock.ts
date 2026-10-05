@@ -60,6 +60,14 @@ export class CopilotMock {
       enqueueChunk(controller, message)
     }
 
+    const enqueueReasoningDelta = (
+      controller: ReadableStreamDefaultController<any>,
+      text: string,
+    ) => {
+      const message = CopilotMock.toReasoningDelta(text)
+      enqueueChunk(controller, message)
+    }
+
     const createToolCallStream = (id: string, query: string) =>
       new ReadableStream({
         async start(controller) {
@@ -107,6 +115,18 @@ export class CopilotMock {
 
       return new ReadableStream({
         async start(controller) {
+          // Simulate a reasoning model "thinking" before it starts streaming
+          // the actual answer, mirroring a `reasoning_content` delta stream
+          // (see @ai-sdk/openai-compatible's `reasoning-delta` handling).
+          const reasoningWordCount = 15 + Math.floor(Math.random() * 26)
+          for (let i = 0; i < reasoningWordCount; i++) {
+            const randomIndex = Math.floor(Math.random() * LOREM_IPSUM_WORDS.length)
+            enqueueReasoningDelta(controller, `${LOREM_IPSUM_WORDS[randomIndex]} `)
+            await pause(10)
+          }
+
+          await pause(2000)
+
           let parts = 0
           while (true) {
             if (!options.endlessText && parts >= 4) {
@@ -285,6 +305,10 @@ export class CopilotMock {
 
   static toChoicesDelta(content: string) {
     return {choices: [{delta: {content}}]}
+  }
+
+  static toReasoningDelta(content: string) {
+    return {choices: [{delta: {reasoning_content: content}}]}
   }
 
   static toChoicesMessage(content: string) {

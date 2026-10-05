@@ -418,3 +418,10 @@ export const IconGlobe = () => (
     <GlobeIcon />
   </SvgIcon>
 )
+
+import LucideLightbulb from '~icons/lucide/lightbulb'
+export const IconLightbulb = () => (
+  <SvgIcon>
+    <LucideLightbulb />
+  </SvgIcon>
+)

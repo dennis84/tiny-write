@@ -247,38 +247,64 @@ export class ThreadService {
     const messageId = context.nextId ?? uuidv4()
 
     // Create answer message directly to visualize loading
-    this.addChunk(messageId, context.parentId, '')
+    this.addChunk(thread, messageId, context.parentId, '')
 
-    const result = await this.aiService.completions(
-      context,
-      (chunk) => {
-        this.addChunk(messageId, context.parentId, chunk)
-      },
-      (toolCall) => {
-        this.updateThread((thread) => {
-          const existing = thread.messages.find((m) => m.id === messageId)
-          if (existing) {
-            existing.toolCalls ??= []
-            const existingCall = existing.toolCalls.find((it) => it.id === toolCall.id)
-            if (existingCall) {
-              Object.assign(existingCall, toolCall)
-            } else {
-              existing.toolCalls.push(toolCall)
+    const result = await this.aiService.completions(context, (chunk) => {
+      if (chunk.kind === 'text') {
+        this.addChunk(thread, messageId, context.parentId, chunk.delta)
+        return
+      }
+
+      this.updateThread((thread) => {
+        const currentMessage = thread.messages.find((m) => m.id === messageId)
+        if (currentMessage) {
+          currentMessage.thinking ??= []
+          const existing = currentMessage.thinking.find(
+            (it) => it.kind === chunk.kind && it.id === chunk.id,
+          )
+
+          switch (chunk.kind) {
+            case 'reasoning': {
+              if (existing && existing.kind === 'reasoning') {
+                if (chunk.delta) existing.content += chunk.delta
+                if (chunk.endDate) existing.endDate = chunk.endDate
+              } else {
+                currentMessage.thinking.push({
+                  kind: 'reasoning',
+                  id: chunk.id,
+                  content: chunk.delta ?? '',
+                  startDate: chunk.startDate ?? new Date(),
+                  endDate: chunk.endDate,
+                })
+              }
+
+              break
+            }
+            case 'tool-call': {
+              if (existing) {
+                Object.assign(existing, chunk)
+              } else {
+                currentMessage.thinking.push({
+                  startDate: chunk.startDate ?? new Date(),
+                  ...chunk,
+                })
+              }
+              break
             }
           }
-        })
-      },
-    )
+        }
+      }, thread.id)
+    })
 
     if (result.success) {
       if (result.usage) {
         this.updateThread((thread) => {
           const message = thread.messages.find((m) => m.id === messageId)
           if (message) message.usage = result.usage
-        })
+        }, thread.id)
       }
 
-      await this.saveThread()
+      await this.saveThread(thread)
       if (!thread.title) {
         try {
           const title = await this.generateTitle(thread)
@@ -288,9 +314,9 @@ export class ThreadService {
         }
       }
 
-      await this.summarize(thread)
+      await this.summarize()
     } else if (result.interrupted) {
-      this.interrupt(messageId)
+      this.interrupt(thread, messageId)
     } else if (result.error) {
       this.dialogService.toast({message: result.error, action: 'Close'})
     }
@@ -320,24 +346,20 @@ export class ThreadService {
     await this.saveThread(thread)
   }
 
-  addChunk(id: string, parentId: string | undefined, chunk: string) {
-    // debug(`Stream message chunk (id=${id}, parentId=${parentId}, chunk=${chunk})`)
+  addChunk(thread: Thread, messageId: string, parentId: string | undefined, chunk: string) {
     const model = this.aiService.chatModel
     if (!model) return
 
-    const thread = this.currentThread
-    if (!thread) return
-
     this.updateThread((t) => {
-      let messageIndex = t.messages.findIndex((m) => m.id === id)
+      let messageIndex = t.messages.findIndex((m) => m.id === messageId)
 
       if (messageIndex !== -1) {
         // Mutate proxy object in place
         t.messages[messageIndex].content += chunk
       } else {
-        info(`Create new message to stream to (id=${id}, parentId=${parentId})`)
+        info(`Create new message to stream to (id=${messageId}, parentId=${parentId})`)
         const newMessage = {
-          id,
+          id: messageId,
           content: chunk,
           role: 'assistant',
           parentId,
@@ -352,16 +374,18 @@ export class ThreadService {
     }, thread.id)
   }
 
-  interrupt(id: string) {
-    info(`Interrupt message streaming (id=${id})`)
-
-    const currentThread = this.currentThread
-    if (!currentThread) return
+  interrupt(thread: Thread, messageId: string) {
+    info(`Interrupt message streaming (id=${messageId})`)
 
     this.updateThread((thread) => {
-      const existing = thread.messages.find((m) => m.id === id)
-      if (existing) existing.interrupted = true
-    })
+      const existing = thread.messages.find((m) => m.id === messageId)
+      if (existing) {
+        existing.interrupted = true
+        existing.thinking?.forEach((it) => {
+          it.endDate = new Date()
+        })
+      }
+    }, thread.id)
   }
 
   async updateTitle(threadId: string, title: string) {
@@ -482,10 +506,11 @@ export class ThreadService {
     if (nextId) return this.messageTree.getItem(nextId)
   }
 
-  async summarize(thread = this.currentThread) {
+  async summarize() {
     const model = this.aiService.chatModel
     if (!model) return
 
+    const thread = this.currentThread
     if (!thread) return
 
     const context = new ThreadContext()

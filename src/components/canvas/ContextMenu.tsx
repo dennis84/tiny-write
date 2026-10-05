@@ -60,7 +60,8 @@ export const ContextMenu = () => {
     let buffer = ''
 
     const result = await aiService.completions(context, (chunk) => {
-      buffer += chunk
+      if (chunk.kind !== 'text') return
+      buffer += chunk.delta
       const node = parser.parse(buffer)
       const tr = editorView.state.tr
       tr.delete(0, editorView.state.doc.content.size)

@@ -49,6 +49,12 @@ export const Layout = styled.div`
       transform: rotate(90deg);
     }
   }
+  /* Blinking node during AI processing */
+  @keyframes blink {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+  }
 `
 
 export const PageContent = styled.div`

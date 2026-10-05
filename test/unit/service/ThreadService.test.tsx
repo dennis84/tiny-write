@@ -195,11 +195,11 @@ test('addChunk', async () => {
 
   await service.init()
 
-  service.addChunk('2', '1', 'A')
+  service.addChunk(service.currentThread!, '2', '1', 'A')
   expect(service.currentThread?.messages[1].content).toBe('A')
-  service.addChunk('2', '1', 'b')
+  service.addChunk(service.currentThread!, '2', '1', 'b')
   expect(service.currentThread?.messages[1].content).toBe('Ab')
-  service.addChunk('2', '1', 'c')
+  service.addChunk(service.currentThread!, '2', '1', 'c')
   expect(service.currentThread?.messages[1].content).toBe('Abc')
 
   expect(service.currentThread?.messages).toHaveLength(2)
@@ -228,20 +228,24 @@ test('sendMessages - dedup tool calls by id', async () => {
 
   await service.init()
 
-  aiService.completions.mockImplementation(async (_messages, onChunk, onToolCall) => {
-    onChunk('Here is what I found')
-    onToolCall?.({
+  aiService.completions.mockImplementation(async (_messages, onChunk) => {
+    onChunk({kind: 'text', delta: 'Here is what I found'})
+    onChunk({
+      kind: 'tool-call',
       id: 'call_1',
       toolName: 'braveSearch',
-      status: 'tool-call',
       input: {query: 'foo'},
+      startDate: new Date(),
+      endDate: new Date(),
     })
-    onToolCall?.({
+    onChunk({
+      kind: 'tool-call',
       id: 'call_1',
       toolName: 'braveSearch',
-      status: 'tool-result',
       input: {query: 'foo'},
       result: [{title: 'Foo result', url: 'https://example.com/foo', description: ''}],
+      startDate: new Date(),
+      endDate: new Date(),
     })
     return {success: true}
   })
@@ -249,11 +253,11 @@ test('sendMessages - dedup tool calls by id', async () => {
   await service.sendMessages()
 
   const assistantMessage = service.currentThread?.messages.find((m) => m.role === 'assistant')
-  expect(assistantMessage?.toolCalls).toHaveLength(1)
-  expect(assistantMessage?.toolCalls?.[0]).toMatchObject({
+  expect(assistantMessage?.thinking).toHaveLength(1)
+  expect(assistantMessage?.thinking?.[0]).toMatchObject({
+    kind: 'tool-call',
     id: 'call_1',
     toolName: 'braveSearch',
-    status: 'tool-result',
     input: {query: 'foo'},
     result: [{title: 'Foo result', url: 'https://example.com/foo', description: ''}],
   })
@@ -282,7 +286,7 @@ test('interrupt', async () => {
     expect(service.currentThread?.id).toEqual('1')
   })
 
-  service.interrupt('2')
+  service.interrupt(service.currentThread!, '2')
 
   expect(service.currentThread?.messages[1].interrupted).toEqual(true)
 })

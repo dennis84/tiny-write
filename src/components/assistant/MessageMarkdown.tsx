@@ -188,7 +188,7 @@ export const MessageMarkdown = (props: Props) => {
 
   const renderMessage = (content: string) => {
     try {
-      const tokens = md.parse(content, undefined)
+      const tokens = md.parse(content, {})
 
       batch(() => {
         tree.reset([])

@@ -18,5 +18,5 @@ test('render - parse error', async () => {
   stubLocation('/assistant')
 
   const {container} = render(() => <MessageMarkdown content="`[]abc" />)
-  expect(container.innerHTML).toEqual('')
+  expect(container.innerHTML).toEqual('<p><span>`[]abc</span></p>')
 })
