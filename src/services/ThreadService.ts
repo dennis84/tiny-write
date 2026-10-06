@@ -12,7 +12,7 @@ import summaryPrompt from '@/prompts/assistant/summary.md?raw'
 import commonRulesPrompt from '@/prompts/common/rules.md?raw'
 import {error, info} from '@/remote/log'
 import {isFile} from '@/state'
-import {createTreeStore, type TreeItem} from '@/tree'
+import {createTreeStore, type Tree, type TreeItem} from '@/tree'
 import {
   type Attachment,
   AttachmentType,
@@ -30,7 +30,7 @@ import type {LocationService} from './LocationService'
 import type {TreeService} from './TreeService'
 
 export class ThreadService {
-  public messageTree = createTreeStore<Message>()
+  private messageTrees = new Map<string, Tree<Message>>()
   private attachmentsSignal = createSignal<Attachment[]>([])
   private threadsResource = createResource<Thread[]>(() => this.fetchThreads(), {
     storage: createDeepSignal, // store threads as proxy objects
@@ -72,6 +72,12 @@ export class ThreadService {
     const threadId = this.currentThreadId
     if (!threadId) return -1
     return threads.latest?.findIndex((t) => t.id === threadId) ?? -1
+  }
+
+  // Current thread's tree, for UI call sites (e.g. Conversation.tsx) that
+  // only ever care about whatever thread is being displayed right now.
+  get messageTree(): Tree<Message> {
+    return this.getMessageTree(this.currentThreadId ?? '')
   }
 
   constructor(
@@ -208,7 +214,7 @@ export class ThreadService {
     // recycle last empty thread
     const thread = threads()?.find((it) => !it.lastModified && it.parentId === parentId)
     if (thread) {
-      this.messageTree.reset([])
+      this.getMessageTree(thread.id).reset([])
       return thread
     }
 
@@ -232,7 +238,7 @@ export class ThreadService {
     const [, {mutate}] = this.threadsResource
     mutate((prev = []) => [...prev, newThread])
 
-    this.messageTree.reset([])
+    this.getMessageTree(newThread.id).reset([])
     this.treeService.add(newThread)
 
     return newThread
@@ -314,7 +320,7 @@ export class ThreadService {
         }
       }
 
-      await this.summarize()
+      await this.summarize(thread)
     } else if (result.interrupted) {
       this.interrupt(thread, messageId)
     } else if (result.error) {
@@ -336,7 +342,7 @@ export class ThreadService {
     this.updateThread((thread) => {
       thread.messages.push(newMessage)
       thread.lastModified = new Date()
-      this.messageTree.add(thread.messages[thread.messages.length - 1])
+      this.getMessageTree(thread.id).add(thread.messages[thread.messages.length - 1])
     }, thread.id)
 
     if (thread.path?.has(parentId)) {
@@ -369,7 +375,7 @@ export class ThreadService {
         messageIndex = t.messages.length - 1
 
         // Add new message as proxy object to tree
-        this.messageTree.add(t.messages[messageIndex])
+        this.getMessageTree(thread.id).add(t.messages[messageIndex])
       }
     }, thread.id)
   }
@@ -416,7 +422,7 @@ export class ThreadService {
       throw new Error(`Thread not found (id=${this.currentThreadId})`)
     }
 
-    this.messageTree.reset(currentThread?.messages ?? [])
+    this.getMessageTree(currentThread.id).reset(currentThread?.messages ?? [])
 
     // Set markdown from parent tree node as input prompt
     if (currentThread.messages.length === 0 && currentThread.parentId) {
@@ -433,6 +439,7 @@ export class ThreadService {
       const [, {mutate}] = this.threadsResource
       mutate((prev = []) => prev.filter((it) => it.id !== id))
       await DB.deleteThread(id)
+      this.messageTrees.delete(id)
     } else {
       const updated = this.updateThread((thread) => {
         thread.deleted = true
@@ -472,7 +479,9 @@ export class ThreadService {
       })
 
       this.updatePath(message.parentId, newMessage.id)
-      this.messageTree.add(currentThread.messages[currentThread.messages.length - 1])
+      this.getMessageTree(currentThread.id).add(
+        currentThread.messages[currentThread.messages.length - 1],
+      )
 
       await this.saveThread()
     } else if (message.role === 'assistant') {
@@ -503,14 +512,13 @@ export class ThreadService {
     const overridePath = currentThread.path?.get(parentId)
     const nextId = overridePath ?? childrenIds[childrenIds.length - 1]
 
-    if (nextId) return this.messageTree.getItem(nextId)
+    if (nextId) return this.getMessageTree(currentThread.id).getItem(nextId)
   }
 
-  async summarize() {
+  async summarize(thread = this.currentThread) {
     const model = this.aiService.chatModel
     if (!model) return
 
-    const thread = this.currentThread
     if (!thread) return
 
     const context = new ThreadContext()
@@ -525,7 +533,7 @@ export class ThreadService {
       context.addMessage(MessageUtil.toModelMessage(it.value))
       if (it.value.usage) lastUsage = it.value.usage
       targetId = it.value.id
-    })
+    }, thread)
 
     const {inputTokens, outputTokens} = lastUsage ?? MessageUtil.tokenCount(context)
     info(`Maybe create summary (inputTokens=${inputTokens}, outputTokens=${outputTokens})`)
@@ -548,9 +556,9 @@ export class ThreadService {
         this.updateThread((thread) => {
           const target = thread.messages.find((m) => m.id === targetId)
           if (target) target.summary = summary
-        })
+        }, thread.id)
 
-        await this.saveThread()
+        await this.saveThread(thread)
       }
     } catch {
       error('Summarization failed')
@@ -580,17 +588,16 @@ export class ThreadService {
     return title
   }
 
-  traverseTree(fn: (it: TreeItem<Message>) => void) {
-    const thread = this.currentThread
+  traverseTree(fn: (it: TreeItem<Message>) => void, thread = this.currentThread) {
     if (!thread) return undefined
 
+    const tree = this.getMessageTree(thread.id)
     const path = thread.path
-    let nextId =
-      path?.get(undefined) ?? this.messageTree.rootItemIds[this.messageTree.rootItemIds.length - 1]
+    let nextId = path?.get(undefined) ?? tree.rootItemIds[tree.rootItemIds.length - 1]
     let next: TreeItem<Message> | undefined
     let parentId: string | undefined
 
-    while ((next = this.messageTree.getItem(nextId))) {
+    while ((next = tree.getItem(nextId))) {
       fn(next)
       nextId = path?.get(next.id) ?? next.childrenIds[next.childrenIds.length - 1]
     }
@@ -631,7 +638,7 @@ export class ThreadService {
       if (it.value.usage) lastUsage = it.value.usage
 
       context.parentId = it.value.id
-    })
+    }, thread)
 
     if (context.hasCodeBlocks) {
       context.addSystemMessage(codeBlockHandlingPrompt)
@@ -692,5 +699,21 @@ export class ThreadService {
       info(`Save thread (id=${thread?.id}, title=${thread?.title})`)
       await DB.updateThread(thread)
     }
+  }
+
+  // Each thread gets its own tree instance, kept in sync with its own
+  // `messages` array regardless of what's currently navigated to. This is
+  // what lets a background stream (started in a thread the user has since
+  // navigated away from) keep updating the right tree instead of leaking
+  // into whichever thread is currently displayed.
+  private getMessageTree(threadId: string): Tree<Message> {
+    let tree = this.messageTrees.get(threadId)
+    if (!tree) {
+      tree = createTreeStore<Message>()
+      tree.reset(this.findThreadById(threadId)?.messages ?? [])
+      this.messageTrees.set(threadId, tree)
+    }
+
+    return tree
   }
 }

@@ -93,7 +93,7 @@ export const Variables = () => {
       --font-size-h1: ${() => String(configService.fontSize * 1.8)}px;
       --font-size-h2: ${() => String(configService.fontSize * 1.4)}px;
       --font-size-h3: ${() => String(configService.fontSize * 1.2)}px;
-      --line-height: ${() => String(configService.fontSize * 1.6)}px;
+      --line-height: ${() => String(configService.fontSize * 1.8)}px;
       --line-height-h1: ${() => String(configService.fontSize * 1.8 * 1.6)}px;
       --border-radius: ${ConfigService.BORDER_RADIUS};
       --border-radius-small: ${ConfigService.BORDER_RADIUS_SMALL};

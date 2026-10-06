@@ -1,5 +1,6 @@
 import type {Page} from '@playwright/test'
 import {CopilotMock} from '@/utils/CopilotMock'
+import { pause } from '@/utils/promise'
 
 export const mockCopilotLogin = async (page: Page) => {
   await page.route('*/**/?url=https://github.com/login/device/code', async (route) => {
@@ -32,10 +33,15 @@ export const mockCopilotModels = async (page: Page) => {
 interface CompletionResponse {
   chunks?: string[]
   text?: string
+  delayMs?: number
 }
 
 export const mockCopilotCompletion = async (page: Page, resp: CompletionResponse) => {
   await page.route('*/**/?url=https://example.com/github/api/chat/completions', async (route) => {
+    if (resp.delayMs) {
+      await pause(resp.delayMs)
+    }
+
     const stream = route.request().postDataJSON().stream === true
     if (stream && resp.chunks) {
       await route.fulfill({body: CopilotMock.completionsStream(resp.chunks)})

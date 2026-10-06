@@ -112,3 +112,28 @@ test('edit question', async ({page}) => {
 
   await expect(page.getByTestId('answer_bubble').nth(1)).toContainText('Answer3')
 })
+
+test('background', async ({page}) => {
+  await mockCopilotCompletion(page, {chunks: ['Test', '123'], text: 'Test Call', delayMs: 500})
+
+  // New top level chat
+  await page.goto('/assistant')
+  await expect(page.getByText('Ask Copilot')).toBeVisible()
+
+  await expect(page.getByTestId('model_select')).toHaveText('GPT-4o')
+
+  // Add question and get answer
+  await page.getByTestId('chat_input').locator('.ProseMirror').pressSequentially('Hello', {delay})
+  await page.getByTestId('send').click()
+
+  await page.getByTestId('navbar_menu_open').click()
+  await page.getByTestId('new').click()
+  await page.getByTestId('new_thread').click()
+
+  await expect(page.getByText('Ask Copilot')).toBeVisible()
+
+  await page.locator('[data-testid="tree_link"]').filter({hasText: 'Test Call'}).click()
+
+  await expect(page.getByTestId('question_bubble')).toHaveText('Hello')
+  await expect(page.getByTestId('answer_bubble')).toContainText('Test123')
+})

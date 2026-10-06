@@ -11,11 +11,12 @@ interface Props {
 }
 
 export const useTitle = (props?: Props): Resource<string | undefined> => {
-  const {fileService, canvasService} = useState()
+  const {fileService, locationService, treeService} = useState()
 
-  const currentItem = () => {
+  const currentItem = (): MenuItem | undefined => {
     if (props?.useCurrent === false) return props?.item
-    return props?.item ?? fileService.currentFile ?? canvasService.currentCanvas
+    const id = locationService.currentItemId
+    return props?.item ?? (id ? treeService.getItem(id)?.value : undefined)
   }
 
   const currentItemKey = () => {
