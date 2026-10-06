@@ -19,7 +19,7 @@ test.beforeEach(async ({page}) => {
 
   await page.goto('/')
   await page.waitForTimeout(1000)
-  await page.click('[data-testid="new_editor"]')
+  await page.getByTestId('new_editor').click()
   await page.getByTestId('initialized').waitFor()
 
   await page.locator('.ProseMirror').pressSequentially('# Title', {delay})
@@ -43,7 +43,8 @@ test('ask copilot', async ({page}) => {
   await openBlockMenu(page, 1)
   await page.getByTestId('copilot_ask_inline').click()
   await page
-    .locator(`[data-testid=input_line] > ${cmContent}`)
+    .getByTestId('input_line')
+    .locator(`> ${cmContent}`)
     .pressSequentially('my question', {delay})
   await page.keyboard.press('Enter')
   await assertEditorLineToEqual(page, 1, 'Hello World')
@@ -52,7 +53,8 @@ test('ask copilot', async ({page}) => {
   await openBlockMenu(page, 2)
   await page.getByTestId('copilot_ask_inline').click()
   await page
-    .locator(`[data-testid=input_line] > ${cmContent}`)
+    .getByTestId('input_line')
+    .locator(`> ${cmContent}`)
     .pressSequentially('my question', {delay})
   await page.keyboard.press('Enter')
   await assertEditorLineToEqual(page, 1, 'Hello World')
@@ -61,7 +63,8 @@ test('ask copilot', async ({page}) => {
   await openBlockMenu(page, 3)
   await page.getByTestId('copilot_ask_inline').click()
   await page
-    .locator(`[data-testid=input_line] > ${cmContent}`)
+    .getByTestId('input_line')
+    .locator(`> ${cmContent}`)
     .pressSequentially('my question', {delay})
   await page.keyboard.press('Enter')
   await expect(page.locator(cmContent)).toHaveText('Hello World')

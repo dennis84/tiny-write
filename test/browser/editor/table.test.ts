@@ -3,7 +3,7 @@ import {assertEditorLineToEqual, delay, move} from '../utils'
 
 test.beforeEach(async ({page}) => {
   await page.goto('/')
-  await page.waitForSelector('[data-testid="editor_scroll"]')
+  await page.getByTestId('editor_scroll').waitFor()
 })
 
 const getNthCell = (page: Page, row: number, col: number) =>

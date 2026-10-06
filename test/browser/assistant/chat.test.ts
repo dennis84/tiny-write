@@ -16,7 +16,7 @@ test.beforeEach(async ({page}) => {
   await mockCopilotModels(page)
 
   await page.goto('/')
-  await page.waitForSelector('[data-testid="initialized"]')
+  await page.getByTestId('initialized').waitFor()
 })
 
 test('chat', async ({page}) => {
@@ -26,34 +26,30 @@ test('chat', async ({page}) => {
   await page.goto('/assistant')
   await expect(page.getByText('Ask Copilot')).toBeVisible()
 
-  await expect(page.locator('[data-testid="model_select"]')).toHaveText('GPT-4o')
+  await expect(page.getByTestId('model_select')).toHaveText('GPT-4o')
 
   // Add question and get answer
-  await page.locator('[data-testid="chat_input"] .ProseMirror').pressSequentially('Hello', {delay})
-  await page.click('[data-testid="send"]')
+  await page.getByTestId('chat_input').locator('.ProseMirror').pressSequentially('Hello', {delay})
+  await page.getByTestId('send').click()
 
-  await expect(page.locator('[data-testid="question_bubble"]')).toHaveText('Hello')
-  await expect(page.locator('[data-testid="answer_bubble"]')).toContainText('Test123')
+  await expect(page.getByTestId('question_bubble')).toHaveText('Hello')
+  await expect(page.getByTestId('answer_bubble')).toContainText('Test123')
 
   // Check and wait for title update
-  await page.click('[data-testid="navbar_menu_open"]')
-  const link = page.locator('[data-testid="tree_link"]').locator('nth=0')
+  await page.getByTestId('navbar_menu_open').click()
+  const link = page.getByTestId('tree_link').locator('nth=0')
   await expect(link.getByText('Test Call')).toBeVisible()
 
   // Send another question
   await mockCopilotCompletion(page, {chunks: ['Aaa', 'bbb']})
 
-  await page.locator('[data-testid="chat_input"] .ProseMirror').pressSequentially('Zzz', {delay})
-  await page.click('[data-testid="send"]')
+  await page.getByTestId('chat_input').locator('.ProseMirror').pressSequentially('Zzz', {delay})
+  await page.getByTestId('send').click()
 
-  await expect(page.locator('[data-testid="question_bubble"]').locator('nth=0')).toHaveText('Hello')
-  await expect(page.locator('[data-testid="answer_bubble"]').locator('nth=0')).toContainText(
-    'Test123',
-  )
-  await expect(page.locator('[data-testid="question_bubble"]').locator('nth=1')).toHaveText('Zzz')
-  await expect(page.locator('[data-testid="answer_bubble"]').locator('nth=1')).toContainText(
-    'Aaabbb',
-  )
+  await expect(page.getByTestId('question_bubble').locator('nth=0')).toHaveText('Hello')
+  await expect(page.getByTestId('answer_bubble').locator('nth=0')).toContainText('Test123')
+  await expect(page.getByTestId('question_bubble').locator('nth=1')).toHaveText('Zzz')
+  await expect(page.getByTestId('answer_bubble').locator('nth=1')).toContainText('Aaabbb')
 })
 
 test('edit question', async ({page}) => {
@@ -61,21 +57,21 @@ test('edit question', async ({page}) => {
   await mockCopilotApiToken(page)
   await mockCopilotCompletion(page, {chunks: ['SetupAnswer'], text: 'Test Call'})
 
-  await page.click('[data-testid="navbar_assistant_open"]')
+  await page.getByTestId('navbar_assistant_open').click()
   await expect(page.getByText('Ask Copilot')).toBeVisible()
 
   await page
     .getByTestId('chat_input')
     .locator('.ProseMirror')
     .pressSequentially('SetupQuestion', {delay})
-  await page.click('[data-testid="send"]')
+  await page.getByTestId('send').click()
 
   await expect(page.getByTestId('question_bubble')).toHaveText('SetupQuestion')
   await expect(page.getByTestId('answer_bubble')).toContainText('SetupAnswer')
 
   // Check and wait for title update
-  await page.click('[data-testid="navbar_menu_open"]')
-  const link = page.locator('[data-testid="tree_link"]').locator('nth=0')
+  await page.getByTestId('navbar_menu_open').click()
+  const link = page.getByTestId('tree_link').locator('nth=0')
   await expect(link.getByText('Test Call')).toBeVisible()
 
   // Test case 1: Edit question
@@ -108,7 +104,7 @@ test('edit question', async ({page}) => {
     .getByTestId('chat_input')
     .locator('.ProseMirror')
     .pressSequentially('Question3', {delay})
-  await page.click('[data-testid="send"]')
+  await page.getByTestId('send').click()
 
   await expect(page.getByTestId('answer_bubble').nth(1)).toContainText('Answer3')
 })
@@ -132,7 +128,7 @@ test('background', async ({page}) => {
 
   await expect(page.getByText('Ask Copilot')).toBeVisible()
 
-  await page.locator('[data-testid="tree_link"]').filter({hasText: 'Test Call'}).click()
+  await page.getByTestId('tree_link').filter({hasText: 'Test Call'}).click()
 
   await expect(page.getByTestId('question_bubble')).toHaveText('Hello')
   await expect(page.getByTestId('answer_bubble')).toContainText('Test123')

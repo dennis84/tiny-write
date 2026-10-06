@@ -10,16 +10,16 @@ test('existing room', async ({page, browser}) => {
   })
 
   await page.goto(`/code/${id}`)
-  await page.waitForSelector('[data-testid="code_scroll"]')
-  await page.click('[data-testid="navbar_menu_open"]')
-  await page.click('[data-testid="collab"]')
+  await page.getByTestId('code_scroll').waitFor()
+  await page.getByTestId('navbar_menu_open').click()
+  await page.getByTestId('collab').click()
 
   await page.locator('.cm-content').pressSequentially('Hello', {delay})
   await assertCodeLineToEqual(page, 1, 'Hello')
 
   const page2 = await browser.newPage()
   await page2.goto(`/code?join=${id}`)
-  await page2.click('[data-testid="join_file"]')
+  await page2.getByTestId('join_file').click()
   await assertCodeLineToEqual(page2, 1, 'Hello')
 
   // // make sure that cursor is at the start position

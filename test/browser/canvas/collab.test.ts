@@ -17,33 +17,29 @@ test('share', async ({page, browser}) => {
 
   await page.goto(`/canvas/${id}`)
 
-  await expect(page.locator('[data-testid="canvas_container"]')).toBeVisible()
+  await expect(page.getByTestId('canvas_container')).toBeVisible()
 
-  await page.click('[data-testid="navbar_menu_open"]')
-  await page.click('[data-testid="collab"]')
-  await page.click('[data-testid="navbar_menu_open"]')
+  await page.getByTestId('navbar_menu_open').click()
+  await page.getByTestId('collab').click()
+  await page.getByTestId('navbar_menu_open').click()
 
-  await page
-    .locator('[data-testid="canvas_container"]')
-    .click({button: 'right', position: {x: 1, y: 1}})
-  await page.click('[data-testid="context_menu_new_file"]')
+  await page.getByTestId('canvas_container').click({button: 'right', position: {x: 1, y: 1}})
+  await page.getByTestId('context_menu_new_file').click()
 
-  await expect(page.locator('[data-testid="canvas_editor"]')).toHaveCount(1)
+  await expect(page.getByTestId('canvas_editor')).toHaveCount(1)
 
   const page2 = await browser.newPage()
   await page2.goto(`/canvas?join=${id}`)
-  await page2.click('[data-testid="join_canvas"]')
+  await page2.getByTestId('join_canvas').click()
 
-  await expect(page2.locator('[data-testid="canvas_editor"]')).toHaveCount(1)
-  await page2
-    .locator('[data-testid="canvas_container"]')
-    .click({button: 'right', position: {x: 400, y: 100}})
-  await page2.click('[data-testid="context_menu_new_file"]')
+  await expect(page2.getByTestId('canvas_editor')).toHaveCount(1)
+  await page2.getByTestId('canvas_container').click({button: 'right', position: {x: 400, y: 100}})
+  await page2.getByTestId('context_menu_new_file').click()
 
-  await expect(page2.locator('[data-testid="canvas_editor"]')).toHaveCount(2)
-  await expect(page.locator('[data-testid="canvas_editor"]')).toHaveCount(2)
+  await expect(page2.getByTestId('canvas_editor')).toHaveCount(2)
+  await expect(page.getByTestId('canvas_editor')).toHaveCount(2)
 
-  await page2.locator('[data-testid="canvas_container"]').dblclick({position: {x: 410, y: 100}})
+  await page2.getByTestId('canvas_container').dblclick({position: {x: 410, y: 100}})
 
   await page.locator('.ProseMirror').nth(1).pressSequentially('Hello', {delay})
 

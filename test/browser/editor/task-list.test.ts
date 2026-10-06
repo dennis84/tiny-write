@@ -6,7 +6,7 @@ const getItem = (listN: number, taskN: number) =>
 
 test.beforeEach(async ({page}) => {
   await page.goto('/')
-  await page.waitForSelector('[data-testid="editor_scroll"]')
+  await page.getByTestId('editor_scroll').waitFor()
 })
 
 test('create tasks', async ({page}) => {

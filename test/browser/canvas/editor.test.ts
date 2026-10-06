@@ -2,21 +2,21 @@ import {expect, test} from '@playwright/test'
 
 test.beforeEach(async ({page}) => {
   await page.goto('/canvas')
-  await page.waitForSelector('[data-testid="new_canvas_page"]')
+  await page.getByTestId('new_canvas_page').waitFor()
 })
 
 test('add editor file', async ({page}) => {
-  await page.click('[data-testid="new_canvas"]')
+  await page.getByTestId('new_canvas').click()
 
-  await expect(page.locator('[data-testid="canvas_container"]')).toBeVisible()
+  await expect(page.getByTestId('canvas_container')).toBeVisible()
 
   // Create file
-  await page.locator('[data-testid="canvas_container"]').click({button: 'right'})
-  await page.click('[data-testid="context_menu_new_file"]')
-  await expect(page.locator('[data-testid="canvas_editor"]')).toHaveCount(1)
+  await page.getByTestId('canvas_container').click({button: 'right'})
+  await page.getByTestId('context_menu_new_file').click()
+  await expect(page.getByTestId('canvas_editor')).toHaveCount(1)
 
   // Move mouse to left link handle
-  const box = await page.locator('[data-testid="edge_left_link_handle"]').boundingBox()
+  const box = await page.getByTestId('edge_left_link_handle').boundingBox()
   expect(box).toBeDefined()
   if (!box) return
 
@@ -26,14 +26,14 @@ test('add editor file', async ({page}) => {
   await page.mouse.up()
 
   // Create another file
-  await page.click('[data-testid="context_menu_new_file"]')
+  await page.getByTestId('context_menu_new_file').click()
 
-  await expect(page.locator('[data-testid="canvas_editor"]')).toHaveCount(2)
+  await expect(page.getByTestId('canvas_editor')).toHaveCount(2)
 
   // Clear canvas
-  await page.click('[data-testid="current_item_button"]')
-  await page.click('[data-testid="clear_canvas"]')
-  await page.click('[data-testid="confirm"]')
+  await page.getByTestId('current_item_button').click()
+  await page.getByTestId('clear_canvas').click()
+  await page.getByTestId('confirm').click()
 
-  await expect(page.locator('[data-testid="canvas_editor"]')).toHaveCount(0)
+  await expect(page.getByTestId('canvas_editor')).toHaveCount(0)
 })

@@ -16,8 +16,8 @@ test('paste markdown', async ({page}) => {
     await navigator.clipboard.writeText(text)
   }, markdownContent)
 
-  await page.waitForSelector('[data-testid="editor_scroll"]')
-  await page.click('[data-testid="navbar_menu_open"]')
+  await page.getByTestId('editor_scroll').waitFor()
+  await page.getByTestId('navbar_menu_open').click()
   await assertEditorLineToEqual(page, 1, 'Start typing ...')
 
   await page.locator('.ProseMirror').focus()

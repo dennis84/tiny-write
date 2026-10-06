@@ -6,7 +6,7 @@ const mod = os.platform() === 'darwin' ? 'Meta' : 'Control'
 
 test.beforeEach(async ({page}) => {
   await page.goto('/')
-  await page.waitForSelector('[data-testid="editor_scroll"]')
+  await page.getByTestId('editor_scroll').waitFor()
 })
 
 test('on undo/redo', async ({page}) => {
@@ -31,6 +31,6 @@ test('on new', async ({page}) => {
   await page.locator('.ProseMirror').pressSequentially('second', {delay})
   await expect(page.locator('.ProseMirror')).toHaveText('second')
 
-  await page.click('[data-testid="navbar_menu_open"]')
-  await expect(page.locator('[data-testid="tree_link"]')).toHaveCount(2)
+  await page.getByTestId('navbar_menu_open').click()
+  await expect(page.getByTestId('tree_link')).toHaveCount(2)
 })

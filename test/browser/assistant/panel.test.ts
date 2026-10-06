@@ -53,14 +53,14 @@ test.beforeEach(async ({page}) => {
   await mockCopilotModels(page)
 
   await page.goto('/')
-  await page.waitForSelector('[data-testid="initialized"]')
+  await page.getByTestId('initialized').waitFor()
 })
 
 test('copy', async ({page, context}) => {
   await context.grantPermissions(['clipboard-read', 'clipboard-write'])
   await page.goto('/assistant/1')
 
-  await page.locator('[data-testid="panel_button_copy"]').locator('nth=0').click()
+  await page.getByTestId('panel_button_copy').locator('nth=0').click()
 
   const content = await page.evaluate(() => navigator.clipboard.readText())
   expect(content).toBe("const test1 = '111'")
@@ -69,11 +69,11 @@ test('copy', async ({page, context}) => {
 test('create file', async ({page}) => {
   await page.goto('/assistant/1')
 
-  await page.locator('[data-testid="panel_button_create"]').click()
+  await page.getByTestId('panel_button_create').click()
   await assertCodeLineToEqual(page, 1, "const test1 = '111'")
 
-  await page.click('[data-testid="navbar_menu_open"]')
-  const treeLink = page.locator('[data-testid="tree_link"]').filter({hasText: 'main.ts'})
+  await page.getByTestId('navbar_menu_open').click()
+  const treeLink = page.getByTestId('tree_link').filter({hasText: 'main.ts'})
   await expect(treeLink).toHaveCount(1)
   expect(await treeLink.getAttribute('level')).toBe('1')
   expect(await treeLink.getAttribute('data-parent-id')).toBe('1')
@@ -82,7 +82,7 @@ test('create file', async ({page}) => {
 test('apply', async ({page}) => {
   await page.goto('/assistant/1')
 
-  await page.locator('[data-testid="panel_button_apply"]').nth(0).click()
+  await page.getByTestId('panel_button_apply').nth(0).click()
   await page.locator('button[name="accept"]').click()
 
   await expect(page.getByText('All chunks applied')).toBeVisible()
@@ -94,8 +94,8 @@ test('apply', async ({page}) => {
 test('apply - all', async ({page}) => {
   await page.goto('/assistant/1')
 
-  await page.locator('[data-testid="panel_button_apply"]').nth(0).click()
-  await page.locator('[data-testid="accept_all"]').click()
+  await page.getByTestId('panel_button_apply').nth(0).click()
+  await page.getByTestId('accept_all').click()
 
   await expect(page.getByText('Full diff applied')).toBeVisible()
   expect(page.url()).toContain('/code/222')
@@ -106,8 +106,8 @@ test('apply - all', async ({page}) => {
 test('apply - reject all', async ({page}) => {
   await page.goto('/assistant/1')
 
-  await page.locator('[data-testid="panel_button_apply"]').nth(0).click()
-  await page.locator('[data-testid="reject_all"]').click()
+  await page.getByTestId('panel_button_apply').nth(0).click()
+  await page.getByTestId('reject_all').click()
 
   await expect(page.getByText('Full diff rejected')).toBeVisible()
   expect(page.url()).toContain('/code/222')
@@ -121,7 +121,7 @@ test('apply - range', async ({page}) => {
 
   await page.goto('/assistant/1')
 
-  await page.locator('[data-testid="panel_button_apply"]').nth(1).click()
+  await page.getByTestId('panel_button_apply').nth(1).click()
 
   await page.locator('button[name="accept"]').click()
 

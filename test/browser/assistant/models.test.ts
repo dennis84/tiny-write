@@ -16,18 +16,18 @@ test.beforeEach(async ({page}) => {
   await mockCopilotModels(page)
 
   await page.goto('/')
-  await page.waitForSelector('[data-testid="initialized"]')
+  await page.getByTestId('initialized').waitFor()
 })
 
 test('model select', async ({page}) => {
-  await page.click('[data-testid="navbar_assistant_open"]')
+  await page.getByTestId('navbar_assistant_open').click()
   await page.mouse.move(0, 0) // move away from tooltip
 
   await expect(page.getByText('Ask Copilot')).toBeVisible()
 
-  await page.click('[data-testid="model_select"]')
+  await page.getByTestId('model_select').click()
 
-  const tooltip = page.locator('[data-testid="tooltip"]')
+  const tooltip = page.getByTestId('tooltip')
 
   await expect(tooltip.getByText('GPT-4o')).toBeVisible()
   await expect(tooltip.getByText('Claude 3.5 Sonnet')).toBeVisible()

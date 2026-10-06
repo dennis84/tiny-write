@@ -1,6 +1,6 @@
 import type {Page} from '@playwright/test'
 import {CopilotMock} from '@/utils/CopilotMock'
-import { pause } from '@/utils/promise'
+import {pause} from '@/utils/promise'
 
 export const mockCopilotLogin = async (page: Page) => {
   await page.route('*/**/?url=https://github.com/login/device/code', async (route) => {
