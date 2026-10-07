@@ -6,12 +6,10 @@ import {TooltipHelp} from '../dialog/TooltipHelp'
 import {IconAiAssistant, IconAiAssistantClose} from '../icons/Ai'
 
 export const AssistantButton = () => {
-  const {store, menuService, locationService} = useState()
+  const {aiService, menuService, locationService} = useState()
 
   const onAssistantClick = async () => {
-    const isActice =
-      store.ai?.copilot?.user || store.ai?.llamaCpp?.enabled || store.ai?.ollama?.enabled
-    if (!isActice) {
+    if (!aiService.enabled) {
       menuService.setSubmenu(SubmenuId.AI_CONFIG)
       return
     }

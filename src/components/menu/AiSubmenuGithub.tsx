@@ -50,9 +50,11 @@ export const AiSubmenuGithub = () => {
     copilotService.verify(url)
   }
 
+  // TODO:
   const onLsp = () => {}
 
   createEffect(() => {
+    // TODO:
     // if (isTauri()) return
 
     const code = codeResult()

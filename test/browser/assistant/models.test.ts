@@ -23,7 +23,7 @@ test('model select', async ({page}) => {
   await page.getByTestId('navbar_assistant_open').click()
   await page.mouse.move(0, 0) // move away from tooltip
 
-  await expect(page.getByText('Ask Copilot')).toBeVisible()
+  await expect(page.getByText('Ask AI')).toBeVisible()
 
   await page.getByTestId('model_select').click()
 

@@ -66,6 +66,14 @@ export class AiService {
     return w ? `${w}px` : '50vw'
   }
 
+  get enabled() {
+    return (
+      this.store.ai?.copilot?.user ||
+      this.store.ai?.llamaCpp?.enabled ||
+      this.store.ai?.ollama?.enabled
+    )
+  }
+
   constructor(
     private copilotService: CopilotService,
     private ollamaService: OllamaService,

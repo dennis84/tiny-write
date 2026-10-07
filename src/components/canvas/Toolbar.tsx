@@ -25,7 +25,7 @@ import {IconFocus, IconHistory, IconLanguage, IconOpenInFull} from '../icons/Ui'
 
 export const Toolbar = () => {
   const {
-    store,
+    aiService,
     canvasService,
     codeService,
     fileService,
@@ -70,7 +70,7 @@ export const Toolbar = () => {
     canvasService.backToContent(VecUtil.center(box), currentCanvas.camera.zoom)
   }
 
-  const onCopilot = async () => {
+  const onAskAi = async () => {
     const selected = getSelected()
     if (!selected) return
     const file = fileService.findFileById(selected.element.id)
@@ -214,9 +214,9 @@ export const Toolbar = () => {
             </Show>
           </Suspense>
 
-          <Show when={store.ai?.copilot?.user}>
-            <TooltipButton onClick={onCopilot}>
-              <IconAiAssistant /> Ask Copilot
+          <Show when={aiService?.enabled}>
+            <TooltipButton onClick={onAskAi}>
+              <IconAiAssistant /> Ask AI
             </TooltipButton>
           </Show>
         </Show>

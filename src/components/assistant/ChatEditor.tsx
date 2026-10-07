@@ -53,7 +53,7 @@ export const ChatEditor = (props: Props) => {
       tableKeymap,
       // plugins
       history(),
-      placeholder('Ask Copilot ...'),
+      placeholder('Ask AI ...'),
       createMarkdownPlugins(schema),
       createCodeBlockPlugin(schema),
       inputRules({rules: [codeInputRule, ...emphasisInputRules]}),

@@ -24,7 +24,6 @@ const Scroller = styled.div`
 
 export const ContextMenu = () => {
   const {
-    store,
     canvasService,
     aiService,
     canvasCollabService,
@@ -188,7 +187,7 @@ export const ContextMenu = () => {
       >
         <IconCodeBlocks /> New code file
       </TooltipButton>
-      <Show when={store.ai?.copilot?.user}>
+      <Show when={aiService?.enabled}>
         <Show when={props.dialog.state?.deadLink}>
           {(link) => (
             <TooltipButton onClick={() => generateAiFile(link(), props.dialog.state.clickPos)}>

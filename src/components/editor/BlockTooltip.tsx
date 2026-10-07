@@ -44,7 +44,6 @@ interface Props {
 
 export const BlockTooltip = (props: Props) => {
   const {
-    store,
     fileService,
     codeMirrorService,
     configService,
@@ -143,7 +142,7 @@ export const BlockTooltip = (props: Props) => {
     closeTooltip()
   }
 
-  const onCopilotAddToChat = async () => {
+  const onAddToAiAssistant = async () => {
     const block = props.selectedBlock
     if (!block) return
 
@@ -169,7 +168,7 @@ export const BlockTooltip = (props: Props) => {
     closeTooltip()
   }
 
-  const onCopilotInline = () => {
+  const onAiRephrasing = () => {
     const block = props.selectedBlock
     if (!block) return
 
@@ -190,7 +189,7 @@ export const BlockTooltip = (props: Props) => {
 
     showInputLine({
       value: '',
-      placeholder: 'Rephrasing by copilot...',
+      placeholder: 'Rephrasing by AI...',
       onEnter: async (text) => {
         const context = new ThreadContext()
 
@@ -366,13 +365,13 @@ export const BlockTooltip = (props: Props) => {
         </TooltipButton>
         <TooltipDivider />
       </Show>
-      {/* Copilot actions */}
-      <Show when={store.ai?.copilot?.user}>
-        <TooltipButton onClick={onCopilotAddToChat} data-testid="copilot_add_to_chat">
-          <IconAdd /> Add to copilot chat
+      {/* AI actions */}
+      <Show when={aiService.enabled}>
+        <TooltipButton onClick={onAddToAiAssistant} data-testid="add_to_ai_assistant">
+          <IconAdd /> Add to AI assistant
         </TooltipButton>
-        <TooltipButton onClick={onCopilotInline} data-testid="copilot_ask_inline">
-          <IconRefresh /> Rephrasing by copilot
+        <TooltipButton onClick={onAiRephrasing} data-testid="ai_rephrasing">
+          <IconRefresh /> Rephrasing by AI
         </TooltipButton>
         <TooltipDivider />
       </Show>

@@ -41,7 +41,7 @@ test('ask copilot', async ({page}) => {
 
   // Replace h1
   await openBlockMenu(page, 1)
-  await page.getByTestId('copilot_ask_inline').click()
+  await page.getByTestId('ai_rephrasing').click()
   await page
     .getByTestId('input_line')
     .locator(`> ${cmContent}`)
@@ -51,7 +51,7 @@ test('ask copilot', async ({page}) => {
 
   // Replace paragraph
   await openBlockMenu(page, 2)
-  await page.getByTestId('copilot_ask_inline').click()
+  await page.getByTestId('ai_rephrasing').click()
   await page
     .getByTestId('input_line')
     .locator(`> ${cmContent}`)
@@ -61,7 +61,7 @@ test('ask copilot', async ({page}) => {
 
   // Replace code block
   await openBlockMenu(page, 3)
-  await page.getByTestId('copilot_ask_inline').click()
+  await page.getByTestId('ai_rephrasing').click()
   await page
     .getByTestId('input_line')
     .locator(`> ${cmContent}`)

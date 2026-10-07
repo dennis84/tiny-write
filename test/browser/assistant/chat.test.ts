@@ -24,7 +24,7 @@ test('chat', async ({page}) => {
 
   // New top level chat
   await page.goto('/assistant')
-  await expect(page.getByText('Ask Copilot')).toBeVisible()
+  await expect(page.getByText('Ask AI')).toBeVisible()
 
   await expect(page.getByTestId('model_select')).toHaveText('GPT-4o')
 
@@ -58,7 +58,7 @@ test('edit question', async ({page}) => {
   await mockCopilotCompletion(page, {chunks: ['SetupAnswer'], text: 'Test Call'})
 
   await page.getByTestId('navbar_assistant_open').click()
-  await expect(page.getByText('Ask Copilot')).toBeVisible()
+  await expect(page.getByText('Ask AI')).toBeVisible()
 
   await page
     .getByTestId('chat_input')
@@ -114,7 +114,7 @@ test('background', async ({page}) => {
 
   // New top level chat
   await page.goto('/assistant')
-  await expect(page.getByText('Ask Copilot')).toBeVisible()
+  await expect(page.getByText('Ask AI')).toBeVisible()
 
   await expect(page.getByTestId('model_select')).toHaveText('GPT-4o')
 
@@ -126,7 +126,7 @@ test('background', async ({page}) => {
   await page.getByTestId('new').click()
   await page.getByTestId('new_thread').click()
 
-  await expect(page.getByText('Ask Copilot')).toBeVisible()
+  await expect(page.getByText('Ask AI')).toBeVisible()
 
   await page.getByTestId('tree_link').filter({hasText: 'Test Call'}).click()
 
