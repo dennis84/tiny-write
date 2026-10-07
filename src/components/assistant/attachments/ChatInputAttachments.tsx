@@ -30,7 +30,7 @@ export const ChatInputAttachments = () => {
       <AddCurrentSelection onAttachment={onAttachment} />
       <AddCurrentProject onAttachment={onAttachment} />
       <AddImage onAttachment={onImageAttachment} />
-      <Show when={threadService.attachments().length > 0}>
+      <Show when={threadService.currentThread?.attachments?.length}>
         <TooltipDivider />
         <TooltipButton onClick={onRemoveAll}>
           <IconClose /> Remove all attachments
@@ -56,24 +56,19 @@ export const ChatInputAttachments = () => {
     closeTooltip()
   }
 
-  const onRemoveAll = () => {
-    threadService.setAttachments([])
+  const onRemoveAll = async () => {
+    await threadService.setAttachments([])
   }
 
-  const onRemove = (attachment: Attachment) => {
-    threadService.removeAttachment(attachment)
+  const onRemove = async (attachment: Attachment) => {
+    await threadService.removeAttachment(attachment)
   }
 
   const onRemoveOthers = (attachment: Attachment) => {
-    threadService.attachments().forEach((it) => {
-      if (it !== attachment) threadService.removeAttachment(it)
+    threadService.currentThread?.attachments?.forEach(async (it) => {
+      if (it !== attachment) await threadService.removeAttachment(it)
     })
   }
-
-  createEffect(() => {
-    threadService.currentThread // reset on change thread
-    threadService.setAttachments([])
-  })
 
   // Adds dropped files as attachments
   createEffect(() => {
@@ -102,7 +97,7 @@ export const ChatInputAttachments = () => {
         </IconButton>
       </TooltipHelp>
       <Attachments>
-        <Index each={threadService.attachments()}>
+        <Index each={threadService.currentThread?.attachments}>
           {(attachment) => (
             <AttachmentChip
               attachment={attachment()}

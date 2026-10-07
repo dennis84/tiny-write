@@ -28,7 +28,7 @@ export const ProjectAttachmentChip = (props: Props) => {
   const {threadService} = useState()
 
   const Tooltip = () => {
-    const onRemove = (attachment: Attachment) => {
+    const onRemove = async (attachment: Attachment) => {
       if (!('fileId' in attachment)) return
       const fileId = attachment.fileId
       if (!fileId) return
@@ -38,7 +38,7 @@ export const ProjectAttachmentChip = (props: Props) => {
         files: props.attachment.files.filter((it) => it !== attachment),
       }
 
-      threadService.addAttachment(updated)
+      await threadService.addAttachment(updated)
     }
 
     return (

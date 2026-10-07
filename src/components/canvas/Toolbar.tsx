@@ -70,14 +70,14 @@ export const Toolbar = () => {
     canvasService.backToContent(VecUtil.center(box), currentCanvas.camera.zoom)
   }
 
-  const onCopilot = () => {
+  const onCopilot = async () => {
     const selected = getSelected()
     if (!selected) return
     const file = fileService.findFileById(selected.element.id)
     if (!file?.codeEditorView) return
 
     menuService.showAssistant()
-    threadService.addAttachment({
+    await threadService.addAttachment({
       type: AttachmentType.File,
       fileId: file.id,
       content: createCodeFence({

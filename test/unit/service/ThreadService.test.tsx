@@ -847,7 +847,9 @@ test('searchThreads', async () => {
   ])
 })
 
-test('hande attachments', () => {
+test('hande attachments', async () => {
+  vi.spyOn(DB, 'getThreads').mockResolvedValue([createThread({id: '1'})])
+
   const service = new ThreadService(
     fileService,
     aiService,
@@ -856,7 +858,11 @@ test('hande attachments', () => {
     treeService,
   )
 
-  expect(service.attachments()).toEqual([])
+  await waitFor(() => {
+    expect(service.currentThread?.id).toEqual('1')
+  })
+
+  expect(service.currentThread?.attachments).toEqual(undefined)
 
   const createFileAttachment = (props: Partial<FileAttachment>): FileAttachment => ({
     type: AttachmentType.File,
@@ -887,31 +893,31 @@ test('hande attachments', () => {
     ...props,
   })
 
-  service.addAttachment(createFileAttachment({fileId: '1', projectId: '1'}))
-  expect(service.attachments()).toHaveLength(1)
-  const attachment1 = service.attachments()[0]
-  expect.assert(attachment1.type === AttachmentType.File)
+  await service.addAttachment(createFileAttachment({fileId: '1', projectId: '1'}))
+  expect(service.currentThread?.attachments).toHaveLength(1)
+  const attachment1 = service.currentThread?.attachments?.[0]
+  expect.assert(attachment1?.type === AttachmentType.File)
   expect(attachment1.content).toEqual('1')
 
-  service.addAttachment(createFileAttachment({fileId: '1', projectId: '1', content: '2'}))
-  expect(service.attachments()).toHaveLength(1)
-  const newAttachment = service.attachments()[0]
-  expect.assert(newAttachment.type === AttachmentType.File)
+  await service.addAttachment(createFileAttachment({fileId: '1', projectId: '1', content: '2'}))
+  expect(service.currentThread?.attachments).toHaveLength(1)
+  const newAttachment = service.currentThread?.attachments?.[0]
+  expect.assert(newAttachment?.type === AttachmentType.File)
   expect(newAttachment.content).toEqual('2')
 
-  service.addAttachment(createFileAttachment({fileId: '2'}))
-  expect(service.attachments()).toHaveLength(2)
+  await service.addAttachment(createFileAttachment({fileId: '2'}))
+  expect(service.currentThread?.attachments).toHaveLength(2)
 
-  service.addAttachment(createSelectionAttachment({fileId: '2'}))
-  expect(service.attachments()).toHaveLength(2)
+  await service.addAttachment(createSelectionAttachment({fileId: '2'}))
+  expect(service.currentThread?.attachments).toHaveLength(2)
 
-  service.addAttachment(createImageAttachment({name: 'name'}))
-  expect(service.attachments()).toHaveLength(3)
+  await service.addAttachment(createImageAttachment({name: 'name'}))
+  expect(service.currentThread?.attachments).toHaveLength(3)
 
-  service.addAttachment(createImageAttachment({name: 'name'}))
-  expect(service.attachments()).toHaveLength(3)
+  await service.addAttachment(createImageAttachment({name: 'name'}))
+  expect(service.currentThread?.attachments).toHaveLength(3)
 
-  service.addAttachment(
+  await service.addAttachment(
     createProjectAttachment({
       projectId: '1',
       tree: 'TREE',
@@ -922,13 +928,15 @@ test('hande attachments', () => {
       ],
     }),
   )
-  expect(service.attachments()).toHaveLength(3)
+  expect(service.currentThread?.attachments).toHaveLength(3)
 
   // not added but updates file attachment in project
-  service.addAttachment(createFileAttachment({fileId: '1', projectId: '1', content: '3'}))
-  expect(service.attachments()).toHaveLength(3)
-  expect((service.attachments()[2] as ProjectAttachment).files[2].content).toEqual('3')
+  await service.addAttachment(createFileAttachment({fileId: '1', projectId: '1', content: '3'}))
+  expect(service.currentThread?.attachments).toHaveLength(3)
+  expect((service.currentThread!.attachments![2] as ProjectAttachment).files[2].content).toEqual(
+    '3',
+  )
 
-  service.setAttachments([])
-  expect(service.attachments()).toHaveLength(0)
+  await service.setAttachments([])
+  expect(service.currentThread?.attachments).toHaveLength(0)
 })

@@ -26,9 +26,9 @@ export const Suggestions = (props: Props) => {
   }
 
   const hasCodeAttachment = () =>
-    threadService
-      .attachments()
-      .some((a) => a.type === AttachmentType.File || a.type === AttachmentType.Selection)
+    threadService.currentThread?.attachments?.some(
+      (a) => a.type === AttachmentType.File || a.type === AttachmentType.Selection,
+    )
 
   return (
     <Show when={hasCodeAttachment()}>

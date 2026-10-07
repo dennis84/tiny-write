@@ -1,8 +1,8 @@
 import {createDeepSignal} from '@solid-primitives/resource'
 import type {UserModelMessage} from 'ai'
 import {formatDate, isToday} from 'date-fns'
-import {createResource, createSignal} from 'solid-js'
-import {produce} from 'solid-js/store'
+import {createResource} from 'solid-js'
+import {produce, unwrap} from 'solid-js/store'
 import {v4 as uuidv4} from 'uuid'
 import {DB} from '@/db'
 import codeBlockHandlingPrompt from '@/prompts/assistant/code-block-handling.md?raw'
@@ -31,17 +31,12 @@ import type {TreeService} from './TreeService'
 
 export class ThreadService {
   private messageTrees = new Map<string, Tree<Message>>()
-  private attachmentsSignal = createSignal<Attachment[]>([])
   private threadsResource = createResource<Thread[]>(() => this.fetchThreads(), {
     storage: createDeepSignal, // store threads as proxy objects
   })
 
   static createId() {
     return uuidv4()
-  }
-
-  get attachments() {
-    return this.attachmentsSignal[0]
   }
 
   get threads() {
@@ -110,12 +105,18 @@ export class ThreadService {
     await this.saveThread()
   }
 
-  setAttachments(attachments: Attachment[]) {
-    this.attachmentsSignal[1](attachments)
+  async setAttachments(attachments: Attachment[]) {
+    const thread = this.updateThread((thread) => {
+      thread.attachments = attachments
+    })
+
+    if (thread) await this.saveThread(thread)
   }
 
-  addAttachment(attachment: Attachment) {
-    this.attachmentsSignal[1]((prev) => {
+  async addAttachment(attachment: Attachment) {
+    const thread = this.updateThread((thread) => {
+      const prev = thread.attachments ?? []
+
       // 1. Check if we are updating a file that is already inside an existing project
       if (attachment.type === AttachmentType.File && attachment.projectId) {
         const projectIndex = prev.findIndex(
@@ -133,7 +134,8 @@ export class ThreadService {
               .concat([attachment]),
           }
 
-          return nextAttachments
+          thread.attachments = nextAttachments
+          return
         }
       }
 
@@ -169,12 +171,20 @@ export class ThreadService {
         return true
       })
 
-      return [...filtered, attachment]
+      thread.attachments = [...filtered, attachment]
     })
+
+    if (thread) await this.saveThread(thread)
   }
 
-  removeAttachment(attachment: Attachment) {
-    this.attachmentsSignal[1]((prev) => prev.filter((a) => a !== attachment))
+  async removeAttachment(attachment: Attachment) {
+    const thread = this.updateThread((thread) => {
+      thread.attachments = (thread.attachments ?? []).filter(
+        (a) => unwrap(a) !== unwrap(attachment),
+      )
+    })
+
+    if (thread) await this.saveThread(thread)
   }
 
   async searchThreads(term: string): Promise<[Thread, string | undefined][]> {

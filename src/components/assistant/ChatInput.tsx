@@ -75,11 +75,11 @@ export const ChatInput = (props: Props) => {
       id: uuidv4(),
       role: 'user',
       content,
-      attachments: threadService.attachments(),
+      attachments: threadService.currentThread?.attachments,
     })
 
     mediaService.resetDroppedFiles()
-    threadService.setAttachments([])
+    await threadService.setAttachments([])
     await threadService.updateCurrentInput(undefined)
 
     setTimeout(() => {

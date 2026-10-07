@@ -143,7 +143,7 @@ export const BlockTooltip = (props: Props) => {
     closeTooltip()
   }
 
-  const onCopilotAddToChat = () => {
+  const onCopilotAddToChat = async () => {
     const block = props.selectedBlock
     if (!block) return
 
@@ -164,7 +164,7 @@ export const BlockTooltip = (props: Props) => {
         } satisfies TextAttachment)
 
     menuService.showAssistant()
-    threadService.addAttachment(attachment)
+    await threadService.addAttachment(attachment)
 
     closeTooltip()
   }

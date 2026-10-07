@@ -18,20 +18,20 @@ export const AutoContext = () => {
 
     if (isFile(parentItem?.value) && parentItem.value.code) {
       const attachment = fileService.createAttachment(parentItem.value)
-      threadService.addAttachment(attachment)
+      void threadService.addAttachment(attachment)
     }
   })
 
   // Refresh project attachment if menu tree was updated
   createEffect(async () => {
     treeService.tree // listen on tree changes
-    const attachments = untrack(() => threadService.attachments())
+    const attachments = untrack(() => threadService.currentThread?.attachments ?? [])
     for (const attachment of attachments) {
       if (attachment.type === AttachmentType.Project) {
         const project = treeService.getItem(attachment.projectId)?.value
         if (!isProject(project)) continue
         const newAttachment = await projectService.createAttachment(project)
-        threadService.addAttachment(newAttachment)
+        await threadService.addAttachment(newAttachment)
       }
     }
   })
@@ -55,7 +55,7 @@ export const AutoContext = () => {
     }
 
     const attachment = fileService.createAttachment(currentFile)
-    threadService.addAttachment(attachment)
+    void threadService.addAttachment(attachment)
   })
 
   return null

@@ -311,6 +311,7 @@ export interface Thread {
   path?: Map<string | undefined, string>
   pinned?: boolean
   currentInput?: string
+  attachments?: Attachment[]
   private?: boolean
   projectId?: string
   deleted?: boolean
