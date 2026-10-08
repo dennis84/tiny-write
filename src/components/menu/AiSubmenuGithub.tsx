@@ -1,6 +1,6 @@
 import {createEffect, createSignal, onCleanup, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
-import {isTest} from '@/env'
+import {isTauri, isTest} from '@/env'
 import {copy} from '@/remote/clipboard'
 import type {CopilotPromptUserDeviceFlow} from '@/remote/copilot'
 import {useState} from '@/state'
@@ -31,7 +31,7 @@ export const AiSubmenuGithub = () => {
   const onConnect = async () => {
     const result = await copilotService.signIn()
     if (result.status === 'AlreadySignedIn') {
-      await copilotService.updateStatus({user: result.user})
+      await copilotService.updateConfig({user: result.user})
     } else {
       setCodeResult(result)
     }
@@ -50,20 +50,21 @@ export const AiSubmenuGithub = () => {
     copilotService.verify(url)
   }
 
-  // TODO:
-  const onLsp = () => {}
+  const onLsp = async () => {
+    await copilotService.updateConfig({
+      ...store.ai?.copilot,
+      lspEnabled: !store.ai?.copilot?.lspEnabled,
+    })
+  }
 
   createEffect(() => {
-    // TODO:
-    // if (isTauri()) return
-
     const code = codeResult()
     if (!code) return
 
     const interval = setInterval(async () => {
       const status = await copilotService.getStatus(code)
       if (status?.user) {
-        await copilotService.updateStatus(status)
+        await copilotService.updateConfig(status)
         setCodeResult(undefined)
         setDone(true)
       }
@@ -106,9 +107,16 @@ export const AiSubmenuGithub = () => {
                 <Link onClick={onDisconnect}>
                   <IconToggleOff /> Disconnect
                 </Link>
-                <Link onClick={onLsp}>
-                  <IconToggleOn /> Enable inline completions
-                </Link>
+                <Show when={isTauri() && !store.ai?.copilot?.lspEnabled}>
+                  <Link onClick={onLsp}>
+                    <IconToggleOn /> Enable inline completions
+                  </Link>
+                </Show>
+                <Show when={isTauri() && store.ai?.copilot?.lspEnabled}>
+                  <Link onClick={onLsp}>
+                    <IconToggleOff /> Disable inline completions
+                  </Link>
+                </Show>
                 <Show when={done()}>
                   <Note>GitHub Copilot is now ready!</Note>
                 </Show>

@@ -16,13 +16,14 @@ import {
 import {linter, setDiagnostics} from '@codemirror/lint'
 import {Compartment, EditorState, type Extension} from '@codemirror/state'
 import {drawSelection, EditorView, keymap, tooltips} from '@codemirror/view'
+import type {Store} from 'solid-js/store'
 import {tabCompletionKeymap} from '@/codemirror/completion'
 import {getLanguageConfig, type LangConfig} from '@/codemirror/highlight'
 import {lsp} from '@/codemirror/lsp'
 import {mermaidKeywords} from '@/codemirror/mermaid'
 import {getTheme} from '@/codemirror/theme'
 import {isTauri} from '@/env'
-import {Page, type PrettierConfig} from '@/types'
+import {Page, type PrettierConfig, type State} from '@/types'
 import {LspUtil} from '@/utils/LspUtil'
 import type {AppService} from './AppService'
 import type {ConfigService} from './ConfigService'
@@ -51,6 +52,7 @@ export class CodeMirrorService {
     private locationService: LocationService,
     private fileService: FileService,
     private projectFileService: ProjectFileService,
+    private store: Store<State>,
   ) {}
 
   static replaceSlice(doc: string, slice: string, range: [number, number]): string {
@@ -107,7 +109,15 @@ export class CodeMirrorService {
       const uri = props.path
         ? `file://${props.path}`
         : LspUtil.createBufferUri(props.id, lang.extension)
-      extensions.push(lsp(uri, this.locationService, this.fileService, this.projectFileService))
+      extensions.push(
+        lsp(
+          uri,
+          this.locationService,
+          this.fileService,
+          this.projectFileService,
+          this.store.ai?.copilot?.lspEnabled ?? false,
+        ),
+      )
     }
 
     if (this.locationService.page !== Page.Canvas) {

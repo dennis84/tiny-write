@@ -74,7 +74,7 @@ export class MessageUtil {
       content.push({
         type: 'file',
         mediaType: attachment.mediaType,
-        data: new URL(attachment.content), //{type: 'data', data: attachment.content},
+        data: new URL(attachment.content),
       })
       content.push({type: 'text', text: '--- END OF IMAGE ATTACHMENT ---'})
     } else if (attachment.type === AttachmentType.Text) {

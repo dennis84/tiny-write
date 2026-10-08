@@ -16,7 +16,7 @@ import {
 } from '@/remote/copilot'
 import {fetch} from '@/remote/http'
 import {debug, info} from '@/remote/log'
-import type {Model, State} from '@/types'
+import type {Copilot, Model, State} from '@/types'
 
 interface ApiTokenEndpoints {
   api: string
@@ -62,14 +62,15 @@ export class CopilotService {
     }
   }
 
-  async updateStatus(status: CopilotStatus) {
-    info(`Set github status (status=${JSON.stringify(status)})`)
+  async updateConfig(config: Copilot) {
+    info(`Update copilot config (config=${JSON.stringify(config)})`)
     this.setState(
       produce((state) => {
         state.ai ??= {}
         state.ai.copilot ??= {}
-        state.ai.copilot.accessToken = status.accessToken
-        state.ai.copilot.user = status.user
+        state.ai.copilot.accessToken = config.accessToken
+        state.ai.copilot.user = config.user
+        state.ai.copilot.lspEnabled = config.lspEnabled
       }),
     )
 

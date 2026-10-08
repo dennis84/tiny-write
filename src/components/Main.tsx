@@ -74,18 +74,25 @@ export const Main = (props: Props) => {
       })
     })
 
-    createEffect((prev) => {
-      if (!prev) return ctrl.store.config.theme?.code
-      untrack(() => {
-        for (const f of ctrl.fileService.files) {
-          if (!f.editorView && !f.codeEditorView) continue
-          if (f.code) ctrl.codeService.updateConfig(f)
-          else ctrl.editorService.updateEditorState(f)
-        }
-      })
-
-      return ctrl.store.config.theme?.code
-    })
+    // Reinit CM and PM when:
+    createEffect(
+      on(
+        () => ({
+          code: ctrl.store.config.theme.code,
+          lspEnabled: ctrl.store.ai?.copilot?.lspEnabled,
+        }),
+        () => {
+          untrack(() => {
+            for (const f of ctrl.fileService.files) {
+              if (!f.editorView && !f.codeEditorView) continue
+              if (f.code) ctrl.codeService.updateConfig(f)
+              else ctrl.editorService.updateEditorState(f)
+            }
+          })
+        },
+        {defer: true},
+      ),
+    )
 
     createEffect(
       on(

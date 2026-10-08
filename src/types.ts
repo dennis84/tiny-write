@@ -82,6 +82,7 @@ export type Config = v.InferInput<typeof ConfigSchema>
 export interface Copilot {
   user?: string
   accessToken?: string
+  lspEnabled?: boolean
 }
 
 export interface Ollama {

@@ -30,6 +30,7 @@ test('createEditor', () => {
   const locationService = mock<LocationService>()
   const fileService = mock<FileService>()
   const projectFileService = mock<ProjectFileService>()
+  const [store] = createStore<State>(createState())
 
   const parent = document.createElement('div')
   const service = new CodeMirrorService(
@@ -40,7 +41,9 @@ test('createEditor', () => {
     locationService,
     fileService,
     projectFileService,
+    store,
   )
+
   const {editorView, compartments} = service.createEditor({id: '1', lang: 'mermaid', parent})
 
   expect(editorView).toBeDefined()
@@ -71,6 +74,7 @@ test('format', async () => {
     locationService,
     fileService,
     projectFileService,
+    store,
   )
   const {editorView} = service.createEditor({id: '1', lang: 'typescript', parent, doc})
 
@@ -103,6 +107,7 @@ test('format - error', async () => {
     locationService,
     fileService,
     projectFileService,
+    store,
   )
   const {editorView} = service.createEditor({id: '1', lang: 'typescript', parent, doc})
 

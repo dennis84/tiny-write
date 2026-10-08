@@ -71,6 +71,7 @@ export const createCtrl = (initial: State) => {
     locationService,
     fileService,
     projectFileService,
+    store,
   )
   const proseMirrorService = new ProseMirrorService(
     configService,

@@ -21,6 +21,7 @@ export const lsp = (
   locationService: LocationService,
   fileService: FileService,
   projectFileService: ProjectFileService,
+  copilotEnabled: boolean,
 ) => {
   function createTransport(): Transport {
     let handlers: ((value: string) => void)[] = []
@@ -55,9 +56,10 @@ export const lsp = (
       ]),
       // signatureHelp(),
       // serverDiagnostics()
-      copilotCompletion(),
+      ...(copilotEnabled ? [copilotCompletion()] : []),
     ],
   }).connect(transport)
+
   return client.plugin(uri)
 }
 
