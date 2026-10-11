@@ -54,6 +54,7 @@ export class OllamaService {
       name: 'ollama',
       baseURL: 'http://localhost:11434/v1',
       apiKey: 'ollama',
+      supportsStructuredOutputs: true,
     })
   }
 

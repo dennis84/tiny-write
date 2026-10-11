@@ -2,6 +2,7 @@ import type {EditorView as CmEditorView} from '@codemirror/view'
 import type {EditorView} from 'prosemirror-view'
 import * as v from 'valibot'
 import type * as lspTypes from 'vscode-languageserver-protocol'
+import type {PartialBlock} from './services/AiService'
 import type {TreeItem, TreeState} from './tree'
 
 export interface MergeState {
@@ -291,7 +292,8 @@ export interface Message {
   id: string
   parentId?: string
   leftId?: string
-  content: string
+  content?: string
+  blocks?: PartialBlock[]
   attachments?: Attachment[]
   role: ChatRole
   interrupted?: boolean

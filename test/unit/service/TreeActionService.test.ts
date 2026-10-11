@@ -160,7 +160,7 @@ test('move - project already assigned', async () => {
   await service.move('file_1', 'file_2')
 
   expect(fileService.updateFile).toHaveBeenCalledTimes(1)
-  const args = vi.mocked(fileService.updateFile).mock.calls[0]
+  const args = fileService.updateFile.mock.calls[0]
   expect(args[0]).toEqual('file_1')
   expect(args[1]).toStrictEqual({
     parentId: 'file_2',

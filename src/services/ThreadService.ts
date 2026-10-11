@@ -5,7 +5,6 @@ import {createResource} from 'solid-js'
 import {produce, unwrap} from 'solid-js/store'
 import {v4 as uuidv4} from 'uuid'
 import {DB} from '@/db'
-import codeBlockHandlingPrompt from '@/prompts/assistant/code-block-handling.md?raw'
 import commonAssistantRulesPrompt from '@/prompts/assistant/common.md?raw'
 import generateTitlePrompt from '@/prompts/assistant/generate-title.md?raw'
 import summaryPrompt from '@/prompts/assistant/summary.md?raw'
@@ -23,7 +22,7 @@ import {
 } from '@/types'
 import {MessageUtil} from '@/utils/MessageUtil'
 import {ThreadContext} from '@/utils/ThreadContext'
-import type {AiService} from './AiService'
+import type {AiService, PartialBlock} from './AiService'
 import type {DialogService} from './DialogService'
 import type {FileService} from './FileService'
 import type {LocationService} from './LocationService'
@@ -266,6 +265,11 @@ export class ThreadService {
     this.addChunk(thread, messageId, context.parentId, '')
 
     const result = await this.aiService.completions(context, (chunk) => {
+      if (chunk.kind === 'blocks') {
+        this.updateBlocks(thread, messageId, context.parentId, chunk.blocks)
+        return
+      }
+
       if (chunk.kind === 'text') {
         this.addChunk(thread, messageId, context.parentId, chunk.delta)
         return
@@ -362,6 +366,40 @@ export class ThreadService {
     await this.saveThread(thread)
   }
 
+  updateBlocks(
+    thread: Thread,
+    messageId: string,
+    parentId: string | undefined,
+    blocks: PartialBlock[],
+  ) {
+    const model = this.aiService.chatModel
+    if (!model) return
+
+    this.updateThread((t) => {
+      let messageIndex = t.messages.findIndex((m) => m.id === messageId)
+
+      if (messageIndex !== -1) {
+        // Mutate proxy object in place
+        t.messages[messageIndex].blocks = blocks
+      } else {
+        info(`Create new message to stream to (id=${messageId}, parentId=${parentId})`)
+        const newMessage = {
+          id: messageId,
+          content: '',
+          blocks,
+          role: 'assistant',
+          parentId,
+          model,
+        } satisfies Message
+        t.messages.push(newMessage)
+        messageIndex = t.messages.length - 1
+
+        // Add new message as proxy object to tree
+        this.getMessageTree(thread.id).add(t.messages[messageIndex])
+      }
+    }, thread.id)
+  }
+
   addChunk(thread: Thread, messageId: string, parentId: string | undefined, chunk: string) {
     const model = this.aiService.chatModel
     if (!model) return
@@ -377,6 +415,7 @@ export class ThreadService {
         const newMessage = {
           id: messageId,
           content: chunk,
+          blocks: [],
           role: 'assistant',
           parentId,
           model,
@@ -545,7 +584,7 @@ export class ThreadService {
       targetId = it.value.id
     }, thread)
 
-    const {inputTokens, outputTokens} = lastUsage ?? MessageUtil.tokenCount(context)
+    const {inputTokens, outputTokens} = lastUsage ?? context.tokenCount()
     info(`Maybe create summary (inputTokens=${inputTokens}, outputTokens=${outputTokens})`)
 
     const promptLimit = model.maxPromptTokens * 0.7
@@ -650,16 +689,12 @@ export class ThreadService {
       context.parentId = it.value.id
     }, thread)
 
-    if (context.hasCodeBlocks) {
-      context.addSystemMessage(codeBlockHandlingPrompt)
-    }
-
     context.addSystemMessage(commonRulesPrompt)
     context.addSystemMessage(commonAssistantRulesPrompt)
 
     // Reduce messages starting from last summary
     if (lastSummary && lastSummaryIndex !== -1) {
-      const {inputTokens, outputTokens} = lastUsage ?? MessageUtil.tokenCount(context)
+      const {inputTokens, outputTokens} = lastUsage ?? context.tokenCount()
       const promptLimit = model.maxPromptTokens * 0.9
       const outputLimit = model.maxOutputTokens * 0.9
       const reduce = inputTokens > promptLimit || outputTokens > outputLimit

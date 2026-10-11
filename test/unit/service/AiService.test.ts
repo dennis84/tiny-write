@@ -8,13 +8,13 @@ import {createOpenAICompatible} from '@ai-sdk/openai-compatible'
 import {waitFor} from '@solidjs/testing-library'
 import {createStore} from 'solid-js/store'
 import {fetch} from '@/remote/http'
-import {AiService, type Chunk} from '@/services/AiService'
+import {AiService, type Chunk, type PartialBlock} from '@/services/AiService'
 import type {CopilotService} from '@/services/CopilotService'
 import type {LlamaCppService} from '@/services/LlamaCppService'
 import type {OllamaService} from '@/services/OllamaService'
 import {createState} from '@/state'
 import type {ToolCall} from '@/types'
-import {FINISH_REASON} from '@/utils/CopilotMock'
+import {CopilotMock, FINISH_REASON} from '@/utils/CopilotMock'
 import {pause} from '@/utils/promise'
 import {ThreadContext} from '@/utils/ThreadContext'
 
@@ -61,8 +61,10 @@ test('completions - success', async () => {
   context.addMessage({role: 'user', content: [{type: 'text', text: 'Hello, world!'}]})
 
   const chunks = [
-    `data: {"choices":[{"delta":{"content":"Hello"}}]}\n\n`,
-    `data: {"choices":[{"delta":{"content":", world"}}]}\n\n`,
+    CopilotMock.toChunk(CopilotMock.toChoicesDelta('{"blocks":[')),
+    CopilotMock.toChunk(CopilotMock.toChoicesDelta('{"kind":"text","content":"Hello')),
+    CopilotMock.toChunk(CopilotMock.toChoicesDelta(', world"}')),
+    CopilotMock.toChunk(CopilotMock.toChoicesDelta(']}')),
     `data: ${FINISH_REASON}\n\n`,
     `data: [DONE]\n\n`,
   ]
@@ -79,14 +81,14 @@ test('completions - success', async () => {
 
   vi.mocked(fetch).mockResolvedValueOnce(new Response(stream, {status: 200}))
 
-  let content = ''
+  let blocks: PartialBlock[] = []
   const result = await service.completions(context, (chunk) => {
-    if (chunk.kind === 'text') content += chunk.delta
+    if (chunk.kind === 'blocks') blocks = chunk.blocks
   })
 
   expect(result.success).toBe(true)
   expect(result.interrupted).toBe(undefined)
-  expect(content).toEqual('Hello, world')
+  expect(blocks[0].content).toEqual('Hello, world')
 })
 
 test('completions - interrupted', async () => {
@@ -105,11 +107,12 @@ test('completions - interrupted', async () => {
   context.addMessage({role: 'user', content: [{type: 'text', text: 'Hello, world!'}]})
 
   const chunks = [
-    `data: {"choices":[{"delta":{"content":"Hello"}}]}\n\n`,
-    `data: {"choices":[{"delta":{"content":", world"}}]}\n\n`,
-    `data: {"choices":[{"delta":{"content":", 1"}}]}\n\n`,
-    `data: {"choices":[{"delta":{"content":", 2"}}]}\n\n`,
-    `data: {"choices":[{"delta":{"content":", 3"}}]}\n\n`,
+    CopilotMock.toChunk(CopilotMock.toChoicesDelta('{"blocks":[{"kind":"text","content":"Hello')),
+    CopilotMock.toChunk(CopilotMock.toChoicesDelta(', world')),
+    CopilotMock.toChunk(CopilotMock.toChoicesDelta(', 1')),
+    CopilotMock.toChunk(CopilotMock.toChoicesDelta(', 2')),
+    CopilotMock.toChunk(CopilotMock.toChoicesDelta(', 3"}')),
+    CopilotMock.toChunk(CopilotMock.toChoicesDelta(']}')),
     `data: ${FINISH_REASON}\n\n`,
     `data: [DONE]\n\n`,
   ]
@@ -128,16 +131,16 @@ test('completions - interrupted', async () => {
 
   vi.mocked(fetch).mockResolvedValueOnce(new Response(stream, {status: 200}))
 
-  let content = ''
+  let blocks: PartialBlock[] = []
   const result = await service.completions(context, (chunk) => {
-    if (chunk.kind === 'text') content += chunk.delta
+    if (chunk.kind === 'blocks') blocks = chunk.blocks
     // Stop after first chunk
     service.stop()
   })
 
   expect(result.success).toBe(false)
   expect(result.interrupted).toBe(true)
-  expect(content).toEqual('Hello')
+  expect(blocks[0].content).toEqual('Hello')
 })
 
 test('completions - onToolCall reports tool-call and tool-result events', async () => {
@@ -189,7 +192,9 @@ test('completions - onToolCall reports tool-call and tool-result events', async 
   ]
 
   const finalChunks = [
-    `data: {"choices":[{"delta":{"content":"Done"}}]}\n\n`,
+    CopilotMock.toChunk(
+      CopilotMock.toChoicesDelta('{"blocks":[{"kind":"text","content":"DONE"}]}'),
+    ),
     `data: ${FINISH_REASON}\n\n`,
     `data: [DONE]\n\n`,
   ]

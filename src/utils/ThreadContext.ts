@@ -3,7 +3,6 @@ import type {ModelMessage} from 'ai'
 export class ThreadContext {
   private _system = ''
   private _messages: ModelMessage[] = []
-  private _hasCodeBlocks = false
 
   // Incoming AI response creates a tree node with this parentId
   public parentId: string | undefined
@@ -31,10 +30,6 @@ export class ThreadContext {
     this._messages = messages
   }
 
-  get hasCodeBlocks() {
-    return this._hasCodeBlocks
-  }
-
   addSystemMessage(message: string) {
     if (this._system !== '') this._system += '\n\n'
     this._system += message
@@ -42,22 +37,43 @@ export class ThreadContext {
 
   addMessage(message: ModelMessage) {
     this._messages.push(message)
+  }
 
-    if (message.role === 'user') {
-      const checkCode = (text: string) => text.includes('```')
-      if (typeof message.content === 'string') {
-        if (checkCode(message.content)) {
-          this._hasCodeBlocks = true
+  tokenCount(): {inputTokens: number; outputTokens: number} {
+    let outputTokens = 0
+    let inputTokens = this.countText(this.system ?? '')
+
+    for (const message of this.messages) {
+      if (message.role === 'user') {
+        if (typeof message.content === 'string') {
+          inputTokens += this.countText(message.content)
+        } else if (Array.isArray(message.content)) {
+          message.content.forEach((c) => {
+            if (c.type === 'text') inputTokens += this.countText(c.text)
+          })
         }
-      } else if (Array.isArray(message.content)) {
-        for (const c of message.content) {
-          if (c.type === 'text' && checkCode(c.text)) this._hasCodeBlocks = true
+      } else if (message.role === 'assistant') {
+        if (typeof message.content === 'string') {
+          outputTokens += this.countText(message.content)
+        } else if (Array.isArray(message.content)) {
+          message.content.forEach((c) => {
+            if (c.type === 'text') outputTokens += this.countText(c.text)
+          })
         }
       }
     }
+
+    return {inputTokens, outputTokens}
   }
 
   toString() {
     return JSON.stringify([{role: 'system', content: this._system}, ...this._messages])
+  }
+
+  private countText(text: string): number {
+    const words = text.split(/\s+/).length
+    const chars = text.length
+    const punctuation = (text.match(/[^a-zA-Z0-9\s]/g) || []).length
+    return Math.ceil(words * 1.3 + punctuation * 0.5 + chars / 15)
   }
 }

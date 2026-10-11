@@ -206,6 +206,7 @@ export class CopilotService {
       name: 'internal-copilot',
       baseURL,
       apiKey: tokenResponse.token,
+      supportsStructuredOutputs: true,
       headers: {
         'Editor-Version': this.appVersion(),
         'Copilot-Integration-Id': 'vscode-chat',

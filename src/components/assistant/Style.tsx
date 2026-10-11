@@ -40,9 +40,6 @@ export const ChatBubble = styled.div<{fadeIn?: boolean}>`
       border: 0;
     }
   }
-  .fence-container {
-    margin-bottom: 10px;
-  }
   a {
     color: var(--primary-background);
   }

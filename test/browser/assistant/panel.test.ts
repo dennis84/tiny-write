@@ -1,27 +1,17 @@
 import {expect, test} from '@playwright/test'
+import type {PartialBlock} from '@/services/AiService'
 import {createYUpdate} from '../../unit/testutil/codemirror-util'
 import {assertCodeLineToEqual, delay, setupDB} from '../utils'
 import {mockCopilotApiToken, mockCopilotModels} from './mock'
 
-const content = `
-## Test1
-
-\`\`\`ts file=src/main.ts
-const test1 = '111'
-\`\`\`
-
-## Test2
-
-\`\`\`ts id=222
-const test2 = '222'
-\`\`\`
-
-## Test3
-
-\`\`\`ts id=333 range=5-10
-const test3 = '333'
-\`\`\`
-`
+const blocks: PartialBlock[] = [
+  {kind: 'text', content: '## Test1'},
+  {kind: 'file', content: `const test1 = '111'`, lang: 'ts', path: 'src/main.ts'},
+  {kind: 'text', content: '## Test2'},
+  {kind: 'file', content: `const test2 = '222'`, lang: 'ts', ref: '222'},
+  {kind: 'text', content: '## Test3'},
+  {kind: 'file', content: `const test3 = '333'`, lang: 'ts', ref: '333', range: [5, 10]},
+]
 
 test.beforeEach(async ({page}) => {
   await setupDB(page, {
@@ -43,7 +33,7 @@ test.beforeEach(async ({page}) => {
         active: true,
         messages: [
           {id: '1', role: 'user', content: 'Blah'},
-          {id: '2', parentId: '1', role: 'assistant', content},
+          {id: '2', parentId: '1', role: 'assistant', blocks},
         ],
       },
     ],

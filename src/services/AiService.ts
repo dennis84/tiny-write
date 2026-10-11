@@ -1,7 +1,8 @@
 import type {OpenAICompatibleProvider} from '@ai-sdk/openai-compatible'
-import {generateText, stepCountIs, streamText} from 'ai'
+import {type DeepPartial, generateText, Output, stepCountIs, streamText} from 'ai'
 import {type Accessor, createMemo, createSignal} from 'solid-js'
 import type {SetStoreFunction, Store} from 'solid-js/store'
+import {z} from 'zod'
 import {DB} from '@/db'
 import {debug, error, info} from '@/remote/log'
 import type {Model, State, Usage} from '@/types'
@@ -11,6 +12,25 @@ import {BraveSearchService} from './BraveSearchService'
 import type {CopilotService} from './CopilotService'
 import type {LlamaCppService} from './LlamaCppService'
 import type {OllamaService} from './OllamaService'
+
+const FileResponseSchema = z.object({
+  kind: z.literal('file'),
+  content: z.string(),
+  ref: z.string().optional(),
+  lang: z.string().optional(),
+  caption: z.string().optional(),
+  path: z.string().optional(),
+  range: z.tuple([z.number().int().nonnegative(), z.number().int().nonnegative()]),
+})
+
+const TextResponseSchema = z.object({
+  kind: z.literal('text'),
+  content: z.string(),
+})
+
+const ResponseSchema = z.object({
+  blocks: z.array(z.discriminatedUnion('kind', [TextResponseSchema, FileResponseSchema])),
+})
 
 export interface TextChunk {
   kind: 'text'
@@ -35,6 +55,17 @@ export interface ToolCallChunk {
   endDate?: Date
 }
 
+export type PartialBlock = TextBlock | FileBlock //NonNullable<NonNullable<PartialResponse['blocks']>[number]>
+
+export type TextBlock = DeepPartial<z.infer<typeof TextResponseSchema>>
+
+export type FileBlock = DeepPartial<z.infer<typeof FileResponseSchema>>
+
+export interface Blocks {
+  kind: 'blocks'
+  blocks: PartialBlock[]
+}
+
 export interface CompletionsResult {
   success: boolean
   interrupted?: boolean
@@ -42,7 +73,7 @@ export interface CompletionsResult {
   usage?: Usage
 }
 
-export type Chunk = TextChunk | ReasoningChunk | ToolCallChunk
+export type Chunk = Blocks | TextChunk | ReasoningChunk | ToolCallChunk
 
 export class AiService {
   private streamingSignal = createSignal<AbortController | undefined>()
@@ -133,6 +164,7 @@ export class AiService {
         anthropic: {thinking: {type: 'enabled', budgetTokens: 4000}},
         google: {thinkingConfig: {thinkingBudget: 2048, includeThoughts: true}},
       },
+      output: Output.object({schema: ResponseSchema}),
       stopWhen: stepCountIs(5),
       onEnd: () => {
         this.streamingSignal[1](undefined)
@@ -148,64 +180,61 @@ export class AiService {
         ret.interrupted = true
         ret.success = false
       },
+      onChunk: ({chunk}) => {
+        switch (chunk.type) {
+          case 'reasoning-start':
+            onChunk({
+              kind: 'reasoning',
+              id: chunk.id,
+              startDate: new Date(),
+            })
+            break
+          case 'reasoning-end':
+            onChunk({
+              kind: 'reasoning',
+              id: chunk.id,
+              endDate: new Date(),
+            })
+            break
+          case 'reasoning-delta':
+            onChunk({
+              kind: 'reasoning',
+              id: chunk.id,
+              delta: chunk.text,
+            })
+            break
+          case 'tool-input-start':
+            onChunk({
+              kind: 'tool-call',
+              id: chunk.id,
+              toolName: chunk.toolName,
+              startDate: new Date(),
+            })
+            break
+          case 'tool-call':
+          case 'tool-error':
+            onChunk({
+              kind: 'tool-call',
+              id: chunk.toolCallId,
+              toolName: chunk.toolName,
+              input: chunk.input as Record<string, any>,
+            })
+            break
+          case 'tool-result':
+            onChunk({
+              kind: 'tool-call',
+              id: chunk.toolCallId,
+              toolName: chunk.toolName,
+              result: chunk.output,
+              endDate: new Date(),
+            })
+            break
+        }
+      },
     })
 
-    for await (const part of result.stream) {
-      switch (part.type) {
-        case 'text-delta':
-          onChunk({
-            kind: 'text',
-            delta: part.text,
-          })
-          break
-        case 'reasoning-start':
-          onChunk({
-            kind: 'reasoning',
-            id: part.id,
-            startDate: new Date(),
-          })
-          break
-        case 'reasoning-end':
-          onChunk({
-            kind: 'reasoning',
-            id: part.id,
-            endDate: new Date(),
-          })
-          break
-        case 'reasoning-delta':
-          onChunk({
-            kind: 'reasoning',
-            id: part.id,
-            delta: part.text,
-          })
-          break
-        case 'tool-input-start':
-          onChunk({
-            kind: 'tool-call',
-            id: part.id,
-            toolName: part.toolName,
-            startDate: new Date(),
-          })
-          break
-        case 'tool-call':
-        case 'tool-error':
-          onChunk({
-            kind: 'tool-call',
-            id: part.toolCallId,
-            toolName: part.toolName,
-            input: part.input as Record<string, any>,
-          })
-          break
-        case 'tool-result':
-          onChunk({
-            kind: 'tool-call',
-            id: part.toolCallId,
-            toolName: part.toolName,
-            result: part.output,
-            endDate: new Date(),
-          })
-          break
-      }
+    for await (const part of result.partialOutputStream) {
+      onChunk({kind: 'blocks', blocks: part.blocks?.filter((it) => it !== undefined) ?? []})
     }
 
     try {

@@ -51,13 +51,19 @@ export class CopilotMock {
 
     const encoder = new TextEncoder()
     const enqueueChunk = (controller: ReadableStreamDefaultController<any>, chunk: unknown) => {
-      const buffer = encoder.encode(CopilotMock.toChunk(chunk)).buffer
-      controller.enqueue(buffer)
+      controller.enqueue(encoder.encode(CopilotMock.toChunk(chunk)))
     }
 
     const enqueueDelta = (controller: ReadableStreamDefaultController<any>, text: string) => {
       const message = CopilotMock.toChoicesDelta(text)
       enqueueChunk(controller, message)
+    }
+
+    const enqueueJsonStringDelta = (
+      controller: ReadableStreamDefaultController<any>,
+      text: string,
+    ) => {
+      enqueueDelta(controller, CopilotMock.toJSONString(text))
     }
 
     const enqueueReasoningDelta = (
@@ -81,7 +87,7 @@ export class CopilotMock {
           await pause(1_000)
 
           enqueueChunk(controller, CopilotMock.toFinishDelta('tool_calls'))
-          controller.enqueue(encoder.encode('data: [DONE]').buffer)
+          controller.enqueue(encoder.encode('data: [DONE]'))
           controller.close()
         },
       })
@@ -127,11 +133,14 @@ export class CopilotMock {
 
           await pause(2000)
 
+          enqueueDelta(controller, '{"blocks":[')
+
           let parts = 0
           while (true) {
             if (!options.endlessText && parts >= 4) {
-              controller.enqueue(encoder.encode(`data: ${FINISH_REASON}\n\n`).buffer)
-              controller.enqueue(encoder.encode('data: [DONE]').buffer)
+              enqueueDelta(controller, ']}')
+              controller.enqueue(encoder.encode(`data: ${FINISH_REASON}\n\n`))
+              controller.enqueue(encoder.encode('data: [DONE]'))
               controller.close()
               break
             }
@@ -143,39 +152,46 @@ export class CopilotMock {
             const h1 = Math.random() > 0.9
 
             if (code) {
-              enqueueDelta(controller, '\n\n')
-              enqueueDelta(controller, '```')
-              await pause(10)
-              enqueueDelta(controller, 'typescript id=123 file=test.ts\n')
-              enqueueDelta(controller, 'let x = ') // to test highlighting
-              await pause(10)
-            } else if (h1) {
-              enqueueDelta(controller, '# ')
-            }
+              enqueueDelta(controller, '{"kind":"text","content":"')
+              enqueueJsonStringDelta(controller, '\n\n')
+              enqueueDelta(controller, '"},')
 
-            if (code && options.endlessCode) {
-              while (true) {
-                const newline = Math.random() > 0.8
-                const randomIndex = Math.floor(Math.random() * LOREM_IPSUM_WORDS.length)
-                enqueueDelta(controller, `${LOREM_IPSUM_WORDS[randomIndex]}${newline ? '\n' : ' '}`)
-                await pause(10)
+              enqueueDelta(
+                controller,
+                '{"kind":"file","lang":"typescript","ref":"123","path":"test.ts","range":[0,0],"content":"',
+              )
+              enqueueJsonStringDelta(controller, 'let x = ')
+              await pause(10)
+
+              if (options.endlessCode) {
+                while (true) {
+                  const newline = Math.random() > 0.8
+                  const randomIndex = Math.floor(Math.random() * LOREM_IPSUM_WORDS.length)
+                  enqueueJsonStringDelta(
+                    controller,
+                    `${JSON.stringify(LOREM_IPSUM_WORDS[randomIndex])}${newline ? '\n' : ' '}`,
+                  )
+                  await pause(10)
+                }
               }
-            }
 
-            const randomIndex = Math.floor(Math.random() * LOREM_IPSUM_WORDS.length)
-            for (let i = 0; i <= randomIndex; i++) {
-              enqueueDelta(controller, `${LOREM_IPSUM_WORDS[i]} `)
-              await pause(10)
-            }
-
-            if (code) {
-              enqueueDelta(controller, '\n')
-              enqueueDelta(controller, '``') // close code fence in 2 chunks
-              enqueueDelta(controller, '`\n\n')
+              const randomIndex = Math.floor(Math.random() * LOREM_IPSUM_WORDS.length)
+              enqueueJsonStringDelta(controller, JSON.stringify(LOREM_IPSUM_WORDS[randomIndex]))
+              enqueueDelta(controller, '"},')
               continue
             }
 
-            enqueueDelta(controller, '\n\n')
+            enqueueDelta(controller, '{"kind":"text","content":"')
+            if (h1) enqueueJsonStringDelta(controller, '# ')
+
+            const randomIndex = Math.floor(Math.random() * LOREM_IPSUM_WORDS.length)
+            for (let i = 0; i <= randomIndex; i++) {
+              enqueueJsonStringDelta(controller, `${LOREM_IPSUM_WORDS[i]} `)
+              await pause(10)
+            }
+
+            enqueueJsonStringDelta(controller, '\n\n')
+            enqueueDelta(controller, '"},')
           }
         },
       })
@@ -297,9 +313,14 @@ export class CopilotMock {
   }
 
   static completionsStream(textChunks: string[]) {
-    return `${textChunks
-      .map((content) => CopilotMock.toChoicesDelta(content))
-      .map((json) => CopilotMock.toChunk(json))
+    const chunks = [
+      '{"blocks":[{"kind":"text","content":"',
+      ...textChunks.map((content) => CopilotMock.toJSONString(content)),
+      '"}]}',
+    ]
+
+    return `${chunks
+      .map((content) => CopilotMock.toChunk(CopilotMock.toChoicesDelta(content)))
       .join('')}data: ${FINISH_REASON}\n\ndata: [DONE]`
   }
 
@@ -348,7 +369,11 @@ export class CopilotMock {
     }
   }
 
-  private static toChunk(chunk: unknown) {
+  static toChunk(chunk: unknown) {
     return `data: ${JSON.stringify(chunk)}\n\n`
+  }
+
+  static toJSONString(content: string) {
+    return JSON.stringify(content).slice(1, -1)
   }
 }

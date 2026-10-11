@@ -15,6 +15,7 @@ import {
   type Window,
 } from '@/types'
 import {info} from './remote/log'
+import {MessageUtil} from './utils/MessageUtil'
 
 export interface PersistedVersion {
   ydoc: Uint8Array
@@ -260,7 +261,8 @@ export class DB {
       }
 
       for (const message of thread.messages) {
-        if (message.content.toLowerCase().includes(term)) {
+        const text = MessageUtil.toString(message)
+        if (text.toLowerCase().includes(term)) {
           results.push(thread)
           cursor = await cursor.continue()
           continue loop

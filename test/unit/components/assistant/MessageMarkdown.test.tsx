@@ -1,4 +1,4 @@
-import {render} from '@solidjs/testing-library'
+import {render, waitFor} from '@solidjs/testing-library'
 import {expect, test, vi} from 'vitest'
 import {mock} from 'vitest-mock-extended'
 import {MessageMarkdown} from '@/components/assistant/MessageMarkdown'
@@ -11,12 +11,18 @@ test('render - code', async () => {
   stubLocation('/assistant')
 
   const {container} = render(() => <MessageMarkdown content="`[]abc`" />)
-  expect(container.innerHTML).toEqual('<p><span><code>[]abc</code></span></p>')
+
+  await waitFor(() => {
+    expect(container.innerHTML).toEqual('<p><span><code>[]abc</code></span></p>')
+  })
 })
 
 test('render - parse error', async () => {
   stubLocation('/assistant')
 
   const {container} = render(() => <MessageMarkdown content="`[]abc" />)
-  expect(container.innerHTML).toEqual('<p><span>`[]abc</span></p>')
+
+  await waitFor(() => {
+    expect(container.innerHTML).toEqual('<p><span>`[]abc</span></p>')
+  })
 })

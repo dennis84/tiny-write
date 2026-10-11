@@ -4,6 +4,7 @@ import {copy} from '@/remote/clipboard'
 import {useState} from '@/state'
 import type {TreeItem} from '@/tree'
 import {AttachmentType, type Message} from '@/types'
+import {MessageUtil} from '@/utils/MessageUtil'
 import {ButtonGroup, ButtonSpan, IconButton} from '../Button'
 import {TooltipHelp} from '../dialog/TooltipHelp'
 import {Spinner} from '../icons/Spinner'
@@ -31,7 +32,7 @@ interface Props {
 export const MessageAnswer = (props: Props) => {
   const {aiService, configService} = useState()
 
-  const onCopy = () => copy(props.message.value.content)
+  const onCopy = () => copy(MessageUtil.toString(props.message.value))
 
   const onRegenerate = () => {
     props.onRegenerate?.(props.message.value)
@@ -42,7 +43,7 @@ export const MessageAnswer = (props: Props) => {
       <Thinking message={props.message.value} />
       {/* Rerender code blocks if code theme has been changed */}
       <Show when={configService.codeTheme} keyed>
-        <MessageMarkdown content={props.message.value.content} />
+        <MessageMarkdown blocks={props.message.value.blocks} />
       </Show>
       <ButtonGroup>
         <TooltipHelp title="Copy">

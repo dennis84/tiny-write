@@ -1,7 +1,6 @@
 import {expect, test} from 'vitest'
 import {AttachmentType, type Message} from '@/types'
 import {MessageUtil} from '@/utils/MessageUtil'
-import {ThreadContext} from '@/utils/ThreadContext'
 
 test('toModelMessage', () => {
   const message: Message = {
@@ -111,15 +110,4 @@ test('isEmptyUsage', () => {
   expect(MessageUtil.isEmptyUsage({inputTokens: 0, outputTokens: 5})).toBe(false)
   expect(MessageUtil.isEmptyUsage({inputTokens: 5, outputTokens: 0})).toBe(false)
   expect(MessageUtil.isEmptyUsage({inputTokens: 5, outputTokens: 5})).toBe(false)
-})
-
-test('tokenCount - counts user messages as input and assistant messages as output', () => {
-  const context = new ThreadContext()
-  context.addMessage({role: 'user', content: 'A'})
-  context.addMessage({role: 'assistant', content: 'B'})
-
-  const result = MessageUtil.tokenCount(context)
-
-  expect(result.inputTokens).toBeGreaterThan(0)
-  expect(result.outputTokens).toBeGreaterThan(0)
 })

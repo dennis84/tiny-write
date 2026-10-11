@@ -67,6 +67,7 @@ export class LlamaCppService {
     return createOpenAICompatible({
       name: 'llama-cpp',
       baseURL: `${this.baseUrl}/v1`,
+      supportsStructuredOutputs: true,
     })
   }
 

@@ -16,23 +16,28 @@ import {
   type ProjectAttachment,
   type SelectionAttachment,
 } from '@/types'
-import {MessageUtil} from '@/utils/MessageUtil'
+import {ThreadContext} from '@/utils/ThreadContext'
 import {createFile, createThread} from '../testutil/data'
 import {expectTree} from '../testutil/tree'
 
-const fileService = mock<FileService>()
-const aiService = mock<AiService>({
-  chatModel: {
-    maxPromptTokens: 2,
-    maxOutputTokens: 2,
-  },
-})
-const locationService = mock<LocationService>({threadId: '1'})
-const dialogService = mock<DialogService>()
-const treeService = mock<TreeService>()
+let fileService: FileService
+let aiService: AiService
+let locationService: LocationService
+let dialogService: DialogService
+let treeService: TreeService
 
 beforeEach(() => {
-  vi.resetAllMocks()
+  vi.restoreAllMocks()
+  fileService = mock<FileService>()
+  aiService = mock<AiService>({
+    chatModel: {
+      maxPromptTokens: 2,
+      maxOutputTokens: 2,
+    },
+  })
+  locationService = mock<LocationService>({threadId: '1'})
+  dialogService = mock<DialogService>()
+  treeService = mock<TreeService>()
 })
 
 vi.mock('@/prompts/common/rules.md?raw', () => {
@@ -41,10 +46,6 @@ vi.mock('@/prompts/common/rules.md?raw', () => {
 
 vi.mock('@/prompts/assistant/common.md?raw', () => {
   return {default: 'assistant/common'}
-})
-
-vi.mock('@/prompts/assistant/code-block-handling.md?raw', () => {
-  return {default: 'assistant/code-block-handling'}
 })
 
 vi.mock('@/prompts/common/user-message.md?raw', () => {
@@ -228,7 +229,7 @@ test('sendMessages - dedup tool calls by id', async () => {
 
   await service.init()
 
-  aiService.completions.mockImplementation(async (_messages, onChunk) => {
+  vi.mocked(aiService).completions.mockImplementation(async (_messages, onChunk) => {
     onChunk({kind: 'text', delta: 'Here is what I found'})
     onChunk({
       kind: 'tool-call',
@@ -316,7 +317,7 @@ test('summarize', async () => {
 
   await service.init()
 
-  aiService.completionsSync.mockResolvedValue('12')
+  vi.mocked(aiService).completionsSync.mockResolvedValue('12')
 
   await service.summarize()
 
@@ -354,7 +355,7 @@ test('summarize - real usage overrides text estimate and skips summarization', a
 
   await service.init()
 
-  aiService.completionsSync.mockResolvedValue('12')
+  vi.mocked(aiService).completionsSync.mockResolvedValue('12')
 
   await service.summarize()
 
@@ -423,8 +424,8 @@ test('init - newThread', async () => {
 
   const file = createFile({id: 'file_1'})
 
-  treeService.getItem.mockReturnValue({id: file.id, childrenIds: [], value: file})
-  fileService.createAttachment.mockReturnValue({
+  vi.mocked(treeService).getItem.mockReturnValue({id: file.id, childrenIds: [], value: file})
+  vi.mocked(fileService).createAttachment.mockReturnValue({
     content: 'Test 123',
     type: AttachmentType.File,
     fileId: file.id,
@@ -662,7 +663,7 @@ test('generateTitle', async () => {
     expect(service.currentThread?.id).toEqual('1')
   })
 
-  aiService.completionsSync.mockImplementation(async (context) => {
+  vi.mocked(aiService).completionsSync.mockImplementation(async (context) => {
     expect(context.messages).toHaveLength(3)
     expect(context.messages[2].content).toContain('Generate a concise')
 
@@ -676,8 +677,8 @@ test('generateTitle', async () => {
 
 test.each<[Message[], number, number]>([
   [[], 2, 0],
-  [[{id: '1', role: 'assistant', content: ''}], 2, 1],
-  [[{id: '1', role: 'user', content: '```'}], 3, 1],
+  [[{id: '1', role: 'assistant', blocks: [{kind: 'text', content: ''}]}], 2, 1],
+  [[{id: '1', role: 'user', blocks: [{kind: 'text', content: '```'}]}], 2, 1],
   [
     [
       // maxPromptTokens: 10, maxOutputTokens: 12,
@@ -778,7 +779,9 @@ test.each<[Message[], number, number]>([
     }),
   ])
 
-  vi.spyOn(MessageUtil, 'countText').mockImplementation((text) => text.split(/\s+/).length)
+  vi.spyOn(ThreadContext.prototype as any, 'countText').mockImplementation(
+    (text) => (text as string).split(/\s+/).length,
+  )
 
   vi.spyOn(aiService, 'chatModel', 'get').mockReturnValue({
     ...aiService.chatModel!,

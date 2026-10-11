@@ -1,43 +1,16 @@
 import type {FilePart, ModelMessage, TextPart, UserContent} from 'ai'
+import {createCodeFence} from '@/components/assistant/util'
 import fileAttachmentPrompt from '@/prompts/attachments/file.md?raw'
 import projectAttachmentPrompt from '@/prompts/attachments/project.md?raw'
 import textAttachmentPrompt from '@/prompts/attachments/text.md?raw'
 import userMessagePrompt from '@/prompts/common/user-message.md?raw'
 import {type Attachment, AttachmentType, type Message, type Usage} from '@/types'
-import type {ThreadContext} from './ThreadContext'
 
 export class MessageUtil {
   static isEmptyUsage(usage?: Usage): boolean {
     if (!usage) return true
     if (usage.inputTokens == null || usage.outputTokens == null) return true
     return usage.inputTokens === 0 && usage.outputTokens === 0
-  }
-
-  static tokenCount(context: ThreadContext): {inputTokens: number; outputTokens: number} {
-    let outputTokens = 0
-    let inputTokens = MessageUtil.countText(context.system ?? '')
-
-    for (const message of context.messages) {
-      if (message.role === 'user') {
-        if (typeof message.content === 'string') {
-          inputTokens += MessageUtil.countText(message.content)
-        } else if (Array.isArray(message.content)) {
-          message.content.forEach((c) => {
-            if (c.type === 'text') inputTokens += MessageUtil.countText(c.text)
-          })
-        }
-      } else if (message.role === 'assistant') {
-        if (typeof message.content === 'string') {
-          outputTokens += MessageUtil.countText(message.content)
-        } else if (Array.isArray(message.content)) {
-          message.content.forEach((c) => {
-            if (c.type === 'text') outputTokens += MessageUtil.countText(c.text)
-          })
-        }
-      }
-    }
-
-    return {inputTokens, outputTokens}
   }
 
   static toModelMessage(message: Message, latest = false): ModelMessage {
@@ -63,7 +36,7 @@ export class MessageUtil {
 
     return {
       role: message.role,
-      content: message.content,
+      content: MessageUtil.toString(message),
     }
   }
 
@@ -127,10 +100,17 @@ export class MessageUtil {
     })
   }
 
-  static countText(text: string): number {
-    const words = text.split(/\s+/).length
-    const chars = text.length
-    const punctuation = (text.match(/[^a-zA-Z0-9\s]/g) || []).length
-    return Math.ceil(words * 1.3 + punctuation * 0.5 + chars / 15)
+  static toString(message: Message): string {
+    return (
+      message.content ??
+      message.blocks
+        ?.map((b) => {
+          if (b.kind === 'text') return b.content ?? ''
+          else if (b.kind === 'file') return createCodeFence({code: b.content ?? '', lang: b.lang})
+          return ''
+        })
+        .join('\n\n') ??
+      ''
+    )
   }
 }
