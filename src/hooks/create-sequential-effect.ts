@@ -28,7 +28,7 @@ export function createSequentialEffect<T>(
   createEffect(async () => {
     const newItem = source()
     // Untrack is used to prevent this effect from re-running when queue changes.
-    untrack(async () => {
+    await untrack(async () => {
       setQueue((prev) => [...prev, newItem])
       await processQueue()
     })

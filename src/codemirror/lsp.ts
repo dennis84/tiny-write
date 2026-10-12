@@ -74,7 +74,7 @@ const jumpToDefinition =
     if (!plugin) return false
     plugin.client.sync()
 
-    plugin.client
+    void plugin.client
       .request<lspTypes.DefinitionParams, lspTypes.Location | lspTypes.Location[] | null>(
         'textDocument/definition',
         {

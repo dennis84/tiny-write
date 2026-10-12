@@ -1,6 +1,4 @@
-import type MarkdownIt from 'markdown-it'
-
-type Token = any // not exported from markdown-it?
+import type {MarkdownIt, Token} from 'markdown-it'
 
 export const taskList = (md: MarkdownIt) => {
   md.core.ruler.after('inline', 'github-task-lists', (state) => {

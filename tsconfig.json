@@ -5,7 +5,6 @@
     "types": [
       "vite/client",
       "@types/node",
-      "@testing-library/jest-dom",
       "unplugin-icons/types/solid"
     ],
     "allowJs": false,

@@ -88,7 +88,7 @@ test('init - not found', async () => {
     setState,
   )
 
-  expect(service.init('3')).rejects.toThrow(/^File not found.*/)
+  await expect(service.init('3')).rejects.toThrow(/^File not found.*/)
 })
 
 test('init - share', async () => {

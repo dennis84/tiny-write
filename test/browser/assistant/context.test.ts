@@ -33,7 +33,7 @@ test('add code to context', async ({page}) => {
 
   // file attachment was added
   const question = page.getByTestId('question')
-  expect(question).toContainText('Q1')
+  await expect(question).toContainText('Q1')
   await question.getByTestId('file_attachment_chip').click()
   const dialog = page.getByTestId('tooltip')
   expect(dialog).toContainText('111')
@@ -57,7 +57,7 @@ test('new thread from markdown file', async ({page}) => {
 
   // markdown file was used as prompt
   const question = page.getByTestId('chat_input')
-  expect(question).toContainText('222')
+  await expect(question).toContainText('222')
 
   // thread is added to markdown item in tree
   const threadTreeLink = page.getByTestId('tree_link').filter({hasText: 'Empty thread'})
