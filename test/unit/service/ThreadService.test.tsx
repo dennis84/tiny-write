@@ -425,11 +425,13 @@ test('init - newThread', async () => {
   const file = createFile({id: 'file_1'})
 
   vi.mocked(treeService).getItem.mockReturnValue({id: file.id, childrenIds: [], value: file})
-  vi.mocked(fileService).createAttachment.mockReturnValue({
-    content: 'Test 123',
-    type: AttachmentType.File,
-    fileId: file.id,
-  })
+  vi.mocked(fileService).createAttachments.mockReturnValue([
+    {
+      content: 'Test 123',
+      type: AttachmentType.File,
+      fileId: file.id,
+    },
+  ])
 
   const service = new ThreadService(
     fileService,
@@ -876,7 +878,7 @@ test('hande attachments', async () => {
   const createSelectionAttachment = (props: Partial<SelectionAttachment>): SelectionAttachment => ({
     type: AttachmentType.Selection,
     content: '',
-    selection: [[0, 0]],
+    selection: [1, 10],
     ...props,
   })
 

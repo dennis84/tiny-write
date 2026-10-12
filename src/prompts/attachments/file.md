@@ -1,5 +1,3 @@
 --- FILE ATTACHMENT ---
-type: {{type}}
-content:
-{{content}}
+{{file_node}}
 --- END OF FILE ATTACHMENT ---

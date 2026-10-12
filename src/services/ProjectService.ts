@@ -154,7 +154,7 @@ export class ProjectService {
 
       if (isFile(it.value) && it.value.code) {
         if (it.value.codeEditorView && opened < MAX) {
-          files.push(this.fileService.createAttachment(it.value))
+          files.push(...this.fileService.createAttachments(it.value))
           opened++
         }
 
@@ -162,7 +162,7 @@ export class ProjectService {
         tree += `${indent}${name}\n`
       } else if (isFile(it.value)) {
         if (it.value.editorView && opened < MAX) {
-          files.push(this.fileService.createAttachment(it.value))
+          files.push(...this.fileService.createAttachments(it.value))
           opened++
         }
 

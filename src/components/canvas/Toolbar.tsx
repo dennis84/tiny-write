@@ -10,7 +10,6 @@ import {
   Suspense,
 } from 'solid-js'
 import {getLanguageNames} from '@/codemirror/highlight'
-import {createCodeFence} from '@/components/assistant/util'
 import {TooltipButton} from '@/components/dialog/Style'
 import {useDialog} from '@/hooks/use-dialog'
 import {useInputLine} from '@/hooks/use-input-line'
@@ -80,12 +79,9 @@ export const Toolbar = () => {
     await threadService.addAttachment({
       type: AttachmentType.File,
       fileId: file.id,
-      content: createCodeFence({
-        id: file.id,
-        code: file.codeEditorView.state.doc.toString(),
-        lang: file.codeLang,
-        path: file.path,
-      }),
+      codeLang: file.codeLang,
+      path: file.path,
+      content: file.codeEditorView.state.doc.toString(),
     })
   }
 

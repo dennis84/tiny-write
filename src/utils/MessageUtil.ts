@@ -1,10 +1,16 @@
 import type {FilePart, ModelMessage, TextPart, UserContent} from 'ai'
-import {createCodeFence} from '@/components/assistant/util'
 import fileAttachmentPrompt from '@/prompts/attachments/file.md?raw'
 import projectAttachmentPrompt from '@/prompts/attachments/project.md?raw'
-import textAttachmentPrompt from '@/prompts/attachments/text.md?raw'
 import userMessagePrompt from '@/prompts/common/user-message.md?raw'
-import {type Attachment, AttachmentType, type Message, type Usage} from '@/types'
+import {
+  type Attachment,
+  AttachmentType,
+  type FileAttachment,
+  type Message,
+  type SelectionAttachment,
+  type TextAttachment,
+  type Usage,
+} from '@/types'
 
 export class MessageUtil {
   static isEmptyUsage(usage?: Usage): boolean {
@@ -53,24 +59,22 @@ export class MessageUtil {
     } else if (attachment.type === AttachmentType.Text) {
       content.push({
         type: 'text',
-        text: MessageUtil.renderTemplate(textAttachmentPrompt, {
-          content: attachment.content,
+        text: MessageUtil.renderTemplate(fileAttachmentPrompt, {
+          file_node: MessageUtil.fileNode(attachment),
         }),
       })
     } else if (attachment.type === AttachmentType.File) {
       content.push({
         type: 'text',
         text: MessageUtil.renderTemplate(fileAttachmentPrompt, {
-          type: attachment.codeLang ?? 'Plaintext',
-          content: attachment.content,
+          file_node: MessageUtil.fileNode(attachment),
         }),
       })
     } else if (attachment.type === AttachmentType.Selection) {
       content.push({
         type: 'text',
         text: MessageUtil.renderTemplate(fileAttachmentPrompt, {
-          type: attachment.codeLang ?? 'Plaintext',
-          content: attachment.content,
+          file_node: MessageUtil.fileNode(attachment),
         }),
       })
     } else if (attachment.type === AttachmentType.Project) {
@@ -94,6 +98,25 @@ export class MessageUtil {
     return content
   }
 
+  static fileNode(props: FileAttachment | SelectionAttachment | TextAttachment): string {
+    const xmlDoc = new DOMParser().parseFromString('<file/>', 'application/xml')
+    const root = xmlDoc.documentElement
+
+    if (props.fileId) root.setAttribute('ref', props.fileId)
+    if (props.path) root.setAttribute('path', props.path)
+
+    const lang = props.type === AttachmentType.Text ? 'text/markdown' : props.codeLang
+    if (lang) root.setAttribute('lang', lang)
+
+    if (props.type === AttachmentType.Selection && props.selection) {
+      root.setAttribute('range', `${props.selection[0]}-${props.selection[1]}`)
+    }
+
+    root.textContent = props.content
+
+    return new XMLSerializer().serializeToString(xmlDoc)
+  }
+
   static renderTemplate<T extends Record<string, any>>(template: string, data: T): string {
     return template.replace(/\{\{\s*(\w+)\s*\}\}/g, (match, key) => {
       return key in data && data[key] != null ? String(data[key]) : match
@@ -106,11 +129,23 @@ export class MessageUtil {
       message.blocks
         ?.map((b) => {
           if (b.kind === 'text') return b.content ?? ''
-          else if (b.kind === 'file') return createCodeFence({code: b.content ?? '', lang: b.lang})
+          else if (b.kind === 'file') return MessageUtil.createCodeFence(b.content ?? '', b.lang)
           return ''
         })
         .join('\n\n') ??
       ''
     )
+  }
+
+  private static createCodeFence(code: string, lang?: string): string {
+    let content = ''
+
+    content += '```'
+    content += lang ?? ''
+    content += '\n'
+    content += code
+    content += '\n```'
+
+    return content
   }
 }

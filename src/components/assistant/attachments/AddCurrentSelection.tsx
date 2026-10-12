@@ -4,7 +4,6 @@ import {IconTextCursor} from '@/components/icons/Ui'
 import {useCurrentFile} from '@/hooks/use-current-file'
 import {useState} from '@/state'
 import {type Attachment, AttachmentType} from '@/types'
-import {createCodeFence} from '../util'
 
 interface Props {
   onAttachment: (attachment: Attachment) => void
@@ -19,23 +18,16 @@ export const AddCurrentSelection = (props: Props) => {
     const editorView = currentFile()?.codeEditorView
     if (!editorView) return
 
-    const from = editorView.state.selection.main.from
-    const to = editorView.state.selection.main.to
-    const code = editorView.state.sliceDoc(from, to)
+    editorView.state.selection.ranges.forEach((range) => {
+      const content = editorView.state.sliceDoc(range.from, range.to)
 
-    const content = createCodeFence({
-      id: currentFile()?.id,
-      code,
-      lang: currentFile()?.codeLang,
-      path: currentFile()?.path,
-      range: [from, to],
-    })
-
-    props.onAttachment({
-      content,
-      type: AttachmentType.Selection,
-      fileId: currentFile()?.id,
-      selection: [[from, to]],
+      props.onAttachment({
+        content,
+        type: AttachmentType.Selection,
+        fileId: currentFile()?.id,
+        path: currentFile()?.path,
+        selection: [range.from, range.to],
+      })
     })
   }
 

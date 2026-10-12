@@ -13,7 +13,12 @@ Rules:
 For each {"kind":"file"} block:
 - In file blocks, include "ref" and "range" only if provided and known; otherwise omit them.
 - Do not invent ref/range.
+- Set "caption" to a short summary of the code block’s intent, max 10 words.
+- Set "path" on every {"kind":"file"} block.
+- If the user/request provides a file path and the code is modifying or referring to that file, preserve that exact path.
+- Otherwise, invent a sensible new-file path that matches the code’s purpose and language (concise, conventional project structure).
+- Never overwrite or alter an explicitly provided path.
+- Do not use empty "path" values.
 - Set "lang" from path extension when path exists (.ts->ts, .tsx->tsx, .py->py, etc.).
 - If no path, infer lang from syntax (imports/types => ts, JSX => tsx/jsx, braces+semicolons => js, etc.).
 - If still uncertain, omit "lang" (do not invent random values).
-- Set "caption" to a short summary of the code block’s intent, max 10 words.

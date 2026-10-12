@@ -8,13 +8,14 @@ test('toModelMessage', () => {
     role: 'user',
     content: '123',
     attachments: [
-      {type: AttachmentType.Text, content: 'Text'},
-      {type: AttachmentType.File, content: 'File', codeLang: 'typescript'},
+      {type: AttachmentType.Text, fileId: '1', content: 'Text'},
+      {type: AttachmentType.File, fileId: '2', content: 'File', codeLang: 'typescript'},
       {
         type: AttachmentType.Selection,
+        fileId: '3',
         content: 'Selection',
         codeLang: 'typescript',
-        selection: [[0, 0]],
+        selection: [1, 10],
       },
       {type: AttachmentType.Image, content: 'data:123', name: 'img', mediaType: 'image/png'},
       {
@@ -35,24 +36,18 @@ test('toModelMessage', () => {
   expect.assert(Array.isArray(result.content))
 
   expect.assert(result.content[0].type === 'text')
-  expect(result.content[0].text).toEqual(`--- TEXT/MARKDOWN ATTACHMENT ---
-type: Text or Markdown document
-content:
-Text
---- END OF TEXT/MARKDOWN ATTACHMENT ---\n`)
+  expect(result.content[0].text).toEqual(`--- FILE ATTACHMENT ---
+<file ref="1" lang="text/markdown">Text</file>
+--- END OF FILE ATTACHMENT ---\n`)
 
   expect.assert(result.content[1].type === 'text')
   expect(result.content[1].text).toEqual(`--- FILE ATTACHMENT ---
-type: typescript
-content:
-File
+<file ref="2" lang="typescript">File</file>
 --- END OF FILE ATTACHMENT ---\n`)
 
   expect.assert(result.content[2].type === 'text')
   expect(result.content[2].text).toEqual(`--- FILE ATTACHMENT ---
-type: typescript
-content:
-Selection
+<file ref="3" lang="typescript" range="1-10">Selection</file>
 --- END OF FILE ATTACHMENT ---\n`)
 
   expect.assert(result.content[3].type === 'text')

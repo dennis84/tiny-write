@@ -17,8 +17,10 @@ export const AutoContext = () => {
       : undefined
 
     if (isFile(parentItem?.value) && parentItem.value.code) {
-      const attachment = fileService.createAttachment(parentItem.value)
-      void threadService.addAttachment(attachment)
+      const attachments = fileService.createAttachments(parentItem.value)
+      attachments.forEach((attachment) => {
+        void threadService.addAttachment(attachment)
+      })
     }
   })
 
@@ -54,8 +56,10 @@ export const AutoContext = () => {
       return
     }
 
-    const attachment = fileService.createAttachment(currentFile)
-    void threadService.addAttachment(attachment)
+    const attachments = fileService.createAttachments(currentFile)
+    attachments.forEach((attachment) => {
+      void threadService.addAttachment(attachment)
+    })
   })
 
   return null

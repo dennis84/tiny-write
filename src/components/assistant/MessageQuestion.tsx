@@ -1,11 +1,13 @@
 import {createSignal, For, Show} from 'solid-js'
 import {styled} from 'solid-styled-components'
+import {copy} from '@/remote/clipboard'
 import {useState} from '@/state'
 import type {TreeItem} from '@/tree'
 import type {Message} from '@/types'
+import {MessageUtil} from '@/utils/MessageUtil'
 import {ButtonGroup, IconButton} from '../Button'
 import {TooltipHelp} from '../dialog/TooltipHelp'
-import {IconEdit} from '../icons/Ui'
+import {IconCopy, IconEdit} from '../icons/Ui'
 import {AttachmentChip} from './attachments/AttachmentChip'
 import {MessageInput} from './MessageInput'
 import {MessageMarkdown} from './MessageMarkdown'
@@ -58,6 +60,8 @@ export const MessageQuestion = (props: Props) => {
 
   const {configService} = useState()
 
+  const onCopy = () => copy(MessageUtil.toString(props.message.value))
+
   const onEditMessage = async () => {
     setEditing(true)
   }
@@ -98,6 +102,11 @@ export const MessageQuestion = (props: Props) => {
           </QuestionBubble>
           <Attachments />
           <ButtonGroup class="button-group">
+            <TooltipHelp title="Copy">
+              <IconButton onClick={onCopy}>
+                <IconCopy />
+              </IconButton>
+            </TooltipHelp>
             <Pagination
               id={props.message.id}
               parentId={props.message.parentId}

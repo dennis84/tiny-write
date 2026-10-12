@@ -3,7 +3,6 @@ import {TooltipButton} from '@/components/dialog/Style'
 import {IconCodeBlocks} from '@/components/icons/File'
 import {useCurrentFile} from '@/hooks/use-current-file'
 import {type Attachment, AttachmentType} from '@/types'
-import {createCodeFence} from '../util'
 
 interface Props {
   onAttachment: (attachment: Attachment) => void
@@ -16,17 +15,12 @@ export const AddCurrentFile = (props: Props) => {
     const editorView = currentFile()?.codeEditorView
     if (!editorView) return
 
-    const content = createCodeFence({
-      id: currentFile()?.id,
-      code: editorView.state.doc.toString(),
-      lang: currentFile()?.codeLang,
-      path: currentFile()?.path,
-    })
-
     props.onAttachment({
-      content,
+      content: editorView.state.doc.toString(),
       type: AttachmentType.File,
       fileId: currentFile()?.id,
+      codeLang: currentFile()?.codeLang,
+      path: currentFile()?.path,
     })
   }
 

@@ -16,7 +16,6 @@ import {useState} from '@/state'
 import {createTreeStore, type Tree, type TreeItem} from '@/tree'
 import {pause} from '@/utils/promise'
 import {CodeBlockHeader} from './CodeBlockHeader'
-import {parseCodeBlockAttrs} from './util'
 
 const CodeBlock = styled.div`
   background: var(--code-background);
@@ -28,11 +27,6 @@ export interface TokenItem {
   parentId?: string
   nodeType: string
   openNode: Token
-}
-
-export interface CodeFenceInfo {
-  lang?: string
-  attrs?: {id?: string; range?: [number, number]; file?: string}
 }
 
 const md = markdownit({
@@ -55,18 +49,11 @@ const MarkdownNode = (p: {tree: Tree<TokenItem>; node: TreeItem<TokenItem>}) => 
 }
 
 const MarkdownTree = (p: {tree: Tree<TokenItem>; childrenIds: string[]}) => {
-  const parseInfo = (item: TokenItem): CodeFenceInfo => {
-    let lang: string | undefined
-    let rest = ''
+  const parseLang = (item: TokenItem): string | undefined => {
     if (item.openNode.info) {
       const arr = item.openNode.info.split(/(\s+)/g)
-      lang = arr[0]
-      rest = arr.slice(2).join('')
+      return arr[0]
     }
-
-    const attrs = parseCodeBlockAttrs(rest)
-
-    return {lang, attrs}
   }
 
   return (
@@ -77,7 +64,7 @@ const MarkdownTree = (p: {tree: Tree<TokenItem>; childrenIds: string[]}) => {
             <Switch>
               <Match when={item().value.nodeType === 'fence'}>
                 <CodeFence
-                  info={parseInfo(item().value)}
+                  lang={parseLang(item().value)}
                   content={item().value.openNode.content.trim()}
                 />
               </Match>
@@ -96,7 +83,7 @@ const MarkdownTree = (p: {tree: Tree<TokenItem>; childrenIds: string[]}) => {
 }
 
 interface CodeFenceProps {
-  info: CodeFenceInfo
+  lang?: string
   content: string
 }
 
@@ -111,7 +98,7 @@ const CodeFence = (p: CodeFenceProps) => {
     let view = editorView()
     if (!view) {
       const theme = getTheme(configService.codeTheme.value)
-      const lang = getLanguageConfig(p.info.lang)
+      const lang = getLanguageConfig(p.lang)
       const doc = p.content
 
       view = new EditorView({
@@ -138,8 +125,7 @@ const CodeFence = (p: CodeFenceProps) => {
       // Reconfigure plugins because highlight infos comes after open fence:
       // chunk: ```
       // chunk: typescript\n
-      // const info = parseInfo()
-      const lang = getLanguageConfig(p.info.lang)
+      const lang = getLanguageConfig(p.lang)
 
       view.dispatch({
         changes: {from, to: docLen, insert: content.slice(from)},
@@ -237,7 +223,7 @@ export const MessageMarkdown = (props: MeessageMarkdownProps) => {
     return (
       <CodeBlock>
         <CodeBlockHeader block={props.block} />
-        <CodeFence info={{lang: props.block.lang}} content={props.block.content?.trim() ?? ''} />
+        <CodeFence lang={props.block.lang} content={props.block.content?.trim() ?? ''} />
       </CodeBlock>
     )
   }

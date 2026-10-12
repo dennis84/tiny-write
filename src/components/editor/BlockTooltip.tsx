@@ -5,7 +5,6 @@ import {Decoration} from 'prosemirror-view'
 import {createEffect, Show} from 'solid-js'
 import {foldAll} from '@/codemirror/fold-all'
 import {getLanguageNames} from '@/codemirror/highlight'
-import {createBlockquote, createCodeFence} from '@/components/assistant/util'
 import {DialogList, TooltipButton, TooltipDivider} from '@/components/dialog/Style'
 import {useDialog} from '@/hooks/use-dialog'
 import {useInputLine} from '@/hooks/use-input-line'
@@ -152,14 +151,11 @@ export const BlockTooltip = (props: Props) => {
       ? ({
           type: AttachmentType.File,
           codeLang: block.blockNode.attrs.lang,
-          content: createCodeFence({
-            code: block.blockNode.textContent,
-            lang: block.blockNode.attrs.lang,
-          }),
+          content: block.blockNode.textContent,
         } satisfies FileAttachment)
       : ({
           type: AttachmentType.Text,
-          content: createBlockquote(block.blockNode.textContent),
+          content: block.blockNode.textContent,
         } satisfies TextAttachment)
 
     menuService.showAssistant()

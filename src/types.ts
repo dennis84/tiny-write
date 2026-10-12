@@ -219,6 +219,7 @@ export interface TextAttachment {
   fileId?: string
   parentId?: string
   leftId?: string
+  path?: string
 }
 
 export interface FileAttachment {
@@ -229,14 +230,16 @@ export interface FileAttachment {
   codeLang?: string
   parentId?: string
   leftId?: string
+  path?: string
 }
 
 export interface SelectionAttachment {
   type: AttachmentType.Selection
-  content: string // selected text
+  content: string
   fileId?: string
   codeLang?: string
-  selection: (readonly [number, number])[] // [start, end]
+  path?: string
+  selection: [number, number]
 }
 
 export interface ImageAttachment {

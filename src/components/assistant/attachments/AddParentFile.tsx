@@ -25,8 +25,10 @@ export const AddParentFile = (props: Props) => {
   const onClick = () => {
     const parent = parentFile()
     if (!parent) return
-    const attachment = fileService.createAttachment(parent)
-    props.onAttachment(attachment)
+    const attachments = fileService.createAttachments(parent)
+    attachments.forEach((attachment) => {
+      props.onAttachment(attachment)
+    })
   }
 
   return (

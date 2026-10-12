@@ -36,7 +36,7 @@ test('add code to context', async ({page}) => {
   expect(question).toContainText('Q1')
   await question.getByTestId('file_attachment_chip').click()
   const dialog = page.getByTestId('tooltip')
-  expect(dialog).toContainText('``` id=1111```')
+  expect(dialog).toContainText('111')
 
   // thread is added to code item in tree
   await page.getByTestId('navbar_menu_open').click()

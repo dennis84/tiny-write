@@ -55,7 +55,7 @@ export interface ToolCallChunk {
   endDate?: Date
 }
 
-export type PartialBlock = TextBlock | FileBlock //NonNullable<NonNullable<PartialResponse['blocks']>[number]>
+export type PartialBlock = TextBlock | FileBlock
 
 export type TextBlock = DeepPartial<z.infer<typeof TextResponseSchema>>
 
@@ -158,11 +158,6 @@ export class AiService {
       abortSignal: controller.signal,
       tools: {
         braveSearch: BraveSearchService.getTool(),
-      },
-      providerOptions: {
-        openai: {reasoningEffort: 'medium', reasoningSummary: 'auto'},
-        anthropic: {thinking: {type: 'enabled', budgetTokens: 4000}},
-        google: {thinkingConfig: {thinkingBudget: 2048, includeThoughts: true}},
       },
       output: Output.object({schema: ResponseSchema}),
       stopWhen: stepCountIs(5),

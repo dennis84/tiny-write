@@ -477,8 +477,8 @@ export class ThreadService {
     if (currentThread.messages.length === 0 && currentThread.parentId) {
       const parent = this.treeService.getItem(currentThread.parentId)
       if (isFile(parent?.value) && !parent.value.code) {
-        const attachment = this.fileService.createAttachment(parent.value)
-        await this.updateCurrentInput(attachment.content)
+        const attachments = this.fileService.createAttachments(parent.value)
+        await this.updateCurrentInput(attachments[0].content)
       }
     }
   }

@@ -32,7 +32,6 @@ export const ChatBubble = styled.div<{fadeIn?: boolean}>`
     }
     .cm-content {
       padding: 10px;
-      padding-top: 0; /* no magin to apply panel */
     }
     .cm-panels {
       position: static;

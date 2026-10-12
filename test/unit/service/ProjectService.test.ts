@@ -186,9 +186,7 @@ test('createAttachment', async () => {
   })
 
   const fileAttachment: FileAttachment = {
-    content: `\`\`\`typescript id=code4.ts
-let x = 1
-\`\`\``,
+    content: `let x = 1`,
     type: AttachmentType.File,
     codeLang: openedFile.codeLang,
     fileId: openedFile.id,
@@ -196,7 +194,7 @@ let x = 1
     leftId: openedFile.leftId,
   }
 
-  fileService.createAttachment.mockReturnValue(fileAttachment)
+  fileService.createAttachments.mockReturnValue([fileAttachment])
 
   const items = [
     project,

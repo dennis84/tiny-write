@@ -1,6 +1,6 @@
 import {EditorState} from '@codemirror/state'
 import {EditorView} from '@codemirror/view'
-import {createEffect, createSignal, For, Match, onMount, Suspense, Switch} from 'solid-js'
+import {createEffect, createSignal, Match, onMount, Show, Suspense, Switch} from 'solid-js'
 import {styled} from 'solid-styled-components'
 import {getLanguageConfig} from '@/codemirror/highlight'
 import {getTheme} from '@/codemirror/theme'
@@ -28,7 +28,7 @@ export const AttachmentButton = styled(Button)`
 interface AttachmentTitleProps {
   file?: File
   codeLang?: string
-  selection?: (readonly [number, number])[]
+  selection?: [number, number]
 }
 
 export const AttachmentTitle = (props: AttachmentTitleProps) => {
@@ -40,26 +40,28 @@ export const AttachmentTitle = (props: AttachmentTitleProps) => {
 
   const langConfig = getLanguageConfig(props.codeLang)
 
-  const Selection = () => (
-    <For each={props.selection}>
-      {([from, to]) => (
-        <>
-          {from}-{to}{' '}
-        </>
-      )}
-    </For>
-  )
-
   return (
     <Suspense>
       <Switch>
         <Match when={title()}>
           {title()}
-          <Selection />
+          <Show when={props.selection}>
+            {(sel) => (
+              <>
+                {sel()[0]}-{sel()[1]}
+              </>
+            )}
+          </Show>
         </Match>
         <Match when={props.selection}>
           {langConfig.name ?? ''} File:
-          <Selection />
+          <Show when={props.selection}>
+            {(sel) => (
+              <>
+                {sel()[0]}-{sel()[1]}
+              </>
+            )}
+          </Show>
         </Match>
         <Match when={props.file}>{langConfig.name ?? ''} File</Match>
         <Match when={true}>Code Block</Match>
